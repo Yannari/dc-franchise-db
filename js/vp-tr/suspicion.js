@@ -57,6 +57,12 @@ import { players } from '../core.js';
 import { PORTRAIT_CSS, TR_NAV_TOP, TR_STICKY_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
+// THE PORTRAIT WALL, SHARED (Plan 11). Voting Plans are drawn on the same wall
+// of framed faces the morning-after and the conclave use — one component, not a
+// second one that drifts. This screen only feeds it names, target rings and
+// per-face intent captions; the frame, the strikes and the highlight ring are
+// the wall's own.
+import { portraitWall, PORTRAIT_WALL_CSS } from './portrait-wall.js';
 
 // NO EXIT VERB HERE, for the reason selection.js gives: nobody leaves on this
 // screen. It reports a state of mind, not a departure, and importing a word it
@@ -277,64 +283,6 @@ function _fore() {
     + '</svg>';
 }
 
-/**
- * THE HERO: two plumb lines, and the gap between their bobs.
- *
- * One hangs dead true. The other hangs off by exactly how wrong the room is
- * tonight — `err` is 0 when every ounce of the castle's suspicion is aimed at
- * somebody who really is a Traitor and 1 when none of it is. Nothing else on
- * this screen has to say what it is about.
- *
- * DRAWN AS A REAL PLUMB LINE and not as two diagonals: a beam, a fixed point,
- * a cord that hangs from it, and a bob that is a cone on a stub. The skew is
- * applied at the bob rather than at the beam, so the cord stays straight and
- * taut, which is the one thing a plumb line must never stop looking like.
- */
-function _heroScene(err) {
-  const e = Math.max(0, Math.min(1, Number(err) || 0));
-  const beamY = 248, bobY = 372;
-  const trueX = 508, beliefTop = 592;
-  const drift = 66 * e;                       // dead true at 0, a hand's width at 1
-  const beliefX = beliefTop + drift;
-  const cord = (x0, x1, cls) => '<path class="' + cls + '" d="M' + x0 + ' ' + beamY
-    + 'L' + x1.toFixed(1) + ' ' + bobY + '" stroke="#cfe0ee" stroke-width="1.5"'
-    + ' opacity=".8"/>';
-  // A REAL BOB: a short barrel with a cone on the bottom of it, not an arrow.
-  const bob = (x, fill, cls) => '<g class="' + cls + '">'
-    + '<path d="M' + (x - 7).toFixed(1) + ' ' + (bobY - 11) + 'h14v11l-7 13-7-13z"'
-    + ' fill="' + fill + '"/>'
-    + '<path d="M' + (x - 7).toFixed(1) + ' ' + (bobY - 11) + 'h14" stroke="#0b0f12"'
-    + ' stroke-width="1" opacity=".5"/></g>';
-  const gapY = bobY + 30;
-  return '<svg class="sn-hero-scene" viewBox="0 0 1100 440"'
-    + ' preserveAspectRatio="xMidYMid slice">'
-    + '<defs><linearGradient id="snHeroBg" x1="0" y1="0" x2="0" y2="1">'
-    + '<stop offset="0%" stop-color="#1d262e"/><stop offset="62%" stop-color="#131a20"/>'
-    + '<stop offset="100%" stop-color="#0b0f12"/></linearGradient></defs>'
-    + '<rect width="1100" height="440" fill="url(#snHeroBg)"/>'
-    // the beam the two lines hang from, and the two fixed points on it
-    + '<path d="M452 ' + beamY + 'h196" stroke="#7f93a4" stroke-width="3"/>'
-    + '<circle cx="' + trueX + '" cy="' + beamY + '" r="3.4" fill="#cfe0ee"/>'
-    + '<circle cx="' + beliefTop + '" cy="' + beamY + '" r="3.4" fill="#cfe0ee"/>'
-    // the true line, and a dashed vertical through it so the eye has a datum
-    + '<path d="M' + trueX + ' ' + beamY + 'V' + (bobY + 40) + '" stroke="#4c5f6e"'
-    + ' stroke-width="1" stroke-dasharray="3 7" opacity=".75"/>'
-    + cord(trueX, trueX, 'sn-cord-true')
-    + bob(trueX, '#e6f0f8', 'sn-bob-true')
-    // the believed line, off by the room's error
-    + '<path d="M' + beliefTop + ' ' + beamY + 'V' + (bobY + 40) + '" stroke="#4c5f6e"'
-    + ' stroke-width="1" stroke-dasharray="3 7" opacity=".4"/>'
-    + cord(beliefTop, beliefX, 'sn-cord-off')
-    + bob(beliefX, '#d8a34a', 'sn-bob-off')
-    // the gap, measured, between where the line hangs and where true is
-    + (drift > 6
-      ? '<path d="M' + beliefTop + ' ' + gapY + 'H' + beliefX.toFixed(1)
-        + '" stroke="#d8a34a" stroke-width="1.2" opacity=".85"/>'
-        + '<path d="M' + beliefTop + ' ' + (gapY - 5) + 'v10M' + beliefX.toFixed(1)
-        + ' ' + (gapY - 5) + 'v10" stroke="#d8a34a" stroke-width="1.2" opacity=".85"/>'
-      : '')
-    + '</svg>';
-}
 
 function _filters() {
   return '<svg width="0" height="0" style="position:absolute" aria-hidden="true">'
@@ -949,6 +897,71 @@ function _weigh(name, top, ceiling, truth, meta, capt) {
     + '</div></div>';
 }
 
+/**
+ * VOTING PLANS, ON THE PORTRAIT WALL (Plan 11).
+ *
+ * The screen's primitive is now the shared wall of framed faces, not an
+ * abstract rule. Every living player hangs on it; an ARROW under a face is who
+ * that person means to move against, and a RING marks a face somebody is aiming
+ * at. Two arrows, and the difference between them IS the credibility ceiling
+ * made visible:
+ *
+ *   →  a Faithful leaning toward a name for the table. A read, and a read is a
+ *      FEELING, NOT PROOF — nothing a Faithful believes is worth more than the
+ *      ceiling, so their arrow is drawn as the tentative one.
+ *   ⇒  the pact, aiming at a Faithful. The pact is not guessing, so its arrow is
+ *      the certain one. TURRET-ONLY — it is on `v.plans` only for the audience.
+ *
+ * OBSERVER SAFETY IS IN THE DATA, NOT THE CSS. A player layer is handed
+ * `v.myPlan` — their own lean and nothing else — and never `v.plans`, so the
+ * pact's arrows and the Traitors' identities cannot reach this function on a
+ * player layer at all. The audience holds all of it; that is the whole screen.
+ */
+function _votingWall(v) {
+  const source = v.truthKnown ? (v.plans || []) : (v.myPlan ? [v.myPlan] : []);
+  const caption = {};
+  const highlight = new Set();
+  let faith = 0, pact = 0;
+  for (const p of source) {
+    // The arrow is the intent; the mark distinguishes a feeling from proof.
+    const mark = p.role === 'pact' ? '⇛' : '→';
+    caption[p.observer] = mark + ' ' + p.target;
+    highlight.add(p.target);
+    if (p.role === 'pact') pact++; else faith++;
+  }
+  const wall = portraitWall({ names: v.living.slice(), highlight, caption, size: 52 });
+  const pct = _pct(v.ceiling);
+  const legend = v.truthKnown
+    ? '<p class="sn-said">A face with <b>&rarr;</b> under it is a Faithful leaning '
+      + 'toward a name for the table &mdash; and a read is a feeling, not proof: nothing '
+      + 'a Faithful can hold is worth more than ' + pct + '%. A face with <b>&#8667;</b> '
+      + 'is the pact, aiming in the dark, and the pact is not guessing. A ring is a face '
+      + 'somebody means to move against.</p>'
+    : '<p class="sn-said">Your <b>&rarr;</b> is the name you are leaning toward at the '
+      + 'table. It is a feeling and not proof &mdash; nothing you can hold is worth more '
+      + 'than ' + pct + '%, and nobody in this castle can get past that. What anybody '
+      + 'else means to do is theirs, and not a thing this wall will show you.</p>';
+  const sums = v.truthKnown
+    ? _sums([['Faithfuls with a lean', faith],
+        ['Marked by the pact', pact, pact ? 'wrong' : null],
+        ['In the castle', v.living.length]])
+    : '';
+  return _card(v.truthKnown ? 'Voting Plans' : 'Your Vote',
+    'The wall of faces', 'balance',
+    legend + '<div class="sn-wall-wrap">' + wall + '</div>' + sums, 'quiet');
+}
+
+/** A neutral backdrop for the title banner — the plumb-line diagram is retired. */
+function _heroBackdrop() {
+  return '<svg class="sn-hero-scene" viewBox="0 0 1100 440"'
+    + ' preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
+    + '<defs><linearGradient id="snHeroBg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#1d262e"/><stop offset="62%" stop-color="#131a20"/>'
+    + '<stop offset="100%" stop-color="#0b0f12"/></linearGradient></defs>'
+    + '<rect width="1100" height="440" fill="url(#snHeroBg)"/>'
+    + '</svg>';
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // THE VIEW — the gate, and it is a TWO-STATE gate
 // ══════════════════════════════════════════════════════════════════════
@@ -1019,11 +1032,69 @@ function _view(ep, observer) {
     }));
   }
 
+  // ── VOTING PLANS (Plan 11) ───────────────────────────────────────────
+  //
+  // WHO MEANS TO MOVE AGAINST WHOM. Two kinds of plan, drawn on one wall:
+  //
+  //   A FAITHFUL'S banishment lean — the top name their own board is aimed at,
+  //   which is who they will argue to send to the table. Drawn on EVERY layer
+  //   that is entitled to it: the audience sees them all; a player sees only
+  //   their own, because their own board is the only one they hold.
+  //
+  //   A TRAITOR'S murder target — TURRET-ONLY, and this is the single biggest
+  //   observer-safety surface on the screen. It is read from `ep.tr.night`,
+  //   which is night content, and ONLY when the observer is the audience. On a
+  //   player layer `plans`/`traitors`/`murder` are null: they never reach the
+  //   branch that would draw them, so no edit downstream can leak who the
+  //   Traitors are or who they are aiming at.
+  const truth = truthKnown ? (b.truth || {}) : null;
+  let plans = null;             // audience: every living player's intent
+  let myPlan = null;            // player: their own intent, and only that
+  if (truthKnown) {
+    plans = [];
+    // Faithful banishment leans, off each Faithful's own board.
+    for (const bd of boards) {
+      if (truth[bd.observer] === 'traitor') continue;
+      const top = (bd.entries || []).filter(e => e.score > 0)
+        .sort((x, y) => y.score - x.score || x.name.localeCompare(y.name))[0];
+      if (top) plans.push({ observer: bd.observer, target: top.name,
+        role: 'faithful', score: top.score });
+    }
+    // The pact's target — TURRET-ONLY, off the conclave record (the same
+    // audience-only night data the Conclave screen draws). `argued` is one
+    // entry per Traitor who had a name, including the ones the room did not
+    // take, so this is every Traitor's own intended target, not just the
+    // winning one. `conclave` is null on a night with no kill (a recruitment
+    // night, an endgame), and then the pact simply has no arrows.
+    const conclave = (ep.tr && ep.tr.conclave) || null;
+    const argued = (conclave && Array.isArray(conclave.argued)) ? conclave.argued : [];
+    const seenPact = new Set();
+    for (const a of argued) {
+      if (!a || !a.traitor || !a.target) continue;
+      // BOTH ENDS STILL IN THE CASTLE. The chosen victim is dead by the time
+      // this snapshot is taken and is not on the wall, so a ⇛ pointing at them
+      // would be an arrow to nobody; the arrows that survive are the pact's
+      // living intentions — the losing ballots, who they are STILL aiming at.
+      if (living.indexOf(a.traitor) < 0 || living.indexOf(a.target) < 0) continue;
+      if (seenPact.has(a.traitor)) continue;
+      seenPact.add(a.traitor);
+      plans.push({ observer: a.traitor, target: a.target, role: 'pact', score: 1 });
+    }
+  } else if (watcher && inRoom) {
+    const top = (mine || []).filter(e => e.score > 0)
+      .sort((x, y) => y.score - x.score || x.name.localeCompare(y.name))[0];
+    if (top) myPlan = { observer: watcher, target: top.name, role: 'faithful',
+      score: top.score };
+  }
+
   return {
     ep: b.ep != null ? b.ep : (ep.num || 1),
     isAudience, watcher, inRoom, truthKnown, ceiling,
     living,
     mine,
+    // The voting plans. `plans` is audience-only (it carries the pact's target,
+    // which is turret content); `myPlan` is the one plan a player may hold.
+    plans, myPlan,
     // AUDIENCE ONLY, and null rather than empty where withheld.
     boards: truthKnown ? boards : null,
     castle: truthKnown ? b.castle : null,
@@ -1078,6 +1149,9 @@ function _buildBeats(v) {
   const flipEp = {};
   for (const f of v.flips || []) flipEp[f.name] = f.ep;
   const holders = (v.boards || []).length;
+
+  // ── 0. VOTING PLANS, ON THE WALL — the primitive, first ──────────────
+  push('open', _votingWall(v), { kind: 'plans' });
 
   // ── 1. THE ROOM, MEASURED ───────────────────────────────────────────
   push('open', _card('The Room, Measured', 'The rule', 'rule',
@@ -1299,6 +1373,9 @@ function _buildPlayerBeats(v, beats, push, key, used, pctWall) {
   }
   const held = mine.filter(e => !e.dismissed);
   const sure = mine.filter(e => e.certain);
+
+  // ── 0. YOUR VOTE, ON THE WALL — the primitive, first ─────────────────
+  push('open', _votingWall(v), { kind: 'plans' });
 
   push('open', _card('What You Have', _pick(MINE_LEAD, key + '|ml'), 'rule',
     '<p>' + (held.length
@@ -1549,7 +1626,11 @@ export function trSuspicionRevealAll(suffix, total, epNum) {
 export function rpBuildSuspicion(ep, observer = 'audience') {
   const suffix = 'suspicion';
   const vars = '--sn-grain-src:' + _noiseTile('0.86', 4, 41, 0.28, 220) + ';';
-  const css = '<style>' + SN_CSS + '</style>' + _filters();
+  const css = '<style>' + SN_CSS + '</style>'
+    + '<style>' + PORTRAIT_WALL_CSS
+    + '.sn-wall-wrap{margin:14px 0 4px;padding:12px 6px;border-radius:8px;'
+    + 'background:rgba(11,15,18,.4);border:1px solid rgba(142,166,187,.18)}'
+    + '</style>' + _filters();
   const v = _view(ep, observer);
 
   if (!v) {
@@ -1576,8 +1657,6 @@ export function rpBuildSuspicion(ep, observer = 'audience') {
     window.__trSuspicion = window.__trSuspicion || {};
     window.__trSuspicion[epNum] = state;
   }
-
-  const err = v.truthKnown ? 1 - _accuracy(v.castle, v.truth) : 0.5;
 
   const observerBadge = v.isAudience
     ? '<div class="sn-observer" data-layer="audience">' + _icon('eye', 13)
@@ -1615,22 +1694,23 @@ export function rpBuildSuspicion(ep, observer = 'audience') {
     + '<div class="sn-grain"></div>'
     + '</div>'
     + '<div class="sn-body">'
-    + '<div class="sn-hero">' + _heroScene(err)
+    + '<div class="sn-hero">' + _heroBackdrop()
     + '<div class="sn-hero-lock">'
     // "Day N" and not "Season I - Day I", for the reason all nine other screens
     // say so: the episode record carries no season number.
     + '<div class="sn-eyebrow">The Traitors &middot; Day ' + (v.ep || epNum)
-    + ' &middot; What The Castle Believes</div>'
-    + '<h1 class="sn-title">THE SUSPICION BOARD</h1>'
+    + ' &middot; Who Means To Move Against Whom</div>'
+    + '<h1 class="sn-title">VOTING PLANS</h1>'
     + '<div class="sn-title-rule"><i></i>' + _ic('balance', 34, '#8ea6bb')
     + '<i></i></div>'
     + '<p class="sn-sub">'
     + (v.isAudience
-      ? 'One line hangs true and the other hangs where the castle thinks true '
-        + 'is. Everything on this page is the distance between them, and '
-        + 'nobody in that building can measure it.'
-      : 'Everything you have worked out, weighed against a wall you are not '
-        + 'able to get past. Nobody in this castle is.')
+      ? 'Every face in the castle, and the name each of them means to move '
+        + 'against. The Faithfuls are guessing and the pact is not, and the '
+        + 'whole distance between those two is the only thing this screen is '
+        + 'about.'
+      : 'The name you are leaning toward at the table, and the wall you cannot '
+        + 'get past to be sure of it. Nobody in this castle can.')
     + '</p>'
     + '</div></div>'
     + '<header class="sn-head">' + observerBadge + '</header>'

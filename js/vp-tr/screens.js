@@ -191,8 +191,8 @@ export const TRAITORS_SCREENS = [
   // the first night the Faithfuls have not formed one read between them and a
   // page reporting that they have not is a page with nothing on it. The pact's
   // own certainty is already the last beat of the Selection.
-  { id: 'tr-suspicion', label: 'The Suspicion Board', suffix: 'suspicion',
-    badge: { text: 'The Board', color: '#7fa8c9' },
+  { id: 'tr-suspicion', label: 'Voting Plans', suffix: 'suspicion',
+    badge: { text: 'Voting Plans', color: '#7fa8c9' },
     when: r => !!(r.tr && r.tr.beliefs && Array.isArray(r.tr.beliefs.castle)
       && r.tr.beliefs.castle.length),
     build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,

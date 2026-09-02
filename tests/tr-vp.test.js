@@ -5810,6 +5810,71 @@ describe('the truth layer is the audience\'s and nobody else\'s', () => {
   });
 });
 
+// ── GUARD: THE VOTING-PLANS WALL KEEPS THE PACT TURRET-ONLY (Plan 11) ──
+//
+// The Voting Plans wall shows every Faithful's banishment lean (a → arrow) on
+// the layer entitled to it, and the pact's murder targets (a ⇛ arrow) on the
+// AUDIENCE layer ALONE. The pact's target is read from `ep.tr.conclave` — night
+// content — and only when the observer is the audience, so a Faithful can never
+// be shown who the Traitors are aiming at, nor, by the arrows, who the Traitors
+// are. This is the single biggest observer-safety surface the rebuild adds.
+//
+// MUTATION: give the player path `plans` (the audience set) instead of
+// `myPlan`. RESULT: RED — a Faithful's wall then carries the pact's ⇛ arrows.
+describe('the voting-plans wall keeps the pact turret-only', () => {
+  const PACT_ARROW = '⇛';   // ⇛, the pact's target
+  const READ_ARROW = '→';   // →, a Faithful's lean
+  // A LIVING pact target: the chosen victim is dead by snapshot time and off
+  // the wall, so the arrows that survive are the losing ballots — who the pact
+  // is still aiming at, both ends still in the castle.
+  const livingPactTarget = ep => ep.tr.conclave && Array.isArray(ep.tr.conclave.argued)
+    && ep.tr.conclave.argued.some(a => a && a.traitor && a.target
+      && ep.tr.beliefs.living.includes(a.traitor)
+      && ep.tr.beliefs.living.includes(a.target));
+  const PLANNED = BOARDS.filter(({ ep }) => livingPactTarget(ep));
+
+  it('the audience wall marks a Traitor aiming, and rings the face aimed at', () => {
+    let checked = 0;
+    for (const { ep } of PLANNED) {
+      const aud = noCss(rpBuildSuspicion(ep, 'audience'));
+      expect(aud.includes(PACT_ARROW),
+        `ep ${ep.num}: the audience wall shows no pact target`).toBe(true);
+      expect(/data-hi="1"/.test(aud),
+        `ep ${ep.num}: no face on the wall is ringed as a target`).toBe(true);
+      checked++;
+    }
+    expect(checked, 'no night with a living pact plan was drawn').toBeGreaterThan(8);
+  });
+
+  it('a Faithful never sees the pact arrow, and every caption on their wall is their own read',
+    () => {
+      let checked = 0, faithLayers = 0;
+      for (const { ep } of PLANNED) {
+        const truth = ep.tr.beliefs.truth || {};
+        const faithful = ep.tr.beliefs.living.filter(n => truth[n] === 'faithful');
+        for (const fp of faithful) {
+          const pb = noCss(rpBuildSuspicion(ep, 'player:' + fp));
+          expect(pb.includes(PACT_ARROW),
+            `${fp} is shown the pact's murder arrow on ep ${ep.num}`).toBe(false);
+          // Every intent caption on a player's wall is a → (their own lean).
+          // A ⇛ or any caption naming somebody else's target is the leak.
+          const caps = [...pb.matchAll(/pw-cap">([^<]+)</g)].map(m => m[1]);
+          for (const c of caps) {
+            expect(c.startsWith(READ_ARROW + ' '),
+              `${fp} sees a caption that is not their own lean: "${c}"`).toBe(true);
+          }
+          expect(caps.length,
+            `${fp} sees more intent captions than their own single lean`)
+            .toBeLessThanOrEqual(1);
+          faithLayers++;
+        }
+        checked++;
+      }
+      expect(checked, 'no night with a pact plan was checked').toBeGreaterThan(10);
+      expect(faithLayers, 'no faithful layer was examined').toBeGreaterThan(40);
+    });
+});
+
 // ── GUARD: THE NUMBERS SHOWN ARE THE NUMBERS EXPORTED ─────────────────
 describe('the board prints the model\'s numbers and not its own', () => {
   it('every meter on the audience layer is a figure off the record', () => {

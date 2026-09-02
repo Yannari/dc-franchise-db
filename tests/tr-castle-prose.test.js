@@ -1309,10 +1309,25 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     const declared = new Set(EVENTS.filter(e => e.roles === 'initiator-first').map(e => e.id));
     expect(declared.size, 'no event declares its direction, so this arm is vacuous')
       .toBeGreaterThanOrEqual(13);
-    let seen = 0;
+    // A DECLARED EVENT THAT FIRES SOLO NAMES NO RESPONDENT (Defect 3). The
+    // alibi check is convened as a pair but conducted BEHIND the subject's back
+    // — the subject is absent, so the event now reports ONE participant and
+    // there is no respondent to record. Its `roles` declaration is harmless
+    // (`sceneSpeakers` simply returns null with no pair), but the per-scene pair
+    // check below must skip it. The skip is PAIRED, not a hole: a declared event
+    // that recorded a lone participant must be that one behind-the-back event,
+    // so a DIFFERENT initiator-first event losing its speaker still fails here.
+    const SOLO_DECLARED = new Set(['testing-ask-for-alibi-check']);
+    let seen = 0, solo = 0;
     for (const ep of TASK6_ROWS) {
       for (const raw of ep.tr.castle.scenes) {
         if (!declared.has(raw.eventId)) continue;
+        if ((raw.people || []).length < 2) {
+          expect(SOLO_DECLARED.has(raw.eventId),
+            `${raw.eventId} declares a direction but recorded a lone participant`).toBe(true);
+          solo++;
+          continue;
+        }
         expect(raw.speaker, `${raw.eventId} declares its direction and recorded no speaker`)
           .toBeTruthy();
         expect(raw.respondent).toBeTruthy();
@@ -1951,5 +1966,102 @@ describe('the recall lead is drawn in the scene own register', () => {
       'They have sat like this before, in a different room, on a worse day.')).toBe(false);
     expect(COMBATIVE_LEAD.test(
       'All of them arrived at this from a different day, and all of them arrived.')).toBe(false);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// COHERENCE: A COMPOSED SCENE NAMES ONE CAST AND ONE EVENT (Defect 3)
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE BUG, REPRODUCED AND FIXED. A behind-the-back investigation — an alibi
+// check {a} runs with third parties while the SUBJECT {b} is elsewhere — was
+// convened as a pair [a, b] and composed as a two-hander. The establish put
+// both in the room ("Brody and Chet are at the bottom of the stairs"); the
+// reaction gave the absent {b} a face-to-face answer ("Chet stumbles, laughs,
+// and the laugh does not land the way Chet wanted"); and the consequence then
+// said {b} "has no idea a question was asked, let alone answered badly" — three
+// cards of a conversation {b} was never in. Root cause: `testing-ask-for-alibi-
+// check` reported {b} as a participant (`pair: [a, b]`), so `_mode` guessed a
+// pair. Fixed by reporting one participant off the record (`actor: a`), exactly
+// as `susp-pattern-tracking` and `trust-defend-in-absentia` already do, so the
+// composer draws the solo scene the event actually is.
+//
+// The sweep that fix opened found a SECOND face of the same defect: the line
+// "{b} has no idea a question was asked" lived in the SHARED `CONSEQ.testing`
+// pool, so it also landed on to-their-face tests where {b} had just answered —
+// the consequence contradicting the reaction one card above it. That line was
+// rewritten to the coherent stakes-oblivious version.
+//
+// TWO ARMS, both mutation-proved by the last `it` in this block:
+//   A. STRUCTURAL — an alibi check composes ONE participant, never a pair.
+//   B. GENERAL — no composed pair/group scene closes by saying the partner it
+//      just gave a face-to-face reaction to was never asked a question.
+describe('a composed scene names one cast and one event (Defect 3)', () => {
+  // The exact incoherence signature: a consequence claiming the reaction's
+  // partner never knew a question was put to them. NOT the coherent "without
+  // ever knowing there was anything to pass" (present, unaware it was a TEST).
+  const ABSENT_PARTNER = /has no idea (?:a|the) question was asked/i;
+  const strip = s => String(s || '').replace(/<[^>]+>/g, '')
+    .replace(/&#8217;|&rsquo;/g, "'").replace(/&mdash;/g, '—').replace(/\s+/g, ' ').trim();
+
+  const rows = [];
+  for (let seed = 70001; seed <= 70030; seed++) {
+    setPlayers(ROSTER);
+    seedFranchiseHistory(CAST);
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+    for (const e of (gs.episodeHistory || [])) {
+      if (e.tr && e.tr.castle && (e.tr.castle.scenes || []).length) rows.push({ ...e });
+    }
+  }
+  const scenes = rows.flatMap(e => castleDayScenes(e, 'audience'));
+
+  it('composed enough scenes across seasons to test at all', () => {
+    expect(scenes.length, 'no scene was composed — every arm below is vacuous')
+      .toBeGreaterThan(200);
+  });
+
+  it('ARM A: a behind-the-back alibi check composes one participant, never a pair', () => {
+    const alibi = scenes.filter(s => s.eventId === 'testing-ask-for-alibi-check');
+    expect(alibi.length,
+      'no alibi check was composed, so the structural arm is vacuous').toBeGreaterThan(10);
+    const asPair = alibi.filter(s => s.participants.length >= 2);
+    expect(asPair.map(s => s.participants.join(' & ')),
+      'an alibi check composed the absent subject as a co-present partner')
+      .toEqual([]);
+  });
+
+  it('ARM B: no pair scene reacts to a partner it then says was never asked', () => {
+    let pairScenes = 0;
+    const bad = [];
+    for (const s of scenes) {
+      if (s.mode !== 'pair' && s.mode !== 'group') continue;
+      pairScenes++;
+      const conseq = (s.observerText.audience || []).find(c => c.kind === 'consequence');
+      if (conseq && ABSENT_PARTNER.test(strip(conseq.text))) {
+        bad.push(`${s.eventId} [${s.participants.join(' & ')}]: ${strip(conseq.text)}`);
+      }
+    }
+    expect(pairScenes,
+      'no pair or group scene was composed, so the general arm is vacuous')
+      .toBeGreaterThan(40);
+    expect(bad.slice(0, 8),
+      'a two-hander closed by saying the partner it just answered was never asked')
+      .toEqual([]);
+  });
+
+  it('and the matcher would catch the card that shipped, and clears the fix', () => {
+    // THE MUTATION: the exact consequence the defect printed, over a pair scene.
+    expect(ABSENT_PARTNER.test(
+      'Brody got the answer Brody was afraid of. Chet has no idea a question '
+      + 'was asked, let alone answered badly.')).toBe(true);
+    // ...and NOT the coherent replacement, or ARM B could never fail.
+    expect(ABSENT_PARTNER.test(
+      'Brody got the answer Brody was afraid of. Chet thinks it was just a '
+      + 'conversation, and does not know it was anything else.')).toBe(false);
+    // ...nor the coherent "unaware it was a test" line, which is a different and
+    // legitimate thing to say about a partner who WAS present.
+    expect(ABSENT_PARTNER.test(
+      'Chet passes it without ever knowing there was anything to pass. Brody '
+      + 'knows, and that is the whole point of it.')).toBe(false);
   });
 });

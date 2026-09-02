@@ -1114,7 +1114,16 @@ const CONSEQ = {
       ],
       adverse: [
         '{b} fails it, and {a} does not say so. {a} simply stops planning tomorrow around {b}.',
-        '{a} got the answer {a} was afraid of. {b} has no idea a question was asked, let alone answered badly.',
+        // WAS "{b} has no idea a question was asked, let alone answered badly." That
+        // line was written for a BEHIND-THE-BACK check where {b} is absent, and it
+        // sat in this SHARED pair/group pool, so it landed on to-their-face tests
+        // where {b} had just answered in the reaction card one line above — saying
+        // {b} did not know a question was asked, a card after {b} answered it. The
+        // one event it was right for (the alibi check) now composes as a solo
+        // scene and draws from CONSEQ_SINGLE, so this pool only ever answers a
+        // scene {b} was in. The line now says {b} was present and oblivious to the
+        // STAKES, not to the question. Found by the Defect 3 coherence sweep.
+        '{a} got the answer {a} was afraid of. {b} thinks it was just a conversation, and does not know it was anything else.',
         'That is the last favour {b} gets from {a} for a while, and {b} will not be told why.',
         '{a} was hoping to be wrong about {b} and is not. It moves {b} up a list {b} cannot see.',
       ],
@@ -2590,6 +2599,20 @@ const DY_CSS = `
 .dy-face{display:inline-flex;align-items:center;gap:8px;
   font-family:var(--dy-display);font-weight:700;font-size:12px;letter-spacing:.04em;
   color:rgba(236,227,208,.78)}
+/* THE INITIALS FALLBACK STAYS INSIDE ITS OWN FRAME, NEVER INLINE WITH THE NAME.
+   When a player has no avatar file the portrait draws its initials ("P", "R")
+   as the fallback; those must stay clipped inside the box and be separated from
+   the name by the flex gap, not run flush against it ("PPriya", "RRaj"). The
+   name is a sibling text node right after the <span class="cv-av">, so a
+   PORTRAIT_CSS that is missing on this screen — or, more to the point, one that
+   a later screen's own bare .cv-av-ini rule has overridden lower in the same
+   document — lets the initials fall out of the frame and mash into the name.
+   These SCOPED copies carry higher specificity than the bare global rule, so
+   they win the cascade wherever castle-day draws a portrait beside a name (the
+   establishing faces and the sidebar loom rows alike). Mirrors the same fix
+   already carried by cold-open.js's .co-face-chip. */
+.dy-face .cv-av,.dy-who .cv-av{position:relative;overflow:hidden;flex:none}
+.dy-face .cv-av-ini,.dy-who .cv-av-ini{position:absolute;inset:0}
 
 /* ── THE BACK-STITCH: what this beat cites, drawn as a citation ──────
    The engine appends its continuity to the beat's own sentence. Left inline

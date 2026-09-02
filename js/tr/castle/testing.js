@@ -553,8 +553,22 @@ registerEvent({
     const line = lineFor(ALIBI_CHECK_LINES[branch],
       `testing-ask-for-alibi-check|${branch}|${ctx.ep}`, { a, b });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
+    // ONE PARTICIPANT ON THE RECORD, BECAUSE ONE PERSON IS IN THIS SCENE.
+    // Every branch of an alibi check is conducted BEHIND {b}'s back — {a} takes
+    // {b}'s account to third parties ({b} is not in the room), and even
+    // `got-back-to-them` has {b} finding out afterwards rather than being
+    // present. Reporting `pair: [a, b]` put {b} into `sceneParticipants`, so the
+    // screen composed a two-hander and handed {b} an establishing card ("{a} and
+    // {b} are at the bottom of the stairs"), a face-to-face reaction ("{b}
+    // stumbles, laughs...") and a consequence that then said "{b} has no idea a
+    // question was asked" — three cards of a conversation {b} was never in. Same
+    // defect and same fix as `susp-pattern-tracking`, `trust-defend-in-absentia`
+    // and `cover-feign-fear:borrowed-it`: report `actor` alone, so `_mode`
+    // composes the solo/single scene the event actually is. The convened pair
+    // [a, b] is still keyed for cooldowns at pick time (js/tr/events.js), and
+    // `api.addBond(a, b, …)` above is untouched, so the simulation is unchanged.
     return { branch: branch === 'ok' ? 'checks-out' : branch === 'bad' ? 'inconsistent' : branch,
-      pair: [a, b], threadId: thread?.id, cited, bondDelta };
+      actor: a, threadId: thread?.id, cited, bondDelta };
   },
 });
 

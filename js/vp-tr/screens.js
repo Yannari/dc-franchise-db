@@ -24,7 +24,8 @@ import { rpBuildHouseStatus, trHouseStatusRevealAll } from './house-status.js';
 import { rpBuildMission, trMissionRevealAll } from './mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from './recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
-import { rpBuildCastleDay, trCastleDayRevealAll } from './castle-day.js';
+import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
+  from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 import { rpBuildConfessionals, trConfessionalsRevealAll, _hasConfessionals }
@@ -108,14 +109,47 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-cold-open', label: 'Breakfast', suffix: 'coldopen',
     when: r => !!(r.tr && r.tr.dawn),
     build: rpBuildColdOpen, revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },
+  // ── THE DAY, INTERLEAVED INTO BROADCAST ORDER (Plan 11) ───────────────
+  //
+  // The Castle Day used to be ONE screen at the foot of the episode, after the
+  // conclave. That put the whole social layer — most of it happening BEFORE the
+  // Round Table — three or four screens after the vote it precedes. The stream
+  // is now three segments at their real chronological moments, parameterised off
+  // ONE builder (`rpBuildCastleDay(r, o, segment)`), never duplicated.
+  //
+  // THE MORNING opens on the previous night (breakfast finds out what it cost)
+  // and runs the working morning, and it sits before the mission because that is
+  // when it happens. It carries no reaction to tonight's table — the causality
+  // guard in castle-day.js's `_view` throws if a post-banishment scene is ever
+  // sorted into it.
+  { id: 'tr-castle-morning', label: 'The Morning', suffix: 'castleday-morning',
+    badge: { text: 'The Morning', color: '#8fbf9a' },
+    when: r => castleSegmentHasScenes(r, 'morning'),
+    build: (r, o) => rpBuildCastleDay(r, o, 'morning'),
+    revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-mission', label: 'The Mission', suffix: 'mission',
     badge: { text: 'Mission', color: '#c8a24a' },
     when: r => !!(r.tr && r.tr.mission),
     build: rpBuildMission, revealAll: trMissionRevealAll, revealAllName: 'trMissionRevealAll' },
+  // THE AFTERNOON — the road back and the manoeuvring before the table — sits
+  // between the mission and the Round Table. Still pre-banishment, still guarded.
+  { id: 'tr-castle-afternoon', label: 'The Afternoon', suffix: 'castleday-afternoon',
+    badge: { text: 'The Afternoon', color: '#c9a24e' },
+    when: r => castleSegmentHasScenes(r, 'afternoon'),
+    build: (r, o) => rpBuildCastleDay(r, o, 'afternoon'),
+    revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-round-table', label: 'The Round Table', suffix: 'roundtable',
     badge: { text: 'Round Table', color: '#b91c3c' },
     when: r => !!(r.tr && r.tr.table),
     build: rpBuildRoundTable, revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
+  // THE NIGHT — after the table, into the dark. This is the segment that MAY
+  // react to the banishment (roundtable-scramble + post-banishment), so it sits
+  // after the Round Table, exactly where the whole day used to sit.
+  { id: 'tr-castle-night', label: 'The Night', suffix: 'castleday-night',
+    badge: { text: 'The Night', color: '#94a0cc' },
+    when: r => castleSegmentHasScenes(r, 'night'),
+    build: (r, o) => rpBuildCastleDay(r, o, 'night'),
+    revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-conclave', label: 'The Conclave', suffix: 'conclave',
     badge: { text: 'Conclave', color: '#e0a049' },
     when: r => !!(r.tr && r.tr.conclave),
@@ -124,21 +158,17 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'The Offer', color: '#8b5cf6' },
     when: r => !!(r.tr && r.tr.recruitment),
     build: rpBuildRecruitment, revealAll: trRecruitmentRevealAll, revealAllName: 'trRecruitmentRevealAll' },
-  // ── THE DAY, AFTER THE NIGHT IT ENDED ON, AND THAT IS NOT A WHIM ────
+  // ── THE CASTLE DAY IS NOW THREE SEGMENTS, ABOVE ──────────────────────
   //
-  // It holds all seven windows, and two of them -- `after-table` and `night`
-  // -- happen AFTER the table sits. Placed anywhere above the Round Table it
-  // would print reactions to a reveal three screens before the reveal, which
-  // is exactly the defect Task 6 found by reading a season in sequence (the
-  // day book was second and listed exits that had not happened yet) and Task 7
-  // fixed by moving that screen to the foot. Same object, same move: the day
-  // is looked back over once the day is done.
-  { id: 'tr-castle-day', label: 'The Castle Day', suffix: 'castleday',
-    badge: { text: 'The Day', color: '#8fbf9a' },
-    when: r => !!(r.tr && r.tr.castle && Array.isArray(r.tr.castle.scenes)
-      && r.tr.castle.scenes.length),
-    build: rpBuildCastleDay, revealAll: trCastleDayRevealAll,
-    revealAllName: 'trCastleDayRevealAll' },
+  // It used to be one screen here, at the foot after the conclave, because two
+  // of its seven windows (`after-table`, `night`) happen after the table sits
+  // and drawing the whole stream above the table printed reactions to a reveal
+  // three screens early. Plan 11 split it into morning / afternoon / night at
+  // their real broadcast moments; only the NIGHT segment carries the two
+  // post-table windows, and it is still after the Round Table. The causality
+  // guard in castle-day.js's `_view` enforces that the morning and afternoon
+  // never carry a post-banishment scene.
+  //
   // -- WHO BELIEVES WHAT, AND HOW WRONG THEY ARE (Plan 8, Task 10) -----
   //
   // AFTER THE TABLE, AND THAT IS NOT A PREFERENCE. `tr.beliefs` is snapshotted

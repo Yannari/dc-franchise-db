@@ -2764,6 +2764,65 @@ const DY_CSS = `
 // engine itself treats as behind a door.
 const PRIVATE_HOURS = new Set(['night']);
 
+// ══════════════════════════════════════════════════════════════════════
+// THE DAY, SPLIT INTO THREE BROADCAST SEGMENTS  (Plan 11, interleave)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The day used to be ONE screen at the foot of the episode, after the conclave,
+// because two of its phases happen after the Round Table and drawing the whole
+// stream anywhere above the table printed a reaction three screens before the
+// reveal it reacted to. That rule is intact — it is why the NIGHT segment still
+// sits after the table — but the other two thirds of the day happen BEFORE the
+// table and belong at their real chronological moment: the morning before the
+// mission, the afternoon between the mission and the table.
+//
+// So the screen is parameterised by SEGMENT rather than duplicated three times.
+// Each segment names the phases (js/tr/castle/phases.js) it draws, and the
+// registration in screens.js binds one segment per screen. `null`/undefined is
+// the WHOLE day, unchanged, which is what the transcript renderer and every
+// existing test that calls `rpBuildCastleDay(ep, observer)` still gets.
+const SEGMENT_PHASES = {
+  morning: ['breakfast-fallout', 'morning-life'],
+  afternoon: ['mission-fallout', 'private-strategy'],
+  night: ['roundtable-scramble', 'post-banishment'],
+};
+// The two windows that happen AFTER the Round Table's banishment. A scene in
+// one of them may only ever appear in the NIGHT segment — see the causality
+// guard in `_view`.
+const POST_TABLE_WINDOWS = new Set(['after-table', 'night']);
+/**
+ * Does a phase id belong in this segment?
+ *
+ * The six named phases split three-and-three. The overflow bucket
+ * (`unmapped:<window>`, appended by `castlePhaseRecord` when a scene fires
+ * under a window the running order has never heard of) rides on the NIGHT
+ * segment — the last one — so that a scene can never be dropped by the split.
+ * It is inert today (every window maps to a phase), a guard for a window an
+ * author adds next year without also updating `WINDOW_TO_PHASE`.
+ */
+function _phaseInSegment(phaseId, segment) {
+  const list = SEGMENT_PHASES[segment];
+  if (!list) return true; // whole day
+  if (list.includes(phaseId)) return true;
+  if (segment === 'night' && String(phaseId).indexOf('unmapped:') === 0) return true;
+  return false;
+}
+
+/**
+ * Does a record carry any castle scene in this segment's phases?
+ *
+ * `screens.js` registers each segment screen off this — the same rule as
+ * every other castle screen, off the RECORD and never an episode number — so
+ * the phase→segment split lives in ONE place. The scene→phase grouping is
+ * already on the record (`castlePhaseRecord`), so this is a pure read.
+ */
+export function castleSegmentHasScenes(r, segment) {
+  const phases = r && r.tr && r.tr.castle && r.tr.castle.phases;
+  if (!Array.isArray(phases)) return false;
+  return phases.some(ph => _phaseInSegment(ph.id, segment)
+    && Array.isArray(ph.scenes) && ph.scenes.length);
+}
+
 function _sceneFor(scene, watcher) {
   if (watcher == null) return 'full';
   // ── ONE NAMED PARTICIPANT IS A CLAIM HERE TOO (Task 7 stage 6) ────────
@@ -2794,7 +2853,7 @@ function _sceneFor(scene, watcher) {
   return PRIVATE_HOURS.has(scene.window) ? 'none' : 'heard';
 }
 
-function _view(ep, observer) {
+function _view(ep, observer, segment = null) {
   const c = ep && ep.tr && ep.tr.castle;
   if (!c) return null;
   const obs = observer == null ? 'audience' : String(observer);
@@ -2820,15 +2879,23 @@ function _view(ep, observer) {
   const phaseOf = new Map();
   const bands = [];
   for (const ph of (Array.isArray(c.phases) ? c.phases : [])) {
+    // A SEGMENT DRAWS ONLY ITS OWN PHASES. The whole day (segment null) keeps
+    // every phase, so the transcript and every legacy caller are unchanged.
+    if (segment && !_phaseInSegment(ph.id, segment)) continue;
     bands.push(ph);
     for (const s of (ph.scenes || [])) phaseOf.set(s, ph);
   }
   const ordered = bands.length
     ? bands.flatMap(ph => (ph.scenes || []).filter(s => all.includes(s)))
-    : all.slice();
+    // A segment with no matching phases renders empty; only the whole day
+    // falls back to the raw scene list (the hand-built night-only test rows,
+    // and any record written before phases existed).
+    : (segment ? [] : all.slice());
   // Anything the record holds and no phase claimed still gets drawn. Same rule
-  // as the overflow bucket itself, one level up.
-  for (const s of all) if (!ordered.includes(s)) ordered.push(s);
+  // as the overflow bucket itself, one level up. NOT for a segment — a segment
+  // is exactly its phases, and an unclaimed scene it did not ask for would be
+  // the split silently leaking material from another hour.
+  if (!segment) for (const s of all) if (!ordered.includes(s)) ordered.push(s);
 
   const scenes = [];
   let missedInTheDark = 0;
@@ -2840,6 +2907,28 @@ function _view(ep, observer) {
       phaseId: ph ? ph.id : null,
       phaseLabel: ph ? ph.label : null,
       unscheduled: !!(ph && String(ph.id).indexOf('unmapped:') === 0) });
+  }
+
+  // ── CAUSALITY: A MORNING MAY NOT REACT TO A NIGHT THAT HAS NOT HAPPENED ──
+  //
+  // This is why the day used to live at the foot of the episode. The banishment
+  // happens at the Round Table, which sits between the `evening` window and the
+  // `after-table`/`night` windows; a scene reacting to it can only fire in one
+  // of those two post-table windows, which belong to the NIGHT segment alone.
+  // If a scene from a post-table window has been sorted into the morning or the
+  // afternoon segment, the split is broken and the screen would print a
+  // reaction to a banishment that, in broadcast order, has not happened yet.
+  // Surface it — do not render it. Mutate `SEGMENT_PHASES.morning` to include
+  // `'post-banishment'` and this throws, which is the band on the guard.
+  if (segment === 'morning' || segment === 'afternoon') {
+    for (const s of scenes) {
+      if (POST_TABLE_WINDOWS.has(s.window)) {
+        throw new Error('tr castle causality: the ' + segment + ' segment holds a '
+          + 'post-banishment scene "' + (s.eventId || s.threadId || '?')
+          + '" from window "' + s.window + '" — it would react to a banishment '
+          + 'that has not happened yet in broadcast order');
+      }
+    }
   }
 
   // The hours that produced something THIS READER CAN SEE, in the order the
@@ -2905,6 +2994,7 @@ function _view(ep, observer) {
   return {
     ep: c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0,
     isAudience, watcher, scenes, order, rows, missedInTheDark, cast,
+    segment,
     total: all.length,
   };
 }
@@ -3591,10 +3681,13 @@ function _dayPanel(state, idx) {
 // REVEAL MACHINERY — DOM-only, never a rebuild
 // ══════════════════════════════════════════════════════════════════════
 
+// KEYED BY SUFFIX, NOT BY EPISODE NUMBER. Three castle segments now sit on one
+// episode — morning, afternoon, night — each a separate screen with its own
+// reveal progress, so the key is the suffix (`castleday`, `castleday-morning`,
+// …) the reveal handler is handed, never the shared episode number.
 const _tvState = {};
-function _key(epNum) { return 'castleday-' + (epNum || 0); }
-function _state(epNum, total) {
-  const k = _key(epNum);
+function _state(suffix, total) {
+  const k = suffix || 'castleday';
   if (!_tvState[k]) _tvState[k] = { idx: 0, total };
   _tvState[k].total = total;
   return _tvState[k];
@@ -3625,19 +3718,19 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   if (scroller) scroller.scrollTop = top;
 }
 
-function _updatePanel(epNum, idx) {
-  const el = document.getElementById('dy-panel-inner');
+function _updatePanel(suffix, idx) {
+  const el = document.getElementById('dy-panel-inner-' + suffix);
   const store = (typeof window !== 'undefined' && window.__trCastleDay) || {};
-  const state = store[epNum];
+  const state = store[suffix];
   if (!el || !state) return;
   el.innerHTML = _dayPanel(state, idx);
 }
 
 /** Bring the new card into view, UNDER the loom rather than behind it. */
-function _scrollTo(el) {
+function _scrollTo(el, suffix) {
   if (!el) return;
   const scroller = document.querySelector('.rp-main');
-  const stage = document.getElementById('dy-panel-inner');
+  const stage = document.getElementById('dy-panel-inner-' + suffix);
   if (!scroller || !scroller.scrollTo || !el.getBoundingClientRect) {
     if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
@@ -3649,19 +3742,19 @@ function _scrollTo(el) {
 }
 
 export function trCastleDayRevealNext(suffix, total, epNum) {
-  const st = _state(epNum, total);
+  const st = _state(suffix, total);
   if (st.idx >= total - 1) return;
   st.idx++;
   _reapplyVisibility(suffix, st.idx, total);
-  _scrollTo(document.getElementById('dy-step-' + suffix + '-' + st.idx));
-  _updatePanel(epNum, st.idx);
+  _scrollTo(document.getElementById('dy-step-' + suffix + '-' + st.idx), suffix);
+  _updatePanel(suffix, st.idx);
 }
 
 export function trCastleDayRevealAll(suffix, total, epNum) {
-  const st = _state(epNum, total);
+  const st = _state(suffix, total);
   st.idx = total - 1;
   _reapplyVisibility(suffix, st.idx, total);
-  _updatePanel(epNum, st.idx);
+  _updatePanel(suffix, st.idx);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -3676,11 +3769,28 @@ export function trCastleDayRevealAll(suffix, total, epNum) {
  * `observer` is `'audience'` or `'player:<Name>'`; `_view` is the one place
  * the difference between them is decided.
  */
-export function rpBuildCastleDay(ep, observer = 'audience') {
-  const suffix = 'castleday';
+// Per-segment title furniture. Whole-day (segment null) keeps its own text
+// below, unchanged, so the transcript renderer sees the same page it always did.
+const SEGMENT_META = {
+  morning: { eyebrow: 'Dawn Into The Morning', title: 'THE CASTLE &middot; MORNING',
+    sub: 'The hours before the mission — first light on whatever the night cost, '
+      + 'and the long working morning the castle spends in twos and in doorways.' },
+  afternoon: { eyebrow: 'The Road Back, Into The Evening',
+    title: 'THE CASTLE &middot; AFTERNOON',
+    sub: 'Between the mission and the table — what the road put on them, and the '
+      + 'arithmetic of the evening, worked out before anybody sits down.' },
+  night: { eyebrow: 'After The Table, Into The Dark',
+    title: 'THE CASTLE &middot; NIGHT',
+    sub: 'After the Round Table — the room still standing in the shape the '
+      + 'banishment left it, and the one private hour the castle belongs to '
+      + 'whoever is still awake in it.' },
+};
+
+export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
+  const suffix = segment ? 'castleday-' + segment : 'castleday';
   const vars = '--dy-grain-src:' + _noiseTile('0.78', 4, 37, 0.34, 230) + ';';
   const css = '<style>' + DY_CSS + '</style>' + _filters();
-  const v = _view(ep, observer);
+  const v = _view(ep, observer, segment);
 
   const shellNone = (headline, body, icon) =>
     '<div class="dy-root" style="' + vars + '">' + css
@@ -3720,13 +3830,13 @@ export function rpBuildCastleDay(ep, observer = 'audience') {
   const beats = _buildBeats(v);
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
-  const st = _state(epNum, total);
+  const st = _state(suffix, total);
   if (st.idx > total - 1) st.idx = total - 1;
 
   const state = { v, stepMeta: beats.map(b => b.meta) };
   if (typeof window !== 'undefined') {
     window.__trCastleDay = window.__trCastleDay || {};
-    window.__trCastleDay[epNum] = state;
+    window.__trCastleDay[suffix] = state;
   }
 
   const observerBadge = v.isAudience
@@ -3769,18 +3879,21 @@ export function rpBuildCastleDay(ep, observer = 'audience') {
     + '<div class="dy-hero">' + _heroScene(stories)
     + '<div class="dy-hero-lock">'
     + '<div class="dy-eyebrow">The Traitors &middot; Day ' + (v.ep || epNum)
-    + ' &middot; Dawn To Dark</div>'
-    + '<h1 class="dy-title">THE CASTLE DAY</h1>'
+    + ' &middot; ' + (segment ? SEGMENT_META[segment].eyebrow : 'Dawn To Dark') + '</div>'
+    + '<h1 class="dy-title">' + (segment ? SEGMENT_META[segment].title : 'THE CASTLE DAY')
+    + '</h1>'
     + '<div class="dy-title-rule"><i></i>' + _ic('knot', 36, '#d2a44e') + '<i></i></div>'
-    + '<p class="dy-sub">' + (v.rows.some(r => r.priorDays.length)
-      ? 'Seven hours, and everything that happened in them that was not a vote. Some of '
-        + 'it started today. Some of it has been running for days and only the people in '
-        + 'it know.'
-      : 'Seven hours, and everything that happened in them that was not a vote. All of it '
-        + 'starts here. Not one of these stories has a yesterday yet.') + '</p>'
+    + '<p class="dy-sub">' + (segment ? SEGMENT_META[segment].sub
+      : (v.rows.some(r => r.priorDays.length)
+        ? 'Seven hours, and everything that happened in them that was not a vote. Some of '
+          + 'it started today. Some of it has been running for days and only the people in '
+          + 'it know.'
+        : 'Seven hours, and everything that happened in them that was not a vote. All of it '
+          + 'starts here. Not one of these stories has a yesterday yet.')) + '</p>'
     + '</div></div>'
     + '<header class="dy-head">' + observerBadge + '</header>'
-    + '<div class="dy-stage" id="dy-panel-inner">' + _dayPanel(state, st.idx) + '</div>'
+    + '<div class="dy-stage" id="dy-panel-inner-' + suffix + '">'
+    + _dayPanel(state, st.idx) + '</div>'
     + '<main class="dy-main">' + stream + '</main>'
     + '</div></div>'
     + '<div class="dy-controls" id="dy-controls-' + suffix + '">'

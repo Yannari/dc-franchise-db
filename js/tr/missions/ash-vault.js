@@ -624,6 +624,12 @@ export const ashVault = {
     + 'when the wing closes is two and a half thousand into the shared pot.',
 
   eligibility(ctx) {
+    // A shield-granting mission stands down when the season is holding shields
+    // out — the same gate the archetype Reliquary sits behind, so the "a
+    // mission grants nothing but money" equivalence can hold the one immunity
+    // channel out of both arms. Spec allows exactly one shield mission; this is
+    // the bespoke one.
+    if (ctx?.shieldsEnabled === false) return false;
     return Array.isArray(ctx?.living) && ctx.living.length >= 4;
   },
 

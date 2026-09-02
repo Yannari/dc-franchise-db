@@ -30,6 +30,7 @@
 // never two — this repo has shipped an 19MB `gs` from exactly that mistake.
 import { gs, setGs, players, seasonConfig, seasonFormat } from './core.js';
 import { playTraitorsSeason } from './tr/headless.js';
+import { bespokeMissionsEnabled, _setBespokeMissionsEnabled } from './tr/missions/index.js';
 
 /** Is the season on the setup screen a castle? */
 export const isTraitorsSeason = () => seasonFormat(seasonConfig) === 'traitors';
@@ -63,13 +64,28 @@ function _playWholeSeason() {
   const cast = (players || []).map(p => p.name).filter(Boolean);
   if (cast.length < 4) return false;
 
-  const result = playTraitorsSeason({
-    cast,
-    traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
-    potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
-    endgameSize: Number(seasonConfig.finaleSize) || 3,
-    seed: _seed(),
-  });
+  // ── STAGE 2 FLIPS THE FLAG HERE, and only here ──────────────────────
+  // The bespoke catalogue (js/tr/missions/) ships gated off — a mission whose
+  // VP builder did not yet exist may not reach a played season. Stage 2 built
+  // the four builders, so a season played from the SHOW turns them on. It is
+  // done at the one real UI entry point rather than as the module default so
+  // the module still reads `let _bespokeEnabled = false` (the mockup-approval
+  // gate the contract test still checks), and restored afterwards so nothing
+  // else in the process inherits it.
+  const _bespokeWas = bespokeMissionsEnabled();
+  _setBespokeMissionsEnabled(true);
+  let result;
+  try {
+    result = playTraitorsSeason({
+      cast,
+      traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
+      potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
+      endgameSize: Number(seasonConfig.finaleSize) || 3,
+      seed: _seed(),
+    });
+  } finally {
+    _setBespokeMissionsEnabled(_bespokeWas);
+  }
   // `gs` is now the engine's. Take what it wrote and give the UI's back.
   const inner = gs;
   const rows = inner.episodeHistory || [];

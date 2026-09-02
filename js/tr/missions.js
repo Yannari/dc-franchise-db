@@ -104,6 +104,15 @@ import {
   SWING, MIN_PLAYERS,
 } from './missions/contract.js';
 export { POT_CEILING };
+// THE BESPOKE CATALOGUE, and the one place it plugs into the played engine.
+// `runMission` chooses a bespoke afternoon first when the catalogue is enabled;
+// its `simulate` writes its own pot line and record, and `applyMissionEffects`
+// applies the bonds, reads, claims and crowd moments it declares. When the
+// catalogue is off (its default) none of this runs and the archetype stream is
+// bit-identical to before — no rng draw is taken.
+import { pickBespokeMission, bespokeMissionsEnabled } from './missions/index.js';
+import { createMissionCtx } from './missions/contract.js';
+import { applyMissionEffects } from './missions/apply.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // THE CHESS MISSION — knowledge as the currency (spec 7.2, evidence source 4)
@@ -1079,6 +1088,32 @@ export function runMission(ep, rng) {
   if (!gs?.tr) return null;
   const living = [...(gs.activePlayers || [])];
   if (living.length < MIN_PLAYERS) return null;
+
+  // ── THE BESPOKE AFTERNOON, FIRST ─────────────────────────────────────
+  // Chosen before the archetype rotation and off the SAME rng stream, so
+  // enabling the catalogue reshuffles the missions' own stream and touches no
+  // game draw (they run off `_missionRngFor`, headless.js). A bespoke mission
+  // pays its pot inside `simulate` (through the shared `payPot`), records
+  // itself, and has its declared effects applied through the scene API. The
+  // shield gate rides on the same `_shieldMission` switch the archetype
+  // Reliquary sits behind, via `ctx.shieldsEnabled`.
+  if (bespokeMissionsEnabled()) {
+    const lastId = Array.isArray(gs.tr.missions) && gs.tr.missions.length
+      ? gs.tr.missions[gs.tr.missions.length - 1].id : null;
+    const ctx = createMissionCtx({
+      ep, living,
+      alignmentOf: (name, e) => alignmentAt(name, e),
+      shieldsEnabled: _shieldMission,
+    });
+    const chosen = pickBespokeMission(ctx, rng, lastId);
+    if (chosen) {
+      const rec = chosen.simulate(ctx, rng);
+      if (!Array.isArray(gs.tr.missions)) gs.tr.missions = [];
+      gs.tr.missions.push(rec);
+      applyMissionEffects(rec, ep);
+      return rec;
+    }
+  }
 
   const m = _chooseArchetype(rng);
   // The knowledge archetype scores off per-player boards instead of the stat

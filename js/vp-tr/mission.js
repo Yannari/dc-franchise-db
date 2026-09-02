@@ -53,6 +53,11 @@ import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
+// The four bespoke afternoons draw themselves — `rpBuildMission` dispatches a
+// bespoke record here, and the two revealers below delegate to their DOM-only
+// reveal. One screen registry entry, one revealer name, two builders behind it.
+import { isBespokeMissionRec, rpBuildBespokeMission, bespokeRevealNext, bespokeRevealAll }
+  from './mission-bespoke.js';
 
 const TR = 'traitors';
 
@@ -1216,6 +1221,9 @@ function _scrollTo(el) {
 }
 
 export function trMissionRevealNext(suffix, total, epNum) {
+  if (typeof window !== 'undefined' && window.__trBespoke && window.__trBespoke[epNum]) {
+    return bespokeRevealNext(total, epNum);
+  }
   const st = _state(epNum, total);
   if (st.idx >= total - 1) return;
   st.idx++;
@@ -1225,6 +1233,9 @@ export function trMissionRevealNext(suffix, total, epNum) {
 }
 
 export function trMissionRevealAll(suffix, total, epNum) {
+  if (typeof window !== 'undefined' && window.__trBespoke && window.__trBespoke[epNum]) {
+    return bespokeRevealAll(total, epNum);
+  }
   const st = _state(epNum, total);
   st.idx = total - 1;
   _reapplyVisibility(suffix, st.idx, total);
@@ -1244,6 +1255,12 @@ export function trMissionRevealAll(suffix, total, epNum) {
  * what the difference is and where it is applied.
  */
 export function rpBuildMission(ep, observer = 'audience') {
+  // A bespoke afternoon is drawn by its own themed builder (js/vp-tr/
+  // mission-bespoke.js). The archetype body below handles the seven money/
+  // knowledge/shield archetypes.
+  if (isBespokeMissionRec(ep && ep.tr && ep.tr.mission)) {
+    return rpBuildBespokeMission(ep, observer);
+  }
   const suffix = 'mission';
   const vars = '--mi-grain-src:' + _noiseTile('0.9', 4, 29, 0.4, 240) + ';';
   const css = '<style>' + MI_CSS + '</style>' + _filters();

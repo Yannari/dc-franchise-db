@@ -552,7 +552,7 @@ export function placementsFrom(playerScores) {
  * without asking `gs` — the invariant `potAfter === potBefore + potEarned`
  * has to be checkable against numbers the record itself carries.
  */
-export function createMissionCtx({ ep, living, alignmentOf = () => null }) {
+export function createMissionCtx({ ep, living, alignmentOf = () => null, shieldsEnabled = true }) {
   const field = [...living];
   return Object.freeze({
     ep,
@@ -560,6 +560,12 @@ export function createMissionCtx({ ep, living, alignmentOf = () => null }) {
     potBefore: (gs?.tr?.pot) || 0,
     potCeiling: (typeof gs?.tr?.potCeiling === 'number' && gs.tr.potCeiling > 0)
       ? gs.tr.potCeiling : POT_CEILING,
+    // Whether a shield-granting mission may be chosen this afternoon. The
+    // equivalence guard in tests/tr-missions.test.js holds the shield mission
+    // out (`_setShieldMissionEnabled(false)`), the same as it holds out the
+    // archetype Reliquary, so a bespoke mission that grants a Shield reads this
+    // in its `eligibility` and stands down when shields are off.
+    shieldsEnabled: shieldsEnabled !== false,
     stat: statOf,
     pronounsFor: pronounSlots,
     alignment: (name) => alignmentOf(name, ep),

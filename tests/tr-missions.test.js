@@ -142,6 +142,8 @@ import { initTraitorsState } from '../js/tr/state.js';
 import { playTraitorsSeason, rngFor } from '../js/tr/headless.js';
 import { runMission, POT_CEILING, MISSION_IDS, _setMissionsEnabled,
   _setKnowledgeMissionEnabled, _setShieldMissionEnabled } from '../js/tr/missions.js';
+import { _setBespokeMissionsEnabled } from '../js/tr/missions/index.js';
+import { _setMissionEffectsEnabled } from '../js/tr/missions/apply.js';
 import { allFacts } from '../js/knowledge.js';
 import { _setPactPotBlind } from '../js/tr/deduction.js';
 import { _setMissionFalloutEnabled } from '../js/tr/castle/mission-fallout.js';
@@ -378,12 +380,39 @@ describe('a mission grants NOTHING but money', () => {
       (r.castleEvents || []).map(e => e.id).join(','),
     ].join('|')).join('\n') + `\n${s.winner}|${s.survivors.join(',')}`;
 
+    // THE FIFTH NARROWING, FOR TASK 8 STAGE 2 — AND IT IS NOT AN ARCHETYPE, A
+    // NUMBER OR A CASTLE WINDOW. IT IS MISSION CONDUCT.
+    //
+    // The four BESPOKE missions (js/tr/missions/) run in a played season now,
+    // and a scene inside one — somebody carried a teammate's box, somebody held
+    // a box a beat too long, somebody abandoned the relay — DECLARES bonds,
+    // reads, claims and crowd moments, and js/tr/missions/apply.js APPLIES them
+    // through the scene API. A bond feeds bondResistance() -> suspicion() and
+    // moves the deduction bands, so with them on a season plays differently.
+    // That is the intended design (spec §9: a mission where somebody abandons
+    // their team MUST change relationships), and it is the opposite of "a
+    // mission grants nothing but money".
+    //
+    // The honest narrowing is not to soften the claim until the new writes fit
+    // inside it; it is to hold this ONE channel out of both arms and re-run the
+    // identical total equivalence over what a mission is still NOT allowed to
+    // do — shield nobody, save nobody at a table, nudge no ballot directly,
+    // confer no immunity. The bespoke catalogue is switched ON in both arms
+    // (`_setBespokeMissionsEnabled(true)`), its shield mission held out by the
+    // existing `_setShieldMissionEnabled(false)` gate, and its EFFECTS held out
+    // by `_setMissionEffectsEnabled(false)`. The road-home window is held out
+    // too, so a bespoke afternoon's fallout is not read either. What survives
+    // intact: a money OR bespoke mission, effects held out, still buys exactly
+    // nothing. The next test but two is the paired arm — effects back on, and
+    // the equivalence must FAIL.
     let on, off;
     const unblind = _setPactPotBlind(true);
     try {
       _setKnowledgeMissionEnabled(false);
       _setShieldMissionEnabled(false);
       _setMissionFalloutEnabled(false);
+      _setBespokeMissionsEnabled(true);
+      _setMissionEffectsEnabled(false);
       on = seasons(40).map(project);
       _setMissionsEnabled(false);
       off = seasons(40).map(project);
@@ -392,10 +421,12 @@ describe('a mission grants NOTHING but money', () => {
       _setKnowledgeMissionEnabled(true);
       _setShieldMissionEnabled(true);
       _setMissionFalloutEnabled(true);
+      _setBespokeMissionsEnabled(false);
+      _setMissionEffectsEnabled(true);
       unblind();
     }
     for (let i = 0; i < on.length; i++) {
-      expect(off[i], `season ${i + 1} diverged when the money missions were switched off`)
+      expect(off[i], `season ${i + 1} diverged when the missions were switched off`)
         .toBe(on[i]);
     }
 
@@ -455,6 +486,60 @@ describe('a mission grants NOTHING but money', () => {
     expect(diverged, 'switching the mission-fallout window back on changed nothing across '
       + 'eight seasons, so the hold-out above is holding nothing out and the equivalence '
       + 'guard is quietly wider than it claims')
+      .toBeGreaterThan(0);
+  });
+
+  it('and the FIFTH hold-out is holding something real out: mission conduct', () => {
+    // THE ARM THAT MAKES THE FIFTH NARROWING A NARROWING AND NOT A HOLE, the
+    // same shape as the Chess, Shield and road-home arms: switch the held-out
+    // thing back ON in both arms and the equivalence above must FAIL. Here the
+    // held-out thing is the bespoke missions' EFFECTS — the bonds and reads a
+    // scene writes through js/tr/missions/apply.js. Bespoke is on in both arms
+    // (its shield mission held out as before), and the only variable is whether
+    // `applyMissionEffects` runs. If this goes green, either a mission's
+    // declared consequences reach no state — spec §9 says a mission where
+    // somebody abandons their team MUST change relationships — or the hold-out
+    // above is switching nothing off and the guard it narrows is wider than it
+    // claims.
+    //
+    // SEPARATION IS SMALL AND THE REASON IS THE SAME AS THE POT ARM'S: a bond
+    // written on the road out only changes a banishment when it tips a read that
+    // was already close, which is a minority of nights. So this plays more
+    // seasons than the Chess/Shield arms (16) and floors at 1 — a channel gone
+    // wholly silent lands at 0 and fails, which is the mutation this arm exists
+    // to catch. The projection is the SAME banishment/murder log as above, so
+    // the only difference between this arm and the guard is the effects flag.
+    const project = (s) => s.log.map(r =>
+      [r.ep, r.banished, r.wasTraitor, r.murdered, r.murderTarget, r.blocked,
+        r.executed].join('|')).join(String.fromCharCode(10)) + `\n${s.winner}`;
+    // Every hold-out the guard above uses is kept EXCEPT the effects flag, so
+    // the sole variable between this arm and the guard is whether
+    // `applyMissionEffects` runs — the pot is blinded and the road-home window
+    // is held out, so neither of those can supply the divergence.
+    let on, off;
+    const unblind = _setPactPotBlind(true);
+    try {
+      _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
+      _setMissionFalloutEnabled(false);
+      _setBespokeMissionsEnabled(true);
+      _setMissionEffectsEnabled(true);   // NOT held out this time — the mutation
+      on = seasons(16).map(project);
+      _setMissionsEnabled(false);
+      off = seasons(16).map(project);
+    } finally {
+      _setMissionsEnabled(true);
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+      _setMissionFalloutEnabled(true);
+      _setBespokeMissionsEnabled(false);
+      _setMissionEffectsEnabled(true);
+      unblind();
+    }
+    const diverged = on.filter((v, i) => v !== off[i]).length;
+    expect(diverged, `applying the bespoke missions' effects changed nothing across sixteen `
+      + 'seasons, so the effects hold-out above is holding nothing out and a mission that is '
+      + 'supposed to change relationships changes no state')
       .toBeGreaterThan(0);
   });
 

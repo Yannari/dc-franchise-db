@@ -563,6 +563,29 @@ function _powerLedger() {
  * `null` when no mission ran: fewer than four people left, or an endgame
  * round, and the screen must not be registered for either.
  */
+/**
+ * The fields a BESPOKE mission carries beyond the archetype shape, deep-copied.
+ *
+ * All plain data (strings, numbers, arrays, objects) — no functions, no Sets —
+ * so a `JSON` round trip is a faithful deep clone and survives save/load. The
+ * `shield`/`shields` block is left to `_missionRecord`'s existing relic
+ * handling, which already reads `m.shield`.
+ */
+function _bespokeMissionFields(m) {
+  const clone = v => (v == null ? v : JSON.parse(JSON.stringify(v)));
+  return {
+    ceremony: clone(m.ceremony),
+    briefing: m.briefing || '',
+    phases: clone(m.phases) || [],
+    playerScores: clone(m.playerScores) || {},
+    placements: Array.isArray(m.placements) ? [...m.placements] : [],
+    scenes: clone(m.scenes) || [],
+    shields: clone(m.shields) || [],
+    tally: clone(m.tally) || null,
+    potBefore: typeof m.potBefore === 'number' ? m.potBefore : Math.max(0, (m.potAfter || 0) - (m.earned || 0)),
+  };
+}
+
 function _missionRecord(m) {
   if (!m) return null;
   const relicKey = m.shield ? 'shield' : (m.dagger ? 'dagger' : null);
@@ -575,6 +598,18 @@ function _missionRecord(m) {
     gross: m.gross, earned: m.earned, potAfter: m.potAfter,
     sideObjectives: (m.sideObjectives || []).map(o => ({ ...o })),
     summary: m.summary || '',
+    // ── THE BESPOKE AFTERNOON, WRITTEN OUT ──────────────────────────────
+    // A bespoke mission (js/tr/missions/) is an archetype record with an
+    // episode's worth of detail hung off it. The screen draws that detail — a
+    // full briefing, three phases with beats, the scenes and their
+    // confessionals, the running tally — so it is copied onto the row, in
+    // plain data, for exactly the reason the rest of this record is: a screen
+    // must not reach into `gs.tr.missions` for whichever afternoon happens to
+    // be last. Absent (not empty) on an archetype afternoon, so the screen
+    // branches on which kind it is drawing rather than on a length. Deep-copied
+    // because a save round-trips this and a shared reference would let a load
+    // alias two seasons.
+    ...(Array.isArray(m.phases) ? _bespokeMissionFields(m) : {}),
     // The Chess afternoon's observable, and it is an observable and not a
     // belief -- see the note in js/tr/missions.js. Absent on every other
     // archetype rather than empty, so the screen branches on the afternoon it

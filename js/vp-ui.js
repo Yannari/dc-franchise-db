@@ -26,11 +26,15 @@ const _TR_PHASES = {
   'tr-castle-morning':  { id:'tr-morning',   label:'Morning',   icon:'☀' },
   'tr-mission':     { id:'tr-afternoon', label:'Afternoon', icon:'◈' },
   'tr-castle-afternoon':{ id:'tr-afternoon', label:'Afternoon', icon:'◈' },
+  // Voting Plans sits in the pre-table scramble, between the afternoon and the
+  // table it leads into — so its breadcrumb is a Traitors phase reading "The
+  // Vote", not the old post-night "The Day" (which put it after the table), and
+  // never the show-registry fallthrough's Total-Drama "CAMP".
+  'tr-suspicion':   { id:'tr-plans',     label:'The Vote',  icon:'▦' },
   'tr-round-table': { id:'tr-evening',   label:'The Table', icon:'◍' },
   'tr-castle-night':{ id:'tr-night',     label:'Night',     icon:'☾' },
   'tr-conclave':    { id:'tr-night',     label:'Night',     icon:'☾' },
   'tr-recruitment': { id:'tr-night',     label:'Night',     icon:'☾' },
-  'tr-suspicion':   { id:'tr-day',      label:'The Day',   icon:'▦' },
   'tr-status':      { id:'tr-book',      label:'Ruled Off', icon:'▤' },
   'tr-endgame':     { id:'tr-endgame',   label:'The Endgame', icon:'✦' },
   'tr-debug':       { id:'debug',        label:'Debug',     icon:'⚙' },

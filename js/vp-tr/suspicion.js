@@ -921,29 +921,29 @@ function _votingWall(v) {
   const source = v.truthKnown ? (v.plans || []) : (v.myPlan ? [v.myPlan] : []);
   const caption = {};
   const highlight = new Set();
-  let faith = 0, pact = 0;
+  let faith = 0;
   for (const p of source) {
-    // The arrow is the intent; the mark distinguishes a feeling from proof.
-    const mark = p.role === 'pact' ? '⇛' : '→';
-    caption[p.observer] = mark + ' ' + p.target;
+    // ONE ARROW ONLY, AND IT IS A FEELING. Every plan on this pre-table screen
+    // is a Faithful's banishment lean — a read, and a read is not proof. The
+    // pact's ⇛ murder arrow was removed with the rest of the murder plumbing
+    // (see `_view`): the kill is a night decision the table has not taken yet.
+    caption[p.observer] = '→ ' + p.target;
     highlight.add(p.target);
-    if (p.role === 'pact') pact++; else faith++;
+    faith++;
   }
   const wall = portraitWall({ names: v.living.slice(), highlight, caption, size: 52 });
   const pct = _pct(v.ceiling);
   const legend = v.truthKnown
     ? '<p class="sn-said">A face with <b>&rarr;</b> under it is a Faithful leaning '
       + 'toward a name for the table &mdash; and a read is a feeling, not proof: nothing '
-      + 'a Faithful can hold is worth more than ' + pct + '%. A face with <b>&#8667;</b> '
-      + 'is the pact, aiming in the dark, and the pact is not guessing. A ring is a face '
-      + 'somebody means to move against.</p>'
+      + 'a Faithful can hold is worth more than ' + pct + '%. A ring is a face somebody '
+      + 'means to move against. What the pact will do after dark is not on this wall.</p>'
     : '<p class="sn-said">Your <b>&rarr;</b> is the name you are leaning toward at the '
       + 'table. It is a feeling and not proof &mdash; nothing you can hold is worth more '
       + 'than ' + pct + '%, and nobody in this castle can get past that. What anybody '
       + 'else means to do is theirs, and not a thing this wall will show you.</p>';
   const sums = v.truthKnown
     ? _sums([['Faithfuls with a lean', faith],
-        ['Marked by the pact', pact, pact ? 'wrong' : null],
         ['In the castle', v.living.length]])
     : '';
   return _card(v.truthKnown ? 'Voting Plans' : 'Your Vote',
@@ -1041,15 +1041,17 @@ function _view(ep, observer) {
   //   that is entitled to it: the audience sees them all; a player sees only
   //   their own, because their own board is the only one they hold.
   //
-  //   A TRAITOR'S murder target — TURRET-ONLY, and this is the single biggest
-  //   observer-safety surface on the screen. It is read from `ep.tr.night`,
-  //   which is night content, and ONLY when the observer is the audience. On a
-  //   player layer `plans`/`traitors`/`murder` are null: they never reach the
-  //   branch that would draw them, so no edit downstream can leak who the
-  //   Traitors are or who they are aiming at.
+  //   NO MURDER TARGET REACHES THIS SCREEN, on any layer. The screen now sits
+  //   BEFORE the Round Table, and the pact's kill is a NIGHT decision taken
+  //   AFTER the table sits — drawing it here would be a night decision shown
+  //   before the day vote, a causality leak. It used to read the pact's arrows
+  //   off `ep.tr.conclave.argued` (audience-only night data) and hang a ⇛ under
+  //   each Traitor's face; that whole branch is gone. `plans` now carries only
+  //   Faithful banishment leans, and the murder plan stays conclave-only
+  //   content, on the Conclave screen at the foot where the night belongs.
   const truth = truthKnown ? (b.truth || {}) : null;
-  let plans = null;             // audience: every living player's intent
-  let myPlan = null;            // player: their own intent, and only that
+  let plans = null;             // audience: every living player's banishment lean
+  let myPlan = null;            // player: their own lean, and only that
   if (truthKnown) {
     plans = [];
     // Faithful banishment leans, off each Faithful's own board.
@@ -1059,26 +1061,6 @@ function _view(ep, observer) {
         .sort((x, y) => y.score - x.score || x.name.localeCompare(y.name))[0];
       if (top) plans.push({ observer: bd.observer, target: top.name,
         role: 'faithful', score: top.score });
-    }
-    // The pact's target — TURRET-ONLY, off the conclave record (the same
-    // audience-only night data the Conclave screen draws). `argued` is one
-    // entry per Traitor who had a name, including the ones the room did not
-    // take, so this is every Traitor's own intended target, not just the
-    // winning one. `conclave` is null on a night with no kill (a recruitment
-    // night, an endgame), and then the pact simply has no arrows.
-    const conclave = (ep.tr && ep.tr.conclave) || null;
-    const argued = (conclave && Array.isArray(conclave.argued)) ? conclave.argued : [];
-    const seenPact = new Set();
-    for (const a of argued) {
-      if (!a || !a.traitor || !a.target) continue;
-      // BOTH ENDS STILL IN THE CASTLE. The chosen victim is dead by the time
-      // this snapshot is taken and is not on the wall, so a ⇛ pointing at them
-      // would be an arrow to nobody; the arrows that survive are the pact's
-      // living intentions — the losing ballots, who they are STILL aiming at.
-      if (living.indexOf(a.traitor) < 0 || living.indexOf(a.target) < 0) continue;
-      if (seenPact.has(a.traitor)) continue;
-      seenPact.add(a.traitor);
-      plans.push({ observer: a.traitor, target: a.target, role: 'pact', score: 1 });
     }
   } else if (watcher && inRoom) {
     const top = (mine || []).filter(e => e.score > 0)
@@ -1092,8 +1074,10 @@ function _view(ep, observer) {
     isAudience, watcher, inRoom, truthKnown, ceiling,
     living,
     mine,
-    // The voting plans. `plans` is audience-only (it carries the pact's target,
-    // which is turret content); `myPlan` is the one plan a player may hold.
+    // The voting plans — Faithful banishment leans only. `plans` is audience-only
+    // (it names every living Faithful's lean); `myPlan` is the one lean a player
+    // may hold. No murder target is on either: that is a night decision the table
+    // has not taken, and this screen sits before the table.
     plans, myPlan,
     // AUDIENCE ONLY, and null rather than empty where withheld.
     boards: truthKnown ? boards : null,

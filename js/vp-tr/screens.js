@@ -139,6 +139,27 @@ export const TRAITORS_SCREENS = [
     when: r => castleSegmentHasScenes(r, 'afternoon'),
     build: (r, o) => rpBuildCastleDay(r, o, 'afternoon'),
     revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
+  // ── VOTING PLANS — THE INTENTIONS THAT LEAD INTO THE TABLE (moved) ────
+  //
+  // IT USED TO SIT AT THE FOOT, after the conclave and the offer. That put a
+  // screen whose whole subject is who-means-to-banish-whom three screens AFTER
+  // the banishment it precedes. Voting plans are pre-table intentions, so the
+  // screen belongs in the pre-table scramble slot: right after the afternoon
+  // and before the room sits down.
+  //
+  // AND BECAUSE IT IS NOW PRE-TABLE, IT CARRIES NO MURDER TARGET. The pact's
+  // kill is a NIGHT decision, taken after the table sits; drawing it here would
+  // be a night decision shown before the day vote — a causality leak. The pact
+  // arrows were removed from this screen (see `_votingWall` in suspicion.js);
+  // the murder plan stays conclave-only content, and the conclave still sits at
+  // the foot where the night belongs. What is left is the one thing that IS
+  // known before the table: the Faithfuls' banishment leans.
+  { id: 'tr-suspicion', label: 'Voting Plans', suffix: 'suspicion',
+    badge: { text: 'Voting Plans', color: '#7fa8c9' },
+    when: r => !!(r.tr && r.tr.beliefs && Array.isArray(r.tr.beliefs.castle)
+      && r.tr.beliefs.castle.length),
+    build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,
+    revealAllName: 'trSuspicionRevealAll' },
   { id: 'tr-round-table', label: 'The Round Table', suffix: 'roundtable',
     badge: { text: 'Round Table', color: '#b91c3c' },
     when: r => !!(r.tr && r.tr.table),
@@ -191,12 +212,13 @@ export const TRAITORS_SCREENS = [
   // the first night the Faithfuls have not formed one read between them and a
   // page reporting that they have not is a page with nothing on it. The pact's
   // own certainty is already the last beat of the Selection.
-  { id: 'tr-suspicion', label: 'Voting Plans', suffix: 'suspicion',
-    badge: { text: 'Voting Plans', color: '#7fa8c9' },
-    when: r => !!(r.tr && r.tr.beliefs && Array.isArray(r.tr.beliefs.castle)
-      && r.tr.beliefs.castle.length),
-    build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,
-    revealAllName: 'trSuspicionRevealAll' },
+  //
+  // ── VOTING PLANS MOVED UP, BEFORE THE ROUND TABLE ────────────────────
+  // It used to be registered HERE, at the foot after the conclave. Voting plans
+  // are pre-table intentions, so the entry now lives in the pre-table scramble
+  // slot above — right after the afternoon — and carries no murder target,
+  // because the kill is a night decision the table has not yet made. See that
+  // entry and `_votingWall` in suspicion.js.
   // -- THE CHAIR IS NOW FOLDED INTO THE NIGHT (Plan 11, alcove fold) -----
   //
   // The Alcove used to be its own screen here, after the board and before the

@@ -5677,19 +5677,31 @@ describe('the suspicion board is reachable from a played season', () => {
       .toBeGreaterThan(20);
   });
 
-  it('and it sits after the table, because the record is taken at the end of the night',
+  it('and it sits before the table, in the pre-table scramble, because a voting '
+    + 'plan is a pre-table intention (Defect 1)',
     () => {
-      // The snapshot already holds tonight's reveal and tonight's murder
-      // evidence. Drawn before the Round Table it would print the room reacting
-      // to a banishment three screens before the banishment — the defect Task 6
-      // found by reading a season in sequence.
+      // MOVED (Defect 1). Voting Plans are the intentions that lead INTO the
+      // banishment vote, so the screen belongs before the Round Table — right
+      // after the afternoon, in the pre-table scramble. It used to sit at the
+      // foot, after the conclave, which put the who-means-to-banish-whom screen
+      // three screens AFTER the banishment it precedes. What made that move
+      // safe: the pact's murder target — a NIGHT decision taken after the table
+      // — was removed from the screen (see the wall guard above), so nothing on
+      // it is a night decision shown before the day vote.
       let checked = 0;
       for (const { ep } of BOARDS) {
         const ids = buildVPScreens(ep).map(s => s.id);
         if (!ids.includes('tr-round-table')) continue;
+        // Paired: before the table it leads into, and after the afternoon it
+        // follows — so a stray move in either direction is caught.
         expect(ids.indexOf('tr-suspicion'),
-          `ep ${ep.num}: the board is drawn before the table it already knows about`)
-          .toBeGreaterThan(ids.indexOf('tr-round-table'));
+          `ep ${ep.num}: Voting Plans is not drawn before the table it leads into`)
+          .toBeLessThan(ids.indexOf('tr-round-table'));
+        if (ids.includes('tr-castle-afternoon')) {
+          expect(ids.indexOf('tr-suspicion'),
+            `ep ${ep.num}: Voting Plans is drawn before the afternoon it follows`)
+            .toBeGreaterThan(ids.indexOf('tr-castle-afternoon'));
+        }
         checked++;
       }
       expect(checked, 'no night carried both a table and a board').toBeGreaterThan(15);
@@ -5810,40 +5822,53 @@ describe('the truth layer is the audience\'s and nobody else\'s', () => {
   });
 });
 
-// ── GUARD: THE VOTING-PLANS WALL KEEPS THE PACT TURRET-ONLY (Plan 11) ──
+// ── GUARD: THE VOTING-PLANS WALL SHOWS NO MURDER TARGET, ON ANY LAYER ──
 //
-// The Voting Plans wall shows every Faithful's banishment lean (a → arrow) on
-// the layer entitled to it, and the pact's murder targets (a ⇛ arrow) on the
-// AUDIENCE layer ALONE. The pact's target is read from `ep.tr.conclave` — night
-// content — and only when the observer is the audience, so a Faithful can never
-// be shown who the Traitors are aiming at, nor, by the arrows, who the Traitors
-// are. This is the single biggest observer-safety surface the rebuild adds.
+// The screen moved (Defect 1): it now sits BEFORE the Round Table, in the
+// pre-table scramble, because a voting plan is a pre-table intention. The pact's
+// kill is a NIGHT decision, taken AFTER the table sits, so a murder target drawn
+// here would be a night decision shown before the day vote — a causality leak.
 //
-// MUTATION: give the player path `plans` (the audience set) instead of
-// `myPlan`. RESULT: RED — a Faithful's wall then carries the pact's ⇛ arrows.
-describe('the voting-plans wall keeps the pact turret-only', () => {
-  const PACT_ARROW = '⇛';   // ⇛, the pact's target
-  const READ_ARROW = '→';   // →, a Faithful's lean
-  // A LIVING pact target: the chosen victim is dead by snapshot time and off
-  // the wall, so the arrows that survive are the losing ballots — who the pact
-  // is still aiming at, both ends still in the castle.
+// So the pact's ⇛ murder arrow is gone from EVERY layer, audience included; what
+// the wall shows now is only the Faithfuls' banishment leans (a → arrow), and it
+// rings the faces they mean to move against. The murder plan stays conclave-only
+// content, on the Conclave screen at the foot where the night belongs.
+//
+// PAIRED ARM, so neither half passes for free: the → leans MUST be present and
+// the faces ringed (banishment intentions are the whole subject of the screen),
+// AND the ⇛ murder arrow MUST be absent (audience and player alike).
+//
+// MUTATION A: restore the pact loop in `_view` (push `role:'pact'` plans off
+// `ep.tr.conclave.argued`). RESULT: RED — the audience wall carries a ⇛ again.
+// MUTATION B: drop the Faithful-lean loop in `_view`. RESULT: RED — no → arrow
+// and no ringed face survive the positive arm.
+describe('the voting-plans wall shows no murder target, on any layer', () => {
+  const PACT_ARROW = '⇛';   // ⇛, a pact murder target — must never appear now
+  const READ_ARROW = '→';   // →, a Faithful's banishment lean
+  // Nights the pact HAD a living target: proof the removal is real work rather
+  // than a season that never planned a kill. Read off the record, as before.
   const livingPactTarget = ep => ep.tr.conclave && Array.isArray(ep.tr.conclave.argued)
     && ep.tr.conclave.argued.some(a => a && a.traitor && a.target
       && ep.tr.beliefs.living.includes(a.traitor)
       && ep.tr.beliefs.living.includes(a.target));
   const PLANNED = BOARDS.filter(({ ep }) => livingPactTarget(ep));
 
-  it('the audience wall marks a Traitor aiming, and rings the face aimed at', () => {
-    let checked = 0;
+  it('the audience wall shows banishment leans and never a murder arrow', () => {
+    let checked = 0, withLean = 0, withRing = 0;
     for (const { ep } of PLANNED) {
       const aud = noCss(rpBuildSuspicion(ep, 'audience'));
+      // The negative arm: even on a night the pact HAD a living target, the
+      // audience wall must not carry the ⇛.
       expect(aud.includes(PACT_ARROW),
-        `ep ${ep.num}: the audience wall shows no pact target`).toBe(true);
-      expect(/data-hi="1"/.test(aud),
-        `ep ${ep.num}: no face on the wall is ringed as a target`).toBe(true);
+        `ep ${ep.num}: the audience wall still shows a pact murder target`).toBe(false);
+      // The positive arm: the banishment leans are the point of the screen.
+      if (aud.includes(READ_ARROW)) withLean++;
+      if (/data-hi="1"/.test(aud)) withRing++;
       checked++;
     }
     expect(checked, 'no night with a living pact plan was drawn').toBeGreaterThan(8);
+    expect(withLean, 'no audience wall drew a single banishment lean').toBeGreaterThan(4);
+    expect(withRing, 'no face on any wall was ringed as a lean target').toBeGreaterThan(4);
   });
 
   it('a Faithful never sees the pact arrow, and every caption on their wall is their own read',

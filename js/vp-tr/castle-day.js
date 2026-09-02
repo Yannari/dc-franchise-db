@@ -3508,6 +3508,30 @@ function _beatCard(s, beat, key) {
     + body + '</div>';
 }
 
+// ONE CARD PER SCENE (user-directed): the establish/action/reaction/consequence
+// beats that used to be four separate reveal-cards now flow inside a single
+// card, so a scene reads as one moment instead of four fragments and there is
+// nothing to click through. The 4-beat DATA is unchanged (castleDayScenes still
+// returns the full stream) — only the rendering is merged.
+function _sceneCard(s, stream, key) {
+  const fam = _fam(s);
+  const heard = s.layer === 'heard';
+  const carried = !s.opened;
+  let body = '<div class="dy-place">' + _esc(s.heading) + '</div>';
+  body += _faces(s.participants);
+  for (const beat of stream) {
+    body += '<p class="dy-say">'
+      + _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text)) + '</p>';
+    if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
+    if (!heard && beat.kind === 'consequence' && s.closedNow) body += _knotMark(s, beat.mark);
+  }
+  return '<div class="dy-scene" data-carried="' + (carried && !heard ? '1' : '0') + '"'
+    + ' data-beat="scene"'
+    + (heard ? ' data-heard="1"' : '')
+    + ' style="--dy-thread:' + fam.colour + '">'
+    + body + '</div>';
+}
+
 function _hourPlate(w, key) {
   const h = _hour(w);
   return '<div class="dy-hourplate">'
@@ -3603,14 +3627,12 @@ function _buildBeats(v) {
     }
     if (raw.window !== hour) { lead += _hourPlate(raw.window, key); hour = raw.window; }
 
-    for (let j = 0; j < stream.length; j++) {
-      beats.push({
-        phase: _hour(raw.window).sun,
-        html: (j === 0 ? lead : '') + _beatCard(s, stream[j], skey),
-        meta: { kind: 'card', beat: stream[j].kind, scene: i, window: raw.window,
-          band: _bandName(raw.phaseId, raw.window), who: composed.participants },
-      });
-    }
+    beats.push({
+      phase: _hour(raw.window).sun,
+      html: lead + _sceneCard(s, stream, skey),
+      meta: { kind: 'card', beat: 'scene', scene: i, window: raw.window,
+        band: _bandName(raw.phaseId, raw.window), who: composed.participants },
+    });
   }
 
   // THE LAST CARD — the day added up, and the only card that counts anything.
@@ -3928,13 +3950,12 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
   // pattern, and the reason the conclave first shipped a screen that was
   // blank until it was clicked.
   const stream = beats.map((b, i) =>
-    '<div class="dy-beat' + (i <= st.idx ? ' dy-vis' : '')
+    '<div class="dy-beat dy-vis'
     + '" id="dy-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + b.html + '</div>').join('');
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state
   // on every paint and there is no closure left to hold them.
-  const call = fn => fn + "('" + suffix + "'," + total + ',' + epNum + ')';
   const stories = v.rows.length;
 
   return '<div class="dy-root" style="' + vars + '">' + css + extraCss
@@ -3967,16 +3988,9 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
     + '</div></div>'
     + '<header class="dy-head">' + observerBadge + '</header>'
     + '<div class="dy-stage" id="dy-panel-inner-' + suffix + '">'
-    + _dayPanel(state, st.idx) + '</div>'
+    + _dayPanel(state, total - 1) + '</div>'
     + '<main class="dy-main">' + stream + '</main>'
-    + '</div></div>'
-    + '<div class="dy-controls" id="dy-controls-' + suffix + '">'
-    + '<button class="dy-btn" onclick="' + call('trCastleDayRevealNext') + '">'
-    + _icon('chevron', 12) + 'Continue</button>'
-    + '<span class="dy-counter" id="dy-counter-' + suffix + '">'
-    + (st.idx + 1) + ' / ' + total + '</span>'
-    + '<button class="dy-btn" onclick="' + call('trCastleDayRevealAll') + '">Reveal all</button>'
-    + '</div></div>';
+    + '</div></div></div>';
 }
 
 /**

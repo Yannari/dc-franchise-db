@@ -3703,7 +3703,7 @@ function _dayPanel(state, idx) {
     // SCENES, NOT CARDS. "The morning 16" is a number about the rendering; a
     // viewer counts rooms they have been in, and there is one establishing
     // card per room.
-    if (m.beat === 'establish') byPart.set(m.band, byPart.get(m.band) + 1);
+    if (m.beat === 'scene') byPart.set(m.band, byPart.get(m.band) + 1);
   }
   const here = parts[parts.length - 1];
   const rows = parts.map(p =>
@@ -3715,7 +3715,7 @@ function _dayPanel(state, idx) {
   // count of "the castle" — the evidence rule, on a sidebar.
   const seen = new Map();
   for (const m of meta) {
-    if (m.beat !== 'establish') continue;
+    if (m.beat !== 'scene') continue;
     for (const n of (m.who || [])) seen.set(n, (seen.get(n) || 0) + 1);
   }
   const who = [...seen].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);

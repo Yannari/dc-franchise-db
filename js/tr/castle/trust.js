@@ -25,7 +25,9 @@ import { sceneApi, arcAdvanceCiting } from './effects.js';
 import {
   findOpenThread, openThreadsFor, heatAt, lastClosedThread, outcomeSense,
 } from '../threads.js';
-
+// A PURE READ of what somebody already thinks — the same import
+// js/tr/castle/suspicion.js holds, and it writes nothing.
+import { suspicion } from '../deduction.js';
 import { lineFor } from './lines.js';
 
 const FAMILY = 'trust';
@@ -93,23 +95,86 @@ registerEvent({
   },
 });
 
-const TRADE_LINES = [
-  '{a} and {b} compared notes on {c} — quietly, and to no one else.',
-  '{a} asked {b} point blank what they made of {c}. {b} told them.',
-  'Walking back from breakfast, {a} and {b} traded honest reads on {c}.',
-  '{a} and {b} spent ten minutes on {c} and did not once say anything they would repeat elsewhere.',
-  '"What do you actually think about {c}," {b} asked, and {a} answered the actual question.',
-  '{a} gave {b} the version of their read on {c} that had the doubts still in it.',
-];
+// ── TASK 7 STAGE 4: REWRITTEN, AND WIDENED TO A SOLO DRAW ─────────────
+//
+// The audit's verdict on this event was REWRITE: "one branch (`traded-reads`)
+// — the fork is in the wording, not in the game." It is also the highest-
+// firing event in the whole `after-table` window, so a single-branch flagship
+// was costing that window most of its variety.
+//
+// FOUR PAIRED BRANCHES, and they are four different things that happen when
+// two people compare reads: it is genuinely mutual, or one of them pays and
+// the other does not, or they land on the SAME name and it becomes an
+// arrangement, or they land on different names and that costs them something.
+// The last two are chosen by what the two of them actually think, not by the
+// roll — `suspicion()` is the read each already holds, so the scene's outcome
+// is a fact about the season rather than a coin.
+//
+// AND A SOLO BRANCH, which is the widening the yield measurement asked for
+// rather than a fifth event. `after-table` spent 26% of its phase budget and
+// eleven of its fourteen events refused a one-person draw outright; `runWindow`
+// BREAKS on the first draw with nothing eligible, so one solo draw cost the
+// rest of the night. The same premise with nobody to trade with is a person
+// working out, on their own, which of the room they would actually stand next
+// to — which is the trust family's own question asked quietly.
+const TRADE_LINES = {
+  'traded-reads': [
+    '{a} and {b} compared notes on {c} — quietly, and to no one else.',
+    '{a} asked {b} point blank what they made of {c}. {b} told them.',
+    'Walking back from the table, {a} and {b} traded honest reads on {c}.',
+    '{a} and {b} spent ten minutes on {c} and did not once say anything they would repeat elsewhere.',
+    '“What do you actually think about {c},” {b} asked, and {a} answered the actual question.',
+    '{a} gave {b} the version of their read on {c} that had the doubts still in it.',
+  ],
+  'one-way': [
+    '{a} gave {b} a real read on {c} and got back something that could have been said to anybody.',
+    '{a} paid first, as usual, and {b} did not pay at all, and both of them noticed which.',
+    '“Your turn,” {a} said, having gone first about {c}. {b}’s turn lasted about four seconds.',
+    '{b} listened to everything {a} thought about {c} and volunteered nothing whatsoever in return.',
+    '{a} came away from that conversation having given {b} more than {a} had meant to.',
+  ],
+  'same-name': [
+    '{a} and {b} arrived at {c} separately and independently, and that turned into an arrangement.',
+    'Both of them said {c}. Neither had planned to, and by the end of it {a} and {b} were a unit.',
+    '“{c}.” “{c}.” {a} and {b} said it at almost the same time and then had to decide what to do about it.',
+    '{a} and {b} found they had the same name and spent the rest of the conversation on what to do with it.',
+    'Two people got to {c} by different routes, and {a} and {b} both understood what that was worth.',
+  ],
+  disagreed: [
+    '{a} said {c}. {b} said somebody else entirely, and neither of them could move the other one.',
+    '{a} and {b} did not agree about {c}, and by the end of it they were not really talking about {c}.',
+    '“You’re wrong about {c},” {b} said, and would not say who {b} had instead, which was worse.',
+    '{a} put {c} up and {b} took it apart, and something between them was slightly colder afterwards.',
+    'It was supposed to be two people helping each other. It turned into {a} defending {c} to {b}.',
+  ],
+  'read-the-room': [
+    '{a} went through the room, name by name, and worked out which of them {a} would actually stand next to.',
+    'Nobody to trade with, so {a} did it alone: the whole list, in order, ranked by nothing {a} could prove.',
+    '{a} sat with the question of who in this castle {a} genuinely believes, and did not like how short the list was.',
+    'It is easier to be honest about the room when nobody in it is listening. {a} took the opportunity.',
+    '{a} tried to put a name to the feeling and could not, and spent the rest of the hour on it anyway.',
+    '{a} had reads on all of them and evidence for none, and knew exactly which of those two matters.',
+    'On {a}’s own, the list came out different from the one {a} would have said out loud, which was the point.',
+    '{a} did the whole room from memory and stopped, twice, at the same name, and could not say why.',
+  ],
+};
 
 registerEvent({
   id: 'trust-trade-reads',
   family: FAMILY,
   window: 'after-table',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['social', 'strategic', 'loyalty', 'intuition'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+    knowledge: ['incomplete', 'witnessed'],
+  },
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
+    // WIDENED FROM `length !== 2` TO "one or two". See the header above.
+    if (!ctx.actors?.length || ctx.actors.length > 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
+    if (ctx.actors.length === 1) return 1.5;
     const [a, b] = ctx.actors;
     return getBond(a, b) >= 0 ? 2 : 0.5;
   },
@@ -119,21 +184,40 @@ registerEvent({
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    let note = pick(rng, TRADE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     // SPEC 5.5, BRANCHING ON A CLOSED THREAD'S OUTCOME. An honest read on
     // somebody is mostly a memory of how the last thing about them ended, and
     // the castle wrote that down when closeThread named the outcome.
     const prior = lastClosedThread(target, { beforeEp: ctx.ep });
     const sense = outcomeSense(prior?.outcome);
+    if (!b) {
+      const soloNote = lineFor(TRADE_LINES['read-the-room'],
+        `trust-trade-reads|read-the-room|${ctx.ep}`, { a });
+      const t = api.openArc(FAMILY, [a], { source: sceneWhy, seed: soloNote });
+      return { branch: 'read-the-room', actor: a, threadId: t?.id, bondDelta: 0,
+        priorOutcome: prior?.outcome ?? null };
+    }
+    // WHAT THE TWO OF THEM ALREADY THINK decides the last two branches, so
+    // `same-name` is a real convergence and `disagreed` is a real difference.
+    const agree = suspicion(a, target, ctx.ep) > 0 && suspicion(b, target, ctx.ep) > 0;
+    const sb = pStats(b);
+    const branch = agree && rng() < 0.55 ? 'same-name'
+      : rng() < (1 - sb.social / 10) * 0.5 + 0.15 ? 'one-way'
+        : (suspicion(a, target, ctx.ep) > 0) !== (suspicion(b, target, ctx.ep) > 0) ? 'disagreed'
+          : 'traded-reads';
+    let note = lineFor(TRADE_LINES[branch], `trust-trade-reads|${branch}|${ctx.ep}`,
+      { a, b, c: target });
     // NO DAY NUMBER: see the note in suspicion.js's susp-noticed-inconsistency.
     // "day N" belongs to same-thread residue citation and is guarded as such.
     if (sense === 'walked') note += ` Both of them remembered ${target} being asked once, and coming out of it clean.`;
     else if (sense === 'cracked') note += ` Neither of them had forgotten what came out of ${target} the last time.`;
     else if (sense === 'coupled') note += ` Whatever ${target} was doing, it had stopped being a secret a while ago.`;
-    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'traded-reads', pair: [a, b], about: target, threadId: t?.id,
-      priorOutcome: prior?.outcome ?? null };
+    const bondDelta = branch === 'same-name' ? 2.5
+      : branch === 'traded-reads' ? 1 : branch === 'one-way' ? -0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const kind = branch === 'disagreed' ? 'suspicion' : FAMILY;
+    const t = api.openArc(kind, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, about: target, threadId: t?.id,
+      bondDelta, priorOutcome: prior?.outcome ?? null };
   },
 });
 
@@ -516,35 +600,95 @@ registerEvent({
   },
 });
 
-const FAVOR_LINES = [
-  '{b} did {a} a small, real favor tonight — the kind that only makes sense if the pact still holds.',
-  '{b} took something off {a}\'s plate without being asked and without mentioning it afterwards.',
-  '{b} covered for {a} over something trivial, which is how you find out about the untrivial ones.',
-  'Nobody saw {b} do it except {a}, and {b} had made sure of that.',
-  '{a} had not asked. {b} had noticed anyway, and dealt with it.',
-];
+// ── TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ────────────
+//
+// The verdict was "one branch (`favor-returned`) — the fork is in the wording,
+// not in the game", and it was right: a favour was done, a bond went up by
+// one, every single time. The four branches now are four different things a
+// favour can be, and three of them are not warmth. Being kept in somebody's
+// ledger is the one that matters: `kept-the-score` moves the bond DOWN and
+// opens a suspicion story, because a favour you are expected to repay is a
+// debt and both people in this castle know the difference.
+const FAVOR_LINES = {
+  'favor-returned': [
+    '{b} did {a} a small, real favour tonight — the kind that only makes sense if the arrangement still holds.',
+    '{b} took something off {a}’s plate without being asked and without mentioning it afterwards.',
+    '{b} quietly sorted something out for {a} over a trivial thing, which is how you find out about the untrivial ones.',
+    'Nobody saw {b} do it except {a}, and {b} had made sure of that.',
+    '{a} had not asked. {b} had noticed anyway, and dealt with it.',
+  ],
+  'noticed-and-said-so': [
+    '{a} caught {b} doing it and said thank you properly, out loud, which embarrassed both of them.',
+    '“You didn’t have to do that,” {a} said. “I know,” said {b}, and that was the end of the conversation.',
+    '{a} made a point of naming what {b} had done, in front of {b}, rather than filing it silently.',
+    '{b} had meant it to go unnoticed and {a} noticed, and told {b} so, and meant it.',
+    'It was a small thing and {a} treated it as a large one, which {b} did not correct.',
+  ],
+  'refused-it-back': [
+    '{b} did {a} the favour and would not let {a} return it, which {a} found harder to accept than the favour.',
+    '“We’re not keeping accounts,” {b} said, and {a} could not tell whether that was generosity or a position.',
+    '{a} tried to square it and {b} would not be squared with, and the whole thing sat there unfinished.',
+    '{b} waved it off twice. The second wave was firmer than the first and {a} stopped offering.',
+    '“Get me back some other week,” {b} said, which is either kindness or an open invoice.',
+  ],
+  'kept-the-score': [
+    '{b} did {a} the favour and mentioned it again about an hour later, in passing, to no particular purpose.',
+    '{b} brought it up twice before bed. {a} had thanked {b} the first time.',
+    '“That’s two you owe me,” {b} said, lightly, and {a} heard the number rather than the tone.',
+    '{a} realised somewhere in the evening that {b} had been counting, and had been counting for a while.',
+    '{b} was generous in the specific way that leaves a receipt, and {a} took the receipt.',
+  ],
+};
 
 registerEvent({
   id: 'trust-return-favor',
   family: FAMILY,
   window: 'after-table',
+  // The pair is [the one who receives, the one who does it] — and it is the
+  // DOER who runs every one of these scenes, so the field is returned rather
+  // than declared, because `roles: 'initiator-first'` would name the wrong one.
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'strategic', 'social', 'boldness'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     return findOpenThread(FAMILY, [a, b]) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-return-favor');
     const sceneWhy = 'returned a favour';
     const [a, b] = ctx.actors;
     const existing = findOpenThread(FAMILY, [a, b]);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const note = lineFor(FAVOR_LINES, `trust-return-favor|${ctx.ep}`, { a, b });
-    const t = existing
-      ? api.advanceArc(existing.id, note, { source: sceneWhy })
-      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'favor-returned', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    const st = pStats(b);
+    const bond = getBond(a, b);
+    const scores = {
+      'favor-returned': (st.loyalty / 10) * 0.5 + Math.max(0, bond) / 10 * 0.3,
+      'noticed-and-said-so': (pStats(a).social / 10) * 0.45 + 0.15,
+      'refused-it-back': (1 - st.social / 10) * 0.4 + (st.loyalty / 10) * 0.25,
+      'kept-the-score': (st.strategic / 10) * 0.45 + (1 - st.loyalty / 10) * 0.35,
+    };
+    const total = Object.values(scores).reduce((s, v) => s + v, 0);
+    let roll = rng() * total;
+    let branch = 'favor-returned';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const note = lineFor(FAVOR_LINES[branch], `trust-return-favor|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'favor-returned' ? 1
+      : branch === 'noticed-and-said-so' ? 2 : branch === 'refused-it-back' ? 0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const kind = branch === 'kept-the-score' ? 'suspicion' : FAMILY;
+    const target = kind === FAMILY ? existing : findOpenThread(kind, [a, b]);
+    const t = target
+      ? api.advanceArc(target.id, note, { source: sceneWhy })
+      : api.openArc(kind, [a, b], { source: sceneWhy, seed: note });
+    // `noticed-and-said-so` is the one branch where the person who received it
+    // is doing the talking; everywhere else the doer runs the scene.
+    const doerDrives = branch !== 'noticed-and-said-so';
+    return { branch, pair: [a, b], speaker: doerDrives ? b : a, respondent: doerDrives ? a : b,
+      threadId: t?.id, bondDelta };
   },
 });
 

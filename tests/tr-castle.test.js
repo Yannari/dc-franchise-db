@@ -40,6 +40,8 @@ import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
 import '../js/tr/castle/mission-fallout.js';
+import '../js/tr/castle/consequences.js';
+import '../js/tr/castle/nightfall.js';
 
 const BASE_CAST = roster.players.slice(0, 6).map(p => p.name);
 
@@ -1204,8 +1206,46 @@ describe('events cite residue: episode 7 names episode 2', () => {
     //   - a THIRD player with a season in common with B, so there is a
     //     conversation for A to be left out of (callback-no-history-envy).
     const [A, B, C] = PROBE_CAST;
-    gs.tr.rounds.push({ ep: PROBE_EP - 2, murdered: PROBE_CAST[4], murderTarget: PROBE_CAST[4] });
-    gs.activePlayers = gs.activePlayers.filter(n => n !== PROBE_CAST[4]);
+    // THE SECOND DEATH, RECORDED AS A CAST MEMBER WHO IS GONE RATHER THAN AS A
+    // ROUND (Task 7 stage 4). This used to push a murder round for PROBE_CAST[4]
+    // at PROBE_EP - 2 and remove them from the living. Two things stopped that
+    // working when `probeWorld` gained a Round Table of its own:
+    //   - PROBE_CAST[4] is the player probeWorld's round BANISHES, so the same
+    //     person was being murdered and banished, which no season can do; and
+    //   - the push landed AFTER probeWorld's round, so the tail of `gs.tr.rounds`
+    //     was an episode-3 record on an episode-5 night, and every event that
+    //     reads "tonight's table" (js/tr/castle/consequences.js,
+    //     js/tr/castle/nightfall.js) correctly refused to fire.
+    // `murderCount` is cast-minus-living-minus-banishments (js/tr/state.js), so
+    // a seventh name in the alignment ledger who is not in the living cast is
+    // the same second murder with none of the contradiction: seven cast, three
+    // gone, one banished, two murdered — which is what `grief-toast-to-them`
+    // asks for and is the only thing the old push was buying.
+    recordAlignment('Pg', false, 1, 'selection');
+    // ── THREE MORE PRECONDITIONS THE after-table LIBRARY NEEDS ────────────
+    //
+    // Same rule as the three above: added HERE and not in `probeWorld`,
+    // because that world is shared with the belief gate and the ground-truth
+    // probes and moving it moves their measurements.
+    //
+    //   - A SECOND TABLE WITH BALLOTS ON IT. `after-the-count-moved` compares
+    //     this week's slate with last week's, so it needs two of them; the
+    //     round probeWorld already has at PROBE_EP - 1 records a murder and no
+    //     vote, which is what a night-one record honestly looks like and is
+    //     not what this event reads.
+    //   - A REAL RELATIONSHIP WITH THE PERSON WHO LEFT. `after-the-empty-seat`
+    //     refuses to fire without one in either direction, which is the causal
+    //     contract's own rule about grief, so the fixture has to supply one.
+    const prev = gs.tr.rounds.find(r => r.ep === PROBE_EP - 1);
+    prev.ballots = [
+      { voter: A, voted: PROBE_CAST[2], channel: 'banishment' },
+      { voter: B, voted: PROBE_CAST[2], channel: 'banishment' },
+      { voter: PROBE_CAST[2], voted: A, channel: 'banishment' },
+      { voter: PROBE_CAST[3], voted: A, channel: 'banishment' },
+    ];
+    prev.accusations = [{ accuser: B, target: A }];
+    setBond(A, PROBE_CAST[4], 5);
+    setBond(PROBE_CAST[3], PROBE_CAST[4], 5);
     setFranchiseLedger({
       v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {
         '1': { seasonName: 'S1', format: 'total-drama', players: {
@@ -1260,7 +1300,26 @@ describe('events cite residue: episode 7 names episode 2', () => {
         for (const actors of SCENES) {
           worldWithHistory();
           if (ep !== PROBE_EP) {
-            gs.tr.rounds.push({ ep: ep - 1, murdered: PROBE_CAST[4], murderTarget: PROBE_CAST[4] });
+            gs.tr.rounds.push({ ep: ep - 1, murdered: PROBE_CAST[5], murderTarget: PROBE_CAST[5] });
+            // THE THIRD PRECONDITION, AND IT CANNOT LIVE IN THE SAME WORLD AS
+            // THE FIRST TABLE. `after-the-room-got-it-wrong` needs a reveal
+            // that said Faithful and `after-the-room-got-it-right` needs one
+            // that said Traitor, and one round cannot say both. probeWorld's
+            // table says Faithful, so the later reading — four rounds on, the
+            // world this loop was already built to produce — holds the other
+            // one. Same shape as the two worlds this sweep already runs for
+            // `susp-cold-case-revival`.
+            gs.tr.rounds.push({
+              ep, banished: PROBE_CAST[2], banishedWasTraitor: true, murdered: null,
+              ballots: [
+                { voter: A, voted: PROBE_CAST[2], channel: 'banishment' },
+                { voter: B, voted: A, channel: 'banishment' },
+                { voter: PROBE_CAST[3], voted: PROBE_CAST[2], channel: 'banishment' },
+              ],
+              revotes: [], accusations: [{ accuser: A, target: PROBE_CAST[2] }], betrayals: [],
+              exitSpeech: { burns: true, target: B, conviction: 0.5,
+                text: `${PROBE_CAST[2]} names ${B} on the way out.` },
+            });
           }
           const candidate = { ...ctx(), ep, actors, living: gs.activePlayers.slice() };
           if (ev.weight(candidate) > 0) { c = candidate; break outer; }

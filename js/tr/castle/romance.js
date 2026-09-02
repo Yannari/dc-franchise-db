@@ -328,13 +328,49 @@ registerEvent({
   },
 });
 
-const BREAKUP_LINES = [
-  '{a} and {b} ended it, in front of enough people that everyone would know by lunch.',
-  'It finished in the kitchen, with an audience, and neither {a} nor {b} lowered their voice for it.',
-  '{a} and {b} stopped, and the castle watched them stop, and nobody pretended otherwise.',
-  'Whatever {a} and {b} had, it was over by the time the plates were cleared, and publicly.',
-  '{b} walked away from {a} mid-sentence, and that was the end of it, in front of four people.',
-];
+// -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
+//
+// One branch (`broke-up`), and every one of its five lines was the SAME
+// break-up: loud, in front of people, over in a minute. That is one of the
+// four ways this ends and it is the least common one. The four now are four
+// different endings with four different costs, and only one of them is a
+// scene. `faded-out` in particular is the honest majority case and the pool
+// could not produce it.
+//
+// EVERY BRANCH STILL CLOSES THE SHOWMANCE. The fork is in how it ends and what
+// it costs, never in whether it ended -- an event that sometimes declines to
+// do the thing it is named for is the silent-branch defect the prose suite has
+// a rule about.
+const BREAKUP_LINES = {
+  'broke-up': [
+    '{a} and {b} ended it in front of enough people that it would be around the castle by lunch.',
+    'It finished in the kitchen, with an audience, and neither {a} nor {b} lowered their voice for it.',
+    '{a} and {b} stopped, and four people watched them stop, and nobody pretended otherwise.',
+    'Whatever {a} and {b} had, it was over by the time the plates were cleared, and publicly.',
+    '{b} walked away from {a} mid-sentence, and that was the end of it, in front of four people.',
+  ],
+  'faded-out': [
+    'Nobody ended it. {a} and {b} simply stopped sitting together, and by the third day it had stopped.',
+    'There was no conversation about it, which is how most of these actually go. {a} and {b} just went quiet.',
+    '{a} and {b} were still perfectly friendly and had stopped being anything else about a week ago.',
+    'It ran out rather than ending. Neither {a} nor {b} could have named the day.',
+    'The game took up all the room there was, and what {a} and {b} had did not survive the crowding.',
+  ],
+  'ended-kindly': [
+    '{a} and {b} ended it properly, in private, and both of them were better about it than they had to be.',
+    '\u201cThis place is not the place for it,\u201d {b} said to {a}, and {a} agreed, and they meant it kindly.',
+    'It finished with the two of them agreeing it had finished, which almost never happens here.',
+    '{a} and {b} decided together, said so to each other and to nobody else, and went to bed.',
+    'They were friends by the end of the conversation, {a} and {b}, which neither had expected going in.',
+  ],
+  'ended-in-strategy': [
+    '{b} ended it because of what it was costing at the table, and told {a} that in exactly those words.',
+    '\u201cThey are going to come for whichever of us is easier,\u201d {b} said, and ended it, and was not wrong.',
+    '{a} was left holding a very reasonable explanation and no relationship at all.',
+    '{b} priced the thing and put it down, and did {a} the courtesy of saying which of those had come first.',
+    'It ended for a reason {a} could not argue with, which is the worst reason for it to end.',
+  ],
+};
 
 registerEvent({
   id: 'romance-showmance-breakup',
@@ -361,26 +397,79 @@ registerEvent({
     if (!t || ctx.ep <= t.openedEp) return 0;
     return getBond(...t.parties) < 5 ? 2 : 0;
   },
-  fire(ctx) {
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'social', 'strategic', 'loyalty'],
+    relationship: ['romance'],
+  },
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-showmance-breakup');
     const sceneWhy = 'it ended between them';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
+    const sb = pStats(b);
+    const scores = {
+      'broke-up': (1 - sb.temperament / 10) * 0.5 + 0.15,
+      'faded-out': (1 - sb.social / 10) * 0.4 + 0.25,
+      'ended-kindly': (sb.loyalty / 10) * 0.4 + (sb.temperament / 10) * 0.3,
+      'ended-in-strategy': (sb.strategic / 10) * 0.5 + (1 - sb.loyalty / 10) * 0.2,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0);
+    let roll = rng() * total;
+    let branch = 'broke-up';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
     api.resolveArc(t.id, 'broken-up', { source: sceneWhy });
-    api.addBond(a, b, -2, { source: sceneWhy });
+    const bondDelta = branch === 'broke-up' ? -2
+      : branch === 'faded-out' ? -0.5 : branch === 'ended-kindly' ? 1 : -1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const residueThread = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(BREAKUP_LINES, `romance-showmance-breakup|${ctx.ep}`, { a, b }) });
-    return { branch: 'broke-up', pair: [a, b], threadId: residueThread?.id, bondDelta: -2 };
+      { source: sceneWhy,
+        seed: lineFor(BREAKUP_LINES[branch], `romance-showmance-breakup|${branch}|${ctx.ep}`, { a, b }) });
+    // `{b}` is the one who ends it on three of the four; `faded-out` has
+    // nobody driving it, and the pair order is the arc's own.
+    const bEnds = branch !== 'faded-out';
+    return { branch, pair: [a, b], speaker: bEnds ? b : a, respondent: bEnds ? a : b,
+      threadId: residueThread?.id, bondDelta };
   },
 });
 
-const SHIELD_LINES = [
-  '{a} and {b} quietly agreed: if either of their names comes up tomorrow, the other one is speaking first.',
-  'Last thing before sleep, {a} and {b} worked out who says what if it goes wrong tomorrow.',
-  '{a} and {b} agreed on a signal, which is either very sweet or very organised.',
-  'Whoever gets named first, the other one stands up. {a} and {b} settled that in the dark and did not discuss it again.',
-  '{b} told {a} not to defend them tomorrow. {a} agreed, and both of them knew {a} was lying.',
-];
+// -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
+//
+// One branch (`shield-pact`), in the thinnest window in the game. A couple
+// agreeing to stand up for each other is only interesting because it is a bad
+// idea, and the pool could not say so: three of the four branches now are the
+// ways it goes wrong, and one of them is the couple deciding, correctly, that
+// being seen to protect each other is what gets both of them written down.
+const SHIELD_LINES = {
+  'shield-pact': [
+    '{a} and {b} quietly agreed: if either of their names comes up tomorrow, the other one is speaking first.',
+    'Last thing before sleep, {a} and {b} worked out who says what if it goes wrong tomorrow.',
+    '{a} and {b} agreed on a signal, which is either very sweet or very organised.',
+    'Whoever gets named first, the other one stands up. {a} and {b} settled that in the dark and did not discuss it again.',
+    '{b} told {a} not to defend them tomorrow. {a} agreed, and both of them knew {a} was lying.',
+  ],
+  'one-sided-pact': [
+    '{a} promised to stand up for {b} tomorrow. {b} said something warm that was not the same promise.',
+    '{a} committed to it out loud and waited, and {b} did not commit to anything out loud.',
+    'It was supposed to be mutual. {a} noticed, somewhere in the dark, that only one of them had said it.',
+    '{b} let {a} make the promise and did not stop {a} and did not match it.',
+    '{a} came away from that thinking it was settled. It was settled in one direction.',
+  ],
+  'agreed-to-be-strangers': [
+    '{a} and {b} agreed to be nothing in public tomorrow, which is the sensible version and it cost them.',
+    '\u201cDon\u2019t defend me,\u201d {b} said, and meant it. \u201cIf you stand up for me they write us both down.\u201d',
+    'The pact {a} and {b} made was the opposite of a pact: two people agreeing not to look at each other.',
+    '{a} and {b} worked out that being seen to protect each other is what gets both of them named.',
+    'They chose the game over the gesture, {a} and {b}, and both of them were quiet about it afterwards.',
+  ],
+  'refused-the-pact': [
+    '{b} would not make the promise, and would not explain why, and {a} lay there with that.',
+    '\u201cI\u2019m not going to say that to you,\u201d {b} told {a}, in the dark, and did not soften it.',
+    '{a} asked for the one thing and {b} declined, kindly, and the kindness made it worse.',
+    '{b} said tomorrow would be tomorrow, which is not a no and is not anything else either.',
+    '{a} had thought this was already agreed. It turned out, at midnight, not to be.',
+  ],
+};
 
 registerEvent({
   id: 'romance-shields-target-together',
@@ -392,15 +481,36 @@ registerEvent({
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['loyalty', 'strategic', 'boldness', 'temperament'],
+    relationship: ['romance'],
+  },
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-shields-target-together');
     const sceneWhy = 'agreed to take the pressure off each other';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const advanced = api.advanceArc(t.id, lineFor(SHIELD_LINES, `romance-shields-target-together|${ctx.ep}`, { a, b }),
+    const sb = pStats(b);
+    const scores = {
+      'shield-pact': (sb.loyalty / 10) * 0.5 + (sb.boldness / 10) * 0.25,
+      'one-sided-pact': (1 - sb.loyalty / 10) * 0.35 + (1 - sb.boldness / 10) * 0.3,
+      'agreed-to-be-strangers': (sb.strategic / 10) * 0.5 + (sb.mental / 10) * 0.25,
+      'refused-the-pact': (1 - sb.loyalty / 10) * 0.4 + (sb.strategic / 10) * 0.25,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0);
+    let roll = rng() * total;
+    let branch = 'shield-pact';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'shield-pact' ? 1
+      : branch === 'one-sided-pact' ? -0.5
+        : branch === 'agreed-to-be-strangers' ? 0.5 : -2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id,
+      lineFor(SHIELD_LINES[branch], `romance-shields-target-together|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    return { branch: 'shield-pact', pair: [a, b], threadId: advanced?.id, bondDelta: 1 };
+    return { branch, pair: [a, b], speaker: b, respondent: a,
+      threadId: advanced?.id, bondDelta };
   },
 });
 

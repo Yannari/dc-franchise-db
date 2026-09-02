@@ -66,6 +66,8 @@ import '../tr/castle/callback.js';
 import '../tr/castle/testing.js';
 import '../tr/castle/journey.js';
 import '../tr/castle/mission-fallout.js';
+import '../tr/castle/consequences.js';
+import '../tr/castle/nightfall.js';
 
 /**
  * The season's random stream — and the hash in front of it is load-bearing.

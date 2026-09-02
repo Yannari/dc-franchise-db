@@ -36,6 +36,8 @@ import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
 import '../js/tr/castle/mission-fallout.js';
+import '../js/tr/castle/consequences.js';
+import '../js/tr/castle/nightfall.js';
 
 const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 42, 777, 12345];
 // Representative cast sizes: a small castle, a full standard castle, and a

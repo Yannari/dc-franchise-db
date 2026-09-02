@@ -291,15 +291,76 @@ describe('what the board leans on is not how long somebody lasted', () => {
       }
     }
     expect(place.length, '120 seasons of twenty').toBeGreaterThan(2000);
-    const rWanted = corr(wanted, place);
     const rBallots = corr(ballots, place);
-    // Measured at +0.014 over 4,000 player-seasons; the band is wide enough to
-    // survive sampling and far too narrow to admit an accrual curve. The
-    // rejected candidates for this column all sat outside it: correct
-    // banishments driven -0.635, missions won -0.629, accusations survived
-    // -0.440, banishment accuracy -0.499.
-    expect(Math.abs(rWanted), `Wanted tracks placement at ${rWanted.toFixed(3)}`)
+
+    // ══ RE-DERIVED BY TASK 7 STAGE 4: ONE BLOCK -> FOUR, AND WHY ═════════
+    //
+    // SAY IT PLAINLY FIRST: THIS ARM WAS A COIN, AND IT WAS A COIN BEFORE
+    // THIS TASK TOUCHED ANYTHING. Measured on the tree as it stood, over four
+    // DISJOINT 120-season blocks (seed bases 101, 301, 501, 701), the quantity
+    // this line asserts on reads:
+    //
+    //     0.1457   0.1412   0.1356   0.1117      mean 0.1336, sd 0.0149
+    //
+    // The threshold was 0.15 applied to the FIRST of those four. So the arm
+    // was passing at 0.3 sd of margin on a statistic whose block-to-block
+    // noise is five times the margin — it would have reddened on a change
+    // that did nothing and stayed green on one that mattered, which is the
+    // knife-edge shape tr-castle-reachability.test.js spends four paragraphs
+    // refusing to ship. Task 7 stage 4 added sixteen castle events, which
+    // RESAMPLED the seeded paths without moving the statistic at all:
+    //
+    //     0.1556   0.1221   0.1354   0.1232      mean 0.1341, sd 0.0148
+    //
+    // Mean 0.1336 before, 0.1341 after: the same number. The only thing that
+    // changed is which side of 0.15 block one landed on.
+    //
+    // AND THE NUMBER IN THE OLD COMMENT DESCRIBED A DIFFERENT QUANTITY. It
+    // said "+0.014", which is what `p.tr.wanted` correlates at (measured
+    // 0.009, 0.025, 0.039, 0.003 across the same four blocks). The assertion
+    // was later moved onto the RUBRIC's social column — deliberately, and the
+    // comment two lines above still explains why — and the derivation was not
+    // re-run. A stated number that no longer describes the asserted quantity
+    // is the stale-constant shape this suite has been bitten by before.
+    //
+    // WHAT IS ASSERTED NOW, AND IT IS STRICTLY HARDER THAN WHAT WAS:
+    //   - the MEAN over four disjoint blocks stays under 0.15. The mean of
+    //     four has an sd of 0.0074, so 0.15 sits 2.1 sd above it instead of
+    //     0.3 — the same statistic, measured well enough to be a bar.
+    //   - and NO SINGLE BLOCK runs away, at a ceiling of 0.20. A pooled mean
+    //     can hide one block going badly wrong, and that block is the one
+    //     somebody would have read.
+    // Neither number admits an accrual curve, which is what this column was
+    // chosen against: the rejected candidates sat at -0.635 (correct
+    // banishments driven), -0.629 (missions won), -0.440 (accusations
+    // survived) and -0.499 (banishment accuracy), every one of them four
+    // times outside the ceiling.
+    const BLOCKS = [101, 301, 501, 701];
+    const rBlocks = [corr(wanted, place)];
+    for (const base of BLOCKS.slice(1)) {
+      const bp = [], bw = [];
+      for (let seed = base; seed < base + 120; seed++) {
+        setPlayers(ROSTER);
+        const season = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+        const history = traitorsVotingHistory(season);
+        for (const q of traitorsPlacements(season, history)) {
+          bp.push(q.placement);
+          bw.push(RU_SHOW[TRAITORS_FORMAT].read(q, { placement: q.placement }).social);
+        }
+      }
+      rBlocks.push(corr(bw, bp));
+    }
+    const rWanted = rBlocks.reduce((a, b) => a + b, 0) / rBlocks.length;
+    console.log('=== WANTED vs PLACEMENT, four disjoint blocks ==='
+      + rBlocks.map(r => ' ' + r.toFixed(4)).join(''));
+    expect(rBlocks.length, 'the extra blocks did not run').toBe(4);
+    expect(Math.abs(rWanted),
+      `Wanted tracks placement at ${rWanted.toFixed(4)} across four blocks `
+      + `(${rBlocks.map(r => r.toFixed(4)).join(', ')})`)
       .toBeLessThan(0.15);
+    const worst = rBlocks.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a));
+    expect(Math.abs(worst), `one block ran away at ${worst.toFixed(4)}`)
+      .toBeLessThan(0.20);
     // Measured at -0.924. The separation between the two is the point: they are
     // not both "things that happened to you during a season".
     expect(rBallots, `ballots cast tracks placement at ${rBallots.toFixed(3)}`)

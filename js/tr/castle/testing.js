@@ -101,6 +101,26 @@ const REVERSE_PSYCH_LINES = {
     'It was not a real accusation. {b} defended themselves from it like it was.',
     '{b}\'s face did the whole thing before {b}\'s mouth caught up, and {a} watched both.',
   ],
+  // -- TASK 7 STAGE 4: TWO BRANCHES SHORT OF FOUR, AND NOW FOUR ----------
+  //
+  // The audit's verdict was REWRITE: two branches, both of them the TESTER
+  // getting a result. The two added are the two ways the test can go wrong for
+  // the person running it, which is what a bait is actually risky about --
+  // being seen doing it, and having it turned round on you.
+  'saw-through-it': [
+    '\u201cYou don\u2019t believe that,\u201d {b} said, about four seconds in. \u201cSo what are you actually asking me?\u201d',
+    '{b} named the manoeuvre out loud while {a} was still halfway through performing it.',
+    '{a} baited {b} and {b} said, pleasantly, that {a} could just ask the question instead.',
+    '{b} let {a} finish and then asked what {a} had been hoping to see, which {a} could not answer.',
+    '{b} was not annoyed about it, which was somehow worse for {a} than being caught out.',
+  ],
+  'turned-it-round': [
+    '{b} took the bait, ran with it, and by the end of it {a} was the one explaining themselves.',
+    '{a} said something {a} did not mean and {b} agreed enthusiastically and asked what {a} planned to do about it.',
+    '{b} answered the fake accusation with a real one, and {a} had walked into it.',
+    'It stopped being a test somewhere in the middle, and it was {b} who decided when.',
+    '{b} finished the conversation holding everything {a} had come in with, and {a} knew it.',
+  ],
 };
 
 const HYPOTHETICAL_LINES = {
@@ -158,13 +178,44 @@ const COLD_READ_LINES = [
   '{a} mentioned {c} in the wrong context on purpose, and read {b} instead of listening to them.',
 ];
 
-const FOLLOW_THROUGH_LINES = [
-  '{a} kept quietly checking whether {b} was still holding up to whatever they\'d been asked before.',
-  '{a} never said the word out loud again, and went on checking every day that {b} was keeping it.',
-  '{b} did not know they were still being marked. {a} was still marking.',
-  '{a} looked for the day {b} would let it slip, and it had not been today either.',
-  'It had been asked once and never repeated, and {a} was watching the answer hold.',
-];
+// -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
+//
+// One branch (`followed-through`) became four. The premise is that somebody is
+// still quietly being marked, and the only outcome written was that they were
+// still passing -- so the event could never report the thing it exists to look
+// for. It can now: the promise is half-kept, it is dropped, or the person
+// being marked works out that they are being marked, which is the worst of the
+// four for the person doing the marking.
+const FOLLOW_THROUGH_LINES = {
+  'followed-through': [
+    '{a} kept quietly checking whether {b} was still holding up to whatever they\'d been asked before.',
+    '{a} never said the word out loud again, and went on checking every day that {b} was keeping it.',
+    '{b} did not know they were still being marked. {a} was still marking.',
+    '{a} looked for the day {b} would let it slip, and it had not been today either.',
+    'It had been asked once and never repeated, and {a} was watching the answer hold.',
+  ],
+  'half-kept-it': [
+    '{b} did most of it. {a} noticed which part {b} had quietly left undone.',
+    'It was nearly kept, whatever it was, and nearly is a word {a} had not been expecting to need.',
+    '{b} honoured the letter of it and not much else, and {a} had been watching for exactly that.',
+    '{a} could not call it broken and could not call it kept, and spent the evening on the difference.',
+    '{b} would have passed anybody else\u2019s check. {a} is not anybody else.',
+  ],
+  'dropped-it': [
+    '{b} had not kept it. {a} watched {b} not keep it and said nothing at all.',
+    'Whatever {b} had agreed to, {b} had stopped doing it about a day ago, and {a} had the day.',
+    '{a} had been waiting for the moment {b} let it go, and it arrived without any drama at all.',
+    '{b} let it slip in a sentence about something else entirely, which is always how it happens.',
+    'It was small and it was clear: {b} is not doing the thing {b} said {b} would do.',
+  ],
+  'clocked-the-check': [
+    '\u201cYou keep asking me that,\u201d {b} said to {a}. \u201cIn slightly different words. Every day.\u201d',
+    '{b} worked out that {a} had been marking, and let {a} know that {b} had worked it out.',
+    '{a} asked the sideways question one time too many and {b} named it out loud.',
+    '{b} answered the real question instead of the one {a} had asked, which ended the arrangement.',
+    '\u201cWhatever you\u2019re checking,\u201d {b} said, \u201cI\u2019d rather you just checked it.\u201d {a} had no answer ready.',
+  ],
+};
 
 
 registerEvent({
@@ -296,6 +347,11 @@ registerEvent({
   // early there is nothing to bait them about, late the room is too small for
   // a test this indirect to stay private.
   acts: { early: 0.7, middle: 1.4, late: 0.8 },
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'intuition', 'boldness', 'strategic'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -306,13 +362,34 @@ registerEvent({
     const sceneWhy = 'argued the opposite to see what came back';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const staysCalm = rng() < Math.max(0.1, Math.min(0.9, st.temperament / 10));
-    const bondDelta = staysCalm ? 0.5 : -1;
+    // FOUR OUTCOMES, TWO OF WHICH GO BADLY FOR THE TESTER. Sharpness is what
+    // gets a bait caught and nerve is what gets it turned round, so the person
+    // being tested decides all four -- which is what a test is for.
+    const scores = {
+      'stayed-calm': (st.temperament / 10) * 0.5 + 0.15,
+      'got-rattled': (1 - st.temperament / 10) * 0.55 + 0.15,
+      'saw-through-it': (st.intuition / 10) * 0.5 + (st.mental / 10) * 0.25,
+      'turned-it-round': (st.boldness / 10) * 0.4 + (st.strategic / 10) * 0.35,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0);
+    let roll = rng() * total;
+    let branch = 'stayed-calm';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const pool = branch === 'stayed-calm' ? REVERSE_PSYCH_LINES.calm
+      : branch === 'got-rattled' ? REVERSE_PSYCH_LINES.rattled : REVERSE_PSYCH_LINES[branch];
+    const bondDelta = branch === 'stayed-calm' ? 0.5
+      : branch === 'got-rattled' ? -1 : branch === 'saw-through-it' ? -1.5 : -2;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = lineFor(REVERSE_PSYCH_LINES[staysCalm ? 'calm' : 'rattled'],
-      `testing-reverse-psychology|${ctx.ep}|${staysCalm}`, { a, b });
+    const line = lineFor(pool, `testing-reverse-psychology|${branch}|${ctx.ep}`, { a, b });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
-    return { branch: staysCalm ? 'stayed-calm' : 'got-rattled', pair: [a, b], threadId: t?.id, bondDelta };
+    // THE DIRECTION IS THE BRANCH'S ON TWO OF THESE. On `saw-through-it` and
+    // `turned-it-round` the person being tested takes the conversation over,
+    // and the `roles: 'initiator-first'` declaration above would hand the
+    // reaction card to the wrong one. `speaker`/`respondent` on the result
+    // takes precedence -- see `sceneSpeakers` in js/tr/events.js.
+    const bTakesIt = branch === 'saw-through-it' || branch === 'turned-it-round';
+    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+      threadId: t?.id, bondDelta };
   },
 });
 
@@ -450,20 +527,44 @@ registerEvent({
   // CITES (Plan 5 Task 2). "Whatever they'd been asked before" is a sentence
   // with a hole in it where the day should be.
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'intuition', 'temperament', 'social'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     return findOpenThread(FAMILY, [a, b]) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-follow-through-check');
     const sceneWhy = 'checked whether a promise was kept';
     const [a, b] = ctx.actors;
     const t = findOpenThread(FAMILY, [a, b]);
-    api.addBond(a, b, 0.5, { source: sceneWhy });
-    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, lineFor(FOLLOW_THROUGH_LINES, `testing-follow-through-check|${ctx.ep}`, { a, b }),
+    const sb = pStats(b);
+    const scores = {
+      'followed-through': (sb.loyalty / 10) * 0.5 + (sb.temperament / 10) * 0.25,
+      'half-kept-it': (1 - sb.loyalty / 10) * 0.35 + (sb.strategic / 10) * 0.25,
+      'dropped-it': (1 - sb.loyalty / 10) * 0.5 + 0.1,
+      'clocked-the-check': (sb.intuition / 10) * 0.45 + (sb.social / 10) * 0.2,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0);
+    let roll = rng() * total;
+    let branch = 'followed-through';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'followed-through' ? 0.5
+      : branch === 'half-kept-it' ? -0.5 : branch === 'dropped-it' ? -2 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep,
+      lineFor(FOLLOW_THROUGH_LINES[branch], `testing-follow-through-check|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    return { branch: 'followed-through', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
+    // On `clocked-the-check` the marked player ends the arrangement, so the
+    // scene changes hands and the field says so rather than the sentence.
+    const bTakesIt = branch === 'clocked-the-check';
+    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+      threadId: thread?.id, cited, bondDelta };
   },
 });
 

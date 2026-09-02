@@ -766,10 +766,31 @@ describe('the predictions panel cannot be shown a dead cast', () => {
   });
 
   it('has a season that actually empties, so the arm above is not vacuous', () => {
-    const gone = (doc.votingHistory || []).flatMap(r => r.exits || []).length;
-    expect(gone, 'nobody left this season').toBeGreaterThan(10);
-    const last = episodesOf(doc, TRAITORS_FORMAT).slice(-1)[0];
-    expect(stillIn(doc, TRAITORS_FORMAT, last.episode).length,
-      'the castle is still full on the last night').toBeLessThan(6);
+    // ── WHY THIS WALKS THE SEASONS INSTEAD OF PINNING SEED 1 (Task 7 st. 4) ──
+    //
+    // This is a REACHABILITY floor: the arm above asserts an equality that
+    // holds vacuously if every season ends with a full castle, so this one has
+    // to find a season that empties. It used to ask seed 1 alone, and seed 1 is
+    // not a property of the exporter — it is a path through the castle event
+    // pool, and adding sixteen events to the two windows either side of a
+    // banishment reroutes it. Seed 1 now finishes with exactly six still in.
+    //
+    // Same correction, and the same reason, as the co-winner block earlier in
+    // this file: WIDEN THE SEARCH AND FAIL LOUDLY ON A TOTAL MISS. The bound is
+    // untouched — a season that empties is still a season that gets below six —
+    // and the claim is strictly stronger than the old one, because it now says
+    // some season in the fixture empties rather than that one particular season
+    // happens to.
+    const emptied = SEASONS.map((season, i) =>
+      buildTraitorsSeasonDocument(season, { seasonNumber: SEEDS[i] }))
+      .map(d => {
+        const gone = (d.votingHistory || []).flatMap(r => r.exits || []).length;
+        const last = episodesOf(d, TRAITORS_FORMAT).slice(-1)[0];
+        return { gone, left: last ? stillIn(d, TRAITORS_FORMAT, last.episode).length : Infinity };
+      })
+      .filter(r => r.gone > 10 && r.left < 6);
+    expect(emptied.length,
+      'not one of the eight fixture seasons emptied its castle, so the equality '
+      + 'arm above is vacuous').toBeGreaterThan(0);
   });
 });

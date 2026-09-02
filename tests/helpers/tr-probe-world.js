@@ -133,6 +133,69 @@ export function probeWorld({ aTraitor, bTraitor, turret }) {
       lines: ['Somebody went down the stair and came back up with something that was not a reliquary.'],
     },
   });
+  // ── A TABLE ON THE RECORD (Task 7 stage 4) ────────────────────────────
+  //
+  // WHY THIS IS HERE, and it is the same reason the afternoon above is. The
+  // `after-table` and `night` libraries (js/tr/castle/consequences.js,
+  // js/tr/castle/nightfall.js) are built on tonight's round — its ballots, its
+  // accusations, its banishment and its exit speech — because that is the only
+  // record those two windows can be causally built on. Without one in this
+  // world all sixteen of them weight 0 and, worse, the three sweeps that
+  // execute the whole pool against a hand-built ctx call `fire()` anyway and
+  // hit a null round: the guards that claim to look inside every event would
+  // have been looking inside nothing for an eighth of the library.
+  //
+  // NEUTRAL BY CONSTRUCTION, in the sense that matters. Nothing on this record
+  // reads or reveals anybody's role — the banished player is recorded as a
+  // Faithful, which is true of both arms because Pe is a Faithful in both — so
+  // it is byte-identical whichever of A and B is the Traitor, and cannot move
+  // what the ground-truth probes or the belief gate measure.
+  //
+  // THE SHAPE IS CHOSEN TO MAKE THE POOL REACHABLE, exactly as the mission
+  // record's team split was. Pe is banished (and leaves `activePlayers`, or
+  // the world would contradict the state it is modelling — see the murder
+  // above). A takes one vote, from B, so `after-you-wrote-my-name` has both of
+  // its branch sets available with the pair the sweeps convene. Two people
+  // name A out loud, so `after-two-people-said-my-name` clears its
+  // two-accuser bar. A names Pc, so `after-what-i-said-at-the-table` has a
+  // sentence to answer for. And the leaver burns B, which is the one thing
+  // `after-the-last-thing-they-said` cannot be reached without.
+  //
+  // THE MURDER COUNT IS PRESERVED. `murderCount` (js/tr/state.js) is
+  // cast-minus-living minus banishments, so recording a banishment WITHOUT
+  // removing its player would have silently taken the world's murder count to
+  // zero and made every `deaths >= 1` gate in the grief family unreachable.
+  // Six cast, two gone, one banished, one murdered — the same one murder this
+  // world had before.
+  gs.tr.rounds.push({
+    ep: PROBE_EP,
+    banished: PROBE_CAST[4],
+    banishedWasTraitor: false,
+    murdered: null,
+    ballots: [
+      { voter: A, voted: PROBE_CAST[4], channel: 'banishment' },
+      { voter: B, voted: A, channel: 'banishment' },
+      { voter: PROBE_CAST[2], voted: PROBE_CAST[4], channel: 'banishment' },
+      { voter: PROBE_CAST[3], voted: PROBE_CAST[4], channel: 'banishment' },
+      { voter: PROBE_CAST[4], voted: PROBE_CAST[2], channel: 'banishment' },
+    ],
+    revotes: [],
+    accusations: [
+      { accuser: A, target: PROBE_CAST[2] },
+      { accuser: B, target: A },
+      { accuser: PROBE_CAST[3], target: A },
+    ],
+    betrayals: [],
+    exitSpeech: { burns: true, target: B, conviction: 0.4,
+      text: `${PROBE_CAST[4]} names ${B} on the way out.` },
+  });
+  gs.activePlayers = gs.activePlayers.filter(n => n !== PROBE_CAST[4]);
+  // A DISAGREEMENT IN THE TURRET, tonight, so `night-overruled-in-the-turret`
+  // is reachable when both arms make both A and B Traitors — which is exactly
+  // what the write-path sweep and the belief gate do. It names no target, and
+  // the event reads none: see `tensionTonight` in js/tr/castle/nightfall.js.
+  gs.tr.conclaveTension.push({ ep: PROBE_EP, winner: A, loser: B,
+    target: PROBE_CAST[2], theirTarget: PROBE_CAST[3] });
   const THREAD_KINDS = ['trust', 'suspicion', 'cover', 'callback', 'testing', 'grief',
     'romance', 'romance-spark', 'romance-showmance'];
   for (const parties of [[A, B], [A], [B]]) {

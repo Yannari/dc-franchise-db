@@ -233,12 +233,41 @@ const COLD_SWEAT_LINES = {
     'Nothing about the question was difficult, and {a} still had to swallow before answering it.',
     '{a} laughed at the wrong volume and spent the next minute wondering who had heard it.',
   ],
+  // ── TASK 7 STAGE 4: THE FORK MOVED OUT OF THE WORDING ─────────────────
+  //
+  // The audit's verdict was REWRITE — "one branch (`tell`) — the fork is in
+  // the wording, not in the game" — and it was exactly right: `pressed` and
+  // `calm` chose a POOL and returned the same branch either way, so the (event,
+  // branch) table read this as one outcome and the screen answered it in one
+  // register. Two more outcomes now, and they are things that happen rather
+  // than ways of saying the first one: the moment is caught and covered
+  // over-thoroughly, or it is turned into a joke and survives.
+  overexplained: [
+    '{a} answered the ordinary question and then answered it again, at length, twice more than was necessary.',
+    'Nobody had asked for detail. {a} supplied a great deal of it, in order, with times attached.',
+    '{a} corrected a small thing nobody had queried, and then corrected the correction.',
+    '{a} explained where {a} had been for a good deal longer than anybody wanted to know.',
+    'It was one question. {a} treated it as four, and answered all four, carefully.',
+  ],
+  'laughed-it-off': [
+    '{a} made a joke about how guilty {a} must look, and it landed, and the room moved on.',
+    '“Look at me, I’m clearly a murderer,” {a} said, and got a laugh, and did not have to answer the question.',
+    '{a} turned the whole moment into something funny before anybody had decided it was a moment.',
+    'It could have gone badly for {a} and {a} made it not, in about four words, without appearing to try.',
+    '{a} named the awkwardness out loud, which is the one move that reliably kills it, and killed it.',
+  ],
 };
 
 registerEvent({
   id: 'cover-cold-sweat-tell',
   family: FAMILY,
   window: 'after-table',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'social', 'strategic', 'boldness'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+    knowledge: ['witnessed'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -253,15 +282,35 @@ registerEvent({
     if (pStats(actor).temperament < 4) return nervy ? 3 : 2;
     return ctx.state?.[actor] === 'desperate' ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-cold-sweat-tell');
     const sceneWhy = 'gave something away while being asked about the night';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const pressed = isNervy(ctx.state?.[actor]);
-    const note = lineFor(COLD_SWEAT_LINES[pressed ? 'pressed' : 'calm'],
-      `cover-cold-sweat-tell|${ctx.ep}|${pressed}`, { a: actor });
+    const st = pStats(actor);
+    // FOUR OUTCOMES, AND THE STATE STILL CHOOSES BETWEEN TWO OF THEM. Somebody
+    // the room came for last night sweats differently from somebody it did
+    // not, which is what `pressed`/`calm` was for and is kept — it is now the
+    // split INSIDE the branch that goes badly rather than the whole fork.
+    const scores = {
+      tell: (1 - st.temperament / 10) * 0.5 + 0.2,
+      overexplained: (1 - st.social / 10) * 0.35 + (st.strategic / 10) * 0.3,
+      'laughed-it-off': (st.social / 10) * 0.45 + (st.boldness / 10) * 0.3,
+    };
+    const total = Object.values(scores).reduce((s, v) => s + v, 0);
+    let roll = rng() * total;
+    let branch = 'tell';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const pool = branch === 'tell' ? COLD_SWEAT_LINES[pressed ? 'pressed' : 'calm']
+      : COLD_SWEAT_LINES[branch];
+    const note = lineFor(pool, `cover-cold-sweat-tell|${branch}|${ctx.ep}|${pressed}`, { a: actor });
     const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: note });
-    return { branch: 'tell', actor, threadId: t?.id, underPressure: pressed };
+    // THE BRANCH IS THE MOMENT, same rule `cover-alibi-crumbles` states: a
+    // recovery the room enjoys is spectacle, a visible tell is exposure.
+    const colour = branch === 'laughed-it-off' ? 'masterful'
+      : branch === 'tell' ? 'exposed' : null;
+    return { branch: branch === 'tell' ? 'tell' : branch, actor, threadId: t?.id,
+      underPressure: pressed, crowd: colour ? { name: actor, colour } : null };
   },
 });
 
@@ -518,18 +567,54 @@ registerEvent({
   },
 });
 
-const BLEND_LINES = [
-  '{a} sat with {b} and helped them grieve — the same night\'s work {a} had a hand in causing.',
-  '{a} made sure {b} ate something this morning, and meant it, and had also been in the turret.',
-  '{b} cried and {a} was the one holding them, which was true and monstrous at the same time.',
-  '{a} said all the right things to {b} about last night, and knew every one of them from the other side.',
-  'Nobody comforted {b} better than {a} did, and nobody had less right to.',
-];
+// ── TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ────────────
+//
+// One branch (`blended-in`) became four, and the four are four different
+// results of the same attempt rather than four ways of describing a success.
+// Sitting in with the people who have lost somebody is a PERFORMANCE with a
+// failure mode, and the failure modes are the interesting half: doing it too
+// well, doing it too much, and being quietly not wanted there.
+const BLEND_LINES = {
+  'blended-in': [
+    '{a} sat with {b} and helped them grieve — the same night’s work {a} had a hand in causing.',
+    '{a} made sure {b} ate something this morning, and meant it, and had also been in the turret.',
+    '{b} cried and {a} was the one holding them, which was true and monstrous at the same time.',
+    '{a} said all the right things to {b} about last night, and knew every one of them from the other side.',
+    'Nobody comforted {b} better than {a} did, and nobody had less right to.',
+  ],
+  'overdid-it': [
+    '{a} was so much the right person about it that {b} came away faintly unsure why.',
+    '{a} grieved slightly harder than anybody who had known them that well, and {b} noticed the size of it.',
+    'It was all correct and it was all a little too much, and {b} could not have said which part.',
+    '{a} said three kind things about somebody {a} had barely spoken to, and {b} counted them.',
+    '{b} was comforted and, an hour later, could not work out why the comforting had felt like an argument.',
+  ],
+  'was-welcomed': [
+    '{b} pulled {a} in without being asked. Whatever {b} thinks, {a} is inside it now.',
+    '“I’m glad it’s you,” {b} said to {a}, which is a sentence {a} is going to be carrying for a while.',
+    '{b} wanted {a} there specifically, and said so, in front of other people.',
+    '{a} did not have to do anything. {b} did the whole thing for {a}, out of pure grief.',
+    '{b} thanked {a} for being there, and {a} said the ordinary thing back, and it worked.',
+  ],
+  'kept-out': [
+    '{a} sat down with them and something in the shape of the group did not open up to let {a} in.',
+    '{b} was perfectly polite and gave {a} nothing, and {a} left earlier than {a} had planned to.',
+    '{a} said the right thing and it landed nowhere. {b} answered somebody else.',
+    'There is an inside to a room like that and {a} spent twenty minutes in the doorway of it.',
+    '{b} did not want {a} there and was not going to say so, and both of them understood the arrangement.',
+  ],
+};
 
 registerEvent({
   id: 'cover-blend-with-victims-friends',
   family: FAMILY,
   window: 'after-table',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['social', 'temperament', 'loyalty', 'strategic'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     // Again: the Traitor is whichever of the two IS one (not whichever was
@@ -541,15 +626,31 @@ registerEvent({
     if (!b || knowsAlignmentOf(a, b, ctx.ep)) return 0;
     return gs?.tr?.rounds?.some(r => r.ep === ctx.ep - 1 && r.murdered) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-blend-with-victims-friends');
     const sceneWhy = 'sat in with the people who had lost somebody';
     const a = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const b = ctx.actors.find(n => n !== a);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(BLEND_LINES, `cover-blend-with-victims-friends|${ctx.ep}`, { a, b }) });
-    return { branch: 'blended-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    const st = pStats(a);
+    const bond = getBond(a, b);
+    const scores = {
+      'blended-in': (st.social / 10) * 0.45 + (st.temperament / 10) * 0.25,
+      'overdid-it': (1 - st.temperament / 10) * 0.4 + (st.strategic / 10) * 0.25,
+      'was-welcomed': Math.max(0, bond) / 10 * 0.5 + (st.loyalty / 10) * 0.25,
+      'kept-out': (1 - st.social / 10) * 0.4 + Math.max(0, -bond) / 10 * 0.4,
+    };
+    const total = Object.values(scores).reduce((s, v) => s + v, 0);
+    let roll = rng() * total;
+    let branch = 'blended-in';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'blended-in' ? 1
+      : branch === 'overdid-it' ? -0.5 : branch === 'was-welcomed' ? 2.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const kind = branch === 'overdid-it' || branch === 'kept-out' ? 'suspicion' : FAMILY;
+    const t = api.openArc(kind, [a, b],
+      { source: sceneWhy,
+        seed: lineFor(BLEND_LINES[branch], `cover-blend-with-victims-friends|${branch}|${ctx.ep}`, { a, b }) });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 
@@ -662,6 +763,20 @@ const ALONE_LINES = {
     'It nearly came out of {a} at the bottom of the stairs, to the first person they saw, and did not.',
     '{a} got as far as the shape of the first word and turned it into something else.',
   ],
+  // ── TASK 7 STAGE 4: THE FOURTH BRANCH ─────────────────────────────────
+  //
+  // The audit's verdict was REWRITE: three branches, and (before stage 2's
+  // migration) no effects at all. The fourth is the one the other three imply
+  // and none of them is — the hour is not spent surviving it, it is spent
+  // WORKING, and tomorrow is built in the dark by somebody who is good at this.
+  rehearsing: [
+    '{a} did not try to sleep. {a} spent the hour building tomorrow, sentence by sentence, until it fitted.',
+    'By two in the morning {a} had an account of the whole day that would survive being asked about twice.',
+    '{a} took the version of today {a} intends to give and ran it until the seams stopped showing.',
+    'It is work, and {a} did the work: what {a} saw, when, and who else could say so.',
+    '{a} lay there deciding which true things to say tomorrow, which is most of the skill of it.',
+    '{a} picked the two details that make an account real and made sure both of them were true ones.',
+  ],
 };
 
 registerEvent({
@@ -672,6 +787,12 @@ registerEvent({
   // in events.js. Solo scope, or a two-person scene silently misses the thread.
   threadScope: 'solo',
   citesResidue: true,
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'strategic', 'loyalty', 'boldness'],
+    alignment: ['original-traitor', 'recruited-traitor'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -688,12 +809,14 @@ registerEvent({
     const steadyScore = (st.temperament / 10) * 0.6 + (st.strategic / 10) * 0.3;
     const sleeplessScore = (1 - st.temperament / 10) * 0.6 + 0.2;
     const nearlyScore = (st.loyalty / 10) * 0.5 + (1 - st.boldness / 10) * 0.3;
-    const total = steadyScore + sleeplessScore + nearlyScore;
+    const rehearsingScore = (st.strategic / 10) * 0.5 + (st.mental / 10) * 0.35;
+    const total = steadyScore + sleeplessScore + nearlyScore + rehearsingScore;
     const roll = rng() * total;
     let branch;
     if (roll < steadyScore) branch = 'steady';
     else if (roll < steadyScore + sleeplessScore) branch = 'sleepless';
-    else branch = 'nearly';
+    else if (roll < steadyScore + sleeplessScore + nearlyScore) branch = 'nearly';
+    else branch = 'rehearsing';
 
     const line = pick(rng, ALONE_LINES[branch]).replace(/\{a\}/g, actor);
     const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, line, { source: sceneWhy });

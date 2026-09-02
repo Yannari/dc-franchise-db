@@ -668,7 +668,28 @@ registerEvent({
     // record — so the one night the castle most obviously has an empty bed in
     // it was the one night this event could not fire.
     if (peopleLost(gs) < 1) return 0;
-    return isNervy(ctx.state?.[ctx.actors[0]]) ? 2.5 : 1.2;
+    // ── RARE-STATE AMPLIFICATION ON `desperate` (Task 7 stage 4) ─────────
+    //
+    // `awake-desperate` is the pool's rarest branch and it is rare for a good
+    // reason: it needs somebody who took two-fifths of a ballot last night and
+    // is still standing, which is a 3.5% state. Stage 4 put five more events
+    // into `night` -- three of them solo-capable, where this event was one of
+    // only two -- and measured what that cost: this branch fell from ~47
+    // firings per 3,200 seasons to ~30, against the branch floor of 24 in
+    // tests/tr-castle-reachability.test.js. A margin of six on a count whose
+    // own resampling noise is larger than six is the knife-edge shape that
+    // file refuses to ship, and it would have been MY crowding that put it
+    // there.
+    //
+    // Spec 5.4's answer to exactly this is guard 2's own argument in prose: a
+    // mechanism that can only fire in a narrow window must be weighted UP
+    // inside it or it never appears at all. So the amplification is applied
+    // where the narrow state actually is, rather than to the whole event --
+    // `paranoid` (35% of actor-slots) keeps the weight it had, and only the
+    // 3.5% state is lifted.
+    const state = ctx.state?.[ctx.actors[0]];
+    if (state === 'desperate') return 5;
+    return isNervy(state) ? 2.5 : 1.2;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-nobody-sleeps');

@@ -239,31 +239,86 @@ registerEvent({
   },
 });
 
-const RIVALRY_LINES = [
-  'Whatever it was between {a} and {b} last time, it clearly hadn\'t cooled off.',
-  '{a} and {b} were competing about something before either of them noticed they had started.',
-  'Everything between {a} and {b} is still a scoreboard, and both of them can read it.',
-  '{a} disagreed with {b} on a point neither of them cared about, purely out of habit.',
-  'Put {a} and {b} in a room and the temperature does the same thing it always did.',
-];
+// -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
+//
+// One branch (`rivalry-carried-over`), and it made the ledger deterministic: a
+// recorded rivalry produced a recorded rivalry, every time, in a castle where
+// the whole interest of an old relationship is that it may not survive
+// contact with a new game. Four branches now, and the two that matter most are
+// the ones where the ledger loses -- the rivalry is put down on purpose, or it
+// is USED, which is a rivalry becoming an asset rather than a feeling.
+//
+// The alumni rule holds in all four: the claim stays exactly what the ledger
+// supports (these two were rivals) and only the interpretation moves.
+const RIVALRY_LINES = {
+  'rivalry-carried-over': [
+    'Whatever it was between {a} and {b} last time, it clearly hadn\'t cooled off.',
+    '{a} and {b} were competing about something before either of them noticed they had started.',
+    'Everything between {a} and {b} is still a scoreboard, and both of them can read it.',
+    '{a} disagreed with {b} on a point neither of them cared about, purely out of habit.',
+    'Put {a} and {b} in a room and the temperature does the same thing it always did.',
+  ],
+  'called-a-truce': [
+    '\u201cWe were rivals on a beach,\u201d {b} said to {a}. \u201cThis is not a beach.\u201d {a} agreed, and both of them meant it.',
+    '{a} and {b} agreed to leave the old season where it was, out loud, in a corridor, at some length.',
+    '{b} put it down first, which surprised {a}, and then {a} put it down too.',
+    'Two people who spent a whole season needling each other decided, tonight, that it was expensive.',
+    '{a} said the thing {a} should have said seasons ago, and {b} took it better than {a} deserved.',
+  ],
+  'reopened-it': [
+    'It was not a general chill. {a} raised the specific thing, by name, and {b} remembered it exactly.',
+    '{a} and {b} got into the old argument again, in full, with the same two positions and less patience.',
+    'Whatever the two of them had left unfinished last time, {a} finished it in a stone corridor at midnight.',
+    '{b} had thought this was over. {a} had not, and said so, and the evening went where it went.',
+    'The old grievance came out whole, on both sides, and neither of them had improved at it.',
+  ],
+  'useful-rivalry': [
+    '{a} pointed out to {b} that the room already believes they hate each other, and that is worth something.',
+    '\u201cNobody will ever put us together,\u201d {b} said to {a}. \u201cSo let\u2019s not be put together.\u201d',
+    'Two old rivals worked out, quite fast, that being old rivals is the best available disguise.',
+    '{a} and {b} agreed to keep performing it, which is a stranger kind of alliance than the ordinary sort.',
+    '{b} suggested they keep the rivalry running. {a} had been about to suggest the same thing.',
+  ],
+};
 
 registerEvent({
   id: 'callback-competitive-history',
   family: FAMILY,
   window: 'after-table',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'strategic', 'loyalty', 'boldness'],
+    relationship: ['prior-history', 'rival'],
+    knowledge: ['witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     return sharedHistory(a, b).some(h => h.relation === 'rivals') ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'callback-competitive-history');
     const sceneWhy = 'carried a rivalry over from a previous season';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, -1, { source: sceneWhy });
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'rivalry-carried-over': (1 - sa.temperament / 10) * 0.4 + 0.25,
+      'called-a-truce': (sa.temperament / 10) * 0.35 + (sb.loyalty / 10) * 0.3,
+      'reopened-it': (1 - sa.temperament / 10) * 0.35 + (sa.boldness / 10) * 0.3,
+      'useful-rivalry': (sa.strategic / 10) * 0.35 + (sb.strategic / 10) * 0.35,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0);
+    let roll = rng() * total;
+    let branch = 'rivalry-carried-over';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'rivalry-carried-over' ? -1
+      : branch === 'called-a-truce' ? 2.5 : branch === 'reopened-it' ? -2.5 : 1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(RIVALRY_LINES, `callback-competitive-history|${ctx.ep}`, { a, b }) });
-    return { branch: 'rivalry-carried-over', pair: [a, b], threadId: t?.id, bondDelta: -1 };
+      { source: sceneWhy,
+        seed: lineFor(RIVALRY_LINES[branch], `callback-competitive-history|${branch}|${ctx.ep}`, { a, b }) });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 

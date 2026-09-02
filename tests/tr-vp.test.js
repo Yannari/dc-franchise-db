@@ -945,7 +945,34 @@ describe('a revote is its own screen state and never a second helping', () => {
 // proves the render is silent cannot tell a screen that refuses from a screen
 // handed nothing to print.
 describe('the endgame reveals nothing, on the record and on the screen', () => {
-  const ENDGAME = TABLES.filter(t => t.ep.tr.table.endgame);
+  // ── THE SEARCH WALKS SEEDS (Task 7 stage 4) ──────────────────────────
+  //
+  // This used to be `TABLES.filter(...)` over the four seeds at the head of
+  // the file, and it is a REACHABILITY floor rather than a property of those
+  // four seeds: the three locks below need a finale table to look at, and
+  // whether a given seed reaches one is a function of how long the castle
+  // takes to run out of Faithfuls, which every content change reroutes.
+  // Stage 3 moved this file's other endgame arm for the same reason and said
+  // so; stage 4 put sixteen events into the two windows either side of a
+  // banishment, and none of seeds 1, 3, 7 and 11 now plays one.
+  //
+  // Same correction as the co-winner block in tr-export.test.js and as the
+  // one stage 3 applied here: WIDEN THE SEARCH, FAIL LOUDLY ON A TOTAL MISS.
+  // The floor below is untouched at four, and the claim is strictly stronger
+  // than "these four seeds happen to". `END_SEEDS` further down this file is
+  // the same idea, already in this file's idiom.
+  const ENDGAME = (() => {
+    const found = TABLES.filter(t => t.ep.tr.table.endgame);
+    if (found.length > 3) return found;
+    for (const extra of [21, 23, 25, 27, 29, 31, 33, 35]) {
+      const run = season(extra);
+      for (const e of run.episodes) {
+        if (e.tr && e.tr.table && e.tr.table.endgame) found.push({ ep: e, run });
+      }
+      if (found.length > 3) break;
+    }
+    return found;
+  })();
   const MANDATED = TABLES.filter(t => !t.ep.tr.table.endgame);
 
   it('a real season reaches an endgame table to check', () => {
@@ -2949,10 +2976,27 @@ describe('the endgame turns nobody over', () => {
     // only. Recomputing `endgameChoice` after the fact would be worse than
     // useless here: it reads `gs`, and `gs` is replaced wholesale by the next
     // season, so a late call answers about a castle that no longer exists.
-    const watched = [];
-    const restore = _setEndgameWatch(c => watched.push(c));
-    let run;
-    try { run = season(101); } finally { restore(); }
+    // ── THE SEARCH WALKS SEEDS (Task 7 stage 4) ──────────────────────
+    //
+    // Seed 101 was pinned, and which ROLES reach the final ask is a property
+    // of that seeded path rather than of the engine: a Traitor has to survive
+    // to the endgame for a Traitor to be asked, and every content change
+    // reroutes who does. Stage 4's sixteen new castle events moved seed 101 to
+    // an all-Faithful endgame. The claim being made here is about the ENGINE
+    // — that it decides on ground truth and hands the whole basis over — so
+    // the honest form is to find a season that reaches both roles and fail
+    // loudly if none does, which is what the assertions below already do.
+    let watched = [];
+    let run = null;
+    for (const seed of [101, 103, 105, 107, 109, 111, 113, 115]) {
+      const attempt = [];
+      const restore = _setEndgameWatch(c => attempt.push(c));
+      let r;
+      try { r = season(seed); } finally { restore(); }
+      watched = attempt;
+      run = r;
+      if (attempt.some(c => c.role === 'traitor') && attempt.some(c => c.role === 'faithful')) break;
+    }
     const ep = run.episodes[run.episodes.length - 1];
     expect(watched.length, 'nobody was asked, so this control proves nothing')
       .toBeGreaterThan(1);
@@ -5210,7 +5254,25 @@ const onRule = v => Math.min(100, Math.round(v * 100));
 describe('the belief record reaches the row at all', () => {
   it('a real season writes a board on every night that is not an endgame table', () => {
     let rows = 0, withBoard = 0, endgameRows = 0;
-    for (const r of RUNS) {
+    // ── THE SEARCH WALKS SEEDS (Task 7 stage 4) ────────────────────────
+    //
+    // Same reachability correction, and the same reason, as the `ENDGAME`
+    // block above: this arm has TWO claims in it, and only the second one is
+    // about the four seeds at the head of the file. "Every ordinary night
+    // carries a board" is a property of every season; "an endgame row carries
+    // none" needs an endgame row to exist, and after stage 4's content none of
+    // seeds 1, 3, 7 and 11 reaches one. Extra seeds are appended only until an
+    // endgame row turns up, so the ordinary-night half is still measured over
+    // the same four runs plus whatever the search needed.
+    const runs = [...RUNS];
+    if (!runs.some(r => r.episodes.some(e => e.tr && e.tr.table && e.tr.table.endgame))) {
+      for (const extra of [21, 23, 25, 27, 29, 31, 33, 35]) {
+        const run = season(extra);
+        runs.push(run);
+        if (run.episodes.some(e => e.tr && e.tr.table && e.tr.table.endgame)) break;
+      }
+    }
+    for (const r of runs) {
       for (const e of r.episodes) {
         rows++;
         const isEndgame = !!(e.tr && e.tr.table && e.tr.table.endgame);

@@ -440,10 +440,57 @@ function _reactClass(scene) {
   // a confrontation that never happened. A test only works while the other
   // person does not know it is one, and somebody being lied to smoothly is not
   // being questioned. Two different scenes, two different sets of answers.
+  // ── THE TEST THAT THE OTHER PERSON WON (Task 7 stage 4) ──────────────
+  //
+  // THE DEFECT, AND IT WAS RECORDED BEFORE IT WAS FIXED. Every `tested` pool
+  // below — reaction and consequence, smooth and adverse — is written from one
+  // side: `{a}` set the test, `{b}` is being measured and does not know it.
+  // That is true of nearly every testing scene in the pool and it is false of a
+  // few, and Task 7 stage 3 found the false ones by reading a real day: on
+  // `mission-what-you-saw-out-there:turned` the person being asked takes the
+  // conversation over and asks the better question, and on
+  // `mission-who-was-where:asked-back` they put the question straight back.
+  // Flipping `speaker`/`respondent` fixed the reaction card and broke the
+  // consequence card — the screen then said the tester had failed their own
+  // test — so stage 3 reverted two of the flips and LEFT THE DEFECT OPEN with a
+  // note at both call sites, because no value of one field can satisfy two
+  // pools that disagree about who is who.
+  //
+  // Stage 4 made it worse before it fixed it: rewriting the audit's REWRITE
+  // list gave `testing-reverse-psychology` and `testing-follow-through-check` a
+  // branch each where the answerer sees the test coming and one where they turn
+  // it round, which is three more of the same shape. So the fix is here, where
+  // the brief says it belongs — in the screen, not in the library.
+  //
+  // WHAT THE FIX IS. A fifth react class and a matching consequence family,
+  // both written from the OTHER side, selected by an explicit list of branches
+  // rather than by a heuristic over the sentence. That is the same discipline
+  // ADVERSE_BRANCHES already runs on and for the same reason: the information
+  // is in the event, and a list somebody has to maintain deliberately is
+  // better than a pattern that quietly stops matching. Those events return
+  // `speaker`/`respondent` the way round the scene actually went, so in these
+  // pools `{a}` is the person who took the conversation over and `{b}` is the
+  // one who came in holding the questions.
+  if (TURNED_BRANCHES.has(String(scene.branch || ''))) return 'tested-turned';
   if (f === 'testing') return 'tested';
   if (f === 'cover') return 'covered';
   return 'pressure';
 }
+
+/**
+ * The branches on which the person being tested ended up running the scene.
+ *
+ * Five, and every one of them is an event that returns `speaker`/`respondent`
+ * pointing the other way on that branch and only on that branch. Anything not
+ * on this list keeps the ordinary `tested` register, so a testing branch added
+ * next year degrades to the old behaviour rather than crashing.
+ */
+const TURNED_BRANCHES = new Set([
+  // js/tr/castle/mission-fallout.js — stage 3 found these two by reading a day
+  'turned', 'asked-back',
+  // js/tr/castle/testing.js — stage 4's rewrites off the audit's REWRITE list
+  'saw-through-it', 'turned-it-round', 'clocked-the-check',
+]);
 
 /**
  * HOW THE OTHER PERSON TAKES IT, and it is the card that carries the dialogue.
@@ -541,6 +588,30 @@ const REACT = {
       '{b} laughs, changes the subject twice, and never once says the old season out loud.',
       '“Long time ago,” {b} says, in the voice people use when they would like it to stay a long time ago.',
       '{b} lets {a} tell the story and adds nothing at all to it, which {a} notices.',
+    ],
+  },
+  // See `_reactClass`: `{a}` is the one who took the conversation over and
+  // `{b}` is the one who arrived holding the questions.
+  'tested-turned': {
+    blunt: [
+      '{b} came in with a question and is now answering one, and cannot work out when that happened.',
+      '“That is not what I asked you,” {b} says, and gets no help at all with what {b} did ask.',
+      '{b} keeps going for another minute out of momentum and then stops, because there is nowhere left to go.',
+    ],
+    sharp: [
+      '{b} recognises the shape of it happening and cannot stop it happening.',
+      '“All right,” {b} says. “Fair.” It costs {b} something to say and {a} watches it cost.',
+      '{b} spends the rest of it answering carefully, which is not what {b} came here to do.',
+    ],
+    warm: [
+      '{b} laughs, admits {b} had been fishing, and the admission is the most honest thing either of them says.',
+      '“I have been rumbled,” {b} says, cheerfully, and does not entirely mean the cheerfulness.',
+      '{b} takes it well and takes it, which are two different things and {b} does both.',
+    ],
+    guarded: [
+      '{b} lets it go without conceding anything out loud, and neither of them says who won.',
+      '{b} answers as little as possible on the way out, having arrived meaning to ask.',
+      '{b} says something pleasant and leaves earlier than {b} had planned to leave.',
     ],
   },
   tested: {
@@ -738,6 +809,50 @@ const ADVERSE_BRANCHES = new Set([
   // writes `setEmotionalState(..., 'paranoid')`, so a smooth register here
   // would contradict the state the same firing recorded.
   'caught-up-with-it',
+  // ── TASK 7 STAGE 4: THE TWO WINDOWS EITHER SIDE OF A BANISHMENT ───────
+  //
+  // `after-table` went from fourteen events to twenty-five and `night` from
+  // seven to twelve, and twelve events already in those two windows were
+  // rewritten off the audit's REWRITE list from one or two branches to four,
+  // so these two lists grew by ninety-seven branches at once. Every one was
+  // read — its authored lines AND its bond delta — and sorted on the same
+  // single question stage 3 used, which is the question `_tone` is actually
+  // asking: IS THE PERSON ANSWERING THIS SCENE BEING LEANED ON? Adverse when
+  // the respondent is under pressure, refuses the conversation, is caught
+  // short, or the scene leaves the two of them worse off. The bond delta is
+  // corroborating evidence and not the rule, which is the lesson `strategic`
+  // taught in the other direction.
+  //
+  // The ballot was put to somebody and the answer did not survive it:
+  'denied-it', 'flat-denial', 'overclaimed', 'made-it-a-price',
+  // A refusal, a silence, or a door closed on the person asking:
+  'would-not-say', 'would-not-say-it', 'went-quiet', 'let-it-stand',
+  'could-not', 'let-it-lie', 'promised-nothing', 'kept-out',
+  // It turned into a confrontation, and the respondent is answering it:
+  'asked-them-why', 'asked-about-it', 'asked-outright', 'one-of-us-is-lying',
+  'picked-it-up', 'moved-off', 'never-with-me', 'disagreed', 'told-somebody',
+  // `one-way` is the rewritten `trust-trade-reads` branch where one of them
+  // pays and the other does not. It sits beside `one-sided` above, which is
+  // the identical shape on the road home, for the identical reason.
+  'one-way',
+  // The scene left the two of them worse off, or ended something:
+  'pressed-it', 'turned-cold', 'could-not-agree', 'one-of-them-lied',
+  'reopened-it', 'kept-the-score', 'one-sided-pact', 'refused-the-pact',
+  'hollow', 'faded-out', 'ended-in-strategy', 'half-kept-it', 'dropped-it',
+  'clocked-the-check', 'saw-through-it', 'turned-it-round', 'overdid-it',
+  'overexplained', 'defended-the-vote',
+  // The mourning turned into an accusation. `angry-at-the-room` is the same
+  // shape as `blamed-room` above and sits with it deliberately.
+  'angry-at-the-room', 'named-the-wrong-one',
+  // Nobody there to be leaned on, and it landed badly anyway. Both of these
+  // write `setEmotionalState(..., 'paranoid')` in the same firing, so a smooth
+  // register would contradict the state the scene itself recorded — the rule
+  // `caught-up-with-it` is on this list for.
+  'rattled', 'counted-them',
+  // `conditional` is `after-i-need-you-tomorrow`'s answer-with-air-in-it. It
+  // sits beside `hedged` above, which is the identical move in the identical
+  // hour, and writes a bond delta of exactly zero for the same reason.
+  'conditional',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.
@@ -790,15 +905,75 @@ const BENIGN_BRANCHES = new Set([
   // `on-their-own` is private grief and sits beside `cried-alone` above for
   // exactly the same reason: grief landing is not a scene going badly.
   'alone', 'nothing-doing', 'on-their-own', 'sorting-it', 'straight-through',
+  // ── TASK 7 STAGE 4: THE TWO WINDOWS EITHER SIDE OF A BANISHMENT ───────
+  //
+  // See the long note on the adverse list above for the rule these were sorted
+  // by. Everything here is a scene in which nobody is under pressure: an
+  // honest answer, a kindness, an arrangement both of them wanted, or one
+  // person alone with something.
+  //
+  // The ballot was asked about and answered straight:
+  'owned-it', 'named-the-others', 'reassured-it', 'counted-my-own',
+  'blamed-the-loudest', 'credit-where-due', 'who-knew', 'next-one',
+  'worked-the-room', 'answered-it', 'dismissed', 'got-it-right',
+  'stood-by-it', 'walked-it-back', 'with-me-again', 'came-across',
+  // Grief that landed, and did not turn into anything else:
+  'mourned', 'relieved', 'guilty', 'moved-their-things', 'talked-about-them',
+  'own-ballot',
+  // Two people agreed something, or simply had a decent hour of it:
+  'quietly-pleased', 'worried-by-it', 'made-it-a-plan', 'made-a-plan',
+  'said-it-out-loud', 'joked-about-it', 'agreed-a-line', 'ordinary', 'funny',
+  'kind', 'same-name', 'noticed-and-said-so', 'refused-it-back',
+  'called-a-truce', 'useful-rivalry', 'agreed-to-be-strangers',
+  'ended-kindly', 'let-it-pass', 'laughed-it-off', 'was-welcomed',
+  'swallowed-it', 'made-a-condition',
+  // `performed-it` is the Traitor branch of `after-somebody-goes-tonight`,
+  // and it sits here for the same reason `feigned-fear` does: what the
+  // RESPONDENT experiences is a frightened person being honest with them.
+  // Nobody in that corridor is being leaned on, and the screen has no
+  // business telling the viewer otherwise.
+  'performed-it',
+  // The solo branches of both windows. There is nobody to be leaned on by,
+  // and none of these writes an emotional state the smooth register would
+  // contradict — the two that do are on the adverse list above.
+  'alone-with-it', 'read-the-room', 'filed-it', 'awake-with-it',
+  'checked-the-door', 'rehearsing',
 ]);
 
 /** Both lists, for the coverage arm. Nothing else reads them. */
 export const BRANCH_TONES = { adverse: ADVERSE_BRANCHES, benign: BENIGN_BRANCHES };
 
+/**
+ * ── AN ADVERSE BRANCH IS NOT ANSWERED SMOOTHLY (Task 7 stage 4) ────────
+ *
+ * The order used to be: outcome first, always, because "it is the harder
+ * fact". That is right for `ADVERSE_OUTCOMES`, and it was wrong the other way
+ * round, and reading a real day is what showed it:
+ *
+ *   (action)     Brick ended it rather than let Beardo keep asking, which
+ *                Brick considered the decent version.
+ *   (reaction)   Brick doesn't make a speech about it. Brick moves closer and
+ *                stays there, which is the answer.
+ *
+ * A refusal answered as an embrace, which is the card-contradicts-the-card-
+ * under-it defect this function exists to prevent. The cause is that
+ * `turned-back` is one of the five outcomes `outcomeSense` calls "walked", and
+ * two different events use it to mean two different things: "the scrutiny came
+ * at them and they came out the other side" and "the promise was refused and
+ * that ended it". The sense label is a COARSER fact than the branch, not a
+ * harder one — it is shared by five endings, and the branch names exactly what
+ * happened in this scene.
+ *
+ * So a smooth outcome no longer overrides an adverse branch. `ADVERSE_OUTCOMES`
+ * still overrides a benign one, which is the direction that was always right:
+ * a story that ended in an exposure is an adverse scene whatever the branch
+ * said on the way in.
+ */
 function _tone(s) {
+  const branchAdverse = ADVERSE_BRANCHES.has(String(s.branch || ''));
   if (s.closedNow && ADVERSE_OUTCOMES.has(s.outcome)) return 'adverse';
-  if (s.closedNow && SMOOTH_OUTCOMES.has(s.outcome)) return 'smooth';
-  return ADVERSE_BRANCHES.has(String(s.branch || '')) ? 'adverse' : 'smooth';
+  if (s.closedNow && SMOOTH_OUTCOMES.has(s.outcome)) return branchAdverse ? 'adverse' : 'smooth';
+  return branchAdverse ? 'adverse' : 'smooth';
 }
 
 /**
@@ -826,6 +1001,26 @@ const REACT_ADVERSE = {
     guarded: [
       '{b} gives an answer that does not fit the one {b} gave this morning, and hears it not fit.',
       '{b} looks for a way out of the conversation, finds none, and says nothing at all instead.',
+    ],
+  },
+  // See `_reactClass`. `{a}` took the scene over; `{b}` is the one who came in
+  // holding the questions and is not enjoying the reversal.
+  'tested-turned': {
+    blunt: [
+      '{b} does not take being turned round well, and says so at a volume the corridor can hear.',
+      '“You are not answering me,” {b} says, twice, and both times it is {b} who ends up answering.',
+    ],
+    sharp: [
+      '{b} tries once to get back to the original question and cannot find a way in that does not look like retreat.',
+      '{b} concedes nothing, learns nothing, and leaves having given away rather more than {b} got.',
+    ],
+    warm: [
+      '{b} had not expected to be on this end of it and it shows, and {b} hates that it shows.',
+      '{b} says something reasonable in a voice that is not, and stops mid-sentence.',
+    ],
+    guarded: [
+      '{b} shuts the conversation rather than lose it, which is its own kind of answer.',
+      '{b} goes very quiet and stays that way, and it is not the quiet of somebody thinking.',
     ],
   },
   tested: {
@@ -983,6 +1178,39 @@ const CONSEQ = {
         '{a} has enough of it to be dangerous with, and {b} has just handed over the piece {a} was missing.',
         'The doubt does not need any more evidence. It needs an audience, and {a} knows where to find one tonight.',
         '{a} stops giving {b} the benefit of it. That is the change, and it does not go back.',
+      ],
+    },
+  },
+  // The same scene from the side that won it. See `TURNED_BRANCHES` and
+  // `_reactClass`: `{a}` is the person who was being tested and took the
+  // conversation over, `{b}` is the one who set it up.
+  'testing-turned': {
+    opened: {
+      smooth: [
+        '{b} came to find something out and went away having been found out. Neither of them says that out loud.',
+        '{a} now knows {b} is checking, which is worth more than whatever {b} was checking for.',
+        'The test went the wrong way for the person who set it. {b} will not be trying that one again.',
+        '{a} leaves holding the thing {b} came to collect, and {b} knows it.',
+      ],
+      adverse: [
+        '{b} has lost the one advantage {b} had, which was that {a} did not know {b} was looking.',
+        '{a} was being measured and is now measuring, and {b} handed that over in a single sentence.',
+        'It costs {b} more than it costs {a}, and both of them can see exactly how much.',
+        '{b} came in with a question and leaves with a problem, and the problem is {a}.',
+      ],
+    },
+    carried: {
+      smooth: [
+        'Twice now {b} has come at it sideways, and twice {a} has turned it round. {b} stops trying.',
+        '{a} has stopped pretending not to notice, and {b} has stopped pretending not to be doing it.',
+        'The two of them are past the sideways version of this conversation, which suits {a} and does not suit {b}.',
+        '{a} has the measure of how {b} asks things now, which is a more useful thing to own than an answer.',
+      ],
+      adverse: [
+        '{b} has done this twice and been caught twice, and {a} has stopped giving {b} the benefit of it.',
+        'Whatever {b} was building, {a} has taken it apart in front of {b} for the second time.',
+        '{a} does not need to test {b} back. {b} keeps volunteering it.',
+        'Two of these now, and the only thing {b} has established is that {a} is watching {b} do it.',
       ],
     },
   },
@@ -2898,8 +3126,14 @@ function _consequenceText(s, subs, key, used, mode, tone) {
     return { text: say + ' ' + clause, say, mark: clause, tone };
   }
   const dir = s.opened ? 'opened' : 'carried';
-  const famKey = (s.family === 'romance-spark' || s.kind === 'romance-spark') ? 'romance'
-    : (CONSEQ[s.family] ? s.family : (CONSEQ[s.kind] ? s.kind : 'unspun'));
+  // THE TURNED TEST GETS ITS OWN FAMILY KEY, for the reason `_reactClass`
+  // gives at length: the ordinary `testing` consequence pool says the tester
+  // came away with something, and on these five branches the tester is the one
+  // who lost the conversation. Checked FIRST, so a branch on the list can
+  // never fall through to the pool that would contradict its own reaction card.
+  const famKey = TURNED_BRANCHES.has(String(s.branch || '')) ? 'testing-turned'
+    : (s.family === 'romance-spark' || s.kind === 'romance-spark') ? 'romance'
+      : (CONSEQ[s.family] ? s.family : (CONSEQ[s.kind] ? s.kind : 'unspun'));
   const pool = (mode === 'pair' || mode === 'group')
     ? CONSEQ[famKey][dir][tone]
     : CONSEQ_SINGLE[dir][tone];

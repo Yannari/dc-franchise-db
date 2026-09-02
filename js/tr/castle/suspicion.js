@@ -27,14 +27,50 @@ const FAMILY = 'suspicion';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 
-const NOTICE_LINES = [
-  '{a} noticed {b}\'s story about last night had a detail that didn\'t match this morning.',
-  'Something small in how {b} answered a question made {a} quietly file it away.',
-  '{a} couldn\'t say exactly what it was, but {b}\'s timeline felt off by a beat.',
-  '{b} corrected themselves halfway through a sentence, and {a} heard the correction more than the sentence.',
-  '{a} asked {b} the same question twice, an hour apart, and got two answers that were nearly the same.',
-  '{b} was a shade too precise about where they had been, and precision is what people build, not what they remember.',
-];
+// ── TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ────────────
+//
+// The verdict was "one branch (`noticed`) — the fork is in the wording, not in
+// the game", and it was the second-highest-firing event in `after-table`, so
+// the whole window inherited its one outcome. What was missing is that
+// noticing a seam is the START of a decision, not the end of one: you keep it,
+// you put it to them, you decide it was nothing, or you take it to somebody
+// else. Those are four different scenes with four different costs, and only
+// the first one was written.
+//
+// `told-somebody` NAMES THE THIRD PARTY rather than saying the room now knows,
+// which is the consensus rule — a doubt that has travelled has a named
+// recipient or it has not travelled.
+const NOTICE_LINES = {
+  noticed: [
+    '{a} noticed {b}’s story about last night had a detail that didn’t match this morning.',
+    'Something small in how {b} answered a question made {a} quietly file it away.',
+    '{a} couldn’t say exactly what it was, but {b}’s timeline felt off by a beat.',
+    '{b} corrected themselves halfway through a sentence, and {a} heard the correction more than the sentence.',
+    '{a} asked {b} the same question twice, an hour apart, and got two answers that were nearly the same.',
+    '{b} was a shade too precise about where they had been, and precision is what people build, not what they remember.',
+  ],
+  'asked-about-it': [
+    '{a} did not file it. {a} put it to {b} on the spot, and watched the whole of the answer.',
+    '“You said upstairs. Earlier you said the hall.” {a} asked it plainly and waited through the pause.',
+    '{a} repeated {b}’s own sentence back to {b}, both versions of it, in order.',
+    '“Which one is it?” {a} asked, and {b} picked one, and the picking took a second too long.',
+    '{a} raised the mismatch to {b}’s face rather than to anybody else’s, which {b} did not expect.',
+  ],
+  'let-it-pass': [
+    '{a} caught the seam and decided, deliberately, that it was a person misremembering an evening.',
+    '{a} nearly said something and then remembered how many things {a} has misremembered this week.',
+    '“That’s nothing,” {a} decided, about {b}, and mostly meant it, and moved on.',
+    '{a} let it go, and being the kind of person who lets things go is itself a position in this castle.',
+    '{a} chose to believe {b}, which is a choice and {a} knew it was one at the time.',
+  ],
+  'told-somebody': [
+    '{a} did not raise it with {b}. {a} raised it with {c}, quietly, before the corridor emptied.',
+    '“Ask {b} about last night,” {a} said to {c}, and would not say any more than that.',
+    '{a} took the mismatch to {c} rather than to {b}, which is a decision about {b} and about {c}.',
+    '{c} now has the same small wrong detail about {b} that {a} has, and {b} does not know either of them has it.',
+    '{a} gave it to {c} whole — both versions of {b}’s evening, and nothing about what it means.',
+  ],
+};
 
 registerEvent({
   id: 'susp-noticed-inconsistency',
@@ -57,12 +93,38 @@ registerEvent({
     return outcomeSense(lastClosedThread(b, { beforeEp: ctx.ep })?.outcome) === 'walked'
       ? base * 1.5 : base;
   },
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'boldness', 'temperament', 'social'],
+    knowledge: ['witnessed', 'heard-with-source'],
+    relationship: ['neutral', 'rival', 'close-ally'],
+  },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'susp-noticed-inconsistency');
     const sceneWhy = 'noticed something that did not line up';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, -1, { source: sceneWhy });
-    let note = pick(rng, NOTICE_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const st = pStats(a);
+    const third = (ctx.living || []).filter(n => n !== a && n !== b);
+    const scores = {
+      noticed: (st.intuition / 10) * 0.4 + 0.2,
+      'asked-about-it': (st.boldness / 10) * 0.5 + (st.temperament / 10) * 0.2,
+      'let-it-pass': (1 - st.intuition / 10) * 0.4 + (st.loyalty / 10) * 0.3,
+      // Only available when there is somebody to take it to.
+      'told-somebody': third.length ? (st.social / 10) * 0.45 + (1 - st.loyalty / 10) * 0.25 : 0,
+    };
+    const total = Object.values(scores).reduce((s, v) => s + v, 0);
+    let roll = rng() * total;
+    let branch = 'noticed';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const c = third.length ? pick(rng, third) : b;
+    const bondDelta = branch === 'noticed' ? -1
+      : branch === 'asked-about-it' ? -1.5 : branch === 'let-it-pass' ? 0.5 : -0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // The doubt travels to a NAMED person, and to nobody else — the reaction
+    // radius is the people the scene actually reached.
+    if (branch === 'told-somebody') api.addBond(a, c, 1, { source: sceneWhy });
+    let note = lineFor(NOTICE_LINES[branch], `susp-noticed-inconsistency|${branch}|${ctx.ep}`,
+      { a, b, c });
     const prior = lastClosedThread(b, { beforeEp: ctx.ep });
     const sense = outcomeSense(prior?.outcome);
     // A WHOLE SENTENCE, APPENDED, never a clause spliced into a sentence some
@@ -78,7 +140,7 @@ registerEvent({
     if (sense === 'walked') note += ` ${b} had been asked about something before, and had walked out of it clean.`;
     else if (sense === 'cracked') note += ` The last time anybody leaned on ${b}, something came out.`;
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'noticed', pair: [a, b], threadId: t?.id, bondDelta: -1,
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta,
       priorOutcome: prior?.outcome ?? null };
   },
 });
@@ -741,6 +803,26 @@ const DOOR_LINES = {
     '{a} was sitting on the stairs when {b} came back up them, and neither pretended to be surprised.',
     '{b} froze at the top of the corridor because {a}\'s door was open, and {a} was behind it.',
   ],
+  // ── TASK 7 STAGE 4: THE FOURTH BRANCH, AND IT IS A SOLO ONE ───────────
+  //
+  // The audit's verdict was REWRITE — three branches, short of four, and no
+  // thread write on the original — and the branch count was only half of it.
+  // `night` was the thinnest window in the game (1.31 scenes an episode
+  // against a 2-4 budget) and this, its single most-fired event, refused a
+  // one-person draw. `runWindow` BREAKS rather than skipping when a draw finds
+  // nothing eligible, so every solo draw that landed here ended the night.
+  // The premise survives being alone perfectly: the whole scene is one person
+  // in the dark deciding what a noise was.
+  'checked-the-door': [
+    '{a} got up at some point in the night to see whether the corridor had anybody in it. It did not.',
+    'Something moved, or did not. {a} lay there for a long time deciding which, and settled on neither.',
+    '{a} opened the door about four inches, saw an empty corridor, and did not feel any better about it.',
+    'There was a noise at the wrong end of the night and {a} spent an hour giving it a name and taking it back.',
+    '{a} counted the doors between here and the stairs, twice, for no reason {a} could have defended in daylight.',
+    'Old buildings make noise. {a} knows that. {a} still sat up, and still listened, and still did not sleep after.',
+    '{a} put a shoe against the door, felt ridiculous about it, and left the shoe where it was.',
+    'By the time it got light {a} had built and demolished three separate explanations for one floorboard.',
+  ],
 };
 
 registerEvent({
@@ -756,8 +838,19 @@ registerEvent({
   // a DIFFERENT person hearing something the next night is a real scene.
   cooldown: { player: 5 },
   citesResidue: true,
+  // ADVANCES, AND SAYS SO. The original wrote no thread at all, which was the
+  // other half of the audit's REWRITE verdict: the pool's single most-fired
+  // event left nothing behind for anything to continue.
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'temperament', 'boldness'],
+    relationship: ['neutral', 'rival', 'close-ally'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
-    if (ctx.actors?.length !== 2) return 0;
+    // WIDENED FROM `length !== 2` TO "one or two" — see `checked-the-door`.
+    if (!ctx.actors?.length || ctx.actors.length > 2) return 0;
     const [a] = ctx.actors;
     // SPEC 5.3. Somebody the room came for today does not sleep, and does not
     // stop listening. ctx.state is a frozen, read-only view of the last table.
@@ -767,6 +860,13 @@ registerEvent({
     const api = sceneApi(ctx, 'susp-heard-in-the-corridor');
     const sceneWhy = 'heard something in the corridor after lights out';
     const [a, b] = ctx.actors;
+    if (!b) {
+      const soloNote = lineFor(DOOR_LINES['checked-the-door'],
+        `susp-heard-in-the-corridor|checked-the-door|${ctx.ep}`, { a });
+      const solo = arcContinue(api, FAMILY, [a], ctx.ep, soloNote, { source: sceneWhy });
+      return { branch: 'checked-the-door', actor: a, threadId: solo.thread?.id,
+        cited: solo.cited, bondDelta: 0, state: ctx.state?.[a] || 'content' };
+    }
     const sa = pStats(a);
     const sb = pStats(b);
     // What the listener ends up with: a sharp one hears a real thing, an

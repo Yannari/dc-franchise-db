@@ -85,6 +85,8 @@ import '../js/tr/castle/callback.js';
 import '../js/tr/castle/testing.js';
 import '../js/tr/castle/journey.js';
 import '../js/tr/castle/mission-fallout.js';
+import '../js/tr/castle/consequences.js';
+import '../js/tr/castle/nightfall.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -553,11 +555,28 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // draw, and the sweep below confirms the result: the rarest branch in the
     // whole pool is unchanged at `grief-nobody-sleeps:awake-desperate`, and
     // the window's own pre-existing six all still clear the branch floor.
-    expect(EVENTS.length).toBe(112);
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(53);
+    // MOVED AGAIN BY TASK 7 STAGE 4: 112 -> 128 events, 53 -> 71 advancers,
+    // 47 -> 63 citers. Sixteen new events are the `after-table` and `night`
+    // libraries (js/tr/castle/consequences.js, js/tr/castle/nightfall.js) and
+    // all sixteen declare both flags; the other two advancer declarations are
+    // rewrites off the audit's REWRITE list —
+    // `susp-heard-in-the-corridor` (the pool's most-fired event, which wrote
+    // no thread at all) and `cover-alone-with-it` (which wrote no effects at
+    // all before stage 2 migrated it).
+    //
+    // SAME ARGUMENT AS STAGE 3'S FOR WHY A DECLARATION IS SAFE IN THESE TWO
+    // WINDOWS AND WAS NOT IN `morning`: guard 1 multiplies a declared advancer
+    // by 4x-9x inside its OWN window, and `after-table` and `night` were
+    // running at 26% and 44% of their own phase budgets — the multiplier is
+    // being applied inside windows whose problem was that they had nothing to
+    // draw. Measured after: `after-table` 1.43 -> 4.05 scenes an episode,
+    // `night` 1.31 -> 2.58, and the sweeps below confirm nothing in either
+    // window's pre-existing pool fell under a floor.
+    expect(EVENTS.length).toBe(128);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(71);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(47);
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(63);
   });
 
   it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
@@ -590,12 +609,18 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // assert as a bar — six `journey-back` cells went from one advancer to two
     // or more, and a thread living in that window is no longer limited to one
     // advance every five rounds by the pair cooldown on a single event.
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(47);
+    // MOVED BY TASK 7 STAGE 4: 47 -> 48 cells, and this is the first time the
+    // ZERO count has fallen. 18 -> 15: `cover|night`, `grief|night` and
+    // `suspicion|night` all gained an advancer, two of them because the audit's
+    // REWRITE verdict on the events already sitting there was that they wrote
+    // no thread at all. `one` -> `many` moved again for the same reason as
+    // stage 3 (10 -> 23), and the new cell is `trust|night`.
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(48);
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(18);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(15);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(14);
-    expect(many, 'cells with two or more advancers').toBe(15);
+      + 'living here can be advanced at most once every five rounds').toBe(11);
+    expect(many, 'cells with two or more advancers').toBe(22);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -640,13 +665,29 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // `romance-liability-exposed` left it for night), and `romance|journey-back`
     // gained a second non-advancer. Two cells gained a second advancer in the
     // move, which is why `many` went 8 -> 10.
+    // TASK 7 STAGE 4 REMOVED THREE, AND NAMED THEM: `cover|night`,
+    // `grief|night` and `suspicion|night`. All three lost their zero because
+    // the event already sitting in them gained the declaration the audit said
+    // it was missing — `cover-alone-with-it` and `susp-heard-in-the-corridor`
+    // both wrote no thread at all, which is the "no reachable follow-up"
+    // half of their REWRITE verdicts — plus `night-the-seat-they-had` in the
+    // grief cell. Nothing was added to this list.
     expect(zeroNames).toEqual([
-      'callback|dawn', 'callback|journey-out', 'callback|morning',
-      'cover|journey-out', 'cover|morning', 'cover|night',
-      'grief|journey-out', 'grief|morning', 'grief|night',
-      'romance|after-table', 'romance|journey-back', 'romance|journey-out',
-      'romance|morning', 'suspicion|journey-out', 'suspicion|morning',
-      'suspicion|night', 'testing|journey-out', 'testing|morning',
+      'callback|dawn',
+      'callback|journey-out',
+      'callback|morning',
+      'cover|journey-out',
+      'cover|morning',
+      'grief|journey-out',
+      'grief|morning',
+      'romance|after-table',
+      'romance|journey-back',
+      'romance|journey-out',
+      'romance|morning',
+      'suspicion|journey-out',
+      'suspicion|morning',
+      'testing|journey-out',
+      'testing|morning',
     ]);
   });
 
@@ -1108,12 +1149,14 @@ describe('THE WINDOW SWEEP: every window spec 5.6 names is a window the show use
 // event's `passed-clean` closures go to zero while its firings, and its
 // `exposed` closures, do not.
 const CLOSING_BRANCHES = [
-  // MOVED BY TASK 7 STAGE 3: 13 -> 17. Two of the four are
-  // `mission-back-through-the-gate` (js/tr/castle/mission-fallout.js), the one
-  // closer in the new `journey-back` library, which resolves whichever open
-  // arc these two people are actually in at the gate; the third and fourth are
-  // `grief-castle-in-view:turned-back`, a terminal outcome added when that
-  // event was rewritten from two branches to four. Nothing left the list.
+  // MOVED BY TASK 7 STAGE 4: 17 -> 21. Two new closers, one per window:
+  // `after-i-need-you-tomorrow` (js/tr/castle/consequences.js), which ends a
+  // trust story an hour after a banishment in either direction, and
+  // `night-what-we-say-in-the-morning` (js/tr/castle/nightfall.js), which
+  // settles a testing story by AGREEMENT as well as by catching somebody out
+  // — the pool held only the second ending. Nothing left the list.
+  'after-i-need-you-tomorrow:passed-clean',
+  'after-i-need-you-tomorrow:turned-back',
   'cover-story-survived-the-day:exposed',
   'cover-story-survived-the-day:passed-clean',
   'grief-castle-in-view:buried',
@@ -1121,6 +1164,8 @@ const CLOSING_BRANCHES = [
   'mission-back-through-the-gate:buried',
   'mission-back-through-the-gate:passed-clean',
   'mission-back-through-the-gate:turned-back',
+  'night-what-we-say-in-the-morning:passed-clean',
+  'night-what-we-say-in-the-morning:test-exposed',
   'romance-showmance-on-the-way-back:became-showmance',
   'susp-let-it-go-on-the-road-back:confessed-unrelated',
   'susp-let-it-go-on-the-road-back:denied-convincingly',
@@ -1232,12 +1277,82 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // and `nervy` (paranoid OR desperate) reads 59. The rarest of the six new cells
 // is 59 per 400. A repeat-detecting label is not worth a knife-edge band.
 const BRANCHES = [
-  // MOVED BY TASK 7 STAGE 3: 168 -> 236. Sixty-eight new (event, branch) keys:
-  // fourteen new events at four branches each (with three of them carrying a
-  // fifth for a solo draw), plus the six branches added by the three
-  // `journey-back` rewrites the audit put on the REWRITE list. Nothing left
-  // the list — every branch that fired before still fires.
+  // MOVED BY TASK 7 STAGE 4: 236 -> 346. A hundred and ten new (event, branch)
+  // keys, from two places and in roughly equal measure:
+  //
+  //   - the sixteen new `after-table` and `night` events, at four or five
+  //     branches each (js/tr/castle/consequences.js, js/tr/castle/nightfall.js);
+  //   - and TWELVE REWRITES off the audit's REWRITE list, every one of which
+  //     went from one or two branches to four. Those are the interesting half:
+  //     `trust-trade-reads`, `trust-return-favor`, `susp-noticed-inconsistency`,
+  //     `susp-heard-in-the-corridor`, `cover-cold-sweat-tell`,
+  //     `cover-blend-with-victims-friends`, `cover-alone-with-it`,
+  //     `testing-reverse-psychology`, `testing-follow-through-check`,
+  //     `callback-competitive-history`, `romance-showmance-breakup` and
+  //     `romance-shields-target-together`.
+  //
+  // NOTHING LEFT THE LIST. Every branch that fired before still fires, which
+  // is the check that matters here: a rewrite that quietly dropped an existing
+  // outcome would look identical from the count alone.
+  'after-i-need-you-tomorrow:agreed',
+  'after-i-need-you-tomorrow:conditional',
+  'after-i-need-you-tomorrow:refused',
+  'after-i-need-you-tomorrow:traded',
+  'after-nobody-said-our-names:made-it-a-plan',
+  'after-nobody-said-our-names:one-of-us-is-lying',
+  'after-nobody-said-our-names:quietly-pleased',
+  'after-nobody-said-our-names:worried-by-it',
+  'after-somebody-goes-tonight:alone-with-it',
+  'after-somebody-goes-tonight:joked-about-it',
+  'after-somebody-goes-tonight:made-a-plan',
+  'after-somebody-goes-tonight:performed-it',
+  'after-somebody-goes-tonight:said-it-out-loud',
+  'after-somebody-goes-tonight:would-not-say-it',
+  'after-the-count-moved:came-across',
+  'after-the-count-moved:flat-denial',
+  'after-the-count-moved:moved-off',
+  'after-the-count-moved:never-with-me',
+  'after-the-count-moved:with-me-again',
+  'after-the-empty-seat:angry-at-the-room',
+  'after-the-empty-seat:guilty',
+  'after-the-empty-seat:mourned',
+  'after-the-empty-seat:on-their-own',
+  'after-the-empty-seat:relieved',
+  'after-the-last-thing-they-said:alone-with-it',
+  'after-the-last-thing-they-said:answered-it',
+  'after-the-last-thing-they-said:dismissed',
+  'after-the-last-thing-they-said:let-it-stand',
+  'after-the-last-thing-they-said:picked-it-up',
+  'after-the-room-got-it-right:credit-where-due',
+  'after-the-room-got-it-right:next-one',
+  'after-the-room-got-it-right:on-their-own',
+  'after-the-room-got-it-right:overclaimed',
+  'after-the-room-got-it-right:who-knew',
+  'after-the-room-got-it-wrong:alone-with-it',
+  'after-the-room-got-it-wrong:blamed-the-loudest',
+  'after-the-room-got-it-wrong:counted-my-own',
+  'after-the-room-got-it-wrong:defended-the-vote',
+  'after-the-room-got-it-wrong:went-quiet',
+  'after-two-people-said-my-name:asked-them-why',
+  'after-two-people-said-my-name:counted-them',
+  'after-two-people-said-my-name:hardened',
+  'after-two-people-said-my-name:rattled',
+  'after-two-people-said-my-name:worked-the-room',
+  'after-what-i-said-at-the-table:alone-with-it',
+  'after-what-i-said-at-the-table:got-it-right',
+  'after-what-i-said-at-the-table:named-the-wrong-one',
+  'after-what-i-said-at-the-table:stood-by-it',
+  'after-what-i-said-at-the-table:walked-it-back',
+  'after-you-wrote-my-name:denied-it',
+  'after-you-wrote-my-name:made-it-a-price',
+  'after-you-wrote-my-name:named-the-others',
+  'after-you-wrote-my-name:owned-it',
+  'after-you-wrote-my-name:reassured-it',
+  'after-you-wrote-my-name:would-not-say',
+  'callback-competitive-history:called-a-truce',
+  'callback-competitive-history:reopened-it',
   'callback-competitive-history:rivalry-carried-over',
+  'callback-competitive-history:useful-rivalry',
   'callback-different-show-different-person:disappointment',
   'callback-different-show-different-person:dissonance',
   'callback-different-show-different-person:redemption',
@@ -1257,9 +1372,15 @@ const BRANCHES = [
   'cover-alibi-crumbles:holds',
   'cover-alibi-crumbles:wobbles',
   'cover-alone-with-it:nearly',
+  'cover-alone-with-it:rehearsing',
   'cover-alone-with-it:sleepless',
   'cover-alone-with-it:steady',
   'cover-blend-with-victims-friends:blended-in',
+  'cover-blend-with-victims-friends:kept-out',
+  'cover-blend-with-victims-friends:overdid-it',
+  'cover-blend-with-victims-friends:was-welcomed',
+  'cover-cold-sweat-tell:laughed-it-off',
+  'cover-cold-sweat-tell:overexplained',
   'cover-cold-sweat-tell:tell',
   'cover-decline-recruit-offer-story:recruit-story-covered',
   'cover-double-bluff:double-bluffed',
@@ -1366,6 +1487,30 @@ const BRANCHES = [
   'mission-who-was-where:refused-it',
   'mission-who-was-where:straight-answer',
   'mission-who-was-where:thin-answer',
+  'night-nothing-strategic-left:alone',
+  'night-nothing-strategic-left:funny',
+  'night-nothing-strategic-left:hollow',
+  'night-nothing-strategic-left:kind',
+  'night-nothing-strategic-left:ordinary',
+  'night-one-vote-away:asked-outright',
+  'night-one-vote-away:awake-with-it',
+  'night-one-vote-away:counted-it',
+  'night-one-vote-away:let-it-lie',
+  'night-one-vote-away:promised-nothing',
+  'night-overruled-in-the-turret:filed-it',
+  'night-overruled-in-the-turret:made-a-condition',
+  'night-overruled-in-the-turret:pressed-it',
+  'night-overruled-in-the-turret:swallowed-it',
+  'night-overruled-in-the-turret:turned-cold',
+  'night-the-seat-they-had:could-not',
+  'night-the-seat-they-had:moved-their-things',
+  'night-the-seat-they-had:on-their-own',
+  'night-the-seat-they-had:own-ballot',
+  'night-the-seat-they-had:talked-about-them',
+  'night-what-we-say-in-the-morning:agreed-a-line',
+  'night-what-we-say-in-the-morning:could-not-agree',
+  'night-what-we-say-in-the-morning:one-of-them-lied',
+  'night-what-we-say-in-the-morning:settled-it',
   'romance-comfort-after-loss-sparks:grief-spark',
   'romance-jealousy-third-party:jealousy',
   'romance-liability-exposed:confronts',
@@ -1375,8 +1520,14 @@ const BRANCHES = [
   'romance-protection-instinct:protected',
   'romance-road-spark:road-spark',
   'romance-shared-alibi:shared-alibi',
+  'romance-shields-target-together:agreed-to-be-strangers',
+  'romance-shields-target-together:one-sided-pact',
+  'romance-shields-target-together:refused-the-pact',
   'romance-shields-target-together:shield-pact',
   'romance-showmance-breakup:broke-up',
+  'romance-showmance-breakup:ended-in-strategy',
+  'romance-showmance-breakup:ended-kindly',
+  'romance-showmance-breakup:faded-out',
   'romance-showmance-fight:showmance-fight',
   'romance-showmance-forms:showmance-formed',
   'romance-showmance-on-the-way-back:agreed-quietly',
@@ -1398,6 +1549,7 @@ const BRANCHES = [
   'susp-group-pressure-crack:holds',
   'susp-group-pressure-crack:redirects',
   'susp-heard-in-the-corridor:caught',
+  'susp-heard-in-the-corridor:checked-the-door',
   'susp-heard-in-the-corridor:heard',
   'susp-heard-in-the-corridor:imagined',
   'susp-let-it-go-on-the-road-back:cleared',
@@ -1405,7 +1557,10 @@ const BRANCHES = [
   'susp-let-it-go-on-the-road-back:slipped',
   'susp-misread-tell:misread-calm',
   'susp-misread-tell:misread-nervy',
+  'susp-noticed-inconsistency:asked-about-it',
+  'susp-noticed-inconsistency:let-it-pass',
   'susp-noticed-inconsistency:noticed',
+  'susp-noticed-inconsistency:told-somebody',
   'susp-out-of-earshot:agreed',
   'susp-out-of-earshot:defended',
   'susp-out-of-earshot:hedged',
@@ -1427,7 +1582,10 @@ const BRANCHES = [
   'testing-decoy-secret:malicious',
   'testing-double-check-story:consistent',
   'testing-double-check-story:inconsistent',
+  'testing-follow-through-check:clocked-the-check',
+  'testing-follow-through-check:dropped-it',
   'testing-follow-through-check:followed-through',
+  'testing-follow-through-check:half-kept-it',
   'testing-hypothetical-loyalty-question:hedged',
   'testing-hypothetical-loyalty-question:reassured',
   'testing-loyalty-oath:refuses',
@@ -1437,7 +1595,9 @@ const BRANCHES = [
   'testing-night-scores-it:failed',
   'testing-night-scores-it:inconclusive',
   'testing-reverse-psychology:got-rattled',
+  'testing-reverse-psychology:saw-through-it',
   'testing-reverse-psychology:stayed-calm',
+  'testing-reverse-psychology:turned-it-round',
   'testing-silence-test:chased',
   'testing-silence-test:let-it-go',
   'testing-small-dare:complied',
@@ -1459,6 +1619,9 @@ const BRANCHES = [
   'trust-post-murder-huddle:huddled',
   'trust-protect-pact:pact',
   'trust-return-favor:favor-returned',
+  'trust-return-favor:kept-the-score',
+  'trust-return-favor:noticed-and-said-so',
+  'trust-return-favor:refused-it-back',
   'trust-secret-swap:kept',
   'trust-secret-swap:leakedAccident',
   'trust-secret-swap:leakedDeliberate',
@@ -1467,6 +1630,10 @@ const BRANCHES = [
   'trust-settled-on-the-way-back:soured',
   'trust-settled-on-the-way-back:unresolved',
   'trust-share-suspicion-honestly:shared-suspicion',
+  'trust-trade-reads:disagreed',
+  'trust-trade-reads:one-way',
+  'trust-trade-reads:read-the-room',
+  'trust-trade-reads:same-name',
   'trust-trade-reads:traded-reads',
   'trust-vote-commitment-test:broken',
   'trust-vote-commitment-test:deflected',

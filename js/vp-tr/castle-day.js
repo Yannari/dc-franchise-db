@@ -1479,7 +1479,9 @@ const ESTABLISH_SINGLE = [
   '{when}, at {loc}, and whatever is going on with {a} is going on quietly.',
   '{a} is at {loc}, {when}, and not making much of being there.',
   'At {loc}, {when}. {a} is in the middle of something and not advertising it.',
-  '{when}. {a} is at {loc}, doing the thing people here do with their hands while they think.',
+  '{when}. {a} is at {loc}, turning something over and in no hurry to be interrupted.',
+  '{loc}, {when}. {a} has come here to think, and it shows.',
+  '{when}, and {a} has {loc} to themselves, which is plainly the point.',
 ];
 // ── WIDENED (fix round 1, C1b) ────────────────────────────────────────
 //
@@ -1695,7 +1697,7 @@ const OUTCOME_CLAUSE = {
   'passed-clean': 'Nothing stuck to anybody.',
   'defended-by-history': 'Somebody who knew them before this place spoke up, and that was what settled it.',
   'turned-back': 'The question came back the other way and stayed there.',
-  buried: 'It got buried, deliberately, by the people who were standing there.',
+  buried: 'It gets buried on purpose. Nobody who was there means to raise it at the table.',
   'confessed-unrelated': 'Something got admitted to. It was not the thing being asked about.',
   'test-exposed': 'It came apart in front of the person who set it up.',
   'failed-maliciously': 'It was failed on purpose, and both of them know that as well.',

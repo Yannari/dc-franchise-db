@@ -20,11 +20,16 @@ let _vpViewMode = 'watch';
 // order already is — the castle comes down, goes out, sits at the table, and
 // the book is ruled off after all three.
 const _TR_PHASES = {
+  'tr-arrival':     { id:'tr-arrival',   label:'Arrival',   icon:'⌂' },
+  'tr-selection':   { id:'tr-selection', label:'Selection', icon:'◉' },
   'tr-cold-open':   { id:'tr-morning',   label:'Morning',   icon:'☀' },
   'tr-mission':     { id:'tr-afternoon', label:'Afternoon', icon:'◈' },
   'tr-round-table': { id:'tr-evening',   label:'The Table', icon:'◍' },
   'tr-conclave':    { id:'tr-night',     label:'Night',     icon:'☾' },
   'tr-recruitment': { id:'tr-night',     label:'Night',     icon:'☾' },
+  'tr-castle-day':  { id:'tr-day',      label:'The Day',   icon:'▦' },
+  'tr-suspicion':   { id:'tr-day',      label:'The Day',   icon:'▦' },
+  'tr-confessionals':{ id:'tr-day',     label:'The Day',   icon:'▦' },
   'tr-status':      { id:'tr-book',      label:'Ruled Off', icon:'▤' },
   'tr-endgame':     { id:'tr-endgame',   label:'The Endgame', icon:'✦' },
   'tr-debug':       { id:'debug',        label:'Debug',     icon:'⚙' },
@@ -996,11 +1001,29 @@ export function closeVisualPlayer() {
 
 export function vpNext() {
   const visible = _vpVisibleIndexes();
+  if (!visible.length) return;
   const pos = visible.indexOf(vpCurrentScreen);
-  if (pos >= 0 && pos < visible.length - 1) { vpCurrentScreen = visible[pos + 1]; renderVPScreen(); }
+  // pos === -1 means the current screen is hidden in this view mode (e.g. the
+  // user switched to Quick Results while on a screen Quick does not show). The
+  // next button used to die here; advance to the first visible screen at or
+  // after the current index instead.
+  if (pos === -1) {
+    const fwd = visible.find(i => i >= vpCurrentScreen);
+    vpCurrentScreen = fwd === undefined ? visible[visible.length - 1] : fwd;
+    renderVPScreen();
+    return;
+  }
+  if (pos < visible.length - 1) { vpCurrentScreen = visible[pos + 1]; renderVPScreen(); }
 }
 export function vpPrev() {
   const visible = _vpVisibleIndexes();
+  if (!visible.length) return;
   const pos = visible.indexOf(vpCurrentScreen);
+  if (pos === -1) {
+    const back = [...visible].reverse().find(i => i <= vpCurrentScreen);
+    vpCurrentScreen = back === undefined ? visible[0] : back;
+    renderVPScreen();
+    return;
+  }
   if (pos > 0) { vpCurrentScreen = visible[pos - 1]; renderVPScreen(); }
 }

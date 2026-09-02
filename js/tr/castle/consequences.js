@@ -1430,7 +1430,7 @@ const NEED_YOU = {
     '“Up to a point,” {b} said, and {a} spent the night working out where the point is.',
     '{b} agreed to everything {a} asked for except the part {a} had actually come for.',
     '“If it’s you or me at that table, I’m not going to lie to you now,” {b} said. {a} respected it and did not like it.',
-    '{a} got an answer from {b} that would cover either outcome, and both of them heard it happen.',
+    '{a} got an answer from {b} that would serve for either outcome, and both of them heard it happen.',
   ],
   refused: [
     '“I can’t promise that,” {b} said to {a}, plainly, and did not dress it up afterwards.',

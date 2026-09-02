@@ -1320,6 +1320,12 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // `one-sided-so-far` and `trust-circle-forms:not-yet` became `not-this-week`
 // for the same collision reason, and `cover-swap-story-with-partner`'s merged
 // romance branch was renamed when its gate was widened.
+//
+// FIX ROUND 1: 541, +1. `grief-nobody-sleeps:awake-unfounded` is new — the
+// branch a nervy mood takes when NO ballot supports the sentence it would
+// otherwise print (C3, js/tr/castle/grief.js). `cover-decline-recruit-offer-
+// story:recruit-story-covered` was renamed `recruit-story-kept` because the
+// old identifier contained a banned engine word (C2); it is the same branch.
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1438,7 +1444,7 @@ const BRANCHES = [
   'cover-cold-sweat-tell:overexplained',
   'cover-cold-sweat-tell:tell',
   'cover-decline-recruit-offer-story:binned-it',
-  'cover-decline-recruit-offer-story:recruit-story-covered',
+  'cover-decline-recruit-offer-story:recruit-story-kept',
   'cover-decline-recruit-offer-story:told-it-unasked',
   'cover-double-bluff:asked-back',
   'cover-double-bluff:did-not-take',
@@ -1507,6 +1513,7 @@ const BRANCHES = [
   'grief-nobody-sleeps:awake-content',
   'grief-nobody-sleeps:awake-desperate',
   'grief-nobody-sleeps:awake-paranoid',
+  'grief-nobody-sleeps:awake-unfounded',
   'grief-numb-to-it-now:numb',
   'grief-numb-to-it-now:one-of-them-still-feels-it',
   'grief-numb-to-it-now:performed-it',

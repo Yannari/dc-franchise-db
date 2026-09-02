@@ -104,15 +104,41 @@ function _hash(s) {
 //   - IT IS PER SEASON, NOT PER PROCESS. The store is on the season's own
 //     state and dies with it, so two seasons played back to back do not
 //     inherit each other's usage.
-//   - IT CANNOT HIDE A THIN POOL. A one-line pool still prints one line every
-//     time, and tests/tr-castle-prose.test.js's variety floor still counts the
-//     DISTINCT sentences a branch produced across the whole corpus. This
-//     changes the ORDER a pool is spent in, never its contents.
+//   - IT DOES HIDE A THIN POOL, AND THE ORIGINAL VERSION OF THIS NOTE SAID
+//     THE OPPOSITE. That claim was false and it was load-bearing, so it is
+//     corrected here rather than quietly deleted — the same stale-claim class
+//     Task 7 congratulated itself for catching in tr-rankings.
+//
+//     WHAT WAS CLAIMED: "a one-line pool still prints one line every time, and
+//     the variety floor still counts the DISTINCT sentences a branch produced
+//     across the whole corpus." Both halves are true and the conclusion drawn
+//     from them was not. MEASURED BY THE REVIEWER: cutting
+//     `CONFIDE_LINES['nearly-said-it']` — the highest-firing branch in the
+//     library — from 18 lines to THREE left the 4,200-season repetition
+//     ceiling at 2.83%, unmoved to the digit. It only reacts at two or fewer,
+//     because the round-robin below spends a 3-line pool 1-1-1 before it can
+//     ever repeat, and three firings a season is most of what a branch does.
+//     The variety floor is a floor of >= 4 DISTINCT sentences, and for any
+//     pool of four or more this rule now GUARANTEES that floor. It cannot fail.
+//
+//     SO THE HONEST NUMBERS ARE BOTH RECORDED, and both are asserted:
+//       * WITH the rule, seasons printing a sentence 3x: 2.83%. That is what a
+//         viewer experiences, and it is the number the ceiling bands.
+//       * WITHOUT it, the same measurement on the same content: 7.00%. That is
+//         the health of the POOLS, and `tests/tr-castle-prose.test.js` bands it
+//         separately through `_setDrawRule` below so that nobody reads 2.83% as
+//         evidence the writing is finished. It is not: 469 pools are still
+//         under nine lines.
+//     What is true is the narrower statement: this changes the ORDER a pool is
+//     spent in, never its contents.
 //
 // The bucket key deliberately strips digits, so `event|branch|ep` and
 // `event|ep|branch` (both orderings exist in the pool) collapse to the same
 // (event, branch) bucket — which is the same key the prose suite's `mask()`
 // measures, so the thing being deduplicated is exactly the thing being counted.
+
+// Declared above its only reader so the module has no temporal-dead-zone edge.
+let _drawRule = true;
 
 /**
  * Per-season record of which pool slots an (event, branch) has already spent,
@@ -158,7 +184,7 @@ export function lineFor(pool, key, subs) {
   // note above: the hash still picks the starting point, so the variation the
   // hash was for is unchanged; this only stops a busy season landing on the
   // same element twice while others sit unused.
-  const store = _maskStore();
+  const store = _drawRule ? _maskStore() : null;
   if (store && n > 1 && n <= 31) {
     const bucket = String(key).replace(/\d+/g, '');
     let mask = store[bucket] || 0;
@@ -174,6 +200,21 @@ export function lineFor(pool, key, subs) {
   }
   return s;
 }
+
+// ── THE COUNTERFACTUAL SWITCH, AND WHY IT IS SHIPPED ─────────────────
+//
+// Production never touches this. It exists so that one guard can measure the
+// thing the rule above HIDES: with the round-robin on, the repetition ceiling
+// reports how varied the castle READS, and with it off the same measurement
+// reports how varied the castle IS WRITTEN. Those are different properties and
+// Task 7 shipped a note claiming they were the same one, which is why the arm
+// that separates them needs a way in.
+//
+// It is a switch rather than an env var so that the dependency is visible from
+// the source: one exported function, named in exactly one test, and any future
+// caller shows up in a grep for it.
+/** Guard hook only — see the note above. Returns the previous setting. */
+export function _setDrawRule(on) { const was = _drawRule; _drawRule = !!on; return was; }
 
 /** Exposed for the guard, which walks every pool in the pool. */
 export { _hash as _lineHash };

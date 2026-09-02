@@ -501,27 +501,64 @@ const TURNED_BRANCHES = new Set([
  * branch turns the question over, the warm branch slows it down, the guarded
  * branch answers less than it was asked.
  */
+// ── WIDENED (fix round 1, C1b, second pass) ───────────────────────────
+//
+// After `REACT_SINGLE` and `CONSEQ_SINGLE` went from four lines to twelve, the
+// worst composed card in a season fell from 9 to 7 and the top of the census
+// moved here: `bond` and `pressure` are the two commonest reaction classes and
+// each voice held THREE lines against ~4 draws a season. Both are now nine.
+//
+// The other six classes are left at three. That is deliberate and it is
+// measured rather than assumed: they sit an order of magnitude down the census
+// and widening a pool nothing is hitting is decoration — the same call
+// `REACT_ADVERSE`'s docblock makes about its own two-per-slot pools. The
+// remaining exposure is stated in the season-scope arm in
+// tests/tr-castle-prose.test.js rather than left for somebody to find.
 const REACT = {
   pressure: {
     blunt: [
       '“Say what you actually mean,” {b} says. “You’ve been circling it since this morning.”',
       '{b} doesn’t soften it. “If you think I did something, put my name up tonight and stop asking me questions.”',
       '“Ask me properly or drop it,” {b} says, and doesn’t look away while {a} decides which.',
+      '“You have had all day to ask me that,” {b} says. “Ask it.”',
+      '{b} answers the first question at some volume and refuses the second one entirely.',
+      '“Do not do the voice,” {b} says. “Just say the thing.”',
+      '{b} tells {a} exactly where {b} was and then asks why {a} needed to know.',
+      '“I am not going to be careful about this,” {b} says, and is not.',
+      '{b} answers, hard and fast, and leaves the room before {a} can follow it up.',
     ],
     sharp: [
       '{b} answers it, then asks {a} the same question back, word for word, to hear how it sounds coming the other way.',
       '“You’ve asked me that twice now,” {b} says. “The second time wasn’t for your benefit.”',
       '{b} gives {a} the answer and watches what {a} does with it, which is the part {b} actually came for.',
+      '{b} answers in a way that is true, complete, and impossible to build anything on.',
+      '{b} works out what the question is really about and answers THAT, which {a} did not expect.',
+      '“You are asking the wrong thing,” {b} says, and then tells {a} the right one.',
+      '{b} pauses for exactly as long as an honest person would and then answers.',
+      '{b} answers and adds nothing, and the nothing is deliberate.',
+      '{b} turns the whole thing over once in front of {a} and hands it back the same shape.',
     ],
     warm: [
       '“Can we slow down?” {b} says. “I’d rather answer it properly than win it.”',
       '{b} takes it better than {a} expected — answers straight, and then asks whether {a} is all right.',
       '“I’m not going to be weird about this,” {b} says, and means it, and answers anyway.',
+      '{b} looks a bit hurt by the asking and answers it properly regardless.',
+      '“You could have just asked me,” {b} says, and there is no edge on it at all.',
+      '{b} answers, and then asks {a} whether something is wrong, and means the question.',
+      '“I would rather you asked than wondered,” {b} says, and that is the end of it.',
+      '{b} takes it as a fair question, which it was, and treats it like one.',
+      '{b} answers and then makes {a} a cup of tea, which is not an answer and helps.',
     ],
     guarded: [
       '{b} gives {a} an answer that is true and about half as long as it could have been.',
       '“Sure,” {b} says, and nothing else, and lets the silence do the rest of the work.',
       '{b} laughs it off, agrees with {a} about something next to it, and never answers the question asked.',
+      '{b} gives a date, a room and a reason, and none of it is checkable.',
+      '“Ask somebody else and see if they say the same,” {b} says, which is not a yes.',
+      '{b} answers a slightly different question so smoothly that {a} nearly misses it.',
+      '{b} says something agreeable, at length, that contains no information whatever.',
+      '“I was where I said I was,” {b} says, and does not say where that was.',
+      '{b} smiles, answers halfway, and lets {a} decide whether to push.',
     ],
   },
   bond: {
@@ -529,21 +566,45 @@ const REACT = {
       '“Don’t make me regret this,” {b} says, which from {b} is as close to warm as it gets.',
       '{b} says it back plainly, no hedging. {a} is on the short list of people {b} intends to keep.',
       '“Good,” {b} says. “Then we stop wasting each other’s time and start counting the same way.”',
+      '“Right,” {b} says. “Then that is settled and we do not discuss it again.”',
+      '{b} shakes on it, which nobody in this castle does, and means it.',
+      '“Finally,” {b} says, which is not gracious and is entirely honest.',
+      '{b} says yes before {a} has finished the sentence and does not take it back.',
+      '“You are the only one I would have said that to,” {b} says, flatly, as a fact.',
+      '{b} agrees in four words and then talks about something else for an hour.',
     ],
     sharp: [
       '{b} agrees, and privately works out exactly what {a} has handed over and what it is worth.',
       '“That helps me,” {b} says, and it is a true sentence doing two jobs at once.',
       '{b} takes the offer, keeps a little back, and lets {a} believe the whole of it changed hands.',
+      '{b} accepts, and is already working out what this is worth on Thursday.',
+      '{b} says yes and means a slightly smaller yes than {a} heard.',
+      '“Good,” says {b}, who has wanted exactly this since Tuesday and never once asked.',
+      '{b} agrees, and files the fact that {a} asked first.',
+      '{b} takes it, and takes note of how much it cost {a} to offer.',
+      '{b} accepts with one small condition that sounds like nothing and is not.',
     ],
     warm: [
       '{b} is visibly relieved. “I’ve been carrying that on my own since we got here.”',
       '“I know,” {b} says. “I’ve known since the first night. I was waiting for you to say it.”',
       '{b} doesn’t make a speech about it. {b} moves closer and stays there, which is the answer.',
+      '{b} says thank you, badly, twice, and gets it wrong both times and means it.',
+      '“I did not think anybody had noticed,” {b} says, which is its own kind of answer.',
+      '{b} laughs, and it is the first honest noise {b} has made in this building.',
+      '“Do not be nice to me,” {b} says. “I will not cope with it.” And does not.',
+      '{b} goes quiet for a second and comes back with something much warmer than expected.',
+      '{b} tells {a} something true in return, immediately, without being asked.',
     ],
     guarded: [
       '{b} says yes, carefully, in a way that could be walked back tomorrow if it has to be.',
       '“All right,” {b} says. It isn’t much, and coming from {b} it is a great deal.',
       '{b} accepts it without promising anything back, and both of them notice the gap.',
+      '{b} says “we will see,” which from {b} is close to a yes.',
+      '{b} agrees to the part {b} can agree to and is precise about which part.',
+      '“Ask me again on Thursday,” {b} says, and it is not a brush-off.',
+      '{b} nods, once, and does not add a word to it.',
+      '{b} takes it seriously enough not to answer straight away.',
+      '“I will not say yes to something I might not do,” {b} says, which is nearly better.',
     ],
   },
   loss: {
@@ -919,6 +980,13 @@ const ADVERSE_BRANCHES = new Set([
   // 'paranoid')` in the same firing -- the rule `rattled` and `counted-them`
   // are on this list for.
   'came-down-angry',
+  // `awake-unfounded` is `grief-nobody-sleeps` on a nervy mood with NO ballot
+  // behind it (fix round 1, C3) — an override-set paranoia, or an episode with
+  // no Round Table yet. It is a solo scene, so nobody is being leaned on; it
+  // sits here rather than on the benign list for the same reason
+  // `came-down-angry` above does, which is that the firing's own state is
+  // paranoid and a smooth consequence card would contradict it.
+  'awake-unfounded',
   // ── TASK 7 STAGE 6: THE REMAINING REWRITES ───────────────────────────
   //
   // The last of the audit's REWRITE list, plus the KEEP-list events whose
@@ -1089,7 +1157,7 @@ const BENIGN_BRANCHES = new Set([
   'innocent', 'invited-in', 'keepsake', 'kept', 'keptQuiet', 'let-it-go',
   'misread-calm', 'mourn', 'noticed', 'numb', 'oblivious', 'pact', 'pair-again',
   'pair-first', 'planted', 'probed', 'protected', 'quiet', 'reassured',
-  'recruit-story-covered', 'rehearsed', 'reseated', 'road-spark', 'serviceable',
+  'recruit-story-kept', 'rehearsed', 'reseated', 'road-spark', 'serviceable',
   'shape-guessed', 'shape-redrawn', 'shared-alibi', 'shared-mourning',
   'shared-suspicion', 'shield-pact', 'showmance-formed', 'showmance-on-the-road',
   'solo-again', 'solo-first', 'sparked', 'stayed-calm', 'steady', 'stoic', 'sworn',
@@ -1947,30 +2015,85 @@ const ESTABLISH_SINGLE = [
   'At {loc}, {when}. {a} is in the middle of something and not advertising it.',
   '{when}. {a} is at {loc}, doing the thing people here do with their hands while they think.',
 ];
+// ── WIDENED (fix round 1, C1b) ────────────────────────────────────────
+//
+// THE DEFECT, MEASURED AT THE LAYER A VIEWER READS: 100% of seasons printed
+// the same composed card four or more times; median worst 9, worst 15, over
+// 206,364 cards. Every one of the top eight offenders was a FOUR-element pool
+// in this file — `CONSEQ_SINGLE` and `REACT_SINGLE` below — and Task 7 never
+// touched either while taking the castle from 12.8 fired scenes an episode to
+// ~28, which roughly doubled the draws against them.
+//
+// WHY `_pickUnique` DID NOT SAVE THEM. It round-robins, but its `used` set is
+// PER DAY (`castleDayScenes` builds a fresh one per episode), so a four-line
+// pool drawn five times a day is exhausted every day and starts again every
+// day. Across ten episodes that is ten passes over four sentences.
+//
+// AND WHY THE FIX IS WIDTH RATHER THAN A SEASON-SCOPED SET. A season-scoped
+// `used` would make the composed output depend on how many times the caller
+// had already rendered the season, and this function is called repeatedly for
+// the same episode by the screen, by the transcript and by the guards — the
+// "records and the page cannot disagree" property in `_pickUnique`'s own
+// docblock is exactly what that would break. Width is stateless and
+// deterministic, and it is what the pools were short of.
+//
+// Four lines became twelve in all eight pools.
 const REACT_SINGLE = {
   blunt: [
     '{a} does not soften it for whoever is within earshot, and does not check who is.',
     '{a} lets it show for exactly as long as it takes and then puts it away again.',
     'Whatever {a} feels about it, {a} feels it at full volume for about a second.',
     '{a} makes no attempt to be gracious about it, and is not sorry afterwards either.',
+    '{a} says exactly what {a} thinks of it, to nobody in particular, and does not lower the volume.',
+    '{a} is not interested in being reasonable about this one and does not pretend to be.',
+    'It shows on {a} for a second and a half and {a} does not spend any of that hiding it.',
+    '{a} swears once, quietly, at a wall, and feels marginally better.',
+    'Whoever is in the room gets the whole of it, and {a} does not check who is in the room.',
+    '{a} does not do the thing where you arrange your face. {a} has never done that thing.',
+    'It comes out flat and hard and {a} would say it again.',
+    '{a} does not soften it, does not qualify it, and does not stay to discuss it.',
   ],
   sharp: [
     '{a} runs it through again, looking for the place it comes apart, and finds one.',
     '{a} files it the way {a} files everything, and rearranges tomorrow around it.',
     '{a} does not react at all, which for {a} is a decision rather than an absence.',
     '{a} works out, standing there, exactly what that is going to be worth on Thursday.',
+    '{a} does the arithmetic before {a} does the feeling, which is the wrong way round and is {a}.',
+    '{a} stands very still for a moment, which with {a} means something is being filed.',
+    'Nothing about {a} moves. A great deal behind {a} rearranges itself.',
+    '{a} finds the one part of it that is useful and keeps only that part.',
+    '{a} is already two conversations ahead and it shows if you know where to look.',
+    '{a} makes a note of it in the place {a} keeps notes, which is not paper.',
+    'It becomes a plan, for {a}, before it has finished being a surprise.',
+    '{a} asks nothing and works out most of it anyway.',
   ],
   warm: [
     'It gets to {a} more than {a} would like, and it takes {a} a moment to be all right again.',
     '{a} takes it hard and takes it quietly, which is not how {a} usually takes anything.',
     '{a} is fine about it, right up until the moment {a} has to say something, and then is fine again.',
     '{a} does the kind thing before {a} has finished deciding whether it was deserved.',
+    '{a} minds more than {a} lets on, and lets on more than {a} means to.',
+    'It lands somewhere {a} was not braced for, and {a} needs a second with it.',
+    '{a} does not say anything for a moment, and the moment is the whole of the answer.',
+    '{a} is generous about it, immediately, and thinks about the cost afterwards.',
+    'Something goes out of {a} and comes back slightly changed.',
+    '{a} would rather have been told sooner and does not say so.',
+    'It gets under {a}, and {a} carries it around all afternoon being fine.',
+    '{a} feels the whole of it and gives about a third of it away.',
   ],
   guarded: [
     'Nothing shows. {a} has had a great deal of practice at nothing showing.',
     '{a} puts it back where it was and goes to find somebody to be normal in front of.',
     '{a} gives it about a second and a half and then stops giving it anything.',
     '{a} agrees with whatever was nearest and lets the moment go past unremarked.',
+    '{a} produces the face that ends conversations and it ends the conversation.',
+    'Whatever went through {a} went through somewhere the room cannot see.',
+    '{a} says the small safe thing and lets the large one go by.',
+    'It is impossible to tell from {a} whether that landed at all.',
+    '{a} nods once, at nothing much, and the subject is closed.',
+    '{a} takes it the way {a} takes everything, which is to say invisibly.',
+    'There is a reaction. {a} has put it somewhere nobody was invited to.',
+    '{a} keeps whatever it was and keeps the keeping of it quiet too.',
   ],
 };
 const CONSEQ_SINGLE = {
@@ -1980,12 +2103,28 @@ const CONSEQ_SINGLE = {
       'It changes nothing anybody could point at, and it changes what {a} intends to do tomorrow.',
       '{a} keeps it. Whoever was near enough to see it did not know what they were looking at.',
       'Nothing is decided by it, and {a} is carrying one more thing into tonight than {a} was this morning.',
+      'It goes nowhere today. It has somewhere to go, and {a} knows where.',
+      'Nobody else will remember this by supper. {a} will remember it on Thursday.',
+      '{a} files it and the filing is the whole of what happened.',
+      'It costs nothing now, which is not the same as costing nothing.',
+      'The day carries on exactly as it was going to, with one more thing in it.',
+      '{a} does not act on it. {a} does not put it down either.',
+      'It is small, and small things in this building have a way of not staying small.',
+      'Whatever that was worth, {a} has decided not to spend it this morning.',
     ],
     adverse: [
       'That is going to cost {a} something, and {a} knew it was going to as it was happening.',
       '{a} cannot take it back and spends the rest of the hour working out who saw.',
       'It gets away from {a}, briefly, and briefly is all it takes in a building this size.',
       '{a} has made tonight harder for {a}, and has nobody to blame for it.',
+      'That is going to be quoted back, and {a} could name the person who will quote it.',
+      '{a} spends the next hour finding out how far it went, and it went further than that.',
+      'It is out. There is no version of the evening where {a} gets it back.',
+      '{a} has given the room something to do with {a}, which is the last thing {a} needed.',
+      'Somebody heard the whole of that, and {a} does not know which somebody.',
+      'It costs {a} a name at the table tonight and {a} can already feel which one.',
+      '{a} would take it back. {a} has been in this format long enough to know that is not on offer.',
+      'The damage is small and it is the kind that compounds.',
     ],
   },
   carried: {
@@ -1994,10 +2133,26 @@ const CONSEQ_SINGLE = {
       '{a} does it again and it costs about what it cost last time, which is manageable.',
       'It repeats, quietly, and nothing about it has got any easier or any worse.',
       'Another day of it. {a} has stopped noticing that {a} is doing it at all.',
+      'It has become a habit rather than a decision, which is how most of these end.',
+      'The second time is easier. The third one was easier than that.',
+      '{a} has done this enough times now that there is a rhythm to it.',
+      'It is the same weight and {a} has got better at carrying it.',
+      'Nothing new. That is not the same as nothing.',
+      'By now {a} could do it without thinking, and increasingly does.',
+      'It repeats because it works, and {a} has stopped asking whether it still does.',
+      'Another morning, the same shape, and {a} is a fraction further in than yesterday.',
     ],
     adverse: [
       'It is getting heavier. {a} has nowhere to set it down and nobody safe to set it down in front of.',
       '{a} does it again, and is worse at it than the last time, and can tell.',
+      'It is costing more each time and {a} has not found a way to stop.',
+      'The third one is where it stops looking like bad luck to anybody watching.',
+      '{a} is further in than {a} meant to be and cannot see the way back from here.',
+      'It compounds. Everything in this building compounds.',
+      '{a} knows exactly how this ends and does it again anyway.',
+      'Every repeat makes the first one look worse, and there have been several.',
+      'It is heavier than yesterday and yesterday was heavier than the day before.',
+      '{a} has run out of ways to make this one mean something else.',
       'The second one is harder than the first, and {a} has no reason to think the third will not be harder still.',
       '{a} is running out of room to do this in, and there is a week of it left.',
     ],
@@ -2092,11 +2247,25 @@ const OUTCOME_CLAUSE = {
  * the conversation had come up once this morning. A lead that contradicts its
  * own tail is worse than no lead. Found by dumping a day and reading it.
  */
+// ── WIDENED (fix round 1, C1b, third pass) ────────────────────────────
+//
+// Named explicitly in the review alongside REACT_SINGLE and CONSEQ_SINGLE. The
+// recall lead prints on every carried scene, and a carried scene is now much
+// commoner than it was when these were written at four lines: Task 7 took the
+// castle to ~28 fired scenes an episode and gave the pool 73 advancers, so a
+// season draws these several times a day rather than a few times a week.
+// Four became ten.
 const RECALL_LEAD_DAYS = [
   'This did not start this morning, and both of them know exactly when it did.',
   'This is not the first time these two have stood somewhere and had this exact conversation.',
   'It is older than today, and both of them know precisely how much older.',
   'The argument arrives already halfway through, because it started days ago.',
+  'Neither of them has to explain the beginning of it, because both of them were there.',
+  'They have had this conversation before, in a different room, on a worse day.',
+  'Whatever this is, it has been going long enough to have a shorthand.',
+  'The two of them arrive at the middle of it without either one setting it up.',
+  'This has history, and both of them are carrying their half of it.',
+  'It has been between them since well before this morning, and neither pretends otherwise.',
 ];
 /** The same two, for a scene with nobody in it to be the other half of "both". */
 const RECALL_LEAD_DAYS_SOLO = [
@@ -2104,12 +2273,24 @@ const RECALL_LEAD_DAYS_SOLO = [
   '{a} has done a version of this before, and not long ago.',
   'It is older than today, and {a} knows exactly how much older.',
   'Whatever this is, {a} has been carrying it since well before this morning.',
+  '{a} has been round this before, more than once, and knows the shape of it.',
+  'It started days ago and {a} has not put it down since.',
+  'This is not new to {a}, and {a} could say which morning it started on.',
+  '{a} picks it up exactly where {a} left it, which is some way in.',
+  'There is a history to this and all of it is {a}\'s.',
+  '{a} did not arrive at this today. {a} arrived at it some time ago.',
 ];
 const RECALL_LEAD_TODAY_SOLO = [
   '{a} has already been here once today, and here {a} is again.',
   'The second time since breakfast, and nobody has seen {a} do it once.',
   'It did not keep. {a} is back at it before the day is out.',
   '{a} could not leave it alone for the length of an afternoon.',
+  'Twice before dark, and {a} would say it was once.',
+  '{a} is back on it already, which is faster than {a} meant to be.',
+  'It kept for about four hours, which is longer than {a} expected of it.',
+  '{a} has been here once today and here {a} is again, sooner.',
+  'The same thing, the same day, and {a} has not noticed it is the same.',
+  'It did not survive the afternoon. Very little does with {a}.',
 ];
 /**
  * And again for three or more, because "both of them know exactly when it did"
@@ -2121,18 +2302,36 @@ const RECALL_LEAD_DAYS_GROUP = [
   'This has been running for days, and everybody standing here is part of why.',
   'It did not start this morning, and not one of them is hearing it for the first time.',
   'They have all been carrying some part of this since well before today.',
+  'Every one of them could name a different day this started on, and all of them would be right.',
+  'It has been going long enough that nobody bothers explaining it to anybody.',
+  'This is old, and the room has been standing in it for some time.',
+  'Nobody here is new to this, which is why nobody sets it up.',
+  'It goes back further than any of them will say out loud.',
+  'All of them have a version of where this began and none of them agree.',
 ];
 const RECALL_LEAD_TODAY_GROUP = [
   'This has already come up once today, and it has picked up people since.',
   'The second time today, and there are more of them in it than there were this morning.',
   'It did not keep, and it did not stay between the two who started it.',
   'They are back on it before the day is out, and the room is bigger this time.',
+  'The same subject, hours later, and two more people have joined it.',
+  'It came up at breakfast and it is up again, with an audience.',
+  'Twice in one day, and the second time nobody kept it quiet.',
+  'It has picked up people since this morning, which is what these do.',
+  'They are at it again and the room has stopped pretending not to listen.',
+  'Round two, same day, more of them in it.',
 ];
 const RECALL_LEAD_TODAY = [
   'Neither of them has left it alone for more than a couple of hours.',
   'It was not going to wait until tomorrow, and neither of them tried to make it.',
   'They are back at it, and the second go is shorter and a good deal sharper.',
   'Whatever was settled the first time did not stay settled for long.',
+  'The second go is happening before the first one has finished cooling.',
+  'Neither of them waited. It came back up inside the afternoon.',
+  'It did not keep for a day, or an evening, or in the end for an hour.',
+  'They are back on it, and this time nobody is being careful.',
+  'Once was not enough for either of them, apparently.',
+  'The subject came back before the room had finished with the first version.',
 ];
 
 /**
@@ -3239,6 +3438,11 @@ const UNSPOKEN = [
   'No reference was made to any of it. This is the same story, and it started on day {d}.',
   'They did not have to say what it was about. It has been what it was about since day {d}.',
   'Said as though it were the first time. It is not; it has been going since day {d}.',
+  'Neither of them mentioned day {d}, which is where all of this actually starts.',
+  'The day itself went unmentioned. It was day {d}, and both of them know it.',
+  'Not a word about day {d}. It is the whole reason this conversation exists.',
+  'It has been running since day {d} and nobody in the room said the number.',
+  'Day {d} did not come up. Day {d} did not need to.',
 ];
 
 /** Twice in one round, between the same people, about the same thing. */

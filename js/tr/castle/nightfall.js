@@ -495,7 +495,7 @@ const ONE_VOTE_AWAY = {
   'promised-nothing': [
     '{b} offered {a} something reassuring and {a} declined it, politely, which unsettled {b} more than a row.',
     '“Don’t promise me anything,” {a} said to {b}. “I’d rather know where I actually stand.”',
-    '{b} said {a} was safe and {a} pointed out, without heat, that {b} does not get to decide that.',
+    '{b} said {a} was safe and {a} pointed out, quite evenly, that {b} does not get to decide that.',
     '{a} would not take the comfort, and {b} spent a while afterwards working out what that meant.',
     '“You said that last week too,” {a} said to {b}, and rolled over, and did not say anything else.',
   ],

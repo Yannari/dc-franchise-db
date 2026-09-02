@@ -316,7 +316,7 @@ const REASON_LINES = {
   ],
   'wasted-decoy': [
     'Half that room already thinks {t} is one of us. I would rather settle it tonight than let it run and turn into something we cannot steer.',
-    'The heat is on {t} anyway. Taking {obj} now looks like exactly what the room already believes, and the room believing something is the closest thing to safety we get.',
+    'The room is on {t} anyway. Taking {obj} now looks like exactly what the room already believes, and the room believing something is the closest thing to safety we get.',
     '{T} is where all the suspicion in this castle currently lives. I say we spend it while it is still worth something.',
     'Everyone is already pointing at {t}. Let them be right about the wrong person once, and see what it does to their confidence afterwards.',
   ],

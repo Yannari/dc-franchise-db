@@ -10,14 +10,25 @@
 // depending on how many of the four beat kinds (establish/action/reaction/
 // consequence) its observer stream carries.
 //
-// Task 6 (the VP rewrite) and Task 7 (the ~210-event library) are not built
-// yet, so THE FULL CARD COUNT CANNOT BE MEASURED HERE — there is no card
-// renderer to run a scene through. What this file measures instead is the
-// one number already real: how many SCENES a standard episode's six phases
-// actually produce, over representative seeds and cast sizes, off the
-// starting ranges the brief specifies (3-5, 5-8, 4-6, 6-9, 4-7, 2-4). That
-// count is Task 12's other half of the arithmetic; see task-5-report.md for
-// how the two combine and what they imply about the starting ranges.
+// RE-BASELINED AFTER TASK 7 (fix round 1, I1). The paragraph that stood here
+// described a world that no longer exists — "Task 7 (the ~210-event library) is
+// not built yet", "a mean around 8-12", "a single boundary-exact hit". Task 7
+// shipped, the library is 128 events, and a standard 18-person table episode
+// now averages 27.4 castle scenes. The comment at the foot of the old arm said
+// in as many words that whoever landed Task 7 should expect to re-baseline
+// this file; that is what this is.
+//
+// WHY IT MATTERED THAT IT WAS STALE. The only shipped assertion touching the
+// 25-scene number was `sawFullDay` — "at least one episode in this scan
+// touched 25". It passed at a mean of 12.8 and it passes at 27.4, so a
+// regression of THIRTEEN SCENES AN EPISODE, which is the whole of what Task 7
+// bought, would have left this file green. The largest deliverable in the task
+// had no assertion behind it.
+//
+// WHAT IS ASSERTED NOW is the MEAN over the scan, plus the SHARE of episodes
+// that clear 25 — not a per-episode floor, because a per-episode floor would
+// be red on arrival and would be lying about the distribution. The numbers are
+// in the arm below.
 import { describe, expect, it } from 'vitest';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
@@ -102,51 +113,78 @@ describe('phase budgets: arithmetic sanity', () => {
 });
 
 describe('measured scene counts (a standard 18-person episode)', () => {
-  // MEASURED, NOT ASSUMED: against the real, currently-registered ~98-event
-  // pool (Task 7's ~210-event library is not built yet), a single table
-  // episode's fired scene count is 0-28 across this scan, with a mean around
-  // 8-12 depending on cast size — well under a hard per-episode 25 floor.
-  // The bottleneck is eligible-event exhaustion inside `runWindow` (see
-  // js/tr/events.js's header comment: most events have sharp, rare
-  // preconditions BY DESIGN), not the phase budgets in js/tr/castle/phases.js
-  // — `private-strategy` (backed by 27 registered `evening` events) already
-  // lands near its own 6-9 ceiling most rounds, while `mission-fallout`
-  // (backed by only 6 `journey-back` events) frequently fires zero. Raising
-  // the ranges further would not move this number; the pot already goes
-  // unspent in the thin windows. See task-5-report.md for the full
-  // arithmetic and why this is Task 7's gap to close, not a Task 5 retune.
+  // ── THE DISTRIBUTION, MEASURED, BEFORE ANY BAND IS SET ───────────────
   //
-  // What IS asserted, precisely: across the WHOLE scan below (14 seeds x 3
-  // cast sizes, n=112+ table episodes) the fired count touched >=25 exactly
-  // ONCE. That is a single boundary-exact hit, not a comfortable margin —
-  // fix round 1 corrected earlier wording ("demonstrably capable") that
-  // overstated this as proof of reliable capability. The honest claim this
-  // assertion makes is narrower: the scheduler is not STRUCTURALLY incapable
-  // of a 25-scene day, so a red result here means something changed, not
-  // that the ceiling was always out of reach.
+  // 14 seeds x an 18-person cast, table episodes only, ENDGAME ROUNDS
+  // EXCLUDED. The exclusion is not tidying: an endgame round runs no mission,
+  // so it has two fewer windows by construction and is a different animal from
+  // a standard episode, which is what the 25-scene number is about. Both
+  // populations are printed by the reporting arm below so the choice is
+  // visible rather than assumed.
   //
-  // RE-BASELINING, NOT REGRESSION, IS THE FIRST HYPOTHESIS. Because the one
-  // passing sample sits exactly on the boundary, this arm is sensitive to
-  // Task 7 harmlessly adding even one or two events to a thin window
-  // (`journey-back` at 6, `night` at 7) and nudging that single case either
-  // side of 25. Whoever lands Task 7 should expect this test to need
-  // re-baselining as the library grows — a red result here should be
-  // investigated as "did the boundary case move" before being treated as a
-  // regression.
-  it('the schedule touches a 25-scene day at least once in the scan', () => {
-    let sawFullDay = false;
+  //     n=94   min 0   p10 24   median 30   mean 27.39   max 37
+  //     episodes at or above 25: 87.2%
+  //
+  // THREE THINGS THAT FOLLOW, and the third is why this is not a per-episode
+  // floor:
+  //
+  //   1. THE MEAN IS THE DELIVERABLE. Task 7's target was >=25 scenes an
+  //      episode and it lands at 27.4. Banding the mean at 24 puts a real
+  //      number under the task's largest claim: a regression of the size Task
+  //      7's `runWindow` fix is worth (~5 scenes) leaves it green, and a
+  //      regression of the size Task 7 itself is worth (~13) does not.
+  //   2. THE SHARE IS BANDED TOO, because a mean can be held up by a long
+  //      right tail while most episodes are thin. 87.2% of episodes clear 25;
+  //      the band is 60%, which is well clear of today and would redden on a
+  //      distribution that had gone bimodal.
+  //   3. THERE IS NO PER-EPISODE FLOOR, ON PURPOSE. 12.8% of episodes are
+  //      below 25 and the tenth percentile is 24, so a naive per-episode
+  //      `>= 25` would be red the day it was written. Some of those are the
+  //      last rounds of a season with six people left in the castle, which is
+  //      a smaller building with less going on in it and SHOULD produce fewer
+  //      scenes. Asserting what is true is the whole point; asserting what
+  //      sounds strongest is how a file ends up with `sawFullDay` in it.
+  function standardEpisodeCounts(castSize = 18) {
+    const counts = [];
     for (const seed of SEEDS) {
-      for (const row of tableRows(18, seed)) {
-        const total = row.tr.castle.phases.flatMap(p => p.scenes).length;
-        if (total >= 25) sawFullDay = true;
+      for (const row of tableRows(castSize, seed)) {
+        if (row.tr.endgame) continue;
+        counts.push(row.tr.castle.phases.flatMap(p => p.scenes).length);
       }
     }
-    expect(sawFullDay, 'not one episode in this scan touched a 25-scene day — '
-      + 'that would mean the phase-budget scheduler itself is structurally '
-      + 'incapable of it, not just pool-limited (see the header comment above: '
-      + 'the passing case is a single boundary-exact hit, and this arm is '
-      + 'expected to need re-baselining as Task 7 changes the pool)')
-      .toBe(true);
+    return counts.sort((a, b) => a - b);
+  }
+
+  it('a standard episode averages the scene count the task was built to deliver', () => {
+    const counts = standardEpisodeCounts(18);
+    const mean = counts.reduce((a, b) => a + b, 0) / counts.length;
+    const atLeast25 = counts.filter(n => n >= 25).length / counts.length;
+    console.log(`\n[tr-episode-density] 18-cast standard episodes: n=${counts.length} `
+      + `min=${counts[0]} p10=${counts[Math.floor(counts.length * 0.1)]} `
+      + `median=${counts[Math.floor(counts.length / 2)]} mean=${mean.toFixed(2)} `
+      + `max=${counts[counts.length - 1]} at-or-above-25=${(atLeast25 * 100).toFixed(1)}%`);
+
+    // ANTI-VACUITY: the scan has to have found episodes to measure.
+    expect(counts.length, 'no standard table episodes were measured at all')
+      .toBeGreaterThan(60);
+    expect(mean, `the castle averages ${mean.toFixed(2)} scenes a standard episode, against `
+      + 'the 27.4 Task 7 delivered — this is the assertion that number never had')
+      .toBeGreaterThan(24);
+    expect(atLeast25, `only ${(atLeast25 * 100).toFixed(1)}% of standard episodes reach 25 `
+      + 'scenes — the mean is being held up by a tail rather than by the body')
+      .toBeGreaterThan(0.6);
+  });
+
+  it('and the scheduler is not structurally capped below the band', () => {
+    // WHAT `sawFullDay` USED TO BE, kept because the claim is still worth
+    // making and is now made about the top of the distribution rather than
+    // about a single boundary-exact hit. If the maximum a season can produce
+    // collapses, the mean band above may still pass for a while on a narrowed
+    // distribution; this catches the ceiling falling on its own.
+    const counts = standardEpisodeCounts(18);
+    expect(counts[counts.length - 1], 'the busiest episode in the whole scan is under 30 '
+      + 'scenes — the scheduler, not the pool, has become the limit')
+      .toBeGreaterThanOrEqual(30);
   });
 
   it('reports the measured min/mean/max scene count across seeds and cast sizes', () => {

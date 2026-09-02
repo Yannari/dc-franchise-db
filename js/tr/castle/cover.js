@@ -875,7 +875,7 @@ registerEvent({
 // scene, and there are four things: keep it, use it unprompted, decide the
 // having of it is the danger, or find out the other party has been telling it.
 const RECRUIT_COVER_LINES = {
-  'recruit-story-covered': [
+  'recruit-story-kept': [
     '{a} had a whole account ready for where they’d been the night they made that offer. Nobody had even asked.',
     '{a} has an account of that night ready to go, polished, unrequested, and gathering dust.',
     'Somewhere in {a}’s head is a very good explanation for a conversation nobody knows happened.',
@@ -911,7 +911,7 @@ const RECRUIT_COVER_LINES = {
     'It turns out the other half of that conversation has not been treating it as a secret.',
     '{a}’s story is airtight and is about a night the castle already has a version of.',
     'Somebody said the thing at breakfast and {a} had to arrange a face for it.',
-    'The account {a} prepared is now a defence rather than a cover, which is a different job.',
+    'The account {a} prepared is now a defence rather than a screen, which is a different job.',
     '{a} learned that the person who refused has been dining out on refusing.',
     'What {a} had was a secret. What {a} has is a position, and it is worse.',
   ],
@@ -949,14 +949,14 @@ registerEvent({
     const refuser = mine[0]?.player || null;
     const age = Math.max(0, ctx.ep - (mine[0]?.ep ?? ctx.ep));
     const scores = {
-      'recruit-story-covered': 0.4 + (st.temperament / 10) * 0.15,
+      'recruit-story-kept': 0.4 + (st.temperament / 10) * 0.15,
       'told-it-unasked': (1 - st.temperament / 10) * 0.3 + Math.min(3, age) * 0.05,
       'binned-it': (st.intuition / 10) * 0.25 + Math.min(3, age) * 0.06,
       'they-told-it-first': refuser ? 0.15 + (1 - pStats(refuser).loyalty / 10) * 0.25 : 0,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
-    let roll = rng() * total, branch = 'recruit-story-covered';
+    let roll = rng() * total, branch = 'recruit-story-kept';
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
     const sceneWhy = branch === 'told-it-unasked' ? 'gave an alibi nobody had asked for'

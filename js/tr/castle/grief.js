@@ -29,6 +29,42 @@ const FAMILY = 'grief';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 
+// ── THE BALLOT BEHIND A MOOD, OR NOTHING (fix round 1, C3) ────────────
+//
+// THE DEFECT, MEASURED: `grief-nobody-sleeps` printed "Somebody had said {a}'s
+// name tonight" and "One name said out loud at that table..." off nothing but
+// `ctx.state === 'paranoid'`, and 6.0% of paranoid firings (16 of 265 over 300
+// seasons) had ZERO votes and ZERO accusations against that person at the last
+// table — including episode one, before any Round Table has been held at all.
+// A sentence about a ballot that no ballot supports is exactly what the causal
+// writing contract exists to prevent, and no assertion in the suite could see
+// it, because the branch label and the firing counts were all perfectly healthy.
+//
+// WHERE THE UNGROUNDED STATE COMES FROM. `emotionalStateOf` (js/tr/events.js)
+// derives `paranoid`/`desperate` from the round record, and that path really
+// does require `votes >= 1` or two accusers — so the derivation is sound. The
+// hole is the OVERRIDE path: `setEmotionalState` lets a scene declare a mood,
+// and `mission-the-long-walk:caught-up-with-it` sets `paranoid` off a private
+// hour on the road home where nobody said anything to anybody. On episode one
+// there is no round at all, so an override is the ONLY way to be paranoid, and
+// every one of those firings claimed a table that had not happened.
+//
+// THE FIX IS THE ONE `after-you-wrote-my-name` ALREADY USES: read the ballots.
+// This returns the round the mood could have come from ONLY when that round
+// actually names the person, so a line that cites the table is reachable only
+// when the table can be cited. It deliberately reads `rounds[rounds.length-1]`
+// — the same record `emotionalStateOf` read — rather than `table(ctx)`, which
+// requires tonight's: `night` sees tonight's table and `dawn` sees last
+// night's, and both are a real ballot this person's name was really on.
+function _ballotBehind(actor) {
+  const rounds = gs.tr?.rounds || [];
+  const last = rounds[rounds.length - 1];
+  if (!last || !actor) return null;
+  const voted = (last.ballots || []).some(b => b.voted === actor);
+  const named = (last.accusations || []).some(a => a.target === actor);
+  return (voted || named) ? last : null;
+}
+
 /** Was there a murder in the round that just closed? Shared by every event below. */
 function _victimLastNight(ep) {
   const rounds = gs?.tr?.rounds;
@@ -1325,11 +1361,16 @@ registerEvent({
     // WHAT THE ROOM KNEW, AND WHY, said in the scene rather than asserted.
     // Both clauses cite the public ballots of the last Round Table — the thing
     // the whole castle watched happen — and neither reads anybody's role.
-    const why = state === 'desperate'
-      ? ` It was not really about the empty chair; ${actor} had watched the room write their own name down and was still counting.`
-      : state === 'paranoid'
-        ? ` Somebody had said ${actor}'s name at that table, and it had not stopped ringing since.`
-        : '';
+    // C3: THE SAME DEFECT, HARDCODED. Both clauses cite the last Round Table,
+    // and `came-down-angry` below SETS `paranoid` through `setEmotionalState`
+    // — so this event can cause the mood it then reads and narrate a ballot
+    // that never existed. The clause is now gated on the record naming this
+    // person, exactly as `after-you-wrote-my-name` gates its own.
+    const behind = isNervy(state) ? _ballotBehind(actor) : null;
+    const why = !behind ? ''
+      : state === 'desperate'
+        ? ` It was not really about the empty chair; ${actor} had watched the room write their own name down and was still counting.`
+        : ` Somebody had said ${actor}'s name at that table, and it had not stopped ringing since.`;
     const line = lineFor(CRIES_ALONE_LINES[branch],
       `grief-someone-cries-alone|${branch}|${ctx.ep}|${state || 'content'}`,
       { a: actor, c: finder || 'somebody' });
@@ -1523,6 +1564,25 @@ const NIGHT_AWAKE_LINES = {
     'Every creak in the building was somebody deciding something about {a}, and {a} knew that was nonsense, and lay there anyway.',
     '{a} replayed one sentence from the table until they had heard four different meanings in it.',
   ],
+  // THE SAME NIGHT WITH NO BALLOT UNDER IT (fix round 1, C3). Reachable only
+  // when the mood came from somewhere other than the room's votes — an
+  // override written by a scene, or an episode with no table behind it yet.
+  // Not one of these says anybody voted, said a name, or sat at a table,
+  // because on this branch the record does not say that they did.
+  unfounded: [
+    '{a} could not name a single thing that had gone wrong today and lay awake about it anyway.',
+    'Nothing happened. {a} spent four hours going over the nothing.',
+    '{a} kept coming back to who had looked away first, and could not let the question go long enough to sleep.',
+    'Every creak in the building was somebody deciding something about {a}, and {a} knew that was nonsense, and lay there anyway.',
+    '{a} counted who had been kind to them today and could not decide what any of it had meant.',
+    'Somewhere in the dark {a} started ranking the room by who had not looked at them, which is no way to sleep.',
+    'It is a feeling rather than a fact, and at three in the morning {a} could not tell the difference.',
+    '{a} listened to the corridor for a long time and could not decide whether it had gone quiet or always was.',
+    '{a} rehearsed a conversation nobody has asked for, twice, and then a third time.',
+    'There is no evidence for any of it. {a} lay there assembling some.',
+    '{a} went under twice and came back up both times with the same face in front of them.',
+    'By four {a} had built a whole case out of an afternoon and could not find the first brick of it.',
+  ],
   content: [
     '{a} lay awake with the empty beds, doing the arithmetic nobody says out loud.',
     'The castle went very quiet at night once there were fewer people in it, and {a} noticed.',
@@ -1594,7 +1654,12 @@ registerEvent({
     // 363 wrong across 200 seasons. `peopleLost` is cast minus living, which
     // cannot miss an exit that has no paperwork.
     const gone = peopleLost(gs);
-    const line = pick(rng, NIGHT_AWAKE_LINES[state] || NIGHT_AWAKE_LINES.content)
+    // C3: A NERVY MOOD IS NOT A BALLOT. Three of the `paranoid` lines and both
+    // of the `desperate` ones cite the table; they are reachable only when the
+    // record names this person on it. See `_ballotBehind` above.
+    const grounded = !isNervy(state) || !!_ballotBehind(actor);
+    const pool = grounded ? state : 'unfounded';
+    const line = pick(rng, NIGHT_AWAKE_LINES[pool] || NIGHT_AWAKE_LINES.content)
       .replace(/\{a\}/g, actor);
     const tail = gone === 1 ? 'One empty bed, so far.' : `${gone} empty beds, so far.`;
     const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: `${line} ${tail}` });
@@ -1602,6 +1667,9 @@ registerEvent({
     // (id, branch) table read this as one outcome fired five times in a
     // season when it is three genuinely different scenes chosen by the last
     // Round Table, and that table is how repetition gets noticed at all.
-    return { branch: `awake-${state}`, actor, state, gone, threadId: t?.id };
+    // AND THE BRANCH SAYS WHICH, so the repetition table can see the two apart
+    // — the same reasoning the note above gives for not returning a constant.
+    return { branch: grounded ? `awake-${state}` : 'awake-unfounded',
+      actor, state, grounded, gone, threadId: t?.id };
   },
 });

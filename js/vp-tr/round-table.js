@@ -1486,7 +1486,7 @@ const COUNT_TEXT = [
 ];
 const TIE_TEXT = [
   'Level. The format is unkind about this: only the tied are in question, and they are not allowed to speak for themselves with chalk.',
-  'A dead heat, so the room goes again — without the two people it is about.',
+  'Level pegging, so the room goes again — without the two people it is about.',
   'Split down the middle. The tied put their chalk down and watch everybody else pick theirs up.',
   'Nobody has a majority. The room does it again, and this time the people at risk have no say in it.',
 ];
@@ -1528,7 +1528,7 @@ const SPEECH_BURN = [
   'One last accusation, thrown from the doorway.',
 ];
 const SPEECH_QUIET = [
-  'It is said without heat, which somehow lands harder.',
+  'It is said quite evenly, which somehow lands harder.',
   'A last sentence, and it is almost kind.',
   'No shouting. Just the name and the door.',
   'Said evenly, to a room that will be arguing about it by breakfast.',

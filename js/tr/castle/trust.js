@@ -662,7 +662,7 @@ const HUDDLE_LINES = {
     '{a} is very good at this, and being very good at this is a thing worth noticing about somebody.',
     '{b} was grateful for the ten minutes and then saw the same ten minutes given to three others.',
     'The kindness was real and it was also, from a certain angle, a tour.',
-    '{a} made sure nobody was alone this morning, which is either decency or coverage.',
+    '{a} made sure nobody was alone this morning, which is either decency or a tour.',
     '{b} could not decide whether {a} was the kindest person here or the busiest.',
     'Everybody got the same sentence from {a}, word for word, which {b} clocked at the fourth repeat.',
   ],
@@ -1657,7 +1657,7 @@ const LAST_WORD_LINES = {
   hedged: [
     '{a} asked in the dark and {b} gave an answer with just enough air in it to climb back out of later.',
     '{b} said something that sounded like yes to {a}, and neither of them called it what it was.',
-    'The answer {b} gave {a} at lights-out would have covered either outcome, which {a} noticed and let go.',
+    'The answer {b} gave {a} at lights-out would have served for either outcome, which {a} noticed and let go.',
     '{b} promised {a} everything except the one thing {a} had asked for.',
     '{a} lay there afterwards working out what {b} had actually agreed to, and could not.',
   ],

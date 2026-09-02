@@ -815,7 +815,18 @@ export function runWindow(window, ep, rng) {
   // away the whole rest of the window's budget.
   //
   // MEASURED, per (window, draw shape), over 60 seasons — the mean number of
-  // events with a positive weight facing one draw:
+  // events with a positive weight facing one draw.
+  //
+  // WHICH BUILD THESE CAME FROM (fix round 1). This table was taken BEFORE the
+  // stage-6 rewrites, on the 128-event pool as stage 5 left it, and the review
+  // was right that it reads as though it were one measurement of one tree when
+  // it is not: the yield table below was re-measured afterwards and the
+  // eligibility figures here were not. They are kept because what they are
+  // evidence FOR — that a solo draw faces almost nothing in `evening` and that
+  // this is why `break` was throwing the window away — is a property of the
+  // shape of the pool rather than of its exact contents, and stage 6 changed
+  // the contents without changing that shape. They should not be quoted as
+  // current numbers.
   //
   //     window          solo    pair
   //     dawn            2.02    6.52
@@ -837,26 +848,48 @@ export function runWindow(window, ep, rng) {
   // termination, since each retry consumes rng and nothing else would stop
   // the loop on a genuinely empty window.
   //
-  // WHAT IT IS WORTH, measured on 150 seeded seasons of the 20-player
-  // reachability fixture, with no content change of any kind:
+  // WHAT IT IS WORTH. RE-MEASURED AT THE FIX-ROUND-1 TIP (the numbers that
+  // stood here were taken on the stage-5 tree and no longer reproduced), 150
+  // seeded seasons of the 20-player reachability fixture, sweeping only this
+  // constant and changing nothing else:
   //
-  //     break (before)          19.107 scenes/episode
-  //     skip, limit 2           24.111
-  //     skip, limit 3           25.515   <- shipped
-  //     skip, limit 5           28.104
-  //     skip, limit 8           27.919   (the phase budgets bind; it saturates)
+  //     limit 1 (= the old `break`)   21.148 scenes/episode
+  //     limit 2                       25.842
+  //     limit 3                       26.877   <- shipped
+  //     limit 4                       28.454
+  //     limit 5                       28.435
+  //     limit 8                       28.207   (the phase budgets bind)
   //
-  // THREE AND NOT FIVE, DELIBERATELY. Five lands nearer stage 1's 28.5 target
-  // and inside the same band, and it costs more: every extra scene an episode
-  // is another chance for a narrow line pool to repeat inside a season, which
-  // is the defect tests/tr-castle-prose.test.js measures and the one this
-  // stage exists to reduce. Three clears the design's >=25 floor with margin
-  // and leaves the rest of the distance to be bought with content, where it
-  // does not have to be paid for twice.
+  // TWO CORRECTIONS TO WHAT THIS TABLE USED TO SAY. It is worth +5.73 scenes
+  // an episode, not the +5.6 quoted from the older tree; and it SATURATES AT
+  // FOUR, not at eight — 4, 5 and 8 are the same number inside noise, and the
+  // old table's jump between 5 and 8 was reading the phase budgets binding as
+  // if it were a trend.
   //
-  // It takes no draw of the GAME rng — `runWindow` is handed the castle
-  // layer's own stream (see `runCastlePhase`, js/tr/castle/phases.js) — so no
-  // murder, ballot or mission draw moves because of it.
+  // THREE AND NOT FOUR, DELIBERATELY. Four is worth another 1.6 scenes an
+  // episode and it costs more: every extra scene is another chance for a
+  // narrow line pool to repeat inside a season, which is the defect
+  // tests/tr-castle-prose.test.js measures. Three clears the design's >=25
+  // floor with margin (27.4 on a standard 18-cast episode — see
+  // tests/tr-episode-density.test.js, which now bands it) and leaves the rest
+  // of the distance to be bought with content, where it is not paid for twice.
+  //
+  // ── WHAT "NO DRAW MOVES" DOES AND DOES NOT MEAN (fix round 1) ────────
+  //
+  // `runWindow` is handed the castle layer's OWN rng stream (see
+  // `runCastlePhase`, js/tr/castle/phases.js), so changing this constant
+  // cannot advance the murder, ballot or mission streams: their draw sequence
+  // is untouched and a season replays exactly. The sentence that used to sit
+  // here said that and stopped, and it reads — wrongly — as a claim that the
+  // GAME comes out the same.
+  //
+  // IT DOES NOT. Measured, limit 1 against limit 3 over the same 150 seeds:
+  // 950 of 1,238 rounds (76.7%) end with a different (murdered, banished)
+  // pair, and every one of the 150 seasons differs somewhere. That is expected
+  // and it is the mechanism working rather than a leak: extra scenes write
+  // bonds, arcs and beliefs, and the deduction engine and the conclave read
+  // all three when they choose. A castle that produced more television and
+  // changed nothing about the game would be the thing worth worrying about.
   let barren = 0;
   while (drawnHere < cap && budget.used < budget.total) {
     // A fresh ctx (and fresh actors) per draw, not one shared ctx for the

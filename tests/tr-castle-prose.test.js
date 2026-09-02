@@ -50,12 +50,16 @@
 // pattern from `npm test` and this project has shipped four guards into that
 // hole. Collection verified by running the suite and watching the count.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
+import { _setDrawRule } from '../js/tr/castle/lines.js';
 import roster from '../franchise_roster.json';
 import { rpBuildCastleDay, castleDayScenes, BRANCH_TONES } from '../js/vp-tr/castle-day.js';
+import { rpBuildConclave } from '../js/vp-tr/conclave.js';
+import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
 import { screenNarration } from '../js/vp-tr/screens.js';
 import { _vpTextLines } from '../js/text-backlog.js';
 
@@ -233,6 +237,155 @@ describe('THE VARIETY FLOOR: an event that says one thing is one thing, however 
     const thin = rows.filter(r => r.d < 4);
     expect(thin.map(r => `${r.k} says it ${r.d} way(s) in ${r.n} firings`),
       'these branches print the same sentence every time they fire').toEqual([]);
+  });
+  // ── AND A FLOOR THAT THE DRAW RULE CANNOT SATISFY FOR IT ─────────────
+  //
+  // WHY THE ARM ABOVE STOPPED MEASURING ANYTHING (fix round 1, C1). Task 7
+  // added a season-scope round-robin to `lineFor` (js/tr/castle/lines.js): the
+  // hash picks a starting point and the draw then walks past whatever this
+  // (event, branch) has already spent this season. For any pool of four or
+  // more that GUARANTEES four distinct sentences before any of them repeats —
+  // so `d >= 4` above is now a property of the draw rule, not of the writing,
+  // and it cannot fail. The reviewer proved it: cutting the library's
+  // highest-firing pool from 18 lines to 3 left the ceiling at 2.83%, unmoved.
+  //
+  // SO POOL POVERTY IS MEASURED WHERE IT LIVES, WHICH IS THE SOURCE. This
+  // reads the pool arrays out of the castle files and counts them. It cannot
+  // be satisfied by a draw rule, a sampling accident or a season count,
+  // because it never runs a season at all.
+  //
+  // THE BAND IS FOUR, matching the plan's floor and the arm above, so this is
+  // a strict replacement of what that arm used to prove rather than a new
+  // demand. What it deliberately does NOT do is band the MEDIAN: 469 pools are
+  // still under nine lines, that is Task 11's work, and a band nobody can pass
+  // today is a band somebody deletes.
+  it('and no pool in the source is thinner than four, which the draw rule cannot fake', () => {
+    const FILES = ['trust', 'suspicion', 'grief', 'cover', 'romance', 'callback',
+      'testing', 'journey', 'mission-fallout', 'consequences', 'nightfall'];
+    const pools = [];
+    for (const f of FILES) {
+      const src = readFileSync(new URL('../js/tr/castle/' + f + '.js', import.meta.url), 'utf8');
+      const lines = src.split('\n');
+      let name = null; let count = 0;
+      for (const raw of lines) {
+        const t = raw.trim();
+        // A POOL OPENS: either `const NAME_LINES = [` or a keyed branch pool
+        // `'branch-name': [` / `branch: [` inside one.
+        const open = /^(?:const\s+([A-Z_]+)\s*=|\s*'?([\w-]+)'?\s*:)\s*\[$/.exec(t);
+        if (open) { name = `${f}:${open[1] || open[2]}`; count = 0; continue; }
+        if (name && /^['"]/.test(t)) { count++; continue; }
+        if (name && /^\],?$/.test(t)) { pools.push({ name, count }); name = null; }
+      }
+    }
+    // ANTI-VACUITY FIRST: a parser that stops matching would report a clean
+    // library forever, which is the exact shape of the guard it replaces.
+    expect(pools.length, 'no pools were parsed out of the castle source at all')
+      .toBeGreaterThan(400);
+    const total = pools.reduce((n, p) => n + p.count, 0);
+    expect(total, 'the pools parsed but hold almost no lines').toBeGreaterThan(3000);
+
+    const thin = pools.filter(p => p.count > 0 && p.count < 4)
+      .map(p => `${p.name} has ${p.count} line(s)`);
+    expect(thin, 'a pool in the source is thinner than the plan\'s floor of four — '
+      + 'the draw rule hides this from the firing-count arm above, so it is caught here')
+      .toEqual([]);
+
+    // AND THE DISTRIBUTION IS PRINTED, not banded, so Task 11 inherits a number
+    // rather than a feeling about the 469.
+    const under9 = pools.filter(p => p.count > 0 && p.count < 9).length;
+    const sorted = pools.filter(p => p.count > 0).map(p => p.count).sort((a, b) => a - b);
+    console.log(`\n=== POOL WIDTH IN THE SOURCE (${pools.length} pools, ${total} lines) ===`);
+    console.log(`   min ${sorted[0]}  median ${sorted[Math.floor(sorted.length / 2)]}  `
+      + `max ${sorted[sorted.length - 1]}  under nine: ${under9}`);
+  });
+});
+
+describe('THE POOL HEALTH FLOOR: how varied the castle is WRITTEN, not how varied it reads', () => {
+  // ── WHY THIS EXISTS AND WHY IT IS A SEPARATE NUMBER (fix round 1, C1) ─
+  //
+  // The repetition ceiling below reports what a VIEWER experiences, and the
+  // draw rule in `lineFor` is a large part of why it is 2.83%. That is a real
+  // property and it is the right thing to band for the show. It is NOT a
+  // measurement of the writing, and Task 7's own note in lines.js claimed it
+  // was — the claim is corrected there and the counterfactual is banded here.
+  //
+  // SAME MEASUREMENT, SAME CONTENT, DRAW RULE HELD OFF: 9.67%. That is the
+  // honest state of the pools, and it fails the ceiling's own 4% band by a
+  // factor of two and a half. Nobody reading 2.83% should conclude the writing
+  // is finished; 448 pools are still under nine lines and Task 11 owns them.
+  //
+  // == THE DERIVATION, AND A DISCREPANCY STATED RATHER THAN SMOOTHED =====
+  //
+  // The review reported this counterfactual at 7.00%. Re-measured here it is
+  // 9.67%, and the difference is not noise, so it is recorded rather than
+  // averaged away. Four DISJOINT 600-season blocks (seed bases 0, 600, 1200,
+  // 1800), draw rule held off, measured in a standalone harness:
+  //
+  //     9.67%   10.50%   10.00%   9.83%      mean 10.00, sd 0.36pp
+  //
+  // and this arm, in-suite on seeds 1-600, reads 9.67% — the same figure as
+  // the base-0 block to the digit, so the two harnesses agree and the
+  // statistic is well determined. The same arm at N=400 read 8.00%: a 600
+  // sample is the point at which this stops wobbling, which is why N is 600
+  // and not the 400 it was first written at.
+  //
+  // I cannot reproduce 7.00% and do not know how it was obtained; what is
+  // certain is that BOTH figures are far above the 4% band and both say the
+  // same thing about the pools, which is the finding that matters.
+  //
+  // THE BAND IS A REGRESSION GUARD, NOT A TARGET. 13% sits 9.2 sd above the
+  // measured mean on the block sd above, so it reddens when the pools get
+  // THINNER and does not demand work this task was not asked to do. Task 11
+  // should tighten it as it widens them — that is the only direction it can
+  // move in, and a band nobody can pass today is a band somebody deletes.
+  it('with the draw rule held off, the same seasons still do not loop badly', () => {
+    const was = _setDrawRule(false);
+    try {
+      let loud = 0;
+      const N = 600;
+      for (let i = 1; i <= N; i++) {
+        setPlayers(ROSTER);
+        seedFranchiseHistory(CAST);
+        const seen = new Map();
+        // The fire() wrapper at the top of this file is still installed, so
+        // the firings land in FIRINGS; they are read back by season number
+        // rather than re-instrumented.
+        const before = FIRINGS.length;
+        playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: i });
+        for (let j = before; j < FIRINGS.length; j++) {
+          for (const s of FIRINGS[j].notes) seen.set(s, (seen.get(s) || 0) + 1);
+        }
+        for (const [, v] of seen) if (v >= 3) { loud++; break; }
+      }
+      const share = loud / N;
+      console.log(`\n=== POOL HEALTH (draw rule OFF, ${N} seasons) ===`);
+      console.log(`   seasons printing one sentence three times: ${loud} (${(share * 100).toFixed(2)}%)`);
+      console.log('   the same measurement with the rule ON is the ceiling below');
+      expect(loud, 'no season was measured, so this arm asserted nothing').toBeGreaterThan(0);
+      expect(share, `${loud} of ${N} seasons loop with the draw rule off — the POOLS have got `
+        + 'thinner, whatever the ceiling says').toBeLessThan(0.13);
+    } finally {
+      _setDrawRule(was);
+    }
+  }, 300000);
+
+  it('and the switch it uses actually switches something', () => {
+    // GUARD ON THE GUARD. If `_setDrawRule` stopped working, the arm above
+    // would silently measure the shipped configuration and pass forever at
+    // 2.83% — the same free-pass shape this file exists to prevent.
+    setPlayers(ROSTER);
+    seedFranchiseHistory(CAST);
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 777001 });
+    const on = FIRINGS.slice(-400).map(f => f.notes.join('|')).join('~');
+    const was = _setDrawRule(false);
+    setPlayers(ROSTER);
+    seedFranchiseHistory(CAST);
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 777001 });
+    _setDrawRule(was);
+    const off = FIRINGS.slice(-400).map(f => f.notes.join('|')).join('~');
+    expect(on.length, 'the season printed nothing').toBeGreaterThan(2000);
+    expect(off, 'the draw rule switch changed no sentence at all, so the arm above is '
+      + 'measuring the shipped configuration twice').not.toBe(on);
   });
 });
 
@@ -446,22 +599,129 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
       'no scene was composed').toBeGreaterThan(20);
   });
 
-  it('never presents engine vocabulary as story', () => {
-    let checked = 0;
-    for (const ep of TASK6_ROWS) {
-      // THE WORDS, NOT THE MARKUP. `screenNarration` takes the furniture out
-      // and `_vpTextLines` takes the stylesheet and the tags out; a scan of the
-      // raw string is a scan of 20KB of CSS, where `--dy-thread` is a variable
-      // name and not something the castle said.
-      const text = _vpTextLines(screenNarration(rpBuildCastleDay(ep, 'audience'))).join('\n');
-      expect(text.length, 'the day rendered nothing').toBeGreaterThan(400);
-      expect(text).not.toMatch(/\b(?:cover|thread|heat|opened today|the loom)\b/i);
-      checked++;
+  // ── THE DEBUG-WORD SWEEP, REBUILT (fix round 1, C2) ─────────────────
+  //
+  // WHAT WAS WRONG WITH IT, MEASURED BY THE REVIEWER: 73 hits in 422,503 cards
+  // over 400 seasons, and this arm was green the whole time. Three separate
+  // reasons, and all three are shapes rather than bad luck:
+  //
+  //   1. IT RENDERED ONE SEED. `TASK6_ROWS` is a single season (20260901), so
+  //      any line that seed never draws is unguarded. Every other arm in this
+  //      file plays thousands of seasons for exactly this reason and says so
+  //      at length; this one did not.
+  //   2. IT SCANNED ONE SCREEN. Only `rpBuildCastleDay`. Three of the
+  //      reviewer's hits are in `js/vp-tr/conclave.js` and
+  //      `js/vp-tr/round-table.js`, which this arm had never once looked at.
+  //   3. THE MATCHER MISSED INFLECTIONS. A bare `cover` alternative does not
+  //      match "coverage" or "covered", and both of those shipped.
+  //
+  // All three are fixed here. The word list is unchanged in substance — it is
+  // scene-api.js's own header list of debug vocabulary, and the point of it is
+  // that these words are engine furniture whatever grammatical form they
+  // arrive in.
+  const DEBUG_WORDS = /\b(?:cover|covers|covered|covering|coverage|thread|threads|threaded|heat|heats|heated|loom|looms|opened today)\b/i;
+
+  it('never presents engine vocabulary as story, across seasons and across screens', () => {
+    // A CORPUS, NOT A SEED. Twenty seasons rendered in full is ~30x the
+    // exposure of the single season this arm used to read, and it is about the
+    // largest sample that keeps this file's wall clock reasonable — the
+    // module-level statistics above already cost ~110s at 4,200 seasons, and
+    // those need no rendering at all. The seeds are decorrelated from
+    // 20260901 on purpose: a bug only this file's own fixture seed can reach
+    // is precisely the thing being guarded against.
+    const rows = [];
+    for (let seed = 90001; seed <= 90020; seed++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      for (const e of (gs.episodeHistory || [])) {
+        if (e.tr && e.tr.castle && (e.tr.castle.scenes || []).length) rows.push({ ...e });
+      }
     }
-    expect(checked, 'no day was scanned').toBeGreaterThan(4);
-    // GUARD ON THE GUARD: the matcher has to be able to match.
-    expect(/\b(?:cover|thread|heat|opened today|the loom)\b/i.test('Cover — Something starts'))
-      .toBe(true);
+    expect(rows.length, 'the corpus came back empty').toBeGreaterThan(150);
+
+    // AND EVERY SCREEN THE CASTLE'S OWN VOCABULARY CAN REACH, not just the
+    // day. The conclave and the Round Table are written by the same hands and
+    // draw on the same state; a debug word is exactly as wrong on either.
+    const screens = [
+      ['castle day', ep => rpBuildCastleDay(ep, 'audience')],
+      ['conclave', ep => rpBuildConclave(ep, 'audience')],
+      ['round table', ep => rpBuildRoundTable(ep, 'audience')],
+    ];
+    const hits = [];
+    let scanned = 0; let chars = 0;
+    for (const ep of rows) {
+      for (const [what, build] of screens) {
+        let html = '';
+        try { html = build(ep) || ''; } catch { continue; }   // a screen this row does not register
+        if (!html) continue;
+        // THE WORDS, NOT THE MARKUP. `screenNarration` takes the furniture out
+        // and `_vpTextLines` takes the stylesheet and the tags out; a scan of
+        // the raw string is a scan of 20KB of CSS, where `--dy-thread` is a
+        // variable name and not something the castle said.
+        const text = _vpTextLines(screenNarration(html)).join('\n');
+        if (text.length < 40) continue;
+        scanned++; chars += text.length;
+        const m = DEBUG_WORDS.exec(text);
+        if (m) {
+          const at = Math.max(0, m.index - 60);
+          hits.push(`ep ${ep.num} ${what}: "${m[0]}" in ...${text.slice(at, m.index + 70)}...`);
+        }
+      }
+    }
+    expect(scanned, 'no screen was scanned, so this arm asserted nothing')
+      .toBeGreaterThan(300);
+    expect(chars, 'the screens rendered almost no words').toBeGreaterThan(400000);
+    expect(hits.slice(0, 6), 'the screen is printing engine vocabulary as story')
+      .toEqual([]);
+  }, 300000);
+
+  it('and the matcher can match, including the inflections that shipped', () => {
+    // GUARD ON THE GUARD, and the second half of it is not decoration: three
+    // of these were live in the pool while the old matcher reported the
+    // library clean.
+    expect(DEBUG_WORDS.test('Cover — Something starts')).toBe(true);
+    expect(DEBUG_WORDS.test('would cover either outcome')).toBe(true);
+    expect(DEBUG_WORDS.test('would have covered either outcome')).toBe(true);
+    expect(DEBUG_WORDS.test('either decency or coverage')).toBe(true);
+    expect(DEBUG_WORDS.test('said it without heat')).toBe(true);
+    expect(DEBUG_WORDS.test('the rows said opened today')).toBe(true);
+    // and it does not fire on ordinary words that merely start the same way
+    expect(DEBUG_WORDS.test('the campaign was covert about nothing')).toBe(false);
+    expect(DEBUG_WORDS.test('a heather on the hill')).toBe(false);
+  });
+
+  // THE SOURCE SCAN IS THE OTHER HALF AND IS NOT REDUNDANT. The arm above
+  // reads what twenty seasons happened to DRAW; this reads what is WRITTEN, so
+  // a forbidden word typed into a pool no season reaches is still caught. Two
+  // different failure modes, two arms — the same reasoning the vocabulary
+  // guard in tr-vp.test.js gives for keeping both of its.
+  it('and no castle or castle-screen source file holds one at all', () => {
+    const FILES = ['js/vp-tr/castle-day.js', 'js/vp-tr/conclave.js', 'js/vp-tr/round-table.js',
+      'js/tr/castle/trust.js', 'js/tr/castle/suspicion.js', 'js/tr/castle/grief.js',
+      'js/tr/castle/cover.js', 'js/tr/castle/romance.js', 'js/tr/castle/callback.js',
+      'js/tr/castle/testing.js', 'js/tr/castle/journey.js', 'js/tr/castle/mission-fallout.js',
+      'js/tr/castle/consequences.js', 'js/tr/castle/nightfall.js'];
+    const bad = [];
+    let lines = 0;
+    for (const f of FILES) {
+      const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+      expect(src.length, `${f} is empty`).toBeGreaterThan(2000);
+      for (const raw of src.split('\n')) {
+        const t = raw.trim();
+        // A PROSE LINE, which is what this rule is about: a whole-line string
+        // literal out of a pool. Comments and identifiers are engine writing
+        // and are allowed to say `thread` — that is what the thing IS.
+        if (!/^['"].{10,}['"],?$/.test(t)) continue;
+        lines++;
+        const m = DEBUG_WORDS.exec(t);
+        if (m) bad.push(`${f}: [${m[0]}] ${t.slice(0, 100)}`);
+      }
+    }
+    expect(lines, 'no prose lines were found, so this arm read nothing')
+      .toBeGreaterThan(2000);
+    expect(bad, 'a pool holds engine vocabulary, whether or not a season draws it')
+      .toEqual([]);
   });
 
   it('every scene establishes action and consequence', () => {
@@ -622,45 +882,121 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // those across a season is a busy castle, and three is a pool collapsing.
     expect(thrice.length, 'composed cards are printing three times in one episode - a '
       + 'pool has collapsed: ' + thrice.join(' / ')).toBeLessThanOrEqual(2);
-    // ── A RATE, NOT A COUNT, AND THE RE-DERIVATION IS THE POINT ─────────
+    // ── A RATE, NOT A COUNT, RE-DERIVED AGAINST WHAT THIS ARM WALKS ────
     //
-    // `twice < 15` was a raw count over 45 rendered days, derived when a day
-    // held about 12.8 castle scenes. Task 7 stage 5's barren-draw fix in
-    // `runWindow` (js/tr/events.js) took a day to 27.0 scenes, so the SAME 45
-    // days now draw 2.1x as many composed cards out of the same screen pools,
-    // and the count read 19. A raw count whose denominator has doubled is not
-    // measuring pool quality any more; it is measuring how much television the
-    // castle makes.
+    // FIX ROUND 1. The block that stood here was wrong in three separate
+    // respects, and the third is the one that matters most:
     //
-    // WHAT ACTUALLY HAPPENED TO THE POOLS, measured rather than assumed. Per
-    // composed card drawn:
+    //   1. STALE. It quoted "19 repeats / 1215 cards = 1.56%". The shipped arm
+    //      measures 8 / 837 = 0.96%.
+    //   2. THE "STRICTLY HARDER" CLAIM WAS FALSE AS A COUNT. 2% of 837 is
+    //      16.7, so this rate permits SIXTEEN repeats where the count it
+    //      replaced permitted fourteen. It is stricter as a rate and
+    //      marginally looser as a count, and saying only the first half was
+    //      the kind of sentence this file exists to stop.
+    //   3. IT ARGUED OVER A DIFFERENT POPULATION THAN IT COMPUTES. The 576 and
+    //      1215 figures are 45 RENDERED DAYS across several seasons. This arm
+    //      walks `TASK6_ROWS`, which is ONE season: 10 episodes, 837 composed
+    //      cards. The numbers being reasoned about and the number being
+    //      asserted were never measured over the same thing.
     //
-    //     before this stage   6 repeats / 576 cards  =  1.04%
-    //     after               19        / 1215       =  1.56%
+    // SO IT IS RE-DERIVED AGAINST THE ARM'S OWN POPULATION, which is the
+    // choice made here rather than widening the arm — this block sits inside a
+    // describe whose whole subject is `TASK6_ROWS`, and every other arm in it
+    // walks that one season. Measured at the tip, seed 20260901:
     //
-    // and a probe listing every repeat by pool found no collapse -- they are
-    // spread across REACT, REACT_ADVERSE, CONSEQ and REACT_SOLO, which is the
-    // tail of a finite pool and exactly what this arm's own comment above
-    // predicts two-counts are. The pools the probe DID name twice were widened
-    // in js/vp-tr/castle-day.js rather than tolerated: REACT_SOLO 3 -> 6 a
-    // voice, CLOSE_BY_SENSE 3 -> 6 a sense, REACT_ADVERSE.pressure 2 -> 4.
+    //     episodes 10   composed 837   twice 8   thrice 0   rate 0.96%
     //
-    // THE BAND IS STRICTLY HARDER THAN THE ONE IT REPLACES. The old ceiling of
-    // 15, at the old 576-card denominator, permitted 2.60%. This permits 2.00%
-    // -- so a castle at the OLD throughput would fail this arm at a repeat
-    // count of 12, where the old arm passed it up to 14. Nothing was loosened;
-    // the denominator was named.
+    // THE BAND IS 2%, unchanged in value and now honest about what it means:
+    // 16 repeats out of 837, against a live 8. It is a rate rather than a count
+    // because the denominator moves with throughput — Task 7 took a day from
+    // 12.8 fired scenes to ~28 — and a count whose denominator has doubled is
+    // measuring how much television the castle makes, not how good its pools
+    // are. What it is NOT is "strictly harder than 15": at this denominator it
+    // is two repeats more permissive, and that is stated rather than spun.
     //
-    // AND THE DENOMINATOR IS PINNED, because a share can always be made to
-    // pass by measuring fewer things. If the castle ever renders materially
-    // fewer composed cards across these days, this floor goes red and somebody
-    // re-reads the rate rather than quietly enjoying it.
-    expect(composed, 'too few composed cards to measure a repeat rate against')
-      .toBeGreaterThan(600);
+    // AND THE DENOMINATOR IS PINNED AT 750, RAISED FROM 600. A share can
+    // always be made to pass by measuring fewer things. 600 was slack enough
+    // that a full regression of stage 5's `runWindow` barren-draw fix — which
+    // is worth about 5 scenes an episode, and put the composed count at 621
+    // two commits ago — would have slid underneath it and left this arm green
+    // on a castle half the size. 750 sits below the live 837 by about the
+    // margin a content batch moves and above anything a throughput regression
+    // could reach.
+    expect(composed, 'too few composed cards to measure a repeat rate against — the '
+      + 'castle is rendering materially less than it did when this rate was derived')
+      .toBeGreaterThan(750);
     expect(twice / composed, `${twice} of ${composed} composed cards repeated inside `
       + 'a single episode - the screen pools are too narrow for the throughput')
       .toBeLessThan(0.02);
   });
+
+  it('and does not print the same composed card over and over across a SEASON', () => {
+    // ── THE ARM THE PER-EPISODE ONE COULD NOT BE (fix round 1, C1b) ─────
+    //
+    // WHAT THE REVIEW MEASURED, AND WHY NOTHING HERE SAW IT: 100% of seasons
+    // printed the same composed card FOUR OR MORE times; median worst 9, worst
+    // 15, across 206,364 cards. The arm above is per EPISODE and by
+    // construction cannot see a card printed once an episode across ten of
+    // them — which is exactly the shape a four-element pool produces when
+    // `_pickUnique`'s `used` set is rebuilt every day.
+    //
+    // THE CAUSE, AND WHY THE FIX WAS WIDTH. `castleDayScenes` builds a fresh
+    // `used` set per episode, so a four-line pool drawn five times a day is
+    // exhausted and restarted every day. A season-scoped set would fix the
+    // count and break something worse: this function is called repeatedly for
+    // the same episode by the screen, the transcript and these guards, and the
+    // output would then depend on how many times it had already been called.
+    // So `REACT_SINGLE`, `CONSEQ_SINGLE` (4 -> 12), `REACT.bond`,
+    // `REACT.pressure` (3 -> 9) and the recall leads (4 -> 10) were widened
+    // instead. Median worst per season 9 -> 6, worst 15 -> 10.
+    //
+    // THE BAND IS THE WORST CARD IN A SEASON, which is what a viewer meets.
+    // Measured over 120 seasons at the tip: median 6, max 10, and every season
+    // still has some card at 4 or more — that last part is NOT fixed and is
+    // not claimed to be. The forty four-element pools in `CONSEQ` are the
+    // remaining exposure and they are Task 11's, alongside the 448 thin engine
+    // pools. This bands the MAXIMUM at 14, which reddens if any pool collapses
+    // or if throughput rises again without the pools following, and prints the
+    // distribution so the next task inherits a number instead of a feeling.
+    const N = 40;
+    const worst = [];
+    for (let seed = 60001; seed <= 60000 + N; seed++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      const seen = new Map();
+      let cards = 0;
+      for (const row of (gs.episodeHistory || [])) {
+        if (!row.tr || !row.tr.castle || !(row.tr.castle.scenes || []).length) continue;
+        if (row.tr.endgame) continue;
+        for (const scene of castleDayScenes(row, 'audience')) {
+          for (const beat of scene.observerText.audience) {
+            if (beat.kind === 'action') continue;      // the engine's own pools
+            seen.set(beat.text, (seen.get(beat.text) || 0) + 1);
+            cards++;
+          }
+        }
+      }
+      let w = 0; let what = '';
+      for (const [t, n] of seen) if (n > w) { w = n; what = t; }
+      worst.push({ w, what, cards });
+    }
+    const ws = worst.map(x => x.w).sort((a, b) => a - b);
+    const top = worst.reduce((a, b) => (b.w > a.w ? b : a));
+    console.log(`\n=== COMPOSED CARD REPETITION, SEASON SCOPE (${N} seasons) ===`);
+    console.log(`   worst card per season: median ${ws[Math.floor(ws.length / 2)]}, `
+      + `max ${ws[ws.length - 1]}, seasons with one at 4+ `
+      + `${worst.filter(x => x.w >= 4).length}/${N}`);
+    console.log(`   "${top.what.slice(0, 90)}"`);
+
+    // ANTI-VACUITY: the seasons have to have rendered something.
+    expect(worst.reduce((n, x) => n + x.cards, 0),
+      'no composed cards were counted, so this arm asserted nothing').toBeGreaterThan(20000);
+    expect(ws[ws.length - 1], `the worst composed card in a season printed `
+      + `${ws[ws.length - 1]} times — a screen pool has collapsed under the throughput`)
+      .toBeLessThanOrEqual(14);
+  }, 300000);
 
   it('never claims a room was empty when the scene says otherwise', () => {
     // FIX ROUND 1, C1 - and this is the arm that would have caught it. `people`

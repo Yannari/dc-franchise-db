@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Nightjar Orrery — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-nightjar-orrery.html — the approved visual target
+  ══════════════════════════════════════════════════════════════════════
+  Task 8, mission 2 of 4, and it deliberately shares NOTHING with the
+  causeway page: different palette, different fonts, different card
+  physics, different organising primitive.
+
+  THE WORLD: an unheated observatory dome at dusk. Ink-blue, brass, and
+  the white of a star. The organising primitive is A WORKING ORRERY —
+  concentric rings in the sidebar that turn while the mission runs, lock
+  brass when a ring is set true, and stay drifting and cold when one is a
+  graduation out. Phase three replaces the rings with a MERIDIAN LINE and
+  a shadow that sweeps across it, because that is what the phase is.
+
+  Cards are pages torn out of a dead astronomer's night-book: ruled paper,
+  marginal hand, a coffee ring. They fade UP through the dark rather than
+  sliding, because the dome is where things become visible.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --no-void:#080b18; --no-ink:#0e1428; --no-ink2:#161f3c;
+  --no-brass:#d9a441; --no-brass-dim:#8a6a26; --no-brass-lit:#f4cd7c;
+  --no-star:#eaf0ff; --no-cold:#4d6fb5; --no-page:#e8e2d2; --no-pageink:#2a2620;
+  --no-red:#b1443c; --no-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--no-void); color:var(--no-star);
+  font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace; font-size:15.5px; line-height:1.6;
+  overflow-x:hidden;
+}
+
+.no-navstub{
+  position:fixed; inset:0 0 auto 0; height:var(--no-nav); z-index:60;
+  background:#05070f; border-bottom:1px solid #000; display:flex; align-items:center; gap:16px;
+  padding:0 16px; font:400 12px/1 'IBM Plex Mono',monospace; letter-spacing:.2em;
+  text-transform:uppercase; color:#5d6a92;
+}
+.no-navstub b{color:var(--no-brass); letter-spacing:.24em}
+
+/* ── ATMOSPHERE: a sky that turns ─────────────────────────────────── */
+.no-sky{
+  position:fixed; left:0; right:0; top:var(--no-nav); bottom:0; z-index:0; pointer-events:none;
+  background:radial-gradient(130% 90% at 50% 110%, #1c2a54 0%, #0e1428 45%, #060911 100%);
+}
+.no-stars{
+  position:fixed; left:0; right:0; top:var(--no-nav); bottom:0; z-index:0; pointer-events:none;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 22%, var(--no-star), transparent),
+    radial-gradient(1px 1px at 34% 61%, var(--no-star), transparent),
+    radial-gradient(1.4px 1.4px at 58% 14%, var(--no-star), transparent),
+    radial-gradient(1px 1px at 71% 44%, var(--no-star), transparent),
+    radial-gradient(1.3px 1.3px at 86% 76%, var(--no-star), transparent),
+    radial-gradient(1px 1px at 23% 84%, var(--no-star), transparent),
+    radial-gradient(1.1px 1.1px at 46% 33%, var(--no-star), transparent),
+    radial-gradient(1px 1px at 92% 28%, var(--no-star), transparent);
+  opacity:.55; animation:no-twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes no-twinkle{from{opacity:.35}to{opacity:.72}}
+.no-lamp{
+  position:fixed; left:50%; top:calc(var(--no-nav) + 40px); width:900px; height:900px;
+  transform:translateX(-50%); z-index:0; pointer-events:none;
+  background:radial-gradient(circle, rgba(217,164,65,.10) 0%, transparent 62%);
+  animation:no-flicker 7s ease-in-out infinite;
+}
+@keyframes no-flicker{0%,100%{opacity:.9}43%{opacity:.66}61%{opacity:1}}
+
+.no-shell{position:relative; z-index:2; max-width:1100px; margin:0 auto; padding:calc(var(--no-nav) + 28px) 18px 132px}
+
+/* ── HERO ─────────────────────────────────────────────────────────── */
+.no-hero{text-align:center; padding:24px 0 30px; position:relative}
+.no-hero::after{
+  content:''; display:block; width:220px; height:1px; margin:24px auto 0;
+  background:linear-gradient(90deg,transparent,var(--no-brass),transparent);
+}
+.no-kicker{font-size:11.5px; letter-spacing:.42em; text-transform:uppercase; color:var(--no-cold)}
+.no-title{
+  font-family:'Cormorant Garamond',Garamond,serif; font-weight:700;
+  font-size:clamp(40px,8vw,84px); line-height:.98; margin:.14em 0 .12em; letter-spacing:.01em;
+}
+.no-title span{color:var(--no-brass); font-style:italic}
+.no-sub{color:#9aa8cc; max-width:60ch; margin:0 auto; font-size:16px}
+.no-meta{display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:20px}
+.no-chip{
+  font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--no-brass);
+  border:1px solid rgba(217,164,65,.35); border-radius:999px; padding:5px 13px;
+}
+
+.no-grid{display:grid; grid-template-columns:1fr 296px; gap:24px; align-items:start}
+@media(max-width:900px){.no-grid{grid-template-columns:1fr}}
+
+/* ── BRIEFING: a plate from an old atlas ──────────────────────────── */
+.no-brief{
+  border:1px solid rgba(217,164,65,.28); padding:26px 24px 20px; background:rgba(8,11,24,.72);
+  position:relative;
+}
+.no-brief::before,.no-brief::after{
+  content:''; position:absolute; width:12px; height:12px; border:1px solid var(--no-brass);
+}
+.no-brief::before{left:-1px; top:-1px; border-right:none; border-bottom:none}
+.no-brief::after{right:-1px; bottom:-1px; border-left:none; border-top:none}
+.no-brief h2{
+  font-family:'Cormorant Garamond',serif; font-size:27px; font-weight:600; margin:0 0 6px;
+  letter-spacing:.06em; text-transform:uppercase;
+}
+.no-staging{color:#8494bd; font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic;
+  border-bottom:1px solid rgba(132,148,189,.25); padding-bottom:13px; margin-bottom:16px}
+.no-beat{margin:0 0 14px}
+.no-beat.say p{
+  font-family:'Cormorant Garamond',serif; font-size:21px; line-height:1.42; color:#f3f5ff; margin:0;
+  padding-left:20px; border-left:1px solid var(--no-brass);
+}
+.no-beat.do p{
+  margin:0; color:#6d7ca8; font-size:14px; letter-spacing:.02em;
+}
+.no-beat.do p::before{content:'— '; color:var(--no-brass-dim)}
+.no-rules{display:flex; flex-wrap:wrap; gap:6px; margin-top:18px}
+.no-rule{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:#5d6a92;
+  border:1px solid rgba(93,106,146,.4); border-radius:999px; padding:3px 10px}
+.no-rule b{color:var(--no-brass); font-weight:600}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.no-phase{margin-top:34px; padding-top:18px; border-top:1px solid rgba(217,164,65,.22)}
+.no-phase[data-phase="ledger"]{--acc:#c8b48a}
+.no-phase[data-phase="gearing"]{--acc:var(--no-brass)}
+.no-phase[data-phase="transit"]{--acc:#7fa8ff}
+.no-phase-head{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.no-phase-n{
+  width:38px; height:38px; flex:none; border:1px solid var(--acc); color:var(--acc);
+  display:grid; place-items:center; font-family:'Cormorant Garamond',serif; font-size:20px;
+  transform:rotate(45deg);
+}
+.no-phase-n b{transform:rotate(-45deg); display:block}
+.no-phase-name{font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:600; letter-spacing:.03em}
+.no-phase-stats{margin-left:auto; display:flex; gap:6px}
+.no-stat{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--acc);
+  border:1px dashed color-mix(in srgb,var(--acc) 55%, transparent); padding:3px 9px}
+.no-setting{color:#8494bd; font-family:'Cormorant Garamond',serif; font-size:18px; font-style:italic; margin:10px 0 18px}
+
+/* the dome dims and warms per phase */
+.no-phase[data-phase="transit"]{position:relative}
+.no-phase[data-phase="transit"]::before{
+  content:''; position:absolute; left:-999px; right:-999px; top:0; bottom:0; z-index:-1;
+  background:linear-gradient(180deg,rgba(127,168,255,.07),transparent 70%);
+}
+
+/* ── CARDS: night-book pages ──────────────────────────────────────── */
+.no-card{
+  position:relative; margin:0 0 14px; padding:16px 18px 16px 66px;
+  background:linear-gradient(180deg,#efe9d9,#e2dac6);
+  color:var(--no-pageink);
+  box-shadow:0 12px 26px rgba(0,0,0,.5);
+  opacity:0; transform:translateY(18px) rotate(-.35deg);
+  transition:opacity .5s ease, transform .5s cubic-bezier(.2,.9,.25,1);
+}
+.no-card::before{  /* the rule lines */
+  content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:repeating-linear-gradient(180deg,transparent 0 25px,rgba(42,38,32,.16) 25px 26px);
+}
+.no-card::after{  /* the margin rule */
+  content:''; position:absolute; left:54px; top:0; bottom:0; width:1px; background:rgba(177,68,60,.4);
+}
+.no-card.on{opacity:1; transform:none}
+.no-card:nth-child(even){transform:translateY(18px) rotate(.4deg)}
+.no-card:nth-child(even).on{transform:none}
+.no-card .who{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13.5px;
+  letter-spacing:.14em; text-transform:uppercase; color:#5a4b33; position:relative}
+.no-card .txt{font-family:'Cormorant Garamond',serif; font-size:20px; line-height:1.42; margin-top:3px; position:relative}
+.no-card .tag{
+  position:absolute; right:14px; top:14px; font-size:10.5px; letter-spacing:.18em;
+  text-transform:uppercase; padding:2px 8px; border:1px solid currentColor; background:rgba(255,255,255,.4);
+}
+.no-card.true{border-left:5px solid var(--no-brass-dim)} .no-card.true .tag{color:#7a5c17}
+.no-card.out{border-left:5px solid var(--no-red)} .no-card.out .tag{color:var(--no-red)}
+.no-card.plain{border-left:5px solid #b4a98e} .no-card.plain .tag{color:#7d7460}
+.no-card.social{
+  background:linear-gradient(180deg,#e6e9f4,#d8dcec); border-left:5px dashed var(--no-cold);
+}
+.no-card.social .tag{color:#3a5590}
+.no-card .conf{
+  position:relative; margin-top:12px; padding:10px 12px 10px 14px; background:rgba(42,38,32,.06);
+  border-left:2px solid var(--no-red); font-family:'Caveat',cursive; font-size:21px; line-height:1.3;
+  color:#3b332a;
+}
+.no-card .conf small{
+  display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.2em;
+  text-transform:uppercase; color:#8a7f68; margin-bottom:2px;
+}
+.no-card .fx{position:relative; margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;
+  font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#7d7460}
+.no-card .fx span{border:1px dotted rgba(125,116,96,.6); padding:2px 7px}
+
+/* ── ICONS: brass instruments, CSS only ───────────────────────────── */
+.no-ico{position:absolute; left:14px; top:16px; width:32px; height:32px}
+.no-ico i{position:absolute; display:block}
+/* an open book */
+.ico-book i:nth-child(1){left:1px; top:8px; width:14px; height:18px; border:2px solid #7a5c17; border-right:none; transform:skewY(6deg)}
+.ico-book i:nth-child(2){right:1px; top:8px; width:14px; height:18px; border:2px solid #7a5c17; border-left:none; transform:skewY(-6deg)}
+.ico-book i:nth-child(3){left:15px; top:6px; width:2px; height:22px; background:#7a5c17}
+/* a gear ring */
+.ico-ring i:nth-child(1){inset:2px; border:2px solid #7a5c17; border-radius:50%}
+.ico-ring i:nth-child(2){inset:9px; border:1px solid #7a5c17; border-radius:50%}
+.ico-ring i:nth-child(3){left:15px; top:0; width:2px; height:6px; background:#7a5c17;
+  transform-origin:1px 16px; animation:no-spin 9s linear infinite}
+@keyframes no-spin{to{transform:rotate(360deg)}}
+/* a ring one graduation out — it never settles */
+.ico-slip i:nth-child(1){inset:2px; border:2px dashed var(--no-red); border-radius:50%;
+  animation:no-wobble 2.4s ease-in-out infinite}
+.ico-slip i:nth-child(2){left:14px; top:14px; width:4px; height:4px; background:var(--no-red); border-radius:50%}
+@keyframes no-wobble{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+/* the meridian shadow */
+.ico-merid i:nth-child(1){left:15px; top:0; bottom:0; width:2px; background:#3a5590}
+.ico-merid i:nth-child(2){left:4px; top:4px; width:24px; height:24px; border:1px solid #3a5590; border-radius:50%}
+.ico-merid i:nth-child(3){left:8px; top:14px; width:9px; height:3px; background:#3a5590;
+  transform-origin:right center; animation:no-sweep 5s linear infinite}
+@keyframes no-sweep{from{transform:rotate(-38deg)}to{transform:rotate(38deg)}}
+
+/* ── SIDEBAR: a working orrery ────────────────────────────────────── */
+.no-side{position:sticky; top:calc(var(--no-nav) + 14px)}
+.no-panel{border:1px solid rgba(217,164,65,.3); background:rgba(6,9,17,.9)}
+.no-panel h3{
+  margin:0; padding:11px 14px; font-size:11px; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--no-void); background:var(--no-brass);
+}
+.no-orrery{position:relative; width:100%; aspect-ratio:1; max-width:250px; margin:16px auto 4px}
+.no-ring{
+  position:absolute; inset:0; border:1px solid rgba(93,106,146,.5); border-radius:50%;
+  transition:border-color .6s ease, box-shadow .6s ease;
+  animation:no-spin 26s linear infinite;
+}
+.no-ring:nth-child(1){inset:0%; animation-duration:38s}
+.no-ring:nth-child(2){inset:10%; animation-duration:31s; animation-direction:reverse}
+.no-ring:nth-child(3){inset:20%; animation-duration:25s}
+.no-ring:nth-child(4){inset:30%; animation-duration:20s; animation-direction:reverse}
+.no-ring:nth-child(5){inset:40%; animation-duration:16s}
+.no-ring:nth-child(6){inset:50%; animation-duration:12s; animation-direction:reverse}
+.no-ring b{  /* the index mark on each ring */
+  position:absolute; left:50%; top:-4px; width:3px; height:8px; margin-left:-1.5px;
+  background:rgba(93,106,146,.8); transition:background .6s ease;
+}
+.no-ring.true{border-color:var(--no-brass); box-shadow:0 0 14px rgba(217,164,65,.28) inset; animation-play-state:paused}
+.no-ring.true b{background:var(--no-brass-lit)}
+.no-ring.out{border-color:var(--no-red); border-style:dashed}
+.no-ring.out b{background:var(--no-red)}
+.no-core{
+  position:absolute; left:50%; top:50%; width:16px; height:16px; margin:-8px 0 0 -8px;
+  border-radius:50%; background:radial-gradient(circle,var(--no-brass-lit),var(--no-brass-dim));
+  box-shadow:0 0 18px rgba(217,164,65,.6);
+}
+.no-floor{
+  margin:6px 14px 0; padding:9px 11px; text-align:center; border:1px solid rgba(93,106,146,.45);
+  font-size:11.5px; letter-spacing:.26em; text-transform:uppercase; color:#7f8fbb;
+  transition:.5s;
+}
+.no-floor.open{border-color:var(--no-brass); color:var(--no-brass-lit); background:rgba(217,164,65,.1)}
+
+.no-rows{padding:12px 14px 4px}
+.no-row{display:flex; justify-content:space-between; align-items:baseline; font-size:13px;
+  padding:5px 0; border-bottom:1px dotted rgba(93,106,146,.28); color:#93a1c8}
+.no-row b{color:var(--no-star); font-variant-numeric:tabular-nums}
+.no-row.team b{font-family:'Cormorant Garamond',serif; font-size:17px; color:var(--no-brass)}
+
+.no-pot{padding:12px 14px 16px; border-top:1px solid rgba(217,164,65,.22); margin-top:6px}
+.no-pot .r{display:flex; justify-content:space-between; font-size:13px; color:#93a1c8}
+.no-pot .r b{color:var(--no-star); font-variant-numeric:tabular-nums}
+.no-pot .big{font-family:'Cormorant Garamond',serif; font-size:32px; color:var(--no-brass);
+  font-variant-numeric:tabular-nums; margin-top:6px; letter-spacing:.02em}
+.no-shieldnote{margin:0 14px 14px; padding:9px 11px; border:1px dashed rgba(93,106,146,.4);
+  font-size:11.5px; color:#7f8fbb; letter-spacing:.04em}
+
+/* ── CONTROLS ─────────────────────────────────────────────────────── */
+.no-controls{
+  position:fixed; left:0; right:0; bottom:0; z-index:50;
+  background:linear-gradient(180deg,rgba(8,11,24,.1),rgba(5,7,15,.97) 45%);
+  border-top:1px solid rgba(217,164,65,.3); padding:14px 18px 16px;
+  display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;
+}
+.no-btn{
+  font:400 12px/1 'IBM Plex Mono',monospace; letter-spacing:.24em; text-transform:uppercase;
+  padding:13px 26px; border-radius:999px; background:transparent; color:var(--no-brass);
+  border:1px solid var(--no-brass); cursor:pointer; transition:.22s;
+}
+.no-btn:hover{background:var(--no-brass); color:var(--no-void)}
+.no-btn.ghost{color:#7f8fbb; border-color:rgba(127,143,187,.5)}
+.no-btn.ghost:hover{background:rgba(127,143,187,.16); color:var(--no-star)}
+.no-btn[disabled]{opacity:.32; cursor:default}
+.no-btn[disabled]:hover{background:transparent; color:var(--no-brass)}
+.no-counter{font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:#7f8fbb;
+  min-width:160px; text-align:center; font-variant-numeric:tabular-nums}
+
+.no-summary{margin-top:36px; padding:26px; border:1px solid rgba(217,164,65,.35);
+  background:rgba(8,11,24,.8); font-family:'Cormorant Garamond',serif; font-size:22px; line-height:1.45}
+.no-summary small{display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+  letter-spacing:.28em; text-transform:uppercase; color:var(--no-brass); margin-bottom:9px}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+  .no-card{opacity:1; transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="no-navstub"><b>The Traitors</b><span>Episode 7 · Afternoon</span><span>The Nightjar Orrery</span></div>
+<div class="no-sky"></div><div class="no-stars"></div><div class="no-lamp"></div>
+
+<div class="no-shell">
+  <header class="no-hero">
+    <div class="no-kicker">Mission · Episode Seven</div>
+    <h1 class="no-title">The Nightjar <span>Orrery</span></h1>
+    <p class="no-sub">Forty years of one man's undated observations, a brass machine the size of a room,
+      and a strongroom under the floor that only opens on the right night.</p>
+    <div class="no-meta">
+      <span class="no-chip">Three phases</span>
+      <span class="no-chip">Meridian v Antares</span>
+      <span class="no-chip">£3,000 a compartment</span>
+      <span class="no-chip">No shield</span>
+    </div>
+  </header>
+
+  <div class="no-grid">
+    <main>
+
+      <section class="no-brief">
+        <h2>The Briefing</h2>
+        <p class="no-staging">An unheated observatory dome at dusk. A brass orrery on a stone plinth with six
+          concentric rings, a reading desk with an astronomer's night-book on it, and a meridian line inlaid
+          across the floor.</p>
+
+        <div class="no-beat do"><p>The dome is dark except for a working lamp on the plinth. The host stands beside the orrery with a hand resting on the outermost brass ring.</p></div>
+        <div class="no-beat say"><p>The man who built this spent forty years watching one patch of sky and told nobody what he found. He left it in here, under the floor, behind a lock he made himself.</p></div>
+        <div class="no-beat do"><p>The host taps the floor twice with a heel. The sound is hollow.</p></div>
+        <div class="no-beat say"><p>The lock is the machine you are standing next to. Set it to the right night and the floor opens. Set it to the wrong one and it does nothing at all, which is worse, because it does not tell you which ring you got wrong.</p></div>
+        <div class="no-beat do"><p>A crew member sets a leather night-book on the reading desk and opens it.</p></div>
+        <div class="no-beat say"><p>His night-book is on that desk. It does not contain a date anywhere. It contains observations, and you will turn them into six numbers — one for each ring — because that is what he did every evening of his life.</p></div>
+        <div class="no-beat say"><p>Then you set the rings, in order, from the outside in. Each ring has a vernier scale and one person can read it at a time. A ring set one graduation out will still turn, will still feel right, and will still be wrong, and every ring inside it is then wrong too.</p></div>
+        <div class="no-beat do"><p>The host walks to the meridian line inlaid in the floor and stands on it.</p></div>
+        <div class="no-beat say"><p>When the rings are set, the lamp throws the pointer's shadow across this line. One of you calls the moment it crosses. Early or late, you have missed the transit and the floor stays shut.</p></div>
+        <div class="no-beat say"><p>Each opened compartment down there is three thousand into the pot. Time is the only thing I am giving you and I am not giving you much of it.</p></div>
+        <div class="no-beat do"><p>The host steps off the line and puts the lamp on its lowest setting.</p></div>
+        <div class="no-beat say"><p>One last thing. He wrote in his own hand for himself, not for you, and he was not a tidy man. Whoever finishes with the floor open wins the room the money. Begin.</p></div>
+
+        <div class="no-rules">
+          <span class="no-rule"><b>task</b> beat 6</span>
+          <span class="no-rule"><b>sequence</b> beat 7</span>
+          <span class="no-rule"><b>failure</b> beat 7</span>
+          <span class="no-rule"><b>transit</b> beat 9</span>
+          <span class="no-rule"><b>reward</b> beat 10</span>
+          <span class="no-rule"><b>finish</b> beat 12</span>
+        </div>
+      </section>
+
+      <section class="no-phase" data-phase="ledger">
+        <div class="no-phase-head">
+          <span class="no-phase-n"><b>I</b></span>
+          <span class="no-phase-name">The Night-Book</span>
+          <span class="no-phase-stats"><i class="no-stat">mental</i></span>
+        </div>
+        <p class="no-setting">A reading desk under one working lamp, with forty years of an astronomer's private handwriting on it.</p>
+
+        <article class="no-card true" id="no-step-0">
+          <span class="no-ico ico-book"><i></i><i></i><i></i></span><span class="tag">Sharp</span>
+          <div class="who">Gabby · Meridian</div>
+          <div class="txt">Gabby noticed he dated everything from the evening rather than the midnight, which moved every entry by a day.</div>
+        </article>
+
+        <article class="no-card plain" id="no-step-1">
+          <span class="no-ico ico-book"><i></i><i></i><i></i></span><span class="tag">Steady</span>
+          <div class="who">Bowie · Antares</div>
+          <div class="txt">Bowie worked through his share of the pages and produced a number that survived being checked.</div>
+        </article>
+
+        <article class="no-card out" id="no-step-2">
+          <span class="no-ico ico-book"><i></i><i></i><i></i></span><span class="tag">Lost</span>
+          <div class="who">Manu · Antares</div>
+          <div class="txt">Manu was reading a column of temperatures under the impression they were dates.</div>
+        </article>
+
+        <article class="no-card social" id="no-step-3">
+          <span class="no-ico ico-book"><i></i><i></i><i></i></span><span class="tag">Selfish</span>
+          <div class="who">Gabby &amp; Julia · Meridian</div>
+          <div class="txt">Gabby let Julia finish being wrong in front of everybody before producing the right reading.</div>
+          <div class="conf"><small>Gabby · confessional</small>If I hand it over the second I've got it, it's the team's answer. If I hold it ninety seconds, it's mine. There's a version of this game where that matters.</div>
+          <div class="fx"><span>bond Gabby ↔ Julia −0.4</span><span>claim · Julia → Gabby</span><span>crowd · selfish ×0.5</span></div>
+        </article>
+      </section>
+
+      <section class="no-phase" data-phase="gearing">
+        <div class="no-phase-head">
+          <span class="no-phase-n"><b>II</b></span>
+          <span class="no-phase-name">The Gearing</span>
+          <span class="no-phase-stats"><i class="no-stat">strategic</i><i class="no-stat">physical</i></span>
+        </div>
+        <p class="no-setting">The orrery itself: concentric brass rings on a stone plinth, each with a vernier scale only one person can read at a time.</p>
+
+        <article class="no-card true" id="no-step-4">
+          <span class="no-ico ico-ring"><i></i><i></i><i></i></span><span class="tag">Ring 1 · true</span>
+          <div class="who">Priya · Meridian</div>
+          <div class="txt">Priya set the ring, checked the vernier, and did not touch it again, which sounds easy and is not.</div>
+        </article>
+
+        <article class="no-card true" id="no-step-5">
+          <span class="no-ico ico-ring"><i></i><i></i><i></i></span><span class="tag">Ring 2 · true</span>
+          <div class="who">Finn · Antares</div>
+          <div class="txt">Finn had the outermost ring on the number before the rest of the team had agreed there was one.</div>
+        </article>
+
+        <article class="no-card out" id="no-step-6">
+          <span class="no-ico ico-slip"><i></i><i></i></span><span class="tag">Ring 3 · out</span>
+          <div class="who">Alec · Meridian</div>
+          <div class="txt">Alec read the vernier from the side and took the mark one graduation out. Everything inside it went with it.</div>
+        </article>
+
+        <article class="no-card social" id="no-step-7">
+          <span class="no-ico ico-ring"><i></i><i></i><i></i></span><span class="tag">Impressive</span>
+          <div class="who">Ellie &amp; Alec · Meridian</div>
+          <div class="txt">Ellie came round behind Alec and read the same vernier, and the two numbers were not the same.</div>
+          <div class="fx"><span>crowd · Ellie impressive ×0.9</span><span>reputation · sharpness +0.6</span><span>bond Ellie ↔ Alec −0.2</span></div>
+        </article>
+
+        <article class="no-card out" id="no-step-8">
+          <span class="no-ico ico-slip"><i></i><i></i></span><span class="tag">Ring 4 · out</span>
+          <div class="who">Manu · Antares</div>
+          <div class="txt">The brass was cold and Manu's hands were colder, and the ring stopped a hair past the mark.</div>
+        </article>
+
+        <article class="no-card social" id="no-step-9">
+          <span class="no-ico ico-slip"><i></i><i></i></span><span class="tag">Suspicious</span>
+          <div class="who">Fiore &amp; Manu · Antares</div>
+          <div class="txt">Fiore wanted to know who had set ring four, in a voice that had already decided. Ring 4 was the one that went out, and Manu set it.</div>
+          <div class="conf"><small>Fiore · confessional</small>Ring 4. That's not a hard job. You stand over it and you read the number. I'd like to know why Manu couldn't manage it.</div>
+          <div class="fx"><span>record · spoiled ring 4</span><span>suspicion +0.3</span><span>bond Fiore ↔ Manu −0.6</span></div>
+        </article>
+      </section>
+
+      <section class="no-phase" data-phase="transit">
+        <div class="no-phase-head">
+          <span class="no-phase-n"><b>III</b></span>
+          <span class="no-phase-name">The Transit</span>
+          <span class="no-phase-stats"><i class="no-stat">intuition</i><i class="no-stat">temperament</i></span>
+        </div>
+        <p class="no-setting">A meridian line inlaid across the dome floor, a lamp on its lowest setting, and a brass pointer throwing a shadow that moves whether anybody is ready or not.</p>
+
+        <article class="no-card social" id="no-step-10">
+          <span class="no-ico ico-merid"><i></i><i></i><i></i></span><span class="tag">Heroic</span>
+          <div class="who">Bowie &amp; Priya · Meridian</div>
+          <div class="txt">Bowie held the room off the line so the caller could see, which was the second most useful thing anybody did. Priya was the one on the line.</div>
+          <div class="fx"><span>bond Bowie ↔ Priya +0.4</span><span>crowd · Bowie heroic ×0.4</span></div>
+        </article>
+
+        <article class="no-card true" id="no-step-11">
+          <span class="no-ico ico-merid"><i></i><i></i><i></i></span><span class="tag">On the line</span>
+          <div class="who">Priya · Meridian</div>
+          <div class="txt">Priya let three people tell her it was time, ignored all three, and called it two seconds later. Correctly. Meridian's compartment is open, and the money in it is the room's.</div>
+          <div class="conf"><small>Priya · confessional</small>Three people were shouting at me to say it. If you say it when they want you to, you're just the person who said it. I wanted to be the one who was right.</div>
+          <div class="fx"><span>crowd · Priya impressive ×1.1</span><span>reputation · nerve +0.7</span></div>
+        </article>
+
+        <article class="no-card out" id="no-step-12">
+          <span class="no-ico ico-merid"><i></i><i></i><i></i></span><span class="tag">Early</span>
+          <div class="who">Julia · Antares</div>
+          <div class="txt">Julia called it early. The shadow arrived on the line about a second after the word did. Antares' floor stayed shut.</div>
+          <div class="conf"><small>Julia · confessional</small>I'll say the shadow was hard to see. The shadow was extremely easy to see. I couldn't stand there being looked at for one more second.</div>
+          <div class="fx"><span>record · missed transit (early)</span><span>crowd · selfish ×0.5</span></div>
+        </article>
+      </section>
+
+      <div class="no-summary" id="no-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        One floor opened. The other team had the right night and the wrong ring, and will be told so.
+      </div>
+    </main>
+
+    <aside class="no-side">
+      <div class="no-panel">
+        <h3>The Machine</h3>
+        <div class="no-orrery" id="no-orrery">
+          <div class="no-ring" data-ring="1"><b></b></div>
+          <div class="no-ring" data-ring="2"><b></b></div>
+          <div class="no-ring" data-ring="3"><b></b></div>
+          <div class="no-ring" data-ring="4"><b></b></div>
+          <div class="no-ring" data-ring="5"><b></b></div>
+          <div class="no-ring" data-ring="6"><b></b></div>
+          <div class="no-core"></div>
+        </div>
+        <div class="no-floor" id="no-floor">Floor · shut</div>
+
+        <div class="no-rows">
+          <div class="no-row team"><span>Meridian</span><b id="no-m-rings">— rings</b></div>
+          <div class="no-row"><span>Ledger reading</span><b id="no-m-led">—</b></div>
+          <div class="no-row"><span>Transit</span><b id="no-m-tr">—</b></div>
+          <div class="no-row team" style="margin-top:8px"><span>Antares</span><b id="no-a-rings">— rings</b></div>
+          <div class="no-row"><span>Ledger reading</span><b id="no-a-led">—</b></div>
+          <div class="no-row"><span>Transit</span><b id="no-a-tr">—</b></div>
+        </div>
+
+        <div class="no-pot">
+          <div class="r"><span>Fund before</span><b>£52,700</b></div>
+          <div class="r"><span>Compartments open</span><b id="no-pot-c">—</b></div>
+          <div class="r"><span>Earned today</span><b id="no-pot-e">—</b></div>
+          <div class="big" id="no-pot-a">£52,700</div>
+        </div>
+        <div class="no-shieldnote">
+          <b style="color:#93a1c8">Shield.</b> Nothing in this dome grants one. There is money under the
+          floor and nothing else.
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="no-controls">
+  <button class="no-btn" id="no-next">Next</button>
+  <span class="no-counter" id="no-counter">0 of 13 revealed</span>
+  <button class="no-btn ghost" id="no-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 13, idx = -1;
+
+  /* ring state after each step: '' unknown, 'true' locked brass, 'out' drifting */
+  var RINGS = [
+    ['','','','','',''],['','','','','',''],['','','','','',''],['','','','','',''],['','','','','',''],
+    ['true','','','','',''],                      /* step 4: ring 1 */
+    ['true','true','','','',''],                  /* step 5: ring 2 */
+    ['true','true','out','','',''],               /* step 6: ring 3 out */
+    ['true','true','true','','',''],              /* step 7: caught and reset */
+    ['true','true','true','out','',''],           /* step 8: ring 4 out */
+    ['true','true','true','out','',''],
+    ['true','true','true','out','',''],
+    ['true','true','true','out','','']
+  ];
+  /* [meridianRingsTrue, antaresRingsTrue, mLedger, aLedger, mTransit, aTransit] */
+  var ROWS = [
+    [0,0,'—','—','—','—'],[1,0,'strong','—','—','—'],[1,0,'strong','fair','—','—'],
+    [1,0,'strong','weak','—','—'],[1,0,'strong','weak','—','—'],
+    [1,0,'strong','weak','—','—'],[1,1,'strong','weak','—','—'],
+    [1,1,'strong','weak','—','—'],[2,1,'strong','weak','—','—'],
+    [2,1,'strong','weak','—','—'],[2,1,'strong','weak','—','—'],
+    [2,1,'strong','weak','—','—'],[2,1,'strong','weak','called on','called early']
+  ];
+  var OPEN = [0,0,0,0,0,0,0,0,0,0,0,0,1,1];
+
+  function money(n){ return '£' + n.toLocaleString('en-GB'); }
+
+  function paint(){
+    var n = idx + 1;
+    for (var i=0;i<TOTAL;i++){
+      var el = document.getElementById('no-step-'+i);
+      if (el) el.classList.toggle('on', i <= idx);
+    }
+    document.getElementById('no-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    document.getElementById('no-next').disabled = idx >= TOTAL-1;
+    document.getElementById('no-summary').style.opacity = idx >= TOTAL-1 ? '1' : '.25';
+
+    var st = RINGS[Math.max(0,n-1)];
+    var rings = document.querySelectorAll('#no-orrery .no-ring');
+    for (var r=0;r<rings.length;r++){
+      rings[r].classList.remove('true','out');
+      if (st[r]) rings[r].classList.add(st[r]);
+    }
+
+    var w = ROWS[Math.max(0,n-1)];
+    document.getElementById('no-m-rings').textContent = w[0] + ' rings true';
+    document.getElementById('no-a-rings').textContent = w[1] + ' rings true';
+    document.getElementById('no-m-led').textContent = w[2];
+    document.getElementById('no-a-led').textContent = w[3];
+    document.getElementById('no-m-tr').textContent = w[4];
+    document.getElementById('no-a-tr').textContent = w[5];
+
+    var open = OPEN[n];
+    document.getElementById('no-floor').classList.toggle('open', !!open);
+    document.getElementById('no-floor').textContent = open ? 'Floor · open (Meridian)' : 'Floor · shut';
+    document.getElementById('no-pot-c').textContent = idx < 0 ? '—' : open;
+    document.getElementById('no-pot-e').textContent = idx < 0 ? '—' : money(open*3000);
+    document.getElementById('no-pot-a').textContent = money(52700 + (idx<0?0:open*3000));
+  }
+
+  document.getElementById('no-next').addEventListener('click', function(){
+    if (idx >= TOTAL-1) return;
+    idx++; paint();
+    var el = document.getElementById('no-step-'+idx);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  document.getElementById('no-all').addEventListener('click', function(){ idx = TOTAL-1; paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Long Account — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-long-account.html — the approved visual target
+  ══════════════════════════════════════════════════════════════════════
+  Task 8, mission 3 of 4. It shares nothing with the causeway (cold slate,
+  a rising tide) or the orrery (ink-blue, a turning machine): this page is
+  PAPER AND DAYLIGHT — ledger cream, green baize, oxblood leather, wax.
+
+  THE ORGANISING PRIMITIVE IS THE LEDGER ITSELF. The whole page is ruled
+  like a double-entry book: a red margin rule, a running total in the
+  right-hand column, and every result stamped with a wax seal — SETTLED or
+  STRUCK. Cards do not fade in; they are ENTERED, sliding in from the
+  margin the way a clerk's hand moves across a page.
+
+  AND PHASE THREE IS THE POINT OF THE WHOLE PAGE. The screens are face
+  down. The sidebar shows the COUNT and refuses the names, in the same
+  words the host used, because that is the mechanic — the room knows how
+  many held and never who.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --la-baize:#1f3a2e; --la-baize-2:#173025; --la-oxblood:#4a1c1c;
+  --la-paper:#f2ead6; --la-paper-2:#e6dcc2; --la-ink:#2b2418; --la-ink-2:#5c503c;
+  --la-rule:#c0392b; --la-blue:#2f4b7c; --la-lamp:#e8b563; --la-wax:#8e2b24;
+  --la-gold:#b58a3c; --la-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--la-baize); color:var(--la-ink);
+  font-family:'Inter',system-ui,sans-serif; font-size:16px; line-height:1.55; overflow-x:hidden;
+}
+
+.la-navstub{
+  position:fixed; inset:0 0 auto 0; height:var(--la-nav); z-index:60;
+  background:#12241b; border-bottom:1px solid #0a140f; display:flex; align-items:center; gap:16px;
+  padding:0 16px; font:600 12px/1 'Inter',sans-serif; letter-spacing:.2em; text-transform:uppercase;
+  color:#7c9a89;
+}
+.la-navstub b{color:var(--la-lamp); letter-spacing:.24em}
+
+/* ── ATMOSPHERE: baize, an oil lamp, and dust in the beam ─────────── */
+.la-room{
+  position:fixed; left:0; right:0; top:var(--la-nav); bottom:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(90% 60% at 50% 0%, rgba(232,181,99,.16) 0%, transparent 60%),
+    repeating-linear-gradient(46deg, rgba(0,0,0,.05) 0 3px, transparent 3px 6px),
+    linear-gradient(180deg,var(--la-baize) 0%,var(--la-baize-2) 100%);
+}
+.la-dust{
+  position:fixed; left:0; right:0; top:var(--la-nav); bottom:0; z-index:0; pointer-events:none; opacity:.4;
+  background-image:
+    radial-gradient(1.5px 1.5px at 18% 30%, rgba(232,181,99,.7), transparent),
+    radial-gradient(1.2px 1.2px at 44% 70%, rgba(232,181,99,.6), transparent),
+    radial-gradient(1.6px 1.6px at 66% 22%, rgba(232,181,99,.5), transparent),
+    radial-gradient(1.2px 1.2px at 82% 58%, rgba(232,181,99,.6), transparent);
+  animation:la-drift 24s linear infinite alternate;
+}
+@keyframes la-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-26px,-40px,0)}}
+
+.la-shell{position:relative; z-index:2; max-width:1100px; margin:0 auto; padding:calc(var(--la-nav) + 26px) 18px 132px}
+
+/* ── HERO: a leather cover with a gilt rule ───────────────────────── */
+.la-hero{
+  background:linear-gradient(160deg,#5b2323,#3a1616); color:var(--la-paper);
+  border:1px solid #26100f; padding:32px 28px 28px; position:relative;
+  box-shadow:inset 0 0 0 6px rgba(181,138,60,.28), 0 20px 40px rgba(0,0,0,.4);
+}
+.la-kicker{font-size:11.5px; letter-spacing:.38em; text-transform:uppercase; color:var(--la-gold)}
+.la-title{
+  font-family:'Libre Baskerville',Georgia,serif; font-weight:700;
+  font-size:clamp(34px,6.4vw,64px); line-height:1.02; margin:.18em 0 .12em;
+}
+.la-title em{color:var(--la-lamp)}
+.la-sub{color:#e0cfc2; max-width:62ch; font-size:17px}
+.la-meta{display:flex; flex-wrap:wrap; gap:9px; margin-top:18px}
+.la-chip{
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--la-lamp);
+  border:1px solid rgba(232,181,99,.4); padding:5px 12px;
+}
+
+.la-grid{display:grid; grid-template-columns:1fr 300px; gap:22px; margin-top:24px; align-items:start}
+@media(max-width:900px){.la-grid{grid-template-columns:1fr}}
+
+/* ── EVERYTHING ELSE IS PAPER ─────────────────────────────────────── */
+.la-sheet{
+  background:linear-gradient(180deg,var(--la-paper),var(--la-paper-2));
+  box-shadow:0 18px 40px rgba(0,0,0,.42);
+  position:relative; padding:26px 26px 20px 74px;
+}
+.la-sheet::before{  /* the red margin rule */
+  content:''; position:absolute; left:58px; top:0; bottom:0; width:1px; background:var(--la-rule); opacity:.55;
+}
+.la-sheet::after{   /* the feint rules */
+  content:''; position:absolute; inset:0; pointer-events:none; opacity:.34;
+  background:repeating-linear-gradient(180deg,transparent 0 27px,rgba(43,36,24,.18) 27px 28px);
+}
+
+/* ── BRIEFING ─────────────────────────────────────────────────────── */
+.la-brief h2{
+  font-family:'Libre Baskerville',serif; font-size:26px; margin:0 0 4px; position:relative;
+}
+.la-staging{
+  font-family:'Libre Baskerville',serif; font-style:italic; color:var(--la-ink-2); position:relative;
+  border-bottom:1px solid rgba(43,36,24,.2); padding-bottom:12px; margin-bottom:16px;
+}
+.la-beat{margin:0 0 13px; position:relative}
+.la-beat.say p{
+  font-family:'Libre Baskerville',serif; font-size:19px; line-height:1.5; margin:0; color:#1f1a11;
+}
+.la-beat.say p::before{content:'“'; color:var(--la-wax)}
+.la-beat.say p::after{content:'”'; color:var(--la-wax)}
+.la-beat.do p{
+  margin:0; font-family:'Special Elite',cursive; font-size:14.5px; color:#6f6250; letter-spacing:.01em;
+}
+.la-rules{display:flex; flex-wrap:wrap; gap:6px; margin-top:18px; position:relative}
+.la-rule{
+  font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:#6f6250;
+  border:1px solid rgba(111,98,80,.45); padding:3px 9px;
+}
+.la-rule b{color:var(--la-wax); font-weight:600}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.la-phase{margin-top:22px}
+.la-phase-head{
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; position:relative;
+  border-bottom:2px solid var(--la-ink); padding-bottom:6px; margin-bottom:4px;
+}
+.la-phase-n{font-family:'Special Elite',cursive; font-size:15px; color:var(--la-wax); letter-spacing:.2em}
+.la-phase-name{font-family:'Libre Baskerville',serif; font-size:27px; font-weight:700}
+.la-phase-stats{margin-left:auto; display:flex; gap:6px}
+.la-stat{
+  font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--la-blue);
+  border:1px solid rgba(47,75,124,.4); padding:3px 8px;
+}
+.la-setting{
+  font-family:'Libre Baskerville',serif; font-style:italic; color:var(--la-ink-2);
+  position:relative; margin:10px 0 16px;
+}
+
+/* ── ENTRIES: ruled rows, entered from the margin ─────────────────── */
+.la-entry{
+  position:relative; display:grid; grid-template-columns:1fr 96px; gap:14px;
+  padding:12px 0 12px 0; border-bottom:1px solid rgba(43,36,24,.18);
+  opacity:0; transform:translateX(-22px);
+  transition:opacity .4s ease, transform .45s cubic-bezier(.2,.85,.3,1);
+}
+.la-entry.on{opacity:1; transform:none}
+.la-entry .who{
+  font-family:'Special Elite',cursive; font-size:14px; letter-spacing:.06em; color:var(--la-wax);
+}
+.la-entry .txt{font-family:'Libre Baskerville',serif; font-size:18px; line-height:1.45; margin-top:2px}
+.la-entry .amt{
+  font-family:'Special Elite',cursive; font-size:17px; text-align:right; color:var(--la-ink);
+  border-left:1px solid rgba(43,36,24,.25); padding-left:12px; align-self:start; padding-top:2px;
+}
+.la-entry .amt small{display:block; font-family:'Inter',sans-serif; font-size:9.5px;
+  letter-spacing:.16em; text-transform:uppercase; color:#8a7d69}
+.la-entry.struck .txt{color:#6b6252}
+.la-entry.struck .amt{color:var(--la-rule)}
+
+/* a wax seal, CSS only */
+.la-seal{
+  position:absolute; left:-60px; top:14px; width:38px; height:38px; border-radius:50%;
+  background:radial-gradient(circle at 35% 32%, #b4453b, var(--la-wax) 60%, #5f1a15);
+  box-shadow:0 3px 7px rgba(0,0,0,.35);
+  display:grid; place-items:center;
+  font:600 8.5px/1 'Inter',sans-serif; letter-spacing:.08em; text-transform:uppercase;
+  color:rgba(255,235,220,.85); text-align:center;
+}
+.la-seal::after{content:''; position:absolute; inset:5px; border:1px solid rgba(255,225,210,.35); border-radius:50%}
+.la-seal.blue{background:radial-gradient(circle at 35% 32%, #4a6ea8, var(--la-blue) 60%, #1d2f4f)}
+.la-seal.gold{background:radial-gradient(circle at 35% 32%, #d8b060, var(--la-gold) 60%, #6d5120); color:#2b2418}
+.la-seal.grey{background:radial-gradient(circle at 35% 32%, #9c9384, #6f6857 60%, #40392c)}
+
+.la-entry.social{background:rgba(47,75,124,.05); padding-left:8px; margin-left:-8px}
+.la-entry .conf{
+  margin-top:10px; padding:10px 13px; background:rgba(43,36,24,.06); border-left:3px solid var(--la-wax);
+  font-family:'Libre Baskerville',serif; font-style:italic; font-size:17px;
+}
+.la-entry .conf small{
+  display:block; font-family:'Inter',sans-serif; font-style:normal; font-size:9.5px;
+  letter-spacing:.2em; text-transform:uppercase; color:#8a7d69; margin-bottom:3px;
+}
+.la-entry .fx{margin-top:9px; display:flex; flex-wrap:wrap; gap:6px; font-size:10.5px;
+  letter-spacing:.1em; text-transform:uppercase; color:#7d7160}
+.la-entry .fx span{border:1px dotted rgba(125,113,96,.55); padding:2px 7px}
+
+/* ── PHASE THREE: the screens ─────────────────────────────────────── */
+.la-screens{display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 18px; position:relative}
+.la-screen{
+  width:56px; height:76px; background:linear-gradient(160deg,#3e3428,#2b2418);
+  border:1px solid #1c170f; box-shadow:0 5px 12px rgba(0,0,0,.35);
+  display:grid; place-items:center; position:relative;
+  font:600 9px/1 'Inter',sans-serif; letter-spacing:.14em; text-transform:uppercase;
+  color:#7d7160;
+}
+.la-screen::after{content:'FACE DOWN'; width:34px; text-align:center}
+.la-screen.counted{background:linear-gradient(160deg,#54402a,#3a2c1c); border-color:var(--la-gold)}
+.la-screen.counted::after{content:'COUNTED'; color:var(--la-lamp)}
+.la-screencap{
+  font-family:'Special Elite',cursive; font-size:13.5px; color:var(--la-ink-2);
+  position:relative; margin:-8px 0 16px;
+}
+
+/* ── SIDEBAR: the running account ─────────────────────────────────── */
+.la-side{position:sticky; top:calc(var(--la-nav) + 14px)}
+.la-book{
+  background:linear-gradient(180deg,var(--la-paper),var(--la-paper-2));
+  box-shadow:0 16px 34px rgba(0,0,0,.42); position:relative; padding-bottom:14px;
+}
+.la-book h3{
+  margin:0; padding:11px 14px; background:var(--la-oxblood); color:var(--la-lamp);
+  font:600 11px/1 'Inter',sans-serif; letter-spacing:.28em; text-transform:uppercase;
+}
+.la-cols{display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(43,36,24,.2)}
+.la-col{padding:12px 12px 10px; }
+.la-col + .la-col{border-left:1px solid rgba(43,36,24,.2)}
+.la-col h4{
+  margin:0 0 8px; font-family:'Libre Baskerville',serif; font-size:17px; letter-spacing:.02em;
+}
+.la-col .kv{display:flex; justify-content:space-between; font-size:12.5px; color:var(--la-ink-2); padding:3px 0}
+.la-col .kv b{color:var(--la-ink); font-family:'Special Elite',cursive}
+.la-tally{display:flex; gap:3px; margin-top:8px; flex-wrap:wrap}
+.la-tally i{width:5px; height:16px; background:#c9bda2; display:block; transition:background .35s ease}
+.la-tally i.held{background:var(--la-blue)}
+.la-tally i.took{background:var(--la-rule)}
+.la-nonames{
+  margin:10px 12px 0; padding:9px 11px; border:1px dashed rgba(43,36,24,.35);
+  font-family:'Special Elite',cursive; font-size:12.5px; color:#6f6250; line-height:1.4;
+}
+.la-total{padding:12px 14px 0}
+.la-total .r{display:flex; justify-content:space-between; font-size:13px; color:var(--la-ink-2)}
+.la-total .r b{color:var(--la-ink); font-family:'Special Elite',cursive}
+.la-total .big{
+  font-family:'Libre Baskerville',serif; font-weight:700; font-size:30px; color:var(--la-oxblood);
+  margin-top:8px; border-top:2px double var(--la-ink); padding-top:6px;
+}
+.la-shieldnote{
+  margin:12px 12px 0; padding:9px 11px; background:rgba(43,36,24,.06);
+  font-size:12px; color:#6f6250;
+}
+
+/* ── CONTROLS ─────────────────────────────────────────────────────── */
+.la-controls{
+  position:fixed; left:0; right:0; bottom:0; z-index:50;
+  background:linear-gradient(180deg,rgba(23,48,37,.2),#12241b 45%);
+  border-top:2px solid var(--la-gold); padding:14px 18px 16px;
+  display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;
+}
+.la-btn{
+  font:600 12px/1 'Inter',sans-serif; letter-spacing:.2em; text-transform:uppercase;
+  padding:13px 26px; background:var(--la-paper); color:var(--la-oxblood);
+  border:1px solid var(--la-gold); cursor:pointer; transition:.2s;
+}
+.la-btn:hover{background:var(--la-lamp)}
+.la-btn.ghost{background:transparent; color:var(--la-lamp)}
+.la-btn.ghost:hover{background:rgba(232,181,99,.15)}
+.la-btn[disabled]{opacity:.35; cursor:default}
+.la-counter{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#9db8a8;
+  min-width:160px; text-align:center; font-variant-numeric:tabular-nums}
+
+.la-summary{
+  margin-top:24px; padding:22px 26px 22px 74px; position:relative;
+  background:linear-gradient(180deg,var(--la-paper),var(--la-paper-2));
+  box-shadow:0 18px 40px rgba(0,0,0,.4);
+  font-family:'Libre Baskerville',serif; font-size:20px; line-height:1.5;
+}
+.la-summary small{
+  display:block; font-family:'Inter',sans-serif; font-size:10.5px; letter-spacing:.26em;
+  text-transform:uppercase; color:var(--la-wax); margin-bottom:8px;
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+  .la-entry{opacity:1; transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="la-navstub"><b>The Traitors</b><span>Episode 9 · Afternoon</span><span>The Long Account</span></div>
+<div class="la-room"></div><div class="la-dust"></div>
+
+<div class="la-shell">
+  <header class="la-hero">
+    <div class="la-kicker">Mission · Episode Nine</div>
+    <h1 class="la-title">The Long <em>Account</em></h1>
+    <p class="la-sub">A dead man's debts, an agent with a locked box, and one word each to write where
+      nobody can see you write it.</p>
+    <div class="la-meta">
+      <span class="la-chip">Three phases</span>
+      <span class="la-chip">Ink v Wax</span>
+      <span class="la-chip">A hold pays four times a take</span>
+      <span class="la-chip">No shield</span>
+    </div>
+  </header>
+
+  <div class="la-grid">
+    <main>
+
+      <section class="la-sheet la-brief">
+        <h2>The Briefing</h2>
+        <p class="la-staging">A panelled counting room with two long tables on green baize, a locked strongbox
+          on a stand between them, a clerk, a debt book on a lectern, and two writing screens set up in the
+          middle of the floor.</p>
+
+        <div class="la-beat do"><p>The counting room. Two long tables facing each other across a green baize floor, a locked strongbox on a stand between them, and a clerk with a ledger.</p></div>
+        <div class="la-beat say"><p>The man who owned this house died owing money to a great many people, and the estate has sent somebody to settle it. That is the gentleman with the box. He is not on your side and he is not on mine.</p></div>
+        <div class="la-beat do"><p>The host lifts the oilcloth off the debt book and lets it fall open.</p></div>
+        <div class="la-beat say"><p>In this book are twelve claims against the estate. Some of them are real. Some of them were invented by people who thought nobody would ever check. You have twenty minutes with the book to decide which is which.</p></div>
+        <div class="la-beat say"><p>Then you bring your claims to that table, one player at a time, and you argue them. He will test you. If you press a claim you cannot support, he will strike it out and you will not get another turn.</p></div>
+        <div class="la-beat do"><p>The host walks to the middle of the room and stands beside two writing screens.</p></div>
+        <div class="la-beat say"><p>And then the part that decides the afternoon. He will make every one of you a single offer, at once, and you will answer behind these screens where nobody can see you. You may HOLD your price, or you may TAKE what he offers.</p></div>
+        <div class="la-beat say"><p>A take is safe and it is small. A hold is worth four times as much — and a hold only pays if enough of your side holds with you. If too many of you take, the people who held get nothing, and the people who took keep theirs.</p></div>
+        <div class="la-beat do"><p>The host looks along both tables without hurrying.</p></div>
+        <div class="la-beat say"><p>You may say anything you like to each other before you go behind that screen. Nobody will ever be shown what you actually wrote. I want to be very clear about that: nobody, including me, including tonight.</p></div>
+        <div class="la-beat say"><p>Every claim settled goes into the pot you are all playing for. Whatever is still in that box when the clerk closes the book stays with the estate. Read your book.</p></div>
+
+        <div class="la-rules">
+          <span class="la-rule"><b>task</b> beat 4</span>
+          <span class="la-rule"><b>failure</b> beat 5</span>
+          <span class="la-rule"><b>settlement</b> beat 7</span>
+          <span class="la-rule"><b>reward</b> beat 8</span>
+          <span class="la-rule"><b>secrecy</b> beat 10</span>
+          <span class="la-rule"><b>finish</b> beat 11</span>
+        </div>
+      </section>
+
+      <section class="la-sheet la-phase" style="margin-top:22px">
+        <div class="la-phase-head">
+          <span class="la-phase-n">Phase I</span>
+          <span class="la-phase-name">The Survey</span>
+          <span class="la-phase-stats"><i class="la-stat">strategic</i><i class="la-stat">mental</i></span>
+        </div>
+        <p class="la-setting">A lectern with the estate's debt book open on it, and twenty minutes.</p>
+
+        <div class="la-entry" id="la-step-0">
+          <div><div class="la-seal gold">Sound</div>
+            <div class="who">Gabby · Ink</div>
+            <div class="txt">Gabby found three claims signed in the same hand on three different dates and set all three aside.</div>
+          </div>
+          <div class="amt">3<small>claims</small></div>
+        </div>
+
+        <div class="la-entry struck" id="la-step-1">
+          <div><div class="la-seal grey">Weak</div>
+            <div class="who">Manu · Wax</div>
+            <div class="txt">Manu picked the largest number on the page and never asked why it was the largest number on the page.</div>
+          </div>
+          <div class="amt">0<small>claims</small></div>
+        </div>
+
+        <div class="la-entry social" id="la-step-2">
+          <div><div class="la-seal blue">Split</div>
+            <div class="who">Gabby &amp; Bowie · Ink</div>
+            <div class="txt">Gabby wanted the big claim. Bowie wanted the four small ones. The book got read twice while they settled it. Ink took five defensible claims to the table.</div>
+            <div class="conf"><small>Gabby · confessional</small>You don't win a room like that with the biggest claim. You win it with the one they've already half admitted. I'm not explaining that to anybody twice.</div>
+            <div class="fx"><span>bond Gabby ↔ Bowie −0.3</span><span>claim · Bowie → Gabby</span></div>
+          </div>
+          <div class="amt">5<small>to table</small></div>
+        </div>
+      </section>
+
+      <section class="la-sheet la-phase" style="margin-top:22px">
+        <div class="la-phase-head">
+          <span class="la-phase-n">Phase II</span>
+          <span class="la-phase-name">The Room</span>
+          <span class="la-phase-stats"><i class="la-stat">social</i><i class="la-stat">boldness</i></span>
+        </div>
+        <p class="la-setting">A long table, an estate agent with a ledger and a locked box, and one chair on the wrong side of it.</p>
+
+        <div class="la-entry" id="la-step-3">
+          <div><div class="la-seal">Settled</div>
+            <div class="who">Priya · Ink</div>
+            <div class="txt">Priya sat down, put one page on the table, and did not say anything else until he had read it.</div>
+          </div>
+          <div class="amt">£1,400<small>settled</small></div>
+        </div>
+
+        <div class="la-entry struck" id="la-step-4">
+          <div><div class="la-seal grey">Struck</div>
+            <div class="who">Fiore · Wax</div>
+            <div class="txt">He asked Fiore one question about the date and there was no answer to it.</div>
+          </div>
+          <div class="amt">—<small>struck</small></div>
+        </div>
+
+        <div class="la-entry social" id="la-step-5">
+          <div><div class="la-seal">Settled</div>
+            <div class="who">Ellie &amp; Fiore · Wax</div>
+            <div class="txt">When Fiore's claim was struck, Ellie took the same page back to the table and argued it again from the other end. Fiore's claim had been struck; it was not struck the second time.</div>
+            <div class="conf"><small>Fiore · confessional</small>I sat down having lost the room the money and I couldn't look at anybody. And then Ellie just picked the page up like it was nothing.</div>
+            <div class="fx"><span>bond Ellie ↔ Fiore +0.8</span><span>crowd · Ellie heroic ×0.9</span></div>
+          </div>
+          <div class="amt">£1,400<small>settled</small></div>
+        </div>
+
+        <div class="la-entry struck social" id="la-step-6">
+          <div><div class="la-seal grey">Not taken</div>
+            <div class="who">Alec · Ink</div>
+            <div class="txt">Alec let his turn go by. Twice. Nobody made him explain it and nobody had to. That is a turn Ink did not get back.</div>
+            <div class="conf"><small>Alec · confessional</small>I'd read it four times. I knew the dates, I knew the signature, I knew what I was going to say. I just couldn't make myself sit in that chair.</div>
+            <div class="fx"><span>record · turn not taken</span><span>crowd · Alec cowardly ×0.7</span></div>
+          </div>
+          <div class="amt">—<small>forfeit</small></div>
+        </div>
+      </section>
+
+      <section class="la-sheet la-phase" style="margin-top:22px">
+        <div class="la-phase-head">
+          <span class="la-phase-n">Phase III</span>
+          <span class="la-phase-name">The Settlement</span>
+          <span class="la-phase-stats"><i class="la-stat">temperament</i><i class="la-stat">loyalty</i></span>
+        </div>
+        <p class="la-setting">Two writing screens on the baize, a pencil each, and one word to write.</p>
+
+        <div class="la-screens" id="la-screens">
+          <div class="la-screen"></div><div class="la-screen"></div><div class="la-screen"></div>
+          <div class="la-screen"></div><div class="la-screen"></div><div class="la-screen"></div>
+          <div class="la-screen"></div><div class="la-screen"></div><div class="la-screen"></div>
+        </div>
+        <p class="la-screencap">Ink's nine screens. The clerk collects them face down and reads out two numbers.</p>
+
+        <div class="la-entry" id="la-step-7">
+          <div><div class="la-seal blue">Said</div>
+            <div class="who">Priya · Ink</div>
+            <div class="txt">“I am holding. If we all hold we walk out of here with four times the money and I would like the money.”</div>
+          </div>
+          <div class="amt">HOLD<small>stated</small></div>
+        </div>
+
+        <div class="la-entry" id="la-step-8">
+          <div><div class="la-seal blue">Said</div>
+            <div class="who">Julia · Ink</div>
+            <div class="txt">“I will do whatever the room does.” — which is a sentence that means nothing behind a screen.</div>
+          </div>
+          <div class="amt">HEDGE<small>stated</small></div>
+        </div>
+
+        <div class="la-entry" id="la-step-9">
+          <div><div class="la-seal gold">Counted</div>
+            <div class="who">The clerk · Ink</div>
+            <div class="txt">More than half of Ink held, which is all it needed. The agent looked genuinely annoyed. The clerk read out 6 holds and 3 takes, and no names.</div>
+            <div class="fx"><span>record · settlement 6/3 · paid</span><span>crowd · impressive ×0.3</span></div>
+          </div>
+          <div class="amt">6 / 3<small>hold / take</small></div>
+        </div>
+
+        <div class="la-entry struck" id="la-step-10">
+          <div><div class="la-seal grey">Counted</div>
+            <div class="who">The clerk · Wax</div>
+            <div class="txt">The clerk counted the screens. Wax did not have the holds, and everybody who held is paid nothing. The clerk read out 4 holds and 5 takes, and no names.</div>
+            <div class="conf"><small>a Wax player · confessional</small>Somebody in this room stood there and said the word hold to my face. I'd very much like to know who that was.</div>
+            <div class="fx"><span>record · settlement 4/5 · collapsed</span><span>crowd · selfish ×0.3</span></div>
+          </div>
+          <div class="amt">4 / 5<small>hold / take</small></div>
+        </div>
+
+        <div class="la-entry social struck" id="la-step-11">
+          <div><div class="la-seal grey">Audience only</div>
+            <div class="who">Finn · Wax</div>
+            <div class="txt">Finn said hold, out loud, to the table. Finn took it, folded the card twice, and put it in the clerk's tray face down. The screens are collected face down and the clerk does not read out names.</div>
+            <div class="conf"><small>Finn · confessional</small>I meant it when I said it. I meant it right up until I'm standing behind a piece of card with a pencil, on my own, and there's nobody watching.</div>
+            <div class="fx"><span>record · said hold, took · audience only</span><span>crowd · Finn selfish ×0.8</span></div>
+          </div>
+          <div class="amt">TAKE<small>sealed</small></div>
+        </div>
+      </section>
+
+      <div class="la-summary" id="la-summary" style="opacity:.3">
+        <small>The afternoon · solid</small>
+        One side held and one side did not, and the difference is sitting in the pot where everybody can see it.
+      </div>
+    </main>
+
+    <aside class="la-side">
+      <div class="la-book">
+        <h3>The Account</h3>
+        <div class="la-cols">
+          <div class="la-col">
+            <h4>Ink</h4>
+            <div class="kv"><span>claims</span><b id="la-i-c">—</b></div>
+            <div class="kv"><span>settled</span><b id="la-i-s">—</b></div>
+            <div class="kv"><span>screens</span><b id="la-i-t">—</b></div>
+            <div class="la-tally" id="la-i-tally"></div>
+          </div>
+          <div class="la-col">
+            <h4>Wax</h4>
+            <div class="kv"><span>claims</span><b id="la-w-c">—</b></div>
+            <div class="kv"><span>settled</span><b id="la-w-s">—</b></div>
+            <div class="kv"><span>screens</span><b id="la-w-t">—</b></div>
+            <div class="la-tally" id="la-w-tally"></div>
+          </div>
+        </div>
+
+        <div class="la-nonames">
+          The clerk reads out two numbers and no names. This board cannot tell you who held,
+          because nobody in the castle was told.
+        </div>
+
+        <div class="la-total">
+          <div class="r"><span>Fund before</span><b>£61,200</b></div>
+          <div class="r"><span>Claims settled</span><b id="la-tot-c">—</b></div>
+          <div class="r"><span>Earned today</span><b id="la-tot-e">—</b></div>
+          <div class="big" id="la-tot-a">£61,200</div>
+        </div>
+
+        <div class="la-shieldnote">
+          <b>Shield.</b> There is no relic in a counting room. Everything here is money.
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="la-controls">
+  <button class="la-btn" id="la-next">Enter next</button>
+  <span class="la-counter" id="la-counter">0 of 12 entered</span>
+  <button class="la-btn ghost" id="la-all">Enter all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 12, idx = -1;
+
+  /* [inkClaims, inkSettled, waxClaims, waxSettled, inkScreens, waxScreens, earned] */
+  var STATE = [
+    ['—','—','—','—','—','—',0],
+    ['3','—','—','—','—','—',0],
+    ['3','—','0','—','—','—',0],
+    ['5','—','0','—','—','—',0],
+    ['5','1','0','—','—','—',1400],
+    ['5','1','0','0','—','—',1400],
+    ['5','1','0','1','—','—',2800],
+    ['5','1','0','1','—','—',2800],
+    ['5','1','0','1','—','—',2800],
+    ['5','1','0','1','—','—',2800],
+    ['5','4','0','1','6 / 3','—',7000],
+    ['5','4','0','1','6 / 3','4 / 5',8400],
+    ['5','4','0','1','6 / 3','4 / 5',8400]
+  ];
+  /* the screens only become 'counted' when the clerk actually counts them */
+  var COUNTED_AT = 10;
+  var TALLY = { ink:[6,3], wax:[4,5] };
+
+  function tally(el, pair, shown){
+    var html='';
+    if (!shown){ for (var i=0;i<9;i++) html += '<i></i>'; }
+    else {
+      for (var h=0;h<pair[0];h++) html += '<i class="held"></i>';
+      for (var t=0;t<pair[1];t++) html += '<i class="took"></i>';
+    }
+    el.innerHTML = html;
+  }
+
+  function money(n){ return '£' + n.toLocaleString('en-GB'); }
+
+  function paint(){
+    var n = idx + 1;
+    for (var i=0;i<TOTAL;i++){
+      var el = document.getElementById('la-step-'+i);
+      if (el) el.classList.toggle('on', i <= idx);
+    }
+    document.getElementById('la-counter').textContent = n + ' of ' + TOTAL + ' entered';
+    document.getElementById('la-next').disabled = idx >= TOTAL-1;
+    document.getElementById('la-summary').style.opacity = idx >= TOTAL-1 ? '1' : '.3';
+
+    var s = STATE[n];
+    document.getElementById('la-i-c').textContent = s[0];
+    document.getElementById('la-i-s').textContent = s[1];
+    document.getElementById('la-w-c').textContent = s[2];
+    document.getElementById('la-w-s').textContent = s[3];
+    document.getElementById('la-i-t').textContent = s[4];
+    document.getElementById('la-w-t').textContent = s[5];
+    tally(document.getElementById('la-i-tally'), TALLY.ink, idx >= COUNTED_AT - 1);
+    tally(document.getElementById('la-w-tally'), TALLY.wax, idx >= COUNTED_AT);
+
+    var screens = document.querySelectorAll('#la-screens .la-screen');
+    for (var k=0;k<screens.length;k++) screens[k].classList.toggle('counted', idx >= COUNTED_AT - 1);
+
+    document.getElementById('la-tot-c').textContent = idx < 0 ? '—' : (s[1]==='—'?0:s[1]) + ' of 12';
+    document.getElementById('la-tot-e').textContent = idx < 0 ? '—' : money(s[6]);
+    document.getElementById('la-tot-a').textContent = money(61200 + (idx<0?0:s[6]));
+  }
+
+  document.getElementById('la-next').addEventListener('click', function(){
+    if (idx >= TOTAL-1) return;
+    idx++; paint();
+    var el = document.getElementById('la-step-'+idx);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  document.getElementById('la-all').addEventListener('click', function(){ idx = TOTAL-1; paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

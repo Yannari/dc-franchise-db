@@ -84,69 +84,26 @@ import { alignmentAt } from './roles.js';
 // how long it lasts or what anybody concludes from it is decided here.
 import { awardShield, awardDagger, daggerAfternoon } from './powers.js';
 
-/**
- * The most a season's missions can ever be worth.
- *
- * A round number in the show's own currency rather than a tuned one — the
- * tuning lives in MISSION_MAX below, which is what actually decides how close
- * a season gets. Read `gs.tr.potCeiling` at runtime rather than importing this
- * constant into gameplay code, so a future format that shortens a season can
- * scale the ceiling with it.
- */
-export const POT_CEILING = 120000;
-
-/** The most any ONE mission can add before side objectives. ~13% of the pot. */
-const MISSION_MAX = 15600;
-
-/** What a completed side objective is worth. Deliberately small: ~1.5%. */
-const SIDE_BONUS = 1800;
-
-/**
- * How much of a team's raw competence is burnt off before a penny is paid.
- *
- * A mission scored on stats alone pays out around 55% of maximum for an
- * average cast, every time, and a season of that lands within a rounding
- * error of the ceiling. This is the subtraction that makes a mission possible
- * to FAIL: quality is measured from here upward, so an average performance is
- * a mediocre payday and a bad one is nothing at all.
- */
-const DIFFICULTY = 0.34;
-
-/** Below four living players there is nobody to make two teams out of. */
-const MIN_PLAYERS = 4;
-
-/**
- * Below this, the mission pays NOTHING — and the number exists because of a
- * prose defect, not a balance one.
- *
- * The `failed` narration says "not one box cleared the water" and "nothing
- * lit, nothing earned". Without a pass mark those lines print over a payment
- * of two thousand credits, and the summary contradicts the ledger printed
- * underneath it — the same defect class as the grief event that announced two
- * empty beds on a night with three (see js/tr/state.js). A mission is a task:
- * the room completes it or it does not, and a botched afternoon buys the
- * castle nothing. Now the sentence and the number agree.
- *
- * Costs the pot about half a point of the ceiling, because it only bites on
- * the worst ~2% of missions. Side objectives are NOT gated by it: one person
- * bagging the extra out of a washout is coherent, and it is the only thing
- * salvaged from a day like that.
- */
-const PASS_MARK = 0.15;
-
-/**
- * Where the payday actually comes from: not the winners, and not an average.
- *
- * 0.6 on the better team and 0.4 on the worse. Weighting it entirely on the
- * winner would make half the cast irrelevant to the money and remove the one
- * thing that makes a mission a shared enterprise; weighting it evenly would
- * make a single strong team pointless. This says: the room is paid for what
- * the room managed, and the stronger half matters more.
- */
-const BEST_WEIGHT = 0.6;
-
-/** How wide the luck is on a team's day. +/- 9 points of performance. */
-const SWING = 0.18;
+// ══════════════════════════════════════════════════════════════════════
+// THE POT ARITHMETIC LIVES IN js/tr/missions/contract.js
+// ══════════════════════════════════════════════════════════════════════
+//
+// Every one of these constants was declared here, with the paragraph that
+// justified it, until Task 8 gave the bespoke missions the SAME payout
+// arithmetic — which they must have, because the pot distribution is a
+// calibrated band (this file's own header, and tests/tr-missions.test.js) and
+// a second payout curve would move that band from a content edit.
+//
+// So they moved rather than being copied. A constant written in two places is
+// not a constant, and every duplicate-source drift in this project started as
+// two. The values, the comments and the reasoning are unchanged and live in
+// js/tr/missions/contract.js; `POT_CEILING` is re-exported from here so the
+// eleven modules and tests that already import it from this file keep working.
+import {
+  POT_CEILING, MISSION_MAX, SIDE_BONUS, DIFFICULTY, PASS_MARK, BEST_WEIGHT,
+  SWING, MIN_PLAYERS,
+} from './missions/contract.js';
+export { POT_CEILING };
 
 // ══════════════════════════════════════════════════════════════════════
 // THE CHESS MISSION — knowledge as the currency (spec 7.2, evidence source 4)

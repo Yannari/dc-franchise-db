@@ -1694,6 +1694,13 @@ describe('a universal claim is evidenced, wired, or it does not ship', () => {
         'arrival', 'debug']
         .map(f => 'js/vp-tr/' + f + '.js'),
       'js/tr/missions.js', 'js/tr/powers.js', 'js/tr/roundtable.js', 'js/tr/murder.js',
+      // TASK 8: the four bespoke missions. They author viewer prose — host
+      // ceremonies, phase narration, scene lines, confessionals — so they
+      // belong in the same scan as every other prose library. Added here
+      // rather than given a private copy of this matcher in
+      // tests/tr-missions-bespoke.test.js, which keeps the RENDERED half only.
+      ...['drowned-causeway', 'nightjar-orrery', 'long-account', 'ash-vault']
+        .map(f => 'js/tr/missions/' + f + '.js'),
     ];
     const offenders = [];
     let scanned = 0, seen = 0;

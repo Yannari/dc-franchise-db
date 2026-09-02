@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Ash Vault — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-ash-vault.html — the approved visual target
+  ══════════════════════════════════════════════════════════════════════
+  Task 8, mission 4 of 4, and the only one that hands somebody a Shield.
+
+  IT SHARES NOTHING WITH THE OTHER THREE. Not the causeway's cold slate and
+  rising tide, not the orrery's ink-blue turning machine, not the counting
+  room's paper and daylight. This is CHARCOAL AND EMBER: a burnt wing seen
+  from a scaffold walkway, drifting ash, soot-edged index cards, and one
+  orange light down a hole.
+
+  THE ORGANISING PRIMITIVE IS A CUTAWAY OF THE BUILDING. The sidebar draws
+  the wing in section: a row of props that stand lit or fold dark as bays
+  are shored, and beneath them the sixty-foot crawl with a worm of light
+  travelling it. The flue is drawn as a branch off the crawl and stays
+  BLACKED OUT until the searcher reveal, because until then the room does
+  not know anybody went up it.
+
+  Cards do not fade — they SETTLE, like something dropped through smoke.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --av-char:#14100e; --av-char2:#1e1815; --av-soot:#2b2320; --av-smoke:#4a3f39;
+  --av-ember:#e2601c; --av-ember-lo:#8a3a10; --av-ash:#cfc6bd; --av-bone:#efe8dd;
+  --av-cold:#5f7b86; --av-shield:#f0c04a; --av-red:#c0392b; --av-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--av-char); color:var(--av-ash);
+  font-family:'Oswald','Arial Narrow',sans-serif; font-weight:300; font-size:16.5px; line-height:1.55;
+  overflow-x:hidden;
+}
+
+.av-navstub{
+  position:fixed; inset:0 0 auto 0; height:var(--av-nav); z-index:60;
+  background:#0a0807; border-bottom:1px solid #000; display:flex; align-items:center; gap:16px;
+  padding:0 16px; font:500 12px/1 'Oswald',sans-serif; letter-spacing:.22em; text-transform:uppercase;
+  color:#6c6058;
+}
+.av-navstub b{color:var(--av-ember); letter-spacing:.26em}
+
+/* ── ATMOSPHERE: heat haze, drifting ash ──────────────────────────── */
+.av-room{
+  position:fixed; left:0; right:0; top:var(--av-nav); bottom:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(75% 55% at 50% 108%, rgba(226,96,28,.22) 0%, transparent 62%),
+    radial-gradient(120% 80% at 50% -10%, #2b2320 0%, #14100e 60%, #0b0908 100%);
+}
+.av-beams{
+  position:fixed; left:0; right:0; top:var(--av-nav); bottom:0; z-index:0; pointer-events:none; opacity:.22;
+  background:
+    repeating-linear-gradient(74deg, rgba(0,0,0,.9) 0 10px, transparent 10px 90px),
+    repeating-linear-gradient(-68deg, rgba(0,0,0,.75) 0 7px, transparent 7px 130px);
+}
+.av-ash{
+  position:fixed; left:0; right:0; top:var(--av-nav); bottom:0; z-index:1; pointer-events:none; opacity:.45;
+  background-image:
+    radial-gradient(1.6px 1.6px at 10% 10%, var(--av-ash), transparent),
+    radial-gradient(1.2px 1.2px at 30% 45%, var(--av-ash), transparent),
+    radial-gradient(1.8px 1.8px at 55% 20%, var(--av-ash), transparent),
+    radial-gradient(1.2px 1.2px at 74% 62%, var(--av-ash), transparent),
+    radial-gradient(1.5px 1.5px at 88% 34%, var(--av-ash), transparent),
+    radial-gradient(1.3px 1.3px at 22% 78%, var(--av-ash), transparent);
+  background-size:600px 600px;
+  animation:av-fall 26s linear infinite;
+}
+@keyframes av-fall{from{background-position:0 -600px}to{background-position:-90px 600px}}
+
+.av-shell{position:relative; z-index:2; max-width:1100px; margin:0 auto; padding:calc(var(--av-nav) + 26px) 18px 132px}
+
+/* ── HERO ─────────────────────────────────────────────────────────── */
+.av-hero{
+  border:1px solid var(--av-soot); background:linear-gradient(160deg,rgba(43,35,32,.9),rgba(15,12,11,.92));
+  padding:30px 26px 26px; position:relative; overflow:hidden;
+}
+.av-hero::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:4px;
+  background:linear-gradient(90deg,transparent,var(--av-ember),var(--av-ember-lo),transparent);
+  animation:av-glow 5.5s ease-in-out infinite;
+}
+@keyframes av-glow{0%,100%{opacity:.55}50%{opacity:1}}
+.av-kicker{font-size:11.5px; letter-spacing:.4em; text-transform:uppercase; color:var(--av-ember)}
+.av-title{
+  font-family:'Oswald',sans-serif; font-weight:700; text-transform:uppercase;
+  font-size:clamp(38px,7.6vw,78px); line-height:.92; margin:.14em 0 .12em; letter-spacing:-.005em;
+  color:var(--av-bone);
+}
+.av-title span{color:var(--av-ember)}
+.av-sub{color:#98897f; max-width:60ch; font-size:17px; font-family:'Courier Prime',monospace}
+.av-meta{display:flex; flex-wrap:wrap; gap:9px; margin-top:18px}
+.av-chip{
+  font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--av-ash);
+  border:1px solid var(--av-smoke); padding:5px 12px; background:rgba(0,0,0,.3);
+}
+.av-chip.shield{border-color:var(--av-shield); color:var(--av-shield)}
+
+.av-grid{display:grid; grid-template-columns:1fr 302px; gap:22px; margin-top:24px; align-items:start}
+@media(max-width:900px){.av-grid{grid-template-columns:1fr}}
+
+/* ── BRIEFING ─────────────────────────────────────────────────────── */
+.av-brief{background:rgba(11,9,8,.8); border:1px solid var(--av-soot); padding:24px 22px 20px}
+.av-brief h2{
+  font-family:'Oswald',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.1em;
+  font-size:23px; margin:0 0 6px; color:var(--av-bone);
+}
+.av-staging{
+  font-family:'Courier Prime',monospace; font-style:italic; color:#8c7d73; font-size:15px;
+  border-bottom:1px solid var(--av-soot); padding-bottom:12px; margin-bottom:16px;
+}
+.av-beat{margin:0 0 14px}
+.av-beat.say p{
+  margin:0; font-size:19.5px; line-height:1.45; color:var(--av-bone); font-weight:300;
+  padding-left:16px; border-left:3px solid var(--av-ember-lo);
+}
+.av-beat.do p{margin:0; font-family:'Courier Prime',monospace; font-size:14px; color:#7d6f66}
+.av-beat.do p::before{content:'[ '; color:var(--av-ember-lo)}
+.av-beat.do p::after{content:' ]'; color:var(--av-ember-lo)}
+.av-beat.shield p{border-left-color:var(--av-shield); color:#fff2d3}
+.av-rules{display:flex; flex-wrap:wrap; gap:6px; margin-top:18px}
+.av-rule{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:#7d6f66;
+  border:1px solid var(--av-smoke); padding:3px 9px}
+.av-rule b{color:var(--av-ember); font-weight:500}
+.av-rule.shield b{color:var(--av-shield)}
+
+/* ── PHASES: the light changes as you go down and come back up ────── */
+.av-phase{margin-top:30px; padding:18px 16px 4px; border:1px solid var(--av-soot); position:relative}
+.av-phase[data-phase="shoring"]{background:linear-gradient(180deg,rgba(74,63,57,.34),transparent 60%)}
+.av-phase[data-phase="crawl"]{background:linear-gradient(180deg,rgba(10,8,7,.95),rgba(20,16,14,.4) 70%)}
+.av-phase[data-phase="sort"]{background:linear-gradient(180deg,rgba(207,198,189,.14),transparent 60%)}
+.av-phase-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:4px}
+.av-phase-n{
+  font-family:'Courier Prime',monospace; font-weight:700; font-size:13px; letter-spacing:.2em;
+  color:var(--av-char); background:var(--av-ember); padding:4px 9px;
+}
+.av-phase-name{
+  font-family:'Oswald',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  font-size:27px; color:var(--av-bone);
+}
+.av-phase-stats{margin-left:auto; display:flex; gap:6px}
+.av-stat{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--av-cold);
+  border:1px solid rgba(95,123,134,.5); padding:3px 8px}
+.av-setting{font-family:'Courier Prime',monospace; font-style:italic; color:#8c7d73; margin:8px 0 16px}
+
+/* ── CARDS: soot-edged index cards that settle ────────────────────── */
+.av-card{
+  position:relative; margin:0 0 13px; padding:14px 16px 14px 60px;
+  background:linear-gradient(155deg,#2a2320,#1a1513);
+  border:1px solid #0d0b0a;
+  box-shadow:inset 0 0 26px rgba(0,0,0,.7), 0 8px 18px rgba(0,0,0,.5);
+  opacity:0; transform:translateY(-10px) rotate(-.5deg);
+  transition:opacity .5s ease, transform .55s cubic-bezier(.25,.9,.3,1);
+}
+.av-card.on{opacity:1; transform:none}
+.av-card:nth-child(odd){transform:translateY(-10px) rotate(.6deg)}
+.av-card:nth-child(odd).on{transform:none}
+.av-card::before{  /* the scorched edge */
+  content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
+  background:linear-gradient(180deg,var(--av-smoke),#0d0b0a);
+}
+.av-card .who{
+  font-family:'Courier Prime',monospace; font-weight:700; font-size:13px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--av-ember);
+}
+.av-card .txt{color:#d6cdc4; margin-top:2px}
+.av-card .tag{
+  position:absolute; right:12px; top:12px; font-size:10.5px; letter-spacing:.18em;
+  text-transform:uppercase; padding:2px 8px; border:1px solid currentColor;
+}
+.av-card.good::before{background:linear-gradient(180deg,var(--av-ember),var(--av-ember-lo))}
+.av-card.good .tag{color:var(--av-ember)}
+.av-card.bad::before{background:linear-gradient(180deg,var(--av-red),#5c1d16)}
+.av-card.bad .tag{color:var(--av-red)}
+.av-card.plain .tag{color:#7d6f66}
+.av-card.social{border-style:dashed; border-color:var(--av-smoke); background:linear-gradient(155deg,#252b2e,#161a1c)}
+.av-card.social .tag{color:var(--av-cold)}
+.av-card.social::before{background:linear-gradient(180deg,var(--av-cold),#2a3a41)}
+.av-card.relic{
+  border:1px solid var(--av-shield);
+  background:linear-gradient(155deg,#332a16,#1c1710);
+  box-shadow:inset 0 0 34px rgba(240,192,74,.16), 0 8px 22px rgba(0,0,0,.6);
+}
+.av-card.relic .tag{color:var(--av-shield)}
+.av-card.relic::before{background:linear-gradient(180deg,var(--av-shield),#7a5f16)}
+.av-card .conf{
+  margin-top:11px; padding:10px 13px; background:rgba(0,0,0,.4); border-left:2px solid var(--av-ember-lo);
+  font-family:'Courier Prime',monospace; font-size:15.5px; line-height:1.45; color:#e4dbd2;
+}
+.av-card .conf small{
+  display:block; font-family:'Oswald',sans-serif; font-size:10.5px; letter-spacing:.2em;
+  text-transform:uppercase; color:#7d6f66; margin-bottom:4px;
+}
+.av-card .fx{margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; font-size:10.5px;
+  letter-spacing:.1em; text-transform:uppercase; color:#7d6f66}
+.av-card .fx span{border:1px dotted var(--av-smoke); padding:2px 7px}
+
+/* ── ICONS ────────────────────────────────────────────────────────── */
+.av-ico{position:absolute; left:16px; top:15px; width:30px; height:30px}
+.av-ico i{position:absolute; display:block}
+/* an acrow prop, standing */
+.ico-prop i:nth-child(1){left:13px; top:0; width:4px; bottom:4px; background:var(--av-ember)}
+.ico-prop i:nth-child(2){left:4px; right:4px; top:0; height:3px; background:var(--av-ember)}
+.ico-prop i:nth-child(3){left:6px; right:6px; bottom:0; height:4px; background:var(--av-ember-lo)}
+/* a prop that folded */
+.ico-fold i:nth-child(1){left:13px; top:2px; width:4px; height:16px; background:var(--av-red); transform:rotate(19deg); transform-origin:bottom}
+.ico-fold i:nth-child(2){left:4px; right:4px; top:0; height:3px; background:var(--av-red); transform:rotate(-8deg)}
+.ico-fold i:nth-child(3){left:5px; right:5px; bottom:0; height:4px; background:#5c1d16}
+/* the crawl: a tunnel with a light going down it */
+.ico-crawl i:nth-child(1){left:0; right:0; top:9px; height:12px; border:2px solid var(--av-ash); border-left:none; border-right:none}
+.ico-crawl i:nth-child(2){left:2px; top:13px; width:5px; height:4px; background:var(--av-ember);
+  animation:av-crawl 3.4s linear infinite}
+@keyframes av-crawl{from{transform:translateX(0)}to{transform:translateX(21px)}}
+/* the flue: a narrow shaft going up */
+.ico-flue i:nth-child(1){left:11px; top:0; width:8px; bottom:6px; border:2px solid var(--av-shield); border-bottom:none}
+.ico-flue i:nth-child(2){left:4px; right:4px; bottom:0; height:4px; background:var(--av-shield); opacity:.6}
+.ico-flue i:nth-child(3){left:13px; top:8px; width:4px; height:4px; border-radius:50%; background:var(--av-shield);
+  animation:av-rise 2.8s ease-in-out infinite}
+@keyframes av-rise{0%,100%{transform:translateY(6px); opacity:.4}50%{transform:translateY(-4px); opacity:1}}
+/* a deed sheet */
+.ico-deed i:nth-child(1){left:4px; top:2px; right:4px; bottom:2px; background:var(--av-bone)}
+.ico-deed i:nth-child(2){left:8px; right:8px; top:9px; height:2px; background:#8c7d73}
+.ico-deed i:nth-child(3){left:8px; right:12px; top:15px; height:2px; background:#8c7d73}
+
+/* ── SIDEBAR: the wing in section ─────────────────────────────────── */
+.av-side{position:sticky; top:calc(var(--av-nav) + 14px)}
+.av-panel{border:1px solid var(--av-soot); background:rgba(9,7,7,.92)}
+.av-panel h3{
+  margin:0; padding:11px 14px; background:var(--av-ember); color:var(--av-char);
+  font:700 11px/1 'Oswald',sans-serif; letter-spacing:.28em; text-transform:uppercase;
+}
+.av-section{padding:16px 14px 8px}
+.av-cut{position:relative; height:150px; background:#0a0807; border:1px solid var(--av-soot); overflow:hidden}
+.av-cut .roof{position:absolute; left:0; right:0; top:0; height:26px;
+  background:repeating-linear-gradient(72deg,#2b2320 0 6px,#0f0c0b 6px 12px)}
+.av-props{position:absolute; left:8px; right:8px; top:26px; height:56px; display:flex; justify-content:space-between}
+.av-props b{
+  display:block; width:6px; height:100%; background:#3a322d; position:relative;
+  transition:background .45s ease, box-shadow .45s ease;
+}
+.av-props b.up{background:var(--av-ember); box-shadow:0 0 10px rgba(226,96,28,.5)}
+.av-props b.down{background:var(--av-red); transform:rotate(14deg); transform-origin:bottom}
+.av-tunnel{
+  position:absolute; left:8px; right:8px; bottom:22px; height:16px;
+  border:1px solid var(--av-smoke); background:#050404; overflow:hidden;
+}
+.av-tunnel i{
+  position:absolute; left:0; top:2px; bottom:2px; width:8%;
+  background:linear-gradient(90deg,transparent,var(--av-ember)); transition:left .7s ease;
+}
+.av-flue{
+  position:absolute; right:34px; bottom:38px; width:14px; height:44px;
+  border:1px dashed #3a322d; background:#050404; transition:.5s;
+}
+.av-flue.lit{border:1px solid var(--av-shield); background:rgba(240,192,74,.12); box-shadow:0 0 16px rgba(240,192,74,.35)}
+.av-flue.lit::after{content:''; position:absolute; left:4px; top:8px; width:6px; height:6px; border-radius:50%;
+  background:var(--av-shield); box-shadow:0 0 10px var(--av-shield)}
+.av-cutlabel{
+  display:flex; justify-content:space-between; font-family:'Courier Prime',monospace; font-size:10.5px;
+  letter-spacing:.1em; color:#6c6058; margin-top:6px; text-transform:uppercase;
+}
+
+.av-rows{padding:6px 14px 4px}
+.av-row{display:flex; justify-content:space-between; align-items:baseline; padding:5px 0;
+  border-bottom:1px dotted var(--av-soot); font-size:13.5px; color:#98897f}
+.av-row b{color:var(--av-bone); font-family:'Courier Prime',monospace}
+.av-row.team b{color:var(--av-ember); font-family:'Oswald',sans-serif; font-weight:500; font-size:16px}
+
+.av-shieldbox{
+  margin:12px 14px 0; padding:12px; border:1px solid var(--av-soot); background:#050404;
+  text-align:center; transition:.5s;
+}
+.av-shieldbox .lbl{font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:#6c6058}
+.av-shieldbox .val{font-family:'Courier Prime',monospace; font-size:15px; color:#4b423c; margin-top:5px}
+.av-shieldbox.on{border-color:var(--av-shield); background:rgba(240,192,74,.08)}
+.av-shieldbox.on .lbl{color:var(--av-shield)}
+.av-shieldbox.on .val{color:var(--av-bone)}
+.av-shieldbox .cost{font-size:11.5px; color:#8c7d73; margin-top:7px; letter-spacing:.06em}
+
+.av-pot{padding:12px 14px 16px; border-top:1px solid var(--av-soot); margin-top:12px}
+.av-pot .r{display:flex; justify-content:space-between; font-size:13px; color:#98897f}
+.av-pot .r b{color:var(--av-bone); font-family:'Courier Prime',monospace}
+.av-pot .big{
+  font-family:'Oswald',sans-serif; font-weight:700; font-size:32px; color:var(--av-ember);
+  margin-top:7px; letter-spacing:.01em;
+}
+
+/* ── CONTROLS ─────────────────────────────────────────────────────── */
+.av-controls{
+  position:fixed; left:0; right:0; bottom:0; z-index:50;
+  background:linear-gradient(180deg,rgba(20,16,14,.15),#0a0807 45%);
+  border-top:1px solid var(--av-ember-lo); padding:14px 18px 16px;
+  display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;
+}
+.av-btn{
+  font:500 12px/1 'Oswald',sans-serif; letter-spacing:.22em; text-transform:uppercase;
+  padding:13px 26px; background:transparent; color:var(--av-ember);
+  border:1px solid var(--av-ember); cursor:pointer; transition:.2s;
+}
+.av-btn:hover{background:var(--av-ember); color:var(--av-char)}
+.av-btn.ghost{color:#8c7d73; border-color:var(--av-smoke)}
+.av-btn.ghost:hover{background:rgba(140,125,115,.18); color:var(--av-bone)}
+.av-btn[disabled]{opacity:.32; cursor:default}
+.av-btn[disabled]:hover{background:transparent; color:var(--av-ember)}
+.av-counter{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#8c7d73;
+  min-width:160px; text-align:center; font-variant-numeric:tabular-nums}
+
+.av-summary{
+  margin-top:32px; padding:24px; border:1px solid var(--av-soot);
+  background:linear-gradient(155deg,rgba(43,35,32,.85),rgba(11,9,8,.9));
+  font-size:20px; line-height:1.5; color:var(--av-bone);
+}
+.av-summary small{
+  display:block; font-family:'Courier Prime',monospace; font-size:11px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--av-ember); margin-bottom:9px;
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+  .av-card{opacity:1; transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="av-navstub"><b>The Traitors</b><span>Episode 11 · Afternoon</span><span>The Ash Vault</span></div>
+<div class="av-room"></div><div class="av-beams"></div><div class="av-ash"></div>
+
+<div class="av-shell">
+  <header class="av-hero">
+    <div class="av-kicker">Mission · Episode Eleven</div>
+    <h1 class="av-title">The Ash <span>Vault</span></h1>
+    <p class="av-sub">A wing that burned forty years ago, a strongroom under the fallen roof, and one narrow
+      flue that somebody is going to leave the relay for.</p>
+    <div class="av-meta">
+      <span class="av-chip">Three phases</span>
+      <span class="av-chip">Cinder v Flint</span>
+      <span class="av-chip">£2,500 a readable deed</span>
+      <span class="av-chip shield">One shield in the flue</span>
+    </div>
+  </header>
+
+  <div class="av-grid">
+    <main>
+
+      <section class="av-brief">
+        <h2>The Briefing</h2>
+        <p class="av-staging">A scaffold walkway over the collapsed floor of a burnt-out wing, with jacks and
+          timbers stacked on it, a low crawl opening between two fallen beams, a narrower flue opening in the
+          brickwork beside it, and a trestle table on the lawn outside.</p>
+
+        <div class="av-beat do"><p>What is left of the east wing. The host stands on a scaffold walkway above a collapsed floor, with the burnt roof timbers still in place above them.</p></div>
+        <div class="av-beat say"><p>This wing burned in one night forty years ago and nobody has been inside it since, because until last week nobody could get inside it.</p></div>
+        <div class="av-beat do"><p>The host points down at a black opening between two fallen beams.</p></div>
+        <div class="av-beat say"><p>Down there is the strongroom. In the strongroom are fourteen deed boxes. Between you and them is a ceiling that has been coming down slowly for four decades and will keep doing that whether or not you are underneath it.</p></div>
+        <div class="av-beat say"><p>So first you prop it. There are timbers and jacks on the walkway. Every bay you shore properly is a bay you can crawl through; a jack that is not seated will look seated, and the first person through will find out that it is not, and that bay closes for the rest of the afternoon.</p></div>
+        <div class="av-beat do"><p>The host crouches at the mouth of the crawl and puts a hand flat on the floor of it.</p></div>
+        <div class="av-beat say"><p>Then you crawl. One at a time, on your front, with a box behind you. It is sixty feet, it is dark, and you will not be able to turn round. If you stop, the person behind you stops.</p></div>
+        <div class="av-beat do"><p>The host stands and indicates a second, narrower opening in the brickwork to one side.</p></div>
+        <div class="av-beat say shield"><p>That is the old kitchen flue. The housekeeper who came out of this building last said she left a ring in it. I have no idea whether she did. Any one of you may go and look, and if you find it, it is a Shield, and it is yours alone.</p></div>
+        <div class="av-beat say shield"><p>I will tell you what it costs, because that part I do know. While you are in the flue you are not on the relay, and your team crawls a body short, and the boxes you would have brought out stay down there.</p></div>
+        <div class="av-beat do"><p>The host walks to a trestle table set up on the lawn outside.</p></div>
+        <div class="av-beat say"><p>Whatever comes out gets sorted on this table. Forty years of water has made most of those deeds illegible and some of them are simply blank paper. Only a deed you can still read earns anything.</p></div>
+        <div class="av-beat say"><p>Every readable deed on this table when I close the wing is two and a half thousand into the pot. The team that finishes with the most has bragging rights and nothing else. Prop it properly.</p></div>
+
+        <div class="av-rules">
+          <span class="av-rule"><b>task</b> beat 4</span>
+          <span class="av-rule"><b>failure</b> beat 5</span>
+          <span class="av-rule"><b>crawl</b> beat 7</span>
+          <span class="av-rule shield"><b>shield</b> beat 9</span>
+          <span class="av-rule shield"><b>cost</b> beat 10</span>
+          <span class="av-rule"><b>reward</b> beat 13</span>
+          <span class="av-rule"><b>finish</b> beat 13</span>
+        </div>
+      </section>
+
+      <section class="av-phase" data-phase="shoring">
+        <div class="av-phase-head">
+          <span class="av-phase-n">01</span>
+          <span class="av-phase-name">The Shoring</span>
+          <span class="av-phase-stats"><i class="av-stat">physical</i><i class="av-stat">loyalty</i></span>
+        </div>
+        <p class="av-setting">A scaffold walkway over a collapsed floor, with acrow jacks and timbers, under a burnt roof that has been coming down for forty years.</p>
+
+        <article class="av-card good" id="av-step-0">
+          <span class="av-ico ico-prop"><i></i><i></i><i></i></span><span class="tag">Seated</span>
+          <div class="who">Brick · Cinder</div>
+          <div class="txt">Brick seated the jack, put weight on it, and then put more weight on it, which is the difference between a prop and a decoration.</div>
+        </article>
+
+        <article class="av-card good" id="av-step-1">
+          <span class="av-ico ico-prop"><i></i><i></i><i></i></span><span class="tag">Seated</span>
+          <div class="who">Ellie · Flint</div>
+          <div class="txt">Ellie found the beam that was carrying everything and propped that first, which nobody had asked for.</div>
+        </article>
+
+        <article class="av-card bad" id="av-step-2">
+          <span class="av-ico ico-fold"><i></i><i></i><i></i></span><span class="tag">Short</span>
+          <div class="who">Julia · Cinder</div>
+          <div class="txt">Julia set a jack on burnt board. It looked seated. It was not, and the bay behind it shut an hour later.</div>
+        </article>
+
+        <article class="av-card social" id="av-step-3">
+          <span class="av-ico ico-prop"><i></i><i></i><i></i></span><span class="tag">Heroic</span>
+          <div class="who">Priya &amp; Manu · Flint</div>
+          <div class="txt">Priya stood under Manu's prop while Manu seated it, which is what you do and is not nothing.</div>
+          <div class="conf"><small>Priya · confessional</small>Nobody's cutting a highlight reel of me holding a bit of wood over somebody's head for an hour. It was still the job and I did it.</div>
+          <div class="fx"><span>bond Priya ↔ Manu +0.6</span><span>crowd · Priya heroic ×0.5</span></div>
+        </article>
+
+        <article class="av-card social bad" id="av-step-4">
+          <span class="av-ico ico-fold"><i></i><i></i><i></i></span><span class="tag">Suspicious</span>
+          <div class="who">Bowie &amp; Julia · Cinder</div>
+          <div class="txt">Bowie was the one who found the bay shut, and the jack in it was a finger short of the joist. Julia set that jack.</div>
+          <div class="conf"><small>Bowie · confessional</small>You put the jack under and you push it until it stops. That's the whole job. I don't understand how Julia got that wrong, and I'd like to.</div>
+          <div class="fx"><span>record · unseated jack</span><span>suspicion +0.28</span><span>bond Bowie ↔ Julia −0.4</span></div>
+        </article>
+      </section>
+
+      <section class="av-phase" data-phase="crawl">
+        <div class="av-phase-head">
+          <span class="av-phase-n">02</span>
+          <span class="av-phase-name">The Crawl</span>
+          <span class="av-phase-stats"><i class="av-stat">endurance</i><i class="av-stat">temperament</i></span>
+        </div>
+        <p class="av-setting">Sixty feet of shored crawlspace in the dark, a relay of one person at a time, and a narrow brick flue leading off it.</p>
+
+        <article class="av-card good" id="av-step-5">
+          <span class="av-ico ico-crawl"><i></i><i></i></span><span class="tag">Three runs</span>
+          <div class="who">Brick · Cinder</div>
+          <div class="txt">Brick did the sixty feet three times and came out the third time still able to speak.</div>
+        </article>
+
+        <article class="av-card plain" id="av-step-6">
+          <span class="av-ico ico-crawl"><i></i><i></i></span><span class="tag">Steady</span>
+          <div class="who">Ellie · Flint</div>
+          <div class="txt">Ellie made her runs, got a box out each time, and said nothing about the headroom.</div>
+        </article>
+
+        <article class="av-card bad" id="av-step-7">
+          <span class="av-ico ico-crawl"><i></i><i></i></span><span class="tag">Stopped</span>
+          <div class="who">Gabby · Flint</div>
+          <div class="txt">Gabby got halfway, could not make her shoulders work, and had to be pulled out backwards by the ankles.</div>
+        </article>
+
+        <article class="av-card social" id="av-step-8">
+          <span class="av-ico ico-crawl"><i></i><i></i></span><span class="tag">Heroic</span>
+          <div class="who">Manu &amp; Gabby · Flint</div>
+          <div class="txt">Manu went in after Gabby and came out backwards dragging her by the belt.</div>
+          <div class="conf"><small>Gabby · confessional</small>Sixty feet of brick and I couldn't move. I don't know how long I was in there. I know whose voice it was.</div>
+          <div class="fx"><span>bond Manu ↔ Gabby +1.0</span><span>crowd · Manu heroic ×1.2</span></div>
+        </article>
+
+        <article class="av-card relic" id="av-step-9">
+          <span class="av-ico ico-flue"><i></i><i></i><i></i></span><span class="tag">The flue</span>
+          <div class="who">Fiore · Cinder</div>
+          <div class="txt">Fiore was not on the relay for most of the second hour. She came back up with something that was not a deed box.</div>
+          <div class="conf"><small>Fiore · confessional</small>They're all down there carrying boxes for money most of us won't live to collect. I went and got the thing that keeps me here until Thursday.</div>
+          <div class="fx"><span>record · left the relay</span><span>crowd · Fiore selfish ×1.0</span><span>shield · seen by 4</span></div>
+        </article>
+      </section>
+
+      <section class="av-phase" data-phase="sort">
+        <div class="av-phase-head">
+          <span class="av-phase-n">03</span>
+          <span class="av-phase-name">The Sort</span>
+          <span class="av-phase-stats"><i class="av-stat">mental</i><i class="av-stat">social</i></span>
+        </div>
+        <p class="av-setting">A trestle table on the lawn, forty years of water-damaged deeds, and full daylight for the first time all afternoon.</p>
+
+        <article class="av-card good" id="av-step-10">
+          <span class="av-ico ico-deed"><i></i><i></i><i></i></span><span class="tag">Sharp</span>
+          <div class="who">Bowie · Cinder</div>
+          <div class="txt">Bowie held the sheets up to the light one at a time and found writing on three everybody else had binned.</div>
+        </article>
+
+        <article class="av-card bad" id="av-step-11">
+          <span class="av-ico ico-deed"><i></i><i></i><i></i></span><span class="tag">Binned</span>
+          <div class="who">Alec · Flint</div>
+          <div class="txt">Alec binned two readable deeds because the corners were black, which is not the same as illegible.</div>
+        </article>
+
+        <article class="av-card social" id="av-step-12">
+          <span class="av-ico ico-deed"><i></i><i></i><i></i></span><span class="tag">Impressive</span>
+          <div class="who">Bowie · Cinder</div>
+          <div class="txt">Bowie rescued a deed by drying it on his own coat, which is not in the rules and worked. Six of Cinder's deeds came off that table readable, and Bowie is the reason for most of them.</div>
+          <div class="conf"><small>Bowie · confessional</small>My gran's handwriting was worse than that and I read her shopping lists for eleven years. It's not a superpower, it's just practice nobody else has had.</div>
+          <div class="fx"><span>crowd · Bowie impressive ×1.0</span><span>reputation · sharpness +0.6</span></div>
+        </article>
+
+        <article class="av-card social bad" id="av-step-13">
+          <span class="av-ico ico-flue"><i></i><i></i><i></i></span><span class="tag">Suspicious</span>
+          <div class="who">Brick &amp; Fiore · Cinder</div>
+          <div class="txt">Brick counted the boxes on the table, out loud, and then asked how many hands had been on the relay. Fiore pointed out that she had crawled twice before going up there. Two people agreed. One did not.</div>
+          <div class="conf"><small>Brick · confessional</small>We all got offered the same choice and most of us didn't take it. I'm not calling that proof of anything. I'm saying I'll remember it on Thursday when somebody asks me for a name.</div>
+          <div class="fx"><span>claim · Brick → Fiore</span><span>suspicion +0.3</span><span>bond Brick ↔ Fiore −0.7</span></div>
+        </article>
+      </section>
+
+      <div class="av-summary" id="av-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        Most of the boxes came out. One bay shut early, one person could not finish the crawl, and half the
+        deeds were paper soup.
+      </div>
+    </main>
+
+    <aside class="av-side">
+      <div class="av-panel">
+        <h3>The Wing</h3>
+        <div class="av-section">
+          <div class="av-cut">
+            <div class="roof"></div>
+            <div class="av-props" id="av-props">
+              <b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b>
+            </div>
+            <div class="av-flue" id="av-flue"></div>
+            <div class="av-tunnel"><i id="av-worm" style="left:0"></i></div>
+          </div>
+          <div class="av-cutlabel"><span>walkway</span><span>strongroom · 60 ft</span></div>
+        </div>
+
+        <div class="av-rows">
+          <div class="av-row team"><span>Cinder</span><b id="av-c-bays">— bays</b></div>
+          <div class="av-row"><span>Out of the crawl</span><b id="av-c-box">—</b></div>
+          <div class="av-row"><span>Readable deeds</span><b id="av-c-deed">—</b></div>
+          <div class="av-row team" style="margin-top:8px"><span>Flint</span><b id="av-f-bays">— bays</b></div>
+          <div class="av-row"><span>Out of the crawl</span><b id="av-f-box">—</b></div>
+          <div class="av-row"><span>Readable deeds</span><b id="av-f-deed">—</b></div>
+        </div>
+
+        <div class="av-shieldbox" id="av-shieldbox">
+          <div class="lbl">The Flue</div>
+          <div class="val" id="av-shieldval">nobody has gone up it</div>
+          <div class="cost" id="av-shieldcost"></div>
+        </div>
+
+        <div class="av-pot">
+          <div class="r"><span>Fund before</span><b>£74,900</b></div>
+          <div class="r"><span>Readable deeds</span><b id="av-pot-d">—</b></div>
+          <div class="r"><span>Earned today</span><b id="av-pot-e">—</b></div>
+          <div class="big" id="av-pot-a">£74,900</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="av-controls">
+  <button class="av-btn" id="av-next">Next</button>
+  <span class="av-counter" id="av-counter">0 of 14 revealed</span>
+  <button class="av-btn ghost" id="av-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 14, idx = -1;
+
+  /* prop state after n reveals: 0 unknown, 1 seated, 2 folded */
+  var PROPS = [
+    [0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0],[1,1,0,0,0,0,0,0],[1,1,2,0,0,0,0,0],
+    [1,1,2,1,0,0,0,0],[1,1,2,1,1,0,0,0],[1,1,2,1,1,1,0,0],[1,1,2,1,1,1,1,0],
+    [1,1,2,1,1,1,1,0],[1,1,2,1,1,1,1,1],[1,1,2,1,1,1,1,1],[1,1,2,1,1,1,1,1],
+    [1,1,2,1,1,1,1,1],[1,1,2,1,1,1,1,1],[1,1,2,1,1,1,1,1]
+  ];
+  /* how far down the crawl the light has got, 0..100 */
+  /* capped at 92 so the light stays inside the tunnel rather than sliding
+     out past its right-hand wall */
+  var WORM = [0,0,0,0,0,0,20,40,54,62,74,82,88,92,92];
+  /* [cinderBays, cinderBoxes, cinderDeeds, flintBays, flintBoxes, flintDeeds] */
+  var ROWS = [
+    ['—','—','—','—','—','—'],
+    ['1','—','—','—','—','—'],
+    ['1','—','—','1','—','—'],
+    ['1','—','—','1','—','—'],
+    ['1','—','—','2','—','—'],
+    ['3','3','—','2','—','—'],
+    ['3','3','—','4','2','—'],
+    ['3','3','—','4','2','—'],
+    ['3','3','—','4','3','—'],
+    ['3','3','—','4','3','—'],
+    ['3','5','3','4','3','—'],
+    ['3','5','3','4','3','1'],
+    ['3','5','6','4','3','1'],
+    ['3','5','6','4','3','2'],
+    ['3','5','6','4','3','2']
+  ];
+  var FLUE_AT = 9;         /* the searcher reveal */
+  var DEEDS = [0,0,0,0,0,0,0,0,0,0,3,4,7,8,8];
+
+  function money(n){ return '£' + n.toLocaleString('en-GB'); }
+
+  function paint(){
+    var n = idx + 1;
+    for (var i=0;i<TOTAL;i++){
+      var el = document.getElementById('av-step-'+i);
+      if (el) el.classList.toggle('on', i <= idx);
+    }
+    document.getElementById('av-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    document.getElementById('av-next').disabled = idx >= TOTAL-1;
+    document.getElementById('av-summary').style.opacity = idx >= TOTAL-1 ? '1' : '.25';
+
+    var p = PROPS[n], props = document.querySelectorAll('#av-props b');
+    for (var k=0;k<props.length;k++){
+      props[k].classList.remove('up','down');
+      if (p[k] === 1) props[k].classList.add('up');
+      if (p[k] === 2) props[k].classList.add('down');
+    }
+    document.getElementById('av-worm').style.left = WORM[n] + '%';
+
+    var r = ROWS[n];
+    document.getElementById('av-c-bays').textContent = r[0] === '—' ? '— bays' : r[0] + ' bays';
+    document.getElementById('av-c-box').textContent = r[1];
+    document.getElementById('av-c-deed').textContent = r[2];
+    document.getElementById('av-f-bays').textContent = r[3] === '—' ? '— bays' : r[3] + ' bays';
+    document.getElementById('av-f-box').textContent = r[4];
+    document.getElementById('av-f-deed').textContent = r[5];
+
+    /* THE FLUE STAYS BLACK UNTIL SOMEBODY IS SEEN GOING UP IT. The sidebar
+       may never know a thing the page has not revealed. */
+    var lit = idx >= FLUE_AT;
+    document.getElementById('av-flue').classList.toggle('lit', lit);
+    document.getElementById('av-shieldbox').classList.toggle('on', lit);
+    document.getElementById('av-shieldval').textContent =
+      lit ? 'Fiore · found the ring' : 'nobody has gone up it';
+    document.getElementById('av-shieldcost').textContent =
+      lit ? 'cost the castle £1,340 of carry · seen by 4 of 17' : '';
+
+    var d = DEEDS[n];
+    document.getElementById('av-pot-d').textContent = idx < 0 ? '—' : d;
+    document.getElementById('av-pot-e').textContent = idx < 0 ? '—' : money(d*2500);
+    document.getElementById('av-pot-a').textContent = money(74900 + (idx<0?0:d*2500));
+  }
+
+  document.getElementById('av-next').addEventListener('click', function(){
+    if (idx >= TOTAL-1) return;
+    idx++; paint();
+    var el = document.getElementById('av-step-'+idx);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  document.getElementById('av-all').addEventListener('click', function(){ idx = TOTAL-1; paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

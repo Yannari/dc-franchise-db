@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Drowned Causeway — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-drowned-causeway.html — the approved visual target
+  ══════════════════════════════════════════════════════════════════════
+  Task 8, mission 1 of 4. This file is the SOURCE OF TRUTH for the VP
+  builder in stage 2: if the generated screen and this page disagree, the
+  builder is wrong.
+
+  THE WORLD: a tidal sandbar at half tide, in bad light. Slate, wet ochre
+  sand, sea-green channel water and one piece of brass. Nothing in here is
+  borrowed from another challenge's visual language — the organising
+  primitive is THE TIDE GAUGE, a brass rule down the left of the sidebar
+  whose water level rises with every reveal, because the whole mission is
+  a race against a line that moves.
+
+  DATA IS REPRESENTATIVE, not generated: eighteen names, two teams, three
+  phases, the pot line and one dropped strongbox.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700;6..96,900&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dc-slate:#1b2229; --dc-slate-2:#232c35; --dc-sand:#b39a72; --dc-sand-dim:#8d7857;
+  --dc-sea:#2f6f6b; --dc-sea-lit:#49a49c; --dc-foam:#d7e6e2;
+  --dc-brass:#c9a227; --dc-brass-dim:#8d711b;
+  --dc-chalk:#e8eef1; --dc-ink:#0e1317; --dc-red:#a8332c;
+  --dc-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--dc-slate); color:var(--dc-chalk);
+  font-family:'Barlow Condensed','Oswald','Arial Narrow',sans-serif;
+  font-size:17px; line-height:1.5; overflow-x:hidden;
+}
+
+/* the 46px nav the real player draws — every layer starts under it */
+.dc-navstub{
+  position:fixed; inset:0 0 auto 0; height:var(--dc-nav); z-index:60;
+  background:#0b0f13; border-bottom:1px solid #000;
+  display:flex; align-items:center; gap:14px; padding:0 16px;
+  font:600 13px/1 'Barlow Condensed',sans-serif; letter-spacing:.18em; text-transform:uppercase;
+  color:#6b7c86;
+}
+.dc-navstub b{color:var(--dc-brass); letter-spacing:.22em}
+
+/* ── ATMOSPHERE: the sea, always moving, always under the nav ───────── */
+.dc-sky{
+  position:fixed; left:0; right:0; top:var(--dc-nav); bottom:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(120% 70% at 50% -10%, #34424e 0%, #1b2229 55%, #10161b 100%);
+}
+.dc-sky::after{
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);
+}
+.dc-swell{
+  position:fixed; left:-10%; right:-10%; bottom:0; height:34vh; z-index:0; pointer-events:none;
+  background:linear-gradient(180deg,rgba(47,111,107,0) 0%,rgba(47,111,107,.30) 40%,rgba(20,50,50,.75) 100%);
+  filter:blur(1px);
+  animation:dc-swell 17s ease-in-out infinite alternate;
+}
+@keyframes dc-swell{from{transform:translateY(6%) scaleY(.94)}to{transform:translateY(-2%) scaleY(1.06)}}
+.dc-drizzle{
+  position:fixed; inset:var(--dc-nav) 0 0 0; z-index:1; pointer-events:none; opacity:.20;
+  background:repeating-linear-gradient(102deg,rgba(215,230,226,.5) 0 1px,transparent 1px 26px);
+  animation:dc-drizzle 1.5s linear infinite;
+}
+@keyframes dc-drizzle{from{background-position:0 0}to{background-position:-40px 220px}}
+
+/* ── SHELL ─────────────────────────────────────────────────────────── */
+.dc-shell{position:relative; z-index:2; max-width:1100px; margin:0 auto; padding:calc(var(--dc-nav) + 26px) 18px 132px}
+
+.dc-hero{border:1px solid rgba(201,162,39,.35); background:rgba(11,15,19,.72); padding:30px 26px 26px; position:relative}
+.dc-hero::before{
+  content:''; position:absolute; left:0; right:0; top:0; height:3px;
+  background:linear-gradient(90deg,transparent,var(--dc-brass),transparent);
+}
+.dc-kicker{font:600 12px/1 'Barlow Condensed',sans-serif; letter-spacing:.34em; text-transform:uppercase; color:var(--dc-sea-lit)}
+.dc-title{
+  font-family:'Bodoni Moda','Didot',Georgia,serif; font-weight:900;
+  font-size:clamp(38px,7.4vw,74px); line-height:.94; margin:.18em 0 .1em; letter-spacing:-.01em;
+}
+.dc-title em{font-style:italic; color:var(--dc-brass)}
+.dc-sub{color:#9db0b8; max-width:62ch; font-size:18px}
+.dc-meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px}
+.dc-chip{
+  border:1px solid rgba(201,162,39,.4); padding:5px 11px; font-size:13px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--dc-brass); background:rgba(201,162,39,.06);
+}
+
+/* ── LAYOUT: page and a sticky gauge column ────────────────────────── */
+.dc-grid{display:grid; grid-template-columns:1fr 300px; gap:22px; margin-top:26px; align-items:start}
+@media(max-width:900px){.dc-grid{grid-template-columns:1fr}}
+
+/* ── THE BRIEFING: the host, beat by beat ─────────────────────────── */
+.dc-brief{border-left:3px solid var(--dc-brass); background:rgba(9,13,16,.66); padding:22px 22px 18px}
+.dc-brief h2{
+  font-family:'Bodoni Moda',serif; font-weight:700; font-size:26px; margin:0 0 4px; letter-spacing:.02em;
+}
+.dc-staging{
+  color:#8ba0a8; font-style:italic; font-size:16px; border-bottom:1px dashed rgba(139,160,168,.35);
+  padding-bottom:12px; margin-bottom:14px;
+}
+.dc-beat{margin:0 0 13px; padding-left:18px; border-left:2px solid transparent}
+.dc-beat.say{border-left-color:rgba(201,162,39,.5)}
+.dc-beat.say p{
+  font-family:'Bodoni Moda',serif; font-size:19px; line-height:1.45; margin:0; color:#f2f6f7;
+}
+.dc-beat.say p::before{content:'“'; color:var(--dc-brass)}
+.dc-beat.say p::after{content:'”'; color:var(--dc-brass)}
+.dc-beat.do{color:#7f939b; font-size:15.5px}
+.dc-beat.do p{margin:0}
+.dc-rules{display:flex; flex-wrap:wrap; gap:6px; margin-top:16px}
+.dc-rule{
+  font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:#6f8189;
+  border:1px solid rgba(111,129,137,.4); padding:3px 8px;
+}
+.dc-rule b{color:var(--dc-sea-lit); font-weight:600}
+
+/* ── PHASES ────────────────────────────────────────────────────────── */
+.dc-phase{margin-top:30px; padding:20px 18px 6px; border:1px solid rgba(255,255,255,.07); position:relative}
+.dc-phase[data-phase="wade"]{background:linear-gradient(180deg,rgba(179,154,114,.13),rgba(27,34,41,0) 62%)}
+.dc-phase[data-phase="ledge"]{background:linear-gradient(180deg,rgba(47,111,107,.20),rgba(27,34,41,0) 62%)}
+.dc-phase[data-phase="bell"]{background:linear-gradient(180deg,rgba(201,162,39,.16),rgba(27,34,41,0) 62%)}
+.dc-phase-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px}
+.dc-phase-n{
+  font-family:'Bodoni Moda',serif; font-size:44px; line-height:.8; color:var(--dc-brass); opacity:.55;
+}
+.dc-phase-name{font-family:'Bodoni Moda',serif; font-size:29px; font-weight:700}
+.dc-phase-stats{margin-left:auto; display:flex; gap:6px}
+.dc-stat{
+  font-size:11.5px; letter-spacing:.15em; text-transform:uppercase;
+  border:1px solid rgba(73,164,156,.5); color:var(--dc-sea-lit); padding:3px 8px;
+}
+.dc-setting{color:#8ba0a8; font-style:italic; margin:0 0 16px; max-width:70ch}
+
+/* ── CARDS: wet slate with chalk ───────────────────────────────────── */
+.dc-card{
+  position:relative; margin:0 0 12px; padding:14px 16px 14px 62px;
+  background:linear-gradient(160deg,#28323b,#1d252c);
+  border:1px solid rgba(255,255,255,.08); border-left:4px solid rgba(255,255,255,.14);
+  opacity:0; transform:translateY(14px);
+  transition:opacity .45s ease, transform .45s cubic-bezier(.2,.8,.3,1);
+}
+.dc-card.on{opacity:1; transform:none}
+/* card physics differ per phase: the wade trudges up, the ledge slides in
+   sideways over the water, the bell drops like a struck note */
+.dc-phase[data-phase="ledge"] .dc-card{transform:translateX(-26px)}
+.dc-phase[data-phase="ledge"] .dc-card.on{transform:none}
+.dc-phase[data-phase="bell"] .dc-card{transform:translateY(-16px) scale(.985)}
+.dc-phase[data-phase="bell"] .dc-card.on{transform:none}
+.dc-card .who{font-weight:700; letter-spacing:.04em; color:#fff}
+.dc-card .txt{color:#c4d2d8; margin-top:2px}
+.dc-card .tag{
+  position:absolute; right:12px; top:11px; font-size:11px; letter-spacing:.16em;
+  text-transform:uppercase; padding:2px 7px; border:1px solid currentColor;
+}
+.dc-card.good{border-left-color:var(--dc-sea-lit)} .dc-card.good .tag{color:var(--dc-sea-lit)}
+.dc-card.bad{border-left-color:var(--dc-red)} .dc-card.bad .tag{color:var(--dc-red)}
+.dc-card.steady .tag{color:#7f939b}
+.dc-card.social{
+  border-style:dashed; background:linear-gradient(160deg,#2b2318,#1e1a14);
+  border-left-color:var(--dc-brass);
+}
+.dc-card.social .tag{color:var(--dc-brass)}
+.dc-card .conf{
+  margin-top:10px; padding:10px 12px; background:rgba(0,0,0,.32);
+  border-left:2px solid var(--dc-brass); font-family:'Bodoni Moda',serif; font-size:17px; color:#e9eff1;
+}
+.dc-card .conf small{
+  display:block; font-family:'Barlow Condensed',sans-serif; font-size:11px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--dc-brass-dim); margin-bottom:4px;
+}
+.dc-card .fx{
+  margin-top:9px; display:flex; flex-wrap:wrap; gap:6px;
+  font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:#7f939b;
+}
+.dc-card .fx span{border:1px dotted rgba(127,147,155,.5); padding:2px 7px}
+
+/* ── ICONS: CSS only, no emoji ─────────────────────────────────────── */
+.dc-ico{position:absolute; left:16px; top:14px; width:32px; height:32px}
+.dc-ico i{position:absolute; display:block}
+/* crate */
+.ico-crate i:nth-child(1){inset:6px 2px 4px 2px; border:2px solid var(--dc-sand); }
+.ico-crate i:nth-child(2){left:2px; right:2px; top:15px; height:2px; background:var(--dc-sand-dim)}
+.ico-crate i:nth-child(3){left:14px; top:6px; bottom:4px; width:2px; background:var(--dc-sand-dim)}
+/* boot in water */
+.ico-boot i:nth-child(1){left:8px; top:3px; width:8px; height:16px; background:var(--dc-chalk)}
+.ico-boot i:nth-child(2){left:8px; top:15px; width:17px; height:7px; background:var(--dc-chalk); border-radius:0 3px 3px 0}
+.ico-boot i:nth-child(3){left:0; right:0; top:24px; height:2px; background:var(--dc-sea-lit); animation:dc-lap 2.6s ease-in-out infinite}
+@keyframes dc-lap{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+/* ledge / plank over the channel */
+.ico-ledge i:nth-child(1){left:0; right:0; top:13px; height:4px; background:var(--dc-sand)}
+.ico-ledge i:nth-child(2){left:12px; top:2px; width:7px; height:11px; background:var(--dc-chalk)}
+.ico-ledge i:nth-child(3){left:0; right:0; bottom:2px; height:8px;
+  background:repeating-linear-gradient(90deg,var(--dc-sea) 0 5px,transparent 5px 10px);
+  animation:dc-run 3s linear infinite}
+@keyframes dc-run{from{background-position:0 0}to{background-position:10px 0}}
+/* bell */
+.ico-bell i:nth-child(1){left:7px; top:5px; width:18px; height:16px; border:2px solid var(--dc-brass); border-radius:9px 9px 2px 2px; border-bottom:none}
+.ico-bell i:nth-child(2){left:5px; right:5px; top:21px; height:2px; background:var(--dc-brass)}
+.ico-bell i:nth-child(3){left:15px; top:23px; width:3px; height:5px; background:var(--dc-brass); transform-origin:top center; animation:dc-ring 2.2s ease-in-out infinite}
+@keyframes dc-ring{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(16deg)}}
+/* a splash — the box that went in */
+.ico-lost i:nth-child(1){left:14px; top:4px; width:5px; height:5px; background:var(--dc-red)}
+.ico-lost i:nth-child(2){left:4px; right:4px; top:16px; height:2px; background:var(--dc-red); opacity:.7}
+.ico-lost i:nth-child(3){left:9px; right:9px; top:22px; height:2px; background:var(--dc-red); opacity:.45}
+
+/* ── SIDEBAR: the tide gauge is the whole idea ─────────────────────── */
+.dc-side{position:sticky; top:calc(var(--dc-nav) + 14px)}
+.dc-panel{border:1px solid rgba(201,162,39,.3); background:rgba(8,12,15,.86); padding:0 0 14px; overflow:hidden}
+.dc-panel h3{
+  margin:0; padding:11px 14px; font:600 12px/1 'Barlow Condensed',sans-serif;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--dc-slate);
+  background:var(--dc-brass);
+}
+.dc-gaugewrap{display:grid; grid-template-columns:76px 1fr; gap:12px; padding:14px}
+.dc-gauge{
+  position:relative; height:230px; border:2px solid var(--dc-brass-dim); background:#0a1114;
+  overflow:hidden;
+}
+.dc-water{
+  position:absolute; left:0; right:0; bottom:0; height:12%;
+  background:linear-gradient(180deg,var(--dc-sea-lit),var(--dc-sea));
+  transition:height .8s cubic-bezier(.3,.9,.3,1);
+}
+.dc-water::before{
+  content:''; position:absolute; left:-50%; right:-50%; top:-6px; height:10px;
+  background:radial-gradient(circle at 20% 100%,var(--dc-foam) 0 3px,transparent 3px) repeat-x;
+  background-size:14px 10px; opacity:.55;
+  animation:dc-wave 3.4s linear infinite;
+}
+@keyframes dc-wave{from{transform:translateX(0)}to{transform:translateX(14px)}}
+.dc-tick{position:absolute; left:0; width:12px; height:1px; background:var(--dc-brass-dim)}
+.dc-tick.major{width:22px; background:var(--dc-brass)}
+.dc-tick span{
+  position:absolute; left:25px; top:-7px; font-size:9.5px; letter-spacing:.1em;
+  color:var(--dc-brass-dim); white-space:nowrap;
+}
+.dc-gaugelabel{font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--dc-brass-dim); text-align:center; margin-top:6px}
+
+.dc-teams{padding:0 14px}
+.dc-team{border-top:1px solid rgba(255,255,255,.08); padding:10px 0}
+.dc-team .nm{display:flex; justify-content:space-between; align-items:baseline}
+.dc-team .nm b{font-family:'Bodoni Moda',serif; font-size:19px; letter-spacing:.02em}
+.dc-team .nm i{font-style:normal; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#7f939b}
+.dc-crates{display:flex; gap:4px; margin-top:7px; flex-wrap:wrap}
+.dc-crates b{
+  width:16px; height:13px; border:1px solid var(--dc-sand-dim); display:block; background:transparent;
+  transition:background .4s ease;
+}
+.dc-crates b.up{background:var(--dc-sand)}
+.dc-crates b.lost{border-color:var(--dc-red); position:relative}
+.dc-crates b.lost::after{content:''; position:absolute; inset:-1px; background:linear-gradient(45deg,transparent 45%,var(--dc-red) 45% 55%,transparent 55%)}
+.dc-bar{height:5px; background:#101a1d; margin-top:8px; position:relative}
+.dc-bar i{position:absolute; inset:0 auto 0 0; background:var(--dc-sea-lit); transition:width .6s ease}
+
+.dc-pot{padding:12px 14px 0; border-top:1px solid rgba(255,255,255,.08); margin-top:6px}
+.dc-pot .row{display:flex; justify-content:space-between; font-size:14px; color:#9db0b8; margin-bottom:3px}
+.dc-pot .row b{color:var(--dc-chalk); font-variant-numeric:tabular-nums}
+.dc-pot .big{
+  font-family:'Bodoni Moda',serif; font-size:31px; color:var(--dc-brass); letter-spacing:.02em;
+  font-variant-numeric:tabular-nums; margin-top:6px;
+}
+.dc-shieldnote{
+  margin:12px 14px 0; padding:9px 11px; border:1px dashed rgba(127,147,155,.45);
+  font-size:12.5px; letter-spacing:.06em; color:#7f939b;
+}
+
+/* ── STICKY CONTROLS, clear of the nav ────────────────────────────── */
+.dc-controls{
+  position:fixed; left:0; right:0; bottom:0; z-index:50;
+  background:linear-gradient(180deg,rgba(11,15,19,.2),rgba(8,11,14,.97) 42%);
+  border-top:1px solid rgba(201,162,39,.35);
+  padding:14px 18px 16px;
+  display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;
+}
+.dc-btn{
+  font:600 13px/1 'Barlow Condensed',sans-serif; letter-spacing:.2em; text-transform:uppercase;
+  padding:12px 24px; background:transparent; color:var(--dc-brass);
+  border:1px solid var(--dc-brass); cursor:pointer; transition:.2s;
+}
+.dc-btn:hover{background:var(--dc-brass); color:var(--dc-ink)}
+.dc-btn.ghost{color:#7f939b; border-color:rgba(127,147,155,.5)}
+.dc-btn.ghost:hover{background:rgba(127,147,155,.18); color:var(--dc-chalk)}
+.dc-btn[disabled]{opacity:.34; cursor:default}
+.dc-btn[disabled]:hover{background:transparent; color:var(--dc-brass)}
+.dc-counter{
+  font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:#7f939b;
+  font-variant-numeric:tabular-nums; min-width:150px; text-align:center;
+}
+
+.dc-summary{
+  margin-top:34px; padding:24px; border:1px solid rgba(201,162,39,.4); background:rgba(9,13,16,.8);
+  font-family:'Bodoni Moda',serif; font-size:21px; line-height:1.5;
+}
+.dc-summary small{
+  display:block; font-family:'Barlow Condensed',sans-serif; font-size:11.5px; letter-spacing:.26em;
+  text-transform:uppercase; color:var(--dc-brass); margin-bottom:9px;
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+  .dc-card{opacity:1; transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="dc-navstub"><b>The Traitors</b><span>Episode 4 · Afternoon</span><span>The Drowned Causeway</span></div>
+<div class="dc-sky"></div><div class="dc-swell"></div><div class="dc-drizzle"></div>
+
+<div class="dc-shell">
+
+  <header class="dc-hero">
+    <div class="dc-kicker">Mission · Episode Four</div>
+    <h1 class="dc-title">The Drowned <em>Causeway</em></h1>
+    <p class="dc-sub">Eighteen players, ten strongboxes, four hundred yards of wet sand and about seventy
+      minutes before the sea closes the road behind them.</p>
+    <div class="dc-meta">
+      <span class="dc-chip">Three phases</span>
+      <span class="dc-chip">Gulls v Herons</span>
+      <span class="dc-chip">£2,000 a box</span>
+      <span class="dc-chip">No shield</span>
+    </div>
+  </header>
+
+  <div class="dc-grid">
+    <main>
+
+      <!-- ═══ THE BRIEFING ═══ -->
+      <section class="dc-brief">
+        <h2>The Briefing</h2>
+        <p class="dc-staging">The landward end of a tidal causeway at half-tide. A painted tide board on a post,
+          a line of sealed strongboxes on the shingle, and a ruined chapel about four hundred yards out on the sand.</p>
+
+        <div class="dc-beat do"><p>The host stands at the landward end of the causeway with the tide board behind them. The sea is already visible at both edges of the sand.</p></div>
+        <div class="dc-beat say"><p>Out there is a chapel. It has been cut off twice a day for four hundred years, and in about seventy minutes it will be cut off again.</p></div>
+        <div class="dc-beat do"><p>The host turns and points along the wet road to the chapel.</p></div>
+        <div class="dc-beat say"><p>Between here and it are ten sealed strongboxes, half of them marked for one team and half for the other. You will carry them out along the causeway. That is the easy part, and I would enjoy it.</p></div>
+        <div class="dc-beat do"><p>A crew member lifts the corner of a tarpaulin at the chapel wall, showing a stone ledge about a foot wide running above the channel.</p></div>
+        <div class="dc-beat say"><p>You cannot take a box in through the chapel door, because by the time you reach it there will be water across the threshold. You take it along that ledge, hand to hand, and up onto the roof.</p></div>
+        <div class="dc-beat say"><p>If a box goes into the channel, it is gone. Nobody goes in after it. If you drop a box on the sand you may go back for it, and you will lose the time it takes you, and the tide does not wait while you decide.</p></div>
+        <div class="dc-beat do"><p>The host walks to the foot of the tower and puts a hand on the bell rope.</p></div>
+        <div class="dc-beat say"><p>When your boxes are up, one of you rings this bell. The tide board will tell you how many times — read it properly, because a wrong count opens the wrong hatch, and the wrong hatch drops a box straight back onto the sand.</p></div>
+        <div class="dc-beat say"><p>Every strongbox on that roof when I stop the clock is two thousand into the pot you are all playing for. Every box still down here earns you nothing except the walk back.</p></div>
+        <div class="dc-beat do"><p>The host steps aside and looks at the water.</p></div>
+        <div class="dc-beat say"><p>The road closes when it closes. Whoever is on the wrong side of it when that happens finishes the afternoon watching. Go.</p></div>
+
+        <div class="dc-rules">
+          <span class="dc-rule"><b>task</b> beat 4</span>
+          <span class="dc-rule"><b>route</b> beat 6</span>
+          <span class="dc-rule"><b>failure</b> beat 7</span>
+          <span class="dc-rule"><b>count</b> beat 9</span>
+          <span class="dc-rule"><b>reward</b> beat 10</span>
+          <span class="dc-rule"><b>finish</b> beat 12</span>
+        </div>
+      </section>
+
+      <!-- ═══ PHASE 1 ═══ -->
+      <section class="dc-phase" data-phase="wade">
+        <div class="dc-phase-head">
+          <span class="dc-phase-n">I</span>
+          <span class="dc-phase-name">The Wade</span>
+          <span class="dc-phase-stats"><i class="dc-stat">endurance</i><i class="dc-stat">physical</i></span>
+        </div>
+        <p class="dc-setting">Four hundred yards of wet sand between the shingle and the chapel wall.</p>
+
+        <article class="dc-card good" id="dc-step-0">
+          <span class="dc-ico ico-crate"><i></i><i></i><i></i></span>
+          <span class="tag">Strong</span>
+          <div class="who">Brick · Gulls</div>
+          <div class="txt">Brick took a box on each shoulder for the last two hundred yards and did not put either down.</div>
+        </article>
+
+        <article class="dc-card steady" id="dc-step-1">
+          <span class="dc-ico ico-crate"><i></i><i></i><i></i></span>
+          <span class="tag">Steady</span>
+          <div class="who">Priya · Herons</div>
+          <div class="txt">Priya carried her share of the boxes out and came back for another.</div>
+        </article>
+
+        <article class="dc-card bad" id="dc-step-2">
+          <span class="dc-ico ico-boot"><i></i><i></i><i></i></span>
+          <span class="tag">Struggled</span>
+          <div class="who">Miriam · Gulls</div>
+          <div class="txt">Miriam went down to one knee in the soft sand about halfway and lost most of a minute getting up.</div>
+        </article>
+
+        <article class="dc-card social" id="dc-step-3">
+          <span class="dc-ico ico-crate"><i></i><i></i><i></i></span>
+          <span class="tag">Heroic</span>
+          <div class="who">Bowie &amp; Miriam · Gulls</div>
+          <div class="txt">Bowie came back down the sand for Miriam's end of a box that was not going any further on its own.</div>
+          <div class="conf"><small>Miriam · confessional</small>I couldn't get that thing off the sand. Bowie didn't say a word about it, which somehow made it worse and better at the same time.</div>
+          <div class="fx"><span>bond Bowie ↔ Miriam +0.6</span><span>crowd · Bowie heroic ×0.8</span></div>
+        </article>
+
+        <article class="dc-card social" id="dc-step-4">
+          <span class="dc-ico ico-boot"><i></i><i></i><i></i></span>
+          <span class="tag">Selfish</span>
+          <div class="who">Alec &amp; Fiore · Herons</div>
+          <div class="txt">Alec took the light end of every box he touched, and touched fewer of them than anybody. Fiore was still out on the sand with a box when the line came back.</div>
+          <div class="conf"><small>Alec · confessional</small>I'm not carrying two boxes so somebody who hasn't done a thing all week can walk in beside me looking useful.</div>
+          <div class="fx"><span>bond Alec ↔ Fiore −0.5</span><span>crowd · Alec selfish ×0.6</span></div>
+        </article>
+      </section>
+
+      <!-- ═══ PHASE 2 ═══ -->
+      <section class="dc-phase" data-phase="ledge">
+        <div class="dc-phase-head">
+          <span class="dc-phase-n">II</span>
+          <span class="dc-phase-name">The Ledge</span>
+          <span class="dc-phase-stats"><i class="dc-stat">boldness</i><i class="dc-stat">temperament</i></span>
+        </div>
+        <p class="dc-setting">A foot-wide stone ledge along the chapel wall, above the channel, at the point where the tide is running fastest.</p>
+
+        <article class="dc-card good" id="dc-step-5">
+          <span class="dc-ico ico-ledge"><i></i><i></i><i></i></span>
+          <span class="tag">Crossed</span>
+          <div class="who">Bowie · Gulls</div>
+          <div class="txt">Bowie went out along the ledge without touching the wall, which nobody had told him was possible.</div>
+        </article>
+
+        <article class="dc-card bad" id="dc-step-6">
+          <span class="dc-ico ico-ledge"><i></i><i></i><i></i></span>
+          <span class="tag">Froze</span>
+          <div class="who">Ellie · Herons</div>
+          <div class="txt">Ellie got four feet along the ledge, stopped, and stayed stopped for a length of time that started to matter.</div>
+          <div class="conf"><small>Ellie · confessional</small>It's a foot wide and there's water under it. I've watched myself do braver things than that and I couldn't make my leg move.</div>
+          <div class="fx"><span>crowd · Ellie cowardly ×0.7</span><span>reputation · nerve −0.5</span></div>
+        </article>
+
+        <article class="dc-card social" id="dc-step-7">
+          <span class="dc-ico ico-ledge"><i></i><i></i><i></i></span>
+          <span class="tag">Heroic</span>
+          <div class="who">Priya &amp; Ellie · Herons</div>
+          <div class="txt">Priya talked Ellie the last six feet of the ledge in a voice you would use on a horse.</div>
+          <div class="conf"><small>Priya · confessional</small>Ellie wasn't moving for the host, the money or the tide. Sometimes you've just got to go and stand where somebody can see you.</div>
+          <div class="fx"><span>bond Priya ↔ Ellie +0.9</span><span>crowd · Priya heroic ×1.0</span></div>
+        </article>
+
+        <article class="dc-card bad" id="dc-step-8">
+          <span class="dc-ico ico-lost"><i></i><i></i><i></i></span>
+          <span class="tag">Suspicious</span>
+          <div class="who">Finn &amp; Gabby · Gulls</div>
+          <div class="txt">Finn held the box a beat longer than Gabby expected and it went between them into the water.</div>
+          <div class="conf"><small>Gabby · confessional</small>I had my hands on it. Finn did not let go when I expected, and two thousand went into the sea. I am not saying it was on purpose. I am saying I noticed.</div>
+          <div class="fx"><span>bond Finn ↔ Gabby −0.6</span><span>claim · Gabby → Finn</span><span>suspicion +0.35</span></div>
+        </article>
+      </section>
+
+      <!-- ═══ PHASE 3 ═══ -->
+      <section class="dc-phase" data-phase="bell">
+        <div class="dc-phase-head">
+          <span class="dc-phase-n">III</span>
+          <span class="dc-phase-name">The Tide Bell</span>
+          <span class="dc-phase-stats"><i class="dc-stat">mental</i><i class="dc-stat">intuition</i></span>
+        </div>
+        <p class="dc-setting">The chapel tower, the bell rope, and a painted tide board with the height mark half under water.</p>
+
+        <article class="dc-card good" id="dc-step-9">
+          <span class="dc-ico ico-bell"><i></i><i></i><i></i></span>
+          <span class="tag">Correct</span>
+          <div class="who">Gabby · Gulls</div>
+          <div class="txt">Gabby read the board twice, said a number out loud, and was not argued with. She was right.</div>
+        </article>
+
+        <article class="dc-card bad" id="dc-step-10">
+          <span class="dc-ico ico-bell"><i></i><i></i><i></i></span>
+          <span class="tag">Miscount</span>
+          <div class="who">Julia · Herons</div>
+          <div class="txt">Julia counted from the wrong low water. The hatch opened, a box came down, and the sound of it carried. That is one strongbox, and two thousand, off Herons' total.</div>
+          <div class="conf"><small>Julia · confessional</small>I'll tell them the board was wet. The board wasn't wet. I counted from the wrong low water and I knew it about a second after I let go of the rope.</div>
+          <div class="fx"><span>record · bell miscount</span><span>suspicion +0.2</span></div>
+        </article>
+
+        <article class="dc-card social" id="dc-step-11">
+          <span class="dc-ico ico-bell"><i></i><i></i><i></i></span>
+          <span class="tag">Disputed</span>
+          <div class="who">Julia &amp; Manu · Herons</div>
+          <div class="txt">Manu wanted to ring it. Julia put a hand on the rope and would not let go until the board was read again. Manu's number was the right one, and Julia rang hers anyway.</div>
+          <div class="conf"><small>Manu · confessional</small>I gave Julia the number. Julia rang a different one and we watched two thousand hit the sand. That's going on the list.</div>
+          <div class="fx"><span>bond Julia ↔ Manu −0.7</span><span>claim · Manu → Julia</span></div>
+        </article>
+      </section>
+
+      <div class="dc-summary" id="dc-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        Most of the boxes went up. One is in the channel and one is on the sand, and both will be discussed at dinner.
+      </div>
+
+    </main>
+
+    <!-- ═══ SIDEBAR: the tide gauge ═══ -->
+    <aside class="dc-side">
+      <div class="dc-panel">
+        <h3>The Tide</h3>
+        <div class="dc-gaugewrap">
+          <div>
+            <div class="dc-gauge">
+              <div class="dc-water" id="dc-water" style="height:12%"></div>
+              <div class="dc-tick major" style="bottom:180px"><span>ROAD</span></div>
+              <div class="dc-tick" style="bottom:140px"></div>
+              <div class="dc-tick major" style="bottom:100px"><span>LEDGE</span></div>
+              <div class="dc-tick" style="bottom:60px"></div>
+              <div class="dc-tick major" style="bottom:20px"><span>FLAT</span></div>
+            </div>
+            <div class="dc-gaugelabel" id="dc-tidelabel">low</div>
+          </div>
+          <div id="dc-side-inner">
+            <div class="dc-teams" style="padding:0">
+              <div class="dc-team" style="border-top:none">
+                <div class="nm"><b>Gulls</b><i id="dc-g-lab">— on the roof</i></div>
+                <div class="dc-crates" id="dc-g-crates"></div>
+                <div class="dc-bar"><i id="dc-g-bar" style="width:0%"></i></div>
+              </div>
+              <div class="dc-team">
+                <div class="nm"><b>Herons</b><i id="dc-h-lab">— on the roof</i></div>
+                <div class="dc-crates" id="dc-h-crates"></div>
+                <div class="dc-bar"><i id="dc-h-bar" style="width:0%"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dc-pot">
+          <div class="row"><span>Fund before</span><b>£38,400</b></div>
+          <div class="row"><span>Boxes on the roof</span><b id="dc-pot-boxes">—</b></div>
+          <div class="row"><span>Earned today</span><b id="dc-pot-earned">—</b></div>
+          <div class="big" id="dc-pot-after">£38,400</div>
+        </div>
+
+        <div class="dc-shieldnote">
+          <b style="color:#9db0b8">Shield.</b> Nothing on this sandbar grants one. The only relic in the
+          season is in the burnt wing.
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="dc-controls">
+  <button class="dc-btn" id="dc-next">Next</button>
+  <span class="dc-counter" id="dc-counter">0 of 12 revealed</span>
+  <button class="dc-btn ghost" id="dc-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 12;
+  var idx = -1;
+
+  /* Tide level and the boxes are BOTH functions of how far through we are:
+     the sidebar may never show a state the page has not yet revealed. */
+  var TIDE = [12,16,20,24,28,34,40,46,52,60,70,82,92];
+  var LABEL = ['low','low','rising','rising','rising','half','half','half','high','high','high','over the road','closed'];
+  /* box ledger: [gullsUp, gullsLost, heronsUp, heronsLost] after each step */
+  var LEDGER = [
+    [0,0,0,0],[1,0,0,0],[1,0,1,0],[1,0,1,0],[2,0,1,0],[2,0,1,0],
+    [3,0,1,0],[3,0,1,0],[3,0,2,0],[3,1,2,0],[4,1,2,0],[4,1,2,1],[4,1,2,1]
+  ];
+  var QUOTA = 5;
+
+  function crates(el, up, lost){
+    var html = '';
+    for (var i=0;i<QUOTA;i++){
+      var cls = i < up ? 'up' : (i < up + lost ? 'lost' : '');
+      html += '<b class="'+cls+'"></b>';
+    }
+    el.innerHTML = html;
+  }
+
+  function money(n){ return '£' + n.toLocaleString('en-GB'); }
+
+  function paint(){
+    var n = idx + 1;                       /* how many cards are showing */
+    for (var i=0;i<TOTAL;i++){
+      var el = document.getElementById('dc-step-'+i);
+      if (el) el.classList.toggle('on', i <= idx);
+    }
+    document.getElementById('dc-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    document.getElementById('dc-next').disabled = idx >= TOTAL-1;
+    document.getElementById('dc-summary').style.opacity = idx >= TOTAL-1 ? '1' : '.25';
+
+    document.getElementById('dc-water').style.height = TIDE[n] + '%';
+    document.getElementById('dc-tidelabel').textContent = LABEL[n];
+
+    var L = LEDGER[n];
+    crates(document.getElementById('dc-g-crates'), L[0], L[1]);
+    crates(document.getElementById('dc-h-crates'), L[2], L[3]);
+    document.getElementById('dc-g-lab').textContent = L[0] + ' of ' + QUOTA + ' up';
+    document.getElementById('dc-h-lab').textContent = L[2] + ' of ' + QUOTA + ' up';
+    document.getElementById('dc-g-bar').style.width = (100*L[0]/QUOTA) + '%';
+    document.getElementById('dc-h-bar').style.width = (100*L[2]/QUOTA) + '%';
+
+    var boxes = L[0] + L[2];
+    document.getElementById('dc-pot-boxes').textContent = idx < 0 ? '—' : boxes;
+    document.getElementById('dc-pot-earned').textContent = idx < 0 ? '—' : money(boxes*2000);
+    document.getElementById('dc-pot-after').textContent = money(38400 + (idx<0?0:boxes*2000));
+  }
+
+  function scrollTo(i){
+    var el = document.getElementById('dc-step-'+i);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  document.getElementById('dc-next').addEventListener('click', function(){
+    if (idx >= TOTAL-1) return;
+    idx++; paint(); scrollTo(idx);
+  });
+  document.getElementById('dc-all').addEventListener('click', function(){
+    idx = TOTAL-1; paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

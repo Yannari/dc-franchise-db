@@ -49,7 +49,7 @@ import { pStats, romanticCompat } from '../../players.js';
 import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
-import { findOpenThread, heatAt } from '../threads.js';
+import { findOpenThread, heatAt, priorMoments } from '../threads.js';
 import { alignmentAt } from '../roles.js';
 import { MAX_ACTIVE_ROMANCES, _activeRomanceCount, _threadForActors } from './romance.js';
 import { _sentenceCase } from './cover.js';
@@ -70,13 +70,28 @@ function _deaths() { return murderCount(gs); }
 // journey-out — the walk away from the castle
 // ══════════════════════════════════════════════════════════════════════
 
+// ── REWRITE (Task 7 stage 6). The audit: "3 branches; no thread write, so no
+// reachable follow-up and no terminal outcome" — the thread write arrived in
+// stage 2's migration, and the branch count and the pools did not. Five
+// branches now, every pool at ten lines, and a terminal outcome the walk did
+// not have.
+//
+// THE RECORD THE FORK READS is still {b} — who somebody becomes on a walk out
+// of earshot is a real thing about them — plus the stored bond and the arc's
+// own heat, because the second honest walk with the same person is a different
+// scene from the first.
 const STEP_LINES = {
   confided: [
     '{b} fell into step with {a} on the way out and said more in ten minutes of walking than in three days indoors.',
-    'Out of the castle\'s hearing, {b} told {a} the thing they had been carrying around all week.',
+    'Out of the castle’s hearing, {b} told {a} the thing they had been carrying around all week.',
     'Walking put {b} at ease in a way the great hall never had, and {a} got the honest version.',
     'Two miles from anybody, {b} told {a} something {b} had not planned on telling anybody at all.',
     '{b} talked for the whole first hill and {a} did not interrupt once, and got the lot.',
+    'There is no door to be on the other side of out here, and {b} used that.',
+    '{b} started a sentence about the second night and, for once, finished it.',
+    '{a} asked nothing at all and {b} answered all of it anyway, over about a mile.',
+    'The road does something to people. {b} came off it having said the true version.',
+    '{b} said it to the hedgerow rather than to {a}, and {a} had the sense to keep looking forward.',
   ],
   probed: [
     '{b} kept pace with {a} the whole way out and asked questions the whole way out with it.',
@@ -84,6 +99,11 @@ const STEP_LINES = {
     '{b} spent the walk taking {a} apart very politely, one small question at a time.',
     'Every answer {a} gave got a follow-up, and {b} never once sounded like they were interrogating anybody.',
     '{b} asked {a} about the weather, then about breakfast, then about last night, in that order.',
+    'It was the friendliest interrogation {a} has ever been on the wrong end of.',
+    '{b} circled back to the same hour three times in two miles, from three different directions.',
+    '{a} came off the road having given away four things and taken away none.',
+    '{b} let {a} do nine-tenths of the talking, which is how {b} always does this.',
+    'Nothing {b} asked was a question about {a} until all of them were.',
   ],
   quiet: [
     '{a} and {b} walked the whole way without saying much, and neither of them minded.',
@@ -91,6 +111,35 @@ const STEP_LINES = {
     'It was a long walk and {b} spent it inside their own head, with {a} beside them.',
     '{a} tried twice to start something and {b} let both attempts die, without any rudeness in it.',
     'They matched pace for an hour, {a} and {b}, and that was the whole of the conversation.',
+    'Two people, one road, about nine words between them, and no bad feeling in any of it.',
+    '{b} is not a talker and {a} has stopped taking it personally.',
+    'They pointed at a bird once. That was the high point of the discourse.',
+    '{a} found the silence restful, which after a week in that hall is not nothing.',
+    '{b} walked the whole way half a step behind and neither of them adjusted.',
+  ],
+  'said-too-much': [
+    '{b} talked for two miles and spent the last one working out how much of it {a} would keep.',
+    'It came out easily and stopped being easy about four hundred yards from the gate.',
+    '{b} heard themselves telling {a} about the first night and could not find the end of the sentence.',
+    '{a} got more than {a} had wanted, and {b} knew it before the castle was back in sight.',
+    'The road is a confessional right up until you can see the windows again.',
+    '{b} said the true thing and then said “forget that,” which is not how a road works.',
+    'By the gate {b} had gone very quiet, and the quiet was about the last mile rather than this one.',
+    '{b} will spend the rest of the day deciding what {a} is going to do with it.',
+    'What {b} handed over out there is not the kind of thing you hand back.',
+    '{a} did not ask for any of it and is now carrying all of it.',
+  ],
+  'fell-behind': [
+    '{b} dropped back at the first stile and finished the road with somebody else entirely.',
+    'They started the walk together. Somewhere in the second mile {b} was not there any more.',
+    '{b} let the gap open a little at a time until it was not a gap, it was a decision.',
+    '{a} looked round on the hill and {b} was three people back and not hurrying.',
+    'It was not a snub. It was, by the top of the road, unmistakably something.',
+    '{b} stopped to do up a boot and did not catch {a} up again all the way out.',
+    '{a} slowed twice. {b} did not take either invitation.',
+    'Whoever {b} wanted to walk beside today, it was not {a}, and {a} worked that out at the stile.',
+    'The column stretched and {b} chose which end of it to be at.',
+    '{b} walked the last mile with the one person {a} had been hoping to talk to.',
   ],
 };
 
@@ -109,6 +158,11 @@ registerEvent({
   // pool's most crowded one — see the header.
   advancesThread: true,
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['loyalty', 'social', 'strategic', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -117,48 +171,105 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-fall-into-step');
-    const sceneWhy = 'fell into step on the road out';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const confideScore = (st.loyalty / 10) * 0.5 + (st.social / 10) * 0.5;
-    const probeScore = (st.strategic / 10) * 0.5 + (st.intuition / 10) * 0.5;
-    const quietScore = (1 - st.social / 10) * 0.7 + 0.15;
-    const total = confideScore + probeScore + quietScore;
-    const roll = rng() * total;
-    let branch;
-    if (roll < confideScore) branch = 'confided';
-    else if (roll < confideScore + probeScore) branch = 'probed';
-    else branch = 'quiet';
+    const bond = getBond(a, b);
+    const scores = {
+      confided: (st.loyalty / 10) * 0.45 + (st.social / 10) * 0.45,
+      probed: (st.strategic / 10) * 0.5 + (st.intuition / 10) * 0.5,
+      quiet: (1 - st.social / 10) * 0.6 + 0.15,
+      // Saying too much needs somebody who talks and does not hold it well.
+      'said-too-much': (st.social / 10) * 0.35 + (1 - st.temperament / 10) * 0.35,
+      // And walking away from somebody needs a reason not to walk with them.
+      'fell-behind': Math.max(0.05, 0.4 - Math.max(0, bond) * 0.07),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'quiet';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
-    const bondDelta = branch === 'confided' ? 2 : branch === 'probed' ? -0.5 : 0.5;
+    const sceneWhy = branch === 'said-too-much' ? 'said more on the road than they meant to'
+      : branch === 'fell-behind' ? 'let the gap open on the road out'
+        : 'fell into step on the road out';
+    const bondDelta = branch === 'confided' ? 2
+      : branch === 'probed' ? -0.5
+        : branch === 'said-too-much' ? 1
+          : branch === 'fell-behind' ? -1.5 : 0.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, STEP_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
-    return { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // TERMINAL: a road walked apart is a story that ended on the road, and
+    // `buried` is what neither of them will raise at the castle.
+    if (thread && branch === 'fell-behind') {
+      api.resolveArc(thread.id, 'buried', { source: sceneWhy });
+    }
+    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // {b} is the one who caught up and {b} is the one doing the talking, so
+    // {b} drives every branch except the one where {b} leaves.
+    if (branch === 'fell-behind') { out.speaker = a; out.respondent = b; }
+    else { out.speaker = b; out.respondent = a; }
+    return out;
   },
 });
-
+// ── REWRITE (Task 7 stage 6). The audit: "3 branches; no thread write" — the
+// write landed in stage 2 and the branch count did not. Five now, pools at
+// eight, and the two added branches are the two answers the road most obviously
+// has and this event could not give: naming somebody back, and refusing to
+// have the conversation at all.
+//
+// THE RECORD THE FORK READS is unchanged and is {b}'s: their own stats and the
+// stored bond between {b} and the person {a} has just named. Nothing here
+// reads who anybody actually is.
 const EARSHOT_LINES = {
   agreed: [
-    '{a} waited until the castle was out of sight to say {c}\'s name, and {b} said they had been thinking it too.',
+    '{a} waited until the castle was out of sight to say {c}’s name, and {b} said they had been thinking it too.',
     'Off the path, {a} finally said what they thought about {c}. {b} did not need convincing.',
     '{a} tried the theory about {c} out on {b} where nobody could overhear it, and it landed.',
     'The second the gate was behind them, {a} said {c}, and {b} said {c} back.',
     '{a} and {b} spent the middle of the road agreeing about {c} in more detail than either had planned.',
+    'Two miles of {c}, and by the end of it neither of them was hedging about any of it.',
+    '{a} had been carrying {c}’s name since Tuesday and put it down in front of {b} on the hill.',
+    'It is much easier to say a name where there are no walls, and {a} and {b} both found that out.',
   ],
   hedged: [
-    '{a} floated {c}\'s name on the road and {b} neither agreed nor argued, which {a} noticed.',
-    'Out of earshot {a} named {c}. {b} said "maybe" and changed the subject before the next bend.',
+    '{a} floated {c}’s name on the road and {b} neither agreed nor argued, which {a} noticed.',
+    'Out of earshot {a} named {c}. {b} said “maybe” and changed the subject before the next bend.',
     '{a} put {c} in front of {b} and got a shrug for it, and walked the rest of the way wondering why.',
     '{b} agreed that {c} was worth watching, and would not say a word about what they had seen.',
     '{a} said {c} was the one. {b} said everyone was the one, and laughed, and left it.',
+    '{b} gave {a} an answer with no weight in it and let {a} carry it the rest of the way.',
+    '"Could be," said {b}, about {c}, and that was the whole of {b}’s contribution to two miles.',
+    '{a} could not tell whether {b} was being careful or was simply not interested, and still cannot.',
   ],
   defended: [
-    '{a} said {c}\'s name out on the road and {b} shut it down flat.',
+    '{a} said {c}’s name out on the road and {b} shut it down flat.',
     '{b} would not have a word said about {c}, not even out here where nobody was listening.',
     '{a} learned something on that walk, and it was about {b}, not about {c}.',
     '{b} told {a} to leave {c} alone, out on the road, and much harder than the question deserved.',
     '{a} had picked the one name {b} would not hear, and found that out a mile from the castle.',
+    '"You are wrong, and you are going to look stupid," {b} said, which is a lot of certainty for a hedgerow.',
+    '{b} defended {c} for a quarter of an hour to an audience of one and did not stop being angry.',
+    '{a} had thought this was a safe conversation. It was a safe conversation about the wrong person.',
+  ],
+  'named-somebody-else': [
+    '{a} said {c}. {b} listened to all of it and then said a different name entirely.',
+    '“Not {c},” said {b}, and then gave {a} somebody else and three reasons, on the hill.',
+    '{b} traded a name for a name out on the road, which is the fairest exchange available here.',
+    '{a} came off the walk with a name {a} had not gone out with.',
+    '{b} would not follow {a} to {c} and would not let {a} go home empty either.',
+    'Two names went out on that road. Only one of them came back with anybody behind it.',
+    '{b} said the name {b} had been keeping, which is worth more than agreeing about {c} was.',
+    '{a} put {c} down and {b} put somebody else down beside it, and they walked round both.',
+  ],
+  'would-not-talk-about-it': [
+    '“Not out here,” {b} said, which is odd, because out here is the only place anybody can.',
+    '{b} would not discuss anybody at all on the road, and gave no reason for it.',
+    '{a} said {c}’s name and {b} started talking about the weather with real determination.',
+    '{b} does not do this on walks. {b} has never done this on walks, and {a} knows that now.',
+    '{a} got three names into it before realising {b} had not said one.',
+    '{b} listened, said nothing, and let {a} arrive at the castle having spoken to the road.',
+    '“I would rather not,” said {b}, pleasantly, and meant it, and did not.',
+    'Whatever {b} thinks about {c}, it is not going to be said within two miles of {a}.',
   ],
 };
 
@@ -170,6 +281,12 @@ registerEvent({
   family: 'suspicion',
   window: 'journey-out',
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['intuition', 'strategic', 'loyalty', 'boldness'],
+    relationship: ['close-ally', 'rival', 'neutral'],
+    knowledge: ['incomplete', 'witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -180,7 +297,6 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'susp-out-of-earshot');
-    const sceneWhy = 'talked about somebody out of their earshot on the road';
     const [a, b] = ctx.actors;
     const others = (ctx.living || []).filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : ctx.living);
@@ -188,27 +304,48 @@ registerEvent({
     // What `b` does with a name said out loud: a sharp, ambitious player takes
     // it and builds; a cautious one refuses to commit to anything; a loyal one
     // defends. Nothing here reads who anybody actually is.
-    const agreeScore = (st.intuition / 10) * 0.5 + (st.strategic / 10) * 0.5;
-    const hedgeScore = (1 - st.boldness / 10) * 0.6 + 0.2;
-    const defendScore = (st.loyalty / 10) * 0.6 + Math.max(0, getBond(b, target)) / 10 * 0.4;
-    const total = agreeScore + hedgeScore + defendScore;
-    const roll = rng() * total;
-    let branch;
-    if (roll < agreeScore) branch = 'agreed';
-    else if (roll < agreeScore + hedgeScore) branch = 'hedged';
-    else branch = 'defended';
+    const scores = {
+      agreed: (st.intuition / 10) * 0.5 + (st.strategic / 10) * 0.5,
+      hedged: (1 - st.boldness / 10) * 0.6 + 0.2,
+      defended: (st.loyalty / 10) * 0.6 + Math.max(0, getBond(b, target)) / 10 * 0.4,
+      // Trading a name for a name needs somebody who has one to trade.
+      'named-somebody-else': (st.strategic / 10) * 0.3 + (st.boldness / 10) * 0.3,
+      // And refusing the conversation is temperament plus a low appetite for
+      // being on any record at all.
+      'would-not-talk-about-it': (st.temperament / 10) * 0.35 + (1 - st.social / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'hedged';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
-    const bondDelta = branch === 'agreed' ? 1.5 : branch === 'hedged' ? 0 : -1;
+    const sceneWhy = branch === 'named-somebody-else' ? 'answered a name on the road with a different one'
+      : branch === 'would-not-talk-about-it' ? 'would not discuss anybody out on the road'
+        : 'talked about somebody out of their earshot on the road';
+    const bondDelta = branch === 'agreed' ? 1.5
+      : branch === 'defended' ? -1
+        : branch === 'named-somebody-else' ? 1
+          : branch === 'would-not-talk-about-it' ? -0.5 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, EARSHOT_LINES[branch])
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
     // The thread is the PAIR's — what these two now share is that one of them
     // said a name to the other, which is a fact about the two of them.
     const { thread, cited } = arcContinue(api, 'suspicion', [a, b], ctx.ep, line, { source: sceneWhy });
-    return { branch, pair: [a, b], about: target, threadId: thread?.id, cited, bondDelta };
+    return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
+      threadId: thread?.id, cited, bondDelta };
   },
 });
-
+// ── REWRITE (Task 7 stage 6). The audit's verdict was the harshest in the
+// table: "3 branches; writes NO effects: the scene happens and nothing in the
+// season is different afterwards." Stage 2's migration gave it a thread write.
+// This gives it a fork worth having, a fifth branch, wider pools, and the two
+// things a rehearsal on a road can actually END in.
+//
+// THE RECORD THE FORK READS is the cover arc itself — `priorMoments` counts
+// how many times this person has already been over this account, and the
+// fourth rehearsal of one story is a symptom rather than preparation — plus
+// the Traitor's own mental, strategic and temperament.
 const ROAD_REHEARSAL_LINES = {
   airtight: [
     '{a} used the walk to run their own story back through, start to finish, and could not find a seam in it.',
@@ -216,6 +353,9 @@ const ROAD_REHEARSAL_LINES = {
     '{a} spent the road out rehearsing, and came off it with an answer for every question anybody had left.',
     '{a} walked the whole account through twice, out loud, under their breath, and it held both times.',
     'The road was long enough for {a} to test every version and keep the plainest one.',
+    '{a} found the one hour that did not fit, moved it, and the rest of it closed up behind it.',
+    'Two miles of quiet work, and {a} arrived with a night nobody can take apart.',
+    '{a} said it to a gate post and the gate post believed every word.',
   ],
   serviceable: [
     '{a} went over their story on the walk and got most of it to hold, which would have to do.',
@@ -223,13 +363,39 @@ const ROAD_REHEARSAL_LINES = {
     '{a} practised until the account was good enough, and tried not to think about the part that was not.',
     '{a} got it down to one weak hour and decided one weak hour was survivable.',
     'By the last mile the story worked, provided nobody asked about the middle of it.',
+    '{a} has a version. It is not a good version and it is the version {a} is going with.',
+    'It holds if you do not push it, and {a} spent the walk hoping nobody would.',
+    '{a} traded a better story for a simpler one, on the grounds that simpler survives being repeated.',
   ],
   overcooked: [
     '{a} rehearsed the story so many times on the way out that it stopped sounding like something that happened.',
-    'By the last mile {a}\'s account had grown three details it did not need and could not lose.',
+    'By the last mile {a}’s account had grown three details it did not need and could not lose.',
     '{a} polished it past the point of being believable and knew it, and could not stop.',
     'The version {a} walked back with had a time on every hour of it, which no honest person has.',
     '{a} added a small human detail, and then another, and by the gate it was a performance.',
+    '{a} has now got a story so good that having it is itself the problem.',
+    'Nobody remembers a Tuesday like that. {a} does, in nine parts, with a reason for each.',
+    '{a} rehearsed the shrug as well, which is roughly where this stops being preparation.',
+  ],
+  'stopped-rehearsing': [
+    '{a} got half a mile in, heard how it sounded, and decided the rehearsing was the thing that gets people caught.',
+    '{a} put it down on the road out and went in with nothing prepared, on purpose.',
+    'People who have not done anything do not have an account. {a} arrived at that on the hill.',
+    '{a} decided the safest version of Tuesday is the one {a} has not thought about, and stopped thinking about it.',
+    'The rehearsal ended at the second stile. {a} walked the rest of it thinking about the weather, deliberately.',
+    '{a} has watched two people be caught by being too ready and is not going to be the third.',
+    '{a} stopped, out loud, mid-sentence, and did not start again.',
+    'Whatever {a} says tonight, {a} has decided it will be said for the first time.',
+  ],
+  'could-not-get-it-straight': [
+    '{a} could not get through the account once, all the way out, without losing an hour of it.',
+    'Every time {a} started, it came out in a different order, and the order is the whole thing.',
+    '{a} spent two miles on one evening and arrived less sure of it than at the gate.',
+    'The story will not sit still. {a} has been walking behind it since breakfast.',
+    '{a} had it on Tuesday. {a} does not have it now, and the road did not give it back.',
+    'Somewhere between the two versions there is a true one and {a} can no longer find it.',
+    '{a} stopped four times to fix the same hour and fixed it four different ways.',
+    'By the gate {a} had a headache and a night with a hole in the middle of it.',
   ],
 };
 
@@ -245,32 +411,65 @@ registerEvent({
   // lookup has to be per-actor or a two-person scene misses it entirely.
   threadScope: 'solo',
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire', 'rejected'],
+    voice: ['mental', 'strategic', 'temperament'],
+    alignment: ['traitor'],
+    knowledge: ['incomplete'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return ctx.actors.some(n => isTraitor(n, ctx.ep)) ? 2 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-road-rehearsal');
-    const sceneWhy = 'ran through their account of the night on the road';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const st = pStats(actor);
-    // Competence, not permission: the role already granted the scene.
-    const tightScore = (st.strategic / 10) * 0.5 + (st.mental / 10) * 0.5;
-    const okScore = 0.5;
-    const overScore = (1 - st.temperament / 10) * 0.6 + 0.15;
-    const total = tightScore + okScore + overScore;
-    const roll = rng() * total;
-    let branch;
-    if (roll < tightScore) branch = 'airtight';
-    else if (roll < tightScore + okScore) branch = 'serviceable';
-    else branch = 'overcooked';
+    // HOW MANY TIMES THIS PERSON HAS ALREADY BEEN OVER IT, off the stored arc.
+    const existing = findOpenThread('cover', [actor]);
+    const times = existing ? priorMoments(existing, ctx.ep).length : 0;
+    const scores = {
+      // Competence, not permission: the role already granted the scene.
+      airtight: (st.strategic / 10) * 0.5 + (st.mental / 10) * 0.5,
+      serviceable: 0.5,
+      overcooked: (1 - st.temperament / 10) * 0.5 + Math.min(3, times) * 0.1,
+      'stopped-rehearsing': (st.intuition / 10) * 0.25 + Math.min(3, times) * 0.09,
+      'could-not-get-it-straight': (1 - st.mental / 10) * 0.4 + (1 - st.temperament / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'serviceable';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
+    const sceneWhy = branch === 'stopped-rehearsing' ? 'decided the rehearsing was the dangerous part'
+      : branch === 'could-not-get-it-straight' ? 'could not get one evening into the same order twice'
+        : 'ran through their account of the night on the road';
     const line = pick(rng, ROAD_REHEARSAL_LINES[branch]).replace(/\{a\}/g, actor);
     const { thread, cited } = arcContinue(api, 'cover', [actor], ctx.ep, line, { source: sceneWhy });
+    // TWO TERMINAL OUTCOMES, and the event had neither. An account walked
+    // smooth enough to stop working on is `passed-clean`; a rehearsal
+    // deliberately abandoned is `buried`, because nobody else will ever know
+    // there was one.
+    if (thread && branch === 'airtight') {
+      api.resolveArc(thread.id, 'passed-clean', { source: sceneWhy });
+    }
+    if (thread && branch === 'stopped-rehearsing') {
+      api.resolveArc(thread.id, 'buried', { source: sceneWhy });
+    }
     return { branch, actor, threadId: thread?.id, cited };
   },
 });
-
+// ── WIDENED AND REFORKED (Task 7 stage 6). A KEEP-list event, and the clearest
+// demonstration in the pool of why a KEEP verdict was never "no work": three
+// branches with five-line pools, on the highest-firing event in `journey-out`,
+// put `flattered` and `wary` in the top ten of the repetition blame table two
+// batches running. Five branches now, ten lines each — both terms of
+// `C(F,3)/P^2` at once.
+//
+// THE TWO ADDED BRANCHES ARE THE TWO REFUSALS the test could not express: the
+// person picked can decline to be picked, and the person picked can turn the
+// walk round and do the asking. The record they read is the stored bond
+// between the two and {b}'s own boldness — nothing invented.
 const WALK_PICK_LINES = {
   flattered: [
     '{a} chose {b} to walk with instead of the obvious person, and {b} spent the road visibly pleased about it.',
@@ -278,6 +477,11 @@ const WALK_PICK_LINES = {
     '{a} dropped back to walk with {b}, and {b} took it as exactly what it looked like.',
     '{b} had been braced for a long walk on their own, and spent the whole of it grinning instead.',
     'Being chosen did something visible to {b}, and {a} saw it happen and said nothing.',
+    '{b} has been the last person picked for four days, and today {b} was the first.',
+    'It is a very small thing and {b} carried it the whole two miles like luggage.',
+    '{b} said “really?” out loud when {a} fell in beside them, and then was embarrassed about saying it.',
+    'Nobody in this castle has chosen {b} for anything yet. {b} noticed the difference immediately.',
+    '{b} talked more in that hour than in the three days before it, out of sheer relief.',
   ],
   wary: [
     '{a} chose {b} to walk with, and {b} spent the whole road working out why.',
@@ -285,6 +489,11 @@ const WALK_PICK_LINES = {
     '{a} fell in beside {b}, and {b} answered every question with a shorter question.',
     '{b} was perfectly pleasant for two hours and gave {a} absolutely nothing.',
     '{b} kept half a step ahead the whole way, which is not where you walk with a friend.',
+    'Nobody picks {b} for the company. {b} has been in this format before and knows that.',
+    '{b} spent the first mile waiting for the ask and the second mile more worried that it never came.',
+    '{a} got the weather, the boots and the view, and nothing else at all.',
+    '{b} counted how many other people {a} could have walked with, and got to six.',
+    'Being chosen is information about the chooser, and {b} spent the road reading it.',
   ],
   transactional: [
     '{b} understood the pick immediately, priced it, and started talking about what happened at the next vote.',
@@ -292,6 +501,35 @@ const WALK_PICK_LINES = {
     '{b} accepted the company and made sure {a} knew what it would be worth later.',
     '{b} was glad of the walk and said so, and then said what they wanted for it.',
     'By the second hill {b} had stopped talking about the walk and started talking about the vote.',
+    '{b} treated two miles of company as an opening bid and negotiated up from it.',
+    '“You want something,” {b} said, cheerfully. “Good. So do I.”',
+    '{b} does not mind being used, provided the using is mutual and stated.',
+    'It took {b} about nine minutes to convert a kindness into a commitment.',
+    '{b} named a night, a name and a price, in that order, before the halfway stone.',
+  ],
+  'would-not-be-picked': [
+    '{a} fell in beside {b} and {b} found a reason to be somewhere else within the mile.',
+    '{b} does not want to be seen walking with {a}, and made that clear without saying it.',
+    '“I promised I would walk with somebody,” {b} said, which was true and was not the reason.',
+    '{b} sped up. It was not subtle and it was not meant to be.',
+    '{a} chose {b} and {b} declined to be chosen, politely, in front of two other people.',
+    'Being seen beside {a} costs {b} something this week, and {b} has done the arithmetic.',
+    '{b} took the pick as an accusation rather than a compliment and got out of it.',
+    '{a} has been refused a walk before and never quite this quickly.',
+    '{b} spent four minutes with {a} and the rest of the road at the front of the column.',
+    'The gap between them by the top of the hill was about forty yards and entirely deliberate.',
+  ],
+  'turned-it-around': [
+    '{a} picked {b}, and by the second mile {b} was the one doing the asking.',
+    '{b} let {a} start it and then spent an hour finding out what {a} wanted to know and why.',
+    'It was supposed to be a test of {b}. {b} sat the test and then set one.',
+    '{b} answered three questions and asked five, and {a} did not notice the swap until the gate.',
+    '“Why me,” {b} asked, first thing, and would not move on until there was an answer.',
+    '{b} used two miles of {a}’s attention rather better than {a} used them.',
+    '{a} came off the road having learned nothing and having said a great deal.',
+    '{b} turned the walk into an interview and {a} was the one being interviewed.',
+    'The pick told {b} something. {b} spent the road finding out what.',
+    '{b} is very good at this and {a} had not previously known that about {b}.',
   ],
 };
 
@@ -308,6 +546,11 @@ registerEvent({
   roles: 'initiator-first',
   family: 'testing',
   window: 'journey-out',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['social', 'intuition', 'strategic', 'boldness'],
+    relationship: ['close-ally', 'rival', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 4) return 0;
@@ -315,27 +558,47 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-who-you-walk-with');
-    const sceneWhy = 'who they chose to walk beside';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const flatterScore = (st.social / 10) * 0.5 + (st.loyalty / 10) * 0.5;
-    const waryScore = (st.intuition / 10) * 0.6 + (1 - st.temperament / 10) * 0.4;
-    const dealScore = (st.strategic / 10) * 0.6 + (1 - st.loyalty / 10) * 0.4;
-    const total = flatterScore + waryScore + dealScore;
-    const roll = rng() * total;
-    let branch;
-    if (roll < flatterScore) branch = 'flattered';
-    else if (roll < flatterScore + waryScore) branch = 'wary';
-    else branch = 'transactional';
+    const bond = getBond(a, b);
+    const scores = {
+      flattered: (st.social / 10) * 0.5 + (st.loyalty / 10) * 0.5,
+      wary: (st.intuition / 10) * 0.6 + (1 - st.temperament / 10) * 0.4,
+      transactional: (st.strategic / 10) * 0.6 + (1 - st.loyalty / 10) * 0.4,
+      // You only refuse a walk with somebody you would rather not be seen
+      // beside, so this reads the stored bond and nothing else about them.
+      'would-not-be-picked': Math.max(0, 0.45 - Math.max(0, bond) * 0.09),
+      'turned-it-around': (st.boldness / 10) * 0.35 + (st.intuition / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'flattered';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
-    const bondDelta = branch === 'flattered' ? 2 : branch === 'wary' ? -0.5 : 0.5;
-    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const sceneWhy = branch === 'would-not-be-picked' ? 'declined to be walked with'
+      : branch === 'turned-it-around' ? 'was picked and did the asking instead'
+        : 'who they chose to walk beside';
+    const bondDelta = branch === 'flattered' ? 2
+      : branch === 'wary' ? -0.5
+        : branch === 'transactional' ? 0.5
+          : branch === 'would-not-be-picked' ? -2 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, WALK_PICK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const t = api.openArc('testing', [a, b], { source: sceneWhy, seed: line });
-    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    // TERMINAL: a walk refused is a test that got no answer, and `turned-back`
+    // is what the pick came home as.
+    if (t && branch === 'would-not-be-picked') {
+      api.resolveArc(t.id, 'turned-back', { source: sceneWhy });
+    }
+    const out = { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    // AND ON ONE BRANCH THE DIRECTION REVERSES, which `roles:
+    // 'initiator-first'` cannot express — that is a property of the event and
+    // this is a property of the branch. An explicit pair on the result takes
+    // precedence over `roles` (see `sceneSpeakers`), so it is stated here.
+    if (branch === 'turned-it-around') { out.speaker = b; out.respondent = a; }
+    return out;
   },
 });
-
 // FOUR POOLS, NOT TWO, AND A BRANCH LABEL THAT SAYS WHICH (round 2, R5). This
 // is the most-fired new event in the pool - 906 firings per 400 seasons - it is
 // solo-capable, and it shipped with three lines and a CONSTANT branch label.
@@ -355,24 +618,45 @@ const SHORT_COLUMN_LINES = {
     '{a} counted the people on the road out and wished they had not.',
     'Somebody used to walk at the front of this. {a} noticed the gap where they should have been.',
     'It was the first time the road out had felt short, and {a} could not stop doing the arithmetic.',
+    '{a} counted the column at the gate and got a number {a} did not like.',
+    'There is a gap in the line where somebody walked on Monday, and {a} kept looking at it.',
+    '{a} realised halfway out that nobody was behind {a} any more.',
+    'It is the same road and it takes the same time and it is not the same walk.',
+    '{a} did the subtraction twice, on the road, and got the same answer twice.',
   ],
   'solo-again': [
     '{a} had stopped counting the people on the road out, and hated that they knew the number anyway.',
     'The column out of the gate got shorter every time, and {a} had started walking at the back of it.',
     '{a} looked at how few of them were on the road now and could remember every single gap in it.',
     'There was more road than people by this point, and {a} was the only one who said anything about it.',
+    '{a} counted the column out of habit and then wished {a} had not.',
+    'The road out takes the same time and feels twice as long with four fewer people on it.',
+    '{a} walked in the space where somebody used to walk, and noticed doing it.',
+    'It is quieter every week and nobody has said so out loud since the second one.',
+    '{a} could see the whole column from the front now, which was not true on Monday.',
+    'There is a point where a group stops being a group, and {a} thinks they passed it.',
   ],
   'pair-first': [
     'The group leaving was shorter than last time. {a} said it out loud and {b} only nodded.',
     '{a} and {b} both clocked how much smaller the column out of the gate had got.',
     'Neither {a} nor {b} said anything about it, but both of them counted the road out.',
     '{a} caught {b} looking back at the gate to check the number, and did not mention it.',
+    '{a} and {b} both counted, separately, and both arrived at the same short number.',
+    'Neither of them said it out loud. Both of them walked slower for about a minute.',
+    '{b} started a sentence about who was missing and {a} finished it.',
+    'It is the first road out that has felt like this, and {a} and {b} were beside each other for it.',
+    '{a} said “fewer of us” and {b} said “yes,” and that was the whole conversation.',
   ],
   'pair-again': [
     '{a} and {b} had both stopped counting out loud, which was its own way of counting.',
     'The road out was shorter again. {a} started to say so and {b} said they already knew.',
     '{a} and {b} walked out through a gate that used to be crowded, and neither of them filled the silence.',
     'By now {a} and {b} could have named everybody missing from the road without stopping to think.',
+    '{a} and {b} have walked this road with three different sets of people on it.',
+    'They have stopped counting out loud. Both of them still count.',
+    '{a} pointed at a stile and said a name, and {b} knew which week it was from.',
+    'It gets shorter every time and neither of them remarks on it any more.',
+    '{a} and {b} walked at the front because there is not much behind the front now.',
   ],
 };
 

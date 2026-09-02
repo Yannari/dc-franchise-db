@@ -1080,7 +1080,7 @@ registerEvent({
 // days before a banishment is not.
 const TOOK_EXTRA_LINES = {
   credited: [
-    '“{who} went and did it,” {a} said on the road back — which was to {task}, and nobody had asked — and {b} agreed it had been the best thing about {mission}.',
+    '“{who} went and did it,” {a} said on the road back, which was to {task}, and nobody had asked, and {b} agreed it had been the best thing about {mission}.',
     '{a} and {b} spent a mile being genuinely impressed that {who} had managed to {task}, which neither of them had expected of the day.',
     '{a} said the thing out loud that nobody had said at the vans: {who} was the reason {mission} paid what it did.',
     '“Somebody had to {task},” {b} said. “On today of all days.” {a} had been thinking exactly that since it happened.',
@@ -1260,6 +1260,12 @@ const LONG_WALK_LINES = {
     'The walk back took {a} about an hour and {a} used every minute of it, quietly, on the same question.',
     '{a} was the first one back through the gate, by some distance, and had not spoken since the vans.',
     'Two people tried to fall into step with {a} on the road home. Both of them gave up.',
+    '{a} walked it at a pace that made conversation impossible, on purpose.',
+    'The road home took an hour and {a} spent all of it about ten yards ahead.',
+    '{a} had nothing to say about the afternoon and said none of it, at length.',
+    'Somebody asked {a} a question at the halfway stone and got most of a word back.',
+    '{a} looked at the castle getting bigger and did not slow down for any of it.',
+    'It is a long way to walk without talking and {a} managed the whole of it.',
   ],
   'caught-up-with-it': [
     'It got {a} on the road home — not at {mission}, where there had been too much going on, but afterwards, in the quiet.',

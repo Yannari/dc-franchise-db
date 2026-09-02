@@ -841,45 +841,120 @@ describe('cover-alibi-crumbles forks three ways on the SAME roll', () => {
 //
 // Each block states its own roll and the arithmetic that makes every branch
 // reachable at it, in the shape the header above established.
-describe('susp-group-pressure-crack forks on the PRESSURED player, three ways', () => {
+describe('susp-group-pressure-crack forks on the PRESSURED player, six ways', () => {
   const CAST2 = ['Presser', 'Pressed'];
   function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: [...CAST2, 'C', 'D', 'E'], actors: CAST2 }; }
 
   // Reads pStats(actors[1]) — the one under pressure, not the one applying it.
-  // holds = temp*.05 + bold*.03 + .1; cracks = (10-temp)*.06 + .1;
-  // redirects = strat*.04 + soc*.03. All three contain 0.7:
-  //   temp/bold 10, strat/soc 0  -> holds .9 of 1.0        -> 0.7 is holds
-  //   everything 0               -> holds .1 of 0.8        -> 0.7 is cracks
-  //   everything 10              -> cracks ends at .588    -> 0.7 is redirects
-  const ROLL = 0.7;
+  // Task 7 stage 6 took this fork from three branches to six (the audit's
+  // MERGE of `susp-defensive-overcorrect` folded in, plus the two terminal
+  // outcomes the event did not have), so the arithmetic below is re-derived
+  // for six and every one of them is exercised. With no open suspicion thread
+  // between the pair — which is the state `setup` leaves — `heatAt` is 0, so
+  // the two heat terms drop out and the six weights are:
+  //
+  //   holds        = temp*.05 + bold*.03 + .1
+  //   cracks       = (10-temp)*.06 + .1
+  //   redirects    = strat*.04 + soc*.03
+  //   overcorrected= (10-temp)*.03 + (10-bold)*.025
+  //   walked-away  = bold*.025 + (10-soc)*.02
+  //   admitted     = (10-loy)*.025
+  //
+  // WHY THREE ROLLS AND NOT ONE. The three-branch version of this block used a
+  // single shared roll, which is the stronger shape: it proves the STATS moved
+  // the branch and not the roll. At six branches it is arithmetically
+  // impossible and that is worth stating rather than quietly abandoning. The
+  // walk is ordered, so the FIRST branch is selected only while r < holds/T,
+  // and holds/T cannot exceed 0.60 on any stat line; the LAST branch is
+  // selected only while r >= (T - admitted)/T, and admitted/T cannot exceed
+  // 0.14. No single r is inside both intervals. So the block uses three rolls
+  // — LOW for the head of the walk, HIGH for the middle, TAIL for the end —
+  // and each `it` states the cumulative arithmetic that puts roll*T inside its
+  // own branch's interval, with the margin to the nearest edge. Every case
+  // still moves ONLY the stat line against a fixed roll within its group,
+  // which is the property the block exists to test.
+  const ROLL_LOW = 0.3;
+  const ROLL_HIGH = 0.75;
+  const ROLL_TAIL = 0.95;
 
   function pressedWith(stats) {
     setup(CAST2, [makePlayer('Presser', 'floater'), makePlayer('Pressed', 'floater', stats)]);
     return EVENTS.find(e => e.id === 'susp-group-pressure-crack');
   }
 
+  // holds .90 of T=1.50; roll*T = 0.45, margin 0.45 to the holds/cracks edge.
   it('HOLDS: temperament 10 and boldness 10, nothing to redirect with', () => {
-    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 0, social: 0 });
-    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 0, social: 5, loyalty: 10 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL_LOW]));
     expect(result.branch).toBe('holds');
     expect(result.bondDelta).toBe(0.5);
   });
 
-  it('CRACKS: the same roll with everything at 0', () => {
-    const ev = pressedWith({ temperament: 0, boldness: 0, strategic: 0, social: 0 });
-    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+  // holds .25, cracks runs .25->.95 of T=2.00; roll*T = 0.60, margin 0.35.
+  it('CRACKS: the same roll with temperament on the floor', () => {
+    const ev = pressedWith({ temperament: 0, boldness: 5, strategic: 0, social: 5, loyalty: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL_LOW]));
     expect(result.branch).toBe('cracks');
     expect(result.bondDelta).toBe(-2);
   });
 
-  it('REDIRECTS: the same roll, calm AND capable — strategic 10 and social 10 on top of the holds line', () => {
-    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 10, social: 10 });
-    const result = ev.fire(ctxFor(5), scriptedRng([ROLL]));
+  // holds .90, cracks 1.00, redirects runs 1.00->1.70 of T=1.95;
+  // roll*T = 1.4625, margin 0.2375.
+  it('REDIRECTS: calm AND capable — strategic 10 and social 10 on top of the holds line', () => {
+    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 10, social: 10, loyalty: 10 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL_HIGH]));
     expect(result.branch).toBe('redirects');
     expect(result.bondDelta).toBe(-1);
   });
-});
 
+  // holds .10, cracks .80, redirects 1.30, overcorrected runs 1.30->1.85 of
+  // T=2.10; roll*T = 1.575, margin 0.275. THE MERGED PREMISE, exercised.
+  it('OVERCORRECTED: rattled and unbold, but with the social means to keep talking', () => {
+    const ev = pressedWith({ temperament: 0, boldness: 0, strategic: 5, social: 10, loyalty: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL_HIGH]));
+    expect(result.branch).toBe('overcorrected');
+    expect(result.bondDelta).toBe(-1);
+  });
+
+  // holds .65, cracks 1.05, redirects 1.05, overcorrected 1.20, walked-away
+  // runs 1.20->1.65 of T=1.90; roll*T = 1.425, margin 0.225.
+  it('WALKED-AWAY: bold and unsociable — refuses the room rather than the question', () => {
+    const ev = pressedWith({ temperament: 5, boldness: 10, strategic: 0, social: 0, loyalty: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL_HIGH]));
+    expect(result.branch).toBe('walked-away');
+    expect(result.bondDelta).toBe(-2.5);
+  });
+
+  // everything before it sums to 1.55 of T=1.80, admitted runs to 1.80;
+  // roll*T = 1.71, margin 0.09 to the top edge. The tail branch is small by
+  // construction — it is the one gated on loyalty and on an existing story —
+  // so its interval is narrow and the roll has to be near the top to reach it.
+  it('ADMITTED-SOMETHING-ELSE: loyalty on the floor, and it cracks sideways', () => {
+    const ev = pressedWith({ temperament: 10, boldness: 10, strategic: 0, social: 10, loyalty: 0 });
+    const result = ev.fire(ctxFor(5), scriptedRng([ROLL_TAIL]));
+    expect(result.branch).toBe('admitted-something-else');
+    expect(result.bondDelta).toBe(-1.5);
+  });
+
+  // ANTI-VACUITY. Six `it`s above name six branch strings; this asserts the
+  // event cannot quietly grow a seventh or lose one without the block being
+  // re-derived. A branch added and left untested is exactly the defect the
+  // "three forks nothing was testing at all" header above was written for.
+  it('and those six are all of them', () => {
+    const ev = pressedWith({});
+    const seen = new Set();
+    for (let i = 0; i < 60; i++) {
+      setup(CAST2, [makePlayer('Presser', 'floater'),
+        makePlayer('Pressed', 'floater', { temperament: i % 11, boldness: (i * 3) % 11,
+          strategic: (i * 7) % 11, social: (i * 5) % 11, loyalty: (i * 2) % 11 })]);
+      const e = EVENTS.find(x => x.id === 'susp-group-pressure-crack');
+      seen.add(e.fire(ctxFor(5), scriptedRng([(i % 20) / 20 + 0.01])).branch);
+    }
+    expect(ev).toBeTruthy();
+    expect([...seen].sort()).toEqual(['admitted-something-else', 'cracks', 'holds',
+      'overcorrected', 'redirects', 'walked-away']);
+  });
+});
 describe('testing-loyalty-oath forks on the player being ASKED, three ways', () => {
   const CAST2 = ['Asker', 'Asked'];
   function ctxFor(ep) { return { ep, window: 'evening', act: 'middle', living: [...CAST2, 'C'], actors: CAST2 }; }

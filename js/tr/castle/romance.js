@@ -86,9 +86,9 @@ import { pStats, romanticCompat } from '../../players.js';
 // getBond is a PURE READ and the one bonds.js name a castle file may still
 // hold; every WRITE goes through the scene API (see ./effects.js).
 import { getBond } from '../../bonds.js';
-import { registerEvent } from '../events.js';
+import { registerEvent, isNervy } from '../events.js';
 import { sceneApi, arcContinue } from './effects.js';
-import { findOpenThread, heatAt } from '../threads.js';
+import { findOpenThread, heatAt, priorMoments } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
 import { lineFor } from './lines.js';
@@ -188,20 +188,98 @@ export function _activeRomanceCount() {
   return threads.filter(t => t.state === 'open' && (t.kind === SPARK_KIND || t.kind === SHOWMANCE_KIND)).length;
 }
 
-const SPARK_LINES = [
-  '{a} and {b} sat closer than the conversation strictly required, and both of them noticed.',
-  'Something shifted between {a} and {b} tonight that had nothing to do with the game.',
-  '{a} caught {b}\'s eye across the room and it lasted a beat too long to be nothing.',
-  '{a} made {b} laugh, twice, and then spent the rest of the evening trying to do it again.',
-  'They were the last two awake, {a} and {b}, and neither of them went to bed.',
-  '{b} said something ordinary and {a} looked at them for a second too long afterwards.',
-];
+// ── REWRITE (Task 7 stage 6). TOP OF THE BLAME TABLE after batch 1, at 12 of
+// 205 loud seasons. The audit's verdict was "one branch (`sparked`) — the fork
+// is in the wording, not in the game", and the wording was six lines carrying
+// two firings a season in the busiest window in the castle.
+//
+// A SPARK IS NOT A DECISION, IT IS A THING TWO PEOPLE NOTICE, and the fork is
+// what each of them does in the ten seconds afterwards. Five, and every one of
+// them opens the spark arc — the fork is never in WHETHER something started,
+// which is the silent-branch defect the sibling showmance events carry a note
+// about, but in what shape it started in and who else has it.
+//
+// THE RECORD THE FORK READS: the stored bond between them (how much there was
+// to build on before tonight), each of their boldness and social, and how many
+// people are still in the castle — because a spark in a room of eighteen is a
+// private thing and a spark in a room of six is public whatever they do.
+//
+//   sparked        — mutual, unhurried, and neither of them says a word.
+//   named-it-fast  — one of them says it out loud on the spot.
+//   one-sided-so-far — only one of them is in it, and the other has not
+//                    noticed. NAMED THAT WAY because `one-sided` already means
+//                    the opposite thing in `mission-what-cost-us`, where it is
+//                    adverse; the denylist arm in tr-castle-prose.test.js
+//                    caught the collision, which is what it is for.
+//   interrupted    — somebody walks in, and the interruption is what makes it
+//                    real, because now a third person has it.
+//   said-nothing   — both of them clock it and both of them decide not to.
+const SPARK_LINES = {
+  sparked: [
+    '{a} and {b} sat closer than the conversation strictly required, and both of them noticed.',
+    'Something shifted between {a} and {b} tonight that had nothing to do with the game.',
+    '{a} caught {b}’s eye across the room and it lasted a beat too long to be nothing.',
+    '{a} made {b} laugh, twice, and then spent the rest of the evening trying to do it again.',
+    'They were the last two awake, {a} and {b}, and neither of them went to bed.',
+    '{b} said something ordinary and {a} looked at them for a second too long afterwards.',
+    '{a} and {b} ran out of things to say an hour ago and are both still sitting there.',
+    'Neither of them touched the game once. In this castle that is practically a declaration.',
+    '{a} moved a chair four inches and {b} noticed exactly how far it had moved.',
+    'Somewhere in the middle of a dull conversation {a} and {b} stopped having it and kept talking.',
+  ],
+  'named-it-fast': [
+    '“This is going to be a problem, isn’t it,” {b} said, about ten seconds in, and {a} did not disagree.',
+    '{a} said the thing out loud before either of them had decided to, which is one way of deciding.',
+    'It took {a} one evening and one sentence. {b} had been expecting it to take a week.',
+    '{b} named it first — plainly, no joke on the end of it — and then had to wait for {a} to answer.',
+    '“I like you,” {a} said to {b}, in a castle where nobody says anything, and the room did not fall in.',
+    '{a} decided that pretending was more effort than it was worth and told {b} so.',
+    'Neither of them had planned to have that conversation tonight. They had it anyway, fast.',
+    '{b} asked {a} a direct question about it and got a direct answer, which nobody here expects.',
+  ],
+  'one-sided-so-far': [
+    '{a} spent the evening in something that {b} was, as far as {b} knew, merely being pleasant in.',
+    '{b} thought it was a nice conversation. {a} thought about it for two hours afterwards.',
+    'It was mutual for exactly one of them, and {a} is the one who knows that.',
+    '{a} said goodnight, went upstairs, and came back down twice for things {a} did not need.',
+    '{b} has no idea. {a} would very much like to keep it that way for now.',
+    'Whatever this is, {a} is in it on {a}’s own so far, and it is not comfortable in there.',
+    '{a} laughed at something that was not funny and heard {a}’s own laugh from outside it.',
+    'Nothing about the evening was reciprocal, which {a} has decided not to think about.',
+  ],
+  interrupted: [
+    '{a} and {b} were most of the way to something when {c} came in for a glass of water.',
+    '{c} walked in at exactly the wrong moment, said nothing, and has said nothing since.',
+    'The door went. {a} and {b} were suddenly two people discussing tomorrow’s mission.',
+    'It ended the second {c} appeared, and it ended in a way {c} could not fail to read.',
+    '{c} apologised for interrupting, which told {a} and {b} that {c} knew what had been interrupted.',
+    'Whatever was about to happen between {a} and {b} did not, because the castle is full of people.',
+    '{c} took one look at the pair of them and left again, faster than {c} had come in.',
+    'Nothing was said. {c} has been carrying it since about half past eleven.',
+  ],
+  'said-nothing': [
+    'Both of them noticed. Neither of them said so, and both of them noticed the not saying.',
+    '{a} and {b} sat with it for an hour and let it go up the stairs unaccompanied.',
+    'There was a version of the evening where somebody spoke. This was the other one.',
+    '{a} nearly said it. {b} nearly said it. They said goodnight instead, in exactly the same tone.',
+    'They both know. Neither of them is going to be the one who has to be right about it.',
+    '{a} decided a week is a long time in here and that there was no rush, and was wrong about that.',
+    'It went unnamed, which in this place is not the same as it going away.',
+    'What passed between {a} and {b} was entirely deniable, and both of them intend to deny it.',
+  ],
+};
 
 registerEvent({
   id: 'romance-spark',
   family: FAMILY,
   window: 'evening',
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['boldness', 'social', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+    knowledge: ['incomplete', 'witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -213,15 +291,47 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-spark');
-    const sceneWhy = 'something started between them';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const note = pick(rng, SPARK_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const bond = getBond(a, b);
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // WHO ELSE IS IN THE CASTLE, read off the living roster rather than
+    // assumed: `interrupted` needs somebody to do the interrupting, and a
+    // small castle makes being walked in on much likelier.
+    const others = (ctx.living || []).filter(n => n !== a && n !== b);
+    const c = others.length ? others[Math.floor(rng() * others.length)] : null;
+    const scores = {
+      sparked: 0.5 + Math.max(0, bond) * 0.07,
+      'named-it-fast': (sa.boldness / 10) * 0.3 + (sb.boldness / 10) * 0.2,
+      'one-sided-so-far': Math.max(0.05, 0.35 - Math.max(0, bond) * 0.05),
+      interrupted: c ? 0.15 + Math.max(0, 12 - others.length) * 0.03 : 0,
+      'said-nothing': (1 - sa.boldness / 10) * 0.3 + (sa.temperament / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'sparked';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'named-it-fast' ? 'said it out loud the same evening'
+      : branch === 'one-sided-so-far' ? 'was in it on their own so far'
+        : branch === 'interrupted' ? 'was walked in on before anything was said'
+          : branch === 'said-nothing' ? 'both noticed it and neither said so'
+            : 'something started between them';
+    const note = lineFor(SPARK_LINES[branch], `romance-spark|${branch}|${ctx.ep}`,
+      { a, b, c: c || b });
+    const bondDelta = branch === 'named-it-fast' ? 1.5
+      : branch === 'one-sided-so-far' ? 0.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // THE THIRD PERSON WALKS AWAY WITH SOMETHING, which is what makes
+    // `interrupted` a scene rather than a non-event: {c} now holds a fact
+    // about two people, and the bond records that they know it.
+    if (branch === 'interrupted' && c) api.addBond(a, c, -0.5, { source: sceneWhy });
     const t = api.openArc(SPARK_KIND, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'sparked', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    const out = { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    if (branch === 'named-it-fast') { out.speaker = a; out.respondent = b; }
+    return out;
   },
 });
-
 // ── REWRITE (Task 7 stage 5). The audit’s verdict was REWRITE ("one branch
 // — the fork is in the wording"), and once `evening` opened up it went to
 // second on the blame table at 19 of 271 loud seasons.
@@ -333,13 +443,67 @@ registerEvent({
   },
 });
 
-const PROTECT_LINES = [
-  '{a} put themselves between {b} and a room that was getting a little too interested in {b}\'s name.',
-  'The moment {b}\'s name came up, {a} was talking, and kept talking until it had gone away again.',
-  '{a} made it very clear, without ever raising their voice, that coming for {b} meant coming for both of them.',
-  '{a} took a question aimed at {b} and answered it themselves, badly, on purpose.',
-  '{b} did not need defending. {a} defended them anyway, in front of everybody.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`protected`) — the fork
+// is in the wording, not in the game." Standing in front of somebody is the
+// most consequential thing this family does, and it had exactly one outcome:
+// it always worked and it always cost nothing.
+//
+// THE RECORD THE FORK READS is `ctx.state` — the emotional state the last
+// Round Table left the protected partner in, which is a fact the whole castle
+// watched being made — together with the defender's boldness and loyalty. A
+// person the room came for last night is a person who actually needs
+// defending, and a person who does not is somebody being defended in public
+// for no reason, which is how a couple becomes a bloc.
+//
+//   protected      — it works, quietly, and the room moves on.
+//   too-loud       — it works and it costs: the castle now reads them as one
+//                    vote rather than two people.
+//   asked-not-to   — the protected partner tells them to stop. THE DIRECTION
+//                    FLIPS on this branch: {b} is speaking and {a} answers.
+//   did-not-step-in— the defence does not come, and {b} counts the seconds it
+//                    did not come in.
+const PROTECT_LINES = {
+  protected: [
+    '{a} put themselves between {b} and a room that was getting a little too interested in {b}’s name.',
+    'The moment {b}’s name came up, {a} was talking, and kept talking until it had gone away again.',
+    '{a} made it very clear, without ever raising their voice, that coming for {b} meant coming for both of them.',
+    '{a} took a question aimed at {b} and answered it themselves, badly, on purpose.',
+    '{b} did not need defending. {a} defended them anyway, in front of everybody.',
+    '{a} changed the subject four times in a morning and got away with all four.',
+    'Somebody started a sentence with {b}’s name in it and {a} finished it with somebody else’s.',
+    '{a} did it so smoothly that {b} only worked out what had happened an hour later.',
+  ],
+  'too-loud': [
+    '{a} defended {b} at a volume that made three people wonder what needed defending.',
+    'It was a good defence. It was also, everybody agreed afterwards, an unmistakably personal one.',
+    '{a} went further than {b} would have gone for {a}, and the room did the arithmetic on that.',
+    'By the end of it nobody was thinking about {b}’s name any more. They were thinking about the pair of them.',
+    '{a} used the word "we" twice and could not get it back either time.',
+    '{a} won the argument and lost the week: two votes that move together are one vote to this castle.',
+    'Nobody doubted {a} meant it. That was rather the trouble.',
+    'The defence was so complete that it read, to the room, as an alibi with feelings on it.',
+  ],
+  'asked-not-to': [
+    '“Do not do that for me again,” {b} said to {a}, afterwards, and meant it as a kindness.',
+    '{b} took {a} aside and explained, patiently, exactly what {a} had cost them both.',
+    '“You are making me a pair,” {b} said. “I need to be a person.”',
+    '{b} would rather take a bad morning alone than a good one as half of something.',
+    '{a} expected to be thanked. {a} was asked, quite gently, to stop.',
+    '“Next time let it come at me,” {b} said, and {a} did not have an answer to that.',
+    '{b} pointed out that the only people {a} defends are people {a} is sleeping next to, and let it sit.',
+    '{a} had done a generous thing and had to hear why it was a foolish one.',
+  ],
+  'did-not-step-in': [
+    '{b}’s name went round the table and {a} looked at the floor for the whole of it.',
+    'It would have taken one sentence. {a} did not spend it, and {b} counted the seconds it took not to.',
+    '{a} decided the smart play was to let it pass, and {b} watched {a} decide that.',
+    'Nobody expects to be defended in here. {b} had expected it anyway, which is the mistake.',
+    '{a} was three feet away and did not say a word, and both of them knew the distance afterwards.',
+    '{a} waited to see which way the room went before deciding whether to have an opinion.',
+    'The silence was the whole scene. It went on for about ninety seconds.',
+    '{a} said something on {b}’s behalf afterwards, privately, which is not the same thing and both of them knew it.',
+  ],
+};
 
 registerEvent({
   id: 'romance-protection-instinct',
@@ -350,23 +514,58 @@ registerEvent({
   acts: { early: 0.5, late: 1.7 },
   advancesThread: true,
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'backfire', 'rejected', 'ambiguous'],
+    voice: ['boldness', 'loyalty', 'strategic'],
+    relationship: ['close-ally'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-protection-instinct');
-    const sceneWhy = 'put themselves between somebody and the room';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const advanced = api.advanceArc(t.id, lineFor(PROTECT_LINES, `romance-protection-instinct|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'protected', pair: [a, b], threadId: advanced?.id, bondDelta: 1,
-      crowd: { name: a, colour: 'kind' } };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // THE FACT THE WHOLE CASTLE WATCHED BEING MADE. `ctx.state` is the frozen
+    // view of what the last table did to {b}; read-only here.
+    const underFire = isNervy(ctx.state?.[b]);
+    const scores = {
+      protected: 0.35 + (sa.loyalty / 10) * 0.3 + (underFire ? 0.25 : 0),
+      'too-loud': (sa.boldness / 10) * 0.35 + (underFire ? 0 : 0.2),
+      'asked-not-to': (sb.strategic / 10) * 0.3 + (sb.boldness / 10) * 0.15,
+      'did-not-step-in': (sa.strategic / 10) * 0.25 + (1 - sa.loyalty / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'protected';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'too-loud' ? 'defended somebody loudly enough to make them a pair'
+      : branch === 'asked-not-to' ? 'was asked to stop defending somebody'
+        : branch === 'did-not-step-in' ? 'let it come at somebody and said nothing'
+          : 'put themselves between somebody and the room';
+    const note = lineFor(PROTECT_LINES[branch], `romance-protection-instinct|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'protected' ? 1
+      : branch === 'too-loud' ? 0.5
+        : branch === 'asked-not-to' ? -0.5 : -2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id, note, { source: sceneWhy });
+    const out = { branch, pair: [a, b], threadId: advanced?.id, bondDelta };
+    if (branch === 'protected' || branch === 'too-loud') {
+      out.speaker = a; out.respondent = b;
+      out.crowd = { name: a, colour: 'kind' };
+    } else if (branch === 'asked-not-to') {
+      // {b} is the one speaking, so {a} is the person answering for it.
+      out.speaker = b; out.respondent = a;
+    } else {
+      out.speaker = b; out.respondent = a;
+    }
+    return out;
   },
 });
-
 const JEALOUSY_LINES = {
   'said-it-out-loud': [
     '{a} did not love how much time {b} was spending with {c}, and said so.',
@@ -658,13 +857,61 @@ registerEvent({
   },
 });
 
-const SHARED_ALIBI_LINES = [
-  '{a} and {b} vouched for each other\'s whereabouts last night. Nobody thought to ask whether that made it MORE or LESS convincing.',
-  'Asked separately, {a} and {b} gave the same account of the night, which proves either everything or nothing.',
-  '{a} was with {b}. {b} was with {a}. The room had to decide what that was worth.',
-  'The two people least able to clear each other cleared each other, and did it with a straight face.',
-  '{a} answered for {b} before {b} could answer, which {a} realised afterwards had not helped.',
-];
+// ── REWRITE (Task 7 stage 6). The audit's verdict was MERGE into
+// `cover-swap-story-with-partner` — "a couple synchronising an account is the
+// swap event with a relationship on it" — and that premise now lives there as
+// a branch. This event keeps its registration and earns it by being the half
+// the swap event cannot do: the swap is two people AGREEING an account in
+// private, and this is the account meeting the room. Once it is in the room it
+// can hold, or be split, or fail, or be refused, and those are four scenes.
+//
+// THE RECORD THE FORK READS: the showmance arc's own beats — how many times
+// these two have already answered for each other, which is exactly what makes
+// the room start asking them separately — plus the two of them's mental and
+// loyalty. An alibi given for the first time and an alibi given for the fourth
+// time are not the same object, and the thread is where that is stored.
+const SHARED_ALIBI_LINES = {
+  'shared-alibi': [
+    '{a} and {b} vouched for each other’s whereabouts last night. Nobody thought to ask whether that made it MORE or LESS convincing.',
+    '{a} was with {b}. {b} was with {a}. The room had to decide what that was worth.',
+    'The two people least able to clear each other cleared each other, and did it with a straight face.',
+    '{a} answered for {b} before {b} could answer, which {a} realised afterwards had not helped.',
+    'Two names, one night, one account, delivered twice. The room let it go and did not forget it.',
+    '“We were together,” {a} said, for the pair of them, and {b} nodded at the right moment.',
+    'It is the most useless alibi in the castle and the two of them keep giving it anyway.',
+    '{a} and {b} agreed on the hour, the room and the reason, which is one detail more than anybody honest has.',
+  ],
+  'asked-separately': [
+    'Somebody had the wit to take {a} and {b} into different rooms, and the two accounts came back identical.',
+    '{a} was asked first and did not know it. {b} was asked second and did.',
+    'Split up and questioned apart, {a} and {b} produced the same night down to the same cold tea.',
+    'The room stopped asking them together, which is when this stopped being a formality.',
+    '{a} came out of one conversation and could not warn {b} before {b} went into the other.',
+    'Two people, two rooms, one account. It held, and everybody noticed how much it held.',
+    'They had not rehearsed it. They did not need to, which is either love or a problem.',
+    'The identical answer was the reassuring part and the frightening part at the same time.',
+  ],
+  'did-not-match': [
+    '{a} said the kitchen. {b} said the stairs. Both of them heard the other one say it.',
+    'The accounts came apart on one word, and one word is all it takes in here.',
+    '{a} put the two of them together an hour later than {b} did, and neither could fix it afterwards.',
+    'They had never actually compared the night. It showed, in front of four people.',
+    '{b} corrected {a} mid-sentence, publicly, which made it worse rather than better.',
+    'Two people who share a bed gave two different versions of an evening, and the room wrote it down.',
+    'It was a small discrepancy about a dull hour, and it will be quoted at the table.',
+    '{a} tried to make the two versions the same version and made three versions.',
+  ],
+  'refused-to-vouch': [
+    '{b} was asked whether {a} had been there and said, honestly, that {b} could not swear to it.',
+    '“I was asleep,” {b} said, which is true, and which left {a} standing there with nothing.',
+    '{b} would not lie for {a}, not even a small one, and {a} had not known that until this morning.',
+    '{a} looked at {b} for the easy answer and did not get it in front of the whole room.',
+    '{b} declined to be an alibi and had reasons, and gave none of them out loud.',
+    'The room asked. {b} hesitated. The hesitation was the answer and everybody had it.',
+    '“I am not going to say something I do not know,” {b} said, and {a} could not argue with it and wanted to.',
+    '{b} chose being believed over being useful, and {a} understood the choice and hated it.',
+  ],
+};
 
 registerEvent({
   id: 'romance-shared-alibi',
@@ -675,23 +922,57 @@ registerEvent({
   // Two people vouching for each other AGAIN, and naming the last night they
   // did it, is how an alibi stops sounding like an alibi and starts sounding
   // like an arrangement.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire', 'rejected'],
+    voice: ['mental', 'loyalty', 'temperament'],
+    relationship: ['close-ally'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-shared-alibi');
-    const sceneWhy = 'a couple gave the same account of the night';
-    const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
-    const [a, b] = t.parties;
-    api.addBond(a, b, 0.5, { source: sceneWhy });
-    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(SHARED_ALIBI_LINES, `romance-shared-alibi|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'shared-alibi', pair: [a, b], threadId: thread?.id, cited, bondDelta: 0.5 };
+    const show = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
+    const [a, b] = show.parties;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // HOW MANY TIMES THEY HAVE DONE THIS, off the arc rather than out of the
+    // air. The more often a couple have answered for each other, the likelier
+    // the room is to separate them before asking again.
+    const times = priorMoments(show, ctx.ep).length;
+    const scores = {
+      'shared-alibi': Math.max(0.15, 0.6 - times * 0.1),
+      'asked-separately': Math.min(3, times) * 0.15 + (sa.mental / 10) * 0.15,
+      'did-not-match': (1 - sa.mental / 10) * 0.3 + (1 - sb.mental / 10) * 0.2,
+      'refused-to-vouch': (sb.loyalty / 10) * 0.25 + (sb.temperament / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'shared-alibi';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'asked-separately' ? 'gave the same account in two different rooms'
+      : branch === 'did-not-match' ? 'gave two versions of the same evening'
+        : branch === 'refused-to-vouch' ? 'would not swear to a partner’s evening'
+          : 'a couple gave the same account of the night';
+    const note = lineFor(SHARED_ALIBI_LINES[branch], `romance-shared-alibi|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'shared-alibi' ? 0.5
+      : branch === 'asked-separately' ? 1
+        : branch === 'did-not-match' ? -1 : -2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
+    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // WHO ANSWERS depends on which way the account failed: on the two branches
+    // where {b} is the one being leaned on it is {a} asking, and on the refusal
+    // it is {b} speaking and {a} left holding it.
+    if (branch === 'refused-to-vouch') { out.speaker = b; out.respondent = a; }
+    else { out.speaker = a; out.respondent = b; }
+    return out;
   },
 });
-
 // ── FLAGSHIP: the liability is exposed — a four-way fork on the DOUBTING
 // partner's own reading of the person they're sleeping next to ──────────
 //
@@ -878,13 +1159,66 @@ registerEvent({
   },
 });
 
-const FIGHT_LINES = [
-  '{a} and {b} had a real fight, loud enough that the room pretended not to notice.',
-  'It started over nothing and got somewhere real, and everybody downstairs heard the end of it.',
-  '{a} said something to {b} that could not be taken back, and did not take it back.',
-  '{b} walked out on {a} mid-argument and the door said the rest.',
-  'Two people who had been finishing each other\'s sentences spent an evening interrupting them instead.',
-];
+// ── REWRITE (Task 7 stage 6). Third on the blame table after batch 1. The
+// audit: "one branch (`showmance-fight`) — the fork is in the wording, not in
+// the game." A couple in a castle has more than one way to have a row, and the
+// differences between them are the whole of what a viewer takes from the
+// scene: a loud one is entertainment, a quiet one is a countdown, and one that
+// is really about a ballot is a strategy problem wearing a relationship.
+//
+// THE RECORD THE FORK READS: the showmance arc's heat (how live this has been
+// for the last few days), both temperaments, and `ctx.state` — whether the
+// last Round Table left either of them rattled, which is the single commonest
+// reason two people in here turn on each other.
+//
+//   showmance-fight — loud, public, and the castle pretends not to hear it.
+//   went-cold       — no shouting at all, which is worse and lasts longer.
+//   about-the-vote  — the argument is about a name, and the relationship is
+//                     just where it is being held.
+//   patched-it      — they have it out and put it back together the same
+//                     night, which is rarer here than a break-up.
+const FIGHT_LINES = {
+  'showmance-fight': [
+    '{a} and {b} had a real fight, loud enough that the room pretended not to notice.',
+    'It started over nothing and got somewhere real, and everybody downstairs heard the end of it.',
+    '{a} said something to {b} that could not be taken back, and did not take it back.',
+    '{b} walked out on {a} mid-argument and the door said the rest.',
+    'Two people who had been finishing each other’s sentences spent an evening interrupting them instead.',
+    'Four people found somewhere else to be, quite quickly, and none of them went far.',
+    'It got personal in about ninety seconds and stayed personal for twenty minutes.',
+    '{a} brought up something from day two that {a} had promised not to bring up.',
+  ],
+  'went-cold': [
+    'There was no shouting. {a} and {b} were extremely polite to each other for four hours.',
+    '{a} said “fine” in a way that meant the opposite, and then said nothing else at all.',
+    'They sat in the same room all evening and did not once speak to each other, and everybody saw it.',
+    '{b} answered every question {a} asked and asked none back, which is its own kind of shouting.',
+    'It was over before it started and neither of them has admitted it started.',
+    '{a} moved a chair to the other side of the fire, and that was the entire argument.',
+    'Nobody heard a word of it. Everybody in the hall knew exactly what was happening.',
+    '{b} went to bed early without saying goodnight, and {a} noticed both halves of that.',
+  ],
+  'about-the-vote': [
+    'It looked like a lovers’ row. It was actually about a name, and both of them knew that.',
+    '{a} and {b} fell out over who to write, which is not a thing couples in the outside world do.',
+    '“You are asking me to choose,” {b} said, and {a} said “yes,” and that was the whole argument.',
+    'They did not fight about each other. They fought about the third person in every conversation.',
+    '{a} wanted a promise about tonight. {b} would not give one, and the evening went from there.',
+    'The words were about trust and the subject was a ballot, and neither of them pretended otherwise.',
+    '{b} pointed out that {a} had never once asked for something that was not strategic.',
+    'It ended with the two of them further apart on a name than they had been at breakfast.',
+  ],
+  'patched-it': [
+    'They had it out properly and then, unusually for this castle, put it back together the same night.',
+    '{a} apologised first and meant it, and {b} let {a} finish before saying so.',
+    'It was a bad hour and then it was over, and the being over was the surprising part.',
+    '{a} and {b} came back downstairs together, later, and nobody asked.',
+    'Whatever it was cost them one evening. Most things in here cost a week.',
+    '{b} said the thing that ends arguments instead of the thing that wins them.',
+    'The row was real and the making-up was real, and the castle found both of them slightly unbearable.',
+    'They fought about something worth fighting about and then decided it was not worth it.',
+  ],
+};
 
 registerEvent({
   id: 'romance-showmance-fight',
@@ -892,29 +1226,107 @@ registerEvent({
   window: 'evening',
   advancesThread: true,
   rare: true,
+  variationAxes: {
+    outcome: ['backfire', 'ambiguous', 'rejected', 'accepted'],
+    voice: ['temperament', 'strategic', 'loyalty'],
+    relationship: ['close-ally'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-showmance-fight');
-    const sceneWhy = 'they had it out in front of people';
     const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = t.parties;
-    api.addBond(a, b, -1.5, { source: sceneWhy });
-    const advanced = api.advanceArc(t.id, lineFor(FIGHT_LINES, `romance-showmance-fight|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'showmance-fight', pair: [a, b], threadId: advanced?.id, bondDelta: -1.5 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // HOW LIVE THIS HAS BEEN, and what the last table did to them. Both stored.
+    const heat = heatAt(t, ctx.ep);
+    const rattled = isNervy(ctx.state?.[a]) || isNervy(ctx.state?.[b]);
+    const scores = {
+      'showmance-fight': (1 - sa.temperament / 10) * 0.35 + (1 - sb.temperament / 10) * 0.25,
+      'went-cold': (sa.temperament / 10) * 0.3 + (sb.temperament / 10) * 0.2,
+      'about-the-vote': (sa.strategic / 10) * 0.25 + (rattled ? 0.35 : 0),
+      'patched-it': (sa.loyalty / 10) * 0.2 + (sb.loyalty / 10) * 0.2 + heat * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'showmance-fight';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'went-cold' ? 'stopped speaking to each other for an evening'
+      : branch === 'about-the-vote' ? 'fell out over a name rather than over each other'
+        : branch === 'patched-it' ? 'had it out and put it back the same night'
+          : 'they had it out in front of people';
+    const note = lineFor(FIGHT_LINES[branch], `romance-showmance-fight|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'showmance-fight' ? -1.5
+      : branch === 'went-cold' ? -2
+        : branch === 'about-the-vote' ? -1 : 0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: advanced?.id, bondDelta };
   },
 });
-
-const OPTICS_LINES = [
-  'Somebody pointed out, not unkindly, that {a} and {b} getting together was awfully convenient for both their games.',
-  'The word "convenient" got used about {a} and {b} this morning, and it travelled.',
-  'Two votes that always land together stop looking like a couple and start looking like a bloc, and the room said so.',
-  '{a} and {b} were asked, more or less to their faces, whether any of it was real.',
-  'Nobody doubted {a} and {b} liked each other. Several people doubted that was all it was.',
-];
+// ── REWRITE (Task 7 stage 6). The audit's verdict was MERGE into
+// `romance-liability-exposed` — "the room pricing the couple is what
+// liability-exposed already forks on" — and it noted the worse half: this
+// event wrote NO EFFECTS AT ALL. It printed a sentence and nothing about the
+// season was different afterwards, which is the same defect stage 5 found in
+// `cover-preemptive-alibi`.
+//
+// It keeps its registration and earns it on the same reasoning as the other
+// two merges in this file: `romance-liability-exposed` is about what one
+// PARTNER comes to think, and this is about what the ROOM says out loud, which
+// is a different scene with a different victim. The room saying it is now a
+// thing that happens TO the couple rather than a caption on them.
+//
+// THE RECORD THE FORK READS: how many people are left (a castle of six prices
+// a couple much harder than a castle of sixteen), the showmance arc's own
+// length, and the two of them's strategic and temperament. All looked up.
+const OPTICS_LINES = {
+  'called-strategic': [
+    'Somebody pointed out, not unkindly, that {a} and {b} getting together was awfully convenient for both their games.',
+    'The word "convenient" got used about {a} and {b} this morning, and it travelled.',
+    'Two votes that always land together stop looking like a couple and start looking like a bloc, and the room said so.',
+    '{a} and {b} were asked, more or less to their faces, whether any of it was real.',
+    'Nobody doubted {a} and {b} liked each other. Several people doubted that was all it was.',
+    'It got said at breakfast, lightly, and by lunch three people had repeated it without the lightness.',
+    'Somebody counted how many times {a} and {b} had voted the same way, out loud, and got to five.',
+    'The castle decided this morning that {a} and {b} are a number rather than two numbers.',
+  ],
+  'made-a-joke-of-it': [
+    '{a} got in front of it by saying it first and worse, and the room laughed and let it go.',
+    '“We are a voting bloc, obviously,” {b} said, cheerfully, and somehow that was the end of it.',
+    '{a} and {b} played up to it so thoroughly that nobody could take it seriously any more.',
+    'The joke was better than the accusation, which is the only defence that works in a room like this.',
+    '{b} agreed with every word of it and added two more, and the subject died of embarrassment.',
+    '{a} made the couple into the castle’s running gag, deliberately, and it cost them nothing.',
+    'It is very hard to keep prosecuting somebody who has already pleaded guilty and made it funny.',
+    '{a} and {b} let the room have the joke and kept the arrangement, which was the trade.',
+  ],
+  'leaned-into-it': [
+    '{a} and {b} stopped denying it was strategic and started using it, which was worse for everybody else.',
+    '“Yes,” {b} said. “We vote together. What are you going to do about it.”',
+    'The couple decided that being feared as a bloc beat being pitied as a couple.',
+    '{a} and {b} began arriving at conversations together, on purpose, and the room hated it.',
+    'It was an accusation on Tuesday and a strategy by Thursday, and the two of them made the switch openly.',
+    'They confirmed every suspicion the room had and dared it to do anything about it.',
+    'A pair that admits it is a pair is much harder to split than one that denies it, and {a} knew that.',
+    '{a} and {b} spent the morning being exactly as inseparable as they had been accused of being.',
+  ],
+  'it-landed-inside': [
+    'The room said it about {a} and {b}. By evening {a} had started wondering whether it was true of {b}.',
+    'It was meant as a dig at both of them. Only one of them took it home.',
+    '{a} heard "convenient" and could not stop hearing it for the rest of the day.',
+    'Somebody else’s sentence got inside the two of them, which is exactly what it was for.',
+    '{b} asked {a}, later and lightly, whether any of it had ever been about the game. {a} said no, twice.',
+    'The accusation did no damage in the hall at all. It did all of its damage upstairs.',
+    '{a} began doing arithmetic on {b} that {a} had never previously thought to do.',
+    'One sentence at breakfast, and by nightfall {a} was reading a whole week differently.',
+  ],
+};
 
 registerEvent({
   id: 'romance-strategic-optics',
@@ -925,34 +1337,124 @@ registerEvent({
   acts: { early: 0.5, late: 1.6 },
   rare: true,
   // The second advancer in `romance|morning`.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['backfire', 'accepted', 'ambiguous', 'rejected'],
+    voice: ['strategic', 'social', 'temperament'],
+    relationship: ['close-ally'],
+    knowledge: ['witnessed'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     return _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep) ? 2.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-strategic-optics');
-    const sceneWhy = 'the room read the couple as a strategy';
     const showmance = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep);
     const [a, b] = showmance.parties;
-    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(OPTICS_LINES, `romance-strategic-optics|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'called-strategic', pair: [a, b], threadId: thread?.id, cited };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // HOW SMALL THE ROOM IS AND HOW OLD THE COUPLE IS. A castle with six
+    // people in it can afford to price a bloc; one with sixteen cannot be
+    // bothered. Both read, neither assumed.
+    const room = (ctx.living || []).length;
+    const age = priorMoments(showmance, ctx.ep).length;
+    const scores = {
+      'called-strategic': 0.45 + Math.max(0, 12 - room) * 0.04,
+      'made-a-joke-of-it': (sb.social / 10) * 0.35,
+      'leaned-into-it': (sa.strategic / 10) * 0.3 + Math.min(3, age) * 0.08,
+      'it-landed-inside': (1 - sa.temperament / 10) * 0.3 + Math.max(0, 10 - room) * 0.02,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'called-strategic';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'made-a-joke-of-it' ? 'got in front of the accusation by saying it first'
+      : branch === 'leaned-into-it' ? 'stopped denying the couple was a bloc'
+        : branch === 'it-landed-inside' ? 'took the room’s reading of the couple home with them'
+          : 'the room read the couple as a strategy';
+    const note = lineFor(OPTICS_LINES[branch], `romance-strategic-optics|${branch}|${ctx.ep}`, { a, b });
+    // AND IT WRITES SOMETHING NOW, which is the defect the audit recorded
+    // separately from the branch count. Every branch moves the bond, because
+    // being priced by a room is a thing that happens to two people together.
+    const bondDelta = branch === 'made-a-joke-of-it' ? 0.5
+      : branch === 'leaned-into-it' ? 1
+        : branch === 'it-landed-inside' ? -1.5 : -0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread?.id, cited, bondDelta };
   },
 });
-
-const GRIEF_SPARK_LINES = [
-  '{a} and {b} leaned on each other after last night, and it turned into something neither of them expected.',
-  '{b} was the one who found {a} this morning, and neither of them moved for a long time afterwards.',
-  'It was meant to be comfort. Somewhere in the middle of it, for {a} and {b}, it stopped being only that.',
-  '{a} held on to {b} a little longer than the moment strictly needed, and {b} let them.',
-  'Grief put {a} and {b} in the same room at six in the morning, and something else kept them there.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`grief-spark`) — the
+// fork is in the wording, not in the game." It is also the family's only
+// bridge from grief into romance, so the single outcome meant the castle had
+// exactly one way of turning a death into a relationship.
+//
+// COMFORT AFTER A DEATH DOES NOT ALWAYS TURN INTO SOMETHING, and the version
+// where it does not is the more interesting scene about half the time. So this
+// forks on what the comfort BECOMES, and one of the four deliberately does not
+// open a spark at all — it opens a trust arc instead, which is stage 5's
+// `romance-road-spark:walked-it-off` precedent and the reason that branch
+// exists: a family that can only produce romance produces romance where a
+// season needed a friendship.
+//
+// THE RECORD THE FORK READS: how many people this castle has actually lost
+// (counted off the rounds, not asserted), the stored bond, and the two of
+// them's temperament and boldness.
+const GRIEF_SPARK_LINES = {
+  'grief-spark': [
+    '{a} and {b} leaned on each other after last night, and it turned into something neither of them expected.',
+    '{b} was the one who found {a} this morning, and neither of them moved for a long time afterwards.',
+    'It was meant to be comfort. Somewhere in the middle of it, for {a} and {b}, it stopped being only that.',
+    '{a} held on to {b} a little longer than the moment strictly needed, and {b} let them.',
+    'Grief put {a} and {b} in the same room at six in the morning, and something else kept them there.',
+    'Neither of them was thinking about anything except the empty chair, and then, quite suddenly, one of them was.',
+    '{a} came down to cry about somebody else and did not go back up for two hours.',
+    'It is a terrible way for a thing to start and it started anyway.',
+  ],
+  'just-comfort': [
+    '{a} sat with {b} until it was light, and that is all that happened, and it was not nothing.',
+    'Nothing started. {a} and {b} simply got each other through a bad morning, which counts for more in here.',
+    '{b} made tea neither of them drank and stayed until {a} could talk about it.',
+    'It could have turned into something. {a} noticed the moment it could have and let it pass.',
+    'What {a} and {b} have after this morning is not romantic and is much harder to break.',
+    'They talked about the dead for an hour and about themselves not at all, and both preferred it that way.',
+    '{a} needed somebody to be there and {b} was there, and neither of them made it mean more than that.',
+    'By breakfast the two of them were something. It is not what the castle would guess it is.',
+  ],
+  'too-soon': [
+    'It got as far as a hand on an arm, and then {b} said “not like this,” and was right.',
+    '{a} pulled back before {b} had to, and both of them were grateful and neither said so.',
+    'Somewhere in it {b} remembered why they were both awake, and that ended it.',
+    '{a} said the wrong true thing at the wrong hour and heard it land wrong.',
+    'They stopped. Grief makes people reach for whoever is nearest and both of them knew that.',
+    '“Ask me again in a week,” {b} said, which is a long time in here and both of them knew that too.',
+    'It very nearly happened and then, for about four good reasons, it did not.',
+    '{a} went back upstairs at five and lay awake being sensible about it.',
+  ],
+  'the-room-noticed': [
+    'Nobody meant it to be a scene. The castle had it by breakfast anyway.',
+    '{a} and {b} were found together at six in the morning by somebody who did not knock.',
+    'Two people comforting each other over a body is a lovely thing that looks like something else from a doorway.',
+    'Whatever it was, it happened in a hall with sightlines, and this castle has nothing to do but look.',
+    'By nine o’clock there were two versions of what {a} and {b} had been doing, and neither was kind.',
+    'The comfort was real. The account of the comfort that went round at breakfast was not.',
+    '{a} and {b} found out at lunch what the castle had decided about their morning.',
+    'It cost them nothing at the time and a great deal by the evening.',
+  ],
+};
 
 registerEvent({
   id: 'romance-comfort-after-loss-sparks',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['temperament', 'boldness', 'loyalty'],
+    relationship: ['close-ally', 'neutral'],
+  },
   // NO ACT PROFILE, DELIBERATELY, AND THIS IS A WITHDRAWAL (round 2).
   // It shipped as OPENING `{1.3, 1.2, 0.5}` on the argument that a spark is
   // only a story if there is season left for it to become one - every
@@ -983,13 +1485,45 @@ registerEvent({
     const rounds = gs.tr?.rounds || [];
     return rounds.some(r => r.ep === ctx.ep - 1 && r.murdered) && getBond(a, b) >= 1 ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'romance-comfort-after-loss-sparks');
-    const sceneWhy = 'comfort after a death turned into something else';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1.5, { source: sceneWhy });
-    const t = api.openArc(SPARK_KIND, [a, b],
-      { source: sceneWhy, seed: lineFor(GRIEF_SPARK_LINES, `romance-comfort-after-loss-sparks|${ctx.ep}`, { a, b }) });
-    return { branch: 'grief-spark', pair: [a, b], threadId: t?.id, bondDelta: 1.5 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const bond = getBond(a, b);
+    // HOW MANY THIS CASTLE HAS ACTUALLY LOST, counted off the stored rounds.
+    // The fourth body is not the first body, and a room that has been doing
+    // this for a week comforts differently and watches more closely.
+    const lost = (gs.tr?.rounds || []).filter(r => r.murdered || r.banished).length;
+    const scores = {
+      'grief-spark': 0.3 + (sa.boldness / 10) * 0.25 + Math.max(0, bond - 1) * 0.06,
+      'just-comfort': (sa.loyalty / 10) * 0.3 + (sb.loyalty / 10) * 0.2,
+      'too-soon': (sb.temperament / 10) * 0.3 + Math.max(0, 3 - lost) * 0.08,
+      'the-room-noticed': Math.min(4, lost) * 0.09 + (1 - sa.temperament / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'grief-spark';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'just-comfort' ? 'sat with somebody until it was light and left it there'
+      : branch === 'too-soon' ? 'stopped it before it started, and both of them knew why'
+        : branch === 'the-room-noticed' ? 'was found at six in the morning by somebody who did not knock'
+          : 'comfort after a death turned into something else';
+    const note = lineFor(GRIEF_SPARK_LINES[branch],
+      `romance-comfort-after-loss-sparks|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'grief-spark' ? 1.5
+      : branch === 'just-comfort' ? 2
+        : branch === 'the-room-noticed' ? 0.5 : 0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // THE BRANCH THAT DOES NOT MAKE A ROMANCE. `just-comfort` opens a TRUST
+    // arc instead of a spark, so the season carries a friendship out of the
+    // morning rather than a couple — the same move stage 5 made with
+    // `romance-road-spark:walked-it-off`, and the reason this family stopped
+    // being a machine that turns every close pair into a showmance.
+    const kind = branch === 'just-comfort' ? 'trust' : SPARK_KIND;
+    const t = api.openArc(kind, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: t?.id, bondDelta };
   },
 });

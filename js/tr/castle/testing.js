@@ -27,7 +27,7 @@ import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
 import { lineFor } from './lines.js';
-import { findOpenThread } from '../threads.js';
+import { findOpenThread, priorMoments } from '../threads.js';
 
 const FAMILY = 'testing';
 
@@ -35,68 +35,143 @@ function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 
 // Line pools chosen by hash, not by rng — see lines.js for why a `pick()`
 // added to an event that did not already have one reroutes the season.
+// ── REWRITE (Task 7 stage 6): THE FOUR COIN-FLIP TESTS ────────────────
+//
+// `testing-small-dare`, `testing-ask-for-alibi-check`, `testing-double-check-
+// story` and `testing-silence-test` all shipped the same shape — one `rng() <
+// stat` comparison and two branches — and the audit marked all four REWRITE
+// for it ("2 branches, short of four materially different paths"). Two of them
+// also wrote no thread at all before stage 2's migration.
+//
+// The shape is wrong in a specific way rather than merely thin: a test has a
+// SUBJECT and a RESULT, and a coin flip collapses them. Whether the account
+// stands up is one axis; whether the person being tested WORKS OUT THEY ARE
+// BEING TESTED is a completely different one, and it is the axis this family's
+// own flagship (`testing-decoy-secret`) is built on. Every one of the four now
+// forks on both, and every fork reads something stored — the arc's own beat
+// count (how many times this pair has been round this), the tested player's
+// stats, and in the alibi check the third party's willingness to be drawn.
 const DARE_LINES = {
   complied: [
     '{a} floated a small, pointless ask, and {b} just went along with it — no questions.',
     '{a} asked {b} for something trivial and slightly odd, and {b} did it without breaking stride.',
     '{b} swapped seats because {a} asked them to, and never asked why.',
     '{a} tested it with something that did not matter at all, and {b} passed without noticing there had been a test.',
+    '{a} asked {b} to carry something across a room and {b} carried it.',
+    'It took nine seconds and {b} did not think about it once, before or afterwards.',
+    '{a} learned something for free, which does not happen often in here.',
+    '{b} said “sure” before {a} had finished the sentence.',
   ],
   refused: [
     '{a} floated a small, pointless ask, and {b} pushed back on it, which told {a} something.',
     '{b} wanted to know why before doing a thing that took four seconds, and {a} filed that.',
     '{a} asked for nothing much and {b} said no to it, pleasantly, and completely.',
     '{b} laughed and did not move, and the not moving was the answer {a} came for.',
+    '“Why,” said {b}, which is a perfectly reasonable question and was not the answer {a} wanted.',
+    '{b} does not do things because somebody asked, and has apparently never done things because somebody asked.',
+    'It was a nothing. {b} treated it as a something, and that is the finding.',
+    '{a} got a no to a request that had no cost attached, which is worth more than a yes would have been.',
+  ],
+  'named-the-test': [
+    '{b} did the thing and then said, quite mildly, “that was a test, wasn’t it.”',
+    '{a} got compliance and a diagnosis in the same fifteen seconds.',
+    '“You do this,” said {b}. “Little asks. I have noticed.” {a} had not expected to be the subject.',
+    '{b} moved the chair, sat down in it, and asked {a} what {a} had been checking.',
+    'It worked perfectly and {b} understood exactly what had worked, which cancels most of it.',
+    '{b} has been tested before, by better people than {a}, and said as much.',
+    '{a} came away with an answer and with the knowledge that the answer is now unreliable.',
+    '“Ask me the real one,” said {b}, and went back to the washing up.',
+  ],
+  'over-delivered': [
+    '{a} asked for a small thing and {b} did the small thing and then four larger ones.',
+    '{b} took a four-second favour and turned it into twenty minutes of being helpful.',
+    'It was a test of whether {b} would. {b} did, and then did considerably more, unasked.',
+    '{a} wanted a yes. {a} got an afternoon, and is not sure what to do with it.',
+    '{b} is either the most decent person in this castle or is working very hard at something.',
+    'The over-delivery was the interesting part and {a} does not yet know which kind it was.',
+    '{b} finished the job {a} had invented and then found another one.',
+    '{a} has an answer and it is not the binary answer {a} went in for.',
   ],
 };
 
 const ALIBI_CHECK_LINES = {
   ok: [
-    '{a} quietly cross-checked {b}\'s story with a third person. It matched, clean.',
-    '{a} took {b}\'s account to somebody else and came back with nothing to worry about.',
+    '{a} quietly cross-checked {b}’s story with a third person. It matched, clean.',
+    '{a} took {b}’s account to somebody else and came back with nothing to worry about.',
     'Two people put {b} in the same place at the same time, and {a} had asked them separately.',
-    '{a} went looking for a hole in {b}\'s evening and did not find one.',
+    '{a} went looking for a hole in {b}’s evening and did not find one.',
     '{a} asked around about {b} without ever saying they were asking, and everything came back fine.',
     'Two separate accounts of {b}’s evening, both dull, both the same, and {a} believed both.',
-    '{a} took the long way round to check {b} and got the boring answer at the end of it.',
-    'There was nothing to find. {a} looked properly and there was nothing to find.',
-    'Somebody put {b} exactly where {b} had said, without being told what {b} had said.',
-    '{a} came back from checking {b} slightly disappointed and rather more comfortable.',
-    'The account survived a person who wanted it not to, which is the strongest kind there is.',
+    'The hour is accounted for by two people who have no reason to agree, and they agree.',
+    '{a} spent a morning on it and came back with nothing, which is the result {a} least wanted.',
   ],
   bad: [
-    '{a} quietly cross-checked {b}\'s story with a third person. It didn\'t quite match.',
-    '{a} asked somebody else where {b} had been, and got a different room.',
-    'The times were nearly right. Nearly was the problem, and {a} noticed it.',
-    '{b}\'s version had one person in it who did not remember being there, and {a} had asked them first.',
-    'Somebody else put {b} somewhere {b} had not mentioned, and {a} did not point that out.',
-    'The two accounts of {b}’s evening agreed about everything except the part {a} cared about.',
-    '{a} got a different room out of the third person and kept both rooms.',
-    'It was a small gap. {a} has learned that they are all small gaps.',
-    'Nobody could put {b} anywhere for about forty minutes, and {b} had been very specific about those forty minutes.',
-    '{a} asked twice, in two different ways, and got two different evenings.',
-    'The third person hesitated before answering about {b}, and {a} counted the hesitation as well.',
+    '{a} took {b}’s account to a third person and came back with a different night.',
+    'The hour {b} had in the kitchen, somebody else has in the corridor, and {a} has both.',
+    '{a} asked two people about {b}’s evening and got two evenings.',
+    'Somebody put {b} somewhere {b} had not mentioned being, and did it without being led.',
+    '{a} went looking for a hole and found one, and it is a large one.',
+    'The account does not survive contact with anybody else’s, and {a} checked twice.',
+    'Nobody is calling {b} a liar. Nobody can put {b} where {b} says {b} was either.',
+    '{a} has two versions of one hour and only one person who can have both.',
+  ],
+  'nobody-would-say': [
+    '{a} asked three people about {b}’s evening and all three of them declined to have an opinion.',
+    'Nobody would be drawn. In a castle this size that is itself a finding.',
+    '“I would rather not,” said the third person, and the second, and the first.',
+    '{a} could not get a single soul to put {b} anywhere, good or bad.',
+    'The room has decided not to help {a} with this, and {a} does not know why.',
+    'Everybody was busy. Everybody was extremely busy, all at once, about one question.',
+    '{a} came back with nothing at all, which is not the same as coming back with nothing to worry about.',
+    'Two people changed the subject and the third one asked why {a} was asking.',
+  ],
+  'got-back-to-them': [
+    '{a} checked {b}’s account with somebody, and that somebody told {b} before lunch.',
+    '{b} knows {a} has been asking. {b} found out from a third party, which is the worst way.',
+    'The check came back clean and came back to {b} in the same afternoon.',
+    '{a} was careful and {a} was not careful about who {a} was careful with.',
+    '{b} did not say anything about it and has been slightly different since about two o’clock.',
+    'Everybody in this castle repeats everything, which {a} knows and forgot for one morning.',
+    '{a} learned that {b}’s evening is fine and that {b} now knows {a} doubted it.',
+    'It is a small thing and it has changed what {b} says in front of {a} for good.',
   ],
 };
-
 const OATH_LINES = {
   sincere: [
     '{a} asked {b} to commit to it in front of the room, and {b} did, without hesitating.',
     '{a} put the question publicly and {b} answered it publicly, straight away, and meant it.',
     '{b} said yes before {a} had finished asking, in front of everybody.',
     '{a} wanted it said out loud where witnesses were, and {b} said it out loud.',
+    'There was no pause at all, which is the part everybody in that room noticed.',
+    '{b} said it plainly, twice, and offered to say it again if anybody had missed it.',
+    '{a} had expected to have to ask twice and did not have to ask twice.',
+    '{b} used {a}’s name in the promise, which nobody does unless they mean it.',
+    'It cost {b} something to say it in front of that many people, and {b} said it anyway.',
+    'The room got a commitment it had not been expecting and did not know what to do with it.',
   ],
   reluctant: [
     '{b} said what {a} wanted to hear, but it took visible effort to get there.',
     '{b} got to the right answer the long way round, and the room watched the whole route.',
     '{a} got the commitment. {a} also got a pause before it that everybody heard.',
     '{b} agreed, eventually, in a voice that was doing something other than agreeing.',
+    '{b} said yes and then immediately explained what yes did not include.',
+    'It arrived. It arrived late and slightly bent, and everybody heard the shape of it.',
+    '{b} looked at the floor for the whole of the promise, which is not where you look.',
+    '{a} got the words and did not get whatever it is that usually comes with them.',
+    '{b} agreed in the third person, somehow, which nobody could quite object to.',
+    'Two people in the room said afterwards that they would not have counted it.',
   ],
   refuses: [
     '{b} flatly refused to make the commitment {a} was asking for, publicly.',
     '{b} said they were not going to promise anybody anything, and said it to the room, not to {a}.',
     '{a} asked for a promise and got a lecture about promises.',
     '{b} would not say the words, and did not pretend to be sorry about it.',
+    '“I do not do promises in rooms,” said {b}, and left the room.',
+    '{b} pointed out that anybody who says it out loud is planning to break it quietly.',
+    '{a} asked in front of six people and got a no in front of six people.',
+    '{b} offered {a} something smaller instead and {a} did not want the smaller thing.',
+    'The refusal was polite, complete, and considerably more informative than a yes.',
+    '{b} has been made to promise things before and it did not end well, and said so.',
   ],
 };
 
@@ -106,12 +181,22 @@ const REVERSE_PSYCH_LINES = {
     '{a} accused {b} of something they did not believe, and {b} agreed with them cheerfully.',
     '{a} baited {b}, badly on purpose, and {b} took it exactly as seriously as it deserved.',
     '{b} saw it coming, said so, and made {a} say what they were actually after.',
+    '{b} let {a} run the whole thing and then asked, pleasantly, what the point had been.',
+    'It did not land at all. {b} was simply not the sort of person it lands on.',
+    '{b} answered the real question instead of the one {a} had constructed.',
+    '{a} pushed and {b} did not move, and there was nothing behind the push.',
+    '{b} has been managed by better people than {a} and said so, without any edge on it.',
   ],
   rattled: [
     '{a} pretended to distrust {b} just to see the reaction, and {b} got visibly rattled.',
     '{a} said something they did not mean and {b} spent ten minutes answering it.',
     'It was not a real accusation. {b} defended themselves from it like it was.',
     '{b}\'s face did the whole thing before {b}\'s mouth caught up, and {a} watched both.',
+    '{b} got loud about something that did not merit loud, which is the finding.',
+    'It took one sentence to take {b} apart and {a} had prepared three.',
+    '{b} defended a position {b} had not previously held, at some volume.',
+    '{a} said the opposite of what {a} thought and {b} argued with all of it.',
+    '{b} was still going four minutes after {a} had stopped needing an answer.',
   ],
   // -- TASK 7 STAGE 4: TWO BRANCHES SHORT OF FOUR, AND NOW FOUR ----------
   //
@@ -170,6 +255,9 @@ const HYPOTHETICAL_LINES = {
   ],
 };
 
+// See the note over `DARE_LINES` for why these four events were all rewritten
+// together: they shipped one `rng() < stat` comparison each, and a test has a
+// subject and a result rather than a single coin.
 const DOUBLE_CHECK_LINES = {
   consistent: [
     '{a} asked {b} to walk through their morning again. It matched, word for word.',
@@ -197,6 +285,26 @@ const DOUBLE_CHECK_LINES = {
     '{a} asked for it out of order and {b} could not reassemble it, and both of them heard that.',
     '{b} said that {a} had already asked, which is true and is also not an answer.',
   ],
+  'would-not-repeat-it': [
+    '“I have told you,” said {b}, and did not tell {a} again.',
+    '{b} declined to walk through it a second time and gave no reason for declining.',
+    '{a} asked for the morning again and got a flat, pleasant no.',
+    '{b} pointed out that people who are asked twice are people who are suspected once.',
+    '“You either believe me or you do not,” said {b}, which is true and is not an account.',
+    '{b} would answer anything except the thing {b} had already answered.',
+    '{a} has no second version to compare, because {b} would not provide one.',
+    'The refusal is the finding, and {a} is not sure what it is a finding of.',
+  ],
+  'asked-why-twice': [
+    '“That is twice,” said {b}. “Why is it twice?” — and {a} did not have a good answer ready.',
+    '{b} answered the whole thing again and then asked {a} what had changed since yesterday.',
+    '{a} got the account and got the question back, and the question was the harder of the two.',
+    '{b} noticed the check, named it, and answered anyway, which is the worst combination for {a}.',
+    '“Ask me what you actually want to know,” said {b}, having just told {a} the whole morning.',
+    '{b} has been counting how many times {a} has asked, and produced the number.',
+    'The story held. The relationship it was told inside did not.',
+    '{a} came away with a clean account and a person who now watches {a} back.',
+  ],
 };
 
 const SILENCE_LINES = {
@@ -205,15 +313,42 @@ const SILENCE_LINES = {
     '{a} stopped talking mid-thought, and {b} could not leave it there.',
     '{a} let the silence run, and {b} filled it, twice.',
     '{b} came and found {a} an hour later to finish the sentence {a} had abandoned.',
+    '{b} lasted about four seconds, which is a shorter time than {b} would have guessed.',
+    '“Go on,” said {b}, and then said it again, and then asked outright.',
+    '{a} said nothing at all and {b} did all of the work of the conversation.',
+    '{b} could not stand it, and standing it was the entire test.',
   ],
   letgo: [
     '{a} went quiet on purpose to see if {b} would chase it. {b} let it be quiet right back.',
     '{a} left a gap. {b} sat in it comfortably and said nothing at all.',
     '{a} was waiting to be asked. {b} did not ask, and it was a long morning.',
     '{b} matched the silence exactly, which told {a} either a great deal or nothing.',
+    'They sat there for a full minute and {b} was the more comfortable of the two.',
+    '{b} finished the tea, said goodnight, and never once asked what {a} had been about to say.',
+    '{a} ran out of silence before {b} did.',
+    'Nobody in this castle is that incurious by accident, and {a} thought so all afternoon.',
+  ],
+  'filled-it-with-their-own': [
+    '{a} left a gap and {b} filled it with something {a} had not asked about at all.',
+    'The silence got used, and it got used by {b}, for {b}’s own purposes.',
+    '{a} was fishing. {b} put something completely different in the net and walked off.',
+    '{b} took the quiet as an invitation and confessed to an unrelated thing.',
+    '{a} wanted to know about last night and heard about a deal made on Tuesday instead.',
+    'It worked, in that {b} talked. It failed, in that none of it was about the subject.',
+    '{b} needed somewhere to put something and {a} had accidentally provided one.',
+    '{a} got more than {a} came for and none of what {a} came for.',
+  ],
+  'out-waited-them': [
+    '{b} let the silence run, and then let it run longer, and {a} was the one who broke.',
+    '{a} set the trap and stepped in it, which {b} watched happen without comment.',
+    'Two people waited each other out and {a} lost by about ninety seconds.',
+    '{b} has done this before and is better at it, and {a} found that out the slow way.',
+    '{a} filled {a}’s own silence, badly, and heard it happen.',
+    'The test ran in reverse for most of a morning, and {b} never acknowledged that it had.',
+    '{b} said nothing for so long that {a} volunteered something to end it.',
+    'It is very hard to run a silence on somebody who likes silence.',
   ],
 };
-
 const COLD_READ_LINES = {
   'read-it-right': [
     '{a} dropped a leading line about {c} into the conversation purely to watch what crossed {b}’s face, and something did.',
@@ -298,7 +433,12 @@ registerEvent({
   family: FAMILY,
   window: 'morning',
   // The second advancer in `testing|morning`.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'social', 'intuition'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -306,16 +446,46 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-small-dare');
-    const sceneWhy = 'set a small test to see if it would be taken';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const compliant = rng() < Math.max(0.1, Math.min(0.9, st.loyalty / 10));
-    const bondDelta = compliant ? 0.5 : -0.5;
+    // HOW MANY TIMES THIS PAIR HAS ALREADY BEEN ROUND IT, off the stored arc.
+    // The second small ask is a small ask; the fourth is a pattern, and a
+    // person with any intuition at all eventually names it.
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const times = existing ? priorMoments(existing, ctx.ep).length : 0;
+    const scores = {
+      complied: (st.loyalty / 10) * 0.5 + 0.1,
+      refused: (1 - st.loyalty / 10) * 0.45 + 0.05,
+      'named-the-test': (st.intuition / 10) * 0.3 + Math.min(3, times) * 0.1,
+      'over-delivered': (st.social / 10) * 0.3 + (st.loyalty / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'complied';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'named-the-test' ? 'did the thing and said what it had been'
+      : branch === 'over-delivered' ? 'was asked for a small thing and gave an afternoon'
+        : 'set a small test to see if it would be taken';
+    const bondDelta = branch === 'complied' ? 0.5
+      : branch === 'refused' ? -0.5
+        : branch === 'named-the-test' ? -1 : 1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = lineFor(DARE_LINES[compliant ? 'complied' : 'refused'],
-      `testing-small-dare|${ctx.ep}|${compliant}`, { a, b });
+    const line = lineFor(DARE_LINES[branch], `testing-small-dare|${branch}|${ctx.ep}`, { a, b });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
-    return { branch: compliant ? 'complied' : 'refused', pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // TERMINAL: a test that gets named out loud is a test that has stopped
+    // working, and `turned-back` is what it came home as — the same outcome
+    // `testing-cold-read-check:clocked-the-check` closes on.
+    if (thread && branch === 'named-the-test') {
+      api.resolveArc(thread.id, 'turned-back', { source: sceneWhy });
+    }
+    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // AND ON ONE BRANCH THE DIRECTION REVERSES, which `roles: 'initiator-first'`
+    // cannot express: when {b} names the test, {b} is speaking and {a} is the
+    // one answering for it. An explicit pair on the result takes precedence
+    // over `roles` — see `sceneSpeakers` in js/tr/events.js.
+    if (branch === 'named-the-test') { out.speaker = b; out.respondent = a; }
+    return out;
   },
 });
 
@@ -337,6 +507,12 @@ registerEvent({
   // narrating against the first, which is what the citation supplies.
   advancesThread: true,
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'social', 'loyalty'],
+    knowledge: ['witnessed', 'incomplete'],
+    relationship: ['neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -344,16 +520,41 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-ask-for-alibi-check');
-    const sceneWhy = 'took somebody\'s account of the night to a third party';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const checksOut = rng() < Math.max(0.15, Math.min(0.9, st.temperament / 10));
-    const bondDelta = checksOut ? 0.5 : -1;
-    api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = lineFor(ALIBI_CHECK_LINES[checksOut ? 'ok' : 'bad'],
-      `testing-ask-for-alibi-check|${ctx.ep}|${checksOut}`, { a, b });
+    // THE THIRD PARTY IS A REAL PERSON WITH A REAL DISPOSITION, read off the
+    // living roster and their own stats rather than treated as an oracle. A
+    // check is only as good as the person you check with, and two of the four
+    // branches below are about that person rather than about {b}.
+    const others = (ctx.living || []).filter(n => n !== a && n !== b);
+    const c = others.length ? others[Math.floor(rng() * others.length)] : null;
+    const sc = c ? pStats(c) : null;
+    const scores = {
+      ok: (st.temperament / 10) * 0.45 + 0.1,
+      bad: (1 - st.temperament / 10) * 0.4 + 0.05,
+      // A castle that will not be drawn is a castle full of careful people.
+      'nobody-would-say': sc ? (sc.temperament / 10) * 0.25 + (1 - sc.social / 10) * 0.15 : 0,
+      // And a sociable third party is a third party who repeats things.
+      'got-back-to-them': sc ? (sc.social / 10) * 0.3 + (1 - sc.loyalty / 10) * 0.15 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'ok';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'nobody-would-say' ? 'could not get anybody to be drawn on it'
+      : branch === 'got-back-to-them' ? 'checked an account with somebody who repeated the checking'
+        : 'took somebody\'s account of the night to a third party';
+    const bondDelta = branch === 'ok' ? 0.5
+      : branch === 'bad' ? -1
+        : branch === 'nobody-would-say' ? 0 : -1.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    if (branch === 'got-back-to-them' && c) api.addBond(a, c, -0.5, { source: sceneWhy });
+    const line = lineFor(ALIBI_CHECK_LINES[branch],
+      `testing-ask-for-alibi-check|${branch}|${ctx.ep}`, { a, b });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
-    return { branch: checksOut ? 'checks-out' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    return { branch: branch === 'ok' ? 'checks-out' : branch === 'bad' ? 'inconsistent' : branch,
+      pair: [a, b], threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -540,23 +741,55 @@ registerEvent({
   // either. "Walk me through your morning AGAIN" is the single most literal
   // citation in the pool — the whole event is somebody re-asking a question
   // they already asked, and the day they first asked it is the point.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'intuition', 'boldness'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return 1;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-double-check-story');
-    const sceneWhy = 'checked one account against another';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const consistent = rng() < Math.max(0.15, Math.min(0.9, st.temperament / 10 * 0.6 + 0.3));
-    const bondDelta = consistent ? 0 : -1;
+    // HOW MANY TIMES {a} HAS ALREADY DONE THIS TO {b}, off the stored arc.
+    // "Walk me through it again" is a question that changes meaning entirely
+    // on the third asking, and both new branches are about that.
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const times = existing ? priorMoments(existing, ctx.ep).length : 0;
+    const scores = {
+      consistent: (st.temperament / 10) * 0.5 + 0.15,
+      inconsistent: (1 - st.temperament / 10) * 0.45 + 0.05,
+      'would-not-repeat-it': (st.boldness / 10) * 0.2 + Math.min(3, times) * 0.1,
+      'asked-why-twice': (st.intuition / 10) * 0.25 + Math.min(3, times) * 0.12,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'consistent';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'would-not-repeat-it' ? 'would not walk through it a second time'
+      : branch === 'asked-why-twice' ? 'answered it again and asked why it was being asked again'
+        : 'checked one account against another';
+    const bondDelta = branch === 'consistent' ? 0
+      : branch === 'inconsistent' ? -1
+        : branch === 'would-not-repeat-it' ? -1.5 : -0.5;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = lineFor(DOUBLE_CHECK_LINES[consistent ? 'consistent' : 'inconsistent'],
-      `testing-double-check-story|${ctx.ep}|${consistent}`, { a, b });
+    const line = lineFor(DOUBLE_CHECK_LINES[branch],
+      `testing-double-check-story|${branch}|${ctx.ep}`, { a, b });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
-    return { branch: consistent ? 'consistent' : 'inconsistent', pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // TERMINAL: a check the subject names out loud has stopped being a check.
+    if (thread && branch === 'asked-why-twice') {
+      api.resolveArc(thread.id, 'turned-back', { source: sceneWhy });
+    }
+    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // The direction reverses when {b} turns the question round — see the same
+    // note on `testing-small-dare` above.
+    if (branch === 'asked-why-twice') { out.speaker = b; out.respondent = a; }
+    return out;
   },
 });
 
@@ -572,6 +805,11 @@ registerEvent({
   // above susp-whisper-about-absent.
   advancesThread: true,
   citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['social', 'loyalty', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -579,21 +817,44 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'testing-silence-test');
-    const sceneWhy = 'left a silence to see who filled it';
     const [a, b] = ctx.actors;
     const st = pStats(b);
-    const chases = rng() < Math.max(0.1, Math.min(0.9, st.social / 10 * 0.5 + st.loyalty / 10 * 0.4));
-    const bondDelta = chases ? 1 : -1;
+    const sa = pStats(a);
+    const scores = {
+      chased: (st.social / 10) * 0.5 + (st.loyalty / 10) * 0.35,
+      letgo: (1 - st.social / 10) * 0.4 + 0.05,
+      // Somebody with something to put down will use a silence for their own
+      // purposes, which is a result and not a failure.
+      'filled-it-with-their-own': (st.social / 10) * 0.25 + (1 - st.temperament / 10) * 0.2,
+      // And a person more comfortable with quiet than the person running the
+      // test wins the test. That is {a}'s temperament against {b}'s.
+      'out-waited-them': Math.max(0, (st.temperament - sa.temperament) / 10) * 0.5,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'chased';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'filled-it-with-their-own' ? 'used somebody else\'s silence for their own purposes'
+      : branch === 'out-waited-them' ? 'out-waited the person running the silence'
+        : 'left a silence to see who filled it';
+    const bondDelta = branch === 'chased' ? 1
+      : branch === 'letgo' ? -1
+        : branch === 'filled-it-with-their-own' ? 0.5 : -0.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
-    const line = lineFor(SILENCE_LINES[chases ? 'chased' : 'letgo'],
-      `testing-silence-test|${ctx.ep}|${chases}`, { a, b });
+    const line = lineFor(SILENCE_LINES[branch], `testing-silence-test|${branch}|${ctx.ep}`, { a, b });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
-    return { branch: chases ? 'chased' : 'let-it-go', pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    const out = { branch: branch === 'letgo' ? 'let-it-go' : branch,
+      pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    // The direction reverses when the test runs backwards — see the same note
+    // on `testing-small-dare` above.
+    if (branch === 'out-waited-them') { out.speaker = b; out.respondent = a; }
+    return out;
   },
 });
 
 registerEvent({
-  // ── REWRITE (Task 7 stage 5) ────────────────────────────────────────
+  // ── REWRITE (Task 7 stage 5) ──────────────────────────────────
   //
   // The audit’s verdict was REWRITE, and there were two things wrong rather
   // than one. The fork was in the wording — one branch, `cold-read`, over one
@@ -757,24 +1018,48 @@ const DECOY_LINES = {
     '{b} sat on the planted secret completely. It was a clean pass.',
     '{a} waited two days for the fake to surface somewhere. It never did.',
     '{b} was told something worth telling and told nobody, and did not once mention not telling.',
+    '{a} left it two days and then three, and it is still exactly where {a} put it.',
+    'Not one person in this castle has heard it, and {a} has checked with four of them.',
+    '{b} is either extremely trustworthy or extremely careful, and {a} cannot tell which.',
+    'It went in and it did not come out. That is the whole of the result and it is a good one.',
+    '{a} even gave {b} an opening to mention it, twice, and {b} did not take either.',
+    'Whatever else {b} is, {b} is a person who can be told something.',
   ],
   innocent: [
     '{b} repeated the planted secret to somebody else within the day — no malice, just couldn\'t help it.',
     'The fake secret got out through {b}, and {b} clearly hadn\'t meant for it to.',
     '{b} told one person, in confidence, who told one person, in confidence, and {a} heard it back by evening.',
     'It came back to {a} with {b}\'s phrasing still on it, which was answer enough.',
+    '{b} told it as a worry rather than as a weapon, which is somehow worse for {b}.',
+    'It got out inside four hours and {b} has no idea it got out at all.',
+    '{a} heard it back at supper from somebody who had it from somebody who had it from {b}.',
+    '{b} prefaced it with “do not repeat this”, which is how {a} knew exactly where it came from.',
+    'It leaked the way water leaks, gradually and without anybody deciding to.',
+    '{b} is not malicious. {b} is simply not a place a thing can be kept.',
   ],
   malicious: [
     '{b} took the planted secret and spent it deliberately, for something they wanted.',
     '{b} traded {a}\'s "secret" for leverage the moment it was useful.',
     '{b} did not just repeat it. {b} improved it, and aimed the improved version at somebody.',
     '{a} watched {b} sell it, knowingly, to the person it would do the most damage with.',
+    '{b} held it for a day and a half, waiting for the right room, and then used it in the right room.',
+    'It was not repeated. It was deployed, and {a} watched the deploying.',
+    '{b} attached a name to it that {a} had never mentioned, which is the part that will cost.',
+    '{b} got something real for a thing that was not real, which is good work by any standard.',
+    '{a} learned exactly what {b} does with a gift, and it was not a cheap lesson to arrange.',
+    '{b} spent it, and made sure the person {b} spent it on knew who it had come from.',
   ],
   caughtTest: [
     '{b} looked {a} dead in the eye and said "you\'re testing me, aren\'t you?" — and {a} had no good answer.',
     '{b} saw straight through the plant, and made sure {a} knew they had.',
     '{b} repeated the fake secret back to {a}, word perfect, with an eyebrow up.',
     '"That\'s not true," {b} said, pleasantly, "and you know it isn\'t." {a} did know it.',
+    '{b} asked {a} which part {a} had made up, and waited, and {a} did not answer.',
+    '{b} has been on the receiving end of this before, from somebody better at it.',
+    '“If you want to know something, ask me,” said {b}, which ended the arrangement entirely.',
+    '{b} named the test, named the day {a} had started running them, and went to bed.',
+    'It took {b} about four seconds and {a} spent the rest of the evening on those four seconds.',
+    '{b} did not mind being tested. {b} minded being tested badly, and said so.',
   ],
 };
 
@@ -878,18 +1163,36 @@ const NIGHT_CHECK_LINES = {
     'Before sleeping {a} put the whole test back together in their head, and {b} passed it twice.',
     '{a} had been waiting all day for the thing that would prove them wrong about {b}, and it never arrived.',
     '{a} could not find the seam, and went to sleep having decided that meant there was not one.',
+    'Three passes over one afternoon and every one of them came out the same way.',
+    '{a} went looking for the lie at midnight and found an ordinary day instead.',
+    'Whatever {a} had been braced for, {b} did not do it, and {a} slept better for it.',
+    '{a} had built a case out of a feeling and the feeling did not survive being written down.',
+    'It held up in every order {a} put it in, and {a} put it in four.',
+    '{a} decided, at about one in the morning, to stop testing {b} for a while.',
   ],
   failed: [
     '{a} laid the day out before sleeping and found the exact place {b} had failed it.',
     'It took until lights-out for {a} to see it, and then it was the only thing {a} could see.',
     '{a} worked out what {b} had actually done with it, and stopped pretending otherwise.',
     'One sentence from the afternoon came back to {a} at midnight with a different meaning on it.',
+    '{a} found the hour where {b} had been somewhere {b} had not mentioned being.',
+    'It was the smallest possible thing and it was the wrong way round, and {a} could not unsee it.',
+    '{a} put the day in order at midnight and one piece would not go anywhere it fitted.',
+    'The test had a right answer and {b} had given the other one, four hours ago, in passing.',
+    '{a} lay there working out how long {b} had been doing that, and got a longer answer than expected.',
+    'Everything else about the day was fine, which is what made the one thing so loud.',
   ],
   inconclusive: [
     '{a} could not make the day prove anything about {b} either way, and it kept them up.',
     'The test came back neither one thing nor the other, and {a} hated that more than a failure.',
     '{a} ran it back three times before sleeping and still had nothing to show for it.',
     'Every reading of it worked. That was the problem, and {a} knew it was the problem.',
+    '{a} wanted a verdict and got a shrug, from a day {a} had spent designing.',
+    'There is an innocent explanation and a guilty one and they fit equally well, which is intolerable.',
+    '{a} could argue it either way and did, twice, out loud, to the ceiling.',
+    'The test was a good test. The answer is a coin, and {a} designed a coin by accident.',
+    '{a} went to sleep knowing exactly as much about {b} as at breakfast.',
+    'It refuses to resolve, and {a} has now spent two nights on a thing that refuses to resolve.',
   ],
 };
 

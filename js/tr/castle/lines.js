@@ -31,6 +31,8 @@
 // at no cost, because `pick` draws once regardless of how long the array is.
 // Use that when the event has a pool; use `lineFor` when it has none.
 
+import { gs } from '../../core.js';
+
 /**
  * FNV-1a. Small, stable across runs and platforms, and no dependency.
  *
@@ -60,6 +62,80 @@ function _hash(s) {
   return h >>> 0;
 }
 
+// ── AND WHY THE HASH IS ONLY THE STARTING POINT (Task 7 stage 6) ──────
+//
+// THE MEASUREMENT. tests/tr-castle-prose.test.js asks how often a SEASON
+// prints one sentence three times. Stage 6's writing took that from 25.50% to
+// 9.38% — 65 events rewritten from one or two branches to four or five, and
+// forty-odd line pools widened — and then it stopped falling, because what is
+// left is not a defect in any one pool. It is the birthday problem over the
+// whole library: a season now runs ~27 castle scenes an episode over eleven
+// episodes, and with a median pool of eight a hash that picks INDEPENDENTLY
+// each time will land on the same element three times somewhere, in about one
+// season in ten, however good the writing is. Getting to the 4% band by pool
+// width alone needs every pool at roughly sixteen lines, which is another
+// two thousand sentences and buys nothing a reader would notice.
+//
+// THE FIX IS THE ONE THE SCREEN LAYER ALREADY USES, and it is a rule about
+// drawing rather than a rule about writing. `_pickUnique` in
+// js/vp-tr/castle-day.js walks to the next UNUSED element of a pool and
+// round-robins once the pool is exhausted, and its own docblock says why:
+// "a pool of three read four times in one evening prints one of them twice,
+// and a reader notices that immediately... the hash fallback let a busy day
+// draw the same line a third time while three others sat unused". That is
+// exactly this problem one layer up, and the same answer works here.
+//
+// SO: the hash still chooses WHERE IN THE POOL to start — which is what keeps
+// a different pair, or a different night, reading differently — and then the
+// draw walks forward past elements this (event, branch) has already used in
+// this season. When the pool is exhausted the record for that bucket clears
+// and it starts again, so a branch that fires more often than its pool is
+// wide round-robins instead of colliding by chance.
+//
+// FOUR PROPERTIES, and they are the reason this is not a metric dodge:
+//
+//   - IT CONSUMES NO RNG. Same as before: the walk is over the pool, not over
+//     the stream. The firing tables are bit-identical, no murder, ballot or
+//     mission draw moves, and the seeded replay guards hold.
+//   - IT IS DETERMINISTIC. The usage record lives on `gs.tr`, is written in
+//     scene order, and both the engine and the transcript walk the scenes in
+//     that order — so the same seed produces the same prose, which is what
+//     the replay guards actually assert.
+//   - IT IS PER SEASON, NOT PER PROCESS. The store is on the season's own
+//     state and dies with it, so two seasons played back to back do not
+//     inherit each other's usage.
+//   - IT CANNOT HIDE A THIN POOL. A one-line pool still prints one line every
+//     time, and tests/tr-castle-prose.test.js's variety floor still counts the
+//     DISTINCT sentences a branch produced across the whole corpus. This
+//     changes the ORDER a pool is spent in, never its contents.
+//
+// The bucket key deliberately strips digits, so `event|branch|ep` and
+// `event|ep|branch` (both orderings exist in the pool) collapse to the same
+// (event, branch) bucket — which is the same key the prose suite's `mask()`
+// measures, so the thing being deduplicated is exactly the thing being counted.
+
+/**
+ * Per-season record of which pool slots an (event, branch) has already spent,
+ * as a BITMASK rather than a list.
+ *
+ * A plain number, so the store stays JSON-serialisable (it rides on `gs.tr`
+ * and has to survive `prepGsForSave`), stays small — one integer per (event,
+ * branch) rather than a growing array — and, the reason it is not a list, the
+ * membership test is a single `&` instead of an `includes` scan. The list
+ * version was O(pool^2) per draw and pushed the 1,600-season branch sweep in
+ * tests/tr-castle-reachability.test.js past its own timeout.
+ *
+ * Pools wider than 31 lines fall back to the plain hash (see `lineFor`),
+ * because a 32-bit mask cannot index them and a pool that wide does not need
+ * the help.
+ */
+function _maskStore() {
+  const tr = gs && gs.tr;
+  if (!tr) return null;               // probe harnesses hand-build a ctx with no season
+  if (!tr._lineUsed) tr._lineUsed = {};
+  return tr._lineUsed;
+}
+
 /**
  * One line out of `pool`, chosen deterministically from `key` and the
  * substitution values, with `{name}` placeholders filled from `subs`.
@@ -76,7 +152,23 @@ function _hash(s) {
 export function lineFor(pool, key, subs) {
   const vals = subs ? Object.values(subs) : [];
   const h = _hash([key, ...vals].join('|'));
-  let s = pool[h % pool.length];
+  const n = pool.length;
+  let idx = h % n;
+  // WALK PAST WHAT THIS BRANCH HAS ALREADY SPENT THIS SEASON. See the long
+  // note above: the hash still picks the starting point, so the variation the
+  // hash was for is unchanged; this only stops a busy season landing on the
+  // same element twice while others sit unused.
+  const store = _maskStore();
+  if (store && n > 1 && n <= 31) {
+    const bucket = String(key).replace(/\d+/g, '');
+    let mask = store[bucket] || 0;
+    let step = 0;
+    while (step < n && (mask & (1 << ((idx + step) % n)))) step++;
+    if (step >= n) { mask = 0; step = 0; }          // exhausted: round-robin
+    idx = (idx + step) % n;
+    store[bucket] = mask | (1 << idx);
+  }
+  let s = pool[idx];
   if (subs) {
     for (const k of Object.keys(subs)) s = s.split('{' + k + '}').join(subs[k]);
   }

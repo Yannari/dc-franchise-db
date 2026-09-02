@@ -2042,7 +2042,30 @@ describe('the morning and the book are reachable from a played season', () => {
     // open is the FIRST screen of the row. The day book is an end-of-day
     // ledger — it lists tonight's exits — so it is ruled off AFTER the table
     // and the turret rather than printed before them.
-    const ep = RUNS[0].episodes[4];
+    // THE ROW IS FOUND, NOT INDEXED (corrected, Task 7 stage 6). This read
+    // `RUNS[0].episodes[4]`, and the claim it makes is about the ORDER of four
+    // screens — so it needs a row that registers all four, and episode five of
+    // one seed is not a promise of that. A turret does not meet every night
+    // (`tr-conclave` is registered off the conclave record, and the pact spends
+    // some nights not meeting), so this stage's castle content moving the
+    // seeded streams was enough to leave that row without one and the arm read
+    // `indexOf` = -1. Same shape as the co-winner block in tr-export.test.js
+    // and the endgame block below, and the same fix: look for the case across
+    // the whole sample, and fail loudly if the engine stops producing it at
+    // all rather than quietly testing a row with three screens on it.
+    // NOT THE PREMIERE, which is why the old version indexed past it: episode
+    // one carries `tr-arrival` and `tr-selection` ahead of the cold open, so
+    // `indexOf('tr-cold-open') === 0` is false there by design and the row
+    // would fail an assertion about a rule it is exempt from.
+    let ep = null;
+    for (const run of RUNS) {
+      for (const row of run.episodes.slice(1)) {
+        if (buildVPScreens(row).some(x => x.id === 'tr-conclave')) { ep = row; break; }
+      }
+      if (ep) break;
+    }
+    expect(ep, 'no episode in the whole sample registered a conclave screen, so the '
+      + 'order this arm asserts could not be tested on any row').toBeTruthy();
     const ids = buildVPScreens(ep).map(x => x.id);
     expect(ids.length, 'the episode registered no screens').toBeGreaterThan(3);
     expect(ids.indexOf('tr-cold-open')).toBe(0);
@@ -2827,7 +2850,19 @@ describe('the mission and the offer are reachable from a played season', () => {
  * exists for. Across these twenty it fires, and every branch below asserts its
  * own count before it asserts anything about the members.
  */
-const END_SEEDS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
+// TWENTY RAISED TO THIRTY BY TASK 7 STAGE 6, AND NOT BY MOVING A FLOOR. Every
+// count below is a `> 4` on a set drawn from this sample, so the sample has to
+// be big enough that the rarest of the four endings clears four with room. The
+// castle rewrites in this stage move the seeded streams again -- the same
+// effect stage 3 recorded on seed 21 and stage 5 recorded on `OFFER_SEEDS` --
+// and the lone-taker set landed on exactly 4, which is the count sitting on its
+// own threshold. The response this file prescribes for that, in its own words
+// three paragraphs up, is a sample sized to the endings: MORE SEEDS, never a
+// smaller number in the assertion. Ten more odd seeds, same construction, and
+// every `> 4` below is unchanged and now drawn from half again as much
+// evidence.
+const END_SEEDS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39,
+  41, 43, 45, 47, 49, 51, 53, 55, 57, 59];
 const END_RUNS = END_SEEDS.map(season);
 /**
  * The last row of each season, which is where the phase record rides.

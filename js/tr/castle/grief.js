@@ -37,35 +37,105 @@ function _victimLastNight(ep) {
   return round ? round.murdered : null;
 }
 
-const EMPTY_CHAIR_LINES = [
-  '{a} and {b} both ended up staring at the same empty seat at breakfast.',
-  'Nobody moved {v}\'s chair. {a} and {b} noticed at the same time that nobody had.',
-  '{a} caught {b} looking at the gap at the table before either of them said anything.',
-  'Somebody had laid the table for the number they had yesterday. {a} and {b} both counted the places.',
-  '{b} pulled out {v}\'s chair without thinking, realised, and put it back. {a} pretended not to have seen.',
-  'There was too much room at the table now. {a} said so, badly, and {b} knew what they meant.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`empty-chair`) — the
+// fork is in the wording", and the verdict on `grief-seating-shift` was MERGE
+// INTO THIS ONE ("both are the missing person's place at the table"). The
+// merge is honoured as a branch here; that event keeps its registration and is
+// separately reforked below, on the standing reasoning.
+//
+// THE RECORD THE FORK READS is how many mornings this castle has already had
+// one of these — `_lostSoFar` counts the empty chairs off the stored rounds —
+// and the two of them's temperament. The first empty chair is stared at. The
+// fourth one gets moved out of the way before breakfast, and that is a fact
+// about the room rather than about anybody in it.
+const EMPTY_CHAIR_LINES = {
+  'empty-chair': [
+    '{a} and {b} both ended up staring at the same empty seat at breakfast.',
+    'Nobody moved {v}’s chair. {a} and {b} noticed at the same time that nobody had.',
+    '{a} caught {b} looking at the gap at the table before either of them said anything.',
+    'Somebody had laid the table for the number they had yesterday. {a} and {b} both counted the places.',
+    '{b} pulled out {v}’s chair without thinking, realised, and put it back. {a} pretended not to have seen.',
+    'There was too much room at the table now. {a} said so, badly, and {b} knew what they meant.',
+    'The chair is exactly where {v} left it, pushed back at the angle {v} always pushed it back at.',
+    '{a} and {b} sat either side of a gap and had a conversation across it about nothing at all.',
+  ],
+  'moved-it-away': [
+    '{b} took {v}’s chair away from the table before anybody else came down, and {a} watched them do it.',
+    'The chair went against the wall. Nobody asked who had moved it, and {a} knew, and said nothing.',
+    '{a} stacked it, quite briskly, and {b} did not know whether to be grateful or appalled.',
+    'By the time the room filled up there was no gap, because {b} had spent five minutes making sure of it.',
+    '“It is easier if it is not there,” {b} said to {a}, and {a} could not argue with easier.',
+    'Somebody had already dealt with it. That somebody was {b}, and {a} had seen the doing of it.',
+    'The table now seats the number the castle actually has, which took {b} about a minute to arrange.',
+    '{a} came down to a room with no hole in it and understood immediately what that had cost {b}.',
+  ],
+  'laid-a-place': [
+    '{a} laid a place for {v} anyway, and {b} did not take it away.',
+    'There was a cup at the empty setting all morning. {b} put it there and {a} let it stay.',
+    '{a} counted out the plates and put down one too many, on purpose, and dared the room to say so.',
+    'Nobody used {v}’s place. {a} and {b} kept it, without ever discussing keeping it.',
+    'It is a small stubborn thing and {a} did it every morning that week.',
+    '{b} moved a knife two inches so the setting was straight, which is not what people do to an empty chair.',
+    'The castle ate around a laid place and pretended it had not noticed.',
+    '{a} said it was for whoever comes next, which fooled nobody, including {a}.',
+  ],
+  'nobody-noticed': [
+    'The table was laid for the right number this morning, first time, and only {a} and {b} clocked it.',
+    'Somebody had already adjusted. {a} could not work out who, and that was worse than the gap.',
+    'For the first time there was no gap to notice, and {a} noticed that instead.',
+    'The room got the arithmetic right without being told, and {b} found that harder than the empty chair.',
+    'Nobody counted this morning. {a} counted, and was the only one.',
+    '{a} pointed the missing setting out to {b} and {b} said “I know,” in the voice of somebody who had stopped saying it.',
+    'The castle has learned to lay a table for the survivors, and it learned it in about four days.',
+    'Breakfast happened at the right speed for the wrong reason and only two people minded.',
+  ],
+};
 
 registerEvent({
   id: 'grief-empty-chair',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['temperament', 'loyalty', 'boldness'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 3 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-empty-chair');
-    const sceneWhy = 'the missing person\'s place at the table';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const note = pick(rng, EMPTY_CHAIR_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{v\}/g, v);
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // HOW MANY MORNINGS LIKE THIS THE CASTLE HAS ALREADY HAD, counted off the
+    // stored rounds. Every branch below is about that number.
+    const lost = (gs.tr?.rounds || []).filter(r => r.murdered || r.banished).length;
+    const scores = {
+      'empty-chair': Math.max(0.15, 0.6 - lost * 0.08),
+      'moved-it-away': (sb.temperament / 10) * 0.3 + Math.min(4, lost) * 0.06,
+      'laid-a-place': (sa.loyalty / 10) * 0.3,
+      'nobody-noticed': Math.min(5, lost) * 0.09,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'empty-chair';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'moved-it-away' ? 'took the chair away before anyone came down'
+      : branch === 'laid-a-place' ? 'laid a place for somebody who was not coming'
+        : branch === 'nobody-noticed' ? 'the table was laid for the right number, first time'
+          : 'the missing person’s place at the table';
+    const note = lineFor(EMPTY_CHAIR_LINES[branch], `grief-empty-chair|${branch}|${ctx.ep}`, { a, b, v });
+    const bondDelta = branch === 'nobody-noticed' ? 0.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'empty-chair', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+      threadId: t?.id, bondDelta };
   },
 });
-
 // ── REWRITE (Task 7 stage 5). `grief-headcount` had two branches and they
 // were SHAPES, not outcomes: `headcount-pair` and `headcount-solo` are the
 // same beat with a different number of people watching it. `headcount-solo`
@@ -175,13 +245,56 @@ registerEvent({
   },
 });
 
-const RESEATED_LINES = [
-  '{a} sat somewhere new this morning, and {b} sat down right next to them without being asked.',
-  'Nobody sits where they sat on the first day any more. {a} moved again, and {b} moved with them.',
-  '{a} took the chair furthest from the door and {b} took the one beside it, and neither explained.',
-  'The table had reorganised itself overnight. {a} ended up next to {b}, and both of them were fine with that.',
-  '{a} moved a seat along to close the gap, and {b} moved along after them.',
-];
+// ── REWRITE (Task 7 stage 6). MERGE-verdict event ("both are the missing
+// person's place at the table"); the premise now also lives in
+// `grief-empty-chair` as a branch, and this keeps its registration on the
+// standing reasoning and earns it by forking on what `grief-empty-chair`
+// cannot reach: the chair is one object, and the SEATING is the whole room
+// rearranging itself around it. The record the fork reads is the stored bond
+// between the two and how many mornings the castle has done this — the same
+// counted number, because a room re-sorts itself faster every time.
+const RESEATED_LINES = {
+  reseated: [
+    '{a} sat somewhere new this morning, and {b} sat down right next to them without being asked.',
+    'Nobody sits where they sat on the first day any more. {a} moved again, and {b} moved with them.',
+    '{a} took the chair furthest from the door and {b} took the one beside it, and neither explained.',
+    'The table had reorganised itself overnight. {a} ended up next to {b}, and both of them were fine with that.',
+    '{a} moved a seat along to close the gap, and {b} moved along after them.',
+    'Two people who started the week at opposite ends of that table are now within arm’s reach of each other.',
+    'It happens by inches and nobody announces it, and by day six the map is completely different.',
+    '{b} arrived to find {a} had already saved the chair, which is not a thing anybody did on day one.',
+  ],
+  'kept-the-gap': [
+    'The seats either side of the gap stayed empty. Nobody would take either of them.',
+    '{a} moved rather than sit next to the space, and {b} moved for the same reason and would not say so.',
+    'There is a hole in the middle of that table now and the castle eats around the edge of it.',
+    'Two people shuffled up. Nobody closed it, and everybody noticed nobody had.',
+    '{b} said it was silly. {b} still sat at the far end.',
+    'The gap has become a place. {a} said that out loud and wished {a} had not.',
+    'It would take one person moving one chair. Nobody in this castle is going to be that person.',
+    '{a} and {b} both arrived early to make sure of a seat that was not that one.',
+  ],
+  'took-their-chair': [
+    '{b} sat in {v}’s chair. Deliberately, first thing, in front of everybody.',
+    'Somebody had to, and {b} decided it was going to be {b}, and let the room watch.',
+    '{a} came down to find {b} in the dead person’s seat, eating toast, quite calmly.',
+    '“It is a chair,” {b} said to {a}, which is true and is not what the room heard.',
+    '{b} took the seat and held the room’s eye while doing it, which was the point of taking it.',
+    'It is the best seat at that table and {b} has wanted it since Tuesday.',
+    'The castle got its answer about {b} at about ten past eight this morning.',
+    '{a} will remember which chair {b} chose long after {a} has forgotten what was said in it.',
+  ],
+  'sat-apart': [
+    '{a} and {b} sat at opposite ends of the table this morning and neither of them planned it that way.',
+    'Whatever the two of them had yesterday, the seating this morning did not reflect it.',
+    '{b} took a chair three places from {a} and spent breakfast talking to somebody else.',
+    'The room re-sorted itself and put {a} and {b} on different sides of it.',
+    '{a} noticed where {b} sat and did the arithmetic, and did not like the answer.',
+    'It is a small thing. In here a small thing is the only kind of thing there is.',
+    'They have sat together every morning this week. This morning they did not.',
+    '{a} kept a chair free and {b} did not take it, and both of them registered that.',
+  ],
+};
 
 registerEvent({
   id: 'grief-seating-shift',
@@ -191,63 +304,205 @@ registerEvent({
   // no advancer, the largest dead cell in the pool. Grief is cumulative by
   // nature — the second empty chair is only heavy because of the first — so
   // the citation is doing the work the family already implied.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['temperament', 'boldness', 'loyalty'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-seating-shift');
-    const sceneWhy = 'the seats moved around the gap';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(RESEATED_LINES, `grief-seating-shift|${ctx.ep}`, { a, b }),
-      { source: sceneWhy });
-    return { branch: 'reseated', pair: [a, b], threadId: thread?.id, cited, bondDelta: 1 };
+    const v = _victimLastNight(ctx.ep);
+    const sb = pStats(b);
+    const bond = getBond(a, b);
+    const lost = (gs.tr?.rounds || []).filter(r => r.murdered || r.banished).length;
+    const scores = {
+      reseated: 0.35 + Math.max(0, bond) * 0.07,
+      'kept-the-gap': Math.max(0.1, 0.4 - lost * 0.06),
+      'took-their-chair': (sb.boldness / 10) * 0.3 + Math.min(4, lost) * 0.04,
+      'sat-apart': Math.max(0.05, 0.35 - Math.max(0, bond) * 0.06),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'reseated';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'kept-the-gap' ? 'nobody would take the seats either side of it'
+      : branch === 'took-their-chair' ? 'sat in the dead person’s chair in front of everybody'
+        : branch === 'sat-apart' ? 'sat at opposite ends of the table'
+          : 'the seats moved around the gap';
+    const note = lineFor(RESEATED_LINES[branch], `grief-seating-shift|${branch}|${ctx.ep}`, { a, b, v });
+    const bondDelta = branch === 'reseated' ? 1
+      : branch === 'kept-the-gap' ? 0.5
+        : branch === 'took-their-chair' ? -1 : -1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: b, respondent: a, victim: v,
+      threadId: thread?.id, cited, bondDelta };
   },
 });
-
-const SHARED_MOURNING_LINES = [
-  '{a} and {b} didn\'t talk much this morning. They didn\'t need to.',
-  '{a} sat down next to {b} and stayed there, and that was the entire conversation.',
-  'Whatever {a} and {b} had before this morning, it was heavier by lunchtime and neither of them mentioned it.',
-  '{b} made two cups of tea without asking, and {a} took one, and that was enough.',
-  'They did the washing up together, {a} and {b}, very slowly, for much longer than it took.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`shared-mourning`) —
+// the fork is in the wording." Two people mourning the same person is not one
+// scene, because they did not have the same person: the record the fork reads
+// is `getBond(a, v)` and `getBond(b, v)` — what each of them actually had with
+// the person who is gone, stored, and accumulated over the whole season. A
+// morning where both of them lost somebody and a morning where one of them
+// lost somebody and the other is being kind are different mornings, and until
+// this rewrite the castle could only print the first.
+const SHARED_MOURNING_LINES = {
+  'shared-mourning': [
+    '{a} and {b} didn’t talk much this morning. They didn’t need to.',
+    '{a} sat down next to {b} and stayed there, and that was the entire conversation.',
+    'Whatever {a} and {b} had before this morning, it was heavier by lunchtime and neither of them mentioned it.',
+    '{b} made two cups of tea without asking, and {a} took one, and that was enough.',
+    'They did the washing up together, {a} and {b}, very slowly, for much longer than it took.',
+    'Both of them lost the same person and neither of them said the name once all morning.',
+    '{a} and {b} sat on the step for an hour with about four sentences between them.',
+    'It is the only conversation in this castle this week where nobody was working anything out.',
+  ],
+  'told-a-story-about-them': [
+    '{b} told {a} the thing {v} had said on the second night, and both of them laughed and then stopped.',
+    '{a} and {b} spent breakfast on {v} — not the death, {v} — and it was the best half-hour of the week.',
+    'They swapped {v} stories until somebody else came in, and then they stopped.',
+    '{b} did the voice. {a} had not expected to laugh at anything today and did.',
+    '“{v} would have hated this,” said {a}, about the whole morning, and {b} agreed at length.',
+    'It turned out {a} and {b} had two completely different versions of {v}, and both of them were true.',
+    '{b} remembered something {a} had forgotten, and {a} was very glad somebody else had it.',
+    'For twenty minutes {v} was a person in that room rather than a chair.',
+  ],
+  'one-sided-grief': [
+    '{a} was in pieces. {b} had barely known {v}, and spent the morning being careful about that.',
+    '{b} said the right things and did not feel any of them, and hoped {a} could not tell.',
+    'It is hard to mourn beside somebody who is mourning much harder, and {b} found that out this morning.',
+    '{a} kept saying “you understand,” and {b} kept saying yes.',
+    '{b} lost an acquaintance. {a} lost the one person in here who knew them, and the gap between those showed.',
+    '{a} needed somebody to have loved {v} too. {b} was the person available rather than the person needed.',
+    '{b} was kind about it all morning and got it slightly wrong in about four places.',
+    'By lunch {a} had stopped talking about {v} to {b}, which is its own kind of answer.',
+  ],
+  'could-not-say-it': [
+    'Neither of them could get through a sentence about {v}, so they stopped starting them.',
+    '{a} tried three times and {b} did not make {a} finish any of them.',
+    'They sat with it and did not name it, and both would have said afterwards it helped.',
+    '{b} started to say something about the last night and then simply did not.',
+    'It went unspoken for two hours, and the unspokenness was the whole of what passed between them.',
+    '{a} opened their mouth twice and shut it twice and {b} nodded both times.',
+    'Whatever either of them has to say about {v}, this was not the morning it was going to get said.',
+    'They washed up in silence and neither of them left the room first.',
+  ],
+};
 
 registerEvent({
   id: 'grief-shared-mourning-bond',
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous'],
+    voice: ['loyalty', 'social', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+    knowledge: ['witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     if (!_victimLastNight(ctx.ep)) return 0;
     return getBond(a, b) >= 3 ? 2.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-shared-mourning-bond');
-    const sceneWhy = 'mourned the same person together';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 2, { source: sceneWhy });
+    const v = _victimLastNight(ctx.ep);
+    // WHAT EACH OF THEM ACTUALLY HAD WITH THE PERSON WHO IS GONE. Stored, and
+    // accumulated across the whole season; this is the fork.
+    const av = v ? getBond(a, v) : 0;
+    const bv = v ? getBond(b, v) : 0;
+    const both = Math.min(av, bv);
+    const gap = Math.abs(av - bv);
+    const sb = pStats(b);
+    const scores = {
+      'shared-mourning': 0.3 + Math.max(0, both) * 0.09,
+      'told-a-story-about-them': Math.max(0, both) * 0.07 + (sb.social / 10) * 0.25,
+      'one-sided-grief': Math.max(0, gap) * 0.11,
+      'could-not-say-it': (1 - sb.social / 10) * 0.3 + Math.max(0, both) * 0.04,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'shared-mourning';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'told-a-story-about-them' ? 'made the dead a person for half an hour'
+      : branch === 'one-sided-grief' ? 'mourned beside somebody who had barely known them'
+        : branch === 'could-not-say-it' ? 'could not get through a sentence about them'
+          : 'mourned the same person together';
+    const note = lineFor(SHARED_MOURNING_LINES[branch],
+      `grief-shared-mourning-bond|${branch}|${ctx.ep}`, { a, b, v: v || b });
+    const bondDelta = branch === 'one-sided-grief' ? 0.5
+      : branch === 'told-a-story-about-them' ? 2.5 : 2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = lineFor(SHARED_MOURNING_LINES, `grief-shared-mourning-bond|${ctx.ep}`, { a, b });
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'shared-mourning', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+      threadId: t?.id, bondDelta };
   },
 });
-
-const TIMING_LINES = [
-  '{a} said to {b}, quietly: "of everyone, why {v}, and why last night?" Neither of them had an answer.',
-  '"Why {v}," {a} kept saying to {b}, "and why now." It was not really a question by the fourth time.',
-  '{b} pointed out to {a} that {v} had been about to say something at that table. Neither of them liked where that went.',
-  '{a} wanted to know what {v} knew. {b} wanted to know who else had wondered that before last night.',
-  'Of everybody in the castle, {v}. {a} could not make it fit, and {b} had been trying for an hour longer.',
-  '{a} asked {b} what {v} had done to deserve going first, and got a silence that was itself an answer.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`timing`) — the fork is
+// in the wording, not in the game; no thread write, so no reachable follow-up
+// and no terminal outcome." The thread write arrived in stage 2. The fork is
+// here, and the record it reads is the story the castle was already telling
+// about {v} — an open `suspicion` arc naming the person who was taken, which
+// is a thing the whole room watched being built. "Why them, why now" has an
+// entirely different answer depending on whether the castle had spent three
+// days deciding {v} was a Traitor.
+const TIMING_LINES = {
+  timing: [
+    '{a} said to {b}, quietly: “of everyone, why {v}, and why last night?” Neither of them had an answer.',
+    '“Why {v},” {a} kept saying to {b}, “and why now.” It was not really a question by the fourth time.',
+    '{a} wanted to know what {v} knew. {b} wanted to know who else had wondered that before last night.',
+    'Of everybody in the castle, {v}. {a} could not make it fit, and {b} had been trying for an hour longer.',
+    '{a} asked {b} what {v} had done to deserve going first, and got a silence that was itself an answer.',
+    'There are nineteen people in this building and one of them is gone, and {a} wants to know why that one.',
+    '{b} said it was random. {a} said nothing in here is random, and {b} did not really disagree.',
+    'The two of them went round it four times and arrived back where they started, which was {v}.',
+  ],
+  'about-to-say-something': [
+    '{b} pointed out to {a} that {v} had been about to say something at that table. Neither of them liked where that went.',
+    '{v} had started a sentence last night and not finished it, and {a} has been thinking about the half of it that got said.',
+    '“{v} was going to name somebody,” {a} said, and once said it could not be unsaid.',
+    '{b} remembered exactly what {v} had been holding, and told {a}, and both of them went quiet.',
+    'Somebody stopped {v} talking. {a} said that out loud to {b} and meant it literally.',
+    '{a} and {b} worked out between them what {v} had been building towards, and worked out what it cost.',
+    'The last thing {v} said was a beginning. {b} has not been able to think about anything else.',
+    '“It was the question,” said {b}. “It was because of the question.”',
+  ],
+  'we-had-it-wrong': [
+    '{a} and {b} had spent three days on {v}, and last night settled it in the worst possible direction.',
+    'The castle had a story about {v}. That story is now unavailable and {a} would like the last three days back.',
+    '{b} pointed out, gently, that they had been asking {v} questions right up until Tuesday.',
+    '“We were wrong,” said {a}, which is a bigger sentence than it sounds in here.',
+    'All of it pointed at {v} and all of it was pointing the wrong way, and {a} and {b} were both pointing.',
+    'The one thing everybody agreed on this week has just been disproved by somebody with a knife.',
+    '{b} said they should start again from the beginning. {a} said the beginning was {v}.',
+    'What {a} and {b} lost last night was not only {v}. It was every hour they spent on {v}.',
+  ],
+  'would-not-play': [
+    '{a} started on why-{v}-and-why-now, and {b} said, flatly, that {b} was not doing this today.',
+    '“Somebody is dead,” {b} said, “and you want to do arithmetic,” and {a} had no answer for that.',
+    '{b} refused the whole shape of the conversation and left {a} holding it.',
+    '{a} wanted to solve it. {b} wanted to be sad about it for one morning, and said so.',
+    '“Not everything is a clue,” said {b}, which is either true or the most useful thing a Traitor ever says.',
+    '{b} would not speculate about {v} at all, which {a} noticed and filed and did not mention.',
+    '{a} asked the question twice and got the same non-answer twice.',
+    '{b} walked out on the conversation, politely, in the middle of {a}’s second sentence.',
+  ],
+};
 
 registerEvent({
   id: 'grief-suspicion-of-timing',
@@ -256,23 +511,51 @@ registerEvent({
   // The second advancer in `grief|morning`. "Why last night" is a question
   // that gets sharper every time it is asked, and the citation is what makes
   // the second asking sound different from the first.
-    citesResidue: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['intuition', 'strategic', 'temperament'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-suspicion-of-timing');
-    const sceneWhy = 'read something into who was taken and when';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, lineFor(TIMING_LINES, `grief-suspicion-of-timing|${ctx.ep}`, { a, b, v }),
-      { source: sceneWhy });
-    return { branch: 'timing', pair: [a, b], victim: v, threadId: thread?.id, cited, bondDelta: 1 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // WHAT THE CASTLE WAS ALREADY SAYING ABOUT {v}, off the stored threads.
+    // A suspicion story naming the person who was taken is the whole of the
+    // `we-had-it-wrong` branch, and it is looked up rather than asserted.
+    const wasSuspected = (gs.tr?.threads || [])
+      .some(t => t.kind === 'suspicion' && v && t.parties.includes(v));
+    const scores = {
+      timing: 0.45,
+      'about-to-say-something': (sa.intuition / 10) * 0.35,
+      'we-had-it-wrong': wasSuspected ? 0.4 + (sa.loyalty / 10) * 0.15 : 0,
+      'would-not-play': (sb.temperament / 10) * 0.25 + (1 - sb.strategic / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'timing';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'about-to-say-something' ? 'read the death as a sentence somebody stopped'
+      : branch === 'we-had-it-wrong' ? 'lost three days of being wrong about the same person'
+        : branch === 'would-not-play' ? 'refused to do arithmetic on a morning like this'
+          : 'read something into who was taken and when';
+    const note = lineFor(TIMING_LINES[branch], `grief-suspicion-of-timing|${branch}|${ctx.ep}`,
+      { a, b, v: v || b });
+    const bondDelta = branch === 'would-not-play' ? -1 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+      threadId: thread?.id, cited, bondDelta };
   },
 });
-
 // ── FLAGSHIP: the morning reaction — a four-way fork on archetype AND role,
 // not a random pick with four labels ────────────────────────────────────
 //
@@ -309,12 +592,22 @@ const REACTION_LINES = {
     '{a} said {v}\'s name out loud like it needed saying, and {b} agreed.',
     '{a} cried at the table, in front of everyone, and did not apologise for it. {b} thought better of them for it.',
     '{a} kept starting sentences about {v} and not finishing them, and {b} let every one of them go unfinished.',
+    '{a} cried in front of {b} without apologising for it, which nobody here does.',
+    '{a} said {v}’s name about nine times in half an hour and did not notice doing it.',
+    '{b} asked how {a} was and got an honest answer, at length, for the first time this week.',
+    '{a} wanted to talk about {v} and not about who did it, and said so.',
+    'It took {a} most of the morning and {b} sat through the whole of it.',
   ],
   suspicious: [
     '{a} skipped past the grief entirely and went straight to "who benefits from this?" {b} didn\'t have a good answer.',
     '{a} was already building a theory before breakfast was over, and said as much to {b}.',
     'Before anybody had said {v}\'s name twice, {a} was asking {b} who had been out of their room.',
     '{a} wanted the timeline, not the eulogy, and made {b} walk through the whole evening with them.',
+    '{a} was asking who had been where before the announcement had finished.',
+    '“Who benefits,” said {a}, to {b}, over the toast, which is not a breakfast sentence.',
+    '{a} had a list of names before {a} had a cup of tea.',
+    '{b} wanted to be sad about it. {a} wanted the hour it happened in.',
+    '{a} skipped grief entirely and went straight to arithmetic, and did not pretend otherwise.',
   ],
   stoic: [
     '{a} said almost nothing all morning. {b} noticed, and let them have it.',
@@ -322,12 +615,22 @@ const REACTION_LINES = {
     '{a} ate breakfast, cleared the plate, and answered every question with one word.',
     'Whatever {a} was doing with it, they were doing it somewhere nobody could watch.',
     '{a} was up before anybody, dressed, useful, and completely unreachable.',
+    '{a} did the washing up. All of it. Twice. And said about four words.',
+    'Nothing showed. {b} watched for it all morning and nothing showed.',
+    '{a} answered every question with the shortest true answer available.',
+    '{a} has a way of being present and entirely absent at once, and did it all morning.',
+    '{b} could not tell whether {a} was devastated or unbothered, and neither could {a}.',
   ],
   opportunistic: [
     '{a} used the room\'s grief to steer {b} toward exactly where {a} wanted the suspicion to land — smoothly enough that {b} never felt managed.',
     '{a} tried to use the moment to move {b} where they wanted, and it came out clumsy enough that {b} half-noticed something was off.',
     '{a} grieved convincingly for {v} and, in the same breath, put a name in {b}\'s head that had not been there at breakfast.',
     '{a} was a fraction too keen to comfort {b}, and a fraction too keen to tell them who to look at, and {b} clocked the second part.',
+    '{a} was the first person at {b}’s side and the first person to say a name.',
+    'The comfort was real enough. The name that came after it was the reason for the comfort.',
+    '{a} used the worst morning of {b}’s week to move {b} one place along.',
+    '{a} said “we have to think about who gains,” which is true and was not what {b} needed.',
+    'It was decent and it was working, and {b} will remember which came first.',
   ],
 };
 
@@ -535,34 +838,107 @@ registerEvent({
   },
 });
 
-const BLAME_ROOM_LINES = [
-  '{a} said out loud that somebody in this castle let {v} die. {b} didn\'t disagree.',
-  '"One of us sat at that table last night and knew," {a} said, to the room, and {b} watched who looked up.',
-  '{a} was not grieving so much as furious, and {b} caught the edge of it.',
-  '{b} said it was nobody\'s fault. {a} said that was exactly the problem, and the room heard both.',
-  '{a} pointed out that {v} had been sitting between two people last night, and neither of them was going to say who.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`blamed-room`) — the
+// fork is in the wording." Anger said out loud to a room is the loudest thing
+// this family does and it had one outcome, which is that it always landed the
+// same way. The record the fork reads is `ctx.state` — what the last Round
+// Table did to {a}, which the whole castle watched — plus both temperaments,
+// and the fork is what the anger turns into: an accusation with a number in
+// it, a fight with the one person standing there, or a thing {a} turns inward.
+const BLAME_ROOM_LINES = {
+  'blamed-room': [
+    '{a} said out loud that somebody in this castle let {v} die. {b} didn’t disagree.',
+    '“One of us sat at that table last night and knew,” {a} said, to the room, and {b} watched who looked up.',
+    '{a} was not grieving so much as furious, and {b} caught the edge of it.',
+    '{b} said it was nobody’s fault. {a} said that was exactly the problem, and the room heard both.',
+    '{a} pointed out that {v} had been sitting between two people last night, and neither of them was going to say who.',
+    '{a} addressed the whole hall for about ninety seconds and did not lower their voice once.',
+    '“Somebody in this room said goodnight to {v},” said {a}. Nobody put a hand up.',
+    'It was not aimed at anybody, which is why everybody in the hall took it personally.',
+  ],
+  'named-a-number': [
+    '“Three of you know exactly what happened,” {a} said, and the number was the frightening part.',
+    '{a} counted, out loud, how many people it would have taken, and got to a number nobody liked.',
+    '{a} did the arithmetic in front of the room: {v} was not taken by weather.',
+    '“There are more of them than you think,” {a} said to the hall, and could not be talked down from it.',
+    '{a} put a figure on it and the figure did more damage than the accusation.',
+    '{b} tried to soften it. {a} repeated the number instead.',
+    'What {a} said was structural rather than personal, and the room found that much worse.',
+    'By the end of it half the castle was checking {a}’s arithmetic and the other half was checking each other.',
+  ],
+  'turned-on-them': [
+    '{a} started by blaming the room and finished by blaming {b}, and never noticed the turn.',
+    'It was general for about a minute and then it was very specifically about {b}.',
+    '“You were the last one up,” {a} said to {b}, which was true and was not the same as an accusation.',
+    '{b} was standing there and the anger had to go somewhere, and it went at {b}.',
+    '{a} did not mean it. {a} said it, and the room was there, and it cannot be unsaid.',
+    'The room got a speech and {b} got the end of it, at close range.',
+    '{b} answered calmly, which made {a} angrier rather than less.',
+    'What began as grief for {v} became a thing between {a} and {b} inside four sentences.',
+  ],
+  'blamed-themselves': [
+    '{a} said the room let {v} die, and then said that {a} was the room.',
+    '“I was awake,” said {a}. “I heard something. I went back to sleep.”',
+    'The anger turned round on {a} halfway through and {b} did not know what to do with the second half.',
+    '{a} had promised {v} something on Tuesday and told the whole hall about it this morning.',
+    '{b} said it was not {a}’s fault, four times, and {a} did not accept any of them.',
+    'What {a} could not forgive was not the castle. {b} understood that about a minute too late.',
+    '{a} apologised to a chair, in front of eleven people, and then left the room.',
+    'It is the most honest thing anybody has said in that hall all week and nobody knew where to look.',
+  ],
+};
 
 registerEvent({
   id: 'grief-blame-the-room',
   family: FAMILY,
   window: 'morning',
+  variationAxes: {
+    outcome: ['backfire', 'ambiguous', 'rejected'],
+    voice: ['temperament', 'boldness', 'loyalty'],
+    relationship: ['neutral', 'rival'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     return _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-blame-the-room');
-    const sceneWhy = 'blamed the room out loud for the death';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, -0.5, { source: sceneWhy });
     const v = _victimLastNight(ctx.ep);
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(BLAME_ROOM_LINES, `grief-blame-the-room|${ctx.ep}`, { a, b, v }) });
-    return { branch: 'blamed-room', pair: [a, b], victim: v, threadId: t?.id, bondDelta: -0.5 };
+    const sa = pStats(a);
+    // WHAT THE LAST TABLE LEFT {a} WITH, read off the frozen round record.
+    const rattled = isNervy(ctx.state?.[a]);
+    const withVictim = v ? getBond(a, v) : 0;
+    const scores = {
+      'blamed-room': 0.4 + (rattled ? 0.2 : 0),
+      'named-a-number': (sa.strategic / 10) * 0.3 + (sa.boldness / 10) * 0.2,
+      'turned-on-them': (1 - sa.temperament / 10) * 0.35 + (rattled ? 0.15 : 0),
+      'blamed-themselves': (sa.loyalty / 10) * 0.25 + Math.max(0, withVictim) * 0.07,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'blamed-room';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'named-a-number' ? 'put a figure on how many of them knew'
+      : branch === 'turned-on-them' ? 'blamed the room and finished by blaming one person'
+        : branch === 'blamed-themselves' ? 'decided they were the room'
+          : 'blamed the room out loud for the death';
+    const note = lineFor(BLAME_ROOM_LINES[branch], `grief-blame-the-room|${branch}|${ctx.ep}`,
+      { a, b, v: v || b });
+    const bondDelta = branch === 'turned-on-them' ? -2
+      : branch === 'blamed-themselves' ? 1 : -0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    const out = { branch, pair: [a, b], victim: v, threadId: t?.id, bondDelta };
+    // {a} is the one talking on every branch; on `blamed-themselves` there is
+    // nobody being leaned on at all, and the record says so by naming the
+    // speaker without a respondent, which `sceneSpeakers` rejects into the
+    // screen's own fallback rather than asserting a direction that is not there.
+    if (branch !== 'blamed-themselves') { out.speaker = a; out.respondent = b; }
+    return out;
   },
 });
-
 // ── REWRITE (Task 7 stage 5). Third on the blame table once `runWindow`’s
 // barren-draw fix opened `evening` up: one branch over an eight-line pool, on
 // the only grief event in the window.
@@ -631,6 +1007,14 @@ const TOAST_LINES = {
     '{a} got as far as saying two of the names and decided that was enough for tonight.',
     'The castle was noisy in the other room. {a} stayed where it was quiet and drank to {n} people.',
     'Nobody needed to see {a} do it, and that was rather the point of doing it there.',
+    '{a} poured two and drank one and left the other where it was until morning.',
+    'It took about four seconds and {a} did it every night that week.',
+    '{a} said the name once, quietly, in a kitchen with nobody in it.',
+    'There is a glass on that windowsill and only one person in this castle knows why.',
+    '{a} raised it to a chair, felt ridiculous, and did it anyway.',
+    'Nobody joined in because nobody was invited and nobody was told.',
+    '{a} has done this for two of them now and is not looking forward to a third.',
+    'It is the only part of the day {a} does not have to perform any of.',
   ],
 };
 
@@ -700,19 +1084,68 @@ registerEvent({
 // watches four seasons meets it four times, and it read identically all four.
 // Every line here still asserts the ROOM crossed the threshold, which is the
 // claim `oncePerSeason` is defending; see the long note on the flag below.
-const NUMB_LINES = [
-  'The castle had stopped flinching at the empty chair. {a} said so out loud to {b}, and hated that nobody argued.',
-  'Nobody looked up when the number changed this morning. {a} pointed that out to {b}, and the room let it stand.',
-  'Breakfast happened at the normal speed today. {a} said to {b} that it should not have, and {b} had no answer to that.',
-  'Somewhere in the last few days the castle had started treating this as weather. {a} named it to {b}; nobody in earshot disagreed.',
-  'The room had got good at this. {a} said the words to {b} and hated every one of them, and still nobody argued.',
-];
+// ── REWRITE (Task 7 stage 6). MERGE-verdict event ("numbness is a fifth
+// reaction to the morning, alongside mourn/suspicious/stoic/opportunistic"),
+// kept on the standing reasoning and forked here on the one axis
+// `grief-morning-reaction` cannot reach: this event is not about a person's
+// reaction, it is about the ROOM'S THRESHOLD, and a threshold has more than
+// one way of being crossed. The record it reads is `murderCount(gs)` — which
+// the weight already requires to be at least two — and whether the two people
+// standing there have crossed it at the same time. They usually have not, and
+// that is the scene.
+const NUMB_LINES = {
+  numb: [
+    'The castle had stopped flinching at the empty chair. {a} said so out loud to {b}, and hated that nobody argued.',
+    'Nobody looked up when the number changed this morning. {a} pointed that out to {b}, and the room let it stand.',
+    'Breakfast happened at the normal speed today. {a} said to {b} that it should not have, and {b} had no answer to that.',
+    'Somewhere in the last few days the castle had started treating this as weather. {a} named it to {b}; nobody in earshot disagreed.',
+    'The room had got good at this. {a} said the words to {b} and hated every one of them, and still nobody argued.',
+    'The announcement took forty seconds and then people asked about the bread. {a} said so to {b}; nobody in the hall looked up.',
+    'There was no gasp this morning. {a} told {b} that there used to be one, and the room let that stand too.',
+    'The castle has a routine for this now. {a} described the routine to {b}, out loud, and nobody contradicted a word of it.',
+  ],
+  'one-of-them-still-feels-it': [
+    'The room had stopped flinching. {b} had not, and {a} watched {b} be the only one.',
+    '{a} said the castle was used to it now. {b} said “I am not,” and the hall heard that too.',
+    'Everybody got on with breakfast. {b} did not, and {a} said out loud that somebody had to not.',
+    'The castle crossed a line this morning and {b} was standing on the other side of it, alone.',
+    '{a} told {b} that nobody flinches any more. {b} flinched, then, which proved and disproved it at once.',
+    'It is a room of people who have adjusted, and one person who refuses to, and {a} named both.',
+    '{b} is still counting. {a} said to the hall that {b} was the last one who was, and was not contradicted.',
+    'The difference between them this morning is that one of them still finds it remarkable.',
+  ],
+  'said-it-and-regretted-it': [
+    '{a} said the castle had got used to death, heard it land, and could not take it back.',
+    'It came out as an accusation against everybody in the hall, including {a}, and {a} had not meant that.',
+    '{a} named the thing nobody names and then had to stand in the room afterwards.',
+    '“That was not fair,” {b} said, later, and {a} agreed and still thought it was true.',
+    'The sentence was accurate and unkind in about equal measure, and the room only heard the second half.',
+    '{a} apologised for the way it was said and not for any of what was in it.',
+    'Two people stopped speaking to {a} over it, which is a lot of people in a castle this size.',
+    '{a} will be quoted on it at the next table, and knew that about four seconds too late.',
+  ],
+  'performed-it': [
+    'The castle did the mourning the way you do a fire drill, and {a} said so to {b} in the middle of it.',
+    'Everybody said the right thing in the right order, and {a} pointed out to {b} that it had an order now.',
+    'The hall observed a silence that had been getting shorter all week, and {b} timed it.',
+    '{a} told {b} that the castle has a ceremony for this and nobody can remember agreeing to one.',
+    'They all said the name. Nobody said anything else, and {a} named the difference out loud.',
+    'It has become a routine with parts in it, and {a} described the parts to {b} while they were happening.',
+    'The room grieved competently, which {a} said to {b} is the worst sentence available.',
+    '{b} said it was better than nothing. {a} said that was exactly what it was better than.',
+  ],
+};
 
 registerEvent({
   id: 'grief-numb-to-it-now',
   family: FAMILY,
   window: 'dawn',
   acts: { late: 2 },
+  variationAxes: {
+    outcome: ['ambiguous', 'backfire', 'rejected'],
+    voice: ['temperament', 'loyalty', 'boldness'],
+    relationship: ['neutral'],
+  },
   // ONCE PER SEASON (spec 5.4.2, 'signature moments cannot cheapen
   // themselves').
   //
@@ -736,24 +1169,53 @@ registerEvent({
   // So the precedent this sets for the next person is narrow on purpose: tag
   // `oncePerSeason` when a SECOND firing would make the FIRST untrue, and
   // check that against the sentence the event actually writes.
+  //
+  // AND ALL FOUR BRANCHES BELOW ARE STILL ABOUT THE ROOM, deliberately, so the
+  // flag keeps meaning what this note says it means. `one-of-them-still-feels-
+  // it` is not "{b} is sad" — it is the castle having crossed the line with
+  // one person left on the other side of it, which is still a claim about the
+  // castle and is still a thing that can only become true once.
   oncePerSeason: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const deaths = murderCount(gs);
     return deaths >= 2 && _victimLastNight(ctx.ep) ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-numb-to-it-now');
-    const sceneWhy = 'stopped feeling the mornings';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(NUMB_LINES, `grief-numb-to-it-now|${ctx.ep}`, { a, b }) });
-    // No bond move — the point of this one IS the absence of a felt reaction.
-    return { branch: 'numb', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 0 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const deaths = murderCount(gs);
+    const scores = {
+      numb: 0.35 + Math.min(4, deaths) * 0.05,
+      'one-of-them-still-feels-it': (1 - sb.temperament / 10) * 0.3 + (sb.loyalty / 10) * 0.2,
+      'said-it-and-regretted-it': (sa.boldness / 10) * 0.25 + (1 - sa.temperament / 10) * 0.2,
+      'performed-it': (sa.intuition / 10) * 0.25 + Math.min(5, deaths) * 0.04,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'numb';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'one-of-them-still-feels-it' ? 'was the last person in the hall still counting'
+      : branch === 'said-it-and-regretted-it' ? 'named the thing nobody names and had to stand there afterwards'
+        : branch === 'performed-it' ? 'watched the castle grieve competently'
+          : 'stopped feeling the mornings';
+    const note = lineFor(NUMB_LINES[branch], `grief-numb-to-it-now|${branch}|${ctx.ep}`, { a, b });
+    // NO BOND MOVE ON `numb`, deliberately — the point of that one IS the
+    // absence of a felt reaction, and that was true of the event before this
+    // rewrite. The other three are scenes with something in them and move it.
+    const bondDelta = branch === 'numb' ? 0
+      : branch === 'one-of-them-still-feels-it' ? 1
+        : branch === 'said-it-and-regretted-it' ? -1 : 0.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+      threadId: t?.id, bondDelta };
   },
 });
-
 // ── REWRITE (Task 7 stage 5). `grief-someone-cries-alone:cried-alone` was the
 // fourth-loudest repeat in the pool (8 of 144 loud seasons over 800). It is a
 // SOLO event, which is the structural half of the problem: a solo branch is
@@ -906,18 +1368,65 @@ registerEvent({
 // threads — that never led anywhere and now never will. Murder victims are
 // always Faithfuls, and Faithfuls collect suspicion threads constantly, so
 // this fires routinely instead of never.
-const WRONGLY_SUSPECTED_LINES = [
-  '{a} and {b} realized, too late, that {v} had spent their last days under a suspicion that never actually went anywhere.',
-  'Whatever {a} and {b} had thought about {v} last week, they were not going to get to find out now.',
-  '{b} reminded {a} what they had both been saying about {v} three days ago. Neither of them enjoyed the reminder.',
-  '{v} had been answering questions right up until the end, and {a} and {b} worked out this morning that none of them had mattered.',
-  'The case against {v} died with {v}, and {a} and {b} were the only two still holding it.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch — the fork is in the
+// wording." The premise is the best irony the format has and it had exactly
+// one reaction to it. The record the fork reads is the suspicion arc naming
+// {v} — which the weight already requires to exist — and specifically WHO IS
+// ON IT: an arc {a} is a party to is a thing {a} did, and an arc {a} merely
+// watched is a thing the room did, and those are two different mornings. Both
+// are looked up off `t.parties`, never assumed.
+const WRONGLY_SUSPECTED_LINES = {
+  'wrongly-suspected-irony': [
+    '{a} and {b} realised, too late, that {v} had spent their last days under a suspicion that never actually went anywhere.',
+    'Whatever {a} and {b} had thought about {v} last week, they were not going to get to find out now.',
+    '{b} reminded {a} what they had both been saying about {v} three days ago. Neither of them enjoyed the reminder.',
+    '{v} had been answering questions right up until the end, and {a} and {b} worked out this morning that none of them had mattered.',
+    'The case against {v} died with {v}, and {a} and {b} were the only two still holding it.',
+    'Four days of watching {v} very carefully, and the one thing they were watching for was never there.',
+    '{a} said {v}’s name this morning in a completely different voice from the one used on Tuesday.',
+    'Everything {a} and {b} had about {v} turned out to be about somebody they were never going to find this way.',
+  ],
+  'owned-the-mistake': [
+    '{a} said it out loud: “I had {v}. I was completely wrong about {v}, in front of everybody.”',
+    '{a} apologised to a room for something the room had also done, and was the only one who did.',
+    '“I asked {v} four times where they were on Tuesday,” said {a}. “Four times.”',
+    '{a} took the whole of it and did not spread any of it round the table.',
+    '{b} tried to share the blame and {a} would not let {b} have any.',
+    'It cost {a} something to say and {a} said it before breakfast was over.',
+    '{a} has been wrong about somebody before and has never had it settled like this.',
+    'What {a} said this morning will be remembered longer than anything {a} said about {v} alive.',
+  ],
+  'still-think-we-were-right': [
+    '{a} pointed out that being taken does not clear anybody of anything, and {b} did not enjoy hearing it.',
+    '“They could still have been one,” said {a}, about {v}, on the morning of it, and meant it.',
+    '{b} said {v} was innocent. {a} said {b} had no more evidence for that today than yesterday.',
+    'The suspicion did not die with {v} — {a} carried it out of the room intact.',
+    '{a} has seen a castle kill its own before now and is not giving the last four days up.',
+    '“Prove it,” said {a}, which is a terrible thing to say about somebody who cannot answer.',
+    '{b} thought that was monstrous and said so, and {a} agreed and did not change position.',
+    'It is the coldest thing said in that hall this week and it is not obviously wrong.',
+  ],
+  'turned-on-each-other': [
+    '{a} said {b} had started it. {b} said {a} had, and both of them were partly right.',
+    'The case against {v} had two authors and this morning each of them named the other one.',
+    '“You said it first,” said {a}, which is true and is not the defence {a} thinks it is.',
+    'Whatever {a} and {b} had built about {v} came apart this morning and took the two of them with it.',
+    '{b} pointed out exactly which conversation had started it and who had been in it.',
+    'It was a shared mistake right up until it was a mistake, and then it was {b}’s.',
+    'Two people who agreed about {v} for four days spent this morning proving they never had.',
+    '{a} and {b} will not be doing this together again, and both of them said so.',
+  ],
+};
 
 registerEvent({
   id: 'grief-wrongly-suspected-irony',
   family: FAMILY,
   window: 'morning',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected', 'backfire'],
+    voice: ['loyalty', 'temperament', 'strategic'],
+    knowledge: ['witnessed'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const v = _victimLastNight(ctx.ep);
@@ -925,19 +1434,44 @@ registerEvent({
     const threads = gs.tr?.threads || [];
     return threads.some(t => t.kind === 'suspicion' && t.parties.includes(v)) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-wrongly-suspected-irony');
-    const sceneWhy = 'had suspected the person who was killed';
     const [a, b] = ctx.actors;
     const v = _victimLastNight(ctx.ep);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(WRONGLY_SUSPECTED_LINES, `grief-wrongly-suspected-irony|${ctx.ep}`, { a, b, v }) });
-    return { branch: 'wrongly-suspected-irony', pair: [a, b], victim: v, threadId: t?.id, bondDelta: 1 };
+    const sa = pStats(a);
+    // WHOSE CASE IT WAS, off the stored arc's own parties. An arc {a} is a
+    // party to is a thing {a} did; one {a} only watched is a thing the room
+    // did. The weight has already established at least one such arc exists.
+    const arcs = (gs.tr?.threads || [])
+      .filter(t => t.kind === 'suspicion' && v && t.parties.includes(v));
+    const theirs = arcs.some(t => t.parties.includes(a));
+    const shared = arcs.some(t => t.parties.includes(a) && t.parties.includes(b));
+    const scores = {
+      'wrongly-suspected-irony': 0.4,
+      'owned-the-mistake': theirs ? (sa.loyalty / 10) * 0.35 + 0.15 : 0,
+      'still-think-we-were-right': (sa.strategic / 10) * 0.3 + (1 - sa.loyalty / 10) * 0.2,
+      'turned-on-each-other': shared ? 0.25 + (1 - sa.temperament / 10) * 0.25 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'wrongly-suspected-irony';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'owned-the-mistake' ? 'said out loud that they had been wrong about the dead'
+      : branch === 'still-think-we-were-right' ? 'would not clear the dead of anything'
+        : branch === 'turned-on-each-other' ? 'argued about whose case it had been'
+          : 'had suspected the person who was killed';
+    const note = lineFor(WRONGLY_SUSPECTED_LINES[branch],
+      `grief-wrongly-suspected-irony|${branch}|${ctx.ep}`, { a, b, v: v || b });
+    const bondDelta = branch === 'owned-the-mistake' ? 2
+      : branch === 'still-think-we-were-right' ? -1
+        : branch === 'turned-on-each-other' ? -2 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+      threadId: t?.id, bondDelta };
   },
 });
-
-
 // -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
 //
 // The `night` window runs after the Round Table, so `ctx.state` here is the
@@ -1000,6 +1534,12 @@ const NIGHT_AWAKE_LINES = {
     'The place makes different noises with fewer people in it, and {a} had started noticing which.',
     '{a} lay there thinking about nothing much, in a room that used to have somebody else breathing in it.',
     'It is a big building to be quiet in, and {a} was awake for a good hour of it.',
+    '{a} lay there doing arithmetic on a room that keeps getting smaller.',
+    'The castle at four in the morning is a very long building, and {a} heard all of it.',
+    '{a} slept for perhaps an hour and dreamed about the table, which was not restful.',
+    'There is nothing to do at that hour except think, and {a} thought about all of them in order.',
+    '{a} got up twice for water neither time wanting water.',
+    'It was light before {a} stopped listening to the corridor.',
   ],
 };
 

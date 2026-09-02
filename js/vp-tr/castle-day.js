@@ -749,7 +749,7 @@ const ADVERSE_BRANCHES = new Set([
   'broke-up', 'confronts', 'exposes', 'jealousy', 'showmance-fight', 'called-strategic',
   // the doubt got sharper rather than softer
   'caught', 'cracks', 'confess', 'crosschecked', 'hardened', 'denyWeak',
-  'misread-nervy', 'revived', 'tracked', 'turned', 'redirects', 'overheard',
+  'revived', 'turned', 'redirects', 'overheard',
   // they failed it, or worked out that it was one
   'caughtTest', 'failed', 'malicious', 'got-rattled', 'inconsistent', 'refused',
   'refuses', 'reluctant', 'chased',
@@ -919,6 +919,148 @@ const ADVERSE_BRANCHES = new Set([
   // 'paranoid')` in the same firing -- the rule `rattled` and `counted-them`
   // are on this list for.
   'came-down-angry',
+  // ── TASK 7 STAGE 6: THE REMAINING REWRITES ───────────────────────────
+  //
+  // The last of the audit's REWRITE list, plus the KEEP-list events whose
+  // branch sets were widened to close the repetition ceiling. Sorted on the
+  // same single question stages 3, 4 and 5 used, which is the question `_tone`
+  // is actually asking: IS THE PERSON ANSWERING THIS SCENE BEING LEANED ON?
+  // The bond delta is corroborating evidence and not the rule.
+  //
+  // A private thing was put to somebody's face, or taken to a third party who
+  // did not ask for it. `showed-somebody` and `told-somebody-else` above are
+  // the same move and sit together deliberately:
+  'put-it-to-them', 'showed-somebody', 'asked-what-it-was', 'asked-them',
+  'showed-them-the-list', 'named-it-to-them',
+  // The direction of the scene reversed and the person who started it is now
+  // the one answering for it — the shape `put-each-other-on-it` is on this
+  // list for:
+  'caught-them-looking', 'nobody-asked-you', 'called-it-out',
+  // A refusal, or a door closed on the room:
+  'walked-away', 'would-not-take-it', 'shut-it-down',
+  // The respondent came apart, or was taken from, or heard themselves:
+  'admitted-something-else', 'caught-themselves', 'gave-it-up',
+  // It was produced and it landed on the floor, which is a scene going badly
+  // for the person who produced it and an accusation for the person it names:
+  'nobody-cared',
+  // ── AND THE ROMANCE BATCH ────────────────────────────────────────────
+  //
+  // The respondent was put under the room's eye, or split from their partner
+  // and asked apart, or told to stop. `asked-not-to` and `did-not-step-in`
+  // both REVERSE the direction — {b} speaks and {a} answers for it — which is
+  // why they are adverse even though the person being answered is the one who
+  // meant well:
+  'too-loud', 'asked-not-to', 'did-not-step-in', 'asked-separately',
+  // The account came apart, or was refused, in front of people:
+  'did-not-match', 'refused-to-vouch',
+  // The couple turned on each other, or on a name, and came away worse off.
+  // `went-cold` is the quiet version and is the more adverse of the two:
+  'went-cold', 'about-the-vote',
+  // A refusal, delivered kindly, is still a door closed on the person asking
+  // — the shape `refused-the-pact` is on this list for:
+  'too-soon',
+  // Somebody else's sentence got inside the two of them, which is what it was
+  // sent to do:
+  'it-landed-inside',
+  // ── AND THE TRUST BATCH ──────────────────────────────────────────────
+  //
+  // An honest read handed straight back, or asked for back, or priced before
+  // it was given — three different ways for a confidence to cost the person
+  // who offered it, and in all three the respondent is answering a demand:
+  'defended-them', 'took-it-back', 'made-them-pay-first',
+  // An answer with a clause in it, or a promise that needed making twice.
+  // `with-one-exception` sits beside `conditional` and `hedged` above, which
+  // are the identical move, and `said-it-again` is a doubt wearing a
+  // reassurance:
+  'with-one-exception', 'said-it-again',
+  // A refusal, however gently delivered, is still a door closed on the person
+  // asking — the shape `refused-the-pact` and `too-soon` are on this list for:
+  'could-not-be-near-anyone', 'not-this-week', 'declined',
+  // The offer was accepted and immediately priced, which is `made-it-a-price`
+  // in an evening rather than at a ballot:
+  'asked-what-it-costs',
+  // ── AND THE JOURNEY BATCH ────────────────────────────────────────────
+  //
+  // Somebody walked away, or declined to be walked with, or would not have the
+  // conversation at all. All three are a door closed on the person who started
+  // it, and the first two also reverse who is left standing there:
+  'fell-behind', 'would-not-be-picked', 'would-not-talk-about-it',
+  // The road took more out of the respondent than they meant to give:
+  'said-too-much',
+  // The test was turned round and the person who set it is now sitting it —
+  // the same shape as `put-each-other-on-it` and `caught-them-looking`:
+  'turned-it-around',
+  // The account came apart in the person's own mouth, which is the solo
+  // exception this list already carries `rattled` for — except that this one
+  // is adverse on its own content rather than on a state write: the cover
+  // story is the scene, and it failed:
+  'could-not-get-it-straight',
+  // ── AND THE GRIEF BATCH ──────────────────────────────────────────────
+  //
+  // Somebody claimed a dead person's place in front of the room, or would not
+  // clear them of anything, or moved away from the person standing next to
+  // them. In all three the other party is the one left holding it:
+  'took-their-chair', 'still-think-we-were-right', 'sat-apart',
+  // The grief turned into an accusation, at the room or at one person, which
+  // is the shape `blamed-room` and `angry-at-the-room` are on this list for:
+  'named-a-number', 'turned-on-them', 'turned-on-each-other',
+  // A refusal to have the conversation at all:
+  'would-not-play',
+  // Somebody was mourned beside rather than with, and both of them felt the
+  // gap. It is not unkind and it is not smooth either — what the respondent
+  // experiences is being got slightly wrong all morning:
+  'one-sided-grief',
+  // The sentence was true, landed badly, and could not be taken back:
+  'said-it-and-regretted-it',
+  // ── AND THE CALLBACK BATCH ───────────────────────────────────────────
+  //
+  // The offer was refused, or accepted only in a much smaller version, and the
+  // person who made it is the one left holding the difference:
+  'not-the-same-terms', 'would-not-spend-it',
+  // An old debt was named, or priced, or produced in front of people. All
+  // three lean on the person it is about:
+  'said-it-once-and-stopped', 'wants-something-for-it',
+  // The defence did not work, or worked and cost them both. `now-they-are-a-
+  // pair` sits beside `too-loud` above, which is the identical outcome in a
+  // different family:
+  'history-is-not-evidence', 'now-they-are-a-pair',
+  // The warning was handed back, or spent. `used-it-immediately` is the same
+  // shape as `told-somebody-else`:
+  'defended-them-instead', 'used-it-immediately',
+  // Somebody was watched, counted or put together by a room with no evidence:
+  'somebody-noticed', 'the-room-got-there-first', 'the-room-priced-them',
+  // One of them has moved on and the other has not, and the not-moving-on is
+  // the whole scene:
+  'one-of-them-still-is',
+  // The room was told, to its face, that its history is worth nothing:
+  'made-a-virtue-of-it',
+  // ── AND THE COVER BATCH ──────────────────────────────────────────────
+  //
+  // A refusal, and in both cases the person refused is the one left holding
+  // it — `would-not-take-it` is somebody declining to be spent in public and
+  // `would-not-square-it` is somebody declining to be managed at dawn:
+  'would-not-take-it', 'would-not-square-it',
+  // The move worked and could not be stopped afterwards, which is the worst
+  // outcome the manoeuvre has:
+  'the-room-kept-it',
+  // The account was heard to be an account, or was checked behind the
+  // teller's back, or was volunteered at their own expense:
+  'too-identical', 'checked-against-somebody', 'told-it-unasked',
+  // Somebody else had already told the story, and the teller found out from
+  // the room:
+  'they-told-it-first',
+  // ── AND THE TESTING / CALLBACK TAIL ──────────────────────────────────
+  //
+  // The test was named out loud, or turned round on the person running it.
+  // These four all REVERSE the direction — the tester becomes the respondent —
+  // which is exactly the shape `put-each-other-on-it` and `caught-them-looking`
+  // are on this list for:
+  'named-the-test', 'asked-why-twice', 'out-waited-them', 'asked-to-be-let-off',
+  // A refusal to answer the same question twice:
+  'would-not-repeat-it',
+  // The check leaked, or found a room that would not be drawn. In both the
+  // person tested comes away knowing they were tested:
+  'got-back-to-them', 'nobody-would-say',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.
@@ -938,7 +1080,7 @@ const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 const BENIGN_BRANCHES = new Set([
-  'agreed', 'airtight', 'alibi-built', 'awake-content', 'blended-in', 'body-read',
+  'agreed', 'airtight', 'alibi-built', 'awake-content', 'blended-in',
   'buried', 'carried', 'checked-in', 'checks-out', 'circle', 'cleared', 'cold-read',
   'complied', 'confided', 'confirmed', 'consistent', 'convincing', 'cried-alone',
   'denies', 'double-bluffed', 'empty-chair', 'favor-returned',
@@ -1036,6 +1178,116 @@ const BENIGN_BRANCHES = new Set([
   'nearly-said-it', 'saw-it-alone', 'drew-it-alone', 'went-back-over-one',
   'poured-two', 'pocketed', 'put-it-back', 'put-it-away', 'counted-the-chairs',
   'counted-the-useful-ones',
+  // ── TASK 7 STAGE 6: THE REMAINING REWRITES (see the note on the adverse
+  // list above for the rule these were sorted by) ──────────────────────
+  //
+  // The respondent came out of it fine, or the scene was a kindness, or the
+  // doubt was put down rather than pressed:
+  'answered-at-last', 'it-worked', 'stopped-watching',
+  // The solo branches. There is nobody to be leaned on by, and none of these
+  // writes an emotional state the smooth register would contradict — the ones
+  // that do are `came-down-angry`, `rattled` and `counted-them`, on the
+  // adverse list above.
+  'read-it', 'was-nothing', 'heard-it-out-loud', 'let-the-list-go',
+  'put-it-down',
+  // ── AND THE ROMANCE BATCH ────────────────────────────────────────────
+  //
+  // Something started, or was said out loud, or was deliberately not said,
+  // and nobody in any of them is under pressure. `one-sided` sits here for the
+  // reason `borrowed-it` does: what the other person experiences is a pleasant
+  // evening, and the screen has no business telling the viewer otherwise just
+  // because the audience knows which of the two is awake at three:
+  'named-it-fast', 'one-sided-so-far', 'interrupted', 'said-nothing',
+  // The row was had and put down again, or the accusation was absorbed:
+  'patched-it', 'made-a-joke-of-it', 'leaned-into-it',
+  // Comfort that stayed comfort, and the morning the castle drew its own
+  // conclusions about — neither of which leans on anybody in the scene:
+  'just-comfort', 'the-room-noticed',
+  // ── AND THE TRUST BATCH ──────────────────────────────────────────────
+  //
+  // Two people arrived at the same name, or made something out loud, or were
+  // let inside. Nobody is under pressure in any of them:
+  'both-had-it', 'counted-the-room', 'said-the-word', 'three-of-us',
+  'showed-the-worst-of-it',
+  // `went-round-the-room` sits here for the reason `feigned-fear` and
+  // `performed-it` do: what the RESPONDENT experiences is somebody being kind
+  // to them, and the screen has no business telling the viewer otherwise
+  // just because the audience can count the other four people it happened to.
+  'went-round-the-room',
+  // The `trust-defend-in-absentia` branches, all of which report ONE
+  // participant because the person being defended is upstairs (see that
+  // event's header — it is the audit's only REMOVE, answered as a record fix).
+  // The rule this list states then applies: a solo branch is benign unless the
+  // same firing writes a state the smooth register would contradict, and none
+  // of these writes one. `spoke-for-them` is the renamed success branch; see
+  // the same header for why it is not called `defended`.
+  'spoke-for-them', 'lost-the-argument', 'was-asked-why', 'let-it-sit',
+  // ── AND THE JOURNEY BATCH ────────────────────────────────────────────
+  //
+  // A name was answered with a name, which is the fairest exchange the road
+  // has, and nobody in it is under pressure:
+  'named-somebody-else',
+  // The two solo `cover-road-rehearsal` branches. Nobody else is on that road,
+  // and neither writes a state the smooth register would contradict:
+  'stopped-rehearsing',
+  // ── AND THE GRIEF BATCH ──────────────────────────────────────────────
+  //
+  // Two people did something quiet and decent about an empty chair, or about
+  // each other, and nobody in any of them is under pressure:
+  'moved-it-away', 'laid-a-place', 'nobody-noticed', 'kept-the-gap',
+  'told-a-story-about-them', 'could-not-say-it',
+  // The morning's own facts, arrived at together rather than put to anybody:
+  'about-to-say-something', 'we-had-it-wrong',
+  // Somebody took the whole of a mistake rather than spreading it round the
+  // table, and somebody turned an accusation inward instead of outward:
+  'owned-the-mistake', 'blamed-themselves',
+  // The room's threshold, observed. `one-of-them-still-feels-it` is the person
+  // who has NOT crossed it, and being the last one counting is not a scene
+  // going badly for anybody in it:
+  'one-of-them-still-feels-it', 'performed-it',
+  // ── AND THE CALLBACK BATCH ───────────────────────────────────────────
+  //
+  // Two people rebuilt something, or settled something, or agreed a hard fact
+  // about the end without anybody being leaned on to do it:
+  'renegotiated-it', 'agreed-not-to', 'let-it-go-at-last',
+  'both-know-how-it-ends', 'compared-endings',
+  // A warning that arrived at somebody who already had it, and a story asked
+  // for rather than overheard:
+  'already-knew', 'asked-to-be-told',
+  // Somebody outside a story went and started one of their own, which is a
+  // scene about the person and not about the room:
+  'went-and-found-one',
+  // ── AND THE TESTING / CALLBACK TAIL ──────────────────────────────────
+  //
+  // The small ask was taken and then some, the silence was used for something
+  // of the respondent's own, and somebody stopped narrating an old season at
+  // the person living in a new one. Nobody is leaned on in any of them:
+  'over-delivered', 'filled-it-with-their-own', 'stopped-comparing',
+  // ── AND THE COVER BATCH ──────────────────────────────────────────────
+  //
+  // Two people ran a dangerous thing together and it worked, and the
+  // respondent experienced a colleague rather than an interrogator:
+  'played-along', 'were-together-anyway',
+  // The solo cover branches. Nobody else is in any of them, and none writes a
+  // state the smooth register would contradict. `heard-themselves` and
+  // `binned-it` are somebody arriving at a private conclusion, which is the
+  // same shape as `read-the-room` and `alone-with-it` above:
+  'roughed-it-up', 'heard-themselves', 'changed-it', 'binned-it',
+  'abandoned-it',
+  // ── AND TWO MOVED OFF THE ADVERSE LIST, BECAUSE THE SCENE CHANGED ─────
+  //
+  // `tracked` (susp-pattern-tracking) and `misread-nervy` (susp-misread-tell)
+  // were both classified adverse when they were two-person scenes. This
+  // stage's rewrite makes both of them ONE-PERSON scenes — the subject of the
+  // tally, and the subject of the invented tell, are not told any of it is
+  // happening, and naming them a participant is precisely what let the screen
+  // hand them a reaction card in a conversation they were not having (stage
+  // 5's `borrowed-it` finding). The rule this list already states then
+  // applies: a solo branch is benign unless the same firing writes a state the
+  // smooth register would contradict, and neither of these writes one. It also
+  // resolves a pre-existing incoherence, because `tracked-since` — the SAME
+  // scene with a longer history on it — has been on this list all along.
+  'tracked', 'misread-nervy',
 ]);
 
 /** Both lists, for the coverage arm. Nothing else reads them. */
@@ -1634,6 +1886,40 @@ const NEVER_ALONE_WINDOWS = new Set(['journey-out', 'journey-back']);
 const COMPANY_WORDS = /\b(?:ask\w*|questions?|answer\w*|told|tells|replied|agree\w*|volunteer\w*|unprompted|a second time|mid-sentence|read as|(?:one|two|three|four|a few|several) (?:person|people)|the column|the only one|in the open|caught|at breakfast|in front of|everyone|everybody|anyone else|anybody|somebody|someone|the room|the table|nobody at the table|the first person|named a room)\b/i;
 
 function _mode(s, cast) {
+  // ── ONE NAMED PARTICIPANT IS A CLAIM, AND IT WINS (Task 7 stage 6) ────
+  //
+  // FOUND BY DUMPING A DAY AND READING IT, like every other prose defect on
+  // this plan. `s.actors` is who the runner CONVENED and `s.people` is who the
+  // event said was in the scene, and the union below is right for the observer
+  // contract — either claim to having been in the room has to be honoured when
+  // deciding who may see what. It is wrong for COMPOSITION. A handful of
+  // events are convened as a pair and then report exactly one participant on
+  // purpose, because the branch is somebody doing a thing the other person is
+  // not present for: `susp-pattern-tracking:tracked` (a private tally the
+  // subject knows nothing about), `trust-defend-in-absentia` (the person being
+  // defended is upstairs — the audit's only REMOVE verdict, answered as a
+  // record fix), `cover-feign-fear:borrowed-it` (a reaction copied without the
+  // other person knowing). The union put the absent person back into the roll,
+  // and the screen then gave them an action line, a reaction card in their
+  // voice and a consequence about them — three cards of a conversation that
+  // did not happen. Rendered:
+  //
+  //   (action) Caleb was not in the room. Beth argued for them anyway.
+  //   (reaction) Beth accepts it without promising anything back.
+  //
+  // So an event that names exactly ONE participant is taken at its word here.
+  // It is a positive claim rather than an absence — `sceneParticipants` returns
+  // an empty list when an event says nothing, and that case still falls through
+  // to the union below. Nothing about the observer split moves: `_view` reads
+  // `actors`/`people` itself and is untouched.
+  const claimed = [...new Set((s.people || []).filter(Boolean))];
+  if (claimed.length === 1) {
+    const line = String(s.line || '');
+    const namedElse = (cast || []).some(n => n && n !== claimed[0] && line.includes(n));
+    if (namedElse || COMPANY_WORDS.test(line)) return { mode: 'single', roll: claimed };
+    if (NEVER_ALONE_WINDOWS.has(s.window)) return { mode: 'single', roll: claimed };
+    return { mode: 'solo', roll: claimed };
+  }
   const present = [...new Set([...(s.actors || []), ...(s.people || [])].filter(Boolean))];
   const roll = present.length ? present
     : [...new Set((s.parties || []).filter(Boolean))];
@@ -2758,8 +3044,30 @@ const PRIVATE_HOURS = new Set(['night']);
 
 function _sceneFor(scene, watcher) {
   if (watcher == null) return 'full';
-  const inIt = (scene.people || []).includes(watcher)
-    || (scene.actors || []).includes(watcher);
+  // ── ONE NAMED PARTICIPANT IS A CLAIM HERE TOO (Task 7 stage 6) ────────
+  //
+  // The union of `people` and `actors` is the right entitlement rule in
+  // general: either claim to having been in the room earns the full layer,
+  // because a scene the runner convened you into is a scene you were standing
+  // in. It is wrong for the same handful of events `_mode` carves out — the
+  // ones convened as a pair that report exactly ONE participant on purpose,
+  // because the branch is something the other person is not present for
+  // (`susp-pattern-tracking:tracked`, `trust-defend-in-absentia`,
+  // `cover-alone-with-it`, `cover-feign-fear:borrowed-it`). Without this the
+  // two functions disagree: `_mode` composes a one-person scene while this
+  // grants the full layer to somebody the scene has just said was not there,
+  // and `tests/tr-castle-prose.test.js`'s observer arm catches the
+  // disagreement exactly as it should — a player holding the audience stream
+  // for a scene whose own `participants` list does not contain them.
+  //
+  // A ONE-PERSON CLAIM IS ALSO NEVER A LEAK. Somebody who was convened and
+  // then written out of the scene falls to `heard` (or, in a private hour, to
+  // `none`), which is the SAFER layer in both directions — the same rule the
+  // union applies to everybody else who was not in the room.
+  const claimed = (scene.people || []).filter(Boolean);
+  const inIt = claimed.length === 1
+    ? claimed[0] === watcher
+    : claimed.includes(watcher) || (scene.actors || []).includes(watcher);
   if (inIt) return 'full';
   return PRIVATE_HOURS.has(scene.window) ? 'none' : 'heard';
 }

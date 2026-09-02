@@ -573,7 +573,13 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // `night` 1.31 -> 2.58, and the sweeps below confirm nothing in either
     // window's pre-existing pool fell under a floor.
     expect(EVENTS.length).toBe(128);
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(71);
+    // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
+    // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
+    // from a single branch onto `arcContinue`, so each can now genuinely
+    // continue a story that already exists between the pair — which is what
+    // the flag asserts — and declaring it is what makes guard 1's multiplier
+    // available to a scene that can actually use it. No event was added.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(73);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     expect(EVENTS.filter(e => e.citesResidue).length).toBe(63);
@@ -616,10 +622,16 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // no thread at all. `one` -> `many` moved again for the same reason as
     // stage 3 (10 -> 23), and the new cell is `trust|night`.
     expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(48);
+    // 15 -> 14 (TASK 7 STAGE 6). `suspicion|morning` left the zero list, for
+    // the same reason the three `night` cells left it in stage 4: the events
+    // already sitting there gained the declaration the audit said they were
+    // missing. `susp-misread-tell` and `susp-body-language-read` both write
+    // through `arcContinue` now, and the first of them declares the flag. This
+    // is a cell count FALLING again, which is the direction it should move.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(15);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(14);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(11);
+      + 'living here can be advanced at most once every five rounds').toBe(12);
     expect(many, 'cells with two or more advancers').toBe(22);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
@@ -672,6 +684,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // both wrote no thread at all, which is the "no reachable follow-up"
     // half of their REWRITE verdicts — plus `night-the-seat-they-had` in the
     // grief cell. Nothing was added to this list.
+    // TASK 7 STAGE 6 REMOVED ONE MORE, AND NAMED IT: `suspicion|morning`.
+    // `susp-misread-tell`'s rewrite gave it four branches, three of which
+    // continue an existing story rather than opening a new one, so the cell
+    // that held the pool's most-quoted single-line event now has an advancer
+    // in it. Nothing was added to this list.
     expect(zeroNames).toEqual([
       'callback|dawn',
       'callback|journey-out',
@@ -685,7 +702,6 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       'romance|journey-out',
       'romance|morning',
       'suspicion|journey-out',
-      'suspicion|morning',
       'testing|journey-out',
       'testing|morning',
     ]);
@@ -1289,6 +1305,21 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // The count of EVENTS is unchanged at 128, which is the check worth making
 // against this number: if events had been added or removed, that assertion
 // above would have moved too, and it did not.
+//
+// MOVED AGAIN BY TASK 7 STAGE 6: 411 -> 540 (event, branch) keys, and the same
+// check holds — `EVENTS.length` is STILL 128. Not one event was registered or
+// removed in this stage either. Every one of the new keys is a branch on an
+// event that already existed: the remaining REWRITE-list events taken from one
+// or two branches to four, five or six, plus the KEEP-list flagships whose
+// forks were real but whose branch sets could not express a refusal or a
+// reversal. Five keys disappeared, and each because its event's branch was
+// renamed rather than deleted — `susp-body-language-read:body-read` became
+// four named branches, `trust-defend-in-absentia:defended` became
+// `spoke-for-them` (the old label meant the opposite thing in two other
+// events, and `_tone` cannot hold both), `romance-spark:one-sided` became
+// `one-sided-so-far` and `trust-circle-forms:not-yet` became `not-this-week`
+// for the same collision reason, and `cover-swap-story-with-partner`'s merged
+// romance branch was renamed when its gate was widened.
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1349,24 +1380,49 @@ const BRANCHES = [
   'callback-competitive-history:reopened-it',
   'callback-competitive-history:rivalry-carried-over',
   'callback-competitive-history:useful-rivalry',
+  'callback-different-show-different-person:asked-to-be-let-off',
   'callback-different-show-different-person:disappointment',
   'callback-different-show-different-person:dissonance',
   'callback-different-show-different-person:redemption',
+  'callback-different-show-different-person:stopped-comparing',
   'callback-grudge-resurfaces:grudge-resurfaced',
+  'callback-grudge-resurfaces:let-it-go-at-last',
+  'callback-grudge-resurfaces:said-it-once-and-stopped',
+  'callback-grudge-resurfaces:wants-something-for-it',
   'callback-history-confrontation:buries',
   'callback-history-confrontation:grudge',
   'callback-history-confrontation:reconciles',
   'callback-history-confrontation:strategic',
+  'callback-no-history-envy:asked-to-be-told',
   'callback-no-history-envy:left-out',
+  'callback-no-history-envy:made-a-virtue-of-it',
+  'callback-no-history-envy:went-and-found-one',
   'callback-old-alliance-reforms:alliance-reformed',
+  'callback-old-alliance-reforms:not-the-same-terms',
+  'callback-old-alliance-reforms:renegotiated-it',
+  'callback-old-alliance-reforms:somebody-noticed',
   'callback-protects-old-ally-from-vote:defended-by-history',
+  'callback-protects-old-ally-from-vote:history-is-not-evidence',
+  'callback-protects-old-ally-from-vote:now-they-are-a-pair',
+  'callback-protects-old-ally-from-vote:would-not-spend-it',
   'callback-recognized:left-it-at-the-door',
   'callback-recognized:picked-it-back-up',
   'callback-recognized:said-it-to-the-room',
   'callback-recognized:still-owed',
   'callback-shared-alumni-status:alumni-bond',
+  'callback-shared-alumni-status:both-know-how-it-ends',
+  'callback-shared-alumni-status:compared-endings',
+  'callback-shared-alumni-status:the-room-priced-them',
+  'callback-showmance-reunion-spark:agreed-not-to',
+  'callback-showmance-reunion-spark:one-of-them-still-is',
   'callback-showmance-reunion-spark:reunion-spark',
+  'callback-showmance-reunion-spark:the-room-got-there-first',
+  'callback-warns-newbies:already-knew',
+  'callback-warns-newbies:defended-them-instead',
+  'callback-warns-newbies:used-it-immediately',
   'callback-warns-newbies:warned',
+  'cover-alibi-crumbles:abandoned-it',
+  'cover-alibi-crumbles:checked-against-somebody',
   'cover-alibi-crumbles:collapses',
   'cover-alibi-crumbles:holds',
   'cover-alibi-crumbles:wobbles',
@@ -1381,7 +1437,9 @@ const BRANCHES = [
   'cover-cold-sweat-tell:laughed-it-off',
   'cover-cold-sweat-tell:overexplained',
   'cover-cold-sweat-tell:tell',
+  'cover-decline-recruit-offer-story:binned-it',
   'cover-decline-recruit-offer-story:recruit-story-covered',
+  'cover-decline-recruit-offer-story:told-it-unasked',
   'cover-double-bluff:asked-back',
   'cover-double-bluff:did-not-take',
   'cover-double-bluff:double-bluffed',
@@ -1398,10 +1456,15 @@ const BRANCHES = [
   'cover-preemptive-alibi:asked-for-it',
   'cover-preemptive-alibi:held-it-back',
   'cover-preemptive-alibi:too-specific',
+  'cover-rehearsed-story-advance:changed-it',
+  'cover-rehearsed-story-advance:heard-themselves',
   'cover-rehearsed-story-advance:rehearsed',
+  'cover-rehearsed-story-advance:roughed-it-up',
   'cover-road-rehearsal:airtight',
+  'cover-road-rehearsal:could-not-get-it-straight',
   'cover-road-rehearsal:overcooked',
   'cover-road-rehearsal:serviceable',
+  'cover-road-rehearsal:stopped-rehearsing',
   'cover-story-check:awkward',
   'cover-story-check:convincing',
   'cover-story-check:slip',
@@ -1409,14 +1472,26 @@ const BRANCHES = [
   'cover-story-survived-the-day:broke',
   'cover-story-survived-the-day:frayed',
   'cover-story-survived-the-day:held',
+  'cover-suspect-own-ally:played-along',
   'cover-suspect-own-ally:sacrificed-ally',
+  'cover-suspect-own-ally:the-room-kept-it',
+  'cover-suspect-own-ally:would-not-take-it',
   'cover-swap-story-with-partner:synchronized',
+  'cover-swap-story-with-partner:too-identical',
+  'cover-swap-story-with-partner:were-together-anyway',
+  'cover-swap-story-with-partner:would-not-square-it',
   'grief-blame-the-room:blamed-room',
+  'grief-blame-the-room:blamed-themselves',
+  'grief-blame-the-room:named-a-number',
+  'grief-blame-the-room:turned-on-them',
   'grief-castle-in-view:buried',
   'grief-castle-in-view:carried',
   'grief-castle-in-view:talked-past-it',
   'grief-castle-in-view:turned-sharp',
   'grief-empty-chair:empty-chair',
+  'grief-empty-chair:laid-a-place',
+  'grief-empty-chair:moved-it-away',
+  'grief-empty-chair:nobody-noticed',
   'grief-headcount:counted-the-chairs',
   'grief-headcount:counted-the-useful-ones',
   'grief-headcount:left-it-unsaid',
@@ -1433,8 +1508,17 @@ const BRANCHES = [
   'grief-nobody-sleeps:awake-desperate',
   'grief-nobody-sleeps:awake-paranoid',
   'grief-numb-to-it-now:numb',
+  'grief-numb-to-it-now:one-of-them-still-feels-it',
+  'grief-numb-to-it-now:performed-it',
+  'grief-numb-to-it-now:said-it-and-regretted-it',
+  'grief-seating-shift:kept-the-gap',
   'grief-seating-shift:reseated',
+  'grief-seating-shift:sat-apart',
+  'grief-seating-shift:took-their-chair',
+  'grief-shared-mourning-bond:could-not-say-it',
+  'grief-shared-mourning-bond:one-sided-grief',
   'grief-shared-mourning-bond:shared-mourning',
+  'grief-shared-mourning-bond:told-a-story-about-them',
   'grief-shorter-column:pair-again',
   'grief-shorter-column:pair-first',
   'grief-shorter-column:solo-again',
@@ -1443,12 +1527,17 @@ const BRANCHES = [
   'grief-someone-cries-alone:did-not-come-down',
   'grief-someone-cries-alone:put-it-away',
   'grief-someone-cries-alone:was-found',
+  'grief-suspicion-of-timing:about-to-say-something',
   'grief-suspicion-of-timing:timing',
+  'grief-suspicion-of-timing:we-had-it-wrong',
+  'grief-suspicion-of-timing:would-not-play',
   'grief-toast-to-them:could-not-finish',
   'grief-toast-to-them:named-them-all',
   'grief-toast-to-them:nobody-joined-in',
   'grief-toast-to-them:poured-two',
   'grief-toast-to-them:turned-into-a-vow',
+  'grief-wrongly-suspected-irony:owned-the-mistake',
+  'grief-wrongly-suspected-irony:still-think-we-were-right',
   'grief-wrongly-suspected-irony:wrongly-suspected-irony',
   'mission-a-body-short:angry',
   'mission-a-body-short:did-not-mention-it',
@@ -1535,6 +1624,9 @@ const BRANCHES = [
   'night-what-we-say-in-the-morning:one-of-them-lied',
   'night-what-we-say-in-the-morning:settled-it',
   'romance-comfort-after-loss-sparks:grief-spark',
+  'romance-comfort-after-loss-sparks:just-comfort',
+  'romance-comfort-after-loss-sparks:the-room-noticed',
+  'romance-comfort-after-loss-sparks:too-soon',
   'romance-jealousy-third-party:made-it-strategy',
   'romance-jealousy-third-party:said-it-out-loud',
   'romance-jealousy-third-party:swallowed-it',
@@ -1543,11 +1635,17 @@ const BRANCHES = [
   'romance-liability-exposed:exposes',
   'romance-liability-exposed:oblivious',
   'romance-liability-exposed:suspicious',
+  'romance-protection-instinct:asked-not-to',
+  'romance-protection-instinct:did-not-step-in',
   'romance-protection-instinct:protected',
+  'romance-protection-instinct:too-loud',
   'romance-road-spark:named-it',
   'romance-road-spark:road-spark',
   'romance-road-spark:somebody-saw',
   'romance-road-spark:walked-it-off',
+  'romance-shared-alibi:asked-separately',
+  'romance-shared-alibi:did-not-match',
+  'romance-shared-alibi:refused-to-vouch',
   'romance-shared-alibi:shared-alibi',
   'romance-shields-target-together:agreed-to-be-strangers',
   'romance-shields-target-together:one-sided-pact',
@@ -1557,7 +1655,10 @@ const BRANCHES = [
   'romance-showmance-breakup:ended-in-strategy',
   'romance-showmance-breakup:ended-kindly',
   'romance-showmance-breakup:faded-out',
+  'romance-showmance-fight:about-the-vote',
+  'romance-showmance-fight:patched-it',
   'romance-showmance-fight:showmance-fight',
+  'romance-showmance-fight:went-cold',
   'romance-showmance-forms:agreed-to-hide-it',
   'romance-showmance-forms:stopped-hiding-it',
   'romance-showmance-forms:the-room-said-it',
@@ -1566,8 +1667,15 @@ const BRANCHES = [
   'romance-showmance-on-the-way-back:not-yet',
   'romance-showmance-on-the-way-back:told-them',
   'romance-showmance-on-the-way-back:walked-in-holding',
+  'romance-spark:interrupted',
+  'romance-spark:named-it-fast',
+  'romance-spark:one-sided-so-far',
+  'romance-spark:said-nothing',
   'romance-spark:sparked',
   'romance-strategic-optics:called-strategic',
+  'romance-strategic-optics:it-landed-inside',
+  'romance-strategic-optics:leaned-into-it',
+  'romance-strategic-optics:made-a-joke-of-it',
   'romance-walked-back-together:easy',
   'romance-walked-back-together:said-out-loud',
   'romance-walked-back-together:strained',
@@ -1577,12 +1685,25 @@ const BRANCHES = [
   'susp-alliance-shape-guess:drew-it-alone',
   'susp-alliance-shape-guess:put-each-other-on-it',
   'susp-alliance-shape-guess:redrew-it',
-  'susp-body-language-read:body-read',
+  'susp-body-language-read:asked-what-it-was',
+  'susp-body-language-read:caught-them-looking',
+  'susp-body-language-read:read-it',
+  'susp-body-language-read:was-nothing',
+  'susp-cold-case-revival:answered-at-last',
+  'susp-cold-case-revival:nobody-cared',
+  'susp-cold-case-revival:put-it-down',
   'susp-cold-case-revival:revived',
+  'susp-defensive-overcorrect:caught-themselves',
+  'susp-defensive-overcorrect:it-worked',
+  'susp-defensive-overcorrect:let-it-go',
+  'susp-defensive-overcorrect:nobody-asked-you',
   'susp-defensive-overcorrect:overcorrected',
+  'susp-group-pressure-crack:admitted-something-else',
   'susp-group-pressure-crack:cracks',
   'susp-group-pressure-crack:holds',
+  'susp-group-pressure-crack:overcorrected',
   'susp-group-pressure-crack:redirects',
+  'susp-group-pressure-crack:walked-away',
   'susp-heard-in-the-corridor:caught',
   'susp-heard-in-the-corridor:checked-the-door',
   'susp-heard-in-the-corridor:heard',
@@ -1590,8 +1711,11 @@ const BRANCHES = [
   'susp-let-it-go-on-the-road-back:cleared',
   'susp-let-it-go-on-the-road-back:hardened',
   'susp-let-it-go-on-the-road-back:slipped',
+  'susp-misread-tell:asked-them',
+  'susp-misread-tell:heard-it-out-loud',
   'susp-misread-tell:misread-calm',
   'susp-misread-tell:misread-nervy',
+  'susp-misread-tell:told-somebody',
   'susp-noticed-inconsistency:asked-about-it',
   'susp-noticed-inconsistency:let-it-pass',
   'susp-noticed-inconsistency:noticed',
@@ -1599,11 +1723,16 @@ const BRANCHES = [
   'susp-out-of-earshot:agreed',
   'susp-out-of-earshot:defended',
   'susp-out-of-earshot:hedged',
+  'susp-out-of-earshot:named-somebody-else',
+  'susp-out-of-earshot:would-not-talk-about-it',
   'susp-overheard-conversation:agreed-what-it-was',
   'susp-overheard-conversation:argued-about-it',
   'susp-overheard-conversation:saw-it-alone',
   'susp-overheard-conversation:told-somebody-else',
   'susp-overheard-conversation:went-and-asked',
+  'susp-pattern-tracking:let-the-list-go',
+  'susp-pattern-tracking:put-it-to-them',
+  'susp-pattern-tracking:showed-somebody',
   'susp-pattern-tracking:tracked',
   'susp-pattern-tracking:tracked-since',
   'susp-private-accusation:confess',
@@ -1619,7 +1748,9 @@ const BRANCHES = [
   'susp-whisper-about-absent:took-it-away',
   'susp-whisper-about-absent:would-not-join-in',
   'testing-ask-for-alibi-check:checks-out',
+  'testing-ask-for-alibi-check:got-back-to-them',
   'testing-ask-for-alibi-check:inconsistent',
+  'testing-ask-for-alibi-check:nobody-would-say',
   'testing-cold-read-check:kept-it',
   'testing-cold-read-check:read-it-right',
   'testing-cold-read-check:read-it-wrong',
@@ -1628,8 +1759,10 @@ const BRANCHES = [
   'testing-decoy-secret:innocent',
   'testing-decoy-secret:keptQuiet',
   'testing-decoy-secret:malicious',
+  'testing-double-check-story:asked-why-twice',
   'testing-double-check-story:consistent',
   'testing-double-check-story:inconsistent',
+  'testing-double-check-story:would-not-repeat-it',
   'testing-follow-through-check:clocked-the-check',
   'testing-follow-through-check:dropped-it',
   'testing-follow-through-check:followed-through',
@@ -1649,23 +1782,40 @@ const BRANCHES = [
   'testing-reverse-psychology:stayed-calm',
   'testing-reverse-psychology:turned-it-round',
   'testing-silence-test:chased',
+  'testing-silence-test:filled-it-with-their-own',
   'testing-silence-test:let-it-go',
+  'testing-silence-test:out-waited-them',
   'testing-small-dare:complied',
+  'testing-small-dare:named-the-test',
+  'testing-small-dare:over-delivered',
   'testing-small-dare:refused',
   'testing-who-you-walk-with:flattered',
   'testing-who-you-walk-with:transactional',
+  'testing-who-you-walk-with:turned-it-around',
   'testing-who-you-walk-with:wary',
+  'testing-who-you-walk-with:would-not-be-picked',
   'trust-circle-forms:circle',
+  'trust-circle-forms:not-this-week',
+  'trust-circle-forms:said-the-word',
+  'trust-circle-forms:three-of-us',
   'trust-confide-fear:confided',
   'trust-confide-fear:invited-them-in',
   'trust-confide-fear:nearly-said-it',
   'trust-confide-fear:regretted-it',
   'trust-confide-fear:traded-it',
-  'trust-defend-in-absentia:defended',
+  'trust-defend-in-absentia:let-it-sit',
+  'trust-defend-in-absentia:lost-the-argument',
+  'trust-defend-in-absentia:spoke-for-them',
+  'trust-defend-in-absentia:was-asked-why',
   'trust-fall-into-step:confided',
+  'trust-fall-into-step:fell-behind',
   'trust-fall-into-step:probed',
   'trust-fall-into-step:quiet',
+  'trust-fall-into-step:said-too-much',
+  'trust-inner-circle-invite:asked-what-it-costs',
+  'trust-inner-circle-invite:declined',
   'trust-inner-circle-invite:invited-in',
+  'trust-inner-circle-invite:showed-the-worst-of-it',
   'trust-last-word-before-lights-out:broken',
   'trust-last-word-before-lights-out:hedged',
   'trust-last-word-before-lights-out:sworn',
@@ -1673,8 +1823,14 @@ const BRANCHES = [
   'trust-late-checkin:asked-for-a-name',
   'trust-late-checkin:checked-on-them',
   'trust-late-checkin:still-good',
+  'trust-post-murder-huddle:could-not-be-near-anyone',
+  'trust-post-murder-huddle:counted-the-room',
   'trust-post-murder-huddle:huddled',
+  'trust-post-murder-huddle:went-round-the-room',
+  'trust-protect-pact:one-way',
   'trust-protect-pact:pact',
+  'trust-protect-pact:said-it-again',
+  'trust-protect-pact:with-one-exception',
   'trust-return-favor:favor-returned',
   'trust-return-favor:kept-the-score',
   'trust-return-favor:noticed-and-said-so',
@@ -1686,7 +1842,11 @@ const BRANCHES = [
   'trust-settled-on-the-way-back:held',
   'trust-settled-on-the-way-back:soured',
   'trust-settled-on-the-way-back:unresolved',
+  'trust-share-suspicion-honestly:both-had-it',
+  'trust-share-suspicion-honestly:defended-them',
+  'trust-share-suspicion-honestly:made-them-pay-first',
   'trust-share-suspicion-honestly:shared-suspicion',
+  'trust-share-suspicion-honestly:took-it-back',
   'trust-trade-reads:disagreed',
   'trust-trade-reads:one-way',
   'trust-trade-reads:read-the-room',
@@ -1768,7 +1928,24 @@ describe('THE BRANCH FLOOR: a fork nobody takes is dead content inside a live ev
     const starved = bottom.filter(b => b.n < BRANCH_PER400(3)).map(b => `${b.k}: ${b.n}`);
     expect(starved, `these branches are on their way to dead content — an event-keyed `
       + `floor cannot see this, which is why this one is keyed per branch`).toEqual([]);
-  });
+  // == A WALL-CLOCK ALLOWANCE, NOT A BAND (Task 7 stage 6) =================
+  //
+  // This arm plays 3,200 real seasons and nothing about what it ASSERTS has
+  // been changed here — the season count, the floor of three per 400 and the
+  // derivation above are all untouched. What moved is how long 3,200 seasons
+  // take: Task 7 took the castle from 12.8 fired scenes an episode to ~27, so
+  // the same sweep does roughly twice the work and ran past the 90s in
+  // vitest.sim.config.js. It measured 165s here.
+  //
+  // THE HONEST OPTIONS WERE FEWER SEASONS OR MORE TIME, and fewer seasons is
+  // the one that weakens the guard: the long note above spends thirty lines
+  // establishing that this particular statistic — a MINIMUM over 164 cells —
+  // needs 3,200 to be known well, and cutting it to fit a timer would undo
+  // that derivation to save four minutes on a file that already lives in
+  // `vitest.slow.js`. So the time moves and the evidence does not. 300s is
+  // ~1.8x the measured runtime, which is headroom for a slower machine rather
+  // than a number chosen to just fit.
+  }, 300000);
 });
 
 

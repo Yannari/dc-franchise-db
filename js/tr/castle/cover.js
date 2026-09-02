@@ -22,7 +22,7 @@ import { pStats } from '../../players.js';
 import { getBond } from '../../bonds.js';
 import { registerEvent, isNervy } from '../events.js';
 import { sceneApi, arcAdvanceCiting, arcContinue } from './effects.js';
-import { findOpenThread } from '../threads.js';
+import { findOpenThread, priorMoments } from '../threads.js';
 import { alignmentAt, livingFaithfuls } from '../roles.js';
 import { knowsAlignmentOf } from '../deduction.js';
 
@@ -180,13 +180,58 @@ registerEvent({
   },
 });
 
-const SACRIFICE_ALLY_LINES = [
-  '{a} threw suspicion at {b} in front of the room — their own ally, on purpose, to clear both their names.',
-  'In front of everybody, {a} named {b}. {b} understood the manoeuvre and did not enjoy being the material for it.',
-  '{a} needed the room to watch somebody, and picked the person they could most afford to be wrong about.',
-  '{a} spent {b} to buy a morning of not being looked at, and did it smoothly enough that only {b} knew the price.',
-  '{a} asked {b} a question in front of the room that {a} already knew the answer to.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`sacrificed-ally`) —
+// the fork is in the wording." Spending your own partner in front of a room is
+// the biggest move this family has and it always worked, which — as stage 5
+// wrote of `cover-plant-a-name` — is not a move.
+//
+// THE RECORD THE FORK READS is what {a} KNOWS, never what {b} IS: the weight
+// already requires `knowsAlignmentOf(a, b)`, and the fork adds the stored bond
+// between them and {b}'s own temperament and strategic. No belief is written
+// on any branch; a staged suspicion proves nothing and must not reach the
+// deduction layer as though it did.
+const SACRIFICE_ALLY_LINES = {
+  'sacrificed-ally': [
+    '{a} threw suspicion at {b} in front of the room — their own ally, on purpose, to clear both their names.',
+    'In front of everybody, {a} named {b}. {b} understood the manoeuvre and did not enjoy being the material for it.',
+    '{a} needed the room to watch somebody, and picked the person they could most afford to be wrong about.',
+    '{a} spent {b} to buy a morning of not being looked at, and did it smoothly enough that only {b} knew the price.',
+    '{a} asked {b} a question in front of the room that {a} already knew the answer to.',
+    'It was a beautiful piece of work and only two people in the hall knew it was a piece of work.',
+    '{a} put {b} in front of the room the way you put a hand in front of a candle.',
+    'The room got a name to be busy with, and {a} got an evening off, and {b} got the bill.',
+  ],
+  'played-along': [
+    '{a} named {b} in front of the room, and {b} defended themselves badly, on purpose, and beautifully.',
+    '{b} saw what {a} was doing inside a sentence and gave the room exactly the performance it needed.',
+    'The two of them ran it like a scene they had rehearsed, and had not.',
+    '{b} got flustered at precisely the right moment and stopped at precisely the right moment.',
+    '{a} did not have to explain anything afterwards. {b} had understood the whole shape of it live.',
+    'It is the best either of them has played all week and nobody in that hall will ever know.',
+    '{b} even added a detail {a} had not thought of, which made it worse and better.',
+    'Two people did a very dangerous thing in public without exchanging a single look.',
+  ],
+  'would-not-take-it': [
+    '{a} named {b} in front of the room, and {b} refused, flatly, to be the material for it.',
+    '“No,” said {b}, and then said why, and the why was addressed entirely to {a}.',
+    '{b} turned the question straight back and made {a} answer it in front of everybody.',
+    '{a} had assumed {b} would understand. {b} understood perfectly and declined anyway.',
+    'It went wrong in about four seconds and both of them spent the rest of the evening on it.',
+    '{b} would rather have the row in public than take the hit quietly, and had it.',
+    'The room watched two people who are supposed to be allies come apart over one question.',
+    '{a} learned tonight exactly how much {b} is prepared to spend on {a}, and it is not this.',
+  ],
+  'the-room-kept-it': [
+    'It worked. It worked so well that the room is still on {b} two days later and {a} cannot call it off.',
+    '{a} pointed the room at {b} for one evening. The room has decided to keep {b}.',
+    'The name went in easily and will not come out, and {a} needs {b} alive on Thursday.',
+    '{a} spent {b} for a morning and has bought {b} a week of it.',
+    'By the second day {a} was quietly defending {b} against a suspicion {a} had started.',
+    'The manoeuvre had no off switch, which nobody thinks about until they need one.',
+    '{b} is now the most-watched person in this castle and {a} is the reason.',
+    '{a} would take it back. There is no mechanism in this building for taking it back.',
+  ],
+};
 
 registerEvent({
   id: 'cover-suspect-own-ally',
@@ -196,6 +241,12 @@ registerEvent({
   rare: true,
   family: FAMILY,
   window: 'evening',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['strategic', 'temperament', 'boldness'],
+    alignment: ['traitor'],
+    relationship: ['close-ally'],
+  },
   // ACT: TESTING. Throwing your own ally to the room to clear both names
   // needs a room already hunting somebody (so not the first days) and a
   // partner still alive to spend (so not the last). The measured centre of
@@ -209,20 +260,38 @@ registerEvent({
     // the note on cover-swap-story-with-partner.
     return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-suspect-own-ally');
-    const sceneWhy = 'pointed the room at their own ally';
     const [a, b] = ctx.actors;
+    const sb = pStats(b);
+    const bond = getBond(a, b);
+    const scores = {
+      'sacrificed-ally': 0.4,
+      'played-along': (sb.strategic / 10) * 0.3 + Math.max(0, bond) * 0.05,
+      'would-not-take-it': (1 - sb.temperament / 10) * 0.3 + Math.max(0, 0.2 - Math.max(0, bond) * 0.03),
+      'the-room-kept-it': (1 - sb.social / 10) * 0.25 + 0.1,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'sacrificed-ally';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'played-along' ? 'was spent in public and played the part'
+      : branch === 'would-not-take-it' ? 'refused to be the material for somebody else’s evening'
+        : branch === 'the-room-kept-it' ? 'pointed the room at an ally and could not call it off'
+          : 'pointed the room at their own ally';
+    const note = lineFor(SACRIFICE_ALLY_LINES[branch], `cover-suspect-own-ally|${branch}|${ctx.ep}`, { a, b });
     // The misdirection is real strategy, but the FRICTION it creates is real
     // too — publicly turning on your own ally costs something even when it
-    // is staged, which is why this still moves the bond down.
-    api.addBond(a, b, -1, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(SACRIFICE_ALLY_LINES, `cover-suspect-own-ally|${ctx.ep}`, { a, b }) });
-    return { branch: 'sacrificed-ally', pair: [a, b], threadId: t?.id, bondDelta: -1 };
+    // is staged, which is why every branch still moves the bond down.
+    const bondDelta = branch === 'played-along' ? -0.5
+      : branch === 'would-not-take-it' ? -2.5
+        : branch === 'the-room-kept-it' ? -2 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
-
 // ── REWRITE (Task 7 stage 5). Ninth on the blame table. The audit’s verdict
 // was REWRITE ("one branch — the fork is in the wording"), and the reason it
 // mattered is that this is the Traitor’s signature evening move and it always
@@ -352,16 +421,59 @@ registerEvent({
   },
 });
 
-const REHEARSED_LINES = [
-  '{a} told the same story again, word for word. Nobody clocked the repetition.',
-  '{a} gave the account a second time and did not change a syllable of it, which is not how people remember things.',
-  'Asked again, {a} produced the identical version — same details, same order, same small joke in the middle.',
-  '{a} had said it enough times now that it came out smooth, and smooth was the risk.',
-  'The story had stopped being something {a} remembered and become something {a} recited.',
-  '{a} used the same three words in the same three places, for the third day running.',
-  'Nobody was checking any more, and {a} told it exactly the same way regardless.',
-  '{a} could have said it backwards by now, and had privately checked that they could.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`rehearsed`) — the fork
+// is in the wording." It is a solo, high-firing `dawn` event, which is the
+// worst combination in the pool for repetition: one branch means one pool for
+// every firing a season contains, and it sat in the top five of the blame
+// table for three batches running.
+//
+// THE RECORD THE FORK READS is the cover arc's own length — `priorMoments`,
+// how many mornings this account has already been over — and the actor's
+// mental and temperament. A story told for the second time and a story told
+// for the fifth are different objects, and only the second of those is a risk
+// the teller can hear.
+const REHEARSED_LINES = {
+  rehearsed: [
+    '{a} told the same story again, word for word. Nobody clocked the repetition.',
+    '{a} gave the account a second time and did not change a syllable of it, which is not how people remember things.',
+    'Asked again, {a} produced the identical version — same details, same order, same small joke in the middle.',
+    '{a} had said it enough times now that it came out smooth, and smooth was the risk.',
+    'The story had stopped being something {a} remembered and become something {a} recited.',
+    '{a} used the same three words in the same three places, for the third day running.',
+    'Nobody was checking any more, and {a} told it exactly the same way regardless.',
+    '{a} could have said it backwards by now, and had privately checked that they could.',
+  ],
+  'roughed-it-up': [
+    '{a} deliberately got a small detail wrong this morning, because nobody remembers a Tuesday perfectly.',
+    '{a} has started putting a hesitation in, on purpose, in the same place every time.',
+    'The account acquired an error overnight. It is a very carefully chosen error.',
+    '“Half nine — no, quarter to,” said {a}, having decided at four in the morning to say exactly that.',
+    '{a} added a thing that had gone wrong, because true stories have one.',
+    'A smooth account is a written account, and {a} spent the morning making this one look spoken.',
+    '{a} corrected themselves once and let the correction stand, which is the whole trick.',
+    'It is worse than it was and it is far more convincing than it was.',
+  ],
+  'heard-themselves': [
+    '{a} got to the middle of it and heard, quite clearly, that it was a performance.',
+    'It came out smooth and {a} did not like how smooth, and could not do anything about it mid-sentence.',
+    '{a} listened to their own voice doing the small joke for the fourth morning and stopped enjoying it.',
+    'Somewhere in the third telling {a} realised that nobody says a Tuesday this well.',
+    '{a} finished the account and knew exactly which sentence would be quoted back.',
+    'The story is airtight. {a} is now frightened of it, which is a new problem.',
+    '{a} has told it so often that {a} can no longer tell whether any of it happened.',
+    'What {a} heard this morning was somebody reciting, and {a} was the only one in the room to hear it.',
+  ],
+  'changed-it': [
+    '{a} changed a detail this morning and there is now a version of Tuesday in the room that is out of date.',
+    'The account moved half an hour to the left, and two people have the old one.',
+    '{a} improved it. Improving it is the single most dangerous thing anybody can do to a story.',
+    '{a} could not remember whether the earlier version had the kitchen in it, and guessed.',
+    'It is a better account than yesterday’s and it is not yesterday’s.',
+    '{a} fixed the weak hour and created a new one in the process.',
+    'By breakfast there were two Tuesdays and {a} is the only person who knows both.',
+    '{a} will find out which version anybody actually heard at the worst possible moment.',
+  ],
+};
 
 registerEvent({
   id: 'cover-rehearsed-story-advance',
@@ -373,23 +485,46 @@ registerEvent({
   // CITES (Plan 5 Task 2). "The same story again" is a claim ABOUT an earlier
   // day, and the day is the only thing that makes it a risk.
   citesResidue: true,
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'backfire'],
+    voice: ['mental', 'temperament', 'intuition'],
+    alignment: ['traitor'],
+    knowledge: ['incomplete'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     if (!actor) return 0;
     return findOpenThread(FAMILY, [actor]) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-rehearsed-story-advance');
-    const sceneWhy = 'went over their account of the night again';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const t = findOpenThread(FAMILY, [actor]);
-    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, lineFor(REHEARSED_LINES, `cover-rehearsed-story-advance|${ctx.ep}`, { a: actor }),
-      { source: sceneWhy });
-    return { branch: 'rehearsed', actor, threadId: thread?.id, cited };
+    const st = pStats(actor);
+    // HOW MANY MORNINGS THIS ACCOUNT HAS ALREADY HAD, off the stored arc.
+    const times = priorMoments(t, ctx.ep).length;
+    const scores = {
+      rehearsed: Math.max(0.15, 0.55 - times * 0.08),
+      'roughed-it-up': (st.strategic / 10) * 0.3 + Math.min(3, times) * 0.08,
+      'heard-themselves': (st.intuition / 10) * 0.25 + Math.min(4, times) * 0.07,
+      'changed-it': (1 - st.mental / 10) * 0.3 + (1 - st.temperament / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'rehearsed';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'roughed-it-up' ? 'put a deliberate mistake back into a perfect account'
+      : branch === 'heard-themselves' ? 'heard their own account and knew it was a performance'
+        : branch === 'changed-it' ? 'improved an account that two people already had'
+          : 'went over their account of the night again';
+    const note = lineFor(REHEARSED_LINES[branch], `cover-rehearsed-story-advance|${branch}|${ctx.ep}`,
+      { a: actor });
+    const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, note, { source: sceneWhy });
+    return { branch, actor, threadId: thread?.id, cited };
   },
 });
-
 const COLD_SWEAT_LINES = {
   pressed: [
     '{a} broke a small sweat on a completely ordinary follow-up question, with last night\'s votes still sitting on the table behind them.',
@@ -502,12 +637,23 @@ const OUTCOME_LINES = {
     '{a} was so unremarkable about it that {b} lost interest halfway through and asked about lunch.',
     '{a} got a detail slightly wrong on purpose, corrected it, and that was what sold the whole thing.',
     '{a} told it flat, without a single flourish, and the room let it go by.',
+    'It was the least interesting answer available and it was the right one.',
+    '{a} answered, stopped, and did not add anything, which is the whole skill.',
+    'Nobody had any follow-up, because there was nowhere for a follow-up to go.',
+    '{a} got a detail slightly wrong and corrected it, which sold the rest of it.',
+    'The room heard an ordinary Tuesday and went back to what it was doing.',
   ],
   awkward: [
     '{a}\'s story had a wobble in it. Nobody happened to be listening closely enough to catch it.',
     'It wasn\'t {a}\'s best work, but it got through.',
     '{a} lost the shape of it for half a sentence and found it again before anybody looked up.',
     'There was a seam in it, and {a} talked straight over the seam.',
+    '{a} answered a question that had not quite been asked, and got away with the difference.',
+    'The room was not really listening, which did most of the work.',
+    '{a} got the hour wrong by twenty minutes and nobody in that room owns a clock.',
+    'It was clumsy and it was quick, and quick beat clumsy.',
+    '{a} said “obviously” twice, which is what people say when it is not.',
+    'Somebody changed the subject at exactly the right moment, entirely by accident.',
   ],
   suspicious: [
     '{a}\'s answer came a half-second too fast, and at least one person in the room noticed.',
@@ -517,6 +663,11 @@ const OUTCOME_LINES = {
     'Something about the way {a} told it made {b} quietly file it away.',
     '{a} answered a question about the kitchen with an alibi for the corridor, and {b} noticed the difference.',
     '{b} had not been suspicious of {a} until {a} was quite that helpful about it.',
+    '{a} answered a question nobody had finished asking, which is its own kind of answer.',
+    'It was all fine and it was all a little too available.',
+    '{b} came away without a single fact and with a strong feeling, which is worse for {a}.',
+    '{a} volunteered a name. Nobody had asked for a name.',
+    'Everything {a} said was plausible and {b} spent the afternoon on the word plausible.',
   ],
   slip: [
     '{a} said too much, too fast, and had to walk it back in real time.',
@@ -524,6 +675,11 @@ const OUTCOME_LINES = {
     '{a} named a room, then a different room, and then tried to make both of them true.',
     '{a} corrected themselves out loud, twice, on a question about where they had been standing.',
     '{a} put themselves somewhere at a time {b} could prove they had not been, and heard it land.',
+    '{a} named a room and somebody in that room said “no you were not”, quite mildly.',
+    'One hour, one word, and {a} could not get either of them back.',
+    '{a} said “we” about something {a} had done alone, and the room noticed the “we”.',
+    'It was going perfectly well until the bit about the stairs.',
+    '{a} heard the slip while making it and carried on, because there is nothing else to do.',
   ],
 };
 
@@ -706,53 +862,188 @@ registerEvent({
   },
 });
 
-const RECRUIT_COVER_LINES = [
-  '{a} had a whole account ready for where they\'d been the night they made that offer. Nobody had even asked.',
-  '{a} has an account of that night ready to go, polished, unrequested, and gathering dust.',
-  'Somewhere in {a}\'s head is a very good explanation for a conversation nobody knows happened.',
-  '{a} keeps almost bringing up that night and then not bringing it up.',
-  '{a} rehearsed it once more in the mirror, for an audience that has not asked and might never.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch — the fork is in the
+// wording." Stage 2 also found a real defect in it: the actor is re-derived
+// from `gs.tr.loyaltyDebt` inside `fire()`, and with no debt in the world the
+// actor was `undefined` and the old direct `openThread` opened a story whose
+// only party was nothing at all. The scene-API migration made that throw; the
+// derivation is now done once and guarded here as well.
+//
+// THE RECORD THE FORK READS is the debt itself — `gs.tr.loyaltyDebt` holds who
+// approached whom and who refused — plus the recruiter's own temperament and
+// strategic. What a person does with an account nobody has asked for is the
+// scene, and there are four things: keep it, use it unprompted, decide the
+// having of it is the danger, or find out the other party has been telling it.
+const RECRUIT_COVER_LINES = {
+  'recruit-story-covered': [
+    '{a} had a whole account ready for where they’d been the night they made that offer. Nobody had even asked.',
+    '{a} has an account of that night ready to go, polished, unrequested, and gathering dust.',
+    'Somewhere in {a}’s head is a very good explanation for a conversation nobody knows happened.',
+    '{a} keeps almost bringing up that night and then not bringing it up.',
+    '{a} rehearsed it once more in the mirror, for an audience that has not asked and might never.',
+    'It is the best story {a} has and it has no occasion to be told at.',
+    '{a} has a room, a time and a reason for an hour that officially did not happen.',
+    'Every morning {a} checks the account is still there, the way you check a pocket.',
+  ],
+  'told-it-unasked': [
+    '{a} explained where {a} had been that night to somebody who had not raised it.',
+    'It came out at breakfast, unprompted, complete, and {a} heard it happening.',
+    '{a} answered a question about the weather with an alibi for a Tuesday.',
+    'Nobody had asked. {a} told them anyway, which is the one thing the account could not survive.',
+    'The story was so ready that it went off, and {a} could not get it back in.',
+    '{a} volunteered a detail nobody could have known to want and watched it land.',
+    '“Why are you telling me this,” asked the person {a} told, quite reasonably.',
+    'An unrequested alibi is worse than no alibi and {a} knew that before saying it.',
+  ],
+  'binned-it': [
+    '{a} decided that having an account ready is what gets people caught, and stopped having one.',
+    '{a} took the story apart, deliberately, and went into the day with nothing prepared.',
+    'The safest version of that night is the one {a} has not thought about, and {a} stopped thinking about it.',
+    '{a} has watched somebody be caught by being too ready and is not going to be the second.',
+    '{a} let it go before breakfast and felt lighter and considerably less safe.',
+    'What {a} kept was the truth, which is that a conversation happened, and nothing else.',
+    '{a} has decided to be surprised by the question if it ever comes.',
+    'The polished version went in the fire, more or less, and {a} did not miss it.',
+  ],
+  'they-told-it-first': [
+    'The person {a} approached has been telling it all week, and {a} found out this morning.',
+    '{a} has a beautiful account of a night that somebody else has already described out loud.',
+    'It turns out the other half of that conversation has not been treating it as a secret.',
+    '{a}’s story is airtight and is about a night the castle already has a version of.',
+    'Somebody said the thing at breakfast and {a} had to arrange a face for it.',
+    'The account {a} prepared is now a defence rather than a cover, which is a different job.',
+    '{a} learned that the person who refused has been dining out on refusing.',
+    'What {a} had was a secret. What {a} has is a position, and it is worse.',
+  ],
+};
 
 registerEvent({
   id: 'cover-decline-recruit-offer-story',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['ambiguous', 'backfire', 'accepted'],
+    voice: ['temperament', 'strategic', 'intuition'],
+    alignment: ['traitor'],
+    knowledge: ['incomplete', 'witnessed'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const debts = gs.tr?.loyaltyDebt || [];
     const actor = ctx.actors.find(n => debts.some(d => d.recruiter === n));
     return actor ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-decline-recruit-offer-story');
-    const sceneWhy = 'explained away the night they were approached';
     const debts = gs.tr?.loyaltyDebt || [];
     const actor = ctx.actors.find(n => debts.some(d => d.recruiter === n));
-    const t = api.openArc(FAMILY, [actor],
-      { source: sceneWhy, seed: lineFor(RECRUIT_COVER_LINES, `cover-decline-recruit-offer-story|${ctx.ep}`, { a: actor }) });
-    return { branch: 'recruit-story-covered', actor, threadId: t?.id };
+    // WEIGHT AND FIRE MUST AGREE. The weight has already established that one
+    // of the scene's actors is a recruiter with a standing debt; if that is
+    // somehow untrue here, the honest thing is to say so rather than open a
+    // story whose only party is `undefined` — which is precisely what this
+    // event used to do (see the header, and stage 2's report).
+    if (!actor) throw new Error('cover-decline-recruit-offer-story: no recruiter in scene — weight() and fire() disagree');
+    const st = pStats(actor);
+    // THE DEBT ITSELF: who refused, and how long ago. Both stored.
+    const mine = debts.filter(d => d.recruiter === actor);
+    const refuser = mine[0]?.player || null;
+    const age = Math.max(0, ctx.ep - (mine[0]?.ep ?? ctx.ep));
+    const scores = {
+      'recruit-story-covered': 0.4 + (st.temperament / 10) * 0.15,
+      'told-it-unasked': (1 - st.temperament / 10) * 0.3 + Math.min(3, age) * 0.05,
+      'binned-it': (st.intuition / 10) * 0.25 + Math.min(3, age) * 0.06,
+      'they-told-it-first': refuser ? 0.15 + (1 - pStats(refuser).loyalty / 10) * 0.25 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'recruit-story-covered';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'told-it-unasked' ? 'gave an alibi nobody had asked for'
+      : branch === 'binned-it' ? 'threw away an account rather than carry one'
+        : branch === 'they-told-it-first' ? 'found the other half of that night had not kept it'
+          : 'explained away the night they were approached';
+    const note = lineFor(RECRUIT_COVER_LINES[branch],
+      `cover-decline-recruit-offer-story|${branch}|${ctx.ep}`, { a: actor });
+    const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: note });
+    // TERMINAL: an account deliberately destroyed is a story that ended
+    // without anybody else ever learning it existed.
+    if (t && branch === 'binned-it') api.resolveArc(t.id, 'buried', { source: sceneWhy });
+    return { branch, actor, threadId: t?.id };
   },
 });
-
+// ── WIDENED AND REFORKED (Task 7 stage 6). A KEEP-list event, and the second
+// demonstration in this stage of why a KEEP was never "no work": three
+// branches with FOUR-line pools, on a `rare`-amplified `after-table` event, put
+// `holds` in the top five of the repetition blame table in three consecutive
+// batches. Five branches now and ten lines each.
+//
+// THE TWO ADDED BRANCHES ARE THE TWO THINGS AN ALIBI CAN DO that "hold /
+// wobble / collapse" cannot express: it can be checked against somebody else's
+// account rather than against the teller, and it can be abandoned by the
+// teller before it is broken. The record they read is the cover arc's own
+// length — how many days this account has been in the room — plus the actor's
+// stats, all stored.
 const ALIBI_CRUMBLE_LINES = {
   holds: [
-    '{a}\'s account took a real question and shrugged it off without a wobble.',
-    'Somebody tried to pull at {a}\'s alibi. It didn\'t give.',
-    'Two people came at {a}\'s account from two directions and it was the same account both times.',
+    '{a}’s account took a real question and shrugged it off without a wobble.',
+    'Somebody tried to pull at {a}’s alibi. It didn’t give.',
+    'Two people came at {a}’s account from two directions and it was the same account both times.',
     '{a} invited them to check it, which is the last thing anybody does with a story that will not hold.',
+    'The question was a good one and the answer had been ready for it since Tuesday.',
+    '{a} answered without hurrying, which is the whole of the difference.',
+    'It has been asked three ways now and come back the same shape every time.',
+    '{a} let a silence sit at the end of it rather than filling the silence, and the silence held too.',
+    'Whatever else is true about {a}, that hour is not where anybody is going to find it.',
+    'The room moved on, and {a} did not visibly relax, which is also a skill.',
   ],
   wobbles: [
-    '{a}\'s alibi survived, but it took an extra beat longer than it should have.',
-    'There was a small gap in {a}\'s story that {a} had to paper over out loud.',
+    '{a}’s alibi survived, but it took an extra beat longer than it should have.',
+    'There was a small gap in {a}’s story that {a} had to paper over out loud.',
     '{a} had to add a sentence that had not been in it yesterday, and the addition was audible.',
     'The alibi held, but {a} had to hold it, and holding it was visible work.',
+    '{a} got there. Two people watched {a} get there, which is not the same as being believed.',
+    'One hour of it came out slower than the rest, and slow is what people remember.',
+    '{a} answered the question and then answered it again slightly differently, unprompted.',
+    'It is still standing and it is not the same shape it was at breakfast.',
+    '“Roughly,” said {a}, about a time, having been exact about every other time.',
+    'Nobody said anything. Two people wrote it down in the place people write things down.',
   ],
   collapses: [
-    '{a}\'s account came apart the moment someone actually pushed on it.',
-    'The alibi didn\'t survive contact — {a} had to abandon it mid-sentence.',
-    'Somebody had been in that corridor too, and said so, and there was nothing left of {a}\'s version.',
+    '{a}’s account came apart the moment someone actually pushed on it.',
+    'The alibi didn’t survive contact — {a} had to abandon it mid-sentence.',
+    'Somebody had been in that corridor too, and said so, and there was nothing left of {a}’s version.',
     '{a} tried a third variant, in front of everybody, and it was worse than the second.',
+    'It went in one question. One, and {a} had prepared for nine.',
+    '{a} said a room that two people had already established was empty.',
+    'There is no version of that hour left that {a} can say out loud in this castle.',
+    '{a} stopped talking halfway through and could not think of anywhere for the sentence to go.',
+    'The whole thing folded, in public, at about half past nine.',
+    '{a} watched the room understand it before {a} had finished understanding it.',
+  ],
+  'checked-against-somebody': [
+    'Nobody asked {a} anything. Somebody asked three other people, and the answers did not agree with {a}’s.',
+    'The account was tested without {a} in the room, which is much harder to survive.',
+    '{a} found out at lunch that the story had been checked at breakfast.',
+    'Two other people put that hour together and {a} was not in it the way {a} had said.',
+    'It was never a question. It was a comparison, and {a} did not get to answer.',
+    'Somebody had gone round the castle with {a}’s Tuesday and collected disagreements.',
+    'The alibi is fine. The other four alibis it has to fit inside are not.',
+    'Nobody accused {a} of anything. Somebody read out three times and let them sit together.',
+    '{a} would have loved a chance to explain and was not offered one.',
+    'What broke it was arithmetic done by somebody else while {a} was elsewhere.',
+  ],
+  'abandoned-it': [
+    '{a} stopped defending it. Simply stopped, mid-week, and said “I do not remember” instead.',
+    '“I have said too much about a Tuesday,” said {a}, and would not say another word about it.',
+    '{a} withdrew the account before anybody broke it, which is the smarter and stranger move.',
+    'The story went away. {a} did not replace it with a better one, which is the point.',
+    '{a} decided that an unremembered hour is safer than a well-remembered one, and switched.',
+    'Everybody in the castle has a version of {a}’s Tuesday except {a}, as of this evening.',
+    '{a} let it drop and let the room think what it liked, and the room found that unsettling.',
+    'It is a real tactic and it costs a great deal, and {a} paid it rather than be broken.',
+    '{a} answered the next four questions with “I could not tell you,” pleasantly.',
+    'The account was retired rather than defeated, and only {a} knows the difference.',
   ],
 };
 
@@ -764,6 +1055,12 @@ registerEvent({
   // The thread is on the ACTOR, not the scene — see _threadThisEventWouldAdvance.
   threadScope: 'solo',
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire', 'rejected'],
+    voice: ['strategic', 'temperament', 'mental'],
+    alignment: ['traitor'],
+    knowledge: ['incomplete', 'witnessed'],
+  },
   weight(ctx) {
     if (!ctx.actors?.length) return 0;
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
@@ -773,39 +1070,56 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-alibi-crumbles');
-    const sceneWhy = 'their account of the night stopped holding';
     const actor = ctx.actors.find(n => isTraitor(n, ctx.ep));
     const partner = ctx.actors.find(n => n !== actor) || null;
     const st = pStats(actor);
-    const holdsScore = (st.strategic / 10) * 0.4 + (st.temperament / 10) * 0.4 + 0.1;
-    const wobblesScore = 0.35;
-    const collapsesScore = (1 - st.temperament / 10) * 0.5 + (1 - st.strategic / 10) * 0.2;
-    const total = holdsScore + wobblesScore + collapsesScore;
-    const roll = rng() * total;
-    let branch;
-    if (roll < holdsScore) branch = 'holds';
-    else if (roll < holdsScore + wobblesScore) branch = 'wobbles';
-    else branch = 'collapses';
+    const t = findOpenThread(FAMILY, [actor]);
+    // HOW LONG THIS ACCOUNT HAS BEEN IN THE ROOM, off the stored arc. The
+    // longer it has been out there, the more other people's versions it has to
+    // fit inside — which is what `checked-against-somebody` is about.
+    const days = t ? priorMoments(t, ctx.ep).length : 0;
+    const scores = {
+      holds: (st.strategic / 10) * 0.4 + (st.temperament / 10) * 0.4 + 0.1,
+      wobbles: 0.35,
+      collapses: (1 - st.temperament / 10) * 0.5 + (1 - st.strategic / 10) * 0.2,
+      'checked-against-somebody': Math.min(4, days) * 0.11,
+      'abandoned-it': (st.intuition / 10) * 0.2 + Math.max(0, days - 1) * 0.07,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'wobbles';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
-    let line = pick(rng, ALIBI_CRUMBLE_LINES[branch]).replace(/\{a\}/g, actor);
+    const sceneWhy = branch === 'checked-against-somebody' ? 'had their account checked while they were elsewhere'
+      : branch === 'abandoned-it' ? 'withdrew an account before anybody broke it'
+        : 'their account of the night stopped holding';
+    const line = pick(rng, ALIBI_CRUMBLE_LINES[branch]).replace(/\{a\}/g, actor);
     let bondDelta = 0;
     if (partner) {
-      bondDelta = branch === 'holds' ? 0.5 : branch === 'wobbles' ? -0.5 : -2;
+      bondDelta = branch === 'holds' ? 0.5
+        : branch === 'wobbles' ? -0.5
+          : branch === 'checked-against-somebody' ? -1
+            : branch === 'abandoned-it' ? -0.5 : -2;
       if (bondDelta) api.addBond(actor, partner, bondDelta, { source: sceneWhy });
     }
-    const t = findOpenThread(FAMILY, [actor]);
     const advanced = t
       ? api.advanceArc(t.id, line, { source: sceneWhy })
       : api.openArc(FAMILY, [actor], { source: sceneWhy, seed: line });
+    // TERMINAL: an account withdrawn is a story the teller ended, and
+    // `buried` is what it ended as — the room never got to break it.
+    if (advanced && branch === 'abandoned-it') {
+      api.resolveArc(advanced.id, 'buried', { source: sceneWhy });
+    }
     // THE BRANCH IS THE MOMENT. A story that holds is the villain being good
     // at this; one that collapses is the villain sweating, which the crowd
     // enjoys more and warms to slightly. A wobble is neither.
-    const colour = branch === 'holds' ? 'masterful' : branch === 'collapses' ? 'exposed' : null;
+    const colour = branch === 'holds' ? 'masterful'
+      : branch === 'collapses' ? 'exposed'
+        : branch === 'checked-against-somebody' ? 'exposed' : null;
     return { branch, actor, partner, threadId: advanced?.id, bondDelta,
       crowd: colour ? { name: actor, colour } : null };
   },
 });
-
 // ── TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ────────────
 //
 // One branch (`blended-in`) became four, and the four are four different
@@ -1057,13 +1371,60 @@ registerEvent({
   },
 });
 
-const SWAP_STORY_LINES = [
-  '{a} and {b} ran their stories past each other before anyone else was awake, and smoothed out the parts that didn\'t match.',
-  'Before the castle was up, {a} and {b} agreed on what time it had been, and stuck to it all day.',
-  '{a} and {b} found the one detail they had different and picked the duller of the two.',
-  'They rehearsed it once each, {a} then {b}, and then never spoke about it again.',
-  '{b} had put themselves in the wrong room. {a} noticed at dawn, and moved them.',
-];
+// ── REWRITE (Task 7 stage 6), AND THE AUDIT'S ROMANCE MERGE FOLDED IN ──
+//
+// The audit: "one branch (`synchronized`) — the fork is in the wording", and
+// its verdict on `romance-shared-alibi` was MERGE INTO THIS ONE — "a couple
+// synchronising an account is the swap event with a relationship on it;
+// cross-family, and the swap event should take a romance branch." It does now:
+// `two-people-who-share-a-bed` is reachable only when the pair actually has an
+// open showmance arc, which is a stored fact and not an assumption about them.
+//
+// THE RECORD THE FORK READS is still what {a} KNOWS and never what {b} IS —
+// the weight's `knowsAlignmentOf` is unchanged and the long note below still
+// governs — plus the arc's own beat count and both mentals.
+const SWAP_STORY_LINES = {
+  synchronized: [
+    '{a} and {b} ran their stories past each other before anyone else was awake, and smoothed out the parts that didn’t match.',
+    'Before the castle was up, {a} and {b} agreed on what time it had been, and stuck to it all day.',
+    '{a} and {b} found the one detail they had different and picked the duller of the two.',
+    'They rehearsed it once each, {a} then {b}, and then never spoke about it again.',
+    '{b} had put themselves in the wrong room. {a} noticed at dawn, and moved them.',
+    'Two accounts went into that kitchen and one came out, twice.',
+    'It took four minutes and it is the most important four minutes either of them will spend today.',
+    '{a} and {b} agreed on a boring hour, which is the only kind that survives.',
+  ],
+  'too-identical': [
+    '{a} and {b} matched it so exactly that two people who were there noticed the matching.',
+    'Nobody agrees about a Tuesday to the minute. {a} and {b} did, out loud, in front of somebody.',
+    'They smoothed it until there was nothing left to be different about, which is itself a difference.',
+    '{a} used {b}’s phrase and {b} used {a}’s, and both of them heard it happen too late.',
+    'Two accounts identical to the word is one account read twice, and the room can hear that.',
+    '{a} and {b} rehearsed the disagreement as well and delivered it in the same order.',
+    'It is airtight and it is the wrong shape, and neither of them can now make it the right one.',
+    'Somebody said “you two have talked about this,” which is true and unanswerable.',
+  ],
+  'would-not-square-it': [
+    '{a} came to smooth it and {b} would not move a single detail, and gave no reason.',
+    '“I am not changing what I saw,” said {b}, at dawn, to somebody who very much needed {b} to.',
+    '{b} refused to have the conversation at all and went back to bed.',
+    '{a} needed one hour moved and {b} would not move it, and now there are two Tuesdays.',
+    'It is not a disagreement about a fact. It is {b} declining to be managed, and {a} understood that.',
+    '{b} has decided to be somebody who tells the truth about small things, starting this week.',
+    '{a} left the kitchen with a problem {a} had gone in to solve.',
+    'Whatever the two of them are, they are not this, and {b} said so before six in the morning.',
+  ],
+  'were-together-anyway': [
+    '{a} and {b} did not have to arrange anything. They had been in the same room and said so.',
+    'It is the easiest alibi in the castle and the least useful one, and both of them know it.',
+    '{a} and {b} synchronised nothing, because there was nothing to synchronise, and it will not help.',
+    'The account is true, complete and worth precisely nothing to anybody listening.',
+    'Two people who are always together agreeing about a night is not evidence, and {b} said so first.',
+    'They spent the four minutes on whether to say it at all rather than on what to say.',
+    '{a} wanted to invent somebody else in the room. {b} pointed out that there had not been anybody.',
+    'What {a} and {b} have is the truth, which in this building is a considerable handicap.',
+  ],
+};
 
 registerEvent({
   id: 'cover-swap-story-with-partner',
@@ -1074,6 +1435,12 @@ registerEvent({
   family: FAMILY,
   window: 'dawn',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'backfire', 'rejected', 'ambiguous'],
+    voice: ['mental', 'temperament', 'loyalty'],
+    alignment: ['traitor'],
+    relationship: ['close-ally'],
+  },
   // THE ONE PLACE IN THIS FILE WHERE THE SECOND NAME IS NOT READ OFF GROUND
   // TRUTH (whole-plan review, finding 3). Every other event here gates on the
   // ACTOR's own role, which is self-knowledge and costs nothing. This one
@@ -1088,21 +1455,53 @@ registerEvent({
     const [a, b] = ctx.actors;
     return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-swap-story-with-partner');
-    const sceneWhy = 'synchronised an account with somebody else';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
+    const sa = pStats(a);
+    const sb = pStats(b);
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = lineFor(SWAP_STORY_LINES, `cover-swap-story-with-partner|${ctx.ep}`, { a, b });
+    const times = existing ? priorMoments(existing, ctx.ep).length : 0;
+    // THE MERGED PREMISE, GATED ON A STORED FACT — AND WIDENED, BECAUSE THE
+    // FIRST GATE WAS THE SHAPE STAGE 1 WARNED ABOUT. It required an open
+    // showmance arc on top of this event's own Traitor-pact precondition, and
+    // a Traitor pair who are also a couple measured THREE firings in 4,200
+    // seasons: `tests/tr-castle-prose.test.js`'s own guard-on-the-guard
+    // reddened on it, which is exactly what that arm exists to catch. What the
+    // branch actually needs is that these two were together anyway, so the
+    // true account is the only account — an open romance arc of either stage,
+    // or a stored bond high enough that being in the same room all evening is
+    // simply what happened. All three are looked up, none is assumed.
+    const together = !!findOpenThread('romance-showmance', [a, b])
+      || !!findOpenThread('romance-spark', [a, b])
+      || getBond(a, b) >= 5;
+    const scores = {
+      synchronized: 0.4 + (sa.mental / 10) * 0.2,
+      'too-identical': Math.min(3, times) * 0.12 + (sa.mental / 10) * 0.15,
+      'would-not-square-it': (sb.loyalty / 10) * 0.25 + (sb.temperament / 10) * 0.15,
+      'were-together-anyway': together ? 0.55 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'synchronized';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'too-identical' ? 'matched an account so exactly that the matching showed'
+      : branch === 'would-not-square-it' ? 'would not move a detail for somebody who needed it moved'
+        : branch === 'were-together-anyway' ? 'had the true account and the useless one'
+          : 'synchronised an account with somebody else';
+    const note = lineFor(SWAP_STORY_LINES[branch], `cover-swap-story-with-partner|${branch}|${ctx.ep}`,
+      { a, b });
+    const bondDelta = branch === 'synchronized' ? 1
+      : branch === 'too-identical' ? 0.5
+        : branch === 'would-not-square-it' ? -1.5 : 1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'synchronized', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
-
-
 // -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
 //
 // The `night` window runs LAST in the round - after the Round Table and after

@@ -23,7 +23,7 @@ import { getBond } from '../../bonds.js';
 import { registerEvent, isNervy, emotionalStateOf } from '../events.js';
 import { sceneApi, arcAdvanceCiting } from './effects.js';
 import {
-  findOpenThread, openThreadsFor, heatAt, lastClosedThread, outcomeSense,
+  findOpenThread, openThreadsFor, heatAt, lastClosedThread, outcomeSense, priorMoments,
 } from '../threads.js';
 // A PURE READ of what somebody already thinks — the same import
 // js/tr/castle/suspicion.js holds, and it writes nothing.
@@ -390,13 +390,56 @@ registerEvent({
 // so the RARE_MULTIPLIER guard in events.js can do its job: a rare event
 // that never gets the amplification cannot outbid common events on raw
 // weight, no matter how good it reads).
-const CIRCLE_LINES = [
-  '{a} and {b} agreed, without quite saying the word, that they were a unit now.',
-  'Nobody said "alliance". {a} and {b} both left the conversation knowing that was what it had been.',
-  '{a} started saying "we" about things {a} used to say "I" about, and {b} did not correct it.',
-  'It was decided somewhere between the stairs and the door, by {a} and {b}, and never announced.',
-  '{b} said "you and me, then," and {a} said "you and me," and that was the whole ceremony.',
-];
+// ── REWRITE (Task 7 stage 6). The audit's verdict was MERGE into
+// `trust-confide-fear`, and stage 5 folded the premise in there as a branch.
+// This keeps its registration on the standing reasoning — an `evening` scene
+// is worth more than a tidy registry — and earns it by forking on the one
+// thing confide-fear cannot reach: a unit of two is not the only kind. The
+// record the fork reads is the living roster and the bond each of them has
+// with a third person, because whether this is a pair or the start of a bloc
+// is a fact about the room and not about the two of them.
+const CIRCLE_LINES = {
+  circle: [
+    '{a} and {b} agreed, without quite saying the word, that they were a unit now.',
+    'Nobody said “alliance”. {a} and {b} both left the conversation knowing that was what it had been.',
+    '{a} started saying “we” about things {a} used to say “I” about, and {b} did not correct it.',
+    'It was decided somewhere between the stairs and the door, by {a} and {b}, and never announced.',
+    '{b} said “you and me, then,” and {a} said “you and me,” and that was the whole ceremony.',
+    'Neither of them will admit tomorrow that this happened, and both of them will act on it.',
+    'The word was avoided so carefully that avoiding it became the agreement.',
+    '{a} and {b} went to bed as two people and came down as one thing.',
+  ],
+  'said-the-word': [
+    '“It is an alliance,” {b} said. “Say it.” And {a} said it, which nobody here does.',
+    'Somebody used the actual word out loud, in a room with a door, and the door was open.',
+    '{a} named it, formally, and immediately wished the sentence back and could not have it.',
+    '“We are an alliance,” said {a}, and {b} laughed and then agreed and then stopped laughing.',
+    'It got a name this evening. Things with names in this castle get found.',
+    '{b} insisted on the word, on the grounds that a thing without a name is a thing you can leave.',
+    'They said it plainly to each other, which is either courage or a filing error.',
+    'The word was said once and neither of them will say it again all season.',
+  ],
+  'three-of-us': [
+    'It was two people until {a} said {c}’s name, and then it was three.',
+    '{b} agreed to the unit on condition that {c} was in it, and {a} did not argue.',
+    '{a} and {b} became a unit and then immediately spent half an hour on whether {c} counted.',
+    '“And {c},” said {b}, which was not what {a} had been proposing, and was what happened.',
+    'Two is a friendship and three is a bloc, and by bedtime {a}, {b} and {c} were the second thing.',
+    '{a} brought {c} into it without asking {c}, which is how most of these start.',
+    'The unit had a third member before it had a first conversation.',
+    '{b} wanted numbers. {a} wanted {b}. Between them they got {c}.',
+  ],
+  'not-this-week': [
+    'It very nearly became a thing with a shape, and then {b} said “let’s see how tonight goes.”',
+    '{a} offered the unit and {b} declined to name it, warmly, and both of them noticed.',
+    '“Can we not decide that this week,” {b} said, which is a decision.',
+    'They agreed on everything except being a “we”, which is the only part {a} had wanted.',
+    '{b} likes {a} enormously and will not be tied to {a} in front of a table.',
+    'The conversation stopped one sentence short and both of them heard where it stopped.',
+    '{a} pushed for it and {b} did not push back and did not agree, which is worse than either.',
+    'It stayed two people who get on, which is what {b} wanted and not what {a} had asked for.',
+  ],
+};
 
 registerEvent({
   id: 'trust-circle-forms',
@@ -409,70 +452,100 @@ registerEvent({
   // testing and breaking them.
   acts: { early: 1.4, middle: 1.2, late: 0.5 },
   rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['boldness', 'strategic', 'loyalty'],
+    relationship: ['close-ally'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     return getBond(a, b) >= 4 ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-circle-forms');
-    const sceneWhy = 'became a unit without saying so';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(CIRCLE_LINES, `trust-circle-forms|${ctx.ep}`, { a, b }) });
-    return { branch: 'circle', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // THE THIRD PERSON, READ OFF THE ROOM. `three-of-us` needs somebody for
+    // the pair to argue about, and picks the person {b} is actually closest
+    // to — a stored bond, not a name pulled out of the air.
+    const others = (ctx.living || []).filter(n => n !== a && n !== b);
+    let c = null, best = -Infinity;
+    for (const n of others) { const v = getBond(b, n); if (v > best) { best = v; c = n; } }
+    const scores = {
+      circle: 0.45,
+      'said-the-word': (sb.boldness / 10) * 0.3 + (sa.boldness / 10) * 0.15,
+      'three-of-us': c && best >= 2 ? 0.2 + Math.max(0, best) * 0.06 : 0,
+      // NAMED `not-this-week` and not `not-yet`, because `not-yet` already
+      // means something benign in `romance-showmance-on-the-way-back` and one
+      // branch string cannot mean two things to `_tone`. The denylist arm in
+      // tr-castle-prose.test.js caught it, which is what it is for.
+      'not-this-week': (sb.strategic / 10) * 0.25 + (1 - sb.loyalty / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'circle';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'said-the-word' ? 'used the word out loud'
+      : branch === 'three-of-us' ? 'made a pair into a bloc'
+        : branch === 'not-this-week' ? 'declined to name it this week'
+          : 'became a unit without saying so';
+    const note = lineFor(CIRCLE_LINES[branch], `trust-circle-forms|${branch}|${ctx.ep}`,
+      { a, b, c: c || b });
+    const bondDelta = branch === 'not-this-week' ? -0.5 : branch === 'said-the-word' ? 2 : 1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    if (branch === 'three-of-us' && c) api.addBond(a, c, 1, { source: sceneWhy });
+    const t = api.openArc(FAMILY, branch === 'three-of-us' && c ? [a, b, c] : [a, b],
+      { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
-
-// ── FLAGSHIP: the vote commitment test — a check, not a coin ───────────
-//
-// "Will you vote with me tonight?" is not one event with eight phrasings. It
-// is a fork with FOUR distinct outcomes, and each one writes different
-// residue and leaves a different story open:
-//   KEPT      — the commitment holds. Warms the pair, and is itself evidence
-//               the next writer can build a "who keeps their word" thread on.
-//   BROKEN    — the ask is honoured in the room and abandoned in the booth.
-//               The asker's trust in this person takes real, lasting damage.
-//   DEFLECTED — no promise either way. Nothing moves much, but the ask itself
-//               is now on the record (residue), which is what lets a LATER
-//               event reference "the time they wouldn't commit."
-//   TURNED    — the asked flips the dynamic and asks the asker to commit
-//               FIRST. Structural, not just narrated: the prior thread (if
-//               any) is CLOSED with outcome 'turned-back' and the new one is
-//               opened with `parties` REVERSED, so `thread.parties[0]` tells
-//               a downstream reader who is actually on the spot now — see
-//               the comment in fire() for why party order survives the
-//               sorted lookup key.
-//
-// The fork is driven by the asked player's own stats plus the EXISTING bond,
-// not a bare RNG draw dressed up after the fact — a real check has to be
-// something an author could get wrong by mutating, which is exactly what the
-// mutation pass below exercises.
 const COMMIT_LINES = {
   kept: [
     '{b} looked {a} in the eye and said "count on it" — with none of the usual room left around the promise.',
     '{b} gave {a} one name, plainly, and did not hedge when {a} asked a second time.',
     '{b} made the promise cleanly enough that {a} stopped checking for an exit hidden inside it.',
     '{a} asked for certainty. {b} answered with the one name they genuinely intended to put down.',
+    '{b} said the name without being pushed and did not ask for {a}’s in return.',
+    'It is the only straight answer {a} has had all week and {a} knew it while hearing it.',
+    '{b} wrote that name tonight, which {a} found out later and had already believed.',
+    '“Ask me anything else and I will lie,” said {b}, “but that one is true.”',
+    '{b} committed, out loud, with a date on it, which nobody in this castle does.',
   ],
   broken: [
     '{b} promised {a} their vote, smiled, and kept the name they actually intended to write to themselves.',
     '{a} believed {b}. {b} left the conversation knowing the promise was false.',
     '{b} said the name {a} needed to hear and privately kept a different one.',
     'The promise sounded firm. It was already broken in {b}\'s head.',
+    '{b} said a name {b} had no intention of writing and said it beautifully.',
+    'It was a good promise and it had about four hours left in it.',
+    '{b} meant it at the time, which is the version that costs the most later.',
+    '{a} will find out at the table, along with everybody else.',
+    '{b} said yes because yes ended the conversation, and that was the whole of the reason.',
   ],
   deflected: [
     '{b} never actually said yes — they talked around it until {a} stopped pushing.',
     '{a} asked for a number. {b} gave them a vibe.',
     '{b} agreed with everything {a} said and committed to none of it.',
     '{a} asked twice. {b} answered a slightly different question both times.',
+    '{b} talked about the vote at length without ever naming anybody in it.',
+    '“I am with you,” said {b}, which is not a name and both of them knew it.',
+    '{b} gave {a} a shape and would not give {a} a person.',
+    '{a} counted the words afterwards and there had not been a name among them.',
+    '{b} promised to talk about it later, which is the castle’s way of saying no.',
   ],
   turned: [
     '{b} answered the ask with an ask of their own: "you first."',
     'Instead of committing, {b} turned it around on {a} — now THEY owe an answer.',
     '{b} wanted to know why {a} needed to know, and would not move until {a} answered that.',
     'By the end {a} had made a promise and {b} had made none, and neither had planned that.',
+    '{b} asked {a} for the same thing first, and got it, and did not reciprocate.',
+    '{a} came to extract a commitment and left having given one.',
+    '“Who are YOU writing,” said {b}, before {a} had finished the question.',
+    'It was a beautifully run conversation and {a} was not the one running it.',
+    '{a} has a name to write and {b} has {a}’s, and only one of those is useful.',
   ],
 };
 
@@ -545,68 +618,194 @@ registerEvent({
   },
 });
 
-const HUDDLE_LINES = [
-  '{a} and {b} sat close after last night, and neither one pretended they weren\'t scared.',
-  '{a} and {b} found each other before anybody else was down, and stayed together all morning.',
-  'Neither {a} nor {b} said the word "frightened". They sat shoulder to shoulder for an hour instead.',
-  '{a} got to {b} first, and {b} had been waiting to be got to.',
-  'Whatever else was true this morning, {a} and {b} were not going to be alone in it.',
-];
+// ── REWRITE (Task 7 stage 6). The audit: "one branch (`huddled`) — the fork
+// is in the wording." Two frightened people finding each other after a murder
+// is the right premise and it had one ending, which is that it always worked.
+// The record the fork reads is how many the castle has actually lost — counted
+// off `gs.tr.rounds`, never asserted — plus both temperaments. The fourth body
+// is not the first body, and by then some people want company and some people
+// cannot stand to be touched.
+const HUDDLE_LINES = {
+  huddled: [
+    '{a} and {b} sat close after last night, and neither one pretended they weren’t scared.',
+    '{a} and {b} found each other before anybody else was down, and stayed together all morning.',
+    'Neither {a} nor {b} said the word “frightened”. They sat shoulder to shoulder for an hour instead.',
+    '{a} got to {b} first, and {b} had been waiting to be got to.',
+    'Whatever else was true this morning, {a} and {b} were not going to be alone in it.',
+    'They did not talk about the game once, which by this stage of a week is remarkable.',
+    '{b} put a hand on {a}’s arm and left it there for the whole of the announcement.',
+    'Two people who had been careful with each other stopped being careful for about an hour.',
+  ],
+  'counted-the-room': [
+    'It started as comfort and was a strategy meeting inside ten minutes.',
+    '{a} and {b} were still frightened at the end of it, and now they also had a list.',
+    '“Right,” {b} said, when the crying stopped, “who was up?” — and that was the rest of the morning.',
+    'The huddle turned into arithmetic, because arithmetic is the only comfort available in here.',
+    '{a} wanted to be held. {b} wanted to work out who did it, and {b} won.',
+    'Grief lasted about four minutes. Then somebody said a name and it became a different room.',
+    'They counted the chairs, then the people, then the people who had been awake, and felt better for it.',
+    '{a} found that being useful was easier than being sad, and {b} let {a} be useful.',
+  ],
+  'could-not-be-near-anyone': [
+    '{a} went to sit with {b} and {b} could not do it this morning, and said so, and meant nothing by it.',
+    '{b} had been handled by four people already and could not take a fifth.',
+    '“Not now,” {b} said, without looking up, and {a} took it well and did not take it well.',
+    '{a} offered the same thing that worked on Tuesday and it did not work today.',
+    '{b} wanted to be somewhere with nobody in it, and there is nowhere in this castle like that.',
+    'It is possible to be too frightened to be comforted. {b} got there this morning.',
+    '{a} sat down anyway, at a distance, and neither of them said anything for twenty minutes.',
+    '{b} apologised for it afterwards, which made both of them feel worse.',
+  ],
+  'went-round-the-room': [
+    '{a} did not sit with {b}. {a} sat with everybody in turn, and {b} watched {a} do it.',
+    'By nine o’clock {a} had comforted five people and {b} had noticed it was five.',
+    '{a} is very good at this, and being very good at this is a thing worth noticing about somebody.',
+    '{b} was grateful for the ten minutes and then saw the same ten minutes given to three others.',
+    'The kindness was real and it was also, from a certain angle, a tour.',
+    '{a} made sure nobody was alone this morning, which is either decency or coverage.',
+    '{b} could not decide whether {a} was the kindest person here or the busiest.',
+    'Everybody got the same sentence from {a}, word for word, which {b} clocked at the fourth repeat.',
+  ],
+};
 
 registerEvent({
   id: 'trust-post-murder-huddle',
   family: FAMILY,
   window: 'dawn',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['temperament', 'social', 'strategic'],
+    relationship: ['close-ally', 'neutral'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     if (getBond(a, b) < 0) return 0;
     return _sawMurderLastNight(ctx) ? 2 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-post-murder-huddle');
-    const sceneWhy = 'huddled after the news';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(HUDDLE_LINES, `trust-post-murder-huddle|${ctx.ep}`, { a, b }) });
-    return { branch: 'huddled', pair: [a, b], threadId: t?.id, bondDelta: 2 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    // HOW MANY THIS CASTLE HAS LOST, counted off the stored rounds.
+    const lost = (gs.tr?.rounds || []).filter(r => r.murdered || r.banished).length;
+    const scores = {
+      huddled: 0.45 + (sb.temperament / 10) * 0.15,
+      'counted-the-room': (sb.strategic / 10) * 0.3 + Math.min(4, lost) * 0.06,
+      'could-not-be-near-anyone': (1 - sb.temperament / 10) * 0.25 + Math.min(4, lost) * 0.05,
+      'went-round-the-room': (sa.social / 10) * 0.3 - (getBond(a, b) > 4 ? 0.15 : 0),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'huddled';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'counted-the-room' ? 'turned a huddle into arithmetic'
+      : branch === 'could-not-be-near-anyone' ? 'could not be comforted this morning'
+        : branch === 'went-round-the-room' ? 'comforted everybody in turn'
+          : 'huddled after the news';
+    const note = lineFor(HUDDLE_LINES[branch], `trust-post-murder-huddle|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'huddled' ? 2
+      : branch === 'counted-the-room' ? 1
+        : branch === 'could-not-be-near-anyone' ? -0.5 : 0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
-
-const PACT_LINES = [
-  '{a} and {b} made it explicit: whatever happens, neither one puts the other\'s name down.',
-  '{a} said it plainly to {b} — never you, not once, not even as a spare.',
-  'They shook on it, {a} and {b}, which nobody in this castle does lightly.',
-  '{b} asked {a} for the one guarantee worth having, and got it, and gave it back.',
-  '{a} and {b} agreed there was no version of any night where either wrote the other down.',
-];
+const PACT_LINES = {
+  pact: [
+    '{a} and {b} made it explicit: whatever happens, neither one puts the other’s name down.',
+    '{a} said it plainly to {b} — never you, not once, not even as a spare.',
+    'They shook on it, {a} and {b}, which nobody in this castle does lightly.',
+    '{b} asked {a} for the one guarantee worth having, and got it, and gave it back.',
+    '{a} and {b} agreed there was no version of any night where either wrote the other down.',
+    'It took about nine words and neither of them needed the tenth.',
+    '{a} offered and {b} accepted before {a} had finished offering.',
+    'Two people promised each other the only thing worth promising in here, and both meant it.',
+  ],
+  'with-one-exception': [
+    '“Unless it is the two of us at the end,” {b} said, and {a} agreed, and both of them heard the size of it.',
+    '{b} signed up to all of it except the last night, which is the only night it matters.',
+    'The promise came with a carve-out, and the carve-out was written by {b}, not {a}.',
+    '“Never, unless I have to,” is not a promise, and {a} took it anyway.',
+    '{a} wanted it absolute. {b} would only make it conditional, and said why, at length.',
+    'They agreed on everything up to the point where agreeing costs something.',
+    '{b} added a clause. In this castle a clause is a plan.',
+    '{a} noticed the exception, decided not to argue it tonight, and will be thinking about it.',
+  ],
+  'one-way': [
+    '{a} promised. {b} said something warm that was not a promise, and {a} noticed the gap.',
+    '{a} gave {b} the guarantee and got a "you know how I feel about you" back.',
+    'One of them made a commitment and the other made a sound.',
+    '{b} would not say the words, and would not say why {b} would not say the words.',
+    '{a} heard themselves promising and then heard the silence where the other half should have been.',
+    'It was a pact with one signature on it, and {a} signed anyway.',
+    '{b} said “obviously,” which is the cheapest word in the castle, and {a} accepted it.',
+    '{a} walked away having given something and carrying nothing.',
+  ],
+  'said-it-again': [
+    'They have promised each other this before. Saying it again is either reassurance or a symptom.',
+    '{a} asked for it a second time, which told {b} something {a} had not meant to say.',
+    'The words were the same as last time. The reason for needing them was not.',
+    '{a} and {b} renewed a promise neither of them had broken, and both wondered why it needed renewing.',
+    'It is the third time. {b} counted, privately, and did not mention the count.',
+    'A pact restated is a pact somebody has started to doubt, and both of them know that.',
+    '{a} said “we are still all right, aren’t we,” which is not a question people ask when they are.',
+    'They shook on it again. The handshake was fractionally shorter than last time.',
+  ],
+};
 
 registerEvent({
   id: 'trust-protect-pact',
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['loyalty', 'strategic', 'boldness'],
+    relationship: ['close-ally'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     if (getBond(a, b) < 3) return 0;
     return findOpenThread(FAMILY, [a, b]) ? 3 : 1;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-protect-pact');
-    const sceneWhy = 'agreed to protect each other';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
-    const note = lineFor(PACT_LINES, `trust-protect-pact|${ctx.ep}`, { a, b });
+    // HOW MANY TIMES THEY HAVE ALREADY DONE THIS, off the stored arc.
+    const times = existing ? priorMoments(existing, ctx.ep).length : 0;
+    const sb = pStats(b);
+    const scores = {
+      pact: 0.4 + (sb.loyalty / 10) * 0.3,
+      'with-one-exception': (sb.strategic / 10) * 0.35,
+      'one-way': (1 - sb.loyalty / 10) * 0.3 + (1 - sb.boldness / 10) * 0.15,
+      'said-it-again': Math.min(3, times) * 0.18,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'pact';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'with-one-exception' ? 'agreed to protect each other, with a clause'
+      : branch === 'one-way' ? 'promised and was not promised back'
+        : branch === 'said-it-again' ? 'renewed a promise neither of them had broken'
+          : 'agreed to protect each other';
+    const note = lineFor(PACT_LINES[branch], `trust-protect-pact|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'pact' ? 1
+      : branch === 'with-one-exception' ? 0.5
+        : branch === 'said-it-again' ? 0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'pact', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
-
 // ── REWRITE (Task 7 stage 5). `trust-late-checkin:checked-in` was the
 // second-loudest repeat in the castle (16 of 144 loud seasons over 800),
 // and for the same reason as `grief-keepsake`: one branch, a five-line pool,
@@ -786,20 +985,80 @@ function _sawMurderLastNight(ctx) {
 
 // ── Task 6 additions: scaling the family without diluting it ──────────
 
-const SHARE_SUSPICION_LINES = [
-  '{a} told {b}, flat out, who they were actually worried about — no hedging.',
-  '{a} handed {b} a real read on {c}, the kind you only give someone you trust.',
-  '{a} could have hedged about {c} and did not, which {b} noticed and valued.',
-  '"It\'s {c}," said {a}, with nothing else attached, and let {b} do what they liked with it.',
-  '{a} gave {b} the unflattering version of what they thought about {c}, out loud, first.',
-  '{b} asked {a} straight and {a} answered straight, and {c}\'s name was in the answer.',
-];
+// ── REWRITE (Task 7 stage 6). Top of the blame table after the romance batch.
+// The audit: "one branch (`shared-suspicion`) — the fork is in the wording,
+// not in the game."
+//
+// HONESTY IS AN OFFER AND THE OTHER PERSON ANSWERS IT, which is the shape the
+// whole family runs on. The record the fork reads is `suspicion(b, c, ep)` —
+// what {b} ALREADY thinks about the person {a} has just named, which is stored
+// and is the difference between handing somebody a gift and handing them an
+// argument. Nothing here invents a read; it looks one up and lets {b}'s
+// personality decide how {b} answers it.
+const SHARE_SUSPICION_LINES = {
+  'shared-suspicion': [
+    '{a} told {b}, flat out, who they were actually worried about — no hedging.',
+    '{a} handed {b} a real read on {c}, the kind you only give someone you trust.',
+    '{a} could have hedged about {c} and did not, which {b} noticed and valued.',
+    '“It’s {c},” said {a}, with nothing else attached, and let {b} do what they liked with it.',
+    '{a} gave {b} the unflattering version of what they thought about {c}, out loud, first.',
+    '{b} asked {a} straight and {a} answered straight, and {c}’s name was in the answer.',
+    '{a} named {c} without being asked to, which in this castle is a form of payment.',
+    'No conditions, no “do not repeat this” — {a} simply told {b} about {c} and let it go.',
+  ],
+  'both-had-it': [
+    '{a} said {c}. {b} had been sitting on {c} for two days and said so, and the morning changed shape.',
+    'Two people arrived at {c} separately, and by the end of the conversation they were a plan.',
+    '“Say a name,” {b} said. They both said {c}, and then neither of them said anything for a moment.',
+    '{a} named {c} and watched {b}’s face do the thing a face does when it has already got there.',
+    'It stopped being a confidence the second {b} agreed, and started being an arrangement.',
+    '{a} and {b} discovered they had the same person and spent the rest of it deciding what to do about it.',
+    'The relief on both sides was the most honest thing either of them had shown all week.',
+    '{b} produced three reasons for {c} that {a} had not thought of, which settled it.',
+  ],
+  'defended-them': [
+    '{a} named {c}, and {b} spent ten minutes explaining why {a} was wrong about {c}.',
+    '{b} likes {c}. {a} found that out the hard way, in the middle of being honest.',
+    '“Not {c},” {b} said, straight away, and {a} had to decide what that meant about {b}.',
+    '{a} gave {b} the real version and {b} gave it straight back, unopened.',
+    'It was meant as a gift. {b} treated it as an accusation against somebody {b} was not prepared to lose.',
+    '{a} learned something in that conversation, and it was not about {c}.',
+    '{b} asked {a} what evidence there was, which is a fair question and was not the point.',
+    'The honesty cost {a} exactly what honesty usually costs, which is the person you spent it on.',
+  ],
+  'took-it-back': [
+    '{a} named {c} and then, four seconds later, asked {b} not to repeat that, which was worse than not saying it.',
+    '“Forget I said that,” {a} said, having said it, and {b} did not forget it.',
+    '{a} heard the name leave their own mouth and spent the rest of the morning walking it back.',
+    'The honest version came out and then {a} put three qualifications on it and ruined all three.',
+    '{a} gave {b} something real and then asked for it back, which is not how this works.',
+    '{b} agreed not to repeat it and will be thinking about why {b} was asked.',
+    '{a} said {c}’s name once and then would not say it again, and {b} noticed the difference.',
+    'What {b} took away was not the read. It was that {a} was frightened of having given it.',
+  ],
+  'made-them-pay-first': [
+    '“You first,” {a} said, and {b} went first, and only then did {a} say {c}.',
+    '{a} would not name anybody until {b} had, which is trust with a receipt attached.',
+    'It was a trade rather than a confidence, and both of them knew which it was.',
+    '{a} priced the read before giving it and {b} paid without complaining about the price.',
+    '{b} said a name to buy one, and the one {b} bought was {c}.',
+    '{a} has learned not to spend first in here, and {b} did not hold it against {a}.',
+    'They swapped, evenly, and the evenness is the whole of what happened.',
+    '{a} made {b} go first about {c} and then went further than {b} had, which squared it.',
+  ],
+};
 
 registerEvent({
   id: 'trust-share-suspicion-honestly',
   family: FAMILY,
   window: 'morning',
   advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'social', 'strategic', 'intuition'],
+    relationship: ['close-ally', 'neutral'],
+    knowledge: ['witnessed', 'incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     if ((ctx.living || []).length < 3) return 0;
@@ -808,27 +1067,98 @@ registerEvent({
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-share-suspicion-honestly');
-    const sceneWhy = 'shared a suspicion honestly';
     const [a, b] = ctx.actors;
     const others = ctx.living.filter(n => n !== a && n !== b);
     const target = pick(rng, others.length ? others : [b]);
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const note = pick(rng, SHARE_SUSPICION_LINES).replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, target);
+    const sb = pStats(b);
+    // WHAT {b} ALREADY THINKS ABOUT THE PERSON {a} HAS JUST NAMED. Stored, and
+    // it is the whole fork: agreeing is easy when you already had the name,
+    // and defending them is what happens when you had the opposite of it.
+    const theirRead = suspicion(b, target, ctx.ep);
+    const bond = getBond(b, target);
+    const scores = {
+      'shared-suspicion': 0.4 + (pStats(a).loyalty / 10) * 0.2,
+      'both-had-it': Math.max(0, theirRead) * 0.25,
+      'defended-them': Math.max(0, bond) * 0.08 + (theirRead > 0 ? 0 : 0.2),
+      'took-it-back': (1 - pStats(a).temperament / 10) * 0.3,
+      'made-them-pay-first': (pStats(a).strategic / 10) * 0.25 + (1 - pStats(a).loyalty / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'shared-suspicion';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'both-had-it' ? 'found they had the same name and made it a plan'
+      : branch === 'defended-them' ? 'named somebody the other person was not prepared to lose'
+        : branch === 'took-it-back' ? 'said a name and immediately asked for it back'
+          : branch === 'made-them-pay-first' ? 'would not name anybody until the other one had'
+            : 'shared a suspicion honestly';
+    const note = lineFor(SHARE_SUSPICION_LINES[branch],
+      `trust-share-suspicion-honestly|${branch}|${ctx.ep}`, { a, b, c: target });
+    const bondDelta = branch === 'both-had-it' ? 2
+      : branch === 'shared-suspicion' ? 1
+        : branch === 'made-them-pay-first' ? 0.5
+          : branch === 'took-it-back' ? -0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch: 'shared-suspicion', pair: [a, b], about: target, threadId: t?.id, bondDelta: 1 };
+    // TERMINAL: an honest read that gets handed straight back has ended, and
+    // `buried` is what the two of them do with it afterwards.
+    if (t && branch === 'defended-them') api.resolveArc(t.id, 'buried', { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
+      threadId: t?.id, bondDelta };
   },
 });
-
-const INVITE_LINES = [
-  '{a} told {b}, in so many words: you\'re one of the people I\'m actually playing this with.',
-  '{a} let {b} see the whole plan, including the parts that made {a} look bad.',
-  'There is a shorter list than the one {a} talks about, and {a} told {b} they were on it.',
-  '{a} stopped managing {b} and started including them, and said so.',
-  '{b} realised halfway through that {a} was telling them the real version, and {a} let them realise it.',
-];
+// ── REWRITE (Task 7 stage 6). MERGE-verdict event, kept for the same reason
+// the other two in this file are, and forked on the thing an invitation
+// actually has that a confidence does not: an answer with a price on it. The
+// record the fork reads is the stored bond and {b}'s strategic and loyalty —
+// somebody who has been on the outside of a plan all week does not accept
+// being let in the same way as somebody who assumed they already were.
+const INVITE_LINES = {
+  'invited-in': [
+    '{a} told {b}, in so many words: you’re one of the people I’m actually playing this with.',
+    '{a} let {b} see the whole plan, including the parts that made {a} look bad.',
+    'There is a shorter list than the one {a} talks about, and {a} told {b} they were on it.',
+    '{a} stopped managing {b} and started including them, and said so.',
+    '{b} realised halfway through that {a} was telling them the real version, and {a} let them realise it.',
+    'It is not a big speech. It is one sentence with a “we” in it that {a} has never used before.',
+    '{a} told {b} the thing {a} has told nobody, and then told {b} who else knows, which is nobody.',
+    '{b} has been in the outer version of this conversation for a week and did not know there was an inner one.',
+  ],
+  'showed-the-worst-of-it': [
+    '{a} did not lead with the flattering part. {a} led with the part that makes {a} look bad.',
+    '“Before you say yes,” {a} said, “here is what I did on the second night.”',
+    '{a} handed {b} something {b} could destroy {a} with, on purpose, as the price of entry.',
+    'It was an invitation shaped like a confession, and {b} understood the shape.',
+    '{a} told the version of the week that has {a} in the wrong, which is the only version worth telling.',
+    '{b} had assumed there would be an audition. There was, and {a} was the one auditioning.',
+    '{a} gave {b} the loaded half first and let {b} decide what to do with it.',
+    'What {a} put on the table was not a plan. It was a way for {b} to end {a}.',
+  ],
+  'asked-what-it-costs': [
+    '{b} said yes, and then asked what {b} was expected to do about it on Thursday.',
+    '“And in return?” {b} asked, pleasantly, and {a} had not prepared an answer.',
+    '{b} accepted the invitation and priced it in the same breath.',
+    '{a} offered friendship. {b} heard an arrangement and negotiated it like one.',
+    '{b} wanted the terms written down, more or less, which is not what {a} had in mind.',
+    'It became a deal about four sentences after it stopped being a compliment.',
+    '{b} is in. {b} would like it understood exactly what being in means on a bad night.',
+    '{a} was let into {b}’s plan in exchange, which was fair and was not what {a} had expected.',
+  ],
+  declined: [
+    '{b} said no. Kindly, and with reasons, and {a} could not fault any of them.',
+    '“I would rather owe nobody anything this week,” {b} said, and {a} understood and minded.',
+    '{b} does not want to be on a list, however short, and said so plainly.',
+    '{a} offered the inside and {b} preferred the door, and both of them were polite about it.',
+    '{b} pointed out that people on short lists get written down together, and {a} had no answer.',
+    'It was refused so gently that {a} did not work out it had been refused until the stairs.',
+    '{b} said “ask me in a week,” which in this castle is a week nobody is promised.',
+    '{a} had never been turned down for that before and did not know what to do with the face.',
+  ],
+};
 
 registerEvent({
   id: 'trust-inner-circle-invite',
@@ -838,22 +1168,50 @@ registerEvent({
   rare: true,
   family: FAMILY,
   window: 'evening',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['loyalty', 'strategic', 'boldness'],
+    relationship: ['close-ally'],
+    knowledge: ['incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
     return getBond(a, b) >= 5 ? 1.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-inner-circle-invite');
-    const sceneWhy = 'was brought inside';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 1, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(INVITE_LINES, `trust-inner-circle-invite|${ctx.ep}`, { a, b }) });
-    return { branch: 'invited-in', pair: [a, b], threadId: t?.id, bondDelta: 1 };
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const bond = getBond(a, b);
+    const scores = {
+      'invited-in': 0.4 + Math.max(0, bond - 5) * 0.06,
+      'showed-the-worst-of-it': (sa.boldness / 10) * 0.25 + (sa.loyalty / 10) * 0.2,
+      'asked-what-it-costs': (sb.strategic / 10) * 0.3,
+      declined: (1 - sb.loyalty / 10) * 0.25 + (sb.strategic / 10) * 0.1,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'invited-in';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'showed-the-worst-of-it' ? 'led with the part that made them look bad'
+      : branch === 'asked-what-it-costs' ? 'accepted and priced it in the same breath'
+        : branch === 'declined' ? 'would rather owe nobody anything this week'
+          : 'was brought inside';
+    const note = lineFor(INVITE_LINES[branch], `trust-inner-circle-invite|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'showed-the-worst-of-it' ? 2.5
+      : branch === 'invited-in' ? 1
+        : branch === 'asked-what-it-costs' ? 0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    // TERMINAL: an invitation refused is a story that ended in the room it
+    // started in, and neither of them will raise it again.
+    if (t && branch === 'declined') api.resolveArc(t.id, 'buried', { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
-
 // ── TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ────────────
 //
 // The verdict was "one branch (`favor-returned`) — the fork is in the wording,
@@ -1054,18 +1412,88 @@ registerEvent({
   },
 });
 
-const DEFEND_LINES = [
-  'When somebody brought {b}\'s name up sideways, {a} shut it down before it went anywhere.',
-  '{b} was not in the room. {a} argued for them anyway, and won the argument.',
-  '{a} spent capital defending {b} to people who were never going to tell {b} about it.',
-  'The name came up and {a} said "no" before anybody had finished the sentence.',
-  '{a} could have let {b}\'s name sit there and gain weight. {a} took it off the table instead.',
-];
+// ── REWRITE (Task 7 stage 6), AND THE AUDIT'S ONE `REMOVE` ANSWERED ───
+//
+// This is the single event the stage-1 audit marked REMOVE, and the reason it
+// gave was not the premise: "a two-person event in which one of the two is
+// explicitly NOT in the room. It feeds the composer a pair whose second member
+// cannot react, which is the presence-model defect Task 6 fix round 1 spent a
+// round on."
+//
+// That is a defect in the RECORD, not in the scene, and stage 5 found and
+// fixed the identical shape in `cover-feign-fear:borrowed-it` by reporting one
+// participant instead of two. The same fix works here and is better than
+// deleting the premise: being defended while you are upstairs is one of the
+// most characteristic things that happens in this format, and an `after-table`
+// scene is worth more than a tidy registry. So {b} is no longer named as a
+// participant on any branch — {b} is not in the room, and the composer must
+// not be told otherwise — while the bond between them still moves, because
+// what {a} spent is real whether or not {b} ever hears about it.
+//
+// AND THE SUCCESS BRANCH IS RENAMED. `defended` is already produced by
+// `susp-out-of-earshot` and `mission-what-cost-us`, where it means the
+// OPPOSITE thing — a door shut in the face of the person asking — and stage 5
+// moved it to ADVERSE_BRANCHES for that reason. Two events writing one branch
+// string with opposite senses would make `_tone` mean two things, so this one
+// is `spoke-for-them`. Same reasoning stage 5 used when it renamed
+// `grief-headcount`'s new branch rather than reusing `would-not-say-it`.
+//
+// THE FORK IS WHAT THE DEFENCE COSTS, and the record it reads is the open
+// suspicion story naming {b} — which the weight already requires — plus its
+// heat. Defending somebody against a cold story is cheap; defending them
+// against a live one is the scene.
+const DEFEND_LINES = {
+  'spoke-for-them': [
+    'When somebody brought {b}’s name up sideways, {a} shut it down before it went anywhere.',
+    '{b} was not in the room. {a} argued for them anyway, and won the argument.',
+    '{a} spent capital defending {b} to people who were never going to tell {b} about it.',
+    'The name came up and {a} said “no” before anybody had finished the sentence.',
+    '{a} could have let {b}’s name sit there and gain weight. {a} took it off the table instead.',
+    'It took {a} about forty seconds and it cost {a} more than forty seconds will get back.',
+    '{a} produced two facts about Tuesday that nobody else had bothered to remember.',
+    'Nobody in that room will mention this to {b}, and {a} knew that going in.',
+  ],
+  'lost-the-argument': [
+    '{a} defended {b} and was beaten, in front of four people, on the facts.',
+    'The room heard {a} out and then went on saying {b}’s name, slightly louder.',
+    '{a} could not answer the one question, and the one question was the whole of it.',
+    'It went badly. {b}’s name is heavier tonight than it was this afternoon, and {a} helped.',
+    '{a} argued for {b} and made {b} the subject of the evening in the process.',
+    'Everything {a} said was true and none of it was the point, and {a} realised that too late.',
+    'The defence collapsed on a detail {a} had got wrong, which is now also a fact about {a}.',
+    '{a} came out of it having lost ground for somebody who will never know it was lost.',
+  ],
+  'was-asked-why': [
+    'Somebody asked {a}, pleasantly, why {a} cared so much about {b}, and the room went quiet for it.',
+    '“You are very keen on that,” somebody said to {a}, and it was not a compliment.',
+    '{a} defended {b} and the room stopped talking about {b} and started talking about {a}.',
+    'The question was not about {b} at all by the end. It was about who {a} is protecting and why.',
+    '{a} had not thought about what defending {b} would look like from the outside. {a} has now.',
+    'One sentence too many, and {a} became half of a pair the room had not previously drawn.',
+    '{a} got asked to account for the defence, which is a much harder question than the accusation was.',
+    'By the end of it {a} was the one explaining, which is not how {a} had planned the evening.',
+  ],
+  'let-it-sit': [
+    '{b}’s name came up and {a} let it sit there and gain weight, and hated doing it.',
+    '{a} did the arithmetic on what a defence would cost tonight and did not pay it.',
+    'It would have taken one sentence. {a} decided the sentence was too expensive this week.',
+    '{a} said nothing, and will tell {b} nothing, and will remember it longer than {b} would have.',
+    '{a} listened to a room build a case and contributed exactly nothing to either side.',
+    'There is a version of {a} who says something there. {a} was not that person tonight.',
+    '{a} changed the subject instead, badly, and nobody noticed, which was worse.',
+    'The name sat on the table all evening. {a} looked at it and left it there.',
+  ],
+};
 
 registerEvent({
   id: 'trust-defend-in-absentia',
   family: FAMILY,
   window: 'after-table',
+  variationAxes: {
+    outcome: ['accepted', 'backfire', 'rejected', 'ambiguous'],
+    voice: ['loyalty', 'boldness', 'strategic'],
+    knowledge: ['incomplete'],
+  },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
@@ -1075,20 +1503,48 @@ registerEvent({
     const threads = gs.tr?.threads || [];
     return threads.some(t => t.state === 'open' && t.kind === 'suspicion' && t.parties.includes(b)) ? 2.5 : 0;
   },
-  fire(ctx) {
+  fire(ctx, rng) {
     const api = sceneApi(ctx, 'trust-defend-in-absentia');
-    const sceneWhy = 'defended somebody who was not there';
     const [a, b] = ctx.actors;
-    api.addBond(a, b, 2, { source: sceneWhy });
-    const t = api.openArc(FAMILY, [a, b],
-      { source: sceneWhy, seed: lineFor(DEFEND_LINES, `trust-defend-in-absentia|${ctx.ep}`, { a, b }) });
+    const sa = pStats(a);
+    // THE STORY BEING DEFENDED AGAINST, and how live it is. Both stored; the
+    // weight has already established that at least one such story exists.
+    const against = (gs.tr?.threads || [])
+      .filter(t => t.state === 'open' && t.kind === 'suspicion' && t.parties.includes(b))
+      .sort((x, y) => heatAt(y, ctx.ep) - heatAt(x, ctx.ep))[0];
+    const heat = against ? heatAt(against, ctx.ep) : 0;
+    const scores = {
+      'spoke-for-them': 0.35 + (sa.loyalty / 10) * 0.25,
+      'lost-the-argument': heat * 0.3 + (1 - sa.social / 10) * 0.2,
+      'was-asked-why': (sa.boldness / 10) * 0.25 + heat * 0.2,
+      'let-it-sit': (sa.strategic / 10) * 0.25 + (1 - sa.boldness / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'spoke-for-them';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'lost-the-argument' ? 'argued for somebody absent and was beaten'
+      : branch === 'was-asked-why' ? 'was asked why they cared so much'
+        : branch === 'let-it-sit' ? 'let a name sit there and gain weight'
+          : 'defended somebody who was not there';
+    const note = lineFor(DEFEND_LINES[branch], `trust-defend-in-absentia|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'defended' ? 2
+      : branch === 'lost-the-argument' ? 1
+        : branch === 'was-asked-why' ? 1 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    // ONE PARTICIPANT. {b} is upstairs. See the header — this is the whole of
+    // what the audit's REMOVE verdict was about, and it is a record fix.
+    const out = { branch, actor: a, threadId: t?.id, bondDelta };
     // Spending capital on somebody who is not in the room to see it done, and
     // will never be told. The country is watching and that is the whole point.
-    return { branch: 'defended', pair: [a, b], threadId: t?.id, bondDelta: 2,
-      crowd: { name: a, colour: 'selfless' } };
+    if (branch === 'spoke-for-them' || branch === 'lost-the-argument') {
+      out.crowd = { name: a, colour: 'selfless' };
+    }
+    return out;
   },
 });
-
 // A second forking event, distinct from the vote-commitment flagship: what
 // happens to something told in confidence, scored off the RECEIVER'S own
 // loyalty/temperament/social rather than a coin. Three real outcomes, three
@@ -1099,18 +1555,36 @@ const SECRET_SWAP_LINES = {
     'Whatever {a} said, it went into {b} and stayed there.',
     '{b} had two chances to spend it and did not take either of them.',
     'Weeks later {a} would still be the only other person who knew, and {a} would know that.',
+    '{b} did not mention it again, not once, not even to {a}, which is the harder half.',
+    'It has been four days and the castle is exactly as ignorant as it was on the first night.',
+    '{b} had somewhere very useful to put it and did not put it there.',
+    'Whatever {b} is, {b} is a person you can hand a thing to.',
+    '{a} watched two conversations where it would have helped {b} to say it. {b} did not say it.',
+    'It is still {a}’s, which is a rarer sentence in this building than it sounds.',
   ],
   leakedAccident: [
     '{b} didn\'t mean to repeat it — it just slipped out in a different conversation entirely.',
     'The secret got out through {b}, and {b} looked as surprised as anyone that it had.',
     '{b} assumed everyone already knew, said so out loud, and discovered they had not.',
     'It came out of {b} as an aside, in a room {a} was not in, and never went back in.',
+    '{b} used it to make a point about something else entirely and did not notice using it.',
+    'It arrived back at {a} by three separate routes before lunch, which is one route too many.',
+    '{b} said it while thinking about something else, which is how most of these go.',
+    '{b} apologised the moment {b} realised, which did not put any of it back.',
+    'Nobody meant any harm. There is a great deal of harm about anyway.',
+    '{b} thought it had been general knowledge. It had been {a}’s.',
   ],
   leakedDeliberate: [
     '{b} traded {a}\'s secret to somebody else for something better.',
     '{b} decided {a}\'s secret was worth more spent than kept.',
     '{b} waited until it would do the most good — for {b} — and then told the right person.',
     '{b} did the arithmetic on {a}\'s secret and sold at the top.',
+    '{b} held it for two days, which is not carelessness, and then spent it in one sentence.',
+    'It bought {b} exactly one favour, and {b} had checked the price beforehand.',
+    '{b} chose the room, the hour and the audience, and then told them.',
+    '{a} will work out where it came from eventually. {b} has priced that in too.',
+    'It was told with {a}’s name attached, deliberately, because the name was half the value.',
+    '{b} did not enjoy doing it, which changes nothing at all about what {b} did.',
   ],
 };
 

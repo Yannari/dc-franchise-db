@@ -28,8 +28,9 @@ import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
   from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
-import { rpBuildConfessionals, trConfessionalsRevealAll, _hasConfessionals }
-  from './confessionals.js';
+// The Alcove is folded into the night castle segment (Plan 11); only its gate
+// is needed here, for that segment's `when`.
+import { _hasConfessionals } from './confessionals.js';
 
 /**
  * IN THE ORDER THE CASTLE LIVES THEM.
@@ -144,10 +145,16 @@ export const TRAITORS_SCREENS = [
     build: rpBuildRoundTable, revealAll: trRoundTableRevealAll, revealAllName: 'trRoundTableRevealAll' },
   // THE NIGHT — after the table, into the dark. This is the segment that MAY
   // react to the banishment (roundtable-scramble + post-banishment), so it sits
-  // after the Round Table, exactly where the whole day used to sit.
+  // after the Round Table, exactly where the whole day used to sit. It is also
+  // where the confessionals now live (Plan 11, alcove fold): the beliefs the
+  // chair is composed from are snapshotted at the END of the night, so the
+  // Alcove sits beside the night it is the voice of — which is why the segment
+  // registers when there is EITHER a post-table scene OR a confessional, and the
+  // night on episode two that has a confessional but no post-table scene still
+  // gets a screen.
   { id: 'tr-castle-night', label: 'The Night', suffix: 'castleday-night',
     badge: { text: 'The Night', color: '#94a0cc' },
-    when: r => castleSegmentHasScenes(r, 'night'),
+    when: r => castleSegmentHasScenes(r, 'night') || _hasConfessionals(r),
     build: (r, o) => rpBuildCastleDay(r, o, 'night'),
     revealAll: trCastleDayRevealAll, revealAllName: 'trCastleDayRevealAll' },
   { id: 'tr-conclave', label: 'The Conclave', suffix: 'conclave',
@@ -190,25 +197,16 @@ export const TRAITORS_SCREENS = [
       && r.tr.beliefs.castle.length),
     build: rpBuildSuspicion, revealAll: trSuspicionRevealAll,
     revealAllName: 'trSuspicionRevealAll' },
-  // -- THE CHAIR, AND WHAT GETS SAID IN IT (Plan 8, Task 11) -----------
+  // -- THE CHAIR IS NOW FOLDED INTO THE NIGHT (Plan 11, alcove fold) -----
   //
-  // AFTER THE BOARD AND BEFORE THE BOOK, for the reason the board is after the
-  // table: `tr.beliefs` is snapshotted at the END of the night, so a
-  // confessional drawn any earlier would have somebody reacting to a
-  // banishment two screens before the banishment. The board is the measurement
-  // and this is the voice -- the instrument first, then the people, then the
-  // ledger.
-  //
-  // `when` ASKS THE SCREEN'S OWN FILE. On night one the only boards in the
-  // building are the pact's and every entry on them is the turret, which is
-  // the one thing nobody says out loud, so the chair would stand empty. That
-  // condition is a property of what a confessional can be built from, and this
-  // list holds one copy of every rule rather than a second copy of that one.
-  { id: 'tr-confessionals', label: 'The Alcove', suffix: 'confessionals',
-    badge: { text: 'Confessionals', color: '#d08c72' },
-    when: _hasConfessionals,
-    build: rpBuildConfessionals, revealAll: trConfessionalsRevealAll,
-    revealAllName: 'trConfessionalsRevealAll' },
+  // The Alcove used to be its own screen here, after the board and before the
+  // book. The writing contract wants a confessional beside the action it
+  // clarifies, so it is now composed into the NIGHT castle segment (above,
+  // after the Round Table), which is the same place in the night it always
+  // reported on — `tr.beliefs` is snapshotted at the END of the night, so a
+  // confessional cannot be drawn any earlier than the post-table stream without
+  // reacting to a banishment before it has happened. `_hasConfessionals` still
+  // gates it; it is imported for the night segment's `when` above.
   { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
     when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
     build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },

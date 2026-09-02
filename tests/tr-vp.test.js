@@ -6673,47 +6673,95 @@ describe('a season does not print the same confessional line three times', () =>
   });
 });
 
-// ── GUARD 9: REGISTERED, REACHABLE, AND IN THE RIGHT PLACE ────────────
+// ── GUARD 9: THE ALCOVE IS FOLDED INTO THE NIGHT (Plan 11) ────────────
 //
-// MUTATION A: rename the screen's id in `TRAITORS_SCREENS`. RESULT: RED.
-// MUTATION B: `when: r => !!(r.tr && r.tr.beliefs)`. RESULT: RED — the screen
-//   registers on the first night, when every board in the building is the
-//   turret and there is nothing anybody could say out loud.
-describe('the alcove is registered, reachable, and sits where the night puts it', () => {
-  it('after the board and before the day book, on the nights that have one', () => {
+// The Alcove used to be its own screen, tr-confessionals, sitting after the
+// board and before the day book. Plan 11 retired it and composed the chair
+// INTO the night castle segment (tr-castle-night), beside the night it is the
+// voice of — the writing contract's "confessionals sit beside the action they
+// clarify". These guards assert the new shape, and every one is banded:
+//
+// MUTATION A: re-register a standalone `tr-confessionals`. RESULT: RED (first
+//   arm — the id is gone from the running order).
+// MUTATION B: drop `..._confessionalNightBeats(...)` from castle-day.js's night
+//   segment. RESULT: RED (second arm — the night carries no Alcove).
+// MUTATION C: pass `'audience'` instead of `observer` into `confessionalBeats`.
+//   RESULT: RED (third arm — a Faithful's night leaks the camera's truth).
+describe('the alcove is folded into the night, not a standalone screen', () => {
+  it('tr-confessionals is retired, and the night segment that hosts it sits after the table', () => {
     const ids = TRAITORS_SCREENS.map(s => s.id);
-    expect(ids, 'the screen is not registered').toContain('tr-confessionals');
-    expect(ids.indexOf('tr-confessionals'),
-      'the alcove is drawn before the board it is the voice of')
-      .toBeGreaterThan(ids.indexOf('tr-suspicion'));
-    expect(ids.indexOf('tr-confessionals'),
-      'the alcove is drawn after the ledger the day is ruled off in')
+    expect(ids, 'the standalone alcove screen was not retired')
+      .not.toContain('tr-confessionals');
+    expect(ids, 'the night segment is missing').toContain('tr-castle-night');
+    // The chair reports on the night, so the night that hosts it sits after
+    // the Round Table and before the day book — the causality the standalone
+    // screen's placement also honoured.
+    expect(ids.indexOf('tr-castle-night'),
+      'the night is drawn before the table it reacts to')
+      .toBeGreaterThan(ids.indexOf('tr-round-table'));
+    expect(ids.indexOf('tr-castle-night'),
+      'the night is drawn after the day book it should precede')
       .toBeLessThan(ids.indexOf('tr-status'));
-    const entry = TRAITORS_SCREENS.find(s => s.id === 'tr-confessionals');
-    expect(entry.badge && entry.badge.text, 'no timeline pill').toBeTruthy();
   });
 
-  it('and a played season really produces it, off buildVPScreens', () => {
+  it('and a played season composes the confessional inside tr-castle-night', () => {
     let seen = 0, firstNights = 0;
     for (const r of RUNS) {
       for (const e of r.episodes) {
-        const screens = buildVPScreens(e).filter(s => s.id === 'tr-confessionals');
+        const night = buildVPScreens(e).find(s => s.id === 'tr-castle-night');
         if (_hasConfessionals(e)) {
-          expect(screens.length, `ep ${e.num}: registered and not reachable`).toBe(1);
-          expect(strip(screens[0].html).length,
-            `ep ${e.num}: the screen rendered nothing`).toBeGreaterThan(400);
+          expect(night, `ep ${e.num}: no night segment to carry the chair`).toBeTruthy();
+          // The Alcove band is the seam the fold adds; its absence is the RED
+          // when the fold is removed.
+          expect(night.html.includes('The Alcove'),
+            `ep ${e.num}: the night segment does not carry the alcove`).toBe(true);
+          expect(strip(night.html).length,
+            `ep ${e.num}: the folded chair rendered nothing`).toBeGreaterThan(400);
           seen++;
-        } else {
-          expect(screens.length, `ep ${e.num}: reachable with nothing to say`).toBe(0);
-          if (e.num === 1) firstNights++;
+        } else if (e.num === 1) {
+          firstNights++;
         }
       }
     }
-    expect(seen, 'no season reached the alcove').toBeGreaterThan(20);
-    // THE NIGHT THE `when` EXISTS FOR. Every board on the first night is the
-    // turret, and the turret is the one thing nobody says to a camera.
-    expect(firstNights, 'every first night produced a confessional, so the gate '
-      + 'is not doing what it says').toBeGreaterThan(2);
+    expect(seen, 'no season folded a confessional into a night').toBeGreaterThan(20);
+    // THE NIGHT THE GATE EXISTS FOR. Every board on the first night is the
+    // turret, and the turret is the one thing nobody says to a camera — so a
+    // first night is a night the fold must NOT put a chair on.
+    expect(firstNights, 'no first night was examined').toBeGreaterThan(2);
+  });
+
+  it('the fold keeps the observer gate: a Faithful never sees the camera truth in the night', () => {
+    // OBSERVER SAFETY, PRESERVED THROUGH THE FOLD. The audience night carries
+    // the camera's own truth strip ("What the camera knows"); a Faithful
+    // player's night must carry NEITHER that strip NOR another player's chair.
+    // `confessionalBeats` passes the observer straight through, so this is the
+    // same gate confessionals.js has always enforced.
+    let checked = 0;
+    for (const { ep } of BOARDS) {
+      if (!_hasConfessionals(ep)) continue;
+      const truth = ep.tr.beliefs.truth || {};
+      const faithful = Object.keys(truth).filter(n => truth[n] === 'faithful');
+      const traitors = Object.keys(truth).filter(n => truth[n] === 'traitor');
+      if (!faithful.length) continue;
+      const aud = rpBuildCastleDay(ep, 'audience', 'night');
+      expect(aud.includes('What the camera knows'),
+        `ep ${ep.num}: the audience night lost the camera truth strip`).toBe(true);
+      const fp = faithful[0];
+      const plr = rpBuildCastleDay(ep, 'player:' + fp, 'night');
+      // Drop the stylesheet — its selectors legitimately name data-truth — and
+      // look at rendered ELEMENTS only.
+      const body = plr.replace(/<style[\s\S]*?<\/style>/gi, ' ');
+      expect(body.includes('What the camera knows'),
+        `ep ${ep.num}: a Faithful's night showed the camera's truth`).toBe(false);
+      expect(/data-truth=/.test(body),
+        `ep ${ep.num}: a Faithful's night carried an alignment mark`).toBe(false);
+      for (const t of traitors) {
+        expect(body.includes('al-who-nm">' + t + '<'),
+          `ep ${ep.num}: a Faithful's night showed Traitor ${t}'s confessional`).toBe(false);
+      }
+      checked++;
+    }
+    expect(checked, 'no night was checked for the observer gate').toBeGreaterThan(15);
   });
 });
 

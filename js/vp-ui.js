@@ -31,7 +31,6 @@ const _TR_PHASES = {
   'tr-conclave':    { id:'tr-night',     label:'Night',     icon:'☾' },
   'tr-recruitment': { id:'tr-night',     label:'Night',     icon:'☾' },
   'tr-suspicion':   { id:'tr-day',      label:'The Day',   icon:'▦' },
-  'tr-confessionals':{ id:'tr-day',     label:'The Day',   icon:'▦' },
   'tr-status':      { id:'tr-book',      label:'Ruled Off', icon:'▤' },
   'tr-endgame':     { id:'tr-endgame',   label:'The Endgame', icon:'✦' },
   'tr-debug':       { id:'debug',        label:'Debug',     icon:'⚙' },

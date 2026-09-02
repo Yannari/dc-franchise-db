@@ -1925,6 +1925,34 @@ export function trConfessionalsRevealAll(suffix, total, epNum) {
  * `'player:<Name>'`; `_view` is where the gate lives and it is the only place
  * the question is answered.
  */
+/**
+ * THE CONFESSIONALS AS FOLDED BEATS — for the Castle Day's night segment.
+ *
+ * Plan 11 retired the standalone Alcove screen and folds the chair INTO the
+ * castle-day stream, beside the night it is the voice of. This is the seam: it
+ * reuses `_view` (the observer gate, unchanged and untouched) and `_buildBeats`
+ * (the exact composition the standalone screen drew), and hands back the beats
+ * — `{ phase, html, meta }` — for castle-day.js to wrap in its own reveal
+ * stream. The observer contract is the one `_view` already enforces: audience
+ * gets the room and the camera's truth strip, a player gets their own chair and
+ * nothing else. This function WIDENS NOTHING — it passes `observer` straight
+ * through and returns exactly what `rpBuildConfessionals` would have rendered.
+ *
+ * `null` when there is nothing to say (no beliefs on the record). An empty array
+ * is impossible from a live view — `_buildBeats` always opens with a card — so
+ * the caller can treat a null as "no chair tonight".
+ */
+export function confessionalBeats(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v) return null;
+  return _buildBeats(v);
+}
+
+/** The Alcove's stylesheet + filters, so a host screen can draw `al-*` cards. */
+export function confessionalStyle() {
+  return '<style>' + AL_CSS + '</style>' + _filters();
+}
+
 export function rpBuildConfessionals(ep, observer = 'audience') {
   const suffix = 'confessionals';
   const vars = '--al-grain-src:' + _noiseTile('0.82', 4, 23, 0.26, 220) + ';';

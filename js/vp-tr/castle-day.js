@@ -85,6 +85,11 @@ import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
 import { ADVERSE_OUTCOMES, SMOOTH_OUTCOMES, ADVERSE_BRANCHES, BENIGN_BRANCHES,
   attributedLineInVoice, actionPurpose } from '../tr/castle/voice.js';
+// THE ALCOVE, FOLDED IN (Plan 11). The confessional chair is no longer its own
+// screen — it is composed here, into the night segment, beside the night it is
+// the voice of. These reuse confessionals.js's own `_view`/`_buildBeats`, so the
+// observer gate is the one that file already enforces; nothing here widens it.
+import { confessionalBeats, confessionalStyle } from './confessionals.js';
 
 const TR = 'traitors';
 
@@ -3769,6 +3774,41 @@ export function trCastleDayRevealAll(suffix, total, epNum) {
  * `observer` is `'audience'` or `'player:<Name>'`; `_view` is the one place
  * the difference between them is decided.
  */
+/**
+ * THE ALCOVE, AS BEATS IN THE NIGHT STREAM.
+ *
+ * `confessionalBeats` reuses confessionals.js's own `_view`/`_buildBeats`, so
+ * the observer gate is theirs, unchanged. Here we only re-home the beats into
+ * the castle-day reveal stream: they are forced to `data-phase="night"` so the
+ * shell keeps its dark background as they reveal, and given a band header on the
+ * first one so the viewer sees the chair begin. Their meta keeps its own kind
+ * (`open`/`chair`/`close`), which the day panel ignores — it counts only `card`
+ * beats — so the confessionals ride the same Continue button without touching
+ * the sidebar's story count.
+ */
+function _alcoveBand() {
+  return '<div style="display:flex;gap:12px;align-items:center;margin:30px 0 8px;'
+    + 'padding:13px 16px;border-top:1px solid rgba(224,176,112,.30);'
+    + 'border-bottom:1px solid rgba(224,176,112,.16);'
+    + 'background:linear-gradient(90deg,rgba(224,176,112,.10),transparent 70%)">'
+    + _ic('moon', 22, 'rgba(224,176,112,.85)')
+    + '<div><div style="font-family:var(--dy-disp,\'Fraunces\',serif);font-size:15px;'
+    + 'letter-spacing:.04em;color:rgba(240,214,178,.95)">The Alcove</div>'
+    + '<div style="font-family:var(--dy-body,\'Cormorant Garamond\',serif);font-size:13px;'
+    + 'font-style:italic;color:rgba(224,214,196,.72)">One chair, one lamp, and the last '
+    + 'thing said before the day is ruled off — said to the camera, and to nobody else.'
+    + '</div></div></div>';
+}
+function _confessionalNightBeats(ep, observer) {
+  const cb = confessionalBeats(ep, observer);
+  if (!cb || !cb.length) return [];
+  return cb.map((b, i) => ({
+    phase: 'night',
+    html: (i === 0 ? _alcoveBand() : '') + b.html,
+    meta: { ...(b.meta || {}), alcove: true },
+  }));
+}
+
 // Per-segment title furniture. Whole-day (segment null) keeps its own text
 // below, unchanged, so the transcript renderer sees the same page it always did.
 const SEGMENT_META = {
@@ -3810,7 +3850,15 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
       'This row carries no castle day. Nothing was written down for it, which is not '
       + 'the same as nothing having happened.');
   }
-  if (!v.scenes.length) {
+
+  // THE NIGHT SEGMENT CARRIES THE CONFESSIONALS (Plan 11, alcove fold). Built
+  // here from confessionals.js's own gate, appended after the night's scenes.
+  // A night with a confessional but no post-table scene still renders, which is
+  // why the empty-day shell now checks BOTH.
+  const confBeats = segment === 'night' ? _confessionalNightBeats(ep, observer) : [];
+  const extraCss = confBeats.length ? confessionalStyle() : '';
+
+  if (!v.scenes.length && !confBeats.length) {
     // TWO DIFFERENT NOTHINGS, and they are not interchangeable. A day with no
     // scenes at all is a quiet castle; a day whose every scene happened
     // behind a door this reader was not on the right side of is the observer
@@ -3827,7 +3875,8 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
       + 'one conversation went anywhere worth writing down.');
   }
 
-  const beats = _buildBeats(v);
+  const castleBeats = v.scenes.length ? _buildBeats(v) : [];
+  const beats = [...castleBeats, ...confBeats];
   const total = beats.length;
   const epNum = ep.num || v.ep || 0;
   const st = _state(suffix, total);
@@ -3863,7 +3912,7 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
   const call = fn => fn + "('" + suffix + "'," + total + ',' + epNum + ')';
   const stories = v.rows.length;
 
-  return '<div class="dy-root" style="' + vars + '">' + css
+  return '<div class="dy-root" style="' + vars + '">' + css + extraCss
     + '<div class="dy-shell" id="dy-shell-' + suffix + '"'
     + ' data-phase="' + beats[Math.max(0, Math.min(st.idx, total - 1))].phase + '">'
     + '<div class="dy-scenery" aria-hidden="true">'

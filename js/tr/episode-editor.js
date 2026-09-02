@@ -72,6 +72,11 @@ export const MAX_CONFLICT_RUN = 3;
 
 /** No more than this many consecutive scenes sharing a family or a pair. */
 export const MAX_SAME_RUN = 2;
+// A single player headlines at most this many castle scenes in one shown day
+// (editor display cap; see the concentration block in buildEpisodeEdit).
+export const PER_PLAYER_CAP = 3;
+// ...but the cap never drops the shown day below this many scenes.
+export const CONCENTRATION_FLOOR = 6;
 
 /**
  * Story-tier sizes for a STANDARD castle, and how they scale down.
@@ -447,13 +452,54 @@ export function buildEpisodeEdit(eligibleScenes, ctx = {}, rng = null) { // esli
     if (!byPhase.has(k)) { byPhase.set(k, []); phaseOrder.push(k); }
     byPhase.get(k).push(s);
   }
-  const scenes = [];
+  let scenes = [];
   let carry = null;
   for (let pi = 0; pi < phaseOrder.length; pi++) {
     const res = _resequence(byPhase.get(phaseOrder[pi]), carry,
       { reserveTail: pi < phaseOrder.length - 1 });
     carry = res.carry;
     scenes.push(...res.out);
+  }
+
+  // ── PER-PLAYER CONCENTRATION CAP (editor-level, presentation-safe) ──────
+  // The scheduler can over-feature one player by continuing their thread across
+  // windows, so a castle day can end up headlined by a single name. Drop their
+  // lowest-stakes extra scenes from the DISPLAY only: the sim has already run
+  // and written its bonds/beliefs, so removing a scene from the shown day
+  // changes nothing it computed. Recorded (R1: a drop needs a reason), floored
+  // so a thin day is never gutted, and never dropping a closed/payoff scene or
+  // a carried multi-day beat — only standalone texture.
+  const concentrationDrops = [];
+  {
+    // Cap HEADLINING, not mere appearance: the person a scene is ABOUT (its
+    // speaker or first party) may anchor at most PER_PLAYER_CAP scenes a day.
+    // A player can still turn up as someone else's partner any number of times
+    // — capping every appearance culls a third of the day, because a busy
+    // player is in many pairs. This targets exactly the complaint (one name
+    // headlining four scenes) and drops only the excess headline scenes.
+    const headOf = sc => sc.speaker || (sc.parties && sc.parties[0])
+      || (sc.people && sc.people[0]) || null;
+    // How many scenes each window holds — never drop the last one in a window,
+    // or that hour vanishes from the day and its plate with it.
+    const winLeft = new Map();
+    for (const sc of scenes) winLeft.set(sc.window, (winLeft.get(sc.window) || 0) + 1);
+    const headlined = new Map();
+    const kept = [];
+    for (const sc of scenes) {
+      const h = headOf(sc);
+      const over = h && (headlined.get(h) || 0) >= PER_PLAYER_CAP;
+      const droppable = !sc.closedNow && !(sc.priorDays && sc.priorDays.length)
+        && (winLeft.get(sc.window) || 0) > 1;
+      if (over && droppable && (scenes.length - concentrationDrops.length) > CONCENTRATION_FLOOR) {
+        winLeft.set(sc.window, winLeft.get(sc.window) - 1);
+        concentrationDrops.push({ sceneId: sc.sceneId,
+          reason: 'held back so one player did not headline the day' });
+        continue;
+      }
+      if (h) headlined.set(h, (headlined.get(h) || 0) + 1);
+      kept.push(sc);
+    }
+    scenes = kept;
   }
 
   // ── 3. STORY HIERARCHY ──────────────────────────────────────────────
@@ -586,6 +632,7 @@ export function buildEpisodeEdit(eligibleScenes, ctx = {}, rng = null) { // esli
   return {
     ep,
     scenes,
+    concentrationDrops,
     primaryStories,
     secondaryStories,
     textureSlots: textureSlots.slice(0, Math.max(TIERS.textureMin, textureSlots.length)),

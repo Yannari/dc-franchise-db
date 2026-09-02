@@ -91,7 +91,7 @@ import { sceneApi, arcContinue } from './effects.js';
 import { findOpenThread, heatAt, priorMoments } from '../threads.js';
 import { suspicion } from '../deduction.js';
 
-import { lineFor } from './lines.js';
+import { lineFor, whoTheyTold } from './lines.js';
 
 const FAMILY = 'romance';
 const SPARK_KIND = 'romance-spark';
@@ -358,7 +358,7 @@ registerEvent({
 const SHOWMANCE_FORM_LINES = {
   'stopped-hiding-it': [
     '{a} and {b} stopped pretending it was nothing. The castle has a showmance now.',
-    'By breakfast everybody knew about {a} and {b}, and {a} and {b} had stopped minding.',
+    'By breakfast {who} knew about {a} and {b}, and {a} and {b} had stopped minding.',
     '{a} and {b} arrived together and left together and did not explain either.',
     'It stopped being deniable somewhere last night. {a} and {b} are a thing the castle has to plan around now.',
     'Nobody announced anything. {a} and {b} simply stopped sitting apart.',
@@ -437,8 +437,28 @@ registerEvent({
     const bondDelta = branch === 'agreed-to-hide-it' ? 2.5
       : branch === 'the-room-said-it' ? 1 : 2;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // ── HOW FAR IT ACTUALLY GOT (writing-contracts.md, "Evidence for group
+    //    consensus") ─────────────────────────────────────────────────────
+    //
+    // This branch used to assert that the whole castle had it, and wrote no
+    // receipt to say so. The news now travels to named people (`whoTheyTold`
+    // — chosen by bond, no rng draw) with a propagation hop each, and the
+    // sentence takes its words from `api.consensusPhrase`, which is only
+    // allowed to say "the people still in the castle" once the receipts pass
+    // the consensus floor. Below the floor it names them or counts them.
+    const factId = api.recordClaim(a, `${a} and ${b} are a showmance`,
+      { about: b, listeners: [b], channel: 'conversation', source: sceneWhy }).id;
+    const heard = whoTheyTold(b, [a, b], ctx.living, branch === 'agreed-to-hide-it' ? 0
+      : branch === 'told-one-person' ? 1 : 6);
+    for (const to of heard) {
+      api.propagate(factId, b, to,
+        { channel: 'conversation', source: `word of ${a} and ${b} reached ${to}` });
+    }
+    const who = api.consensusPhrase({ factId,
+      evidence: branch === 'the-room-said-it' ? 'public-ceremony' : null });
     const t = api.openArc(SHOWMANCE_KIND, [a, b], { source: sceneWhy,
-      seed: lineFor(SHOWMANCE_FORM_LINES[branch], `romance-showmance-forms|${branch}|${ctx.ep}`, { a, b }) });
+      seed: lineFor(SHOWMANCE_FORM_LINES[branch], `romance-showmance-forms|${branch}|${ctx.ep}`,
+        { a, b, who }) });
     return { branch, pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
@@ -1062,8 +1082,8 @@ const EXPOSED_AFTERMATH_LINES = [
   '{b}\'s own showmance just stood up and named them in front of the room. Damage control starts now.',
   'The person who slept next to {b} has just told the castle what they think {b} is. There is no version of tomorrow where {b} is not answering for that.',
   'Whatever protection {b} had, it was mostly {a}, and {a} has just spent it in public.',
-  '{b} now has to explain, to everybody, why the one person who knows them best said that out loud.',
-  'By breakfast the whole castle will have it. {b} has until breakfast.',
+  '{b} now has to explain, to {who}, why the one person who knows them best said that out loud.',
+  'By breakfast {who} will have it. {b} has until breakfast.',
 ];
 
 registerEvent({
@@ -1150,9 +1170,25 @@ registerEvent({
       bondDelta = -4;
       api.addBond(doubter, suspected, bondDelta, { source: sceneWhy });
       if (showmance) api.resolveArc(showmance.id, 'exposed', { source: sceneWhy });
+      // ── "BY BREAKFAST THE WHOLE CASTLE WILL HAVE IT" NEEDED A COUNT ──
+      //
+      // The exposure happens in front of the room, so the people present are
+      // licensed to know it outright — that is the `public-ceremony` evidence
+      // the consensus rule accepts. Everybody NOT present learns it the
+      // ordinary way, one named hop at a time, and the sentence takes its
+      // words from the receipts rather than from the author's sense of scale.
+      const exposureId = api.recordClaim(doubter,
+        `${doubter} named ${suspected} in front of the room`,
+        { about: suspected, listeners: [suspected], channel: 'public-ceremony',
+          source: sceneWhy }).id;
+      for (const to of whoTheyTold(doubter, [doubter, suspected], ctx.living, 6)) {
+        api.propagate(exposureId, doubter, to,
+          { channel: 'conversation', source: `${to} heard what was said about ${suspected}` });
+      }
+      const who = api.consensusPhrase({ factId: exposureId });
       const coverThread = api.openArc('cover', [suspected],
         { source: sceneWhy, seed: `${line} ${lineFor(EXPOSED_AFTERMATH_LINES, `romance-liability-exposed|exposes|${ctx.ep}`,
-          { a: doubter, b: suspected })}` });
+          { a: doubter, b: suspected, who })}` });
       threadId = coverThread?.id ?? threadId;
     }
     return { branch, doubter, suspected, threadId, bondDelta };
@@ -1294,7 +1330,7 @@ const OPTICS_LINES = {
     'Nobody doubted {a} and {b} liked each other. Several people doubted that was all it was.',
     'It got said at breakfast, lightly, and by lunch three people had repeated it without the lightness.',
     'Somebody counted how many times {a} and {b} had voted the same way, out loud, and got to five.',
-    'The castle decided this morning that {a} and {b} are a number rather than two numbers.',
+    'It was settled this morning, by {who}, that {a} and {b} are a number rather than two numbers.',
   ],
   'made-a-joke-of-it': [
     '{a} got in front of it by saying it first and worse, and the room laughed and let it go.',
@@ -1374,7 +1410,28 @@ registerEvent({
       : branch === 'leaned-into-it' ? 'stopped denying the couple was a bloc'
         : branch === 'it-landed-inside' ? 'took the room’s reading of the couple home with them'
           : 'the room read the couple as a strategy';
-    const note = lineFor(OPTICS_LINES[branch], `romance-strategic-optics|${branch}|${ctx.ep}`, { a, b });
+    // ── WHO ACTUALLY SETTLED IT (writing-contracts.md, "Evidence for group
+    //    consensus") ─────────────────────────────────────────────────────
+    //
+    // The `called-strategic` branch is the room pricing the couple, and one of
+    // its lines used to say the CASTLE had decided. The reading is a claim
+    // somebody made and then repeated, so it is recorded as one and propagated
+    // to named people; `{who}` then takes its words from the receipts. The
+    // sibling lines in this pool already do the honest version by hand ("three
+    // people had repeated it without the lightness"), which is what made the
+    // odd one out visible.
+    let who = 'a few of them';
+    if (branch === 'called-strategic') {
+      const readingId = api.recordClaim(a, `${a} and ${b} are being read as one vote`,
+        { about: b, listeners: [b], channel: 'conversation', source: sceneWhy }).id;
+      for (const to of whoTheyTold(a, [a, b], ctx.living, 4)) {
+        api.propagate(readingId, a, to,
+          { channel: 'conversation', source: `${to} heard the couple priced as a bloc` });
+      }
+      who = api.consensusPhrase({ factId: readingId });
+    }
+    const note = lineFor(OPTICS_LINES[branch], `romance-strategic-optics|${branch}|${ctx.ep}`,
+      { a, b, who });
     // AND IT WRITES SOMETHING NOW, which is the defect the audit recorded
     // separately from the branch count. Every branch moves the bond, because
     // being priced by a room is a thing that happens to two people together.

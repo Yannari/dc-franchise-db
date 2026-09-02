@@ -120,7 +120,7 @@ const ALIBI_CHECK_LINES = {
     'Nobody would be drawn. In a castle this size that is itself a finding.',
     '“I would rather not,” said the third person, and the second, and the first.',
     '{a} could not get a single soul to put {b} anywhere, good or bad.',
-    'The room has decided not to help {a} with this, and {a} does not know why.',
+    'The three people {a} asked have each decided not to help with this, and {a} does not know why.',
     'Everybody was busy. Everybody was extremely busy, all at once, about one question.',
     '{a} came back with nothing at all, which is not the same as coming back with nothing to worry about.',
     'Two people changed the subject and the third one asked why {a} was asking.',

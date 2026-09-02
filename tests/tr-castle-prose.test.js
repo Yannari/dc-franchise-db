@@ -62,6 +62,7 @@ import { rpBuildConclave } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
 import { screenNarration } from '../js/vp-tr/screens.js';
 import { _vpTextLines } from '../js/text-backlog.js';
+import { consensusPhrase } from '../js/tr/knowledge-flow.js';
 
 import '../js/tr/castle/trust.js';
 import '../js/tr/castle/suspicion.js';
@@ -1564,5 +1565,384 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
       }
     }
     expect(checked).toBeGreaterThan(80);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// EVERYONE IS A CLAIM ABOUT A NUMBER, AND IT NEEDS EVIDENCE
+// ══════════════════════════════════════════════════════════════════════
+//
+// writing-contracts.md, "Evidence for group consensus": `everyone`, `the whole
+// room`, `the group agrees`, `the castle turns` and `nobody trusts` require a
+// public vote or ceremony, named reactions from the configured share of living
+// players, propagation receipts reaching that share, or a stored group
+// declaration. "Otherwise use precise language: `three players`, `most of
+// Fiore's team`, `the people in the van`, or named contestants."
+//
+// WHY THIS ARM IS SHAPED LIKE THE DEBUG-WORD SWEEP ABOVE. That sweep shipped
+// green while 73 banned words were live, for three reasons the fix-round note
+// sets out: it rendered ONE seed, it scanned ONE screen, and its matcher missed
+// inflections. All three failure modes apply exactly as well here — "everybody
+// knew" and "everyone knows" are the same defect in different tenses, and the
+// consensus claims are spread across the castle library AND the conclave AND
+// the Round Table. So this reuses that arm's corpus, its screen list and its
+// guard-on-the-guard, and adds the source scan the same way.
+//
+// TWO WAYS A LINE MAY SAY IT, AND NO THIRD:
+//
+//   1. WIRED. The line carries `{who}`, and its event fills it from
+//      `api.consensusPhrase(...)` (js/tr/knowledge-flow.js), which is only
+//      allowed to return the universal form once propagation receipts pass
+//      `CONSENSUS_FLOOR` or a public ceremony licenses it. Below the floor it
+//      names them or counts them.
+//   2. LICENSED. The universal is about something the room WATCHED HAPPEN — a
+//      Round Table, a ceremony, a mission briefing, a public row — or it is a
+//      screen naming the aggregate belief model, or it is a contestant's own
+//      speech overstating for effect. Each of those is listed below with its
+//      reason, keyed on a distinctive fragment rather than a line number so an
+//      edit elsewhere in the file cannot move it.
+//
+// Anything on neither list is red. That is the point.
+const CONSENSUS_CLAIM = [
+  // `turns against` is in the contract's own worked forbidden example
+  // ("Everyone turns against Manu after the mission") and the first draft of
+  // this matcher did not have it. The MUTANT arm below caught that, which is
+  // the entire argument for writing the mutant arm before the fix.
+  /\b(?:everyone|everybody)\s+(?:knew|knows|agreed|agrees|believed|believes|decided|decides|turns?|turned|has\s+it|had\s+it|now\s+knew|already\s+knew)\b/i,
+  /\bthe\s+(?:whole\s+)?(?:castle|room|house|building)\s+(?:has\s+decided|have\s+decided|decided|decides|agreed|agrees|believed|believes|knew|knows|turned|turns)\b/i,
+  /\bgone\s+round\s+the\s+whole\s+castle\b/i,
+  /\bthe\s+whole\s+castle\s+(?:will\s+have|has|had|knows|knew)\b/i,
+  /\b(?:nobody|no\s+one|no-one)\s+(?:trusts|trusted|believes|believed)\b/i,
+  /\bthe\s+group\s+agrees\b/i,
+];
+const claimsConsensus = t => CONSENSUS_CLAIM.some(r => r.test(t));
+
+/**
+ * The licensed universals, each keyed on a fragment and each with the evidence
+ * that licenses it. Adding a line here is a decision somebody has to write a
+ * reason for; that is the whole mechanism.
+ */
+const CONSENSUS_LICENSED = [
+  // ── PUBLIC: the room watched it happen ───────────────────────────────
+  ['and the room agreed, and', 'said out loud to the room, which was present'],
+  ['The room has decided to keep', 'the room spent an evening on it in the open'],
+  ['and everybody knew which one', 'the empty chair at breakfast is the morning reveal'],
+  ['outright success and everybody knew it', 'the mission result is announced to everyone'],
+  ['everybody agreed afterwards', 'a defence made in front of the room'],
+  ['The hesitation was the answer and everybody had it', 'the room asked the question'],
+  ['and the room agreed with', 'said at the table, in the room'],
+  ['The room believed', 'a group-pressure scene: the room is the participants'],
+  ['which nobody had asked about and everybody now knew', 'blurted out loud in the room'],
+  ['assumed everyone already knew', 'a stated MISTAKE, corrected in the same sentence'],
+  ['Nobody says the number out loud. Everybody has it', 'the headcount at breakfast is visible'],
+  ['the room decides it has agreed', 'the conclave, whose room is its three members'],
+  ['every hand in the room agrees to stop it', 'the endgame rule, said by the host'],
+  ['Everybody knew what was being asked', 'the mission briefing is a ceremony'],
+  ['The split is arbitrary and everybody knows it', 'the teams are drawn in public'],
+  ['Then the room has decided', 'the Round Table ballot'],
+  ['Everybody knows one true thing now', 'the banishment reveal'],
+  ['the room has decided otherwise', 'the Round Table ballot, read aloud'],
+  ['exactly what the room has decided they are', 'reads the recorded ballot'],
+  ['everyone knew it while it was still happening', 'a mission failure everybody was standing in'],
+  ['and everybody knew whose', 'a relic laid on the table before the vote'],
+  // ── THE AGGREGATE MODEL, NAMED BY A SCREEN ───────────────────────────
+  ['What the castle believes', 'a screen heading for the deduction model itself'],
+  ['What The Castle Believes', 'the same heading, title case'],
+  ['the castle knows something came back', 'the relic award had witnesses; the board says so'],
+  ['the castle knows that, but the next table', 'names the model, then says it will be ignored'],
+  ['Everything else the castle believes about anybody, it deduced', 'describes the model'],
+  ['The castle knows nothing', 'an assertion of IGNORANCE, which needs no evidence'],
+  ['Nobody in the castle knows to reread it', 'the same, about a recruitment note'],
+  // ── A CONTESTANT'S OWN WORDS ─────────────────────────────────────────
+  ['the next morning everybody agrees it was obvious all along', 'a confessional aphorism'],
+  ['right, and everybody knows it', 'a contestant overstating in their own voice'],
+];
+const licensed = t => CONSENSUS_LICENSED.some(([frag]) => t.includes(frag));
+
+/**
+ * The forms `consensusPhrase` itself produces. A rendered sentence containing
+ * one of these is legal BY CONSTRUCTION: the phrase only reaches the universal
+ * form above the floor or on public evidence, so the evidence check has already
+ * happened by the time these words exist.
+ */
+const EVIDENCED_PHRASE = /the people (?:still in the castle|who were in the room)/i;
+
+/**
+ * The five sentences whose count comes from `api.consensusPhrase`, matched in
+ * the RENDERED corpus with the filled slot captured. This is the arm that
+ * distinguishes "the machinery governs the prose" from "the machinery exists".
+ * Each regex is anchored on the fixed words either side of `{who}` in the pool.
+ */
+const WIRED_TEMPLATES = [
+  /By breakfast (.+?) knew about .+? and .+?, and/gi,
+  /By breakfast (.+?) will have it\./gi,
+  /had gone round (.+?) and come home to/gi,
+  /now has to explain, to (.+?), why the one person/gi,
+  /It was settled this morning, by (.+?), that/gi,
+];
+
+describe('a universal claim is evidenced, wired, or it does not ship', () => {
+  it('the source carries no unlicensed, unwired universal', () => {
+    // WHAT IS WRITTEN, not what one season happened to draw — the same reason
+    // the debug-word sweep keeps its source half beside its render half.
+    const files = [
+      ...['trust', 'suspicion', 'grief', 'cover', 'romance', 'callback', 'testing',
+        'journey', 'mission-fallout', 'consequences', 'nightfall', 'voice']
+        .map(f => 'js/tr/castle/' + f + '.js'),
+      ...['castle-day', 'cold-open', 'conclave', 'confessionals', 'round-table',
+        'house-status', 'mission', 'recruitment', 'endgame', 'selection', 'suspicion',
+        'arrival', 'debug']
+        .map(f => 'js/vp-tr/' + f + '.js'),
+      'js/tr/missions.js', 'js/tr/powers.js', 'js/tr/roundtable.js', 'js/tr/murder.js',
+    ];
+    const offenders = [];
+    let scanned = 0, seen = 0;
+    for (const f of files) {
+      const src = readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+      expect(src.length, f + ' is empty — this scan is reading nothing').toBeGreaterThan(200);
+      scanned++;
+      for (const [n, raw] of src.split('\n').entries()) {
+        const line = raw.trim();
+        if (line.startsWith('//') || line.startsWith('*') || line.startsWith('/*')) continue;
+        if (!claimsConsensus(line)) continue;
+        seen++;
+        // WIRED: the line defers the count to `consensusPhrase`.
+        if (line.includes('{who}') || EVIDENCED_PHRASE.test(line)) continue;
+        if (licensed(line)) continue;
+        offenders.push(f + ':' + (n + 1) + '  ' + line);
+      }
+    }
+    expect(scanned).toBe(files.length);
+    // ANTI-VACUITY: the scan has to be finding the shape at all, or a matcher
+    // that quietly stopped matching would report the library clean.
+    expect(seen, 'the consensus matcher found nothing anywhere — it has stopped matching')
+      .toBeGreaterThan(20);
+    expect(offenders,
+      'these say everyone/the whole castle with nothing checking the evidence. Either '
+      + 'route the line through api.consensusPhrase (give it {who}) or add it to '
+      + 'CONSENSUS_LICENSED with the public event that licenses it.')
+      .toEqual([]);
+  });
+
+  it('and no rendered screen prints one either, across seasons and across screens', () => {
+    // THE CORPUS ARM. Twenty decorrelated seeds, three screens, exactly as the
+    // debug-word sweep does it — a source scan cannot see a sentence assembled
+    // at render time out of two halves that are each innocent.
+    const rows = [];
+    for (let seed = 91001; seed <= 91020; seed++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      for (const e of (gs.episodeHistory || [])) {
+        if (e.tr && e.tr.castle && (e.tr.castle.scenes || []).length) rows.push({ ...e });
+      }
+    }
+    expect(rows.length, 'the corpus came back empty').toBeGreaterThan(150);
+    const screens = [
+      ['castle day', ep => rpBuildCastleDay(ep, 'audience')],
+      ['conclave', ep => rpBuildConclave(ep, 'audience')],
+      ['round table', ep => rpBuildRoundTable(ep, 'audience')],
+    ];
+    const hits = [];
+    let scanned = 0, chars = 0, evidenced = 0;
+    for (const ep of rows) {
+      for (const [what, build] of screens) {
+        let html = '';
+        try { html = build(ep) || ''; } catch { continue; }
+        if (!html) continue;
+        const text = _vpTextLines(screenNarration(html)).join('\n');
+        if (text.length < 40) continue;
+        scanned++; chars += text.length;
+        for (const sentence of text.split(/(?<=[.!?])\s+|\n/)) {
+          if (!claimsConsensus(sentence)) continue;
+          if (EVIDENCED_PHRASE.test(sentence)) { evidenced++; continue; }
+          if (licensed(sentence)) continue;
+          hits.push('ep ' + ep.num + ' ' + what + ': ' + sentence.trim().slice(0, 150));
+        }
+      }
+    }
+    expect(scanned, 'no screen was scanned, so this arm asserted nothing').toBeGreaterThan(300);
+    expect(chars, 'the screens rendered almost no words').toBeGreaterThan(400000);
+    // eslint-disable-next-line no-console
+    console.log('[tr-castle-prose] consensus: ' + scanned + ' screens, '
+      + chars + ' chars, ' + evidenced + ' evidenced universals printed');
+    expect(hits.slice(0, 6),
+      'a screen printed an unevidenced universal').toEqual([]);
+    // AND THE WIRING IS REACHED. A guard whose only evidence is an empty
+    // offender list cannot tell "the machinery governs the prose" from "the
+    // machinery is never called" — which is precisely the defect this arm was
+    // added to close. So the five WIRED sentences are matched in the rendered
+    // corpus and their filled slot is read back.
+    //
+    // `evidenced` IS REPORTED AND NOT BANDED, and the numbers are the reason.
+    // The universal form needs receipts past the 0.75 floor, and the widest
+    // spread any castle event writes is six hops — 39% of a full castle of
+    // eighteen, and past the floor only once the room has shrunk. Measured
+    // over sixty seasons (tools/tr-measure-runs.mjs's sibling probe): 27 wired
+    // sentences printed, 11 of them reaching "the people still in the castle"
+    // and the other 16 handing back "eight of the 13 still here" or "seven of
+    // the eleven still here". Whether THIS twenty-season corpus at twenty
+    // players happens to contain one is a property of the sample, so it is
+    // printed and not asserted; what is asserted is that the wired sentences
+    // shipped at all and that none of them printed an unfilled slot.
+    let wired = 0;
+    const overclaimed = [];
+    for (const ep of rows) {
+      for (const [, build] of screens) {
+        let html = '';
+        try { html = build(ep) || ''; } catch { continue; }
+        if (!html) continue;
+        const text = _vpTextLines(screenNarration(html)).join(' ');
+        for (const re of WIRED_TEMPLATES) {
+          for (const m of text.matchAll(re)) {
+            wired++;
+            const slot = (m[1] || '').trim();
+            if (!slot || /\{who\}/.test(slot)
+              || /\b(?:everyone|everybody|the whole castle)\b/i.test(slot)) {
+              overclaimed.push(m[0].slice(0, 140));
+            }
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line no-console
+    console.log('[tr-castle-prose] consensus wiring: ' + wired + ' wired sentences printed, '
+      + evidenced + ' of them reaching the universal form');
+    expect(wired,
+      'not one of the five sentences routed through api.consensusPhrase reached a '
+      + 'screen in twenty seasons — the machinery is built and unreachable, which is '
+      + 'the exact failure mode it was wired to close').toBeGreaterThan(0);
+    expect(overclaimed.slice(0, 4),
+      'a wired sentence printed an unfilled slot or an unevidenced universal').toEqual([]);
+  }, 300000);
+
+  it('MUTANT: the matcher catches the forbidden forms, in every tense', () => {
+    // THE MUTATION, RUN RATHER THAN ASSERTED. Each of these is the shape the
+    // contract forbids, in a tense or a subject the first draft of this matcher
+    // missed. If any goes false the arms above are decorative — which is
+    // exactly how the debug-word sweep shipped green over 73 live hits.
+    for (const bad of [
+      'Everyone turns against Manu after the mission.',
+      'everybody knew about it by breakfast',
+      'everybody knows about it already',
+      'everyone already knew what she had done',
+      'everybody agreed it was him',
+      'the whole castle knew by lunch',
+      'The name had gone round the whole castle and came home.',
+      'By breakfast the whole castle will have it.',
+      'The castle has decided about her.',
+      'the room has decided otherwise about him',
+      'the castle knew what that meant',
+      'nobody trusts him now',
+      'no one believed a word of it',
+      'the group agrees on nothing',
+    ]) {
+      expect(claimsConsensus(bad), 'the matcher missed: ' + bad).toBe(true);
+    }
+    // ...and it does not fire on the precise language the contract asks for,
+    // or the rule would be unusable and every line would end up licensed.
+    for (const fine of [
+      'Three players said the same thing.',
+      'Ellie, Gabby and Alec knew about it by breakfast.',
+      'four of the twelve still here knew about it',
+      'the people in the van knew',
+      'She said it in front of everybody.',
+      'Nobody had asked.',
+      'the room asked, and she hesitated',
+    ]) {
+      expect(claimsConsensus(fine), 'the matcher over-fires on: ' + fine).toBe(false);
+    }
+    // AND THE LICENCE CANNOT SWALLOW THE MUTANT. An unlicensed offender is
+    // still an offender after the licence check runs.
+    expect(licensed('Everyone turns against Manu after the mission.')).toBe(false);
+    expect(EVIDENCED_PHRASE.test('Everyone turns against Manu.')).toBe(false);
+    expect(CONSENSUS_LICENSED.every(([frag, why]) => frag && why)).toBe(true);
+  });
+
+  it('and the evidenced form is only reachable through the floor', () => {
+    // The other half of the mutation: the phrase the guard treats as legal by
+    // construction has to be one `consensusPhrase` will not hand out cheaply.
+    expect(EVIDENCED_PHRASE.test(consensusPhrase({ agreeing: ['A', 'B', 'C'], living: 12 })))
+      .toBe(false);
+    expect(EVIDENCED_PHRASE.test(consensusPhrase({
+      agreeing: ['A', 'B', 'C'], living: 12, evidence: 'public-ceremony' }))).toBe(true);
+    expect(EVIDENCED_PHRASE.test(consensusPhrase({
+      agreeing: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'], living: 12 }))).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// A SHARED GRIEF IS NOT AN ARGUMENT
+// ══════════════════════════════════════════════════════════════════════
+//
+// `RECALL_LEAD_DAYS` is the card that says WHAT KIND of thing has been running
+// between these people, and it was drawn regardless of tone: "The argument
+// arrives already halfway through, because it started days ago" landed on
+// trust, romance and grief beats. Task 7A split the pair pools by register and
+// fix round 1 found the GROUP pools still unsplit — same defect, one branch
+// further down the same ternary, so a carried three-person mourning could
+// still be called an argument.
+//
+// MEASURED OVER RENDERED SCENES rather than over the source, because the
+// selection is a four-way ternary on (mode, tail.days, warmCarry) and a source
+// assertion can only check that the words appear in a file.
+const COMBATIVE_LEAD = /\b(?:argument|nobody is being careful|a good deal sharper|and none of them agree|will say out loud)\b/i;
+const WARM_FAMILIES = new Set(['trust', 'romance', 'romance-spark', 'grief']);
+
+describe('the recall lead is drawn in the scene own register', () => {
+  it('never calls a carried trust, romance or grief scene an argument', () => {
+    const rows = [];
+    for (let seed = 92001; seed <= 92008; seed++) {
+      setPlayers(ROSTER);
+      seedFranchiseHistory(CAST);
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      for (const e of (gs.episodeHistory || [])) {
+        if (e.tr && e.tr.castle && (e.tr.castle.scenes || []).length) rows.push({ ...e });
+      }
+    }
+    const hits = [];
+    let carriedWarm = 0, carriedWarmGroup = 0;
+    for (const ep of rows) {
+      const raw = new Map((ep.tr.castle.scenes || [])
+        .map(sc => ['ep' + ep.num + '-' + sc.window + '-' + sc.eventId + '-' + sc.beatNo, sc]));
+      for (const scene of castleDayScenes(ep, 'audience')) {
+        const rec = raw.get(scene.id);
+        if (!rec || rec.opened) continue;
+        if (!WARM_FAMILIES.has(String(rec.family || rec.kind))) continue;
+        carriedWarm++;
+        if (scene.mode === 'group') carriedWarmGroup++;
+        for (const card of scene.observerText.audience || []) {
+          if (card.role !== 'recall') continue;
+          if (COMBATIVE_LEAD.test(card.lead || '')) {
+            hits.push(scene.mode + ' ' + rec.family + ': ' + card.lead);
+          }
+        }
+      }
+    }
+    // ANTI-VACUITY, AND THE SECOND HALF IS THE ONE FIX ROUND 1 NEEDED: the
+    // scan must have found carried warm scenes AT ALL, and it must have found
+    // GROUP ones, or the half of the ternary this arm was added for is
+    // untested and the arm passes for free.
+    expect(carriedWarm, 'no carried trust/romance/grief scene was rendered')
+      .toBeGreaterThan(30);
+    expect(carriedWarmGroup, 'no carried warm scene had three people in it, so the '
+      + 'group branch of the lead selection was never exercised').toBeGreaterThan(0);
+    expect(hits.slice(0, 5),
+      'a shared confidence or a shared grief was introduced as an argument').toEqual([]);
+  }, 300000);
+
+  it('and the matcher would catch the line that shipped', () => {
+    // THE MUTATION: the exact sentence the defect printed.
+    expect(COMBATIVE_LEAD.test(
+      'The argument arrives already halfway through, because it started days ago.')).toBe(true);
+    expect(COMBATIVE_LEAD.test(
+      'They are back on it, and this time nobody is being careful.')).toBe(true);
+    expect(COMBATIVE_LEAD.test(
+      'All of them have a version of where this began and none of them agree.')).toBe(true);
+    // ...and not on the warm replacements, or the arm could never pass.
+    expect(COMBATIVE_LEAD.test(
+      'They have sat like this before, in a different room, on a worse day.')).toBe(false);
+    expect(COMBATIVE_LEAD.test(
+      'All of them arrived at this from a different day, and all of them arrived.')).toBe(false);
   });
 });

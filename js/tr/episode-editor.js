@@ -55,7 +55,6 @@
 // nothing today and would perturb everything the first time somebody moved the
 // call site. Ordering is a function of the scenes, so it does not need one.
 import { gs } from '../core.js';
-import { consensusBasis } from './knowledge-flow.js';
 import { sceneToneClass } from './castle/voice.js';
 
 /** The four terminal answers a promise may end an episode with. */
@@ -323,6 +322,23 @@ function _resequence(scenes, carry = null, { reserveTail = false } = {}) {
 
   while (conflicts.length || others.length) {
     let takeConflict;
+    // ── WHERE THE CAP IS NOT A GUARANTEE, MEASURED ───────────────────
+    //
+    // `!others.length -> takeConflict = true` fires BEFORE the cap check
+    // below, so a block whose relief is exhausted runs past three. That is
+    // deliberate and it is not fixable here: ordering cannot manufacture
+    // relief a block does not contain, and inventing a scene to break a run is
+    // the thing this whole plan is written against.
+    //
+    // THE SIZE OF IT, over 462 standard episodes on 60 seeds
+    // (tools/tr-measure-runs.mjs): raw mean longest run 2.62 -> edited 1.80,
+    // distribution {1: 196, 2: 173, 3: 85, 4: 7, 7: 1}. Eight episodes (1.7%)
+    // exceed the cap and the worst is seven. That is why the band in
+    // tests/tr-story-payoff.test.js is a SHARE (>0.75) and not a per-episode
+    // floor, and it is written down here because the first draft of the task
+    // report called it "100% of episodes inside <=3" on the strength of an
+    // eight-seed sample — the self-measurement-becomes-the-claim trap, one
+    // level up from the code.
     // ── A PHASE DOES NOT HAND THE NEXT ONE A LIVE RUN ────────────────
     //
     // `reserveTail` holds one non-conflict scene back to close the phase with
@@ -555,15 +571,18 @@ export function buildEpisodeEdit(eligibleScenes, ctx = {}, rng = null) { // esli
     .filter(p => ep == null || p.ep === ep || p.lastEp === ep)
     .map(p => ({ ...p }));
 
-  // ── 6. CONSENSUS BASIS ──────────────────────────────────────────────
-  // What the room could legally be said to agree about tonight. Stored so a
-  // screen or a later scene has a number to point at instead of the word
-  // "everyone" — see js/tr/knowledge-flow.js.
-  const consensus = consensusBasis({
-    agreeing: [...new Set(scenes.flatMap(s => s.people || []))],
-    living, ep,
-  });
-
+  // ── NO CONSENSUS FIELD ON THIS RECORD, AND THAT IS FIX ROUND 1 ──────
+  //
+  // The first cut stored `edit.consensus` — the numbers behind "how many people
+  // may a sentence claim" — and NOTHING READ IT: no screen, no text backlog, no
+  // later scene. A field that is always written and never read is the
+  // written-but-unreachable shape this repository sweeps for, and it is worse
+  // here than elsewhere because it looks like the wiring rather than like a
+  // gap in it. The machinery it was standing in for is live in the place it
+  // belongs: `api.consensusPhrase` (js/tr/scene-api.js) governs the actual
+  // sentences, and tests/tr-castle-prose.test.js reads them back off the
+  // rendered screens. An episode-level consensus panel belongs with the rest of
+  // the editor's own surface, which is Task 10's.
   return {
     ep,
     scenes,
@@ -572,7 +591,6 @@ export function buildEpisodeEdit(eligibleScenes, ctx = {}, rng = null) { // esli
     textureSlots: textureSlots.slice(0, Math.max(TIERS.textureMin, textureSlots.length)),
     toneLedger,
     promises,
-    consensus,
     // WHAT THE RESEQUENCER ACHIEVED, ON THE RECORD. A band that only ever
     // reads the run length cannot tell "ordering fixed it" from "there was
     // never a run", and this plan has shipped that shape before.

@@ -1807,9 +1807,42 @@ const RECALL_LEAD_TODAY_WARM = [
   'The second time is happening before the first one has finished cooling.',
   'Neither of them waited. It came back up inside the afternoon.',
   'It did not keep for a day, or an evening, or in the end for an hour.',
-  'They are back to it, and this time nobody is being careful about it.',
+  'They are back to it, and this time neither of them is pretending it is nothing.',
   'Once was not enough for either of them, apparently.',
   'It came back round before the room had finished with the first version.',
+];
+/**
+ * THE GROUP POOLS, FOR A STORY THAT IS NOT A FIGHT.
+ *
+ * Ten each, matching their combative siblings. `RECALL_LEAD_DAYS_GROUP` is
+ * mostly neutral already — it does not print the word "argument" — but three of
+ * its ten put the room in opposition ("none of them agree", "further than any
+ * of them will say out loud"), which is the wrong register over three people
+ * sitting with a shared grief or a shared confidence.
+ */
+const RECALL_LEAD_DAYS_GROUP_WARM = [
+  'None of them has to say which day this goes back to. All of them could.',
+  'This has been running for days, and everybody standing here is part of why.',
+  'It did not start this morning, and not one of them is hearing it for the first time.',
+  'They have all been carrying some part of this since well before today.',
+  'Every one of them could name the day it started, and they would all name the same one.',
+  'It has been going long enough that nobody bothers explaining it to anybody.',
+  'This is old, and the room has been standing in it for some time.',
+  'Nobody here is new to this, which is why nobody sets it up.',
+  'It goes back further than any of them would have said a week ago.',
+  'All of them arrived at this from a different day, and all of them arrived.',
+];
+const RECALL_LEAD_TODAY_GROUP_WARM = [
+  'This has already come up once today, and it has picked up people since.',
+  'The second time today, and there are more of them in it than there were this morning.',
+  'It did not keep, and it did not stay between the two who started it.',
+  'They are back to it before the day is out, and the room is bigger this time.',
+  'The same subject, hours later, and two more people have sat down with it.',
+  'It came up at breakfast and it is up again, with company.',
+  'Twice in one day, and the second time nobody kept it quiet.',
+  'It has picked up people since this morning, which is what these do.',
+  'They are at it again and the room has stopped pretending not to listen.',
+  'Round two, same day, more of them in it.',
 ];
 const RECALL_LEAD_TODAY = [
   'Neither of them has left it alone for more than a couple of hours.',
@@ -3102,9 +3135,16 @@ function _composeScene(s, key, used, cast) {
     // The register is the one the reaction card is already keyed on
     // (`_reactClass`): `bond` is trust/romance and `loss` is grief, and both
     // are answered warmly. Everything else keeps the pool it had.
+    // AND THE GROUP HALF, WHICH FIX ROUND 1 FOUND STILL OPEN. The split above
+    // was applied to `mode === 'pair'` only, so a carried trust, romance or
+    // grief scene with three or more people in it still drew "The argument
+    // arrives already halfway through" out of the group pool. Same defect, same
+    // register, one branch further down the same ternary.
     const warmCarry = WARM_RECALL_CLASSES.has(_reactClass(s));
     const leads = mode === 'group'
-      ? (tail.days ? RECALL_LEAD_DAYS_GROUP : RECALL_LEAD_TODAY_GROUP)
+      ? (tail.days
+        ? (warmCarry ? RECALL_LEAD_DAYS_GROUP_WARM : RECALL_LEAD_DAYS_GROUP)
+        : (warmCarry ? RECALL_LEAD_TODAY_GROUP_WARM : RECALL_LEAD_TODAY_GROUP))
       : (b ? (tail.days
         ? (warmCarry ? RECALL_LEAD_DAYS_WARM : RECALL_LEAD_DAYS)
         : (warmCarry ? RECALL_LEAD_TODAY_WARM : RECALL_LEAD_TODAY))

@@ -59,7 +59,7 @@ function _fillPartner(line, a, partner) {
   return _sentenceCase(line.replace(/\{a\}/g, a).replace(/\{b\}/g, partner || 'somebody'));
 }
 
-import { lineFor } from './lines.js';
+import { lineFor, whoTheyTold } from './lines.js';
 
 const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 
@@ -337,7 +337,7 @@ const PLANT_NAME_LINES = {
     '{a} got {c}’s name back from {b} an hour after putting it out, improved, and had to look pleased about it.',
     'It worked. It worked well enough that {a} could no longer take it back if {a} wanted to.',
     '{b} arrived with a theory about {c} that {a} recognised as {a}’s own, and {a} agreed with it warmly.',
-    'The name had gone round the whole castle and come home to {a} wearing somebody else’s clothes.',
+    'The name had gone round {who} and come home to {a} wearing somebody else’s clothes.',
     '{a} listened to {b} explain {c} to {a}, and understood that the thing was now out of anybody’s hands.',
   ],
   'thought-better-of-it': [
@@ -392,9 +392,28 @@ registerEvent({
     // event can pick up on ("why does everyone keep saying that name?"); the
     // plant itself proves nothing and must not read as evidence of anything
     // to the deduction layer.
+    // ── HOW FAR IT ACTUALLY GOT (writing-contracts.md, "Evidence for group
+    //    consensus") ─────────────────────────────────────────────────────
+    //
+    // The `came-back-round` branch used to assert that the name had gone round the whole castle, and wrote no
+    // receipt to say so. The news now travels to named people (`whoTheyTold`
+    // — chosen by bond, no rng draw) with a propagation hop each, and the
+    // sentence takes its words from `api.consensusPhrase`, which is only
+    // allowed to say "the people still in the castle" once the receipts pass
+    // the consensus floor. Below the floor it names them or counts them.
+    let who = 'a few people';
+    if (branch === 'came-back-round' && other) {
+      const factId = api.recordClaim(actor, `${actor} put ${target}'s name into the room`,
+        { about: target, listeners: [other], channel: 'conversation', source: sceneWhy }).id;
+      for (const to of whoTheyTold(other, [actor, other], ctx.living, 5)) {
+        api.propagate(factId, other, to,
+          { channel: 'conversation', source: `${target}'s name was passed on to ${to}` });
+      }
+      who = api.consensusPhrase({ factId });
+    }
     const t = api.openArc(FAMILY, [actor], { source: sceneWhy,
       seed: lineFor(PLANT_NAME_LINES[branch], `cover-plant-a-name|${branch}|${ctx.ep}`,
-        { a: actor, b: other || 'somebody', c: target }) });
+        { a: actor, b: other || 'somebody', c: target, who }) });
     let bondDelta = 0;
     if (branch === 'too-obvious' && other) {
       bondDelta = -1;

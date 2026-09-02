@@ -238,9 +238,17 @@ export function consensusPhrase({ agreeing = [], living = 0, evidence = null,
     living: typeof living === 'number' ? new Array(total).fill('?') : living, evidence });
   if (!list.length) return 'nobody';
   if (basis.universal) {
+    // PLURAL NOUN PHRASES, NOT "everybody". Not a retreat from the universal
+    // version — these ARE it, and they are only reachable above the floor or
+    // on public evidence. They are phrased this way because the production
+    // callers drop the result into a sentence with a verb after it
+    // (`{who} knew about it by breakfast`), and "everybody still in the castle
+    // knew" reads as a grammatical error while "the people still in the castle
+    // knew" does not. A phrase the events cannot use is a phrase the events
+    // will not call.
     return evidence && PUBLIC_EVIDENCE.has(evidence)
-      ? 'everybody who was in the room'
-      : 'everybody still in the castle';
+      ? 'the people who were in the room'
+      : 'the people still in the castle';
   }
   if (list.length <= 3) return _names(list);
   const word = COUNT_WORD[list.length] || String(list.length);

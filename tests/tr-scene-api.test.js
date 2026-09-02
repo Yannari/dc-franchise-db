@@ -578,9 +578,31 @@ describe('the scene consequence API', () => {
     const writers = ['addBond', 'addBelief', 'lowerBelief', 'recordClaim', 'propagate',
       'setVoteIntent', 'addMurderPreference', 'popDelta', 'setEmotionalState', 'openArc',
       'advanceArc', 'resolveArc'];
-    const readers = ['receipt', 'receipts', 'effects'];
+    // TASK 7A added ONE more READER: `consensusPhrase`, which answers "how
+    // many people may this sentence claim" off the propagation ledger. It is
+    // registered here rather than left to widen the list silently, and the arm
+    // below executes it and requires that it record nothing — a stronger
+    // statement than membership of a list.
+    //
+    // ITS TWO SIBLINGS WERE REMOVED IN FIX ROUND 1. `consensusBasis` and
+    // `knowersOf` were put on this surface and then called by no event, which
+    // is the written-but-unreachable shape this repository sweeps for. They
+    // live on js/tr/knowledge-flow.js, where they have real callers.
+    const readers = ['receipt', 'receipts', 'effects', 'consensusPhrase'];
     const fns = Object.keys(api).filter(k => typeof api[k] === 'function');
     expect(fns.sort()).toEqual([...writers, ...readers].sort());
+  });
+
+  it('and the consensus reader really is a reader', () => {
+    // THE ARM THAT MAKES THE REGISTRATION SAFE. A "reader" added to the list
+    // above that quietly wrote would break the promise the whole file is
+    // about, and the list alone cannot tell the difference.
+    const api = createTraitorsSceneApi({ ep: 3 });
+    const before = JSON.stringify(gs.tr);
+    expect(typeof api.consensusPhrase({ agreeing: ['Gabby', 'Alec'] })).toBe('string');
+    expect(api.consensusPhrase({ factId: 'nothing-at-all' })).toBe('nobody');
+    expect(api.receipts()).toEqual([]);
+    expect(JSON.stringify(gs.tr), 'a consensus reader wrote to the season').toBe(before);
   });
 });
 

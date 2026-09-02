@@ -334,13 +334,17 @@ describe('tone and pacing', () => {
   });
 });
 
-describe('consensus', () => {
+describe('the record carries no field nothing reads', () => {
   beforeEach(world);
 
-  it('records what the room could legally be said to agree about', () => {
+  it('there is no consensus block on the edit', () => {
+    // FIX ROUND 1. `edit.consensus` was written every episode and read by
+    // nothing — no screen, no backlog, no later scene. The consensus machinery
+    // governs prose through `api.consensusPhrase` instead, where it has real
+    // callers; see tests/tr-castle-prose.test.js. This arm keeps the field from
+    // coming back without a reader.
     const edit = buildEpisodeEdit(eligibleScenesFor(), { ep: 4, living: CAST }, rngFor(7));
-    expect(edit.consensus.living).toBe(CAST.length);
-    expect(typeof edit.consensus.share).toBe('number');
-    expect(edit.consensus.reason).toBeTruthy();
+    expect(edit.consensus).toBeUndefined();
+    expect(edit.dropped).toBeUndefined();
   });
 });

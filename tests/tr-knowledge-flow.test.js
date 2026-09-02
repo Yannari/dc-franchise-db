@@ -134,18 +134,19 @@ describe('a minority is not everyone', () => {
   it('a public ceremony carries the universal version and a conversation does not', () => {
     const three = { agreeing: ['A', 'B', 'C'], living: 12 };
     expect(consensusPhrase({ ...three, evidence: 'public-ceremony' }))
-      .toMatch(/everybody who was in the room/);
-    expect(consensusPhrase(three)).not.toMatch(/everybody/);
+      .toMatch(/the people who were in the room/);
+    expect(consensusPhrase(three)).not.toMatch(/the people who/);
   });
 
   it('and receipts reaching the floor earn it the hard way', () => {
     const nine = CAST.slice(0, 9);
     expect(nine.length / CAST.length).toBeGreaterThanOrEqual(CONSENSUS_FLOOR);
     expect(consensusPhrase({ agreeing: nine, living: CAST.length }))
-      .toMatch(/everybody still in the castle/);
+      .toMatch(/the people still in the castle/);
     const eight = CAST.slice(0, 8);
     expect(eight.length / CAST.length).toBeLessThan(CONSENSUS_FLOOR);
-    expect(consensusPhrase({ agreeing: eight, living: CAST.length })).not.toMatch(/everybody/);
+    expect(consensusPhrase({ agreeing: eight, living: CAST.length }))
+      .not.toMatch(/the people still/);
   });
 
   it('MUTANT: a floor of zero would let three of twelve be everyone', () => {

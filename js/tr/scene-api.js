@@ -94,7 +94,8 @@ import { crowdMoment, CROWD_COLOURS } from './crowd.js';
 import { openThread, advanceThread, closeThread, knownOutcomes } from './threads.js';
 import { voteIntentFor as _voteIntentFor, murderPreferenceFor as _murderPrefFor,
   recordedReceipts } from './state.js';
-import { KNOWLEDGE_CHANNELS, AUDIENCE_ONLY, shareFact } from './knowledge-flow.js';
+import { KNOWLEDGE_CHANNELS, AUDIENCE_ONLY, shareFact,
+  knowersOf as _knowersOf, consensusPhrase as _consensusPhrase } from './knowledge-flow.js';
 
 /** The three states `emotionalStateOf` (js/tr/events.js) knows about. */
 export const EMOTIONAL_STATES = ['content', 'paranoid', 'desperate'];
@@ -763,9 +764,39 @@ export function createTraitorsSceneApi(ctx = {}) {
     });
   }
 
+  // ── HOW MANY PEOPLE MAY THIS SENTENCE CLAIM (writing-contracts.md) ───
+  //
+  // "Words such as `everyone`, `the whole room`, `the group agrees`, `the
+  // castle turns`, and `nobody trusts` require evidence." An event that wants
+  // to say how far something has got calls this and drops the answer into its
+  // line, so the words come from the receipts rather than from the author's
+  // sense of scale. `living` defaults to the castle as it stands.
+  //
+  // ON THE API AND NOT IMPORTED DIRECTLY, for the reason every other
+  // consequence is: js/tr/castle/ may not import js/tr/knowledge-flow.js's
+  // writer, and a file that imported the readers would be one edit away from
+  // importing `shareFact` beside them.
+  function consensusPhrase({ factId = null, agreeing = null, living = null,
+    evidence = null } = {}) {
+    return _consensusPhrase({
+      factId, ep,
+      agreeing: agreeing || (factId ? _knowersOf(factId, ep) : []),
+      living: living || (gs?.activePlayers || []).length,
+      evidence,
+    });
+  }
+
+  // NO `consensusBasis` OR `knowersOf` ON THIS SURFACE, DELIBERATELY. Both
+  // were here in the first cut of Task 7A and no event called either, which is
+  // this project's own named failure mode wearing a helpful face. They are
+  // exported from js/tr/knowledge-flow.js for the readers that do use them —
+  // `consensusPhrase` above calls both — and they come back onto the API the
+  // day an event needs them, with the event in the same commit.
+
   return {
     ep, sceneId, eventId,
     addBond, addBelief, lowerBelief, recordClaim, propagate, setVoteIntent,
+    consensusPhrase,
     addMurderPreference, popDelta, setEmotionalState, openArc, advanceArc, resolveArc,
     receipt, receipts: allReceipts, effects,
   };

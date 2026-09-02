@@ -149,7 +149,7 @@ const CONFIDE_LINES = {
     '{a} looked round the room at dinner and did the sum on each of them and got no for all of them.',
     'There was a moment in the corridor when {a} could have, and {a} said goodnight instead.',
     '{a} put it away again, carefully, the way you put away a thing you intend to get out later.',
-    'Everyone else seemed to have somebody. {a} noticed that, which did not help.',
+    '{a} looked round the room and could not find anybody else sitting on their own, which did not help.',
   ],
 };
 

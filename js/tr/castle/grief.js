@@ -524,7 +524,7 @@ const TIMING_LINES = {
     '{b} pointed out, gently, that they had been asking {v} questions right up until Tuesday.',
     '“We were wrong,” said {a}, which is a bigger sentence than it sounds in here.',
     'All of it pointed at {v} and all of it was pointing the wrong way, and {a} and {b} were both pointing.',
-    'The one thing everybody agreed on this week has just been disproved by somebody with a knife.',
+    'The one thing {a} and {b} had agreed on all week has just been disproved by somebody with a knife.',
     '{b} said they should start again from the beginning. {a} said the beginning was {v}.',
     'What {a} and {b} lost last night was not only {v}. It was every hour they spent on {v}.',
   ],

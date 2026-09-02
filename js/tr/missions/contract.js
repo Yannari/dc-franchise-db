@@ -67,7 +67,7 @@
 // and a Faithful's ordinary mistake produces the same observable — which is
 // where the false positives that make the format work come from.
 
-import { gs } from '../../core.js';
+import { gs, players } from '../../core.js';
 import { pStats, pronouns } from '../../players.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -283,6 +283,56 @@ export function pronounSlots(name) {
     their: pr.posAdj, Their: pr.PosAdj,
     theirs: pr.pos, self: pr.ref,
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ARCHETYPE VOICE — the same recorded fact, read three ways
+// ══════════════════════════════════════════════════════════════════════
+//
+// A confessional is who-speaks (decided by weightedPick) times HOW-they-speak,
+// and the second half was missing: every confessional in the four missions was
+// one hardcoded string, so a hero and a mastermind rescued off the same sand and
+// said, word for word, the same thing. That breaks the "Voice and stats" writing
+// contract — the fact is fixed, the reading is not. `confessionalVoice` branches
+// the text on the SPEAKER's archetype family, read the AGENTS.md way (archetype
+// off `players`, never `pStats`, which is stats only), grouped into the three
+// behaviour families AGENTS.md already defines. Each family gets a materially
+// different take on the identical recorded fact; none of them may invent a fact
+// the scene did not carry.
+const ARCHETYPE_FAMILY = Object.freeze({
+  // villainous — reads the moment for leverage, advantage or grievance
+  villain: 'villainous', mastermind: 'villainous', schemer: 'villainous',
+  // nice — reads it in terms of the team, fault owned, feeling admitted
+  hero: 'nice', 'loyal-soldier': 'nice', 'social-butterfly': 'nice',
+  showmancer: 'nice', underdog: 'nice', goat: 'nice',
+  // neutral — reads it flatly, defensively, or escalates
+  hothead: 'neutral', 'challenge-beast': 'neutral', wildcard: 'neutral',
+  'chaos-agent': 'neutral', floater: 'neutral', 'perceptive-player': 'neutral',
+});
+
+/** A player's archetype, the AGENTS.md way: off `players`, NOT `pStats`. */
+export function archetypeOf(name) {
+  return players.find(p => p && p.name === name)?.archetype || null;
+}
+
+/**
+ * The behaviour family of a speaker's archetype: 'villainous' | 'nice' |
+ * 'neutral'. Anything unmapped (or nameless) falls to 'neutral', the flat read.
+ */
+export function archetypeFamily(name) {
+  return ARCHETYPE_FAMILY[archetypeOf(name)] || 'neutral';
+}
+
+/**
+ * Pick the confessional line for `name` from a `{ villainous, nice, neutral }`
+ * bank keyed by the speaker's archetype family. The three must be materially
+ * different readings of THE SAME recorded fact — the fact stays put, the voice
+ * changes. Missing families fall back within the bank so a partial bank still
+ * renders, but every call site here supplies all three.
+ */
+export function confessionalVoice(name, bank) {
+  const fam = archetypeFamily(name);
+  return bank[fam] ?? bank.neutral ?? bank.nice ?? bank.villainous ?? '';
 }
 
 /**

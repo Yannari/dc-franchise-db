@@ -39,7 +39,7 @@
 // paid for out of the pot.
 
 import {
-  briefingText, clamp01, freshPick, hostDo, hostSay, PHASE_SWING,
+  briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
 } from './contract.js';
@@ -205,8 +205,15 @@ function _wade(ctx, rng, teams) {
         ],
         confessional: {
           purpose: 'emotional-turn', speaker: struggler,
-          text: `I couldn't get that thing off the sand. ${helper} didn't say a word about `
-            + "it, which somehow made it worse and better at the same time.",
+          text: confessionalVoice(struggler, {
+            nice: `I couldn't get that thing off the sand. ${helper} didn't say a word about `
+              + 'it, which somehow made it worse and better at the same time.',
+            villainous: `${helper} reckons that little rescue means I owe them something now. `
+              + "I don't. I'll file it and I'll never mention it — out here a favour's just a "
+              + 'receipt, and I keep the receipts.',
+            neutral: `I'd have got it up eventually. Everyone's decided ${helper} saved me and `
+              + "I'm not going to make a speech about it — I didn't ask anybody to come back.",
+          }),
         },
       }));
     } else {
@@ -227,8 +234,14 @@ function _wade(ctx, rng, teams) {
         ],
         confessional: {
           purpose: 'hidden-intent', speaker: helper,
-          text: "I'm not carrying two boxes so somebody who hasn't done a thing all week "
-            + "can walk in beside me looking useful.",
+          text: confessionalVoice(helper, {
+            villainous: "I'm not carrying two boxes so somebody who hasn't done a thing all "
+              + 'week can walk in beside me looking useful.',
+            nice: "I keep telling myself I didn't see them stuck out there. I did. I just "
+              + "didn't turn around, and that's not the person I want the room to be voting for.",
+            neutral: `Everybody hauls their own box, that's the whole job. I'm not wrecking my `
+              + `own back dragging ${struggler} in when they've been coasting since Monday.`,
+          }),
         },
       }));
     }
@@ -330,8 +343,15 @@ function _ledge(ctx, rng, teams, boxes) {
           ],
           confessional: {
             purpose: 'emotional-turn', speaker: name,
-            text: "It's a foot wide and there's water under it. I've watched myself do braver "
-              + "things than that and I couldn't make my leg move.",
+            text: confessionalVoice(name, {
+              nice: "It's a foot wide and there's water under it. I've watched myself do braver "
+                + "things than that and I couldn't make my leg move.",
+              villainous: "Let them call it nerves. I made a call — that box wasn't worth going "
+                + "into the channel for, and there's a difference between frozen and choosing, "
+                + 'even if nobody up there can see it.',
+              neutral: "It's a foot of wet stone over a running channel. Anybody swearing they "
+                + "wouldn't think twice is lying to you. I thought twice. That's all it was.",
+            }),
           },
         }));
       } else {
@@ -371,8 +391,15 @@ function _ledge(ctx, rng, teams, boxes) {
           ],
           confessional: {
             purpose: 'belief-change', speaker: receiver,
-            text: `I had my hands on it. ${passer} did not let go when I expected, and two `
-              + 'thousand went into the sea. I am not saying it was on purpose. I am saying I noticed.',
+            text: confessionalVoice(receiver, {
+              neutral: `I had my hands on it. ${passer} didn't let go when I expected, and two `
+                + "thousand went into the sea. I'm not saying it was on purpose. I'm saying I noticed.",
+              villainous: `A box goes in the channel and just like that I've got a name to say `
+                + `at the table tonight. Whether ${passer} did it on purpose barely matters — `
+                + 'it lands on them the same either way.',
+              nice: `I want to believe ${passer}'s hands were just cold, I really do. But I felt `
+                + "the box sit there a beat too long, and I can't pretend I didn't.",
+            }),
           },
         }));
       }
@@ -401,8 +428,15 @@ function _ledge(ctx, rng, teams, boxes) {
         ],
         confessional: {
           purpose: 'character', speaker: who,
-          text: `${other} wasn't moving for the host, the money or the tide. `
-            + "Sometimes you've just got to go and stand where somebody can see you.",
+          text: confessionalVoice(who, {
+            nice: `${other} wasn't moving for the host, the money or the tide. `
+              + "Sometimes you've just got to go and stand where somebody can see you.",
+            villainous: `Everyone clocked me going out to get ${other}. That's the point — you `
+              + "want the room seeing you as the one who saves people, right up until the day you "
+              + "need them not to be watching you at all.",
+            neutral: `${other} had frozen solid and somebody had to go get them. It was me. I `
+              + "wasn't going to stand there watching a box go nowhere because nobody else would move first.",
+          }),
         },
       }));
     }
@@ -504,8 +538,15 @@ function _bell(ctx, rng, teams, teamBoxes, boxes) {
         ],
         confessional: {
           purpose: 'audience-lie', speaker: ringer,
-          text: "I'll tell them the board was wet. The board wasn't wet. I counted from the "
-            + "wrong low water and I knew it about a second after I let go of the rope.",
+          text: confessionalVoice(ringer, {
+            neutral: "I'll tell them the board was wet. The board wasn't wet. I counted from the "
+              + "wrong low water and I knew it about a second after I let go of the rope.",
+            villainous: "I'll tell them the board was wet, and I'll sell it. It wasn't — I "
+              + 'counted off the wrong low water. But a good story at dinner is worth more to me '
+              + 'than a right answer was this afternoon.',
+            nice: "I'm going to say the board was wet, and I'll hate myself for it, because it "
+              + "wasn't. I counted from the wrong low water and I knew the second I let go of the rope.",
+          }),
         },
       }));
     }
@@ -537,8 +578,14 @@ function _bell(ctx, rng, teams, teamBoxes, boxes) {
           ],
           confessional: right ? null : {
             purpose: 'vote-change', speaker: other,
-            text: `I gave ${ringer} the number. ${ringer} rang a different one and we watched `
-              + "two thousand hit the sand. That's going on the list.",
+            text: confessionalVoice(other, {
+              villainous: `I gave ${ringer} the number. ${ringer} rang a different one and we `
+                + "watched two thousand hit the sand. That's going on the list — right at the top of it.",
+              nice: `I gave ${ringer} the right number and they went another way with it. I'm not `
+                + "out for blood, but you can't hand somebody the answer, watch them bin it, and feel nothing.",
+              neutral: `I gave ${ringer} the number. ${ringer} rang a different one and we watched `
+                + "two thousand hit the sand. I'm not forgetting who wouldn't be told.",
+            }),
           },
         }));
       }

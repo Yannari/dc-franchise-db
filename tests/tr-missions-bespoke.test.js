@@ -25,7 +25,7 @@ import { initTraitorsState } from '../js/tr/state.js';
 import { rngFor } from '../js/tr/headless.js';
 import { getBond } from '../js/bonds.js';
 import { TRAITORS_MISSIONS, _setBespokeMissionsEnabled } from '../js/tr/missions/index.js';
-import { createMissionCtx, POT_CEILING, MISSION_BEHAVIOURS, statOf }
+import { createMissionCtx, POT_CEILING, MISSION_BEHAVIOURS, statOf, archetypeFamily }
   from '../js/tr/missions/contract.js';
 import { bespokeMission } from '../js/tr/missions/index.js';
 import roster from '../franchise_roster.json';
@@ -637,4 +637,55 @@ describe('the footprint on a season is the pot and the record', () => {
       'the Ash Vault granted no Shield in 25 afternoons, so holding it out of the arm '
       + 'above proves nothing').toBeGreaterThan(0);
   });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// CONFESSIONALS CARRY ARCHETYPE VOICE — the same fact, read three ways
+// ══════════════════════════════════════════════════════════════════════
+//
+// FINDING (Task 8 review): every confessional was one hardcoded string, so two
+// different speakers off the SAME recorded beat said, word for word, the same
+// thing — voice was missing entirely. The fix branches the confessional text on
+// the SPEAKER's archetype family (villainous / nice / neutral) via
+// `confessionalVoice`. This arm proves the branch is real: for every beat that
+// two different families actually speak, the families must not read identically.
+//
+// MUTATION RUN (reported): collapse any one site's `confessionalVoice({...})`
+// back to a single string — so two families return the same text for that
+// eventId — and the pairwise-distinct check on that eventId fails, turning this
+// arm RED. Reverted afterwards.
+describe('confessionals read differently for different archetype families', () => {
+  for (const mission of TRAITORS_MISSIONS) {
+    it(`${mission.id}: no beat gives two archetype families identical confessional text`, () => {
+      // eventId -> (family -> normalized confessional text). One text per family
+      // per beat, because the voice branch is deterministic in the speaker.
+      const byBeat = new Map();
+      for (const r of runs(mission, 120, { from: 20000 })) {
+        for (const s of r.scenes) {
+          const c = s.confessional;
+          if (!c || !c.speaker || !c.text) continue;
+          const fam = archetypeFamily(c.speaker);
+          if (!byBeat.has(s.eventId)) byBeat.set(s.eventId, new Map());
+          byBeat.get(s.eventId).set(fam, norm(c.text));
+        }
+      }
+
+      // ANTI-VACUITY: some beat must actually have been spoken by two different
+      // families, or the distinctness check below has nothing to bite on and a
+      // collapsed voice branch would sail through unobserved.
+      let multiFamilyBeats = 0;
+      for (const fams of byBeat.values()) if (fams.size >= 2) multiFamilyBeats++;
+      expect(multiFamilyBeats,
+        'no confessional beat was spoken by two different archetype families, so the '
+        + 'voice branch was never exercised on this mission').toBeGreaterThan(0);
+
+      // THE BAND: within one beat, no two families may read word-for-word alike.
+      for (const [eventId, fams] of byBeat) {
+        const texts = [...fams.values()];
+        expect(new Set(texts).size,
+          `${eventId}: two archetype families produced word-for-word the same confessional `
+          + '— the voice branch is collapsed here').toBe(texts.length);
+      }
+    });
+  }
 });

@@ -36,7 +36,7 @@
 // not the pot. Nudge, never switch.
 
 import {
-  briefingText, clamp01, freshPick, hostDo, hostSay, PHASE_SWING,
+  briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   MISSION_MAX, PASS_MARK,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
@@ -187,8 +187,15 @@ function _shoring(ctx, rng, teams) {
         ],
         confessional: {
           purpose: 'character', speaker: who,
-          text: "Nobody's cutting a highlight reel of me holding a bit of wood over "
-            + "somebody's head for an hour. It was still the job and I did it.",
+          text: confessionalVoice(who, {
+            nice: "Nobody's cutting a highlight reel of me holding a bit of wood over "
+              + "somebody's head for an hour. It was still the job and I did it.",
+            villainous: "Holding a beam over somebody's head all afternoon buys you something "
+              + "better than a highlight — it buys you being the person nobody thinks to look at. "
+              + "That's worth an aching arm.",
+            neutral: "It's not a glamorous job, standing there holding a beam up. Somebody had to "
+              + "do it. I don't need a thank-you and I'm not fishing for one.",
+          }),
         },
       }));
     }
@@ -218,8 +225,15 @@ function _shoring(ctx, rng, teams) {
           ],
           confessional: {
             purpose: 'belief-change', speaker: finder,
-            text: "You put the jack under and you push it until it stops. That's the whole "
-              + `job. I don't understand how ${firstBad} got that wrong, and I'd like to.`,
+            text: confessionalVoice(finder, {
+              neutral: "You put the jack under and you push it until it stops. That's the whole "
+                + `job. I don't understand how ${firstBad} got that wrong, and I'd like to.`,
+              villainous: `A finger short. On a jack. ${firstBad}'s name is on that bay, and I'll `
+                + "make sure it's on everyone's mind by tonight — mistake or not, it tells the "
+                + 'same story at the table.',
+              nice: `The jack was short and ${firstBad} set it, and I wish I hadn't been the one `
+                + "to find it. I'm not calling it anything. I just can't unsee that it was short.",
+            }),
           },
         }));
       }
@@ -369,8 +383,15 @@ function _crawl(ctx, rng, teams, bays, boxes) {
           ],
           confessional: {
             purpose: 'emotional-turn', speaker: other,
-            text: "Sixty feet of brick and I couldn't move. I don't know how long I was in "
-              + "there. I know whose voice it was.",
+            text: confessionalVoice(other, {
+              nice: "Sixty feet of brick and I couldn't move. I don't know how long I was in "
+                + "there. I know whose voice it was.",
+              villainous: `Sixty feet in the dark and I froze, and ${who} came in after me. I `
+                + "won't forget that — and not for the sweet reason everyone's assuming. Knowing "
+                + 'who\'ll risk themselves for you is knowing who you can spend.',
+              neutral: "I got stuck. It happens in a hole that size. Somebody came in and got me "
+                + "out. I'd rather not make a whole thing of it — but yeah, I know who it was.",
+            }),
           },
         }));
       } else {
@@ -415,10 +436,25 @@ function _crawl(ctx, rng, teams, bays, boxes) {
     confessional: {
       purpose: 'hidden-intent', speaker: searcher,
       text: found
-        ? "They're all down there carrying boxes for money most of us won't live to collect. "
-          + "I went and got the thing that keeps me here until Thursday."
-        : "An hour. An hour up a chimney on the word of a woman who died in 1994, and I've "
-          + "got nothing to show for it except the part they all watched.",
+        ? confessionalVoice(searcher, {
+            villainous: "They're all down there carrying boxes for money most of us won't live "
+              + "to collect. I went and got the thing that keeps me here until Thursday.",
+            nice: "I know how it looks, peeling off while they're all hauling boxes. But that "
+              + "ring means I get to keep playing for them next week too — and I'll carry double "
+              + "tomorrow to make up for it.",
+            neutral: "Everyone else is breaking their backs for money half of us won't be here to "
+              + "spend. I went and got the one thing that guarantees I'm still standing Thursday. "
+              + "I'd do it again.",
+          })
+        : confessionalVoice(searcher, {
+            neutral: "An hour. An hour up a chimney on the word of a woman who died in 1994, and "
+              + "I've got nothing to show for it except the part they all watched.",
+            villainous: "An hour up a chimney chasing a dead woman's ring, and I've got nothing "
+              + "but the sight of me leaving. Fine — nobody knows if I found it or not, and a "
+              + "maybe-shield keeps people just as honest as a real one.",
+            nice: "An hour up that flue on a rumour, and I came back with nothing but the memory "
+              + "of everyone watching me walk off the relay. I owe them a real shift now, and I know it.",
+          }),
     },
   }));
 
@@ -520,8 +556,15 @@ function _sort(ctx, rng, teams, teamBoxes, searcher) {
         ],
         confessional: {
           purpose: 'character', speaker: star,
-          text: "My gran's handwriting was worse than that and I read her shopping lists for "
-            + "eleven years. It's not a superpower, it's just practice nobody else has had.",
+          text: confessionalVoice(star, {
+            nice: "My gran's handwriting was worse than that and I read her shopping lists for "
+              + "eleven years. It's not a superpower, it's just practice nobody else has had.",
+            villainous: "Everyone clocked me reading the burnt ones nobody else could. Good — let "
+              + "them think I'm the harmless useful one who'd never scheme. A reputation for being "
+              + "no threat is the best thing you can own in here.",
+            neutral: "It's not clever, reading scorched paper. You just don't give up on a line as "
+              + "fast as everyone else does. I'm not going to act like it was some kind of gift.",
+          }),
         },
       }));
     }
@@ -558,9 +601,17 @@ function _sort(ctx, rng, teams, teamBoxes, searcher) {
       ],
       confessional: {
         purpose: 'vote-change', speaker: accuser,
-        text: "We all got offered the same choice and most of us didn't take it. "
-          + "I'm not calling that proof of anything. I'm saying I'll remember it on Thursday "
-          + "when somebody asks me for a name.",
+        text: confessionalVoice(accuser, {
+          neutral: "We all got offered the same choice and most of us didn't take it. "
+            + "I'm not calling that proof of anything. I'm saying I'll remember it on Thursday "
+            + "when somebody asks me for a name.",
+          villainous: `We all got the same offer and most of us stayed on the relay. ${searcher} `
+            + "didn't. I don't have to prove it means anything — I just have to keep saying it "
+            + "until Thursday makes it true.",
+          nice: `We were all offered the flue and most of us stayed. ${searcher} went. I don't `
+            + "think that makes them a Traitor, I really don't — but it's the sort of thing that "
+            + "sticks whether you want it to or not.",
+        }),
       },
     }));
   }

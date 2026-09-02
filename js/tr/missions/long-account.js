@@ -37,7 +37,7 @@
 // for.
 
 import {
-  briefingText, clamp01, freshPick, hostDo, hostSay, PHASE_SWING,
+  briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
 } from './contract.js';
@@ -172,8 +172,14 @@ function _survey(ctx, rng, teams, debts) {
         ],
         confessional: {
           purpose: 'hidden-intent', speaker: who,
-          text: "You don't win a room like that with the biggest claim. You win it with the "
-            + "one they've already half admitted. I'm not explaining that to anybody twice.",
+          text: confessionalVoice(who, {
+            villainous: "You don't win a room like that with the biggest claim. You win it with "
+              + "the one they've already half admitted. I'm not explaining that to anybody twice.",
+            nice: `I picked the claims I was fairly sure I could stand up. I didn't mean to run `
+              + `${other} over doing it — I just didn't have time to take a vote on every line in the book.`,
+            neutral: `Everybody came out of that book with a list. Mine was shorter and it was `
+              + `better. I'm not relitigating it with ${other} — the ledger said what it said.`,
+          }),
         },
       }));
     }
@@ -282,8 +288,15 @@ function _room(ctx, rng, teams, claims) {
         ],
         confessional: {
           purpose: 'emotional-turn', speaker: shy,
-          text: "I'd read it four times. I knew the dates, I knew the signature, I knew what "
-            + "I was going to say. I just couldn't make myself sit in that chair.",
+          text: confessionalVoice(shy, {
+            nice: "I'd read it four times. I knew the dates, I knew the signature, I knew what "
+              + "I was going to say. I just couldn't make myself sit in that chair.",
+            villainous: "Let them think I bottled it. I was reading the agent, not the claim — "
+              + "he was in a mood to strike, and I wasn't going to hand him my name to cross out. "
+              + "Not sitting down was the play.",
+            neutral: "I knew the dates, the signature, all of it. I just didn't fancy being the "
+              + "one in the chair while the agent was swinging. Everyone can call that whatever they like.",
+          }),
         },
       }));
     }
@@ -319,8 +332,15 @@ function _room(ctx, rng, teams, claims) {
           ],
           confessional: {
             purpose: 'emotional-turn', speaker: other,
-            text: "I sat down having lost the room the money and I couldn't look at anybody. "
-              + `And then ${who} just picked the page up like it was nothing.`,
+            text: confessionalVoice(other, {
+              nice: "I sat down having lost the room the money and I couldn't look at anybody. "
+                + `And then ${who} just picked the page up like it was nothing.`,
+              villainous: `I lost the room and ${who} strolled in and won it back. Generous. And `
+                + `now I know ${who}'ll burn capital to be seen as the hero — which tells me exactly `
+                + 'how to use them when it counts.',
+              neutral: `I bombed and sat down, and ${who} took the page and won it. Good for them. `
+                + "I'm not going to pretend it didn't sting to need bailing out.",
+            }),
           },
         }));
       } else {
@@ -343,8 +363,15 @@ function _room(ctx, rng, teams, claims) {
           ],
           confessional: {
             purpose: 'vote-change', speaker: who,
-            text: `I told ${other} that one was rotten. Sitting down and pressing it anyway's `
-              + "either not listening or not caring, and I'd like to know which.",
+            text: confessionalVoice(who, {
+              neutral: `I told ${other} that one was rotten. Sitting down and pressing it anyway's `
+                + "either not listening or not caring, and I'd like to know which.",
+              villainous: `I warned ${other} that claim wouldn't hold and they walked it up anyway. `
+                + "That's not mine to carry — but it's a very handy thing to remind the room of, "
+                + 'right before a vote.',
+              nice: `I did tell ${other} that one wouldn't stand. I'm not glad I was right. `
+                + "Watching it get struck was worse than losing my own would've been, honestly.",
+            }),
           },
         }));
       }
@@ -530,8 +557,15 @@ function _settlement(ctx, rng, teams, settled) {
         ],
         confessional: {
           purpose: 'audience-lie', speaker: liar.name,
-          text: "I meant it when I said it. I meant it right up until I'm standing behind a "
-            + "piece of card with a pencil, on my own, and there's nobody watching.",
+          text: confessionalVoice(liar.name, {
+            neutral: "I meant it when I said it. I meant it right up until I'm standing behind a "
+              + "piece of card with a pencil, on my own, and there's nobody watching.",
+            villainous: "I said hold because that's what buys you the room. I wrote take because "
+              + "that's what buys you the money. Both are true — and only one of them's on the "
+              + "card nobody gets to read.",
+            nice: "I said hold and I meant it, and then I didn't do it, and I've felt sick about "
+              + "it ever since. Nobody in there knows it was me. I know it was me.",
+          }),
         },
       }));
     }

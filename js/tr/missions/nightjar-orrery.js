@@ -32,7 +32,7 @@
 // NO SHIELD, NO RELIC, NO POWER. See the header of drowned-causeway.js.
 
 import {
-  briefingText, clamp01, freshPick, hostDo, hostSay, PHASE_SWING,
+  briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisy, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
 } from './contract.js';
@@ -178,8 +178,15 @@ function _ledger(ctx, rng, teams) {
         ],
         confessional: {
           purpose: 'character', speaker: other,
-          text: `${best} could've stood up and said it to the room. `
-            + "Instead I got shown it, which isn't nothing when you've spent an hour being wrong.",
+          text: confessionalVoice(other, {
+            nice: `${best} could've stood up and said it to the room. `
+              + "Instead I got shown it, which isn't nothing when you've spent an hour being wrong.",
+            villainous: `${best} handed me the reading like it was a kindness. Fine — now I know `
+              + `exactly how ${best}'s head works under pressure, and that's worth more to me `
+              + 'than the number was.',
+            neutral: `${best} showed me the working instead of just calling it out. Good on them, `
+              + "I suppose. I'd been an hour up the wrong ring and I don't love owing anyone for that.",
+          }),
         },
       }));
     } else {
@@ -202,8 +209,14 @@ function _ledger(ctx, rng, teams) {
         ],
         confessional: {
           purpose: 'hidden-intent', speaker: best,
-          text: "If I hand it over the second I've got it, it's the team's answer. If I hold "
-            + "it ninety seconds, it's mine. There's a version of this game where that matters.",
+          text: confessionalVoice(best, {
+            villainous: "If I hand it over the second I've got it, it's the team's answer. If I "
+              + "hold it ninety seconds, it's mine. There's a version of this game where that matters.",
+            nice: "I sat on it a bit longer than I should've, and I know how that looks. I wanted "
+              + "the moment to be mine for once — that's not a proud thing to admit, but it's the true one.",
+            neutral: "I had the reading and I didn't shout it straight away. Everyone acts like "
+              + "that's a crime. I was checking it. Mostly. There's no rule that says I owe the room my speed.",
+          }),
         },
       }));
     }
@@ -356,8 +369,16 @@ function _gearing(ctx, rng, teams, ledgerScore, rings) {
           ],
           confessional: {
             purpose: 'belief-change', speaker: accuser,
-            text: `Ring ${spoiledFrom}. That's not a hard job. You stand over it and you read `
-              + `the number. I'd like to know why ${culprit} couldn't manage it.`,
+            text: confessionalVoice(accuser, {
+              neutral: `Ring ${spoiledFrom}. That's not a hard job. You stand over it and you `
+                + `read the number. I'd like to know why ${culprit} couldn't manage it.`,
+              villainous: `Ring ${spoiledFrom} killed every ring inside it, and ${culprit}'s name `
+                + "is on that one. I don't need it to have been on purpose — I just need it said "
+                + 'tonight, out loud, with the room listening.',
+              nice: `Ring ${spoiledFrom} went out and, yeah, ${culprit} set it. I hate putting `
+                + "somebody's name up like that. But a whole run of rings died behind it, and "
+                + 'somebody was always going to say it.',
+            }),
           },
         }));
       }
@@ -450,8 +471,15 @@ function _transit(ctx, rng, teams, gearRatio) {
         ],
         confessional: {
           purpose: 'emotional-turn', speaker: caller,
-          text: "Three people were shouting at me to say it. If you say it when they want you "
-            + "to, you're just the person who said it. I wanted to be the one who was right.",
+          text: confessionalVoice(caller, {
+            nice: "Three people were shouting at me to say it. If you say it when they want you "
+              + "to, you're just the person who said it. I wanted to be the one who was right.",
+            villainous: "Let them scream. You hold the call while the whole room's yelling and "
+              + "then you're right, and every one of them remembers who kept their head. That's a "
+              + "card, and I'll play it when it's worth playing.",
+            neutral: "They wanted it called early. I don't move because a crowd's gone loud. The "
+              + "shadow hits the line when it hits the line, not a second before somebody's nerves want it to.",
+          }),
         },
       }));
     } else {
@@ -476,8 +504,15 @@ function _transit(ctx, rng, teams, gearRatio) {
         ],
         confessional: early ? {
           purpose: 'audience-lie', speaker: caller,
-          text: "I'll say the shadow was hard to see. The shadow was extremely easy to see. "
-            + "I couldn't stand there being looked at for one more second.",
+          text: confessionalVoice(caller, {
+            neutral: "I'll say the shadow was hard to see. The shadow was extremely easy to see. "
+              + "I couldn't stand there being looked at for one more second.",
+            villainous: "I'll say the shadow was hard to read. It wasn't — I jumped early. But "
+              + "sell the excuse well enough and the miss becomes the shadow's fault instead of "
+              + "mine, and that's a trade I'll take every single time.",
+            nice: "I'm going to say the shadow was hard to read, and that's a lie — it was clear "
+              + "as day. I panicked with everyone staring and called it early. I'd sooner own that in here than out there.",
+          }),
         } : null,
       }));
     }

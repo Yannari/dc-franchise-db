@@ -180,27 +180,52 @@ function _behaviourTone(b) {
   return 'steady';
 }
 
-/** Human labels for a scene's declared effects — DISPLAY ONLY, exactly as the
- *  mockup shows them, including the `record`/`reputation` lines the engine
- *  declares but (deliberately) does not apply. */
+/**
+ * Human labels for a scene's declared effects — DISPLAY ONLY. Two visually
+ * distinct kinds come back, and the split is deliberate:
+ *
+ *  - WIRED effects (`bond`, `crowd`, `suspicion`, `claim`, `shield`) are the
+ *    ones `js/tr/missions/apply.js` actually writes through the scene API. They
+ *    carry a signed number or an arrow — a real, applied consequence — and
+ *    render as the numeric chip the mockup shows.
+ *  - NOTE effects (`record`, `reputation`) are declared by the mission but
+ *    `apply.js` DELIBERATELY DROPS them: there is no reputation store and
+ *    `record`'s only reader is its own prose. Rendering them in the same numeric
+ *    chip made a viewer read a dead line as a live one — "reputation · sharpness
+ *    +0.6" looked exactly like the wired bond/crowd deltas beside it. They now
+ *    come back `note:true`, WITHOUT any numeric delta, and the renderer styles
+ *    them as a plainly descriptive aside so they can never be mistaken for a
+ *    consequence the engine applied.
+ */
 function _fxLabels(effects) {
   const out = [];
   for (const e of effects) {
-    if (e.kind === 'bond') out.push(`bond ${e.players[0]} &harr; ${e.players[1]} ${_signed(e.delta)}`);
-    else if (e.kind === 'crowd') out.push(`crowd &middot; ${e.name} ${e.colour} &times;${e.mult}`);
-    else if (e.kind === 'suspicion') out.push('suspicion ' + _signed(e.delta));
-    else if (e.kind === 'claim') out.push(`claim &middot; ${e.claimant} &rarr; ${e.about}`);
-    else if (e.kind === 'record') out.push('record &middot; ' + _humanField(e));
-    else if (e.kind === 'reputation') out.push(`reputation &middot; ${e.axis} ${_signed(e.delta)}`);
-    else if (e.kind === 'shield') out.push('shield &middot; ' + (e.source || 'found in the flue'));
+    if (e.kind === 'bond') out.push({ note: false, html: `bond ${e.players[0]} &harr; ${e.players[1]} ${_signed(e.delta)}` });
+    else if (e.kind === 'crowd') out.push({ note: false, html: `crowd &middot; ${e.name} ${e.colour} &times;${e.mult}` });
+    else if (e.kind === 'suspicion') out.push({ note: false, html: 'suspicion ' + _signed(e.delta) });
+    else if (e.kind === 'claim') out.push({ note: false, html: `claim &middot; ${e.claimant} &rarr; ${e.about}` });
+    else if (e.kind === 'shield') out.push({ note: false, html: 'shield &middot; ' + _esc(e.source || 'found in the flue') });
+    else if (e.kind === 'record') out.push({ note: true, html: 'noted &middot; ' + _esc(_recordNote(e)) });
+    else if (e.kind === 'reputation') out.push({ note: true, html: 'noted &middot; ' + _esc(_reputationNote(e)) });
   }
   return out;
 }
 function _signed(n) { const v = Math.round(Number(n) * 100) / 100; return (v >= 0 ? '+' : '') + v; }
-function _humanField(e) {
+/** A `record` effect as delta-free words — never a number that reads as applied. */
+function _recordNote(e) {
   const f = e.field || '';
-  if (f === 'settlementCount') return 'settlement ' + (e.value || '');
-  return f.replace(/([A-Z])/g, ' $1').toLowerCase().trim() + (e.value === true ? '' : ' ' + (e.value ?? ''));
+  if (f === 'settlementCount' && e.value && typeof e.value === 'object')
+    return `${e.value.holds} held, ${e.value.takes} took, no names read`;
+  const words = f.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+  if (e.value === true || e.value == null) return words;
+  return `${words} (${e.value})`;
+}
+/** A `reputation` effect as a delta-free descriptive aside, keyed by axis+direction. */
+function _reputationNote(e) {
+  const up = Number(e.delta) >= 0;
+  if (e.axis === 'nerve') return up ? 'nerve held under it' : 'nerve went';
+  if (e.axis === 'sharpness') return up ? 'read as the sharp one' : 'looked off the pace';
+  return `${e.axis || 'form'} ${up ? 'up' : 'down'}`;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -255,7 +280,8 @@ function _defaultCard(v, c, id, th) {
     ? '<div class="' + p + '-conf"><small>' + _esc(c.conf.speaker) + ' &middot; confessional</small>'
       + _esc(c.conf.text) + '</div>' : '';
   const fx = (c.fx && c.fx.length)
-    ? '<div class="' + p + '-fx">' + c.fx.map(f => '<span>' + f + '</span>').join('') + '</div>' : '';
+    ? '<div class="' + p + '-fx">' + c.fx.map(f =>
+        '<span' + (f.note ? ' class="mb-fx-note"' : '') + '>' + f.html + '</span>').join('') + '</div>' : '';
   return '<article class="' + p + '-card ' + th.cardClass(c) + '" id="' + id + '">'
     + th.icon(c, c._ph) + '<span class="' + p + '-tag">' + _esc(th.cardTag(c, c._ph)) + '</span>'
     + '<div class="' + p + '-who mb-wholine">' + _who(c) + '</div>'
@@ -475,6 +501,12 @@ const COMMON_CSS = `
 .mb-hosthead h2{margin:0 !important}
 .mb-hostav .cv-av{width:46px;height:46px}
 .mb-hostname{font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-top:3px}
+/* Dropped-effect notes (record / reputation): apply.js never writes these, so
+   they must NOT read as one of the bordered, uppercase, numeric chips beside
+   them. Stripped of border, caps and letter-spacing, set in italic lower-case
+   prose — an authored aside, unmistakably not an applied consequence. */
+.mb-fx-note{border:none !important;text-transform:none !important;letter-spacing:normal !important;
+  font-style:italic;opacity:.6;padding:2px 0 !important}
 `;
 
 // The four theme definitions live in ./mission-bespoke-themes.js content,

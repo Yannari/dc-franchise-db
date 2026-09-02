@@ -3883,7 +3883,7 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
     '<div class="dy-root" style="' + vars + '">' + css
     + '<div class="dy-shell" data-phase="morning">'
     + '<div class="dy-scenery" aria-hidden="true">'
-    + '<div class="dy-stone"></div><div class="dy-warpfall"></div>'
+    + '<div class="dy-stone"></div>'
     + '<div class="dy-far">' + _hallFar() + '</div>'
     + '<div class="dy-vig"></div><div class="dy-grain"></div></div>'
     + '<div class="dy-body"><div class="dy-none">'
@@ -3962,7 +3962,7 @@ export function rpBuildCastleDay(ep, observer = 'audience', segment = null) {
     + '<div class="dy-shell" id="dy-shell-' + suffix + '"'
     + ' data-phase="' + beats[Math.max(0, Math.min(st.idx, total - 1))].phase + '">'
     + '<div class="dy-scenery" aria-hidden="true">'
-    + '<div class="dy-stone"></div><div class="dy-warpfall"></div>'
+    + '<div class="dy-stone"></div>'
     + '<div class="dy-far">' + _hallFar() + '</div>'
     + '<div class="dy-mid">' + _hallMid(v.ep + '|' + v.scenes.length) + '</div>'
     + '<div class="dy-fore">' + _hallFore() + '</div>'

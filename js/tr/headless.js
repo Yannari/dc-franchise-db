@@ -954,7 +954,65 @@ function _breakfast(prev) {
   // lets the room find the name on its own.
   const namer = grief.length ? grief[0].mourner : null;
 
-  return { victims, pushed, grief, composed: [...new Set(composed)], namer };
+  // ── WHAT THE MORNING NEEDS TO CARRY MORE THAN A ROLL CALL (user, Task 9.1) ──
+  //
+  // The breakfast the user played was too thin: it did little but reveal the
+  // gap. These three fields feed conversation and table-reading beats, and
+  // every one of them is a PUBLIC, stored fact — a bond anybody saw form, or a
+  // seat anybody could point to — so no beat built on them invents anything and
+  // none of them reads alignment.
+  //
+  //   closest — for each victim, the living player who held the warmest bond
+  //     with them. It is the flashback's anchor (the last person the castle saw
+  //     them speak to) and never a Traitor-only fact: a bond is public.
+  //   neighbours — the living players seated either side of the victim in the
+  //     fixed seating plan (`gs.tr.castOrder`). The empty-chair beat is theirs.
+  //   pairs — living players with a warm mutual bond, who sit together over the
+  //     loss. The "who sits with whom" beat draws the room re-forming around it.
+  const order = (gs.tr?.castOrder || []).length ? gs.tr.castOrder : [...living];
+  const closest = {};
+  for (const victim of victims) {
+    let best = null, bestBond = 0;
+    for (const n of living) {
+      const b = getBond(n, victim);
+      if (b > bestBond) { best = n; bestBond = b; }
+    }
+    closest[victim] = best;   // null when nobody living was warm to them
+  }
+  const neighbours = {};
+  for (const victim of victims) {
+    const idx = order.indexOf(victim);
+    const near = [];
+    if (idx >= 0) {
+      for (const step of [-1, 1]) {
+        // walk outward past anyone already gone until a living neighbour
+        for (let k = 1; k <= order.length; k++) {
+          const cand = order[idx + step * k];
+          if (cand == null) break;
+          if (living.includes(cand)) { near.push(cand); break; }
+        }
+      }
+    }
+    neighbours[victim] = [...new Set(near)];
+  }
+  // Warm living pairs (both alive, neither a victim), strongest first, capped.
+  const pairSeen = new Set();
+  const pairs = [];
+  const livingNonVictim = living.filter(n => !victims.includes(n));
+  for (const a of livingNonVictim) {
+    for (const b of livingNonVictim) {
+      if (a === b) continue;
+      const kk = [a, b].sort().join('|');
+      if (pairSeen.has(kk)) continue;
+      pairSeen.add(kk);
+      const bond = getBond(a, b);
+      if (bond >= GRIEF_BOND) pairs.push({ a, b, bond });
+    }
+  }
+  pairs.sort((x, y) => y.bond - x.bond);
+
+  return { victims, pushed, grief, composed: [...new Set(composed)], namer,
+    closest, neighbours, pairs: pairs.slice(0, 3) };
 }
 
 /**

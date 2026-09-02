@@ -44,7 +44,7 @@ import { traitorsVotingHistory, buildTraitorsSeasonDocument } from '../js/tr/exp
 import { seasonWinners } from '../js/records.js';
 import { _setEndgameWatch } from '../js/tr/endgame.js';
 import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } from '../js/vp-tr/conclave.js';
-import { rpBuildRoundTable, trRoundTableRevealAll } from '../js/vp-tr/round-table.js';
+import { rpBuildRoundTable, trRoundTableRevealAll, __rtStageHTML } from '../js/vp-tr/round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from '../js/vp-tr/cold-open.js';
 import { rpBuildHouseStatus, trHouseStatusRevealAll } from '../js/vp-tr/house-status.js';
 import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
@@ -837,6 +837,81 @@ function countBoard(html, round) {
 }
 const sumOf = obj => Object.keys(obj || {}).reduce((n, k) => n + obj[k], 0);
 
+describe('the sticky board never spoils the banishment before its beat (defect #5/#6)', () => {
+  // The user watched the sticky board telegraph the banished player: the running
+  // plurality ("MOST NAMED Alejandro") sat in the board for ~15 beats, naming
+  // the loser long before the verdict. The leader tally is now gated to the
+  // beat it belongs to — the COUNT for its round, or the verdict/reveal after —
+  // and hidden while the slates are still being read. `__rtStageHTML(state,idx)`
+  // returns exactly what the board renders at a given reveal index.
+  const LEADER = /Most named|All level on|data-lead="1"/;
+
+  function stateFor(ep) {
+    rpBuildRoundTable(ep, 'audience');   // populates window.__trRoundTable[ep.num]
+    return (typeof window !== 'undefined' && window.__trRoundTable
+      && window.__trRoundTable[ep.num]) || null;
+  }
+
+  it('no leader tally is shown at any read beat before the count', () => {
+    let checkedReadBeats = 0, sawLeaderAtCount = 0, tables = 0;
+    for (const { ep } of TABLES) {
+      const state = stateFor(ep);
+      if (!state) continue;
+      const kinds = state.stepMeta.map(m => m && m.kind);
+      const firstCount = kinds.indexOf('count');
+      if (firstCount < 0) continue;
+      tables++;
+      // Every beat from the first read up to (not including) the count: the
+      // spoiler window. The board must name no leader and ring no lead seat.
+      for (let idx = 0; idx < firstCount; idx++) {
+        if (kinds[idx] !== 'read') continue;
+        const html = __rtStageHTML(state, idx);
+        expect(LEADER.test(html),
+          `ep ${ep.num} idx ${idx} (kind ${kinds[idx]}): the board named a leader mid-read`).toBe(false);
+        expect(/BANISHED/.test(html),
+          `ep ${ep.num} idx ${idx}: the board named the banished mid-read`).toBe(false);
+        checkedReadBeats++;
+      }
+      // PAIRED ARM — the gate must OPEN, not just stay shut: at the count beat
+      // the leader tally appears (except on a dead-level tie, where nobody
+      // leads). This is what a mutation removing the gate could not fake in the
+      // other direction, and it proves the test is not vacuous.
+      if (LEADER.test(__rtStageHTML(state, firstCount))) sawLeaderAtCount++;
+    }
+    expect(tables, 'no table had a count beat to check').toBeGreaterThan(15);
+    expect(checkedReadBeats, 'no read beats were ever checked').toBeGreaterThan(100);
+    expect(sawLeaderAtCount, 'the leader tally never appeared even at the count — gate stuck shut')
+      .toBeGreaterThan(5);
+  });
+
+  it('the banished IS named on the board once the verdict is revealed', () => {
+    let checked = 0;
+    for (const { ep } of TABLES) {
+      const state = stateFor(ep);
+      if (!state) continue;
+      const kinds = state.stepMeta.map(m => m && m.kind);
+      const vIdx = kinds.indexOf('verdict');
+      if (vIdx < 0) continue;
+      const chosen = ep.tr.table && ep.tr.table.chosen;
+      const html = __rtStageHTML(state, vIdx);
+      expect(html, `ep ${ep.num}: the board did not mark the chair empty at the verdict`)
+        .toMatch(/BANISHED/i);
+      if (chosen) {
+        expect(html, `ep ${ep.num}: the board did not name the banished (${chosen}) at the verdict`)
+          .toContain(chosen);
+      }
+      // And it was NOT named one beat earlier (the beat before the verdict).
+      if (vIdx > 0) {
+        const prev = __rtStageHTML(state, vIdx - 1);
+        expect(/BANISHED/.test(prev),
+          `ep ${ep.num}: the board named the banished a beat early`).toBe(false);
+      }
+      checked++;
+    }
+    expect(checked, 'no verdict was ever checked').toBeGreaterThan(15);
+  });
+});
+
 describe('the table record reaches the screen at all', () => {
   it('a real season records a table on every night it held one, and none it did not', () => {
     expect(TABLES.length, 'no season recorded a Round Table').toBeGreaterThan(25);
@@ -1429,7 +1504,7 @@ describe('the sticky ring is not killed by the shell clip', () => {
     expect(html).toContain('id="rt-stage-inner"');
     // and it is a sibling ABOVE the stream rather than a child of it, or it
     // has nothing to stick through
-    const stageAt = html.indexOf('<div class="rt-stage" id="rt-stage-inner">');
+    const stageAt = html.indexOf('<div class="rt-stage" id="rt-stage-inner"');
     const mainAt = html.indexOf('<main class="rt-main">');
     expect(stageAt, 'the stage is not in the markup').toBeGreaterThan(-1);
     expect(stageAt, 'the stage is inside the stream it is meant to stay above')
@@ -2256,7 +2331,7 @@ describe('the sticky stage is not killed by the shell clip, on either screen', (
       expect(panel[1], `${what}: the stage is drawn over the nav bar`).toMatch(/top:46px/);
       expect(html, `${what}: the stage is not addressable`)
         .toContain('id="' + p + '-stage-inner"');
-      const stageAt = html.indexOf('<div class="' + p + '-stage" id="' + p + '-stage-inner">');
+      const stageAt = html.indexOf('<div class="' + p + '-stage" id="' + p + '-stage-inner"');
       const mainAt = html.indexOf('<main class="' + p + '-main">');
       expect(stageAt, `${what}: the stage is not in the markup`).toBeGreaterThan(-1);
       expect(stageAt, `${what}: the stage is inside the stream it must stay above`)

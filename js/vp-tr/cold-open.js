@@ -611,6 +611,28 @@ const CO_CSS = `
 .co-stage-v[data-hot="1"]{color:var(--co-wax-hot)}
 .co-stage-say{flex:1 1 100%;font-family:var(--co-hand);font-style:italic;font-size:14px;
   color:var(--co-mute)}
+/* ── THE COLLAPSE CONTROL — a small framed button, keyboard-reachable ─── */
+.co-board-toggle{
+  flex:none;margin-left:auto;display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  font-family:var(--co-display);font-weight:700;font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(233,240,245,.72);
+  background:linear-gradient(170deg,rgba(233,240,245,.12),rgba(233,240,245,.03));
+  border:1px solid rgba(233,240,245,.3);padding:6px 11px;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.co-board-toggle:hover,.co-board-toggle:focus-visible{
+  background:rgba(233,240,245,.2);color:var(--co-sun-hot);border-color:rgba(233,240,245,.52);
+  outline:none;
+}
+.co-board-chev{transition:transform .2s ease;display:inline-flex}
+/* folded away: hide the table and the caption, keep the status bar + toggle so
+   the reader can reopen it. The main stream reclaims the height. */
+.co-stage[data-collapsed="1"] .co-table,
+.co-stage[data-collapsed="1"] .co-stage-say{display:none}
+.co-stage[data-collapsed="1"] .co-board-chev{transform:rotate(180deg)}
+@media(prefers-reduced-motion:reduce){
+  .co-board-toggle,.co-board-chev{transition:none!important}
+}
 
 /* THE TABLE IN PLAN. Rectangular, flat, orthographic — not the hall's ring.
    The unit is a PLACE SETTING and the face only appears when its owner has
@@ -919,6 +941,20 @@ const DOWN_MORE = [
   'The others follow within a few minutes of each other, which is its own kind of decision.',
   'The stair does not stop for a while.',
 ];
+// The FIRST cluster down — a few people, not one, and not the whole room.
+const DOWN_FIRST = [
+  'The first few come down together, close behind each other on the stair.',
+  'A small group arrives first. They came down in a bunch, which is what people do when they did not sleep.',
+  'The early ones reach the bottom of the stair within a minute of each other.',
+  'The first arrivals come down in a cluster and head straight for the table.',
+];
+// A MIDDLE cluster — smaller than the one before it.
+const DOWN_MID = [
+  'A smaller group comes down after them.',
+  'Then a few more, fewer this time.',
+  'The next handful arrives, and the stair goes quiet between them.',
+  'Another cluster, thinner than the last.',
+];
 const DOWN_SAID = [
   'Did anyone sleep?',
   'I heard something. I am not saying I heard anything, but I heard something.',
@@ -967,8 +1003,8 @@ const GAP_DOUBLE = [
 ];
 
 const TOLD_TEXT = [
-  'It is put into the format\'s own word a moment later, and the word lands very differently '
-  + 'out loud than it reads on paper. {Nm}.',
+  'Then somebody says the word out loud. Not the soft version — the real one. {Nm}. It sounds '
+  + 'worse spoken than it looked on the cup.',
   'It is said properly, once, and then not again. {Nm}. The room takes it standing up.',
   'The confirmation is short. It always is. {Nm}, and then nothing for a while.',
   'Nobody argues with it. There is nothing in it to argue with. {Nm}, and that is the fact of '
@@ -1088,6 +1124,63 @@ const EYES_TEXT = [
   'The table has a long memory and a short fuse this morning. {who} pushed {vic} at the Round '
   + 'Table, {vic} did not come down, and the room has quietly filed that away where it files '
   + 'the things it means to use.',
+];
+
+// ── WHO SITS WHERE — caused by real stored bonds (bf.pairs) ────────────
+// A warm pair drawing together over the loss. Public: a friendship anybody at
+// the table watched form. Never alignment.
+const SIT_TEXT = [
+  '{pair} sit together, the way they have all week. Whatever else this morning is, it does not '
+  + 'change who trusts who.',
+  'People take the seats they always take. {pair} end up side by side again — a friendship the '
+  + 'whole table already knows about.',
+  'The room settles into its usual shape. {pair} are next to each other, heads close, saying '
+  + 'the small things you say when the big thing is unspeakable.',
+  '{pair} find each other first. They have been a pair since the start and a bad morning only '
+  + 'pulls them tighter.',
+];
+const SIT_SOLO = [
+  'People take the seats they always take. A week in, everyone has a place, and the empty one is '
+  + 'suddenly very easy to see.',
+  'The room arranges itself the way it has every morning. Same chairs, same neighbours — which '
+  + 'is exactly how the gap stands out.',
+];
+// ── THE FLASHBACK — the LAST the castle saw of the victim. VICTIM ONLY.
+// It shows the person who is gone, the night before, and nothing else: no
+// turret, no killer, no choice. A public bond anchors it — the last person
+// they were seen with — because a bond is something the whole room saw. This
+// beat must carry no alignment and name no agent. {vic}, {closest} only.
+const FLASH_TEXT = [
+  'Last night, {vic} was one of the last up. {Sub} sat with {closest} a while, said goodnight on '
+  + 'the stairs, and went up. Nobody knew it was the last time they would see {obj}.',
+  'The castle\'s last sight of {vic}: laughing about nothing with {closest} by the fire, then a '
+  + 'wave from the top of the stairs and a door closing. That was it. That was the whole of it.',
+  'It is worth remembering how ordinary the night was. {vic} made plans with {closest} for today. '
+  + '{Sub} was tired, {sub} was fine, {sub} went to bed. There is no more of the story than that.',
+  'Rewind twelve hours and {vic} is still here — telling {closest} something over the last of the '
+  + 'tea, then off up to bed like any other night. That is where the castle leaves {obj}.',
+];
+const FLASH_NOCLOSE = [
+  'Last night, {vic} went up like everyone else — tired, ordinary, sure there would be a morning. '
+  + 'That is the last the castle has of {obj}, and it is nothing at all, which is the hardest part.',
+  'The night before was nothing special for {vic}. Up the stairs, a door, the light going off. '
+  + 'No warning in it anywhere. There never is.',
+];
+// ── THE EMPTY CHAIR — the victim's own neighbours, by the fixed seating.
+// Caused by `gs.tr.castOrder`: who actually sat either side of them. {a},{b},{vic}.
+const CHAIR_TEXT = [
+  '{who} had sat next to {vic} every morning this week. Today there is a chair between them and '
+  + 'nobody in it, and {who} keeps almost turning to say something to it.',
+  'The gap is not abstract to {who}. That was the person on {pos} left every meal, and now it is '
+  + 'a place setting with the cup turned over.',
+  '{who} does not move the empty chair and does not sit anywhere else either. It stays exactly '
+  + 'where {vic} left it, and the room lets it.',
+];
+const CHAIR_SOLO = [
+  'Nobody sits in the empty place and nobody moves it. It stays laid, cup down, in the spot where '
+  + '{vic} sat every other morning this week.',
+  'The chair stays where it is. A week of the same seats, and its owner is not hard to name — '
+  + 'no one is going to be the one to move it.',
 ];
 
 const MURMUR = [
@@ -1210,6 +1303,11 @@ function _view(ep, observer) {
       grief: (dawn.breakfast.grief || []).map(g => ({ ...g })),
       composed: [...(dawn.breakfast.composed || [])],
       namer: dawn.breakfast.namer || null,
+      // Public, stored facts the fuller morning is built on — a warm bond, a
+      // seat, a friendship. Never alignment. See `_breakfast` in headless.js.
+      closest: dawn.breakfast.closest || {},
+      neighbours: dawn.breakfast.neighbours || {},
+      pairs: (dawn.breakfast.pairs || []).map(p => ({ ...p })),
     } : null,
   };
 }
@@ -1241,30 +1339,53 @@ function _names(list) {
 
 // HOW THE MORNING COMES DOWN, and it is not the same rhythm every episode.
 //
-// A roll call reads identically every night; a real breakfast has a shape, and
-// the shape is different each time — a crowd that arrives together, a tense
-// front-loaded rush, a slow trickle down to the last stragglers. Chosen by a
-// hash of the morning so it is stable on replay and DIFFERS across episodes,
-// never rolled. It only decides how the arrivals are CLUSTERED into beats; the
-// last person is always held out separately (see `_buildBeats`) so the hold at
-// the final places can breathe.
-function _groupsFor(list, shape) {
+// A roll call reads identically every night; a real breakfast has a SHAPE, and
+// the real show's shape is a room filling up in DESCENDING clusters — a few
+// come down together, then a smaller group, then a smaller one, tapering to the
+// tense final places. A lump ("everyone at once, then two singles") is the bug
+// the user found; every shape here gets smaller toward the end and never leads
+// with the whole room.
+//
+// The number of clusters and their steepness vary with a hash of the morning
+// (stable on replay, different across episodes, never rolled). It only decides
+// how the arrivals are CLUSTERED; the last person is always held out separately
+// (see `_buildBeats`) so the hold at the final places can breathe.
+
+/**
+ * `K` non-increasing group sizes summing to `n`, front-loaded and tapering to
+ * the smallest at the end. Weighted by `K, K-1, … 1` then rounded to sum
+ * exactly `n`, with a final monotonic clamp so a rounding wobble can never make
+ * a later cluster larger than an earlier one.
+ */
+export function _descendingSizes(n, K) {
+  K = Math.max(1, Math.min(K, n));
+  const w = []; let sw = 0;
+  for (let i = 0; i < K; i++) { const x = K - i; w.push(x); sw += x; }
+  const sizes = w.map(x => Math.max(1, Math.round(n * x / sw)));
+  let diff = n - sizes.reduce((a, b) => a + b, 0);
+  let gi = 0;
+  while (diff > 0) { sizes[gi % K]++; gi++; diff--; }          // extras to the front
+  gi = K - 1;
+  while (diff < 0) { if (sizes[gi] > 1) { sizes[gi]--; diff++; } gi = gi > 0 ? gi - 1 : K - 1; }
+  for (let i = 1; i < K; i++) {                                 // enforce non-increasing
+    if (sizes[i] > sizes[i - 1]) { const ex = sizes[i] - sizes[i - 1]; sizes[i] -= ex; sizes[i - 1] += ex; }
+  }
+  return sizes;
+}
+
+export function _groupsFor(list, shape) {
   const n = list.length;
   if (n <= 1) return n ? [list] : [];
   if (n === 2) return [[list[0]], [list[1]]];
-  if (shape === 1) {                    // a crowd comes down together, then a few
-    const c = Math.ceil(n * 0.62);
-    return [list.slice(0, c), list.slice(c)].filter(g => g.length);
-  }
-  if (shape === 2) {                    // front-loaded: singles, then the bulk
-    return [list.slice(0, 1), list.slice(1, 2), list.slice(2)].filter(g => g.length);
-  }
-  if (shape === 3) {                    // the bulk early, then a slow trickle
-    const c = Math.max(1, n - 2);
-    return [list.slice(0, c), list.slice(c, c + 1), list.slice(c + 1)].filter(g => g.length);
-  }
-  const t = Math.ceil(n / 3);           // steady thirds
-  return [list.slice(0, t), list.slice(t, 2 * t), list.slice(2 * t)].filter(g => g.length);
+  if (n === 3) return [list.slice(0, 2), list.slice(2)];
+  // More clusters for a bigger room, varied by the morning; capped so a small
+  // room never dissolves into a column of single arrivals.
+  let K = Math.min(n, [4, 5, 3, 4][shape % 4] + (n >= 14 ? 1 : 0));
+  K = Math.min(K, Math.max(2, Math.ceil(n / 2)));
+  const sizes = _descendingSizes(n, K);
+  const groups = []; let idx = 0;
+  for (const s of sizes) { groups.push(list.slice(idx, idx + s)); idx += s; }
+  return groups.filter(g => g.length);
 }
 
 function _buildBeats(v) {
@@ -1305,17 +1426,24 @@ function _buildBeats(v) {
     if (!g.length) return;
     arrivedSoFar.push(...g);
     const who = g[0];
+    const isLast = gi === groups.length - 1;
     const heard = _pickAway(v.arrival ? ARRIVE_SAID : DOWN_SAID,
       key + '|said|' + gi + '|' + who, said);
-    const body = (gi === 0 && g.length === 1)
-      ? '<p>' + _fill(_pick(DOWN_TEXT, key + '|down|' + who), { who: _esc(who) }) + '</p>'
-        + _said(who, _esc(heard))
-      : '<p>' + _pick(DOWN_MORE, key + '|more|' + gi) + '</p>'
-        + '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
-        + _said(who, _esc(heard));
+    // The lead-in prose: the opening cluster reads as "the first few", a single
+    // straggler reads as one person on the stair, and a middle cluster reads as
+    // a smaller group than the one before it.
+    const lead = (g.length === 1)
+      ? _fill(_pick(DOWN_TEXT, key + '|down|' + who), { who: _esc(who) })
+      : gi === 0 ? _pick(DOWN_FIRST, key + '|first')
+        : isLast ? _pick(DOWN_MORE, key + '|more|' + gi)
+          : _pick(DOWN_MID, key + '|mid|' + gi);
+    const chips = g.length > 1
+      ? '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
+      : '';
+    const body = '<p>' + lead + '</p>' + chips + _said(who, _esc(heard));
     push('down', _card(
       gi === 0 ? (v.arrival ? 'Through The Door' : 'Down First')
-        : gi === groups.length - 1 ? 'And The Rest' : 'They Keep Coming',
+        : isLast ? 'And The Rest' : 'They Keep Coming',
       gi === 0 ? 'The stair' : 'Arrivals', gi === 0 ? 'stair' : 'head', body),
     gi === 0 ? (v.arrival ? 'arrive' : 'open') : null,
     { kind: 'down', down: [...arrivedSoFar] });
@@ -1382,6 +1510,44 @@ function _buildBeats(v) {
     push('gap', _card('The Cup Is Turned Over', 'The gap', 'cupdown', inner),
       'gap', { kind: 'gap', down: [...v.room], gap: v.missing.map(x => x.name) });
 
+    // ── THE FLASHBACK — the last the castle saw of the victim. VICTIM ONLY.
+    //
+    // OBSERVER SAFETY: this beat shows the person who is gone, the night before,
+    // and NOTHING ELSE. No turret, no killer, no choice — that is turret-only
+    // knowledge and leaking it here would break the format for the audience and
+    // the Faithful alike. It is anchored on a PUBLIC bond (`bf.closest` — the
+    // living player they were warmest with, which the whole room saw), so it
+    // carries no alignment. `_breakfast` records no specific last action for the
+    // victim, so this is a caused look-back, never an invented death scene.
+    {
+      const cl = bf && bf.closest ? bf.closest[m.name] : null;
+      const fpr = _pr(m.name);
+      const fsubs = { vic: _esc(m.name), closest: _esc(cl || ''),
+        sub: fpr.sub, Sub: fpr.Sub, obj: fpr.obj, pos: fpr.pos };
+      const fbody = '<p>' + _fill(_pick(cl ? FLASH_TEXT : FLASH_NOCLOSE, key + '|flash'), fsubs)
+        + '</p>'
+        + '<div class="co-react"><div class="co-react-row">' + _av(m.name, 44)
+        + '<span class="co-react-tx">The castle&rsquo;s last look at <b>' + _esc(m.name)
+        + '</b>' + (cl ? ', the night before' : '') + '.</span></div></div>';
+      push('told', _card('The Night Before', 'Look back', 'window', fbody),
+        null, { kind: 'flash', down: [...v.room], gap: v.missing.map(x => x.name) });
+    }
+
+    // ── THE EMPTY CHAIR — the victim's own neighbours, by the fixed seating ─
+    // Who actually sat beside them (`bf.neighbours`, from `gs.tr.castOrder`).
+    {
+      const nb = (bf && bf.neighbours && bf.neighbours[m.name]) || [];
+      const seatMate = nb.find(n => v.room.indexOf(n) >= 0);
+      const cpr = seatMate ? _pr(seatMate) : _pr(m.name);
+      const csubs = { who: _esc(seatMate || ''), vic: _esc(m.name), pos: cpr.pos };
+      const cbody = '<p>' + _fill(_pick(seatMate ? CHAIR_TEXT : CHAIR_SOLO, key + '|chair'), csubs)
+        + '</p>' + (nb.length
+        ? '<div class="co-arrivals">' + nb.slice(0, 2).map(n => _faceChip(n, 26)).join('') + '</div>'
+        : '');
+      push('told', _card('The Chair Beside Them', 'The seat', 'plate', cbody),
+        null, { kind: 'chair', down: [...v.room], gap: v.missing.map(x => x.name) });
+    }
+
     // ── GRIEF, and only where a real bond backs it ────────────────────
     if (bf && bf.grief && bf.grief.length) {
       const g0 = bf.grief[0];
@@ -1443,6 +1609,22 @@ function _buildBeats(v) {
         + [...new Set(pushers.map(p => p.pusher))].slice(0, 6)
           .map(n => _faceChip(n, 26)).join('') + '</div></div>'),
       null, { kind: 'eyes', down: [...v.room], gap: v.missing.map(x => x.name) });
+    }
+
+    // ── WHO SITS WITH WHOM — the room re-forming, caused by stored bonds ──
+    // The warm pairs draw together over the loss. `bf.pairs` are living players
+    // with a real mutual bond; if there are none the room still takes its usual
+    // seats, which is a stored fact of its own (the seating never moves).
+    {
+      const pr0 = (bf && bf.pairs && bf.pairs.length) ? bf.pairs[0] : null;
+      const sbody = pr0
+        ? '<p>' + _fill(_pick(SIT_TEXT, key + '|sit'),
+          { pair: _names([pr0.a, pr0.b]) }) + '</p>'
+          + '<div class="co-arrivals">' + _faceChip(pr0.a, 26) + _faceChip(pr0.b, 26)
+          + '</div>'
+        : '<p>' + _pick(SIT_SOLO, key + '|sitsolo') + '</p>';
+      push('told', _card('Who Sits With Whom', 'The room re-forms', 'head', sbody),
+        null, { kind: 'sit', down: [...v.room], gap: v.missing.map(x => x.name) });
     }
 
     // ── WHAT A ROOM DOES WITH IT ──────────────────────────────────────
@@ -1534,7 +1716,8 @@ function _stage(state, idx) {
       + '<span class="co-stage-k">Not coming down</span>'
       + '<span class="co-stage-v" data-hot="1">' + gap.size + '</span></span>';
   }
-  out += '<span class="co-stage-say">' + _esc(say) + '</span></div>';
+  out += '<span class="co-stage-say">' + _esc(say) + '</span>'
+    + _boardToggleBtn() + '</div>';
 
   // THE TABLE ITSELF. Every place laid this morning — the room, plus the
   // settings that will not be used, which are only added once the reader has
@@ -1570,6 +1753,40 @@ function _state(epNum, total) {
   if (!_tvState[k]) _tvState[k] = { idx: 0, total };
   _tvState[k].total = total;
   return _tvState[k];
+}
+
+// ── THE COLLAPSE FLAG — session-scoped, survives every reveal ───────────
+//
+// A MODULE flag (mirrored to localStorage), NOT part of `_tvState`, which is
+// rebuilt on every paint: a collapse that lived there would spring open on the
+// next Continue. Collapsing only hides the laid table; the morning's own
+// gating (the gap is never drawn before the reader reaches it) is untouched.
+let _boardCollapsed = (() => {
+  try { return localStorage.getItem('tr-co-board') === '1'; } catch (e) { return false; }
+})();
+function _saveBoard(v) { try { localStorage.setItem('tr-co-board', v ? '1' : '0'); } catch (e) { /* private mode */ } }
+function _boardToggleBtn() {
+  return '<button type="button" class="co-board-toggle" id="co-board-toggle"'
+    + ' aria-expanded="' + (!_boardCollapsed) + '"'
+    + ' aria-controls="co-stage-inner"'
+    + ' onclick="trColdOpenToggleBoard()">'
+    + '<span class="co-board-chev">' + _icon('chevron', 11) + '</span>'
+    + '<span class="co-board-toggle-lbl">' + (_boardCollapsed ? 'Show table' : 'Hide table')
+    + '</span></button>';
+}
+
+/** Fold the laid table away, or bring it back. Keyboard-reachable button. */
+export function trColdOpenToggleBoard() {
+  _boardCollapsed = !_boardCollapsed;
+  _saveBoard(_boardCollapsed);
+  const wrap = document.getElementById('co-stage-inner');
+  if (wrap) wrap.setAttribute('data-collapsed', _boardCollapsed ? '1' : '0');
+  const btn = document.getElementById('co-board-toggle');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(!_boardCollapsed));
+    const lbl = btn.querySelector('.co-board-toggle-lbl');
+    if (lbl) lbl.textContent = _boardCollapsed ? 'Show table' : 'Hide table';
+  }
 }
 
 function _reapplyVisibility(suffix, upToIdx, total) {
@@ -1749,7 +1966,8 @@ export function rpBuildColdOpen(ep, observer = 'audience') {
     // THE TABLE, STUCK UNDER THE NAV. It is the sticky element AND the element
     // the reveal handlers replace by id — the arrangement both earlier screens
     // ended up in, for the two reasons the header gives.
-    + '<div class="co-stage" id="co-stage-inner">' + _stage(state, st.idx) + '</div>'
+    + '<div class="co-stage" id="co-stage-inner" data-collapsed="'
+    + (_boardCollapsed ? '1' : '0') + '">' + _stage(state, st.idx) + '</div>'
     + '<main class="co-main">' + stream + '</main>'
     + '</div></div>'
     + '<div class="co-controls" id="co-controls-' + suffix + '">'

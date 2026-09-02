@@ -772,9 +772,31 @@ const RT_CSS = `
 }
 .rt-stage-v[data-hot="1"]{color:#e58490}
 .rt-stage-say{
-  flex:1;min-width:220px;text-align:right;
+  flex:1;min-width:180px;text-align:right;
   font-family:var(--rt-hand);font-style:italic;font-size:14px;
   color:rgba(222,214,196,.62);
+}
+/* ── THE COLLAPSE CONTROL — a small framed button, keyboard-reachable ─── */
+.rt-board-toggle{
+  flex:none;margin-left:6px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  font-family:var(--rt-display);font-weight:700;font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(222,214,196,.72);
+  background:linear-gradient(180deg,rgba(222,214,196,.12),rgba(222,214,196,.03));
+  border:1px solid rgba(222,214,196,.28);padding:6px 11px;border-radius:2px;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.rt-board-toggle:hover,.rt-board-toggle:focus-visible{
+  background:rgba(222,214,196,.2);color:var(--rt-bone);border-color:rgba(222,214,196,.5);
+  outline:none;
+}
+.rt-board-toggle .rt-board-chev{transition:transform .2s ease;display:inline-flex}
+/* when the board is folded away, hide the room and give the main column the
+   reclaimed height; the status bar and the toggle stay so it can be reopened */
+.rt-stage[data-collapsed="1"] .rt-ring,
+.rt-stage[data-collapsed="1"] .rt-stage-say{display:none}
+.rt-stage[data-collapsed="1"] .rt-board-chev{transform:rotate(180deg)}
+@media(prefers-reduced-motion:reduce){
+  .rt-board-toggle,.rt-board-chev{transition:none!important}
 }
 
 /* the room itself: a fixed 1020x380 design box, scaled by the column */
@@ -2283,7 +2305,11 @@ function _ring(v, opts) {
   const n = Math.max(1, chairs.length);
   const at = {};
   chairs.forEach((c, i) => { at[c.name] = _seatAt(i, n); });
-  const leaders = _leaders(tally);
+  // THE LEAD HIGHLIGHT IS A LEADER TALLY TOO. Ringing the front-runner's seat
+  // red while the slates are still being read telegraphs the banishment exactly
+  // as the sticky's leader chip did, so it is gated the same way: no lead until
+  // the count for this round (or the verdict) has been reached.
+  const leaders = o.showLead ? _leaders(tally) : [];
   const last = ballots.length ? ballots[ballots.length - 1] : null;
   const V = _verbs();
 
@@ -2393,6 +2419,15 @@ function _stage(state, idx) {
     ? v.first.length
     : ((v.rounds[roundIx - 1] || {}).ballots || []).length;
 
+  // WHETHER THE COUNT IS ALLOWED TO NAME A LEADER YET. The running plurality
+  // is a spoiler: a single dominant name held in the sticky for fifteen beats
+  // tells the reader who gets banished long before the verdict. So the leader
+  // tally is gated to the beat it belongs to — the COUNT for this round, or the
+  // verdict/reveal after it — and stays hidden while the slates are still being
+  // read. Per-round, so a revote re-hides it until its own count is shown.
+  const countShownThisRound = counts.some(m => m.round === roundIx);
+  const tallyRevealed = verdictShown || revealShown || countShownThisRound;
+
   const label = revealShown ? 'The table is closed'
     : verdictShown ? 'The chair is empty'
       : reads.length ? (roundIx ? 'Reading again' : 'Reading the slates')
@@ -2415,7 +2450,14 @@ function _stage(state, idx) {
     + '<span class="rt-stage-k">Slates</span>'
     + '<span class="rt-stage-v">' + inRound.length + ' / ' + roundTotal + '</span></span>';
   const top = _leaders(tally);
-  if (top.length && inRound.length) {
+  // THE BANISHED, NAMED AT THE VERDICT AND NOT ONE BEAT BEFORE. Once the chair
+  // is empty the sticky says who is in it — the user found the board would
+  // telegraph this early and then never state it plainly at the end.
+  if (verdictShown && v.chosen) {
+    out += '<span class="rt-stage-bit">' + _icon('chair', 12, 'rgba(201,40,60,.85)')
+      + '<span class="rt-stage-k">' + _esc(_cap(V.banish)) + '</span>'
+      + '<span class="rt-stage-v" data-hot="1">' + _esc(v.chosen) + '</span></span>';
+  } else if (tallyRevealed && top.length && inRound.length) {
     // A FOUR-WAY TIE IS A SENTENCE, NOT A LIST. Joining every leader with an
     // ampersand produced "Cameron & Brody & Brightly & B" across a strip meant
     // to be read at a glance, which is what a finale table looks like every
@@ -2436,7 +2478,8 @@ function _stage(state, idx) {
     out += '<span class="rt-stage-bit">' + _icon('dagger', 12, 'rgba(201,40,60,.8)')
       + '<span class="rt-stage-k">One slate counts ' + (v.dagger.votes || 1) + '</span></span>';
   }
-  out += '<span class="rt-stage-say">' + _esc(say) + '</span></div>';
+  out += '<span class="rt-stage-say">' + _esc(say) + '</span>'
+    + _boardToggleBtn() + '</div>';
 
   // Who is on their feet, and who they are on their feet about. Read off the
   // debate beats that have actually been shown, so the ring does not light up
@@ -2448,10 +2491,17 @@ function _stage(state, idx) {
   }
 
   out += _ring(v, { ballots: inRound, tally, roundTotal,
-    chosenGone: verdictShown, spoke: reads.length ? [] : spoke,
+    chosenGone: verdictShown, showLead: tallyRevealed,
+    spoke: reads.length ? [] : spoke,
     accused: reads.length ? [] : accused });
   return out;
 }
+
+// Exposed only so the reveal-gating guard can drive the sticky at any idx
+// without a browser: it returns exactly what the board renders, so a test can
+// prove the leader tally is absent before the count beat and present at it.
+// See tests/tr-roundtable.test.js.
+export function __rtStageHTML(state, idx) { return _stage(state, idx); }
 
 // ══════════════════════════════════════════════════════════════════════
 // REVEAL MACHINERY — DOM-only, never a rebuild
@@ -2469,6 +2519,43 @@ function _state(epNum, total) {
   if (!_tvState[k]) _tvState[k] = { idx: 0, total };
   _tvState[k].total = total;
   return _tvState[k];
+}
+
+// ── THE COLLAPSE FLAG — session-scoped, survives every reveal ───────────
+//
+// The user wanted the sticky board foldable so the debate below it is easier to
+// read. The choice is a MODULE flag (mirrored to localStorage so it holds
+// across screen switches), deliberately NOT part of `_tvState`: that record is
+// rebuilt on every paint, and a collapse that lived there would spring back
+// open on the next Continue. Collapsing only HIDES the board — the reveal
+// gating in `_stage`/`_ring` is untouched, so a folded board that is reopened
+// still shows nothing ahead of its reveal step (defect #5 does not return).
+let _boardCollapsed = (() => {
+  try { return localStorage.getItem('tr-rt-board') === '1'; } catch (e) { return false; }
+})();
+function _saveBoard(v) { try { localStorage.setItem('tr-rt-board', v ? '1' : '0'); } catch (e) { /* private mode */ } }
+function _boardToggleBtn() {
+  return '<button type="button" class="rt-board-toggle" id="rt-board-toggle"'
+    + ' aria-expanded="' + (!_boardCollapsed) + '"'
+    + ' aria-controls="rt-stage-inner"'
+    + ' onclick="trRoundTableToggleBoard(\'roundtable\')">'
+    + '<span class="rt-board-chev">' + _icon('chevron', 11) + '</span>'
+    + '<span class="rt-board-toggle-lbl">' + (_boardCollapsed ? 'Show board' : 'Hide board')
+    + '</span></button>';
+}
+
+/** Fold the sticky board away, or bring it back. Keyboard-reachable button. */
+export function trRoundTableToggleBoard() {
+  _boardCollapsed = !_boardCollapsed;
+  _saveBoard(_boardCollapsed);
+  const wrap = document.getElementById('rt-stage-inner');
+  if (wrap) wrap.setAttribute('data-collapsed', _boardCollapsed ? '1' : '0');
+  const btn = document.getElementById('rt-board-toggle');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(!_boardCollapsed));
+    const lbl = btn.querySelector('.rt-board-toggle-lbl');
+    if (lbl) lbl.textContent = _boardCollapsed ? 'Show board' : 'Hide board';
+  }
 }
 
 function _reapplyVisibility(suffix, upToIdx, total) {
@@ -2690,7 +2777,8 @@ export function rpBuildRoundTable(ep, observer = 'audience') {
     // rail ended up in, and for the same two reasons: a shell that clips kills
     // sticky for its descendants, and a sticky element needs a containing
     // block taller than itself. Here that block is `.rt-body`, the whole page.
-    + '<div class="rt-stage" id="rt-stage-inner">' + _stage(state, st.idx) + '</div>'
+    + '<div class="rt-stage" id="rt-stage-inner" data-collapsed="'
+    + (_boardCollapsed ? '1' : '0') + '">' + _stage(state, st.idx) + '</div>'
     + '<main class="rt-main">' + stream + '</main>'
     + '</div></div>'
     + '<div class="rt-controls" id="rt-controls-' + suffix + '">'

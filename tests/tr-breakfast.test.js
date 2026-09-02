@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import roster from '../franchise_roster.json';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
-import { rpBuildColdOpen } from '../js/vp-tr/cold-open.js';
+import { rpBuildColdOpen, _groupsFor, _descendingSizes } from '../js/vp-tr/cold-open.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -59,21 +59,38 @@ describe('the breakfast has enough cards to carry the suspense', () => {
       .toBeGreaterThan(20);
   });
 
-  it('every murder morning renders 10–16 reveal cards', () => {
+  // The raised budget (Task 9.2 — the plan's 10–16 was too tight for the
+  // conversation, table-reading and flashback the morning now carries). Every
+  // murder morning lands in 15–24; the only 15-card cases are the very last
+  // small rooms of a season (four people down), so a STANDARD morning — five or
+  // more still coming down — is held to a floor of 16. Measured over 52 murder
+  // mornings across ten seeds: 15–20, median 17, and the 4-person room is the
+  // sole 15.
+  it('every murder morning renders 15–24 reveal cards', () => {
     for (const { seed, ep } of MURDER_MORNINGS) {
       const n = revealSteps(rpBuildColdOpen(ep, 'audience'));
-      expect(n, `seed ${seed} ep ${ep.num}: too few cards to build tension`)
-        .toBeGreaterThanOrEqual(10);
+      expect(n, `seed ${seed} ep ${ep.num}: too few cards to carry the morning`)
+        .toBeGreaterThanOrEqual(15);
       expect(n, `seed ${seed} ep ${ep.num}: the morning overran its budget`)
-        .toBeLessThanOrEqual(16);
+        .toBeLessThanOrEqual(24);
     }
   });
 
-  // The brief's floor, stated as its own line so a card-budget regression is
-  // named at exactly the number the interface promised.
-  it('meets the brief floor: revealSteps >= 10', () => {
-    const { ep } = MURDER_MORNINGS[0];
-    expect(revealSteps(rpBuildColdOpen(ep, 'audience'))).toBeGreaterThanOrEqual(10);
+  // The standard-morning floor, stated on its own so a regression is named at
+  // the number the brief promised (~16–24). Paired to room size so it cannot
+  // pass vacuously: a room with five or more people still to come down must
+  // clear 16 cards.
+  it('a standard morning (>=5 down) clears the 16-card floor', () => {
+    let checked = 0;
+    for (const { seed, ep } of MURDER_MORNINGS) {
+      const room = (ep.tr.living || []).filter(Boolean).length;
+      if (room < 5) continue;
+      expect(revealSteps(rpBuildColdOpen(ep, 'audience')),
+        `seed ${seed} ep ${ep.num}: a ${room}-person morning fell under the standard floor`)
+        .toBeGreaterThanOrEqual(16);
+      checked++;
+    }
+    expect(checked, 'no standard-sized morning was ever checked').toBeGreaterThan(20);
   });
 });
 
@@ -119,6 +136,45 @@ describe('the morning does not run the identical cadence every night', () => {
       revealSteps(rpBuildColdOpen(ep, 'audience'))));
     expect(counts.size, 'every murder morning rendered the identical number of cards')
       .toBeGreaterThan(1);
+  });
+
+  it('the arrivals come down in DESCENDING clusters ending in <=2', () => {
+    // Defect #1: the old `_groupsFor` produced lumps like [15,1,1] — the whole
+    // room at once, then singles. Every shape must now taper: non-increasing
+    // group sizes, and the last cluster is one or two people, so the room reads
+    // as filling up rather than arriving in a heap. Checked over the cast sizes
+    // a season actually produces, for every shape seed.
+    for (let n = 4; n <= 18; n++) {
+      for (let shape = 0; shape < 4; shape++) {
+        const sizes = _groupsFor([...Array(n).keys()], shape).map(g => g.length);
+        expect(sizes.reduce((a, b) => a + b, 0), `n=${n} shape=${shape}: lost people`).toBe(n);
+        for (let i = 1; i < sizes.length; i++) {
+          expect(sizes[i], `n=${n} shape=${shape}: cluster ${i} (${sizes[i]}) is bigger than ${sizes[i - 1]} before it`)
+            .toBeLessThanOrEqual(sizes[i - 1]);
+        }
+        expect(sizes[sizes.length - 1], `n=${n} shape=${shape}: final cluster does not taper`)
+          .toBeLessThanOrEqual(2);
+        // MUTATION GUARD: a lump would lead with a cluster far larger than an
+        // honest descent. The first cluster is never more than ~half the room.
+        if (n >= 6) {
+          expect(sizes[0], `n=${n} shape=${shape}: the first cluster is a lump`)
+            .toBeLessThanOrEqual(Math.ceil(n * 0.55));
+        }
+      }
+    }
+  });
+
+  it('the descending-size helper is monotonic and exact (mutation target)', () => {
+    // The primitive under the cadence. Reddens if the weighting or the
+    // monotonic clamp regresses.
+    for (const [n, K] of [[17, 5], [16, 4], [14, 6], [11, 4], [9, 3], [7, 4]]) {
+      const s = _descendingSizes(n, K);
+      expect(s.reduce((a, b) => a + b, 0), `n=${n} K=${K}: wrong sum`).toBe(n);
+      for (let i = 1; i < s.length; i++) {
+        expect(s[i], `n=${n} K=${K}: not non-increasing`).toBeLessThanOrEqual(s[i - 1]);
+        expect(s[i], `n=${n} K=${K}: an empty cluster`).toBeGreaterThanOrEqual(1);
+      }
+    }
   });
 
   it('holds at the last places before the reveal', () => {
@@ -216,6 +272,48 @@ describe('the portrait wall carries the murder payoff', () => {
       }
     }
     expect(seenBoth, 'no wall ever showed both a banished and a murdered face').toBe(true);
+  });
+});
+
+describe('the murder flashback (Task 9.4) is victim-only and leaks no alignment', () => {
+  // A short look-back at the person who is gone, the night before — the show's
+  // flashback. CRITICAL: it shows the VICTIM only. It must never name who
+  // murdered them, show the turret, or carry any alignment word — that is
+  // turret-only knowledge and leaking it breaks the format.
+  const ALIGN = ['traitor', 'faithful', 'turret', 'murderer', 'conclave',
+    'the killer', 'chose to kill', 'recruited', 'shielded'];
+  it('the flashback beat exists and carries no turret/alignment reference', () => {
+    let checked = 0;
+    for (const { seed, ep, bf } of MURDER_MORNINGS) {
+      const html = rpBuildColdOpen(ep, 'audience');
+      const bts = beats(html);
+      const flash = bts.find(b => b.body.includes('The Night Before'));
+      expect(flash, `seed ${seed} ep ${ep.num}: no flashback beat`).toBeTruthy();
+      const t = strip(flash.body).toLowerCase();
+      for (const word of ALIGN) {
+        expect(t.includes(word),
+          `seed ${seed} ep ${ep.num}: flashback leaked "${word}"`).toBe(false);
+      }
+      // It shows the victim: the victim's name is in it.
+      expect(strip(flash.body), `seed ${seed} ep ${ep.num}: flashback does not show the victim`)
+        .toContain(bf.victims[0]);
+      // It never names a murderer: no OTHER exited player's name appears as an
+      // agent. (We only assert the alignment-word cleanliness above; the agent
+      // is simply never referenced — the prose is agent-less by construction.)
+      checked++;
+    }
+    expect(checked, 'no flashback was ever checked').toBeGreaterThan(20);
+  });
+
+  it('the flashback reads identically on a player layer (no audience-only content)', () => {
+    for (const { ep } of MURDER_MORNINGS.slice(0, 8)) {
+      const living = (ep.tr.living || []).filter(Boolean);
+      if (!living.length) continue;
+      const aud = beats(rpBuildColdOpen(ep, 'audience')).find(b => b.body.includes('The Night Before'));
+      const pv = beats(rpBuildColdOpen(ep, 'player:' + living[0])).find(b => b.body.includes('The Night Before'));
+      expect(pv, 'the flashback vanished on the player layer').toBeTruthy();
+      expect(strip(pv.body)).toBe(strip(aud.body));
+    }
   });
 });
 

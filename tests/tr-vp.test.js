@@ -51,6 +51,7 @@ import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from '../js/vp-tr/recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from '../js/vp-tr/endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.js';
+import { THEMES as MISSION_THEMES } from '../js/vp-tr/mission-bespoke-themes.js';
 import { rpBuildSelection, trSelectionRevealAll } from '../js/vp-tr/selection.js';
 import { rpBuildArrival, trArrivalRevealAll } from '../js/vp-tr/arrival.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from '../js/vp-tr/suspicion.js';
@@ -591,6 +592,54 @@ describe('the sticky sidebar is not killed by the shell clip', () => {
       .find(n => !night.ep.tr.conclave.turret.includes(n));
     expect(rpBuildConclave(night.ep, 'player:' + outsider))
       .toContain('<div class="cv-scenery"');
+  });
+});
+
+// ── NO FIXED FULL-VIEWPORT LAYER MAY EAT THE CLICK OR THE SCROLL ──────
+//
+// A user reported, on this branch, that after a Traitors screen the "next"
+// button stopped responding and the page would not scroll. The classic cause
+// is a `position:fixed` layer that fills the viewport and sits OVER the
+// content with `pointer-events` left on: it silently swallows every click and
+// wheel event meant for the page beneath it, and nothing on screen says why.
+//
+// The conclave and the castle-day already dodge this — their scenery is
+// `position:absolute` inside a `position:relative` shell, so it can never
+// leave the shell (the sibling `describe` above proves the shell does not clip
+// and the scenery does). The four BESPOKE MISSION themes are newer and take
+// the riskier shape: each `*-scenery` really is `position:fixed` and really
+// does fill the viewport (`top:46px;bottom:0;left:0;right:0`). Two things, and
+// only these two, keep that from being the reported bug — the layer is
+// `pointer-events:none`, so clicks and wheel fall through it, and it sits at
+// `z-index:0` BEHIND the shell's content (`z-index:1`). Drop either and the
+// full-screen fixed layer becomes exactly the overlay that eats the click and
+// the scroll. This is invisible by looking at the screen: the atmosphere still
+// renders, and the trap only shows when a real pointer meets it.
+describe('a bespoke mission scenery can never become a click/scroll trap', () => {
+  it('every full-viewport fixed scenery layer stays inert and behind the content', () => {
+    expect(MISSION_THEMES.length, 'no bespoke mission themes to guard').toBeGreaterThan(0);
+    for (const theme of MISSION_THEMES) {
+      const css = theme.css || '';
+      // The scenery rule for this theme — the one that is position:fixed.
+      const rule = /\.\w+-scenery\{([^}]*)\}/.exec(css);
+      expect(rule, `${theme.id || 'a theme'} has no -scenery rule`).not.toBeNull();
+      const body = rule[1];
+      // It IS a full-viewport fixed layer — that is the shape under guard.
+      expect(body, `${theme.id}: scenery is not the fixed full-viewport layer`)
+        .toMatch(/position:\s*fixed/);
+      // GUARD 1: it must let the pointer through, or it swallows every click
+      // and wheel meant for the screen beneath it (the reported bug).
+      expect(body, `${theme.id}: fixed full-viewport scenery is not pointer-events:none — it will eat clicks and scroll`)
+        .toMatch(/pointer-events:\s*none/);
+      // GUARD 2: it must sit behind the content, never over it. z-index:0 with
+      // the shell at z-index:1 is the second thing keeping it inert.
+      expect(body, `${theme.id}: scenery declares no z-index and could paint over the content`)
+        .toMatch(/z-index:\s*0\b/);
+      const shell = /\.\w+-shell\{([^}]*)\}/.exec(css);
+      expect(shell, `${theme.id} has no -shell rule`).not.toBeNull();
+      expect(shell[1], `${theme.id}: shell is not above the scenery`)
+        .toMatch(/z-index:\s*1\b/);
+    }
   });
 });
 

@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import roster from '../franchise_roster.json';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
-import { rpBuildColdOpen, _groupsFor, _descendingSizes } from '../js/vp-tr/cold-open.js';
+import { rpBuildColdOpen, _groupsFor, _descendingSizes, _stage } from '../js/vp-tr/cold-open.js';
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
@@ -342,6 +342,166 @@ describe('observer safety: the morning leaks no alignment', () => {
           }
         }
       }
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Task 9 defects found by playing the morning in the browser
+// ══════════════════════════════════════════════════════════════════════
+
+// DEFECT 3 — the laid table (the "portrait wall" at the top) must be gated to
+// the arrival reveal, not the end state. At the hold beat the card says "N
+// places still empty"; the board has to show exactly N empty places at that
+// beat, or the count contradicts itself and the still-to-arrive victim is a
+// spoiler already seated. The fix lays the murdered from the first beat as
+// plain empty places so the two numbers cannot disagree.
+describe('the laid table is synced to the arrival reveal (defect 3)', () => {
+  const HOLD_MORNINGS = MURDER_MORNINGS
+    .map(({ seed, ep, bf }) => {
+      const epNum = ep.num || (ep.tr && ep.tr.ep) || 0;
+      const html = rpBuildColdOpen(ep, 'audience');
+      const store = (typeof window !== 'undefined' && window.__trColdOpen) || {};
+      const state = store[epNum];
+      const holdIdx = state ? state.stepMeta.findIndex(m => m && m.kind === 'hold') : -1;
+      const m = html.match(/co-hold-n">(\d+)</);
+      return { seed, ep, bf, epNum, state, holdIdx, stated: m ? +m[1] : null };
+    })
+    .filter(x => x.holdIdx >= 0 && x.stated != null);
+
+  it('there are hold-beat mornings to check', () => {
+    expect(HOLD_MORNINGS.length, 'no morning produced a hold beat with a stated count')
+      .toBeGreaterThan(10);
+  });
+
+  // The invariant, banded against the pre-fix mutant: laying the murdered only
+  // at the gap beat leaves ONE empty place while the card says two, so an
+  // empties!==stated case is exactly the bug this closes.
+  it('the board shows exactly "N places still empty" empty plates at the hold beat', () => {
+    for (const { seed, ep, state, holdIdx, stated } of HOLD_MORNINGS) {
+      const stageHtml = _stage(state, holdIdx);
+      const doc = new DOMParser().parseFromString(stageHtml, 'text/html');
+      const plates = [...doc.querySelectorAll('.co-place')];
+      const empty = plates.filter(p => p.getAttribute('data-down') === '0'
+        && p.getAttribute('data-gap') !== '1');
+      expect(empty.length,
+        `seed ${seed} ep ${ep.num}: board shows ${empty.length} empty places, card says ${stated}`)
+        .toBe(stated);
+    }
+  });
+
+  // The murdered are LAID (present on the board) at the hold beat, not absent —
+  // the other half of the same fix. A victim missing from the board is the
+  // count mismatch dressed differently.
+  it('the murdered are on the board as an empty place at the hold beat', () => {
+    for (const { seed, ep, bf, state, holdIdx } of HOLD_MORNINGS) {
+      const victims = (bf && bf.victims) || (ep.tr.dawn.breakfast.victims) || [];
+      const stageHtml = _stage(state, holdIdx);
+      const doc = new DOMParser().parseFromString(stageHtml, 'text/html');
+      for (const v of victims) {
+        const plate = [...doc.querySelectorAll('.co-place')].find(p => p.getAttribute('data-name') === v);
+        expect(plate, `seed ${seed} ep ${ep.num}: victim ${v} is not laid on the board`).toBeTruthy();
+        expect(plate.getAttribute('data-down'), `seed ${seed} ep ${ep.num}: victim ${v} shown seated pre-reveal`).toBe('0');
+      }
+    }
+  });
+
+  // The board must FILL IN, not sit at the end state: as the reveal advances no
+  // seated player is ever un-seated (down-count is monotonic non-decreasing).
+  it('plates fill in beat by beat (never fewer seated as the morning goes on)', () => {
+    let checked = 0;
+    for (const { state } of HOLD_MORNINGS.slice(0, 12)) {
+      let prevSeated = -1;
+      for (let i = 0; i < state.stepMeta.length; i++) {
+        const doc = new DOMParser().parseFromString(_stage(state, i), 'text/html');
+        const seated = [...doc.querySelectorAll('.co-place[data-down="1"]')].length;
+        expect(seated, 'a seated player un-seated on a later beat').toBeGreaterThanOrEqual(prevSeated);
+        prevSeated = seated;
+      }
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(5);
+  });
+});
+
+// DEFECT 1 — the initials fallback ("J", "SG") must never render inline against
+// the name ("JJulia", "SGScary Girl"). The chip nests the initials inside the
+// portrait box (clipped, absolutely placed) and keeps the name as a SEPARATE
+// sibling; the chip also carries its own containment CSS so a missing or
+// overridden PORTRAIT_CSS can never let the initials escape the frame.
+describe('the arrival chip never mashes initials into the name (defect 1)', () => {
+  const CHIP_MORNINGS = MURDER_MORNINGS.slice(0, 12)
+    .map(({ ep }) => rpBuildColdOpen(ep, 'audience'))
+    .filter(html => /class="co-face-chip"/.test(html));
+
+  it('there are arrival chips to check', () => {
+    expect(CHIP_MORNINGS.length, 'no morning rendered an arrival chip').toBeGreaterThan(5);
+  });
+
+  it('the name is a sibling of the portrait box, never nested inside it', () => {
+    for (const html of CHIP_MORNINGS) {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const chips = [...doc.querySelectorAll('.co-face-chip')];
+      expect(chips.length).toBeGreaterThan(0);
+      for (const chip of chips) {
+        const av = chip.querySelector('.cv-av');
+        const nm = chip.querySelector('.co-face-nm');
+        expect(av, 'chip has no portrait box').toBeTruthy();
+        expect(nm, 'chip has no name').toBeTruthy();
+        // The initials live INSIDE the box...
+        expect(av.querySelector('.cv-av-ini'), 'initials are not inside the portrait box').toBeTruthy();
+        // ...and the name lives OUTSIDE it, so no fallback text can abut it.
+        expect(av.contains(nm), 'the name is nested inside the portrait box — it can mash into the initials').toBe(false);
+      }
+    }
+  });
+
+  // The chip's own containment rule, banded against a mutant that drops it and
+  // trusts PORTRAIT_CSS alone: without it a later `.cv-av` override could pull
+  // the initials out of the frame and back into the name.
+  it('the chip carries its own initials-containment CSS', () => {
+    const html = CHIP_MORNINGS[0];
+    expect(html).toMatch(/\.co-face-chip\s+\.cv-av-ini\{[^}]*position:absolute/);
+    expect(html).toMatch(/\.co-face-chip\s+\.cv-av\{[^}]*overflow:hidden/);
+  });
+});
+
+// DEFECT 2 — a breakfast speech that contradicts itself does not parse. The
+// specific line is gone, and no said line in this file asserts and denies the
+// same thing in one breath.
+describe('breakfast speech does not contradict itself (defect 2)', () => {
+  const SPOKEN = (() => {
+    const out = new Set();
+    for (const seed of [1, 3, 7, 11, 71, 42, 99, 123, 5, 17]) {
+      for (const ep of play(seed)) {
+        if (!ep.tr || !ep.tr.dawn) continue;
+        const html = rpBuildColdOpen(ep, 'audience');
+        let m; const re = /&ldquo;([\s\S]*?)&rdquo;/g;
+        while ((m = re.exec(html))) out.add(m[1].replace(/<[^>]+>/g, '').trim());
+      }
+    }
+    return [...out];
+  })();
+
+  it('gathered a body of spoken lines to check', () => {
+    expect(SPOKEN.length, 'no spoken lines were gathered').toBeGreaterThan(15);
+  });
+
+  it('the self-contradicting "not saying I heard anything" line is gone', () => {
+    for (const line of SPOKEN) {
+      expect(/not saying I heard anything/i.test(line),
+        `the contradictory line still renders: "${line}"`).toBe(false);
+    }
+  });
+
+  // The general shape: no line both claims to have heard something and denies
+  // having heard anything. Banded so it only fires on the actual contradiction,
+  // not on the coherent hedge that replaced it.
+  it('no spoken line asserts and denies hearing in the same breath', () => {
+    for (const line of SPOKEN) {
+      const contradictory = /\bheard (something|anything)\b/i.test(line)
+        && /not saying .*heard (anything|something)/i.test(line);
+      expect(contradictory, `line contradicts itself: "${line}"`).toBe(false);
     }
   });
 });

@@ -736,6 +736,15 @@ const CO_CSS = `
   border:1px solid rgba(233,240,245,.16);background:rgba(8,12,19,.5)}
 .co-face-nm{font-family:var(--co-display);font-weight:700;font-size:10px;letter-spacing:.14em;
   text-transform:uppercase;color:rgba(233,240,245,.82)}
+/* THE INITIALS FALLBACK STAYS INSIDE ITS OWN FRAME, NEVER INLINE WITH THE NAME.
+   When a player has no avatar file the portrait draws its initials ("J", "SG")
+   as the fallback; those must remain clipped inside the 26px box and separated
+   from the name by the chip's gap, not run flush against it ("JJulia",
+   "SGScary Girl"). PORTRAIT_CSS already does this, but the chip carries its own
+   copy so a missing or later-overridden PORTRAIT_CSS can never let the initials
+   escape the frame and mash into the name. */
+.co-face-chip .cv-av{position:relative;overflow:hidden;flex:none}
+.co-face-chip .cv-av-ini{position:absolute;inset:0}
 
 /* THE GAP. One setting, blown up, with the cup turned over on it. */
 .co-gap{
@@ -957,7 +966,7 @@ const DOWN_MID = [
 ];
 const DOWN_SAID = [
   'Did anyone sleep?',
-  'I heard something. I am not saying I heard anything, but I heard something.',
+  'I heard something in the night. I am not saying it meant anything. But I heard it.',
   'Is that everyone?',
   'Do not tell me. Let me count first.',
   'I did the thing where you lie awake deciding what you are going to say down here.',
@@ -1680,7 +1689,7 @@ function _setting(down, gap) {
     + '</svg></span>';
 }
 
-function _stage(state, idx) {
+export function _stage(state, idx) {
   const v = state.v;
   const meta = state.stepMeta.slice(0, Math.max(0, idx + 1));
   const last = meta.length ? meta[meta.length - 1] : null;
@@ -1725,11 +1734,24 @@ function _stage(state, idx) {
   // appending the empty setting to the end of the table put the one place the
   // screen is about in the last chair every single morning.
   const inRoom = new Set(v.room);
-  const laid = (v.cast || []).filter(n => inRoom.has(n) || gap.has(n));
+  // THE MURDERED ARE LAID FROM THE FIRST BEAT, AS PLAIN EMPTY PLACES.
+  //
+  // The board is the room's own count, and the room sees an empty chair long
+  // before it learns the reason for it. So a missing player is a plate on the
+  // table from the start — indistinguishable from a guest still on the stair —
+  // and only takes the cup-turned `data-gap` treatment once the reader reaches
+  // the reveal (`gapShown`). Laying them only at the gap beat (the old
+  // `gap.has(n)` filter) left the board showing ONE empty place while the hold
+  // beat's own line said "2 places still empty", because the second empty was
+  // the victim the board had not laid yet. Now the two numbers cannot disagree:
+  // every place the count is about is a place on the board.
+  const missingSet = new Set((v.missing || []).map(x => x.name));
+  const laid = (v.cast || []).filter(n => inRoom.has(n) || missingSet.has(n));
   out += '<div class="co-table"><div class="co-places">'
     + laid.map(n => {
-      const isGap = gap.has(n);
-      const isDown = !isGap && down.has(n);
+      const isMissing = missingSet.has(n);
+      const isGap = gapShown && isMissing;         // struck through only after the reveal
+      const isDown = !isMissing && down.has(n);     // a missing player never "comes down"
       return '<span class="co-place" data-down="' + (isDown ? 1 : 0) + '"'
         + (isGap ? ' data-gap="1"' : '') + ' data-name="' + _esc(n) + '">'
         + _setting(isDown, isGap)

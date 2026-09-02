@@ -124,11 +124,24 @@ function _hash(s) {
 //     SO THE HONEST NUMBERS ARE BOTH RECORDED, and both are asserted:
 //       * WITH the rule, seasons printing a sentence 3x: 2.83%. That is what a
 //         viewer experiences, and it is the number the ceiling bands.
-//       * WITHOUT it, the same measurement on the same content: 7.00%. That is
+//       * WITHOUT it, the same measurement on the same content: 9.67%. That is
 //         the health of the POOLS, and `tests/tr-castle-prose.test.js` bands it
 //         separately through `_setDrawRule` below so that nobody reads 2.83% as
-//         evidence the writing is finished. It is not: 469 pools are still
-//         under nine lines.
+//         evidence the writing is finished. It is not: 448 of 542 pools are
+//         still under nine lines.
+//
+//         9.67% AND NOT 9.9%, AND NOT THE 7.00% THIS COMMENT USED TO CARRY.
+//         The 7.00% came from the first review and has since been RETRACTED by
+//         it: re-measured by driving `_setDrawRule` directly, across four
+//         600-season blocks plus a fifth of unused seeds and under four
+//         attribution variants, it reproduced 9.67 / 10.50 / 10.00 / 9.83 /
+//         9.50 — and patching this file at the pre-fix commit gave the same
+//         numbers, so it was not a commit difference either. The mean of the
+//         four blocks is 9.9% (sd 0.36pp) and that is the better estimate of
+//         the POPULATION. The number quoted here is the base-0 block, 9.67%,
+//         because that is the block `tests/tr-castle-prose.test.js` actually
+//         plays and prints, and two shipped statements of one number that
+//         disagree is the defect this whole note exists to correct.
 //     What is true is the narrower statement: this changes the ORDER a pool is
 //     spent in, never its contents.
 //

@@ -273,7 +273,15 @@ describe('THE VARIETY FLOOR: an event that says one thing is one thing, however 
         // `'branch-name': [` / `branch: [` inside one.
         const open = /^(?:const\s+([A-Z_]+)\s*=|\s*'?([\w-]+)'?\s*:)\s*\[$/.exec(t);
         if (open) { name = `${f}:${open[1] || open[2]}`; count = 0; continue; }
-        if (name && /^['"]/.test(t)) { count++; continue; }
+        // BACKTICKS COUNT (fix round 2, item 4). This used to be /^['"]/ and
+        // it silently EXEMPTED what it could not read: a template-literal
+        // entry was not counted, and the `p.count > 0` filter below then
+        // dropped the whole pool, so a three-line pool written with backticks
+        // passed. The re-review proved it by converting exactly those three
+        // lines and turning this arm green. In a file set this full of
+        // apostrophes a backtick is a natural authoring choice, and Task 11
+        // adds a great deal more prose.
+        if (name && /^['"`]/.test(t)) { count++; continue; }
         if (name && /^\],?$/.test(t)) { pools.push({ name, count }); name = null; }
       }
     }
@@ -284,7 +292,19 @@ describe('THE VARIETY FLOOR: an event that says one thing is one thing, however 
     const total = pools.reduce((n, p) => n + p.count, 0);
     expect(total, 'the pools parsed but hold almost no lines').toBeGreaterThan(3000);
 
-    const thin = pools.filter(p => p.count > 0 && p.count < 4)
+    // AND NOTHING IS EXEMPTED BY BEING UNREADABLE. A pool the parser opens and
+    // closes without counting a single entry is not an empty pool — there are
+    // none in this library — it is a pool written in a syntax the parser does
+    // not recognise, and the old `p.count > 0` filter turned exactly that into
+    // a silent pass. Asserted BEFORE the width band so a failure names the
+    // right defect: the parser stopped reading, rather than the writing having
+    // got thin.
+    const invisible = pools.filter(p => p.count === 0).map(p => p.name);
+    expect(invisible, 'these pools parsed to zero entries — the parser cannot read them, '
+      + 'and a pool it cannot read is a pool this floor is not checking')
+      .toEqual([]);
+
+    const thin = pools.filter(p => p.count < 4)
       .map(p => `${p.name} has ${p.count} line(s)`);
     expect(thin, 'a pool in the source is thinner than the plan\'s floor of four — '
       + 'the draw rule hides this from the firing-count arm above, so it is caught here')
@@ -292,11 +312,134 @@ describe('THE VARIETY FLOOR: an event that says one thing is one thing, however 
 
     // AND THE DISTRIBUTION IS PRINTED, not banded, so Task 11 inherits a number
     // rather than a feeling about the 469.
-    const under9 = pools.filter(p => p.count > 0 && p.count < 9).length;
-    const sorted = pools.filter(p => p.count > 0).map(p => p.count).sort((a, b) => a - b);
+    const under9 = pools.filter(p => p.count < 9).length;
+    const sorted = pools.map(p => p.count).sort((a, b) => a - b);
     console.log(`\n=== POOL WIDTH IN THE SOURCE (${pools.length} pools, ${total} lines) ===`);
     console.log(`   min ${sorted[0]}  median ${sorted[Math.floor(sorted.length / 2)]}  `
       + `max ${sorted[sorted.length - 1]}  under nine: ${under9}`);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// A BALLOT CLAIM MAY NOT BE MANUFACTURED FROM A MOOD (fix round 2, item 3)
+// ══════════════════════════════════════════════════════════════════════
+//
+// WHY THIS EXISTS. Fix round 1 closed C3 — two grief events printed "Somebody
+// had said {a}'s name tonight" off nothing but `ctx.state === 'paranoid'`, and
+// 6.0% of paranoid firings had zero votes and zero accusations against that
+// person, including episode one before any Round Table has been held. The fix
+// shipped with a measurement and NO GUARD, and the re-review proved what that
+// is worth: it replaced `const grounded = !isNervy(state) || !!_ballotBehind(
+// actor)` with `const grounded = true`, restoring the exact defect, and ran
+// `tr-castle-prose` plus `tr-castle` — 116 tests, all green.
+//
+// Every other blocker in that round got an arm. This is the one whose failure
+// mode is a sentence asserting a fact the season does not contain, which is
+// the causal writing contract's whole subject.
+//
+// HOW IT MEASURES. It wraps the two events' `fire()`, and for each firing
+// records three things off the ENGINE rather than off the prose: who the actor
+// was, what the last recorded round says about them (votes cast against, names
+// said at the table), and the note the firing actually wrote. A firing is a
+// violation when the note makes a ballot claim and the record supports none.
+//
+// THE MATCHER IS A FIXED REGRESSION CORPUS, NOT A COPY OF THE PRODUCTION
+// PREDICATE. It lists the claim phrases these two events can print — the same
+// technique the composed-solo arm above uses, and for the same reason: a guard
+// that re-implements the thing it guards passes whenever both copies are wrong
+// together.
+const BALLOT_CLAIM = /(had said [^.]*name|said [^.]*name (?:out loud )?(?:at|tonight)|at that table|One name said out loud|write their own name down|the ballots|wrote [^.]*name)/i;
+
+describe('a ballot claim needs a ballot behind it', () => {
+  it('never says the room named somebody when the round record does not', () => {
+    const SEASONS = 400;
+    const rows = [];
+    const wrapped = [];
+    for (const ev of EVENTS) {
+      if (ev.id !== 'grief-nobody-sleeps' && ev.id !== 'grief-someone-cries-alone') continue;
+      const orig = ev.fire;
+      wrapped.push([ev, orig]);
+      ev.fire = function (ctx, rng) {
+        const before = new Set();
+        for (const t of (gs?.tr?.threads || [])) for (const b of t.beats) before.add(b);
+        const res = orig.call(this, ctx, rng);
+        const actor = res?.actor;
+        // THE RECORD, READ THE WAY THE ENGINE READS IT: the most recent round,
+        // which is the one `emotionalStateOf` derived the mood from.
+        const rounds = gs.tr?.rounds || [];
+        const last = rounds[rounds.length - 1];
+        const votes = last ? (last.ballots || []).filter(b => b.voted === actor).length : 0;
+        const named = last ? (last.accusations || []).filter(a => a.target === actor).length : 0;
+        let note = '';
+        for (const t of (gs?.tr?.threads || [])) {
+          for (const b of t.beats) if (!before.has(b) && b.note) note += ' ' + b.note;
+        }
+        rows.push({ id: ev.id, ep: ctx.ep, state: res?.state || 'content',
+          votes, named, note: note.trim() });
+        return res;
+      };
+    }
+    try {
+      for (let seed = 1; seed <= SEASONS; seed++) {
+        setPlayers(ROSTER);
+        seedFranchiseHistory(CAST);
+        playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      }
+    } finally {
+      for (const [ev, orig] of wrapped) ev.fire = orig;
+    }
+
+    const nervy = rows.filter(r => r.state === 'paranoid' || r.state === 'desperate');
+    const ungrounded = nervy.filter(r => r.votes === 0 && r.named === 0);
+    const violations = ungrounded.filter(r => BALLOT_CLAIM.test(r.note))
+      .map(r => `${r.id} ep${r.ep} [${r.state}] votes=0 accusations=0: "${r.note.slice(0, 120)}"`);
+
+    console.log(`\n=== BALLOT CLAIMS WITHOUT A BALLOT (${SEASONS} seasons) ===`);
+    console.log(`   firings ${rows.length}, nervy ${nervy.length}, `
+      + `ungrounded nervy ${ungrounded.length}, claiming a ballot anyway ${violations.length}`);
+
+    // ── ANTI-VACUITY, AND IT IS THREE SEPARATE CHECKS ──────────────────
+    //
+    // Each one closes a different way this arm could pass while measuring
+    // nothing: the events never firing, the mood never occurring, and the
+    // ungrounded case never arising — which is the one the defect lives in.
+    expect(rows.length, 'neither event fired at all, so this arm asserted nothing')
+      .toBeGreaterThan(500);
+    expect(nervy.length, 'no firing was ever paranoid or desperate, so the branch this '
+      + 'arm is about was never reached').toBeGreaterThan(200);
+    expect(ungrounded.length, 'no nervy firing ever had an empty round record — the '
+      + 'ungrounded case this arm exists for did not occur in the sample')
+      .toBeGreaterThan(5);
+
+    // AND EPISODE ONE EXPLICITLY, because it is the strongest form of the
+    // defect: there is no Round Table at all, so a mood can only have come
+    // from a scene override and any table claim is certainly false.
+    const ep1 = rows.filter(r => r.ep === 1);
+    expect(ep1.length, 'no episode-1 firing was sampled, so the no-table-exists case '
+      + 'is untested').toBeGreaterThan(0);
+    expect(ep1.filter(r => BALLOT_CLAIM.test(r.note)).map(r => r.note.slice(0, 120)),
+      'an episode-1 scene described a Round Table that has not happened yet').toEqual([]);
+
+    expect(violations.slice(0, 5), 'a scene asserted that the room named somebody when '
+      + 'no ballot and no accusation in the record says so — see `_ballotBehind` in '
+      + 'js/tr/castle/grief.js').toEqual([]);
+  }, 300000);
+
+  it('and the matcher can see a claim when there is one', () => {
+    // GUARD ON THE GUARD. If the corpus above stopped matching, the arm would
+    // report a clean library forever — which is precisely the free pass this
+    // whole item is about.
+    expect(BALLOT_CLAIM.test('Somebody had said Beth’s name tonight, and Beth lay there.'))
+      .toBe(true);
+    expect(BALLOT_CLAIM.test('One name said out loud at that table was enough.')).toBe(true);
+    expect(BALLOT_CLAIM.test('Beth had watched the room write their own name down.')).toBe(true);
+    expect(BALLOT_CLAIM.test('Beth went over the ballots in the dark.')).toBe(true);
+    // and it does not fire on the ungrounded pool, which is the whole point of
+    // that pool existing
+    expect(BALLOT_CLAIM.test('Nothing happened. Beth spent four hours going over the nothing.'))
+      .toBe(false);
+    expect(BALLOT_CLAIM.test('Every creak in the building was somebody deciding something.'))
+      .toBe(false);
   });
 });
 
@@ -316,12 +459,20 @@ describe('THE POOL HEALTH FLOOR: how varied the castle is WRITTEN, not how varie
   //
   // == THE DERIVATION, AND A DISCREPANCY STATED RATHER THAN SMOOTHED =====
   //
-  // The review reported this counterfactual at 7.00%. Re-measured here it is
-  // 9.67%, and the difference is not noise, so it is recorded rather than
-  // averaged away. Four DISJOINT 600-season blocks (seed bases 0, 600, 1200,
-  // 1800), draw rule held off, measured in a standalone harness:
+  // RESOLVED (fix round 2). The first review reported this counterfactual at
+  // 7.00%; re-measured here it was 9.67%, the difference was not noise, and it
+  // was published rather than reconciled to a number that could not be derived.
+  // The re-review then drove `_setDrawRule` directly across these four blocks
+  // plus a fifth of its own unused seeds, under four attribution variants, and
+  // reproduced every block to the digit — including one never run here — and
+  // patched `lineFor` at the pre-fix commit to rule out a commit difference.
+  // **7.00% is retracted.** It matched none of the variants and came from an
+  // apparatus that had not been inspected.
   //
-  //     9.67%   10.50%   10.00%   9.83%      mean 10.00, sd 0.36pp
+  // FIVE DISJOINT 600-SEASON BLOCKS, draw rule held off (seed bases 0, 600,
+  // 1200, 1800 here; the fifth is the re-review's own):
+  //
+  //     9.67%   10.50%   10.00%   9.83%   9.50%     mean 9.90, sd 0.36pp
   //
   // and this arm, in-suite on seeds 1-600, reads 9.67% — the same figure as
   // the base-0 block to the digit, so the two harnesses agree and the
@@ -329,9 +480,12 @@ describe('THE POOL HEALTH FLOOR: how varied the castle is WRITTEN, not how varie
   // sample is the point at which this stops wobbling, which is why N is 600
   // and not the 400 it was first written at.
   //
-  // I cannot reproduce 7.00% and do not know how it was obtained; what is
-  // certain is that BOTH figures are far above the 4% band and both say the
-  // same thing about the pools, which is the finding that matters.
+  // The population estimate is therefore 9.90%. The figure quoted at the top of
+  // this note is 9.67% rather than 9.90% because that is the block THIS ARM
+  // plays and prints, and `js/tr/castle/lines.js` quotes the same 9.67% for the
+  // same reason — two shipped statements of one number that disagree is the
+  // defect the note in that file exists to correct, and it would be an odd way
+  // to correct it.
   //
   // THE BAND IS A REGRESSION GUARD, NOT A TARGET. 13% sits 9.2 sd above the
   // measured mean on the block sd above, so it reddens when the pools get
@@ -951,14 +1105,39 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // `REACT.pressure` (3 -> 9) and the recall leads (4 -> 10) were widened
     // instead. Median worst per season 9 -> 6, worst 15 -> 10.
     //
-    // THE BAND IS THE WORST CARD IN A SEASON, which is what a viewer meets.
-    // Measured over 120 seasons at the tip: median 6, max 10, and every season
-    // still has some card at 4 or more — that last part is NOT fixed and is
-    // not claimed to be. The forty four-element pools in `CONSEQ` are the
-    // remaining exposure and they are Task 11's, alongside the 448 thin engine
-    // pools. This bands the MAXIMUM at 14, which reddens if any pool collapses
-    // or if throughput rises again without the pools following, and prints the
-    // distribution so the next task inherits a number instead of a feeling.
+    // ── THE BAND, RE-DERIVED AGAINST ITS OWN MUTANT (fix round 2) ──────
+    //
+    // THE FIRST VERSION OF THIS BAND DID NOT BITE, and the re-review proved it
+    // the only way that counts: it reverted `CONSEQ_SINGLE` to the 4-wide state
+    // this fix widened — the exact pool the fix was about — and the arm stayed
+    // GREEN. Reproduced here, and the numbers came back to the digit:
+    //
+    //                                    median   max
+    //     shipped, arm seeds N=40           5       7
+    //     shipped, arm seeds N=200          4       7
+    //     shipped, independent N=200        4       7
+    //     REVERTED, arm seeds N=40          6      13   <- old band passed
+    //     REVERTED, arm seeds N=200         7      14   <- passed, exactly
+    //     REVERTED, independent N=200       6      15   <- would have failed
+    //
+    // So the STATISTIC separates cleanly and only the THRESHOLD was wrong: 14
+    // sat one above the mutant's own value on this arm's seeds, which is the
+    // knife-edge shape this branch rejects and the shape I correctly diagnosed
+    // and repaired in tr-rankings. A guard that cannot fail is a number without
+    // an assertion behind it wearing a different costume.
+    //
+    // TWO STATISTICS NOW, and the MEDIAN is the primary one. It separates 4-5
+    // from 6-7 without depending on a tail at all, so it cannot be defeated by
+    // a lucky maximum, and 40 seasons resolve a median far better than they
+    // resolve a max. The maximum is banded as well, at 10: three of headroom
+    // over the shipped 7 and reddening at the mutant's 13. Both were measured
+    // on three configurations, two of them seeds this arm does not use.
+    //
+    // WHAT IS STILL NOT FIXED, and is not claimed to be: every season still has
+    // some composed card at 4 or more. The forty four-element pools in `CONSEQ`
+    // are the remaining exposure and they are Task 11's, alongside the 448 thin
+    // engine pools. The distribution is printed so the next task inherits a
+    // number instead of a feeling.
     const N = 40;
     const worst = [];
     for (let seed = 60001; seed <= 60000 + N; seed++) {
@@ -993,9 +1172,17 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // ANTI-VACUITY: the seasons have to have rendered something.
     expect(worst.reduce((n, x) => n + x.cards, 0),
       'no composed cards were counted, so this arm asserted nothing').toBeGreaterThan(20000);
+    const median = ws[Math.floor(ws.length / 2)];
+    // THE PRIMARY BAND. Shipped 4-5 against a 4-wide-CONSEQ_SINGLE mutant's
+    // 6-7, on three configurations; 5 is the shipped value and 6 is the mutant.
+    expect(median, `the median season's worst composed card printed ${median} times `
+      + '- a screen pool has narrowed relative to the throughput')
+      .toBeLessThanOrEqual(5);
+    // AND THE TAIL, which catches a single pool collapsing while the median
+    // holds. Shipped 7 on all three configurations; the mutant reads 13-15.
     expect(ws[ws.length - 1], `the worst composed card in a season printed `
       + `${ws[ws.length - 1]} times — a screen pool has collapsed under the throughput`)
-      .toBeLessThanOrEqual(14);
+      .toBeLessThanOrEqual(10);
   }, 300000);
 
   it('never claims a room was empty when the scene says otherwise', () => {

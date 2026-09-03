@@ -1988,6 +1988,54 @@ const CONSEQ_COVER_WEIGHT = {
     '{a} wanted one night off from {topic} and did not get it. Nobody gives a Traitor that; they have to take it, and {a} could not.',
   ],
 };
+// GRIEF (mourning). {topic} is the murdered person. This family KEEPS its
+// reaction beat — a comfort beat over a death is coherent, not a wrong-subject
+// redundancy — and only the closing consequence is grounded, so it names the
+// dead. Lines use {a} and {topic} ONLY (never {b}), so one pool is safe over the
+// solo scenes (a keepsake pocketed, somebody numb) and the pair scenes alike.
+const CONSEQ_GRIEF = {
+  closer: [
+    'Grieving {topic} out loud left {a} less alone than before it — the one thing a death like this ever gives back.',
+    'The loss of {topic} drew {a} toward the people who felt it too. Something in the room is warmer for the naming of it.',
+    '{a} said what {topic} had meant and found {a} was not the only one who felt it. Shared grief is lighter than the other kind.',
+    'For {a}, mourning {topic} in company turned out to be the difference between grief and despair.',
+    'The empty place where {topic} sat pulled {a} closer to the living, which is not how {a} expected the morning to go.',
+  ],
+  apart: [
+    'The loss of {topic} put something cold between {a} and the room, and {a} let it.',
+    'Grieving {topic} went wrong for {a}: what should have drawn people together drove a wedge instead.',
+    '{a} came away from the mourning of {topic} more alone, not less. Not every death brings a room closer.',
+    '{topic}’s name sat badly between {a} and the others, and by the end nobody was pretending otherwise.',
+    'The grief for {topic} turned, in {a}’s hands, into something with an edge on it — and the edge stayed.',
+  ],
+  borne: [
+    'The chair where {topic} sat is still the first thing {a} sees in that room, and will be tomorrow.',
+    'For {a}, the fact of {topic} being gone is the shape the whole day is bent around now.',
+    '{a} has not worked out how to be in that room without {topic} in it, and did not manage it today either.',
+    'The loss of {topic} is a quiet thing for {a} — carried, not spoken, and none the lighter for it.',
+    '{a} keeps expecting {topic} to come round the corner, and keeps being wrong, all morning.',
+  ],
+};
+// A grief scene's DIRECTION, coarsened from its branch. CLOSER = shared,
+// forgiven, or spoken grief that binds; APART = grief that divides or curdles;
+// otherwise it is BORNE — private, quiet, or unresolved.
+const GRIEF_CLOSER = new Set(['laid-a-place', 'reseated', 'shared-mourning',
+  'told-a-story-about-them', 'we-had-it-wrong', 'handed-it-over', 'set-it-out',
+  'named-them-all', 'turned-into-a-vow', 'one-of-them-still-feels-it',
+  'owned-the-mistake', 'about-to-say-something']);
+const GRIEF_APART = new Set(['took-their-chair', 'sat-apart', 'one-sided-grief',
+  'could-not-say-it', 'would-not-play', 'blamed-room', 'turned-on-them',
+  'blamed-themselves', 'could-not-finish', 'nobody-joined-in',
+  'said-it-and-regretted-it', 'still-think-we-were-right', 'turned-on-each-other',
+  'kept-the-gap', 'moved-it-away']);
+/** 'closer' | 'apart' | 'borne' for a grief scene. */
+function _griefDir(s) {
+  const b = String(s.branch || '');
+  if (GRIEF_CLOSER.has(b)) return 'closer';
+  if (GRIEF_APART.has(b)) return 'apart';
+  return 'borne';
+}
+
 // A cover scene's RESULT, coarsened from each event's branch labels. TURNED =
 // the other person reacted (took it back, played along, checked it, kept away).
 // ABANDONED = the Traitor chose not to play the card. Otherwise the cover either
@@ -2026,6 +2074,9 @@ const TOPIC_CONFIG = {
   'cover-blend': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_BLEND },
   'cover-account': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_ACCOUNT },
   'cover-weight': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_WEIGHT },
+  // grief KEEPS its reaction beat (mourning comfort is coherent), so no
+  // `reaction: false` — only the consequence is grounded to name the dead.
+  'grief-loss': { dir: _griefDir, conseq: CONSEQ_GRIEF },
 };
 
 // The set of event ids that have been reworked to record a concrete topic.
@@ -2046,7 +2097,13 @@ const TOPIC_READY_TESTING = ['testing-small-dare', 'testing-ask-for-alibi-check'
 // (murder night / recruitment / what they are) being defended.
 /* eslint-disable-next-line */
 const TOPIC_READY_COVER = ['cover-preemptive-alibi', 'cover-suspect-own-ally', 'cover-plant-a-name', 'cover-rehearsed-story-advance', 'cover-cold-sweat-tell', 'cover-story-check', 'cover-double-bluff', 'cover-decline-recruit-offer-story', 'cover-alibi-crumbles', 'cover-blend-with-victims-friends', 'cover-feign-fear', 'cover-swap-story-with-partner', 'cover-alone-with-it'];
-export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER]);
+// grief family (grief.js) — mourning; topic = the murdered person. The two
+// ballot-sensitive events (someone-cries-alone, nobody-sleeps) are left legacy:
+// their subject is a mix of the death and the table, so a victim-named close
+// would misstate the table-paranoia scenes.
+/* eslint-disable-next-line */
+const TOPIC_READY_GRIEF = ['grief-empty-chair', 'grief-headcount', 'grief-seating-shift', 'grief-shared-mourning-bond', 'grief-suspicion-of-timing', 'grief-morning-reaction', 'grief-keepsake', 'grief-blame-the-room', 'grief-toast-to-them', 'grief-numb-to-it-now', 'grief-wrongly-suspected-irony'];
+export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF]);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed

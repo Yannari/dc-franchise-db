@@ -168,7 +168,7 @@ registerEvent({
     const bondDelta = branch === 'nobody-noticed' ? 0.5 : 1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: v, topicKind: 'grief-loss', victim: v,
       threadId: t?.id, bondDelta };
   },
 });
@@ -275,7 +275,7 @@ registerEvent({
     if (branch === 'said-the-number') bondDelta = 1;
     else if (branch === 'left-it-unsaid') bondDelta = 0.5;
     if (bondDelta) api.addBond(actors[0], actors[1], bondDelta, { source: sceneWhy });
-    const out = { branch, actors, victim: v, remaining, threadId: t?.id, bondDelta };
+    const out = { branch, actors, topic: v, topicKind: 'grief-loss', victim: v, remaining, threadId: t?.id, bondDelta };
     if (actors.length === 2) { out.pair = [actors[0], actors[1]]; }
     return out;
   },
@@ -378,7 +378,7 @@ registerEvent({
         : branch === 'took-their-chair' ? -1 : -1.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: b, respondent: a, victim: v,
+    return { branch, pair: [a, b], speaker: b, respondent: a, topic: v, topicKind: 'grief-loss', victim: v,
       threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -485,7 +485,7 @@ registerEvent({
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: v, topicKind: 'grief-loss', victim: v,
       threadId: t?.id, bondDelta };
   },
 });
@@ -588,7 +588,7 @@ registerEvent({
     const bondDelta = branch === 'would-not-play' ? -1 : 1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: v, topicKind: 'grief-loss', victim: v,
       threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -740,7 +740,7 @@ registerEvent({
     if (bondDelta) api.addBond(reactor, partner, bondDelta, { source: sceneWhy });
     const threadId = api.openArc(FAMILY, parties, { source: sceneWhy, seed: line })?.id;
 
-    return { branch, reactor, partner, victim, isTraitor, archetype, threadId, bondDelta };
+    return { branch, reactor, partner, topic: victim, topicKind: 'grief-loss', victim, isTraitor, archetype, threadId, bondDelta };
   },
 });
 
@@ -867,7 +867,7 @@ registerEvent({
     // nothing — see the silence floor in tests/tr-castle-prose.test.js) and
     // then closed as `buried`, which is what that outcome means.
     if (branch === 'put-it-back' && t) api.resolveArc(t.id, 'buried', { source: sceneWhy });
-    const out = { branch, actor, victim: v, threadId: t?.id, bondDelta };
+    const out = { branch, actor, topic: v, topicKind: 'grief-loss', victim: v, threadId: t?.id, bondDelta };
     if (branch === 'handed-it-over') { out.pair = [actor, keeper]; out.speaker = actor; out.respondent = keeper; }
     if (branch === 'set-it-out') out.crowd = { name: actor, colour: 'kind', mult: 0.4 };
     return out;
@@ -966,7 +966,7 @@ registerEvent({
       : branch === 'blamed-themselves' ? 1 : -0.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    const out = { branch, pair: [a, b], victim: v, threadId: t?.id, bondDelta };
+    const out = { branch, pair: [a, b], topic: v, topicKind: 'grief-loss', victim: v, threadId: t?.id, bondDelta };
     // {a} is the one talking on every branch; on `blamed-themselves` there is
     // nobody being leaned on at all, and the record says so by naming the
     // speaker without a respondent, which `sceneSpeakers` rejects into the
@@ -1087,7 +1087,7 @@ registerEvent({
       const note = lineFor(TOAST_LINES['poured-two'], `grief-toast-to-them|poured-two|${ctx.ep}|${gone}`,
         { a, n: String(gone) });
       const solo = arcContinue(api, FAMILY, [a], ctx.ep, note, { source: soloWhy });
-      return { branch: 'poured-two', actor: a, gone, threadId: solo.thread?.id,
+      return { branch: 'poured-two', topic: gone, topicKind: 'grief-loss', actor: a, gone, threadId: solo.thread?.id,
         cited: solo.cited, bondDelta: 0 };
     }
     const st = pStats(b);
@@ -1111,7 +1111,7 @@ registerEvent({
     const note = lineFor(TOAST_LINES[branch], `grief-toast-to-them|${branch}|${ctx.ep}|${gone}`,
       { a, b, n: String(gone) });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
-    return { branch, pair: [a, b], gone, threadId: thread?.id, cited, bondDelta,
+    return { branch, pair: [a, b], topic: gone, topicKind: 'grief-loss', gone, threadId: thread?.id, cited, bondDelta,
       crowd: [{ name: a, colour: 'kind', mult: 0.5 }, { name: b, colour: 'kind', mult: 0.5 }] };
   },
 });
@@ -1248,7 +1248,7 @@ registerEvent({
         : branch === 'said-it-and-regretted-it' ? -1 : 0.5;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: v, topicKind: 'grief-loss', victim: v,
       threadId: t?.id, bondDelta };
   },
 });
@@ -1509,7 +1509,7 @@ registerEvent({
         : branch === 'turned-on-each-other' ? -2 : 1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, victim: v,
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: v, topicKind: 'grief-loss', victim: v,
       threadId: t?.id, bondDelta };
   },
 });

@@ -893,7 +893,7 @@ const TIMELINE_LINES = {
   ],
   'lost-the-hour': [
     '{a} and {b} could not agree on what time any of it had been, and gave up on {c} entirely.',
-    'It turned out {a} and {b} did not have the same evening, never mind {c}’s.',
+    '{a} and {b} could not agree on their own account of the evening, so {c}’s never stood a chance.',
     'Halfway through {b} realised {b} could not account for {b}’s own hour, which ended the exercise.',
     '{a} and {b} set out to check {c} and spent twenty minutes establishing where the two of THEM had been.',
     'Nobody in this castle wears a watch. {a} and {b} rediscovered that about {c}’s Tuesday.',

@@ -27,6 +27,7 @@ import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
   from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
+import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
@@ -232,6 +233,15 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-status', label: 'The Day Book', suffix: 'housestatus',
     when: r => !!(r.tr && Array.isArray(r.tr.cast) && r.tr.cast.length),
     build: rpBuildHouseStatus, revealAll: trHouseStatusRevealAll, revealAllName: 'trHouseStatusRevealAll' },
+  // THE WEB — the whole relationship picture on its own screen, at the foot of
+  // the episode after the Day Book: friendships and enmities, the pact, who the
+  // room is hunting, and every player's own read. Off the per-episode snapshot,
+  // so a replay shows the room as it stood then. No reveal machinery — a board
+  // you read whole.
+  { id: 'tr-web', label: 'The Web', suffix: 'web',
+    badge: { text: 'The Web', color: '#c9a24a' },
+    when: r => !!(r.tr && r.tr.beliefs && (r.tr.beliefs.living || []).length),
+    build: (r, o) => rpBuildWeb(r, o) },
   { id: 'tr-endgame', label: 'The Endgame', suffix: 'endgame',
     badge: { text: 'Endgame', color: '#4cffb3' },
     when: r => !!(r.tr && r.tr.endgame),

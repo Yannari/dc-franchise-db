@@ -327,7 +327,7 @@ registerEvent({
     // about two people, and the bond records that they know it.
     if (branch === 'interrupted' && c) api.addBond(a, c, -0.5, { source: sceneWhy });
     const t = api.openArc(SPARK_KIND, [a, b], { source: sceneWhy, seed: note });
-    const out = { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    const out = { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], threadId: t?.id, bondDelta };
     if (branch === 'named-it-fast') { out.speaker = a; out.respondent = b; }
     return out;
   },
@@ -459,7 +459,7 @@ registerEvent({
     const t = api.openArc(SHOWMANCE_KIND, [a, b], { source: sceneWhy,
       seed: lineFor(SHOWMANCE_FORM_LINES[branch], `romance-showmance-forms|${branch}|${ctx.ep}`,
         { a, b, who }) });
-    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], threadId: t?.id, bondDelta };
   },
 });
 
@@ -573,7 +573,7 @@ registerEvent({
         : branch === 'asked-not-to' ? -0.5 : -2;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const advanced = api.advanceArc(t.id, note, { source: sceneWhy });
-    const out = { branch, pair: [a, b], threadId: advanced?.id, bondDelta };
+    const out = { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], threadId: advanced?.id, bondDelta };
     if (branch === 'protected' || branch === 'too-loud') {
       out.speaker = a; out.respondent = b;
       out.crowd = { name: a, colour: 'kind' };
@@ -687,7 +687,7 @@ registerEvent({
     const openedT = api.openArc(FAMILY, [a, b], { source: sceneWhy,
       seed: lineFor(JEALOUSY_LINES[branch], `romance-jealousy-third-party|${branch}|${ctx.ep}`,
         { a, b, c: third }) });
-    return { branch, pair: [a, b], speaker: a, respondent: b, third,
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b, third,
       threadId: openedT?.id, bondDelta, thirdDelta };
   },
 });
@@ -791,7 +791,7 @@ registerEvent({
     // `{b}` is the one who ends it on three of the four; `faded-out` has
     // nobody driving it, and the pair order is the arc's own.
     const bEnds = branch !== 'faded-out';
-    return { branch, pair: [a, b], speaker: bEnds ? b : a, respondent: bEnds ? a : b,
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: bEnds ? b : a, respondent: bEnds ? a : b,
       threadId: residueThread?.id, bondDelta };
   },
 });
@@ -872,7 +872,7 @@ registerEvent({
     const advanced = api.advanceArc(t.id,
       lineFor(SHIELD_LINES[branch], `romance-shields-target-together|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: b, respondent: a,
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: b, respondent: a,
       threadId: advanced?.id, bondDelta };
   },
 });
@@ -984,7 +984,7 @@ registerEvent({
         : branch === 'did-not-match' ? -1 : -2;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
-    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    const out = { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], threadId: thread?.id, cited, bondDelta };
     // WHO ANSWERS depends on which way the account failed: on the two branches
     // where {b} is the one being leaned on it is {a} asking, and on the refusal
     // it is {b} speaking and {a} left holding it.
@@ -1301,7 +1301,7 @@ registerEvent({
         : branch === 'about-the-vote' ? -1 : 0.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const advanced = api.advanceArc(t.id, note, { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: a, respondent: b,
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b,
       threadId: advanced?.id, bondDelta };
   },
 });
@@ -1440,7 +1440,7 @@ registerEvent({
         : branch === 'it-landed-inside' ? -1.5 : -0.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: a, respondent: b,
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b,
       threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -1580,7 +1580,7 @@ registerEvent({
     // being a machine that turns every close pair into a showmance.
     const kind = branch === 'just-comfort' ? 'trust' : SPARK_KIND;
     const t = api.openArc(kind, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b,
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b,
       threadId: t?.id, bondDelta };
   },
 });

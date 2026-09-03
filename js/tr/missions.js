@@ -110,7 +110,7 @@ export { POT_CEILING };
 // applies the bonds, reads, claims and crowd moments it declares. When the
 // catalogue is off (its default) none of this runs and the archetype stream is
 // bit-identical to before — no rng draw is taken.
-import { pickBespokeMission, bespokeMissionsEnabled } from './missions/index.js';
+import { pickBespokeMission, bespokeMissionsEnabled, BESPOKE_MISSION_IDS } from './missions/index.js';
 import { createMissionCtx } from './missions/contract.js';
 import { applyMissionEffects } from './missions/apply.js';
 
@@ -1097,21 +1097,32 @@ export function runMission(ep, rng) {
   // itself, and has its declared effects applied through the scene API. The
   // shield gate rides on the same `_shieldMission` switch the archetype
   // Reliquary sits behind, via `ctx.shieldsEnabled`.
+  // ── COMBINED POOL: BOTH GENERIC AND BESPOKE (user decision) ──────────
+  // Not either/or any more. A night draws bespoke-vs-generic proportional to
+  // pool size (4 bespoke : 7 generic today), so both kinds appear across a
+  // season and future bespoke naturally weight up as they are added. The roll
+  // is one draw off the MISSION rng (missions run off `_missionRngFor`, so it
+  // reshuffles the mission stream without touching a game draw). An ineligible
+  // bespoke pick falls through to the generic archetype below.
   if (bespokeMissionsEnabled()) {
-    const lastId = Array.isArray(gs.tr.missions) && gs.tr.missions.length
-      ? gs.tr.missions[gs.tr.missions.length - 1].id : null;
-    const ctx = createMissionCtx({
-      ep, living,
-      alignmentOf: (name, e) => alignmentAt(name, e),
-      shieldsEnabled: _shieldMission,
-    });
-    const chosen = pickBespokeMission(ctx, rng, lastId);
-    if (chosen) {
-      const rec = chosen.simulate(ctx, rng);
-      if (!Array.isArray(gs.tr.missions)) gs.tr.missions = [];
-      gs.tr.missions.push(rec);
-      applyMissionEffects(rec, ep);
-      return rec;
+    const nBespoke = BESPOKE_MISSION_IDS.length;
+    const nGeneric = MISSION_IDS.length;
+    if (rng() < nBespoke / (nBespoke + nGeneric)) {
+      const lastId = Array.isArray(gs.tr.missions) && gs.tr.missions.length
+        ? gs.tr.missions[gs.tr.missions.length - 1].id : null;
+      const ctx = createMissionCtx({
+        ep, living,
+        alignmentOf: (name, e) => alignmentAt(name, e),
+        shieldsEnabled: _shieldMission,
+      });
+      const chosen = pickBespokeMission(ctx, rng, lastId);
+      if (chosen) {
+        const rec = chosen.simulate(ctx, rng);
+        if (!Array.isArray(gs.tr.missions)) gs.tr.missions = [];
+        gs.tr.missions.push(rec);
+        applyMissionEffects(rec, ep);
+        return rec;
+      }
     }
   }
 

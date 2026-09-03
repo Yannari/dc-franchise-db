@@ -1599,6 +1599,10 @@ export function defaultConfig() {
     // Random double murders on by default; the Castle Options toggle turns them
     // off for authors who would rather pin a Double when they want one.
     trAutoDouble: true,
+    // Automatic recruitment on by default: the Traitors may recruit a Faithful
+    // on their own (once a season) when the pact runs thin. Off, recruitment
+    // happens only on a night the author pins from the timeline.
+    trAutoRecruit: true,
     // How many are left when the mandated game hands off to the endgame (the
     // fire round). Final three by default; the setup screen offers 2-5.
     trEndgameSize: 3,

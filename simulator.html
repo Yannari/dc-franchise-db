@@ -698,6 +698,15 @@
               </label>
             </div>
             <div class="form-group">
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                <input type="checkbox" id="cfg-tr-auto-recruit" style="width:14px;height:14px;margin-top:3px" checked onchange="saveConfig()">
+                <span>
+                  <span class="form-label" style="margin:0">Random recruitment</span>
+                  <div class="hint hint-tight">On, the Traitors may recruit a Faithful on their own when the pact runs thin (at most once a season). Off, recruitment only happens on a night you pin from the timeline — so you decide if and when it happens.</div>
+                </span>
+              </label>
+            </div>
+            <div class="form-group">
               <label class="form-label">The endgame begins at</label>
               <select id="cfg-tr-endgame-size" onchange="saveConfig()" class="form-input">
                 <option value="2">Final two</option>

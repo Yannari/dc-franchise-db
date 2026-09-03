@@ -1021,6 +1021,7 @@ export function saveConfig() {
     trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
+    trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -1154,6 +1155,7 @@ export function renderConfig() {
   if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
   if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal === true;
   set('cfg-tr-endgame-size', seasonConfig.trEndgameSize || 3);
+  if (g('cfg-tr-auto-recruit')) g('cfg-tr-auto-recruit').checked = seasonConfig.trAutoRecruit !== false;
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
   chk('cfg-ri',        seasonConfig.ri);

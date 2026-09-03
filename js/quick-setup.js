@@ -1100,6 +1100,14 @@ const CONFIG_SCOPE = {
     // to satisfy it.
     'cfg-tr-traitor-count':  ['traitors'],
     'cfg-tr-pot':            ['traitors'],
+    // The rest of the castle's options. `sec-tr-options` is only a label, not a
+    // wrapper, so each control in the block scopes itself — without this the
+    // traitor mode, the double/recruit/reveal toggles and the endgame size all
+    // drew under a Total Drama or Big Brother season too.
+    'cfg-tr-traitor-mode':   ['traitors'],
+    'cfg-tr-auto-double':    ['traitors'],
+    'cfg-tr-auto-recruit':   ['traitors'],
+    'cfg-tr-endgame-reveal': ['traitors'],
     // The castle's endgame size (final 2-5). Only js/tr/ reads it.
     'cfg-tr-endgame-size':   ['traitors'],
     // COUNCIL SIZE IS NOT A CASTLE CONTROL. The `cfg-jury` slider is shared —

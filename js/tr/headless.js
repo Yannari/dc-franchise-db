@@ -250,11 +250,14 @@ function _night(ep, rng) {
   // itself. The automatic path now spends a single season-long token; a
   // recruitment the AUTHOR pinned from the timeline still runs whenever it is
   // scheduled, because that is a deliberate beat and not the heuristic firing.
-  const autoRecruitAllowed = !gs.tr.autoRecruited;
+  // The automatic path is spent once a season (the cap) and can be switched off
+  // entirely by the Castle Option — either way a PINNED recruitment still runs.
+  const autoRecruitAllowed = !gs.tr.autoRecruited && !gs.tr.noAutoRecruit;
   // DRAW THE ROLL UNDER THE CONDITION THE ENGINE ALWAYS DREW IT — canRecruit,
   // not pinned, pact thin — so the game rng stream does not shift on a season
-  // that never hits the cap. The cap gates the RESULT below, after the draw,
-  // never the draw itself; a season with one recruit or none is bit-identical.
+  // that never hits the cap or has auto recruitment off. The gates apply to the
+  // RESULT below, after the draw, never the draw itself; a season with one
+  // recruit or none is bit-identical.
   const autoRoll = canRecruit(ep) && !forcedRecruit
     && livingTraitors(ep).length < 3 && rng() < 0.45;
   const wantsRecruit = canRecruit(ep)
@@ -1973,7 +1976,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   backgrounds = null, database = null, host = null,
   murderSchedule = null, missionSchedule = null, chosenTraitors = null,
   rerollFromEp = null, rerollSeed = null, autoDouble = true,
-  endgameReveal = false,
+  endgameReveal = false, autoRecruit = true,
   announceTraitorCount = false } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
   // The whole season is one deterministic block off `seed`, so a real per-
@@ -2026,6 +2029,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // pickVariant drops `double` from the random pool but still honours a pinned
   // one. Defaults to on, so headless callers (calibration, tests) are unchanged.
   gs.tr.noAutoDouble = autoDouble === false;
+  // Automatic recruitment off, when the Castle Option asks — the pact never
+  // recruits on its own, only on a night the author pinned. Defaults to on, so
+  // headless callers (calibration, tests) are unchanged.
+  gs.tr.noAutoRecruit = autoRecruit === false;
   // THE SEATING PLAN, AND IT NEVER CHANGES. `activePlayers` shrinks every
   // night, so a screen drawing the room from it re-seats everybody the moment
   // somebody leaves and the eye can no longer follow a person from one episode

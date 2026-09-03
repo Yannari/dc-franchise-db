@@ -1296,11 +1296,23 @@ describe('the castle, measured over many seasons', () => {
     // (minus-trust) against 0.1120 of headroom — 2.6 content files. The
     // separation's worst adverse is -0.0537 against 0.1821 — 3.4 files. This
     // band did not need widening; the continuation one did.
+    // RE-EXPRESSED (1.15 -> 1.10) when the endgame boundary moved: the mandated
+    // loop now runs ~one round longer (it no longer breaks on bare `fa <= tr`),
+    // which lengthens threads in BOTH arms — live 1.60 -> 1.83, uniform control
+    // 1.27 -> 1.62 — and a ratio of two rising numbers compresses even when the
+    // gap between them does not. The gap is what proves the selector: the
+    // separation band below reads 0.21 (was 0.32) and is still 4+ sd clear of
+    // its 0.15 floor, so scene selection is demonstrably live and it is the
+    // ratio's denominator that moved, not the mechanism. New reading 1.130 /
+    // 1.133 (200 / 500 seasons), stable; floor cut ~1.3 sd under it. The
+    // separation band is the primary detune guard here (see its note) — a
+    // halved selector collapses the gap under 0.15 regardless of season length.
     expect(live.meanLen / sceneOff.meanLen, 'threads are no longer than they were under '
       + 'uniform actor selection - scene selection is not reconvening live stories')
-      .toBeGreaterThan(1.15);
+      .toBeGreaterThan(1.10);
     // And the separation in beats, which is the same statement in the units
-    // the diagnostics print. Measured +0.323 beats.
+    // the diagnostics print. Measured +0.210 beats after the endgame boundary
+    // move (was +0.323); both arms lengthened, the gap held well clear of 0.15.
     expect(live.meanLen - sceneOff.meanLen, 'thread-aware scene selection moved nothing')
       .toBeGreaterThan(0.15);
   });
@@ -1483,6 +1495,14 @@ describe('the castle, measured over many seasons', () => {
   //     mandated, <=6 living   17 / 149  = 11.41%  175 / 865  = 20.23%
   //     endgame, <=6 living    182 / 362 = 50.28%  1,008 / 1,996 = 50.50%
   //
+  // NOTE — the endgame row above is the PRE-BOUNDARY-MOVE reading. When the
+  // mandated loop stopped breaking on bare `fa <= tr` (headless.js), endgames
+  // began convening at the final three-to-five instead of at any parity size,
+  // and this arm re-read to 224/294 = 76.2% (200 seasons) / stable ~78% at 500
+  // — a real relocation of the population, not an engine change. The two-sided
+  // band far below is re-cut around it; the derivation and the size breakdown
+  // are on that band.
+  //
   // The endgame arm is stable to two decimal places. THE MANDATED ARM IS NOT:
   // 11.41% on n=149 is 2.7 sd below the 20.23% the larger sample gives, and
   // that 11.41% is the figure this file's own population reads. So its floor is
@@ -1538,14 +1558,37 @@ describe('the castle, measured over many seasons', () => {
     expect(mandated.b / mandated.n, 'the late mandated betrayal rate has collapsed toward '
       + 'the old hard bar').toBeGreaterThan(0.03);
 
-    // THE ENDGAME. Task 7's population, stable at 50.3% / 50.5% across a
-    // sixfold change of sample, so this one can carry a two-sided band: 5.7 sd
-    // to the floor and 5.7 to the ceiling on n=362.
+    // THE ENDGAME. RE-EXPRESSED when the endgame boundary moved (headless.js:
+    // the mandated loop no longer breaks on bare `fa <= tr`, which used to open
+    // the reveal-less finale at a 3-v-3 SIX-hander and stop the murders two
+    // nights early — the bug this re-derivation rides in on). Parity now opens
+    // the endgame only once the room is already small (endgameSize + 2), so
+    // endgames convene at the final three-to-five rather than at any parity
+    // size. That is the show's own fire-round size, and it MOVES THIS RATE by
+    // changing WHAT IS BEING COUNTED, exactly as this file's split-out warns:
+    // the old 50.3% center was a DILUTION artifact of the size-6 endgames the
+    // bug produced, where a Traitor had three non-fellows to name and rarely
+    // had to turn on the pact. It was never the true final-table rate.
+    //
+    // Measured over this file's own 200 seeds, and stable across a sample bump:
+    //
+    //     endgame arm       200 seasons        500 seasons
+    //     betrayal rate     224 / 294 = 76.2%  542 / 693 = 78.2%
+    //     by room size      3: 92%  4: 87%  5: 52%
+    //
+    // The rate is size-driven: fellow-naming is near-forced in a three- or
+    // four-hander (few non-fellows left to name instead) and only ~half-priced
+    // at five. The two-sided band is re-cut around the new stable ~0.77: the
+    // floor still asserts the endgame is where the pact breaks (it breaks there
+    // far MORE than the mandated loop's 13-15%), and the ceiling still asserts
+    // the price is charged at all — a rate at 1.0 would mean a Traitor always
+    // names a fellow, which the reluctance term forbids. ~5.7 sd either side on
+    // n=294 (binomial sd 0.0247) is ±0.14.
     expect(endgame.b / endgame.n, 'the endgame has stopped being the place the pact '
-      + 'breaks').toBeGreaterThan(0.35);
-    expect(endgame.b / endgame.n, 'the endgame is now betraying at a rate the mandated '
-      + 'loop never approaches — the price has stopped being charged there at all')
-      .toBeLessThan(0.65);
+      + 'breaks').toBeGreaterThan(0.62);
+    expect(endgame.b / endgame.n, 'the endgame is now betraying at a rate that has '
+      + 'stopped charging the price at all — a Traitor is always naming a fellow')
+      .toBeLessThan(0.90);
   });
 
   it('the castle stream never collapses onto the game stream, 2**31 included', () => {

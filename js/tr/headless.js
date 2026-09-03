@@ -2100,7 +2100,30 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     const alive = gs.activePlayers || [];
     const tr = livingTraitors(ep).length;
     const fa = livingFaithfuls(ep).length;
-    if (!tr || alive.length <= configuredEndgameSize || fa <= tr) break;
+    // WHEN THE MANDATED GAME HANDS OFF TO THE ENDGAME. Three conditions, and
+    // the parity one is the subtle one.
+    //
+    // `!tr` — the pact is dead, the room has won outright. `!fa` — the mirror,
+    // an all-Traitor castle with nobody left to murder (this used to be folded
+    // into `fa <= tr`; it is kept explicit now the parity test is gated).
+    // `alive <= endgameSize` — the room is down to the final handful and it is
+    // simply time.
+    //
+    // Parity (`fa <= tr`) is NOT a real-show trigger on its own — the Faithful
+    // reaching parity is not a loss, the pact keeps murdering and the room
+    // keeps banishing (End Game — Traitors Wiki). The old code broke on bare
+    // `fa <= tr`, which ended a 3-v-3 SIX-hander two nights early: the conclave
+    // fell silent and the reveal-less endgame quietly banished the rest, which
+    // is the bug this fixes. But parity is not irrelevant either — the endgame
+    // is where a Traitor betrays a FELLOW for the pot, and that drama only
+    // exists if the finale opens while two or more of them are still in the
+    // room. So parity ends the mandated game ONLY once the room is already
+    // small (`endgameSize + 2`, i.e. the final four-to-five), which keeps the
+    // murders running at the final six yet still opens a multi-Traitor endgame
+    // where the format wants one. Measured against tr-calibration: the
+    // endgame's betrayal arm needs this window to be populated at all.
+    const parityFinale = fa <= tr && alive.length <= configuredEndgameSize + 2;
+    if (!tr || !fa || alive.length <= configuredEndgameSize || parityFinale) break;
 
     // TASK 5: each of the six Castle Day phases draws its OWN scene-count
     // budget from its own range (js/tr/castle/phases.js), spending it

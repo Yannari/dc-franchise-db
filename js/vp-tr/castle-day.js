@@ -1811,10 +1811,70 @@ function _suspDir(s) {
   return eased ? 'down' : 'up';
 }
 
+// A TEST is run BY {a} ON {topic} (the tested person, {b}). The generic close
+// ("For {names}, that is the end of it") never said what the test SHOWED about
+// the person it was run on. This names {topic} and states what {a} came away
+// believing about them. Keyed by a coarse RESULT, not by each event's branch
+// labels, so one pool serves all eleven testing events. A test reads CHARACTER,
+// not alignment (see testing.js's header), so these speak of trust and doubt,
+// never of "a Traitor".
+const CONSEQ_TESTING = {
+  held: [
+    '{other} came off that test trusting {topic} a shade more than before — a small thing, but {topic} passed it clean.',
+    'Whatever {other} was probing for, {topic} did not give it, and {other} files {topic} on the safer side of the ledger tonight.',
+    '{other} set the test and {topic} walked through it without ever noticing there had been one. That is the best a test like this does.',
+    'The check came back clean. {other} is no less watchful in general; about {topic}, specifically, {other} is easier.',
+    '{other} got the reassurance {other} went looking for: on this evidence, {topic} is exactly who {topic} appears to be.',
+  ],
+  failed: [
+    '{other} did not like what the test showed about {topic}, and there is no unseeing it now.',
+    '{topic} failed a check {topic} did not know was running, and {other} is the only one who knows {topic} failed it.',
+    'The test came back wrong about {topic}. It is a feeling with a shape now, and the shape is {topic}.',
+    '{other} went in half-doubting {topic} and came out further along that road — nothing proven, but the doubt about {topic} has weight it lacked this morning.',
+    'Whatever {other} suspected, {topic} did the thing that confirms it, and {other} watched {topic} do it.',
+  ],
+  spotted: [
+    '{topic} worked out {other} was running a test, which means the test is over and {topic} knows who set it.',
+    '{other} set out to read {topic} and {topic} read the room instead. Now {topic} knows exactly where {other} stands.',
+    'The test stopped being a test the moment {topic} named it. Whatever {other} learned, {topic} learned that {other} is watching.',
+    '{topic} turned the check back on {other}, and came away knowing more about {other} than {other} got about {topic}.',
+    '{other} tried it once too plainly and {topic} caught it. There is no running that particular test on {topic} again.',
+  ],
+  inconclusive: [
+    '{other} designed the test and got no verdict from it — {other} knows exactly as much about {topic} as at breakfast, and resents the hours.',
+    'The check came back neither way. {topic} is still an open question to {other}, only now a more annoying one.',
+    '{other} could read it as {topic} passing or {topic} failing, and did, both, to no conclusion.',
+    'Nothing about {topic} moved. {other} put the test down still not knowing the one thing {other} wanted to know.',
+    'The test settled nothing. {other} keeps {topic} exactly where {topic} was — unanswered.',
+  ],
+};
+// A test's RESULT, coarsened from each event's branch labels. SPOTTED = the
+// tested person realised they were being measured, or turned it back. Otherwise
+// the branch either reassured the tester (HELD), worried them (FAILED), or told
+// them nothing (INCONCLUSIVE).
+const TEST_SPOTTED = new Set(['named-the-test', 'saw-through-it', 'turned-it-round',
+  'asked-it-back', 'made-a-condition', 'asked-why-twice', 'said-it-aloud',
+  'clocked-the-check', 'caughtTest']);
+const TEST_HELD = new Set(['complied', 'over-delivered', 'checks-out', 'sincere',
+  'stayed-calm', 'reassured', 'consistent', 'read-it-right', 'kept-it',
+  'followed-through', 'keptQuiet', 'confirmed']);
+const TEST_FAILED = new Set(['refused', 'inconsistent', 'reluctant', 'refuses',
+  'got-rattled', 'hedged', 'would-not-repeat-it', 'half-kept-it', 'dropped-it',
+  'malicious', 'innocent', 'failed', 'bad']);
+/** 'held' | 'failed' | 'spotted' | 'inconclusive' for a testing scene. */
+function _testDir(s) {
+  const b = String(s.branch || '');
+  if (TEST_SPOTTED.has(b)) return 'spotted';
+  if (TEST_HELD.has(b)) return 'held';
+  if (TEST_FAILED.has(b)) return 'failed';
+  return 'inconclusive';
+}
+
 // Which topicKinds are grounded, and how the composer renders them. `reaction:
 // false` drops the generic reaction card, because the event's own action line
 // already carries the exchange — a second, generic reaction on top of it is the
-// redundancy the reviewer read. `conseq` is the branch-keyed closing pool.
+// redundancy the reviewer read. `conseq` is the branch-keyed closing pool; `dir`
+// (when present) coarsens the branch into the pool's key.
 const TOPIC_CONFIG = {
   'road-third-name': { reaction: false, conseq: CONSEQ_ROAD_THIRD_NAME },
   'road-suspect-walk': { reaction: false, conseq: CONSEQ_ROAD_SUSPECT_WALK },
@@ -1822,11 +1882,18 @@ const TOPIC_CONFIG = {
   'road-cover-back': { reaction: false, conseq: CONSEQ_ROAD_COVER_BACK },
   'road-walk-test': { reaction: false, conseq: CONSEQ_ROAD_WALK_TEST },
   'suspicion-third': { reaction: false, byDirection: true, conseq: CONSEQ_SUSP_THIRD },
+  'testing-probe': { reaction: false, dir: _testDir, conseq: CONSEQ_TESTING },
 };
 
 /** The set of event ids that have been reworked to record a concrete topic. */
 /* eslint-disable-next-line */
-export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with', 'susp-whisper-about-absent', 'susp-timeline-crosscheck', 'susp-overheard-conversation']);
+export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with', 'susp-whisper-about-absent', 'susp-timeline-crosscheck', 'susp-overheard-conversation',
+  // testing family (testing.js) — every test names the person it was run ON
+  // (topic = the tested player) and closes on what it showed about them.
+  'testing-small-dare', 'testing-ask-for-alibi-check', 'testing-loyalty-oath',
+  'testing-reverse-psychology', 'testing-hypothetical-loyalty-question',
+  'testing-double-check-story', 'testing-silence-test', 'testing-cold-read-check',
+  'testing-follow-through-check', 'testing-decoy-secret', 'testing-night-scores-it']);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed
@@ -1836,7 +1903,8 @@ export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-th
  */
 function _topicConsequence(s, subs, key, used, cfg, tone) {
   let branch = String(s.branch || '');
-  if (cfg.byDirection) branch = _suspDir(s);
+  if (cfg.dir) branch = cfg.dir(s);
+  else if (cfg.byDirection) branch = _suspDir(s);
   const pool = (cfg.conseq && cfg.conseq[branch])
     || (cfg.conseq && Object.values(cfg.conseq)[0]) || [];
   const say = _fill(_pickUnique(pool, key + '|tconseq', used, 'tconseq'), subs);
@@ -3509,6 +3577,14 @@ function _composeScene(s, key, used, cast) {
     // legacy event, so a stray `{topic}` in an un-reworked pool renders blank
     // rather than literal — but no legacy pool carries the token.
     topic: s.topic ? String(s.topic) : '',
+    // THE OTHER PERSON, role-safe. `{a}`/`{b}` swap with the scene's speaker
+    // (a flip branch makes the tested person the speaker, so `a` becomes the
+    // subject) — so a topic pool that means "the person who ISN'T the subject"
+    // cannot say `{a}` and be sure. `{other}` is whichever participant is not
+    // the topic, which stays the tester/observer across every branch. Falls
+    // back to `b` (then `a`) when the topic is off-scene (a behind-the-back
+    // check) or the scene is solo.
+    other: (s.topic && roll.find(n => n && n !== s.topic)) || b || a,
   };
   // A grounded event drives its own closing consequence off the recorded topic
   // and branch; legacy events keep the generic family/tone pools.

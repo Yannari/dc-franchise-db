@@ -479,7 +479,7 @@ registerEvent({
     if (thread && branch === 'named-the-test') {
       api.resolveArc(thread.id, 'turned-back', { source: sceneWhy });
     }
-    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    const out = { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', threadId: thread?.id, cited, bondDelta };
     // AND ON ONE BRANCH THE DIRECTION REVERSES, which `roles: 'initiator-first'`
     // cannot express: when {b} names the test, {b} is speaking and {a} is the
     // one answering for it. An explicit pair on the result takes precedence
@@ -568,7 +568,7 @@ registerEvent({
     // [a, b] is still keyed for cooldowns at pick time (js/tr/events.js), and
     // `api.addBond(a, b, …)` above is untouched, so the simulation is unchanged.
     return { branch: branch === 'ok' ? 'checks-out' : branch === 'bad' ? 'inconsistent' : branch,
-      actor: a, threadId: thread?.id, cited, bondDelta };
+      actor: a, topic: b, topicKind: 'testing-probe', threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -615,7 +615,7 @@ registerEvent({
     // which is the whole point of putting that rule in ONE place. Declaring
     // `masterful` here instead paid six Faithfuls a villain's ledger over 100
     // seasons, because `a` is whoever the scene drew and not a Traitor.
-    return { branch, pair: [a, b], threadId: t?.id, bondDelta,
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', threadId: t?.id, bondDelta,
       crowd: branch === 'sincere' ? { name: a, colour: 'kind', mult: 0.6 }
         : branch === 'refuses' ? { name: a, colour: 'cowardly', mult: 0.4 } : null };
   },
@@ -674,7 +674,7 @@ registerEvent({
     // reaction card to the wrong one. `speaker`/`respondent` on the result
     // takes precedence -- see `sceneSpeakers` in js/tr/events.js.
     const bTakesIt = branch === 'saw-through-it' || branch === 'turned-it-round';
-    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
       threadId: t?.id, bondDelta };
   },
 });
@@ -736,7 +736,7 @@ registerEvent({
     // precedence — see `sceneSpeakers`, js/tr/events.js, and the identical
     // note on `testing-reverse-psychology` above.
     const bTakesIt = branch === 'asked-it-back';
-    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
       threadId: t?.id, bondDelta };
   },
 });
@@ -799,7 +799,7 @@ registerEvent({
     if (thread && branch === 'asked-why-twice') {
       api.resolveArc(thread.id, 'turned-back', { source: sceneWhy });
     }
-    const out = { branch, pair: [a, b], threadId: thread?.id, cited, bondDelta };
+    const out = { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', threadId: thread?.id, cited, bondDelta };
     // The direction reverses when {b} turns the question round — see the same
     // note on `testing-small-dare` above.
     if (branch === 'asked-why-twice') { out.speaker = b; out.respondent = a; }
@@ -859,7 +859,7 @@ registerEvent({
     const line = lineFor(SILENCE_LINES[branch], `testing-silence-test|${branch}|${ctx.ep}`, { a, b });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, line, { source: sceneWhy });
     const out = { branch: branch === 'letgo' ? 'let-it-go' : branch,
-      pair: [a, b], threadId: thread?.id, cited, bondDelta };
+      pair: [a, b], topic: b, topicKind: 'testing-probe', threadId: thread?.id, cited, bondDelta };
     // The direction reverses when the test runs backwards — see the same note
     // on `testing-small-dare` above.
     if (branch === 'out-waited-them') { out.speaker = b; out.respondent = a; }
@@ -941,7 +941,7 @@ registerEvent({
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy,
       seed: lineFor(COLD_READ_LINES[branch], `testing-cold-read-check|${branch}|${ctx.ep}`,
         { a, b, c: target }) });
-    return { branch, pair: [a, b], speaker: a, respondent: b, target,
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', speaker: a, respondent: b, target,
       threadId: t?.id, bondDelta };
   },
 });
@@ -993,7 +993,7 @@ registerEvent({
     // On `clocked-the-check` the marked player ends the arrangement, so the
     // scene changes hands and the field says so rather than the sentence.
     const bTakesIt = branch === 'clocked-the-check';
-    return { branch, pair: [a, b], speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', speaker: bTakesIt ? b : a, respondent: bTakesIt ? a : b,
       threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -1159,7 +1159,7 @@ registerEvent({
         threadId = existing.id;
       } else threadId = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line })?.id;
     }
-    return { branch, pair: [a, b], threadId, bondDelta };
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', threadId, bondDelta };
   },
 });
 
@@ -1251,6 +1251,6 @@ registerEvent({
     const outcome = branch === 'confirmed' ? 'passed-clean'
       : branch === 'failed' ? 'failed-maliciously' : null;
     if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
-    return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
+    return { branch, pair: [a, b], topic: b, topicKind: 'testing-probe', threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });

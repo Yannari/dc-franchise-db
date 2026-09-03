@@ -1138,6 +1138,11 @@ const CONFIG_SCOPE = {
     // The castle's traitor-count/selection/pot controls and their heading.
     'sec-tr-options':        ['traitors'],
     'sec-tr-divider':        ['traitors'],
+    // The END GAME heading holds Total Drama's finale block AND the castle's
+    // endgame controls (each control scoped within). Shown for both; a house
+    // finale is fixed (final three, stated in HOUSE OPTIONS), so it stays hidden
+    // there rather than drawing an empty heading.
+    'sec-end-game':          ['total-drama', 'traitors'],
   },
 };
 

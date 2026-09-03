@@ -707,25 +707,6 @@
               </label>
             </div>
             <div class="form-group">
-              <label class="form-label">The endgame begins at</label>
-              <select id="cfg-tr-endgame-size" onchange="saveConfig()" class="form-input">
-                <option value="2">Final two</option>
-                <option value="3">Final three</option>
-                <option value="4">Final four</option>
-                <option value="5">Final five</option>
-              </select>
-              <div class="hint hint-tight">How many are left when the murders stop and the fire round begins — banish-or-end until they agree to end it. Earlier (final five) means a longer finale; final two is a straight last vote.</div>
-            </div>
-            <div class="form-group">
-              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-                <input type="checkbox" id="cfg-tr-endgame-reveal" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
-                <span>
-                  <span class="form-label" style="margin:0">Reveal titles in the endgame</span>
-                  <div class="hint hint-tight">Off (the modern show), a player banished at the final tables is never turned over — the survivors go on nerve alone. On (Ireland S1 style), every endgame banishment reveals Faithful or Traitor, the same as any earlier Round Table.</div>
-                </span>
-              </label>
-            </div>
-            <div class="form-group">
               <label class="form-label">The pot</label>
               <input type="number" id="cfg-tr-pot" class="form-input" min="1000" max="500000" step="1000" value="120000" onchange="saveConfig()">
               <div class="hint hint-tight">The ceiling the missions are earning against. Nobody banked a penny of it until somebody walks out with the lot.</div>
@@ -768,6 +749,29 @@
             </div>
 
             <div class="setup-section-label" id="sec-end-game">END GAME</div>
+            <!-- The castle's endgame controls live under this heading too, so
+                 "END GAME" is a populated section for a castle rather than Total
+                 Drama's finale block sitting empty over one. Each is scoped, so
+                 only the current show's endgame controls draw here. -->
+            <div class="form-group">
+              <label class="form-label">The endgame begins at</label>
+              <select id="cfg-tr-endgame-size" onchange="saveConfig()" class="form-input">
+                <option value="2">Final two</option>
+                <option value="3">Final three</option>
+                <option value="4">Final four</option>
+                <option value="5">Final five</option>
+              </select>
+              <div class="hint hint-tight">How many are left when the murders stop and the fire round begins — banish-or-end until they agree to end it. Earlier (final five) means a longer finale; final two is a straight last vote.</div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                <input type="checkbox" id="cfg-tr-endgame-reveal" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>
+                  <span class="form-label" style="margin:0">Reveal titles in the endgame</span>
+                  <div class="hint hint-tight">Off (the modern show), a player banished at the final tables is never turned over — the survivors go on nerve alone. On (Ireland S1 style), every endgame banishment reveals Faithful or Traitor, the same as any earlier Round Table.</div>
+                </span>
+              </label>
+            </div>
             <div class="slider-control">
               <label>Finale Size: Final <strong id="finale-display">3</strong></label>
               <input type="range" min="2" max="4" value="3" id="cfg-finale" class="setup-slider" oninput="updateSlider('finale');saveConfig()">

@@ -291,9 +291,21 @@ export function runEndgame(startEp, rng = Math.random, { reveal = false } = {}) 
     // (Task 4's mutation survived for precisely that reason), so the refusal
     // runs as often as the grant and the guards assert on both.
     openSeer(ep);
-    const choices = secretBallot(living, ep);
+    // THE ROOM KNOWS WHEN IT HAS ALREADY WON. Mandated banishments are revealed,
+    // so once the last Traitor is banished the whole castle has SEEN it — and a
+    // room that knows it is clean ends the game rather than banishing each other
+    // on stale suspicion. Without this a Faithful's residual (now wrong) read
+    // sent paranoid survivors banishing their own reveal-less in a room of a
+    // dozen: the reported "finale at episode five, nine still in, five banished
+    // at once". This is not an oracle read of hidden alignments — it is the
+    // public reveals the room already watched. The Seer is still offered above,
+    // so a clean sweep still gets its one meeting; it just does not banish.
+    const alreadyWon = !livingTraitors(ep).length;
+    const choices = alreadyWon
+      ? living.map(n => ({ name: n, choice: 'end', role: 'faithful' }))
+      : secretBallot(living, ep);
     ballots.push({ ep, choices, living });
-    if (!choices.some(c => c.choice === 'banish')) break;
+    if (alreadyWon || !choices.some(c => c.choice === 'banish')) break;
     // `reveal` is the author's Castle Option (spec §8's rule is the default:
     // OFF, nobody turned over). ON plays the endgame like Ireland S1 — every
     // banished player is revealed at the table, the same as any earlier one.

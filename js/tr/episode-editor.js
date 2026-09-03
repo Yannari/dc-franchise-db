@@ -286,6 +286,15 @@ function _phaseKey(scene) {
  * Ties break on the ORIGINAL INDEX, so the output is deterministic and, on a
  * phase with no constraint pressure at all, identical to the input.
  */
+// The two scenes that are the room reckoning with its own banishment — was the
+// vote right (a Traitor) or wrong (a Faithful). When either is in a window, it
+// opens it: the night begins with the aftermath of the vote, not around it.
+const _BANISH_VERDICT = new Set(['after-the-room-got-it-right', 'after-the-room-got-it-wrong']);
+function _leadWithBanishmentVerdict(list) {
+  const i = list.findIndex(s => _BANISH_VERDICT.has(String(s && s.eventId || '')));
+  if (i > 0) { const [s] = list.splice(i, 1); list.unshift(s); }
+}
+
 function _resequence(scenes, carry = null, { reserveTail = false } = {}) {
   const isConflict = s => sceneTone(s) === 'conflict';
   const conflicts = scenes.filter(isConflict);
@@ -458,6 +467,14 @@ export function buildEpisodeEdit(eligibleScenes, ctx = {}, rng = null) { // esli
     const res = _resequence(byPhase.get(phaseOrder[pi]), carry,
       { reserveTail: pi < phaseOrder.length - 1 });
     carry = res.carry;
+    // THE ROOM'S VERDICT ON ITS OWN VOTE LEADS THE NIGHT. The first thing the
+    // after-table window shows is the reaction to who was just banished — right
+    // or wrong — not a background social scene that happens to have drawn first.
+    // Presentation only: the sim has already run, and the promoted scene keeps
+    // its own beats, so nothing it computed changes. Applied after resequencing
+    // so the run-breaker still shapes the rest of the window; the carry is read
+    // off the window's TAIL, which this does not move.
+    _leadWithBanishmentVerdict(res.out);
     scenes.push(...res.out);
   }
 

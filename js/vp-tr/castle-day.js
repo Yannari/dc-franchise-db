@@ -83,8 +83,8 @@ import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
-import { ADVERSE_OUTCOMES, SMOOTH_OUTCOMES, ADVERSE_BRANCHES, BENIGN_BRANCHES,
-  attributedLineInVoice, actionPurpose } from '../tr/castle/voice.js';
+import { ADVERSE_OUTCOMES, SMOOTH_OUTCOMES, ADVERSE_BRANCHES, BENIGN_BRANCHES }
+  from '../tr/castle/voice.js';
 // THE ALCOVE, FOLDED IN (Plan 11). The confessional chair is no longer its own
 // screen — it is composed here, into the night segment, beside the night it is
 // the voice of. These reuse confessionals.js's own `_view`/`_buildBeats`, so the
@@ -333,7 +333,7 @@ const ESTABLISH_PAIR = {
     'First light. {a} comes down to {loc} and finds {b} already standing there.',
     'Nobody else is down yet. {a} and {b} are at {loc} with the whole building quiet behind them.',
     'The morning is about ten minutes old. {a} catches {b} at {loc}, before anybody else comes down.',
-    '{a} and {b} are the first two down, and they are at {loc}, and neither says why.',
+    '{a} and {b} reach {loc} before anyone else. Neither explains why they came down so early.',
     'The kettle has not gone on yet. {a} and {b} are at {loc} with the day still ahead of them.',
   ],
   morning: [
@@ -341,11 +341,11 @@ const ESTABLISH_PAIR = {
     'The castle is busy everywhere except {loc}, which is where {a} and {b} are.',
     'An hour after breakfast, {a} steers {b} towards {loc} and lets the door swing shut.',
     '{a} and {b} end up at {loc} together, with a job between them that neither is really doing.',
-    'There is work going on everywhere this morning. At {loc} there is {a}, and {b}, and no work.',
-    '{a} carries something to {loc} that did not need carrying, because {b} is at {loc}.',
+    '{a} and {b} pause their chores at {loc} to speak in private.',
+    '{a} joins {b} at {loc} and waits until nobody else is close enough to hear.',
   ],
   'journey-out': [
-    'The walk out has strung them along the track, and {a} and {b} are at the back of it, near {loc}.',
+    '{a} and {b} fall behind the group near {loc} on the walk to the mission.',
     'Twenty minutes out from the gates, {a} falls into step with {b} at {loc}.',
     'Out at {loc}, with the castle behind them and nothing else to look at, {a} and {b} are talking.',
     '{a} and {b} take {loc} slowly on purpose, and let the others get ahead of them.',
@@ -1475,13 +1475,13 @@ function _mode(s, cast) {
  * where it does.
  */
 const ESTABLISH_SINGLE = [
-  '{loc}, {when}, and the person worth watching in it is {a}.',
-  '{when}, at {loc}, and whatever is going on with {a} is going on quietly.',
-  '{a} is at {loc}, {when}, and not making much of being there.',
-  'At {loc}, {when}. {a} is in the middle of something and not advertising it.',
-  '{when}. {a} is at {loc}, turning something over and in no hurry to be interrupted.',
-  '{loc}, {when}. {a} has come here to think, and it shows.',
-  '{when}, and {a} has {loc} to themselves, which is plainly the point.',
+  '{a} pauses at {loc}, {when}, while the rest of the castle carries on nearby.',
+  '{a} steps into {loc}, {when}, and keeps their voice low.',
+  '{a} stays near {loc}, {when}, watching the others come and go.',
+  'At {loc}, {when}, {a} waits until the nearby conversation has finished.',
+  '{a} stops at {loc}, {when}, away from the busiest part of the castle.',
+  '{a} reaches {loc}, {when}, and takes a moment before returning to the group.',
+  '{a} moves to {loc}, {when}, where the others are less likely to interrupt.',
 ];
 // ── WIDENED (fix round 1, C1b) ────────────────────────────────────────
 //
@@ -1823,7 +1823,7 @@ const CONSEQ_TESTING = {
     '{other} came off that test trusting {topic} a shade more than before — a small thing, but {topic} passed it clean.',
     'Whatever {other} was probing for, {topic} did not give it, and {other} files {topic} on the safer side of the ledger tonight.',
     '{other} set the test and {topic} walked through it without ever noticing there had been one. That is the best a test like this does.',
-    'The check came back clean. {other} is no less watchful in general; about {topic}, specifically, {other} is easier.',
+    '{other} finds no reason to doubt {topic} after the check.',
     '{other} got the reassurance {other} went looking for: on this evidence, {topic} is exactly who {topic} appears to be.',
   ],
   failed: [
@@ -1841,11 +1841,11 @@ const CONSEQ_TESTING = {
     '{other} tried it once too plainly and {topic} caught it. There is no running that particular test on {topic} again.',
   ],
   inconclusive: [
-    '{other} designed the test and got no verdict from it — {other} knows exactly as much about {topic} as at breakfast, and resents the hours.',
-    'The check came back neither way. {topic} is still an open question to {other}, only now a more annoying one.',
-    '{other} could read it as {topic} passing or {topic} failing, and did, both, to no conclusion.',
-    'Nothing about {topic} moved. {other} put the test down still not knowing the one thing {other} wanted to know.',
-    'The test settled nothing. {other} keeps {topic} exactly where {topic} was — unanswered.',
+    '{other} found no evidence that either cleared or implicated {topic}.',
+    '{other} learned nothing conclusive about {topic}; nobody would confirm or contradict {topic}’s account.',
+    'The answers left {other} no more certain about {topic} than before.',
+    '{other} still cannot decide whether {topic}’s account is reliable.',
+    'The check produced no useful conclusion about {topic}.',
   ],
 };
 // A test's RESULT, coarsened from each event's branch labels. SPOTTED = the
@@ -2402,6 +2402,27 @@ const CONSEQ_SEAT_LOSS = {
     'For {a}, {topic} being gone is the shape the whole evening bent around — carried, not spoken, and none the lighter for it.',
   ],
 };
+
+const CONSEQ_SECRET_CONFIDENCE = {
+  kept: [
+    '{a} trusts {b} more because {b} kept the confidence about {topic}.',
+    '{topic} remains a private suspicion shared only by {a} and {b}, strengthening their trust.',
+    '{b} proves that {a} can discuss {topic} without the conversation travelling further.',
+    'Keeping the confidence about {topic} brings {a} and {b} closer.',
+  ],
+  leakedAccident: [
+    '{a} trusts {b} less after the private suspicion about {topic} spreads by accident.',
+    'The accidental leak about {topic} damages the trust between {a} and {b}.',
+    '{b} apologises, but {a} now knows that anything said about {topic} may travel.',
+    'The confidence about {topic} is no longer private, and {a} holds {b} responsible.',
+  ],
+  leakedDeliberate: [
+    '{a} trusts {b} far less after {b} deliberately trades the suspicion about {topic}.',
+    'Using {topic} as bargaining information breaks the confidence between {a} and {b}.',
+    '{b} gains an opening with someone else and loses {a}’s trust over {topic}.',
+    'The deliberate leak about {topic} turns a private confidence into a betrayal.',
+  ],
+};
 const AW_OWNED = new Set(['counted-my-own', 'alone-with-it']);
 const AW_BLAMED = new Set(['blamed-the-loudest']);
 const AW_DEFENDED = new Set(['defended-the-vote']);
@@ -2471,6 +2492,7 @@ const TOPIC_CONFIG = {
   'after-wrong': { reaction: false, dir: _afterWrongDir, conseq: CONSEQ_AFTER_WRONG },
   'after-right': { reaction: false, dir: _afterRightDir, conseq: CONSEQ_AFTER_RIGHT },
   'seat-loss': { dir: _seatLossDir, conseq: CONSEQ_SEAT_LOSS },
+  'secret-confidence': { reaction: false, conseq: CONSEQ_SECRET_CONFIDENCE },
 };
 
 // The set of event ids that have been reworked to record a concrete topic.
@@ -2517,7 +2539,8 @@ const TOPIC_READY_CALLBACK = ['callback-recognized', 'callback-old-alliance-refo
 // night-the-seat-they-had (night) share the seat-loss grief pool.
 /* eslint-disable-next-line */
 const TOPIC_READY_AFTERMATH = ['after-the-room-got-it-wrong', 'after-the-room-got-it-right', 'after-the-empty-seat', 'night-the-seat-they-had'];
-export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK, ...TOPIC_READY_AFTERMATH]);
+const TOPIC_READY_TRUST = ['trust-secret-swap'];
+export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK, ...TOPIC_READY_AFTERMATH, ...TOPIC_READY_TRUST]);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed
@@ -2533,6 +2556,106 @@ function _topicConsequence(s, subs, key, used, cfg, tone) {
     || (cfg.conseq && Object.values(cfg.conseq)[0]) || [];
   const say = _fill(_pickUnique(pool, key + '|tconseq', used, 'tconseq'), subs);
   return { text: say, say, mark: null, tone };
+}
+
+/** A plain closing sentence sourced from the scene's visible receipts. */
+function _receiptConsequence(s, subs, tone, key, used) {
+  const chips = Array.isArray(s.chips) ? s.chips : [];
+  const lines = [];
+  const seen = new Set();
+  for (const chip of chips) {
+    if (!chip || !chip.a || !chip.b) continue;
+    const pair = [chip.a, chip.b].sort().join('|') + '|' + chip.type;
+    if (seen.has(pair)) continue;
+    seen.add(pair);
+    if (chip.type === 'suspicion') {
+      const pool = chip.dir > 0 ? [
+        '{a} leaves more suspicious of {b}.',
+        '{b} now concerns {a} more than before.',
+        '{a} adds {b} to the names they intend to watch closely.',
+        'The conversation gives {a} another reason to doubt {b}.',
+      ] : [
+        '{a} leaves less suspicious of {b}.',
+        '{b} now concerns {a} less than before.',
+        '{a} removes some of the doubt they had attached to {b}.',
+        'The conversation makes {a} more willing to trust {b}.',
+      ];
+      lines.push(_fill(_pickUnique(pool, key + '|receipt|susp|' + pair, used,
+        'receipt-susp'), chip));
+    } else if (chip.type === 'bond') {
+      const pool = chip.dir > 0 ? [
+        '{a} and {b} trust each other more after the conversation.',
+        'The exchange brings {a} and {b} closer.',
+        '{a} and {b} leave with more confidence in each other.',
+        'What happened here strengthens the trust between {a} and {b}.',
+      ] : [
+        '{a} and {b} trust each other less after the conversation.',
+        'The exchange creates distance between {a} and {b}.',
+        '{a} and {b} leave less confident in each other.',
+        'What happened here weakens the trust between {a} and {b}.',
+      ];
+      lines.push(_fill(_pickUnique(pool, key + '|receipt|bond|' + pair, used,
+        'receipt-bond'), chip));
+    }
+  }
+  let say = lines.slice(0, 2).join(' ');
+  if (!say) {
+    const pool = s.closedNow ? [
+      'The conversation ends there.',
+      'They say nothing further about it.',
+      'That is the last either of them says on the subject.',
+      'The discussion stops before anyone else joins them.',
+    ] : (subs.b && subs.b !== subs.a) ? [
+      '{a} and {b} leave without reaching an agreement.',
+      '{a} and {b} end the conversation with the question unsettled.',
+      'Neither {a} nor {b} changes their position before they leave.',
+      '{a} and {b} stop talking before either persuades the other.',
+    ] : [
+      '{a} reaches no firm conclusion before leaving.',
+      '{a} leaves the question unresolved for now.',
+      '{a} decides they do not yet have enough information to act.',
+      '{a} returns to the group without settling the question.',
+    ];
+    say = _fill(_pickUnique(pool, key + '|receipt|fallback', used,
+      'receipt-fallback'), subs);
+  }
+  return { text: say, say, mark: null, tone };
+}
+
+/**
+ * Put the recorded subject into the action itself when an older event line
+ * assumes context the viewer does not have. These are plain orientation
+ * sentences, not new facts: each one says only what `topicKind` already means.
+ */
+function _groundedAction(s, subs) {
+  const line = String(s.line || '').trim();
+  if (!subs.topic || line.includes(subs.topic)) return line;
+  const leads = {
+    'road-third-name': '{a} brings up {topic} on the walk.',
+    'road-suspect-walk': '{other} watches how {topic} behaves on the walk.',
+    /* viewer phrase */ 'road-cover': '{a} rehearses what to say about {topic}.',
+    /* viewer phrase */ 'road-cover-back': '{a} checks whether their account of {topic} survived the day.',
+    'road-walk-test': '{other} uses the walk to test {topic}.',
+    'suspicion-third': '{a} raises a concern about {topic}.',
+    'testing-probe': '{other} checks what {topic} has said and done.',
+    /* viewer phrase */ 'cover-deflect': '{a} tries to redirect suspicion toward {topic}.',
+    /* viewer phrase */ 'cover-blend': '{a} uses the grief around {topic} to appear Faithful.',
+    /* viewer phrase */ 'cover-account': '{a} reviews their account of {topic}.',
+    /* viewer phrase */ 'cover-weight': '{a} considers how to keep hiding {topic}.',
+    'grief-loss': '{a} is still reacting to the loss of {topic}.',
+    'grief-vigil': '{a} cannot stop thinking about {topic}.',
+    'romance-bond': '{other} and {topic} confront what is happening between them.',
+    'romance-suspicion': '{other} questions whether {topic} can be trusted.',
+    'callback-history': '{a} brings up their previous-season history with {topic}.',
+    'callback-warning': '{a} shares what earlier seasons taught them about {topic}.',
+    'callback-envy': '{a} asks what the others know about {topic} from previous seasons.',
+    'after-wrong': '{a} reconsiders the vote that banished {topic}.',
+    'after-right': '{a} reconsiders the evidence that exposed {topic} as a Traitor.',
+    'seat-loss': '{a} reacts to the empty place left by {topic}.',
+    'secret-confidence': '{a} tells {b} a private suspicion about {topic}.',
+  };
+  const lead = leads[s.topicKind];
+  return lead ? _fill(lead, subs) + ' ' + line : line;
 }
 
 /**
@@ -2570,7 +2693,7 @@ const CLOSE_BY_SENSE = {
     'For {names}, it closes here, and it closes quietly. None of it is going to the Round Table tonight.',
     'For {names}, it stops — not resolved, which would take longer, but finished, which only takes somebody deciding.',
     'For {names}, that is where it ends, and it ends without anybody having to be told it has.',
-    'For {names}, it is over, and it is over in the useful way: nobody owes anybody an account of it.',
+    'For {names}, the conversation ends here. Neither plans to raise the subject at the Round Table.',
     'For {names}, it goes no further. Whatever it was going to cost, it has finished costing.',
   ],
   cracked: [
@@ -2814,6 +2937,13 @@ const RECALL_LEAD_TODAY_TOPIC = [
   'The same subject, {topic}, come round again the same afternoon.',
   'Back on {topic} within the hour, sooner than intended.',
   '{topic} again, and the first go had barely finished cooling.',
+];
+
+const RECALL_LEAD_RECORDED = [
+  'This continues an earlier conversation.',
+  'They have discussed this before.',
+  'This is not the first time the subject has come up.',
+  'The conversation has a history.',
 ];
 
 /**
@@ -4148,15 +4278,13 @@ function _stitch(s, tail) {
   if (s.citation) {
     return '<div class="dy-stitch">'
       + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'Back to' + _tabs(s)
-      + '</div>'
-      + '<p class="dy-stitch-t">' + _esc(s.citation) + '</p></div>';
+      + '</div></div>';
   }
   const prior = [...new Set(s.priorDays || [])].sort((a, b) => a - b);
   if (prior.length) {
     return '<div class="dy-stitch">'
       + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'The same story on' + _tabs(s)
-      + '</div>'
-      + '<p class="dy-stitch-t">' + _esc(tail) + '</p></div>';
+      + '</div></div>';
   }
   return '<div class="dy-stitch">'
     + '<div class="dy-stitch-k">' + _ic('needle', 12) + 'Later the same day</div>'
@@ -4256,10 +4384,11 @@ function _composeScene(s, key, used, cast) {
 
   const audience = [
     { kind: 'establish', text: establish, tone: 'neutral' },
-    { kind: 'action', text: String(s.line || '').trim(), tone: 'neutral' },
+    { kind: 'action', text: topicCfg ? _groundedAction(s, subs)
+      : String(s.line || '').trim(), tone: 'neutral' },
   ];
   const carried = !s.opened;
-  if (carried) {
+  if (carried && (s.citation || (s.priorDays || []).length)) {
     // THE LEAD AND THE TAIL ARE SEPARATE because the card draws them in two
     // places — the lead as narration, the tail inside the element carrying
     // the day tabs — and the transcript has to read back the whole sentence.
@@ -4291,56 +4420,30 @@ function _composeScene(s, key, used, cast) {
     // legacy scenes (no recorded topic) keep the subject-free pools below.
     const leads = subs.topic
       ? (tail.days ? RECALL_LEAD_DAYS_TOPIC : RECALL_LEAD_TODAY_TOPIC)
-      : mode === 'group'
-        ? (tail.days
-          ? (warmCarry ? RECALL_LEAD_DAYS_GROUP_WARM : RECALL_LEAD_DAYS_GROUP)
-          : (warmCarry ? RECALL_LEAD_TODAY_GROUP_WARM : RECALL_LEAD_TODAY_GROUP))
-        : (b ? (tail.days
-          ? (warmCarry ? RECALL_LEAD_DAYS_WARM : RECALL_LEAD_DAYS)
-          : (warmCarry ? RECALL_LEAD_TODAY_WARM : RECALL_LEAD_TODAY))
-          : (tail.days ? RECALL_LEAD_DAYS_SOLO : RECALL_LEAD_TODAY_SOLO));
+      : RECALL_LEAD_RECORDED;
     const lead = _fill(_pickUnique(leads, key + '|lead', used), subs);
     // FILLED, and this line is why the placeholder guard in tests/tr-vp.test.js
     // exists: `UNSPOKEN` carries a `{d}` and an earlier draft of this function
     // dropped the `_fill` when the tail became a record instead of a string, so
     // the screen printed "it has been running since day {d}".
     const tailText = _fill(tail.text, subs);
-    audience.push({ kind: 'action', role: 'recall', lead, tail: tailText,
-      text: lead + ' ' + tailText, tone: 'neutral' });
+    // A second beat on the same day needs no separate recap card. The action
+    // and grounded consequence already name the subject; adding "Later the
+    // same day" plus a generic "this again" sentence only repeats them and
+    // creates an antecedent-free paragraph. Keep recall for earlier DAYS,
+    // where the viewer genuinely needs the history.
+    if (tail.days) {
+      audience.push({ kind: 'action', role: 'recall', lead, tail: tailText,
+        text: lead + ' ' + tailText, tone: 'neutral' });
+    }
   }
-  // ── THE REACTION ANSWERS THE ACTION, WHERE THE EVENT SAYS SO ─────────
+  // ── THE CONSEQUENCE ANSWERS THE RECORDED ACTION ───────────────────────
   //
-  // `_reactClass` keys on the scene's FAMILY, and one family holds scenes with
-  // nothing in common: `grief-empty-chair` is mourning and
-  // `grief-suspicion-of-timing` is two people doing forensics over breakfast,
-  // and both are `family: 'grief'`. Both were therefore answered out of the
-  // grief-comfort register, which produced the reviewer's rendered card —
-  // "{b} sits down beside {a} and stays until {a} has stopped" printed under an
-  // interrogation. Stopped WHAT: the comfort line has no antecedent to attach
-  // to, because the scene contained no crying.
-  //
-  // `actionPurpose` (js/tr/castle/voice.js) is an explicit (eventId, branch)
-  // table naming the scenes whose family register answers the wrong stimulus.
-  // It returns null for everything else, so an unlisted scene keeps the pool it
-  // has always had and this can only ever correct a card.
-  // A grounded event whose config drops the reaction skips the generic card:
-  // its action line already carries the exchange, and a second generic reaction
-  // on top of it names the wrong subject or contradicts the line above it.
-  if (!(topicCfg && topicCfg.reaction === false)) {
-    const voice = _voice(b || a);
-    const purpose = b ? actionPurpose(s) : null;
-    const reactPool = b
-      ? (tone === 'adverse' ? REACT_ADVERSE : REACT)[_reactClass(s)][voice]
-      : (mode === 'solo' ? REACT_SOLO[voice] : REACT_SINGLE[voice]);
-    const reactText = purpose
-      ? attributedLineInVoice(b, purpose, subs, { seed: key })
-      : _fill(_pickUnique(reactPool, key + '|react', used), subs);
-    audience.push({ kind: 'reaction', tone: b ? tone : 'neutral',
-      purpose: purpose || null, text: reactText });
-  }
+  // Grounded actions already contain the response that belongs to the event.
+  // A generic reaction here could name the wrong subject or contradict it.
   audience.push({ kind: 'consequence', ...(topicCfg
     ? _topicConsequence(s, subs, key, used, topicCfg, tone)
-    : _consequenceText(s, subs, key, used, mode, tone)) });
+    : _receiptConsequence(s, subs, tone, key, used)) });
 
   const publicStream = [
     { kind: 'establish', tone: 'neutral',
@@ -4461,10 +4564,16 @@ function _pickUnique(pool, key, used, bucket) {
 
 /** The half of the recall card that says what it goes back to. */
 function _recallTail(s, key, used) {
-  if (s.citation) return { days: true, text: String(s.citation).trim() };
-  const prior = [...new Set(s.priorDays || [])];
-  if (prior.length) {
-    return { days: true, text: _pickUnique(UNSPOKEN, key + '|unspoken', used) };
+  // The current action carries the scene. Quoting an older event's entire
+  // sentence here can reintroduce vague prose and makes this scene depend on
+  // wording from another card. Preserve the real day link without replaying
+  // the old sentence, for grounded and legacy events alike.
+  if (s.citation || (s.priorDays || []).length) {
+    const days = [...new Set([...(s.priorDays || []), ...(s.citedDays || [])])]
+      .sort((a, b) => a - b);
+    return { days: true, text: days.length === 1
+      ? `The earlier discussion happened on day ${days[0]}.`
+      : `The same concern also surfaced on days ${days.join(', ')}.` };
   }
   return { days: false, text: _pickUnique(SAME_DAY, key + '|sameday', used) };
 }
@@ -4532,7 +4641,7 @@ function _beatCard(s, beat, key) {
     body += '<div class="dy-place">' + _esc(s.heading) + '</div>';
   }
   body += '<p class="dy-say">'
-    + _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text)) + '</p>';
+    + _esc(beat.say || beat.text) + '</p>';
   if (beat.kind === 'establish') {
     body += _faces(s.participants);
   }
@@ -4705,7 +4814,7 @@ function _sceneCard(s, stream, key) {
   // sits below a hairline in its own block; the impact chips close the card.
   // One scrollable card still — the separation is structural, not a click.
   for (const beat of stream) {
-    const txt = _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text));
+    const txt = _esc(beat.say || beat.text);
     if (beat.kind === 'consequence') {
       body += '<div class="dy-outcome"><p class="dy-say dy-say-out">' + txt + '</p>';
       if (!heard && s.closedNow && !(s.topic && TOPIC_CONFIG[s.topicKind])) {

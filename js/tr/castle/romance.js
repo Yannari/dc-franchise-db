@@ -243,7 +243,7 @@ const SPARK_LINES = {
     'It was mutual for exactly one of them, and {a} is the one who knows that.',
     '{a} said goodnight, went upstairs, and came back down twice for things {a} did not need.',
     '{b} has no idea. {a} would very much like to keep it that way for now.',
-    'Whatever this is, {a} is in it on {a}’s own so far, and it is not comfortable in there.',
+    '{a} is interested in {b}; {b} has not noticed, and {a} is not ready to say it aloud.',
     '{a} laughed at something that was not funny and heard {a}’s own laugh from outside it.',
     'Nothing about the evening was reciprocal, which {a} has decided not to think about.',
   ],

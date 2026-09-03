@@ -1551,40 +1551,22 @@ registerEvent({
 // different consequences — none of them cosmetic.
 const SECRET_SWAP_LINES = {
   kept: [
-    '{b} sat on what {a} told them. It never came up again, anywhere.',
-    'Whatever {a} said, it went into {b} and stayed there.',
-    '{b} had two chances to spend it and did not take either of them.',
-    'Weeks later {a} would still be the only other person who knew, and {a} would know that.',
-    '{b} did not mention it again, not once, not even to {a}, which is the harder half.',
-    'It has been four days and the castle is exactly as ignorant as it was on the first night.',
-    '{b} had somewhere very useful to put it and did not put it there.',
-    'Whatever {b} is, {b} is a person you can hand a thing to.',
-    '{a} watched two conversations where it would have helped {b} to say it. {b} did not say it.',
-    'It is still {a}’s, which is a rarer sentence in this building than it sounds.',
+    '{a} privately told {b} that {a} trusted {target} least. {b} kept the suspicion confidential.',
+    '{b} had two chances to repeat {a}’s suspicion of {target} and refused both.',
+    '{a} admitted distrusting {target}. Days later, {b} remained the only person who knew.',
+    '{b} never repeated what {a} had said about {target}, even when it would have helped {b}.',
   ],
   leakedAccident: [
-    '{b} didn\'t mean to repeat it — it just slipped out in a different conversation entirely.',
-    'The secret got out through {b}, and {b} looked as surprised as anyone that it had.',
-    '{b} assumed everyone already knew, said so out loud, and discovered they had not.',
-    'It came out of {b} as an aside, in a room {a} was not in, and never went back in.',
-    '{b} used it to make a point about something else entirely and did not notice using it.',
-    'It came back to {a} from {who} before lunch, which is {n} routes too many.',
-    '{b} said it while thinking about something else, which is how most of these go.',
-    '{b} apologised the moment {b} realised, which did not put any of it back.',
-    'Nobody meant any harm. There is a great deal of harm about anyway.',
-    '{b} thought it had been general knowledge. It had been {a}’s.',
+    '{b} accidentally told {who} that {a} trusted {target} least, then realised it had been confidential.',
+    'While speaking to {who}, {b} used {a}’s suspicion of {target} as an example and exposed it by mistake.',
+    '{b} assumed {who} already knew that {a} distrusted {target}. They did not.',
+    '{a}’s private suspicion of {target} slipped into {b}’s conversation with {who}.',
   ],
   leakedDeliberate: [
-    '{b} traded {a}\'s secret to somebody else for something better.',
-    '{b} decided {a}\'s secret was worth more spent than kept.',
-    '{b} waited until it would do the most good — for {b} — and then told {who}.',
-    '{b} did the arithmetic on {a}\'s secret and sold at the top.',
-    '{b} held it for two days, which is not carelessness, and then spent it in one sentence.',
-    'It bought {b} exactly one favour, and {b} had checked the price beforehand.',
-    '{b} chose the room, the hour and the audience, and then told them.',
-    '{a} will work out where it came from eventually. {b} has priced that in too.',
-    'It was told with {a}’s name attached, deliberately, because the name was half the value.',
-    '{b} did not enjoy doing it, which changes nothing at all about what {b} did.',
+    '{b} deliberately told {who} that {a} trusted {target} least, hoping the information would buy influence.',
+    '{b} traded {a}’s private suspicion of {target} to {who} in return for their trust.',
+    '{b} waited for a private moment with {who}, then revealed that {a} distrusted {target}.',
+    '{b} named both {a} and {target} when telling {who}, making the source of the suspicion unmistakable.',
   ],
 };
 
@@ -1604,6 +1586,7 @@ registerEvent({
   advancesThread: true,
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
+    if ((ctx.living || []).length < 3) return 0;
     const [a, b] = ctx.actors;
     return getBond(a, b) >= 1 ? 2 : 0;
   },
@@ -1611,6 +1594,7 @@ registerEvent({
     const api = sceneApi(ctx, 'trust-secret-swap');
     const sceneWhy = 'traded something they had not told anyone';
     const [a, b] = ctx.actors;
+    const target = whoTheyTold(a, [a, b], ctx.living, 1)[0];
     const st = pStats(b);
     const keepScore = (st.loyalty / 10) * 0.6 + (st.temperament / 10) * 0.4;
     const accidentScore = (1 - st.social / 10) * 0.5 + 0.15;
@@ -1635,7 +1619,11 @@ registerEvent({
     // Deliberate is ONE person, chosen; accidental spreads. Neither draws rng
     // (see `whoTheyTold`), so this cannot reroute a season.
     const heard = leaked
-      ? whoTheyTold(b, [a, b], ctx.living, branch === 'leakedDeliberate' ? 1 : 3)
+      ? (whoTheyTold(b, [a, b, target], ctx.living,
+        branch === 'leakedDeliberate' ? 1 : 3).length
+          ? whoTheyTold(b, [a, b, target], ctx.living,
+            branch === 'leakedDeliberate' ? 1 : 3)
+          : [target])
       : [];
     // STILL `pick(rng, ...)`, AND THAT IS LOAD-BEARING. Swapping it for the
     // hashed `lineFor` would remove an rng draw from the castle stream and
@@ -1644,12 +1632,13 @@ registerEvent({
     // length it was; only two of its sentences now carry substitutions.
     const line = pick(rng, SECRET_SWAP_LINES[branch])
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b)
+      .replace(/\{target\}/g, target)
       .replace(/\{who\}/g, namesPhrase(heard)).replace(/\{n\}/g, countWord(heard.length));
     let bondDelta = branch === 'kept' ? 1 : branch === 'leakedAccident' ? -1 : -3;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     if (leaked && heard.length) {
-      const claim = api.recordClaim(a, `${a} told ${b} something ${a} had told nobody else`,
-        { listeners: [b], channel: 'conversation', source: sceneWhy });
+      const claim = api.recordClaim(a, `${a} told ${b} that ${a} trusted ${target} least`,
+        { about: target, listeners: [b], channel: 'conversation', source: sceneWhy });
       for (const to of heard) {
         api.propagate(claim.id, b, to,
           { channel: 'conversation', source: `${b} repeated what ${a} said in confidence` });
@@ -1659,7 +1648,8 @@ registerEvent({
     const t = existing
       ? api.advanceArc(existing.id, line, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line });
-    return { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: target,
+      topicKind: 'secret-confidence', threadId: t?.id, bondDelta };
   },
 });
 

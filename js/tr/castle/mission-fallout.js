@@ -464,7 +464,7 @@ const OTHER_HALF_LINES = {
     '{a} and {b} put {ta} and {tb} side by side on the road home and the two afternoons fitted together without a seam.',
     'Two halves of {mission}, told by two people who had not spoken since the briefing, and nothing in either one contradicted the other.',
     '{a} described {ta}’s day, {b} described {tb}’s, and by the gate they had one afternoon between them instead of two.',
-    'It took the whole walk, but {a} and {b} got {mission} straight — and {tier}, on both sides of it.',
+    '{a} and {b} compared their parts of {mission} on the walk home. Their accounts matched, and {tier}.',
   ],
   traded: [
     '{a} gave {b} what {ta} had seen and took what {tb} had seen in exchange, and both of them came home with a name.',
@@ -1299,7 +1299,7 @@ const LONG_WALK_LINES = {
     '{a} went back through the afternoon on the walk home the way people go back through a receipt.',
     'Somewhere on the road {a} worked out which part of {mission} was actually going to matter tonight.',
     '{a} walked home from {mission} rebuilding the afternoon from the start, twice, until the order stopped changing.',
-    'Nobody got anything out of {a} on that road, because {a} was busy, and what {a} was busy with was everybody else.',
+    '{a} spent the road home reviewing how each player had behaved during {mission} and said nothing about it.',
   ],
   'nothing-doing': [
     '{a} walked home from {mission} thinking about nothing in particular, which was the most restful hour of the week.',

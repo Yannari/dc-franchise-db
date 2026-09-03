@@ -879,7 +879,7 @@ const TIMELINE_LINES = {
     '{a} and {b} laid out {c}’s account side by side, and it did not line up cleanly.',
     'Neither {a} nor {b} could quite make {c}’s morning add up the way {c} told it.',
     '{a} remembered {c} in the kitchen, {b} remembered {c} nowhere near it, and both of them were sure.',
-    'Between them, {a} and {b} could account for every hour of {c}’s day except the one that mattered.',
+    '{a} and {b} compared what they knew about {c} and found one unexplained hour in {c}’s account.',
     '{b} walked {a} through where {c} said they had been, and it took two attempts to get to the end of it.',
     '{a} counted it out on their fingers for {b}. The hours were there; {c} was not in all of them.',
   ],
@@ -1043,7 +1043,7 @@ const BODY_READ_LINES = {
   'caught-them-looking': [
     '{b} looked up and found {a} already looking, and neither of them pretended otherwise.',
     '“You have been watching me since Tuesday,” {b} said to {a}. “Get on with it.”',
-    '{b} caught {a} at it in the window’s reflection, which is a worse way to find out.',
+    '{b} saw {a} watching them in the window’s reflection and confronted {a} about it.',
     '{a} had been careful about it. Not careful enough — {b} said so, in front of two other people.',
     '{b} moved seats, deliberately, so that {a} would have to turn round to keep doing it.',
     '“What is it you think you can see,” {b} asked {a}, and did not ask it kindly.',
@@ -1642,7 +1642,7 @@ const MISREAD_LINES = {
   misread: [
     '{a} clocked a completely harmless habit of {b}’s and decided it meant something.',
     '{b} does that thing with their sleeve when they are bored. {a} has decided it is not boredom.',
-    '{a} watched {b} do something {b} has done every day of their life and read a confession into it.',
+    '{a} watched {b} straighten the same sleeve twice and mistook the nervous habit for guilt.',
     'It was the way {b} said good morning. {a} could not have told you what was wrong with it, only that something was.',
     '{b} laughed a beat late at something and {a} built an entire theory on the beat.',
     '{a} decided {b} blinks too much when {b} is lying, having never once seen {b} lie.',

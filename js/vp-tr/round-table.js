@@ -1636,7 +1636,7 @@ const ANNOUNCE_FAITHFUL = [
 const REACT_TRAITOR_PUBLIC = [
   'The table comes apart — relief and fury at once, and under both the same cold arithmetic: how many are left.',
   'For a moment nobody can look at anybody. They were right, and being right feels like nothing they expected it to.',
-  'The room believes itself for the first time all week and does not know what to do with the feeling.',
+  'For the first time all week a read has paid off, and the faces round the table do not quite know what to do with being right.',
   'Somebody starts to celebrate and thinks better of it. There are still chairs at this table that have not been turned over.',
 ];
 const REACT_FAITHFUL_PUBLIC = [

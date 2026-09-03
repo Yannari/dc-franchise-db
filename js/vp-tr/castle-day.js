@@ -170,6 +170,7 @@ const FAMILIES = {
   callback: { colour: '#ac8fc8' },
   testing: { colour: '#5fb6c0' },
   journey: { colour: '#d9834f' },
+  confrontation: { colour: '#e0703a' },
   unspun: { colour: '#b6ac96' },
 };
 function _fam(scene) {
@@ -1870,6 +1871,45 @@ function _testDir(s) {
   return 'inconclusive';
 }
 
+// CONFRONTATION (js/tr/castle/confrontation.js). How the open clash left the
+// person it was aimed at (`{topic}`). Branch names map one-to-one; the generic
+// fallback keeps a card that grows a new branch from ever going blank.
+function _confrontDir(s) {
+  const b = String(s.branch || '');
+  if (b === 'cracked' || b === 'crumbled' || b === 'backfired') return 'exposed';
+  if (b === 'turned') return 'turned';
+  if (b === 'blew-up') return 'blew-up';
+  if (b === 'worked' || b === 'weathered' || b === 'overreached') return 'defended';
+  return 'held';
+}
+const CONSEQ_CONFRONT = {
+  held: [
+    '{a} got nothing out of {topic}, and the room saw {topic} take a direct hit without falling — which says something, just not the thing {a} wanted said.',
+    '{topic} held, so the accusation proved nothing; what it proved is that {a} and {topic} are enemies out loud now.',
+    'Whatever {a} hoped to shake loose, {topic} did not give it up. The two of them are a known feud from here on.',
+  ],
+  exposed: [
+    '{topic} came off worse for it — the flinch is what the room keeps, not the words — and {a} knows exactly what that bought.',
+    'The room will remember {topic} coming apart more than anything {topic} actually said, and it is watching {topic} harder for it.',
+    '{topic} did not hold, and a room that watches for exactly that now has its reason to keep watching {topic}.',
+  ],
+  turned: [
+    'It is {a} on the back foot now, not {topic}. Whatever {a} walked in carrying, {topic} handed straight back.',
+    '{a} meant to corner {topic} and ended up explaining themselves, and the room noticed which way that went.',
+    '{topic} turned it clean around, and now it is {a} the room is quietly wondering about.',
+  ],
+  'blew-up': [
+    'Nothing about {topic} got settled — but {a} and {topic} are a declared war now, and the rest of the room has to pick a side or work hard to look like it has not.',
+    'Two people who plainly cannot stand each other, out loud, with a vote coming: {a} and {topic} just made the week harder for the room around them.',
+    'The fight told the room nothing about {topic} and everything about {a} and {topic}, and none of it can be taken back.',
+  ],
+  defended: [
+    '{topic} came through it, and the room half-remembers who stood where while it happened.',
+    'Whatever was meant to land on {topic} did not, quite — {topic} is still standing and the room files that too.',
+    '{topic} weathered it, which is its own kind of answer, and not the one that was wanted.',
+  ],
+};
+
 // COVER (Traitor-only). Three shapes, all closing on whether the Traitor got
 // away with it and NAMING the concrete subject the generic close never did.
 // {a} is always the Traitor (every cover event drives from the acting player;
@@ -2029,7 +2069,7 @@ const CONSEQ_GRIEF_VIGIL = {
   mourned: [
     'The empty place where {topic} sat is the arithmetic {a} keeps doing, and it comes out the same every time.',
     'For {a}, the fact of {topic} being gone is the shape the whole day bent around.',
-    '{a} carried {topic} out of everyone’s sight for a while, and put it down no lighter than it was picked up.',
+    '{a} took the grief over {topic} off somewhere private, and it weighed exactly the same coming back.',
     '{a} keeps listening for {topic} in a building with one fewer person in it, and knows {a} is doing it.',
     'Grief for {topic} came for {a} in private, and {a} let it, and then folded it away where the room would not see.',
   ],
@@ -2493,6 +2533,7 @@ const TOPIC_CONFIG = {
   'after-right': { reaction: false, dir: _afterRightDir, conseq: CONSEQ_AFTER_RIGHT },
   'seat-loss': { dir: _seatLossDir, conseq: CONSEQ_SEAT_LOSS },
   'secret-confidence': { reaction: false, conseq: CONSEQ_SECRET_CONFIDENCE },
+  'confrontation': { dir: _confrontDir, conseq: CONSEQ_CONFRONT },
 };
 
 // The set of event ids that have been reworked to record a concrete topic.
@@ -2540,7 +2581,10 @@ const TOPIC_READY_CALLBACK = ['callback-recognized', 'callback-old-alliance-refo
 /* eslint-disable-next-line */
 const TOPIC_READY_AFTERMATH = ['after-the-room-got-it-wrong', 'after-the-room-got-it-right', 'after-the-empty-seat', 'night-the-seat-they-had'];
 const TOPIC_READY_TRUST = ['trust-secret-swap'];
-export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK, ...TOPIC_READY_AFTERMATH, ...TOPIC_READY_TRUST]);
+// confrontation family (confrontation.js) — an open clash; topic = the person
+// it was aimed at, and the scene closes on how it left them.
+const TOPIC_READY_CONFRONTATION = ['confront-to-the-face'];
+export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK, ...TOPIC_READY_AFTERMATH, ...TOPIC_READY_TRUST, ...TOPIC_READY_CONFRONTATION]);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed
@@ -2653,6 +2697,7 @@ function _groundedAction(s, subs) {
     'after-right': '{a} reconsiders the evidence that exposed {topic} as a Traitor.',
     'seat-loss': '{a} reacts to the empty place left by {topic}.',
     'secret-confidence': '{a} tells {b} a private suspicion about {topic}.',
+    'confrontation': '{a} takes it straight to {topic}, in front of the room.',
   };
   const lead = leads[s.topicKind];
   return lead ? _fill(lead, subs) + ' ' + line : line;

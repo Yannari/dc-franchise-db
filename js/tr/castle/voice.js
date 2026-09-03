@@ -964,6 +964,10 @@ export const ADVERSE_BRANCHES = new Set([
   // The check leaked, or found a room that would not be drawn. In both the
   // person tested comes away knowing they were tested:
   'got-back-to-them', 'nobody-would-say',
+  // CONFRONTATION (confrontation.js). The person it was aimed at came off
+  // badly: they folded, or it detonated in the open. (`turned` is already
+  // above; `held` is benign.)
+  'cracked', 'blew-up',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.

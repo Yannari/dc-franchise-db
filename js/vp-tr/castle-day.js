@@ -2866,6 +2866,7 @@ const DY_CSS = `
   text-transform:uppercase;font-size:9.5px;letter-spacing:.12em;
   color:rgba(236,227,208,.72)}
 .dy-chip-ar{font-size:10px}
+.dy-chip-note{margin-left:2px;font-family:var(--dy-hand);font-style:italic;font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:rgba(236,227,208,.5)}
 .dy-chip-up{border-color:rgba(122,178,122,.5);background:rgba(70,110,70,.18)}
 .dy-chip-up .dy-chip-ar{color:#8fd08f}
 .dy-chip-dn{border-color:rgba(208,110,110,.5);background:rgba(120,60,60,.18)}
@@ -3829,15 +3830,40 @@ const _SUSP_DIR = {
   'road-suspect-walk': { slipped: 1, hardened: 1, cleared: -1 },
 };
 function _suspicionChipFromRecord(s, isAudience, watcher) {
-  const map = _SUSP_DIR[s.topicKind];
-  if (!map || !s.topic) return null;
-  const dir = map[String(s.branch || '')];
-  if (!dir) return null;                           // a branch with no movement
+  // A HUNCH, NOT A BELIEF-BOARD MOVE. Castle scenes never write the deduction
+  // board — only the priced channels (missions, ballots, murders, the Seer) do.
+  // This chip shows what a scene made somebody FEEL about somebody, LABELLED as
+  // a read, so the viewer sees the daily suspicion without mistaking it for the
+  // hard evidence that decides the vote. Shown on every suspicion scene.
+  const fam = s.family || s.kind;
+  if (fam !== 'suspicion') return null;
   const doubter = s.speaker || (s.actors && s.actors[0])
     || (s.participants && s.participants[0]) || (s.parties && s.parties[0]);
   if (!doubter) return null;
+  // Observer safety: only the doubter's own layer (or the audience) sees the
+  // hunch. A player never sees another player's read.
   if (!isAudience && watcher !== doubter) return null;
-  return { type: 'suspicion', a: doubter, b: s.topic, dir };
+  // The person read: a named topic/third party the scene is about, else the
+  // person questioned to their face, else the other participant.
+  let subject = s.topic || s.about
+    || (s.respondent && s.respondent !== doubter ? s.respondent : null)
+    || (s.participants || s.parties || s.actors || []).find(n => n && n !== doubter)
+    || null;
+  if (!subject || subject === doubter) return null;
+  // Direction: the road topicKinds carry a per-branch table (some ease a read);
+  // otherwise a read HARDENS, unless the scene closed with the suspect walking
+  // away clean or a convincing denial, which EASES it.
+  let dir = 1;
+  const map = _SUSP_DIR[s.topicKind];
+  if (map && s.topic) {
+    dir = map[String(s.branch || '')];
+    if (!dir) return null;
+  } else {
+    const eased = (s.closedNow && s.sense === 'walked')
+      || /denied-convincingly|checked-out|cleared/.test(String(s.outcome || ''));
+    dir = eased ? -1 : 1;
+  }
+  return { type: 'suspicion', a: doubter, b: subject, dir };
 }
 
 /** One impact chip: the people (avatars) and which way the thing moved. */
@@ -3853,11 +3879,15 @@ function _chip(c) {
       + '</span>';
   }
   if (c.type === 'suspicion') {
-    return '<span class="dy-chip dy-chip-' + dirCls + '" data-k="susp">'
+    // Labelled a HUNCH, not a mechanical deduction delta — the read moved, the
+    // board did not. "reads harder" (a read forming) / "easing" (a doubt fading).
+    const word = c.dir < 0 ? 'easing' : 'reads harder';
+    return '<span class="dy-chip dy-chip-' + dirCls + '" data-k="susp" title="a read, not proof — the vote is decided by hard evidence">'
       + '<span class="dy-chip-av">' + _av(c.a, 20) + '</span>'
       + '<span class="dy-chip-to">→</span>'
       + '<span class="dy-chip-av">' + _av(c.b, 20) + '</span>'
-      + '<span class="dy-chip-t">suspicion <span class="dy-chip-ar">' + arrow + '</span></span>'
+      + '<span class="dy-chip-t">' + word + ' <span class="dy-chip-ar">' + arrow + '</span></span>'
+      + '<span class="dy-chip-note">a hunch</span>'
       + '</span>';
   }
   return '<span class="dy-chip dy-chip-' + dirCls + '" data-k="pop">'

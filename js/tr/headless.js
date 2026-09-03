@@ -1175,6 +1175,10 @@ function _castleRecord(ep, fired) {
       // the composer which grounded pool to draw its reaction/consequence from.
       topic: (c && typeof c.topic === 'string' && c.topic) ? c.topic : null,
       topicKind: (c && typeof c.topicKind === 'string' && c.topicKind) ? c.topicKind : null,
+      // The absent third party a suspicion scene is ABOUT, when the event named
+      // one (whisper/timeline/out-of-earshot). Lets the read chip point at the
+      // person suspected rather than the confidant.
+      about: (c && typeof c.about === 'string' && c.about) ? c.about : null,
     });
   }
 

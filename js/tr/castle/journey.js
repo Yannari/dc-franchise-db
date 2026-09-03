@@ -78,19 +78,6 @@ function _lastMurdered() {
   return null;
 }
 
-// DETERMINISTIC JITTER for a belief amount, WITHOUT drawing from the event's
-// rng. Consuming rng() here would shift every downstream scheduler draw for the
-// rest of the season — perturbing which scenes fire, not just the belief the
-// vote now reads. A hash of (observer, subject, ep) gives a stable, varied
-// 0..1 that keeps the scene-firing stream bit-identical; the ONLY sim change is
-// the belief itself feeding the vote, which is the intended effect.
-function _jitter(seedStr) {
-  let h = 2166136261;
-  const str = String(seedStr);
-  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return ((h >>> 0) % 1000) / 1000;
-}
-
 // ══════════════════════════════════════════════════════════════════════
 // journey-out — the walk away from the castle
 // ══════════════════════════════════════════════════════════════════════
@@ -357,24 +344,9 @@ registerEvent({
     // The thread is the PAIR's — what these two now share is that one of them
     // said a name to the other, which is a fact about the two of them.
     const { thread, cited } = arcContinue(api, 'suspicion', [a, b], ctx.ep, line, { source: sceneWhy });
-    // ── DEDUCTION WRITE: a road suspicion now feeds the vote ──────────────
-    // On the branches where the road actually RAISED a read of {c}, the doubter
-    // (and, when they agreed, the confidant) forms a REAL belief about {c}
-    // through the priced sceneEvidence channel — proportional to conviction and
-    // noisy, never a threshold. Nothing is written on the branches that found
-    // nothing (hedged/defended/would-not-talk). truthStatus 'unknown': the
-    // observer saw something real and cannot tell what it means (the common,
-    // committing case). Observer safety is the channel's: it is a's own read.
-    if (branch === 'agreed' || branch === 'named-somebody-else') {
-      const conviction = 0.24 + (pStats(a).intuition / 10) * 0.22 + _jitter(`${a}|${target}|${ctx.ep}|o`) * 0.16;
-      api.addBelief(a, target, conviction,
-        { source: `named ${target} on the road, out of earshot` });
-      if (branch === 'agreed') {
-        const shared = 0.2 + (pStats(b).intuition / 10) * 0.2 + _jitter(`${b}|${target}|${ctx.ep}|s`) * 0.14;
-        api.addBelief(b, target, shared,
-          { source: `agreed on the road that ${target} is the name for tonight` });
-      }
-    }
+    // A ROAD SUSPICION IS A HUNCH, NOT EVIDENCE — it moves the bond and shows a
+    // labelled read chip on the card, but it does NOT write the belief board.
+    // Only priced channels (missions, ballots, murders, the Seer) move the vote.
     return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
       topic: target, topicKind: 'road-third-name',
       threadId: thread?.id, cited, bondDelta };
@@ -1062,24 +1034,8 @@ registerEvent({
     const outcome = branch === 'cleared' ? 'denied-convincingly'
       : branch === 'slipped' ? 'confessed-unrelated' : null;
     if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
-    // ── DEDUCTION WRITE: the walk home moves a's real read of b ───────────
-    // slipped = a caught b's two accounts not matching (a real contradiction,
-    // recorded above) → suspicion of b rises hard. hardened = a believed none
-    // of b's clean answers → rises moderately. cleared = b convinced a → the
-    // read is lowered through the priced doubt channel. Proportional + noisy.
-    if (branch === 'slipped') {
-      const conviction = 0.35 + (pStats(a).intuition / 10) * 0.2 + _jitter(`${a}|${b}|${ctx.ep}|slip`) * 0.15;
-      api.addBelief(a, b, conviction,
-        { source: `caught ${b} giving two accounts of the same afternoon on one walk` });
-    } else if (branch === 'hardened') {
-      const conviction = 0.25 + (pStats(a).intuition / 10) * 0.15 + _jitter(`${a}|${b}|${ctx.ep}|hard`) * 0.12;
-      api.addBelief(a, b, conviction,
-        { source: `did not believe ${b}'s clean answers on the road back` });
-    } else if (branch === 'cleared') {
-      const doubt = 0.25 + _jitter(`${a}|${b}|${ctx.ep}|clear`) * 0.12;
-      api.lowerBelief(a, b, doubt,
-        { source: `${b} answered everything on the road home and a believed it` });
-    }
+    // The walk moves a's HUNCH about b (shown as a labelled read chip) and the
+    // bond — it does not write the belief board. The vote stays on hard evidence.
     // THE CONCRETE SUBJECT is the suspect being walked home: {b}, the person
     // {a} spent the road asking about. The composer closes on the doubt about
     // {b} by name.

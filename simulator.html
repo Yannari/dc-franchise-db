@@ -689,6 +689,15 @@
               </div>
             </div>
             <div class="form-group">
+              <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+                <input type="checkbox" id="cfg-tr-auto-double" style="width:14px;height:14px;margin-top:3px" checked onchange="saveConfig()">
+                <span>
+                  <span class="form-label" style="margin:0">Random double murders</span>
+                  <div class="hint hint-tight">On, the castle sometimes takes two in a night on its own. Off, a Double only happens if you pin one from the timeline — so the night count stays predictable.</div>
+                </span>
+              </label>
+            </div>
+            <div class="form-group">
               <label class="form-label">The pot</label>
               <input type="number" id="cfg-tr-pot" class="form-input" min="1000" max="500000" step="1000" value="120000" onchange="saveConfig()">
               <div class="hint hint-tight">The ceiling the missions are earning against. Nobody banked a penny of it until somebody walks out with the lot.</div>

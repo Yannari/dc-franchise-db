@@ -1596,6 +1596,9 @@ export function defaultConfig() {
     // holds up to `traitorCount` names and the engine tops up any it leaves.
     trTraitorMode: 'random',
     trChosenTraitors: [],
+    // Random double murders on by default; the Castle Options toggle turns them
+    // off for authors who would rather pin a Double when they want one.
+    trAutoDouble: true,
     trPotCeiling: 120000,
     auctionAwardsImmunity: true,  // Auction twist: when ON the auction awards the only immunity (replaces the challenge); when OFF it's a reward alongside a normal challenge
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour

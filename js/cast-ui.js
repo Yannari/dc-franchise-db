@@ -1018,6 +1018,7 @@ export function saveConfig() {
     // portrait grid, not a field.
     trTraitorMode: g('cfg-tr-traitor-mode')?.value || 'random',
     trChosenTraitors: seasonConfig.trChosenTraitors || [],
+    trAutoDouble: g('cfg-tr-auto-double') ? g('cfg-tr-auto-double').checked : true,
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -1148,6 +1149,7 @@ export function renderConfig() {
   set('cfg-jury',    seasonConfig.jurySize || 9);
   set('cfg-tr-traitor-count', seasonConfig.traitorCount || 3);
   set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
+  if (g('cfg-tr-auto-double')) g('cfg-tr-auto-double').checked = seasonConfig.trAutoDouble !== false;
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
   chk('cfg-ri',        seasonConfig.ri);

@@ -1896,7 +1896,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
   backgrounds = null, database = null, host = null,
   murderSchedule = null, missionSchedule = null, chosenTraitors = null,
-  rerollFromEp = null, rerollSeed = null,
+  rerollFromEp = null, rerollSeed = null, autoDouble = true,
   announceTraitorCount = false } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
   // The whole season is one deterministic block off `seed`, so a real per-
@@ -1945,6 +1945,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // its own, so a season played without one is unchanged.
   gs.tr.missionSchedule = (missionSchedule && typeof missionSchedule === 'object')
     ? missionSchedule : null;
+  // Auto (random) double murders off, when the Castle Options toggle asks —
+  // pickVariant drops `double` from the random pool but still honours a pinned
+  // one. Defaults to on, so headless callers (calibration, tests) are unchanged.
+  gs.tr.noAutoDouble = autoDouble === false;
   // THE SEATING PLAN, AND IT NEVER CHANGES. `activePlayers` shrinks every
   // night, so a screen drawing the room from it re-seats everybody the moment
   // somebody leaves and the eye can no longer follow a person from one episode

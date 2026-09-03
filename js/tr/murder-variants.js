@@ -190,7 +190,15 @@ export function pickVariant(ep, living = null) {
     const want = VARIANTS.find(v => v.id === scheduled);
     return (want && want.needs(alive.length, t, f)) ? want.id : 'standard';
   }
-  const pool = VARIANTS.filter(v => v.needs(alive.length, t, f));
+  // AUTO-DOUBLE CAN BE SWITCHED OFF. A Double is the one auto shape that
+  // changes a night's body count (three leave, not two), so a viewer who plans
+  // around the timeline gets surprised by it. With `gs.tr.noAutoDouble` set
+  // (js/tr-run.js, from the Castle Options toggle) it is dropped from the
+  // random pool — but a Double the author PINNED still runs, because the
+  // schedule is honoured above this line.
+  const noAutoDouble = !!(gs.tr && gs.tr.noAutoDouble);
+  const pool = VARIANTS.filter(v => v.needs(alive.length, t, f)
+    && !(noAutoDouble && v.id === 'double'));
   const total = pool.reduce((s, v) => s + v.weight, 0);
   let roll = hash01(`murder-variant|${ep}|${alive.join(',')}`) * total;
   for (const v of pool) {

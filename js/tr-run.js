@@ -123,6 +123,9 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
       endgameSize: Number(seasonConfig.finaleSize) || 3,
       murderSchedule: _murderSchedule(),
       missionSchedule: _missionScheduleMap(),
+      // Auto double murders are on unless the Castle Options toggle turns them
+      // off; a pinned Double still runs either way.
+      autoDouble: seasonConfig.trAutoDouble !== false,
       // Only an explicitly-chosen pact is handed down; 'random' mode (or a cast
       // that has changed since) leaves this null and the engine draws its own.
       chosenTraitors: seasonConfig.trTraitorMode === 'choose'

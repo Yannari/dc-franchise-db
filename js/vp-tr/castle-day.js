@@ -1922,7 +1922,7 @@ const CONSEQ_COVER_BLEND = {
     '{topic} kept {a} at arm’s length all evening, politely and completely. {a} learned that {topic}’s circle is not a place {a} gets to hide.',
     '{topic} did not want company, least of all {a}’s. Whatever {a} was going for, {topic} was not in the mood to supply it.',
     '{a} went to stand with {topic} and was quietly not made room for. {a} files it and finds somewhere else to be ordinary.',
-    '{topic} was welcoming to everyone but {a}, and only {a} noticed the gap. {a} will not try that door again.',
+    '{topic} made room for the others and not for {a}, and only {a} noticed the gap. {a} will not try that door again.',
   ],
   abandoned: [
     '{a} decided the safest way to sit with {topic}’s people was not to, and drifted off before it looked deliberate. Nothing risked is nothing lost.',
@@ -2016,6 +2016,86 @@ const CONSEQ_GRIEF = {
     '{a} keeps expecting {topic} to come round the corner, and keeps being wrong, all morning.',
   ],
 };
+// ROMANCE. {topic} is the partner; the relationship is symmetric, so lines use
+// {other} (the non-topic partner) and {topic}, safe whichever way a flip branch
+// (a breakup ended BY the partner) orders them. KEEPS its reaction beat.
+const CONSEQ_ROMANCE = {
+  warmed: [
+    'What {other} and {topic} have is realer tonight than it was this morning, and both of them felt it move.',
+    '{other} and {topic} closed a little more of the distance. In a castle, being sure of one person is worth more than it looks.',
+    'It went well for {other} and {topic}. There is a place in this game to stand next to somebody, and they are building one.',
+    'The thing between {other} and {topic} took a step it cannot easily take back — a comfort and a liability, both at once.',
+    '{other} and {topic} are steadier tonight. Two people who trust each other in here is rare enough to be worth guarding.',
+  ],
+  cooled: [
+    'Whatever {other} and {topic} had cooled tonight, and neither of them pretended it hadn’t.',
+    'The distance between {other} and {topic} opened back up, and in here a rift between two people is a thing other people use.',
+    'It went badly for {other} and {topic}. What was shelter yesterday is a draught tonight.',
+    '{other} and {topic} are further apart than they were this morning, and a castle notices a couple coming unstuck.',
+    'Something closed between {other} and {topic}, and closed doors between two people are read by the rest of the building.',
+  ],
+  tangled: [
+    'What {other} and {topic} are to each other got more complicated tonight, and complicated is dangerous in a game that turns on who trusts whom.',
+    'The thing between {other} and {topic} is now half feeling and half strategy, and neither of them could tell you the ratio.',
+    '{other} and {topic} are a fact the rest of the castle is starting to have opinions about — the last thing a couple in here wants.',
+    'Whatever {other} and {topic} decided tonight, the game was in the room with them, and it always will be now.',
+    'For {other} and {topic} the line between protecting each other and using each other got thinner tonight, and both of them know it.',
+  ],
+};
+// CALLBACK. {topic} is the person the actor shares prior-season history with.
+// KEEPS its reaction beat; uses {other} + {topic}.
+const CONSEQ_CALLBACK = {
+  warmed: [
+    'The history between {other} and {topic} came back on the right side tonight. Two people who already know how the other plays is an edge, and they have it.',
+    '{other} and {topic} found their old rapport still there. The franchise remembers, and tonight it paid {other} a dividend.',
+    'Whatever {other} and {topic} were on another season, tonight it works in their favour, and both of them are lighter for it.',
+    'The old understanding between {other} and {topic} held across the gap between seasons — rarer than it sounds, and worth more.',
+  ],
+  cooled: [
+    'Whatever is between {other} and {topic} from before did not stay in the past. It is a live thing again, and the room can feel there is history in it.',
+    '{other} and {topic} reopened something that started on another season. Whatever it was then, it has teeth again now.',
+    'The old business between {other} and {topic} came back on the wrong side tonight, and neither of them is letting it go.',
+    'What {other} and {topic} carry from before soured the room between them. The past does not expire in here; it waits.',
+  ],
+  noted: [
+    'The history between {other} and {topic} is out in the open now, and a room that knows two people go back will price them as a pair.',
+    '{other} and {topic} could not keep their past to themselves, and now the castle is doing the maths on it.',
+    'Whatever {other} and {topic} were before, the room has noticed they were something — a fact with a cost in here.',
+    'The old connection between {other} and {topic} is common knowledge tonight. Two people with a shared yesterday are a target with a shared today.',
+  ],
+};
+const CALLBACK_WARMED = new Set(['picked-it-back-up', 'alliance-reformed',
+  'renegotiated-it', 'reunion-spark', 'called-a-truce', 'defended-by-history',
+  'now-they-are-a-pair', 'redemption', 'alumni-bond', 'let-it-go-at-last',
+  'stopped-comparing', 'one-of-them-still-is', 'asked-to-be-told', 'made-a-virtue-of-it']);
+const CALLBACK_COOLED = new Set(['still-owed', 'grudge-resurfaced',
+  'wants-something-for-it', 'rivalry-carried-over', 'reopened-it',
+  'history-is-not-evidence', 'disappointment', 'dissonance', 'left-out',
+  'compared-endings', 'both-know-how-it-ends']);
+/** 'warmed' | 'cooled' | 'noted' for a callback (shared-history) scene. */
+function _callbackDir(s) {
+  const b = String(s.branch || '');
+  if (CALLBACK_WARMED.has(b)) return 'warmed';
+  if (CALLBACK_COOLED.has(b)) return 'cooled';
+  return 'noted';
+}
+
+const ROMANCE_WARMED = new Set(['sparked', 'named-it-fast', 'stopped-hiding-it',
+  'the-room-said-it', 'told-one-person', 'protected', 'shield-pact', 'shared-alibi',
+  'patched-it', 'grief-spark', 'leaned-into-it']);
+const ROMANCE_COOLED = new Set(['broke-up', 'faded-out', 'ended-in-strategy',
+  'went-cold', 'showmance-fight', 'about-the-vote', 'did-not-match', 'refused-to-vouch',
+  'refused-the-pact', 'did-not-step-in', 'asked-not-to', 'one-sided-so-far',
+  'interrupted', 'said-nothing', 'one-sided-pact', 'too-loud', 'ended-kindly',
+  'too-soon']);
+/** 'warmed' | 'cooled' | 'tangled' for a romance scene. */
+function _romanceDir(s) {
+  const b = String(s.branch || '');
+  if (ROMANCE_WARMED.has(b)) return 'warmed';
+  if (ROMANCE_COOLED.has(b)) return 'cooled';
+  return 'tangled';
+}
+
 // A grief scene's DIRECTION, coarsened from its branch. CLOSER = shared,
 // forgiven, or spoken grief that binds; APART = grief that divides or curdles;
 // otherwise it is BORNE — private, quiet, or unresolved.
@@ -2077,6 +2157,9 @@ const TOPIC_CONFIG = {
   // grief KEEPS its reaction beat (mourning comfort is coherent), so no
   // `reaction: false` — only the consequence is grounded to name the dead.
   'grief-loss': { dir: _griefDir, conseq: CONSEQ_GRIEF },
+  // romance KEEPS its reaction beat too — only the consequence is grounded.
+  'romance-bond': { dir: _romanceDir, conseq: CONSEQ_ROMANCE },
+  'callback-history': { dir: _callbackDir, conseq: CONSEQ_CALLBACK },
 };
 
 // The set of event ids that have been reworked to record a concrete topic.
@@ -2103,7 +2186,18 @@ const TOPIC_READY_COVER = ['cover-preemptive-alibi', 'cover-suspect-own-ally', '
 // would misstate the table-paranoia scenes.
 /* eslint-disable-next-line */
 const TOPIC_READY_GRIEF = ['grief-empty-chair', 'grief-headcount', 'grief-seating-shift', 'grief-shared-mourning-bond', 'grief-suspicion-of-timing', 'grief-morning-reaction', 'grief-keepsake', 'grief-blame-the-room', 'grief-toast-to-them', 'grief-numb-to-it-now', 'grief-wrongly-suspected-irony'];
-export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF]);
+// romance family (romance.js) — topic = the partner. romance-liability-exposed
+// is left legacy: it has a doubter/suspected shape (a read of the couple), not a
+// partner pair.
+/* eslint-disable-next-line */
+const TOPIC_READY_ROMANCE = ['romance-spark', 'romance-showmance-forms', 'romance-protection-instinct', 'romance-jealousy-third-party', 'romance-showmance-breakup', 'romance-shields-target-together', 'romance-shared-alibi', 'romance-showmance-fight', 'romance-strategic-optics', 'romance-comfort-after-loss-sparks'];
+// callback family (callback.js) — topic = the shared-history person.
+// callback-warns-newbies (vet + a NEWBIE) and callback-no-history-envy (an
+// outsider with NO shared history) are left legacy: both are about the ABSENCE
+// of a shared past, so a "history between" close would be false.
+/* eslint-disable-next-line */
+const TOPIC_READY_CALLBACK = ['callback-recognized', 'callback-old-alliance-reforms', 'callback-grudge-resurfaces', 'callback-showmance-reunion-spark', 'callback-competitive-history', 'callback-protects-old-ally-from-vote', 'callback-different-show-different-person', 'callback-shared-alumni-status', 'callback-history-confrontation'];
+export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK]);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed

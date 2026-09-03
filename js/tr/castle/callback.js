@@ -234,7 +234,7 @@ registerEvent({
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy,
       seed: lineFor(RECOGNIZED_LINES[branch], `callback-recognized|${branch}|${ctx.ep}|${relation}`, { a, b }) });
-    const out = { branch, pair: [a, b], speaker: a, respondent: b,
+    const out = { branch, topic: b, topicKind: 'callback-history', pair: [a, b], speaker: a, respondent: b,
       relation: strongest?.relation, threadId: t?.id, bondDelta };
     // NO CROWD MOMENT ON `said-it-to-the-room`, deliberately. The obvious
     // colour is `masterful`, and `masterful` is reserved in js/tr/crowd.js
@@ -353,7 +353,7 @@ registerEvent({
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'callback-history', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 // ── REWRITE (Task 7 stage 6). The audit: "one branch (`grudge-resurfaced`) —
@@ -452,7 +452,7 @@ registerEvent({
     // TERMINAL: a grudge the holder puts down is a story that ended, and
     // `buried` is what it ended as.
     if (t && branch === 'let-it-go-at-last') api.resolveArc(t.id, 'buried', { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'callback-history', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 // ── REWRITE (Task 7 stage 6). The audit: "one branch (`reunion-spark`)."
@@ -555,7 +555,7 @@ registerEvent({
     // TERMINAL: two people settling it on the first night is a story that
     // closed on the first night, and both of them meant it to.
     if (t && branch === 'agreed-not-to') api.resolveArc(t.id, 'buried', { source: sceneWhy });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'callback-history', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 // -- TASK 7 STAGE 4: REWRITTEN OFF THE AUDIT'S REWRITE LIST ------------
@@ -637,7 +637,7 @@ registerEvent({
     const t = api.openArc(FAMILY, [a, b],
       { source: sceneWhy,
         seed: lineFor(RIVALRY_LINES[branch], `callback-competitive-history|${branch}|${ctx.ep}`, { a, b }) });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'callback-history', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 
@@ -760,7 +760,7 @@ registerEvent({
     const note = lineFor(DEFEND_HISTORY_LINES[branch],
       `callback-protects-old-ally-from-vote|${branch}|${ctx.ep}`, { a: defender, b: defended });
     const t = api.openArc(FAMILY, [defender, defended], { source: sceneWhy, seed: note });
-    const out = { branch, pair: [defender, defended], speaker: defender, respondent: defended,
+    const out = { branch, topic: defended, topicKind: 'callback-history', pair: [defender, defended], speaker: defender, respondent: defended,
       threadId: t?.id, bondDelta };
     if (branch === 'defended-by-history' || branch === 'now-they-are-a-pair') {
       out.crowd = { name: defender, colour: 'selfless', mult: 0.75 };
@@ -1020,7 +1020,7 @@ registerEvent({
           : branch === 'stopped-comparing' ? 1.5 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    const out = { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    const out = { branch, topic: b, topicKind: 'callback-history', pair: [a, b], threadId: t?.id, bondDelta };
     // {a} is the one doing the comparing on three of the five. On
     // `asked-to-be-let-off` the direction reverses, because {b} is the one
     // speaking and {a} is answering for a fortnight's worth of it.
@@ -1242,7 +1242,7 @@ registerEvent({
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     if (branch === 'the-room-priced-them' && c) api.addBond(a, c, -0.5, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'callback-history', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 // ── FLAGSHIP: the history confrontation — a four-way fork on what the
@@ -1391,6 +1391,6 @@ registerEvent({
         api.resolveArc(existing.id, 'buried', { source: sceneWhy });
       } else threadId = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: line })?.id;
     }
-    return { branch, pair: [a, b], relation: strongest?.relation, threadId, bondDelta };
+    return { branch, topic: b, topicKind: 'callback-history', pair: [a, b], relation: strongest?.relation, threadId, bondDelta };
   },
 });

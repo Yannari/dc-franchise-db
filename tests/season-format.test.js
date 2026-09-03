@@ -44,10 +44,16 @@ describe('show formats', () => {
     expect(TWIST_CATALOG.filter(t => !t.format).every(t => twistFormat(t) === 'total-drama')).toBe(true);
     const td = twistsForFormat('total-drama');
     const bb = twistsForFormat('big-brother');
-    expect(td.length + bb.length).toBe(TWIST_CATALOG.length);
+    const tr = twistsForFormat('traitors');
+    // Every entry is filed under exactly one of the three shows — the sum is a
+    // partition, not a sample.
+    expect(td.length + bb.length + tr.length).toBe(TWIST_CATALOG.length);
     const bbIds = new Set(bb.map(t => t.id));
-    expect(td.some(t => bbIds.has(t.id))).toBe(false);
+    const trIds = new Set(tr.map(t => t.id));
+    expect(td.some(t => bbIds.has(t.id) || trIds.has(t.id))).toBe(false);
+    expect(bb.some(t => trIds.has(t.id))).toBe(false);
     expect(bb.length).toBeGreaterThan(0);
+    expect(tr.length).toBeGreaterThan(0);
   });
 });
 

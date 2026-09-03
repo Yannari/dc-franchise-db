@@ -1975,6 +1975,68 @@ export function buildEpisodeMap() {
     twistMapAll[Number(t.episode)].push(et);
   });
 
+  // ── The Traitors: two leave a night, not one ──────────────────────────
+  //
+  // A castle has no tribes, no merge and no returns, so none of the Total
+  // Drama / Big Brother machinery below applies to it — and its cadence is its
+  // own. From the SECOND episode every night takes TWO: a banishment at the
+  // Round Table and a murder in the dark. Episode one has no Round Table yet,
+  // so it takes only the murder. A scheduled Double Murder takes a third body
+  // while the castle is still big enough to support it (the same 8-alive gate
+  // pickVariant reads in js/tr/murder-variants.js). The generic projection
+  // counts one a night and would draw a castle nearly twice its real length,
+  // every "N left" wrong from episode two down — which is what the scheduler
+  // was showing. The season ends when the room is down to the endgame.
+  const _fmt = (typeof seasonFormat === 'function' ? seasonFormat(seasonConfig) : seasonConfig.format);
+  if (_fmt === 'traitors') {
+    // ── WHY A BUDGET AND NOT A FLAT TWO A NIGHT ─────────────────────────
+    //
+    // A banishment happens EVERY episode from the second (episode one has no
+    // Round Table). A murder happens most nights but not all: the Traitors
+    // sometimes recruit instead of kill, a Shield can block one, and the
+    // endgame is banishment-only. Measured over 20 seeds at five cast sizes,
+    // the murders that land in episodes 2+ come to almost exactly `cast/2 - 3`,
+    // and they cluster EARLY — the banishment-only nights are the endgame tail.
+    // A flat two-a-night drew the season a episode or two short of its real
+    // median every time; this spends a murder budget down the early rounds and
+    // lets the tail run on banishments alone, which lands on the measured
+    // median (episodes ~= cast/2 - endgame + 3) for casts of 14 to 22.
+    //
+    // No projection can be exact — an individual castle runs anywhere from
+    // `cast/2 - 2` to `cast - endgame` episodes depending on how many murders
+    // land — so this targets the typical season. A twist scheduled on an
+    // episode a short season never reaches simply never fires; pickVariant only
+    // ever reads the episodes that happen.
+    const trEps = [];
+    const endgame = Math.max(2, seasonConfig.finaleSize || 3);
+    let murderBudget = Math.max(0, Math.round(cast / 2) - 3); // murders in ep >= 2
+    let trActive = cast;
+    let trEp = 1;
+    while (trActive > endgame && trEp <= 100) {
+      const isDouble = (seasonConfig.twistSchedule || [])
+        .some(t => t && Number(t.episode) === trEp && t.type === 'tr-double-murder');
+      trEps.push({ ep: trEp, active: trActive, phase: 'pre-merge',
+        engineType: twistMap[trEp] || null });
+      // Episode one: the murder, no banishment. Every later night banishes.
+      let toll = trEp === 1 ? 0 : 1;
+      // A murder on top, while budget and room remain (kept clear of the
+      // endgame so the tail stays banishment-only, as the real seasons do).
+      const canMurder = trEp === 1 || (murderBudget > 0 && trActive - toll - 1 >= endgame);
+      if (canMurder) {
+        toll += 1;
+        if (trEp !== 1) murderBudget -= 1;
+        // The Double's second body, when the castle is still big enough for the
+        // shape to run at all (murder-variants' 8-alive gate) and it does not
+        // spend the room past the endgame.
+        if (isDouble && trActive >= 8 && trActive - toll - 1 >= endgame) toll += 1;
+      }
+      trActive = Math.max(endgame, trActive - toll);
+      trEp++;
+    }
+    trEps.push({ ep: trEp, active: endgame, phase: 'finale', engineType: null });
+    return trEps;
+  }
+
   const eps = [];
   let active  = cast;
   let ep      = 1;
@@ -2796,7 +2858,11 @@ export function renderTimeline() {
     const markerText  = isFinale ? 'FINALE'
       : isJuryEp ? `JURY · ${active} left`
         : isMergeEp ? `MERGE · ${active} left` : `${active} left`;
-    const phaseLabel  = phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
+    // A castle has no tribes and no merge, so it has no PRE/POST to stamp — the
+    // episode map hands every season a pre/post split it shares with Total
+    // Drama, and left alone it would print a meaningless PRE on every night.
+    const phaseLabel  = isTraitorsSeason() ? ''
+      : phase === 'ri-duel' ? 'RI DUEL' : phase === 'finale' ? '' : phase === 'pre-merge' ? 'PRE' : 'POST';
 
     // Competition pinning: every Big Brother week has an HOH and a veto, so
     // the pickers are always there rather than something you add.

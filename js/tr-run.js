@@ -28,7 +28,7 @@
 // seed the next time the button was pressed. Rows are MOVED rather than
 // copied, so the queue plus the history is one season's worth of rows and
 // never two — this repo has shipped an 19MB `gs` from exactly that mistake.
-import { gs, setGs, players, seasonConfig, seasonFormat } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { playTraitorsSeason } from './tr/headless.js';
 import { bespokeMissionsEnabled, _setBespokeMissionsEnabled } from './tr/missions/index.js';
 
@@ -48,6 +48,30 @@ function _seed() {
       + Math.floor(Math.random() * 1000) + 1;
   }
   return gs._trSeed;
+}
+
+/**
+ * The author's murder calendar, read off the episode-format designer.
+ *
+ * `seasonConfig.twistSchedule` is the shared per-episode twist store (the same
+ * one Total Drama and Big Brother write to); a `category:'murder'` entry names
+ * a castle night's shape. This turns those entries into the compact
+ * `{ episode: variantId }` map `playTraitorsSeason` hands the engine. Only one
+ * shape can fire per night — the catalogue marks the six mutually incompatible,
+ * so the designer never lets two land on one episode — but if one somehow did,
+ * the last entry wins, matching pickVariant reading a single value per round.
+ * Returns null when nothing is scheduled, so a plain season stays bit-identical.
+ */
+function _murderSchedule() {
+  const out = {};
+  for (const t of (seasonConfig.twistSchedule || [])) {
+    if (!t || t.episode == null) continue;
+    const entry = TWIST_CATALOG.find(c => c.id === t.type);
+    if (entry && entry.category === 'murder' && entry.variant) {
+      out[Number(t.episode)] = entry.variant;
+    }
+  }
+  return Object.keys(out).length ? out : null;
 }
 
 /**
@@ -81,6 +105,7 @@ function _playWholeSeason() {
       traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
       potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
       endgameSize: Number(seasonConfig.finaleSize) || 3,
+      murderSchedule: _murderSchedule(),
       seed: _seed(),
     });
   } finally {

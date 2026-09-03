@@ -2102,6 +2102,32 @@ export function buildEpisodeMap() {
   // was showing. The season ends when the room is down to the endgame.
   const _fmt = (typeof seasonFormat === 'function' ? seasonFormat(seasonConfig) : seasonConfig.format);
   if (_fmt === 'traitors') {
+    // ── ONCE PLAYED, READ THE REAL NIGHT, NOT A GUESS ───────────────────
+    //
+    // A castle is decided in one call and its rows are queued, so after the
+    // season has run the true count is ON the rows: each carries `exits`, the
+    // people it actually removed. A random Double took three, a Recruitment
+    // took one, a Shield blocked a murder — the projection below cannot see any
+    // of those because they are rolled, not scheduled, and that is exactly the
+    // "N left doesn't update with the twist" gap. So if the season exists, the
+    // timeline reports what happened; the projection is only for the setup
+    // screen, before a single night has been decided.
+    const _trRows = [...(gs && gs.episodeHistory || []), ...(gs && gs._trQueue || [])]
+      .filter(r => r && r.num != null && r.format === 'traitors')
+      .sort((a, b) => a.num - b.num);
+    if (_trRows.length) {
+      const trEps = [];
+      let live = cast;
+      for (const r of _trRows) {
+        trEps.push({ ep: r.num, active: live, phase: 'pre-merge',
+          engineType: twistMap[r.num] || null });
+        live = Math.max(0, live - ((r.exits || []).length));
+      }
+      trEps.push({ ep: (_trRows[_trRows.length - 1].num || 0) + 1,
+        active: live, phase: 'finale', engineType: null });
+      return trEps;
+    }
+
     // ── WHY A BUDGET AND NOT A FLAT TWO A NIGHT ─────────────────────────
     //
     // A banishment happens EVERY episode from the second (episode one has no

@@ -1086,38 +1086,24 @@ describe('the endgame reveals nothing, on the record and on the screen', () => {
   // The floor below is untouched at four, and the claim is strictly stronger
   // than "these four seeds happen to". `END_SEEDS` further down this file is
   // the same idea, already in this file's idiom.
-  const ENDGAME = (() => {
-    const found = TABLES.filter(t => t.ep.tr.table.endgame);
-    if (found.length > 3) return found;
-    for (const extra of [21, 23, 25, 27, 29, 31, 33, 35]) {
-      const run = season(extra);
-      for (const e of run.episodes) {
-        if (e.tr && e.tr.table && e.tr.table.endgame) found.push({ ep: e, run });
-      }
-      if (found.length > 3) break;
-    }
-    return found;
-  })();
+  // THE ENDGAME NO LONGER ROUTES THROUGH THIS SCREEN. It used to be drawn as
+  // reveal-less round tables — one sparse row per finale table — which is the
+  // bug the castle owner reported: murder-less "episodes" with half the screens
+  // gone and the actual finale buried on the last of them. The finale is now
+  // ONE screen (js/vp-tr/endgame.js), folded onto the last row, and its live
+  // record and screen locks are in the "the endgame reveals nothing, on the
+  // record and on the screen" describe block far below. What remains here is the
+  // round-table screen's OWN endgame branch: dead in a live season now, but kept
+  // as defense in depth and proved SYNTHETICALLY (LOCK TWO) so it cannot be
+  // deleted unnoticed if the endgame is ever routed back through this screen.
   const MANDATED = TABLES.filter(t => !t.ep.tr.table.endgame);
 
-  it('a real season reaches an endgame table to check', () => {
-    expect(ENDGAME.length, 'no season across four seeds played a finale table')
-      .toBeGreaterThan(3);
-  });
-
-  it('LOCK ONE: the record carries no alignment and no ground truth there', () => {
-    for (const { ep } of ENDGAME) {
-      const t = ep.tr.table;
-      expect(t.chosenAlignment, `ep ${ep.num}: a finale record carries an alignment`)
-        .toBeFalsy();
-      expect(t.truth, `ep ${ep.num}: a finale record carries the room's real alignments`)
-        .toBeFalsy();
-      expect(t.betrayals, `ep ${ep.num}: a finale record carries a betrayal`).toBeFalsy();
-    }
-    // and the mandated season DOES carry them, or lock one is a guard on a
-    // field nothing ever writes
+  it('mandated tables DO carry the alignment the finale withholds', () => {
+    // The positive half of LOCK TWO: the round-table screen reveals on an
+    // ordinary table, so its refusal on an `endgame` one (below) is a real
+    // difference and not a screen that never reveals anything.
     expect(MANDATED.filter(m => m.ep.tr.table.chosenAlignment).length,
-      'no mandated table carried an alignment, so the endgame arm proves nothing')
+      'no mandated table carried an alignment, so the endgame refusal proves nothing')
       .toBeGreaterThan(10);
   });
 
@@ -1162,15 +1148,9 @@ describe('the endgame reveals nothing, on the record and on the screen', () => {
       .toContain('if (!v.endgame && v.chosenAlignment)');
   });
 
-  it('and a real finale table shows the silence, with the word nowhere on it', () => {
-    for (const { ep } of ENDGAME) {
-      const html = tableFullyRevealed(ep);
-      expect(html, `ep ${ep.num}: a finale table turned a card over`)
-        .not.toContain('data-reveal="alignment"');
-      expect(html).not.toContain('<div class="rt-reveal-word">');
-      expect(html).toContain('Nothing Is Turned Over');
-    }
-  });
+  // (The live "a real finale table shows the silence" arm retired with the
+  // per-table endgame rows — the finale's silence is now proved on the endgame
+  // screen itself, in the describe block below.)
 });
 
 // ── GUARD 7: the observer contract ────────────────────────────────────
@@ -5554,45 +5534,24 @@ const printedWhy = html => [...noCss(html)
 const onRule = v => Math.min(100, Math.round(v * 100));
 
 describe('the belief record reaches the row at all', () => {
-  it('a real season writes a board on every night that is not an endgame table', () => {
-    let rows = 0, withBoard = 0, endgameRows = 0;
-    // ── THE SEARCH WALKS SEEDS (Task 7 stage 4) ────────────────────────
-    //
-    // Same reachability correction, and the same reason, as the `ENDGAME`
-    // block above: this arm has TWO claims in it, and only the second one is
-    // about the four seeds at the head of the file. "Every ordinary night
-    // carries a board" is a property of every season; "an endgame row carries
-    // none" needs an endgame row to exist, and after stage 4's content none of
-    // seeds 1, 3, 7 and 11 reaches one. Extra seeds are appended only until an
-    // endgame row turns up, so the ordinary-night half is still measured over
-    // the same four runs plus whatever the search needed.
-    const runs = [...RUNS];
-    if (!runs.some(r => r.episodes.some(e => e.tr && e.tr.table && e.tr.table.endgame))) {
-      for (const extra of [21, 23, 25, 27, 29, 31, 33, 35]) {
-        const run = season(extra);
-        runs.push(run);
-        if (run.episodes.some(e => e.tr && e.tr.table && e.tr.table.endgame)) break;
-      }
-    }
-    for (const r of runs) {
+  it('a real season writes a board on every night', () => {
+    // The endgame used to write its own sparse rows (`tr.table.endgame`), which
+    // carried no belief board on purpose (spec §8). Those rows are gone — the
+    // finale is one screen folded onto the last row now — so every row in
+    // `episodeHistory` is an ordinary night, and every ordinary night carries a
+    // board. (The finale's own no-board property is inherent: the endgame record
+    // has no beliefs field, and its silence is proved on the endgame screen in
+    // the describe block above.)
+    let rows = 0, withBoard = 0;
+    for (const r of RUNS) {
       for (const e of r.episodes) {
+        if (!e.tr) continue;
         rows++;
-        const isEndgame = !!(e.tr && e.tr.table && e.tr.table.endgame);
-        if (isEndgame) {
-          endgameRows++;
-          // SPEC §8: the endgame reveals nothing. `_tableRecord` already
-          // withholds `truth` there and a belief block would hand the last
-          // table every survivor's alignment.
-          expect(e.tr.beliefs, `ep ${e.num}: an endgame row carries a board`).toBe(null);
-          continue;
-        }
         expect(e.tr.beliefs, `ep ${e.num}: no board on an ordinary night`).toBeTruthy();
         if (e.tr.beliefs.castle.length) withBoard++;
       }
     }
     expect(rows, 'no episode rows at all').toBeGreaterThan(30);
-    expect(endgameRows, 'no endgame row in any seed, so the withholding is unchecked')
-      .toBeGreaterThan(0);
     expect(withBoard, 'not one night produced a castle board').toBeGreaterThan(20);
   });
 

@@ -2231,20 +2231,36 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // rather than from who left: a betrayal the room then failed to carry out
   // was still chosen, and `endgameChoice` is the only place that fact exists.
   scoreEndgame(endgame);
-  // `endgame: true` is what keeps the alignment off the finale tables' records
-  // -- see `_tableRecord`. It is passed rather than inferred, because the
-  // rounds on `gs.tr.rounds` carry no flag: the copies in `endgame.rounds` are
-  // where `endgame: true` is stamped, and this loop is holding the copies.
-  for (const r of endgame.rounds || []) {
-    _recordEpisode(r.ep, { banished: r.banished, endgame: true });
-  }
-  // THE PHASE, ON THE LAST ROW THE SEASON WROTE. The endgame can force six
-  // extra tables or none at all -- when the first ask is unanimous no row is
-  // written for it -- so there is no episode number this can be attached to.
-  // The last row is where a viewer clicking forward arrives, and it is the
-  // only row that exists in every one of those cases.
+  // THE FINALE IS ONE EPISODE, NOT ONE PER TABLE.
+  //
+  // Each endgame table used to get its own `_recordEpisode` row. But an endgame
+  // round runs no night and no mission, so those rows rendered as sparse,
+  // murder-less "episodes" — half the screens gone, no conclave — and only the
+  // LAST of them carried the endgame summary. To a viewer that reads as the
+  // game breaking: the murders stopped and the screens vanished, on episode
+  // after episode, with the actual finale buried on the final row (the bug the
+  // castle owner reported). The endgame SCREEN already draws every table, every
+  // vote and the money in one flowing screen, so the per-table rows were pure
+  // redundancy sitting on top of the confusion.
+  //
+  // So the whole endgame rides on the last row the mandated season wrote — the
+  // finale of that episode — and the finale's banishments fold into its
+  // `exits[]` so the timeline still counts every departure. reveal-less, so no
+  // alignment travels on the exit (spec §8, unless the author turned reveals
+  // on, in which case the endgame record already carries it and the screen
+  // reads it there — the exit stays a bare banishment either way).
   const _rows = gs.episodeHistory || [];
-  if (_rows.length) _rows[_rows.length - 1].tr.endgame = _endgameRecord(endgame);
+  if (_rows.length) {
+    const _last = _rows[_rows.length - 1];
+    _last.tr.endgame = _endgameRecord(endgame);
+    const [_banishVerb] = exitVerbs(TRAITORS_FORMAT);
+    for (const r of endgame.rounds || []) {
+      if (r.banished) {
+        _last.exits.push({ name: r.banished, verb: _banishVerb,
+          channel: 'banishment', endgame: true });
+      }
+    }
+  }
 
   return {
     traitors,

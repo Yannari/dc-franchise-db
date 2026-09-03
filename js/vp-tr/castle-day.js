@@ -3240,8 +3240,15 @@ function _view(ep, observer, segment = null) {
     s.chips = _chipsFor(_receipts, _epNum + ':' + s.window + ':' + s.eventId,
       s.layer, isAudience, watcher);
     if (s.layer !== 'heard') {
-      const susp = _suspicionChipFromRecord(s, isAudience, watcher);
-      if (susp) s.chips = [susp, ...s.chips];
+      // The real thing wins: if the scene wrote a belief/doubt receipt, that
+      // drives the suspicion chip. Only fall back to the record-derived
+      // direction when the scene moved no belief (a bonds-only event, or a read
+      // the priced channel refused).
+      const hasReal = s.chips.some(c => c.type === 'suspicion');
+      if (!hasReal) {
+        const susp = _suspicionChipFromRecord(s, isAudience, watcher);
+        if (susp) s.chips = [susp, ...s.chips];
+      }
     }
   }
 

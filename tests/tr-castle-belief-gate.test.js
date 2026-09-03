@@ -101,6 +101,30 @@ function hasCastleFrame(stack) {
   return stack.split(BACKSLASH).join('/').includes('/js/tr/castle/');
 }
 
+// THE SANCTIONED PATH (Plan: castle deduction feeds the vote). A castle scene
+// may now move a belief, but ONLY by asking the priced channel for one:
+// `sceneApi(...).addBelief` -> `sceneEvidence` (deduction.js) -> `learn`. Such a
+// call's stack therefore passes through js/tr/scene-api.js. A DIRECT or
+// laundered write (a castle file importing learn, or calling a helper that
+// does) reaches learn WITHOUT a scene-api frame. So the rule is no longer "no
+// castle frame in a learn() stack" — it is "no castle frame UNLESS it went
+// through the scene API". That still forbids every bare belief write and every
+// direct-ledger route; it only permits the measured, receipted channel.
+function hasSanctionedFrame(stack) {
+  // The priced channel is the marker. learn() is reached from a castle scene
+  // ONLY as castle -> scene-api.addBelief -> deduction.sceneEvidence -> learn,
+  // and deduction.js is the DIRECT caller of learn on that path, so its frame
+  // is always present. A bare castle write (import learn) or a laundered one
+  // (castle -> some other helper -> learn) has no deduction.js frame. (scene-api
+  // is also accepted, but under vite its transformed frame path is unreliable,
+  // whereas deduction.js — the file that actually calls learn — always shows.)
+  const norm = stack.split(BACKSLASH).join('/');
+  return norm.includes('/js/tr/deduction.js') || norm.includes('/js/tr/scene-api.js');
+}
+function isUnsanctionedCastleWrite(stack) {
+  return hasCastleFrame(stack) && !hasSanctionedFrame(stack);
+}
+
 /** Line comments only — every file below discusses learn() in its own prose. */
 function _stripComments(src) {
   return src.split(String.fromCharCode(10))
@@ -142,7 +166,7 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
       'the learn() spy recorded nothing at all — the mock is not wired, so the assertion below is vacuous')
       .toBeGreaterThan(100);
 
-    const fromCastle = learnStacks.filter(hasCastleFrame);
+    const fromCastle = learnStacks.filter(isUnsanctionedCastleWrite);
     const sample = fromCastle.slice(0, 2).join('\n---\n');
     expect(fromCastle.length,
       `${fromCastle.length} of ${learnStacks.length} learn() calls came from a castle event:\n${sample}`)
@@ -191,11 +215,37 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
       .toEqual([]);
     expect(ran.size, 'coverage regressed below the registry').toBe(EVENTS.length);
 
-    const fromCastle = learnStacks.filter(hasCastleFrame);
+    const fromCastle = learnStacks.filter(isUnsanctionedCastleWrite);
     const sample = fromCastle.slice(0, 2).join('\n---\n');
     expect(fromCastle.length,
       fromCastle.length + ' learn() calls came from a castle event while executing the whole pool:' + sample)
       .toBe(0);
+  });
+
+  it('the relaxed rule still bites: a bare castle belief write is caught, the sanctioned one is not', () => {
+    // MUTATION, run not asserted. Three synthetic learn() stacks:
+    //   1. a DIRECT castle write (castle frame, no scene-api frame) — forbidden
+    //   2. a LAUNDERED write (castle -> some helper -> learn, no scene-api) — forbidden
+    //   3. the SANCTIONED path (castle -> scene-api addBelief -> deduction) — allowed
+    // If the predicate stopped distinguishing them, the two arms above would be
+    // either vacuous or over-strict.
+    const direct = ['at learn (/js/knowledge.js:1:1)',
+      'at fire (/js/tr/castle/suspicion.js:9:9)'].join(String.fromCharCode(10));
+    const laundered = ['at learn (/js/knowledge.js:1:1)',
+      'at helper (/js/tr/some-helper.js:2:2)',
+      'at fire (/js/tr/castle/suspicion.js:9:9)'].join(String.fromCharCode(10));
+    const sanctioned = ['at learn (/js/knowledge.js:1:1)',
+      'at sceneEvidence (/js/tr/deduction.js:231:1)',
+      'at addBelief (/js/tr/scene-api.js:420:1)',
+      'at fire (/js/tr/castle/suspicion.js:9:9)'].join(String.fromCharCode(10));
+    expect(isUnsanctionedCastleWrite(direct), 'a direct castle->learn write must be caught').toBe(true);
+    expect(isUnsanctionedCastleWrite(laundered), 'a laundered castle->helper->learn write must be caught').toBe(true);
+    expect(isUnsanctionedCastleWrite(sanctioned), 'the priced scene-API path must be allowed').toBe(false);
+    // And a non-castle write (a legitimate deduction/roundtable frame) is never
+    // this rule's business at all.
+    const legit = ['at learn (/js/knowledge.js:1:1)',
+      'at sceneEvidence (/js/tr/deduction.js:231:1)'].join(String.fromCharCode(10));
+    expect(isUnsanctionedCastleWrite(legit)).toBe(false);
   });
 
   // ── ARM 4: THE SANCTIONED WRITE PATH IS A CLOSED SET ────────────────

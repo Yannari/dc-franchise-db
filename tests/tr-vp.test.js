@@ -79,7 +79,13 @@ function season(seed) {
   // as it plays. Copied out because the next season replaces gs wholesale.
   return { season: s, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) };
 }
-const SEEDS = [1, 3, 7, 11];
+// ENLARGED (deduction rollout): castle suspicion scenes now write real beliefs,
+// which shift banishment outcomes, so a four-seed corpus no longer reliably
+// contains enough of the rare things the floors below measure (an accepted
+// note, a folded first night, a recruited-then-flipped read). The floors are
+// NOT lowered — the sample is widened so the rare case reliably appears, the
+// same non-weakening move used on the export co-winner fixture.
+const SEEDS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23];
 const RUNS = SEEDS.map(season);
 
 /** Every episode across every seed that actually held a conclave. */
@@ -2430,7 +2436,7 @@ describe("neither screen borrows the turret's lamp", () => {
  * say so loudly rather than quietly asking for less.
  */
 const OFFER_SEEDS = [1, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
-  43, 47, 53, 59, 61, 67, 71, 73];
+  43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127];
 const OFFER_RUNS = OFFER_SEEDS.map(season);
 /** Every episode across every offer seed that recorded an approach. */
 const OFFERS = OFFER_RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.recruitment)

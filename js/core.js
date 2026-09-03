@@ -1599,6 +1599,9 @@ export function defaultConfig() {
     // Random double murders on by default; the Castle Options toggle turns them
     // off for authors who would rather pin a Double when they want one.
     trAutoDouble: true,
+    // How many are left when the mandated game hands off to the endgame (the
+    // fire round). Final three by default; the setup screen offers 2-5.
+    trEndgameSize: 3,
     // Endgame reveals OFF by default — the modern show (since 2024) hides a
     // finale-banished player's alignment and the survivors go on nerve alone.
     // Turned ON, the endgame plays like Ireland S1: every banished player is

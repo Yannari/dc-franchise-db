@@ -950,6 +950,27 @@ const DOWN_MORE = [
   'The others follow within a few minutes of each other, which is its own kind of decision.',
   'The stair does not stop for a while.',
 ];
+// A SINGLE straggler who is NOT the first down — used for a one-person cluster
+// anywhere after the opening. The `DOWN_TEXT` pool above is first-arrival
+// language ("down first", "before anyone else") and reads as a contradiction on
+// a latecomer, which is the reported bug: "Brick comes down before anyone else"
+// on the fifth group down. These say the opposite — late, alone, after the rest.
+const DOWN_LATE_ONE = [
+  '{who} comes down alone, a step behind the last group, and takes the nearest empty chair '
+  + 'without a word.',
+  'A gap on the stair, and then just {who}, reading the room from the bottom step before '
+  + 'crossing to the table.',
+  '{who} arrives on their own after the others, and does the arithmetic on the empty places '
+  + 'before sitting down.',
+  'One more set of footsteps, slower than the rest: {who}, last of this lot, taking the table '
+  + 'in on the way past.',
+];
+// Middle-cluster headers, varied so three groups in a row do not all read
+// "They Keep Coming".
+const MID_HEADERS = [
+  'They Keep Coming', 'And More Follow', 'The Stair Again', 'Another Few',
+  'More Of Them', 'The Next Down',
+];
 // The FIRST cluster down — a few people, not one, and not the whole room.
 const DOWN_FIRST = [
   'The first few come down together, close behind each other on the stair.',
@@ -977,6 +998,13 @@ const ARRIVE_SAID = [
   'I have decided already. I am reading nobody and trusting everybody, and that is the plan.',
   'Somebody in this room is going to ruin my week.',
   'Right. Faces. Names. Go.',
+  'One of these faces is lying already. I would very much like to know which one.',
+  'I told myself I would not trust the first kind person I met in here. I am about to, aren\'t I.',
+  'Smaller cast than I pictured. Fewer places for anybody to hide.',
+  'Nobody look at me like that. I have not done anything. Not yet.',
+  'I have watched every season of this. I have a horrible feeling that is going to help me not at all.',
+  'Whatever you have all decided about me from across this table, you are wrong — and I can work with that.',
+  'Count the chairs. Count the faces. Somewhere in the difference is the whole game.',
 ];
 
 const COUNT_TEXT = [
@@ -1431,6 +1459,10 @@ function _buildBeats(v) {
   const groups = _groupsFor(early, shape);
 
   const arrivedSoFar = [];
+  // No two clusters get the same lead sentence — two stragglers in a row drawing
+  // the identical "a gap on the stair, and then just {who}" line is the same
+  // repetition the quotes are deduped against.
+  const leadSaid = new Set();
   groups.forEach((g, gi) => {
     if (!g.length) return;
     arrivedSoFar.push(...g);
@@ -1441,18 +1473,23 @@ function _buildBeats(v) {
     // The lead-in prose: the opening cluster reads as "the first few", a single
     // straggler reads as one person on the stair, and a middle cluster reads as
     // a smaller group than the one before it.
+    // A one-person cluster reads as one person on the stair — but only the
+    // OPENING one is "down first". A lone latecomer takes the straggler pool, or
+    // the first-arrival lines contradict themselves ("comes down before anyone
+    // else" on the fifth group down — the reported bug).
     const lead = (g.length === 1)
-      ? _fill(_pick(DOWN_TEXT, key + '|down|' + who), { who: _esc(who) })
-      : gi === 0 ? _pick(DOWN_FIRST, key + '|first')
-        : isLast ? _pick(DOWN_MORE, key + '|more|' + gi)
-          : _pick(DOWN_MID, key + '|mid|' + gi);
+      ? _fill(_pickAway(gi === 0 ? DOWN_TEXT : DOWN_LATE_ONE,
+        key + '|down|' + gi + '|' + who, leadSaid), { who: _esc(who) })
+      : gi === 0 ? _pickAway(DOWN_FIRST, key + '|first', leadSaid)
+        : isLast ? _pickAway(DOWN_MORE, key + '|more|' + gi, leadSaid)
+          : _pickAway(DOWN_MID, key + '|mid|' + gi, leadSaid);
     const chips = g.length > 1
       ? '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
       : '';
     const body = '<p>' + lead + '</p>' + chips + _said(who, _esc(heard));
     push('down', _card(
       gi === 0 ? (v.arrival ? 'Through The Door' : 'Down First')
-        : isLast ? 'And The Rest' : 'They Keep Coming',
+        : isLast ? 'And The Rest' : _pick(MID_HEADERS, key + '|midhdr|' + gi),
       gi === 0 ? 'The stair' : 'Arrivals', gi === 0 ? 'stair' : 'head', body),
     gi === 0 ? (v.arrival ? 'arrive' : 'open') : null,
     { kind: 'down', down: [...arrivedSoFar] });

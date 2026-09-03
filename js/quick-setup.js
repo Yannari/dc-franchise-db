@@ -1100,6 +1100,14 @@ const CONFIG_SCOPE = {
     // to satisfy it.
     'cfg-tr-traitor-count':  ['traitors'],
     'cfg-tr-pot':            ['traitors'],
+    // The castle's endgame size (final 2-5). Only js/tr/ reads it.
+    'cfg-tr-endgame-size':   ['traitors'],
+    // COUNCIL SIZE IS NOT A CASTLE CONTROL. The `cfg-jury` slider is shared —
+    // the house reads a jury size off it and Total Drama a panel — but the
+    // castle ends on the fire round, not a jury vote, so nothing in js/tr/ ever
+    // reads it. Left unscoped it drew "Council Size: 9 Members" over a castle
+    // that has no council; scoped away from traitors it stops appearing there.
+    'cfg-jury':              ['total-drama', 'big-brother'],
     // A castle has one venue and nothing in js/tr/ reads a setting -- the
     // castle layer writes its own events and never asks where it is. Left
     // visible, the picker offered a summer camp and a world tour for a

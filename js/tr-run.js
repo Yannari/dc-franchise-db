@@ -120,7 +120,11 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
       cast,
       traitorCount: Math.max(2, Math.min(5, Number(seasonConfig.traitorCount) || 3)),
       potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
-      endgameSize: Number(seasonConfig.finaleSize) || 3,
+      // The castle's own endgame size (setup: final 2-5). Falls back to the
+      // Total Drama finale size, then 3, so a season saved before this control
+      // existed still plays a final three.
+      endgameSize: Number(seasonConfig.trEndgameSize)
+        || Number(seasonConfig.finaleSize) || 3,
       murderSchedule: _murderSchedule(),
       missionSchedule: _missionScheduleMap(),
       // Auto double murders are on unless the Castle Options toggle turns them

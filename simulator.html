@@ -698,6 +698,16 @@
               </label>
             </div>
             <div class="form-group">
+              <label class="form-label">The endgame begins at</label>
+              <select id="cfg-tr-endgame-size" onchange="saveConfig()" class="form-input">
+                <option value="2">Final two</option>
+                <option value="3">Final three</option>
+                <option value="4">Final four</option>
+                <option value="5">Final five</option>
+              </select>
+              <div class="hint hint-tight">How many are left when the murders stop and the fire round begins — banish-or-end until they agree to end it. Earlier (final five) means a longer finale; final two is a straight last vote.</div>
+            </div>
+            <div class="form-group">
               <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
                 <input type="checkbox" id="cfg-tr-endgame-reveal" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
                 <span>

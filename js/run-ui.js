@@ -1945,8 +1945,25 @@ export function updateCoachesUI() {
  * and tr-run.js hands them to the engine when the mode is 'choose'; leaving the
  * mode on 'random' ignores the list entirely and the castle draws its own.
  */
+// Names from a PREVIOUS cast linger on the pact after the cast is changed: they
+// have no chip left to unselect, so they silently eat pact slots and block
+// picking anyone new (the reported bug — "can't select a third in a 3-Traitor
+// season because a ghost from the old cast holds the slot"). Drop anybody who is
+// not in the current cast. Returns whether anything changed.
+function _pruneChosenTraitorsToCast() {
+  if (!Array.isArray(seasonConfig.trChosenTraitors)) return false;
+  if (typeof players === 'undefined' || !players.length) return false;
+  const castNames = new Set(players.map(p => p.name));
+  const before = seasonConfig.trChosenTraitors.length;
+  seasonConfig.trChosenTraitors = seasonConfig.trChosenTraitors.filter(n => castNames.has(n));
+  return seasonConfig.trChosenTraitors.length !== before;
+}
+
 export function toggleTraitorPlayer(name) {
   if (!seasonConfig.trChosenTraitors) seasonConfig.trChosenTraitors = [];
+  // Clear stale names FIRST, before the cap check — otherwise a ghost from the
+  // old cast keeps the pact at its cap and the click to add a new face no-ops.
+  _pruneChosenTraitorsToCast();
   const cap = Math.max(2, Math.min(5,
     parseInt(document.getElementById('cfg-tr-traitor-count')?.value)
     || seasonConfig.traitorCount || 3));
@@ -1962,6 +1979,9 @@ export function updateTraitorPickerUI() {
   const grp  = document.getElementById('tr-traitor-choose-group');
   const desc = document.getElementById('tr-traitor-mode-desc');
   if (grp) grp.style.display = mode === 'choose' ? 'block' : 'none';
+  // Drop any pact members left behind by a cast change, so the grid, the cap
+  // and the description all reflect only names that still have a chip.
+  _pruneChosenTraitorsToCast();
   const cap = Math.max(2, Math.min(5,
     parseInt(document.getElementById('cfg-tr-traitor-count')?.value)
     || seasonConfig.traitorCount || 3));

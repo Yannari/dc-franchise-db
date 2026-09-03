@@ -1439,6 +1439,24 @@ const ACCUSED_REPLY = [
   '{T} says nothing at all, and lets the accusation sit there getting older.',
   '{T} turns it round and asks who put the idea in {a}’s head.',
 ];
+// THE ACCUSED ANSWERS, in their own voice — the show gives everyone the floor to
+// defend themselves before the slates. First person; asserts nothing but the
+// bare fact of being accused, which every layer can see. Original lines.
+const ACCUSED_DEFENCE = [
+  'I did not touch anyone. I cannot prove that to you, and I know exactly how that sounds from where I am sitting.',
+  'You want a Traitor and I am the easiest name in this room. Those are not the same thing, and you all know it.',
+  'Ask yourself who is loudest about me tonight. Then ask yourself why they need me gone before I can talk.',
+  'If you send me out and I was one of yours, you have just done their work for them, in the open, for free.',
+  'Every one of you has had an hour today you could not fully account for. Tonight you have decided it is mine.',
+  'Write my name if you have already made your minds up. But you will be back here next week with the same problem.',
+];
+// AND SOMETIMES THROWS IT BACK — only at a name they ACTUALLY put up tonight
+// (`byTarget` says so), never an invented one. `{d}` is that name.
+const ACCUSED_DEFLECT = [
+  '{T} will not sit there and wear it, and says the name right back: {d}.',
+  '{T} answers a name with a name — before you look at me, look at {d}.',
+  '{T} turns the whole table around by pointing at {d} and refusing to be the only one on trial.',
+];
 // HOW A SPEAKER PUTS THEIR EVIDENCE ON THE TABLE. `{src}` is the exact reason
 // their belief carries — drawn from the stored source, never invented — so the
 // claim is never "{A} finds {t} suspicious" but a thing that actually happened.
@@ -1950,6 +1968,19 @@ function _buildBeats(v) {
       + 'the room is about to write down names it has no reason for.</p>'
       + _murmur(key + '|m1')), 'debate', { kind: 'debate' });
   }
+  // No two accused give the same defence in one table — the pool is small and
+  // hash collisions otherwise put an identical first-person line under two
+  // different faces on the same screen. Picked hash-first, advanced past any
+  // line already spoken tonight.
+  const usedDef = new Set();
+  const pickDefence = seedKey => {
+    let i = _hash(seedKey) % ACCUSED_DEFENCE.length;
+    for (let n = 0; n < ACCUSED_DEFENCE.length; n++) {
+      const line = ACCUSED_DEFENCE[(i + n) % ACCUSED_DEFENCE.length];
+      if (!usedDef.has(line)) { usedDef.add(line); return line; }
+    }
+    return ACCUSED_DEFENCE[i];
+  };
   clusters.forEach((c, ci) => {
     const speeches = speechFor.get(c.t) || [];
     const src = speeches.length ? speeches[0].sources[0] : null;
@@ -1972,6 +2003,16 @@ function _buildBeats(v) {
         + c.acc.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
     }
     inner += '<p>' + _fill(_pick(ACCUSED_REPLY, key + '|rep|' + c.t), subs) + '</p>';
+    // THE ACCUSED GETS THE FLOOR, in their own voice — every table on the real
+    // show lets the named player answer before the slates. And they throw it
+    // back ONLY at a name they actually put up tonight (`byTarget` proves it),
+    // never one invented for the sentence.
+    inner += _said(c.t, pickDefence(key + '|def|' + c.t));
+    const deflectTo = [...byTarget.entries()].find(([tgt, accs]) => tgt !== c.t && accs.includes(c.t));
+    if (deflectTo) {
+      inner += '<p>' + _fill(_pick(ACCUSED_DEFLECT, key + '|dfl|' + c.t),
+        { ...subs, d: _esc(deflectTo[0]) }) + '</p>';
+    }
     // THE AUDIENCE'S PRIVILEGE. `v.truth` is null on every other layer and at
     // every finale table, so this block simply does not exist for them.
     if (v.truth) {

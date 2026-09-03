@@ -526,6 +526,12 @@ function _buildBeats(rec, ep) {
   const overruled = rec.overruled || [];
   const plain = rec.variant === 'plain-sight';
   const forced = rec.variant === 'name-your-own';
+  // A DOUBLE NIGHT HAS TWO BODIES. The second is the argument the pact lost
+  // (see `_shapeNight` in murder.js): the overruled Traitor's target dies too.
+  // The seal card and the decision tally both have to say two names, or the
+  // screen announces one death while the Day Book records two.
+  const dbl = rec.variant === 'double' && !!rec.second;
+  const isVictim = t => t === rec.target || (dbl && t === rec.second);
   // `slot` is the beat's ROLE, and it is what the sidebar gates on. Derived
   // here rather than pattern-matched out of the markup later: a sidebar that
   // greps its own HTML for a Roman numeral goes wrong the first time a title
@@ -661,8 +667,8 @@ function _buildBeats(rec, ep) {
     '<div class="cv-tally">'
     + (argued.length
       ? argued.map(a => _tallyRow(a.target, a.traitor,
-        a.target === rec.target ? 'chosen' : 'struck',
-        a.target === rec.target ? 'Chosen' : 'Overruled')).join('')
+        isVictim(a.target) ? 'chosen' : 'struck',
+        isVictim(a.target) ? 'Chosen' : 'Overruled')).join('')
       : _tallyRow(rec.target, rec.decidedBy || '', 'chosen', 'Chosen'))
     + '</div>'
     + '<p style="margin-top:16px">' + _pick(NAME_TEXT, key + '|name') + '</p>'), null, 'name');
@@ -673,17 +679,26 @@ function _buildBeats(rec, ep) {
     + '<h3 class="cv-card-title">Sealed</h3>'
     + '<p>' + _pick(SEAL_TEXT, key + '|wax') + '</p>'
     + '<div class="cv-letter"><div class="cv-letter-sheet">'
-    + '<div class="cv-letter-hand" style="font-size:17px;opacity:.8">Tonight the castle loses</div>'
-    + '<div style="margin:14px 0 2px">' + _av(rec.target, 78) + '</div>'
-    + '<div class="cv-letter-name">' + _esc(String(rec.target || '').toUpperCase()) + '</div>'
-    + '<div class="cv-letter-hand" style="font-size:16px;opacity:.72">&mdash; and will be told so at first light</div>'
+    + '<div class="cv-letter-hand" style="font-size:17px;opacity:.8">Tonight the castle loses'
+    + (dbl ? ' two' : '') + '</div>'
+    + (dbl
+      ? '<div style="margin:14px 0 2px;display:flex;gap:26px;justify-content:center;align-items:flex-start">'
+        + '<div>' + _av(rec.target, 78)
+        + '<div class="cv-letter-name">' + _esc(String(rec.target || '').toUpperCase()) + '</div></div>'
+        + '<div>' + _av(rec.second, 78)
+        + '<div class="cv-letter-name">' + _esc(String(rec.second || '').toUpperCase()) + '</div></div>'
+        + '</div>'
+      : '<div style="margin:14px 0 2px">' + _av(rec.target, 78) + '</div>'
+        + '<div class="cv-letter-name">' + _esc(String(rec.target || '').toUpperCase()) + '</div>')
+    + '<div class="cv-letter-hand" style="font-size:16px;opacity:.72">&mdash; and '
+    + (dbl ? 'both will' : 'will') + ' be told so at first light</div>'
     + '</div>'
     + '<span class="cv-shock" aria-hidden="true"></span>'
     + '<div class="cv-seal-slot">' + _icon('seal', 92, '#8f1a26') + '</div>'
     + '</div>'
     + '<div class="cv-cost" style="justify-content:center;margin-top:54px">'
     + '<span class="cv-chip" data-tone="bad">' + _icon('letter', 13)
-    + 'One name, ' + (rec.ballots || []).length + ' of '
+    + (dbl ? 'Two names, ' : 'One name, ') + (rec.ballots || []).length + ' of '
     + Math.max(1, (rec.turret || []).length) + ' signed</span>'
     + '<span class="cv-chip" data-tone="cold">' + _icon('eye', 13)
     + 'The castle knows nothing</span>'

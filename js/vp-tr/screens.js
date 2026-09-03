@@ -27,7 +27,6 @@ import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
   from './castle-day.js';
 import { rpBuildSelection, trSelectionRevealAll } from './selection.js';
-import { rpBuildWeb } from './web.js';
 import { rpBuildSuspicion, trSuspicionRevealAll } from './suspicion.js';
 // The Alcove is folded into the night castle segment (Plan 11); only its gate
 // is needed here, for that segment's `when`.
@@ -111,16 +110,6 @@ export const TRAITORS_SCREENS = [
   { id: 'tr-cold-open', label: 'Breakfast', suffix: 'coldopen',
     when: r => !!(r.tr && r.tr.dawn),
     build: rpBuildColdOpen, revealAll: trColdOpenRevealAll, revealAllName: 'trColdOpenRevealAll' },
-  // THE STANDING PICTURE — the pact, the castle's collective read, and every
-  // player's own map of who they suspect and who they trust, as it stands this
-  // episode. A static analysis panel (no reveal machinery), drawn off the same
-  // per-episode belief snapshot the Voting Plans screen uses, so a replay shows
-  // the castle as it was THEN. Early in the order deliberately: it is the board
-  // you read before the day plays out on top of it.
-  { id: 'tr-web', label: 'The Web', suffix: 'web',
-    badge: { text: 'The Web', color: '#c9a24a' },
-    when: r => !!(r.tr && r.tr.beliefs && (r.tr.beliefs.living || []).length),
-    build: (r, o) => rpBuildWeb(r, o) },
   // ── THE DAY, INTERLEAVED INTO BROADCAST ORDER (Plan 11) ───────────────
   //
   // The Castle Day used to be ONE screen at the foot of the episode, after the

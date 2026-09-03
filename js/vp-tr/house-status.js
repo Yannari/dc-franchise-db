@@ -66,6 +66,7 @@ import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
+import { rpBuildRelationships } from './web.js';
 
 const TR = 'traitors';
 
@@ -1251,6 +1252,10 @@ export function rpBuildHouseStatus(ep, observer = 'audience') {
     // handlers replace by id.
     + '<div class="db-stage" id="db-stage-inner">' + _stage(state, st.idx) + '</div>'
     + '<main class="db-main">' + stream + '</main>'
+    // THE ROOM, RULED OFF AT THE FOOT OF THE BOOK. Friendships and enmities
+    // first, then the pact and who the room is watching — the relationship
+    // layer, drawn off this episode's own snapshot (js/vp-tr/web.js).
+    + rpBuildRelationships(ep, observer)
     + '</div></div>'
     + '<div class="db-controls" id="db-controls-' + suffix + '">'
     + '<button class="db-btn" onclick="' + call('trHouseStatusRevealNext') + '">'

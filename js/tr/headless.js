@@ -1720,6 +1720,22 @@ function _premiereRules(castSize) {
   };
 }
 
+// The living room's bonds, this episode. One entry per living pair whose bond
+// is worth drawing (|v| >= 1); 0-bonds are the default and left out to keep the
+// record lean. Read by the Day Book's relationship section (js/vp-tr/
+// house-status.js) — friends positive, enemies negative.
+function _snapshotBonds() {
+  const living = [...(gs.activePlayers || [])];
+  const out = [];
+  for (let i = 0; i < living.length; i++) {
+    for (let j = i + 1; j < living.length; j++) {
+      const v = getBond(living[i], living[j]);
+      if (Math.abs(v) >= 1) out.push({ a: living[i], b: living[j], v: Math.round(v * 10) / 10 });
+    }
+  }
+  return out;
+}
+
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
   castle = null, endgame = false, selection = null, arrival = null } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
@@ -1771,6 +1787,14 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // here -- `runMission` already prefers the state's value over its own.
       potCeiling: gs.tr?.potCeiling ?? 0,
       living: [...(gs.activePlayers || [])],
+      // THE ROOM'S FRIENDSHIPS AND ENMITIES, frozen at this episode — friends
+      // positive, enemies negative, one entry per living pair worth drawing.
+      // `gs.bonds` is one live number per pair, mutated all season, so a
+      // relationship screen reading it straight would draw every past episode
+      // with the FINAL bonds on it (the "live state on a replayed episode"
+      // bug). Snapshotted here so the Day Book's relationship section shows the
+      // castle as it stood THEN.
+      bonds: _snapshotBonds(),
       // WHAT THE CASTLE WAS DOING WHILE THE TURRET SAT. Beats written this
       // episode by people who were NOT in the meeting -- the other half of
       // the picture, and the only half the castle itself ever gets.

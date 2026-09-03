@@ -4603,9 +4603,22 @@ describe('a thread cites a day it actually has a beat on', () => {
       if (!closed.length) continue;
       const html = dayRevealed(ep, 'audience');
       const bands = knots(html);
-      const threads = new Set(closed.map(s => s.threadId));
+      // A TOPIC-GROUNDED scene states its ending in the consequence itself and
+      // deliberately draws no separate knot band (see the knot-render guard in
+      // castle-day.js) — the generic "And that is where it finishes." slogan
+      // under a sentence that already said so was the redundancy this rework
+      // removed. So a closed thread is expected to draw a knot only when its
+      // CLOSING scene (highest beat) is not grounded. The guard still bites for
+      // every legacy thread: a real payoff that stopped rendering its knot fails.
+      const closerByThread = new Map();
+      for (const s of closed) {
+        const cur = closerByThread.get(s.threadId);
+        if (!cur || s.beatNo > cur.beatNo) closerByThread.set(s.threadId, s);
+      }
+      let expectedKnots = 0;
+      for (const s of closerByThread.values()) if (!s.topic) expectedKnots++;
       expect(bands.length, `ep ${ep.num}: a thread closed and the screen drew no knot`)
-        .toBe(threads.size);
+        .toBe(expectedKnots);
       closers += bands.length;
     }
     expect(closers, 'no closing thread was checked').toBeGreaterThan(2);

@@ -1168,6 +1168,13 @@ function _castleRecord(ep, fired) {
       closedNow,
       outcome: closedNow ? t.outcome : null,
       sense: closedNow ? outcomeSense(t.outcome) : null,
+      // THE CONCRETE SUBJECT THIS SCENE IS ABOUT, sourced from real sim data by
+      // the event's fire() (the suspect named, the mission fact, the promise).
+      // Reworked (topic-grounded) events set it; legacy events leave it null and
+      // the composer falls back to its old generic wrapping. `topicKind` tells
+      // the composer which grounded pool to draw its reaction/consequence from.
+      topic: (c && typeof c.topic === 'string' && c.topic) ? c.topic : null,
+      topicKind: (c && typeof c.topicKind === 'string' && c.topicKind) ? c.topicKind : null,
     });
   }
 

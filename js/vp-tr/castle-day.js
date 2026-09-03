@@ -1627,6 +1627,135 @@ const CONSEQ_SINGLE = {
   },
 };
 
+// ══════════════════════════════════════════════════════════════════════
+// TOPIC-GROUNDED SCENES — the reader can name who, the concrete subject,
+// what happened, and what changed
+// ══════════════════════════════════════════════════════════════════════
+//
+// A castle scene used to close on a generic consequence drawn by family/tone:
+// "{a} will watch where {b} stands tonight". For a scene where {a} confided a
+// suspicion of a THIRD person ({c}) to {b}, that names the wrong subject — the
+// person watched is {c}, not the confidant {b}. Worse, it fell back on "it /
+// whatever this is" with no antecedent on the card.
+//
+// A REWORKED event's fire() records a concrete `topic` (a name or short phrase
+// SOURCED FROM SIM DATA — the suspect discussed, the promise made, the mission
+// fact) and a `topicKind`. When the composer sees both, it draws the closing
+// consequence from a topic pool keyed by the event's own branch, so every
+// sentence follows an actual cause on the record and names the thing it is
+// about. `{topic}` fills from that recorded subject. Legacy (un-reworked)
+// events leave `topic` null and keep the old generic wrapping unchanged.
+
+// susp-out-of-earshot: {a} raised a THIRD person's name ({topic}) to {b} on the
+// road. {b} is the confidant, not the subject — the change is a suspicion of
+// {topic} plus what the road revealed about {b}.
+const CONSEQ_ROAD_THIRD_NAME = {
+  agreed: [
+    '{a} and {b} came off the road with {topic}’s name settled between them. Neither has proof; both are treating {topic} as the name for tonight.',
+    'By the gate, {a} and {b} had said {topic} out loud enough times to stop hedging. That is one more person now watching {topic}, and {topic} does not know it.',
+    '{a} went out carrying {topic}’s name alone and walked back sharing it with {b}. The two of them are closer for it; {topic} is further exposed for it.',
+  ],
+  hedged: [
+    '{a} is no less sure about {topic} than at the gate — and a good deal less sure about {b}, who would not say either way.',
+    '{topic}’s name is still {a}’s alone to carry: {b} took it and gave nothing back. {a} walks in wondering which side {b} is really keeping.',
+    '{a} put {topic} in front of {b} and got a shrug. The suspicion of {topic} stands; the trust in {b} is the thing that moved, and downward.',
+  ],
+  defended: [
+    '{a} learned nothing new about {topic} and something new about {b}: whatever the road offered, {b} will not move against {topic}.',
+    'The name {a} tried was the one name {b} guards. {a} still suspects {topic} — and now knows {b} is no help there, and files that too.',
+    '{b} shut the talk of {topic} down flat. {a} keeps the suspicion of {topic} and adds a fresh one, about how fast {b} came to {topic}’s defence.',
+  ],
+  'named-somebody-else': [
+    '{a} went out with {topic}’s name and walked home with {b}’s alternative beside it. Both are on {a}’s list now.',
+    '{b} would not follow {a} to {topic}, and would not let {a} arrive empty either. {a} carries in two names instead of one.',
+    '{topic} stays on {a}’s list; the name {b} traded goes on beside it. The road doubled the problem instead of settling it.',
+  ],
+  'would-not-talk-about-it': [
+    '{topic}’s name went nowhere on that road. What {a} took home is that {b} will not say a word out of earshot — which is its own kind of answer.',
+    '{a} raised {topic} and {b} raised the weather. The suspicion of {topic} is exactly where it started; the read on {b} is not.',
+    '{b} would not touch {topic}, or anyone. {a} walks in with the same doubt about {topic} and a new one about why {b} stays so quiet.',
+  ],
+};
+
+// susp-let-it-go-on-the-road-back: {a} walked the suspect ({topic} === {b})
+// home, asking all the way. The change is on the doubt about {topic}.
+const CONSEQ_ROAD_SUSPECT_WALK = {
+  cleared: [
+    '{a} spent the whole road home working on {topic} and came away satisfied. The doubt about {topic} is set down, and {a} means it.',
+    'A long walk with nothing to do but be asked about it, and {topic} never wavered. {a} lets the suspicion of {topic} go at the gate.',
+    '{a} went out doubting {topic} and walked back an ally. Whatever the road tested, {topic} passed it.',
+  ],
+  slipped: [
+    '{topic} gave {a} one account of the afternoon early on the road and a different one near the gate — and {a} was still listening. The doubt about {topic} is far harder now.',
+    '{a} caught {topic} telling the same hours two ways on one walk. That is no longer a feeling about {topic}; it is a thing {a} could say at the table.',
+    'Somewhere on the road {topic}’s story stopped matching itself, and {a} heard it. The suspicion of {topic} has teeth now.',
+  ],
+  hardened: [
+    '{topic} held the line the whole way home and {a} believed none of it. The doubt about {topic} did not clear — it set.',
+    '{a} asked {topic} about it all the way to the gate, got a clean answer each time, and trusts {topic} less for how clean they were.',
+    'Nothing {topic} said was wrong, and {a} came home surer than ever that something is. The read on {topic} hardened on that road.',
+  ],
+};
+
+// cover-road-rehearsal (reworked): a Traitor rehearsed the answer to a SPECIFIC
+// live suspicion aimed at them ({topic} = what they are being asked to account
+// for). The change is whether that answer will hold at the table.
+const CONSEQ_ROAD_COVER = {
+  airtight: [
+    '{a} walked the account of {topic} smooth enough to say in {a}’s sleep. If it comes up at the table tonight, {a} is ready for it.',
+    'By the gate {a} had {topic} answered from every side. The one advantage a Traitor keeps is a story that does not move, and {a} has it.',
+    '{a} found the seam in the account of {topic}, closed it on the road, and arrived with nothing left to catch.',
+  ],
+  serviceable: [
+    '{a} got the account of {topic} to hold, mostly. There is one part {a} still cannot say the same way twice, and the road ran out before it was fixed.',
+    '{a} has a version of {topic} that survives being repeated, provided nobody pushes the middle of it. {a} is betting nobody does.',
+    'The story about {topic} works if you do not lean on it. {a} spent the walk hoping the table will not.',
+  ],
+  overcooked: [
+    '{a} rehearsed the account of {topic} so many times on the road that it stopped sounding like something that happened. Now having it is itself the risk.',
+    '{a}’s answer for {topic} grew a detail for every hour, which no honest person has. {a} knows it and cannot cut any of them.',
+    'By the gate {a} had polished {topic} past the point of belief, and could feel it, and could not stop.',
+  ],
+  'stopped-rehearsing': [
+    '{a} heard how the rehearsed account of {topic} sounded and decided the rehearsing was the thing that gets people caught. {a} goes in cold, on purpose.',
+    '{a} put the account of {topic} down on the road and will say it, for the first time, only if the table asks. Nobody else will ever know there was a rehearsal.',
+    '{a} has watched two people caught by being too ready about their story. On {topic}, {a} will not be the third.',
+  ],
+  'could-not-get-it-straight': [
+    '{a} could not get through the account of {topic} once, all the way, without losing an hour of it. {a} arrives with a night that has a hole in the middle.',
+    'Every time {a} started on {topic} it came out in a different order, and the order is the whole thing. The road did not give it back.',
+    '{a} spent two miles on {topic} and got off the road less sure of it than at the gate.',
+  ],
+};
+
+// Which topicKinds are grounded, and how the composer renders them. `reaction:
+// false` drops the generic reaction card, because the event's own action line
+// already carries the exchange — a second, generic reaction on top of it is the
+// redundancy the reviewer read. `conseq` is the branch-keyed closing pool.
+const TOPIC_CONFIG = {
+  'road-third-name': { reaction: false, conseq: CONSEQ_ROAD_THIRD_NAME },
+  'road-suspect-walk': { reaction: false, conseq: CONSEQ_ROAD_SUSPECT_WALK },
+  'road-cover': { reaction: false, conseq: CONSEQ_ROAD_COVER },
+};
+
+/** The set of event ids that have been reworked to record a concrete topic. */
+/* eslint-disable-next-line */
+export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal']);
+
+/**
+ * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed
+ * by the event's own branch, so the sentence is about the recorded subject.
+ * Falls back to the branch-agnostic pool for a branch the config does not name
+ * (a new branch degrades to generic rather than crashing).
+ */
+function _topicConsequence(s, subs, key, used, cfg, tone) {
+  const branch = String(s.branch || '');
+  const pool = (cfg.conseq && cfg.conseq[branch])
+    || (cfg.conseq && Object.values(cfg.conseq)[0]) || [];
+  const say = _fill(_pickUnique(pool, key + '|tconseq', used, 'tconseq'), subs);
+  return { text: say, say, mark: null, tone };
+}
+
 /**
  * WHAT SOMEBODY ACROSS THE ROOM SEES A PAIR DOING.
  *
@@ -3223,7 +3352,14 @@ function _composeScene(s, key, used, cast) {
     when: WHEN_SAID[s.window] || 'somewhere in the middle of the day',
     names: _namesPhrase(roll),
     d: String(s.openedEp), n: String([...new Set(s.priorDays || [])].length),
+    // THE CONCRETE SUBJECT, when the event recorded one. Empty string for a
+    // legacy event, so a stray `{topic}` in an un-reworked pool renders blank
+    // rather than literal — but no legacy pool carries the token.
+    topic: s.topic ? String(s.topic) : '',
   };
+  // A grounded event drives its own closing consequence off the recorded topic
+  // and branch; legacy events keep the generic family/tone pools.
+  const topicCfg = (s.topic && TOPIC_CONFIG[s.topicKind]) ? TOPIC_CONFIG[s.topicKind] : null;
 
   const estPool = mode === 'group' ? ESTABLISH_GROUP
     : mode === 'pair' ? (ESTABLISH_PAIR[s.window] || ESTABLISH_PAIR.morning)
@@ -3293,17 +3429,24 @@ function _composeScene(s, key, used, cast) {
   // table naming the scenes whose family register answers the wrong stimulus.
   // It returns null for everything else, so an unlisted scene keeps the pool it
   // has always had and this can only ever correct a card.
-  const voice = _voice(b || a);
-  const purpose = b ? actionPurpose(s) : null;
-  const reactPool = b
-    ? (tone === 'adverse' ? REACT_ADVERSE : REACT)[_reactClass(s)][voice]
-    : (mode === 'solo' ? REACT_SOLO[voice] : REACT_SINGLE[voice]);
-  const reactText = purpose
-    ? attributedLineInVoice(b, purpose, subs, { seed: key })
-    : _fill(_pickUnique(reactPool, key + '|react', used), subs);
-  audience.push({ kind: 'reaction', tone: b ? tone : 'neutral',
-    purpose: purpose || null, text: reactText });
-  audience.push({ kind: 'consequence', ..._consequenceText(s, subs, key, used, mode, tone) });
+  // A grounded event whose config drops the reaction skips the generic card:
+  // its action line already carries the exchange, and a second generic reaction
+  // on top of it names the wrong subject or contradicts the line above it.
+  if (!(topicCfg && topicCfg.reaction === false)) {
+    const voice = _voice(b || a);
+    const purpose = b ? actionPurpose(s) : null;
+    const reactPool = b
+      ? (tone === 'adverse' ? REACT_ADVERSE : REACT)[_reactClass(s)][voice]
+      : (mode === 'solo' ? REACT_SOLO[voice] : REACT_SINGLE[voice]);
+    const reactText = purpose
+      ? attributedLineInVoice(b, purpose, subs, { seed: key })
+      : _fill(_pickUnique(reactPool, key + '|react', used), subs);
+    audience.push({ kind: 'reaction', tone: b ? tone : 'neutral',
+      purpose: purpose || null, text: reactText });
+  }
+  audience.push({ kind: 'consequence', ...(topicCfg
+    ? _topicConsequence(s, subs, key, used, topicCfg, tone)
+    : _consequenceText(s, subs, key, used, mode, tone)) });
 
   const publicStream = [
     { kind: 'establish', tone: 'neutral',
@@ -3331,6 +3474,9 @@ function _composeScene(s, key, used, cast) {
     // stored branch says it went well or badly; `layer` is which observer this
     // record was composed for.
     mode, tone,
+    // THE RECORDED SUBJECT, carried onto the composed scene so a guard (and the
+    // consequence-chip row) can read what the scene is about without re-deriving it.
+    topic: s.topic || null, topicKind: s.topicKind || null,
     layer: s.layer === 'heard' ? 'heard' : 'full',
     observerText: s.layer === 'heard'
       ? { public: publicStream }
@@ -3497,7 +3643,7 @@ function _beatCard(s, beat, key) {
     body += _faces(s.participants);
   }
   if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
-  if (!heard && beat.kind === 'consequence' && s.closedNow) {
+  if (!heard && beat.kind === 'consequence' && s.closedNow && !(s.topic && TOPIC_CONFIG[s.topicKind])) {
     body += _knotMark(s, beat.mark);
   }
 
@@ -3523,7 +3669,7 @@ function _sceneCard(s, stream, key) {
     body += '<p class="dy-say">'
       + _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text)) + '</p>';
     if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
-    if (!heard && beat.kind === 'consequence' && s.closedNow) body += _knotMark(s, beat.mark);
+    if (!heard && beat.kind === 'consequence' && s.closedNow && !(s.topic && TOPIC_CONFIG[s.topicKind])) body += _knotMark(s, beat.mark);
   }
   return '<div class="dy-scene" data-carried="' + (carried && !heard ? '1' : '0') + '"'
     + ' data-beat="scene"'

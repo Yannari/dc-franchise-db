@@ -66,6 +66,18 @@ function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
 /** How many people the castle has already lost. */
 function _deaths() { return murderCount(gs); }
 
+// THE MOST RECENT MURDER VICTIM, off the round log — real sim data, the name a
+// Traitor rehearsing an alibi is accounting for. Null before the first murder,
+// on which the road-cover topic falls back to the last afternoon out. Reading
+// the log is a PURE READ; it changes no state and no firing.
+function _lastMurdered() {
+  const rounds = gs?.tr?.rounds || [];
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    if (rounds[i] && rounds[i].murdered) return rounds[i].murdered;
+  }
+  return null;
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // journey-out — the walk away from the castle
 // ══════════════════════════════════════════════════════════════════════
@@ -332,7 +344,12 @@ registerEvent({
     // The thread is the PAIR's — what these two now share is that one of them
     // said a name to the other, which is a fact about the two of them.
     const { thread, cited } = arcContinue(api, 'suspicion', [a, b], ctx.ep, line, { source: sceneWhy });
+    // THE CONCRETE SUBJECT is the third person whose name {a} carried onto the
+    // road — real sim data (a living player {a} named to {b}). The composer
+    // closes the scene on this name, so the consequence is about {c}, not about
+    // the confidant {b} the generic suspicion pool would have watched by mistake.
     return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
+      topic: target, topicKind: 'road-third-name',
       threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -346,56 +363,60 @@ registerEvent({
 // how many times this person has already been over this account, and the
 // fourth rehearsal of one story is a symptom rather than preparation — plus
 // the Traitor's own mental, strategic and temperament.
+// EVERY LINE NAMES WHAT IS BEING REHEARSED. `{topic}` fills from the concrete
+// thing the Traitor is accounting for — the night the last victim was murdered,
+// or the last afternoon out before any murder — so the scene is never a Traitor
+// rehearsing an unnamed "story", the vague premise the reviewer read.
 const ROAD_REHEARSAL_LINES = {
   airtight: [
-    '{a} used the walk to run their own story back through, start to finish, and could not find a seam in it.',
-    'By the time the castle was out of sight {a} had the whole account smooth enough to say in their sleep.',
-    '{a} spent the road out rehearsing, and came off it with an answer for every question anybody had left.',
-    '{a} walked the whole account through twice, out loud, under their breath, and it held both times.',
-    'The road was long enough for {a} to test every version and keep the plainest one.',
-    '{a} found the one hour that did not fit, moved it, and the rest of it closed up behind it.',
-    'Two miles of quiet work, and {a} arrived with a night nobody can take apart.',
-    '{a} said it to a gate post and the gate post believed every word.',
+    '{a} used the walk to run the account of {topic} back through, start to finish, and could not find a seam in it.',
+    'By the time the castle was out of sight, {a} had the story of {topic} smooth enough to say in {a}’s sleep.',
+    '{a} spent the road out on {topic}, and came off it with an answer for every question the table could ask.',
+    '{a} walked the whole account of {topic} through twice, under {a}’s breath, and it held both times.',
+    'The road was long enough for {a} to test every version of {topic} and keep the plainest one.',
+    '{a} found the one hour of {topic} that did not fit, moved it, and the rest of it closed up behind it.',
+    'Two miles of quiet work on {topic}, and {a} arrived with a night nobody can take apart.',
+    '{a} said the account of {topic} to a gate post, and the gate post believed every word.',
   ],
   serviceable: [
-    '{a} went over their story on the walk and got most of it to hold, which would have to do.',
-    'There was one part {a} still could not say twice the same way, and the road ran out before it was fixed.',
-    '{a} practised until the account was good enough, and tried not to think about the part that was not.',
-    '{a} got it down to one weak hour and decided one weak hour was survivable.',
-    'By the last mile the story worked, provided nobody asked about the middle of it.',
-    '{a} has a version. It is not a good version and it is the version {a} is going with.',
-    'It holds if you do not push it, and {a} spent the walk hoping nobody would.',
-    '{a} traded a better story for a simpler one, on the grounds that simpler survives being repeated.',
+    '{a} went over the account of {topic} on the walk and got most of it to hold, which would have to do.',
+    'There was one part of {topic} that {a} still could not say the same way twice, and the road ran out before it was fixed.',
+    '{a} practised the story of {topic} until it was good enough, and tried not to think about the part that was not.',
+    '{a} got {topic} down to one weak hour and decided one weak hour was survivable.',
+    'By the last mile the account of {topic} worked, provided nobody asked about the middle of it.',
+    '{a} has a version of {topic}. It is not a good version, and it is the version {a} is going with.',
+    'The story of {topic} holds if you do not push it, and {a} spent the walk hoping nobody would.',
+    '{a} traded a better account of {topic} for a simpler one, on the grounds that simpler survives being repeated.',
   ],
   overcooked: [
-    '{a} rehearsed the story so many times on the way out that it stopped sounding like something that happened.',
-    'By the last mile {a}’s account had grown three details it did not need and could not lose.',
-    '{a} polished it past the point of being believable and knew it, and could not stop.',
-    'The version {a} walked back with had a time on every hour of it, which no honest person has.',
-    '{a} added a small human detail, and then another, and by the gate it was a performance.',
-    '{a} has now got a story so good that having it is itself the problem.',
-    'Nobody remembers a Tuesday like that. {a} does, in nine parts, with a reason for each.',
-    '{a} rehearsed the shrug as well, which is roughly where this stops being preparation.',
+    '{a} rehearsed {topic} so many times on the way out that it stopped sounding like something that happened.',
+    'By the last mile, {a}’s account of {topic} had grown three details it did not need and could not lose.',
+    '{a} polished the story of {topic} past the point of being believable, knew it, and could not stop.',
+    'The version of {topic} {a} walked back with had a time on every hour, which no honest person has.',
+    '{a} added a small human detail to {topic}, and then another, and by the gate it was a performance.',
+    '{a} has now got an account of {topic} so good that having it is itself the problem.',
+    'Nobody remembers {topic} in that much detail. {a} does, in nine parts, with a reason for each.',
+    '{a} rehearsed the shrug about {topic} as well, which is roughly where this stops being preparation.',
   ],
   'stopped-rehearsing': [
-    '{a} got half a mile in, heard how it sounded, and decided the rehearsing was the thing that gets people caught.',
-    '{a} put it down on the road out and went in with nothing prepared, on purpose.',
-    'People who have not done anything do not have an account. {a} arrived at that on the hill.',
-    '{a} decided the safest version of Tuesday is the one {a} has not thought about, and stopped thinking about it.',
-    'The rehearsal ended at the second stile. {a} walked the rest of it thinking about the weather, deliberately.',
-    '{a} has watched two people be caught by being too ready and is not going to be the third.',
-    '{a} stopped, out loud, mid-sentence, and did not start again.',
-    'Whatever {a} says tonight, {a} has decided it will be said for the first time.',
+    '{a} got half a mile into rehearsing {topic}, heard how it sounded, and decided the rehearsing is the thing that gets people caught.',
+    '{a} put the account of {topic} down on the road out and went in with nothing prepared, on purpose.',
+    'People who have done nothing do not have an account. {a} arrived at that, about {topic}, on the hill.',
+    '{a} decided the safest version of {topic} is the one {a} has not thought about, and stopped thinking about it.',
+    'The rehearsal of {topic} ended at the second stile. {a} walked the rest of it thinking about the weather, deliberately.',
+    '{a} has watched two people caught by being too ready, and will not be the third over {topic}.',
+    '{a} stopped rehearsing {topic}, out loud, mid-sentence, and did not start again.',
+    'Whatever {a} says about {topic} tonight, {a} has decided it will be said for the first time.',
   ],
   'could-not-get-it-straight': [
-    '{a} could not get through the account once, all the way out, without losing an hour of it.',
-    'Every time {a} started, it came out in a different order, and the order is the whole thing.',
-    '{a} spent two miles on one evening and arrived less sure of it than at the gate.',
-    'The story will not sit still. {a} has been walking behind it since breakfast.',
-    '{a} had it on Tuesday. {a} does not have it now, and the road did not give it back.',
-    'Somewhere between the two versions there is a true one and {a} can no longer find it.',
-    '{a} stopped four times to fix the same hour and fixed it four different ways.',
-    'By the gate {a} had a headache and a night with a hole in the middle of it.',
+    '{a} could not get through the account of {topic} once, all the way out, without losing an hour of it.',
+    'Every time {a} started on {topic}, it came out in a different order, and the order is the whole thing.',
+    '{a} spent two miles on {topic} and arrived less sure of it than at the gate.',
+    'The account of {topic} will not sit still. {a} has been walking behind it since breakfast.',
+    '{a} had {topic} straight at breakfast. {a} does not have it now, and the road did not give it back.',
+    'Somewhere between {a}’s two versions of {topic} there is a true one, and {a} can no longer find it.',
+    '{a} stopped four times to fix the same hour of {topic} and fixed it four different ways.',
+    'By the gate, {a} had a headache and an account of {topic} with a hole in the middle of it.',
   ],
 };
 
@@ -441,10 +462,17 @@ registerEvent({
     let roll = rng() * total, branch = 'serviceable';
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
+    // THE CONCRETE THING BEING REHEARSED. The last victim's murder is the night
+    // a Traitor most needs an account for; before any murder, the last afternoon
+    // out. A pure read of the round log — no rng draw, no state write, so the
+    // firing stream is bit-identical to before.
+    const victim = _lastMurdered();
+    const topic = victim ? `the night ${victim} was murdered` : 'yesterday out on the mission';
     const sceneWhy = branch === 'stopped-rehearsing' ? 'decided the rehearsing was the dangerous part'
       : branch === 'could-not-get-it-straight' ? 'could not get one evening into the same order twice'
         : 'ran through their account of the night on the road';
-    const line = pick(rng, ROAD_REHEARSAL_LINES[branch]).replace(/\{a\}/g, actor);
+    const line = pick(rng, ROAD_REHEARSAL_LINES[branch])
+      .replace(/\{a\}/g, actor).replace(/\{topic\}/g, topic);
     const { thread, cited } = arcContinue(api, 'cover', [actor], ctx.ep, line, { source: sceneWhy });
     // TWO TERMINAL OUTCOMES, and the event had neither. An account walked
     // smooth enough to stop working on is `passed-clean`; a rehearsal
@@ -456,7 +484,7 @@ registerEvent({
     if (thread && branch === 'stopped-rehearsing') {
       api.resolveArc(thread.id, 'buried', { source: sceneWhy });
     }
-    return { branch, actor, threadId: thread?.id, cited };
+    return { branch, actor, topic, topicKind: 'road-cover', threadId: thread?.id, cited };
   },
 });
 // ── WIDENED AND REFORKED (Task 7 stage 6). A KEEP-list event, and the clearest
@@ -1005,7 +1033,11 @@ registerEvent({
     const outcome = branch === 'cleared' ? 'denied-convincingly'
       : branch === 'slipped' ? 'confessed-unrelated' : null;
     if (outcome) api.resolveArc(thread.id, outcome, { source: sceneWhy });
-    return { branch, pair: [a, b], threadId: thread.id, cited, note, outcome, bondDelta };
+    // THE CONCRETE SUBJECT is the suspect being walked home: {b}, the person
+    // {a} spent the road asking about. The composer closes on the doubt about
+    // {b} by name.
+    return { branch, pair: [a, b], topic: b, topicKind: 'road-suspect-walk',
+      threadId: thread.id, cited, note, outcome, bondDelta };
   },
 });
 

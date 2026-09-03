@@ -57,7 +57,7 @@ import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
 import { _setDrawRule } from '../js/tr/castle/lines.js';
 import roster from '../franchise_roster.json';
-import { rpBuildCastleDay, castleDayScenes, BRANCH_TONES } from '../js/vp-tr/castle-day.js';
+import { rpBuildCastleDay, castleDayScenes, BRANCH_TONES, TOPIC_READY } from '../js/vp-tr/castle-day.js';
 import { rpBuildConclave } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
 import { screenNarration } from '../js/vp-tr/screens.js';
@@ -883,21 +883,32 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     let checked = 0;
     for (const ep of TASK6_ROWS) {
       for (const scene of allScenes(ep)) {
+        // ESTABLISH, ACTION and CONSEQUENCE are the load-bearing spine of every
+        // scene and are demanded of all of them. The generic REACTION beat is
+        // NOT: a topic-grounded scene carries its exchange inside the action
+        // line and drops the separate reaction (see TOPIC_CONFIG in
+        // castle-day.js), so requiring 'reaction' of every scene would forbid
+        // the grounding this rework exists for. A legacy scene still has all
+        // four, which the reaction-tone guard above continues to check.
         expect(scene.observerText.audience.map(x => x.kind))
-          .toEqual(expect.arrayContaining(['establish', 'action', 'reaction', 'consequence']));
+          .toEqual(expect.arrayContaining(['establish', 'action', 'consequence']));
         checked++;
       }
     }
     expect(checked, 'no scene was checked').toBeGreaterThan(20);
   });
 
-  it('and an audience scene is four or five cards, never one', () => {
+  it('and an audience scene is three to five cards, never one', () => {
     const sizes = new Set();
     let checked = 0;
     for (const ep of TASK6_ROWS) {
       for (const scene of allScenes(ep)) {
         const n = scene.observerText.audience.length;
-        expect(n, scene.id + ' is ' + n + ' cards').toBeGreaterThanOrEqual(4);
+        // THREE is the floor, not four: a topic-grounded scene is
+        // establish + action + consequence (+ a recall beat when carried), and
+        // that is a deliberate re-baseline — the point of the guard is "never
+        // one blob", and three distinct beats is not one.
+        expect(n, scene.id + ' is ' + n + ' cards').toBeGreaterThanOrEqual(3);
         expect(n, scene.id + ' is ' + n + ' cards').toBeLessThanOrEqual(5);
         sizes.add(n);
         checked++;
@@ -1479,7 +1490,12 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
           adverse++;
           expect(conseq.tone, scene.id + ': the consequence was drawn from the wrong pool')
             .toBe('adverse');
-          if (scene.mode === 'pair' || scene.mode === 'group') {
+          // A TOPIC-GROUNDED scene carries its exchange in the action line and
+          // drops the separate generic reaction beat (see TOPIC_CONFIG in
+          // castle-day.js); its tone is checked on the consequence above. Only
+          // a scene that HAS a reaction beat is asked whether that beat is
+          // adverse — the guard still bites for every legacy pair/group scene.
+          if ((scene.mode === 'pair' || scene.mode === 'group') && react) {
             expect(react.tone, scene.id + ': a scene that went badly got a smooth reaction')
               .toBe('adverse');
           }
@@ -2066,5 +2082,104 @@ describe('a composed scene names one cast and one event (Defect 3)', () => {
     expect(ABSENT_PARTNER.test(
       'Chet passes it without ever knowing there was anything to pass. Brody '
       + 'knows, and that is the whole point of it.')).toBe(false);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// TOPIC-GROUNDED SCENES — a cold reader can answer all four questions
+// ══════════════════════════════════════════════════════════════════════
+//
+// The rework's contract (coordinator spec): a reworked scene must let a reader
+// who has seen nothing else answer WHAT happened, WHY the conversation started
+// (the concrete subject), WHO reacted, and WHAT changed. The mechanism is a
+// recorded `topic` (real sim data) that the composer names in the consequence,
+// instead of the generic "it / whatever this is" it used to close on.
+//
+// This arm plays several seasons, collects every scene from a TOPIC_READY
+// event, and demands the topic be NAMED in the closing consequence — which is
+// the sentence that used to name the wrong person or no one. The floor is a
+// real firing count so a rework that quietly stopped grounding fails here.
+describe('a topic-grounded scene names its subject and what changed', () => {
+  const SEEDS = [1, 2, 3, 7, 42, 55, 101, 555, 777, 999, 2002];
+  const grounded = [];
+  for (const seed of SEEDS) {
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+    for (const row of (gs.episodeHistory || [])) {
+      if (!row.tr || !row.tr.castle) continue;
+      for (const sc of castleDayScenes(row, 'audience')) {
+        if (sc.layer === 'heard') continue;
+        if (TOPIC_READY.has(sc.eventId) && sc.topic) grounded.push(sc);
+      }
+    }
+  }
+
+  it('fires enough to test', () => {
+    expect(grounded.length, 'no topic-grounded scene fired across the sample')
+      .toBeGreaterThan(30);
+  });
+
+  it('WHY: every grounded scene records a concrete subject', () => {
+    for (const sc of grounded) {
+      expect(typeof sc.topic === 'string' && sc.topic.length > 0,
+        sc.id + ': grounded scene has no topic').toBe(true);
+    }
+  });
+
+  it('WHAT CHANGED: the consequence names the recorded subject', () => {
+    let checked = 0;
+    for (const sc of grounded) {
+      const beats = sc.observerText.audience;
+      const conseq = beats.find(b => b.kind === 'consequence');
+      expect(conseq, sc.id + ': grounded scene has no consequence').toBeTruthy();
+      const text = String(conseq.say || conseq.text || '');
+      expect(text.includes(sc.topic),
+        sc.id + ': the consequence does not name its subject "' + sc.topic
+        + '" — closes on: ' + text.slice(0, 120)).toBe(true);
+      checked++;
+    }
+    expect(checked, 'no consequence was checked').toBeGreaterThan(30);
+  });
+
+  it('WHAT + WHO: the scene has an action, and its opening names a person in it', () => {
+    for (const sc of grounded) {
+      const beats = sc.observerText.audience;
+      const action = beats.find(b => b.kind === 'action');
+      expect(action, sc.id + ': grounded scene has no action').toBeTruthy();
+      const text = String(action.say || action.text || '');
+      expect(text.length, sc.id + ': empty action').toBeGreaterThan(10);
+      // WHO is answerable from the SCENE, not necessarily the action line: a
+      // solo scene names its actor in the establish ("Caleb has the track to
+      // themselves") and then says "the account of …" rather than repeating the
+      // name — which is the name-repetition the rework also set out to cut. So
+      // the check is that the establish OR the action names a participant.
+      const estab = beats.find(b => b.kind === 'establish');
+      const opening = String(estab ? (estab.say || estab.text || '') : '') + ' ' + text;
+      const named = (sc.participants || []).some(p => opening.includes(p));
+      expect(named, sc.id + ': the scene names no participant in its opening').toBe(true);
+    }
+  });
+
+  it('NO DANGLING FILLER: a grounded consequence never closes on an unnamed "it"', () => {
+    // The exact vagueness the rework removes — a closing line whose whole
+    // content is an unnamed "whatever this is / it did not keep / it repeats
+    // quietly", with no subject on the card. A grounded consequence names its
+    // topic (checked above), so none of these may appear in one.
+    const DANGLING = /\bwhatever this is\b|it did not keep until tomorrow|it repeats, quietly/i;
+    for (const sc of grounded) {
+      const conseq = sc.observerText.audience.find(b => b.kind === 'consequence');
+      const text = String(conseq.say || conseq.text || '');
+      expect(DANGLING.test(text),
+        sc.id + ': grounded consequence still closes on unnamed filler: ' + text.slice(0, 120))
+        .toBe(false);
+    }
+  });
+
+  it('MUTATION: the subject matcher actually bites', () => {
+    // If the consequence matcher could not tell a named subject from a missing
+    // one, every arm above would be vacuous. Prove it: a consequence that omits
+    // the topic fails the includes() check, and one that names it passes.
+    const topic = 'Gabby';
+    expect('the doubt about Gabby did not clear — it set.'.includes(topic)).toBe(true);
+    expect('and that is where it finishes.'.includes(topic)).toBe(false);
   });
 });

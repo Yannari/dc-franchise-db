@@ -1773,6 +1773,44 @@ const CONSEQ_ROAD_WALK_TEST = {
   ],
 };
 
+// A suspicion scene ABOUT AN ABSENT THIRD PARTY ({topic}): two people ({a}, {b})
+// turn over somebody who is not in the room. The generic suspicion consequence
+// names {b} (the confidant) by mistake; this names {topic}. Keyed by a coarse
+// direction (the read hardened / eased / went nowhere), not by each event's
+// branch labels, so one pool serves whisper, timeline and overheard alike.
+const CONSEQ_SUSP_THIRD = {
+  up: [
+    '{a} comes away more sure about {topic}, and now {b} has heard the name too. Neither has proof; both are watching {topic}.',
+    'The read on {topic} hardened between {a} and {b}. It is still a feeling — but it is a shared one now.',
+    "{a} leaves with {topic}'s name sitting heavier than it did, and {b} on the same page about it.",
+  ],
+  down: [
+    '{a} came in doubting {topic} and leaves a little less sure — whatever {b} said took some of the weight off {topic}.',
+    'The doubt about {topic} eased between {a} and {b}. It is not gone; it is lighter.',
+    '{a} lets some of {topic} go. {b} did not think there was much in it, and said so.',
+  ],
+  flat: [
+    "{topic}'s name went between {a} and {b} and settled nothing. The read on {topic} is exactly where it started.",
+    '{a} and {b} turned {topic} over and put it down again, no further along.',
+    '{b} would not be drawn on {topic}. {a} carries the same half-thought back inside, alone.',
+  ],
+};
+// How a suspicion scene's branch moves the read, for the consequence direction
+// and the hunch chip alike. FLAT = a refusal / disagreement / inconclusive
+// check (nothing moved). EASE = the doubt was answered or came up empty.
+// Everything else HARDENS the read.
+const SUSP_FLAT_BRANCHES = new Set(['would-not-join-in', 'lost-the-hour', 'argued-about-it']);
+const SUSP_EASE_BRANCHES = new Set(['checked-out', 'was-nothing', 'let-it-pass',
+  'holds', 'it-worked', 'let-it-go', 'cleared']);
+/** 'flat' | 'down' | 'up' for a suspicion scene, from its branch and outcome. */
+function _suspDir(s) {
+  const b = String(s.branch || '');
+  if (SUSP_FLAT_BRANCHES.has(b)) return 'flat';
+  const eased = SUSP_EASE_BRANCHES.has(b) || (s.closedNow && s.sense === 'walked')
+    || /denied-convincingly|checked-out|cleared/.test(String(s.outcome || ''));
+  return eased ? 'down' : 'up';
+}
+
 // Which topicKinds are grounded, and how the composer renders them. `reaction:
 // false` drops the generic reaction card, because the event's own action line
 // already carries the exchange — a second, generic reaction on top of it is the
@@ -1783,11 +1821,12 @@ const TOPIC_CONFIG = {
   'road-cover': { reaction: false, conseq: CONSEQ_ROAD_COVER },
   'road-cover-back': { reaction: false, conseq: CONSEQ_ROAD_COVER_BACK },
   'road-walk-test': { reaction: false, conseq: CONSEQ_ROAD_WALK_TEST },
+  'suspicion-third': { reaction: false, byDirection: true, conseq: CONSEQ_SUSP_THIRD },
 };
 
 /** The set of event ids that have been reworked to record a concrete topic. */
 /* eslint-disable-next-line */
-export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with']);
+export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with', 'susp-whisper-about-absent', 'susp-timeline-crosscheck', 'susp-overheard-conversation']);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed
@@ -1796,7 +1835,8 @@ export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-th
  * (a new branch degrades to generic rather than crashing).
  */
 function _topicConsequence(s, subs, key, used, cfg, tone) {
-  const branch = String(s.branch || '');
+  let branch = String(s.branch || '');
+  if (cfg.byDirection) branch = _suspDir(s);
   const pool = (cfg.conseq && cfg.conseq[branch])
     || (cfg.conseq && Object.values(cfg.conseq)[0]) || [];
   const say = _fill(_pickUnique(pool, key + '|tconseq', used, 'tconseq'), subs);
@@ -3859,9 +3899,9 @@ function _suspicionChipFromRecord(s, isAudience, watcher) {
     dir = map[String(s.branch || '')];
     if (!dir) return null;
   } else {
-    const eased = (s.closedNow && s.sense === 'walked')
-      || /denied-convincingly|checked-out|cleared/.test(String(s.outcome || ''));
-    dir = eased ? -1 : 1;
+    const d = _suspDir(s);
+    if (d === 'flat') return null;                 // nothing moved — no hunch chip
+    dir = d === 'down' ? -1 : 1;
   }
   return { type: 'suspicion', a: doubter, b: subject, dir };
 }

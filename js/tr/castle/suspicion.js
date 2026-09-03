@@ -244,7 +244,8 @@ registerEvent({
       const t = api.openArc(FAMILY, [a], { source: soloWhy,
         seed: lineFor(OVERHEARD_LINES['saw-it-alone'], `susp-overheard-conversation|saw-it-alone|${ctx.ep}`,
           { a, c, d }) });
-      return { branch: 'saw-it-alone', actor: a, observed: [c, d], threadId: t?.id, bondDelta: 0 };
+      return { branch: 'saw-it-alone', actor: a, observed: [c, d], threadId: t?.id, bondDelta: 0,
+        topic: c, topicKind: 'suspicion-third' };
     }
     const st = pStats(b);
     const scores = {
@@ -268,7 +269,7 @@ registerEvent({
       { a, b, c, d });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch, pair: [a, b], speaker: a, respondent: b, observers: [a, b],
-      observed: [c, d], threadId: t?.id, bondDelta };
+      observed: [c, d], topic: c, topicKind: 'suspicion-third', threadId: t?.id, bondDelta };
   },
 });
 
@@ -710,6 +711,7 @@ registerEvent({
     else if (sense === 'coupled') note += ` Half of it was really about who ${target} had been spending their evenings with.`;
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
+      topic: target, topicKind: 'suspicion-third',
       threadId: thread?.id, cited, bondDelta,
       crowd: { name: a, colour: 'cowardly', mult: 0.4 },
       priorOutcome: prior?.outcome ?? null };
@@ -982,7 +984,7 @@ registerEvent({
     }
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
     return { branch, pair: [a, b], speaker: a, respondent: b, about: target,
-      threadId: t?.id, bondDelta };
+      topic: target, topicKind: 'suspicion-third', threadId: t?.id, bondDelta };
   },
 });
 

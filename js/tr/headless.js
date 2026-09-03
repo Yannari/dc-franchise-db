@@ -228,7 +228,15 @@ function _seedStartingBonds(cast, seed) {
  * evidence out of a night nobody died on. See the comment on that test.
  */
 function _night(ep, rng) {
-  if (!livingTraitors(ep).length) {
+  // NO MURDER ONCE THE FIRE ROUND IS REACHED. `_night` runs after the round
+  // table, so the room here is post-banishment; when that banishment has left
+  // the endgame size (or fewer), the finale begins tonight and there is no
+  // murder after it. Without this the last mandated night killed one more and a
+  // "final four" opened the endgame on three. (Doubles that would overshoot are
+  // held back separately, in pickVariant, so a room one above the size cannot
+  // be carried two under it.)
+  if (!livingTraitors(ep).length
+    || (gs.tr.endgameSize && (gs.activePlayers || []).length <= gs.tr.endgameSize)) {
     return { murdered: null, murderTarget: null, blocked: false, recruited: null,
       executed: null, livingAtMurder: [], conclave: null };
   }
@@ -2150,6 +2158,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
   const configuredEndgameSize = Math.max(2, Math.min(cast.length, Number(endgameSize) || 3));
+  // On the state so `_night` can read it: the last banishment leaves exactly
+  // this many, and no murder (nor a Double) fires that would carry the room past
+  // it — a final-four setting hands the fire round four, not three.
+  gs.tr.endgameSize = configuredEndgameSize;
   while (ep++ < maxRounds) {
     // THE RE-RUN POINT. Reached AFTER every earlier episode has drawn its
     // numbers off the base seed and reproduced exactly, and BEFORE this

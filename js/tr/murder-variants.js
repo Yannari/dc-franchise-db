@@ -177,6 +177,13 @@ export function pickVariant(ep, living = null) {
   if (!_enabled || ep < 2) return 'standard';
   const t = livingTraitors(ep).length;
   const f = livingFaithfuls(ep).length;
+  // A DOUBLE MAY NOT OVERSHOOT THE FIRE ROUND. A Double takes two, so from a
+  // room one above the endgame size it would leave the finale a person short of
+  // what the author set (a "final four" opening on three). Held back here — for
+  // a pinned Double too, since overshooting the set finale is never what "final
+  // four" asked for — so the last banishment, not a Double, sets the finale.
+  const egSize = (gs.tr && gs.tr.endgameSize) || 0;
+  const doubleOvershoots = egSize > 0 && alive.length - 2 < egSize;
   // A SCHEDULED SHAPE WINS, when the living room can support it. The show
   // writes `gs.tr.murderSchedule` (episode -> variant id) from the
   // episode-format designer via js/tr-run.js; an entry here forces that
@@ -188,6 +195,7 @@ export function pickVariant(ep, living = null) {
   const scheduled = gs.tr && gs.tr.murderSchedule && gs.tr.murderSchedule[ep];
   if (scheduled) {
     const want = VARIANTS.find(v => v.id === scheduled);
+    if (want && want.id === 'double' && doubleOvershoots) return 'standard';
     return (want && want.needs(alive.length, t, f)) ? want.id : 'standard';
   }
   // AUTO-DOUBLE CAN BE SWITCHED OFF. A Double is the one auto shape that
@@ -198,7 +206,8 @@ export function pickVariant(ep, living = null) {
   // schedule is honoured above this line.
   const noAutoDouble = !!(gs.tr && gs.tr.noAutoDouble);
   const pool = VARIANTS.filter(v => v.needs(alive.length, t, f)
-    && !(noAutoDouble && v.id === 'double'));
+    && !(noAutoDouble && v.id === 'double')
+    && !(v.id === 'double' && doubleOvershoots));
   const total = pool.reduce((s, v) => s + v.weight, 0);
   let roll = hash01(`murder-variant|${ep}|${alive.join(',')}`) * total;
   for (const v of pool) {

@@ -217,6 +217,14 @@ export function simulateTraitorsEpisode() {
 export function rerunTraitorsEpisode(epNum) {
   if (!gs || !gs._trSeed) return false;
   const N = Math.max(1, Number(epNum) || 1);
+  // THE AIRED PREFIX, CAPTURED BEFORE ANYTHING REPLAYS. Re-running a later night
+  // must never change an earlier one, so episodes 1..N-1 are kept EXACTLY as
+  // they aired — the literal rows, not the replay's copy of them. The replay
+  // reproduces them bit-for-bit off the base seed (they are deterministic), so
+  // this is normally the same rows; but taking the aired ones makes "a re-run of
+  // the future never touches the past" true by construction, even for a season
+  // that aired on older code and is re-run after an engine change.
+  const airedPrefix = (gs.episodeHistory || []).slice(0, N - 1);
   // A fresh divergence each time the button is pressed — a re-run that came
   // back identical would not be a re-run. Kept on `gs` so a reload still varies.
   gs._trRerollNonce = (gs._trRerollNonce || 0) + 1;
@@ -225,10 +233,10 @@ export function rerunTraitorsEpisode(epNum) {
     ^ Math.imul(N, 2654435761)) >>> 0;
   if (!_playWholeSeason(N, rerollSeed || 1)) return false;
   // `_playWholeSeason` put the WHOLE re-rolled season on the queue. Keep the
-  // aired prefix (episodes 1..N-1, identical by construction) in history and
-  // leave episode N onward to air.
+  // AIRED prefix in history (never the replay's) and leave episode N onward — the
+  // re-rolled, genuinely different nights — to air.
   const all = gs._trQueue || [];
-  gs.episodeHistory = all.slice(0, N - 1);
+  gs.episodeHistory = airedPrefix;
   gs._trQueue = all.slice(N - 1);
   const lastAired = gs.episodeHistory[gs.episodeHistory.length - 1];
   gs.activePlayers = lastAired

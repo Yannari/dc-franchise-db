@@ -1870,6 +1870,145 @@ function _testDir(s) {
   return 'inconclusive';
 }
 
+// COVER (Traitor-only). Three shapes, all closing on whether the Traitor got
+// away with it and NAMING the concrete subject the generic close never did.
+// {a} is always the Traitor (every cover event drives from the acting player;
+// none flips the speaker), {topic} is the named subject.
+//
+// cover-deflect — {a} tries to hang suspicion on {topic} (an ally sacrificed, a
+// name planted, a Faithful double-bluffed).
+const CONSEQ_COVER_DEFLECT = {
+  held: [
+    '{a} got {topic}’s name to sit where {a} needed it. Nobody looked at {a} for saying it, and one more person is watching {topic} tonight.',
+    'The suspicion {a} pointed at {topic} took hold. {topic} does not know where it started, and {a} means to keep it that way.',
+    '{a} walked away clean and left {topic} holding a doubt {topic} did not earn — a good night’s work, for a Traitor.',
+    '{a} put {topic} in the frame and stepped out of it. The room is looking the wrong way, which is the only way {a} needs it to look.',
+  ],
+  slipped: [
+    '{a} pushed {topic}’s name too hard, and the room noticed the pushing more than the name. Now {a} is the one who looks like they had a reason.',
+    'The move against {topic} was a shade too neat, and neat is what gets a Traitor caught. {a} felt it land wrong.',
+    '{a} aimed a doubt at {topic} and it ricocheted. {topic} is fine; {a} is the one with a question on them now.',
+    '{a} overplayed {topic} and knows it. The name did not stick to {topic}, and something stuck to {a} instead.',
+  ],
+  turned: [
+    '{topic} would not carry what {a} tried to hang on them, and said so where people could hear. {a} is back to square one, and lighter one option.',
+    '{a} offered {topic} up and {topic} handed it straight back. Whatever {a} learned, {topic} learned {a} was reaching.',
+    'The name went out and came back. {topic} did not take it, the room did not take it, and {a} is holding a plan that did nothing.',
+    '{topic} played along just far enough to see where {a} was going, then stopped. {a} showed a card for nothing.',
+  ],
+  abandoned: [
+    '{a} had {topic}’s name ready and swallowed it. Some nights the safest move is the one {a} does not make, and {a} decided this was one.',
+    '{a} thought better of pointing at {topic} at the last second. The plan is intact because {a} never spent it.',
+    '{a} pulled the move against {topic} before it left {a}’s mouth. Nobody will ever know {topic} was almost tonight’s name.',
+    '{a} kept {topic}’s name in reserve — not tonight, but {a} knows exactly where it is for when {a} needs it.',
+  ],
+};
+// cover-blend — {a} hides inside the grief around {topic} (a murdered player's
+// friend, whose circle {a} is not really part of).
+const CONSEQ_COVER_BLEND = {
+  held: [
+    '{a} folded into the grief around {topic} and came out looking like one more person who is sad — which is exactly what {a} needed to look like.',
+    '{a} sat with {topic} and nobody once thought {a} did not belong there. The best place to hide is inside the mourning.',
+    '{a} borrowed {topic}’s circle for the evening and it fit: one more ordinary griever, as far as anyone watching could tell.',
+    '{a} got close to {topic} without a single false note. {topic} has no idea they just gave a Traitor somewhere to hide.',
+  ],
+  slipped: [
+    '{a} overdid it with {topic} — too sad, too fast — and grief does not work like that. {topic} half-noticed, and half is enough.',
+    '{a} tried to blend in with {topic} and stood out instead. There is a way real friends behave, and {a} was performing next to it.',
+    '{a} pushed too hard into {topic}’s circle and it closed a little. {a} is not one of them, and tonight it showed.',
+    '{a} reached for {topic}’s grief and grabbed air. {topic} did not warm to it, and a cold reception is a thing people remember.',
+  ],
+  turned: [
+    '{topic} kept {a} at arm’s length all evening, politely and completely. {a} learned that {topic}’s circle is not a place {a} gets to hide.',
+    '{topic} did not want company, least of all {a}’s. Whatever {a} was going for, {topic} was not in the mood to supply it.',
+    '{a} went to stand with {topic} and was quietly not made room for. {a} files it and finds somewhere else to be ordinary.',
+    '{topic} was welcoming to everyone but {a}, and only {a} noticed the gap. {a} will not try that door again.',
+  ],
+  abandoned: [
+    '{a} decided the safest way to sit with {topic}’s people was not to, and drifted off before it looked deliberate. Nothing risked is nothing lost.',
+    '{a} thought better of joining {topic}’s circle tonight. Better to be nobody in the corner than the wrong somebody in the group.',
+    '{a} left {topic}’s grief to {topic}’s friends and kept out of it. The move {a} did not make is the move that cannot fail.',
+    '{a} backed away from {topic}’s table before sitting down. Some nights the move is to be forgettable, and {a} made it.',
+  ],
+};
+// cover-account — {a} defends, rehearses, or sits alone with the account of
+// {topic} (the night the last victim was murdered, or the recruitment approach,
+// or — on the first day — what {a} really is).
+const CONSEQ_COVER_ACCOUNT = {
+  held: [
+    '{a}’s account of {topic} is holding. Said the same way twice, to two different people, and neither of them blinked.',
+    '{a} got through {topic} without a seam showing. One more day survived is one more day a Traitor gets to keep playing.',
+    'Whatever {topic} needed to be, {a} made it that, out loud, and it held. {a} sleeps a little easier for it.',
+    '{a}’s version of {topic} is solid tonight. Nobody has a reason to pull at it, and {a} has given them none.',
+  ],
+  slipped: [
+    '{a}’s account of {topic} cracked where somebody could see it, and there is no taking that back on the spot.',
+    '{a} said {topic} one way too many times and heard it stop sounding true. The story about {topic} has a soft place in it now.',
+    'Something in {a}’s telling of {topic} did not add up, and {a} felt the room catch it — the worst feeling a Traitor gets.',
+    '{a} tripped on {topic} in front of the wrong person. It is a small thing, and small things are exactly what get remembered.',
+  ],
+  turned: [
+    'Somebody pushed {a} on {topic} harder than expected, and {a} had to give ground. The account of {topic} is a repair now, not a clean run.',
+    '{a} got asked about {topic} straight out and answered a beat too slow. The beat is what they will remember, not the answer.',
+    '{a} planned to raise {topic} and got beaten to it, which is never where a Traitor wants to be. Now {a} is reacting, not steering.',
+    'The story of {topic} got checked against somebody else’s and did not quite match. {a} spends the night working out how much that cost.',
+  ],
+  abandoned: [
+    '{a} decided the safest thing to do about {topic} was nothing at all, and said none of it. A story you never tell cannot be caught.',
+    '{a} had a whole account of {topic} rehearsed and left it in {a}’s pocket. Better an awkward silence than a story that unravels.',
+    '{a} backed off {topic} before anyone asked. Nobody will ever know there was a version ready, which is the point.',
+    '{a} buried {topic} rather than defend it. On the nights {a} cannot make it hold, the move is to make it small.',
+  ],
+};
+// cover-weight — {a} sits ALONE with the account of {topic}. No audience, so it
+// never "cracks in the open"; the axis is whether {a} is holding together.
+const CONSEQ_COVER_WEIGHT = {
+  held: [
+    '{a} carried {topic} through another night without it showing. The whole cost of it is that {a} is the one who has to carry it.',
+    '{a} sat alone with {topic} and put it down again, steady. Tomorrow {a} does it all over, and knows it.',
+    '{a} has made a kind of peace with {topic} — not that it is fine, but that it is {a}’s to hold and nobody else’s to see.',
+    '{a} looked {topic} full in the face in the dark and did not flinch. That is the job, on the nights nobody is watching.',
+  ],
+  slipped: [
+    '{a} lay awake with {topic}. Nothing cracked in the open, but {a} is running on less than {a} needs to keep this up.',
+    '{a} came within a sentence of telling somebody about {topic}, alone in the dark, and stopped. Nobody will ever know how close it was.',
+    '{topic} would not let {a} sleep. It is not the room that is wearing {a} down; it is the thing only {a} knows.',
+    '{a} spent the small hours with {topic} and none of them helped. The story holds; the person under it is thinner than yesterday.',
+  ],
+  turned: [
+    '{a} nearly handed {topic} to somebody just to be rid of it, and caught {a}’s own mouth in time. The weight of it is starting to steer {a}.',
+    '{topic} got the better of {a} for a moment tonight. Nobody saw — but {a} knows it can, now, which is a new thing to be afraid of.',
+    'For the length of one bad hour {topic} was louder than {a}’s sense, and {a} is only sure it passed because morning came.',
+    '{a} felt {topic} nearly say itself, unbidden, and understood that the danger is not the room any more. It is {a}.',
+  ],
+  abandoned: [
+    '{a} decided to stop turning {topic} over and could not, quite. The thing about a secret is that putting it down is the one move it will not allow.',
+    '{a} tried to leave {topic} for the morning and took it to bed instead. There is no shift that ends for a Traitor.',
+    '{a} meant to set {topic} aside tonight. {topic} had other ideas, and {a} lost the argument to {a}’s own head.',
+    '{a} wanted one night off from {topic} and did not get it. Nobody gives a Traitor that; they have to take it, and {a} could not.',
+  ],
+};
+// A cover scene's RESULT, coarsened from each event's branch labels. TURNED =
+// the other person reacted (took it back, played along, checked it, kept away).
+// ABANDONED = the Traitor chose not to play the card. Otherwise the cover either
+// held or slipped.
+const COVER_TURNED = new Set(['asked-back', 'they-told-it-first',
+  'checked-against-somebody', 'kept-out', 'would-not-take-it']);
+const COVER_ABANDONED = new Set(['held-it-back', 'thought-better-of-it', 'binned-it',
+  'abandoned-it', 'would-not-square-it']);
+const COVER_HELD = new Set(['alibi-built', 'it-took', 'rehearsed', 'laughed-it-off',
+  'convincing', 'double-bluffed', 'recruit-story-kept', 'holds', 'blended-in',
+  'pitched-it-right', 'synchronized', 'were-together-anyway', 'steady', 'sacrificed-ally',
+  'played-along', 'the-room-kept-it', 'was-welcomed']);
+/** 'held' | 'slipped' | 'turned' | 'abandoned' for a cover scene. */
+function _coverDir(s) {
+  const b = String(s.branch || '');
+  if (COVER_TURNED.has(b)) return 'turned';
+  if (COVER_ABANDONED.has(b)) return 'abandoned';
+  if (COVER_HELD.has(b)) return 'held';
+  return 'slipped';
+}
+
 // Which topicKinds are grounded, and how the composer renders them. `reaction:
 // false` drops the generic reaction card, because the event's own action line
 // already carries the exchange — a second, generic reaction on top of it is the
@@ -1883,17 +2022,31 @@ const TOPIC_CONFIG = {
   'road-walk-test': { reaction: false, conseq: CONSEQ_ROAD_WALK_TEST },
   'suspicion-third': { reaction: false, byDirection: true, conseq: CONSEQ_SUSP_THIRD },
   'testing-probe': { reaction: false, dir: _testDir, conseq: CONSEQ_TESTING },
+  'cover-deflect': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_DEFLECT },
+  'cover-blend': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_BLEND },
+  'cover-account': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_ACCOUNT },
+  'cover-weight': { reaction: false, dir: _coverDir, conseq: CONSEQ_COVER_WEIGHT },
 };
 
-/** The set of event ids that have been reworked to record a concrete topic. */
+// The set of event ids that have been reworked to record a concrete topic.
+// KEPT ON ONE LOGICAL LINE PER FAMILY, opened with `TOPIC_READY_*` and not a
+// bare quote: tr-castle-prose's debug-word source scan treats any trimmed line
+// matching /^['"].{10,}['"],?$/ as a prose pool line, so a wrapped array whose
+// continuation lines begin `'cover-...',` would read as story prose and trip on
+// the word "cover" in the event id. A `const NAME =` opener is an identifier
+// line, which that scan (correctly) ignores.
 /* eslint-disable-next-line */
-export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with', 'susp-whisper-about-absent', 'susp-timeline-crosscheck', 'susp-overheard-conversation',
-  // testing family (testing.js) — every test names the person it was run ON
-  // (topic = the tested player) and closes on what it showed about them.
-  'testing-small-dare', 'testing-ask-for-alibi-check', 'testing-loyalty-oath',
-  'testing-reverse-psychology', 'testing-hypothetical-loyalty-question',
-  'testing-double-check-story', 'testing-silence-test', 'testing-cold-read-check',
-  'testing-follow-through-check', 'testing-decoy-secret', 'testing-night-scores-it']);
+const TOPIC_READY_JOURNEY = ['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with', 'susp-whisper-about-absent', 'susp-timeline-crosscheck', 'susp-overheard-conversation'];
+// testing family (testing.js) — every test names the person it was run ON
+// (topic = the tested player) and closes on what it showed about them.
+/* eslint-disable-next-line */
+const TOPIC_READY_TESTING = ['testing-small-dare', 'testing-ask-for-alibi-check', 'testing-loyalty-oath', 'testing-reverse-psychology', 'testing-hypothetical-loyalty-question', 'testing-double-check-story', 'testing-silence-test', 'testing-cold-read-check', 'testing-follow-through-check', 'testing-decoy-secret', 'testing-night-scores-it'];
+// cover family (cover.js) — Traitor-only. Names the subject being covered: the
+// person suspicion is deflected onto, the circle blended into, or the account
+// (murder night / recruitment / what they are) being defended.
+/* eslint-disable-next-line */
+const TOPIC_READY_COVER = ['cover-preemptive-alibi', 'cover-suspect-own-ally', 'cover-plant-a-name', 'cover-rehearsed-story-advance', 'cover-cold-sweat-tell', 'cover-story-check', 'cover-double-bluff', 'cover-decline-recruit-offer-story', 'cover-alibi-crumbles', 'cover-blend-with-victims-friends', 'cover-feign-fear', 'cover-swap-story-with-partner', 'cover-alone-with-it'];
+export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER]);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed

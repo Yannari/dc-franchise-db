@@ -66,6 +66,30 @@ const NICE_ARCHETYPES = ['hero', 'loyal-soldier', 'social-butterfly', 'showmance
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 function isTraitor(name, ep) { return alignmentAt(name, ep) === 'traitor'; }
 
+// THE CONCRETE THING A COVER STORY IS ABOUT — the most recent murder, named,
+// which is the night a Traitor most needs an account for. Read from the exit
+// records of already-played episodes (which include night one, unlike the round
+// log) and then the round log for a within-episode kill. A PURE READ: no rng,
+// no state write, so the firing stream is bit-identical. Before any murder has
+// happened (the first day), the Traitor is covering the one thing they cannot
+// say — that they are a Traitor — so the fallback names that.
+function _accountTopic() {
+  const rows = gs?.episodeHistory || [];
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const exits = (rows[i] && (rows[i].exits || rows[i].tr?.exits)) || [];
+    for (let j = exits.length - 1; j >= 0; j--) {
+      if (exits[j] && exits[j].channel === 'murder' && exits[j].name) {
+        return `the night ${exits[j].name} was murdered`;
+      }
+    }
+  }
+  const rounds = gs?.tr?.rounds || [];
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    if (rounds[i] && rounds[i].murdered) return `the night ${rounds[i].murdered} was murdered`;
+  }
+  return 'what they really are';
+}
+
 // ── REWRITE (Task 7 stage 5). Fourth on the blame table. The audit's verdict
 // was MERGE (into `cover-rehearsed-story-advance`) and also recorded that it
 // "writes NO effects at all"; both are fixed here rather than by deletion,
@@ -173,7 +197,7 @@ registerEvent({
       bondDelta = branch === 'too-specific' ? -1 : -0.5;
       api.addBond(actor, other, bondDelta, { source: sceneWhy });
     }
-    const out = { branch, actor, threadId: thread?.id, cited, bondDelta };
+    const out = { branch, topic: _accountTopic(), topicKind: 'cover-account', actor, threadId: thread?.id, cited, bondDelta };
     if (other && bondDelta) { out.pair = [actor, other]; out.speaker = actor; out.respondent = other; }
     if (branch === 'too-specific') out.crowd = { name: actor, colour: 'exposed', mult: 0.4 };
     return out;
@@ -289,7 +313,7 @@ registerEvent({
         : branch === 'the-room-kept-it' ? -2 : -1;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'cover-deflect', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 // ── REWRITE (Task 7 stage 5). Ninth on the blame table. The audit’s verdict
@@ -422,7 +446,7 @@ registerEvent({
       bondDelta = 0.5;
       api.addBond(actor, other, bondDelta, { source: sceneWhy });
     }
-    const out = { branch, actor, target, threadId: t?.id, bondDelta };
+    const out = { branch, topic: target, topicKind: 'cover-deflect', actor, target, threadId: t?.id, bondDelta };
     if (other && bondDelta) { out.pair = [actor, other]; out.speaker = actor; out.respondent = other; }
     // A Traitor putting an innocent name in the room’s mouth. `cruel` for what
     // it does to the target and `masterful` for how well it is done — the two
@@ -541,7 +565,7 @@ registerEvent({
     const note = lineFor(REHEARSED_LINES[branch], `cover-rehearsed-story-advance|${branch}|${ctx.ep}`,
       { a: actor });
     const { thread, cited } = arcAdvanceCiting(api, t, ctx.ep, note, { source: sceneWhy });
-    return { branch, actor, threadId: thread?.id, cited };
+    return { branch, topic: _accountTopic(), topicKind: 'cover-account', actor, threadId: thread?.id, cited };
   },
 });
 const COLD_SWEAT_LINES = {
@@ -633,7 +657,7 @@ registerEvent({
     // recovery the room enjoys is spectacle, a visible tell is exposure.
     const colour = branch === 'laughed-it-off' ? 'masterful'
       : branch === 'tell' ? 'exposed' : null;
-    return { branch: branch === 'tell' ? 'tell' : branch, actor, threadId: t?.id,
+    return { branch: branch === 'tell' ? 'tell' : branch, topic: _accountTopic(), topicKind: 'cover-account', actor, threadId: t?.id,
       underPressure: pressed, crowd: colour ? { name: actor, colour } : null };
   },
 });
@@ -764,7 +788,7 @@ registerEvent({
     if (bondDelta) api.addBond(actor, partner, bondDelta, { source: sceneWhy });
 
     const { thread, cited } = arcContinue(api, FAMILY, parties, ctx.ep, line, { source: sceneWhy });
-    return { branch, actor, partner, archetype, isNiceButTraitor: NICE_ARCHETYPES.includes(archetype),
+    return { branch, topic: _accountTopic(), topicKind: 'cover-account', actor, partner, archetype, isNiceButTraitor: NICE_ARCHETYPES.includes(archetype),
       competence, threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -866,7 +890,7 @@ registerEvent({
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep,
       lineFor(DOUBLE_BLUFF_LINES[branch], `cover-double-bluff|${branch}|${ctx.ep}`, { a, b }),
       { source: sceneWhy });
-    const out = { branch, pair: [a, b], speaker: a, respondent: b,
+    const out = { branch, topic: b, topicKind: 'cover-deflect', pair: [a, b], speaker: a, respondent: b,
       threadId: thread?.id, cited, bondDelta };
     // `masterful` only where it was. A move that got asked the next question,
     // or was declined outright, is not a Traitor doing the thing well — and
@@ -988,7 +1012,7 @@ registerEvent({
     // TERMINAL: an account deliberately destroyed is a story that ended
     // without anybody else ever learning it existed.
     if (t && branch === 'binned-it') api.resolveArc(t.id, 'buried', { source: sceneWhy });
-    return { branch, actor, threadId: t?.id };
+    return { branch, topic: refuser ? `the night ${refuser} turned them down` : 'the night they made their offer', topicKind: 'cover-account', actor, threadId: t?.id };
   },
 });
 // ── WIDENED AND REFORKED (Task 7 stage 6). A KEEP-list event, and the second
@@ -1135,7 +1159,7 @@ registerEvent({
     const colour = branch === 'holds' ? 'masterful'
       : branch === 'collapses' ? 'exposed'
         : branch === 'checked-against-somebody' ? 'exposed' : null;
-    return { branch, actor, partner, threadId: advanced?.id, bondDelta,
+    return { branch, topic: _accountTopic(), topicKind: 'cover-account', actor, partner, threadId: advanced?.id, bondDelta,
       crowd: colour ? { name: actor, colour } : null };
   },
 });
@@ -1222,7 +1246,7 @@ registerEvent({
     const t = api.openArc(kind, [a, b],
       { source: sceneWhy,
         seed: lineFor(BLEND_LINES[branch], `cover-blend-with-victims-friends|${branch}|${ctx.ep}`, { a, b }) });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: b, topicKind: 'cover-blend', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 
@@ -1358,7 +1382,7 @@ registerEvent({
       bondDelta = -1;
       api.addBond(actor, other, bondDelta, { source: sceneWhy });
     }
-    const out = { branch, actor, threadId: thread?.id, cited, bondDelta };
+    const out = { branch, topic: _accountTopic(), topicKind: 'cover-account', actor, threadId: thread?.id, cited, bondDelta };
     // WHO WAS ACTUALLY IN THE SCENE (found by reading a rendered day, and the
     // first fix was not enough).
     //
@@ -1518,7 +1542,7 @@ registerEvent({
     const t = existing
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
-    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+    return { branch, topic: _accountTopic(), topicKind: 'cover-account', pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
 // -- PLAN 5 TASK 4: THE `night` WINDOW ----------------------------------
@@ -1612,6 +1636,6 @@ registerEvent({
 
     const line = pick(rng, ALONE_LINES[branch]).replace(/\{a\}/g, actor);
     const { thread, cited } = arcContinue(api, FAMILY, [actor], ctx.ep, line, { source: sceneWhy });
-    return { branch, actor, threadId: thread?.id, cited, state: ctx.state?.[actor] || 'content' };
+    return { branch, topic: _accountTopic(), topicKind: 'cover-weight', actor, threadId: thread?.id, cited, state: ctx.state?.[actor] || 'content' };
   },
 });

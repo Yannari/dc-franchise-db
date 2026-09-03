@@ -1081,20 +1081,31 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // are. What it is NOT is "strictly harder than 15": at this denominator it
     // is two repeats more permissive, and that is stated rather than spun.
     //
-    // AND THE DENOMINATOR IS PINNED AT 650. A share can always be made to pass
+    // AND THE DENOMINATOR IS PINNED AT 600. A share can always be made to pass
     // by measuring fewer things, so this floor guards against a THROUGHPUT
-    // regression rather than a design choice: stage 5's `runWindow` barren-draw
+    // COLLAPSE rather than a design choice: stage 5's `runWindow` barren-draw
     // fix is worth ~5 scenes an episode and a full regression of it put the
-    // composed count at 621, so the floor must stay above that. It was 750 when
-    // the live count was 837; the editor's per-player concentration cap (one
-    // player headlines at most 3 scenes a day — see PER_PLAYER_CAP in
-    // episode-editor.js) intentionally trims excess headline scenes and brought
-    // the live count to ~711. 650 sits below that and above the 621 a real
-    // throughput regression would reach. The repeat-RATE band below is
-    // unchanged.
+    // composed count at 621. It was 750 when the live count was 837; the
+    // editor's per-player concentration cap (one player headlines at most 3
+    // scenes a day — see PER_PLAYER_CAP in episode-editor.js) brought it to
+    // ~711, and the floor moved to 650.
+    //
+    // RE-BASELINED 650 -> 600 for the CASTLE-SCENE REWORK. A topic-grounded
+    // scene closes on a subject-naming consequence and DROPS the generic
+    // reaction beat (TOPIC_CONFIG `reaction: false` in castle-day.js — the
+    // action line already carries the exchange), so each grounded scene
+    // contributes two composed beats (establish + consequence) where a legacy
+    // scene contributed three. As the testing and cover families landed this
+    // fell from ~711 to 648 BY DESIGN, not by a throughput regression. This is
+    // a re-baseline of a denominator-sanity floor, exactly like the 750->650
+    // one above; the repeat-RATE band below (the actual quality guard) is
+    // UNCHANGED at 2%. 600 clears the live 648 with margin and still reddens on
+    // the ~414 a barren-draw regression would reach under grounding. It will be
+    // re-baselined again as the remaining deduction families (consequences,
+    // nightfall) ground.
     expect(composed, 'too few composed cards to measure a repeat rate against — the '
       + 'castle is rendering materially less than it did when this rate was derived')
-      .toBeGreaterThan(650);
+      .toBeGreaterThan(600);
     expect(twice / composed, `${twice} of ${composed} composed cards repeated inside `
       + 'a single episode - the screen pools are too narrow for the throughput')
       .toBeLessThan(0.02);

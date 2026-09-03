@@ -267,7 +267,7 @@ export function resolvePot(ep) {
  * table is a different game: three or four people, no reveal to reason from,
  * and a question that is not "who is the Traitor".
  */
-export function runEndgame(startEp, rng = Math.random) {
+export function runEndgame(startEp, rng = Math.random, { reveal = false } = {}) {
   const rounds = [];
   const ballots = [];
   let ep = startEp;
@@ -294,7 +294,10 @@ export function runEndgame(startEp, rng = Math.random) {
     const choices = secretBallot(living, ep);
     ballots.push({ ep, choices, living });
     if (!choices.some(c => c.choice === 'banish')) break;
-    const r = runRoundTable(ep, rng, { reveal: false });
+    // `reveal` is the author's Castle Option (spec §8's rule is the default:
+    // OFF, nobody turned over). ON plays the endgame like Ireland S1 — every
+    // banished player is revealed at the table, the same as any earlier one.
+    const r = runRoundTable(ep, rng, { reveal });
     if (!r) break;                    // an empty castle has nobody to banish
     rounds.push({ ...r, endgame: true });
     ep++;
@@ -303,7 +306,7 @@ export function runEndgame(startEp, rng = Math.random) {
   // standing" — the same reason headless.js settles them after every night.
   settleDaggers(ep);
   const result = resolvePot(ep);
-  return { ...result, rounds, ballots, endEp: ep,
+  return { ...result, rounds, ballots, endEp: ep, reveal,
     // The one private meeting of the season, or null if the endgame never had
     // a room big enough to hold one. Handed back rather than left on `gs`
     // because the next season replaces `gs` wholesale.

@@ -1599,6 +1599,11 @@ export function defaultConfig() {
     // Random double murders on by default; the Castle Options toggle turns them
     // off for authors who would rather pin a Double when they want one.
     trAutoDouble: true,
+    // Endgame reveals OFF by default — the modern show (since 2024) hides a
+    // finale-banished player's alignment and the survivors go on nerve alone.
+    // Turned ON, the endgame plays like Ireland S1: every banished player is
+    // turned over at the table, the same as any earlier Round Table.
+    trEndgameReveal: false,
     trPotCeiling: 120000,
     auctionAwardsImmunity: true,  // Auction twist: when ON the auction awards the only immunity (replaces the challenge); when OFF it's a reward alongside a normal challenge
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour

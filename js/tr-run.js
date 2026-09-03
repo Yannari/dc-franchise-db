@@ -126,6 +126,9 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
       // Auto double murders are on unless the Castle Options toggle turns them
       // off; a pinned Double still runs either way.
       autoDouble: seasonConfig.trAutoDouble !== false,
+      // Off by default: finale banishments stay blind (the modern show). On,
+      // the endgame turns every banished player over like any earlier table.
+      endgameReveal: seasonConfig.trEndgameReveal === true,
       // Only an explicitly-chosen pact is handed down; 'random' mode (or a cast
       // that has changed since) leaves this null and the engine draws its own.
       chosenTraitors: seasonConfig.trTraitorMode === 'choose'

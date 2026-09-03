@@ -62,6 +62,7 @@
 // individually catchable, which is the point: the record's is caught by
 // reading the record, and the screen's is caught by handing it a forged one.
 import { seasonConfig, players } from '../core.js';
+import { pronouns } from '../players.js';
 import { exitVerbs, roundExits } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
@@ -731,6 +732,8 @@ const LT_CSS = `
 .lt-shell[data-phase="answer"]{--lt-ground:#101722}
 .lt-shell[data-phase="answer"] .lt-wash{opacity:.34}
 .lt-shell[data-phase="count"] {--lt-ground:#111823}
+.lt-shell[data-phase="vote"]  {--lt-ground:#0f1620}
+.lt-shell[data-phase="vote"] .lt-wash{opacity:.28}
 .lt-shell[data-phase="table"] {--lt-ground:#0e141d}
 .lt-shell[data-phase="table"] .lt-wash{opacity:.22}
 .lt-shell[data-phase="money"] {--lt-ground:#1c1a12}
@@ -811,6 +814,15 @@ const LT_CSS = `
 }
 .lt-chair[data-state="banish"] .lt-chair-st{color:var(--lt-wax-hot)}
 .lt-chair[data-state="gone"] .lt-chair-st{color:rgba(221,227,234,.5)}
+/* the collapse toggle on the sticky stage (breakfast has one; this now does too) */
+.lt-stage-head{display:flex;justify-content:flex-end;margin-bottom:8px}
+.lt-stage-toggle{font-family:var(--lt-display);font-weight:700;font-size:9px;
+  letter-spacing:.24em;text-transform:uppercase;cursor:pointer;
+  background:rgba(143,162,182,.1);color:rgba(221,227,234,.7);
+  border:1px solid rgba(143,162,182,.28);padding:5px 12px;display:inline-flex;
+  align-items:center;gap:7px;transition:background .2s,color .2s}
+.lt-stage-toggle:hover{background:rgba(143,162,182,.2);color:#fff}
+.lt-stage.lt-collapsed .lt-stage-body{display:none}
 .lt-meters{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
 .lt-meter{
   flex:1 1 130px;padding:6px 12px 7px;
@@ -918,6 +930,89 @@ const LT_CSS = `
   color:rgba(221,227,234,.72)}
 .lt-void-s{font-family:var(--lt-body);font-style:italic;font-size:15px;
   color:rgba(221,227,234,.52);margin-top:4px}
+
+/* ── THE VOTE THAT ACTUALLY BANISHES — slates read aloud ───────────── */
+.lt-vote{display:flex;flex-direction:column;gap:7px;margin:6px 0 4px}
+.lt-slate{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+  padding:8px 12px;background:rgba(6,8,12,.62);border:1px solid rgba(143,162,182,.16);
+  border-left:2px solid rgba(143,162,182,.34)}
+.lt-slate-who{display:flex;align-items:center;gap:9px;min-width:0}
+.lt-slate-nm{font-family:var(--lt-display);font-weight:700;font-size:14px;letter-spacing:.02em;
+  color:rgba(221,227,234,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lt-slate-arrow{font-family:var(--lt-body);font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(143,162,182,.5);text-align:center}
+.lt-slate-tgt{position:relative;justify-self:end;padding:5px 13px;text-align:center;
+  background:linear-gradient(176deg,var(--lt-paper),#aeb6c0);color:#1b2029;
+  font-family:var(--lt-display);font-weight:900;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;box-shadow:0 5px 13px rgba(0,0,0,.5);white-space:nowrap}
+.lt-slate[data-hit="1"] .lt-slate-tgt{background:linear-gradient(176deg,#e3c8cd,#c39aa2);
+  color:#5c0c17}
+/* the tally the slates come to */
+.lt-tally{display:flex;flex-direction:column;gap:6px;margin:12px 0 2px}
+.lt-trow{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:12px}
+.lt-tname{font-family:var(--lt-display);font-weight:700;font-size:13px;letter-spacing:.02em;
+  color:rgba(221,227,234,.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.lt-tbar{position:relative;height:16px;background:rgba(143,162,182,.1);overflow:hidden}
+.lt-tbar-f{position:absolute;left:0;top:0;bottom:0;
+  background:linear-gradient(90deg,rgba(143,162,182,.4),rgba(143,162,182,.68));
+  transition:width .5s ease}
+.lt-trow[data-top="1"] .lt-tbar-f{background:linear-gradient(90deg,#8f1d2c,#c8455a)}
+.lt-trow[data-top="1"] .lt-tname{color:#f0c3ca}
+.lt-tnum{font-family:var(--lt-display);font-weight:900;font-size:16px;color:#eaeff5;min-width:22px;text-align:center}
+
+/* ── THE REVEAL, WHEN THE AUTHOR TURNED IT ON ──────────────────────── */
+.lt-reveal{margin:13px 0 2px;padding:20px 20px 18px;text-align:center;position:relative;
+  overflow:hidden;border:1px solid rgba(185,143,62,.3)}
+.lt-reveal[data-side="traitor"]{background:radial-gradient(120% 140% at 50% 0,rgba(90,14,22,.62),rgba(6,4,6,.9));
+  border-color:rgba(200,69,90,.5)}
+.lt-reveal[data-side="faithful"]{background:radial-gradient(120% 140% at 50% 0,rgba(30,42,58,.6),rgba(5,7,10,.9));
+  border-color:rgba(143,162,182,.42)}
+.lt-reveal-tag{font-family:var(--lt-display);font-weight:900;
+  font-size:clamp(26px,5vw,40px);letter-spacing:.14em;text-transform:uppercase;line-height:1;
+  margin:6px 0 8px}
+.lt-reveal[data-side="traitor"] .lt-reveal-tag{color:#e86073;
+  text-shadow:0 0 34px rgba(200,69,90,.5)}
+.lt-reveal[data-side="faithful"] .lt-reveal-tag{color:#bcd2e6;
+  text-shadow:0 0 30px rgba(143,162,182,.4)}
+.lt-reveal-s{font-family:var(--lt-hand);font-style:italic;font-size:18px;line-height:1.5;
+  color:#eadfc6;max-width:560px;margin:0 auto}
+
+/* ── REACTIONS that the reveal leaves in the room ──────────────────── */
+.lt-reacts{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0 2px;justify-content:center}
+.lt-react{display:flex;align-items:center;gap:10px;padding:9px 15px 9px 9px;max-width:340px;
+  border:1px solid rgba(143,162,182,.2);border-left:2px solid;background:rgba(8,10,14,.72)}
+.lt-react[data-tone="grief"]{border-left-color:#6f8aa8}
+.lt-react[data-tone="shock"]{border-left-color:#c8455a}
+.lt-react[data-tone="relief"]{border-left-color:#b98f3e}
+.lt-react[data-tone="steel"]{border-left-color:#8fa2b6}
+.lt-react-tx{font-family:var(--lt-body);font-style:italic;font-size:14px;line-height:1.45;
+  color:rgba(234,223,198,.9)}
+.lt-react-tx b{font-style:normal;font-weight:700;color:#f2e2bb}
+
+/* ── THE VERDICT — the season's one headline ───────────────────────── */
+.lt-verdict{position:relative;overflow:hidden;margin:2px 0 16px;padding:26px 22px 22px;
+  text-align:center;border:1px solid rgba(185,143,62,.34)}
+.lt-verdict[data-side="traitors"]{
+  background:radial-gradient(130% 150% at 50% 0,rgba(120,16,26,.7),rgba(6,3,5,.94));
+  border-color:rgba(200,69,90,.55)}
+.lt-verdict[data-side="faithfuls"]{
+  background:radial-gradient(130% 150% at 50% 0,rgba(30,46,64,.66),rgba(4,7,10,.94));
+  border-color:rgba(160,196,224,.4)}
+.lt-verdict-k{font-family:var(--lt-display);font-weight:700;font-size:10px;letter-spacing:.4em;
+  text-transform:uppercase;color:rgba(234,223,198,.6);margin-bottom:10px}
+.lt-verdict-h{font-family:var(--lt-display);font-weight:900;
+  font-size:clamp(30px,6.4vw,56px);letter-spacing:.02em;line-height:1;margin:0}
+.lt-verdict[data-side="traitors"] .lt-verdict-h{color:#f0596c;
+  text-shadow:0 0 44px rgba(200,69,90,.55)}
+.lt-verdict[data-side="faithfuls"] .lt-verdict-h{color:#cfe0f0;
+  text-shadow:0 0 40px rgba(160,196,224,.45)}
+.lt-verdict-s{font-family:var(--lt-hand);font-style:italic;font-size:18px;
+  color:#eadfc6;margin:12px auto 0;max-width:520px}
+/* winner cards wear the pact colour on a Traitor win — they ARE unmasked here */
+.lt-winners[data-side="traitors"] .lt-winner{border-color:rgba(200,69,90,.5);
+  background:rgba(48,12,18,.6)}
+.lt-winners[data-side="traitors"] .lt-winner-nm{color:#f4c8ce}
+.lt-winners[data-side="traitors"] .lt-winner-sh{color:rgba(232,150,160,.85)}
 
 /* ── THE MONEY, WHICH IS THE ONLY THING TURNED OVER ─────────────────── */
 .lt-pot{
@@ -1161,6 +1256,125 @@ const TABLE_SILENT = [
   + 'It does not come. It is not going to.',
 ];
 
+// THE VOTE THAT ACTUALLY BANISHES. The secret ballot only decided to HOLD a
+// table; this is the table. Written blind of who is named — the slates carry
+// that — so every line here is about the act, not the target.
+const VOTE_INTRO = [
+  'One of them would not let it end, so all of them have to write a name. The slates go '
+  + 'round the table face-down and come back with somebody on them.',
+  'The room asked for another and the room gets one. Every hand takes a slate, and this '
+  + 'time the word on it is a person.',
+  'No more folded words about whether to stop. A name each now, out loud, in front of the '
+  + 'people it might be.',
+  'A single hand held the game open, and this is the price of it: a full table, one name '
+  + 'apiece, and no way to take it back once the chalk is dry.',
+];
+const VOTE_HOST = [
+  'Names this time. Write them where I can see them, and hold them up when I call it.',
+  'One name each. Not whether -- who. And you will show me.',
+  'You wanted another table. Here it is. Write the name you came to write.',
+  'The slates, please. A person on each one, and no hiding it this time.',
+];
+// The banished, revealed at the count. Blind of alignment.
+const VOTE_RESULT = [
+  'The chalk is read out one slate at a time, and the pile in front of {who} is the one '
+  + 'that keeps growing.',
+  'They hold the slates up together, and {who} is on more of them than anybody else at '
+  + 'the table.',
+  'The count comes in and it comes in on {who}. Whatever the folded words said, this is '
+  + 'the one that landed.',
+  '{who} watched the names go up and knew before the last one turned over. The table '
+  + 'chose, and it chose {who}.',
+];
+// REVEAL ON (Ireland S1 mode) — the alignment IS turned over, the same as any
+// earlier table. Two pools; the record's `revealedTraitor` picks between them.
+const REVEAL_TRAITOR = [
+  '{who} draws the cloak closed for the last time. A Traitor -- and the room had the '
+  + 'right one in its hand at the end after all.',
+  'The word is TRAITOR, and the table lets out the breath it has been holding since the '
+  + 'first night. {who} was one of them.',
+  '{who} was a Traitor. It is read out, it is over, and half the room is already turning '
+  + 'to look at whoever is left.',
+  'A cloak, and everyone sees it this time. {who} played the whole castle and the castle '
+  + 'caught {obj} on the last table it had.',
+];
+const REVEAL_FAITHFUL = [
+  '{who} was Faithful. The word lands in a silent room, and every face at the table does '
+  + 'the arithmetic on what they have just done.',
+  'FAITHFUL. {who} was telling the truth the entire time, and the table spent its last '
+  + 'banishment on {obj}.',
+  '{who} leaves as a Faithful, and the people who wrote that name will carry it into '
+  + 'whatever this room decides next.',
+  'The reveal is FAITHFUL, and it costs the room more than a chair -- it costs them the '
+  + 'certainty they voted with.',
+];
+
+// REACTIONS THE REVEAL LEAVES IN THE ROOM. Each is grounded — grief needs a
+// stored bond, vindication needs a vote actually cast at this table, guilt
+// needs the same vote landing on a Faithful. `{a}` is the reactor, `{who}` the
+// banished. Nothing here reads an alignment the reactor was not just shown.
+const REACT_GRIEF = [
+  '{a} does not look at the empty chair, which is how everybody knows exactly whose it was.',
+  '{a} had spent the whole game beside {who}, and the room can see the cost of it land.',
+  'Whatever {who} was, {a} is not ready for the chair to be empty, and does not pretend to be.',
+];
+// Deliberately agnostic about HOW the name got written — the reactor may be a
+// Faithful who read it right or a Traitor who cut a fellow loose, and this
+// screen may not tell which. Every line is true of both: the slate matched the
+// cloak, and that is all it claims.
+const REACT_VINDICATED = [
+  '{a} wrote that name, and the cloak proves it. Whatever it took to put it down, it was '
+  + 'the right one.',
+  '{a} named {who} at this table, and the reveal says the slate was not wrong. {a} sits '
+  + 'very still.',
+  'Of everyone at the table, {a} is the one whose name matched what came off {who}.',
+];
+const REACT_GUILT = [
+  '{a} voted for {who} and {who} was Faithful. That is a thing {a} now has to carry out '
+  + 'of this room.',
+  '{a} put a name down and the name was clean. The look on {posAdj} face is the whole '
+  + 'price of playing this game on nerve.',
+  '{a} spent the last banishment on the wrong person, and {a} knows it before the host '
+  + 'says another word.',
+];
+const REACT_ROBBED = [
+  '{a} sat across from that cloak for the length of the season and never once wrote the '
+  + 'name. It is not the money that lands hardest.',
+  '{a} thought the room was clean. {a} was going to split it with the person who is about '
+  + 'to take all of it.',
+  '{a} reached the last table honest and leaves it with nothing, beaten by somebody who '
+  + 'was never once in danger.',
+];
+
+// THE BEAT BEFORE THE BOX. The room has stopped, the cloaks are still on, and
+// for one held moment nobody knows — the whole season narrows to this.
+const SUSPENSE = [
+  'They have agreed to stop. The strongbox is carried in and set on the table, and for '
+  + 'the length of one breath nobody in the room knows what nobody in the room is.',
+  'The game is over and the cloaks are still on. That is the trick of the ending: the '
+  + 'money is decided, and the people it is being decided between are about to find out '
+  + 'with everyone else.',
+  'No more slates. No more asks. Just the box on the table and the last thing left to '
+  + 'do -- which is to find out, all at once, who has been sitting there the whole time.',
+  'The candles are let go out and nobody lights them. There is no evening left to get '
+  + 'through, only the box, and the answer folded up inside the people around it.',
+];
+const SUSPENSE_HOST = [
+  'You have stopped the game. Now I get to tell you what you stopped it on.',
+  'Before anybody touches that box -- one of you already knows how this ends. The rest '
+  + 'of you are about to.',
+  'You decided to trust each other. In a moment you will learn exactly what that was '
+  + 'worth.',
+  'Hands off the box. Look at the faces around you first. Remember them like this.',
+];
+// THE HEADLINE THE WHOLE SEASON WAS FOR. Chosen off the record's own word.
+const VERDICT = {
+  traitors: { solo: 'The Traitor Wins', many: 'The Traitors Win',
+    kicker: 'The pact was never broken. The castle handed it the box.' },
+  faithfuls: { solo: 'The Faithful Wins', many: 'The Faithful Win',
+    kicker: 'Not one cloak left in the room. They found every last one.' },
+};
+
 const MONEY_LEAD = {
   faithfuls: [
     'Nobody left in this room was lying, and the money stays where the room put it.',
@@ -1243,16 +1457,26 @@ function _view(ep, observer) {
     return { ep: a.ep, living: [...(a.living || [])], choices, banish,
       unanimous: banish === 0 };
   });
-  // Same lock on the tables: an episode and a name. `wasTraitor` exists on the
-  // round object the engine holds and is not on the record and not here.
-  const tables = (rec.tables || []).map(t => ({ ep: t.ep, chosen: t.chosen || null }));
+  // Same lock on the tables: an episode and a name, plus the VOTE that named
+  // them — who wrote whose name (public, read aloud at any Round Table) and the
+  // count it came to. `revealedTraitor` is the one alignment field, and it is
+  // null unless the author turned the finale reveals on: with them off the
+  // record never carried it, so the screen is blind by construction.
+  const tables = (rec.tables || []).map(t => ({
+    ep: t.ep, chosen: t.chosen || null,
+    ballots: Array.isArray(t.ballots)
+      ? t.ballots.map(b => ({ voter: b.voter, voted: b.voted })) : [],
+    tally: t.tally && typeof t.tally === 'object' ? { ...t.tally } : null,
+    revealedTraitor: rec.reveal ? (t.revealedTraitor === true) : null,
+  }));
+  const revealOn = !!rec.reveal;
 
   const room = [];
   for (const a of asks) for (const n of a.living) if (!room.includes(n)) room.push(n);
   const present = !!watcher && room.includes(watcher);
 
   return {
-    isAudience, watcher, present, room, asks, tables,
+    isAudience, watcher, present, room, asks, tables, revealOn,
     ep: rec.from || ep.num || 0,
     // The money. Ground truth, and this is the one place in the format where
     // that is legitimate -- see `resolvePot`. Read straight off the record so
@@ -1287,6 +1511,11 @@ function _view(ep, observer) {
     gone: [...((ep.tr && ep.tr.goneBefore) || []), ...roundExits(ep, TR)]
       .filter(g => g && !room.includes(g.name)),
     cast: (ep.tr && ep.tr.cast) || [],
+    // The living-pair bonds as they stood this episode (js/tr/headless.js
+    // `_snapshotBonds`: {a,b,v}, |v|>=1). Faithful-safe — a bond is a thing
+    // the whole castle can see — and it is what grounds a reveal's grief: the
+    // room turns to the person who was closest to whoever just left.
+    bonds: (ep.tr && Array.isArray(ep.tr.bonds)) ? ep.tr.bonds : [],
   };
 }
 
@@ -1321,6 +1550,80 @@ function _hostBand(line) {
 }
 /** Curly apostrophes in the pools, without a literal in every string. */
 const _apos = s => String(s).replace(/\{apos\}/g, '&rsquo;');
+
+// How warm a bond has to be before an empty chair reads as grief. Held, not
+// tuned — the same threshold the morning-after grief uses in headless.js.
+const GRIEF_BOND = 3;
+function _pron(name) { try { return pronouns(name) || {}; } catch (e) { return {}; } }
+function _bondBetween(v, a, b) {
+  for (const p of (v.bonds || [])) {
+    if ((p.a === a && p.b === b) || (p.a === b && p.b === a)) return p.v || 0;
+  }
+  return 0;
+}
+// THE VOTE, DRAWN. Every slate face-up (a Round Table reads them aloud — this
+// is public in both layers), the ones that named the banished flagged, and the
+// tally they came to with the top name barred in blood.
+function _voteStage(table, akey) {
+  const chosen = table.chosen;
+  const slates = (table.ballots || []).map(b =>
+    '<div class="lt-slate" data-hit="' + (b.voted === chosen ? 1 : 0) + '">'
+    + '<span class="lt-slate-who">' + _av(b.voter, 32)
+    + '<span class="lt-slate-nm">' + _esc(b.voter) + '</span></span>'
+    + '<span class="lt-slate-arrow">wrote</span>'
+    + '<span class="lt-slate-tgt">' + _esc(b.voted || '—') + '</span></div>').join('');
+  const t = table.tally && typeof table.tally === 'object' ? table.tally : {};
+  const entries = Object.entries(t).sort((a, b) => b[1] - a[1]);
+  const max = entries.length ? Math.max(1, entries[0][1]) : 1;
+  const rows = entries.map(([nm, c], idx) =>
+    '<div class="lt-trow" data-top="' + (idx === 0 ? 1 : 0) + '">'
+    + '<span class="lt-tname">' + _esc(nm) + '</span>'
+    + '<span class="lt-tbar"><span class="lt-tbar-f" style="width:'
+    + Math.round(c / max * 100) + '%"></span></span>'
+    + '<span class="lt-tnum">' + c + '</span></div>').join('');
+  return '<div class="lt-vote">' + slates + '</div>'
+    + (rows ? '<div class="lt-tally">' + rows + '</div>' : '');
+}
+// THE REACTIONS THE CHAIR LEAVES BEHIND, each grounded in a record the room
+// can see. Grief off a stored bond (alignment-free, so it fires whether or not
+// the reveal is on); vindication/guilt only when the reveal turned the cloak
+// over, and only for somebody who actually wrote that name at this table.
+function _revealReacts(v, table, akey) {
+  const chosen = table.chosen;
+  const chips = [];
+  const used = new Set([chosen]);
+  let griever = null, best = GRIEF_BOND;
+  for (const n of (v.room || [])) {
+    if (used.has(n)) continue;
+    const b = _bondBetween(v, n, chosen);
+    if (b >= best) { best = b; griever = n; }
+  }
+  if (griever) {
+    used.add(griever);
+    const pr = _pron(griever);
+    chips.push({ tone: 'grief', name: griever,
+      tx: _fill(_pick(REACT_GRIEF, akey + '|grief'),
+        { a: '<b>' + _esc(griever) + '</b>', who: _esc(chosen), posAdj: pr.posAdj || 'their' }) });
+  }
+  if (table.revealedTraitor !== null && table.revealedTraitor !== undefined) {
+    const voters = (table.ballots || [])
+      .filter(b => b.voted === chosen && (v.room || []).includes(b.voter) && !used.has(b.voter))
+      .map(b => b.voter);
+    if (voters.length) {
+      const who = voters[_hash(akey + '|react-voter') % voters.length];
+      used.add(who);
+      const pr = _pron(who);
+      const pool = table.revealedTraitor ? REACT_VINDICATED : REACT_GUILT;
+      chips.push({ tone: table.revealedTraitor ? 'relief' : 'steel', name: who,
+        tx: _fill(_pick(pool, akey + '|vg'),
+          { a: '<b>' + _esc(who) + '</b>', who: _esc(chosen), posAdj: pr.posAdj || 'their' }) });
+    }
+  }
+  if (!chips.length) return '';
+  return '<div class="lt-reacts">' + chips.map(c =>
+    '<span class="lt-react" data-tone="' + c.tone + '">' + _av(c.name, 34)
+    + '<span class="lt-react-tx">' + c.tx + '</span></span>').join('') + '</div>';
+}
 
 function _buildBeats(v) {
   const beats = [];
@@ -1396,18 +1699,50 @@ function _buildBeats(v) {
       + '</p>'),
     { kind: 'count', askIdx: i, unanimous: a.unanimous, banish: a.banish });
 
-    // ── and the table it forced, which explains nothing ───────────────
+    // ── the vote that forced the table, and then the table itself ─────
     if (table && table.chosen) {
-      push('table', _card('table', 'What It Cost', 'part',
-        '<h2 class="lt-h">' + _esc(table.chosen) + ' Was ' + _cap(v.doors.vote)
-        + '</h2>'
-        + '<p>' + _esc(_fill(_pick(TABLE_SILENT, akey + '|table'),
-          { who: table.chosen })) + '</p>'
-        + '<div class="lt-void"><div class="lt-void-w">Nothing Is Turned Over</div>'
-        + '<div class="lt-void-s">There is no reveal at a table this late. Whatever '
-        + _esc(table.chosen) + ' was, they took it out of the door with them.</div>'
-        + '</div>'),
-      { kind: 'table', askIdx: i, chosen: table.chosen });
+      // THE VOTE. The secret ballot above only decided to HOLD a table; this
+      // is the table. Rendering it is what stops a player who voted "end it"
+      // from being banished with nothing on screen to explain who chose them.
+      push('vote', _card('vote', 'The Vote', 'slip',
+        '<h2 class="lt-h">A Name, Not A Word</h2>'
+        + '<p>' + _apos(_pick(VOTE_INTRO, akey + '|vintro')) + '</p>'
+        + _hostBand(_esc(_pick(VOTE_HOST, akey + '|vhost')))
+        + _voteStage(table, akey)
+        + '<p class="lt-say">'
+        + _esc(_fill(_pick(VOTE_RESULT, akey + '|vres'), { who: table.chosen }))
+        + '</p>'),
+      { kind: 'vote', askIdx: i, chosen: table.chosen });
+
+      // WHAT IT COST — turned over, or not, on the author's Castle Option.
+      const reacts = _revealReacts(v, table, akey);
+      if (v.revealOn && table.revealedTraitor !== null
+        && table.revealedTraitor !== undefined) {
+        const traitor = table.revealedTraitor === true;
+        const side = traitor ? 'traitor' : 'faithful';
+        const pr = _pron(table.chosen);
+        push('table', _card('table', 'What It Cost', 'part',
+          '<h2 class="lt-h">' + _esc(table.chosen) + ' Was ' + _cap(v.doors.vote)
+          + '</h2>'
+          + '<div class="lt-reveal" data-side="' + side + '">'
+          + '<div class="lt-reveal-tag">' + (traitor ? 'A Traitor' : 'Faithful')
+          + '</div><div class="lt-reveal-s">'
+          + _apos(_esc(_fill(_pick(traitor ? REVEAL_TRAITOR : REVEAL_FAITHFUL,
+            akey + '|rev'), { who: table.chosen, obj: pr.obj || 'them' })))
+          + '</div></div>' + reacts),
+        { kind: 'table', askIdx: i, chosen: table.chosen, revealed: side });
+      } else {
+        push('table', _card('table', 'What It Cost', 'part',
+          '<h2 class="lt-h">' + _esc(table.chosen) + ' Was ' + _cap(v.doors.vote)
+          + '</h2>'
+          + '<p>' + _esc(_fill(_pick(TABLE_SILENT, akey + '|table'),
+            { who: table.chosen })) + '</p>'
+          + '<div class="lt-void"><div class="lt-void-w">Nothing Is Turned Over</div>'
+          + '<div class="lt-void-s">There is no reveal at a table this late. Whatever '
+          + _esc(table.chosen) + ' was, they took it out of the door with them.</div>'
+          + '</div>' + reacts),
+        { kind: 'table', askIdx: i, chosen: table.chosen });
+      }
     }
   }
 
@@ -1436,13 +1771,48 @@ function _buildBeats(v) {
   // written. It is a false positive on the meaning and a true one on the
   // shape, and the shape is the thing the rule is about.
   const side = MONEY_LEAD[v.winner] ? v.winner : 'faithfuls';
+
+  // ── THE HELD BREATH BEFORE THE BOX ──────────────────────────────────
+  // A beat with no numbers on it: the game has stopped, the cloaks are still
+  // on, and the whole season narrows to the moment before it is turned over.
+  // This is the suspense the ending was missing — the reveal lands on a room
+  // the viewer has been made to wait for, not on a line of accounting.
+  push('money', _card('money', 'The Fire Of Truth', 'read',
+    '<p>' + _apos(_pick(SUSPENSE, key + '|susp')) + '</p>'
+    + _hostBand(_esc(_pick(SUSPENSE_HOST, key + '|susphost')))),
+  { kind: 'suspense' });
+
+  // ── AND THEN IT IS TURNED OVER ──────────────────────────────────────
+  // The verdict is the headline the whole season was for. `resolvePot` decided
+  // the winner off ground truth (the one place that is legitimate); the tag is
+  // read straight off its word so the banner and the money cannot disagree.
+  const vv = VERDICT[side] || VERDICT.faithfuls;
+  // A Traitor win is a Traitor UNMASK — the winners wear the pact colour and
+  // the robbed Faithful get a reaction, grounded in their having reached the
+  // end without ever writing the winning name.
+  const robbedHtml = (side === 'traitors' && v.losers.length)
+    ? (() => {
+      const who = v.losers[_hash(key + '|robbed-who') % v.losers.length];
+      const pr = _pron(who);
+      return '<div class="lt-reacts"><span class="lt-react" data-tone="shock">'
+        + _av(who, 34) + '<span class="lt-react-tx">'
+        + _fill(_pick(REACT_ROBBED, key + '|robbed'),
+          { a: '<b>' + _esc(who) + '</b>', posAdj: pr.posAdj || 'their' })
+        + '</span></span></div>';
+    })() : '';
   push('money', _card('money', 'The Strongbox', 'read',
-    '<div class="lt-pot"><span class="lt-pot-n">' + _money(v.pot) + '</span>'
+    '<div class="lt-verdict" data-side="' + side + '">'
+    + '<div class="lt-verdict-k">' + (side === 'traitors'
+      ? 'The Castle Was Betrayed' : 'The Castle Held') + '</div>'
+    + '<h2 class="lt-verdict-h">' + (solo ? vv.solo : vv.many) + '</h2>'
+    + '<div class="lt-verdict-s">' + _esc(vv.kicker) + '</div></div>'
+    + '<div class="lt-pot"><span class="lt-pot-n">' + _money(v.pot) + '</span>'
     + '<span class="lt-pot-k">in the box</span></div>'
     + '<h2 class="lt-h">' + (solo ? 'One Of Them Takes It'
       : v.takers.length + ' Ways') + '</h2>'
     + '<p>' + _apos(_pick(MONEY_LEAD[side], key + '|lead')) + '</p>'
-    + '<div class="lt-winners">' + winnersHtml + '</div>'
+    + '<div class="lt-winners" data-side="' + side + '">' + winnersHtml + '</div>'
+    + robbedHtml
     + (lostHtml ? '<p class="lt-say">And these were at the same table.</p>' + lostHtml : '')
     // THE ENGINE'S OWN SENTENCE, not a second copy of it. `resolvePot` picks
     // its pool off the number of takers and whether anybody is standing
@@ -1506,7 +1876,19 @@ function _stage(state, idx) {
   const forced = seen.filter(m => m.kind === 'table' && m.chosen).length;
   const standing = chairs.filter(c => c.state !== 'gone').length;
   const money = seen.some(m => m.kind === 'money');
-  return '<div class="lt-stage-row">'
+  const collapsed = !!state.collapsed;
+  // The stage sticks under the nav all the way down the screen; late in a long
+  // endgame that is a lot of fixed furniture, so it collapses the same way the
+  // breakfast table does. The toggle label is rendered from `state.collapsed`
+  // because `_updateStage` rewrites this innerHTML on every reveal — the class
+  // lives on the persistent container, the label has to be redrawn from state.
+  const epNum = state.epNum;
+  const toggle = '<div class="lt-stage-head">'
+    + '<button class="lt-stage-toggle" onclick="trEndgameToggleStage(\'endgame\',0,'
+    + epNum + ')">' + _ic('chevron', 10)
+    + (collapsed ? 'Show table' : 'Hide table') + '</button></div>';
+  return toggle + '<div class="lt-stage-body">'
+    + '<div class="lt-stage-row">'
     + chairs.map(c => '<span class="lt-chair" data-state="' + c.state + '"'
       + ' data-name="' + _esc(c.name) + '">' + _av(c.name, 28)
       + '<span><span class="lt-chair-nm">' + _esc(c.name) + '</span>'
@@ -1529,7 +1911,8 @@ function _stage(state, idx) {
     + '<span class="lt-meter-v">'
     + (money ? (v.takers.length === 1 ? _money(v.pot) : _money(v.share)) : _money(v.pot))
     + '</span></span>'
-    + '</div>';
+    + '</div>'   // .lt-meters
+    + '</div>';  // .lt-stage-body
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1607,6 +1990,20 @@ export function trEndgameRevealAll(suffix, total, epNum) {
   _updateStage(epNum, st.idx);
 }
 
+// Collapse/expand the sticky stage — the same convenience the breakfast table
+// has. The collapsed flag lives on the persistent stage state so it survives
+// the innerHTML rewrites `_updateStage` does on every reveal.
+export function trEndgameToggleStage(suffix, total, epNum) {
+  const el = document.getElementById('lt-stage-inner');
+  const store = (typeof window !== 'undefined' && window.__trEndgame) || {};
+  const state = store[epNum];
+  if (!el || !state) return;
+  state.collapsed = !state.collapsed;
+  el.classList.toggle('lt-collapsed', state.collapsed);
+  const st = _tvState[_key(epNum)];
+  _updateStage(epNum, st ? st.idx : 0);
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // THE SCREEN
 // ══════════════════════════════════════════════════════════════════════
@@ -1649,7 +2046,7 @@ export function rpBuildEndgame(ep, observer = 'audience') {
   const st = _state(epNum, total);
   if (st.idx > total - 1) st.idx = total - 1;
 
-  const state = { v, stepMeta: beats.map(b => b.meta) };
+  const state = { v, stepMeta: beats.map(b => b.meta), epNum, collapsed: false };
   if (typeof window !== 'undefined') {
     window.__trEndgame = window.__trEndgame || {};
     window.__trEndgame[epNum] = state;

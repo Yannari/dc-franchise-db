@@ -43,6 +43,7 @@ import { exitVerbs, SHOWS, publicBallots, roundExits } from '../js/shows.js';
 import { traitorsVotingHistory, buildTraitorsSeasonDocument } from '../js/tr/export.js';
 import { seasonWinners } from '../js/records.js';
 import { _setEndgameWatch } from '../js/tr/endgame.js';
+import { alignmentAt } from '../js/tr/roles.js';
 import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable, trRoundTableRevealAll, __rtStageHTML } from '../js/vp-tr/round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from '../js/vp-tr/cold-open.js';
@@ -3210,12 +3211,27 @@ describe('the endgame turns nobody over', () => {
           seen++;
         }
       }
-      // and the tables the asks forced: an episode and a name. `wasTraitor` is
-      // on the round object the engine holds and must not be on this.
+      // and the tables the asks forced. A table now carries the VOTE that did
+      // the banishing -- who wrote whose name, and the count -- because the
+      // screen has to show it (a player who voted "end it" could otherwise be
+      // banished with nothing on screen to explain who chose them). Those are
+      // PUBLIC: a Round Table reads its slates aloud. The one field that is not
+      // public is alignment, and it rides only when the author turned finale
+      // reveals on. This sample runs with reveals OFF (see `season`), so the
+      // lock here is that `revealedTraitor` is NULL on every table and no
+      // ballot carries anything but a voter and the name they wrote.
       for (const t of ep.tr.endgame.tables) {
         expect(Object.keys(t).sort(),
-          `ep ${ep.num}: a finale table carries more than an episode and a name`)
-          .toEqual(['chosen', 'ep']);
+          `ep ${ep.num}: a finale table carries an unexpected field`)
+          .toEqual(['ballots', 'chosen', 'ep', 'revealedTraitor', 'tally']);
+        expect(t.revealedTraitor,
+          `ep ${ep.num}: a reveals-off finale leaked an alignment onto the record`)
+          .toBeNull();
+        for (const b of t.ballots) {
+          expect(Object.keys(b).sort(),
+            `ep ${ep.num}: a finale ballot carries more than a voter and a vote`)
+            .toEqual(['voted', 'voter']);
+        }
       }
     }
     expect(seen, 'no choice was inspected, so this arm asserted nothing')
@@ -3247,6 +3263,41 @@ describe('the endgame turns nobody over', () => {
     expect(tables, 'no endgame forced a table across twenty seeds').toBeGreaterThan(8);
   });
 
+  it('REVEALS ON (the Castle Option): the finale turns players over, and the vote is shown', () => {
+    // The author's opt-in (Ireland S1 style). With it on, an endgame banishment
+    // is turned over like any earlier table, and the record carries the
+    // alignment it withholds by default. The vote that did the banishing is
+    // shown in BOTH modes -- it is public -- so a player who voted "end it" is
+    // never banished with nothing on screen to explain who chose them.
+    let revealedTables = 0, voteSlates = 0;
+    for (const seed of END_SEEDS) {
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed, endgameReveal: true });
+      const rows = gs.episodeHistory || [];
+      const ep = rows[rows.length - 1];
+      const eg = ep && ep.tr && ep.tr.endgame;
+      if (!eg || !(eg.tables || []).some(t => t.chosen)) continue;
+      expect(eg.reveal, `seed ${seed}: reveals-on season recorded reveal:false`).toBe(true);
+      const html = endgameRevealed({ ...ep }, 'audience');
+      for (const t of eg.tables) {
+        if (!t.chosen) continue;
+        expect(typeof t.revealedTraitor,
+          `seed ${seed}: a reveals-on table carried no alignment`).toBe('boolean');
+        expect(t.revealedTraitor,
+          `seed ${seed}: the record's alignment disagrees with the round`)
+          .toBe(alignmentAt(t.chosen, t.ep) === 'traitor');
+        revealedTables++;
+      }
+      // the reveal card replaced the silence, and the vote slates are present
+      expect(html, `seed ${seed}: reveals on but the silence card still drew`)
+        .not.toContain('Nothing Is Turned Over');
+      expect(html, `seed ${seed}: the reveal card did not draw`).toContain('lt-reveal-tag');
+      voteSlates += (html.match(/class="lt-slate"/g) || []).length;
+    }
+    expect(revealedTables, 'no reveals-on table was inspected across the seeds')
+      .toBeGreaterThan(8);
+    expect(voteSlates, 'the banishment vote was never drawn').toBeGreaterThan(8);
+  });
+
   it('and the money card, which is the one place it may be said, says it', () => {
     // The other half of the same rule. If nothing anywhere on the screen ever
     // named a side, LOCK TWO would be satisfied by a screen that simply never
@@ -3276,13 +3327,24 @@ describe('the endgame turns nobody over', () => {
       .replace(new RegExp('(^|[^:])//[^\\n]*', 'g'), '$1 ');
     expect(src, 'the view stopped rebuilding the choices from scratch')
       .toContain("choice: c.choice === 'banish' ? 'banish' : 'end',");
+    // The view still rebuilds the tables off a record it does not trust, and
+    // the alignment field is still gated behind `rec.reveal` there -- the two
+    // clauses this pins. The public vote fields (ballots, tally) ride alongside.
     expect(src, 'the view stopped rebuilding the tables from scratch')
-      .toContain('tables = (rec.tables || []).map(t => ({ ep: t.ep, chosen: t.chosen || null }))');
+      .toContain('ep: t.ep, chosen: t.chosen || null,');
+    expect(src, 'the view stopped gating the finale alignment behind rec.reveal')
+      .toContain('revealedTraitor: rec.reveal ? (t.revealedTraitor === true) : null,');
     const eng = readFileSync(new URL('../' + 'js/tr/headless.js', import.meta.url), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, ' ')
       .replace(new RegExp('(^|[^:])//[^\\n]*', 'g'), '$1 ');
     expect(eng, 'the record stopped rebuilding the choices and started spreading them')
       .toContain('.map(c => ({ name: c.name, choice: c.choice }))');
+    // AND THE FINALE ALIGNMENT IS GATED AT THE RECORD TOO. The screen lock
+    // above is null-safe only because the engine never writes an alignment onto
+    // a reveals-off table in the first place. Pin that gate: `revealed` decides
+    // whether `wasTraitor` reaches the record at all.
+    expect(eng, 'the record stopped gating the finale alignment behind the reveal flag')
+      .toContain('revealedTraitor: revealed ? !!r.wasTraitor : null,');
   });
 });
 

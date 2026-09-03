@@ -851,11 +851,28 @@ function _endgameRecord(e) {
     return { ep: b.ep, living: [...(b.living || [])], choices, banish,
       unanimous: banish === 0 };
   });
+  // WAS THE FINALE PLAYED WITH REVEALS ON. Off (the default and the spec §8
+  // rule) a banished player's alignment never reaches this record — the screen
+  // is blind by construction, not by omission. On, it is carried per table.
+  const revealed = !!e.reveal;
   return {
     from: asks.length ? asks[0].ep : null,
     endEp: e.endEp ?? null,
+    reveal: revealed,
     asks,
-    tables: (e.rounds || []).map(r => ({ ep: r.ep, chosen: r.banished || null })),
+    // WHO WROTE WHOSE NAME, and the count it came to — the vote that actually
+    // does the banishing, which the secret banish/end ballot above only DECIDES
+    // TO HOLD. Without it the screen jumped from "somebody wanted another" to
+    // "X is gone" with no vote in between, so a player who voted to END could
+    // be banished with nothing on screen to explain it. The ballots are public
+    // (a Round Table reads its slates aloud); `wasTraitor` is NOT, and rides
+    // along only when the author turned reveals on.
+    tables: (e.rounds || []).map(r => ({
+      ep: r.ep, chosen: r.banished || null,
+      ballots: (r.ballots || []).map(b => ({ voter: b.voter, voted: b.voted })),
+      tally: Array.isArray(r.tally) ? r.tally.map(t => ({ ...t })) : (r.tally || null),
+      revealedTraitor: revealed ? !!r.wasTraitor : null,
+    })),
     winner: e.winner || null,
     takers: [...(e.takers || [])],
     losers: [...(e.losers || [])],
@@ -1922,6 +1939,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   backgrounds = null, database = null, host = null,
   murderSchedule = null, missionSchedule = null, chosenTraitors = null,
   rerollFromEp = null, rerollSeed = null, autoDouble = true,
+  endgameReveal = false,
   announceTraitorCount = false } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
   // The whole season is one deterministic block off `seed`, so a real per-
@@ -2208,7 +2226,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // stopped being written. From here the survivors are asked the private
   // question instead of the public one, and the money finally has a reader.
   const mandatedRounds = gs.tr.rounds.length;
-  const endgame = runEndgame(ep, rng);
+  const endgame = runEndgame(ep, rng, { reveal: endgameReveal });
   // The final table's private question, and it is scored from the CHOICES
   // rather than from who left: a betrayal the room then failed to carry out
   // was still chosen, and `endgameChoice` is the only place that fact exists.

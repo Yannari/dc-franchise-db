@@ -2781,6 +2781,41 @@ const RECALL_LEAD_TODAY = [
   'The subject came back before the room had finished with the first version.',
 ];
 
+// ── TOPIC-AWARE RECALL LEADS ──────────────────────────────────────────
+//
+// THE DEFECT: the pools above are SUBJECT-FREE ("Whatever this is, it has been
+// going long enough to have a shorthand") because they were written before an
+// event recorded what a carried scene was ABOUT. On a grounded scene that read
+// as the user's complaint — a carried argument opening on "whatever this is"
+// directly above a consequence that names the subject in full. Now that a scene
+// carries a `topic`, a carried GROUNDED scene names it in the lead instead.
+//
+// Deliberately mode- and warmth-NEUTRAL (no "both", no "argument"), so ONE pool
+// each serves solo/pair/group and trust/grief/suspicion alike — the tail that
+// follows ("It went back to day 3: …") supplies the day, so the lead only has
+// to say WHAT and roughly WHEN. Legacy scenes (no topic) keep the pools above.
+// Each lead's FIXED text (topic aside) runs past 44 characters on purpose: the
+// screen renders the lead and its day-citation tail as separate lines, and the
+// transcript guard checks a 44-char slice of lead+tail against one shown line,
+// so a short lead would bleed into the tail and never match. The legacy pools
+// above are all full sentences for the same reason.
+const RECALL_LEAD_DAYS_TOPIC = [
+  'Back to {topic} — and none of this started this morning.',
+  'It is {topic} once more, and this is older than this morning.',
+  'The same subject, {topic}, picked up again from days ago.',
+  '{topic} once more, and not for the first time this week.',
+  'This returns to {topic}, which has been running for some days now.',
+  'The matter of {topic}, taken up again from where it started days back.',
+];
+const RECALL_LEAD_TODAY_TOPIC = [
+  'Back to {topic} so soon — the same day has not even finished.',
+  'It is {topic} again — the second time since breakfast.',
+  '{topic} once more, and it has not even been a full day.',
+  'The same subject, {topic}, come round again the same afternoon.',
+  'Back on {topic} within the hour, sooner than intended.',
+  '{topic} again, and the first go had barely finished cooling.',
+];
+
 /**
  * WHAT SOMEBODY ACROSS THE ROOM GETS, and it is WRITTEN, not hidden.
  *
@@ -4250,14 +4285,20 @@ function _composeScene(s, key, used, cast) {
     // arrives already halfway through" out of the group pool. Same defect, same
     // register, one branch further down the same ternary.
     const warmCarry = WARM_RECALL_CLASSES.has(_reactClass(s));
-    const leads = mode === 'group'
-      ? (tail.days
-        ? (warmCarry ? RECALL_LEAD_DAYS_GROUP_WARM : RECALL_LEAD_DAYS_GROUP)
-        : (warmCarry ? RECALL_LEAD_TODAY_GROUP_WARM : RECALL_LEAD_TODAY_GROUP))
-      : (b ? (tail.days
-        ? (warmCarry ? RECALL_LEAD_DAYS_WARM : RECALL_LEAD_DAYS)
-        : (warmCarry ? RECALL_LEAD_TODAY_WARM : RECALL_LEAD_TODAY))
-        : (tail.days ? RECALL_LEAD_DAYS_SOLO : RECALL_LEAD_TODAY_SOLO));
+    // A GROUNDED carried scene NAMES its subject in the lead — the fix for the
+    // "whatever this is" filler landing above a consequence that names it in
+    // full. The topic pools are mode/warmth-neutral, so they serve every shape;
+    // legacy scenes (no recorded topic) keep the subject-free pools below.
+    const leads = subs.topic
+      ? (tail.days ? RECALL_LEAD_DAYS_TOPIC : RECALL_LEAD_TODAY_TOPIC)
+      : mode === 'group'
+        ? (tail.days
+          ? (warmCarry ? RECALL_LEAD_DAYS_GROUP_WARM : RECALL_LEAD_DAYS_GROUP)
+          : (warmCarry ? RECALL_LEAD_TODAY_GROUP_WARM : RECALL_LEAD_TODAY_GROUP))
+        : (b ? (tail.days
+          ? (warmCarry ? RECALL_LEAD_DAYS_WARM : RECALL_LEAD_DAYS)
+          : (warmCarry ? RECALL_LEAD_TODAY_WARM : RECALL_LEAD_TODAY))
+          : (tail.days ? RECALL_LEAD_DAYS_SOLO : RECALL_LEAD_TODAY_SOLO));
     const lead = _fill(_pickUnique(leads, key + '|lead', used), subs);
     // FILLED, and this line is why the placeholder guard in tests/tr-vp.test.js
     // exists: `UNSPOKEN` carries a `{d}` and an earlier draft of this function

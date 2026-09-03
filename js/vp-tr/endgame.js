@@ -959,6 +959,16 @@ const LT_CSS = `
 .lt-trow[data-top="1"] .lt-tbar-f{background:linear-gradient(90deg,#8f1d2c,#c8455a)}
 .lt-trow[data-top="1"] .lt-tname{color:#f0c3ca}
 .lt-tnum{font-family:var(--lt-display);font-weight:900;font-size:16px;color:#eaeff5;min-width:22px;text-align:center}
+/* the tie-break: a re-vote, or the draw of last resort */
+.lt-tiebreak{margin:12px 0 2px;padding:12px 14px;border:1px solid rgba(185,143,62,.28);
+  border-left:2px solid var(--lt-wax-hot);background:rgba(28,20,8,.5)}
+.lt-tiebreak-h{font-family:var(--lt-display);font-weight:900;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--lt-wax-hot)}
+.lt-tiebreak-s{font-family:var(--lt-body);font-style:italic;font-size:14px;
+  color:rgba(234,223,198,.72);margin:3px 0 8px}
+.lt-tiebreak .lt-vote{margin:0}
+.lt-tiebreak.lt-drawn{border-left-color:#c8455a;background:rgba(30,10,14,.55)}
+.lt-tiebreak.lt-drawn .lt-tiebreak-h{color:#e86073}
 
 /* ── THE REVEAL, WHEN THE AUTHOR TURNED IT ON ──────────────────────── */
 .lt-reveal{margin:13px 0 2px;padding:20px 20px 18px;text-align:center;position:relative;
@@ -1286,6 +1296,17 @@ const VOTE_RESULT = [
   '{who} watched the names go up and knew before the last one turned over. The table '
   + 'chose, and it chose {who}.',
 ];
+// When the first count tied and the room had to break it (a re-vote, or the
+// draw of last resort). Blind of alignment; about the deadlock, not the target.
+const VOTE_RESULT_TIE = [
+  'The first count came in level, so it did not settle anything. It took another pass to '
+  + 'land on {who}.',
+  'Nobody had the numbers on the first count. The tie had to be broken, and when it was, '
+  + 'the name under it was {who}.',
+  '{who} tied the first count and lost the tie-break. That is the whole of how {who} came '
+  + 'to be the one to leave.',
+];
+
 // REVEAL ON (Ireland S1 mode) — the alignment IS turned over, the same as any
 // earlier table. Two pools; the record's `revealedTraitor` picks between them.
 const REVEAL_TRAITOR = [
@@ -1467,6 +1488,10 @@ function _view(ep, observer) {
     ballots: Array.isArray(t.ballots)
       ? t.ballots.map(b => ({ voter: b.voter, voted: b.voted })) : [],
     tally: t.tally && typeof t.tally === 'object' ? { ...t.tally } : null,
+    revotes: Array.isArray(t.revotes) ? t.revotes.map(rv => ({
+      tied: [...(rv.tied || [])],
+      ballots: (rv.ballots || []).map(b => ({ voter: b.voter, voted: b.voted })),
+    })) : [],
     revealedTraitor: rec.reveal ? (t.revealedTraitor === true) : null,
   }));
   const revealOn = !!rec.reveal;
@@ -1561,6 +1586,15 @@ function _bondBetween(v, a, b) {
   }
   return 0;
 }
+// Did the first count of this table tie at the top? Decides which result line
+// the table's card draws — a clean count "chose" the name; a tie "broke" to it.
+function _tableWasTie(table) {
+  const t = table && table.tally && typeof table.tally === 'object' ? table.tally : {};
+  const counts = Object.values(t);
+  if (counts.length < 2) return false;
+  const top = Math.max(...counts);
+  return counts.filter(c => c === top).length > 1;
+}
 // THE VOTE, DRAWN. Every slate face-up (a Round Table reads them aloud — this
 // is public in both layers), the ones that named the banished flagged, and the
 // tally they came to with the top name barred in blood.
@@ -1575,14 +1609,55 @@ function _voteStage(table, akey) {
   const t = table.tally && typeof table.tally === 'object' ? table.tally : {};
   const entries = Object.entries(t).sort((a, b) => b[1] - a[1]);
   const max = entries.length ? Math.max(1, entries[0][1]) : 1;
-  const rows = entries.map(([nm, c], idx) =>
-    '<div class="lt-trow" data-top="' + (idx === 0 ? 1 : 0) + '">'
+  // A TIE AT THE TOP is not decided by this count. The top score is shared when
+  // two or more names hold it; the banished (`table.chosen`) is only "top" here
+  // if nothing else matched it. `data-top` flags every name on the top score,
+  // not just the one who left, so the count reads honestly as level.
+  const top = entries.length ? entries[0][1] : 0;
+  const tiedNames = entries.filter(([, c]) => c === top).map(([nm]) => nm);
+  const isTie = tiedNames.length > 1;
+  const rows = entries.map(([nm, c]) =>
+    '<div class="lt-trow" data-top="' + (c === top ? 1 : 0) + '">'
     + '<span class="lt-tname">' + _esc(nm) + '</span>'
     + '<span class="lt-tbar"><span class="lt-tbar-f" style="width:'
     + Math.round(c / max * 100) + '%"></span></span>'
     + '<span class="lt-tnum">' + c + '</span></div>').join('');
-  return '<div class="lt-vote">' + slates + '</div>'
+  let html = '<div class="lt-vote">' + slates + '</div>'
     + (rows ? '<div class="lt-tally">' + rows + '</div>' : '');
+  // THE TIE-BREAK, drawn only when the first count actually tied. Each revote is
+  // its own set of slates (the format re-asks only the tied, and they do not
+  // vote on themselves); a tie that survives every revote was settled by a draw,
+  // which is the format's last resort and has to be SAID or the banishment looks
+  // arbitrary — the reported bug (a level 1-1-1 and then "it chose Gwen").
+  if (isTie) {
+    const revotes = Array.isArray(table.revotes) ? table.revotes : [];
+    let broke = false;
+    for (const rv of revotes) {
+      const rslates = (rv.ballots || []).map(b =>
+        '<div class="lt-slate" data-hit="' + (b.voted === chosen ? 1 : 0) + '">'
+        + '<span class="lt-slate-who">' + _av(b.voter, 30)
+        + '<span class="lt-slate-nm">' + _esc(b.voter) + '</span></span>'
+        + '<span class="lt-slate-arrow">again</span>'
+        + '<span class="lt-slate-tgt">' + _esc(b.voted || '—') + '</span></div>').join('');
+      const rt = {};
+      for (const b of (rv.ballots || [])) if (b.voted) rt[b.voted] = (rt[b.voted] || 0) + 1;
+      const rtop = Object.values(rt).length ? Math.max(...Object.values(rt)) : 0;
+      const rtied = Object.entries(rt).filter(([, c]) => c === rtop).map(([n]) => n);
+      if (rtied.length <= 1) broke = true;
+      html += '<div class="lt-tiebreak"><div class="lt-tiebreak-h">A Tie — They Vote Again</div>'
+        + '<div class="lt-tiebreak-s">Level between ' + _esc(_listOf(rv.tied || tiedNames))
+        + '. Only the tied are named, and they do not vote on themselves.</div>'
+        + '<div class="lt-vote">' + rslates + '</div></div>';
+    }
+    if (!broke) {
+      // Every revote tied too (or there was no eligible voter to break it): the
+      // name was drawn. The format does this in the open — it hands them boxes.
+      html += '<div class="lt-tiebreak lt-drawn"><div class="lt-tiebreak-h">Still Level — '
+        + 'The Name Is Drawn</div><div class="lt-tiebreak-s">Nobody could break it, so it '
+        + 'came down to the draw. ' + _esc(chosen) + ' was the name pulled.</div></div>';
+    }
+  }
+  return html;
 }
 // THE REACTIONS THE CHAIR LEAVES BEHIND, each grounded in a record the room
 // can see. Grief off a stored bond (alignment-free, so it fires whether or not
@@ -1710,7 +1785,8 @@ function _buildBeats(v) {
         + _hostBand(_esc(_pick(VOTE_HOST, akey + '|vhost')))
         + _voteStage(table, akey)
         + '<p class="lt-say">'
-        + _esc(_fill(_pick(VOTE_RESULT, akey + '|vres'), { who: table.chosen }))
+        + _esc(_fill(_pick(_tableWasTie(table) ? VOTE_RESULT_TIE : VOTE_RESULT,
+          akey + '|vres'), { who: table.chosen }))
         + '</p>'),
       { kind: 'vote', askIdx: i, chosen: table.chosen });
 

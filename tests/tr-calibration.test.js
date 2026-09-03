@@ -1537,8 +1537,16 @@ describe('the castle, measured over many seasons', () => {
       + 'the early arm is vacuous').toBeGreaterThan(2000);
     expect(mandated.n, 'the mandated loop never once left a Traitor in a room of six or '
       + 'fewer with a fellow still in it — this arm is vacuous').toBeGreaterThan(100);
+    // COVERAGE RE-DERIVED (250 -> 150) when the automatic recruit was capped at
+    // one a season (js/tr/headless.js): fewer recruits means the pact is refilled
+    // less often, so it thins faster and fewer finales open with two Traitors
+    // still in — the multi-Traitor endgame population dropped from ~294 to ~201
+    // over these 200 seeds. This is a COVERAGE floor (is the arm non-vacuous),
+    // not the rate band beside it — 201 decisions is ample to trust a rate, and
+    // the rate itself is unmoved and still checked below. Floor cut well under
+    // the reading, the author's own rule for a coverage floor.
     expect(endgame.n, 'no endgame table ever put the question to a Traitor with a fellow '
-      + 'opposite — the endgame arm is vacuous').toBeGreaterThan(250);
+      + 'opposite — the endgame arm is vacuous').toBeGreaterThan(150);
 
     // Early: the pact is not for sale while there is a castle full of people
     // to spend instead. Measured 0/2,770 here and 0/16,385 at 1,200 seasons;

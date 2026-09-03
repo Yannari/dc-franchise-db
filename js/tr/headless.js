@@ -243,11 +243,28 @@ function _night(ep, rng) {
   // run simply falls through to a murder. With nothing pinned this is the old
   // thin-pact heuristic, draw for draw.
   const forcedRecruit = !!(gs.tr.murderSchedule && gs.tr.murderSchedule[ep] === 'recruit');
+  // THE AUTOMATIC RECRUIT FIRES ONCE A SEASON. Before, the only gate was
+  // `canRecruit` (a Traitor has been banished and one still lives), so with a
+  // thin pact the 45% roll could land on consecutive nights — two recruitments
+  // back to back, two nights with no murder, which is not how the pact refills
+  // itself. The automatic path now spends a single season-long token; a
+  // recruitment the AUTHOR pinned from the timeline still runs whenever it is
+  // scheduled, because that is a deliberate beat and not the heuristic firing.
+  const autoRecruitAllowed = !gs.tr.autoRecruited;
+  // DRAW THE ROLL UNDER THE CONDITION THE ENGINE ALWAYS DREW IT — canRecruit,
+  // not pinned, pact thin — so the game rng stream does not shift on a season
+  // that never hits the cap. The cap gates the RESULT below, after the draw,
+  // never the draw itself; a season with one recruit or none is bit-identical.
+  const autoRoll = canRecruit(ep) && !forcedRecruit
+    && livingTraitors(ep).length < 3 && rng() < 0.45;
   const wantsRecruit = canRecruit(ep)
-    && (forcedRecruit || (livingTraitors(ep).length < 3 && rng() < 0.45));
+    && (forcedRecruit || (autoRoll && autoRecruitAllowed));
   if (wantsRecruit) {
     const pick = chooseRecruit(ep, rng);
     if (pick) {
+      // Spend the season's one automatic recruit. A pinned one does not spend
+      // it — the author may schedule as many as they like.
+      if (!forcedRecruit) gs.tr.autoRecruited = true;
       // The ultimatum fires only with one Traitor left — the format's own rule,
       // and the reason refusal is fatal there: they have seen the only face.
       const offer = offerRecruitment(pick.target, ep, rng,
@@ -871,6 +888,16 @@ function _endgameRecord(e) {
       ep: r.ep, chosen: r.banished || null,
       ballots: (r.ballots || []).map(b => ({ voter: b.voter, voted: b.voted })),
       tally: Array.isArray(r.tally) ? r.tally.map(t => ({ ...t })) : (r.tally || null),
+      // THE TIE-BREAK, so the screen can explain a banishment the first count
+      // did not settle. A finale table of three can come in 1-1-1; the format
+      // re-votes on the tied and, if that still ties (nobody eligible to break
+      // it), draws a name. Without these the screen showed a level count and
+      // then "it chose Gwen" with nothing between — see the reported bug. Each
+      // revote carries who was tied and the ballots the eligible cast.
+      revotes: (r.revotes || []).map(rv => ({
+        tied: [...(rv.tied || [])],
+        ballots: (rv.ballots || []).map(b => ({ voter: b.voter, voted: b.voted })),
+      })),
       revealedTraitor: revealed ? !!r.wasTraitor : null,
     })),
     winner: e.winner || null,
@@ -1754,7 +1781,8 @@ function _snapshotBonds() {
 }
 
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
-  castle = null, endgame = false, selection = null, arrival = null } = {}) {
+  castle = null, endgame = false, selection = null, arrival = null,
+  finale = false } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -1769,7 +1797,9 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       .map(name => ({ name, verb: murderVerb, channel: 'murder' })),
   ].filter(Boolean);
   const conclave = night?.conclave || null;
-  const table = _tableRecord(ep, { endgame });
+  // On a finale row the endgame screen owns every table; a `_tableRecord` here
+  // would rebuild the last endgame round as a redundant Round Table screen.
+  const table = finale ? null : _tableRecord(ep, { endgame });
   // HOISTED SO IT CAN BE TRIMMED, and the order below is the whole contract:
   // the row is written FIRST and the buffer is trimmed SECOND, against the
   // very array the row took. Inverting those two lines deletes receipts that
@@ -1794,6 +1824,10 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // screen answers "was this relic found tonight?" with the reader's
       // scroll position.
       ep,
+      // THE FINALE ROW. Marks the endgame's own episode so screens that make no
+      // sense on it (a fresh Round Table, a voting-plans board) can opt out; the
+      // endgame screen and the Day Book are all it carries besides breakfast.
+      finale: !!finale,
       conclave,
       // The public half of the same night. `null` on a night with no table --
       // night one holds none, and the screen must not be registered for it.
@@ -2231,32 +2265,36 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // rather than from who left: a betrayal the room then failed to carry out
   // was still chosen, and `endgameChoice` is the only place that fact exists.
   scoreEndgame(endgame);
-  // THE FINALE IS ONE EPISODE, NOT ONE PER TABLE.
+  // THE FINALE IS ITS OWN EPISODE, AND IT COMMITS NO MURDER.
   //
-  // Each endgame table used to get its own `_recordEpisode` row. But an endgame
-  // round runs no night and no mission, so those rows rendered as sparse,
-  // murder-less "episodes" — half the screens gone, no conclave — and only the
-  // LAST of them carried the endgame summary. To a viewer that reads as the
-  // game breaking: the murders stopped and the screens vanished, on episode
-  // after episode, with the actual finale buried on the final row (the bug the
-  // castle owner reported). The endgame SCREEN already draws every table, every
-  // vote and the money in one flowing screen, so the per-table rows were pure
-  // redundancy sitting on top of the confusion.
+  // Two earlier shapes were both wrong. First, each endgame table got its own
+  // `_recordEpisode` row — but an endgame round runs no night and no mission, so
+  // those rows rendered as sparse, murder-less "episodes" with the summary on
+  // only the last one, which read as the game breaking. Then the whole endgame
+  // was folded onto the LAST MANDATED row — but that row had just run a night,
+  // so the finale episode carried a conclave, a murder committed in the same
+  // episode as the fire round, which is not how the finale plays.
   //
-  // So the whole endgame rides on the last row the mandated season wrote — the
-  // finale of that episode — and the finale's banishments fold into its
-  // `exits[]` so the timeline still counts every departure. reveal-less, so no
-  // alignment travels on the exit (spec §8, unless the author turned reveals
-  // on, in which case the endgame record already carries it and the screen
-  // reads it there — the exit stays a bare banishment either way).
+  // So the endgame is ONE dedicated finale row. It runs no `_night` (no conclave
+  // is built for it), the last mandated night's murder surfaces in its breakfast
+  // like any other morning-after, and the endgame SCREEN draws every table, vote
+  // and the money. The finale's banishments fold into its `exits[]` so the
+  // timeline counts every departure; reveal-less, so no alignment travels on the
+  // exit (spec §8 — unless the author turned reveals on, and then the endgame
+  // record carries it and the screen reads it there).
   const _rows = gs.episodeHistory || [];
   if (_rows.length) {
-    const _last = _rows[_rows.length - 1];
-    _last.tr.endgame = _endgameRecord(endgame);
+    const _finaleEp = (Number(_rows[_rows.length - 1].num) || _rows.length) + 1;
+    // A finale row: endgame phase, no night, no table of its own (`finale`
+    // nulls the table `_tableRecord` would otherwise rebuild from the endgame
+    // rounds — the endgame screen owns those).
+    _recordEpisode(_finaleEp, { endgame: true, finale: true });
+    const _finaleRow = _rows[_rows.length - 1];
+    _finaleRow.tr.endgame = _endgameRecord(endgame);
     const [_banishVerb] = exitVerbs(TRAITORS_FORMAT);
     for (const r of endgame.rounds || []) {
       if (r.banished) {
-        _last.exits.push({ name: r.banished, verb: _banishVerb,
+        _finaleRow.exits.push({ name: r.banished, verb: _banishVerb,
           channel: 'banishment', endgame: true });
       }
     }

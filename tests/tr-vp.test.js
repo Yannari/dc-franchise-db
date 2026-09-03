@@ -2410,8 +2410,14 @@ describe("neither screen borrows the turret's lamp", () => {
  * of seasons is the day the mode is genuinely unreachable and this file should
  * say so loudly rather than quietly asking for less.
  */
+// WIDENED when the automatic recruit was capped at one a season (js/tr/
+// headless.js): recruitment got rarer per season — as the file's own note
+// above says, raise the seeds rather than lower the floor — so the modes,
+// refusals and both answers are now sampled over twice as many runs.
 const OFFER_SEEDS = [1, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
-  43, 47, 53, 59, 61, 67, 71, 73];
+  43, 47, 53, 59, 61, 67, 71, 73,
+  79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149,
+  151, 157, 163, 167, 173, 179];
 const OFFER_RUNS = OFFER_SEEDS.map(season);
 /** Every episode across every offer seed that recorded an approach. */
 const OFFERS = OFFER_RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.recruitment)
@@ -3110,15 +3116,27 @@ describe('the endgame record reaches the screen at all', () => {
     const robbed = ENDINGS.filter(e => e.ep.tr.endgame.winner === 'traitors'
       && e.ep.tr.endgame.losers.length);
     const clean = ENDINGS.filter(e => e.ep.tr.endgame.winner === 'faithfuls');
-    const pair = split.filter(e => e.ep.tr.endgame.winner === 'traitors');
+    let pair = split.filter(e => e.ep.tr.endgame.winner === 'traitors');
     expect(lone.length, 'no season ended on a single taker').toBeGreaterThan(4);
     expect(split.length, 'no season ended on a split pot').toBeGreaterThan(4);
     expect(robbed.length, 'no season ended with somebody robbed').toBeGreaterThan(4);
     expect(clean.length, 'no season ended clean').toBeGreaterThan(4);
-    // The rarest of the four, and the reason this file does not use the shared
-    // four seeds for the endgame: a PAIR of Traitors dividing the pot in front
-    // of the people they took it from fires nowhere in seeds 1, 3, 7 and 11.
-    expect(pair.length, 'no season ended on two cloaks sharing the money')
+    // THE RAREST ENDING, AND IT GOT RARER. A PAIR of Traitors dividing the pot
+    // needs two of them to BOTH survive the finale — and the parity-gated
+    // endgame is where the pact mostly turns on itself, so two cloaks reaching
+    // the split together is now a ~3% outcome and fires in none of this file's
+    // odd 1-59 seeds. Walk seeds until one turns up (the file's rule: widen the
+    // search, fail loudly on a total miss — the day it cannot be found in any
+    // number of seasons is the day the split is unreachable and this says so).
+    if (!pair.length) {
+      for (let extra = 60; extra <= 400 && !pair.length; extra++) {
+        const run = season(extra);
+        const ep = run.episodes[run.episodes.length - 1];
+        if (ep && ep.tr && ep.tr.endgame && ep.tr.endgame.winner === 'traitors'
+          && ep.tr.endgame.takers.length > 1) pair = [{ ep, run }];
+      }
+    }
+    expect(pair.length, 'no season ended on two cloaks sharing the money, in any seed searched')
       .toBeGreaterThan(0);
   });
 });
@@ -3203,7 +3221,7 @@ describe('the endgame turns nobody over', () => {
       for (const t of ep.tr.endgame.tables) {
         expect(Object.keys(t).sort(),
           `ep ${ep.num}: a finale table carries an unexpected field`)
-          .toEqual(['ballots', 'chosen', 'ep', 'revealedTraitor', 'tally']);
+          .toEqual(['ballots', 'chosen', 'ep', 'revealedTraitor', 'revotes', 'tally']);
         expect(t.revealedTraitor,
           `ep ${ep.num}: a reveals-off finale leaked an alignment onto the record`)
           .toBeNull();
@@ -5534,24 +5552,28 @@ const printedWhy = html => [...noCss(html)
 const onRule = v => Math.min(100, Math.round(v * 100));
 
 describe('the belief record reaches the row at all', () => {
-  it('a real season writes a board on every night', () => {
-    // The endgame used to write its own sparse rows (`tr.table.endgame`), which
-    // carried no belief board on purpose (spec §8). Those rows are gone — the
-    // finale is one screen folded onto the last row now — so every row in
-    // `episodeHistory` is an ordinary night, and every ordinary night carries a
-    // board. (The finale's own no-board property is inherent: the endgame record
-    // has no beliefs field, and its silence is proved on the endgame screen in
-    // the describe block above.)
-    let rows = 0, withBoard = 0;
+  it('a real season writes a board on every ordinary night, and none on the finale', () => {
+    // The endgame is its own episode now — one finale row (`tr.finale`) that
+    // carries the whole fire round and NO belief board (spec §8: the endgame
+    // reveals nothing, and a board would hand the last table every survivor's
+    // alignment). Every other row is an ordinary night and carries one.
+    let rows = 0, withBoard = 0, finales = 0;
     for (const r of RUNS) {
       for (const e of r.episodes) {
         if (!e.tr) continue;
         rows++;
+        if (e.tr.finale) {
+          finales++;
+          expect(e.tr.beliefs, `ep ${e.num}: the finale carries a board`).toBe(null);
+          continue;
+        }
         expect(e.tr.beliefs, `ep ${e.num}: no board on an ordinary night`).toBeTruthy();
         if (e.tr.beliefs.castle.length) withBoard++;
       }
     }
     expect(rows, 'no episode rows at all').toBeGreaterThan(30);
+    expect(finales, 'no finale row in any seed, so the withholding is unchecked')
+      .toBeGreaterThan(0);
     expect(withBoard, 'not one night produced a castle board').toBeGreaterThan(20);
   });
 

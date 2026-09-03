@@ -1728,6 +1728,51 @@ const CONSEQ_ROAD_COVER = {
   ],
 };
 
+// cover-story-survived-the-day: a Traitor's account of {topic} (the night the
+// last victim was murdered) either lasted the whole day out or came apart on it.
+const CONSEQ_ROAD_COVER_BACK = {
+  held: [
+    "{a}'s account of {topic} survived a whole day in the open. Nobody out there had a reason to doubt it, and {a} banks the day.",
+    'A day of questions, and not one landed on {topic}. {a} comes home with the story intact.',
+    '{a} said {topic} the same way to each person who asked and none of them blinked — another ordinary day on the record.',
+  ],
+  frayed: [
+    "{a}'s account of {topic} got home, but lost a piece on the road: {a} has a version to remember now that is not quite the one {a} left with.",
+    'The story of {topic} held, barely. {a} spends the walk in learning which loose end to watch.',
+    'One person remembered {topic} differently and {a} had to agree with them. The account is a repair now, not a clean run.',
+  ],
+  broke: [
+    'The account of {topic} came apart in the open, and {a} could not put it back. One story {a} was leaning on has stopped working.',
+    '{a} answered about {topic} once too often and once too fast, and it fell over where people could hear. There is no taking that back on a road.',
+    'The story of {topic} did not survive the day. {a} walks in with a hole where an alibi used to be.',
+  ],
+};
+
+// testing-who-you-walk-with: {a} chose to walk with {topic}, and what {topic}
+// did with the pick is the test. The change is the read on {topic}.
+const CONSEQ_ROAD_WALK_TEST = {
+  flattered: [
+    '{a} picked {topic} for the road and {topic} took it as the compliment it was. The two are closer for it, and {a} has the read {a} went out for.',
+    '{topic} walked the whole way beside {a} and gave the honest version. {a} comes off the road trusting {topic} a little more than at the gate.',
+  ],
+  wary: [
+    '{a} learned less about {topic} than {a} hoped: {topic} kept the walk pleasant and gave nothing away. {a} files the caution.',
+    '{topic} answered {a} carefully the whole road out. {a} is no surer of {topic}, and a little more curious about why.',
+  ],
+  transactional: [
+    '{topic} made the road a negotiation. Nothing was decided, but both of them know a deal is on the table now.',
+    '{a} picked {topic} and got a trade rather than a friendship. {a} knows exactly what {topic} wants, which is its own kind of read.',
+  ],
+  'would-not-be-picked': [
+    '{topic} declined to be walked with, quickly and in front of people. {a} has the answer {a} went for, and it is not the one {a} wanted.',
+    '{topic} put a length of road between them by the top of the hill. {a} comes home knowing where {a} stands with {topic} — further out than {a} thought.',
+  ],
+  'turned-it-around': [
+    '{topic} was picked to be read and spent the road doing the reading instead. Whoever set out to test {topic} came home tested.',
+    "The walk was somebody else's idea and {topic}'s afternoon. {topic} gave away nothing and learned plenty, and now one more person knows how good {topic} is at exactly that.",
+  ],
+};
+
 // Which topicKinds are grounded, and how the composer renders them. `reaction:
 // false` drops the generic reaction card, because the event's own action line
 // already carries the exchange — a second, generic reaction on top of it is the
@@ -1736,11 +1781,13 @@ const TOPIC_CONFIG = {
   'road-third-name': { reaction: false, conseq: CONSEQ_ROAD_THIRD_NAME },
   'road-suspect-walk': { reaction: false, conseq: CONSEQ_ROAD_SUSPECT_WALK },
   'road-cover': { reaction: false, conseq: CONSEQ_ROAD_COVER },
+  'road-cover-back': { reaction: false, conseq: CONSEQ_ROAD_COVER_BACK },
+  'road-walk-test': { reaction: false, conseq: CONSEQ_ROAD_WALK_TEST },
 };
 
 /** The set of event ids that have been reworked to record a concrete topic. */
 /* eslint-disable-next-line */
-export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal']);
+export const TOPIC_READY = new Set(['susp-out-of-earshot', 'susp-let-it-go-on-the-road-back', 'cover-road-rehearsal', 'cover-story-survived-the-day', 'testing-who-you-walk-with']);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed

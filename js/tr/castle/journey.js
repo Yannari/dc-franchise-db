@@ -618,7 +618,9 @@ registerEvent({
     if (t && branch === 'would-not-be-picked') {
       api.resolveArc(t.id, 'turned-back', { source: sceneWhy });
     }
-    const out = { branch, pair: [a, b], threadId: t?.id, bondDelta };
+    // THE CONCRETE SUBJECT is the person picked ({b}) — the test is on them.
+    const out = { branch, pair: [a, b], topic: b, topicKind: 'road-walk-test',
+      threadId: t?.id, bondDelta };
     // AND ON ONE BRANCH THE DIRECTION REVERSES, which `roles:
     // 'initiator-first'` cannot express — that is a property of the event and
     // this is a property of the branch. An explicit pair on the result takes
@@ -1043,18 +1045,18 @@ registerEvent({
 
 const STORY_SURVIVED_LINES = {
   held: [
-    'A whole day out of the castle and nobody caught {a} in anything. The story was still standing at the gate.',
-    '{a} got through the entire journey without having to change a single word of it.',
-    'By the walk home {a} had stopped bracing for the question, because it never came.',
-    'Nobody out there had any interest in {a} at all, which was the best news {a} had had all week.',
-    '{a} said the same three sentences to four different people and none of them blinked.',
+    'A whole day out of the castle and nobody caught {a} out on {topic}. The account was still standing at the gate.',
+    '{a} got through the entire journey without changing a word of the account of {topic}.',
+    'By the walk home {a} had stopped bracing for the question about {topic}, because it never came.',
+    'Nobody out there pressed {a} on {topic} at all, which was the best news {a} had had all week.',
+    '{a} said the same three sentences about {topic} to four different people and none of them blinked.',
   ],
   frayed: [
-    '{a} had to patch it twice on the road and neither patch was clean.',
-    'The story got {a} home, but it had lost a piece somewhere out there.',
-    '{a} spent the walk back quietly listing everything they would have to remember differently now.',
-    'One person on the road out remembered it differently, and {a} had to agree with them.',
-    '{a} came home with a story that worked and one loose end they could not tie off.',
+    '{a} had to patch the account of {topic} twice on the road, and neither patch was clean.',
+    'The story of {topic} got {a} home, but it had lost a piece somewhere out there.',
+    '{a} spent the walk back quietly listing everything about {topic} they would have to remember differently now.',
+    'One person on the road remembered {topic} differently, and {a} had to agree with them.',
+    '{a} came home with an account of {topic} that worked and one loose end they could not tie off.',
   ],
   // THE ACCOUNT COMES APART, NOT THE PERSON. This branch closes the cover
   // THREAD with `exposed`, and a sentence implying the room now knows what
@@ -1062,11 +1064,11 @@ const STORY_SURVIVED_LINES = {
   // castle events write zero beliefs, so nobody in the castle learned
   // anything here except that one story stopped working.
   broke: [
-    'Somebody asked the one question on the road back, and {a} did not have an answer that matched the last one.',
-    'The account came apart in the open, hours from the castle, and {a} had nothing to put in its place.',
-    '{a} heard their own story fall over on the walk home and could not pick it back up.',
-    'It went wrong in the open, in front of people, and {a} had a whole road home to think about it.',
-    '{a} answered too fast, out there where there was nowhere to go, and the answer was wrong.',
+    'Somebody asked the one question about {topic} on the road back, and {a} did not have an answer that matched the last one.',
+    'The account of {topic} came apart in the open, hours from the castle, and {a} had nothing to put in its place.',
+    '{a} heard their own account of {topic} fall over on the walk home and could not pick it back up.',
+    'It went wrong in the open, in front of people, and {a} had a whole road home to think about {topic}.',
+    '{a} answered about {topic} too fast, out there where there was nowhere to go, and the answer was wrong.',
   ],
 };
 
@@ -1103,7 +1105,10 @@ registerEvent({
     else if (roll < holdScore + frayScore) branch = 'frayed';
     else branch = 'broke';
 
-    const line = pick(rng, STORY_SURVIVED_LINES[branch]).replace(/\{a\}/g, actor);
+    const victim = _lastMurdered();
+    const topic = victim ? `the night ${victim} was murdered` : 'yesterday out on the mission';
+    const line = pick(rng, STORY_SURVIVED_LINES[branch])
+      .replace(/\{a\}/g, actor).replace(/\{topic\}/g, topic);
     const thread = findOpenThread('cover', [actor]);
     // ── "AN ANSWER THAT MATCHED THE LAST ONE" NEEDS A LAST ONE ──────────
     //
@@ -1135,7 +1140,7 @@ registerEvent({
     const witness = ctx.actors.find(n => n !== actor);
     if (witness && branch === 'broke') { bondDelta = -1.5; api.addBond(actor, witness, bondDelta,
       { source: sceneWhy }); }
-    return { branch, actor, threadId: thread.id, cited, note, outcome, witness: witness || null, bondDelta };
+    return { branch, actor, topic, topicKind: 'road-cover-back', threadId: thread.id, cited, note, outcome, witness: witness || null, bondDelta };
   },
 });
 

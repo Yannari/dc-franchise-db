@@ -2783,6 +2783,50 @@ const DY_CSS = `
 .dy-knot[data-sense="coupled"]{border-color:rgba(220,149,180,.5);
   background:linear-gradient(96deg,rgba(220,149,180,.14),rgba(16,14,12,.42))}
 
+/* ── THE SPOKEN LINE — pulled out of the narration, in a hand ────────── */
+.dy-say + .dy-say{margin-top:11px}
+.dy-say.dy-spoken{font-family:var(--dy-hand);font-size:19.5px;line-height:1.5;
+  color:rgba(245,238,222,.96);padding-left:14px;
+  border-left:2px solid rgba(255,238,196,.28);margin-top:13px}
+
+/* ── THE CONSEQUENCE — what changed, under a hairline in its own block ── */
+.dy-outcome{margin-top:15px;padding-top:14px;
+  border-top:1px solid rgba(255,238,196,.14)}
+.dy-outcome .dy-say-out{font-size:17.5px;line-height:1.55;
+  color:rgba(240,232,214,.82)}
+
+/* ── THE IMPACT ROW — the suspicion / bond / popularity a scene moved ──
+   A chip carries the avatar(s) of the people concerned and which way the
+   thing went. Visually a row of tokens, never sentences, so the eye reads the
+   consequences of a scene without reading its prose. */
+.dy-impact{margin-top:15px;padding-top:13px;
+  border-top:1px dashed rgba(255,238,196,.16)}
+.dy-impact-k{display:block;font-family:var(--dy-display);font-weight:700;
+  font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(236,227,208,.44);margin-bottom:9px}
+.dy-chips{display:flex;flex-wrap:wrap;gap:8px}
+.dy-chip{display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px 4px 5px;border-radius:14px;
+  border:1px solid rgba(255,238,196,.2);background:rgba(16,14,12,.5);
+  font-family:var(--dy-display);font-weight:700;font-size:11px;letter-spacing:.02em;
+  color:rgba(236,227,208,.9)}
+.dy-chip .cv-av{position:relative;overflow:hidden;flex:none}
+.dy-chip .cv-av-ini{position:absolute;inset:0}
+.dy-chip-av{display:inline-flex}
+.dy-chip-link{color:rgba(236,227,208,.5);font-weight:400;margin:0 -2px}
+.dy-chip-to{color:rgba(236,227,208,.6);font-size:13px;margin:0 -1px}
+.dy-chip-t{margin-left:3px;display:inline-flex;align-items:center;gap:4px;
+  text-transform:uppercase;font-size:9.5px;letter-spacing:.12em;
+  color:rgba(236,227,208,.72)}
+.dy-chip-ar{font-size:10px}
+.dy-chip-up{border-color:rgba(122,178,122,.5);background:rgba(70,110,70,.18)}
+.dy-chip-up .dy-chip-ar{color:#8fd08f}
+.dy-chip-dn{border-color:rgba(208,110,110,.5);background:rgba(120,60,60,.18)}
+.dy-chip-dn .dy-chip-ar{color:#e08a8a}
+.dy-chip[data-k="susp"].dy-chip-up{border-color:rgba(210,150,74,.55);
+  background:rgba(150,100,40,.18)}
+.dy-chip[data-k="susp"].dy-chip-up .dy-chip-ar{color:#e6b25a}
+
 /* ── AN OVERHEARD SCENE — the observer layer, drawn as less ─────────── */
 .dy-scene[data-heard="1"]{
   background:linear-gradient(168deg,rgba(34,30,25,.8),rgba(20,18,15,.9));
@@ -3138,6 +3182,20 @@ function _view(ep, observer, segment = null) {
     if (!row.closed) continue;
     const last = row.steps[row.steps.length - 1];
     for (const st of row.steps) if (st !== last) scenes[st].closedNow = false;
+  }
+
+  // ── IMPACT CHIPS: what each scene actually moved, observer-gated ───────
+  // Read the episode's receipts once and attach the movements to each scene,
+  // gated by the same layer/watcher this view was built for.
+  const _receipts = (ep.tr && Array.isArray(ep.tr.receipts)) ? ep.tr.receipts : [];
+  const _epNum = c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0;
+  for (const s of scenes) {
+    s.chips = _chipsFor(_receipts, _epNum + ':' + s.window + ':' + s.eventId,
+      s.layer, isAudience, watcher);
+    if (s.layer !== 'heard') {
+      const susp = _suspicionChipFromRecord(s, isAudience, watcher);
+      if (susp) s.chips = [susp, ...s.chips];
+    }
   }
 
   // EVERY NAME THE DAY COULD BE ABOUT. `_mode` needs it to tell a scene with
@@ -3657,6 +3715,111 @@ function _beatCard(s, beat, key) {
 // ONE CARD PER SCENE (user-directed): the establish/action/reaction/consequence
 // beats that used to be four separate reveal-cards now flow inside a single
 // card, so a scene reads as one moment instead of four fragments and there is
+// ══════════════════════════════════════════════════════════════════════
+// IMPACT CHIPS — the suspicion / bond / popularity a scene actually moved
+// ══════════════════════════════════════════════════════════════════════
+//
+// The reviewer could read what a scene SAID but not SEE what it did. Every
+// castle write leaves a receipt on the scene API (js/tr/scene-api.js), keyed
+// by `sceneId = ${ep}:${window}:${eventId}` — the same coordinates the composed
+// scene carries — so the movements are recoverable without re-deriving them.
+// A compact chip row under the prose shows them, each with the avatar(s) of the
+// people concerned, visually distinct from the sentences.
+//
+// OBSERVER-GATED IN THE DATA. The audience sees every applied movement. A
+// Faithful `player:<name>` layer sees only what that watcher could know: a bond
+// they are half of, a read they themselves formed. Never another player's
+// private suspicion, never the audience-only popularity meta, and nothing at
+// all on a scene they merely overheard. This is the same contract the prose
+// layer already keeps, applied to the receipts.
+function _chipsFor(receipts, sceneId, layer, isAudience, watcher) {
+  if (layer === 'heard') return [];               // overheard: no private impact
+  const mine = receipts.filter(r => r && r.applied && r.sceneId === sceneId);
+  const out = [];
+  const seen = new Map();                          // dedup by type|a|b, summing dir
+  const add = (type, a, b, dir) => {
+    if (!a) return;
+    const key = type + '|' + a + '|' + (b || '');
+    if (seen.has(key)) { seen.get(key).dir += dir; return; }
+    const chip = { type, a, b: b || null, dir };
+    seen.set(key, chip); out.push(chip);
+  };
+  for (const r of mine) {
+    if (r.kind === 'bond' && r.delta) {
+      const [a, b] = r.players || [];
+      if (!isAudience && watcher && watcher !== a && watcher !== b) continue;
+      add('bond', a, b, r.delta > 0 ? 1 : -1);
+    } else if (r.kind === 'belief') {
+      if (!isAudience && watcher !== r.observer) continue;
+      add('suspicion', r.observer, r.subject, 1);
+    } else if (r.kind === 'doubt' && r.delta) {
+      if (!isAudience && watcher !== r.observer) continue;
+      add('suspicion', r.observer, r.subject, -1);
+    } else if (r.kind === 'crowd' && r.delta) {
+      if (!isAudience) continue;                   // popularity is audience meta
+      add('popularity', r.observer, null, r.delta > 0 ? 1 : -1);
+    }
+  }
+  return out;
+}
+
+// SUSPICION MOVEMENT, from the scene's OWN RECORD. Castle events write no
+// beliefs (by design — see the family headers and tr-castle-write-path), so a
+// suspicion delta is not a receipt. It IS recorded, though: a reworked
+// suspicion scene carries the subject it is about (`topic`) and the branch that
+// says which way the doubt went. This maps the branch to a direction, so the
+// chip shows a real recorded movement rather than a fabricated number.
+// Observer-gated: only the doubter's own layer (or the audience) sees it.
+const _SUSP_DIR = {
+  'road-third-name': { agreed: 1, 'named-somebody-else': 1 },
+  'road-suspect-walk': { slipped: 1, hardened: 1, cleared: -1 },
+};
+function _suspicionChipFromRecord(s, isAudience, watcher) {
+  const map = _SUSP_DIR[s.topicKind];
+  if (!map || !s.topic) return null;
+  const dir = map[String(s.branch || '')];
+  if (!dir) return null;                           // a branch with no movement
+  const doubter = s.speaker || (s.actors && s.actors[0])
+    || (s.participants && s.participants[0]) || (s.parties && s.parties[0]);
+  if (!doubter) return null;
+  if (!isAudience && watcher !== doubter) return null;
+  return { type: 'suspicion', a: doubter, b: s.topic, dir };
+}
+
+/** One impact chip: the people (avatars) and which way the thing moved. */
+function _chip(c) {
+  const dirCls = c.dir > 0 ? 'up' : c.dir < 0 ? 'dn' : 'flat';
+  const arrow = c.dir > 0 ? '▲' : c.dir < 0 ? '▼' : '■';
+  if (c.type === 'bond') {
+    return '<span class="dy-chip dy-chip-' + dirCls + '" data-k="bond">'
+      + '<span class="dy-chip-av">' + _av(c.a, 20) + '</span>'
+      + '<span class="dy-chip-link">–</span>'
+      + '<span class="dy-chip-av">' + _av(c.b, 20) + '</span>'
+      + '<span class="dy-chip-t">trust <span class="dy-chip-ar">' + arrow + '</span></span>'
+      + '</span>';
+  }
+  if (c.type === 'suspicion') {
+    return '<span class="dy-chip dy-chip-' + dirCls + '" data-k="susp">'
+      + '<span class="dy-chip-av">' + _av(c.a, 20) + '</span>'
+      + '<span class="dy-chip-to">→</span>'
+      + '<span class="dy-chip-av">' + _av(c.b, 20) + '</span>'
+      + '<span class="dy-chip-t">suspicion <span class="dy-chip-ar">' + arrow + '</span></span>'
+      + '</span>';
+  }
+  return '<span class="dy-chip dy-chip-' + dirCls + '" data-k="pop">'
+    + '<span class="dy-chip-av">' + _av(c.a, 20) + '</span>'
+    + '<span class="dy-chip-t">popularity <span class="dy-chip-ar">' + arrow + '</span></span>'
+    + '</span>';
+}
+
+/** The impact row: what the scene moved, in chips. */
+function _chipRow(chips) {
+  if (!chips || !chips.length) return '';
+  return '<div class="dy-impact">'
+    + '<span class="dy-impact-k">What it moved</span>'
+    + '<div class="dy-chips">' + chips.map(_chip).join('') + '</div></div>';
+}
+
 // nothing to click through. The 4-beat DATA is unchanged (castleDayScenes still
 // returns the full stream) — only the rendering is merged.
 function _sceneCard(s, stream, key) {
@@ -3665,12 +3828,26 @@ function _sceneCard(s, stream, key) {
   const carried = !s.opened;
   let body = '<div class="dy-place">' + _esc(s.heading) + '</div>';
   body += _faces(s.participants);
+  // THE BEATS, SET APART SO A SCENE PARSES AT A GLANCE. The action reads as
+  // narration; a spoken reaction is pulled out in its own hand; the consequence
+  // sits below a hairline in its own block; the impact chips close the card.
+  // One scrollable card still — the separation is structural, not a click.
   for (const beat of stream) {
-    body += '<p class="dy-say">'
-      + _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text)) + '</p>';
-    if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
-    if (!heard && beat.kind === 'consequence' && s.closedNow && !(s.topic && TOPIC_CONFIG[s.topicKind])) body += _knotMark(s, beat.mark);
+    const txt = _esc(beat.role === 'recall' ? beat.lead : (beat.say || beat.text));
+    if (beat.kind === 'consequence') {
+      body += '<div class="dy-outcome"><p class="dy-say dy-say-out">' + txt + '</p>';
+      if (!heard && s.closedNow && !(s.topic && TOPIC_CONFIG[s.topicKind])) {
+        body += _knotMark(s, beat.mark);
+      }
+      body += '</div>';
+    } else if (beat.kind === 'reaction') {
+      body += '<p class="dy-say dy-spoken">' + txt + '</p>';
+    } else {
+      body += '<p class="dy-say">' + txt + '</p>';
+      if (!heard && beat.role === 'recall') body += _stitch(s, beat.tail);
+    }
   }
+  if (!heard && s.chips && s.chips.length) body += _chipRow(s.chips);
   return '<div class="dy-scene" data-carried="' + (carried && !heard ? '1' : '0') + '"'
     + ' data-beat="scene"'
     + (heard ? ' data-heard="1"' : '')
@@ -4160,3 +4337,17 @@ export function castleDayScenes(ep, observer = 'audience') {
   return v.scenes.map((raw, i) =>
     _composeScene({ ...raw, epNum: v.ep }, key + '|' + i + '|' + raw.eventId, used, v.cast));
 }
+
+/**
+ * THE IMPACT CHIPS PER SCENE, for the observer given — the machine-readable
+ * form of the "What it moved" row. Exposed so a guard can assert the
+ * observer-gating (a player never sees another player's private read) at the
+ * data level rather than by scraping markup.
+ */
+export function castleDayChips(ep, observer = 'audience') {
+  const v = _view(ep, observer);
+  if (!v) return [];
+  return v.scenes.map(s => ({ eventId: s.eventId, window: s.window,
+    layer: s.layer, chips: (s.chips || []).map(c => ({ ...c })) }));
+}
+

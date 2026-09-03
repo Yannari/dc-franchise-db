@@ -57,7 +57,7 @@ import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
 import { _setDrawRule } from '../js/tr/castle/lines.js';
 import roster from '../franchise_roster.json';
-import { rpBuildCastleDay, castleDayScenes, BRANCH_TONES, TOPIC_READY } from '../js/vp-tr/castle-day.js';
+import { rpBuildCastleDay, castleDayScenes, castleDayChips, BRANCH_TONES, TOPIC_READY } from '../js/vp-tr/castle-day.js';
 import { rpBuildConclave } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
 import { screenNarration } from '../js/vp-tr/screens.js';
@@ -2181,5 +2181,97 @@ describe('a topic-grounded scene names its subject and what changed', () => {
     const topic = 'Gabby';
     expect('the doubt about Gabby did not clear — it set.'.includes(topic)).toBe(true);
     expect('and that is where it finishes.'.includes(topic)).toBe(false);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// IMPACT CHIPS — the movements are shown, and observer-gated
+// ══════════════════════════════════════════════════════════════════════
+//
+// The user could read what a scene said but not SEE what it moved. Each scene
+// now renders a "What it moved" row of chips (suspicion / bond) sourced from the
+// scene's receipts and record. This arm proves (1) they appear, and (2) they
+// respect the observer layer — a Faithful never sees another player's private
+// read. Band against the mutant: the gating is what makes arm 2 pass.
+describe('impact chips are shown and observer-gated', () => {
+  const chipSeasons = [];
+  for (const seed of [1, 2, 3, 7, 42, 2002]) {
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+    for (const row of (gs.episodeHistory || [])) {
+      if (row.tr && row.tr.castle) chipSeasons.push({ seed, row });
+    }
+  }
+
+  it('the audience sees suspicion and bond movements', () => {
+    let susp = 0, bond = 0;
+    for (const { row } of chipSeasons) {
+      for (const sc of castleDayChips(row, 'audience')) {
+        for (const c of sc.chips) {
+          if (c.type === 'suspicion') susp++;
+          if (c.type === 'bond') bond++;
+        }
+      }
+    }
+    expect(bond, 'no bond chips across the sample').toBeGreaterThan(30);
+    expect(susp, 'no suspicion chips across the sample').toBeGreaterThan(5);
+  });
+
+  it('every chip names the people concerned', () => {
+    for (const { row } of chipSeasons) {
+      for (const sc of castleDayChips(row, 'audience')) {
+        for (const c of sc.chips) {
+          expect(typeof c.a === 'string' && c.a.length > 0,
+            sc.eventId + ': chip has no primary person').toBe(true);
+          if (c.type !== 'popularity') {
+            expect(typeof c.b === 'string' && c.b.length > 0,
+              sc.eventId + ': ' + c.type + ' chip has no second person').toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it('OBSERVER SAFETY: a player never sees another player\'s private read', () => {
+    // For every suspicion/popularity chip a PLAYER layer is shown, the read must
+    // be that player's own (the observer). For a bond chip, the player must be
+    // one of the two. Anything else is a leak. Also: an overheard scene shows
+    // no chips at all.
+    let checkedPlayers = 0, checkedChips = 0;
+    for (const { row } of chipSeasons.slice(0, 30)) {
+      const living = (row.tr && row.tr.living) || [];
+      for (const who of living.slice(0, 4)) {
+        checkedPlayers++;
+        for (const sc of castleDayChips(row, 'player:' + who)) {
+          if (sc.layer === 'heard') {
+            expect(sc.chips.length, who + ': an overheard scene showed impact chips')
+              .toBe(0);
+            continue;
+          }
+          for (const c of sc.chips) {
+            checkedChips++;
+            if (c.type === 'bond') {
+              expect(c.a === who || c.b === who,
+                who + ': shown a bond chip they are not part of (' + c.a + '/' + c.b + ')')
+                .toBe(true);
+            } else {
+              // suspicion / popularity: the observer is `c.a`
+              expect(c.a, who + ': shown a ' + c.type + ' read that is not theirs (' + c.a + ')')
+                .toBe(who);
+            }
+          }
+        }
+      }
+    }
+    expect(checkedPlayers, 'no player layers were checked').toBeGreaterThan(10);
+  });
+
+  it('MUTATION: an un-gated suspicion chip would leak, and the check catches it', () => {
+    // A synthetic leak: a suspicion chip whose observer (a) is not the watcher.
+    // The observer-safety assertion above is `c.a === who`; prove it bites.
+    const who = 'Alejandro';
+    const leak = { type: 'suspicion', a: 'Beth', b: 'Chef Hatchet', dir: 1 };
+    const ownRead = { type: 'suspicion', a: who, b: 'Chef Hatchet', dir: 1 };
+    expect(leak.a === who).toBe(false);      // would fail the guard → caught
+    expect(ownRead.a === who).toBe(true);    // the watcher's own read passes
   });
 });

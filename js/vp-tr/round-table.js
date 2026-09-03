@@ -1596,6 +1596,50 @@ const REVEAL_FAITHFUL = [
   'The count was clean and the answer was wrong, which is the worst combination this table produces.',
   'They did that to one of their own, in the open, unanimously enough.',
 ];
+// FIRST PERSON, SPOKEN AT THE DOOR. The banished turns their own card — the
+// one certainty the format hands the room comes out of the mouth of the person
+// leaving. Original lines; the only fact they may assert is the alignment the
+// record already reveals here (never in the endgame, where nothing is turned
+// over).
+const ANNOUNCE_TRAITOR = [
+  'I am a Traitor. I have been one since the first night, and every one of you sat next to it and smiled.',
+  'Yes. It was me. You will want to remember that I was not the only one at this table.',
+  'Traitor. You got one right — and you have no idea how far that is from getting them all.',
+  'I am a Traitor. Look hard at who was quietest tonight, because I am leaving one behind.',
+];
+const ANNOUNCE_FAITHFUL = [
+  'I am a Faithful. I always was, and you have just done their work for them.',
+  'Faithful. Every single day. Look at what you have done, and look at who talked you into it.',
+  'A Faithful. That is what this room burned tonight, and the ones who wanted it are still sitting there.',
+  'I am a Faithful — and now you get to live with that while a Traitor of yours walks free.',
+];
+// THE ROOM, AFTER. Public on every layer — the mood of a table that has just
+// been handed its one true thing, or spent it on an innocent.
+const REACT_TRAITOR_PUBLIC = [
+  'The table comes apart — relief and fury at once, and under both the same cold arithmetic: how many are left.',
+  'For a moment nobody can look at anybody. They were right, and being right feels like nothing they expected it to.',
+  'The room believes itself for the first time all week and does not know what to do with the feeling.',
+  'Somebody starts to celebrate and thinks better of it. There are still chairs at this table that have not been turned over.',
+];
+const REACT_FAITHFUL_PUBLIC = [
+  'The silence goes on a beat too long. Every person at this table is now somebody who did that.',
+  'A hand goes to a mouth. The apology forms and there is no one left in the chair to give it to.',
+  'They look at each other and understand, all at once, that a Traitor is still here, wearing one of these sorry faces.',
+  'Nobody says the obvious thing out loud: whoever wanted this one gone the most is the one to watch now.',
+];
+// AUDIENCE PRIVILEGE. Only the crowd sees the surviving pact react — same
+// channel as the debate's "what the room cannot see". `{who}` is a Traitor
+// still seated; never rendered on a player layer, where `v.truth` is null.
+const REACT_TRAITOR_HIDDEN = [
+  '{who} keeps a straight face and does the only sum that matters: the pact down by one, and every remaining pair of eyes now free to turn their way.',
+  'A friend just went out that door and {who} mourns nothing — only measures how much warmer the room got, and how much colder.',
+  '{who} grieves loudly for exactly as long as the others are watching, and not one second past it.',
+];
+const REACT_FAITHFUL_HIDDEN = [
+  '{who} lets the room do the grieving and does not have to fake a thing — the table just spent its knife on one of its own.',
+  'Behind a sympathetic face, {who} is having the best night of the week and cannot let a muscle of it show.',
+  'The pact loses no one and the room loses a friend, and {who} keeps the smile off {pos} face by an act of pure will.',
+];
 const SILENCE_TEXT = [
   'Nobody is told anything. Not tonight, not at this number, not ever again.',
   'The chair empties and the room learns precisely nothing from it.',
@@ -2120,8 +2164,13 @@ function _buildBeats(v) {
   // either lock is caught rather than covered for.
   if (!v.endgame && v.chosenAlignment) {
     const isTraitor = v.chosenAlignment === 'traitor';
+    // THE BANISHED TURNS THEIR OWN CARD. The one certain thing the format hands
+    // the room is said out loud, in the leaving player's own voice, before the
+    // seal confirms it — the "circle of truth" the reveal used to skip straight
+    // past. First person, and it may assert only the alignment already revealed.
     push('verdict',
-      '<div class="rt-reveal" data-reveal="alignment"><div class="rt-reveal-inner">'
+      _said(v.chosen, _pick(isTraitor ? ANNOUNCE_TRAITOR : ANNOUNCE_FAITHFUL, key + '|an'))
+      + '<div class="rt-reveal" data-reveal="alignment"><div class="rt-reveal-inner">'
       + '<div class="rt-reveal-face" data-side="' + _esc(v.chosenAlignment) + '">'
       + _icon('seal', 40, isTraitor ? '#c9283c' : 'rgba(222,214,196,.75)')
       + '<div class="rt-reveal-word">' + (isTraitor ? 'Traitor' : 'Faithful') + '</div>'
@@ -2131,6 +2180,33 @@ function _buildBeats(v) {
       + '<div class="rt-note">' + _pick(isTraitor ? REVEAL_TRAITOR : REVEAL_FAITHFUL,
         key + '|rv') + '</div>',
       'reveal', { kind: 'reveal', alignment: v.chosenAlignment });
+
+    // ── THE ROOM REACTS — the beat the table used to skip ────────────────
+    //
+    // A reveal with no reaction is a fact with nobody to land on. The room's
+    // mood is public; the surviving pact's private read is the audience's alone
+    // (`v.truth` is null on every player layer), same channel as the debate's
+    // "what the room cannot see".
+    const pushers = (v.first || []).filter(b => b.target === v.chosen).map(b => b.voter);
+    const survTraitors = v.truth
+      ? Object.keys(v.truth).filter(n => v.truth[n] === 'traitor'
+          && n !== v.chosen && v.seated.includes(n))
+      : [];
+    let rh = '<p>' + _pick(isTraitor ? REACT_TRAITOR_PUBLIC : REACT_FAITHFUL_PUBLIC,
+      key + '|rxp') + '</p>';
+    if (pushers.length) {
+      rh += '<div class="rt-faces">'
+        + pushers.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
+    }
+    if (survTraitors.length) {
+      const who = survTraitors[0];
+      const wpr = _pr(who);
+      rh += '<div class="rt-irony"><b>What the room cannot see</b><span>'
+        + _fill(_pick(isTraitor ? REACT_TRAITOR_HIDDEN : REACT_FAITHFUL_HIDDEN, key + '|rxh'),
+          { who: _esc(who), pos: wpr.pos, sub: wpr.sub, obj: wpr.obj }) + '</span></div>';
+    }
+    push('verdict', _card(null, 'The room', 'table', rh),
+      null, { kind: 'reaction' });
   } else {
     push('verdict', '<div class="rt-silence">'
       + _icon('eye', 42, 'rgba(222,214,196,.42)')

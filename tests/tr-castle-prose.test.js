@@ -1091,18 +1091,28 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // ~711, and the floor moved to 650.
     //
     // RE-BASELINED 650 -> 600 for the CASTLE-SCENE REWORK. A topic-grounded
-    // scene closes on a subject-naming consequence and DROPS the generic
-    // reaction beat (TOPIC_CONFIG `reaction: false` in castle-day.js — the
-    // action line already carries the exchange), so each grounded scene
-    // contributes two composed beats (establish + consequence) where a legacy
-    // scene contributed three. As the testing and cover families landed this
-    // fell from ~711 to 648 BY DESIGN, not by a throughput regression. This is
-    // a re-baseline of a denominator-sanity floor, exactly like the 750->650
-    // one above; the repeat-RATE band below (the actual quality guard) is
-    // UNCHANGED at 2%. 600 clears the live 648 with margin and still reddens on
-    // the ~414 a barren-draw regression would reach under grounding. It will be
-    // re-baselined again as the remaining deduction families (consequences,
-    // nightfall) ground.
+    // scene closes on a subject-naming consequence and, when it is a deduction
+    // reckoning, DROPS the generic reaction beat (TOPIC_CONFIG `reaction: false`
+    // in castle-day.js — the action line already carries the exchange), so each
+    // such scene contributes two composed beats (establish + consequence) where
+    // a legacy scene contributed three. As testing and cover landed this fell
+    // from ~711 to 648 BY DESIGN, not by a throughput regression; the repeat-
+    // RATE band below (the actual quality guard) is UNCHANGED at 2%.
+    //
+    // FINAL RE-BASELINE (all deduction families grounded). consequences,
+    // nightfall and romance-liability-exposed have now dropped their reaction
+    // beats too (after-wrong / after-right / romance-suspicion carry
+    // `reaction: false`; the aftermath grief scenes and the once-skipped
+    // grief-vigil / callback-absence events KEEP theirs, being mourning or
+    // recognition rather than deduction). Measured at the tip, seed 20260901:
+    //
+    //     episodes 10   composed 643
+    //
+    // 600 is the FINAL value — this is a DENOMINATOR-SANITY floor, not the
+    // throughput guard (that is tr-episode-density's job). It clears the live
+    // 643 with a 43-card margin and still reddens on the ~414 a barren-draw
+    // regression would reach under grounding. Not expected to move again unless
+    // a future family changes the establish/reaction/consequence beat shape.
     expect(composed, 'too few composed cards to measure a repeat rate against — the '
       + 'castle is rendering materially less than it did when this rate was derived')
       .toBeGreaterThan(600);

@@ -2476,6 +2476,55 @@ export const _bbUsedTag = (used, id, chosen = null) => {
   return ` · in ${at.slice(0, 2).join(', ')}${at.length > 2 ? ` +${at.length - 2}` : ''}`;
 };
 
+// ── The castle's mission, pinned to an episode ────────────────────────
+//
+// A castle runs one mission an afternoon, so unlike a Big Brother competition
+// (which is one slot of several) this is a single dropdown, shown on every
+// castle episode. 'Auto' lets the estate draw its own; pinning one forces it
+// when it is eligible that day (js/tr/missions.js runMission), and an
+// ineligible pin quietly falls back to a random afternoon.
+function _trMissionEntry(ep) {
+  return (seasonConfig.trMissionSchedule || []).find(t => t && Number(t.episode) === Number(ep));
+}
+
+function _trMissionPicker(ep) {
+  const cat = (typeof TR_MISSION_CATALOG !== 'undefined' ? TR_MISSION_CATALOG : []) || [];
+  if (!cat.length) return '';
+  const chosen = _trMissionEntry(ep)?.missionId || '';
+  const pinned = !!chosen;
+  let h = `<label style="display:flex;align-items:center;gap:4px;flex:1 1 100%;min-width:0;font-size:9.5px;letter-spacing:.5px;color:${
+    pinned ? '#d4b45f' : 'var(--muted,#7d8590)'}" title="${
+    pinned ? 'Pinned — this afternoon runs exactly this mission' : 'Auto — the castle draws its own mission'
+  }"><span style="flex:0 0 auto">Mission</span>`;
+  h += `<select onchange="event.stopPropagation();_setTrMission(${ep},this.value)" onclick="event.stopPropagation()" style="font-size:10px;background:#1e1e2e;color:${
+    pinned ? '#e8d5a8' : '#8b949e'};border:1px solid rgba(201,162,74,${pinned ? '0.55' : '0.22'});border-radius:3px;padding:1px 2px;flex:1 1 auto;min-width:0;max-width:100%">`;
+  h += `<option value="" ${!chosen ? 'selected' : ''}>Auto</option>`;
+  const bespoke = cat.filter(m => m.kind === 'bespoke');
+  const generic = cat.filter(m => m.kind !== 'bespoke');
+  if (bespoke.length) {
+    h += `<optgroup label="Bespoke &middot; ${bespoke.length}">`;
+    bespoke.forEach(m => { h += `<option value="${m.id}" ${m.id === chosen ? 'selected' : ''}>${m.name}</option>`; });
+    h += `</optgroup>`;
+  }
+  if (generic.length) {
+    h += `<optgroup label="Classic &middot; ${generic.length}">`;
+    generic.forEach(m => { h += `<option value="${m.id}" ${m.id === chosen ? 'selected' : ''}>${m.name}</option>`; });
+    h += `</optgroup>`;
+  }
+  h += `</select></label>`;
+  return h;
+}
+
+export function _setTrMission(ep, missionId) {
+  if (!seasonConfig.trMissionSchedule) seasonConfig.trMissionSchedule = [];
+  let entry = _trMissionEntry(ep);
+  if (!entry) { entry = { episode: Number(ep) }; seasonConfig.trMissionSchedule.push(entry); }
+  if (missionId) entry.missionId = missionId;
+  else seasonConfig.trMissionSchedule = seasonConfig.trMissionSchedule.filter(c => c !== entry);
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 function _bbCompPicker(ep, slot, label) {
   const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
   if (!list.length) return '';
@@ -2942,13 +2991,21 @@ export function renderTimeline() {
           </div>`)
       : '';
 
+    // The castle's afternoon mission — one dropdown per episode, always shown
+    // (a castle runs a mission every day), pinning which one runs.
+    const missionRow = (isTraitorsSeason() && !isFinale)
+      ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(201,162,74,0.14)">
+            ${_trMissionPicker(ep)}
+          </div>`
+      : '';
+
     html += `<div class="fd-episode ${isSelected ? 'selected' : ''} ${isFinale ? 'finale' : ''} ${phase === 'ri-duel' ? 'ri-ep' : ''}" onclick="${isFinale ? '' : `toggleEpisode(${ep})`}" ${isFinale ? 'style="opacity:.6;cursor:default"' : ''}>
       <div class="fd-ep-header">
         <span class="fd-ep-num">Ep. ${ep} <span class="fd-ep-phase-label">${phaseLabel}</span></span>
         <span class="${markerClass}">${markerText}</span>
       </div>
       ${twistTags ? `<div class="fd-ep-twists">${twistTags}</div>` : ''}
-      ${compRow}
+      ${compRow}${missionRow}
     </div>`;
   });
 

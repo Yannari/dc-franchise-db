@@ -75,6 +75,22 @@ function _murderSchedule() {
 }
 
 /**
+ * The author's mission calendar, read off the timeline's per-episode dropdown.
+ *
+ * `seasonConfig.trMissionSchedule` is a list of `{ episode, missionId }`; this
+ * turns it into the compact `{ episode: missionId }` map the engine reads
+ * (runMission forces that afternoon's mission when it is eligible). Returns
+ * null when nothing is pinned, so an unscheduled season stays as it was.
+ */
+function _missionScheduleMap() {
+  const out = {};
+  for (const t of (seasonConfig.trMissionSchedule || [])) {
+    if (t && t.episode != null && t.missionId) out[Number(t.episode)] = t.missionId;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/**
  * Play the whole season into a queue.
  *
  * `playTraitorsSeason` replaces `gs` wholesale — it is a headless harness and
@@ -106,6 +122,7 @@ function _playWholeSeason() {
       potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
       endgameSize: Number(seasonConfig.finaleSize) || 3,
       murderSchedule: _murderSchedule(),
+      missionSchedule: _missionScheduleMap(),
       // Only an explicitly-chosen pact is handed down; 'random' mode (or a cast
       // that has changed since) leaves this null and the engine draws its own.
       chosenTraitors: seasonConfig.trTraitorMode === 'choose'

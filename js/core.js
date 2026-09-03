@@ -320,6 +320,25 @@ export const TWIST_CATEGORIES = [
 export const TWIST_CATEGORY_LABEL = Object.fromEntries(
   TWIST_CATEGORIES.map(c => [c.id, c.label]));
 
+// The castle's afternoon missions, for the timeline's per-episode mission
+// dropdown (js/run-ui.js). ids must match js/tr/missions.js (the seven generic
+// ARCHETYPES) and js/tr/missions/ (the four bespoke) — a mismatch just means a
+// pinned id the engine never matches, so it falls back to a random afternoon.
+// A castle plays one mission a day; the dropdown pins which one.
+export const TR_MISSION_CATALOG = [
+  { id:'coffin-dig',       name:'The Sunken Coffins',   kind:'generic' },
+  { id:'cipher-crypt',     name:'The Cipher Crypt',     kind:'generic' },
+  { id:'long-drop',        name:'The Long Drop',        kind:'generic' },
+  { id:'wolf-run',         name:'The Wolf Run',         kind:'generic' },
+  { id:'bone-market',      name:'The Bone Market',      kind:'generic' },
+  { id:'blind-chess',      name:'The Blind Chess Game', kind:'generic' },
+  { id:'the-reliquary',    name:'The Reliquary',        kind:'generic' },
+  { id:'drowned-causeway', name:'The Drowned Causeway', kind:'bespoke' },
+  { id:'nightjar-orrery',  name:'The Nightjar Orrery',  kind:'bespoke' },
+  { id:'long-account',     name:'The Long Account',     kind:'bespoke' },
+  { id:'ash-vault',        name:'The Ash Vault',        kind:'bespoke' },
+];
+
 export const TWIST_CATALOG = [
   // Team Dynamics
   // The oldest device in the genre and the one thing this engine could not do:

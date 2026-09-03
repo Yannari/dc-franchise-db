@@ -1887,7 +1887,8 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
   potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
   backgrounds = null, database = null, host = null,
-  murderSchedule = null, chosenTraitors = null, announceTraitorCount = false } = {}) {
+  murderSchedule = null, missionSchedule = null, chosenTraitors = null,
+  announceTraitorCount = false } = {}) {
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
@@ -1911,6 +1912,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // before — the audits, the calibration and the tests pass nothing here.
   gs.tr.murderSchedule = (murderSchedule && typeof murderSchedule === 'object')
     ? murderSchedule : null;
+  // THE AUTHOR'S MISSION CALENDAR, episode -> mission id, from the timeline's
+  // per-episode dropdown (js/tr-run.js). `runMission` reads it and forces that
+  // afternoon's mission when it is eligible. Null means every afternoon draws
+  // its own, so a season played without one is unchanged.
+  gs.tr.missionSchedule = (missionSchedule && typeof missionSchedule === 'object')
+    ? missionSchedule : null;
   // THE SEATING PLAN, AND IT NEVER CHANGES. `activePlayers` shrinks every
   // night, so a screen drawing the room from it re-seats everybody the moment
   // somebody leaves and the eye can no longer follow a person from one episode

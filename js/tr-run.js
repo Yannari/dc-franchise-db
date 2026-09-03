@@ -99,7 +99,7 @@ function _missionScheduleMap() {
  * Everything the UI owns (the cast, the config, the popularity ledger, the
  * checkpoints) survives; everything the engine owns arrives.
  */
-function _playWholeSeason() {
+function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
   const outer = gs;
   const cast = (players || []).map(p => p.name).filter(Boolean);
   if (cast.length < 4) return false;
@@ -129,6 +129,10 @@ function _playWholeSeason() {
         ? (seasonConfig.trChosenTraitors || []).filter(n => cast.includes(n))
         : null,
       seed: _seed(),
+      // A re-run replays off the SAME base seed (so every earlier episode
+      // reproduces exactly) and swaps to `rerollSeed` at `rerollFromEp`.
+      rerollFromEp: rerollFromEp || null,
+      rerollSeed: rerollSeed == null ? null : rerollSeed,
     });
   } finally {
     _setBespokeMissionsEnabled(_bespokeWas);
@@ -183,6 +187,44 @@ export function simulateTraitorsEpisode() {
     gs.phase = 'castle';
   }
   return row;
+}
+
+/**
+ * Re-run episode `epNum` for real — a genuinely different night, with every
+ * earlier episode kept exactly as it aired.
+ *
+ * A castle is one deterministic block off its base seed, so this replays that
+ * block but swaps the rng to a fresh seed at `epNum` (see playTraitorsSeason's
+ * `rerollFromEp`): episodes before it draw the same numbers and reproduce byte
+ * for byte, this night and every one after diverge. It re-derives entirely from
+ * the base seed on `gs` — no in-memory checkpoint — so it still works after a
+ * reload. Leaves the queue holding the re-rolled episode `epNum` onward; the
+ * caller airs it exactly like a normal night.
+ */
+export function rerunTraitorsEpisode(epNum) {
+  if (!gs || !gs._trSeed) return false;
+  const N = Math.max(1, Number(epNum) || 1);
+  // A fresh divergence each time the button is pressed — a re-run that came
+  // back identical would not be a re-run. Kept on `gs` so a reload still varies.
+  gs._trRerollNonce = (gs._trRerollNonce || 0) + 1;
+  const rerollSeed = ((gs._trSeed >>> 0)
+    ^ Math.imul(gs._trRerollNonce, 0x9e3779b1)
+    ^ Math.imul(N, 2654435761)) >>> 0;
+  if (!_playWholeSeason(N, rerollSeed || 1)) return false;
+  // `_playWholeSeason` put the WHOLE re-rolled season on the queue. Keep the
+  // aired prefix (episodes 1..N-1, identical by construction) in history and
+  // leave episode N onward to air.
+  const all = gs._trQueue || [];
+  gs.episodeHistory = all.slice(0, N - 1);
+  gs._trQueue = all.slice(N - 1);
+  const lastAired = gs.episodeHistory[gs.episodeHistory.length - 1];
+  gs.activePlayers = lastAired
+    ? [...(lastAired.tr?.living || [])]
+    : (players || []).map(p => p.name).filter(Boolean);
+  gs.episode = gs.episodeHistory.length;
+  gs.phase = gs._trQueue.length ? 'castle' : 'complete';
+  gs.trWinner = null;
+  return true;
 }
 
 /** How many nights of this season have not aired yet. */

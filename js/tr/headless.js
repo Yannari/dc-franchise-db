@@ -1896,13 +1896,32 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
   backgrounds = null, database = null, host = null,
   murderSchedule = null, missionSchedule = null, chosenTraitors = null,
+  rerollFromEp = null, rerollSeed = null,
   announceTraitorCount = false } = {}) {
-  const rng = rngFor(seed);
+  // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
+  // The whole season is one deterministic block off `seed`, so a real per-
+  // episode re-run works by REPLAYING it and swapping the rng to a fresh seed
+  // exactly at `rerollFromEp`: episodes before it draw the same numbers and
+  // reproduce byte for byte, the target episode and everything after diverge.
+  // `let` (not `const`) so the swap below can reassign the three streams. With
+  // no reroll asked, this is the ordinary single-stream season, untouched.
+  const _reroll = Number(rerollFromEp) >= 1 && rerollSeed != null;
+  let rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
-  const castleRng = _castleRngFor(seed);
+  let castleRng = _castleRngFor(seed);
   // And the missions', off both of them — see _missionRngFor.
-  const missionRng = _missionRngFor(seed);
+  let missionRng = _missionRngFor(seed);
+  // Swapping all three from ONE fresh seed keeps the three-stream separation the
+  // doc comments insist on (game / narrative / missions never share a stream),
+  // just re-based from the re-run point.
+  const _swapStreams = () => {
+    rng = rngFor(rerollSeed);
+    castleRng = _castleRngFor(rerollSeed);
+    missionRng = _missionRngFor(rerollSeed);
+  };
+  // Re-running from night one is a whole fresh season: swap before anything draws.
+  if (_reroll && Number(rerollFromEp) <= 1) _swapStreams();
   // gs is null until a season exists (js/core.js), so the harness creates one.
   setGs({ bonds: {}, activePlayers: [...cast] });
   gs.tr = initTraitorsState();
@@ -2044,6 +2063,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
 
   const configuredEndgameSize = Math.max(2, Math.min(cast.length, Number(endgameSize) || 3));
   while (ep++ < maxRounds) {
+    // THE RE-RUN POINT. Reached AFTER every earlier episode has drawn its
+    // numbers off the base seed and reproduced exactly, and BEFORE this
+    // episode draws anything — so this night and every night after it are a
+    // different season, and the ones before are the ones that aired.
+    if (_reroll && ep === Number(rerollFromEp)) _swapStreams();
     const alive = gs.activePlayers || [];
     const tr = livingTraitors(ep).length;
     const fa = livingFaithfuls(ep).length;

@@ -18,7 +18,7 @@ import { coachCanPlay } from './advantages.js';
 // works — but a show that is unreachable from the run loop is precisely the
 // bug this wiring exists to close, and an import fails loudly at load time
 // where a missing global fails silently at the moment somebody presses Play.
-import { isTraitorsSeason, simulateTraitorsEpisode } from './tr-run.js';
+import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode } from './tr-run.js';
 import { roundExits, exitVerbs } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -600,7 +600,7 @@ export function renderRunTab() {
     document.getElementById('ep-history-wrap').style.display = 'flex';
     // Show replay button only when a checkpoint exists for the viewed episode
     const _viewNum = viewingEpNum || gs.episodeHistory[gs.episodeHistory.length-1]?.num;
-    if (replayBtn) replayBtn.style.display = gsCheckpoints[_viewNum] ? 'block' : 'none';
+    if (replayBtn) replayBtn.style.display = _canReplay(_viewNum) ? 'block' : 'none';
   }
 }
 
@@ -1070,7 +1070,7 @@ export function renderEpisodeHistory() {
     // them over it would be eighty reads of fields that do not exist on the
     // row. It gets its own card, with the show's own two doors on it.
     if (_isCastleRow(ep)) {
-      const hasCp = !!gsCheckpoints[ep.num];
+      const hasCp = _canReplay(ep.num);
       const gone = _spoilerFree ? '???'
         : (roundExits(ep, 'traitors').map(x => x.name).join(' + ') || '—');
       return `<div class="ep-hist-card ${ep.num === currentNum ? 'active' : ''}" onclick="viewEpisode(${ep.num})">
@@ -1179,7 +1179,7 @@ export function renderEpisodeHistory() {
     const _hasAuction = (ep.twists || []).some(t => t.type === 'auction');
     const aucTag = _hasAuction ? `<span class="ep-hist-tag" style="background:rgba(233,196,106,0.15);color:#e9c46a">Auction</span>` : '';
     const ncTag = ep.noChallenge && !_hasAuction ? `<span class="ep-hist-tag" style="background:rgba(240,163,90,0.15);color:#f0a35a">No Challenge</span>` : '';
-    const hasCheckpoint = !!gsCheckpoints[ep.num];
+    const hasCheckpoint = _canReplay(ep.num);
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
       : '';
@@ -1401,7 +1401,21 @@ export function simulateMultipleEpisodes(count) {
   runOne();
 }
 
+/**
+ * Can this episode be re-run? A castle re-runs off its persisted base seed, so
+ * every aired episode is replayable — including after a reload, unlike the
+ * in-memory checkpoints the other shows use.
+ */
+function _canReplay(epNum) {
+  if (isTraitorsSeason()) return !!(gs && gs._trSeed);
+  return !!gsCheckpoints[epNum];
+}
+
 export function replayEpisode(epNum) {
+  // The castle re-runs FOR REAL and off its base seed — no checkpoint needed,
+  // so it works after a reload too, and every earlier episode reproduces
+  // exactly while this night onward is a genuinely different season.
+  if (isTraitorsSeason()) { _replayTraitorsEpisode(epNum); return; }
   const checkpoint = gsCheckpoints[epNum];
   if (!checkpoint) { alert(`No checkpoint saved for Episode ${epNum}. Only episodes run in this session can be replayed.`); return; }
   const laterEps = gs.episodeHistory.filter(e => e.num > epNum);
@@ -1479,6 +1493,50 @@ export function replayEpisode(epNum) {
   viewingEpNum = ep.num;
   renderRunTab();
   document.getElementById('run-main').scrollTop = 0;
+}
+
+/**
+ * The castle's own re-run. Re-simulates episode `epNum` onward off the base
+ * seed with a fresh divergence, keeping every earlier episode exactly as it
+ * aired, then airs the new night. No in-memory checkpoint — it reads the seed
+ * off `gs`, so it survives a reload — and the whole gs is snapshotted first so
+ * a re-run that fails changes nothing.
+ */
+function _replayTraitorsEpisode(epNum) {
+  if (!gs || !gs._trSeed) {
+    alert(`Episode ${epNum} cannot be re-run — this castle was not started in this browser, so there is no season to re-roll.`);
+    return;
+  }
+  const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
+  const msg = laterEps.length
+    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum}–${epNum + laterEps.length} will be re-simulated into a genuinely different season. Every earlier episode stays exactly as it is.`
+    : `Re-run Episode ${epNum} into a different night?`;
+  if (!confirm(msg)) return;
+
+  const before = JSON.parse(JSON.stringify(gs));
+  let ep = null, failure = null;
+  try {
+    if (rerunTraitorsEpisode(epNum)) ep = simulateTraitorsEpisode();
+  } catch (e) { failure = e; }
+
+  if (!ep) {
+    gs = before;
+    repairGsSets(gs);
+    try { renderRunTab(); } catch { /* state is already back */ }
+    alert(`Episode ${epNum} could not be re-run, so nothing was changed.${
+      failure ? `\n\n${failure.message || failure}` : ''}`);
+    return;
+  }
+  // A re-run rewrites this episode and everything after it, so the checkpoints
+  // for those episodes no longer describe a night that happened.
+  for (const k of Object.keys(gsCheckpoints)) {
+    if (Number(k) >= epNum) { delete gsCheckpoints[k]; _idbDelete('cp_' + k); }
+  }
+  _refreshFeed({ rebuild: true });
+  _autoRevealSpoiler(ep.num);
+  viewingEpNum = ep.num;
+  renderRunTab();
+  const rm = document.getElementById('run-main'); if (rm) rm.scrollTop = 0;
 }
 
 export function copyOutput() {

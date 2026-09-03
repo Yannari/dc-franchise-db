@@ -1910,6 +1910,32 @@ const CONSEQ_CONFRONT = {
   ],
 };
 
+// CONFRONTATION-DEFENCE (confrontation.js confront-defend-the-accused). `{a}`
+// stood up for `{topic}`; the direction is what that got them both.
+function _defenceDir(s) {
+  const b = String(s.branch || '');
+  if (b === 'worked') return 'safe';
+  if (b === 'drew-fire') return 'spread';
+  return 'unmoved';
+}
+const CONSEQ_DEFENCE = {
+  safe: [
+    '{topic} came through it, and {a} is the reason — a debt like that does not un-happen.',
+    'The doubt eased off {topic}, and the people who saw it know {a} bought that with their own standing.',
+    '{topic} is safer than they were an hour ago, and tied to {a} now whether either of them wanted that.',
+  ],
+  unmoved: [
+    'The defence changed nothing: {topic} is under exactly as much suspicion as before, and {a} spent standing on it for no return.',
+    '{topic} is no better off, and {a} is on record having tried — which is its own small mark, for later.',
+    'It slid off. {topic} stays where they were, and the only thing that moved is that {a} showed a card.',
+  ],
+  spread: [
+    '{a} drew the room’s doubt onto themselves standing up for {topic}, and now both of them are being watched — a defence that widened the target instead of shrinking it.',
+    'Now it is {a} and {topic} both, tied together by the defence: whatever lands on one has a way to the other.',
+    'Standing up for {topic} put {a} in the frame beside them, and neither can get clear of the other now.',
+  ],
+};
+
 // COVER (Traitor-only). Three shapes, all closing on whether the Traitor got
 // away with it and NAMING the concrete subject the generic close never did.
 // {a} is always the Traitor (every cover event drives from the acting player;
@@ -2534,6 +2560,8 @@ const TOPIC_CONFIG = {
   'seat-loss': { dir: _seatLossDir, conseq: CONSEQ_SEAT_LOSS },
   'secret-confidence': { reaction: false, conseq: CONSEQ_SECRET_CONFIDENCE },
   'confrontation': { dir: _confrontDir, conseq: CONSEQ_CONFRONT },
+  'confrontation-pileon': { dir: _confrontDir, conseq: CONSEQ_CONFRONT },
+  'confrontation-defence': { dir: _defenceDir, conseq: CONSEQ_DEFENCE },
 };
 
 // The set of event ids that have been reworked to record a concrete topic.
@@ -2583,7 +2611,7 @@ const TOPIC_READY_AFTERMATH = ['after-the-room-got-it-wrong', 'after-the-room-go
 const TOPIC_READY_TRUST = ['trust-secret-swap'];
 // confrontation family (confrontation.js) — an open clash; topic = the person
 // it was aimed at, and the scene closes on how it left them.
-const TOPIC_READY_CONFRONTATION = ['confront-to-the-face'];
+const TOPIC_READY_CONFRONTATION = ['confront-to-the-face', 'confront-pile-on', 'confront-defend-the-accused'];
 export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK, ...TOPIC_READY_AFTERMATH, ...TOPIC_READY_TRUST, ...TOPIC_READY_CONFRONTATION]);
 
 /**
@@ -2698,6 +2726,8 @@ function _groundedAction(s, subs) {
     'seat-loss': '{a} reacts to the empty place left by {topic}.',
     'secret-confidence': '{a} tells {b} a private suspicion about {topic}.',
     'confrontation': '{a} takes it straight to {topic}, in front of the room.',
+    'confrontation-pileon': '{a} and the room round on {topic} at once.',
+    'confrontation-defence': '{a} stands up for {topic} in front of the room.',
   };
   const lead = leads[s.topicKind];
   return lead ? _fill(lead, subs) + ' ' + line : line;

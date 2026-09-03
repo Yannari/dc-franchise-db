@@ -966,8 +966,9 @@ export const ADVERSE_BRANCHES = new Set([
   'got-back-to-them', 'nobody-would-say',
   // CONFRONTATION (confrontation.js). The person it was aimed at came off
   // badly: they folded, or it detonated in the open. (`turned` is already
-  // above; `held` is benign.)
-  'cracked', 'blew-up',
+  // above; `held` is benign.) `crumbled` is the pile-on's fold; `drew-fire` is
+  // the defender who pulled the room onto themselves.
+  'cracked', 'blew-up', 'crumbled', 'drew-fire',
 ]);
 /**
  * AND EVERY OTHER BRANCH, SAID OUT LOUD.
@@ -1195,6 +1196,10 @@ export const BENIGN_BRANCHES = new Set([
   // resolves a pre-existing incoherence, because `tracked-since` — the SAME
   // scene with a longer history on it — has been on this list all along.
   'tracked', 'misread-nervy',
+  // CONFRONTATION (confrontation.js). The person under fire came through it —
+  // held the pile-on, or was defended, or the mob overshot and swung sympathy
+  // their way — and the defence branches that cost the defender nothing.
+  'weathered', 'overreached', 'worked', 'fell-flat',
 ]);
 
 /**

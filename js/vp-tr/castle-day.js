@@ -2016,6 +2016,60 @@ const CONSEQ_GRIEF = {
     '{a} keeps expecting {topic} to come round the corner, and keeps being wrong, all morning.',
   ],
 };
+// GRIEF-VIGIL — the two solitary-crisis grief scenes (someone-cries-alone,
+// nobody-sleeps). These were LEFT LEGACY because their subject is a mix: some
+// mornings the person is grieving the dead, some they are lying awake over
+// their OWN name at the last table. So the topic is set PER BRANCH in the
+// event, and the branch is coarsened here into four registers that each name
+// their real subject: MOURNED/BANISHED name the departed ({topic} = the dead,
+// branched on death-vs-banishment from the round record); HAUNTED/RESTLESS name
+// the person's own precarity ({topic} = the actor themself, so {a} IS the
+// subject). KEEPS its reaction beat (a solo grief reaction is coherent).
+const CONSEQ_GRIEF_VIGIL = {
+  mourned: [
+    'The empty place where {topic} sat is the arithmetic {a} keeps doing, and it comes out the same every time.',
+    'For {a}, the fact of {topic} being gone is the shape the whole day bent around.',
+    '{a} carried {topic} out of everyone’s sight for a while, and put it down no lighter than it was picked up.',
+    '{a} keeps listening for {topic} in a building with one fewer person in it, and knows {a} is doing it.',
+    'Grief for {topic} came for {a} in private, and {a} let it, and then folded it away where the room would not see.',
+  ],
+  banished: [
+    'The castle is one chair lighter for {topic}, and {a} sat alone with the fact that the room did it in daylight, on purpose.',
+    '{topic} was sent home by a vote {a} was part of — a different weight, somehow, from the ones taken in the dark.',
+    'For {a}, {topic} leaving by the table is the harder kind of gone: nobody to blame but the people still in the building.',
+    '{a} spent the quiet hours with the seat {topic} left — not taken, but given away by a room {a} still stands in.',
+  ],
+  haunted: [
+    'What broke {a} was not the empty chair. It was the number of people who had said {a}’s own name at that table.',
+    '{a} came out of it no safer than {a} went in, and knowing exactly which faces to watch from here.',
+    'Whatever grief was in the room, what got to {a} in the end was {a}’s own name, said out loud at a table that heard every word of it.',
+    '{a} counted, alone, who had written {a} down, until the counting stopped meaning anything and the light came anyway.',
+  ],
+  restless: [
+    '{a} built a whole case out of a day that held nothing, and could not find the first brick of it by morning.',
+    'There was nothing to it, and {a} spent the private hours on the nothing anyway. It did not become a something.',
+    '{a} sat alone with a feeling that had no fact under it, knew as much, and sat with it regardless.',
+    '{a} went looking for a reason to be afraid and came back with none, which did not help {a} at all.',
+  ],
+  // was-found: somebody came upon the crier and stayed. Role-neutral — the pool
+  // names the dead against BOTH of them, so it does not matter which of the pair
+  // the composer puts first (see grief.js: the recorded pair is left as-is).
+  comforted: [
+    'The two of them sat with the fact of {topic} for a while, and neither pretended it was nothing.',
+    'Grief for {topic} did not have to be carried alone this morning, and both of them were quietly the better for that.',
+    'They fixed nothing about {topic} being gone. They just made sure nobody had to face it by themselves.',
+    'Whatever {topic} had been to them, the loss was lighter for being shared in that corner before anyone else was up.',
+    'Neither of them said much about {topic}. Sitting there together was the whole of what either had to offer, and it was enough.',
+  ],
+};
+/** mourned | banished | haunted | restless for a grief-vigil scene. The event
+ * chooses the register directly (`topicDir`), because whether a scene mourns the
+ * dead or frets over the actor's own name is not something the branch label
+ * alone can tell the composer; see grief.js. */
+function _vigilDir(s) {
+  return s.topicDir || 'mourned';
+}
+
 // ROMANCE. {topic} is the partner; the relationship is symmetric, so lines use
 // {other} (the non-topic partner) and {topic}, safe whichever way a flip branch
 // (a breakup ended BY the partner) orders them. KEEPS its reaction beat.
@@ -2064,6 +2118,87 @@ const CONSEQ_CALLBACK = {
     'The old connection between {other} and {topic} is common knowledge tonight. Two people with a shared yesterday are a target with a shared today.',
   ],
 };
+// CALLBACK-ABSENCE — the two once-skipped callback events, both about the
+// ABSENCE of a shared past rather than a shared past itself. warns-newbies: {a}
+// has history with {topic} (a threat) and hands a read to {b}, a newbie who has
+// none. no-history-envy: {a} has no history with {topic} and sits outside a
+// story {b} can tell. Both name {topic} — the person the missing history is
+// ABOUT — and frame who is short of it. KEEP the reaction beat (callback).
+const CONSEQ_CALLBACK_WARNING = {
+  'took-it': [
+    '{a} handed {b} a read on {topic} that {b} had no way to check — {b} has no history with {topic} to weigh it against, only {a}’s word.',
+    '{b} came away watching {topic} on {a}’s say-so alone, which is the whole power of having played before and the whole risk of trusting somebody who has.',
+    '{a}’s history with {topic} is {b}’s inheritance now, secondhand, and {b} took it because {b} had nothing of {b}’s own to set against it.',
+    '{b} left with {a}’s warning about {topic} and no way to test it — a newcomer’s bargain, taking a veteran’s past on trust.',
+  ],
+  'had-it': [
+    '{a} warned {b} about {topic} and found {b} already halfway there — a reputation beats a warning to the room, as it usually does.',
+    '{b} did not need {a}’s history with {topic}; {b} had built enough of a read here to meet it, and the missing past turned out not to matter this time.',
+    '{a} told {b} what {topic} was, and {b} nodded along to a thing {b} had worked out with no history to go on at all.',
+    '{a}’s account of {topic} landed on somebody who had already reached it alone — the warning confirmed {b} rather than informing {b}.',
+  ],
+  refused: [
+    '{b} has no history with {topic} and decided that cut the other way — {b} trusts what {b} has seen over what {a} remembers, and said so.',
+    '{a}’s warning about {topic} bounced: with no shared past of {b}’s own, {b} weighed {a} against {topic} and came down on {topic}’s side.',
+    '{b} took {a}’s history with {topic} as {a}’s problem, not {b}’s, and defended {topic} to {a}’s face.',
+    'Having nothing owed to {topic} either way, {b} heard {a} out and sided with {topic} anyway — the warning cost {a} more than {topic}.',
+  ],
+  'spent-it': [
+    '{b} had no stake in {a}’s history with {topic} and every use for it — {b} took the warning straight to work, and {a} watched it be spent.',
+    '{a} meant a caution and {b} heard ammunition. No history with {topic} left {b} free to use one without a second thought.',
+    '{a}’s account of {topic} became {b}’s opening move inside the hour, which is not what a warning is for.',
+    '{b} turned {a}’s past with {topic} into {b}’s present against {topic}, and did it before {a} had finished talking.',
+  ],
+};
+const CONSEQ_CALLBACK_ENVY = {
+  'left-out': [
+    '{a} sat outside a conversation about {topic} that {a} had no part in, and felt the whole weight of having no history here to fall back on.',
+    'The story about {topic} was one {b} could tell and {a} could only listen to. In a returnee castle, that gap is its own kind of exposure.',
+    '{a} has no shared past with {topic} to trade on, and an hour of {b} reminiscing made sure {a} felt it.',
+    'A story about {topic} went round that {a} was not in, and {a} learned again that a clean slate is also an empty hand here.',
+  ],
+  asked: [
+    '{a} made {b} tell the whole story about {topic} from the start — if {a} cannot have the history, {a} will at least have the information.',
+    'Rather than sit outside it, {a} asked {b} for the whole of {topic}, and turned a gap into a briefing.',
+    '{a} has no history with {topic}, so {a} did the next best thing and got {b} to hand it over in full.',
+    '{a} could not share {topic}’s past, so {a} borrowed it — questioned {b} until the missing years were at least secondhand knowledge.',
+  ],
+  virtue: [
+    '{a} turned having no history with {topic} into the argument — no old debts, no old grudges, nothing owed. In here, a clean slate can be sold as trustworthiness.',
+    '{a} made a virtue of the gap: the rest of the room is tangled up with {topic}, and {a} is not, and {a} made sure that was heard.',
+    '{a} decided that not sharing {topic}’s history was a feature, not a wound, and started saying so out loud.',
+    '{a} recast the missing past with {topic} as an asset — the one person here with no reason to protect {topic} or fear them.',
+  ],
+  'own-story': [
+    '{a} stopped envying the history with {topic} and went and started one of {a}’s own instead — the only real cure for being the newcomer.',
+    'Left out of {topic}’s story, {a} went and built a fresh one elsewhere in the room, which is worth more than borrowing an old one.',
+    '{a} could not share the past with {topic}, so {a} spent the morning making a present with somebody who also had none.',
+    'Rather than stand at the edge of {topic}’s history, {a} walked off and laid the first stone of a history of {a}’s own.',
+  ],
+};
+const WARN_TOOK = new Set(['warned']);
+const WARN_HAD = new Set(['already-knew']);
+const WARN_REFUSED = new Set(['defended-them-instead']);
+/** took-it | had-it | refused | spent-it for a callback-warning scene. */
+function _warnDir(s) {
+  const b = String(s.branch || '');
+  if (WARN_TOOK.has(b)) return 'took-it';
+  if (WARN_HAD.has(b)) return 'had-it';
+  if (WARN_REFUSED.has(b)) return 'refused';
+  return 'spent-it';
+}
+const ENVY_ASKED = new Set(['asked-to-be-told']);
+const ENVY_VIRTUE = new Set(['made-a-virtue-of-it']);
+const ENVY_OWN = new Set(['went-and-found-one']);
+/** left-out | asked | virtue | own-story for a callback-envy scene. */
+function _envyDir(s) {
+  const b = String(s.branch || '');
+  if (ENVY_ASKED.has(b)) return 'asked';
+  if (ENVY_VIRTUE.has(b)) return 'virtue';
+  if (ENVY_OWN.has(b)) return 'own-story';
+  return 'left-out';
+}
+
 const CALLBACK_WARMED = new Set(['picked-it-back-up', 'alliance-reformed',
   'renegotiated-it', 'reunion-spark', 'called-a-truce', 'defended-by-history',
   'now-they-are-a-pair', 'redemption', 'alumni-bond', 'let-it-go-at-last',
@@ -2078,6 +2213,45 @@ function _callbackDir(s) {
   if (CALLBACK_WARMED.has(b)) return 'warmed';
   if (CALLBACK_COOLED.has(b)) return 'cooled';
   return 'noted';
+}
+
+// ROMANCE-SUSPICION — romance-liability-exposed, the one romance event that is
+// really a SUSPICION READ: one half of a showmance has started to doubt the
+// other. Grounded as a read (topic = the doubted partner, hunch chip fires) and
+// its reaction beat dropped, because the action line already carries the doubt.
+const CONSEQ_ROMANCE_SUSPICION = {
+  buried: [
+    '{a} felt the ground shift under {topic} and stepped back onto it — the doubt is real, but tonight {a} would rather have the showmance than the answer.',
+    '{a} looked straight at what {topic} might be and chose not to see it, and the couple is warmer tonight for the looking away.',
+    'Whatever {a} half-noticed about {topic}, {a} buried it under one more good evening. The read is still there; {a} just is not ready to spend it.',
+    '{a} had the thought about {topic} and put it back down. Some doubts are safer kept than acted on, and {a} decided this was one.',
+  ],
+  'took-root': [
+    'A cold thought about {topic} took root in {a} tonight, and {a} said nothing — so {topic} does not yet know {a} has started counting.',
+    '{a} has begun watching {topic} the way you watch a person you sleep beside and have started to wonder about. Nothing said, everything changed.',
+    '{a} kept the doubt about {topic} private, and a doubt kept is a doubt that grows. {topic} is a question to {a} now, not just a partner.',
+    'Something about {topic} stopped adding up for {a}, quietly, and {a} is not going to be the one to raise it first.',
+  ],
+  'named-it': [
+    '{a} put the doubt to {topic} directly, in private, and the showmance is a different thing now for {a} having said it aloud.',
+    '{a} asked {topic} the question {a} had been swallowing for days. Whatever {topic} answered, the couple cannot go back to not having asked.',
+    '{a} confronted {topic} where nobody could hear, and something broke a little in the asking — trust, once queried, does not fully re-seal.',
+    '{a} finally said to {topic} what {a} had been thinking, and the room the two of them shared is smaller for it now.',
+  ],
+  'went-public': [
+    '{a} named {topic} out loud in the dark, loud enough for the corridor, and the showmance stopped being shelter and became evidence against {topic}.',
+    'The one person who knew {topic} best just told the floor what {a} believes {topic} is. There is no protection left in it for {topic} now.',
+    '{a} spent the whole of the showmance in a single sentence: {topic} is exposed, and the person who exposed {topic} is the one who used to shield them.',
+    '{a} turned the couple into an accusation — {topic} is named, publicly, by the last person anyone expected to do it.',
+  ],
+};
+/** buried | took-root | named-it | went-public for a romance-suspicion scene. */
+function _romSuspDir(s) {
+  const b = String(s.branch || '');
+  if (b === 'oblivious') return 'buried';
+  if (b === 'suspicious') return 'took-root';
+  if (b === 'confronts') return 'named-it';
+  return 'went-public';
 }
 
 const ROMANCE_WARMED = new Set(['sparked', 'named-it-fast', 'stopped-hiding-it',
@@ -2137,6 +2311,131 @@ function _coverDir(s) {
   return 'slipped';
 }
 
+// ── CONSEQUENCES / NIGHTFALL (the two hours either side of a banishment) ──
+//
+// These "after-table" and "night" scenes are ABOUT the person who just left
+// the table — {gone}, a public fact the whole castle watched — but their
+// legacy closing drew a generic, subject-free pool that never named the
+// departed. Grounded here so the close says WHO the room lost (or caught) and
+// what it did to the person having the reaction. topic = {gone}.
+//
+// AFTER-WRONG — the reveal said the banished player was a Faithful. The room
+// got it wrong, and {gone} should still be here. {a} is the survivor
+// reckoning with it; {other} is whoever they are reckoning with it beside.
+const CONSEQ_AFTER_WRONG = {
+  owned: [
+    '{a} keeps coming back to {a}’s own ballot with {topic}’s name on it. The room got it wrong, and {a} was part of the room.',
+    'The reveal cleared {topic} of everything and left {a} holding a vote {a} cannot take back.',
+    '{a} was certain about {topic} at six o’clock, and certainty is exactly what cost {topic} the game. {a} will carry the price of that a while.',
+    'There is no version of the evening where {a} did not help send {topic} home a Faithful, and {a} has stopped trying to find one.',
+  ],
+  blamed: [
+    '{a} traced {topic}’s whole banishment back to the loudest voice in the room, and is not letting that voice forget it.',
+    'For {a}, the wrong done to {topic} has a face on it now, and it is not {a}’s own.',
+    '{a} came away sure of one thing: {topic} should still be here, and somebody talked the room into the opposite.',
+    '{a} is angrier at how {topic} went than at the fact of it — a name got said first, and the rest of them only agreed.',
+  ],
+  defended: [
+    '{a} will not call {topic} a mistake, only the best answer to a bad question, and means to make the same kind of call tomorrow.',
+    '{topic} is gone and {a} has decided to be colder about it than the room expected, because the alternative is being useless.',
+    '{a} filed {topic} under the cost of playing this game at all, and went back to work. Somebody has to.',
+    'For {a}, the read was right on the night even if {topic} was wrong, and {a} is not going to apologise for arithmetic.',
+  ],
+  quiet: [
+    '{a} would not say {topic}’s name again tonight, and the not-saying was louder than anything {a} could have said.',
+    'Whatever losing {topic} did to {a}, {a} took it somewhere the room could not follow.',
+    '{a} carried {topic} out of that hall without a word, and nobody was going to make {a} put it down for them.',
+    '{a} answered every question about the table without once saying {topic}’s name, which was its own kind of answer.',
+  ],
+};
+// AFTER-RIGHT — the reveal said the banished player was a Traitor. The room
+// got it right, and now the question is who actually knew.
+const CONSEQ_AFTER_RIGHT = {
+  credited: [
+    '{a} had {topic}’s name before the reveal did, and tonight the slate proved it — worth more to {a} than the banishment itself.',
+    'For once the castle confirmed something for {a}: {topic} was exactly what {a} had thought, and {a} got to say so at last.',
+    'The read on {topic} came good, and {a} is walking a shade taller for it — quietly, where it cannot be used against {a}.',
+    '{a} and the slate agreed about {topic}, and {a} filed the feeling away for the next time a read of {a}’s gets waved off.',
+  ],
+  'who-knew': [
+    'The interesting thing was never {topic} leaving. It was working out who else had {topic}’s name, and what that says about them.',
+    '{a} came away from {topic} less interested in the win than in who claimed to have seen it coming and could not prove they had.',
+    '{topic} is off the board, and now {a} is doing the harder arithmetic: which of the people still here really knew.',
+    'For {a}, catching {topic} only sharpened the next question — the room got one right, and somebody in it got there suspiciously fast.',
+  ],
+  onward: [
+    '{a} gave {topic} about four seconds of satisfaction and then went straight to who {topic} had been sitting with.',
+    '{topic}’s name is off the board, and for {a} it only made the shape of the rest of them clearer.',
+    'Being right about {topic} is not the same as being safe, and {a} spent the quiet minutes on the difference.',
+    '{a} took {topic} away to keep — one fact the castle had finally made certain — and started rebuilding the week around it.',
+  ],
+};
+// SEAT-LOSS — grief for the banished, either at the table's edge (after-table)
+// or in the dark afterwards (night). KEEPS its reaction beat (mourning is
+// coherent), and names {gone}: a person banished in daylight, which is a
+// different weight from the ones taken at night.
+const CONSEQ_SEAT_LOSS = {
+  mourned: [
+    'The empty place where {topic} sat is the one {a} keeps looking at, and the vote that made it empty was cast in daylight, by hands still in the room.',
+    '{a} lost {topic} to a show of hands, not to the dark, and somehow that is the harder thing to sit with.',
+    'For {a}, {topic} being chosen — named, counted, sent home by people still in the building — is a different grief from the ones the night hands out.',
+    '{a} spent the evening keeping {topic} in the conversation, because the alternative was letting the room close over the gap too fast.',
+  ],
+  relieved: [
+    '{a} would not say it aloud, but the seat {topic} left is one {a} is glad to see empty. Some banishments are a mercy, and this was one.',
+    'Whatever {a} owes the room tonight, it is thanks: {topic} is gone, and {a} will sleep easier for the chair being empty.',
+    'For {a}, the loss of {topic} is not a loss at all, and {a} spent the night making a careful private peace with that.',
+  ],
+  guilty: [
+    '{a} wrote {topic}’s name and now has to sit across from the gap it made. There is no version of the evening where {a} did not help do that.',
+    'The empty seat is {a}’s doing as much as anyone’s — {a}’s ballot said {topic}, and the slate does not forget.',
+    '{a} keeps arriving back at the same fact: {a} put {topic}’s name down, and {topic}’s chair is where {a} put it.',
+  ],
+  angry: [
+    '{a} traced the seat {topic} left back to the loudest voice at the table, and is not finished with that voice yet.',
+    'For {a}, {topic} leaving has a face on it, and it is not {a}’s: somebody talked the room into that chair being empty.',
+    '{a} came away from {topic}’s seat less sad than furious, and clear about exactly who to be furious at.',
+  ],
+  quiet: [
+    'The seat {topic} had is the first thing {a} sees in that room now, and will be tomorrow.',
+    '{a} could not put {topic} into words tonight, and stopped trying somewhere before it got light.',
+    'For {a}, {topic} being gone is the shape the whole evening bent around — carried, not spoken, and none the lighter for it.',
+  ],
+};
+const AW_OWNED = new Set(['counted-my-own', 'alone-with-it']);
+const AW_BLAMED = new Set(['blamed-the-loudest']);
+const AW_DEFENDED = new Set(['defended-the-vote']);
+/** owned | blamed | defended | quiet for an after-the-room-got-it-wrong scene. */
+function _afterWrongDir(s) {
+  const b = String(s.branch || '');
+  if (AW_OWNED.has(b)) return 'owned';
+  if (AW_BLAMED.has(b)) return 'blamed';
+  if (AW_DEFENDED.has(b)) return 'defended';
+  return 'quiet';
+}
+const AR_CREDITED = new Set(['credit-where-due']);
+const AR_WHOKNEW = new Set(['who-knew', 'overclaimed']);
+/** credited | who-knew | onward for an after-the-room-got-it-right scene. */
+function _afterRightDir(s) {
+  const b = String(s.branch || '');
+  if (AR_CREDITED.has(b)) return 'credited';
+  if (AR_WHOKNEW.has(b)) return 'who-knew';
+  return 'onward';
+}
+const SEAT_MOURNED = new Set(['mourned', 'moved-their-things', 'talked-about-them']);
+const SEAT_RELIEVED = new Set(['relieved']);
+const SEAT_GUILTY = new Set(['guilty', 'own-ballot']);
+const SEAT_ANGRY = new Set(['angry-at-the-room']);
+/** mourned | relieved | guilty | angry | quiet for a seat-loss (grief) scene. */
+function _seatLossDir(s) {
+  const b = String(s.branch || '');
+  if (SEAT_MOURNED.has(b)) return 'mourned';
+  if (SEAT_RELIEVED.has(b)) return 'relieved';
+  if (SEAT_GUILTY.has(b)) return 'guilty';
+  if (SEAT_ANGRY.has(b)) return 'angry';
+  return 'quiet';
+}
+
 // Which topicKinds are grounded, and how the composer renders them. `reaction:
 // false` drops the generic reaction card, because the event's own action line
 // already carries the exchange — a second, generic reaction on top of it is the
@@ -2157,9 +2456,21 @@ const TOPIC_CONFIG = {
   // grief KEEPS its reaction beat (mourning comfort is coherent), so no
   // `reaction: false` — only the consequence is grounded to name the dead.
   'grief-loss': { dir: _griefDir, conseq: CONSEQ_GRIEF },
+  // the two solitary-crisis grief scenes; topic set per-branch (dead, or self).
+  'grief-vigil': { dir: _vigilDir, conseq: CONSEQ_GRIEF_VIGIL },
   // romance KEEPS its reaction beat too — only the consequence is grounded.
   'romance-bond': { dir: _romanceDir, conseq: CONSEQ_ROMANCE },
+  // the one romance event that is a suspicion read — reaction dropped, hunch chip on.
+  'romance-suspicion': { reaction: false, dir: _romSuspDir, conseq: CONSEQ_ROMANCE_SUSPICION },
   'callback-history': { dir: _callbackDir, conseq: CONSEQ_CALLBACK },
+  // the two once-skipped callback events, about the ABSENCE of shared history.
+  'callback-warning': { dir: _warnDir, conseq: CONSEQ_CALLBACK_WARNING },
+  'callback-envy': { dir: _envyDir, conseq: CONSEQ_CALLBACK_ENVY },
+  // consequences / nightfall — the banishment aftermath. after-wrong/right are
+  // deduction reckonings and drop the reaction; seat-loss is grief and keeps it.
+  'after-wrong': { reaction: false, dir: _afterWrongDir, conseq: CONSEQ_AFTER_WRONG },
+  'after-right': { reaction: false, dir: _afterRightDir, conseq: CONSEQ_AFTER_RIGHT },
+  'seat-loss': { dir: _seatLossDir, conseq: CONSEQ_SEAT_LOSS },
 };
 
 // The set of event ids that have been reworked to record a concrete topic.
@@ -2181,23 +2492,32 @@ const TOPIC_READY_TESTING = ['testing-small-dare', 'testing-ask-for-alibi-check'
 /* eslint-disable-next-line */
 const TOPIC_READY_COVER = ['cover-preemptive-alibi', 'cover-suspect-own-ally', 'cover-plant-a-name', 'cover-rehearsed-story-advance', 'cover-cold-sweat-tell', 'cover-story-check', 'cover-double-bluff', 'cover-decline-recruit-offer-story', 'cover-alibi-crumbles', 'cover-blend-with-victims-friends', 'cover-feign-fear', 'cover-swap-story-with-partner', 'cover-alone-with-it'];
 // grief family (grief.js) — mourning; topic = the murdered person. The two
-// ballot-sensitive events (someone-cries-alone, nobody-sleeps) are left legacy:
-// their subject is a mix of the death and the table, so a victim-named close
-// would misstate the table-paranoia scenes.
+// once-skipped ballot-sensitive events (someone-cries-alone, nobody-sleeps) are
+// now grounded too, via the grief-vigil pool: they set the topic PER BRANCH (the
+// dead when the scene mourns; the actor's own name when it is table-paranoia),
+// so a victim-named close never lands on a self-precarity scene.
 /* eslint-disable-next-line */
-const TOPIC_READY_GRIEF = ['grief-empty-chair', 'grief-headcount', 'grief-seating-shift', 'grief-shared-mourning-bond', 'grief-suspicion-of-timing', 'grief-morning-reaction', 'grief-keepsake', 'grief-blame-the-room', 'grief-toast-to-them', 'grief-numb-to-it-now', 'grief-wrongly-suspected-irony'];
+const TOPIC_READY_GRIEF = ['grief-empty-chair', 'grief-headcount', 'grief-seating-shift', 'grief-shared-mourning-bond', 'grief-suspicion-of-timing', 'grief-morning-reaction', 'grief-keepsake', 'grief-blame-the-room', 'grief-toast-to-them', 'grief-numb-to-it-now', 'grief-wrongly-suspected-irony', 'grief-someone-cries-alone', 'grief-nobody-sleeps'];
 // romance family (romance.js) — topic = the partner. romance-liability-exposed
-// is left legacy: it has a doubter/suspected shape (a read of the couple), not a
-// partner pair.
+// is grounded as a SUSPICION READ (topicKind 'romance-suspicion'): its
+// doubter/suspected shape is a read of one partner by the other, so it names the
+// doubted partner and carries a hunch chip rather than a couple's TRUST chip.
 /* eslint-disable-next-line */
-const TOPIC_READY_ROMANCE = ['romance-spark', 'romance-showmance-forms', 'romance-protection-instinct', 'romance-jealousy-third-party', 'romance-showmance-breakup', 'romance-shields-target-together', 'romance-shared-alibi', 'romance-showmance-fight', 'romance-strategic-optics', 'romance-comfort-after-loss-sparks'];
-// callback family (callback.js) — topic = the shared-history person.
-// callback-warns-newbies (vet + a NEWBIE) and callback-no-history-envy (an
-// outsider with NO shared history) are left legacy: both are about the ABSENCE
-// of a shared past, so a "history between" close would be false.
+const TOPIC_READY_ROMANCE = ['romance-spark', 'romance-showmance-forms', 'romance-protection-instinct', 'romance-jealousy-third-party', 'romance-showmance-breakup', 'romance-shields-target-together', 'romance-shared-alibi', 'romance-showmance-fight', 'romance-strategic-optics', 'romance-comfort-after-loss-sparks', 'romance-liability-exposed'];
+// callback family (callback.js) — topic = the shared-history person. The two
+// once-skipped events are now grounded on the ABSENCE of a shared past:
+// callback-warns-newbies (a vet handing a newbie a read on a threat the newbie
+// has no history with) and callback-no-history-envy (an outsider sitting outside
+// a story about a person they never played with). Both name that third person
+// and frame who is short of the history.
 /* eslint-disable-next-line */
-const TOPIC_READY_CALLBACK = ['callback-recognized', 'callback-old-alliance-reforms', 'callback-grudge-resurfaces', 'callback-showmance-reunion-spark', 'callback-competitive-history', 'callback-protects-old-ally-from-vote', 'callback-different-show-different-person', 'callback-shared-alumni-status', 'callback-history-confrontation'];
-export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK]);
+const TOPIC_READY_CALLBACK = ['callback-recognized', 'callback-old-alliance-reforms', 'callback-grudge-resurfaces', 'callback-showmance-reunion-spark', 'callback-competitive-history', 'callback-protects-old-ally-from-vote', 'callback-different-show-different-person', 'callback-shared-alumni-status', 'callback-history-confrontation', 'callback-warns-newbies', 'callback-no-history-envy'];
+// consequences.js + nightfall.js — the banishment aftermath. Each names the
+// person who left the table ({gone}). after-the-empty-seat (after-table) and
+// night-the-seat-they-had (night) share the seat-loss grief pool.
+/* eslint-disable-next-line */
+const TOPIC_READY_AFTERMATH = ['after-the-room-got-it-wrong', 'after-the-room-got-it-right', 'after-the-empty-seat', 'night-the-seat-they-had'];
+export const TOPIC_READY = new Set([...TOPIC_READY_JOURNEY, ...TOPIC_READY_TESTING, ...TOPIC_READY_COVER, ...TOPIC_READY_GRIEF, ...TOPIC_READY_ROMANCE, ...TOPIC_READY_CALLBACK, ...TOPIC_READY_AFTERMATH]);
 
 /**
  * WHAT CHANGED, NAMED. Draws the closing consequence from the topic pool keyed
@@ -4248,6 +4568,9 @@ function _chipsFor(receipts, sceneId, layer, isAudience, watcher) {
 const _SUSP_DIR = {
   'road-third-name': { agreed: 1, 'named-somebody-else': 1 },
   'road-suspect-walk': { slipped: 1, hardened: 1, cleared: -1 },
+  // A doubt inside a showmance: buried EASES it (the doubter looks away),
+  // everything else HARDENS it (a read taking root, said, or made public).
+  'romance-suspicion': { oblivious: -1, suspicious: 1, confronts: 1, exposes: 1 },
 };
 function _suspicionChipFromRecord(s, isAudience, watcher) {
   // A HUNCH, NOT A BELIEF-BOARD MOVE. Castle scenes never write the deduction
@@ -4256,7 +4579,11 @@ function _suspicionChipFromRecord(s, isAudience, watcher) {
   // a read, so the viewer sees the daily suspicion without mistaking it for the
   // hard evidence that decides the vote. Shown on every suspicion scene.
   const fam = s.family || s.kind;
-  if (fam !== 'suspicion') return null;
+  // A suspicion read shows a hunch chip. Family 'suspicion' always; plus the one
+  // romance event (romance-liability-exposed) that is a read of one partner by
+  // the other, tagged 'romance-suspicion' so the chip fires though its family
+  // is 'romance'.
+  if (fam !== 'suspicion' && s.topicKind !== 'romance-suspicion') return null;
   const doubter = s.speaker || (s.actors && s.actors[0])
     || (s.participants && s.participants[0]) || (s.parties && s.parties[0]);
   if (!doubter) return null;

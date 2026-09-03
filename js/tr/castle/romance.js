@@ -1191,7 +1191,11 @@ registerEvent({
           { a: doubter, b: suspected, who })}` });
       threadId = coverThread?.id ?? threadId;
     }
-    return { branch, doubter, suspected, threadId, bondDelta };
+    // GROUNDED (once-skipped) as a SUSPICION READ, not a partner pair: the
+    // subject is the doubted partner, and the close names them and says which
+    // way the doubt went. speaker=doubter fixes the hunch chip's observer.
+    return { branch, doubter, suspected, speaker: doubter, respondent: suspected,
+      topic: suspected, topicKind: 'romance-suspicion', threadId, bondDelta };
   },
 });
 

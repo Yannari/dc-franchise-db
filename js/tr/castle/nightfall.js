@@ -350,6 +350,7 @@ registerEvent({
         'on-their-own', ctx.ep, { a, gone });
       const solo = arcContinue(api, 'grief', [a], ctx.ep, soloNote, { source: sceneWhy });
       return { branch: 'on-their-own', actor: a, subject: gone,
+        topic: gone, topicKind: 'seat-loss',
         threadId: solo.thread?.id, cited: solo.cited, bondDelta: 0 };
     }
     const wroteIt = ballotOf(round, a) === gone;
@@ -370,6 +371,7 @@ registerEvent({
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, 'grief', [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b, subject: gone,
+      topic: gone, topicKind: 'seat-loss',
       threadId: thread?.id, cited, bondDelta };
   },
 });

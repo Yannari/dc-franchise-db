@@ -437,6 +437,7 @@ registerEvent({
       // A person who wrote the name and watched the reveal is not fine.
       if (wroteIt) api.setEmotionalState(a, 'paranoid', { source: sceneWhy });
       return { branch: 'alone-with-it', actor: a, subject: gone,
+        topic: gone, topicKind: 'after-wrong',
         threadId: solo.thread?.id, cited: solo.cited, bondDelta: 0 };
     }
     const branch = forkOn(rng, {
@@ -456,6 +457,7 @@ registerEvent({
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, 'grief', [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b, subject: gone,
+      topic: gone, topicKind: 'after-wrong',
       threadId: thread?.id, cited, bondDelta };
   },
 });
@@ -551,6 +553,7 @@ registerEvent({
         'on-their-own', ctx.ep, { a, gone });
       const solo = arcContinue(api, 'trust', [a], ctx.ep, soloNote, { source: sceneWhy });
       return { branch: 'on-their-own', actor: a, subject: gone,
+        topic: gone, topicKind: 'after-right',
         threadId: solo.thread?.id, cited: solo.cited, bondDelta: 0 };
     }
     const aWasRight = rightOnes.includes(a);
@@ -577,7 +580,7 @@ registerEvent({
     // On `overclaimed` and `credit-where-due` it is `{b}` doing the talking.
     const bTalks = branch === 'overclaimed' || branch === 'credit-where-due';
     return { branch, pair: [a, b], speaker: bTalks ? b : a, respondent: bTalks ? a : b,
-      subject: gone, threadId: thread?.id, cited, bondDelta };
+      subject: gone, topic: gone, topicKind: 'after-right', threadId: thread?.id, cited, bondDelta };
   },
 });
 
@@ -1021,6 +1024,7 @@ registerEvent({
         'on-their-own', ctx.ep, { a, gone });
       const solo = arcContinue(api, 'grief', [a], ctx.ep, soloNote, { source: sceneWhy });
       return { branch: 'on-their-own', actor: a, subject: gone,
+        topic: gone, topicKind: 'seat-loss',
         threadId: solo.thread?.id, cited: solo.cited, bondDelta: 0 };
     }
     const branch = forkOn(rng, {
@@ -1038,6 +1042,7 @@ registerEvent({
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, 'grief', [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b, subject: gone,
+      topic: gone, topicKind: 'seat-loss',
       threadId: thread?.id, cited, bondDelta };
   },
 });

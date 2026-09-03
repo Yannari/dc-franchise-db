@@ -881,7 +881,8 @@ registerEvent({
     api.addBond(a, b, -1, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, FAMILY, [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, actor: a, pair: [a, c], speaker: a, respondent: c,
-      about: b, warned: c, threadId: thread?.id, cited, bondDelta: -1 };
+      about: b, warned: c, topic: b, topicKind: 'callback-warning',
+      threadId: thread?.id, cited, bondDelta: -1 };
   },
 });
 // ── WIDENED AND REFORKED (Task 7 stage 6). A KEEP-list event and the top of
@@ -1144,7 +1145,8 @@ registerEvent({
     const { thread, cited } = arcContinue(api, FAMILY, [outsider, insider], ctx.ep, note,
       { source: sceneWhy });
     return { branch, pair: [outsider, insider], speaker: outsider, respondent: insider,
-      about: c, threadId: thread?.id, cited, bondDelta };
+      about: c, topic: c, topicKind: 'callback-envy',
+      threadId: thread?.id, cited, bondDelta };
   },
 });
 // ── REWRITE (Task 7 stage 6). MERGE-verdict event ("two alumni clocking each

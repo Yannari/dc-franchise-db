@@ -65,6 +65,25 @@ function _ballotBehind(actor) {
   return (voted || named) ? last : null;
 }
 
+/**
+ * The most recent person to leave, and how — murdered in the night or banished
+ * in daylight. Used by the night vigil to NAME the empty bed and to branch the
+ * grief on death-vs-banishment (see grief-vigil in vp-tr/castle-day.js). Walks
+ * the rounds newest-first; falls back to cast-minus-living for a night-one loss
+ * that has no round record yet.
+ */
+function _lastGone() {
+  const rounds = gs?.tr?.rounds || [];
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    if (rounds[i].murdered) return { name: rounds[i].murdered, byMurder: true };
+    if (rounds[i].banished) return { name: rounds[i].banished, byMurder: false };
+  }
+  const cast = Object.keys(gs?.tr?.alignment || {});
+  const living = new Set(gs?.activePlayers || []);
+  const g = cast.find(n => !living.has(n));
+  return g ? { name: g, byMurder: true } : null;
+}
+
 /** Was there a murder in the round that just closed? Shared by every event below. */
 function _victimLastNight(ep) {
   const rounds = gs?.tr?.rounds;
@@ -1377,6 +1396,22 @@ registerEvent({
     const parties = branch === 'was-found' ? [actor, finder] : [actor];
     const t = api.openArc(FAMILY, parties, { source: sceneWhy, seed: `${line}${why}` });
     const out = { branch, actor, threadId: t?.id, state: state || 'content', bondDelta: 0 };
+    // GROUNDED (once-skipped). The empty chair is a MURDER victim (the grief
+    // gate requires one), so the death-vs-banishment axis is always 'death'
+    // here. topic is the dead when the scene mourns them, and the actor
+    // themself when the scene is really about their OWN name at the last table
+    // (came-down-angry off a ballot) — the mixed subject that got this event
+    // skipped. See grief-vigil in vp-tr/castle-day.js.
+    const victim = _victimLastNight(ctx.ep);
+    const tableDriven = branch === 'came-down-angry' && !!behind;
+    out.topicKind = 'grief-vigil';
+    // came-down-angry off a real ballot is about the actor's OWN name (haunted);
+    // was-found is a comfort scene, closed on the shared loss with a role-neutral
+    // pool (naming the dead against BOTH of them, so the recorded pair need not
+    // be reordered — reordering it shifts the castle scene stream); everything
+    // else mourns the dead.
+    out.topicDir = tableDriven ? 'haunted' : branch === 'was-found' ? 'comforted' : 'mourned';
+    out.topic = tableDriven ? actor : victim;
     if (branch === 'was-found') {
       out.bondDelta = 2;
       api.addBond(actor, finder, 2, { source: sceneWhy });
@@ -1669,7 +1704,21 @@ registerEvent({
     // Round Table, and that table is how repetition gets noticed at all.
     // AND THE BRANCH SAYS WHICH, so the repetition table can see the two apart
     // — the same reasoning the note above gives for not returning a constant.
+    // GROUNDED (once-skipped). The empty bed has a name and a manner of leaving
+    // (murdered vs banished, from the round record); a nervy night is really
+    // about the actor's OWN name at the last table, and a groundless one about
+    // nothing at all. So the topic and its register are set per-branch: the dead
+    // when the scene counts empty beds, the actor themself when it does not. See
+    // grief-vigil in vp-tr/castle-day.js.
+    const last = _lastGone();
+    const tableDriven = grounded && isNervy(state);
+    const baseless = pool === 'unfounded';
+    const topicDir = tableDriven ? 'haunted'
+      : baseless ? 'restless'
+        : (last && last.byMurder === false) ? 'banished' : 'mourned';
     return { branch: grounded ? `awake-${state}` : 'awake-unfounded',
-      actor, state, grounded, gone, threadId: t?.id };
+      actor, state, grounded, gone, threadId: t?.id,
+      topicKind: 'grief-vigil', topicDir,
+      topic: (tableDriven || baseless) ? actor : (last ? last.name : actor) };
   },
 });

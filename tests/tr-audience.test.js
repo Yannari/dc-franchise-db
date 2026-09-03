@@ -430,8 +430,19 @@ describe('the measurement §10.4 exists for', () => {
     expect(Math.abs(rStandF), `Faithful-only standing corr ${rStandF.toFixed(3)}`)
       .toBeLessThan(Math.abs(rPopF) * 0.55);
 
-    // Pooled, the standing is very nearly independent of placement (-0.013).
+    // Pooled, the standing is nearly independent of placement. It used to read
+    // -0.013 when castle life moved no affection at all; now that castle scenes
+    // colour the crowd by BEHAVIOUR (js/tr/castle/crowd-map.js), and behaviour
+    // tracks survival a little — the loyal get murdered, the schemers last — it
+    // rises to ~0.10. That is ~1% shared variance and still an ORDER below the
+    // raw-popularity correlation, which is the point: the round normalisation in
+    // `audienceStanding` is doing its job. The RELATIVE bound below is the real
+    // guard (standing far less placement-linked than raw popularity); the
+    // absolute cap is a sanity ceiling, widened once to admit the feature that
+    // moves affection at all. Damping the crowd mult does not move this — the
+    // correlation is distributional, not magnitude — so the ceiling, not the
+    // mult, is where it is acknowledged.
     expect(Math.abs(rStand)).toBeLessThan(Math.abs(rPop) * 0.5);
-    expect(Math.abs(rStand)).toBeLessThan(0.1);
+    expect(Math.abs(rStand)).toBeLessThan(0.13);
   });
 });

@@ -28,6 +28,7 @@
 import { gs } from '../core.js';
 import { findOpenThread, heatAt, openThreads, actFor } from './threads.js';
 import { applyEventCrowd } from './crowd.js';
+import { sceneCrowd } from './castle/crowd-map.js';
 import { emotionalOverrideFor } from './state.js';
 import { weightedPick } from '../event-scheduler.js';
 import { createTraitorsSceneApi } from './scene-api.js';
@@ -521,6 +522,13 @@ export function pickEvent(ctx, rng) {
   // here so no event author ever touches either ledger directly, and it
   // takes no rng draw, so a season with the ledgers in it is bit-identical to
   // one without. See js/tr/crowd.js.
+  // If the event did not declare its own crowd moment, the central map
+  // (js/tr/castle/crowd-map.js) supplies one for the scenes the country would
+  // actually react to — named by event and actor, never guessed from family.
+  if (consequences && !consequences.crowd) {
+    const mapped = sceneCrowd(chosen.id, consequences);
+    if (mapped) consequences.crowd = mapped;
+  }
   const crowd = applyEventCrowd(consequences, ctx.ep);
 
   // `actors` is harness data too — nothing in the engine reads it. The

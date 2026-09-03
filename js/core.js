@@ -1562,6 +1562,11 @@ export function defaultConfig() {
     // is the ceiling the missions earn against (js/tr/missions.js), not a
     // starting balance -- the castle begins on nothing.
     traitorCount: 3,
+    // 'random' — the castle picks its own pact in secret (default).
+    // 'choose' — the author names it on the setup screen; `trChosenTraitors`
+    // holds up to `traitorCount` names and the engine tops up any it leaves.
+    trTraitorMode: 'random',
+    trChosenTraitors: [],
     trPotCeiling: 120000,
     auctionAwardsImmunity: true,  // Auction twist: when ON the auction awards the only immunity (replaces the challenge); when OFF it's a reward alongside a normal challenge
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour

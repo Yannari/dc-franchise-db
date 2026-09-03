@@ -1879,6 +1879,61 @@ export function updateCoachesUI() {
   }
 }
 
+/**
+ * The castle's pact, chosen by hand.
+ *
+ * A mirror of the Mole picker: a portrait grid on the setup screen, capped at
+ * the season's Traitor count. Selected names go on `seasonConfig.trChosenTraitors`
+ * and tr-run.js hands them to the engine when the mode is 'choose'; leaving the
+ * mode on 'random' ignores the list entirely and the castle draws its own.
+ */
+export function toggleTraitorPlayer(name) {
+  if (!seasonConfig.trChosenTraitors) seasonConfig.trChosenTraitors = [];
+  const cap = Math.max(2, Math.min(5,
+    parseInt(document.getElementById('cfg-tr-traitor-count')?.value)
+    || seasonConfig.traitorCount || 3));
+  const idx = seasonConfig.trChosenTraitors.indexOf(name);
+  if (idx >= 0) seasonConfig.trChosenTraitors.splice(idx, 1);
+  else if (seasonConfig.trChosenTraitors.length < cap) seasonConfig.trChosenTraitors.push(name);
+  updateTraitorPickerUI();
+  saveConfig();
+}
+
+export function updateTraitorPickerUI() {
+  const mode = document.getElementById('cfg-tr-traitor-mode')?.value || 'random';
+  const grp  = document.getElementById('tr-traitor-choose-group');
+  const desc = document.getElementById('tr-traitor-mode-desc');
+  if (grp) grp.style.display = mode === 'choose' ? 'block' : 'none';
+  const cap = Math.max(2, Math.min(5,
+    parseInt(document.getElementById('cfg-tr-traitor-count')?.value)
+    || seasonConfig.traitorCount || 3));
+  // A count dropped below the pact trims the pact, not the other way round.
+  if (Array.isArray(seasonConfig.trChosenTraitors) && seasonConfig.trChosenTraitors.length > cap) {
+    seasonConfig.trChosenTraitors = seasonConfig.trChosenTraitors.slice(0, cap);
+  }
+  if (desc) {
+    desc.textContent = mode === 'choose'
+      ? `Tap up to ${cap} of the cast to make them Traitors. Any slots you leave, the castle fills in secret.`
+      : 'The castle picks its own Traitors in secret.';
+  }
+  if (mode !== 'choose') return;
+  const container = document.getElementById('tr-traitor-select');
+  if (!container || typeof players === 'undefined' || !players.length) return;
+  const selected = (seasonConfig.trChosenTraitors || []);
+  container.innerHTML = players.map(p => {
+    const sel = selected.includes(p.name);
+    const slug = p.slug || p.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const init = (p.name || '?')[0].toUpperCase();
+    return `<div data-member="${p.name}" data-selected="${sel}" onclick="toggleTraitorPlayer('${p.name.replace(/'/g,"\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
+      <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#8f1a26' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color 0.15s">
+        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
+      </div>
+      <span style="font-size:9px;color:${sel ? '#c0392b' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s">${p.name}</span>
+    </div>`;
+  }).join('');
+}
+
 export function toggleMolePlayer(name) {
   if (!seasonConfig.molePlayers) seasonConfig.molePlayers = [];
   const idx = seasonConfig.molePlayers.indexOf(name);

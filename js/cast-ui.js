@@ -1013,6 +1013,11 @@ export function saveConfig() {
     // the engine clamps: `selectTraitors` refuses to make the whole cast a
     // Traitor, and a pot of nothing is a season with no reason to play it.
     traitorCount: Math.max(2, Math.min(5, parseInt(g('cfg-tr-traitor-count')?.value) || 3)),
+    // 'random' or 'choose'; the chosen pact rides on seasonConfig and is read
+    // back in populateConfig rather than off a DOM control, because it is a
+    // portrait grid, not a field.
+    trTraitorMode: g('cfg-tr-traitor-mode')?.value || 'random',
+    trChosenTraitors: seasonConfig.trChosenTraitors || [],
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -1142,7 +1147,9 @@ export function renderConfig() {
   if (g('cfg-franchise-meta-autorecord')) g('cfg-franchise-meta-autorecord').checked = seasonConfig.franchiseMetaAutoRecord !== false;
   set('cfg-jury',    seasonConfig.jurySize || 9);
   set('cfg-tr-traitor-count', seasonConfig.traitorCount || 3);
+  set('cfg-tr-traitor-mode', seasonConfig.trTraitorMode || 'random');
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
+  if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');

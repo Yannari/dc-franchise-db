@@ -1887,7 +1887,7 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
   potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
   backgrounds = null, database = null, host = null,
-  murderSchedule = null, announceTraitorCount = false } = {}) {
+  murderSchedule = null, chosenTraitors = null, announceTraitorCount = false } = {}) {
   const rng = rngFor(seed);
   // The narrative layer's OWN stream — see castleRngFor's doc comment for why
   // round budgets (and later, window draws) must never share the game rng.
@@ -1946,7 +1946,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   resetKnowledge();
   _seedStartingBonds(cast, seed);
 
-  const traitors = selectTraitors(cast, { traitorCount }, rng);
+  const traitors = selectTraitors(cast,
+    { traitorCount, chosenTraitors: Array.isArray(chosenTraitors) ? chosenTraitors : null }, rng);
   traitors.forEach(n => recordAlignment(n, true, 1, 'selection'));
   cast.filter(n => !traitors.includes(n)).forEach(n => recordAlignment(n, false, 1, 'selection'));
   seedTraitorKnowledge(1);

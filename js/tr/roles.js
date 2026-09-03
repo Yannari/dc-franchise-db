@@ -32,7 +32,19 @@ export function selectTraitors(cast, cfg = {}, rng = Math.random) {
   const pool = [...cast];
   const want = Math.max(1, Math.min(Number(cfg.traitorCount) || 3, pool.length - 1));
   const picked = [];
-  for (let i = 0; i < want && pool.length; i++) {
+  // THE AUTHOR'S PACT FIRST, when the setup screen named one. The chosen names
+  // are taken in order, filtered to the cast and deduped, and capped at `want`;
+  // a pact named short of `want` is topped up at random from whoever is left,
+  // so a half-named pact still plays. With no chosen list this is the old
+  // all-random pick, draw for draw — every headless caller that passes no
+  // `chosenTraitors` (the audits, the calibration, the tests) is untouched.
+  const chosen = Array.isArray(cfg.chosenTraitors) ? cfg.chosenTraitors : [];
+  for (const name of chosen) {
+    if (picked.length >= want) break;
+    const i = pool.indexOf(name);
+    if (i >= 0) picked.push(pool.splice(i, 1)[0]);
+  }
+  for (let i = picked.length; i < want && pool.length; i++) {
     picked.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
   }
   return picked;

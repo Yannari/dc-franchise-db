@@ -106,6 +106,11 @@ function _playWholeSeason() {
       potCeiling: Number(seasonConfig.trPotCeiling) || undefined,
       endgameSize: Number(seasonConfig.finaleSize) || 3,
       murderSchedule: _murderSchedule(),
+      // Only an explicitly-chosen pact is handed down; 'random' mode (or a cast
+      // that has changed since) leaves this null and the engine draws its own.
+      chosenTraitors: seasonConfig.trTraitorMode === 'choose'
+        ? (seasonConfig.trChosenTraitors || []).filter(n => cast.includes(n))
+        : null,
       seed: _seed(),
     });
   } finally {

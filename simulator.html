@@ -669,13 +669,24 @@
             </div>
             <div class="form-group">
               <label class="form-label">Traitors</label>
-              <select id="cfg-tr-traitor-count" onchange="saveConfig()" class="form-input">
+              <select id="cfg-tr-traitor-count" onchange="updateTraitorPickerUI();saveConfig()" class="form-input">
                 <option value="2">2</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
                 <option value="5">5</option>
               </select>
               <div class="hint hint-tight">Too few and one lucky banishment ends the season early; too many and the Faithfuls cannot help but find one. Two to a quarter of the cast.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Who are the Traitors?</label>
+              <select id="cfg-tr-traitor-mode" onchange="updateTraitorPickerUI();saveConfig()" class="form-input">
+                <option value="random">Chosen at random</option>
+                <option value="choose">Choose them yourself</option>
+              </select>
+              <div class="hint hint-tight" id="tr-traitor-mode-desc">The castle picks its own Traitors in secret.</div>
+              <div id="tr-traitor-choose-group" style="display:none;margin-top:8px">
+                <div id="tr-traitor-select" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">The pot</label>

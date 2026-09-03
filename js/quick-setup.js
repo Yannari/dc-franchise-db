@@ -1062,6 +1062,10 @@ const CONFIG_SCOPE = {
     popularity: ['total-drama', 'big-brother', 'traitors'],  // a castle has an audience too
     survival:   ['total-drama'],
     mole:       ['total-drama'],
+    // Sideline coaches train a TRIBE — a house and a castle have neither, so
+    // the panel meant nothing on either and, being absent from this map, was
+    // the one TD mechanic that stayed drawn over both.
+    coaches:    ['total-drama'],
   },
   fields: {
     'cfg-days':              ['total-drama'],  // a house runs to a final three, not a day count

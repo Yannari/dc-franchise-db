@@ -2070,13 +2070,21 @@ export function buildEpisodeMap() {
     while (trActive > endgame && trEp <= 100) {
       const isDouble = (seasonConfig.twistSchedule || [])
         .some(t => t && Number(t.episode) === trEp && t.type === 'tr-double-murder');
+      // A pinned Recruitment night makes no body — the pact recruits instead of
+      // kills — so that night removes only the banished (one elimination, not
+      // two). Episode one is always a murder (recruitment cannot run before a
+      // Traitor has been banished), so it is exempt.
+      const isRecruit = trEp !== 1 && (seasonConfig.twistSchedule || [])
+        .some(t => t && Number(t.episode) === trEp && t.type === 'tr-recruitment');
       trEps.push({ ep: trEp, active: trActive, phase: 'pre-merge',
         engineType: twistMap[trEp] || null });
       // Episode one: the murder, no banishment. Every later night banishes.
       let toll = trEp === 1 ? 0 : 1;
       // A murder on top, while budget and room remain (kept clear of the
-      // endgame so the tail stays banishment-only, as the real seasons do).
-      const canMurder = trEp === 1 || (murderBudget > 0 && trActive - toll - 1 >= endgame);
+      // endgame so the tail stays banishment-only, as the real seasons do) —
+      // unless a Recruitment is pinned here, in which case nobody is murdered.
+      const canMurder = trEp === 1
+        || (!isRecruit && murderBudget > 0 && trActive - toll - 1 >= endgame);
       if (canMurder) {
         toll += 1;
         if (trEp !== 1) murderBudget -= 1;

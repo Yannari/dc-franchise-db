@@ -871,27 +871,37 @@ export const TWIST_CATALOG = [
   { id:'tr-on-trial', emoji:'📜', name:'On Trial', format:'traitors',
     category:'murder', phase:'any', variant:'on-trial', engineType:'tr-murder-variant',
     desc:'The Traitors draw up a death list of several names and murder just one of them. The spared wake to learn they were on it — and the room hunts the survivors, because a Traitor will often write one of their own onto the list as cover. Needs a castle of 5+ with 3+ Faithful still standing.',
-    incompatible:['tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own'] },
+    incompatible:['tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own','tr-recruitment'] },
   { id:'tr-plain-sight', emoji:'🍷', name:'In Plain Sight', format:'traitors',
     category:'murder', phase:'any', variant:'plain-sight', engineType:'tr-murder-variant',
     desc:'No conclave, no letter. A Traitor murders at the table, in front of the whole castle — a poisoned glass, a kiss, an embrace at the door — and the room is left to work out who was within arm’s reach. The one night the pact takes without arguing is the one night it leaves no conclave tension to trace. Needs 5+ alive, 1+ Traitor, 2+ Faithful.',
-    incompatible:['tr-on-trial','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own'] },
+    incompatible:['tr-on-trial','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own','tr-recruitment'] },
   { id:'tr-face-to-face', emoji:'⛪', name:'Face to Face', format:'traitors',
     category:'murder', phase:'any', variant:'face-to-face', engineType:'tr-murder-variant',
     desc:'The victim is taken to the chapel and given a last word before the end — the only time in the game the dead get to name a name. What they say is public, and worth exactly what their own read of the castle was worth: better than a guess, a long way short of proof. Needs 5+ alive, 2+ Faithful.',
-    incompatible:['tr-on-trial','tr-plain-sight','tr-dungeon','tr-double-murder','tr-name-your-own'] },
+    incompatible:['tr-on-trial','tr-plain-sight','tr-dungeon','tr-double-murder','tr-name-your-own','tr-recruitment'] },
   { id:'tr-dungeon', emoji:'🔦', name:'The Dungeon', format:'traitors',
     category:'murder', phase:'any', variant:'dungeon', engineType:'tr-murder-variant',
     desc:'Two players go down to the dungeon and only one comes back up. The castle suspects whoever climbed the stair alone; the survivor, for their part, heard a voice down there and has a read of their own — one private, stat-gated, and often wrong. Needs 6+ alive, 3+ Faithful.',
-    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-double-murder','tr-name-your-own'] },
+    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-double-murder','tr-name-your-own','tr-recruitment'] },
   { id:'tr-double-murder', emoji:'🩸', name:'Double Murder', format:'traitors',
     category:'murder', phase:'any', variant:'double', engineType:'tr-murder-variant',
     desc:'Two bodies in one night — the murder the pact agreed on, and the one it argued about, carried out after all. With two dead the room can lay both victims’ whole records over each other: a name they had both been pushing is two Faithful reads pointing one way. Needs a full early-season castle: 8+ alive, 4+ Faithful, 2+ Traitors.',
-    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-dungeon','tr-name-your-own'] },
+    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-dungeon','tr-name-your-own','tr-recruitment'] },
   { id:'tr-name-your-own', emoji:'🗡️', name:'Name Your Own', format:'traitors',
     category:'murder', phase:'any', variant:'name-your-own', engineType:'tr-murder-variant',
     desc:'The Traitors are forced to murder one of their own. The room’s instincts run exactly backwards — the people who pushed the victim were the ones who were right — so the evidence this night hands a Faithful is poison, and the pact pays for it in grudges instead. Thins a pact that has grown comfortable. Needs 3+ Traitors, 5+ alive.',
-    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder'] },
+    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder','tr-recruitment'] },
+  // A night the pact RECRUITS instead of killing — so nobody is murdered and
+  // only the banishment removes anyone (one elimination, not two; the timeline
+  // knows). It can only run once the room has already banished a Traitor (the
+  // show's rule, enforced by the engine's canRecruit); pinned before that, the
+  // night falls back to an ordinary murder. Mutually exclusive with the six
+  // murder shapes — a night is one thing or the other.
+  { id:'tr-recruitment', emoji:'🤝', name:'Recruitment', format:'traitors',
+    category:'murder', phase:'any', variant:'recruit', engineType:'tr-murder-variant',
+    desc:'Instead of murdering, the Traitors make an offer: one Faithful is invited to join the pact. Accept and become a Traitor; refuse and stay Faithful — and with one Traitor left, a refusal is fatal. The castle wakes to find nobody was murdered, which is its own loud piece of information. Nobody dies in the night, so only the Round Table takes anyone that day. Only available once a Traitor has been banished.',
+    incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own'] },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

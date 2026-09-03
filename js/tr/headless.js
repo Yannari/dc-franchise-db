@@ -234,8 +234,16 @@ function _night(ep, rng) {
   const rounds = gs.tr.rounds;
   const last = rounds.length ? rounds[rounds.length - 1] : null;
 
-  // Recruit rather than murder when the pact is thin and somebody is takeable.
-  const wantsRecruit = canRecruit(ep) && livingTraitors(ep).length < 3 && rng() < 0.45;
+  // Recruit rather than murder when the pact is thin and somebody is takeable —
+  // or when the author PINNED a recruitment to this night from the timeline
+  // (`gs.tr.murderSchedule[ep] === 'recruit'`). Either way `canRecruit` still
+  // gates it: the pact cannot recruit until the room has banished one of them,
+  // which is the show's own rule, so a pinned recruitment the castle cannot yet
+  // run simply falls through to a murder. With nothing pinned this is the old
+  // thin-pact heuristic, draw for draw.
+  const forcedRecruit = !!(gs.tr.murderSchedule && gs.tr.murderSchedule[ep] === 'recruit');
+  const wantsRecruit = canRecruit(ep)
+    && (forcedRecruit || (livingTraitors(ep).length < 3 && rng() < 0.45));
   if (wantsRecruit) {
     const pick = chooseRecruit(ep, rng);
     if (pick) {

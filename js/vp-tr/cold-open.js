@@ -882,10 +882,10 @@ const CO_CSS = `
 
 const HOST_LINES = {
   open: [
-    'Morning. Somebody in this room slept extremely well.',
-    'Good morning. I hope you all had a restful night. One of you certainly did.',
-    'Morning, all. Come down. Sit where you like.',
-    'Good morning. The kettle is on and the arithmetic is not in your favour.',
+    'Good morning. Take your seats. When everyone who can come down has arrived, any empty place will tell you whom the Traitors chose overnight.',
+    'Morning. Wait until every surviving player is here, then count the empty places. That is how you will learn whether the Traitors removed anyone overnight.',
+    'Good morning. Sit down and account for everyone who survived the Round Table. Anyone still missing after that was selected overnight.',
+    'Morning. Do not decide who is missing until the last surviving player reaches the table. Then the empty chair will give you the answer.',
   ],
   gap: [
     'Look around you. There is a chair back this morning, and it is not coming forward again.',
@@ -1017,20 +1017,16 @@ const COUNT_TEXT = [
 ];
 
 const GAP_TEXT = [
-  'And there it is. A place laid, a plate untouched, and the cup turned face down on the '
-  + 'linen — which is the thing the staff do, quietly, before anybody else is up.',
-  'One setting is exactly as it was left last night, except for the cup, which is upside down. '
-  + 'That is how this castle says it.',
-  'The gap is not dramatic. It is a chair still tucked in and a cup the wrong way up, and it '
-  + 'takes the room about four seconds to find it.',
-  'Everything on that place is where the staff put it. Nothing has been moved. The cup is '
-  + 'over, and the room goes very quiet all at once.',
+  'One place remains empty after every surviving player has arrived. Its cup has been turned over to mark the person selected overnight.',
+  'Everyone who can still enter the room is present. The untouched setting and overturned cup identify the missing player.',
+  'The final count leaves one unoccupied chair. The staff have turned over its cup, confirming who was taken overnight.',
+  'No more players are expected down the stairs. The remaining place belongs to the person the Traitors chose.',
 ];
 const GAP_SAID = [
-  'No. No, no, no.',
-  'They were sitting right there. Last night. Right there.',
-  'I spoke to {them} at the door. I said goodnight.',
-  'Who else is not here? Look up. Everyone look up.',
+  'That is the only empty place. We have our answer.',
+  'Everyone else is here. That place belongs to {them}.',
+  'Count once more. Nobody else is missing.',
+  'The last expected player has arrived. That chair confirms it.',
 ];
 const GAP_DOUBLE = [
   'And then a second cup, four places along, turned the same way.',
@@ -1040,24 +1036,17 @@ const GAP_DOUBLE = [
 ];
 
 const TOLD_TEXT = [
-  'Then somebody says the word out loud. Not the soft version — the real one. {Nm}. It sounds '
-  + 'worse spoken than it looked on the cup.',
-  'It is said properly, once, and then not again. {Nm}. The room takes it standing up.',
-  'The confirmation is short. It always is. {Nm}, and then nothing for a while.',
-  'Nobody argues with it. There is nothing in it to argue with. {Nm}, and that is the fact of '
-  + 'the morning.',
+  'The group confirms what the empty place means: {Nm}.',
+  'With every other player accounted for, the conclusion is unavoidable: {Nm}.',
+  'The overturned cup provides the morning’s answer: {Nm}.',
+  'The final attendance count confirms it: {Nm}.',
 ];
 
 const AFTER_TEXT = [
-  'What happens next is the part nobody rehearses. Somebody starts a sentence about last night '
-  + 'and abandons it. Somebody else pours a cup for a person who is not there and puts it down '
-  + 'very carefully.',
-  'The room reorganises itself around the gap without anybody deciding to. Chairs move a few '
-  + 'inches. Nobody sits in the empty place and nobody moves it either.',
-  'There are two kinds of people at this table now and they look identical: the ones who are '
-  + 'shaken, and the ones who are doing shaken very well indeed.',
-  'Somebody says the thing everybody is thinking, which is that whoever did it is sitting here '
-  + 'eating breakfast, and the sentence just hangs there over the toast.',
+  'The remaining players begin discussing why the Traitors may have chosen this victim.',
+  'The empty chair stays in place while the group turns from confirming the murder to interpreting it.',
+  'The players compare reactions, knowing that grief can be genuine or performed.',
+  'Attention returns to the central fact of the game: at least one person at breakfast helped choose the victim.',
 ];
 
 const WHOLE_TEXT = [
@@ -1080,14 +1069,10 @@ const WHOLE_AUDIENCE = [
 ];
 
 const DAY_TEXT = [
-  'And then, because there is nothing else to do with a morning, they eat. The day has a shape '
-  + 'and the shape does not care.',
-  'Plates get filled. Conversation restarts at half volume. Whatever this room is going to be '
-  + 'today, it starts now.',
-  'By the time the pots are empty the room has already begun the other thing it does, which is '
-  + 'deciding, very quietly, who is next.',
-  'Somebody makes a joke and it lands, which is the most frightening thing to happen all '
-  + 'morning.',
+  'Breakfast continues, and the players carry what they learned into the rest of the day.',
+  'The group begins the day with one fewer player and a new murder to investigate.',
+  'Once breakfast ends, the players return to the game and begin comparing suspicions.',
+  'The morning closes with the victim confirmed and the surviving players still unsure whom to trust.',
 ];
 
 // ── the hold: down to the last places, the room watching the door ──────
@@ -1134,10 +1119,10 @@ const GRIEF_TEXT = [
   + 'knew.',
 ];
 const GRIEF_SAID = [
-  'Not {vic}. Anyone but {vic}.',
-  'I said goodnight to {obj}. I said see you in the morning.',
-  'We had a plan for today. {Sub} and me. We had a plan.',
-  'They picked the one person in here I actually trusted.',
+  'I trusted {vic} more than anyone else here.',
+  '{vic} was the person I felt safest speaking to.',
+  'Losing {vic} changes who I can rely on in this game.',
+  'They took the person I trusted most.',
 ];
 // ── composed: the cold-bonded, who lose nothing ───────────────────────
 const COMPOSED_TEXT = [
@@ -1188,20 +1173,14 @@ const SIT_SOLO = [
 // they were seen with — because a bond is something the whole room saw. This
 // beat must carry no alignment and name no agent. {vic}, {closest} only.
 const FLASH_TEXT = [
-  'Last night, {vic} was one of the last up. {Sub} sat with {closest} a while, said goodnight on '
-  + 'the stairs, and went up. Nobody knew it was the last time they would see {obj}.',
-  'The castle\'s last sight of {vic}: laughing about nothing with {closest} by the fire, then a '
-  + 'wave from the top of the stairs and a door closing. That was it. That was the whole of it.',
-  'It is worth remembering how ordinary the night was. {vic} made plans with {closest} for today. '
-  + '{Sub} was tired, {sub} was fine, {sub} went to bed. There is no more of the story than that.',
-  'Rewind twelve hours and {vic} is still here — telling {closest} something over the last of the '
-  + 'tea, then off up to bed like any other night. That is where the castle leaves {obj}.',
+  '{vic} was present at the Round Table the night before. Among the remaining players, {closest} had the strongest recorded bond with {obj}.',
+  'Before the night began, {vic} was still in the game. {Sub} was closest to {closest}, which explains why the loss may affect them most.',
+  'The public record from the previous evening still included {vic}. {closest} was the surviving player most closely connected to {obj}.',
+  '{vic} survived the Round Table and entered the night as an active player. {Sub} had a stronger bond with {closest} than with anyone else still present.',
 ];
 const FLASH_NOCLOSE = [
-  'Last night, {vic} went up like everyone else — tired, ordinary, sure there would be a morning. '
-  + 'That is the last the castle has of {obj}, and it is nothing at all, which is the hardest part.',
-  'The night before was nothing special for {vic}. Up the stairs, a door, the light going off. '
-  + 'No warning in it anywhere. There never is.',
+  '{vic} was still an active player when the previous evening ended. No close surviving bond is recorded for {obj}.',
+  'The previous public record ends with {vic} still in the game. The next confirmed fact is the empty place at breakfast.',
 ];
 // ── THE EMPTY CHAIR — the victim's own neighbours, by the fixed seating.
 // Caused by `gs.tr.castOrder`: who actually sat either side of them. {a},{b},{vic}.
@@ -1435,14 +1414,23 @@ function _buildBeats(v) {
   const order = _arrivalOrder(v);
 
   // ── the building, before anybody ────────────────────────────────────
+  const overnight = v.arrival
+    ? _pick(STILL_TEXT, key + '|still')
+    : 'Last night, the Traitors chose someone for murder. The players will learn the result at breakfast when everyone who can still arrive has reached the table.';
   push('still', _card(
-    v.arrival ? 'Before Any Of Them' : 'The Hour Before',
-    'First light', 'window',
-    '<p>' + _pick(STILL_TEXT, key + '|still') + '</p>'
-    + _murmur(key + '|m0')), null, { kind: 'still', down: [] });
+    v.arrival ? 'Before Any Of Them' : 'What Happened Overnight',
+    v.arrival ? 'First light' : 'Before breakfast', 'window',
+    '<p>' + overnight + '</p>'
+    + (v.arrival ? _murmur(key + '|m0') : '')), null, { kind: 'still', down: [] });
 
-  push('stir', _card('The East Windows', 'Dawn', 'sun',
-    '<p>' + _pick(STIR_TEXT, key + '|stir') + '</p>'), null,
+  const prepared = v.arrival
+    ? _pick(STIR_TEXT, key + '|stir')
+    : 'Breakfast is set for ' + (v.room.length + v.missing.length)
+      + ' players who were still in the game when the night began. '
+      + v.room.length + ' of them can still come down this morning.';
+  push('stir', _card(v.arrival ? 'The East Windows' : 'The Breakfast Room',
+    v.arrival ? 'Dawn' : 'The table is set', 'sun',
+    '<p>' + prepared + '</p>'), null,
   { kind: 'stir', down: [] });
 
   // ── the castle comes down ───────────────────────────────────────────
@@ -1468,8 +1456,9 @@ function _buildBeats(v) {
     arrivedSoFar.push(...g);
     const who = g[0];
     const isLast = gi === groups.length - 1;
-    const heard = _pickAway(v.arrival ? ARRIVE_SAID : DOWN_SAID,
-      key + '|said|' + gi + '|' + who, said);
+    const heard = v.arrival
+      ? _pickAway(ARRIVE_SAID, key + '|said|' + gi + '|' + who, said)
+      : null;
     // The lead-in prose: the opening cluster reads as "the first few", a single
     // straggler reads as one person on the stair, and a middle cluster reads as
     // a smaller group than the one before it.
@@ -1477,19 +1466,27 @@ function _buildBeats(v) {
     // OPENING one is "down first". A lone latecomer takes the straggler pool, or
     // the first-arrival lines contradict themselves ("comes down before anyone
     // else" on the fifth group down — the reported bug).
-    const lead = (g.length === 1)
-      ? _fill(_pickAway(gi === 0 ? DOWN_TEXT : DOWN_LATE_ONE,
-        key + '|down|' + gi + '|' + who, leadSaid), { who: _esc(who) })
-      : gi === 0 ? _pickAway(DOWN_FIRST, key + '|first', leadSaid)
-        : isLast ? _pickAway(DOWN_MORE, key + '|more|' + gi, leadSaid)
-          : _pickAway(DOWN_MID, key + '|mid|' + gi, leadSaid);
+    const lead = v.arrival
+      ? ((g.length === 1)
+        ? _fill(_pickAway(gi === 0 ? DOWN_TEXT : DOWN_LATE_ONE,
+          key + '|down|' + gi + '|' + who, leadSaid), { who: _esc(who) })
+        : gi === 0 ? _pickAway(DOWN_FIRST, key + '|first', leadSaid)
+          : isLast ? _pickAway(DOWN_MORE, key + '|more|' + gi, leadSaid)
+            : _pickAway(DOWN_MID, key + '|mid|' + gi, leadSaid))
+      : _names(g) + (g.length === 1 ? ' arrives' : ' arrive')
+        + ' together. ' + arrivedSoFar.length + ' of ' + v.room.length
+        + ' expected players are now at the table.';
     const chips = g.length > 1
       ? '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
       : '';
-    const body = '<p>' + lead + '</p>' + chips + _said(who, _esc(heard));
+    const body = '<p>' + lead + '</p>' + chips
+      + (heard ? _said(who, _esc(heard)) : '');
     push('down', _card(
-      gi === 0 ? (v.arrival ? 'Through The Door' : 'Down First')
-        : isLast ? 'And The Rest' : _pick(MID_HEADERS, key + '|midhdr|' + gi),
+      v.arrival
+        ? (gi === 0 ? 'Through The Door'
+          : isLast ? 'And The Rest' : _pick(MID_HEADERS, key + '|midhdr|' + gi))
+        : gi === 0 ? 'First Arrivals'
+          : isLast ? 'The Table Fills' : 'More Players Arrive',
       gi === 0 ? 'The stair' : 'Arrivals', gi === 0 ? 'stair' : 'head', body),
     gi === 0 ? (v.arrival ? 'arrive' : 'open') : null,
     { kind: 'down', down: [...arrivedSoFar] });
@@ -1504,7 +1501,11 @@ function _buildBeats(v) {
   push('count', _card(
     v.arrival ? 'Strangers, And One Secret' : 'The Room Counts Itself',
     'The count', 'plate',
-    '<p>' + _pick(COUNT_TEXT, key + '|count') + '</p>' + _countStrip(seatBits)),
+    '<p>' + (v.arrival ? _pick(COUNT_TEXT, key + '|count')
+      : arrivedSoFar.length + ' players are seated. '
+        + ((v.room.length + v.missing.length) - arrivedSoFar.length)
+        + ' places are still empty, so the group waits for the remaining arrivals before identifying a victim.')
+      + '</p>' + _countStrip(seatBits)),
   null, { kind: 'count', down: [...arrivedSoFar] });
 
   // ── the gap, or the absence of one ──────────────────────────────────
@@ -1525,7 +1526,9 @@ function _buildBeats(v) {
 
       // ── THE RELIEF, that leaves the murdered place as the only answer ──
       push('down', _card('And Then One More', 'The stair', 'stair',
-        '<p>' + _fill(_pick(RELIEF_TEXT, key + '|relief'), { who: _esc(lastOne) }) + '</p>'),
+        '<p>' + _esc(lastOne) + ' is the last expected player to arrive. '
+        + v.room.length + ' of ' + v.room.length
+        + ' expected players are now at the table. Any remaining empty place belongs to somebody taken overnight.</p>'),
       null, { kind: 'relief', down: [...v.room] });
     }
 

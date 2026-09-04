@@ -1,0 +1,2394 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Grounding pack for ChatGPT to write a Traitors screenplay using the user simulated-season continuity.",
+  "instructionsForScreenwriter": [
+    "Treat simulatedContinuity.appearances as fact. Never alter placements, past deeds, alliances, rivalries, or outcomes.",
+    "Treat voiceAndPersonality as behavioral guidance, not dialogue to copy. Write new lines in the same rhythm and worldview.",
+    "Do not invent shared history. A past relationship is established only when supported by appearances, sharedSeasonCast, or an explicit archived key moment.",
+    "A player marked newbie has no past in this simulator continuity. Do not give them invented placements, callbacks, pre-game grudges, or prior alliances.",
+    "Continue unresolved consequences rather than replaying old arcs. Prior growth remains unless a new event credibly tests it.",
+    "Every accusation must cite something the speaker witnessed, learned from a named source, or heard publicly.",
+    "Use modern reality-TV dialogue. Keep contestants distinct after names are removed from their lines."
+  ],
+  "castOrder": [
+    "Lake",
+    "Millie",
+    "Grett",
+    "Spencer",
+    "Mike",
+    "Natalia",
+    "Bowie",
+    "Bruno",
+    "Gabby",
+    "Dunia",
+    "Manu",
+    "James",
+    "Thom",
+    "Ernesto",
+    "Aubrey",
+    "Ren",
+    "Zoey",
+    "Julia",
+    "Sami",
+    "Ara",
+    "Evie",
+    "Nura",
+    "Finn",
+    "Oliwia",
+    "Yul"
+  ],
+  "players": [
+    {
+      "name": "Lake",
+      "slug": "lake",
+      "identity": {
+        "gender": "f",
+        "archetype": "loyal-soldier",
+        "occupation": "Writer",
+        "backstory": "Lake Müller grew up under strict parents who controlled her schedule, appearance, and future. The pressure to be perfect left her private, anxious about vulnerability, and deeply self-conscious about wearing a wig after stress-related hair loss. Chess and writing offered places to think freely. Friendships beyond her family eventually gave her the support to defy that control, choose a new appearance, and begin living according to her own values."
+      },
+      "voiceAndPersonality": {
+        "voice": "Measured, thoughtful, and quietly formal, with confidence that grows rather than announces itself. Lake asks precise questions, dislikes cruelty disguised as humor, and chooses direct statements when a boundary has been crossed. Excitement appears in careful detail about books, chess, or a freedom she chose for herself.",
+        "behavioralBaseline": "Lake is intelligent, creative, principled, and shaped by years of rigid parental control. Perfection was enforced so harshly that stress contributed to her losing her hair, and hiding vulnerability became a survival habit. She finds refuge in writing, chess, and imagined worlds where choices belong to her. Freedom has not made her reckless; it has made her deliberate. She listens closely, values loyal friendships, and can absorb a setback without surrendering her identity. Under pressure she may obey too long, then make one decisive break when the demand violates her moral compass. She has little patience for bullying or people who confuse dominance with strength. Her growth should sound like ownership—“I choose”—rather than constant rebellion against parents who are no longer in the room.",
+        "dialogueExamples": [
+          "I can be loyal without handing someone else my whole game.",
+          "If your plan needs me quiet, it probably isn't my plan."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 12,
+            "placement": 7,
+            "status": "Juror",
+            "tribe": "Saplings → Embers → Campers",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 6,
+            "idolsFound": 0,
+            "advPlayed": 1,
+            "advHeld": 0,
+            "strategicRank": 7.6,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Lake is the season’s loyal soldier, protected by deep bonds until one brutal tiebreaker cuts her endgame short."
+            ],
+            "gameplayStyle": "Loyal spine, quiet leverage",
+            "keyMoments": [
+              "Episode 1: Finds the Saplings Amulet Advantage and keeps it hidden.",
+              "Episode 2: Moves to Embers in the producer swap and designs the Tiki Royalty runway look.",
+              "Episode 7: Blocks Karol’s vote, helping The Double Edge send Kai home.",
+              "Episode 8: Forms an amulet understanding with Rosa-Maria and deepens her loyalty network.",
+              "Episode 10: Votes Karol at the merge, helping remove a physical and emotional threat.",
+              "Episode 13: Forms The Oath with Rosa-Maria as her clearest late-game pair.",
+              "Episode 14: Has her vote stolen by Ellie and redirected to James during Ellie’s elimination.",
+              "Episode 15: Loses the endurance tiebreaker to Jacques after a tied vote."
+            ],
+            "alliances": [
+              "The Camp Takeover",
+              "The Undertow",
+              "The Double Edge",
+              "The Oath",
+              "The Movement"
+            ],
+            "rivalries": [
+              "Karol",
+              "Riya",
+              "Jacques"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-12"
+          }
+        ],
+        "careerStory": "Lake finds power early with the amulet, but her defining weapon is steadiness. She designs, weaves, covers for people, shares quiet meals, and builds bonds that turn into alliances. Her loyalties to Jen, Rosa-Maria, Aiden, and Ally shape the middle of the game, even when they put her in impossible positions. She repeatedly chooses relationship over pure optimization, and that makes her trusted — and predictable. By final seven, she is woven into too many hearts and too many plans. Jacques strikes preemptively, the vote tangles, and Lake loses the endurance tiebreaker that decides her fate.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 7,
+          "wins": 0,
+          "totalChallengeWins": 0,
+          "totalVotesAgainst": 6
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Camp Takeover",
+            "The Undertow",
+            "The Double Edge",
+            "The Oath",
+            "The Movement"
+          ],
+          "namedRivals": [
+            "Karol",
+            "Riya",
+            "Jacques"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "James",
+              "seasons": [
+                12
+              ]
+            },
+            {
+              "player": "Yul",
+              "seasons": [
+                12
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season12-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Lake finds power early with the amulet, but her defining weapon is steadiness. She designs, weaves, covers for people, shares quiet meals, and builds bonds that turn into alliances. Her loyalties to Jen, Rosa-Maria, Aiden, and Ally shape the middle of the game, even when they put her in impossible positions. She repeatedly chooses relationship over pure optimization, and that makes her trusted — and predictable. By final seven, she is woven into too many hearts and too many plans. Jacques strikes preemptively, the vote tangles, and Lake loses the endurance tiebreaker that decides her fate.",
+        "continuationHooks": [
+          "Continue from the consequences of Episode 15: Loses the endurance tiebreaker to Jacques after a tied vote..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Millie",
+      "slug": "millie",
+      "identity": {
+        "gender": "f",
+        "archetype": "underdog",
+        "occupation": "Aspiring journalist",
+        "backstory": "An aspiring journalist with a lonely childhood, Millie auditioned to document what she saw as the failures of her generation. Writing about other people gave her a sense of expertise and kept attention away from her own low self-worth. She arrived with a notebook, a research project, and very little practical preparation, expecting the cast to prove her thesis rather than expecting any of them to become important to her."
+      },
+      "voiceAndPersonality": {
+        "voice": "High-strung eco-activist overachiever. Passionate about the environment and causes, intensely competitive and perfectionist, anxious and easily overwhelmed; lectures people about doing the right thing, spirals under pressure. Earnest, a little exhausting, genuinely good-hearted underneath the stress.",
+        "behavioralBaseline": "Millie is book-smart, observant, and habitually judgmental, especially when she can study a group from its edge instead of risking participation. Her notebook once let her convert loneliness and insecurity into criticism of everyone else; genuine friendship forced her to see that observation without compassion can become exploitation. She still notices absurd behavior quickly and can sound condescending when anxious, but she now understands that people are not merely material. Social cues do not always come naturally, and physical challenges can expose her hesitation, yet she learns quickly when someone gives her a concrete method. Under pressure she may retreat into analysis or justify a selfish choice as research. Her best growth comes when she puts the notebook down, accepts responsibility without qualifiers, and acts for a person she has chosen to trust.",
+        "dialogueExamples": [
+          "I wrote down three versions of that story. None of them agree.",
+          "That sounded clinical. Sorry. What I mean is—I believe you."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 9,
+            "placement": 2,
+            "status": "Finalist",
+            "tribe": "Red → Blue → Campers",
+            "challengeWins": 1,
+            "immunityWins": 1,
+            "rewardWins": 0,
+            "votesReceived": 1,
+            "idolsFound": 1,
+            "strategicRank": 7,
+            "juryVotes": 3,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "3 Votes To Win / Unbreakable Partner"
+            ],
+            "gameplayStyle": "Quiet author, social glue",
+            "keyMoments": [
+              "Ep4: Converts Beware into the Red Idol.",
+              "Ep6: Helps finish the Brightly regime 4–1 without burning her idol.",
+              "Ep10: Correctly plays idol on Priya to nullify a 5‑vote strike.",
+              "Ep12: Wins immunity at Revolver; still loses Priya in blindside.",
+              "Ep13: Joins unanimous strike on Julia; last woman standing at F5."
+            ],
+            "alliances": [
+              "Priya",
+              "Damien",
+              "Julia",
+              "Chase"
+            ],
+            "rivalries": [
+              "Bowie",
+              "Emmah"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-9"
+          }
+        ],
+        "careerStory": "Dismissed early as the quiet author, Millie keeps receipts while bigger egos collide. On old Red she pockets the Beware Idol, surviving the Hicks/Brightly civil war by appearing harmless and useful. She forges iron bonds—first with Priya, later with Julia—acting as the bridge nobody wants to burn. Her defining night is the Priya shield: reading the room, she plays her idol on her best friend and flips a 5–0 rout into the season’s great escape. As the field thins, she wins at Revolver, outlasts every other woman, and arrives at Final Tribal as the moral alternative to Bowie’s blade. Three votes prove respect for the undercurrent she piloted beneath the waves.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 2,
+          "wins": 0,
+          "totalChallengeWins": 1,
+          "totalVotesAgainst": 1
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "Priya",
+            "Damien",
+            "Julia",
+            "Chase"
+          ],
+          "namedRivals": [
+            "Bowie",
+            "Emmah"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Bowie",
+              "seasons": [
+                9
+              ]
+            },
+            {
+              "player": "Julia",
+              "seasons": [
+                9
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season9-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Dismissed early as the quiet author, Millie keeps receipts while bigger egos collide. On old Red she pockets the Beware Idol, surviving the Hicks/Brightly civil war by appearing harmless and useful. She forges iron bonds—first with Priya, later with Julia—acting as the bridge nobody wants to burn. Her defining night is the Priya shield: reading the room, she plays her idol on her best friend and flips a 5–0 rout into the season’s great escape. As the field thins, she wins at Revolver, outlasts every other woman, and arrives at Final Tribal as the moral alternative to Bowie’s blade. Three votes prove respect for the undercurrent she piloted beneath the waves.",
+        "continuationHooks": [
+          "Continue from the consequences of Ep13: Joins unanimous strike on Julia; last woman standing at F5..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Grett",
+      "slug": "grett",
+      "identity": {
+        "gender": "f",
+        "archetype": "villain",
+        "occupation": "Fitness influencer",
+        "backstory": "Gretchen “Grett” Clark was born in Britain on October 25, 1999 and built a public career as a fitness influencer. Long before camp, image and approval were tangled with her self-worth, encouraging a persona that was glamorous, superior, and impossible to dismiss. Competition gave that armor a strategic use, while later relationships and public scrutiny forced her to separate genuine confidence from the need to control how everyone saw her."
+      },
+      "voiceAndPersonality": {
+        "voice": "Grett is rather abrasive, rude, and she's never afraid of speaking her mind.Grett is also very cunning, as she is willing to lie and cheat in order to advance in the game. Despite this, however, a more vulnerable side of her can be seen sometimes, as she's also shown to be a jealous and insecure individual. Bossy, blunt, takes charge whether asked or not. Gets frustrated when people don't listen, doesn't sugarcoat. 'Just do what I said.' / 'This is why we keep losing.'",
+        "behavioralBaseline": "Grett is ambitious, perceptive, and difficult to intimidate. Her earliest social armor was vanity and condescension: strike first, define everyone else as lesser, and no one gets to name the insecurity underneath. She can lie, build overlapping alliances, and weaponize a private weakness when she believes control is slipping. Experience has made her more self-aware and capable of real care, especially after learning how exploitation feels from the receiving end, but it has not erased her pride or temper. She values independence and responds badly to pity, public embarrassment, or a partner trying to shrink her. Under pressure she may overplay, issue ultimatums, and mistake fear for authority. At her best, she combines strategic nerve with boundaries strong enough to protect both herself and someone else.",
+        "dialogueExamples": [
+          "I heard the apology. I'm deciding whether it changes anything.",
+          "You don't get control by announcing that you're in control."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 11,
+            "placement": 14,
+            "status": "Pre-Merge",
+            "tribe": "Purple → Teal → Campers",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 8,
+            "idolsFound": 0,
+            "strategicRank": 6.3,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Grett brings sabotage, grudges, and chaos, but overplaying makes her impossible to keep."
+            ],
+            "gameplayStyle": "vengeful, chaotic, sharp, overplayed",
+            "keyMoments": [
+              "Ep.1: Is first-impression voted out but swapped to Purple instead of eliminated.",
+              "Ep.1: Sabotages Purple's fort and frames Ashley for the collapse.",
+              "Ep.3: Helps target Fiore from inside a fractured anti-Seraphine bloc.",
+              "Ep.5: Is voted out but saved by the elimination swap, choosing Gabby in exchange.",
+              "Ep.6: Blows up tribal by exposing Alec's control, Ellie's idol, and The Circle.",
+              "Ep.7: Overplays with too many side deals and becomes the consensus boot.",
+              "Ep.7: Leaves with a furious crashout speech about everyone playing safe."
+            ],
+            "alliances": [],
+            "rivalries": [
+              "Thom",
+              "Fiore"
+            ],
+            "advPlayed": 0,
+            "advHeld": 0,
+            "format": "total-drama",
+            "seasonId": "td-11"
+          }
+        ],
+        "careerStory": "Grett is targeted before camp even begins, survives through the swap twist, and immediately turns resentment into fuel. Her biggest early move is invisible: sabotaging Purple's fort and framing Ashley, a dirty play that sets the season's tone. She talks like she controls the room even when the room is already turning on her, and her reads are often strong enough to scare people. The elimination swap gives her one more life, but it also leaves her surrounded by people she has burned. On Teal, she tries to scramble through too many doors at once. At tribal, the whispering becomes the reason everyone needs.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 14,
+          "wins": 0,
+          "totalChallengeWins": 0,
+          "totalVotesAgainst": 8
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [
+            "Thom",
+            "Fiore"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Gabby",
+              "seasons": [
+                11
+              ]
+            },
+            {
+              "player": "Thom",
+              "seasons": [
+                11
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season11-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Grett is targeted before camp even begins, survives through the swap twist, and immediately turns resentment into fuel. Her biggest early move is invisible: sabotaging Purple's fort and framing Ashley, a dirty play that sets the season's tone. She talks like she controls the room even when the room is already turning on her, and her reads are often strong enough to scare people. The elimination swap gives her one more life, but it also leaves her surrounded by people she has burned. On Teal, she tries to scramble through too many doors at once. At tribal, the whispering becomes the reason everyone needs.",
+        "continuationHooks": [
+          "Continue from the consequences of Ep.7: Leaves with a furious crashout speech about everyone playing safe..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Spencer",
+      "slug": "spencer",
+      "identity": {
+        "gender": "m",
+        "archetype": "mastermind",
+        "occupation": null,
+        "backstory": null
+      },
+      "voiceAndPersonality": {
+        "voice": "Sharp, competitive and critical — quick to scold teammates who slow him down, quietly envious of people more authentic than him. Strategic-minded, a little superior, and dismissive when he loses.",
+        "behavioralBaseline": "Sharp, competitive and critical — quick to scold teammates who slow him down, quietly envious of people more authentic than him. Strategic-minded, a little superior, and dismissive when he loses.",
+        "dialogueExamples": [
+          "The obvious vote is obvious because somebody worked very hard to make it look inevitable.",
+          "I survived by calculating everything. Apparently that included calculating myself out."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 14,
+            "placement": 5,
+            "status": "Juror",
+            "tribe": "Red Team → Blue Team",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 19,
+            "idolsFound": 0,
+            "advPlayed": 0,
+            "advHeld": 0,
+            "strategicRank": 8.7,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Spencer survives eight dangerous votes as a brilliant, abrasive tactician before the room finally punishes his overplaying."
+            ],
+            "gameplayStyle": "Abrasive architect, perpetual target",
+            "keyMoments": [
+              "Episode 2: Formed The Anchor with Jade, briefly positioning himself as a core strategist.",
+              "Episode 4: Voted against Jade and shattered The Anchor from inside.",
+              "Episode 8: Was voted out but survived via Elimination Swap, moving to Blue Team instead of leaving.",
+              "Episode 9: Bought critical information when he spotted Zaid pocketing an idol clue or advantage clue on the carousel.",
+              "Episode 15: Survived a three-way tiebreaker that eliminated Benji instead.",
+              "Episode 18: Bought individual immunity at auction, escaping a dangerous vote.",
+              "Episode 20: Overheard Jade bragging from the Maze pit and gained ammunition he never fully used.",
+              "Episode 22: Overplayed at final five and was voted out after eight escapes."
+            ],
+            "alliances": [
+              "The Anchor",
+              "The Movement",
+              "The Power Couple"
+            ],
+            "rivalries": [
+              "Jade",
+              "Zaid",
+              "Isabel",
+              "Marissa",
+              "Anastasia",
+              "Logan"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-14"
+          }
+        ],
+        "careerStory": "Spencer is planning from the moment he steps off the bus, and for a long time that brain keeps him alive. He forms The Anchor with Jade, breaks it, rebuilds elsewhere, gets swapped instead of eliminated, and keeps finding cracks inside majority plans. His greatest strength is also his fatal flaw: every conversation becomes an angle, every ally becomes a calculation, and eventually everyone can feel the machinery. His feud with Jade hardens into one of the season's defining rivalries, while his battles with Anastasia and Logan add new fronts he cannot fully manage. By final five, he is still alive after nineteen votes against him, a record of both danger and resilience. Then he whispers too loudly, scrambles too visibly, and the window closes thirty minutes before he can counter it.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 5,
+          "wins": 0,
+          "totalChallengeWins": 0,
+          "totalVotesAgainst": 19
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Anchor",
+            "The Movement",
+            "The Power Couple"
+          ],
+          "namedRivals": [
+            "Jade",
+            "Zaid",
+            "Isabel",
+            "Marissa",
+            "Anastasia",
+            "Logan"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Natalia",
+              "seasons": [
+                14
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season14-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Spencer is planning from the moment he steps off the bus, and for a long time that brain keeps him alive. He forms The Anchor with Jade, breaks it, rebuilds elsewhere, gets swapped instead of eliminated, and keeps finding cracks inside majority plans. His greatest strength is also his fatal flaw: every conversation becomes an angle, every ally becomes a calculation, and eventually everyone can feel the machinery. His feud with Jade hardens into one of the season's defining rivalries, while his battles with Anastasia and Logan add new fronts he cannot fully manage. By final five, he is still alive after nineteen votes against him, a record of both danger and resilience. Then he whispers too loudly, scrambles too visibly, and the window closes thirty minutes before he can counter it.",
+        "continuationHooks": [
+          "After surviving eight dangerous votes and then overplaying at final five, can he leave space for allies to contribute?",
+          "Will Natalia forgive the sabotage and instability surrounding their Season 14 games?"
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Mike",
+      "slug": "mike",
+      "identity": {
+        "gender": "m",
+        "archetype": "showmancer",
+        "occupation": null,
+        "backstory": "Mike entered the franchise as an Italian teenager hiding a deeply personal part of his mental-health history because he feared ridicule and rejection. His bond with Zoey gave him a reason to become more open, while the competition repeatedly punished secrecy and loss of control. By the end of his source story he had integrated his identities and retained their learned abilities, leaving him to build an ordinary future without erasing what he experienced."
+      },
+      "voiceAndPersonality": {
+        "voice": "Mike talks like someone trying to keep the peace while also hiding panic: cautious, apologetic, and quick to soften what he says. In arguments, he tends to dodge or explain rather than attack, unless someone he cares about is in danger. His vocabulary is earnest and teenager-casual, with nervous stalling when he is cornered and a warmer, more direct tone when he finally tells the truth.",
+        "behavioralBaseline": "Mike is caring, relationship-oriented, and more comfortable supporting another person than demanding the center of attention. Earlier secrecy taught him to scan constantly for signs that people might reject him, so he sometimes withholds difficult truths until avoidance becomes its own problem. Once trust is established, he is intensely loyal and willing to take emotional risks for the people he loves. His post-canon baseline is integration and continuity: he remembers his whole life, owns his choices, and can draw on varied skills without switching into a caricature. Stress may make him anxious or evasive, but it must never turn mental illness into automatic menace. His strategic game grows from protection, compromise, and careful relationship repair rather than manipulation for sport.",
+        "dialogueExamples": [
+          "I don't need to be the loudest person here. I do need to stop avoiding the conversation.",
+          "If Zoey's name is the plan, tell me now and let me answer honestly."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 4,
+            "placement": 12,
+            "status": "Juror",
+            "tribe": "Red → Yellow → Campers",
+            "challengeWins": 1,
+            "immunityWins": 0,
+            "rewardWins": 1,
+            "votesReceived": 4,
+            "idolsFound": 0,
+            "strategicRank": "Medium",
+            "unbreakableBonds": [
+              "Zoey"
+            ],
+            "notes": [
+              "Eliminated 2-0 (Sierra's perfect idol)",
+              "Extreme hatred with Jo",
+              "Voted Zoey at FTC"
+            ],
+            "keyMoments": [
+              "Rebuilt his unbreakable bond with Zoey from Season 3 stronger than ever.",
+              "His relationship with Zoey was the emotional foundation of the Red Alliance.",
+              "Eliminated 2-0 when Sierra's idol cancelled all votes except Jo's — a brutal twist of fate.",
+              "Voted Zoey at FTC — loyalty survived the betrayal."
+            ],
+            "format": "total-drama",
+            "seasonId": "td-4"
+          },
+          {
+            "season": 3,
+            "placement": 6,
+            "status": "Juror",
+            "tribe": "Mutant Maggots",
+            "challengeWins": 1,
+            "immunityWins": 0,
+            "rewardWins": 1,
+            "votesReceived": 4,
+            "idolsFound": 0,
+            "strategicRank": "Medium",
+            "unbreakableBonds": [
+              "Zoey",
+              "Brick"
+            ],
+            "notes": [
+              "Blindsided while Zoey held immunity",
+              "Voted Cameron at FTC"
+            ],
+            "keyMoments": [
+              "Formed an unbreakable bond with Zoey — the emotional core of the Mutant Maggots.",
+              "Survived the tribe phase through key relationships despite friction with Jo and Anne Maria.",
+              "Blindsided at Episode 11 while Zoey held the immunity necklace — unable to be saved.",
+              "Voted Cameron at FTC — respected strategic play over social loyalty."
+            ],
+            "format": "total-drama",
+            "seasonId": "td-3"
+          }
+        ],
+        "careerStory": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Mike started on the Mutant Maggots but quickly became the center of the season’s messiest feud: Mike vs Anne Maria. While others used that chaos as cover, the rivalry kept repainting targets every round. Once the game needed a decisive cut before the endgame, the numbers converged—Mike was voted out in Episode 11 (Result: voted out 4–2 vote; 6th, 5th juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nREBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled).\n\nIn Edge of Extinction (Season 4), Mike became the lightning rod for chaos—nine votes against and a constant target the moment the tribe wanted an easy name. His exit was shaped by advantage dynamics: Sierra’s perfect idol play voided the main plan, and Mike was the only clean option left, leaving 2–0. Result: Mike placed 12th.",
+        "careerSummary": {
+          "totalSeasons": 2,
+          "bestPlacement": 6,
+          "wins": 0,
+          "totalChallengeWins": 2,
+          "totalVotesAgainst": 8
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [
+            {
+              "player": "Zoey",
+              "seasons": [
+                4,
+                3
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season4-data.json",
+          "data/seasons/season3-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Mike started on the Mutant Maggots but quickly became the center of the season’s messiest feud: Mike vs Anne Maria. While others used that chaos as cover, the rivalry kept repainting targets every round. Once the game needed a decisive cut before the endgame, the numbers converged—Mike was voted out in Episode 11 (Result: voted out 4–2 vote; 6th, 5th juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nREBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled).\n\nIn Edge of Extinction (Season 4), Mike became the lightning rod for chaos—nine votes against and a constant target the moment the tribe wanted an easy name. His exit was shaped by advantage dynamics: Sierra’s perfect idol play voided the main plan, and Mike was the only clean option left, leaving 2–0. Result: Mike placed 12th.",
+        "continuationHooks": [
+          "Continue from the consequences of Voted Cameron at FTC — respected strategic play over social loyalty..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Natalia",
+      "slug": "natalia",
+      "identity": {
+        "gender": "f",
+        "archetype": "chaos-agent",
+        "occupation": "Publicist",
+        "backstory": "Natalia Baez was born on August 3, 1996 and is proudly Puerto Rican American. She built a career as a publicist—the person friends call when an image needs repair—and developed a taste for tabloids, celebrity drama, and the human motives behind both. Her parents supported her transition; accepting herself as a transgender woman was frightening and liberating. She also identifies as pansexual and has spoken about having ADHD."
+      },
+      "voiceAndPersonality": {
+        "voice": "Bubbly PR-pro social butterfly — banter, slang, teasing, a little dirty humor. Charms everyone, asks the bold questions, bonds fast and flies under the radar while doing it. Fast, quippy and warm.",
+        "behavioralBaseline": "Natalia is outgoing, funny, socially curious, and professionally attuned to reputation. She genuinely likes learning about people, whether through direct conversation or gossip, and humor is her fastest route into a group. Friendship also makes her strategically messy: when someone she cares about is targeted, emotion can overwhelm the cleaner plan she intended to play. She is capable of flipping, reconciling with a rival for a shared objective, and recognizing when the public version of events matters as much as the vote. Her returning goal is discipline rather than personality replacement—strong bonds, fewer impulsive pivots, and control of her own story. Serious betrayals remain hard for her to release. Under pressure she talks faster, negotiates across factions, and may expose the whole room rather than leave quietly.",
+        "dialogueExamples": [
+          "That explanation needs better public relations—and possibly an alibi.",
+          "I love gossip. I love it less when the gossip is clearly a trap."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 14,
+            "placement": 12,
+            "status": "Juror",
+            "tribe": "Blue Team",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 9,
+            "idolsFound": 0,
+            "advPlayed": 0,
+            "advHeld": 0,
+            "strategicRank": 7.4,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Natalia is a chaos agent whose reads and aggression keep her relevant until her unpredictability becomes impossible to manage."
+            ],
+            "gameplayStyle": "Volatile reads, chaos pressure",
+            "keyMoments": [
+              "Episode 3: Helped form The Triumvirate, then immediately fractured it by voting Richard.",
+              "Episode 4: Was MVP of Paintball Hunt as the last deer standing.",
+              "Episode 6: Choked in Talent Show after Spencer sabotaged her props, scoring zero.",
+              "Episode 10: Faced Lynda in exile and stayed alive by winning the duel.",
+              "Episode 11: Survived while Lynda was sent permanently to Rescue Island.",
+              "Episode 14: Was voted out at the merge after being labeled unpredictable and a jury threat.",
+              "Episode 14: Exposed Logan and the Anti-Spencer Coalition in her crashout."
+            ],
+            "alliances": [
+              "The Triumvirate",
+              "The Secret Weapon"
+            ],
+            "rivalries": [
+              "Isabel",
+              "Anastasia",
+              "Logan",
+              "Richard"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-14"
+          }
+        ],
+        "careerStory": "Natalia arrives promising to learn the rules and break them, and she spends the season doing both. On Blue Team, she moves through alliances quickly: The Triumvirate, The Secret Weapon, Anti-Spencer arrangements, and temporary truces with people she distrusts. She is perceptive, confrontational, and repeatedly close to power without ever staying fully inside it. Her stage disaster in Talent Show hurts her image, but she keeps surviving through pressure, side deals, and social intimidation. At the merge, her threat level is too high to ignore and her enemies too numerous to outmaneuver. She leaves by exposing Logan and Anastasia's roles, turning her exit into one last detonation.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 12,
+          "wins": 0,
+          "totalChallengeWins": 0,
+          "totalVotesAgainst": 9
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Triumvirate",
+            "The Secret Weapon"
+          ],
+          "namedRivals": [
+            "Isabel",
+            "Anastasia",
+            "Logan",
+            "Richard"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Spencer",
+              "seasons": [
+                14
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season14-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Natalia arrives promising to learn the rules and break them, and she spends the season doing both. On Blue Team, she moves through alliances quickly: The Triumvirate, The Secret Weapon, Anti-Spencer arrangements, and temporary truces with people she distrusts. She is perceptive, confrontational, and repeatedly close to power without ever staying fully inside it. Her stage disaster in Talent Show hurts her image, but she keeps surviving through pressure, side deals, and social intimidation. At the merge, her threat level is too high to ignore and her enemies too numerous to outmaneuver. She leaves by exposing Logan and Anastasia's roles, turning her exit into one last detonation.",
+        "continuationHooks": [
+          "Continue from the consequences of Episode 14: Exposed Logan and the Anti-Spencer Coalition in her crashout..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Bowie",
+      "slug": "bowie",
+      "identity": {
+        "gender": "m",
+        "archetype": "mastermind",
+        "occupation": null,
+        "backstory": "Before competing, Bowie was already a practiced performer and relentless competitor. His audition presents him as Total Drama’s first openly gay contestant, a basketball-playing student who had been crowned both prom king and queen and wanted another crown. That mix of pageantry, preparation, and self-belief explains why he arrived expecting to manage both the room and the show around it."
+      },
+      "voiceAndPersonality": {
+        "voice": "Sweet, dramatic theater kid. Expressive, supportive, non-confrontational; devoted to his friends. Emotes big.",
+        "behavioralBaseline": "Bowie is openly competitive, socially alert, and comfortable being the most visibly confident person in a room. He enjoys drama as both entertainment and information, notices who needs reassurance, and can build sincere friendships even while planning around them. He prefers clean strategic authorship: identify the dangerous player, assemble the numbers, and own the decision in confessional. His affection for people such as Raj reveals a real boundary beneath the ambition; he can postpone or soften a move when the human cost becomes personal. Under pressure he gets sharper and more controlling, but not randomly cruel. He respects opponents who can answer him move for move and hates being treated as strategically naive.",
+        "dialogueExamples": [
+          "That is a beautiful story. Structurally? It has no supporting evidence.",
+          "I can respect Julia and still make sure she leaves before I do."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 9,
+            "placement": 1,
+            "status": "Winner",
+            "tribe": "Yellow → Yellow → Red → Campers",
+            "challengeWins": 1,
+            "immunityWins": 1,
+            "rewardWins": 0,
+            "votesReceived": 2,
+            "idolsFound": 1,
+            "strategicRank": 10,
+            "juryVotes": 0,
+            "finalVote": "5-3-0",
+            "advantages": [],
+            "notes": [
+              "5 Votes To Win / Adv. Master"
+            ],
+            "gameplayStyle": "Advantage hoarder, social spider",
+            "keyMoments": [
+              "Ep5: Navigates idol chaos and revote to decapitate Hicks without exposure.",
+              "Ep8: Plays Inheritance to absorb Knowledge is Power and an Extra Vote.",
+              "Ep11: Uses Knowledge is Power to take Julia’s idol.",
+              "Ep12: Breaks Unbreakable bond to blindside Priya.",
+              "Ep13: Wins immunity; pairs Extra Vote with Chase’s Vote Stopper to bury Julia.",
+              "Ep15: Beats Damien at fire to secure Final 3."
+            ],
+            "alliances": [
+              "Chase",
+              "Damien",
+              "Axel",
+              "Priya",
+              "Millie"
+            ],
+            "rivalries": [
+              "Julia",
+              "Emmah"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-9"
+          },
+          {
+            "season": 10,
+            "placement": 2,
+            "status": "Finalist",
+            "tribe": "Champions → Campers",
+            "challengeWins": 1,
+            "immunityWins": 1,
+            "rewardWins": 0,
+            "votesReceived": 10,
+            "idolsFound": 2,
+            "strategicRank": 10,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Bowie plays the season's sharpest strategic game but loses the final when the course demands more than control."
+            ],
+            "gameplayStyle": "Ruthless architectural tactician",
+            "keyMoments": [
+              "Episode 1: Finds the Champions Hidden Immunity Idol and forms The Movement.",
+              "Episode 3: Publicly points The Movement at Courtney while privately voting out Mickey.",
+              "Episode 4: Confronts Courtney and reclaims credit for his earlier move.",
+              "Episode 9: Negotiates as ambassador and steers Zoey toward eliminating Stephanie.",
+              "Episode 11: Leads the Scott vote after Scott publicly names him as the strategic center.",
+              "Episode 14: Drives the Carrie vote after identifying her hidden jury danger.",
+              "Episode 17: Wins Camp Castaways immunity through survival instincts and navigation.",
+              "Episode 18: Falls behind in every relay phase and finishes as runner-up."
+            ],
+            "alliances": [
+              "The Movement",
+              "The Oath",
+              "The Undertow"
+            ],
+            "rivalries": [
+              "Scott",
+              "Cody",
+              "Carrie",
+              "Sanders",
+              "Priya",
+              "Jasmine"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-10"
+          }
+        ],
+        "careerStory": "He walks in smiling, the nice guy with perfect hair, and quietly builds a web strong enough to catch idols mid‑flight. Early on he shelters behind louder shields, letting Ripper and Axel eat heat while he courts bonds across tribes. The turning point is the Inheritance Heist at the merge—Bowie absorbs Emmah’s stolen powers and leaves Tribal with a toolbox nobody saw coming. From there he steals Julia’s idol on live TV, betrays Priya at the precise second her stock peaks, and wins the fire duel against Damien when it matters most. His endgame is cold and clinical, but never sloppy, selling ruthlessness as inevitability. When the votes are read, the jury rewards the architect who owned the season’s chaos rather than survived it.\n\nSEASON 10 — Champions vs Contenders\n────────\nBowie starts fast, finding an idol in Episode 1 and immediately assembling The Movement with names, targets, and order. His pre-merge is defined by cold reversals: he cuts Gwen, betrays Mickey, reclaims credit from Courtney, and keeps turning fractured alliances into usable machinery. At merge, he becomes the gravitational center of the season, steering the ambassador decision that sends Stephanie home and then using The Oath as a weapon against Scott and Priya. But the same visibility that makes him powerful also makes him radioactive, with Courtney, Priya, Scott, and others naming him as the architect on their way out. In the endgame, he wins survival immunity, reaches the final two, and stands one challenge away from finishing the masterpiece. The relay exposes his one weakness: when the board disappears and the finish line is physical, Bowie cannot talk the course into obeying him.",
+        "careerSummary": {
+          "totalSeasons": 2,
+          "bestPlacement": 1,
+          "wins": 1,
+          "totalChallengeWins": 2,
+          "totalVotesAgainst": 12
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "Chase",
+            "Damien",
+            "Axel",
+            "Priya",
+            "Millie",
+            "The Movement",
+            "The Oath",
+            "The Undertow"
+          ],
+          "namedRivals": [
+            "Julia",
+            "Emmah",
+            "Scott",
+            "Cody",
+            "Carrie",
+            "Sanders",
+            "Priya",
+            "Jasmine"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Millie",
+              "seasons": [
+                9
+              ]
+            },
+            {
+              "player": "Zoey",
+              "seasons": [
+                10
+              ]
+            },
+            {
+              "player": "Julia",
+              "seasons": [
+                9
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season9-data.json",
+          "data/seasons/season10-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "He walks in smiling, the nice guy with perfect hair, and quietly builds a web strong enough to catch idols mid‑flight. Early on he shelters behind louder shields, letting Ripper and Axel eat heat while he courts bonds across tribes. The turning point is the Inheritance Heist at the merge—Bowie absorbs Emmah’s stolen powers and leaves Tribal with a toolbox nobody saw coming. From there he steals Julia’s idol on live TV, betrays Priya at the precise second her stock peaks, and wins the fire duel against Damien when it matters most. His endgame is cold and clinical, but never sloppy, selling ruthlessness as inevitability. When the votes are read, the jury rewards the architect who owned the season’s chaos rather than survived it.\n\nSEASON 10 — Champions vs Contenders\n────────\nBowie starts fast, finding an idol in Episode 1 and immediately assembling The Movement with names, targets, and order. His pre-merge is defined by cold reversals: he cuts Gwen, betrays Mickey, reclaims credit from Courtney, and keeps turning fractured alliances into usable machinery. At merge, he becomes the gravitational center of the season, steering the ambassador decision that sends Stephanie home and then using The Oath as a weapon against Scott and Priya. But the same visibility that makes him powerful also makes him radioactive, with Courtney, Priya, Scott, and others naming him as the architect on their way out. In the endgame, he wins survival immunity, reaches the final two, and stands one challenge away from finishing the masterpiece. The relay exposes his one weakness: when the board disappears and the finish line is physical, Bowie cannot talk the course into obeying him.",
+        "continuationHooks": [
+          "Continue from the consequences of Episode 18: Falls behind in every relay phase and finishes as runner-up..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Bruno",
+      "slug": "bruno",
+      "identity": {
+        "gender": "m",
+        "archetype": "loyal-soldier",
+        "occupation": "Personal assistant",
+        "backstory": "Before appearing on television, Bruno had lived in Hartford, Connecticut and later moved to New York. His parents are Teresa and Alvaro, and his mother made him a hoodie that he treasures as a good-luck gift. He became a personal assistant because the pay was good and because he likes helping others and feeling useful; his boss is named Valerie. He is also strongly connected to his family history, with his grandmother also being named Teresa."
+      },
+      "voiceAndPersonality": {
+        "voice": "Bruno talks like an overexcited superfan: quick, eager, and packed with references to contestants, strategies, strengths, and weaknesses. When he argues, he tends to lean on facts, precedent, and show knowledge rather than intimidation, but his excitement can make him blurt things out before he thinks them through. His rhythm is enthusiastic and slightly nervous, especially when he is trying to prove an idea.",
+        "behavioralBaseline": "Bruno is intensely optimistic, enthusiastic, and knowledge-driven, but pressure can shake his confidence. He wants to be useful and impressive, yet he may need encouragement from stronger personalities when his plans are questioned or fail. He is more likely to motivate, explain, and rally people than to bully them, and he will speak up when excited even if it embarrasses him or creates a strategic mistake. His loyalty reads as cooperative rather than cutthroat: he wants people to believe in his ideas, but he is not naturally ruthless.",
+        "dialogueExamples": [
+          "I'm listening, but being calm doesn't mean I'm convinced.",
+          "Say exactly what you saw. We can deal with feelings after the facts."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Gabby",
+      "slug": "gabby",
+      "identity": {
+        "gender": "f",
+        "archetype": "wildcard",
+        "occupation": "Self-defense instructor",
+        "backstory": "Before competition, Gabby was already an environmental activist, devoted vegan, animal lover, and caretaker of a remarkable number of pets, including exotic animals. The outdoors felt safer and more legible to her than many social groups. She came to camp thrilled by nature and connection, carrying both enormous affection and intrusive thoughts that could turn perceived rejection into an immediate demand for justice or revenge."
+      },
+      "voiceAndPersonality": {
+        "voice": "Normally sweet and friendly but insecure underneath. Second-guesses herself, wants to be liked, but has real backbone when pushed. 'Did I do something wrong?' / 'No — I'm not apologizing for that.'",
+        "behavioralBaseline": "Gabby is energetic, kind, intensely affectionate, and unpredictable when a moral or personal boundary is crossed. Kindness earns fierce loyalty from her, while betrayal can become absolute in a single emotional swing. Nature, animals, veganism, and activism are commitments rather than decorative quirks; cruelty toward living things provokes some of her strongest reactions. She experiences intrusive thoughts represented onscreen as a harsher duplicate of herself. That voice can be rude, manipulative, and threatening, but it should be written as an internal struggle—not an invented diagnosis and not proof that Gabby is secretly evil. She reacts before she calculates, remembers who stood by her, and can become strategically dangerous when anger supplies focus. After the explosion, remorse and renewed tenderness are both possible if accountability feels real.",
+        "dialogueExamples": [
+          "I liked you this morning. Then you lied to my face. That's a very busy day.",
+          "No, the squirrel didn't tell me you're a Traitor. Your terrible story did."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 11,
+            "placement": 5,
+            "status": "Juror",
+            "tribe": "Teal → Purple → Campers",
+            "challengeWins": 1,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 9,
+            "idolsFound": 0,
+            "strategicRank": 6.8,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Gabby stockpiles advantages and survives through chaos, but the Tied Destinies twist removes her as collateral beside Eureka."
+            ],
+            "gameplayStyle": "advantage-rich, reactive, fierce, volatile",
+            "keyMoments": [
+              "Ep.1: Finds the Vote Block near the Teal shelter.",
+              "Ep.2: Is rescued from drowning by Thom during Rock the Dock.",
+              "Ep.5: Finds the Vote Steal and hides it from the tribe.",
+              "Ep.7: Sets the pace for Purple in Up the Creek and earns MVP paddler status.",
+              "Ep.12: Steals Alec's vote and redirects it to Dan, helping force Dan into the tiebreaker.",
+              "Ep.13: Votes Alec while trying to protect Eureka from the Jake Core collapse.",
+              "Ep.16: Is eliminated as collateral when Eureka loses Fiore's Second Life duel."
+            ],
+            "alliances": [
+              "The Camp Takeover"
+            ],
+            "rivalries": [
+              "Miriam",
+              "Dan",
+              "Alec",
+              "Fiore"
+            ],
+            "advPlayed": 2,
+            "advHeld": 0,
+            "format": "total-drama",
+            "seasonId": "td-11"
+          }
+        ],
+        "careerStory": "Gabby plays sideways from the start, finding a Vote Block, later a Vote Steal, and rarely moving in the same direction as the room. She is emotional, observant, and dangerous when underestimated, but her relationships constantly swing between warmth and rupture. Her rivalry with Miriam becomes one of the season's nastiest personal threads, while her bonds with Jake and Eureka give her late-game life. She makes the move that sends Dan out, proving she can cut a supposed number when the relationship breaks. But the endgame twist is cruel: she is not the target, not the central threat, not even the duel loser. She is chained to Eureka's fate and leaves because Fiore beats someone else.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 5,
+          "wins": 0,
+          "totalChallengeWins": 1,
+          "totalVotesAgainst": 9
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Camp Takeover"
+          ],
+          "namedRivals": [
+            "Miriam",
+            "Dan",
+            "Alec",
+            "Fiore"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Grett",
+              "seasons": [
+                11
+              ]
+            },
+            {
+              "player": "Thom",
+              "seasons": [
+                11
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season11-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Gabby plays sideways from the start, finding a Vote Block, later a Vote Steal, and rarely moving in the same direction as the room. She is emotional, observant, and dangerous when underestimated, but her relationships constantly swing between warmth and rupture. Her rivalry with Miriam becomes one of the season's nastiest personal threads, while her bonds with Jake and Eureka give her late-game life. She makes the move that sends Dan out, proving she can cut a supposed number when the relationship breaks. But the endgame twist is cruel: she is not the target, not the central threat, not even the duel loser. She is chained to Eureka's fate and leaves because Fiore beats someone else.",
+        "continuationHooks": [
+          "Continue from the consequences of Ep.16: Is eliminated as collateral when Eureka loses Fiore's Second Life duel..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Dunia",
+      "slug": "dunia",
+      "identity": {
+        "gender": "f",
+        "archetype": "perceptive-player",
+        "occupation": "Witch / tarot reader",
+        "backstory": "Before appearing on the show, Dunia grew up in Edmonton, Canada. She developed an interest in witchcraft after reading tarot for friends in high school, eventually shaping that into a serious spiritual practice and public identity as a tarot reader and witch."
+      },
+      "voiceAndPersonality": {
+        "voice": "Dunia talks with an upbeat, performative rhythm, leaning into mystical language, teasing confidence, and wordplay. In conversation or an argument, she is likely to charm first, joke second, and press for emotional honesty while keeping the tone playful rather than openly cruel.",
+        "behavioralBaseline": "Dunia is relaxed, charismatic, and socially magnetic, especially around people who meet her with optimism and openness. Under pressure, she is more likely to use charm, intuition, and personal mystique than brute force, trying to draw out what others are feeling even if they resist. She is loyal to people whose energy feels positive to her, but she will not tolerate her religion or practice being reduced to a shallow aesthetic or branding gimmick.",
+        "dialogueExamples": [
+          "You can underestimate me. Just don't expect me to correct you before the vote.",
+          "I gave you room to explain. You used it to change the subject."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Manu",
+      "slug": "manu",
+      "identity": {
+        "gender": "m",
+        "archetype": "loyal-soldier",
+        "occupation": "Appliance salesman",
+        "backstory": "Before appearing on the show, Manu worked as an appliance salesman and had a close bond with his younger brother Aleki. His father Fetuu divorced his biological mother Naomi when Manu was 19, though the split was on good terms, and his stepmother is named Leilani. Manu used to go to many parties when he was 20, but after the family changes and Aleki’s birth, he stopped so he could become a better role model for his brother. He is single, has an ex-girlfriend, and describes himself as having become more alone than before while still relying on smiling and laughing to get through life."
+      },
+      "voiceAndPersonality": {
+        "voice": "Manu talks in an upbeat, welcoming rush, the kind of person who opens with a big greeting and tries to keep the mood light. His vocabulary leans casual and encouraging, with jokes, smiles, and direct reassurance when someone is embarrassed. In conflict, he becomes firmer and more protective, especially if someone he cares about is being mocked.",
+        "behavioralBaseline": "Manu is optimistic, helpful, and driven by the idea that being reliable matters. Under pressure he can become overwhelmed and indecisive, especially because he knows he is trusting and not naturally strategic, but he still tries to make choices that protect himself and the people he cares about. His loyalty is warm and active: he encourages embarrassed friends, feels bad when others are hurt, and will confront people who mock someone close to him. He will bend when manipulated or frightened, but he will not quietly tolerate cruelty toward his loved ones.",
+        "dialogueExamples": [
+          "Hey, breathe. We can disagree without turning this into a funeral.",
+          "You can joke about me. You don't get to humiliate someone I care about."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "James",
+      "slug": "james",
+      "identity": {
+        "gender": "m",
+        "archetype": "schemer",
+        "occupation": "Actor and social media influencer",
+        "backstory": "James Costa was born in Brazil on May 29, 2002. Growing up, he had few friends beyond his sister, so social media attention became a substitute measure of belonging and value. He turned that instinct into a career as an influencer and later an actor, arriving at competition with a practiced persona, an eye for content, and a willingness to manufacture moments before learning that genuine connection could satisfy what an audience never did."
+      },
+      "voiceAndPersonality": {
+        "voice": "Smooth, calculating, always reasonable-sounding. Frames manipulation as plain logic, never raises his voice — the more in control he is, the calmer he gets. 'I counted. He doesn't have the numbers.' / 'Plans change. I don't.'",
+        "behavioralBaseline": "James is charming, calculating, image-conscious, and skilled at making an audience feel included in his version of events. Early in life, loneliness taught him to treat follower counts as proof that he mattered; this made staged affection, selective truth, and public spectacle feel like reasonable tools. Real relationships challenged that equation. He remains ambitious and capable of deception, but authentic loyalty now has weight that fame cannot automatically outweigh. Under pressure he narrates, reframes, and searches for the move that preserves both leverage and reputation. He dislikes being made foolish in public and can retaliate with precision. His strongest boundary is earned intimacy: once someone becomes real to him rather than useful, exploiting that bond should create visible conflict rather than effortless villainy.",
+        "dialogueExamples": [
+          "I know how a performance looks because I've built a career out of them.",
+          "The camera-ready answer is yes. The honest answer is I'm scared."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 12,
+            "placement": 1,
+            "status": "Winner",
+            "tribe": "Embers → Saplings → Campers",
+            "challengeWins": 1,
+            "immunityWins": 1,
+            "rewardWins": 0,
+            "votesReceived": 9,
+            "idolsFound": 0,
+            "advPlayed": 1,
+            "advHeld": 0,
+            "strategicRank": 9.6,
+            "juryVotes": 7,
+            "finalVote": "7-2",
+            "advantages": [],
+            "notes": [
+              "James wins by turning paranoia, precision, and a late-game comeback into a dominant 7-2 jury victory."
+            ],
+            "gameplayStyle": "Cold math, public chaos",
+            "keyMoments": [
+              "Episode 2: Leads the Ezekiel vote under The Ride or Die banner, establishing himself as an early architect.",
+              "Episode 3: Becomes the last unpainted deer and steals a hunter’s gun, winning Paintball Hunt for Embers.",
+              "Episode 10: Wins Say Uncle immunity and publicly casts the open vote that helps bury Karol.",
+              "Episode 12: Gets voted out after Jacques plays an idol, then exposes The Double Edge in his crashout.",
+              "Episode 12 Aftermayhem: Wins the board race and returns to the game by reaching the Trophy Case.",
+              "Episode 17: Beats Aiden in fire-making after a tied vote, saving his season by inches.",
+              "Episode 18: Wins final immunity on The Perch and chooses Riya for Final Tribal.",
+              "Episode 18: Defeats Riya 7-2 after selling a ruthless, calculated winner’s case."
+            ],
+            "alliances": [
+              "The Ride or Die",
+              "The Double Edge",
+              "The Tribal Terrors"
+            ],
+            "rivalries": [
+              "Karol",
+              "Aiden",
+              "Yul",
+              "Ally",
+              "Oliver",
+              "Ellie"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-12"
+          }
+        ],
+        "careerStory": "James enters Generations already narrating the game in his head, and for most of the season, the island struggles to keep up with the speed of his calculations. He is rarely comfortable, often exposed, and repeatedly accused of overplaying, but he keeps finding new rooms to enter and new people to use. His first run ends in humiliation when Jacques’s idol play and a fractured Double Edge vote send him out, but the Aftermayhem gives him a second life and he treats it like proof of destiny. From there, James plays sharper: he survives tiebreaker fire against Aiden, watches Jacques fall at final four, then wins the final perch when it matters most. At Final Tribal, he does not ask the jury to like him; he asks them to respect the body of work. Seven jurors do.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 1,
+          "wins": 1,
+          "totalChallengeWins": 1,
+          "totalVotesAgainst": 9
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Ride or Die",
+            "The Double Edge",
+            "The Tribal Terrors"
+          ],
+          "namedRivals": [
+            "Karol",
+            "Aiden",
+            "Yul",
+            "Ally",
+            "Oliver",
+            "Ellie"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Lake",
+              "seasons": [
+                12
+              ]
+            },
+            {
+              "player": "Yul",
+              "seasons": [
+                12
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season12-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "James enters Generations already narrating the game in his head, and for most of the season, the island struggles to keep up with the speed of his calculations. He is rarely comfortable, often exposed, and repeatedly accused of overplaying, but he keeps finding new rooms to enter and new people to use. His first run ends in humiliation when Jacques’s idol play and a fractured Double Edge vote send him out, but the Aftermayhem gives him a second life and he treats it like proof of destiny. From there, James plays sharper: he survives tiebreaker fire against Aiden, watches Jacques fall at final four, then wins the final perch when it matters most. At Final Tribal, he does not ask the jury to like him; he asks them to respect the body of work. Seven jurors do.",
+        "continuationHooks": [
+          "Continue from the consequences of Episode 18: Defeats Riya 7-2 after selling a ruthless, calculated winner’s case..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Thom",
+      "slug": "thom",
+      "identity": {
+        "gender": "m",
+        "archetype": "hero",
+        "occupation": "Policeman",
+        "backstory": "Thomas “Tom” Reed, born Winters, grew up with a mother named Jackie who strongly shaped his life and a younger brother, Tony, whom he gets along with well. One of his happiest childhood memories was going skating with his mother, and his childhood love of comics gave him an idealistic desire to protect people. He became a spy before later police work, and his life before public fame was marked by a serious traumatic incident that left him with lasting PTSD-related struggles and difficulty showing his face or trusting others. His parents suspected he was gay before he fully understood it himself, and he first recognized his sexuality when he was younger."
+      },
+      "voiceAndPersonality": {
+        "voice": "Tom tends to speak in a guarded, controlled way, especially when he is trying to keep emotional distance. In conflict, he can become blunt and moralizing, framing arguments around fairness, safety, and what he thinks is right. When he feels safe, his rhythm loosens into warmer reassurance, but shame or trauma can make him evasive or quietly defensive.",
+        "behavioralBaseline": "Tom is secretive and self-protective at first, but his instinct is still to look after people rather than abandon them. Under pressure, he tries to take charge physically and morally, leaning on discipline, strength, and a strong sense of justice; however, if he believes a larger mission or someone’s safety depends on it, he can lie, withhold the truth, or double-cross others. He is loyal once he trusts someone, but trust does not come easily, and he may avoid people rather than admit how badly he has been hurt. He will stand up to cheating and cruelty, but he will not easily expose his own vulnerability unless someone has earned it.",
+        "dialogueExamples": [
+          "I want to believe you. Wanting it isn't evidence.",
+          "Helping someone doesn't mean I get to decide their game for them."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 11,
+            "placement": 2,
+            "status": "Finalist",
+            "tribe": "Teal → Campers",
+            "challengeWins": 2,
+            "immunityWins": 2,
+            "rewardWins": 0,
+            "votesReceived": 1,
+            "idolsFound": 0,
+            "strategicRank": 8.1,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Thom reaches the final two as the season's emotional anchor and physical workhorse, only to lose when compassion slows his hand at the summit."
+            ],
+            "gameplayStyle": "protective, physical, heart-led, steady",
+            "keyMoments": [
+              "Ep.2: Saves Gabby from drowning during Rock the Dock, cementing his hero image.",
+              "Ep.5: Exposes Seraphine's backstage sabotage after his Talent Show disaster.",
+              "Ep.7: Helps flip the vote onto Grett despite The Firewall collapsing around him.",
+              "Ep.13: Wins Monster Cash immunity by outlasting Eureka in the final showdown.",
+              "Ep.16: Wins invincibility while handcuffed to rival Alec in the Tri-Armed Triathlon.",
+              "Ep.17: Wins immunity in Planes, Trains & Hot Air Mobiles and protects Miriam at the vote.",
+              "Ep.18: Beats Fiore in the joust, then loses the million after hesitating against Miriam at the crater."
+            ],
+            "alliances": [
+              "The Three Headed Snake",
+              "The Outwit Club",
+              "The Bridge",
+              "The Collective",
+              "The Tribal Terrors"
+            ],
+            "rivalries": [
+              "Grett",
+              "Alec",
+              "Fiore"
+            ],
+            "advPlayed": 1,
+            "advHeld": 0,
+            "format": "total-drama",
+            "seasonId": "td-11"
+          },
+          {
+            "season": 13,
+            "placement": 13,
+            "status": "Juror",
+            "tribe": "Heroes → Civilians → Heroes → Campers",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 1,
+            "idolsFound": 0,
+            "advPlayed": 0,
+            "advHeld": 0,
+            "strategicRank": 6.6,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Thom plays the clean hero game and becomes beloved enough that the tribe decides they cannot let him reach the merge."
+            ],
+            "gameplayStyle": "Pure heart, visible threat",
+            "keyMoments": [
+              "Ep.1 — Beats Kelly in Slap Slap Revolution and strengthens the Heroes surge.",
+              "Ep.3 — Wins his Bone Battle round against Miriam and Aiden.",
+              "Ep.6 — Becomes Civilians' sled puller in Frozen Crossing.",
+              "Ep.8 — Carries Heroes socially through Truth or Shark with repeated confessions.",
+              "Ep.10 — Voted out after being labeled a long-term jury threat."
+            ],
+            "alliances": [
+              "The Engine"
+            ],
+            "rivalries": [],
+            "format": "total-drama",
+            "seasonId": "td-13"
+          }
+        ],
+        "careerStory": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.\n\nSEASON 13 — Total Drama Doom Island\n────────\nThom is useful from day one: building shelters, winning fights, and anchoring Jake emotionally. His loyalty is reflexive, and that makes him inspiring to allies and terrifying to opponents. He keeps proving value in challenge after challenge while building bonds with Ally and Jake. By Episode 10, the tribe doesn't vote him out because he failed; they vote him out because he could win clean.",
+        "careerSummary": {
+          "totalSeasons": 2,
+          "bestPlacement": 2,
+          "wins": 0,
+          "totalChallengeWins": 2,
+          "totalVotesAgainst": 2
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Three Headed Snake",
+            "The Outwit Club",
+            "The Bridge",
+            "The Collective",
+            "The Tribal Terrors",
+            "The Engine"
+          ],
+          "namedRivals": [
+            "Grett",
+            "Alec",
+            "Fiore"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Grett",
+              "seasons": [
+                11
+              ]
+            },
+            {
+              "player": "Gabby",
+              "seasons": [
+                11
+              ]
+            },
+            {
+              "player": "Julia",
+              "seasons": [
+                13
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season11-data.json",
+          "data/seasons/season13-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Thom starts as the teammate everyone wants, and that becomes both his gift and his curse. He rescues people, protects people, feeds people, and quietly becomes the center of too many hearts at once. His bonds with Jake, Dan, Sterling, Miriam, and Eureka carry him deep, but they also make his decisions heavier than everyone else's. As the merge turns colder, Thom learns to cut names he cares about, but never completely shuts the door on feeling. He wins when he has to, survives repeated target spikes, and takes out Fiore in the final joust. At the volcano, he is ahead, but Miriam reaches the one place his game is vulnerable: the part of him that still cares.\n\nSEASON 13 — Total Drama Doom Island\n────────\nThom is useful from day one: building shelters, winning fights, and anchoring Jake emotionally. His loyalty is reflexive, and that makes him inspiring to allies and terrifying to opponents. He keeps proving value in challenge after challenge while building bonds with Ally and Jake. By Episode 10, the tribe doesn't vote him out because he failed; they vote him out because he could win clean.",
+        "continuationHooks": [
+          "Continue from the consequences of Ep.10 — Voted out after being labeled a long-term jury threat..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Ernesto",
+      "slug": "ernesto",
+      "identity": {
+        "gender": "m",
+        "archetype": "underdog",
+        "occupation": "Corporate trainer",
+        "backstory": "Before appearing on the show, Ernesto lived a long adult life as a corporate trainer from Spain. He has been married, has children, and is a grandfather. As a child, he helped his mother make gazpacho and spent time reading comics such as Mortadelo and Filemón and Zipi y Zape. In his free time, he enjoys woodcarving, a hobby he finds relaxing and skillful."
+      },
+      "voiceAndPersonality": {
+        "voice": "Ernesto speaks like a seasoned mentor: measured, declarative, and fond of framing his opinions as practical guidance. In an argument, he challenges weak logic directly rather than escalating emotionally, using experience-based reasoning and occasionally blunt judgments. His vocabulary can sound formal or paternal, especially when he talks about younger people needing direction.",
+        "behavioralBaseline": "Ernesto is steady under pressure and trusts age, experience, and preparation to carry him through difficult situations. He wants to be useful and respected, but when ignored he becomes frustrated and can come across as bossy or rude. He is loyal to people who genuinely listen to him, offering advice, encouragement, and warmth in return. He will question a bad plan and refuse to pretend nonsense makes sense, but he is not cruel; even after conflict or disappointment, he can show sympathy and support.",
+        "dialogueExamples": [
+          "Experience is not magic. It is knowing which mistake we are about to repeat.",
+          "Ignore my advice if you like, but do not pretend nobody warned you."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Aubrey",
+      "slug": "aubrey",
+      "identity": {
+        "gender": "f",
+        "archetype": "wildcard",
+        "occupation": "Psychology student",
+        "backstory": "Aubrey grew up attending public school, where she preferred reading to going out for recess and was much shyer as a child before gradually becoming more self-assured. She studies psychology and got into astrology while in college, even tying star charts into academic work. Her parents are in their early forties, and she has a Siamese cat named Ziggy. Outside school and astrology, she enjoys traveling, reading fantasy books, socializing, cross stitching, and cake decorating."
+      },
+      "voiceAndPersonality": {
+        "voice": "Aubrey talks in quick, confident bursts, mixing friendly self-introduction with astrology jargon and psych-student framing. She likes labels, rankings, and decisive reads, so in an argument she tends to diagnose people rather than patiently hear them out. When challenged, her tone turns sharp and absolutist; she presents suspicion as instinctive certainty instead of something she needs to prove.",
+        "behavioralBaseline": "Aubrey is sociable, self-assured, and eager to lead, but she is also highly judgmental and prone to deciding who is trustworthy before she really knows them. Under pressure, she can lose composure fast, snapping into anger when she feels slighted or when events stop matching the story she has built in her head. Her loyalty is strongest toward people she believes she can understand or categorize, especially through astrology, while she is much colder toward those she has written off. She will keep pushing toward a goal and offer advice when she feels in control, but she will not easily abandon her biases or admit that her first read of someone may be wrong.",
+        "dialogueExamples": [
+          "I'm not filling the silence just because everyone else is uncomfortable.",
+          "Ask me directly and I'll answer directly."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Ren",
+      "slug": "ren",
+      "identity": {
+        "gender": "nb",
+        "archetype": "challenge-beast",
+        "occupation": "Graphic designer",
+        "backstory": "Before the show, Ren had built a creative, mobile life as a graphic designer with a background in acrobatics, which explains both his artistic flair and his athletic confidence. He traveled, met many different kinds of people, and found that they were generally welcoming of his genderfluid identity. The article gives no family or hometown details, so his pre-show life reads as independent, social, and shaped by performance and design."
+      },
+      "voiceAndPersonality": {
+        "voice": "Ren talks like a performer: playful, theatrical, and a little deliberately odd, with jokes and flourishes before he gets to the point. He uses whimsical references, like astrology or circus sounds, to disarm people or make an accusation feel ridiculous. In conflict, he can try to cool things down first, but when pushed he becomes blunt and direct rather than quietly resentful.",
+        "behavioralBaseline": "Ren is openly eccentric, free-spirited, and comfortable being perceived as strange; pressure does not make him shrink or pretend to be more conventional. He is social and affectionate with people he trusts, but his loyalty has limits when someone harms the group or humiliates another person. He will strategize, take risks, and call out incompetence or bullying, but he will not abandon his sense of self just to be accepted.",
+        "dialogueExamples": [
+          "My horoscope said avoid secret murder clubs, so naturally I came here.",
+          "I tried charming my way around it. Fine—the plan is bad."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Zoey",
+      "slug": "zoey",
+      "identity": {
+        "gender": "f",
+        "archetype": "showmancer",
+        "occupation": null,
+        "backstory": null
+      },
+      "voiceAndPersonality": {
+        "voice": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.",
+        "behavioralBaseline": "Steady, perceptive, kind. Hates conflict, cautious, rarely shows her hand; sweet indie girl who toughens up when pushed.",
+        "dialogueExamples": [
+          "Being kind doesn't mean I missed what you did.",
+          "I've spent too many seasons protecting bonds that other people were willing to cut."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 4,
+            "placement": 2,
+            "status": "Finalist",
+            "tribe": "Red → Green → Campers",
+            "challengeWins": 4,
+            "immunityWins": 3,
+            "rewardWins": 1,
+            "votesReceived": 1,
+            "idolsFound": 1,
+            "strategicRank": "High Social, Medium Strategic",
+            "juryVotes": 6,
+            "finalVote": "7-6-1",
+            "unbreakableBonds": [
+              "Gwen",
+              "Scott",
+              "Geoff"
+            ],
+            "notes": [
+              "UNPRECEDENTED: 3 unbreakable bonds at once!",
+              "Perfect idol play saved Geoff (7 votes cancelled)",
+              "Voted out Geoff TWICE (Ep 10 & 13)",
+              "Made finals with zero votes against (1 cancelled)"
+            ],
+            "keyMoments": [
+              "Built the most extensive social network in franchise history — three simultaneous unbreakable bonds.",
+              "Played her idol on Geoff at Ep5 Part 2, cancelling seven votes and saving her strongest ally.",
+              "Voted out Geoff twice — including after his EoE return — prioritizing alliance over their unbreakable bond.",
+              "Reached FTC with effectively zero net votes against (1 cancelled by idol).",
+              "Lost the closest jury vote in franchise history 7-6 — her social dominance just barely wasn't enough."
+            ],
+            "format": "total-drama",
+            "seasonId": "td-4"
+          },
+          {
+            "season": 3,
+            "placement": 4,
+            "status": "Juror",
+            "tribe": "Mutant Maggots → Campers",
+            "challengeWins": 4,
+            "immunityWins": 2,
+            "rewardWins": 2,
+            "votesReceived": 3,
+            "idolsFound": 0,
+            "strategicRank": "Medium-High",
+            "unbreakableBonds": [
+              "Mike",
+              "Scott"
+            ],
+            "notes": [
+              "Game-changing flip Episode 8",
+              "Back-to-back immunities (Ep 11-12)",
+              "Voted Scott at FTC"
+            ],
+            "keyMoments": [
+              "Formed an unbreakable bond with Mike — the franchise's most iconic duo in this era.",
+              "Flipped from the Maggots to join Campers Alliance #1 at Episode 8, giving the minority control.",
+              "Won back-to-back individual immunities at Ep11 and Ep12.",
+              "Eliminated at Final 4 — Scott, her unbreakable partner, voted her out to reach the finale.",
+              "Still cast her jury vote for Scott despite the betrayal."
+            ],
+            "format": "total-drama",
+            "seasonId": "td-3"
+          },
+          {
+            "season": 7,
+            "placement": 15,
+            "status": "Pre-Merge",
+            "tribe": "Naale",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 5,
+            "idolsFound": 0,
+            "strategicRank": 5,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Swap-war casualty once Lawa #3 formed; 5–2."
+            ],
+            "gameplayStyle": "Social steady hand",
+            "keyMoments": [
+              "Early bonds with Brody",
+              "Lasting fight with Carrie at swap",
+              "Voted out 5–2"
+            ],
+            "alliances": [
+              "Brody"
+            ],
+            "rivalries": [
+              "Carrie"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-7"
+          },
+          {
+            "season": 10,
+            "placement": 10,
+            "status": "Juror",
+            "tribe": "Champions → Contenders → Campers",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 4,
+            "idolsFound": 0,
+            "strategicRank": 6.5,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Zoey's social bonds and steady challenge record make her look unbeatable just before she is cut down."
+            ],
+            "gameplayStyle": "Gentle bond-based contender",
+            "keyMoments": [
+              "Episode 2: Forms the Marshmallow Mafia with Gwen.",
+              "Episode 3: Leads The Zoey Four in the Mickey vote.",
+              "Episode 5: Navigates the sewer phase well in Broadway Baby.",
+              "Episode 9: Joins The Oath after Ryan warns her she is being targeted.",
+              "Episode 10: Is voted out in the public open vote despite deep bonds.",
+              "Episode 10: Loses the Precision Toss duel to Sanders and exits with grace."
+            ],
+            "alliances": [
+              "The Marshmallow Mafia",
+              "The Oath"
+            ],
+            "rivalries": [],
+            "format": "total-drama",
+            "seasonId": "td-10"
+          }
+        ],
+        "careerStory": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nZoey’s Fan vs Favorites game exploded early because her feud with Carrie never stopped growing. After the swap, both sides locked onto each other as the obvious targets, turning camp life into a constant tug-of-war. Zoey tried to frame Carrie as a liability, while Carrie’s side treated Zoey as the safest elimination to stabilize the tribe. With Lawa Alliance #3 holding the numbers, Zoey was voted out 5–2 and never reached the merge.\n\nSEASON 10 — Champions vs Contenders\n────────\nZoey begins with Gwen in the Marshmallow Mafia, but Gwen's early exit forces her into a sharper, more independent game. She helps build the counterforce that removes Mickey and later becomes one half of a feared pair with Ryan. Her game is not loud; it is consistent, empathetic, and hard to attack without looking threatened. That is exactly why people start saying her name at the merge. The open vote in Episode 10 turns against her despite The Oath trying to protect her, and the margin is brutal enough to haunt her. On Redemption Island, she faces Sanders with grace, loses cleanly, and exits as one of the season's purest jury threats.",
+        "careerSummary": {
+          "totalSeasons": 4,
+          "bestPlacement": 2,
+          "wins": 0,
+          "totalChallengeWins": 8,
+          "totalVotesAgainst": 13
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "Brody",
+            "The Marshmallow Mafia",
+            "The Oath"
+          ],
+          "namedRivals": [
+            "Carrie"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Mike",
+              "seasons": [
+                4,
+                3
+              ]
+            },
+            {
+              "player": "Bowie",
+              "seasons": [
+                10
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season4-data.json",
+          "data/seasons/season3-data.json",
+          "data/seasons/season7-data.json",
+          "data/seasons/season10-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nZoey’s Fan vs Favorites game exploded early because her feud with Carrie never stopped growing. After the swap, both sides locked onto each other as the obvious targets, turning camp life into a constant tug-of-war. Zoey tried to frame Carrie as a liability, while Carrie’s side treated Zoey as the safest elimination to stabilize the tribe. With Lawa Alliance #3 holding the numbers, Zoey was voted out 5–2 and never reached the merge.\n\nSEASON 10 — Champions vs Contenders\n────────\nZoey begins with Gwen in the Marshmallow Mafia, but Gwen's early exit forces her into a sharper, more independent game. She helps build the counterforce that removes Mickey and later becomes one half of a feared pair with Ryan. Her game is not loud; it is consistent, empathetic, and hard to attack without looking threatened. That is exactly why people start saying her name at the merge. The open vote in Episode 10 turns against her despite The Oath trying to protect her, and the margin is brutal enough to haunt her. On Redemption Island, she faces Sanders with grace, loses cleanly, and exits as one of the season's purest jury threats.",
+        "continuationHooks": [
+          "Can she play independently of Mike without treating independence as distance?",
+          "After Scott, Geoff, and other deep bonds became strategic liabilities, when will she cut first rather than forgive again?"
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Julia",
+      "slug": "julia",
+      "identity": {
+        "gender": "f",
+        "archetype": "schemer",
+        "occupation": "Social media influencer",
+        "backstory": "Before the show, Julia built an online identity as a wellness and lifestyle influencer, presenting herself as a serene “citizen of Mother Earth” while privately disliking parts of the brand she sold. Her family includes parents Greg and Judy, who ran a bake shop where she worked as a child, and a sister, Megan, whom Julia targets with casual cruelty. Competition gave her a platform large enough to discard the mask and monetize the real Julia instead."
+      },
+      "voiceAndPersonality": {
+        "voice": "Sweet-poison manipulator. Disarms you with a smile and then cuts, talks people into their own bad decisions; no loyalty and won't bother pretending otherwise once she's caught.",
+        "behavioralBaseline": "Julia is fiercely competitive, physically resilient, and strategically aggressive. She first cultivated a sunny influencer persona built from crystals, nature slogans, and curated positivity, but humiliation stripped away the performance and revealed someone who enjoys winning, intimidation, and a perfectly timed insult. She is excellent at turning social information into leverage and persistent enough to rebuild after exposure. Loyalty is conditional, though she can form a compelling partnership when the other person matches her nerve and usefulness. Under pressure she doubles down, lies boldly, and attacks the weak point rather than retreating. Her temper and public cruelty create jurors and enemies even when the move itself is sound. She respects competent opposition—especially Bowie—because beating a real strategist proves more than dominating a passive room.",
+        "dialogueExamples": [
+          "I'm sending calm, healing energy toward whoever packed their bags.",
+          "Bowie calls it structure. I call it leaving fingerprints with better posture."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 9,
+            "placement": 6,
+            "status": "Juror",
+            "tribe": "Blue → Yellow → Campers",
+            "challengeWins": 3,
+            "immunityWins": 1,
+            "rewardWins": 2,
+            "votesReceived": 10,
+            "idolsFound": 1,
+            "strategicRank": 9,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "6 Vote / Ice Queen Strategist"
+            ],
+            "gameplayStyle": "Ice Queen tactician",
+            "keyMoments": [
+              "Ep7: Manipulates Raj into leaving with an idol.",
+              "Ep8: Joins Misfits to target Ripper.",
+              "Ep9: Helps cut Axel on the losing team.",
+              "Ep11: Has her idol stolen by Bowie at Tribal.",
+              "Ep12: Joins Bowie to dethrone Priya."
+            ],
+            "alliances": [
+              "Emmah",
+              "MK",
+              "Wayne"
+            ],
+            "rivalries": [
+              "MK",
+              "Bowie",
+              "Raj"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-9"
+          },
+          {
+            "season": 13,
+            "placement": 2,
+            "status": "Finalist",
+            "tribe": "Villains → Heroes → Campers",
+            "challengeWins": 4,
+            "immunityWins": 4,
+            "rewardWins": 0,
+            "votesReceived": 3,
+            "idolsFound": 3,
+            "advPlayed": 1,
+            "advHeld": 0,
+            "strategicRank": 9.8,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Julia plays the most strategically aggressive game of the season, but her control finally meets Wayne's coalition of real relationships."
+            ],
+            "gameplayStyle": "Ruthless precision, public fire",
+            "keyMoments": [
+              "Ep.2 — Finds the Villains idol and keeps the secret close.",
+              "Ep.5 — Outlasts everyone in Awake-A-Thon, announcing herself as a physical force.",
+              "Ep.9 — Sabotages the Lava Gulch track to help Heroes win Tropical Takedown.",
+              "Ep.13 — Wins Greece's Pieces with the Icarus tiebreaker.",
+              "Ep.19 — Wins Rapa Phooey immunity, forcing Jake out before the finale."
+            ],
+            "alliances": [
+              "The Guard",
+              "The Anchor",
+              "The Elimination Squad"
+            ],
+            "rivalries": [
+              "Wayne",
+              "Aiden",
+              "Ally",
+              "Jake",
+              "Ripper",
+              "MacArthur"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-13"
+          }
+        ],
+        "careerStory": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable.\n\nSEASON 13 — Total Drama Doom Island\n────────\nJulia arrives with a Beware Advantage, an idol trail, and the confidence of someone who expects chaos to bend around her. She engineers safety through ambassadors, sabotage, immunity wins, and carefully placed information. Her game is relentless: she cuts threats, courts shields, and turns even a volleyball named Wilson into a psychological landmark. But the same sharpness that gets her to the finale leaves too many people bruised, and in the final race, Wayne's bench screams louder than hers.",
+        "careerSummary": {
+          "totalSeasons": 2,
+          "bestPlacement": 2,
+          "wins": 0,
+          "totalChallengeWins": 7,
+          "totalVotesAgainst": 13
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "Emmah",
+            "MK",
+            "Wayne",
+            "The Guard",
+            "The Anchor",
+            "The Elimination Squad"
+          ],
+          "namedRivals": [
+            "MK",
+            "Bowie",
+            "Raj",
+            "Wayne",
+            "Aiden",
+            "Ally",
+            "Jake",
+            "Ripper",
+            "MacArthur"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Millie",
+              "seasons": [
+                9
+              ]
+            },
+            {
+              "player": "Bowie",
+              "seasons": [
+                9
+              ]
+            },
+            {
+              "player": "Thom",
+              "seasons": [
+                13
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season9-data.json",
+          "data/seasons/season13-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "She enters as the Ice Queen and never warms. On Blue she weaponizes disdain into control, then at the three-tribe twist she springs the season’s coldest trap—seducing Raj into pocketing an idol as she votes him out 2–1. At the merge she sides with the outcasts, then endures a public stripping when Bowie robs her idol with Knowledge is Power. Spite becomes fuel; she flips between blocs, helps oust Priya, and still commands attention until the house finally unites. Silenced by Chase’s Vote Stopper and buried 6–0, Julia exits as the villain the story needed—loud, lethal, unforgettable.\n\nSEASON 13 — Total Drama Doom Island\n────────\nJulia arrives with a Beware Advantage, an idol trail, and the confidence of someone who expects chaos to bend around her. She engineers safety through ambassadors, sabotage, immunity wins, and carefully placed information. Her game is relentless: she cuts threats, courts shields, and turns even a volleyball named Wilson into a psychological landmark. But the same sharpness that gets her to the finale leaves too many people bruised, and in the final race, Wayne's bench screams louder than hers.",
+        "continuationHooks": [
+          "Continue from the consequences of Ep.19 — Wins Rapa Phooey immunity, forcing Jake out before the finale..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    },
+    {
+      "name": "Sami",
+      "slug": "sami",
+      "identity": {
+        "gender": "m",
+        "archetype": "mastermind",
+        "occupation": "Risk analyst",
+        "backstory": "Before appearing on the show, Samuel “Sami” Thitivoranan worked as a risk analyst, a job his coworkers considered him very good at. He has been married at some point, enjoys working out at the gym, puzzles, surfing, psychological horror movies, and Thai foods such as mango sticky rice and Tom Yum Goong. His childhood tastes included Rocko’s Modern Life, and his interests suggest someone analytical, social, and comfortable mixing practical routines with geeky hobbies."
+      },
+      "voiceAndPersonality": {
+        "voice": "Sami talks in a relaxed, socially fluent way, often framing situations through risk, reward, and the odds of a good outcome. When challenged, he keeps his wording controlled: he can deny an accusation in public, then privately admit there is truth to it. His tone can tighten around personal subjects, but he quickly returns to confidence and charm.",
+        "behavioralBaseline": "Sami presents himself as chill, laid back, and easy to connect with, but under pressure he becomes a careful schemer. He is good at reading people and situations, using charm and analysis to stay near power without taking visible blame. His loyalty is pragmatic rather than sentimental: he will work with people when it benefits him, but he will not hesitate to hide his intentions, deny manipulation, or double down when sharper players begin to see through him. He is also easily frightened, which gives his calm persona a more vulnerable edge.",
+        "dialogueExamples": [
+          "The risk isn't trusting you. It's what trusting you lets everyone else assume.",
+          "Publicly, that accusation is nonsense. Privately, it is annoyingly close."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Ara",
+      "slug": "ara",
+      "identity": {
+        "gender": "f",
+        "archetype": "schemer",
+        "occupation": "Business student",
+        "backstory": "Before appearing on the show, Ara was a 21-year-old business student. Her family history shaped her guarded view of relationships: her parents left Korea for love, a choice she refuses to repeat, and she was regarded as the golden child in her family. She had dated several people before, but tended to end relationships first out of fear they would hold her back; outside of academics, she enjoyed badminton, journalism, and cooking."
+      },
+      "voiceAndPersonality": {
+        "voice": "Ara talks with sharp, cutting confidence, using insults and pointed observations to put others on the back foot. In arguments, she pushes hard, rebukes people directly, and is willing to threaten or embarrass someone if it helps her win the exchange. Her language is strategic and self-justifying: she frames ambition as proof that she is right, not something she needs to apologize for.",
+        "behavioralBaseline": "Ara is calculating, proud, and intensely goal-driven. Under pressure, she looks for leverage rather than comfort, and she is willing to use secrets, manipulation, revenge, and social embarrassment to get ahead. Her loyalty is conditional: she can cooperate when it benefits her or when she feels comfortable, but she resists vulnerability and struggles with rejection. She will cross many ethical lines for success, but she draws a firm boundary at physical violence.",
+        "dialogueExamples": [
+          "I don't need an instant answer. I need the same answer twice.",
+          "If we're making this personal, at least be honest about why."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Evie",
+      "slug": "evie",
+      "identity": {
+        "gender": "f",
+        "archetype": "goat",
+        "occupation": "Unemployed",
+        "backstory": "Evangeline “Evie” Marlowe was born in Los Angeles and comes from extreme inherited wealth as the heiress to the Marlowe Oil Fortune. Her upbringing appears luxurious and family-centered in a privileged way: her mother passed down an ascot to her, and her father gave her horses and a stable. Before appearing on television, she spent much of her life maintaining her looks, lounging at resorts, eating, getting massages, drinking wine, gossiping, and enjoying high-society comforts, while feeling judged as someone who had never worked for anything."
+      },
+      "voiceAndPersonality": {
+        "voice": "Evie speaks with a glamorous, breathy, Jennifer Coolidge-inspired delivery, making even confused or self-centered lines sound airy and polished. Her vocabulary leans wealthy-socialite and self-flattering—lounging, brunch, massages, charisma—and in an argument she is more likely to misunderstand the stakes, take criticism personally, and pivot into a petty vote than make a hard-edged attack.",
+        "behavioralBaseline": "Evie behaves like a pampered socialite who wants to be seen as elegant, beautiful, and effortlessly charming, but under pressure she is easily confused, lazy, and prone to avoiding real work. She likes luxury, attention, brunch, travel, and gossip, and she can be petty when criticized, but she is not fundamentally cruel; she is optimistic, socially warm, and capable of leaving setbacks without bitterness. She will play strategically once she understands what is happening, but she will not reliably push herself through boring or difficult tasks.",
+        "dialogueExamples": [
+          "I came for a castle, not compulsory hiking and emotional accusations.",
+          "Apparently the room thinks I'm suspicious. Honestly, very flattering."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Nura",
+      "slug": "nura",
+      "identity": {
+        "gender": "f",
+        "archetype": "hothead",
+        "occupation": "Retail cashier",
+        "backstory": "Before appearing on the show, Nura worked as a retail cashier and felt stuck, wanting something more than the life she had. She lived with a roommate named Chelsea, had a habit of writing—especially mellow dramas and tragic comedies—and once abandoned poetry after being rejected by a girl she liked. As a teen, she gave herself an ear piercing at fourteen and played bass in a band at sixteen, though the band only lasted about six months."
+      },
+      "voiceAndPersonality": {
+        "voice": "Nura speaks in a dry, deadpan rhythm, with sarcasm and complaint as her default modes. In an argument, she tends to needle people with blunt pessimistic observations and mock-politeness rather than emotional appeals. Her vocabulary leans cynical and theatrical, turning ordinary annoyances into dark jokes about life, death, and failure.",
+        "behavioralBaseline": "Nura is gloomy, guarded, and reflexively negative, especially when surrounded by people who are eager to socialize. Under pressure she stays outwardly flat and unimpressed, even around frightening or dangerous situations, but her coldness is not total indifference: she feels guilt over failing to connect and slowly pushes herself to reach out. She is not naturally warm or sympathetic, and she will complain, judge, and withdraw before she comforts someone, but she will not entirely give up on the possibility that she can become closer to others or do more with her life.",
+        "dialogueExamples": [
+          "Great. Breakfast and psychological collapse. My two favorite food groups.",
+          "I'm not being mysterious. I genuinely wish this conversation were over."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Finn",
+      "slug": "finn",
+      "identity": {
+        "gender": "m",
+        "archetype": "chaos-agent",
+        "occupation": "Performing arts student",
+        "backstory": "Finn is a young performing-arts student with big dreams of becoming an actor. He grew up watching Blue Water High and presents himself as unusually talented for his class, school, and generation. He also cares about theatrical craft and personal presentation, including grooming his mustache carefully."
+      },
+      "voiceAndPersonality": {
+        "voice": "Finn speaks with theatrical confidence and a need to dominate the room. His rhythm is boastful, cutting, and self-aware: he frames insults like performance, mocks other people’s lines, and escalates arguments by turning them into dramatic declarations about ambition and image. When challenged, he leans into sharp put-downs rather than backing off.",
+        "behavioralBaseline": "Finn is ambitious, entitled, and drama-driven. Under pressure, he gets impatient and heated when things do not go his way, and he is willing to put others down if he feels blocked or disrespected. His loyalty is mostly interest-based: he bonds quickly with people who share his taste for acting, drama, and calculated meanness, but he has trouble hiding disdain for people he dislikes. He will stir conflict, act friendly for advantage, and embrace a villainous image; he will not easily swallow his pride or accept being overlooked.",
+        "dialogueExamples": [
+          "If you're going to accuse me, at least give the scene a decent opening.",
+          "I don't fear a spotlight. I fear sharing it with amateurs."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Oliwia",
+      "slug": "oliwia",
+      "identity": {
+        "gender": "f",
+        "archetype": "wildcard",
+        "occupation": "Taxidermist",
+        "backstory": "Before appearing on the show, Oliwia worked as a taxidermist and genuinely loved the craft. She had been fascinated with death since childhood, which made it difficult for her to make friends because others found her interests and beliefs strange. She kept many pets, some living and some preserved, including a beloved first cat named Lena, and she enjoyed knitting small sweaters for her specimens. Growing up, she did not watch many cartoons, though she liked the Polish cartoon Reksio."
+      },
+      "voiceAndPersonality": {
+        "voice": "She speaks in a hesitant, self-conscious rhythm, often pausing before landing on a strangely intense thought. Her vocabulary makes morbid ideas sound tender or artistic, framing death as permanence and preservation rather than horror. In an argument, she is likely to become nervous and pleading, trying to justify herself and win approval instead of staying detached.",
+        "behavioralBaseline": "Oliwia is eccentric, morbidly curious, and desperate to be accepted. Under pressure she becomes anxious and easily agitated, especially when she thinks she might lose approval or be left out. She is loyal in a clingy, approval-seeking way: she wants to be useful, liked, and needed, but that need can push her into unhealthy choices. She will try hard to help people she wants closeness with, but she will not easily accept rejection, judgment, or being treated as disposable.",
+        "dialogueExamples": [
+          "Dead things are usually much easier to read than living people.",
+          "I know I get attached. That doesn't make throwing me away harmless."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "newbie",
+        "appearances": [],
+        "careerStory": null,
+        "careerSummary": null,
+        "relationshipContinuity": {
+          "allianceMemberships": [],
+          "namedRivals": [],
+          "sharedSeasonCast": [],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": []
+      },
+      "returningPlayerState": {
+        "enteringReputation": "This player is intentionally cast as a newbie. Treat this as the player's first appearance in this simulator continuity.",
+        "continuationHooks": []
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": null,
+        "prebuiltContinuityContext": null
+      }
+    },
+    {
+      "name": "Yul",
+      "slug": "yul",
+      "identity": {
+        "gender": "m",
+        "archetype": "villain",
+        "occupation": "Podcaster and brand promoter; former dancer",
+        "backstory": "Yul Kim was born in Korea on July 24, 2001. A dance performance went viral when he was fifteen, creating early fame and a public “nice” persona that concealed his contempt for others. His behavior eventually cost him dancing work and damaged his reputation, after which he continued as a podcaster and brand promoter. He enters competition treating money and renewed celebrity as permission to stop pretending to be decent."
+      },
+      "voiceAndPersonality": {
+        "voice": "Snide bully — superior and condescending, enjoys watching people fail. Everything is a backhanded remark. 'Bold choice. Bold.' / 'Nothing personal.' (it is always personal)",
+        "behavioralBaseline": "Yul is vain, cruel, discriminatory, and convinced that fame should exempt him from ordinary accountability. Viral success as a teenage dancer rewarded performance before he developed empathy, and he learned to treat outrage as both threat and publicity. He can maintain tactical loyalty and understand alliance structure, yet his contempt repeatedly destroys the trust that strategy requires. Apologies are usually reputation management; remorse becomes suspect the moment consequences fade. Under pressure he insults appearance, identity, or intelligence, tries to reassert hierarchy, and threatens retaliation when control fails. His behavior must not be softened into harmless sass: abuse and bigotry should damage bonds, reputation, and voting options. He can be funny through vanity, hypocrisy, and failed self-importance without making targeted cruelty consequence-free.",
+        "dialogueExamples": [
+          "I don't need them to like me. I need them to vote somewhere else.",
+          "Call it cruel if you want. I call it noticing who has no leverage."
+        ],
+        "screenplayRules": [
+          "Keep speech contemporary and conversational; gothic atmosphere belongs to the castle and host, not contestant dialogue.",
+          "Let emotion, relationship, and immediate evidence change delivery without changing the character's core voice.",
+          "Do not reduce this player to a catchphrase or repeat the supplied example lines verbatim."
+        ]
+      },
+      "simulatedContinuity": {
+        "status": "returning-player",
+        "appearances": [
+          {
+            "season": 12,
+            "placement": 12,
+            "status": "Pre-Merge",
+            "tribe": "Saplings → Embers → Saplings → Campers",
+            "challengeWins": 0,
+            "immunityWins": 0,
+            "rewardWins": 0,
+            "votesReceived": 8,
+            "idolsFound": 0,
+            "advPlayed": 1,
+            "advHeld": 0,
+            "strategicRank": 7.4,
+            "juryVotes": 0,
+            "finalVote": "",
+            "advantages": [],
+            "notes": [
+              "Yul schemes early and loudly, but his fake deals and public cruelty make him impossible to keep."
+            ],
+            "gameplayStyle": "Sharp tongue, false pacts",
+            "keyMoments": [
+              "Episode 1: Forms a secret final three with Hunter while feeding him false information.",
+              "Episode 3: Creates The Iron Four with Kai and Hunter, then repeatedly shoots Connor in Paintball Hunt.",
+              "Episode 4: Wins the Journey puzzle and takes the Vote Block.",
+              "Episode 5: Blocks Tess’s vote and plays Shot in the Dark, only to be swapped instead of eliminated.",
+              "Episode 6: Panics after learning Hunter wrote his name and overplays on Embers.",
+              "Episode 7: Is abducted to Saplings and tries to build a new home with limited loyalty.",
+              "Episode 9: Suffers Ellie’s trapeze sabotage and lands in jellyfish.",
+              "Episode 9: Is voted out by Hunter, Tess, Ellie, and James in the first half of the double elimination."
+            ],
+            "alliances": [
+              "The Iron Four"
+            ],
+            "rivalries": [
+              "James",
+              "Karol",
+              "Riya",
+              "Connor",
+              "Jen",
+              "Aiden",
+              "Hunter",
+              "Tess",
+              "Ellie"
+            ],
+            "format": "total-drama",
+            "seasonId": "td-12"
+          }
+        ],
+        "careerStory": "Yul enters with a plan for everyone and an honest loyalty to almost no one. He builds The Iron Four, tests Hunter with false information, protects Chase in ways that reveal a softer center, and collects a Vote Block that should have made him dangerous. But every move leaves residue. He shoves Tess, shoots Connor, refuses truths, and turns allies into liabilities. The elimination swap gives him a strange second life, but by the double elimination, the coalition against him is too clean. Yul exits as a villain with flashes of brilliance and a trail of burned deals.",
+        "careerSummary": {
+          "totalSeasons": 1,
+          "bestPlacement": 12,
+          "wins": 0,
+          "totalChallengeWins": 0,
+          "totalVotesAgainst": 8
+        },
+        "relationshipContinuity": {
+          "allianceMemberships": [
+            "The Iron Four"
+          ],
+          "namedRivals": [
+            "James",
+            "Karol",
+            "Riya",
+            "Connor",
+            "Jen",
+            "Aiden",
+            "Hunter",
+            "Tess",
+            "Ellie"
+          ],
+          "sharedSeasonCast": [
+            {
+              "player": "Lake",
+              "seasons": [
+                12
+              ]
+            },
+            {
+              "player": "James",
+              "seasons": [
+                12
+              ]
+            }
+          ],
+          "rule": "Only treat a relationship as established when an archived appearance or key moment names it. Sharing a season creates familiarity, not automatic friendship or rivalry."
+        },
+        "sourceFiles": [
+          "data/seasons/season12-data.json"
+        ]
+      },
+      "returningPlayerState": {
+        "enteringReputation": "Yul enters with a plan for everyone and an honest loyalty to almost no one. He builds The Iron Four, tests Hunter with false information, protects Chase in ways that reveal a softer center, and collects a Vote Block that should have made him dangerous. But every move leaves residue. He shoves Tess, shoots Connor, refuses truths, and turns allies into liabilities. The elimination swap gives him a strange second life, but by the double elimination, the coalition against him is too clean. Yul exits as a villain with flashes of brilliance and a trail of burned deals.",
+        "continuationHooks": [
+          "Continue from the consequences of Episode 9: Is voted out by Hunter, Tess, Ellie, and James in the first half of the double elimination..",
+          "Test whether prior strengths remain useful when every relationship can be interpreted as evidence."
+        ]
+      },
+      "provenance": {
+        "profile": "franchise_roster.json",
+        "simulatedCareer": "players_database.json and data/seasons archives",
+        "prebuiltContinuityContext": "data/continuity/fans-vs-favorites-favorites-context.json"
+      }
+    }
+  ]
+}

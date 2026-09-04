@@ -1833,6 +1833,24 @@ function placesOf(html) {
   return out;
 }
 
+describe('breakfast prose explains the morning instead of gesturing at it', () => {
+  it('connects the gathering to last night and reports concrete arrival progress', () => {
+    const rows = DAYS.filter(({ ep }) => ep.tr?.dawn?.ofEp != null).slice(0, 20);
+    expect(rows.length, 'no post-premiere breakfasts were generated').toBeGreaterThan(10);
+    const vague = /quietest hour this building has|stone has already forgotten|light comes up over the water|shafts land across the boards|the early ones|then a few more|smaller group|another cluster|they keep coming|and more follow|the next down|very ordinary face|lie awake deciding what you are going to say|made plans with|said goodnight|laughing about nothing|last sight of|went up like everyone else|the night before was nothing special/i;
+    for (const { ep } of rows) {
+      const text = strip(morningRevealed(ep));
+      const expected = ep.tr.cast.length - ep.tr.goneBefore.length;
+      expect(text, `ep ${ep.num}: breakfast never explains what happened overnight`)
+        .toContain('Last night, the Traitors chose someone for murder.');
+      expect(text, `ep ${ep.num}: breakfast never accounts for the living arrivals`)
+        .toContain(`${expected} of ${expected} expected players are now at the table.`);
+      expect(vague.test(text), `ep ${ep.num}: breakfast still contains disconnected filler`)
+        .toBe(false);
+    }
+  });
+});
+
 // ── GUARD: THE FUND ───────────────────────────────────────────────────
 describe('the fund the board prints is the fund the record carries', () => {
   it('the record itself agrees with the season the export publishes', () => {
@@ -2692,6 +2710,20 @@ describe('the note and the ultimatum are rendered as the different things they a
     }
     expect(seenNote, 'no note was rendered').toBeGreaterThan(5);
     expect(seenUlt, 'no ultimatum was rendered').toBeGreaterThan(5);
+  });
+
+  it('an anonymous note plainly says that the offer is to become a Traitor', () => {
+    const vague = /one of the people it happens to|carrying water for people|asks so badly|charm needs a face|pact is short of numbers|cross the floor/i;
+    let checked = 0;
+    for (const { ep } of notes) {
+      const text = strip(offerRevealed(ep));
+      expect(text, `ep ${ep.num}: the note never states the actual offer`)
+        .toContain('become a Traitor');
+      expect(vague.test(text), `ep ${ep.num}: the note still hides its meaning in metaphor`)
+        .toBe(false);
+      checked++;
+    }
+    expect(checked, 'no anonymous note was checked').toBeGreaterThan(5);
   });
 
   it('and the terms strip states the price of refusing, before the answer is read', () => {

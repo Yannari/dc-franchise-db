@@ -752,15 +752,10 @@ const ASKER_HIDDEN = [
 
 const ASK = {
   note: [
-    'The offer is the same one it always is. Come upstairs. Stop being hunted and start '
-    + 'hunting. Take a share of a fund you are currently working for on somebody else\'s '
-    + 'behalf.',
-    'Cross the floor. Sit at the table upstairs instead of the one downstairs. It is put '
-    + 'plainly, because a note has one paragraph and no chance to argue.',
-    'Join, and stop being one of the people it happens to. Written flat, with no charm in '
-    + 'it at all, because charm needs a face.',
-    'The pact is short of numbers and is asking. That is all a note can say, and all it '
-    + 'needs to.',
+    'The note asks the recipient to become a Traitor, join the murders and share the prize if the Traitors win.',
+    'The offer is explicit: become a Traitor and work with the existing Traitors from this night onward.',
+    'The recipient is invited to leave the Faithful and become a Traitor. Accepting means helping choose future murder victims.',
+    'The anonymous writer asks the recipient to become a Traitor and join the group that meets in the turret.',
   ],
   ultimatum: [
     'The offer is made and the alternative is made with it, in the same breath, without '
@@ -995,8 +990,7 @@ function _buildBeats(v) {
   push('ask', 'both', _card('both', 'What Was Offered', 'The offer', 'stair',
     '<p>' + _pick(ASK[v.mode], key + '|ask') + '</p>'
     + '<div class="nt-vellum"><p>' + (v.mode === 'note'
-      ? 'Come up to the turret. You have been carrying water for people who would spend you '
-        + 'without blinking. Stop. Burn this.'
+      ? 'You are being offered the chance to become a Traitor. If you accept, come to the turret tonight and join us. Destroy this note.'
       : 'You know what I am. You know what happens to the rest of them. Come up, and it '
         + 'stops happening to you.')
     + '</p><span class="nt-vellum-seal">' + _icon('seal', 30, '#8e1526') + '</span></div>'),
@@ -1270,8 +1264,7 @@ export function rpBuildRecruitment(ep, observer = 'audience') {
     + _icon(v.mode === 'note' ? 'letter' : 'cloak', 36,
       v.mode === 'note' ? '#ded3b4' : '#8e1526') + '<i></i></div>'
     + '<p class="nt-sub">' + (v.mode === 'note'
-      ? 'An offer with no name on it. Saying no to it costs nothing, because nobody was '
-        + 'seen &mdash; which is exactly why it asks so badly.'
+      ? 'An anonymous written offer to become a Traitor. Refusing is survivable because the recipient never sees who delivered it.'
       : 'An offer made in person, in a passage with nowhere to go. Saying no to it is '
         + 'fatal, and it is fatal for one reason: they have seen your face.')
     + '</p>'

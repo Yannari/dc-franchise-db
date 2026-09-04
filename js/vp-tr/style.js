@@ -465,6 +465,8 @@ ${PORTRAIT_CSS}
    both columns at once; the castle only ever gets the right one. Deliberately
    COLDER and flatter than the turret column: another room, another light. */
 .cv-beat{display:grid;grid-template-columns:160px 1fr;gap:0 24px}
+/* castle asleep: no downstairs "meanwhile" scenes, so drop the gutter column */
+.cv-main.cv-no-gutter .cv-beat{grid-template-columns:1fr;gap:0}
 .cv-margin{
   position:relative;padding:8px 18px 8px 0;text-align:right;
   border-right:1px dashed rgba(143,166,194,.24);

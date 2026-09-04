@@ -1114,22 +1114,31 @@ export function rpBuildConclave(ep, observer = 'audience') {
   // class is baked in here from the state the handlers keep; they still own it
   // from the first click onwards. The Round Table does the same thing and this
   // is the pattern for the screens still to come.
+  // THE GUTTER ONLY EXISTS IF THE CASTLE WAS AWAKE FOR IT. `_downstairs`
+  // (js/tr/headless.js) supplies the "meanwhile" scenes; on a night where the
+  // castle is asleep and nothing happened downstairs it returns nothing, and a
+  // reserved-but-blank 160px column left a dead margin down the whole screen.
+  // When NO beat carries a margin, the column is dropped entirely (`cv-no-gutter`
+  // on `.cv-main`) so the turret uses the full width; on a night that does have
+  // a downstairs scene the gutter comes back, blank cells and all.
+  const hasMargin = beats.some(b => b.margin);
   const stream = beats.map((b, i) =>
     '<div class="cv-beat' + (i <= st.idx ? ' cv-vis' : '')
     + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_pick(HOST_LINES[b.hostSlot],
       'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '')
-    // A beat with no castle scene of its own gets an EMPTY gutter cell, not a
-    // recycled one. The column's rule carries on down the page; the minute is
-    // simply blank, because nothing happened in it worth watching.
-    + (b.margin
-      ? '<div class="cv-margin">'
-        + '<span class="cv-margin-ic">' + _icon(b.margin.ic, 14, 'rgba(143,166,194,.55)') + '</span>'
-        + '<span class="cv-margin-time">' + b.margin.t + '</span>'
-        + (b.margin.who ? '<div class="cv-margin-av">' + _av(b.margin.who, 34, 'dim') + '</div>' : '')
-        + '<span class="cv-margin-txt">' + b.margin.m + '</span>'
-        + '</div>'
-      : '<div class="cv-margin cv-margin-quiet"></div>')
+    // With a gutter this episode, a beat with no castle scene of its own gets an
+    // EMPTY cell (the minute was simply blank); with no gutter at all, no cell.
+    + (hasMargin
+      ? (b.margin
+        ? '<div class="cv-margin">'
+          + '<span class="cv-margin-ic">' + _icon(b.margin.ic, 14, 'rgba(143,166,194,.55)') + '</span>'
+          + '<span class="cv-margin-time">' + b.margin.t + '</span>'
+          + (b.margin.who ? '<div class="cv-margin-av">' + _av(b.margin.who, 34, 'dim') + '</div>' : '')
+          + '<span class="cv-margin-txt">' + b.margin.m + '</span>'
+          + '</div>'
+        : '<div class="cv-margin cv-margin-quiet"></div>')
+      : '')
     + '<div>' + b.html + '</div></div>').join('');
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state on
@@ -1167,7 +1176,7 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '</div></div>'
     + '<header class="cv-head">' + observerBadge + '</header>'
     + '<div class="cv-grid">'
-    + '<main class="cv-main">' + stream + '</main>'
+    + '<main class="cv-main' + (hasMargin ? '' : ' cv-no-gutter') + '">' + stream + '</main>'
     + '<aside class="cv-side"><div id="cv-sidebar-inner">' + _sidebar(state, st.idx) + '</div></aside>'
     + '</div></div></div>'
     + '<div class="cv-controls" id="cv-controls-' + suffix + '">'

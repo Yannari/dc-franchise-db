@@ -101,7 +101,21 @@ function _missionScheduleMap() {
  */
 function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
   const outer = gs;
-  const cast = (players || []).map(p => p.name).filter(Boolean);
+  // THE SEASON'S OWN CAST, IN ITS OWN ORDER — not the live `players`. A re-run
+  // (and a resume after a refresh) must replay the SAME season, and the whole
+  // block is deterministic off `seed` + the cast ORDER: selection, seating and
+  // every draw key off it. After a refresh `players` may be a different order,
+  // a superset (the full roster), or empty, and replaying against that produces
+  // a DIFFERENT season — a re-run that fails outright, or one whose diverged
+  // timeline banishes somebody the aired prefix already banished ("banished
+  // twice"). `gs.tr.castOrder` is the authoritative order the season was built
+  // on and it is persisted, so a replay off it reproduces the original exactly.
+  // Stats still come from `players` by NAME (pStats is a name lookup, order-
+  // independent), so this only pins the order, never the roster. The initial
+  // play has no `gs.tr` yet and falls back to the live cast, as before.
+  const savedOrder = (gs && gs.tr && Array.isArray(gs.tr.castOrder) && gs.tr.castOrder.length)
+    ? gs.tr.castOrder.filter(Boolean) : null;
+  const cast = savedOrder || (players || []).map(p => p.name).filter(Boolean);
   if (cast.length < 4) return false;
 
   // ── STAGE 2 FLIPS THE FLAG HERE, and only here ──────────────────────
@@ -176,7 +190,17 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
 export function simulateTraitorsEpisode() {
   if (!gs) return null;
   if (!Array.isArray(gs._trQueue)) {
+    // The queue was lost (a reload that dropped it, an older save). Rebuild it —
+    // but the season may already have aired episodes, so DROP the ones that
+    // aired instead of replaying from episode one on top of them. Rebuilding is
+    // deterministic off the season's seed + `gs.tr.castOrder` (see
+    // _playWholeSeason), so the dropped prefix is exactly what aired; without
+    // this the whole season regenerated and stacked onto the history, which is
+    // the "episode 3 turned into a different episode 3, Jasmine and Zoey
+    // appeared from nowhere" corruption.
+    const aired = (gs.episodeHistory || []).length;
     if (!_playWholeSeason()) return null;
+    if (aired > 0 && Array.isArray(gs._trQueue)) gs._trQueue = gs._trQueue.slice(aired);
   }
   const row = (gs._trQueue || []).shift();
   if (!row) {

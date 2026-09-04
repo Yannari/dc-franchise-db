@@ -260,16 +260,26 @@ function _night(ep, rng) {
   // scheduled, because that is a deliberate beat and not the heuristic firing.
   // The automatic path is spent once a season (the cap) and can be switched off
   // entirely by the Castle Option — either way a PINNED recruitment still runs.
-  const autoRecruitAllowed = !gs.tr.autoRecruited && !gs.tr.noAutoRecruit;
+  // HOW OFTEN THE PACT RECRUITS, BY HOW THIN IT IS. Down to ONE Traitor it is
+  // near-certain — an ultimatum, because the pact ends the moment that one is
+  // banished. At TWO it is the old occasional 45%. At three or more it does not
+  // recruit at all; there is no need. (User-tuned: "1 left = ~100%, 2 = 45%".)
+  const _trLeft = livingTraitors(ep).length;
+  const recruitRate = _trLeft === 1 ? 1.0 : (_trLeft === 2 ? 0.45 : 0);
   // DRAW THE ROLL UNDER THE CONDITION THE ENGINE ALWAYS DREW IT — canRecruit,
-  // not pinned, pact thin — so the game rng stream does not shift on a season
-  // that never hits the cap or has auto recruitment off. The gates apply to the
-  // RESULT below, after the draw, never the draw itself; a season with one
-  // recruit or none is bit-identical.
+  // not pinned, pact thin (rate > 0 is the same "< 3 Traitors" gate) — so the
+  // game rng stream does not shift; only the THRESHOLD moved. The toggle and cap
+  // gate the RESULT below, after the draw, never the draw itself.
   const autoRoll = canRecruit(ep) && !forcedRecruit
-    && livingTraitors(ep).length < 3 && rng() < 0.45;
+    && recruitRate > 0 && rng() < recruitRate;
+  // The optional two-Traitor refill fires at most once a season (no back-to-back
+  // spam) and obeys the "Random recruitment" toggle. The one-Traitor survival
+  // recruit ignores the season cap — losing that Traitor ends the pact — but
+  // still obeys the toggle, so turning recruitment off turns ALL of it off.
+  const autoOn = !gs.tr.noAutoRecruit;
+  const capOk = _trLeft === 1 || !gs.tr.autoRecruited;
   const wantsRecruit = canRecruit(ep)
-    && (forcedRecruit || (autoRoll && autoRecruitAllowed));
+    && (forcedRecruit || (autoRoll && autoOn && capOk));
   if (wantsRecruit) {
     const pick = chooseRecruit(ep, rng);
     if (pick) {

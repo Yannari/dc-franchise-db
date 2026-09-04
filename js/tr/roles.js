@@ -150,8 +150,11 @@ export function offerRecruitment(target, ep, rng = Math.random, { mode = 'note',
   const arch = players.find(p => p.name === target)?.archetype || 'floater';
   // Proportional, never a threshold. Loyalty is the spine of it: a high-loyalty
   // Faithful refuses and dies for it, which is the most characterful outcome
-  // this mechanic has.
-  let p = 0.30
+  // this mechanic has. The base is set so that SAYING YES is the common answer
+  // — most people, faced with "join or you are exposed", take the cloak, and a
+  // refusal is the rare, principled exception it is on the show — while loyalty
+  // still pulls a devoted Faithful back to "no".
+  let p = 0.55
     + ((st.boldness || 5) / 10) * 0.22
     + ((st.strategic || 5) / 10) * 0.22
     - ((st.loyalty || 5) / 10) * 0.42

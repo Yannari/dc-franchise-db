@@ -34,6 +34,7 @@ import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
 import { pStats } from '../players.js';
 import { voteIntentFor } from './state.js';
+import { allianceVoteBias } from './alliances.js';
 import { _lineHash } from './castle/lines.js';
 
 export { alignmentFactId };
@@ -490,7 +491,15 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
       score: suspicion(voter, name, ep) * _voteSuspicionMult
         + (priced ? pactNoise(voter, name, ep) : rng() * 0.35)
         - (priced ? reluctance : 0)
-        + (intent && intent.target === name ? (intent.strength || 0) : 0),
+        + (intent && intent.target === name ? (intent.strength || 0) : 0)
+        // THE BLOC THE VOTER STANDS IN. A TERM beside suspicion, never an
+        // override, and taking no rng draw (see allianceVoteBias): a voter
+        // shields the people in their circle and leans on the loners outside
+        // every circle, so a well-bonded, social, strategic player — Traitor or
+        // not — is protected by the alliance they built, and an isolated one is
+        // the free-agent vote. A strong read on an ally still beats the instinct
+        // to protect them, which is the betrayal the format lives on.
+        + allianceVoteBias(voter, name, ep),
     };
   }).sort((a, b) => b.score - a.score);
   const chosen = scored[0].name;

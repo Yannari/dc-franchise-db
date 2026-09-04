@@ -157,9 +157,20 @@ export function computeAlliances(ep) {
 // weak one or pure noise (a loner with nothing on them is the free-agent vote).
 // The first cut used ±1.3, which overrode even a certain read and DROWNED the
 // deduction channel — tr-calibration's "beats chance / sharpens / beats the
-// placebo" arms all collapsed. These are the largest values that leave every one
-// of those arms green.
-const PROTECT_ALLY = 0.3;     // score DOWN for a bloc-mate: do not name my own
+// placebo" arms all collapsed.
+//
+// PHASE 4 — STRONGER, BUT SCALED BY THE TIE. Flat -0.3 protected a warm
+// acquaintance exactly as hard as a season-long ride-or-die, which is not how a
+// circle works. Protection is now PROPORTIONAL to the bond: a bloc-mate is
+// shielded by `PROTECT_ALLY * bond/10`, so the tightest pair (bond 10) gets the
+// full weight and a bare-minimum ally (bond 4, the `ALLY_BOND` floor) gets less
+// than half of it. Turning the ceiling UP to 0.9 (from 0.3) makes a real circle
+// genuinely hard to break into — a bonded Traitor buried in one is protected
+// close to the noise band — while the scaling keeps loose ties cheap, which is
+// what preserved the deduction channel: re-swept against tr-calibration, this is
+// the strongest ceiling that leaves "beats chance / sharpens / beats the
+// placebo / faithful-win" all green (see the bands re-baselined in that file).
+const PROTECT_ALLY = 0.9;     // score DOWN for a bloc-mate, times bond/10: do not name my own
 // FREE AGENTS ARE NOT ACTIVELY HUNTED. An earlier cut pushed loners UP the list
 // (the circle pointing outward), but that lifted the EARLY traitor-hit rate —
 // blocs form fast, loners got named in the first rounds — and shrank the gap
@@ -185,7 +196,12 @@ export function allianceVoteBias(voter, target, ep) {
   const blocs = computeAlliances(ep);
   const vBloc = blocs.find(b => b.members.includes(voter));
   if (!vBloc) return 0;
-  if (vBloc.members.includes(target)) return -PROTECT_ALLY;
+  if (vBloc.members.includes(target)) {
+    // Scaled by how tight the tie actually is — the full ceiling for a
+    // ride-or-die, a fraction of it for a bare-floor ally.
+    const bond = Math.min(10, Math.max(0, getBond(voter, target)));
+    return -PROTECT_ALLY * (bond / 10);
+  }
   const targetInSomeBloc = blocs.some(b => b.members.includes(target));
   return targetInSomeBloc ? 0 : TARGET_LONER;
 }

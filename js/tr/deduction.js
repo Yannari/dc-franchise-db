@@ -484,6 +484,17 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   // without and cannot drift the murder/ballot draws that follow.
   const intent = voteIntentFor(gs, voter, ep);
 
+  // BLOC COORDINATION WAS TRIED HERE AND REJECTED (Phase 4). Pooling the
+  // circle's reads so a bloc votes as a unit is the obvious way to make an
+  // alliance a power, but it amplifies the deduction channel at EVERY phase:
+  // at strength 0.5 it wrecked late sharpening (a Traitor inside a faithful
+  // bloc steers the pool onto a Faithful), and even at 0.2 it leaked
+  // information EARLY (early lift 0.102 > the 0.10 ceiling — the room was
+  // already sharp in the first half). The calibrated model wants near-chance
+  // early and sharpening late, and any read-amplification breaks that curve.
+  // So alliances strengthen through PROTECTION only (allianceVoteBias, now
+  // bond-scaled), never through coordinated targeting.
+
   const scored = pool.map(name => {
     const priced = reluctance > 0 && fellows.includes(name);
     return {

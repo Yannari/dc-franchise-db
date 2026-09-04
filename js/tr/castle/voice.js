@@ -994,6 +994,16 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── the morning nobody was taken (quiet-night-full-table) ───────────
+  //
+  // All four, and the classification is not a shrug. This scene is two people
+  // arriving at a theory TOGETHER about a full table: nobody is accused,
+  // nobody is asked to account for themselves, and the bond goes up on every
+  // branch. `somebody-was-safe` is the one that looks adverse and is not --
+  // it is the pair getting NEAREST THE TRUTH, and the person it is about is
+  // not in the conversation. Adverse means the respondent is being leaned on,
+  // and in this scene the respondent is being agreed with.
+  'counted-twice', 'they-faltered', 'somebody-was-safe', 'a-message',
   // an alliance aired its strain and survived (trust-circle-breaks)
   'talked-through',
   'agreed', 'airtight', 'alibi-built', 'awake-content', 'blended-in',

@@ -77,6 +77,9 @@ import '../tr/castle/mission-fallout.js';
 import '../tr/castle/consequences.js';
 import '../tr/castle/nightfall.js';
 import '../tr/castle/confrontation.js';
+// The morning nobody was taken. Every other dawn scene in the pool needs a
+// body; a blocked night has none, and had no scene at all.
+import '../tr/castle/quiet-night.js';
 
 /**
  * The season's random stream — and the hash in front of it is load-bearing.
@@ -973,6 +976,27 @@ function _morning() {
     // alone. Everybody came down; only the people watching at home know a
     // name was chosen upstairs and a relic ate it.
     blocked: !!(prev && prev.tr?.conclave?.blocked),
+    // ── HOW LAST NIGHT WAS SHAPED, AND WHY IT IS ON THE MORNING ──────
+    //
+    // Six murder variants write a `variantLine` describing the shape of the
+    // night. Two of them (plain-sight, name-your-own) are rendered by the
+    // conclave screen. THE OTHER FOUR WERE RENDERED NOWHERE AT ALL -- measured
+    // over 40 seasons, 38 firings of on-trial, face-to-face, dungeon and
+    // double produced zero appearances of their own line on any screen of that
+    // night or the following morning. Written, recorded, unreachable, which is
+    // this project's signature bug class.
+    //
+    // THE MORNING AND NOT THE CONCLAVE, because most of these sentences are
+    // about breakfast: "one of the three does not come down to breakfast",
+    // "two of them are eating toast in the morning", "{a} is at breakfast.
+    // {b} is not." Printed on the night screen they would announce who
+    // survives before the murder has been shown.
+    //
+    // AUDIENCE ONLY, gated in the screen's `_view`. The list, the chapel and
+    // the dungeon are things the castle never learns; a player who read this
+    // would know the shape of a night nobody told them about.
+    variantLine: (prev && prev.tr?.conclave?.line) || null,
+    variant: (prev && prev.tr?.conclave?.variant) || null,
     // ── WHAT THE ROOM DOES WITH THE EMPTY PLACE (Plan 9, Task 9) ────────
     //
     // The morning is not a roll call. It has reactions, and every one of them

@@ -572,14 +572,19 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // draw. Measured after: `after-table` 1.43 -> 4.05 scenes an episode,
     // `night` 1.31 -> 2.58, and the sweeps below confirm nothing in either
     // window's pre-existing pool fell under a floor.
-    expect(EVENTS.length).toBe(128);
+    expect(EVENTS.length).toBe(134);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
     // continue a story that already exists between the pair — which is what
     // the flag asserts — and declaring it is what makes guard 1's multiplier
     // available to a scene that can actually use it. No event was added.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(73);
+    // 73 -> 77 on the same 2026-09-04 re-baseline as the branch snapshot
+    // below: `confrontation.js` declares advancers and landed after this
+    // file was last written. `quiet-night-full-table` is NOT one of them --
+    // it opens an arc rather than continuing one -- so it is not in this
+    // number, which is the check that the count moved for the reason given.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(77);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     expect(EVENTS.filter(e => e.citesResidue).length).toBe(63);
@@ -621,7 +626,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // REWRITE verdict on the events already sitting there was that they wrote
     // no thread at all. `one` -> `many` moved again for the same reason as
     // stage 3 (10 -> 23), and the new cell is `trust|night`.
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(48);
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(49);
     // 15 -> 14 (TASK 7 STAGE 6). `suspicion|morning` left the zero list, for
     // the same reason the three `night` cells left it in stage 4: the events
     // already sitting there gained the declaration the audit said they were
@@ -632,7 +637,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       + 'can never be continued here, whatever either continuation lever is set to').toBe(14);
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
       + 'living here can be advanced at most once every five rounds').toBe(12);
-    expect(many, 'cells with two or more advancers').toBe(22);
+    // 22 -> 23: one further cell reached two advancers when the
+    // confrontation family was registered. `none` and `one` are unchanged,
+    // which is what says a cell gained an advancer rather than the shape
+    // of the grid moving underneath all three numbers.
+    expect(many, 'cells with two or more advancers').toBe(23);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -1326,6 +1335,23 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // otherwise print (C3, js/tr/castle/grief.js). `cover-decline-recruit-offer-
 // story:recruit-story-covered` was renamed `recruit-story-kept` because the
 // old identifier contained a banned engine word (C2); it is the same branch.
+// RE-BASELINED 2026-09-04, AND THE CAUSE WAS CHECKED BEFORE THE NUMBERS WERE
+// TOUCHED. This snapshot was written on 2026-09-02 (819f37cd). `confrontation.js`
+// landed on 2026-09-03 with three events, `trust-circle-breaks` and
+// `after-the-circle-harboured-one` grew branches in the same window, and
+// `quiet-night-full-table` was added on the 4th. None of those updated this
+// file, and this file is in vitest.slow.js — excluded from `npm test` — so
+// nothing ever ran it to say so. It has been red since the 3rd.
+//
+// 22 branches ADDED, ZERO REMOVED, which is the only fact that makes a
+// re-baseline safe rather than a way of blessing a regression:
+//
+//   confront-to-the-face          4    (confrontation.js, new)
+//   confront-pile-on              3    (confrontation.js, new)
+//   confront-defend-the-accused   3    (confrontation.js, new)
+//   after-the-circle-harboured-one 4   (betrayal fallout)
+//   trust-circle-breaks           4
+//   quiet-night-full-table        4    (the morning nobody was taken)
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1341,6 +1367,10 @@ const BRANCHES = [
   'after-somebody-goes-tonight:performed-it',
   'after-somebody-goes-tonight:said-it-out-loud',
   'after-somebody-goes-tonight:would-not-say-it',
+  'after-the-circle-harboured-one:closed-ranks',
+  'after-the-circle-harboured-one:couldnt-see-it',
+  'after-the-circle-harboured-one:cut-loose',
+  'after-the-circle-harboured-one:who-else',
   'after-the-count-moved:came-across',
   'after-the-count-moved:flat-denial',
   'after-the-count-moved:moved-off',
@@ -1427,6 +1457,16 @@ const BRANCHES = [
   'callback-warns-newbies:defended-them-instead',
   'callback-warns-newbies:used-it-immediately',
   'callback-warns-newbies:warned',
+  'confront-defend-the-accused:drew-fire',
+  'confront-defend-the-accused:fell-flat',
+  'confront-defend-the-accused:worked',
+  'confront-pile-on:crumbled',
+  'confront-pile-on:overreached',
+  'confront-pile-on:weathered',
+  'confront-to-the-face:blew-up',
+  'confront-to-the-face:cracked',
+  'confront-to-the-face:held',
+  'confront-to-the-face:turned',
   'cover-alibi-crumbles:abandoned-it',
   'cover-alibi-crumbles:checked-against-somebody',
   'cover-alibi-crumbles:collapses',
@@ -1630,6 +1670,10 @@ const BRANCHES = [
   'night-what-we-say-in-the-morning:could-not-agree',
   'night-what-we-say-in-the-morning:one-of-them-lied',
   'night-what-we-say-in-the-morning:settled-it',
+  'quiet-night-full-table:a-message',
+  'quiet-night-full-table:counted-twice',
+  'quiet-night-full-table:somebody-was-safe',
+  'quiet-night-full-table:they-faltered',
   'romance-comfort-after-loss-sparks:grief-spark',
   'romance-comfort-after-loss-sparks:just-comfort',
   'romance-comfort-after-loss-sparks:the-room-noticed',
@@ -1801,6 +1845,10 @@ const BRANCHES = [
   'testing-who-you-walk-with:turned-it-around',
   'testing-who-you-walk-with:wary',
   'testing-who-you-walk-with:would-not-be-picked',
+  'trust-circle-breaks:drifted',
+  'trust-circle-breaks:severed',
+  'trust-circle-breaks:talked-through',
+  'trust-circle-breaks:turned-cold',
   'trust-circle-forms:circle',
   'trust-circle-forms:not-this-week',
   'trust-circle-forms:said-the-word',

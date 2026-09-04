@@ -282,3 +282,84 @@ describe('the morning card knows whether anybody actually died', () => {
     expect(quiet, 'no morning in this sweep was a quiet one').toBeGreaterThan(0);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// EVERY MURDER VARIANT SHOWS ITS OWN SENTENCE
+// ══════════════════════════════════════════════════════════════════════
+//
+// MEASURED BEFORE THE FIX, over 40 seasons, checking every screen of the night
+// AND of the following morning:
+//
+//   plain-sight     13 firings   13 rendered
+//   name-your-own   13           13
+//   on-trial         6            0
+//   face-to-face    12            0
+//   dungeon         11            0
+//   double           9            0
+//
+// Thirty-eight firings of four variants, zero appearances. The sentences exist
+// and are good — "The pact wanted two different people dead and was told it
+// could have both" is the whole explanation of a double-murder night — and
+// they were written, recorded on the row, and shown to nobody. The conclave
+// prints `rec.line` inside the plain-sight branch and the no-argument branch,
+// which is exactly why those two were the two that worked.
+//
+// THEY RENDER ON THE MORNING, not the night. Most of these sentences are about
+// breakfast ("does not come down to breakfast", "eating toast in the morning",
+// "{a} is at breakfast. {b} is not") and on the conclave screen they would
+// announce who survives before the murder has been shown.
+describe('a murder variant is never narrated to nobody', () => {
+  const RUNS2 = [];
+  for (let seed = 1; seed <= 16; seed++) RUNS2.push(season(seed));
+
+  it('every variant with a line renders it exactly once, somewhere', () => {
+    const byVariant = {};
+    for (const run of RUNS2) {
+      const rows = run.episodes;
+      rows.forEach((ep, i) => {
+        const c = ep.tr && ep.tr.conclave;
+        if (!c || !c.line) return;
+        byVariant[c.variant] = byVariant[c.variant] || { n: 0, shown: 0 };
+        byVariant[c.variant].n++;
+        // The night itself, and the morning that reports it.
+        let html = audienceHtml(ep);
+        const next = rows[i + 1];
+        if (next) html += audienceHtml(next);
+        const head = String(c.line).slice(0, 45);
+        const hits = html.split(head).length - 1;
+        if (hits) byVariant[c.variant].shown++;
+        expect(hits, `ep ${ep.num} (${c.variant}) printed its line ${hits} times`)
+          .toBeLessThanOrEqual(1);
+      });
+    }
+    expect(Object.keys(byVariant).length,
+      'no variant with a line was reached at all').toBeGreaterThan(2);
+    for (const [v, s] of Object.entries(byVariant)) {
+      expect(s.shown, `${v}: ${s.n} firings and ${s.shown} of them rendered the line`)
+        .toBe(s.n);
+    }
+  });
+
+  it('never shows the shape of the night to a player', () => {
+    // The list, the chapel and the dungeon are things the castle is never
+    // told. A player reading this would know the shape of a night nobody
+    // mentioned to them.
+    let checked = 0;
+    for (const run of RUNS2) {
+      const rows = run.episodes;
+      rows.forEach((ep, i) => {
+        const c = ep.tr && ep.tr.conclave;
+        if (!c || !c.line) return;
+        const next = rows[i + 1];
+        if (!next) return;
+        const head = String(c.line).slice(0, 45);
+        for (const who of (next.tr.living || []).slice(0, 5)) {
+          checked++;
+          expect(body(rpBuildColdOpen(next, 'player:' + who)).includes(head),
+            `${who} was shown the shape of a night the castle never learned`).toBe(false);
+        }
+      });
+    }
+    expect(checked, 'no player view was checked').toBeGreaterThan(20);
+  });
+});

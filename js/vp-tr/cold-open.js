@@ -813,6 +813,14 @@ const CO_CSS = `
   padding:9px 13px;border-left:2px solid rgba(190,150,90,.55);
   background:rgba(190,150,90,.07);border-radius:2px}
 
+/* the shape of the night — audience only, and marked as such so a reader
+   never mistakes it for something the room at the table knows */
+.co-shape{font-size:14px;line-height:1.6;color:rgba(233,240,245,.8);
+  margin:12px auto 0;max-width:58ch;padding:10px 14px;border-radius:2px;
+  border-left:2px solid rgba(150,110,190,.6);background:rgba(150,110,190,.09)}
+.co-shape span{display:block;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(190,160,225,.85);margin-bottom:5px}
+
 /* ── STICKY CONTROLS ────────────────────────────────────────────────── */
 .co-controls{
   position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -1368,6 +1376,12 @@ function _view(ep, observer) {
     missing,
     // AUDIENCE ONLY — see the note above.
     blocked: isAudience ? !!dawn.blocked : false,
+    // THE SHAPE OF THE NIGHT, and audience-only for the same reason `blocked`
+    // is: the list, the chapel and the dungeon are things the castle is never
+    // told. Four of the six variants had this sentence written and recorded
+    // and rendered nowhere — see the note in `_morning` (js/tr/headless.js).
+    variantLine: isAudience ? (dawn.variantLine || null) : null,
+    variant: isAudience ? (dawn.variant || null) : null,
     // THE REACTIONS THE MORNING EARNS, computed in js/tr/headless.js off bonds
     // and last night's public ballots — never a raw alignment. Faithful-safe
     // on every layer, so it is not stripped. `null` on episode one and on any
@@ -1737,7 +1751,13 @@ function _buildBeats(v) {
 
     // ── WHAT A ROOM DOES WITH IT ──────────────────────────────────────
     push('told', _card('What A Room Does With It', 'After', 'cup',
-      '<p>' + _pick(AFTER_TEXT, key + '|after') + '</p>' + _murmur(key + '|m1')),
+      '<p>' + _pick(AFTER_TEXT, key + '|after') + '</p>' + _murmur(key + '|m1')
+      // AND HOW LAST NIGHT WAS ACTUALLY SHAPED. Only the two variants the
+      // conclave already narrates are skipped, so the sentence appears once a
+      // night and never twice.
+      + ((v.variantLine && v.variant !== 'plain-sight' && v.variant !== 'name-your-own')
+        ? '<p class="co-shape"><span>You only &middot; audience</span>'
+          + _esc(v.variantLine) + '</p>' : '')),
     null, { kind: 'after', down: [...v.room], gap: v.missing.map(x => x.name) });
   } else if (!v.arrival) {
     let inner = '<p>' + _pick(WHOLE_TEXT, key + '|whole') + '</p>'

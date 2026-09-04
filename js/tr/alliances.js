@@ -190,6 +190,22 @@ export function allianceVoteBias(voter, target, ep) {
   return targetInSomeBloc ? 0 : TARGET_LONER;
 }
 
+/**
+ * Were these two an alliance EDGE — a warm bond both leaned into?
+ *
+ * The same test `computeAlliances` runs on every pair, exposed on its own so
+ * the betrayal fallout can ask it about a Traitor who has ALREADY LEFT: it
+ * reads the STORED bond (getBond survives a banishment) and the two stat-based
+ * affinities, never `gs.activePlayers`, so "was this keeper in the revealed
+ * Traitor's circle?" still has a true answer the moment after the Traitor is
+ * removed. Deterministic, no rng — belief-side, no alignment read.
+ */
+export function wasAllied(a, b) {
+  if (!a || !b || a === b) return false;
+  if (getBond(a, b) < ALLY_BOND) return false;
+  return allianceAffinity(a) >= AFFINITY_FLOOR && allianceAffinity(b) >= AFFINITY_FLOOR;
+}
+
 /** Test seam: drop the per-episode cache so a fresh bond graph recomputes. */
 export function _clearAllianceCache() {
   if (gs && gs.tr) gs.tr._allianceCache = null;

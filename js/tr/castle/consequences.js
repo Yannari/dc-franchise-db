@@ -103,6 +103,7 @@ import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { sceneApi, arcContinue, arcAdvanceCiting } from './effects.js';
 import { alignmentAt } from '../roles.js';
+import { wasAllied } from '../alliances.js';
 import { lineFor } from './lines.js';
 import { findOpenThread } from '../threads.js';
 
@@ -581,6 +582,142 @@ registerEvent({
     const bTalks = branch === 'overclaimed' || branch === 'credit-where-due';
     return { branch, pair: [a, b], speaker: bTalks ? b : a, respondent: bTalks ? a : b,
       subject: gone, topic: gone, topicKind: 'after-right', threadId: thread?.id, cited, bondDelta };
+  },
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// AFTER-TABLE 3b. THE CIRCLE HARBOURED ONE — the reveal said Traitor, and
+//    it was somebody {a} had sat with all week
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE RECORD: `round.banishedWasTraitor === true`, plus a PUBLIC alliance edge
+// — `{a}` was in the revealed Traitor's circle. That is the fact the whole
+// castle can see (the format runs on who sits with whom) and it is the fact
+// this scene is about: not "a Traitor is gone" but "the Traitor was one of
+// MINE, and now I have to decide what my own circle is worth." No alignment is
+// read — `wasAllied` reads the stored bond and stat affinity, the same public
+// test the vote bias runs on — so a Faithful may lead this scene freely; being
+// fooled by a Traitor is a Faithful experience, the one nobody is spared.
+//
+// `{a}` IS THE CIRCLE SURVIVOR, `{b}` THE PERSON THEY TALK IT OUT WITH — who
+// may or may not have been in the circle too. Gating on BOTH being circle-mates
+// made the scene almost unreachable: `_sceneActors` draws pairs uniformly (or
+// off an open thread), and two of one small surviving circle land together
+// about 0.4% of a draw — over 120 seasons the scene fired zero times. Requiring
+// only the LEAD to be a circle survivor widens it to any pair that includes one,
+// which is what makes the fallout something the season actually shows.
+//
+// It goes BOTH WAYS by `{a}`'s archetype, on purpose. A loyal survivor closes
+// ranks and holds their remaining people tighter (bond up); a strategic one
+// audits who else sat with the Traitor (paranoia, bond flat); a low-intuition
+// one cannot trust their own read any more (bond down, paranoid); a bold,
+// disloyal one cuts the whole circle loose (bond down hard). WHO was in the
+// circle decides whether it hardens into a faction or scatters into free
+// agents — which is the whole point of building alliances out of the cast entry.
+const CIRCLE_HARBOURED = {
+  'closed-ranks': [
+    '“So one of them wasn’t what I thought,” {a} told {b}. “Fine. I trust who I trust, and I trust harder now.”',
+    '{a} had sat with {gone} all week and did not fall apart about it — {a} pulled the people {a} had left in closer, {b} among them.',
+    '“I’m not going to stop trusting people because {gone} lied to me,” {a} said to {b}. “That is exactly what they would want.”',
+    '{b} expected {a} to be shaken and found {a} steadier instead: fewer people, held tighter, and {a} said as much out loud.',
+    '“I picked wrong on {gone},” {a} admitted to {b}. “I do not think I have picked wrong on everyone.”',
+  ],
+  'who-else': [
+    '“If {gone} fooled me, who else was in that little group?” {a} asked, and {b} could see {a} already listing them.',
+    '{a} stopped grieving {gone} fast and started counting who {gone} had spent the week whispering with, out loud, to {b}.',
+    '“One in that circle usually means two,” {a} said to {b}. Neither of them enjoyed where the sentence pointed.',
+    '{a} walked {b} through everyone {gone} had eaten with, in order, and left the conclusion sitting there for {b} to pick up.',
+    '“I vouched for {gone},” {a} said. “So somebody should be looking hard at me — unless I look harder first.”',
+  ],
+  'couldnt-see-it': [
+    '“I sat next to {gone} every single morning,” {a} said to {b}. “How did I not see one thing?”',
+    '{a} could not get past it: if {a} had missed it in {gone}, {a} had no idea what {a} was missing in anybody else.',
+    '“I would have sworn on {gone},” {a} told {b}, and the way {a} said it made {b} wonder who else {a} had sworn on.',
+    '{a} kept turning it over with {b} — the same week, the same person, and not one moment in it that had felt wrong.',
+    '{b} tried to steady {a} and it did not take, because the lesson of the night was that steady is easy to fake.',
+  ],
+  'cut-loose': [
+    '“I am not carrying {gone}’s name around,” {a} told {b}. “Whatever that group was, I am out of it as of tonight.”',
+    '{a} started putting daylight between {a} and everyone {gone} had been close to, and did not much care who noticed.',
+    '“That circle is a target now,” {a} said to {b}. “I would rather stand alone than be the last one in {gone}’s club.”',
+    '{a} was pleasant about it and completely clear: whatever {a} had been part of, {a} would be seen on {a}’s own now.',
+    '“Nothing personal,” {a} said, which {b} understood to mean {a} was cutting a good many things loose at once.',
+  ],
+};
+
+registerEvent({
+  id: 'after-the-circle-harboured-one',
+  family: 'trust',
+  window: 'after-table',
+  advancesThread: true,
+  // NOT citesResidue. This is a REACTION to tonight's reveal, not a callback:
+  // it opens or advances a trust thread about the betrayal, but it names no
+  // earlier day, so declaring citesResidue would put it in the citing-event
+  // sweep (tr-castle.test.js) as content that promises a citation it never
+  // writes — and its alliance-edge precondition is not constructible in that
+  // sweep's probe world anyway.
+  variationAxes: {
+    outcome: ['tightened', 'fractured', 'paranoid', 'severed'],
+    voice: ['loyalty', 'strategic', 'intuition', 'boldness'],
+    knowledge: ['witnessed'],
+    relationship: ['close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const round = table(ctx);
+    if (!round) return 0;
+    if (round.banishedWasTraitor !== true) return 0;
+    const [x, y] = ctx.actors;
+    const gone = round.banished;
+    // AT LEAST ONE of the pair has to have been in the revealed Traitor's
+    // circle — that person leads. `wasAllied` reads the bond that stood when
+    // `gone` was alive, so it still answers the moment after the banishment.
+    return (wasAllied(x, gone) || wasAllied(y, gone)) ? 4 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'after-the-circle-harboured-one');
+    const sceneWhy = 'sat with a circle-mate the reveal had just called a Traitor';
+    const round = table(ctx);
+    const gone = round.banished;
+    // THE CIRCLE SURVIVOR LEADS. If both were in it, actor order stands; the
+    // reaction card belongs to `{a}` either way.
+    const [x, y] = ctx.actors;
+    const a = wasAllied(x, gone) ? x : y;
+    const b = a === x ? y : x;
+    const st = pStats(a);
+    const bond = getBond(a, b);
+    const branch = forkOn(rng, {
+      // A loyal survivor hardens what circle is left around the loss.
+      'closed-ranks': (st.loyalty / 10) * 0.5 + (st.social / 10) * 0.25 + Math.max(0, bond) / 10 * 0.25,
+      // A strategic survivor turns outward and audits the rest of the circle.
+      'who-else': (st.strategic / 10) * 0.5 + (st.intuition / 10) * 0.3,
+      // A survivor who trusts their own read cannot, tonight, and it shows.
+      'couldnt-see-it': (1 - st.intuition / 10) * 0.45 + (st.temperament / 10) * 0.25 + 0.1,
+      // A bold, low-loyalty survivor treats the circle as a liability and leaves it.
+      'cut-loose': (st.boldness / 10) * 0.45 + (1 - st.loyalty / 10) * 0.4,
+    });
+    const note = line(CIRCLE_HARBOURED[branch], 'after-the-circle-harboured-one', branch, ctx.ep, {
+      a, b, gone,
+    });
+    // The circle either hardens (up) or comes apart (down), by branch. These
+    // sizes match the file's other trust scenes, so the fallout bends the bond
+    // graph — and therefore next episode's blocs and vote bias — without
+    // snapping it.
+    const bondDelta = branch === 'closed-ranks' ? 2
+      : branch === 'who-else' ? -0.5
+        : branch === 'couldnt-see-it' ? -1.5 : -2.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // The two branches where the shared trust actually cracked leave the
+    // survivor rattled going into the night, the same write `after-you-wrote-my-name`
+    // makes and `post-banishment` reads back.
+    if (branch === 'couldnt-see-it' || branch === 'cut-loose') {
+      api.setEmotionalState(a, 'paranoid', { source: sceneWhy });
+    }
+    const kind = (branch === 'closed-ranks') ? 'trust' : 'suspicion';
+    const { thread, cited } = arcContinue(api, kind, [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      subject: gone, topic: gone, topicKind: 'after-right',
+      threadId: thread?.id, cited, bondDelta };
   },
 });
 

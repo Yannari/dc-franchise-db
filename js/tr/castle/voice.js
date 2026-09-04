@@ -636,6 +636,9 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // a circle-mate was revealed a Traitor and the circle came apart, not together
+  // (after-the-circle-harboured-one; its 'closed-ranks' branch is BENIGN below)
+  'who-else', 'couldnt-see-it', 'cut-loose',
   // the story did not survive contact
   'awkward', 'broke', 'collapses', 'frayed', 'overcooked', 'slip', 'suspicious',
   'tell', 'wobbles', 'nearly', 'sleepless', 'sacrificed-ally',

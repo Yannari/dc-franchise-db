@@ -586,6 +586,16 @@ export function revealCascade(name, wasTraitor, ep, rng = Math.random) {
   for (const b of (round.ballots || [])) {
     if (b.channel !== 'banishment' || !living.includes(b.voter)) continue;
     if (b.voted === name) continue;                 // they were right; nothing to answer for
+    // GUILT BY THE COMPANY YOU KEPT — TRIED, MEASURED, REJECTED. It is
+    // dramatically true that a revealed Traitor's circle looks guiltier, and a
+    // first cut boosted a circle-mate keeper's indictment to 0.6. But a Traitor
+    // buries themselves among FAITHFULS, so their circle is mostly Faithful, and
+    // a stronger indictment there is a stronger FALSE positive: tr-calibration's
+    // BOARD PRECISION and BEATS-THE-PLACEBO arms both went red (the engine read
+    // no better than noise once the board filled with confident wrong reads).
+    // The keeper indictment stays flat at 0.5 for everyone; the circle's
+    // fallout is carried by the castle beat and the bond graph instead, where a
+    // false read costs a bond rather than poisoning the deduction channel.
     for (const observer of living) {
       if (observer === b.voter) continue;
       const belief = learn(observer, alignmentFactId(b.voter), {

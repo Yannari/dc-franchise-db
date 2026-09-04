@@ -421,3 +421,36 @@ describe('re-running one episode does not re-air the rest of the season', () => 
     }
   });
 });
+
+// ── GUARD: A RELOAD AFTER A RE-RUN KEEPS THE RE-ROLLED SEASON ─────────
+//
+// `_trQueue` normally survives the save, but if it is ever lost (an IDB quota
+// failure, an older save) simulateTraitorsEpisode rebuilds it from the seed.
+// After a re-run the season was RE-ROLLED, so the rebuild has to reproduce the
+// re-rolled season — replaying the original and stacking it on the re-rolled
+// aired prefix is the "re-run made up new episodes / the ledger disagrees"
+// corruption. This drops the queue by hand (a reload that lost it) and asserts
+// the rebuilt next night is the re-rolled one the intact queue held.
+describe('a reload after a re-run reproduces the re-rolled season', () => {
+  it('rebuilds the re-rolled future, not the original', () => {
+    airWholeSeason(41);
+    const N = 4;
+    expect(rerunTraitorsEpisode(N), 're-run refused').toBe(true);
+    const airedN = simulateTraitorsEpisode();
+    expect(airedN && airedN.num, 're-run episode did not air as N').toBe(N);
+    // The intact queue's next night IS the re-rolled Episode N+1 — the answer.
+    const expected = gsRef._trQueue[0];
+    expect(expected, 'no next night queued').toBeTruthy();
+    const expectKey = expected.num + '::'
+      + (expected.exits || []).map(x => x.name + ':' + x.verb).join('|');
+    // A reload that lost the queue.
+    delete gsRef._trQueue;
+    const rebuilt = simulateTraitorsEpisode();
+    expect(rebuilt, 'nothing aired after the rebuild').toBeTruthy();
+    const rebuiltKey = rebuilt.num + '::'
+      + (rebuilt.exits || []).map(x => x.name + ':' + x.verb).join('|');
+    expect(rebuiltKey,
+      'the rebuild reproduced a different season than the re-rolled one')
+      .toBe(expectKey);
+  });
+});

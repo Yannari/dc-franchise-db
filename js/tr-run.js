@@ -199,7 +199,14 @@ export function simulateTraitorsEpisode() {
     // the "episode 3 turned into a different episode 3, Jasmine and Zoey
     // appeared from nowhere" corruption.
     const aired = (gs.episodeHistory || []).length;
-    if (!_playWholeSeason()) return null;
+    // REPRODUCE THE SEASON THAT ACTUALLY AIRED, re-run included. If this season
+    // was re-run, it was re-rolled from `_trRerollFromEp` with `_trRerollSeed`
+    // (persisted by rerunTraitorsEpisode); replaying without those regenerates
+    // the ORIGINAL season and stacks it on the re-rolled prefix — the "made-up
+    // episodes" corruption. A season that was never re-run has both undefined
+    // and this is the plain replay it always was.
+    if (!_playWholeSeason(gs._trRerollFromEp || null,
+      gs._trRerollSeed == null ? null : gs._trRerollSeed)) return null;
     if (aired > 0 && Array.isArray(gs._trQueue)) gs._trQueue = gs._trQueue.slice(aired);
   }
   const row = (gs._trQueue || []).shift();
@@ -256,6 +263,17 @@ export function rerunTraitorsEpisode(epNum) {
     ^ Math.imul(gs._trRerollNonce, 0x9e3779b1)
     ^ Math.imul(N, 2654435761)) >>> 0;
   if (!_playWholeSeason(N, rerollSeed || 1)) return false;
+  // PERSIST THE REROLL so a reload can reproduce THIS season, not the original.
+  // `_trQueue` normally survives the save intact, but if it is ever lost (an IDB
+  // quota failure, an older save), `simulateTraitorsEpisode` rebuilds it from
+  // the seed — and without these it would rebuild the ORIGINAL, un-rerolled
+  // season and stack it onto the re-rolled aired prefix, which is the "re-run
+  // made up new episodes / the ledger disagrees with itself" corruption. The
+  // aired prefix (episodes 1..N-1) is base-seed deterministic either way, so
+  // only the LATEST reroll point and seed need keeping; a later re-run overwrites
+  // them. Both are plain numbers on `gs`, so they ride the normal save.
+  gs._trRerollFromEp = N;
+  gs._trRerollSeed = rerollSeed || 1;
   // `_playWholeSeason` put the WHOLE re-rolled season on the queue. Keep the
   // AIRED prefix in history (never the replay's) and leave episode N onward — the
   // re-rolled, genuinely different nights — to air.

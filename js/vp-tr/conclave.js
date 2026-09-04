@@ -286,49 +286,49 @@ function _cloakFigure(tone, name) {
 // that carried the number.
 
 const CLIMB = [
-  'The candles in the long room are still lit when they find reasons to leave it. A cup carried to the kitchen and never brought back. A window that wanted shutting. A goodnight said too early, and one said too late so it would not sound like a pair.',
-  'They go up separately and by different routes, which is not caution any more so much as habit. The last one out stops to bank the fire, because leaving it burning would be the kind of small wrong thing somebody remembers in the morning.',
-  'It takes eleven minutes for the room downstairs to empty of them, and nobody in it notices, because nobody in it is counting. That is the whole of the trick and it never stops working.',
-  'One of them says goodnight loudly. One says nothing at all. Another is already on the stair and has been for a minute, listening to the rest of them not arrive together.',
+  'After the other players go to bed, the Traitors leave separately and meet in the turret.',
+  'The Traitors wait until the corridors are empty, then take separate routes to the turret.',
+  'Once the castle is quiet, each Traitor leaves for the turret without drawing attention.',
+  'The Traitors enter the turret one at a time so nobody downstairs sees them together.',
 ];
 const STAIR = [
-  'The west stair is forty-one steps and none of them are even. At the top there is a door with no lock, and it does not need one, because nobody in the castle has ever had a reason to open it.',
-  'The stair turns twice and the second turn is where the noise from below stops. After that it is only their own feet, and the wind through a window nobody has bothered to glaze in two hundred years.',
-  'There is a lantern kept on the fourth landing and it is always exactly where they left it, which tells them what they need to know about who else uses this staircase.',
-  'Cold comes up the stair the wrong way, out of the stone rather than down from the roof. By the top they can see their own breath, and it makes them look, briefly, like people who have been running.',
+  'Nobody else is allowed into this meeting. The Faithfuls will not learn what was discussed here.',
+  'The meeting is private. Only the Traitors and the audience will hear the proposed names.',
+  'Behind the turret door, the Traitors must choose one player to target tonight.',
+  'When the door closes, the Traitors can speak openly about whom they want removed.',
 ];
 const GREET = [
-  'They do not greet each other. There is a way of standing in this room that stands in for it.',
-  'Nobody says hello. Hello is for downstairs, and it costs something up here to be reminded of downstairs.',
-  'They arrange themselves around the table the same way they did the first night, which nobody has ever mentioned and all of them have noticed.',
-  'The door is pushed to rather than shut. It has to be able to be left through quickly, and every one of them knows that without any of them having said it.',
+  'All living Traitors are present. Each may propose a target before the group decides.',
+  'The Traitors take their places and prepare to compare targets.',
+  'The meeting begins with each Traitor allowed to argue for one name.',
+  'They begin by reviewing the players who could threaten or benefit the pact.',
 ];
 
 /** How a Traitor argues, by the term that actually drove the pick. */
 const REASON_LINES = {
   beloved: [
-    'Everybody in that castle likes {t}. Affection is the only thing in this place that outvotes suspicion, and by the end of the week it will be pointed at whoever {sub} points at.',
-    'Nobody will ever put {t} up. That is not a compliment, it is a problem: a person the room cannot bring itself to touch is a person we have to touch ourselves.',
-    'The room carried {t} back across the lawn this afternoon. Ask yourself what that looks like on Friday, and then ask whether we would rather have the answer now or find it out later.',
-    'I have nothing against {t}. I have something against being liked that much, this early, by that many of them.',
+    '{T} is well liked and could influence several votes. If we leave {obj} here, {sub} may become too difficult to remove at the Round Table.',
+    '{T} has strong relationships across the castle. Removing {obj} would weaken the Faithfuls socially.',
+    'Other players listen to {t}. That influence could unite the castle against us later.',
+    '{T} is protected by too many relationships. Tonight may be our safest chance to remove {obj}.',
   ],
   'onto-me': [
-    '{T} said my name at that table. Once is a guess. {Sub} did not sound like {sub} was guessing.',
-    '{T} has been asking who goes up the west stair after ten. Nobody asks a question twice unless they already have half the answer.',
-    'I have been in three conversations this week where {t} was watching me instead of listening to me. That is not paranoia, that is a habit, and habits get written down.',
-    '{T} is two questions away. I am not going to sit here and wait to find out which two.',
+    '{T} has publicly suspected me. Keeping {obj} here gives the Faithfuls another chance to investigate me.',
+    '{T} is watching me closely and may persuade other players to do the same.',
+    '{T} has begun connecting evidence to me. I want {obj} removed before that suspicion spreads.',
+    '{T} is a direct threat to my cover because {sub} already suspects me.',
   ],
   'wasted-decoy': [
-    'Half that room already thinks {t} is one of us. I would rather settle it tonight than let it run and turn into something we cannot steer.',
-    'The room is on {t} anyway. Taking {obj} now looks like exactly what the room already believes, and the room believing something is the closest thing to safety we get.',
-    '{T} is where all the suspicion in this castle currently lives. I say we spend it while it is still worth something.',
-    'Everyone is already pointing at {t}. Let them be right about the wrong person once, and see what it does to their confidence afterwards.',
+    'The Faithfuls already suspect {t}. Removing {obj} wastes a likely Round Table target and forces them to investigate somebody new.',
+    '{T} is already drawing suspicion. If we remove {obj}, the castle loses the person it was most likely to vote against next.',
+    'The castle is focused on {t}. Removing {obj} destroys that false lead before the Faithfuls can use it.',
+    'Several Faithfuls already want to vote for {t}. Removing {obj} takes that easy target away from them.',
   ],
   convenient: [
-    '{T} is nobody&rsquo;s favourite and nobody&rsquo;s problem. Nobody will look up from breakfast.',
-    'There is no argument for {t} and no argument against {obj}, and that is precisely why {sub} costs us the least of anyone at that table.',
-    'Pick the name the room has no feeling about. A castle that feels nothing on Tuesday reasons badly on Wednesday.',
-    'I am not going to pretend this is clever. {T} is the quiet answer, and a quiet answer buys us another quiet week.',
+    '{T} has fewer close allies than the other options. Removing {obj} is less likely to unite the castle against us.',
+    'Nobody is strongly protecting {t}. We can remove {obj} without creating an obvious enemy.',
+    '{T} is the lowest-risk target because fewer players are personally attached to {obj}.',
+    'This is not the most ambitious choice. {T} is simply the target least likely to expose us.',
   ],
   forced: [
     'It is not a choice and we are all going to behave as though it were one. That is the part I mind.',
@@ -347,46 +347,46 @@ const UNSAID = [
 ];
 
 const DIVIDE = [
-  'Nobody raises a voice. That is the thing about this room: it is a negotiation between people who cannot afford to be seen leaving it angry.',
-  'The argument runs about four minutes and is conducted almost entirely in the pauses.',
-  'It is not really a vote. It is a moment where somebody stops talking and somebody else does not, and the room decides it has agreed.',
-  'They talk over the lantern rather than across it, which keeps every face half-lit and makes the whole thing look far more civil than it is.',
+  'The Traitors have proposed different targets. They now compare the risks of each choice.',
+  'The shortlist is divided, so the group must decide which argument matters most tonight.',
+  'More than one name is under consideration. Only one can become the final target.',
+  'The Traitors disagree about the safest target and begin eliminating options.',
 ];
 const OVERRULE_TEXT = [
-  'It is not a vote so much as a moment when the rest of them stop talking and one does not. {T} stays at the table. {T} stays alive. {L} takes {pos} hand off the slip and does not put it anywhere in particular.',
-  '{L} loses it in the space of about nine seconds and does not argue afterwards, which is worse than arguing. {T} will never learn how close this came.',
-  'The room moves without anybody declaring that it has. {L} is still speaking when it becomes clear that {pos} name is not the one going on the letter.',
-  '{W} does not win the argument so much as outlast it. {L} stops, looks at the slip, and lets go of it &mdash; and {t}, who is asleep, goes on being asleep.',
+  '{L} proposed {T}, but the other Traitors reject that target. {T} will remain in the castle tonight.',
+  '{L} cannot persuade the group to choose {T}. The proposal is removed from consideration.',
+  'The group overrules {L}. {T} is not the name that will go on tonight&rsquo;s letter.',
+  '{W}&rsquo;s choice wins the argument. {L}&rsquo;s proposal to target {T} is rejected.',
 ];
 const OVERRULE_KEPT = [
-  'The argument is not withdrawn. That is the thing about this room &mdash; nothing said in it can be taken back, and everything said in it is remembered by the other people who will need it later.',
-  'Losing an argument up here is not like losing one downstairs. Downstairs it is forgotten by breakfast. Up here it is filed.',
-  'Nobody says the word "overruled". Nobody has to. All of them will be able to date this evening from memory in a fortnight.',
-  'It costs nothing tonight, which is exactly the kind of debt this castle specialises in.',
+  'The rejected proposal may create tension inside the pact on a later night.',
+  'The group moves on, but the Traitor who lost the argument may remember being overruled.',
+  'The disagreement is settled for tonight. It may still affect trust inside the pact.',
+  'Everyone accepts the final target, although one Traitor did not get the outcome they wanted.',
 ];
 const LEDGER_LOSS = [
-  '{L} has now been overruled by {w} and is keeping the count. {W} knows {sub2} is keeping the count, and has decided that is a problem for a later night.',
-  '{L} will do what was decided, and do it well, and will never again offer {w} anything that has not been asked for directly.',
-  'Two nights ago they were among the only people in this castle who could speak plainly to one another. Tonight they are two people in a room who agree.',
-  '{W} got the name. {L} got a reason, and a reason is the thing still standing at the end, when the names have all run out.',
+  '{L} was overruled by {W}. That disagreement may reduce trust between them.',
+  '{L} accepts the decision, but may be less willing to support {W} in a future conclave.',
+  '{W} won the argument and {L} lost it. Their working relationship may now be weaker.',
+  '{W}&rsquo;s target was selected. {L} now has a reason to question {W}&rsquo;s priorities.',
 ];
 const LEDGER_QUIET = [
-  'Nobody was overruled, which sounds like the good outcome and is the one that leaves the fewest handholds. They agreed, and none of them learned anything about the others.',
-  'A unanimous room is a room with no story in it, and this pact has now had one of those. They will not get many.',
-  'They agree, and the agreeing takes under a minute, and every one of them notices how easy it is becoming.',
-  'There is nothing to remember about tonight, which is its own kind of problem: the next disagreement will have no practice behind it.',
+  'The Traitors agree on the target. Nobody is overruled tonight.',
+  'The decision is unanimous, so this meeting creates no new conflict inside the pact.',
+  'Every Traitor supports the same target. The group reaches the decision quickly.',
+  'There is no disagreement to resolve: the pact chooses the target together.',
 ];
 const NAME_TEXT = [
-  'Nobody says the word. Nobody has said the word once in this room all season, and that is not squeamishness, it is craft: a name is a thing you can write down.',
-  'The slip goes into the middle of the table and stays there a moment longer than it needs to, because none of them wants to be the one who reaches first.',
-  'What is decided is decided in about the time it takes to put a cup down. That is the part the castle would not believe.',
-  'It is written in a hand none of them will admit to afterwards, which is a precaution, and a very small confession.',
+  'The discussion is finished. This is the target the Traitors have agreed to remove.',
+  'The other proposed names are rejected. The remaining name becomes tonight&rsquo;s target.',
+  'The Traitors reach their decision and prepare the letter for the chosen player.',
+  'The final target is confirmed. The Faithfuls downstairs still know nothing about the decision.',
 ];
 const SEAL_TEXT = [
-  'The wax takes about four seconds to soften and less than one to set. Whoever holds the seal presses it harder than is required.',
-  'The quill is passed rather than offered. It is not a ceremony; it has simply stopped being possible to do this casually.',
-  'Their hand is steady. They are quietly appalled at how steady their hand is.',
-  'A drop of wax lands off the paper and onto the table, where it will still be tomorrow, going unremarked by the whole castle.',
+  'They write the chosen player&rsquo;s name and seal the letter that will be delivered before breakfast.',
+  'The Traitors sign the decision and seal the letter for the chosen player.',
+  'The final name is written down. A sealed letter will inform the player before breakfast.',
+  'With every Traitor committed to the decision, the target&rsquo;s letter is sealed.',
 ];
 const PLAIN_SIGHT_TEXT = [
   'There is no climb tonight and no meeting. One of them decided this over other people&rsquo;s conversation, at a table with the plates still on it, and nobody in the room felt the moment pass.',
@@ -404,16 +404,16 @@ const PLAIN_SIGHT_TEXT = [
  *  unprofessional about it. NOT ONE OF THESE STRINGS NAMES THE HOST. */
 const HOST_LINES = {
   open: [
-    'The castle is asleep, or believes it is, which for our purposes is the same thing. Some of its guests have found reasons to be elsewhere. I would not dream of interrupting them.',
-    'Everybody downstairs has gone up to bed pleased with how the evening went. I do so enjoy the ones who go up smiling.',
-    'There is a room at the top of this castle that appears on no plan of it. Three floors below, somebody is banking a fire and thinking about tomorrow.',
-    'You will notice how quietly this is done. That is not fear. That is competence, and competence is what makes the rest of it so difficult to watch.',
+    'The Faithfuls have gone to bed. The Traitors are now meeting privately to choose a target.',
+    'Tonight, each Traitor may propose a player to remove. The group must agree before leaving the turret.',
+    'This meeting is hidden from the Faithfuls. Only the Traitors know which names are being considered.',
+    'The Traitors are together in the turret. Their decision will determine who receives a letter before breakfast.',
   ],
   shortlist: [
-    'Names go up tonight and only some of them will still be arguable in the morning. Do watch how beautifully polite they are about getting there.',
-    'What follows is a negotiation. I would remind you that everybody being negotiated over is currently asleep and has no representation in the matter.',
-    'They will each make an excellent case. Only one of those cases is actually about the person it names.',
-    'Listen to the reasons rather than the names. The reasons are the only honest thing anybody says in this room.',
+    'Each Traitor will name a preferred target and explain the strategic reason for that choice.',
+    'Several players may be proposed, but the group can select only one final target.',
+    'The shortlist is open. Watch which target each Traitor supports and why.',
+    'The arguments begin now. The final choice may reveal disagreements inside the pact.',
   ],
   overrule: [
     'Somebody has just been told no by the only people in the world who could tell them so. They will remember that. The others are relying on them not to.',
@@ -448,8 +448,9 @@ function _slipBody(s) {
   return '<div class="cv-slip-head">'
     + _av(s.target, 48)
     + '<span class="cv-slip-target">' + _esc(String(s.target).toUpperCase()) + '</span>'
-    + '<span class="cv-slip-by">argued by ' + _esc(s.by) + ' ' + _av(s.by, 28) + '</span></div>'
-    + '<div class="cv-slip-reason">&ldquo;' + s.reason + '&rdquo;</div>';
+    + '<span class="cv-slip-by">proposed by ' + _esc(s.by) + ' ' + _av(s.by, 28) + '</span></div>'
+    + '<div class="cv-slip-reason"><b>' + _esc(s.by) + ' proposes ' + _esc(s.target)
+    + '.</b> ' + _esc(s.by) + "'s reason: &ldquo;" + s.reason + '&rdquo;</div>';
 }
 function _slip(s) {
   return '<div class="cv-slip">' + _slipBody(s)
@@ -521,7 +522,9 @@ function _buildBeats(rec, ep) {
   const key = 'tr|' + (rec.ep || 0) + '|' + (rec.target || '');
   // What this turret has already said tonight. See `_pickAway`.
   const said = new Set();
-  const down = (ep && ep.tr && ep.tr.downstairs) || [];
+  // Episode-level story notes do not carry a time. Only an explicitly timed
+  // scene may be intercut with this private night meeting.
+  const down = ((ep && ep.tr && ep.tr.downstairs) || []).filter(d => d && d.time);
   const argued = rec.argued || [];
   const overruled = rec.overruled || [];
   const plain = rec.variant === 'plain-sight';
@@ -585,8 +588,8 @@ function _buildBeats(rec, ep) {
       i === 0 ? 'The Shortlist Opens' : a.traitor + ' Answers',
       'III. The argument', 'quill',
       '<p>' + (i === 0
-        ? 'The lantern goes in the middle of the table because it has to go somewhere and nobody wants to be the one holding it.'
-        : 'They wait until the last one has finished, which is not the same as agreeing with them.')
+        ? 'The first Traitor names a target and explains why removing that player would help the pact.'
+        : a.traitor + ' proposes another target and explains the advantage to the pact.')
       + '</p>' + _slip({ target: a.target, by: a.traitor, reason, unsaid })),
     i === 0 ? 'shortlist' : null, 'argue');
   });
@@ -671,7 +674,8 @@ function _buildBeats(rec, ep) {
         isVictim(a.target) ? 'Chosen' : 'Overruled')).join('')
       : _tallyRow(rec.target, rec.decidedBy || '', 'chosen', 'Chosen'))
     + '</div>'
-    + '<p style="margin-top:16px">' + _pick(NAME_TEXT, key + '|name') + '</p>'), null, 'name');
+    + '<p style="margin-top:16px"><b>' + _esc(rec.target)
+    + ' is selected as tonight\'s target.</b> ' + _pick(NAME_TEXT, key + '|name') + '</p>'), null, 'name');
 
   // ── VIII. the wax ──
   push('seal', '<div class="cv-card">'
@@ -757,9 +761,8 @@ function _buildBeats(rec, ep) {
   });
   beats.forEach((b, i) => {
     const d = scenes[i] || null;
-    const mins = 40 + i * 4;
     b.margin = d ? {
-      t: (mins >= 60 ? '23:' : '22:') + String(mins % 60).padStart(2, '0'),
+      t: _esc(d.time),
       ic: ICONS[i % ICONS.length],
       who: (d.parties || [])[0] || null,
       m: _esc(d.note),
@@ -1092,7 +1095,7 @@ export function rpBuildConclave(ep, observer = 'audience') {
 
   const observerBadge = '<div class="cv-observer">' + _icon('eye', 13)
     + 'Observer: ' + (observer === 'audience' ? 'audience' : _esc(String(observer).slice(7)))
-    + ' <em>&mdash; you are being shown what the castle is not</em></div>';
+    + ' <em>&mdash; the audience can see this private meeting; the Faithfuls cannot</em></div>';
 
   // THE FIRST PAINT ALREADY SHOWS WHAT HAS BEEN REVEALED.
   //
@@ -1153,8 +1156,8 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '<div class="cv-eyebrow">The Traitors &middot; Night ' + (rec.ep || epNum) + '</div>'
     + '<h1 class="cv-title">THE CONCLAVE</h1>'
     + '<div class="cv-title-rule"><i></i>' + _icon('seal', 44, '#8f1a26') + '<i></i></div>'
-    + '<p class="cv-sub">They climb to the turret while the castle sleeps below, and decide, '
-    + 'calmly, which of the people they had supper with will not come down to breakfast.</p>'
+    + '<p class="cv-sub">The Traitors meet in private to choose tonight&rsquo;s target. '
+    + 'Each proposal, disagreement and final decision is shown below.</p>'
     + '</div></div>'
     + '<header class="cv-head">' + observerBadge + '</header>'
     + '<div class="cv-grid">'

@@ -639,6 +639,9 @@ export const ADVERSE_BRANCHES = new Set([
   // a circle-mate was revealed a Traitor and the circle came apart, not together
   // (after-the-circle-harboured-one; its 'closed-ranks' branch is BENIGN below)
   'who-else', 'couldnt-see-it', 'cut-loose',
+  // an alliance came apart (trust-circle-breaks; 'talked-through' is BENIGN,
+  // 'turned-cold' is already listed below)
+  'drifted', 'severed',
   // the story did not survive contact
   'awkward', 'broke', 'collapses', 'frayed', 'overcooked', 'slip', 'suspicious',
   'tell', 'wobbles', 'nearly', 'sleepless', 'sacrificed-ally',
@@ -991,6 +994,8 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // an alliance aired its strain and survived (trust-circle-breaks)
+  'talked-through',
   'agreed', 'airtight', 'alibi-built', 'awake-content', 'blended-in',
   'buried', 'carried', 'checked-in', 'checks-out', 'circle', 'cleared', 'cold-read',
   'complied', 'confided', 'confirmed', 'consistent', 'convincing', 'cried-alone',

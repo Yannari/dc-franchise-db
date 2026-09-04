@@ -1207,9 +1207,7 @@ function _buildBeats(v) {
     const rows = b.entries.slice(0, 5);
     const top = rows.find(e => e.score > 0) || null;
     const lead = top
-      ? _esc(b.observer) + ' currently suspects ' + _esc(top.name) + ' most. '
-        + 'Recorded reason: <em>' + _esc(top.sourceType || 'unspecified') + ' information'
-        + (top.why ? ' connected to ' + _esc(top.why) : '') + '.</em>'
+      ? _suspicionLead(b.observer, top)
       : _fill(_pickUnique(rows.length ? READ_DROPPED : READ_EMPTY,
         key + '|re|' + i, used), { who: _esc(b.observer), sub: 'they' });
     push('reads', _card(b.observer, 'One player’s suspicions', 'dividers',
@@ -1260,6 +1258,18 @@ function _buildBeats(v) {
   acc > 0.5 ? 'right' : 'wrong'), { kind: 'gap', acc });
 
   return beats;
+}
+
+/** Explain one clue without presenting it as the cause of the full score. */
+export function _suspicionLead(observer, top) {
+  const pct = Math.min(100, Math.round((Number(top?.score) || 0) * 100));
+  const clue = top?.why ? _esc(top.why) : 'No specific incident was retained with this read.';
+  return _esc(observer) + ' currently suspects ' + _esc(top?.name) + ' most. '
+    + _esc(observer) + "'s overall suspicion of " + _esc(top?.name) + ' is ' + pct
+    + '%. That is not the strength of this clue. '
+    + '<em>One recorded clue: ' + clue + '</em> '
+    + _esc(observer) + ' treats it as possible sabotage, not proof that '
+    + _esc(top?.name) + ' is a Traitor.';
 }
 
 /**

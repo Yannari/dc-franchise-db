@@ -502,6 +502,110 @@ registerEvent({
     return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
   },
 });
+// ══════════════════════════════════════════════════════════════════════
+// THE ALLIANCE ENDS — the counterpart to trust-circle-forms
+// ══════════════════════════════════════════════════════════════════════
+//
+// Formation has an event; the break did not, and the back half of a season is
+// mostly breaks (the forms event's own act note says so: "what is left is
+// testing and breaking them"). A warm pair comes apart four ways, by WHO they
+// are: they air it and hold (benign), they quietly cool (drift), one cuts the
+// other loose in the open (severed), or — the darkest, and the "I don't trust
+// you any more, I think you're one of them" the request asked for — the
+// falling-out turns into a Traitor read (turned-cold). No belief is written
+// (no castle file writes beliefs); the bond collapses and a suspicion-shaped
+// thread opens, which is the residue a real read leaves. `turned-cold` leans
+// on INTUITION and on whether `{b}` has already moved against `{a}` at a table,
+// so the flip is earned, not random.
+const CIRCLE_BREAK_LINES = {
+  'talked-through': [
+    '{a} said the thing that had been sitting wrong all week, and {b} heard it, and by the end they were still a pair.',
+    '“Say it,” {b} told {a}. {a} said it, {b} did not flinch, and the alliance came out the other side of it.',
+    'It could have ended in that corridor. Instead {a} and {b} spent an hour on it and decided they were worth keeping.',
+    '{a} nearly walked away from {b} tonight and did not, and both of them knew exactly how close it had been.',
+    '“We are fine,” {b} said, and for once in this castle it was true when somebody said it.',
+  ],
+  drifted: [
+    '{a} and {b} did not fight. They just stopped finishing each other’s sentences, and both of them noticed.',
+    'Nobody ended it. {a} sat somewhere else at breakfast and {b} let {a} go, and that was the whole of it.',
+    'The alliance did not break so much as cool — fewer check-ins, longer pauses, and no plan to fix any of it.',
+    '{a} stopped bringing things to {b} first, {b} stopped asking why, and the unit quietly became two people.',
+    '“We should talk strategy,” {a} said, and then neither of them did, which was the answer.',
+  ],
+  severed: [
+    '“I am not tied to you any more,” {a} told {b}, plainly, and did not soften a word of it.',
+    '{a} ended it in one sentence and {b} did not get a vote on it.',
+    '“Whatever we were, we are not that now,” {a} said, and {b} understood it was meant for tonight, at the table.',
+    '{a} cut {b} loose and made sure it happened where people could see, which is its own kind of message.',
+    '{b} reached for the alliance one last time and {a} was already out the other side of it.',
+  ],
+  'turned-cold': [
+    '{a} looked at {b} and, for the first time, wondered if the person {a} had been trusting was a Traitor.',
+    '“I trusted you,” {a} said to {b}, in the past tense, and the word sitting under it was Traitor.',
+    'It stopped being a falling-out the moment {a} started counting the things {b} had steered {a} away from.',
+    '{a} did not just leave the alliance — {a} left it certain {b} had been using it, and using it for one thing.',
+    '{b} watched {a}’s face turn from friend to suspect and could not find the one sentence that would stop it.',
+  ],
+};
+
+registerEvent({
+  id: 'trust-circle-breaks',
+  family: FAMILY,
+  window: 'evening',
+  // ACT: the mirror of trust-circle-forms. Alliances form early and come apart
+  // late, so this is weighted the other way — rare early, common by the endgame.
+  acts: { early: 0.4, middle: 1.0, late: 1.5 },
+  rare: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['loyalty', 'boldness', 'intuition'],
+    relationship: ['close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // Only a real alliance can break. Same warm-bond floor formation uses.
+    return getBond(a, b) >= 4 ? 1.3 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-circle-breaks');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    // Has `b` already moved against `a` in the open? A ballot or an accusation
+    // `a` heard read out — public, no alignment read — makes the Traitor flip
+    // earned rather than a mood. Scanned across the season, like `_accusedMe`.
+    let struckFirst = 0;
+    for (const r of (gs.tr?.rounds || [])) {
+      if ((r.ballots || []).some(x => x.voter === b && x.voted === a)) struckFirst++;
+      if ((r.accusations || []).some(x => x.accuser === b && x.target === a)) struckFirst++;
+    }
+    const scores = {
+      'talked-through': (sa.loyalty / 10) * 0.45 + Math.max(0, getBond(a, b)) / 10 * 0.3,
+      drifted: (1 - sa.boldness / 10) * 0.4 + (1 - sa.loyalty / 10) * 0.2 + 0.1,
+      severed: (sa.boldness / 10) * 0.4 + (1 - sa.loyalty / 10) * 0.3,
+      // Intuition sees the pattern; being struck at first gives it something to see.
+      'turned-cold': (sa.intuition / 10) * 0.4 + Math.min(0.4, struckFirst * 0.2),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'drifted';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'talked-through' ? 'aired it and kept the alliance'
+      : branch === 'drifted' ? 'let the alliance quietly cool'
+        : branch === 'severed' ? 'cut a partner loose in the open'
+          : 'stopped trusting a partner and started suspecting one';
+    const note = lineFor(CIRCLE_BREAK_LINES[branch], `trust-circle-breaks|${branch}|${ctx.ep}`,
+      { a, b });
+    const bondDelta = branch === 'talked-through' ? 1.5
+      : branch === 'drifted' ? -1.5 : branch === 'severed' ? -3 : -3.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    if (branch === 'turned-cold') api.setEmotionalState(a, 'paranoid', { source: sceneWhy });
+    const t = api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b, threadId: t?.id, bondDelta };
+  },
+});
+
 const COMMIT_LINES = {
   kept: [
     '{b} looked {a} in the eye and said "count on it" — with none of the usual room left around the promise.',

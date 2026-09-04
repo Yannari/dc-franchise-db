@@ -493,7 +493,6 @@ const BELL_WRONG = [
   '{who} counted from the wrong low water. The hatch opened, a box came down, and the sound of it carried.',
   '{who} rang one too many. One box went back onto the sand in front of everybody who had carried it.',
   'The board said one thing and {who} said another, and the bell believed {who}.',
-  '{who} was talked out of the right number by three people who were louder and wronger.',
 ];
 const BELL_ARGUE = [
   '{who} and {other} had the count two apart, at volume, with the water across the road.',
@@ -534,7 +533,9 @@ function _bell(ctx, rng, teams, teamBoxes, boxes) {
           { kind: 'record', player: ringer, field: 'bellMiscount', value: 1,
             source: `${ringer} rang the wrong count and cost ${t.name} a strongbox` },
           { kind: 'suspicion', observer: null, subject: ringer, delta: 0.2,
-            source: `${ringer} miscounted the peal with the board in front of ${slots.them}` },
+            source: `During The Drowned Causeway, ${ringer} rang the bell at the wrong tide count `
+              + `even though the correct count was on the board. The mistake dropped one strongbox `
+              + `and cost ${t.name} two thousand.` },
         ],
         confessional: {
           purpose: 'audience-lie', speaker: ringer,

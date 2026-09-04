@@ -1518,7 +1518,7 @@ function _replayTraitorsEpisode(epNum) {
   }
   const laterEps = (gs.episodeHistory || []).filter(e => e.num > epNum);
   const msg = laterEps.length
-    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum}–${epNum + laterEps.length} will be re-simulated into a genuinely different season. Every earlier episode stays exactly as it is.`
+    ? `Re-run Episode ${epNum}?\n\nEpisode ${epNum} will be re-simulated into a different night, and Episodes ${epNum + 1}–${epNum + laterEps.length} will be cleared — simulate them again from there. Every earlier episode stays exactly as it is.`
     : `Re-run Episode ${epNum} into a different night?`;
   if (!confirm(msg)) return;
 
@@ -1526,18 +1526,16 @@ function _replayTraitorsEpisode(epNum) {
   let ep = null, failure = null;
   try {
     if (rerunTraitorsEpisode(epNum)) {
+      // AIR ONLY THE RE-RUN EPISODE, then stop. Re-running Episode N clears
+      // N+1 onward (rerunTraitorsEpisode leaves the re-rolled future on the
+      // queue but unaired); the viewer simulates forward themselves from here,
+      // exactly as the other simulators behave. An earlier version aired the
+      // whole tail through to the finale so Export stayed enabled, but that made
+      // re-running Episode 2 of an eight-night season silently replay all eight
+      // — the opposite of "re-run this one episode." If N was the finale the
+      // queue is now empty and simulating it lands on `complete` regardless, so
+      // Export still works for the case that actually needed it.
       ep = simulateTraitorsEpisode();
-      // Air the rest of the re-rolled season through to the finale. The confirm
-      // above promised the whole tail re-simulated, and a re-run that stopped one
-      // episode in left the season paused mid-flight — not `complete` — so Export
-      // and Publish stayed disabled ("the export button doesn't go after the
-      // re-run"). Playing it out lands on a finished, exportable season; the
-      // viewer can still step back through the new episodes on the tape.
-      let guard = 0;
-      while (ep && gs.phase !== 'complete' && guard++ < 60) {
-        const next = simulateTraitorsEpisode();
-        if (!next) break;
-      }
     }
   } catch (e) { failure = e; }
 

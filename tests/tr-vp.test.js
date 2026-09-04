@@ -55,7 +55,7 @@ import { rpBuildCastleDay, trCastleDayRevealAll } from '../js/vp-tr/castle-day.j
 import { THEMES as MISSION_THEMES } from '../js/vp-tr/mission-bespoke-themes.js';
 import { rpBuildSelection, trSelectionRevealAll } from '../js/vp-tr/selection.js';
 import { rpBuildArrival, trArrivalRevealAll } from '../js/vp-tr/arrival.js';
-import { rpBuildSuspicion, trSuspicionRevealAll } from '../js/vp-tr/suspicion.js';
+import { rpBuildSuspicion, trSuspicionRevealAll, _suspicionLead } from '../js/vp-tr/suspicion.js';
 import { rpBuildConfessionals, trConfessionalsRevealAll, SPOKEN_POOLS,
   _hasConfessionals } from '../js/vp-tr/confessionals.js';
 // THE CEILING, FROM THE MODULE THAT DECIDES IT. The board's wall is this number
@@ -650,34 +650,29 @@ describe('a bespoke mission scenery can never become a click/scroll trap', () =>
 // castle scene against half the cards and two beats four minutes apart said
 // the same sentence. Repetition is the worse failure of the two: it reads as a
 // bug, and seven plans of this project have been spent on it.
-describe('the irony gutter does not repeat itself', () => {
+describe('an explicitly timed conclave intercut does not repeat itself', () => {
   const gutterLines = html => (html.match(/<span class="cv-margin-txt">([^<]*)<\/span>/g) || [])
     .map(m => m.replace(/<[^>]+>/g, '').trim());
 
-  it('no two gutter lines in one night say the same thing', () => {
-    let withAny = 0;
-    for (const { ep } of NIGHTS) {
-      const lines = gutterLines(rpBuildConclave(ep, 'audience'));
-      if (lines.length) withAny++;
-      expect(new Set(lines).size,
-        'ep ' + ep.num + ': the gutter printed the same castle line twice')
-        .toBe(lines.length);
-    }
-    // ...and it does print SOME, or the guard above is a guard on an empty set
-    expect(withAny, 'no night printed a gutter line at all').toBeGreaterThan(10);
+  it('no explicitly timed scene is printed twice', () => {
+    const ep = NIGHTS[0].ep;
+    const timed = { ...ep, tr: { ...ep.tr, downstairs: [
+      { parties: ['A'], time: '22:40', note: 'The same timed scene.' },
+      { parties: ['B'], time: '22:40', note: 'The same timed scene.' },
+      { parties: ['C'], time: '22:48', note: 'A different timed scene.' },
+    ] } };
+    const lines = gutterLines(rpBuildConclave(timed, 'audience'));
+    expect(lines).toEqual(['The same timed scene.', 'A different timed scene.']);
   });
 
   it('a night with fewer scenes than beats leaves the extra minutes blank', () => {
     // The honest output, and the one the cycling version could never produce.
     // A quiet castle IS quiet; an empty minute says so.
-    const quiet = NIGHTS.find(n => {
-      const html = rpBuildConclave(n.ep, 'audience');
-      const beats = (html.match(/id="cv-step-conclave-\d+"/g) || []).length;
-      return gutterLines(html).length < beats;
-    });
-    expect(quiet, 'no night across four seasons had a quiet minute to check')
-      .toBeTruthy();
-    const html = rpBuildConclave(quiet.ep, 'audience');
+    const ep = NIGHTS[0].ep;
+    const quiet = { ...ep, tr: { ...ep.tr, downstairs: [
+      { parties: ['A'], time: '22:40', note: 'One recorded night scene.' },
+    ] } };
+    const html = rpBuildConclave(quiet, 'audience');
     const beats = (html.match(/id="cv-step-conclave-\d+"/g) || []).length;
     const cells = (html.match(/class="cv-margin[ "]/g) || []).length;
     // one gutter cell per beat, always: the column's rule never breaks
@@ -693,9 +688,9 @@ describe('the irony gutter does not repeat itself', () => {
     // wherever it came from, so the note text is deduped as well as the slot.
     const ep = NIGHTS[0].ep;
     const dup = { ...ep, tr: { ...ep.tr, downstairs: [
-      { parties: ['A'], note: 'The same thing, twice.' },
-      { parties: ['B'], note: 'The same thing, twice.' },
-      { parties: ['C'], note: 'A different thing.' },
+      { parties: ['A'], time: '22:40', note: 'The same thing, twice.' },
+      { parties: ['B'], time: '22:44', note: 'The same thing, twice.' },
+      { parties: ['C'], time: '22:48', note: 'A different thing.' },
     ] } };
     const lines = gutterLines(rpBuildConclave(dup, 'audience'));
     expect(lines).toEqual(['The same thing, twice.', 'A different thing.']);
@@ -1848,6 +1843,33 @@ describe('breakfast prose explains the morning instead of gesturing at it', () =
       expect(vague.test(text), `ep ${ep.num}: breakfast still contains disconnected filler`)
         .toBe(false);
     }
+  });
+});
+
+describe('the conclave keeps untimed day notes out of its night timeline', () => {
+  it('does not assign a fabricated time to a storyline note', () => {
+    const ep = NIGHTS[0].ep;
+    const note = 'A daytime storyline note with no recorded time.';
+    const constructed = { ...ep, tr: { ...ep.tr, downstairs: [
+      { parties: ['A', 'B'], note },
+    ] } };
+    const html = rpBuildConclave(constructed, 'audience');
+    expect(strip(html)).not.toContain(note);
+    expect(html).not.toContain('class="cv-margin-time"');
+  });
+});
+
+describe('the conclave states the decision in direct language', () => {
+  it('names each proposal, its speaker, and the selected target', () => {
+    const night = NIGHTS.find(n => n.ep.tr.conclave.argued.length > 1);
+    expect(night, 'no divided conclave exists to test').toBeTruthy();
+    const rec = night.ep.tr.conclave;
+    const html = strip(rpBuildConclave(night.ep, 'audience'));
+    for (const proposal of rec.argued) {
+      expect(html).toContain(`${proposal.traitor} proposes ${proposal.target}`);
+      expect(html).toContain(`${proposal.traitor}'s reason:`);
+    }
+    expect(html).toContain(`${rec.target} is selected as tonight's target.`);
   });
 });
 
@@ -5621,6 +5643,22 @@ const printedWhy = html => [...noCss(html)
  * than the bar.
  */
 const onRule = v => Math.min(100, Math.round(v * 100));
+
+describe('a suspicion card distinguishes a clue from the overall read', () => {
+  it('does not present one mission mistake as proof of alignment', () => {
+    const lead = strip(_suspicionLead('Brick', {
+      name: 'Bowie', score: 0.56, sourceType: 'deduced',
+      why: 'During The Drowned Causeway, Bowie rang the bell at the wrong tide count '
+        + 'even though the correct count was on the board. The mistake dropped one '
+        + 'strongbox and cost the team two thousand.',
+    }));
+    expect(lead).toContain("Brick's overall suspicion of Bowie is 56%");
+    expect(lead).toContain('not the strength of this clue');
+    expect(lead).toContain('One recorded clue: During The Drowned Causeway');
+    expect(lead).toContain('possible sabotage, not proof');
+    expect(lead).not.toMatch(/deduced information connected to/i);
+  });
+});
 
 describe('the belief record reaches the row at all', () => {
   it('a real season writes a board on every ordinary night, and none on the finale', () => {

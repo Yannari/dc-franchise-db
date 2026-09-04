@@ -33,7 +33,8 @@ import { gs as gsRef, setGs, setPlayers, players, seasonConfig, relationships,
   gsCheckpoints, repairGsSets, TWIST_CATALOG, formatIsRunnable, defaultConfig } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
-import { isTraitorsSeason, simulateTraitorsEpisode, traitorsEpisodesLeft } from '../js/tr-run.js';
+import { isTraitorsSeason, simulateTraitorsEpisode, traitorsEpisodesLeft,
+  rerunTraitorsEpisode } from '../js/tr-run.js';
 import { getEpisodeEliminations, renderEpisodeHistory, renderEpisodeView } from '../js/run-ui.js';
 import { exitVerbs } from '../js/shows.js';
 import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
@@ -375,5 +376,48 @@ describe('the run tab does not print another show\'s words over a castle', () =>
       checked++;
     }
     expect(checked, 'no card was checked').toBeGreaterThan(5);
+  });
+});
+
+// ── GUARD: RE-RUN TRUNCATES THE FUTURE, IT DOES NOT RE-AIR IT ─────────
+//
+// Re-running Episode N when the season has aired past it must clear N+1
+// onward and re-simulate ONLY N, leaving the re-rolled future on the queue for
+// the viewer to step through — the way every other simulator behaves. An
+// earlier version aired the whole tail back through to the finale, so
+// "re-run this episode" of a two-night season silently replayed the entire
+// season. This asserts the one-episode behaviour directly on the run module's
+// own functions (the UI wrapper adds only a confirm() around exactly this).
+describe('re-running one episode does not re-air the rest of the season', () => {
+  it('clears the future and airs only the chosen night', () => {
+    const aired = airWholeSeason(37);
+    expect(aired.length, 'need a multi-night season to test truncation').toBeGreaterThan(4);
+    const N = 3;
+    // Snapshot the exits of every episode that must stay untouched.
+    const priorExits = gsRef.episodeHistory
+      .filter(e => e.num < N)
+      .map(e => ({ num: e.num, exits: (e.exits || []).map(x => x.name).join(',') }));
+
+    expect(rerunTraitorsEpisode(N), 're-run refused').toBe(true);
+    // Truncated to the aired prefix — episodes N and later are gone from history.
+    expect(gsRef.episodeHistory.length, 'history was not truncated to N-1').toBe(N - 1);
+
+    const row = simulateTraitorsEpisode();
+    expect(row, 'the re-run episode did not air').toBeTruthy();
+    // Exactly ONE more episode aired, not the whole tail.
+    expect(gsRef.episodeHistory.length, 're-run aired more than the one episode').toBe(N);
+    expect(row.num, 'the aired episode was not N').toBe(N);
+    // The re-rolled future is still queued (this was not the finale), so the
+    // season is paused mid-flight rather than played to completion.
+    expect(gsRef.phase, 'the season ran to completion instead of stopping at N').toBe('castle');
+    expect(traitorsEpisodesLeft(), 'no future was left to simulate forward').toBeGreaterThan(0);
+
+    // Every earlier episode is byte-for-byte the night it was.
+    for (const p of priorExits) {
+      const now = gsRef.episodeHistory.find(e => e.num === p.num);
+      expect(now, `episode ${p.num} vanished`).toBeTruthy();
+      expect((now.exits || []).map(x => x.name).join(','),
+        `episode ${p.num} changed under a later re-run`).toBe(p.exits);
+    }
   });
 });

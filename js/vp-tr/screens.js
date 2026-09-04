@@ -22,6 +22,7 @@ import { rpBuildRoundTable, trRoundTableRevealAll } from './round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from './cold-open.js';
 import { rpBuildHouseStatus, trHouseStatusRevealAll } from './house-status.js';
 import { rpBuildMission, trMissionRevealAll } from './mission.js';
+import { rpBuildArmoury, trArmouryRevealAll } from './armoury.js';
 import { rpBuildRecruitment, trRecruitmentRevealAll } from './recruitment.js';
 import { rpBuildEndgame, trEndgameRevealAll } from './endgame.js';
 import { rpBuildCastleDay, trCastleDayRevealAll, castleSegmentHasScenes }
@@ -133,6 +134,15 @@ export const TRAITORS_SCREENS = [
     badge: { text: 'Mission', color: '#c8a24a' },
     when: r => !!(r.tr && r.tr.mission),
     build: rpBuildMission, revealAll: trMissionRevealAll, revealAllName: 'trMissionRevealAll' },
+  // THE ARMOURY, IMMEDIATELY AFTER THE AFTERNOON THAT EARNED IT. It is the
+  // mission's own reward and it happens on the way back from it, so it sits
+  // between the mission and the afternoon rather than anywhere near the night.
+  // Registered off the record like everything else here: most afternoons do not
+  // open the room, and those rows must not get a screen.
+  { id: 'tr-armoury', label: 'The Armoury', suffix: 'armoury',
+    badge: { text: 'Armoury', color: '#8fe0c4' },
+    when: r => !!(r.tr && r.tr.armoury && (r.tr.armoury.entrants || []).length),
+    build: rpBuildArmoury, revealAll: trArmouryRevealAll, revealAllName: 'trArmouryRevealAll' },
   // THE AFTERNOON — the road back and the manoeuvring before the table — sits
   // between the mission and the Round Table. Still pre-banishment, still guarded.
   { id: 'tr-castle-afternoon', label: 'The Afternoon', suffix: 'castleday-afternoon',

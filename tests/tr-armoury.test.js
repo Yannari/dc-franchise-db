@@ -21,6 +21,9 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { gs, setPlayers, seasonConfig } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { rpBuildHouseStatus } from '../js/vp-tr/house-status.js';
+import { rpBuildArmoury } from '../js/vp-tr/armoury.js';
+import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
+import { generateTraitorsSummaryText } from '../js/text-backlog.js';
 import roster from '../franchise_roster.json';
 
 const ROSTER = roster.players.slice(0, 20);
@@ -183,5 +186,72 @@ describe('the hesitation it buys', () => {
     expect(rate, `the pact showed no hesitation: hit ${(rate * 100).toFixed(0)}% of `
       + `entrants against ${(chance * 100).toFixed(0)}% by chance`)
       .toBeLessThan(chance - 0.05);
+  });
+});
+
+// ── THE SCREEN ────────────────────────────────────────────────────────
+//
+// The Armoury VP has one job the rest of the screens do not: it must show the
+// group and refuse the outcome, to the right eyes, in BOTH the rendered page
+// and the transcript. Text is searchable, so a backlog that leaked the holder
+// would be worse than a page that did — both arms are asserted.
+describe('the Armoury screen shows the room and withholds the door', () => {
+  it('is registered right after the mission, and only on a night that ran one', () => {
+    const g = season(5);
+    const row = (g.episodeHistory || []).find(e => e.tr?.armoury);
+    expect(row, 'no armoury night to test').toBeTruthy();
+    const ids = TRAITORS_SCREENS.filter(s => s.when(row)).map(s => s.id);
+    expect(ids).toContain('tr-armoury');
+    expect(ids.indexOf('tr-armoury'), 'the Armoury does not follow the mission')
+      .toBe(ids.indexOf('tr-mission') + 1);
+    // A night with no Armoury must not get the screen.
+    const plain = (g.episodeHistory || []).find(e => e.tr && !e.tr.armoury);
+    if (plain) {
+      expect(TRAITORS_SCREENS.find(s => s.id === 'tr-armoury').when(plain)).toBeFalsy();
+    }
+  });
+
+  it('gives every entrant a different door', () => {
+    const g = season(5);
+    const row = (g.episodeHistory || []).find(e => e.tr?.armoury);
+    const html = rpBuildArmoury(row, 'audience');
+    const nums = [...html.matchAll(/opens door ([IVX]+)</g)].map(m => m[1]);
+    expect(nums.length, 'no doors were rendered').toBe(row.tr.armoury.entrants.length);
+    expect(new Set(nums).size, 'two entrants opened the same door: ' + nums.join(','))
+      .toBe(nums.length);
+  });
+
+  it('shows a Faithful the queue and never the find — page and transcript', () => {
+    const g = season(5);
+    const row = (g.episodeHistory || []).find(e => e.tr?.armoury);
+    const a = row.tr.armoury;
+    const outsider = (row.tr.living || []).find(n => !a.entrants.includes(n));
+    expect(outsider, 'everybody was in the armoury').toBeTruthy();
+
+    const page = rpBuildArmoury(row, 'player:' + outsider);
+    // The public half: the names went up in front of the castle.
+    for (const n of a.entrants) expect(page, 'an entrant is missing').toContain(n);
+    // The secret half. The find is rendered as a shield badge and an audience
+    // strip; neither may exist for somebody who was not in the room.
+    expect(page, 'a Faithful was shown a find').not.toMatch(/data-f="1"/);
+    expect(page, 'a Faithful was shown the audience strip').not.toMatch(/You only/);
+
+    const text = generateTraitorsSummaryText(row, 'player:' + outsider);
+    expect(text, 'the transcript leaked the holder to a Faithful')
+      .not.toMatch(/opened the loaded door|cannot be murdered tonight/);
+
+    // ...and the audience does get it, or this arm proves nothing.
+    const aud = generateTraitorsSummaryText(row, 'audience');
+    expect(aud).toMatch(/cannot be murdered tonight/);
+  });
+
+  it('tells the holder about their own door and nobody else’s', () => {
+    const g = season(5);
+    const row = (g.episodeHistory || []).find(e => e.tr?.armoury);
+    const a = row.tr.armoury;
+    const page = rpBuildArmoury(row, 'player:' + a.holders[0]);
+    expect(page, 'the holder was not shown their own find').toMatch(/data-f="1"/);
+    // Exactly one find is visible to them — their own, never a second holder's.
+    expect((page.match(/data-f="1"/g) || []).length).toBe(1);
   });
 });

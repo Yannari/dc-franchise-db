@@ -73,15 +73,31 @@ const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
 
 /** One real season, played once and shared. A season costs about 40ms. */
-function season(seed) {
+function season(seed, cfg) {
   setPlayers(ROSTER);
+  // A SEASON'S OPTIONAL SYSTEMS HAVE TO BE PLAYED, NOT ASSUMED. The Armoury
+  // (js/tr/armoury.js) only runs when the author chose it, so a sweep played
+  // entirely on defaults can never reach its screen — and the reachability
+  // guard below would then report a screen that exists and is never registered,
+  // which is this project's signature bug class pointed at a false positive.
+  // One of the seeds below plays with the room open, so the sweep exercises it
+  // for real instead of being told to skip it.
+  if (cfg) Object.assign(seasonConfig, cfg);
+  else seasonConfig.trShieldSource = 'mission';
   const s = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
   // `gs.episodeHistory` is what the VP reads, and it is written by the season
   // as it plays. Copied out because the next season replaces gs wholesale.
   return { season: s, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) };
 }
 const SEEDS = [1, 3, 7, 11];
-const RUNS = SEEDS.map(season);
+const RUNS = SEEDS.map(sd => season(sd));
+// ...and one more with the Armoury open, so `tr-armoury` is reached by a real
+// night rather than by a builder called directly.
+// Seed 8: four Armouries and a room that never drops below eight, so it
+// exercises the screen without also being the degenerate final-roll season
+// that the standing-roll guard (correctly) objects to.
+RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4, trShieldCount: 1 }));
+seasonConfig.trShieldSource = 'mission';
 
 /** Every episode across every seed that actually held a conclave. */
 const NIGHTS = RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.conclave)
@@ -2115,9 +2131,26 @@ describe('a relic does not name its holder to somebody who was not there', () =>
         expect(all.includes('data-holder'),
           `ep ${ep.num}: the relic carries a holder for ${blind}, who never saw it`)
           .toBe(false);
-        expect(mentions(all, r.holder),
-          `ep ${ep.num}: ${r.holder} is named on the relic to ${blind}, who never saw it`)
-          .toBe(false);
+        // NAMED IS NOT IDENTIFIED, AND THE ARMOURY IS THE CASE THAT SEPARATES
+        // THEM. A Shield won in the open is revealed the moment its holder is
+        // named, so for those the name may not appear at all. An Armoury Shield
+        // is the opposite by construction: the card names the WHOLE GROUP that
+        // went in — that is the public fact the castle actually has, and the
+        // holder is one of them — and the secret survives precisely because
+        // four names are printed and none is singled out. So the group case
+        // asserts the group is complete and nobody is picked out of it, and the
+        // no-name rule stays exactly as strict for every other relic.
+        const isArmoury = (r.via === 'armoury') || (r.entrants || []).length > 0;
+        if (isArmoury) {
+          for (const n of r.entrants) {
+            expect(mentions(all, n),
+              `ep ${ep.num}: the Armoury group is incomplete — ${n} is missing`).toBe(true);
+          }
+        } else {
+          expect(mentions(all, r.holder),
+            `ep ${ep.num}: ${r.holder} is named on the relic to ${blind}, who never saw it`)
+            .toBe(false);
+        }
         expect(all.includes('data-known="0"'),
           `ep ${ep.num}: the relic is not marked unattributed for ${blind}`).toBe(true);
         checked++;

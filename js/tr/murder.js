@@ -10,7 +10,7 @@
 // the room resolves the disagreement on social weight rather than on who is
 // right, and the loser remembers. That last part is why the endgame betrayal
 // has a date on it instead of a schedule.
-import { gs } from '../core.js';
+import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
@@ -67,6 +67,54 @@ function _pairScatter(a, b) {
   return (h >>> 0) / 4294967296;
 }
 
+// How hard a chosen sacrifice is pulled up the list. Applied AFTER the
+// read-quality multiply, like the relic terms, so it is a decision a Traitor
+// makes on purpose rather than a thing a bad read can fumble into.
+const SACRIFICE_PULL = 3;
+
+/**
+ * THE PSYCHOLOGICAL REVERSAL — a Traitor deliberately murdering their OWN
+ * friend to buy cover, and the name they pick, or null.
+ *
+ * Normal conclave logic AVOIDS killing a friend (the room connects it by
+ * breakfast). This is the inversion the format's best players actually run: a
+ * Traitor who is ALREADY under suspicion sacrifices the person everyone knows
+ * they were close to, precisely because "they'd never kill their own friend"
+ * is the sentence the castle says next. It is expensive — you spend a real
+ * ally — so only a scheming archetype under real heat, with a genuine friend
+ * to spend, ever reaches for it, and even then it is a coin nobody flips often.
+ *
+ * DETERMINISTIC, NO rng DRAW. The gate is a string hash (`_lineHash`), the same
+ * discipline `_pairScatter` uses, so a season replays byte-identical from its
+ * seed — a re-run or a reload reproduces the same sacrifice. Computed once per
+ * (traitor, ep) and read per candidate in `formPreference`.
+ */
+function _sacrificeTarget(traitor, ep) {
+  const arch = (players || []).find(p => p && p.name === traitor)?.archetype;
+  // Only the archetypes the format lets scheme: a hero does not do this.
+  if (!['mastermind', 'schemer', 'villain'].includes(arch)) return null;
+  // Only a Traitor who NEEDS cover — someone the room has already been naming.
+  const heatOnMe = _publicHeatAgainst(traitor, ep);
+  if (heatOnMe < 0.15) return null;
+  // A genuine friend to spend: the closest Faithful they are actually bonded to.
+  let friend = null, best = 4.99;
+  for (const n of livingFaithfuls(ep)) {
+    if (n === traitor) continue;
+    const b = getBond(traitor, n);
+    if (b > best) { best = b; friend = n; }
+  }
+  if (!friend) return null;
+  const st = pStats(traitor);
+  // The appetite for it: strategy and nerve, sharpened by how much heat they
+  // are actually carrying. Capped so even an ideal Traitor under fire only
+  // reaches for it about a third of the time.
+  const drive = (st.strategic / 10) * 0.5 + (st.boldness / 10) * 0.3
+    + Math.min(0.4, heatOnMe) * 0.5;
+  const p = Math.min(0.35, drive);
+  const roll = (_lineHash(`sacrifice|${traitor}|${ep}`) >>> 0) / 4294967296;
+  return roll < p ? friend : null;
+}
+
 /**
  * One Traitor's private opinion about who should die tonight.
  *
@@ -88,6 +136,9 @@ export function formPreference(traitor, ep, rng = Math.random) {
   // walk back up the stair with a Dagger in their hand, or null. Per Traitor,
   // never per pact — see shieldSeenBy.
   const knownDagger = daggerSeenBy(traitor, ep);
+  // THE REVERSAL, decided once for the whole night: the friend this Traitor has
+  // chosen to sacrifice for cover, or null. Read per candidate below.
+  const sacrifice = _sacrificeTarget(traitor, ep);
 
   const scored = targets.map(name => {
     const ts = pStats(name);
@@ -104,9 +155,15 @@ export function formPreference(traitor, ep, rng = Math.random) {
 
     // Never someone they visibly clashed with — the room connects it by
     // breakfast — and never someone they cannot bring themselves to name.
+    // UNLESS this is the sacrifice: then the very friendship the avoidance
+    // protects is the point, so the penalty is skipped (and the pull applied
+    // after the read multiply below).
     const bond = getBond(traitor, name);
-    if (bond > 0) score -= (bond / 10) * 0.9;
-    if (bond < -4) score -= 0.6;
+    const isSacrifice = name === sacrifice;
+    if (!isSacrifice) {
+      if (bond > 0) score -= (bond / 10) * 0.9;
+      if (bond < -4) score -= 0.6;
+    }
 
     // How well they weigh any of it. A poor read doesn't just shrink the
     // signal — it hands the decision to noise instead, which is the actual
@@ -134,6 +191,11 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // gameplay edit re-rolling the season, which is the coupling _missionRngFor
     // and _castleRngFor both exist to prevent. Applied after the read-quality
     // multiply so it cannot be scaled away by a Traitor who reads badly.
+    // THE SACRIFICE PULL, applied here beside the relic terms and for the same
+    // reason: after the read-quality multiply, so it is a deliberate play a
+    // badly-reading Traitor cannot scale away. It draws the chosen friend up the
+    // list hard enough to usually win the argument in this Traitor's own head.
+    if (isSacrifice) score += SACRIFICE_PULL;
     if (name === knownShield) score -= KNOWN_SHIELD_PENALTY;
     // THE OTHER DIRECTION. A Faithful carrying a Dagger is a Faithful who gets
     // two votes at a table nobody can predict, and the Traitor who saw it won
@@ -162,7 +224,7 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // actually drove THIS pick instead of recomputing it — a recompute can
     // silently disagree with the number that won, and Task 2 keys
     // murderCost off this label.
-    return { name, score, beloved, heat, accused };
+    return { name, score, beloved, heat, accused, sacrifice: isSacrifice };
   }).sort((a, b) => b.score - a.score);
 
   const pick = scored[0];
@@ -216,6 +278,7 @@ function _accusedMe(traitor, name) {
  * number that actually won.
  */
 function _reasonFor(pick) {
+  if (pick.sacrifice) return 'sacrifice';         // a friend spent for cover
   if (pick.accused > 0) return 'onto-me';
   if (pick.heat > 0.25) return 'wasted-decoy';  // a bad reason, deliberately reachable
   if (pick.beloved >= 0.7) return 'beloved';

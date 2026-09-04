@@ -316,7 +316,7 @@ const REASON_LINES = {
     '{T} has publicly suspected me. Keeping {obj} here gives the Faithfuls another chance to investigate me.',
     '{T} is watching me closely and may persuade other players to do the same.',
     '{T} has begun connecting evidence to me. I want {obj} removed before that suspicion spreads.',
-    '{T} is a direct threat to my cover because {sub} already suspects me.',
+    '{T} is the most dangerous name to me because {sub} already suspects me and will pull others along.',
   ],
   'wasted-decoy': [
     'The Faithfuls already suspect {t}. Removing {obj} wastes a likely Round Table target and forces them to investigate somebody new.',
@@ -329,6 +329,12 @@ const REASON_LINES = {
     'Nobody is strongly protecting {t}. We can remove {obj} without creating an obvious enemy.',
     '{T} is the lowest-risk target because fewer players are personally attached to {obj}.',
     'This is not the most ambitious choice. {T} is simply the target least likely to expose us.',
+  ],
+  sacrifice: [
+    '{T} is my friend, and it is no secret to anyone. That is exactly why it should be {obj}: nobody suspects the person who just lost somebody.',
+    'They have started saying my name. So I give them {t} — someone I am close to — and let them wonder why a Traitor would ever do that.',
+    'It costs me an ally, and it buys me the one thing I cannot make any other way: a reason for the room to cross me off.',
+    'I know how this looks. I am counting on how it looks. You do not kill your own friend unless you are innocent, and I need them believing that.',
   ],
   forced: [
     'It is not a choice and we are all going to behave as though it were one. That is the part I mind.',

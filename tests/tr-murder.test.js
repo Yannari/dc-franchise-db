@@ -771,8 +771,13 @@ describe('the twist catalogue: one shape a night, and each leaves its own trail'
     //
     // If a future change reroutes the rng these seeds stop hitting the state,
     // and the coverage assertion below says so loudly rather than passing.
+    // SEEDS RE-DERIVED after the murder 'sacrifice' reversal shifted outcomes
+    // (js/tr/murder.js): the play changes who dies on some nights, so the old
+    // seeds [613, 1086] stopped hitting the shielded-second double. Re-swept —
+    // 578 (ep4) and 1295 (ep3) each produce exactly one such night. The reversal
+    // takes no rng draw, so this is outcomes moving, not the stream.
     const found = [];
-    for (const seed of [613, 1086]) {
+    for (const seed of [578, 1295]) {
       setPlayers(BIG_ROSTER);
       const s = playTraitorsSeason({ cast: BIG_CAST, seed });
       for (const r of (s.rounds || [])) {

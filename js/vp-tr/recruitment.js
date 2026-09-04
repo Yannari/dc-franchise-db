@@ -53,6 +53,7 @@ import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
+import { ruleReminder } from '../tr-rules.js';
 
 const TR = 'traitors';
 
@@ -583,6 +584,14 @@ const NT_CSS = `
   font-size:19px;line-height:1.5;text-align:left}
 .nt-vellum-seal{position:absolute;right:16px;bottom:12px;opacity:.9}
 
+/* THE RULE, under the note that does not state it. Upright and lettered
+   against the vellum's handwriting: the paper is a character speaking and
+   this is the format speaking, and they must not look like the same voice. */
+.nt-rule{font-size:13px;letter-spacing:.03em;line-height:1.55;
+  color:rgba(159,182,210,.78);text-align:left;margin:12px 0 2px;
+  padding:9px 13px;border-left:2px solid rgba(142,21,38,.6);
+  background:rgba(142,21,38,.08);border-radius:2px}
+
 /* the answer, and it is the only loud thing on the screen */
 .nt-verdict{
   margin:14px 0 4px;padding:18px 20px;border:1px solid rgba(159,182,210,.34);
@@ -982,7 +991,19 @@ function _buildBeats(v) {
     + '<div class="nt-vellum"><p>' + (v.mode === 'note'
       ? 'You are being offered the chance to become a Traitor. If you accept, come to the turret tonight and join us. Destroy this note.'
       : 'I am a Traitor. You must become a Traitor and join us in the turret. If you refuse, you will not return to breakfast.')
-    + '</p><span class="nt-vellum-seal">' + _icon('seal', 30, '#8e1526') + '</span></div>'),
+    + '</p><span class="nt-vellum-seal">' + _icon('seal', 30, '#8e1526') + '</span></div>'
+    // WHAT KIND OF OFFER THIS IS, as a rule and not as atmosphere.
+    //
+    // Recruitment is a SURPRISE rule: the premiere briefing deliberately never
+    // mentions it, because a cast told on day one that Traitors may recruit
+    // spends the whole season watching for it and the show has given that away
+    // for nothing (js/tr/rules.js explains the split). The consequence is that
+    // this screen is the first and only place a viewer can be told, and until
+    // now it told them by implication -- the note's own wording -- which does
+    // not say the thing that actually matters, which is that refusing a NOTE
+    // is survivable and refusing an ULTIMATUM is not.
+    + '<p class="nt-rule">' + _esc(ruleReminder(
+      v.mode === 'ultimatum' ? 'recruitment-ultimatum' : 'recruitment-note') || '') + '</p>'),
   { kind: 'ask' });
 
   // ── the pause ───────────────────────────────────────────────────────

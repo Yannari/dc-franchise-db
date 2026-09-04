@@ -68,6 +68,7 @@ import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { portraitWall, PORTRAIT_WALL_CSS, WALL_MURDERED, WALL_BANISHED } from './portrait-wall.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
+import { ruleReminder } from '../tr-rules.js';
 
 const TR = 'traitors';
 
@@ -796,6 +797,22 @@ const CO_CSS = `
 .co-murmur{font-family:var(--co-hand);font-style:italic;font-size:15px;
   color:rgba(233,240,245,.44);text-align:center;margin:14px 0 0;padding:0 30px}
 
+/* THE RULE, said plainly, under the mood line that is not saying it.
+   NAMED co-explain AND NOT co-rule ON PURPOSE: the --co-rule custom property
+   two hundred lines up is this screen's hairline border colour. A class and a
+   custom property do not actually collide in CSS, so the first name worked and
+   was still wrong -- the next person editing this file would have had to read
+   both to find out which one meant a horizontal line and which meant a
+   paragraph of format rules. (And no backticks in here: this comment lives
+   inside the CSS template literal, so a backtick ends the stylesheet.)
+   Deliberately NOT the handwriting face: a murmur is the castle talking to
+   itself and this is the format talking to the viewer, so it reads as a
+   different voice -- upright, lettered, boxed off the prose above it. */
+.co-explain{font-family:var(--co-body,inherit);font-size:13px;letter-spacing:.03em;
+  color:rgba(233,240,245,.72);text-align:left;margin:12px auto 0;max-width:56ch;
+  padding:9px 13px;border-left:2px solid rgba(190,150,90,.55);
+  background:rgba(190,150,90,.07);border-radius:2px}
+
 /* ── STICKY CONTROLS ────────────────────────────────────────────────── */
 .co-controls{
   position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -1068,11 +1085,53 @@ const WHOLE_AUDIENCE = [
   'You know what was supposed to happen this morning. They do not, and they never will.',
 ];
 
-const DAY_TEXT = [
+// ── the day card, AND WHY THERE ARE THREE POOLS OF IT ──────────────────
+//
+// There was one pool, drawn for every morning the screen builds. Three of its
+// four lines asserted a death ('one fewer player', 'a new murder to
+// investigate', 'the victim confirmed'), and the card that draws them is
+// pushed UNCONDITIONALLY — after a murder, after a blocked murder, and on the
+// morning nobody has died yet.
+//
+// MEASURED, not reasoned about: a 40-season sweep rendering every cold open
+// found a blocked-murder morning closing on 'the morning closes with the
+// victim confirmed' while every chair at that table was full. One in two of
+// the blocked mornings in the sweep drew a line that was false about its own
+// episode. Day one never tripped it, but only by luck of the hash — episode
+// one keys to the same variant every season, so the pool's three bad lines sat
+// one hash apart from being read over a morning where nobody had so much as
+// been accused yet.
+//
+// The fix is the split, not a longer pool: what the day card may assert is
+// decided by WHAT HAPPENED, and no pool contains a line its branch cannot
+// support. DAY_QUIET is the one that has to be careful — it is read on a
+// blocked morning by the audience AND by a player, so it may not know that
+// anything was stopped, only that nobody is gone.
+const DAY_ARRIVAL = [
+  'Breakfast finishes and the castle starts filling itself in — who sits where, who talks '
+  + 'to whom, who is already counting. None of it means anything yet. All of it will.',
+  'The first day begins with nothing behind it. Every read this room makes from here is '
+  + 'built on a morning where nobody had anything to hide yet.',
+  'They go out into the first day of it knowing exactly as much about each other as they '
+  + 'did on the drive, which is nothing, and it is the last morning that will be true.',
+  'And then the day starts, and the castle stops being a building full of strangers and '
+  + 'starts being a room where somebody is lying.',
+];
+const DAY_DEATH = [
   'Breakfast continues, and the players carry what they learned into the rest of the day.',
   'The group begins the day with one fewer player and a new murder to investigate.',
   'Once breakfast ends, the players return to the game and begin comparing suspicions.',
   'The morning closes with the victim confirmed and the surviving players still unsure whom to trust.',
+];
+const DAY_QUIET = [
+  'Breakfast ends with everybody still in it, and the day starts on a morning that gave '
+  + 'the room nothing to work with at all.',
+  'Nobody is carried out of this one. They go into the day with a full table behind them '
+  + 'and the same questions they sat down with.',
+  'The day starts anyway. A morning that took nobody still has to be spent, and this room '
+  + 'is going to spend it arguing about a night it cannot see.',
+  'Every chair gets pushed back in. Whatever last night was, it is going to have to be '
+  + 'guessed at from here, because the table is not going to tell them.',
 ];
 
 // ── the hold: down to the last places, the room watching the door ──────
@@ -1688,15 +1747,37 @@ function _buildBeats(v) {
     // ever built when `_view` left the flag on the view.
     if (v.blocked) {
       inner += '<p class="co-murmur">' + _pick(WHOLE_AUDIENCE, key + '|blocked') + '</p>';
+      // AND THE RULE THAT MADE IT HAPPEN, said plainly.
+      //
+      // The pool above is atmosphere -- 'something between that room and this
+      // one ate it' -- and atmosphere was the ONLY thing a viewer meeting
+      // their first blocked murder was given. The format's single best
+      // deduction event read as the show declining to explain itself. The
+      // registry line says what a shield does; the mood line still sets the
+      // mood underneath it.
+      //
+      // Reachable only inside this branch, which `_view` builds for the
+      // audience alone -- so the reminder cannot leak to a player observer by
+      // construction, and `ruleReminder`'s own gate is the belt to that
+      // braces.
+      const why = ruleReminder('murder-blocked-by-shield', 'audience');
+      if (why) inner += '<p class="co-explain">' + why + '</p>';
     }
     push('count', _card('Nobody Is Missing', 'A full table', 'cup', inner),
       'whole', { kind: 'whole', down: [...v.room] });
   }
 
   // ── and the day starts ──────────────────────────────────────────────
+  // WHICH MORNING THIS IS, decided off `missing` and not off `blocked`.
+  // `blocked` is audience-only by construction (see `_view`), so branching on
+  // it would hand a player observer the death pool on a morning where nobody
+  // died. `missing` is the public fact — who is not at this table — and it is
+  // the same for every observer, which is exactly what this card is allowed to
+  // know.
+  const dayPool = v.arrival ? DAY_ARRIVAL : (v.missing.length ? DAY_DEATH : DAY_QUIET);
   push('day', _card(
     v.arrival ? 'Day One' : 'The Day Starts Anyway', 'Onward', 'sun',
-    '<p>' + _pick(DAY_TEXT, key + '|day') + '</p>'), 'day',
+    '<p>' + _pick(dayPool, key + '|day') + '</p>'), 'day',
   { kind: 'day', down: [...v.room], gap: v.missing.map(x => x.name) });
 
   return beats;

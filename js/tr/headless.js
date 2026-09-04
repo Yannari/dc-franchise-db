@@ -40,6 +40,7 @@ import { buildEpisodeEdit } from './episode-editor.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 import { runEndgame } from './endgame.js';
+import { computeAlliances } from './alliances.js';
 import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
   scoreEndgame } from './crowd.js';
 
@@ -1875,6 +1876,12 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // bug). Snapshotted here so the Day Book's relationship section shows the
       // castle as it stood THEN.
       bonds: _snapshotBonds(),
+      // THE BLOCS AS THEY STOOD TONIGHT — the circles the room votes in, frozen
+      // like the bonds and for the same reason: `computeAlliances` reads the
+      // LIVE bond graph, so a replayed episode would draw the FINAL alliances
+      // over an early night. Snapshotted so The Web shows the castle's real
+      // circles that episode. Members only — public, belief-side, no alignment.
+      alliances: (computeAlliances(ep) || []).map(b => ({ members: [...b.members] })),
       // WHAT THE CASTLE WAS DOING WHILE THE TURRET SAT. Beats written this
       // episode by people who were NOT in the meeting -- the other half of
       // the picture, and the only half the castle itself ever gets.

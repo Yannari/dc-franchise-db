@@ -63,9 +63,19 @@ function _view(ep, observer) {
   }
   const castle = ((b && b.castle) || []).filter(r => r.accusers > 0).slice(0, 8);
 
+  // The blocs the room votes in, as they stood this episode (snapshotted in
+  // headless.js). Trimmed to the living and to real circles (two or more).
+  // Public and belief-side — a bloc is bonds, never an alignment.
+  const alliances = (rec.alliances || [])
+    .map(a => ({ members: (a.members || []).filter(n => liveSet.has(n)) }))
+    .filter(a => a.members.length >= 2)
+    .sort((a, c) => c.members.length - a.members.length);
+  const inABloc = new Set(alliances.flatMap(a => a.members));
+  const freeAgents = living.filter(n => !inABloc.has(n));
+
   return {
     isAudience, watcher, living, truth, friendships, enmities, pact, flipEp,
-    reads, watchedBy, castle,
+    reads, watchedBy, castle, alliances, freeAgents,
     faithfulsLeft: isAudience ? living.filter(n => truth[n] === 'faithful').length : null,
     traitorsLeft: isAudience ? pact.length : null,
   };
@@ -170,6 +180,32 @@ export function rpBuildWeb(ep, observer = 'audience') {
     }).join('')
     + '</div></section>';
 
+  // ── the circles (alliances) ──
+  const allianceHtml = '<section class="wb-sec"><div class="wb-sec-h">' + _icon('seal', 13, '#c9a24a')
+    + ' The Circles</div>'
+    + '<p class="wb-lead">The blocs the castle votes in — people who trust each other and will not write a circle-mate’s name if they can help it. A Traitor who has slipped inside a circle is shielded by it; a free agent, in no circle, is the easy name.</p>'
+    + (v.alliances.length
+      ? '<div class="wb-blocs">' + v.alliances.map((a, i) => {
+        const trs = v.isAudience ? a.members.filter(n => T[n] === 'traitor').length : 0;
+        const tag = v.isAudience && trs
+          ? '<span class="wb-bloc-tag">' + trs + ' cloaked inside</span>' : '';
+        return '<div class="wb-bloc' + (trs ? ' has-t' : '') + '">'
+          + '<div class="wb-bloc-h">Circle ' + (i + 1) + ' <span class="wb-bloc-n">'
+          + a.members.length + '</span>' + tag + '</div>'
+          + '<div class="wb-bloc-faces">' + a.members.map(n =>
+            '<span class="wb-pf"><span class="wb-pf-av">' + _av(n, 40, v.isAudience ? T[n] : null)
+            + '</span><span class="wb-pf-nm">' + _esc(n) + '</span></span>').join('')
+          + '</div></div>';
+      }).join('') + '</div>'
+      + (v.freeAgents.length
+        ? '<div class="wb-free"><div class="wb-free-h">Free agents &middot; in no circle, and the room’s easy names</div>'
+          + '<div class="wb-bloc-faces wb-free-faces">' + v.freeAgents.map(n =>
+            '<span class="wb-pf wb-pf-sm"><span class="wb-pf-av">' + _av(n, 30, v.isAudience ? T[n] : null)
+            + '</span><span class="wb-pf-nm">' + _esc(n) + '</span></span>').join('') + '</div></div>'
+        : '')
+      : '<div class="wb-none">No circles have formed yet — everyone is still on their own.</div>')
+    + '</section>';
+
   const count = v.isAudience
     ? '<span class="wb-cnt-f">' + v.faithfulsLeft + ' Faithful</span><span class="wb-cnt-x">vs</span>'
       + '<span class="wb-cnt-t">' + v.traitorsLeft + ' Traitor' + (v.traitorsLeft === 1 ? '' : 's') + '</span>'
@@ -186,7 +222,7 @@ export function rpBuildWeb(ep, observer = 'audience') {
     + '<div class="wb-sub">Who is close, who is at odds, and who is watching whom</div>'
     + '<div class="wb-count">' + count + '</div></header>'
     + badge
-    + pactHtml + bondsHtml + castleHtml + readsHtml
+    + pactHtml + bondsHtml + allianceHtml + castleHtml + readsHtml
     + '</div></div>';
 }
 
@@ -240,6 +276,23 @@ const WB_CSS = `
 .wb-pair-enemy{border-left:3px solid var(--wb-red)}
 .wb-pf{display:flex;flex-direction:column;align-items:center;gap:2px;width:58px}
 .wb-pf-nm{font-size:11.5px;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--wb-ink)}
+/* ── the circles (alliances) ── */
+.wb-blocs{display:flex;flex-wrap:wrap;gap:12px}
+.wb-bloc{flex:1 1 220px;min-width:200px;border:1px solid var(--wb-line);border-radius:8px;
+  padding:11px 12px 13px;background:linear-gradient(180deg,rgba(201,162,74,.05),rgba(0,0,0,.15))}
+.wb-bloc.has-t{border-color:rgba(192,57,43,.4);background:linear-gradient(180deg,rgba(192,57,43,.08),rgba(0,0,0,.18))}
+.wb-bloc-h{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--wb-dim);margin-bottom:9px}
+.wb-bloc-n{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;
+  border-radius:9px;background:rgba(201,162,74,.18);color:var(--wb-gold);font-weight:700;letter-spacing:0}
+.wb-bloc-tag{margin-left:auto;color:#e0808a;font-style:italic;text-transform:none;letter-spacing:0;font-size:12px}
+.wb-bloc-faces{display:flex;flex-wrap:wrap;gap:10px}
+.wb-pf-av{display:inline-flex}
+.wb-pf-sm{width:44px}
+.wb-pf-sm .wb-pf-nm{max-width:44px;font-size:10.5px}
+.wb-free{margin-top:14px;border-top:1px dashed var(--wb-line);padding-top:12px}
+.wb-free-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--wb-dim);margin-bottom:9px}
+.wb-free-faces{opacity:.82}
 .wb-cord{height:5px;border-radius:3px;background:rgba(255,255,255,.06);position:relative;overflow:hidden;min-width:40px}
 .wb-cord-fill{position:absolute;left:0;top:0;height:100%;border-radius:3px}
 .wb-pair-friend .wb-cord-fill{background:linear-gradient(90deg,#3d6b39,#8fce86);box-shadow:0 0 10px rgba(95,158,87,.7)}

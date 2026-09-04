@@ -1,0 +1,324 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Mockup — The Armoury</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   THE ARMOURY — an iron cabinet wall, opened one door at a time.
+   Prefix: am-   (conclave is cv-, day book db-, suspicion sn-)
+
+   THE IDEA, TAKEN FROM WHAT THE ROOM IS: it is not a ceremony and not a
+   table. It is a COLD STORE with a locked front — iron, stone, one candle —
+   and the drama is mechanical: a door swings, and there is either a shield
+   behind it or there is nothing. So the screen is a WALL OF DOORS that open
+   in turn, and the last card is the only thing the castle actually gets:
+   four faces and no answer.
+   ═══════════════════════════════════════════════════════════════════ */
+:root{
+  --am-void:#05070a;
+  --am-stone:#0d1014;
+  --am-iron:#171c22;
+  --am-iron-lit:#232a33;
+  --am-steel:#8ea0b4;
+  --am-rime:#c8d6e4;          /* the cold light in here */
+  --am-cand:#e0a049;          /* the one warm thing */
+  --am-cand-hot:#ffdb95;
+  --am-shield:#7fd4b8;        /* the find: cold green-silver */
+  --am-shield-hot:#c9fff0;
+  --am-empty:#3b444f;
+  --am-wax:#8f1a26;
+  --am-display:'Fraunces',Georgia,serif;
+  --am-body:'Cormorant Garamond',Georgia,serif;
+  --am-hand:'IM Fell English',Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--am-void);color:var(--am-rime);
+  font-family:var(--am-body);font-size:17px;line-height:1.55}
+.am-root{position:relative;min-height:100vh;overflow:hidden}
+
+/* ── the room itself: stone, a cold draught, one candle out of frame ── */
+.am-scenery{position:absolute;left:0;right:0;top:0;bottom:0;z-index:0;pointer-events:none}
+.am-wall{position:absolute;inset:0;
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(200,214,228,.07) 0%, transparent 60%),
+    radial-gradient(80% 50% at 88% 22%, rgba(224,160,73,.13) 0%, transparent 62%),
+    linear-gradient(180deg,#0a0d11 0%,#05070a 100%)}
+/* mortar courses — stone, not a texture image */
+.am-courses{position:absolute;inset:0;opacity:.5;
+  background-image:repeating-linear-gradient(0deg,transparent 0 46px,rgba(255,255,255,.035) 46px 47px),
+    repeating-linear-gradient(90deg,transparent 0 118px,rgba(255,255,255,.025) 118px 119px)}
+.am-cold{position:absolute;inset:0;
+  background:linear-gradient(200deg,rgba(127,212,184,.05),transparent 46%)}
+.am-vig{position:absolute;inset:0;box-shadow:inset 0 0 260px 70px #04060a}
+.am-grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;
+  background-image:radial-gradient(rgba(255,255,255,.55) .5px,transparent .5px);
+  background-size:3px 3px}
+/* dust falling through the candle cone */
+.am-mote{position:absolute;width:2px;height:2px;border-radius:50%;
+  background:rgba(255,219,149,.5);animation:am-drift linear infinite}
+@keyframes am-drift{from{transform:translateY(-8vh)}to{transform:translateY(108vh)}}
+
+.am-body{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 22px 120px}
+
+/* ── the lockup ── */
+.am-hero{padding:74px 0 30px;text-align:center}
+.am-eyebrow{font-family:var(--am-display);font-weight:600;font-size:10px;
+  letter-spacing:.46em;text-transform:uppercase;color:var(--am-steel)}
+.am-title{font-family:var(--am-display);font-weight:900;font-size:clamp(46px,8vw,86px);
+  margin:12px 0 0;letter-spacing:.01em;color:#eef4fa;
+  transform:scaleX(.86);text-shadow:0 0 42px rgba(200,214,228,.18)}
+.am-rule{display:flex;align-items:center;justify-content:center;gap:14px;margin:16px 0 0}
+.am-rule i{height:1px;width:120px;background:linear-gradient(90deg,transparent,rgba(200,214,228,.4),transparent)}
+.am-sub{font-family:var(--am-hand);font-style:italic;color:var(--am-steel);
+  max-width:620px;margin:16px auto 0;font-size:19px}
+
+/* ── who earned it: the public half, stated first ── */
+.am-earned{margin:34px 0 0;border:1px solid rgba(200,214,228,.14);
+  background:linear-gradient(180deg,rgba(23,28,34,.8),rgba(13,16,20,.6));padding:18px 20px}
+.am-earned-h{font-family:var(--am-display);font-size:11px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--am-cand);margin-bottom:4px}
+.am-earned-p{font-family:var(--am-hand);font-style:italic;color:var(--am-steel);margin:0 0 14px}
+.am-queue{display:flex;gap:16px;flex-wrap:wrap}
+.am-q{display:flex;flex-direction:column;align-items:center;gap:6px;width:88px}
+.am-q-av{width:60px;height:60px;border-radius:50%;border:2px solid rgba(200,214,228,.3);
+  background:linear-gradient(160deg,#2a323c,#141a20);display:grid;place-items:center;
+  font-family:var(--am-display);font-weight:700;font-size:22px;color:#cfe0f0}
+.am-q-nm{font-family:var(--am-display);font-weight:600;font-size:13px;text-align:center}
+.am-q-ord{font-family:var(--am-hand);font-style:italic;font-size:12px;color:var(--am-steel)}
+
+/* ── THE CABINET WALL ── */
+.am-wallrow{margin:40px 0 0}
+.am-wall-h{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.am-wall-h b{font-family:var(--am-display);font-size:12px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--am-cand);font-weight:600}
+.am-wall-h span{font-family:var(--am-hand);font-style:italic;color:var(--am-steel);font-size:15px}
+.am-doors{display:flex;flex-direction:column;gap:0}
+/* ONE TURN, ONE ROW. The first cut laid the four cabinets out as a grid and
+   each turn's prose was then trapped in a 190px column — four narrow ribbons of
+   italic. A turn is a person walking up to a wall on their own, so it is a row:
+   the cabinet on the left at a fixed size, and everything said about it beside
+   it with room to be a sentence. */
+.am-turn{display:grid;grid-template-columns:186px 1fr;gap:26px;align-items:center;
+  padding:24px 0;border-bottom:1px solid rgba(200,214,228,.09)}
+.am-turn:last-child{border-bottom:none}
+.am-turn-body{min-width:0}
+.am-turn-who{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.am-turn-nm{font-family:var(--am-display);font-weight:700;font-size:25px;color:#eef4fa}
+.am-turn-ord{font-family:var(--am-hand);font-style:italic;color:var(--am-steel);font-size:15px}
+.am-turn-out{margin-left:auto;font-family:var(--am-display);font-weight:700;font-size:11px;
+  letter-spacing:.26em;text-transform:uppercase;padding:5px 11px;border:1px solid}
+.am-turn-out[data-f="1"]{color:var(--am-shield-hot);border-color:rgba(127,212,184,.55);
+  background:rgba(127,212,184,.08)}
+.am-turn-out[data-f="0"]{color:#6f7a87;border-color:rgba(200,214,228,.18)}
+
+/* one cabinet: iron frame, a door that swings on its hinge */
+.am-door{position:relative;aspect-ratio:3/4;perspective:900px}
+.am-turn .am-door{width:186px}
+.am-door-frame{position:absolute;inset:0;border:2px solid #2b333d;border-radius:3px;
+  background:
+    radial-gradient(90% 60% at 50% 0%, rgba(255,219,149,.12), transparent 60%),
+    linear-gradient(180deg,#0a0d11,#12161c);
+  overflow:hidden;box-shadow:inset 0 0 40px rgba(0,0,0,.9)}
+/* what is inside, revealed when the door swings */
+.am-inside{position:absolute;inset:12px;display:grid;place-items:center;text-align:center;
+  background:radial-gradient(60% 50% at 50% 45%, rgba(0,0,0,.5), rgba(0,0,0,.85));
+  border:1px solid rgba(255,255,255,.05)}
+.am-inside-empty{font-family:var(--am-hand);font-style:italic;color:var(--am-empty);font-size:16px}
+.am-shield-ico{filter:drop-shadow(0 0 18px rgba(127,212,184,.6))}
+.am-found-cap{font-family:var(--am-display);font-weight:700;font-size:12px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--am-shield-hot);margin-top:8px}
+/* the door leaf */
+.am-leaf{position:absolute;inset:0;transform-origin:left center;
+  transition:transform .9s cubic-bezier(.22,.9,.25,1);
+  background:
+    repeating-linear-gradient(90deg,#1b212a 0 22px,#161b23 22px 44px),
+    linear-gradient(180deg,#232a33,#12171d);
+  border:1px solid #2f3945;border-radius:2px;
+  box-shadow:inset -14px 0 26px rgba(0,0,0,.6), 2px 0 12px rgba(0,0,0,.7);
+  display:grid;place-items:center}
+.am-door.open .am-leaf{transform:rotateY(-114deg)}
+.am-leaf-no{font-family:var(--am-display);font-weight:900;font-size:34px;color:#3d4956}
+.am-handle{position:absolute;right:12px;top:50%;width:9px;height:26px;border-radius:5px;
+  background:linear-gradient(180deg,#7d8896,#3c4551);transform:translateY(-50%);
+  box-shadow:0 0 8px rgba(0,0,0,.8)}
+.am-plate{position:absolute;left:10px;top:10px;font-family:var(--am-hand);font-style:italic;
+  font-size:12px;color:#6d7987;letter-spacing:.08em}
+/* who is opening it */
+.am-door-nm{margin-top:9px;text-align:center;font-family:var(--am-display);font-weight:600;font-size:15px}
+.am-door-sub{text-align:center;font-family:var(--am-hand);font-style:italic;
+  font-size:13px;color:var(--am-steel)}
+.am-door.found .am-door-frame{border-color:rgba(127,212,184,.5);
+  box-shadow:inset 0 0 40px rgba(0,0,0,.9),0 0 34px rgba(127,212,184,.22)}
+
+/* ── the beat cards between doors ── */
+.am-beat{border-left:2px solid rgba(224,160,73,.5);padding:8px 0 8px 18px;margin:14px 0 0;
+  font-family:var(--am-hand);font-style:italic;color:#b9c8d8;font-size:18px}
+
+/* ── THE LAST CARD: what the castle gets ── */
+.am-silence{margin:44px 0 0;border:1px solid rgba(143,26,38,.5);
+  background:linear-gradient(180deg,rgba(30,10,13,.75),rgba(10,12,16,.85));padding:26px 24px;
+  text-align:center;position:relative;overflow:hidden}
+.am-silence::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(70% 60% at 50% 0%,rgba(143,26,38,.25),transparent 60%)}
+.am-silence-h{font-family:var(--am-display);font-weight:900;font-size:26px;color:#f0dfe2;
+  letter-spacing:.02em;position:relative}
+.am-silence-p{font-family:var(--am-hand);font-style:italic;color:#c7b3b6;max-width:640px;
+  margin:10px auto 20px;position:relative;font-size:18px}
+.am-lineup{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;position:relative}
+.am-l{display:flex;flex-direction:column;align-items:center;gap:7px;width:96px}
+.am-l-av{width:66px;height:66px;border-radius:50%;border:2px solid rgba(240,223,226,.35);
+  background:linear-gradient(160deg,#2a323c,#141a20);display:grid;place-items:center;
+  font-family:var(--am-display);font-weight:700;font-size:24px;color:#e6eef6}
+.am-l-nm{font-family:var(--am-display);font-weight:600;font-size:14px}
+.am-l-q{font-family:var(--am-display);font-weight:900;font-size:20px;color:var(--am-wax)}
+.am-note{margin-top:18px;font-family:var(--am-hand);font-style:italic;color:#8f9aa8;font-size:15px;
+  position:relative}
+
+/* audience-only strip */
+.am-truth{margin:22px 0 0;border:1px dashed rgba(127,212,184,.4);padding:14px 16px;
+  background:rgba(127,212,184,.05);display:flex;align-items:center;gap:14px}
+.am-truth-tag{font-family:var(--am-display);font-weight:700;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--am-shield);white-space:nowrap}
+.am-truth-txt{font-family:var(--am-hand);font-style:italic;color:#a9c9c0;font-size:16px}
+
+/* ── sticky reveal controls ── */
+.am-controls{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;gap:14px;
+  align-items:center;justify-content:center;padding:14px;
+  background:linear-gradient(0deg,rgba(5,7,10,.97),rgba(5,7,10,.6) 70%,transparent)}
+.am-btn{font-family:var(--am-display);font-weight:600;font-size:12px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--am-rime);background:rgba(23,28,34,.9);
+  border:1px solid rgba(200,214,228,.28);padding:11px 20px;cursor:pointer;border-radius:2px}
+.am-btn:hover{border-color:var(--am-cand);color:var(--am-cand-hot)}
+.am-counter{font-family:var(--am-display);font-weight:700;font-size:13px;letter-spacing:.18em;
+  color:var(--am-steel)}
+
+.am-step{opacity:0;height:0;overflow:hidden;pointer-events:none;transition:opacity .5s}
+.am-step.vis{opacity:1;height:auto;overflow:visible;pointer-events:auto}
+@media(prefers-reduced-motion:reduce){
+  .am-leaf{transition:none}.am-mote{display:none}.am-step{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="am-root">
+  <div class="am-scenery" aria-hidden="true">
+    <div class="am-wall"></div><div class="am-courses"></div>
+    <div class="am-cold"></div><div class="am-vig"></div><div class="am-grain"></div>
+    <div id="motes"></div>
+  </div>
+
+  <div class="am-body">
+    <div class="am-hero">
+      <div class="am-eyebrow">The Traitors &middot; Night 4</div>
+      <h1 class="am-title">THE ARMOURY</h1>
+      <div class="am-rule"><i></i>
+        <svg width="30" height="34" viewBox="0 0 30 34"><path d="M15 2 L28 7 V17 C28 25 22 30 15 32 C8 30 2 25 2 17 V7 Z"
+          fill="none" stroke="#7fd4b8" stroke-width="2"/></svg><i></i></div>
+      <p class="am-sub">Four of them won the afternoon. They go in one at a time, and each opens
+        one door. Behind one of these doors is a shield.</p>
+    </div>
+
+    <div class="am-earned">
+      <div class="am-earned-h">Who earned it &middot; the whole castle watched this</div>
+      <p class="am-earned-p">The Bone Market went well, and it went well because of these four.
+        They were told to wait at the bottom of the stair and go up in turn.</p>
+      <div class="am-queue">
+        <div class="am-q"><div class="am-q-av">C</div><div class="am-q-nm">Chef Hatchet</div><div class="am-q-ord">first</div></div>
+        <div class="am-q"><div class="am-q-av">B</div><div class="am-q-nm">Brick</div><div class="am-q-ord">second</div></div>
+        <div class="am-q"><div class="am-q-av">B</div><div class="am-q-nm">Brody</div><div class="am-q-ord">third</div></div>
+        <div class="am-q"><div class="am-q-av">A</div><div class="am-q-nm">Axel</div><div class="am-q-ord">last</div></div>
+      </div>
+    </div>
+
+    <div class="am-wallrow">
+      <div class="am-wall-h"><b>The wall</b><span>Twelve doors, four turns, one shield.</span></div>
+      <div class="am-doors" id="doors"></div>
+    </div>
+
+    <div class="am-step" id="s-silence">
+      <div class="am-silence">
+        <div class="am-silence-h">Nobody said a word on the way out</div>
+        <p class="am-silence-p">All four came back down the stair with their hands empty and their
+          faces doing nothing at all. The castle knows exactly who went up there. It will not be
+          told which of them is safe tonight, and neither will the Traitors.</p>
+        <div class="am-lineup">
+          <div class="am-l"><div class="am-l-av">C</div><div class="am-l-nm">Chef Hatchet</div><div class="am-l-q">?</div></div>
+          <div class="am-l"><div class="am-l-av">B</div><div class="am-l-nm">Brick</div><div class="am-l-q">?</div></div>
+          <div class="am-l"><div class="am-l-av">B</div><div class="am-l-nm">Brody</div><div class="am-l-q">?</div></div>
+          <div class="am-l"><div class="am-l-av">A</div><div class="am-l-nm">Axel</div><div class="am-l-q">?</div></div>
+        </div>
+        <div class="am-note">One shield between four people is four people the pact cannot touch
+          without spending the night on a wall.</div>
+      </div>
+      <div class="am-truth">
+        <span class="am-truth-tag">You only &middot; audience</span>
+        <span class="am-truth-txt">Brody opened the third door. Brody cannot be murdered tonight,
+          and has not told a soul.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="am-controls">
+    <button class="am-btn" onclick="next()">&rsaquo; Continue</button>
+    <span class="am-counter" id="counter">1 / 6</span>
+    <button class="am-btn" onclick="all()">Reveal all</button>
+  </div>
+</div>
+
+<script>
+const DOORS = [
+  { n: 'Chef Hatchet', plate: 'IV',  no: '4',  found: false, line: 'Chef Hatchet takes the fourth door because it is nearest, and does not look back at the others.' },
+  { n: 'Brick',        plate: 'IX',  no: '9',  found: false, line: 'Brick counts along the wall to nine, opens it squarely, and stands there a moment longer than the door deserves.' },
+  { n: 'Brody',        plate: 'II',  no: '2',  found: true,  line: 'Brody goes to the second door without thinking about it at all.' },
+  { n: 'Axel',         plate: 'XI',  no: '11', found: false, line: 'Axel is last up, with two doors already hanging open, and picks the one furthest from both.' },
+];
+const shield = '<svg class="am-shield-ico" width="58" height="66" viewBox="0 0 30 34"><path d="M15 2 L28 7 V17 C28 25 22 30 15 32 C8 30 2 25 2 17 V7 Z" fill="rgba(127,212,184,.16)" stroke="#c9fff0" stroke-width="2"/><path d="M10 17 l3.6 3.6 L21 13" fill="none" stroke="#c9fff0" stroke-width="2.4" stroke-linecap="round"/></svg>';
+const ORD=['first','second','third','last'];
+document.getElementById('doors').innerHTML = DOORS.map((d,i)=>`
+  <div class="am-step" id="s-${i}">
+    <div class="am-turn">
+      <div class="am-door ${d.found?'found':''}" id="d-${i}">
+        <div class="am-door-frame">
+          <div class="am-inside">${d.found ? shield + '<div class="am-found-cap">Shield</div>'
+            : '<div class="am-inside-empty">empty</div>'}</div>
+          <div class="am-leaf"><span class="am-leaf-no">${d.no}</span><span class="am-handle"></span>
+            <span class="am-plate">${d.plate}</span></div>
+        </div>
+      </div>
+      <div class="am-turn-body">
+        <div class="am-turn-who">
+          <span class="am-turn-nm">${d.n}</span>
+          <span class="am-turn-ord">goes up ${ORD[i]}, and opens door ${d.plate}</span>
+          <span class="am-turn-out" data-f="${d.found?1:0}">${d.found?'Shield':'Nothing'}</span>
+        </div>
+        <div class="am-beat">${d.line}</div>
+      </div>
+    </div>
+  </div>`).join('');
+
+let idx = -1; const TOTAL = DOORS.length + 2;
+function show(i){
+  if(i===0){ /* intro already visible */ }
+  else if(i<=DOORS.length){
+    const s=document.getElementById('s-'+(i-1)); s.classList.add('vis');
+    setTimeout(()=>document.getElementById('d-'+(i-1)).classList.add('open'),120);
+    s.scrollIntoView({behavior:'smooth',block:'center'});
+  } else {
+    const s=document.getElementById('s-silence'); s.classList.add('vis');
+    s.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  document.getElementById('counter').textContent=(Math.min(i+1,TOTAL))+' / '+TOTAL;
+}
+function next(){ if(idx<TOTAL-1){ idx++; show(idx);} }
+function all(){ while(idx<TOTAL-1){ idx++; show(idx);} }
+idx=0; show(0);
+// dust
+const m=document.getElementById('motes');
+for(let i=0;i<26;i++){ const d=document.createElement('div'); d.className='am-mote';
+  d.style.left=(Math.random()*100)+'%'; d.style.animationDuration=(9+Math.random()*13)+'s';
+  d.style.animationDelay=(-Math.random()*18)+'s'; d.style.opacity=(.2+Math.random()*.5);
+  m.appendChild(d); }
+</script>
+</body></html>

@@ -2042,7 +2042,8 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
 export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds = 40,
   potCeiling = POT_CEILING, endgameSize = 3, evidence = ballotEvidence,
   backgrounds = null, database = null, host = null,
-  murderSchedule = null, missionSchedule = null, chosenTraitors = null,
+  murderSchedule = null, missionSchedule = null, armourySchedule = null,
+  shieldEpisodes = null, chosenTraitors = null,
   rerollFromEp = null, rerollSeed = null, autoDouble = true,
   endgameReveal = false, autoRecruit = true,
   announceTraitorCount = false } = {}) {
@@ -2093,6 +2094,15 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // its own, so a season played without one is unchanged.
   gs.tr.missionSchedule = (missionSchedule && typeof missionSchedule === 'object')
     ? missionSchedule : null;
+  // THE AFTERNOON'S PINS. Both are `{ episode: true }` maps written by the
+  // timeline (js/tr-run.js) and read once a day: `armourySchedule` opens the
+  // Armoury on a night the author asked for it whatever the mission scored,
+  // and `shieldEpisodes` forces that day's mission to be one that carries a
+  // Shield. Null on an unpinned season, so nothing changes for one.
+  gs.tr.armourySchedule = (armourySchedule && typeof armourySchedule === 'object')
+    ? armourySchedule : null;
+  gs.tr.shieldEpisodes = (shieldEpisodes && typeof shieldEpisodes === 'object')
+    ? shieldEpisodes : null;
   // Auto (random) double murders off, when the Castle Options toggle asks —
   // pickVariant drops `double` from the random pool but still honours a pinned
   // one. Defaults to on, so headless callers (calibration, tests) are unchanged.

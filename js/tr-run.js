@@ -91,6 +91,37 @@ function _missionScheduleMap() {
 }
 
 /**
+ * The nights the author pinned an Armoury, off the timeline's twist schedule.
+ *
+ * A pin is an INSTRUCTION: `runArmoury` skips its own "did the castle earn it"
+ * tier gate for a scheduled night, because asking for an Armoury on episode 4
+ * and being told the mission was mediocre is not a feature. Returns null when
+ * nothing is pinned so an unscheduled season is unchanged.
+ */
+function _armourySchedule() {
+  const out = {};
+  for (const t of (seasonConfig.twistSchedule || [])) {
+    if (!t || t.episode == null) continue;
+    if (t.type === 'tr-armoury') out[Number(t.episode)] = true;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/**
+ * The afternoons the author ticked "shield" on, off `trShieldEpisodes`.
+ * Forces the Shield-bearing mission archetype that day the same way
+ * `_missionScheduleMap` forces a named mission.
+ */
+function _shieldEpisodes() {
+  const out = {};
+  for (const e of (seasonConfig.trShieldEpisodes || [])) {
+    const n = Number(e);
+    if (Number.isFinite(n)) out[n] = true;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/**
  * Play the whole season into a queue.
  *
  * `playTraitorsSeason` replaces `gs` wholesale — it is a headless harness and
@@ -141,6 +172,8 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
         || Number(seasonConfig.finaleSize) || 3,
       murderSchedule: _murderSchedule(),
       missionSchedule: _missionScheduleMap(),
+      armourySchedule: _armourySchedule(),
+      shieldEpisodes: _shieldEpisodes(),
       // Auto double murders are on unless the Castle Options toggle turns them
       // off; a pinned Double still runs either way.
       autoDouble: seasonConfig.trAutoDouble !== false,

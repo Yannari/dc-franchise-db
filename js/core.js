@@ -902,6 +902,15 @@ export const TWIST_CATALOG = [
     category:'murder', phase:'any', variant:'recruit', engineType:'tr-murder-variant',
     desc:'Instead of murdering, the Traitors make an offer: one Faithful is invited to join the pact. Accept and become a Traitor; refuse and stay Faithful — and with one Traitor left, a refusal is fatal. The castle wakes to find nobody was murdered, which is its own loud piece of information. Nobody dies in the night, so only the Round Table takes anyone that day. Only available once a Traitor has been banished.',
     incompatible:['tr-on-trial','tr-plain-sight','tr-face-to-face','tr-dungeon','tr-double-murder','tr-name-your-own'] },
+  // THE AFTERNOON'S OWN TWIST, and the reason it is NOT `category:'murder'`.
+  // The six shapes above are what the pact does at night and a night is one
+  // shape or the other; the Armoury happens in daylight, after the mission,
+  // and coexists with whatever the Traitors do once the castle is asleep. So
+  // it carries no `incompatible` list at all — pin an Armoury and a Double on
+  // the same episode and both run, which is a real and very bad day.
+  { id:'tr-armoury', emoji:'🛡️', name:'The Armoury', format:'traitors',
+    category:'power', phase:'any', engineType:'tr-armoury',
+    desc:'The players who did best in today’s mission earn a visit to the Armoury. They go in one at a time and each opens a single box; one of them hides a shield, which blocks tonight’s murder and nothing else. The castle sees exactly WHO went in and never learns who came out with it — so the Traitors have to decide whether anybody in that group is worth the risk of wasting the night on a wall. Set the group size and how many shields are hidden in Castle Options.' },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──
@@ -1619,8 +1628,16 @@ export function defaultConfig() {
     //      box. The castle knows WHO WENT IN and nobody knows who came out with
     //      it, so the pact has to hesitate over the whole group
     //      (js/tr/armoury.js).
-    //   'off' — no Shields in this castle at all.
+    //   'scheduled' — nothing fires on its own. A Shield happens only on an
+    //      episode you pin from the timeline (an Armoury twist, or the
+    //      mission's own shield tickbox), which is the control you want when
+    //      you are testing one or writing a season deliberately.
+    //   'off' — no Shields in this castle at all, pinned or otherwise.
+    // A PIN ALWAYS WINS except under 'off': asking for an Armoury on episode 4
+    // is an instruction, not a preference, so it runs whatever the mode says.
     trShieldSource: 'mission',
+    // Episodes whose mission awards a Shield, pinned from the timeline.
+    trShieldEpisodes: [],
     // How many boxes hide a Shield (the show's "double Shield" twist is 2).
     trShieldCount: 1,
     // How many players earn the visit. Three or four, as the show runs it.

@@ -121,17 +121,25 @@ function _entrants(mission, size) {
  */
 export function runArmoury(ep, mission, rng = Math.random) {
   if (!gs || !gs.tr) return null;
-  if (shieldSource() !== 'armoury') return null;
-  // THE AFTERNOON HAS TO HAVE EARNED IT. The wiki's own note is that some days
-  // nobody meets the mission's condition and the Armoury simply does not open,
-  // and that condition is what makes the room worth playing FOR: a castle that
-  // works gets a shot at a Shield, a castle that scrapes home gets nothing. It
-  // is also the balance: opening on every afternoon put a Shield in the castle
-  // every single night (8.4 a season against the 1.2 the mission route gives),
-  // which turns a scarce, frightening object into weather. `triumph` and
-  // `solid` only — the two tiers a room has to actually be good to reach.
-  const tier = mission && mission.tier;
-  if (tier !== 'triumph' && tier !== 'solid') return null;
+  const src = shieldSource();
+  if (src === 'off') return null;
+  // A PIN IS AN INSTRUCTION, NOT A PREFERENCE. The author put an Armoury on
+  // this episode from the timeline, so it opens — whatever the season's default
+  // source is and whatever the mission scored. Being told "your Armoury did not
+  // run because the afternoon was mediocre" is not a feature, it is a night the
+  // author planned and did not get.
+  const pinned = !!(gs.tr.armourySchedule && gs.tr.armourySchedule[ep]);
+  if (!pinned) {
+    // Unpinned, it only opens at all in the automatic Armoury mode...
+    if (src !== 'armoury') return null;
+    // ...and only after an afternoon the castle actually won. The wiki's own
+    // note is that some days nobody meets the mission's condition; that is also
+    // the balance, because opening on every afternoon put a Shield in the
+    // castle every single night (8.4 a season against the 1.2 the mission route
+    // gives) and turned a scarce, frightening object into weather.
+    const tier = mission && mission.tier;
+    if (tier !== 'triumph' && tier !== 'solid') return null;
+  }
   const size = armourySize();
   const entrants = _entrants(mission, size);
   // Not enough of a room to make a group worth hiding inside: two people and

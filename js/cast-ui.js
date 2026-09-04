@@ -1023,6 +1023,7 @@ export function saveConfig() {
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
     trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
     trShieldSource: g('cfg-tr-shield-source')?.value || 'mission',
+    trShieldEpisodes: Array.isArray(seasonConfig.trShieldEpisodes) ? seasonConfig.trShieldEpisodes : [],
     trArmourySize: parseInt(g('cfg-tr-armoury-size')?.value) || 4,
     trShieldCount: parseInt(g('cfg-tr-shield-count')?.value) || 1,
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),

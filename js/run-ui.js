@@ -2647,6 +2647,41 @@ function _trMissionPicker(ep) {
   return h;
 }
 
+/**
+ * "Shield" on this afternoon — the mission route, per episode.
+ *
+ * The Armoury is a TWIST (pin it from the twist catalogue like any other); a
+ * mission-won Shield is not a twist, it is a property of that day's mission, so
+ * it lives here beside the mission dropdown as a tickbox. Ticked, that
+ * afternoon runs a mission that carries a Shield and somebody is seen taking
+ * it — which is the whole difference from the Armoury, where the room only
+ * learns who walked in.
+ */
+function _trShieldTicked(ep) {
+  return (seasonConfig.trShieldEpisodes || []).some(e => Number(e) === Number(ep));
+}
+
+function _trShieldTick(ep) {
+  const on = _trShieldTicked(ep);
+  return `<label style="display:flex;align-items:center;gap:4px;flex:0 0 auto;font-size:9.5px;letter-spacing:.5px;cursor:pointer;color:${
+    on ? '#d4b45f' : 'var(--muted,#7d8590)'}" title="${
+    on ? 'This afternoon’s mission carries a shield — the winner is seen taking it'
+      : 'Tick to put a shield in this afternoon’s mission'
+  }" onclick="event.stopPropagation()">`
+    + `<input type="checkbox" ${on ? 'checked' : ''} style="width:11px;height:11px;margin:0;accent-color:#c9a24a"`
+    + ` onchange="event.stopPropagation();_setTrShield(${ep},this.checked)">`
+    + `<span>Shield</span></label>`;
+}
+
+export function _setTrShield(ep, on) {
+  if (!Array.isArray(seasonConfig.trShieldEpisodes)) seasonConfig.trShieldEpisodes = [];
+  const n = Number(ep);
+  seasonConfig.trShieldEpisodes = seasonConfig.trShieldEpisodes.filter(e => Number(e) !== n);
+  if (on) seasonConfig.trShieldEpisodes.push(n);
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 export function _setTrMission(ep, missionId) {
   if (!seasonConfig.trMissionSchedule) seasonConfig.trMissionSchedule = [];
   let entry = _trMissionEntry(ep);
@@ -3127,7 +3162,7 @@ export function renderTimeline() {
     // (a castle runs a mission every day), pinning which one runs.
     const missionRow = (isTraitorsSeason() && !isFinale)
       ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(201,162,74,0.14)">
-            ${_trMissionPicker(ep)}
+            ${_trMissionPicker(ep)}${_trShieldTick(ep)}
           </div>`
       : '';
 

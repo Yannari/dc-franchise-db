@@ -652,9 +652,18 @@ const stat = (name, key) => {
 };
 
 /** Which archetype runs, never the one that ran last. */
-function _chooseArchetype(rng) {
+function _chooseArchetype(rng, ep) {
   const last = gs?.tr?.missions?.length ? gs.tr.missions[gs.tr.missions.length - 1].id : null;
   const rounds = (gs?.tr?.rounds || []).length;
+  // A TICKED AFTERNOON IS A SHIELD AFTERNOON. Making the archetype merely
+  // ELIGIBLE left it to the draw and it came up about 40% of the time, so a
+  // ticked episode mostly did not carry a Shield — a control that does not
+  // control. A pinned MISSION still wins over the tick (it is the more specific
+  // instruction and it is applied before this function is even called).
+  if (gs?.tr?.shieldEpisodes && gs.tr.shieldEpisodes[ep] && shieldSource() !== 'off') {
+    const shieldArch = ARCHETYPES.find(a => a.power === 'shield');
+    if (shieldArch) return shieldArch;
+  }
   const eligible = ARCHETYPES.flatMap(m => {
     if (m.knowledge) {
       return _knowledgeMission && rounds >= CHESS_MIN_ROUNDS
@@ -671,8 +680,14 @@ function _chooseArchetype(rng) {
     // to be about and is dropped from the pool; under 'off' there are no
     // Shields at all and it is dropped for the same reason.
     if (m.power === 'shield') {
-      return (_shieldMission && shieldSource() === 'mission')
-        ? Array(SHIELD_WEIGHT).fill(m) : [];
+      // A TICKED EPISODE FORCES IT. `trShieldEpisodes` (the timeline's shield
+      // tickbox) says this afternoon is a Shield afternoon, so the archetype is
+      // eligible whatever the season's default source is — the same "a pin is
+      // an instruction" rule the Armoury follows. `off` still means off.
+      const pinnedShield = !!(gs.tr?.shieldEpisodes && gs.tr.shieldEpisodes[ep]);
+      const src = shieldSource();
+      const wanted = src === 'mission' || (pinnedShield && src !== 'off');
+      return (_shieldMission && wanted) ? Array(SHIELD_WEIGHT).fill(m) : [];
     }
     return [m];
   });
@@ -881,7 +896,7 @@ function _runChess(m, living, ep, rng) {
  * The searcher pays the hour whether or not they find anything, which is what
  * makes breaking away a gamble instead of a purchase.
  */
-function _runReliquary(m, living, rng) {
+function _runReliquary(m, living, rng, ep) {
   const split = _splitTeams(living, rng);
   // Who walks off. Weighted rather than picked: boldness up, loyalty down,
   // proportional in both, and a floor so a dutiful cast still produces
@@ -895,7 +910,15 @@ function _runReliquary(m, living, rng) {
     roll -= weights[i];
     if (roll <= 0) { searcher = living[i]; break; }
   }
-  const found = rng() < clamp01(FIND_BASE + FIND_PER_POINT * (stat(searcher, 'intuition') / 10));
+  // THE ROLL STILL HAPPENS on a ticked afternoon and its result is overridden,
+  // never skipped: skipping the draw would consume one fewer number and re-roll
+  // every murder and ballot after it (the coupling `_missionRngFor` exists to
+  // prevent). Ticking "Shield" on an episode means there IS one that day —
+  // otherwise the searcher comes back empty a fifth of the time and the control
+  // silently does nothing, which is the defect this file has hit before.
+  const forced = !!(gs?.tr?.shieldEpisodes && gs.tr.shieldEpisodes[ep]);
+  const rolled = rng() < clamp01(FIND_BASE + FIND_PER_POINT * (stat(searcher, 'intuition') / 10));
+  const found = forced ? true : rolled;
 
   const teams = [];
   // The same two teams scored a second way, with the searcher's hour put back
@@ -1160,7 +1183,7 @@ export function runMission(ep, rng) {
     }
   }
 
-  const m = (scheduledIsGeneric && ARCHETYPES.find(a => a.id === scheduledId)) || _chooseArchetype(rng);
+  const m = (scheduledIsGeneric && ARCHETYPES.find(a => a.id === scheduledId)) || _chooseArchetype(rng, ep);
   // The knowledge archetype scores off per-player boards instead of the stat
   // pair, because the dilemma has to be able to move the money: a Traitor who
   // throws their board really does cost the castle part of the pot, which is
@@ -1168,7 +1191,7 @@ export function runMission(ep, rng) {
   const chess = m.knowledge ? _runChess(m, living, ep, rng) : null;
   // And the power archetype scores off a team that is a body short, because
   // somebody left it. See _runReliquary.
-  const reliquary = m.power === 'shield' ? _runReliquary(m, living, rng) : null;
+  const reliquary = m.power === 'shield' ? _runReliquary(m, living, rng, ep) : null;
   const teams = chess ? chess.teams : (reliquary ? reliquary.teams : _drawTeams(living, m, rng));
   const best = Math.max(teams[0].perf, teams[1].perf);
   const worst = Math.min(teams[0].perf, teams[1].perf);
@@ -1247,7 +1270,13 @@ export function runMission(ep, rng) {
     // The find and miss prose is shared on purpose rather than duplicated:
     // SEARCH_FOUND says "something that was not a reliquary" and never says
     // what, because from the top of the stair nobody can tell.
-    const isDagger = daggerAfternoon(living);
+    // A TICKED AFTERNOON IS A SHIELD AFTERNOON, not a Dagger one. The relic
+    // slot is shared, so without this the tick lost about one time in six to a
+    // Dagger day and the author got a relic they did not ask for. The call
+    // still happens so its draws are consumed and the stream is unchanged.
+    const _daggerDay = daggerAfternoon(living);
+    const isDagger = (gs?.tr?.shieldEpisodes && gs.tr.shieldEpisodes[ep])
+      ? false : _daggerDay;
     const won = reliquary.found
       ? (isDagger
         ? awardDagger(reliquary.searcher, teams, ep, rng)

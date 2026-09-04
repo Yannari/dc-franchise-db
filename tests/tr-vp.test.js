@@ -8053,3 +8053,136 @@ describe('the conclave screen does not invent a meeting on a plain-sight night',
     expect(seen, 'no ordinary conclave was measured').toBeGreaterThan(10);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// HOW LONG THE PRIVATE SCREENS RUN
+// ══════════════════════════════════════════════════════════════════════
+//
+// A reveal card is an `id="xx-step-…"` element: the unit a viewer clicks
+// through. The conclave and the recruitment are the two screens where a
+// dropped beat is invisible from reading the code — both build their beat list
+// conditionally, both have variants that legitimately run short, and neither
+// has ever had a number attached to it.
+//
+// ── THE BAND WAS MEASURED, AND IT IS NOT THE ONE THAT WAS PLANNED ────
+//
+// The plan for this guard said 8-15 cards. Measured over 36 seasons (12 seeds
+// x cast 10/14/18), counting only the episodes that actually registered the
+// screen and splitting by the variant that shapes it:
+//
+//   conclave  standard        n=135   6 / 10 / 10     (min / median / max)
+//   conclave  face-to-face    n=  7   6 / 10 / 10
+//   conclave  double          n=  4   9 / 10 / 10
+//   conclave  on-trial        n=  5   8 /  9 / 10
+//   conclave  dungeon         n=  4   6 / 10 / 10
+//   conclave  plain-sight     n= 10   6 /  6 /  6
+//   conclave  name-your-own   n=  7   6 /  6 /  6
+//   recruitment  note         n= 13   6 /  6 /  6
+//   recruitment  ultimatum    n= 15   6 /  6 /  6
+//
+// 8-15 would have been WRONG IN BOTH DIRECTIONS. Every recruitment and two
+// whole conclave variants sit below 8, so the floor would have been red on
+// arrival for a third of the population. And nothing in 172 conclaves reaches
+// even 11, so the top half of that band is unreachable — an unfailable
+// assertion, which is worse than no assertion because it reads like cover.
+//
+// ── SO THE ARMS ASSERT WHAT IS ACTUALLY LOAD-BEARING ─────────────────
+//
+// A FLOOR, because a screen that loses a beat loses it silently. A CEILING
+// well above the observed max but low enough to catch a beat duplicated per
+// Traitor. And the STRUCTURAL CLAIM, which is the one that carries real
+// information: the two variants where nobody argues must render SHORTER than
+// an ordinary conclave. That is a relationship between paths, so it cannot be
+// satisfied by a constant, and it is exactly what breaks if somebody wires the
+// argument phases to fire on a night that had no argument — which is the bug
+// the plain-sight arms above were written for, caught from the other side.
+describe('the private screens run to a measured length', () => {
+  const cards = h => (String(h).match(/id="[a-z]{2,3}-step-/g) || []).length;
+  const NO_ARGUMENT = new Set(['plain-sight', 'name-your-own']);
+
+  it('every conclave lands in the measured band, per variant', () => {
+    const quiet = [], loud = [];
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const c = ep.tr && ep.tr.conclave;
+        if (!c) continue;
+        const n = cards(rpBuildConclave(ep, 'audience'));
+        expect(n, `ep ${ep.num} (${c.variant}) renders ${n} conclave cards`)
+          .toBeGreaterThanOrEqual(5);
+        expect(n, `ep ${ep.num} (${c.variant}) renders ${n} conclave cards`)
+          .toBeLessThanOrEqual(13);
+        (NO_ARGUMENT.has(c.variant) ? quiet : loud).push(n);
+      }
+    }
+    expect(loud.length, 'no ordinary conclave was measured').toBeGreaterThan(10);
+    expect(quiet.length, 'no no-argument conclave was measured').toBeGreaterThan(0);
+  });
+
+  // ── ONE SLIP PER ARGUMENT THAT ACTUALLY HAPPENED ────────────────────
+  //
+  // The first version of this arm compared "a no-argument night is shorter
+  // than a typical night with one". It passed a mutation that rendered an
+  // argument card PER TRAITOR IN THE TURRET on a plain-sight night, which is
+  // precisely the bug it was written for — because a late-season plain-sight
+  // night has two Traitors alive, so the bugged screen still came out shorter
+  // than a typical five-Traitor conclave. The arm was measuring how many
+  // people were left as much as how many of them argued, and a guard that
+  // cannot tell those apart is not a guard.
+  //
+  // Stated exactly instead: a proposal slip is drawn once per entry in
+  // `argued`, so the rendered count and the record must agree, on every
+  // variant. `_plainSight` writes exactly one entry (js/tr/murder.js), so a
+  // plain-sight night draws exactly one slip however many Traitors are alive.
+  // Struck slips are excluded — an overrule redraws a losing name as a second,
+  // cancelled slip, which is a different object.
+  it('draws one proposal slip per argument the record actually holds', () => {
+    let checked = 0, quiet = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const c = ep.tr && ep.tr.conclave;
+        if (!c || !(c.argued || []).length) continue;
+        const html = rpBuildConclave(ep, 'audience');
+        // `_slip` closes the attribute immediately; `_struckSlip` follows it
+        // with data-struck="1". Matching the closing bracket is what actually
+        // excludes the cancelled slip — the first version of this line matched
+        // both and reported 4 slips for 3 arguments.
+        const slips = (html.match(/class="cv-slip">/g) || []).length;
+        expect(slips, `ep ${ep.num} (${c.variant}) draws ${slips} proposal slips for `
+          + `${c.argued.length} argument(s) on the record`).toBe(c.argued.length);
+        checked++;
+        if (c.variant === 'plain-sight') {
+          quiet++;
+          expect(slips, `ep ${ep.num}: a plain-sight night drew ${slips} slips — nobody `
+            + 'was consulted, so there is exactly one').toBe(1);
+        }
+      }
+    }
+    expect(checked, 'no conclave with an argument was measured').toBeGreaterThan(10);
+    expect(quiet, 'no plain-sight night was measured').toBeGreaterThan(0);
+  });
+
+  it('every recruitment renders its full beat list, in both modes', () => {
+    const seen = { note: [], ultimatum: [] };
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const r = ep.tr && ep.tr.recruitment;
+        if (!r || !r.mode) continue;
+        const n = cards(rpBuildRecruitment(ep, 'audience'));
+        expect(n, `ep ${ep.num} (${r.mode}) renders ${n} recruitment cards`)
+          .toBeGreaterThanOrEqual(5);
+        expect(n, `ep ${ep.num} (${r.mode}) renders ${n} recruitment cards`)
+          .toBeLessThanOrEqual(9);
+        (seen[r.mode] ||= []).push(n);
+      }
+    }
+    const all = [...seen.note, ...seen.ultimatum];
+    expect(all.length, 'no recruitment night was measured at all').toBeGreaterThan(0);
+    // THE SCREEN IS STRUCTURALLY FIXED — 28 firings across three cast sizes and
+    // both modes produced 6 cards every single time. An accepted offer and a
+    // refused one are the same beats with different words in them, so a mode
+    // that suddenly runs shorter has dropped a card rather than had less to say.
+    expect(new Set(all).size,
+      `recruitment card counts vary (${[...new Set(all)].sort().join(', ')}) — this screen `
+      + 'has a fixed beat list, so a difference here is a dropped beat').toBe(1);
+  });
+});

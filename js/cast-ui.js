@@ -7,8 +7,9 @@ import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
 import { seasonFormat, formatIsRunnable, formatName } from './core.js';
-import { applyAvatarSlug, refreshReturneeAvatars, baseAvatarSlug, resolveAvatarSlug,
-  hasReturneeArt, whenReturneeArtKnown } from './players.js';
+import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
+  playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
+import { SHOWS } from './shows.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
@@ -164,7 +165,12 @@ export function submitPlayer() {
   const baseSlug = document.getElementById('f-slug').value.trim() || name.toLowerCase().replace(/\s+/g,'-');
   const player = {
     id: editingId || Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-    name, baseSlug, slug: baseSlug,
+    name, slug: baseSlug,
+    // The portrait this season chose. Identity (slug) and appearance
+    // (avatarId/avatarFile) are separate fields now, so a returning player can
+    // wear the same clothes and a first-timer can wear new ones.
+    avatarId: getFormPortrait().avatarId,
+    avatarFile: getFormPortrait().avatarFile,
     tribe: document.getElementById('f-tribe').value,
     gender: getGender(),
     sexuality: sexuality !== 'straight' ? sexuality : undefined,
@@ -178,11 +184,10 @@ export function submitPlayer() {
     backgroundType: TR_BACKGROUND_TYPES.includes(document.getElementById('f-background')?.value)
       ? document.getElementById('f-background').value : undefined,
   };
-  applyAvatarSlug(player); // set effective .slug from base + returnee state
+  ensurePortraitSelection(player); // fill in the portrait if the picker was never touched
   if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
   else { players.push(player); resetForm(); }
   saveCast(); renderCast();
-  refreshReturneeAvatars([player]); // async-confirm the -returnee image exists
 }
 export function editPlayer(id) {
   const p = players.find(p=>p.id===id); if (!p) return;
@@ -197,7 +202,8 @@ export function editPlayer(id) {
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = p.isReturnee || false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = p.isCoach || false;
   const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = p.backgroundType || '';
-  _updateReturneeArtHint();
+  setFormPortrait(p.avatarId, p.avatarFile);
+  renderPortraitPickerInto();
   updateBackgroundPreview();
   putStats(p.stats);
   document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
@@ -229,6 +235,8 @@ export function resetForm() {
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
   const bgEl = document.getElementById('f-background'); if (bgEl) bgEl.value = '';
   const bgPrev = document.getElementById('f-background-preview'); if (bgPrev) bgPrev.innerHTML = '';
+  setFormPortrait(null, '');
+  renderPortraitPickerInto();
   document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
@@ -251,8 +259,8 @@ export function filterRoster(query) {
   dd.innerHTML = matches.map((p, i) =>
     `<div class="roster-item" data-i="${i}" onmousedown="fillFromRoster(${JSON.stringify(p).replace(/"/g,'&quot;')})"
       style="padding:7px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span>${p.name}${hasReturneeArt(p)
-    ? ' <span title="Has a returnee portrait" style="font-size:9px;letter-spacing:.5px;color:#a78bfa">RET</span>' : ''}</span>
+      <span>${p.name}${_extraPortraitCount(p)
+    ? ` <span title="${_extraPortraitCount(p)} portrait${_extraPortraitCount(p) === 1 ? '' : 's'} for this show besides the default" style="font-size:9px;letter-spacing:.5px;color:#a78bfa">+${_extraPortraitCount(p)}</span>` : ''}</span>
       <span style="font-size:10px;color:var(--muted)">${p.archetype||''}</span>
     </div>`
   ).join('');
@@ -286,7 +294,8 @@ export function fillFromRoster(p) {
   // Always default to non-returnee when adding from roster — set per-season in cast builder
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
-  _updateReturneeArtHint();
+  setFormPortrait(null, '');
+  renderPortraitPickerInto();
 }
 
 // Close dropdown when clicking outside
@@ -458,7 +467,7 @@ export function _applyPreset(data) {
   seasonConfig = data.config;
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   players = data.players;
-  refreshReturneeAvatars(players);   // resolve returnee icons for the loaded cast
+  migrateCastPortraits(players);     // repair pre-portrait saves, once
   saveCast();
   relationships = data.relationships || [];
   localStorage.setItem('simulator_rels', JSON.stringify(relationships));
@@ -712,40 +721,102 @@ export async function renderSeasonSaveList() {
 // CAST RENDER
 // ══════════════════════════════════════════════════════════════════════
 
-/**
- * Repaint once the returnee list is known.
- *
- * `hasReturneeArt` answers false until the manifest resolves, and the existing
- * refresh only repaints when a SLUG changes — which never happens for somebody
- * who is not flagged as returning. So the "returnee art available" marker would
- * have been missing on first paint and never appeared.
- */
-let _retArtRepainted = false;
-function _repaintWhenReturneeArtKnown() {
-  if (_retArtRepainted) return;
-  _retArtRepainted = true;
-  try { whenReturneeArtKnown().then(() => { try { renderCast(); _updateReturneeArtHint(); } catch {} }); } catch {}
+// ── Portrait picker ───────────────────────────────────────────────────
+// The old control was a checkbox and a hint line: tick Returning and you MIGHT
+// get a second face, if one happened to exist under a filename nobody could
+// see. There was no way to ask what art a character had, no way to choose
+// between three looks, and the answer changed shows without asking. This shows
+// every portrait registered for THIS show, plus the profile default, and lets
+// the season pick one.
+
+/** How many show-specific looks this character has, for the roster dropdown. */
+function _extraPortraitCount(p) {
+  try { return portraitOptions(baseAvatarSlug(p), seasonFormat(seasonConfig)).filter(o => !o.isGlobal).length; }
+  catch { return 0; }
 }
 
-/** Says whether the character in the form has returnee art, before you tick it. */
-export function _updateReturneeArtHint() {
-  const el = document.getElementById('f-returnee-art');
-  if (!el) return;
-  const name = document.getElementById('f-name')?.value?.trim();
-  if (!name) { el.textContent = ''; return; }
-  const entry = FRANCHISE_ROSTER.find(r => r.name === name);
-  const slug = entry ? baseAvatarSlug(entry) : name.toLowerCase().replace(/\s+/g, '-');
-  if (hasReturneeArt(slug)) {
-    el.textContent = '· returnee portrait available';
-    el.style.color = '#a78bfa';
-  } else {
-    el.textContent = '· no returnee art — the normal portrait is used';
-    el.style.color = 'var(--muted)';
-  }
+let _formPortrait = { avatarId: null, avatarFile: '' };
+let _catalogRepainted = false;
+
+function _repaintWhenCatalogKnown() {
+  if (_catalogRepainted) return;
+  _catalogRepainted = true;
+  // The catalog arrives over the network, so the first paint has nothing to
+  // show. Repaint once rather than rendering an empty picker forever.
+  try { loadPortraitCatalog().then(() => { try { renderCast(); renderPortraitPickerInto(); } catch {} }); } catch {}
 }
+
+const _pesc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function _formSlug() {
+  return (document.getElementById('f-slug')?.value || '').trim()
+    || (document.getElementById('f-name')?.value || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+/** Reset the form's portrait state — used when clearing or loading a member. */
+export function setFormPortrait(avatarId, avatarFile) {
+  _formPortrait = { avatarId: avatarId || null, avatarFile: avatarFile || '' };
+}
+export function getFormPortrait() { return { ..._formPortrait }; }
+
+/**
+ * Portrait choices for the cast form: everything this player has for THIS
+ * show, then their global portrait. Never another show's art, and no cap on
+ * how many looks somebody may have.
+ */
+export function renderPortraitPicker(playerSlug, selectedId, show = seasonFormat(seasonConfig), playerName = '') {
+  const opts = portraitOptions(playerSlug, show);
+  const showName = SHOWS[show]?.name || 'this show';
+  const who = playerName || playerSlug;
+  if (!opts.length) {
+    return `<div class="portrait-picker-empty" role="note">No registered portrait for ${_pesc(who) || 'this character'}. The base file is used.</div>`;
+  }
+
+  const usable = opts.filter(o => !o.missing);
+  const chosen = opts.some(o => o.id === selectedId && !o.missing)
+    ? selectedId
+    : (usable[0] || opts[0]).id;
+
+  const note = hasShowPortraits(playerSlug, show)
+    ? ''
+    : `<div class="portrait-picker-note" role="note">No ${_pesc(showName)} portrait yet — the profile default is used.</div>`;
+
+  const items = opts.map(o => {
+    const label = `${who} — ${o.isGlobal ? 'All shows' : showName} — ${o.label}`;
+    const sel = o.id === chosen;
+    return `<label class="portrait-opt${sel ? ' is-selected' : ''}${o.missing ? ' is-missing' : ''}" aria-checked="${sel}">
+      <input type="radio" name="f-portrait" value="${_pesc(o.id)}" aria-label="${_pesc(label)}"${sel ? ' checked' : ''}${o.missing ? ' disabled' : ''} onchange="selectPortrait(this.value)">
+      <span class="portrait-opt-thumb">
+        <img src="${_pesc(o.url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+        ${sel ? '<span class="portrait-opt-check" aria-hidden="true">&#10003;</span>' : ''}
+      </span>
+      <span class="portrait-opt-label">${_pesc(o.label)}${o.missing ? ' <em>Missing file</em>' : ''}</span>
+    </label>`;
+  }).join('');
+
+  return `${note}<div class="portrait-picker" role="radiogroup" aria-label="Portrait for ${_pesc(who)} in ${_pesc(showName)}">${items}</div>`;
+}
+
+/** Paint the picker into the cast form for whoever is in it right now. */
+export function renderPortraitPickerInto() {
+  const host = document.getElementById('f-portrait-picker');
+  if (!host) return;
+  const name = (document.getElementById('f-name')?.value || '').trim();
+  host.innerHTML = renderPortraitPicker(_formSlug(), _formPortrait.avatarId, seasonFormat(seasonConfig), name);
+}
+
+export function selectPortrait(id) {
+  const opt = portraitOptions(_formSlug(), seasonFormat(seasonConfig)).find(o => o.id === id);
+  if (!opt || opt.missing) return;
+  _formPortrait = { avatarId: opt.id, avatarFile: opt.file };
+  renderPortraitPickerInto();
+  const live = document.getElementById('f-portrait-status');
+  if (live) live.textContent = `Portrait set to ${opt.label}.`;
+}
+
 
 export function renderCast() {
-  _repaintWhenReturneeArtKnown();
+  _repaintWhenCatalogKnown();
   const grid = document.getElementById('cast-grid');
   if (!players.length) {
     grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128101;</div><p>No players yet. Add one or click <strong>S9 Cast</strong> / <strong>S10 Cast</strong>.</p></div>`;
@@ -769,20 +840,13 @@ export function renderCast() {
 export function renderCard(p) {
   const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);
   const ovPct=((ov-1)/9*100).toFixed(0), isEd=editingId===p.id;
-  // ── resolveAvatarSlug, not the stored `p.slug` ──
-  //
-  // `slug` is a CACHE of the rule, written by applyAvatarSlug. A player who was
-  // a returnee last season keeps `jules-returnee` in that field until something
-  // recomputes it, so unticking Returning left the returnee portrait on screen —
-  // the box said one thing and the face said another. Asking the rule directly
-  // makes "returnee art only when Returning is ticked" structural instead of
-  // dependent on every path remembering to refresh a cached string.
-  const avatar=`<img src="assets/avatars/${resolveAvatarSlug(p)}.png" alt="${p.name}" onerror="this.remove()">`;
-  // Which portrait is actually on screen. The variant used to appear silently
-  // on a returnee's card and there was no way to tell it had — or to tell, for
-  // anybody else, that one existed at all.
-  const retArt = hasReturneeArt(p);
-  const showingRet = retArt && p.isReturnee && p._returneeAvatarOk;
+  // The card shows the portrait this season CHOSE, not one derived from the
+  // Returning checkbox. Which look is on screen is now a stated fact, so the
+  // card can name it instead of leaving the viewer to compare two faces.
+  const avatar=`<img src="${playerAvatarUrl(p)}" alt="${p.name}" onerror="this.remove()">`;
+  const _show = seasonFormat(seasonConfig);
+  const _chosen = portraitOptions(baseAvatarSlug(p), _show).find(o => o.id === p.avatarId);
+  const portraitTag = _chosen && !_chosen.isGlobal ? _chosen.label : '';
   const statBars=STATS.map(s=>`<div class="sbar-row"><span class="sbar-key" style="color:${s.color}">${s.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${p.stats[s.key]/10*100}%;background:${s.color}"></div></div><span class="sbar-val">${p.stats[s.key]}</span></div>`).join('');
   return `<div class="player-card ${isEd?'editing':''}" id="card-${p.id}">
     <div class="card-tribe-bar" style="background:${tc}"></div>
@@ -797,11 +861,9 @@ export function renderCard(p) {
           ${p.isReturnee ? '<span class="archetype-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Returning</span>' : ''}
           ${p.isCoach ? '<span class="archetype-tag" title="Trains this tribe — never competes, never votes" style="background:rgba(59,130,246,0.15);color:#3b82f6">Coach</span>' : ''}
           ${p.backgroundType ? `<span class="archetype-tag" title="Background type — how the castle recognises this contestant" style="background:rgba(148,163,184,0.15);color:#94a3b8">${p.backgroundType[0].toUpperCase()}${p.backgroundType.slice(1)}</span>` : ''}
-          ${showingRet
-    ? '<span class="archetype-tag" title="Drawn with this character&apos;s returnee portrait" style="background:rgba(139,92,246,0.16);color:#a78bfa">Returnee art</span>'
-    : retArt && !p.isReturnee
-      ? '<span class="archetype-tag" title="A returnee portrait exists — tick Returning to use it" style="background:rgba(139,92,246,0.08);color:#7c6aa8">Returnee art available</span>'
-      : ''}
+          ${portraitTag
+    ? `<span class="archetype-tag" title="The portrait this season uses for ${p.name}" style="background:rgba(139,92,246,0.16);color:#a78bfa">${portraitTag}</span>`
+    : ''}
         </div>
       </div>
     </div>
@@ -1534,13 +1596,12 @@ export function openAllianceForm(id) {
   const existing = id ? preGameAlliances.find(a => a.id === id) : null;
   const selected = new Set(existing?.members || []);
   grid.innerHTML = names.map(n => {
-    const p = players.find(x => x.name === n);
-    const slug = p?.slug || n.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const src = playerAvatarUrl(n);
     const init = (n||'?')[0].toUpperCase();
     const sel = selected.has(n);
     return `<div data-member="${n}" data-selected="${sel}" onclick="toggleAllianceMember(this)" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
       <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#10b981' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color 0.15s">
-        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
         <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
       </div>
       <span style="font-size:9px;color:${sel ? '#10b981' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s">${n}</span>

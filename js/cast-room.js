@@ -14,7 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { STATS, ARCHETYPE_NAMES, ARCHETYPES, players, relationships, seasonConfig } from './core.js';
-import { threat, threatTier, overall, tribeColor, resolveAvatarSlug } from './players.js';
+import { threat, threatTier, overall, tribeColor, playerAvatarUrl } from './players.js';
 import { seasonFormat } from './core.js';
 import { saveCast, renderCast, editPlayer, cancelEdit } from './cast-ui.js';
 import { franchiseHistorySummary } from './franchise-meta.js';
@@ -24,14 +24,11 @@ import { franchiseHistorySummary } from './franchise-meta.js';
 // ══════════════════════════════════════════════════════════════════════
 
 export /**
- * The face to draw.
- *
- * `p.slug` is a cache of the returnee rule, not the rule — a player who was a
- * returnee last season keeps `jules-returnee` in that field until something
- * recomputes it. Asking the rule means the portrait can never disagree with the
- * Returning checkbox that is sitting right next to it.
+ * The face to draw: the portrait this season selected for this player, resolved
+ * through the registry rather than rebuilt from the slug. A slug says who
+ * somebody is; it has never known which of their looks a season chose.
  */
-const _crSlug = p => { try { return resolveAvatarSlug(p); } catch { return p?.slug || ''; } };
+const _crAvatar = p => { try { return playerAvatarUrl(p); } catch { return ''; } };
 
 function statTotal(stats) { return STATS.reduce((t, s) => t + (stats?.[s.key] || 0), 0); }
 const _key = p => p.id ?? p.name;
@@ -215,7 +212,7 @@ function _portrait(p) {
     `<circle cx="36" cy="36" r="33" fill="var(--surface2)" stroke="var(--accent-gold,#f0c040)" stroke-width="2"/>` +
     `<text x="36" y="47" text-anchor="middle" font-size="30" font-family="var(--font-display,sans-serif)" fill="var(--muted)">${initial}</text></svg>`;
   const img = p.slug
-    ? `<img class="cr-face" src="assets/avatars/${esc(_crSlug(p))}.png" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none'">`
+    ? `<img class="cr-face" src="${esc(_crAvatar(p))}" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none'">`
     : '';
   return `<div class="cr-portrait" style="--tc:${tc}">${medallion}${img}</div>`;
 }

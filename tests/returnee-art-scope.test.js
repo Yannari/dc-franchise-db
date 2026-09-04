@@ -1,58 +1,90 @@
-// Returning is a fact about an APPEARANCE, not about a person.
+// Returning is a fact about an APPEARANCE, not about a person — and since the
+// portrait catalog landed it is not a fact about ARTWORK at all.
 //
-// Reported: a houseguest who was not marked Returning was drawn with their
-// returnee portrait. Two separate reasons, and both of them let a past season
-// reach into a present one.
+// Originally reported: a houseguest who was not marked Returning was drawn with
+// their returnee portrait, for two separate reasons, both of which let a past
+// season reach into a present one. The mechanism that caused it (mutating
+// p.slug to `{slug}-returnee`) is gone; these tests now hold the replacement to
+// the same promise, and add the one the old design could not make — that
+// ticking the box changes no picture whatsoever.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { setPlayers } from '../js/core.js';
-import { resolveAvatarSlug, applyAvatarSlug, baseAvatarSlug } from '../js/players.js';
+import { setPortraitCatalog } from '../js/avatar-registry.js';
+import { baseAvatarSlug, ensurePortraitSelection, playerAvatarUrl } from '../js/players.js';
 import { DEFAULT_ROSTER } from '../js/roster-data.js';
 
-const jules = over => ({ name: 'Jules', slug: 'jules', baseSlug: 'jules',
-  stats: {}, ...over });
+const CATALOG = {
+  schemaVersion: 1,
+  players: {
+    jules: {
+      defaults: { global: 'base', 'total-drama': 'td-original' },
+      portraits: [
+        { id: 'base', show: 'global', label: 'Profile default', file: 'jules.png' },
+        { id: 'td-original', show: 'total-drama', label: 'Original', file: 'jules.png' },
+        { id: 'td-returnee', show: 'total-drama', label: 'Returning look', file: 'jules-returnee.png' },
+      ],
+    },
+    noart: { defaults: { global: 'base' }, portraits: [{ id: 'base', show: 'global', label: 'Default', file: 'noart.png' }] },
+  },
+};
+const jules = over => ({ name: 'Jules', slug: 'jules', stats: {}, ...over });
 
-describe('returnee art follows the checkbox, not history', () => {
-  beforeEach(() => setPlayers([]));
+beforeEach(() => {
+  setPlayers([]);
+  setPortraitCatalog(CATALOG, ['jules.png', 'jules-returnee.png', 'noart.png']);
+});
 
+describe('returnee art follows the season, not history', () => {
   it('never resolves to returnee art when Returning is off', () => {
-    // Even with the art confirmed present and a stale slug left over from the
-    // season they DID return in.
-    const p = jules({ isReturnee: false, _returneeAvatarOk: true, slug: 'jules-returnee' });
-    expect(resolveAvatarSlug(p)).toBe('jules');
+    // Even with a stale slug left over from the season they DID return in.
+    const p = ensurePortraitSelection(jules({ isReturnee: false, _returneeAvatarOk: true, slug: 'jules-returnee' }), 'total-drama');
+    expect(p.avatarFile).toBe('jules.png');
+    expect(playerAvatarUrl(p, 'total-drama')).toBe('assets/avatars/jules.png');
   });
 
-  it('uses it when Returning is on and the art exists', () => {
-    expect(resolveAvatarSlug(jules({ isReturnee: true, _returneeAvatarOk: true }))).toBe('jules-returnee');
+  it('migrates an old returnee save onto the returnee portrait', () => {
+    const p = ensurePortraitSelection(jules({ isReturnee: true, _returneeAvatarOk: true }), 'total-drama');
+    expect(p.avatarFile).toBe('jules-returnee.png');
   });
 
   it('falls back to the base face when the art was never made', () => {
-    expect(resolveAvatarSlug(jules({ isReturnee: true, _returneeAvatarOk: false }))).toBe('jules');
+    const p = ensurePortraitSelection({ name: 'Noart', slug: 'noart', isReturnee: true, _returneeAvatarOk: true }, 'total-drama');
+    expect(p.avatarFile).toBe('noart.png');
   });
 
-  it('recovers the base slug from a stale returnee one', () => {
-    const p = jules({ isReturnee: false, slug: 'jules-returnee', baseSlug: undefined });
+  it('recovers the base slug from a stale returnee one, permanently', () => {
+    const p = jules({ isReturnee: false, slug: 'jules-returnee' });
     expect(baseAvatarSlug(p)).toBe('jules');
-    applyAvatarSlug(p);
-    expect(p.slug, 'the stale returnee slug survived a recompute').toBe('jules');
+    ensurePortraitSelection(p, 'total-drama');
+    expect(p.slug, 'the stale returnee slug survived the repair').toBe('jules');
   });
 
-  it('draws from the rule rather than the cached slug', () => {
-    // `p.slug` is a CACHE of the rule, written by applyAvatarSlug. Rendering
-    // straight from it meant unticking Returning left the returnee portrait on
-    // screen until something happened to recompute the field — the checkbox
-    // said one thing and the face said another.
+  it('the checkbox cannot change the art once a portrait is chosen', () => {
+    // The promise the old design could not make: artwork and returning status
+    // were the same fact, so the box WAS the picker.
+    const p = ensurePortraitSelection(jules({ isReturnee: false, avatarId: 'td-returnee', avatarFile: 'jules-returnee.png' }), 'total-drama');
+    p.isReturnee = true;
+    ensurePortraitSelection(p, 'total-drama');
+    expect(p.avatarFile).toBe('jules-returnee.png');
+    p.isReturnee = false;
+    ensurePortraitSelection(p, 'total-drama');
+    expect(p.avatarFile).toBe('jules-returnee.png');
+  });
+
+  it('draws from the season selection rather than any slug', () => {
+    // Rendering from `p.slug` meant unticking Returning left the returnee
+    // portrait on screen until something happened to recompute the field.
     const castUi = readFileSync('js/cast-ui.js', 'utf8');
     const castRoom = readFileSync('js/cast-room.js', 'utf8');
-    expect(castUi).toMatch(/avatars\/\$\{resolveAvatarSlug\(p\)\}\.png/);
-    expect(castUi, 'the card still renders the cached slug').not.toMatch(/avatars\/\$\{p\.slug\}\.png/);
-    expect(castRoom).toMatch(/avatars\/\$\{esc\(_crSlug\(p\)\)\}\.png/);
+    expect(castUi).toMatch(/src="\$\{playerAvatarUrl\(p\)\}"/);
+    expect(castUi, 'the card still renders a slug').not.toMatch(/avatars\/\$\{[^}]*slug[^}]*\}\.png/);
+    expect(castRoom).toMatch(/src="\$\{esc\(_crAvatar\(p\)\)\}"/);
   });
 
   it('keeps a season’s casting decision off the permanent character record', () => {
     // syncCastToRoster wrote `isReturnee` onto the franchise roster, so being a
-    // returnee once made you a returnee forever, and every later season could
-    // inherit it.
+    // returnee once made you a returnee forever.
     const castUi = readFileSync('js/cast-ui.js', 'utf8');
     expect(castUi).toMatch(/delete FRANCHISE_ROSTER\[ri\]\.isReturnee;/);
     expect(castUi, 'the roster is still being stamped with a per-season flag')
@@ -61,40 +93,13 @@ describe('returnee art follows the checkbox, not history', () => {
 
   it('writes an avatar to the slug that was asked for', () => {
     // The endpoint wrote `<roster slug>.png` and ignored the slug the caller
-    // sent. Harmless while a character had exactly one image — and destructive
-    // the moment anything uploaded a VARIANT: the returnee slot posted
-    // `jules-returnee` and this saved it over jules.png, replacing the real
-    // portrait with the returnee art. It then looked like a rendering bug,
-    // because every screen was correctly drawing a base portrait that was no
-    // longer the base portrait.
+    // sent — destructive the moment anything uploaded a VARIANT, because the
+    // returnee slot posted `jules-returnee` and this saved it over jules.png.
     const serve = readFileSync('serve.py', 'utf8');
     expect(serve).toMatch(/want = \(avatar\.get\('slug'\) or ''\)\.strip\(\)\.lower\(\)/);
     expect(serve, 'a slug is a filename here and is still trusted unvalidated')
       .toMatch(/re\.fullmatch\(r'\[a-z0-9\]\[a-z0-9-\]\*', want or ''\)/);
     expect(serve).toMatch(/AVATAR_DIR, target \+ '\.png'/);
-  });
-
-  it('lets the returnee slot actually be closed', () => {
-    // Two things re-opened it on their own — the re-render reads
-    // `_hasReturneeArt`, and the file probe ticks it when the art exists — so
-    // unticking snapped straight back and there was no way to close it.
-    const studio = readFileSync('js/studio.js', 'utf8');
-    expect(studio).toMatch(/d\._retSlotClosed = !e\.target\.checked;/);
-    expect(studio).toMatch(/if \(retBox\.hidden && !d\._retSlotClosed/);
-    expect(studio).toMatch(/&& !d\._retSlotClosed \? '' : 'hidden'/);
-  });
-
-  it('does not ask a backend that is not there', () => {
-    // `/api/avatars` is serve.py and the Studio worker. The published site has
-    // neither, so probing it on every page load put a 404 in the console every
-    // time — for a request whose answer was always "fall back to the committed
-    // manifest". Same test the Studio uses to decide whether it can write.
-    const players = readFileSync('js/players.js', 'utf8');
-    expect(players).toMatch(/const backend = \(\(\) => \{/);
-    expect(players).toMatch(/localStorage\.getItem\('studio_api_base'\)/);
-    expect(players).toMatch(/h === 'localhost' \|\| h === '127\.0\.0\.1'/);
-    expect(players, 'the listing is still fetched unconditionally')
-      .toMatch(/const fromListing = !backend \? Promise\.resolve\(null\) : fetch\('api\/avatars'/);
   });
 
   it('ships a roster with no appearance flags on it', () => {

@@ -1,5 +1,5 @@
 import { players } from './core.js';
-import { resolveAvatarSlug } from './players.js';
+import { playerAvatarUrl } from './players.js';
 
 // js/vp-coaches.js — The Coaches' Board: a chalkboard + playbook VP screen for
 // the coaching twist. Reads ep.coachData, shaped:
@@ -96,29 +96,25 @@ function _fallbackSlug(name) {
   return String(name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
-// Resolve a portrait slug the same way the rest of the app does — via the
-// roster record's resolveAvatarSlug() (which knows about -returnee variants),
-// not a guess from the display name. Falls back to a slugified name for
-// contestants/coaches that aren't in `players` (shouldn't happen, but a
-// blank hole is worse than a slightly-wrong guess).
-function _avatarSlug(name) {
-  const p = players.find(x => x.name === name);
-  if (p) {
-    try {
-      const slug = resolveAvatarSlug(p);
-      if (slug) return slug;
-    } catch { /* fall through to guess */ }
-  }
-  return _fallbackSlug(name);
+// Resolve a portrait the same way the rest of the app does — through the
+// registry, which knows which look this season chose. Falls back to the base
+// convention for contestants/coaches that aren't in `players` (shouldn't
+// happen, but a blank hole is worse than a slightly-wrong guess).
+function _avatarSrc(name) {
+  try {
+    const url = playerAvatarUrl(name);
+    if (url) return url;
+  } catch { /* fall through to guess */ }
+  return `assets/avatars/${_fallbackSlug(name)}.png`;
 }
 
 // A portrait with a mandatory text fallback — a missing PNG must degrade to
 // a name/initial, never a blank hole. `cls` may include size (cb-av-tiny)
 // and/or a background hint (cb-av-onlight) for cork/parchment contexts.
 function _avatar(name, cls = '') {
-  const slug = _avatarSlug(name);
+  const src = _avatarSrc(name);
   const init = (name || '?')[0].toUpperCase();
-  return `<span class="cb-av-wrap"><img class="cb-av ${cls}" src="assets/avatars/${slug}.png" alt="${name}" title="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback ${cls}" style="display:none">${init}</span></span>`;
+  return `<span class="cb-av-wrap"><img class="cb-av ${cls}" src="${src}" alt="${name}" title="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'"><span class="cb-av-fallback ${cls}" style="display:none">${init}</span></span>`;
 }
 
 // ── Sidebar ─────────────────────────────────────────────────────────

@@ -1,5 +1,9 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
-import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig } from './core.js';
+import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig, seasonFormat } from './core.js';
+import {
+  resolvePortrait, avatarUrl as registryAvatarUrl, legacyPortraitSelection,
+  loadPortraitCatalog, portraitOptions, hasShowPortraits,
+} from './avatar-registry.js';
 import { romanticallyCompatible } from './attraction.js';
 import { pronounsOf } from './pronouns-of.js';
 import { DEFAULT_ROSTER } from './roster-data.js';
@@ -17,6 +21,8 @@ import { DEFAULT_ROSTER } from './roster-data.js';
 // run time, and neither module touches the other while it is being evaluated.
 import { getBond } from './bonds.js';
 import { META_WEIGHTS } from './franchise-meta.js';
+
+export { loadPortraitCatalog, portraitOptions, hasShowPortraits };
 
 export function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
 
@@ -77,165 +83,79 @@ export function getGender() {
   return document.querySelector('#f-gender-seg .gm-btn.active')?.dataset.g || 'nb';
 }
 
-// ── Returnee avatars ──────────────────────────────────────────────────
-// A player's icon is assets/avatars/{slug}.png. When isReturnee is set AND a
-// {base}-returnee.png file exists, that variant is used everywhere. We achieve
-// this WITHOUT touching the ~50 scattered render sites by resolving the effective
-// slug onto player.slug (what every render reads), keeping the canonical slug in
-// player.baseSlug (what identity/exports read).
+// ── Portraits ─────────────────────────────────────────────────────────
+// Artwork used to be chosen by mutating p.slug to `{slug}-returnee`, which
+// fused identity and appearance into one field and capped everybody at two
+// looks for their whole career. Selection now lives on the cast member as
+// { avatarId, avatarFile }, is scoped to the show, and is resolved by
+// js/avatar-registry.js. p.slug is identity again and nothing writes to it.
+//
+// Returning-player status stays gameplay and continuity metadata. It picks no
+// picture. Somebody who returns wearing the same clothes is a normal thing.
 
-// Canonical slug (user's input) — strip any resolved -returnee suffix defensively.
+/** Canonical identity slug — never the -returnee variant. */
 export function baseAvatarSlug(p) {
   if (!p) return '';
   if (p.baseSlug) return p.baseSlug;
-  const s = p.slug || '';
+  const s = String(p.slug || '');
   return s.endsWith('-returnee') ? s.slice(0, -'-returnee'.length) : s;
 }
 
-// The slug to actually render: the -returnee variant only when flagged returnee
-// AND its image has been confirmed to exist (p._returneeAvatarOk).
-export function resolveAvatarSlug(p) {
-  const base = baseAvatarSlug(p);
-  if (!base) return base;
-  return (p.isReturnee && p._returneeAvatarOk) ? `${base}-returnee` : base;
+function _slugifyName(name) {
+  return String(name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
-// Write the canonical + effective slug onto the player. renders read .slug;
-// identity/exports read .baseSlug.
-export function applyAvatarSlug(p) {
-  if (!p) return;
-  p.baseSlug = baseAvatarSlug(p);
-  p.slug = resolveAvatarSlug(p);
+/** Canonical slug for a name — for identity and DOM ids, NOT for image paths. */
+export function portraitSlug(name, list = players) {
+  const p = (list || []).find(x => x && x.name === name);
+  return (p && baseAvatarSlug(p)) || _slugifyName(name);
 }
 
-// Manifest of base slugs that have a {base}-returnee.png variant. Loaded once and
-// cached. Lets us use variants WITHOUT probing every returnee (which 404s for the
-// majority that have no variant). Regenerate with tools/gen-returnee-manifest.mjs.
-let _returneeManifest = null;        // Set once loaded; null = not yet loaded
-let _returneeManifestPromise = null; // de-dupes concurrent loads
-function _loadReturneeManifest() {
-  if (_returneeManifest) return Promise.resolve(_returneeManifest);
-  if (_returneeManifestPromise) return _returneeManifestPromise;
-  if (typeof fetch === 'undefined') return Promise.resolve(null); // non-browser: signal "unknown"
-  // ── THE SERVER'S OWN FILE LISTING FIRST ──
-  //
-  // The manifest is a hand-run build artifact: `node
-  // tools/gen-returnee-manifest.mjs`. So uploading `<slug>-returnee.png` from
-  // the Casting Studio — which puts the file exactly where it belongs — left
-  // the art unusable until somebody went and edited the repo, because this set
-  // is authoritative and the new slug was not in it.
-  //
-  // `/api/avatars` is the directory itself, so when a backend is answering it
-  // cannot be out of date. The static file stays as the offline path and for a
-  // deployed site with no same-origin API.
-  // ── ONLY WHERE SOMETHING CAN ANSWER ──
-  //
-  // `/api/avatars` is serve.py and the Studio worker. On the published site
-  // there is no backend, so this asked every single page load and got a 404 in
-  // the console every time — noise I added, on a request whose answer was
-  // always going to be "fall back to the static file".
-  //
-  // Same test the Studio uses to decide whether it can WRITE: a configured API
-  // base, or a local host. Anywhere else, the committed manifest is the only
-  // answer there is.
-  const backend = (() => {
-    try {
-      if (localStorage.getItem('studio_api_base')) return true;
-      const h = location.hostname;
-      return h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '';
-    } catch { return false; }
-  })();
-
-  const fromListing = !backend ? Promise.resolve(null) : fetch('api/avatars', { cache: 'no-store' })
-    .then(r => (r.ok ? r.json() : null))
-    .then(d => {
-      const list = d?.avatars;
-      if (!Array.isArray(list)) return null;
-      return new Set(list.filter(sl => sl.endsWith('-returnee'))
-        .map(sl => sl.slice(0, -'-returnee'.length)));
-    })
-    .catch(() => null);
-
-  _returneeManifestPromise = fromListing
-    .then(live => (live ? live : fetch('assets/avatars/returnee-manifest.json')
-      .then(r => (r.ok ? r.json() : []))
-      .then(arr => new Set(Array.isArray(arr) ? arr : []))))
-    .then(set => { _returneeManifest = set; return _returneeManifest; })
-    .catch(() => null); // nothing readable → caller falls back to legacy probe
-  return _returneeManifestPromise;
+function _currentShow() {
+  try { return seasonFormat() || undefined; } catch { return undefined; }
 }
 
-// For each returnee, use the {base}-returnee.png variant only when it actually
-// exists. With the manifest present we know this up front, so no request is made
-// for variants that don't exist (no 404 noise). If the manifest can't be loaded we
-// fall back to the legacy per-image probe so behavior degrades gracefully.
-// Re-renders + persists when a slug changes. Browser-only; no-op without a DOM.
-export function refreshReturneeAvatars(list = players) {
-  if (!Array.isArray(list)) return;
-  // 1. Apply synchronously from any cached _returneeAvatarOk so renders are correct now.
-  list.forEach(applyAvatarSlug);
-  if (typeof Image === 'undefined') return;
-  // 2. Resolve each returnee's variant once the manifest is known.
-  _loadReturneeManifest().then(manifest => {
-    list.filter(p => p && p.isReturnee).forEach(p => {
-      const base = baseAvatarSlug(p);
-      if (!base) return;
-      if (manifest) {
-        // Manifest is authoritative: set state directly, never request a missing file.
-        const ok = manifest.has(base);
-        if (ok !== !!p._returneeAvatarOk) { p._returneeAvatarOk = ok; applyAvatarSlug(p); _afterAvatarChange(); }
-        return;
-      }
-      // No manifest available → legacy probe (may 404, but keeps variants working).
-      const prev = !!p._returneeAvatarOk;
-      const img = new Image();
-      img.onload  = () => { if (!prev) { p._returneeAvatarOk = true;  applyAvatarSlug(p); _afterAvatarChange(); } };
-      img.onerror = () => { if (prev)  { p._returneeAvatarOk = false; applyAvatarSlug(p); _afterAvatarChange(); } };
-      img.src = `assets/avatars/${base}-returnee.png`;
-    });
+/** The one call every screen makes for a player image URL. */
+export function playerAvatarUrl(nameOrPlayer, show = _currentShow()) {
+  const p = typeof nameOrPlayer === 'string'
+    ? (players || []).find(x => x && x.name === nameOrPlayer)
+    : nameOrPlayer;
+  if (!p) return resolvePortrait({ playerSlug: _slugifyName(nameOrPlayer), show }).url;
+  return registryAvatarUrl({
+    playerSlug: baseAvatarSlug(p), show, avatarId: p.avatarId, avatarFile: p.avatarFile,
   });
 }
 
 /**
- * Does this character have a returnee portrait, right now, synchronously?
- *
- * The whole returnee-art system was invisible from the outside: the variant
- * quietly appeared on the card of somebody flagged as returning and there was
- * no way to tell, before flagging them, whether one even existed. So a cast
- * builder could not say "this one has returnee art and that one does not",
- * which is the only question anybody actually asks about it.
- *
- * Returns false until the manifest has loaded — and kicks that load off — so a
- * caller can render immediately and repaint when it resolves.
+ * Give a cast member a portrait selection if it has none, and clear the legacy
+ * mechanism off it. Idempotent: a record that already carries a selection is
+ * left alone, which is what makes "toggling Returning does not change the art"
+ * true rather than merely intended.
  */
-export function hasReturneeArt(playerOrSlug) {
-  const base = typeof playerOrSlug === 'string'
-    ? playerOrSlug.replace(/-returnee$/, '')
-    : baseAvatarSlug(playerOrSlug);
-  if (!base) return false;
-  if (!_returneeManifest) { _loadReturneeManifest(); return false; }
-  return _returneeManifest.has(base);
-}
-
-/** Resolves once the returnee list is known, for callers that want to repaint. */
-export function whenReturneeArtKnown() {
-  return _loadReturneeManifest();
-}
-
-function _afterAvatarChange() {
-  // Re-render the cast + persist, via the window hooks (avoids a circular import).
-  if (typeof window !== 'undefined') {
-    if (typeof window.renderCast === 'function') window.renderCast();
-    if (typeof window.saveCast === 'function') window.saveCast();
+export function ensurePortraitSelection(player, show = _currentShow()) {
+  if (!player) return player;
+  const canonical = baseAvatarSlug(player);
+  if (canonical) player.slug = canonical;      // identity restored, once
+  if (player.baseSlug === player.slug) delete player.baseSlug;
+  if (!player.avatarId && !player.avatarFile) {
+    const sel = legacyPortraitSelection(player, show);
+    player.avatarId = sel.avatarId;
+    player.avatarFile = sel.avatarFile;
   }
+  delete player._returneeAvatarOk;
+  return player;
+}
+
+export function migrateCastPortraits(list = players, show = _currentShow()) {
+  if (!Array.isArray(list)) return;
+  list.forEach(p => { if (p) ensurePortraitSelection(p, show); });
 }
 
 export function miniAvatar(name, size = 28) {
-  const p = players.find(x => x.name === name);
-  const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const src = playerAvatarUrl(name);
   const init = (name||'?')[0].toUpperCase();
   return `<div title="${name}" style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);overflow:hidden;flex-shrink:0;position:relative;font-size:${Math.round(size*0.4)}px;font-weight:700;color:var(--muted)">
-    <img src="assets/avatars/${slug}.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+    <img src="${src}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
     <span style="display:none">${init}</span>
   </div>`;
 }

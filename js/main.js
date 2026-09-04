@@ -402,8 +402,10 @@ async function init() {
   audioMod.initAudio();
   // Broadcast channel bar: ON-AIR state, live clock, theme (light/dark)
   broadcastMod.initBroadcastBar();
-  // Resolve returnee avatars for the loaded cast (uses -returnee.png when present)
-  playersMod.refreshReturneeAvatars();
+  // Load the portrait catalog, then repair any pre-portrait save in the cast.
+  playersMod.loadPortraitCatalog().then(() => {
+    try { playersMod.migrateCastPortraits(); window.renderCast?.(); } catch { /* boot must not care */ }
+  });
 
   // A finished season restored straight from localStorage never passes
   // through the season-save loader, so the ledger heal runs here too.

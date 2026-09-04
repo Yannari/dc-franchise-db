@@ -2717,7 +2717,7 @@ function _loadCastIntoSeason(cast) {
   const arr = members.map(_memberToPlayer);
   try { window.players = arr; } catch {}
   try { window.saveCast && window.saveCast(); } catch {}
-  try { window.refreshReturneeAvatars && window.refreshReturneeAvatars(arr); } catch {}
+  try { window.migrateCastPortraits && window.migrateCastPortraits(arr); } catch {}
   try { window.renderCast && window.renderCast(); } catch {}
   _toast(`Loaded "${cast.name}" — ${arr.length} into the season cast`, 'ok');
   studioExit(); // drop to Build Cast so they see the loaded lineup

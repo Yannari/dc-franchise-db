@@ -548,6 +548,26 @@ const SEASON_TITLES = {
 };
 function seasonTitle(n) { return SEASON_TITLES[n] || ('Season ' + n); }
 
+
+/* ── Career portraits ───────────────────────────────────────────────────
+   This page shows a PERSON, not one appearance, so it shows their latest
+   recorded look — derived from the newest season they played, never written
+   back down onto a season row. Rebuilding the path from a slug drew whatever
+   file happens to be named after them, which stopped being right the moment
+   somebody could have more than one portrait. */
+const _careerFaces = new Map();
+function indexCareerFaces(db) {
+  for (const p of ((db && db.players) || [])) {
+    const f = p && p.latestAvatarFile;
+    if (!f || typeof f !== 'string' || /[\/:]/.test(f) || f.includes('..')) continue;
+    if (p.id) _careerFaces.set(String(p.id).toLowerCase(), f);
+    if (p.name) _careerFaces.set(String(p.name).toLowerCase(), f);
+  }
+}
+function careerFace(slugOrName, fallbackSlug) {
+  const f = _careerFaces.get(String(slugOrName || '').toLowerCase());
+  return f ? `assets/avatars/${f}` : `assets/avatars/${fallbackSlug ?? slugOrName}.png`;
+}
 // ── State ──────────────────────────────────────────────────────
 let allPlayers = [];      // full players_database players array
 let allRankings = [];     // rankings_database rankings array
@@ -560,6 +580,7 @@ async function loadData() {
     const r = await fetch('players_database.json');
     const db = await r.json();
     allPlayers = db.players || [];
+    indexCareerFaces(db);
 
     // Every show's board. This read Total Drama's alone, so comparing two
     // houseguests showed neither of them a tier.
@@ -633,7 +654,7 @@ function renderAc(players) {
   acList.innerHTML = players.map(p => {
     const t = tierStyle(p.tier || 'D');
     return `<div class="ac-item" data-slug="${p.id}">
-      <img class="ac-avatar" src="assets/avatars/${p.id}.png" alt=""
+      <img class="ac-avatar" src="${careerFace(p.id)}" alt=""
            onerror="this.style.display='none'">
       <div>
         <div class="ac-name">${p.name}</div>
@@ -685,7 +706,7 @@ function renderChips() {
     const p = getPlayer(slug);
     if (!p) return '';
     return `<div class="chip">
-      <img src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">
+      <img src="${careerFace(slug)}" alt="" onerror="this.style.display='none'">
       <span>${p.name}</span>
       <button class="chip-remove" data-slug="${slug}" title="Remove">✕</button>
     </div>`;
@@ -781,7 +802,7 @@ function renderPlayerCards(players) {
     const score = r ? r.score : null;
     const rankStr = r ? `#${r.rank || '?'} • Score ${score}` : '';
     return `<div class="cmp-player-card p${i}">
-      <img class="cmp-av" src="assets/avatars/${p.id}.png" alt="${p.name}"
+      <img class="cmp-av" src="${careerFace(p.id)}" alt="${p.name}"
            onerror="this.src=''; this.style.background='rgba(255,255,255,.06)'">
       <div class="cmp-pname">${p.name}</div>
       ${tier && tier !== 'Unranked' ? `<div class="cmp-tier-pill" style="color:${t.color};background:${t.bg};border:1px solid ${t.border}">${tier} Tier</div>` : ''}

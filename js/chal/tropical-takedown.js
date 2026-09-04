@@ -1,6 +1,6 @@
 // js/chal/tropical-takedown.js
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1432,8 +1432,8 @@ function _buildSidebarContent(ep, phase) {
     <div class="tt-sb-section">${td.tribeName.toUpperCase()}</div>
     ${td.tribeMembers.map(n => {
       const isCaptain = n === td.captain.captain && (showCaptain || revealedCaptains.has(td.tribeName));
-      const _slug = players.find(p => p.name === n)?.slug || n.toLowerCase();
-      return `<div class="tt-sb-row"><img class="tt-sb-av" style="border-color:${col}" src="assets/avatars/${_slug}.png" onerror="this.style.display='none'"><span class="tt-sb-name"><strong>${n}</strong></span>${isCaptain ? '<div class="tt-captain-badge">CPT</div>' : ''}</div>`;
+      const _src = playerAvatarUrl(n);
+      return `<div class="tt-sb-row"><img class="tt-sb-av" style="border-color:${col}" src="${_src}" onerror="this.style.display='none'"><span class="tt-sb-name"><strong>${n}</strong></span>${isCaptain ? '<div class="tt-captain-badge">CPT</div>' : ''}</div>`;
     }).join('')}`;
   }).join('');
 
@@ -1459,8 +1459,8 @@ function _buildSidebarContent(ep, phase) {
         const td = data.tribes.find(t => t.tribeName === meta[i].tribe);
         if (td) {
           const col = tribeColor(td.tribeName);
-          const _cSlug = players.find(p => p.name === td.captain.captain)?.slug || td.captain.captain.toLowerCase();
-          html += `<div class="tt-sb-row"><img class="tt-sb-av" style="border-color:${col}" src="assets/avatars/${_cSlug}.png" onerror="this.style.display='none'"><span class="tt-sb-name"><strong>${td.captain.captain}</strong></span><div class="tt-captain-badge">CPT</div></div>`;
+          const _cSrc = playerAvatarUrl(td.captain.captain);
+          html += `<div class="tt-sb-row"><img class="tt-sb-av" style="border-color:${col}" src="${_cSrc}" onerror="this.style.display='none'"><span class="tt-sb-name"><strong>${td.captain.captain}</strong></span><div class="tt-captain-badge">CPT</div></div>`;
           revealed++;
         }
       }
@@ -1517,7 +1517,7 @@ function _buildSidebarContent(ep, phase) {
       td.diveOrder.forEach((n, idx) => {
         const ps = playerStatus[n] || {};
         const isCaptain = n === td.captain.captain;
-        const _slug = players.find(p => p.name === n)?.slug || n.toLowerCase();
+
         let statusIcons = '';
         if (ps.dived) {
           statusIcons += ps.score >= 7 ? '<span style="color:var(--tt-success);font-size:9px" title="Clean dive">&#x2714;</span>' : '<span style="color:var(--tt-danger);font-size:9px" title="Rough dive">&#x2718;</span>';
@@ -1530,7 +1530,7 @@ function _buildSidebarContent(ep, phase) {
         }
         const scoreVal = ps.dived ? `<span class="tt-sb-val ${ps.score >= 7 ? 'tt-sb-val-g' : 'tt-sb-val-d'}" style="font-size:10px">${ps.score.toFixed(1)}</span>` : '<span class="tt-sb-val" style="font-size:9px;opacity:.3">waiting</span>';
         const capBadge = isCaptain ? '<div class="tt-captain-badge">CPT</div>' : '';
-        html += `<div class="tt-sb-row"><img class="tt-sb-av" style="border-color:${col}" src="assets/avatars/${_slug}.png" onerror="this.style.display='none'"><span class="tt-sb-name" style="flex:1;min-width:0"><strong style="font-size:11px">${n}</strong>${capBadge} <span style="display:block;margin-top:1px">${statusIcons}</span></span>${scoreVal}</div>`;
+        html += `<div class="tt-sb-row"><img class="tt-sb-av" style="border-color:${col}" src="${playerAvatarUrl(n)}" onerror="this.style.display='none'"><span class="tt-sb-name" style="flex:1;min-width:0"><strong style="font-size:11px">${n}</strong>${capBadge} <span style="display:block;margin-top:1px">${statusIcons}</span></span>${scoreVal}</div>`;
       });
     });
   } else if (phase === 'race') {
@@ -1628,10 +1628,9 @@ function _buildSidebarContent(ep, phase) {
       if (m.type === 'run') {
         const col = tribeColor(m.tribe);
         const valCls = m.crashed ? 'tt-sb-val-d' : (m.time < 10 ? 'tt-sb-val-g' : 'tt-sb-val-w');
-        const slug1 = players.find(p => p.name === m.rider1)?.slug || (m.rider1 || '').toLowerCase();
-        const slug2 = players.find(p => p.name === m.rider2)?.slug || (m.rider2 || '').toLowerCase();
-        const av1 = m.rider1 ? `<img class="tt-sb-av" style="border-color:${col};width:20px;height:20px;margin-right:-4px;z-index:2;position:relative" src="assets/avatars/${slug1}.png" onerror="this.style.display='none'" title="${m.rider1}">` : '';
-        const av2 = m.rider2 ? `<img class="tt-sb-av" style="border-color:${col};width:20px;height:20px" src="assets/avatars/${slug2}.png" onerror="this.style.display='none'" title="${m.rider2}">` : '';
+        const src1 = playerAvatarUrl(m.rider1), src2 = playerAvatarUrl(m.rider2);
+        const av1 = m.rider1 ? `<img class="tt-sb-av" style="border-color:${col};width:20px;height:20px;margin-right:-4px;z-index:2;position:relative" src="${src1}" onerror="this.style.display='none'" title="${m.rider1}">` : '';
+        const av2 = m.rider2 ? `<img class="tt-sb-av" style="border-color:${col};width:20px;height:20px" src="${src2}" onerror="this.style.display='none'" title="${m.rider2}">` : '';
         const crashLabel = m.crashed ? ` <span style="font-size:7px;color:var(--tt-danger);letter-spacing:.5px">${(m.crashSection || 'CRASH').split(' ')[0].substring(0,5).toUpperCase()}</span>` : '';
         html += `<div class="tt-sb-row">${av1}${av2}<span class="tt-sb-name" style="flex:1;min-width:0;margin-left:4px"><strong>R${m.round}</strong> <span style="color:${col}">${m.tribe.substring(0, 2).toUpperCase()}</span>${crashLabel}</span><span class="tt-sb-val ${valCls}">${m.time}s</span></div>`;
       }
@@ -2269,7 +2268,8 @@ export function rpBuildTTTitleCard(ep) {
     const col = tribeColor(td.tribeName);
     const avatars = td.tribeMembers.map(n => {
       const slug = players.find(p => p.name === n)?.slug || n.toLowerCase();
-      return `<img class="tt-team-av" style="border-color:${col}" src="assets/avatars/${slug}.png" alt="${n}" onerror="this.style.display='none'">`;
+      const slugAv = playerAvatarUrl(n);
+      return `<img class="tt-team-av" style="border-color:${col}" src="${slugAv}" alt="${n}" onerror="this.style.display='none'">`;
     }).join('');
     return `<div class="tt-team-block"><div class="tt-team-name" style="color:${col}">${td.tribeName.toUpperCase()}</div><div class="tt-team-av-row">${avatars}</div></div>`;
   }).join('');
@@ -2282,6 +2282,7 @@ export function rpBuildTTTitleCard(ep) {
   const stanceClasses = ['tt-stance-brave', 'tt-stance-scared', 'tt-stance-pumped'];
   const cliffHTML = cliffPlayers.map((n, i) => {
     const slug = players.find(p => p.name === n)?.slug || n.toLowerCase();
+    const slugAv = playerAvatarUrl(n);
     const arch = players.find(p => p.name === n)?.archetype || '';
     let stance;
     if (['villain', 'mastermind', 'schemer'].includes(arch)) stance = 'tt-stance-brave';
@@ -2289,10 +2290,10 @@ export function rpBuildTTTitleCard(ep) {
     else stance = stanceClasses[Math.floor(Math.random() * stanceClasses.length)];
     const left = 20 + (i * 55 / Math.max(cliffPlayers.length - 1, 1));
     const top = 6 + Math.random() * 1.5;
-    return `<div class="tt-cliff-player ${stance}" style="top:${top.toFixed(1)}%;left:${left.toFixed(1)}%;"><img src="assets/avatars/${slug}.png" alt="${n}" style="width:28px;height:28px;" onerror="this.style.display='none'"><div class="tt-cliff-player-name">${n.toUpperCase()}</div></div>`;
+    return `<div class="tt-cliff-player ${stance}" style="top:${top.toFixed(1)}%;left:${left.toFixed(1)}%;"><img src="${slugAv}" alt="${n}" style="width:28px;height:28px;" onerror="this.style.display='none'"><div class="tt-cliff-player-name">${n.toUpperCase()}</div></div>`;
   }).join('');
-  const diverSlug = players.find(p => p.name === diverPlayer)?.slug || diverPlayer.toLowerCase();
-  const diverHTML = `<div class="tt-diver" style="left:45%;"><img src="assets/avatars/${diverSlug}.png" alt="${diverPlayer}"><div class="tt-diver-splash"></div></div>`;
+  const diverSrc = playerAvatarUrl(diverPlayer);
+  const diverHTML = `<div class="tt-diver" style="left:45%;"><img src="${diverSrc}" alt="${diverPlayer}"><div class="tt-diver-splash"></div></div>`;
 
   // Underwater elements
   const chains = `<div class="tt-deep-chain" style="top:52%;left:25%;"></div><div class="tt-deep-chain" style="top:62%;left:55%;animation-delay:1.5s;"></div><div class="tt-deep-chain" style="top:70%;left:75%;animation-delay:3s;"></div>`;

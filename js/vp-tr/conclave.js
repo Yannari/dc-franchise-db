@@ -52,7 +52,7 @@
 // a registry change cannot reach — is the bug tests/show-vocabulary.test.js
 // exists for, one clause further in.
 import { seasonConfig, players } from '../core.js';
-import { pronouns } from '../players.js';
+import { pronouns, playerAvatarUrl } from '../players.js';
 import { exitVerbs } from '../shows.js';
 import { HOSTS_BY_FORMAT } from '../quick-setup.js';
 import { CONCLAVE_CSS } from './style.js';
@@ -159,7 +159,9 @@ export function _portrait(slug, name, size, opts) {
     + (o.lit && o.tone ? ' data-lit="' + o.tone + '"' : '') + '>'
     + '<span class="cv-av-ini" style="font-size:' + Math.max(9, Math.round(s * 0.34)) + 'px">'
     + _esc(_initials(name)) + '</span>'
-    + '<img src="assets/avatars/' + _esc(slug) + '.png" alt="" onerror="this.remove()">'
+    // The name, not the slug: a slug says who somebody is, and the castle is
+    // this cast's SECOND look for several of them.
+    + '<img src="' + _esc(playerAvatarUrl(name || slug)) + '" alt="" onerror="this.remove()">'
     + '</span>';
 }
 

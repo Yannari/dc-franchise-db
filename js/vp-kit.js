@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from './players.js';
 // ══════════════════════════════════════════════════════════════════════
 // vp-kit.js — the reusable strategy visual grammar (VP redesign).
 //
@@ -36,7 +37,8 @@ export function sgBadge(label, { tone: t = 'neutral', color, ghost = false } = {
 // A portrait + name pill for referencing a contestant inline.
 export function sgPortraitChip(name, slug) {
   const s = slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `<span class="sg-portrait-chip"><img src="assets/avatars/${s}.png" alt="" onerror="this.style.visibility='hidden'">${esc(name)}</span>`;
+  const sAv = playerAvatarUrl(name);
+  return `<span class="sg-portrait-chip"><img src="${sAv}" alt="" onerror="this.style.visibility='hidden'">${esc(name)}</span>`;
 }
 
 // A labelled section divider with a glowing tone dot.

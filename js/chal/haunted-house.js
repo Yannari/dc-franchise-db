@@ -2,7 +2,7 @@
 // DC4 "Carnival of Chaos". 3 rooms: Library combo lock → Three Keys split rooms → Ordinary Girl Doll boss.
 // Last-one-standing race: eliminations knock players OUT of the challenge; first to cut the rope escapes = immunity.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -23,7 +23,7 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function portrait(name, size = 38) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:5px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:5px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 const VILLAINY = ['villain', 'mastermind', 'schemer'];
 const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
@@ -876,7 +876,7 @@ export function rpBuildHauntedTitleCard(ep) {
   const r = ep.hauntedHouse; if (!r) return '';
   const active = ep.tribalPlayers || [];
   const badges = active.map(n =>
-    `<div class="hh-badge"><img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.display='none'"><span>${n}</span></div>`
+    `<div class="hh-badge"><img src="${playerAvatarUrl(n)}" onerror="this.style.display='none'"><span>${n}</span></div>`
   ).join('');
   return _shell(`
     <div class="hh-cover">

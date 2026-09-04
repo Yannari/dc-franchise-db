@@ -479,6 +479,28 @@ window._showsReady = new Promise(resolve => { window._showsResolve = resolve; })
 const SEASON_COLORS=['#60a5fa','#a78bfa','#34d399','#f59e0b','#fb923c','#f472b6','#38bdf8','#fbbf24','#e879f9'];
 
 function slugify(n){return(n||'').toLowerCase().replace(/[^a-z0-9]/g,'-');}
+
+/* ── Portraits ──────────────────────────────────────────────────────────
+   This is an APPEARANCE page: every row on it is one person in one season,
+   and the season recorded which of their portraits it used. Rebuilding the
+   path from the slug drew whatever their profile default happens to be TODAY,
+   so re-reading an old season after somebody got new art showed the new art.
+   Rows written before portraits existed have no avatarFile and still fall back
+   to the old convention. */
+function _srSafeFile(f){return typeof f==='string'&&!!f&&!/[\/:]/.test(f)&&!f.includes('..')&&/\.(png|webp|jpe?g|gif)$/i.test(f);}
+let _srRowsByName=new Map();
+/* The episode strip knows an eliminated player only by name, so index the
+   season's own placement rows and let a name reach the portrait too. */
+function srIndexRows(season){
+  _srRowsByName=new Map();
+  for(const r of ((season&&season.placements)||[])) if(r&&r.name) _srRowsByName.set(String(r.name).toLowerCase(),r);
+}
+function srFace(row,fallbackSlug,name){
+  if(_srSafeFile(row&&row.avatarFile))return 'assets/avatars/'+row.avatarFile;
+  const byName=_srRowsByName.get(String(name||(row&&row.name)||'').toLowerCase());
+  if(_srSafeFile(byName&&byName.avatarFile))return 'assets/avatars/'+byName.avatarFile;
+  return 'assets/avatars/'+(fallbackSlug||slugify((row&&row.name)||name||''))+'.png';
+}
 function plink(name,ps){const s=ps||slugify(name);return `<a href="player.html?player=${s}" style="color:var(--sc);font-weight:700">${name}</a>`;}
 function phaseClass(p){if(!p)return'pre-merge';const lp=p.toLowerCase();if(lp==='winner')return'winner';if(lp==='finalist')return'finalist';if(lp.includes('juror'))return'juror';return'pre-merge';}
 
@@ -504,7 +526,7 @@ function buildAwardHighlights(awards){
       <div class="sr-hl-label">${label}</div>
       <div class="sr-hl-row">
         <div class="sr-hl-av">
-          <img src="assets/avatars/${ps}.png" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/>
+          <img src="${srFace(a, ps, name)}" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/>
           <span>${name.substring(0,2).toUpperCase()}</span>
         </div>
         <div>
@@ -689,7 +711,7 @@ function buildRecords(season){
         const tall = !!(own.strategy || own.legacy);
         return `<div class="sr-winner-row${tall ? ' is-tall' : ''}">
         <div class="sr-winner-av">
-          <img src="assets/avatars/${x.playerSlug||''}.png"
+          <img src="${srFace(x, x.playerSlug)}"
             style="display:none"
             onload="this.style.display='block';this.nextElementSibling.style.display='none'"
             onerror="this.style.display='none'"/>
@@ -707,6 +729,7 @@ function buildRecords(season){
     </div>`;
 
     // Placements
+    srIndexRows(s);
     const placementsHTML=(s.placements||[]).map((p,idx)=>{
       const isRich=p.story||p.keyMoments?.length||p.alliances?.length;
       const pnum=p.placement===1?'🥇':p.placement===2?'🥈':p.placement===3?'🥉':'#'+p.placement;
@@ -730,7 +753,7 @@ function buildRecords(season){
         <div class="sr-placement-header" ${hasBody?'onclick="srToggle(this)"':`onclick="window.location.href='player.html?player=${p.playerSlug}'"`}>
           <div class="sr-p-num">${pnum}</div>
           <div class="sr-p-av">
-            <img src="assets/avatars/${p.playerSlug}.png" onload="this.style.display='block';this.parentElement.querySelector('.sr-av-fb').style.display='none'" onerror="this.style.display='none'"/>
+            <img src="${srFace(p, p.playerSlug)}" onload="this.style.display='block';this.parentElement.querySelector('.sr-av-fb').style.display='none'" onerror="this.style.display='none'"/>
             <span class="sr-av-fb">${(p.name||'').substring(0,2).toUpperCase()}</span>
           </div>
           <div class="sr-p-info">
@@ -757,7 +780,7 @@ function buildRecords(season){
           <div class="sr-ep-num">Ep ${ep.episode}</div>
           ${el ? `<div class="sr-ep-boot">
             <div class="sr-ep-boot-av">
-              <img src="assets/avatars/${es}.png" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"/>
+              <img src="${srFace(null, es, el)}" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"/>
               <span>${el.substring(0,2).toUpperCase()}</span>
             </div>
             <div class="sr-ep-boot-name">☠️ ${el}</div>
@@ -779,7 +802,7 @@ function buildRecords(season){
           <div class="sr-ep-num">${p.placement === 1 ? 'WIN' : p.placement <= 3 ? 'FTC' : `Ep ~${Math.max(1,epNum)}`}</div>
           <div class="sr-ep-boot">
             <div class="sr-ep-boot-av" style="${p.placement <= 3 ? 'border-color:rgba(245,158,11,.5)' : ''}">
-              <img src="assets/avatars/${p.playerSlug}.png" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"/>
+              <img src="${srFace(p, p.playerSlug)}" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"/>
               <span>${(p.name||'').substring(0,2).toUpperCase()}</span>
             </div>
             <div class="sr-ep-boot-name" style="${p.placement <= 3 ? 'color:#f59e0b' : ''}">${p.placement===1?'🏆':p.placement<=3?'🥈':'☠️'} ${p.name}</div>
@@ -875,7 +898,7 @@ function buildRecords(season){
 
       const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-      const av = p => `<img src="assets/avatars/${esc(p.playerSlug)}.png" alt=""
+      const av = p => `<img src="${esc(srFace(p, p.playerSlug))}" alt=""
         onerror="this.style.visibility='hidden'">`;
       /* "3th" and "2th" were on the wall. A placement is an ordinal and
          `${n}th` is only right two thirds of the time. */
@@ -1698,7 +1721,7 @@ function buildRecords(season){
             return`<a class="sr-top-card" href="player.html?player=${p.playerSlug}">
               <div class="sr-top-num">${pnum}</div>
               <div class="sr-top-av">
-                <img src="assets/avatars/${p.playerSlug}.png" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/>
+                <img src="${srFace(p, p.playerSlug)}" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/>
                 <span>${(p.name||'').substring(0,2).toUpperCase()}</span>
               </div>
               <div class="sr-top-name">${p.name}</div>
@@ -1822,7 +1845,7 @@ function buildStatsTable(placements){
     return`<tr>
       <td><strong>${p.placement}</strong></td>
       <td class="left"><div class="sr-st-player">
-        <img class="sr-st-av" src="assets/avatars/${p.playerSlug}.png" alt="" onerror="this.style.display='none'">
+        <img class="sr-st-av" src="${srFace(p, p.playerSlug)}" alt="" onerror="this.style.display='none'">
         <a class="sr-st-name" href="player.html?player=${p.playerSlug}">${p.name}</a>
       </div></td>
       <td><span class="sr-p-phase ${pc}" style="font-size:10px;padding:2px 7px">${p.phase||'—'}</span></td>

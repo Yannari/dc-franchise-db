@@ -1,6 +1,6 @@
 // js/chal/frozen-crossing.js — Frozen Crossing: pre-merge tribe challenge (ice floe gauntlet + sled pickup race)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -16,7 +16,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1316,7 +1317,7 @@ function _av(name, cls = '', extraStyle = '') {
   const frozenCls = cls.includes('frozen') ? ' fc-av-frozen' : '';
   const shiverCls = cls.includes('shiver') ? ' fc-av-shiver' : '';
   const sizeCls = cls.includes('lg') ? ' fc-av-lg' : cls.includes('sm') ? ' fc-av-sm' : cls.includes('xs') ? ' fc-av-xs' : '';
-  return `<img class="fc-av${sizeCls}${frozenCls}${shiverCls}" src="assets/avatars/${slug(name)}.png" alt="${name}" style="border-color:${tc};${extraStyle}" onerror="this.style.display='none'">`;
+  return `<img class="fc-av${sizeCls}${frozenCls}${shiverCls}" src="${playerAvatarUrl(name)}" alt="${name}" style="border-color:${tc};${extraStyle}" onerror="this.style.display='none'">`;
 }
 
 function _avWrap(name, cls = '', breath = false) {
@@ -1385,7 +1386,7 @@ function _buildSidebarContent(ep, screenKey) {
         const pillText = gatedProgress >= fc.floesPerPlayer ? 'DONE' : `${gatedProgress}/${fc.floesPerPlayer}`;
 
         html += `<div class="fc-sbrow">`;
-        html += `<div class="fc-bwrap"><img class="fc-av-xs${shiverCls}${frozenCls}" src="assets/avatars/${slug(name)}.png" style="border:1px solid ${tc};" onerror="this.style.display='none'">${gatedCold <= 4 && !gatedFrozen ? '<div class="fc-vapor"></div>' : ''}</div>`;
+        html += `<div class="fc-bwrap"><img class="fc-av-xs${shiverCls}${frozenCls}" src="${playerAvatarUrl(name)}" style="border:1px solid ${tc};" onerror="this.style.display='none'">${gatedCold <= 4 && !gatedFrozen ? '<div class="fc-vapor"></div>' : ''}</div>`;
         html += `<div class="fc-sbname"${gatedFrozen ? ' style="color:var(--fc-frozen);"' : ''}>${name}</div>`;
         if (gatedFrozen) {
           html += `<span class="fc-floe-pill" style="background:rgba(239,68,68,.1);color:var(--fc-danger);">${gatedProgress}/${fc.floesPerPlayer}</span>`;
@@ -1420,7 +1421,7 @@ function _buildSidebarContent(ep, screenKey) {
       const pullerColdCls = pullerCold > 5 ? 'w' : pullerCold > 2 ? 'c' : 'f';
       const pullerColdPct = clamp(pullerCold / 10, 0, 1) * 100;
       html += `<div class="fc-sbrow">`;
-      html += `<div class="fc-bwrap"><img class="fc-av-xs" src="assets/avatars/${slug(tribe.puller)}.png" style="border:1px solid ${tc};" onerror="this.style.display='none'"></div>`;
+      html += `<div class="fc-bwrap"><img class="fc-av-xs" src="${playerAvatarUrl(tribe.puller)}" style="border:1px solid ${tc};" onerror="this.style.display='none'"></div>`;
       html += `<div class="fc-sbname">${tribe.puller}</div>`;
       html += `<span class="fc-floe-pill" style="background:rgba(251,191,36,.12);color:var(--fc-gold);font-size:7px;">PULLER</span>`;
       const pullerBg = pullerColdCls === 'w' ? 'linear-gradient(to top,#fb923c,#f97316)' : pullerColdCls === 'c' ? 'linear-gradient(to top,#7dd3fc,var(--fc-ice))' : 'linear-gradient(to top,#60a5fa,var(--fc-frozen))';
@@ -1447,7 +1448,7 @@ function _buildSidebarContent(ep, screenKey) {
         const shiverCls = cold <= 4 && !isFrozen ? ' fc-av-shiver' : '';
         const frozenCls = isFrozen ? ' fc-av-frozen' : '';
         html += `<div class="fc-sbrow">`;
-        html += `<div class="fc-bwrap"><img class="fc-av-xs${shiverCls}${frozenCls}" src="assets/avatars/${slug(name)}.png" style="border:1px solid ${tc};" onerror="this.style.display='none'">${cold <= 4 && !isFrozen ? '<div class="fc-vapor"></div>' : ''}</div>`;
+        html += `<div class="fc-bwrap"><img class="fc-av-xs${shiverCls}${frozenCls}" src="${playerAvatarUrl(name)}" style="border:1px solid ${tc};" onerror="this.style.display='none'">${cold <= 4 && !isFrozen ? '<div class="fc-vapor"></div>' : ''}</div>`;
         html += `<div class="fc-sbname"${isFrozen ? ' style="color:var(--fc-frozen);"' : ''}>${name}</div>`;
         html += statusPill;
         if (isFrozen) {
@@ -1902,7 +1903,7 @@ export function rpBuildFCTitleCard(ep) {
     const shiverCls = cold <= 6 ? ' fc-av-shiver' : '';
     const frozenCls = isFrozen ? ' fc-av-frozen' : '';
     return `<div style="text-align:center;margin:4px;">
-      <div class="fc-bwrap"><img class="fc-av${shiverCls}${frozenCls}" src="assets/avatars/${slug(name)}.png" style="border-color:${tc};" onerror="this.style.display='none'"><div class="fc-vapor"></div></div>
+      <div class="fc-bwrap"><img class="fc-av${shiverCls}${frozenCls}" src="${playerAvatarUrl(name)}" style="border-color:${tc};" onerror="this.style.display='none'"><div class="fc-vapor"></div></div>
       <div style="font-size:8px;color:var(--fc-ice);margin-top:4px;letter-spacing:1px;opacity:.6;">${name}</div>
     </div>`;
   }).join('');
@@ -2060,7 +2061,7 @@ export function rpBuildFCPhase1(ep) {
           </div>
           <div class="fc-txt">
             <div style="display:flex;align-items:center;gap:10px;">
-              <img class="fc-av fc-av-frozen" src="assets/avatars/${slug(playerName)}.png" style="border-color:var(--fc-frozen);" onerror="this.style.display='none'">
+              <img class="fc-av fc-av-frozen" src="${playerAvatarUrl(playerName)}" style="border-color:var(--fc-frozen);" onerror="this.style.display='none'">
               <div>${e.text}</div>
             </div>
           </div>
@@ -2206,7 +2207,7 @@ export function rpBuildFCSledAssignment(ep) {
     cardsHtml += `<div id="fc-step-${suffix}-${i}" class="fc-hidden">
       <div class="fc-sled-panel${panelCls}">
         <div style="font-family:'Black Ops One',cursive;font-size:10px;letter-spacing:3px;opacity:.4;margin-bottom:10px;">${ordinal}</div>
-        <img class="fc-av-lg" src="assets/avatars/${slug(puller)}.png" style="border-color:${tc};display:block;margin:0 auto;" onerror="this.style.display='none'">
+        <img class="fc-av-lg" src="${playerAvatarUrl(puller)}" style="border-color:${tc};display:block;margin:0 auto;" onerror="this.style.display='none'">
         <div style="font-family:'Black Ops One',cursive;font-size:14px;color:${tc};margin-top:8px;letter-spacing:2px;">${tribeName.toUpperCase()}</div>
         <div style="font-size:11px;color:rgba(240,249,255,.6);margin:6px 0;font-style:italic;line-height:1.5;">${pullerReact}</div>
         ${_iconSled(sledCls)}
@@ -2367,7 +2368,7 @@ export function rpBuildFCPhase2(ep) {
         ${flavorHtml}
         <div class="fc-hero">
           <div style="position:relative;z-index:2;">
-            <img class="fc-av-lg" src="assets/avatars/${slug(puller)}.png" style="border-color:var(--fc-gold);display:block;margin:0 auto 14px;box-shadow:0 0 25px rgba(251,191,36,.3);" onerror="this.style.display='none'">
+            <img class="fc-av-lg" src="${playerAvatarUrl(puller)}" style="border-color:var(--fc-gold);display:block;margin:0 auto 14px;box-shadow:0 0 25px rgba(251,191,36,.3);" onerror="this.style.display='none'">
             <div class="fc-hero-title">HERO SAVE</div>
             <div style="font-size:12px;color:var(--fc-frost);opacity:.45;letter-spacing:3px;margin-bottom:14px;">${puller} grips the ice edge with raw strength</div>
             <div class="fc-txt" style="max-width:500px;margin:0 auto;">${e.text}</div>
@@ -2392,9 +2393,9 @@ export function rpBuildFCPhase2(ep) {
           </div>
           <div class="fc-txt">
             <div style="display:flex;gap:16px;align-items:center;justify-content:center;margin:12px 0;">
-              <div style="text-align:center;"><img class="fc-av-lg" src="assets/avatars/${slug(charmer)}.png" style="border-color:${_playerTribeColor(charmer)};" onerror="this.style.display='none'"><div style="font-size:9px;color:${_playerTribeColor(charmer)};margin-top:4px;font-weight:700;letter-spacing:2px;">CHARMER</div></div>
+              <div style="text-align:center;"><img class="fc-av-lg" src="${playerAvatarUrl(charmer)}" style="border-color:${_playerTribeColor(charmer)};" onerror="this.style.display='none'"><div style="font-size:9px;color:${_playerTribeColor(charmer)};margin-top:4px;font-weight:700;letter-spacing:2px;">CHARMER</div></div>
               <div style="text-align:center;">${_iconHeart()}<div style="font-size:8px;color:var(--fc-pink);margin-top:6px;letter-spacing:3px;">TRAP</div></div>
-              <div style="text-align:center;"><div class="fc-bwrap"><img class="fc-av-lg fc-av-shiver" src="assets/avatars/${slug(target)}.png" style="border-color:${_playerTribeColor(target)};" onerror="this.style.display='none'"><div class="fc-vapor"></div></div><div style="font-size:9px;color:${_playerTribeColor(target)};margin-top:4px;font-weight:700;letter-spacing:2px;">VICTIM</div></div>
+              <div style="text-align:center;"><div class="fc-bwrap"><img class="fc-av-lg fc-av-shiver" src="${playerAvatarUrl(target)}" style="border-color:${_playerTribeColor(target)};" onerror="this.style.display='none'"><div class="fc-vapor"></div></div><div style="font-size:9px;color:${_playerTribeColor(target)};margin-top:4px;font-weight:700;letter-spacing:2px;">VICTIM</div></div>
             </div>
             <div>${e.text}</div>
             ${e.score ? `<div style="font-size:9px;color:var(--fc-aurora-g);margin-top:8px;letter-spacing:1px;">★ ${charmer} +${e.score} individual (strategic play)</div>` : ''}
@@ -2441,7 +2442,7 @@ export function rpBuildFCPhase2(ep) {
         <div class="fc-card" data-tribe="${tribeName}" style="border-left-color:var(--fc-aurora-g);">
           <div class="fc-hdr"><div class="fc-title" style="color:var(--fc-aurora-g);">ENCOURAGEMENT</div><span class="fc-badge fc-bs">SPEED + | BOND +0.5</span></div>
           <div class="fc-txt"><div style="display:flex;gap:10px;align-items:center;">
-            <img class="fc-av-sm" src="assets/avatars/${slug(from)}.png" style="border-color:${tc};" onerror="this.style.display='none'">
+            <img class="fc-av-sm" src="${playerAvatarUrl(from)}" style="border-color:${tc};" onerror="this.style.display='none'">
             <div>${e.text}</div>
           </div></div>
         </div>
@@ -2453,7 +2454,7 @@ export function rpBuildFCPhase2(ep) {
         <div class="fc-card fc-card-danger" data-tribe="${tribeName}">
           <div class="fc-hdr"><div class="fc-title" style="color:var(--fc-danger);">WHIPPING</div><span class="fc-badge fc-bd">SPEED ++ | BOND -1.0</span></div>
           <div class="fc-txt"><div style="display:flex;gap:10px;align-items:center;">
-            <img class="fc-av-sm" src="assets/avatars/${slug(from)}.png" style="border-color:${tc};" onerror="this.style.display='none'">
+            <img class="fc-av-sm" src="${playerAvatarUrl(from)}" style="border-color:${tc};" onerror="this.style.display='none'">
             <div>${e.text}</div>
           </div>
           <div style="font-size:9px;color:var(--fc-danger);margin-top:6px;letter-spacing:1px;">POP -1 ${from} • Camp event injected</div>
@@ -2477,7 +2478,7 @@ export function rpBuildFCPhase2(ep) {
           </div>
           <div class="fc-txt">
             <div style="display:flex;align-items:center;gap:10px;">
-              ${player ? `<div class="fc-bwrap"><img class="fc-av" src="assets/avatars/${slug(player)}.png" style="border-color:${tc};" onerror="this.style.display='none'"><div class="fc-vapor"></div></div>` : ''}
+              ${player ? `<div class="fc-bwrap"><img class="fc-av" src="${playerAvatarUrl(player)}" style="border-color:${tc};" onerror="this.style.display='none'"><div class="fc-vapor"></div></div>` : ''}
               <div>${e.text}</div>
             </div>
           </div>
@@ -2521,7 +2522,7 @@ function _buildRaceMap(fc) {
       const tc = tribeColor(tribe.name);
       checkpointsHtml += `<div class="fc-mapcp unvisited" id="fc-mapcp-${tIdx}-${cpIdx}" style="top:${top}px;left:${left}%;">
         <div class="fc-mapcp-node" style="border-color:${tc}33;">
-          <img src="assets/avatars/${slug(name)}.png" alt="${name}" style="filter:grayscale(1) brightness(.6);" onerror="this.style.display='none'">
+          <img src="${playerAvatarUrl(name)}" alt="${name}" style="filter:grayscale(1) brightness(.6);" onerror="this.style.display='none'">
           <div class="fc-mapcp-mark" style="background:rgba(168,216,234,.15);color:var(--fc-ice);">?</div>
         </div>
         <div class="fc-mapcp-label">CP ${cpIdx + 1}</div>
@@ -2609,7 +2610,7 @@ export function rpBuildFCResults(ep) {
     const memberAvatars = (tribe?.members || []).map(name => {
       const isMissing = tribe?.missing?.includes(name);
       const frozenCls = isMissing ? ' fc-av-frozen' : '';
-      return `<img class="fc-av-sm${frozenCls}" src="assets/avatars/${slug(name)}.png" style="border-color:${tc};${isMissing ? 'opacity:.3;' : ''}" onerror="this.style.display='none'">`;
+      return `<img class="fc-av-sm${frozenCls}" src="${playerAvatarUrl(name)}" style="border-color:${tc};${isMissing ? 'opacity:.3;' : ''}" onerror="this.style.display='none'">`;
     }).join('');
 
     cardsHtml += `<div id="fc-step-${suffix}-${i}" class="fc-hidden">

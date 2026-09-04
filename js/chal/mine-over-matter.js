@@ -15,7 +15,7 @@
 // giant scorpions, the hole-in-the-bag elimination).
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -730,7 +730,8 @@ export function _textMineOverMatter(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════════════
 function _portrait(name, size = 46) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #3a2f1a;background:#120e08;object-fit:cover;" onerror="this.style.visibility='hidden'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #3a2f1a;background:#120e08;object-fit:cover;" onerror="this.style.visibility='hidden'">`;
 }
 
 function _gemIcon(size = 14) {

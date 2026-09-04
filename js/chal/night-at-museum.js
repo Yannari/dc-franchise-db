@@ -1,6 +1,6 @@
 // js/chal/night-at-museum.js — Night at the Museum: pre-merge tribe challenge (security breach + gallery search + assembly)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -26,7 +26,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1902,7 +1903,8 @@ function _nmIcon(type, large) {
 function _nmPortraitIcon(name) {
   if (!name) return _nmIcon('frame');
   const sl = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<span class="nm-icon nm-icon-portrait"><div class="frame-wrap"><div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div><img src="assets/avatars/${sl}.png" alt="${name}" style="position:absolute;top:2px;left:2px;right:2px;bottom:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:cover;border-radius:1px;z-index:0;" onerror="this.style.display='none'"><div class="canvas-inner" style="background:transparent;"></div></div></span>`;
+  const slAv = playerAvatarUrl(name);
+  return `<span class="nm-icon nm-icon-portrait"><div class="frame-wrap"><div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div><img src="${slAv}" alt="${name}" style="position:absolute;top:2px;left:2px;right:2px;bottom:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:cover;border-radius:1px;z-index:0;" onerror="this.style.display='none'"><div class="canvas-inner" style="background:transparent;"></div></div></span>`;
 }
 
 
@@ -1972,6 +1974,7 @@ function _buildSidebarContent(ep, screenKey) {
     const members = [...(t.members || [])];
     members.forEach(name => {
       const sl = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+      const slAv = playerAvatarUrl(name);
       const score = useGated ? (gatedScores[name] || 0) : (epScores[name] || 0);
       const scoreCls = score > 0 ? 'nm-sb-val-g' : score < 0 ? 'nm-sb-val-d' : 'nm-sb-val-w';
       const scoreSign = score > 0 ? '+' : '';
@@ -1987,7 +1990,7 @@ function _buildSidebarContent(ep, screenKey) {
       html += `<div class="nm-sb-row" style="gap:6px;">`;
       // Mini portrait in gilded frame
       html += `<div style="width:22px;height:22px;flex-shrink:0;border:2px solid rgba(180,145,60,.4);border-radius:2px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 0 4px rgba(0,0,0,.15);position:relative;">`;
-      html += `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`;
+      html += `<img src="${slAv}" alt="${name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`;
       html += `</div>`;
       html += `<span class="nm-sb-name" style="font-size:10px;">${name}</span>`;
       html += rolePill;
@@ -2531,7 +2534,7 @@ function _nmShell(content, ep, phaseCls) {
     const w = pw + sizeVar;
     const h = ph + sizeVar;
     portraitsHtml += `<div class="nm-portrait${isOval ? ' nm-portrait-oval' : ''}" data-name="${pName}" style="left:${xPct.toFixed(1)}%;top:${yPct.toFixed(1)}vh;width:${w}px;height:${h}px;transform:translate(-50%,-50%);${br}">` +
-      `<div class="canvas" style="${br}"><img src="assets/avatars/${sl}.png" alt="${pName}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.35;filter:sepia(.5) brightness(.65) contrast(1.15);${br}" onerror="this.style.display='none'"></div>` +
+      `<div class="canvas" style="${br}"><img src="${slAv}" alt="${pName}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.35;filter:sepia(.5) brightness(.65) contrast(1.15);${br}" onerror="this.style.display='none'"></div>` +
       `<div class="frame" style="${br}"></div></div>`;
   });
 
@@ -2968,8 +2971,9 @@ export function rpBuildNMTitleCard(ep) {
     const borderCol = cc === 'y' ? 'var(--nm-gold)' : (cc === 'r' ? 'var(--nm-tribe-red)' : 'var(--nm-info)');
     const members = (t.members || []).map(name => {
       const sl = slug(name);
+      const slAv = playerAvatarUrl(name);
       return `<div style="text-align:center;margin:3px;">
-        <div style="width:38px;height:38px;border-radius:50%;border:2px solid ${borderCol};overflow:hidden;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,.4);"><img src="assets/avatars/${sl}.png" alt="${name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'"></div>
+        <div style="width:38px;height:38px;border-radius:50%;border:2px solid ${borderCol};overflow:hidden;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,.4);"><img src="${slAv}" alt="${name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'"></div>
         <div style="font-size:7px;color:var(--nm-cream);margin-top:3px;letter-spacing:1px;opacity:.6;">${name}</div>
       </div>`;
     }).join('');

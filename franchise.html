@@ -683,10 +683,30 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 function pLink(name, slug) {
   return slug ? `<a class="player-link" href="player.html?player=${slug}">${name}</a>` : (name || '—');
 }
+
+/* ── Career portraits ───────────────────────────────────────────────────
+   This page shows a PERSON, not one appearance, so it shows their latest
+   recorded look — derived from the newest season they played, never written
+   back down onto a season row. Rebuilding the path from a slug drew whatever
+   file happens to be named after them, which stopped being right the moment
+   somebody could have more than one portrait. */
+const _careerFaces = new Map();
+function indexCareerFaces(db) {
+  for (const p of ((db && db.players) || [])) {
+    const f = p && p.latestAvatarFile;
+    if (!f || typeof f !== 'string' || /[\/:]/.test(f) || f.includes('..')) continue;
+    if (p.id) _careerFaces.set(String(p.id).toLowerCase(), f);
+    if (p.name) _careerFaces.set(String(p.name).toLowerCase(), f);
+  }
+}
+function careerFace(slugOrName, fallbackSlug) {
+  const f = _careerFaces.get(String(slugOrName || '').toLowerCase());
+  return f ? `assets/avatars/${f}` : `assets/avatars/${fallbackSlug ?? slugOrName}.png`;
+}
 function avatar(slug, size) {
   const s = size || 28;
   return slug
-    ? `<img class="mini-avatar" style="width:${s}px;height:${s}px" src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">`
+    ? `<img class="mini-avatar" style="width:${s}px;height:${s}px" src="${careerFace(slug)}" alt="" onerror="this.style.display='none'">`
     : '';
 }
 function rankIcon(i) {
@@ -737,7 +757,7 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
     const [franchise, seasonsDb, playersDb, rosterDb, voicesDb] = await Promise.all([
       fetch('franchise_database.json').then(r => r.json()),
       fetch('seasons_database.json').then(r => r.json()),
-      fetch('players_database.json').then(r => r.json()),
+      fetch('players_database.json').then(r => r.json()).then(d => (indexCareerFaces(d), d)),
       fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
       fetch('voice-profiles.json').then(r => r.json()).catch(() => ({ profiles: {} })),
     ]);
@@ -800,7 +820,7 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
       return `<div class="champ-card">
         <div class="champ-season-badge">${c.emoji||s.emoji||'🏝️'} Season ${c.season}</div>
         <div class="champ-avatar-wrap">
-          <img class="champ-avatar" src="assets/avatars/${c.playerSlug||''}.png" alt="" onerror="this.style.display='none'">
+          <img class="champ-avatar" src="${careerFace(c.playerSlug || c.name)}" alt="" onerror="this.style.display='none'">
           <div>
             <div class="champ-name"><a href="player.html?player=${c.playerSlug||''}">${c.winner}</a></div>
             <div class="champ-title">${c.seasonTitle}</div>
@@ -878,7 +898,7 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
       g.players.forEach(p => {
         const seasonBadges = (p.seasons||[]).map(s=>`<span class="s-badge">S${s}</span>`).join('');
         retHTML += `<div class="returnee-card">
-          <img class="ret-avatar" src="assets/avatars/${p.playerSlug||''}.png" alt="" onerror="this.style.display='none'">
+          <img class="ret-avatar" src="${careerFace(p.playerSlug || p.name)}" alt="" onerror="this.style.display='none'">
           <div class="ret-name"><a href="player.html?player=${p.playerSlug||''}">${p.name}</a></div>
           <div class="ret-seasons">${seasonBadges}</div>
           ${p.wins ? `<span class="wins-badge">👑 ${p.wins} win${p.wins!==1?'s':''}</span>` : ''}

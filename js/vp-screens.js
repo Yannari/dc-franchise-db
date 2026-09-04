@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from './players.js';
 // ══════════════════════════════════════════════════════════════════════
 // vp-screens.js — VP screen builders, helpers, and the main buildVPScreens controller
 // ══════════════════════════════════════════════════════════════════════
@@ -227,10 +228,11 @@ export function rpPortrait(name, cls='', badge='') {
   if (!name) return `<div class="rp-portrait ${cls}"><div class="rp-portrait-img"><span>?</span></div><div class="rp-portrait-name">?</div></div>`;
   const p = players.find(x => x.name === name);
   const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const slugAv = playerAvatarUrl(name);
   const init = (name||'?')[0].toUpperCase();
   return `<div class="rp-portrait ${cls}">
     <div class="rp-portrait-img">
-      <img src="assets/avatars/${slug}.png"
+      <img src="${slugAv}"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
       <span style="display:none">${init}</span>
     </div>
@@ -240,16 +242,15 @@ export function rpPortrait(name, cls='', badge='') {
 }
 
 export function rpDuoImg(nameA, nameB) {
-  const slugA = (players.find(x=>x.name===nameA)?.slug) || nameA.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  const slugB = (players.find(x=>x.name===nameB)?.slug) || nameB.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const srcA = playerAvatarUrl(nameA), srcB = playerAvatarUrl(nameB);
   const ia = nameA[0].toUpperCase(), ib = nameB[0].toUpperCase();
   return `<div class="rp-rel-duo">
     <div class="rp-portrait-img" style="width:64px;height:64px;font-size:20px">
-      <img src="assets/avatars/${slugA}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+      <img src="${srcA}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
       <span style="display:none">${ia}</span>
     </div>
     <div class="rp-portrait-img" style="width:64px;height:64px;font-size:20px;margin-left:-14px;border-color:#0d1117">
-      <img src="assets/avatars/${slugB}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+      <img src="${srcB}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
       <span style="display:none">${ib}</span>
     </div>
   </div>`;
@@ -1301,13 +1302,12 @@ export function rpBuildColdOpen(ep) {
           const score = _popSnap[name] || 0;
           const scoreColor = score >= 10 ? '#e3b341' : score > 0 ? '#c09030' : score < 0 ? '#e05c5c' : 'var(--vp-text-dim)';
           const _badge = _pulBadge(score);
-          const _p = players.find(x => x.name === name);
-          const _slug = _p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+          const _src = playerAvatarUrl(name);
           const _init = (name||'?')[0].toUpperCase();
           return `<div style="display:flex;align-items:center;gap:6px;padding:1px 0">
             <span style="font-size:9px;font-weight:700;color:var(--vp-text-dim);font-family:var(--font-mono);width:14px;text-align:right;flex-shrink:0">${i+1}</span>
             <div style="width:${_icSz}px;height:${_icSz}px;border-radius:3px;overflow:hidden;flex-shrink:0;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:${_icFs}px;font-weight:700;color:#6e7681">
-              <img src="assets/avatars/${_slug}.png" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+              <img src="${_src}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
               <span style="display:none">${_init}</span>
             </div>
             <span style="font-size:${Math.max(10, Math.round(_icSz * 0.45))}px;color:var(--vp-text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
@@ -1455,10 +1455,11 @@ export function rpBuildTribes(ep) {
           const inTribe = tribeSet.has(name);
           const otherTribe = inTribe ? '' : (playerTribeMap[name] || '');
           const slug = (players.find(p=>p.name===name)?.slug) || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+          const slugAv = playerAvatarUrl(name);
           const init = (name||'?')[0].toUpperCase();
           html += `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;${inTribe ? '' : 'opacity:0.35;filter:grayscale(1)'}">
             <div style="width:36px;height:36px;border-radius:5px;overflow:hidden;background:#161b22;border:1px solid ${inTribe ? tc : '#30363d'};flex-shrink:0">
-              <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover"
+              <img src="${slugAv}" style="width:100%;height:100%;object-fit:cover"
                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
               <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#8b949e">${init}</span>
             </div>
@@ -2759,7 +2760,7 @@ export function rpBuildDebug(ep) {
     const _rosterW = (activePlayers && activePlayers.length) ? [...activePlayers] : (gs.activePlayers?.length ? [...gs.activePlayers] : players.map(p => p.name));
     let _focusW = localStorage.getItem('vp_debug_player');
     if (!_focusW || !_rosterW.includes(_focusW)) _focusW = _rosterW[0];
-    const _slugW = n => players.find(p => p.name === n)?.slug || String(n).toLowerCase().replace(/\s+/g, '-');
+    const _slugW = n => playerAvatarUrl(n);   // the URL, not a slug: which look this season chose
     const _dimsW = ['affection', 'trust', 'strategicRespect', 'fear', 'obligation', 'resentment', 'attraction'];
     const _shortW = { affection: 'LIKING', trust: 'TRUST', strategicRespect: 'GAME RESPECT', fear: 'FEAR', obligation: 'OWES', resentment: 'RESENTMENT', attraction: 'ATTRACTION' };
     const _helpW = {
@@ -2790,7 +2791,7 @@ export function rpBuildDebug(ep) {
     const _selW = _rosterW.map(n => {
       const on = n === _focusW;
       return `<button onclick="localStorage.setItem('vp_debug_player','${String(n).replace(/'/g, "\\'")}');const e=gs.episodeHistory.find(x=>x.num===${ep.num});if(e){buildVPScreens(e);renderVPScreen();}" title="${n}" style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 5px;border:1px solid ${on ? '#d9a6ff' : 'rgba(255,255,255,0.1)'};border-radius:8px;background:${on ? 'rgba(200,120,255,0.16)' : 'transparent'};cursor:pointer;flex:0 0 auto">
-        <img src="assets/avatars/${_slugW(n)}.png" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid ${on ? '#d9a6ff' : '#30363d'}" onerror="this.style.visibility='hidden'">
+        <img src="${_slugW(n)}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid ${on ? '#d9a6ff' : '#30363d'}" onerror="this.style.visibility='hidden'">
         <span style="font-size:9px;font-weight:${on ? '700' : '400'};color:${on ? '#d9a6ff' : '#8b949e'};max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span></button>`;
     }).join('');
     html += `<div style="margin-bottom:10px;padding:9px;background:rgba(200,120,255,0.06);border:1px solid rgba(200,120,255,0.18);border-radius:8px">
@@ -2823,7 +2824,7 @@ export function rpBuildDebug(ep) {
       const _causes = [...(_causeStoreW[`${_focusW}→${n}`] || [])].reverse().slice(0, 2).map(c => `ep${c.ep} ${c.reason}`).join(' · ');
       const _backSig = _dimsW.filter(d => Math.abs(back[d]) >= 2).map(d => `${_shortW[d]} ${back[d].toFixed(0)}`).join(' ');
       html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);opacity:${faded ? '0.5' : '1'}">
-        <td style="padding:5px;color:#e6edf3;white-space:nowrap"><img src="assets/avatars/${_slugW(n)}.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'"><strong>${n}</strong></td>
+        <td style="padding:5px;color:#e6edf3;white-space:nowrap"><img src="${_slugW(n)}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'"><strong>${n}</strong></td>
         ${_dimsW.map(d => { const v = out[d]; return `<td style="padding:5px;text-align:center;color:${_colW(v)};font-weight:${Math.abs(v) >= 3 ? '700' : '400'}" title="${_helpW[d]}">${v.toFixed(1)}</td>`; }).join('')}
         <td style="padding:5px;color:#c9d1d9;min-width:150px">${_readW(out)}${_causes ? `<div style="color:#6e7681;font-size:9px;margin-top:2px">${_causes}</div>` : ''}</td>
         <td style="padding:5px;color:#8b949e;min-width:90px">${_backSig || '<span style="color:#484f58">·</span>'}</td>
@@ -7631,13 +7632,12 @@ export function rpBuildRelationships(ep) {
           const score = _popSnap[name] || 0;
           const scoreColor = score >= 10 ? '#e3b341' : score > 0 ? '#c09030' : score < 0 ? '#e05c5c' : 'var(--muted)';
           const _badge = _pulBadge(score);
-          const _p = players.find(x => x.name === name);
-          const _slug = _p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+          const _src = playerAvatarUrl(name);
           const _init = (name||'?')[0].toUpperCase();
           return `<div style="display:flex;align-items:center;gap:6px;padding:1px 0">
             <span style="font-size:9px;font-weight:700;color:var(--muted);font-family:var(--font-mono);width:14px;text-align:right;flex-shrink:0">${i+1}</span>
             <div style="width:${_icSz}px;height:${_icSz}px;border-radius:3px;overflow:hidden;flex-shrink:0;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:${_icFs}px;font-weight:700;color:#6e7681">
-              <img src="assets/avatars/${_slug}.png" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+              <img src="${_src}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
               <span style="display:none">${_init}</span>
             </div>
             <span style="font-size:${Math.max(10, Math.round(_icSz * 0.45))}px;color:var(--vp-text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
@@ -8747,10 +8747,11 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
         const loyScore = Math.min(10, Math.max(1, Math.round(s.loyalty * 0.5 + avgBond * 0.8 + (hasBetrayed ? -2 : 0))));
         const loyColor = loyScore >= 8 ? '#3fb950' : loyScore >= 6 ? '#e3b341' : loyScore >= 4 ? '#f0a500' : '#f85149';
         const slug = (players.find(p=>p.name===name)?.slug) || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const slugAv = playerAvatarUrl(name);
         const init = (name||'?')[0].toUpperCase();
         html += `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;${inTribe?'':'opacity:0.35;filter:grayscale(1)'}">
           <div style="width:56px;height:56px;border-radius:7px;overflow:hidden;background:#161b22;border:2px solid ${inTribe?tc:'#30363d'}">
-            <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover"
+            <img src="${slugAv}" style="width:100%;height:100%;object-fit:cover"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
             <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#8b949e">${init}</span>
           </div>
@@ -8765,10 +8766,11 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
       quittersThisEp.filter(name => !_reRecruits.has(name)).forEach(name => {
         if (!_activePlayerSet.has(name)) return;
         const slug = (players.find(p=>p.name===name)?.slug) || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const slugAv = playerAvatarUrl(name);
         const init = (name||'?')[0].toUpperCase();
         html += `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0.4;filter:grayscale(1)">
           <div style="width:56px;height:56px;border-radius:7px;overflow:hidden;background:#161b22;border:2px solid #30363d">
-            <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover"
+            <img src="${slugAv}" style="width:100%;height:100%;object-fit:cover"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
             <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#8b949e">${init}</span>
           </div>
@@ -11618,7 +11620,7 @@ export function rpBuildReadOfRoom(ep, attending = []) {
   if (!roster.length) return '';
   const rosterSet = new Set(roster);
   const slug = n => cast.find(p => p.name === n)?.slug || String(n).toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  const face = (n, extra = '') => `<span class="rotr-face ${extra}" title="${esc(n)}"><img src="assets/avatars/${slug(n)}.png" alt="${esc(n)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${esc(String(n)[0] || '?')}</span></span>`;
+  const face = (n, extra = '') => `<span class="rotr-face ${extra}" title="${esc(n)}"><img src="${playerAvatarUrl(n)}" alt="${esc(n)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${esc(String(n)[0] || '?')}</span></span>`;
   const faces = ns => `<span class="rotr-faces">${[...new Set(ns.filter(Boolean))].slice(0,2).map((n,i)=>face(n,i?'back':'')).join('')}</span>`;
   const badge = (label, color, privacy = '') => `<span class="rotr-badges"><span class="rotr-badge" style="--bc:${color}">${esc(label)}</span>${privacy ? `<span class="rotr-privacy">${esc(privacy)}</span>` : ''}</span>`;
   const row = ({ people=[], label, color='#8b949e', text, load=false, privacy='' }) => `<div class="rotr-row ${load?'load':'ambient'}" style="--tier:${color}">${faces(people)}${badge(label,color,privacy)}<div class="rotr-copy">${text}</div></div>`;
@@ -12910,6 +12912,7 @@ export function rpBuildVotes(ep) {
         <div style="font-size:11px;font-weight:700;color:#e6edf3;margin-bottom:8px">${alliance.name}</div>`;
       betrayalsThisEp.forEach(b => {
         const slug = (players.find(p=>p.name===b.player)?.slug) || b.player.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const slugAv = playerAvatarUrl(b.player);
         const votedAnAlly = alliance.members.includes(b.votedFor);
         const allyNote    = votedAnAlly ? ` — targeted their own ally` : '';
         const newNote     = b.formedThisEp ? ` Brand new alliance; the bonds never had time to hold.` : '';
@@ -12926,6 +12929,7 @@ export function rpBuildVotes(ep) {
       });
       quitsThisEp.forEach(q => {
         const slug = (players.find(p=>p.name===q.player)?.slug) || q.player.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const slugAv = playerAvatarUrl(q.player);
         const reasonNote = q.reason ? ` (${q.reason})` : '';
         html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
           ${rpPortrait(q.player, 'sm')}
@@ -16704,7 +16708,7 @@ export function rpBuildBBColdOpen(ep) {
       : '';
     return `<div class="bbf-tile ${i === look ? 'is-now' : ''} ${inHouse ? 'is-in' : 'is-empty'}"${lookAt}>
       <div class="bbf-frame">
-        ${inHouse ? `<img src="assets/avatars/${_bbSlug(name)}.png" alt="${_bbEsc(name || '')}"
+        ${inHouse ? `<img src="${_bbAvatarSrc(name)}" alt="${_bbEsc(name || '')}"
               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#30363d">${(name || '?')[0]}</span>`
           : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#222831;font-size:17px;font-weight:800">?</div>`}
@@ -25972,13 +25976,15 @@ const _bbEsc = v => String(v ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const _bbAvatar = (name, px = 26) => `<span class="bb-av" style="width:${px}px;height:${px}px">
-  <img src="assets/avatars/${_bbSlug(name)}.png" alt="${_bbEsc(name || '')}"
+  <img src="${_bbAvatarSrc(name)}" alt="${_bbEsc(name || '')}"
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
   <i>${(name || '?')[0]}</i></span>`;
 
-const _bbSlug = name => {
-  const p = (typeof players !== 'undefined') ? players.find(x => x.name === name) : null;
-  return p?.slug || String(name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+// The URL, resolved through the registry. This used to hand back a slug and
+// let three call sites bolt `.png` onto it, which is how a Big Brother screen
+// could only ever draw one look per person.
+const _bbAvatarSrc = name => {
+  try { return playerAvatarUrl(name); } catch { return ''; }
 };
 
 /**
@@ -26016,7 +26022,7 @@ function _bbMemoryWall(stillIn, { note = '', status = {}, notYet = [] } = {}) {
         ${marks.length ? `<span class="bbw-mark ${marks.length > 1 ? 'is-multi' : ''}">${
           marks.map(m => `<b class="bbw-m-${m}">${label[m]}</b>`).join('')}</span>` : ''}
         <div class="bbw-photo">
-          <img src="assets/avatars/${_bbSlug(name)}.png" alt="${_bbEsc(name || '')}"
+          <img src="${_bbAvatarSrc(name)}" alt="${_bbEsc(name || '')}"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;color:#4a4e48">${(name || '?')[0]}</span>
         </div>

@@ -1,6 +1,6 @@
 // js/chal/ice-ice-baby.js — Ice Ice Baby: Siege & Steal (pre-merge tribe challenge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -17,7 +17,8 @@ function arch(name) { return players.find(p => p.name === name)?.archetype || ''
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function portrait(name, size = 42) {
   const s = slug(name);
-  return `<img src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const sAv = playerAvatarUrl(name);
+  return `<img src="${sAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 
 const _usedTexts = new Set();
@@ -1520,7 +1521,7 @@ function _badgeClass(cls) {
 
 function _av(name, cls = '') {
   const tc = _playerTribeColor(name);
-  return `<img class="iib-av${cls ? ' iib-av-' + cls : ''}" src="assets/avatars/${slug(name)}.png" alt="${name}" style="border-color:${tc};" onerror="this.style.display='none'">`;
+  return `<img class="iib-av${cls ? ' iib-av-' + cls : ''}" src="${playerAvatarUrl(name)}" alt="${name}" style="border-color:${tc};" onerror="this.style.display='none'">`;
 }
 
 function _playerTribeColor(name) {

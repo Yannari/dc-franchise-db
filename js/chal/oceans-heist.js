@@ -1,6 +1,6 @@
 // js/chal/oceans-heist.js — Ocean's Eight-or-Nine bank heist challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -997,11 +997,13 @@ export function _coldOpenOceansHeist(ep) {
 // ══════════════════════════════════════════════════════════════
 function _ohPortrait(name, size = 40) {
   const slug = players.find(p => p.name === name)?.slug || '';
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--heist-cyan);box-shadow:0 0 6px rgba(34,211,238,0.2)" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--heist-cyan);box-shadow:0 0 6px rgba(34,211,238,0.2)" onerror="this.style.display='none'">`;
 }
 function _ohSidePortrait(name, size = 24) {
   const slug = players.find(p => p.name === name)?.slug || '';
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid var(--heist-cyan)" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid var(--heist-cyan)" onerror="this.style.display='none'">`;
 }
 function _ohBadge(text, color = 'cyan') {
   const colors = { cyan: 'var(--heist-cyan)', red: 'var(--heist-red)', gold: 'var(--heist-gold)', green: 'var(--heist-green)', gray: '#64748b' };

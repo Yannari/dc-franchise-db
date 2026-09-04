@@ -1,6 +1,6 @@
 // js/chal/bigger-badder-brutaler.js — Bigger! Badder! Brutal-er! (ROTI pre-merge tribe race)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1605,7 +1605,8 @@ function _ensureState(key, total) {
 
 function portrait(name, size = 28) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 
 function _playerChips(names, tribeName) {

@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // demons-plainer-vp.js — VP screens for Demon's Plainer
 // Phase A: forest/dusk shelter build.  Phase B: neon carnival flag-memory coaster.
@@ -10,7 +11,7 @@ const SPINE = "M -30,362 L 95,362 C 165,362 178,150 250,150 C 312,150 326,258 36
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 26) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.3)" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.3)" onerror="this.style.visibility='hidden'">`;
 }
 const FLAG_HEX = { RED: '#e0342b', BLUE: '#2f7bd6', GREEN: '#3fb950', YELLOW: '#f5c518', PURPLE: '#9b59b6', ORANGE: '#e08b2f', PINK: '#e879a8', TEAL: '#2bb0a0' };
 function flagChip(c, big) {

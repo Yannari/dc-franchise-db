@@ -1084,6 +1084,10 @@ const RT_CSS = `
 .rt-run-chip b{font-size:13px;color:var(--rt-candle)}
 .rt-run-chip[data-lead="1"]{border-color:rgba(201,40,60,.55);color:#e58490}
 .rt-run-chip[data-lead="1"] b{color:#e58490}
+/* the name on the slate that was just turned over — it is always in the strip
+   (see _runStrip) and it is worth being able to find without counting */
+.rt-run-chip[data-just="1"]{border-color:rgba(240,224,170,.6);
+  background:rgba(240,224,170,.1);color:rgba(246,238,214,.95)}
 
 /* the moment a name lands on somebody who already had one */
 .rt-note{
@@ -1522,11 +1526,25 @@ const READ_FIRST = [
   'Nothing has been decided yet. This is where it starts.',
   'One slate up, and every face in the room is watching it rather than the hand holding it.',
 ];
+// TEN, NOT FOUR, AND THE NUMBER IS ARITHMETIC RATHER THAN TASTE. This is the
+// routine-join line and it is drawn once per slate that adds to a pile which
+// already exists — on a seventeen-person table that is a dozen draws from one
+// pool. Four lines cannot cover twelve draws; they can only be rearranged, and
+// a real night printed "Same name again. Nobody in the room misses it." three
+// times down one board. The draw is rotated as well (see the call site), which
+// stops two adjacent slates matching; the extra lines are what stop the same
+// sentence coming round twice on one reading.
 const READ_JOIN = [
   'That is another for {t}.',
   '{T} takes a second look down the table, and a third name is already coming.',
   'The pile in front of {t} grows.',
   'Same name again. Nobody in the room misses it.',
+  'Another one for {t}, and the room has stopped being surprised by it.',
+  '{T} does not react this time, which is its own kind of reaction.',
+  'That name again. Somebody down the table lets out a breath.',
+  'It goes on the same pile, and the pile is starting to look like a decision.',
+  'One more for {t}. Nobody writes a name twice by accident.',
+  '{T} watches it land and says nothing at all.',
 ];
 const READ_NEW = [
   'A name nobody had said out loud all evening.',
@@ -1748,11 +1766,30 @@ function _slate(b, ord, run) {
     + '</div>';
 }
 
-/** The running count, printed on the slate's frame. */
-function _runStrip(tally, leaders) {
+/**
+ * The running count, printed on the slate's frame.
+ *
+ * `justNamed` IS ALWAYS SHOWN, AND THAT IS THE WHOLE POINT OF THE ARGUMENT.
+ * The strip is the top six by count, and a name that has just received its
+ * FIRST vote sorts last among the ones — so on a seventeen-person table the
+ * board stopped moving somewhere around slate fourteen. Three consecutive
+ * slates read out three different names and printed the identical tally under
+ * all of them, because none of the three could get into the top six.
+ *
+ * A running count whose whole job is to show the vote that was just read may
+ * not be capable of omitting it. So the cap still holds at six, and the name
+ * on the slate takes one of the places.
+ */
+function _runStrip(tally, leaders, justNamed) {
   const rows = Object.keys(tally).sort((a, b) => tally[b] - tally[a] || a.localeCompare(b));
-  return rows.slice(0, 6).map(n =>
-    '<span class="rt-run-chip"' + (leaders.indexOf(n) >= 0 ? ' data-lead="1"' : '') + '>'
+  let shown = rows.slice(0, 6);
+  if (justNamed && tally[justNamed] != null && shown.indexOf(justNamed) < 0) {
+    shown = rows.slice(0, 5).concat([justNamed])
+      .sort((a, b) => tally[b] - tally[a] || a.localeCompare(b));
+  }
+  return shown.map(n =>
+    '<span class="rt-run-chip"' + (leaders.indexOf(n) >= 0 ? ' data-lead="1"' : '')
+    + (n === justNamed ? ' data-just="1"' : '') + '>'
     + _esc(n) + ' <b>' + tally[n] + '</b></span>').join('');
 }
 
@@ -2070,6 +2107,9 @@ function _buildBeats(v) {
     // What has actually been held up so far, for the reciprocal check.
     const seenPair = new Map();
     let surprised = false;
+    // Advances on every routine join so two in a row cannot match — see the
+    // note at the draw itself.
+    let joinIx = 0;
     ballots.forEach((b, i) => {
       const w = (v.dagger && v.dagger.holder === b.voter) ? (v.dagger.votes || 1) : 1;
       const had = b.target ? (run[b.target] || 0) : 0;
@@ -2100,7 +2140,16 @@ function _buildBeats(v) {
         && leadersBefore.indexOf(b.target) < 0) {
         note = _fill(_pick(READ_LEAD, key + '|ld|' + b.target), subs);
       } else if (had > 0 && routine) {
-        note = _fill(_pick(READ_JOIN, key + '|jn|' + b.voter), subs);
+        // ROTATED, NOT HASHED. `_pick` keyed on the voter cannot see what the
+        // slate above it drew, and this branch fires on every routine join --
+        // a seventeen-slate night gave three people "Same name again. Nobody
+        // in the room misses it" and three more "takes a second look down the
+        // table". The READ_NEW branch below already carries a once-a-round
+        // guard with a comment about a stuck record; this is the same defect
+        // one branch up. Advancing an offset per draw keeps it deterministic
+        // and makes two consecutive joins impossible to match.
+        note = _fill(READ_JOIN[(_hash(key + '|jn|' + b.voter) + joinIx++)
+          % READ_JOIN.length], subs);
       } else if (b.target && !named.has(b.target) && !surprised && roundIx === 0) {
         // ONCE a round. On a night the debate never converged, half the slates
         // are names nobody said, and four variants of the same observation in

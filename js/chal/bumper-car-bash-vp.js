@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // bumper-car-bash-vp.js — VP screens for "Bumper Car Bash".
 // Carnival-of-chaos neon tent (bcb- prefix): a rainbow-burst cold open with
@@ -11,7 +12,7 @@ import { players } from '../core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 24) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fff;background:#241436" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fff;background:#241436" onerror="this.style.visibility='hidden'">`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -295,7 +296,7 @@ export function rpBuildBashTitleCard(ep) {
   const featured = d.results.slice(0, 4).map(r => r.name);
   const cars = featured.map((n, i) => `
     <div class="car ${CARCLS[i]}"><span class="spark">✦</span><span class="pole"></span>
-      <img class="face" src="assets/avatars/${slugOf(n)}.png" alt="${esc(n)}" onerror="this.style.visibility='hidden'">
+      <img class="face" src="${playerAvatarUrl(n)}" alt="${esc(n)}" onerror="this.style.visibility='hidden'">
       <div class="hull" style="background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.6));border-color:${HUES[i % HUES.length]}"></div>
       <div class="nm">${esc(n)}</div></div>`).join('');
   const roster = d.roster.map(r => `<div class="bcb-drv">${av(r.name, 38)}<div><div class="nm">${esc(r.name)}</div><div class="arc">${esc(r.arch)}</div></div>${r.allies && r.allies.length ? `<span class="bcb-tag">+ ${esc(r.allies[0])}</span>` : ''}</div>`).join('');

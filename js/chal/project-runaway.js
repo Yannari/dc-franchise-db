@@ -1,6 +1,6 @@
 // js/chal/project-runaway.js — Project Runaway: fashion challenge (pre-merge tribe)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -17,7 +17,8 @@ function arch(name) { return players.find(p => p.name === name)?.archetype || ''
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function portrait(name, size = 42) {
   const s = slug(name);
-  return `<img src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const sAv = playerAvatarUrl(name);
+  return `<img src="${sAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 
 const _usedTexts = new Set();
@@ -1408,7 +1409,8 @@ function _creatureIcon(type) {
 // ── AVATAR HELPER ──
 function _av(name, size = 32) {
   const s = slug(name);
-  return `<img class="evt-avatar" src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:2px;object-fit:contain;border:1px solid var(--border);flex-shrink:0" onerror="this.outerHTML='<span class=\\'evt-avatar\\' style=\\'display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:2px;border:1px solid var(--border);background:var(--deep);color:var(--champagne);font-family:var(--sans);font-size:${Math.round(size*0.45)}px;font-weight:700;flex-shrink:0\\'>${name.charAt(0)}</span>'">`;
+  const sAv = playerAvatarUrl(name);
+  return `<img class="evt-avatar" src="${sAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:2px;object-fit:contain;border:1px solid var(--border);flex-shrink:0" onerror="this.outerHTML='<span class=\\'evt-avatar\\' style=\\'display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:2px;border:1px solid var(--border);background:var(--deep);color:var(--champagne);font-family:var(--sans);font-size:${Math.round(size*0.45)}px;font-weight:700;flex-shrink:0\\'>${name.charAt(0)}</span>'">`;
 }
 
 // ── EVENT CARD BUILDER ──
@@ -1518,7 +1520,7 @@ function _buildSidebarContent(ep, screenKey) {
 
     // Model = cover shot
     html += `<div class="mag-cover-shot">`;
-    html += `<img src="assets/avatars/${slug(roles.model)}.png" alt="${roles.model}" onerror="this.parentElement.style.background='#3a2a4a'">`;
+    html += `<img src="${playerAvatarUrl(roles.model)}" alt="${roles.model}" onerror="this.parentElement.style.background='#3a2a4a'">`;
     html += `<span class="mag-role-banner">Cover Star</span>`;
     html += `<div class="mag-player-role"><div class="mag-player-name">${roles.model}</div><div class="mag-player-tag">Model</div></div>`;
     html += `</div>`;
@@ -1530,7 +1532,7 @@ function _buildSidebarContent(ep, screenKey) {
     ];
     html += `<div class="mag-mid-row" style="grid-template-columns:repeat(${midCards.length},1fr);">`;
     midCards.forEach(c => {
-      html += `<div class="mag-mid-card"><img src="assets/avatars/${slug(c.name)}.png" alt="${c.name}" onerror="this.parentElement.style.background='${c.bg}'"><div class="mag-player-role"><div class="mag-player-name">${c.name}</div><div class="mag-player-tag">${c.tag}</div></div></div>`;
+      html += `<div class="mag-mid-card"><img src="${playerAvatarUrl(c.name)}" alt="${c.name}" onerror="this.parentElement.style.background='${c.bg}'"><div class="mag-player-role"><div class="mag-player-name">${c.name}</div><div class="mag-player-tag">${c.tag}</div></div></div>`;
     });
     html += `</div>`;
 
@@ -1538,7 +1540,7 @@ function _buildSidebarContent(ep, screenKey) {
     if (roles.gatherers && roles.gatherers.length > 0) {
       html += `<div class="mag-headshot-row">`;
       roles.gatherers.forEach(g => {
-        html += `<div class="mag-headshot"><img src="assets/avatars/${slug(g)}.png" alt="${g}"><div class="mag-hs-name">${g}</div></div>`;
+        html += `<div class="mag-headshot"><img src="${playerAvatarUrl(g)}" alt="${g}"><div class="mag-hs-name">${g}</div></div>`;
       });
       html += `</div>`;
     }
@@ -2046,7 +2048,7 @@ export function rpBuildPRTitleCard(ep) {
   content += `</div>`;
   // Walking models (up to 8 active players)
   allActive.slice(0, 8).forEach(name => {
-    content += `<img class="co-model-avi" src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">`;
+    content += `<img class="co-model-avi" src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">`;
   });
   // Crowd
   content += _buildCrowdSide('left');
@@ -2240,7 +2242,7 @@ export function rpBuildPRRunway(ep) {
       const modelName = roles?.model || evt.player;
       content += `<div id="pr-step-runway-${idx}">`;
       content += `<div class="runway-stage"><div class="spotlight-sweep"></div><div class="runway-walk">`;
-      content += `<img class="runway-model-img" src="assets/avatars/${slug(modelName)}.png" alt="${modelName}" onerror="this.style.background='var(--gold)'">`;
+      content += `<img class="runway-model-img" src="${playerAvatarUrl(modelName)}" alt="${modelName}" onerror="this.style.background='var(--gold)'">`;
       content += `<div class="runway-model-name">${modelName}</div>`;
       content += `<div class="runway-tribe">${evt.tribe} &bull; Model</div>`;
       content += `</div></div>`;

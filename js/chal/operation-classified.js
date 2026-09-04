@@ -1,6 +1,6 @@
 // js/chal/operation-classified.js — Operation: Classified spy challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -25,7 +25,8 @@ function isShunned(name) {
 }
 function portrait(name, size = 42) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<span class="oc-port" style="width:${size}px;height:${size}px"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" style="width:100%;height:100%;object-fit:cover"><b style="display:none;color:#fff">${(name||'?')[0]}</b></span>`;
+  const slugAv = playerAvatarUrl(name);
+  return `<span class="oc-port" style="width:${size}px;height:${size}px"><img src="${slugAv}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" style="width:100%;height:100%;object-fit:cover"><b style="display:none;color:#fff">${(name||'?')[0]}</b></span>`;
 }
 
 // ── RESULT TIERS (rescaled for 0.02-0.04 coefficients) ──
@@ -1346,9 +1347,10 @@ export function rpBuildOperationClassifiedTitleCard(ep) {
   const oc = ep.operationClassified;
   const folders = (oc.activePlayers || []).map(name => {
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(name);
     return `<div class="oc-folder">
       <div class="oc-folder-content">
-        <div class="oc-folder-photo"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}"></div>
+        <div class="oc-folder-photo"><img src="${slugAv}" onerror="this.style.display='none'" alt="${name}"></div>
         <div class="oc-folder-name">${name}</div>
         <div class="oc-folder-stamp mission">IN MISSION</div>
       </div>
@@ -1390,12 +1392,13 @@ export function rpBuildOperationClassifiedScan(ep) {
 
     const resultLabel = ev.type === 'clear' ? 'CLEARANCE GRANTED' : ev.type === 'watched' ? 'UNDER SURVEILLANCE' : 'INTRUDER FLAGGED';
     const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(ev.player);
     const agentNum = `AG-${String(Math.abs(ev.player.charCodeAt(0) * 37 + ev.player.length * 89) % 9000 + 1000)}`;
     const clearance = ev.type === 'clear' ? 'LEVEL 9 — TOP SECRET' : ev.type === 'watched' ? 'LEVEL 4 — RESTRICTED' : 'LEVEL 0 — DENIED';
     html += `<div id="oc-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">
       <div class="oc-scan-card">
         <div class="oc-scan-photo">
-          <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${ev.player}">
+          <img src="${slugAv}" onerror="this.style.display='none'" alt="${ev.player}">
         </div>
         <div class="oc-scan-data">
           <div class="oc-scan-header">CLASSIFIED DOSSIER</div>
@@ -1614,6 +1617,7 @@ export function rpBuildOperationClassifiedDefusal(ep) {
     const resultLabel = ev.type === 'perfect' ? '✅ PERFECT DEFUSAL' : ev.type === 'defused' ? '✅ DEFUSED' : ev.type === 'messy' ? '⚠️ MESSY — FOAM EVERYWHERE' : '💥 DETONATED';
     const methodLabel = ev.pickMethod === 'copy' ? 'COPIED' : ev.pickMethod === 'fashion' ? 'FASHION PICK' : ev.pickMethod === 'analyze' ? 'CIRCUIT ANALYSIS' : ev.pickMethod === 'panic' ? 'PANIC CUT' : 'GUT FEELING';
     const slug = players.find(p => p.name === ev.player)?.slug || ev.player.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(ev.player);
 
     // Build wire panel — show all 6 wires, highlight the chosen one
     let wiresHtml = '';
@@ -1691,11 +1695,12 @@ export function rpBuildOperationClassifiedDebrief(ep) {
     const stamp = isWinner ? 'MISSION SUCCESS' : isBottom ? 'MISSION FAILED' : 'MISSION COMPLETE';
     const stampClass = isWinner ? 'mission-success' : isBottom ? 'mission-failed' : 'mission-complete';
     const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(r.name);
     const defusalResult = oc.players[r.name]?.defusal?.result || '?';
     const laserMax = oc.players[r.name]?.laser?.maxStep || 0;
     foldersHtml += `<div class="oc-folder">
       <div class="oc-folder-content">
-        <div class="oc-folder-photo"><img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${r.name}"></div>
+        <div class="oc-folder-photo"><img src="${slugAv}" onerror="this.style.display='none'" alt="${r.name}"></div>
         <div class="oc-folder-name">${r.name}</div>
         <div style="font:9px/1.3 'Share Tech Mono',monospace;color:#555;margin-bottom:4px">
           SCORE: ${Math.round(r.score)} · LASER: ${laserMax}/5 · BOMB: ${defusalResult.toUpperCase()}
@@ -1708,11 +1713,11 @@ export function rpBuildOperationClassifiedDebrief(ep) {
   steps.push({ text: foldersHtml });
 
   // Step 3: Winner reveal
-  const winSlug = players.find(p => p.name === winner)?.slug || winner.toLowerCase().replace(/\s+/g, '-');
+  const winSrc = playerAvatarUrl(winner);
   steps.push({ text: `<div class="oc-winner">
     <div class="oc-folder" style="margin:0 auto;max-width:160px">
       <div class="oc-folder-content">
-        <div class="oc-folder-photo" style="width:72px;height:72px"><img src="assets/avatars/${winSlug}.png" onerror="this.style.display='none'" alt="${winner}"></div>
+        <div class="oc-folder-photo" style="width:72px;height:72px"><img src="${winSrc}" onerror="this.style.display='none'" alt="${winner}"></div>
         <div class="oc-folder-name" style="font-size:14px">${winner}</div>
         <div class="oc-folder-stamp mission-success" style="font-size:11px;padding:5px 10px">IMMUNITY GRANTED</div>
       </div>

@@ -4,7 +4,7 @@
 // Signature mechanic: a SCHEMER can THROW the challenge for their own team — heavily subtracting points,
 // enough to FLIP a win into a loss. A high-intuition teammate can EXPOSE them (or get framed if the read fails).
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -926,7 +926,7 @@ export function baRevealAll(screenKey, totalSteps) {
 // ── AVATARS ──
 function _av(name, cls = '') {
   const initial = (name || '?').charAt(0).toUpperCase();
-  return `<span class="ba-iav${cls ? ' ' + cls : ''}"><img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>${initial}</b></span>`;
+  return `<span class="ba-iav${cls ? ' ' + cls : ''}"><img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>${initial}</b></span>`;
 }
 
 function _badgeClass(cls) {

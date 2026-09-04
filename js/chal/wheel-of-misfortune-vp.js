@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // wheel-of-misfortune-vp.js — VP screens for "Wheel of Misfortune".
 // Night-carnival midway (wm- prefix): a big rotating Ferris wheel of amber
@@ -11,7 +12,7 @@ import { players } from '../core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 24) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #ffd98a;background:#1a1030" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #ffd98a;background:#1a1030" onerror="this.style.visibility='hidden'">`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 const ROLE = { rider: ['rider', 'WHEEL'], grounder: ['grounder', 'GROUND'] };

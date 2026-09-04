@@ -1,6 +1,6 @@
 // js/chal/chefshank.js — The Chefshank Redemption prison challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── Text pools ──────────────────────────────────────────────────────────────
@@ -1971,10 +1971,11 @@ function _csShell(content, ep) {
 
 function _csMugshot(name, size = 64) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   const outerWidth = size + 16;
   const idx = name.charCodeAt(0) % 99 + 1;
   return `<div class="cs-mugshot" style="width:${outerWidth}px">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:1px" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;border-radius:1px" onerror="this.style.display='none'">
     <div class="cs-mugshot-name" style="max-width:${size}px">${name}</div>
     <div class="cs-mugshot-id">INMATE #${String(idx).padStart(2, '0')}</div>
   </div>`;
@@ -1982,16 +1983,18 @@ function _csMugshot(name, size = 64) {
 
 function _csSideMugshot(name, size = 32, extraClass = '') {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div class="cs-mugshot sm ${extraClass}" style="width:${size + 8}px;flex-shrink:0">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:1px" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;border-radius:1px" onerror="this.style.display='none'">
     <div class="cs-mugshot-name">${name}</div>
   </div>`;
 }
 
 function _csSmallPortrait(name, size = 44) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:2px;overflow:hidden;border:2px solid var(--cs-bar);box-shadow:0 2px 6px rgba(0,0,0,0.5)">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;object-fit:cover;filter:contrast(1.05) brightness(0.95)" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;object-fit:cover;filter:contrast(1.05) brightness(0.95)" onerror="this.style.display='none'">
   </div>`;
 }
 
@@ -2793,7 +2796,8 @@ export function rpBuildChefshankDramaBreak(ep) {
         ${imp.impact ? `<div style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:10px;color:${imp.color}"><span>${imp.icon}</span> ${imp.impact}</div>` : ''}
         ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
           const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
-          return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid var(--cs-bar);filter:contrast(1.05) brightness(0.95)" title="${n}" onerror="this.style.display='none'">`;
+          const sAv = playerAvatarUrl(n);
+          return `<img src="${sAv}" width="24" height="24" style="border-radius:2px;border:1px solid var(--cs-bar);filter:contrast(1.05) brightness(0.95)" title="${n}" onerror="this.style.display='none'">`;
         }).join('')}</div>` : ''}
       </div>
     </div>`;

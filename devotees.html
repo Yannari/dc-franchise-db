@@ -715,12 +715,33 @@ function populateArchetypeFilter() {
 // Replace the fetch() section in devotees.html (around line 509-526) with this:
 // ========================================
 
+
+/* ── Career portraits ───────────────────────────────────────────────────
+   This page shows a PERSON, not one appearance, so it shows their latest
+   recorded look — derived from the newest season they played, never written
+   back down onto a season row. Rebuilding the path from a slug drew whatever
+   file happens to be named after them, which stopped being right the moment
+   somebody could have more than one portrait. */
+const _careerFaces = new Map();
+function indexCareerFaces(db) {
+  for (const p of ((db && db.players) || [])) {
+    const f = p && p.latestAvatarFile;
+    if (!f || typeof f !== 'string' || /[\/:]/.test(f) || f.includes('..')) continue;
+    if (p.id) _careerFaces.set(String(p.id).toLowerCase(), f);
+    if (p.name) _careerFaces.set(String(p.name).toLowerCase(), f);
+  }
+}
+function careerFace(slugOrName, fallbackSlug) {
+  const f = _careerFaces.get(String(slugOrName || '').toLowerCase());
+  return f ? `assets/avatars/${f}` : `assets/avatars/${fallbackSlug ?? slugOrName}.png`;
+}
 // Load player data from JSON file first (always fresh), then cache
 function loadPlayerData() {
   console.log('📁 Loading fresh data from players_database.json...');
   return fetch('players_database.json')
     .then(response => response.json())
     .then(data => {
+      indexCareerFaces(data);
       try {
         localStorage.setItem('players_database', JSON.stringify(data));
         console.log('✅ Cached fresh data to localStorage');
@@ -1012,7 +1033,7 @@ function renderPlayers(players) {
     card.innerHTML = `
       <div class="row">
         <div class="player-avatar">
-          <img src="assets/avatars/${player.id}.png" alt="${name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+          <img src="${careerFace(player.id, player.id)}" alt="${name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
           <div class="fallback">${emoji}</div>
         </div>
         <div>

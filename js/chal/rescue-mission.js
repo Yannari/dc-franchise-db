@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // rescue-mission.js — "Carnival Rescue" finale VP (DC4 Carnival of Chaos)
 // Six animated act screens + title + champion. Sim lives in finale.js
@@ -7,7 +8,7 @@ import { players } from '../core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || String(name).toLowerCase().replace(/\s+/g, '-'); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-function av(name, size) { return `<img class="rr-av" src="assets/avatars/${slugOf(name)}.png" alt="${esc(name)}" style="width:${size}px;height:${size}px" onerror="this.style.visibility='hidden'">`; }
+function av(name, size) { return `<img class="rr-av" src="${playerAvatarUrl(name)}" alt="${esc(name)}" style="width:${size}px;height:${size}px" onerror="this.style.visibility='hidden'">`; }
 const TEAMCOL = ['a', 'b', 'c', 'd'];
 
 // ── shared styles (ported from the approved mockup) ──
@@ -191,7 +192,7 @@ function _controls(key, total) {
 function _hud(d, A) {
   const runnersHtml = d.finalists.map((f, i) => {
     const pos = Math.min(93, Math.max(2, A.positions[f] || 2));
-    return `<span class="rr-runner ${TEAMCOL[i]}" style="left:${pos}%;width:30px;height:30px"><img src="assets/avatars/${slugOf(f)}.png" alt="${esc(f)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.style.visibility='hidden'"></span>`;
+    return `<span class="rr-runner ${TEAMCOL[i]}" style="left:${pos}%;width:30px;height:30px"><img src="${playerAvatarUrl(f)}" alt="${esc(f)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.style.visibility='hidden'"></span>`;
   }).join('');
   return `<div class="rr-hud"><div class="lbl">🏁 LIVE POSITION</div><div class="rr-track"><span class="rr-flag">🏁</span>${runnersHtml}</div></div>`;
 }

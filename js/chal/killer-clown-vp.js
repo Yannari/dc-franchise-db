@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // killer-clown-vp.js — VP screens for "Night of the Killer Clown".
 // Moonlit blood-carnival theme (noc- prefix): near-black night forest, drifting
@@ -11,7 +12,7 @@ import { players } from '../core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 24) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.5)" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.5)" onerror="this.style.visibility='hidden'">`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 

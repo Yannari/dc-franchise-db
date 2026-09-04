@@ -1,6 +1,6 @@
 // js/chal/rapa-phooey.js — Rapa Phooey!: Easter Island egg hunt (TDWT post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -3077,7 +3077,8 @@ function _icon(type) {
 
 function _av(name, size = '') {
   const sl = slug(name);
-  return `<span class="rp-av ${size}" data-player="${sl}"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2)}'"></span>`;
+  const slAv = playerAvatarUrl(name);
+  return `<span class="rp-av ${size}" data-player="${sl}"><img src="${slAv}" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2)}'"></span>`;
 }
 
 function _eggDot(colorHex, nested = false) {
@@ -4036,6 +4037,7 @@ function _buildFieldSidebar(cd, contestants, lastTickStates, revIdx) {
     const pc = color?.hex || '#4ec0d4';
     const colorLabel = (color?.label || '?').toUpperCase();
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     const remaining = epp - el.lost;
 
     // Own eggs (player's color)
@@ -4060,7 +4062,7 @@ function _buildFieldSidebar(cd, contestants, lastTickStates, revIdx) {
     const initials = n.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     trackerHTML += `<div class="rp-ft-row${el.gone ? ' ft-gone' : ''}">
       <div class="rp-ft-av" style="border-color:${pc}">
-        <img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.outerHTML='<span class=ft-init>${initials}</span>'">
+        <img src="${slAv}" alt="${n}" onerror="this.outerHTML='<span class=ft-init>${initials}</span>'">
       </div>
       <div class="rp-ft-info">
         <div class="rp-ft-name">${n.toUpperCase()}<span class="rp-ft-color" style="background:${pc}"></span><span class="rp-ft-clabel">${colorLabel}</span>${remainTag}</div>
@@ -4084,6 +4086,7 @@ function _buildFieldSidebar(cd, contestants, lastTickStates, revIdx) {
     const p = ev.player || ev.actor || '?';
     const pc = cd.colorAssign[p]?.hex || '#4ec0d4';
     const sl = slug(p);
+    const slAv = playerAvatarUrl(p);
     const badge = _cardBadge(ev.type, ev);
     const badgeCls = badge[0];
     const badgeLabel = badge[1];
@@ -4140,7 +4143,7 @@ function _buildFieldSidebar(cd, contestants, lastTickStates, revIdx) {
     const logInit = p.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     logHTML += `<div class="rp-log-entry">
       <div class="rp-log-av" style="border-color:${pc}">
-        <img src="assets/avatars/${sl}.png" alt="${p}" onerror="this.outerHTML='<span class=ft-init>${logInit}</span>'">
+        <img src="${slAv}" alt="${p}" onerror="this.outerHTML='<span class=ft-init>${logInit}</span>'">
       </div>
       <div class="rp-log-body">
         <span class="rp-log-name">${p}</span>
@@ -4251,6 +4254,7 @@ function _buildCaveSidebar(cd, contestants, lastTickStates, revIdx) {
     const cs = caveState[n];
     const pc = cd.colorAssign[n]?.hex || '#4ec0d4';
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     const initials = n.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
     // Progress bar: 3 segments + exit
@@ -4283,7 +4287,7 @@ function _buildCaveSidebar(cd, contestants, lastTickStates, revIdx) {
 
     progressHTML += `<div class="rp-ft-row${cs.eliminated ? ' ft-gone' : ''}${cs.exited ? '' : ''}">
       <div class="rp-ft-av" style="border-color:${pc}">
-        <img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.outerHTML='<span class=ft-init>${initials}</span>'">
+        <img src="${slAv}" alt="${n}" onerror="this.outerHTML='<span class=ft-init>${initials}</span>'">
       </div>
       <div class="rp-ft-info">
         <div class="rp-ft-name">${n.toUpperCase()}<span class="rp-ft-color" style="background:${pc}"></span></div>
@@ -4315,6 +4319,7 @@ function _buildCaveSidebar(cd, contestants, lastTickStates, revIdx) {
     const p = ev.player || ev.actor || '?';
     const pc = cd.colorAssign[p]?.hex || '#4ec0d4';
     const sl = slug(p);
+    const slAv = playerAvatarUrl(p);
     const badge = _cardBadge(ev.type, ev);
     const badgeCls = badge[0];
     const badgeLabel = badge[1];
@@ -4355,7 +4360,7 @@ function _buildCaveSidebar(cd, contestants, lastTickStates, revIdx) {
     const logInit = p.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     logHTML += `<div class="rp-log-entry">
       <div class="rp-log-av" style="border-color:${pc}">
-        <img src="assets/avatars/${sl}.png" alt="${p}" onerror="this.outerHTML='<span class=ft-init>${logInit}</span>'">
+        <img src="${slAv}" alt="${p}" onerror="this.outerHTML='<span class=ft-init>${logInit}</span>'">
       </div>
       <div class="rp-log-body">
         <span class="rp-log-name">${p}</span>
@@ -4506,6 +4511,7 @@ function _buildPillarSidebar(cd, contestants, lastTickStates, revIdx) {
     const ps = pState[n];
     const pc = cd.colorAssign[n]?.hex || '#4ec0d4';
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     const initials = n.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
     // Progress bar: tier / 3
@@ -4538,7 +4544,7 @@ function _buildPillarSidebar(cd, contestants, lastTickStates, revIdx) {
 
     trackerHTML += `<div class="rp-ft-row${ps.eliminated ? ' ft-gone' : ''}">
       <div class="rp-ft-av" style="border-color:${pc}">
-        <img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.outerHTML='<span class=ft-init>${initials}</span>'">
+        <img src="${slAv}" alt="${n}" onerror="this.outerHTML='<span class=ft-init>${initials}</span>'">
       </div>
       <div class="rp-ft-info">
         <div class="rp-ft-name">${n.toUpperCase()}<span class="rp-ft-color" style="background:${pc}"></span></div>
@@ -4607,6 +4613,7 @@ function _buildPillarSidebar(cd, contestants, lastTickStates, revIdx) {
     const p = ev.player || ev.actor || '?';
     const pc = cd.colorAssign[p]?.hex || '#4ec0d4';
     const sl = slug(p);
+    const slAv = playerAvatarUrl(p);
     const badge = _cardBadge(ev.type, ev);
     const badgeCls = badge[0];
     const badgeLabel = badge[1];
@@ -4648,7 +4655,7 @@ function _buildPillarSidebar(cd, contestants, lastTickStates, revIdx) {
     const logInit = p.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     logHTML += `<div class="rp-log-entry">
       <div class="rp-log-av" style="border-color:${pc}">
-        <img src="assets/avatars/${sl}.png" alt="${p}" onerror="this.outerHTML='<span class=ft-init>${logInit}</span>'">
+        <img src="${slAv}" alt="${p}" onerror="this.outerHTML='<span class=ft-init>${logInit}</span>'">
       </div>
       <div class="rp-log-body">
         <span class="rp-log-name">${p}</span>
@@ -5107,8 +5114,9 @@ function _buildFieldMap(cd) {
     const n = contestants[pi];
     const pc = cd.colorAssign[n]?.hex || '#4ec0d4';
     const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+    const slAv = playerAvatarUrl(n);
     const initials = n.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    playerAvatars += `<div class="field-player" id="rp-field-player-${pi}" style="border-color:${pc};top:85%;left:${15 + pi * 12}%"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.outerHTML='<div class=fp-fallback>${initials}</div>'"><span class="fp-label">${n.split(' ')[0].toUpperCase()}</span></div>`;
+    playerAvatars += `<div class="field-player" id="rp-field-player-${pi}" style="border-color:${pc};top:85%;left:${15 + pi * 12}%"><img src="${slAv}" alt="${n}" onerror="this.outerHTML='<div class=fp-fallback>${initials}</div>'"><span class="fp-label">${n.split(' ')[0].toUpperCase()}</span></div>`;
   }
 
   return `<div class="rp-map" id="rp-field-map">
@@ -5144,9 +5152,10 @@ function _buildCaveMap(cd) {
     const n = contestants[pi];
     const pc = cd.colorAssign[n]?.hex || '#4ec0d4';
     const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+    const slAv = playerAvatarUrl(n);
     const initials = n.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     const topPct = 42 + (pi % 3) * 14;
-    playerAvatars += `<div class="cave-player" id="rp-cave-player-${pi}" style="border-color:${pc};top:${topPct}%;left:5%"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.outerHTML='<div class=cp-fallback>${initials}</div>'"><span class="cp-name">${n.split(' ')[0].toUpperCase()}</span><span class="cp-eggs" id="rp-cave-eggs-${pi}"></span></div>`;
+    playerAvatars += `<div class="cave-player" id="rp-cave-player-${pi}" style="border-color:${pc};top:${topPct}%;left:5%"><img src="${slAv}" alt="${n}" onerror="this.outerHTML='<div class=cp-fallback>${initials}</div>'"><span class="cp-name">${n.split(' ')[0].toUpperCase()}</span><span class="cp-eggs" id="rp-cave-eggs-${pi}"></span></div>`;
   }
 
   const stalactites = [12, 28, 48, 65, 82].map(l =>
@@ -5183,9 +5192,10 @@ function _buildPillarMap(cd) {
     const n = contestants[pi];
     const pc = cd.colorAssign[n]?.hex || '#4ec0d4';
     const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+    const slAv = playerAvatarUrl(n);
     const initials = n.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
     const offset = pi % 2 === 0 ? -38 : 38;
-    playerAvatars += `<div class="pillar-climber" id="rp-pillar-climber-${pi}" style="border-color:${pc};top:80%;display:none;left:calc(50% + ${offset}px)"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.outerHTML='<div class=pc-fallback>${initials}</div>'"><span class="pc-label">${n.split(' ')[0].toUpperCase()}</span><span class="pc-eggs"></span></div>`;
+    playerAvatars += `<div class="pillar-climber" id="rp-pillar-climber-${pi}" style="border-color:${pc};top:80%;display:none;left:calc(50% + ${offset}px)"><img src="${slAv}" alt="${n}" onerror="this.outerHTML='<div class=pc-fallback>${initials}</div>'"><span class="pc-label">${n.split(' ')[0].toUpperCase()}</span><span class="pc-eggs"></span></div>`;
   }
 
   const winds = [
@@ -5304,7 +5314,7 @@ export function rpBuildRPTitleCard(ep) {
     const react = reactions[i % 3];
     const delay = (i * 0.4 + 0.2).toFixed(1);
     return `<div class="rp-scene-fig ${react}" style="left:${leftPct.toFixed(1)}%;bottom:${bottomOff}px;--fig-color:${pc};animation-delay:${delay}s">
-      <div class="fig-ring"><img src="assets/avatars/${slug(n)}.png" alt="${n}" onerror="this.outerHTML='<span style=\\"font-size:11px;color:var(--rp-bone)\\">${initials}</span>'"></div>
+      <div class="fig-ring"><img src="${playerAvatarUrl(n)}" alt="${n}" onerror="this.outerHTML='<span style=\\"font-size:11px;color:var(--rp-bone)\\">${initials}</span>'"></div>
       <div class="fig-egg" style="background:${pc}"></div>
       <div class="fig-name">${firstName}</div>
     </div>`;
@@ -5320,7 +5330,7 @@ export function rpBuildRPTitleCard(ep) {
     const archetype = archLabel(arch(n));
     return `<div class="rp-rs" style="--pc:${pc}">
       <span class="feather" style="background:${pc}">${colorLabel}</span>
-      <div class="av-ring"><img src="assets/avatars/${slug(n)}.png" alt="${n}" onerror="this.style.display='none';this.nextSibling.style.display=''"><span style="display:none">${initials}</span></div>
+      <div class="av-ring"><img src="${playerAvatarUrl(n)}" alt="${n}" onerror="this.style.display='none';this.nextSibling.style.display=''"><span style="display:none">${initials}</span></div>
       <div class="rs-nm">${firstName}</div>
       <div class="rs-arch">${archetype}</div>
     </div>`;

@@ -1,6 +1,6 @@
 // js/chal/get-a-clue.js — Get a Clue murder mystery challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1946,7 +1947,7 @@ function _buildBoard(ep, phase, revealIdx = -1) {
 
     return `<div class="gc-polaroid ${extraCls}" style="--rot:${rot}deg" data-name="${name}">
       <div class="gc-polaroid-pin" style="background:radial-gradient(circle at 40% 40%,${pinColor},${pinColor === 'var(--pin-white)' ? '#bdc3c7' : pinColor})"></div>
-      <img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">
+      <img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">
       <div class="gc-polaroid-name">${name.split(' ').pop()}</div>
       ${statusBadge}${tallyHtml}
     </div>`;
@@ -2099,7 +2100,7 @@ export function rpBuildGetAClueTitleCard(ep) {
     const rot = ((i * 7 + 3) % 11 - 5);
     return `<div class="gc-cover-suspect"><div class="gc-polaroid" style="--rot:${rot}deg">
       <div class="gc-polaroid-pin" style="background:radial-gradient(circle at 40% 40%,var(--pin-white),#bdc3c7)"></div>
-      <img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:44px;height:44px;object-fit:contain" onerror="this.style.display='none'">
+      <img src="${playerAvatarUrl(name)}" alt="${name}" style="width:44px;height:44px;object-fit:contain" onerror="this.style.display='none'">
       <div class="gc-polaroid-name">${name.split(' ').pop()}</div>
     </div></div>`;
   }).join('');
@@ -2213,7 +2214,7 @@ export function rpBuildGetAClueCollection(ep) {
       const rot = i === 0 ? -3 : 3;
       return `<div class="gc-evidence-evt-photo" style="--rot:${rot}deg">
         <div class="gc-evidence-evt-pin" style="background:radial-gradient(circle at 40% 40%,${evtConfig.pin},${evtConfig.pin})"></div>
-        <img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">
+        <img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">
         <div class="gc-evidence-evt-photo-name">${name.split(' ').pop()}</div>
       </div>`;
     }).join('');
@@ -2279,7 +2280,7 @@ export function rpBuildGetAClueTrain(ep) {
 
   // Murder
   steps.push(`<div class="gc-blackout">
-    <div class="gc-silhouette-row">${Object.keys(gc.phase1.sampleCounts).map(name => `<div class="gc-silhouette"><img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:24px;height:24px;object-fit:contain;border-radius:50%;filter:brightness(0.6) saturate(0) opacity(0.7)" onerror="this.outerHTML='👤'"></div>`).join('')}</div>
+    <div class="gc-silhouette-row">${Object.keys(gc.phase1.sampleCounts).map(name => `<div class="gc-silhouette"><img src="${playerAvatarUrl(name)}" alt="${name}" style="width:24px;height:24px;object-fit:contain;border-radius:50%;filter:brightness(0.6) saturate(0) opacity(0.7)" onerror="this.outerHTML='👤'"></div>`).join('')}</div>
     <div class="gc-blackout-text">${gc.phase2.murderText}</div>
   </div>`);
 
@@ -2563,7 +2564,7 @@ export function rpBuildGetAClueVerdict(ep) {
   steps.push(`<div class="gc-guilty">
     <div class="gc-guilty-frame">
       <div class="gc-guilty-photo">
-        <img src="assets/avatars/${slug(kn)}.png" alt="${kn}" onerror="this.style.display='none'">
+        <img src="${playerAvatarUrl(kn)}" alt="${kn}" onerror="this.style.display='none'">
         <div class="gc-guilty-photo-name">${kn}</div>
       </div>
     </div>

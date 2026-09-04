@@ -15,7 +15,7 @@
 // Scales to 3+ teams — scorers gang up on the strongest surviving rival net.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -515,8 +515,9 @@ function _amgEnsure(key, total) { if (!_amgState[key]) _amgState[key] = { idx: -
 function _amgPortrait(name, cls, color) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const slugAv = playerAvatarUrl(name);
   const init = String(name).slice(0, 2).toUpperCase();
-  return `<span class="amg-pf ${cls || ''}" style="background:${color || '#4a3320'}"><img src="assets/avatars/${slug}.png" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
+  return `<span class="amg-pf ${cls || ''}" style="background:${color || '#4a3320'}"><img src="${slugAv}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
 }
 
 function _amgScarecrowSVG(w) { const s = w || 40; return `<svg width="${s}" height="${s * 1.3}" viewBox="0 0 40 52"><g stroke="#7a4a24" stroke-width="3" stroke-linecap="round"><line x1="20" y1="14" x2="20" y2="40"/><line x1="6" y1="22" x2="34" y2="22"/></g><circle cx="20" cy="10" r="7" fill="#d6a45a"/><path d="M13 6 L20 -1 L27 6 Z" fill="#c98a2e"/><circle cx="17" cy="9" r="1.3" fill="#3a2410"/><circle cx="23" cy="9" r="1.3" fill="#3a2410"/><path d="M16 13 Q20 16 24 13" stroke="#3a2410" stroke-width="1.2" fill="none"/></svg>`; }

@@ -414,6 +414,28 @@ const SEASON_COLORS = [
   '#facc15','#e879f9'
 ];
 
+/* ── Portraits ──────────────────────────────────────────────────────────
+   A season card shows its winner as they were IN that season, so it reads
+   the portrait the season recorded. Rebuilding the path from a slug drew whatever file is named after the
+   person today, which stopped being the right answer the moment somebody
+   could have more than one. A season written before portraits existed has no
+   avatarFile and falls back to the old convention. */
+let _faceBySlug = new Map();
+function indexSeasonFaces(season) {
+  _faceBySlug = new Map();
+  const rows = [...(season?.placements || []), ...(season?.cast || [])];
+  for (const r of rows) {
+    const f = r?.avatarFile;
+    if (!f || typeof f !== 'string' || /[\/:]/.test(f) || f.includes('..')) continue;
+    if (r.playerSlug) _faceBySlug.set(String(r.playerSlug).toLowerCase(), f);
+    if (r.name) _faceBySlug.set(String(r.name).toLowerCase(), f);
+  }
+}
+function faceSrc(slugOrName, fallbackSlug) {
+  const f = _faceBySlug.get(String(slugOrName || '').toLowerCase());
+  return f ? `assets/avatars/${f}` : `assets/avatars/${fallbackSlug ?? slugOrName}.png`;
+}
+
 function getSeasonColor(num) {
   return SEASON_COLORS[(num - 1) % SEASON_COLORS.length];
 }
@@ -478,6 +500,8 @@ function renderSeasons(seasons) {
     const showShort = sw ? ((sw.SHOWS[fmt] || {}).short || '') : '';
     const sc = getSeasonColor(season.seasonNumber);
     const isMR = season.seasonNumber === mostRecent[fmt];
+
+    indexSeasonFaces(season);   // this card's winner is an appearance, not a career
     const slug = (season.winner?.playerSlug || season.winner?.name || '').toLowerCase().replace(/[^a-z0-9]/g,'-');
     const winnerName = season.winner?.name || '—';
     const vote = season.winner?.vote || '';
@@ -532,7 +556,7 @@ function renderSeasons(seasons) {
 
     <div class="scard-winner">
       <div class="scard-winner-av">
-        <img src="assets/avatars/${slug}.png" alt="${winnerName}"
+        <img src="${faceSrc(season.winner?.playerSlug || season.winner?.name, slug)}" alt="${winnerName}"
              onerror="this.style.display='none';this.parentElement.textContent='👑'"/>
       </div>
       <div class="scard-winner-info">

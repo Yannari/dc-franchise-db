@@ -1,6 +1,6 @@
 // js/chal/great-fake-out.js — The Great Fake-Out: post-merge vehicle race + eating gauntlet
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -26,7 +26,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 

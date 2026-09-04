@@ -1,6 +1,6 @@
 // js/chal/drumheller.js — Awwwwww, Drumheller archaeology challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -23,7 +23,7 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function portrait(name, size = 42) {
-  return `<img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
@@ -2232,7 +2232,7 @@ function _buildDigScene(active) {
 
     diggers += `<div class="dh-digger" style="left:${x}px;animation-delay:${delay}s">
       <div style="position:relative">
-        <div class="dh-digger-avatar"><img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'"></div>
+        <div class="dh-digger-avatar"><img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'"></div>
         <div class="dh-digger-tool" style="animation-delay:${swingDelay}s"><svg width="18" height="18"><use href="#dh-${toolSym}"/></svg></div>
       </div>
       <div class="dh-digger-name">${name.split(' ')[0]}</div>
@@ -2278,7 +2278,7 @@ export function rpBuildDHTitleCard(ep) {
     const a = arch(name);
     const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2);
     const delay = (1.8 + i * 0.15).toFixed(2);
-    rosterHtml += `<div class="dh-roster-chip" style="animation-delay:${delay}s"><div class="dh-roster-avatar"><img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'"></div><div><div class="dh-roster-name">${name}</div><div class="dh-roster-arch">${a}</div></div></div>`;
+    rosterHtml += `<div class="dh-roster-chip" style="animation-delay:${delay}s"><div class="dh-roster-avatar"><img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'"></div><div><div class="dh-roster-name">${name}</div><div class="dh-roster-arch">${a}</div></div></div>`;
   }
 
   return _shell(`
@@ -2523,7 +2523,7 @@ export function rpBuildDHBuildPhase(ep) {
 
     cards += `<div id="dh-step-${screenKey}-${stepIdx}" class="dh-card" style="border-color:${borderColor}" data-player="${name}">
       <div class="dh-player-row">
-        <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};overflow:hidden;flex-shrink:0"><img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.textContent='${initials}'"></div>
+        <div style="width:40px;height:40px;border-radius:50%;border:2px solid ${borderColor};overflow:hidden;flex-shrink:0"><img src="${playerAvatarUrl(name)}" alt="${name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.textContent='${initials}'"></div>
         <div><div class="dh-player-name">${name}</div><div style="font-size:10px;color:${qualityColor};font-weight:700;letter-spacing:0.5px;font-family:'IBM Plex Mono',monospace">${qualityLabel}</div></div>
         <div class="dh-badge dh-badge-${build.quality >= 10 ? 'green' : build.quality >= 7 ? 'gold' : build.quality >= 4 ? 'grey' : 'red'}" style="margin-left:auto">${qualityLabel}</div>
       </div>

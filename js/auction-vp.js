@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from './players.js';
 // js/auction-vp.js — VP screens for the Survivor Auction ("Hell of a Deal").
 // A night auction house: green-felt block under a spotlight, gold trim, covered curtains for blind lots,
 // bidder paddles as escalating bid chips, a SOLD stamp, and a live BANK board down the side that drains
@@ -6,7 +7,7 @@ import { gs, players } from './core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function portrait(name, size = 26) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.visibility='hidden'">`;
 }
 function getAuc(ep) { return (ep.twists || []).find(t => t.type === 'auction')?.auction || ep._auctionData || null; }
 

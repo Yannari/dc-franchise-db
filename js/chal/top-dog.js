@@ -1,6 +1,6 @@
 // js/chal/top-dog.js — Top Dog animal buddy challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1346,8 +1347,9 @@ function _confessionalCard(player, animalName, type) {
   const pr = pronouns(player);
   const text = pick(pool)(player, { name: animalName }, pr);
   const sl = slug(player);
+  const slAv = playerAvatarUrl(player);
   return `<div class="td-confessional">
-    <div class="td-conf-portrait"><img src="assets/avatars/${sl}.png" alt="${player}" onerror="this.style.display='none'"></div>
+    <div class="td-conf-portrait"><img src="${slAv}" alt="${player}" onerror="this.style.display='none'"></div>
     ${text}
   </div>`;
 }
@@ -2800,8 +2802,9 @@ function _css() {
 // ══════════════════════════════════════════════════════════════
 function _poster(name, statusCls = '', tag = '') {
   const sl = slug(name);
+  const slAv = playerAvatarUrl(name);
   return `<span class="td-poster ${statusCls}">
-    <span class="td-poster-frame"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.style.display='none'"></span>
+    <span class="td-poster-frame"><img src="${slAv}" alt="${name}" onerror="this.style.display='none'"></span>
     <span class="td-poster-name">${name}</span>${tag ? `<span class="td-poster-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
   </span>`;
 }
@@ -2998,7 +3001,8 @@ function _sidebarRoster(data) {
   const assignments = data.phase1?.assignments || [];
   assignments.forEach(a => {
     const sl = slug(a.player);
-    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-gold">READY</span></div>`;
+    const slAv = playerAvatarUrl(a.player);
+    h += `<div class="td-sb-row"><img src="${slAv}" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-gold">READY</span></div>`;
   });
   h += `<div class="td-sb-section"><div class="td-sb-title">CHALLENGE BRIEF</div><div style="font-size:0.72rem;color:var(--pet-brown);line-height:1.4">Phase 1: Adopt your pet, train them, and perform for the judges. Phase 2: Adventure through the forest trail. First to the meadow exit wins immunity!</div></div>`;
   return h;
@@ -3012,15 +3016,16 @@ function _sidebarAssignment(data) {
   let h = '<div class="td-sb-title">ADOPTION BOARD</div>';
   assignments.forEach((a, i) => {
     const sl = slug(a.player);
+    const slAv = playerAvatarUrl(a.player);
     const revealed = i <= revIdx;
     if (revealed) {
       const pct = Math.round(a.compatibility * 10);
       const barCls = a.compatibility >= 6.5 ? 'td-gold' : a.compatibility >= 4 ? 'td-amber' : 'td-crimson';
       const animal = a.animal;
-      h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-gold">${animal.name}</span></div>`;
+      h += `<div class="td-sb-row"><img src="${slAv}" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-gold">${animal.name}</span></div>`;
       h += `<div style="display:flex;gap:4px;align-items:center;margin:1px 0 3px 0"><div class="td-compat-bar" style="flex:1"><div class="td-compat-fill ${barCls}" style="width:${pct}%"></div></div>${_moodMeter(a.mood || 3, animal.name)}</div>`;
     } else {
-      h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-grey">???</span></div>`;
+      h += `<div class="td-sb-row"><img src="${slAv}" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag td-grey">???</span></div>`;
     }
   });
   return h;
@@ -3038,6 +3043,7 @@ function _sidebarTraining(data) {
 
   assignments.forEach(a => {
     const sl = slug(a.player);
+    const slAv = playerAvatarUrl(a.player);
     let successes = 0, lastMood = a.mood || 3;
     for (let r = 0; r < roundsRevealed && r < rounds.length; r++) {
       const res = rounds[r].results?.find(rr => rr.player === a.player);
@@ -3048,7 +3054,7 @@ function _sidebarTraining(data) {
     const pct = total > 0 ? Math.round((successes / total) * 100) : 0;
     const barCls = pct >= 75 ? 'td-gold' : pct >= 50 ? 'td-amber' : 'td-crimson';
 
-    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag ${pct >= 75 ? 'td-gold' : pct >= 50 ? 'td-amber' : 'td-crimson'}">${successes}/${total}</span></div>`;
+    h += `<div class="td-sb-row"><img src="${slAv}" alt="${a.player}" onerror="this.style.display='none'"><span class="td-sb-name">${a.player}</span><span class="td-sb-tag ${pct >= 75 ? 'td-gold' : pct >= 50 ? 'td-amber' : 'td-crimson'}">${successes}/${total}</span></div>`;
     h += `<div style="display:flex;gap:4px;align-items:center;margin:1px 0 3px 0"><div class="td-compat-bar" style="flex:1"><div class="td-compat-fill ${barCls}" style="width:${pct}%"></div></div>${_moodMeter(lastMood, a.animal?.name || '?')}</div>`;
   });
   return h;
@@ -3065,14 +3071,16 @@ function _sidebarJudging(data) {
   const sorted = [...revealed].sort((a, b) => b.total - a.total);
   sorted.forEach((p, i) => {
     const sl = slug(p.player);
+    const slAv = playerAvatarUrl(p.player);
     const animal = p.animalObj || {};
-    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name">${p.player}</span><span class="td-sb-tag td-gold">${p.total}/20</span></div>`;
+    h += `<div class="td-sb-row"><img src="${slAv}" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name">${p.player}</span><span class="td-sb-tag td-gold">${p.total}/20</span></div>`;
   });
   // Unrevealed
   perfs.forEach((p, i) => {
     if (i > revIdx) {
       const sl = slug(p.player);
-      h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name">${p.player}</span><span class="td-sb-tag td-grey">???</span></div>`;
+      const slAv = playerAvatarUrl(p.player);
+      h += `<div class="td-sb-row"><img src="${slAv}" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name">${p.player}</span><span class="td-sb-tag td-grey">???</span></div>`;
     }
   });
   return h;
@@ -3114,8 +3122,9 @@ function _sidebarForest(data) {
         const playerSeg = Math.min(FOREST_LENGTH, Math.floor(pos));
         if (playerSeg === seg) {
           const sl = slug(a.player);
+          const slAv = playerAvatarUrl(a.player);
           const borderColor = a.compatibility >= 6.5 ? 'var(--pet-mint)' : a.compatibility >= 4 ? 'var(--pet-peach)' : 'var(--pet-danger)';
-          dots += `<span class="td-trail-dot" style="border-color:${borderColor}" title="${a.player}"><img src="assets/avatars/${sl}.png" alt="${a.player}" onerror="this.style.display='none'"></span>`;
+          dots += `<span class="td-trail-dot" style="border-color:${borderColor}" title="${a.player}"><img src="${slAv}" alt="${a.player}" onerror="this.style.display='none'"></span>`;
           segCls += ' td-reached';
         }
       });
@@ -3159,9 +3168,10 @@ function _sidebarForest(data) {
 
     playerPositions.forEach((p, curRank) => {
       const sl = slug(p.player);
+      const slAv = playerAvatarUrl(p.player);
       const prevRank = prevRanks[p.player] ?? curRank;
       const arrow = curRank < prevRank ? '<span class="td-arrow-up"></span>' : curRank > prevRank ? '<span class="td-arrow-down"></span>' : '<span class="td-arrow-same"></span>';
-      h += `<div class="td-sb-row">${arrow}<img src="assets/avatars/${sl}.png" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name" style="flex:1">${p.player}</span>${_moodMeter(p.lastMood, p.animal?.name || '?')}</div>`;
+      h += `<div class="td-sb-row">${arrow}<img src="${slAv}" alt="${p.player}" onerror="this.style.display='none'"><span class="td-sb-name" style="flex:1">${p.player}</span>${_moodMeter(p.lastMood, p.animal?.name || '?')}</div>`;
     });
   }
 
@@ -3176,11 +3186,12 @@ function _sidebarWinner(data, ep) {
 
   finishOrder.forEach((n, i) => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     const isWinner = n === winner;
     let tag = '';
     if (isWinner) tag = '<span class="td-sb-tag td-crown">IMMUNE</span>';
     else tag = `<span class="td-sb-tag td-gold">#${i + 1}</span>`;
-    h += `<div class="td-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="td-sb-name">${n}</span>${tag}</div>`;
+    h += `<div class="td-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="td-sb-name">${n}</span>${tag}</div>`;
   });
 
   return h;
@@ -3723,7 +3734,7 @@ export function rpBuildTopDogWinner(ep) {
   // Find winner's animal
   const winnerAssign = assignments.find(a => a.player === winner);
   const winnerAnimal = winnerAssign?.animal || { name: '?', icon: '?' };
-  const winnerSlug = slug(winner);
+  const winnerAv = playerAvatarUrl(winner);
 
   // Build leaderboard sorted by total score (winner guaranteed #1)
   const ranked = [...finishOrder].sort((a, b) => {
@@ -3749,7 +3760,7 @@ export function rpBuildTopDogWinner(ep) {
       <div style="font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:800;color:var(--pet-muted);letter-spacing:3px;margin-bottom:6px;text-transform:uppercase">FIRST TO THE FINISH</div>
       <div class="td-h1" style="font-size:1.8rem;color:#a08020">BEST IN SHOW</div>
       <div style="margin:14px auto;width:90px;height:90px;border-radius:50%;border:4px solid #e8c050;overflow:hidden;position:relative;box-shadow:0 0 20px rgba(232,192,80,0.3)">
-        <img src="assets/avatars/${winnerSlug}.png" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
+        <img src="${winnerAv}" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
         <div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(232,192,80,0.15),transparent 50%);pointer-events:none"></div>
       </div>
       <div style="font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:800;color:#a08020;margin:6px 0">${winner}</div>

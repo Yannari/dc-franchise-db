@@ -1,6 +1,6 @@
 // js/chal/million-bucks-bc.js — One Million Bucks, B.C. prehistoric challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -1225,11 +1225,13 @@ export function _textMillionBucksBC(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════
 function _bcPortrait(name, size = 32) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid var(--cave-amber);object-fit:cover;flex-shrink:0;box-shadow:0 0 6px rgba(217,119,6,0.2)" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid var(--cave-amber);object-fit:cover;flex-shrink:0;box-shadow:0 0 6px rgba(217,119,6,0.2)" onerror="this.style.display='none'">`;
 }
 function _bcSidePortrait(name, size = 20) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:1px solid var(--cave-amber);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:1px solid var(--cave-amber);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function _bcBadge(text, cls) {
   return `<div class="bc-ev-badge ${cls}" style="font-size:10px;padding:3px 10px">${text}</div>`;

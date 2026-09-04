@@ -1,6 +1,6 @@
 // js/chal/crouching-courtney.js — Way of the Warrior kung fu challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1533,7 +1534,7 @@ function _buildHonor(ep, phase) {
       const fScore = lastBeat?.find(b => b.fighter === p.fighter)?.score || 0;
       return `<div class="kf-honor-player">
         <div class="kf-honor-rank">${idx + 1}</div>
-        <img class="kf-honor-img" src="assets/avatars/${slug(p.trainer)}.png" alt="${p.trainer}" onerror="this.style.display='none'">
+        <img class="kf-honor-img" src="${playerAvatarUrl(p.trainer)}" alt="${p.trainer}" onerror="this.style.display='none'">
         <div class="kf-honor-info">
           <div class="kf-honor-name">${p.trainer} → ${p.fighter}</div>
           <div class="kf-honor-bar"><div class="kf-honor-fill kf-honor-fill-g" style="width:${Math.min(100, fScore * 8)}%"></div></div>
@@ -1543,7 +1544,7 @@ function _buildHonor(ep, phase) {
     if (cc.phase1.spy) {
       rows += `<div class="kf-honor-player" style="border-color:var(--gold)">
         <div class="kf-honor-rank" style="color:var(--gold)">🕵️</div>
-        <img class="kf-honor-img" src="assets/avatars/${slug(cc.phase1.spy)}.png" alt="${cc.phase1.spy}" onerror="this.style.display='none'">
+        <img class="kf-honor-img" src="${playerAvatarUrl(cc.phase1.spy)}" alt="${cc.phase1.spy}" onerror="this.style.display='none'">
         <div class="kf-honor-info"><div class="kf-honor-name">${cc.phase1.spy} (spy)</div></div>
       </div>`;
     }
@@ -1568,7 +1569,7 @@ function _buildHonor(ep, phase) {
       const color = pct > 60 ? 'g' : pct > 30 ? 'y' : 'r';
       return `<div class="kf-honor-player">
         <div class="kf-honor-rank">${idx + 1}</div>
-        <img class="kf-honor-img" src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">
+        <img class="kf-honor-img" src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">
         <div class="kf-honor-info">
           <div class="kf-honor-name">${name}${trainer ? ` (${trainer})` : ''}</div>
           <div class="kf-honor-bar"><div class="kf-honor-fill kf-honor-fill-${color}" style="width:${pct}%"></div></div>
@@ -1581,7 +1582,7 @@ function _buildHonor(ep, phase) {
     for (const t of trainerOnly) {
       rows += `<div class="kf-honor-player" style="opacity:0.6">
         <div class="kf-honor-rank">—</div>
-        <img class="kf-honor-img" src="assets/avatars/${slug(t)}.png" alt="${t}" onerror="this.style.display='none'">
+        <img class="kf-honor-img" src="${playerAvatarUrl(t)}" alt="${t}" onerror="this.style.display='none'">
         <div class="kf-honor-info"><div class="kf-honor-name">${t} (trainer)</div></div>
       </div>`;
     }
@@ -1610,7 +1611,7 @@ function _buildHonor(ep, phase) {
       const color = pct > 60 ? 'g' : pct > 30 ? 'y' : 'r';
       return `<div class="kf-honor-player">
         <div class="kf-honor-rank">${idx + 1}</div>
-        <img class="kf-honor-img" src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">
+        <img class="kf-honor-img" src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">
         <div class="kf-honor-info">
           <div class="kf-honor-name">${name}</div>
           <div class="kf-honor-bar"><div class="kf-honor-fill kf-honor-fill-${color}" style="width:${pct}%"></div></div>
@@ -1638,7 +1639,7 @@ function _buildSocialCard(evt) {
   const icon = icons[evt.type] || '💬';
   const cls = `kf-social-${evt.type}`;
   const playerIcons = (evt.players || []).map(n =>
-    `<div class="kf-hanko"><img src="assets/avatars/${slug(n)}.png" alt="${n}" onerror="this.style.display='none'"></div>`
+    `<div class="kf-hanko"><img src="${playerAvatarUrl(n)}" alt="${n}" onerror="this.style.display='none'"></div>`
   ).join('');
   return `<div class="kf-social ${cls}">
     <div class="kf-social-type">${icon}</div>
@@ -1689,7 +1690,7 @@ export function rpBuildCrouchingCourtneyTitleCard(ep) {
 
   const roster = allPlayers.map(name =>
     `<div class="kf-hanko" style="margin:4px">
-      <img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">
+      <img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">
     </div>`
   ).join('');
 
@@ -1733,9 +1734,9 @@ export function rpBuildCrouchingCourtneyTraining(ep) {
   // Each pair pick as its own step with narration
   for (const p of cc.phase1.pairs) {
     steps.push(`<div class="kf-player-card" style="flex-wrap:wrap">
-      <div class="kf-hanko"><img src="assets/avatars/${slug(p.trainer)}.png" alt="${p.trainer}" onerror="this.style.display='none'"></div>
+      <div class="kf-hanko"><img src="${playerAvatarUrl(p.trainer)}" alt="${p.trainer}" onerror="this.style.display='none'"></div>
       <div style="font-size:18px;color:var(--gold)">→</div>
-      <div class="kf-hanko"><img src="assets/avatars/${slug(p.fighter)}.png" alt="${p.fighter}" onerror="this.style.display='none'"></div>
+      <div class="kf-hanko"><img src="${playerAvatarUrl(p.fighter)}" alt="${p.fighter}" onerror="this.style.display='none'"></div>
       <div style="flex:1;min-width:200px">
         <div class="kf-player-name">🎓 ${p.trainer} → 🥊 ${p.fighter}</div>
         <div class="kf-player-detail" style="margin-top:4px">${p.pickText || 'Trainer → Fighter'}</div>
@@ -1746,7 +1747,7 @@ export function rpBuildCrouchingCourtneyTraining(ep) {
   // Spy reveal
   if (cc.phase1.spy) {
     steps.push(`<div class="kf-player-card" style="border-color:rgba(212,160,23,0.3);background:rgba(212,160,23,0.04)">
-      <div class="kf-hanko" style="border-color:var(--gold)"><img src="assets/avatars/${slug(cc.phase1.spy)}.png" alt="${cc.phase1.spy}" onerror="this.style.display='none'"></div>
+      <div class="kf-hanko" style="border-color:var(--gold)"><img src="${playerAvatarUrl(cc.phase1.spy)}" alt="${cc.phase1.spy}" onerror="this.style.display='none'"></div>
       <div style="flex:1">
         <div class="kf-player-name" style="color:var(--gold)">🕵️ ${cc.phase1.spy}</div>
         <div class="kf-player-detail" style="color:rgba(212,160,23,0.6)">Absent from training... suspiciously</div>
@@ -1772,7 +1773,7 @@ export function rpBuildCrouchingCourtneyTraining(ep) {
         : '<span style="font-size:8px;padding:1px 5px;border:1px solid var(--jade);color:var(--jade);border-radius:2px;font-family:Cinzel,serif;letter-spacing:1px">SAFE</span>';
       const borderColor = r.style === 'harsh-success' ? 'var(--sun-red)' : r.style === 'harsh-fail' ? '#888' : r.style === 'showmance' ? 'var(--cherry)' : 'var(--gold)';
       return `<div class="kf-player-card" style="border-color:${borderColor}">
-        <div class="kf-hanko"><img src="assets/avatars/${slug(r.fighter)}.png" alt="${r.fighter}" onerror="this.style.display='none'"></div>
+        <div class="kf-hanko"><img src="${playerAvatarUrl(r.fighter)}" alt="${r.fighter}" onerror="this.style.display='none'"></div>
         <div style="flex:1">
           <div class="kf-player-name">${r.fighter} ${styleBadge} ${r.trainer ? `<span style="font-size:9px;color:rgba(26,26,26,0.4)">by ${r.trainer}</span>` : ''}</div>
           <div class="kf-player-detail">${r.text}</div>
@@ -1847,7 +1848,7 @@ export function rpBuildCrouchingCourtneyFight(ep) {
         <div class="kf-vs">
           <div class="kf-vs-side">
             <div class="kf-hanko" style="width:50px;height:50px;margin:0 auto">
-              <img src="assets/avatars/${slug(fight.fighters[0])}.png" alt="${fight.fighters[0]}" style="width:42px;height:42px" onerror="this.style.display='none'">
+              <img src="${playerAvatarUrl(fight.fighters[0])}" alt="${fight.fighters[0]}" style="width:42px;height:42px" onerror="this.style.display='none'">
             </div>
             <div style="font-family:'Cinzel',serif;font-weight:700;font-size:13px;color:var(--parchment);margin-top:6px">${fight.fighters[0]}</div>
             <div style="font-size:9px;color:rgba(245,230,200,0.5)">${fight.trainers[0] ? `🎓 ${fight.trainers[0]}` : '⚡ Solo'}</div>
@@ -1855,7 +1856,7 @@ export function rpBuildCrouchingCourtneyFight(ep) {
           <div class="kf-vs-text">VS</div>
           <div class="kf-vs-side">
             <div class="kf-hanko" style="width:50px;height:50px;margin:0 auto">
-              <img src="assets/avatars/${slug(fight.fighters[1])}.png" alt="${fight.fighters[1]}" style="width:42px;height:42px" onerror="this.style.display='none'">
+              <img src="${playerAvatarUrl(fight.fighters[1])}" alt="${fight.fighters[1]}" style="width:42px;height:42px" onerror="this.style.display='none'">
             </div>
             <div style="font-family:'Cinzel',serif;font-weight:700;font-size:13px;color:var(--parchment);margin-top:6px">${fight.fighters[1]}</div>
             <div style="font-size:9px;color:rgba(245,230,200,0.5)">${fight.trainers[1] ? `🎓 ${fight.trainers[1]}` : '⚡ Solo'}</div>
@@ -1881,7 +1882,7 @@ export function rpBuildCrouchingCourtneyFight(ep) {
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
           <div style="flex:1">
             <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px">
-              <img src="assets/avatars/${slug(fight.fighters[0])}.png" style="width:20px;height:20px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
+              <img src="${playerAvatarUrl(fight.fighters[0])}" style="width:20px;height:20px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
               <span style="font-family:'Cinzel',serif;font-size:10px;color:var(--parchment)">${fight.fighters[0]}</span>
             </div>
             <div class="kf-hp-bar" style="height:10px"><div class="kf-hp-fill kf-hp-${aColor}" style="width:${aHPPct}%"></div></div>
@@ -1890,7 +1891,7 @@ export function rpBuildCrouchingCourtneyFight(ep) {
           <div style="flex:1">
             <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;justify-content:flex-end">
               <span style="font-family:'Cinzel',serif;font-size:10px;color:var(--parchment)">${fight.fighters[1]}</span>
-              <img src="assets/avatars/${slug(fight.fighters[1])}.png" style="width:20px;height:20px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
+              <img src="${playerAvatarUrl(fight.fighters[1])}" style="width:20px;height:20px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
             </div>
             <div class="kf-hp-bar" style="height:10px"><div class="kf-hp-fill kf-hp-${bColor}" style="width:${bHPPct}%;margin-left:auto"></div></div>
           </div>
@@ -1917,11 +1918,11 @@ export function rpBuildCrouchingCourtneyFight(ep) {
     steps.push(`<div class="kf-ko">
       <div style="display:flex;gap:8px;justify-content:center;align-items:center">
         <div class="kf-hanko" style="width:56px;height:56px;border-color:var(--gold)">
-          <img src="assets/avatars/${slug(fight.winner)}.png" alt="${fight.winner}" style="width:48px;height:48px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
+          <img src="${playerAvatarUrl(fight.winner)}" alt="${fight.winner}" style="width:48px;height:48px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
         </div>
         ${winTrainer ? `<div style="font-size:16px;color:var(--gold)">+</div>
         <div class="kf-hanko" style="width:40px;height:40px;border-color:var(--gold)">
-          <img src="assets/avatars/${slug(winTrainer)}.png" alt="${winTrainer}" style="width:34px;height:34px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
+          <img src="${playerAvatarUrl(winTrainer)}" alt="${winTrainer}" style="width:34px;height:34px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
         </div>` : ''}
       </div>
       <div style="font-family:'Cinzel',serif;font-weight:900;font-size:20px;color:var(--gold);margin-top:6px;letter-spacing:3px;text-shadow:0 0 12px rgba(212,160,23,0.4)">${fight.winner}${winTrainer ? ` & ${winTrainer}` : ''} WIN!</div>
@@ -1944,7 +1945,7 @@ export function rpBuildCrouchingCourtneyFight(ep) {
   let summaryHtml = ranked.map(([name, w], idx) => {
     const trainer = cc.phase1.pairs.find(p => p.fighter === name)?.trainer;
     return `<div class="kf-player-card" style="${name === champion ? 'border-color:var(--gold)' : ''}">
-      <div class="kf-hanko" style="${name === champion ? 'border-color:var(--gold)' : ''}"><img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'"></div>
+      <div class="kf-hanko" style="${name === champion ? 'border-color:var(--gold)' : ''}"><img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'"></div>
       <div style="flex:1">
         <div class="kf-player-name">${name} ${name === champion ? '👑' : ''}</div>
         <div class="kf-player-detail">${w} win${w !== 1 ? 's' : ''}${trainer ? ` — trained by ${trainer}` : ''}</div>
@@ -2004,7 +2005,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
   // Climber lineup
   const climberRoster = cc.phase3.climbers.map(n =>
     `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px">
-      <div class="kf-hanko"><img src="assets/avatars/${slug(n)}.png" alt="${n}" onerror="this.style.display='none'"></div>
+      <div class="kf-hanko"><img src="${playerAvatarUrl(n)}" alt="${n}" onerror="this.style.display='none'"></div>
       <div style="font-size:9px;color:var(--parchment)">${n.split(' ').pop()}</div>
     </div>`
   ).join('');
@@ -2034,7 +2035,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
       stageHtml = stageResults.map(r => {
         if (r.type === 'steal' && r.success) {
           return `<div class="kf-player-card kf-betrayal kf-steal-flash" style="border-color:var(--sun-red)">
-            <div class="kf-hanko" style="border-color:var(--sun-red)"><img src="assets/avatars/${slug(r.name)}.png" alt="${r.name}" onerror="this.style.display='none'"></div>
+            <div class="kf-hanko" style="border-color:var(--sun-red)"><img src="${playerAvatarUrl(r.name)}" alt="${r.name}" onerror="this.style.display='none'"></div>
             <div style="flex:1">
               <div class="kf-player-name">${r.name} <span class="kf-team-badge kf-team-badge-betray">STOLEN!</span></div>
               <div class="kf-player-detail">${r.text}</div>
@@ -2043,7 +2044,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
           </div>`;
         } else if (r.type === 'steal' && !r.success) {
           return `<div class="kf-player-card" style="opacity:0.7;border-color:rgba(100,100,100,0.3)">
-            <div class="kf-hanko"><img src="assets/avatars/${slug(r.name)}.png" alt="${r.name}" onerror="this.style.display='none'"></div>
+            <div class="kf-hanko"><img src="${playerAvatarUrl(r.name)}" alt="${r.name}" onerror="this.style.display='none'"></div>
             <div style="flex:1">
               <div class="kf-player-name">${r.name}</div>
               <div class="kf-player-detail">${r.text}</div>
@@ -2052,7 +2053,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
           </div>`;
         } else if (r.type === 'finish') {
           return `<div class="kf-player-card" style="border-color:var(--gold);background:rgba(212,160,23,0.06)">
-            <div class="kf-hanko" style="border-color:var(--gold)"><img src="assets/avatars/${slug(r.name)}.png" alt="${r.name}" onerror="this.style.display='none'"></div>
+            <div class="kf-hanko" style="border-color:var(--gold)"><img src="${playerAvatarUrl(r.name)}" alt="${r.name}" onerror="this.style.display='none'"></div>
             <div style="flex:1">
               <div class="kf-player-name" style="color:var(--gold)">${r.name} 🌳</div>
               <div class="kf-player-detail">${r.text}</div>
@@ -2070,7 +2071,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
         const isChaser = isWin && r.name !== cc.phase3.bonsaiHolder;
         const cardCls = isBonsaiGrab ? 'kf-boss-entrance' : '';
         return `<div class="kf-player-card ${cardCls}" style="border-color:${isWin ? 'var(--jade)' : 'var(--sun-red)'}${isBonsaiGrab ? ';box-shadow:0 0 20px rgba(39,174,96,0.2)' : ''}">
-          <div class="kf-hanko" style="border-color:${isWin ? 'var(--jade)' : 'var(--sun-red)'}"><img src="assets/avatars/${slug(r.name)}.png" alt="${r.name}" onerror="this.style.display='none'"></div>
+          <div class="kf-hanko" style="border-color:${isWin ? 'var(--jade)' : 'var(--sun-red)'}"><img src="${playerAvatarUrl(r.name)}" alt="${r.name}" onerror="this.style.display='none'"></div>
           <div style="flex:1">
             <div class="kf-player-name">${r.name} ${isBonsaiGrab ? '<span class="kf-bonsai-grab" style="font-size:18px">🌳</span>' : isChaser ? '🏃' : ''}</div>
             <div class="kf-player-detail">${r.text}</div>
@@ -2083,7 +2084,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
       stageHtml = stageResults.map(r => {
         if (r.eliminated) {
           return `<div class="kf-player-card" style="opacity:0.4;border-color:var(--sun-red)">
-            <div class="kf-hanko" style="opacity:0.5"><img src="assets/avatars/${slug(r.name)}.png" alt="${r.name}" onerror="this.style.display='none'"></div>
+            <div class="kf-hanko" style="opacity:0.5"><img src="${playerAvatarUrl(r.name)}" alt="${r.name}" onerror="this.style.display='none'"></div>
             <div style="flex:1"><div class="kf-player-name" style="text-decoration:line-through">${r.name}</div><div class="kf-player-detail">${r.text}</div></div>
             <div class="kf-water-cup"><div class="kf-water-cup-fill kf-water-danger" style="height:0%"></div></div>
           </div>`;
@@ -2091,7 +2092,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
         const waterPct = Math.max(0, r.water || 0);
         const isDanger = waterPct <= 40;
         return `<div class="kf-player-card">
-          <div class="kf-hanko"><img src="assets/avatars/${slug(r.name)}.png" alt="${r.name}" onerror="this.style.display='none'"></div>
+          <div class="kf-hanko"><img src="${playerAvatarUrl(r.name)}" alt="${r.name}" onerror="this.style.display='none'"></div>
           <div style="flex:1">
             <div class="kf-player-name">${r.name} ${r.isTeamed ? '<span class="kf-team-badge kf-team-badge-ally">🤝 TEAM</span>' : ''}</div>
             <div class="kf-player-detail">${r.text}</div>
@@ -2104,7 +2105,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
       if (i === 2 && cc.phase3.betrayals.length) {
         const stageBetrayal = cc.phase3.betrayals[0];
         stageHtml = `<div class="kf-player-card kf-betrayal" style="border-color:var(--sun-red)">
-          <div class="kf-hanko" style="border-color:var(--sun-red)"><img src="assets/avatars/${slug(stageBetrayal.betrayer)}.png" alt="${stageBetrayal.betrayer}" onerror="this.style.display='none'"></div>
+          <div class="kf-hanko" style="border-color:var(--sun-red)"><img src="${playerAvatarUrl(stageBetrayal.betrayer)}" alt="${stageBetrayal.betrayer}" onerror="this.style.display='none'"></div>
           <div style="flex:1">
             <div class="kf-player-name">${stageBetrayal.betrayer} <span class="kf-team-badge kf-team-badge-betray">BETRAYAL</span></div>
             <div class="kf-player-detail">${stageBetrayal.text}</div>
@@ -2130,7 +2131,7 @@ export function rpBuildCrouchingCourtneyClimb(ep) {
       border:2px solid var(--gold);border-radius:4px">
       <div class="kf-torii" style="opacity:0.1;font-size:32px">⛩️</div>
       <div class="kf-hanko" style="width:64px;height:64px;margin:0 auto;border-color:var(--gold)">
-        <img src="assets/avatars/${slug(cc.immunityWinner)}.png" alt="${cc.immunityWinner}" style="width:56px;height:56px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
+        <img src="${playerAvatarUrl(cc.immunityWinner)}" alt="${cc.immunityWinner}" style="width:56px;height:56px;border-radius:50%;object-fit:contain" onerror="this.style.display='none'">
       </div>
       <div class="kf-title" style="font-size:24px;margin-top:10px">IMMUNITY</div>
       <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-top:4px;letter-spacing:2px">${cc.immunityWinner}</div>

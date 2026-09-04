@@ -1,6 +1,6 @@
 // js/chal/planes-trains.js — Planes, Trains & Hot Air Mobiles (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -16,7 +16,8 @@ function arch(name) { return players.find(p => p.name === name)?.archetype || ''
 function ordinal(n) { const s = ['th','st','nd','rd']; const v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 function portrait(name, size = 42) {
   const s = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${s}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const sAv = playerAvatarUrl(name);
+  return `<img src="${sAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function _evPlayers(player, target) {
@@ -3586,6 +3587,7 @@ export function rpBuildPTLandRace(ep) {
     const isHeli = assign?.vehicleId === 'helicopter';
     const yOffset = 20 + (i % 6) * 11;
     const s = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const sAv = playerAvatarUrl(name);
 
     // Compute left position from snapshot
     let leftPct = 5;
@@ -3611,7 +3613,7 @@ export function rpBuildPTLandRace(ep) {
     }
 
     return `<div class="pt-map-racer" id="pt-map-racer-${name.replace(/\s+/g, '-')}" style="left:${leftPct}%;bottom:${isHeli ? heliBottom : yOffset}%;opacity:${opa}">
-      <img src="assets/avatars/${s}.png" alt="${name}" style="width:28px;height:28px;border-radius:50%;object-fit:contain;border:2px solid var(--pt-ink);box-shadow:0 2px 4px rgba(0,0,0,0.3)" onerror="this.style.display='none'">
+      <img src="${sAv}" alt="${name}" style="width:28px;height:28px;border-radius:50%;object-fit:contain;border:2px solid var(--pt-ink);box-shadow:0 2px 4px rgba(0,0,0,0.3)" onerror="this.style.display='none'">
       <span class="pt-map-racer-label">${name.split(' ')[0]}</span>
     </div>`;
   }).join('');
@@ -3785,9 +3787,10 @@ export function rpBuildPTSeaCrossing(ep) {
   // Build racer markers for the sea map
   const seaRacerMarkers = racers.map((name, i) => {
     const s = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const sAv = playerAvatarUrl(name);
     const yOffset = 18 + (i % racers.length) * Math.min(10, 60 / racers.length);
     return `<div class="pt-map-racer" id="pt-sea-racer-${name.replace(/\s+/g, '-')}" style="left:6%;bottom:${yOffset}%;opacity:0.3">
-      <img src="assets/avatars/${s}.png" alt="${name}" style="width:24px;height:24px;border-radius:50%;object-fit:contain;border:2px solid var(--pt-teal);box-shadow:0 2px 6px rgba(42,111,124,0.4)" onerror="this.style.display='none'">
+      <img src="${sAv}" alt="${name}" style="width:24px;height:24px;border-radius:50%;object-fit:contain;border:2px solid var(--pt-teal);box-shadow:0 2px 6px rgba(42,111,124,0.4)" onerror="this.style.display='none'">
       <span class="pt-map-racer-label" style="background:var(--pt-teal)">${name.split(' ')[0]}</span>
     </div>`;
   }).join('');

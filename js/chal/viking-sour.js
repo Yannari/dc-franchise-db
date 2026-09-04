@@ -1,6 +1,6 @@
 // js/chal/viking-sour.js — Viking Sour: pre-merge tribe challenge (blueprint + sail + naval battle)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1961,7 +1961,7 @@ function _tagCls(type) {
 // Avatar helper
 function _av(name, size = 28) {
   const tc = _playerTribeColor(name);
-  return `<img class="vs-portrait" src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-color:${tc}" onerror="this.outerHTML='<div class=\\'vs-portrait\\' style=\\'width:${size}px;height:${size}px;border-color:${tc}\\'>${name.substring(0,2).toUpperCase()}</div>'">`;
+  return `<img class="vs-portrait" src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-color:${tc}" onerror="this.outerHTML='<div class=\\'vs-portrait\\' style=\\'width:${size}px;height:${size}px;border-color:${tc}\\'>${name.substring(0,2).toUpperCase()}</div>'">`;
 }
 
 function _playerTribeColor(name) {
@@ -2816,7 +2816,7 @@ export function rpBuildVSTitleCard(ep) {
       const delay = 3.2 + playerIdx * 0.08;
       rosterHTML += `<div class="vs-title-player ${teamCls}" style="animation-delay:${delay}s">
         <div class="vs-title-player-avatar">
-          <img src="assets/avatars/${slug(n)}.png" alt="${n}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <img src="${playerAvatarUrl(n)}" alt="${n}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <span class="initials" style="display:none">${n.substring(0, 2).toUpperCase()}</span>
         </div>
         <div class="vs-title-player-name">${n}</div>

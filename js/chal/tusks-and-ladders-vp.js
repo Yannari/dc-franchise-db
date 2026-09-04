@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // tusks-and-ladders-vp.js — VP screens for Tusks and Ladders.
 // Circus big-top theme (tal- prefix): red/gold stripes, sawdust, an inline-SVG
@@ -8,7 +9,7 @@ import { players } from '../core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 24) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.35)" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.35)" onerror="this.style.visibility='hidden'">`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 

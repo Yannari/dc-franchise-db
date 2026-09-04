@@ -1,6 +1,6 @@
 // js/chal/beach-blanket-bogus.js
 import { gs, players } from '../core.js';
-import { pStats, pronouns, romanticCompat, updateChalRecord } from '../players.js';
+import { pStats, pronouns, romanticCompat, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 
 /* ═══════════════════════════════════════════════════════
@@ -1974,7 +1974,8 @@ export function _textBeachBlanketBogus(ep, ln, sec) {
 
 function _bbbPortrait(name, size = 40) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);" onerror="this.style.display='none'">`;
 }
 
 /* ═══════════════════════════════════════════════════════

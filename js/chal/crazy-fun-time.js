@@ -1,6 +1,6 @@
 // js/chal/crazy-fun-time.js
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1371,7 +1371,8 @@ function _buildSidebarContent(ep, phase) {
       const col = tribeColor(t.tribeName);
       const roster = t.tribeMembers.map(n => {
         const slug = n.toLowerCase().replace(/\s+/g, '-');
-        return `<img class="cft-sb-av" style="border-color:${col};" src="assets/avatars/${slug}.png" alt="${n}" title="${n}">`;
+        const slugAv = playerAvatarUrl(n);
+        return `<img class="cft-sb-av" style="border-color:${col};" src="${slugAv}" alt="${n}" title="${n}">`;
       }).join('');
       return `<div class="cft-sb-team">
         <div class="cft-sb-team-header"><span class="cft-sb-team-name" style="color:${col};">${t.tribeName}</span></div>
@@ -1403,8 +1404,9 @@ function _buildSidebarContent(ep, phase) {
       const col = tribeColor(t.tribeName);
       const roster = t.tribeMembers.map(n => {
         const slug = n.toLowerCase().replace(/\s+/g, '-');
+        const slugAv = playerAvatarUrl(n);
         const isRep = n === t.rep.name;
-        return `<img class="cft-sb-av${isRep ? ' is-rep' : ''}" style="border-color:${col};" src="assets/avatars/${slug}.png" alt="${n}" title="${n}${isRep ? ' ★ REP' : ''}">`;
+        return `<img class="cft-sb-av${isRep ? ' is-rep' : ''}" style="border-color:${col};" src="${slugAv}" alt="${n}" title="${n}${isRep ? ' ★ REP' : ''}">`;
       }).join('');
       const showScore = revealIdx >= 0;
       const scoreDigits = showScore ? _sbDigits(runningScores[t.tribeName] || 0, col) : '';
@@ -1437,10 +1439,11 @@ function _buildSidebarContent(ep, phase) {
       const avatarHtml = players.length > 0 ? (() => {
         const p = players[0];
         const slug = p.toLowerCase().replace(/\s+/g, '-');
+        const slugAv = playerAvatarUrl(p);
         // Find tribe color for this player
         let pCol = 'rgba(255,255,255,0.3)';
         for (const t of data.tribes) { if (t.tribeMembers.includes(p)) { pCol = tribeColor(t.tribeName); break; } }
-        return `<img class="cft-sb-av-tiny" style="border-color:${pCol};" src="assets/avatars/${slug}.png" alt="${p}">`;
+        return `<img class="cft-sb-av-tiny" style="border-color:${pCol};" src="${slugAv}" alt="${p}">`;
       })() : '';
       const summaryText = players.length >= 2 ? `${players[0]} → ${players[1]}` : players.length === 1 ? players[0] : 'Event';
       const bondClass = evt.consequence && evt.consequence.includes('-') ? 'neg' : 'pos';
@@ -1455,7 +1458,8 @@ function _buildSidebarContent(ep, phase) {
       const col = tribeColor(comm.tribeName);
       const roster = (comm.roles ? Object.values(comm.roles) : []).filter(r => r && r.player).map(r => {
         const slug = r.player.toLowerCase().replace(/\s+/g, '-');
-        return `<img class="cft-sb-av" style="border-color:${col};" src="assets/avatars/${slug}.png" alt="${r.player}" title="${r.player} — ${r.role}">`;
+        const slugAv = playerAvatarUrl(r.player);
+        return `<img class="cft-sb-av" style="border-color:${col};" src="${slugAv}" alt="${r.player}" title="${r.player} — ${r.role}">`;
       }).join('');
       const hasIntel = comm.hasChefIntel;
       // Build role rows
@@ -1496,8 +1500,9 @@ function _buildSidebarContent(ep, phase) {
       const totalScore = data.tribes.find(tr => tr.tribeName === comm.tribeName).pinballScore + comm.scores.total * 100;
       const roster = (data.tribes.find(tr => tr.tribeName === comm.tribeName) || {tribeMembers:[]}).tribeMembers.map(n => {
         const slug = n.toLowerCase().replace(/\s+/g, '-');
+        const slugAv = playerAvatarUrl(n);
         const avCol = isLoser ? 'rgba(239,68,68,0.4)' : col;
-        return `<img class="cft-sb-av" style="border-color:${avCol};${isLoser ? 'opacity:.6;' : ''}" src="assets/avatars/${slug}.png" alt="${n}">`;
+        return `<img class="cft-sb-av" style="border-color:${avCol};${isLoser ? 'opacity:.6;' : ''}" src="${slugAv}" alt="${n}">`;
       }).join('');
       const label = isWinner ? `<div style="font-size:8px;color:var(--cft-green);margin-top:4px;">★ FIRST PLACE — IMMUNITY</div>` : isLoser ? `<div style="font-size:8px;color:var(--cft-red);margin-top:4px;">LAST — TRIBAL COUNCIL</div>` : `<div style="font-size:8px;color:var(--cft-gold);margin-top:4px;">${rank+1}${rank===1?'ND':'RD'} — SAFE</div>`;
       sbContent += `<div class="cft-sb-team" style="padding:8px 0;">
@@ -1515,7 +1520,8 @@ function _buildSidebarContent(ep, phase) {
     const winT = data.tribes.find(tr => tr.tribeName === winTribe);
     const winRoster = winT ? winT.tribeMembers.map(n => {
       const slug = n.toLowerCase().replace(/\s+/g, '-');
-      return `<img class="cft-sb-av" style="border-color:${winCol};" src="assets/avatars/${slug}.png" alt="${n}">`;
+      const slugAv = playerAvatarUrl(n);
+      return `<img class="cft-sb-av" style="border-color:${winCol};" src="${slugAv}" alt="${n}">`;
     }).join('') : '';
     sbContent = `<div style="padding:10px 12px;">
       <div style="font-size:8px;color:var(--cft-gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Final Standings</div>
@@ -1960,7 +1966,8 @@ function _digits(score, color) {
 
 function _avatar(name, color, cls = '') {
   const slug = name.toLowerCase().replace(/\s+/g, '-');
-  return `<img class="cft-av ${cls}" style="border-color:${color};" src="assets/avatars/${slug}.png" alt="${name}" title="${name}">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img class="cft-av ${cls}" style="border-color:${color};" src="${slugAv}" alt="${name}" title="${name}">`;
 }
 
 function _starsHtml(quality, max = 5) {
@@ -1987,8 +1994,9 @@ export function rpBuildCFTTitleCard(ep) {
     return t.tribeMembers.map(n => {
       ballIdx++;
       const slug = n.toLowerCase().replace(/\s+/g, '-');
+      const slugAv = playerAvatarUrl(n);
       const animDur = (3.3 + (ballIdx * 0.23) % 1.5).toFixed(1);
-      return `<div class="cft-machine-ball" style="border-color:${col};background:radial-gradient(circle,rgba(255,255,255,0.2),${col}15);box-shadow:0 0 10px ${col}30;animation:cft-blender-${Math.min(ballIdx, 18)} ${animDur}s ease-in-out infinite;"><img src="assets/avatars/${slug}.png" alt="${n}"></div>`;
+      return `<div class="cft-machine-ball" style="border-color:${col};background:radial-gradient(circle,rgba(255,255,255,0.2),${col}15);box-shadow:0 0 10px ${col}30;animation:cft-blender-${Math.min(ballIdx, 18)} ${animDur}s ease-in-out infinite;"><img src="${slugAv}" alt="${n}"></div>`;
     }).join('');
   }).join('');
 
@@ -2044,11 +2052,11 @@ export function rpBuildCFTPinball(ep) {
   const scoreBar = data.tribes.map(t => {
     const col = tribeColor(t.tribeName);
     const animalSlug = t.animal.type.toLowerCase().replace(/\s+/g, '-');
-    const repSlug = t.rep.name.toLowerCase().replace(/\s+/g, '-');
+    const repSrc = playerAvatarUrl(t.rep.name);
     const displayScore = pinRevealIdx >= 0 ? headerScores[t.tribeName] : 0;
     return `<div class="cft-team-score" style="border-color:${col};">
       <div class="cft-team-score-avatars">
-        <img class="cft-av cft-av-sm" style="border-color:${col};z-index:2;" src="assets/avatars/${repSlug}.png" alt="${t.rep.name}">
+        <img class="cft-av cft-av-sm" style="border-color:${col};z-index:2;" src="${repSrc}" alt="${t.rep.name}">
         <div class="cft-team-score-animal" style="border-color:${col};">${_icon('animal')}</div>
       </div>
       <div>
@@ -2063,6 +2071,7 @@ export function rpBuildCFTPinball(ep) {
   const repBalls = data.tribes.map((t, ti) => {
     const col = tribeColor(t.tribeName);
     const slug = t.rep.name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(t.rep.name);
     const ballAnims = [
       { top: [55, 25, 60, 18, 55], left: [20, 50, 65, 30, 20], dur: 3.5 },
       { top: [30, 60, 20, 55, 30], left: [65, 30, 55, 75, 65], dur: 4 },
@@ -2070,7 +2079,7 @@ export function rpBuildCFTPinball(ep) {
     ];
     const anim = ballAnims[ti] || ballAnims[0];
     const kfName = `cft-ball-${ti + 1}`;
-    return `<div class="cft-ball" style="border-color:${col};background:radial-gradient(circle at 35% 35%,rgba(255,255,255,0.2),${col}20);box-shadow:0 0 15px ${col}40;animation:${kfName} ${anim.dur}s ease-in-out infinite;"><img src="assets/avatars/${slug}.png" alt="${t.rep.name}"></div>`;
+    return `<div class="cft-ball" style="border-color:${col};background:radial-gradient(circle at 35% 35%,rgba(255,255,255,0.2),${col}20);box-shadow:0 0 15px ${col}40;animation:${kfName} ${anim.dur}s ease-in-out infinite;"><img src="${slugAv}" alt="${t.rep.name}"></div>`;
   }).join('');
 
   // Ball animation keyframes (inline, unique per tribe)
@@ -2220,9 +2229,10 @@ export function rpBuildCFTDramaBreak(ep) {
     const iconType = dramaIconMap[evt.type] || 'drama';
     const avatars = (evt.players || []).slice(0, 2).map(p => {
       const slug = p.toLowerCase().replace(/\s+/g, '-');
+      const slugAv = playerAvatarUrl(p);
       let pCol = 'rgba(255,255,255,0.3)';
       for (const t of data.tribes) { if (t.tribeMembers.includes(p)) { pCol = tribeColor(t.tribeName); break; } }
-      return `<img class="cft-av cft-av-xs" style="border-color:${pCol};" src="assets/avatars/${slug}.png" alt="${p}">`;
+      return `<img class="cft-av cft-av-xs" style="border-color:${pCol};" src="${slugAv}" alt="${p}">`;
     }).join('');
     return `<div id="cft-step-drama-${i}" class="cft-step${st.idx >= i ? ' cft-visible' : ''}">
       <div class="cft-drama-card ${side}">
@@ -2515,10 +2525,11 @@ export function rpBuildCFTResults(ep) {
 
     const roster = t.tribeMembers.map(n => {
       const slug = n.toLowerCase().replace(/\s+/g, '-');
+      const slugAv = playerAvatarUrl(n);
       const avCol = isLoser ? 'rgba(239,68,68,0.4)' : col;
       const isRep = n === t.rep.name;
       return `<div class="cft-result-player">
-        <img class="cft-av${isRep ? ' is-rep' : ''}" style="border-color:${avCol};width:36px;height:36px;${isLoser ? 'opacity:.7;' : ''}" src="assets/avatars/${slug}.png" alt="${n}">
+        <img class="cft-av${isRep ? ' is-rep' : ''}" style="border-color:${avCol};width:36px;height:36px;${isLoser ? 'opacity:.7;' : ''}" src="${slugAv}" alt="${n}">
         <div class="cft-result-player-name">${n}</div>
       </div>`;
     }).join('');

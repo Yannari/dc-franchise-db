@@ -5,7 +5,7 @@
 // socially (bonds swing, schemes get exposed, romances get outed). Lose your grip and you fall. Ropes at
 // zero and you fall. Last soul hanging wins immunity.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -23,7 +23,7 @@ function popDelta(name, delta) { if (!gs.popularity) gs.popularity = {}; gs.popu
 function arch(name) { return players.find(p => p.name === name)?.archetype || 'floater'; }
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function portrait(name, size = 38) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:5px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:5px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 const VILLAINY = ['villain', 'mastermind', 'schemer'];
 const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
@@ -1185,6 +1185,7 @@ function _ropeStrands(r) { return [0, 1, 2].map(i => `<div class="hd-strand ${i 
 
 function _hdPuppet(name, ropes, trembling, left, scale, isWinner) {
   const sl = slugOf(name);
+  const slAv = playerAvatarUrl(name);
   return `<div class="hd-slot ${isWinner ? 'hd-winner' : ''}" data-name="${name.replace(/"/g, '&quot;')}" style="left:${left}%;--s:${scale}">
     <div class="hd-sway ${trembling ? 'trem' : ''}">
       <svg width="128" height="180" viewBox="0 0 128 180" style="position:absolute;top:0;left:0">
@@ -1203,14 +1204,14 @@ function _hdPuppet(name, ropes, trembling, left, scale, isWinner) {
         <g stroke="#fff" stroke-width="2" opacity="0.5" stroke-linecap="round"><path d="M34 24 l-8 -4"/><path d="M94 24 l8 -4"/></g>
       </svg>
       <div class="hd-p-helm"><div class="hd-p-scr">☠</div></div>
-      <img class="hd-p-face" src="assets/avatars/${sl}.png" onerror="this.style.visibility='hidden'">
+      <img class="hd-p-face" src="${slAv}" onerror="this.style.visibility='hidden'">
       ${trembling ? '<div class="hd-sweat a"></div><div class="hd-sweat b"></div>' : ''}
       <div class="hd-ropebox">${_ropeStrands(ropes)}</div>
       <div class="hd-p-name">${name}</div>
     </div>
   </div>`;
 }
-function _hdBob(name, left) { return `<img class="hd-bob" src="assets/avatars/${slugOf(name)}.png" style="left:${left}%" onerror="this.style.visibility='hidden'">`; }
+function _hdBob(name, left) { return `<img class="hd-bob" src="${playerAvatarUrl(name)}" style="left:${left}%" onerror="this.style.visibility='hidden'">`; }
 function _waterDeco() {
   return `<svg class="hd-shark" viewBox="0 0 150 44"><path d="M2 30 Q40 8 96 22 Q120 26 148 14 Q132 34 116 34 Q126 44 108 42 Q96 34 78 36 Q40 40 2 30 Z" fill="#0a2c34"/></svg>
     <div class="hd-fin"></div><div class="hd-fin" style="animation-delay:-3.5s"></div>`;
@@ -1274,7 +1275,7 @@ export function rpBuildHungTitleCard(ep) {
   const r = ep.hungOut; if (!r) return '';
   const active = ep.tribalPlayers || [];
   const badges = active.map(n =>
-    `<div class="hd-badge"><div class="hd-helm"></div><img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.display='none'"><span>${n}</span></div>`
+    `<div class="hd-badge"><div class="hd-helm"></div><img src="${playerAvatarUrl(n)}" onerror="this.style.display='none'"><span>${n}</span></div>`
   ).join('');
   return _shell(`
     <div class="hd-cover">

@@ -1,6 +1,6 @@
 // js/chal/aftermayhem.js — Aftermayhem: board game gauntlet for eliminated players to return
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats, pronouns, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -1099,7 +1099,8 @@ function _icon(type) {
 // ── AVATAR HELPER ──
 function _av(name, size = 32) {
   const s = slug(name);
-  return `<img src="assets/avatars/${s}.png" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${name}"><div style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:rgba(255,255,255,.15);align-items:center;justify-content:center;font-family:Bungee,sans-serif;font-size:${Math.round(size*0.4)}px;color:#fff">${name[0]}</div>`;
+  const sAv = playerAvatarUrl(name);
+  return `<img src="${sAv}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${name}"><div style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:rgba(255,255,255,.15);align-items:center;justify-content:center;font-family:Bungee,sans-serif;font-size:${Math.round(size*0.4)}px;color:#fff">${name[0]}</div>`;
 }
 
 // ── Energy class ──
@@ -1479,7 +1480,7 @@ function _buildSidebarContent(ep, screenKey) {
     const color = TOKEN_COLORS[i % TOKEN_COLORS.length];
 
     html += `<div class="am-sb-player ${cls}">
-      <div class="am-sb-avatar" style="border-color:${color};"><img src="assets/avatars/${slug(r.name)}.png" onerror="this.style.display='none'" alt="${r.name}"></div>
+      <div class="am-sb-avatar" style="border-color:${color};"><img src="${playerAvatarUrl(r.name)}" onerror="this.style.display='none'" alt="${r.name}"></div>
       <div class="am-sb-info">
         <div class="am-sb-name">${r.name}</div>
         <div class="am-sb-pos">${posText}</div>
@@ -1494,7 +1495,7 @@ function _buildSidebarContent(ep, screenKey) {
   if (gallery.length > 0) {
     html += '<div class="am-sb-title">PEANUT GALLERY</div><div class="am-peanut">';
     gallery.slice(0, 8).forEach(n => {
-      html += `<div class="am-peanut-face"><img src="assets/avatars/${slug(n)}.png" onerror="this.style.display='none'" alt="${n}"></div>`;
+      html += `<div class="am-peanut-face"><img src="${playerAvatarUrl(n)}" onerror="this.style.display='none'" alt="${n}"></div>`;
     });
     html += '</div>';
   }
@@ -1579,7 +1580,7 @@ export function rpBuildAftermayhemLottery(ep) {
     const color = TOKEN_COLORS[stepIdx % TOKEN_COLORS.length];
     cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
       <div class="am-lottery-card golden">
-        <div class="am-lottery-avatar" style="border-color:${color};"><img src="assets/avatars/${slug(wr.name)}.png" onerror="this.style.display='none'" alt="${wr.name}"></div>
+        <div class="am-lottery-avatar" style="border-color:${color};"><img src="${playerAvatarUrl(wr.name)}" onerror="this.style.display='none'" alt="${wr.name}"></div>
         <div class="am-lottery-text"><strong>${wr.name}</strong> opens the can... <strong style="color:var(--am-gold);">GOLDEN CHRIS!</strong><br>${wr.text}</div>
         <div class="am-lottery-badge" style="background:rgba(255,209,60,.2);color:var(--am-gold);">&#9733; IN</div>
       </div>
@@ -1592,7 +1593,7 @@ export function rpBuildAftermayhemLottery(ep) {
     const isGroup = lr.name === '_group';
     cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
       <div class="am-lottery-card empty">
-        ${isGroup ? '' : `<div class="am-lottery-avatar" style="border-color:var(--am-grey);"><img src="assets/avatars/${slug(lr.name)}.png" onerror="this.style.display='none'" alt="${lr.name}"></div>`}
+        ${isGroup ? '' : `<div class="am-lottery-avatar" style="border-color:var(--am-grey);"><img src="${playerAvatarUrl(lr.name)}" onerror="this.style.display='none'" alt="${lr.name}"></div>`}
         <div class="am-lottery-text">${isGroup ? lr.text : `<strong>${lr.name}</strong>: ${lr.text}`}</div>
         <div class="am-lottery-badge" style="background:rgba(255,255,255,.05);color:var(--am-grey);">OUT</div>
       </div>
@@ -1642,10 +1643,11 @@ export function rpBuildAftermayhemBoard(ep) {
   am.racers.forEach((r, i) => {
     const color = TOKEN_COLORS[i % TOKEN_COLORS.length];
     const s = slug(r.name);
+    const sAv = playerAvatarUrl(r.name);
     const staggerX = numRacers > 1 ? (i - (numRacers - 1) / 2) * 14 : 0;
     const staggerY = i * 6;
     tokensHtml += `<div id="am-token-${s}" class="am-token" style="border-color:${color};left:${15 + staggerX}px;top:${-12 - staggerY}px;" data-pos="0">
-      <img src="assets/avatars/${s}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${r.name}">
+      <img src="${sAv}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${r.name}">
       <div class="initials" style="display:none;background:${color};">${r.name[0]}</div>
     </div>`;
   });
@@ -1726,7 +1728,7 @@ export function rpBuildAftermayhemBoard(ep) {
       cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
         <div class="am-card roll">
           <div class="am-card-head">
-            <div class="am-card-avatar" style="border-color:${color};"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+            <div class="am-card-avatar" style="border-color:${color};"><img src="${playerAvatarUrl(turn.player)}" onerror="this.style.display='none'" alt="${turn.player}"></div>
             <span class="am-card-who">${turn.player}</span>
             <span class="am-card-tag tag-roll">ROLLED ${turn.diceRoll}</span>
           </div>
@@ -1749,7 +1751,7 @@ export function rpBuildAftermayhemBoard(ep) {
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
           <div class="am-card trap">
             <div class="am-card-head">
-              <div class="am-card-avatar" style="border-color:${color};"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+              <div class="am-card-avatar" style="border-color:${color};"><img src="${playerAvatarUrl(turn.player)}" onerror="this.style.display='none'" alt="${turn.player}"></div>
               <span class="am-card-who">${turn.player}</span>
               <span class="am-card-tag tag-trap">BOOBY TRAP!</span>
             </div>
@@ -1781,7 +1783,7 @@ export function rpBuildAftermayhemBoard(ep) {
           cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
             <div class="am-card trap" style="border-left-color:var(--am-red);">
               <div class="am-card-head">
-                <div class="am-card-avatar" style="border-color:var(--am-red);"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+                <div class="am-card-avatar" style="border-color:var(--am-red);"><img src="${playerAvatarUrl(turn.player)}" onerror="this.style.display='none'" alt="${turn.player}"></div>
                 <span class="am-card-who" style="color:var(--am-red);">${turn.player}</span>
                 <span class="am-card-tag tag-trap">KNOCKED BACK!</span>
               </div>
@@ -1801,7 +1803,7 @@ export function rpBuildAftermayhemBoard(ep) {
           cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
             <div class="am-card ko">
               <div class="am-card-head">
-                <div class="am-card-avatar" style="border-color:var(--am-grey);filter:grayscale(1);"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+                <div class="am-card-avatar" style="border-color:var(--am-grey);filter:grayscale(1);"><img src="${playerAvatarUrl(turn.player)}" onerror="this.style.display='none'" alt="${turn.player}"></div>
                 <span class="am-card-who" style="color:var(--am-red);">${turn.player} &#8212; KNOCKED OUT!</span>
                 <span class="am-card-tag tag-ko">K.O.</span>
               </div>
@@ -1837,7 +1839,7 @@ export function rpBuildAftermayhemBoard(ep) {
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
           <div class="am-card cameo">
             <div class="am-card-head">
-              <div class="am-card-avatar" style="border-color:var(--am-neon);"><img src="assets/avatars/${slug(turn.cameo.activePlayer)}.png" onerror="this.style.display='none'" alt="${turn.cameo.activePlayer}"></div>
+              <div class="am-card-avatar" style="border-color:var(--am-neon);"><img src="${playerAvatarUrl(turn.cameo.activePlayer)}" onerror="this.style.display='none'" alt="${turn.cameo.activePlayer}"></div>
               <span class="am-card-who">${turn.cameo.activePlayer} via Video</span>
               <span class="am-card-tag" style="${tagColors[cType] || tagColors.neutral}">${tagLabels[cType] || 'VIDEO LINK'}</span>
             </div>
@@ -1859,7 +1861,7 @@ export function rpBuildAftermayhemBoard(ep) {
         cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
           <div class="am-card challenge">
             <div class="am-card-head">
-              <div class="am-card-avatar" style="border-color:${color};"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+              <div class="am-card-avatar" style="border-color:${color};"><img src="${playerAvatarUrl(turn.player)}" onerror="this.style.display='none'" alt="${turn.player}"></div>
               <div style="flex:1;">
                 <span class="am-card-who">${turn.player}</span>
                 ${callbackHtml}
@@ -1895,7 +1897,7 @@ export function rpBuildAftermayhemBoard(ep) {
             cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
               <div class="am-card ko">
                 <div class="am-card-head">
-                  <div class="am-card-avatar" style="border-color:var(--am-grey);filter:grayscale(1);"><img src="assets/avatars/${slug(turn.player)}.png" onerror="this.style.display='none'" alt="${turn.player}"></div>
+                  <div class="am-card-avatar" style="border-color:var(--am-grey);filter:grayscale(1);"><img src="${playerAvatarUrl(turn.player)}" onerror="this.style.display='none'" alt="${turn.player}"></div>
                   <span class="am-card-who" style="color:var(--am-red);">${turn.player} &#8212; KNOCKED OUT!</span>
                   <span class="am-card-tag tag-ko">K.O.</span>
                 </div>
@@ -1980,7 +1982,7 @@ export function rpBuildAftermayhemBoard(ep) {
       cardsHtml += `<div id="am-step-${suffix}-${stepIdx}" class="am-hidden">
         <div class="am-card social">
           <div class="am-card-head">
-            <div class="am-card-avatar" style="border-color:${avatarColor};"><img src="assets/avatars/${slug(avatarPlayer)}.png" onerror="this.style.display='none'" alt="${avatarPlayer}"></div>
+            <div class="am-card-avatar" style="border-color:${avatarColor};"><img src="${playerAvatarUrl(avatarPlayer)}" onerror="this.style.display='none'" alt="${avatarPlayer}"></div>
             <span class="am-card-who">${avatarPlayer}</span>
             <span class="am-card-tag tag-social">${tagLabel}</span>
           </div>
@@ -2136,7 +2138,7 @@ export function rpBuildAftermayhemFinish(ep) {
     <div class="am-winner">
       <div class="am-winner-confetti">${confettiHtml}</div>
       <div class="am-winner-avatar" style="border-color:${wColor};">
-        <img src="assets/avatars/${slug(winner)}.png" onerror="this.style.display='none'" alt="${winner}">
+        <img src="${playerAvatarUrl(winner)}" onerror="this.style.display='none'" alt="${winner}">
       </div>
       <div class="am-winner-label">TROPHY CASE REACHED</div>
       <div class="am-winner-name">${winner.toUpperCase()}</div>
@@ -2149,7 +2151,7 @@ export function rpBuildAftermayhemFinish(ep) {
   cardsHtml += `<div id="am-step-${suffix}-2" class="am-hidden">
     <div class="am-card winner-card">
       <div class="am-card-head">
-        <div class="am-card-avatar" style="border-color:${wColor};"><img src="assets/avatars/${slug(winner)}.png" onerror="this.style.display='none'" alt="${winner}"></div>
+        <div class="am-card-avatar" style="border-color:${wColor};"><img src="${playerAvatarUrl(winner)}" onerror="this.style.display='none'" alt="${winner}"></div>
         <span class="am-card-who" style="color:var(--am-gold);">${winner.toUpperCase()} RETURNS!</span>
         <span class="am-card-tag tag-win">&#9733; RETURN</span>
       </div>
@@ -2176,7 +2178,7 @@ export function rpBuildAftermayhemFinish(ep) {
     const eCls = _energyClass(r.finalEnergy);
     standingsHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;margin:4px 16px;background:${isW ? 'rgba(255,209,60,.06)' : 'rgba(255,255,255,.02)'};border:1px solid ${isW ? 'var(--am-gold)' : 'rgba(255,255,255,.05)'};border-radius:6px;">
       <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:${isW ? 'var(--am-gold)' : '#666'};width:24px;text-align:center;">${isW ? '&#9733;' : '#' + (i + 1)}</span>
-      <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid ${rColor};flex-shrink:0;"><img src="assets/avatars/${slug(r.name)}.png" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'" alt="${r.name}"></div>
+      <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid ${rColor};flex-shrink:0;"><img src="${playerAvatarUrl(r.name)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'" alt="${r.name}"></div>
       <div style="flex:1;">
         <div style="font-family:'Fredoka',sans-serif;font-size:12px;color:var(--am-cream);">${r.name}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#777;">Sq ${r.finalPosition} &#x2022; ${r.alive ? `${r.finalEnergy} HP` : `KO'd R${r.koRound}`} &#x2022; ${r.scores || 0} pts</div>

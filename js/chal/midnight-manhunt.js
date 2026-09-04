@@ -1,5 +1,5 @@
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -13,7 +13,7 @@ function noise(range) { return (Math.random() - 0.5) * range; }
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function getArchetype(name) { return players.find(p => p.name === name)?.archetype || 'floater'; }
 function _slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
-function _av(name, size) { return `<img src="assets/avatars/${_slug(name)}.png" alt="${name}" style="width:${size||22}px;height:${size||22}px;border-radius:3px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`; }
+function _av(name, size) { return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size||22}px;height:${size||22}px;border-radius:3px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`; }
 function _pin(name) {
   return `<span class="mm-pin">${_av(name, 20)}<span class="mm-pin-label">${name}</span></span>`;
 }
@@ -1418,11 +1418,12 @@ function _buildMapSvg(tribes, allPlayers) {
   (allPlayers || []).forEach((p, pi) => {
     const tc = TRIBE_COLORS[p.ti] || '#5c3d2e';
     const slug = _slug(p.name);
+    const slugAv = playerAvatarUrl(p.name);
     const clipId = `mm-clip-p-${pi}`;
     svg += `\n  <defs><clipPath id="${clipId}"><circle r="7"/></clipPath></defs>`;
     svg += `\n  <g id="mm-map-p-${pi}" style="transform:translate(${MAP_START.x}px,${MAP_START.y}px);transition:transform .8s cubic-bezier(.25,1,.5,1),opacity .4s" opacity=".8">
     <circle r="8" fill="${tc}" stroke="#e8d8b8" stroke-width="1.5"/>
-    <image href="assets/avatars/${slug}.png" x="-7" y="-7" width="14" height="14" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>
+    <image href="${slugAv}" x="-7" y="-7" width="14" height="14" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>
     <circle r="7" fill="none" stroke="${tc}" stroke-width="1.5"/>
   </g>`;
   });

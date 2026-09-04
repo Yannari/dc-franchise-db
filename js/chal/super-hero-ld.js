@@ -1,6 +1,6 @@
 // js/chal/super-hero-ld.js — Super Hero-ld superhero challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1775,8 +1776,9 @@ export function rpBuildSuperHeroldTitleCard(ep) {
 
   const badges = Object.entries(sh.heroes).map(([name, hero]) => {
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(name);
     return `<div class="sh-cover-badge" style="border-color:${hero.color};color:${hero.color}">
-      <img src="assets/avatars/${slug}.png" alt="${name}" style="width:44px;height:44px;object-fit:contain" onerror="this.style.display='none'">
+      <img src="${slugAv}" alt="${name}" style="width:44px;height:44px;object-fit:contain" onerror="this.style.display='none'">
       <div class="sh-cover-badge-name">${hero.heroName.split(' ').pop()}</div>
     </div>`;
   }).join('');
@@ -1821,6 +1823,7 @@ export function rpBuildSuperHeroldCostume(ep) {
     const hero = sh.heroes[name];
     const playerEvents = cc.events.filter(e => e.player === name);
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(name);
 
     let html = `<div class="sh-panel sh-panel-impact" style="--burst-color:${hero.color}30;--panel-bg:${hero.color}50;--panel-bg2:${hero.color}30">`;
 
@@ -1834,7 +1837,7 @@ export function rpBuildSuperHeroldCostume(ep) {
         <div class="sh-hero-glow" style="background:radial-gradient(circle at 50% 30%,${hero.glow},transparent 60%)"></div>
         <div class="sh-hero-cape" style="background:${hero.color}"></div>
         <div class="sh-hero-mask" style="color:${hero.color}"></div>
-        <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" alt="${name}">
+        <img src="${slugAv}" onerror="this.style.display='none'" alt="${name}">
       </div>
       <div class="sh-hero-data">
         <div class="sh-hero-name" style="color:${hero.color}">${hero.icon} ${hero.heroName}</div>
@@ -2280,7 +2283,7 @@ export function rpBuildSuperHeroldBoss(ep) {
   // FINAL BLOW
   const fbPlayer = boss.finalBlowPlayer;
   const fbHero = sh.heroes[fbPlayer];
-  const fbSlug = players.find(p => p.name === fbPlayer)?.slug || fbPlayer.toLowerCase().replace(/\s+/g, '-');
+  const fbSrc = playerAvatarUrl(fbPlayer);
   steps.push({ html: `<div class="sh-panel sh-panel-impact" style="text-align:center;--panel-bg:#1a0a2e;--panel-bg2:#0a0518;--burst-color:rgba(239,68,68,0.2)">
     <div class="sh-pow sh-pow-lg" style="color:var(--comic-red)">FINAL BLOW!</div>
     <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.9);margin:12px 0;line-height:1.6;max-width:500px;margin-left:auto;margin-right:auto">${boss.finalBlowText}</div>
@@ -2296,7 +2299,7 @@ export function rpBuildSuperHeroldBoss(ep) {
     <div class="sh-pow sh-pow-lg" style="color:var(--comic-red);position:relative;z-index:2">IMMUNITY!</div>
     <div style="margin:16px 0;position:relative;z-index:2">
       <div style="display:inline-block;border:6px solid ${fbHero?.color || 'var(--comic-yellow)'};border-radius:6px;overflow:hidden;box-shadow:0 0 30px ${fbHero?.glow || 'rgba(234,179,8,0.3)'}">
-        <img src="assets/avatars/${fbSlug}.png" alt="${fbPlayer}" style="width:90px;height:90px;object-fit:contain;display:block" onerror="this.style.display='none'">
+        <img src="${fbSrc}" alt="${fbPlayer}" style="width:90px;height:90px;object-fit:contain;display:block" onerror="this.style.display='none'">
       </div>
     </div>
     <div style="font-family:'Bangers',cursive;font-size:36px;color:${fbHero?.color || '#333'};letter-spacing:4px;position:relative;z-index:2;

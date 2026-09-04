@@ -1,6 +1,6 @@
 // js/chal/crazytown.js — 3:10 to Crazytown Western challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── Text pools ──────────────────────────────────────────────────────────────
@@ -2046,25 +2046,28 @@ function _ctShell(content, ep) {
 
 function _ctPortrait(name, size = 64) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   const outerWidth = size + 20;
   return `<div class="ct-portrait" style="width:${outerWidth}px">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px;" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;border-radius:2px;" onerror="this.style.display='none'">
     <div class="ct-portrait-name" style="max-width:${size}px">${name}</div>
   </div>`;
 }
 
 function _ctSidePortrait(name, size = 32, extraClass = '') {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div class="ct-portrait sm ${extraClass}" style="width:${size + 8}px;flex-shrink:0">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
     <div class="ct-portrait-name">${name}</div>
   </div>`;
 }
 
 function _ctSmallPortrait(name, size = 44) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:4px;overflow:hidden;border:2px solid var(--ct-leather);box-shadow:0 2px 6px rgba(0,0,0,0.4)">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;object-fit:cover;filter:sepia(0.15)" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;object-fit:cover;filter:sepia(0.15)" onerror="this.style.display='none'">
   </div>`;
 }
 
@@ -2162,6 +2165,7 @@ export function rpBuildCrazytownHorseDive(ep) {
     sidebar += `<div class="ct-side-sec">${tr.tribe}</div>`;
     for (const r of tr.reactions) {
       const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
+      const slugAv = playerAvatarUrl(r.name);
       const revealed = revealedNames.has(r.name);
       const icon = !revealed ? '&#10067;' : r.jumped ? '&#9989;' : '&#128020;';
       const scoreHtml = revealed && r.jumped && r.landingPoints != null ? ` ${_ctChalkNum(r.landingPoints)}` : '';
@@ -2263,6 +2267,7 @@ function _ctBuildDiveSidebar(hd, revIdx) {
     sidebar += `<div class="ct-side-sec">${tr.tribe}</div>`;
     for (const r of tr.reactions) {
       const slug = players.find(p => p.name === r.name)?.slug || r.name.toLowerCase().replace(/\s+/g, '-');
+      const slugAv = playerAvatarUrl(r.name);
       const revealed = revealedNames.has(r.name);
       const icon = !revealed ? '&#10067;' : r.jumped ? '&#9989;' : '&#128020;';
       const scoreHtml = revealed && r.jumped && r.landingPoints != null ? ` ${_ctChalkNum(r.landingPoints)}` : '';
@@ -2338,9 +2343,10 @@ export function rpBuildCrazytownStandoff(ep) {
       <div style="position:absolute;inset:0;background:rgba(0,0,0,0.15);pointer-events:none"></div>
       ${roundShooters.map((n, ci) => {
         const sl = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
+        const slAv = playerAvatarUrl(n);
         const tc = _tribeColor(n);
         return `<div style="flex:1;position:relative;overflow:hidden;border-right:1px solid rgba(0,0,0,0.3)">
-          <img src="assets/avatars/${sl}.png" style="width:100%;height:140%;object-fit:cover;object-position:center 20%;filter:contrast(1.2) sepia(0.3);opacity:0.85" onerror="this.style.display='none'">
+          <img src="${slAv}" style="width:100%;height:140%;object-fit:cover;object-position:center 20%;filter:contrast(1.2) sepia(0.3);opacity:0.85" onerror="this.style.display='none'">
           <div style="position:absolute;bottom:0;left:0;right:0;padding:4px 4px;background:linear-gradient(transparent,rgba(0,0,0,0.8));font-size:9px;color:${tc};letter-spacing:1px;text-align:center;font-family:'Rye',serif;text-shadow:0 1px 3px rgba(0,0,0,0.8)">${n.split(' ')[0]}</div>
         </div>`;
       }).join('')}
@@ -2628,7 +2634,8 @@ export function rpBuildCrazytownDramaBreak(ep, breakNum) {
         <div class="ct-ev-text">${evt.text || ''}</div>
         ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
           const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
-          return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" title="${n}" onerror="this.style.display='none'">`;
+          const sAv = playerAvatarUrl(n);
+          return `<img src="${sAv}" width="24" height="24" style="border-radius:2px;border:1px solid var(--ct-leather);filter:sepia(0.2)" title="${n}" onerror="this.style.display='none'">`;
         }).join('')}</div>` : ''}
       </div>
     </div>`;
@@ -2736,8 +2743,9 @@ export function rpBuildCrazytownResults(ep) {
   leaderboard += '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">';
   for (const [name, score] of scores) {
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(name);
     leaderboard += `<div class="ct-portrait" style="width:80px" data-bounty="$${score}">
-      <img src="assets/avatars/${slug}.png" width="64" height="64" style="display:block;border-radius:2px" onerror="this.style.display='none'">
+      <img src="${slugAv}" width="64" height="64" style="display:block;border-radius:2px" onerror="this.style.display='none'">
       <div class="ct-portrait-name" style="font-size:7px;max-width:68px">${name}</div>
     </div>`;
   }

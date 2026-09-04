@@ -1,6 +1,6 @@
 // js/chal/rock-the-dock.js — Rock the Dock: pre-merge tribe challenge (ocean swim + dock relay)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1643,7 +1643,8 @@ function _icon(type) {
 
 function _av(name) {
   const s = slug(name);
-  return `<img class="rtd-card-av" src="assets/avatars/${s}.png" alt="${name}" onerror="this.style.display='none'">`;
+  const sAv = playerAvatarUrl(name);
+  return `<img class="rtd-card-av" src="${sAv}" alt="${name}" onerror="this.style.display='none'">`;
 }
 
 function _badge(type, text) {
@@ -2046,10 +2047,11 @@ export function rpBuildRTDTitleCard(ep) {
   data.tribes.forEach(t => {
     t.tribeMembers.forEach(name => {
       const sl = slug(name);
+      const slAv = playerAvatarUrl(name);
       netPlayers += `<div class="rtd-net-player">
         <div class="rtd-net-knot rtd-net-knot-tl"></div><div class="rtd-net-knot rtd-net-knot-tr"></div>
         <div class="rtd-net-knot rtd-net-knot-bl"></div><div class="rtd-net-knot rtd-net-knot-br"></div>
-        <img class="rtd-net-av" src="assets/avatars/${sl}.png" alt="${name}" style="border-color:${t.tribeColor}80;" onerror="this.style.display='none'">
+        <img class="rtd-net-av" src="${slAv}" alt="${name}" style="border-color:${t.tribeColor}80;" onerror="this.style.display='none'">
         <span class="rtd-net-dot" style="background:${t.tribeColor};"></span>
         <strong>${name}</strong>
       </div>`;
@@ -2059,7 +2061,7 @@ export function rpBuildRTDTitleCard(ep) {
   // Tribe blocks with avatars
   const tribeBlocks = data.tribes.map(t => {
     const avs = t.tribeMembers.map(n =>
-      `<img src="assets/avatars/${slug(n)}.png" alt="${n}" style="border-color:${t.tribeColor}80;" onerror="this.style.display='none'">`
+      `<img src="${playerAvatarUrl(n)}" alt="${n}" style="border-color:${t.tribeColor}80;" onerror="this.style.display='none'">`
     ).join('');
     return `<div class="rtd-tc-tribe-block" style="border-color:${t.tribeColor}20;">
       <div class="rtd-tc-tribe-name" style="color:${t.tribeColor};">${t.tribeName.toUpperCase()}</div>
@@ -2657,7 +2659,7 @@ export function rpBuildRTDResults(ep) {
     steps.push(`<div style="background:rgba(30,25,20,.7);border:1px solid rgba(160,128,80,.08);border-radius:5px;padding:14px 18px;position:relative;border-left:3px solid var(--rtd-rope-dark);">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--rtd-rope-light);margin-bottom:6px;">CONFESSIONAL</div>
       <div style="display:flex;align-items:flex-start;gap:10px;">
-        <img src="assets/avatars/${slug(conf.name)}.png" alt="${conf.name}" style="width:32px;height:32px;border-radius:4px;border:1.5px solid var(--rtd-rope-dark);object-fit:contain;" onerror="this.style.display='none'">
+        <img src="${playerAvatarUrl(conf.name)}" alt="${conf.name}" style="width:32px;height:32px;border-radius:4px;border:1.5px solid var(--rtd-rope-dark);object-fit:contain;" onerror="this.style.display='none'">
         <div style="font-size:13px;line-height:1.6;color:var(--rtd-cream);font-style:italic;">${conf.text}</div>
       </div>
     </div>`);

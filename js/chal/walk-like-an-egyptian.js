@@ -1,6 +1,6 @@
 // js/chal/walk-like-an-egyptian.js — Walk Like an Egyptian (pre-merge tribe challenge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -27,7 +27,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function canScheme(name) {
@@ -2527,17 +2528,19 @@ function _playerChips(names, tribeName) {
   const tc = tribeName ? tribeColor(tribeName) : 'var(--eg-muted)';
   return `<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px">${names.map(n => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px 2px 2px;border-radius:14px;background:rgba(0,0,0,0.15);border:1px solid ${tc}44;font-size:0.78rem;font-family:Cormorant Garamond,serif;color:inherit">
-      <img src="assets/avatars/${sl}.png" alt="${n}" style="width:20px;height:20px;border-radius:50%;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">${n}</span>`;
+      <img src="${slAv}" alt="${n}" style="width:20px;height:20px;border-radius:50%;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">${n}</span>`;
   }).join('')}</div>`;
 }
 
 function _cartouche(name, statusCls = '', tag = '', tribeName = '') {
   const sl = slug(name);
+  const slAv = playerAvatarUrl(name);
   const tc = tribeName ? tribeColor(tribeName) : '';
   const borderStyle = tribeName ? `border-left:3px solid ${tc};padding-left:4px` : '';
   return `<span class="eg-cartouche ${statusCls}" style="${borderStyle}">
-    <span class="eg-seal-frame"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.style.display='none'"></span>
+    <span class="eg-seal-frame"><img src="${slAv}" alt="${name}" onerror="this.style.display='none'"></span>
     <span class="eg-seal-name">${name}</span>${tribeName ? _tribeBadge(tribeName) : ''}${tag ? `<span class="eg-seal-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
   </span>`;
 }
@@ -3600,7 +3603,8 @@ function _sidebarRoster(data) {
     h += `<div class="eg-sb-section"><div style="font-family:Metamorphous,cursive;font-size:0.88rem;font-weight:700;color:var(--eg-terra);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 1px 0 rgba(0,0,0,0.1)">${tName}</div>`;
     tData.members.forEach(n => {
       const sl = slug(n);
-      h += `<div class="eg-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span><span class="eg-sb-tag eg-t-gold">CREW</span></div>`;
+      const slAv = playerAvatarUrl(n);
+      h += `<div class="eg-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span><span class="eg-sb-tag eg-t-gold">CREW</span></div>`;
     });
     h += '</div>';
   });
@@ -3684,15 +3688,16 @@ function _sidebarPyramid(data) {
   h += '<div class="eg-sb-section"><div style="font-family:Cormorant Garamond,serif;font-size:0.75rem;color:rgba(232,213,168,0.4);letter-spacing:1px;margin-bottom:4px">EXPLORERS</div>';
   choices.forEach(c => {
     const sl = slug(c.name);
+    const slAv = playerAvatarUrl(c.name);
     const isRevealed = revealedChoices.includes(c);
     if (isRevealed) {
       const pathTag = c.path === 'over'
         ? '<span class="eg-sb-tag eg-t-orange">OVER</span>'
         : '<span class="eg-sb-tag eg-t-green">UNDER</span>';
       const scoreTag = `<span style="font-family:Cormorant Garamond,serif;font-size:0.72rem;color:rgba(232,213,168,0.4)">${Math.round((c.score || 0) * 10) / 10}</span>`;
-      h += `<div class="eg-sb-row"><img src="assets/avatars/${sl}.png" alt="${c.name}" onerror="this.style.display='none'"><span class="eg-sb-name">${c.name}</span>${scoreTag}${pathTag}</div>`;
+      h += `<div class="eg-sb-row"><img src="${slAv}" alt="${c.name}" onerror="this.style.display='none'"><span class="eg-sb-name">${c.name}</span>${scoreTag}${pathTag}</div>`;
     } else {
-      h += `<div class="eg-sb-row" style="opacity:0.4"><img src="assets/avatars/${sl}.png" alt="${c.name}" onerror="this.style.display='none'" style="filter:brightness(0.5)"><span class="eg-sb-name">${c.name}</span><span class="eg-sb-tag eg-t-grey">???</span></div>`;
+      h += `<div class="eg-sb-row" style="opacity:0.4"><img src="${slAv}" alt="${c.name}" onerror="this.style.display='none'" style="filter:brightness(0.5)"><span class="eg-sb-name">${c.name}</span><span class="eg-sb-tag eg-t-grey">???</span></div>`;
     }
   });
   h += '</div>';
@@ -3736,9 +3741,9 @@ function _sidebarDesert(data) {
     // Navigator
     const leader = data.phase2.leaders?.[tName];
     if (leader && revIdx >= 0) {
-      const navSl = slug(leader.navigator);
+      const navSl = playerAvatarUrl(leader.navigator);
       h += `<div class="eg-sb-row" style="margin-top:2px">
-        <img src="assets/avatars/${navSl}.png" alt="${leader.navigator}" onerror="this.style.display='none'">
+        <img src="${navSl}" alt="${leader.navigator}" onerror="this.style.display='none'">
         <span class="eg-sb-name">${leader.navigator}</span>
         <span style="font-family:Cormorant Garamond,serif;font-size:0.65rem;color:rgba(232,213,168,0.4);letter-spacing:0.5px">NAV</span>
       </div>`;
@@ -3866,7 +3871,8 @@ function _sidebarResults(data) {
     const members = data.tribes[tName]?.members || [];
     members.forEach(n => {
       const sl = slug(n);
-      h += `<div class="eg-sb-row" style="margin-left:4px;border-bottom-color:rgba(194,166,69,0.04)"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span></div>`;
+      const slAv = playerAvatarUrl(n);
+      h += `<div class="eg-sb-row" style="margin-left:4px;border-bottom-color:rgba(194,166,69,0.04)"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="eg-sb-name">${n}</span></div>`;
     });
     h += '</div>';
   });
@@ -3894,8 +3900,9 @@ export function rpBuildEgyptTitleCard(ep) {
     const accentColor = ti === 0 ? 'var(--eg-torch)' : ti === 1 ? 'var(--eg-nile)' : 'var(--eg-scarab)';
     const members = tData.members.map(n => {
       const sl = slug(n);
+      const slAv = playerAvatarUrl(n);
       return `<div class="eg-co-member">
-        <div class="eg-co-avatar"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"></div>
+        <div class="eg-co-avatar"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"></div>
         <div class="eg-co-mname">${n}</div>
       </div>`;
     }).join('');
@@ -4537,11 +4544,12 @@ export function rpBuildEgyptResults(ep) {
   const maxScore = scores.length > 0 ? scores[0][1] : 1;
   scores.forEach(([name, score], i) => {
     const sl = slug(name);
+    const slAv = playerAvatarUrl(name);
     const pct = Math.min(100, Math.max(8, (score / maxScore) * 100));
     const barCls = i === 0 ? 'eg-gold' : i < 3 ? 'eg-orange' : 'eg-green';
     content += `<div class="eg-lb-row ${i === 0 ? 'eg-first' : ''}" style="gap:8px">
       <span class="eg-lb-rank">${i + 1}</span>
-      <img src="assets/avatars/${sl}.png" alt="${name}" style="width:24px;height:24px;border-radius:50%;object-fit:contain;border:1.5px solid ${i === 0 ? 'var(--eg-pharaoh-gold)' : 'rgba(194,166,69,0.25)'}" onerror="this.style.display='none'">
+      <img src="${slAv}" alt="${name}" style="width:24px;height:24px;border-radius:50%;object-fit:contain;border:1.5px solid ${i === 0 ? 'var(--eg-pharaoh-gold)' : 'rgba(194,166,69,0.25)'}" onerror="this.style.display='none'">
       <span class="eg-lb-name">${name}</span>
       <div style="width:60px;flex-shrink:0"><div class="eg-bar-wrap" style="height:6px"><div class="eg-bar ${barCls}" style="width:${pct}%"></div></div></div>
       <span class="eg-lb-score">${Math.round(score * 10) / 10}</span>

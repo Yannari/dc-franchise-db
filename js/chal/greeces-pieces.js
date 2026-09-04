@@ -4,7 +4,7 @@
 // 3 events (Pillar Maze, Wrestling, Hurdles) + Icarus tiebreaker.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, tribeColor } from '../players.js';
+import { pStats, pronouns, updateChalRecord, tribeColor, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1658,7 +1658,7 @@ function _ensureState(key, total) {
 }
 
 function _slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
-function _avatar(name) { return `assets/avatars/${_slug(name)}.png`; }
+function _avatar(name) { return `${playerAvatarUrl(name)}`; }
 function _icon(type) { return `<span class="gp-icon gp-icon-${type}"></span>`; }
 function _pin(name) {
   const tribe = _currentEp ? _tribeForPlayer(name, _currentEp) : null;
@@ -2846,8 +2846,9 @@ function _buildZoneMapSVG(ep, screenKey) {
         const oy = pos.y + Math.sin(angle) * spread - 2;
         const tc = _tribeColorFromEp(_tribeForPlayer(name, ep), ep) || '#8a7850';
         const slug = _slug(name);
+        const slugAv = playerAvatarUrl(name);
         svg += `<circle cx="${ox}" cy="${oy}" r="3.2" fill="#2a2018" stroke="${tc}" stroke-width=".8"/>`;
-        svg += `<image href="assets/avatars/${slug}.png" x="${ox - 2.5}" y="${oy - 2.5}" width="5" height="5" clip-path="circle(2.5px at 2.5px 2.5px)"/>`;
+        svg += `<image href="${slugAv}" x="${ox - 2.5}" y="${oy - 2.5}" width="5" height="5" clip-path="circle(2.5px at 2.5px 2.5px)"/>`;
         svg += `<text x="${ox}" y="${oy + 5.5}" text-anchor="middle" font-family="Cinzel,serif" font-size="2.2" fill="${tc}" font-weight="700">${name.length > 6 ? name.slice(0, 5) + '.' : name}</text>`;
       });
     });

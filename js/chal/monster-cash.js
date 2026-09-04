@@ -4,7 +4,7 @@
 // Pre-merge: tribe immunity. Post-merge: individual immunity, normal tribal.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, seasonConfig, players } from '../core.js';
-import { pStats, pronouns, romanticCompat, updateChalRecord } from '../players.js';
+import { pStats, pronouns, romanticCompat, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 import { _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1395,7 +1395,8 @@ export function _textMonsterCash(ep, ln, sec) {
 
 function _mcPortrait(name, size = 48) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #444;" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #444;" onerror="this.style.display='none'">`;
 }
 
 function _mcSkyline(stateKey) {

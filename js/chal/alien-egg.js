@@ -6,7 +6,7 @@
 // most eggs win immunity. Slimed = eliminated from challenge.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, seasonConfig, players } from '../core.js';
-import { pStats, pronouns, romanticCompat, updateChalRecord } from '../players.js';
+import { pStats, pronouns, romanticCompat, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 import { _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1313,7 +1313,8 @@ export function _textAlienEgg(ep, ln, sec) {
 
 function _aePortrait(name, size = 40) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`;
 }
 
 function _aeShell(content, ep) {

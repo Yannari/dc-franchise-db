@@ -16,7 +16,7 @@
 // Bigger team sits one out each round. Scales to 3+ teams (battle royale).
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -418,8 +418,9 @@ function _paEnsure(key, total) { if (!_paState[key]) _paState[key] = { idx: -1, 
 function _paPortrait(name, cls, color) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const slugAv = playerAvatarUrl(name);
   const init = String(name).slice(0, 2).toUpperCase();
-  return `<span class="pa-pf ${cls || ''}" style="background:${color || '#88a'}"><img src="assets/avatars/${slug}.png" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
+  return `<span class="pa-pf ${cls || ''}" style="background:${color || '#88a'}"><img src="${slugAv}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
 }
 function _paActor(name, color, badge) {
   return `<span class="pa-actor">${_paPortrait(name, 'lg', color)}${badge ? `<span class="pa-actor-badge">${badge}</span>` : ''}</span>`;

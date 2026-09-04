@@ -1,6 +1,6 @@
 // js/chal/princess-pride.js — The Princess Pride fairy tale challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -2232,7 +2233,7 @@ export function rpBuildPrincessPrideTitleCard(ep) {
   const allCover = [pp.royalName, ...pp.classAssignments.map(ca => ca.name)];
   const badges = allCover.map(name => {
     return `<div class="pp-cover-badge" style="border-color:var(--royal-purple)">
-      <img src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:40px;height:40px;object-fit:contain" onerror="this.style.display='none'">
+      <img src="${playerAvatarUrl(name)}" alt="${name}" style="width:40px;height:40px;object-fit:contain" onerror="this.style.display='none'">
       <div class="pp-cover-badge-name">${name.split(' ').pop()}</div>
     </div>`;
   }).join('');
@@ -2269,7 +2270,7 @@ export function rpBuildPrincessPrideCeremony(ep) {
     <div class="pp-narration">${pp.ceremonyText}</div>
     <div class="pp-hero-card" style="border:2px solid var(--royal-gold);background:rgba(234,179,8,0.1)">
       <div class="pp-hero-photo" style="border-color:var(--royal-gold)">
-        <img src="assets/avatars/${slug(pp.royalName)}.png" onerror="this.style.display='none'" alt="${pp.royalName}">
+        <img src="${playerAvatarUrl(pp.royalName)}" onerror="this.style.display='none'" alt="${pp.royalName}">
       </div>
       <div>
         <div class="pp-hero-name" style="color:var(--royal-gold)">${ROYAL.icon} ${pp.royalTitle} ${pp.royalName}</div>
@@ -2285,7 +2286,7 @@ export function rpBuildPrincessPrideCeremony(ep) {
     steps.push(`<div class="pp-panel">
       <div class="pp-hero-card">
         <div class="pp-hero-photo" style="border-color:${cls?.color || '#888'}">
-          <img src="assets/avatars/${slug(ca.name)}.png" onerror="this.style.display='none'" alt="${ca.name}">
+          <img src="${playerAvatarUrl(ca.name)}" onerror="this.style.display='none'" alt="${ca.name}">
         </div>
         <div>
           <div class="pp-hero-name" style="color:${cls?.color || '#333'}">${ca.name}</div>

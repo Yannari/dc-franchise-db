@@ -1,7 +1,7 @@
 // js/chal/finders-creepers.js — Finders Creepers: a found-footage night scavenger hunt (pre-merge tribe challenge)
 // Signature mechanic: FEWEST members lost wins. The mutant spider + booby traps WEB members out of the hunt.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -710,7 +710,7 @@ export function fcrRevealAll(screenKey, totalSteps) {
 // ── AVATARS ──
 function _av(name, cls = '') {
   const initial = (name || '?').charAt(0).toUpperCase();
-  return `<span class="fc-iav${cls ? ' ' + cls : ''}"><img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>${initial}</b></span>`;
+  return `<span class="fc-iav${cls ? ' ' + cls : ''}"><img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><b>${initial}</b></span>`;
 }
 
 function _badgeClass(cls) {

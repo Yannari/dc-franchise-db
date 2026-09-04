@@ -1,6 +1,6 @@
 // js/chal/hawaiian-punch.js — Hawaiian Punch finale VP builders (no simulation)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns } from '../players.js';
+import { pStats, pronouns, playerAvatarUrl } from '../players.js';
 import { getBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -9,7 +9,8 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 function portrait(name, size = 42) {
   if (!name || typeof name !== 'string') return '';
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function pr(name) { return pronouns(name); }

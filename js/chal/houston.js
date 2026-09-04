@@ -1,6 +1,6 @@
 // js/chal/houston.js — Houston, We Have a Problem (post-merge space station challenge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1986,8 +1987,9 @@ function _css() {
 // ── PLAYER HELMET BUILDER ──
 function _helmet(name, statusCls = '', tag = '') {
   const sl = slug(name);
+  const slAv = playerAvatarUrl(name);
   return `<span class="so-helmet ${statusCls}">
-    <span class="so-helmet-visor"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.style.display='none'"></span>
+    <span class="so-helmet-visor"><img src="${slAv}" alt="${name}" onerror="this.style.display='none'"></span>
     <span class="so-helmet-name">${name}</span>${tag ? `<span class="so-helmet-tag ${tag.cls || ''}">${tag.text}</span>` : ''}
   </span>`;
 }
@@ -2076,7 +2078,8 @@ function _sidebarRoster(data, ps, names) {
   let h = '<div class="so-sb-title">MISSION ROSTER</div>';
   names.forEach(n => {
     const sl = slug(n);
-    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag so-cyan">CREW</span></div>`;
+    const slAv = playerAvatarUrl(n);
+    h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag so-cyan">CREW</span></div>`;
   });
   h += `<div class="so-sb-section"><div class="so-sb-title">MISSION BRIEF</div><div style="font-size:0.72rem;color:#8a9bae;line-height:1.4">4 Zones. Survive each to advance. Last one standing wins immunity.</div></div>`;
   return h;
@@ -2090,12 +2093,13 @@ function _sidebarZeroG(data, ps, names) {
   const adaptData = data.zone1.adaptation || [];
   names.forEach((n, i) => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     const revealed = i <= revIdx;
     const ad = adaptData.find(a => a.name === n);
     if (revealed && ad) {
       const pct = Math.round(ad.score * 10);
       const barCls = ad.score >= 7 ? 'so-cyan' : ad.score >= 4 ? 'so-orange' : 'so-red';
-      h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${ad.score >= 7 ? 'so-cyan' : ad.score >= 4 ? 'so-orange' : 'so-red'}">${ad.attempts} SRCH</span></div>`;
+      h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${ad.score >= 7 ? 'so-cyan' : ad.score >= 4 ? 'so-orange' : 'so-red'}">${ad.attempts} SRCH</span></div>`;
       h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar ${barCls}" style="width:${pct}%"></div></div>`;
       // Components found
       const searchData = data.zone1.searches?.find(s => s.name === n);
@@ -2106,7 +2110,7 @@ function _sidebarZeroG(data, ps, names) {
         }
       }
     } else {
-      h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag so-grey">???</span></div>`;
+      h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag so-grey">???</span></div>`;
     }
   });
   return h;
@@ -2134,6 +2138,7 @@ function _sidebarRedAlert(data, ps, names) {
   // Show repair progress gated by round
   names.forEach(n => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     const elimData = data.zone2.eliminations?.find(e => e.name === n);
     const launchData = data.zone2.launches?.find(l => l.name === n);
     let progress = 0;
@@ -2154,7 +2159,7 @@ function _sidebarRedAlert(data, ps, names) {
     }
 
     const barCls = progress >= 100 ? 'so-green' : progress >= 60 ? 'so-cyan' : progress >= 30 ? 'so-orange' : 'so-red';
-    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${statusCls}">${status}</span></div>`;
+    h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${statusCls}">${status}</span></div>`;
     h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar ${barCls}" style="width:${progress}%"></div></div>`;
   });
   h += '</div>';
@@ -2188,6 +2193,7 @@ function _sidebarReEntry(data, ps, names) {
   const launched = names.filter(n => !data.zone2.eliminations?.some(e => e.name === n));
   launched.forEach(n => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     let status = 'IN POD';
     let statusCls = 'so-cyan';
 
@@ -2205,7 +2211,7 @@ function _sidebarReEntry(data, ps, names) {
 
     // Endurance bar
     const endurance = Math.min(100, stagesRevealed > 0 && statusCls !== 'so-slime' ? (stagesRevealed / totalStages) * 100 : 0);
-    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${statusCls}">${status}</span></div>`;
+    h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span><span class="so-sb-tag ${statusCls}">${status}</span></div>`;
     if (statusCls !== 'so-slime') {
       h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar so-orange" style="width:${endurance}%"></div></div>`;
     }
@@ -2218,7 +2224,8 @@ function _sidebarReEntry(data, ps, names) {
     h += '<div class="so-sb-section"><div class="so-sb-title">BURNOUT</div>';
     burnouts.forEach(e => {
       const sl = slug(e.name);
-      h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${e.name}" onerror="this.style.display='none'"><span class="so-sb-name" style="color:#7CC142">${e.name}</span><span class="so-sb-tag so-slime">${e.stage}</span></div>`;
+      const slAv = playerAvatarUrl(e.name);
+      h += `<div class="so-sb-row"><img src="${slAv}" alt="${e.name}" onerror="this.style.display='none'"><span class="so-sb-name" style="color:#7CC142">${e.name}</span><span class="so-sb-tag so-slime">${e.stage}</span></div>`;
     });
     h += '</div>';
   }
@@ -2247,6 +2254,7 @@ function _sidebarSprint(data, ps, names) {
   const sprinters = names.filter(n => ps[n] && !ps[n].eliminatedAt);
   sprinters.forEach(n => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     // Calculate obstacle position from revealed rounds
     let obstaclePos = 0;
     for (let r = 0; r < roundsRevealed && r < rounds.length; r++) {
@@ -2257,7 +2265,7 @@ function _sidebarSprint(data, ps, names) {
 
     const isWinner = roundsRevealed >= rounds.length && data.sprint.winner === n;
     const tag = isWinner ? '<span class="so-sb-tag so-gold">WINNER</span>' : `<span class="so-sb-tag so-cyan">${obstaclePos}/${obstacles.length}</span>`;
-    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span>${tag}</div>`;
+    h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span>${tag}</div>`;
     h += `<div class="so-bar-wrap" style="margin-left:27px"><div class="so-bar so-cyan" style="width:${(obstaclePos / obstacles.length) * 100}%"></div></div>`;
   });
   h += '</div>';
@@ -2272,12 +2280,13 @@ function _sidebarWinner(data, ps, names) {
   const ordered = [winner, ...names.filter(n => n !== winner && !rankings.includes(n)), ...rankings];
   ordered.forEach((n, i) => {
     const sl = slug(n);
+    const slAv = playerAvatarUrl(n);
     let tag = '';
     if (n === winner) tag = '<span class="so-sb-tag so-gold">IMMUNE</span>';
     else if (ps[n]?.eliminatedAt === 'zone2') tag = '<span class="so-sb-tag so-red">STRANDED</span>';
     else if (ps[n]?.eliminatedAt === 'reentry') tag = '<span class="so-sb-tag so-slime">BURNOUT</span>';
     else tag = `<span class="so-sb-tag so-cyan">#${i + 1}</span>`;
-    h += `<div class="so-sb-row"><img src="assets/avatars/${sl}.png" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span>${tag}</div>`;
+    h += `<div class="so-sb-row"><img src="${slAv}" alt="${n}" onerror="this.style.display='none'"><span class="so-sb-name">${n}</span>${tag}</div>`;
   });
   return h;
 }
@@ -2694,14 +2703,14 @@ export function rpBuildHoustonWinner(ep) {
   }).join('');
 
   // Winner highlight
-  const winnerVisor = slug(winner);
+  const winnerVisor = playerAvatarUrl(winner);
 
   const content = `
     <div class="so-hatch-burst" style="text-align:center;margin:12px 0">
       <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#8a9bae;letter-spacing:3px;margin-bottom:6px">EXIT HATCH BREACHED</div>
       <div class="so-h1" style="font-size:1.8rem;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.6),0 0 60px rgba(255,215,0,0.3)">IMMUNITY WINNER</div>
       <div style="margin:14px auto;width:90px;height:90px;border-radius:50%;border:4px solid #ffd700;overflow:hidden;position:relative;box-shadow:0 0 30px rgba(255,215,0,0.4)">
-        <img src="assets/avatars/${winnerVisor}.png" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
+        <img src="${winnerVisor}" alt="${winner}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">
         <div style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(255,215,0,0.2),transparent 50%),repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,215,0,0.05) 2px,rgba(255,215,0,0.05) 4px);pointer-events:none"></div>
       </div>
       <div style="font-family:'Exo 2',sans-serif;font-size:1.3rem;font-weight:700;color:#ffd700;margin:6px 0">${winner}</div>

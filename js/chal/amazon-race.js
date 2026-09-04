@@ -1,6 +1,6 @@
 // js/chal/amazon-race.js — The Am-AH-Zon Race: pre-merge tribe challenge (jungle trek, 4 phases)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -16,7 +16,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -2571,7 +2572,7 @@ function _badgeCls(cls) {
 
 function _av(name, size = 36) {
   const tc = _playerTribeColor(name);
-  return `<img class="az-av" src="assets/avatars/${slug(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-color:${tc};" onerror="this.style.display='none'">`;
+  return `<img class="az-av" src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-color:${tc};" onerror="this.style.display='none'">`;
 }
 
 function _playerTribeColor(name) {
@@ -2670,7 +2671,7 @@ function _buildPlayerRoster(members, revealedOutcomes, tc) {
   let html = `<div class="az-sb-roster">`;
   members.forEach(name => {
     const res = revealedOutcomes[name];
-    const avSrc = `assets/avatars/${slug(name)}.png`;
+    const avSrc = `${playerAvatarUrl(name)}`;
     const oc = res ? _outcomeColor(res.outcome) : '';
     const borderCol = res ? oc : 'rgba(232,240,232,.12)';
     html += `<div class="az-sb-row">
@@ -3316,7 +3317,7 @@ export function rpBuildAZTitleCard(ep) {
     const tc = tribeColor(_tn(t));
     const tn = _tn(t);
     const avs = t.members.map(name =>
-      `<img class="az-av" src="assets/avatars/${slug(name)}.png" style="width:30px;height:30px;border-color:${tc};" onerror="this.style.display='none'">`
+      `<img class="az-av" src="${playerAvatarUrl(name)}" style="width:30px;height:30px;border-color:${tc};" onerror="this.style.display='none'">`
     ).join('');
     return `<div class="az-title-tribe">
       <div class="az-title-tribe-name" style="color:${tc};border-bottom:2px solid ${tc}40;">${tn.toUpperCase()}</div>
@@ -3874,7 +3875,7 @@ export function rpBuildAZResults(ep) {
     const placeColor = i === 0 ? 'var(--az-gold)' : i === az.tribesSorted.length - 1 ? 'var(--az-danger)' : 'var(--az-leaf)';
 
     const memberAvatars = tribe.members.map(name =>
-      `<img class="az-av" src="assets/avatars/${slug(name)}.png" style="width:24px;height:24px;border-color:${tc};" onerror="this.style.display='none'">`
+      `<img class="az-av" src="${playerAvatarUrl(name)}" style="width:24px;height:24px;border-color:${tc};" onerror="this.style.display='none'">`
     ).join('');
 
     const fragStr = tribe.ruins.allFragments ? `<span style="color:var(--az-gold);font-size:9px;letter-spacing:1px;">ALL FRAGMENTS</span>` : `<span style="color:var(--az-amber);font-size:9px;">${tribe.ruins.fragmentsFound}/4</span>`;

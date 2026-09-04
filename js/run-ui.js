@@ -6,6 +6,7 @@
 // module FUNCTIONS on window, not module data. `DEMOS` is an array and
 // `DEMO_LABELS` an object, so reading them off window gave undefined and the
 // ratings section rendered its curve above an empty grid.
+import { playerAvatarUrl } from './players.js';
 import { DEMOS, DEMO_LABELS } from './ratings.js';
 // Same reason: ADVANTAGES is an array and ADV_SOURCE_LABELS an object, so
 // reading them off window gives undefined and the coach list renders empty.
@@ -211,11 +212,11 @@ function _hubEsc(value) {
 
 function _hubPortrait(name, cast = players, eliminated = false, isCoach = false) {
   const player = (cast || []).find(p => p.name === name);
-  const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const src = playerAvatarUrl(player || name);
   // A coach is on this tribe without being one of its contestants — shown, but
   // never counted among the players still competing for the placement.
   return `<span class="hub-player${eliminated ? ' eliminated' : ''}${isCoach ? ' hub-player-coach' : ''}" title="${_hubEsc(name)}${isCoach ? ' — coach' : ''}">
-    <span class="hub-player-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>
+    <span class="hub-player-face"><img src="${_hubEsc(src)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>
     <span class="hub-player-name">${_hubEsc(name)}${isCoach ? '<b style="display:block;font-size:7px;letter-spacing:1px;opacity:.75">COACH</b>' : ''}</span>
   </span>`;
 }
@@ -223,8 +224,8 @@ function _hubPortrait(name, cast = players, eliminated = false, isCoach = false)
 function _hubRailFace(name, cast = players) {
   if (!name) return '<span class="hub-rail-empty">•</span>';
   const player = (cast || []).find(p => p.name === name);
-  const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `<span class="hub-rail-face"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
+  const src = playerAvatarUrl(player || name);
+  return `<span class="hub-rail-face"><img src="${_hubEsc(src)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
 }
 
 /**
@@ -1725,10 +1726,11 @@ export function updateMoleUI() {
       container.innerHTML = players.map(p => {
         const sel = selected.includes(p.name);
         const slug = p.slug || p.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const slugAv = playerAvatarUrl(p.name);
         const init = (p.name || '?')[0].toUpperCase();
         return `<div data-member="${p.name}" data-selected="${sel}" onclick="toggleMolePlayer('${p.name.replace(/'/g,"\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
           <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#f85149' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color 0.15s">
-            <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <img src="${slugAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
             <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
           </div>
           <span style="font-size:9px;color:${sel ? '#f85149' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s">${p.name}</span>
@@ -1872,11 +1874,12 @@ export function updateSeasonTwistUI(id) {
     host.innerHTML = players.map(p => {
       const sel = chosen === p.name;
       const slug = p.slug || p.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const slugAv = playerAvatarUrl(p.name);
       const init = (p.name || '?')[0].toUpperCase();
       return `<div onclick="pickSeasonTwistPlayer('${_q(opt.key)}','${_q(c.id)}','${_q(p.name)}')"
         style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
         <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? accent : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color .15s">
-          <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter .15s,opacity .15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <img src="${slugAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter .15s,opacity .15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
           <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
         </div>
         <span style="font-size:9px;color:${sel ? accent : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}${
@@ -2021,10 +2024,11 @@ export function updateTraitorPickerUI() {
   container.innerHTML = players.map(p => {
     const sel = selected.includes(p.name);
     const slug = p.slug || p.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const slugAv = playerAvatarUrl(p.name);
     const init = (p.name || '?')[0].toUpperCase();
     return `<div data-member="${p.name}" data-selected="${sel}" onclick="toggleTraitorPlayer('${p.name.replace(/'/g,"\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
       <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#8f1a26' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color 0.15s">
-        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <img src="${slugAv}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
         <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
       </div>
       <span style="font-size:9px;color:${sel ? '#c0392b' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s">${p.name}</span>
@@ -4397,8 +4401,8 @@ function _ratingsCurve(weeks) {
 
 function _overviewPortrait(name, extraClass = '') {
   const player = players.find(candidate => candidate.name === name);
-  const slug = player?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return `<span class="overview-face ${extraClass}" title="${_hubEsc(name)}"><img src="assets/avatars/${_hubEsc(slug)}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
+  const src = playerAvatarUrl(player || name);
+  return `<span class="overview-face ${extraClass}" title="${_hubEsc(name)}"><img src="${_hubEsc(src)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${_hubEsc(String(name)[0] || '?')}</span></span>`;
 }
 
 function renderMidseasonOverview() {

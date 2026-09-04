@@ -364,10 +364,32 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
 </script>
 
 <script>
+
+/* ── Portraits ──────────────────────────────────────────────────────────
+   These awards belong to a SEASON, so they show the portrait that season
+   used. Rebuilding the path from a slug drew whatever file is named after the
+   person today, which stopped being the right answer the moment somebody
+   could have more than one. A season written before portraits existed has no
+   avatarFile and falls back to the old convention. */
+let _faceBySlug = new Map();
+function indexSeasonFaces(season) {
+  _faceBySlug = new Map();
+  const rows = [...(season?.placements || []), ...(season?.cast || [])];
+  for (const r of rows) {
+    const f = r?.avatarFile;
+    if (!f || typeof f !== 'string' || /[\/:]/.test(f) || f.includes('..')) continue;
+    if (r.playerSlug) _faceBySlug.set(String(r.playerSlug).toLowerCase(), f);
+    if (r.name) _faceBySlug.set(String(r.name).toLowerCase(), f);
+  }
+}
+function faceSrc(slugOrName, fallbackSlug) {
+  const f = _faceBySlug.get(String(slugOrName || '').toLowerCase());
+  return f ? `assets/avatars/${f}` : `assets/avatars/${fallbackSlug ?? slugOrName}.png`;
+}
 function avatar(slug, size) {
   if (!slug) return '';
   const s = size || 32;
-  return `<img class="award-player-avatar" style="width:${s}px;height:${s}px" src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">`;
+  return `<img class="award-player-avatar" style="width:${s}px;height:${s}px" src="${faceSrc(slug)}" alt="" onerror="this.style.display='none'">`;
 }
 
 function awardItem(icon, label, name, slug, detail) {
@@ -470,6 +492,7 @@ function awardItem(icon, label, name, slug, detail) {
       const showShort = (SHOWS[fmt] || {}).short || '';
       const awards = season.awards || {};
       const w = season.winner || {};
+      indexSeasonFaces(season);   // this card's faces come from THIS season
       const delay = (idx * 0.08).toFixed(2);
       /* Link by seasonId: both shows have a season 1, so a bare number sent
          every Big Brother card to Total Drama's awards. A record written before

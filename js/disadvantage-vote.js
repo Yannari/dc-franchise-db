@@ -13,7 +13,7 @@
 //   rpBuildDisadvantageTrial(ep)   — VP screen (+ disReveal handlers)
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from './core.js';
-import { pStats, pronouns } from './players.js';
+import { pStats, pronouns, playerAvatarUrl } from './players.js';
 import { addBond, getBond, getPerceivedBond } from './bonds.js';
 
 function archOf(n) { return players.find(p => p.name === n)?.archetype || 'floater'; }
@@ -326,7 +326,7 @@ export function applyDisadvantagePenalty(ep) {
 // ══════════════════════════════════════════════════════════════════════
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 24) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #f0c674;background:#1a130a" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #f0c674;background:#1a130a" onerror="this.style.visibility='hidden'">`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 

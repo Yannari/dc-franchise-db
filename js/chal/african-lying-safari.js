@@ -1,6 +1,6 @@
 // js/chal/african-lying-safari.js — African Lying Safari: post-merge hunt challenge (TDWT S3E21)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1757,7 +1757,8 @@ function _icon(type) {
 
 function _av(name, size = '') {
   const sl = slug(name);
-  return `<span class="als-av ${size}" data-player="${sl}"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}'"></span>`;
+  const slAv = playerAvatarUrl(name);
+  return `<span class="als-av ${size}" data-player="${sl}"><img src="${slAv}" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}'"></span>`;
 }
 
 function _chefAv(size = '') {
@@ -2375,15 +2376,17 @@ export function rpBuildSafariColdOpen(ep) {
     const x = 50 + 42 * Math.cos(rad);
     const y = 50 + 42 * Math.sin(rad);
     const sl = slug(name);
-    return `<div class="als-orbit-player" data-player="${sl}" style="left:${x}%;top:${y}%;transform:translate(-50%,-50%);"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}'"></div>`;
+    const slAv = playerAvatarUrl(name);
+    return `<div class="als-orbit-player" data-player="${sl}" style="left:${x}%;top:${y}%;transform:translate(-50%,-50%);"><img src="${slAv}" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}'"></div>`;
   }).join('');
 
   const rosterCards = active.slice(0, 10).map(name => {
     const sl = slug(name);
+    const slAv = playerAvatarUrl(name);
     const p = players.find(pl => pl.name === name);
     const arch = p?.archetype || 'unknown';
     return `<div class="als-rs-card">
-      <div class="av"><img src="assets/avatars/${sl}.png" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}'"></div>
+      <div class="av"><img src="${slAv}" alt="${name}" onerror="this.outerHTML='${name.split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)}'"></div>
       <div class="nm">${name.split(' ')[0]}</div>
       <div class="arch">${arch}</div>
     </div>`;

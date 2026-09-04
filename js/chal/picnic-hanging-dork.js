@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,9 +15,9 @@ function noise(n) { return (Math.random() - 0.5) * n * 2; }
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 function popDelta(name, d) { if (!gs.popularity) gs.popularity = {}; gs.popularity[name] = (gs.popularity[name] || 0) + d; }
 function portrait(name, size = 24) {
-  const p = players.find(x => x.name === name);
-  if (!p?.slug) return `<span class="hd-portrait-blank" style="width:${size}px;height:${size}px;background:var(--hd-dust);border-radius:50%;display:inline-block;vertical-align:middle"></span>`;
-  return `<img src="assets/avatars/${p.slug}.png" class="hd-portrait" style="width:${size}px;height:${size}px;border-radius:50%;vertical-align:middle;object-fit:cover" onerror="this.style.display='none'" alt="${name}">`;
+  const src = playerAvatarUrl(name);
+  if (!src) return `<span class="hd-portrait-blank" style="width:${size}px;height:${size}px;background:var(--hd-dust);border-radius:50%;display:inline-block;vertical-align:middle"></span>`;
+  return `<img src="${src}" class="hd-portrait" style="width:${size}px;height:${size}px;border-radius:50%;vertical-align:middle;object-fit:cover" onerror="this.style.display='none'" alt="${name}">`;
 }
 function aAn(word) { return /^[aeiou]/i.test(word) ? 'an' : 'a'; }
 
@@ -2121,8 +2121,8 @@ function _hdUpdateCanyon(screenKey) {
   if (meta.type === 'jump' && meta.player) {
     // Player drops into canyon
     jumper.className = 'hd-canyon-jumper hd-cj-active hd-cj-drop';
-    const p = players.find(x => x.name === meta.player);
-    if (icon && p?.slug) icon.innerHTML = `<img src="assets/avatars/${p.slug}.png" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`;
+    const src = playerAvatarUrl(meta.player);
+    if (icon && src) icon.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`;
     else if (icon) icon.innerHTML = '';
     if (nameEl) nameEl.textContent = meta.player.split(' ')[0];
     if (grab) grab.style.opacity = '0';
@@ -3699,8 +3699,9 @@ export function rpBuildHDEmuRace(ep) {
     (hd.players || []).forEach((p, idx) => {
       const yOff = 10 + idx * 22;
       const slug = players.find(x => x.name === p.name)?.slug;
+      const slugAv = playerAvatarUrl(p.name);
       const imgTag = slug
-        ? `<img src="assets/avatars/${slug}.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover" onerror="this.outerHTML='${p.name.substring(0,2)}'" alt="${p.name}">`
+        ? `<img src="${slugAv}" style="width:18px;height:18px;border-radius:50%;object-fit:cover" onerror="this.outerHTML='${p.name.substring(0,2)}'" alt="${p.name}">`
         : p.name.substring(0, 2);
       cards += `<div class="hd-track-runner" id="hd-runner-${idx}" style="left:3%;top:${yOff}px;background:var(--hd-amber);width:20px;height:20px;font-size:7px;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center">
         ${imgTag}

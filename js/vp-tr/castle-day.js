@@ -3009,16 +3009,31 @@ const RECALL_LEAD_TODAY_TOPIC = [
   'Back to {topic} so soon — the same day has not even finished.',
   'It is {topic} again — the second time since breakfast.',
   '{topic} once more, and it has not even been a full day.',
-  'The same subject, {topic}, come round again the same afternoon.',
+  'The same subject, {topic}, comes round again the same afternoon.',
   'Back on {topic} within the hour, sooner than intended.',
   '{topic} again, and the first go had barely finished cooling.',
 ];
 
+// THE FALLBACK LEAD, FOR A SCENE WITH NO RECORDED TOPIC — and it may not
+// simply announce that a history exists, because the TAIL already does.
+//
+// The two halves of this card are printed together, and the old pool produced
+// pairs like:
+//
+//     "They have discussed this before. The earlier discussion happened on
+//      day 1."
+//     "The conversation has a history. The earlier discussion happened on
+//      day 1."
+//
+// Two sentences, one fact, and neither of them says anything about what the
+// return is like. The tail owns WHEN. The lead's job is what it costs to be
+// back here, which is the half a viewer cannot get from a day number.
 const RECALL_LEAD_RECORDED = [
-  'This continues an earlier conversation.',
-  'They have discussed this before.',
-  'This is not the first time the subject has come up.',
-  'The conversation has a history.',
+  'Neither of them comes into this fresh.',
+  'It is not a new argument, and it does not sound like one.',
+  'They pick it up exactly where they dropped it, which is not a comfortable place.',
+  'Whatever this was, it did not finish the first time.',
+  'They have been here before, and it went no better then.',
 ];
 
 /**

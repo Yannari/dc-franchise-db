@@ -13,7 +13,7 @@
 // Rich social events fire BETWEEN every hot seat.
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 import { romanticCompat } from '../players.js';
@@ -434,8 +434,9 @@ const _statCls = { confident: 'st-pass', hesitant: 'st-slow', refused: 'st-fail'
 function _tdtPortrait(name, color, cls) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const slugAv = playerAvatarUrl(name);
   const init = String(name).slice(0, 2).toUpperCase();
-  return `<span class="tdt-pf ${cls}" style="background:${color}"><img src="assets/avatars/${slug}.png" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
+  return `<span class="tdt-pf ${cls}" style="background:${color}"><img src="${slugAv}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><b>${init}</b></span>`;
 }
 
 // Cumulative race state up to a reveal index (drives map + sidebar).

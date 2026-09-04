@@ -19,6 +19,19 @@ function _slug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+/**
+ * The portrait this appearance used.
+ *
+ * A season document is read by the wiki and the player profile, neither of
+ * which opens a simulator save — so the choice is denormalised onto every row
+ * that names a person. Without it those pages can only guess from the slug,
+ * which is how a career of five seasons showed the same face five times.
+ */
+function _portraitOf(name) {
+  const p = (players || []).find(x => x && x.name === name);
+  return { avatarId: p?.avatarId || null, avatarFile: p?.avatarFile || '' };
+}
+
 function _clean(val, fallback = '') {
   return (val && val !== '[AI_FILL]') ? val : fallback;
 }
@@ -205,6 +218,14 @@ export function _rebuildByShow(player) {
   // single entry in it; counting that array would file a player who did both
   // as a one-season rookie. `seasons` keeps its shape for those readers.
   player.totalSeasons = (player.seasonDetails || []).length;
+  // One face for the list pages, DERIVED and never authoritative: it is
+  // recomputed from the newest appearance every time, and it never writes back
+  // down onto a season row. A career-level portrait that overwrote the season
+  // rows would erase the point of recording them.
+  const newest = [...(player.seasonDetails || [])]
+    .sort((a, b) => (b.season || 0) - (a.season || 0))
+    .find(d => d && d.avatarFile);
+  player.latestAvatarFile = newest?.avatarFile || '';
   return player;
 }
 
@@ -937,6 +958,7 @@ function _extractPlayerData() {
 
     playerData[name] = {
       playerSlug: _slug(name),
+      ..._portraitOf(name),
       placement: placementInfo.placement,
       phase: placementInfo.phase,
       tribe,
@@ -1398,6 +1420,7 @@ export function extractSeasonRawStats() {
   const finalistData = (finalists || []).map(name => ({
     name,
     playerSlug: _slug(name),
+    ..._portraitOf(name),
     placement: placements[name]?.placement ?? null,
     juryVotes: ftcVotes?.[name] ?? 0
   }));
@@ -2117,6 +2140,8 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
     if (!player.seasonDetails) player.seasonDetails = [];
     player.seasonDetails.push(_tagSeasonDetail({
       season: seasonNum,
+      avatarId: pd.avatarId || null,
+      avatarFile: pd.avatarFile || '',
       placement: pd.placement,
       status: pd.phase,
       tribe: pd.tribe || '',
@@ -3805,6 +3830,8 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
 
     player.seasonDetails.push(_tagSeasonDetail({
       season: seasonNum,
+      avatarId: entry.avatarId || null,
+      avatarFile: entry.avatarFile || '',
       placement: entry.placement,
       status: entry.status,
       challengeWins: compWins,

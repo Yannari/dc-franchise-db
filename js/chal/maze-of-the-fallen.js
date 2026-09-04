@@ -12,7 +12,7 @@
 // knows the answer can BROADCAST THE WRONG WAY to sink a rival (Zaid misleading Isabel). Meanwhile the PIT
 // runs its own parallel arc: reconciliations, comfort, gloating, and eavesdropped intel that feeds the vote.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -663,7 +663,7 @@ export function simulateMazeOfTheFallen(ep) {
 // VP — THE AERIAL HEDGE MAZE (moonlit top-down map, lantern crossroads, flip-flashcards, the pit)
 // ══════════════════════════════════════════════════════════════════════
 function portrait(name, size = 26) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.visibility='hidden'">`;
 }
 const MTF_PODCOLORS = ['#5aa9ff', '#ff6a6a', '#7affb0', '#ffd35a', '#c78aff', '#ff9f5a'];
 function podColor(id) { return MTF_PODCOLORS[(id || 0) % MTF_PODCOLORS.length]; }
@@ -840,9 +840,9 @@ function _mtfMapHTML(r, snp, label) {
     const cls = m.status === 'done' ? 'done' : '';
     const col = podColor(m.pod ?? x.pod);
     return `<div class="mtf-tok ${cls}" id="mtf-tok-${slugOf(n)}" style="left:${p.left}%;top:${p.top}%">
-      <span class="lbl">${n}</span><img src="assets/avatars/${slugOf(n)}.png" style="border-color:${cls ? '' : col}" onerror="this.style.visibility='hidden'"></div>`;
+      <span class="lbl">${n}</span><img src="${playerAvatarUrl(n)}" style="border-color:${cls ? '' : col}" onerror="this.style.visibility='hidden'"></div>`;
   }).join('');
-  const pitImgs = pit.map((x, i) => `<img id="mtf-pit-${slugOf(x.name)}" src="assets/avatars/${slugOf(x.name)}.png" style="left:${10 + (i % 9) * 10}%;transform:rotate(${(x.name.length % 2 ? -1 : 1) * 7}deg)" onerror="this.style.visibility='hidden'">`).join('');
+  const pitImgs = pit.map((x, i) => `<img id="mtf-pit-${slugOf(x.name)}" src="${playerAvatarUrl(x.name)}" style="left:${10 + (i % 9) * 10}%;transform:rotate(${(x.name.length % 2 ? -1 : 1) * 7}deg)" onerror="this.style.visibility='hidden'">`).join('');
   const stillIn = r.roster.filter(x => (snp[x.name]?.status || 'maze') === 'maze').length;
   return `<div class="mtf-moon"></div><div class="mtf-fog"></div><div class="mtf-flies">${mtfFlies()}</div>
     ${mtfHedgesSVG()}
@@ -860,7 +860,7 @@ function _mtfSidebar(r, snp) {
     const col = podColor(m.pod ?? x.pod);
     const done = m.status === 'done';
     return `<div class="mtf-chip ${m.status === 'pit' ? 'out' : ''}">
-      <img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.visibility='hidden'">
+      <img src="${playerAvatarUrl(n)}" onerror="this.style.visibility='hidden'">
       <div class="mtf-cn"><div class="nn"><span class="mtf-dot" style="background:${done ? 'var(--lantern)' : col}"></span>${done ? '♛ ' : ''}${n}<span class="mtf-pips">${done ? '' : pips}</span></div>
         <div class="mtf-prog"><i style="width:${done ? 100 : pct}%"></i></div></div></div>`;
   };
@@ -950,13 +950,13 @@ function _priorSnap(r, evs) {
 function rpBuildMazeTitleCard(ep) {
   const r = ep.mazeData; if (!r) return '';
   const fallen = (r.fallen || []).map((n, i) =>
-    `<div class="mtf-fcard mtf-ghost" style="animation-delay:${(0.15 * i).toFixed(2)}s"><img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.visibility='hidden'"><div class="nm">${n}</div><div class="rip">THE FALLEN</div></div>`).join('');
+    `<div class="mtf-fcard mtf-ghost" style="animation-delay:${(0.15 * i).toFixed(2)}s"><img src="${playerAvatarUrl(n)}" onerror="this.style.visibility='hidden'"><div class="nm">${n}</div><div class="rip">THE FALLEN</div></div>`).join('');
   // runners assembling at the glowing maze mouth — pod-colored, staggered slide-up
   const mouth = r.roster.map((x, i) =>
-    `<div class="mtf-runner" style="animation-delay:${(0.25 + 0.12 * i).toFixed(2)}s"><img src="assets/avatars/${slugOf(x.name)}.png" style="border-color:${podColor(x.pod)};box-shadow:0 0 12px ${podColor(x.pod)}66,0 3px 10px rgba(0,0,0,.6)" onerror="this.style.visibility='hidden'"><div class="rn" style="color:${podColor(x.pod)}">${x.name}</div></div>`).join('');
+    `<div class="mtf-runner" style="animation-delay:${(0.25 + 0.12 * i).toFixed(2)}s"><img src="${playerAvatarUrl(x.name)}" style="border-color:${podColor(x.pod)};box-shadow:0 0 12px ${podColor(x.pod)}66,0 3px 10px rgba(0,0,0,.6)" onerror="this.style.visibility='hidden'"><div class="rn" style="color:${podColor(x.pod)}">${x.name}</div></div>`).join('');
   // compact roster band restating the full field
   const roster = r.roster.map(x =>
-    `<div class="mtf-rchip"><img src="assets/avatars/${slugOf(x.name)}.png" style="border-color:${podColor(x.pod)}" onerror="this.style.visibility='hidden'"><span class="mtf-rdot" style="background:${podColor(x.pod)}"></span><span class="rn">${x.name}</span></div>`).join('');
+    `<div class="mtf-rchip"><img src="${playerAvatarUrl(x.name)}" style="border-color:${podColor(x.pod)}" onerror="this.style.visibility='hidden'"><span class="mtf-rdot" style="background:${podColor(x.pod)}"></span><span class="rn">${x.name}</span></div>`).join('');
   const hedges = mtfHedgesSVG().replace('class="mtf-hedges"', 'class="mtf-hedges mtf-estab-hedges"');
   return _mtfShell(`<div class="mtf-cover" style="padding-top:6px">
     <div class="mtf-estab">
@@ -1013,7 +1013,7 @@ function _mtfUpdateMap(suffix, snp) {
       if (pitEl && !pitEl.querySelector(`#mtf-pit-${slugOf(n)}`)) {
         const idx = pitEl.querySelectorAll('img').length;
         const im = document.createElement('img'); im.id = `mtf-pit-${slugOf(n)}`;
-        im.src = `assets/avatars/${slugOf(n)}.png`; im.style.left = (10 + (idx % 9) * 10) + '%';
+        im.src = `${playerAvatarUrl(n)}`; im.style.left = (10 + (idx % 9) * 10) + '%';
         im.style.transform = `rotate(${(n.length % 2 ? -1 : 1) * 7}deg)`;
         im.onerror = function () { this.style.visibility = 'hidden'; };
         pitEl.appendChild(im);

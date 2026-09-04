@@ -1,6 +1,6 @@
 // js/chal/rock-n-rule.js — Rock n' Rule rock-and-roll challenge (post-merge)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -15,7 +15,8 @@ function popDelta(name, delta) {
 function arch(name) { return players.find(p => p.name === name)?.archetype || ''; }
 function portrait(name, size = 42) {
   const sl = slug(name);
-  return `<img src="assets/avatars/${sl}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slAv = playerAvatarUrl(name);
+  return `<img src="${slAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1188,7 +1189,7 @@ function _buildMeter(ep, phase) {
   const rows = sorted.map((p, idx) =>
     `<div class="rr-meter-player">
       <div class="rr-meter-rank">${idx + 1}</div>
-      <img class="rr-meter-img" src="assets/avatars/${slug(p.name)}.png" alt="${p.name}" onerror="this.style.display='none'">
+      <img class="rr-meter-img" src="${playerAvatarUrl(p.name)}" alt="${p.name}" onerror="this.style.display='none'">
       <div class="rr-meter-info">
         <div class="rr-meter-name">${p.name}</div>
         <div class="rr-meter-bar-wrap"><div class="rr-meter-fill rr-meter-fill-${p.color}" style="width:${p.pct}%"></div></div>
@@ -1217,7 +1218,7 @@ export function rpBuildRockNRuleTitleCard(ep) {
   const allPlayers = rr.phase1.performances.map(p => p.name);
   const roster = allPlayers.map(name =>
     `<div class="rr-cover-player">
-      <img src="assets/avatars/${slug(name)}.png" alt="${name}" onerror="this.style.display='none'">
+      <img src="${playerAvatarUrl(name)}" alt="${name}" onerror="this.style.display='none'">
     </div>`
   ).join('');
 
@@ -1378,7 +1379,7 @@ export function rpBuildRockNRuleCarpet(ep) {
 
     steps.push(`<div class="rr-carpet" style="border-color:${photoColor}">
       <div class="rr-carpet-header">
-        <img class="rr-carpet-photo" src="assets/avatars/${slug(run.name)}.png" alt="${run.name}"
+        <img class="rr-carpet-photo" src="${playerAvatarUrl(run.name)}" alt="${run.name}"
           style="border-color:${photoColor}" onerror="this.style.display='none'">
         <div style="flex:1">
           <div class="rr-carpet-headline" style="color:${photoColor}">${run.photoResult.label}</div>
@@ -1739,7 +1740,7 @@ function _rrUpdateMeter(revIdx) {
   const rows = playerData.map((p, idx) =>
     `<div class="rr-meter-player">
       <div class="rr-meter-rank">${idx + 1}</div>
-      <img class="rr-meter-img" src="assets/avatars/${slug(p.name)}.png" alt="${p.name}" onerror="this.style.display='none'">
+      <img class="rr-meter-img" src="${playerAvatarUrl(p.name)}" alt="${p.name}" onerror="this.style.display='none'">
       <div class="rr-meter-info">
         <div class="rr-meter-name">${p.name}</div>
         <div class="rr-meter-bar-wrap"><div class="rr-meter-fill rr-meter-fill-${p.color}" style="width:${p.pct}%"></div></div>

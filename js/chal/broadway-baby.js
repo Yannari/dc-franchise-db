@@ -1,6 +1,6 @@
 // ── Broadway Baby — 3-phase pre-merge tribe challenge ──
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -1565,7 +1565,7 @@ function _tribeLookup(ep) {
 
 function _avatar(name, size) {
   size = size || 28;
-  return `<img class="bb-avatar" src="assets/avatars/${slugFor(name)}.png" style="width:${size}px;height:${size}px" onerror="this.style.display='none'">`;
+  return `<img class="bb-avatar" src="${playerAvatarUrl(name)}" style="width:${size}px;height:${size}px" onerror="this.style.display='none'">`;
 }
 
 /* ───────────────────────── tvState ───────────────────────── */
@@ -2821,7 +2821,7 @@ export function rpBuildBBTitleCard(ep) {
   tribes.forEach(t => {
     const ts = _tribeStyle(t.color);
     const avatars = (t.members || []).map(m =>
-      `<div class="bb-player-av" style="border-color:${ts.bg}"><img src="assets/avatars/${(m||'').toLowerCase().replace(/\s+/g,'-')}.png" onerror="this.style.display='none'"></div>`
+      `<div class="bb-player-av" style="border-color:${ts.bg}"><img src="${playerAvatarUrl(m || '')}" onerror="this.style.display='none'"></div>`
     ).join('');
     playerGrids += `<div style="margin-bottom:14px"><div class="bb-tribe-tag" style="background:${ts.light};color:${ts.text};border:1px solid ${ts.bg}">${t.tribeName}</div></div>
     <div class="bb-player-grid">${avatars}</div>`;

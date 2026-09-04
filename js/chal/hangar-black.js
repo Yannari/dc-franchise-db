@@ -1,6 +1,6 @@
 // js/chal/hangar-black.js — Operation: Hangar Black: both-phase twist challenge (facility breach + specimen hunt + extraction)
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, tribeColor, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -17,7 +17,8 @@ function arch(name) { return players.find(p => p.name === name)?.archetype || ''
 function aAn(word) { return /^[aeiou]/i.test(word) ? 'an' : 'a'; }
 function portrait(name, size = 42) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">`;
 }
 function slug(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 
@@ -1822,7 +1823,7 @@ function _buildSidebarContent(ep, screenKey) {
     const pct = Math.round((depth / maxDepth) * 100);
     const entry = cd.entries?.find(e => e.name === name);
     const tc = entry?.tribe ? _tribeColorSafe(entry.tribe) : 'var(--hud)';
-    html += `<div class="hb-race-row"><div class="label"><img src="assets/avatars/${slug(name)}.png" class="hb-race-pic" style="border-color:${tc}" onerror="this.style.display='none'"><span class="lname" style="color:${tc}">${name}</span><span class="lpct">RM ${depth}/${maxDepth}</span></div><div class="hb-race-track"><div class="hb-race-fill" style="width:${pct}%;background:linear-gradient(90deg,${tc}80,${tc})"></div></div></div>`;
+    html += `<div class="hb-race-row"><div class="label"><img src="${playerAvatarUrl(name)}" class="hb-race-pic" style="border-color:${tc}" onerror="this.style.display='none'"><span class="lname" style="color:${tc}">${name}</span><span class="lpct">RM ${depth}/${maxDepth}</span></div><div class="hb-race-track"><div class="hb-race-fill" style="width:${pct}%;background:linear-gradient(90deg,${tc}80,${tc})"></div></div></div>`;
   });
   html += `</div></div></div>`;
 
@@ -1837,7 +1838,7 @@ function _buildSidebarContent(ep, screenKey) {
     const entry = cd.entries?.find(e => e.name === name);
     const tc = entry?.tribe ? _tribeColorSafe(entry.tribe) : 'var(--hud)';
     const rowCls = status === 'KO' ? 'eliminated' : hp < 30 ? 'injured' : '';
-    html += `<div class="hb-roster-row ${rowCls}" style="border-left-color:${tc}"><img src="assets/avatars/${slug(name)}.png" class="hb-roster-pic" style="border-color:${tc}" onerror="this.style.display='none'"><div class="hb-roster-info"><div class="hb-roster-name">${name}</div><div class="hb-hp"><div class="hb-hp-fill ${hpCls}" style="width:${hpPct}%"></div></div></div><div class="hb-roster-status ${statusCls}">${status}</div></div>`;
+    html += `<div class="hb-roster-row ${rowCls}" style="border-left-color:${tc}"><img src="${playerAvatarUrl(name)}" class="hb-roster-pic" style="border-color:${tc}" onerror="this.style.display='none'"><div class="hb-roster-info"><div class="hb-roster-name">${name}</div><div class="hb-hp"><div class="hb-hp-fill ${hpCls}" style="width:${hpPct}%"></div></div></div><div class="hb-roster-status ${statusCls}">${status}</div></div>`;
   });
   html += `</div></div></div>`;
 
@@ -1909,7 +1910,7 @@ function _buildMap(ep, phase) {
     const topOff = row * 12;
     const left = 15 + leftOff;
     const top = 70 + topOff;
-    tokens += `<div class="hb-tok" id="hb-maptok-${name.replace(/\s+/g, '-')}" style="border-color:${tc};box-shadow:0 0 14px ${tc};left:${left}%;top:${top}%"><img src="assets/avatars/${slug(name)}.png" class="hb-tok-pic" onerror="this.outerHTML='<span style=\\'color:${tc}\\'>${name.charAt(0)}</span>'"></div>`;
+    tokens += `<div class="hb-tok" id="hb-maptok-${name.replace(/\s+/g, '-')}" style="border-color:${tc};box-shadow:0 0 14px ${tc};left:${left}%;top:${top}%"><img src="${playerAvatarUrl(name)}" class="hb-tok-pic" onerror="this.outerHTML='<span style=\\'color:${tc}\\'>${name.charAt(0)}</span>'"></div>`;
   });
 
   return `
@@ -2007,7 +2008,7 @@ export function rpBuildHBTitleCard(ep) {
 
   // Avatar figures
   const figuresHtml = active.map(name =>
-    `<img class="hb-ground-fig" src="assets/avatars/${slug(name)}.png" alt="${name}" style="animation-delay:${(Math.random() * 1.5).toFixed(1)}s" onerror="this.style.display='none'">`
+    `<img class="hb-ground-fig" src="${playerAvatarUrl(name)}" alt="${name}" style="animation-delay:${(Math.random() * 1.5).toFixed(1)}s" onerror="this.style.display='none'">`
   ).join('');
 
   // Team blocks (pre-merge) or operator count (post-merge)

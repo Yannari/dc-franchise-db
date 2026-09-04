@@ -1,6 +1,6 @@
 // js/chal/full-metal-drama.js — Full Metal Drama war challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ── HELPERS ──
@@ -1108,20 +1108,22 @@ export function _textFullMetalDrama(ep, ln, sec) {
 function _fmdPortrait(name, size = 44) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const slugAv = playerAvatarUrl(name);
   const init = (name || '?')[0].toUpperCase();
-  return `<img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;filter:contrast(1.15) saturate(0.85)" /><span style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:var(--wd-steel);color:#fff;font-size:${Math.round(size*0.45)}px;line-height:${size}px;text-align:center;display:none">${init}</span>`;
+  return `<img src="${slugAv}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;filter:contrast(1.15) saturate(0.85)" /><span style="display:none;width:${size}px;height:${size}px;border-radius:50%;background:var(--wd-steel);color:#fff;font-size:${Math.round(size*0.45)}px;line-height:${size}px;text-align:center;display:none">${init}</span>`;
 }
 
 /* ── military ID card ── */
 function _fmdIdCard(name, role, statusText, statusColor) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const slugAv = playerAvatarUrl(name);
   const init = (name || '?')[0].toUpperCase();
   const serial = name.split('').reduce((s, c) => s + c.charCodeAt(0), 0).toString(16).toUpperCase().padStart(4, '0');
   return `<div class="fmd-id-card">
     <div class="fmd-id-stripe" style="background:${statusColor || 'var(--wd-olive)'}"></div>
     <div class="fmd-id-photo">
-      <img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+      <img src="${slugAv}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
       <span style="display:none">${init}</span>
     </div>
     <div class="fmd-id-info">
@@ -1137,9 +1139,10 @@ function _fmdIdCard(name, role, statusText, statusColor) {
 function _fmdSidePortrait(name, size = 28) {
   const p = players.find(x => x.name === name);
   const slug = p?.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const slugAv = playerAvatarUrl(name);
   const init = (name || '?')[0].toUpperCase();
   return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid rgba(196,167,119,0.3);display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3)">
-    <img src="assets/avatars/${slug}.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:${size}px;height:${size}px;object-fit:cover;filter:contrast(1.1) saturate(0.85)" />
+    <img src="${slugAv}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:${size}px;height:${size}px;object-fit:cover;filter:contrast(1.1) saturate(0.85)" />
     <span style="display:none;font-size:${Math.round(size*0.45)}px;color:var(--wd-khaki)">${init}</span>
   </div>`;
 }

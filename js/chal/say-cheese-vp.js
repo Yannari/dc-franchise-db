@@ -1,3 +1,4 @@
+import { playerAvatarUrl } from '../players.js';
 // ══════════════════════════════════════════════════════════════════════
 // say-cheese-vp.js — VP screens for "Say Cheese".
 // Dawn carnival drop-tower (sc- prefix): purple-to-peach sunrise sky, a rising
@@ -11,7 +12,7 @@ import { players } from '../core.js';
 
 function slugOf(name) { return players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'); }
 function av(name, size = 24) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fff;background:#241436" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #fff;background:#241436" onerror="this.style.visibility='hidden'">`;
 }
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -218,7 +219,7 @@ export function rpBuildCheeseTitleCard(ep) {
   const posY = [64, 36, 8]; const spreadX = ['6%', '44%', '78%', '26%'];
   const jumpers = featured.map((r, i) => {
     const tag = r.disadvantaged ? `<span class="tg top">TOP · DISADVANTAGE</span>` : `<span class="tg ${HTAG[r.height]}">${HLABEL[r.height]}</span>`;
-    return `<div class="sc-jumper" style="left:${spreadX[i]};top:${posY[r.height]}%;animation-delay:${(i * 0.5).toFixed(1)}s"><span class="cord"></span><span class="who"><img class="face" src="assets/avatars/${slugOf(r.name)}.png" alt="${esc(r.name)}" onerror="this.style.visibility='hidden'"><span class="phone"></span></span><div class="nm">${esc(r.name)}</div>${tag}</div>`;
+    return `<div class="sc-jumper" style="left:${spreadX[i]};top:${posY[r.height]}%;animation-delay:${(i * 0.5).toFixed(1)}s"><span class="cord"></span><span class="who"><img class="face" src="${playerAvatarUrl(r.name)}" alt="${esc(r.name)}" onerror="this.style.visibility='hidden'"><span class="phone"></span></span><div class="nm">${esc(r.name)}</div>${tag}</div>`;
   }).join('');
   const platforms = [8, 36, 64].map(t => `<div class="sc-platform" style="top:${t}%"></div>`).join('');
   const roster = d.roster.map(r => `<div class="sc-drv">${av(r.name, 40)}<div><div class="nm">${esc(r.name)}</div><div class="arc">${esc(r.arch)}</div></div><span class="sc-h ${HTAG[r.height]}">${HLABEL[r.height]}</span></div>`).join('');
@@ -258,7 +259,7 @@ export function rpBuildCheeseResults(ep) {
   const gallery = d.results.map(r => {
     const win = r.name === d.immunityWinner;
     const cap = win ? 'FEARLESS ✓' : r.dq ? 'DISQUALIFIED' : (BESTCAP[r.best] || 'NO GOOD');
-    return `<div class="sc-polaroid ${win ? 'win' : 'fail'}"><img src="assets/avatars/${slugOf(r.name)}.png" alt="${esc(r.name)}" onerror="this.style.visibility='hidden'"><div class="sc-cap ${win ? '' : 'bad'}">${cap}</div></div>`;
+    return `<div class="sc-polaroid ${win ? 'win' : 'fail'}"><img src="${playerAvatarUrl(r.name)}" alt="${esc(r.name)}" onerror="this.style.visibility='hidden'"><div class="sc-cap ${win ? '' : 'bad'}">${cap}</div></div>`;
   }).join('');
   const fins = d.results.map((r, i) => {
     const win = r.name === d.immunityWinner;

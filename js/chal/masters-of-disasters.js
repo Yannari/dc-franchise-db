@@ -1,6 +1,6 @@
 // js/chal/masters-of-disasters.js — Masters of Disasters disaster challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ─── Text pools ───────────────────────────────────────────────────────────────
@@ -1674,8 +1674,9 @@ export function _textMastersOfDisasters(ep, ln, sec) {
 
 function _mdSmallPortrait(name, size = 44) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:2px;overflow:hidden;border:2px solid var(--md-smoke);box-shadow:0 2px 6px rgba(0,0,0,0.5)">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;object-fit:cover" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;object-fit:cover" onerror="this.style.display='none'">
   </div>`;
 }
 
@@ -1953,6 +1954,7 @@ function _mdBuildEarthquakeSidebar(eq, revIdx, tribeNames, ep) {
     html += `<div class="md-side-sec">${tName}</div>`;
     for (const [name, s] of tribeMembers) {
       const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+      const slugAv = playerAvatarUrl(name);
       const st = pStats(name);
       const fatPct = Math.min(100, Math.round((s.fatigue / Math.max(1, st.endurance)) * 100));
       const stagePips = Array.from({ length: 5 }, (_, i) =>
@@ -1960,7 +1962,7 @@ function _mdBuildEarthquakeSidebar(eq, revIdx, tribeNames, ep) {
       ).join('');
 
       html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0">
-        <img src="assets/avatars/${slug}.png" width="28" height="28" style="border-radius:2px;border:1px solid ${s.stopped ? '#ef4444' : '#334155'}" onerror="this.style.display='none'">
+        <img src="${slugAv}" width="28" height="28" style="border-radius:2px;border:1px solid ${s.stopped ? '#ef4444' : '#334155'}" onerror="this.style.display='none'">
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span style="font-size:10px;color:${s.stopped ? '#fca5a5' : 'rgba(255,255,255,0.8)'}${s.stopped ? ';text-decoration:line-through' : ''}">${name}</span>
@@ -2043,7 +2045,8 @@ function _mdBuildSubmarineSidebar(sub, revIdx, tribeNames, ep) {
       html += `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">`;
       for (const name of surv) {
         const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name} — surviving" style="border-radius:2px;border:1px solid rgba(34,211,238,0.3)" onerror="this.style.display='none'">`;
+        const slugAv = playerAvatarUrl(name);
+        html += `<img src="${slugAv}" width="24" height="24" title="${name} — surviving" style="border-radius:2px;border:1px solid rgba(34,211,238,0.3)" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
     }
@@ -2053,7 +2056,8 @@ function _mdBuildSubmarineSidebar(sub, revIdx, tribeNames, ep) {
       html += `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">`;
       for (const name of snork) {
         const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name} — snorkel" style="border-radius:2px;border:1px solid rgba(147,197,253,0.4);opacity:0.75" onerror="this.style.display='none'">`;
+        const slugAv = playerAvatarUrl(name);
+        html += `<img src="${slugAv}" width="24" height="24" title="${name} — snorkel" style="border-radius:2px;border:1px solid rgba(147,197,253,0.4);opacity:0.75" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
     }
@@ -2063,7 +2067,8 @@ function _mdBuildSubmarineSidebar(sub, revIdx, tribeNames, ep) {
       html += `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px">`;
       for (const name of sub_list) {
         const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-        html += `<img src="assets/avatars/${slug}.png" width="24" height="24" title="${name} — submerged" style="border-radius:2px;border:1px solid rgba(239,68,68,0.3);opacity:0.4;filter:saturate(0.3)" onerror="this.style.display='none'">`;
+        const slugAv = playerAvatarUrl(name);
+        html += `<img src="${slugAv}" width="24" height="24" title="${name} — submerged" style="border-radius:2px;border:1px solid rgba(239,68,68,0.3);opacity:0.4;filter:saturate(0.3)" onerror="this.style.display='none'">`;
       }
       html += `</div>`;
     }
@@ -2235,8 +2240,9 @@ export function rpBuildMastersOfDisastersEarthquake(ep) {
     if (rd.timedOut?.length) {
       for (const to of rd.timedOut) {
         const slug = players.find(p => p.name === to.name)?.slug || to.name.toLowerCase().replace(/\s+/g, '-');
+        const slugAv = playerAvatarUrl(to.name);
         roundHtml += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin:4px 0;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-left:4px solid var(--md-danger);border-radius:4px">
-          <img src="assets/avatars/${slug}.png" width="36" height="36" style="border-radius:2px;border:2px solid var(--md-danger);filter:grayscale(0.5)" onerror="this.style.display='none'">
+          <img src="${slugAv}" width="36" height="36" style="border-radius:2px;border:2px solid var(--md-danger);filter:grayscale(0.5)" onerror="this.style.display='none'">
           <div style="flex:1;min-width:0">
             <div style="font-size:9px;color:#fca5a5;letter-spacing:1px;font-family:'Bebas Neue',sans-serif">⏱️ TIMED OUT</div>
             <div style="font-size:12px;color:rgba(255,255,255,0.7)">${to.name} couldn't make it across in time. Stopped at stage ${to.stage}/5.</div>
@@ -2327,7 +2333,8 @@ export function rpBuildMastersOfDisastersDramaBreak(ep) {
         ${imp.impact ? `<div style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:10px;color:${imp.color}">${imp.impact}</div>` : ''}
         ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
           const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
-          return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid #334155" title="${n}" onerror="this.style.display='none'">`;
+          const sAv = playerAvatarUrl(n);
+          return `<img src="${sAv}" width="24" height="24" style="border-radius:2px;border:1px solid #334155" title="${n}" onerror="this.style.display='none'">`;
         }).join('')}</div>` : ''}
       </div>
     </div>`;
@@ -2597,9 +2604,10 @@ export function rpBuildMastersOfDisastersResults(ep) {
   for (const [name, score] of scores) {
     const roundedScore = typeof score === 'number' ? Math.round(score) : score;
     const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+    const slugAv = playerAvatarUrl(name);
     leaderboard += `<div style="text-align:center;width:64px">
       <div style="width:48px;height:48px;border-radius:2px;overflow:hidden;border:2px solid var(--md-smoke);box-shadow:0 2px 6px rgba(0,0,0,0.5);margin:0 auto">
-        <img src="assets/avatars/${slug}.png" width="48" height="48" style="display:block;object-fit:cover" onerror="this.style.display='none'">
+        <img src="${slugAv}" width="48" height="48" style="display:block;object-fit:cover" onerror="this.style.display='none'">
       </div>
       <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--md-ember)">${roundedScore}</div>

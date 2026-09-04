@@ -7,7 +7,7 @@
 // off your animal and you're flung into the mud. Pre-merge: last team with anyone still riding wins.
 // Post-merge: last soul on the ride wins immunity.
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord } from '../players.js';
+import { pStats, pronouns, updateChalRecord, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -825,7 +825,7 @@ export function simulateMerryGoRoundUp(ep) {
 // VP — THE SPIN DECK (a live, genuinely-spinning big-top carousel)
 // ══════════════════════════════════════════════════════════════════════
 function portrait(name, size = 30) {
-  return `<img src="assets/avatars/${slugOf(name)}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.visibility='hidden'">`;
+  return `<img src="${playerAvatarUrl(name)}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.visibility='hidden'">`;
 }
 const MGR_SPEED = { 1: 0.34, 2: 0.8, 3: 1.55, 4: 1.9, 5: 2.2 };
 const MGR_CX = 320, MGR_CY = 95, MGR_RX = 300, MGR_RY = 76;
@@ -980,9 +980,9 @@ function mgrLights() {
 // ── the deck (arena) built from a snapshot ──
 function mgrSeat(name, animal, baseAng, wob) {
   return `<div class="mgr-seat ${wob ? 'wob' : ''}" data-name="${name.replace(/"/g, '&quot;')}" data-ang="${baseAng}">
-    <div class="mgr-nm">${name}</div>${mgrAnimal(animal)}<img class="mgr-face" src="assets/avatars/${slugOf(name)}.png" onerror="this.style.visibility='hidden'">${wob ? '<div class="mgr-streak"></div>' : ''}</div>`;
+    <div class="mgr-nm">${name}</div>${mgrAnimal(animal)}<img class="mgr-face" src="${playerAvatarUrl(name)}" onerror="this.style.visibility='hidden'">${wob ? '<div class="mgr-streak"></div>' : ''}</div>`;
 }
-function mgrSplat(name, left) { return `<img class="mgr-splat" data-name="${name.replace(/"/g, '&quot;')}" src="assets/avatars/${slugOf(name)}.png" style="left:${left}%;transform:rotate(${(name.length % 2 ? -1 : 1) * 8}deg)" onerror="this.style.visibility='hidden'">`; }
+function mgrSplat(name, left) { return `<img class="mgr-splat" data-name="${name.replace(/"/g, '&quot;')}" src="${playerAvatarUrl(name)}" style="left:${left}%;transform:rotate(${(name.length % 2 ? -1 : 1) * 8}deg)" onerror="this.style.visibility='hidden'">`; }
 
 function _mgrDeckHTML(r, snap, level, dir, label) {
   const seatOrder = r.seatMap.map(s => s.name);
@@ -1071,7 +1071,7 @@ function _mgrSidebar(r, snap) {
     const spct = clamp((m.stomach / Math.max(1, m.stomach0)) * 100, 0, 100).toFixed(0);
     const tb = tribeOfName(n);
     const dot = (!r.isMerged && tb) ? `<span class="mgr-dot" style="background:${_mgrTeamColor(r, tb)}"></span>` : '';
-    return `<div class="mgr-chip ${riding ? '' : 'out'}"><img src="assets/avatars/${slugOf(n)}.png" onerror="this.style.visibility='hidden'">
+    return `<div class="mgr-chip ${riding ? '' : 'out'}"><img src="${playerAvatarUrl(n)}" onerror="this.style.visibility='hidden'">
       <div class="mgr-cn"><div class="nn">${dot}${riding ? _animalEmoji(m.animal) : '💥'} ${n}</div>
         ${riding ? `<div class="mgr-meter m-grip"><i style="width:${gpct}%"></i></div><div class="mgr-meter m-stom"><i style="width:${spct}%"></i></div>` : ''}
       </div></div>`;
@@ -1132,7 +1132,7 @@ function _mgrShell(inner) { return `<div class="mgr-shell">${mgrCss()}${inner}</
 function rpBuildMerryTitleCard(ep) {
   const r = ep.merryData; if (!r) return '';
   const cards = r.seatMap.map(s =>
-    `<div class="mgr-seatcard"><img src="assets/avatars/${slugOf(s.name)}.png" onerror="this.style.visibility='hidden'"><div class="nm">${s.name}</div><div class="an">${s.animal}</div></div>`).join('');
+    `<div class="mgr-seatcard"><img src="${playerAvatarUrl(s.name)}" onerror="this.style.visibility='hidden'"><div class="nm">${s.name}</div><div class="an">${s.animal}</div></div>`).join('');
   return _mgrShell(`<div class="mgr-cover">
     <div class="mgr-sub">STAWAKI CARNIVAL · THE DEMON'S MERRY-GO-ROUND</div>
     <div class="mgr-title">MERRY-GO-<br>ROUND-UP</div>
@@ -1210,7 +1210,7 @@ function _mgrDeckStep(suffix, ev) {
       const left = parseFloat(seat.style.left) || MGR_CX, top = parseFloat(seat.style.top) || MGR_CY;
       if (plat) {
         const ghost = document.createElement('img');
-        ghost.className = 'mgr-fling'; ghost.src = `assets/avatars/${slugOf(name)}.png`;
+        ghost.className = 'mgr-fling'; ghost.src = `${playerAvatarUrl(name)}`;
         ghost.style.left = left + 'px'; ghost.style.top = top + 'px';
         ghost.onerror = function () { this.style.visibility = 'hidden'; };
         plat.appendChild(ghost);
@@ -1222,7 +1222,7 @@ function _mgrDeckStep(suffix, ev) {
             if (mud && !mud.querySelector(`.mgr-splat[data-name="${(name || '').replace(/"/g, '&quot;')}"]`)) {
               const idx = mud.querySelectorAll('.mgr-splat').length;
               const sp = document.createElement('img');
-              sp.className = 'mgr-splat'; sp.src = `assets/avatars/${slugOf(name)}.png`;
+              sp.className = 'mgr-splat'; sp.src = `${playerAvatarUrl(name)}`;
               sp.dataset.name = name; sp.style.left = (8 + (idx % 9) * 10) + '%';
               sp.style.transform = `rotate(${(name.length % 2 ? -1 : 1) * 8}deg)`;
               sp.onerror = function () { this.style.visibility = 'hidden'; };

@@ -1,6 +1,6 @@
 // js/chal/one-flu.js — One Flu Over the Cuckoos medical challenge
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 
 // ─── Text Pools ───────────────────────────────────────────────────────────────
@@ -1919,10 +1919,11 @@ function _ofShell(content, ep, extraClass = '') {
 
 function _ofWristband(name, size = 64, statusClass = '', statusText = '') {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   const outerWidth = size + 16;
   const idx = (name.charCodeAt(0) + (name.charCodeAt(1) || 0)) % 99 + 1;
   return `<div class="of-wristband ${statusClass}" style="width:${outerWidth}px">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
     <div class="of-wristband-name" style="max-width:${size}px">${name}</div>
     <div class="of-wristband-id">PATIENT #${String(idx).padStart(2, '0')}</div>
     ${statusText ? `<div class="of-wristband-status ${statusClass}">${statusText}</div>` : ''}
@@ -1931,8 +1932,9 @@ function _ofWristband(name, size = 64, statusClass = '', statusText = '') {
 
 function _ofSideWristband(name, size = 32, statusClass = '', statusText = '') {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div class="of-wristband sm ${statusClass}" style="width:${size + 8}px;flex-shrink:0">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;border-radius:2px" onerror="this.style.display='none'">
     <div class="of-wristband-name">${name}</div>
     ${statusText ? `<div class="of-wristband-status ${statusClass}">${statusText}</div>` : ''}
   </div>`;
@@ -1945,8 +1947,9 @@ function _ofSymptomName(id) {
 
 function _ofSmallPortrait(name, size = 44) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
+  const slugAv = playerAvatarUrl(name);
   return `<div style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:2px;overflow:hidden;border:2px solid #334155;box-shadow:0 2px 6px rgba(0,0,0,0.5)">
-    <img src="assets/avatars/${slug}.png" width="${size}" height="${size}" style="display:block;object-fit:cover" onerror="this.style.display='none'">
+    <img src="${slugAv}" width="${size}" height="${size}" style="display:block;object-fit:cover" onerror="this.style.display='none'">
   </div>`;
 }
 
@@ -2502,7 +2505,8 @@ export function rpBuildOneFluDramaBreak(ep) {
         ${imp.impact ? `<div style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:10px;color:${imp.color}"><span class="of-cross" style="font-size:10px;margin:0">${imp.icon}</span> ${imp.impact}</div>` : ''}
         ${(evt.players || []).length > 1 ? `<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">${evt.players.slice(1).map(n => {
           const s = players.find(p => p.name === n)?.slug || n.toLowerCase().replace(/\s+/g, '-');
-          return `<img src="assets/avatars/${s}.png" width="24" height="24" style="border-radius:2px;border:1px solid #334155" title="${n}" onerror="this.style.display='none'">`;
+          const sAv = playerAvatarUrl(n);
+          return `<img src="${sAv}" width="24" height="24" style="border-radius:2px;border:1px solid #334155" title="${n}" onerror="this.style.display='none'">`;
         }).join('')}</div>` : ''}
       </div>
     </div>`;

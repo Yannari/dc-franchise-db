@@ -19,7 +19,7 @@
 // giftable immunity).
 // ══════════════════════════════════════════════════════════════════════
 import { gs, players, seasonConfig } from '../core.js';
-import { pStats, pronouns, updateChalRecord, romanticCompat } from '../players.js';
+import { pStats, pronouns, updateChalRecord, romanticCompat, playerAvatarUrl } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { _challengeRomanceSpark, _checkShowmanceChalMoment } from '../romance.js';
 
@@ -741,7 +741,8 @@ export function _textTreasureIsland(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════════════
 function _portrait(name, size = 40) {
   const slug = players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-');
-  return `<img src="assets/avatars/${slug}.png" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #5b3a20;background:#0a1018;object-fit:cover;" onerror="this.style.visibility='hidden'">`;
+  const slugAv = playerAvatarUrl(name);
+  return `<img src="${slugAv}" alt="${name}" style="width:${size}px;height:${size}px;border-radius:50%;border:2px solid #5b3a20;background:#0a1018;object-fit:cover;" onerror="this.style.visibility='hidden'">`;
 }
 
 function _svgDefs() {

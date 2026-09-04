@@ -272,20 +272,28 @@ function _night(ep, rng) {
   // gate the RESULT below, after the draw, never the draw itself.
   const autoRoll = canRecruit(ep) && !forcedRecruit
     && recruitRate > 0 && rng() < recruitRate;
-  // The optional two-Traitor refill fires at most once a season (no back-to-back
-  // spam) and obeys the "Random recruitment" toggle. The one-Traitor survival
-  // recruit ignores the season cap — losing that Traitor ends the pact — but
-  // still obeys the toggle, so turning recruitment off turns ALL of it off.
+  // TWO RECRUITS A SEASON AT MOST, ONE PER PACT SIZE. The show recruits as the
+  // pact thins — an occasional bolster at two Traitors, and the iconic survival
+  // recruit when only one is left — but it does not recruit over and over. So
+  // each STATE gets its own once-a-season token: the two-Traitor refill fires at
+  // most once, and the one-Traitor emergency at most once. Without the second
+  // token the emergency was uncapped, and a pact that yo-yoed (recruit -> two,
+  // banished -> one, recruit again) could recruit three or more times. Both obey
+  // the "Random recruitment" toggle, so turning it off turns ALL of it off.
   const autoOn = !gs.tr.noAutoRecruit;
-  const capOk = _trLeft === 1 || !gs.tr.autoRecruited;
+  const capOk = _trLeft === 1 ? !gs.tr.emergencyRecruited : !gs.tr.autoRecruited;
   const wantsRecruit = canRecruit(ep)
     && (forcedRecruit || (autoRoll && autoOn && capOk));
   if (wantsRecruit) {
     const pick = chooseRecruit(ep, rng);
     if (pick) {
-      // Spend the season's one automatic recruit. A pinned one does not spend
-      // it — the author may schedule as many as they like.
-      if (!forcedRecruit) gs.tr.autoRecruited = true;
+      // Spend this pact size's once-a-season token (the emergency at one
+      // Traitor, the refill at two). A PINNED recruit spends neither — the
+      // author may schedule as many as they like.
+      if (!forcedRecruit) {
+        if (_trLeft === 1) gs.tr.emergencyRecruited = true;
+        else gs.tr.autoRecruited = true;
+      }
       // The ultimatum fires only with one Traitor left — the format's own rule,
       // and the reason refusal is fatal there: they have seen the only face.
       const offer = offerRecruitment(pick.target, ep, rng,

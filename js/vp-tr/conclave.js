@@ -352,47 +352,89 @@ const UNSAID = [
   'Everything {a} said about {t} is true. None of it is why. {A} needs this name to be the one that goes, and needs the others never to ask why it came out so fast.',
 ];
 
+// ── the conclave's own prose, AND WHY IT WAS REWRITTEN ────────────────
+//
+// These pools used to read like a rulebook standing next to the scene rather
+// than the scene itself: "The proposal is removed from consideration", "That
+// disagreement may reduce trust between them", "The decision is unanimous, so
+// this meeting creates no new conflict inside the pact." Three tells, and they
+// travelled together:
+//
+//   1. THE HEDGE. "may reduce trust", "may still affect", "may remember" --
+//      the engine's uncertainty leaking into the narration. The screen is
+//      describing a thing that HAS happened; whether it matters later is the
+//      season's business, not this card's.
+//   2. THE ABSTRACT NOUN. consideration, priorities, working relationship,
+//      the outcome they wanted. Nothing in a room, nobody's hands.
+//   3. THE PROCEDURE. "They now compare the risks of each choice" is a
+//      description of a mechanic, not of three people in a turret at night.
+//
+// PLAIN_SIGHT_TEXT immediately below was the benchmark for the rewrite -- it
+// is the register the rest of this file already speaks in, and it was sitting
+// four lines away from prose that sounded like a manual.
 const DIVIDE = [
-  'The Traitors have proposed different targets. They now compare the risks of each choice.',
-  'The shortlist is divided, so the group must decide which argument matters most tonight.',
-  'More than one name is under consideration. Only one can become the final target.',
-  'The Traitors disagree about the safest target and begin eliminating options.',
+  'Two names on the table and no agreement about either. What follows is not a '
+  + 'discussion so much as each of them finding out what the others are willing to spend.',
+  'The shortlist splits. Nobody says the real argument out loud, which is that '
+  + 'each name protects a different one of them.',
+  'More than one name is in play and only one of them survives the next few '
+  + 'minutes. The lantern gets moved twice while they work it out.',
+  'They disagree, and it takes a moment for anyone to admit it. Then it takes '
+  + 'considerably longer than a moment to settle.',
 ];
 const OVERRULE_TEXT = [
-  '{L} proposed {T}, but the other Traitors reject that target. {T} will remain in the castle tonight.',
-  '{L} cannot persuade the group to choose {T}. The proposal is removed from consideration.',
-  'The group overrules {L}. {T} is not the name that will go on tonight&rsquo;s letter.',
-  '{W}&rsquo;s choice wins the argument. {L}&rsquo;s proposal to target {T} is rejected.',
+  '{L} wanted {T}, and does not get {T}. The name goes back on the table and stays there.',
+  '{L} argues for {T} and runs out of people willing to be convinced. {T} sleeps '
+  + 'through the rest of it without ever knowing.',
+  'The turret goes against {L}. {T} is not the name on tonight&rsquo;s letter, and '
+  + '{L} is the only person in the room who minds.',
+  '{W} wins it. {L}&rsquo;s case for {T} gets as far as being heard and no further.',
 ];
 const OVERRULE_KEPT = [
-  'The rejected proposal may create tension inside the pact on a later night.',
-  'The group moves on, but the Traitor who lost the argument may remember being overruled.',
-  'The disagreement is settled for tonight. It may still affect trust inside the pact.',
-  'Everyone accepts the final target, although one Traitor did not get the outcome they wanted.',
+  'It is settled in the sense that the writing starts. It is not settled in any '
+  + 'other sense.',
+  'They move on quickly, the way people do when the alternative is staying on it.',
+  'Nobody says anything unkind. That is not the same as nobody minding.',
+  'The argument stops because the letter has to be written, which is not quite '
+  + 'the same as the argument being over.',
 ];
 const LEDGER_LOSS = [
-  '{L} was overruled by {W}. That disagreement may reduce trust between them.',
-  '{L} accepts the decision, but may be less willing to support {W} in a future conclave.',
-  '{W} won the argument and {L} lost it. Their working relationship may now be weaker.',
-  '{W}&rsquo;s target was selected. {L} now has a reason to question {W}&rsquo;s priorities.',
+  '{L} lost that one to {W}, and had to stand there while it happened.',
+  '{W} got the name. {L} got the look the other two exchanged while {L} was talking.',
+  '{L} came up the stair with a plan and goes back down without it, having watched '
+  + '{W} take the room.',
+  '{L} conceded. There is a difference between conceding and agreeing, and {L} '
+  + 'knows exactly which one this was.',
 ];
+// NOTHING IN HERE MAY ASSUME A CLIMB. This pool is read on any night with no
+// disagreement to record -- including a plain-sight night, where there was no
+// meeting, nobody went up and nobody came back down. An earlier draft of these
+// lines said "go back down having cost each other nothing" and would have
+// contradicted the same screen's own opening card.
 const LEDGER_QUIET = [
-  'The Traitors agree on the target. Nobody is overruled tonight.',
-  'The decision is unanimous, so this meeting creates no new conflict inside the pact.',
-  'Every Traitor supports the same target. The group reaches the decision quickly.',
-  'There is no disagreement to resolve: the pact chooses the target together.',
+  'One name and no argument about it. Nothing was spent here tonight.',
+  'Nobody had to be talked round, which is rarer than any of them admit.',
+  'No disagreement to record. Whatever tonight was, it was not expensive.',
+  'It cost the pact nothing. That is not always a good sign, and none of them '
+  + 'are thinking about it tonight.',
 ];
+// NEUTRAL ABOUT WHETHER ANYBODY SPOKE. Read on every night including a
+// plain-sight one, where there was no argument and no talking to finish.
 const NAME_TEXT = [
-  'The discussion is finished. This is the target the Traitors have agreed to remove.',
-  'The other proposed names are rejected. The remaining name becomes tonight&rsquo;s target.',
-  'The Traitors reach their decision and prepare the letter for the chosen player.',
-  'The final target is confirmed. The Faithfuls downstairs still know nothing about the decision.',
+  'That is the name, and it is the last comfortable moment anybody has about it.',
+  'A name is left standing at the end of it, which is all tonight was ever for.',
+  'It is settled, and somebody starts looking for the wax, which is how you know.',
+  'One name goes forward. It is not the one that will still be here tomorrow.',
 ];
 const SEAL_TEXT = [
-  'They write the chosen player&rsquo;s name and seal the letter that will be delivered before breakfast.',
-  'The Traitors sign the decision and seal the letter for the chosen player.',
-  'The final name is written down. A sealed letter will inform the player before breakfast.',
-  'With every Traitor committed to the decision, the target&rsquo;s letter is sealed.',
+  'The name goes down in somebody&rsquo;s handwriting and the wax goes over it. '
+  + 'By breakfast it will have been read.',
+  'They write it, fold it, and press the seal. Nothing about the next few hours '
+  + 'is in anybody&rsquo;s hands now.',
+  'The letter is sealed. Downstairs the castle is asleep and one of them has '
+  + 'about six hours left of not knowing.',
+  'Wax, seal, done. The hardest part of tonight was deciding; the rest of it '
+  + 'happens on its own.',
 ];
 const PLAIN_SIGHT_TEXT = [
   'There is no climb tonight and no meeting. One of them decided this over other people&rsquo;s conversation, at a table with the plates still on it, and nobody in the room felt the moment pass.',
@@ -420,6 +462,30 @@ const HOST_LINES = {
     'Several players may be proposed, but the group can select only one final target.',
     'The shortlist is open. Watch which target each Traitor supports and why.',
     'The arguments begin now. The final choice may reveal disagreements inside the pact.',
+  ],
+  // ── AND THE SAME TWO SLOTS ON A NIGHT WITH NO MEETING ───────────────
+  //
+  // Every line in `open` and `shortlist` asserts a meeting: "The Traitors are
+  // now meeting privately", "The group must agree before leaving the turret",
+  // "Each Traitor will name a preferred target". On a plain-sight night none
+  // of that happens -- one Traitor decides alone, downstairs, in company --
+  // and the host was announcing a conclave over a screen whose own first card
+  // said the turret stayed empty.
+  openPlain: [
+    'There is no meeting tonight. One of them has decided this without asking anybody.',
+    'Nobody climbs to the turret. What happens instead happens downstairs, in company, '
+    + 'and the castle does not notice it happening.',
+    'The Traitors are not together tonight. They do not need to be.',
+    'No turret, no candles, no discussion. A single decision, taken in the middle of '
+    + 'everybody.',
+  ],
+  shortlistPlain: [
+    'There is no shortlist. There is one name, and only one person ever knew it was '
+    + 'being considered.',
+    'Nothing is proposed and nothing is argued. Watch who is doing the deciding.',
+    'No debate to follow tonight. The reason for this name stays inside the person '
+    + 'holding it.',
+    'This is the version with no witnesses inside the pact either.',
   ],
   overrule: [
     'Somebody has just been told no by the only people in the world who could tell them so. They will remember that. The others are relying on them not to.',
@@ -451,11 +517,17 @@ function _said(who, line) {
     + '<cite>' + _esc(who) + '</cite></div></div>';
 }
 function _slipBody(s) {
+  // `solo` is a night where nothing was PROPOSED, because there was nobody to
+  // propose it to (a plain-sight murder). The slip is the same object either
+  // way -- a name and a reason -- but the two verbs on it are about putting a
+  // name to a room, and on a solo night no room was ever asked.
+  const by = s.solo ? 'chosen by ' : 'proposed by ';
+  const verb = s.solo ? ' settles on ' : ' proposes ';
   return '<div class="cv-slip-head">'
     + _av(s.target, 48)
     + '<span class="cv-slip-target">' + _esc(String(s.target).toUpperCase()) + '</span>'
-    + '<span class="cv-slip-by">proposed by ' + _esc(s.by) + ' ' + _av(s.by, 28) + '</span></div>'
-    + '<div class="cv-slip-reason"><b>' + _esc(s.by) + ' proposes ' + _esc(s.target)
+    + '<span class="cv-slip-by">' + by + _esc(s.by) + ' ' + _av(s.by, 28) + '</span></div>'
+    + '<div class="cv-slip-reason"><b>' + _esc(s.by) + verb + _esc(s.target)
     + '.</b> ' + _esc(s.by) + "'s reason: &ldquo;" + s.reason + '&rdquo;</div>';
 }
 function _slip(s) {
@@ -560,9 +632,19 @@ function _buildBeats(rec, ep) {
   const cloaks = (rec.turret || []).map(name => {
     const mine = argued.find(a => a.traitor === name);
     const tone = _tone(mine ? mine.conviction : 0.45);
+    // ON A PLAIN-SIGHT NIGHT NOBODY IS IN THE ROOM. The tone notes are written
+    // about Traitors standing in a convened turret ("Waiting to hear the
+    // others", "Arrived first, and has been standing where the light is") and
+    // read as nonsense beside a card that has just said the pact is in
+    // different rooms and only one of them is deciding.
+    const soloNote = plain
+      ? (mine ? 'The one who decided, and did not mention it to either of them.'
+        : 'Not asked. Will find out with everybody else.')
+      : null;
     return '<div class="cv-cloak" data-state="' + tone + '">' + _cloakFigure(tone, name)
       + '<div class="cv-cloak-name">' + _esc(String(name).toUpperCase()) + '</div>'
-      + '<div class="cv-cloak-note">' + _esc(_pickAway(TONE_NOTE[tone], key + '|tone|' + name, said))
+      + '<div class="cv-cloak-note">' + _esc(soloNote
+        || _pickAway(TONE_NOTE[tone], key + '|tone|' + name, said))
       + '</div></div>';
   }).join('');
   const chips = '<div class="cv-cost">'
@@ -590,13 +672,30 @@ function _buildBeats(rec, ep) {
     // genuinely different things, and it is the audience's whole privilege.
     const unsaid = a.reason === 'onto-me'
       ? _fill(_pick(UNSAID, key + '|unsaid|' + a.traitor), subs) : null;
-    push('argue', _card(
-      i === 0 ? 'The Shortlist Opens' : a.traitor + ' Answers',
-      'III. The argument', 'quill',
-      '<p>' + (i === 0
+    // A PLAIN-SIGHT NIGHT HAS AN `argued` ENTRY AND DID NOT HAVE AN ARGUMENT.
+    //
+    // `_plainSight` (js/tr/murder.js) writes a single-entry `argued` so the
+    // decision has the shape every downstream reader expects. It is
+    // BOOKKEEPING, not a debate -- nobody was consulted, which is the whole
+    // point of the variant, and phase I of this very screen says so out loud.
+    //
+    // Rendering it through the shortlist copy produced a screen that
+    // contradicted itself inside three cards: "The turret stays empty...
+    // nobody is consulted" at I, then "The Shortlist Opens -- the first
+    // Traitor names a target and explains why removing that player would help
+    // the pact" at III. Found by dumping five seasons of this screen as text
+    // and reading them, which is the only way this class of defect surfaces.
+    const soloTitle = plain ? 'Decided Alone' : (i === 0 ? 'The Shortlist Opens' : a.traitor + ' Answers');
+    const soloLead = plain
+      ? a.traitor + ' does not put this to anybody. The reason exists, and it stays where '
+        + 'it is, which is entirely inside ' + a.traitor + '.'
+      : (i === 0
         ? 'The first Traitor names a target and explains why removing that player would help the pact.'
-        : a.traitor + ' proposes another target and explains the advantage to the pact.')
-      + '</p>' + _slip({ target: a.target, by: a.traitor, reason, unsaid })),
+        : a.traitor + ' proposes another target and explains the advantage to the pact.');
+    push('argue', _card(soloTitle,
+      plain ? 'III. No argument' : 'III. The argument', 'quill',
+      '<p>' + soloLead + '</p>'
+      + _slip({ target: a.target, by: a.traitor, reason, unsaid, solo: plain })),
     i === 0 ? 'shortlist' : null, 'argue');
   });
 
@@ -1125,7 +1224,11 @@ export function rpBuildConclave(ep, observer = 'audience') {
   const stream = beats.map((b, i) =>
     '<div class="cv-beat' + (i <= st.idx ? ' cv-vis' : '')
     + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
-    + (b.hostSlot ? _hostBand(_pick(HOST_LINES[b.hostSlot],
+    + (b.hostSlot ? _hostBand(_pick(
+      // A plain-sight night takes the no-meeting variant of the two slots
+      // that would otherwise announce a conclave that is not happening.
+      HOST_LINES[(rec.variant === 'plain-sight' && HOST_LINES[b.hostSlot + 'Plain'])
+        ? b.hostSlot + 'Plain' : b.hostSlot],
       'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '')
     // With a gutter this episode, a beat with no castle scene of its own gets an
     // EMPTY cell (the minute was simply blank); with no gutter at all, no cell.
@@ -1171,8 +1274,11 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '<div class="cv-eyebrow">The Traitors &middot; Night ' + (rec.ep || epNum) + '</div>'
     + '<h1 class="cv-title">THE CONCLAVE</h1>'
     + '<div class="cv-title-rule"><i></i>' + _icon('seal', 44, '#8f1a26') + '<i></i></div>'
-    + '<p class="cv-sub">The Traitors meet in private to choose tonight&rsquo;s target. '
-    + 'Each proposal, disagreement and final decision is shown below.</p>'
+    + '<p class="cv-sub">' + (rec.variant === 'plain-sight'
+      ? 'No meeting tonight. One Traitor chose a name alone, downstairs, in company, '
+      + 'and the decision is shown below.'
+      : 'The Traitors meet in private to choose tonight&rsquo;s target. '
+      + 'Each proposal, disagreement and final decision is shown below.') + '</p>'
     + '</div></div>'
     + '<header class="cv-head">' + observerBadge + '</header>'
     + '<div class="cv-grid">'

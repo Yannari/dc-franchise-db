@@ -759,26 +759,51 @@ const ASKER_HIDDEN = [
   + 'convincingly, and it costs nothing to say no to.',
 ];
 
+// ── what was offered, AND WHAT THIS POOL IS NOW FOR ───────────────────
+//
+// These eight lines used to state the RULES of the offer -- "Refusing is fatal
+// because they have seen and can identify the recruiter", "Accepting means
+// helping choose future murder victims" -- in the flat register of a manual,
+// while the ASKER pool directly above was doing real writing about the very
+// same moment.
+//
+// The rules are now said properly and once, by js/tr-rules.js, in the reminder
+// printed directly beneath this card: a viewer meeting their first recruitment
+// is told what a note is and what an ultimatum costs. That frees this pool to
+// do what a screen is for, which is the moment rather than the mechanic. Two
+// copies of the rules stacked on one card would have been worse than the flat
+// version it replaces.
 const ASK = {
   note: [
-    'The note asks the recipient to become a Traitor, join the murders and share the prize if the Traitors win.',
-    'The offer is explicit: become a Traitor and work with the existing Traitors from this night onward.',
-    'The recipient is invited to leave the Faithful and become a Traitor. Accepting means helping choose future murder victims.',
-    'The anonymous writer asks the recipient to become a Traitor and join the group that meets in the turret.',
+    'Somebody is asking {who} to change sides, in writing, from behind a door they '
+    + 'were careful not to be standing at.',
+    'It is an invitation to stop being one of the people downstairs and start being '
+    + 'one of the people the downstairs is afraid of.',
+    'The paper asks for a defection and offers a share of the money, and does both '
+    + 'in fewer words than anybody would use out loud.',
+    'The offer is the turret: the stair, the meetings, and a hand in who does not '
+    + 'come down to breakfast.',
   ],
   ultimatum: [
-    'The recipient is ordered to become a Traitor. Refusing is fatal because they have seen and can identify the recruiter.',
-    'The offer is explicit: become a Traitor and join the group in the turret. Refusing is fatal because the recruiter revealed their identity.',
-    'The recruiter demands an immediate choice: become a Traitor or refuse and be removed before breakfast.',
-    'The recipient must become a Traitor to survive the night. A refusal would leave them able to expose the recruiter.',
+    'The offer and the threat arrive in the same breath, from somebody standing close '
+    + 'enough to be recognised.',
+    'It is put simply, because there is no version of this that takes long: come up '
+    + 'the stair, or do not come down to breakfast.',
+    'There is no paper to burn and no door to shut. The offer is a person, and the '
+    + 'person is not leaving without an answer.',
+    'One night, one Traitor, and no safe way to make this offer. So it is made '
+    + 'unsafely, and the risk is loaded onto {who} instead.',
   ],
 };
 
 const WEIGH = [
-  'The recipient must answer immediately, without consulting anyone else.',
-  'The choice is made in the corridor: accept the new role or refuse it.',
-  'The recipient pauses to decide whether to join the Traitors.',
-  'No one else can help with the decision, and the recruiter waits for a direct answer.',
+  'There is nobody to ask. Every person who could be consulted about this is a '
+  + 'person it cannot be mentioned to.',
+  'The whole decision happens in a corridor, in the time it takes to be missed, and '
+  + 'there is no version where thinking about it longer helps.',
+  'A pause. Not a long one — a long one would be an answer on its own.',
+  'Whatever gets decided in the next few seconds is the rest of somebody&rsquo;s '
+  + 'season, and it gets decided standing up.',
 ];
 
 const ANSWER = {
@@ -808,10 +833,14 @@ const AFTER = {
     + 'down here as material.',
   ],
   acceptedUltimatum: [
-    '{who} accepts and becomes a Traitor. The recruiter has gained a new ally who also knows their identity.',
-    '{who} joins the Traitors and will take part in their next meeting in the turret.',
-    '{who} accepts the ultimatum. From this point forward, they share the Traitors’ information and objectives.',
-    '{who} survives the ultimatum by becoming a Traitor and joining the recruiter upstairs.',
+    '{who} says yes and lives, and the two of them now hold the same secret from '
+    + 'opposite ends of how willingly they took it.',
+    'So it worked, and it worked because it had to. {who} goes up the stair holding '
+    + 'a face nobody else in the castle can name.',
+    '{who} accepts. It is not quite the same as being recruited — being recruited '
+    + 'is a choice, and this was arithmetic.',
+    '{who} is upstairs tonight. Every person who trusted {who} this morning is going '
+    + 'to carry on doing it, which is precisely what the pact just bought.',
   ],
   refusedNote: [
     'And that is the end of it, because there is nothing to end. {who} never saw a face, '

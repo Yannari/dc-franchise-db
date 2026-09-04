@@ -7973,3 +7973,83 @@ describe('the debate cites sources and shows the votes an argument moved', () =>
       .toBeGreaterThan(3);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// A NIGHT WITH NO MEETING MAY NOT NARRATE A MEETING
+// ══════════════════════════════════════════════════════════════════════
+//
+// FOUND BY DUMPING FIVE SEASONS OF THIS SCREEN AS PLAIN TEXT AND READING
+// THEM, which is the only way this class surfaces — every assertion in this
+// file passed the whole time it was broken.
+//
+// `_plainSight` (js/tr/murder.js) is the variant where one Traitor decides
+// alone, downstairs, in company: no climb, no turret, nobody consulted. It
+// still writes a single-entry `argued` so the decision carries the shape every
+// downstream reader expects. That entry is BOOKKEEPING, and the screen was
+// rendering it as a debate. One card said "The turret stays empty... nobody is
+// consulted"; two cards later the host said "Each Traitor will name a
+// preferred target and explain the strategic reason for that choice", the
+// slip said "proposed by", a cloak note said "Waiting to hear the others
+// before committing to anything", and the ledger said they "go back down".
+//
+// Six separate places, all of them describing a meeting that the same screen
+// had already said did not happen.
+//
+// The guard is phrased against the RENDERED TEXT rather than against which
+// pool was picked, because the defect was never in one pool — it was in six,
+// and a new one can be added tomorrow.
+describe('the conclave screen does not invent a meeting on a plain-sight night', () => {
+  // Words that assert the pact convened, argued, or dispersed. Deliberately
+  // not a list of the old sentences: a guard that pins sentences is a guard
+  // that goes green the moment somebody rewrites them.
+  const CONVENED = [
+    /\bproposed by\b/i,
+    /\bproposes\b/i,
+    /each traitor will name/i,
+    /the group must agree/i,
+    /meeting privately/i,
+    /waiting to hear the others/i,
+    /go back down/i,
+    /the shortlist is open/i,
+    /the arguments begin/i,
+  ];
+
+  it('never says the Traitors met, argued, or dispersed when they did not', () => {
+    let seen = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const c = ep.tr && ep.tr.conclave;
+        if (!c || c.variant !== 'plain-sight') continue;
+        seen++;
+        const html = strip(rpBuildConclave(ep, 'audience'));
+        for (const re of CONVENED) {
+          expect(re.test(html),
+            `ep ${ep.num}: no meeting was held and the screen says ${re}`).toBe(false);
+        }
+        // AND IT STILL HAS TO SAY WHAT DID HAPPEN. The cheap way to pass the
+        // arm above is to render nothing at all, which would trade a
+        // contradiction for a blank screen.
+        expect(html).toMatch(/alone|no meeting|without asking|not asked/i);
+        expect(html).toContain(c.target);
+      }
+    }
+    // ANTI-VACUITY: plain-sight is one variant of six and this arm is
+    // worthless on a sweep that never drew it.
+    expect(seen, 'no season in this sweep held a plain-sight night').toBeGreaterThan(0);
+  });
+
+  it('still narrates the meeting on a night that HAD one', () => {
+    // The control arm. Without it, breaking the plain-sight flag so that every
+    // night takes the no-meeting branch would leave the arm above green.
+    let seen = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const c = ep.tr && ep.tr.conclave;
+        if (!c || c.variant === 'plain-sight' || !(c.argued || []).length) continue;
+        seen++;
+        expect(strip(rpBuildConclave(ep, 'audience'))).toMatch(/proposed by|proposes/i);
+      }
+    }
+    expect(seen, 'no ordinary conclave was measured').toBeGreaterThan(10);
+  });
+});

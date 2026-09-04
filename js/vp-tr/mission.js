@@ -578,6 +578,14 @@ const MI_CSS = `
 .mi-say{font-family:var(--mi-hand);font-style:italic;font-size:19px;line-height:1.55;
   color:rgba(244,232,204,.94)}
 
+/* THE TASK, set apart from the commentary under it. Upright and boxed: the
+   task is the rules being stated, the paragraph below it is somebody's opinion
+   of how the afternoon went, and a viewer must be able to tell which is which
+   at a glance. */
+.mi-task{font-size:14px;line-height:1.6;letter-spacing:.01em;
+  color:rgba(244,232,204,.9);padding:10px 14px;margin:0 0 12px;
+  border-left:2px solid rgba(185,143,62,.6);background:rgba(185,143,62,.08)}
+
 /* the two teams, side by side */
 .mi-teams{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 2px}
 .mi-team{padding:13px 15px;border:1px solid rgba(185,143,62,.28);background:rgba(12,13,10,.5)}
@@ -758,8 +766,8 @@ const BRIEF_TEXT = {
   ],
   solid: [
     'A brief, a horn, and a long wet afternoon of doing a job properly and not brilliantly.',
-    'Everybody knew what was being asked. Most of it got done, which out here counts as a '
-    + 'success and is priced accordingly.',
+    'Most of what was asked for came back. The part that did not is the part the fund '
+    + 'will not be seeing.',
   ],
   scraped: [
     'The brief was clear enough. What happened to it afterwards was not.',
@@ -784,11 +792,16 @@ const TEAM_TEXT = [
   + 'which is the single most useful thing to remember about any of this.',
 ];
 
+// NOTHING IN HERE MAY BE ABOUT "the work" IN THE ABSTRACT. The card underneath
+// carries the mission's own outcome line, which is specific; this one sets the
+// hour it happened in. "Then the work, which is the part nobody signs up for
+// and everybody has to do" said nothing about the afternoon at all and was
+// printed on eight of the missions in a five-season dump.
 const WORK_TEXT = [
-  'And then it was simply hours of it, in the rain, with the castle a long way off up the hill.',
-  'What follows is the afternoon itself, which took considerably longer than it takes to read.',
-  'Then the work, which is the part nobody signs up for and everybody has to do.',
-  'The horn went and the estate got on with it.',
+  'And then it was hours of it, in the rain, with the castle a long way off up the hill.',
+  'The horn went and both teams started, and after that it was a question of who kept going.',
+  'What follows took most of the daylight and all of everybody.',
+  'They went at it until the light went, which out here is the whole of the working day.',
 ];
 
 const BREAK_TEXT = [
@@ -951,6 +964,9 @@ function _view(ep, observer) {
     onTheField: watcher == null
       || m.teams.some(t => (t.members || []).indexOf(watcher) >= 0),
     name: m.name || 'The Mission',
+    // WHAT THE TASK PHYSICALLY IS. Public by construction — the host explains
+    // it to everybody before the horn — so it is not observer-gated.
+    task: m.task || null,
     id: m.id || '',
     teams: m.teams.map(t => ({ name: t.name, members: [...(t.members || [])] })),
     bestTeam: m.bestTeam || null,
@@ -985,9 +1001,26 @@ function _buildBeats(v) {
     beats.push({ phase, html, hostSlot: hostSlot || null, meta: meta || null });
 
   // ── the brief ───────────────────────────────────────────────────────
+  // THE TASK FIRST, THEN HOW IT WENT.
+  //
+  // This card used to open on a tier line -- "Everybody knew what was being
+  // asked. Most of it got done, which out here counts as a success and is
+  // priced accordingly" -- and then quote the outcome. Between the two, the
+  // viewer was never told what the afternoon actually asked anybody to DO.
+  // They got a name ("The Cipher Crypt"), an assessment, and a result.
+  //
+  // `task` (js/tr/missions.js) is one sentence of physical instruction and it
+  // goes first, because a result is not readable before the rules are.
   push('brief', _card(v.name, 'The brief', 'banner',
-    '<p>' + _pick(BRIEF_TEXT[v.tier] || BRIEF_TEXT.solid, key + '|brief') + '</p>'
-    + '<p class="mi-say">&ldquo;' + _esc(v.summary) + '&rdquo;</p>'),
+    // AND THE OUTCOME LINE IS NOT HERE ANY MORE. `v.summary` was printed on
+    // this card AND on the work card below, which already says in its own
+    // comment that it is "the afternoon's own account of itself". So the same
+    // sentence appeared twice on one screen — and the first time was on the
+    // BRIEF, announcing how the afternoon went before the screen had shown
+    // anybody doing it. The brief now carries the task and the framing; the
+    // work card carries the result.
+    (v.task ? '<p class="mi-task">' + _esc(v.task) + '</p>' : '')
+    + '<p>' + _pick(BRIEF_TEXT[v.tier] || BRIEF_TEXT.solid, key + '|brief') + '</p>'),
   'open', { kind: 'brief' });
 
   // ── the two halves of the room ──────────────────────────────────────

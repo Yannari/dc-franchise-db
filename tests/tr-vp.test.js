@@ -8186,3 +8186,75 @@ describe('the private screens run to a measured length', () => {
       + 'has a fixed beat list, so a difference here is a dropped beat').toBe(1);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE MISSION SCREEN: SAY THE TASK, SAY IT ONCE
+// ══════════════════════════════════════════════════════════════════════
+//
+// Two defects from the same five-season text dump.
+//
+// 1. NO TASK. The brief named the mission and assessed it and never said what
+//    the afternoon asked anybody to do. `task` (js/tr/missions.js) is that
+//    sentence; this arm checks it reaches the screen rather than just the
+//    record, which is the difference this project keeps getting wrong.
+// 2. THE OUTCOME LINE TWICE. `v.summary` was printed on the brief AND on the
+//    work card, which says in its own comment that it is "the afternoon's own
+//    account of itself". The first printing also announced how the afternoon
+//    went before the screen had shown anybody doing it.
+describe('the mission screen states its task once and its result once', () => {
+  it('prints the physical task on the brief', () => {
+    let seen = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const m = ep.tr && ep.tr.mission;
+        if (!m || !m.task) continue;
+        const html = strip(rpBuildMission(ep, 'audience'));
+        // The first clause is enough — the whole sentence survives escaping
+        // differently depending on punctuation.
+        const head = m.task.split(/[.,]/)[0].trim();
+        expect(html.includes(head),
+          `ep ${ep.num}: the screen never states the task ("${head}")`).toBe(true);
+        seen++;
+      }
+    }
+    expect(seen, 'no mission with a task was rendered').toBeGreaterThan(5);
+  });
+
+  it('does not print the outcome line twice on one screen', () => {
+    let seen = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        const m = ep.tr && ep.tr.mission;
+        if (!m || !m.summary) continue;
+        const html = strip(rpBuildMission(ep, 'audience'));
+        const n = html.split(m.summary).length - 1;
+        if (!n) continue;                    // a bespoke afternoon narrates differently
+        seen++;
+        expect(n, `ep ${ep.num}: the outcome line appears ${n} times`).toBeLessThanOrEqual(1);
+      }
+    }
+    expect(seen, 'no mission summary was found on a screen').toBeGreaterThan(5);
+  });
+
+  it('has no vague filler where the afternoon should be', () => {
+    // The constructions that say nothing about the mission they are printed
+    // over. Not a style preference: each of these was drawn on top of a
+    // specific, well-written outcome line and displaced it.
+    const VAGUE = [
+      /which out here counts as a/i,
+      /the part nobody signs up for/i,
+      /the afternoon moved/i,
+      /came back neither way/i,
+      /the room learned what it was going to/i,
+    ];
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        if (!ep.tr || !ep.tr.mission) continue;
+        const html = strip(rpBuildMission(ep, 'audience'));
+        for (const re of VAGUE) {
+          expect(re.test(html), `ep ${ep.num}: vague filler ${re}`).toBe(false);
+        }
+      }
+    }
+  });
+});

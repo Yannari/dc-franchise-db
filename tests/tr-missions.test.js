@@ -140,7 +140,7 @@ vi.mock('../js/knowledge.js', async (importOriginal) => {
 import { gs, setGs, setPlayers } from '../js/core.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { playTraitorsSeason, rngFor } from '../js/tr/headless.js';
-import { runMission, POT_CEILING, MISSION_IDS, _setMissionsEnabled,
+import { runMission, POT_CEILING, MISSION_IDS, MISSION_ARCHETYPES, _setMissionsEnabled,
   _setKnowledgeMissionEnabled, _setShieldMissionEnabled } from '../js/tr/missions.js';
 import { _setBespokeMissionsEnabled } from '../js/tr/missions/index.js';
 import { _setMissionEffectsEnabled } from '../js/tr/missions/apply.js';
@@ -1135,5 +1135,53 @@ describe('the Chess mission -- knowledge as the currency (spec 7.2, source 4)', 
       if (m.tier === 'triumph') expect(m.quality).toBeGreaterThanOrEqual(0.55);
       if (m.tier === 'failed') expect(m.quality).toBeLessThan(0.15);
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE MISSION SCREEN HAS TO SAY WHAT THE MISSION WAS
+// ══════════════════════════════════════════════════════════════════════
+//
+// Found by dumping five seasons of the screen as plain text and reading it.
+// A viewer was given a NAME ("The Cipher Crypt"), an assessment ("Most of it
+// got done, which out here counts as a success and is priced accordingly"),
+// and a result — with no statement anywhere of what the afternoon actually
+// asked anybody to do. The outcome lines in js/tr/missions.js are specific and
+// good; there was simply no task above them.
+describe('every generic mission states its physical task', () => {
+  it('all seven archetypes carry a task, and it says what people DO', () => {
+    for (const m of MISSION_ARCHETYPES) {
+      expect(typeof m.task, `${m.id} has no task`).toBe('string');
+      expect(m.task.length, `${m.id}'s task is too short to be instructions`)
+        .toBeGreaterThan(80);
+      // A task is a physical instruction, so it has to contain a verb about
+      // doing something rather than a mood about an afternoon.
+      expect(/\b(carry|dig|match|run|trade|play|open|cross|haul|fill|bring|call)\w*\b/i
+        .test(m.task), `${m.id}'s task never says what anybody does`).toBe(true);
+      // And it has to say what it is worth, because that is the half a viewer
+      // cannot infer from watching.
+      expect(/\bpaid|pays|paid for|money|silver|strongbox|fund|worth|lost\b/i.test(m.task),
+        `${m.id}'s task never says what it earns or costs`).toBe(true);
+    }
+  });
+
+  it('the task survives onto the episode row the screen actually reads', () => {
+    // The record is copied field by field in `_missionRecord` (js/tr/headless.js),
+    // so a new field on the mission does not reach a screen for free — this is
+    // the arm that would have caught the task being added and not carried.
+    setPlayers(ROSTER.map(p => ({ ...p })));
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 3 });
+    let seen = 0;
+    for (const row of (gs.episodeHistory || [])) {
+      const m = row.tr && row.tr.mission;
+      if (!m || !m.id) continue;
+      // Bespoke afternoons have their own briefing machinery and are exempt.
+      if (!MISSION_ARCHETYPES.some(a => a.id === m.id)) continue;
+      seen++;
+      expect(typeof m.task, `ep ${row.num} (${m.id}) reached the row with no task`)
+        .toBe('string');
+      expect(m.task.length).toBeGreaterThan(80);
+    }
+    expect(seen, 'no archetype mission was measured').toBeGreaterThan(2);
   });
 });

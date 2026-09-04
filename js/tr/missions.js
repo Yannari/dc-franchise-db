@@ -295,6 +295,10 @@ const FIND_PER_POINT = 0.55;
 const ARCHETYPES = [
   {
     id: 'coffin-dig',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Dig weighted coffins out of a tidal flat and carry them up the cliff path before the sea closes over the dig. Every box that clears the water line is paid for; anything still down there when the tide turns is lost.',
     name: 'The Sunken Coffins',
     teams: ['Ravens', 'Hounds'],
     primary: 'endurance', secondary: 'physical',
@@ -331,6 +335,10 @@ const ARCHETYPES = [
   },
   {
     id: 'cipher-crypt',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Match each numbered tomb in the crypt to its line of scripture in the ledger the abbot left, working by candlelight. Every correct match opens a strongbox. The candles are the clock.',
     name: 'The Cipher Crypt',
     teams: ['Candles', 'Keys'],
     primary: 'mental', secondary: 'strategic',
@@ -367,6 +375,10 @@ const ARCHETYPES = [
   },
   {
     id: 'long-drop',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Carry strongboxes one at a time across a plank gantry rigged over a dry well eighty feet deep. Each box that reaches the far side is paid for; a crossing nobody will make is a box that stays where it is.',
     name: 'The Long Drop',
     teams: ['Ropes', 'Lanterns'],
     primary: 'boldness', secondary: 'temperament',
@@ -403,6 +415,10 @@ const ARCHETYPES = [
   },
   {
     id: 'wolf-run',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Run a lit lantern through the pine woods and across the ford to the castle courtyard. The money rides on the flame: a lantern that arrives still lit pays, and one that goes out on the way pays nothing.',
     name: 'The Wolf Run',
     teams: ['Pines', 'Fords'],
     primary: 'physical', secondary: 'intuition',
@@ -439,6 +455,10 @@ const ARCHETYPES = [
   },
   {
     id: 'bone-market',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Trade a bag of worthless trinkets up through nine stalls of a bone market, one deal at a time, and come back with silver. Every trade must go up in value; the stallholders are under no obligation to be reasonable.',
     name: 'The Bone Market',
     teams: ['Coins', 'Cups'],
     primary: 'social', secondary: 'strategic',
@@ -475,6 +495,10 @@ const ARCHETYPES = [
   },
   {
     id: 'blind-chess',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Play out a game of chess on a courtyard board with the pieces hidden from the players, calling moves from memory alone. Every piece taken cleanly is paid for.',
     name: 'The Blind Chess Game',
     teams: ['White', 'Black'],
     primary: 'mental', secondary: 'intuition',
@@ -518,6 +542,10 @@ const ARCHETYPES = [
   },
   {
     id: 'the-reliquary',
+    // WHAT THEY PHYSICALLY DO. Rendered on the brief card: the outcome
+    // lines below say what HAPPENED, and without this the viewer is told a
+    // mission name and a result with no task in between.
+    task: 'Carry reliquaries up the tower stair, one to a niche, until every niche is filled. Every niche filled is paid for. It is also the one afternoon where somebody can leave the line and come back carrying something the castle cannot see.',
     name: 'The Reliquary',
     teams: ['Bells', 'Bones'],
     // The last stat in the game to be used by a mission, and the right one for
@@ -590,6 +618,10 @@ export function sideObjectiveLabel(id) {
 
 /** Every archetype id, for tests and for anything enumerating the catalogue. */
 export const MISSION_IDS = ARCHETYPES.map(m => m.id);
+// The archetypes themselves, for the guard that checks every one of them
+// states its physical task (tests/tr-missions.test.js). Read-only by
+// convention; nothing in the engine mutates an archetype.
+export const MISSION_ARCHETYPES = ARCHETYPES;
 
 /**
  * Test-only kill switch. The equivalence arm in tests/tr-missions.test.js
@@ -1228,6 +1260,10 @@ export function runMission(ep, rng) {
     // second opinion about it (js/tr/armoury.js `_contribution`).
     primary: m.primary || null, secondary: m.secondary || null,
     id: m.id, ep, name: m.name, teams, quality, tier, bestTeam,
+    // WHAT THE AFTERNOON PHYSICALLY WAS. The brief card names the mission
+    // and the outcome lines say how it went; without this the viewer is
+    // never told what the task actually asked people to do.
+    task: m.task || null,
     gross, earned, potAfter: gs.tr.pot, sideObjectives,
     summary: _freshPick(rng, m.lines[tier]),
   };

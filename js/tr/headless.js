@@ -665,6 +665,10 @@ function _missionRecord(m) {
   const r = relicKey ? m[relicKey] : null;
   return {
     id: m.id, ep: m.ep, name: m.name,
+    // The physical task. On the row for the same reason everything else here
+    // is: the screen reads a record and must not reach into `gs.tr.missions`
+    // for whichever afternoon happened to run last.
+    task: m.task || null,
     teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])],
       perf: t.perf })),
     quality: m.quality, tier: m.tier, bestTeam: m.bestTeam,

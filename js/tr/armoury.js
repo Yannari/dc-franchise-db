@@ -32,7 +32,8 @@
 // single murder or ballot in a season that does not run one.
 import { gs, seasonConfig } from '../core.js';
 import { pStats } from '../players.js';
-import { alignmentAt } from './roles.js';
+import { alignmentAt, alignmentFactId } from './roles.js';
+import { learn, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 
 /**
  * The Shield grant, written here rather than imported.
@@ -222,3 +223,107 @@ export function armouryHesitation(name, ep) {
 // wants. It is NOT a filter: the pact can still choose an entrant and lose the
 // night, and the audience gets to watch them do it.
 const WASTED_NIGHT = 1.8;
+
+// ══════════════════════════════════════════════════════════════════════
+// WHAT A FULL TABLE MEANS WHEN EVERYBODY KNOWS A SHIELD IS OUT THERE
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE HOLE THIS CLOSES, measured before it was written: across 120 Armoury
+// seasons the castle blocked 16 murders and formed ZERO beliefs from any of
+// them. Every other channel that reads a night reads a BODY — `murderEvidence`
+// suppresses itself on a blocked night, and `variantEvidence` returns early
+// with a comment saying so — and `shieldEvidence` (js/tr/powers.js) runs off
+// the WITNESS list, which an Armoury shield deliberately leaves empty because
+// nobody is told who won. Three channels, each correct on its own terms, and
+// between them the format's strongest single night was dead air.
+//
+// THE INFERENCE THE CASTLE CAN ACTUALLY MAKE, and why it is public here and
+// private for a mission shield:
+//
+//   A mission shield is won in front of whoever happened to be looking, so the
+//   room does not collectively know a shield is live. `shieldEvidence` is
+//   right to gate on witnesses.
+//
+//   An Armoury is different in exactly the way that matters. WHO WENT IN IS
+//   PUBLIC — it was the afternoon's reward, handed out in front of everybody —
+//   so the whole castle knows a shield exists and knows the four people it
+//   could belong to. A full table on that night is therefore legible to the
+//   room, not just to the audience: nobody died, a shield was live, so the
+//   Traitors spent their night on one of those four.
+//
+// WHO IT INCRIMINATES. Not the entrants. The Traitors went for one of them,
+// which makes that person Faithful, and the belief store has no way to say
+// "this person looks innocent" — `learn` only ever raises confidence that an
+// alignment fact is TRUE. What is expressible, and what the room would
+// genuinely say out loud, is the mirror of `pushedThenNearlyDied`: whoever
+// pushed an entrant at last night's table wanted what the Traitors wanted.
+//
+// PRICED FOR THE UNCERTAINTY THE ROOM ACTUALLY HAS. The witness channel pays
+// the full ceiling because a witness knows WHICH player the attempt landed on.
+// The castle does not — it knows only that the target was one of N entrants —
+// so a pusher is implicated at roughly the odds their name was the one, which
+// is how many entrants they pushed over how many there were. Pushing one of
+// four is a quarter of the case, and it is priced as a quarter of the case.
+const ARMOURY_BLOCK_KIND = 'pushed-an-entrant-the-night-the-shield-held';
+
+/**
+ * The room's read on an Armoury night that ate a murder.
+ *
+ * Returns the beliefs formed, for measurement. Emits nothing at all — and
+ * consumes no rng — on any night that was not an Armoury block, so a season
+ * played without an Armoury is bit-identical to one played before this
+ * existed.
+ */
+export function armouryBlockEvidence(ep, rng = Math.random) {
+  const tr = gs.tr;
+  if (!tr) return [];
+  const living = gs.activePlayers || [];
+  // Did an ARMOURY shield eat a murder tonight? Both halves have to be true:
+  // a block on the ledger, and a shield behind it that came out of the room.
+  const blocked = (tr.blockedMurders || []).filter(b => b.ep === ep);
+  if (!blocked.length) return [];
+  const armouryShields = (tr.shields || []).filter(sh => sh.ep === ep && sh.via === 'armoury');
+  if (!armouryShields.length) return [];
+  const hit = blocked.find(b => armouryShields.some(sh => sh.holder === b.target));
+  if (!hit) return [];
+
+  // The entrant list is the public half of the Armoury and the only reason
+  // this read exists. Without it the room has a full table and nothing to
+  // attach it to.
+  const rec = armouryAt(ep);
+  const entrants = (rec?.entrants || []).filter(n => living.includes(n));
+  if (entrants.length < 2) return [];
+
+  // Last night's table: where "you wanted them gone" is on the record.
+  const round = (tr.rounds || []).filter(r => r.ep === ep).pop();
+  if (!round) return [];
+  const pushedBy = new Map();
+  const note = (who, target) => {
+    if (!who || !living.includes(who)) return;
+    if (!pushedBy.has(who)) pushedBy.set(who, new Set());
+    pushedBy.get(who).add(target);
+  };
+  for (const a of (round.accusations || [])) {
+    if (entrants.includes(a.target)) note(a.accuser, a.target);
+  }
+  for (const b of (round.ballots || [])) {
+    if (b.channel === 'banishment' && entrants.includes(b.voted)) note(b.voter, b.voted);
+  }
+
+  const formed = [];
+  for (const [pusher, targets] of pushedBy) {
+    // An entrant who pushed another entrant is still saying a name; being in
+    // the room does not exempt them from having wanted somebody out of it.
+    const price = Math.min(ALIGNMENT_CRED_CEILING,
+      ALIGNMENT_CRED_CEILING * (targets.size / entrants.length));
+    for (const observer of living) {
+      if (observer === pusher) continue;
+      const belief = learn(observer, alignmentFactId(pusher), {
+        source: `wanted somebody out of the Armoury group the night the shield held`,
+        sourceType: price >= 0.5 ? 'deduced' : 'rumor', confidence: price, ep, rng,
+      });
+      if (belief) formed.push({ observer, subject: pusher, kind: ARMOURY_BLOCK_KIND, ep });
+    }
+  }
+  return formed;
+}

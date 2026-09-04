@@ -24,6 +24,8 @@ import { rpBuildHouseStatus } from '../js/vp-tr/house-status.js';
 import { rpBuildArmoury } from '../js/vp-tr/armoury.js';
 import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
 import { generateTraitorsSummaryText } from '../js/text-backlog.js';
+import { armouryBlockEvidence } from '../js/tr/armoury.js';
+import { recordFact, resetKnowledge } from '../js/knowledge.js';
 import roster from '../franchise_roster.json';
 
 const ROSTER = roster.players.slice(0, 20);
@@ -285,5 +287,127 @@ describe('the Armoury screen shows the room and withholds the door', () => {
     expect(page, 'the holder was not shown their own find').toMatch(/data-f="1"/);
     // Exactly one find is visible to them — their own, never a second holder's.
     expect((page.match(/data-f="1"/g) || []).length).toBe(1);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ROOM'S READ ON A NIGHT THE SHIELD HELD
+// ══════════════════════════════════════════════════════════════════════
+//
+// MEASURED BEFORE IT WAS BUILT: across 120 Armoury seasons the castle blocked
+// 16 murders and formed ZERO beliefs from any of them. Every channel that
+// reads a night reads a BODY — `murderEvidence` suppresses itself on a blocked
+// night, `variantEvidence` returns early with a comment saying so, and
+// `shieldEvidence` runs off the witness list, which an Armoury shield leaves
+// empty on purpose because nobody is told who won. Three channels, each right
+// on its own terms, and between them the format's strongest night was silent.
+//
+// `armouryBlockEvidence` is the one read the room can actually run: WHO WENT
+// IN IS PUBLIC, so a full table on that night says the Traitors spent the
+// night on one of those four.
+//
+// It incriminates the PUSHERS and not the entrants, and that is not a
+// preference — a targeted entrant is Faithful, and `learn` has no way to say
+// "this person looks innocent". See the header note in js/tr/armoury.js.
+describe('a blocked Armoury night is not dead air', () => {
+  it('costs nothing — no beliefs, no rng — on a night that was not one', () => {
+    // THE ARM THAT PROTECTS EVERY STORED SEASON. The channel runs on the
+    // missions' stream; a draw taken on an ordinary night would displace every
+    // mission roll after it.
+    seasonConfig.trShieldSource = 'mission';
+    setPlayers(ROSTER);
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 4 });
+    let calls = 0;
+    const rng = () => { calls++; return 0.5; };
+    for (let ep = 1; ep <= 8; ep++) {
+      expect(armouryBlockEvidence(ep, rng),
+        `ep ${ep} formed beliefs on a season with no Armoury`).toEqual([]);
+    }
+    expect(calls, 'the channel drew from the rng on a night it does nothing').toBe(0);
+  });
+
+  // ── WHY THIS IS TWO ARMS AND NOT ONE END-TO-END ONE ────────────────
+  //
+  // Two attempts at a single "play seasons and check what happened" arm both
+  // failed for reasons worth keeping, because each was the guard measuring the
+  // wrong thing rather than the code being wrong:
+  //
+  //   1. RE-RUNNING THE CHANNEL after the season does not reproduce the night.
+  //      It reads live `gs.activePlayers`, and by the finale almost every
+  //      pusher and entrant has been banished or murdered, so it correctly
+  //      declines to speak about any of them. The arm reported "no block in 60
+  //      seasons reached the channel" about a channel that had fired.
+  //   2. READING THE BELIEF STORE at the end does not find them either.
+  //      `pruneStale` drops a fact roughly six episodes after it is created
+  //      (js/knowledge.js), so a belief formed on night 5 of a twelve-night
+  //      season is gone before the season is.
+  //
+  // So the behaviour is asserted directly on a constructed night, and
+  // REACHABILITY -- that real seasons produce such nights at all -- is
+  // asserted separately. Neither half is worth much alone: the first without
+  // the second is the written-but-unreachable shape this project keeps
+  // shipping, and the second without the first proves only that a rare thing
+  // happens.
+  it('blames the people who pushed an entrant, never the shield holder', () => {
+    setPlayers(ROSTER.map(p => ({ ...p })));
+    const cast = CAST.slice(0, 8);
+    const [holder, other, pusher, bystander] = cast;
+    resetKnowledge();
+    gs.activePlayers = [...cast];
+    for (const n of cast) recordFact({ type: 'alignment', subject: n, truth: false, ep: 1 });
+    gs.tr = Object.assign(gs.tr || {}, {
+      blockedMurders: [{ ep: 3, target: holder }],
+      shields: [{ ep: 3, holder, via: 'armoury', witnesses: [], visibility: 'secret' }],
+      armouries: [{ ep: 3, via: 'armoury', entrants: [holder, other, cast[4], cast[5]],
+        holders: [holder], count: 1 }],
+      rounds: [{ ep: 3,
+        accusations: [{ accuser: pusher, target: holder }],
+        ballots: [{ channel: 'banishment', voter: pusher, voted: holder }] }],
+    });
+    // AN ACCEPTING DRAW, ON PURPOSE. `learn` rolls for acceptance against the
+    // belief's credibility, and this channel is deliberately cheap — pushing
+    // one of four entrants is a quarter of the case, so it prices at 0.155 and
+    // is REFUSED by most of the room most of the time. A 0.5 draw here made
+    // the arm report silence from a channel that was working exactly as
+    // designed. What is under test is who gets blamed, not how often.
+    const formed = armouryBlockEvidence(3, () => 0);
+    expect(formed.length, 'the channel said nothing about a night built to make it speak')
+      .toBeGreaterThan(0);
+    const subjects = new Set(formed.map(f => f.subject));
+    expect([...subjects], 'somebody other than the pusher was blamed').toEqual([pusher]);
+    expect(subjects.has(holder), 'the holder was blamed for having been protected')
+      .toBe(false);
+    for (const f of formed) {
+      expect(f.observer, 'a player formed this belief about themselves').not.toBe(f.subject);
+      expect(gs.activePlayers).toContain(f.observer);
+    }
+    // The whole castle runs this read — that is the difference from the
+    // witness-gated mission channel, and it is the point of the Armoury being
+    // public about WHO WENT IN.
+    expect(new Set(formed.map(f => f.observer)).size).toBeGreaterThan(2);
+    expect(formed.every(f => f.observer !== bystander)).toBe(false);
+  });
+
+  it('and real seasons actually reach that night', () => {
+    let blocks = 0, withEntrants = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      seasonConfig.trShieldSource = 'armoury';
+      seasonConfig.trArmourySize = 4;
+      setPlayers(ROSTER.map(p => ({ ...p })));
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      const tr = gs.tr || {};
+      for (const b of (tr.blockedMurders || [])) {
+        const sh = (tr.shields || []).find(x => x.ep === b.ep && x.holder === b.target
+          && x.via === 'armoury');
+        if (!sh) continue;
+        blocks++;
+        const rec = (tr.armouries || []).find(a => a.ep === b.ep);
+        if (rec && (rec.entrants || []).length >= 2
+          && (tr.rounds || []).some(r => r.ep === b.ep)) withEntrants++;
+      }
+    }
+    expect(blocks, 'no Armoury shield blocked a murder in 60 seasons').toBeGreaterThan(0);
+    expect(withEntrants, 'blocks happen but never with the entrant list and table the '
+      + 'channel needs — it would be unreachable in a real season').toBeGreaterThan(0);
   });
 });

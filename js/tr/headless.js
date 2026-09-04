@@ -41,7 +41,7 @@ import { buildEpisodeEdit } from './episode-editor.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 import { runEndgame } from './endgame.js';
-import { runArmoury } from './armoury.js';
+import { runArmoury, armouryBlockEvidence } from './armoury.js';
 import { computeAlliances } from './alliances.js';
 import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
   scoreEndgame } from './crowd.js';
@@ -2235,6 +2235,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // roll drawn from the game's own stream would displace every murder and
   // ballot after it (see _missionRngFor).
   shieldEvidence(ep, missionRng, n1);
+  // AND THE ROOM'S OWN READ, which only an Armoury night has. Runs beside
+  // `shieldEvidence` and on the same stream for the same reasons: the shield
+  // must still be live to be identified, and this belongs to the mission the
+  // Armoury came out of. Returns immediately, drawing nothing, on any night
+  // that was not an Armoury block — so a season with no Armoury is unchanged.
+  armouryBlockEvidence(ep, missionRng);
   expireShields(ep);
   // A Dagger is NOT expired here — that is the whole difference between the
   // two powers, and the reason one of them can reach the endgame. What this
@@ -2347,6 +2353,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     const night = _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
     shieldEvidence(ep, missionRng, night);
+    armouryBlockEvidence(ep, missionRng);
     expireShields(ep);
     settleDaggers(ep);   // see night one: the banished and the murdered, both
     castleEvents.push(...runCastlePhase('post-banishment', ep, castleRng)); // night

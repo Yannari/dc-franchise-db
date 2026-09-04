@@ -49,10 +49,10 @@ body{margin:0;background:#05070a;color:var(--am-rime);
 /* torchlight: two warm pools that breathe */
 .am-glow{position:fixed;width:760px;height:760px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,155,61,.20) 0%,rgba(255,155,61,.07) 34%,transparent 66%);
-  animation:am-breathe 5.5s ease-in-out infinite}
+  animation:am-breathe 7.5s ease-in-out infinite}
 .am-glow.l{left:-190px;top:2vh}
 .am-glow.r{right:-190px;top:26vh;animation-delay:-2.3s}
-@keyframes am-breathe{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+@keyframes am-breathe{0%,100%{opacity:.86;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}
 .am-vig{position:fixed;inset:0;pointer-events:none;
   box-shadow:inset 0 0 300px 90px rgba(4,3,2,.95)}
 .am-grain{position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
@@ -181,13 +181,18 @@ body{margin:0;background:#05070a;color:var(--am-rime);
   .am-flame{animation:none!important}
 }
 /* the torch flames flicker */
-.am-flame{transform-origin:50% 100%;animation:am-flick 1.7s ease-in-out infinite}
-.am-flame.b{animation-duration:2.3s;animation-delay:-.7s}
+/* A FLAME SITTING IN A BRACKET, NOT A SPIRIT. The first cut swung 13% of its
+   own height on a 1.7s cycle and blurred hard, and the two of those together
+   read as something drifting rather than something burning. A torch in still
+   air barely moves: this breathes about 4%, never leaves its own base, and
+   runs slowly enough that the eye stops following it. */
+.am-flame{transform-origin:50% 100%;animation:am-flick 3.4s ease-in-out infinite}
+.am-flame.b{animation-duration:4.3s;animation-delay:-1.6s}
 @keyframes am-flick{
-  0%,100%{transform:scaleY(1) scaleX(1) translateY(0)}
-  30%{transform:scaleY(1.13) scaleX(.93) translateY(-2px)}
-  55%{transform:scaleY(.94) scaleX(1.06) translateY(1px)}
-  78%{transform:scaleY(1.07) scaleX(.97) translateY(-1px)}}
+  0%,100%{transform:scaleY(1) scaleX(1)}
+  34%{transform:scaleY(1.045) scaleX(.985)}
+  62%{transform:scaleY(.98) scaleX(1.015)}
+  82%{transform:scaleY(1.02) scaleX(.995)}}
 </style>
 </head>
 <body>
@@ -220,7 +225,7 @@ body{margin:0;background:#05070a;color:var(--am-rime);
       </linearGradient>
       <filter id="fSoft"><feGaussianBlur stdDeviation="9"/></filter>
       <filter id="fFlame" x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur stdDeviation="4"/></filter>
+        <feGaussianBlur stdDeviation="1.6"/></filter>
       <pattern id="pAshlar" width="240" height="96" patternUnits="userSpaceOnUse">
         <rect width="240" height="96" fill="url(#gStone)"/>
         <!-- mortar courses + staggered joints -->

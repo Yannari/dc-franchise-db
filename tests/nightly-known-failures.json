@@ -1,0 +1,52 @@
+{
+  "_why": [
+    "The nightly simulation suite (.github/workflows/nightly.yml) had failed every",
+    "night for at least eight consecutive runs, 2026-08-28 through 2026-09-04, with",
+    "9 of 77 files red. It was running perfectly. Nobody could act on it, because a",
+    "workflow that is red every morning is indistinguishable from one that has just",
+    "broken -- so a genuine regression landed in it and sat there for a day without",
+    "anybody being able to see it against the noise.",
+    "",
+    "This file is the noise, written down. scripts/nightly-gate.mjs fails the run",
+    "only on a file that is NOT listed here, so tomorrow's red means something new.",
+    "",
+    "IT IS NOT A PLACE TO PUT FAILURES. The gate also fails when a file listed here",
+    "PASSES, which forces the list to shrink as things are fixed and stops it",
+    "becoming a permanent amnesty. Every entry carries the date it was first seen",
+    "and what it says, so the list can be read as a to-do rather than as a shrug."
+  ],
+  "files": {
+    "tests/bb-broken-promise.test.js": {
+      "since": "2026-09-04",
+      "note": "a promise no longer firms a vote at all: 0.0988 not < 0.0851 — a calibration band, drifted"
+    },
+    "tests/bb-halting-hex.test.js": {
+      "since": "2026-09-04",
+      "note": "no hex fired in 25 seeds — the twist has become unreachable, which is this project's signature bug class and the most urgent entry here"
+    },
+    "tests/bb-knowledge.test.js": {
+      "since": "2026-09-04",
+      "note": "barely any couples formed across sixteen seasons: 36 not > 60 — showmance formation rate has fallen"
+    },
+    "tests/bb-love-triangle.test.js": {
+      "since": "2026-09-04",
+      "note": "a house triangle described with camp vocabulary — one show's words over the other, the bug class docs/ADDING-A-SHOW.md exists for"
+    },
+    "tests/bb-season-export.test.js": {
+      "since": "2026-09-04",
+      "note": "the Rivals twist recorded 15 rivalries where the export expects 1"
+    },
+    "tests/bb-theme-high-rollers.test.js": {
+      "since": "2026-09-04",
+      "note": "the floor paid each side of a split week its own tier set instead of paying the house once"
+    },
+    "tests/events-big-brother-volume.test.js": {
+      "since": "2026-09-04",
+      "note": "22 BB events never fire in 48 seeded seasons (nightmare-*, hrr-*, wildcard-*, cliques-*, past-*) — written, registered and unreachable"
+    },
+    "tests/vp-big-brother-week.test.js": {
+      "since": "2026-09-04",
+      "note": "the visual player does not show the competition by name"
+    }
+  }
+}

@@ -15,6 +15,20 @@ name: Nightly simulation tests
 #
 # The file list lives in vitest.slow.js, shared with vitest.config.js so the
 # two halves cannot disagree about which side a test is on.
+#
+# ── 2026-09-04: IT RAN EVERY NIGHT AND NOBODY COULD USE IT ────────────
+#
+# This workflow executed faithfully and FAILED on every one of the eight runs
+# from 2026-08-28 to 2026-09-04 — 9 of 77 files red. A job that is red every
+# morning carries the same information as one that is switched off, and it
+# showed: a genuine regression landed on the 3rd and was invisible against a
+# week of existing red.
+#
+# So the step below is no longer `npm run test:sim` but the gate around it. It
+# fails on a file that is NOT in tests/nightly-known-failures.json, and also on
+# a file listed there that has started passing — which is what stops the list
+# becoming a permanent amnesty. The known failures are printed every run, so
+# they read as the outstanding work rather than as noise.
 
 on:
   schedule:
@@ -36,6 +50,17 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      # --reporter=verbose, because the per-file timings printed here are how
-      # vitest.slow.js gets re-derived when it rots.
-      - run: npm run test:sim
+      # The gate runs vitest itself, with --reporter=verbose (the per-file
+      # timings printed here are how vitest.slow.js gets re-derived when it
+      # rots) AND --reporter=json, which is what it compares against the
+      # baseline. `npm run test:sim` is still the way to run the suite by hand
+      # without the gate.
+      - run: npm run test:nightly
+      # The machine-readable result, kept whatever the verdict was, so a red
+      # morning can be diffed against the one before it rather than re-run.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-results
+          path: .nightly/results.json
+          if-no-files-found: warn

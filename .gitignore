@@ -49,3 +49,4 @@ assets/gallery/
 !.dev.vars.example
 .env*
 !.env.example
+.nightly/

@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:sim": "vitest run --config vitest.sim.config.js --reporter=verbose",
+    "test:nightly": "node scripts/nightly-gate.mjs",
     "calibrate:voting": "vitest run tests/emotional-defection-calibration.test.js --reporter=verbose",
     "audit:realism": "vitest run --config vitest.audit.config.js tests/voting-realism-audit.test.js --reporter=verbose",
     "audit:season": "vitest run --config vitest.audit.config.js tests/full-season-audit.test.js --reporter=verbose",

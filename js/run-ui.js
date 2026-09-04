@@ -602,6 +602,15 @@ export function renderRunTab() {
     const _viewNum = viewingEpNum || gs.episodeHistory[gs.episodeHistory.length-1]?.num;
     if (replayBtn) replayBtn.style.display = _canReplay(_viewNum) ? 'block' : 'none';
   }
+  // LIVE-UPDATE THE SEASON TIMELINE. `buildEpisodeMap` reads the REAL nights off
+  // the season's rows once they exist (see its Traitors branch), but the Format
+  // Designer's timeline was only redrawn on the setup screen and on twist edits
+  // — never as episodes aired — so it kept showing the pre-simulation projection
+  // ("N left" and the twist row frozen at the guess). Refreshing it here, after
+  // every episode the run tab draws, makes it track what actually happened.
+  // `renderTimeline` no-ops when its container is absent, so this is safe on any
+  // screen and for any format.
+  try { renderTimeline(); } catch (e) { /* timeline is optional chrome */ }
 }
 
 export function renderGameState() {

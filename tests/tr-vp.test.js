@@ -5750,9 +5750,12 @@ describe('the belief record reaches the row at all', () => {
         flips++;
         for (const e of rows) {
           if (!e.tr.beliefs.living.includes(name)) continue;
-          if (e.tr.ep < at) {
+          // Voting Plans is frozen before the table. A recruitment recorded
+          // on this episode happens later that night, so the recruit is still
+          // a Faithful on this screen and first appears as a Traitor tomorrow.
+          if (e.tr.ep <= at) {
             expect(e.tr.beliefs.truth[name],
-              `${name} is reported a Traitor on ep ${e.tr.ep}, before the ep ${at} flip`)
+              `${name} is reported a Traitor on ep ${e.tr.ep}, before the ep ${at} night flip`)
               .toBe('faithful');
             before++;
           } else {
@@ -5788,6 +5791,36 @@ describe('the belief record reaches the row at all', () => {
 });
 
 describe('the suspicion board is reachable from a played season', () => {
+  it('contains no deduction created by the Round Table it is shown before', () => {
+    let checked = 0;
+    for (const { ep } of BOARDS) {
+      const chosen = ep.tr.table?.chosen;
+      if (!chosen) continue;
+      const leaked = ep.tr.beliefs.boards.flatMap(b => b.entries)
+        .filter(e => String(e.why || '').includes(`the night ${chosen} was revealed`));
+      expect(leaked, `ep ${ep.num}: Voting Plans knows the result of its future Round Table`)
+        .toEqual([]);
+      checked++;
+    }
+    expect(checked, 'no pre-table belief board had a later Round Table').toBeGreaterThan(15);
+  });
+
+  it('explains collective suspicion and certainty in direct language', () => {
+    const vague = /past the wall|the room, measured|one page, and it belongs|the room from where|the asking|whatever the reasoning was worth|the strongest of those reads is the one that will do the damage|reasoning well|written down\. not once|nobody unconvinced/i;
+    let checked = 0;
+    for (const { ep } of BOARDS.slice(0, 20)) {
+      const text = strip(suspicionRevealed(ep, 'audience'));
+      expect(text, `ep ${ep.num}: the screen never defines its percentages`)
+        .toContain('A Faithful’s percentage is their confidence in one suspicion.');
+      expect(text, `ep ${ep.num}: the screen never distinguishes Traitor certainty`)
+        .toContain('Traitors know the identities of the other Traitors with 100% certainty.');
+      expect(vague.test(text), `ep ${ep.num}: the suspicion screen still uses unexplained metaphor`)
+        .toBe(false);
+      checked++;
+    }
+    expect(checked, 'no suspicion screen was checked').toBeGreaterThan(10);
+  });
+
   it('buildVPScreens registers it for every night the castle wrote something down', () => {
     let seen = 0;
     for (const r of RUNS) {

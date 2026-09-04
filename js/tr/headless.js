@@ -1812,7 +1812,7 @@ function _snapshotBonds() {
 
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
   castle = null, endgame = false, selection = null, arrival = null,
-  finale = false } = {}) {
+  finale = false, beliefs = undefined } = {}) {
   // THE DOOR, NOT JUST THE NAME. docs/ADDING-A-SHOW.md §5 gives `exits[]` a
   // `verb` and a `channel` and this row was writing neither, so every reader
   // of the episode history knew somebody had gone and not which of the show's
@@ -1968,7 +1968,7 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // `_tableRecord` already withholds its `truth` there; a belief block
       // carrying every survivor's alignment would hand the last table exactly
       // what the format spends it refusing to say.
-      beliefs: endgame ? null : _beliefRecord(ep),
+      beliefs: endgame ? null : (beliefs === undefined ? _beliefRecord(ep) : beliefs),
       // -- WHY ANYTHING ON THIS ROW IS DIFFERENT (Plan 10, Task 4) -----
       //
       // Every state write a scene performed tonight, with the cause that
@@ -2157,6 +2157,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // the room believes, which is the point of it.
   missionEvidence(ep, missionRng);
   castle1.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back
+  const beliefs1 = _beliefRecord(ep);
   const n1 = _night(ep, rng);
   // THE SHIELD IS RESOLVED THE MOMENT THE NIGHT IS, and in this order for two
   // reasons. `shieldEvidence` has to run while the Shield is still live —
@@ -2178,7 +2179,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   castle1.push(...runCastlePhase('post-banishment', ep, castleRng)); // night
   scoreMission(ep, mission1);
   _recordEpisode(ep, { banished: null, night: n1, mission: mission1, castle: castle1,
-    selection, arrival });
+    selection, arrival, beliefs: beliefs1 });
   log.push({ ep, banished: null, wasTraitor: null, ...n1, mission: mission1,
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
@@ -2265,6 +2266,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     missionEvidence(ep, missionRng);
     castleEvents.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back
     castleEvents.push(...runCastlePhase('private-strategy', ep, castleRng)); // evening
+    // Voting Plans is shown before the Round Table, so freeze its beliefs now.
+    // The reveal cascade inside runRoundTable() creates valid information for
+    // tomorrow, but it must not travel backward onto tonight's pre-table screen.
+    const beliefsBeforeTable = _beliefRecord(ep);
     const r = runRoundTable(ep, rng);
     if (!r) break;   // an empty castle: nothing left to banish
     // The reveal cascade has already run inside runRoundTable by the time
@@ -2291,7 +2296,8 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // bit-identical with the ledgers in place. See js/tr/crowd.js.
     scoreMission(ep, mission);
     scoreTable(ep, r, { bondOf: getBond });
-    _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents });
+    _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents,
+      beliefs: beliefsBeforeTable });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night, mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });

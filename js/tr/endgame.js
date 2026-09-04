@@ -304,6 +304,12 @@ export function runEndgame(startEp, rng = Math.random, { reveal = false } = {}) 
     const choices = alreadyWon
       ? living.map(n => ({ name: n, choice: 'end', role: 'faithful' }))
       : secretBallot(living, ep);
+    // Automatic choices are still decisions written to the endgame record.
+    // Keep the observation seam complete even though secretBallot() was not
+    // needed to calculate them.
+    if (alreadyWon && _watch) {
+      for (const c of choices) _watch({ ...c, ep, living: [...living] });
+    }
     ballots.push({ ep, choices, living });
     if (alreadyWon || !choices.some(c => c.choice === 'banish')) break;
     // `reveal` is the author's Castle Option (spec §8's rule is the default:

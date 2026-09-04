@@ -934,10 +934,9 @@ function _votingWall(v) {
   const wall = portraitWall({ names: v.living.slice(), highlight, caption, size: 52 });
   const pct = _pct(v.ceiling);
   const legend = v.truthKnown
-    ? '<p class="sn-said">A face with <b>&rarr;</b> under it is a Faithful leaning '
-      + 'toward a name for the table &mdash; and a read is a feeling, not proof: nothing '
-      + 'a Faithful can hold is worth more than ' + pct + '%. A ring is a face somebody '
-      + 'means to move against. What the pact will do after dark is not on this wall.</p>'
+    ? '<p class="sn-said">An arrow names the person that Faithful currently wants to banish. '
+      + 'A ring marks anyone targeted by at least one Faithful. These are voting intentions, '
+      + 'not proof, and no Faithful confidence score can exceed ' + pct + '%.</p>'
     : '<p class="sn-said">Your <b>&rarr;</b> is the name you are leaning toward at the '
       + 'table. It is a feeling and not proof &mdash; nothing you can hold is worth more '
       + 'than ' + pct + '%, and nobody in this castle can get past that. What anybody '
@@ -1138,13 +1137,11 @@ function _buildBeats(v) {
   push('open', _votingWall(v), { kind: 'plans' });
 
   // ── 1. THE ROOM, MEASURED ───────────────────────────────────────────
-  push('open', _card('The Room, Measured', 'The rule', 'rule',
-    '<p>' + _fill(_pick(OPENING, key + '|open'), {
-      whoN: _word(holders) + ' ' + _s(holders, 'person', 'people'),
-      has: _s(holders, 'has', 'have'), are: _s(holders, 'is', 'are'),
-    }) + '</p>'
-    + '<p class="sn-said">' + _fill(_pick(WALL_RULE, key + '|wall'), { pct: pctWall })
-    + '</p>'
+  push('open', _card('How To Read The Board', 'The rule', 'rule',
+    '<p>A Faithful’s percentage is their confidence in one suspicion. It is calculated from '
+    + 'recorded votes, conversations, observations and rumors.</p>'
+    + '<p class="sn-said">Faithful confidence is capped at ' + pctWall
+    + '. Traitors know the identities of the other Traitors with 100% certainty.</p>'
     + _sums([
       ['In the castle', v.living.length],
       ['Holding a read', holders],
@@ -1160,31 +1157,29 @@ function _buildBeats(v) {
   shown.forEach((row, i) => {
     const isT = truth[row.name] === 'traitor';
     const flip = flipEp[row.name];
+    const topAccuser = _topAccuser(v, row.name);
     const lead = row.accusers === 0
-      ? _fill(_pickUnique(WEIGH_NONE, key + '|w0|' + i, used),
-        { who: _esc(row.name), n: _word(row.cleared) })
-      : row.accusers === 1
-      ? _fill(_pickUnique(WEIGH_ONE, key + '|w1|' + i, used),
-        { who: _esc(row.name), who2: _esc(_topAccuser(v, row.name) || 'one of them') })
-      : _fill(_pickUnique(WEIGH, key + '|w|' + i, used), {
-        who: _esc(row.name), n: _word(row.accusers), N: _Word(row.accusers),
-        acc: _s(row.accusers, 'name against them', 'names against them'),
-        have: _s(row.accusers, 'has', 'have'),
-      });
+      ? 'No Faithful currently suspects ' + _esc(row.name) + '. '
+        + _word(row.cleared) + ' ' + _s(row.cleared, 'person has', 'people have')
+        + ' considered and dismissed the name.'
+      : _Word(row.accusers) + ' ' + _s(row.accusers, 'Faithful currently suspects',
+        'Faithfuls currently suspect') + ' ' + _esc(row.name) + '.'
+        + (topAccuser ? ' ' + _esc(topAccuser) + ' holds the strongest individual suspicion.' : '');
     const verdictPool = row.accusers === 0
       ? (isT ? DROPPED_HIT : DROPPED_MISS)
       : (!isT ? TRUE_MISS : (flip ? TRUE_FLIP : TRUE_HIT));
-    const verdict = _fill(_pickUnique(verdictPool, key + '|v|' + i, used), {
-      who: _esc(row.name), sub: 'they', since: 'the first night',
-      day: _word(flip || 1),
-    });
-    push('castle', _card(row.name, _ord(i) + ' by weight of opinion', 'pin',
+    const verdict = row.accusers === 0
+      ? (isT ? _esc(row.name) + ' is a Traitor, so dismissing this suspicion is incorrect.'
+        : _esc(row.name) + ' is a Faithful, so dismissing this suspicion is correct.')
+      : (isT ? _esc(row.name) + ' is a Traitor, so the suspicion is correctly directed.'
+        : _esc(row.name) + ' is a Faithful, so the suspicion is incorrectly directed.');
+    push('castle', _card(row.name, _ord(i) + ' by total Faithful suspicion', 'pin',
       '<p>' + lead + '</p>'
       + _weigh(row.name, row.top, v.ceiling, truth[row.name] || null,
         _word(row.accusers) + ' ' + _s(row.accusers, 'accuser') + ', '
         + (row.cleared ? _word(row.cleared) + ' ' + _s(row.cleared, 'dismissal')
-          : 'nobody unconvinced'),
-        'the strongest single read against them')
+          : 'no dismissals'),
+        'strongest individual confidence')
       + '<div class="sn-verdict" data-truth="' + _esc(truth[row.name] || 'faithful') + '">'
       + _ic(isT ? 'plumb' : 'balance', 14) + '<span>' + verdict + '</span></div>',
       isT ? 'right' : 'wrong'),
@@ -1212,15 +1207,14 @@ function _buildBeats(v) {
     const rows = b.entries.slice(0, 5);
     const top = rows.find(e => e.score > 0) || null;
     const lead = top
-      ? _fill(_pickUnique(READ_TOP, key + '|rt|' + i, used), {
-        who: _esc(b.observer), t: _esc(top.name),
-        why: '<em>' + _esc(top.why || 'nothing they could put a name to') + '</em>',
-      })
+      ? _esc(b.observer) + ' currently suspects ' + _esc(top.name) + ' most. '
+        + 'Recorded reason: <em>' + _esc(top.sourceType || 'unspecified') + ' information'
+        + (top.why ? ' connected to ' + _esc(top.why) : '') + '.</em>'
       : _fill(_pickUnique(rows.length ? READ_DROPPED : READ_EMPTY,
         key + '|re|' + i, used), { who: _esc(b.observer), sub: 'they' });
-    push('reads', _card(b.observer, 'Inside one head', 'dividers',
-      '<p class="sn-said">'
-      + _esc(_fill(_pick(READ_LEAD, key + '|rl|' + i), { who: b.observer })) + '</p>'
+    push('reads', _card(b.observer, 'One player’s suspicions', 'dividers',
+      '<p class="sn-said">This card shows only the suspicions recorded for '
+      + _esc(b.observer) + '.</p>'
       + '<p>' + lead + '</p>' + _rowsOf(rows),
       'quiet'),
     { kind: 'read', name: b.observer });
@@ -1228,13 +1222,11 @@ function _buildBeats(v) {
 
   // ── 4. THE WALL ─────────────────────────────────────────────────────
   const certain = _certainties(v.boards);
-  push('wall', _card('Past The Wall', _pick(WALL_LEAD, key + '|wl'), 'wall',
+  push('wall', _card('What The Traitors Know', 'Confirmed identities', 'wall',
     '<p>' + (certain.length
-      ? _fill(_pick(WALL_PACT, key + '|wp'), {
-        n: _word(certain.length), N: _Word(certain.length),
-        mark: _s(certain.length, 'mark'),
-      })
-      : _pick(WALL_EMPTY, key + '|we')) + '</p>'
+      ? 'Traitors recognize the other members of their group. The '
+        + _word(certain.length) + ' entries below are certain knowledge, not suspicion.'
+      : 'No living player currently has certain knowledge of another player’s alignment.') + '</p>'
     + (certain.length
       ? '<div class="sn-rows">' + certain.slice(0, 8).map(c =>
         '<div class="sn-row">' + _av(c.observer, 30)
@@ -1249,14 +1241,16 @@ function _buildBeats(v) {
   const acc = _accuracy(castle, truth);
   const quiet = _quietestTraitor(v);
   const gapPool = acc < 0.34 ? GAP_BAD : (acc > 0.66 ? GAP_GOOD : GAP_SPLIT);
-  push('gap', _card('The Distance', _pick(GAP_LEAD, key + '|gl'), 'plumb',
-    '<p>' + _pick(gapPool, key + '|gp') + '</p>'
+  const accuracyText = acc < 0.34
+    ? 'Most Faithful suspicion currently targets Faithful players.'
+    : acc > 0.66
+      ? 'Most Faithful suspicion currently targets Traitors.'
+      : 'Faithful suspicion is divided between Traitors and Faithful players.';
+  push('gap', _card('Accuracy Of Faithful Suspicion', 'Current distribution', 'plumb',
+    '<p>' + accuracyText + '</p>'
     + (quiet
-      ? '<p class="sn-said">' + _fill(_pick(quiet.accusers ? QUIET_ONE : QUIET_NONE,
-        key + '|q'), {
-        who: _esc(quiet.name), obj: 'them', n: _word(quiet.accusers),
-        acc: _s(quiet.accusers, 'name against them', 'names against them'),
-      }) + '</p>'
+      ? '<p class="sn-said">' + _esc(quiet.name) + ' is the least suspected Traitor, with '
+        + quiet.accusers + ' Faithful ' + _s(quiet.accusers, 'accuser') + '.</p>'
       : '')
     + _sums([
       ['Weight on Traitors', _pct(acc) + '%', acc > 0.5 ? 'brass' : 'wrong'],
@@ -1689,10 +1683,8 @@ export function rpBuildSuspicion(ep, observer = 'audience') {
     + '<i></i></div>'
     + '<p class="sn-sub">'
     + (v.isAudience
-      ? 'Every face in the castle, and the name each of them means to move '
-        + 'against. The Faithfuls are guessing and the pact is not, and the '
-        + 'whole distance between those two is the only thing this screen is '
-        + 'about.'
+      ? 'This screen shows each Faithful’s current banishment target, the evidence behind '
+        + 'their suspicions, and the identities that only the Traitors know for certain.'
       : 'The name you are leaning toward at the table, and the wall you cannot '
         + 'get past to be sure of it. Nobody in this castle can.')
     + '</p>'

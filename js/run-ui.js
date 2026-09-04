@@ -1516,7 +1516,20 @@ function _replayTraitorsEpisode(epNum) {
   const before = JSON.parse(JSON.stringify(gs));
   let ep = null, failure = null;
   try {
-    if (rerunTraitorsEpisode(epNum)) ep = simulateTraitorsEpisode();
+    if (rerunTraitorsEpisode(epNum)) {
+      ep = simulateTraitorsEpisode();
+      // Air the rest of the re-rolled season through to the finale. The confirm
+      // above promised the whole tail re-simulated, and a re-run that stopped one
+      // episode in left the season paused mid-flight — not `complete` — so Export
+      // and Publish stayed disabled ("the export button doesn't go after the
+      // re-run"). Playing it out lands on a finished, exportable season; the
+      // viewer can still step back through the new episodes on the tape.
+      let guard = 0;
+      while (ep && gs.phase !== 'complete' && guard++ < 60) {
+        const next = simulateTraitorsEpisode();
+        if (!next) break;
+      }
+    }
   } catch (e) { failure = e; }
 
   if (!ep) {

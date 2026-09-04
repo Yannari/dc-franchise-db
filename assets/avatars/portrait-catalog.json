@@ -1,0 +1,2975 @@
+{
+  "schemaVersion": 1,
+  "players": {
+    "Slasher": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "Slasher.png"
+        }
+      ]
+    },
+    "aaron": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "aaron.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "aaron-returnee.png"
+        }
+      ]
+    },
+    "aiden": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "aiden.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "aiden-returnee.png"
+        }
+      ]
+    },
+    "alec": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "alec.png"
+        }
+      ]
+    },
+    "alejandro": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "alejandro.png"
+        }
+      ]
+    },
+    "alessio": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "alessio.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "alessio-returnee.png"
+        }
+      ]
+    },
+    "ally": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ally.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "ally-returnee.png"
+        }
+      ]
+    },
+    "amberly": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "amberly.png"
+        }
+      ]
+    },
+    "amelie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "amelie.png"
+        }
+      ]
+    },
+    "amy": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "amy.png"
+        }
+      ]
+    },
+    "anastasia": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "anastasia.png"
+        }
+      ]
+    },
+    "andre": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "andre.png"
+        }
+      ]
+    },
+    "anne-maria": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "anne-maria.png"
+        }
+      ]
+    },
+    "ara": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ara.png"
+        }
+      ]
+    },
+    "arlo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "arlo.png"
+        }
+      ]
+    },
+    "ashley": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ashley.png"
+        }
+      ]
+    },
+    "aubrey": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "aubrey.png"
+        }
+      ]
+    },
+    "avani": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "avani.png"
+        }
+      ]
+    },
+    "avery": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "avery.png"
+        }
+      ]
+    },
+    "axel": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "axel.png"
+        }
+      ]
+    },
+    "b": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "b.png"
+        }
+      ]
+    },
+    "beardo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "beardo.png"
+        }
+      ]
+    },
+    "ben": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ben.png"
+        }
+      ]
+    },
+    "benji": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "benji.png"
+        }
+      ]
+    },
+    "beth": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "beth.png"
+        }
+      ]
+    },
+    "blaineley": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "blaineley.png"
+        }
+      ]
+    },
+    "bowie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "bowie.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "bowie-returnee.png"
+        }
+      ]
+    },
+    "brick": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "brick.png"
+        }
+      ]
+    },
+    "bridgette": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "bridgette.png"
+        }
+      ]
+    },
+    "brightly": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "brightly.png"
+        }
+      ]
+    },
+    "brody": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "brody.png"
+        }
+      ]
+    },
+    "bruno": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "bruno.png"
+        }
+      ]
+    },
+    "caleb": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "caleb.png"
+        }
+      ]
+    },
+    "cameron": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "cameron.png"
+        }
+      ]
+    },
+    "carlos": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "carlos.png"
+        }
+      ]
+    },
+    "carrie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "carrie.png"
+        }
+      ]
+    },
+    "chase": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "chase.png"
+        }
+      ]
+    },
+    "chef-hatchet": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "chef-hatchet.png"
+        }
+      ]
+    },
+    "chet": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "chet.png"
+        }
+      ]
+    },
+    "chris-mclean": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "chris-mclean.png"
+        }
+      ]
+    },
+    "cody": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "cody.png"
+        }
+      ]
+    },
+    "connor": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "connor.png"
+        }
+      ]
+    },
+    "courtney": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "courtney.png"
+        }
+      ]
+    },
+    "crimson": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "crimson.png"
+        }
+      ]
+    },
+    "dakota": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dakota.png"
+        }
+      ]
+    },
+    "dameira": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dameira.png"
+        }
+      ]
+    },
+    "damien": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "damien.png"
+        }
+      ]
+    },
+    "dan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dan.png"
+        }
+      ]
+    },
+    "dave": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dave.png"
+        }
+      ]
+    },
+    "dawn": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dawn.png"
+        }
+      ]
+    },
+    "devin": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "devin.png"
+        }
+      ]
+    },
+    "diego": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "diego.png"
+        }
+      ]
+    },
+    "dj": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dj.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "dj-returnee.png"
+        }
+      ]
+    },
+    "don": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "don.png"
+        }
+      ]
+    },
+    "doug": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "doug.png"
+        }
+      ]
+    },
+    "drea": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "drea.png"
+        }
+      ]
+    },
+    "drew": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "drew.png"
+        }
+      ]
+    },
+    "duncan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "duncan.png"
+        }
+      ]
+    },
+    "dunia": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dunia.png"
+        }
+      ]
+    },
+    "dwayne": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dwayne.png"
+        }
+      ]
+    },
+    "dylon": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dylon.png"
+        }
+      ]
+    },
+    "ella": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ella.png"
+        }
+      ]
+    },
+    "ellie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ellie.png"
+        }
+      ]
+    },
+    "ellody": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ellody.png"
+        }
+      ]
+    },
+    "emma": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "emma.png"
+        }
+      ]
+    },
+    "emmah": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "emmah.png"
+        }
+      ]
+    },
+    "ennui": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ennui.png"
+        }
+      ]
+    },
+    "ernesto": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ernesto.png"
+        }
+      ]
+    },
+    "eureka": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "eureka.png"
+        }
+      ]
+    },
+    "eva": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "eva.png"
+        }
+      ]
+    },
+    "evie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "evie.png"
+        }
+      ]
+    },
+    "ezekiel": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ezekiel.png"
+        }
+      ]
+    },
+    "felipe": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "felipe.png"
+        }
+      ]
+    },
+    "finn": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "finn.png"
+        }
+      ]
+    },
+    "fiore": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "fiore.png"
+        }
+      ]
+    },
+    "freddy": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "freddy.png"
+        }
+      ]
+    },
+    "gabby": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "gabby.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "gabby-returnee.png"
+        }
+      ]
+    },
+    "geoff": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "geoff.png"
+        }
+      ]
+    },
+    "gerry": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "gerry.png"
+        }
+      ]
+    },
+    "grant": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "grant.png"
+        }
+      ]
+    },
+    "grett": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "grett.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "grett-returnee.png"
+        }
+      ]
+    },
+    "gwen": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "gwen.png"
+        }
+      ]
+    },
+    "gyselle": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "gyselle.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "gyselle-returnee.png"
+        }
+      ]
+    },
+    "hannah": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "hannah.png"
+        }
+      ]
+    },
+    "hans": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "hans.png"
+        }
+      ]
+    },
+    "harold": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "harold.png"
+        }
+      ]
+    },
+    "harriett": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "harriett.png"
+        }
+      ]
+    },
+    "hasan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "hasan.png"
+        }
+      ]
+    },
+    "heather": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "heather.png"
+        }
+      ]
+    },
+    "hicks": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "hicks.png"
+        }
+      ]
+    },
+    "hina": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "hina.png"
+        }
+      ]
+    },
+    "hunter": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "hunter.png"
+        }
+      ]
+    },
+    "ireland": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ireland.png"
+        }
+      ]
+    },
+    "isabel": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "isabel.png"
+        }
+      ]
+    },
+    "ivy": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ivy.png"
+        }
+      ]
+    },
+    "izzy": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "izzy.png"
+        }
+      ]
+    },
+    "jacques": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jacques.png"
+        }
+      ]
+    },
+    "jade": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jade.png"
+        }
+      ]
+    },
+    "jahan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jahan.png"
+        }
+      ]
+    },
+    "jake": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jake.png"
+        }
+      ]
+    },
+    "james": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "james.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "james-returnee.png"
+        }
+      ]
+    },
+    "jane": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jane.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "jane-returnee.png"
+        }
+      ]
+    },
+    "jasmine": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jasmine.png"
+        }
+      ]
+    },
+    "jay": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jay.png"
+        }
+      ]
+    },
+    "jen": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jen.png"
+        }
+      ]
+    },
+    "jeremiah": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jeremiah.png"
+        }
+      ]
+    },
+    "jo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jo.png"
+        }
+      ]
+    },
+    "joel": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "joel.png"
+        }
+      ]
+    },
+    "joey": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "joey.png"
+        }
+      ]
+    },
+    "josee": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "josee.png"
+        }
+      ]
+    },
+    "jules": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "jules.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "jules-returnee.png"
+        }
+      ]
+    },
+    "julia": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "julia.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "julia-returnee.png"
+        }
+      ]
+    },
+    "junior": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "junior.png"
+        }
+      ]
+    },
+    "justin": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "justin.png"
+        }
+      ]
+    },
+    "kai": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "kai.png"
+        }
+      ]
+    },
+    "karol": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "karol.png"
+        }
+      ]
+    },
+    "katie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "katie.png"
+        }
+      ]
+    },
+    "kelly": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "kelly.png"
+        }
+      ]
+    },
+    "kimera": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "kimera.png"
+        }
+      ]
+    },
+    "kitty": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "kitty.png"
+        }
+      ]
+    },
+    "kristal": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "kristal.png"
+        }
+      ]
+    },
+    "lake": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lake.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "lake-returnee.png"
+        }
+      ]
+    },
+    "lara": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lara.png"
+        }
+      ]
+    },
+    "laurie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "laurie.png"
+        }
+      ]
+    },
+    "leonard": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "leonard.png"
+        }
+      ]
+    },
+    "leshawna": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "leshawna.png"
+        }
+      ]
+    },
+    "lightning": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lightning.png"
+        }
+      ]
+    },
+    "lill": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lill.png"
+        }
+      ]
+    },
+    "lilly": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lilly.png"
+        }
+      ]
+    },
+    "lindsay": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lindsay.png"
+        }
+      ]
+    },
+    "logan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "logan.png"
+        }
+      ]
+    },
+    "lorenzo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lorenzo.png"
+        }
+      ]
+    },
+    "lynda": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "lynda.png"
+        }
+      ]
+    },
+    "macarthur": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "macarthur.png"
+        }
+      ]
+    },
+    "maggy": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "maggy.png"
+        }
+      ]
+    },
+    "manu": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "manu.png"
+        }
+      ]
+    },
+    "marissa": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "marissa.png"
+        }
+      ]
+    },
+    "mary": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "mary.png"
+        }
+      ]
+    },
+    "max": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "max.png"
+        }
+      ]
+    },
+    "mei": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "mei.png"
+        }
+      ]
+    },
+    "mickey": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "mickey.png"
+        }
+      ]
+    },
+    "mike": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "mike.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "mike-returnee.png"
+        }
+      ]
+    },
+    "miles": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "miles.png"
+        }
+      ]
+    },
+    "millie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "millie.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "millie-returnee.png"
+        }
+      ]
+    },
+    "miriam": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "miriam.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "miriam-returnee.png"
+        }
+      ]
+    },
+    "misha": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "misha.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "misha-returnee.png"
+        }
+      ]
+    },
+    "mk": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "mk.png"
+        }
+      ]
+    },
+    "natalia": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "natalia.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "natalia-returnee.png"
+        }
+      ]
+    },
+    "natasha": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "natasha.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "natasha-returnee.png"
+        }
+      ]
+    },
+    "nessa": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "nessa.png"
+        }
+      ]
+    },
+    "nichelle": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "nichelle.png"
+        }
+      ]
+    },
+    "nick": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "nick.png"
+        }
+      ]
+    },
+    "nico": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "nico.png"
+        }
+      ]
+    },
+    "noah": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "noah.png"
+        }
+      ]
+    },
+    "nura": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "nura.png"
+        }
+      ]
+    },
+    "obi": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "obi.png"
+        }
+      ]
+    },
+    "oliver": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "oliver.png"
+        }
+      ]
+    },
+    "oliwia": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "oliwia.png"
+        }
+      ]
+    },
+    "owen": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "owen.png"
+        }
+      ]
+    },
+    "pete": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "pete.png"
+        }
+      ]
+    },
+    "priya": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "priya.png"
+        }
+      ]
+    },
+    "raj": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "raj.png"
+        }
+      ]
+    },
+    "ren": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ren.png"
+        }
+      ]
+    },
+    "richard": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "richard.png"
+        }
+      ]
+    },
+    "riley": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "riley.png"
+        }
+      ]
+    },
+    "ripper": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ripper.png"
+        }
+      ]
+    },
+    "riya": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "riya.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "riya-returnee.png"
+        }
+      ]
+    },
+    "rock": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "rock.png"
+        }
+      ]
+    },
+    "rodney": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "rodney.png"
+        }
+      ]
+    },
+    "rosa-maria": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "rosa-maria.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "rosa-maria-returnee.png"
+        }
+      ]
+    },
+    "roxie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "roxie.png"
+        }
+      ]
+    },
+    "ryan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ryan.png"
+        }
+      ]
+    },
+    "sadie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sadie.png"
+        }
+      ]
+    },
+    "sam": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sam.png"
+        }
+      ]
+    },
+    "samey": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "samey.png"
+        }
+      ]
+    },
+    "sami": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sami.png"
+        }
+      ]
+    },
+    "sanders": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sanders.png"
+        }
+      ]
+    },
+    "scarlett": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "scarlett.png"
+        }
+      ]
+    },
+    "scary-girl": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "scary-girl.png"
+        }
+      ]
+    },
+    "scott": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "scott.png"
+        }
+      ]
+    },
+    "seraphine": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "seraphine.png"
+        }
+      ]
+    },
+    "shawn": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "shawn.png"
+        }
+      ]
+    },
+    "sierra": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sierra.png"
+        }
+      ]
+    },
+    "sky": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sky.png"
+        }
+      ]
+    },
+    "spencer": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "spencer.png"
+        }
+      ]
+    },
+    "spud": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "spud.png"
+        }
+      ]
+    },
+    "staci": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "staci.png"
+        }
+      ]
+    },
+    "stanley": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "stanley.png"
+        }
+      ]
+    },
+    "stella": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "stella.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "stella-returnee.png"
+        }
+      ]
+    },
+    "stephanie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "stephanie.png"
+        }
+      ]
+    },
+    "sterling": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sterling.png"
+        }
+      ]
+    },
+    "sugar": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "sugar.png"
+        }
+      ]
+    },
+    "tammy": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tammy.png"
+        }
+      ]
+    },
+    "tanner": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tanner.png"
+        }
+      ]
+    },
+    "taylor": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "taylor.png"
+        }
+      ]
+    },
+    "ted": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "ted.png"
+        }
+      ]
+    },
+    "tess": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tess.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "tess-returnee.png"
+        }
+      ]
+    },
+    "thom": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "thom.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "thom-returnee.png"
+        }
+      ]
+    },
+    "tobias": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tobias.png"
+        }
+      ]
+    },
+    "tom": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tom.png"
+        }
+      ]
+    },
+    "topher": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "topher.png"
+        }
+      ]
+    },
+    "trent": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "trent.png"
+        }
+      ]
+    },
+    "tristan": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tristan.png"
+        }
+      ]
+    },
+    "tyler": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "tyler.png"
+        }
+      ]
+    },
+    "valeria": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "valeria.png"
+        }
+      ]
+    },
+    "wayne": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "wayne.png"
+        }
+      ]
+    },
+    "will": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "will.png"
+        }
+      ]
+    },
+    "willow": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "willow.png"
+        }
+      ]
+    },
+    "wix": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "wix.png"
+        }
+      ]
+    },
+    "yul": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "yul.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "yul-returnee.png"
+        }
+      ]
+    },
+    "zachary": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zachary.png"
+        }
+      ]
+    },
+    "zaid": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zaid.png"
+        }
+      ]
+    },
+    "zee": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zee.png"
+        }
+      ]
+    },
+    "zella": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zella.png"
+        }
+      ]
+    },
+    "zion": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zion.png"
+        }
+      ]
+    },
+    "zoey": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "zoey.png"
+        },
+        {
+          "id": "td-returnee",
+          "show": "total-drama",
+          "label": "Returning-player look",
+          "file": "zoey-returnee.png"
+        }
+      ]
+    }
+  }
+}

@@ -29,7 +29,9 @@
     "deploy:all": "npm run deploy && npm run deploy:analytics && npm run deploy:seasons",
     "preview": "wrangler dev --config worker/wrangler.toml",
     "build:favorites-context": "node scripts/build-favorites-context.mjs",
-    "fix:social-counts": "node scripts/fix-social-counts.mjs"
+    "fix:social-counts": "node scripts/fix-social-counts.mjs",
+    "avatars:check": "node tools/gen-avatar-manifest.mjs --check",
+    "avatars:files": "node tools/gen-avatar-manifest.mjs --write-files --check"
   },
   "repository": {
     "type": "git",

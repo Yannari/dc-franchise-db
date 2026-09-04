@@ -195,6 +195,17 @@ describe('the hesitation it buys', () => {
 // group and refuse the outcome, to the right eyes, in BOTH the rendered page
 // and the transcript. Text is searchable, so a backlog that leaked the holder
 // would be worse than a page that did — both arms are asserted.
+/**
+ * THE PAGE WITHOUT ITS STYLESHEET.
+ *
+ * The screen carries ~7KB of CSS, and that CSS contains the very selectors the
+ * secrecy arms search for — `.am-turn-out[data-f="1"]` is a rule as well as a
+ * badge. Asserting over the raw string therefore matched the stylesheet and
+ * reported a leak that was not on the page (and counted every find twice). Same
+ * reason tr-vp.test.js strips `<style>` before reading a screen.
+ */
+const body = html => String(html || '').replace(/<style[\s\S]*?<\/style>/gi, ' ');
+
 describe('the Armoury screen shows the room and withholds the door', () => {
   it('is registered right after the mission, and only on a night that ran one', () => {
     const g = season(5);
@@ -211,10 +222,31 @@ describe('the Armoury screen shows the room and withholds the door', () => {
     }
   });
 
+  it('carries its stylesheet on EVERY build, not just the first', () => {
+    // The visual player swaps screens by replacing innerHTML, so the <style>
+    // block leaves the document with the screen that carried it. A once-per-
+    // process latch therefore styled the first Armoury of a session and left
+    // every later one — and every re-render of the same one — as raw markup:
+    // the scenery SVG at natural size, every step visible at once. Shipped
+    // exactly that once; this is the arm that says so.
+    const g = season(8);
+    const rows = (g.episodeHistory || []).filter(e => e.tr?.armoury);
+    expect(rows.length, 'need more than one armoury night to test this')
+      .toBeGreaterThan(1);
+    for (const r of rows) {
+      expect(rpBuildArmoury(r, 'audience'), `ep ${r.num} rendered with no stylesheet`)
+        .toMatch(/<style>/);
+    }
+    // ...and the same night built twice still carries it the second time.
+    const twice = rpBuildArmoury(rows[0], 'audience');
+    expect(twice, 're-rendering the same night dropped the stylesheet')
+      .toMatch(/<style>/);
+  });
+
   it('gives every entrant a different door', () => {
     const g = season(5);
     const row = (g.episodeHistory || []).find(e => e.tr?.armoury);
-    const html = rpBuildArmoury(row, 'audience');
+    const html = body(rpBuildArmoury(row, 'audience'));
     const nums = [...html.matchAll(/opens door ([IVX]+)</g)].map(m => m[1]);
     expect(nums.length, 'no doors were rendered').toBe(row.tr.armoury.entrants.length);
     expect(new Set(nums).size, 'two entrants opened the same door: ' + nums.join(','))
@@ -228,7 +260,7 @@ describe('the Armoury screen shows the room and withholds the door', () => {
     const outsider = (row.tr.living || []).find(n => !a.entrants.includes(n));
     expect(outsider, 'everybody was in the armoury').toBeTruthy();
 
-    const page = rpBuildArmoury(row, 'player:' + outsider);
+    const page = body(rpBuildArmoury(row, 'player:' + outsider));
     // The public half: the names went up in front of the castle.
     for (const n of a.entrants) expect(page, 'an entrant is missing').toContain(n);
     // The secret half. The find is rendered as a shield badge and an audience
@@ -249,7 +281,7 @@ describe('the Armoury screen shows the room and withholds the door', () => {
     const g = season(5);
     const row = (g.episodeHistory || []).find(e => e.tr?.armoury);
     const a = row.tr.armoury;
-    const page = rpBuildArmoury(row, 'player:' + a.holders[0]);
+    const page = body(rpBuildArmoury(row, 'player:' + a.holders[0]));
     expect(page, 'the holder was not shown their own find').toMatch(/data-f="1"/);
     // Exactly one find is visible to them — their own, never a second holder's.
     expect((page.match(/data-f="1"/g) || []).length).toBe(1);

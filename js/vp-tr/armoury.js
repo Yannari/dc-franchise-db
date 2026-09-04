@@ -521,15 +521,19 @@ export function trArmouryRevealAll(suffix, total, epNum) {
   _reapply(suffix, st.idx, total);
 }
 
-// ── the stylesheet, once ──────────────────────────────────────────────
-let _cssDone = false;
+// ── the stylesheet, EVERY TIME ────────────────────────────────────────
+//
+// NOT ONCE PER PROCESS, and the first cut was. The visual player swaps screens
+// by REPLACING innerHTML, so the <style> block goes out of the document with
+// the screen that carried it — a once-per-process latch therefore styles the
+// first Armoury of a session and leaves every later one, and every re-render of
+// the same one, completely unstyled: the scenery SVG at natural size, every
+// step visible at once, the portraits raw. Every other castle screen emits its
+// sheet on every build (see `cssOnce` in js/vp-tr/conclave.js) for exactly this
+// reason. Duplicate identical <style> blocks are free; a missing one is not.
 function _css() {
-  if (_cssDone) return '';
-  _cssDone = true;
   return '<style>' + ARMOURY_CSS + '</style>';
 }
-/** Test seam: let a second build in the same process re-emit the CSS. */
-export function _resetArmouryCss() { _cssDone = false; }
 
 const ARMOURY_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');

@@ -758,30 +758,24 @@ const ASK = {
     'The anonymous writer asks the recipient to become a Traitor and join the group that meets in the turret.',
   ],
   ultimatum: [
-    'The offer is made and the alternative is made with it, in the same breath, without '
-    + 'either of them having to be spelled out. Come upstairs. Or.',
-    'Join, said to a face, by a face. There is no second half to the sentence and there '
-    + 'does not need to be one — the second half is standing there.',
-    'It is not really a question and both of them know it. The pact is asking, and the '
-    + 'asking is the threat.',
-    'Come up, or explain to somebody in the morning why you know what you now know. It is '
-    + 'put more politely than that. It is not put more kindly.',
+    'The recipient is ordered to become a Traitor. Refusing is fatal because they have seen and can identify the recruiter.',
+    'The offer is explicit: become a Traitor and join the group in the turret. Refusing is fatal because the recruiter revealed their identity.',
+    'The recruiter demands an immediate choice: become a Traitor or refuse and be removed before breakfast.',
+    'The recipient must become a Traitor to survive the night. A refusal would leave them able to expose the recruiter.',
   ],
 };
 
 const WEIGH = [
-  'They had, by the most generous estimate, a few seconds. Nobody gets to sleep on this.',
-  'Everything that happens next comes out of a decision made by one person standing '
-  + 'perfectly still.',
-  'There was a pause. It was not a long one, and it was the loudest thing in the corridor.',
-  'Whatever they had decided about themselves before tonight, this is where they found out '
-  + 'whether it was true.',
+  'The recipient must answer immediately, without consulting anyone else.',
+  'The choice is made in the corridor: accept the new role or refuse it.',
+  'The recipient pauses to decide whether to join the Traitors.',
+  'No one else can help with the decision, and the recruiter waits for a direct answer.',
 ];
 
 const ANSWER = {
   yes: [
     'They said yes.',
-    'They took it.',
+    'They accepted the offer.',
     'They said yes, and did not take long about it.',
     'The answer was yes, which is how most of these end and never feels that way at the time.',
   ],
@@ -805,14 +799,10 @@ const AFTER = {
     + 'down here as material.',
   ],
   acceptedUltimatum: [
-    '{who} said yes to a face, which means the debt runs both ways from here: each of them '
-    + 'can end the other with a sentence.',
-    'They go up together, and neither of them is under any illusion about why. That is a '
-    + 'partnership with a knife in it from the first evening.',
-    '{who} crossed the floor to somebody they had just been threatened by. Nobody is '
-    + 'pretending it was a courtship.',
-    'Upstairs, then — a recruit who was given one option and a recruiter who now has to live '
-    + 'beside them.',
+    '{who} accepts and becomes a Traitor. The recruiter has gained a new ally who also knows their identity.',
+    '{who} joins the Traitors and will take part in their next meeting in the turret.',
+    '{who} accepts the ultimatum. From this point forward, they share the Traitors’ information and objectives.',
+    '{who} survives the ultimatum by becoming a Traitor and joining the recruiter upstairs.',
   ],
   refusedNote: [
     'And that is the end of it, because there is nothing to end. {who} never saw a face, '
@@ -991,8 +981,7 @@ function _buildBeats(v) {
     '<p>' + _pick(ASK[v.mode], key + '|ask') + '</p>'
     + '<div class="nt-vellum"><p>' + (v.mode === 'note'
       ? 'You are being offered the chance to become a Traitor. If you accept, come to the turret tonight and join us. Destroy this note.'
-      : 'You know what I am. You know what happens to the rest of them. Come up, and it '
-        + 'stops happening to you.')
+      : 'I am a Traitor. You must become a Traitor and join us in the turret. If you refuse, you will not return to breakfast.')
     + '</p><span class="nt-vellum-seal">' + _icon('seal', 30, '#8e1526') + '</span></div>'),
   { kind: 'ask' });
 
@@ -1265,8 +1254,7 @@ export function rpBuildRecruitment(ep, observer = 'audience') {
       v.mode === 'note' ? '#ded3b4' : '#8e1526') + '<i></i></div>'
     + '<p class="nt-sub">' + (v.mode === 'note'
       ? 'An anonymous written offer to become a Traitor. Refusing is survivable because the recipient never sees who delivered it.'
-      : 'An offer made in person, in a passage with nowhere to go. Saying no to it is '
-        + 'fatal, and it is fatal for one reason: they have seen your face.')
+      : 'A face-to-face demand to become a Traitor. Refusing is fatal because the recipient can identify the recruiter.')
     + '</p>'
     + '</div></div>'
     + '<header class="nt-head">' + observerBadge + '</header>'

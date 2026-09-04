@@ -2726,6 +2726,22 @@ describe('the note and the ultimatum are rendered as the different things they a
     expect(checked, 'no anonymous note was checked').toBeGreaterThan(5);
   });
 
+  it('a face-to-face ultimatum plainly states the offer and the fatal refusal', () => {
+    const vague = /not really a question|the pact is asking|asking is the threat|you know what i am|happens to the rest of them|stops happening to you|found out whether it was true|the second half is standing there/i;
+    let checked = 0;
+    for (const { ep } of ults) {
+      const text = strip(offerRevealed(ep));
+      expect(text, `ep ${ep.num}: the ultimatum never states the actual offer`)
+        .toContain('become a Traitor');
+      expect(text, `ep ${ep.num}: the ultimatum never states the cost of refusal`)
+        .toContain('Refusing is fatal');
+      expect(vague.test(text), `ep ${ep.num}: the ultimatum still hides its meaning in metaphor`)
+        .toBe(false);
+      checked++;
+    }
+    expect(checked, 'no face-to-face ultimatum was checked').toBeGreaterThan(5);
+  });
+
   it('and the terms strip states the price of refusing, before the answer is read', () => {
     // THE MECHANIC ITSELF, ON THE PAGE. The rule is about consequences and
     // the whole screen is built to make it legible, so the two words it turns

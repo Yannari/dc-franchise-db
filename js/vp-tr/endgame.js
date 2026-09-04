@@ -1335,7 +1335,7 @@ const REVEAL_FAITHFUL = [
 // needs the same vote landing on a Faithful. `{a}` is the reactor, `{who}` the
 // banished. Nothing here reads an alignment the reactor was not just shown.
 const REACT_GRIEF = [
-  '{a} does not look at the empty chair, which is how everybody knows exactly whose it was.',
+  '{a} does not look at the empty chair, and not looking at it is the loudest thing {a} does.',
   '{a} had spent the whole game beside {who}, and the room can see the cost of it land.',
   'Whatever {who} was, {a} is not ready for the chair to be empty, and does not pretend to be.',
 ];
@@ -1371,7 +1371,7 @@ const REACT_ROBBED = [
 // for one held moment nobody knows — the whole season narrows to this.
 const SUSPENSE = [
   'They have agreed to stop. The strongbox is carried in and set on the table, and for '
-  + 'the length of one breath nobody in the room knows what nobody in the room is.',
+  + 'the length of one breath not one person at it knows what any of the others are.',
   'The game is over and the cloaks are still on. That is the trick of the ending: the '
   + 'money is decided, and the people it is being decided between are about to find out '
   + 'with everyone else.',

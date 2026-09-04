@@ -63,6 +63,29 @@ function _hash01(key) {
 }
 function _pick(pool, key) { return pool[Math.floor(_hash01(key) * pool.length) % pool.length]; }
 
+/**
+ * The same, but it will not repeat a line already used on this screen.
+ *
+ * WHY THE PLAIN HASH IS NOT ENOUGH HERE. Every other pool in this file is
+ * drawn once a night. These two are drawn once PER ENTRANT, four times, from
+ * pools of four and six — and a hash keyed on the name has no idea what the
+ * name above it drew. Measured on a real night: three of the four entrants got
+ * "is back down the stair inside a minute, and gives the room no help
+ * whatever", one under the other, which reads as a screen with one sentence in
+ * it rather than as four people doing the same careful thing.
+ *
+ * Falls back to the plain hash once the pool is exhausted, so a bigger Armoury
+ * than the pool degrades to the old behaviour instead of throwing.
+ */
+function _pickFresh(pool, key, used) {
+  const start = Math.floor(_hash01(key) * pool.length) % pool.length;
+  for (let k = 0; k < pool.length; k++) {
+    const cand = pool[(start + k) % pool.length];
+    if (!used.has(cand)) { used.add(cand); return cand; }
+  }
+  return pool[start];
+}
+
 // ── the sentences ─────────────────────────────────────────────────────
 //
 // Four pools, all about the WALK and never about the outcome: the screen must
@@ -70,18 +93,33 @@ function _pick(pool, key) { return pool[Math.floor(_hash01(key) * pool.length) %
 // Shield, because the castle watching from the bottom of the stair cannot tell
 // them apart. That is the whole point of the room, and a line that leaked the
 // result through its tone would undo the record's own secrecy.
+// WHAT A TURN CARD IS ALLOWED TO SAY. The entrant goes up, chooses one door,
+// opens it out of everybody's sight and comes back down. That is the whole of
+// what happens, and it is all the castle sees.
 const APPROACH = [
-  '{who} goes up {ord}, does not look back down the stair, and takes door {n} without breaking step.',
+  '{who} goes up {ord} and takes door {n} without breaking step.',
   '{who} counts along the wall to {n}, puts a hand flat on the oak, and opens it.',
-  '{who} stands in front of the wall for a moment longer than the wall deserves, then chooses {n}.',
-  '{who} goes {ord}. Door {n}, no hesitation anybody down there could have measured.',
-  'It is {who}’s turn. {They} pick door {n} the way people pick a door they have already decided on.',
+  '{who} stands in front of the wall a moment longer than the wall deserves, then chooses {n}.',
+  '{who} goes {ord}, and picks door {n} with no hesitation anybody down there could measure.',
+  'It is {who}’s turn. {They} pick{s} door {n} the way people pick a door they settled on hours ago.',
   '{who} walks the length of the rack first, comes back, and opens {n}.',
 ];
+// NOTHING IN HERE MAY SAY WHAT WAS OR WAS NOT FOUND.
+//
+// The first line of this pool used to be "{who} comes back down with {their}
+// hands empty" -- drawn for every entrant including the one who had just
+// opened the loaded door, on a card four rows under the badge announcing the
+// Shield. It was not a hedge about appearances either; it stated empty hands
+// as fact.
+//
+// A turn card is the CASTLE'S view, and the castle's view is a person coming
+// back down a stair giving nothing away. Every line here is true whether the
+// door was loaded or not, which is the only way this pool can be drawn without
+// knowing.
 const AFTER = [
-  '{who} comes back down with {their} hands empty and {their} face doing nothing at all.',
+  '{who} comes back down with {their} face doing nothing at all.',
   'Whatever was behind {n}, {who} closes the door on it and says nothing on the way out.',
-  '{who} is back down the stair inside a minute, and the castle learns exactly as much as it was going to.',
+  '{who} is back down the stair inside a minute, and gives the room no help whatever.',
   '{who} pulls the door to, and the only sound in it is the iron.',
 ];
 
@@ -90,9 +128,14 @@ function _pron(name) {
   const g = (p && (p.gender || p.pronouns)) || '';
   const f = /^(f|she|her)/i.test(String(g));
   const m = /^(m|he|him)/i.test(String(g));
-  return f ? { they: 'she', They: 'She', their: 'her' }
-    : m ? { they: 'he', They: 'He', their: 'his' }
-      : { they: 'they', They: 'They', their: 'their' };
+  // `s` IS THE VERB ENDING, and it exists because a line written for they/them
+  // is ungrammatical the moment it is filled with he or she. "{They} pick door
+  // {n}" rendered as "He pick door X" and "She pick door XI" for most of the
+  // cast. Any template with a present-tense verb after {They} must use it:
+  // "{They} pick{s}".
+  return f ? { they: 'she', They: 'She', their: 'her', s: 's' }
+    : m ? { they: 'he', They: 'He', their: 'his', s: 's' }
+      : { they: 'they', They: 'They', their: 'their', s: '' };
 }
 function _fill(tpl, vars) {
   return String(tpl).replace(/\{(\w+)\}/g, (_, k) => (vars[k] == null ? '' : vars[k]));
@@ -150,6 +193,13 @@ function _view(ep, observer) {
     watcher,
     // The answer, for the audience strip only. Never rendered for a player.
     holders: isAudience ? [...(rec.holders || [])] : [],
+    // AUDIENCE ONLY, AND FOR A HARDER REASON THAN THE HOLDERS ARE. "A Traitor
+    // is holding this one" tells a player that somebody in a NAMED, PUBLIC
+    // four-person group is a Traitor, which is the single biggest thing the
+    // castle could be handed. False stays false for a player: the closing
+    // paragraph then reads the ordinary way, which is also what that player
+    // has every reason to believe.
+    pactAware: isAudience ? !!rec.pactAware : false,
     missionName: (ep.tr.mission && ep.tr.mission.name) || null,
   };
 }
@@ -374,12 +424,15 @@ export function rpBuildArmoury(ep, observer = 'audience') {
     + '<div class="am-q-nm">' + _esc(s.name) + '</div>'
     + '<div class="am-q-ord">' + _esc(s.ord) + '</div></div>').join('');
 
+  // One set per screen build, so the four turn cards cannot repeat each other.
+  const usedApproach = new Set(), usedAfter = new Set();
   const turns = v.slots.map((s, i) => {
     const p = _pron(s.name);
     const key = 'am|' + v.ep + '|' + s.name;
-    const approach = _fill(_pick(APPROACH, key + '|a'),
-      { who: _esc(s.name), ord: s.ord, n: s.numeral, They: p.They, they: p.they, their: p.their });
-    const after = _fill(_pick(AFTER, key + '|b'),
+    const approach = _fill(_pickFresh(APPROACH, key + '|a', usedApproach),
+      { who: _esc(s.name), ord: s.ord, n: s.numeral, They: p.They, they: p.they,
+        their: p.their, s: p.s });
+    const after = _fill(_pickFresh(AFTER, key + '|b', usedAfter),
       { who: _esc(s.name), n: s.numeral, their: p.their, they: p.they, They: p.They });
     // The badge only exists where the observer is entitled to an outcome.
     const badge = s.known
@@ -450,14 +503,40 @@ export function rpBuildArmoury(ep, observer = 'audience') {
     + '<div class="am-step" id="am-step-' + suffix + '-' + (n + 1) + '">'
     + '<div class="am-silence">'
     + '<div class="am-silence-h">Nobody said a word on the way out</div>'
-    + '<p class="am-silence-p">All ' + _word(n) + ' came back down the stair with their hands '
-    + 'empty and their faces doing nothing at all. The castle knows exactly who went up there. '
-    + 'It will not be told which of them is safe tonight, and neither will the Traitors.</p>'
+    // ── THREE THINGS THIS PARAGRAPH USED TO GET WRONG ────────────────
+    //
+    // "All four came back down the stair with their hands EMPTY" was printed
+    // on nights one of them had just opened the loaded door, four cards under
+    // the badge that said so. What the castle sees is people giving nothing
+    // away, which is a different sentence.
+    //
+    // "...and NEITHER WILL THE TRAITORS" is false whenever a Traitor walked
+    // into the Armoury and found it. That is not a corner case the engine
+    // ignores: `armouryHesitation` returns 0 for exactly this room, because a
+    // pact that knows where the Shield is stops being careful. The screen was
+    // telling the audience the opposite of what the conclave was about to do.
+    + '<p class="am-silence-p">All ' + _word(n) + ' come back down the stair giving nothing '
+    + 'away. The castle knows exactly who went up there and will not be told which of them '
+    + 'is holding anything'
+    + (v.isAudience && v.pactAware
+      ? ' — but one of the people who went up is a Traitor, so tonight the pact is not '
+        + 'guessing.</p>'
+      : ', and neither will the Traitors.</p>')
     + '<div class="am-lineup">' + lineup + '</div>'
+    // ── AND THE RULE, WHICH WAS THE WRONG WAY ROUND ──────────────────
+    //
+    // "…is four people the pact cannot touch" says the entrants are protected.
+    // They are not. The Traitors may name any of them tonight; what the
+    // Armoury buys is the RISK that the name they pick is the one holding it,
+    // in which case the murder is spent on nothing. That risk is the entire
+    // mechanic (`armouryHesitation` prices it at shields/entrants) and the
+    // screen was describing its opposite.
     + '<div class="am-note">'
-    + (v.count > 1 ? _word(v.count) + ' shields between ' + _word(n) + ' people is '
-      : 'One shield between ' + _word(n) + ' people is ')
-    + _word(n) + ' people the pact cannot touch without spending the night on a wall.</div>'
+    + (v.count > 1
+      ? _word(v.count) + ' shields somewhere among ' + _word(n) + ' people. '
+      : 'One shield somewhere among ' + _word(n) + ' people. ')
+    + 'The Traitors may still choose any name on this list tonight — but if they choose the '
+    + 'one holding it, the murder fails and the night is spent.</div>'
     + '</div>' + truth + '</div>'
     + '</div>'
     + '<div class="am-controls" id="am-controls-' + suffix + '">'

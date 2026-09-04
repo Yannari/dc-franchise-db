@@ -411,3 +411,155 @@ describe('a blocked Armoury night is not dead air', () => {
       + 'channel needs — it would be unreachable in a real season').toBeGreaterThan(0);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ARMOURY SCREEN HAS TO BE TRUE ABOUT ITS OWN NIGHT
+// ══════════════════════════════════════════════════════════════════════
+//
+// Five defects, all found by rendering the screen as plain text and reading
+// it. Four were reported from the finished product; the fifth came out of the
+// same read.
+const _armouryHtml = (ep, obs = 'audience') => stripTags(rpBuildArmoury(ep, obs));
+
+/** Rendered text with the stylesheet and markup gone — what a viewer reads. */
+function stripTags(html) {
+  return String(html)
+    .replace(/<style>[\s\S]*?<\/style>/g, ' ')
+    .replace(/<svg[\s\S]*?<\/svg>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&rsquo;/g, '\u2019').replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ');
+}
+
+/** Every episode across a sweep that actually opened the Armoury. */
+function armouryEpisodes(seeds = [1, 2, 3, 4, 5, 6, 7, 8]) {
+  const out = [];
+  for (const seed of seeds) {
+    seasonConfig.trShieldSource = 'armoury';
+    seasonConfig.trArmourySize = 4;
+    setPlayers(ROSTER.map(p => ({ ...p })));
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+    for (const row of (gs.episodeHistory || [])) {
+      if (row.tr && row.tr.armoury && (row.tr.armoury.entrants || []).length) {
+        out.push({ ...row });
+      }
+    }
+  }
+  return out;
+}
+
+describe('the Armoury screen says true things about its own night', () => {
+  const EPS = armouryEpisodes();
+
+  it('reached enough Armoury nights to be worth asserting on', () => {
+    expect(EPS.length).toBeGreaterThan(20);
+  });
+
+  // 1. GRAMMAR. `{They} pick door {n}` was written for they/them and is filled
+  //    with a gendered pronoun for most of the cast, producing "He pick door X"
+  //    and "She pick door XI".
+  it('conjugates its verbs for a gendered pronoun', () => {
+    const BAD = /\b(He|She|he|she)\s+(pick|come|walk|go|open|take|choose|stand|count|pull|close|say)\b/;
+    for (const ep of EPS) {
+      const t = _armouryHtml(ep);
+      const hit = t.match(BAD);
+      expect(hit, `ep ${ep.num}: "${hit && hit[0]}" — singular subject, plural verb`).toBe(null);
+    }
+  });
+
+  // 2 & 3. THE CONTRADICTION. The turn cards announce a Shield behind a door
+  //    and the closing card then says every entrant came back empty-handed.
+  //    Both are on the same screen, four cards apart.
+  it('never says everybody found nothing on a night somebody found something', () => {
+    let withFind = 0;
+    for (const ep of EPS) {
+      const holders = ep.tr.armoury.holders || [];
+      if (!holders.length) continue;
+      withFind++;
+      const t = _armouryHtml(ep);
+      expect(/hands empty/i.test(t),
+        `ep ${ep.num}: ${holders.join(', ')} found a shield and the screen says hands empty`)
+        .toBe(false);
+      expect(/came back .*with nothing|all .* found nothing/i.test(t),
+        `ep ${ep.num}: the screen says nobody found anything`).toBe(false);
+    }
+    expect(withFind, 'no Armoury night in the sweep produced a shield').toBeGreaterThan(5);
+  });
+
+  // 4. THE RULE. The entrants are NOT protected. The Traitors may target any of
+  //    them; the risk is that the murder is wasted on the one who is holding it.
+  it('does not claim the entrants are untouchable', () => {
+    const WRONG = /cannot touch|can ?not be touched|out of reach|untouchable|off limits/i;
+    for (const ep of EPS) {
+      const t = _armouryHtml(ep);
+      const hit = t.match(WRONG);
+      expect(hit, `ep ${ep.num}: "${hit && hit[0]}" — the pact may target any entrant`)
+        .toBe(null);
+    }
+  });
+
+  // 5. THE ONE THAT WAS NOT REPORTED. "neither will the Traitors" is false on
+  //    a night a Traitor walked into the Armoury and opened the loaded door —
+  //    which is exactly the case `armouryHesitation` already handles by
+  //    returning 0 for a `pactAware` room.
+  it('does not tell the audience the Traitors are in the dark when they are not', () => {
+    let aware = 0;
+    for (const ep of EPS) {
+      if (!ep.tr.armoury.pactAware) continue;
+      aware++;
+      const t = _armouryHtml(ep);
+      expect(/neither will the Traitors|nor will the Traitors|the Traitors will not be told/i.test(t),
+        `ep ${ep.num}: a Traitor is holding this shield and the screen says the pact does not know`)
+        .toBe(false);
+    }
+    expect(aware, 'no pact-aware Armoury night in the sweep').toBeGreaterThan(0);
+  });
+
+  // 7. NO LINE TWICE ON ONE WALL. The turn pools are drawn once per entrant
+  //    from pools of four and six, and a hash keyed on the name cannot see
+  //    what the name above it drew: a real night gave three of the four
+  //    entrants the same closing sentence, stacked one under the other.
+  it('does not give two entrants the same sentence on the same night', () => {
+    for (const ep of EPS) {
+      const t = _armouryHtml(ep);
+      // The two lines that are drawn per entrant, reduced to a fingerprint so
+      // the check does not depend on which names were filled into them.
+      for (const frag of ['gives the room no help whatever', 'face doing nothing at all',
+        'closes the door on it and says nothing', 'only sound in it is the iron',
+        'without breaking step', 'puts a hand flat on the oak',
+        'longer than the wall deserves', 'settled on hours ago',
+        'walks the length of the rack first']) {
+        const n = t.split(frag).length - 1;
+        expect(n, `ep ${ep.num}: "${frag}" appears ${n} times on one wall`)
+          .toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  // 6. OBSERVER SAFETY, extended from tests/tr-host-explanations.test.js: the
+  //    rule that a branch which never receives a fact cannot leak it.
+  it('never names the holder to a player who is not the holder', () => {
+    let checked = 0;
+    for (const ep of EPS.slice(0, 12)) {
+      const holders = ep.tr.armoury.holders || [];
+      if (!holders.length) continue;
+      for (const who of (ep.tr.living || []).slice(0, 6)) {
+        if (holders.includes(who)) continue;
+        const t = _armouryHtml(ep, 'player:' + who);
+        checked++;
+        for (const h of holders) {
+          expect(new RegExp(h + '\s+(opened the loaded|is safe|cannot be murdered)', 'i').test(t),
+            `${who} was told ${h} holds the shield`).toBe(false);
+        }
+        expect(/opened the loaded door/i.test(t),
+          `${who} was shown the audience-only result line`).toBe(false);
+        // THE HARDEST ONE ON THIS SCREEN. "one of the people who went up is a
+        // Traitor" narrows the pact to a NAMED, PUBLIC four-person group,
+        // which is a bigger gift than the holder's identity. Audience only.
+        expect(/is a Traitor, so tonight the pact is not guessing/i.test(t),
+          `${who} was told a Traitor is in the Armoury group`).toBe(false);
+      }
+    }
+    expect(checked, 'no player view was checked').toBeGreaterThan(10);
+  });
+});

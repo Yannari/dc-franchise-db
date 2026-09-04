@@ -707,6 +707,11 @@
               </label>
             </div>
             <div class="form-group">
+              <label class="form-label">Episode length</label>
+              <select id="cfg-tr-density" onchange="updateDensityUI();saveConfig()" class="form-input"></select>
+              <div class="hint hint-tight" id="tr-density-readout"></div>
+            </div>
+            <div class="form-group">
               <label class="form-label">Shields</label>
               <select id="cfg-tr-shield-source" onchange="updateShieldUI();saveConfig()" class="form-input">
                 <option value="mission">Won in a mission — the winner is seen taking it</option>

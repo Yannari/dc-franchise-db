@@ -28,6 +28,8 @@
 // before the mission runs, exactly where `journey-out`'s own `runWindow` call
 // used to sit.
 import { runWindow, startBudget } from '../events.js';
+import { seasonConfig } from '../../core.js';
+import { densityFactor, scaledRange, TR_DENSITY_DEFAULT } from '../../tr-density.js';
 
 /**
  * The six phases a Castle Day is scheduled from, IN THE ORDER THE DAY RUNS
@@ -92,7 +94,19 @@ export const WINDOW_TO_PHASE = Object.freeze(
 export function runCastlePhase(phase, ep, rng) {
   const def = _byId.get(phase);
   if (!def) throw new Error(`runCastlePhase: unknown phase "${phase}"`);
-  const count = def.min + Math.floor(rng() * (def.max - def.min + 1));
+  // THE AUTHOR'S EPISODE LENGTH, applied to the RANGE and not to the result.
+  //
+  // `scaledRange` returns its arguments untouched at factor 1, and this is
+  // still exactly ONE draw at every density -- which is the whole of the rng
+  // contract here. The castle stream is shared with nothing, but it is
+  // reproducible from the season seed, so a density that added or skipped a
+  // draw would re-roll every castle day downstream of the first phase that
+  // used it. A default season is therefore bit-identical to the code that had
+  // no density setting at all; tests/tr-density-controls.test.js asserts it
+  // rather than trusting this comment.
+  const [lo, hi] = scaledRange(def.min, def.max,
+    densityFactor(seasonConfig?.trDensity || TR_DENSITY_DEFAULT));
+  const count = lo + Math.floor(rng() * (hi - lo + 1));
   startBudget(count, def.windows.length);
   const fired = [];
   for (const w of def.windows) fired.push(...runWindow(w, ep, rng));

@@ -258,6 +258,28 @@ export function rpBuildTraitorsDebug(epRecord) {
 
     <section><h3>Why anything is different — the scene receipts</h3>${_receipts(receipts)}</section>
 
+    <section><h3>Episode length &mdash; what was budgeted and what fired</h3>${
+      (day && day.density)
+        ? '<table><tr><th>phase</th><th>budget</th><th>scenes</th><th>spent</th></tr>'
+          + (day.density.budgets || []).map(b => {
+            const got = ((day.phases || []).find(p => p.id === b.id)?.scenes || []).length;
+            // A phase that fired FEWER scenes than its floor is the pool
+            // running out, not a budget choice -- the thing that caps
+            // Extended. Flagged so a reader can see which stretch of the day
+            // had nothing eligible left rather than inferring it.
+            const short = got < b.min;
+            return `<tr><td>${esc(b.label)}</td><td>${esc(b.min)}-${esc(b.max)}</td>`
+              + `<td>${esc(got)}</td><td>${short
+                ? '<span class="none">pool ran dry</span>' : 'as budgeted'}</td></tr>`;
+          }).join('')
+          + `<tr><td><b>total</b></td><td>${esc((day.density.budgets || [])
+            .reduce((a, b) => a + b.min, 0))}-${esc((day.density.budgets || [])
+            .reduce((a, b) => a + b.max, 0))}</td><td><b>${esc((day.phases || [])
+            .reduce((a, p) => a + (p.scenes || []).length, 0))}</b></td><td>`
+          + `${esc(day.density.id)} &times;${esc(day.density.factor)}</td></tr>`
+          + '</table>'
+        : '<div class="none">no density on this record</div>'}</section>
+
     <section><h3>The castle day</h3>${(day && (day.scenes || []).length)
       ? '<table><tr><th>hour</th><th>family</th><th>event</th><th>who</th>'
         + '<th>thread</th><th>beat</th><th>cites</th><th>closed</th></tr>'

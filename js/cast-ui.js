@@ -17,6 +17,8 @@ import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
 import { alumniDatabase, setAlumniDatabase } from './alumni.js';
 import { TR_BACKGROUND_TYPES, resolveTraitorsBackground, snapshotTraitorsBackgrounds,
   traitorsBackgroundBlockers } from './tr/state.js';
+import { TR_DENSITY_LEVELS, TR_DENSITY_DEFAULT, densityLevel,
+  traitorsDensitySummary } from './tr-density.js';
 
 export function showTab(name) {
   audio.sfx('tab-swoosh');
@@ -1022,6 +1024,7 @@ export function saveConfig() {
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
     trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
+    trDensity: g('cfg-tr-density')?.value || TR_DENSITY_DEFAULT,
     trShieldSource: g('cfg-tr-shield-source')?.value || 'mission',
     trShieldEpisodes: Array.isArray(seasonConfig.trShieldEpisodes) ? seasonConfig.trShieldEpisodes : [],
     trArmourySize: parseInt(g('cfg-tr-armoury-size')?.value) || 4,
@@ -1160,6 +1163,9 @@ export function renderConfig() {
   if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal === true;
   set('cfg-tr-endgame-size', seasonConfig.trEndgameSize || 3);
   if (g('cfg-tr-auto-recruit')) g('cfg-tr-auto-recruit').checked = seasonConfig.trAutoRecruit !== false;
+  try { updateDensityUI(); } catch (e) {}
+  set('cfg-tr-density', seasonConfig.trDensity || TR_DENSITY_DEFAULT);
+  try { updateDensityUI(); } catch (e) {}
   set('cfg-tr-shield-source', seasonConfig.trShieldSource || 'mission');
   set('cfg-tr-armoury-size', seasonConfig.trArmourySize || 4);
   set('cfg-tr-shield-count', seasonConfig.trShieldCount || 1);
@@ -1848,6 +1854,41 @@ function _esc(s) {
  * so they are hidden otherwise rather than sitting there inert — the same
  * treatment the traitor picker gets when the mode is random.
  */
+/**
+ * The episode-length readout under the density picker.
+ *
+ * Prints the level's own blurb and the ESTIMATED card count for the cast size
+ * currently in the builder — the estimate is calibrated against played seasons
+ * (js/tr-density.js), so an author moving this control is told the length they
+ * will actually get rather than the one the label implies.
+ */
+export function updateDensityUI() {
+  const sel = document.getElementById('cfg-tr-density');
+  // THE OPTION LIST IS BUILT FROM THE REGISTRY, NOT TYPED INTO THE HTML.
+  // This project's recurring bug is a second copy of a list drifting from the
+  // first (docs/ADDING-A-SHOW.md counts eight of them). js/tr-density.js owns
+  // the levels; the markup owns an empty <select>.
+  if (sel && !sel.options.length) {
+    for (const d of TR_DENSITY_LEVELS) {
+      const o = document.createElement('option');
+      o.value = d.id; o.textContent = d.label;
+      sel.appendChild(o);
+    }
+    sel.value = seasonConfig.trDensity || TR_DENSITY_DEFAULT;
+  }
+  const id = sel?.value || TR_DENSITY_DEFAULT;
+  const out = document.getElementById('tr-density-readout');
+  if (!out) return;
+  // The cast the season will actually be played with, when the builder knows
+  // it; the estimator's own default otherwise.
+  const n = (Array.isArray(window.players) && window.players.length)
+    ? window.players.length : 18;
+  out.innerHTML = '<div style="margin-bottom:4px">'
+    + String(densityLevel(id).blurb).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    + '</div><b>' + String(traitorsDensitySummary(n, id))
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</b>';
+}
+
 export function updateShieldUI() {
   const src = document.getElementById('cfg-tr-shield-source')?.value || 'mission';
   const box = document.getElementById('tr-armoury-opts');

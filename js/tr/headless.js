@@ -30,7 +30,8 @@ import { sceneParticipants, sceneSpeakers, KNOWN_WINDOWS } from './events.js';
 // TASK 5: the day is scheduled in six chronological phases, each with its
 // own scene-count budget, replacing the old flat 4-8-per-round total split
 // fair-share across all seven windows. See js/tr/castle/phases.js.
-import { runCastlePhase, castlePhaseRecord } from './castle/phases.js';
+import { runCastlePhase, castlePhaseRecord, CASTLE_PHASE_BUDGETS } from './castle/phases.js';
+import { densityFactor, scaledRange, TR_DENSITY_DEFAULT } from '../tr-density.js';
 import { outcomeSense } from './threads.js';
 // TASK 7A: the day is EDITED before it is filed — stories ranked, beats
 // ordered inside their phase, promises answered. See js/tr/episode-editor.js
@@ -1316,7 +1317,24 @@ function _castleRecord(ep, fired) {
   const edit = buildEpisodeEdit(scenes, { ep, living: [...(gs.activePlayers || [])] });
   const phases = castlePhaseRecord(edit.scenes);
 
-  return { ep, windows, scenes: edit.scenes, phases, edit };
+  // THE LENGTH THIS EPISODE WAS PLAYED AT, on the record and not read live.
+  //
+  // The debug screen prints it, and a screen that read `seasonConfig` instead
+  // would label every past episode with whatever the author has the control set
+  // to NOW -- the "live state on a replayed episode" class this file already
+  // snapshots bonds and alliances to avoid. The scaled budgets go with it so a
+  // reader can check the scene counts below against what was actually
+  // budgeted, rather than against the ranges printed in phases.js.
+  const _dFactor = densityFactor(seasonConfig?.trDensity || TR_DENSITY_DEFAULT);
+  const density = {
+    id: seasonConfig?.trDensity || TR_DENSITY_DEFAULT,
+    factor: _dFactor,
+    budgets: CASTLE_PHASE_BUDGETS.map(b => {
+      const [min, max] = scaledRange(b.min, b.max, _dFactor);
+      return { id: b.id, label: b.label, min, max };
+    }),
+  };
+  return { ep, windows, scenes: edit.scenes, phases, edit, density };
 }
 
 /**

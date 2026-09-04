@@ -707,6 +707,30 @@
               </label>
             </div>
             <div class="form-group">
+              <label class="form-label">Shields</label>
+              <select id="cfg-tr-shield-source" onchange="updateShieldUI();saveConfig()" class="form-input">
+                <option value="mission">Won in a mission — the winner is seen taking it</option>
+                <option value="armoury">The Armoury — the best of the day draw for it in secret</option>
+                <option value="off">No shields this season</option>
+              </select>
+              <div class="hint hint-tight">A shield blocks the next murder only. It never saves anybody at the Round Table, it cannot be given away, and an unused one expires at dawn.</div>
+            </div>
+            <div class="form-group" id="tr-armoury-opts" style="display:none">
+              <label class="form-label">Into the Armoury</label>
+              <div style="display:flex;gap:8px">
+                <select id="cfg-tr-armoury-size" onchange="saveConfig()" class="form-input" style="flex:1">
+                  <option value="3">Top 3 of the mission</option>
+                  <option value="4" selected>Top 4 of the mission</option>
+                  <option value="5">Top 5 of the mission</option>
+                </select>
+                <select id="cfg-tr-shield-count" onchange="saveConfig()" class="form-input" style="flex:1">
+                  <option value="1" selected>1 shield hidden</option>
+                  <option value="2">2 shields hidden</option>
+                </select>
+              </div>
+              <div class="hint hint-tight">Only a castle that actually wins the afternoon gets in. They each open one box, and the whole castle sees WHO went in but never who came out with it — so the Traitors have to decide whether any of that group is worth the risk.</div>
+            </div>
+            <div class="form-group">
               <label class="form-label">The pot</label>
               <input type="number" id="cfg-tr-pot" class="form-input" min="1000" max="500000" step="1000" value="120000" onchange="saveConfig()">
               <div class="hint hint-tight">The ceiling the missions are earning against. Nobody banked a penny of it until somebody walks out with the lot.</div>

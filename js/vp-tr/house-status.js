@@ -868,6 +868,11 @@ function _view(ep, observer) {
   const goneSet = new Set(gone.map(g => g.name));
   const room = rec.cast.filter(n => !goneSet.has(n));
 
+  // AN ARMOURY SHIELD HAS NO WITNESSES BY CONSTRUCTION, so the ordinary rule
+  // (holder, or somebody who watched it be won) correctly tells nobody but the
+  // holder — that is the secret half. What the castle DOES know is the group
+  // that walked in, which the whole room watched; that is carried separately
+  // as `entrants` below and shown to everybody.
   const entitled = r => isAudience || (watcher && (r.holder === watcher
     || (r.witnesses || []).indexOf(watcher) >= 0));
   const relic = (r, kind) => {
@@ -881,6 +886,12 @@ function _view(ep, observer) {
       holder: known ? r.holder : null,
       seenLine: known ? (r.seenLine || '') : '',
       known,
+      // PUBLIC WHATEVER THE OBSERVER IS. The names that went into the Armoury
+      // are the afternoon's reward, handed out in front of everybody. One of
+      // them is carrying it and the castle has no way to tell which — which is
+      // the whole reason the group is worth showing.
+      via: r.via || null,
+      entrants: [...(r.entrants || [])],
     };
   };
   const powers = rec.powers || {};
@@ -1028,9 +1039,19 @@ function _relicCard(r, history) {
     ? '<div class="db-relic-h">' + _esc(r.holder) + '</div>'
       + (r.seenLine ? '<div class="db-relic-note">' + _esc(r.seenLine) + '</div>'
         : '<div class="db-relic-note">You were there when it was picked up.</div>')
-    : '<div class="db-relic-h"><em>Holder not known to you</em></div>'
-      + '<div class="db-relic-note">It came back out of the field in somebody\'s hands and '
-      + 'you were not one of the people looking the right way.</div>';
+    : (r.via === 'armoury' && r.entrants.length
+      // THE ARMOURY'S OWN SENTENCE. Not "you missed it" — nobody saw this one,
+      // and the honest thing to say is who walked in, because that is exactly
+      // what the castle has to work with.
+      ? '<div class="db-relic-h"><em>One of these ' + r.entrants.length
+        + ' is carrying it</em></div>'
+        + '<div class="db-relic-note">'
+        + _esc(r.entrants.join(', '))
+        + ' earned the Armoury this afternoon and went in one at a time. Nobody said a word '
+        + 'on the way out.</div>'
+      : '<div class="db-relic-h"><em>Holder not known to you</em></div>'
+        + '<div class="db-relic-note">It came back out of the field in somebody\'s hands and '
+        + 'you were not one of the people looking the right way.</div>');
   return '<div class="db-relic" data-kind="' + _esc(r.kind) + '"'
     + ' data-known="' + (r.known && r.holder ? 1 : 0) + '"'
     + (r.known && r.holder ? ' data-holder="' + _esc(r.holder) + '"' : '')

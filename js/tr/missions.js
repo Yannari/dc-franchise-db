@@ -83,6 +83,7 @@ import { alignmentAt } from './roles.js';
 // anything, and what it cost the castle in money. Nothing about who saw it,
 // how long it lasts or what anybody concludes from it is decided here.
 import { awardShield, awardDagger, daggerAfternoon } from './powers.js';
+import { shieldSource } from './armoury.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // THE POT ARITHMETIC LIVES IN js/tr/missions/contract.js
@@ -663,7 +664,16 @@ function _chooseArchetype(rng) {
     // history to make sense of, and the format hands them out from the first
     // afternoon. A Shield won on night one blocks night one's murder, which is
     // the format working rather than an edge case.
-    if (m.power === 'shield') return _shieldMission ? Array(SHIELD_WEIGHT).fill(m) : [];
+    // AND THE AUTHOR'S CHOICE OF WHERE SHIELDS COME FROM (setup: Shields).
+    // 'mission' is this — the Reliquary's searcher breaks away and wins it in
+    // the open. Under 'armoury' the Shield is drawn from boxes AFTER the
+    // afternoon instead (js/tr/armoury.js), so the Reliquary has nothing left
+    // to be about and is dropped from the pool; under 'off' there are no
+    // Shields at all and it is dropped for the same reason.
+    if (m.power === 'shield') {
+      return (_shieldMission && shieldSource() === 'mission')
+        ? Array(SHIELD_WEIGHT).fill(m) : [];
+    }
     return [m];
   });
   const pool = eligible.filter(m => m.id !== last);
@@ -1190,6 +1200,10 @@ export function runMission(ep, rng) {
   // copy of the tie rule, and the two would drift the first time either moved.
   const bestTeam = teams[0].perf >= teams[1].perf ? teams[0].name : teams[1].name;
   const rec = {
+    // THE STATS THE AFTERNOON WAS SCORED ON, carried so the Armoury can rank
+    // "who did best today" on the mission's own terms instead of inventing a
+    // second opinion about it (js/tr/armoury.js `_contribution`).
+    primary: m.primary || null, secondary: m.secondary || null,
     id: m.id, ep, name: m.name, teams, quality, tier, bestTeam,
     gross, earned, potAfter: gs.tr.pot, sideObjectives,
     summary: _freshPick(rng, m.lines[tier]),

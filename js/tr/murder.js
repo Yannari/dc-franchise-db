@@ -16,6 +16,7 @@ import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
 import { murderPreferenceFor } from './state.js';
 import { shieldSeenBy, daggerSeenBy } from './powers.js';
+import { armouryHesitation } from './armoury.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
 import { _lineHash } from './castle/lines.js';
@@ -197,6 +198,16 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // list hard enough to usually win the argument in this Traitor's own head.
     if (isSacrifice) score += SACRIFICE_PULL;
     if (name === knownShield) score -= KNOWN_SHIELD_PENALTY;
+    // THE ARMOURY GROUP, AND THE HESITATION IT BUYS. When the Shield came out
+    // of the Armoury the pact does not know WHO has it — only who walked in,
+    // which the whole castle watched. So every entrant carries the chance of
+    // being the one, and spending the night on them wastes the murder outright.
+    // The penalty is that chance, priced (js/tr/armoury.js). It is a term and
+    // not a filter: a Traitor with a strong reason still takes the risk, which
+    // is the drama the format wants — and it goes to zero the moment one of the
+    // pact opens the right box, because then the Shield is accounted for.
+    // Applied here with the other power terms, after the read-quality multiply.
+    score -= armouryHesitation(name, ep);
     // THE OTHER DIRECTION. A Faithful carrying a Dagger is a Faithful who gets
     // two votes at a table nobody can predict, and the Traitor who saw it won
     // is the only person in the pact who can act on that. Applied at the same

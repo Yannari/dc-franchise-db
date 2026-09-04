@@ -1022,6 +1022,9 @@ export function saveConfig() {
     trEndgameReveal: g('cfg-tr-endgame-reveal') ? g('cfg-tr-endgame-reveal').checked : false,
     trEndgameSize: parseInt(g('cfg-tr-endgame-size')?.value) || 3,
     trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
+    trShieldSource: g('cfg-tr-shield-source')?.value || 'mission',
+    trArmourySize: parseInt(g('cfg-tr-armoury-size')?.value) || 4,
+    trShieldCount: parseInt(g('cfg-tr-shield-count')?.value) || 1,
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -1156,6 +1159,10 @@ export function renderConfig() {
   if (g('cfg-tr-endgame-reveal')) g('cfg-tr-endgame-reveal').checked = seasonConfig.trEndgameReveal === true;
   set('cfg-tr-endgame-size', seasonConfig.trEndgameSize || 3);
   if (g('cfg-tr-auto-recruit')) g('cfg-tr-auto-recruit').checked = seasonConfig.trAutoRecruit !== false;
+  set('cfg-tr-shield-source', seasonConfig.trShieldSource || 'mission');
+  set('cfg-tr-armoury-size', seasonConfig.trArmourySize || 4);
+  set('cfg-tr-shield-count', seasonConfig.trShieldCount || 1);
+  try { updateShieldUI(); } catch (e) {}
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
   chk('cfg-ri',        seasonConfig.ri);
@@ -1833,4 +1840,15 @@ export function renderBackgroundPanel() {
 function _esc(s) {
   return String(s ?? '').replace(/[&<>"]/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+/**
+ * The Armoury's own options only mean anything when the Armoury is the source,
+ * so they are hidden otherwise rather than sitting there inert — the same
+ * treatment the traitor picker gets when the mode is random.
+ */
+export function updateShieldUI() {
+  const src = document.getElementById('cfg-tr-shield-source')?.value || 'mission';
+  const box = document.getElementById('tr-armoury-opts');
+  if (box) box.style.display = src === 'armoury' ? '' : 'none';
 }

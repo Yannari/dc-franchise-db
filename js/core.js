@@ -1611,6 +1611,20 @@ export function defaultConfig() {
     // Turned ON, the endgame plays like Ireland S1: every banished player is
     // turned over at the table, the same as any earlier Round Table.
     trEndgameReveal: false,
+    // WHERE A SHIELD COMES FROM, and it changes what the Traitors can know.
+    //   'mission' (default) — the modern show: the Reliquary's searcher breaks
+    //      away and wins it in the open, so who saw it decides what the pact
+    //      can steer around (js/tr/powers.js `awardShield`).
+    //   'armoury' — the early-show room: the best of the afternoon each open a
+    //      box. The castle knows WHO WENT IN and nobody knows who came out with
+    //      it, so the pact has to hesitate over the whole group
+    //      (js/tr/armoury.js).
+    //   'off' — no Shields in this castle at all.
+    trShieldSource: 'mission',
+    // How many boxes hide a Shield (the show's "double Shield" twist is 2).
+    trShieldCount: 1,
+    // How many players earn the visit. Three or four, as the show runs it.
+    trArmourySize: 4,
     trPotCeiling: 120000,
     auctionAwardsImmunity: true,  // Auction twist: when ON the auction awards the only immunity (replaces the challenge); when OFF it's a reward alongside a normal challenge
     setting: 'hosted-camp',   // venue flavor: hosted-camp | survival-island | carnival | film-lot | world-tour

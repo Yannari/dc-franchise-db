@@ -40,6 +40,7 @@ import { buildEpisodeEdit } from './episode-editor.js';
 import { runMission, POT_CEILING } from './missions.js';
 import { shieldEvidence, expireShields, settleDaggers } from './powers.js';
 import { runEndgame } from './endgame.js';
+import { runArmoury } from './armoury.js';
 import { computeAlliances } from './alliances.js';
 import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
   scoreEndgame } from './crowd.js';
@@ -601,7 +602,12 @@ function _goneThrough() {
 function _powerLedger() {
   const copy = r => ({ ep: r.ep, holder: r.holder, witnesses: [...(r.witnesses || [])],
     visibility: r.visibility, outcome: r.outcome, seenLine: r.seenLine || '',
-    playedEp: r.playedEp ?? null, target: r.target ?? null });
+    playedEp: r.playedEp ?? null, target: r.target ?? null,
+    // WHERE IT CAME FROM, AND WHO WALKED IN. An Armoury Shield has no
+    // witnesses by construction, so without these two the Day Book could only
+    // say "holder not known to you" — and the group that went in is the one
+    // thing the castle DOES know and the only thing anybody can play against.
+    via: r.via || null, entrants: [...(r.entrants || [])] });
   return {
     shields: (gs.tr?.shields || []).map(copy),
     daggers: (gs.tr?.daggers || []).map(copy),
@@ -1810,6 +1816,32 @@ function _snapshotBonds() {
   return out;
 }
 
+/**
+ * TONIGHT'S ARMOURY, as plain data on the row.
+ *
+ * Copied onto the episode rather than read back out of `gs.tr` for the reason
+ * `_conclaveRecord` gives: `gs` is replaced wholesale by the next season and
+ * rebuilt by a load, so a screen reaching into live state would draw the season
+ * it is standing in instead of the episode it is showing.
+ *
+ * `entrants` is PUBLIC and `holders` is NOT — the screens gate the second on
+ * the observer exactly as the conclave gates the turret, and `js/vp-tr/` is
+ * where that rule is enforced. The record carries both because the AUDIENCE is
+ * entitled to the whole truth; a Faithful observer is never shown `holders`.
+ */
+function _armouryRecord(ep) {
+  const a = (gs.tr?.armouries || []).find(x => x.ep === ep);
+  if (!a) return null;
+  return {
+    ep: a.ep,
+    entrants: [...a.entrants],
+    slots: (a.slots || []).map(s => ({ name: s.name, found: !!s.found })),
+    holders: [...(a.holders || [])],
+    count: a.count,
+    pactAware: !!a.pactAware,
+  };
+}
+
 function _recordEpisode(ep, { banished = null, night = null, mission = null,
   castle = null, endgame = false, selection = null, arrival = null,
   finale = false, beliefs = undefined } = {}) {
@@ -1926,6 +1958,9 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // that: a mission needs four people and an endgame round runs none,
       // and the pact spends most nights killing rather than asking.
       mission: _missionRecord(mission),
+      // WHO WALKED INTO THE ARMOURY, and (for the audience) who came out with
+      // something. Null on every afternoon that did not run one.
+      armoury: _armouryRecord(ep),
       recruitment: _recruitmentRecord(night),
       // -- THE DAY THE CASTLE ACTUALLY SPENT (Plan 8, Task 8) ---------
       //
@@ -2149,6 +2184,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // journey is: out to the mission, and back from it. Night one has one too —
   // the show does — even though it has no Round Table.
   const mission1 = runMission(ep, missionRng);
+  // THE ARMOURY, straight after the afternoon that earned it. Draws off the
+  // MISSION stream like everything else out here, so a season with no Armoury
+  // configured consumes an identical game stream (js/tr/armoury.js).
+  const armoury1 = runArmoury(ep, mission1, missionRng);
   // EVIDENCE SOURCE 4, and it runs on night one like every other beat of the
   // afternoon. It reads the mission that has JUST happened rather than the
   // round that just closed, so it is not part of the order contract below and
@@ -2262,6 +2301,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // nothing about what it draws.
     castleEvents.push(...runCastlePhase('morning-life', ep, castleRng)); // morning + journey-out
     const mission = runMission(ep, missionRng);
+    const armoury = runArmoury(ep, mission, missionRng);   // see night one
     // Source 4. Same round as the mission it reads, before the table it feeds.
     missionEvidence(ep, missionRng);
     castleEvents.push(...runCastlePhase('mission-fallout', ep, castleRng)); // journey-back

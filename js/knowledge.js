@@ -152,12 +152,53 @@ export function learn(knower, id, { source = 'observation', sourceType = 'observ
   if (res.confidence >= belief.confidence) { belief.valence = res.valence; belief.source = source; belief.sourceType = sourceType; }
   belief.confidence = Math.max(belief.confidence, res.confidence);
   belief.learnedEp = e;
+  // THE EVIDENCE HISTORY, not just the winning reason. `belief.source` above is
+  // overwritten by whichever clue was strongest, so a screen reading it can only
+  // ever show ONE line beside a suspicion — "Bowie miscounted the peal" — and a
+  // read that took a whole season of small things to build reads as a single
+  // event. `clues` keeps the strongest few DISTINCT reasons (deduped by their
+  // sentence, most-confident first), so Voting Plans can say "the wrong bell
+  // count, AND the contradiction later, AND defending a revealed Traitor" — a
+  // reasoned case rather than one fact. Display-only: nothing reads it for a
+  // decision, and it takes no rng, so every calibration band is undisturbed.
+  _recordClue(belief, source, sourceType, res.confidence, e);
   // second-order knowledge — each now knows the other knows
   if (from && fact.beliefs[from]) {
     if (!belief.knowsOthersKnow.includes(from)) belief.knowsOthersKnow.push(from);
     if (!fact.beliefs[from].knowsOthersKnow.includes(knower)) fact.beliefs[from].knowsOthersKnow.push(knower);
   }
   return belief;
+}
+
+// How many distinct clues a single belief keeps. A read is a case of a few
+// things, not a dossier; the screen shows the top three, and one spare covers a
+// stronger clue arriving after the list is full.
+const CLUE_CAP = 4;
+
+/**
+ * Fold one reason into a belief's evidence history.
+ *
+ * Deduped by the reason SENTENCE — the same clue arriving twice (a re-observed
+ * pattern, a re-heard rumour) lifts its confidence and freshness rather than
+ * listing it twice — and kept strongest-first so the screen's top three are the
+ * three that matter. A propagation clue whose `source` is just a name is kept
+ * too; the screen decides how to word it. Bounded at CLUE_CAP so a long season
+ * cannot grow an unbounded list into every per-episode snapshot.
+ */
+function _recordClue(belief, source, sourceType, confidence, ep) {
+  if (!source) return;
+  if (!Array.isArray(belief.clues)) belief.clues = [];
+  const hit = belief.clues.find(c => c.source === source);
+  if (hit) {
+    hit.confidence = Math.max(hit.confidence || 0, confidence || 0);
+    hit.ep = ep;
+    if (sourceType) hit.sourceType = sourceType;
+  } else {
+    belief.clues.push({ source, sourceType: sourceType || null, confidence: confidence || 0, ep });
+  }
+  belief.clues.sort((a, b) => (b.confidence || 0) - (a.confidence || 0)
+    || (b.ep || 0) - (a.ep || 0));
+  if (belief.clues.length > CLUE_CAP) belief.clues.length = CLUE_CAP;
 }
 
 // ── confidence over time ────────────────────────────────────────────────

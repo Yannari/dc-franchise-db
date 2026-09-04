@@ -518,6 +518,21 @@ function _readOf(observer, candidates, ep) {
       // without its reason is a number a screen would have to invent a story
       // for.
       why: b.source || null,
+      // THE FULL CASE, not just the winning line. `why` is the single strongest
+      // reason; `clues` is the top few DISTINCT reasons behind this read, so the
+      // screen can show that a suspicion was built out of several things across
+      // the season rather than one event. Falls back to the single source for a
+      // belief formed before the history existed (an older save).
+      clues: Array.isArray(b.clues) && b.clues.length
+        ? b.clues.slice(0, 3).map(c => ({
+          source: c.source,
+          sourceType: c.sourceType || null,
+          confidence: _r3(c.confidence || 0),
+          ep: c.ep == null ? null : c.ep,
+        }))
+        : (b.source ? [{ source: b.source, sourceType: b.sourceType || null,
+          confidence: _r3(b.effectiveConfidence || 0),
+          ep: b.learnedEp == null ? null : b.learnedEp }] : []),
       learnedEp: b.learnedEp == null ? null : b.learnedEp,
       // Certainty, and there are only ever two ways to hold it about an
       // alignment: you were in the turret, or you watched somebody's cloak come

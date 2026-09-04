@@ -509,6 +509,12 @@ const SN_CSS = `
 .sn-row-nm{font-family:var(--sn-display);font-weight:600;font-size:17px}
 .sn-row-why{font-family:var(--sn-hand);font-size:13.5px;color:var(--sn-quiet);
   font-style:italic}
+/* the case behind a read: the top few distinct clues, stacked */
+.sn-clues{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
+.sn-clues li{font-family:var(--sn-hand);font-size:13px;color:var(--sn-quiet);font-style:italic;
+  position:relative;padding-left:14px;line-height:1.35}
+.sn-clues li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;
+  border-radius:50%;background:var(--sn-steel);opacity:.7}
 .sn-row-n{font-family:var(--sn-display);font-weight:700;font-size:16px;text-align:right}
 .sn-row[data-dismissed="1"]{opacity:.62}
 .sn-row[data-dismissed="1"] .sn-row-n{color:var(--sn-quiet)}
@@ -1023,6 +1029,7 @@ function _view(ep, observer) {
       confidence: e.confidence,
       sourceType: e.sourceType,
       why: e.why,
+      clues: e.clues,
       learnedEp: e.learnedEp,
       certain: !!e.certain,
       // What THEY did with it, which is a fact about them. Not what it was
@@ -1263,13 +1270,27 @@ function _buildBeats(v) {
 /** Explain one clue without presenting it as the cause of the full score. */
 export function _suspicionLead(observer, top) {
   const pct = Math.min(100, Math.round((Number(top?.score) || 0) * 100));
-  const clue = top?.why ? _esc(top.why) : 'No specific incident was retained with this read.';
-  return _esc(observer) + ' currently suspects ' + _esc(top?.name) + ' most. '
-    + _esc(observer) + "'s overall suspicion of " + _esc(top?.name) + ' is ' + pct
-    + '%. That is not the strength of this clue. '
-    + '<em>One recorded clue: ' + clue + '</em> '
-    + _esc(observer) + ' treats it as possible sabotage, not proof that '
-    + _esc(top?.name) + ' is a Traitor.';
+  // THE CASE, not just its headline. A read is often built out of several
+  // things; the lead names how many and quotes the strongest, and the rows
+  // below carry the rest. Falls back to the single `why` for a belief with no
+  // history (an older save), which is the shape the single-clue guard checks.
+  const clues = (Array.isArray(top?.clues) && top.clues.length)
+    ? top.clues
+    : (top?.why ? [{ source: top.why }] : []);
+  const n = clues.length;
+  const strongest = n ? _esc(clues[0].source)
+    : 'No specific incident was retained with this read.';
+  const base = _esc(observer) + ' currently suspects ' + _esc(top?.name) + ' most. '
+    + _esc(observer) + "'s overall suspicion of " + _esc(top?.name) + ' is ' + pct + '%. ';
+  if (n <= 1) {
+    return base + 'That is not the strength of this clue. '
+      + '<em>One recorded clue: ' + strongest + '</em> '
+      + _esc(observer) + ' treats it as possible sabotage, not proof that '
+      + _esc(top?.name) + ' is a Traitor.';
+  }
+  return base + 'That is not the strength of any single clue. '
+    + '<em>' + n + ' recorded clues; the strongest: ' + strongest + '</em> '
+    + _esc(observer) + ' has been building this case out of several things, not one.';
 }
 
 /**
@@ -1333,10 +1354,31 @@ function _rowsOf(rows) {
     '<div class="sn-row"' + (e.dismissed || !(e.score > 0) ? ' data-dismissed="1"' : '') + '>'
     + _av(e.name, 30)
     + '<div><span class="sn-row-nm">' + _esc(e.name) + '</span>'
-    + (e.why ? '<span class="sn-row-why"> &mdash; ' + _esc(e.why) + '</span>' : '')
-    + _tier(e.sourceType) + '</div>'
+    + _cluesHtml(e)
+    + '</div>'
     + '<div class="sn-row-n">' + _pct(e.score) + '%</div>'
     + '</div>').join('') + '</div>';
+}
+
+/**
+ * THE CASE BEHIND A READ, not just its headline. A read built out of several
+ * things across the season shows all of them (up to three) so it looks like the
+ * reasoning it was — the wrong bell count, AND the contradiction later, AND
+ * defending a player who turned out to be a Traitor. One clue renders inline as
+ * before; two or more stack as a short list. Falls back to the single `why`
+ * when a belief carries no history (an older save).
+ */
+function _cluesHtml(e) {
+  const clues = (Array.isArray(e.clues) && e.clues.length)
+    ? e.clues
+    : (e.why ? [{ source: e.why, sourceType: e.sourceType }] : []);
+  if (!clues.length) return '';
+  if (clues.length === 1) {
+    return '<span class="sn-row-why"> &mdash; ' + _esc(clues[0].source) + '</span>'
+      + _tier(clues[0].sourceType);
+  }
+  return '<ul class="sn-clues">' + clues.map(c =>
+    '<li>' + _esc(c.source) + _tier(c.sourceType) + '</li>').join('') + '</ul>';
 }
 
 /**

@@ -691,6 +691,10 @@ const REACTION_LINES = {
 
 registerEvent({
   id: 'grief-morning-reaction',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['boldness', 'intuition', 'loyalty', 'social', 'strategic'],
+  },
   family: FAMILY,
   window: 'dawn',
   weight(ctx) {
@@ -1640,6 +1644,10 @@ const NIGHT_AWAKE_LINES = {
 
 registerEvent({
   id: 'grief-nobody-sleeps',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['temperament', 'loyalty', 'intuition'],
+  },
   family: FAMILY,
   window: 'night',
   weight(ctx) {

@@ -728,6 +728,10 @@ const OUTCOME_LINES = {
 
 registerEvent({
   id: 'cover-story-check',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['boldness', 'strategic', 'temperament'],
+  },
   family: FAMILY,
   window: 'evening',
   // ADVANCES AND CITES (Plan 5 Task 2). `cover|evening` held four events and

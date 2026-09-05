@@ -655,6 +655,11 @@ const COMMIT_LINES = {
 
 registerEvent({
   id: 'trust-vote-commitment-test',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'strategic', 'boldness', 'intuition'],
+    relationship: ['close-ally', 'neutral'],
+  },
   family: FAMILY,
   window: 'evening',
   advancesThread: true,
@@ -1676,6 +1681,11 @@ const SECRET_SWAP_LINES = {
 
 registerEvent({
   id: 'trust-secret-swap',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'social', 'strategic', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
   family: FAMILY,
   // RELOCATED BY PLAN 5 TASK 4 ROUND 2 (R2), and relocation rather than
   // reweighting is the point. Filling three empty windows took 22% of
@@ -1796,6 +1806,11 @@ const LAST_WORD_LINES = {
 
 registerEvent({
   id: 'trust-last-word-before-lights-out',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['loyalty', 'boldness', 'strategic'],
+    relationship: ['close-ally', 'neutral'],
+  },
   family: FAMILY,
   window: 'night',
   // TRUE: the event only exists where these two already have an open trust

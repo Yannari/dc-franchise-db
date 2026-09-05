@@ -696,6 +696,10 @@ const SHORT_COLUMN_LINES = {
 // for. Two of this window's events take a lone actor.
 registerEvent({
   id: 'grief-shorter-column',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted'],
+    relationship: ['close-ally', 'neutral'],
+  },
   family: 'grief',
   window: 'journey-out',
   // COOLDOWN OVERRIDE (spec 5.4.2). 878 firings per 400 seasons, up to five

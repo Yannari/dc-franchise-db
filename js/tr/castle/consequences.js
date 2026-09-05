@@ -657,7 +657,12 @@ registerEvent({
   // writes — and its alliance-edge precondition is not constructible in that
   // sweep's probe world anyway.
   variationAxes: {
-    outcome: ['tightened', 'fractured', 'paranoid', 'severed'],
+    // The pool's own vocabulary, not this event's branch names. The four
+    // words below are what the other 130 events classify with; the branch
+    // strings (tightened/fractured/paranoid/severed) stay where they
+    // belong, on the branch, and tests/tr-castle-reachability.test.js
+    // still guards each of them by name.
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
     voice: ['loyalty', 'strategic', 'intuition', 'boldness'],
     knowledge: ['witnessed'],
     relationship: ['close-ally'],

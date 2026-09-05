@@ -574,6 +574,11 @@ registerEvent({
 
 registerEvent({
   id: 'testing-loyalty-oath',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['boldness', 'loyalty'],
+    relationship: ['close-ally', 'neutral'],
+  },
   // The direction is a property of THIS event, not of the sentence it happens
   // to draw: the pair is [the one running the test, the one being tested].
   // See `sceneSpeakers` in js/tr/events.js.
@@ -1079,6 +1084,11 @@ const DECOY_LINES = {
 
 registerEvent({
   id: 'testing-decoy-secret',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['intuition', 'loyalty', 'social', 'strategic', 'temperament'],
+    relationship: ['close-ally', 'neutral'],
+  },
   // The direction is a property of THIS event, not of the sentence it happens
   // to draw: the pair is [the one running the test, the one being tested].
   // See `sceneSpeakers` in js/tr/events.js.
@@ -1212,6 +1222,11 @@ const NIGHT_CHECK_LINES = {
 
 registerEvent({
   id: 'testing-night-scores-it',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'loyalty', 'mental', 'temperament'],
+    knowledge: ['tested-before', 'first-test'],
+  },
   // The direction is a property of THIS event, not of the sentence it happens
   // to draw: the pair is [the one running the test, the one being tested].
   // See `sceneSpeakers` in js/tr/events.js.

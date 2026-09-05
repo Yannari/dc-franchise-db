@@ -788,6 +788,11 @@ const ACCUSE_LINES = {
 
 registerEvent({
   id: 'susp-private-accusation',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'intuition', 'loyalty', 'social', 'temperament'],
+    relationship: ['close-ally', 'neutral', 'rival'],
+  },
   // The direction is a property of THIS event, not of the sentence it happens
   // to draw: `fire` returns `pair: [accuser, accused]`, and every branch here
   // (denies / denyWeak / turned / confess) is the ACCUSED answering.

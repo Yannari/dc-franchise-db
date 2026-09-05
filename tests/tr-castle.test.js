@@ -1997,3 +1997,78 @@ describe('the Castle Day is scheduled in six chronological phases', () => {
     expect(a).toEqual(b);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// EVERY EVENT DECLARES WHAT VARIES IN IT — AND THE WORDS ARE REAL WORDS
+// ══════════════════════════════════════════════════════════════════════
+//
+// `variationAxes` was declared on 121 of 134 events and READ BY NOTHING. It
+// is the inventory Task 11 Step 1 counts against — "≥2 outcomes, and at least
+// one of voice / relationship / knowledge / alignment" — and until this arm
+// existed the thirteen events that declared none were invisible, and a
+// fourteenth could ship any day.
+//
+// A declaration nothing checks is a comment. These three arms are what make
+// it a contract, and the third is the one that catches a real bug class
+// rather than a missing field: `voice` names STATS, and this project has a
+// closed list of nine (CLAUDE.md, "Do NOT invent stats"). An axis reading
+// `charisma` or `luck` would be describing a stat the engine cannot score.
+describe('the event pool declares its own variation', () => {
+  const IDENTITY = ['voice', 'relationship', 'knowledge', 'alignment'];
+  // js/players.js — the only nine that exist.
+  const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+    'loyalty', 'boldness', 'intuition', 'temperament'];
+  // The vocabularies already in use across the pool. Closed on purpose: a new
+  // word here is a decision, not a typo, and it should be made deliberately.
+  const OUTCOMES = ['ambiguous', 'accepted', 'rejected', 'backfire'];
+  // THE ONE FAMILY THAT CLASSIFIES BY BRANCH NAME INSTEAD.
+  //
+  // js/tr/castle/confrontation.js (three events, added 2026-09-03) declares
+  // its branch strings as outcomes rather than the four words the other 130
+  // events use. Listed rather than rewritten: nothing reads this field, so
+  // normalising another family's declarations buys no behaviour and would
+  // edit work that is not this change's to edit. It IS an inconsistency and
+  // the list should not grow — a new event using a fifth vocabulary fails
+  // here, which is the point.
+  const LEGACY_OUTCOMES = ['held', 'cracked', 'turned', 'blew-up',
+    'weathered', 'crumbled', 'overreached', 'worked', 'fell-flat', 'drew-fire'];
+  const RELATIONSHIPS = ['close-ally', 'neutral', 'rival', 'romance', 'prior-history'];
+
+  it('every registered event declares at least two outcomes', () => {
+    const bad = EVENTS.filter(e => ((e.variationAxes || {}).outcome || []).length < 2)
+      .map(e => e.id);
+    expect(bad, 'these events declare fewer than two outcomes').toEqual([]);
+    expect(EVENTS.length, 'no events registered at all').toBeGreaterThan(100);
+  });
+
+  it('and at least one axis that is about a person, not an outcome', () => {
+    const bad = EVENTS.filter(e => !IDENTITY.some(k => ((e.variationAxes || {})[k] || []).length))
+      .map(e => e.id);
+    expect(bad, 'these declare no voice, relationship, knowledge or alignment axis')
+      .toEqual([]);
+  });
+
+  it('names only stats that exist, and only vocabulary already in use', () => {
+    const badStat = [], badOutcome = [], badRel = [];
+    for (const e of EVENTS) {
+      const va = e.variationAxes || {};
+      for (const v of (va.voice || [])) {
+        if (!STATS.includes(v)) badStat.push(`${e.id}: ${v}`);
+      }
+      for (const v of (va.outcome || [])) {
+        if (!OUTCOMES.includes(v) && !LEGACY_OUTCOMES.includes(v)) {
+          badOutcome.push(`${e.id}: ${v}`);
+        }
+      }
+      for (const v of (va.relationship || [])) {
+        if (!RELATIONSHIPS.includes(v)) badRel.push(`${e.id}: ${v}`);
+      }
+    }
+    expect(badStat, 'a voice axis names something that is not one of the nine stats')
+      .toEqual([]);
+    expect(badOutcome, 'an outcome axis uses a word the rest of the pool does not')
+      .toEqual([]);
+    expect(badRel, 'a relationship axis uses a word the rest of the pool does not')
+      .toEqual([]);
+  });
+});

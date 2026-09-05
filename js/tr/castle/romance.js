@@ -1088,6 +1088,11 @@ const EXPOSED_AFTERMATH_LINES = [
 
 registerEvent({
   id: 'romance-liability-exposed',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected', 'backfire'],
+    voice: ['boldness', 'intuition', 'loyalty'],
+    relationship: ['romance'],
+  },
   family: FAMILY,
   // RELOCATED `after-table` -> `night` (round 2, R2). This is the family's
   // flagship and it forks FOUR ways on 25 firings per 400 seasons, so every

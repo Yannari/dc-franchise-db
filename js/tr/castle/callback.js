@@ -1328,6 +1328,11 @@ const CONFRONTATION_LINES = {
 
 registerEvent({
   id: 'callback-history-confrontation',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['boldness', 'loyalty', 'strategic', 'temperament'],
+    relationship: ['prior-history', 'rival'],
+  },
   family: FAMILY,
   window: 'after-table',
   advancesThread: true,

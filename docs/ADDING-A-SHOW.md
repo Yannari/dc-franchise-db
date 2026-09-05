@@ -284,6 +284,7 @@ because none of these files look show-specific from the outside.
 | Run tab / timeline | `js/run-ui.js` | badges, the hub, the episode list |
 | Viewing party | `js/vp-screens.js` | screens filter `episodeHistory` on `format` |
 | Rankings, awards, franchise, compare, leaderboards | those `.html` files | most already read the registry; `compare.html` and `franchise.html` hold their own label maps |
+| Portraits, everywhere | `js/avatar-registry.js` | nothing to add for a new show — but see **Portraits** below before drawing a face anywhere |
 
 **The trivia trap, twice now:** a line that reads correctly on one show is a
 false statement on another. "Reached the end without ever being nominated"
@@ -291,6 +292,34 @@ printed over a Total Drama season, which has no nominations; "was evicted"
 printed over a camp, which votes people out. Every sentence a screen generates
 has to come from that show's own vocabulary, and the registry's `words` block is
 where it comes from.
+
+---
+
+### Portraits
+
+A new show needs **no avatar code branch**. The moment its key exists in
+`js/shows.js` it is a valid `show` value in
+`assets/avatars/portrait-catalog.json` and appears in the cast builder's
+portrait filter automatically.
+
+To give somebody a look for the new show:
+
+1. put the file in `assets/avatars/`;
+2. add one entry to that player's `portraits` array — a stable `id`, the new
+   show's registry key, a human `label`, and the filename;
+3. run `npm run avatars:files`, which regenerates the file inventory and
+   validates the catalog.
+
+`js/avatar-registry.js` is the only file allowed to turn a player plus a show
+plus a stored selection into a URL, and `tests/no-direct-avatar-paths.test.js`
+fails the build if a screen rebuilds one from a slug. An **unknown** show key
+resolves to the player's global portrait and never borrows Total Drama's —
+same rule as the vocabulary, applied to pictures.
+
+**Never select artwork from `isReturnee`.** Returning is a fact about an
+appearance; it has chosen no picture since 2026-09. The portrait a season uses
+is recorded on the cast member as `{ avatarId, avatarFile }` and travels with
+the season into saves, exports and the wiki.
 
 ---
 
@@ -794,6 +823,13 @@ grep -rn "'total-drama'" --include=*.html --include=*.js .   | grep -Ev "$EX" | 
 #   js/wiki-view.js (4)  js/social/adapter.js (3)  js/cast-ui.js (2)
 #   js/run-ui.js  js/social/events.js  player.html  worker/worker-season-live.js
 grep -rn "=== 'big-brother' ?" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests/"
+
+# Portrait paths. Anything here that is not the resolver, a documented
+# allowlist entry in tests/no-direct-avatar-paths.test.js, or a HOST literal is
+# a screen guessing somebody's face from their slug — which cannot know which
+# of their looks the season chose. Expect only the allowlisted files.
+grep -rn "assets/avatars/[^\"'\`]*\${" --include=*.js js/   | grep -Ev "$EX" | grep -iv host
+node tools/gen-avatar-manifest.mjs --check
 
 # Neither grep is exhaustive. `!== 'big-brother'`, `?? 'total-drama'` and a
 # switch on the slug are all show lists too. Treat these two as the floor.

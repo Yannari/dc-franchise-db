@@ -24,6 +24,7 @@ import os
 import json
 import base64
 import re
+import datetime
 
 ROOT = os.getcwd()
 ROSTER_PATH = os.path.join(ROOT, 'franchise_roster.json')
@@ -217,9 +218,11 @@ def write_character(payload):
         with open(os.path.join(AVATAR_DIR, target + '.png'), 'wb') as f:
             f.write(raw)
         result['wrote'].append('assets/avatars/%s.png' % target)
-        # Returnee art is only ever used if the manifest lists it.
-        if rewrite_returnee_manifest() is not None:
-            result['wrote'].append('assets/avatars/returnee-manifest.json')
+        # The browser marks a registered portrait "missing" off this inventory,
+        # so a file uploaded here has to appear in it or the cast builder will
+        # show it greyed out as missing while it sits on disk.
+        if rewrite_available_files() is not None:
+            result['wrote'].append('assets/avatars/available-files.json')
 
     return result
 
@@ -231,30 +234,32 @@ def list_avatars():
         return []
 
 
-def rewrite_returnee_manifest():
-    """Regenerate assets/avatars/returnee-manifest.json from the files on disk.
+def rewrite_available_files():
+    """Regenerate assets/avatars/available-files.json from the files on disk.
 
-    The manifest is AUTHORITATIVE at runtime — refreshReturneeAvatars does
-    `manifest.has(base)` and never probes for a file once it has loaded — so an
-    uploaded `<slug>-returnee.png` that is not listed here is silently never
-    used. Until now the only thing that wrote it was `node
-    tools/gen-returnee-manifest.mjs`, run by hand, which meant adding returnee
-    art required editing the repo even though the upload endpoint had already
-    put the file exactly where it belongs — and an upload that skipped that step
-    left art sitting on disk that nothing would ever draw.
+    The browser uses this inventory to tell a registered portrait whose file is
+    missing from one that is simply not loaded yet, WITHOUT probing every
+    filename and filling the console with 404s. That makes it authoritative at
+    runtime: art uploaded here but absent from the inventory shows up in the
+    cast builder disabled and labelled "Missing file" while sitting on disk.
 
-    Derived from the directory every time, so it cannot disagree with what is
-    actually there. Same rule as the tools script, which stays for offline use.
+    This replaces the old returnee manifest, which answered a narrower question
+    — "does <slug>-returnee.png exist?" — from back when a person could have
+    exactly two portraits. Derived from the directory every time, so it cannot
+    disagree with what is actually there. `node tools/gen-avatar-manifest.mjs
+    --write-files` does the same job offline.
     """
+    exts = ('.png', '.webp', '.jpg', '.jpeg', '.gif')
     try:
-        slugs = sorted(f[:-len('-returnee.png')] for f in os.listdir(AVATAR_DIR)
-                       if f.lower().endswith('-returnee.png'))
+        files = sorted(f for f in os.listdir(AVATAR_DIR) if f.lower().endswith(exts))
     except OSError:
         return None
-    path = os.path.join(AVATAR_DIR, 'returnee-manifest.json')
+    path = os.path.join(AVATAR_DIR, 'available-files.json')
+    payload = {'generatedAt': datetime.datetime.now(datetime.timezone.utc)
+               .isoformat().replace('+00:00', 'Z'), 'files': files}
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(slugs) + chr(10))
-    return slugs
+        f.write(json.dumps(payload, indent=2) + chr(10))
+    return files
 
 
 class StudioHandler(http.server.SimpleHTTPRequestHandler):

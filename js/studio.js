@@ -2558,10 +2558,11 @@ async function _save() {
       } catch (e) { _toast('Avatar upload failed: ' + e.message, 'warn'); }
     }
 
-    // The returnee variant rides the same endpoint under `<slug>-returnee`.
-    // The server rewrites returnee-manifest.json off its own directory when it
-    // lands, which is the step that used to mean editing the repo: without a
-    // manifest entry the art exists and is never used.
+    // The second portrait rides the same endpoint under `<slug>-returnee`.
+    // Uploading it puts the FILE on disk and into the server's inventory; a
+    // season only draws it once it is registered in
+    // assets/avatars/portrait-catalog.json and a cast member picks it, because
+    // artwork stopped being something the Returning checkbox decides.
     if (d.returneeDataUri) {
       try {
         const r = await fetch(_apiUrl('/api/character'), {

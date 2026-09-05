@@ -122,6 +122,24 @@ describe('measured scene counts (a standard 18-person episode)', () => {
   // populations are printed by the reporting arm below so the choice is
   // visible rather than assumed.
   //
+  //     n=94   min 21   p10 23   median 26   mean 26.46   max 33
+  //
+  // ── RAISED 2026-09-05 BY ONE CONSTANT, NOT BY CONTENT ───────────────
+  //
+  // `BARREN_DRAWS_BEFORE_DONE` 3 -> 4 (js/tr/events.js), which is how many
+  // consecutive empty draws end a window. Mean 25.19 -> 26.46, median 25 ->
+  // 26, the share clearing 25 scenes 55.6% -> 77.7%, and the thinnest episode
+  // in the scan 19 -> 21.
+  //
+  // It was tried the other way first. Five loosely-gated events written for
+  // `evening` — the window with the largest budget and the worst spend, two of
+  // them widened to a solo draw — moved density by +0.05 and the window from
+  // 60% of budget spent to 61%, while taking the repetition ceiling from 3.9%
+  // to 7.0%. They were reverted. In a window that ends early, new events
+  // mostly DISPLACE the draws it was going to make; the constant decides how
+  // many draws there are.
+  //
+  // The superseded line, for comparison:
   //     n=99   min 20   p10 21   median 25   mean 25.19   max 31
   //     episodes at or above 25: 55.6%
   //

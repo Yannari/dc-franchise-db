@@ -568,8 +568,38 @@ export function pickEvent(ctx, rng) {
 /**
  * How many draws in a row must find nothing before a window is treated as
  * finished. See the long note in `runWindow`, which carries the measurement.
+ *
+ * ── 3 -> 4 (2026-09-05), AND WHY THIS IS THE DENSITY LEVER ───────────
+ *
+ * `runWindow`'s own table already measured this and shipped 3:
+ *
+ *     limit 1 (the old `break`)   21.148 scenes/episode
+ *     limit 2                     25.842
+ *     limit 3                     26.877   <- was shipped
+ *     limit 4                     28.454
+ *     limit 5                     28.435
+ *     limit 8                     28.207   (the phase budgets bind)
+ *
+ * Task 12 has to re-impose a floor of >=25 scenes on a standard episode, and
+ * the question was whether that floor comes from CONTENT or from here. It was
+ * tested rather than assumed: five loosely-gated events were written for
+ * `evening` — the window with the largest budget and the worst spend, two of
+ * them widened to a solo draw because a solo draw there faces 0.51 eligible
+ * events against 8.49 for a pair. They fired well, and moved the window from
+ * 60%% of budget spent to 61%%, and density by +0.05 scenes an episode. They
+ * also took the repetition ceiling from 3.9%% to 7.0%%, and were reverted.
+ *
+ * So content does not buy density in a window that is already ending early:
+ * new events mostly DISPLACE the draws the window was going to make anyway.
+ * This constant is what decides how many draws it makes. One line is worth
+ * +1.58 scenes an episode where five events were worth +0.05.
+ *
+ * FOUR AND NOT FIVE OR EIGHT, because the table above saturates: 4, 5 and 8
+ * are the same number inside noise once the phase budgets bind. Taking the
+ * first value that reaches the plateau buys the whole gain and leaves the
+ * budgets, not this constant, as the thing that decides density.
  */
-const BARREN_DRAWS_BEFORE_DONE = 3;
+const BARREN_DRAWS_BEFORE_DONE = 4;
 
 const ROUND_BUDGET_MIN = 4;
 const ROUND_BUDGET_MAX = 8; // inclusive

@@ -409,7 +409,27 @@ export function citeMoments(thread, ep, max = 3, against = null) {
   // ONE MOMENT ONLY. `_head` and not the whole note, so a citation is never
   // spliced inside a citation — which is the guarantee the old "always lead
   // with the opening beat" rule used to provide and R4 removed.
-  const quoted = _head(lead.note);
+  let quoted = _head(lead.note);
+  // ── AND THE QUOTED HEAD LOSES ITS OWN ASIDE WHEN THE HOST HAS ONE ───
+  //
+  // The guard below stops this function ADDING an em-dash pair. It cannot help
+  // when both halves arrive carrying one already: a host note reading
+  // "X handed Y the whole shape of it — Z, the days, the order — and asked for
+  // nothing back." spliced with a quoted head that itself contains a dash
+  // gives three dashes in one sentence, and a reader cannot tell which pair is
+  // the aside. Both halves are well-formed alone; only the JOIN breaks, which
+  // is exactly what the note below says about the other case.
+  //
+  // Surfaced by raising BARREN_DRAWS_BEFORE_DONE (js/tr/events.js): more
+  // scenes means more citations, and the count went from 0 to 2 in 15,342
+  // notes. The defect was always there — the extra draws only made it likely
+  // enough to see.
+  //
+  // The aside is the droppable half. Cutting the quoted head at its own dash
+  // keeps the citation, keeps the day, and keeps the sentence readable.
+  if (quoted.includes('—') && String(against || '').includes('—')) {
+    quoted = quoted.split('—')[0].trim().replace(/[,;:]$/, '');
+  }
   if (!others.length) return `It went back to day ${lead.ep}: ${quoted}.`;
 
   // The quoted note is spliced INSIDE an em-dash parenthetical, so its own full

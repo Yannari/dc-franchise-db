@@ -2501,10 +2501,19 @@ describe("neither screen borrows the turret's lamp", () => {
 // headless.js): recruitment got rarer per season — as the file's own note
 // above says, raise the seeds rather than lower the floor — so the modes,
 // refusals and both answers are now sampled over twice as many runs.
+// WIDENED AGAIN when the pact was allowed to strike on every night it can
+// (tests/tr-murder-every-night.test.js). More murders means shorter seasons,
+// which means fewer nights on which an approach can happen at all, so the
+// refusal count came in at exactly 3 against a floor of >3 — the same
+// knife-edge this block has now hit twice. Raise the seeds, not the floor:
+// the floor is what the guard is FOR, and a floor lowered to fit the sample
+// is a guard that will not notice recruitment disappearing.
 const OFFER_SEEDS = [1, 3, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
   43, 47, 53, 59, 61, 67, 71, 73,
   79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149,
-  151, 157, 163, 167, 173, 179];
+  151, 157, 163, 167, 173, 179,
+  181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257,
+  263, 269, 271, 277, 281, 283];
 const OFFER_RUNS = OFFER_SEEDS.map(season);
 /** Every episode across every offer seed that recorded an approach. */
 const OFFERS = OFFER_RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.recruitment)

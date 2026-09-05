@@ -2846,7 +2846,24 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // tests/tr-calibration.test.js goes vacuous without it — but it belongs
     // AFTER the banishment, beside `handOver`, where the same rule already
     // skips the night and opens the endgame in the same episode.
-    if (!tr || !fa || alive.length <= configuredEndgameSize) break;
+    //
+    // ── AND A DEAD PACT DOES NOT SKIP THE TABLE EITHER ────────────────
+    //
+    // Reported: "force a last banishment always before the endgame, even when
+    // all the traitors are out." `!tr` and `!fa` used to break HERE, which is
+    // the same defect the paragraph above describes in its other half: the
+    // episode never happens, so a season whose pact was wiped out simply
+    // stopped — no mission, no castle day, no table — and the fire round
+    // opened on a room of eleven nobody had been asked to vote on. (Measured
+    // at `endgameSize: 4`: the endgame opened with 6, 8, 9 and even 11
+    // players.) The room being clean ends the GAME, not the DAY.
+    //
+    // So they run the day and hand over after its table. Only the size rule
+    // breaks at the top, and it has to: the room is already the size the
+    // author asked the endgame to open at, so running one more table would
+    // hand the fire round `endgameSize - 1` players.
+    const pactGone = !tr || !fa;
+    if (alive.length <= configuredEndgameSize) break;
 
     // TASK 5: each of the six Castle Day phases draws its OWN scene-count
     // budget from its own range (js/tr/castle/phases.js), spending it
@@ -2930,24 +2947,35 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // that was supposed to decide it, not before.
     const parityNow = livingFaithfuls(ep).length <= livingTraitors(ep).length
       && stillIn <= configuredEndgameSize + 2;
-    const handOver = stillIn <= configuredEndgameSize || parityNow;
-    // AND THE PACT DOES NOT MURDER ITSELF INTO THE ENDGAME.
+    const handOver = pactGone || stillIn <= configuredEndgameSize || parityNow;
+    // ── THE PACT MURDERS EVERY NIGHT IT IS STILL ABLE TO ──────────────
     //
-    // Without this the handover only lands on the right parity. A room of five
-    // banishes to four, murders to three, and with `endgameSize: 3` the
-    // endgame opens having never had a banishment reach it — the last thing
-    // that happened was a murder, and the fire round is a night away from the
-    // table that was supposed to trigger it.
+    // There used to be a second suppression here: a murder that would take the
+    // room TO the endgame size was not committed, so that the table rather
+    // than the pact delivered the handover. It bought exactness on the odd
+    // cast counts and it cost a SECOND murder-free night, one episode before
+    // the finale — reported from a played season: "I tested one episode before
+    // the finale, there was no murder despite being a top 6 with 2 Traitors
+    // still there." Measured across 24 seasons at `endgameSize: 4`, seed 1's
+    // nights ran + + + + + + + - -, two dark nights in a row at the end.
     //
-    // So a murder that would take the room TO the endgame size, or past it, is
-    // not committed. The Traitors do not hand themselves the ending; the
-    // castle votes its way there. The cost is one murder-free night on the
-    // approach, which the room reads as a quiet morning
-    // (js/tr/castle/quiet-night.js gives it a scene) — and the gain is that
-    // `endgameSize: 3` means what it says on every cast size: banish from four
-    // to three, then play the endgame with those three.
-    const wouldEndIt = stillIn - 1 <= configuredEndgameSize;
-    const night = (handOver || wouldEndIt) ? null : _night(ep, rng);
+    // It is also not what the format does. The End Game (Traitors Wiki): the
+    // murders run every night up to and including the night before the finale,
+    // and the finale DAY is the one with no murder in it — mission, Round
+    // Table, then vote-or-end. UK series 1 is the worked example: six left at
+    // the end of the previous episode, and the finale banishes twice with no
+    // murder between.
+    //
+    // And it was not buying what it looked like it was buying. Removing it
+    // costs nothing on size, because the two parities land on the endgame from
+    // opposite sides: from six the murder lands the room on four exactly and
+    // the finale is its own day; from seven the table lands it on four and
+    // `handOver` skips that night, so the finale is that same episode. Either
+    // way the fire round opens with the number the author asked for, and the
+    // only mandated nights without a murder are a night the pact spent making
+    // an offer instead (js/tr/roles.js — the UK series 1 recruitment), and the
+    // finale itself.
+    const night = handOver ? null : _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
     // Housekeeping runs either way: a Shield still expires on a night nobody
     // was murdered, and a Dagger still settles on the banishment.

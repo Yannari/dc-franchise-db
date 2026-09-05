@@ -6,12 +6,13 @@
 // every unit test it has and still produce a room that never works anything
 // out, because "did the belief update" and "did the room find the Traitors" are
 // different questions and only the second one matters.
-import { gs, setGs, players, seasonConfig } from '../core.js';
+import { gs, setGs, players, seasonConfig, ARCHETYPES } from '../core.js';
 // THE LEAF TABLE, not `pronouns()` in js/players.js. They are the same rule --
 // `pronouns()` is `pronounsOf(p.gender)` and nothing else -- and this takes the
 // gender off a roster entry this file already has in hand. js/tr/state.js
 // resolves the same clauses off the same table for the same reason.
 import { pronounsOf } from '../pronouns-of.js';
+import { pStats } from '../players.js';
 import { initTraitorsState, snapshotTraitorsBackgrounds, receiptsForEp,
   trimRecordedReceipts } from './state.js';
 import { resetKnowledge } from '../knowledge.js';
@@ -1586,6 +1587,442 @@ const _MEET_SHARED = [
   '{a} gets to {b} last, deliberately. &ldquo;{season}.&rdquo; {b} says, &ldquo;I remember.&rdquo;',
 ];
 
+// ── THE MONTAGE ───────────────────────────────────────────────────────
+//
+// An arrival card used to be two or three lines: what somebody physically did
+// getting out of a car, the billing the ledger holds on them, and whatever the
+// person nearest had reason to say. That is a door, not an introduction — the
+// premiere of a show whose whole engine is nine stats and fifteen archetypes
+// said nothing whatsoever about who any of these people are.
+//
+// Three more lines per person, and every one of them reads a fact the season
+// already holds rather than inventing a characterisation:
+//
+//   profile      what their STATS are built for, in words. Never a number: a
+//                premiere does not say "7 endurance", it says what a 7 does.
+//   personality  how their ARCHETYPE plays, specifically. The `_stance` note
+//                below is right that a second fifteen-row archetype TABLE is
+//                the duplication this repo keeps getting bitten by — so this
+//                is keyed by the archetype id and guarded by a test that fails
+//                the moment core.js holds one this file does not.
+//   threat       what the room will make of them before anybody has spoken.
+//                For alumni that is their RECORD, off the ledger. For everyone
+//                else it is the assumption their billing invites.
+
+/**
+ * WHAT A STAT LINE IS FOR, as a category rather than a number.
+ *
+ * Pairs rather than single stats, because one high stat is a spike and two is
+ * a build — and because the interesting sentence is what somebody can DO, not
+ * which column is tallest. Proportional throughout: no threshold decides
+ * anything except which sentence gets printed, which is the one thing
+ * AGENTS.md allows a threshold to decide.
+ */
+const _STAT_KEYS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+  'loyalty', 'boldness', 'intuition', 'temperament'];
+
+/**
+ * THE NORM A PLAYER IS MEASURED AGAINST, and it is not the roster's.
+ *
+ * Comparing raw pair totals asks "is this number big", which the stats answer
+ * the same way for everybody: loyalty and temperament run high across the
+ * roster, so `loyalty + temperament` was the top pair for a third of the cast
+ * and the same sentence printed on a third of the cards. Measured against the
+ * mean of core.js's fifteen archetype stat lines instead, the question becomes
+ * "is this person UNUSUAL here", which is the only question a premiere is
+ * actually asking. Derived rather than written down, so it cannot drift from
+ * the archetypes it describes.
+ */
+const _STAT_NORM = (() => {
+  const norm = {};
+  const rows = Object.values(ARCHETYPES || {});
+  for (const k of _STAT_KEYS) {
+    const vals = rows.map(a => a && a[k]).filter(v => typeof v === 'number');
+    norm[k] = vals.length ? vals.reduce((t, v) => t + v, 0) / vals.length : 5;
+  }
+  return norm;
+})();
+
+const _d = (s, k) => (Number(s && s[k]) || 0) - _STAT_NORM[k];
+const _BUILDS = [
+  { id: 'outlast', of: s => _d(s, 'physical') + _d(s, 'endurance') },
+  { id: 'room', of: s => _d(s, 'social') + _d(s, 'strategic') },
+  { id: 'reader', of: s => _d(s, 'intuition') + _d(s, 'mental') },
+  // Boldness alone, doubled to sit on the same scale as the pairs. Paired with
+  // physical it almost never led — boldness is the highest archetype norm
+  // there is, so the pair started in a hole and the nerve pool fired twice in
+  // a hundred and twenty players. A spike is a build too.
+  { id: 'nerve', of: s => 2 * _d(s, 'boldness') },
+  { id: 'steady', of: s => _d(s, 'loyalty') + _d(s, 'temperament') },
+];
+
+/**
+ * The build this stat line most looks like, or 'balanced' when nothing leads.
+ *
+ * A flat sheet is a real answer and not a missing one — somebody with no spike
+ * is a specific kind of player, and printing a strength the numbers do not
+ * support would be the montage lying about them. Half a point of daylight is
+ * the margin, which puts about one player in eight here.
+ */
+function _buildOf(stats) {
+  const s = stats || {};
+  const scored = _BUILDS.map(b => ({ id: b.id, score: b.of(s) || 0 }))
+    .sort((a, b) => b.score - a.score);
+  if (!scored.length) return 'balanced';
+  // Nothing above the norm anywhere is genuinely unremarkable, and says so.
+  if (scored[0].score <= 0) return 'balanced';
+  if (scored.length > 1 && scored[0].score - scored[1].score < 0.5) return 'balanced';
+  return scored[0].id;
+}
+
+const _PROFILE = {
+  outlast: [
+    '{name} is built for the long afternoons — the kind of player still standing when the '
+    + 'clever ones have sat down.',
+    'Whatever the castle asks {obj} to carry, {name} will still be carrying it after '
+    + 'everybody else has put it down.',
+    'There is no version of a mission where {name} is the one who gives out first, and '
+    + 'the room will work that out in about a week.',
+    '{name} does not look quick. {sub} looks like somebody who finishes things, which is '
+    + 'worth more here.',
+    'The physical half of this game is where {name} lives, and the castle has a great deal '
+    + 'of physical half.',
+    'Endurance is the whole of {posAdj} case, and the missions are long enough for it to matter.',
+    '{name} has the build of somebody who has never once been the reason a team stopped.',
+    'If it comes down to who is still going at the end of a very long day, it comes down '
+    + 'to {name}.',
+  ],
+  room: [
+    '{name} plays the room before the game starts, and has already started.',
+    'Names, faces, who is standing with whom — {name} has the whole drive filed before the '
+    + 'doors open.',
+    '{name} is the sort who is everybody’s second-favourite person by Thursday, which '
+    + 'is a better place to be than first.',
+    'Talking is the game as far as {name} is concerned, and {sub} is extremely good at talking.',
+    '{name} will know something about every person here by tonight, and none of them will '
+    + 'remember being asked.',
+    'The social half is where {name} does {posAdj} damage &mdash; quietly, and mostly over '
+    + 'other people’s shoulders.',
+    '{name} builds a room the way other people build a wall, and it holds.',
+    'Give {name} an evening and a kitchen and {sub} will come out of it with an alliance '
+    + 'nobody agreed to.',
+  ],
+  reader: [
+    '{name} notices what nobody says out loud, which is the only skill this game actually rewards.',
+    'Reads people better than most of the room knows, and has the sense not to say so.',
+    '{name} watches hands, not faces, and the difference will matter at a table.',
+    'There is a version of this season where {name} works it out early and cannot get '
+    + 'anybody to listen.',
+    '{name} is the kind who remembers the sentence somebody said four days ago and the '
+    + 'exact pause before it.',
+    'Nothing gets past {name} twice, and the room has not yet noticed that {sub} is counting.',
+    '{name} has the unnerving habit of being right without being able to say why.',
+    'Intuition is the whole of {posAdj} game, and intuition is what a Round Table is for.',
+  ],
+  nerve: [
+    '{name} goes first. Whatever it is, {name} goes first.',
+    'Nerve is the thing {name} has more of than sense, and it works more often than it should.',
+    '{name} will say the dangerous thing at the table while everybody else is still deciding '
+    + 'whether to think it.',
+    'There is no hesitation in {name} at all, which is either the best or the worst thing '
+    + 'about {obj}.',
+    '{name} is physically fearless and socially about the same, and the castle rewards '
+    + 'exactly one of those.',
+    'Ask {name} to do the frightening half of a mission and {sub} will be gone before the '
+    + 'sentence finishes.',
+    '{name} plays like somebody who has never seriously considered losing.',
+    'Bold to the point of carelessness, and carelessness is survivable here for about a fortnight.',
+  ],
+  steady: [
+    '{name} is the steady one, and a castle full of liars is exactly where that gets noticed.',
+    'Loyal, level, and hard to move &mdash; which makes {obj} either the safest person here '
+    + 'or the most useful.',
+    '{name} does not rattle. Whatever the table does tonight, {name} will be the same '
+    + 'tomorrow morning.',
+    'There is nothing volatile in {name} at all, and in this castle that reads as either '
+    + 'trustworthy or dull, and both are dangerous.',
+    '{name} keeps {posAdj} word, and a game built on breaking it will find that remarkable.',
+    'Temperament is {posAdj} whole defence: {name} simply does not give anybody anything to read.',
+    '{name} is the one everybody ends up telling things to, which is a role rather than a choice.',
+    'Steady hands, long memory, no theatre. {name} will be here a while.',
+  ],
+  balanced: [
+    'Nothing about {name} spikes, which means nothing about {name} announces itself either.',
+    '{name} is good at most of it and best at none of it, and that is a harder read than it sounds.',
+    'There is no obvious way to use {name} and no obvious way to fear {obj}, which is its '
+    + 'own kind of protection.',
+    '{name} will not win the castle on any one thing. That is not the same as not winning it.',
+    'Round, even, unremarkable on paper &mdash; and paper does not sit at the Round Table.',
+    '{name} has no weakness worth naming and no weapon worth naming, and the room will '
+    + 'underestimate the first half.',
+    'Whatever this season asks for, {name} can do a version of it.',
+    '{name} is the player nobody writes down on the first night, for reasons that will '
+    + 'stop being reasons by the fourth.',
+  ],
+};
+
+/**
+ * HOW AN ARCHETYPE PLAYS, said once and specifically.
+ *
+ * Keyed by the archetype id from core.js. `_stance` above is deliberately
+ * coarse because a second fifteen-row archetype TABLE — one that re-states the
+ * stat lines or the behaviour rules — is the duplication docs/ADDING-A-SHOW.md
+ * catalogues. This is not that: it holds no stats and no rules, only voice, and
+ * tests/tr-arrival-montage.test.js fails if core.js ever holds an archetype
+ * this object does not, so it cannot silently go stale.
+ */
+const _PERSONALITY = {
+  mastermind: [
+    '{name} is already three votes ahead and will not tell anybody which three.',
+    'The plan exists before the game does. {name} arrives with one and will adjust it '
+    + 'quietly for a month.',
+    '{name} does not want to be seen doing anything, which is the only real skill in the building.',
+    'Somebody in this castle will be banished by a plan {name} never once said out loud.',
+    '{name} will let somebody else say the name. That is the entire method.',
+    'Control without fingerprints &mdash; {name} has done this before, to people who liked {obj}.',
+    '{name} plays the long one, and the long one is the only one that wins here.',
+    'Every conversation {name} has tonight is a placement, and none of them will feel like one.',
+  ],
+  schemer: [
+    '{name} will burn something down this week and be sympathetic about it at breakfast.',
+    'Loyalty is a resource to {name}, and resources get spent.',
+    '{name} is looking for the crack already, and there is always a crack.',
+    'Whoever {name} is warmest to tonight should count the exits.',
+    '{name} does not build alliances so much as leases them.',
+    'There is no bridge {name} will not cross and then set alight from the far side.',
+    '{name} plays fast and dirty and is usually gone by the jury, which {sub} considers a fair trade.',
+    'The first betrayal of the season has a good chance of having {name}’s hand on it.',
+  ],
+  hothead: [
+    '{name} will say it at the table. Whatever it is, {name} will say it at the table.',
+    'There is no gap between what {name} thinks and what the room hears.',
+    '{name} makes enemies without meaning to and keeps making them anyway.',
+    'Somebody will get accused loudly this week, and {name} will be the one doing the accusing.',
+    '{name} does not manage {posAdj} temper so much as travel with it.',
+    'Honest to a fault and loud about it &mdash; {name} is impossible to read and impossible to hide behind.',
+    '{name} will be right at some point and nobody will hear it over the volume.',
+    'Every Round Table {name} sits at gets more interesting and less survivable.',
+  ],
+  'challenge-beast': [
+    '{name} intends to win the missions and let the rest of it follow.',
+    'The physical half belongs to {name}, and {sub} will make sure the room knows it.',
+    '{name} is here to be useful, which in a castle full of liars is a strange kind of shield.',
+    'Nobody wants to banish the person carrying the mission, and {name} is counting on exactly that.',
+    '{name} will earn more for the pot than anybody and be nowhere near the plan.',
+    'The competitive half is easy for {name}. The other half is the whole problem.',
+    '{name} wins things. Whether {sub} can win THIS is the question of the season.',
+    'Give {name} a task and a deadline and the castle gets its money. Give {obj} a table and it is a different night.',
+  ],
+  'social-butterfly': [
+    '{name} will have spoken to every person in this castle before the first night is out.',
+    'There is no room {name} cannot walk into, and no conversation {sub} cannot join.',
+    '{name} collects people, and by the end of the week half the castle will think they are close.',
+    'The whole game is who likes you, as far as {name} is concerned, and {sub} is not entirely wrong.',
+    '{name} is everybody’s friend, which is lovely and is also a lot of people to lie to.',
+    'Warmth is {posAdj} whole strategy and it is more effective than the clever ones want to admit.',
+    '{name} will know something about everyone here by tomorrow and mean none of it unkindly.',
+    'Nobody dislikes {name}. That is either a shield or a target and it takes a fortnight to find out which.',
+  ],
+  'loyal-soldier': [
+    '{name} picks a side early and stays on it, right through to the end of everything.',
+    'Whoever {name} trusts tonight is who {sub} will still be defending three banishments from now.',
+    '{name} does not scheme. {sub} does not need to, and would not enjoy it.',
+    'There is a version of this where {name}’s loyalty is the best thing here and a version where it is fatal.',
+    '{name} will be lied to by somebody {sub} would have gone to the end with.',
+    'Straight down the line, every night, no matter what the line costs.',
+    '{name} keeps the promise. That is the whole of it, and here it is nearly a liability.',
+    'Somebody is going to use {name}’s loyalty against {obj} and it is going to be horrible to watch.',
+  ],
+  wildcard: [
+    'Nobody, including {name}, knows what {name} is going to do on any given night.',
+    '{name} will vote against the room for a reason nobody can reconstruct afterwards.',
+    'There is no pattern to {name} and therefore nothing to plan around.',
+    '{name} plays on instinct, and the instinct is not always the same instinct.',
+    'Half the castle will spend the season trying to work out whose side {name} is on.',
+    'Unpredictable in a way that is genuinely dangerous rather than merely annoying.',
+    '{name} is a coin flip with opinions, and coin flips ruin plans.',
+    'Whatever the sensible move is this week, {name} has already thought of a stranger one.',
+  ],
+  'chaos-agent': [
+    '{name} would rather the season were interesting than survivable.',
+    'The plan does not matter to {name}. The mess matters to {name}.',
+    '{name} will blow something up purely to see which way the pieces land.',
+    'There is no long game here. There is tonight, and tonight should be memorable.',
+    '{name} enjoys this far too much to play it carefully.',
+    'Somebody will do something inexplicable at a Round Table this season and it will be {name}.',
+    '{name} treats a quiet, orderly castle as a personal insult.',
+    'The castle is about to become considerably less orderly and {name} is the reason.',
+  ],
+  floater: [
+    '{name} intends to be nobody’s problem for as long as that works.',
+    'No side, no enemies, no reason to be written down &mdash; {name} has done this before.',
+    '{name} will drift toward whoever is winning and be genuinely pleasant about it.',
+    'There is no plan, and the absence of a plan is the plan.',
+    '{name} survives by being unremarkable and knows exactly how unremarkable to be.',
+    'Nobody will suggest {name}’s name for a fortnight, which is the entire objective.',
+    '{name} is here at the end of most seasons and remembered in none of them.',
+    'Ask {name} who {sub} is with and you will get a very warm answer that contains nothing.',
+  ],
+  underdog: [
+    'Nobody is going to take {name} seriously, and {name} is counting on that.',
+    '{name} arrives underestimated and has no intention of correcting anybody.',
+    'There is a version of this season where {name} is the last one standing and nobody saw it.',
+    '{name} has been written off before and has notes on what it costs the people who do it.',
+    'Being nobody’s first choice is a position, and {name} knows how to play it.',
+    '{name} will be here longer than the room expects and will enjoy every day of it.',
+    'The castle will look straight past {name} for a month. That is a month of free moves.',
+    '{name} plays like somebody with nothing to defend, which is harder to beat than it sounds.',
+  ],
+  hero: [
+    '{name} will do the right thing at the table even when the right thing is expensive.',
+    'There is no version of {name} that betrays somebody quietly, and everybody will know it.',
+    '{name} plays straight, says so, and dares the room to make that a weakness.',
+    'Whoever {name} defends is going to be defended properly, whatever it costs {obj}.',
+    '{name} is the one who says the unpopular true thing to protect somebody else.',
+    'Decency is {posAdj} entire game, and a castle of liars finds that either noble or delicious.',
+    '{name} will not lie well, because {name} has never really practised.',
+    'Somebody here needs an ally with a spine. {name} is going to be it.',
+  ],
+  villain: [
+    '{name} is not going to pretend to be nice about this, which is oddly refreshing.',
+    'The knife is not hidden. {name} would rather you saw it.',
+    '{name} plays to win and considers everything else somebody else’s problem.',
+    'There is a cruelty to how {name} plays that the room will mistake for confidence for about a week.',
+    '{name} will do the thing nobody else is willing to do, and sleep fine.',
+    'Warmth is a tool as far as {name} is concerned, and {sub} uses tools.',
+    '{name} arrives fully intending to be the reason somebody goes home crying.',
+    'Nobody is going to like {name} by the finale. {name} has already priced that in.',
+  ],
+  goat: [
+    '{name} is here to be underestimated and is doing an excellent job of it already.',
+    'Nobody will feel threatened by {name}, which is exactly how somebody reaches a final.',
+    '{name} is the person everybody wants to sit beside at the end, and knows it.',
+    'There is no threat here, says the room, and the room says that every single season.',
+    '{name} will be carried a long way by people who think they are doing the carrying.',
+    'Harmless is a costume, and {name} wears it very comfortably.',
+    'Everybody wants {name} in the final two. Somebody is going to get what they asked for.',
+    '{name} plays the whole season as somebody else’s idea of a safe bet.',
+  ],
+  'perceptive-player': [
+    '{name} is watching the room rather than joining it, and has been since the car.',
+    'Very little gets past {name}, and {sub} is careful about how much of that shows.',
+    '{name} will spot the lie before the liar is finished telling it.',
+    'There is a notebook in {name}’s head and everybody on the flags is already in it.',
+    '{name} plays quietly and reads loudly, which is the correct way round.',
+    'Somebody is going to be caught this season by {name} noticing a detail nobody else kept.',
+    '{name} asks a small question tonight that will matter enormously in three weeks.',
+    'The best reader in the room is usually the least talkative one. {name} is both.',
+  ],
+  showmancer: [
+    '{name} will find somebody, and it will change how {sub} plays every night after.',
+    'The game and the personal life are the same thing to {name}, which is a lot of exposure.',
+    '{name} plays with {posAdj} heart in it, which makes {obj} both very dangerous and very readable.',
+    'Somebody in this castle is going to matter to {name} more than the money does.',
+    '{name} builds one bond that runs deeper than the rest and defends it past all sense.',
+    'There will be a pair this season, and {name} intends to be half of it.',
+    'Affection is how {name} plays, and affection is the easiest thing in here to weaponise.',
+    '{name} will trust one person completely, which in this castle is a decision with a cost.',
+  ],
+};
+
+/**
+ * WHAT THE ROOM WILL MAKE OF SOMEBODY BEFORE THEY SPEAK.
+ *
+ * For alumni that is their RECORD, off the same ledger the billing is quoted
+ * from — a champion arrives carrying a different problem to somebody who went
+ * out fourth. For everybody else it is what their billing invites the room to
+ * assume, which is not a fact about them and is very much a fact about the
+ * room. Nothing here invents a history: the tier is chosen from placements the
+ * snapshot already holds.
+ */
+const _THREAT = {
+  champion: [
+    '{name} has won one of these before, and there is no version of this season where '
+    + 'anybody forgets that.',
+    'A winner on the flags. Every person here is now doing sums about {obj}.',
+    '{name} arrives with a title, which is the most expensive thing anybody can bring '
+    + 'through that arch.',
+    'The room knows {name} has done this. That knowledge is worth about a fortnight, '
+    + 'and then it is a target.',
+    'Somebody who has already won cannot arrive quietly, and {name} has not.',
+    '{name} will spend this season being watched by people who have seen how it ends.',
+    'There is a champion standing on these flags and every single person here has clocked it.',
+    'Winning once buys {name} respect. It also buys {obj} a name on a slate.',
+  ],
+  finalist: [
+    '{name} has gone deep before and did not quite finish it, which is its own kind of hunger.',
+    'The room can see {name} has been near the end of one of these. That is enough.',
+    '{name} arrives with a record that says dangerous without saying champion.',
+    'Somebody who got that close does not come back to make friends.',
+    '{name} knows exactly what the last week of one of these feels like, and most people here do not.',
+    'A finalist is a threat with something to prove, which is the worse of the two.',
+    '{name} has done the hard part before. The room will not enjoy remembering that.',
+    'Close enough to taste it once. That does something to how a person plays the second time.',
+  ],
+  veteran: [
+    '{name} has been through one of these before, and it shows in how little the castle impresses {obj}.',
+    'Not a champion, not a stranger &mdash; {name} is the dangerous middle the room forgets to count.',
+    '{name} knows the shape of a season, which is worth more than any single result.',
+    'The record on {name} is unremarkable. The experience behind it is not.',
+    '{name} has sat at one of these tables before and has notes.',
+    'Somebody here has done this and is not being loud about it. That is {name}.',
+    '{name} arrives with a past the room can look up and mostly will not bother to.',
+    'Experience without a trophy is the quietest advantage in the building, and {name} has it.',
+  ],
+  earlyExit: [
+    '{name} went out early last time and has spent a while thinking about why.',
+    'The record says {name} is not a threat. The record is a season old and {name} is not.',
+    'Nobody is frightened of {name} on this evidence, which is precisely the useful part.',
+    '{name} has something to correct, and people with something to correct play harder.',
+    'An early exit reads as harmless. It reads that way right up until it does not.',
+    '{name} arrives with a result nobody respects and a memory of exactly how it happened.',
+    'The room will look at {name}’s finish and file {obj} under safe. That is a gift.',
+    '{name} was got at early once and has arrived determined to be got at last.',
+  ],
+  celebrity: [
+    'Recognition in this castle is a currency that spends badly, and {name} arrived holding a lot of it.',
+    'Everybody here already has an idea of who {name} is, and none of those ideas are from this castle.',
+    '{name} arrives with a reputation that has nothing to do with this game and will be used in it anyway.',
+    'Being known is not the same as being trusted, and {name} is about to find out how different.',
+    'Half this room made their mind up about {name} before the car door opened.',
+    '{name} is famous for something else entirely, which the castle will treat as evidence of something.',
+    'The public {name} and the {name} on these flags are about to be compared nightly.',
+    'A known face is a head start and a handicap, and nobody knows yet which one {name} has.',
+  ],
+  civilian: [
+    // NOT "has no record" — the billing line directly above already said that,
+    // and two sentences making the same observation is the montage stalling.
+    // These are about what the ROOM does with a stranger, which is a different
+    // fact and the one that actually costs somebody something.
+    'The room will invent a version of {name} by Thursday, and {name} will have to live in it.',
+    'This castle will decide who {name} is off a single misjudged sentence, and then keep the verdict.',
+    'Somebody will mistake {name}’s quietness for a strategy, and act on it.',
+    '{name} gets to choose what to be in here, which is a freedom and a full-time job.',
+    'Being unplaceable buys {name} a fortnight. What {sub} does with it is the whole season.',
+    'The castle finds a stranger far more unsettling than a résumé, and it will test {obj} for it.',
+    'Nobody has a reason to trust {name} and nobody has a reason not to, which is the most '
+    + 'dangerous place on the flags.',
+    'By the weekend somebody will have decided what {name} is, and they will be confident about it.',
+  ],
+};
+
+/** Which threat tier the LEDGER puts somebody in. Placements, never a guess. */
+function _threatTier(bg) {
+  const type = (bg && bg.type) || 'civilian';
+  const apps = (bg && bg.appearances) || [];
+  if (!apps.length) return type === 'celebrity' ? 'celebrity' : 'civilian';
+  const best = apps.reduce((b, a) => {
+    const p = Number(a && a.placement);
+    return Number.isFinite(p) && p > 0 && (b == null || p < b) ? p : b;
+  }, null);
+  if (best === 1) return 'champion';
+  if (best != null && best <= 3) return 'finalist';
+  // Never better than fifth across every season the ledger holds: the room
+  // reads that as harmless, which is the whole point of the line.
+  if (best != null && best >= 5) return 'earlyExit';
+  return 'veteran';
+}
+
 /**
  * WHO WALKED IN, IN THE CARS THEY WALKED IN WITH.
  *
@@ -1651,6 +2088,25 @@ export function buildArrivalRecord(cast, backgrounds = {}, host = null) {
       // the only sentence on this record allowed to state a past, and it
       // states one only where the ledger holds one.
       if (bg && bg.summary) lines.push({ kind: 'record', text: bg.summary });
+      // ── WHO THIS PERSON IS, out of what the season already knows ──────
+      //
+      // Stats, then archetype, then what the room will assume. Each reads a
+      // fact the engine holds and none of them prints a number: a premiere
+      // does not say "7 endurance", it says what a 7 lets somebody do.
+      const subs = { name, obj: pr.obj, posAdj: pr.posAdj, sub: pr.sub, ref: pr.ref };
+      const build = _buildOf(pStats(name));
+      lines.push({ kind: 'profile', build,
+        text: _pFill(_pPickUnique(_PROFILE[build] || _PROFILE.balanced,
+          seed + '|profile|' + name, used), subs) });
+      const arch = (person && person.archetype) || '';
+      if (_PERSONALITY[arch]) {
+        lines.push({ kind: 'personality', archetype: arch,
+          text: _pFill(_pPickUnique(_PERSONALITY[arch], seed + '|arch|' + name, used), subs) });
+      }
+      const tier = _threatTier(bg);
+      lines.push({ kind: 'threat', tier,
+        text: _pFill(_pPickUnique(_THREAT[tier] || _THREAT.civilian,
+          seed + '|threat|' + name, used), subs) });
       const intro = {
         name,
         order: introductions.length,

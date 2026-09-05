@@ -15,7 +15,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setFranchiseLedger, setSeasonIncluded,
   buildFranchiseMeta, hasFranchiseHistory } from '../js/franchise-meta.js';
-import { resolveAvatarSlug } from '../js/players.js';
+import { ensurePortraitSelection } from '../js/players.js';
+import { setPortraitCatalog } from '../js/avatar-registry.js';
 
 // Two prior seasons, one Total Drama and one Big Brother, so the cast below
 // really is a CROSSOVER cast rather than one show's alumni wearing a new label.
@@ -118,12 +119,23 @@ describe('The Traitors: history without the checkbox', () => {
     expect(buildFranchiseMeta(TR_CAST, trCfg())).toBeNull();
   });
 
-  it('leaves the portrait alone — art still follows the checkbox', () => {
-    // The other half of the overload. History must NOT swap the portrait: a
-    // player with a past who is not returning wears their own face.
+  it('leaves the portrait alone — history is not a costume', () => {
+    // The other half of the overload. Having a past must NOT swap the
+    // portrait, and since the catalog landed neither does RETURNING: the
+    // season picks a look, and the two checkboxes decide nothing about art.
+    setPortraitCatalog({ schemaVersion: 1, players: { fiore: {
+      defaults: { global: 'base' },
+      portraits: [
+        { id: 'base', show: 'global', label: 'Profile default', file: 'fiore.png' },
+        { id: 'tr-castle', show: 'traitors', label: 'Castle', file: 'fiore-tr.png' },
+      ] } } }, ['fiore.png', 'fiore-tr.png']);
     expect(hasFranchiseHistory('Fiore')).toBe(true);
-    expect(resolveAvatarSlug({ baseSlug: 'fiore', isReturnee: false, _returneeAvatarOk: true })).toBe('fiore');
-    expect(resolveAvatarSlug({ baseSlug: 'fiore', isReturnee: true, _returneeAvatarOk: true })).toBe('fiore-returnee');
+    const picked = { name: 'Fiore', slug: 'fiore', avatarId: 'base', avatarFile: 'fiore.png' };
+    for (const returning of [false, true, false]) {
+      picked.isReturnee = returning;
+      ensurePortraitSelection(picked, 'traitors');
+      expect(picked.avatarFile, 'a checkbox moved the portrait').toBe('fiore.png');
+    }
   });
 });
 

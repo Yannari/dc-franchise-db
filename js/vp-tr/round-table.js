@@ -1411,6 +1411,106 @@ const HOST_LINES = {
   ],
 };
 
+// ══════════════════════════════════════════════════════════════════════
+// THE HOST PUTS IT TO SOMEBODY — by name
+// ══════════════════════════════════════════════════════════════════════
+//
+// WHAT WAS WRONG. Every line in `HOST_LINES` above is addressed to the room:
+// 'sit down', 'so say it', 'pick up your chalk'. Correct for the slots they
+// fill, and it left the host as a master of ceremonies who could have been
+// reading the same script over any table of any season. In the format he is a
+// PARTICIPANT at this table -- he leans on one person, by name, using a thing
+// that has already happened in front of everybody, and the room watches them
+// answer him.
+//
+// So these are addressed to ONE PERSON, and which person is chosen from the
+// table's own record before any pool is read: who this room is converging on,
+// who is doing the converging, or who has said nothing at all. All three are
+// public facts -- accusations made out loud at this table -- so the beat is
+// identical on every observer layer, which is what a host beat has to be.
+
+const NEEDLE_CONVERGE = [
+  '{Nm}. {n} people have said your name tonight and you have answered none of them properly. '
+  + 'Would you like to try, or would you like to keep looking at the table?',
+  '{Nm}, {n} of them have decided you are the interesting one this evening. How does that feel from where you are sitting?',
+  'Let us start with {Nm}, since {n} of them already have. {Nm}, they think it is you. Are they right?',
+  '{Nm}. You have had all day to think of an answer to this. I do hope it is a good one.',
+  'I want to hear from {Nm} first, and I want the rest of you to watch {them} do it.',
+  '{Nm}, you are the name in this room. Tell them why they are wrong, and tell them properly.',
+];
+const NEEDLE_ACCUSER = [
+  '{Nm}, you have been very sure of yourself tonight. What happens to you if you are wrong?',
+  '{Nm} has done most of the talking at this table. {Nm}, if that slate comes back the wrong colour, this room will remember it was you.',
+  'You have led this, {Nm}. I hope you have thought about tomorrow morning as well as tonight.',
+  '{Nm}, you built this case. In a few minutes you will find out whether you built it out of anything.',
+  '{Nm}, you are asking everybody here to follow you. That is a great deal to ask of people who do not know you.',
+  'A confident evening for {Nm}. Confidence is not evidence, but it does travel faster.',
+];
+const NEEDLE_SILENT = [
+  '{Nm}. You have not said a word. Is that a strategy, or is it a hiding place?',
+  'I notice {Nm} has contributed nothing at all this evening. {Nm}, this is the part where that stops being clever.',
+  '{Nm}, everybody else has put a name in the air. You have not. Why is that?',
+  'The quietest person at this table is {Nm}, and the quietest person at a table is always worth a look.',
+  '{Nm} has been extremely careful tonight. Careful people last a long time here, right up until they do not.',
+  'Nothing from {Nm}. Nothing last night either. At some point, {Nm}, silence starts to say something on your behalf.',
+];
+const NEEDLE_NOBODY = [
+  'Not one of you has said a name. That is either a very peaceful table or a very frightened one.',
+  'You have sat here for an hour and produced nothing. Somebody in this room is delighted about that.',
+  'No accusations at all. Marvellous. You are going to write down names anyway, and you are going to do it blind.',
+  'An entire evening and not one person named. Whoever arranged that is having a very good night.',
+];
+
+/**
+ * WHO THE HOST GOES AT, and the order is the show's. The person the room has
+ * converged on is the one it wants to hear from; failing that, the person
+ * driving the convergence; failing that, the person who has not spoken. All
+ * three are read off `v.accusations`, which is what was said out loud at this
+ * table and is therefore public on every layer.
+ */
+function _needle(v) {
+  const counts = new Map();
+  const made = new Map();
+  for (const a of v.accusations) {
+    counts.set(a.target, (counts.get(a.target) || 0) + 1);
+    made.set(a.accuser, (made.get(a.accuser) || 0) + 1);
+  }
+  const top = arr => [...arr].sort((x, y) => y[1] - x[1]
+    || String(x[0]).localeCompare(String(y[0])))[0];
+  // 1. The name this room keeps coming back to -- but only if it IS coming
+  //    back to it. One person naming one person is not a convergence.
+  const t = top(counts);
+  if (t && t[1] >= 2 && v.seated.indexOf(t[0]) >= 0) {
+    return { pool: NEEDLE_CONVERGE, who: t[0], n: t[1] };
+  }
+  // 2. Whoever is driving it.
+  const m = top(made);
+  if (m && v.seated.indexOf(m[0]) >= 0) return { pool: NEEDLE_ACCUSER, who: m[0] };
+  // 3. Somebody who has neither accused nor been accused. Deterministic pick,
+  //    never random: this screen is rebuilt on every reveal.
+  const spoke = new Set([...counts.keys(), ...made.keys()]);
+  const quiet = v.seated.filter(n => !spoke.has(n));
+  if (quiet.length) {
+    return { pool: NEEDLE_SILENT,
+      who: quiet[_hash('rt|quiet|' + v.ep + '|' + quiet.join(',')) % quiet.length] };
+  }
+  // 4. Nobody said anything at all, which is its own beat.
+  return { pool: NEEDLE_NOBODY, who: null };
+}
+
+// AND THE SIGN-OFF, which is the most implicated thing the host says all week:
+// he addresses the people who are about to do it, in a room where the rest of
+// them are listening, and everybody has to sit there and take it. The verb is
+// filled from the registry at the last moment like every other verb in this
+// file -- `{kill}` is never written out.
+const HOST_SENDOFF = [
+  'The rest of you, go to bed. Traitors — you have work tonight, and one of these faces will not be at breakfast.',
+  'Off you go. Traitors, whoever you are: choose well. The rest of you, sleep if you can manage it.',
+  'That is tonight. Somewhere in this room are people who now have a second decision to make, and they will be making it without you.',
+  'Goodnight to all of you. To two or three of you, good luck — you have somebody to {kill} before morning.',
+  'Go up. Traitors, the castle is yours for a few hours. Do try to be interesting about it.',
+];
+
 const ACCUSE_LINES = [
   '{A} keeps coming back to {t}, and will not be talked off it.',
   '{A} says it is {t}, looking straight down the table and refusing to look away.',
@@ -1466,7 +1566,7 @@ const ACCUSED_DEFLECT = [
 // claim is never "{A} finds {t} suspicious" but a thing that actually happened.
 // The framing lets the source phrase stand as the reason.
 const CLAIM_SOURCE = [
-  '{A} does not leave it at a feeling. There is a reason, and {sub} says it out loud: {src}.',
+  '{A} does not leave it at a feeling. There is a reason, and it is said out loud: {src}.',
   'And {A} has something concrete for it — {src} — which is more than most names at this table come with.',
   '{A} puts the reason on the wood where everyone can see it: {src}.',
   'It is not a hunch. {A} points to the thing itself: {src}.',
@@ -1970,6 +2070,24 @@ function _buildBeats(v) {
     + '</p><div class="rt-faces">' + seats + '</div>'
     + _murmur(key + '|m0')), 'open', { kind: 'gather' });
 
+  // ── AND THE HOST GOES AT SOMEBODY ─────────────────────────────────────
+  //
+  // Not on a finale table: by the endgame the host has stopped prompting and
+  // the room argues into a silence, which is the whole texture of those
+  // votes (spec §8) and a needling host would flatten it.
+  if (!v.endgame) {
+    const nd = _needle(v);
+    const npr = nd.who ? _pr(nd.who) : null;
+    const nline = _fill(_pick(nd.pool, key + '|needle|' + (nd.who || '-')),
+      { Nm: _esc(nd.who || ''), them: npr ? npr.obj : '', they: npr ? npr.sub : '',
+        their: npr ? npr.posAdj : '', n: String(nd.n == null ? '' : nd.n) });
+    push('gather', _hostBand(nline)
+      + (nd.who
+        ? '<div class="rt-faces">' + _faceChip(nd.who, 30) + '</div>'
+        : ''),
+    null, { kind: 'needle', who: nd.who });
+  }
+
   // ── the debate ──────────────────────────────────────────────────────
   //
   // SPEECH-DRIVEN when the debate produced speeches with provenance (see
@@ -2303,6 +2421,20 @@ function _buildBeats(v) {
       + '<div class="rt-silence-h">Nothing Is Turned Over</div>'
       + '<p>' + _pick(SILENCE_TEXT, key + '|si') + '</p></div>',
       'silence', { kind: 'silence' });
+  }
+
+  // ── AND THE HOST SENDS THEM UP ────────────────────────────────────────
+  //
+  // The format's closing move, and the screen ended without it: the host
+  // turns from the room he has just made vote and addresses the people who
+  // are about to do the other thing, while everybody else listens. Nothing
+  // secret is said -- the castle knows Traitors exist and knows what they do
+  // after a table -- so it is the same beat on every observer layer.
+  //
+  // Not on a finale table, where there is no night after the vote.
+  if (!v.endgame) {
+    push('verdict', _hostBand(_fill(_pick(HOST_SENDOFF, key + '|sendoff'),
+      { kill: _esc(_verbs().murder) })), null, { kind: 'sendoff' });
   }
   return beats;
 }

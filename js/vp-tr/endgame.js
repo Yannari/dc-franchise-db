@@ -1500,8 +1500,8 @@ const UNMASK_FAITHFUL = [
   + 'nothing, and the room knows it now.',
   '{a} says the word and somebody reaches over and grips {posAdj} arm. That is '
   + 'the whole of it: honest, and nearly not believed.',
-  '{a} is clean, and the way {sub} says it makes it obvious how long {sub} has '
-  + 'wanted somebody to just ask.',
+  '{a} is clean, and the way of saying it makes obvious how long {sub} had been '
+  + 'waiting for somebody to just ask.',
   'Faithful, says {a}, and the person who very nearly wrote that name cannot '
   + 'look up.',
 ];

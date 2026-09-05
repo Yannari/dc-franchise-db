@@ -585,6 +585,18 @@ describe('THE REPETITION CEILING: what a viewer actually notices', () => {
     console.log(`   seasons reaching 3x: ${loud.length} (${(share * 100).toFixed(2)}%)`);
     console.log(`   worst single season: ${worst.worst}x  (season ${worst.season})`);
     console.log(`   "${worst.what}"`);
+    // AND WHICH SENTENCES, not just how many seasons. Kept because the arm
+    // without it is unactionable: it says the castle is looping and names one
+    // season's worst offender, which on a 4200-season sweep is noise. Ranking
+    // the loopers by how many seasons each appears in is what found the real
+    // cause on 2026-09-05 -- `_soloSafe` strips every {b} line before a
+    // one-actor firing draws, so grief-morning-reaction's `mourn` branch was
+    // drawing solo from TWO lines out of nine and led this table by an order
+    // of magnitude. Nothing in the failure message pointed at it.
+    { const c = new Map();
+      for (const w of loud) c.set(w.what, (c.get(w.what) || 0) + 1);
+      console.log('   TOP LOOPERS:');
+      for (const [k, v] of [...c].sort((a, b) => b[1] - a[1]).slice(0, 15)) console.log(`     ${v}	${k}`); }
 
     expect(WORST_PER_SEASON.length, 'no seasons measured — this assertion is vacuous')
       .toBe(PROSE_SEASONS);
@@ -1727,6 +1739,13 @@ const CONSENSUS_LICENSED = [
   ['The split is arbitrary and everybody knows it', 'the teams are drawn in public'],
   ['Then the room has decided', 'the Round Table ballot'],
   ['Everybody knows one true thing now', 'the banishment reveal'],
+  // SAME EVENT, SECOND POOL. `js/vp-tr/endgame.js` narrates the banished
+  // player turning their own card over, in front of a seated room that is
+  // watching them do it -- the one moment in the format where a universal
+  // claim about what the room knows is a description of what just happened
+  // in front of it, and the line above already licenses the same event from
+  // the other screen.
+  ['and the room knows it now', 'the banishment reveal, turned over in the open'],
   ['the room has decided otherwise', 'the Round Table ballot, read aloud'],
   ['exactly what the room has decided they are', 'reads the recorded ballot'],
   ['everyone knew it while it was still happening', 'a mission failure everybody was standing in'],

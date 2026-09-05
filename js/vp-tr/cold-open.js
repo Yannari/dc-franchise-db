@@ -761,6 +761,35 @@ const CO_CSS = `
 .co-gap-cup{display:flex;align-items:center;justify-content:center;width:96px;height:96px;
   border:1px solid rgba(201,40,60,.5);background:rgba(142,21,38,.12)}
 
+/* THE FRAME OFF THE WALL. The portrait tipped out of true and the eulogy
+   beside it, because the host has it in one hand while saying this. */
+.co-frame{
+  display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;
+  margin:16px 0 6px;padding:18px 20px;
+  background:linear-gradient(160deg,rgba(20,16,12,.94),rgba(10,13,19,.9));
+  border:1px solid rgba(201,40,60,.3);
+}
+.co-frame-pic{
+  position:relative;width:92px;padding:7px 7px 20px;
+  background:linear-gradient(150deg,#2b2119,#171208);
+  border:1px solid rgba(233,240,245,.16);
+  box-shadow:0 14px 26px -12px rgba(0,0,0,.9);
+  transform:rotate(-6.5deg);
+  animation:co-tilt 5.5s ease-in-out infinite alternate;
+}
+.co-frame-pic img,.co-frame-pic .cv-av{width:100%;display:block;filter:grayscale(1) contrast(1.1)}
+.co-frame-pic::after{
+  content:'';position:absolute;inset:7px 7px 20px;
+  background:linear-gradient(120deg,rgba(255,255,255,.13),transparent 42%);
+  pointer-events:none;
+}
+@keyframes co-tilt{from{transform:rotate(-6.5deg)}to{transform:rotate(-3deg)}}
+.co-frame-drop{
+  margin-top:11px;padding-top:10px;border-top:1px solid rgba(201,40,60,.24);
+  font-size:14px;line-height:1.55;color:rgba(233,240,245,.62);font-style:italic;
+}
+@media(prefers-reduced-motion:reduce){.co-frame-pic{animation:none}}
+
 /* the counting strip */
 .co-count{display:flex;flex-wrap:wrap;gap:8px 26px;margin:14px 0 2px;padding:13px 0 0;
   border-top:1px solid var(--co-rule)}
@@ -1142,6 +1171,179 @@ const DAY_QUIET = [
   + 'guessed at from here, because the table is not going to tell them.',
 ];
 
+// ══════════════════════════════════════════════════════════════════════
+// THE PORTRAIT COMES DOWN — the host's eulogy
+// ══════════════════════════════════════════════════════════════════════
+//
+// WHAT WAS MISSING, and it is the format's single most recognisable beat. The
+// screen found the empty chair, named the victim and moved on to the room's
+// reaction. The host said one generic line over the top of it ('one of you is
+// not coming down') and never said the name at all. In the show this is where
+// the host crosses to the portrait wall, takes the frame down, says something
+// unkind and SPECIFIC about the person in it, and drops it on the floor.
+//
+// THE RULE THIS POOL RUNS ON: the middle sentence is a FACT ABOUT THIS
+// SEASON, not a mood. Every branch below is chosen by something the record
+// already stores and the room already saw — who spent last night's table
+// accusing them, who was warmest with them, how far into the season they got,
+// whether anybody has said their name yet this morning. A eulogy that could
+// be read over any of twenty players is the thing this replaces, so the fact
+// clause is selected first and the joke is fitted to it.
+//
+// AND WHAT IT MAY NOT KNOW. Alignment, the turret, the choice, the reason.
+// The host is speaking to the room at breakfast: everything here is either
+// public (the ballots, the seating, the day count) or the audience-safe
+// reaction the record already computed. `pushed` is last night's PUBLIC vote
+// talk; `closest` is a bond the whole castle watched form.
+
+// The address. Six, and none of them is a greeting -- the host is talking
+// about somebody who is not there, to a room that has worked out why.
+const EULOGY_OPEN = [
+  'This one is {Nm}.',
+  '{Nm}. Off the wall, and off the board.',
+  'Let us all look at {Nm} one more time.',
+  'The frame is {Nm}&rsquo;s. Was.',
+  'And here we have {Nm}, in better days. Yesterday, mostly.',
+  '{Nm}. Six days, one castle, one very bad decision made by somebody else.',
+];
+
+// THE FACT CLAUSE, and the branch is picked from the record before any of
+// these are read. Each pool may only say the thing its own branch proved.
+const EULOGY_FACT = {
+  // Somebody still in this room spent last night's table pushing them.
+  pushed: [
+    'Last night {who} sat at that table and told everybody here that {Nm} was the problem. '
+    + '{who}, you were wrong, and you were loud, and now you are neither of those things in private.',
+    '{who} wanted {Nm} gone at the Round Table. Somebody upstairs was listening and had better handwriting.',
+    'The last thing this room did to {Nm} was let {who} put a name on {them}. The Traitors '
+    + 'have now agreed with {who}, which is not the endorsement {who} was hoping for.',
+    '{who} spent yesterday evening making a case against {Nm}. The case has been settled '
+    + 'out of court, overnight, by people who do not take questions.',
+  ],
+  // A real, stored, publicly-visible bond with somebody still at the table.
+  mourned: [
+    '{who} liked {Nm}. That was visible from the other end of the castle, and it is going to be '
+    + 'visible for the rest of the week.',
+    'There is one person in this room who is going to take this badly, and {who} already knows '
+    + 'I mean {them}.',
+    '{Nm} found exactly one person in this castle worth trusting, and {who} is sitting right there, '
+    + 'having breakfast without {them}.',
+    '{who}, you have lost the only person here who was pleased to see you in the mornings. '
+    + 'Do enjoy the rest of your stay.',
+  ],
+  // Nobody pushed them and nobody was close: the quiet game, ended.
+  quiet: [
+    '{Nm} did not make a single enemy in this castle. That turns out not to be the protection '
+    + 'everybody assumes it is.',
+    'Nobody at this table has said {Nm}&rsquo;s name this morning. It has been eleven minutes.',
+    '{Nm} played six days without once being accused of anything. Somebody upstairs found that '
+    + 'far more interesting than any of you did.',
+    'You will all struggle to remember what {Nm} said at the last Round Table, and that is '
+    + 'because {Nm} did not say anything, and that is why {Nm} is not here.',
+  ],
+  // Made it a long way in.
+  survivor: [
+    '{Nm} got further than most of the people who are still eating. Longer, and no better fed.',
+    'That is {Nm} gone on day {day}, which is more days than half of this table is going to see.',
+    '{Nm} survived {day} days of this and one night of it, and only the last one counted.',
+    'Day {day}. {Nm} outlasted a great many of you and is nonetheless the one on the floor.',
+  ],
+  // The first name off the wall, or near enough.
+  early: [
+    '{Nm} lasted less time in this castle than the fruit on that table.',
+    'That is {Nm}, gone before any of you had learned to spell each other&rsquo;s names.',
+    '{Nm} came a very long way to be here for a very short time.',
+    'You have all had breakfasts that lasted longer than {Nm}&rsquo;s game.',
+  ],
+};
+
+// THE DISMISSAL. Short, unkind, and pointedly not sad -- the register the
+// format lives on. Never the exit verb spelled out: `{gone}` is filled from
+// the registry at the last moment, like everywhere else in this file.
+const EULOGY_PUN = [
+  'Terribly sad. Anyway.',
+  'A great loss to this castle, which has already stopped noticing.',
+  'Gone, {gone}, and frankly a little bit predictable.',
+  'We shall not see {them} again. We shall, however, be having eggs.',
+  'A tragedy. Do help yourselves to the toast.',
+  'And that is that. It is a beautiful morning and one of you had a hand in it.',
+  'Rest well. Or do not — I understand the beds through there are dreadful.',
+  'Marvellous person. Absolutely no use to anybody upstairs.',
+];
+
+// The frame hits the floor. This is a physical beat and the room reacts to it.
+const EULOGY_DROP = [
+  'The frame goes down onto the flagstones from about waist height. Nobody at the table pretends not to jump.',
+  'The portrait is dropped, face up, and left there. It stays on the floor all morning.',
+  'The glass takes it badly. Somebody two seats down puts a hand over their mouth and takes it away again.',
+  'The frame lands flat and loud in a room that had gone completely silent to hear it.',
+  'It is not thrown. It is simply let go of, which is somehow worse, and the sound of it goes round the whole hall.',
+];
+
+/**
+ * WHICH FACT THIS MORNING HAS. Ordered, and the order is the point: a specific
+ * living person the room can look at beats an arithmetic fact about the
+ * calendar. Returns the pool key and the substitution it needs, or the quiet
+ * branch, which needs nothing and is always available.
+ */
+function _eulogyFact(v, m) {
+  const bf = v.breakfast;
+  const inRoom = n => n && v.room.indexOf(n) >= 0;
+  // 1. Somebody at this table spent last night pushing them. Public, and the
+  //    most pointed thing the host can do with it is say so to their face.
+  const pushers = ((bf && bf.pushed && bf.pushed[m.name]) || []).filter(inRoom);
+  if (pushers.length) return { pool: 'pushed', who: pushers[0] };
+  // 2. A warm bond the castle watched form, with somebody still eating.
+  const close = bf && bf.closest ? bf.closest[m.name] : null;
+  if (inRoom(close)) return { pool: 'mourned', who: close };
+  // 3. How far in this is, which is a fact about the season rather than the
+  //    person -- so it sits below both of the above and above nothing.
+  const day = v.ep;
+  if (day >= 6) return { pool: 'survivor', day: String(day) };
+  if (day <= 2) return { pool: 'early', day: String(day) };
+  // 4. Nobody wanted them gone, nobody was close, and it is the middle of the
+  //    season. That is its own fact and the pool says so.
+  return { pool: 'quiet' };
+}
+
+/** The three lines the host says over the frame, as one filled block. */
+function _eulogy(v, m, key) {
+  const pr = _pr(m.name);
+  const V = _verbs();
+  const fact = _eulogyFact(v, m);
+  const subs = {
+    Nm: _esc(m.name), who: _esc(fact.who || ''), day: fact.day || String(v.ep),
+    them: pr.obj, they: pr.sub, They: pr.Sub, their: pr.posAdj, gone: _esc(m.verb || V.night),
+  };
+  return [
+    _fill(_pick(EULOGY_OPEN, key + '|eu|open'), subs),
+    _fill(_pick(EULOGY_FACT[fact.pool], key + '|eu|' + fact.pool), subs),
+    _fill(_pick(EULOGY_PUN, key + '|eu|pun'), subs),
+  ].join(' ');
+}
+
+// ── AND THE HOST POINTS AT THE AFTERNOON ──────────────────────────────
+//
+// The morning does not simply stop in this format: the host closes it by
+// telling the room what the day is going to ask of them, which is what turns
+// a eulogy into a running order. `{task}` is the mission's own one-line
+// description off the record, so the tease is about the actual afternoon
+// rather than a generic promise of exertion.
+const TEASE_TEXT = [
+  'On your feet. This afternoon you are going out to earn your own prize money, and it is called {name}.',
+  'Eat. Then get outside, because {name} is waiting for you and it will not wait long.',
+  'That is the news. The rest of the morning is yours; the afternoon belongs to {name}.',
+  'Ten minutes, and then out. {name}, in the grounds, and I would not arrive full.',
+  'You have a mission today. It is called {name}, and one of you is going to do it badly in front of everybody.',
+  'Finish your tea. {name} is set up outside and it is not going to be kind to any of you.',
+];
+const TEASE_TASK = [
+  'What it is: {task}',
+  'The task, in one sentence: {task}',
+  'Here is what you will be doing out there: {task}',
+  'The short version: {task}',
+];
+
 // ── the hold: down to the last places, the room watching the door ──────
 const HOLD_TEXT = [
   'It comes down to the last places, and the counting stops being quiet. The room is '
@@ -1391,6 +1593,13 @@ function _view(ep, observer) {
     // table can do, and for the list, the chapel and the dungeon is the
     // audience alone. The screen prints what it is handed and decides nothing.
     variantRule: variantReminder(dawn.variant, observer),
+    // THE AFTERNOON, so the morning can end the way the format ends it: the
+    // host tells them what they are walking into. Public by construction --
+    // the mission is announced to the whole castle and played in daylight --
+    // so it is not gated. Name and task only; the RESULT lives on the mission
+    // screen and must not reach a card that is read before it happens.
+    mission: (rec.mission && rec.mission.name)
+      ? { name: rec.mission.name, task: rec.mission.task || null } : null,
     // THE REACTIONS THE MORNING EARNS, computed in js/tr/headless.js off bonds
     // and last night's public ballots — never a raw alignment. Faithful-safe
     // on every layer, so it is not stripped. `null` on episode one and on any
@@ -1641,6 +1850,26 @@ function _buildBeats(v) {
     push('gap', _card('The Cup Is Turned Over', 'The gap', 'cupdown', inner),
       'gap', { kind: 'gap', down: [...v.room], gap: v.missing.map(x => x.name) });
 
+    // ── THE PORTRAIT COMES OFF THE WALL ───────────────────────────────
+    //
+    // The format's signature beat, and the screen did not have it. The host
+    // crosses to the wall, takes the frame down, and says three sentences:
+    // the name, ONE FACT THIS SEASON PROVED (see `_eulogyFact`), and a
+    // dismissal. Then the frame is dropped. The host slot is null because
+    // the eulogy IS the host line -- a second generic band under it would
+    // have him speak twice in one card.
+    for (const x of v.missing) {
+      const xpr = _pr(x.name);
+      push('gap', _card('The Frame Comes Down', 'The wall', 'bell',
+        '<div class="co-frame"><div class="co-frame-pic">' + _av(x.name, 78) + '</div>'
+        + '<div><div class="co-host-line">&ldquo;'
+        + _eulogy(v, x, key + '|' + x.name) + '&rdquo;</div>'
+        + '<div class="co-frame-drop">'
+        + _fill(_pick(EULOGY_DROP, key + '|drop|' + x.name), { them: xpr.obj })
+        + '</div></div></div>'),
+      null, { kind: 'told', down: [...v.room], gap: v.missing.map(y => y.name) });
+    }
+
     // ── THE FLASHBACK — the last the castle saw of the victim. VICTIM ONLY.
     //
     // OBSERVER SAFETY: this beat shows the person who is gone, the night before,
@@ -1808,9 +2037,19 @@ function _buildBeats(v) {
   // the same for every observer, which is exactly what this card is allowed to
   // know.
   const dayPool = v.arrival ? DAY_ARRIVAL : (v.missing.length ? DAY_DEATH : DAY_QUIET);
+  // AND THE AFTERNOON, NAMED. Only when the record has one -- an episode
+  // with no mission on it (or an older save) closes exactly as it did before.
+  const tease = v.mission
+    ? '<p>' + _fill(_pick(TEASE_TEXT, key + '|tease'), { name: _esc(v.mission.name) }) + '</p>'
+      + (v.mission.task
+        ? '<p class="co-frame-drop">'
+          + _fill(_pick(TEASE_TASK, key + '|teasetask'), { task: _esc(v.mission.task) })
+          + '</p>'
+        : '')
+    : '';
   push('day', _card(
     v.arrival ? 'Day One' : 'The Day Starts Anyway', 'Onward', 'sun',
-    '<p>' + _pick(dayPool, key + '|day') + '</p>'), 'day',
+    '<p>' + _pick(dayPool, key + '|day') + '</p>' + tease), 'day',
   { kind: 'day', down: [...v.room], gap: v.missing.map(x => x.name) });
 
   return beats;

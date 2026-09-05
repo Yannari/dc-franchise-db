@@ -572,7 +572,16 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // draw. Measured after: `after-table` 1.43 -> 4.05 scenes an episode,
     // `night` 1.31 -> 2.58, and the sweeps below confirm nothing in either
     // window's pre-existing pool fell under a floor.
-    expect(EVENTS.length).toBe(138);
+    // 138 -> 157 on 2026-09-05. Nineteen SOLO-ONLY events (js/tr/castle/
+    // alone.js), written because a firings-per-branch sweep showed seven of
+    // the ten busiest branches in the whole pool are solo branches: the
+    // scene composer convenes ONE person about 40% of the time and only a
+    // handful of events carried a solo branch, so that handful absorbed
+    // nearly every solo draw in a season. All nineteen OPEN arcs rather than
+    // continuing them and none cites residue, so the two counts below are
+    // deliberately unmoved — which is the check that the count moved for the
+    // reason given.
+    expect(EVENTS.length).toBe(157);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -1371,6 +1380,10 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 577 -> 634 on 2026-09-05: nineteen solo-only events in
+// js/tr/castle/alone.js, three branches each. See the event-count comment
+// above for why they were written and why the advancer/citer counts beside
+// it are deliberately unmoved.
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1565,6 +1578,9 @@ const BRANCHES = [
   'grief-headcount:counted-the-useful-ones',
   'grief-headcount:left-it-unsaid',
   'grief-headcount:said-the-number',
+  'grief-how-the-room-holds-them:nothing-changed',
+  'grief-how-the-room-holds-them:people-are-cooler',
+  'grief-how-the-room-holds-them:people-are-warmer',
   'grief-keepsake:handed-it-over',
   'grief-keepsake:pocketed',
   'grief-keepsake:put-it-back',
@@ -1601,11 +1617,26 @@ const BRANCHES = [
   'grief-suspicion-of-timing:timing',
   'grief-suspicion-of-timing:we-had-it-wrong',
   'grief-suspicion-of-timing:would-not-play',
+  'grief-the-castle-in-daylight:got-on-with-it',
+  'grief-the-castle-in-daylight:looked-at-it-properly',
+  'grief-the-castle-in-daylight:the-empty-rooms',
+  'grief-the-chair-beside-them:did-not-notice',
+  'grief-the-chair-beside-them:kept-the-place',
+  'grief-the-chair-beside-them:sat-somewhere-else',
+  'grief-the-hour-before-the-table:decided-early',
+  'grief-the-hour-before-the-table:dreading-it',
+  'grief-the-hour-before-the-table:still-deciding',
   'grief-toast-to-them:could-not-finish',
   'grief-toast-to-them:named-them-all',
   'grief-toast-to-them:nobody-joined-in',
   'grief-toast-to-them:poured-two',
   'grief-toast-to-them:turned-into-a-vow',
+  'grief-what-came-back-with-them:brought-it-home',
+  'grief-what-came-back-with-them:shook-it-off',
+  'grief-what-came-back-with-them:watched-them-come-in',
+  'grief-what-it-is-all-for:not-thinking-about-it',
+  'grief-what-it-is-all-for:what-it-has-cost',
+  'grief-what-it-is-all-for:why-they-came',
   'grief-wrongly-suspected-irony:owned-the-mistake',
   'grief-wrongly-suspected-irony:still-think-we-were-right',
   'grief-wrongly-suspected-irony:wrongly-suspected-irony',
@@ -1759,6 +1790,9 @@ const BRANCHES = [
   'susp-alliance-shape-guess:drew-it-alone',
   'susp-alliance-shape-guess:put-each-other-on-it',
   'susp-alliance-shape-guess:redrew-it',
+  'susp-awake-with-a-name:afraid-of-the-morning',
+  'susp-awake-with-a-name:certain-of-someone',
+  'susp-awake-with-a-name:slept-fine',
   'susp-body-language-read:asked-what-it-was',
   'susp-body-language-read:caught-them-looking',
   'susp-body-language-read:read-it',
@@ -1772,6 +1806,9 @@ const BRANCHES = [
   'susp-defensive-overcorrect:let-it-go',
   'susp-defensive-overcorrect:nobody-asked-you',
   'susp-defensive-overcorrect:overcorrected',
+  'susp-going-over-the-count:one-vote-bothering-them',
+  'susp-going-over-the-count:read-the-ballots',
+  'susp-going-over-the-count:stopped-counting',
   'susp-group-pressure-crack:admitted-something-else',
   'susp-group-pressure-crack:cracks',
   'susp-group-pressure-crack:holds',
@@ -1782,6 +1819,9 @@ const BRANCHES = [
   'susp-heard-in-the-corridor:checked-the-door',
   'susp-heard-in-the-corridor:heard',
   'susp-heard-in-the-corridor:imagined',
+  'susp-keeping-track-of-it:gave-up-tracking',
+  'susp-keeping-track-of-it:went-through-it-again',
+  'susp-keeping-track-of-it:wrote-it-down',
   'susp-let-it-go-on-the-road-back:cleared',
   'susp-let-it-go-on-the-road-back:hardened',
   'susp-let-it-go-on-the-road-back:slipped',
@@ -1813,6 +1853,9 @@ const BRANCHES = [
   'susp-private-accusation:denies',
   'susp-private-accusation:denyWeak',
   'susp-private-accusation:turned',
+  'susp-said-nothing-about-it:holding-it',
+  'susp-said-nothing-about-it:let-it-go',
+  'susp-said-nothing-about-it:not-sure-it-counts',
   'susp-the-shape-of-the-column:read-the-order',
   'susp-the-shape-of-the-column:the-wrong-pair',
   'susp-the-shape-of-the-column:walking-alone',
@@ -1820,6 +1863,12 @@ const BRANCHES = [
   'susp-timeline-crosscheck:did-not-line-up',
   'susp-timeline-crosscheck:lost-the-hour',
   'susp-timeline-crosscheck:one-of-us-was-there',
+  'susp-what-one-person-does-with-it:counting-the-cost',
+  'susp-what-one-person-does-with-it:was-right',
+  'susp-what-one-person-does-with-it:was-wrong',
+  'susp-where-in-the-column:took-the-back',
+  'susp-where-in-the-column:took-the-front',
+  'susp-where-in-the-column:went-where-put',
   'susp-whisper-about-absent:compared-notes',
   'susp-whisper-about-absent:named-somebody-else',
   'susp-whisper-about-absent:took-it-away',
@@ -1854,6 +1903,9 @@ const BRANCHES = [
   'testing-night-scores-it:confirmed',
   'testing-night-scores-it:failed',
   'testing-night-scores-it:inconclusive',
+  'testing-rehearsing-tomorrow:decided-to-say-nothing',
+  'testing-rehearsing-tomorrow:no-plan-at-all',
+  'testing-rehearsing-tomorrow:practised-it',
   'testing-reverse-psychology:got-rattled',
   'testing-reverse-psychology:saw-through-it',
   'testing-reverse-psychology:stayed-calm',
@@ -1893,6 +1945,12 @@ const BRANCHES = [
   'trust-fall-into-step:probed',
   'trust-fall-into-step:quiet',
   'trust-fall-into-step:said-too-much',
+  'trust-first-one-down:counted-them-in',
+  'trust-first-one-down:had-the-room',
+  'trust-first-one-down:nobody-came',
+  'trust-glad-of-the-air:already-working',
+  'trust-glad-of-the-air:dreading-the-mission',
+  'trust-glad-of-the-air:glad-to-be-out',
   'trust-inner-circle-invite:asked-what-it-costs',
   'trust-inner-circle-invite:declined',
   'trust-inner-circle-invite:invited-in',
@@ -1932,6 +1990,18 @@ const BRANCHES = [
   'trust-share-suspicion-honestly:made-them-pay-first',
   'trust-share-suspicion-honestly:shared-suspicion',
   'trust-share-suspicion-honestly:took-it-back',
+  'trust-the-back-of-the-column:could-not-keep-up',
+  'trust-the-back-of-the-column:deliberately-behind',
+  'trust-the-back-of-the-column:took-the-long-way',
+  'trust-the-last-light:could-not-sleep',
+  'trust-the-last-light:slept-fine',
+  'trust-the-last-light:went-over-tomorrow',
+  'trust-the-stairs-afterwards:said-nothing-going-up',
+  'trust-the-stairs-afterwards:stayed-down',
+  'trust-the-stairs-afterwards:straight-up',
+  'trust-the-walk-back-alone:let-it-go',
+  'trust-the-walk-back-alone:noticed-the-quiet',
+  'trust-the-walk-back-alone:went-over-it',
   'trust-took-the-weight-on-the-road:let-them-struggle',
   'trust-took-the-weight-on-the-road:made-a-point-of-it',
   'trust-took-the-weight-on-the-road:took-the-weight',

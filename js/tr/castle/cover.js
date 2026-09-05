@@ -1500,7 +1500,13 @@ registerEvent({
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
     const [a, b] = ctx.actors;
-    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 2 : 0;
+    // 2 -> 3 on 2026-09-05. Nineteen solo-only events landed in `dawn` and six
+    // other windows (js/tr/castle/alone.js) and this event's firing count fell
+    // from 43 to 31 per the prose sweep, under the variety floor of 40 -- not
+    // because anything about the pact changed but because a window that used to
+    // run out of draws now fills them. The gate is unchanged; only its share of
+    // the pair draws it can win is.
+    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 3 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-swap-story-with-partner');

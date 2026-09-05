@@ -1013,6 +1013,30 @@ export const BENIGN_BRANCHES = new Set([
   'went-over-it', 'noticed-the-quiet', 'let-it-go',
   'decided-early', 'still-deciding', 'dreading-it',
   'was-right', 'was-wrong', 'counting-the-cost',
+  // ── AND THE SIXTEEN SOLO EVENTS ADDED ON 2026-09-05 (same file) ─────
+  //
+  // Same rule, applied whole: a scene with one actor in it has no
+  // respondent, so there is nobody for the register to be adverse TOWARDS.
+  // Several of these read bleak — lying awake counting the room against you,
+  // being unable to hold the pace on the road home, noticing the hall cool
+  // around you — and bleak is not what this list sorts on. `_tone` picks the
+  // register the SCREEN speaks in, and the register for one person alone
+  // with a thought is the smooth one however bad the thought is.
+  'afraid-of-the-morning', 'already-working', 'brought-it-home',
+  'certain-of-someone', 'could-not-keep-up', 'could-not-sleep',
+  'counted-them-in', 'decided-to-say-nothing', 'deliberately-behind',
+  'did-not-notice', 'dreading-the-mission', 'gave-up-tracking',
+  'glad-to-be-out', 'got-on-with-it', 'had-the-room', 'holding-it',
+  'kept-the-place', 'looked-at-it-properly', 'no-plan-at-all',
+  'nobody-came', 'not-sure-it-counts', 'not-thinking-about-it',
+  'nothing-changed', 'one-vote-bothering-them', 'people-are-cooler',
+  'people-are-warmer', 'practised-it', 'read-the-ballots',
+  'said-nothing-going-up', 'sat-somewhere-else', 'shook-it-off',
+  'slept-fine', 'stayed-down', 'stopped-counting', 'straight-up',
+  'the-empty-rooms', 'took-the-back', 'took-the-front',
+  'took-the-long-way', 'watched-them-come-in', 'went-over-tomorrow',
+  'went-through-it-again', 'went-where-put', 'what-it-has-cost',
+  'why-they-came', 'wrote-it-down',
   // ── the road out (js/tr/castle/journey.js, four events) ─────────────
   //
   // Sorted by the rule this file runs on: adverse means the RESPONDENT is

@@ -10,7 +10,7 @@ import { playerAvatarUrl } from './players.js';
 import { DEMOS, DEMO_LABELS } from './ratings.js';
 // Same reason: ADVANTAGES is an array and ADV_SOURCE_LABELS an object, so
 // reading them off window gives undefined and the coach list renders empty.
-import { ADVANTAGES, ADV_SOURCE_LABELS } from './core.js';
+import { ADVANTAGES, ADV_SOURCE_LABELS, snapshotGs } from './core.js';
 import { COACH_FINDABLE_DEFAULT, coachesOf } from './coaches.js';
 import { coachCanPlay } from './advantages.js';
 
@@ -1231,7 +1231,7 @@ export function _saveEpisodeCheckpoint() {
   // count must come from the same place the episode number does.
   const cpNum = (gs.episodeHistory?.length || 0) + 1;
   try {
-    gsCheckpoints[cpNum] = JSON.parse(JSON.stringify(gs));
+    gsCheckpoints[cpNum] = snapshotGs();
     repairGsSets(gsCheckpoints[cpNum]);
     _idbPut('cp_' + cpNum, JSON.parse(JSON.stringify(gsCheckpoints[cpNum])));
   } catch { /* a week must never fail on its own undo button */ }
@@ -1445,7 +1445,7 @@ export function replayEpisode(epNum) {
   // that path.
   //
   // Now the rollback is reversible until the replacement is in hand.
-  const before = JSON.parse(JSON.stringify(gs));
+  const before = snapshotGs();
   const droppedKeys = Object.keys(gsCheckpoints).filter(k => Number(k) >= epNum);
   const droppedCps = droppedKeys.map(k => [k, gsCheckpoints[k]]);
 
@@ -1523,7 +1523,7 @@ function _replayTraitorsEpisode(epNum) {
     : `Re-run Episode ${epNum} into a different night?`;
   if (!confirm(msg)) return;
 
-  const before = JSON.parse(JSON.stringify(gs));
+  const before = snapshotGs();
   let ep = null, failure = null;
   try {
     if (rerunTraitorsEpisode(epNum)) {

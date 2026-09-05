@@ -1,5 +1,5 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
-import { gs, seasonConfig, players, repairGsSets, seasonFormat } from './core.js';
+import { gs, seasonConfig, players, repairGsSets, seasonFormat, snapshotGs } from './core.js';
 import { showWords } from './shows.js';
 import { arrivalLine, soloLine } from './life-cast.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
@@ -1166,7 +1166,7 @@ export function simulateEpisode() {
   try { if (retrofitFranchiseMeta()) console.log('Franchise meta retrofitted at episode 1.'); } catch (e) {}
   // Save full checkpoint before any mutation so this episode can be replayed
   const _cpNum = gs.episode + 1;
-  gsCheckpoints[_cpNum] = JSON.parse(JSON.stringify(gs));
+  gsCheckpoints[_cpNum] = snapshotGs();
   repairGsSets(gsCheckpoints[_cpNum]);
   _idbPut('cp_' + _cpNum, JSON.parse(JSON.stringify(gsCheckpoints[_cpNum])));
   const cfg = seasonConfig;

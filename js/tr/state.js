@@ -303,11 +303,27 @@ export function prepTrForSave(g) {
   return g;
 }
 
-/** Rebuild Sets after a load. Idempotent, and safe on a state that never had them. */
+/**
+ * Rebuild Sets after a load. Idempotent, and safe on a state that never had
+ * them — INCLUDING one where the Set was stringified while still a Set.
+ *
+ * `JSON.stringify(new Set([...]))` is `{}`, not an array: a snapshot taken
+ * without `prepGsForSave` first loses the contents and leaves a plain object
+ * behind. `new Set({})` then throws "is not iterable", so a state that had
+ * merely lost some shields could not be loaded at all — the rollback after a
+ * failed re-run died on this line and reported a TypeError instead of the
+ * reason the re-run failed.
+ *
+ * The data is gone either way; what this decides is whether the season comes
+ * back empty or does not come back. Same shape as `repairGsSets` in core.js,
+ * which has always taken an array or nothing and never trusted the field.
+ */
 export function repairTrSets(g) {
   if (!g?.tr) return g;
   for (const key of TR_SETS) {
-    if (!(g.tr[key] instanceof Set)) g.tr[key] = new Set(g.tr[key] || []);
+    const v = g.tr[key];
+    if (v instanceof Set) continue;
+    g.tr[key] = Array.isArray(v) ? new Set(v) : new Set();
   }
   return g;
 }

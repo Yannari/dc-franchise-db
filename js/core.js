@@ -1724,6 +1724,29 @@ export function repairGsSets(g) {
   // told about a player, and it has to survive a save.
   repairTrSets(g);
 }
+/**
+ * A deep copy of the game state that still has its Sets when it comes back.
+ *
+ * `JSON.parse(JSON.stringify(gs))` looks like a deep clone and quietly is not:
+ * a Set stringifies to `{}`, so every snapshot taken that way lost the
+ * contents of `shieldedThisRound` and every field in SET_FIELDS, and handed
+ * back a plain object where a Set was expected. Checkpoints were taken this
+ * way, which means a replayed episode restored a state whose Sets had been
+ * emptied — and the rollback after a failed re-run tried to rebuild one and
+ * threw, reporting a TypeError instead of why the re-run failed.
+ *
+ * Flatten, copy, put the live state back. The same three steps saveGameState
+ * has always taken; this is them named once so a fifth caller cannot get them
+ * wrong again.
+ */
+export function snapshotGs(g = gs) {
+  if (!g) return g;
+  prepGsForSave(g);
+  const copy = JSON.parse(JSON.stringify(g));
+  repairGsSets(g);      // the LIVE state gets its Sets back immediately
+  return copy;          // the copy keeps arrays, which is what a save wants
+}
+
 // Pre-save: convert Sets to arrays so JSON.stringify preserves them
 export function prepGsForSave(g) {
   if (!g) return g;

@@ -1,5 +1,5 @@
 // js/finale.js - Finale simulation: final challenge, jury vote, fan campaign, fan vote
-import { gs, gsCheckpoints, seasonConfig, players, repairGsSets } from './core.js';
+import { gs, gsCheckpoints, seasonConfig, players, repairGsSets, snapshotGs } from './core.js';
 import { engagement } from './ratings.js';
 import { audienceBoard } from './audience.js';
 import { _idbPut } from './savestate.js';
@@ -137,7 +137,7 @@ export function simulateFinale() {
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
   // Save checkpoint before finale so it can be replayed
-  gsCheckpoints[epNum] = JSON.parse(JSON.stringify(gs));
+  gsCheckpoints[epNum] = snapshotGs();
   repairGsSets(gsCheckpoints[epNum]);
   _idbPut('cp_' + epNum, JSON.parse(JSON.stringify(gsCheckpoints[epNum])));
 

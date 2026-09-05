@@ -28,6 +28,10 @@ import { INTERVIEW_QUESTIONS, parseInterview, serializeInterview }
 // localStorage and globalThis overrides, and pointing at the wrong worker fails
 // silently by falling through to its default branch.
 import { writerEndpoint } from './social/writer.js';
+// The registry itself, not window.shows — nothing sets that on the page the
+// Studio runs in, and reading it there left the portrait panel's show dropdown
+// with nothing in it but "All shows".
+import { SHOWS } from './shows.js';
 
 const ARCHETYPES = ['mastermind','schemer','hothead','challenge-beast','social-butterfly','loyal-soldier','wildcard','chaos-agent','floater','underdog','hero','villain','goat','perceptive-player','showmancer'];
 
@@ -1333,9 +1337,8 @@ const PORTRAIT_SHOW_ANY = 'global';
 /** Show options for the dropdown, straight off the registry — never a list of
  *  our own, which is the duplication docs/ADDING-A-SHOW.md exists to stop. */
 function _portraitShowOptions(selected) {
-  const shows = (window.shows && window.shows.SHOWS) || {};
   const rows = [[PORTRAIT_SHOW_ANY, 'All shows']]
-    .concat(Object.entries(shows).map(([key, s]) => [key, (s && s.name) || key]));
+    .concat(Object.entries(SHOWS).map(([key, s]) => [key, (s && s.name) || key]));
   return rows.map(([key, label]) =>
     `<option value="${_esc(key)}"${key === selected ? ' selected' : ''}>${_esc(label)}</option>`).join('');
 }
@@ -1345,8 +1348,7 @@ function _portraitShowOptions(selected) {
  *  every filename and storage key in this project already uses — rather than a
  *  slice of the slug, which turns `big-brother` into `big`. */
 function _portraitFilename(slug, show, id) {
-  const shows = (window.shows && window.shows.SHOWS) || {};
-  const prefix = (shows[show] && shows[show].prefix) || show;
+  const prefix = (SHOWS[show] && SHOWS[show].prefix) || show;
   const stem = show === PORTRAIT_SHOW_ANY ? id : `${prefix}-${id}`;
   return `${slug}-${stem}.png`.replace(/-+/g, '-');
 }

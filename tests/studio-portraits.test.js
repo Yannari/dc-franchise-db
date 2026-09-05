@@ -9,6 +9,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SHOWS } from '../js/shows.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const studio = fs.readFileSync(path.join(ROOT, 'js/studio.js'), 'utf8');
@@ -39,12 +40,17 @@ describe('the portraits panel', () => {
     // A hard-coded show list here is the duplication docs/ADDING-A-SHOW.md
     // exists to stop: a fourth show would be missing from the dropdown and
     // nothing would say why.
-    expect(studio).toMatch(/window\.shows && window\.shows\.SHOWS/);
-    // Comments stripped: a comment may name a show as an EXAMPLE, and that is
-    // documentation rather than a second list.
-    const fn = studio.slice(studio.indexOf('function _portraitShowOptions'),
-      studio.indexOf('function _portraitFilename'))
-      .replace(/^\s*(\/\/|\*|\/\*).*$/gm, '');
+    // Imported, not read off a global. `window.shows` is set by season_ref.html
+    // and NOT by the page the Studio runs in, so reading it there left the
+    // dropdown holding nothing but "All shows" — and the first version of this
+    // test injected a fake `window.shows`, so it passed against that bug.
+    expect(studio).toMatch(/import \{ SHOWS \} from '\.\/shows\.js'/);
+    // Comments stripped throughout: one may name a show, or the old global, as
+    // an EXAMPLE — that is documentation, not a second source of truth.
+    const code = studio.replace(/^\s*(\/\/|\*|\/\*).*$/gm, '');
+    expect(code, 'the Studio reads shows off a global again').not.toMatch(/window\.shows/);
+    const fn = code.slice(code.indexOf('function _portraitShowOptions'),
+      code.indexOf('function _portraitFilename'));
     for (const slug of ['total-drama', 'big-brother', 'traitors']) {
       expect(fn, `_portraitShowOptions names ${slug} directly`).not.toContain(slug);
     }
@@ -137,25 +143,28 @@ const code = [
   "const _esc = s => String(s==null?'':s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));",
   "const _avatarSrc = s => 'assets/avatars/'+s+'.png';",
   "const PORTRAIT_SHOW_ANY='global';",
+  "const SHOWS = arguments[0];",
   grab('_portraitShowOptions'), grab('_portraitFilename'),
   grab('_portraitThumb'), grab('_renderPortraitRows'),
   'return { _portraitShowOptions, _portraitFilename, _portraitThumb, _renderPortraitRows };'
 ].join('\n');
-const M = new Function(code)();
+const M = new Function(code)(SHOWS);   // the real registry, not a stand-in
 
 describe('portrait panel rendering', () => {
   it('names every registered show plus All shows', () => {
-    globalThis.window = { shows: { SHOWS: {
-      'total-drama': { name: 'Total Drama', prefix:'td' }, 'big-brother': { name: 'Big Brother', prefix:'bb' },
-      traitors: { name: 'The Traitors', prefix:'tr' }, 'the-challenge': { name: 'The Challenge', prefix:'ch' } } } };
     const html = M._portraitShowOptions('traitors');
     expect(html).toContain('>All shows<');
-    expect(html).toContain('>The Challenge<');       // a fourth show, with no code change
+    // EVERY show in the registry, by the name the registry gives it. This is
+    // the assertion that would have caught the dropdown coming up empty.
+    for (const [key, s] of Object.entries(SHOWS)) {
+      expect(html, `${key} is missing from the portrait show dropdown`).toContain(`>${s.name}<`);
+      expect(html).toContain(`value="${key}"`);
+    }
+    expect(Object.keys(SHOWS).length).toBeGreaterThanOrEqual(3);
     expect(html).toMatch(/value="traitors" selected/);
   });
 
   it('derives readable filenames', () => {
-    globalThis.window = { shows: { SHOWS: { 'total-drama':{prefix:'td'}, 'big-brother':{prefix:'bb'}, traitors:{prefix:'tr'} } } };
     expect(M._portraitFilename('bowie','traitors','castle')).toBe('bowie-tr-castle.png');
     expect(M._portraitFilename('bowie','global','look-2')).toBe('bowie-look-2.png');
     expect(M._portraitFilename('rosa-maria','big-brother','house')).toBe('rosa-maria-bb-house.png');

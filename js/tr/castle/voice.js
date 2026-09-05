@@ -1005,6 +1005,14 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── the scenes one person has (js/tr/castle/alone.js) ───────────────
+  //
+  // Solo scenes have no respondent, so none of them can be adverse in this
+  // file's sense — there is nobody being leaned on. They are somebody thinking
+  // on a road, waiting for a table, or sitting with a result.
+  'went-over-it', 'noticed-the-quiet', 'let-it-go',
+  'decided-early', 'still-deciding', 'dreading-it',
+  'was-right', 'was-wrong', 'counting-the-cost',
   // ── the road out (js/tr/castle/journey.js, four events) ─────────────
   //
   // Sorted by the rule this file runs on: adverse means the RESPONDENT is

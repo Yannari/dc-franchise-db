@@ -454,3 +454,40 @@ describe('a reload after a re-run reproduces the re-rolled season', () => {
       .toBe(expectKey);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// A BLOCKING BACKGROUND STOPS THE SEASON STARTING
+// ══════════════════════════════════════════════════════════════════════
+//
+// `traitorsBackgroundBlockers` had exactly one caller — the cast builder's
+// panel — so a blocker was advisory. Nothing on the way INTO a season read
+// it, and the castle started with the precise cast the check exists to
+// refuse. The blocking warning's own comment in js/tr/state.js says it
+// "stops the season rather than being a note nobody reads", and it did not.
+//
+// THIS ARM IS AT THE PLAY PATH ON PURPOSE. tests/tr-background-types.test.js
+// covers the resolver and the blocker list; both were already correct. What
+// was missing was anything asserting that the ENTRY POINT consults them, and
+// a gate nothing drives is the same as no gate — disabling it left this file
+// green at 14/14.
+describe('the season refuses a cast the backgrounds block', () => {
+  it('an Alumni with no recorded appearance stops the first episode', () => {
+    castle({}, 11);
+    // One player reclassified into the blocking state, everybody else as they
+    // were. `alumni` with no franchise record is the one blocking case.
+    setPlayers(ROSTER.map((p, i) => (i === 0
+      ? { ...p, backgroundType: 'alumni' } : { ...p })));
+    expect(simulateTraitorsEpisode(),
+      'the season aired a night on a cast a blocking background refuses').toBe(null);
+  });
+
+  it('and the same cast plays once the background is not blocking', () => {
+    // THE CONTROL. Without it the arm above passes on any breakage that stops
+    // a season for a completely different reason.
+    castle({}, 11);
+    setPlayers(ROSTER.map((p, i) => (i === 0
+      ? { ...p, backgroundType: 'civilian' } : { ...p })));
+    expect(simulateTraitorsEpisode(),
+      'a clean cast was refused, so the arm above proves nothing').toBeTruthy();
+  });
+});

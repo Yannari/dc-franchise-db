@@ -31,6 +31,9 @@
 import { gs, setGs, players, seasonConfig, seasonFormat, TWIST_CATALOG } from './core.js';
 import { playTraitorsSeason } from './tr/headless.js';
 import { bespokeMissionsEnabled, _setBespokeMissionsEnabled } from './tr/missions/index.js';
+// The one shared background resolver and its blocker list — the same pair
+// the cast builder uses, so the season and the panel cannot disagree.
+import { snapshotTraitorsBackgrounds, traitorsBackgroundBlockers } from './tr/state.js';
 
 /** Is the season on the setup screen a castle? */
 export const isTraitorsSeason = () => seasonFormat(seasonConfig) === 'traitors';
@@ -148,6 +151,39 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
     ? gs.tr.castOrder.filter(Boolean) : null;
   const cast = savedOrder || (players || []).map(p => p.name).filter(Boolean);
   if (cast.length < 4) return false;
+
+  // ── AND THE BACKGROUNDS HAVE TO CLEAR ───────────────────────────────
+  //
+  // `traitorsBackgroundBlockers` (js/tr/state.js) is the list of reasons this
+  // cast cannot start a castle. The cast builder has always shown it — and
+  // that was the whole of the enforcement. Nothing on the way into a season
+  // read it, so every blocker was advisory: dismiss the panel, or arrive at
+  // this function by any route that is not the builder, and the season began
+  // anyway with the exact cast the check exists to refuse.
+  //
+  // A resolved-but-empty background is not a blocker, and this only refuses
+  // what the resolver itself marked `blocking`. Season one has no `gs.tr`
+  // yet, so the backgrounds are resolved from the live cast the same way the
+  // builder resolves them, off the one shared resolver — a second derivation
+  // here would drift from the panel and refuse a season the panel had passed.
+  try {
+    const blockers = traitorsBackgroundBlockers(
+      snapshotTraitorsBackgrounds((players || []).filter(Boolean)));
+    if (blockers.length) {
+      const why = blockers.map(b => b && (b.text || b.message || b.id)).filter(Boolean);
+      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast('This cast cannot start a castle yet: '
+          + (why[0] || 'a background is blocking'), 'error');
+      }
+      console.warn('[traitors] season refused — background blockers:', why);
+      return false;
+    }
+  } catch (e) {
+    // A resolver that throws must not silently wave a season through, but it
+    // must not block one either on a cast the builder never checked — log and
+    // continue, which is what every other optional read here does.
+    console.warn('[traitors] background check failed:', e && e.message);
+  }
 
   // ── STAGE 2 FLIPS THE FLAG HERE, and only here ──────────────────────
   // The bespoke catalogue (js/tr/missions/) ships gated off — a mission whose

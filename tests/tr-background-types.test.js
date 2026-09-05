@@ -275,3 +275,49 @@ describe('a franchise record that failed to load', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// A BLOCKING BACKGROUND ACTUALLY BLOCKS
+// ══════════════════════════════════════════════════════════════════════
+//
+// `alumni-without-history` carries `blocking: true` and its own comment in
+// js/tr/state.js says "the warning stops the season rather than being a note
+// nobody reads". It did not. `traitorsBackgroundBlockers` was called in
+// exactly one place — the cast builder's panel — and nothing on the way into
+// a season read it, so every blocker was advisory: dismiss the panel, or
+// reach the play path by any other route, and the castle started with the
+// precise cast the check exists to refuse.
+//
+// This is the Task 1 carry-forward the plan ledger warned must not be lost
+// when Task 10A was folded into Task 10.
+describe('a blocking background refuses the season', () => {
+  it('an Alumni with no recorded appearance is a blocker', () => {
+    const bg = resolveTraitorsBackground(
+      { name: 'Nobody', backgroundType: 'alumni', occupation: 'Contestant' }, []);
+    const blocking = (bg.warnings || []).filter(w => w && w.blocking);
+    expect(blocking.length, 'an Alumni with no history raised no blocking warning')
+      .toBeGreaterThan(0);
+    expect(blocking[0].code).toBe('alumni-without-history');
+  });
+
+  it('and the blocker list picks it up off a whole cast', () => {
+    const cast = [
+      { name: 'Nobody', backgroundType: 'alumni', occupation: 'Contestant' },
+      { name: 'Ordinary', backgroundType: 'civilian', occupation: 'Plumber' },
+    ];
+    const blockers = traitorsBackgroundBlockers(snapshotTraitorsBackgrounds(cast, []));
+    expect(blockers.length, 'the cast-wide blocker list missed it').toBeGreaterThan(0);
+    expect(blockers.some(b => b.player === 'Nobody')).toBe(true);
+    // ANTI-VACUITY: a list that flags everybody is not a check. The civilian
+    // beside them must not be in it.
+    expect(blockers.some(b => b.player === 'Ordinary')).toBe(false);
+  });
+
+  it('a clean cast produces no blockers at all', () => {
+    const cast = [
+      { name: 'Ordinary', backgroundType: 'civilian', occupation: 'Plumber' },
+      { name: 'Known', backgroundType: 'celebrity', occupation: 'Singer' },
+    ];
+    expect(traitorsBackgroundBlockers(snapshotTraitorsBackgrounds(cast, []))).toEqual([]);
+  });
+});

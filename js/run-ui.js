@@ -604,15 +604,27 @@ export function renderRunTab() {
     const _viewNum = viewingEpNum || gs.episodeHistory[gs.episodeHistory.length-1]?.num;
     if (replayBtn) replayBtn.style.display = _canReplay(_viewNum) ? 'block' : 'none';
   }
-  // LIVE-UPDATE THE SEASON TIMELINE. `buildEpisodeMap` reads the REAL nights off
-  // the season's rows once they exist (see its Traitors branch), but the Format
-  // Designer's timeline was only redrawn on the setup screen and on twist edits
-  // — never as episodes aired — so it kept showing the pre-simulation projection
-  // ("N left" and the twist row frozen at the guess). Refreshing it here, after
-  // every episode the run tab draws, makes it track what actually happened.
-  // `renderTimeline` no-ops when its container is absent, so this is safe on any
-  // screen and for any format.
-  try { renderTimeline(); } catch (e) { /* timeline is optional chrome */ }
+  // ── LIVE-UPDATE THE SEASON TIMELINE — ON THE ONE SHOW THAT CAN ─────
+  //
+  // `buildEpisodeMap` reads the REAL nights off the season's rows for a castle
+  // and ONLY for a castle: a Traitors season is decided in one call, so every
+  // night is already on `episodeHistory` or `_trQueue` carrying the `exits` it
+  // actually made, and the timeline can report what happened instead of what
+  // was projected.
+  //
+  // Every other format has no such branch. Total Drama and Big Brother fall
+  // through to the PROJECTION — a count derived from seasonConfig before a
+  // single episode has run — so redrawing it after each episode re-renders the
+  // same guess, and where the guess has drifted from the season (a medevac, a
+  // quit, a twist that took two) it redraws a number that is now wrong, over
+  // and over, looking like a live figure. A projection presented as live is
+  // worse than a projection left alone.
+  //
+  // So the refresh is limited to the show it works for. The other two get the
+  // timeline they always had: drawn on the setup screen and on twist edits.
+  if (isTraitorsSeason()) {
+    try { renderTimeline(); } catch (e) { /* timeline is optional chrome */ }
+  }
 }
 
 export function renderGameState() {

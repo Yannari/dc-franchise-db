@@ -60,17 +60,32 @@ function devWarn(key, message) {
   if (typeof console !== 'undefined' && console.warn) console.warn(`[avatar-registry] ${message}`);
 }
 
-/** Show-specific portraits first, then the player's global portrait. */
-export function portraitOptions(playerSlug, show) {
+/**
+ * Show-specific portraits first, then the player's global portrait.
+ *
+ * `selected` is the choice this season is ALREADY holding. If it belongs to
+ * another show it is appended anyway, flagged `offShow`, because a selection
+ * you cannot see is a selection you cannot change: a cast member carried over
+ * from a Total Drama season kept drawing their Total Drama look on a Big
+ * Brother season while the picker showed only the profile default, ticked, and
+ * offered no way out of it.
+ */
+export function portraitOptions(playerSlug, show, selected) {
   const entry = entryFor(playerSlug);
   if (!entry) return [];
   const key = isKnownShow(show) ? show : null;
   const list = (entry.portraits || []).filter(p => p && isSafePortraitFile(p.file));
   const scoped = key ? list.filter(p => p.show === key) : [];
   const global = list.filter(p => p.show === 'global');
-  return [...scoped, ...global].map(p => ({
+  const shown = [...scoped, ...global];
+  if (selected) {
+    const held = list.find(p => p.id === selected || p.file === selected);
+    if (held && !shown.includes(held)) shown.push(held);
+  }
+  return shown.map(p => ({
     id: p.id, show: p.show, label: p.label, file: p.file,
     url: urlFor(p.file), missing: !fileExists(p.file), isGlobal: p.show === 'global',
+    offShow: p.show !== 'global' && key != null && p.show !== key,
   }));
 }
 

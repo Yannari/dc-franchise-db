@@ -79,6 +79,17 @@ describe('the portraits panel', () => {
     expect(rows, 'the show dropdown is disabled again').not.toMatch(/st-por-show[\s\S]{0,200}disabled/);
   });
 
+  it('converts the continuity display name into a show key', () => {
+    // continuityIndex reports `show: showName(format)` — "Big Brother", not
+    // "big-brother". Writing that straight into the catalog produces a show no
+    // validator accepts, and it looks right in the UI while being wrong.
+    expect(studio).toContain('function _showKeyOf(');
+    const fn = studio.slice(studio.indexOf('async function _loadDraftPortraits'),
+      studio.indexOf('function _renderPortraitRows'));
+    expect(fn).toMatch(/_showKeyOf\(a\.show\)/);
+    expect(fn, 'the raw display name is used as a show key').not.toMatch(/map\(a => a\.show\)/);
+  });
+
   it('does not guess Total Drama for legacy -returnee art', () => {
     // The filename predates shows existing, so it says nothing about which one
     // the art was drawn for.

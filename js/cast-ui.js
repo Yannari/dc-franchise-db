@@ -765,7 +765,9 @@ export function getFormPortrait() { return { ..._formPortrait }; }
  * how many looks somebody may have.
  */
 export function renderPortraitPicker(playerSlug, selectedId, show = seasonFormat(seasonConfig), playerName = '') {
-  const opts = portraitOptions(playerSlug, show);
+  // The held choice is passed in so it is offered even when it belongs to
+  // another show — otherwise it is invisible and stuck.
+  const opts = portraitOptions(playerSlug, show, selectedId || _formPortrait.avatarFile);
   const showName = SHOWS[show]?.name || 'this show';
   const who = playerName || playerSlug;
   if (!opts.length) {
@@ -782,7 +784,8 @@ export function renderPortraitPicker(playerSlug, selectedId, show = seasonFormat
     : `<div class="portrait-picker-note" role="note">No ${_pesc(showName)} portrait yet — the profile default is used.</div>`;
 
   const items = opts.map(o => {
-    const label = `${who} — ${o.isGlobal ? 'All shows' : showName} — ${o.label}`;
+    const where = o.isGlobal ? 'All shows' : (SHOWS[o.show]?.name || o.show);
+    const label = `${who} — ${where} — ${o.label}${o.offShow ? ' (from another show)' : ''}`;
     const sel = o.id === chosen;
     return `<label class="portrait-opt${sel ? ' is-selected' : ''}${o.missing ? ' is-missing' : ''}" aria-checked="${sel}">
       <input type="radio" name="f-portrait" value="${_pesc(o.id)}" aria-label="${_pesc(label)}"${sel ? ' checked' : ''}${o.missing ? ' disabled' : ''} onchange="selectPortrait(this.value)">

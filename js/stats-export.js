@@ -1603,7 +1603,10 @@ function _extractRatings() {
     // Always derived from the episode history rather than read off
     // `gs.ratings`, so an exported season and a re-rated one cannot differ.
     const derived = ratingsForSeason(gs?.episodeHistory || [],
-      { format: seasonFormat() || DEFAULT_FORMAT });
+      // seasonFormat() with no argument does not inspect anything: it returns
+      // DEFAULT_FORMAT. So every Big Brother season was rated on Total Drama's
+      // overlay, which is a different curve.
+      { format: seasonFormat(seasonConfig) || DEFAULT_FORMAT });
     if (!derived) return null;
     return {
       v: derived.v,

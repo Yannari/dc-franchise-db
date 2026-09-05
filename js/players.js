@@ -112,7 +112,14 @@ export function portraitSlug(name, list = players) {
 }
 
 function _currentShow() {
-  try { return seasonFormat() || undefined; } catch { return undefined; }
+  // ── seasonFormat() NEEDS THE CONFIG ──
+  //
+  // Called bare it does not inspect anything — it returns DEFAULT_FORMAT, i.e.
+  // Total Drama, always. So every portrait in a Big Brother season resolved as
+  // though the season were Total Drama, and a houseguest with Total Drama art
+  // was drawn in it. That is the bug class docs/ADDING-A-SHOW.md is written
+  // about, in pictures rather than words.
+  try { return seasonFormat(seasonConfig) || undefined; } catch { return undefined; }
 }
 
 /** The one call every screen makes for a player image URL. */

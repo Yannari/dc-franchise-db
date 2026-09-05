@@ -6528,3 +6528,7 @@
 .portrait-picker-note,.portrait-picker-empty{font-size:11px;color:var(--muted);margin-bottom:6px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion: reduce){.portrait-opt,.portrait-opt-thumb{transition:none}}
+
+/* A portrait held over from another show: shown so it can be changed, and
+   named so it is obvious why it is there. */
+.portrait-opt-off{display:block;font-style:normal;font-size:9px;letter-spacing:.3px;color:#e5843e}

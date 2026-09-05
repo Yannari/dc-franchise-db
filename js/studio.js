@@ -1343,6 +1343,15 @@ function _portraitShowOptions(selected) {
     `<option value="${_esc(key)}"${key === selected ? ' selected' : ''}>${_esc(label)}</option>`).join('');
 }
 
+/** A show slug, from either a slug or the display name the continuity index
+ *  reports. Returns null for anything the registry does not know. */
+function _showKeyOf(show) {
+  if (!show) return null;
+  if (SHOWS[show]) return show;
+  const hit = Object.entries(SHOWS).find(([, s]) => s && s.name === show);
+  return hit ? hit[0] : null;
+}
+
 /** The filename a new portrait is saved under. Derived, never typed.
  *  The show part is the registry's own prefix (td / bb / tr) — the same one
  *  every filename and storage key in this project already uses — rather than a
@@ -1392,7 +1401,10 @@ async function _loadDraftPortraits(d) {
     // on All shows, which offers it everywhere and prejudges nothing.
     let show = PORTRAIT_SHOW_ANY;
     try {
-      const played = [...new Set((await appearancesFor(d.slug)).map(a => a.show).filter(Boolean))];
+      // continuityIndex reports the show by its DISPLAY NAME ("Big Brother"),
+      // and the catalog is keyed by slug. Writing the name straight through
+      // produced a `show` no validator would accept.
+      const played = [...new Set((await appearancesFor(d.slug)).map(a => _showKeyOf(a.show)).filter(Boolean))];
       if (played.length === 1) show = played[0];
     } catch { /* no continuity index; All shows is the safe answer */ }
     d.portraits.push({

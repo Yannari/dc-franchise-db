@@ -68,7 +68,7 @@ import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { portraitWall, PORTRAIT_WALL_CSS, WALL_MURDERED, WALL_BANISHED } from './portrait-wall.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';
-import { ruleReminder } from '../tr-rules.js';
+import { ruleReminder, variantReminder } from '../tr-rules.js';
 
 const TR = 'traitors';
 
@@ -1382,6 +1382,15 @@ function _view(ep, observer) {
     // and rendered nowhere — see the note in `_morning` (js/tr/headless.js).
     variantLine: isAudience ? (dawn.variantLine || null) : null,
     variant: isAudience ? (dawn.variant || null) : null,
+    // THE RULE BEHIND THE SHAPE, gated by the registry rather than here.
+    //
+    // A viewer meeting their first double murder has never been told two
+    // people CAN die in one night. `variantReminder` answers with the
+    // sentence this observer is allowed — which for a double is everybody,
+    // because two empty chairs at one breakfast is arithmetic anybody at the
+    // table can do, and for the list, the chapel and the dungeon is the
+    // audience alone. The screen prints what it is handed and decides nothing.
+    variantRule: variantReminder(dawn.variant, observer),
     // THE REACTIONS THE MORNING EARNS, computed in js/tr/headless.js off bonds
     // and last night's public ballots — never a raw alignment. Faithful-safe
     // on every layer, so it is not stripped. `null` on episode one and on any
@@ -1757,7 +1766,11 @@ function _buildBeats(v) {
       // night and never twice.
       + ((v.variantLine && v.variant !== 'plain-sight' && v.variant !== 'name-your-own')
         ? '<p class="co-shape"><span>You only &middot; audience</span>'
-          + _esc(v.variantLine) + '</p>' : '')),
+          + _esc(v.variantLine) + '</p>' : '')
+      // AND THE RULE IT RAN UNDER. Printed for whoever is entitled to it, so
+      // on a double this reaches a player too — they can see the second empty
+      // chair, and the format owes them the sentence that explains it.
+      + (v.variantRule ? '<p class="co-explain">' + _esc(v.variantRule) + '</p>' : '')),
     null, { kind: 'after', down: [...v.room], gap: v.missing.map(x => x.name) });
   } else if (!v.arrival) {
     let inner = '<p>' + _pick(WHOLE_TEXT, key + '|whole') + '</p>'

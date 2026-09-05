@@ -181,6 +181,95 @@ export const TR_RULES = {
       + 'be allowed to go back downstairs.',
     occursIn: tr => !!(tr.recruitment && tr.recruitment.mode === 'ultimatum'),
   },
+  // ── the six shapes a night can take ─────────────────────────────────
+  //
+  // A viewer meeting their first double murder has never been told that two
+  // people CAN die in one night. Same for the list, the chapel and the
+  // dungeon: the format has six murder variants (js/tr/murder-variants.js)
+  // and the registry described exactly none of them, so the screen showed the
+  // consequence of a rule the audience had never heard.
+  //
+  // VISIBILITY IS PER VARIANT, and it is not a formality. `double` is public
+  // by arithmetic — two empty chairs at one breakfast, which anybody can
+  // count. The other three are things the castle is never told, so their
+  // explanation is audience-only exactly like the variant line it sits under
+  // (js/vp-tr/cold-open.js). `plain-sight` and `name-your-own` are already
+  // narrated by the conclave and are described here for completeness.
+  'murder-double': {
+    id: 'murder-double',
+    trigger: 'The Traitors are allowed two names in one night.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'all',
+    reminder: 'Some nights the Traitors may take two people instead of one. '
+      + 'Two chairs are empty at the same breakfast, and the castle can count.',
+    fullRules: 'On a double night the Traitors name two victims rather than one. '
+      + 'Both leave before breakfast. Nothing tells the castle in advance that '
+      + 'tonight was one of those nights — only the second empty chair does.',
+    occursIn: tr => tr.conclave?.variant === 'double',
+  },
+  'murder-on-trial': {
+    id: 'murder-on-trial',
+    trigger: 'The Traitors write a shortlist and only one name on it is used.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'audience',
+    reminder: 'On this night the Traitors put several names on a list and took '
+      + 'only one of them. The people who were on it and lived find out that '
+      + 'they were on it.',
+    fullRules: 'The Traitors name a shortlist rather than a single victim. One '
+      + 'of the listed players is murdered; the others survive knowing they were '
+      + 'written down, which is its own kind of information for a room to hold.',
+    occursIn: tr => tr.conclave?.variant === 'on-trial',
+  },
+  'murder-face-to-face': {
+    id: 'murder-face-to-face',
+    trigger: 'The victim is taken to the chapel and allowed to speak.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'audience',
+    reminder: 'This victim was not taken in their sleep. They were brought to '
+      + 'the chapel, told what was happening, and given one last thing to say.',
+    fullRules: 'On a chapel night the Traitors face their victim before the '
+      + 'murder and let them speak once. Whatever is said goes no further than '
+      + 'that room; the castle gets the same empty chair as on any other night.',
+    occursIn: tr => tr.conclave?.variant === 'face-to-face',
+  },
+  'murder-dungeon': {
+    id: 'murder-dungeon',
+    trigger: 'Two players go down to the dungeon and one comes back.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'audience',
+    reminder: 'Two players spent the night in the dungeon and the Traitors chose '
+      + 'between them. One of them came up to breakfast and the other did not.',
+    fullRules: 'A dungeon night puts two players underground together overnight. '
+      + 'The Traitors murder one of the pair. The survivor comes back up having '
+      + 'spent the night beside the person who did not.',
+    occursIn: tr => tr.conclave?.variant === 'dungeon',
+  },
+  'murder-plain-sight': {
+    id: 'murder-plain-sight',
+    trigger: 'One Traitor decides alone, downstairs, in company.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'audience',
+    reminder: 'There was no meeting tonight. One Traitor chose a name alone, in '
+      + 'the middle of everybody, and the others were not asked.',
+    fullRules: 'On a plain-sight night the pact never convenes. A single Traitor '
+      + 'settles on a victim in company, without consulting the others, and the '
+      + 'murder happens on that decision alone.',
+    occursIn: tr => tr.conclave?.variant === 'plain-sight',
+  },
+  'murder-name-your-own': {
+    id: 'murder-name-your-own',
+    trigger: 'The Traitors are made to murder one of their own.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'audience',
+    reminder: 'Tonight the murder had to come from inside the pact. The Traitors '
+      + 'were made to choose one of their own, and there was nothing to argue '
+      + 'about — only somebody to sign for it.',
+    fullRules: 'On this night the Traitors may not name a Faithful. The victim '
+      + 'must be one of them, which ends a pact that has grown comfortable and '
+      + 'leaves whoever decided it carrying that with the survivors.',
+    occursIn: tr => tr.conclave?.variant === 'name-your-own',
+  },
+
   'armoury-shield': {
     id: 'armoury-shield',
     trigger: 'The Armoury opens after a mission.',
@@ -228,4 +317,35 @@ export function ruleReminder(id, observer = 'audience') {
   if (!r) return null;
   if (r.observerVisibility === 'audience' && observer !== 'audience') return null;
   return r.reminder;
+}
+
+/**
+ * The rule id for a murder variant, or null for an ordinary night.
+ *
+ * `standard` has no entry on purpose: there is nothing to explain about a
+ * night that ran the way the premiere already said every night runs.
+ */
+const VARIANT_RULE = {
+  double: 'murder-double',
+  'on-trial': 'murder-on-trial',
+  'face-to-face': 'murder-face-to-face',
+  dungeon: 'murder-dungeon',
+  'plain-sight': 'murder-plain-sight',
+  'name-your-own': 'murder-name-your-own',
+};
+
+/**
+ * What this observer may be told about the shape of last night, or null.
+ *
+ * THE GATING LIVES HERE AND NOT IN THE SCREEN. A screen that decided for
+ * itself would have to know that a double is public arithmetic (two empty
+ * chairs at one breakfast, anybody can count) while the list, the chapel and
+ * the dungeon are things the castle is never told — and that is a rule about
+ * the FORMAT, which is what this file is for. `ruleReminder` already refuses
+ * an audience-only rule to a player, so the screen can print whatever comes
+ * back without deciding anything.
+ */
+export function variantReminder(variant, observer = 'audience') {
+  const id = VARIANT_RULE[variant];
+  return id ? ruleReminder(id, observer) : null;
 }

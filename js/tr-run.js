@@ -372,10 +372,36 @@ export function rerunTraitorsEpisode(epNum) {
   // A fresh divergence each time the button is pressed — a re-run that came
   // back identical would not be a re-run. Kept on `gs` so a reload still varies.
   gs._trRerollNonce = (gs._trRerollNonce || 0) + 1;
-  const rerollSeed = ((gs._trSeed >>> 0)
-    ^ Math.imul(gs._trRerollNonce, 0x9e3779b1)
-    ^ Math.imul(N, 2654435761)) >>> 0;
-  if (!_playWholeSeason(N, rerollSeed || 1, _rerollChain(N, rerollSeed || 1))) return false;
+  // ── AND IT HAS TO ACTUALLY REACH EPISODE N ──────────────────────────
+  //
+  // A castle does not have a fixed length. The endgame ends when the room
+  // agrees to stop, so a different seed can finish it a night earlier — and a
+  // re-run of the FINALE would then produce a season with no finale in it,
+  // leaving nothing to air. That was reported as "Episode 11 could not be
+  // re-run", which is true and useless: the viewer asked for a different
+  // episode 11, not for a ruling on whether one exists.
+  //
+  // So the nonce is turned until a re-roll that HAS an episode N comes up.
+  // Each turn is a completely different season from N on, and the ones that
+  // end early are simply not the answer to the question that was asked. Twelve
+  // is far past coincidence for a season that is one night from its end;
+  // beyond it the refusal is honest, because at that point the state itself is
+  // saying this night has nowhere left to go.
+  let rerollSeed = 0;
+  let reached = false;
+  for (let attempt = 0; attempt < 12 && !reached; attempt++) {
+    if (attempt) gs._trRerollNonce = (gs._trRerollNonce || 0) + 1;
+    rerollSeed = ((gs._trSeed >>> 0)
+      ^ Math.imul(gs._trRerollNonce, 0x9e3779b1)
+      ^ Math.imul(N, 2654435761)) >>> 0;
+    if (!_playWholeSeason(N, rerollSeed || 1, _rerollChain(N, rerollSeed || 1))) return false;
+    reached = (gs._trQueue || []).length >= N;
+  }
+  if (!reached) {
+    return _refuse(`no re-roll of this season reaches episode ${N}. The castle ends `
+      + 'when the room agrees to stop, and from here every version of it ends '
+      + 'sooner. Re-run an earlier episode to change that.');
+  }
   _lastRefusal = null;
   // PERSIST THE REROLL so a reload can reproduce THIS season, not the original.
   // `_trQueue` normally survives the save intact, but if it is ever lost (an IDB

@@ -81,6 +81,10 @@ import '../tr/castle/confrontation.js';
 // The morning nobody was taken. Every other dawn scene in the pool needs a
 // body; a blocked night has none, and had no scene at all.
 import '../tr/castle/quiet-night.js';
+// The scenes one person has. Seven of the pool's ten busiest branches are
+// SOLO branches, because a solo draw happens ~40% of the time and only a
+// handful of events carry one — so that handful absorbs nearly all of them.
+import '../tr/castle/alone.js';
 
 /**
  * The season's random stream — and the hash in front of it is load-bearing.
@@ -2829,8 +2833,21 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // murders running at the final six yet still opens a multi-Traitor endgame
     // where the format wants one. Measured against tr-calibration: the
     // endgame's betrayal arm needs this window to be populated at all.
-    const parityFinale = fa <= tr && alive.length <= configuredEndgameSize + 2;
-    if (!tr || !fa || alive.length <= configuredEndgameSize || parityFinale) break;
+    // ── AND PARITY DOES NOT SKIP THE TABLE ────────────────────────────
+    //
+    // Parity used to break HERE, at the top, before this night's Round Table
+    // had run. Reported from played seasons: "the endgame starts without the
+    // last banishment", and "it launched at top 6 instead of banishing someone,
+    // then a murder, then a last banishment, then the finale."
+    //
+    // Both are this. Ending the mandated game at the top of an episode means
+    // the episode never happens: no table, and the fire round opens on a room
+    // nobody was asked to vote on. The window itself earns its place — the
+    // endgame's betrayal arm needs two Traitors in the room and
+    // tests/tr-calibration.test.js goes vacuous without it — but it belongs
+    // AFTER the banishment, beside `handOver`, where the same rule already
+    // skips the night and opens the endgame in the same episode.
+    if (!tr || !fa || alive.length <= configuredEndgameSize) break;
 
     // TASK 5: each of the six Castle Day phases draws its OWN scene-count
     // budget from its own range (js/tr/castle/phases.js), spending it
@@ -2910,7 +2927,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // being skipped. `endgameSize: 3` now reads: banish from four to three,
     // and go straight into the endgame with those three.
     const stillIn = (gs.activePlayers || []).length;
-    const handOver = stillIn <= configuredEndgameSize;
+    // THE ROOM AS THE BANISHMENT LEFT IT — so parity is read after the table
+    // that was supposed to decide it, not before.
+    const parityNow = livingFaithfuls(ep).length <= livingTraitors(ep).length
+      && stillIn <= configuredEndgameSize + 2;
+    const handOver = stillIn <= configuredEndgameSize || parityNow;
     // AND THE PACT DOES NOT MURDER ITSELF INTO THE ENDGAME.
     //
     // Without this the handover only lands on the right parity. A room of five

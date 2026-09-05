@@ -43,7 +43,7 @@ const STUBBED = ['players', 'seasonConfig', 'relationships', 'pStats', 'pronouns
 const priorGlobals = new Map();
 let gsDescribed = false;
 
-function castle(cfg = {}, seed = null) {
+function castle(cfg = {}, seed = null, castOverride = null) {
   for (const k of STUBBED) if (!priorGlobals.has(k)) priorGlobals.set(k, globalThis[k]);
   if (!gsDescribed) {
     Object.defineProperty(globalThis, 'gs', {
@@ -51,7 +51,7 @@ function castle(cfg = {}, seed = null) {
     });
     gsDescribed = true;
   }
-  setPlayers(ROSTER.map(p => ({ ...p })));
+  setPlayers((castOverride || ROSTER).map(p => ({ ...p })));
   Object.assign(globalThis, { players, seasonConfig, relationships, pStats, pronouns,
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat, TWIST_CATALOG,
     gsCheckpoints, repairGsSets,
@@ -84,8 +84,8 @@ function castle(cfg = {}, seed = null) {
  */
 const SEEDS = [11, 23, 37, 41, 59];
 
-function airWholeSeason(seed = SEEDS[0], cfg) {
-  castle(cfg, seed);
+function airWholeSeason(seed = SEEDS[0], cfg, castOverride) {
+  castle(cfg, seed, castOverride);
   const aired = [];
   for (let i = 0; i < 60; i++) {
     const row = simulateTraitorsEpisode();
@@ -217,6 +217,73 @@ describe('a refusal says why', () => {
     expect(rerunTraitorsEpisode(3)).toBe(true);
     expect(lastTraitorsRerunRefusal(), 'a stale reason survived a good re-run')
       .toBeNull();
+  });
+});
+
+describe('re-running the LAST night', () => {
+  // Reported: "Episode 11 could not be re-run" on an eleven-night season. A
+  // castle has no fixed length — the endgame ends when the room agrees to stop
+  // — so a re-roll can finish a night earlier and leave no episode 11 to air.
+  // True, and useless: the viewer asked for a different finale, not for a
+  // ruling on whether one exists. The nonce is turned until one comes up.
+  it('re-runs the finale on a smaller cast too', () => {
+    // HONEST NOTE ON WHAT THIS DOES AND DOES NOT PROVE. Re-running the finale
+    // was reported as refused on a played season, and a scan over cast sizes
+    // found re-rolls that end a night early (fourteen players, seed 3, the
+    // first three nonces all come back one night short of the aired season).
+    // The engine retries the nonce until one reaches the episode. But every
+    // case reachable from THIS harness succeeds on the first attempt, so this
+    // arm covers the smaller cast and NOT the retry itself — it passes with
+    // the retry limit set to one. The retry is not proven by a test.
+    setPlayers(roster.players.slice(0, 14).map(p => ({ ...p })));
+    globalThis.players = players;
+    const aired = airWholeSeason(3, {}, roster.players.slice(0, 14));
+    const last = aired.length;
+    expect(rerunTraitorsEpisode(last), 'refused a finale a re-roll can reach')
+      .toBe(true);
+    const row = simulateTraitorsEpisode();
+    expect(row, 'aired nothing').toBeTruthy();
+    expect(row.num).toBe(last);
+  });
+
+  it('produces a finale rather than refusing', () => {
+    for (const seed of [11, 23, 37, 41, 59, 101, 131]) {
+      const aired = airWholeSeason(seed);
+      const last = aired.length;
+      expect(rerunTraitorsEpisode(last), `seed ${seed}: refused the finale`).toBe(true);
+      const row = simulateTraitorsEpisode();
+      expect(row, `seed ${seed}: re-ran the finale and aired nothing`).toBeTruthy();
+      expect(row.num).toBe(last);
+      agrees(row, last);
+    }
+  });
+
+  it('keeps the prefix while it hunts for one', () => {
+    // Each attempt replays the whole season; the aired nights must survive
+    // every one of them.
+    const aired = airWholeSeason(41);
+    const last = aired.length;
+    const kept = prefixOf(gsRef.episodeHistory, last);
+    expect(rerunTraitorsEpisode(last)).toBe(true);
+    simulateTraitorsEpisode();
+    expect(prefixOf(gsRef.episodeHistory, last), 'a retry rewrote the past')
+      .toEqual(kept);
+  });
+
+  it('still records the reroll that actually took', () => {
+    // The nonce moves on every attempt, so the persisted seed has to be the
+    // one that produced the season now on the queue — otherwise a reload
+    // rebuilds a different one.
+    const aired = airWholeSeason(23);
+    const last = aired.length;
+    expect(rerunTraitorsEpisode(last)).toBe(true);
+    const row = simulateTraitorsEpisode();
+    const kept = prefixOf(gsRef.episodeHistory, last + 1);
+    delete gsRef._trQueue;                       // a reload that lost it
+    const chain = gsRef._trRerolls;
+    expect(chain[chain.length - 1].fromEp).toBe(last);
+    expect(prefixOf(gsRef.episodeHistory, last + 1)).toEqual(kept);
+    expect(row.num).toBe(last);
   });
 });
 

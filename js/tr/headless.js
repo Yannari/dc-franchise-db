@@ -2860,10 +2860,42 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     //
     // So they run the day and hand over after its table. Only the size rule
     // breaks at the top, and it has to: the room is already the size the
-    // author asked the endgame to open at, so running one more table would
-    // hand the fire round `endgameSize - 1` players.
+    // author asked the endgame to open at.
+    //
+    // ── AND NEITHER DOES THE SIZE RULE, WHICH IS THE THIRD REPORT ─────
+    //
+    // "If they arrive at four at the last episode, the next episode should
+    // still include a banishment, right?" Right, and it did not always. When
+    // the previous night's murder landed the room exactly on the number, this
+    // broke here, and the finale was then built as a bare row further down:
+    // no mission, no castle day, no Round Table. The fire round opened
+    // straight onto a vote-or-end, and a room that voted to end at the first
+    // ask went home having never banished anybody on the last day — the
+    // season's final removal was a murder. Measured over 30 seasons at
+    // `endgameSize: 4`: seven finales built that way, two of them with no
+    // banishment at all, and all seven with no mission.
+    //
+    // That is not the finale the format plays. UK series one, episode twelve:
+    // a mission (Treasure in the Loch, the last £20,000), then Kieran banished
+    // 4-1, then Wilfred banished 3-1, then the three who were left took it.
+    // The murder was the night BEFORE. A finale day is a full day.
+    //
+    // So the last day is played rather than skipped. It runs its mission, its
+    // castle day and its Round Table, it commits no murder, and the fire round
+    // opens on what its table leaves.
+    //
+    // THE PRICE, AND IT IS NOT AVOIDABLE. The room loses two people an episode
+    // — one to the table, one to the night — so with the pact striking every
+    // night there is no way to land the fire round on one exact number from
+    // both parities AND put a banishment in front of it. It opens at the
+    // number when the table delivered the size, and one below when the murder
+    // did. `endgameSize` is therefore the room the LAST DAY opens with, which
+    // is how the report reads it: arrive at four, play a last episode, banish.
     const pactGone = !tr || !fa;
-    if (alive.length <= configuredEndgameSize) break;
+    // A table of two is a coin flip rather than a vote, so the smallest rooms
+    // still hand over untouched.
+    if (alive.length <= 2) break;
+    const lastDay = pactGone || alive.length <= configuredEndgameSize;
 
     // TASK 5: each of the six Castle Day phases draws its OWN scene-count
     // budget from its own range (js/tr/castle/phases.js), spending it
@@ -2947,7 +2979,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // that was supposed to decide it, not before.
     const parityNow = livingFaithfuls(ep).length <= livingTraitors(ep).length
       && stillIn <= configuredEndgameSize + 2;
-    const handOver = pactGone || stillIn <= configuredEndgameSize || parityNow;
+    const handOver = lastDay || stillIn <= configuredEndgameSize || parityNow;
     // ── THE PACT MURDERS EVERY NIGHT IT IS STILL ABLE TO ──────────────
     //
     // There used to be a second suppression here: a murder that would take the

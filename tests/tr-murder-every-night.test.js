@@ -144,51 +144,70 @@ describe('the endgame is handed a room that was voted on', () => {
     }
   });
 
-  it('opens at the configured size, or one above it at three', () => {
-    // A BAND, NOT A CONSTANT. An early end is a legitimate outcome and cannot
-    // be assumed away, so this measures that the configured size is what
-    // normally happens rather than pretending it always does.
+  it('opens within one of the number the author asked for', () => {
+    // ── WHAT `endgameSize` PROMISES, AFTER THE THIRD REPORT ───────────
     //
-    // AND THE FIRST VERSION OF THIS ARM SHIPPED A STALE NUMBER. It asserted
-    // >35% exact at every size, measured while the parity window was
-    // temporarily pinned at +0 during the investigation below — a band taken
-    // under a configuration that is not the one that ships. Against the real
-    // engine size 3 comes in at 3/12, and the arm was red the moment the
-    // window went back. Re-measured here, on the code as it stands.
+    // "If they arrive at four at the last episode, the next episode should
+    // still include a banishment, right?" It should, and now does — the last
+    // day is played in full rather than skipped (see the arm below). Which
+    // settles what the setting can promise, because the two cannot both be
+    // exact: the room loses two people an episode, one to the table and one to
+    // the night, so with the pact striking every night there is no landing on
+    // one number from both parities AND putting a banishment in front of it.
+    // The fire round opens at the number when the table delivered the size,
+    // and one below when the murder did.
     //
-    // AND THE SECOND VERSION READ TWELVE SEEDS, which put size 4 at 5/12 and
-    // sent me looking for a mechanism that was not there. At 24 seeds it is
-    // 13/24. Small-sample noise, answered with a bigger sample rather than a
-    // looser band — measured, cast 20, 24 seeds:
+    // So the claim is WITHIN ONE, and the earlier exact-size bands in this
+    // file are gone rather than loosened twice more — a band that has been
+    // renegotiated three times is not measuring anything. Measured, cast 20,
+    // 24 seeds, fire round opening:
     //
-    //   size 3   {3:10, 4:6, 5:4, 8:1, 9:1, 10:2}    exact 42%   at-or-+1 67%
-    //   size 4   {4:13, 5:4, 6:3, 8:1, 9:1, 10:2}    exact 54%   at-or-+1 71%
-    //   size 5   {5:17, 6:3, 8:1, 9:1, 10:2}         exact 71%   at-or-+1 83%
+    //   size 3   {2:1, 3:12, 4:4, 5:4, 6:1, 9:1, 14:1}    within one 71%
+    //   size 4   {3:9, 4:8, 5:4, 6:1, 9:1, 14:1}          within one 88%
+    //   size 5   {4:5, 5:16, 6:1, 9:1, 14:1}              within one 92%
     //
-    // The tail (8, 9, 10) is a season that ended on its own terms — a dead
-    // pact — and the arm above proves those still had a Round Table first.
-    //
-    // WHY THREE SITS LOWEST. The parity window is `endgameSize + 2`, so at
-    // size 3 it reaches five, and a pact that now strikes every night drives
-    // the room to parity at four often. Narrowing the window was measured as
-    // the alternative and rejected: at +0 every size lands 20/24, and
-    // tr-calibration's endgame betrayal arm goes vacuous (78 qualifying
-    // decisions against a floor of 150). See tr-endgame-opens-where-asked.
+    // The tail — 9, 14 — is a season that ended on its own terms with the pact
+    // wiped out, and the arm above proves those had a Round Table first.
     for (const size of SIZES) {
       const of = RUNS.filter(r => r.endgameSize === size);
-      const exact = of.filter(r => r.openedWith === size).length;
-      const near = of.filter(r => r.openedWith === size || r.openedWith === size + 1).length;
-      expect(exact / of.length,
-        `endgameSize ${size} was honoured on only ${exact}/${of.length} seasons`)
-        .toBeGreaterThan(0.35);
-      // At every size, including three, the fire round opens at the number or
-      // one above it on the clear majority of seasons. Anything further out is
-      // a season that ended on its own terms, and the arm above proves those
-      // were voted on first.
+      const near = of.filter(r => Math.abs(r.openedWith - size) <= 1).length;
       expect(near / of.length,
-        `endgameSize ${size} opened at ${size} or ${size + 1} on only `
+        `endgameSize ${size} opened within one of the number on only `
         + `${near}/${of.length} seasons`).toBeGreaterThan(0.6);
-      expect(of.every(r => r.openedWith >= 2)).toBe(true);
+      // And never below two — a fire round of one has nobody to ask.
+      expect(of.every(r => r.openedWith >= 2),
+        `endgameSize ${size} opened the fire round on fewer than two players`).toBe(true);
     }
+  });
+
+  it('always banishes on the last day, and never murders on it', () => {
+    // THE REPORT, DIRECTLY. Before this, a finale reached by a murder was
+    // built as a bare row — no mission, no castle day, no Round Table — and
+    // the fire round opened straight onto a vote-or-end. A room that voted to
+    // end at the first ask went home having never banished anybody on the last
+    // day: the season's final removal was a murder. Measured over 30 seasons
+    // at `endgameSize: 4`, seven finales were built that way and two of them
+    // banished nobody at all.
+    //
+    // UK series one, episode twelve is the shape: a mission, Kieran banished
+    // 4-1, Wilfred banished 3-1, and the three left took the money. The murder
+    // was the night before.
+    let missions = 0;
+    for (const r of RUNS) {
+      const row = r.rows.find(e => e.tr && e.tr.endgame);
+      const eg = row.tr.endgame;
+      const banishments = (eg.tables || []).length + (row.tr.table ? 1 : 0);
+      expect(banishments, `size ${r.endgameSize} seed ${r.seed}: the last day banished `
+        + 'nobody — the last removal of the season was a murder').toBeGreaterThan(0);
+      expect(row.tr.conclave, `size ${r.endgameSize} seed ${r.seed}: the finale held a `
+        + 'conclave — the last day is the one day with no murder in it').toBeFalsy();
+      if (row.tr.mission) missions++;
+    }
+    // A finale that is a real day, not a bare row. Missions have their own
+    // floor on room size (MIN_PLAYERS, js/tr/missions.js), so the smallest
+    // endgames legitimately run without one — this asserts the day is normally
+    // whole, not that the floor was removed.
+    expect(missions / RUNS.length, 'the finale is rendering as a bare row again')
+      .toBeGreaterThan(0.6);
   });
 });

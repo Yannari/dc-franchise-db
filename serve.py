@@ -30,6 +30,9 @@ ROOT = os.getcwd()
 ROSTER_PATH = os.path.join(ROOT, 'franchise_roster.json')
 VOICE_PATH = os.path.join(ROOT, 'voice-profiles.json')
 AVATAR_DIR = os.path.join(ROOT, 'assets', 'avatars')
+CATALOG_PATH = os.path.join(AVATAR_DIR, 'portrait-catalog.json')
+SEASONS_DIR = os.path.join(ROOT, 'data', 'seasons')
+PORTRAIT_SLUG = r'[a-z0-9][a-z0-9-]*'   # a portrait id / filename stem
 SLUG_RE = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 
 ROSTER_FIELDS = ('name', 'slug', 'gender', 'sexuality', 'archetype', 'stats')
@@ -196,7 +199,38 @@ def write_character(payload):
         _write_json(VOICE_PATH, vdoc)
         result['wrote'].append('voice-profiles.json')
 
-    # 3) avatar PNG (optional)
+    # 3) portraits (optional) — files AND their catalog entries, together
+    #
+    # A character can have any number of looks, scoped to a show. Each entry
+    # may carry its own image; ones that only rename a label arrive without
+    # one. Written before the single-avatar path below so a first save that
+    # creates the character still registers its extra art.
+    portraits = payload.get('portraits') or []
+    for item in portraits:
+        uri = item.get('dataUri') or ''
+        fname = (item.get('file') or '').strip()
+        if not uri.startswith('data:image'):
+            continue
+        if not re.fullmatch(PORTRAIT_SLUG + r'\.(png|webp|jpe?g|gif)', fname or ''):
+            continue                      # apply_portraits reports it properly
+        raw_bytes = base64.b64decode(uri.split(',', 1)[1] if ',' in uri else '')
+        os.makedirs(AVATAR_DIR, exist_ok=True)
+        with open(os.path.join(AVATAR_DIR, fname), 'wb') as f:
+            f.write(raw_bytes)
+        result['wrote'].append('assets/avatars/%s' % fname)
+
+    if portraits or payload.get('removePortraits'):
+        problems = apply_portraits(slug, portraits, payload.get('removePortraits'))
+        result['wrote'].append('assets/avatars/portrait-catalog.json')
+        if problems:
+            # Reported rather than raised: the files and the roster row are
+            # already written, and a silent partial success is how art ends up
+            # on disk that nothing can pick.
+            result['portraitProblems'] = problems
+        if rewrite_available_files() is not None and                 'assets/avatars/available-files.json' not in result['wrote']:
+            result['wrote'].append('assets/avatars/available-files.json')
+
+    # 4) avatar PNG (optional)
     avatar = payload.get('avatar') or {}
     data_uri = avatar.get('dataUri') or ''
     if data_uri.startswith('data:image'):
@@ -232,6 +266,144 @@ def list_avatars():
         return sorted(f[:-4] for f in os.listdir(AVATAR_DIR) if f.lower().endswith('.png'))
     except OSError:
         return []
+
+
+def show_keys():
+    """The valid `show` values, read out of js/shows.js so this cannot drift.
+
+    js/shows.js is the only source of truth for show slugs, and a second copy
+    of the list here is exactly the duplication docs/ADDING-A-SHOW.md is about.
+    """
+    try:
+        with open(os.path.join(ROOT, 'js', 'shows.js'), encoding='utf-8') as f:
+            src = f.read()
+    except OSError:
+        return []
+    block = src[src.find('export const SHOWS'):]
+    return re.findall(r"^  '?([a-z0-9-]+)'?:\s*\{", block, re.M)
+
+
+def catalog_refs():
+    """Every (playerSlug, avatarId) a saved season already committed to.
+
+    A portrait an old season recorded cannot be unregistered without changing
+    what that season draws, so removal is refused for these.
+    """
+    refs = set()
+    if not os.path.isdir(SEASONS_DIR):
+        return refs
+
+    def walk(node):
+        if isinstance(node, list):
+            for item in node:
+                walk(item)
+        elif isinstance(node, dict):
+            aid = node.get('avatarId')
+            who = node.get('playerSlug') or node.get('slug')
+            if aid and who:
+                refs.add((who, aid))
+            for value in node.values():
+                walk(value)
+
+    for name in os.listdir(SEASONS_DIR):
+        if not name.endswith('.json'):
+            continue
+        try:
+            with open(os.path.join(SEASONS_DIR, name), encoding='utf-8') as f:
+                walk(json.load(f))
+        except (OSError, ValueError):
+            continue
+    return refs
+
+
+def apply_portraits(slug, portraits, removals):
+    """Register a character's portraits in assets/avatars/portrait-catalog.json.
+
+    The file has to exist before a season can pick the art: uploading an image
+    puts it on disk, and the catalog is what makes it SELECTABLE. Doing both in
+    one save is the point — art sitting in the folder that nothing can choose is
+    the failure the old returnee manifest existed to prevent, and it came back
+    the moment the two steps were separate.
+
+    Rules enforced here rather than in the browser, because the browser is not
+    the only writer:
+      - a portrait id is stable: changing the FILE behind one rewrites what
+        every season that recorded it already drew, so it is refused;
+      - a label is free to change, because nothing keys off it;
+      - an id a saved season references cannot be removed;
+      - `show` must be a key from js/shows.js, or 'global'.
+    """
+    doc = _read_json(CATALOG_PATH, {'schemaVersion': 1, 'players': {}})
+    doc.setdefault('schemaVersion', 1)
+    players = doc.setdefault('players', {})
+    valid_shows = set(show_keys()) | {'global'}
+    refs = catalog_refs()
+    problems = []
+
+    entry = players.setdefault(slug, {'defaults': {}, 'portraits': []})
+    entry.setdefault('defaults', {})
+    entry.setdefault('portraits', [])
+    by_id = {p.get('id'): p for p in entry['portraits'] if isinstance(p, dict)}
+
+    # The profile default always exists: it is the character's own portrait,
+    # and every other look is measured against it.
+    if 'base' not in by_id:
+        base = {'id': 'base', 'show': 'global', 'label': 'Profile default',
+                'file': slug + '.png'}
+        entry['portraits'].insert(0, base)
+        by_id['base'] = base
+    entry['defaults'].setdefault('global', 'base')
+
+    for item in (portraits or []):
+        pid = (item.get('id') or '').strip().lower()
+        show = (item.get('show') or 'global').strip()
+        label = (item.get('label') or '').strip()
+        fname = (item.get('file') or '').strip()
+
+        if not re.fullmatch(PORTRAIT_SLUG, pid or ''):
+            problems.append('bad portrait id "%s"' % pid)
+            continue
+        if show not in valid_shows:
+            problems.append('%s: unknown show "%s"' % (pid, show))
+            continue
+        if not label:
+            problems.append('%s: needs a label' % pid)
+            continue
+        if not re.fullmatch(PORTRAIT_SLUG + r'\.(png|webp|jpe?g|gif)', fname or ''):
+            problems.append('%s: unsafe filename "%s"' % (pid, fname))
+            continue
+
+        existing = by_id.get(pid)
+        if existing:
+            if existing.get('file') != fname:
+                problems.append('%s: already points at %s — changing the file behind a '
+                                'registered portrait rewrites the seasons that used it'
+                                % (pid, existing.get('file')))
+                continue
+            existing['label'] = label
+            existing['show'] = show
+        else:
+            new = {'id': pid, 'show': show, 'label': label, 'file': fname}
+            entry['portraits'].append(new)
+            by_id[pid] = new
+
+        if item.get('makeDefault') and show != 'global':
+            entry['defaults'][show] = pid
+
+    for pid in (removals or []):
+        pid = (pid or '').strip().lower()
+        if pid == 'base':
+            problems.append('the profile default cannot be removed')
+            continue
+        if (slug, pid) in refs:
+            problems.append('%s is recorded in a saved season and cannot be unregistered' % pid)
+            continue
+        entry['portraits'] = [p for p in entry['portraits'] if p.get('id') != pid]
+        entry['defaults'] = {k: v for k, v in entry['defaults'].items()
+                             if v != pid or k == 'global'}
+
+    _write_json(CATALOG_PATH, doc)
+    return problems
 
 
 def rewrite_available_files():

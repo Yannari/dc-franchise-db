@@ -285,6 +285,7 @@ because none of these files look show-specific from the outside.
 | Viewing party | `js/vp-screens.js` | screens filter `episodeHistory` on `format` |
 | Rankings, awards, franchise, compare, leaderboards | those `.html` files | most already read the registry; `compare.html` and `franchise.html` hold their own label maps |
 | Portraits, everywhere | `js/avatar-registry.js` | nothing to add for a new show — but see **Portraits** below before drawing a face anywhere |
+| Casting Studio | `js/studio.js` | nothing to add — the Portraits panel builds its show dropdown from `SHOWS`. Check it lists your show; if it does not, the registry entry is wrong |
 
 **The trivia trap, twice now:** a line that reads correctly on one show is a
 false statement on another. "Reached the end without ever being nominated"
@@ -302,13 +303,31 @@ A new show needs **no avatar code branch**. The moment its key exists in
 `assets/avatars/portrait-catalog.json` and appears in the cast builder's
 portrait filter automatically.
 
-To give somebody a look for the new show:
+To give somebody a look for the new show, use the Casting Studio: open the
+character, **Portraits → Add portrait**, choose the new show in the dropdown
+(it is there the moment the registry entry exists — the dropdown is built from
+`SHOWS`, not from a list of its own), set the image and a label, and save. The
+Studio writes the file and the catalog entry together, because art on disk that
+no season can pick is invisible and unexplained.
+
+By hand, the same three things:
 
 1. put the file in `assets/avatars/`;
 2. add one entry to that player's `portraits` array — a stable `id`, the new
    show's registry key, a human `label`, and the filename;
 3. run `npm run avatars:files`, which regenerates the file inventory and
    validates the catalog.
+
+Two rules the Studio and `serve.py` both enforce, because a portrait id is what
+a season writes into its own history:
+
+- **the file behind a registered id never changes.** Swapping it rewrites what
+  every season that recorded it already drew, so it is refused; make a new id.
+- **an id a saved season recorded cannot be unregistered.** `catalog_refs()` in
+  `serve.py` and `collectHistoricalRefs()` in `tools/gen-avatar-manifest.mjs`
+  both scan `data/seasons/` for this.
+
+A label is free to change at any time: nothing keys off it.
 
 `js/avatar-registry.js` is the only file allowed to turn a player plus a show
 plus a stored selection into a URL, and `tests/no-direct-avatar-paths.test.js`

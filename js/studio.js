@@ -145,7 +145,7 @@ function _blankChar() {
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
     interview: {}, profileSources:{},
-    voice:'', avatarDataUri:'', returneeDataUri:'', stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
+    voice:'', avatarDataUri:'', portraits: [], removePortraits: [], stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
 
@@ -1128,20 +1128,22 @@ async function _editBySlug(slug) {
     // keeping it here too would stack a second copy in front of the first.
     voice: parsed.prose,
     avatarDataUri: (rich && rich.avatarDataUri) || '',
-    returneeDataUri: (rich && rich.returneeDataUri) || '',
-    // Filled in below, once the draft's own slug is known.
-    _hasReturneeArt: false,
+    // The wardrobe is loaded from the catalog below, off the DRAFT's slug.
+    portraits: [],
+    removePortraits: [],
   };
+  renderStudio();
   // ── off the DRAFT's slug, not the IndexedDB record's ──
   //
-  // This read `rich.slug`, and `rich` only exists for a character that has been
-  // saved through the Studio before. Aiden — who is in the roster, has
-  // aiden-returnee.png sitting on the server, and has never been edited here —
-  // produced `''`, so it looked for a file called `-returnee.png`, found
-  // nothing, and reported that a character with returnee art had none.
-  _draft._hasReturneeArt = !!_draft.returneeDataUri
-    || (!!_draft.slug && _avatarList.includes(`${_draft.slug}-returnee`));
-  renderStudio();
+  // The old returnee check read `rich.slug`, and `rich` only exists for a
+  // character saved through the Studio before. Aiden — who is in the roster,
+  // has aiden-returnee.png sitting on the server, and has never been edited
+  // here — produced `''`, so it looked for `-returnee.png`, found nothing, and
+  // reported that a character with art had none. Same trap, so the same rule:
+  // the draft's slug is the one that is always right.
+  _loadDraftPortraits(_draft).then(() => {
+    if (_draft) _refreshPortraitList();
+  }).catch(() => { /* no catalog reachable; the panel stays empty */ });
   document.getElementById('st-editor')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1315,6 +1317,180 @@ function _sourceChips(sources) {
     `<span class="st-profile-source" data-kind="${_esc(s.kind)}" ${s.quote ? `title="${_esc(s.quote)}"` : ''}>${_esc(s.label)}</span>`).join('')}</span>`;
 }
 
+// ── Portraits ─────────────────────────────────────────────────────────────
+//
+// A character used to have room for exactly two images: their portrait, and a
+// "returnee" one that the Cast Builder's Returning checkbox switched to. That
+// was the whole wardrobe, it was hard-coded, and it belonged to one show by
+// accident — Total Drama, because that was the only show when it was written.
+//
+// A character can now have any number of looks, each scoped to a show, and a
+// season picks one. This panel is where they are registered: it writes the
+// FILE and the catalog entry together, because art on disk that no season can
+// choose is the failure the old returnee manifest existed to prevent.
+const PORTRAIT_SHOW_ANY = 'global';
+
+/** Show options for the dropdown, straight off the registry — never a list of
+ *  our own, which is the duplication docs/ADDING-A-SHOW.md exists to stop. */
+function _portraitShowOptions(selected) {
+  const shows = (window.shows && window.shows.SHOWS) || {};
+  const rows = [[PORTRAIT_SHOW_ANY, 'All shows']]
+    .concat(Object.entries(shows).map(([key, s]) => [key, (s && s.name) || key]));
+  return rows.map(([key, label]) =>
+    `<option value="${_esc(key)}"${key === selected ? ' selected' : ''}>${_esc(label)}</option>`).join('');
+}
+
+/** The filename a new portrait is saved under. Derived, never typed.
+ *  The show part is the registry's own prefix (td / bb / tr) — the same one
+ *  every filename and storage key in this project already uses — rather than a
+ *  slice of the slug, which turns `big-brother` into `big`. */
+function _portraitFilename(slug, show, id) {
+  const shows = (window.shows && window.shows.SHOWS) || {};
+  const prefix = (shows[show] && shows[show].prefix) || show;
+  const stem = show === PORTRAIT_SHOW_ANY ? id : `${prefix}-${id}`;
+  return `${slug}-${stem}.png`.replace(/-+/g, '-');
+}
+
+function _portraitThumb(p) {
+  if (p.dataUri) return p.dataUri;
+  if (!p.file) return '';
+  return _avatarSrc(String(p.file).replace(/\.[a-z0-9]+$/i, ''));
+}
+
+/** Load this character's registered looks, minus the profile default. */
+async function _loadDraftPortraits(d) {
+  d.portraits = [];
+  d.removePortraits = [];
+  let cat = null;
+  try { cat = await (await fetch('assets/avatars/portrait-catalog.json', { cache: 'no-cache' })).json(); } catch { /* no catalog yet */ }
+  const entry = cat && cat.players && cat.players[d.slug];
+  const defaults = (entry && entry.defaults) || {};
+  for (const p of ((entry && entry.portraits) || [])) {
+    if (!p || p.id === 'base' || p.show === PORTRAIT_SHOW_ANY) continue;
+    d.portraits.push({
+      id: p.id, show: p.show, label: p.label || '', file: p.file,
+      registered: true, makeDefault: defaults[p.show] === p.id,
+    });
+  }
+  // ── art on disk that nobody registered ──
+  //
+  // 27 characters have a `<slug>-returnee.png` from the old two-slot system.
+  // The file is real and the catalog may not know about it, in which case no
+  // season can pick it and nothing on any screen says why. Surface it as an
+  // unregistered row so it can be filed properly in one save.
+  const legacy = `${d.slug}-returnee`;
+  if (d.slug && _avatarList.includes(legacy) && !d.portraits.some(p => p.file === `${legacy}.png`)) {
+    d.portraits.push({
+      id: 'td-returnee', show: 'total-drama', label: 'Returning-player look',
+      file: `${legacy}.png`, registered: false, unregistered: true, makeDefault: false,
+    });
+  }
+}
+
+function _renderPortraitRows(d) {
+  if (!d.portraits || !d.portraits.length) {
+    return `<p class="st-por-empty">No extra looks yet. ${_esc(d.name || 'This character')} is
+      drawn with their profile portrait on every show.</p>`;
+  }
+  return d.portraits.map((p, i) => {
+    const thumb = _portraitThumb(p);
+    return `<div class="st-por-row" data-i="${i}">
+      <label class="st-por-face">
+        ${thumb ? `<img src="${_esc(thumb)}" alt="" onerror="this.style.display='none'">` : ''}
+        <span class="st-por-face-ph">set image</span>
+        <input type="file" accept="image/*" class="st-por-file" data-i="${i}" hidden>
+      </label>
+      <div class="st-por-fields">
+        <div class="st-por-line">
+          <select class="st-input st-por-show" data-i="${i}"${p.registered
+    ? ' disabled title="A registered portrait keeps its show. Moving it would change what the seasons that already used it drew."' : ''}>
+            ${_portraitShowOptions(p.show)}
+          </select>
+          <input class="st-input st-por-label" data-i="${i}" value="${_esc(p.label)}"
+            placeholder="What this look is — &quot;Castle outfit&quot;">
+        </div>
+        <div class="st-por-meta">
+          <code>${_esc(p.file || _portraitFilename(d.slug || 'slug', p.show, p.id || 'new'))}</code>
+          ${p.unregistered ? '<b class="st-por-warn">on disk, unregistered — save to file it</b>' : ''}
+          <label class="st-por-def" title="The look this show uses when a season does not pick one.">
+            <input type="checkbox" class="st-por-default" data-i="${i}"${p.makeDefault ? ' checked' : ''}${
+  p.show === PORTRAIT_SHOW_ANY ? ' disabled' : ''}>
+            <span>Default for this show</span>
+          </label>
+          <button type="button" class="st-btn st-btn-quiet st-por-del" data-i="${i}">Remove</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _refreshPortraitList() {
+  const host = document.getElementById('st-por-list');
+  if (host) host.innerHTML = _renderPortraitRows(_draft);
+  _wirePortraitRows();
+}
+
+function _wirePortraitRows() {
+  const ed = document.getElementById('st-editor');
+  if (!ed) return;
+  const d = _draft;
+  ed.querySelectorAll('.st-por-file').forEach(el => el.addEventListener('change', async e => {
+    const p = d.portraits[+e.target.dataset.i];
+    const f = e.target.files[0];
+    if (!p || !f) return;
+    try { p.dataUri = await _imgToAvatar(URL.createObjectURL(f)); _refreshPortraitList(); }
+    catch { _toast('Could not read that image', 'err'); }
+  }));
+  ed.querySelectorAll('.st-por-show').forEach(el => el.addEventListener('change', e => {
+    const p = d.portraits[+e.target.dataset.i];
+    if (!p) return;
+    p.show = e.target.value;
+    if (p.show === PORTRAIT_SHOW_ANY) p.makeDefault = false;
+    if (!p.registered) p.file = _portraitFilename(d.slug, p.show, p.id);
+    _refreshPortraitList();
+  }));
+  ed.querySelectorAll('.st-por-label').forEach(el => el.addEventListener('input', e => {
+    const p = d.portraits[+e.target.dataset.i];
+    if (p) p.label = e.target.value;
+  }));
+  ed.querySelectorAll('.st-por-default').forEach(el => el.addEventListener('change', e => {
+    const p = d.portraits[+e.target.dataset.i];
+    if (!p) return;
+    // One default per show, so ticking this one unticks its rivals.
+    if (e.target.checked) d.portraits.forEach(q => { if (q.show === p.show) q.makeDefault = false; });
+    p.makeDefault = e.target.checked;
+    _refreshPortraitList();
+  }));
+  ed.querySelectorAll('.st-por-del').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i;
+    const p = d.portraits[i];
+    if (!p) return;
+    if (p.registered && !confirm('Unregister "' + (p.label || p.id) + '"?'
+      + '\n\nThe image stays on disk. If a saved season already recorded this'
+      + ' portrait the save will refuse, because unregistering it would change'
+      + ' what that season draws.')) return;
+    if (p.registered) d.removePortraits.push(p.id);
+    d.portraits.splice(i, 1);
+    _refreshPortraitList();
+  }));
+}
+
+function _addPortraitRow() {
+  const d = _draft;
+  d.portraits = d.portraits || [];
+  // A stable id, because it is what a season records. The label is what people
+  // read; the id is what history is written in, so it never changes again.
+  let n = d.portraits.length + 1;
+  while (d.portraits.some(p => p.id === `look-${n}`)) n++;
+  const id = `look-${n}`;
+  d.portraits.push({
+    id, show: PORTRAIT_SHOW_ANY, label: '',
+    file: _portraitFilename(d.slug || 'slug', PORTRAIT_SHOW_ANY, id),
+    registered: false, makeDefault: false,
+  });
+  _refreshPortraitList();
+}
+
 function _renderEditor() {
   const ed = document.getElementById('st-editor');
   if (!ed) return;
@@ -1338,25 +1514,20 @@ function _renderEditor() {
       <div class="st-avatar-ctrls">
         <label class="st-btn st-file">Upload image<input type="file" id="st-f-file" accept="image/*" hidden></label>
         <button type="button" class="st-btn" id="st-f-lib">Pick from library</button>
-        <label class="st-check st-ret-toggle" title="Show the second portrait slot. This does NOT mark the character as a returnee — that is per season, in the Cast Builder. It only controls whether a returnee portrait exists to use.">
-          <input type="checkbox" id="st-f-ret-on" ${(d.returneeDataUri || d._hasReturneeArt) && !d._retSlotClosed ? 'checked' : ''}>
-          <span>Returnee portrait</span>
-        </label>
+
       </div>
       <div id="st-lib" class="st-lib" hidden></div>
 
-      <!-- FOLDED AWAY UNLESS ASKED FOR. Most characters never get one, and a
-           permanent second upload box costs the sheet a row for nothing. -->
-      <div class="st-ret" id="st-ret" ${(d.returneeDataUri || d._hasReturneeArt) && !d._retSlotClosed ? '' : 'hidden'}>
-        <div class="st-ret-face" id="st-ret-portrait"></div>
-        <div class="st-ret-side">
-          <p class="st-ret-note">Shown instead of the main portrait when this character
-            plays a season as a returnee. Saved as <code>${_esc(d.slug || 'slug')}-returnee.png</code>.</p>
-          <div class="st-avatar-ctrls">
-            <label class="st-btn st-file">Upload returnee image<input type="file" id="st-f-ret-file" accept="image/*" hidden></label>
-            <button type="button" class="st-btn st-btn-quiet" id="st-f-ret-clear">Remove</button>
-          </div>
+      <!-- The wardrobe. One row per look, each scoped to a show; a season
+           picks one in the Cast Builder. Returning status does not choose art. -->
+      <div class="st-por">
+        <div class="st-por-head">
+          <b>Portraits</b>
+          <span class="st-por-hint">Extra looks, per show. The Cast Builder picks one per season &mdash;
+            <em>Returning Player</em> is continuity and changes no artwork.</span>
+          <button type="button" class="st-btn" id="st-por-add">Add portrait</button>
         </div>
+        <div id="st-por-list">${_renderPortraitRows(d)}</div>
       </div>
 
       <div class="st-row2">
@@ -1642,45 +1813,8 @@ function _renderEditor() {
   // whether it is ever used were both repo-only knowledge: you had to know the
   // filename rule, upload through the raw avatar library, and then regenerate a
   // JSON file by hand. It is a labelled box on the character now.
-  const retBox = ed.querySelector('#st-ret');
-  ed.querySelector('#st-f-ret-on').addEventListener('change', e => {
-    retBox.hidden = !e.target.checked;
-    // Remembered, because two things re-open this box on their own — the
-    // re-render reads `_hasReturneeArt`, and the probe below ticks it when the
-    // file exists — so unticking it snapped straight back and there was no way
-    // to close it at all. An explicit close outranks both.
-    d._retSlotClosed = !e.target.checked;
-    if (e.target.checked) _refreshReturneePortrait();
-  });
-  ed.querySelector('#st-f-ret-file').addEventListener('change', async e => {
-    const f = e.target.files[0]; if (!f) return;
-    try { d.returneeDataUri = await _imgToAvatar(URL.createObjectURL(f)); _refreshReturneePortrait(); }
-    catch { _toast('Could not read that image', 'err'); }
-  });
-  ed.querySelector('#st-f-ret-clear').addEventListener('click', () => {
-    d.returneeDataUri = ''; d._removeReturnee = true; _refreshReturneePortrait();
-  });
-  if (!retBox.hidden) _refreshReturneePortrait();
-  // ── and open it for art the list has not heard about yet ──
-  //
-  // `_avatarList` comes from `/api/avatars`, which is fetched asynchronously
-  // and is empty with no backend at all — so a character whose returnee
-  // portrait is sitting on disk still opened with the slot folded away and the
-  // box unticked, which reads exactly like "this character has no returnee
-  // art". One image request settles it.
-  if (retBox.hidden && !d._retSlotClosed && d.slug && !d._removeReturnee && typeof Image !== 'undefined') {
-    const probe = new Image();
-    probe.onload = () => {
-      if (_draft !== d) return;          // editor moved on while this was in flight
-      d._hasReturneeArt = true;
-      const box = document.getElementById('st-ret');
-      const tick = document.getElementById('st-f-ret-on');
-      if (box) box.hidden = false;
-      if (tick) tick.checked = true;
-      _refreshReturneePortrait();
-    };
-    probe.src = _avatarSrc(`${d.slug}-returnee`);
-  }
+  ed.querySelector('#st-por-add')?.addEventListener('click', _addPortraitRow);
+  _wirePortraitRows();
 
   _fillContinuity(ed, d.slug);
   ed.querySelector('#st-f-continuity')?.addEventListener('input', e => { d.continuityNote = e.target.value; });
@@ -2210,24 +2344,6 @@ function _refreshPortrait() {
   p.innerHTML = src ? `<img src="${_esc(src)}" alt="" onerror="this.remove()">` : '<span class="st-portrait-ph">no avatar</span>';
 }
 
-function _refreshReturneePortrait() {
-  const p = document.getElementById('st-ret-portrait'); if (!p) return;
-  // ── ASK THE FILE, DO NOT ASK THE LIST ──
-  //
-  // Gating the preview on `_hasReturneeArt` meant the panel could only ever
-  // show art it had been told about in advance — and the list it was told from
-  // (`/api/avatars`) is fetched asynchronously and is empty with no backend at
-  // all. So opening the slot on a character whose portrait is sitting right
-  // there printed "no returnee art" over a file that exists.
-  //
-  // The image itself is the authority: request it, and let onerror say no.
-  const src = _draft.returneeDataUri
-    || (_draft.slug && !_draft._removeReturnee ? _avatarSrc(`${_draft.slug}-returnee`) : '');
-  p.classList.remove('miss');
-  p.innerHTML = src
-    ? `<img src="${_esc(src)}" alt="" onerror="this.parentElement.innerHTML='&lt;span class=&quot;st-portrait-ph&quot;&gt;no returnee art&lt;/span&gt;'">`
-    : '<span class="st-portrait-ph">no returnee art</span>';
-}
 
 // ── avatar library picker ───────────────────────────────────────────────
 // 190+ avatars is far too many for one flat grid, so the picker shows one
@@ -2520,13 +2636,15 @@ async function _save() {
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
     continuityNote: d.continuityNote,
     castingInterview: iv, profileSources: d.profileSources,
-    voice: d.voice, avatarDataUri: d.avatarDataUri || '',
-    returneeDataUri: d.returneeDataUri || '' };
+    voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }
-  if (d.returneeDataUri) {
+  // Every look the editor is holding, so the grid and the pickers show it
+  // before the server has written anything.
+  for (const q of (d.portraits || [])) {
+    if (!q.dataUri || !q.file) continue;
     window.__studioAvatars = window.__studioAvatars || {};
-    window.__studioAvatars[`${d.slug}-returnee`] = d.returneeDataUri;
+    window.__studioAvatars[q.file.replace(/\.[a-z0-9]+$/i, '')] = q.dataUri;
   }
 
   // composed voice = bio lead-in (age/origin/orientation) + prose — this is what
@@ -2558,25 +2676,42 @@ async function _save() {
       } catch (e) { _toast('Avatar upload failed: ' + e.message, 'warn'); }
     }
 
-    // The second portrait rides the same endpoint under `<slug>-returnee`.
-    // Uploading it puts the FILE on disk and into the server's inventory; a
-    // season only draws it once it is registered in
-    // assets/avatars/portrait-catalog.json and a cast member picks it, because
-    // artwork stopped being something the Returning checkbox decides.
-    if (d.returneeDataUri) {
+    // ── the wardrobe: files AND catalog entries, in one write ──
+    //
+    // Sending the images without registering them puts art on disk that no
+    // season can pick and nothing on any screen explains — which is exactly
+    // what the old returnee manifest existed to prevent, and what came back
+    // the moment uploading and registering were separate steps. The server
+    // does both, and reports per-portrait problems rather than failing silent.
+    const _porRows = (d.portraits || []).filter(q => q.id && q.file && (q.label || '').trim());
+    if (_porRows.length || (d.removePortraits || []).length) {
       try {
         const r = await fetch(_apiUrl('/api/character'), {
           method: 'POST', headers: _apiHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ roster: entry, voice: { name: d.name, text: composedVoice },
-            avatar: { slug: `${d.slug}-returnee`, dataUri: d.returneeDataUri } }),
+          body: JSON.stringify({
+            roster: entry, voice: { name: d.name, text: composedVoice },
+            portraits: _porRows.map(q => ({ id: q.id, show: q.show, label: q.label.trim(),
+              file: q.file, dataUri: q.dataUri || '', makeDefault: !!q.makeDefault })),
+            removePortraits: d.removePortraits || [],
+          }),
         });
         const j = await r.json();
         if (!j.ok) throw new Error(j.error || 'write failed');
         wrote = [...(wrote || []), ...(j.wrote || [])];
-        d._hasReturneeArt = true;
-        if (!_avatarList.includes(`${d.slug}-returnee`)) _avatarList.push(`${d.slug}-returnee`);
-      } catch (e) { _toast('Returnee art upload failed: ' + e.message, 'warn'); }
+        (j.portraitProblems || []).forEach(msg => _toast('Portrait: ' + msg, 'warn'));
+        for (const q of _porRows) {
+          q.registered = true; q.unregistered = false; q.dataUri = '';
+          const stem = q.file.replace(/\.[a-z0-9]+$/i, '');
+          if (!_avatarList.includes(stem)) _avatarList.push(stem);
+        }
+        d.removePortraits = [];
+        _refreshPortraitList();
+      } catch (e) { _toast('Portrait save failed: ' + e.message, 'warn'); }
     }
+    // A row with no label is not saved: the label is what the Cast Builder
+    // shows, and an unlabelled thumbnail is a choice nobody can read.
+    const _porUnlabelled = (d.portraits || []).length - _porRows.length - 0;
+    if (_porUnlabelled > 0) _toast(`${_porUnlabelled} portrait${_porUnlabelled === 1 ? '' : 's'} skipped — each needs a label`, 'warn');
   }
 
   // 4) refresh surfaces
@@ -2947,21 +3082,31 @@ function _injectCSS() {
   .st-empty{color:var(--muted,#889);font-size:13px;padding:8px}
   .st-sheet{background:var(--surface,#1c1c22);border:1px solid var(--border,#333);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:13px}
   .st-sheet-head{display:flex;gap:14px;align-items:flex-start}
-  /* The returnee slot: folded away unless the character has art or you ask
-     for it, because most never get one and a permanent second upload box
-     costs the sheet a row for nothing. */
-  .st-ret-toggle{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted,#8b949e);cursor:pointer;user-select:none}
-  .st-ret-toggle input{accent-color:var(--accent,#f85149);cursor:pointer}
-  .st-ret{display:flex;gap:12px;align-items:flex-start;margin:8px 0 2px;padding:10px;
-    border:1px dashed var(--border,#333);border-radius:10px;background:rgba(255,255,255,.02)}
-  .st-ret[hidden]{display:none}
-  .st-ret-face{width:72px;height:72px;flex:0 0 auto;border-radius:10px;overflow:hidden;
-    background:var(--border,#333);border:1px solid var(--border,#333);display:grid;place-items:center}
-  .st-ret-face img{width:100%;height:100%;object-fit:cover}
-  .st-ret-face.miss img{display:none}
-  .st-ret-side{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:7px}
-  .st-ret-note{margin:0;font-size:11px;line-height:1.45;color:var(--muted,#8b949e)}
-  .st-ret-note code{font-size:10.5px;color:var(--accent,#f85149)}
+  /* The wardrobe. One row per look; the count is unbounded, so this is a
+     list rather than the fixed second slot it replaced. */
+  .st-por{border:1px dashed var(--border,#333);border-radius:10px;padding:10px;background:rgba(255,255,255,.02)}
+  .st-por-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+  .st-por-head b{font-size:12px;letter-spacing:.02em}
+  .st-por-hint{flex:1 1 220px;min-width:0;font-size:11px;line-height:1.45;color:var(--muted,#8b949e)}
+  .st-por-empty{margin:0;font-size:11px;line-height:1.45;color:var(--muted,#8b949e)}
+  .st-por-row{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border,#2a2a30)}
+  .st-por-row:first-child{border-top:none;padding-top:2px}
+  .st-por-face{position:relative;width:64px;height:64px;flex:0 0 auto;border-radius:10px;overflow:hidden;
+    background:var(--border,#333);border:1px solid var(--border,#333);display:grid;place-items:center;cursor:pointer}
+  .st-por-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .st-por-face-ph{position:relative;font-size:9px;letter-spacing:.04em;color:var(--muted,#8b949e);text-align:center}
+  .st-por-face img + .st-por-face-ph{opacity:0}
+  .st-por-face:hover .st-por-face-ph{opacity:1;background:rgba(0,0,0,.55);width:100%;padding:3px 0}
+  .st-por-fields{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .st-por-line{display:flex;gap:7px;flex-wrap:wrap}
+  .st-por-show{flex:0 0 132px}
+  .st-por-label{flex:1 1 160px;min-width:0}
+  .st-por-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10.5px;color:var(--muted,#8b949e)}
+  .st-por-meta code{font-size:10.5px;color:var(--accent,#f85149)}
+  .st-por-warn{color:#e5843e;font-weight:600}
+  .st-por-def{display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+  .st-por-def input{accent-color:var(--accent,#f85149);cursor:pointer}
+  .st-por-del{font-size:10.5px;padding:2px 8px}
   .st-btn-quiet{opacity:.75}
   .st-portrait{width:96px;height:96px;flex:0 0 auto;border-radius:12px;overflow:hidden;background:var(--border,#333);border:1px solid var(--border,#333);display:grid;place-items:center}
   .st-portrait img{width:100%;height:100%;object-fit:cover}

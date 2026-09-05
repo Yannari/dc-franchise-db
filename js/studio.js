@@ -149,6 +149,7 @@ function _blankChar() {
     // The casting interview, held as { key: answer } while it is being edited
     // and serialised on save. See js/casting-interview.js.
     interview: {}, profileSources:{},
+    _editingSlug: null,
     voice:'', avatarDataUri:'', portraits: [], removePortraits: [], stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
   };
 }
@@ -1113,6 +1114,12 @@ async function _editBySlug(slug) {
   const pick = (...xs) => xs.find(v => v !== undefined && v !== null && v !== '') ?? '';
 
   _draft = {
+    // WHICH ROW THIS DRAFT IS, by slug — the one field a rename does not
+    // touch. The save's collision check used to identify "a different
+    // character" by NAME, so renaming (the one edit that changes a name) always
+    // looked like a clash with yourself: correcting `aubrey` to `Aubrey` was
+    // refused with 'Slug "aubrey" already used by aubrey'.
+    _editingSlug: base.slug,
     name: base.name, slug: base.slug, gender: base.gender || 'nb',
     sexuality: pick(base.sexuality, rich && rich.sexuality, parsed.sexuality, 'straight'),
     archetype: base.archetype || '', stats: { ...Object.fromEntries(STAT_KEYS.map(k => [k, 5])), ...(base.stats || {}) },
@@ -2612,8 +2619,19 @@ async function _save() {
   if (!d.name) return _fail(note, 'Name is required');
   if (!/^[a-z0-9][a-z0-9-]*$/.test(d.slug)) return _fail(note, 'Slug must be lowercase letters/digits/dashes');
   if (!d.archetype) return _fail(note, 'Pick an archetype');
-  // slug collision with a DIFFERENT existing character
-  const clash = _roster().find(p => p.slug === d.slug && p.name !== d.name);
+  // ── A SLUG COLLISION WITH A DIFFERENT CHARACTER, and only that ──────
+  //
+  // "Different" is a question about IDENTITY, and identity here is the slug:
+  // it is what the roster is keyed on, what the save updates by, and what a
+  // rename leaves alone. Asking by name meant a rename could never be saved —
+  // the row still held the old name, so the character collided with itself.
+  //
+  // Changing the slug ONTO somebody else's is still caught, because then the
+  // row found is not the row being edited. A brand-new character has no
+  // editing slug and is compared against everybody, as before.
+  const editing = d._editingSlug || null;
+  const clash = _roster().find(p => p.slug === d.slug
+    && (editing ? p.slug !== editing : p.name !== d.name));
   if (clash) return _fail(note, `Slug "${d.slug}" already used by ${clash.name}`);
 
   // ── the bio travels with the character, and it did not ──
@@ -2652,7 +2670,13 @@ async function _save() {
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();
-  const i = arr.findIndex(p => p.slug === d.slug || p.name === d.name);
+  // THE ROW BEING EDITED, by the slug it was loaded under. Matching on the
+  // NEW slug or the NEW name finds nothing when both have changed, and the
+  // save then pushes a second character instead of updating the first — the
+  // rename leaving a duplicate behind. A brand-new character has no editing
+  // slug and matches on its own, as before.
+  const i = arr.findIndex(p => (d._editingSlug && p.slug === d._editingSlug)
+    || p.slug === d.slug || p.name === d.name);
   if (i >= 0) arr[i] = { ...arr[i], ...entry }; else arr.push(entry);
   _persistRoster(arr);
 

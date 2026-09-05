@@ -309,6 +309,88 @@ const GREET = [
   'They begin by reviewing the players who could threaten or benefit the pact.',
 ];
 
+// ── THE SAME THREE POOLS ON A NIGHT WITH NO CHOICE IN IT ──────────────
+//
+// Reported by a viewer, who read it as an engine bug: "traitor eliminated a
+// traitor in the conclave". The engine was right — `name-your-own` (see
+// js/tr/murder-variants.js) exists to thin a pact that has got comfortable,
+// and it is the format. The SCREEN was wrong, in six places at once, and
+// every one of them was a line written for an ordinary night being read on
+// this one:
+//
+//   I    "the Traitors can speak openly about whom they want removed"
+//   II   "they begin by reviewing the players who could threaten the pact"
+//   II   the doomed Traitor captioned "watching the room more carefully than
+//        the argument" -- there is no argument, card III says so
+//   VI   "it cost the pact nothing", on the night the pact lost a third of
+//        itself. This is the loudest one and it is why the report was filed.
+//   VII  "X is selected as tonight's target", of a man in the cloak
+//   VIII "the castle knows nothing", when what the castle will actually do is
+//        read a Traitor's death as a Faithful's and reason from it for a week
+//
+// Which is the plain-sight defect exactly (see PLAIN_SIGHT_TEXT and the
+// `soloNote` block below) in a second variant, and found the same way both
+// times: by dumping the rendered screen as text and reading it, not by any
+// assertion over it. Nothing here changes what the engine did.
+const CLIMB_FORCED = [
+  'The Traitors climb knowing what is waiting at the top of it. None of them '
+  + 'says so on the stair.',
+  'Three go up. The room they are going to has already decided the shape of what '
+  + 'happens in it, and left them only the name.',
+  'They take the turret one at a time, the way they always do, and it has never '
+  + 'felt less like a habit.',
+  'The stair is the same stair. Everything at the top of it is different tonight.',
+];
+const STAIR_FORCED = [
+  'The instruction is already there when they arrive: the murder must come from '
+  + 'inside the cloaks. There is no player downstairs eligible tonight.',
+  'Behind the turret door there is no shortlist to build. The pact has been told '
+  + 'to take one of its own, and the only question left is which.',
+  'The castle is not in danger tonight. Everyone who is, is already in this room.',
+  'They are not choosing a target. They are choosing which of the three of them '
+  + 'is worth the least to the other two.',
+];
+const GREET_FORCED = [
+  'Nobody reviews the castle. There is nothing down there to review — the name has '
+  + 'to come out of the three of them.',
+  'They take their places and do not look at each other for a moment longer than '
+  + 'anybody needs to.',
+  'The meeting begins with all three of them already knowing it ends with one of '
+  + 'them named.',
+  'No targets are compared. The room is the shortlist, and every person in it '
+  + 'knows the length of it.',
+];
+// VI. AND WHAT IT COST, WHICH IS THE ONE FACT THE ORIGINAL SCREEN DENIED.
+// LEDGER_QUIET is read on any night with no disagreement to record, and a
+// forced night has none — one Traitor is handed the pen, nobody argues, so
+// the ledger reached for "nothing was spent here tonight" over the most
+// expensive night the pact ever has. These are read INSTEAD, never beside it.
+const LEDGER_FORCED = [
+  'It cost them {v}, which is a third of everything the pact had. There is no '
+  + 'version of tonight where that is cheap, and none of them pretend otherwise '
+  + 'on the way down.',
+  'The pact is two now. Two is a number you can be outvoted at, outlasted at and '
+  + 'talked round at, and all three of them worked that out somewhere on the stair.',
+  'They spent a Traitor. Not a Faithful they could afford, not a name off the '
+  + 'castle — one of the three people in the world who knew what they were.',
+  'What it cost is sitting in the room while the wax is warmed, and the other two '
+  + 'have already started dividing up what {v} used to do for them.',
+];
+// The upside, said second, because it is real and it is the only reason the
+// format does this to them: a dead Traitor reads as a dead Faithful.
+const LEDGER_FORCED_GAIN = [
+  'What it buys is a body the castle cannot possibly read correctly. By breakfast '
+  + '{v} will be a {mv} Faithful, mourned as one and reasoned from as one, and '
+  + 'every deduction the room makes off {vObj} will be built on it.',
+  'The castle will spend the week working out who would want {v} dead. It will not '
+  + 'once consider that the answer is the two people it trusts most.',
+  'There is one thing to be said for it: nobody hunting Traitors ever starts from '
+  + 'a Traitor\'s corpse. {VSub} is about to become the best alibi either of them '
+  + 'will ever be handed.',
+  'The room downstairs will grieve {v} as one of its own, and will be right about '
+  + 'nothing else it thinks tonight.',
+];
+
 /** How a Traitor argues, by the term that actually drove the pick. */
 const REASON_LINES = {
   beloved: [
@@ -431,6 +513,20 @@ const NAME_TEXT = [
   'It is settled, and somebody starts looking for the wax, which is how you know.',
   'One name goes forward. It is not the one that will still be here tomorrow.',
 ];
+// NAME_TEXT's four lines are all written about a stranger downstairs — "the
+// last comfortable moment anybody has about it", "it is not the one that will
+// still be here tomorrow" — and read as bloodless over a name that belongs to
+// somebody in the room.
+const NAME_TEXT_FORCED = [
+  'Nobody in the turret says it is unfair, because all three of them know exactly '
+  + 'what the alternative to naming somebody was.',
+  'It is written by one of the two who get to walk back down the stair, and both '
+  + 'of them will be very careful about that at breakfast.',
+  'One of the cloaks goes on the letter. The castle will read it as a Faithful and '
+  + 'build a week of reasoning on top of that mistake.',
+  'The pact signs for itself. There is no version of the morning where this looks '
+  + 'like what it actually was.',
+];
 const SEAL_TEXT = [
   'The name goes down in somebody&rsquo;s handwriting and the wax goes over it. '
   + 'By breakfast it will have been read.',
@@ -440,6 +536,21 @@ const SEAL_TEXT = [
   + 'about six hours left of not knowing.',
   'Wax, seal, done. The hardest part of tonight was deciding; the rest of it '
   + 'happens on its own.',
+];
+// TWO OF THE FOUR ABOVE ARE FALSE ON A FORCED NIGHT, and the reported
+// transcript landed on one of them: "the hardest part of tonight was
+// deciding" over a card headed "No argument", and "one of them has about six
+// hours left of not knowing" about a man who was standing in the turret while
+// it was written.
+const SEAL_TEXT_FORCED = [
+  'The wax goes over a name that was up here with them. Two of them carry the '
+  + 'letter down and neither offers to be the one holding it.',
+  'It is sealed by people who will have to be surprised about it in about six '
+  + 'hours, in front of everybody, and be good at it.',
+  'The seal goes on. The difficult part of tonight is not behind them — it starts '
+  + 'at breakfast, and it lasts as long as they do.',
+  'Written, folded, pressed. Downstairs the castle sleeps through the one murder '
+  + 'it was never in any danger from.',
 ];
 const PLAIN_SIGHT_TEXT = [
   'There is no climb tonight and no meeting. One of them decided this over other people&rsquo;s conversation, at a table with the plates still on it, and nobody in the room felt the moment pass.',
@@ -491,6 +602,36 @@ const HOST_LINES = {
     'No debate to follow tonight. The reason for this name stays inside the person '
     + 'holding it.',
     'This is the version with no witnesses inside the pact either.',
+  ],
+  // ── AND ON THE NIGHT THE PACT IS MADE TO NAME ONE OF ITS OWN ────────
+  //
+  // Same failure as `plain-sight` above, found the same way and reported by a
+  // viewer rather than by a test: every line in `open` and `shortlist` offers
+  // the pact a CHOICE OF THE CASTLE -- "choose a target", "each Traitor may
+  // propose a player to remove", "watch which target each Traitor supports" --
+  // and on a `name-your-own` night there is no choice and no player outside
+  // the room is eligible. The host was announcing an ordinary target
+  // selection over a screen whose third card is titled "No argument" and whose
+  // sentence is that the murder must come from inside the cloaks.
+  openForced: [
+    'The Traitors are in the turret, and for once they are not choosing who dies. '
+    + 'They are choosing which of them does.',
+    'There is no target to pick tonight. The name has to come out of that room, and '
+    + 'all three of them know it before the door is shut.',
+    'Tonight the pact is not hunting. It is being asked to pay, and the only currency '
+    + 'it has left up there is each other.',
+    'The Faithfuls are asleep and safe, every one of them. The danger tonight is '
+    + 'entirely upstairs.',
+  ],
+  shortlistForced: [
+    'No shortlist, because there is nothing to shorten. Three names went up that '
+    + 'stair and one of them is not coming back down.',
+    'Nothing is proposed. Watch which of them picks up the pen, because that is the '
+    + 'only decision anybody makes tonight.',
+    'There is no argument to follow. There is a room deciding which of its own it can '
+    + 'best afford to lose.',
+    'They are not comparing targets. They are looking at each other, which is a great '
+    + 'deal worse and takes considerably less time.',
   ],
   overrule: [
     'Somebody has just been told no by the only people in the world who could tell them so. They will remember that. The others are relying on them not to.',
@@ -562,6 +703,20 @@ function _hostBand(line) {
 }
 
 /** A Traitor's bearing tonight, read off how hard they pushed their own name. */
+/**
+ * Which suffixed HOST_LINES pool a night reads, or '' for the ordinary ones.
+ *
+ * Two of the four host slots assert a meeting AND a free choice of the castle,
+ * and two variants break one of those each: `plain-sight` has no meeting,
+ * `name-your-own` has no choice. A slot with no suffixed pool falls back at
+ * the call site, so adding a variant here does not mean writing eight pools.
+ */
+function _hostSuffix(variant) {
+  if (variant === 'plain-sight') return 'Plain';
+  if (variant === 'name-your-own') return 'Forced';
+  return '';
+}
+
 function _tone(conviction) {
   if (conviction >= 0.6) return 'cold';
   if (conviction <= 0.3) return 'nervy';
@@ -626,11 +781,13 @@ function _buildBeats(rec, ep) {
     beats.push({ phase, html, hostSlot: hostSlot || null, slot: slot || null });
 
   // ── I. the climb ──
-  push('gather', _card(plain ? 'No Climb Tonight' : 'The Climb', 'I. The turret', 'door',
+  push('gather', _card(plain ? 'No Climb Tonight' : forced ? 'The Climb, Told' : 'The Climb',
+    'I. The turret', 'door',
     plain
       ? '<p>' + _pick(PLAIN_SIGHT_TEXT, key + '|plain') + '</p>'
         + (rec.line ? '<p>' + _esc(rec.line) + '</p>' : '')
-      : '<p>' + _pick(CLIMB, key + '|climb') + '</p><p>' + _pick(STAIR, key + '|stair') + '</p>'),
+      : '<p>' + _pick(forced ? CLIMB_FORCED : CLIMB, key + '|climb') + '</p><p>'
+        + _pick(forced ? STAIR_FORCED : STAIR, key + '|stair') + '</p>'),
   'open', 'climb');
 
   // ── II. who is up there ──
@@ -645,7 +802,24 @@ function _buildBeats(rec, ep) {
     const soloNote = plain
       ? (mine ? 'The one who decided, and did not mention it to either of them.'
         : 'Not asked. Will find out with everybody else.')
-      : null;
+      // AND THE SAME PROBLEM ON A FORCED NIGHT. The tone notes are written
+      // about a debate ("Watching the room more carefully than the argument",
+      // "Has an answer, and is prepared to be talked out of it") and there is
+      // no argument to watch or be talked out of — card III, two cards later,
+      // is titled "No argument". Worse, they were being read over the man the
+      // room is about to name, which made the doomed Traitor look like a
+      // participant in his own murder.
+      : forced
+        ? (name === rec.target
+          // NO IGNORANCE CLAIM. The victim is standing in the turret while the
+          // letter is written — the variant's own sentence pool says the
+          // decider "has to look at {victim} while doing it" — so a caption
+          // saying they do not know yet contradicts the card two beats later.
+          ? 'The name, and is in the room for the writing of it.'
+          : name === rec.decidedBy
+            ? 'The one holding the pen, because somebody had to and the other two waited.'
+            : 'Says nothing, agrees to it, and will be living with that by Thursday.')
+        : null;
     return '<div class="cv-cloak" data-state="' + tone + '">' + _cloakFigure(tone, name)
       + '<div class="cv-cloak-name">' + _esc(String(name).toUpperCase()) + '</div>'
       + '<div class="cv-cloak-note">' + _esc(soloNote
@@ -656,14 +830,19 @@ function _buildBeats(rec, ep) {
     + '<span class="cv-chip" data-tone="cold">' + _icon('hourglass', 13)
     + (rec.turret || []).length + ' in the cloak</span>'
     + '<span class="cv-chip">' + _icon('shield', 13)
-    + (rec.shield
-      ? (rec.shield.pactAware ? 'A shield they watched be won' : 'A shield they did not see')
-      : 'No shield in play') + '</span></div>';
-  push('gather', _card(plain ? 'The Pact, Apart' : 'In the Turret Tonight',
-    'II. The cloaks', 'cloak',
-    '<p>' + (plain
-      ? 'They are in different rooms tonight, and only one of them is deciding anything.'
-      : _pick(GREET, key + '|greet')) + '</p>'
+    // A SHIELD IS A FAITHFUL'S OBJECT and tonight's name is not a Faithful's,
+    // so "a shield they watched be won" was true and entirely beside the
+    // point — the one player it protects was never eligible tonight anyway.
+    + ((forced && rec.shield) ? 'A shield that protects nobody in this room'
+      : rec.shield
+        ? (rec.shield.pactAware ? 'A shield they watched be won' : 'A shield they did not see')
+        : 'No shield in play') + '</span></div>';
+  push('gather', _card(plain ? 'The Pact, Apart'
+    : forced ? 'Three, And One Of Them Is The Answer' : 'In the Turret Tonight',
+  'II. The cloaks', 'cloak',
+  '<p>' + (plain
+    ? 'They are in different rooms tonight, and only one of them is deciding anything.'
+    : _pick(forced ? GREET_FORCED : GREET, key + '|greet')) + '</p>'
     + '<div class="cv-cloaks">' + cloaks + '</div>' + chips), null, 'cloaks');
 
   // ── III. the arguments, one beat each ──
@@ -752,7 +931,20 @@ function _buildBeats(rec, ep) {
 
   // ── VI. what it cost — prose, never a stat readout ──
   const costLines = [];
-  if (overruled.length) {
+  if (forced) {
+    // THE FORCED NIGHT NEVER READS LEDGER_QUIET. A pact that is handed the pen
+    // has nothing to disagree about, so the quiet pool was reached every time
+    // and told the audience "it cost the pact nothing" over the one night the
+    // pact demonstrably paid a member. Cost first, then what the cost buys.
+    const vp = _pr(rec.target);
+    // `{mv}` COMES FROM THE REGISTRY, never typed. This show is the only one
+    // with two exit verbs and tests/tr-vp.test.js fails any source file that
+    // writes one as a literal — which is what the first draft of this pool did.
+    const subs = { v: rec.target, vObj: vp.obj, vSub: vp.sub, VSub: vp.Sub,
+      mv: _verbs().murder };
+    costLines.push(_fill(_pick(LEDGER_FORCED, key + '|forcedcost'), subs));
+    costLines.push(_fill(_pick(LEDGER_FORCED_GAIN, key + '|forcedgain'), subs));
+  } else if (overruled.length) {
     const o = overruled[0];
     costLines.push(_fill(_pick(LEDGER_LOSS, key + '|ledger'), {
       l: o.loser, L: o.loser, w: o.winner, W: o.winner, sub2: _pr(o.winner).sub,
@@ -785,13 +977,19 @@ function _buildBeats(rec, ep) {
       : _tallyRow(rec.target, rec.decidedBy || '', 'chosen', 'Chosen'))
     + '</div>'
     + '<p style="margin-top:16px"><b>' + _esc(rec.target)
-    + ' is selected as tonight\'s target.</b> ' + _pick(NAME_TEXT, key + '|name') + '</p>'), null, 'name');
+    + (forced
+      // "IS SELECTED AS TONIGHT'S TARGET" IS THE SENTENCE FOR A FAITHFUL. Said
+      // of a man in the cloak it reads as the engine having picked the wrong
+      // person, which is exactly how the defect was reported.
+      ? ' &mdash; a Traitor, sitting in this room &mdash; is the name that goes on the letter.</b> '
+      : ' is selected as tonight\'s target.</b> ')
+    + _pick(forced ? NAME_TEXT_FORCED : NAME_TEXT, key + '|name') + '</p>'), null, 'name');
 
   // ── VIII. the wax ──
   push('seal', '<div class="cv-card">'
     + '<div class="cv-card-label">' + _icon('seal', 14) + 'VIII. The wax</div>'
     + '<h3 class="cv-card-title">Sealed</h3>'
-    + '<p>' + _pick(SEAL_TEXT, key + '|wax') + '</p>'
+    + '<p>' + _pick(forced ? SEAL_TEXT_FORCED : SEAL_TEXT, key + '|wax') + '</p>'
     + '<div class="cv-letter"><div class="cv-letter-sheet">'
     + '<div class="cv-letter-hand" style="font-size:17px;opacity:.8">Tonight the castle loses'
     + (dbl ? ' two' : '') + '</div>'
@@ -815,7 +1013,11 @@ function _buildBeats(rec, ep) {
     + (dbl ? 'Two names, ' : 'One name, ') + (rec.ballots || []).length + ' of '
     + Math.max(1, (rec.turret || []).length) + ' signed</span>'
     + '<span class="cv-chip" data-tone="cold">' + _icon('eye', 13)
-    + 'The castle knows nothing</span>'
+    // "KNOWS NOTHING" IS TRUE AND IS NOT THE INTERESTING FACT on a forced
+    // night. The castle is about to be handed a dead Traitor and will read it
+    // as a dead Faithful — it does not end up knowing nothing, it ends up
+    // knowing something false, and reasoning from it for a week.
+    + (forced ? 'The castle will get this wrong' : 'The castle knows nothing') + '</span>'
     + '</div></div>', null, 'seal');
 
   // ── IX. the other room ──
@@ -920,6 +1122,11 @@ function _sidebar(state, idx) {
     for (const n of rec.turret || []) {
       let tag = '';
       if (loser && overAt != null && idx >= overAt && n === loser.loser) tag = 'Overruled';
+      // ON A FORCED NIGHT THE TARGET IS IN THIS LIST, and without a tag the
+      // sidebar showed three Traitors in the turret and gave no indication
+      // that one of them was the letter. Gated on the seal like every other
+      // tag here, so it never spoils the card that says it.
+      else if (rec.variant === 'name-your-own' && n === rec.target && idx >= sealedAt) tag = 'Named';
       else if (n === rec.decidedBy && idx >= sealedAt) tag = 'Carried it';
       out += '<div class="cv-side-row">' + _av(n, 30)
         + '<span class="cv-side-name">' + _esc(n) + '</span>'
@@ -936,7 +1143,15 @@ function _sidebar(state, idx) {
   const shown = (rec.argued || []).filter((a, i) =>
     idx >= (argueAt.length > i ? argueAt[i] : 99));
   if (!shown.length) {
-    out += '<div class="cv-side-pend">No name has been said aloud.</div>';
+    // A forced night has an empty `argued` for the whole screen, so "no name
+    // has been said aloud" sat in the sidebar from the first card to the last
+    // — reading as a meeting still waiting to start, beside a main column that
+    // had already sealed the letter.
+    out += '<div class="cv-side-pend">' + (rec.variant === 'name-your-own'
+      ? (idx >= sealedAt
+        ? 'There was never a shortlist. The name had to come from inside the cloaks.'
+        : 'No shortlist tonight. The name has to come out of that room.')
+      : 'No name has been said aloud.') + '</div>';
   } else {
     for (const a of shown) {
       const chosen = a.target === rec.target;
@@ -1092,6 +1307,25 @@ export function trConclaveRevealAll(suffix, total, epNum) {
  * defaults to showing the secret when it does not understand the question is
  * the wrong way round.
  */
+/**
+ * TEST SEAM. The pools that describe an ORDINARY night — a meeting, a
+ * shortlist, an argument, a target chosen from the castle — every one of them
+ * a sentence that is false on a night with no meeting (`plain-sight`) or no
+ * choice (`name-your-own`).
+ *
+ * Exported rather than retyped into the guard, and that is the whole point of
+ * it: a retyped phrase list agrees with itself forever and goes quietly stale
+ * the first time a line here is reworded, which is this repo's standing trap
+ * (see tests/imports-are-committed.test.js for the same failure in a
+ * comment-stripper). The guard asserts these strings DO appear on ordinary
+ * nights before asserting they do not appear on variant ones, so a pool that
+ * stopped being read cannot pass by matching nothing.
+ */
+export const _ORDINARY_POOLS = {
+  CLIMB, STAIR, GREET, NAME_TEXT, SEAL_TEXT, LEDGER_QUIET, TONE_NOTE,
+  HOST_OPEN: HOST_LINES.open, HOST_SHORTLIST: HOST_LINES.shortlist,
+};
+
 export function conclaveVisibleTo(rec, observer) {
   const obs = observer == null ? 'audience' : String(observer);
   if (obs === 'audience') return true;
@@ -1231,9 +1465,11 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '" id="cv-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
     + (b.hostSlot ? _hostBand(_pick(
       // A plain-sight night takes the no-meeting variant of the two slots
-      // that would otherwise announce a conclave that is not happening.
-      HOST_LINES[(rec.variant === 'plain-sight' && HOST_LINES[b.hostSlot + 'Plain'])
-        ? b.hostSlot + 'Plain' : b.hostSlot],
+      // that would otherwise announce a conclave that is not happening; a
+      // `name-your-own` night takes the no-choice variant of the same two.
+      // Derived from the record rather than passed in, so a variant that adds
+      // a suffixed pool gets it read without touching this expression.
+      HOST_LINES[b.hostSlot + _hostSuffix(rec.variant)] || HOST_LINES[b.hostSlot],
       'tr|host|' + b.hostSlot + '|' + seedEp + '|' + rec.target)) : '')
     // With a gutter this episode, a beat with no castle scene of its own gets an
     // EMPTY cell (the minute was simply blank); with no gutter at all, no cell.
@@ -1282,8 +1518,14 @@ export function rpBuildConclave(ep, observer = 'audience') {
     + '<p class="cv-sub">' + (rec.variant === 'plain-sight'
       ? 'No meeting tonight. One Traitor chose a name alone, downstairs, in company, '
       + 'and the decision is shown below.'
-      : 'The Traitors meet in private to choose tonight&rsquo;s target. '
-      + 'Each proposal, disagreement and final decision is shown below.') + '</p>'
+      : rec.variant === 'name-your-own'
+        // There is no proposal and no disagreement on this night — one Traitor
+        // is handed the pen — so the standard subtitle promised the viewer two
+        // things the screen then never showed.
+        ? 'The pact has been told the murder must come from inside the cloaks. No '
+        + 'player downstairs is eligible tonight; the name comes out of this room.'
+        : 'The Traitors meet in private to choose tonight&rsquo;s target. '
+        + 'Each proposal, disagreement and final decision is shown below.') + '</p>'
     + '</div></div>'
     + '<header class="cv-head">' + observerBadge + '</header>'
     + '<div class="cv-grid">'

@@ -1534,7 +1534,7 @@ const _ARRIVE_ONE = {
     '{name} is hugging somebody before the boot is open.',
     '{name} gets out apologising for nothing at all and is instantly popular for it.',
     '{name} learns four names on the flags and uses every one of them twice.',
-    '{name} carries somebody else’s case up the steps without being asked.',
+    "{name} carries somebody else's case up the steps without being asked.",
     '{name} finds the one person standing on their own and goes over.',
     '{name} is laughing at the size of the building within about four seconds and takes '
     + 'three other people with {obj}.',
@@ -1685,9 +1685,10 @@ const _PROFILE = {
     + 'the room will work that out in about a week.',
     '{name} does not look quick. {sub} looks like somebody who finishes things, which is '
     + 'worth more here.',
-    'The physical half of this game is where {name} lives, and the castle has a great deal '
-    + 'of physical half.',
-    'Endurance is the whole of {posAdj} case, and the missions are long enough for it to matter.',
+    '{name} will still be hauling when the rest of the team has started watching, and the '
+    + 'missions here run long enough for that to decide things.',
+    'Put {name} in a river crossing or a crate relay and {sub} will be the last one breathing hard. '
+    + 'That counts double in a season this physical.',
     '{name} has the build of somebody who has never once been the reason a team stopped.',
     'If it comes down to who is still going at the end of a very long day, it comes down '
     + 'to {name}.',
@@ -1696,19 +1697,21 @@ const _PROFILE = {
     '{name} plays the room before the game starts, and has already started.',
     'Names, faces, who is standing with whom — {name} has the whole drive filed before the '
     + 'doors open.',
-    '{name} is the sort who is everybody’s second-favourite person by Thursday, which '
-    + 'is a better place to be than first.',
+    "{name} is the sort who is everybody's second-favourite person by Thursday, which "
+    + "is a better place to be than first.",
     'Talking is the game as far as {name} is concerned, and {sub} is extremely good at talking.',
     '{name} will know something about every person here by tonight, and none of them will '
     + 'remember being asked.',
-    'The social half is where {name} does {posAdj} damage &mdash; quietly, and mostly over '
-    + 'other people’s shoulders.',
-    '{name} builds a room the way other people build a wall, and it holds.',
+    'By lunchtime {name} will have heard three secrets and offered two, and the exchange rate '
+    + 'will always favour {obj}.',
+    '{name} remembers every favour done and every debt owed, and by Thursday the kitchen '
+    + 'runs through {obj}.',
     'Give {name} an evening and a kitchen and {sub} will come out of it with an alliance '
     + 'nobody agreed to.',
   ],
   reader: [
-    '{name} notices what nobody says out loud, which is the only skill this game actually rewards.',
+    '{name} catches the glance across the table that the rest of the room missed, and files '
+    + 'it before dessert.',
     'Reads people better than most of the room knows, and has the sense not to say so.',
     '{name} watches hands, not faces, and the difference will matter at a table.',
     'There is a version of this season where {name} works it out early and cannot get '
@@ -1717,7 +1720,8 @@ const _PROFILE = {
     + 'exact pause before it.',
     'Nothing gets past {name} twice, and the room has not yet noticed that {sub} is counting.',
     '{name} has the unnerving habit of being right without being able to say why.',
-    'Intuition is the whole of {posAdj} game, and intuition is what a Round Table is for.',
+    'When somebody changes their story at the table, {name} will be the first to notice and '
+    + 'the last to say so.',
   ],
   nerve: [
     '{name} goes first. Whatever it is, {name} goes first.',
@@ -1742,7 +1746,8 @@ const _PROFILE = {
     'There is nothing volatile in {name} at all, and in this castle that reads as either '
     + 'trustworthy or dull, and both are dangerous.',
     '{name} keeps {posAdj} word, and a game built on breaking it will find that remarkable.',
-    'Temperament is {posAdj} whole defence: {name} simply does not give anybody anything to read.',
+    'The table will shout and {name} will sit still, and the room will not know what to do '
+    + 'with somebody it cannot rattle.',
     '{name} is the one everybody ends up telling things to, which is a role rather than a choice.',
     'Steady hands, long memory, no theatre. {name} will be here a while.',
   ],
@@ -1752,7 +1757,8 @@ const _PROFILE = {
     'There is no obvious way to use {name} and no obvious way to fear {obj}, which is its '
     + 'own kind of protection.',
     '{name} will not win the castle on any one thing. That is not the same as not winning it.',
-    'Round, even, unremarkable on paper &mdash; and paper does not sit at the Round Table.',
+    '{name} can hold a conversation, carry a crate, and read a room &mdash; none of it '
+    + 'brilliantly, all of it well enough to stay.',
     '{name} has no weakness worth naming and no weapon worth naming, and the room will '
     + 'underestimate the first half.',
     'Whatever this season asks for, {name} can do a version of it.',
@@ -1774,13 +1780,14 @@ const _PROFILE = {
 const _PERSONALITY = {
   mastermind: [
     '{name} is already three votes ahead and will not tell anybody which three.',
-    'The plan exists before the game does. {name} arrives with one and will adjust it '
-    + 'quietly for a month.',
+    '{name} will sit with someone at breakfast, agree with them completely, and by dinner '
+    + 'that person will be voting exactly where {name} needs them.',
     '{name} does not want to be seen doing anything, which is the only real skill in the building.',
     'Somebody in this castle will be banished by a plan {name} never once said out loud.',
     '{name} will let somebody else say the name. That is the entire method.',
     'Control without fingerprints &mdash; {name} has done this before, to people who liked {obj}.',
-    '{name} plays the long one, and the long one is the only one that wins here.',
+    'Three people will leave this castle on a plan {name} set in motion, and two of them '
+    + 'will think it was their own idea.',
     'Every conversation {name} has tonight is a placement, and none of them will feel like one.',
   ],
   schemer: [
@@ -1791,7 +1798,7 @@ const _PERSONALITY = {
     '{name} does not build alliances so much as leases them.',
     'There is no bridge {name} will not cross and then set alight from the far side.',
     '{name} plays fast and dirty and is usually gone by the jury, which {sub} considers a fair trade.',
-    'The first betrayal of the season has a good chance of having {name}’s hand on it.',
+    "The first betrayal of the season has a good chance of having {name}'s hand on it.",
   ],
   hothead: [
     '{name} will say it at the table. Whatever it is, {name} will say it at the table.',
@@ -1818,7 +1825,7 @@ const _PERSONALITY = {
     'There is no room {name} cannot walk into, and no conversation {sub} cannot join.',
     '{name} collects people, and by the end of the week half the castle will think they are close.',
     'The whole game is who likes you, as far as {name} is concerned, and {sub} is not entirely wrong.',
-    '{name} is everybody’s friend, which is lovely and is also a lot of people to lie to.',
+    "{name} is everybody's friend, which is lovely and is also a lot of people to lie to.",
     'Warmth is {posAdj} whole strategy and it is more effective than the clever ones want to admit.',
     '{name} will know something about everyone here by tomorrow and mean none of it unkindly.',
     'Nobody dislikes {name}. That is either a shield or a target and it takes a fortnight to find out which.',
@@ -1827,17 +1834,18 @@ const _PERSONALITY = {
     '{name} picks a side early and stays on it, right through to the end of everything.',
     'Whoever {name} trusts tonight is who {sub} will still be defending three banishments from now.',
     '{name} does not scheme. {sub} does not need to, and would not enjoy it.',
-    'There is a version of this where {name}’s loyalty is the best thing here and a version where it is fatal.',
+    "There is a version of this where {name}'s loyalty is the best thing here and a version where it is fatal.",
     '{name} will be lied to by somebody {sub} would have gone to the end with.',
     'Straight down the line, every night, no matter what the line costs.',
     '{name} keeps the promise. That is the whole of it, and here it is nearly a liability.',
-    'Somebody is going to use {name}’s loyalty against {obj} and it is going to be horrible to watch.',
+    "Somebody is going to use {name}'s loyalty against {obj} and it is going to be horrible to watch.",
   ],
   wildcard: [
     'Nobody, including {name}, knows what {name} is going to do on any given night.',
     '{name} will vote against the room for a reason nobody can reconstruct afterwards.',
     'There is no pattern to {name} and therefore nothing to plan around.',
-    '{name} plays on instinct, and the instinct is not always the same instinct.',
+    '{name} will back somebody to the hilt on Monday and vote them out on Wednesday without '
+    + 'losing a minute of sleep.',
     'Half the castle will spend the season trying to work out whose side {name} is on.',
     'Unpredictable in a way that is genuinely dangerous rather than merely annoying.',
     '{name} is a coin flip with opinions, and coin flips ruin plans.',
@@ -1845,7 +1853,7 @@ const _PERSONALITY = {
   ],
   'chaos-agent': [
     '{name} would rather the season were interesting than survivable.',
-    'The plan does not matter to {name}. The mess matters to {name}.',
+    '{name} will accuse somebody at the table just to watch the room split, and call it a good evening.',
     '{name} will blow something up purely to see which way the pieces land.',
     'There is no long game here. There is tonight, and tonight should be memorable.',
     '{name} enjoys this far too much to play it carefully.',
@@ -1854,12 +1862,12 @@ const _PERSONALITY = {
     'The castle is about to become considerably less orderly and {name} is the reason.',
   ],
   floater: [
-    '{name} intends to be nobody’s problem for as long as that works.',
+    "{name} intends to be nobody's problem for as long as that works.",
     'No side, no enemies, no reason to be written down &mdash; {name} has done this before.',
     '{name} will drift toward whoever is winning and be genuinely pleasant about it.',
-    'There is no plan, and the absence of a plan is the plan.',
+    '{name} will agree with whoever is talking, leave no trace on the vote, and wake up safe.',
     '{name} survives by being unremarkable and knows exactly how unremarkable to be.',
-    'Nobody will suggest {name}’s name for a fortnight, which is the entire objective.',
+    "Nobody will suggest {name}'s name for a fortnight, which is the entire objective.",
     '{name} is here at the end of most seasons and remembered in none of them.',
     'Ask {name} who {sub} is with and you will get a very warm answer that contains nothing.',
   ],
@@ -1868,7 +1876,7 @@ const _PERSONALITY = {
     '{name} arrives underestimated and has no intention of correcting anybody.',
     'There is a version of this season where {name} is the last one standing and nobody saw it.',
     '{name} has been written off before and has notes on what it costs the people who do it.',
-    'Being nobody’s first choice is a position, and {name} knows how to play it.',
+    "Being nobody's first choice is a position, and {name} knows how to play it.",
     '{name} will be here longer than the room expects and will enjoy every day of it.',
     'The castle will look straight past {name} for a month. That is a month of free moves.',
     '{name} plays like somebody with nothing to defend, which is harder to beat than it sounds.',
@@ -1886,7 +1894,7 @@ const _PERSONALITY = {
   villain: [
     '{name} is not going to pretend to be nice about this, which is oddly refreshing.',
     'The knife is not hidden. {name} would rather you saw it.',
-    '{name} plays to win and considers everything else somebody else’s problem.',
+    "{name} plays to win and considers everything else somebody else's problem.",
     'There is a cruelty to how {name} plays that the room will mistake for confidence for about a week.',
     '{name} will do the thing nobody else is willing to do, and sleep fine.',
     'Warmth is a tool as far as {name} is concerned, and {sub} uses tools.',
@@ -1901,13 +1909,13 @@ const _PERSONALITY = {
     '{name} will be carried a long way by people who think they are doing the carrying.',
     'Harmless is a costume, and {name} wears it very comfortably.',
     'Everybody wants {name} in the final two. Somebody is going to get what they asked for.',
-    '{name} plays the whole season as somebody else’s idea of a safe bet.',
+    "{name} plays the whole season as somebody else's idea of a safe bet.",
   ],
   'perceptive-player': [
     '{name} is watching the room rather than joining it, and has been since the car.',
     'Very little gets past {name}, and {sub} is careful about how much of that shows.',
     '{name} will spot the lie before the liar is finished telling it.',
-    'There is a notebook in {name}’s head and everybody on the flags is already in it.',
+    "There is a notebook in {name}'s head and everybody on the flags is already in it.",
     '{name} plays quietly and reads loudly, which is the correct way round.',
     'Somebody is going to be caught this season by {name} noticing a detail nobody else kept.',
     '{name} asks a small question tonight that will matter enormously in three weeks.',
@@ -1976,7 +1984,7 @@ const _THREAT = {
     '{name} has something to correct, and people with something to correct play harder.',
     'An early exit reads as harmless. It reads that way right up until it does not.',
     '{name} arrives with a result nobody respects and a memory of exactly how it happened.',
-    'The room will look at {name}’s finish and file {obj} under safe. That is a gift.',
+    "The room will look at {name}'s finish and file {obj} under safe. That is a gift.",
     '{name} was got at early once and has arrived determined to be got at last.',
   ],
   celebrity: [
@@ -1996,7 +2004,7 @@ const _THREAT = {
     // fact and the one that actually costs somebody something.
     'The room will invent a version of {name} by Thursday, and {name} will have to live in it.',
     'This castle will decide who {name} is off a single misjudged sentence, and then keep the verdict.',
-    'Somebody will mistake {name}’s quietness for a strategy, and act on it.',
+    "Somebody will mistake {name}'s quietness for a strategy, and act on it.",
     '{name} gets to choose what to be in here, which is a freedom and a full-time job.',
     'Being unplaceable buys {name} a fortnight. What {sub} does with it is the whole season.',
     'The castle finds a stranger far more unsettling than a résumé, and it will test {obj} for it.',
@@ -2225,7 +2233,7 @@ function _premiereRules(castSize) {
     { kind: 'rule', visibility: 'all', ruleId: 'round-table-banishment',
       action: 'The host indicates the doors at the top of the steps.',
       text: 'Every evening you will sit at the Round Table. You will make your accusations '
-        + 'to each other’s faces, and then each of you will write down one name. '
+        + "to each other's faces, and then each of you will write down one name. "
         + 'Whoever the room names goes out by banishment, and tells you exactly what they '
         + 'were on the way through that door.' },
     { kind: 'rule', visibility: 'all', ruleId: 'endgame-payout',

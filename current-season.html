@@ -1371,11 +1371,41 @@ Owen: This is going to be amazing!"
               livePortraits.set(String(p.name).toLowerCase(), p.avatarFile);
             }
           }
-          if (livePortraits.size) refreshAppearanceMap(season);
+          if (!livePortraits.size) return;
+          refreshAppearanceMap(season);
+          repaintPortraits();
         })
         .catch(() => { /* offline or no worker; the local sources stand */ });
     }
     window.loadLivePortraits = loadLivePortraits;
+
+    /**
+     * Draw the faces again.
+     *
+     * The portrait map is filled from three sources and two of them arrive
+     * LATE — the published database syncs over the network, and the airing
+     * season's snapshot is a second fetch after that. The map updated and
+     * nothing repainted, so the Players tab kept whatever face it had been
+     * built with, which was the guess made before either answer landed.
+     */
+    function repaintPortraits() {
+      // The grid has more than one writer, so "what it was last drawn with" can
+      // be empty even when there is a cast on screen. Fall back to the season
+      // state rather than skipping silently.
+      try {
+        const args = _lastGridArgs
+          || (CURRENT && CURRENT.cast && CURRENT.cast.length
+            ? [CURRENT.cast, [...(CURRENT.eliminated || [])], {}] : null);
+        if (args) renderPlayersGrid(...args);
+      } catch {}
+      try { renderSeasonControlRoom(); } catch {}
+      try {
+        if (CURRENT && CURRENT.analytics) {
+          renderCompass(CURRENT.analytics, CURRENT.cast, CURRENT.eliminated);
+        }
+      } catch {}
+    }
+    window.repaintPortraits = repaintPortraits;
 
     window.refreshAppearanceMap = refreshAppearanceMap;
     // PUBLISHED, because this page is not one scope. slugify is defined three
@@ -1600,7 +1630,9 @@ Owen: This is going to be amazing!"
     // ----------------------------
     // Rendering: Current Players grid
     // ----------------------------
+    let _lastGridArgs = null;
     function renderPlayersGrid(castNames, eliminatedNames, titlesMap) {
+      _lastGridArgs = [castNames, eliminatedNames, titlesMap];
       const eliminated = new Set((eliminatedNames || []).map(n => n.toLowerCase()));
       const cast = (castNames || []).slice(0, 60);
 
@@ -4796,7 +4828,7 @@ console.log("🚀 Season Setup script tag reached!");
     })
     .then(db => {
       localStorage.setItem('players_database', JSON.stringify(db, null, 2));
-      try { window.refreshAppearanceMap?.(window.CURRENT?.season); } catch {}
+      try { window.refreshAppearanceMap?.(window.CURRENT?.season); window.repaintPortraits?.(); } catch {}
       console.log(`✅ Database synced from players_database.json (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
     })
     .catch(e => {

@@ -32,7 +32,9 @@
     "build:favorites-context": "node scripts/build-favorites-context.mjs",
     "fix:social-counts": "node scripts/fix-social-counts.mjs",
     "avatars:check": "node tools/gen-avatar-manifest.mjs --check",
-    "avatars:files": "node tools/gen-avatar-manifest.mjs --write-files --check"
+    "avatars:files": "node tools/gen-avatar-manifest.mjs --write-files --check",
+    "d1:exec": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file",
+    "d1:migrate:portraits": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file worker/live_season_migration_portrait.sql"
   },
   "repository": {
     "type": "git",

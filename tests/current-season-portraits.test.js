@@ -119,3 +119,35 @@ describe('the airing season publishes its portraits', () => {
   });
 });
 
+describe('the faces are drawn again when a late source lands', () => {
+  it('repaints after the map changes', () => {
+    // The map is filled from three sources and two arrive LATE — the database
+    // syncs over the network, and the airing season's snapshot is a second
+    // fetch after it. The map updated and nothing repainted, so the Players
+    // tab kept the face it had been built with: the guess made before either
+    // answer arrived.
+    expect(html).toContain('function repaintPortraits(');
+    const load = html.slice(html.indexOf('function loadLivePortraits'),
+      html.indexOf('function loadLivePortraits') + 1200);
+    expect(load, 'the snapshot lands and nothing redraws').toContain('repaintPortraits()');
+  });
+
+  it('redraws the grid even when it has another writer', () => {
+    // renderPlayersGrid is not the only thing that writes that element, so
+    // "what it was last drawn with" can be empty while a cast is on screen.
+    const fn = html.slice(html.indexOf('function repaintPortraits('),
+      html.indexOf('function repaintPortraits(') + 900);
+    expect(fn).toContain('_lastGridArgs');
+    expect(fn, 'no fallback when the grid was drawn by something else')
+      .toMatch(/CURRENT\.cast/);
+  });
+
+  it('redraws the surfaces that actually hold faces', () => {
+    const fn = html.slice(html.indexOf('function repaintPortraits('),
+      html.indexOf('function repaintPortraits(') + 900);
+    for (const surface of ['renderPlayersGrid', 'renderSeasonControlRoom', 'renderCompass']) {
+      expect(fn, `${surface} is not repainted`).toContain(surface);
+    }
+  });
+});
+

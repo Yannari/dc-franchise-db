@@ -1444,14 +1444,14 @@ const NEEDLE_ACCUSER = [
   'You have led this, {Nm}. I hope you have thought about tomorrow morning as well as tonight.',
   '{Nm}, you built this case. In a few minutes you will find out whether you built it out of anything.',
   '{Nm}, you are asking everybody here to follow you. That is a great deal to ask of people who do not know you.',
-  'A confident evening for {Nm}. Confidence is not evidence, but it does travel faster.',
+  'A confident evening for {Nm}. I hope for your sake it was more than that.',
 ];
 const NEEDLE_SILENT = [
   '{Nm}. You have not said a word. Is that a strategy, or is it a hiding place?',
   'I notice {Nm} has contributed nothing at all this evening. {Nm}, this is the part where that stops being clever.',
   '{Nm}, everybody else has put a name in the air. You have not. Why is that?',
   'The quietest person at this table is {Nm}, and the quietest person at a table is always worth a look.',
-  '{Nm} has been extremely careful tonight. Careful people last a long time here, right up until they do not.',
+  '{Nm} has been extremely careful tonight. That works until it does not, and this table is where it stops working.',
   'Nothing from {Nm}. Nothing last night either. At some point, {Nm}, silence starts to say something on your behalf.',
 ];
 const NEEDLE_NOBODY = [

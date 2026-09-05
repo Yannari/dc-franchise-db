@@ -1204,7 +1204,7 @@ const EULOGY_OPEN = [
   'Let us all look at {Nm} one more time.',
   'The frame is {Nm}&rsquo;s. Was.',
   'And here we have {Nm}, in better days. Yesterday, mostly.',
-  '{Nm}. Six days, one castle, one very bad decision made by somebody else.',
+  '{Nm}. One castle, and one very bad decision made by somebody else.',
 ];
 
 // THE FACT CLAUSE, and the branch is picked from the record before any of
@@ -1213,12 +1213,12 @@ const EULOGY_FACT = {
   // Somebody still in this room spent last night's table pushing them.
   pushed: [
     'Last night {who} sat at that table and told everybody here that {Nm} was the problem. '
-    + '{who}, you were wrong, and you were loud, and now you are neither of those things in private.',
-    '{who} wanted {Nm} gone at the Round Table. Somebody upstairs was listening and had better handwriting.',
+    + '{who}, you were wrong, and you were loud, and somebody who was right did it quietly.',
+    '{who} wanted {Nm} gone at the Round Table. Somebody upstairs agreed, and they did not need a vote.',
     'The last thing this room did to {Nm} was let {who} put a name on {them}. The Traitors '
     + 'have now agreed with {who}, which is not the endorsement {who} was hoping for.',
-    '{who} spent yesterday evening making a case against {Nm}. The case has been settled '
-    + 'out of court, overnight, by people who do not take questions.',
+    '{who} spent yesterday evening making a case against {Nm}. The Traitors '
+    + 'made the same decision overnight, without the debate.',
   ],
   // A real, stored, publicly-visible bond with somebody still at the table.
   mourned: [
@@ -1243,7 +1243,7 @@ const EULOGY_FACT = {
   ],
   // Made it a long way in.
   survivor: [
-    '{Nm} got further than most of the people who are still eating. Longer, and no better fed.',
+    '{Nm} got further than most of the people who are still eating, and it did not save {them}.',
     'That is {Nm} gone on day {day}, which is more days than half of this table is going to see.',
     '{Nm} survived {day} days of this and one night of it, and only the last one counted.',
     'Day {day}. {Nm} outlasted a great many of you and is nonetheless the one on the floor.',
@@ -1262,7 +1262,7 @@ const EULOGY_FACT = {
 // the registry at the last moment, like everywhere else in this file.
 const EULOGY_PUN = [
   'Terribly sad. Anyway.',
-  'A great loss to this castle, which has already stopped noticing.',
+  'A great loss. The castle will have forgotten by lunch.',
   'Gone, {gone}, and frankly a little bit predictable.',
   'We shall not see {them} again. We shall, however, be having eggs.',
   'A tragedy. Do help yourselves to the toast.',

@@ -66,10 +66,27 @@ describe('the portraits panel', () => {
     expect(studio).toMatch(/_avatarList\.includes\(legacy\)/);
   });
 
-  it('locks the show of a registered portrait', () => {
-    // Re-filing a portrait under another show changes what the seasons that
-    // recorded it already drew.
-    expect(studio).toMatch(/p\.registered[\s\S]{0,120}disabled/);
+  it('never locks the show dropdown', () => {
+    // It was locked once a portrait was registered, on the theory that moving
+    // it rewrote history. It does not: a season records the FILE, and the
+    // resolver prefers that snapshot, so a moved portrait leaves every past
+    // screen alone. Locking it only stranded legacy art on the show this code
+    // guessed for it — a Big Brother houseguest stuck on Total Drama with no
+    // way to correct it.
+    const rows = studio.slice(studio.indexOf('function _renderPortraitRows'),
+      studio.indexOf('function _refreshPortraitList'));
+    expect(rows).toContain('st-por-show');
+    expect(rows, 'the show dropdown is disabled again').not.toMatch(/st-por-show[\s\S]{0,200}disabled/);
+  });
+
+  it('does not guess Total Drama for legacy -returnee art', () => {
+    // The filename predates shows existing, so it says nothing about which one
+    // the art was drawn for.
+    const fn = studio.slice(studio.indexOf('async function _loadDraftPortraits'),
+      studio.indexOf('function _renderPortraitRows'));
+    expect(fn, 'legacy art is hard-filed under Total Drama').not.toMatch(/show: 'total-drama'/);
+    expect(fn).toMatch(/appearancesFor\(d\.slug\)/);
+    expect(fn).toMatch(/PORTRAIT_SHOW_ANY/);
   });
 
   it('sends portraits and removals with the character save', () => {
@@ -93,6 +110,12 @@ describe('serve.py enforces the catalog rules', () => {
     for (const slug of ['total-drama', 'big-brother', 'traitors']) {
       expect(serve, `serve.py hard-codes ${slug}`).not.toContain(`'${slug}'`);
     }
+  });
+
+  it('lets a portrait move between shows, without stranding a default', () => {
+    const fn = serve.slice(serve.indexOf('def apply_portraits'), serve.indexOf('def rewrite_available_files'));
+    expect(fn).toMatch(/Re-filing under another show is allowed/);
+    expect(fn).toMatch(/would dangle/);
   });
 
   it('refuses to change the file behind a registered id', () => {
@@ -179,7 +202,8 @@ describe('portrait panel rendering', () => {
     expect(html).toContain('bowie-tr-castle.png');
     expect(html).toContain('on disk, unregistered');
     expect((html.match(/st-por-row/g)||[]).length).toBe(2);
-    expect(html).toMatch(/st-por-show[^>]*disabled/);          // registered: show locked
+    expect(html, 'a registered portrait cannot be re-filed')
+      .not.toMatch(/st-por-show[^>]*disabled/);                 // movable, always
     expect(html).toMatch(/st-por-default[^>]*checked/);        // default ticked
   });
 

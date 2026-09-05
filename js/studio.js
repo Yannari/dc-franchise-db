@@ -1382,8 +1382,21 @@ async function _loadDraftPortraits(d) {
   // unregistered row so it can be filed properly in one save.
   const legacy = `${d.slug}-returnee`;
   if (d.slug && _avatarList.includes(legacy) && !d.portraits.some(p => p.file === `${legacy}.png`)) {
+    // ── WHICH SHOW? THE FILENAME DOES NOT SAY ──
+    //
+    // `<slug>-returnee.png` predates shows existing at all, so guessing Total
+    // Drama was just this project's history talking — and it put a Big
+    // Brother houseguest's only alternate look on the wrong show. Their own
+    // appearances are the honest evidence: somebody who has only ever played
+    // one show almost certainly drew this for that show. Anyone else starts
+    // on All shows, which offers it everywhere and prejudges nothing.
+    let show = PORTRAIT_SHOW_ANY;
+    try {
+      const played = [...new Set((await appearancesFor(d.slug)).map(a => a.show).filter(Boolean))];
+      if (played.length === 1) show = played[0];
+    } catch { /* no continuity index; All shows is the safe answer */ }
     d.portraits.push({
-      id: 'td-returnee', show: 'total-drama', label: 'Returning-player look',
+      id: 'alt-1', show, label: 'Returning-player look',
       file: `${legacy}.png`, registered: false, unregistered: true, makeDefault: false,
     });
   }
@@ -1404,8 +1417,9 @@ function _renderPortraitRows(d) {
       </label>
       <div class="st-por-fields">
         <div class="st-por-line">
-          <select class="st-input st-por-show" data-i="${i}"${p.registered
-    ? ' disabled title="A registered portrait keeps its show. Moving it would change what the seasons that already used it drew."' : ''}>
+          <select class="st-input st-por-show" data-i="${i}"
+            title="Which seasons may pick this look. Changing it is safe: a season
+that already used it recorded the FILE, so its own screens are unaffected.">
             ${_portraitShowOptions(p.show)}
           </select>
           <input class="st-input st-por-label" data-i="${i}" value="${_esc(p.label)}"

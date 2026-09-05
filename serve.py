@@ -380,6 +380,15 @@ def apply_portraits(slug, portraits, removals):
                                 'registered portrait rewrites the seasons that used it'
                                 % (pid, existing.get('file')))
                 continue
+            # Re-filing under another show is allowed and is NOT a history
+            # rewrite: a season that used this look recorded the file, and the
+            # resolver prefers that snapshot, so its screens do not move. What
+            # changes is which show's picker offers it from now on.
+            if existing.get('show') != show:
+                # ...but a default pointing at it from the show it just left
+                # would dangle, and validation fails on that.
+                entry['defaults'] = {k: v for k, v in entry['defaults'].items()
+                                     if not (v == pid and k != show and k != 'global')}
             existing['label'] = label
             existing['show'] = show
         else:

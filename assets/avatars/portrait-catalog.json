@@ -26,12 +26,15 @@
           "file": "aaron.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "aaron-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "aiden": {
       "defaults": {
@@ -1127,12 +1130,15 @@
           "file": "gyselle.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "gyselle-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "hannah": {
       "defaults": {
@@ -1386,12 +1392,15 @@
           "file": "jane.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "jane-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "jasmine": {
       "defaults": {
@@ -1509,12 +1518,15 @@
           "file": "jules.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "jules-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "julia": {
       "defaults": {
@@ -2000,12 +2012,15 @@
           "file": "misha.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "misha-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "mk": {
       "defaults": {
@@ -2051,12 +2066,15 @@
           "file": "natasha.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "natasha-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "nessa": {
       "defaults": {
@@ -2589,12 +2607,15 @@
           "file": "stella.png"
         },
         {
-          "id": "td-returnee",
-          "show": "total-drama",
+          "id": "bb-returnee",
+          "show": "big-brother",
           "label": "Returning-player look",
           "file": "stella-returnee.png"
         }
-      ]
+      ],
+      "aliases": {
+        "td-returnee": "bb-returnee"
+      }
     },
     "stephanie": {
       "defaults": {

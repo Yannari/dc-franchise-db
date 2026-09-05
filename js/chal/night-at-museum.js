@@ -2523,6 +2523,7 @@ function _nmShell(content, ep, phaseCls) {
   let portraitsHtml = '';
   shuffledMembers.forEach((pName, i) => {
     const sl = pName ? slug(pName) : '';
+    const slAv = pName ? playerAvatarUrl(pName) : '';
     const row = Math.floor(i / cols);
     const col = i % cols;
     const xOff = row % 2 === 1 ? xGap * 0.5 : 0;

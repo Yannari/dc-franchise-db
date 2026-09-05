@@ -10,7 +10,7 @@ import { playerAvatarUrl } from './players.js';
 import { DEMOS, DEMO_LABELS } from './ratings.js';
 // Same reason: ADVANTAGES is an array and ADV_SOURCE_LABELS an object, so
 // reading them off window gives undefined and the coach list renders empty.
-import { ADVANTAGES, ADV_SOURCE_LABELS, snapshotGs } from './core.js';
+import { ADVANTAGES, ADV_SOURCE_LABELS, snapshotGs, authoredEpisode } from './core.js';
 import { COACH_FINDABLE_DEFAULT, coachesOf } from './coaches.js';
 import { coachCanPlay } from './advantages.js';
 
@@ -2276,8 +2276,14 @@ export function buildEpisodeMap() {
   let _campReturnUsed = false;
 
   while (active > finale && ep <= 100) {
-    const etype = twistMap[ep] || null;
-    const _allTypes = twistMapAll[ep] || [];
+    // THE AUTHOR'S NIGHT, NOT THE PLAYED ONE. A cancelled elimination inserts a
+    // blank below, so after one they stop agreeing — the schedule is keyed by
+    // the episode the author wrote and is no longer renumbered when a season is
+    // simulated (see `authoredEpisode`). Reading `twistMap[ep]` here would draw
+    // every later twist a night early once a swap had happened.
+    const _authored = authoredEpisode(ep);
+    const etype = (_authored == null ? null : twistMap[_authored]) || null;
+    const _allTypes = (_authored == null ? [] : twistMapAll[_authored]) || [];
 
     // How many players leave/return this episode?
     // Check ALL twists on this episode (not just the last one)

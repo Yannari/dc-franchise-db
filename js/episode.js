@@ -1,5 +1,5 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
-import { gs, seasonConfig, players, repairGsSets, seasonFormat, snapshotGs } from './core.js';
+import { gs, seasonConfig, players, repairGsSets, seasonFormat, snapshotGs, authoredEpisode } from './core.js';
 import { showWords } from './shows.js';
 import { arrivalLine, soloLine } from './life-cast.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
@@ -1521,7 +1521,13 @@ export function simulateEpisode() {
   // episode. Nothing downstream ever read the pushed row: it existed to be
   // picked up by the very next line, one tick later. So it is a local value
   // now, and the season the author wrote stays the season the author wrote.
-  const _scheduled = (cfg.twistSchedule || []).filter(t => t && Number(t.episode) === epNum);
+  // WHICH NIGHT OF THE AUTHOR'S PLAN THIS IS. A cancelled elimination inserts a
+  // blank episode, so after one the played number and the authored number stop
+  // agreeing — see `authoredEpisode`. Null is an inserted blank, which has no
+  // authored twists of its own.
+  const _authoredEp = authoredEpisode(epNum);
+  const _scheduled = _authoredEp == null ? []
+    : (cfg.twistSchedule || []).filter(t => t && Number(t.episode) === _authoredEp);
   const _autoReward = cfg.autoRewardChallenges && cfg.foodWater === 'enabled'
     && gs.activePlayers.length > 4
     && !_scheduled.some(t => t.type === 'reward-challenge');
@@ -6681,15 +6687,14 @@ function simulateJuryRoundtable(ep) {
       // Track skipped elimination so buildEpisodeMap extends the season
       if (!gs.skippedEliminationEps) gs.skippedEliminationEps = [];
       if (!gs.skippedEliminationEps.includes(epNum)) gs.skippedEliminationEps.push(epNum);
-      // Shift all future twists forward by 1 to match the inserted blank episode
-      if (!gs._twistShiftedForEps) gs._twistShiftedForEps = [];
-      if (!gs._twistShiftedForEps.includes(epNum) && seasonConfig.twistSchedule?.length) {
-        gs._twistShiftedForEps.push(epNum);
-        seasonConfig.twistSchedule.forEach(tw => {
-          if (tw && Number(tw.episode) > epNum) tw.episode = Number(tw.episode) + 1;
-        });
-        try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch(e) {}
-      }
+      // THE SLIDE IS DERIVED, NOT WRITTEN. Every later twist does run a night
+      // later now — but `skippedEliminationEps` above is the whole record of
+      // that, and `authoredEpisode()` reads it. This used to add one to the
+      // episode of every later entry in `seasonConfig.twistSchedule` and save
+      // it back to localStorage, which meant simulating an episode permanently
+      // renumbered the author's Format Designer: a twist placed on episode 5
+      // sat on 6 afterwards, and on 7 after the next swap. The plan is not
+      // scratch space for a runtime fact.
     }
 
   // ── EXILE DUEL RESOLUTION: duel between exile player and this episode's boot ──

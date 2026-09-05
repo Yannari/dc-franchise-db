@@ -1747,6 +1747,35 @@ export function snapshotGs(g = gs) {
   return copy;          // the copy keeps arrays, which is what a save wants
 }
 
+/**
+ * WHICH EPISODE OF THE AUTHOR'S PLAN A PLAYED NIGHT IS.
+ *
+ * An Elimination Swap cancels a boot, so the season gains a night: the
+ * projection inserts a blank episode after it and every later twist runs one
+ * night later than it was written for.
+ *
+ * That slide used to be stored by REWRITING `seasonConfig.twistSchedule` —
+ * adding one to the episode of every later entry and saving it back to
+ * localStorage. The author's plan was being used as scratch space for a
+ * runtime fact, so simulating an episode permanently renumbered the Format
+ * Designer: a twist placed on episode 5 was on episode 6 afterwards, and on 7
+ * after the next swap. Reported as "my season timeline changes when I
+ * simulate".
+ *
+ * The slide is real and still applies; it is just derived now. `null` means
+ * this played night is one of the inserted blanks and has no authored
+ * counterpart — without that the episode after a swap would re-fire the swap's
+ * own twists.
+ */
+export function authoredEpisode(playedEp, g = gs) {
+  const n = Number(playedEp);
+  if (!Number.isFinite(n)) return null;
+  const skipped = (g && Array.isArray(g.skippedEliminationEps)) ? g.skippedEliminationEps : [];
+  if (!skipped.length) return n;
+  if (skipped.some(e => Number(e) === n - 1)) return null;   // the inserted blank
+  return n - skipped.filter(e => Number(e) < n).length;
+}
+
 // Pre-save: convert Sets to arrays so JSON.stringify preserves them
 export function prepGsForSave(g) {
   if (!g) return g;

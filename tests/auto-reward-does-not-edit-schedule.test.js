@@ -44,8 +44,11 @@ describe('the played season does not edit the written one', () => {
   it('still assembles the auto reward for the episode being played', () => {
     // The reward has to reach `_rawScheduled`, which is what the twist check
     // reads — it just must not survive the tick.
+    // A generous window: this block grew when the authored-episode offset
+    // landed beside it, and a fixed slice quietly stopped reaching the line it
+    // was asserting on.
     const block = episode.slice(episode.indexOf('AUTO REWARD'),
-      episode.indexOf('AUTO REWARD') + 1600);
+      episode.indexOf('AUTO REWARD') + 3000);
     expect(block).toContain("type: 'reward-challenge'");
     expect(block).toContain('_rawScheduled');
     expect(block, 'the gate conditions were dropped').toContain('autoRewardChallenges');

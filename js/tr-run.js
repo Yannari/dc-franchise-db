@@ -38,6 +38,21 @@ import { snapshotTraitorsBackgrounds, traitorsBackgroundBlockers } from './tr/st
 /** Is the season on the setup screen a castle? */
 export const isTraitorsSeason = () => seasonFormat(seasonConfig) === 'traitors';
 
+// ── WHY THE LAST REFUSAL REFUSED ────────────────────────────────────
+//
+// `rerunTraitorsEpisode` returned a bare `false` from four different places,
+// and the UI turned that into "Episode 11 could not be re-run, so nothing was
+// changed." — a sentence with no next step in it. Every one of those refusals
+// knows exactly what is wrong; none of them could say so.
+//
+// A string rather than a thrown error, because a refusal is not a failure:
+// nothing is broken, the season is untouched, and the user needs a reason
+// rather than a stack. Boolean return kept, so no caller changes.
+let _lastRefusal = null;
+const _refuse = why => { _lastRefusal = why; return false; };
+/** The reason the last re-run was refused, or null if the last one worked. */
+export function lastTraitorsRerunRefusal() { return _lastRefusal; }
+
 /**
  * The seed this season plays on.
  *
@@ -150,7 +165,7 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
   const savedOrder = (gs && gs.tr && Array.isArray(gs.tr.castOrder) && gs.tr.castOrder.length)
     ? gs.tr.castOrder.filter(Boolean) : null;
   const cast = savedOrder || (players || []).map(p => p.name).filter(Boolean);
-  if (cast.length < 4) return false;
+  if (cast.length < 4) return _refuse(`a castle needs at least four players and this one has ${cast.length}`);
 
   // ── AND THE BACKGROUNDS HAVE TO CLEAR ───────────────────────────────
   //
@@ -176,7 +191,8 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
           + (why[0] || 'a background is blocking'), 'error');
       }
       console.warn('[traitors] season refused — background blockers:', why);
-      return false;
+      return _refuse('a background is blocking this cast: '
+        + (why[0] || 'see the Background panel in the cast builder'));
     }
   } catch (e) {
     // A resolver that throws must not silently wave a season through, but it
@@ -333,7 +349,17 @@ function _rerollChain(n, seed) {
 }
 
 export function rerunTraitorsEpisode(epNum) {
-  if (!gs || !gs._trSeed) return false;
+  _lastRefusal = null;
+  if (!gs) return _refuse('there is no season loaded');
+  // Every season played through the run tab stores its seed on the first
+  // night. A season without one predates that, or was rebuilt by something
+  // that dropped it — either way the replay cannot reproduce the nights that
+  // already aired, so it refuses rather than inventing a different season.
+  if (!gs._trSeed) {
+    return _refuse('this season has no stored seed, so the episodes that already '
+      + 'aired cannot be reproduced. A re-run would replace them with a different '
+      + 'season rather than change one night of this one');
+  }
   const N = Math.max(1, Number(epNum) || 1);
   // THE AIRED PREFIX, CAPTURED BEFORE ANYTHING REPLAYS. Re-running a later night
   // must never change an earlier one, so episodes 1..N-1 are kept EXACTLY as
@@ -350,6 +376,7 @@ export function rerunTraitorsEpisode(epNum) {
     ^ Math.imul(gs._trRerollNonce, 0x9e3779b1)
     ^ Math.imul(N, 2654435761)) >>> 0;
   if (!_playWholeSeason(N, rerollSeed || 1, _rerollChain(N, rerollSeed || 1))) return false;
+  _lastRefusal = null;
   // PERSIST THE REROLL so a reload can reproduce THIS season, not the original.
   // `_trQueue` normally survives the save intact, but if it is ever lost (an IDB
   // quota failure, an older save), `simulateTraitorsEpisode` rebuilds it from

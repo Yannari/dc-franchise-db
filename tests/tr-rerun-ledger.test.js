@@ -22,7 +22,7 @@ import { gs as gsRef, setGs, setPlayers, players, seasonConfig, relationships,
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, traitorsEpisodesLeft,
-  rerunTraitorsEpisode } from '../js/tr-run.js';
+  rerunTraitorsEpisode, lastTraitorsRerunRefusal } from '../js/tr-run.js';
 import { getEpisodeEliminations, renderEpisodeHistory, renderEpisodeView } from '../js/run-ui.js';
 import { exitVerbs } from '../js/shows.js';
 import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
@@ -191,3 +191,32 @@ describe('a reload after two re-runs', () => {
     agrees(next, next.num);
   });
 });
+
+describe('a refusal says why', () => {
+  // "Episode 11 could not be re-run, so nothing was changed." was the whole of
+  // it, from four different refusals, none of which could say what was wrong.
+  it('names the missing seed', () => {
+    airWholeSeason(37);
+    delete gsRef._trSeed;
+    expect(rerunTraitorsEpisode(3)).toBe(false);
+    expect(lastTraitorsRerunRefusal(), 'refused with no reason').toBeTruthy();
+    expect(lastTraitorsRerunRefusal()).toMatch(/seed/i);
+  });
+
+  it('names a cast too small to hold a castle', () => {
+    airWholeSeason(37);
+    setPlayers(ROSTER.slice(0, 2).map(p => ({ ...p })));
+    globalThis.players = players;
+    gsRef.tr.castOrder = players.map(p => p.name);
+    expect(rerunTraitorsEpisode(3)).toBe(false);
+    expect(lastTraitorsRerunRefusal()).toMatch(/four players/i);
+  });
+
+  it('clears the reason when a re-run works', () => {
+    airWholeSeason(37);
+    expect(rerunTraitorsEpisode(3)).toBe(true);
+    expect(lastTraitorsRerunRefusal(), 'a stale reason survived a good re-run')
+      .toBeNull();
+  });
+});
+

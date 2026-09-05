@@ -19,7 +19,8 @@ import { coachCanPlay } from './advantages.js';
 // works — but a show that is unreachable from the run loop is precisely the
 // bug this wiring exists to close, and an import fails loudly at load time
 // where a missing global fails silently at the moment somebody presses Play.
-import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode } from './tr-run.js';
+import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
+  lastTraitorsRerunRefusal } from './tr-run.js';
 import { roundExits, exitVerbs } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -1524,7 +1525,7 @@ function _replayTraitorsEpisode(epNum) {
   if (!confirm(msg)) return;
 
   const before = snapshotGs();
-  let ep = null, failure = null;
+  let ep = null, failure = null, refused = null;
   try {
     if (rerunTraitorsEpisode(epNum)) {
       // AIR ONLY THE RE-RUN EPISODE, then stop. Re-running Episode N clears
@@ -1537,6 +1538,19 @@ function _replayTraitorsEpisode(epNum) {
       // queue is now empty and simulating it lands on `complete` regardless, so
       // Export still works for the case that actually needed it.
       ep = simulateTraitorsEpisode();
+      // THE REPLAY WORKED AND PRODUCED NOTHING. A re-rolled season can be
+      // SHORTER than the one it replaces — the endgame ends when the room
+      // agrees to stop, and a different seed can have it agree a night earlier
+      // — so asking for an episode past the new ending leaves an empty queue.
+      // That is a real answer and it needs saying: "nothing changed" with no
+      // reason attached reads as a broken button.
+      if (!ep) {
+        refused = `the re-rolled season ends before episode ${epNum}. A different `
+          + 'seed can finish the castle a night earlier, so there is no episode '
+          + 'there to play. Re-run an earlier one.';
+      }
+    } else {
+      refused = lastTraitorsRerunRefusal();
     }
   } catch (e) { failure = e; }
 
@@ -1544,8 +1558,13 @@ function _replayTraitorsEpisode(epNum) {
     gs = before;
     repairGsSets(gs);
     try { renderRunTab(); } catch { /* state is already back */ }
+    // WHY, not just THAT. Five separate refusals used to arrive as one
+    // sentence with no next step in it — and every one of them knows exactly
+    // what is wrong. A refusal is not a failure: nothing is broken and the
+    // season is untouched, so what the reader needs is a reason, not a stack.
+    const why = failure ? (failure.message || String(failure)) : refused;
     alert(`Episode ${epNum} could not be re-run, so nothing was changed.${
-      failure ? `\n\n${failure.message || failure}` : ''}`);
+      why ? `\n\n${why}` : ''}`);
     return;
   }
   // A re-run rewrites this episode and everything after it, so the checkpoints

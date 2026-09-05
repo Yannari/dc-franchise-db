@@ -220,7 +220,7 @@ const HOURS = {
     'A chair is empty and the room is still standing in the shape it left.',
     'The doors close behind them and nobody quite knows where to put themselves.',
     'Straight afterwards, before anybody has decided what they think about it.',
-    'The hour with a hole in it. Whatever gets said now, gets said too fast.',
+    'One fewer voice in the room, and nobody has worked out how to fill the gap.',
   ] },
   night: { label: 'Night', sun: 'night', lines: [
     'Doors shut. Nobody in the castle is asleep who says they are.',
@@ -1207,7 +1207,7 @@ const CONSEQ = {
   romance: {
     opened: {
       smooth: [
-        'Neither of them mentions it afterwards, which is its own way of mentioning it.',
+        'Neither of them mentions it afterwards, and neither of them forgets it either.',
         'It is not nothing. {a} and {b} both notice that it is not nothing, and both decide to leave it there.',
         '{a} and {b} spend an hour together that neither of them needed to spend, and both of them noticed the hour.',
         'Nothing is said about it out loud. Both of them go to bed having thought about it.',
@@ -1238,9 +1238,9 @@ const CONSEQ = {
     opened: {
       smooth: [
         'Nothing is fixed by it. But {a} and {b} got through the morning next to each other instead of alone.',
-        'It goes nowhere useful, and it is not supposed to. It is a bad morning being had out loud.',
+        'A bad morning, shared. Neither of them tries to make it useful.',
         '{a} and {b} do not talk about the game once, which neither of them manages twice in a week.',
-        'Nobody feels better. {a} and {b} feel slightly less alone about it, which is a different thing and it counts.',
+        'Nothing is fixed. {a} and {b} are just less alone with it than they were an hour ago.',
       ],
       adverse: [
         'The grief turns into a question halfway through, and the question has a name in it.',
@@ -1267,7 +1267,7 @@ const CONSEQ = {
   callback: {
     opened: {
       smooth: [
-        'Something from before this place is now inside this place, and {a} and {b} are the only two who have the whole of it.',
+        'Old history is back on the table, and {a} and {b} are the only two in the room who know the full version.',
         'The old story is out. It changes how {a} looks at {b} tonight, and it does not go back in.',
         '{a} and {b} settle something that has been sitting between them since long before the castle.',
         'They get through it, which neither of them entirely expected to. Whatever it was, it is smaller now.',
@@ -1290,7 +1290,7 @@ const CONSEQ = {
         'It is worse this time. Whatever {a} and {b} did not say last time gets said now.',
         'The old wound is doing new damage, and both of them can see it doing the damage.',
         '{a} and {b} have now had this argument twice in a castle, and the second one was public.',
-        'It stops being history and becomes a reason, which is exactly what it should never have become.',
+        'What started as history is now a reason to act, and both of them know it.',
       ],
     },
   },
@@ -1314,13 +1314,13 @@ const CONSEQ = {
         'Another hour of walking, another hour of talking, and it goes a little further than last time.',
         '{a} and {b} have made this walk together before. This one moves it on.',
         'The walk is becoming the place they do this, and both of them are starting to rely on it.',
-        'Same road, same pair, a little more said each time. That is how these get built.',
+        'Same road, same pair, and each walk takes it a step further than the last.',
       ],
       adverse: [
         '{a} and {b} have had this conversation on this road before, and it went better the first time.',
         'The walk is no longer the safe place it was. Neither of them will suggest it tomorrow.',
         'They run out of road before they run out of argument, which is the worst way to end one.',
-        'It gets worse over the distance rather than better, which is not what walking usually does.',
+        'They get worse with each other over the distance rather than better, and the gate is still a mile off.',
       ],
     },
   },
@@ -1329,22 +1329,22 @@ const CONSEQ = {
       smooth: [
         'It is a small thing and it is not nothing. {a} and {b} both leave with a slightly different read of the other.',
         'Nothing is settled by it. Something is nudged by it, and neither of them could say exactly what.',
-        'Neither of them will remember this on Friday. Both of them are slightly changed by it tonight.',
-        'It is the sort of exchange a castle is made of: no consequence anybody can name, and a consequence all the same.',
+        '{a} and {b} move on to other people, carrying a read neither of them asked for.',
+        '{a} and {b} part ways without saying anything worth repeating, and both remember how the other said it.',
       ],
       adverse: [
         'It goes slightly wrong, in a way neither of them will mention and both of them will remember.',
         '{a} and {b} leave it a little colder than they arrived at it, and neither is sure why.',
-        'Something small gets broken here, and small things are what a fortnight is made of.',
-        'Nothing happens, exactly. {a} and {b} are simply worse with each other afterwards.',
+        'Something goes wrong between {a} and {b}, too small to name and too sharp to ignore.',
+        '{a} and {b} leave it sharper with each other than when they sat down, and neither can point at what changed.',
       ],
     },
     carried: {
       smooth: [
-        'It comes round again, the way things in a building this size come round again.',
+        '{a} and {b} end up in the same room again, and pick it up without deciding to.',
         '{a} and {b} pick it up where they left it and put it down about where they picked it up.',
         'Twice now, and it still has not turned into anything. It may not need to.',
-        'The same exchange, a day older. It is becoming the thing {a} and {b} do instead of talking.',
+        '{a} and {b} have the same exchange a second time and neither of them calls it a habit yet.',
       ],
       adverse: [
         'It comes round again and it is thinner than it was. {a} and {b} are running out of it.',
@@ -2032,7 +2032,7 @@ const CONSEQ_COVER_WEIGHT = {
   held: [
     '{a} carried {topic} through another night without it showing. The whole cost of it is that {a} is the one who has to carry it.',
     '{a} sat alone with {topic} and put it down again, steady. Tomorrow {a} does it all over, and knows it.',
-    '{a} has made a kind of peace with {topic} — not that it is fine, but that it is {a}’s to hold and nobody else’s to see.',
+    "{a} has stopped fighting {topic} and started managing it. The secret is {a}'s weight to carry.",
     '{a} looked {topic} full in the face in the dark and did not flinch. That is the job, on the nights nobody is watching.',
   ],
   slipped: [
@@ -2045,13 +2045,13 @@ const CONSEQ_COVER_WEIGHT = {
     '{a} nearly handed {topic} to somebody just to be rid of it, and caught {a}’s own mouth in time. The weight of it is starting to steer {a}.',
     '{topic} got the better of {a} for a moment tonight. Nobody saw — but {a} knows it can, now, which is a new thing to be afraid of.',
     'For the length of one bad hour {topic} was louder than {a}’s sense, and {a} is only sure it passed because morning came.',
-    '{a} felt {topic} nearly say itself, unbidden, and understood that the danger is not the room any more. It is {a}.',
+    "{a} nearly said {topic} out loud without meaning to, and caught it just in time. The danger now is {a}'s own mouth.",
   ],
   abandoned: [
-    '{a} decided to stop turning {topic} over and could not, quite. The thing about a secret is that putting it down is the one move it will not allow.',
+    '{a} tried to stop thinking about {topic} and could not. A secret that size does not let you set it down.',
     '{a} tried to leave {topic} for the morning and took it to bed instead. There is no shift that ends for a Traitor.',
     '{a} meant to set {topic} aside tonight. {topic} had other ideas, and {a} lost the argument to {a}’s own head.',
-    '{a} wanted one night off from {topic} and did not get it. Nobody gives a Traitor that; they have to take it, and {a} could not.',
+    '{a} wanted one night off from {topic} and did not get it. The secret does not take nights off.',
   ],
 };
 // GRIEF (mourning). {topic} is the murdered person. This family KEEPS its
@@ -2064,21 +2064,21 @@ const CONSEQ_GRIEF = {
     'Grieving {topic} out loud left {a} less alone than before it — the one thing a death like this ever gives back.',
     'The loss of {topic} drew {a} toward the people who felt it too. Something in the room is warmer for the naming of it.',
     '{a} said what {topic} had meant and found {a} was not the only one who felt it. Shared grief is lighter than the other kind.',
-    'For {a}, mourning {topic} in company turned out to be the difference between grief and despair.',
-    'The empty place where {topic} sat pulled {a} closer to the living, which is not how {a} expected the morning to go.',
+    'Talking about {topic} helped {a} more than {a} expected it to.',
+    '{topic} being gone drove {a} toward the people who are still here.',
   ],
   apart: [
     'The loss of {topic} put something cold between {a} and the room, and {a} let it.',
     'Grieving {topic} went wrong for {a}: what should have drawn people together drove a wedge instead.',
     '{a} came away from the mourning of {topic} more alone, not less. Not every death brings a room closer.',
     '{topic}’s name sat badly between {a} and the others, and by the end nobody was pretending otherwise.',
-    'The grief for {topic} turned, in {a}’s hands, into something with an edge on it — and the edge stayed.',
+    'The grief for {topic} turned sharp on {a}, and {a} pointed it at the room.',
   ],
   borne: [
     'The chair where {topic} sat is still the first thing {a} sees in that room, and will be tomorrow.',
-    'For {a}, the fact of {topic} being gone is the shape the whole day is bent around now.',
+    '{topic} being gone is the first thing {a} thinks about in the morning and the last thing at night.',
     '{a} has not worked out how to be in that room without {topic} in it, and did not manage it today either.',
-    'The loss of {topic} is a quiet thing for {a} — carried, not spoken, and none the lighter for it.',
+    '{a} carries the loss of {topic} without saying a word about it, and it does not get lighter.',
     '{a} keeps expecting {topic} to come round the corner, and keeps being wrong, all morning.',
   ],
 };
@@ -2093,11 +2093,11 @@ const CONSEQ_GRIEF = {
 // subject). KEEPS its reaction beat (a solo grief reaction is coherent).
 const CONSEQ_GRIEF_VIGIL = {
   mourned: [
-    'The empty place where {topic} sat is the arithmetic {a} keeps doing, and it comes out the same every time.',
-    'For {a}, the fact of {topic} being gone is the shape the whole day bent around.',
+    '{a} keeps counting the chairs and coming up one short for {topic}.',
+    '{a} spent the whole day thinking about {topic}, and none of it helped.',
     '{a} took the grief over {topic} off somewhere private, and it weighed exactly the same coming back.',
     '{a} keeps listening for {topic} in a building with one fewer person in it, and knows {a} is doing it.',
-    'Grief for {topic} came for {a} in private, and {a} let it, and then folded it away where the room would not see.',
+    '{a} grieved {topic} alone and put it away before anyone could see.',
   ],
   banished: [
     'The castle is one chair lighter for {topic}, and {a} sat alone with the fact that the room did it in daylight, on purpose.',
@@ -2106,16 +2106,16 @@ const CONSEQ_GRIEF_VIGIL = {
     '{a} spent the quiet hours with the seat {topic} left — not taken, but given away by a room {a} still stands in.',
   ],
   haunted: [
-    'What broke {a} was not the empty chair. It was the number of people who had said {a}’s own name at that table.',
+    "{a} could not stop counting how many people had written {a}'s name down at that table.",
     '{a} came out of it no safer than {a} went in, and knowing exactly which faces to watch from here.',
-    'Whatever grief was in the room, what got to {a} in the end was {a}’s own name, said out loud at a table that heard every word of it.',
+    "{a} lay awake less worried about who went home than about how many votes had {a}'s name on them.",
     '{a} counted, alone, who had written {a} down, until the counting stopped meaning anything and the light came anyway.',
   ],
   restless: [
-    '{a} built a whole case out of a day that held nothing, and could not find the first brick of it by morning.',
-    'There was nothing to it, and {a} spent the private hours on the nothing anyway. It did not become a something.',
+    "{a} talked {a}'s self into suspecting somebody, and by morning could not remember why.",
+    '{a} chewed on a hunch all night and it was still a hunch by morning.',
     '{a} sat alone with a feeling that had no fact under it, knew as much, and sat with it regardless.',
-    '{a} went looking for a reason to be afraid and came back with none, which did not help {a} at all.',
+    '{a} went looking for a reason to be afraid, found none, and stayed afraid anyway.',
   ],
   // was-found: somebody came upon the crier and stayed. Role-neutral — the pool
   // names the dead against BOTH of them, so it does not matter which of the pair
@@ -2393,7 +2393,7 @@ const CONSEQ_AFTER_WRONG = {
     '{a} keeps coming back to {a}’s own ballot with {topic}’s name on it. The room got it wrong, and {a} was part of the room.',
     'The reveal cleared {topic} of everything and left {a} holding a vote {a} cannot take back.',
     '{a} was certain about {topic} at six o’clock, and certainty is exactly what cost {topic} the game. {a} will carry the price of that a while.',
-    'There is no version of the evening where {a} did not help send {topic} home a Faithful, and {a} has stopped trying to find one.',
+    '{a} helped send {topic} home a Faithful, and no amount of going over it changes that.',
   ],
   blamed: [
     '{a} traced {topic}’s whole banishment back to the loudest voice in the room, and is not letting that voice forget it.',
@@ -2444,7 +2444,7 @@ const CONSEQ_SEAT_LOSS = {
   mourned: [
     'The empty place where {topic} sat is the one {a} keeps looking at, and the vote that made it empty was cast in daylight, by hands still in the room.',
     '{a} lost {topic} to a show of hands, not to the dark, and somehow that is the harder thing to sit with.',
-    'For {a}, {topic} being chosen — named, counted, sent home by people still in the building — is a different grief from the ones the night hands out.',
+    '{a} watched the room vote {topic} out in daylight, which sits heavier than a murder nobody saw.',
     '{a} spent the evening keeping {topic} in the conversation, because the alternative was letting the room close over the gap too fast.',
   ],
   relieved: [
@@ -2465,7 +2465,7 @@ const CONSEQ_SEAT_LOSS = {
   quiet: [
     'The seat {topic} had is the first thing {a} sees in that room now, and will be tomorrow.',
     '{a} could not put {topic} into words tonight, and stopped trying somewhere before it got light.',
-    'For {a}, {topic} being gone is the shape the whole evening bent around — carried, not spoken, and none the lighter for it.',
+    "{a} spent the evening with {topic} on {a}'s mind and nothing useful to do about it.",
   ],
 };
 
@@ -2642,29 +2642,29 @@ function _receiptConsequence(s, subs, tone, key, used) {
     seen.add(pair);
     if (chip.type === 'suspicion') {
       const pool = chip.dir > 0 ? [
-        '{a} leaves more suspicious of {b}.',
-        '{b} now concerns {a} more than before.',
-        '{a} adds {b} to the names they intend to watch closely.',
-        'The conversation gives {a} another reason to doubt {b}.',
+        '{a} watches {b} more carefully from here.',
+        "{b} is higher on {a}'s list tonight.",
+        '{a} files {b} under the names worth keeping an eye on.',
+        '{a} leaves with a harder read on {b}.',
       ] : [
-        '{a} leaves less suspicious of {b}.',
-        '{b} now concerns {a} less than before.',
-        '{a} removes some of the doubt they had attached to {b}.',
-        'The conversation makes {a} more willing to trust {b}.',
+        '{a} eases off {b} after that.',
+        "{b} drops a notch on {a}'s list.",
+        '{a} lets some of the doubt about {b} go.',
+        '{a} comes away less worried about {b}.',
       ];
       lines.push(_fill(_pickUnique(pool, key + '|receipt|susp|' + pair, used,
         'receipt-susp'), chip));
     } else if (chip.type === 'bond') {
       const pool = chip.dir > 0 ? [
-        '{a} and {b} trust each other more after the conversation.',
-        'The exchange brings {a} and {b} closer.',
-        '{a} and {b} leave with more confidence in each other.',
-        'What happened here strengthens the trust between {a} and {b}.',
+        '{a} and {b} are steadier with each other after that.',
+        '{a} and {b} close a little of the distance.',
+        '{a} and {b} walk away warmer than they sat down.',
+        '{a} and {b} have more ground under them tonight.',
       ] : [
-        '{a} and {b} trust each other less after the conversation.',
-        'The exchange creates distance between {a} and {b}.',
-        '{a} and {b} leave less confident in each other.',
-        'What happened here weakens the trust between {a} and {b}.',
+        '{a} and {b} are cooler with each other after that.',
+        'Something between {a} and {b} frays a little.',
+        '{a} and {b} walk away stiffer than they sat down.',
+        '{a} and {b} have less ground under them tonight.',
       ];
       lines.push(_fill(_pickUnique(pool, key + '|receipt|bond|' + pair, used,
         'receipt-bond'), chip));
@@ -3003,7 +3003,7 @@ const RECALL_LEAD_DAYS_TOPIC = [
   'The same subject, {topic}, picked up again from days ago.',
   '{topic} once more, and not for the first time this week.',
   'This returns to {topic}, which has been running for some days now.',
-  'The matter of {topic}, taken up again from where it started days back.',
+  '{topic} again, and this one has been running since earlier in the week.',
 ];
 const RECALL_LEAD_TODAY_TOPIC = [
   'Back to {topic} so soon — the same day has not even finished.',
@@ -3033,7 +3033,7 @@ const RECALL_LEAD_RECORDED = [
   // NOT "a new argument": this pool is drawn for carried TRUST, ROMANCE and
   // GRIEF scenes as well, and tr-castle-prose has an arm asserting that a
   // shared confidence is never introduced as a row. It caught this line.
-  'It is not new, and neither of them is pretending it is.',
+  'This started before today, and both of them know it.',
   'They pick it up exactly where they dropped it, which is not a comfortable place.',
   'Whatever this was, it did not finish the first time.',
   'They have been here before, and it went no better then.',
@@ -4269,9 +4269,9 @@ const HOST_CLOSE = {
   busy: [
     'A castle is a very large building for keeping a secret in, and every one of them '
     + 'spent today finding that out.',
-    'None of that was a competition, and every bit of it mattered.',
-    'Nobody won anything this afternoon, and at least two of them lost something they '
-    + 'have not counted yet.',
+    'None of that was a competition and all of it was the game. It always is.',
+    'Nobody won anything this afternoon. Several people lost something and have not '
+    + 'noticed yet.',
     'Watch the ones who said the least. There were fewer of them than usual today.',
   ],
   quiet: [
@@ -4284,7 +4284,7 @@ const HOST_CLOSE = {
   woven: [
     'Three or four of those were the same story, and only some of them know it.',
     'Look at what carried over. Look very hard at who it carried over onto.',
-    'Stories in this place do not end when the people in them walk away. They collect interest.',
+    'Stories in this place are not events. They are debts, and they come due.',
     'Every one of those stories goes somewhere. One of them goes somewhere tonight.',
   ],
 };

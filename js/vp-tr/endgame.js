@@ -1024,6 +1024,61 @@ const LT_CSS = `
 .lt-winners[data-side="traitors"] .lt-winner-nm{color:#f4c8ce}
 .lt-winners[data-side="traitors"] .lt-winner-sh{color:rgba(232,150,160,.85)}
 
+/* ── THE UNMASKING ──────────────────────────────────────────────────
+   One person at a time. The card is deliberately the biggest thing on the
+   screen after the verdict: this is the scene the season was built to reach,
+   and it used to not exist at all. */
+.lt-turn{display:flex;align-items:center;gap:18px;padding:18px 20px;border-radius:14px;
+  border:1px solid rgba(185,143,62,.28);background:rgba(10,8,10,.55);position:relative;
+  overflow:hidden}
+.lt-turn:after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:radial-gradient(120% 160% at 8% 50%,rgba(244,221,162,.10),transparent 62%)}
+.lt-turn[data-role="traitor"]{border-color:rgba(200,69,90,.6);
+  background:radial-gradient(130% 180% at 6% 50%,rgba(96,12,22,.72),rgba(8,3,5,.92));
+  box-shadow:0 0 46px rgba(200,69,90,.22) inset}
+.lt-turn[data-role="traitor"]:after{
+  background:radial-gradient(120% 160% at 8% 50%,rgba(240,89,108,.18),transparent 64%)}
+.lt-turn-av{flex:0 0 auto;position:relative;z-index:1}
+.lt-turn[data-role="traitor"] .lt-turn-av img{
+  box-shadow:0 0 0 2px rgba(200,69,90,.75),0 0 30px rgba(200,69,90,.4)}
+.lt-turn-body{min-width:0;position:relative;z-index:1}
+.lt-turn-nm{font-family:var(--lt-display);font-weight:800;font-size:20px;letter-spacing:.01em;
+  color:#eadfc6;line-height:1.1}
+.lt-turn-role{font-family:var(--lt-display);font-weight:900;font-size:clamp(22px,4.4vw,38px);
+  letter-spacing:.16em;text-transform:uppercase;line-height:1.05;margin:2px 0 8px}
+.lt-turn[data-role="faithful"] .lt-turn-role{color:#cfe0f0;
+  text-shadow:0 0 26px rgba(160,196,224,.4)}
+.lt-turn[data-role="traitor"] .lt-turn-role{color:#f0596c;
+  text-shadow:0 0 34px rgba(200,69,90,.6);animation:lt-strike 1.1s ease-out both}
+.lt-turn-tx{margin:0;font-size:14px;line-height:1.62;color:rgba(234,223,198,.9)}
+@keyframes lt-strike{
+  0%{opacity:0;transform:scale(1.22);letter-spacing:.5em;filter:blur(7px)}
+  55%{opacity:1;filter:blur(0)}
+  100%{opacity:1;transform:scale(1);letter-spacing:.16em}
+}
+/* The ones banished blind, and whether the room was right about them. */
+.lt-sent{display:flex;flex-direction:column;gap:8px;margin:12px 0 14px}
+.lt-sent-row{display:grid;grid-template-columns:auto auto auto 1fr;align-items:center;gap:11px;
+  padding:9px 12px;border-radius:11px;border:1px solid rgba(185,143,62,.22);
+  background:rgba(12,10,12,.5)}
+.lt-sent-row[data-role="traitor"]{border-color:rgba(200,69,90,.45);
+  background:rgba(52,12,20,.44)}
+.lt-sent-nm{font-family:var(--lt-display);font-weight:700;font-size:14px;color:#eadfc6}
+.lt-sent-role{font-family:var(--lt-display);font-weight:900;font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.lt-sent-row[data-role="traitor"] .lt-sent-role{color:#f4c8ce;background:rgba(200,69,90,.24)}
+.lt-sent-row[data-role="faithful"] .lt-sent-role{color:#cfe0f0;background:rgba(160,196,224,.16)}
+.lt-sent-say{font-family:var(--lt-hand);font-style:italic;font-size:13px;
+  color:rgba(234,223,198,.72);min-width:0}
+@media (max-width:620px){
+  .lt-turn{flex-direction:column;align-items:flex-start;gap:12px}
+  .lt-sent-row{grid-template-columns:auto 1fr;row-gap:4px}
+  .lt-sent-say{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:reduce){
+  .lt-turn[data-role="traitor"] .lt-turn-role{animation:none}
+}
+
 /* ── THE MONEY, WHICH IS THE ONLY THING TURNED OVER ─────────────────── */
 .lt-pot{
   display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
@@ -1388,6 +1443,124 @@ const SUSPENSE_HOST = [
   + 'worth.',
   'Hands off the box. Look at the faces around you first. Remember them like this.',
 ];
+// ══════════════════════════════════════════════════════════════════════
+// THE UNMASKING
+// ══════════════════════════════════════════════════════════════════════
+//
+// The scene the format is built to reach, and the one this screen did not
+// have. The room agreed to stop, the money was announced, and the season's
+// central question — what were these people — was answered only by implication
+// in a list of who got paid. Nobody ever turned over.
+//
+// In the show this is the whole ending: the host stops the room, says the
+// thing, and then goes round one at a time. A Faithful says it and the table
+// exhales. A Traitor says it and the table comes apart. That is why the
+// reveals arrive one card at a time here, Faithfuls first and the pact last —
+// the order is on the record (js/tr/endgame.js) precisely so this screen
+// cannot give the ending away halfway through.
+
+/** The host stopping the room. This is the speech, and it is said once. */
+const UNMASK_HOST = [
+  'Nobody move. You have played this game for {days} days without ever being told '
+  + 'the truth, and I am about to tell you all of it at once.',
+  'You have made your decision. Now I make mine, which is to stop lying to you. '
+  + 'One at a time, in this room, we find out what you all were.',
+  'Look around this table. Some of you are exactly what you said you were. At '
+  + 'least one of you has been sitting there since the first morning waiting for this.',
+  'There is nothing left to vote on. There is only the last thing, which is the '
+  + 'truth, and it has been in this room the whole time.',
+  'You came in here strangers and you are leaving as something. In a moment you '
+  + 'will all find out what.',
+  'This is the part nobody can lie through. When I ask, you answer, and the answer '
+  + 'is the one you have been carrying since the night I picked.',
+];
+const UNMASK_LEAD = [
+  'Nobody sits down. The host goes round the table and asks the only question the '
+  + 'castle has ever cared about, and this time there is no vote attached to it.',
+  'The candles are behind them and the room has gone completely quiet. One at a '
+  + 'time, each of them is asked to say what they are, out loud, to the people they '
+  + 'played it with.',
+  'This is the moment the whole season has been arranged around. Not the money — '
+  + 'the turning over.',
+  'They stand where they are. There is no slate to write on and nowhere to look '
+  + 'except at each other while it happens.',
+];
+
+/** A Faithful turning over. Relief, or the cost of having been honest. */
+const UNMASK_FAITHFUL = [
+  '{a} says it plainly and the table lets out a breath it has been holding since '
+  + 'the first table.',
+  '&ldquo;Faithful,&rdquo; says {a}, and means it, and has meant it every single '
+  + 'night in this castle.',
+  '{a} was exactly what {sub} said {sub} was. In this room that is somehow the '
+  + 'more surprising answer.',
+  '{a} turns over honest. Nobody is shocked and one or two people look faintly '
+  + 'guilty about the ballots they wrote.',
+  'Faithful. {a} has been telling the truth in a building where that was worth '
+  + 'nothing, and the room knows it now.',
+  '{a} says the word and somebody reaches over and grips {posAdj} arm. That is '
+  + 'the whole of it: honest, and nearly not believed.',
+  '{a} is clean, and the way {sub} says it makes it obvious how long {sub} has '
+  + 'wanted somebody to just ask.',
+  'Faithful, says {a}, and the person who very nearly wrote that name cannot '
+  + 'look up.',
+];
+
+/** A Traitor turning over. The gasp — this is the beat the ending is for. */
+const UNMASK_TRAITOR = [
+  '{a} does not say it straight away. {a} lets the room look, and then says it, '
+  + 'and the table comes apart.',
+  '&ldquo;Traitor.&rdquo; One word out of {a}, and every conversation of the last '
+  + 'fortnight rearranges itself in the heads of the people who had it.',
+  '{a} smiles before {sub} answers, which is the answer. The noise the table makes '
+  + 'is not a word.',
+  '{a} says it quietly and it lands like a door. Somebody says <em>no</em> out '
+  + 'loud, to nobody.',
+  'Traitor. {a} has sat at every table in this castle and written a name every '
+  + 'time, and not one of those names was true.',
+  '{a} turns over and the room does not believe it for a full second. Then it '
+  + 'does, all at once, and everybody starts talking.',
+  '&ldquo;I have been a Traitor since the first night,&rdquo; says {a}. The people '
+  + 'who defended {obj} at the last table are the loudest.',
+  '{a} says the word almost gently, which is somehow worse, and the table erupts.',
+];
+
+/** The room, watching a cloak turn over. Grounded in what they actually did. */
+const REACT_UNMASK = [
+  '{b} sat next to that for the entire season.',
+  '{b} defended {a} at a table. Out loud. To the room.',
+  '{b} is not saying anything. {b} is just doing the arithmetic.',
+  '{b} laughs once, entirely without humour.',
+  '{b} had the name and talked {ref} out of it.',
+  '{b} has both hands over {posAdj} mouth and has not moved.',
+  '{b} looks at {a} the way you look at a stranger who knows your address.',
+  '{b} says &ldquo;I knew it&rdquo; and absolutely nobody in this room believes {obj}.',
+];
+
+/** What the room banished blind, and whether it was right. */
+// `{door}` is the registry's word for this show's public exit and is filled at
+// the call site — see tests/tr-vp.test.js, which fails any castle source that
+// writes one as a literal. This screen has no business knowing the word.
+const SENTHOME_LEAD = [
+  'And the ones they sent home at the end — nobody was ever told what those were, '
+  + 'not the room and not the people watching it. Here they are.',
+  'The last {door}s went out without a word. This is what the room actually '
+  + 'did with them.',
+  'Every chair emptied in this endgame was emptied blind. The castle finds out now, '
+  + 'at the same time as everybody else.',
+  'They went on nerve and were told nothing. This is the score.',
+];
+const SENTHOME_RIGHT = [
+  'They were right, and they never knew it at the time.',
+  'The room found it, on nothing but instinct, and then had to sit there wondering.',
+  'That was a cloak, and the table sent it out without ever being told it had.',
+];
+const SENTHOME_WRONG = [
+  'Honest, and sent home anyway, on nothing.',
+  'The room spent its last {door} on somebody who never told it a single lie.',
+  'A Faithful, put out at the end by the people {sub} had been right about all along.',
+];
+
 // THE HEADLINE THE WHOLE SEASON WAS FOR. Chosen off the record's own word.
 const VERDICT = {
   traitors: { solo: 'The Traitor Wins', many: 'The Traitors Win',
@@ -1507,6 +1680,11 @@ function _view(ep, observer) {
     // that is legitimate -- see `resolvePot`. Read straight off the record so
     // the figure on the page and the figure in the export cannot disagree.
     winner: rec.winner || null,
+    // THE UNMASKING, in the order the record put it in — Faithfuls first and
+    // the pact last, decided in js/tr/endgame.js so this screen cannot give
+    // the ending away halfway through by sorting it differently.
+    reveals: (rec.reveals || []).map(r => ({ name: r.name, role: r.role })),
+    sentHome: (rec.sentHome || []).map(r => ({ name: r.name, role: r.role, ep: r.ep })),
     takers: [...(rec.takers || [])],
     losers: [...(rec.losers || [])],
     pot: rec.pot || 0,
@@ -1857,6 +2035,86 @@ function _buildBeats(v) {
     '<p>' + _apos(_pick(SUSPENSE, key + '|susp')) + '</p>'
     + _hostBand(_esc(_pick(SUSPENSE_HOST, key + '|susphost')))),
   { kind: 'suspense' });
+
+  // ── THE UNMASKING ───────────────────────────────────────────────────
+  //
+  // One card per person, in the record's order — Faithfuls first, the pact
+  // last. Before this the ending was a list of who got paid, and the season's
+  // actual question was answered only by implication. Nobody ever turned over.
+  if (v.reveals.length) {
+    // ONE SET FOR THE WHOLE SCENE. Eight variants and five people turning over
+    // is a coin flip that two of them collide, and a dumped finale had exactly
+    // that: two Faithfuls saying word for word the same sentence, one after
+    // the other. `_pickAway` is here for this and its doc comment says so.
+    const said = new Set();
+    push('unmask', _card('unmask', 'The Last Question', 'seal',
+      '<p>' + _apos(_pick(UNMASK_LEAD, key + '|unmask-lead')) + '</p>'
+      + _hostBand(_esc(_fill(_pick(UNMASK_HOST, key + '|unmask-host'),
+        { days: String(Math.max(2, v.ep || 2)) })))),
+    { kind: 'unmask-open' });
+
+    v.reveals.forEach((r, i) => {
+      const isT = r.role === 'traitor';
+      const pr = _pron(r.name);
+      const pool = isT ? UNMASK_TRAITOR : UNMASK_FAITHFUL;
+      // THE ROOM ONLY REACTS TO A CLOAK. A Faithful turning over is a relief;
+      // a Traitor turning over is the scene, so the reaction is spent there
+      // and the person reacting is somebody who was actually in the room.
+      const others = v.reveals.filter(x => x.name !== r.name).map(x => x.name);
+      const reactor = (isT && others.length)
+        ? others[_hash(key + '|unmask-react-who|' + r.name) % others.length] : null;
+      const rpr = reactor ? _pron(reactor) : {};
+      push('unmask', _card('unmask', '', isT ? 'cloak' : 'seal',
+        '<div class="lt-turn" data-role="' + r.role + '">'
+        + '<div class="lt-turn-av">' + _av(r.name, 62) + '</div>'
+        + '<div class="lt-turn-body">'
+        + '<div class="lt-turn-nm">' + _esc(r.name) + '</div>'
+        + '<div class="lt-turn-role">' + (isT ? 'Traitor' : 'Faithful') + '</div>'
+        + '<p class="lt-turn-tx">'
+        + _apos(_fill(_pickAway(pool, key + '|unmask|' + r.name, said),
+          { a: '<b>' + _esc(r.name) + '</b>', sub: pr.sub || 'they',
+            obj: pr.obj || 'them', posAdj: pr.posAdj || 'their' })) + '</p>'
+        + '</div></div>'
+        + (reactor
+          ? '<div class="lt-reacts"><span class="lt-react" data-tone="shock">'
+            + _av(reactor, 34) + '<span class="lt-react-tx">'
+            + _apos(_fill(_pickAway(REACT_UNMASK, key + '|unmask-react|' + r.name, said),
+              { a: '<b>' + _esc(r.name) + '</b>', b: '<b>' + _esc(reactor) + '</b>',
+                obj: rpr.obj || 'them', ref: rpr.ref || 'themselves',
+                posAdj: rpr.posAdj || 'their' }))
+            + '</span></span></div>'
+          : '')),
+      { kind: 'unmask', name: r.name, role: r.role, order: i });
+    });
+
+    // AND WHAT THEY SENT HOME BLIND. No endgame banishment revealed anything,
+    // so this is the first time anybody learns whether the room was right —
+    // the difference between a clean win and one they arrived at by luck.
+    if (v.sentHome.length) {
+      const right = v.sentHome.filter(x => x.role === 'traitor').length;
+      push('unmask', _card('unmask', 'And The Ones They Sent Home', 'part',
+        '<p>' + _apos(_fill(_pick(SENTHOME_LEAD, key + '|sent-lead'),
+          { door: _esc(v.doors.vote) })) + '</p>'
+        + '<div class="lt-sent">' + v.sentHome.map(x => {
+          const spr = _pron(x.name);
+          return '<div class="lt-sent-row" data-role="' + x.role + '">'
+            + _av(x.name, 34)
+            + '<span class="lt-sent-nm">' + _esc(x.name) + '</span>'
+            + '<span class="lt-sent-role">' + (x.role === 'traitor' ? 'Traitor' : 'Faithful')
+            + '</span>'
+            + '<span class="lt-sent-say">' + _apos(_fill(_pickAway(
+              x.role === 'traitor' ? SENTHOME_RIGHT : SENTHOME_WRONG,
+              key + '|sent|' + x.name, said),
+              { sub: spr.sub || 'they', door: _esc(v.doors.vote) })) + '</span>'
+            + '</div>';
+        }).join('') + '</div>'
+        + _sums([
+          ['Cloaks found blind', String(right), right ? 'brass' : null],
+          ['Honest, sent anyway', String(v.sentHome.length - right), null],
+        ])),
+      { kind: 'sent-home' });
+    }
+  }
 
   // ── AND THEN IT IS TURNED OVER ──────────────────────────────────────
   // The verdict is the headline the whole season was for. `resolvePot` decided

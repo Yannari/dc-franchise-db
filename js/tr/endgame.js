@@ -324,7 +324,35 @@ export function runEndgame(startEp, rng = Math.random, { reveal = false } = {}) 
   // standing" — the same reason headless.js settles them after every night.
   settleDaggers(ep);
   const result = resolvePot(ep);
-  return { ...result, rounds, ballots, endEp: ep, reveal,
+  // ── THE UNMASKING ───────────────────────────────────────────────────
+  //
+  // Nobody has revealed anything since the last mandated table: that is rule 1
+  // above, and it is why the endgame is played on nerve. So the moment the
+  // room agrees to stop is the ONLY moment the season's central fact becomes
+  // sayable, and it is the scene the whole format is built to reach.
+  //
+  // Recorded here rather than inferred on the screen. A screen can work out
+  // who was a Traitor from who took the money — takers are the pact when the
+  // pact survives — but that is a second derivation of the season's most
+  // important fact, and the two would only have to disagree once.
+  //
+  // ORDER IS THE DRAMA. Faithfuls first and the pact last, because a reveal
+  // read out in seating order gives the ending away halfway through. Stable,
+  // so a replay unmasks the room in the same order it did the first time.
+  const _roleOf = n => (alignmentAt(n, ep) === 'traitor' ? 'traitor' : 'faithful');
+  const standing = [...(gs.activePlayers || [])];
+  const reveals = [
+    ...standing.filter(n => _roleOf(n) === 'faithful'),
+    ...standing.filter(n => _roleOf(n) === 'traitor'),
+  ].map(n => ({ name: n, role: _roleOf(n) }));
+  // AND WHAT THE ROOM SENT HOME BLIND. Every endgame banishment happened with
+  // no reveal, so until now not even the audience has been told whether the
+  // room was right. Two of these turning out to be Faithful is the difference
+  // between a clean win and a room that got there by luck.
+  const sentHome = rounds.filter(r => r && r.banished)
+    .map(r => ({ name: r.banished, role: _roleOf(r.banished), ep: r.ep ?? null }));
+
+  return { ...result, rounds, ballots, endEp: ep, reveal, reveals, sentHome,
     // The one private meeting of the season, or null if the endgame never had
     // a room big enough to hold one. Handed back rather than left on `gs`
     // because the next season replaces `gs` wholesale.

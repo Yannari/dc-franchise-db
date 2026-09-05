@@ -81,10 +81,6 @@ import '../tr/castle/confrontation.js';
 // The morning nobody was taken. Every other dawn scene in the pool needs a
 // body; a blocked night has none, and had no scene at all.
 import '../tr/castle/quiet-night.js';
-// The ordinary evening. `evening` and `after-table` leave nine scenes a
-// night of budget unspent between them because almost everything in them
-// needs rare state; these are the ones that can fire on a Tuesday.
-import '../tr/castle/evening.js';
 
 /**
  * The season's random stream — and the hash in front of it is load-bearing.
@@ -950,6 +946,20 @@ function _endgameRecord(e) {
       revealedTraitor: revealed ? !!r.wasTraitor : null,
     })),
     winner: e.winner || null,
+    // ── THE UNMASKING ─────────────────────────────────────────────────
+    //
+    // The one moment the season's central fact becomes sayable, and the scene
+    // the format is built to reach. Carried on the record rather than worked
+    // out on the screen from who took the money: that inference is right today
+    // (the takers ARE the pact when the pact survives) and it is a second
+    // derivation of the most important fact in the show, which only has to
+    // disagree once. `reveals` is already in reveal order — Faithfuls first,
+    // the pact last, so the ending is not given away halfway through.
+    reveals: (e.reveals || []).map(r => ({ name: r.name, role: r.role })),
+    // And what the room sent home BLIND. No endgame banishment revealed
+    // anything, so this is the first time anyone learns whether the room was
+    // right — the difference between a clean win and one they got to by luck.
+    sentHome: (e.sentHome || []).map(r => ({ name: r.name, role: r.role, ep: r.ep ?? null })),
     takers: [...(e.takers || [])],
     losers: [...(e.losers || [])],
     survivors: [...(e.survivors || [])],

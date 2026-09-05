@@ -1600,8 +1600,8 @@ const _MEET_SHARED = [
   + 'played that one together.',
   '{a} and {b} have done this before &mdash; {season} &mdash; and the handshake takes '
   + 'slightly too long.',
-  '{b} sees {a} on the flags and stops. {season}. Everybody standing near them works out '
-  + 'that there is history without being told what it is.',
+  '{b} sees {a} on the flags and stops. {season}. Neither of them needs to explain it '
+  + 'to the people watching.',
   '{a} gets to {b} last, deliberately. &ldquo;{season}.&rdquo; {b} says, &ldquo;I remember.&rdquo;',
 ];
 
@@ -1715,8 +1715,7 @@ const _PROFILE = {
     '{name} plays the room before the game starts, and has already started.',
     'Names, faces, who is standing with whom — {name} has the whole drive filed before the '
     + 'doors open.',
-    "{name} is the sort who is everybody's second-favourite person by Thursday, which "
-    + "is a better place to be than first.",
+    "{name} makes sure everybody likes {obj} enough, and nobody likes {obj} too much.",
     'Talking is the game as far as {name} is concerned, and {sub} is extremely good at talking.',
     '{name} will know something about every person here by tonight, and none of them will '
     + 'remember being asked.',
@@ -1806,7 +1805,7 @@ const _PERSONALITY = {
     'Control without fingerprints &mdash; {name} has done this before, to people who liked {obj}.',
     'Three people will leave this castle on a plan {name} set in motion, and two of them '
     + 'will think it was their own idea.',
-    'Every conversation {name} has tonight is a placement, and none of them will feel like one.',
+    '{name} will have three people voting together by Thursday, and none of them will remember whose idea it was.',
   ],
   schemer: [
     '{name} will burn something down this week and be sympathetic about it at breakfast.',
@@ -1894,7 +1893,7 @@ const _PERSONALITY = {
     '{name} arrives underestimated and has no intention of correcting anybody.',
     'There is a version of this season where {name} is the last one standing and nobody saw it.',
     '{name} has been written off before and has notes on what it costs the people who do it.',
-    "Being nobody's first choice is a position, and {name} knows how to play it.",
+    "Nobody here sees {name} coming, and {name} is not going to correct them.",
     '{name} will be here longer than the room expects and will enjoy every day of it.',
     'The castle will look straight past {name} for a month. That is a month of free moves.',
     '{name} plays like somebody with nothing to defend, which is harder to beat than it sounds.',
@@ -1968,20 +1967,20 @@ const _THREAT = {
     'A winner on the flags. Every person here is now doing sums about {obj}.',
     '{name} arrives with a title, which is the most expensive thing anybody can bring '
     + 'through that arch.',
-    'The room knows {name} has done this. That knowledge is worth about a fortnight, '
-    + 'and then it is a target.',
+    'The room knows {name} has done this. That buys respect for a week, and then it buys '
+    + 'a name on a slate.',
     'Somebody who has already won cannot arrive quietly, and {name} has not.',
     '{name} will spend this season being watched by people who have seen how it ends.',
     'There is a champion standing on these flags and every single person here has clocked it.',
     'Winning once buys {name} respect. It also buys {obj} a name on a slate.',
   ],
   finalist: [
-    '{name} has gone deep before and did not quite finish it, which is its own kind of hunger.',
+    '{name} has gone deep before and did not quite finish it, and that is the sort of thing a person comes back for.',
     'The room can see {name} has been near the end of one of these. That is enough.',
     '{name} arrives with a record that says dangerous without saying champion.',
     'Somebody who got that close does not come back to make friends.',
     '{name} knows exactly what the last week of one of these feels like, and most people here do not.',
-    'A finalist is a threat with something to prove, which is the worse of the two.',
+    'A finalist is a threat who nearly got there, and the room can see it.',
     '{name} has done the hard part before. The room will not enjoy remembering that.',
     'Close enough to taste it once. That does something to how a person plays the second time.',
   ],

@@ -499,7 +499,7 @@ const _ARCHETYPE_VOICE = {
     { rep: "for surviving a vote {sub} was never supposed to survive",
       now: "plays from behind and has learned to use the view" },
     { rep: "for turning a fourth-boot prediction into a deep run",
-      now: "carries no expectations and no target, which is its own kind of weapon" },
+      now: "carries no expectations and no target, and nobody here is watching for {obj}" },
     { rep: "for proving the early consensus wrong by a margin of weeks",
       now: "lets the castle underestimate {obj} and makes no effort to correct it" },
     { rep: "for scraping through elimination after elimination on nothing but nerve",

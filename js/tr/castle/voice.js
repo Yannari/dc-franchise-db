@@ -636,6 +636,17 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── the road out (js/tr/castle/journey.js) ──────────────────────────
+  //
+  // The five where somebody is on the receiving end of it: an argument
+  // carried out of the castle and had in front of a walking column, one that
+  // had to be broken up, one swallowed and still felt, being left to carry
+  // your own load for a mile, and being the person nobody would walk beside.
+  'straight-back-into-it', 'in-front-of-everybody', 'somebody-stepped-in',
+  // NOT `swallowed-it`: that branch name already lives in BENIGN, grouped
+  // with 'let-it-pass' and 'ended-kindly', and the sense carries over — a
+  // row somebody holds in is a row the other person never has to take.
+  'let-them-struggle', 'walking-alone',
   // a circle-mate was revealed a Traitor and the circle came apart, not together
   // (after-the-circle-harboured-one; its 'closed-ranks' branch is BENIGN below)
   'who-else', 'couldnt-see-it', 'cut-loose',
@@ -994,6 +1005,14 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── the road out (js/tr/castle/journey.js, four events) ─────────────
+  //
+  // Sorted by the rule this file runs on: adverse means the RESPONDENT is
+  // being leaned on. Raising an old thing where the castle cannot hear it,
+  // taking the weight off somebody, reading the shape of the column — the
+  // person opposite is being talked to, helped, or looked at, not pressed.
+  'said-it-out-there', 'took-the-weight', 'made-a-point-of-it',
+  'read-the-order', 'the-wrong-pair',
   // ── the morning nobody was taken (quiet-night-full-table) ───────────
   //
   // All four, and the classification is not a shrug. This scene is two people

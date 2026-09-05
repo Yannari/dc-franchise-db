@@ -572,7 +572,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // draw. Measured after: `after-table` 1.43 -> 4.05 scenes an episode,
     // `night` 1.31 -> 2.58, and the sweeps below confirm nothing in either
     // window's pre-existing pool fell under a floor.
-    expect(EVENTS.length).toBe(134);
+    expect(EVENTS.length).toBe(138);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -584,10 +584,21 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // file was last written. `quiet-night-full-table` is NOT one of them --
     // it opens an arc rather than continuing one -- so it is not in this
     // number, which is the check that the count moved for the reason given.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(77);
+    // 77 -> 80 on 2026-09-05: three of the four events added to the
+    // `journey-out` window continue a thread (raising an old thing on the
+    // road, carrying the table's argument onto it, taking the weight off
+    // somebody). The fourth, `susp-the-shape-of-the-column`, OPENS an arc
+    // rather than continuing one and is deliberately not in this number —
+    // which is the check that the count moved for the reason given.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(80);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(63);
+    // 63 -> 64: exactly one of the four new journey-out events declares it.
+    // `trust-raised-it-on-the-road` refuses to fire without a thread that
+    // already has a day behind it and cites those days; the other three
+    // read the bond graph, the column or last night's accusations, none of
+    // which is residue.
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(64);
   });
 
   it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
@@ -626,7 +637,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // REWRITE verdict on the events already sitting there was that they wrote
     // no thread at all. `one` -> `many` moved again for the same reason as
     // stage 3 (10 -> 23), and the new cell is `trust|night`.
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(49);
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(50);
     // 15 -> 14 (TASK 7 STAGE 6). `suspicion|morning` left the zero list, for
     // the same reason the three `night` cells left it in stage 4: the events
     // already sitting there gained the declaration the audit said they were
@@ -635,8 +646,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // is a cell count FALLING again, which is the direction it should move.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
       + 'can never be continued here, whatever either continuation lever is set to').toBe(14);
+    // 12 -> 13: `confrontation @ journey-out` did not exist before and now
+    // holds exactly one advancer. `none` is unchanged, which is what says a
+    // cell gained an advancer rather than the grid moving under all three.
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(12);
+      + 'living here can be advanced at most once every five rounds').toBe(13);
     // 22 -> 23: one further cell reached two advancers when the
     // confrontation family was registered. `none` and `one` are unchanged,
     // which is what says a cell gained an advancer rather than the shape
@@ -1352,6 +1366,11 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 //   after-the-circle-harboured-one 4   (betrayal fallout)
 //   trust-circle-breaks           4
 //   quiet-night-full-table        4    (the morning nobody was taken)
+// 2026-09-05: +14, all from the four events added to the `journey-out` window
+// (js/tr/castle/journey.js). That window held EIGHT events against thirty-one
+// in `evening`, with seven of the eight families on exactly one — the
+// eligible-event exhaustion this plan measured in `journey-back` and `night`
+// and then fixed in both, leaving this one starved. Zero branches removed.
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1460,6 +1479,10 @@ const BRANCHES = [
   'confront-defend-the-accused:drew-fire',
   'confront-defend-the-accused:fell-flat',
   'confront-defend-the-accused:worked',
+  'confront-it-starts-on-the-road:in-front-of-everybody',
+  'confront-it-starts-on-the-road:somebody-stepped-in',
+  'confront-it-starts-on-the-road:straight-back-into-it',
+  'confront-it-starts-on-the-road:swallowed-it',
   'confront-pile-on:crumbled',
   'confront-pile-on:overreached',
   'confront-pile-on:weathered',
@@ -1790,6 +1813,9 @@ const BRANCHES = [
   'susp-private-accusation:denies',
   'susp-private-accusation:denyWeak',
   'susp-private-accusation:turned',
+  'susp-the-shape-of-the-column:read-the-order',
+  'susp-the-shape-of-the-column:the-wrong-pair',
+  'susp-the-shape-of-the-column:walking-alone',
   'susp-timeline-crosscheck:checked-out',
   'susp-timeline-crosscheck:did-not-line-up',
   'susp-timeline-crosscheck:lost-the-hour',
@@ -1886,6 +1912,10 @@ const BRANCHES = [
   'trust-protect-pact:pact',
   'trust-protect-pact:said-it-again',
   'trust-protect-pact:with-one-exception',
+  'trust-raised-it-on-the-road:let-it-lie',
+  'trust-raised-it-on-the-road:put-it-down',
+  'trust-raised-it-on-the-road:reopened-it',
+  'trust-raised-it-on-the-road:said-it-out-there',
   'trust-return-favor:favor-returned',
   'trust-return-favor:kept-the-score',
   'trust-return-favor:noticed-and-said-so',
@@ -1902,6 +1932,9 @@ const BRANCHES = [
   'trust-share-suspicion-honestly:made-them-pay-first',
   'trust-share-suspicion-honestly:shared-suspicion',
   'trust-share-suspicion-honestly:took-it-back',
+  'trust-took-the-weight-on-the-road:let-them-struggle',
+  'trust-took-the-weight-on-the-road:made-a-point-of-it',
+  'trust-took-the-weight-on-the-road:took-the-weight',
   'trust-trade-reads:disagreed',
   'trust-trade-reads:one-way',
   'trust-trade-reads:read-the-room',

@@ -1478,3 +1478,465 @@ registerEvent({
 // Nothing below this line: `night` events live with their families, because
 // night is a room in the castle and the road is not.
 export const JOURNEY_WINDOWS = ['journey-out', 'journey-back'];
+
+// ══════════════════════════════════════════════════════════════════════
+// FOUR MORE FOR THE ROAD OUT — the window the library forgot
+// ══════════════════════════════════════════════════════════════════════
+//
+// `journey-out` held EIGHT events against thirty-one in `evening` and
+// twenty-six in `after-table`, and seven of the eight families had exactly
+// ONE event in it. That is the eligible-event exhaustion the plan's own Task 5
+// ruling measured in `journey-back` and `night` — both of which were then
+// filled, while this one was not. A phase cannot spend a scene budget it has
+// no eligible events for, so a starved window caps density everywhere.
+//
+// TWO OF THESE ARE FAMILIES THE WINDOW HAD NONE OF. `callback` and
+// `confrontation` never fired on the road, which meant the walk out could
+// never carry a piece of history or an argument — the two things a private
+// hour away from the castle is most obviously for.
+//
+// AND EVERY ONE READS STORED STATE, which is the plan's demand of a callback:
+// "reads stored history rather than matching a name". The road event that
+// raises something reads an OPEN THREAD and its prior days; the argument reads
+// last night's ACCUSATIONS; the column reads the bond graph; the favour reads
+// who is carrying what. None of them invents a past.
+
+const ROAD_RAISE_LINES = {
+  // They bring it up, out here, where the castle cannot hear it.
+  'said-it-out-there': [
+    '{a} let a mile go by and then asked the question {a} had come out here to ask.',
+    'There was nobody within earshot for the first time in a week, and {a} used it.',
+    '{a} said it plainly, once, and then let {b} have the silence to answer into.',
+    '{a} waited until the gate was out of sight and then asked {b} about it directly.',
+    'Two miles from anybody, {a} finally put the question to {b} plainly.',
+    '{a} had been carrying it since that day and let it out on the road, where it was safe to.',
+    'The road is the one place in this game with no audience, and {a} used it on {b}.',
+    '{a} brought it up the way you bring up a thing you have rehearsed.',
+    'It came out of {a} between one field and the next, and {b} had known it was coming.',
+  ],
+  // Raised, and put back down again without an answer.
+  'let-it-lie': [
+    '{a} carried it the whole way out and carried it the whole way back.',
+    'The moment was there for about a hundred yards. {a} let it go past.',
+    '{b} gave {a} two openings. {a} took neither and talked about the mission.',
+    '{a} got as far as the first word of it and then talked about the weather instead.',
+    'It nearly came up. {b} watched {a} decide against it and said nothing about that either.',
+    '{a} started, stopped, and spent the rest of the road being pleasant.',
+    'Whatever {a} had meant to ask {b} out there, it stayed unasked.',
+    '{a} decided the road was not as private as it looked and kept walking.',
+    'Both of them knew what the walk was for. Neither of them opened it.',
+  ],
+  // It goes badly: the old thing is worse for being handled.
+  'reopened-it': [
+    '{a} meant to settle it and managed to make it a great deal worse.',
+    'Whatever had been scabbed over came off on that road, in front of the hills.',
+    'They went out with one problem between them and came back with the same one, louder.',
+    '{a} raised it and the whole of it came back up with it, mile after mile.',
+    'It was settled until {a} touched it. By the top of the road it was not settled.',
+    '{b} answered the question and then answered it twice more, louder.',
+    'What {a} wanted was a line under it. What {a} got was the argument again, in a field.',
+    'They arrived at the mission not speaking, having left the castle fine.',
+    '{a} picked at it until {b} stopped pretending it did not matter.',
+  ],
+  // Or it closes: the road ends the story.
+  'put-it-down': [
+    '{a} and {b} left it in a field, which is a better place for it than the castle.',
+    'It got said, it got answered, and neither of them picked it back up.',
+    'Whatever was between them went into the ditch at the second gate and stayed there.',
+    '{a} said it, {b} answered it, and that was genuinely the end of the thing.',
+    'It took about four hundred yards and then neither of them needed it any more.',
+    'They walked the rest of the way out lighter than they walked the first mile.',
+    'Whatever it had been, it did not survive being said out loud on an empty road.',
+    '{b} explained. {a} believed it. The road did what the hall could not.',
+    'It ended quietly, somewhere between the stile and the water, and stayed ended.',
+  ],
+};
+
+// RAISING AN OLD THING WHERE THE CASTLE CANNOT HEAR IT.
+//
+// FILED UNDER `trust`, AND THE FIRST DRAFT GOT THAT WRONG. It was written as a
+// `callback`, on the reasoning that it brings up the past — and
+// tests/tr-castle-reachability.test.js caught it inside one run: that family
+// means FRANCHISE history, and the suite carries a deliberate invariant that
+// callback fires ZERO times in a debut season, so "a green run is never
+// mistaken for 'callback works in season one'". This event reads an IN-SEASON
+// thread, so it fired 113 times on an empty ledger and broke a documented
+// property of the pool.
+//
+// The invariant was right and the filing was wrong. What this scene actually
+// is, is two people with a story between them raising it on a private road —
+// which is trust, continued. The distinction from `trust-fall-into-step` is
+// the precondition: that one is the conversation a walk produces, this one
+// requires a thread with a DAY already behind it (`priorMoments`), and cites
+// it rather than describing a past in general terms.
+registerEvent({
+  id: 'trust-raised-it-on-the-road',
+  family: 'trust',
+  window: 'journey-out',
+  advancesThread: true,
+  citesResidue: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['boldness', 'temperament', 'loyalty', 'social'],
+    relationship: ['close-ally', 'neutral', 'prior-history'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // THE HISTORY HAS TO EXIST. No open thread between them, or one with no
+    // day behind it, and there is nothing to raise — a scene that "brings up
+    // the past" with no past on the record is the vague-callback defect the
+    // whole grounding pass was about.
+    const t = findOpenThread('callback', [a, b]) || findOpenThread('trust', [a, b])
+      || findOpenThread('suspicion', [a, b]);
+    if (!t) return 0;
+    if (!priorMoments(t, ctx.ep).length) return 0;
+    // WEIGHTED TO SUPPLEMENT, NOT TO TAKE OVER. Four events entering a
+    // window that held six is a 60%% increase in weight, and the phase
+    // budget does not grow to match — so every existing event fires less.
+    // Measured: `cover-swap-story-with-partner:were-together-anyway` fell
+    // to 34 firings against tr-castle-prose's variety floor of 40. These
+    // weights are set below the window's typical 2.5 for that reason.
+    return 1.4 + Math.min(0.8, heatAt(t, ctx.ep));
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-raised-it-on-the-road');
+    const [a, b] = ctx.actors;
+    const st = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      // Saying it needs nerve and a reason to bother.
+      'said-it-out-there': (st.boldness / 10) * 0.5 + (st.social / 10) * 0.3,
+      // Letting it lie is what a careful person does with a private hour.
+      'let-it-lie': (1 - st.boldness / 10) * 0.55 + 0.15,
+      // It reopens when the person answering cannot leave it alone.
+      'reopened-it': (1 - sb.temperament / 10) * 0.5 + (st.boldness / 10) * 0.2,
+      // And it closes when both of them would rather it did.
+      'put-it-down': (sb.temperament / 10) * 0.35 + (st.loyalty / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'let-it-lie';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'said-it-out-there' ? 'raised it on the road, away from the castle'
+      : branch === 'reopened-it' ? 'reopened an old argument on the road out'
+        : branch === 'put-it-down' ? 'settled an old thing on the road out'
+          : 'nearly raised it on the road and did not';
+    const bondDelta = branch === 'put-it-down' ? 2
+      : branch === 'said-it-out-there' ? 1
+        : branch === 'reopened-it' ? -2.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const line = pick(rng, ROAD_RAISE_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
+    // A thing put down on the road is a thing the castle does not carry back.
+    // 'buried' is the pool's own word for a story that ended where it was had —
+    // trust-fall-into-step resolves its terminal road branch the same way.
+    if (thread && branch === 'put-it-down') {
+      api.resolveArc(thread.id, 'buried', { source: sceneWhy });
+    }
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread?.id, cited, bondDelta };
+  },
+});
+
+const ROAD_ARGUMENT_LINES = {
+  // It carries over from the table and does not wait for the mission.
+  'straight-back-into-it': [
+    '{a} got about four hundred yards before last night came out of {a} again.',
+    'The road had barely started and {a} was already saying {b}\u2019s name like an accusation.',
+    '{a} spent the first hill relitigating the table, at volume, at {b}.',
+    '{a} did not last a mile before starting on {b} about last night.',
+    'The gate was barely shut when {a} said the name again, and meant it at {b}.',
+    'Whatever {a} had been holding through breakfast came out on the first hill.',
+    '{a} had clearly decided the road was the place, and told {b} so at length.',
+    'It picked up exactly where the table left it, with worse footing.',
+    '{a} started it before the castle was out of sight and did not slow down.',
+  ],
+  // Held, in public, in front of a walking column.
+  'in-front-of-everybody': [
+    'It happened in the open, on a track, with no walls to take it behind.',
+    '{a} and {b} had it out where every single person on that road could hear.',
+    'Nobody intervened and nobody looked away, which is its own kind of participation.',
+    'They had it out on an open road with fourteen people close enough to hear every word.',
+    'Nobody pretended not to listen. There is nowhere on a road to pretend.',
+    '{a} and {b} argued the length of a field and the column went quiet around them.',
+    'It was not a private conversation and neither of them tried to make it one.',
+    'The walk arranged itself into an audience without anybody deciding to.',
+    'Two people arguing, twelve people walking slightly slower to hear it.',
+  ],
+  // Somebody steps in and it stops.
+  'somebody-stepped-in': [
+    'It was going somewhere bad until a third voice made it stop going there.',
+    'Somebody got between {a} and {b} and walked one of them up the road.',
+    'The argument ended because somebody else decided it was going to.',
+    'It got as far as raised voices before somebody put themselves between them.',
+    'A third person said the thing that ended it, and both of them let it be ended.',
+    'The column absorbed it. Somebody changed the subject and it stayed changed.',
+    'It was stopped, not settled, and everybody walking knew the difference.',
+    'Somebody walked {b} up to the front and that was the end of the argument.',
+    'It ended because a third party made ending it easier than continuing.',
+  ],
+  // Or it does not happen at all, and the not-happening is the scene.
+  'swallowed-it': [
+    '{a} said nothing to {b} for six miles and meant every word of it.',
+    'It stayed in {a}, all the way out and all the way through the afternoon.',
+    '{a} rehearsed it the whole road and delivered none of it.',
+    '{a} had it ready the whole way out and never once said it.',
+    'Twice {a} drew breath to start on {b}. Twice {a} kept walking.',
+    'Whatever {a} thinks about last night, the road did not hear it.',
+    '{a} walked the entire way behind {b} and said nothing at all.',
+    'It stayed in. That is not the same as it going away.',
+    '{a} decided this was not the hour for it, and the deciding took the whole hour.',
+  ],
+};
+
+// THE OTHER MISSING FAMILY. A confrontation reads last night's PUBLIC record —
+// who accused whom at the table — so the argument on the road is the argument
+// the room already heard, continued where the host is not standing.
+registerEvent({
+  id: 'confront-it-starts-on-the-road',
+  family: 'confrontation',
+  window: 'journey-out',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['boldness', 'temperament', 'strategic'],
+    relationship: ['rival', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // LAST NIGHT'S TABLE, AND ONLY THAT. An argument on the road out is the
+    // argument the room already had; without a public accusation between these
+    // two there is nothing to carry, and inventing one would hand the walk a
+    // grievance the record does not contain.
+    const round = (gs.tr?.rounds || []).filter(r => r.ep === ctx.ep - 1).pop();
+    if (!round) return 0;
+    const said = (round.accusations || []).some(x =>
+      (x.accuser === a && x.target === b) || (x.accuser === b && x.target === a));
+    if (!said) return 0;
+    // And people who like each other do not carry it onto the road.
+    // WEIGHTED TO SUPPLEMENT, NOT TO TAKE OVER. Four events entering a
+    // window that held six is a 60%% increase in weight, and the phase
+    // budget does not grow to match — so every existing event fires less.
+    // Measured: `cover-swap-story-with-partner:were-together-anyway` fell
+    // to 34 firings against tr-castle-prose's variety floor of 40. These
+    // weights are set below the window's typical 2.5 for that reason.
+    return getBond(a, b) <= 1 ? 1.8 : 0.6;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-it-starts-on-the-road');
+    const [a, b] = ctx.actors;
+    const st = pStats(a);
+    const scores = {
+      'straight-back-into-it': (st.boldness / 10) * 0.5 + (1 - st.temperament / 10) * 0.3,
+      'in-front-of-everybody': (st.boldness / 10) * 0.4 + (1 - st.strategic / 10) * 0.25,
+      'somebody-stepped-in': 0.35,
+      'swallowed-it': (1 - st.boldness / 10) * 0.5 + (st.strategic / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'swallowed-it';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'swallowed-it' ? 'carried last night up the road and never said it'
+      : branch === 'somebody-stepped-in' ? 'was talked down on the road out'
+        : 'took last night onto the road';
+    const bondDelta = branch === 'swallowed-it' ? -0.5
+      : branch === 'somebody-stepped-in' ? -1 : -2.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const line = pick(rng, ROAD_ARGUMENT_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const { thread, cited } = arcContinue(api, 'confrontation', [a, b], ctx.ep, line,
+      { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread?.id, cited, bondDelta };
+  },
+});
+
+const COLUMN_SHAPE_LINES = {
+  // The column sorts itself and somebody reads the sorting.
+  'read-the-order': [
+    '{a} watched who chose whom on that road and did the arithmetic quietly.',
+    'The column is a seating plan nobody thinks about, and {a} thinks about it.',
+    '{a} hung back a little and read the whole line of them from behind.',
+    '{a} spent the walk noting who had chosen to be near whom, and remembering it.',
+    'A column arranges itself honestly. {a} watched it arrange itself.',
+    '{a} counted the pairs on the road out and did not like one of the answers.',
+    'Nobody picks who they walk beside by accident, and {a} knows that.',
+    '{a} let the column go ahead and looked at the shape of it from the back.',
+    'The road sorts people. {a} was reading the sort the whole way.',
+  ],
+  // Two people who should not be together, are.
+  'the-wrong-pair': [
+    '{b} was walking with the last person {a} would have paired them with.',
+    '{a} looked up the road, saw who {b} had fallen in beside, and thought about it all day.',
+    'It is a small thing to notice. {a} noticed it and kept it.',
+    '{a} saw {b} walking with somebody {b} has spent all week disagreeing with.',
+    'Two people who do not like each other walked a whole mile side by side, and {a} noticed.',
+    '{a} could not work out what {b} was doing at that end of the column.',
+    'The pairing made no sense from anywhere except one explanation, and {a} got there.',
+    '{a} watched {b} fall in beside the last person {a} expected and said nothing.',
+    'It is not proof of anything. {a} filed it anyway.',
+  ],
+  // Somebody is walking alone and that is its own answer.
+  'walking-alone': [
+    '{b} had the road to themselves for an hour, and not by choosing it.',
+    '{a} counted the pairs and got everybody except {b}.',
+    'There was a space around {b} the whole way out that nobody stepped into.',
+    '{b} walked the whole road out on their own, and {a} was not the only one to see it.',
+    'Nobody fell in beside {b}. {a} noticed how quickly that had stopped being an accident.',
+    '{b} was alone at the back of the column for an hour, which in this castle is a verdict.',
+    '{a} thought about walking with {b} and thought better of it, along with everybody else.',
+    'A column of fourteen and {b} in a gap of their own the whole way.',
+    '{a} watched the space around {b} and understood exactly what it meant.',
+  ],
+};
+
+// THE COLUMN AS EVIDENCE. Reads the live bond graph rather than a roll: who
+// walks beside whom is a real fact this engine already holds, and a suspicion
+// scene that reads it is deducing from the game rather than from a die.
+registerEvent({
+  id: 'susp-the-shape-of-the-column',
+  family: 'suspicion',
+  window: 'journey-out',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['intuition', 'strategic', 'social'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    // A column needs a column. Six people on a road is a group; three is a
+    // walk, and the shape of three tells nobody anything.
+    // WEIGHTED TO SUPPLEMENT, NOT TO TAKE OVER. Four events entering a
+    // window that held six is a 60%% increase in weight, and the phase
+    // budget does not grow to match — so every existing event fires less.
+    // Measured: `cover-swap-story-with-partner:were-together-anyway` fell
+    // to 34 firings against tr-castle-prose's variety floor of 40. These
+    // weights are set below the window's typical 2.5 for that reason.
+    return (ctx.living || []).length >= 6 ? 1.2 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-the-shape-of-the-column');
+    const [a, b] = ctx.actors;
+    const st = pStats(a);
+    // IS {b} ACTUALLY ALONE? Read off the bonds, not decided by the roll — a
+    // player nobody has a positive bond with really is walking on their own.
+    const friends = (ctx.living || []).filter(n => n !== b && getBond(b, n) > 1).length;
+    const scores = {
+      'read-the-order': (st.intuition / 10) * 0.45 + (st.strategic / 10) * 0.3,
+      'the-wrong-pair': (st.intuition / 10) * 0.4 + 0.15,
+      // Only reachable when the isolation is real.
+      'walking-alone': friends === 0 ? 0.9 : friends === 1 ? 0.3 : 0,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'read-the-order';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'walking-alone' ? 'walked the road out with nobody beside them'
+      : branch === 'the-wrong-pair' ? 'was seen walking with somebody unexpected'
+        : 'read the order of the column on the road out';
+    // A read costs the person read, a little, and only in the reader's head.
+    const bondDelta = branch === 'walking-alone' ? -0.5 : -1;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const line = pick(rng, COLUMN_SHAPE_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const t = api.openArc('suspicion', [a, b], { source: sceneWhy, seed: line });
+    return { branch, pair: [a, b], speaker: a, respondent: b, topic: b,
+      topicKind: 'road-read', threadId: t?.id, bondDelta };
+  },
+});
+
+const ROAD_FAVOUR_LINES = {
+  'took-the-weight': [
+    '{a} shifted the load onto {a}\u2019s own shoulder at the gate and said nothing about it.',
+    '{b} did not ask and {a} did not wait to be asked.',
+    'By the top of the hill {a} had most of it, and neither of them had discussed that.',
+    '{a} took the heavy end off {b} at the second stile without being asked.',
+    'Somewhere on the hill {a} was carrying {b}’s share and neither of them mentioned it.',
+    '{b} was struggling and {a} simply took it, which is not nothing out here.',
+    '{a} carried it the last mile and handed it back at the gate without comment.',
+    'It was a small thing. {b} has decided to remember it anyway.',
+    '{a} did it quietly, which is the only way it counts.',
+  ],
+  'made-a-point-of-it': [
+    '{a} helped, visibly, in front of the people {a} wanted to have seen it.',
+    'The generosity was genuine. So was the timing of it.',
+    '{a} took the weight where the column was thickest and put it down where it was not.',
+    '{a} took the weight off {b} and made sure the column saw it happen.',
+    'The help was real and the audience for it was chosen.',
+    '{a} carried it, and mentioned carrying it, twice.',
+    'It was generous and it was theatre, and {b} could tell which part was which.',
+    '{b} said thank you and spent the next mile working out what it had cost.',
+    'A favour done loudly is still a favour. It is just also something else.',
+  ],
+  'let-them-struggle': [
+    '{b} carried the whole of it and {a} walked beside {b} carrying nothing.',
+    'There was one obvious moment to offer and {a} let it pass.',
+    '{a} was close enough the whole way. That is what {b} will remember.',
+    '{a} watched {b} struggle with it the whole way and did not offer.',
+    'Nobody helped {b}. {a} was closest, and did not.',
+    '{a} could have taken it at any point on that road and chose not to.',
+    'It was not cruelty. It was a decision, made once and kept for a mile.',
+    '{b} managed it alone and noticed exactly who had let them.',
+    '{a} walked ahead. {b} arrived last, and carrying everything.',
+  ],
+};
+
+// A ROAD IS PHYSICAL, and almost nothing in this pool is. The mission is an
+// hour away on foot with something to carry, and who takes the weight off whom
+// is a trust beat the castle's rooms cannot produce.
+registerEvent({
+  id: 'trust-took-the-weight-on-the-road',
+  family: 'trust',
+  window: 'journey-out',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['loyalty', 'physical', 'social', 'strategic'],
+    relationship: ['close-ally', 'neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // Nobody carries anything for somebody they are actively against.
+    // WEIGHTED TO SUPPLEMENT, NOT TO TAKE OVER. Four events entering a
+    // window that held six is a 60%% increase in weight, and the phase
+    // budget does not grow to match — so every existing event fires less.
+    // Measured: `cover-swap-story-with-partner:were-together-anyway` fell
+    // to 34 firings against tr-castle-prose's variety floor of 40. These
+    // weights are set below the window's typical 2.5 for that reason.
+    return getBond(a, b) >= -1 ? 1.2 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'trust-took-the-weight-on-the-road');
+    const [a, b] = ctx.actors;
+    const st = pStats(a);
+    const bond = getBond(a, b);
+    const scores = {
+      // Doing it quietly is loyalty plus the physical wherewithal to spare.
+      'took-the-weight': (st.loyalty / 10) * 0.4 + (st.physical / 10) * 0.3
+        + Math.max(0, bond) / 10 * 0.3,
+      // Doing it visibly is a social player buying something with it.
+      'made-a-point-of-it': (st.social / 10) * 0.35 + (st.strategic / 10) * 0.35,
+      // Not doing it needs a reason, and a thin bond is one.
+      'let-them-struggle': Math.max(0.1, 0.5 - Math.max(0, bond) * 0.08),
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'took-the-weight';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+
+    const sceneWhy = branch === 'took-the-weight' ? 'took the weight off them on the road'
+      : branch === 'made-a-point-of-it' ? 'helped on the road where the column could see it'
+        : 'let them carry it the whole way';
+    const bondDelta = branch === 'took-the-weight' ? 2
+      : branch === 'made-a-point-of-it' ? 1 : -1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const line = pick(rng, ROAD_FAVOUR_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
+    const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      threadId: thread?.id, cited, bondDelta };
+  },
+});

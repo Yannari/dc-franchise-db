@@ -1423,6 +1423,63 @@ git add tests/tr-calibration.test.js tests/tr-vp.test.js tests/tr-full-experienc
 git commit -m "test(traitors): gate the full simulator experience"
 ```
 
+### Task 13: The five format mechanics the show has and this engine does not
+
+**Source, and it is not a wish list.** The Traitors wiki marks its format
+mechanics with `Template:Gameplay Mechanic`. Seventeen pages carry it, and
+twelve are already built here — Missions, Armoury, Shield, Murder, Round Table,
+On Trial, Murder in Plain Sight, End Game, Recruitment, Banishment, Dagger,
+Seer. The remaining five are this task, listed with what the show actually does
+rather than with an invented reading:
+
+| Mechanic | What the show does |
+| --- | --- |
+| **Death Match** | The Traitors covertly pick four players for a game of cards. One card is a life card; the loser is murdered face to face. In the UK it REPLACES On Trial and Murder in Plain Sight. |
+| **Journal of Suspicions** | A murdered or banished Faithful grants their most-trusted player access to the written suspicions every eliminated player left behind. |
+| **Sacred Sword** | Contestants draw swords from a stone. The one winner may take the previous mission's prize money and leave the game, or return it to the pot and stay. |
+| **Dinner Party** | Replaces a Round Table with a dinner, and is a CARRIER for other twists — a quit offer, a Murder in Plain Sight run during or after it. Sometimes played with no twist at all. |
+| **Secret Traitor** | One Traitor is hidden from the other Traitors and holds different powers. The pact is no longer a single conclave. |
+
+**Order is by cost, and the reasoning is structural:**
+
+1. **Death Match** is cheapest. It is a murder variant and `js/tr/murder-variants.js` already carries six with a feasibility gate, a line pool and a `VARIANT_RULE` entry apiece. It needs no new architecture.
+2. **Journal of Suspicions** is the best fit for THIS engine specifically: it reads written suspicions, and `js/knowledge.js` already stores real beliefs with sources and confidences. Everywhere else this twist would need invented text; here it has a store to read.
+3. **Sacred Sword** touches the pot and voluntary exit — a departure channel the show's two exit verbs do not cover (`docs/ADDING-A-SHOW.md` §5). Expect a third channel, and check every `exits[]` reader.
+4. **Dinner Party** is a Round Table REPLACEMENT and a container. Build it after there are twists worth carrying, or it is an empty frame.
+5. **Secret Traitor** is the most expensive and should be last. `runConclave`, `shieldSeenBy`, `armouryHesitation` and the alliance code all assume the pact is one group that shares information; a Traitor the other Traitors cannot see breaks that assumption rather than extending it.
+
+**Files:**
+- Modify: `js/tr/murder-variants.js`, `js/tr-rules.js`, `js/vp-tr/cold-open.js` (Death Match)
+- Create: `js/tr/journal.js`; Modify: `js/knowledge.js` readers only (Journal)
+- Modify: `js/tr/headless.js`, `js/shows.js` exit verbs (Sacred Sword)
+- Modify: `js/tr/roundtable.js`, `js/vp-tr/round-table.js` (Dinner Party)
+- Modify: `js/tr/roles.js`, `js/tr/murder.js` (Secret Traitor)
+- Test: `tests/tr-death-match.test.js`, `tests/tr-journal.test.js`, `tests/tr-sacred-sword.test.js`, `tests/tr-dinner-party.test.js`, `tests/tr-secret-traitor.test.js`
+
+**Interfaces:**
+- Every mechanic registers in `js/tr-rules.js` with `trigger`, `reminder`, `fullRules` and `observerVisibility`, and is explained BEFORE or AT its first occurrence — the contract Task 10 established. A twist whose rule the viewer is never told is not finished.
+- Every mechanic is schedulable from the timeline the way the Armoury is, not season-wide-only.
+
+- [ ] **Step 1: Build them one at a time, in the order above, each with its own commit**
+
+Each mechanic ships with: the engine change, a VP screen or a documented reason it rides an existing one, a text-backlog path, the `tr-rules.js` entry, and a reachability arm proving it FIRES in a played season. This project's signature defect is content that is written, registered, wired and never reached — a mechanic with no firing count is not done.
+
+- [ ] **Step 2: Measure each one against a real season, not against its own test**
+
+For every mechanic, report firings per 60 seeded seasons and the branch distribution inside it. A branch nobody takes is dead content inside a live twist. Re-derive the affected baselines with the measurement recorded in the test, never by fitting the number.
+
+- [ ] **Step 3: Confirm the calibration bands still hold**
+
+Run: `npx vitest run tests/tr-calibration.test.js --config vitest.sim.config.js`
+Expected: PASS. Death Match and Secret Traitor both change who dies and what the room can infer; the near-chance-early and sharpens-late bands are the check that they changed the drama and not the deduction.
+
+- [ ] **Step 4: Commit each mechanic separately**
+
+```bash
+git add js/tr js/tr-rules.js js/vp-tr tests/tr-<mechanic>.test.js
+git commit -m "feat(traitors): <mechanic>"
+```
+
 ## Claude execution notes
 
 - Read the complete task before editing. Do not batch multiple tasks into one commit.

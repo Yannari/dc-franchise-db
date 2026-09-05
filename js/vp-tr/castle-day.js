@@ -4269,9 +4269,9 @@ const HOST_CLOSE = {
   busy: [
     'A castle is a very large building for keeping a secret in, and every one of them '
     + 'spent today finding that out.',
-    'None of that was a competition and all of it was the game. It always is.',
-    'Nobody won anything this afternoon. Several people lost something and have not '
-    + 'noticed yet.',
+    'None of that was a competition, and every bit of it mattered.',
+    'Nobody won anything this afternoon, and at least two of them lost something they '
+    + 'have not counted yet.',
     'Watch the ones who said the least. There were fewer of them than usual today.',
   ],
   quiet: [
@@ -4284,7 +4284,7 @@ const HOST_CLOSE = {
   woven: [
     'Three or four of those were the same story, and only some of them know it.',
     'Look at what carried over. Look very hard at who it carried over onto.',
-    'Stories in this place are not events. They are debts, and they come due.',
+    'Stories in this place do not end when the people in them walk away. They collect interest.',
     'Every one of those stories goes somewhere. One of them goes somewhere tonight.',
   ],
 };

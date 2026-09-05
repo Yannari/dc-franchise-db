@@ -719,16 +719,16 @@ const OPEN_A = [
   'The camera does not argue back.',
   'What follows was said alone, in a room with a chair in it.',
   'This is the only room in the castle where nobody has to be careful.',
-  'The door shuts, and the performance stops for about a minute.',
+  'The door shuts, and they say what they actually think.',
   'Nobody out there hears any of this.',
   'A room the size of a cupboard, and a queue outside it.',
 ];
 const OPEN_B = [
   'Everything said in it tonight was said to nobody.',
-  'None of it is proof, and all of it is meant.',
+  'None of it is evidence, and every word of it is honest.',
   'That is why people tell it things.',
   'Not one of them has any way of knowing whether they are right.',
-  'Watch what they do with that.',
+  'Most of them are guessing, and all of them sound sure.',
   'What comes out is not what gets said at the table, and that is the point.',
   'Which is exactly why it is worth listening to.',
   'They will all deny half of it by morning.',
@@ -1013,8 +1013,8 @@ const CAM_RIGHT_B = [
   'Whether anybody at that table believes it tomorrow is another question '
   + 'entirely.',
   '{t} is a Traitor and the case against {t} is barely a case at all.',
-  'Being right is not the same as being able to prove it, and in this building '
-  + 'it is worth about half as much.',
+  'Being right and being believed are two different problems, and in this '
+  + 'building the second one is harder.',
   'It will take three more people agreeing before it means anything.',
 ];
 const CAM_WRONG_A = [
@@ -1030,8 +1030,8 @@ const CAM_WRONG_B = [
   '{t} has done nothing but stand in the wrong place in a ballot record.',
   'Everything just said about {t} was built out of nothing that ever happened.',
   '{t} is a Faithful, and nobody in that building is going to say so.',
-  'It is a day spent walking away from the answer, and it will feel like '
-  + 'progress.',
+  'The real answer is somewhere else entirely, and nobody in the building is '
+  + 'looking there.',
   'Somewhere in this castle the right person heard that and said nothing.',
 ];
 const CAM_LATE = [
@@ -1113,7 +1113,7 @@ const CAM_SILENT_T_A = [
   'Nothing, from somebody who has known the answer since the first night.',
 ];
 const CAM_SILENT_T_B = [
-  'The holding back is the whole performance.',
+  'Saying nothing is the safest move a Traitor has.',
   'There is a difference between having nothing and giving nothing, and only '
   + 'one person in that room knows which this was.',
   'An empty minute, from the one person who could have ended the season with a '
@@ -1121,7 +1121,7 @@ const CAM_SILENT_T_B = [
   'Nothing said in there can be checked against anything later, which is the '
   + 'point of saying nothing.',
   'It costs less than a name that turns out to be wrong.',
-  'The camera is the only thing in this castle that can tell the difference.',
+  'Nobody in the room will ever know the difference.',
 ];
 // THE SEAT OF THE ACCUSED. The camera speaks about the SPEAKER here and not
 // about the name they gave, because somebody protesting is the one case where
@@ -1192,15 +1192,15 @@ const CLOSE_HIT_B = [
 const CLOSE_MISS_A = [
   'Not one of those names was right.',
   'Everything said in that chair tonight was said with total conviction.',
-  'The castle has spent a day getting further away from the answer.',
+  'Every name given tonight belongs to a Faithful.',
   'Nobody named anybody worth naming.',
   'Every name in there belongs to somebody who has done nothing.',
-  'A clean sweep, in the wrong direction.',
+  'The room pointed at everyone except the people who are actually doing it.',
 ];
 const CLOSE_MISS_B = [
   'They will sit down tomorrow and vote on them anyway.',
   'Almost none of it was true.',
-  'It feels to them like progress.',
+  'They will go to bed thinking they are close.',
   'They will go to bed feeling as though they have narrowed it down.',
   'Tomorrow one of those people loses everything for it.',
   'And the ones who are actually doing this sat in that room and agreed.',
@@ -1217,7 +1217,7 @@ const CLOSE_SPLIT_B = [
   'From inside the room there is no way at all to tell which part.',
   'Every one of them was said with the same face.',
   'Half of it is going to cost somebody everything.',
-  'Which is the only kind this format really has.',
+  'And the right half will have to fight the wrong half for the table tomorrow.',
   'It is sitting next to three that are not, and they all sound alike.',
   'The other part is about to be much louder.',
 ];
@@ -1236,13 +1236,13 @@ const CLOSE_NONE_A = [
   'The question was put {N} times and never once answered.',
 ];
 const CLOSE_NONE_B = [
-  'The castle has had a whole day and come out of it with nothing.',
+  'A whole day gone and nobody could finish the sentence.',
   'They will still be asked it tomorrow, and one of them will have to say '
   + 'something.',
   'Nobody who sat down in that room got near enough to say so.',
   'Whatever is happening in this building is happening somewhere none of them '
   + 'is looking.',
-  'A day gone, and the pot with it.',
+  'Another day spent, and still no answer to show for it.',
   'Tomorrow they vote anyway. That is the part nobody agreed to and everybody '
   + 'does.',
 ];

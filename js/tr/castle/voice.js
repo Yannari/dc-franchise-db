@@ -636,6 +636,18 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE SEVEN CONFRONTATION EVENTS ADDED 2026-09-05 ─────────────────
+  //
+  // The family was four events and every one of them in `evening`, so the
+  // loudest thing this format does could only happen in one hour of the day.
+  // These are the branches where somebody IS under it: an accusation that
+  // lands at breakfast, a vote nobody will account for, an argument with
+  // five miles left to run, a promise denied to the face of the person it
+  // was made to.
+  'blamed-somebody-else', 'blamed-them-back', 'denied-saying-it',
+  'everybody-heard-it', 'made-it-worse', 'made-it-worse-for-them',
+  'named-the-weak-link', 'ran-the-whole-way', 'room-took-sides',
+  'said-it-cold', 'threw-it-back', 'turned-it-on-them', 'would-not-answer',
   // ── the road out (js/tr/castle/journey.js) ──────────────────────────
   //
   // The five where somebody is on the receiving end of it: an argument
@@ -1005,6 +1017,17 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE ONES FROM THE SAME SEVEN THAT DO NOT LEAN ON ANYBODY ────
+  //
+  // Same events, sorted on this file's rule rather than on how loud the
+  // scene is: an accusation that fizzles, a room that shuts it down, a
+  // corridor that ends with the air cleared, somebody taking the blame
+  // themselves. Nobody opposite is being pressed in any of these.
+  'admitted-it', 'both-embarrassed', 'cleared-the-air', 'had-a-reason',
+  'nobody-backed-it', 'nobody-heard-it', 'ran-out-of-road',
+  'said-it-plainly', 'said-what-they-meant', 'shut-down',
+  'the-column-broke-it-up', 'told-them-to-stop', 'too-raw',
+  'took-the-blame',
   // ── the scenes one person has (js/tr/castle/alone.js) ───────────────
   //
   // Solo scenes have no respondent, so none of them can be adverse in this

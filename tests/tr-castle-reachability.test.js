@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(157);
+    expect(EVENTS.length).toBe(164);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -599,7 +599,16 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // somebody). The fourth, `susp-the-shape-of-the-column`, OPENS an arc
     // rather than continuing one and is deliberately not in this number —
     // which is the check that the count moved for the reason given.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(80);
+    // 80 -> 87 on 2026-09-05: all seven new confrontation events advance a
+    // thread, because every one of them continues an argument the pair
+    // already had -- `advanceArc` on an existing suspicion or
+    // confrontation story, `openArc` only when there is none. None of the
+    // seven cites residue, and the citer count below is deliberately
+    // unmoved: `confront-the-broken-word` DECLARED citesResidue and it was
+    // false (it writes through lineFor and advanceArc, neither of which
+    // appends a citation), which tests/tr-castle.test.js caught by being
+    // unable to make the event eligible in the probe world.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(87);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -646,7 +655,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // REWRITE verdict on the events already sitting there was that they wrote
     // no thread at all. `one` -> `many` moved again for the same reason as
     // stage 3 (10 -> 23), and the new cell is `trust|night`.
-    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(50);
+    // 50 -> 55: the confrontation family reached six new windows on
+    // 2026-09-05 (dawn, morning, journey-out, journey-back, after-table,
+    // night), which is five new cells plus one it already had. See the
+    // note on the event count above.
+    expect(c.size, 'the number of non-empty (family x window) cells changed').toBe(55);
     // 15 -> 14 (TASK 7 STAGE 6). `suspicion|morning` left the zero list, for
     // the same reason the three `night` cells left it in stage 4: the events
     // already sitting there gained the declaration the audit said they were
@@ -655,16 +668,30 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // is a cell count FALLING again, which is the direction it should move.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
       + 'can never be continued here, whatever either continuation lever is set to').toBe(14);
+    // 13 -> 17 on 2026-09-05. The confrontation family reached six new
+    // windows, and each arrived with exactly ONE advancer in it, so five of
+    // those cells are new entries on this list rather than cells that moved
+    // off `zero`. That is the expected shape for a family being widened one
+    // event per window at a time, and it is worth saying plainly that it is
+    // not an improvement: a cell with one advancer can continue a thread at
+    // most once every five rounds. A second confrontation event in each of
+    // those windows is what would move them on, and is not yet written.
+    //
     // 12 -> 13: `confrontation @ journey-out` did not exist before and now
     // holds exactly one advancer. `none` is unchanged, which is what says a
     // cell gained an advancer rather than the grid moving under all three.
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(13);
+      + 'living here can be advanced at most once every five rounds').toBe(17);
+    // 23 -> 24 on 2026-09-05: `confrontation @ evening` had three events and
+    // gained a fourth, so the one cell the family already occupied is the
+    // only one that moved up here. The other six arrived at one advancer
+    // each — see the note above.
+    //
     // 22 -> 23: one further cell reached two advancers when the
     // confrontation family was registered. `none` and `one` are unchanged,
     // which is what says a cell gained an advancer rather than the shape
     // of the grid moving underneath all three numbers.
-    expect(many, 'cells with two or more advancers').toBe(23);
+    expect(many, 'cells with two or more advancers').toBe(24);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -1380,6 +1407,14 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 157 -> 164 AND 666 -> 694 on 2026-09-05, AND THE EVENT COUNT MOVES FOR THE
+// FIRST TIME IN THREE COMMITS. Measured before writing: events per family
+// across the pool were trust 35, suspicion 31, grief 26, testing 17, cover 17,
+// romance 14, callback 12 -- and CONFRONTATION 4, every one of them registered
+// to `evening`. The loudest thing this format does could happen in exactly one
+// hour of the day. The seven new events are that family in the six windows it
+// had never reached, four branches each.
+//
 // 653 -> 666 on 2026-09-05, EVENT COUNT AGAIN UNCHANGED. The last thirteen
 // events below Task 11's four-branch bar, and TWO OF THEM WERE BUGS rather
 // than missing content -- see js/tr/castle/cover.js
@@ -1507,18 +1542,46 @@ const BRANCHES = [
   'callback-warns-newbies:defended-them-instead',
   'callback-warns-newbies:used-it-immediately',
   'callback-warns-newbies:warned',
+  'confront-about-the-vote:blamed-somebody-else',
+  'confront-about-the-vote:owned-it',
+  'confront-about-the-vote:turned-it-on-them',
+  'confront-about-the-vote:would-not-answer',
+  'confront-blamed-for-the-mission:blamed-them-back',
+  'confront-blamed-for-the-mission:named-the-weak-link',
+  'confront-blamed-for-the-mission:nobody-backed-it',
+  'confront-blamed-for-the-mission:took-the-blame',
   'confront-defend-the-accused:drew-fire',
   'confront-defend-the-accused:fell-flat',
   'confront-defend-the-accused:too-late',
   'confront-defend-the-accused:worked',
+  'confront-in-the-corridor:cleared-the-air',
+  'confront-in-the-corridor:made-it-worse',
+  'confront-in-the-corridor:nobody-heard-it',
+  'confront-in-the-corridor:said-what-they-meant',
   'confront-it-starts-on-the-road:in-front-of-everybody',
   'confront-it-starts-on-the-road:somebody-stepped-in',
   'confront-it-starts-on-the-road:straight-back-into-it',
   'confront-it-starts-on-the-road:swallowed-it',
+  'confront-on-the-long-walk:everybody-heard-it',
+  'confront-on-the-long-walk:ran-out-of-road',
+  'confront-on-the-long-walk:ran-the-whole-way',
+  'confront-on-the-long-walk:the-column-broke-it-up',
+  'confront-over-breakfast:room-took-sides',
+  'confront-over-breakfast:said-it-cold',
+  'confront-over-breakfast:shut-down',
+  'confront-over-breakfast:too-raw',
   'confront-pile-on:crumbled',
   'confront-pile-on:overreached',
   'confront-pile-on:turned-it-back',
   'confront-pile-on:weathered',
+  'confront-stop-following-me:admitted-it',
+  'confront-stop-following-me:both-embarrassed',
+  'confront-stop-following-me:made-it-worse-for-them',
+  'confront-stop-following-me:told-them-to-stop',
+  'confront-the-broken-word:denied-saying-it',
+  'confront-the-broken-word:had-a-reason',
+  'confront-the-broken-word:said-it-plainly',
+  'confront-the-broken-word:threw-it-back',
   'confront-to-the-face:blew-up',
   'confront-to-the-face:cracked',
   'confront-to-the-face:held',

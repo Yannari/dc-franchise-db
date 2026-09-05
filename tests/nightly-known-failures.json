@@ -18,19 +18,15 @@
   "files": {
     "tests/bb-broken-promise.test.js": {
       "since": "2026-09-04",
-      "note": "a promise no longer firms a vote at all: 0.0988 not < 0.0851 — a calibration band, drifted"
-    },
-    "tests/bb-halting-hex.test.js": {
-      "since": "2026-09-04",
-      "note": "no hex fired in 25 seeds — the twist has become unreachable, which is this project's signature bug class and the most urgent entry here"
+      "note": "a promise no longer firms a vote at all: 0.0988 not < 0.0851 \u00e2\u20ac\u201d a calibration band, drifted"
     },
     "tests/bb-knowledge.test.js": {
       "since": "2026-09-04",
-      "note": "barely any couples formed across sixteen seasons: 36 not > 60 — showmance formation rate has fallen"
+      "note": "barely any couples formed across sixteen seasons: 36 not > 60 \u00e2\u20ac\u201d showmance formation rate has fallen"
     },
     "tests/bb-love-triangle.test.js": {
       "since": "2026-09-04",
-      "note": "a house triangle described with camp vocabulary — one show's words over the other, the bug class docs/ADDING-A-SHOW.md exists for"
+      "note": "a house triangle described with camp vocabulary \u00e2\u20ac\u201d one show's words over the other, the bug class docs/ADDING-A-SHOW.md exists for"
     },
     "tests/bb-season-export.test.js": {
       "since": "2026-09-04",
@@ -42,7 +38,7 @@
     },
     "tests/events-big-brother-volume.test.js": {
       "since": "2026-09-04",
-      "note": "22 BB events never fire in 48 seeded seasons (nightmare-*, hrr-*, wildcard-*, cliques-*, past-*) — written, registered and unreachable"
+      "note": "22 BB events never fire in 48 seeded seasons (nightmare-*, hrr-*, wildcard-*, cliques-*, past-*) \u00e2\u20ac\u201d written, registered and unreachable"
     },
     "tests/vp-big-brother-week.test.js": {
       "since": "2026-09-04",

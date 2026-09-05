@@ -33,10 +33,36 @@ const beat = (text, players, badgeText, badgeClass = 'gold') =>
  */
 export function resolveHaltingHex({ week, evicted, nominees = [], hoh, rng = Math.random }) {
   if (!evicted) return null;
-  const [inst] = activePowersAt('eviction-night', week.num, 'halting-hex');
-  if (!inst) return null;
+  // ── WHICH HOLDER IS ASKED, AND WHY IT IS NOT SIMPLY THE FIRST ───────
+  //
+  // This read `const [inst] = activePowersAt(...)` — the first instance in the
+  // store, whoever that happened to be. With one Hex in play that is the only
+  // holder and the bug is invisible. With more than one it asks the wrong
+  // person and never asks the right one, and the measurement is stark: hand
+  // the Hex to all twelve houseguests, evict Zee, and the function considers
+  // BOWIE, who has no stake in Zee, decides against, and returns null. Zee's
+  // own Hex is never looked at. Across 25 seeds the twist did not fire once,
+  // and tests/bb-halting-hex.test.js had been red on all three of its arms.
+  //
+  // SAVING YOURSELF IS NOT A DECISION — this function's own comment says so
+  // a few lines down, and then it could never reach the case, because the
+  // evictee's Hex only got a hearing if the evictee happened to be first in
+  // the store. So the evictee's own instance outranks everybody's; failing
+  // that, the holder with the most at stake in the person leaving is asked,
+  // rather than an arbitrary one who will almost always say no.
+  //
+  // No rng is consumed by choosing, and the single draw below is where it
+  // always was — so a season with one Hex in it is unchanged.
+  const live = activePowersAt('eviction-night', week.num, 'halting-hex')
+    .filter(i => (gs.activePlayers || []).includes(i.holder));
+  if (!live.length) return null;
+  const stakeIn = who => {
+    if (who === evicted) return Infinity;
+    try { return allyStake(who, evicted) || 0; } catch { return 0; }
+  };
+  const inst = live.slice().sort((a, b) => stakeIn(b.holder) - stakeIn(a.holder)
+    || String(a.holder).localeCompare(String(b.holder)))[0];
   const holder = inst.holder;
-  if (!(gs.activePlayers || []).includes(holder)) return null;
 
   const st = pStats(holder);
   const lastWeek = week.num >= inst.expiresAfterWeek;

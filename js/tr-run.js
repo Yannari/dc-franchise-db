@@ -133,7 +133,7 @@ function _shieldEpisodes() {
  * Everything the UI owns (the cast, the config, the popularity ledger, the
  * checkpoints) survives; everything the engine owns arrives.
  */
-function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
+function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null) {
   const outer = gs;
   // THE SEASON'S OWN CAST, IN ITS OWN ORDER — not the live `players`. A re-run
   // (and a resume after a refresh) must replay the SAME season, and the whole
@@ -229,6 +229,11 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null) {
       // reproduces exactly) and swaps to `rerollSeed` at `rerollFromEp`.
       rerollFromEp: rerollFromEp || null,
       rerollSeed: rerollSeed == null ? null : rerollSeed,
+      // EVERY re-run this season has had, in order. One point is enough for
+      // one re-run; a second one at a later episode replayed the prefix off
+      // the base seed and rebuilt a past that never aired. See the chain note
+      // in playTraitorsSeason.
+      rerolls: Array.isArray(rerolls) ? rerolls : null,
     });
   } finally {
     _setBespokeMissionsEnabled(_bespokeWas);
@@ -275,7 +280,8 @@ export function simulateTraitorsEpisode() {
     // episodes" corruption. A season that was never re-run has both undefined
     // and this is the plain replay it always was.
     if (!_playWholeSeason(gs._trRerollFromEp || null,
-      gs._trRerollSeed == null ? null : gs._trRerollSeed)) return null;
+      gs._trRerollSeed == null ? null : gs._trRerollSeed,
+      gs._trRerolls || null)) return null;
     if (aired > 0 && Array.isArray(gs._trQueue)) gs._trQueue = gs._trQueue.slice(aired);
   }
   const row = (gs._trQueue || []).shift();
@@ -314,6 +320,18 @@ export function simulateTraitorsEpisode() {
  * reload. Leaves the queue holding the re-rolled episode `epNum` onward; the
  * caller airs it exactly like a normal night.
  */
+/**
+ * The swap points this replay needs: every re-run that produced the prefix
+ * being kept, plus the one about to happen.
+ *
+ * Built before `_playWholeSeason` replaces `gs`, because the chain lives on the
+ * outer state and the replay's own `gs` has never heard of it.
+ */
+function _rerollChain(n, seed) {
+  return [...(gs._trRerolls || []).filter(r => r && Number(r.fromEp) < n),
+    { fromEp: n, seed }];
+}
+
 export function rerunTraitorsEpisode(epNum) {
   if (!gs || !gs._trSeed) return false;
   const N = Math.max(1, Number(epNum) || 1);
@@ -331,7 +349,7 @@ export function rerunTraitorsEpisode(epNum) {
   const rerollSeed = ((gs._trSeed >>> 0)
     ^ Math.imul(gs._trRerollNonce, 0x9e3779b1)
     ^ Math.imul(N, 2654435761)) >>> 0;
-  if (!_playWholeSeason(N, rerollSeed || 1)) return false;
+  if (!_playWholeSeason(N, rerollSeed || 1, _rerollChain(N, rerollSeed || 1))) return false;
   // PERSIST THE REROLL so a reload can reproduce THIS season, not the original.
   // `_trQueue` normally survives the save intact, but if it is ever lost (an IDB
   // quota failure, an older save), `simulateTraitorsEpisode` rebuilds it from
@@ -343,6 +361,12 @@ export function rerunTraitorsEpisode(epNum) {
   // them. Both are plain numbers on `gs`, so they ride the normal save.
   gs._trRerollFromEp = N;
   gs._trRerollSeed = rerollSeed || 1;
+  // AND ONTO THE CHAIN. Re-running episode N rewrites everything from N on, so
+  // any earlier re-run that started at or after N is no longer part of this
+  // season's history and is dropped. What remains is the swaps that produced
+  // the prefix being kept, plus this one.
+  gs._trRerolls = [...(gs._trRerolls || []).filter(r => r && Number(r.fromEp) < N),
+    { fromEp: N, seed: rerollSeed || 1 }];
   // `_playWholeSeason` put the WHOLE re-rolled season on the queue. Keep the
   // AIRED prefix in history (never the replay's) and leave episode N onward — the
   // re-rolled, genuinely different nights — to air.

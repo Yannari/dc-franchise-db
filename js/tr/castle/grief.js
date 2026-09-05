@@ -1553,7 +1553,16 @@ registerEvent({
     const arcs = (gs.tr?.threads || [])
       .filter(t => t.kind === 'suspicion' && v && t.parties.includes(v));
     const theirs = arcs.some(t => t.parties.includes(a));
-    const shared = arcs.some(t => t.parties.includes(a) && t.parties.includes(b));
+    // STRUCTURALLY IMPOSSIBLE AS WRITTEN, and it scored a literal 0 on every
+    // firing across a 3200-season sweep -- a quarter of this event's written
+    // content that had never reached a screen. `arcs` is already filtered to
+    // threads naming the victim, and a thread is opened with ONE or TWO
+    // parties (see js/tr/castle/suspicion.js), so no single arc can hold the
+    // victim AND both of these actors. What the branch MEANS is that both of
+    // them had a case against the person who is now dead, and that is two
+    // arcs rather than one.
+    const shared = arcs.some(t => t.parties.includes(a))
+      && arcs.some(t => t.parties.includes(b));
     const scores = {
       'wrongly-suspected-irony': 0.4,
       'owned-the-mistake': theirs ? (sa.loyalty / 10) * 0.35 + 0.15 : 0,

@@ -1037,6 +1037,31 @@ export const BENIGN_BRANCHES = new Set([
   'took-the-long-way', 'watched-them-come-in', 'went-over-tomorrow',
   'went-through-it-again', 'went-where-put', 'what-it-has-cost',
   'why-they-came', 'wrote-it-down',
+  // ── AND THE FOURTH BRANCH EACH OF THEM GAINED ───────────────────────
+  //
+  // Task 11's completeness bar is four branches and the nineteen above
+  // shipped with three; each of these is the fork that was added, on a
+  // different driver from its siblings. Same rule as the block above: one
+  // actor, no respondent, nothing for the register to be adverse towards.
+  // `voted-against-the-room` and `took-the-chair` are the two that look
+  // hardest and are still BENIGN here -- a person sitting alone with what
+  // they did is not a person leaning on anybody.
+  'being-managed', 'came-back-decided', 'changed-their-mind',
+  'checked-their-own-record', 'counted-the-doors',
+  'counted-who-did-not-look', 'decided-to-go-first', 'decided-who-to-tell',
+  'did-the-arithmetic', 'not-worried-tonight', 'set-the-pace',
+  'took-the-chair', 'voted-against-the-room', 'walked-it-like-a-race',
+  'walked-off-the-path', 'wanted-to-go-home', 'went-up-with-a-decision',
+  'wished-they-had-waited', 'worked-out-a-move',
+  // ── AND THE FOURTH BRANCH THE SHORT EVENTS GAINED (2026-09-05) ──────
+  //
+  // Eleven events across confrontation/cover/journey/testing/trust shipped
+  // with three branches against Task 11's bar of four. Sorted on this file's
+  // own rule -- adverse means the RESPONDENT is being leaned on, not that the
+  // scene is bleak. A defence that arrives late, a silence under a question,
+  // a day nobody asked, a trade that was not returned: nobody in any of those
+  // is being pressed by the person opposite.
+  'too-late', 'stopped-talking', 'nobody-asked', 'the-gap-in-the-middle', 'needed-carrying', 'never-raised-it', 'asked-for-one-back', 'misread', 'refused-to-trade',
   // ── the road out (js/tr/castle/journey.js, four events) ─────────────
   //
   // Sorted by the rule this file runs on: adverse means the RESPONDENT is
@@ -1269,6 +1294,10 @@ export const BENIGN_BRANCHES = new Set([
   // held the pile-on, or was defended, or the mob overshot and swung sympathy
   // their way — and the defence branches that cost the defender nothing.
   'weathered', 'overreached', 'worked', 'fell-flat',
+  // The pile-on's target redirects it and the person who STARTED it is now
+  // the one under the room. That is a respondent being leaned on, so it is
+  // adverse -- the only one of the eleven new branches that is.
+  'turned-it-back',
 ]);
 
 /**

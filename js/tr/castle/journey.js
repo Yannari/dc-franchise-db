@@ -999,6 +999,16 @@ const LET_IT_GO_LINES = {
     '{a} let {b} finish and then said nothing at all, all the way to the gate.',
     'It was the wrong answer given very well, and {a} came home sure of it.',
   ],
+  'never-raised-it': [
+    '{a} had the whole road to ask {b} about it and did not ask.',
+    'Two miles, nobody else within earshot, and {a} talked to {b} about the weather.',
+    '{a} rehearsed the question for the first half of that walk and spent the second half not asking it.',
+    '{b} has no idea {a} suspects anything, which is either {a} being clever or {a} losing the nerve for it.',
+    'The moment came up three times on that road and {a} let all three of them go past.',
+    '{a} decided that asking would tell {b} more than the answer would tell {a}.',
+    'It is the safest thing {a} did all day and {a} is not sure it was the right thing.',
+    '{a} walked the entire way home beside the person {a} suspects and said nothing about it at all.',
+  ],
 };
 
 registerEvent({
@@ -1030,12 +1040,18 @@ registerEvent({
     const clearScore = (st.temperament / 10) * 0.5 + (st.social / 10) * 0.5;
     const slipScore = (1 - st.temperament / 10) * 0.6 + (1 - st.mental / 10) * 0.4;
     const hardenScore = 0.45;
-    const total = clearScore + slipScore + hardenScore;
+    // A FOURTH OUTCOME, and the only one that reads the DOUBTER rather than
+    // the suspected: {a} had the road and did not use it. Cautious players
+    // do this constantly and the event could not say so.
+    const sa = pStats(a);
+    const unaskedScore = (1 - sa.boldness / 10) * 0.4 + (sa.strategic / 10) * 0.2;
+    const total = clearScore + slipScore + hardenScore + unaskedScore;
     const roll = rng() * total;
     let branch;
     if (roll < clearScore) branch = 'cleared';
     else if (roll < clearScore + slipScore) branch = 'slipped';
-    else branch = 'hardened';
+    else if (roll < clearScore + slipScore + hardenScore) branch = 'hardened';
+    else branch = 'never-raised-it';
 
     const line = pick(rng, LET_IT_GO_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread('suspicion', [a, b]);
@@ -1102,6 +1118,16 @@ const STORY_SURVIVED_LINES = {
     'It went wrong in the open, in front of people, and {a} had a whole road home to think about {topic}.',
     '{a} answered about {topic} too fast, out there where there was nowhere to go, and the answer was wrong.',
   ],
+  'nobody-asked': [
+    '{a} carried a complete account of {topic} all the way home and nobody asked for one word of it.',
+    'A whole day, and not one person put a question to {a} about {topic}.',
+    '{a} had answers ready for questions that never came, which is its own kind of unnerving.',
+    'Nobody is looking at {a} at all, and {a} cannot decide whether that is safety or a set-up.',
+    'The account {a} built for {topic} went unused, and is now a day older and no better.',
+    '{a} spent the road back braced for it and arrived home unasked.',
+    'It is easier to hold a story up than to carry one nobody wants, and {a} is finding that out.',
+    'Not a single question about {topic}. {a} has started to wonder what that means.',
+  ],
 };
 
 registerEvent({
@@ -1113,7 +1139,7 @@ registerEvent({
   citesResidue: true,
   variationAxes: {
     outcome: ['accepted', 'ambiguous', 'backfire'],
-    voice: ['strategic', 'temperament', 'mental'],
+    voice: ['social', 'strategic', 'temperament', 'mental'],
     alignment: ['original-traitor', 'recruited-traitor'],
   },
   weight(ctx) {
@@ -1130,12 +1156,19 @@ registerEvent({
     const holdScore = (st.strategic / 10) * 0.5 + (st.temperament / 10) * 0.5;
     const frayScore = 0.5;
     const breakScore = (1 - st.mental / 10) * 0.5 + (1 - st.temperament / 10) * 0.5;
-    const total = holdScore + frayScore + breakScore;
+    // A FOURTH OUTCOME, and the only one where the day does nothing to the
+    // story at all: nobody asks a liked player anything. It is the branch a
+    // Traitor most wants and least enjoys, and no other fork here reads
+    // `social` -- the three above are all about how well the account holds
+    // once it is under pressure.
+    const unaskedScore = (st.social / 10) * 0.45;
+    const total = holdScore + frayScore + breakScore + unaskedScore;
     const roll = rng() * total;
     let branch;
     if (roll < holdScore) branch = 'held';
     else if (roll < holdScore + frayScore) branch = 'frayed';
-    else branch = 'broke';
+    else if (roll < holdScore + frayScore + breakScore) branch = 'broke';
+    else branch = 'nobody-asked';
 
     const victim = _lastMurdered();
     const topic = victim ? `the night ${victim} was murdered` : 'yesterday out on the mission';
@@ -1818,6 +1851,16 @@ const COLUMN_SHAPE_LINES = {
     'A column of fourteen and {b} in a gap of their own the whole way.',
     '{a} watched the space around {b} and understood exactly what it meant.',
   ],
+  'the-gap-in-the-middle': [
+    'The column went out in two halves today with thirty yards of nothing between them, and {a} walked in the gap looking at both.',
+    '{a} noticed the road had a front group and a back group and that nobody was crossing between them.',
+    'It was not a column this morning. It was two of them, and {a} could name who was in each.',
+    '{a} watched the gap open over the first mile and stay open for the rest of it.',
+    'Two groups, one road, and {b} was the only person who moved between them. {a} was counting.',
+    'The shape of it told {a} more than an hour of talking would have: this castle has come apart into two rooms.',
+    '{a} spent the walk out working out which half {a} was in, and did not like the answer.',
+    'Nobody planned that split and everybody walked it, which is the part {a} keeps turning over.',
+  ],
 };
 
 // THE COLUMN AS EVIDENCE. Reads the live bond graph rather than a roll: who
@@ -1856,13 +1899,20 @@ registerEvent({
       'the-wrong-pair': (st.intuition / 10) * 0.4 + 0.15,
       // Only reachable when the isolation is real.
       'walking-alone': friends === 0 ? 0.9 : friends === 1 ? 0.3 : 0,
+      // A FOURTH READ, and the only one about the WHOLE column rather than
+      // one person in it: the road has split into two groups and the gap is
+      // the information. Needs a road with enough people on it to have a
+      // middle, which is why it is gated on the living count.
+      'the-gap-in-the-middle': (ctx.living || []).length >= 8
+        ? (st.intuition / 10) * 0.3 + 0.15 : 0,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
     let roll = rng() * total, branch = 'read-the-order';
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
-    const sceneWhy = branch === 'walking-alone' ? 'walked the road out with nobody beside them'
+    const sceneWhy = branch === 'the-gap-in-the-middle' ? 'read the gap the column had opened in itself'
+      : branch === 'walking-alone' ? 'walked the road out with nobody beside them'
       : branch === 'the-wrong-pair' ? 'was seen walking with somebody unexpected'
         : 'read the order of the column on the road out';
     // A read costs the person read, a little, and only in the reader's head.
@@ -1909,6 +1959,16 @@ const ROAD_FAVOUR_LINES = {
     '{b} managed it alone and noticed exactly who had let them.',
     '{a} walked ahead. {b} arrived last, and carrying everything.',
   ],
+  'needed-carrying': [
+    'It went the other way today: {a} was the one struggling and {b} took it off {a} without being asked.',
+    '{a} could not hold the pace with it and {b} said nothing about that, which is the part {a} will remember.',
+    '{a} has been the one helping all week. Today {a} needed it, and {b} was there.',
+    '{b} carried {a}\'s load for the last mile and made no comment on why it was necessary.',
+    '{a} is not used to being the weak one on a road and did not enjoy finding out.',
+    'There is a debt on that road now and it is the wrong way round from how {a} likes it.',
+    '{b} slowed to {a}\'s pace for an hour and let {a} keep whatever dignity was left in it.',
+    '{a} said thank you once, quietly, and has been thinking about it since.',
+  ],
 };
 
 // A ROAD IS PHYSICAL, and almost nothing in this pool is. The mission is an
@@ -1921,7 +1981,7 @@ registerEvent({
   advancesThread: true,
   variationAxes: {
     outcome: ['accepted', 'ambiguous', 'rejected'],
-    voice: ['loyalty', 'physical', 'social', 'strategic'],
+    voice: ['loyalty', 'physical', 'endurance', 'social', 'strategic'],
     relationship: ['close-ally', 'neutral'],
   },
   weight(ctx) {
@@ -1949,17 +2009,24 @@ registerEvent({
       'made-a-point-of-it': (st.social / 10) * 0.35 + (st.strategic / 10) * 0.35,
       // Not doing it needs a reason, and a thin bond is one.
       'let-them-struggle': Math.max(0.1, 0.5 - Math.max(0, bond) * 0.08),
+      // A FOURTH OUTCOME, and it REVERSES the scene: {a} is the one who
+      // cannot carry it and {b} takes it off them. The three above all read
+      // {a} as the helper; this is the only fork where {a} is the helped, and
+      // it is the only one that reads endurance.
+      'needed-carrying': (1 - st.endurance / 10) * 0.35 + (1 - st.physical / 10) * 0.2,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
     let roll = rng() * total, branch = 'took-the-weight';
     for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
 
-    const sceneWhy = branch === 'took-the-weight' ? 'took the weight off them on the road'
+    const sceneWhy = branch === 'needed-carrying' ? 'was the one who needed carrying on the road'
+      : branch === 'took-the-weight' ? 'took the weight off them on the road'
       : branch === 'made-a-point-of-it' ? 'helped on the road where the column could see it'
         : 'let them carry it the whole way';
     const bondDelta = branch === 'took-the-weight' ? 2
-      : branch === 'made-a-point-of-it' ? 1 : -1.5;
+      : branch === 'needed-carrying' ? 1.5
+        : branch === 'made-a-point-of-it' ? 1 : -1.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const line = pick(rng, ROAD_FAVOUR_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const { thread, cited } = arcContinue(api, 'trust', [a, b], ctx.ep, line, { source: sceneWhy });

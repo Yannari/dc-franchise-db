@@ -1677,6 +1677,16 @@ const SECRET_SWAP_LINES = {
     '{b} waited for a private moment with {who}, then revealed that {a} distrusted {target}.',
     '{b} named both {a} and {target} when telling {who}, making the source of the suspicion unmistakable.',
   ],
+  'refused-to-trade': [
+    '{a} gave {b} something real and got nothing back, and both of them noticed the shape of that.',
+    '{b} took what {a} offered and did not offer anything, which is an answer of its own.',
+    'It was supposed to be a trade. {a} paid and {b} did not.',
+    '{a} told {b} the one thing {a} had been keeping, and {b} said that was interesting.',
+    '{b} has nothing to give, or nothing {b} is willing to give, and {a} does not know which.',
+    '{a} is now the only one of the two of them carrying a risk, and worked that out about an hour too late.',
+    '{b} listened beautifully and gave up not one thing, which is a skill and is not friendship.',
+    'The silence after {a} finished went on slightly too long, and then {b} changed the subject.',
+  ],
 };
 
 registerEvent({
@@ -1713,12 +1723,18 @@ registerEvent({
     const keepScore = (st.loyalty / 10) * 0.6 + (st.temperament / 10) * 0.4;
     const accidentScore = (1 - st.social / 10) * 0.5 + 0.15;
     const deliberateScore = (st.strategic / 10) * 0.5 + (1 - st.loyalty / 10) * 0.5;
-    const total = keepScore + accidentScore + deliberateScore;
+    // A FOURTH OUTCOME, and it happens BEFORE the other three can: there is
+    // no secret to keep or leak because {b} never gave one. The three above
+    // all assume the trade completed; this is the one where it did not, and
+    // it leaves {a} exposed alone.
+    const refuseScore = (1 - st.boldness / 10) * 0.3 + (st.strategic / 10) * 0.2;
+    const total = keepScore + accidentScore + deliberateScore + refuseScore;
     const roll = rng() * total;
     let branch;
     if (roll < keepScore) branch = 'kept';
     else if (roll < keepScore + accidentScore) branch = 'leakedAccident';
-    else branch = 'leakedDeliberate';
+    else if (roll < keepScore + accidentScore + deliberateScore) branch = 'leakedDeliberate';
+    else branch = 'refused-to-trade';
 
     // ── THE SECRET IS A STORED CLAIM BEFORE IT IS A LEAK ────────────────
     //
@@ -1729,7 +1745,9 @@ registerEvent({
     // wrote a bond and nothing else, so "it arrived back at {a} by three
     // separate routes" named nobody, informed nobody, and could not be cited by
     // any later scene — the exact shape the knowledge contract forbids.
-    const leaked = branch !== 'kept';
+    // `refused-to-trade` produced no secret at all, so nothing travelled and
+    // nothing may be recorded as having travelled.
+    const leaked = branch !== 'kept' && branch !== 'refused-to-trade';
     // Deliberate is ONE person, chosen; accidental spreads. Neither draws rng
     // (see `whoTheyTold`), so this cannot reroute a season.
     const heard = leaked
@@ -1748,7 +1766,10 @@ registerEvent({
       .replace(/\{a\}/g, a).replace(/\{b\}/g, b)
       .replace(/\{target\}/g, target)
       .replace(/\{who\}/g, namesPhrase(heard)).replace(/\{n\}/g, countWord(heard.length));
-    let bondDelta = branch === 'kept' ? 1 : branch === 'leakedAccident' ? -1 : -3;
+    // A one-sided trade costs the pair less than a leak and more than nothing:
+    // {a} is not betrayed, only unmatched, and knows it.
+    let bondDelta = branch === 'kept' ? 1 : branch === 'refused-to-trade' ? -0.5
+      : branch === 'leakedAccident' ? -1 : -3;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     if (leaked && heard.length) {
       const claim = api.recordClaim(a, `${a} told ${b} that ${a} trusted ${target} least`,
@@ -1802,6 +1823,16 @@ const LAST_WORD_LINES = {
     '{b} was kind about it, which somehow made it worse, and {a} did not ask twice.',
     '"I can\'t," said {b}, into the dark, and {a} stopped asking anyone anything that night.',
   ],
+  'turned-it-round': [
+    '{a} asked it in the dark and {b} asked it straight back, and neither of them answered first.',
+    '{b} would not go first. {b} put the same question to {a} and waited.',
+    'It was meant to be {a} testing {b}. By lights out it was two people testing each other and getting nowhere.',
+    '{b} answered a question with a question and the room went quiet enough that everybody heard it.',
+    '{a} learned nothing about {b} and gave away something about {a} doing it.',
+    '{b} has been asked once too often this week and turned the last one round.',
+    'Two people lay in the dark waiting for the other to commit, and both of them are still waiting.',
+    '{b} said \'you first\' into a dark room, and {a} did not.',
+  ],
 };
 
 registerEvent({
@@ -1833,16 +1864,24 @@ registerEvent({
     const swearScore = (st.loyalty / 10) * 0.5 + (st.boldness / 10) * 0.3 + Math.max(0, bond) / 10 * 0.2;
     const hedgeScore = (1 - st.boldness / 10) * 0.6 + 0.2;
     const breakScore = (1 - st.loyalty / 10) * 0.5 + (st.strategic / 10) * 0.5;
-    const total = swearScore + hedgeScore + breakScore;
+    // A FOURTH ANSWER IN THE DARK: {b} refuses to go first and puts it back.
+    // Distinct from `hedged`, which buys an exit -- this buys the same
+    // commitment from the asker, and it reads intuition, which nothing else
+    // in this fork does.
+    const turnScore = (st.intuition / 10) * 0.35 + (st.strategic / 10) * 0.2;
+    const total = swearScore + hedgeScore + breakScore + turnScore;
     const roll = rng() * total;
     let branch;
     if (roll < swearScore) branch = 'sworn';
     else if (roll < swearScore + hedgeScore) branch = 'hedged';
-    else branch = 'broken';
+    else if (roll < swearScore + hedgeScore + breakScore) branch = 'broken';
+    else branch = 'turned-it-round';
 
     const line = pick(rng, LAST_WORD_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread(FAMILY, [a, b]);
-    const bondDelta = branch === 'sworn' ? 3 : branch === 'hedged' ? 0 : -2;
+    // Mutual wariness is not a betrayal and it is not nothing.
+    const bondDelta = branch === 'sworn' ? 3 : branch === 'turned-it-round' ? -0.5
+      : branch === 'hedged' ? 0 : -2;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     // Write the beat FIRST so the payoff carries the story it is paying off,
     // then resolve. `hedged` is the branch that leaves it open, and it has to

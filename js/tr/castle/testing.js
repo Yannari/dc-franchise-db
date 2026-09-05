@@ -173,6 +173,16 @@ const OATH_LINES = {
     'The refusal was polite, complete, and considerably more informative than a yes.',
     '{b} has been made to promise things before and it did not end well, and said so.',
   ],
+  'asked-for-one-back': [
+    '{b} swore it, and then asked {a} to swear the same thing, which had not been the arrangement.',
+    '{a} wanted an oath. {b} gave one and required one, and {a} had about two seconds to decide.',
+    '{b} said yes and then turned it round: the same words, from {a}, out loud, now.',
+    'It stopped being a test of {b} the moment {b} asked {a} to take it too.',
+    '{b} agreed on one condition, and the condition was that {a} was in it as deep.',
+    '{a} came away with an oath and a matching obligation and is not sure {a} came out ahead.',
+    '{b} has been asked to prove things all week and decided tonight that it should go both ways.',
+    'Two people swore something in that corridor and only one of them had planned to.',
+  ],
 };
 
 const REVERSE_PSYCH_LINES = {
@@ -576,7 +586,7 @@ registerEvent({
   id: 'testing-loyalty-oath',
   variationAxes: {
     outcome: ['accepted', 'ambiguous', 'rejected'],
-    voice: ['boldness', 'loyalty'],
+    voice: ['boldness', 'loyalty', 'strategic'],
     relationship: ['close-ally', 'neutral'],
   },
   // The direction is a property of THIS event, not of the sentence it happens
@@ -600,15 +610,23 @@ registerEvent({
     const sincereScore = (st.loyalty / 10) * 0.5 + (st.boldness / 10) * 0.3 + 0.1;
     const reluctantScore = 0.35;
     const refusesScore = (1 - st.loyalty / 10) * 0.5 + (1 - st.boldness / 10) * 0.15;
-    const total = sincereScore + reluctantScore + refusesScore;
+    // A FOURTH ANSWER TO BEING ASKED, and it is the only one that changes who
+    // is being tested: {b} swears and requires the same of {a}. Strategic and
+    // boldness in the person UNDER the test, a pairing none of the three
+    // above reads.
+    const mutualScore = (st.strategic / 10) * 0.35 + (st.boldness / 10) * 0.2;
+    const total = sincereScore + reluctantScore + refusesScore + mutualScore;
     const roll = rng() * total;
     let branch;
     if (roll < sincereScore) branch = 'sincere';
     else if (roll < sincereScore + reluctantScore) branch = 'reluctant';
-    else branch = 'refuses';
+    else if (roll < sincereScore + reluctantScore + refusesScore) branch = 'refuses';
+    else branch = 'asked-for-one-back';
 
     const line = lineFor(OATH_LINES[branch], `testing-loyalty-oath|${ctx.ep}|${branch}`, { a, b });
-    const bondDelta = branch === 'sincere' ? 2 : branch === 'reluctant' ? 0 : -2;
+    // A mutual oath binds harder than a given one: both of them are in it.
+    const bondDelta = branch === 'sincere' ? 2 : branch === 'asked-for-one-back' ? 2.5
+      : branch === 'reluctant' ? 0 : -2;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]);
     const t = existing
@@ -1218,6 +1236,16 @@ const NIGHT_CHECK_LINES = {
     '{a} went to sleep knowing exactly as much about {b} as at breakfast.',
     'It refuses to resolve, and {a} has now spent two nights on a thing that refuses to resolve.',
   ],
+  'misread': [
+    '{a} came out of the night certain about {b}, and certain the wrong way.',
+    'The test gave {a} a clean answer about {b}. It was the wrong answer, and {a} has no way to know that.',
+    '{a} read it, called it, and built the rest of the week on a conclusion that will not hold.',
+    'Everything {a} thinks about {b} from here rests on one night that {a} got backwards.',
+    '{b} passed something {b} should have failed, or failed something {b} should have passed, and only the castle will find out which.',
+    '{a} is more confident about {b} this morning than the evidence deserves.',
+    'It looked conclusive. That is the most dangerous thing a night in this castle can look.',
+    '{a} has stopped asking questions about {b}, which is exactly what {b} needed.',
+  ],
 };
 
 registerEvent({
@@ -1251,16 +1279,26 @@ registerEvent({
     const passScore = (sb.loyalty / 10) * 0.5 + (sb.temperament / 10) * 0.4;
     const failScore = (1 - sb.loyalty / 10) * 0.5 + (sa.intuition / 10) * 0.4;
     const noneScore = (1 - sa.mental / 10) * 0.6 + 0.2;
-    const total = passScore + failScore + noneScore;
+    // A FOURTH RESULT, and it is the one the other three cannot express: a
+    // CONFIDENT WRONG READ. `inconclusive` is the tester getting no answer;
+    // this is the tester getting an answer and it being false, which is a
+    // different and more dangerous thing to carry into a week. Low intuition
+    // with high confidence -- the corner `noneScore` (low mental) misses.
+    const misreadScore = (1 - sa.intuition / 10) * 0.4 + (sb.social / 10) * 0.25;
+    const total = passScore + failScore + noneScore + misreadScore;
     const roll = rng() * total;
     let branch;
     if (roll < passScore) branch = 'confirmed';
     else if (roll < passScore + failScore) branch = 'failed';
-    else branch = 'inconclusive';
+    else if (roll < passScore + failScore + noneScore) branch = 'inconclusive';
+    else branch = 'misread';
 
     const line = pick(rng, NIGHT_CHECK_LINES[branch]).replace(/\{a\}/g, a).replace(/\{b\}/g, b);
     const thread = findOpenThread(FAMILY, [a, b]);
-    const bondDelta = branch === 'confirmed' ? 2 : branch === 'failed' ? -2.5 : 0;
+    // A misread warms the bond exactly as a pass would, because {a} believes
+    // it was a pass. That is the whole cost of the branch.
+    const bondDelta = branch === 'confirmed' ? 2 : branch === 'misread' ? 1.5
+      : branch === 'failed' ? -2.5 : 0;
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { note, cited } = arcAdvanceCiting(api, thread, ctx.ep, line, { source: sceneWhy });
     const outcome = branch === 'confirmed' ? 'passed-clean'

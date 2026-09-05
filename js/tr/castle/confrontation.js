@@ -146,6 +146,16 @@ const PILE_LINES = {
     'Four voices on one is not an argument, it is a mob, and the moment that landed, the feeling in the room began to swing back toward {b}.',
     '{a} pushed the pile-on past where it should have stopped, and it bought {b} sympathy the accusation never would have.',
   ],
+  'turned-it-back': [
+    '{b} took the pile-on, picked the loudest voice in it, and turned the whole thing onto {a} instead.',
+    'Cornered by the room, {b} asked {a} one question back, and the room turned round to look at {a}.',
+    '{b} did not defend {b}self at all. {b} spent the entire time asking why {a} was so certain, and by the end so was everybody.',
+    'The room came for {b} and left holding a question about {a}, which is not how a pile-on is supposed to end.',
+    '{b} let it run for a minute and then put a single thing to {a} that nobody had an answer for.',
+    'It stopped being about {b} somewhere in the middle, and {a} is the reason it stopped.',
+    '{b} was outnumbered and came out of it with the room\'s attention pointed at {a}.',
+    '{a} started that and {b} finished it, and the finishing was the part people will repeat.',
+  ],
 };
 
 registerEvent({
@@ -155,8 +165,8 @@ registerEvent({
   window: 'evening',
   advancesThread: true,
   variationAxes: {
-    outcome: ['weathered', 'crumbled', 'overreached'],
-    voice: ['temperament', 'boldness', 'social'],
+    outcome: ['weathered', 'crumbled', 'overreached', 'backfire'],
+    voice: ['temperament', 'boldness', 'social', 'strategic'],
   },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
@@ -176,6 +186,11 @@ registerEvent({
       weathered: (sb.temperament / 10) * 0.5 + (sb.boldness / 10) * 0.4,
       crumbled: (1 - sb.temperament / 10) * 0.55 + (1 - sb.boldness / 10) * 0.25,
       overreached: (sb.social / 10) * 0.35 + 0.2,
+      // A FOURTH OUTCOME. Being surrounded does not only produce holding,
+      // folding or a mob that overshoots -- a sharp target redirects it, and
+      // the accuser ends the evening as the subject. Strategic and boldness
+      // in the person UNDER it, which no other branch here reads together.
+      'turned-it-back': (sb.strategic / 10) * 0.35 + (sb.boldness / 10) * 0.25,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
@@ -184,7 +199,10 @@ registerEvent({
 
     const sceneWhy = 'was surrounded by the room at once';
     const note = lineFor(PILE_LINES[branch], `confront-pile-on|${branch}|${ctx.ep}`, { a, b });
-    const bondDelta = branch === 'overreached' ? -0.5 : -1.5;
+    // Turning it back costs the pair more than any of the others: {a}
+    // started it and {b} made {a} pay in front of everybody.
+    const bondDelta = branch === 'turned-it-back' ? -2
+      : branch === 'overreached' ? -0.5 : -1.5;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
     const t = existing
@@ -197,6 +215,7 @@ registerEvent({
     if (branch === 'weathered') crowd = { name: b, colour: 'masterful', reason: 'stood calm while the room came at them at once', mult: 0.5 };
     else if (branch === 'crumbled') crowd = { name: b, colour: 'cowardly', reason: 'came apart under a pile-on', mult: 0.5 };
     else if (branch === 'overreached') crowd = { name: a, colour: 'cruel', reason: 'led a pile-on past where it should have stopped', mult: 0.5 };
+    else if (branch === 'turned-it-back') crowd = { name: b, colour: 'masterful', reason: 'turned a whole room\u2019s pile-on back onto the person who started it', mult: 0.6 };
 
     return { branch, pair: [a, b], speaker: a, respondent: b,
       topic: b, topicKind: 'confrontation-pileon', threadId: t?.id || existing?.id || null, bondDelta,
@@ -227,6 +246,16 @@ const DEFEND_LINES = {
     '{a} put themselves between {b} and the room and caught some of it — standing up for the accused made {a} one of them.',
     '{a} meant to draw the doubt off {b} and drew it onto themselves instead, and now {a} and {b} sink or float together.',
   ],
+  'too-late': [
+    '{a} defended {b} well and did it a full ten minutes after the room had stopped caring.',
+    'By the time {a} spoke up for {b} the conversation had gone somewhere else, and the defence hung there on its own.',
+    '{a} made the case for {b} to a room that had already finished with it, which reads less like loyalty and more like positioning.',
+    'It was a good defence of {b}. It was the wrong minute for it, and {b} noticed which.',
+    '{a} waited to see which way it was going before standing up for {b}, and the waiting was the visible part.',
+    '{a} said the right thing about {b} once saying it had stopped costing anything.',
+    'The room had already let {b} off the hook when {a} arrived to do it, and {a} took the credit anyway.',
+    '{b} needed that twenty minutes earlier. {a} was working out whether to say it at all.',
+  ],
 };
 
 registerEvent({
@@ -236,8 +265,8 @@ registerEvent({
   window: 'evening',
   advancesThread: true,
   variationAxes: {
-    outcome: ['worked', 'fell-flat', 'drew-fire'],
-    voice: ['boldness', 'social', 'loyalty'],
+    outcome: ['worked', 'fell-flat', 'drew-fire', 'rejected'],
+    voice: ['boldness', 'social', 'loyalty', 'strategic'],
   },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
@@ -260,6 +289,11 @@ registerEvent({
       worked: (sa.social / 10) * 0.5 + (sa.boldness / 10) * 0.3,
       'fell-flat': (1 - sa.social / 10) * 0.4 + 0.2,
       'drew-fire': (sa.boldness / 10) * 0.3 + (1 - sa.strategic / 10) * 0.3,
+      // A FOURTH OUTCOME, and the one a careful player produces: the defence
+      // is real and it is late, because {a} waited to see which way the room
+      // was going first. High strategic, low boldness -- the opposite corner
+      // from `drew-fire`.
+      'too-late': (sa.strategic / 10) * 0.3 + (1 - sa.boldness / 10) * 0.25,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
@@ -269,7 +303,9 @@ registerEvent({
     const sceneWhy = 'stood up for them in front of the room';
     const note = lineFor(DEFEND_LINES[branch], `confront-defend-the-accused|${branch}|${ctx.ep}`, { a, b });
     // Standing together warms the bond; it warms less when it costs the defender.
-    const bondDelta = branch === 'drew-fire' ? 1 : 2;
+    // A late defence buys almost nothing with the person defended, who was
+    // watching the delay rather than the words.
+    const bondDelta = branch === 'too-late' ? 0.5 : branch === 'drew-fire' ? 1 : 2;
     api.addBond(a, b, bondDelta, { source: sceneWhy });
     const existing = findOpenThread('trust', [a, b]) || findOpenThread(FAMILY, [a, b]);
     const t = existing
@@ -282,6 +318,7 @@ registerEvent({
     if (branch === 'worked') crowd = { name: a, colour: 'selfless', reason: 'stood up for somebody the room was turning on', mult: 0.5 };
     else if (branch === 'fell-flat') crowd = { name: a, colour: 'kind', reason: 'tried to defend somebody, and meant it', mult: 0.5 };
     else if (branch === 'drew-fire') crowd = { name: a, colour: 'heroic', reason: 'took the room’s suspicion onto themselves to shield another', mult: 0.5 };
+    else if (branch === 'too-late') crowd = { name: a, colour: 'selfish', reason: 'waited to see which way the room went before defending a friend', mult: 0.4 };
 
     return { branch, pair: [a, b], speaker: a, respondent: b,
       topic: b, topicKind: 'confrontation-defence', threadId: t?.id || existing?.id || null, bondDelta,

@@ -604,6 +604,16 @@ const COLD_SWEAT_LINES = {
     'It could have gone badly for {a} and {a} made it not, in about four words, without appearing to try.',
     '{a} named the awkwardness out loud, which is the one move that reliably kills it, and killed it.',
   ],
+  'stopped-talking': [
+    'Asked about the night, {a} simply stopped talking, and the stopping was louder than any answer.',
+    '{a} had been fine all evening until the question, and then said nothing at all for a beat too long.',
+    'The room asked {a} something ordinary and got a silence back that nobody knew what to do with.',
+    '{a} did not deny it, explain it or laugh. {a} went quiet, and people noticed the shape of the quiet.',
+    'There is a pause that means thinking and a pause that means choosing, and {a} used the second one.',
+    '{a} answered every question that evening except one, and left that one hanging.',
+    'It was not a lie. It was the absence of one, and it did {a} more damage than a lie would have.',
+    '{a} looked at the table instead of answering and the table looked back.',
+  ],
 };
 
 registerEvent({
@@ -644,6 +654,12 @@ registerEvent({
       tell: (1 - st.temperament / 10) * 0.5 + 0.2,
       overexplained: (1 - st.social / 10) * 0.35 + (st.strategic / 10) * 0.3,
       'laughed-it-off': (st.social / 10) * 0.45 + (st.boldness / 10) * 0.3,
+      // A FOURTH THING PRESSURE DOES, and the three above did not cover it:
+      // a quiet, guarded player under a question does not sweat, overexplain
+      // or perform their way out -- they stop talking, and the stop is the
+      // tell. The only fork here that reads LOW social and LOW boldness
+      // together, which is the corner `laughed-it-off` leaves empty.
+      'stopped-talking': (1 - st.social / 10) * 0.35 + (1 - st.boldness / 10) * 0.25,
     };
     const total = Object.values(scores).reduce((s, v) => s + v, 0);
     let roll = rng() * total;
@@ -655,8 +671,10 @@ registerEvent({
     const t = api.openArc(FAMILY, [actor], { source: sceneWhy, seed: note });
     // THE BRANCH IS THE MOMENT, same rule `cover-alibi-crumbles` states: a
     // recovery the room enjoys is spectacle, a visible tell is exposure.
+    // A silence the room reads is exposure of the same kind a visible tell
+    // is -- less spectacle, same direction.
     const colour = branch === 'laughed-it-off' ? 'masterful'
-      : branch === 'tell' ? 'exposed' : null;
+      : (branch === 'tell' || branch === 'stopped-talking') ? 'exposed' : null;
     return { branch: branch === 'tell' ? 'tell' : branch, topic: _accountTopic(), topicKind: 'cover-account', actor, threadId: t?.id,
       underPressure: pressed, crowd: colour ? { name: actor, colour } : null };
   },
@@ -917,7 +935,8 @@ registerEvent({
 // derivation is now done once and guarded here as well.
 //
 // THE RECORD THE FORK READS is the debt itself — `gs.tr.loyaltyDebt` holds who
-// approached whom and who refused — plus the recruiter's own temperament and
+// approached whom and who ACCEPTED (a refusal writes no record; see the note
+// on `they-told-it-first` at the event below) — plus the recruiter's own temperament and
 // strategic. What a person does with an account nobody has asked for is the
 // scene, and there are four things: keep it, use it unprompted, decide the
 // having of it is the danger, or find out the other party has been telling it.
@@ -959,7 +978,7 @@ const RECRUIT_COVER_LINES = {
     '{a}’s story is airtight and is about a night the castle already has a version of.',
     'Somebody said the thing at breakfast and {a} had to arrange a face for it.',
     'The account {a} prepared is now a defence rather than a screen, which is a different job.',
-    '{a} learned that the person who refused has been dining out on refusing.',
+    '{a} learned that the person {sub} brought in has been dining out on the story of it.',
     'What {a} had was a secret. What {a} has is a position, and it is worse.',
   ],
 };
@@ -993,13 +1012,15 @@ registerEvent({
     const st = pStats(actor);
     // THE DEBT ITSELF: who refused, and how long ago. Both stored.
     const mine = debts.filter(d => d.recruiter === actor);
-    const refuser = mine[0]?.player || null;
+    // `recruit`, not `player` -- see the note above this event. The other
+    // party to a loyalty debt is the person who ACCEPTED.
+    const recruited = mine[0]?.recruit || null;
     const age = Math.max(0, ctx.ep - (mine[0]?.ep ?? ctx.ep));
     const scores = {
       'recruit-story-kept': 0.4 + (st.temperament / 10) * 0.15,
       'told-it-unasked': (1 - st.temperament / 10) * 0.3 + Math.min(3, age) * 0.05,
       'binned-it': (st.intuition / 10) * 0.25 + Math.min(3, age) * 0.06,
-      'they-told-it-first': refuser ? 0.15 + (1 - pStats(refuser).loyalty / 10) * 0.25 : 0,
+      'they-told-it-first': recruited ? 0.15 + (1 - pStats(recruited).loyalty / 10) * 0.25 : 0,
     };
     const keys = Object.keys(scores);
     const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
@@ -1016,7 +1037,9 @@ registerEvent({
     // TERMINAL: an account deliberately destroyed is a story that ended
     // without anybody else ever learning it existed.
     if (t && branch === 'binned-it') api.resolveArc(t.id, 'buried', { source: sceneWhy });
-    return { branch, topic: refuser ? `the night ${refuser} turned them down` : 'the night they made their offer', topicKind: 'cover-account', actor, threadId: t?.id };
+    // Same correction as the variable above: the debt records an ACCEPTANCE,
+    // so the night in question is the night they said yes.
+    return { branch, topic: recruited ? `the night ${recruited} said yes` : 'the night they made their offer', topicKind: 'cover-account', actor, threadId: t?.id };
   },
 });
 // ── WIDENED AND REFORKED (Task 7 stage 6). A KEEP-list event, and the second

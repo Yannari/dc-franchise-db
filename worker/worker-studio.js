@@ -959,6 +959,20 @@ const asInt = v => {
   if (typeof v === 'string' && /^-?\d+$/.test(v.trim())) return parseInt(v, 10);
   return null;   // "High" and friends are prose, not ranks
 };
+
+/**
+ * A portrait filename, or null.
+ *
+ * The client sends this and the site renders it into an <img src>, so it is a
+ * filename here in the same way a slug is a filename in the avatar endpoint —
+ * validated rather than trusted. Basename only: no path, no scheme, no
+ * traversal, and an extension we actually serve.
+ */
+const safePortraitFile = v => {
+  const f = typeof v === 'string' ? v.trim() : '';
+  return /^[A-Za-z0-9][A-Za-z0-9._-]*\.(png|webp|jpe?g|gif)$/i.test(f)
+    && !f.includes('..') ? f : null;
+};
 const asNum = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
 // Chunking means you never have to think about batch size — the sync splits
@@ -1195,6 +1209,11 @@ async function liveSeasonGet(env) {
       rewardWins: r.reward_wins,
       challengeWins: r.challenge_wins,
       votesReceived: r.votes_received,
+      // Absent rather than null on a database without the migration, so a
+      // reader can tell "no portrait recorded" from "this season chose the
+      // default" without guessing.
+      ...(r.avatar_file ? { avatarFile: r.avatar_file } : {}),
+      ...(r.avatar_id ? { avatarId: r.avatar_id } : {}),
     })),
   };
 }
@@ -1248,17 +1267,39 @@ async function liveSeasonPut(env, payload = {}) {
       asInt(payload.stillIn) ?? players.filter(p => p.status === 'in').length),
   ];
 
-  for (const p of players) {
-    if (!p || !p.name) continue;
-    stmts.push(d.prepare(
+  // ── THE PORTRAIT, IF THE DATABASE HAS SOMEWHERE TO PUT IT ──────────
+  //
+  // live_season_migration_portrait.sql adds the two columns. A database that
+  // has not had it applied answers the INSERT with "no such column", and the
+  // STANDINGS — the thing sync exists to do — would go down with them. Same
+  // rule as the feed below: the portraits are worth having and not worth
+  // taking the sync with them, so the write is attempted with the columns and
+  // retried without.
+  const rowStmts = withPortraits => players.filter(p => p && p.name).map(p => (withPortraits
+    ? d.prepare(
+      `INSERT INTO live_season (season_number,player_name,player_id,status,exit_episode,
+        immunity_wins,reward_wins,challenge_wins,votes_received,avatar_id,avatar_file)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(season, String(p.name), p.slug || null, p.status || 'in', asInt(p.exitEpisode),
+      asInt(p.immunityWins) || 0, asInt(p.rewardWins) || 0,
+      asInt(p.challengeWins) || 0, asInt(p.votesReceived) || 0,
+      p.avatarId || null, safePortraitFile(p.avatarFile))
+    : d.prepare(
       `INSERT INTO live_season (season_number,player_name,player_id,status,exit_episode,
         immunity_wins,reward_wins,challenge_wins,votes_received) VALUES (?,?,?,?,?,?,?,?,?)`
     ).bind(season, String(p.name), p.slug || null, p.status || 'in', asInt(p.exitEpisode),
       asInt(p.immunityWins) || 0, asInt(p.rewardWins) || 0,
-      asInt(p.challengeWins) || 0, asInt(p.votesReceived) || 0));
-  }
+      asInt(p.challengeWins) || 0, asInt(p.votesReceived) || 0)));
 
-  await runChunked(d, stmts);
+  let portraitError = null;
+  try {
+    await runChunked(d, [...stmts, ...rowStmts(true)]);
+  } catch (e) {
+    if (!/no such column/i.test(e.message || '')) throw e;
+    portraitError = 'live_season has no portrait columns — apply '
+      + 'worker/live_season_migration_portrait.sql';
+    await runChunked(d, [...stmts, ...rowStmts(false)]);
+  }
 
   // The feed rides along with the standings so one press of sync puts the whole
   // night on the site — but it is written SEPARATELY and afterwards, and its
@@ -1284,6 +1325,7 @@ async function liveSeasonPut(env, payload = {}) {
     ok: true, seasonNumber: season, episode: asInt(payload.episode),
     players: players.length, posts,
     ...(socialError ? { socialError } : {}),
+    ...(portraitError ? { portraitError } : {}),
   };
 }
 

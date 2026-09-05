@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS live_season (
   reward_wins   INTEGER DEFAULT 0,
   challenge_wins INTEGER DEFAULT 0,
   votes_received INTEGER DEFAULT 0,
+  -- The portrait this season cast them with. A player can have any number,
+  -- scoped per show, and for an AIRING season this table is the only place
+  -- that choice exists — players_database.json holds finished seasons only.
+  -- See live_season_migration_portrait.sql for an existing database.
+  avatar_id      TEXT,
+  avatar_file    TEXT,
   PRIMARY KEY (season_number, player_name)
 );
 

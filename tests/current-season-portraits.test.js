@@ -71,3 +71,51 @@ describe('the transcript draws the same faces as the simulator', () => {
     expect(body).toContain('window.portraitFor');
   });
 });
+
+describe('the airing season publishes its portraits', () => {
+  const worker = fs.readFileSync(path.join(ROOT, 'worker/worker-studio.js'), 'utf8');
+  const exporter = fs.readFileSync(path.join(ROOT, 'js/stats-export.js'), 'utf8');
+  const schema = fs.readFileSync(path.join(ROOT, 'worker/live_season_schema.sql'), 'utf8');
+
+  it('the snapshot carries the portrait each player was cast with', () => {
+    const fn = exporter.slice(exporter.indexOf('export function extractLiveSeasonSnapshot'),
+      exporter.indexOf('export function extractLiveSeasonSnapshot') + 3000);
+    expect(fn).toContain('_portraitOf(name)');
+  });
+
+  it('the table has somewhere to put it', () => {
+    expect(schema).toMatch(/avatar_file\s+TEXT/);
+    expect(fs.existsSync(path.join(ROOT, 'worker/live_season_migration_portrait.sql'))).toBe(true);
+  });
+
+  it('a database without the migration still syncs the standings', () => {
+    // The portraits are worth having and not worth taking the sync down with
+    // them — the same rule the feed already follows one block below.
+    expect(worker).toMatch(/no such column/i);
+    expect(worker).toContain('portraitError');
+    expect(worker).toContain('rowStmts');
+  });
+
+  it('validates the filename instead of trusting the client', () => {
+    // The site renders this straight into an <img src>, so it is a filename
+    // here in the same way a slug is one in the avatar endpoint.
+    expect(worker).toContain('const safePortraitFile');
+    expect(worker).toMatch(/safePortraitFile\(p\.avatarFile\)/);
+  });
+
+  it('the page reads the published snapshot, not just local storage', () => {
+    // Everything else this page knows is local: the database has finished
+    // seasons, and the simulator's cast lives in the browser it was played in.
+    // Opened on a phone, neither answers for the season actually airing.
+    expect(html).toContain('/api/live-season');
+    expect(html).toContain('function loadLivePortraits(');
+  });
+
+  it('keeps the airing portraits off every other season', () => {
+    // A cached snapshot for the airing season was merged into every season the
+    // page rendered, so an old episode was drawn with today's faces.
+    expect(html).toContain('livePortraitSeason');
+    expect(html).toMatch(/Number\(livePortraitSeason\) === Number\(season\)/);
+  });
+});
+

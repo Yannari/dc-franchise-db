@@ -3936,6 +3936,11 @@ export function extractLiveSeasonSnapshot() {
       status: isOut ? (jury.has(name) ? 'jury' : 'out') : 'in',
       exitEpisode: isOut ? Math.floor(exitEp) : null,
       votesReceived: votes.totalVotesReceived || 0,
+      // The portrait this season cast them with. players_database.json holds
+      // FINISHED seasons, so for the one currently airing this snapshot is the
+      // only place the choice can travel — and without it the site draws the
+      // profile default over the season most likely to be using custom art.
+      ..._portraitOf(name),
     };
     if (!isBB) {
       return {

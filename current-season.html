@@ -1278,6 +1278,19 @@ Owen: This is going to be amazing!"
     const HOST_PORTRAITS = { 'chris mclean': 'chris-mclean', 'chris': 'chris-mclean',
                              'chef hatchet': 'chef-hatchet', 'chef': 'chef-hatchet' };
     let appearanceByName = new Map();
+    // The airing season's portraits, as published by "Sync episode to site".
+    // Filled asynchronously; the map is rebuilt when it lands.
+    let livePortraits = new Map();
+    // WHICH season those portraits belong to. Without it a cached snapshot for
+    // the airing season was merged into every OTHER season the page rendered,
+    // so an old episode was drawn with today's faces.
+    let livePortraitSeason = null;
+    const LIVE_SEASON_API = (() => {
+      try {
+        return (localStorage.getItem('studio_api_base')
+          || 'https://dc-studio.yannari19.workers.dev').replace(/\/+$/, '') + '/api/live-season';
+      } catch { return 'https://dc-studio.yannari19.workers.dev/api/live-season'; }
+    })();
 
     function _safePortraitFile(f) {
       return typeof f === 'string' && !!f && !/[\/:]/.test(f) && !f.includes('..') && /\.(png|webp|jpe?g|gif)$/i.test(f);
@@ -1310,9 +1323,18 @@ Owen: This is going to be amazing!"
         if (_safePortraitFile(file)) appearanceByName.set(String(p.name).toLowerCase(), file);
       }
 
-      // 2. the season on the bench right now, which the database cannot know
-      //    about. Scoped by season number so viewing an OLD episode does not
-      //    get today's cast painted over it.
+      // 2. the airing season as PUBLISHED. This is the one that works away
+      //    from the machine the season was played on — the local cast below
+      //    only exists in the simulator's own browser. Merged only for the
+      //    season it is actually about.
+      if (season == null || livePortraitSeason == null
+        || Number(livePortraitSeason) === Number(season)) {
+        for (const [name, file] of livePortraits) appearanceByName.set(name, file);
+      }
+
+      // 3. the season on the bench right now, which neither the database nor
+      //    the published snapshot can be ahead of. Scoped by season number so
+      //    viewing an OLD episode does not get today's cast painted over it.
       try {
         const cfg = JSON.parse(localStorage.getItem('simulator_config') || 'null');
         const live = JSON.parse(localStorage.getItem('simulator_cast') || 'null');
@@ -1326,6 +1348,34 @@ Owen: This is going to be amazing!"
         }
       } catch { /* no simulator on this browser; the database answer stands */ }
     }
+
+    /**
+     * Pull the airing season's portraits off the site.
+     *
+     * Everything else this page knows about portraits is local: the published
+     * database has finished seasons only, and the simulator's cast lives in
+     * the localStorage of the machine it was played on. Opened anywhere else —
+     * a phone, somebody else's browser — neither answers for the season
+     * actually airing, which is the one on screen. Never throws: no backend
+     * simply means the other two sources stand.
+     */
+    function loadLivePortraits(season) {
+      return fetch(LIVE_SEASON_API, { cache: 'no-store' })
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          if (!j || !j.airing || !Array.isArray(j.players)) return;
+          livePortraitSeason = j.seasonNumber ?? null;
+          livePortraits = new Map();
+          for (const p of j.players) {
+            if (p && p.name && _safePortraitFile(p.avatarFile)) {
+              livePortraits.set(String(p.name).toLowerCase(), p.avatarFile);
+            }
+          }
+          if (livePortraits.size) refreshAppearanceMap(season);
+        })
+        .catch(() => { /* offline or no worker; the local sources stand */ });
+    }
+    window.loadLivePortraits = loadLivePortraits;
 
     window.refreshAppearanceMap = refreshAppearanceMap;
     // PUBLISHED, because this page is not one scope. slugify is defined three
@@ -2494,6 +2544,7 @@ Owen: This is going to be amazing!"
       CURRENT.analytics = analytics;
       CURRENT.season = seasonNow;
       refreshAppearanceMap(seasonNow);   // portraits are per-season, so the map is too
+      loadLivePortraits(seasonNow);      // and the airing one is published, not local
       window.CURRENT = CURRENT;
       CURRENT.episode = episodeNow;
       CURRENT.summaryText = txt;

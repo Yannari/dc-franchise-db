@@ -2285,6 +2285,9 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     castleEvents: castle1, budget: { ...gs.tr.roundBudget } });
 
   const configuredEndgameSize = Math.max(2, Math.min(cast.length, Number(endgameSize) || 3));
+  // Set by the loop when a Round Table hands straight over to the endgame;
+  // the endgame then attaches to THAT episode instead of building its own row.
+  let _endgameEp = null;
   // On the state so `_night` can read it: the last banishment leaves exactly
   // this many, and no murder (nor a Double) fires that would carry the room past
   // it — a final-four setting hands the fire round four, not three.
@@ -2378,8 +2381,50 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // after-table fires — that is the whole point of the window: someone
     // was just revealed.
     castleEvents.push(...runCastlePhase('roundtable-scramble', ep, castleRng)); // after-table
-    const night = _night(ep, rng);
+
+    // ── THE ENDGAME BEGINS ON THE NIGHT THE TABLE REACHES IT ────────────
+    //
+    // The format does not murder somebody and then hold the fire round; the
+    // last banishment IS the handover. So the moment the Round Table brings
+    // the room down to the endgame size, this episode runs NO NIGHT — no
+    // conclave, no murder — and the endgame opens in the same episode, after
+    // the banishment that caused it.
+    //
+    // WHAT THIS REPLACES, and why the previous shape was not simply wrong.
+    // The endgame used to break out of this loop at the TOP of the next
+    // iteration and build a dedicated finale row. That row was correct about
+    // one thing the note below the loop argues at length: an endgame must not
+    // sit in an episode that also committed a murder. It bought that by
+    // spending a whole extra episode on it, which is where the sparse
+    // "episode" with no mission, no table and no night came from — and it put
+    // the fire round a night away from the banishment that triggered it.
+    //
+    // Skipping the night here gets the same guarantee for free: the episode
+    // that hands over cannot contain a murder, because the murder is the thing
+    // being skipped. `endgameSize: 3` now reads: banish from four to three,
+    // and go straight into the endgame with those three.
+    const stillIn = (gs.activePlayers || []).length;
+    const handOver = stillIn <= configuredEndgameSize;
+    // AND THE PACT DOES NOT MURDER ITSELF INTO THE ENDGAME.
+    //
+    // Without this the handover only lands on the right parity. A room of five
+    // banishes to four, murders to three, and with `endgameSize: 3` the
+    // endgame opens having never had a banishment reach it — the last thing
+    // that happened was a murder, and the fire round is a night away from the
+    // table that was supposed to trigger it.
+    //
+    // So a murder that would take the room TO the endgame size, or past it, is
+    // not committed. The Traitors do not hand themselves the ending; the
+    // castle votes its way there. The cost is one murder-free night on the
+    // approach, which the room reads as a quiet morning
+    // (js/tr/castle/quiet-night.js gives it a scene) — and the gain is that
+    // `endgameSize: 3` means what it says on every cast size: banish from four
+    // to three, then play the endgame with those three.
+    const wouldEndIt = stillIn - 1 <= configuredEndgameSize;
+    const night = (handOver || wouldEndIt) ? null : _night(ep, rng);
     // Same pair, same order, same stream — see the note on night one.
+    // Housekeeping runs either way: a Shield still expires on a night nobody
+    // was murdered, and a Dagger still settles on the banishment.
     shieldEvidence(ep, missionRng, night);
     armouryBlockEvidence(ep, missionRng);
     expireShields(ep);
@@ -2401,9 +2446,12 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     scoreTable(ep, r, { bondOf: getBond });
     _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents,
       beliefs: beliefsBeforeTable });
-    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...night, mission,
+    log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...(night || {}), mission,
       alive: alive.length, aliveAtVote: alive.length, traitorsAtVote: tr,
       castleEvents, budget: { ...gs.tr.roundBudget } });
+    // The table reached the endgame size: this episode is the last one, and
+    // the endgame below attaches to it rather than to a row of its own.
+    if (handOver) { _endgameEp = ep; break; }
   }
 
   // THE ENDGAME (spec 8), and it is the reason a season can now END rather
@@ -2413,7 +2461,17 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // stopped being written. From here the survivors are asked the private
   // question instead of the public one, and the money finally has a reader.
   const mandatedRounds = gs.tr.rounds.length;
-  const endgame = runEndgame(ep, rng, { reveal: endgameReveal });
+  // ONE PAST THE HANDOVER, BECAUSE `runEndgame` USES ITS ARGUMENT AS A ROUND
+  // COUNTER. It calls `runRoundTable(ep, …)` and then `ep++` for each further
+  // table, so the number it is given must be one no mandated round already
+  // owns. When the loop handed over, `ep` IS the episode that just ran a Round
+  // Table — starting there put two rounds on one episode number, and
+  // `_tableRecord` and the export both answer such an episode with whichever
+  // round they happen to find first. When the loop exited at the top instead
+  // (a dead pact, an all-Traitor castle, parity) `ep` is an episode that never
+  // ran and the number is already free.
+  const endgame = runEndgame(_endgameEp != null ? ep + 1 : ep, rng,
+    { reveal: endgameReveal });
   // The final table's private question, and it is scored from the CHOICES
   // rather than from who left: a betrayal the room then failed to carry out
   // was still chosen, and `endgameChoice` is the only place that fact exists.
@@ -2437,13 +2495,31 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // record carries it and the screen reads it there).
   const _rows = gs.episodeHistory || [];
   if (_rows.length) {
-    const _finaleEp = (Number(_rows[_rows.length - 1].num) || _rows.length) + 1;
-    // A finale row: endgame phase, no night, no table of its own (`finale`
-    // nulls the table `_tableRecord` would otherwise rebuild from the endgame
-    // rounds — the endgame screen owns those).
-    _recordEpisode(_finaleEp, { endgame: true, finale: true });
-    const _finaleRow = _rows[_rows.length - 1];
+    // ── WHERE THE ENDGAME LIVES ─────────────────────────────────────────
+    //
+    // Normally on the episode whose Round Table reached the endgame size:
+    // the loop skipped that episode's night for exactly this reason, so the
+    // row carries a mission, a table, a banishment and then the endgame, with
+    // no murder in it — which is the objection the note above raises against
+    // folding, answered rather than avoided.
+    //
+    // A row of its own is still built for the ways a season can end WITHOUT a
+    // handover table: the pact being wiped out, an all-Traitor castle, or the
+    // parity rule closing the mandated game. Those exit the loop at the top
+    // with no banishment to attach to, and a finale row is the honest shape
+    // for them.
+    let _finaleRow = _endgameEp != null
+      ? _rows.find(r => Number(r.num) === Number(_endgameEp)) : null;
+    if (!_finaleRow) {
+      const _finaleEp = (Number(_rows[_rows.length - 1].num) || _rows.length) + 1;
+      _recordEpisode(_finaleEp, { endgame: true, finale: true });
+      _finaleRow = _rows[_rows.length - 1];
+    }
     _finaleRow.tr.endgame = _endgameRecord(endgame);
+    // The row that carries the endgame IS the finale, however it got here.
+    // Nothing in js/vp-tr/ gates a screen on this, but the export and the
+    // Day Book read it to know which episode ended the season.
+    _finaleRow.tr.finale = true;
     const [_banishVerb] = exitVerbs(TRAITORS_FORMAT);
     for (const r of endgame.rounds || []) {
       if (r.banished) {

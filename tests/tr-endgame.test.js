@@ -118,7 +118,27 @@ describe('one vote to banish forces another Round Table', () => {
       expect(survivors.length, 'the endgame ran the castle empty').toBeGreaterThan(0);
     }
     console.log(`[coverage] ${tables} endgame tables, ${tiny} of them with three ballots or fewer`);
-    expect(tables, 'no endgame table sat at all').toBeGreaterThan(150);
+    // ── FLOOR RE-DERIVED 2026-09-05, AND IT IS A SAMPLE SIZE ────────────
+    //
+    // 150 -> 100. This is the anti-vacuity floor that keeps the real
+    // assertions above from passing on an empty scan; it is not a claim about
+    // how much banishing an endgame ought to do.
+    //
+    // The endgame now opens in the same episode as the Round Table that
+    // handed over to it, and the pact no longer murders the room INTO the
+    // endgame (js/tr/headless.js) — so the last thing to happen before the
+    // fire round is a banishment where it used to be a murder. A banishment
+    // can take a Traitor; a murder never does. Measured over 60 seeded
+    // seasons, before and after the change on the same probe:
+    //
+    //     before   34 endgame tables   32 of 60 seasons ran none
+    //     after    29 endgame tables   39 of 60 seasons ran none
+    //
+    // Fewer tables because more endgames open on a room that simply votes to
+    // end, which is both a real consequence and a common real-show ending.
+    // This suite's own scan fell 150 -> 121 for the same reason. 100 keeps a
+    // fifth of margin under the measurement rather than being fitted to it.
+    expect(tables, 'no endgame table sat at all').toBeGreaterThan(100);
     expect(tiny, 'no table small enough to deadlock ever sat').toBeGreaterThan(20);
   });
 });
@@ -170,7 +190,8 @@ describe('nobody is revealed in the endgame', () => {
     });
     console.log(`[coverage] ${egChecked} endgame banishments checked, ${egLeaks.length} leaked; `
       + `control: ${mandatedSeen}/${mandatedChecked} mandated banishments DID reveal`);
-    expect(egChecked, 'no endgame banishment happened — the probe saw nothing').toBeGreaterThan(150);
+    // Same re-derivation as the table floor above (150 -> 100).
+    expect(egChecked, 'no endgame banishment happened — the probe saw nothing').toBeGreaterThan(100);
     // THE CONTROL FIRST: if this is not near-total the probe cannot see a
     // reveal and the line below is unfalsifiable.
     expect(mandatedChecked, 'no mandated banishment to control against').toBeGreaterThan(1000);
@@ -230,7 +251,7 @@ describe('nobody is revealed in the endgame', () => {
       + `${egSpoke.length} carried a speech; control: ${mandSpeeches}/${mandTables} mandated tables `
       + `spoke, ${mandBurns} burned, ${mandCertain} of those at conviction 1`);
 
-    expect(egTables, 'no endgame table sat — the probe saw nothing').toBeGreaterThan(150);
+    expect(egTables, 'no endgame table sat — the probe saw nothing').toBeGreaterThan(100);
     expect(egTraitorsBanished, 'no endgame table ever banished a Traitor, so the leaking state '
       + 'never arose and this assertion is vacuous').toBeGreaterThan(30);
     // THE CONTROL, BEFORE THE ASSERTION. If exit speeches stopped being

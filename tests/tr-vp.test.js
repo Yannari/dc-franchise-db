@@ -5694,27 +5694,49 @@ describe('a suspicion card distinguishes a clue from the overall read', () => {
 });
 
 describe('the belief record reaches the row at all', () => {
-  it('a real season writes a board on every ordinary night, and none on the finale', () => {
-    // The endgame is its own episode now — one finale row (`tr.finale`) that
-    // carries the whole fire round and NO belief board (spec §8: the endgame
-    // reveals nothing, and a board would hand the last table every survivor's
-    // alignment). Every other row is an ordinary night and carries one.
-    let rows = 0, withBoard = 0, finales = 0;
+  it('a board on every night that sat a Round Table, and none without one', () => {
+    // RE-STATED 2026-09-05, BECAUSE THE FINALE IS NO LONGER A ROW OF ITS OWN.
+    //
+    // This used to read "and none on the finale", on the reasoning that the
+    // endgame reveals nothing (spec §8) and a board would hand the last table
+    // every survivor's alignment. The endgame now opens in the SAME episode as
+    // the Round Table that handed over to it (js/tr/headless.js), so that row
+    // sat a real table, banished somebody, and its Voting Plans screen needs
+    // the board that table was voted on — withholding it would blank a screen
+    // about a table that genuinely happened.
+    //
+    // THE ORIGINAL CONCERN IS UNCHANGED AND IS NOT GUARDED HERE. What protects
+    // a player from the board's audience-only accuracy figures is the observer
+    // contract, which is asserted where it belongs — on the screens, in this
+    // file and in tests/tr-host-explanations.test.js. A record carrying a fact
+    // is not a leak; a screen printing it to the wrong reader is.
+    //
+    // So the rule is about the TABLE, not the finale: a night that sat one has
+    // a board, a night that did not has none. The endgame-only rows that still
+    // exist (a dead pact, an all-Traitor castle, parity) sit no table and are
+    // covered by the second arm.
+    let rows = 0, withBoard = 0, tabled = 0, untabled = 0;
     for (const r of RUNS) {
       for (const e of r.episodes) {
         if (!e.tr) continue;
         rows++;
-        if (e.tr.finale) {
-          finales++;
-          expect(e.tr.beliefs, `ep ${e.num}: the finale carries a board`).toBe(null);
+        // AN ENDGAME-ONLY ROW, and only that. Night one also sits no table —
+        // there is no Round Table on the first night — and it carries a board
+        // like any other night, which the first cut of this rule wrongly
+        // called a leak.
+        if (e.tr.finale && !e.tr.table) {
+          untabled++;
+          expect(e.tr.beliefs, `ep ${e.num}: a board on an endgame-only row`).toBe(null);
           continue;
         }
+        if (e.tr.table) tabled++;
         expect(e.tr.beliefs, `ep ${e.num}: no board on an ordinary night`).toBeTruthy();
         if (e.tr.beliefs.castle.length) withBoard++;
       }
     }
     expect(rows, 'no episode rows at all').toBeGreaterThan(30);
-    expect(finales, 'no finale row in any seed, so the withholding is unchecked')
+    expect(tabled, 'no night sat a Round Table').toBeGreaterThan(20);
+    expect(untabled, 'no table-less night, so the withholding is unchecked')
       .toBeGreaterThan(0);
     expect(withBoard, 'not one night produced a castle board').toBeGreaterThan(20);
   });

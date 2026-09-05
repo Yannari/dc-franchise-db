@@ -132,15 +132,35 @@ export function traitorsRoundBallots(round) {
  */
 export function traitorsVotingHistory(season = {}) {
   const [banishVerb, murderVerb] = exitVerbs(TRAITORS_FORMAT);
-  const byEp = new Map();
-  for (const r of season.rounds || []) byEp.set(r.ep, r);
-  for (const r of (season.endgame?.rounds || [])) byEp.set(r.ep, r);
+  // ── ONE ROW PER EPISODE, AND THE FINALE HAS TWO TABLES IN IT ────────
+  //
+  // This was a Map keyed on `ep` with the endgame's rounds written into it
+  // SECOND, so an endgame table sharing an episode with a mandated one simply
+  // OVERWROTE it. Invisible while the endgame lived on a finale row of its
+  // own; a silent data loss the moment it moved onto the episode whose Round
+  // Table handed over to it. The mandated banishment disappeared from the
+  // history and `_departures` placed nineteen of twenty players.
+  //
+  // One row per episode is a contract this file is tested on, so the fix is
+  // not to split them. The MANDATED table is the episode's round — it is the
+  // one whose ballots `votes` should report and whose banishment `eliminated`
+  // means — and the endgame's banishments ride along in `exits[]`, in the
+  // order they happened, so nobody is lost and nothing is double-counted.
+  const mandated = new Map();
+  const endgameByEp = new Map();
+  for (const r of season.rounds || []) if (!mandated.has(r.ep)) mandated.set(r.ep, r);
+  for (const r of (season.endgame?.rounds || [])) {
+    if (!endgameByEp.has(r.ep)) endgameByEp.set(r.ep, []);
+    endgameByEp.get(r.ep).push(r);
+    // An endgame that ran on an episode of its own still needs a row.
+    if (!mandated.has(r.ep)) mandated.set(r.ep, r);
+  }
   // Night one lives only on the log — there is no round record for a night
   // with no table — so the log is what decides which episodes exist at all.
-  const eps = new Set([...(season.log || []).map(l => l.ep), ...byEp.keys()]);
+  const eps = new Set([...(season.log || []).map(l => l.ep), ...mandated.keys()]);
 
   return [...eps].sort((a, b) => a - b).map(ep => {
-    const round = byEp.get(ep) || {};
+    const round = mandated.get(ep) || {};
     const logged = (season.log || []).find(l => l.ep === ep) || {};
     const banished = round.banished ?? logged.banished ?? null;
     const murdered = round.murdered ?? logged.murdered ?? null;
@@ -150,8 +170,17 @@ export function traitorsVotingHistory(season = {}) {
     // murder verb rather than invented a third one nothing else knows.
     const executed = round.executed ?? logged.executed ?? null;
 
+    // THE ENDGAME'S OWN TABLES, on the episode that handed over to them. The
+    // mandated banishment goes out first because it happened first; then each
+    // endgame table in the order it sat. `round` is the mandated one, so a
+    // banishment already reported above is not repeated here.
+    const endgameExits = (endgameByEp.get(ep) || [])
+      .filter(r => r !== round && r.banished)
+      .map(r => _exit(r.banished, banishVerb, 'banishment'))
+      .filter(Boolean);
     const exits = [
       _exit(banished, banishVerb, 'banishment'),
+      ...endgameExits,
       _exit(murdered, murderVerb, 'murder'),
       _exit(second, murderVerb, 'murder'),
       _exit(executed, murderVerb, 'murder'),

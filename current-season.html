@@ -1283,9 +1283,23 @@ Owen: This is going to be amazing!"
       return typeof f === 'string' && !!f && !/[\/:]/.test(f) && !f.includes('..') && /\.(png|webp|jpe?g|gif)$/i.test(f);
     }
 
-    /** Rebuild the name → appearance map for the season now on screen. */
+    /**
+     * Rebuild the name → portrait map for the season now on screen.
+     *
+     * TWO SOURCES, AND THE LIVE ONE WINS. players_database.json holds FINISHED
+     * seasons only, so a season being played right now is not in it at all —
+     * which meant this page fell through to the base portrait for exactly the
+     * season the simulator was drawing custom art for, and the transcript
+     * disagreed with the show it was transcribing.
+     *
+     * The simulator's own cast is in localStorage on this same origin, with the
+     * portrait each player was cast with. Read it when it is THIS season's
+     * cast, and let the database answer for every finished one.
+     */
     function refreshAppearanceMap(season) {
       appearanceByName = new Map();
+
+      // 1. finished seasons, from the published database
       let db;
       try { db = JSON.parse(localStorage.getItem('players_database') || 'null'); } catch { db = null; }
       for (const p of (db?.players || [])) {
@@ -1295,9 +1309,31 @@ Owen: This is going to be amazing!"
         const file = here?.avatarFile || p.latestAvatarFile || '';
         if (_safePortraitFile(file)) appearanceByName.set(String(p.name).toLowerCase(), file);
       }
+
+      // 2. the season on the bench right now, which the database cannot know
+      //    about. Scoped by season number so viewing an OLD episode does not
+      //    get today's cast painted over it.
+      try {
+        const cfg = JSON.parse(localStorage.getItem('simulator_config') || 'null');
+        const live = JSON.parse(localStorage.getItem('simulator_cast') || 'null');
+        const sameSeason = season == null || cfg == null
+          || Number(cfg.seasonNumber) === Number(season);
+        if (sameSeason && Array.isArray(live)) {
+          for (const p of live) {
+            if (!p?.name || !_safePortraitFile(p.avatarFile)) continue;
+            appearanceByName.set(String(p.name).toLowerCase(), p.avatarFile);
+          }
+        }
+      } catch { /* no simulator on this browser; the database answer stands */ }
     }
 
     window.refreshAppearanceMap = refreshAppearanceMap;
+    // PUBLISHED, because this page is not one scope. slugify is defined three
+    // times here, in three different ones, and getCharacterAvatar — the
+    // transcript's avatar helper — lives in a later scope than this. Calling
+    // `portraitFor` from there threw ReferenceError on every character in
+    // every episode render.
+    window.portraitFor = portraitFor;
 
     /** The image URL for one person on this page. */
     function portraitFor(name) {
@@ -3897,8 +3933,9 @@ async function generateEpisodeAI() {
 
     const paths = [
       // The recorded portrait first: a transcript names a person, and this
-      // season may not have drawn them the way the last one did.
-      portraitFor(characterName),
+      // season may not have drawn them the way the last one did. Off `window`
+      // because this is a different scope from where it is defined.
+      (window.portraitFor ? window.portraitFor(characterName) : ''),
       `assets/avatars/${key}.png`,
       `assets/avatars/${keySimple}.png`,
       `assets/avatars/${characterName.toLowerCase()}.png`

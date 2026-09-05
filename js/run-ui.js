@@ -10,7 +10,7 @@ import { playerAvatarUrl } from './players.js';
 import { DEMOS, DEMO_LABELS } from './ratings.js';
 // Same reason: ADVANTAGES is an array and ADV_SOURCE_LABELS an object, so
 // reading them off window gives undefined and the coach list renders empty.
-import { ADVANTAGES, ADV_SOURCE_LABELS, snapshotGs, authoredEpisode } from './core.js';
+import { ADVANTAGES, ADV_SOURCE_LABELS, snapshotGs } from './core.js';
 import { COACH_FINDABLE_DEFAULT, coachesOf } from './coaches.js';
 import { coachCanPlay } from './advantages.js';
 
@@ -2275,15 +2275,14 @@ export function buildEpisodeMap() {
   let _campStartEp = 0;
   let _campReturnUsed = false;
 
+  // What the episode just pushed actually removed — see the extra-night note.
+  let _lastElims = 1;
   while (active > finale && ep <= 100) {
-    // THE AUTHOR'S NIGHT, NOT THE PLAYED ONE. A cancelled elimination inserts a
-    // blank below, so after one they stop agreeing — the schedule is keyed by
-    // the episode the author wrote and is no longer renumbered when a season is
-    // simulated (see `authoredEpisode`). Reading `twistMap[ep]` here would draw
-    // every later twist a night early once a swap had happened.
-    const _authored = authoredEpisode(ep);
-    const etype = (_authored == null ? null : twistMap[_authored]) || null;
-    const _allTypes = (_authored == null ? [] : twistMapAll[_authored]) || [];
+    // EPISODE 4 IS EPISODE 4. The schedule is keyed by episode number and
+    // nothing shifts it: whatever the author put on a night is what that night
+    // runs, however the ones before it turned out.
+    const etype = twistMap[ep] || null;
+    const _allTypes = twistMapAll[ep] || [];
 
     // How many players leave/return this episode?
     // Check ALL twists on this episode (not just the last one)
@@ -2440,10 +2439,26 @@ export function buildEpisodeMap() {
     const activeWithReturns = active + returns + riReturn;
     eps.push({ ep, active: activeWithReturns, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
     active = Math.max(finale, activeWithReturns - elims);
+    _lastElims = elims;
     ep++;
 
-    // Team Swap advantage: insert blank episode right after (no elimination happened, season extends by 1)
-    if (gs?.skippedEliminationEps?.includes(ep - 1) && active > finale) {
+    // ── THE EXTRA NIGHT, COUNTED ONCE ────────────────────────────────
+    //
+    // A cancelled elimination means the season needs one more night to reach
+    // the finale. There are two ways that becomes visible here and they used
+    // to BOTH fire for a scheduled Elimination Swap: `elims = 0` above already
+    // makes the loop take an extra turn, and then this pushed another episode
+    // on top. Before simulating, only the first applied and the timeline was
+    // right; afterwards both did, and an empty episode appeared with every
+    // later twist pushed down a slot. That is the reported "episode 4 acts as
+    // empty and episode 5 acts with episode 4's twists".
+    //
+    // So this is for the case it was written for and named after: a Team Swap
+    // ADVANTAGE, which is played rather than scheduled. Nothing on the plan
+    // predicted it, `elims` was 1, and this is the only thing that can model
+    // the night it cost. When the schedule already said nobody would leave,
+    // the turn above has counted it.
+    if (_lastElims > 0 && gs?.skippedEliminationEps?.includes(ep - 1) && active > finale) {
       if (!merged && active <= mergeAt) merged = true;
       eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null });
       active = Math.max(finale, active - 1);

@@ -1,5 +1,5 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
-import { gs, seasonConfig, players, repairGsSets, seasonFormat, snapshotGs, authoredEpisode } from './core.js';
+import { gs, seasonConfig, players, repairGsSets, seasonFormat, snapshotGs } from './core.js';
 import { showWords } from './shows.js';
 import { arrivalLine, soloLine } from './life-cast.js';
 import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
@@ -1521,13 +1521,13 @@ export function simulateEpisode() {
   // episode. Nothing downstream ever read the pushed row: it existed to be
   // picked up by the very next line, one tick later. So it is a local value
   // now, and the season the author wrote stays the season the author wrote.
-  // WHICH NIGHT OF THE AUTHOR'S PLAN THIS IS. A cancelled elimination inserts a
-  // blank episode, so after one the played number and the authored number stop
-  // agreeing — see `authoredEpisode`. Null is an inserted blank, which has no
-  // authored twists of its own.
-  const _authoredEp = authoredEpisode(epNum);
-  const _scheduled = _authoredEp == null ? []
-    : (cfg.twistSchedule || []).filter(t => t && Number(t.episode) === _authoredEp);
+  // EPISODE 4 IS EPISODE 4. The schedule is keyed by episode number and nothing
+  // shifts it — whatever the author put on a night is what that night runs,
+  // however the ones before it turned out. An Elimination Swap used to slide
+  // every later twist down by one (by rewriting the plan, and then by an
+  // offset), so the night after a swap ran empty and the one after that ran the
+  // twists the author had placed a night earlier.
+  const _scheduled = (cfg.twistSchedule || []).filter(t => t && Number(t.episode) === epNum);
   const _autoReward = cfg.autoRewardChallenges && cfg.foodWater === 'enabled'
     && gs.activePlayers.length > 4
     && !_scheduled.some(t => t.type === 'reward-challenge');
@@ -6687,14 +6687,15 @@ function simulateJuryRoundtable(ep) {
       // Track skipped elimination so buildEpisodeMap extends the season
       if (!gs.skippedEliminationEps) gs.skippedEliminationEps = [];
       if (!gs.skippedEliminationEps.includes(epNum)) gs.skippedEliminationEps.push(epNum);
-      // THE SLIDE IS DERIVED, NOT WRITTEN. Every later twist does run a night
-      // later now — but `skippedEliminationEps` above is the whole record of
-      // that, and `authoredEpisode()` reads it. This used to add one to the
-      // episode of every later entry in `seasonConfig.twistSchedule` and save
-      // it back to localStorage, which meant simulating an episode permanently
-      // renumbered the author's Format Designer: a twist placed on episode 5
-      // sat on 6 afterwards, and on 7 after the next swap. The plan is not
-      // scratch space for a runtime fact.
+      // AND NOTHING SLIDES. `skippedEliminationEps` above is the whole
+      // record: the season needs one more night to reach the finale, which
+      // buildEpisodeMap already gets from this episode removing nobody.
+      //
+      // This used to add one to the episode of every later entry in
+      // `seasonConfig.twistSchedule` and save it back to localStorage, so
+      // simulating permanently renumbered the author's Format Designer — a
+      // twist placed on episode 5 sat on 6 afterwards, and on 7 after the next
+      // swap. The plan is not scratch space, and episode 4 is episode 4.
     }
 
   // ── EXILE DUEL RESOLUTION: duel between exile player and this episode's boot ──

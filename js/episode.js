@@ -1507,15 +1507,27 @@ export function simulateEpisode() {
 
   // ── TWIST CHECK ──
   // Filter incompatible twists: if two immunity twists conflict, keep the first scheduled
-  // Auto-inject reward challenge when survival + auto-reward is enabled (stops at F4)
-  if (cfg.autoRewardChallenges && cfg.foodWater === 'enabled' && gs.activePlayers.length > 4) {
-    const _hasReward = (cfg.twistSchedule||[]).some(t => t && Number(t.episode) === epNum && t.type === 'reward-challenge');
-    if (!_hasReward) {
-      if (!cfg.twistSchedule) cfg.twistSchedule = [];
-      cfg.twistSchedule.push({ episode: epNum, type: 'reward-challenge', id: 'auto-reward-' + epNum });
-    }
-  }
-  const _rawScheduled = (cfg.twistSchedule||[]).filter(t => t && Number(t.episode) === epNum);
+  // ── AUTO REWARD: A DECISION ABOUT TONIGHT, NOT AN EDIT TO THE SEASON ──
+  //
+  // This used to `push` the auto reward onto `cfg.twistSchedule` — the
+  // AUTHOR'S schedule, the one the Format Designer draws and localStorage
+  // persists. So simulating an episode permanently rewrote the plan: every
+  // night played grew a "Reward Challenge" card the author never placed, and
+  // because the timeline's projection maps twists onto projected episodes, the
+  // extra entry renumbered everything after it — simulate episode 3 and
+  // episode 4 empties out while its twist slides to 5.
+  //
+  // Reported with two screenshots of the same timeline before and after one
+  // episode. Nothing downstream ever read the pushed row: it existed to be
+  // picked up by the very next line, one tick later. So it is a local value
+  // now, and the season the author wrote stays the season the author wrote.
+  const _scheduled = (cfg.twistSchedule || []).filter(t => t && Number(t.episode) === epNum);
+  const _autoReward = cfg.autoRewardChallenges && cfg.foodWater === 'enabled'
+    && gs.activePlayers.length > 4
+    && !_scheduled.some(t => t.type === 'reward-challenge');
+  const _rawScheduled = _autoReward
+    ? [..._scheduled, { episode: epNum, type: 'reward-challenge', id: 'auto-reward-' + epNum }]
+    : _scheduled;
   const _usedTypes = new Set();
   // Sudden Death is both a standalone challenge AND a format modifier: it can
   // co-fire with ONE scoring twist challenge and eliminate that challenge's

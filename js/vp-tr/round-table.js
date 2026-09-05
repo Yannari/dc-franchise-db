@@ -2159,7 +2159,7 @@ function _buildBeats(v) {
       }
       seenPair.set(b.voter, b.target);
       leadersBefore = leadersNow;
-      const strip = _runStrip(run, leadersNow);
+      const strip = _runStrip(run, leadersNow, b.target);
       const html = _slate(b, (i + 1) + ' / ' + ballots.length, strip)
         + (note ? '<div class="rt-note"' + (tone ? ' data-tone="' + tone + '"' : '')
           + '>' + note + '</div>' : '');

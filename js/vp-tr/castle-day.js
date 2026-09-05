@@ -3030,7 +3030,10 @@ const RECALL_LEAD_TODAY_TOPIC = [
 // back here, which is the half a viewer cannot get from a day number.
 const RECALL_LEAD_RECORDED = [
   'Neither of them comes into this fresh.',
-  'It is not a new argument, and it does not sound like one.',
+  // NOT "a new argument": this pool is drawn for carried TRUST, ROMANCE and
+  // GRIEF scenes as well, and tr-castle-prose has an arm asserting that a
+  // shared confidence is never introduced as a row. It caught this line.
+  'It is not new, and neither of them is pretending it is.',
   'They pick it up exactly where they dropped it, which is not a comfortable place.',
   'Whatever this was, it did not finish the first time.',
   'They have been here before, and it went no better then.',

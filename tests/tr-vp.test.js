@@ -7748,6 +7748,15 @@ describe('no host prose assumes which host is on', () => {
       .split(h.label).join('{HOST}')
       .split(String(h.value).toLowerCase().replace(/[^a-z0-9]+/g, '-')).join('{SLUG}')
       .replace(/<span class="cv-av-ini"[^>]*>[\s\S]*?<\/span>/g, '{INI}')
+      // THE HOST'S PICTURE IS ALLOWED TO BE THE HOST'S PICTURE. Since the
+      // portrait resolver landed (89f797cc) an avatar src carries a surname —
+      // `…-sandoval.png` against `…-crane.png` — and the slug split above does
+      // not catch it, because the suffix is the surname and not the full slug.
+      // This arm is about PROSE written for one particular host; a portrait
+      // that differs between two different people is the system working. The
+      // cast is identical across the two renders, so normalising every avatar
+      // src costs nothing and removes the only legitimate difference.
+      .replace(/src="assets\/avatars\/[^"]*"/g, 'src="{PORTRAIT}"')
       .replace(/(sd|sp)x\d+/g, '$1{UID}')
       .replace(/cvClk\d+/g, 'cvClk{UID}')
       // the reveal handlers carry the renumbered key, which is not the host
@@ -8256,5 +8265,69 @@ describe('the mission screen states its task once and its result once', () => {
         }
       }
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE RUNNING COUNT HAS TO COUNT THE SLATE IT IS UNDER
+// ══════════════════════════════════════════════════════════════════════
+//
+// Found by dumping two seasons of Round Tables as text and looking for lines
+// that repeat inside one screen. Four of the five adjacent repeats were the
+// TALLY STRIP printing an identical count under three different names.
+//
+// `_runStrip` shows the top six by count. A name receiving its FIRST vote
+// sorts last among the ones, so on a seventeen-person table it could not get
+// into the strip at all — and the board stopped moving somewhere around slate
+// fourteen while the host kept reading names out. A running count whose whole
+// job is to show the vote just read must not be able to omit it.
+describe('the round table tally always shows the name just read', () => {
+  it('the slate being turned over appears in its own running count', () => {
+    let checked = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        // `votes`, not `ballots`. The first cut of this gate read a field that
+        // does not exist on the table record, so the loop skipped every
+        // episode and the arm reported "no strip rendered" instead of
+        // testing anything — the same misspelt-subject failure this suite
+        // already hit once on `dawn.victims`.
+        if (!ep.tr || !ep.tr.table || !(ep.tr.table.votes || []).length) continue;
+        const html = rpBuildRoundTable(ep, 'audience');
+        // Every rendered strip, in slate order, with the chip marked as the
+        // one just named.
+        // The strip holds SPANS, so its own </div> closes it — the first cut of
+        // this regex looked for a nested </div></div> and matched nothing, which
+        // made the arm report "no strip rendered" rather than test anything.
+        const strips = html.match(/<div class="rt-slate-run">[\s\S]*?<\/div>/g) || [];
+        if (!strips.length) continue;
+        for (const strip of strips) {
+          expect(/data-just="1"/.test(strip),
+            `ep ${ep.num}: a slate's running count does not contain the name on it`)
+            .toBe(true);
+          checked++;
+        }
+      }
+    }
+    expect(checked, 'no running-count strip was rendered at all').toBeGreaterThan(30);
+  });
+
+  it('the count under consecutive slates actually changes', () => {
+    // The symptom as a viewer meets it: three names read out, one tally.
+    let checked = 0;
+    for (const run of RUNS) {
+      for (const ep of run.episodes) {
+        if (!ep.tr || !ep.tr.table) continue;
+        const html = rpBuildRoundTable(ep, 'audience');
+        const strips = (html.match(/<div class="rt-slate-run">[\s\S]*?<\/div>/g) || [])
+          .map(s => strip(s).replace(/\s+/g, ' ').trim());
+        for (let i = 1; i < strips.length; i++) {
+          expect(strips[i], `ep ${ep.num}: slate ${i + 1} printed the same running count `
+            + 'as the slate before it — a name was read and the board did not move')
+            .not.toBe(strips[i - 1]);
+          checked++;
+        }
+      }
+    }
+    expect(checked, 'no consecutive strips were compared').toBeGreaterThan(20);
   });
 });

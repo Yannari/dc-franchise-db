@@ -159,9 +159,12 @@ export function _portrait(slug, name, size, opts) {
     + (o.lit && o.tone ? ' data-lit="' + o.tone + '"' : '') + '>'
     + '<span class="cv-av-ini" style="font-size:' + Math.max(9, Math.round(s * 0.34)) + 'px">'
     + _esc(_initials(name)) + '</span>'
-    // The name, not the slug: a slug says who somebody is, and the castle is
-    // this cast's SECOND look for several of them.
-    + '<img src="' + _esc(playerAvatarUrl(name || slug)) + '" alt="" onerror="this.remove()">'
+    // A cast member gets the portrait THIS season chose for them — the castle
+    // is several of them in different clothes. Anybody else (the host) is not
+    // in the cast, has no appearance and no catalog entry, so the slug they
+    // were handed is the whole answer and must be used verbatim: deriving one
+    // from their display name renames them.
+    + '<img src="' + _esc(playerAvatarUrl(players.find(x => x.name === name) || { slug })) + '" alt="" onerror="this.remove()">'
     + '</span>';
 }
 

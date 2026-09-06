@@ -2708,7 +2708,24 @@ function _receiptConsequence(s, subs, tone, key, used) {
     if (seen.has(pair)) continue;
     seen.add(pair);
     if (chip.type === 'suspicion') {
-      const pool = chip.dir > 0 ? [
+      // A TRAITOR IS NOT GETTING MORE SUSPICIOUS, and cannot be. They were
+      // shown the pact in the turret, so they know by elimination that the
+      // person opposite is innocent. What moves for them is how close that
+      // person is getting — which is a different sentence, not a softer one.
+      // `pact` draws nothing at all: a Traitor reading a fellow is two people
+      // who were introduced to each other at midnight.
+      if (s.readKind === 'pact') continue;
+      const pool = s.readKind === 'threat' ? (chip.dir > 0 ? [
+        '{a} is watching {b} more carefully from here.',
+        '{b} is getting closer than {a} would like.',
+        '{a} has started planning around {b}.',
+        '{a} would rather {b} were not paying this much attention.',
+      ] : [
+        '{a} stops worrying about {b} for now.',
+        '{a} decides {b} is looking the wrong way after all.',
+        '{b} is further off it than {a} feared.',
+        '{a} breathes out a little where {b} is concerned.',
+      ]) : chip.dir > 0 ? [
         '{a} is more suspicious of {b} after that.',
         "{b} is higher on {a}'s list tonight.",
         '{a} files {b} under the names worth keeping an eye on.',
@@ -4298,6 +4315,23 @@ function _view(ep, observer, segment = null) {
   // ── IMPACT CHIPS: what each scene actually moved, observer-gated ───────
   // Read the episode's receipts once and attach the movements to each scene,
   // gated by the same layer/watcher this view was built for.
+  // ── THE READ LABEL, STRIPPED FOR EVERYBODY IT WOULD TELL SOMETHING ──
+  //
+  // `readKind` is computed in js/tr/headless.js off ground truth: `threat`
+  // means the doubter is a Traitor watching somebody they KNOW is innocent,
+  // `pact` means they are reading a fellow. Either value names the doubter's
+  // alignment to anybody who can see it, so it is exactly as sensitive as the
+  // alignment itself and is dropped for every observer except the two who
+  // already have it — the AUDIENCE, and the DOUBTER, who is that person.
+  //
+  // Same gate the suspicion chip below already applies, and applied here
+  // rather than at each use so a later reader cannot pick the field up
+  // without it.
+  for (const s of scenes) {
+    if (!s.readKind) continue;
+    if (!isAudience && watcher !== s.readDoubter) { s.readKind = null; }
+  }
+
   const _receipts = (ep.tr && Array.isArray(ep.tr.receipts)) ? ep.tr.receipts : [];
   const _epNum = c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0;
   for (const s of scenes) {

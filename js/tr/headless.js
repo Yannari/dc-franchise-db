@@ -1301,7 +1301,35 @@ function _castleRecord(ep, fired) {
       && isLastTonight;
     const voices = sceneSpeakers(f.event, c);
 
+    // ── WHAT KIND OF READ THIS IS, when it is a read at all ────────────
+    //
+    // A Faithful wondering about somebody is asking whether they are a
+    // Traitor. A TRAITOR wondering about somebody cannot be asking that: the
+    // turret showed them the whole pact, so they know by elimination that
+    // everybody outside it is innocent. What a Traitor watches a Faithful for
+    // is whether that Faithful is getting close to THEM — a threat read, not
+    // a guilt read, and the two want opposite words on the card.
+    //
+    // `null` on every scene that is not a suspicion read, so the screen's
+    // existing behaviour is unchanged wherever this does not apply. See the
+    // note on `_view` in js/vp-tr/castle-day.js for why this is stripped for
+    // every observer but the audience and the doubter.
+    const _doubter = voices?.speaker ?? (f.actors || [])[0] ?? null;
+    const _subject = (c && c.topic) || voices?.respondent || null;
+    let readKind = null;
+    if ((f.event.family || t.kind) === 'suspicion' && _doubter && _subject
+      && _doubter !== _subject) {
+      const dIsTraitor = alignmentAt(_doubter, ep) === 'traitor';
+      const sIsTraitor = alignmentAt(_subject, ep) === 'traitor';
+      // A Traitor reading a FELLOW is not a read at all — they were introduced
+      // in the turret. `pact` tells the screen to draw nothing rather than to
+      // draw the wrong thing.
+      readKind = !dIsTraitor ? 'guilt' : (sIsTraitor ? 'pact' : 'threat');
+    }
+
     scenes.push({
+      readKind,
+      readDoubter: readKind ? _doubter : null,
       window: f.event.window,
       family: f.event.family || t.kind,
       eventId: f.event.id,

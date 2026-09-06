@@ -233,7 +233,7 @@ const BEFORE_TABLE_LINES = {
     '{a} has been sure three times tonight and unsure four.',
     '{a} had two names and an hour, and used the hour badly.',
     '{a} kept waiting for one more piece and the evening did not provide one.',
-    'Nothing tipped it. {a} went down still holding both.',
+    'Nothing tipped it. {a} went down to the table still torn between two names.',
     '{a} would have taken any excuse to be sure and was not offered one.',
     '{a} went down to the table genuinely not knowing what to write.',
     'Two names, no way to choose between them, and an hour to go.',

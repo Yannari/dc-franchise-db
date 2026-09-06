@@ -30,6 +30,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // not look like anything already in this repo.
 import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
+import { rpBuildDragSummary } from './vp-dr/summary.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14039,6 +14040,18 @@ export function buildVPScreens(epRecord) {
   // rides on all live in `js/vp-tr/screens.js` — one copy, because the text
   // backlog retranscribes the same list and a second copy of it is how the
   // transcript quietly stops mentioning a screen.
+  // ── THE MAIN STAGE ────────────────────────────────────────────────
+  //
+  // Returns its own screen for the same reason the castle does: a drag episode
+  // has no tribes, no challenge record and no Tribal Council, and the Total
+  // Drama path below reads all three. Without this branch, opening a drag
+  // episode threw and the show could be played but never watched.
+  //
+  // ONE SCREEN, and deliberately a readout rather than a designed one — the
+  // real sixteen are Plan 5. See js/vp-dr/summary.js.
+  if (epRecord.format === 'drag-race') {
+    return [{ id: 'dr-summary', label: 'Episode', html: rpBuildDragSummary(epRecord) }];
+  }
   if (epRecord.format === 'traitors') {
     vpScreens = traitorsScreens(epRecord, epRecord.observer || 'audience');
     // The debug tab, behind the same flag Total Drama's sits behind. Pushed

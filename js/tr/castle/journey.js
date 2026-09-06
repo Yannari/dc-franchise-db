@@ -876,7 +876,7 @@ const SETTLED_LINES = {
     'Whatever {a} and {b} had, it did not survive the road home.',
     '{b} pushed it one sentence too far on the way back, and {a} was done.',
     '{b} explained, and then explained the explanation, and {a} walked the last mile alone.',
-    'There was a version of the road home where {a} and {b} were fine. {b} talked past it.',
+    '{a} and {b} could have left it alone on the walk back, but {b} kept talking and made it worse.',
   ],
   unresolved: [
     'They talked the whole way back and settled nothing, and both of them knew it.',

@@ -1093,14 +1093,14 @@ registerEvent({
 
 const STORY_SURVIVED_LINES = {
   held: [
-    'A whole day out of the castle and nobody caught {a} out on {topic}. The account was still standing at the gate.',
-    '{a} got through the entire journey without changing a word of the account of {topic}.',
+    'A whole day out of the castle and nobody caught {a} out on {topic}. The story was still holding at the gate.',
+    '{a} got through the entire journey without changing a word of the story about {topic}.',
     'By the walk home {a} had stopped bracing for the question about {topic}, because it never came.',
     'Nobody out there pressed {a} on {topic} at all, which was the best news {a} had had all week.',
-    '{a} said the same three sentences about {topic} to four different people and none of them blinked.',
+    '{a} told the same story about {topic} to four different people and none of them questioned it.',
   ],
   frayed: [
-    '{a} had to patch the account of {topic} twice on the road, and neither patch was clean.',
+    '{a} had to patch the story about {topic} twice on the road, and neither patch was clean.',
     'The story of {topic} got {a} home, but it had lost a piece somewhere out there.',
     '{a} spent the walk back quietly listing everything about {topic} they would have to remember differently now.',
     'One person on the road remembered {topic} differently, and {a} had to agree with them.',

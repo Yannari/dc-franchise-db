@@ -1800,12 +1800,12 @@ const CONSEQ_ROAD_COVER = {
 // last victim was murdered) either lasted the whole day out or came apart on it.
 const CONSEQ_ROAD_COVER_BACK = {
   held: [
-    "{a}'s account of {topic} survived a whole day in the open. Nobody out there had a reason to doubt it, and {a} banks the day.",
+    "{a}'s story about {topic} held up all day. Nobody questioned it, and {a} comes home with it intact.",
     'A day of questions, and not one landed on {topic}. {a} comes home with the story intact.',
-    '{a} told the story of {topic} the same way to each person who asked, and none of them blinked.',
+    '{a} told the same story about {topic} to each person who asked, and none of them questioned it.',
   ],
   frayed: [
-    "{a}'s account of {topic} got home, but lost a piece on the road: {a} has a version to remember now that is not quite the one {a} left with.",
+    "{a}'s story about {topic} got home, but it changed on the road: {a} has to remember a different version now than the one {a} left with.",
     'The story of {topic} held, barely. {a} spends the walk in learning which loose end to watch.',
     'One person remembered {topic} differently and {a} had to agree with them. The account is a repair now, not a clean run.',
   ],

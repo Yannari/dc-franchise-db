@@ -1481,7 +1481,7 @@ registerEvent({
 //                             `confessed-unrelated`.
 const GROUP_PRESSURE_LINES = {
   holds: [
-    ‘The whole room pressured {b} at once and {b} didn’t budge an inch.’,
+    'The whole room pressured {b} at once and {b} didn’t budge an inch.',
     'Six people staring at {b} at once, and {b} just waited them out.',
     'The room asked {b} the same thing four different ways and got the same answer four times.',
     '{b} let the questions pile up and then answered the first one, calmly, as if the rest had not happened.',

@@ -1581,7 +1581,7 @@ const REACT_SINGLE = {
 // for a vote that is coming, that is the only closing beat that is true.
 const FALLBACK_SOLO = {
   smooth: [
-    '{a} keeps what {a} worked out to {ref} and goes down to dinner closer to identifying a traitor.',
+    '{a} keeps it quiet and goes down to dinner closer to identifying a traitor.',
     'Nobody watched {a} work that out, which is the whole value of it.',
     '{a} carries the information downstairs and intends to use it at the right table.',
     'None of that helps {a} tonight. {a} is playing a longer game.',

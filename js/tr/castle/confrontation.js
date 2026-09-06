@@ -33,19 +33,19 @@ const TOPIC = 'confrontation';
 // (the topic) answers — and the branch is how `{b}` takes it.
 const FACE_LINES = {
   held: [
-    '{a} said it to {b}’s face, in front of the room, and {b} did not blink.',
-    '{a} put it to {b} straight, no softening, and {b} held the look and gave nothing back.',
-    '{a} named it out loud at {b}, and {b} let the accusation sit there and go cold.',
-    '{a} came at {b} directly, and {b} took it standing — which the room clocked as much as the accusation.',
+    '{a} accused {b} to {b}’s face, in front of the room, and {b} did not flinch.',
+    '{a} said it plainly — called {b} suspicious — and {b} held the look and gave nothing back.',
+    '{a} said {b}’s name out loud as an accusation, and {b} let it sit there until it went cold.',
+    '{a} accused {b} directly, and {b} stood there and took it while the room watched both of them.',
   ],
   cracked: [
-    '{a} pushed {b} on it, hard, and {b} came apart a little: a stammer, a look away, a hand that would not settle.',
-    '{a} would not let it go, and {b}’s answer got smaller and shakier the longer it ran.',
-    '{a} kept the pressure on {b}, and {b} folded — half an answer, then none at all.',
+    '{a} pushed {b} on the accusation, hard, and {b} came apart a little: a stammer, a look away, a hand that would not settle.',
+    '{a} would not let the question go, and {b}’s answer got smaller and shakier the longer it ran.',
+    '{a} kept pressing {b} for an explanation, and {b} folded — half an answer, then none at all.',
     '{a} said it plainly and {b} could not meet it, and the people watching filed that away.',
   ],
   turned: [
-    '{a} came for {b} and walked straight into it: {b} turned the whole thing round and put {a} on the back foot.',
+    '{a} accused {b} and {b} turned the whole thing round, and suddenly {a} was the one answering questions.',
     '{a} accused {b} to {b}’s face, and {b} answered with a question {a} could not climb out from under.',
     '{b} did not defend — {b} attacked, and by the end it was {a} doing the explaining.',
     '{a} thought {b} was cornered. {b} was not, and made certain the room saw who really was.',
@@ -130,9 +130,9 @@ registerEvent({
 // already is. `{a}` fronts it, `{b}` (topic) is the one being surrounded.
 const PILE_LINES = {
   weathered: [
-    'It stopped being a conversation and became a circle, three or four voices at {b} at once, and {b} stood in the middle of it and did not give.',
+    'Three or four people started questioning {b} at once, and {b} stood in the middle of it and did not give.',
     'The room closed on {b} with {a} loudest, and {b} took every question without raising a hand or a voice.',
-    '{a} led the others onto {b} all at once, and {b} weathered it like weather — head down, steady, still there at the end.',
+    '{a} led the others onto {b} all at once, and {b} kept calm and waited it out.',
     '{b} had four people’s doubt landing at the same time, {a} first among them, and answered all of it without cracking.',
   ],
   crumbled: [
@@ -150,8 +150,8 @@ const PILE_LINES = {
   'turned-it-back': [
     '{b} took the pile-on, picked the loudest voice in it, and turned the whole thing onto {a} instead.',
     'Cornered, {b} asked {a} one question back, and the nearest half of the table turned to look at {a}.',
-    '{b} mounted no defence at all, and spent the entire time asking why {a} was so certain. By the end so was everybody.',
-    'The room came for {b} and left holding a question about {a}, which is not how a pile-on is supposed to end.',
+    '{b} did not defend at all — just kept asking why {a} was so sure, until the rest of the room started wondering the same thing about {a}.',
+    'The room came for {b} and walked away suspicious of {a} instead, which nobody had planned.',
     '{b} let it run for a minute and then put a single thing to {a} that nobody had an answer for.',
     'It stopped being about {b} somewhere in the middle, and {a} is the reason it stopped.',
     '{b} was outnumbered and came out of it with the room\'s attention pointed at {a}.',
@@ -238,14 +238,14 @@ const DEFEND_LINES = {
   'fell-flat': [
     '{a} spoke up for {b}, and it did not move anybody — the doubt about {b} sat there exactly as heavy as before.',
     '{a} made the case for {b} and the room heard it and kept its face, and nothing about {b} changed.',
-    '{a} defended {b} into a silence that gave nothing back, and {b} is no lighter for it.',
+    '{a} defended {b} and the room went quiet but nobody changed their mind, and {b} is no safer for it.',
     '{a} tried, for {b}, and it slid off — a defence nobody argued with and nobody bought either.',
   ],
   'drew-fire': [
     '{a} stood up for {b}, and the next question was why {a} cared so much — now there are two of them being watched.',
     'Defending {b} cost {a}: the moment {a} spoke, the doubt widened to take {a} in as well.',
     '{a} put themselves between {b} and the room and caught some of it — standing up for the accused made {a} one of them.',
-    '{a} meant to draw the doubt off {b} and drew it onto themselves instead, and now {a} and {b} sink or float together.',
+    '{a} meant to draw the suspicion off {b} and drew it onto themselves instead, and now both of them are being watched.',
   ],
   'too-late': [
     '{a} defended {b} well and did it a full ten minutes after the room had stopped caring.',
@@ -361,7 +361,7 @@ const BREAKFAST_LINES = {
     '{a} came at {b} an hour after a body and it landed as grief rather than as a case.',
     'The room did not hear an accusation. It heard somebody upset, and it looked away from {a} rather than at {b}.',
     '{a} said it while {a} was still shaking, and that is all anybody took from it.',
-    'It was the wrong morning to be right, and {a} was too raw to be either.',
+    '{a} was too upset to make the accusation land, and the room heard grief instead of a case.',
     '{b} did not even have to answer. The room did the answering for {b}, gently, at {a}.',
     '{a} spent that accusation at the worst possible hour and got nothing back for it.',
   ],
@@ -456,7 +456,7 @@ const VOTE_LINES = {
     '{b} explained the vote by explaining somebody else’s, which {a} noticed and filed.',
     '"I only wrote it because—" and the rest of {b}’s sentence was a third person’s name.',
     '{b} answered {a} by handing {a} somebody else to be angry with.',
-    'It is a good technique and {a} has seen it before, which is the problem.',
+    '{a} recognised what {b} was doing — blaming someone else for the vote — because {a} has seen it before.',
     '{b} spread the vote around until it belonged to nobody, least of all {b}.',
     '{a} came for one answer and left holding two more names and no answer at all.',
   ],
@@ -473,7 +473,7 @@ const VOTE_LINES = {
     '{b} did not defend the vote. {b} attacked {a}’s, and did it in front of two other people.',
     '"Ask yourself that," said {b}, and the corridor went quiet.',
     '{b} had clearly been waiting for {a} to raise it and had the answer ready in the shape of a question.',
-    '{a} started that conversation and did not finish it, and the difference was {b}’s doing.',
+    '{a} started asking about the vote and ended up defending {a}’s own, which was {b}’s doing.',
     'By the end it was {a} explaining a slate, which is not how {a} had planned the evening.',
   ],
 };
@@ -545,7 +545,7 @@ const CORRIDOR_LINES = {
   'said-what-they-meant': [
     'No room, no audience, no performance: {a} said the actual thing to {b} outside the bedroom door.',
     'It is a different conversation with nobody watching, and {a} and {b} finally had that one.',
-    '{a} told {b} the truth of it in a corridor at midnight, which is where truths get told here.',
+    '{a} told {b} the truth in a corridor at midnight, with nobody around to hear it.',
     '{b} heard the version {a} has not said downstairs all week.',
     'Two people said what they thought of each other with no third person to play to.',
     'It was quieter than the hall version and considerably worse to hear.',
@@ -555,16 +555,16 @@ const CORRIDOR_LINES = {
     '{a} and {b} said the whole thing to each other and then, oddly, shook on it.',
     'It turned out to be a misunderstanding with four days on it, and four days is a long time here.',
     '{b} explained, {a} believed it, and the corridor got twenty minutes and settled it.',
-    'Whatever that was, it ended with both of them agreeing it had been stupid.',
+    'The argument ended with both of them agreeing it had been stupid.',
     'They went up separately and came down together, and the hall noticed that in the morning.',
   ],
   'made-it-worse': [
     'Away from the room there was nothing to keep it civil, and neither of them kept it civil.',
     '{a} said something in that corridor {a} will not be able to take back.',
     'It got personal in a way it had not managed to downstairs, because downstairs there were witnesses.',
-    'Whatever this was about, it is about something else now.',
+    'The argument started about suspicion and ended somewhere personal.',
     'They ran out of accusations somewhere around midnight and started on each other instead.',
-    'Two doors closed hard at the same end of the corridor, and the corridor remembered it all night.',
+    'Two doors slammed at the same end of the corridor, and neither of them came back out.',
   ],
   'nobody-heard-it': [
     'Whatever happened in that corridor, it stayed there, and the castle will run tomorrow on not knowing.',
@@ -657,7 +657,7 @@ const LONG_WALK_LINES = {
     'They said everything worth saying in the first half mile and had four more to walk.',
     'The argument finished long before the road did, and then it was just two people walking.',
     '{a} and {b} ran out of things to accuse each other of and kept walking anyway.',
-    'There is nothing more awkward than being furious with somebody for another hour with nothing left to say.',
+    '{a} and {b} ran out of things to say and still had four miles of walking next to each other.',
     'It ended in silence, not agreement, and the silence went on for miles.',
     'By the gate it had gone cold, and cold between those two is not better than loud.',
   ],
@@ -847,7 +847,7 @@ const BROKEN_WORD_LINES = {
     'There was no shouting. {a} simply repeated {b}’s own words back at {b}, exactly.',
     'There is nothing to argue with when somebody quotes you accurately, and {b} did not try.',
     '{a} had the sentence word for word, which suggests {a} has been carrying it for days.',
-    'It was not an accusation. It was a receipt, and {b} had to stand there for it.',
+    '{a} did not accuse {b} of anything new — just repeated what {b} had promised and let the broken promise speak for itself.',
   ],
   'denied-saying-it': [
     '{b} said {b} had never promised that, and said it with a completely straight face.',
@@ -867,7 +867,7 @@ const BROKEN_WORD_LINES = {
   ],
   'threw-it-back': [
     '{b} listed, from memory, the two things {a} had promised {b} and not done.',
-    'It stopped being about {b}’s broken word about four seconds in.',
+    'The conversation stopped being about {b}’s broken promise almost immediately — {b} made sure of that.',
     '{a} raised one promise and {b} raised two, and now there are three on the floor.',
     '{b} was clearly waiting to be asked about this and had the counter-charge ready.',
     'Neither of them has kept a word to the other this week and now both of them know it.',

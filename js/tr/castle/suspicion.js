@@ -881,24 +881,24 @@ registerEvent({
 
 const TIMELINE_LINES = {
   'did-not-line-up': [
-    '{a} and {b} laid out {c}’s account side by side, and it did not line up cleanly.',
+    '{a} and {b} laid out {c}’s story side by side, and the timeline did not line up cleanly.',
     'Neither {a} nor {b} could quite make {c}’s morning add up the way {c} told it.',
     '{a} remembered {c} in the kitchen, {b} remembered {c} nowhere near it, and both of them were sure.',
-    '{a} and {b} compared what they knew about {c} and found one unexplained hour in {c}’s account.',
+    '{a} and {b} compared what they knew about {c} and found one hour nobody could explain.',
     '{b} walked {a} through where {c} said they had been, and it took two attempts to get to the end of it.',
-    '{a} counted it out on their fingers for {b}. The hours were there; {c} was not in all of them.',
+    '{a} went through the evening hour by hour for {b}, and there was a gap where nobody could say where {c} had been.',
   ],
   'checked-out': [
     '{a} and {b} put {c}’s day together hour by hour and every one of them had somebody in it.',
-    'It held. {a} had wanted it not to hold, and said so to {b}, and {b} said the same.',
+    '{c}’s timeline held up. {a} had been hoping to find a gap, and told {b} as much.',
     '{a} and {b} went looking for a gap in {c}’s evening and came out the other end with nothing at all.',
     'Two people crosschecked {c} properly and had to admit, to each other, that {c} was where {c} said.',
-    'The account was dull and complete, which {b} pointed out is exactly what an account should be.',
+    '{c}’s story was boring and airtight, which {b} pointed out is exactly what an innocent person sounds like.',
     '{a} and {b} cleared {c} between them and neither of them enjoyed it much.',
   ],
   'lost-the-hour': [
-    '{a} and {b} could not agree on what time any of it had been, and gave up on {c} entirely.',
-    '{a} and {b} could not agree on their own account of the evening, so {c}’s never stood a chance.',
+    '{a} and {b} could not agree on what time anything had happened, and gave up trying to check {c} entirely.',
+    '{a} and {b} could not agree on their own version of the evening, so checking {c}’s was hopeless.',
     'Halfway through {b} realised {b} could not account for {b}’s own hour, which ended the exercise.',
     '{a} and {b} set out to check {c} and spent twenty minutes establishing where the two of THEM had been.',
     'Nobody in this castle wears a watch. {a} and {b} rediscovered that about {c}’s Tuesday.',

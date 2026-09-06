@@ -1125,6 +1125,12 @@ const CONFIG_SCOPE = {
     'cfg-bb-havenot-count':  ['big-brother'],
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
+    // The cast form's castle-only field, which says so on its own label —
+    // "Background (The Traitors)" — and was drawn on every show anyway, so a
+    // queen was being cast as a Civilian. The label naming a show is exactly
+    // the signal that it needs a row here; the guard in tests/dr-setup.test.js
+    // now enforces that.
+    'f-background':          ['traitors'],
     'cfg-finale':            ['total-drama'],  // a house always ends at three
     // The castle's own controls: how many traitors, and the pot they are
     // playing for. No other format's engine reads either.

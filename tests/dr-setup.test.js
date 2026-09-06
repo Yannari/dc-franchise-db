@@ -126,6 +126,37 @@ describe('the setup screen shows one show at a time', () => {
     }
   });
 
+  /* ── AND THE SHAPE THE PREFIX RULE ABOVE CANNOT SEE ────────────────
+     `f-background` is the cast form's castle-only field. Its id names no show
+     — the prefix rule looks for cfg-/sec- ids — but its LABEL does, in so many
+     words: "Background (The Traitors)". It was unscoped, so a Drag Race queen
+     was being cast as a Civilian.
+
+     A label that names one show is the same declaration an id prefix is, so it
+     gets the same rule. */
+  it('a control whose label names one show is scoped to that show', () => {
+    const SHOW_NAMES = { 'The Traitors': 'traitors', 'Big Brother': 'big-brother', 'Drag Race': 'drag-race' };
+    // The Show picker itself names every show on purpose; it is the control
+    // you change formats WITH, so it belongs to all of them.
+    const ALLOWED = new Set(['cfg-format']);
+    const re = /<label class="form-label"[^>]*>([^<]*(?:<span[^>]*>[^<]*<\/span>)?[^<]*)<\/label>\s*<(?:select|input)[^>]*id="([\w-]+)"/g;
+    for (const [, labelText, id] of html.matchAll(re)) {
+      if (ALLOWED.has(id)) continue;
+      const named = Object.entries(SHOW_NAMES).filter(([n]) => labelText.includes(n));
+      if (named.length !== 1) continue;
+      const [, fmt] = named[0];
+      const sc = configScopeFor(fmt);
+      const claimed = [...sc.fields, ...sc.sections, ...sc.accordions].includes(id);
+      expect(claimed, `${id}'s label says ${named[0][0]} but it is not scoped to ${fmt}`).toBe(true);
+      // And it must NOT be shown on the other shows.
+      for (const other of Object.keys(SHOWS).filter(f => f !== fmt)) {
+        const so = configScopeFor(other);
+        expect([...so.fields, ...so.sections, ...so.accordions].includes(id),
+          `${id} says ${named[0][0]} but is drawn on ${other}`).toBe(false);
+      }
+    }
+  });
+
   it('so no show is told another show\'s rules', () => {
     // The concrete case: a drag season must not be offered a Head of Household
     // or a Round Table, and a castle must not be offered a lip sync verdict.

@@ -1164,7 +1164,7 @@ const CONSEQ = {
         '{a} tells it the same way again. Nobody has yet noticed that it is always exactly the same way.',
         'It survives another day, and every day it survives makes it harder for {a} to change any part of it.',
         '{a} gets through another one. The version {a} is telling has not moved a word since the first time.',
-        'Another day of ordinary. {a} is getting very good at it, and that is when people stop noticing you.',
+        'Another day of flying under the radar. {a} is getting very good at it, and that is when people stop noticing you.',
       ],
       adverse: [
         'The version is coming apart at the edges now, and {a} is patching it in front of the person who noticed.',

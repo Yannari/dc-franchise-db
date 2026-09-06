@@ -1849,7 +1849,7 @@ const VOTED_LINES = {
   'one-of-them-was-in-danger': [
     '{b}’s name was in the air all evening and {a} had to sit there and hear it.',
     '{a} spent that table defending {b} and became a name in the process.',
-    '{a} sat through an hour of {b} being discussed and could not say a word about it.',
+    'Watching somebody you are close with being the subject of discussion is worse than being in the hot seat yourself, and {a} sat through the whole hour of it.',
     '{a} did not trust {a}’s own voice enough to speak up, and has been furious ever since.',
     '{b} came within two votes of it and {a} knows exactly which two.',
     'It went to a count and {a} did not breathe through any of it.',

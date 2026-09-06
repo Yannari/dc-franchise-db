@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(183);
+    expect(EVENTS.length).toBe(186);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -620,7 +620,9 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // 101 -> 106: all five carry-on events advance a thread, which is the
     // whole reason they exist — each one refuses to fire without a story to
     // continue, so unlike an ordinary event none of them can open one.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(106);
+    // 106 -> 109: the last three carry-on events, same as the five before
+    // them — they exist only to continue a story and cannot open one.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(109);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -633,7 +635,10 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // CONTINUE a story, they go through `arcContinue`, and a continuation
     // that does not say what it is continuing is the disconnected-vignette
     // shape they were written against. The day tab is the payload.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(69);
+    // 69 -> 72: all three cite residue for the same structural reason as the
+    // five before them — a continuation that does not say what it continues
+    // is the disconnected-vignette shape they exist against.
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(72);
   });
 
   it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
@@ -690,7 +695,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // fewer places where the castle can start something it can never pick up
     // again — which is the number on this line that actually means something.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(6);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(3);
     // 17 -> 20 on 2026-09-05: the same three cells that left `zero` above
     // arrived here, because one advancer is what they gained. The two
     // numbers move together by construction and it is worth reading them
@@ -719,7 +724,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       // with ONE advancer can continue a thread at most once every five
       // rounds; a second event in each of those five is what would move them
       // on, and is not written.
-      + 'living here can be advanced at most once every five rounds').toBe(23);
+      // 23 -> 26: the three cells that left the zero list arrived here. Every
+      // cell a debut season can reach now has AN advancer; none of the new
+      // ones has two, so a thread opened in them is still continuable only
+      // once every five rounds. That is the next thing to move, not this.
+      + 'living here can be advanced at most once every five rounds').toBe(26);
     // 24 -> 26 on 2026-09-05: two more cells reached two advancers when the
     // group events landed, which is the same movement as the `one` count
     // falling above and should be read with it.
@@ -808,9 +817,6 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       'callback|dawn',
       'callback|journey-out',
       'callback|morning',
-      'cover|journey-out',
-      'grief|journey-out',
-      'testing|morning',
     ]);
   });
 
@@ -1455,6 +1461,15 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 183 -> 186 AND 770 -> 782 on 2026-09-06, AND THE ZERO-ADVANCER LIST IS NOW
+// THREE, ALL OF THEM `callback`. Those three are not an oversight: that family
+// reads franchise history and fires ZERO in a debut season by design, so an
+// event written for `callback|dawn` cannot be verified by playing one. They
+// wait for a returnee fixture rather than being guessed at.
+//
+// Every cell a debut season can reach now has an event that can continue a
+// story in it. 11 -> 6 -> 3 across two batches.
+//
 // 178 -> 183 AND 750 -> 770 on 2026-09-06, AND THE NUMBER THIS BATCH IS
 // ABOUT IS THE ZERO-ADVANCER COUNT BELOW: 11 -> 6.
 //
@@ -1661,6 +1676,10 @@ const BRANCHES = [
   'carry-account-again:stopped-telling-it',
   'carry-account-again:the-story-grew',
   'carry-account-again:told-it-the-same',
+  'carry-account-on-the-road:asked-about-it-out-there',
+  'carry-account-on-the-road:let-it-lie-out-there',
+  'carry-account-on-the-road:rehearsed-on-the-walk',
+  'carry-account-on-the-road:somebody-else-was-there',
   'carry-doubt-on-the-road:found-the-hole',
   'carry-doubt-on-the-road:let-it-cool',
   'carry-doubt-on-the-road:tested-it-again',
@@ -1669,10 +1688,18 @@ const BRANCHES = [
   'carry-grief-days-later:shared-it-properly',
   'carry-grief-days-later:still-carrying-it',
   'carry-grief-days-later:turned-it-to-use',
+  'carry-one-short-on-the-road:counted-the-column',
+  'carry-one-short-on-the-road:nobody-said-the-name',
+  'carry-one-short-on-the-road:talked-about-them-walking',
+  'carry-one-short-on-the-road:walking-where-they-walked',
   'carry-the-morning-after:admitted-it-in-daylight',
   'carry-the-morning-after:nothing-changed-in-daylight',
   'carry-the-morning-after:one-of-them-retreated',
   'carry-the-morning-after:somebody-saw',
+  'carry-the-morning-test:answered-too-well',
+  'carry-the-morning-test:nothing-to-read',
+  'carry-the-morning-test:set-it-over-breakfast',
+  'carry-the-morning-test:they-saw-it-coming',
   'carry-the-second-test:failed-it-this-time',
   'carry-the-second-test:passed-it-again',
   'carry-the-second-test:refused-to-play',

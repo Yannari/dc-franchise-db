@@ -1529,7 +1529,13 @@ registerEvent({
     // because anything about the pact changed but because a window that used to
     // run out of draws now fills them. The gate is unchanged; only its share of
     // the pair draws it can win is.
-    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 3 : 0;
+    // 3 -> 4 on 2026-09-06, the second bump for the same reason: eleven
+    // more events landed in windows this one competes in and its firing
+    // count fell 43 -> 31 -> (weight 3) -> 38, against a variety floor of
+    // 40. Nothing about the pact gate has changed; the pool around it has
+    // grown twice. If a third bump is ever needed, widen the gate instead
+    // — a weight climbing to keep pace with the pool is a smell.
+    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 4 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-swap-story-with-partner');

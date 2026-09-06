@@ -581,3 +581,309 @@ registerEvent({
       ...(crowd ? { crowd } : {}) };
   },
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE LAST THREE REACHABLE CELLS (2026-09-06)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The five above took the zero-advancer list from eleven to six. These three
+// take it to three, and the three that remain are all `callback` — a family
+// that fires ZERO in a debut season by design, because it reads franchise
+// history. An event written for `callback|dawn` cannot be verified by playing
+// a season, so it waits for a returnee fixture rather than being guessed at.
+//
+// Same contract as the five above: each refuses to fire without a story to
+// continue, each declares `citesResidue`, and the pools are ten lines deep
+// because a continuation is met repeatedly across one story.
+
+// ══════════════════════════════════════════════════════════════════════
+// cover @ journey-out — the account, carried out of the gate
+// ══════════════════════════════════════════════════════════════════════
+const COVER_ROAD_LINES = {
+  'rehearsed-on-the-walk': [
+    '{a} spent the road out going over it again, silently, in order.',
+    'Five miles is enough to say a thing to yourself forty times, and {a} used all of it.',
+    '{a} has the account down to the minute now, which is the problem with having it down to the minute.',
+    'Nobody walking beside {a} could have known what {a} was doing for an hour.',
+    '{a} tested the weak part of it against every step and it held every time.',
+    'By the field {a} could have recited it backwards.',
+    'It is a good account and {a} has now made it a performance.',
+    '{a} has stopped believing it a little, from the repetition.',
+    'Practising a truth and practising a lie look identical from the outside, which is what {a} is counting on.',
+    '{a} arrived at the field with it word-perfect and slightly sick of it.',
+  ],
+  'asked-about-it-out-there': [
+    '{b} raised it on the road, casually, in the open air where it is harder to seem defensive.',
+    'It came up again a mile out, and {a} had to do the whole thing standing up and walking.',
+    '{b} picked the one hour {a} could not leave the conversation.',
+    'A road is a bad place to be asked and {a} knows {b} knows that.',
+    '{b} asked it differently this time, which {a} noticed and did not mention.',
+    'The answer was the same. The circumstances of giving it were much worse.',
+    '{a} got through it and spent the rest of the walk working out what it had cost.',
+    '{b} let it go after one question, which is somehow more worrying than three.',
+    'Out there, with nowhere to sit down, {a} sounded exactly as rehearsed as {a} was.',
+    'They walked the last mile talking about the weather and both of them knew why.',
+  ],
+  'somebody-else-was-there': [
+    '{a} had not counted on a third person hearing it, and a third person heard it.',
+    'It stopped being a private account somewhere on that road.',
+    'Whoever was walking behind {a} and {b} has the whole of it now.',
+    '{a} spent the rest of the afternoon trying to work out who had been in earshot.',
+    'A road carries. {a} learned that an hour too late.',
+    'The account is now in two heads {a} did not choose.',
+    '{a} said it once and it has been repeated twice since, and not by {a}.',
+    'There is no way to ask who heard without telling them there was something to hear.',
+    '{a} has lost control of the version, which is worse than losing the argument.',
+    'It will come back at a table, in somebody else’s words.',
+  ],
+  'let-it-lie-out-there': [
+    'Neither {a} nor {b} mentioned it once on that road, which took effort from both.',
+    'It was the obvious thing to talk about and they talked about everything else.',
+    '{a} had the answer ready for five miles and never needed it.',
+    'The account got a day older and no more solid.',
+    '{b} did not ask. {a} has been trying to decide since whether that is good.',
+    'Some silences are mercy and some are somebody waiting, and {a} cannot tell which.',
+    'They walked out together and the thing between them walked with them, unspoken.',
+    '{a} would almost rather have been asked.',
+    'Nothing was said and nothing was resolved and both of them arrived tired.',
+    'It is still there. It will be there tomorrow, and heavier.',
+  ],
+};
+
+registerEvent({
+  id: 'carry-account-on-the-road',
+  family: 'cover',
+  window: 'journey-out',
+  advancesThread: true,
+  citesResidue: true,
+  roles: 'initiator-first',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'mental', 'social', 'intuition'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return storyBetween('cover', ctx.actors) ? 3 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'carry-account-on-the-road');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const branch = fork(rng, {
+      'rehearsed-on-the-walk': (sa.mental / 10) * 0.35 + (sa.temperament / 10) * 0.15,
+      'asked-about-it-out-there': (sb.intuition / 10) * 0.35 + (sb.social / 10) * 0.15,
+      'somebody-else-was-there': (ctx.living || []).length >= 7 ? 0.3 : 0.1,
+      'let-it-lie-out-there': (1 - sb.boldness / 10) * 0.3 + 0.1,
+    });
+    const sceneWhy = branch === 'asked-about-it-out-there' ? 'was asked about it where they could not sit down'
+      : branch === 'somebody-else-was-there' ? 'lost the account to a third pair of ears'
+        : branch === 'let-it-lie-out-there' ? 'walked five miles beside it and never said it'
+          : 'went over the account the whole way out';
+    const note = lineFor(COVER_ROAD_LINES[branch],
+      `carry-account-on-the-road|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'asked-about-it-out-there' ? -1
+      : branch === 'somebody-else-was-there' ? -0.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, 'cover', [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: a, topicKind: 'cover-account', threadId: thread?.id, cited, note, bondDelta };
+  },
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// grief @ journey-out — walking out one short
+// ══════════════════════════════════════════════════════════════════════
+const GRIEF_ROAD_LINES = {
+  'counted-the-column': [
+    '{a} counted the column at the gate the way {a} has every morning since {v} went.',
+    'It is a shorter walk out every week and {a} is the one keeping the number.',
+    '{a} knows exactly how many left the castle this morning without being told.',
+    'The gap in the line is where {v} used to walk and {a} has not stopped seeing it.',
+    '{a} said the number out loud to {b} and wished {a} had not.',
+    'Everybody notices. {a} is the only one who says it.',
+    'There were eighteen of them on the first road out. {a} could tell you today’s figure.',
+    '{a} watched the column form up and felt the arithmetic land again.',
+    'It is not sadness exactly. It is bookkeeping that hurts.',
+    '{b} has started dreading the walk out because of what {a} says at the gate.',
+  ],
+  'talked-about-them-walking': [
+    '{a} and {b} talked about {v} for the first two miles and neither of them minded.',
+    'The road is where you can say a name without the room hearing it.',
+    '{a} told {b} something about {v} that {a} has not told anybody else here.',
+    'They laughed about {v} somewhere near the ford, properly, for the first time.',
+    'It is easier to grieve walking than sitting still, and both of them have found that out.',
+    '{b} asked what {v} had been like before all this, and {a} answered at length.',
+    'Two people remembering the same person, out loud, with nobody keeping score.',
+    'It was the best conversation either of them has had about {v}.',
+    '{a} stopped mid-sentence once and {b} waited.',
+    'By the field they had said everything and both felt lighter for it.',
+  ],
+  'nobody-said-the-name': [
+    'Nobody on that road said {v}’s name once, and {a} counted.',
+    'A week ago {v} was on this walk. This morning nobody mentioned it.',
+    '{a} waited for somebody else to say it first and nobody did.',
+    'The castle has moved on and {a} is a few days behind.',
+    'It is the speed of the forgetting that {a} cannot get past.',
+    '{a} nearly said something at the gate and did not.',
+    'There is a version of this walk where {v} is discussed. This was not it.',
+    '{b} did not notice the silence, which told {a} something about {b}.',
+    'They will all be forgotten this fast and {a} has just understood that.',
+    '{a} walked the whole way out composing something and said none of it.',
+  ],
+  'walking-where-they-walked': [
+    '{a} took the place in the column {v} used to take, without deciding to.',
+    'The road goes past the spot where {a} last spoke to {v} properly.',
+    '{a} slowed at the ford for no reason {b} could see.',
+    'There is a gate {v} always went through first and {a} went through it first today.',
+    'It is a small haunting and it happens every time they walk out.',
+    '{a} has started avoiding one stretch of that road.',
+    '{b} asked if {a} was all right and got a yes that was not one.',
+    'The landscape has not changed. The walk is completely different.',
+    '{a} did the whole road out with somebody who is not there.',
+    'Nobody else on that column noticed a thing.',
+  ],
+};
+
+registerEvent({
+  id: 'carry-one-short-on-the-road',
+  family: 'grief',
+  window: 'journey-out',
+  advancesThread: true,
+  citesResidue: true,
+  roles: 'initiator-first',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['loyalty', 'temperament', 'social', 'intuition'],
+    relationship: ['neutral', 'close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return storyBetween('grief', ctx.actors) ? 3 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'carry-one-short-on-the-road');
+    const [a, b] = ctx.actors;
+    const t = storyBetween('grief', ctx.actors);
+    const v = t?.topic || (gs.tr?.goneBefore || []).slice(-1)[0]?.name || 'them';
+    const sa = pStats(a);
+    const branch = fork(rng, {
+      'counted-the-column': (sa.mental / 10) * 0.3 + (1 - sa.temperament / 10) * 0.15,
+      'talked-about-them-walking': (sa.social / 10) * 0.35 + (sa.loyalty / 10) * 0.15,
+      'nobody-said-the-name': (sa.intuition / 10) * 0.25 + (1 - sa.social / 10) * 0.2,
+      'walking-where-they-walked': (sa.loyalty / 10) * 0.3 + 0.1,
+    });
+    const sceneWhy = branch === 'talked-about-them-walking' ? 'said the name out loud on the road, at length'
+      : branch === 'nobody-said-the-name' ? 'counted how fast the castle forgot'
+        : branch === 'walking-where-they-walked' ? 'walked the road with somebody who is not there'
+          : 'counted the column at the gate again';
+    const note = lineFor(GRIEF_ROAD_LINES[branch],
+      `carry-one-short-on-the-road|${branch}|${ctx.ep}`, { a, b, v });
+    const bondDelta = branch === 'talked-about-them-walking' ? 2
+      : branch === 'nobody-said-the-name' ? -0.5 : 0.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, 'grief', [a, b], ctx.ep, note, { source: sceneWhy });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: v, topicKind: 'grief-loss', threadId: thread?.id, cited, note, bondDelta };
+  },
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// testing @ morning — the test set in daylight
+// ══════════════════════════════════════════════════════════════════════
+const TEST_MORNING_LINES = {
+  'set-it-over-breakfast': [
+    '{a} put something in front of {b} at breakfast that only makes sense as a test.',
+    'It looked like small talk and it was not small talk.',
+    '{a} left a gap in a sentence and watched what {b} filled it with.',
+    'Half the table heard the question and only two people knew what it was for.',
+    '{a} has got better at this. A week ago it would have been obvious.',
+    '{b} answered without breaking stride, which is either innocence or practice.',
+    'It cost {a} nothing to ask and {a} learned something either way.',
+    '{a} asked it over toast, which is the least threatening hour there is.',
+    'The whole thing took nine seconds and {a} has been turning it over since.',
+    'Nobody else at that table will remember the question by lunch.',
+  ],
+  'they-saw-it-coming': [
+    '{b} clocked it immediately and answered the question {a} had actually asked.',
+    '"You are testing me," {b} said, pleasantly, over the tea.',
+    '{a} was not as subtle as {a} thought and now both of them know it.',
+    '{b} has been tested before and has stopped finding it insulting.',
+    'The test failed and the attempt is now the information.',
+    '{b} gave the right answer in a tone that said what it was.',
+    '{a} will have to be cleverer next time, and {b} will be readier.',
+    'Being caught testing somebody is its own kind of answer about {a}.',
+    '{b} smiled about it, which was worse than being angry.',
+    'It is a draw and {a} does not enjoy draws.',
+  ],
+  'answered-too-well': [
+    '{b} had an answer ready that was slightly better than the question deserved.',
+    'Nobody is that precise about a Tuesday, and {a} noticed.',
+    'It was correct in a way that suggested it had been prepared.',
+    '{b} remembered a detail nobody remembers and {a} has filed the fact of it.',
+    'The answer closed the question completely, which is what worries {a}.',
+    '{a} came away with less doubt and more unease, which are not the same.',
+    'A good answer at breakfast is not proof of anything and {a} cannot let it go.',
+    '{b} volunteered one extra thing, and the extra thing is what {a} kept.',
+    'It is thin. It is also the second time.',
+    '{a} said thank you and meant something else.',
+  ],
+  'nothing-to-read': [
+    '{b} answered it flatly and {a} came away with nothing at all.',
+    'Some people are unreadable and {b} may simply be one of them.',
+    'There was no tell because there was nothing to tell, or because {b} is good.',
+    '{a} has spent a week on {b} and has not moved an inch.',
+    'The test produced a fact {a} already had.',
+    '{b} is not hiding anything or is hiding it perfectly, and {a} still cannot tell.',
+    'It is the third time {a} has tried and the third time nothing came back.',
+    '{a} is starting to think the problem is {a}, not {b}.',
+    'A blank is not innocence. It is also not evidence.',
+    '{a} will have to find another way at it, and does not have one.',
+  ],
+};
+
+registerEvent({
+  id: 'carry-the-morning-test',
+  family: 'testing',
+  window: 'morning',
+  advancesThread: true,
+  citesResidue: true,
+  roles: 'initiator-first',
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['strategic', 'intuition', 'social', 'mental'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    return storyBetween('testing', ctx.actors) ? 3 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'carry-the-morning-test');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const branch = fork(rng, {
+      'set-it-over-breakfast': (sa.strategic / 10) * 0.35 + (sa.social / 10) * 0.15,
+      'they-saw-it-coming': (sb.intuition / 10) * 0.35 + (sb.mental / 10) * 0.15,
+      'answered-too-well': (sb.mental / 10) * 0.3 + (sb.strategic / 10) * 0.2,
+      'nothing-to-read': (sb.temperament / 10) * 0.3 + (1 - sa.intuition / 10) * 0.15,
+    });
+    const sceneWhy = branch === 'they-saw-it-coming' ? 'was caught setting a test over breakfast'
+      : branch === 'answered-too-well' ? 'got an answer that was better than the question deserved'
+        : branch === 'nothing-to-read' ? 'set a test and got nothing back at all'
+          : 'set a test over breakfast and nobody else noticed';
+    const note = lineFor(TEST_MORNING_LINES[branch],
+      `carry-the-morning-test|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'they-saw-it-coming' ? -1.5
+      : branch === 'answered-too-well' ? -0.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const { thread, cited } = arcContinue(api, 'testing', [a, b], ctx.ep, note, { source: sceneWhy });
+    let crowd = null;
+    if (branch === 'they-saw-it-coming') crowd = { name: b, colour: 'masterful', reason: 'named a test out loud over breakfast', mult: 0.4 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: 'testing-probe', threadId: thread?.id, cited, note, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});

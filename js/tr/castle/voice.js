@@ -636,6 +636,13 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE LAST THREE REACHABLE CELLS (carry-on.js, 2026-09-06) ────────
+  //
+  // Being asked about an account where you cannot sit down, losing it to a
+  // third pair of ears, being caught setting a test, and an answer better
+  // than the question deserved. In each the person opposite is under it.
+  'answered-too-well', 'asked-about-it-out-there',
+  'somebody-else-was-there', 'they-saw-it-coming',
   // ── THE CONTINUATIONS (js/tr/castle/carry-on.js, 2026-09-06) ────────
   //
   // Five events written to fill the advancer holes in `morning` and
@@ -1051,6 +1058,14 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE HALF OF THE SAME THREE THAT PRESS NOBODY ────────────────
+  //
+  // Rehearsing an account to yourself on a road, counting the column at the
+  // gate, saying a dead player's name out loud for two miles, a test that
+  // came back blank.
+  'counted-the-column', 'let-it-lie-out-there', 'nobody-said-the-name',
+  'nothing-to-read', 'rehearsed-on-the-walk', 'set-it-over-breakfast',
+  'talked-about-them-walking', 'walking-where-they-walked',
   // ── AND THE CONTINUATIONS THAT PRESS NOBODY ─────────────────────────
   //
   // Same five events. Grief shared without either of them meaning anything

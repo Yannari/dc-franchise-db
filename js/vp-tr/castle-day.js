@@ -343,7 +343,7 @@ const ESTABLISH_PAIR = {
     'An hour after breakfast, {a} steers {b} towards {loc} and lets the door swing shut.',
     '{a} and {b} end up at {loc} together, with a job between them that neither is really doing.',
     '{a} and {b} pause their chores at {loc} to speak in private.',
-    '{a} joins {b} at {loc} and waits until nobody else is close enough to hear.',
+    '{a} joins {b} at {loc} and waits for the room to empty before saying anything.',
   ],
   'journey-out': [
     '{a} and {b} fall behind the group near {loc} on the walk to the mission.',

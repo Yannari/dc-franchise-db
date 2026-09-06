@@ -83,7 +83,7 @@ const DARE_LINES = {
     '“Ask me the real one,” said {b}, and went back to the washing up.',
   ],
   'over-delivered': [
-    '{a} asked for a small thing and {b} did the small thing and then four larger ones.',
+    '{a} asked {b} for a small favour to see what would happen, and {b} did it and then kept going unprompted.',
     '{b} took a four-second favour and turned it into twenty minutes of being helpful.',
     'It was a test of whether {b} would. {b} did, and then did considerably more, unasked.',
     '{a} wanted a yes. {a} got an afternoon, and is not sure what to do with it.',

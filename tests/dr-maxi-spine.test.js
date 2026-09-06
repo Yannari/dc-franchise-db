@@ -78,6 +78,25 @@ describe('the spine', () => {
     expect(runMaxi(ctxFor('snatch-game')).assignment.order[0]).toBe('Ada');
   });
 
+  it('a role type drafts every queen, and records the pick under her name', () => {
+    const out = runMaxi(ctxFor('acting'));
+    for (const n of Object.keys(out.performances)) {
+      expect(out.assignment.roles[n], `${n} has no role`).toBeTruthy();
+      expect(out.assignment.picks[n].name).toBe(n);
+      expect(typeof out.assignment.picks[n].ducked).toBe('boolean');
+    }
+    // Two teams, so two leads: one ladder across the room would hand one team
+    // both big parts and leave the other with none.
+    const leads = Object.values(out.assignment.roles).filter(r => r === 'lead');
+    expect(leads.length).toBe(2);
+  });
+
+  it('a captains type splits the room without losing or cloning anybody', () => {
+    const out = runMaxi(ctxFor('choreography'));
+    expect(out.assignment.teams.length).toBe(2);
+    expect(out.assignment.teams.flat().sort()).toEqual(CAST.map(p => p.name).sort());
+  });
+
   it('is seeded: the same seed gives the same result', () => {
     expect(JSON.stringify(runMaxi(ctxFor('acting', 4)).performances))
       .toBe(JSON.stringify(runMaxi(ctxFor('acting', 4)).performances));
@@ -156,7 +175,10 @@ describe('the archetype law', () => {
         drag: { acting: 9, comedy: 9, dance: 9, design: 9, runway: 9, lipsync: 9, singing: 9 },
       })]));
     for (const m of MAXI_TYPES) {
-      for (let s = 0; s < 6; s++) {
+      // Spread seeds: consecutive ones all start this LCG in the same narrow
+      // band, which would quietly test one branch six times over. See rng.js.
+      for (let i = 0; i < 6; i++) {
+        const s = i * 7919 + 13;
         const bonds = {};
         for (const a of Object.keys(players)) for (const b of Object.keys(players)) {
           if (a !== b) bonds[[a, b].sort().join('|')] = -9;

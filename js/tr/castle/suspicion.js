@@ -1206,7 +1206,7 @@ const SHAPE_GUESS_LINES = {
   ],
   'drew-it-alone': [
     '{a} drew the whole room in {a}’s head, with nobody there to move a single line.',
-    'Nobody to check it against, so {a} built the map alone and had to believe all of it.',
+    'Nobody to check against, so {a} worked out who trusts whom alone and had to take {pos} own word for it.',
     '{a} worked out who was with whom and got a shape {a} could not test on anybody.',
     'It is easy to be certain about a room when there is nobody in it to disagree with you, and {a} was certain.',
     '{a} put the castle into three groups and spent the rest of the evening moving one name between two of them.',

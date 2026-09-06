@@ -147,7 +147,10 @@ export function perform(ctx) {
     const mean = team.reduce((s, n) => s + raw[n], 0) / team.length;
     const weakest = team.reduce((w, n) => (raw[n] < raw[w] ? n : w), team[0]);
     const best = team.reduce((b, n) => (raw[n] > raw[b] ? n : b), team[0]);
-    if (raw[weakest] < 4 && mean > 7 && best !== weakest) {
+    // Being carried is RELATIVE — a gap between her and the group, not an
+    // absolute floor. The absolute version needed the team mean above 7 and
+    // fired three times in sixty seasons, which is not a mechanic.
+    if (mean - raw[weakest] > 3 && mean > 5.5 && best !== weakest) {
       events.push(evt('carried', {
         players: [best, weakest],
         bond: [[best, weakest, 0.5]],

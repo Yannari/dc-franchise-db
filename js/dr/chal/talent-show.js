@@ -33,25 +33,37 @@ export const talentById = id => TALENTS.find(t => t.id === id) || null;
 
 /** What she is best at — unless she is bold enough to reach past it. */
 export function chooseTalent(player, rng = Math.random) {
+  return chooseAct(player, rng).talent;
+}
+
+/** The pick, plus what she passed up to make it. */
+export function chooseAct(player, rng = Math.random) {
   const d = dragOf(player);
   const ranked = [...TALENTS]
     .map(t => ({ t, s: blendScore(d, t.blend) }))
     .sort((a, b) => b.s - a.s);
+  const safest = ranked[0];
   const bold = (Number(player?.stats?.boldness) || 5) / 10;
   if (ranked.length > 1 && rng() < bold * 0.35) {
     // She reaches: the best act among those riskier than her safest choice.
     // This is the "she went for it" beat, and it is her nerve that buys it.
-    const riskier = ranked.slice(1, 4).filter(x => x.t.risk > ranked[0].t.risk);
-    if (riskier.length) return riskier[0].t;
+    const riskier = ranked.slice(1, 4).filter(x => x.t.risk > safest.t.risk);
+    if (riskier.length) {
+      return { talent: riskier[0].t, reached: true, passedUp: safest.s };
+    }
   }
-  return ranked[0].t;
+  return { talent: safest.t, reached: false, passedUp: safest.s };
 }
 
 export function assign(ctx) {
   const { living, players, rng } = ctx;
   const picks = {};
   for (const n of living) {
-    picks[n] = { name: n, choice: chooseTalent(players[n], rng).id, penalty: 0, lostTo: null };
+    const a = chooseAct(players[n], rng);
+    picks[n] = {
+      name: n, choice: a.talent.id, penalty: 0, lostTo: null,
+      reached: a.reached, passedUp: Math.round(a.passedUp * 100) / 100,
+    };
   }
   return {
     roles: Object.fromEntries(living.map(n => [n, 'standard'])),
@@ -90,12 +102,20 @@ export function perform(ctx) {
     } else if (!landed) {
       events.push(evt('stunt-failed', { players: [n], pop: { [n]: -2 }, data: { talent: talent.id } }));
     }
-    // Not the same note as failing. This is the queen who chose an act she
-    // could never have done, which the panel says out loud every season.
-    if (craft < 4) {
+    // Not the same note as failing. This is the queen who chose the wrong act,
+    // which the panel says out loud every season — and there are two ways to
+    // do it. She has nothing she can show, or she had something and walked
+    // past it. Measured, the first alone fired once in sixty seasons, because
+    // she always picks her own best act: on its own the note was dead.
+    const pick = assignment.picks[n];
+    const walkedPast = pick?.reached && (pick.passedUp - craft) > 1.5;
+    if (craft < 4 || walkedPast) {
       events.push(evt('wrong-talent', {
         players: [n], pop: { [n]: -2 },
-        data: { talent: talent.id, craft: Math.round(craft * 10) / 10 },
+        data: {
+          talent: talent.id, craft: Math.round(craft * 10) / 10,
+          walkedPast: !!walkedPast, passedUp: pick?.passedUp ?? null,
+        },
       }));
     }
 

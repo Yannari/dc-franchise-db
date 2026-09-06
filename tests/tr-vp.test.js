@@ -3192,12 +3192,47 @@ describe('the before-the-money helper keeps the screen and drops the stylesheet'
 });
 
 describe('the endgame record reaches the screen at all', () => {
+  it('asks somebody on the clear majority of seasons', () => {
+    // The floor the arm below used to carry, kept as a population claim: a
+    // zero-ask finale is the exception (the room reached the fire at two), and
+    // if it ever became the rule something has gone wrong with the handover
+    // rather than with the screen.
+    const asked = ENDINGS.filter(({ ep }) => (ep.tr.endgame.asks || []).length).length;
+    expect(asked / ENDINGS.length,
+      `only ${asked}/${ENDINGS.length} finales put the question to anybody`)
+      .toBeGreaterThan(0.6);
+  });
+
+  it('draws a finale that asked nobody, rather than calling it unplayed', () => {
+    // The regression this pair replaces: `_view` gated on `asks.length` and
+    // answered a finished season with "The Game Is Still Running" — no
+    // reveals, no strongbox, no winner, on a record holding all three.
+    const quiet = ENDINGS.filter(({ ep }) => !(ep.tr.endgame.asks || []).length);
+    for (const { ep } of quiet) {
+      const html = rpBuildEndgame(ep, 'audience');
+      expect(html, `ep ${ep.num}: a finished endgame rendered as unplayed`)
+        .not.toContain('The Game Is Still Running');
+      expect(html).toContain('lt-step-endgame-0');
+    }
+  });
+
   it('every season played writes one, and it holds asks and money', () => {
     expect(ENDINGS.length, 'no season across twenty seeds recorded an endgame')
       .toBe(END_SEEDS.length);
     for (const { ep } of ENDINGS) {
       const e = ep.tr.endgame;
-      expect(e.asks.length, 'an endgame that never asked anybody').toBeGreaterThan(0);
+      // A FINALE MAY ASK NOBODY. The fire stops rather than putting the
+      // vote-or-end question to a room of two — a banishment needs a majority
+      // and two players give 1-1, so the only thing on the far side of that
+      // question is a coin flip deciding the season (js/tr/endgame.js). A
+      // season that reaches the fire with two standing therefore holds no
+      // asks at all, and the screen still has to draw the ending.
+      //
+      // So the claim moves from "every endgame asked" to "asks are the norm",
+      // which is what it was really guarding, and the zero-ask case gets its
+      // own arm below rather than being tolerated by a loosened floor.
+      expect(e.asks.length).toBeGreaterThanOrEqual(0);
+      if (!e.asks.length) continue;   // nothing below applies to a finale that asked nobody
       expect(e.takers.length, 'an endgame nobody won').toBeGreaterThan(0);
       expect(['faithfuls', 'traitors']).toContain(e.winner);
       // ── THE LOOP HAS TWO EXITS, NOT ONE (corrected, Task 7 stage 3) ────
@@ -3224,11 +3259,24 @@ describe('the endgame record reaches the screen at all', () => {
       // emptied. That is a STRONGER assertion than the one it replaces on
       // every season that ends the usual way, and a real one on the season
       // that does not.
+      // ── AND A THIRD EXIT, ADDED WITH THE RULE THAT CREATED IT ────────
+      //
+      // The fire now stops rather than putting the question to a room of two:
+      // a banishment needs a majority and two players give 1-1, so the only
+      // thing on the far side of that question is a coin flip deciding the
+      // season (js/tr/endgame.js, tests/tr-endgame-stops-at-two.test.js). So a
+      // finale can end on a NON-unanimous ask, having banished down to two.
+      //
+      // It gets the same treatment as the second exit and for the same reason
+      // the comment above gives: it is not a free pass. Each exit has to be
+      // accompanied by the state it claims, so the arm still fails on a
+      // finale that simply stopped for no reason the record can show.
       const lastAsk = e.asks[e.asks.length - 1];
       const emptied = (e.survivors || []).length < 2;
-      expect(lastAsk.unanimous || emptied,
+      const stoppedAtTwo = (e.survivors || []).length === 2;
+      expect(lastAsk.unanimous || emptied || stoppedAtTwo,
         'the endgame stopped on an ask somebody wanted another table at, and the room '
-        + 'it was asked in still had two people in it').toBe(true);
+        + 'it was asked in still had three people in it').toBe(true);
       // One table per ask that was not unanimous, and never one more.
       expect(e.tables.length).toBe(e.asks.filter(a => !a.unanimous).length);
     }
@@ -3617,6 +3665,9 @@ describe('the pot the screen splits is the pot the export pays', () => {
       expect(sum, `ep ${ep.num}: ${m[1]} + ${m[2]} + ${m[3]} is not a cast of `
         + ep.tr.cast.length).toBe(ep.tr.cast.length);
       // and the standing figure is the room the question was first put to
+      // asks[0] only exists where the question was put; a zero-ask finale
+      // (the fire stopping at two) has no slips and nothing to check here.
+      if (!(ep.tr.endgame.asks || []).length) continue;
       expect(Number(m[1])).toBe(ep.tr.endgame.asks[0].living.length);
     }
   });
@@ -3643,6 +3694,7 @@ describe('a player reads their own paper and nobody else\'s', () => {
     let checked = 0;
     for (const { ep } of ENDINGS.slice(0, 10)) {
       const e = ep.tr.endgame;
+      if (!(e.asks || []).length) continue;
       for (const who of e.asks[0].living) {
         const drawn = slipsOf(endgameRevealed(ep, 'player:' + who));
         const open = drawn.filter(s => s.choice !== 'sealed');
@@ -3664,7 +3716,13 @@ describe('a player reads their own paper and nobody else\'s', () => {
 
   it('and somebody who was already out of the castle reads none of them', () => {
     let checked = 0;
-    for (const { ep } of ENDINGS.slice(0, 10)) {
+    // TEN SEASONS THAT ACTUALLY ASKED SOMEBODY. Slicing the first ten and then
+    // skipping the ones that asked nobody (the fire stops at two rather than
+    // putting the question) checked eight and then failed on its own count.
+    // The arm still checks ten; it just picks ten it can check.
+    const eligible = ENDINGS.filter(x => (x.ep.tr.endgame.asks || []).length).slice(0, 10);
+    expect(eligible.length, 'fewer than ten finales in the sweep asked anybody').toBe(10);
+    for (const { ep } of eligible) {
       const e = ep.tr.endgame;
       const room = e.asks[0].living;
       const out = (ep.tr.cast || []).find(n => !room.includes(n));
@@ -3698,7 +3756,14 @@ describe("the last table may not be described in another show's words", () => {
 
   it('and neither does the layer that reads nothing', () => {
     const { ep } = ENDINGS[0];
-    const out = (ep.tr.cast || []).find(n => !ep.tr.endgame.asks[0].living.includes(n));
+    // A SEASON THAT ASKED NOBODY HAS NO ROOM TO BE OUT OF, and treating its
+    // empty `living` as "everybody is out" picked a player who was standing at
+    // the fire — which is how this arm started reporting 8 slips where it
+    // wanted 10. Pick a season that actually put the question.
+    const asked = ENDINGS.filter(e => (e.ep.tr.endgame.asks || []).length);
+    expect(asked.length, 'no finale in the sweep asked anybody').toBeGreaterThan(0);
+    const src = asked[0].ep;
+    const out = (src.tr.cast || []).find(n => !src.tr.endgame.asks[0].living.includes(n));
     expect(out).toBeTruthy();
     expect(foreignWordsIn(strip(endgameRevealed(ep, 'player:' + out)), 'traitors'))
       .toEqual([]);
@@ -3822,42 +3887,61 @@ describe('the endgame is a room and not a hole', () => {
     }
   });
 
-  it('the wall and the air run the full height, not the height of the drawing', () => {
-    // The planes are finite by nature -- a drawn room is 2600px and an endgame
-    // with six asks is twice that -- so the two layers that have to cover
-    // whatever the page turns out to be are declared against `bottom` and not
-    // against a height.
-    const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
-    const css = cssOf(html);
-    expect(html, 'the wall is not in the markup').toContain('<div class="lt-stone">');
-    expect(html, 'the air is not in the markup').toContain('<div class="lt-air">');
-    expect(css).toMatch(/\.lt-stone\{[^}]*bottom:0/);
-    expect(css).toMatch(/\.lt-air[^{]*\{[^}]*bottom:0/);
-    const motes = (html.match(/class="lt-mote"/g) || []).length;
-    expect(motes, 'the air is empty').toBeGreaterThan(20);
+  it('the room runs the full height of the screen, not of the drawing', () => {
+    // WHAT THIS ARM USED TO SAY. The scenery was drawn objects — `lt-stone` for
+    // a wall, `lt-far`/`lt-mid`/`lt-fore` for painted furniture — and the bug
+    // it caught was those layers being sized to the artwork rather than to the
+    // shell, which left a hole under the drawing.
+    //
+    // There is no drawing any more. Reported as "really cartoony — more
+    // abstract, but still Traitors, castle, Scotland", and the answer was to
+    // stop drawing objects: the room is one pointed arch as a void, the fire
+    // as a bloom of light, haar, a moonlight shaft and grain.
+    //
+    // THE FAILURE MODE IS THE SAME ONE, though, which is why this arm survives
+    // rather than being deleted: those layers are FIXED to the viewport, and if
+    // they ever go back to being absolute inside the shell the arch anchors to
+    // the bottom of a page thousands of pixels tall and the fire is never once
+    // on screen. That is exactly what happened on the first attempt at this.
+    const html = rpBuildEndgame(ENDINGS[0].ep, 'audience');
+    for (const cls of ['ft-arch', 'ft-bloom', 'ft-haar', 'ft-shaft', 'ft-embers']) {
+      expect(html, 'the room is missing ' + cls).toContain(cls);
+    }
+    const css = (html.match(/<style>[\s\S]*?<\/style>/) || [''])[0];
+    for (const sel of ['.ft-arch{', '.ft-bloom{', '.ft-floorlight{', '.ft-embers{']) {
+      const at = css.indexOf(sel);
+      expect(at, sel + ' has no rule').toBeGreaterThan(-1);
+      expect(css.slice(at, at + 200),
+        sel + ' is not fixed to the viewport, so the fire will sit below the fold')
+        .toContain('position:fixed');
+    }
   });
 
   it('and the fire has run down rather than gone out — there is one ember', () => {
     // The set is lit by flame on every other screen. This screen is what is
     // left of that fire, which is far colder than blackness and is the only
     // warm thing on it until the strongbox opens.
+    //
+    // THE HEARTH IS NOT DRAWN ANY MORE. It used to be SVG coals carrying
+    // literal hex fills, and this arm read those hexes to check each one was
+    // actually warm. The room is light and texture now — no drawn objects at
+    // all — so there is no fill to read: the embers are DOM elements and every
+    // warm thing on the screen is mixed from ONE palette entry.
+    //
+    // The claim survives the change and is checked where it now lives: the
+    // coal colour is `--ft-hot`, so the arm asserts that token is defined and
+    // that it is a live coal by the same red-minus-blue test the old fills
+    // were held to. That is the whole point of grading from one variable —
+    // there is one place to check instead of a fill per shape.
     const html = rpBuildEndgame({ ...ENDINGS[0].ep, num: ++_trN }, 'audience');
-    // EVERY ONE OF THEM, NOT "AT LEAST ONE". The hearth carries two coals and
-    // a first version of this arm only asked whether the string appeared
-    // anywhere -- so putting one of the two out changed nothing and the
-    // mutation came back green. Redundancy hiding a dead guard, and this plan
-    // has now shipped it five times.
-    const embers = (String(html)
-      .match(/class="lt-ember" [^>]*fill="#([0-9a-f]{6})"/g) || [])
-      .map(s => /fill="#([0-9a-f]{6})"/.exec(s)[1]);
+    const embers = (String(html).match(/class="ft-ember"/g) || []);
     expect(embers.length, 'the hearth has gone cold').toBeGreaterThanOrEqual(2);
-    for (const c of embers) {
-      const r = parseInt(c.slice(0, 2), 16), b = parseInt(c.slice(4, 6), 16);
-      expect(r - b, `#${c} is not a live coal`).toBeGreaterThan(64);
-    }
-    expect(cssOf(html)).toMatch(/@keyframes lt-ember\{/);
-    // and the pot is physically in the room, not only on a card
-    expect(html, 'the strongbox is not in the room').toContain('id="ltEmber"');
+    const hot = /--ft-hot:\s*#([0-9a-f]{6})/i.exec(String(html));
+    expect(hot, 'the coal colour is not defined anywhere').toBeTruthy();
+    const r = parseInt(hot[1].slice(0, 2), 16), b = parseInt(hot[1].slice(4, 6), 16);
+    expect(r - b, `#${hot[1]} is not a live coal`).toBeGreaterThan(64);
+    // and the whole room reads it, rather than each shape carrying its own
+    expect(String(html)).toMatch(/--ft-heat/);
   });
 });
 
@@ -4544,7 +4628,22 @@ function hourPlates(html) {
  * wrong span is the same family as one that matches nothing.
  */
 function stitches(html) {
-  return String(html).match(/<div class="dy-stitch">[\s\S]*?<\/p><\/div>/g) || [];
+  // THE `</p>` IS OPTIONAL AND THE OLD PATTERN REQUIRED IT. `_stitch`
+  // (js/vp-tr/castle-day.js) has THREE shapes and only one of them carries a
+  // `<p class="dy-stitch-t">`: the "Later the same day" tail. The other two —
+  // "Back to" and "The same story on", which are the ones that actually carry
+  // the DAY TABS this helper exists to read — close as `</div></div>`.
+  //
+  // So a day whose stitches are all tab-only matched NOTHING, and the arm
+  // below reported every one of its cited days as undrawn. It had never gone
+  // red because some day in the sweep always happened to contain a tail
+  // stitch as well, which let the non-greedy match run from the tab stitch to
+  // that one and pick the tabs up on the way. A guard passing by luck of the
+  // draw mix: it went red the first time a batch of new events changed which
+  // stitch landed last. Verified against both shapes before changing it.
+  return String(html)
+    .match(/<div class="dy-stitch">[\s\S]*?<\/div>(?:<p class="dy-stitch-t">[\s\S]*?<\/p>)?<\/div>/g)
+    || [];
 }
 /** The day tabs inside one stitch, as numbers. */
 function stitchDays(block) {
@@ -5759,8 +5858,29 @@ describe('the belief record reaches the row at all', () => {
     }
     expect(rows, 'no episode rows at all').toBeGreaterThan(30);
     expect(tabled, 'no night sat a Round Table').toBeGreaterThan(20);
-    expect(untabled, 'no table-less night, so the withholding is unchecked')
-      .toBeGreaterThan(0);
+    // ── THE ENDGAME-ONLY ROW NO LONGER HAPPENS, AND THAT IS THE POINT ──
+    //
+    // This used to demand at least one of them, as an anti-vacuity floor on
+    // the withholding rule above. The state is gone: a finale reached by a
+    // murder used to be built as a bare row with no mission, no castle day and
+    // no Round Table, and a room that voted to end at the first ask went home
+    // having never banished anybody on the last day. Reported, and fixed — the
+    // last day is played in full now (js/tr/headless.js,
+    // tests/tr-murder-every-night.test.js), so every finale sits a table.
+    //
+    // A floor on a state the engine no longer produces is an assertion that
+    // can only ever fail, so it is replaced by the fact that REPLACED the
+    // state. The per-row rule above still stands and still runs if such a row
+    // ever comes back — which is what would happen if the last day stopped
+    // being played — and this says out loud why the count is zero.
+    expect(untabled,
+      'an endgame-only row appeared again: the last day is supposed to be played '
+      + 'in full, with its own Round Table').toBe(0);
+    const finales = RUNS.flatMap(r => r.episodes.filter(e => e.tr && e.tr.finale));
+    expect(finales.length, 'no finale in the sweep at all').toBeGreaterThan(2);
+    for (const f of finales) {
+      expect(f.tr.table, `ep ${f.num}: the finale sat no Round Table`).toBeTruthy();
+    }
     expect(withBoard, 'not one night produced a castle board').toBeGreaterThan(20);
   });
 

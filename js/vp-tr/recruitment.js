@@ -1016,7 +1016,13 @@ function _buildBeats(v) {
 
   // ── the offer itself ────────────────────────────────────────────────
   push('ask', 'both', _card('both', 'What Was Offered', 'The offer', 'stair',
-    '<p>' + _pick(ASK[v.mode], key + '|ask') + '</p>'
+    // `{who}` HAS TO BE FILLED. One line in the `note` pool names the person
+    // being asked and `_pick` alone leaves the brace in the copy — it shipped
+    // that way and only surfaced when a stream shift drew that variant, which
+    // is the whole reason tests/tr-vp.test.js scans a full seeded transcript
+    // for raw placeholders rather than trusting any single rendering.
+    '<p>' + _pick(ASK[v.mode], key + '|ask').split('{who}').join(_esc(v.target || 'them'))
+    + '</p>'
     + '<div class="nt-vellum"><p>' + (v.mode === 'note'
       ? 'You are being offered the chance to become a Traitor. If you accept, come to the turret tonight and join us. Destroy this note.'
       : 'I am a Traitor. You must become a Traitor and join us in the turret. If you refuse, you will not return to breakfast.')

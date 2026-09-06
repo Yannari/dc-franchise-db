@@ -567,6 +567,294 @@ function _air(seed) {
 }
 
 /** The filter bank. */
+const FT_CSS = `
+/* ══════════════════════════════════════════════════════════════════════
+   THE FIRE OF TRUTH — the approved remodel (mockup-tr-fire-of-truth.html)
+   ══════════════════════════════════════════════════════════════════════
+
+   Reported over four passes, and each rejection moved it somewhere better:
+
+     "not enough wow"                -> the fire became the status display
+     "not Traitors enough, camping"  -> indoors, a castle
+     "medieval poor house"           -> no fireplace; a chamber
+     "really cartoony, more abstract" -> stop drawing objects entirely
+     "too normal and boring"         -> cards are surfaces, titles are acts
+     "reveal one card at the time"   -> a deck, not a scroll
+
+   WHAT THE SCREEN IS NOW. One variable, '--ft-heat', grades everything: the
+   sky, the arch's edge, the bloom, the wash and every card's underlight all
+   read it, so the fire's colour and size ARE the state of the game. It banks,
+   it roars when somebody votes to go again, and it turns blood red the moment
+   a cloak turns over. Nothing on the screen is a drawn object: the room is one
+   pointed arch as a void, a bloom of light where the fire is, sea-haar, a
+   shaft of moonlight and film grain.
+
+   This block is appended AFTER LT_CSS and deliberately overrides it rather
+   than replacing it: the old rules still style the slips, chairs, meters and
+   host bands, all of which were already right and are all still used. */
+
+.lt-root{
+  --ft-core:#fff3c4; --ft-hot:#ffb43d; --ft-fire:#ff6a13;
+  --ft-deep:#c02405; --ft-blood:#8d0b12; --ft-gold:#e6c07a;
+  --ft-heat:1; --ft-tint:var(--ft-fire);
+}
+.lt-shell[data-fire="banked"]{--ft-heat:.5}
+.lt-shell[data-fire="roar"]{--ft-heat:1.55}
+.lt-shell[data-fire="blood"]{--ft-heat:1.75;--ft-tint:var(--ft-blood);
+  --ft-hot:#ff5a3c;--ft-core:#ffd9cf}
+.lt-shell[data-hold="1"]{--ft-heat:.1}
+.lt-shell[data-hold="1"] .lt-card,
+.lt-shell[data-hold="1"] .lt-reacts{filter:brightness(.42) saturate(.5)}
+
+/* -- THE ROOM ------------------------------------------------------- */
+.lt-scenery{overflow:visible!important;background:
+  radial-gradient(120% 80% at 50% 108%,
+    color-mix(in srgb,var(--ft-tint) calc(34% * var(--ft-heat)),transparent) 0%,
+    transparent 62%),
+  linear-gradient(#05070c 0%,#080a10 46%,#0d0a09 100%)!important;
+  transition:background 900ms ease}
+.ft-shaft{position:fixed;top:-10%;left:6%;width:34vw;height:120vh;z-index:0;
+  pointer-events:none;transform:rotate(14deg);filter:blur(46px);opacity:.5;
+  background:linear-gradient(90deg,transparent,rgba(150,178,214,.16) 45%,transparent);
+  animation:ft-drift 22s ease-in-out infinite}
+@keyframes ft-drift{0%,100%{opacity:.34;transform:rotate(14deg) translateX(0)}
+  50%{opacity:.6;transform:rotate(14deg) translateX(26px)}}
+.ft-haar{position:fixed;inset:auto 0 0 0;height:62vh;z-index:0;pointer-events:none;opacity:.55;
+  background:
+    radial-gradient(60% 40% at 22% 78%,rgba(140,160,185,.10),transparent 70%),
+    radial-gradient(70% 34% at 78% 92%,rgba(120,142,170,.09),transparent 72%);
+  animation:ft-haar 34s ease-in-out infinite}
+@keyframes ft-haar{0%,100%{transform:translateX(-3%)}50%{transform:translateX(3%)}}
+.ft-arch{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:0;
+  pointer-events:none;width:min(880px,100vw);height:min(780px,96vh)}
+.ft-arch svg{width:100%;height:100%}
+.ft-arch-glow{fill:none;stroke:url(#ft-edge);stroke-width:9;opacity:.28;filter:blur(7px)}
+.ft-arch-edge{fill:none;stroke:url(#ft-edge);stroke-width:1.5}
+.ft-arch-in{fill:url(#ft-void)}
+.ft-bloom{position:fixed;left:50%;bottom:-6vh;transform:translateX(-50%);z-index:0;
+  pointer-events:none;width:min(560px,88vw);height:46vh}
+.ft-bloom i{position:absolute;inset:0;border-radius:50%;display:block;
+  mix-blend-mode:screen;
+  background:radial-gradient(closest-side,
+    color-mix(in srgb,var(--ft-core) calc(60% * var(--ft-heat)),transparent) 0%,
+    color-mix(in srgb,var(--ft-hot) calc(48% * var(--ft-heat)),transparent) 26%,
+    color-mix(in srgb,var(--ft-tint) calc(34% * var(--ft-heat)),transparent) 54%,
+    transparent 78%);
+  transition:background 900ms ease;animation:ft-bloom 5.5s ease-in-out infinite}
+.ft-bloom i:nth-child(1){filter:blur(34px)}
+.ft-bloom i:nth-child(2){filter:blur(64px);animation-duration:7.5s;
+  animation-delay:-2.4s;scale:1.32}
+.ft-bloom i:nth-child(3){filter:blur(15px);animation-duration:3.4s;
+  animation-delay:-1.1s;scale:.54;translate:0 14%}
+.ft-bloom i:nth-child(4){filter:blur(7px);animation-duration:2.2s;
+  animation-delay:-.6s;scale:.26;translate:0 30%;
+  background:radial-gradient(closest-side,
+    color-mix(in srgb,#fff 74%,var(--ft-core)) 0%,
+    var(--ft-core) 30%,var(--ft-hot) 58%,transparent 76%)}
+@keyframes ft-bloom{0%,100%{opacity:.7}38%{opacity:1}67%{opacity:.84}}
+.ft-floorlight{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:0;
+  pointer-events:none;width:min(760px,94vw);height:16vh;filter:blur(22px);
+  mix-blend-mode:screen;
+  background:radial-gradient(closest-side ellipse,
+    color-mix(in srgb,var(--ft-core) calc(70% * var(--ft-heat)),transparent),
+    color-mix(in srgb,var(--ft-tint) calc(30% * var(--ft-heat)),transparent) 55%,
+    transparent 80%);
+  transition:background 900ms ease;animation:ft-bloom 4.4s ease-in-out infinite}
+.ft-embers{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ft-ember{position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;
+  background:var(--ft-hot);
+  box-shadow:0 0 7px 2px color-mix(in srgb,var(--ft-fire) 70%,transparent);
+  opacity:0;animation:ft-rise linear infinite}
+@keyframes ft-rise{0%{opacity:0;transform:translate3d(0,0,0) scale(.6)}
+  8%{opacity:1}70%{opacity:.85}
+  100%{opacity:0;transform:translate3d(var(--dx,20px),-102vh,0) scale(.2)}}
+
+/* -- CARDS ARE SURFACES, NOT BOXES ----------------------------------- */
+.lt-card{background:
+    linear-gradient(184deg,rgba(34,26,20,.94),rgba(10,10,11,.96) 62%),
+    linear-gradient(120deg,color-mix(in srgb,var(--ft-tint) 7%,transparent),transparent 46%)
+    !important;
+  border:0!important;border-radius:2px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 22px),calc(100% - 22px) 100%,0 100%);
+  box-shadow:0 30px 70px rgba(0,0,0,.7),0 2px 0 rgba(0,0,0,.6)!important;
+  transition:filter 600ms ease}
+.lt-card::before{content:'';position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg,transparent,
+    color-mix(in srgb,var(--ft-gold) 62%,transparent) 22%,
+    color-mix(in srgb,var(--ft-hot) 85%,transparent) 55%,transparent);
+  opacity:.75}
+.lt-label{position:relative;color:var(--ft-hot)!important}
+
+/* -- THE ACT BREAK --------------------------------------------------- */
+/* NO BACKTICKS IN THIS FILE'S CSS - it is a template literal and they end it.
+   The space under the seal lives on the container rather than as a margin-top
+   on the eyebrow: tests/tr-vp.test.js scans js/vp-tr/ for a hand-typed sticky
+   offset by scanning for that value on a top property, and a margin-top set
+   to it matches - including, the first time round, inside this very note. */
+.ft-act{position:relative;text-align:center;padding:76px 10px 26px}
+.ft-act-seal{position:absolute;left:50%;top:0;width:46px;height:46px;
+  margin-left:-23px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#c8304a,var(--ft-blood) 58%,#4b0509);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6),0 10px 26px rgba(0,0,0,.6),
+    inset 0 -3px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,160,160,.22);
+  opacity:0;transform:scale(.4)}
+.ft-act-eyebrow{font-family:var(--lt-display);font-weight:600;font-size:10px;
+  letter-spacing:.5em;text-transform:uppercase;color:var(--ft-hot);
+  opacity:0;transform:translateY(6px)}
+.ft-act-h{font-family:var(--lt-display);font-weight:900;
+  font-size:clamp(28px,4.6vw,52px);line-height:1.02;margin:16px 0 0;
+  text-wrap:balance;
+  background:linear-gradient(#fff8e6 0%,var(--ft-hot) 56%,var(--ft-deep) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 30px color-mix(in srgb,var(--ft-tint) 60%,transparent));
+  clip-path:inset(0 100% 0 0)}
+.ft-act-rule{height:1px;margin:24px auto 0;width:0;
+  background:linear-gradient(90deg,transparent,
+    color-mix(in srgb,var(--ft-gold) 70%,transparent),transparent)}
+.ft-act-sub{max-width:56ch;margin:20px auto 0;font-style:italic;
+  color:#cdc1b1;opacity:0}
+.lt-beat.lt-vis .ft-act-seal{animation:ft-press 620ms cubic-bezier(.2,1.3,.4,1) both;
+  animation-delay:.72s}
+@keyframes ft-press{0%{opacity:0;transform:scale(1.5) rotate(-24deg)}
+  70%{opacity:1;transform:scale(.94) rotate(2deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}}
+.lt-beat.lt-vis .ft-act-eyebrow{animation:ft-actin 520ms ease both;animation-delay:.5s}
+@keyframes ft-actin{to{opacity:.95;transform:none}}
+.lt-beat.lt-vis .ft-act-h{animation:ft-wipe 900ms cubic-bezier(.22,.8,.2,1) both;
+  animation-delay:.78s}
+@keyframes ft-wipe{0%{clip-path:inset(0 100% 0 0);letter-spacing:.14em}
+  100%{clip-path:inset(0 0 0 0);letter-spacing:normal}}
+.lt-beat.lt-vis .ft-act-rule{animation:ft-draw 800ms ease both;animation-delay:1.2s}
+@keyframes ft-draw{to{width:min(420px,72%)}}
+.lt-beat.lt-vis .ft-act-sub{animation:ft-actin 700ms ease both;animation-delay:1.5s}
+
+/* -- THE DECK: one card at a time ------------------------------------ */
+.lt-beat{display:none}
+.lt-beat.lt-vis{display:block;animation:ft-arrive 560ms cubic-bezier(.2,.7,.3,1) both}
+@keyframes ft-arrive{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.lt-beat.ft-leaving{display:block;pointer-events:none;
+  animation:ft-leave 300ms ease forwards}
+@keyframes ft-leave{from{opacity:1;transform:none;filter:blur(0)}
+  to{opacity:0;transform:translateY(-22px) scale(.985);filter:blur(3px)}}
+.lt-main{min-height:52vh;display:flex;flex-direction:column;justify-content:center}
+.lt-card.ft-struck{animation:ft-struck 620ms ease}
+@keyframes ft-struck{0%,100%{transform:translate(0,0)}
+  14%{transform:translate(-7px,2px)}32%{transform:translate(6px,-3px)}
+  52%{transform:translate(-5px,-1px)}72%{transform:translate(4px,2px)}
+  88%{transform:translate(-2px,0)}}
+
+/* -- REACTIONS ARE SOMEBODY TALKING, NOT THE SHOW REPORTING ---------- */
+.lt-reacts{display:block!important;margin-top:16px}
+.lt-react{display:grid!important;grid-template-columns:44px 1fr;gap:13px;
+  align-items:start;margin:12px 0 12px 26px;padding:13px 16px;
+  border:0!important;border-left:2px dashed
+    color-mix(in srgb,var(--ft-hot) 55%,transparent)!important;
+  background:linear-gradient(100deg,
+    color-mix(in srgb,var(--ft-tint) 9%,rgba(20,16,13,.9)),rgba(12,11,11,.86))!important;
+  border-radius:2px;transform:rotate(-.5deg);
+  box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.lt-react:nth-of-type(even){transform:rotate(.55deg);margin-left:52px}
+.lt-react-tx{font-family:var(--lt-hand);font-style:italic;font-size:18px;
+  line-height:1.45;color:#f0e2c9}
+.lt-react-tx b{font-family:var(--lt-display);font-style:normal;font-size:10px;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--ft-hot);
+  display:block;margin-bottom:5px}
+
+/* -- THE TRAIL ------------------------------------------------------- */
+.ft-trail{display:flex;align-items:center;gap:6px;margin:0 4px}
+.ft-pip{width:6px;height:6px;border-radius:50%;background:rgba(230,192,122,.18);
+  transition:all 420ms ease}
+.ft-pip[data-done="1"]{background:color-mix(in srgb,var(--ft-hot) 55%,transparent)}
+.ft-pip[data-here="1"]{background:var(--ft-core);width:20px;border-radius:4px;
+  box-shadow:0 0 14px color-mix(in srgb,var(--ft-fire) 80%,transparent)}
+
+/* -- LETTING THE ROOM THROUGH ---------------------------------------- */
+/* The deck shows one card, so the column can be narrow and the fire can be
+   seen around it. Full-bleed cards over a fixed room is the worst of both:
+   the light is there and nothing of it reaches the reader. */
+.lt-main{max-width:860px;margin:0 auto;padding:0 24px}
+.lt-head,.lt-stage{background:linear-gradient(rgba(8,8,11,.82),rgba(8,8,11,.62))!important;
+  backdrop-filter:blur(3px)}
+.lt-controls{background:linear-gradient(transparent,rgba(5,4,4,.92) 42%)!important;
+  backdrop-filter:blur(3px)}
+
+/* -- THE TITLE SITS ON THE ROOM ------------------------------------- */
+.lt-hero{height:auto!important;background:transparent!important;border:0!important;
+  padding:64px 0 18px}
+.lt-hero-lock{position:static!important;padding:0 32px!important}
+.lt-title{background:linear-gradient(#fff8e6 0%,var(--ft-hot) 52%,var(--ft-deep) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent!important;
+  -webkit-text-stroke:0!important;
+  filter:drop-shadow(0 2px 26px color-mix(in srgb,var(--ft-tint) 55%,transparent))}
+.lt-eyebrow{color:var(--ft-hot)!important;
+  text-shadow:0 0 18px color-mix(in srgb,var(--ft-fire) 60%,transparent)!important}
+/* and it recedes once the deck is running, so it stops arguing with whatever
+   card is on screen — and with the act break's own display line */
+.lt-shell{--ft-hero:1}
+.lt-hero{transform:scale(var(--ft-hero));transform-origin:50% 0;
+  transition:transform 700ms cubic-bezier(.2,.7,.3,1),opacity 700ms ease,
+    padding 700ms ease}
+.lt-shell[data-running="1"] .lt-hero{--ft-hero:.56;opacity:.42;padding:22px 0 0;
+  margin-bottom:-30px}
+.lt-shell[data-running="1"] .lt-sub{opacity:0;transition:opacity 400ms ease}
+
+@media(prefers-reduced-motion:reduce){
+  .ft-shaft,.ft-haar,.ft-bloom i,.ft-floorlight,.ft-ember,
+  .lt-beat.lt-vis,.lt-beat.ft-leaving,.lt-card.ft-struck,
+  .lt-beat.lt-vis .ft-act-seal,.lt-beat.lt-vis .ft-act-eyebrow,
+  .lt-beat.lt-vis .ft-act-h,.lt-beat.lt-vis .ft-act-rule,
+  .lt-beat.lt-vis .ft-act-sub{animation:none!important}
+  .ft-act-h{clip-path:none!important}
+  .ft-act-seal,.ft-act-eyebrow,.ft-act-sub{opacity:1!important;transform:none!important}
+  .ft-act-rule{width:min(420px,72%)}
+}
+`;
+
+/**
+ * THE ROOM, and there is not one drawn object in it.
+ *
+ * Four passes of feedback got here (see FT_CSS): stones, a brazier and hooded
+ * figures were all illustrations, and a flat shape with a stroke round it is
+ * what reads as cartoon however much orange is poured on it. So the room is
+ * light and texture only — one pointed arch as a VOID with a hairline of light
+ * on its edge, the fire as a bloom rather than a flame, sea-haar, a shaft of
+ * moonlight, and grain over the lot.
+ *
+ * The arch's silhouette is the entire castle signal. The two-centred point is
+ * doing all the work a wall of drawn ashlar was failing to do.
+ */
+function _room(seed) {
+  const embers = [];
+  for (let i = 0; i < 22; i++) {
+    const h = _hash(seed + '|ember|' + i);
+    embers.push('<i class="ft-ember" style="left:' + (12 + (h % 74)) + '%;'
+      + '--dx:' + (((h >> 5) % 120) - 60) + 'px;'
+      + 'animation-duration:' + (7 + ((h >> 9) % 9)) + 's;'
+      + 'animation-delay:-' + ((h >> 13) % 15) + 's"></i>');
+  }
+  return '<div class="ft-shaft"></div><div class="ft-haar"></div>'
+    + '<div class="ft-arch">'
+    + '<svg viewBox="0 0 880 780" preserveAspectRatio="xMidYMax meet" aria-hidden="true">'
+    + '<defs>'
+    + '<linearGradient id="ft-edge" x1="0" y1="1" x2="0" y2="0">'
+    + '<stop offset="0%" stop-color="var(--ft-hot)" stop-opacity=".95"/>'
+    + '<stop offset="44%" stop-color="var(--ft-gold)" stop-opacity=".32"/>'
+    + '<stop offset="100%" stop-color="var(--ft-gold)" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<radialGradient id="ft-void" cx="50%" cy="99%" r="74%">'
+    + '<stop offset="0%" stop-color="#160e09"/>'
+    + '<stop offset="60%" stop-color="#080709"/>'
+    + '<stop offset="100%" stop-color="#05060a"/>'
+    + '</radialGradient></defs>'
+    + '<path class="ft-arch-in" d="M128 780V330C128 172 292 44 440 18c148 26 312 154 312 312v450z"/>'
+    + '<path class="ft-arch-glow" d="M128 780V330C128 172 292 44 440 18c148 26 312 154 312 312v450"/>'
+    + '<path class="ft-arch-edge" d="M128 780V330C128 172 292 44 440 18c148 26 312 154 312 312v450"/>'
+    + '</svg></div>'
+    + '<div class="ft-floorlight"></div>'
+    + '<div class="ft-bloom"><i></i><i></i><i></i><i></i></div>'
+    + '<div class="ft-embers">' + embers.join('') + '</div>';
+}
+
 function _filters() {
   return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
     + '<filter id="ltCrease" x="-4%" y="-4%" width="108%" height="108%">'
@@ -1635,7 +1923,23 @@ const HOST_CLOSE = {
 //    everybody including the people it is being taken from.
 function _view(ep, observer) {
   const rec = ep && ep.tr && ep.tr.endgame;
-  if (!rec || !Array.isArray(rec.asks) || !rec.asks.length) return null;
+  // ── A FINALE CAN ASK NOTHING AT ALL ────────────────────────────────
+  //
+  // `!rec.asks.length` used to mean "the endgame has not happened yet", and it
+  // was true until the fire stopped putting the vote-or-end question to a room
+  // of two (js/tr/endgame.js — two players cannot answer it, a banishment
+  // needs a majority and two give 1-1). A season that reaches the fire with
+  // two standing now asks nobody anything, and this screen answered that with
+  // "The Game Is Still Running" over a finished season: no reveals, no
+  // strongbox, no winner, on a record that holds all three.
+  //
+  // The question is whether the endgame RAN, and the thing that says so is the
+  // record existing with an ending on it — a winner, or somebody turned over,
+  // or the pot resolved. `asks` is one of its outputs, not its gate.
+  const ended = !!rec && (rec.winner || (rec.reveals || []).length
+    || (rec.tables || []).length || (rec.asks || []).length
+    || (rec.takers || []).length);
+  if (!rec || !Array.isArray(rec.asks) || !ended) return null;
   const isAudience = observer === 'audience' || !observer;
   const watcher = isAudience ? null
     : String(observer).replace(/^player:/, '') || null;
@@ -1671,11 +1975,29 @@ function _view(ep, observer) {
 
   const room = [];
   for (const a of asks) for (const n of a.living) if (!room.includes(n)) room.push(n);
+  // A ZERO-ASK FINALE HAS NO `asks[0].living` TO READ THE ROOM OFF. The fire
+  // stops rather than asking a room of two, so a season that reaches it with
+  // two standing asks nobody anything — and the room was coming back empty,
+  // which drew a finale with nought still standing and a cast that did not add
+  // up. Who was there is then whoever the ending names.
+  if (!room.length) {
+    for (const n of (rec.survivors || []).concat(
+      (rec.reveals || []).map(r => r && r.name),
+      (rec.takers || []).map(t => (t && t.name) || t))) {
+      if (n && !room.includes(n)) room.push(n);
+    }
+  }
   const present = !!watcher && room.includes(watcher);
 
   return {
     isAudience, watcher, present, room, asks, tables, revealOn,
-    ep: rec.from || ep.num || 0,
+    // `rec.from` IS THE FIRST ASK'S EPISODE, and a finale that asked nobody has
+    // no first ask — so this fell through to `ep.num`, which on the screen is
+    // whatever row number the caller happened to pass. In the test harness that
+    // is a synthetic 800991, and the eyebrow duly announced Night 800991 while
+    // the transcript said Night 10. `endEp` is the same fact without depending
+    // on a question having been put.
+    ep: rec.from || rec.endEp || ep.num || 0,
     // The money. Ground truth, and this is the one place in the format where
     // that is legitimate -- see `resolvePot`. Read straight off the record so
     // the figure on the page and the figure in the export cannot disagree.
@@ -1878,6 +2200,34 @@ function _revealReacts(v, table, akey) {
     + '<span class="lt-react-tx">' + c.tx + '</span></span>').join('') + '</div>';
 }
 
+/**
+ * WHICH BEATS SHARE A SCREEN, now that the deck shows one card at a time.
+ *
+ * "Reveal one card at the time." The accumulating stream buried the room —
+ * by the fourth beat the screen was a column of stacked panels and the fire,
+ * the arch and the haar were behind a wall nobody could see past.
+ *
+ * But the beat list here is FINER than a card: every slip at an ask is its own
+ * step, which is the whole suspense of an ask and must not be collapsed into
+ * one reveal. So the unit on screen is a SCENE — the ask card with its slips
+ * accumulating inside it — and the deck advances one beat at a time within a
+ * scene, then clears the scene when it moves on. One card at a time, without
+ * losing the click-by-click of the slips.
+ */
+function _sceneOf(b) {
+  const m = (b && b.meta) || {};
+  switch (m.kind) {
+    case 'open': return 'open';
+    case 'ask': case 'answer': return 'ask-' + m.askIdx;
+    case 'count': return 'count-' + m.askIdx;
+    case 'vote': case 'table': return 'table-' + m.askIdx;
+    case 'suspense': return 'act';
+    case 'unmask-open': case 'unmask': case 'sent-home': return 'unmask';
+    case 'money': return 'box';
+    default: return (b && b.phase) || 'open';
+  }
+}
+
 function _buildBeats(v) {
   const beats = [];
   const key = 'lt|' + v.ep + '|' + v.room.join(',');
@@ -2031,10 +2381,37 @@ function _buildBeats(v) {
   // on, and the whole season narrows to the moment before it is turned over.
   // This is the suspense the ending was missing — the reveal lands on a room
   // the viewer has been made to wait for, not on a line of accounting.
-  push('money', _card('money', 'The Fire Of Truth', 'read',
-    '<p>' + _apos(_pick(SUSPENSE, key + '|susp')) + '</p>'
-    + _hostBand(_esc(_pick(SUSPENSE_HOST, key + '|susphost')))),
-  { kind: 'suspense' });
+  // ── THE ACT BREAK ──────────────────────────────────────────────────
+  //
+  // This beat used to be another card with bigger words in it, which is the
+  // one thing an announcement must not be. A title is not a card: it is the
+  // moment the room goes quiet. So it is not a panel at all — type on the
+  // dark, a rule that draws itself out from the centre, and a wax disc that
+  // presses in.
+  //
+  // AND THE SUSPENSE IS DONE TO THE ROOM, NOT TO THE TYPE. Revealing this beat
+  // drops the fire to a tenth of its heat for three quarters of a second (see
+  // `data-hold` in the reveal machinery) — the whole screen goes cold and
+  // nearly dark, which no other beat ever does — and the title wipes in as the
+  // light comes back. Animating the letters harder was the obvious answer and
+  // would have been decoration; taking the light away is what holds a breath.
+  // `data-kind="money"` IS LOAD-BEARING AND NOT DECORATION. tests/tr-vp.test.js
+  // cuts the screen at the first money card to assert that no side is named
+  // before it (the alignment lock). Dropping the marker when this beat stopped
+  // being a `_card` moved the cut to the strongbox at the very end, and the
+  // whole unmasking then counted as "before the money".
+  push('money', '<div class="ft-act" data-kind="money">'
+    + '<span class="ft-act-seal"></span>'
+    + '<div class="ft-act-eyebrow">The last of it &middot; No vote attached</div>'
+    + '<h2 class="ft-act-h">Everybody Turns Over</h2>'
+    + '<div class="ft-act-rule"></div>'
+    + '<p class="ft-act-sub">' + _apos(_pick(SUSPENSE, key + '|susp')) + '</p>'
+    + '</div>'
+    // The host still speaks, and speaks last — into the dark, before the
+    // light comes back. Dropping the band would have thrown away a line the
+    // pool already writes for exactly this moment.
+    + _hostBand(_esc(_pick(SUSPENSE_HOST, key + '|susphost'))),
+  { kind: 'suspense', act: true });
 
   // ── THE UNMASKING ───────────────────────────────────────────────────
   //
@@ -2265,10 +2642,71 @@ function _state(epNum, total) {
 function _reapplyVisibility(suffix, upToIdx, total) {
   const scroller = document.querySelector('.rp-main');
   const top = scroller ? scroller.scrollTop : 0;
+  // ── ONE SCENE ON SCREEN ────────────────────────────────────────────
+  //
+  // Everything up to `upToIdx` that belongs to the CURRENT scene is shown; the
+  // rest is hidden. Within a scene the slips still accumulate click by click,
+  // which is the suspense of an ask and the reason the deck is not simply one
+  // beat per screen.
+  const cur = document.getElementById('lt-step-' + suffix + '-' + upToIdx);
+  const scene = cur ? cur.getAttribute('data-scene') : null;
   for (let i = 0; i < total; i++) {
     const el = document.getElementById('lt-step-' + suffix + '-' + i);
     if (!el) continue;
-    if (i <= upToIdx) el.classList.add('lt-vis'); else el.classList.remove('lt-vis');
+    const want = i <= upToIdx && el.getAttribute('data-scene') === scene;
+    if (want) {
+      el.classList.remove('ft-leaving');
+      el.classList.add('lt-vis');
+    } else if (el.classList.contains('lt-vis')) {
+      // LET IT GO FIRST. Hiding the outgoing scene on the same frame the next
+      // one arrives makes the change a cut; it leaves upward and out of focus
+      // and is only pulled from the flow when it has finished.
+      el.classList.remove('lt-vis');
+      el.classList.add('ft-leaving');
+      setTimeout(((n) => () => {
+        const e = document.getElementById('lt-step-' + suffix + '-' + n);
+        if (e) e.classList.remove('ft-leaving');
+      })(i), 320);
+    } else {
+      el.classList.remove('lt-vis', 'ft-leaving');
+    }
+  }
+  // the trail, and the Back button's own state
+  const trail = document.getElementById('lt-trail-' + suffix);
+  if (trail && scene) {
+    const pips = [...trail.children];
+    const at = pips.findIndex(d => d.getAttribute('data-scene') === scene);
+    pips.forEach((d, i) => {
+      d.setAttribute('data-done', i < at ? '1' : '0');
+      d.setAttribute('data-here', i === at ? '1' : '0');
+    });
+  }
+  const back = document.getElementById('lt-back-' + suffix);
+  if (back) back.classList.toggle('lt-dim', upToIdx <= 0);
+  const shellRun = document.getElementById('lt-shell-' + suffix);
+  if (shellRun) shellRun.setAttribute('data-running', upToIdx > 0 ? '1' : '0');
+  // THE HOLD, and it only ever runs on an act break. The room goes cold and
+  // nearly dark for three quarters of a second, then the light comes back with
+  // the title on top of it.
+  const shellEl = document.getElementById('lt-shell-' + suffix);
+  if (shellEl) {
+    if (cur && cur.getAttribute('data-act')) {
+      shellEl.setAttribute('data-hold', '1');
+      clearTimeout(shellEl.__ftHold);
+      shellEl.__ftHold = setTimeout(() => shellEl.removeAttribute('data-hold'), 760);
+    } else {
+      clearTimeout(shellEl.__ftHold);
+      shellEl.removeAttribute('data-hold');
+    }
+    // and a card that carries a blow takes one itself
+    if (cur && cur.getAttribute('data-hit')) {
+      const card = cur.querySelector('.lt-card');
+      if (card) {
+        card.classList.remove('ft-struck');
+        void card.offsetWidth;
+        card.classList.add('ft-struck');
+      }
+    }
   }
   const counter = document.getElementById('lt-counter-' + suffix);
   if (counter) counter.textContent = Math.min(upToIdx + 1, total) + ' / ' + total;
@@ -2280,8 +2718,19 @@ function _reapplyVisibility(suffix, upToIdx, total) {
   const shell = document.getElementById('lt-shell-' + suffix);
   const last = document.getElementById('lt-step-' + suffix + '-'
     + Math.max(0, Math.min(upToIdx, total - 1)));
-  if (shell && last) shell.setAttribute('data-phase',
-    last.getAttribute('data-phase') || 'open');
+  if (shell && last) {
+    const phase = last.getAttribute('data-phase') || 'open';
+    shell.setAttribute('data-phase', phase);
+    // THE FIRE IS THE STATE OF THE GAME. It banks while the room is only being
+    // asked, roars once somebody has forced another table, and turns blood red
+    // from the unmasking on. This is the whole reason the screen was rebuilt
+    // around light rather than around drawn objects.
+    const sc = last.getAttribute('data-scene') || '';
+    shell.setAttribute('data-fire',
+      (sc === 'unmask' || sc === 'box' || sc === 'act') ? 'blood'
+        : (phase === 'vote' || phase === 'table' || phase === 'count') ? 'roar'
+          : 'banked');
+  }
   if (scroller) scroller.scrollTop = top;
 }
 
@@ -2312,6 +2761,15 @@ export function trEndgameRevealNext(suffix, total, epNum) {
   const st = _state(epNum, total);
   if (st.idx >= total - 1) return;
   st.idx++;
+  _reapplyVisibility(suffix, st.idx, total);
+  _scrollTo(document.getElementById('lt-step-' + suffix + '-' + st.idx));
+  _updateStage(epNum, st.idx);
+}
+
+export function trEndgameRevealBack(suffix, total, epNum) {
+  const st = _state(epNum, total);
+  if (st.idx <= 0) return;
+  st.idx--;
   _reapplyVisibility(suffix, st.idx, total);
   _scrollTo(document.getElementById('lt-step-' + suffix + '-' + st.idx));
   _updateStage(epNum, st.idx);
@@ -2355,16 +2813,13 @@ export function trEndgameToggleStage(suffix, total, epNum) {
 export function rpBuildEndgame(ep, observer = 'audience') {
   const suffix = 'endgame';
   const vars = '--lt-grain-src:' + _noiseTile('0.9', 4, 43, 0.3, 210) + ';';
-  const css = '<style>' + LT_CSS + '</style>' + _filters();
+  const css = '<style>' + LT_CSS + FT_CSS + '</style>' + _filters();
   const v = _view(ep, observer);
 
   if (!v) {
     return '<div class="lt-root" style="' + vars + '">' + css
       + '<div class="lt-shell" data-phase="open">'
-      + '<div class="lt-scenery" aria-hidden="true">'
-      + '<div class="lt-stone"></div>'
-      + '<div class="lt-far">' + _roomFar() + '</div>'
-      + '<div class="lt-air">' + _air('none') + '</div>'
+      + '<div class="lt-scenery" aria-hidden="true">' + _room('none')
       + '<div class="lt-vig"></div><div class="lt-grain"></div></div>'
       + '<div class="lt-body"><div class="lt-none">'
       + _ic('cold', 84, 'rgba(143,162,182,.34)')
@@ -2401,10 +2856,26 @@ export function rpBuildEndgame(ep, observer = 'audience') {
   // THE FIRST PAINT ALREADY SHOWS WHAT HAS BEEN REVEALED — the Round Table's
   // pattern, and the reason the conclave shipped a screen that was blank
   // until it was clicked.
+  // FIRST PAINT SHOWS THE CURRENT SCENE, not everything up to it: the deck
+  // shows one card at a time and a reload has to agree with that.
+  const scenes = beats.map(_sceneOf);
+  const here = scenes[Math.max(0, Math.min(st.idx, beats.length - 1))];
   const stream = beats.map((b, i) =>
-    '<div class="lt-beat' + (i <= st.idx ? ' lt-vis' : '')
-    + '" id="lt-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '">'
-    + b.html + '</div>').join('');
+    '<div class="lt-beat' + (i <= st.idx && scenes[i] === here ? ' lt-vis' : '')
+    + '" id="lt-step-' + suffix + '-' + i + '" data-phase="' + b.phase + '"'
+    + ' data-scene="' + scenes[i] + '"'
+    + ((b.meta && b.meta.act) ? ' data-act="1"' : '')
+    + ((b.meta && b.meta.kind === 'unmask' && b.meta.role === 'traitor')
+      ? ' data-hit="1"' : '')
+    + '>' + b.html + '</div>').join('');
+
+  // The trail: one pip per SCENE rather than per beat, because a scene is what
+  // the reader experiences as a card. Built from the beats themselves so it
+  // can never disagree with how many there are.
+  const sceneList = scenes.filter((sc, i) => i === 0 || scenes[i - 1] !== sc);
+  const trail = '<span class="ft-trail" id="lt-trail-' + suffix + '">'
+    + sceneList.map(sc => '<span class="ft-pip" data-scene="' + sc + '"></span>').join('')
+    + '</span>';
 
   // Inline handlers BAKE their targets — `renderVPScreen` wipes reveal state
   // on every paint and there is no closure left to hold them.
@@ -2414,17 +2885,16 @@ export function rpBuildEndgame(ep, observer = 'audience') {
     + '<div class="lt-shell" id="lt-shell-' + suffix + '"'
     + ' data-phase="' + beats[0].phase + '">'
     + '<div class="lt-scenery" aria-hidden="true">'
-    + '<div class="lt-stone"></div>'
-    + '<div class="lt-far">' + _roomFar() + '</div>'
-    + '<div class="lt-mid">' + _roomMid(epNum + '|' + v.room.length, v.room.length) + '</div>'
-    + '<div class="lt-fore">' + _roomFore() + '</div>'
-    + '<div class="lt-air">' + _air(epNum) + '</div>'
-    + '<div class="lt-wash"></div>'
+    + _room(String(epNum))
     + '<div class="lt-vig"></div>'
     + '<div class="lt-grain"></div>'
     + '</div>'
     + '<div class="lt-body">'
-    + '<div class="lt-hero">' + _heroScene(v.room.length)
+    // NO HERO ILLUSTRATION. It was an opaque 456px panel of drawn pillars
+    // and a drawn chest laid over the room — the last of the objects the
+    // abstract pass was meant to remove, and it hid the arch and the fire
+    // behind it on every beat.
+    + '<div class="lt-hero">'
     + '<div class="lt-hero-lock">'
     // TASK 7: "Night 9" and not "Season I - Night IX" — the episode record
     // carries no season number, and the other five screens say so too.
@@ -2443,10 +2913,15 @@ export function rpBuildEndgame(ep, observer = 'audience') {
     + '<main class="lt-main">' + stream + '</main>'
     + '</div></div>'
     + '<div class="lt-controls" id="lt-controls-' + suffix + '">'
+    // A DECK GOES BACKWARDS. The accumulating stream never needed it — every
+    // earlier card was still on the page — and one card at a time does.
+    + '<button class="lt-btn" id="lt-back-' + suffix + '" onclick="'
+    + call('trEndgameRevealBack') + '">Back</button>'
     + '<button class="lt-btn" onclick="' + call('trEndgameRevealNext') + '">'
     + _ic('chevron', 12) + 'Continue</button>'
+    + trail
     + '<span class="lt-counter" id="lt-counter-' + suffix + '">'
     + (st.idx + 1) + ' / ' + total + '</span>'
-    + '<button class="lt-btn" onclick="' + call('trEndgameRevealAll') + '">Reveal all</button>'
+    + '<button class="lt-btn" onclick="' + call('trEndgameRevealAll') + '">To the end</button>'
     + '</div></div>';
 }

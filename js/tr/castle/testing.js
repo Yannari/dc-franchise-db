@@ -177,7 +177,7 @@ const OATH_LINES = {
     '{b} swore it, and then asked {a} to swear the same thing, which had not been the arrangement.',
     '{a} wanted an oath. {b} gave one and required one, and {a} had about two seconds to decide.',
     '{b} said yes and then turned it round: the same words, from {a}, out loud, now.',
-    'It stopped being a test of {b} the moment {b} asked {a} to take it too.',
+    '{b} agreed, but only if {a} swore the same thing back, which turned the whole conversation around.',
     '{b} agreed on one condition, and the condition was that {a} was in it as deep.',
     '{a} came away with an oath and a matching obligation and is not sure {a} came out ahead.',
     '{b} has been asked to prove things all week and decided tonight that it should go both ways.',
@@ -225,7 +225,7 @@ const REVERSE_PSYCH_LINES = {
     '{b} took the bait, ran with it, and by the end of it {a} was the one explaining themselves.',
     '{a} said something {a} did not mean and {b} agreed enthusiastically and asked what {a} planned to do about it.',
     '{b} answered the fake accusation with a real one, and {a} had walked into it.',
-    'It stopped being a test somewhere in the middle, and it was {b} who decided when.',
+    '{b} took control of the conversation about halfway through, and {a} did not get it back.',
     '{b} finished the conversation holding everything {a} had come in with, and {a} knew it.',
   ],
 };
@@ -253,7 +253,7 @@ const HYPOTHETICAL_LINES = {
     '{b} recognised the shape of the question and handed it straight back across the table.',
     '{a} ended the conversation having answered more of it than {b} had.',
     '{b} would not be measured without measuring {a} at the same time, and said so pleasantly.',
-    'It stopped being a test about halfway through and turned into two people testing each other.',
+    '{b} started testing {a} right back about halfway through, and by the end neither of them was sure who learned more.',
   ],
   'made-a-condition': [
     '{b} said yes, and then said what it would take, and {a} had not expected a price.',
@@ -377,12 +377,12 @@ const COLD_READ_LINES = {
     '{b} gave {a} a completely ordinary reaction and {a} decided it was not one.',
   ],
   'said-it-aloud': [
-    '{a} did the read on {b} about {c} and then, rather than keep it, told {b} what {a} had just done.',
-    '"I was watching you, just then," {a} admitted, which is not how this is supposed to work.',
+    '{a} brought up {c} to see how {b} reacted, and then admitted that was why {a} had brought {c} up.',
+    '"I was watching you, just then," {a} admitted, which surprised {b} more than the test itself had.',
     '{a} got the information and immediately handed it back, because {a} could not do the other thing to {b}.',
     '{a} explained the trick to {b} halfway through performing it, and both of them found that funny.',
     '{a} said {c}’s name to read {b} and then told {b} that was why, and {b} respected it.',
-    'It stopped being a test the moment {a} said out loud that it was one, and {a} said so on purpose.',
+    '{a} told {b} what the conversation had really been about, deliberately, and {b} took that as a sign of trust.',
   ],
   'kept-it': [
     '{a} read {b} on {c}, got a clear answer, and gave {b} absolutely nothing back.',

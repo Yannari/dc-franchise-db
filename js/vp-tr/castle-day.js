@@ -1837,7 +1837,7 @@ const CONSEQ_TESTING = {
   spotted: [
     '{topic} worked out {other} was running a test, which means the test is over and {topic} knows who set it.',
     '{other} set out to read {topic} and {topic} read the room instead. Now {topic} knows exactly where {other} stands.',
-    'The test stopped being a test the moment {topic} named it. Whatever {other} learned, {topic} learned that {other} is watching.',
+    '{topic} called it out as a test to {other}\'s face. {other} got an answer, but {topic} now knows {other} was looking.',
     '{topic} turned the check back on {other}, and came away knowing more about {other} than {other} got about {topic}.',
     '{other} tried it once too plainly and {topic} caught it. There is no running that particular test on {topic} again.',
   ],

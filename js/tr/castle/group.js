@@ -478,7 +478,7 @@ const SAT_UP_LINES = {
   'nobody-wanted-to-go-up': [
     '{names} stayed downstairs long after there was any reason to, because upstairs is where it happens.',
     'The fire went out and all {n} of them were still in the room.',
-    'Nobody says it. Everybody knows that going to bed is the part where somebody is chosen.',
+    'Nobody says it. Going to bed is the part where somebody is chosen.',
     'They talked about nothing for two hours rather than be the first to stand up.',
     'It is the safest place in the castle and none of them would say why they are in it.',
     'Three people sitting in a cold room at one in the morning, being extremely casual.',

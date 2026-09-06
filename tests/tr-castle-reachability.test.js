@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(186);
+    expect(EVENTS.length).toBe(194);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -622,7 +622,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continue, so unlike an ordinary event none of them can open one.
     // 106 -> 109: the last three carry-on events, same as the five before
     // them — they exist only to continue a story and cannot open one.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(109);
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(117);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -724,11 +724,18 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       // with ONE advancer can continue a thread at most once every five
       // rounds; a second event in each of those five is what would move them
       // on, and is not written.
+      // 26 -> 22 (THE CONFRONTATION BATCH, 2026-09-06). This one moved the
+      // OTHER WAY, and that is the direction to want. The eight new events
+      // went into windows confrontation already occupied, so no cell left
+      // `zero`; four cells that held a single advancer now hold two, which is
+      // the count that matters against the five-episode pair cooldown — a
+      // thread living in a one-advancer cell can be picked up at most once
+      // every five rounds, and in a two-advancer cell it can alternate.
       // 23 -> 26: the three cells that left the zero list arrived here. Every
       // cell a debut season can reach now has AN advancer; none of the new
       // ones has two, so a thread opened in them is still continuable only
       // once every five rounds. That is the next thing to move, not this.
-      + 'living here can be advanced at most once every five rounds').toBe(26);
+      + 'living here can be advanced at most once every five rounds').toBe(22);
     // 24 -> 26 on 2026-09-05: two more cells reached two advancers when the
     // group events landed, which is the same movement as the `one` count
     // falling above and should be read with it.
@@ -742,7 +749,8 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // confrontation family was registered. `none` and `one` are unchanged,
     // which is what says a cell gained an advancer rather than the shape
     // of the grid moving underneath all three numbers.
-    expect(many, 'cells with two or more advancers').toBe(26);
+    // 26 -> 30: the four cells the confrontation batch lifted out of `one`.
+    expect(many, 'cells with two or more advancers').toBe(30);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -1708,14 +1716,26 @@ const BRANCHES = [
   'confront-about-the-vote:owned-it',
   'confront-about-the-vote:turned-it-on-them',
   'confront-about-the-vote:would-not-answer',
+  'confront-apology-refused:apologised-for-the-wrong-thing',
+  'confront-apology-refused:refused-it',
+  'confront-apology-refused:took-it-badly-and-then-took-it',
+  'confront-apology-refused:used-it',
   'confront-blamed-for-the-mission:blamed-them-back',
   'confront-blamed-for-the-mission:named-the-weak-link',
   'confront-blamed-for-the-mission:nobody-backed-it',
   'confront-blamed-for-the-mission:took-the-blame',
+  'confront-carried-it-home:dropped-it-at-the-gate',
+  'confront-carried-it-home:one-of-them-apologised',
+  'confront-carried-it-home:somebody-else-carried-it',
+  'confront-carried-it-home:still-going-inside',
   'confront-defend-the-accused:drew-fire',
   'confront-defend-the-accused:fell-flat',
   'confront-defend-the-accused:too-late',
   'confront-defend-the-accused:worked',
+  'confront-first-light:caught-them-alone',
+  'confront-first-light:it-turned-into-breakfast',
+  'confront-first-light:not-at-this-hour',
+  'confront-first-light:somebody-walked-in',
   'confront-in-the-corridor:cleared-the-air',
   'confront-in-the-corridor:made-it-worse',
   'confront-in-the-corridor:nobody-heard-it',
@@ -1744,10 +1764,30 @@ const BRANCHES = [
   'confront-the-broken-word:had-a-reason',
   'confront-the-broken-word:said-it-plainly',
   'confront-the-broken-word:threw-it-back',
+  'confront-the-empty-chair:defended-the-room',
+  'confront-the-empty-chair:nobody-said-anything',
+  'confront-the-empty-chair:we-got-it-wrong',
+  'confront-the-empty-chair:you-drove-it',
+  'confront-through-the-door:never-opened-it',
+  'confront-through-the-door:opened-it',
+  'confront-through-the-door:said-the-unsayable',
+  'confront-through-the-door:wrong-door',
   'confront-to-the-face:blew-up',
   'confront-to-the-face:cracked',
   'confront-to-the-face:held',
   'confront-to-the-face:turned',
+  'confront-waited-up:had-it-out',
+  'confront-waited-up:lost-their-nerve',
+  'confront-waited-up:they-were-ready-too',
+  'confront-waited-up:woke-the-corridor',
+  'confront-would-not-walk-with:called-out-for-it',
+  'confront-would-not-walk-with:closed-the-gap',
+  'confront-would-not-walk-with:dragged-others-in',
+  'confront-would-not-walk-with:made-it-obvious',
+  'confront-you-let-them-go:both-admitted-it',
+  'confront-you-let-them-go:said-nothing-at-all',
+  'confront-you-let-them-go:saved-themselves',
+  'confront-you-let-them-go:turned-it-on-the-accuser',
   'cover-alibi-crumbles:abandoned-it',
   'cover-alibi-crumbles:checked-against-somebody',
   'cover-alibi-crumbles:collapses',

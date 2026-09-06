@@ -636,6 +636,21 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE CONFRONTATION BATCH (confrontation.js, 2026-09-06) ──────────
+  //
+  // Eight events taking the thinnest family in the pool from 12 to 20,
+  // weighted into the three windows it held ONE event in. Classified by the
+  // SIGN OF THE BOND EACH BRANCH PAYS rather than by how the card reads: a
+  // scene can sound warm and still cost two points, and since `_tone` governs
+  // how the composer frames the consequence, the consequence is the honest
+  // key. Everything here is negative.
+  'called-out-for-it', 'caught-them-alone', 'defended-the-room',
+  'dragged-others-in', 'dropped-it-at-the-gate', 'had-it-out',
+  'made-it-obvious', 'never-opened-it', 'not-at-this-hour',
+  'said-nothing-at-all', 'said-the-unsayable', 'saved-themselves',
+  'somebody-else-carried-it', 'somebody-walked-in', 'still-going-inside',
+  'they-were-ready-too', 'turned-it-on-the-accuser', 'we-got-it-wrong',
+  'woke-the-corridor', 'wrong-door', 'you-drove-it',
   // ── THE LAST THREE REACHABLE CELLS (carry-on.js, 2026-09-06) ────────
   //
   // Being asked about an account where you cannot sit down, losing it to a
@@ -1058,6 +1073,16 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE NINE OF THE SAME EIGHT THAT PAY NOTHING OR PAY UP ───────
+  //
+  // An apology taken after being refused, two people admitting the same
+  // ugly thing, a door opened halfway through, a row that became breakfast,
+  // a snub walked straight at -- and the three that cost nothing because
+  // nothing happened: a nerve lost on a landing, a room that stayed quiet,
+  // an apology aimed at the wrong injury and accepted without warmth.
+  'apologised-for-the-wrong-thing', 'both-admitted-it', 'closed-the-gap',
+  'it-turned-into-breakfast', 'lost-their-nerve', 'nobody-said-anything',
+  'one-of-them-apologised', 'opened-it', 'took-it-badly-and-then-took-it',
   // ── AND THE HALF OF THE SAME THREE THAT PRESS NOBODY ────────────────
   //
   // Rehearsing an account to yourself on a road, counting the column at the

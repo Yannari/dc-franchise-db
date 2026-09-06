@@ -176,6 +176,10 @@ export function runDragWeek(state, cfg, ctx) {
   const storylineNeed = storylineNeedFor(state.storylines || [], {
     living, episode: cfg.num, totalEpisodes: cfg.totalEpisodes || 12, state,
   });
+  // Stashed for the arc tracker's variant reader, which runs after the week
+  // and otherwise has no idea how far through the season it is.
+  state._drPhase = (cfg.totalEpisodes || 12) > 1
+    ? (cfg.num - 1) / ((cfg.totalEpisodes || 12) - 1) : 0;
 
   const bend = hostBend(ranking, { star: state.star, storylineNeed, trackPull, split });
 

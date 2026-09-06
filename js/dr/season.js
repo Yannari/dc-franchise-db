@@ -156,10 +156,16 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   return out;
 }
 
-/** Record what the week did to the arcs, then hand the row straight back. */
-function beat(state, row) {
+/**
+ * Record what the week did to the arcs, then hand the row straight back.
+ *
+ * `cast` is not optional in practice: the variant tests read her drag stats and
+ * her style, and without the real player objects every one of them sees a queen
+ * of straight fives.
+ */
+function beat(state, row, cast) {
   state.storylines = recordBeat(state.storylines || [], {
-    episode: row.num, row, state,
+    episode: row.num, row, state, cast,
   });
   return row;
 }
@@ -338,7 +344,7 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
       // the full cast is restored afterwards rather than reconciled — the
       // half-week cannot have removed anybody.
       state.living = group;
-      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { noElimination: true }), ctx)));
+      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { noElimination: true }), ctx), cast));
       state.living = wholeCast;
     }
   }
@@ -357,14 +363,14 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   const finaleSize = FINALE_SIZE[finaleType] || 4;
   for (const sch of schedule) {
     if (state.living.length <= finaleSize) break;
-    rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { totalEpisodes }), ctx)));
+    rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { totalEpisodes }), ctx), cast));
   }
 
   const last = schedule[schedule.length - 1] || {};
   const finale = runFinale(state, {
     num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
   }, ctx);
-  rows.push(beat(state, finale));
+  rows.push(beat(state, finale, cast));
 
   return { rows, state, winner: state.winner, runnerUp: state.runnerUp, finale: finale.dr.finale };
 }

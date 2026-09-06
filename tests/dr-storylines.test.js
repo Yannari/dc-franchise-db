@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it } from 'vitest';
 import { ARCS, assignStorylines, storylineNeed, recordBeat, arcSummary } from '../js/dr/storylines.js';
+import { AGENDAS, LABELS, ARC_FAMILIES, pickVariant, allVariants } from '../js/dr/arcs.js';
 import { rngFor } from '../js/dr/rng.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -35,28 +36,77 @@ describe('assignStorylines', () => {
 
   it('casts the five opening arcs and neither of the two that must be earned', () => {
     const arcs = sl.map(s => s.arc);
-    for (const a of ['frontrunner', 'underdog', 'villain', 'rivalry', 'sisters']) {
+    for (const a of ['frontrunner', 'underdog', 'villain', 'relationship']) {
       expect(arcs, a).toContain(a);
     }
     // A season that hands these out at episode one decided its story before
     // anybody performed.
-    expect(arcs).not.toContain('fighter');
+    expect(arcs).not.toContain('performance');
     expect(arcs).not.toContain('robbed');
+    expect(arcs).not.toContain('shock');
     for (const a of arcs) expect(ARCS).toContain(a);
   });
 
   it('picks the right people', () => {
     expect(sl.find(s => s.arc === 'frontrunner').players).toEqual(['Star']);
     expect(sl.find(s => s.arc === 'villain').players).toEqual(['Snake']);
-    expect(sl.find(s => s.arc === 'rivalry').players.sort()).toEqual(['Foe', 'Snake']);
-    expect(sl.find(s => s.arc === 'sisters').players.sort()).toEqual(['Kid', 'Sis']);
+    const rel = sl.filter(s => s.arc === 'relationship');
+    expect(rel.find(s => s.variantId === 'rivalry').players.sort()).toEqual(['Foe', 'Snake']);
+    expect(rel.find(s => s.variantId !== 'rivalry').players.sort()).toEqual(['Kid', 'Sis']);
   });
 
-  it('casts no rivalry or sisters in a room with no strong feelings', () => {
+  it('names a variant on every arc it casts', () => {
+    for (const s of sl) {
+      expect(s.variantId, s.arc).toBeTruthy();
+      expect(s.variantName, s.arc).toBeTruthy();
+    }
+  });
+
+  it('never gives one queen two solo agendas', () => {
+    const seen = {};
+    for (const s of sl.filter(x => AGENDAS.includes(x.arc) && x.players.length === 1)) {
+      for (const n of s.players) seen[n] = (seen[n] || 0) + 1;
+    }
+    for (const [n, c] of Object.entries(seen)) expect(c, `${n} holds ${c} agendas`).toBe(1);
+  });
+
+  it('but lets the villain also be half of the rivalry', () => {
+    // The taxonomy files Villain and Rivalry under one family for a reason:
+    // blocking this would throw away the most natural story in the room.
+    const rel = sl.find(s => s.arc === 'relationship' && s.variantId === 'rivalry');
+    const villain = sl.find(s => s.arc === 'villain');
+    expect(rel.players).toContain(villain.players[0]);
+  });
+
+  it('layers labels on top of an agenda, because a real edit does', () => {
+    const stacked = sl.filter(s => LABELS.includes(s.arc));
+    expect(stacked.length, 'no label arcs at all').toBeGreaterThan(0);
+  });
+
+  it('every family in the catalogue resolves to a variant', () => {
+    for (const f of Object.keys(ARC_FAMILIES)) {
+      const v = pickVariant(f, { player: CAST[0] });
+      expect(v, f).toBeTruthy();
+      expect(v.family, f).toBe(f);
+    }
+    // No two variants inside one family share an id, or the screens cannot
+    // tell them apart.
+    for (const [f, fam] of Object.entries(ARC_FAMILIES)) {
+      const ids = fam.variants.map(x => x.id);
+      expect(new Set(ids).size, `${f} repeats a variant id`).toBe(ids.length);
+    }
+    expect(allVariants().length).toBeGreaterThan(35);
+  });
+
+  it('keeps agendas rare and labels common', () => {
+    // The whole safety argument for a fifteen-family catalogue.
+    expect(AGENDAS.length).toBeLessThan(LABELS.length);
+  });
+
+  it('casts no relationship arc in a room with no strong feelings', () => {
     const flat = assignStorylines({ cast: CAST, state: state(), bond: () => 0, rng: rngFor(1) });
     const arcs = flat.map(s => s.arc);
-    expect(arcs).not.toContain('rivalry');
-    expect(arcs).not.toContain('sisters');
+    expect(arcs).not.toContain('relationship');
     expect(arcs).toContain('frontrunner');
   });
 });
@@ -119,39 +169,75 @@ describe('recordBeat', () => {
     },
   });
 
-  it('earns the fighter after two lip syncs survived', () => {
+  it('earns the performance arc after two lip syncs survived', () => {
     const st = state();
     st.lipsyncRecord.Kid = ['W', 'W'];
     const sl = recordBeat(base(), { episode: 4, row: row({}), state: st });
-    expect(sl.find(s => s.arc === 'fighter')?.players).toEqual(['Kid']);
+    expect(sl.find(s => s.arc === 'performance')?.players).toEqual(['Kid']);
   });
 
   it('does not earn it after one', () => {
     const st = state();
     st.lipsyncRecord.Kid = ['W'];
     expect(recordBeat(base(), { episode: 4, row: row({}), state: st })
-      .find(s => s.arc === 'fighter')).toBeUndefined();
+      .find(s => s.arc === 'performance')).toBeUndefined();
   });
 
-  it('earns the robbed queen after two downward bends', () => {
+  it('earns the robbed queen after two snubs: topped the panel, did not win', () => {
     let sl = base();
     const st = state();
     for (const ep of [2, 3]) {
       sl = recordBeat(sl, {
         episode: ep, state: st,
-        row: row({ bend: [{ name: 'Sis', panelRank: 1, finalRank: 3 }] }),
+        row: row({
+          bend: [{ name: 'Sis', panelRank: 1, finalRank: 2 }],
+          call: { win: ['Kid'], high: ['Sis'], safe: [], low: [], bottom: [] },
+        }),
       });
     }
     expect(sl.find(s => s.arc === 'robbed')?.players).toEqual(['Sis']);
   });
 
-  it('does not count a bend of one place as a robbery', () => {
+  it('also counts the panel loving her and the host calling nobody', () => {
+    let sl = base();
+    const st = state();
+    for (const ep of [2, 3]) {
+      sl = recordBeat(sl, {
+        episode: ep, state: st,
+        row: row({
+          bend: [{ name: 'Sis', panelRank: 2, finalRank: 2 }],
+          call: { win: ['Kid'], high: ['Foe'], safe: ['Sis'], low: [], bottom: [] },
+        }),
+      });
+    }
+    expect(sl.find(s => s.arc === 'robbed')?.players).toEqual(['Sis']);
+  });
+
+  it('is not robbery when the panel had her top and she actually won', () => {
     let sl = base();
     const st = state();
     for (const ep of [2, 3, 4]) {
       sl = recordBeat(sl, {
         episode: ep, state: st,
-        row: row({ bend: [{ name: 'Sis', panelRank: 1, finalRank: 2 }] }),
+        row: row({
+          bend: [{ name: 'Sis', panelRank: 1, finalRank: 1 }],
+          call: { win: ['Sis'], high: [], safe: [], low: [], bottom: [] },
+        }),
+      });
+    }
+    expect(sl.find(s => s.arc === 'robbed')).toBeUndefined();
+  });
+
+  it('nor when the panel never rated her in the first place', () => {
+    let sl = base();
+    const st = state();
+    for (const ep of [2, 3, 4]) {
+      sl = recordBeat(sl, {
+        episode: ep, state: st,
+        row: row({
+          bend: [{ name: 'Sis', panelRank: 8, finalRank: 8 }],
+          call: { win: ['Kid'], high: [], safe: ['Sis'], low: [], bottom: [] },
+        }),
       });
     }
     expect(sl.find(s => s.arc === 'robbed')).toBeUndefined();

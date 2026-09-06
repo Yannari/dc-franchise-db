@@ -242,7 +242,17 @@
   .ft-side{position:static}}
 
 /* ── HERO ──────────────────────────────────────────────────────────── */
-.ft-hero{position:relative;text-align:center;padding:78px 0 30px}
+/* THE HERO RECEDES ONCE THE DECK IS RUNNING. It is the screen's title card and
+   it earns the first beat; from the second on it is a second headline arguing
+   with whatever the current card is saying, and on an act break there are then
+   two enormous display lines on screen at once. It shrinks and dims rather
+   than disappearing, so the screen never loses its name. */
+.ft-hero{position:relative;text-align:center;padding:78px 0 30px;
+  transition:transform 700ms cubic-bezier(.2,.7,.3,1),opacity 700ms ease,
+    padding 700ms ease;transform-origin:50% 0}
+.ft-root.running .ft-hero{transform:scale(.52);opacity:.4;padding:26px 0 0;
+  margin-bottom:-46px}
+.ft-root.running .ft-sub{opacity:0;transition:opacity 400ms ease}
 .ft-eyebrow{font-family:var(--ft-display);font-weight:600;font-size:10px;
   letter-spacing:.46em;text-transform:uppercase;color:var(--ft-hot);
   text-shadow:0 0 18px color-mix(in srgb,var(--ft-fire) 60%,transparent)}
@@ -258,9 +268,41 @@
   font-style:italic;font-size:19px;color:#cfc4b4}
 
 /* ── CARDS ─────────────────────────────────────────────────────────── */
-.ft-beat{opacity:0;transform:translateY(26px);
-  transition:opacity 620ms ease,transform 620ms cubic-bezier(.2,.7,.3,1)}
-.ft-beat.on{opacity:1;transform:none}
+/* -- ONE CARD AT A TIME ----------------------------------------------
+   "Reveal one card at the time maybe."
+
+   Yes, and it is worth more than it sounds. The accumulating version buried
+   the room: by beat four the screen was a column of stacked cards and the
+   fire, the arch and the haar — the whole reason the page was rebuilt around
+   light — were behind a wall of panels nobody could see past. Showing one beat
+   at a time hands the room back, and it is the format's own grammar as well:
+   the fire deals with one thing at a time and so does the screen.
+
+   The stage holds a minimum height so the page does not jump as beats of
+   different lengths come and go, and the beat is centred in it, which puts
+   every card in the same place on the screen — the eye never has to go looking
+   for the next one. */
+.ft-stage{min-height:66vh;display:flex;flex-direction:column;
+  justify-content:center;position:relative}
+.ft-beat{display:none;opacity:0;transform:translateY(26px)}
+.ft-beat.on{display:block;opacity:1;transform:none;
+  transition:opacity 520ms ease,transform 560ms cubic-bezier(.2,.7,.3,1)}
+/* THE OUTGOING CARD IS NOT `display:none` YET. Hiding it on the same frame the
+   next one arrives makes the change a cut; it leaves first, downward and dark,
+   and is only pulled from the flow when it has finished. */
+.ft-beat.leaving{display:block;pointer-events:none;
+  animation:ft-leave 300ms ease forwards}
+@keyframes ft-leave{
+  from{opacity:1;transform:none;filter:blur(0)}
+  to{opacity:0;transform:translateY(-22px) scale(.985);filter:blur(3px)}}
+
+/* the trail: which beat this is, and how many are left */
+.ft-trail{display:flex;align-items:center;gap:7px;margin:0}
+.ft-pip{width:7px;height:7px;border-radius:50%;background:rgba(230,192,122,.18);
+  transition:all 420ms ease}
+.ft-pip.done{background:color-mix(in srgb,var(--ft-hot) 55%,transparent)}
+.ft-pip.here{background:var(--ft-core);width:22px;border-radius:4px;
+  box-shadow:0 0 14px color-mix(in srgb,var(--ft-fire) 80%,transparent)}
 /* -- THE CARD SURFACE ------------------------------------------------
    "Too normal and boring." It was a rectangle with a 1px border on all four
    sides — the default panel, and a border that even in weight reads as a box
@@ -731,6 +773,7 @@
 
     <div class="ft-grid">
       <main>
+        <div class="ft-stage">
 
         <!-- I. the room -->
         <div class="ft-beat" data-fire="calm" data-anim="ask">
@@ -937,6 +980,7 @@
           </div>
         </div>
 
+        </div>
       </main>
 
       <!-- ── SIDEBAR ─────────────────────────────────────────────────── -->
@@ -964,9 +1008,11 @@
   </div>
 
   <div class="ft-controls">
-    <button class="ft-btn" id="next">&rsaquo;&nbsp; Continue</button>
+    <button class="ft-btn" id="back">&lsaquo;&nbsp; Back</button>
+    <button class="ft-btn" id="next">Continue&nbsp; &rsaquo;</button>
+    <div class="ft-trail" id="trail"></div>
     <span class="ft-counter" id="counter">1 / 6</span>
-    <button class="ft-btn" id="all">Reveal all</button>
+    <button class="ft-btn" id="all">To the end</button>
   </div>
 </div>
 
@@ -1013,6 +1059,7 @@
   const counter = document.getElementById('counter');
   const btnNext = document.getElementById('next');
   const btnAll = document.getElementById('all');
+  const btnBack = document.getElementById('back');
   const sAsked = document.getElementById('s-asked');
   const sAlive = document.getElementById('s-alive');
   const sTables = document.getElementById('s-tables');
@@ -1081,14 +1128,48 @@
       setTimeout(() => e.remove(), 5200);
     }
   }
+  // The trail, built once from the beats themselves so it can never disagree
+  // with how many there are.
+  const trail = document.getElementById('trail');
+  beats.forEach(() => {
+    const d = document.createElement('span');
+    d.className = 'ft-pip';
+    trail.appendChild(d);
+  });
+  const pips = [...trail.children];
+
   function show(n) {
-    idx = Math.min(n, beats.length - 1);
-    beats.forEach((b, i) => b.classList.toggle('on', i <= idx));
+    const prev = idx;
+    idx = Math.max(0, Math.min(n, beats.length - 1));
+    if (prev === idx) return;
+    beats.forEach((b, i) => {
+      if (i === idx) {
+        b.classList.remove('leaving');
+        b.classList.add('on');
+      } else if (i === prev && prev >= 0) {
+        // let it go first, then take it out of the flow
+        b.classList.remove('on');
+        b.classList.add('leaving');
+        setTimeout(() => b.classList.remove('leaving'), 320);
+      } else {
+        b.classList.remove('on', 'leaving');
+      }
+    });
+    root.classList.toggle('running', idx > 0);
+    pips.forEach((d, i) => {
+      d.classList.toggle('done', i < idx);
+      d.classList.toggle('here', i === idx);
+    });
     if (idx >= 0) {
       const beat = beats[idx];
       grade(beat);
       if (beat.dataset.act) actFlare();
-      beat.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // No scrollIntoView: the stage centres the beat already, and scrolling
+      // to a card that is the only thing on screen fights the reader.
+      if (window.scrollY > 240) {
+        document.querySelector('.ft-stage')
+          .scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       beat.querySelectorAll('.ft-count-n[data-to]').forEach(countUp);
       burst(beat);
       // The blow lands on the CARD as well as on the page — a traitor turning
@@ -1106,9 +1187,17 @@
     counter.textContent = (idx + 1) + ' / ' + beats.length;
     btnNext.disabled = idx >= beats.length - 1;
     btnAll.disabled = idx >= beats.length - 1;
+    btnBack.disabled = idx <= 0;
   }
   btnNext.addEventListener('click', () => show(idx + 1));
+  btnBack.addEventListener('click', () => show(idx - 1));
   btnAll.addEventListener('click', () => show(beats.length - 1));
+  // A deck wants arrow keys. Space too, which is what people press.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(idx + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
+  });
+  idx = -1;
   show(0);
 })();
 </script>

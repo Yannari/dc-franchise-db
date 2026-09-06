@@ -2256,12 +2256,12 @@ function _buildBeats(v) {
     // THREE HEADINGS FOR THE THREE AGE BANDS. A single "this started days
     // ago" was printed over rows that had started that morning; the band is
     // measured in js/tr/roundtable.js and the heading follows it.
-    'grievance-fresh': 'They had this out yesterday',
-    'old-grievance': 'This started days ago',
-    'grievance-old': 'This has run all week',
+    'grievance-fresh': 'They had this argument yesterday',
+    'old-grievance': 'An old argument reaches the table',
+    'grievance-old': 'This argument has run all week',
     'broken-word': 'A promise, quoted back',
-    'ganged-up': 'Somebody says it is arranged',
-    defended: 'Somebody takes a side',
+    'ganged-up': 'Too many accusers to be a coincidence',
+    defended: 'Somebody speaks up for them',
   };
   for (const c of (v.clashes || [])) {
     push('debate', '<div class="rt-clash">'

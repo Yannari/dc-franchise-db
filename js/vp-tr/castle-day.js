@@ -3036,7 +3036,7 @@ const RECALL_LEAD_RECORDED = [
   'This started before today, and both of them know it.',
   'They pick it up exactly where they dropped it, which is not a comfortable place.',
   'Whatever this was, it did not finish the first time.',
-  'They have been here before, and it went no better then.',
+  'They had this same conversation before, and it ended the same way.',
 ];
 
 /**

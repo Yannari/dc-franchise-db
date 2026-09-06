@@ -1607,10 +1607,10 @@ const DEFLECT_SOURCE = [
 // claim is never "{A} finds {t} suspicious" but a thing that actually happened.
 // The framing lets the source phrase stand as the reason.
 const CLAIM_SOURCE = [
-  '{A} does not leave it at a feeling. There is a reason, and it is said out loud: {src}.',
-  'And {A} has something concrete for it — {src} — which is more than most names at this table come with.',
-  '{A} puts the reason on the wood where everyone can see it: {src}.',
-  'It is not a hunch. {A} points to the thing itself: {src}.',
+  '{A} backs the accusation up with something specific: {src}.',
+  'And {A} has evidence — {src} — which is more than most accusations at this table come with.',
+  '{A} gives the table a reason, not just a name: {src}.',
+  '{A} does not stop at the name. {A} says why: {src}.',
 ];
 // AND WHEN THERE IS NOTHING TO CITE, WHICH IS BETTER THAN A QUARTER OF THE
 // TIME. These four pools are the counterpart of CLAIM_SOURCE above and exist
@@ -1635,8 +1635,8 @@ const NO_SOURCE = {
   // Something the whole room already has, so it reads as nobody's insight.
   public: [
     '{A} offers a reason everybody at this table already had, which persuades exactly nobody.',
-    'It is not a read. It is a thing the whole room watched happen, said back to the room slowly.',
-    '{A} has nothing the rest of them do not, and says it with the confidence of somebody who does.',
+    '{A} points at something the whole room already saw happen, which convinces nobody who was there.',
+    '{A} has no information the rest of them do not have, and says it like a discovery anyway.',
     'Every person here could have made that speech. {A} is the one who chose to.',
     'The room hears its own knowledge repeated at it and stays exactly where it was.',
   ],
@@ -1645,17 +1645,17 @@ const NO_SOURCE = {
     '{A} is still working from something that stopped being true days ago, and has not noticed.',
     'The reason {A} has is out of date. {Asub} says it with all of last week’s certainty.',
     'That was a good read on Tuesday. {A} is the last person in the castle still holding it.',
-    'Whatever {A} had has gone cold, and {asub} is arguing from the shape it left behind.',
+    'Whatever {A} had is days old now, and {asub} is still arguing as if it just happened.',
     '{A} is answering a question the week has already moved past.',
   ],
   // No record at all. A bond, a manner, an accumulation of small things.
   feeling: [
     '{A} has no reason and does not pretend to have one. It is a feeling, and {A} says so out loud.',
     'Asked why, {A} cannot say. Not evasively — {asub} genuinely cannot put a thing under it.',
-    'It is a week of very small things and not one of them will survive being said on its own.',
-    '{A} is going on the way {t} has been in the room, which is nothing, and is also the only thing {A} has.',
-    'There is no record behind this. There is a person who has decided, and a room deciding what to do with that.',
-    '{A} admits it is instinct. In this castle that is either the best tool in the room or the worst.',
+    '{A} has noticed a dozen small things about {t} this week, and none of them are enough to say out loud on their own.',
+    '{A} is going on the way {t} has been behaving, which is hard to pin down but impossible to ignore.',
+    '{A} has no evidence — just a gut feeling about {t}, and the room has to decide whether that is enough.',
+    '{A} admits it is instinct, not proof, and says the name anyway.',
   ],
 };
 
@@ -1667,14 +1667,14 @@ const MINDCHANGE_TEXT = [
   + 'says so before the chalk is even out.',
   'It lands on {who}. You can see it land: {who} was undecided, and now {who} is not, and the '
   + 'name {sub} has settled on is {t}.',
-  'Across the table {who} changes {pos} mind in real time — not talked into it, walked into it, '
-  + 'and {t} is where {sub} ends up.',
+  'Across the table {who} changes {pos} mind in real time — the argument lands, and {t} is the '
+  + 'name {who} is writing now.',
   '{who} nods slowly, the way people do when an argument has actually moved them. {t}. That is '
   + 'where {who} is now.',
 ];
 const MINDCHANGE_MORE = [
   'And {who} is not the only one the argument turned.',
-  'A couple of others shift with {obj}, quietly, without putting a hand up.',
+  'A couple of others quietly change their vote to match {obj}.',
   'The name travels; it does not stop at one slate.',
 ];
 
@@ -1682,8 +1682,8 @@ const MINDCHANGE_MORE = [
 // `_view` before a player observer's screen is built, and never written at a
 // finale table.
 const IRONY_TRUE = [
-  'And the room is right. It has no way of knowing that, and it will not believe itself.',
-  'Correct, and arrived at by the wrong road entirely.',
+  'And the room is right — {t} really is a Traitor. They have no proof, but they have the right name.',
+  'Correct, even though the reasoning that got them here was wrong.',
   'They have the right name. Watch how little that is worth in a minute.',
   'True — which at this table is a coincidence more often than it is a deduction.',
   'The room has it. The room will now talk itself out of it.',

@@ -91,6 +91,41 @@ describe('the setup screen shows one show at a time', () => {
     }
   });
 
+
+  /* ── AND THE RULE BEHIND BOTH LEAKS ────────────────────────────────
+     Two separate reports, one cause: an element that names a show in its id
+     but is missing from CONFIG_SCOPE is drawn on EVERY show. First the fixed
+     explainer rows, then five castle controls — the murder shapes the castle
+     may spring unasked, the scene density, and three shield settings — so a
+     runway was being asked which murder twists it would allow.
+
+     Fixing the seven cases would leave the eighth to be reported. This is the
+     rule: if an id names a show, some format must claim it, and exactly one. */
+  it('every show-specific control in the markup is scoped', () => {
+    const ids = [...html.matchAll(/id="((?:cfg|sec)-(?:tr|bb|dr)-[\w-]+)"/g)].map(m => m[1]);
+    expect(ids.length, 'no show-specific ids found — did the markup change?').toBeGreaterThan(20);
+    const scoped = new Set();
+    for (const fmt of Object.keys(SHOWS)) {
+      const sc = configScopeFor(fmt);
+      for (const id of [...sc.fields, ...sc.sections, ...sc.accordions]) scoped.add(id);
+    }
+    const missing = [...new Set(ids)].filter(id => !scoped.has(id));
+    expect(missing,
+      'these name a show but no format claims them, so they draw on ALL shows')
+      .toEqual([]);
+  });
+
+  it('and each is claimed by exactly the show its name says', () => {
+    const owner = { tr: 'traitors', bb: 'big-brother', dr: 'drag-race' };
+    for (const [, id, prefix] of html.matchAll(/id="((?:cfg|sec)-(tr|bb|dr)-[\w-]+)"/g)) {
+      const owners = Object.keys(SHOWS).filter(fmt => {
+        const sc = configScopeFor(fmt);
+        return [...sc.fields, ...sc.sections, ...sc.accordions].includes(id);
+      });
+      expect(owners, `${id} is claimed by ${owners.join(', ') || 'nobody'}`).toEqual([owner[prefix]]);
+    }
+  });
+
   it('so no show is told another show\'s rules', () => {
     // The concrete case: a drag season must not be offered a Head of Household
     // or a Round Table, and a castle must not be offered a lip sync verdict.

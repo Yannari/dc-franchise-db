@@ -1150,6 +1150,18 @@ const CONFIG_SCOPE = {
     'cfg-tr-endgame-reveal': ['traitors'],
     // The castle's endgame size (final 2-5). Only js/tr/ reads it.
     'cfg-tr-endgame-size':   ['traitors'],
+    // ── FIVE MORE CASTLE CONTROLS THAT WERE NEVER SCOPED ────────────
+    //
+    // The murder shapes the castle may spring unasked, the scene density, and
+    // the three shield/armoury settings. All castle-only, none of them in this
+    // map, so every one of them was drawn on a Big Brother, Total Drama and
+    // Drag Race season too — a runway was being asked which murder twists it
+    // would allow. Found by reading the screen after the fourth show landed.
+    'cfg-tr-random-mv':      ['traitors'],
+    'cfg-tr-density':        ['traitors'],
+    'cfg-tr-shield-source':  ['traitors'],
+    'cfg-tr-armoury-size':   ['traitors'],
+    'cfg-tr-shield-count':   ['traitors'],
     // The main stage's own controls. Every one of these is read by js/dr/*:
     // the premiere and finale shapes pick which weeks the season runs, and the
     // four switches are ALLOWANCES the lip sync and the schedule consult. A

@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Fire of Truth — endgame mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-fire-of-truth.html — the endgame, remodelled around the fire
+  ══════════════════════════════════════════════════════════════════════
+
+  THE BRIEF: "when there's 2 the game stops... can you remodel it to the fire
+  of truth design — wow effect, animations, interactivity, suspense."
+
+  WHAT WAS WRONG WITH THE OLD ONE. It is a cold blue-grey hall: slate pillars,
+  a strongbox in silhouette, paper slips on a #0a0c11 ground. It has a card
+  titled "The Fire Of Truth" and there is no fire anywhere on the screen. The
+  prose is good and is kept almost entirely; what it never had was a PLACE.
+
+  THE PLACE. One firepit, at night, outdoors, and every beat of the endgame
+  happens at it. Nothing is "shown" on a card that could instead be done to
+  the fire:
+
+    the question   each player folds a word and feeds it to the flames
+    the count      the fire ANSWERS — it roars on "another", settles on "end"
+    the vote       slates held up in the firelight
+    the banishing  a chair goes dark and its ember dies
+    the turning    the last survivors turn over; a Traitor burns the fire RED
+    the box        lit by whatever colour the fire finished on
+
+  So the fire is not decoration, it is the status display: its colour, height
+  and noise are the state of the game. That is the wow, and it is also the
+  suspense — you can see the fire react before you have read the card.
+
+  BUILT AS A MOCKUP FIRST, per the repo's VP workflow: placeholder data, all
+  CSS and JS inline, no imports. The VP builders in js/vp-tr/endgame.js are to
+  reproduce this exactly. Fonts and the reveal/controls grammar are carried
+  over from the existing screen so it still reads as the same show.
+-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700;9..144,900&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+
+.ft-root{
+  /* night, and the fire's own light */
+  --ft-night:#07090f;
+  --ft-night-2:#0d0a09;
+  --ft-soot:#171310;
+  --ft-stone:#2a2621;
+  --ft-ash:#9d958a;
+  --ft-bone:#efe6d8;
+  --ft-smoke:#6b6257;
+
+  /* the flame ramp — the whole screen is graded off these three */
+  --ft-core:#fff3c4;
+  --ft-hot:#ffb43d;
+  --ft-fire:#ff6a13;
+  --ft-deep:#c02405;
+  --ft-blood:#8d0b12;
+
+  --ft-gold:#e6c07a;
+  --ft-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --ft-hand:'IM Fell English',Georgia,serif;
+  --ft-body:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+
+  /* THE ONE VARIABLE THE WHOLE SCREEN HANGS OFF. Every glow, every shadow and
+     the sky itself read --ft-heat, so one line of JS moves the entire scene
+     from banked embers to a roaring fire to blood red. */
+  --ft-heat:1;
+  --ft-tint:var(--ft-fire);
+
+  position:relative;color:var(--ft-bone);
+  font-family:var(--ft-body);font-size:17px;line-height:1.6;
+  background:var(--ft-night);
+  min-height:100vh;overflow-x:hidden;
+}
+.ft-root *,.ft-root *::before,.ft-root *::after{box-sizing:border-box}
+
+/* ── THE NIGHT ─────────────────────────────────────────────────────── */
+.ft-sky{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 50% 108%,
+      color-mix(in srgb,var(--ft-tint) calc(38% * var(--ft-heat)),transparent) 0%,
+      transparent 62%),
+    radial-gradient(70% 45% at 50% 100%,
+      color-mix(in srgb,var(--ft-core) calc(16% * var(--ft-heat)),transparent) 0%,
+      transparent 55%),
+    linear-gradient(#05070c 0%,#080a10 45%,var(--ft-night-2) 100%);
+  transition:background 900ms ease;
+}
+/* the light the fire throws on everything, breathing */
+.ft-sky::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(60% 40% at 50% 104%,
+    color-mix(in srgb,var(--ft-core) calc(22% * var(--ft-heat)),transparent),transparent 60%);
+  animation:ft-breathe 4.2s ease-in-out infinite;mix-blend-mode:screen}
+@keyframes ft-breathe{0%,100%{opacity:.55;transform:scale(1)}
+  38%{opacity:1;transform:scale(1.06)}
+  61%{opacity:.72;transform:scale(.98)}}
+
+/* ── THE HALL ──────────────────────────────────────────────────────── */
+/* FIRST PASS WAS A CAMPSITE: stars, an open night sky and a ring of boulders
+   round a log fire. Reported as "not Traitors enough — castle, it looks like
+   camping." Correct, and the fix is not more orange, it is a ROOM. The show's
+   own furniture is a great hall — coursed ashlar, a carved stone hearth, iron,
+   candle sconces, a gothic window with the weather behind it — so the fire is
+   moved indoors and set in a fireplace big enough to stand in. */
+.ft-wall{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.85}
+.ft-wall svg{width:100%;height:100%}
+/* the hall falls away to nothing at the edges — one lit end of a long room */
+.ft-vignette{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(90% 70% at 50% 96%,transparent 30%,rgba(3,3,5,.72) 78%),
+    linear-gradient(rgba(3,4,7,.86) 0%,rgba(4,4,6,.34) 34%,transparent 60%)}
+
+/* wall sconces, one either side, because a hall this size is not lit by one
+   fire and the flicker has to come from more than the middle of the screen */
+.ft-sconce{position:fixed;bottom:34%;z-index:0;pointer-events:none;width:78px;
+  opacity:.9}
+.ft-sconce.l{left:calc(50% - 470px)}
+.ft-sconce.r{right:calc(50% - 470px)}
+@media(max-width:1180px){.ft-sconce{display:none}}
+.ft-candle{transform-origin:50% 100%;animation:ft-gutter 2.6s ease-in-out infinite}
+.ft-sconce.r .ft-candle{animation-duration:3.4s;animation-delay:-1.1s}
+@keyframes ft-gutter{
+  0%,100%{transform:scaleY(1) skewX(-4deg)}
+  40%{transform:scaleY(1.16) skewX(5deg)}
+  70%{transform:scaleY(.92) skewX(-2deg)}}
+
+/* ── EMBERS ────────────────────────────────────────────────────────── */
+.ft-embers{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.ft-ember{position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;
+  background:var(--ft-hot);
+  box-shadow:0 0 6px 2px color-mix(in srgb,var(--ft-fire) 70%,transparent);
+  opacity:0;animation:ft-rise linear infinite}
+@keyframes ft-rise{
+  0%{opacity:0;transform:translate3d(0,0,0) scale(.6)}
+  8%{opacity:1}
+  70%{opacity:.85}
+  100%{opacity:0;transform:translate3d(var(--dx,20px),-102vh,0) scale(.2)}}
+
+/* ── THE FIRE ITSELF ───────────────────────────────────────────────── */
+/* Layered SVG flames, each on its own wobble, pushed through a turbulence
+   filter so the edge never repeats. This is the centrepiece — it is drawn
+   once, fixed to the floor of the screen, and every card is read over it. */
+.ft-pit{position:fixed;left:50%;bottom:0;transform:translateX(-50%);
+  z-index:1;pointer-events:none;width:min(720px,96vw);height:min(560px,72vh)}
+.ft-pit svg{width:100%;height:100%;overflow:visible;
+  filter:drop-shadow(0 0 40px color-mix(in srgb,var(--ft-fire) calc(60% * var(--ft-heat)),transparent))}
+.ft-flame{transform-origin:50% 100%;animation:ft-lick 1.7s ease-in-out infinite alternate}
+.ft-flame.f2{animation-duration:1.15s;animation-delay:-.35s;opacity:.92}
+.ft-flame.f3{animation-duration:2.3s;animation-delay:-.8s;opacity:.8}
+.ft-flame.f4{animation-duration:.85s;animation-delay:-.15s;opacity:.75}
+@keyframes ft-lick{
+  0%{transform:scaleY(.9) scaleX(1.04) skewX(-3deg)}
+  50%{transform:scaleY(1.1) scaleX(.94) skewX(4deg)}
+  100%{transform:scaleY(.97) scaleX(1.02) skewX(-2deg)}}
+
+/* the fire's three moods, driven from JS by one class on .ft-root */
+.ft-root[data-fire="banked"]{--ft-heat:.55}
+.ft-root[data-fire="roar"]{--ft-heat:1.5}
+.ft-root[data-fire="blood"]{--ft-heat:1.7;--ft-tint:var(--ft-blood)}
+.ft-root[data-fire="roar"] .ft-flame{animation-duration:.6s}
+.ft-root[data-fire="banked"] .ft-flame{animation-duration:2.8s}
+.ft-pit .ft-gcore{transition:opacity 700ms ease}
+.ft-root[data-fire="blood"] .ft-gcore{opacity:.15}
+.ft-root[data-fire="blood"] .ft-gblood{opacity:1}
+.ft-gblood{opacity:0;transition:opacity 700ms ease}
+
+/* the hearth: dressed stone, iron, and the oak burning on it */
+.ft-dressed{fill:#332c24;stroke:#0e0b09;stroke-width:2}
+.ft-dressed-2{fill:#3e362c;stroke:#0e0b09;stroke-width:2}
+.ft-carve{fill:none;stroke:#584a39;stroke-width:2}
+.ft-iron{fill:#241e19;stroke:#0a0807;stroke-width:1.5}
+/* the surround is lit from the inside, so the jambs are warm at the mouth and
+   fall off to nothing at the edge of the hall. This is the line that makes it
+   read as a fireplace rather than as a shape. */
+.ft-lit{fill:url(#ft-hearthlight);mix-blend-mode:screen;
+  opacity:calc(.55 * var(--ft-heat));transition:opacity 900ms ease}
+/* THE CLOAKS BREATHE — AND THE ANIMATION LIVES ON AN INNER GROUP.
+   A CSS `transform` on an SVG element OVERRIDES its `transform` attribute
+   outright, so putting this animation on the same <g> that carried
+   `translate(628 356) scale(-.94 .94)` threw the positioning away and drew
+   BOTH cloaks stacked at the origin. It looked plausible — one hooded figure,
+   left of the fire — and was only caught by measuring getBBox through
+   getScreenCTM and finding two shapes at x 273-406. Position on the outer
+   group, animate on the inner one. */
+.ft-cloak{animation:ft-sway 9s ease-in-out infinite;transform-origin:50% 100%}
+.ft-cloak.r{animation-duration:11s;animation-delay:-3s}
+@keyframes ft-sway{0%,100%{transform:translateX(0) scaleY(1)}
+  50%{transform:translateX(2px) scaleY(1.008)}}
+.ft-log{fill:#241a12;stroke:#0b0806;stroke-width:1.5}
+.ft-log-hot{fill:url(#ft-logglow)}
+/* the crest over the mantel — the castle's own mark, lit from below */
+.ft-crest{fill:#1c1815;stroke:#4a3f31;stroke-width:2}
+.ft-crest-in{fill:color-mix(in srgb,var(--ft-tint) calc(30% * var(--ft-heat)),#241d17);
+  transition:fill 900ms ease}
+
+/* ── LAYOUT ────────────────────────────────────────────────────────── */
+.ft-wrap{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:0 20px 300px}
+.ft-grid{display:grid;grid-template-columns:1fr 268px;gap:26px}
+/* NO `align-items:start` HERE. It shrinks the aside's grid area to the height
+   of its own content, which leaves `position:sticky` nothing to travel inside —
+   the sidebar then scrolls away with the page and the right column is empty for
+   the whole second half of the screen. The track has to stretch. */
+.ft-side-col{min-height:100%}
+@media(max-width:900px){.ft-grid{grid-template-columns:1fr}.ft-side-col{order:-1}
+  .ft-side{position:static}}
+
+/* ── HERO ──────────────────────────────────────────────────────────── */
+.ft-hero{position:relative;text-align:center;padding:78px 0 30px}
+.ft-eyebrow{font-family:var(--ft-display);font-weight:600;font-size:10px;
+  letter-spacing:.46em;text-transform:uppercase;color:var(--ft-hot);
+  text-shadow:0 0 18px color-mix(in srgb,var(--ft-fire) 60%,transparent)}
+.ft-title{font-family:var(--ft-display);font-weight:900;font-size:clamp(38px,7.4vw,74px);
+  line-height:.94;margin:14px 0 6px;letter-spacing:.01em;
+  background:linear-gradient(#fff8e6 0%,var(--ft-hot) 52%,var(--ft-deep) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 26px color-mix(in srgb,var(--ft-fire) 55%,transparent));
+  animation:ft-flicker 5.5s steps(1,end) infinite}
+@keyframes ft-flicker{0%,100%{opacity:1}47%{opacity:.94}49%{opacity:1}
+  72%{opacity:.9}73%{opacity:1}}
+.ft-sub{max-width:640px;margin:16px auto 0;font-family:var(--ft-body);
+  font-style:italic;font-size:19px;color:#cfc4b4}
+
+/* ── CARDS ─────────────────────────────────────────────────────────── */
+.ft-beat{opacity:0;transform:translateY(26px);
+  transition:opacity 620ms ease,transform 620ms cubic-bezier(.2,.7,.3,1)}
+.ft-beat.on{opacity:1;transform:none}
+.ft-card{position:relative;margin:26px 0;padding:26px 28px 28px;
+  background:linear-gradient(160deg,rgba(28,22,17,.93),rgba(11,10,10,.95));
+  border:1px solid rgba(230,192,122,.16);border-radius:3px;
+  box-shadow:0 26px 60px rgba(0,0,0,.66),
+    inset 0 1px 0 rgba(255,220,160,.07),
+    0 0 0 1px rgba(0,0,0,.5);
+  backdrop-filter:blur(2px)}
+/* every card is lit from below, by the fire */
+.ft-card::after{content:'';position:absolute;left:0;right:0;bottom:0;height:60%;
+  border-radius:3px;pointer-events:none;
+  background:linear-gradient(transparent,
+    color-mix(in srgb,var(--ft-tint) calc(9% * var(--ft-heat)),transparent));
+  transition:background 900ms ease}
+/* the wash is scenery and must sit UNDER the copy — without this the gradient
+   paints over the card's own title and greys it out at high heat. */
+.ft-card>*{position:relative;z-index:1}
+.ft-label{display:flex;align-items:center;gap:9px;
+  font-family:var(--ft-display);font-weight:600;font-size:10px;letter-spacing:.26em;
+  text-transform:uppercase;color:var(--ft-hot);opacity:.9}
+.ft-h{font-family:var(--ft-display);font-weight:700;font-size:27px;line-height:1.15;
+  margin:9px 0 12px;color:var(--ft-bone)}
+.ft-p{margin:0 0 12px;color:#d3c8b8}
+.ft-p:last-child{margin-bottom:0}
+
+/* the host, speaking across the fire */
+.ft-host{display:flex;gap:14px;align-items:flex-start;margin:18px 0 4px;
+  padding:15px 17px;border-left:2px solid var(--ft-hot);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--ft-fire) 12%,transparent),transparent)}
+.ft-host-av{width:42px;height:42px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 35% 30%,#5a4634,#221912);
+  border:1px solid rgba(230,192,122,.4);display:grid;place-items:center;
+  font-family:var(--ft-display);font-size:13px;color:var(--ft-gold)}
+.ft-host-q{font-family:var(--ft-hand);font-style:italic;font-size:19px;color:#f0e2c9}
+.ft-host-n{font-family:var(--ft-display);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ft-smoke);margin-top:5px}
+
+/* ── THE SLIPS, FED TO THE FIRE ────────────────────────────────────── */
+.ft-slips{display:grid;gap:12px;margin-top:18px}
+.ft-slip{position:relative;display:grid;
+  grid-template-columns:44px 1fr auto;gap:14px;align-items:center;
+  padding:13px 15px;border-radius:2px;
+  background:linear-gradient(#efe6d3,#d9cdb4);color:#2a2018;
+  box-shadow:0 10px 26px rgba(0,0,0,.5);
+  transform-origin:60% 50%;
+  opacity:0;animation:ft-toss 700ms cubic-bezier(.2,.8,.3,1) forwards}
+/* NO `transform:none` AT 100%. The resting rotation comes from the
+   nth-child rules below, and an animation that ends at `none` overrides them
+   for as long as it is filling forwards — the slips snapped square the moment
+   they landed. It ends on the same angle it rests at instead. */
+@keyframes ft-toss{
+  0%{opacity:0;transform:translate(60px,-34px) rotate(9deg) scale(.92)}
+  62%{opacity:1}
+  100%{opacity:1;transform:translate(0,0) rotate(var(--rot,0deg)) scale(1)}}
+/* THE CHAR HAS TO BE AN EDGE, NOT A STAIN. The first pass used two big
+   radial gradients across the middle of the slip and it read as a coffee ring
+   — paper does not brown in the centre, it browns inward FROM the edge it was
+   held to. So: four tight corner burns plus a scorch line hugging the right
+   edge, all under 40% radius. */
+.ft-slip::before{content:'';position:absolute;inset:0;border-radius:2px;pointer-events:none;
+  background:
+    radial-gradient(38% 120% at 100% 50%,rgba(52,18,2,.9),rgba(120,55,10,.28) 55%,transparent 78%),
+    radial-gradient(28% 60% at 0% 0%,rgba(74,32,6,.55),transparent 70%),
+    radial-gradient(30% 70% at 2% 100%,rgba(74,32,6,.5),transparent 72%);
+  opacity:0;transition:opacity 900ms ease}
+.ft-slip.burnt::before{opacity:1}
+.ft-slip.burnt{color:#241b15;background:linear-gradient(#e6d9bd,#cdbb9a)}
+/* The crease it was folded on. KEPT FAINT: at full strength it cut the slip
+   into two panels and the right-hand half read as a separate card. */
+.ft-slip::after{content:'';position:absolute;top:6%;bottom:6%;left:42%;width:1px;
+  pointer-events:none;opacity:.5;
+  background:linear-gradient(90deg,rgba(60,40,20,.35),rgba(255,248,230,.55))}
+/* laid down by hand, not by a grid */
+.ft-slip:nth-child(odd){--rot:-.5deg}
+.ft-slip:nth-child(even){--rot:.45deg}
+.ft-av{width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#8a7355,#3a2c1f);
+  display:grid;place-items:center;font-family:var(--ft-display);font-size:13px;
+  color:#f3e6cd;border:1px solid rgba(0,0,0,.35)}
+.ft-slip-n{font-family:var(--ft-display);font-weight:700;font-size:19px}
+.ft-slip-w{font-family:var(--ft-hand);font-style:italic;font-size:15px;
+  color:#4a3a2c;margin-top:2px}
+.ft-word{font-family:var(--ft-display);font-weight:900;font-size:13px;
+  letter-spacing:.2em;text-transform:uppercase;padding:8px 14px;border-radius:2px;
+  white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.ft-word.end{background:#1e2c22;color:#c9e6bd;border:1px solid #46654a}
+.ft-word.again{background:var(--ft-deep);color:#ffe2c4;border:1px solid var(--ft-fire);
+  box-shadow:0 0 20px color-mix(in srgb,var(--ft-fire) 55%,transparent);
+  animation:ft-pulse 1.5s ease-in-out infinite}
+@keyframes ft-pulse{0%,100%{box-shadow:0 0 16px rgba(255,106,19,.4)}
+  50%{box-shadow:0 0 30px rgba(255,106,19,.85)}}
+.ft-word.hidden{background:#3b332a;color:#8d8175;border:1px solid #514639;
+  letter-spacing:.34em}
+
+/* ── THE COUNT: the fire's own answer ──────────────────────────────── */
+.ft-count{display:flex;align-items:center;gap:22px;margin-top:18px;
+  padding:20px 22px;border:1px solid rgba(230,192,122,.2);border-radius:3px;
+  background:radial-gradient(120% 200% at 0% 50%,
+    color-mix(in srgb,var(--ft-tint) 16%,transparent),transparent 70%)}
+.ft-count-n{font-family:var(--ft-display);font-weight:900;font-size:60px;line-height:.85;
+  color:var(--ft-hot);
+  text-shadow:0 0 34px color-mix(in srgb,var(--ft-fire) 75%,transparent)}
+.ft-count-l{font-family:var(--ft-display);font-size:10px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--ft-smoke)}
+
+/* ── THE TURNING OVER ──────────────────────────────────────────────── */
+.ft-turn{display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:start;
+  padding:17px 0;border-bottom:1px solid rgba(230,192,122,.12)}
+.ft-turn:last-child{border-bottom:none}
+.ft-turn-av{width:64px;height:64px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 35% 30%,#8a7355,#2e2318);
+  display:grid;place-items:center;font-family:var(--ft-display);font-size:17px;
+  color:#f3e6cd;border:2px solid rgba(230,192,122,.3)}
+.ft-turn.traitor .ft-turn-av{border-color:var(--ft-blood);
+  box-shadow:0 0 30px color-mix(in srgb,var(--ft-blood) 80%,transparent)}
+.ft-turn.faithful .ft-turn-av{border-color:#7fa8c9;
+  box-shadow:0 0 22px rgba(127,168,201,.45)}
+.ft-role{font-family:var(--ft-display);font-weight:900;font-size:11px;
+  letter-spacing:.3em;text-transform:uppercase;display:inline-block;
+  padding:5px 12px;border-radius:2px;margin-bottom:7px}
+.ft-turn.faithful .ft-role{background:#1b2a36;color:#a9cde8;border:1px solid #35566e}
+.ft-turn.traitor .ft-role{background:var(--ft-blood);color:#ffd9d0;
+  border:1px solid var(--ft-fire);
+  animation:ft-pulse 1.4s ease-in-out infinite}
+
+/* the screen takes a hit when a cloak turns over */
+@keyframes ft-shake{
+  0%,100%{transform:translate(0,0)}
+  12%{transform:translate(-9px,3px)}28%{transform:translate(8px,-4px)}
+  46%{transform:translate(-6px,-2px)}64%{transform:translate(5px,3px)}
+  82%{transform:translate(-3px,1px)}}
+.ft-root.hit .ft-wrap{animation:ft-shake 620ms ease}
+/* and the fire throws a flare across the whole night */
+.ft-flare{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;
+  background:radial-gradient(60% 45% at 50% 100%,
+    color-mix(in srgb,var(--ft-tint) 85%,transparent),transparent 70%)}
+.ft-root.flaring .ft-flare{animation:ft-flareup 900ms ease-out}
+@keyframes ft-flareup{0%{opacity:0}18%{opacity:.9}100%{opacity:0}}
+
+/* ── THE BOX ───────────────────────────────────────────────────────── */
+.ft-box{text-align:center;padding:34px 20px 26px}
+.ft-money{font-family:var(--ft-display);font-weight:900;
+  font-size:clamp(42px,8vw,80px);line-height:1;
+  background:linear-gradient(#fff6dd,var(--ft-gold) 45%,#9a6b1e);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 30px rgba(230,192,122,.4))}
+.ft-money-l{font-family:var(--ft-display);font-size:10px;letter-spacing:.34em;
+  text-transform:uppercase;color:var(--ft-smoke);margin-top:8px}
+
+/* ── SIDEBAR: who is still at the fire ─────────────────────────────── */
+.ft-side{position:sticky;top:18px}
+.ft-side-box{padding:16px 17px;border:1px solid rgba(230,192,122,.16);border-radius:3px;
+  background:linear-gradient(rgba(24,19,15,.94),rgba(10,9,9,.96));margin-bottom:14px;
+  box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.ft-side-h{font-family:var(--ft-display);font-weight:600;font-size:9px;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--ft-hot);margin-bottom:12px}
+.ft-chair{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);transition:opacity 500ms ease}
+.ft-chair:last-child{border-bottom:none}
+.ft-chair-av{width:30px;height:30px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 35% 30%,#7d684e,#2a2018);
+  display:grid;place-items:center;font-size:11px;font-family:var(--ft-display);
+  color:#efe0c4}
+.ft-chair-n{font-family:var(--ft-body);font-size:15px;flex:1}
+/* the ember beside each name IS their status light */
+.ft-dot{width:8px;height:8px;border-radius:50%;background:var(--ft-hot);
+  box-shadow:0 0 10px 2px color-mix(in srgb,var(--ft-fire) 70%,transparent);
+  animation:ft-emberpulse 2.4s ease-in-out infinite}
+@keyframes ft-emberpulse{0%,100%{opacity:.55}50%{opacity:1}}
+.ft-chair.out{opacity:.32}
+.ft-chair.out .ft-dot{background:#3a332c;box-shadow:none;animation:none}
+.ft-chair.out .ft-chair-n{text-decoration:line-through;color:var(--ft-smoke)}
+.ft-stat{display:flex;justify-content:space-between;align-items:baseline;
+  padding:6px 0;font-family:var(--ft-body)}
+.ft-stat b{font-family:var(--ft-display);font-weight:900;color:var(--ft-gold);font-size:19px}
+.ft-stat span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ft-smoke);font-family:var(--ft-display)}
+
+/* ── CONTROLS ──────────────────────────────────────────────────────── */
+.ft-controls{position:fixed;left:0;right:0;bottom:0;z-index:6;
+  display:flex;align-items:center;justify-content:center;gap:20px;padding:15px;
+  background:linear-gradient(transparent,rgba(5,4,4,.93) 42%);
+  backdrop-filter:blur(3px)}
+.ft-btn{font-family:var(--ft-display);font-weight:600;font-size:11px;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--ft-bone);
+  background:linear-gradient(rgba(60,40,24,.9),rgba(26,18,12,.95));
+  border:1px solid rgba(230,192,122,.35);border-radius:2px;
+  padding:13px 26px;cursor:pointer;transition:all 220ms ease}
+.ft-btn:hover{border-color:var(--ft-hot);color:#fff3d8;
+  box-shadow:0 0 26px color-mix(in srgb,var(--ft-fire) 45%,transparent);
+  transform:translateY(-1px)}
+.ft-btn[disabled]{opacity:.35;cursor:default;transform:none;box-shadow:none}
+.ft-counter{font-family:var(--ft-display);font-size:11px;letter-spacing:.24em;
+  color:var(--ft-smoke)}
+
+@media(prefers-reduced-motion:reduce){
+  .ft-root *,.ft-root *::before,.ft-root *::after{
+    animation:none!important;transition:none!important}
+  .ft-beat{opacity:1;transform:none}
+  .ft-slip{opacity:1}
+}
+</style>
+</head>
+<body style="margin:0;background:#07090f">
+<div class="ft-root" id="root" data-fire="calm">
+
+  <div class="ft-sky"></div>
+
+  <!-- ── THE HALL: coursed ashlar, staggered the way stone is laid ──── -->
+  <div class="ft-wall">
+    <svg preserveAspectRatio="xMidYMax slice" viewBox="0 0 1600 900" aria-hidden="true">
+      <defs>
+        <pattern id="ft-ashlar" width="196" height="96" patternUnits="userSpaceOnUse">
+          <rect width="196" height="96" fill="#0f0d0b"/>
+          <g fill="#151210" stroke="#0b0908" stroke-width="1.5">
+            <rect x="2" y="2" width="92" height="42" rx="2"/>
+            <rect x="100" y="2" width="92" height="42" rx="2"/>
+            <rect x="-46" y="50" width="92" height="42" rx="2"/>
+            <rect x="52" y="50" width="92" height="42" rx="2"/>
+            <rect x="150" y="50" width="92" height="42" rx="2"/>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="1600" height="900" fill="url(#ft-ashlar)"/>
+      <!-- a gothic window, high up, with the weather behind it -->
+      <g transform="translate(1180 70)">
+        <path class="ft-dressed-2" d="M0 300V90C0 40 40 0 90 0s90 40 90 90v210z"/>
+        <path fill="#0a1018" d="M14 288V92c0-42 34-76 76-76s76 34 76 76v196z"/>
+        <path fill="#16202c" opacity=".8" d="M22 286V94c0-38 30-68 68-68s68 30 68 68v192z"/>
+        <g stroke="#2b2621" stroke-width="6" fill="none">
+          <path d="M90 22v264M22 150h136M22 216h136"/>
+        </g>
+      </g>
+      <g transform="translate(240 70)">
+        <path class="ft-dressed-2" d="M0 300V90C0 40 40 0 90 0s90 40 90 90v210z"/>
+        <path fill="#0a1018" d="M14 288V92c0-42 34-76 76-76s76 34 76 76v196z"/>
+        <path fill="#16202c" opacity=".7" d="M22 286V94c0-38 30-68 68-68s68 30 68 68v192z"/>
+        <g stroke="#2b2621" stroke-width="6" fill="none">
+          <path d="M90 22v264M22 150h136M22 216h136"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div class="ft-vignette"></div>
+
+  <!-- ── SCONCES ──────────────────────────────────────────────────── -->
+  <div class="ft-sconce l">
+    <svg viewBox="0 0 78 150" aria-hidden="true">
+      <path class="ft-iron" d="M30 150V64h18v86z"/>
+      <path class="ft-iron" d="M14 66c0-14 12-24 25-24s25 10 25 24z"/>
+      <rect class="ft-iron" x="34" y="20" width="10" height="30" rx="3"/>
+      <g class="ft-candle" transform="translate(39 22)">
+        <ellipse fill="var(--ft-fire)" opacity=".45" rx="16" ry="24" cy="-12"/>
+        <path fill="url(#ft-core)" d="M0-34c8 12 10 18 10 24 0 7-5 12-10 12s-10-5-10-12c0-6 2-12 10-24z"/>
+      </g>
+    </svg>
+  </div>
+  <div class="ft-sconce r">
+    <svg viewBox="0 0 78 150" aria-hidden="true">
+      <path class="ft-iron" d="M30 150V64h18v86z"/>
+      <path class="ft-iron" d="M14 66c0-14 12-24 25-24s25 10 25 24z"/>
+      <rect class="ft-iron" x="34" y="20" width="10" height="30" rx="3"/>
+      <g class="ft-candle" transform="translate(39 22)">
+        <ellipse fill="var(--ft-fire)" opacity=".45" rx="16" ry="24" cy="-12"/>
+        <path fill="url(#ft-core)" d="M0-34c8 12 10 18 10 24 0 7-5 12-10 12s-10-5-10-12c0-6 2-12 10-24z"/>
+      </g>
+    </svg>
+  </div>
+  <div class="ft-embers" id="embers"></div>
+  <div class="ft-flare"></div>
+
+  <!-- ── THE FIRE ──────────────────────────────────────────────────── -->
+  <!-- ── THE HEARTH ───────────────────────────────────────────────── -->
+  <div class="ft-pit">
+    <svg viewBox="0 0 720 560" aria-hidden="true">
+      <defs>
+        <filter id="ft-turb" x="-30%" y="-30%" width="160%" height="160%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.045"
+            numOctaves="2" seed="7" result="n">
+            <animate attributeName="baseFrequency" dur="9s"
+              values="0.014 0.045;0.022 0.062;0.014 0.045" repeatCount="indefinite"/>
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="8"
+            xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <radialGradient id="ft-core" cx="50%" cy="88%" r="62%">
+          <stop offset="0%" stop-color="#fffbe8"/>
+          <stop offset="34%" stop-color="#ffd777"/>
+          <stop offset="68%" stop-color="#ff7d1a"/>
+          <stop offset="100%" stop-color="#c02405" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="ft-blood" cx="50%" cy="88%" r="62%">
+          <stop offset="0%" stop-color="#ffd9cf"/>
+          <stop offset="30%" stop-color="#ff5a3c"/>
+          <stop offset="66%" stop-color="#a3120f"/>
+          <stop offset="100%" stop-color="#4a0206" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="ft-rim" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="var(--ft-hot)" stop-opacity="0"/>
+          <stop offset="86%" stop-color="var(--ft-hot)" stop-opacity="0"/>
+          <stop offset="97%" stop-color="var(--ft-hot)" stop-opacity=".9"/>
+          <stop offset="100%" stop-color="var(--ft-core)" stop-opacity="1"/>
+        </linearGradient>
+        <radialGradient id="ft-hearthlight" cx="50%" cy="82%" r="52%">
+          <stop offset="0%" stop-color="var(--ft-tint)" stop-opacity=".85"/>
+          <stop offset="55%" stop-color="var(--ft-tint)" stop-opacity=".3"/>
+          <stop offset="100%" stop-color="var(--ft-tint)" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="ft-logglow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ff8c2b"/>
+          <stop offset="100%" stop-color="#5e1c04"/>
+        </linearGradient>
+        <clipPath id="ft-mouth">
+          <path d="M148 520V236c0-16 14-28 32-28h360c18 0 32 12 32 28v284z"/>
+        </clipPath>
+      </defs>
+
+      <!-- the surround: jambs, a four-centred lintel, a mantel shelf -->
+      <path class="ft-dressed" d="M96 560V212c0-40 32-72 74-72h380c42 0 74 32 74 72v348h-58V236c0-16-14-28-32-28H186c-18 0-32 12-32 28v324z"/>
+      <rect class="ft-dressed-2" x="72" y="120" width="576" height="34" rx="4"/>
+      <rect class="ft-dressed-2" x="86" y="154" width="548" height="16" rx="3"/>
+      <path class="ft-carve" d="M100 137h520M118 162h484"/>
+      <!-- firelight spilling onto the stone it is set in -->
+      <path class="ft-lit" d="M96 560V212c0-40 32-72 74-72h380c42 0 74 32 74 72v348h-58V236c0-16-14-28-32-28H186c-18 0-32 12-32 28v324z"/>
+      <rect class="ft-lit" x="72" y="120" width="576" height="50" rx="4"/>
+
+      <!-- the castle's mark over the mantel, taking its colour off the fire -->
+      <g transform="translate(360 60)">
+        <path class="ft-crest" d="M-46 -34h92v42c0 30-22 50-46 62-24-12-46-32-46-62z"/>
+        <path class="ft-crest-in" d="M-34 -22h68v30c0 22-16 37-34 46-18-9-34-24-34-46z"/>
+        <path fill="none" stroke="#5c4c39" stroke-width="2" d="M0-14v46M-18 2h36"/>
+      </g>
+
+      <!-- inside the mouth: the back of the chimney, then the fire -->
+      <g clip-path="url(#ft-mouth)">
+        <rect x="140" y="200" width="440" height="360" fill="#070605"/>
+        <rect x="140" y="200" width="440" height="360" fill="url(#ft-core)" opacity=".12"/>
+        <g filter="url(#ft-turb)" transform="translate(0 190)">
+          <g class="ft-gcore">
+            <path class="ft-flame f3" fill="url(#ft-core)" opacity=".55"
+              d="M360 300C260 300 228 236 248 176c10 42 34 52 34 52s-24-74 24-124c-8 56 34 74 34 74s-14-58 20-96c-2 52 44 66 44 118 0 62-44 100-44 100z"/>
+            <path class="ft-flame f1" fill="url(#ft-core)"
+              d="M360 306c-70 0-104-44-96-98 8 34 28 44 28 44s-20-62 22-104c-8 48 30 62 30 62s-12-48 18-80c-2 44 38 56 38 100 0 52-40 76-40 76z"/>
+            <path class="ft-flame f2" fill="#ffd980" opacity=".85"
+              d="M360 308c-42 0-62-28-58-62 6 22 18 28 18 28s-12-40 14-66c-4 30 18 40 18 40s-8-30 12-50c-2 28 22 36 22 64 0 32-26 46-26 46z"/>
+            <path class="ft-flame f4" fill="#fff6da" opacity=".9"
+              d="M360 310c-22 0-32-16-30-36 3 13 9 16 9 16s-6-23 8-38c-2 18 9 23 9 23s-4-17 6-29c-1 16 12 21 12 37 0 18-14 27-14 27z"/>
+          </g>
+          <g class="ft-gblood">
+            <path class="ft-flame f1" fill="url(#ft-blood)"
+              d="M360 306c-70 0-104-44-96-98 8 34 28 44 28 44s-20-62 22-104c-8 48 30 62 30 62s-12-48 18-80c-2 44 38 56 38 100 0 52-40 76-40 76z"/>
+            <path class="ft-flame f2" fill="#ff6a4a" opacity=".85"
+              d="M360 308c-42 0-62-28-58-62 6 22 18 28 18 28s-12-40 14-66c-4 30 18 40 18 40s-8-30 12-50c-2 28 22 36 22 64 0 32-26 46-26 46z"/>
+          </g>
+        </g>
+
+        <!-- fire dogs, and the oak across them -->
+        <g>
+          <path class="ft-iron" d="M214 500v-62h12v62zM214 438c0-18 14-30 30-30v12c-11 0-18 7-18 18z"/>
+          <path class="ft-iron" d="M494 500v-62h12v62zM506 438c0-11-7-18-18-18v-12c16 0 30 12 30 30z"/>
+          <rect class="ft-log" x="236" y="452" width="248" height="22" rx="10"
+            transform="rotate(-5 360 463)"/>
+          <rect class="ft-log-hot" x="248" y="457" width="224" height="8" rx="4"
+            transform="rotate(-5 360 463)" opacity=".85"/>
+          <rect class="ft-log" x="244" y="470" width="236" height="20" rx="10"
+            transform="rotate(4 362 480)"/>
+          <rect class="ft-iron" x="196" y="496" width="328" height="12" rx="4"/>
+        </g>
+      </g>
+
+      <!-- ── THE CLOAKS ────────────────────────────────────────────
+           The one image the show is known for, and the fastest way to say
+           "Traitors" rather than "fireplace": two hooded figures either side
+           of the hearth, black against the light, rim-lit down the edge that
+           faces the fire. They are silhouettes on purpose — no faces, because
+           at this point in the season nobody knows which of them is which. -->
+      <g transform="translate(74 286) scale(1.18)"><g class="ft-cloak l">
+        <!-- ONE CONTINUOUS SILHOUETTE — hood, shoulders and robe in a single
+             path. Two earlier passes failed here and both are worth naming: a
+             floating head ellipse above a body read as two blobs, and a rim
+             gradient poured over the WHOLE shape turned the figure into a pale
+             cone. A rim light is an EDGE — the gradient is transparent until
+             86% and only the last few pixels are lit. -->
+        <path fill="#070606" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
+        <path fill="url(#ft-rim)" opacity=".85" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
+      </g></g>
+      <g transform="translate(646 286) scale(-1.18 1.18)"><g class="ft-cloak r">
+        <path fill="#070606" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
+        <path fill="url(#ft-rim)" opacity=".85" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
+      </g></g>
+
+      <!-- the flagstone the hearth sits on -->
+      <rect class="ft-dressed-2" x="120" y="516" width="480" height="20" rx="3"/>
+      <rect class="ft-dressed" x="84" y="536" width="552" height="24" rx="3"/>
+    </svg>
+  </div>
+
+  <!-- ── PAGE ──────────────────────────────────────────────────────── -->
+  <div class="ft-wrap">
+
+    <div class="ft-hero">
+      <div class="ft-eyebrow">The Traitors &middot; Night 10 &middot; The Last Fire</div>
+      <h1 class="ft-title">THE FIRE OF TRUTH</h1>
+      <p class="ft-sub">One word each, folded and fed to the flames. Every hand at
+        this fire has to agree before it goes out &mdash; and nobody who leaves from
+        here is ever turned over.</p>
+    </div>
+
+    <div class="ft-grid">
+      <main>
+
+        <!-- I. the room -->
+        <div class="ft-beat" data-fire="calm">
+          <div class="ft-card">
+            <div class="ft-label">I. The Fire</div>
+            <h2 class="ft-h">Nobody Is Going To Be Turned Over</h2>
+            <p class="ft-p">The fire is built for a castle that used to hold twenty.
+              Four of them sit down at it and are not asked to accuse anybody. They
+              are asked something else.</p>
+            <p class="ft-p">One word each, folded and fed to the flames. It takes the
+              whole fire to put it out, and one hand to keep it lit &mdash; so the
+              quietest player here holds exactly the power the loudest one does, and
+              neither has to explain it.</p>
+          </div>
+        </div>
+
+        <!-- II. the question -->
+        <div class="ft-beat" data-fire="calm">
+          <div class="ft-card">
+            <div class="ft-label">II. The Question, For The First Time</div>
+            <h2 class="ft-h">Feed It, Or Keep It Lit</h2>
+            <p class="ft-p">The first time of asking. They have spent a whole season
+              reading each other and none of it reaches across a folded piece of paper.</p>
+            <div class="ft-host">
+              <div class="ft-host-av">VS</div>
+              <div>
+                <div class="ft-host-q">&ldquo;You may end this now, all of you
+                  together, or not at all.&rdquo;</div>
+                <div class="ft-host-n">Valeria Sandoval</div>
+              </div>
+            </div>
+            <div class="ft-slips">
+              <div class="ft-slip burnt" style="animation-delay:.05s">
+                <div class="ft-av">B</div>
+                <div><div class="ft-slip-n">Beardo</div>
+                  <div class="ft-slip-w">Would rather take a share than take a risk.</div></div>
+                <div class="ft-word end">End it</div>
+              </div>
+              <div class="ft-slip burnt" style="animation-delay:.18s">
+                <div class="ft-av">BR</div>
+                <div><div class="ft-slip-n">Brick</div>
+                  <div class="ft-slip-w">Is finished reading people. Wants the doors open.</div></div>
+                <div class="ft-word end">End it</div>
+              </div>
+              <div class="ft-slip burnt" style="animation-delay:.31s">
+                <div class="ft-av">BO</div>
+                <div><div class="ft-slip-n">Bowie</div>
+                  <div class="ft-slip-w">Believes the room is clean, or wants very badly to.</div></div>
+                <div class="ft-word end">End it</div>
+              </div>
+              <div class="ft-slip burnt" style="animation-delay:.44s">
+                <div class="ft-av">C</div>
+                <div><div class="ft-slip-n">Carrie</div>
+                  <div class="ft-slip-w">Cannot look at one of these faces without hearing
+                    something that did not add up.</div></div>
+                <div class="ft-word again">Another</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- III. the count — the fire answers -->
+        <div class="ft-beat" data-fire="roar">
+          <div class="ft-card">
+            <div class="ft-label">III. The Count</div>
+            <h2 class="ft-h">The Fire Stays Lit</h2>
+            <div class="ft-count">
+              <div class="ft-count-n">1</div>
+              <div>
+                <div class="ft-count-l">one hand, of four</div>
+                <p class="ft-p" style="margin:6px 0 0">Not one voice. So they sit back
+                  down, at a fire that has just told everybody somebody here is still
+                  hunting.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IV. the vote -->
+        <div class="ft-beat" data-fire="roar">
+          <div class="ft-card">
+            <div class="ft-label">IV. The Vote</div>
+            <h2 class="ft-h">A Name, Not A Word</h2>
+            <p class="ft-p">One of them would not let it go out, so all of them have to
+              write a name. The slates go round face-down and come back with somebody
+              on them.</p>
+            <div class="ft-slips">
+              <div class="ft-slip"><div class="ft-av">B</div>
+                <div><div class="ft-slip-n">Beardo</div></div>
+                <div class="ft-word hidden">Carrie</div></div>
+              <div class="ft-slip"><div class="ft-av">BR</div>
+                <div><div class="ft-slip-n">Brick</div></div>
+                <div class="ft-word hidden">Carrie</div></div>
+              <div class="ft-slip"><div class="ft-av">BO</div>
+                <div><div class="ft-slip-n">Bowie</div></div>
+                <div class="ft-word hidden">Carrie</div></div>
+              <div class="ft-slip"><div class="ft-av">C</div>
+                <div><div class="ft-slip-n">Carrie</div></div>
+                <div class="ft-word hidden">Bowie</div></div>
+            </div>
+            <div class="ft-count" style="margin-top:16px">
+              <div class="ft-count-n">3</div>
+              <div><div class="ft-count-l">against Carrie, of four</div>
+                <p class="ft-p" style="margin:6px 0 0">Carrie goes out of the door with
+                  the fire no wiser than it was an hour ago.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- V. the turning over -->
+        <div class="ft-beat" data-fire="blood" data-hit="1">
+          <div class="ft-card">
+            <div class="ft-label">V. The Turning Over</div>
+            <h2 class="ft-h">The Only Question The Castle Ever Cared About</h2>
+            <p class="ft-p">Nobody sits down. The host goes round the fire and asks it,
+              and this time there is no vote attached.</p>
+            <div class="ft-host">
+              <div class="ft-host-av">VS</div>
+              <div>
+                <div class="ft-host-q">&ldquo;Some of you are exactly what you said you
+                  were. At least one of you has been sitting there since the first
+                  morning waiting for this.&rdquo;</div>
+                <div class="ft-host-n">Valeria Sandoval</div>
+              </div>
+            </div>
+            <div style="margin-top:8px">
+              <div class="ft-turn faithful">
+                <div class="ft-turn-av">B</div>
+                <div><span class="ft-role">Faithful</span>
+                  <p class="ft-p">Beardo is clean, and the way of saying it makes obvious
+                    how long he had been waiting for somebody to just ask.</p></div>
+              </div>
+              <div class="ft-turn faithful">
+                <div class="ft-turn-av">BR</div>
+                <div><span class="ft-role">Faithful</span>
+                  <p class="ft-p">Brick was exactly what he said he was. At this fire that
+                    is somehow the more surprising answer.</p></div>
+              </div>
+              <div class="ft-turn traitor">
+                <div class="ft-turn-av">BO</div>
+                <div><span class="ft-role">Traitor</span>
+                  <p class="ft-p">Bowie turns over and the fire does not believe it for a
+                    full second. Then it does, all at once, and everybody starts talking.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VI. the box -->
+        <div class="ft-beat" data-fire="blood">
+          <div class="ft-card ft-box">
+            <div class="ft-label" style="justify-content:center">VI. The Strongbox</div>
+            <h2 class="ft-h" style="font-size:32px">The Castle Was Betrayed</h2>
+            <div class="ft-money">&pound;67,684</div>
+            <div class="ft-money-l">all of it, to one of them</div>
+            <p class="ft-p" style="margin-top:20px">The pact was never broken. The fire
+              went out on a Traitor, and the castle handed him the box.</p>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- ── SIDEBAR ─────────────────────────────────────────────────── -->
+      <aside class="ft-side-col"><div class="ft-side">
+        <div class="ft-side-box">
+          <div class="ft-side-h">At The Fire</div>
+          <div class="ft-chair" id="ch-beardo"><div class="ft-chair-av">B</div>
+            <div class="ft-chair-n">Beardo</div><div class="ft-dot"></div></div>
+          <div class="ft-chair" id="ch-brick"><div class="ft-chair-av">BR</div>
+            <div class="ft-chair-n">Brick</div><div class="ft-dot"></div></div>
+          <div class="ft-chair" id="ch-bowie"><div class="ft-chair-av">BO</div>
+            <div class="ft-chair-n">Bowie</div><div class="ft-dot"></div></div>
+          <div class="ft-chair" id="ch-carrie"><div class="ft-chair-av">C</div>
+            <div class="ft-chair-n">Carrie</div><div class="ft-dot"></div></div>
+        </div>
+        <div class="ft-side-box">
+          <div class="ft-side-h">The Fire</div>
+          <div class="ft-stat"><span>Times asked</span><b id="s-asked">0</b></div>
+          <div class="ft-stat"><span>Still standing</span><b id="s-alive">4</b></div>
+          <div class="ft-stat"><span>Tables forced</span><b id="s-tables">0</b></div>
+          <div class="ft-stat"><span>In the box</span><b>&pound;67,684</b></div>
+        </div>
+      </div></aside>
+    </div>
+  </div>
+
+  <div class="ft-controls">
+    <button class="ft-btn" id="next">&rsaquo;&nbsp; Continue</button>
+    <span class="ft-counter" id="counter">1 / 6</span>
+    <button class="ft-btn" id="all">Reveal all</button>
+  </div>
+</div>
+
+<script>
+// ── EMBERS ────────────────────────────────────────────────────────────
+// Made once, in JS, because 26 of them as markup is 26 lines of noise in a
+// builder. The VP will emit the same loop.
+(function () {
+  const host = document.getElementById('embers');
+  for (let i = 0; i < 26; i++) {
+    const e = document.createElement('i');
+    e.className = 'ft-ember';
+    e.style.left = (14 + Math.random() * 72) + '%';
+    e.style.setProperty('--dx', (Math.random() * 140 - 70) + 'px');
+    e.style.animationDuration = (7 + Math.random() * 9) + 's';
+    e.style.animationDelay = (-Math.random() * 14) + 's';
+    e.style.transform = 'scale(' + (0.5 + Math.random()) + ')';
+    host.appendChild(e);
+  }
+})();
+
+// ── THE REVEAL, AND THE FIRE REACTING TO IT ──────────────────────────
+// Each beat carries `data-fire`, so the scene is graded BY THE BEAT rather
+// than by a separate script that has to be kept in step with it. That is the
+// interactivity worth having: the night changes colour under you as you click.
+(function () {
+  const root = document.getElementById('root');
+  const beats = [...document.querySelectorAll('.ft-beat')];
+  const counter = document.getElementById('counter');
+  const btnNext = document.getElementById('next');
+  const btnAll = document.getElementById('all');
+  const sAsked = document.getElementById('s-asked');
+  const sAlive = document.getElementById('s-alive');
+  const sTables = document.getElementById('s-tables');
+  let idx = -1;
+
+  function grade(beat) {
+    root.dataset.fire = beat.dataset.fire || 'calm';
+    if (beat.dataset.hit) {
+      root.classList.add('hit', 'flaring');
+      setTimeout(() => root.classList.remove('hit', 'flaring'), 950);
+    } else {
+      root.classList.add('flaring');
+      setTimeout(() => root.classList.remove('flaring'), 950);
+    }
+  }
+  function sidebar(i) {
+    sAsked.textContent = i >= 1 ? (i >= 4 ? 2 : 1) : 0;
+    sTables.textContent = i >= 3 ? 1 : 0;
+    sAlive.textContent = i >= 3 ? 3 : 4;
+    document.getElementById('ch-carrie').classList.toggle('out', i >= 3);
+  }
+  function show(n) {
+    idx = Math.min(n, beats.length - 1);
+    beats.forEach((b, i) => b.classList.toggle('on', i <= idx));
+    if (idx >= 0) {
+      grade(beats[idx]);
+      beats[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    sidebar(idx);
+    counter.textContent = (idx + 1) + ' / ' + beats.length;
+    btnNext.disabled = idx >= beats.length - 1;
+    btnAll.disabled = idx >= beats.length - 1;
+  }
+  btnNext.addEventListener('click', () => show(idx + 1));
+  btnAll.addEventListener('click', () => show(beats.length - 1));
+  show(0);
+})();
+</script>
+</body>
+</html>

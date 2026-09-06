@@ -281,8 +281,23 @@ export function runEndgame(startEp, rng = Math.random, { reveal = false } = {}) 
   let guard = (gs.activePlayers || []).length + 2;
   while (guard-- > 0) {
     const living = [...(gs.activePlayers || [])];
-    // One person cannot banish anybody, so the question has only one answer.
-    if (living.length < 2) break;
+    // ── TWO IS THE END OF IT, NOT ANOTHER QUESTION ────────────────────
+    //
+    // Reported from a played finale: the screen drew "The Question, A Second
+    // Time — the same question, the same paper, fewer hands" to a room of two,
+    // both of whom wrote End it. "When there's 2 the game stops, no need to
+    // have a last question."
+    //
+    // And a table of two could not have answered it either way: a banishment
+    // needs a majority and two players produce 1-1, so the only thing on the
+    // other side of that question is a coin flip deciding the season. The
+    // mandated loop already stops handing episodes over at two for exactly
+    // this reason (js/tr/headless.js); this is the same rule at the fire.
+    //
+    // The pot then resolves on the two who are left, which is the format's own
+    // rule and needs no vote to trigger it: any Traitor still standing at the
+    // end takes it, otherwise the Faithfuls split.
+    if (living.length <= 2) break;
     // ASKED EVERY TIME, AND ANSWERED YES EXACTLY ONCE (spec 7.3). It is put
     // here, before the ask, because that is what the power is for: a private
     // meeting whose one certain answer is spent on the question the room is

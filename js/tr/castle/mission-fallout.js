@@ -1595,22 +1595,22 @@ const THE_GATE_LINES = {
     'It had taken all day and the whole road, but {a} and {b} came through the gate square with each other.',
   ],
   'ended-badly': [
-    '{a} and {b} finished it at the gate, and finishing it was worse for both of them than leaving it open had been.',
+    '{a} and {b} finished the argument at the gate, and finishing it was worse for both of them than leaving it open had been.',
     'The last hundred yards took whatever {a} and {b} had left and spent it, and neither of them was pretending otherwise inside.',
     '“Fine,” {b} said, at the door. “Then we know where we are.” They did. It was not a good place.',
-    '{a} pushed it one sentence too far on the path up from {mission}, and it broke where it stood.',
+    '{a} pushed the conversation one sentence too far on the path up from {mission}, and whatever trust was left between them broke.',
   ],
   'carried-inside': [
     'The castle arrived before {a} and {b} were done, and both of them knew exactly what that meant for tonight.',
-    '{a} and {b} ran out of road before they ran out of it, and carried the rest of it in through the gate.',
-    '“Later,” {a} said, at the door, and {b} heard the word for what it was.',
-    'Coming back from {mission} put {a} and {b} back inside the walls with the thing still open between them.',
+    '{a} and {b} ran out of road before they finished the argument, and carried the rest of it in through the gate.',
+    '”Later,” {a} said at the door, and both of them knew the conversation was not over.',
+    '{a} and {b} came back from {mission} with the disagreement still unresolved between them.',
   ],
   'quietly-dropped': [
-    'Neither {a} nor {b} picked it up again on the path from {mission}, and by the door it had stopped being a thing.',
-    '{a} let it go somewhere on the last mile and did not tell {b} that {a} had, which was the kindest version.',
-    'It simply stopped mattering to {a} and {b} between the vans and the gate, the way these things do.',
-    '{a} and {b} walked the last stretch talking about the food, and the other thing was never mentioned again.',
+    'Neither {a} nor {b} brought the argument up again on the path from {mission}, and by the door it had gone quiet on its own.',
+    '{a} stopped pushing the point somewhere on the last mile and did not tell {b}, which was the kindest version.',
+    'The disagreement simply ran out of energy between the vans and the gate, and neither of them restarted it.',
+    '{a} and {b} walked the last stretch talking about the food, and the argument was never mentioned again.',
   ],
 };
 

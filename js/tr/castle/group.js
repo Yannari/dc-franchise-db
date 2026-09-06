@@ -191,7 +191,7 @@ registerEvent({
     if (branch === 'two-against-one') crowd = { name: c, colour: 'wronged', reason: 'was outnumbered in a room and had to agree anyway', mult: 0.4 };
     else if (branch === 'somebody-said-nothing') crowd = { name: c, colour: 'exposed', reason: 'said nothing at all while a room decided a name', mult: 0.4 };
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: c,
-      topic: c, topicKind: 'group-room', threadId: t?.id || existing?.id || null,
+      threadId: t?.id || existing?.id || null,
       bondDelta: delta, ...(crowd ? { crowd } : {}) };
   },
 });
@@ -282,7 +282,7 @@ registerEvent({
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY_TRUST, [a, b], { source: sceneWhy, seed: note });
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: b,
-      topic: b, topicKind: 'group-room', threadId: t?.id || existing?.id || null, bondDelta: delta };
+      threadId: t?.id || existing?.id || null, bondDelta: delta };
   },
 });
 
@@ -378,7 +378,7 @@ registerEvent({
     let crowd = null;
     if (branch === 'left-somebody-out') crowd = { name: c, colour: 'wronged', reason: 'was left to walk a road behind two people who would not make room', mult: 0.5 };
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: c,
-      topic: c, topicKind: 'group-room', threadId: t?.id || existing?.id || null,
+      threadId: t?.id || existing?.id || null,
       bondDelta: delta, ...(crowd ? { crowd } : {}) };
   },
 });
@@ -467,7 +467,7 @@ registerEvent({
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY_SUSP, [a, b], { source: sceneWhy, seed: note });
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: b,
-      topic: b, topicKind: 'group-room', threadId: t?.id || existing?.id || null, bondDelta: delta };
+      threadId: t?.id || existing?.id || null, bondDelta: delta };
   },
 });
 
@@ -556,7 +556,7 @@ registerEvent({
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc(FAMILY_TRUST, [a, b], { source: sceneWhy, seed: note });
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: b,
-      topic: b, topicKind: 'group-room', threadId: t?.id || existing?.id || null, bondDelta: delta };
+      threadId: t?.id || existing?.id || null, bondDelta: delta };
   },
 });
 
@@ -653,7 +653,7 @@ registerEvent({
     else if (branch === 'held-the-room') crowd = { name: c, colour: 'masterful', reason: 'took a room full of accusers and gave nothing', mult: 0.6 };
     else if (branch === 'the-room-turned') crowd = { name: a, colour: 'cruel', reason: 'kept going after the room had stopped', mult: 0.5 };
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: c,
-      topic: c, topicKind: 'group-room', threadId: t?.id || existing?.id || null,
+      threadId: t?.id || existing?.id || null,
       bondDelta: delta, ...(crowd ? { crowd } : {}) };
   },
 });
@@ -746,7 +746,7 @@ registerEvent({
     let crowd = null;
     if (branch === 'one-of-them-defended-them') crowd = { name: c, colour: 'selfless', reason: 'defended somebody who was not there, to a road that had already decided', mult: 0.5 };
     return { branch, actors: [...actors], people: [...actors], speaker: a, respondent: b,
-      topic: b, topicKind: 'group-room', threadId: t?.id || existing?.id || null,
+      threadId: t?.id || existing?.id || null,
       bondDelta: delta, ...(crowd ? { crowd } : {}) };
   },
 });

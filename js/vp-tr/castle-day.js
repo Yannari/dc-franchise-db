@@ -1192,7 +1192,7 @@ const CONSEQ = {
     carried: {
       smooth: [
         'It holds again. {a} and {b} have built something the rest of the castle has not been shown.',
-        'Whatever this is, it survived today as well. That is starting to be worth something to both of them.',
+        'Another day and {a} and {b} are still where they were. That is starting to be worth something to both of them.',
         '{a} and {b} keep choosing each other, and it is beginning to be the thing they are known for.',
         'Neither of them tests it any more. That is either the safest thing either of them has, or the most expensive.',
       ],
@@ -1565,6 +1565,73 @@ const REACT_SINGLE = {
     '{a} keeps whatever it was and keeps the keeping of it quiet too.',
   ],
 };
+// ── THE CLOSING LINE WHEN NOTHING COUNTABLE MOVED ──────────────────────
+//
+// `_receiptConsequence` builds its line out of chips — recorded bond and read
+// movements. A scene that moved neither has no chip, and a SOLO scene moves
+// neither by construction: one person alone has no interpersonal delta, and
+// every event in js/tr/castle/alone.js returns bondDelta 0 for that reason.
+// So this pool is not a rare safety net. It is the standard closing line for
+// most of the solo pool, and it used to be four sentences all saying that
+// nothing had been concluded.
+//
+// NO CHIP IS NOT NO CONSEQUENCE. It is no NUMBER. What a scene with no number
+// still has is somebody who now intends something, is carrying something, or
+// is one step nearer a name — and in a format where every hour is evidence
+// for a vote that is coming, that is the only closing beat that is true.
+const FALLBACK_SOLO = {
+  smooth: [
+    '{a} says nothing to anybody about it and goes down to dinner a step nearer a name.',
+    'Nobody watched {a} work that out, which is the whole value of it.',
+    '{a} carries it down the stairs and intends to spend it at the right table.',
+    'It buys {a} nothing tonight. {a} is not playing for tonight.',
+    '{a} comes away with the beginnings of something and the sense to keep quiet about it.',
+    'Whoever is doing this has been a fraction less careful than they think, and {a} is a fraction closer for it.',
+    '{a} adds it to the rest and the rest is starting to have a shape.',
+    'Nothing about the evening changes. {a} goes into it knowing one more thing than the room does.',
+    '{a} will not act on it this week. {a} will not forget it either.',
+    'It is not evidence yet. {a} has been in this castle long enough to know what it is on the way to being.',
+  ],
+  adverse: [
+    '{a} goes back down having got something wrong and not yet knowing which part.',
+    'Somebody in this castle is going to make {a} pay for that hour, and {a} half knows it.',
+    '{a} leaves it there because leaving it there is all that is on offer.',
+    'It costs {a} nothing tonight and it is the kind of thing that arrives late.',
+    '{a} has spent something and cannot say what, which is the worst way to spend it.',
+    'Whatever {a} was building has a piece missing and {a} cannot find the piece.',
+    '{a} goes down to the hall carrying it and hoping it does not show.',
+    'The week has got harder for {a} and nobody in the room did it to {a}.',
+    '{a} would take that hour back. This format does not do that.',
+    '{a} is further from a name than {a} was this morning, and further along in the week.',
+  ],
+};
+
+// The same, for two people who talked and moved nothing measurable between
+// them. Never "they did not reach an agreement" — an agreement was not what
+// the scene was for.
+const FALLBACK_PAIR = {
+  smooth: [
+    '{a} and {b} leave it where it is, and both of them will come back to it before Thursday.',
+    'Nothing is settled between {a} and {b}, and neither of them wanted it settled tonight.',
+    '{a} and {b} go back in separately, a minute apart, which is a habit now.',
+    'They have not agreed anything. {a} and {b} have agreed to keep having the conversation.',
+    '{a} takes something away from that and {b} takes something different.',
+    '{a} and {b} come out of it with the same short list and neither says so.',
+    'It moves nobody tonight. It has moved {a} and {b} nearer to each other all week.',
+    '{a} and {b} say goodnight in the corridor like two people who have not just done that.',
+  ],
+  adverse: [
+    '{a} and {b} stop before either of them says the thing that could not be walked back.',
+    'It ends because it has to end, not because {a} or {b} is finished.',
+    '{a} and {b} leave it, and it is going to be waiting for both of them tomorrow.',
+    'Neither of them has moved. That is the part {a} and {b} will each report differently.',
+    '{a} goes one way and {b} goes the other and the hall notices the order.',
+    'Nothing was decided and something between {a} and {b} was.',
+    'They will be perfectly civil at breakfast. {a} and {b} both know what that is worth.',
+    '{a} and {b} run out of evening before either runs out of argument.',
+  ],
+};
+
 const CONSEQ_SINGLE = {
   opened: {
     smooth: [
@@ -1600,7 +1667,7 @@ const CONSEQ_SINGLE = {
     smooth: [
       'The same again, a day later, and {a} is a little better at it than yesterday.',
       '{a} does it again and it costs about what it cost last time, which is manageable.',
-      'It repeats, quietly, and nothing about it has got any easier or any worse.',
+      '{a} does the same thing again and it has got no easier and no harder.',
       'Another day of it. {a} has stopped noticing that {a} is doing it at all.',
       'It has become a habit rather than a decision, which is how most of these end.',
       'The second time is easier. The third one was easier than that.',
@@ -2039,7 +2106,7 @@ const CONSEQ_COVER_WEIGHT = {
     '{a} lay awake with {topic}. Nothing cracked in the open, but {a} is running on less than {a} needs to keep this up.',
     '{a} came within a sentence of telling somebody about {topic}, alone in the dark, and stopped. Nobody will ever know how close it was.',
     '{topic} would not let {a} sleep. It is not the room that is wearing {a} down; it is the thing only {a} knows.',
-    '{a} spent the small hours with {topic} and none of them helped. The story holds; the person under it is thinner than yesterday.',
+    '{a} went over {topic} again in the dark and the dark did not help. The lie is holding fine. {a} is the part that is wearing out.',
   ],
   turned: [
     '{a} nearly handed {topic} to somebody just to be rid of it, and caught {a}’s own mouth in time. The weight of it is starting to steer {a}.',
@@ -2672,22 +2739,28 @@ function _receiptConsequence(s, subs, tone, key, used) {
   }
   let say = lines.slice(0, 2).join(' ');
   if (!say) {
+    // NO CHIP IS NOT NO CONSEQUENCE — it is no NUMBER, which is a different
+    // thing and used to be written as though it were the same. A scene that
+    // moved no bond and no read fell through to four interchangeable
+    // "nothing was concluded" sentences, and because a SOLO scene moves
+    // neither by construction (one person alone has no interpersonal delta,
+    // and every event in js/tr/castle/alone.js returns bondDelta 0 for that
+    // reason), those four were the standard closing line for most of the
+    // solo pool. Measured from a real dump: six solo scenes in one night,
+    // six variations on "reaches no firm conclusion".
+    //
+    // `CONSEQ_SINGLE` and `CONSEQ` are already written for exactly this — a
+    // scene whose outcome is internal rather than countable — and carry
+    // twelve lines a branch against these four. So the fallback now goes
+    // THERE rather than to a fifth pool that says nothing.
     const pool = s.closedNow ? [
       'The conversation ends there.',
       'They say nothing further about it.',
       'That is the last either of them says on the subject.',
       'The discussion stops before anyone else joins them.',
-    ] : (subs.b && subs.b !== subs.a) ? [
-      '{a} and {b} leave without reaching an agreement.',
-      '{a} and {b} end the conversation with the question unsettled.',
-      'Neither {a} nor {b} changes their position before they leave.',
-      '{a} and {b} stop talking before either persuades the other.',
-    ] : [
-      '{a} reaches no firm conclusion before leaving.',
-      '{a} leaves the question unresolved for now.',
-      '{a} decides they do not yet have enough information to act.',
-      '{a} returns to the group without settling the question.',
-    ];
+    ] : (subs.b && subs.b !== subs.a)
+      ? (FALLBACK_PAIR[tone] || FALLBACK_PAIR.smooth)
+      : (FALLBACK_SOLO[tone] || FALLBACK_SOLO.smooth);
     say = _fill(_pickUnique(pool, key + '|receipt|fallback', used,
       'receipt-fallback'), subs);
   }

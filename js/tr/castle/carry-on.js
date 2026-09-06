@@ -174,7 +174,7 @@ registerEvent({
     let crowd = null;
     if (branch === 'turned-it-to-use') crowd = { name: a, colour: 'selfish', reason: 'enlisted somebody who is dead into an argument', mult: 0.5 };
     return { branch, pair: [a, b], speaker: a, respondent: b,
-      topic: v, topicKind: 'grief-subject', threadId: thread?.id, cited, note, bondDelta,
+      topic: v, topicKind: 'grief-loss', threadId: thread?.id, cited, note, bondDelta,
       ...(crowd ? { crowd } : {}) };
   },
 });
@@ -477,7 +477,7 @@ registerEvent({
     if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
     const { thread, cited } = arcContinue(api, 'suspicion', [a, b], ctx.ep, note, { source: sceneWhy });
     return { branch, pair: [a, b], speaker: a, respondent: b,
-      topic: b, topicKind: 'suspicion-subject', threadId: thread?.id, cited, note, bondDelta };
+      topic: b, topicKind: 'road-suspect-walk', threadId: thread?.id, cited, note, bondDelta };
   },
 });
 

@@ -1288,7 +1288,17 @@ function _castleRecord(ep, fired) {
     // CLOSED TONIGHT, which is not the same as closed. `closeThread` stamps
     // `lastEp`, so a thread paid off three rounds ago is not a payoff on this
     // row and must not be drawn as one.
-    const closedNow = t.state === 'closed' && t.lastEp === ep && !!t.outcome;
+    //
+    // AND NOT THE SAME AS "THIS SCENE CLOSED IT". The three conditions below
+    // are a fact about the THREAD, so when a story had two scenes in one
+    // episode and ended closed, BOTH of them reported the payoff and the
+    // screen drew two knots for one ending — tr-vp.test.js's rule is that a
+    // thread is knotted exactly once, on the last scene it has. `used` is
+    // this scene's index into that thread's beats tonight and `todays` is all
+    // of them, so the last one is the only one entitled to the payoff.
+    const isLastTonight = used === todays.length - 1;
+    const closedNow = t.state === 'closed' && t.lastEp === ep && !!t.outcome
+      && isLastTonight;
     const voices = sceneSpeakers(f.event, c);
 
     scenes.push({

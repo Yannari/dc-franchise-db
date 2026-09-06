@@ -165,7 +165,17 @@ export function advanceThread(id, ep, note = '', eventId = '') {
 
 export function closeThread(id, ep, outcome) {
   const t = gs.tr?.threads?.find(x => x.id === id);
-  if (!t) return null;
+  // ALREADY CLOSED IS A NO-OP, symmetric with `advanceThread` directly above,
+  // which has always refused a thread whose state is not `open`. This one did
+  // not, so a second event resolving the same arc in the same episode closed
+  // it again, overwrote the outcome, and — because `resolveArc` reports
+  // `closedNow` off a non-null return — made TWO scenes each draw a knot for
+  // one story. tr-vp.test.js states the rule the screen wants ("a thread is
+  // knotted off exactly once, on the last scene it has"); this is the engine
+  // half of it. `resolveArc` already handles the null: it records the receipt
+  // with `applied: false` and a `blockedBy`, so the second event still gets a
+  // truthful receipt saying it did not do anything.
+  if (!t || t.state !== 'open') return null;
   t.state = 'closed';
   t.outcome = outcome;
   t.lastEp = ep;

@@ -1786,7 +1786,7 @@ registerEvent({
     let crowd = null;
     if (branch === 'one-of-them-carried-it') crowd = { name: a, colour: 'kind', reason: 'covered for somebody out of their depth and said nothing about it', mult: 0.5 };
     return { branch, pair: [a, b], speaker: a, respondent: b,
-      topic: b, topicKind: 'road-partner', threadId: t?.id, bondDelta,
+      threadId: t?.id, bondDelta,
       ...(crowd ? { crowd } : {}) };
   },
 });
@@ -1889,7 +1889,7 @@ registerEvent({
     let crowd = null;
     if (branch === 'admired') crowd = { name: win.player, colour: 'masterful', reason: 'was the best thing on that field and the road home said so', mult: 0.5 };
     return { branch, pair: [a, b], speaker: a, respondent: b,
-      topic: win.player, topicKind: 'road-praise', threadId: t?.id || existing?.id || null,
+      topic: win.player, topicKind: 'road-third-name', threadId: t?.id || existing?.id || null,
       bondDelta, ...(crowd ? { crowd } : {}) };
   },
 });
@@ -1986,7 +1986,7 @@ registerEvent({
       ? api.advanceArc(existing.id, note, { source: sceneWhy })
       : api.openArc('trust', [a, b], { source: sceneWhy, seed: note });
     return { branch, pair: [a, b], speaker: a, respondent: b,
-      topic: b, topicKind: 'road-partner', threadId: t?.id || existing?.id || null, bondDelta };
+      threadId: t?.id || existing?.id || null, bondDelta };
   },
 });
 
@@ -2089,7 +2089,7 @@ registerEvent({
     if (branch === 'shared-it-out') crowd = { name: a, colour: 'selfless', reason: 'handed round the credit for an afternoon they could have kept', mult: 0.6 };
     else if (branch === 'took-the-credit') crowd = { name: a, colour: 'selfish', reason: 'told a team result in the first person all the way home', mult: 0.5 };
     return { branch, pair: [a, b], speaker: a, respondent: b,
-      topic: b, topicKind: 'road-partner', threadId: t?.id || existing?.id || null,
+      threadId: t?.id || existing?.id || null,
       bondDelta, ...(crowd ? { crowd } : {}) };
   },
 });

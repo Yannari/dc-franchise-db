@@ -723,7 +723,7 @@ export function createTraitorsSceneApi(ctx = {}) {
     const t = closeThread(id, ep, outcome);
     _push({ kind: 'arc-resolve', value: `${id}:${outcome}`, source,
       players: t ? [...t.parties] : null,
-      applied: !!t, blockedBy: t ? null : 'no arc with that id' });
+      applied: !!t, blockedBy: t ? null : 'no open arc with that id' });
     return t;
   }
 

@@ -18,7 +18,7 @@
 // from a seed cannot afford.
 import { gs } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { getBond } from '../bonds.js';
+import { getBond, addBond } from '../bonds.js';
 import { resolveVotes } from '../voting.js';
 import { learn, believes } from '../knowledge.js';
 import { knowersOf } from './knowledge-flow.js';
@@ -79,6 +79,321 @@ function debate(ep, rng) {
   }
   for (const a of accusations) broadcast(a.accuser, a.target, ep, rng);
   return accusations;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CLASHES — the table is an argument, and it was a list
+// ══════════════════════════════════════════════════════════════════════
+//
+// WHAT `debate()` ABOVE PRODUCES, and what it does not. Every living player
+// contributes at most ONE accusation — their own top read, pointed at a name —
+// and that is the entire debate record. Measured across 40 played seasons the
+// castle's `confrontation` family runs at 9.6 scenes a season against
+// suspicion's 66.8, and every one of those 9.6 happens somewhere ELSE: in a
+// kitchen, on a road, in a corridor. The one hour of the format whose entire
+// purpose is people accusing each other to their faces produced no
+// confrontation at all — a list of names with defences attached, and no two
+// of them ever touching.
+//
+// A CLASH IS TWO SEATED PLAYERS GOING AT EACH OTHER IN THE OPEN, and it is
+// generated from what the season already holds rather than from a die:
+//
+//   counter        {b} is accused and names {a} straight back. The commonest
+//                  and the one the format actually runs on.
+//   old-grievance  a confrontation or suspicion thread these two have been
+//                  carrying all week, brought to the table where it costs
+//                  something. THIS is the wire the castle needed: an argument
+//                  that started in a corridor on day three finishes here.
+//   broken-word    {a} holds {b} to a trust story the record shows {b} broke.
+//                  Gated on the thread's OUTCOME, not on a mood.
+//   ganged-up      two or more accusers landed on the same target and the
+//                  target says so out loud.
+//   defended       {a} takes {b}'s side against the room, at a cost.
+//
+// EVERY CLASH HAS CONSEQUENCES, like every castle event: the bond moves, and
+// where a thread already exists it is advanced rather than duplicated. A
+// clash that changed nothing would be the decorative-event class the whole
+// castle layer is written against.
+//
+// AND THEY ARE PUBLIC BY CONSTRUCTION. A clash reads accusations (said out
+// loud at this table), bonds, and thread KINDS and OUTCOMES — never an
+// alignment, never a belief's certainty. Nothing here can leak what a Faithful
+// could not have watched happen.
+
+// TEST-ONLY SEAM, and the reason it exists rather than a comment claiming an
+// effect. Clashes are generated FROM suspicion threads and tonight's
+// accusations, so the two people in one were ALREADY likely to write each
+// other down: a raw "59.8% of clashers voted for the person they clashed
+// with" is a correlation with a shared cause, not a measured influence. This
+// runs the identical season with the vote-intent term removed and nothing
+// else changed, so the two numbers can be subtracted.
+let _noClashIntents = false;
+export function _setClashIntents(on) {
+  const prev = !_noClashIntents;
+  _noClashIntents = !on;
+  return () => { _noClashIntents = !prev; };
+}
+
+/** Live threads between two seated players, by kind. */
+function _threadBetween(kind, a, b) {
+  return (gs.tr?.threads || []).find(t => t.kind === kind
+    && (t.parties || []).length === 2
+    && t.parties.includes(a) && t.parties.includes(b));
+}
+
+const CLASH_LINES = {
+  counter: [
+    '{b} does not answer it. {b} asks {a}, in front of everybody, why {a} is so certain.',
+    '“Before I answer that,” says {b} to {a}, “tell the table where you were.”',
+    '{a} names {b} and {b} names {a} back inside ten seconds, and the room has two problems now.',
+    '{b} turns it straight round: the same accusation, the same words, pointed at {a}.',
+    '{b} says the interesting question is not about {b} at all, and then asks it about {a}.',
+    'It stops being an accusation and becomes a fight, and the room lets it run.',
+    '{b} answers {a} with a question and {a} does not have the answer ready.',
+    '“You have been building to this all week,” {b} tells {a}. “Say the rest of it.”',
+  ],
+  // AGE-BANDED, because these assert how long something has been running and
+  // the event now knows. `{d}` is the thread's real opening episode and is
+  // safe in every band; the bands exist for the lines that say a duration in
+  // words. See the note on `clashes` for the measurement.
+  'old-grievance': [
+    'It has been running since day {d} and {a} finally says it where it counts.',
+    '{a} brings the whole of it to the table and {b} has to sit through the list.',
+    'Whatever happened between {a} and {b} on day {d} is now the room\u2019s business.',
+    'This argument is older than the table it is being had at, and it shows.',
+    '{a} has been carrying this since day {d} and picks tonight to put it down.',
+    '\u201cWe have done this,\u201d says {b}. \u201cWe have never done it in front of them,\u201d says {a}.',
+    '{a} does not raise anything new. {a} raises all of it at once.',
+    'Two people who have been circling this since day {d} stop circling it.',
+  ],
+  // ONE NIGHT OLD. Whatever this is, it started yesterday, and a card calling
+  // that ancient is the defect this band exists to prevent.
+  'grievance-fresh': [
+    '{a} and {b} had this out yesterday and are having it again tonight, louder.',
+    'It is one day old and it has already reached the table.',
+    'Whatever happened between {a} and {b} yesterday did not stay between them.',
+    '{a} slept on it, decided not to let it go, and said so in front of everybody.',
+    'Yesterday this was a private disagreement. Tonight it is evidence.',
+    '{b} clearly hoped {a} would leave it. {a} did not leave it.',
+    'It has had exactly one night to cool down and did not use it.',
+    'They were arguing about this on the stairs last night. Now the room has it.',
+  ],
+  // FIVE EPISODES OR MORE, which is where a week is a fair thing to call it.
+  'grievance-old': [
+    'The room is watching two people finish something that started a week ago.',
+    'This has been running since day {d} and it has picked up weight every day since.',
+    '{a} and {b} have been doing this for most of the season and the room is tired of it.',
+    'It started on day {d} and it is still the thing between them.',
+    'Half the castle has left since this began and it is somehow still going.',
+    'There is nothing new in it. There has not been anything new in it since day {d}.',
+    '{a} has been holding this since day {d}, which is longer than some of them lasted.',
+    'It is the oldest live argument in the building and tonight it costs somebody a vote.',
+  ],
+
+  'broken-word': [
+    '{a} reminds {b} what {b} swore, and the room hears the sentence for the first time.',
+    '“You gave me your word,” {a} says to {b}, and the table goes very quiet.',
+    '{a} quotes a promise back at {b} in front of everybody, exactly.',
+    'Whatever {b} said to {a} in private is public now, and it does not sound good out loud.',
+    '{a} makes {b} account for it at the table rather than in a corridor, which is the point.',
+    '{b} broke something with {a} this week and {a} has chosen the worst possible moment for it.',
+    'The room did not know those two had a deal. It knows now, and it knows it broke.',
+    '{a} says the words {b} used. {b} does not deny using them.',
+  ],
+  'ganged-up': [
+    '{b} points out that three people have said the same name in ten minutes and asks who arranged that.',
+    '“You have all decided,” says {b}. Nobody at that table says no.',
+    '{b} names the people who named {b}, in order, and it sounds a great deal like a list.',
+    '{b} stops defending and starts counting, out loud, and the count is not flattering to the room.',
+    'It is the one accusation a group cannot answer: that it arrived agreed.',
+    '{b} asks when they all talked, and two of them look at each other.',
+    'Being outnumbered is not evidence and {b} makes the room feel like it is.',
+    '{b} would rather lose the vote than pretend that was a coincidence.',
+  ],
+  defended: [
+    '{a} cuts across the room to say the case against {b} is nonsense, and wears the consequences.',
+    'Nobody expected {a} to speak up for {b}, and {a} did, at length.',
+    '{a} puts {a}’s own standing behind {b} at the table, in public, with a vote coming.',
+    '“If you are writing that name,” {a} tells the room, “you are wrong, and I will say so after.”',
+    '{a} defends {b} well enough that two people stop nodding.',
+    'It costs {a} something to do that here and {a} does it anyway.',
+    '{a} is now attached to {b} in the room’s head, which is exactly the risk.',
+    'Two of them turn to look at {a} instead, which is what happens to anybody who does that.',
+  ],
+};
+
+/**
+ * THE ARGUMENTS THIS TABLE HAS. Reads the accusation list the debate just
+ * produced, plus the season's stored threads and bonds, and returns the
+ * exchanges worth showing — with their consequences already applied.
+ *
+ * Capped at four: a table where everybody rows with everybody is a brawl
+ * rather than a Round Table, and the format's tension is that most of it is
+ * polite.
+ */
+function clashes(ep, rng, accusations) {
+  const living = gs.activePlayers || [];
+  const out = [];
+  const used = new Set();
+  const pairKey = (a, b) => [a, b].sort().join('|');
+
+  // Who was named, and by whom.
+  const namedBy = new Map();
+  for (const a of accusations) {
+    if (!namedBy.has(a.target)) namedBy.set(a.target, []);
+    namedBy.get(a.target).push(a.accuser);
+  }
+
+  // WHAT THE ARGUMENT IS ACTUALLY ABOUT. A thread stores the sentence that
+  // opened it; quoting that is the difference between "this started days ago"
+  // and telling the viewer what started. Trimmed rather than paraphrased —
+  // the words are the ones the castle screen already printed on the day.
+  const openingOf = (threadId) => {
+    const t = (gs.tr?.threads || []).find(x => x.id === threadId);
+    const first = (t?.beats || [])[0];
+    const note = String(first?.note || '').trim();
+    return note && note.length <= 190 ? note : null;
+  };
+
+  const push = (kind, a, b, extra = {}) => {
+    const k = pairKey(a, b);
+    if (used.has(k) || out.length >= 4) return false;
+    used.add(k);
+    const seed = `clash|${kind}|${ep}|${a}|${b}`;
+    const line = lineFor(CLASH_LINES[kind], seed, { a, b })
+      .replace(/\{d\}/g, String(extra.day ?? ep));
+    out.push({ kind, a, b, line, since: openingOf(extra.threadId), ...extra });
+    return true;
+  };
+
+  // ── 1. OLD GRIEVANCE. The wire the castle needed: a confrontation the two
+  //    of them have been having all week, brought to the one room where it
+  //    changes a vote. Highest priority because it is the only kind that pays
+  //    off work the season has already done.
+  for (const t of (gs.tr?.threads || [])) {
+    if (out.length >= 4) break;
+    if (t.state !== 'open') continue;
+    if (t.kind !== 'confrontation' && t.kind !== 'suspicion') continue;
+    const [x, y] = t.parties || [];
+    if (!x || !y || !living.includes(x) || !living.includes(y)) continue;
+    // AT MOST TWO PER TABLE. Measured without this cap: 3.78 clashes a table
+    // of which 2.76 were this kind, because it is checked first and fills the
+    // cap of four. A table whose arguments are three-quarters the same SHAPE
+    // reads as one argument repeated, which is the variety failure the castle
+    // pools are all written against.
+    if (out.filter(c => String(c.kind).startsWith('grievance')
+      || c.kind === 'old-grievance').length >= 2) break;
+    // AND IT HAS TO ACTUALLY BE OLD. A thread opened TONIGHT is not a
+    // grievance, it is the argument currently happening, and 10.5% of these
+    // were exactly that before this line existed — "this started days ago"
+    // printed over a row from that morning. The band below then decides which
+    // pool may speak, so no card claims a duration the record does not hold.
+    const day = t.openedEp || ep;
+    const age = ep - day;
+    if (age < 1) continue;
+    const kind = age >= 5 ? 'grievance-old' : age === 1 ? 'grievance-fresh' : 'old-grievance';
+    // It only reaches the table if it is actually hot, or one of them has
+    // just been named by the other.
+    const named = (namedBy.get(y) || []).includes(x) || (namedBy.get(x) || []).includes(y);
+    if (!named && rng() > 0.35) continue;
+    push(kind, x, y, { day, age, threadId: t.id });
+  }
+
+  // ── 2. BROKEN WORD, off the OUTCOME the record already carries.
+  for (const t of (gs.tr?.threads || [])) {
+    if (out.length >= 4) break;
+    if (t.kind !== 'trust') continue;
+    if (t.outcome !== 'turned-back' && t.outcome !== 'exposed') continue;
+    const [x, y] = t.parties || [];
+    if (!x || !y || !living.includes(x) || !living.includes(y)) continue;
+    push('broken-word', x, y, { threadId: t.id });
+  }
+
+  // ── 3. GANGED UP. Three or more names on one person, said out loud.
+  for (const [target, accusers] of namedBy) {
+    if (out.length >= 4) break;
+    if (accusers.length < 3 || !living.includes(target)) continue;
+    push('ganged-up', accusers[0], target, { accusers: [...accusers] });
+  }
+
+  // ── 4. COUNTER. The commonest exchange in the format: {b} is accused and
+  //    names {a} straight back. Boldness decides who does it.
+  for (const a of accusations) {
+    if (out.length >= 4) break;
+    if (!living.includes(a.target)) continue;
+    const nerve = (pStats(a.target).boldness || 5) / 10;
+    if (rng() > nerve * 0.55) continue;
+    push('counter', a.accuser, a.target);
+  }
+
+  // ── 5. DEFENDED. Somebody takes a side against the room, at a cost.
+  for (const [target, accusers] of namedBy) {
+    if (out.length >= 4) break;
+    if (!living.includes(target)) continue;
+    const friend = living.find(n => n !== target && !accusers.includes(n)
+      && getBond(n, target) >= 3);
+    if (!friend) continue;
+    push('defended', friend, target);
+  }
+
+  // ── THE CONSEQUENCES ─────────────────────────────────────────────────
+  //
+  // A clash moves three things, and until this was written it moved one and a
+  // half. The bond and the thread's heat carry into TOMORROW; the vote intent
+  // is what makes the argument matter TONIGHT, at the table it happened at.
+  // `chooseBanishmentVote` reads intents as one term beside suspicion and
+  // noise, so a row can move a ballot and can never own one — a player with a
+  // strong read still writes the name they came in with, which is what makes
+  // a clash that fails to change anybody's mind a real outcome rather than an
+  // impossible one.
+  for (const c of out) {
+    const delta = c.kind === 'defended' ? 2
+      : c.kind === 'broken-word' ? -2.5
+        : c.kind === 'ganged-up' ? -1.5 : -2;   // all three grievance bands: -2
+    addBond(c.a, c.b, delta);
+    c.bondDelta = delta;
+    // A grievance aired in the open is the same story continuing, so it
+    // advances the thread it came from rather than starting a rival one.
+    if (c.threadId) {
+      const t = (gs.tr?.threads || []).find(x => x.id === c.threadId);
+      // ONLY WHILE IT IS STILL OPEN. `broken-word` deliberately selects a
+      // thread that has ALREADY RESOLVED (that is its whole gate), and moving
+      // a resolved thread's `lastEp` forward rewrites when it closed — which
+      // is the timeline three unrelated events read to decide whether they
+      // may recap an outcome. tr-castle-reachability's prior-outcome rule
+      // caught it as 36 firings "recapping something that has not happened",
+      // named on events that had nothing to do with this change.
+      if (t && t.state === 'open') {
+        t.lastEp = ep; t.heat = Math.min(10, (t.heat || 0) + 2);
+      }
+    }
+    // AND THE BALLOT. Being publicly gone at by somebody makes you likelier to
+    // write their name, and `defended` runs the other way: {a} has just tied
+    // themselves to {b} in front of the room, so {a} is likelier to write
+    // whoever the room is pushing at {b} — modelled as {a} NOT writing {b},
+    // which is the honest half of that we can state without inventing a
+    // third name.
+    if (_noClashIntents) continue;
+    const intents = (gs.tr.voteIntents ||= []);
+    const setIntent = (voter, target, strength) => {
+      const prev = intents.find(x => x.voter === voter && x.ep === ep);
+      const rec = { voter, target, strength, ep, sceneId: `clash:${c.kind}`,
+        source: `${voter} and ${target} went at each other at the table` };
+      if (prev) { if ((prev.strength || 0) < strength) Object.assign(prev, rec); }
+      else intents.push(rec);
+    };
+    if (c.kind === 'defended') {
+      // No name to point at, so no intent: the consequence of defending is
+      // the bond and the room's attention, both already applied.
+    } else if (c.kind === 'ganged-up') {
+      // The target now has a specific reason to write the loudest accuser.
+      setIntent(c.b, c.a, 0.45);
+    } else {
+      setIntent(c.a, c.b, 0.4);
+      setIntent(c.b, c.a, 0.4);
+    }
+  }
+  return out;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -353,6 +668,12 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   // draw: whether tonight is the night was decided when the thing was won
   // (js/tr/powers.js), so a table with a Dagger at it draws exactly as many
   // numbers as a table without one and the two seasons remain comparable.
+  // THE ARGUMENTS HAPPEN BEFORE THE CHALK, which is both how the format runs
+  // and the only ordering under which they can matter. This call used to sit
+  // in the `round` literal at the bottom of this function — after the ballots
+  // were cast — so every clash was decoration by construction. See `clashes`.
+  const tableClashes = clashes(ep, rng, accusations);
+
   const weights = daggerWeights(ep, living);
   const daggerHolder = weights ? Object.keys(weights)[0] : null;
 
@@ -408,7 +729,14 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
     // beliefs the debate already formed — see `speechesFrom`. Every speech
     // cites a source the speaker holds; the VP renders claim/response/
     // mind-change beats off it.
-    speeches: speechesFrom(accusations, ep) };
+    speeches: speechesFrom(accusations, ep),
+    // THE ARGUMENTS, as opposed to the list of names. See `clashes` above:
+    // the one hour of this format whose whole purpose is people accusing each
+    // other to their faces produced no confrontation at all until this
+    // existed. Generated from the accusations just made plus the season's own
+    // open threads, so a row that started in a corridor on day three finishes
+    // here, where it costs a vote.
+    clashes: tableClashes };
   if (daggerHolder) {
     // Recorded on the round, because the room watched it happen: the draw is
     // public even though the win was not. `votes` is read off the exported

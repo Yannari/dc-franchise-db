@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(167);
+    expect(EVENTS.length).toBe(174);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -609,7 +609,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // appends a citation), which tests/tr-castle.test.js caught by being
     // unable to make the event eligible in the probe world.
     // 87 -> 90: all three romance road events advance the thread they gate on.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(90);
+    // 90 -> 97: all seven group events advance a thread. Each continues the
+    // story between the first two of its actors where one exists and opens
+    // one where it does not -- a room arguing about a name is the same
+    // story as the pair who started it, not a rival one.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(97);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -694,7 +698,15 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // holds exactly one advancer. `none` is unchanged, which is what says a
     // cell gained an advancer rather than the grid moving under all three.
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(20);
+      // 20 -> 18: two cells that held exactly one advancer gained a second
+      // when the group events landed in them, which is the direction this
+      // number should move -- a cell with one advancer can continue a
+      // thread at most once every five rounds.
+      + 'living here can be advanced at most once every five rounds').toBe(18);
+    // 24 -> 26 on 2026-09-05: two more cells reached two advancers when the
+    // group events landed, which is the same movement as the `one` count
+    // falling above and should be read with it.
+    //
     // 23 -> 24 on 2026-09-05: `confrontation @ evening` had three events and
     // gained a fourth, so the one cell the family already occupied is the
     // only one that moved up here. The other six arrived at one advancer
@@ -704,7 +716,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // confrontation family was registered. `none` and `one` are unchanged,
     // which is what says a cell gained an advancer rather than the shape
     // of the grid moving underneath all three numbers.
-    expect(many, 'cells with two or more advancers').toBe(24);
+    expect(many, 'cells with two or more advancers').toBe(26);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -1424,6 +1436,24 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 167 -> 174 AND 706 -> 734 on 2026-09-05, AND THIS ONE IS NOT A CONTENT
+// BATCH. Actors per scene, measured over 40 played seasons (9,796 scenes):
+// one actor 45%, two actors 55%, THREE OR MORE 0%. Not rare -- none.
+// `_sceneActors` had two uniform branches and no third, and its continuation
+// branch returns a thread's parties, which are one or two names. A castle of
+// eighteen never had three of them in a room together.
+//
+// AND js/vp-tr/castle-day.js HAS HAD A `group` COMPOSITION MODE SINCE IT WAS
+// WRITTEN (line ~1461, its own ESTABLISH_GROUP pool, its own establish and
+// consequence arms) that no played season could reach. A whole mode of dead
+// content, not a fork nobody takes.
+//
+// The seven events in js/tr/castle/group.js exist so the draw could be
+// opened: 93 of the pool's events begin `if (ctx.actors?.length !== 2)
+// return 0`, so a three-actor draw with nothing to answer it spends window
+// density on barren draws. Content first, sampler second, measured after --
+// density held at 26.34 scenes an episode against 26.46 before.
+//
 // 164 -> 167 AND 694 -> 706 on 2026-09-05. Same method as the confrontation
 // batch below, applied to the next-thinnest row of the same grid: romance held
 // evening 3, dawn 2, morning 2, night 2, after-table 1 -- and JOURNEY-OUT 0,
@@ -1764,6 +1794,34 @@ const BRANCHES = [
   'grief-wrongly-suspected-irony:still-think-we-were-right',
   'grief-wrongly-suspected-irony:turned-on-each-other',
   'grief-wrongly-suspected-irony:wrongly-suspected-irony',
+  'group-agreed-a-name:broke-up-with-nothing',
+  'group-agreed-a-name:landed-on-one',
+  'group-agreed-a-name:somebody-said-nothing',
+  'group-agreed-a-name:two-against-one',
+  'group-kitchen-at-breakfast:closed-ranks',
+  'group-kitchen-at-breakfast:nobody-mentioned-it',
+  'group-kitchen-at-breakfast:said-it-first',
+  'group-kitchen-at-breakfast:the-room-split',
+  'group-rounded-on-them:came-apart',
+  'group-rounded-on-them:held-the-room',
+  'group-rounded-on-them:nobody-would-start',
+  'group-rounded-on-them:the-room-turned',
+  'group-sat-up-late:heard-something',
+  'group-sat-up-late:nobody-wanted-to-go-up',
+  'group-sat-up-late:one-of-them-left-early',
+  'group-sat-up-late:told-each-other-things',
+  'group-walked-home-in-threes:agreed-who-cost-them',
+  'group-walked-home-in-threes:one-of-them-defended-them',
+  'group-walked-home-in-threes:said-nothing-useful',
+  'group-walked-home-in-threes:went-over-the-afternoon',
+  'group-walked-out-together:left-somebody-out',
+  'group-walked-out-together:picked-up-a-stray',
+  'group-walked-out-together:traded-what-they-had',
+  'group-walked-out-together:walked-as-a-block',
+  'group-went-through-the-vote:blamed-each-other',
+  'group-went-through-the-vote:counted-it-out-loud',
+  'group-went-through-the-vote:protected-one-of-them',
+  'group-went-through-the-vote:went-to-bed-on-it',
   'mission-a-body-short:angry',
   'mission-a-body-short:did-not-mention-it',
   'mission-a-body-short:named-them',

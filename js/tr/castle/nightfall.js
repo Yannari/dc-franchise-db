@@ -625,7 +625,7 @@ const NOTHING_LEFT = {
     '{a} fell asleep with the light on, which is the most honest thing {a} did all day.',
     '{a} sat on the end of the bed for a while with nothing much going on behind the face.',
     'Nothing to plan, nobody to talk to, and about six hours of it.',
-    '{a} read the same page of nothing four times and went to sleep.',
+    '{a} got four pages in, remembered none of it, and put the book down.',
     '{a} took off one boot and stayed like that for ten minutes.',
     'It was the first evening this week {a} had not been working something out, and it was strange.',
     '{a} listened to the castle settle and did not attach a meaning to any of it.',

@@ -78,6 +78,10 @@ import '../tr/castle/mission-fallout.js';
 import '../tr/castle/consequences.js';
 import '../tr/castle/nightfall.js';
 import '../tr/castle/confrontation.js';
+// The scenes that need a room. `_sceneActors` returned one or two actors and
+// nothing else, so the composer's `group` mode (js/vp-tr/castle-day.js:1461,
+// with its own ESTABLISH_GROUP pool) had never once run in a played season.
+import '../tr/castle/group.js';
 // The morning nobody was taken. Every other dawn scene in the pool needs a
 // body; a blocked night has none, and had no scene at all.
 import '../tr/castle/quiet-night.js';
@@ -548,6 +552,13 @@ function _tableRecord(ep, { endgame = false } = {}) {
     revotes: (round.revotes || []).map(rv => ({
       tied: [...(rv.tied || [])], count: (rv.ballots || []).length })),
     accusations: (round.accusations || []).map(a => ({ ...a })),
+    // THE ARGUMENTS THE TABLE ACTUALLY HAD. `accusations` above is a list of
+    // names pointed at names; a clash is two of those people going at each
+    // other out loud (js/tr/roundtable.js `clashes`). Public on every layer
+    // by construction: a clash reads what was said at this table plus the
+    // season's own thread kinds and outcomes, never an alignment and never a
+    // belief's certainty.
+    clashes: (round.clashes || []).map(c => ({ ...c })),
     // THE ACCUSATIONS WITH THEIR PROVENANCE. Public on every layer: a speech
     // is a claim made out loud at the table, and its `sources` are drawn from
     // the speaker's own suspicion (never a `public`-tier turret belief — see

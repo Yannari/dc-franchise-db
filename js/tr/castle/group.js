@@ -59,6 +59,8 @@ const FAMILY_CONF = 'confrontation';
 /** Three or more, and the extras are the point. */
 const groupOnly = ctx => ((ctx.actors || []).length >= 3 ? ctx.actors : null);
 
+const NUMBER_WORD = { 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six' };
+
 /** "A, B and C" — the group's own name for itself, for the {names} slot. */
 function namesOf(list) {
   const l = (list || []).filter(Boolean);
@@ -76,7 +78,13 @@ function fillGroup(s, actors) {
   return String(s)
     .replace(/\{names\}/g, namesOf(actors))
     .replace(/\{rest\}/g, namesOf(actors.slice(1)))
-    .replace(/\{n\}/g, String(actors.length))
+    // AS A WORD, NEVER A DIGIT. tests/tr-castle-prose.test.js's number rule
+    // says any digit a castle sentence prints must equal a fact the season
+    // state can justify -- how many are living, lost, murdered, banished, in
+    // the cast, or an episode that has happened. A GROUP SIZE is none of
+    // those, so "all 3 of them" is a number the rule cannot check and
+    // correctly refuses. Spelling it removes the digit and reads better.
+    .replace(/\{n\}/g, NUMBER_WORD[actors.length] || String(actors.length))
     .replace(/\{a\}/g, a).replace(/\{b\}/g, b).replace(/\{c\}/g, c || '');
 }
 

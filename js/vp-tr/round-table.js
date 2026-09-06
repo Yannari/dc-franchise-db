@@ -910,6 +910,36 @@ const RT_CSS = `
    the same measure for every beat. */
 .rt-main{padding:26px 34px 80px;max-width:820px;margin:0 auto}
 
+/* THE CLASHES. An argument card, deliberately unlike the accusation cards
+   around it: two faces facing each other across a struck rule, and a colour
+   that says friction rather than suspicion. */
+.rt-clash{
+  position:relative;margin:14px 0;padding:15px 17px;
+  background:linear-gradient(150deg,rgba(120,20,28,.20),rgba(12,10,14,.92));
+  border:1px solid rgba(201,40,60,.40);
+  border-left:3px solid rgba(201,40,60,.75);
+}
+.rt-clash-k{
+  display:flex;align-items:center;gap:8px;margin-bottom:9px;
+  font-family:var(--rt-display,serif);font-weight:700;font-size:9.5px;
+  letter-spacing:.28em;text-transform:uppercase;color:rgba(230,150,150,.85);
+}
+.rt-clash-pair{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.rt-clash-v{
+  flex:0 0 auto;width:16px;height:1px;background:rgba(201,40,60,.6);position:relative;
+}
+.rt-clash-v::before,.rt-clash-v::after{
+  content:'';position:absolute;width:5px;height:1px;background:rgba(201,40,60,.85);
+}
+.rt-clash-v::before{left:0;top:-2px;transform:rotate(28deg)}
+.rt-clash-v::after{right:0;top:2px;transform:rotate(28deg)}
+.rt-clash-t{font-size:16px;line-height:1.55;color:rgba(238,232,224,.93)}
+.rt-clash-since{
+  margin-top:9px;padding-left:11px;border-left:2px solid rgba(201,40,60,.35);
+  font-size:14px;line-height:1.5;font-style:italic;color:rgba(226,214,206,.66);
+}
+@media(prefers-reduced-motion:reduce){.rt-clash{animation:none}}
+
 /* ── HOST BAND ──────────────────────────────────────────────────────── */
 .rt-host{
   position:relative;overflow:hidden;
@@ -2024,6 +2054,11 @@ function _view(rec, observer) {
     first,
     rounds,
     accusations: (rec.accusations || []).filter(a => a && a.accuser && a.target),
+    // THE ARGUMENTS, as opposed to the list of names. Public on every layer
+    // -- a clash is two people going at each other out loud at this table,
+    // built from what was said here plus the season's own thread kinds and
+    // outcomes (js/tr/roundtable.js `clashes`). No alignment, no certainty.
+    clashes: (rec.clashes || []).filter(c => c && c.a && c.b && c.line),
     // THE SPEECHES, with their provenance. Public on every layer — a claim
     // made out loud at the table, its `sources` drawn from the speaker's own
     // suspicion (never a `public`-tier turret belief; see roundtable.js's
@@ -2205,6 +2240,43 @@ function _buildBeats(v) {
   });
 
   // ── the slates ──────────────────────────────────────────────────────
+  // ── AND THE ARGUMENTS THE ROOM ACTUALLY HAD ─────────────────────────
+  //
+  // The debate above is a list of names with defences under them. A clash is
+  // two of those people going at each other, and it is drawn LAST in the
+  // debate — after every accusation has been made and before the chalk comes
+  // out, which is where the format puts it: the hour turns nasty at the end.
+  //
+  // Each card names both people and its own kind, because the KIND is the
+  // information: a counter-accusation is a different animal from a promise
+  // being quoted back, and the card that does not say which is a card the
+  // viewer has to guess at.
+  const CLASH_KIND = {
+    counter: 'Straight back at them',
+    // THREE HEADINGS FOR THE THREE AGE BANDS. A single "this started days
+    // ago" was printed over rows that had started that morning; the band is
+    // measured in js/tr/roundtable.js and the heading follows it.
+    'grievance-fresh': 'They had this out yesterday',
+    'old-grievance': 'This started days ago',
+    'grievance-old': 'This has run all week',
+    'broken-word': 'A promise, quoted back',
+    'ganged-up': 'Somebody says it is arranged',
+    defended: 'Somebody takes a side',
+  };
+  for (const c of (v.clashes || [])) {
+    push('debate', '<div class="rt-clash">'
+      + '<div class="rt-clash-k">' + _ic('candles', 11)
+      + _esc(CLASH_KIND[c.kind] || 'It gets sharp') + '</div>'
+      + '<div class="rt-clash-pair">' + _faceChip(c.a, 26)
+      + '<span class="rt-clash-v"></span>' + _faceChip(c.b, 26) + '</div>'
+      + '<p class="rt-clash-t">' + _esc(c.line) + '</p>'
+      // WHAT IT IS ABOUT, quoted off the thread's opening beat. Without this
+      // the card says an argument happened and never says what argument.
+      + (c.since ? '<p class="rt-clash-since">&ldquo;' + _esc(c.since)
+        + '&rdquo;</p>' : '') + '</div>',
+    null, { kind: 'clash', pair: [c.a, c.b] });
+  }
+
   push('slates', _card('Write A Name', 'The slates', 'chalk',
     '<p>' + _pick(WRITE_TEXT, key + '|wr') + '</p>'
     + '<div class="rt-chips">' + _chip(v.seated.length + ' slates', null)

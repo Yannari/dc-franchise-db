@@ -814,6 +814,26 @@ export function _sceneActors(living, rng, ep) {
   if (living.length < 2 || rng() < 0.4) return [living[i]];
   let j = Math.floor(rng() * living.length);
   while (j === i) j = Math.floor(rng() * living.length);
+  // ── AND SOMETIMES A ROOM ─────────────────────────────────────────────
+  //
+  // MEASURED BEFORE THIS EXISTED, actors per scene over 40 played seasons
+  // (9,796 scenes): 1 actor 45%, 2 actors 55%, THREE OR MORE 0%. Not rare —
+  // none. A castle of eighteen never had three of them in a room together,
+  // and js/vp-tr/castle-day.js has had a complete `group` composition mode
+  // since it was written (line ~1461, its own ESTABLISH_GROUP pool and its
+  // own establish and consequence arms) that no played season could reach.
+  //
+  // 12% OF THE PAIR DRAWS, and the number is small on purpose: 93 of the
+  // pool's events open `if (ctx.actors?.length !== 2) return 0`, so every
+  // three-actor draw is one those 93 cannot answer. js/tr/castle/group.js is
+  // what answers them, and until that file is large enough to carry a bigger
+  // share, a higher rate would buy group scenes by spending window density —
+  // the thing BARREN_DRAWS_BEFORE_DONE was raised to protect.
+  if (living.length >= 4 && rng() < 0.12) {
+    let k = Math.floor(rng() * living.length);
+    while (k === i || k === j) k = Math.floor(rng() * living.length);
+    return [living[i], living[j], living[k]];
+  }
   return [living[i], living[j]];
 }
 

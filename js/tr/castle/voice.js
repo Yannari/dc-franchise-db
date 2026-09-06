@@ -636,6 +636,15 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE GROUP SCENES (js/tr/castle/group.js, 2026-09-05) ────────────
+  //
+  // A room, not a pair. Sorted on the same rule: adverse means somebody is
+  // being leaned on, and in a group that is the person the other two have
+  // already agreed about, the one who came apart under three questioners,
+  // or the one walked away from on a road.
+  'agreed-who-cost-them', 'blamed-each-other', 'came-apart',
+  'left-somebody-out', 'picked-up-a-stray', 'the-room-split',
+  'the-room-turned', 'two-against-one',
   // ── THE ROMANCE FAMILY ON THE ROAD (2026-09-05) ─────────────────────
   //
   // Sorted on this family's own precedent rather than on the confrontation
@@ -1026,6 +1035,20 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE GROUP SCENES WHERE NOBODY IS UNDER ANYTHING ─────────────
+  //
+  // A room that agrees, a room that cannot, a kitchen that says nothing, a
+  // late night where three people tell each other true things. Several of
+  // these are bleak and none of them presses the person opposite, which is
+  // what this list sorts on.
+  'broke-up-with-nothing', 'counted-it-out-loud', 'heard-something',
+  'held-the-room', 'landed-on-one', 'nobody-mentioned-it',
+  'nobody-wanted-to-go-up', 'nobody-would-start',
+  'one-of-them-defended-them', 'one-of-them-left-early',
+  'protected-one-of-them', 'said-it-first', 'said-nothing-useful',
+  'somebody-said-nothing', 'told-each-other-things',
+  'traded-what-they-had', 'walked-as-a-block', 'went-over-the-afternoon',
+  'went-to-bed-on-it',
   // ── AND THE WARM HALF OF THE SAME THREE EVENTS ──────────────────────
   //
   // Walking a road together, being got home off one, voting the same name,

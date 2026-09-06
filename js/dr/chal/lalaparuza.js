@@ -38,7 +38,11 @@ export function assign(ctx) {
   // would make being named twice impossible, and being named twice is the
   // whole of the event below.
   const named = Object.fromEntries(order.map(n => [n, choices[n][0]]));
-  const { picks, events } = contestFor({ order, choices, players, rng });
+  const { picks, events } = contestFor({
+      order, choices, players, rng,
+      // No preparation penalty here — nothing is prepared for an opponent; the duel scores her.
+      penaltyScale: 0,
+    });
 
   const chosenCount = {};
   for (const n of order) {

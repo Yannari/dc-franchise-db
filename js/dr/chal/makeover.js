@@ -69,7 +69,11 @@ export function assign(ctx) {
       }));
       return [n, scored.sort((a, b) => b.s - a.s).map(x => x.p.name)];
     }));
-    const contest = contestFor({ order, choices, players, rng });
+    const contest = contestFor({
+      order, choices, players, rng,
+      // No preparation penalty here — she meets him this morning either way; his ease already scores it.
+      penaltyScale: 0,
+    });
     picks = contest.picks;
     events.push(...contest.events);
   } else {

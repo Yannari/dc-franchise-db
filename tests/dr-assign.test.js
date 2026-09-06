@@ -122,7 +122,8 @@ describe('contestFor', () => {
     expect(picks.Ada.choice).toBe('Dolly');
     expect(picks.Ada.penalty).toBe(0);
     expect(picks.Bee.choice).toBe('Tina');
-    expect(picks.Bee.penalty).toBeCloseTo(0.8);
+    // Graduated by depth: second choice is 0.4, and falling further costs more.
+    expect(picks.Bee.penalty).toBeCloseTo(0.4);
     expect(picks.Bee.lostTo).toBe('Ada');
     expect(picks.Cleo.choice).toBe('Cher');
 
@@ -140,7 +141,47 @@ describe('contestFor', () => {
     expect(events).toEqual([]);
   });
 
-  it('a queen with nothing left takes a leftover and pays double', () => {
+  it('the penalty grows with how far she fell', () => {
+    // A flat fee charged the queen who got her second choice exactly what it
+    // charged the queen who got her last. On a thirteen-queen roast, where the
+    // shortlists are nearly identical, that meant twelve of thirteen paying
+    // the same amount — which is what reading a dumped season showed.
+    const { picks } = contestFor({
+      order: ['Ada', 'Bee', 'Cleo', 'Dot'],
+      choices: Object.fromEntries(['Ada', 'Bee', 'Cleo', 'Dot'].map(n => [n, ['A', 'B', 'C', 'D']])),
+      players, rng: rngFor(1),
+    });
+    expect(picks.Ada.penalty).toBe(0);
+    expect(picks.Bee.penalty).toBeLessThan(picks.Cleo.penalty);
+    expect(picks.Cleo.penalty).toBeLessThan(picks.Dot.penalty);
+  });
+
+  it('fires one scene per contested thing, not one per queen shuffled down', () => {
+    // Four queens with the same shortlist all lose 'A' to Ada. That is one
+    // conflict, and reporting it four times buries the one that happened.
+    const { events } = contestFor({
+      order: ['Ada', 'Bee', 'Cleo', 'Dot'],
+      choices: Object.fromEntries(['Ada', 'Bee', 'Cleo', 'Dot'].map(n => [n, ['A', 'B', 'C', 'D']])),
+      players, rng: rngFor(1),
+    });
+    expect(events.filter(e => e.type === 'contest').length).toBe(1);
+  });
+
+  it('can be turned off where nothing was prepared', () => {
+    // A roast slot, a makeover partner, an opponent, a pile of materials: she
+    // gets those on the day and their difficulty is already scored elsewhere,
+    // so charging a preparation penalty would charge her twice. The conflict
+    // still happens; only the penalty goes.
+    const { picks, events } = contestFor({
+      order: ['Ada', 'Bee', 'Cleo'],
+      choices: { Ada: ['A', 'B'], Bee: ['A', 'B'], Cleo: ['A', 'B'] },
+      players, rng: rngFor(1), penaltyScale: 0,
+    });
+    for (const p of Object.values(picks)) expect(p.penalty).toBe(0);
+    expect(events.length).toBeGreaterThan(0);
+  });
+
+  it('a queen with nothing left takes a leftover and pays the most', () => {
     const { picks } = contestFor({
       order: ['Ada', 'Bee'], choices: { Ada: ['Solo'], Bee: ['Solo'] }, players, rng: rngFor(1),
     });

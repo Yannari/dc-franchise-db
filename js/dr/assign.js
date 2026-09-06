@@ -111,6 +111,23 @@ export function captainSplit({ order, captains, players, bond, rng }) {
   return { teams, events };
 }
 
+/** How far down the list a queen with nothing left has fallen. */
+const LEFTOVER_DEPTH = 4;
+
+/**
+ * What missing your first choice costs, by how far you fell.
+ *
+ * GRADUATED, because a flat fee is wrong in both directions. Measured on a
+ * thirteen-queen roast, where the shortlists are nearly identical because
+ * every bold queen wants the closer: a flat 0.8 charged twelve of the thirteen
+ * the same amount, so the queen who got her second choice paid exactly what
+ * the queen who got her last one paid. Second choice is a shrug; nothing left
+ * at all is a night she did not prepare for.
+ */
+function penaltyFor(depth, scale = 1) {
+  return Math.round(Math.min(1.6, Math.max(0, depth) * 0.4) * scale * 100) / 100;
+}
+
 /**
  * Two queens want the same thing.
  *
@@ -118,44 +135,53 @@ export function captainSplit({ order, captains, players, bond, rng }) {
  * Snatch Game characters, Rusical parts, roast slots, materials. `choices` is
  * each queen's preference list, best first; the order decides who keeps it.
  *
- * A queen who misses her first choice carries a PENALTY into the performance,
- * because playing your second-choice character is measurably harder than
- * playing the one you had prepared. And the pair remember it.
+ * A queen who misses her first choice may carry a PENALTY into the
+ * performance, because playing your second-choice character is measurably
+ * harder than playing the one you had prepared. And the pair remember it.
+ *
+ * `penaltyScale` EXISTS TO TURN THAT OFF, and most callers should. The penalty
+ * means "I prepared for something else", which is true of a Snatch Game
+ * character or a Rusical part and false of a roast slot, a makeover partner, a
+ * lip sync opponent or a pile of materials: she gets those on the day, and
+ * how hard each one is to work with is ALREADY scored by the challenge. Paying
+ * the penalty on top of that charges her twice for the same fact. Only the
+ * conflict — the event, the bond — belongs everywhere.
  */
-export function contestFor({ order, choices, players, rng }) {
+export function contestFor({ order, choices, players, rng, penaltyScale = 1 }) {
   const taken = new Set();
   const holder = {};
   const picks = {};
   const events = [];
+  // One scene per contested thing. Thirteen queens with near-identical
+  // shortlists all lose the same slot to the same queen, and reporting that as
+  // twelve separate conflicts buries the one that actually happened.
+  const fought = new Set();
 
   for (const n of order) {
     const wants = choices[n] || [];
     let got = null;
-    let penalty = 0;
-    let lostTo = null;
+    let depth = -1;
 
     for (let i = 0; i < wants.length; i++) {
-      if (!taken.has(wants[i])) {
-        got = wants[i];
-        penalty = i ? 0.8 : 0;
-        if (i) lostTo = holder[wants[0]] || null;
-        break;
-      }
+      if (!taken.has(wants[i])) { got = wants[i]; depth = i; break; }
     }
 
     if (!got) {
       // Everything she wanted is gone. She takes what is left, and it costs
-      // double — this is the queen picking last with nothing prepared.
+      // the most — this is the queen picking last with nothing prepared.
       got = `leftover-${n}`;
-      penalty = 1.6;
-      lostTo = holder[wants[0]] || null;
+      depth = LEFTOVER_DEPTH;
     }
+
+    const penalty = penaltyFor(depth, penaltyScale);
+    const lostTo = depth > 0 ? (holder[wants[0]] || null) : null;
 
     taken.add(got);
     holder[got] = n;
-    picks[n] = { choice: got, penalty, lostTo };
+    picks[n] = { name: n, choice: got, penalty, lostTo, depth };
 
-    if (lostTo) {
+    if (lostTo && !fought.has(wants[0])) {
+      fought.add(wants[0]);
       events.push(evt('contest', {
         players: [lostTo, n],
         bond: [[lostTo, n, -1.0]],

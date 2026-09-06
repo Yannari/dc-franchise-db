@@ -58,7 +58,11 @@ export function assign(ctx) {
       const value = m => (d.design >= CAN_SEW ? m.difficulty * AMBITION : 0) - m.difficulty * 0.3;
       return [n, [...MATERIALS].sort((a, b) => value(b) - value(a)).map(m => m.id)];
     }));
-    const { picks, events } = contestFor({ order, choices, players, rng });
+    const { picks, events } = contestFor({
+      order, choices, players, rng,
+      // No preparation penalty here — the pile is handed to her on the day; its difficulty already scores it.
+      penaltyScale: 0,
+    });
     return {
       roles: Object.fromEntries(order.map(n => [n, 'standard'])),
       teams: [], order, picks, events,

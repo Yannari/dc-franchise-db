@@ -55,7 +55,11 @@ export function assign(ctx) {
   const slots = order.map((_, i) => `slot-${i + 1}`);
   const choices = Object.fromEntries(order.map(n =>
     [n, slotPreference(slots, Number(players[n]?.stats?.boldness) || 5)]));
-  const { picks, events } = contestFor({ order, choices, players, rng });
+  const { picks, events } = contestFor({
+      order, choices, players, rng,
+      // No preparation penalty here — same jokes, a different position: the slot difficulty already scores it.
+      penaltyScale: 0,
+    });
   return {
     roles: Object.fromEntries(order.map(n => [n, 'standard'])),
     teams: [], order, picks, events,

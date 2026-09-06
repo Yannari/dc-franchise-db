@@ -155,6 +155,13 @@ export function generateDragSummaryText(row) {
   if (dr.mini) ln(`Mini challenge: ${dr.mini.name} — ${dr.mini.winner} wins ${dr.mini.buys}`);
   if (dr.judges?.length) ln(`On the panel: ${dr.judges.map(id => judgeById(id)?.name || id).join(', ')}`);
   if (dr.runway?.category) ln(`Runway category: ${dr.runway.category}`);
+
+  // What the challenge actually did. Without this the maxi engine is invisible
+  // — the readout would print a challenge name and a rank and nothing that
+  // happened in between, which is not something anybody can check by reading.
+  _textAssignment(dr, ln);
+  _textEvents(dr, ln);
+
   ln('');
   ln('PANEL RANK -> FINAL RANK');
   for (const b of dr.bend || []) {
@@ -187,4 +194,90 @@ export function generateDragSummaryText(row) {
   ln('');
   ln(`  ${(dr.living || []).length} ${w.players} left: ${(dr.living || []).join(', ')}`);
   return L.join('\n');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// The challenge's own working, in plain text
+// ══════════════════════════════════════════════════════════════════════
+//
+// Provisional, like the rest of this file: Plan 3 turns all of it into prose.
+// Until then it is the only way to READ what the maxi engine did, and reading
+// the output is how every prose and balance bug in this project has been
+// found. A screen that prints a challenge name and a final rank with nothing
+// in between cannot be checked by anybody.
+
+/** How the night was handed out: parts, teams, characters, materials. */
+function _textAssignment(dr, ln) {
+  const a = dr.assignment;
+  const perf = dr.performances || {};
+  if (!a) return;
+
+  if (a.teams?.length > 1) {
+    ln('');
+    ln('TEAMS');
+    a.teams.forEach((t, i) => ln(`  ${i + 1}. ${t.join(', ')}`));
+  }
+
+  // Only worth a block when the queens differ. A night where everybody is
+  // 'standard' with no pick to report has nothing to say here.
+  const rows = Object.keys(perf).map(n => {
+    const d = perf[n].detail || {};
+    const bits = [];
+    if (perf[n].role && perf[n].role !== 'standard') bits.push(perf[n].role);
+    if (d.part) bits.push(d.part);
+    if (d.character) bits.push(`as ${d.character}`);
+    if (d.talent) bits.push(d.talent);
+    if (d.material) bits.push(d.material);
+    if (d.partner) bits.push(`makes over ${d.partner}`);
+    if (d.slot) bits.push(`slot ${d.slot}${d.slotKind === 'middle' ? '' : ` (${d.slotKind})`}`);
+    if (d.live) bits.push('sings LIVE');
+    if (typeof d.wins === 'number') bits.push(`${d.wins}W ${d.losses}L`);
+    const pick = a.picks?.[n];
+    if (pick?.penalty) {
+      bits.push(`${pick.depth === 1 ? 'second choice' : `choice ${pick.depth + 1}`}, -${pick.penalty}`);
+    }
+    if (pick?.ducked) bits.push('ducked the lead');
+    return bits.length ? `  ${n.padEnd(16)} ${bits.join(' · ')}` : null;
+  }).filter(Boolean);
+
+  if (rows.length) {
+    ln('');
+    ln('THE ASSIGNMENT');
+    for (const r of rows) ln(r);
+  }
+
+  if (dr.challenge?.id === 'ball') {
+    const any = Object.values(perf).find(p => p.detail?.looks);
+    if (any) {
+      ln('');
+      ln(`THE BALL — ${any.detail.theme}`);
+      for (const [n, p] of Object.entries(perf)) {
+        const looks = (p.detail?.looks || [])
+          .map(l => `${l.label} ${l.score}${l.sewn ? ' (sewn)' : ''}`).join('  ·  ');
+        if (looks) ln(`  ${n.padEnd(16)} ${looks}`);
+      }
+    }
+  }
+}
+
+/** Everything the werk room and the challenge did to the room. */
+function _textEvents(dr, ln) {
+  const evs = dr.events || [];
+  if (!evs.length) return;
+  ln('');
+  ln('WHAT HAPPENED');
+  for (const e of evs) {
+    // The walkthrough fires for every queen every week by design; listing
+    // thirteen of them would bury the events that are actually stories.
+    if (e.type === 'walkthrough') continue;
+    const who = (e.players || []).join(' & ');
+    const pop = Object.entries(e.pop || {})
+      .map(([n, d]) => `${n} ${d > 0 ? '+' : ''}${d}`).join(', ');
+    ln(`  ${e.type.padEnd(22)} ${who}${pop ? `   [pop ${pop}]` : ''}`);
+  }
+  const walked = evs.filter(e => e.type === 'walkthrough');
+  const took = walked.filter(e => e.data?.took).length;
+  if (walked.length) {
+    ln(`  ${'walkthrough'.padEnd(22)} ${took} of ${walked.length} took the host's note`);
+  }
 }

@@ -21,6 +21,7 @@ import { coachCanPlay } from './advantages.js';
 // where a missing global fails silently at the moment somebody presses Play.
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
+import { isDragSeason, simulateDragEpisode } from './dr-run.js';
 import { roundExits, exitVerbs } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -1308,6 +1309,35 @@ export function simulateNext() {
   // see js/tr-run.js for why an engine with no per-night entry point cannot
   // be asked for one. Everything after the call is what the house does:
   // checkpoint, feed, spoiler reveal, render.
+  // ── THE MAIN STAGE ────────────────────────────────────────────────
+  //
+  // Fourth engine, fourth branch, and it turns on the FORMAT alone for the
+  // same reason the castle's does: falling through to episode.js at the final
+  // few would run tribes and a Tribal Council over a runway.
+  //
+  // The whole season is played on the first press and the rows are queued —
+  // see js/dr-run.js for why an engine whose finale depends on the whole run
+  // cannot be asked for one night at a time.
+  if (isDragSeason()) {
+    _saveEpisodeCheckpoint();
+    const drEp = simulateDragEpisode();
+    if (!drEp) {
+      alert(gs.activePlayers && gs.activePlayers.length
+        ? 'This season is already complete.'
+        : 'Add queens to Cast Builder first.');
+      return;
+    }
+    // POPULARITY IS NOT UPDATED HERE, AND THE OMISSION IS DELIBERATE.
+    // `updatePopularity` reads a Total Drama episode — challenges, idols, a
+    // tribal — and this show has none of them. js/dr-run.js writes the ledger
+    // from the season's own events instead.
+    _refreshFeed();
+    _autoRevealSpoiler(drEp.num);
+    viewingEpNum = drEp.num;
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+    return;
+  }
   if (isTraitorsSeason()) {
     _saveEpisodeCheckpoint();
     const trEp = simulateTraitorsEpisode();
@@ -1486,18 +1516,20 @@ export function replayEpisode(epNum) {
     // Re-run this episode — the format decides the engine, exactly as
     // simulateNext does. The replay path only knew Total Drama's two engines,
     // so a house had checkpoints it could never spend.
-    if (isBigBrotherSeason() || isTraitorsSeason()) _saveEpisodeCheckpoint();
+    if (isBigBrotherSeason() || isTraitorsSeason() || isDragSeason()) _saveEpisodeCheckpoint();
     // The castle re-airs rather than re-plays: the checkpoint carries the
     // queue AND the seed, so shifting the next row off it hands back the same
     // night. That is the correct behaviour and not a limitation — the season
     // was decided in one call and re-deciding it from episode 3 would rewrite
     // the ending, which is the thing the endgame's placement already warns
     // about.
-    ep = isTraitorsSeason()
-      ? simulateTraitorsEpisode()
-      : isBigBrotherSeason()
-        ? (simulateBBEpisode() || runBBFinale())
-        : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
+    ep = isDragSeason()
+      ? simulateDragEpisode()
+      : isTraitorsSeason()
+        ? simulateTraitorsEpisode()
+        : isBigBrotherSeason()
+          ? (simulateBBEpisode() || runBBFinale())
+          : (gs.phase === 'finale' ? simulateFinale() : simulateEpisode());
   } catch (e) {
     failure = e;
   }

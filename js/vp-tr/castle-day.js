@@ -1586,7 +1586,7 @@ const FALLBACK_SOLO = {
     '{a} carries the information downstairs and intends to use it at the right table.',
     'None of that helps {a} tonight. {a} is playing a longer game.',
     '{a} comes away with the start of a suspicion and the sense to keep quiet about it.',
-    'Whoever is doing this has been a fraction less careful than they think, and {a} is a fraction closer for it.',
+    'Whoever the traitors are, they slipped up today, and {a} is a step closer to a name because of it.',
     '{a} adds another observation to the pile, and the pile is starting to point somewhere.',
     'Nothing about the evening changes. {a} goes into the round table knowing one more thing than the room does.',
     '{a} will not act on what {a} learned this week, but {a} will not forget it either.',

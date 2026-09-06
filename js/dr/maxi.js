@@ -56,10 +56,15 @@ export function runMaxi(ctx) {
     return r;
   };
 
-  const a = take((mod.assign || generic.assign)(ctx));
-  const assignment = {
-    roles: a.roles, teams: a.teams || [], order: a.order, picks: a.picks || {},
-  };
+  // `extra` is whatever the hook invented — the Ball's theme, a roast's
+  // running order. Spread rather than named, on the same principle as the prep
+  // carry below: a module should be able to hand its own performance step a
+  // fact without this file learning what the fact is. `picks` stays keyed by
+  // queen everywhere, so anything else belongs out here rather than smuggled
+  // into it under a made-up name.
+  const { roles, teams, order, picks, scenes: _s, events: _e, ...extra } = take(
+    (mod.assign || generic.assign)(ctx));
+  const assignment = { roles, teams: teams || [], order, picks: picks || {}, ...extra };
 
   const ctx2 = { ...ctx, assignment };
   const p = take((mod.prepare || generic.prepare)(ctx2));

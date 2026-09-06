@@ -293,3 +293,27 @@ describe('the triple lip sync', () => {
     }
   });
 });
+
+describe('a Ball week reaches the runway', () => {
+  // The bug class this codebase keeps hitting: a system that runs, produces a
+  // correct result, and reaches no screen. The Ball's whole point is three
+  // walks, so the assertion is not that the module returns three — it is that
+  // the WEEK scores three.
+  it('scores three walks per queen instead of one, and names them', () => {
+    const c = cast(8);
+    const st = initDragState({ cast: c, seed: 5, rng: rngFor(5) });
+    const row = runDragWeek(st, cfg({ maxiId: 'ball' }), ctxFor(c));
+    expect(row.dr.runway.walks.length).toBe(3);
+    for (const n of st.living) {
+      expect(row.dr.runway[n].walks.length, n).toBe(3);
+    }
+  });
+
+  it('and an ordinary week still walks once', () => {
+    const c = cast(8);
+    const st = initDragState({ cast: c, seed: 5, rng: rngFor(5) });
+    const row = runDragWeek(st, cfg({ maxiId: 'acting' }), ctxFor(c));
+    expect(row.dr.runway.walks.length).toBe(1);
+    expect(row.dr.runway[st.living[0]].walks.length).toBe(1);
+  });
+});

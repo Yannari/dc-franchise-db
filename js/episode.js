@@ -3880,9 +3880,26 @@ export function simulateEpisode() {
   // of them happened not to hold a ballot.
   const _dissolveCoaches = ep.loser?.name ? coachesOf(ep.loser.name) : [];
   const _dissolveHeads = (ep.tribalPlayers?.length || 0) + _dissolveCoaches.length;
-  // At least one contestant: a camp of nothing but coaches is folded by the
-  // block above, and everything below here reads _soloP for bonds and pronouns.
-  if ((ep.tribalPlayers?.length || 0) >= 1 && _dissolveHeads <= 2 && ep.challengeType === 'tribe') {
+  // ── AND FOLDING MUST NOT CANCEL A VOTE THE CAMP COULD STILL HOLD ────
+  //
+  // Reported three times, and the third report is what found it: "no tribal
+  // screen at all, and it often does that after a tribe expansion, with
+  // coaches activated." Both halves matter. An expansion makes every tribe
+  // smaller at a stroke, and `_dissolveHeads` counts COACHES as heads — so a
+  // losing tribe of two contestants, or of one contestant and one coach, hit
+  // the threshold and the camp folded WITHOUT A TRIBAL COUNCIL. Nobody was
+  // voted out, nothing was scheduled, and the week simply had no vote in it.
+  //
+  // Two contestants can hold a tribal: the vote ties and the format has a
+  // tie-break for exactly that. Only a camp down to ONE
+  // contestant has no vote to hold, because the one ballot there is would be
+  // that player writing their own name.
+  //
+  // So the head count still decides whether the CAMP is viable — that part was
+  // a deliberate fix and coaches are people living there — but the vote is
+  // only skipped when there is nobody left to vote against. A tribe of two
+  // votes, drops to one, and folds the next time it loses.
+  if ((ep.tribalPlayers?.length || 0) === 1 && _dissolveHeads <= 2 && ep.challengeType === 'tribe') {
     // Everybody left moves, not just a lone survivor — and everybody keeps
     // what they are. A contestant arrives a contestant; a coach arrives a
     // coach, still unable to compete or vote, at whatever camp takes them.

@@ -76,7 +76,13 @@ function season(seed, endgameSize) {
   const egRow = rows.find(e => e.tr && e.tr.endgame);
   if (!egRow) return null;
   const eg = egRow.tr.endgame;
-  const openedAt = eg.asks?.[0]?.living?.length ?? 0;
+    // A ZERO-ASK ENDGAME HAS NO `asks[0]`. Since the fire stops rather than
+    // putting a question to a room of two (js/tr/endgame.js), a finale that
+    // opens at two asks nothing at all — and reading the opening room off
+    // `asks[0]` then reports it as 0 and drags this band under its floor for a
+    // reason that is not about sizing at all. The room that reached the fire
+    // is the survivors when nobody was ever asked.
+  const openedAt = eg.asks?.[0]?.living?.length ?? (eg.survivors || []).length;
   // Was the game already decided when it opened? Those are the legitimate
   // early exits: nobody left to find, or nobody left to murder.
   const traitorsLeft = (eg.reveals || []).filter(r => r.role === 'traitor').length
@@ -86,7 +92,7 @@ function season(seed, endgameSize) {
 }
 
 describe('the endgame opens at the size the author asked for', () => {
-  it.each([[3], [4], [5]])('endgameSize %i opens within one of the number', size => {
+  it.each([[3], [4], [5]])('endgameSize %i opens inside its window', size => {
     const runs = SEEDS.map(s2 => season(s2, size)).filter(Boolean);
     expect(runs.length, 'no season reached an endgame').toBeGreaterThan(15);
     const tally = {};
@@ -111,13 +117,16 @@ describe('the endgame opens at the size the author asked for', () => {
     //   size 3   {2:2, 3:9, 4:5, 5:3, 6:1, 7:2, 8:1, 9:1}   within one 67%
     //   size 4   {3:6, 4:8, 5:3, 6:3, 7:2, 8:1, 9:1}        within one 71%
     //   size 5   {4:5, 5:12, 6:3, 7:2, 8:1, 9:1}            within one 83%
-    const near = runs.filter(r => Math.abs(r.openedAt - size) <= 1).length;
+    // One below is a murder-delivered handover; up to two above is the parity
+    // window, which the next arm asserts from the other side. Same bound in
+    // tests/tr-murder-every-night.test.js — one rule, stated once.
+    const near = runs.filter(r => r.openedAt >= size - 1 && r.openedAt <= size + 2).length;
     expect(near / runs.length,
-      `opened within one of ${size} on only ${near}/${runs.length}: `
-      + JSON.stringify(tally)).toBeGreaterThan(0.6);
+      `opened inside [${size - 1}, ${size + 2}] on only ${near}/${runs.length}: `
+      + JSON.stringify(tally)).toBeGreaterThan(0.7);
     // The far tail is only ever a season that ended on its own terms.
     for (const r of runs) {
-      if (Math.abs(r.openedAt - size) <= 1) continue;
+      if (r.openedAt >= size - 1 && r.openedAt <= size + 2) continue;
       if (r.decided) continue;
       expect(r.openedAt, `opened at ${r.openedAt} with endgameSize ${size} and the `
         + 'game was still live').toBeLessThanOrEqual(size + 2);

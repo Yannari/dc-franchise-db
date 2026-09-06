@@ -111,10 +111,11 @@
     radial-gradient(90% 70% at 50% 96%,transparent 30%,rgba(3,3,5,.72) 78%),
     linear-gradient(rgba(3,4,7,.86) 0%,rgba(4,4,6,.34) 34%,transparent 60%)}
 
-/* wall sconces, one either side, because a hall this size is not lit by one
-   fire and the flicker has to come from more than the middle of the screen */
-.ft-sconce{position:fixed;bottom:34%;z-index:0;pointer-events:none;width:78px;
-  opacity:.9}
+/* wall torches, one either side, because a chamber is not lit by one fire and
+   the flicker has to come from more than the middle of the screen */
+.ft-sconce{position:fixed;bottom:30%;z-index:0;pointer-events:none;width:92px;
+  opacity:.95;
+  filter:drop-shadow(0 0 34px color-mix(in srgb,var(--ft-fire) calc(50% * var(--ft-heat)),transparent))}
 .ft-sconce.l{left:calc(50% - 470px)}
 .ft-sconce.r{right:calc(50% - 470px)}
 @media(max-width:1180px){.ft-sconce{display:none}}
@@ -471,32 +472,78 @@
 
   <!-- ── SCONCES ──────────────────────────────────────────────────── -->
   <div class="ft-sconce l">
-    <svg viewBox="0 0 78 150" aria-hidden="true">
-      <path class="ft-iron" d="M30 150V64h18v86z"/>
-      <path class="ft-iron" d="M14 66c0-14 12-24 25-24s25 10 25 24z"/>
-      <rect class="ft-iron" x="34" y="20" width="10" height="30" rx="3"/>
-      <g class="ft-candle" transform="translate(39 22)">
-        <ellipse fill="var(--ft-fire)" opacity=".45" rx="16" ry="24" cy="-12"/>
-        <path fill="url(#ft-core)" d="M0-34c8 12 10 18 10 24 0 7-5 12-10 12s-10-5-10-12c0-6 2-12 10-24z"/>
-      </g>
+    <svg viewBox="0 0 90 190" aria-hidden="true">
+      <defs>
+        <radialGradient id="ft-torchcore" cx="50%" cy="82%" r="60%">
+          <stop offset="0%" stop-color="#fffbe8"/>
+          <stop offset="36%" stop-color="#ffd777"/>
+          <stop offset="70%" stop-color="#ff7d1a"/>
+          <stop offset="100%" stop-color="#c02405" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- iron bracket, a pitch-soaked head, and a live flame on it. A candle
+           in a holder was the cottage again; a torch is what a chamber nobody
+           admits to is lit by. -->
+      <path class="ft-iron" d="M40 190v-96h12v96z"/>
+      <path class="ft-iron" d="M22 100c0-16 14-28 30-28s30 12 30 28l-8 4c0-13-10-22-22-22s-22 9-22 22z"/>
+      <path class="ft-iron" d="M44 96l6-46h10l-6 46z"/>
+      <path fill="#2b1d12" d="M46 56h20l-3 22H49z"/>
+      <!-- OUTER GROUP POSITIONS, INNER GROUP ANIMATES. Second time this bit
+           me in one file: a CSS `transform` animation on an SVG element
+           overrides that element's `transform` attribute outright, so the
+           flame was drawn at the SVG origin — a half-disc of orange in the top
+           corner, well away from the bracket, while the torch itself looked
+           correctly unlit. See the same note on .ft-cloak. -->
+      <g transform="translate(56 54)"><g class="ft-candle">
+        <ellipse fill="var(--ft-fire)" opacity=".4" rx="24" ry="34" cy="-18"/>
+        <path fill="url(#ft-torchcore)" d="M0-52c12 18 15 27 15 36 0 11-7 18-15 18s-15-7-15-18c0-9 3-18 15-36z"/>
+        <path fill="#fff6da" opacity=".9" d="M0-30c5 8 7 12 7 16 0 5-3 8-7 8s-7-3-7-8c0-4 2-8 7-16z"/>
+      </g></g>
     </svg>
   </div>
   <div class="ft-sconce r">
-    <svg viewBox="0 0 78 150" aria-hidden="true">
-      <path class="ft-iron" d="M30 150V64h18v86z"/>
-      <path class="ft-iron" d="M14 66c0-14 12-24 25-24s25 10 25 24z"/>
-      <rect class="ft-iron" x="34" y="20" width="10" height="30" rx="3"/>
-      <g class="ft-candle" transform="translate(39 22)">
-        <ellipse fill="var(--ft-fire)" opacity=".45" rx="16" ry="24" cy="-12"/>
-        <path fill="url(#ft-core)" d="M0-34c8 12 10 18 10 24 0 7-5 12-10 12s-10-5-10-12c0-6 2-12 10-24z"/>
-      </g>
+    <svg viewBox="0 0 90 190" aria-hidden="true">
+      <defs>
+        <radialGradient id="ft-torchcore" cx="50%" cy="82%" r="60%">
+          <stop offset="0%" stop-color="#fffbe8"/>
+          <stop offset="36%" stop-color="#ffd777"/>
+          <stop offset="70%" stop-color="#ff7d1a"/>
+          <stop offset="100%" stop-color="#c02405" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- iron bracket, a pitch-soaked head, and a live flame on it. A candle
+           in a holder was the cottage again; a torch is what a chamber nobody
+           admits to is lit by. -->
+      <path class="ft-iron" d="M40 190v-96h12v96z"/>
+      <path class="ft-iron" d="M22 100c0-16 14-28 30-28s30 12 30 28l-8 4c0-13-10-22-22-22s-22 9-22 22z"/>
+      <path class="ft-iron" d="M44 96l6-46h10l-6 46z"/>
+      <path fill="#2b1d12" d="M46 56h20l-3 22H49z"/>
+      <!-- OUTER GROUP POSITIONS, INNER GROUP ANIMATES. Second time this bit
+           me in one file: a CSS `transform` animation on an SVG element
+           overrides that element's `transform` attribute outright, so the
+           flame was drawn at the SVG origin — a half-disc of orange in the top
+           corner, well away from the bracket, while the torch itself looked
+           correctly unlit. See the same note on .ft-cloak. -->
+      <g transform="translate(56 54)"><g class="ft-candle">
+        <ellipse fill="var(--ft-fire)" opacity=".4" rx="24" ry="34" cy="-18"/>
+        <path fill="url(#ft-torchcore)" d="M0-52c12 18 15 27 15 36 0 11-7 18-15 18s-15-7-15-18c0-9 3-18 15-36z"/>
+        <path fill="#fff6da" opacity=".9" d="M0-30c5 8 7 12 7 16 0 5-3 8-7 8s-7-3-7-8c0-4 2-8 7-16z"/>
+      </g></g>
     </svg>
   </div>
-  <div class="ft-embers" id="embers"></div>
-  <div class="ft-flare"></div>
 
-  <!-- ── THE FIRE ──────────────────────────────────────────────────── -->
-  <!-- ── THE HEARTH ───────────────────────────────────────────────── -->
+  <!-- ── THE CHAMBER ──────────────────────────────────────────────────
+       SECOND REJECTION, AND IT WAS THE RIGHT CALL: the fireplace version read
+       as "medieval poor house". A mantel shelf with a shield over it is a
+       COTTAGE — domestic, warm, somebody's front room. The note that came with
+       it named the fix exactly: secret chamber, castle, torch.
+
+       So: no fireplace. A vaulted undercroft, a pointed arch on heavy piers,
+       and the fire raised off the floor in an iron brazier on a stone plinth —
+       a thing carried into a room to hold a meeting by, not a thing built into
+       a wall to keep a kitchen warm. Torches in iron brackets rather than
+       candles. A stair goes up into the dark at the back, which is the whole
+       point of a chamber nobody is supposed to find. -->
   <div class="ft-pit">
     <svg viewBox="0 0 720 560" aria-hidden="true">
       <defs>
@@ -527,41 +574,38 @@
           <stop offset="97%" stop-color="var(--ft-hot)" stop-opacity=".9"/>
           <stop offset="100%" stop-color="var(--ft-core)" stop-opacity="1"/>
         </linearGradient>
-        <radialGradient id="ft-hearthlight" cx="50%" cy="82%" r="52%">
-          <stop offset="0%" stop-color="var(--ft-tint)" stop-opacity=".85"/>
-          <stop offset="55%" stop-color="var(--ft-tint)" stop-opacity=".3"/>
+        <radialGradient id="ft-hearthlight" cx="50%" cy="70%" r="56%">
+          <stop offset="0%" stop-color="var(--ft-tint)" stop-opacity=".9"/>
+          <stop offset="55%" stop-color="var(--ft-tint)" stop-opacity=".26"/>
           <stop offset="100%" stop-color="var(--ft-tint)" stop-opacity="0"/>
         </radialGradient>
         <linearGradient id="ft-logglow" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#ff8c2b"/>
           <stop offset="100%" stop-color="#5e1c04"/>
         </linearGradient>
-        <clipPath id="ft-mouth">
-          <path d="M148 520V236c0-16 14-28 32-28h360c18 0 32 12 32 28v284z"/>
-        </clipPath>
       </defs>
 
-      <!-- the surround: jambs, a four-centred lintel, a mantel shelf -->
-      <path class="ft-dressed" d="M96 560V212c0-40 32-72 74-72h380c42 0 74 32 74 72v348h-58V236c0-16-14-28-32-28H186c-18 0-32 12-32 28v324z"/>
-      <rect class="ft-dressed-2" x="72" y="120" width="576" height="34" rx="4"/>
-      <rect class="ft-dressed-2" x="86" y="154" width="548" height="16" rx="3"/>
-      <path class="ft-carve" d="M100 137h520M118 162h484"/>
-      <!-- firelight spilling onto the stone it is set in -->
-      <path class="ft-lit" d="M96 560V212c0-40 32-72 74-72h380c42 0 74 32 74 72v348h-58V236c0-16-14-28-32-28H186c-18 0-32 12-32 28v324z"/>
-      <rect class="ft-lit" x="72" y="120" width="576" height="50" rx="4"/>
-
-      <!-- the castle's mark over the mantel, taking its colour off the fire -->
-      <g transform="translate(360 60)">
-        <path class="ft-crest" d="M-46 -34h92v42c0 30-22 50-46 62-24-12-46-32-46-62z"/>
-        <path class="ft-crest-in" d="M-34 -22h68v30c0 22-16 37-34 46-18-9-34-24-34-46z"/>
-        <path fill="none" stroke="#5c4c39" stroke-width="2" d="M0-14v46M-18 2h36"/>
+      <!-- the vault: two piers and a pointed arch, with the dark behind it -->
+      <path fill="#050404" d="M84 560V232C84 132 208 46 360 26c152 20 276 106 276 206v328z"/>
+      <path class="ft-dressed" fill-rule="evenodd"
+        d="M40 560V226C40 108 184 8 360 0c176 8 320 108 320 226v334h-56V232C624 132 500 46 360 26 220 46 96 132 96 232v328z"/>
+      <g class="ft-carve">
+        <path d="M118 240C118 152 232 76 360 58M602 240C602 152 488 76 360 58"/>
+        <path d="M150 560V262M570 560V262"/>
       </g>
+      <!-- the stair up into the dark at the back of the chamber -->
+      <g opacity=".8">
+        <path fill="#070606" d="M300 396h120v164H300z"/>
+        <g stroke="#191512" stroke-width="3" fill="none">
+          <path d="M300 428h120M306 458h108M312 488h96M318 518h84"/>
+        </g>
+      </g>
+      <path class="ft-lit"
+        d="M48 560V214C48 106 130 20 236 20h248c106 0 188 86 188 194v346z"/>
 
-      <!-- inside the mouth: the back of the chimney, then the fire -->
-      <g clip-path="url(#ft-mouth)">
-        <rect x="140" y="200" width="440" height="360" fill="#070605"/>
-        <rect x="140" y="200" width="440" height="360" fill="url(#ft-core)" opacity=".12"/>
-        <g filter="url(#ft-turb)" transform="translate(0 190)">
+      <!-- the brazier -->
+      <g>
+        <g filter="url(#ft-turb)" transform="translate(0 100)">
           <g class="ft-gcore">
             <path class="ft-flame f3" fill="url(#ft-core)" opacity=".55"
               d="M360 300C260 300 228 236 248 176c10 42 34 52 34 52s-24-74 24-124c-8 56 34 74 34 74s-14-58 20-96c-2 52 44 66 44 118 0 62-44 100-44 100z"/>
@@ -579,34 +623,17 @@
               d="M360 308c-42 0-62-28-58-62 6 22 18 28 18 28s-12-40 14-66c-4 30 18 40 18 40s-8-30 12-50c-2 28 22 36 22 64 0 32-26 46-26 46z"/>
           </g>
         </g>
-
-        <!-- fire dogs, and the oak across them -->
-        <g>
-          <path class="ft-iron" d="M214 500v-62h12v62zM214 438c0-18 14-30 30-30v12c-11 0-18 7-18 18z"/>
-          <path class="ft-iron" d="M494 500v-62h12v62zM506 438c0-11-7-18-18-18v-12c16 0 30 12 30 30z"/>
-          <rect class="ft-log" x="236" y="452" width="248" height="22" rx="10"
-            transform="rotate(-5 360 463)"/>
-          <rect class="ft-log-hot" x="248" y="457" width="224" height="8" rx="4"
-            transform="rotate(-5 360 463)" opacity=".85"/>
-          <rect class="ft-log" x="244" y="470" width="236" height="20" rx="10"
-            transform="rotate(4 362 480)"/>
-          <rect class="ft-iron" x="196" y="496" width="328" height="12" rx="4"/>
+        <ellipse cx="360" cy="424" rx="66" ry="12" fill="url(#ft-logglow)" opacity=".9"/>
+        <path class="ft-iron" d="M286 412h148l-22 54a10 10 0 0 1-9 6h-86a10 10 0 0 1-9-6z"/>
+        <rect class="ft-iron" x="278" y="402" width="164" height="14" rx="7"/>
+        <g class="ft-iron">
+          <path d="M312 470l-16 46h12l16-46zM408 470l16 46h-12l-16-46zM356 472h8v46h-8z"/>
         </g>
+        <ellipse class="ft-dressed-2" cx="360" cy="522" rx="104" ry="18"/>
+        <ellipse class="ft-dressed" cx="360" cy="540" rx="128" ry="20"/>
       </g>
 
-      <!-- ── THE CLOAKS ────────────────────────────────────────────
-           The one image the show is known for, and the fastest way to say
-           "Traitors" rather than "fireplace": two hooded figures either side
-           of the hearth, black against the light, rim-lit down the edge that
-           faces the fire. They are silhouettes on purpose — no faces, because
-           at this point in the season nobody knows which of them is which. -->
       <g transform="translate(74 286) scale(1.18)"><g class="ft-cloak l">
-        <!-- ONE CONTINUOUS SILHOUETTE — hood, shoulders and robe in a single
-             path. Two earlier passes failed here and both are worth naming: a
-             floating head ellipse above a body read as two blobs, and a rim
-             gradient poured over the WHOLE shape turned the figure into a pale
-             cone. A rim light is an EDGE — the gradient is transparent until
-             86% and only the last few pixels are lit. -->
         <path fill="#070606" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
         <path fill="url(#ft-rim)" opacity=".85" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
       </g></g>
@@ -614,10 +641,6 @@
         <path fill="#070606" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
         <path fill="url(#ft-rim)" opacity=".85" d="M66 0C50 0 42 14 40 34c-2 12-4 18-8 24C18 70 8 92 4 120 0 150 0 190 0 210h132c0-20 0-50-4-90-4-28-14-50-28-62-4-6-6-12-8-24C90 14 82 0 66 0z"/>
       </g></g>
-
-      <!-- the flagstone the hearth sits on -->
-      <rect class="ft-dressed-2" x="120" y="516" width="480" height="20" rx="3"/>
-      <rect class="ft-dressed" x="84" y="536" width="552" height="24" rx="3"/>
     </svg>
   </div>
 

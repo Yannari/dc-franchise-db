@@ -1520,7 +1520,21 @@ describe('the castle, measured over many seasons', () => {
       bucket.n++;
       if (d.betrayed) bucket.b++;
     });
-    try { run(); } finally { restore(); }
+    // 300 SEASONS FOR THIS ARM, NOT THE FILE'S 200, and the reason is a
+    // design change rather than flakiness. The fire now stops at two rather
+    // than putting the vote-or-end question to a room that cannot answer it
+    // (js/tr/endgame.js — a banishment needs a majority and two players give
+    // 1-1). Those final coin-flip tables were part of this arm's population,
+    // so it fell from 163 qualifying decisions to 132 and dropped under the
+    // coverage floor without the engine having changed at all.
+    //
+    // The floor is what this arm is FOR — it asks whether the channel is
+    // observed, not how often it fires — so the sample is raised back over it
+    // rather than the floor being lowered to meet the sample. Same call this
+    // file's own note records for the recruit cap, and the same call made in
+    // tests/tr-vp.test.js's offer block. Measured: 132 at 200 seasons, ~200 at
+    // 300.
+    try { run(300); } finally { restore(); }
 
     const pct = (x) => (x.b / x.n * 100).toFixed(2);
     console.log(`pact: full castle (10+ living) ${big.b}/${big.n} betrayals`

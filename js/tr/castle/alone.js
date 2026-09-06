@@ -1869,17 +1869,17 @@ const WALKED_LAST_LINES = {
   ],
   'set-the-pace': [
     '{a} set the pace home and did not once check whether anybody was keeping it.',
-    '{a} was through that gate a clear two minutes ahead of the next of them.',
+    '{a} was through the gate two minutes before anybody else and was already inside by the time the group arrived.',
     'The whole column walked at {a}\'s speed for an hour and most of them did not enjoy it.',
     '{a} led it home hard, which is either leadership or a message.',
     '{a} does not slow down for people and has stopped pretending to.',
     'Two of them asked {a} to ease off. {Sub} did, for about four minutes.',
     '{a} arrived home not winded at all, which several people noticed and one of them minded.',
-    'There is a kind of authority you get from being at the front of a tired group.',
+    '{a} walked at the front for an hour and the rest of the group fell in behind without being asked.',
     '{a} took the front on the way out and kept it on the way back.',
-    'It is the only competition available on a road and {a} treated it as one.',
+    '{a} turned a walk into a race that nobody else agreed to.',
     '{a} was first up the drive and turned round to watch the rest of it arrive.',
-    'Being the strongest one here keeps you safe all week and gets you killed at the end, and {a} knows both.',
+    '{a} outpaced the whole group and spent the rest of the evening wondering whether that was smart.',
   ],
 };
 

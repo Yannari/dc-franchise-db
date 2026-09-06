@@ -199,7 +199,7 @@ const OVERHEARD_LINES = {
     '{a} would have liked somebody else to have seen it, because seeing a thing on your own is worth almost nothing here.',
     '{c} and {d} stopped mid-sentence when {a} appeared, and {a} spent the rest of the evening deciding whether that was true.',
     'By the time {a} got somewhere to think about it, {a} was no longer certain what {a} had actually seen.',
-    'It is a thin thing to hold on your own: two people, a corner, a silence.',
+    '{a} saw two people in a corner go quiet, alone, with nobody to tell about it.',
     '{a} did not say anything about it to anybody, because there is no way to say it that does not sound like nothing.',
     '{a} kept it, and kept turning it over, and it did not get any bigger for the turning.',
     'Nobody else was in that corridor. {a} has learned what a fact with one witness is worth.',

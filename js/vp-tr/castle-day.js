@@ -1783,7 +1783,7 @@ const CONSEQ_SUSP_THIRD = {
   up: [
     '{a} comes away more sure about {topic}, and now {b} has heard the name too. Neither has proof; both are watching {topic}.',
     'The read on {topic} hardened between {a} and {b}. It is still a feeling — but it is a shared one now.',
-    "{a} leaves with {topic}'s name sitting heavier than it did, and {b} on the same page about it.",
+    "{a} and {b} both leave more suspicious of {topic} than they were when they sat down.",
   ],
   down: [
     '{a} came in doubting {topic} and leaves a little less sure — whatever {b} said took some of the weight off {topic}.',

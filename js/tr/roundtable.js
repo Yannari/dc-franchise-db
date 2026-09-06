@@ -203,11 +203,11 @@ const CLASH_LINES = {
   'ganged-up': [
     '{b} points out that three people have said the same name in ten minutes and asks who arranged that.',
     '“You have all decided,” says {b}. Nobody at that table says no.',
-    '{b} reads out the names of everybody who accused {b}, one by one, and asks how that happened by accident.',
+    '{b} counts the accusers on one hand — three people, the same name, the same night — and asks who talked first.',
     '{b} stops defending and counts how many people accused {b}, out loud, and the number speaks for itself.',
     '{b} says the accusation arrived ready-made and asks who put it together.',
     '{b} asks when they all talked, and two of them look at each other.',
-    'Being outnumbered is not evidence and {b} makes the room feel like it is.',
+    '{b} asks how many people it takes before a coordinated vote stops looking like an opinion.',
     '{b} would rather lose the vote than pretend that was a coincidence.',
   ],
   defended: [

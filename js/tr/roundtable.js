@@ -216,9 +216,9 @@ const CLASH_LINES = {
     '{a} puts {a}’s own standing behind {b} at the table, in public, with a vote coming.',
     '“If you are writing that name,” {a} tells the room, “you are wrong, and I will say so after.”',
     '{a} defends {b} well enough that two people stop nodding.',
-    ‘It costs {a} something to defend {b} here and {a} does it anyway.’,
-    ‘{a} spoke up for {b} and is now attached to {b} in the room’s head.’,
-    ‘{a} defends {b} and two of them turn to look at {a} instead.’,
+    'It costs {a} something to defend {b} here and {a} does it anyway.',
+    '{a} spoke up for {b} and is now attached to {b} in the room’s head.',
+    '{a} defends {b} and two of them turn to look at {a} instead.',
   ],
 };
 

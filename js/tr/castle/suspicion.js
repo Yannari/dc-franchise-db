@@ -1521,7 +1521,7 @@ const GROUP_PRESSURE_LINES = {
     '{b} answered, and then answered again, and then answered a third time in case the room had missed it. It had not.',
     '{b} produced a level of detail about a Tuesday that no innocent person has ever had about a Tuesday.',
     'Nobody had asked where {b} was. {b} told them anyway, twice, with times.',
-    '{b} kept going long after {a} had stopped wanting an answer, which is its own kind of answer.',
+    '{b} kept going long after {a} had stopped wanting an answer, and neither of them noticed who stopped listening first.',
     'The room believed {b} up until about the fourth clarification.',
   ],
   'walked-away': [

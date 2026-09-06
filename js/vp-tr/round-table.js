@@ -1640,7 +1640,7 @@ const READ_JOIN = [
   'The pile in front of {t} grows.',
   'Same name again. Nobody in the room misses it.',
   'Another one for {t}, and the room has stopped being surprised by it.',
-  '{T} does not react this time, which is its own kind of reaction.',
+  '{T} does not react this time. The table notices that too.',
   'That name again. Somebody down the table lets out a breath.',
   'It goes on the same pile, and the pile is starting to look like a decision.',
   'One more for {t}. Nobody writes a name twice by accident.',
@@ -2119,7 +2119,7 @@ function _buildBeats(v) {
   if (!clusters.length) {
     push('debate', _card('Nobody Has A Name', 'The debate', 'hand',
       '<p>Nothing has happened yet that anybody can point at. They talk round the table '
-      + 'for an hour and it produces exactly nothing, which is its own kind of information: '
+      + 'for an hour and it produces exactly nothing — so now '
       + 'the room is about to write down names it has no reason for.</p>'
       + _murmur(key + '|m1')), 'debate', { kind: 'debate' });
   }

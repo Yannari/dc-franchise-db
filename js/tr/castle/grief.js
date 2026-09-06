@@ -438,7 +438,7 @@ const SHARED_MOURNING_LINES = {
     '{b} lost an acquaintance. {a} lost the one person in here who knew them, and the gap between those showed.',
     '{a} needed somebody to have loved {v} too. {b} was the person available rather than the person needed.',
     '{b} was kind about it all morning and got it slightly wrong in about four places.',
-    'By lunch {a} had stopped talking about {v} to {b}, which is its own kind of answer.',
+    'By lunch {a} had stopped talking about {v} to {b}. {b} noticed but did not ask why.',
   ],
   'could-not-say-it': [
     'Neither of them could get through a sentence about {v}, so they stopped starting them.',

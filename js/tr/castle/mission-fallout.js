@@ -896,7 +896,7 @@ const AUDIT_LINES = {
     '{a} told {who} about {mission} on the road back without being asked once, and heard it happening.',
     '{a} volunteered rather more of the afternoon than anybody had wanted, and then spent the last mile regretting the extra.',
     '“I was on {team} the whole time,” {a} said, twice, to somebody who had not asked either time.',
-    '{a} put the whole day in front of people who were not looking for it, which is its own kind of answer.',
+    '{a} put the whole day in front of people who were not looking for it, and they looked at each other instead.',
   ],
   unasked: [
     'Nobody asked {a} anything about {mission} on the way home, and {a} noticed how much that was worth.',

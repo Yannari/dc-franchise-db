@@ -564,7 +564,7 @@ const CORRIDOR_LINES = {
     'It got personal in a way it had not managed to downstairs, because downstairs there were witnesses.',
     'Whatever this was about, it is about something else now.',
     'They ran out of accusations somewhere around midnight and started on each other instead.',
-    'Two doors closed hard at the same end of the corridor, which is its own kind of statement.',
+    'Two doors closed hard at the same end of the corridor, and the corridor remembered it all night.',
   ],
   'nobody-heard-it': [
     'Whatever happened in that corridor, it stayed there, and the castle will run tomorrow on not knowing.',

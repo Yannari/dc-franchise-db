@@ -1237,7 +1237,7 @@ const FIGHT_LINES = {
     'There was no shouting. {a} and {b} were extremely polite to each other for four hours.',
     '{a} said “fine” in a way that meant the opposite, and then said nothing else at all.',
     'They sat in the same room all evening and did not once speak to each other, and everybody saw it.',
-    '{b} answered every question {a} asked and asked none back, which is its own kind of shouting.',
+    '{b} answered every question {a} asked and asked none back. The silence where curiosity should have been was louder than the fight.',
     'It was over before it started and neither of them has admitted it started.',
     '{a} moved a chair to the other side of the fire, and that was the entire argument.',
     'Nobody heard a word of it. Everybody in the hall knew exactly what was happening.',

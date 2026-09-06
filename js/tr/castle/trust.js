@@ -536,7 +536,7 @@ const CIRCLE_BREAK_LINES = {
     '“I am not tied to you any more,” {a} told {b}, plainly, and did not soften a word of it.',
     '{a} ended it in one sentence and {b} did not get a vote on it.',
     '“Whatever we were, we are not that now,” {a} said, and {b} understood it was meant for tonight, at the table.',
-    '{a} cut {b} loose and made sure it happened where people could see, which is its own kind of message.',
+    '{a} cut {b} loose and made sure it happened where people could see. The audience was the point.',
     '{b} reached for the alliance one last time and {a} was already out the other side of it.',
   ],
   'turned-cold': [

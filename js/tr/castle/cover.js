@@ -724,7 +724,7 @@ const OUTCOME_LINES = {
     'Something about the way {a} told it made {b} quietly file it away.',
     '{a} answered a question about the kitchen with an alibi for the corridor, and {b} noticed the difference.',
     '{b} had not been suspicious of {a} until {a} was quite that helpful about it.',
-    '{a} answered a question nobody had finished asking, which is its own kind of answer.',
+    '{a} answered a question nobody had finished asking, and {b} filed that away.',
     'It was all fine and it was all a little too available.',
     '{b} came away without a single fact and with a strong feeling, which is worse for {a}.',
     '{a} volunteered a name. Nobody had asked for a name.',

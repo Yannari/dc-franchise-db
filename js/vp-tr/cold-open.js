@@ -1001,7 +1001,7 @@ const DOWN_TEXT = [
 const DOWN_MORE = [
   'Then the rest of it, in twos and threes.',
   'After that they come down in clusters, the way people do when nobody wants to arrive alone.',
-  'The others follow within a few minutes of each other, which is its own kind of decision.',
+  'The others follow within a few minutes of each other. Nobody wanted to be first, and nobody wanted to be last.',
   'The stair does not stop for a while.',
 ];
 // A SINGLE straggler who is NOT the first down — used for a one-person cluster

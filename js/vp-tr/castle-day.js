@@ -597,7 +597,7 @@ const REACT = {
       '“I know,” {b} says. “I’ve known since the first night. I was waiting for you to say it.”',
       '{b} doesn’t make a speech about it. {b} moves closer and stays there, which is the answer.',
       '{b} says thank you, badly, twice, and gets it wrong both times and means it.',
-      '“I did not think anybody had noticed,” {b} says, which is its own kind of answer.',
+      '”I did not think anybody had noticed,” {b} says, and means it.',
       '{b} laughs, and it is the first honest noise {b} has made in this building.',
       '“Do not be nice to me,” {b} says. “I will not cope with it.” And does not.',
       '{b} goes quiet for a second and comes back with something much warmer than expected.',
@@ -910,7 +910,7 @@ const REACT_ADVERSE = {
       '{b} says something reasonable in a voice that is not, and stops mid-sentence.',
     ],
     guarded: [
-      '{b} shuts the conversation rather than lose it, which is its own kind of answer.',
+      '{b} shuts the conversation rather than lose it. That told {a} more than finishing it would have.',
       '{b} goes very quiet and stays that way, and it is not the quiet of somebody thinking.',
     ],
   },
@@ -1672,7 +1672,7 @@ const CONSEQ_ROAD_THIRD_NAME = {
     '{topic} stays on {a}’s list; the name {b} traded goes on beside it. The road doubled the problem instead of settling it.',
   ],
   'would-not-talk-about-it': [
-    '{topic}’s name went nowhere on that road. What {a} took home is that {b} will not say a word out of earshot — which is its own kind of answer.',
+    "{topic}’s name went nowhere on that road. What {a} took home is that {b} will not say a word out of earshot — and that silence had a shape.",
     '{a} raised {topic} and {b} raised the weather. The suspicion of {topic} is exactly where it started; the read on {b} is not.',
     '{b} would not touch {topic}, or anyone. {a} walks in with the same doubt about {topic} and a new one about why {b} stays so quiet.',
   ],
@@ -1762,7 +1762,7 @@ const CONSEQ_ROAD_WALK_TEST = {
   ],
   transactional: [
     '{topic} made the road a negotiation. Nothing was decided, but both of them know a deal is on the table now.',
-    '{a} picked {topic} and got a trade rather than a friendship. {a} knows exactly what {topic} wants, which is its own kind of read.',
+    '{a} picked {topic} and got a trade rather than a friendship. {a} knows exactly what {topic} wants, and that is worth more than warmth.',
   ],
   'would-not-be-picked': [
     '{topic} declined to be walked with, quickly and in front of people. {a} has the answer {a} went for, and it is not the one {a} wanted.',
@@ -1906,7 +1906,7 @@ const CONSEQ_CONFRONT = {
   defended: [
     '{topic} came through it, and the room half-remembers who stood where while it happened.',
     'Whatever was meant to land on {topic} did not, quite — {topic} is still standing and the room files that too.',
-    '{topic} weathered it, which is its own kind of answer, and not the one that was wanted.',
+    '{topic} weathered it, and the room noticed that the accusation slid off cleaner than it should have.',
   ],
 };
 

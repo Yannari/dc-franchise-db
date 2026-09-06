@@ -1121,7 +1121,7 @@ const STORY_SURVIVED_LINES = {
   'nobody-asked': [
     '{a} carried a complete account of {topic} all the way home and nobody asked for one word of it.',
     'A whole day, and not one person put a question to {a} about {topic}.',
-    '{a} had answers ready for questions that never came, which is its own kind of unnerving.',
+    '{a} had answers ready for questions that never came, and spent the evening wondering why.',
     'Nobody is looking at {a} at all, and {a} cannot decide whether that is safety or a set-up.',
     'The account {a} built for {topic} went unused, and is now a day older and no better.',
     '{a} spent the road back braced for it and arrived home unasked.',
@@ -1717,7 +1717,7 @@ const ROAD_ARGUMENT_LINES = {
   'in-front-of-everybody': [
     'It happened in the open, on a track, with no walls to take it behind.',
     '{a} and {b} had it out where every single person on that road could hear.',
-    'Nobody intervened and nobody looked away, which is its own kind of participation.',
+    'Nobody intervened and nobody looked away. Fourteen witnesses and not one of them neutral.',
     'They had it out on an open road with fourteen people close enough to hear every word.',
     'Nobody pretended not to listen. There is nowhere on a road to pretend.',
     '{a} and {b} argued the length of a field and the column went quiet around them.',

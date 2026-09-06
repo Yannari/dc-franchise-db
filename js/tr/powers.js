@@ -932,7 +932,7 @@ const SEER_CLAIM_LINES = {
     'A private word, and then a public accusation with nothing behind it. {who} says it without blinking.',
   ],
   silent: [
-    '{who} comes back and says nothing at all, which is its own kind of answer.',
+    '{who} comes back and says nothing at all. The table reads that silence for the rest of the night.',
     'Whatever passed in that room stays there. {who} keeps it.',
     '{who} sits back down with the only certain thing in the castle and does not spend it.',
     'Not a word out of {who}. The room notices the door and nothing else.',

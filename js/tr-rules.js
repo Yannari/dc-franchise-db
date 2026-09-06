@@ -217,7 +217,7 @@ export const TR_RULES = {
       + 'they were on it.',
     fullRules: 'The Traitors name a shortlist rather than a single victim. One '
       + 'of the listed players is murdered; the others survive knowing they were '
-      + 'written down, which is its own kind of information for a room to hold.',
+      + 'written down — and the room will remember who was on that list.',
     occursIn: tr => tr.conclave?.variant === 'on-trial',
   },
   'murder-face-to-face': {

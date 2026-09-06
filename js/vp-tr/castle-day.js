@@ -3107,8 +3107,8 @@ const RECALL_LEAD_RECORDED = [
   // GRIEF scenes as well, and tr-castle-prose has an arm asserting that a
   // shared confidence is never introduced as a row. It caught this line.
   'This started before today, and both of them know it.',
-  'They pick it up exactly where they dropped it, which is not a comfortable place.',
-  'Whatever this was, it did not finish the first time.',
+  'They pick the conversation up exactly where they left it, which is not a comfortable place.',
+  'The conversation did not finish the first time, and neither of them has let it go.',
   'They had this same conversation before, and it ended the same way.',
 ];
 

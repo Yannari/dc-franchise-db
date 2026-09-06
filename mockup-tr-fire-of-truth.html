@@ -438,6 +438,120 @@
 .ft-stat span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;
   color:var(--ft-smoke);font-family:var(--ft-display)}
 
+
+/* -- CARDS REACT ----------------------------------------------------
+   "Also card reaction and animation." The room was doing all the work: the
+   fire changed colour and height under you while the cards themselves just
+   faded up, identically, whatever had happened on them. A screen where the
+   background is more expressive than the content is backwards.
+
+   So every card now enters in the manner of the thing it is reporting, and
+   the ones that carry a blow take one:
+
+     ask      rises and settles, like paper being put down
+     count    lands on the beat, a hard scale-in with the number counting up
+     vote     slips deal in one at a time, staggered
+     turn     each player's card FLIPS over — the one gesture the whole
+              format is about, and the only place it is used
+     blow     a traitor turning over shakes the card, not just the page
+
+   None of it is decoration: every animation here is the same information the
+   card is already carrying, said a second time in movement, so the beat lands
+   before you have finished reading it. */
+
+.ft-beat[data-anim="ask"].on .ft-card{animation:ft-lay 700ms cubic-bezier(.2,.8,.25,1)}
+@keyframes ft-lay{
+  0%{transform:translateY(26px) rotate(.6deg);opacity:0}
+  60%{transform:translateY(-3px) rotate(-.2deg)}
+  100%{transform:none;opacity:1}}
+
+.ft-beat[data-anim="count"].on .ft-card{animation:ft-land 620ms cubic-bezier(.16,1.1,.3,1)}
+@keyframes ft-land{
+  0%{transform:scale(.9);opacity:0}
+  55%{transform:scale(1.02)}
+  100%{transform:scale(1);opacity:1}}
+
+.ft-beat[data-anim="box"].on .ft-card{animation:ft-swell 900ms cubic-bezier(.2,.7,.2,1)}
+@keyframes ft-swell{
+  0%{transform:scale(.96) translateY(20px);opacity:0;filter:brightness(.4)}
+  100%{transform:none;opacity:1;filter:none}}
+
+/* THE FLIP. Reserved for the turning over and used nowhere else — a gesture
+   that means one thing on this screen keeps meaning it. */
+.ft-turn{perspective:900px}
+.ft-turn-av{transform-style:preserve-3d}
+.ft-beat.on .ft-turn .ft-turn-av{animation:ft-flip 900ms cubic-bezier(.3,.8,.3,1) both}
+.ft-beat.on .ft-turn:nth-child(2) .ft-turn-av{animation-delay:.5s}
+.ft-beat.on .ft-turn:nth-child(3) .ft-turn-av{animation-delay:1s}
+/* A FULL TURN, NOT A HALF ONE. Ending on rotateY(180deg) leaves the element
+   mirrored at rest, so every initial on the card came out backwards — B as 8,
+   BR as a reversed R. Obvious in a screenshot and invisible in the source.
+   360 lands on the identity transform, and the flash still sits on the
+   edge-on frame where the answer changes. */
+@keyframes ft-flip{
+  0%{transform:rotateY(0deg) scale(1);filter:brightness(.35)}
+  44%{transform:rotateY(160deg) scale(1.08);filter:brightness(.35)}
+  56%{transform:rotateY(200deg) scale(1.08);filter:brightness(1.6)}
+  100%{transform:rotateY(360deg) scale(1);filter:none}}
+/* the badge and the line arrive AFTER the card has finished turning, so the
+   answer is not readable before the gesture that gives it */
+.ft-beat.on .ft-turn .ft-role,
+.ft-beat.on .ft-turn .ft-p{animation:ft-after 500ms ease both;animation-delay:.75s}
+.ft-beat.on .ft-turn:nth-child(2) .ft-role,
+.ft-beat.on .ft-turn:nth-child(2) .ft-p{animation-delay:1.25s}
+.ft-beat.on .ft-turn:nth-child(3) .ft-role,
+.ft-beat.on .ft-turn:nth-child(3) .ft-p{animation-delay:1.75s}
+@keyframes ft-after{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* a card that takes a hit takes it itself, rather than leaving it to the page */
+.ft-card.struck{animation:ft-struck 620ms ease}
+@keyframes ft-struck{
+  0%,100%{transform:translate(0,0)}
+  14%{transform:translate(-7px,2px)}32%{transform:translate(6px,-3px)}
+  52%{transform:translate(-5px,-1px)}72%{transform:translate(4px,2px)}
+  88%{transform:translate(-2px,0)}}
+
+/* -- THE REACTIONS ---------------------------------------------------
+   Deliberately NOT another .ft-card: a reaction is somebody in the room
+   talking, not the show reporting, and the two must not look the same. Torn
+   edge, hand type, laid at a slight angle, and lit by the fire like everything
+   else in the room. */
+.ft-react{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:start;
+  margin:14px 0 14px 34px;padding:15px 18px 15px 16px;
+  border-left:2px dashed color-mix(in srgb,var(--ft-hot) 55%,transparent);
+  background:linear-gradient(100deg,
+    color-mix(in srgb,var(--ft-tint) 9%,rgba(20,16,13,.9)),rgba(12,11,11,.86));
+  border-radius:2px;transform:rotate(-.5deg);
+  box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.ft-react:nth-of-type(even){transform:rotate(.55deg);margin-left:60px;margin-right:14px}
+.ft-beat.on .ft-react{animation:ft-mutter 640ms cubic-bezier(.2,.9,.3,1) both}
+.ft-beat.on .ft-react:nth-of-type(2){animation-delay:.22s}
+@keyframes ft-mutter{
+  0%{opacity:0;transform:translateY(10px) rotate(-2deg)}
+  100%{opacity:1}}
+.ft-react-av{width:52px;height:52px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#8a7355,#2e2318);
+  display:grid;place-items:center;font-family:var(--ft-display);font-size:15px;
+  color:#f3e6cd;border:1px solid rgba(230,192,122,.28)}
+.ft-react-q{font-family:var(--ft-hand);font-style:italic;font-size:19px;
+  line-height:1.45;color:#f0e2c9}
+.ft-react-n{font-family:var(--ft-display);font-size:10px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--ft-smoke);margin-top:7px}
+.ft-react-n b{color:var(--ft-hot);font-weight:600}
+
+/* the count, arriving as a number rather than sitting there as one */
+.ft-count-n{font-variant-numeric:tabular-nums}
+
+@media(prefers-reduced-motion:reduce){
+  .ft-beat[data-anim].on .ft-card,
+  .ft-beat.on .ft-turn .ft-turn-av,
+  .ft-beat.on .ft-turn .ft-role,
+  .ft-beat.on .ft-turn .ft-p,
+  .ft-beat.on .ft-react,
+  .ft-card.struck{animation:none!important}
+  .ft-turn-av{transform:none!important}
+}
+
 /* ── CONTROLS ──────────────────────────────────────────────────────── */
 .ft-controls{position:fixed;left:0;right:0;bottom:0;z-index:6;
   display:flex;align-items:center;justify-content:center;gap:20px;padding:15px;
@@ -522,7 +636,7 @@
       <main>
 
         <!-- I. the room -->
-        <div class="ft-beat" data-fire="calm">
+        <div class="ft-beat" data-fire="calm" data-anim="ask">
           <div class="ft-card">
             <div class="ft-label">I. The Fire</div>
             <h2 class="ft-h">Nobody Is Going To Be Turned Over</h2>
@@ -537,7 +651,7 @@
         </div>
 
         <!-- II. the question -->
-        <div class="ft-beat" data-fire="calm">
+        <div class="ft-beat" data-fire="calm" data-anim="ask">
           <div class="ft-card">
             <div class="ft-label">II. The Question, For The First Time</div>
             <h2 class="ft-h">Feed It, Or Keep It Lit</h2>
@@ -582,12 +696,12 @@
         </div>
 
         <!-- III. the count — the fire answers -->
-        <div class="ft-beat" data-fire="roar">
+        <div class="ft-beat" data-fire="roar" data-anim="count">
           <div class="ft-card">
             <div class="ft-label">III. The Count</div>
             <h2 class="ft-h">The Fire Stays Lit</h2>
             <div class="ft-count">
-              <div class="ft-count-n">1</div>
+              <div class="ft-count-n" data-to="1">0</div>
               <div>
                 <div class="ft-count-l">one hand, of four</div>
                 <p class="ft-p" style="margin:6px 0 0">Not one voice. So they sit back
@@ -599,7 +713,7 @@
         </div>
 
         <!-- IV. the vote -->
-        <div class="ft-beat" data-fire="roar">
+        <div class="ft-beat" data-fire="roar" data-anim="vote">
           <div class="ft-card">
             <div class="ft-label">IV. The Vote</div>
             <h2 class="ft-h">A Name, Not A Word</h2>
@@ -621,16 +735,33 @@
                 <div class="ft-word hidden">Bowie</div></div>
             </div>
             <div class="ft-count" style="margin-top:16px">
-              <div class="ft-count-n">3</div>
+              <div class="ft-count-n" data-to="3">0</div>
               <div><div class="ft-count-l">against Carrie, of four</div>
                 <p class="ft-p" style="margin:6px 0 0">Carrie goes out of the door with
                   the fire no wiser than it was an hour ago.</p></div>
             </div>
           </div>
+
+          <div class="ft-react">
+            <div class="ft-react-av">BR</div>
+            <div>
+              <div class="ft-react-q">&ldquo;I wrote her name and I still do not know
+                whether I have just won this or ended it.&rdquo;</div>
+              <div class="ft-react-n">Brick &middot; <b>voted Carrie</b></div>
+            </div>
+          </div>
+          <div class="ft-react">
+            <div class="ft-react-av">BO</div>
+            <div>
+              <div class="ft-react-q">&ldquo;Nobody turns anybody over from here. That is
+                the part they have not thought about yet.&rdquo;</div>
+              <div class="ft-react-n">Bowie &middot; <b>voted Carrie</b></div>
+            </div>
+          </div>
         </div>
 
         <!-- V. the turning over -->
-        <div class="ft-beat" data-fire="blood" data-hit="1">
+        <div class="ft-beat" data-fire="blood" data-hit="1" data-anim="turn">
           <div class="ft-card">
             <div class="ft-label">V. The Turning Over</div>
             <h2 class="ft-h">The Only Question The Castle Ever Cared About</h2>
@@ -665,11 +796,28 @@
                     full second. Then it does, all at once, and everybody starts talking.</p></div>
               </div>
             </div>
+
+            <div class="ft-react">
+              <div class="ft-react-av">B</div>
+              <div>
+                <div class="ft-react-q">&ldquo;I sat next to him at every single one of
+                  these. Every one.&rdquo;</div>
+                <div class="ft-react-n">Beardo &middot; <b>laughs once, without humour</b></div>
+              </div>
+            </div>
+            <div class="ft-react">
+              <div class="ft-react-av">BR</div>
+              <div>
+                <div class="ft-react-q">&ldquo;He argued for Carrie. He argued for her and
+                  we listened to him do it.&rdquo;</div>
+                <div class="ft-react-n">Brick &middot; <b>working backwards</b></div>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- VI. the box -->
-        <div class="ft-beat" data-fire="blood">
+        <div class="ft-beat" data-fire="blood" data-anim="box">
           <div class="ft-card ft-box">
             <div class="ft-label" style="justify-content:center">VI. The Strongbox</div>
             <h2 class="ft-h" style="font-size:32px">The Castle Was Betrayed</h2>
@@ -777,12 +925,51 @@
     sAlive.textContent = i >= 3 ? 3 : 4;
     document.getElementById('ch-carrie').classList.toggle('out', i >= 3);
   }
+  // A NUMBER THAT ARRIVES. The count is the whole of beats III and IV, and
+  // sitting there already-correct wastes the one moment they have.
+  function countUp(el) {
+    const to = Number(el.dataset.to || 0);
+    if (!to) { el.textContent = to; return; }
+    const t0 = performance.now(), ms = 520;
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  // embers thrown off the card that just landed, from where it sits
+  function burst(el) {
+    const r = el.getBoundingClientRect();
+    for (let i = 0; i < 9; i++) {
+      const e = document.createElement('i');
+      e.className = 'ft-ember';
+      e.style.left = (r.left + Math.random() * r.width) + 'px';
+      e.style.bottom = (window.innerHeight - r.bottom) + 'px';
+      e.style.setProperty('--dx', (Math.random() * 90 - 45) + 'px');
+      e.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+      document.getElementById('embers').appendChild(e);
+      setTimeout(() => e.remove(), 5200);
+    }
+  }
   function show(n) {
     idx = Math.min(n, beats.length - 1);
     beats.forEach((b, i) => b.classList.toggle('on', i <= idx));
     if (idx >= 0) {
-      grade(beats[idx]);
-      beats[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const beat = beats[idx];
+      grade(beat);
+      beat.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      beat.querySelectorAll('.ft-count-n[data-to]').forEach(countUp);
+      burst(beat);
+      // The blow lands on the CARD as well as on the page — a traitor turning
+      // over should not be something only the background notices.
+      if (beat.dataset.hit) {
+        const card = beat.querySelector('.ft-card');
+        // retriggered by removing and re-adding, or a second reveal of the
+        // same beat plays nothing at all
+        card.classList.remove('struck');
+        void card.offsetWidth;
+        setTimeout(() => card.classList.add('struck'), 1000);
+      }
     }
     sidebar(idx);
     counter.textContent = (idx + 1) + ' / ' + beats.length;

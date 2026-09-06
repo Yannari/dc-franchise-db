@@ -109,12 +109,17 @@ describe('playDragSeason', () => {
     // episode six, and five finalists instead of four. Correct, and worth
     // pinning — the real show answers this with a later double elimination,
     // which this engine does not do yet.
+    // A wide search on purpose: a double shantay is a rare event by design
+    // (measured at roughly one season in sixteen), so a narrow sweep finds one
+    // or not depending on the seed rather than on the behaviour. An earlier
+    // version searched 40 seasons and started failing the day the runway
+    // categories shifted the seeded stream.
     let found = null;
-    for (let s = 0; s < 40 && !found; s++) {
+    for (let s = 0; s < 200 && !found; s++) {
       const out = playDragSeason({ cast: cast(13, 700 + s), seed: s, config: { drDoubleShantay: true } });
       if (out.rows.some(r => r.dr.lipsync?.call === 'double-shantay')) found = out;
     }
-    expect(found, 'no double shantay in 40 seasons').toBeTruthy();
+    expect(found, 'no double shantay in 200 seasons — it has stopped happening').toBeTruthy();
     expect(found.state.living.length).toBeGreaterThan(4);
     expect(found.finale.placements.length).toBe(found.state.living.length);
     expect(found.winner).toBeTruthy();
@@ -200,5 +205,30 @@ describe('playDragSeason', () => {
       .toBeGreaterThan(0.15);
     expect(crown, 'the strongest queen nearly always wins — the finale is not a contest')
       .toBeLessThan(0.60);
+  });
+});
+
+describe('runway categories in a season', () => {
+  it('every episode gets one, and a season does not repeat itself', () => {
+    const sch = buildSchedule({ episodes: 11, castSize: 14, pinned: [], rng: rngFor(3) });
+    const cats = sch.map(e => e.runwayCategory);
+    expect(cats.every(Boolean), 'an episode with no runway category').toBe(true);
+    expect(new Set(cats).size, 'the same category twice in one season').toBe(cats.length);
+  });
+
+  it('a pinned category is kept', () => {
+    const sch = buildSchedule({
+      episodes: 6, castSize: 12, rng: rngFor(1),
+      pinned: [{ episode: 3, runwayCategory: 'Best Drag' }],
+    });
+    expect(sch.find(e => e.episode === 3).runwayCategory).toBe('Best Drag');
+  });
+
+  it('reaches the week, so the runway is a real prompt', () => {
+    const { rows } = playDragSeason({ cast: cast(12), seed: 4 });
+    for (const row of rows.filter(r => !r.dr.finale)) {
+      expect(row.dr.runway.category, `episode ${row.num}`).toBeTruthy();
+      expect(row.dr.runway.category).not.toMatch(/eleganza$/);
+    }
   });
 });

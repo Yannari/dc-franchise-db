@@ -147,7 +147,16 @@ export function runwayScore({
   // difference between a queen with an identity and one without.
   const presence = DRAG_STYLES.includes(d.style) ? 5 : 2.5;
 
-  const score = craft * 0.6 + (fit * 10) * 0.25 + presence * 0.15 + noise(rng, 1.5);
+  // ── WHY FIT IS WORTH LESS THAN THE CRAFT ───────────────────────────
+  //
+  // A category that suits her is a real advantage and must not be a decisive
+  // one. At 0.25 the fit term swung 2.5 points, which is exactly the gap
+  // between a runway 9 and a runway 5 — so which prompt the season happened to
+  // draw mattered as much as whether she can do a runway at all, and the best
+  // queen's crown rate fell from 22% to 12.5% when real categories landed.
+  // At 0.15 a wheelhouse category is worth 1.5, comfortably less than the
+  // craft gap: an edge, not a verdict.
+  const score = craft * 0.7 + (fit * 10) * 0.15 + presence * 0.15 + noise(rng, 1.5);
   return {
     score: Math.round(score * 100) / 100,
     fit,

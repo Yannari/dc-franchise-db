@@ -10,7 +10,8 @@ import { describe, expect, it } from 'vitest';
 import { MAXI_TYPES, TENTPOLES, maxiById } from '../js/dr/data/challenges.js';
 import { MINI_TYPES, miniById } from '../js/dr/data/minis.js';
 import { SONGS, songById } from '../js/dr/data/songs.js';
-import { DRAG_STATS } from '../js/dr/queen.js';
+import { DRAG_STATS, DRAG_STYLES } from '../js/dr/queen.js';
+import { RUNWAY_CATEGORIES, runwayById } from '../js/dr/data/runways.js';
 
 describe('maxi catalogue', () => {
   it('has the fan wiki\'s types, with the Roast split out, six of them tentpoles', () => {
@@ -109,5 +110,28 @@ describe('songs', () => {
       expect(SONGS.filter(s => s.tempo === tempo).length, `no ${tempo} song`).toBeGreaterThan(1);
     }
     expect(songById('nonsense')).toBe(null);
+  });
+});
+
+describe('runway categories', () => {
+  it('are a real list, each declaring what it flatters', () => {
+    expect(RUNWAY_CATEGORIES.length).toBeGreaterThanOrEqual(15);
+    expect(new Set(RUNWAY_CATEGORIES.map(c => c.label)).size).toBe(RUNWAY_CATEGORIES.length);
+    for (const c of RUNWAY_CATEGORIES) {
+      expect(c.label.length, 'a category with no name').toBeGreaterThan(3);
+      expect(Array.isArray(c.styles), c.label).toBe(true);
+      for (const st of c.styles) expect(DRAG_STYLES, `${c.label} names ${st}`).toContain(st);
+    }
+    expect(runwayById('nonsense')).toBe(null);
+  });
+
+  it('no style is left out, and some categories suit everybody', () => {
+    // A style nothing ever flatters is a style that is quietly a penalty.
+    for (const style of DRAG_STYLES) {
+      const n = RUNWAY_CATEGORIES.filter(c => c.styles.includes(style)).length;
+      expect(n, `no category flatters a ${style} queen`).toBeGreaterThan(0);
+    }
+    // And neutral prompts exist, so not every week is a lottery on style.
+    expect(RUNWAY_CATEGORIES.filter(c => !c.styles.length).length).toBeGreaterThan(1);
   });
 });

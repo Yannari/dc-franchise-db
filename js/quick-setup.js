@@ -1140,6 +1140,7 @@ const CONFIG_SCOPE = {
     // The seven craft stats and the style, in the cast builder. Only this
     // show's judges score them.
     'sec-dr-craft':          ['drag-race'],
+    'sec-dr-judges':         ['drag-race'],
     'f-drag-style':          ['drag-race'],
     'cfg-finale':            ['total-drama'],  // a house always ends at three
     // The castle's own controls: how many traitors, and the pot they are

@@ -11,6 +11,7 @@ import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
 import { MINI_TYPES } from './data/minis.js';
 import { JUDGES } from './data/judges.js';
 import { SONGS } from './data/songs.js';
+import { RUNWAY_CATEGORIES } from './data/runways.js';
 import { rngFor } from './rng.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
@@ -104,6 +105,10 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       rotatingId: pin.rotatingId || rotating[(e - 1) % rotating.length],
       guest: pin.guest || null,
       songTitle: pin.songTitle || pick(rng, SONGS).title,
+      // A category per week, and never the same one twice in a season: the
+      // runway is the one thing a viewer sees every single episode, so a
+      // repeat is more noticeable here than anywhere else.
+      runwayCategory: pin.runwayCategory || null,
     });
   }
 
@@ -139,6 +144,14 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   }
   for (const e of out) delete e._style;
 
+  const catPool = RUNWAY_CATEGORIES.map(c => c.label)
+    .filter(l => !out.some(e => e.runwayCategory === l));
+  for (const e of out) {
+    if (e.runwayCategory) continue;
+    if (!catPool.length) catPool.push(...RUNWAY_CATEGORIES.map(c => c.label));
+    e.runwayCategory = catPool.splice(Math.floor(rng() * catPool.length), 1)[0];
+  }
+
   return out;
 }
 
@@ -150,11 +163,13 @@ function weekCfg(sch, config, num, extra = {}) {
     rotatingId: sch.rotatingId,
     guest: sch.guest,
     songTitle: sch.songTitle,
+    runwayCategory: sch.runwayCategory,
     judgeWeights: config.drJudgeWeights || {},
     immunity: !!config.drImmunity,
     // Defaults ON: an unset value means the format's ordinary rule applies.
     allowDoubleShantay: config.drDoubleShantay !== false,
     allowDoubleSashay: !!config.drDoubleSashay,
+    tripleOnTie: !!config.drTripleLipsync,
     ...extra,
   };
 }

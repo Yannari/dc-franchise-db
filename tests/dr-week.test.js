@@ -243,3 +243,53 @@ describe('reactionFor', () => {
     expect(many(1).has('crash-out')).toBe(true);
   });
 });
+
+describe('the triple lip sync', () => {
+  /* ── A CONTROL THAT DID NOTHING ─────────────────────────────────────
+     Found by auditing Plan 1 rather than by playing: `drTripleLipsync` was on
+     the setup screen, saved to the config, passed into dr-run's config
+     object — and read by no line of the engine. CONFIG_SCOPE's whole rule is
+     that a control is shown only if that format's engine reads the value, so a
+     switch that does nothing is the same bug as a switch on the wrong show. */
+  const castOf = n => cast(n);
+
+  it('sends three to the stage when the bottom will not resolve into two', () => {
+    let tripled = null;
+    for (let s = 0; s < 60 && !tripled; s++) {
+      const c = castOf(12);
+      const st = initDragState({ cast: c, seed: s, rng: rngFor(s) });
+      const row = runDragWeek(st, cfg({ num: 1, tripleOnTie: true }), ctxFor(c, s));
+      if (row.dr.lipsync?.call === 'triple') tripled = { row, st };
+    }
+    expect(tripled, 'no triple in 60 seasons — the tie window is too tight').toBeTruthy();
+    expect(tripled.row.dr.call.bottom.length).toBe(3);
+    expect(Object.keys(tripled.row.dr.lipsync.scores).length).toBe(3);
+    // One goes home, two are saved.
+    expect(tripled.row.exits.length).toBe(1);
+    expect(tripled.row.exits[0].name).toBe(tripled.row.dr.lipsync.loser);
+    expect(tripled.st.living.length).toBe(11);
+  });
+
+  it('the lowest score is the one who goes', () => {
+    for (let s = 0; s < 60; s++) {
+      const c = castOf(12);
+      const st = initDragState({ cast: c, seed: s, rng: rngFor(s) });
+      const row = runDragWeek(st, cfg({ num: 1, tripleOnTie: true }), ctxFor(c, s));
+      const ls = row.dr.lipsync;
+      if (ls?.call !== 'triple') continue;
+      const lowest = Object.entries(ls.scores).sort((a, b) => a[1] - b[1])[0][0];
+      expect(ls.loser).toBe(lowest);
+      expect(ls.winner).toBe(Object.entries(ls.scores).sort((a, b) => b[1] - a[1])[0][0]);
+    }
+  });
+
+  it('never fires when the season did not ask for it', () => {
+    for (let s = 0; s < 40; s++) {
+      const c = castOf(12);
+      const st = initDragState({ cast: c, seed: s, rng: rngFor(s) });
+      const row = runDragWeek(st, cfg({ num: 1 }), ctxFor(c, s));
+      expect(row.dr.call.bottom.length, `season ${s}`).toBeLessThanOrEqual(2);
+      expect(row.dr.lipsync?.call).not.toBe('triple');
+    }
+  });
+});

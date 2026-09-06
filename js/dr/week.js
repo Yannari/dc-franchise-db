@@ -27,6 +27,7 @@ import { dragOf } from './queen.js';
 import { maxiById } from './data/challenges.js';
 import { miniById } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
+import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
 import { performQueen, runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
@@ -176,12 +177,17 @@ export function runDragWeek(state, cfg, ctx) {
   say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
 
   const category = cfg.runwayCategory || `${maxi.name} eleganza`;
-  const runway = { category };
+  // The styles this category flatters, from the category itself. A prompt
+  // nobody declared styles for is neutral, and a design or Ball week's runway
+  // is the look she BUILT, which is judged on the building rather than on
+  // whether the theme suited her.
+  const categoryStyles = cfg.categoryStyles || runwayById(category)?.styles || [];
+  const runway = { category, categoryStyles };
   for (const n of living) {
     const sewn = maxi.runway === 'design' || maxi.runway === 'ball';
     const r = runwayScore({
       player: P(n), category, sewn,
-      categoryStyles: cfg.categoryStyles || [], rng,
+      categoryStyles: sewn ? [] : categoryStyles, rng,
     });
     runway[n] = { score: r.score, fit: r.fit };
   }
@@ -221,7 +227,29 @@ export function runDragWeek(state, cfg, ctx) {
   // Early-season immunity, when the season is playing that rule.
   const immune = cfg.immunity && state.lastWinner && cfg.num <= 5 ? [state.lastWinner] : [];
   const call = callWeek(bend, { castSize: living.length, immune });
-  say('critiques', 'critiques', { call, split });
+
+  // ── THE TRIPLE LIP SYNC ────────────────────────────────────────────
+  //
+  // When the season allows it and the bottom will not resolve into two — the
+  // queen just above the bottom is level with the queen in it — she joins them
+  // rather than being called safe on a coin flip. Three lip sync, the lowest
+  // goes home, and the other two are saved.
+  //
+  // "Level" is measured on the panel's own view rather than on a rank, because
+  // ranks are always one apart and would make this fire every week or never.
+  let tripled = false;
+  if (cfg.tripleOnTie && call.low.length && call.bottom.length === 2 && living.length > 4) {
+    const viewOf = n => (ranking.find(r => r.name === n) || {}).meanRank ?? 0;
+    const lowest = call.low[call.low.length - 1];
+    const highestBottom = call.bottom[0];
+    if (Math.abs(viewOf(lowest) - viewOf(highestBottom)) < 1.25) {
+      call.low = call.low.filter(n => n !== lowest);
+      call.bottom = [lowest, ...call.bottom];
+      tripled = true;
+    }
+  }
+
+  say('critiques', 'critiques', { call, split, tripled });
 
   // How each critiqued queen took it. `expected` is HER read of the room —
   // never the panel's ranking, which she has not heard yet.
@@ -244,7 +272,30 @@ export function runDragWeek(state, cfg, ctx) {
   const song = (cfg.songTitle && songById(cfg.songTitle)) || pick(rng, SONGS);
   let lipsync = null;
   const exits = [];
-  if (call.bottom.length >= 2) {
+  if (call.bottom.length > 2) {
+    // A triple. Everybody performs, the lowest goes home, and the call is
+    // reported as a shantay for the two who survived it — the doubles are a
+    // head-to-head judgement and do not apply to three.
+    const scored = call.bottom.map(n => ({
+      n,
+      r: lipsyncScore({
+        player: P(n), song, lipsyncRecord: state.lipsyncRecord[n], lastReaction: reactions[n], rng,
+      }),
+    })).sort((x, y) => y.r.score - x.r.score);
+    const goingHome = scored[scored.length - 1].n;
+    lipsync = {
+      song: song.title, artist: song.artist, queens: call.bottom.map(n => n),
+      scores: Object.fromEntries(scored.map(x => [x.n, x.r.score])),
+      beats: Object.fromEntries(scored.map(x => [x.n, x.r.beats])),
+      stunts: Object.fromEntries(scored.map(x => [x.n, x.r.stunt])),
+      call: 'triple', winner: scored[0].n, loser: goingHome,
+      gap: Math.round((scored[0].r.score - scored[scored.length - 1].r.score) * 100) / 100,
+      triple: true,
+    };
+    for (const x of scored) state.lipsyncRecord[x.n].push(x.n === goingHome ? 'L' : 'W');
+    exits.push(goingHome);
+    say('lipsync', 'lipsync', { lipsync });
+  } else if (call.bottom.length === 2) {
     const [a, b] = call.bottom;
     const sa = lipsyncScore({
       player: P(a), song, lipsyncRecord: state.lipsyncRecord[a], lastReaction: reactions[a], rng,

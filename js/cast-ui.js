@@ -1368,6 +1368,9 @@ export function renderConfig() {
   try { updateShieldUI(); } catch (e) {}
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
+  // The judges panel: drawn here so it survives a reload and a show switch,
+  // not only a click on the tab strip.
+  try { if (typeof window.renderDragJudges === 'function') window.renderDragJudges(); } catch (e) { /* optional chrome */ }
   set('cfg-dr-premiere', seasonConfig.drPremiere || 'standard');
   set('cfg-dr-finale', seasonConfig.drFinale || 'top4');
   // Defaults ON, so the read has to be an explicit !== false rather than a

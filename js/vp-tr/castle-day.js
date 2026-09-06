@@ -2709,7 +2709,7 @@ function _receiptConsequence(s, subs, tone, key, used) {
     seen.add(pair);
     if (chip.type === 'suspicion') {
       const pool = chip.dir > 0 ? [
-        '{a} watches {b} more carefully from here.',
+        '{a} is more suspicious of {b} after that.',
         "{b} is higher on {a}'s list tonight.",
         '{a} files {b} under the names worth keeping an eye on.',
         '{a} leaves with a harder read on {b}.',
@@ -2730,7 +2730,7 @@ function _receiptConsequence(s, subs, tone, key, used) {
       ] : [
         '{a} and {b} are cooler with each other after that.',
         'Something between {a} and {b} frays a little.',
-        '{a} and {b} walk away stiffer than they sat down.',
+        '{a} and {b} are more guarded with each other after that.',
         '{a} and {b} have less ground under them tonight.',
       ];
       lines.push(_fill(_pickUnique(pool, key + '|receipt|bond|' + pair, used,

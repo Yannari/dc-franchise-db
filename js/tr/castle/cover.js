@@ -115,7 +115,7 @@ function _accountTopic() {
 const PREEMPTIVE_LINES = {
   'alibi-built': [
     '{a} had an answer ready for a question nobody had asked yet.',
-    'Nobody had raised it. {a} raised it themselves, cleared it up, and moved the conversation along.',
+    'Nobody had asked where {a} was that night. {a} brought it up anyway, explained it away, and moved the conversation along.',
     '{a} worked out overnight what the awkward question was going to be, and had the boring answer waiting for it.',
     '{a} volunteered a detail so small nobody would ever have thought to check it, which was the whole point.',
     'The story {a} told at breakfast was answering something, and nobody at the table could have said what.',

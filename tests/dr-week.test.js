@@ -184,19 +184,31 @@ describe('runDragWeek', () => {
     expect(new Set(st.out).size).toBe(st.out.length);
   });
 
-  it('below a bottom two there is no elimination — that is the finale\'s job', () => {
-    // Three queens cannot produce a top two AND a bottom two, so the week
-    // calls the room and sends nobody home. The season loop stops before
-    // here (js/dr/season.js runs the finale at the configured size); this
-    // asserts the boundary behaves rather than looping or throwing, because a
-    // silent no-op at the wrong size would be an infinite season.
+  it('three queens still make a bottom two — one wins, two lip sync', () => {
+    // This is how a season reaches a final two at all. An earlier version
+    // called two of three forward and left a single queen as "the bottom",
+    // which made a top-2 finale unreachable: the weekly loop could never get
+    // below three. callWeek drops to one win at four or fewer for that reason.
     const c = cast(3);
+    const st = initDragState({ cast: c, seed: 5, rng: rngFor(5) });
+    const row = runDragWeek(st, cfg(), ctxFor(c));
+    expect(row.dr.call.win.length).toBe(1);
+    expect(row.dr.call.bottom.length).toBe(2);
+    expect(row.dr.lipsync).toBeTruthy();
+    expect(st.living.length).toBe(2);
+  });
+
+  it('two queens is the floor — no bottom two, so nobody goes home', () => {
+    // The true boundary, and the finale's job from here. Asserted rather than
+    // left to be discovered, because a silent no-op at the wrong size would be
+    // a season that never ends.
+    const c = cast(2);
     const st = initDragState({ cast: c, seed: 5, rng: rngFor(5) });
     const row = runDragWeek(st, cfg(), ctxFor(c));
     expect(row.dr.call.bottom.length).toBeLessThan(2);
     expect(row.dr.lipsync).toBe(null);
     expect(row.exits).toEqual([]);
-    expect(st.living.length).toBe(3);
+    expect(st.living.length).toBe(2);
   });
 });
 

@@ -153,7 +153,12 @@ export function hostBend(ranking, { star = {}, storylineNeed = {}, trackPull = {
  */
 export function callWeek(finalRanking, { castSize, immune = [] } = {}) {
   const n = castSize || finalRanking.length;
-  const up = n >= 12 ? 3 : 2;
+  // How many are called up. It drops to ONE at four or fewer, and that is not
+  // cosmetic: with three queens left, calling two of them forward leaves a
+  // single queen to be the bottom, no lip sync is possible and the season
+  // cannot reach a final two. One win and two lip syncing is also what the
+  // format actually does that late.
+  const up = n >= 12 ? 3 : n >= 5 ? 2 : 1;
   const down = n >= 9 ? 3 : 2;
 
   const order = [...finalRanking].sort((a, b) => a.finalRank - b.finalRank).map(r => r.name);

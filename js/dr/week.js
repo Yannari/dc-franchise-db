@@ -254,12 +254,18 @@ export function runDragWeek(state, cfg, ctx) {
     });
     // The host's lean, at half weight, as the spec requires.
     const bendOf = n => (bend.find(x => x.name === n)?.bend || 0) * 0.5;
-    const lc = lipsyncCall({
-      a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
-      bendA: bendOf(a), bendB: bendOf(b),
-      allowDoubleShantay: cfg.allowDoubleShantay,
-      allowDoubleSashay: cfg.allowDoubleSashay,
-    });
+    // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends
+    // with two queens performing for their lives and both staying, which is
+    // the night's climax — but nobody goes home, so the call is resolved
+    // without a loser rather than skipped.
+    const lc = cfg.noElimination
+      ? { call: 'shantay', winner: sa.score >= sb.score ? a : b, loser: null, losers: [], gap: sa.score - sb.score }
+      : lipsyncCall({
+        a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
+        bendA: bendOf(a), bendB: bendOf(b),
+        allowDoubleShantay: cfg.allowDoubleShantay,
+        allowDoubleSashay: cfg.allowDoubleSashay,
+      });
 
     lipsync = {
       song: song.title, artist: song.artist, queens: [a, b],
@@ -278,8 +284,10 @@ export function runDragWeek(state, cfg, ctx) {
       exits.push(a, b);
     } else {
       state.lipsyncRecord[lc.winner].push('W');
-      state.lipsyncRecord[lc.loser].push('L');
-      exits.push(lc.loser);
+      if (lc.loser) {
+        state.lipsyncRecord[lc.loser].push('L');
+        exits.push(lc.loser);
+      }
     }
     say('lipsync', 'lipsync', { lipsync });
   }

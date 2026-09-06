@@ -80,29 +80,59 @@ export const WERK_EVENTS = [
     note: '{a} takes more than her share off the fabric wall and {b} notices.',
     arcs: ['villain'], when: f => f.canScheme && f.bond <= 2,
     effects: { bond: -1.5, pop: { a: -2 } },
+    lines: [
+      "{a} takes four bolts off the wall when everybody else took two, and does it like she is the only person in the room. She is not. {b} counts them from across the table and says nothing, which is louder than saying something.",
+      "The fabric wall is supposed to be shared. {a} does not seem to have heard about that, or has heard and has decided she does not care. {b} watches her carry it all back to her station in two trips and makes a note she will keep for later.",
+      "\"She took the whole bolt,\" {b} says to nobody in particular, watching {a} lay out enough fabric for three outfits on a station built for one. {a} hears it and does not turn around, which is a choice {b} also files away.",
+      "{b} goes to the wall for the stretch velvet and it is gone. All of it. {a} is cutting into it at her station like it was always hers. {b} stands there for a second, looks at the empty hook, looks at {a}, and walks back without a word.",
+    ],
   }),
   ev({
     id: 'machine-jam', slot: 'prep', cast: 'solo', weight: 1,
     note: 'Her machine eats the fabric and she loses time she did not have.',
     when: f => !strongAt(f.a, 'design'),
     effects: { pop: { a: 1 }, state: 'lostTime' },
+    lines: [
+      "The machine eats the chiffon about halfway through the second panel and {a} sits there staring at it like it has personally betrayed her. She pulls it out, the fabric tears, and that is twenty minutes she is not getting back.",
+      "{a} hears the sound before she sees it — that awful crunch of the needle hitting something it should not have hit. She lifts the presser foot and the whole thing comes out mangled. She says a word the cameras will have to bleep and starts again from nothing.",
+      "The bobbin jams and {a} spends ten minutes trying to fix it with a seam ripper and her fingernails before somebody tells her to just rethread it. By then the damage is done — the skirt is bunched in the middle and she does not have time to cut a new one.",
+      "There is a moment where {a} is sewing and then a moment where {a} is holding two pieces of fabric that are no longer attached to each other, and the moment between those two moments was the machine deciding it had done enough for today.",
+    ],
   }),
   ev({
     id: 'mirror-check', slot: 'werk-elim-day', cast: 'pair', weight: 2,
     note: 'Two queens getting into drag beside each other, talking to the mirror rather than to each other.',
     when: f => true,
     effects: { bond: 0.5 },
+    lines: [
+      "{a} and {b} are side by side at the mirrors doing their faces, and the conversation happens the way it does when you are both looking straight ahead. Nobody turns. They talk to each other's reflections about last night, about today, about nothing much. It is the most relaxed either of them has been all week.",
+      "They are both contouring and {b} glances over at {a}'s technique and says \"teach me that\" without any ego about it. {a} shows her, they do the same cheekbone at the same time, and for about five minutes it is two queens getting ready, not two queens in a challenge.",
+      "{a} catches {b}'s eye in the mirror and pulls a face — the full ugly-cry drag face, chin forward, nostrils wide — and {b} does one back. They go back and forth until one of them breaks, and breaking is laughing so hard the eyeliner goes on crooked.",
+      "Neither of them says much. {a} is blending. {b} is gluing down a brow. They pass the setting spray back and forth without asking for it, because they have been beside each other long enough to know the routine. The room is loud behind them but the mirror is quiet.",
+    ],
   }),
   ev({
     id: 'borrowed-jewels', slot: 'werk-elim-day', cast: 'pair', weight: 1,
     note: '{b} lends {a} something for the runway because {a} has nothing that works.',
     arcs: ['hero', 'fashion'], when: f => weakAt(f.a, 'runway') && f.bond >= 2,
     effects: { bond: 1, pop: { b: 1 } },
+    lines: [
+      "{a} is staring at her accessories like they personally let her down, and {b} crosses the room with a pair of earrings and a necklace and puts them on the table without ceremony. \"Wear these. Give them back tomorrow.\" {a} starts to say she cannot and {b} is already walking away.",
+      "\"What are you wearing with that?\" {b} asks, and {a} holds up her only option, and {b}'s face says everything her mouth is too polite to say. She goes to her own case and comes back with a belt and a pair of cuffs that turn {a}'s outfit into something that belongs on the stage.",
+      "{b} sees {a} holding two brooches against the neckline and hating both. She comes over, opens her own jewellery roll, and says \"pick one.\" {a} picks the biggest. {b} laughs and says \"I knew you would\" and lets her take it anyway.",
+      "{a} has nothing for her neck and the dress needs something for the neck. {b} unclasps her own choker, drops it into {a}'s hand, and says \"do not lose it, it was my grandmother's.\" It was not her grandmother's. They both know that. {a} wears it like it was.",
+    ],
   }),
   ev({
     id: 'glue-gun-burn', slot: 'prep', cast: 'solo', weight: 1,
     note: 'She burns herself on the glue gun and keeps going.',
     when: f => true, effects: { pop: { a: 1 } },
+    lines: [
+      "{a} burns two fingers on the glue gun and says \"ow\" in a voice that means it really hurt, and then she blows on them once and goes right back to glueing. The room looks over. She waves the hand. \"I am fine.\" She is not fine. She finishes the headpiece anyway.",
+      "The glue gun gets {a} on the thumb and she drops it on the table, which gets glue on the table, which gets glue on the fabric, which gets the word \"no\" said very loudly to an empty room. She peels it off, trims the edge, and keeps going with a blister forming under the tape.",
+      "A string of hot glue lands on {a}'s wrist and she does a full silent scream — mouth open, no sound — which is funnier than it should be given that it actually left a mark. She wraps it in a paper towel and does not stop working.",
+      "{a} pulls the trigger on the glue gun and it comes out sideways onto her finger. She stares at it hardening on her skin, says \"well that is going to scar,\" and picks up the next rhinestone with the other hand. The outfit has to be finished. The finger will heal.",
+    ],
   }),
   ev({
     id: 'padding-panic', slot: 'werk-elim-day', cast: 'solo', weight: 1,
@@ -181,8 +211,13 @@ export const WERK_EVENTS = [
   }),
   ev({
     id: 'rehearsal-collision', slot: 'prep', cast: 'pair', weight: 1,
-    note: 'Two queens want the same beat in a group number and neither gives it up.',
-    arcs: ['relationship'], when: f => f.bond <= 2 && f.sameTeam,
+    // `sameTeam` was in this gate and nothing ever set it, so the scene was
+    // written, registered and drawn zero times in thirty seasons. The werk
+    // room is drawn before the challenge hands out its teams, so team
+    // membership is not a fact this slot can have — the scene is about two
+    // queens wanting the same idea, which needs no team at all.
+    note: 'Two queens land on the same idea and neither of them will move off it.',
+    arcs: ['relationship'], when: f => f.bond <= 3,
     effects: { bond: -1.5, pop: { a: -1 } },
   }),
   ev({

@@ -271,15 +271,39 @@ describe('the triple lip sync', () => {
   });
 
   it('the lowest score is the one who goes', () => {
+    // A THREE-WAY TIE IS NOT RARE: scores are rounded to two places, and this
+    // assertion used to name one specific queen, which quietly required the
+    // minimum to be unique. It is not — measured, two queens tied on 2.72 in a
+    // sixty-season sweep. The invariant is that whoever goes is AT the minimum.
     for (let s = 0; s < 60; s++) {
       const c = castOf(12);
       const st = initDragState({ cast: c, seed: s, rng: rngFor(s) });
       const row = runDragWeek(st, cfg({ num: 1, tripleOnTie: true }), ctxFor(c, s));
       const ls = row.dr.lipsync;
       if (ls?.call !== 'triple') continue;
-      const lowest = Object.entries(ls.scores).sort((a, b) => a[1] - b[1])[0][0];
-      expect(ls.loser).toBe(lowest);
-      expect(ls.winner).toBe(Object.entries(ls.scores).sort((a, b) => b[1] - a[1])[0][0]);
+      const vals = Object.values(ls.scores);
+      expect(ls.scores[ls.loser], `seed ${s}`).toBe(Math.min(...vals));
+      expect(ls.scores[ls.winner], `seed ${s}`).toBe(Math.max(...vals));
+    }
+  });
+
+  it('and a tie is broken by the season, not by the array order', () => {
+    // Two queens level on the night: the one with less to show for the season
+    // goes. Deterministic, and the show's own logic.
+    const c = castOf(12);
+    const st = initDragState({ cast: c, seed: 4, rng: rngFor(4) });
+    st.record.Queen10 = ['WIN', 'HIGH'];
+    st.record.Queen7 = ['BTM'];
+    const row = runDragWeek(st, cfg({ num: 1, tripleOnTie: true }), ctxFor(c, 4));
+    const ls = row.dr.lipsync;
+    if (ls?.call === 'triple') {
+      const vals = Object.values(ls.scores);
+      const atMin = Object.entries(ls.scores)
+        .filter(([, v]) => v === Math.min(...vals)).map(([n]) => n);
+      if (atMin.length > 1 && atMin.includes('Queen10') && atMin.includes('Queen7')) {
+        expect(ls.loser).toBe('Queen7');
+      }
+      expect(ls.scores[ls.loser]).toBe(Math.min(...vals));
     }
   });
 

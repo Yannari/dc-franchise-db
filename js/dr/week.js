@@ -32,6 +32,7 @@ import { panelFor } from './judges.js';
 import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
+import { runWerkRoom, applyWerkScene } from './werk.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -80,8 +81,47 @@ export function runDragWeek(state, cfg, ctx) {
 
   // 1–2. The room after the last exit, and the morning after that.
   const last = state.episodes[state.episodes.length - 1] || null;
-  say('cold-open', 'cold-open', { gone: last ? last.exits.map(x => x.name) : [] });
+  const gone = last ? last.exits.map(x => x.name) : [];
+  say('cold-open', 'cold-open', { gone });
   say('werk-morning', 'werk-morning', { living: [...living] });
+
+  // ── THE ROOM ──────────────────────────────────────────────────────
+  //
+  // Drawn once for the whole week rather than per slot, so a scene cannot
+  // repeat itself across the morning and the afternoon, and filed into the
+  // slots it belongs to. The maxi challenge writes its own prep scenes; these
+  // are the ones that are about the room rather than about the work.
+  const werkScenes = runWerkRoom({
+    slots: ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
+    living, players: ctx.players, state, storylines: state.storylines || [],
+    rng,
+    ctx: {
+      bond: ctx.bond,
+      phase: state._drPhase ?? 0,
+      episode: cfg.num,
+      someoneLeft: gone.length > 0,
+      gone,
+    },
+  });
+  const werkEvents = [];
+  for (const sc of werkScenes) {
+    applyWerkScene(sc, ctx);
+    scenes.push({
+      step: sc.slot, kind: `werk:${sc.id}`,
+      data: { players: sc.players, note: sc.note, eligible: sc.eligible },
+      text: sc.text || '',
+    });
+    werkEvents.push({
+      type: `werk:${sc.id}`, players: sc.players,
+      bond: sc.effects.bond && sc.players[1]
+        ? [[sc.players[0], sc.players[1], sc.effects.bond]] : [],
+      pop: Object.fromEntries(Object.entries(sc.effects.pop || {})
+        .map(([k, v]) => [k === 'a' ? sc.players[0] : sc.players[1], v])
+        .filter(([n]) => n)),
+      state: sc.effects.state ? { [sc.effects.state]: sc.players[0] } : {},
+      data: {},
+    });
+  }
 
   // 3. The mini, and what winning it buys.
   let mini = null;
@@ -241,7 +281,27 @@ export function runDragWeek(state, cfg, ctx) {
         player: P(n), song, lipsyncRecord: state.lipsyncRecord[n], lastReaction: reactions[n], rng,
       }),
     })).sort((x, y) => y.r.score - x.r.score);
-    const goingHome = scored[scored.length - 1].n;
+
+    // TIES HAPPEN, and they were being broken by array order — which meant the
+    // queen who went home depended on where the panel had listed her, a thing
+    // nobody decided. Scores are rounded to two places, so an exact tie in a
+    // three-way is not rare enough to leave to chance.
+    //
+    // The show's own logic breaks it: when two performances are level, the one
+    // with less to show for the season goes. Wins and highs count for her,
+    // lows and bottoms against, and a queen who has never been in trouble
+    // survives a queen who has.
+    const standing = n => {
+      const rec = state.record[n] || [];
+      return rec.filter(r => r === 'WIN').length * 2
+        + rec.filter(r => r === 'HIGH').length
+        - rec.filter(r => r === 'BTM').length;
+    };
+    const worst = scored[scored.length - 1].r.score;
+    const tied = scored.filter(x => x.r.score === worst);
+    const goingHome = tied.length === 1
+      ? tied[0].n
+      : tied.slice().sort((x, y) => standing(x.n) - standing(y.n))[0].n;
     lipsync = {
       song: song.title, artist: song.artist, queens: call.bottom.map(n => n),
       scores: Object.fromEntries(scored.map(x => [x.n, x.r.score])),
@@ -360,7 +420,8 @@ export function runDragWeek(state, cfg, ctx) {
       call,
       reactions,
       lipsync,
-      events: maxiEvents,
+      events: [...maxiEvents, ...werkEvents],
+      werk: werkScenes.map(s2 => ({ id: s2.id, slot: s2.slot, players: s2.players, eligible: s2.eligible })),
       // A SNAPSHOT, not the live list: replaying episode 4 must show episode
       // 4's arcs, not the ones the season ended with.
       storylines: arcSummary(state.storylines || []),

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Grounding pack for ChatGPT to write a total drama screenplay using the user simulated-season continuity.",
+  "purpose": "Grounding pack for ChatGPT to write a Total Drama screenplay using the user simulated-season continuity.",
   "instructionsForScreenwriter": [
     "Treat simulatedContinuity.appearances as fact. Never alter placements, past deeds, alliances, rivalries, or outcomes.",
     "Treat voiceAndPersonality as behavioral guidance, not dialogue to copy. Write new lines in the same rhythm and worldview.",

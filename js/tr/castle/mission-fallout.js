@@ -1008,7 +1008,7 @@ const MISSING_HOUR_LINES = {
     '“It’s not that {who} went,” {b} said. “It’s that we paid for it and {who} kept it.”',
   ],
   'defended-the-hour': [
-    '”I’d have gone looking too,” {b} said, when {a} complained about {who} leaving. “So would you.”’,
+    '“I’d have gone looking too,” {b} said, when {a} complained about {who} leaving. “So would you.”',
     '{a} raised {who}’s hour away from {team} and {b} pointed out that anybody with a chance at that would have taken it.',
     '“{who} played the game,” {b} said on the road home. “You’re annoyed because {who} played it first.”',
     '{b} would not have {who} blamed for the detour on {mission}, and said so twice before the gate.',

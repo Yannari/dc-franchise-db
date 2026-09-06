@@ -1294,7 +1294,25 @@ export function applyTwist(ep, twist, isPrimary = true) {
     }
     const numTribes  = gs.tribes.length + 1;
     const perTribe   = Math.floor(allActive.length / numTribes);
-    const newName    = 'New Tribe';
+    // ── THE NAME COMES FROM SETUP, NOT FROM A STRING LITERAL ──────────
+    //
+    // Reported: "can tribe expansion use the name of the team unused in setup
+    // instead of using New Tribe as name and a random color?"
+    //
+    // Both halves are the same cause. `tribeColor` (js/players.js) looks a
+    // name up in `seasonConfig.tribes` and falls back to hashing the string
+    // into a palette when it finds nothing — so "New Tribe" was never given a
+    // random colour, it was given the hash of the words "New Tribe", which is
+    // the same wrong colour every season and belongs to no tribe the author
+    // configured. Take a name the author actually wrote and the colour follows
+    // it home with no second lookup.
+    //
+    // A season that configured no spare name still gets "New Tribe": the twist
+    // has to be able to run on a setup that never planned for it.
+    const _inPlay = new Set(gs.tribes.map(t => String(t.name || '').toLowerCase()));
+    const _spare = (seasonConfig.tribes || [])
+      .find(t => t && t.name && !_inPlay.has(String(t.name).toLowerCase()));
+    const newName    = _spare ? _spare.name : 'New Tribe';
     const oldNames   = gs.tribes.map(t => t.name);
     const allNames   = [...oldNames, newName];
     gs.tribes = allNames.map((name, i) => ({

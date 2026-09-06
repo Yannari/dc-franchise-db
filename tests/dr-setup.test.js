@@ -157,6 +157,52 @@ describe('the setup screen shows one show at a time', () => {
     }
   });
 
+  /* ── THE CAST FORM, FIELD BY FIELD ─────────────────────────────────
+     Three leaks were reported from this one form: the castle's Background
+     select, the murder twists, and Total Drama's Coach tick. None of them
+     could be caught by a rule about ids or labels, because "Coach" names no
+     show and neither does `f-coach`.
+
+     So this one is a CLASSIFICATION rather than a pattern: every control in
+     the cast form is either universal or belongs to one show, somebody has to
+     say which, and a field added later fails this test until they do. That is
+     a list, which this project usually refuses — but the alternative here is
+     no rule at all, and a list that FAILS ON ADDITION is not the same as one
+     that goes stale silently. */
+  const CAST_FORM = {
+    'f-name': null, 'f-slug': null, 'f-gender-seg': null, 'f-sexuality': null,
+    'f-archetype': null, 'f-returnee': null, 'f-portrait-picker': null,
+    'f-portrait-status': null, 'f-background-preview': null,
+    'f-tribe': 'total-drama',       // a house, a castle and a workroom have no tribes
+    'f-coach': 'total-drama',       // a coach trains a tribe from the sideline
+    'f-background': 'traitors',     // Alumni / Celebrity / Civilian is the castle's question
+    'f-drag-style': 'drag-race',    // only this show's judges score a drag style
+  };
+
+  it('every cast-form field is classified, and none has appeared unclassified', () => {
+    const ids = [...new Set([...html.matchAll(/id="(f-[\w-]+)"/g)].map(m => m[1]))];
+    const unknown = ids.filter(id => !(id in CAST_FORM));
+    expect(unknown,
+      'a cast-form field nobody has classified — decide whether it is universal '
+      + 'or belongs to one show, and add it to CAST_FORM above')
+      .toEqual([]);
+  });
+
+  it('and each show-specific one is scoped to exactly its show', () => {
+    for (const [id, fmt] of Object.entries(CAST_FORM)) {
+      const shownOn = Object.keys(SHOWS).filter(f => {
+        const sc = configScopeFor(f);
+        return [...sc.fields, ...sc.sections, ...sc.accordions].includes(id);
+      });
+      if (fmt === null) {
+        expect(shownOn, `${id} is universal but scoped to ${shownOn.join(', ')}`).toEqual([]);
+      } else {
+        expect(shownOn, `${id} belongs to ${fmt} but is drawn on ${shownOn.join(', ') || 'nothing'}`)
+          .toEqual([fmt]);
+      }
+    }
+  });
+
   it('so no show is told another show\'s rules', () => {
     // The concrete case: a drag season must not be offered a Head of Household
     // or a Round Table, and a castle must not be offered a lip sync verdict.

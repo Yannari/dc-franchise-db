@@ -1131,6 +1131,16 @@ const CONFIG_SCOPE = {
     // the signal that it needs a row here; the guard in tests/dr-setup.test.js
     // now enforces that.
     'f-background':          ['traitors'],
+    // A coach trains a TRIBE from the sideline. A house, a castle and a
+    // workroom have no tribes, so the per-character tick meant nothing on
+    // three of the four shows and was offered on all of them. The `coaches`
+    // accordion above has been scoped since Big Brother; this checkbox, which
+    // is the thing you actually tick, never was.
+    'f-coach':               ['total-drama'],
+    // The seven craft stats and the style, in the cast builder. Only this
+    // show's judges score them.
+    'sec-dr-craft':          ['drag-race'],
+    'f-drag-style':          ['drag-race'],
     'cfg-finale':            ['total-drama'],  // a house always ends at three
     // The castle's own controls: how many traitors, and the pot they are
     // playing for. No other format's engine reads either.

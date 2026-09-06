@@ -145,6 +145,28 @@
           <label class="form-label">Stats</label>
           <div class="stat-sliders" id="stat-sliders"></div>
         </div>
+        <!-- The craft a panel scores, on the show that has one. Scoped to
+             drag-race in CONFIG_SCOPE, so it is not drawn over a camp. -->
+        <div class="form-group" id="sec-dr-craft">
+          <label class="form-label">Drag craft <span style="font-weight:400;color:var(--muted);font-size:10px">(what the judges score)</span></label>
+          <div class="stat-sliders" id="drag-stat-sliders"></div>
+          <div class="form-group" style="margin-top:8px">
+            <label class="form-label">Drag style</label>
+            <select id="f-drag-style" class="form-select">
+              <option value="">Auto — from her strongest craft</option>
+              <option value="pageant">Pageant</option>
+              <option value="comedy">Comedy</option>
+              <option value="fashion">Fashion</option>
+              <option value="camp">Camp</option>
+              <option value="club-kid">Club kid</option>
+              <option value="spooky">Spooky</option>
+              <option value="broadway">Broadway</option>
+              <option value="dancer">Dancer</option>
+              <option value="glamour">Glamour</option>
+              <option value="art">Art</option>
+            </select>
+          </div>
+        </div>
         <div class="divider"></div>
         <button class="btn btn-primary" id="submit-btn" onclick="submitPlayer()">Add Player</button>
         <div class="btn-row" id="edit-actions" style="display:none">

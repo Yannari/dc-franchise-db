@@ -54,6 +54,7 @@ export function buildStatSliders() {
       <span class="slider-val" id="val-${s.key}" style="color:${s.color}">5</span>
     </div>`).join('');
   STATS.forEach(s => setSlider(s.key, 5, false));
+  buildDragSliders();
 }
 
 export function setSlider(key, val, resetArchetype) {
@@ -73,6 +74,85 @@ export function applyArchetype(key) {
 }
 export function getStats() { const s = {}; STATS.forEach(st => { s[st.key] = parseInt(document.getElementById('slider-'+st.key).value); }); return s; }
 export function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.key] || 5, false)); }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE DRAG CRAFT SLIDERS
+// ══════════════════════════════════════════════════════════════════════
+//
+// The nine stats above are the PERSON and every show reads them. These seven
+// are what a panel scores, and only one show has a panel — so they live behind
+// `sec-dr-craft`, which CONFIG_SCOPE draws for drag-race alone.
+//
+// They are here as well as in the Casting Studio on purpose, and the two do
+// different jobs: the Studio authors a character permanently and writes to D1,
+// while this sets up THIS season's cast. Somebody assembling a Drag Race cast
+// should not have to leave the cast builder to say who can sing.
+const DRAG_CRAFT = [
+  { key: 'acting',  name: 'Acting',  color: '#f9a8d4' },
+  { key: 'comedy',  name: 'Comedy',  color: '#fbbf24' },
+  { key: 'dance',   name: 'Dance',   color: '#4ade80' },
+  { key: 'design',  name: 'Design',  color: '#60a5fa' },
+  { key: 'runway',  name: 'Runway',  color: '#c084fc' },
+  { key: 'lipsync', name: 'Lip sync', color: '#f85149' },
+  { key: 'singing', name: 'Singing', color: '#38bdf8' },
+];
+
+export function buildDragSliders() {
+  const container = document.getElementById('drag-stat-sliders');
+  if (!container) return;
+  container.innerHTML = DRAG_CRAFT.map(s => `
+    <div class="slider-row">
+      <span class="slider-name" style="color:${s.color}">${s.name}</span>
+      <input type="range" min="1" max="10" value="5" class="stat-slider" id="dslider-${s.key}"
+        oninput="setDragSlider('${s.key}', this.value)">
+      <span class="slider-val" id="dval-${s.key}" style="color:${s.color}">5</span>
+    </div>`).join('');
+  DRAG_CRAFT.forEach(s => setDragSlider(s.key, 5));
+}
+
+export function setDragSlider(key, val) {
+  const n = parseInt(val);
+  const craft = DRAG_CRAFT.find(s => s.key === key);
+  if (!craft) return;
+  const pct = ((n - 1) / 9 * 100).toFixed(1) + '%';
+  const el = document.getElementById('dslider-' + key);
+  if (el) {
+    el.value = n;
+    el.style.background = `linear-gradient(to right,${craft.color} 0%,${craft.color} ${pct},var(--slider-track) ${pct})`;
+  }
+  const vEl = document.getElementById('dval-' + key);
+  if (vEl) vEl.textContent = n;
+}
+
+/**
+ * The craft block as the engine wants it, or undefined.
+ *
+ * Undefined when nothing was touched: a row of fives is indistinguishable from
+ * a considered choice, and storing it would claim every cast member had been
+ * given a craft line. js/dr/queen.js reads a missing block as middling
+ * everything, so the two mean the same thing to the engine and only one of
+ * them lies to a reader.
+ */
+export function getDragCraft() {
+  if (!document.getElementById('dslider-acting')) return undefined;
+  const out = {};
+  let touched = false;
+  for (const s of DRAG_CRAFT) {
+    const v = parseInt(document.getElementById('dslider-' + s.key).value);
+    out[s.key] = v;
+    if (v !== 5) touched = true;
+  }
+  const style = document.getElementById('f-drag-style')?.value || '';
+  if (style) { out.style = style; touched = true; }
+  return touched ? out : undefined;
+}
+
+export function putDragCraft(drag) {
+  const d = drag || {};
+  DRAG_CRAFT.forEach(s => setDragSlider(s.key, d[s.key] || 5));
+  const sel = document.getElementById('f-drag-style');
+  if (sel) sel.value = d.style || '';
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // DERIVED
@@ -175,6 +255,7 @@ export function submitPlayer() {
     gender: getGender(),
     sexuality: sexuality !== 'straight' ? sexuality : undefined,
     archetype: document.getElementById('f-archetype').value, stats: getStats(),
+    drag: getDragCraft(),
     isReturnee: document.getElementById('f-returnee')?.checked || false,
     isCoach: document.getElementById('f-coach')?.checked || false,
     // Alumni / Celebrity / Civilian — stored ONLY when the user overrode the
@@ -206,6 +287,7 @@ export function editPlayer(id) {
   renderPortraitPickerInto();
   updateBackgroundPreview();
   putStats(p.stats);
+  putDragCraft(p.drag);
   document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
   document.getElementById('submit-btn').textContent = 'Update Player';
   document.getElementById('edit-actions').style.display = 'flex';
@@ -239,6 +321,7 @@ export function resetForm() {
   renderPortraitPickerInto();
   document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
+  putDragCraft(null);
 }
 // ── Franchise Roster: fetched from JSON on load, embedded copy as fallback ──
 export let FRANCHISE_ROSTER = DEFAULT_ROSTER;
@@ -291,6 +374,7 @@ export function fillFromRoster(p) {
   document.getElementById('f-archetype').value = p.archetype || '';
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc || '';
   if (p.stats) putStats(p.stats);
+  putDragCraft(p.drag);
   // Always default to non-returnee when adding from roster — set per-season in cast builder
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;

@@ -261,13 +261,36 @@
 .ft-beat{opacity:0;transform:translateY(26px);
   transition:opacity 620ms ease,transform 620ms cubic-bezier(.2,.7,.3,1)}
 .ft-beat.on{opacity:1;transform:none}
-.ft-card{position:relative;margin:26px 0;padding:26px 28px 28px;
-  background:linear-gradient(160deg,rgba(28,22,17,.93),rgba(11,10,10,.95));
-  border:1px solid rgba(230,192,122,.16);border-radius:3px;
-  box-shadow:0 26px 60px rgba(0,0,0,.66),
-    inset 0 1px 0 rgba(255,220,160,.07),
-    0 0 0 1px rgba(0,0,0,.5);
+/* -- THE CARD SURFACE ------------------------------------------------
+   "Too normal and boring." It was a rectangle with a 1px border on all four
+   sides — the default panel, and a border that even in weight reads as a box
+   drawn round some text rather than as a surface in a room.
+
+   A surface is defined by how light falls on it, so: no boxed border. A bright
+   top edge where the light catches, a warm hairline down the left that runs
+   out before the bottom, nothing on the right or below, and the corner nearest
+   the fire clipped so the shape is not four right angles. It sits IN the room
+   instead of on top of it. */
+.ft-card{position:relative;margin:30px 0;padding:30px 32px 32px;
+  background:
+    linear-gradient(184deg,rgba(34,26,20,.94),rgba(10,10,11,.96) 62%),
+    linear-gradient(120deg,
+      color-mix(in srgb,var(--ft-tint) 7%,transparent),transparent 46%);
+  border:0;border-radius:2px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 22px),calc(100% - 22px) 100%,0 100%);
+  box-shadow:0 30px 70px rgba(0,0,0,.7),0 2px 0 rgba(0,0,0,.6);
   backdrop-filter:blur(2px)}
+/* the light on the top edge, brightest where the card faces the fire */
+.ft-card::before{content:'';position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg,transparent,
+    color-mix(in srgb,var(--ft-gold) 62%,transparent) 22%,
+    color-mix(in srgb,var(--ft-hot) 85%,transparent) 55%,transparent);
+  opacity:.75}
+/* and one warm rule down the leading edge, running out before the foot */
+.ft-card>.ft-label::before{content:'';position:absolute;left:-32px;top:-8px;
+  width:2px;height:96px;
+  background:linear-gradient(color-mix(in srgb,var(--ft-hot) 80%,transparent),
+    transparent)}
 /* every card is lit from below, by the fire */
 .ft-card::after{content:'';position:absolute;left:0;right:0;bottom:0;height:60%;
   border-radius:3px;pointer-events:none;
@@ -277,7 +300,7 @@
 /* the wash is scenery and must sit UNDER the copy — without this the gradient
    paints over the card's own title and greys it out at high heat. */
 .ft-card>*{position:relative;z-index:1}
-.ft-label{display:flex;align-items:center;gap:9px;
+.ft-label{position:relative;display:flex;align-items:center;gap:9px;
   font-family:var(--ft-display);font-weight:600;font-size:10px;letter-spacing:.26em;
   text-transform:uppercase;color:var(--ft-hot);opacity:.9}
 .ft-h{font-family:var(--ft-display);font-weight:700;font-size:27px;line-height:1.15;
@@ -552,6 +575,80 @@
   .ft-turn-av{transform:none!important}
 }
 
+
+/* -- THE ACT BREAK ---------------------------------------------------
+   "Especially the title announcement card — that's a big suspense."
+
+   It was the same panel as everything else with bigger text in it, which is
+   the one thing an announcement must not be. A title is not a card: it is the
+   moment the room goes quiet.
+
+   So an act break is not a panel at all. No background, no border, no padding
+   box — just type on the dark, two hairlines that draw themselves out from the
+   centre, and a wax disc.
+
+   AND THE SUSPENSE IS DONE TO THE ROOM, NOT TO THE TYPE. When an act card is
+   revealed the fire is dropped to almost nothing for three quarters of a
+   second — the whole screen goes cold and dark, which no other beat ever does
+   — and the title lands as it comes back up. Animating the letters harder
+   would have been the obvious answer and it would have been decoration; taking
+   the light away is the thing that actually holds a breath. */
+.ft-root[data-fire="hold"]{--ft-heat:.1}
+.ft-root[data-fire="hold"] .ft-card,
+.ft-root[data-fire="hold"] .ft-react{filter:brightness(.42) saturate(.5)}
+.ft-card,.ft-react{transition:filter 600ms ease}
+
+.ft-act{position:relative;margin:64px 0 56px;padding:0;text-align:center}
+.ft-act-eyebrow{font-family:var(--ft-display);font-weight:600;font-size:10px;
+  letter-spacing:.5em;text-transform:uppercase;color:var(--ft-hot);
+  opacity:0;transform:translateY(6px)}
+.ft-act-h{font-family:var(--ft-display);font-weight:900;
+  font-size:clamp(30px,5.4vw,58px);line-height:1.02;margin:16px 0 0;
+  text-wrap:balance;
+  background:linear-gradient(#fff8e6 0%,var(--ft-hot) 56%,var(--ft-deep) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 30px color-mix(in srgb,var(--ft-tint) 60%,transparent));
+  clip-path:inset(0 100% 0 0)}
+.ft-act-sub{max-width:56ch;margin:20px auto 0;font-style:italic;font-size:19px;
+  color:#cdc1b1;opacity:0}
+.ft-act-rule{position:relative;height:1px;margin:26px auto 0;width:0;
+  background:linear-gradient(90deg,transparent,
+    color-mix(in srgb,var(--ft-gold) 70%,transparent),transparent)}
+/* the seal, which is the only round thing on the screen and is used once */
+/* CLEAR OF THE EYEBROW. At -30px the disc sat straight through "ACT V - NO
+   VOTE ATTACHED" and the two fought; the seal is the thing that presses first
+   and the line reads underneath it. */
+.ft-act-seal{position:absolute;left:50%;top:-64px;width:46px;height:46px;
+  margin-left:-23px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#c8304a,var(--ft-blood) 58%,#4b0509);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6),0 10px 26px rgba(0,0,0,.6),
+    inset 0 -3px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,160,160,.22);
+  opacity:0;transform:scale(.4) rotate(-24deg)}
+
+.ft-beat.on .ft-act-seal{animation:ft-press 620ms cubic-bezier(.2,1.3,.4,1) both;
+  animation-delay:.72s}
+@keyframes ft-press{
+  0%{opacity:0;transform:scale(1.5) rotate(-24deg)}
+  70%{opacity:1;transform:scale(.94) rotate(2deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}}
+.ft-beat.on .ft-act-eyebrow{animation:ft-actin 520ms ease both;animation-delay:.5s}
+@keyframes ft-actin{to{opacity:.95;transform:none}}
+.ft-beat.on .ft-act-h{animation:ft-wipe 900ms cubic-bezier(.22,.8,.2,1) both;
+  animation-delay:.78s}
+@keyframes ft-wipe{
+  0%{clip-path:inset(0 100% 0 0);letter-spacing:.14em}
+  100%{clip-path:inset(0 0 0 0);letter-spacing:normal}}
+.ft-beat.on .ft-act-rule{animation:ft-draw 800ms ease both;animation-delay:1.2s}
+@keyframes ft-draw{to{width:min(420px,72%)}}
+.ft-beat.on .ft-act-sub{animation:ft-actin 700ms ease both;animation-delay:1.5s}
+
+@media(prefers-reduced-motion:reduce){
+  .ft-beat.on .ft-act-seal,.ft-beat.on .ft-act-eyebrow,.ft-beat.on .ft-act-h,
+  .ft-beat.on .ft-act-rule,.ft-beat.on .ft-act-sub{animation:none!important;
+    opacity:1!important;transform:none!important;clip-path:none!important;
+    width:min(420px,72%)}
+}
+
 /* ── CONTROLS ──────────────────────────────────────────────────────── */
 .ft-controls{position:fixed;left:0;right:0;bottom:0;z-index:6;
   display:flex;align-items:center;justify-content:center;gap:20px;padding:15px;
@@ -760,6 +857,18 @@
           </div>
         </div>
 
+        <!-- the act break: the room goes out, and this is what comes back -->
+        <div class="ft-beat" data-fire="blood" data-act="1">
+          <div class="ft-act">
+            <span class="ft-act-seal"></span>
+            <div class="ft-act-eyebrow">Act V &middot; No vote attached</div>
+            <h2 class="ft-act-h">Everybody Turns Over</h2>
+            <div class="ft-act-rule"></div>
+            <p class="ft-act-sub">Three of them are about to find out what they have
+              been sitting next to since the first morning.</p>
+          </div>
+        </div>
+
         <!-- V. the turning over -->
         <div class="ft-beat" data-fire="blood" data-hit="1" data-anim="turn">
           <div class="ft-card">
@@ -909,8 +1018,20 @@
   const sTables = document.getElementById('s-tables');
   let idx = -1;
 
+  let holdTimer = null;
   function grade(beat) {
-    root.dataset.fire = beat.dataset.fire || 'calm';
+    const want = beat.dataset.fire || 'calm';
+    clearTimeout(holdTimer);
+    if (beat.dataset.act) {
+      // THE HOLD. Everything cold and nearly dark for three quarters of a
+      // second, then the fire comes back with the title on top of it. This is
+      // the only place on the screen the light is ever taken away, which is
+      // what makes it read as a held breath rather than as another transition.
+      root.dataset.fire = 'hold';
+      holdTimer = setTimeout(() => { root.dataset.fire = want; }, 760);
+      return;
+    }
+    root.dataset.fire = want;
     if (beat.dataset.hit) {
       root.classList.add('hit', 'flaring');
       setTimeout(() => root.classList.remove('hit', 'flaring'), 950);
@@ -918,6 +1039,15 @@
       root.classList.add('flaring');
       setTimeout(() => root.classList.remove('flaring'), 950);
     }
+  }
+  // An act card flares when the light COMES BACK, not when it goes out — a
+  // flare during the hold is a flash into a dark room and undoes the whole
+  // point of taking the light away.
+  function actFlare() {
+    setTimeout(() => {
+      root.classList.add('flaring');
+      setTimeout(() => root.classList.remove('flaring'), 950);
+    }, 780);
   }
   function sidebar(i) {
     sAsked.textContent = i >= 1 ? (i >= 4 ? 2 : 1) : 0;
@@ -957,6 +1087,7 @@
     if (idx >= 0) {
       const beat = beats[idx];
       grade(beat);
+      if (beat.dataset.act) actFlare();
       beat.scrollIntoView({ behavior: 'smooth', block: 'center' });
       beat.querySelectorAll('.ft-count-n[data-to]').forEach(countUp);
       burst(beat);

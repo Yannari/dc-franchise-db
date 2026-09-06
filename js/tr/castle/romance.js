@@ -1593,3 +1593,317 @@ registerEvent({
       threadId: t?.id, bondDelta };
   },
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ROAD, WHICH THIS FAMILY HAD NEVER BEEN ON
+// ══════════════════════════════════════════════════════════════════════
+//
+// MEASURED 2026-09-05 across the window x family grid: romance held evening 3,
+// dawn 2, morning 2, night 2, after-table 1 — and JOURNEY-OUT 0, JOURNEY-BACK
+// 0. Two people in this castle could fall for each other at breakfast, at
+// dinner, at midnight and after a banishment, and then walk five miles beside
+// each other twice a day with nothing to say.
+//
+// The road is the format's best romantic setting and the one it never used: a
+// mission is the only hour of the day the castle spends OUTSIDE, in daylight,
+// with a legitimate reason to be paired off and no round table at the end of
+// it. It is also the only place a showmance is unavoidably PUBLIC — everybody
+// can see who walked with whom for an hour, which is exactly the liability
+// this family is built on.
+//
+// All four gate on a thread that already exists, so none of them can create a
+// pairing and none needs the concurrency cap; all four declare `rare: true`,
+// which is the guard-2 rule the file's own header records this family
+// breaking once already.
+
+// ── romance-walked-together ─────────────────────────────────────────────
+const WALKED_LINES = {
+  'walked-the-whole-way': [
+    '{a} and {b} walked out together and walked back together and did not once swap partners in between.',
+    'Everybody else rotated up and down that column all afternoon. {a} and {b} did not move.',
+    'It is a five-mile advertisement and neither {a} nor {b} seems to mind.',
+    '{a} fell in beside {b} at the gate without either of them arranging it, which is worse than arranging it.',
+    'The column has eyes and {a} and {b} spent an hour in front of all of them.',
+    '{b} slowed down twice to let {a} catch up, and the second time somebody behind them saw it.',
+    'They talked about nothing for an hour, in public, at three miles an hour.',
+    '{a} and {b} arrived at the field last and nobody was surprised by that.',
+  ],
+  'kept-apart-on-purpose': [
+    '{a} and {b} deliberately walked at opposite ends of the column, which fooled nobody.',
+    'Not walking together is a decision, and everybody could see the decision being made.',
+    '{b} joined a group at the front specifically so as not to be walking beside {a}.',
+    'They have decided to be strangers in daylight. It is going badly.',
+    '{a} looked back down the road once and then made a point of not doing it again.',
+    'The gap they kept was so exact that it was the most obvious thing on the road.',
+    'Two people who are careful never to be near each other are two people somebody is watching.',
+    '{a} and {b} said one word to each other in five miles and it was “fine”.',
+  ],
+  'the-column-saw-it': [
+    'Somebody walked the middle third of that road behind {a} and {b} and did not say anything about it.',
+    'It is not a secret any more. It stopped being one somewhere around the ford.',
+    'Two people at the back of the column had a whole conversation about the two people at the front.',
+    '{a} and {b} were being discussed before they had reached the field.',
+    'A road gives everybody an hour with nothing to do but look, and they looked.',
+    'By the time they got to the field, the people walking behind them had stopped wondering.',
+    'Somebody counted how many times {b} laughed and has an opinion about the number.',
+    'The column arrived at that field with a piece of information it had not left with.',
+  ],
+  'first-hour-alone': [
+    'It is the only hour this week {a} and {b} have had without a room around them, and they used all of it.',
+    'No castle, no table, no cameras in the corner. Just a road, and they talked the whole of it.',
+    '{a} said something on that road that would not have been said inside those walls.',
+    'The gap between the column and the two of them got wider and neither of them closed it.',
+    'They fell behind on purpose and got an hour of being two people rather than two players.',
+    'It was the best hour either of them has had here and both of them know it will cost something.',
+    'For about forty minutes neither of them mentioned the game once, which is a kind of holiday.',
+    '{b} said "this is the only part I am going to miss" and meant it.',
+  ],
+};
+
+registerEvent({
+  id: 'romance-walked-together',
+  family: FAMILY,
+  window: 'journey-out',
+  advancesThread: true,
+  rare: true,
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    // Either stage: a spark walks the road as readably as a showmance does.
+    return (_threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep)
+      || _threadForActors(SPARK_KIND, ctx.actors, ctx.ep)) ? 1.6 : 0;
+  },
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['boldness', 'social', 'strategic', 'temperament'],
+    relationship: ['romance'],
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-walked-together');
+    const sceneWhy = 'spent the road out beside each other, in front of everybody';
+    const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep)
+      || _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
+    const [a, b] = t.parties;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'walked-the-whole-way': (sa.boldness / 10) * 0.35 + (sb.boldness / 10) * 0.2,
+      'kept-apart-on-purpose': ((sa.strategic + sb.strategic) / 20) * 0.45,
+      // Needs a column big enough to hold a witness.
+      'the-column-saw-it': (ctx.living || []).length >= 7 ? 0.4 : 0.1,
+      'first-hour-alone': ((sa.temperament + sb.temperament) / 20) * 0.3 + 0.1,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0) || 1;
+    let roll = rng() * total;
+    let branch = 'walked-the-whole-way';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'first-hour-alone' ? 2
+      : branch === 'walked-the-whole-way' ? 1
+        : branch === 'kept-apart-on-purpose' ? -0.5 : 0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id,
+      lineFor(WALKED_LINES[branch], `romance-walked-together|${branch}|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
+    // WHAT THE COUNTRY MAKES OF IT. A romance played in the open is the single
+    // most watchable thing in this format and the crowd map pays it as
+    // spectacle rather than as affection.
+    let crowd = null;
+    if (branch === 'walked-the-whole-way') crowd = { name: a, colour: 'exposed', reason: 'spent a whole road beside the same person, in front of everybody', mult: 0.5 };
+    else if (branch === 'the-column-saw-it') crowd = { name: b, colour: 'exposed', reason: 'stopped being a secret somewhere on the road', mult: 0.5 };
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b,
+      threadId: advanced?.id, bondDelta, ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── romance-carried-them-home ───────────────────────────────────────────
+// The road back, after a mission has taken something out of somebody. The
+// fork is whether the help is given as a partner or performed as a player.
+const CARRIED_LINES = {
+  'took-care-of-them': [
+    '{b} was finished by the end of that afternoon and {a} got {b} home without making anything of it.',
+    '{a} carried {b}’s share of it for the last two miles and did not mention doing it.',
+    'It was not a gesture. {a} simply did it, which is why it landed.',
+    '{b} would not have made it up that drive at that pace and {a} slowed down before {b} had to ask.',
+    '{a} noticed before {b} said anything, which is the whole of it.',
+    'There was no audience for the part that mattered, which was {a} not saying a word about it.',
+    '{a} gave {b} the last of the water and lied about having had some.',
+    'They came up the drive together at half the pace of everybody else and neither of them cared.',
+  ],
+  'made-a-performance-of-it': [
+    '{a} helped {b} home very visibly, and the visibility was doing at least half the work.',
+    'It was kind and it was staged, and the person it was staged for was the column.',
+    '{a} asked twice, loudly, whether {b} was all right.',
+    'Somebody watching could not tell whether {a} was looking after {b} or campaigning.',
+    '{b} could tell. That is the part {a} did not think about.',
+    'The castle will remember that {a} was good to {b} on that road, which was the point.',
+    '{a} made sure the help happened where the front of the column could see it.',
+    'It is not nothing to be looked after. It is less when you can see the reason.',
+  ],
+  'let-them-struggle': [
+    '{b} fell back on that road and {a} stayed exactly where {a} had been walking.',
+    '{a} did not help, and the not-helping was as visible as helping would have been.',
+    'Somebody else went back for {b}. Everybody noticed it was not {a}.',
+    '{a} has decided, this week, to be careful about being seen with {b}, and it showed at the worst moment.',
+    'There is a version of that road where {a} drops back. This was not it.',
+    '{b} got home alone and has been quiet since.',
+    '{a} will explain it tonight. {b} has already drawn a conclusion.',
+    'It cost {a} nothing and it cost the two of them a great deal.',
+  ],
+  'they-refused-it': [
+    '{a} tried to take it off {b} and {b} would not have it, in front of six people.',
+    '{b} shook {a} off harder than the moment needed.',
+    '{b} is not going to be the one who has to be looked after, and made that clear on a public road.',
+    '{a} offered twice and got a no twice, and stopped offering.',
+    'Being helped in front of the castle is a thing {b} will not do, whatever it costs.',
+    '{b} walked the last mile badly rather than take an arm.',
+    'It was pride and it read as coldness, and {a} is not sure which it was either.',
+    'They arrived home separately and it was {b}’s doing.',
+  ],
+};
+
+registerEvent({
+  id: 'romance-carried-them-home',
+  family: FAMILY,
+  window: 'journey-back',
+  advancesThread: true,
+  rare: true,
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    if ((ctx.ep || 0) < 2) return 0;
+    return (_threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep)
+      || _threadForActors(SPARK_KIND, ctx.actors, ctx.ep)) ? 1.6 : 0;
+  },
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected', 'backfire'],
+    voice: ['loyalty', 'social', 'strategic', 'boldness'],
+    relationship: ['romance'],
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-carried-them-home');
+    const sceneWhy = 'got them home off the road, or did not';
+    const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep)
+      || _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
+    const [a, b] = t.parties;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'took-care-of-them': (sa.loyalty / 10) * 0.45 + (1 - sa.social / 10) * 0.15,
+      'made-a-performance-of-it': (sa.social / 10) * 0.35 + (sa.strategic / 10) * 0.25,
+      'let-them-struggle': (1 - sa.loyalty / 10) * 0.35 + (sa.strategic / 10) * 0.2,
+      'they-refused-it': (sb.boldness / 10) * 0.3 + (1 - sb.social / 10) * 0.2,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0) || 1;
+    let roll = rng() * total;
+    let branch = 'took-care-of-them';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'took-care-of-them' ? 2.5
+      : branch === 'made-a-performance-of-it' ? 0.5
+        : branch === 'they-refused-it' ? -1 : -2.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id,
+      lineFor(CARRIED_LINES[branch], `romance-carried-them-home|${branch}|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
+    let crowd = null;
+    if (branch === 'took-care-of-them') crowd = { name: a, colour: 'kind', reason: 'got somebody home off a road without making anything of it', mult: 0.6 };
+    else if (branch === 'made-a-performance-of-it') crowd = { name: a, colour: 'selfish', reason: 'made a performance out of looking after somebody', mult: 0.5 };
+    else if (branch === 'let-them-struggle') crowd = { name: a, colour: 'cowardly', reason: 'left the person they are closest to at the back of the column', mult: 0.5 };
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b,
+      threadId: advanced?.id, bondDelta, ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── romance-voted-differently ───────────────────────────────────────────
+// The one thing this family has that no other pairing in the castle does: two
+// people who are supposed to be on the same side, and a public record of
+// whether they were. `after-table` held ONE romance event before this.
+const VOTED_LINES = {
+  'wrote-the-same-name': [
+    '{a} and {b} turned over the same name and neither of them had to look at the other to know it.',
+    'Two slates, one name, no conversation about it beforehand. The room noticed that.',
+    'It is the closest thing to a public declaration this castle allows.',
+    '{a} and {b} have voted together every night this week and somebody has started counting.',
+    'They did not need to agree it. That is either lovely or extremely dangerous.',
+    'A pair that votes as one is a bloc, whatever else it is, and the castle can do arithmetic.',
+    '{b} wrote it without hesitating and {a} had already written the same thing.',
+    'Nobody in this room believes that was a coincidence, because it was not.',
+  ],
+  'wrote-different-names': [
+    '{a} wrote one name and {b} wrote another and the whole room watched them find that out.',
+    'It is the first time they have split, and it happened in public with no warning.',
+    '{b}’s slate came up and {a}’s face did something before {a} could stop it.',
+    'Two people who tell each other everything told each other nothing about this.',
+    'They will have to talk about that tonight and both of them know it.',
+    'A split slate between those two is worth more to this room than either name on it.',
+    '{a} had assumed, and will not be assuming again.',
+    'It is not a betrayal. It is the exact shape of one, at the exact worst moment.',
+  ],
+  'covered-for-them': [
+    '{a} voted somewhere useless specifically so that {b}’s name would not need company.',
+    '{b} was in danger and {a} spent a slate keeping {b} out of it.',
+    'It was a wasted vote and it was not wasted, and only two people at that table know why.',
+    '{a} put a name down that made no sense to anybody except the person it protected.',
+    'Somebody has worked out that {a}’s vote never lands anywhere near {b}, and that is a pattern.',
+    '{a} has now done that twice, which is once more than is safe.',
+    'It cost {a} standing with three people and bought {b} one more night.',
+    'The room will forgive a bad vote. It is less forgiving about a pattern of them.',
+  ],
+  'one-of-them-was-in-danger': [
+    '{b}’s name was in the air all evening and {a} had to sit there and hear it.',
+    '{a} spent that table defending {b} and became a name in the process.',
+    'Watching somebody you are close to be discussed for an hour is its own kind of ordeal.',
+    '{a} did not trust {a}’s own voice enough to speak up, and has been furious ever since.',
+    '{b} came within two votes of it and {a} knows exactly which two.',
+    'It went to a count and {a} did not breathe through any of it.',
+    'That was the first time either of them had genuinely thought about losing the other.',
+    'They got through it. Neither of them is going to forget the twenty minutes in the middle.',
+  ],
+};
+
+registerEvent({
+  id: 'romance-voted-differently',
+  family: FAMILY,
+  window: 'after-table',
+  advancesThread: true,
+  rare: true,
+  weight(ctx) {
+    if (!ctx.actors?.length) return 0;
+    return (_threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep)
+      || _threadForActors(SPARK_KIND, ctx.actors, ctx.ep)) ? 1.8 : 0;
+  },
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'strategic', 'boldness', 'temperament'],
+    relationship: ['romance'],
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'romance-voted-differently');
+    const sceneWhy = 'found out at the table what the other one had written';
+    const t = _threadForActors(SHOWMANCE_KIND, ctx.actors, ctx.ep)
+      || _threadForActors(SPARK_KIND, ctx.actors, ctx.ep);
+    const [a, b] = t.parties;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const bond = getBond(a, b);
+    const scores = {
+      'wrote-the-same-name': ((sa.loyalty + sb.loyalty) / 20) * 0.4 + Math.max(0, bond) * 0.04,
+      'wrote-different-names': ((sa.strategic + sb.strategic) / 20) * 0.35,
+      'covered-for-them': (sa.loyalty / 10) * 0.3 + (sa.boldness / 10) * 0.2,
+      'one-of-them-was-in-danger': 0.3,
+    };
+    const total = Object.values(scores).reduce((acc, v) => acc + v, 0) || 1;
+    let roll = rng() * total;
+    let branch = 'wrote-the-same-name';
+    for (const k of Object.keys(scores)) { roll -= scores[k]; if (roll <= 0) { branch = k; break; } }
+    const bondDelta = branch === 'wrote-the-same-name' ? 1.5
+      : branch === 'covered-for-them' ? 2
+        : branch === 'one-of-them-was-in-danger' ? 1 : -2.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const advanced = api.advanceArc(t.id,
+      lineFor(VOTED_LINES[branch], `romance-voted-differently|${branch}|${ctx.ep}`, { a, b }),
+      { source: sceneWhy });
+    let crowd = null;
+    if (branch === 'covered-for-them') crowd = { name: a, colour: 'selfless', reason: 'spent a vote keeping somebody else out of danger', mult: 0.5 };
+    else if (branch === 'wrote-the-same-name') crowd = { name: a, colour: 'exposed', reason: 'voted as a pair in front of a room that can count', mult: 0.4 };
+    return { branch, topic: b, topicKind: 'romance-bond', pair: [a, b], speaker: a, respondent: b,
+      threadId: advanced?.id, bondDelta, ...(crowd ? { crowd } : {}) };
+  },
+});

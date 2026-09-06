@@ -636,6 +636,15 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE ROMANCE FAMILY ON THE ROAD (2026-09-05) ─────────────────────
+  //
+  // Sorted on this family's own precedent rather than on the confrontation
+  // rule: `refused-the-pact` and `one-sided-pact` are already adverse here,
+  // so a cold, one-sided or rebuffed outcome is the adverse register for
+  // romance even though nobody is being interrogated. `let-them-struggle`
+  // belongs to this set too and is already on it from journey.js.
+  'kept-apart-on-purpose', 'made-a-performance-of-it', 'they-refused-it',
+  'wrote-different-names',
   // ── THE SEVEN CONFRONTATION EVENTS ADDED 2026-09-05 ─────────────────
   //
   // The family was four events and every one of them in `evening`, so the
@@ -1017,6 +1026,15 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE WARM HALF OF THE SAME THREE EVENTS ──────────────────────
+  //
+  // Walking a road together, being got home off one, voting the same name,
+  // spending a slate to keep somebody out of danger. Public, in several
+  // cases costly, and in none of them is the person opposite under
+  // anything.
+  'covered-for-them', 'first-hour-alone', 'one-of-them-was-in-danger',
+  'the-column-saw-it', 'took-care-of-them', 'walked-the-whole-way',
+  'wrote-the-same-name',
   // ── AND THE ONES FROM THE SAME SEVEN THAT DO NOT LEAN ON ANYBODY ────
   //
   // Same events, sorted on this file's rule rather than on how loud the

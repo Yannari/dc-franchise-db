@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(164);
+    expect(EVENTS.length).toBe(167);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -608,7 +608,8 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // false (it writes through lineFor and advanceArc, neither of which
     // appends a citation), which tests/tr-castle.test.js caught by being
     // unable to make the event eligible in the probe world.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(87);
+    // 87 -> 90: all three romance road events advance the thread they gate on.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(90);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -666,8 +667,20 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // missing. `susp-misread-tell` and `susp-body-language-read` both write
     // through `arcContinue` now, and the first of them declares the flag. This
     // is a cell count FALLING again, which is the direction it should move.
+    // 14 -> 11 on 2026-09-05, AND THIS IS THE FIRST TIME IT HAS FALLEN BY
+    // MORE THAN ONE. The three romance road events all advance a thread, and
+    // all three landed in cells that had no advancer at all: a story opened
+    // in `journey-out` or `journey-back` could not be continued there. Three
+    // fewer places where the castle can start something it can never pick up
+    // again — which is the number on this line that actually means something.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(14);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(11);
+    // 17 -> 20 on 2026-09-05: the same three cells that left `zero` above
+    // arrived here, because one advancer is what they gained. The two
+    // numbers move together by construction and it is worth reading them
+    // that way — a cell going 0 -> 1 is a real improvement and still leaves a
+    // thread continuable only once every five rounds.
+    //
     // 13 -> 17 on 2026-09-05. The confrontation family reached six new
     // windows, and each arrived with exactly ONE advancer in it, so five of
     // those cells are new entries on this list rather than cells that moved
@@ -681,7 +694,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // holds exactly one advancer. `none` is unchanged, which is what says a
     // cell gained an advancer rather than the grid moving under all three.
     expect(one, 'cells with exactly one advancer — the 5-episode pair cooldown means a thread '
-      + 'living here can be advanced at most once every five rounds').toBe(17);
+      + 'living here can be advanced at most once every five rounds').toBe(20);
     // 23 -> 24 on 2026-09-05: `confrontation @ evening` had three events and
     // gained a fourth, so the one cell the family already occupied is the
     // only one that moved up here. The other six arrived at one advancer
@@ -748,6 +761,13 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continue an existing story rather than opening a new one, so the cell
     // that held the pool's most-quoted single-line event now has an advancer
     // in it. Nothing was added to this list.
+    // THREE NAMES LEFT THIS LIST ON 2026-09-05 and none joined it:
+    // `romance|after-table`, `romance|journey-back` and `romance|journey-out`.
+    // The family had no event at all on the road and one that could not
+    // continue anything after a table, so a romance story opened in any of
+    // those three hours could never be picked up in them again. This list
+    // is the one in the file worth reading as a to-do: every name on it is
+    // a place the castle can start something and then drop it.
     expect(zeroNames).toEqual([
       'callback|dawn',
       'callback|journey-out',
@@ -756,9 +776,6 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       'cover|morning',
       'grief|journey-out',
       'grief|morning',
-      'romance|after-table',
-      'romance|journey-back',
-      'romance|journey-out',
       'romance|morning',
       'suspicion|journey-out',
       'testing|journey-out',
@@ -1407,6 +1424,20 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 164 -> 167 AND 694 -> 706 on 2026-09-05. Same method as the confrontation
+// batch below, applied to the next-thinnest row of the same grid: romance held
+// evening 3, dawn 2, morning 2, night 2, after-table 1 -- and JOURNEY-OUT 0,
+// JOURNEY-BACK 0. Two people could fall for each other at breakfast, at
+// dinner and at midnight, and then walk five miles beside each other twice a
+// day with nothing to say. The road is the only hour the castle spends
+// outside, paired off, in daylight, where a showmance is unavoidably public,
+// which is the liability that family is built on.
+//
+// All three gate on a thread that already exists, so none can create a
+// pairing or needs the 4-active concurrency cap, and all three declare
+// `rare: true` -- the guard-2 rule js/tr/castle/romance.js's own header
+// records that family having broken once already.
+//
 // 157 -> 164 AND 666 -> 694 on 2026-09-05, AND THE EVENT COUNT MOVES FOR THE
 // FIRST TIME IN THREE COMMITS. Measured before writing: events per family
 // across the pool were trust 35, suspicion 31, grief 26, testing 17, cover 17,
@@ -1821,6 +1852,10 @@ const BRANCHES = [
   'quiet-night-full-table:counted-twice',
   'quiet-night-full-table:somebody-was-safe',
   'quiet-night-full-table:they-faltered',
+  'romance-carried-them-home:let-them-struggle',
+  'romance-carried-them-home:made-a-performance-of-it',
+  'romance-carried-them-home:they-refused-it',
+  'romance-carried-them-home:took-care-of-them',
   'romance-comfort-after-loss-sparks:grief-spark',
   'romance-comfort-after-loss-sparks:just-comfort',
   'romance-comfort-after-loss-sparks:the-room-noticed',
@@ -1874,10 +1909,18 @@ const BRANCHES = [
   'romance-strategic-optics:it-landed-inside',
   'romance-strategic-optics:leaned-into-it',
   'romance-strategic-optics:made-a-joke-of-it',
+  'romance-voted-differently:covered-for-them',
+  'romance-voted-differently:one-of-them-was-in-danger',
+  'romance-voted-differently:wrote-different-names',
+  'romance-voted-differently:wrote-the-same-name',
   'romance-walked-back-together:easy',
   'romance-walked-back-together:said-out-loud',
   'romance-walked-back-together:strained',
   'romance-walked-back-together:watched',
+  'romance-walked-together:first-hour-alone',
+  'romance-walked-together:kept-apart-on-purpose',
+  'romance-walked-together:the-column-saw-it',
+  'romance-walked-together:walked-the-whole-way',
   'susp-alliance-shape-guess:agreed-the-map',
   'susp-alliance-shape-guess:could-not-place-one',
   'susp-alliance-shape-guess:drew-it-alone',

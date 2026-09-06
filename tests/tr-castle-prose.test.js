@@ -1295,8 +1295,19 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
           // A grounded scene may name an absent SUBJECT (a murdered player,
           // suspect, or person whose account is being checked) without claiming
           // that person is physically present.
+          // WHOLE NAMES, NOT SUBSTRINGS. `action.includes(n)` is a plain
+          // substring test, and this cast contains a player called "B", so it
+          // matched every capital B in the prose -- "Beth", "By", "But" -- and
+          // reported that a solo scene named a player who is not in it. It went
+          // red the first time a season holding that player produced a solo
+          // cover scene, on a batch of events that had nothing to do with
+          // either. Same family as the U+0008 note below: a matcher over prose
+          // that is wrong in the permissive direction until the exact cast that
+          // exposes it comes up.
+          const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const namesSomebody = n => new RegExp('(^|[^\\p{L}])' + esc(n) + '($|[^\\p{L}])', 'u').test(action);
           const others = CAST.filter(n => !(scene.topic && scene.topic.includes(n))
-            && !scene.participants.includes(n) && action.includes(n));
+            && !scene.participants.includes(n) && namesSomebody(n));
           expect(others, scene.id + ': composed as alone, and the action names '
             + others.join(', ') + ' - "' + action + '"').toEqual([]);
           const hit = FOUND_DEFECTS.filter(re => re.test(action)).map(String);

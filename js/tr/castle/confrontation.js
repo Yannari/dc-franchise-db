@@ -150,7 +150,7 @@ const PILE_LINES = {
   'turned-it-back': [
     '{b} took the pile-on, picked the loudest voice in it, and turned the whole thing onto {a} instead.',
     'Cornered by the room, {b} asked {a} one question back, and the room turned round to look at {a}.',
-    '{b} did not defend {b}self at all. {b} spent the entire time asking why {a} was so certain, and by the end so was everybody.',
+    '{b} mounted no defence at all, and spent the entire time asking why {a} was so certain. By the end so was everybody.',
     'The room came for {b} and left holding a question about {a}, which is not how a pile-on is supposed to end.',
     '{b} let it run for a minute and then put a single thing to {a} that nobody had an answer for.',
     'It stopped being about {b} somewhere in the middle, and {a} is the reason it stopped.',

@@ -1668,3 +1668,428 @@ registerEvent({
 });
 
 export const MISSION_FALLOUT_WINDOW = 'journey-back';
+
+// ══════════════════════════════════════════════════════════════════════
+// THE AFTERNOONS THAT WENT WELL, WHICH THIS FILE COULD NOT SAY
+// ══════════════════════════════════════════════════════════════════════
+//
+// REPORTED FROM WATCHING A SEASON: the missions produce drama and never
+// produce anything else. Reading the fourteen events above by their bond
+// direction bears it out — the register runs "what cost us", "a body short",
+// "who was where", "the hour they went missing". An afternoon in this format
+// is also the only time eighteen strangers do something TOGETHER, in
+// daylight, with a shared result, and that half of it had no events at all.
+//
+// So these four are the other half. Same contract as everything above — gated
+// on tonight's record through `afternoon()`, no belief writes, no invented
+// per-player score (rule 2: `sideObjectives[]` is the only place the record
+// attaches an individual's name to an outcome, and `mission-good-hands` is
+// the only one of these four that names one).
+//
+// AND THEY ARE NOT ALL WARM, because "positive" is not a register either. A
+// good day makes an alliance visible, which is a cost; being carried is a
+// debt; noticing somebody is competent is the first half of deciding they are
+// dangerous. What they have in common is that the afternoon PRODUCED
+// something between two people rather than took something away.
+
+// ── mission-same-half-first-time ────────────────────────────────────────
+// Two people who have no history at all, put on the same team by a draw. The
+// castle's whole social graph starts somewhere and this is one of the places.
+const FIRST_TIME_LINES = {
+  'found-they-worked': [
+    '{a} and {b} had not said fifty words to each other before this afternoon and worked like they had.',
+    'Nobody put {a} and {b} together. The draw did, and it turned out to be a good draw.',
+    'They spent four hours finding out they think the same way about a problem.',
+    '{a} has been in this castle a week and only met {b} properly today.',
+    'It is a strange way to meet somebody, and it worked.',
+    'By the end of it {a} and {b} were finishing each other’s jobs without being asked.',
+    'There is a version of this season where those two never speak. This is not it now.',
+    '{a} came off that field having decided {b} is worth knowing.',
+  ],
+  'polite-and-nothing': [
+    '{a} and {b} were perfectly civil for four hours and came home strangers.',
+    'They did the work. They did not do anything else.',
+    'Not every pairing takes. That one did not, and neither of them minded.',
+    '{a} could not tell you one thing about {b} that {a} did not know this morning.',
+    'It was an afternoon of two people being professionally pleasant.',
+    'Nothing went wrong between them and nothing happened either.',
+    'They will go back to not speaking tomorrow and it will not be awkward.',
+    'Four hours, no friction, no ground gained.',
+  ],
+  'got-in-the-way': [
+    '{a} and {b} could not get out of each other’s way all afternoon.',
+    'Two people with the same idea and no way to agree whose it was.',
+    'It was not a row. It was four hours of very slightly the wrong rhythm.',
+    'They each thought the other was slowing it down and both were a bit right.',
+    '{a} has decided {b} is hard work, on the evidence of one afternoon.',
+    'Nobody said anything. Everybody could see it.',
+    'By the third hour they had stopped consulting each other entirely.',
+    'It is the sort of thing that becomes a reason at a table in about four days.',
+  ],
+  'one-of-them-carried-it': [
+    '{a} did most of it and {b} knows {a} did most of it.',
+    'There is a debt on that field now and both of them can feel the shape of it.',
+    '{b} was out of {b}’s depth and {a} took it on without making a thing of it.',
+    '{a} said nothing about it on the road home, which {b} noticed more than a complaint.',
+    'Being carried is a hard thing to be grateful for and {b} is managing it.',
+    'It cost {a} an afternoon and bought something that is not a favour yet.',
+    '{b} will remember this the next time {a}’s name comes up, one way or the other.',
+    'They came home even in the record and not even at all.',
+  ],
+};
+
+registerEvent({
+  id: 'mission-same-half-first-time',
+  family: 'trust',
+  window: 'journey-back',
+  roles: 'initiator-first',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['social', 'temperament', 'strategic', 'loyalty'],
+    relationship: ['neutral'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const m = afternoon(ctx);
+    if (!m) return 0;
+    const [a, b] = ctx.actors;
+    // THE SAME TEAM, and no story between them yet. `storyWith` is the same
+    // "have these two got a history" filter callback.js uses, imported rather
+    // than re-implemented.
+    const ta = teamOf(m, a);
+    if (!ta || !ta.members.includes(b)) return 0;
+    if (findOpenThread('trust', [a, b]) || findOpenThread('suspicion', [a, b])) return 0;
+    if (Math.abs(getBond(a, b)) > 2) return 0;
+    return 2.5;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'mission-same-half-first-time');
+    const sceneWhy = 'was put on the same half as somebody they did not know';
+    const [a, b] = ctx.actors;
+    const m = afternoon(ctx);
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const branch = forkOn(rng, {
+      'found-they-worked': ((sa.social + sb.social) / 20) * 0.4 + 0.1,
+      'polite-and-nothing': (1 - sa.social / 10) * 0.3 + 0.15,
+      'got-in-the-way': ((10 - sa.temperament) + (10 - sb.temperament)) / 20 * 0.3,
+      'one-of-them-carried-it': (sa.physical / 10) * 0.25 + (1 - sb.physical / 10) * 0.2,
+    });
+    const note = line(FIRST_TIME_LINES[branch], 'mission-same-half-first-time', branch, ctx.ep,
+      { a, b, mission: m.name });
+    const bondDelta = branch === 'found-they-worked' ? 2.5
+      : branch === 'one-of-them-carried-it' ? 1
+        : branch === 'got-in-the-way' ? -1.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const t = api.openArc('trust', [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'one-of-them-carried-it') crowd = { name: a, colour: 'kind', reason: 'covered for somebody out of their depth and said nothing about it', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: 'road-partner', threadId: t?.id, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── mission-good-hands ──────────────────────────────────────────────────
+// Somebody was VISIBLY good at something. The record has exactly one place
+// that names an individual (`sideObjectives`), and this reads it — but the
+// fork is what watching competence does to the watcher, which in this castle
+// is not always admiration.
+const GOOD_HANDS_LINES = {
+  admired: [
+    '{a} watched {who} {task} as if it were nothing, and said so, out loud, to {b}.',
+    '{who} had to {task}, made it look straightforward, and {a} has not stopped mentioning it.',
+    'There is a pleasure in watching somebody be good at a thing, and {a} had it this afternoon.',
+    '{a} told {b} that {who} was the best thing about the whole day.',
+    'It was not close. Somebody had to {task}, {who} did, and everybody else watched.',
+    '{a} would not have got near it and is honest with {b} about that.',
+    'Competence is rarer out there than nerve and {a} knows the difference.',
+    '{a} has decided {who} is somebody to keep, on the evidence of one afternoon.',
+  ],
+  'noted-it-quietly': [
+    '{a} said nothing at the time about what it took to {task}, and has thought about it since.',
+    '{a} filed the way {who} managed to {task}, and did not tell {b} what {a} was filing.',
+    'It is useful to know exactly what everybody here can do.',
+    '{a} watched {who} closely enough to be able to describe it later, which is a decision.',
+    '{a} mentioned to {b} that somebody had to {task}, in a way that sounded like small talk.',
+    'Somebody who can {task} that calmly is somebody who could have done other things too.',
+    '{a} is building a list of what people are capable of and {who} went on it today.',
+    'The observation is worth more unshared and {a} has kept most of it.',
+  ],
+  'found-it-suspicious': [
+    '{who} was far too good at it for {a}’s liking, and {a} said so to {b}.',
+    '{a} wanted to know where {who} learned to do that.',
+    'There is no reason being competent should look bad. It looked bad to {a}.',
+    '{a} put it to {b} that nobody is that calm doing that job for the first time.',
+    'It is thin and {a} knows it is thin and {a} cannot let it go.',
+    '{a} has turned an afternoon’s good work into a question about {who}.',
+    'This castle punishes being visibly good at things and {who} was visibly good at a thing.',
+    '{b} thinks {a} is reaching. {a} may be reaching.',
+  ],
+  'wished-it-had-been-them': [
+    '{a} could have been the one to {task} and was not asked, and has been quiet since.',
+    'It is a small thing to mind and {a} minds it.',
+    '{a} congratulated {who} and meant about two thirds of it.',
+    'Being useful is how you stay here, and {a} was not useful this afternoon.',
+    '{a} told {b} the truth of it: {a} wanted that job.',
+    'Nobody chose {a} for it and nobody was thinking about {a} at all, which is worse.',
+    '{a} has spent the road home working out how to be indispensable by Thursday.',
+    'The afternoon was a good one and {a} came out of it feeling replaceable.',
+  ],
+};
+
+registerEvent({
+  id: 'mission-good-hands',
+  family: 'trust',
+  window: 'journey-back',
+  roles: 'initiator-first',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['intuition', 'social', 'strategic', 'loyalty'],
+    relationship: ['neutral', 'close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const m = afternoon(ctx);
+    if (!m) return 0;
+    return wonTask(m, { exclude: ctx.actors, living: ctx.living }) ? 2.5 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'mission-good-hands');
+    const sceneWhy = 'talked about somebody who was very good out there';
+    const [a, b] = ctx.actors;
+    const m = afternoon(ctx);
+    const win = wonTask(m, { exclude: ctx.actors, living: ctx.living });
+    const st = pStats(a);
+    const branch = forkOn(rng, {
+      admired: (st.social / 10) * 0.35 + (st.loyalty / 10) * 0.3,
+      'noted-it-quietly': (st.strategic / 10) * 0.4 + (1 - st.social / 10) * 0.2,
+      'found-it-suspicious': (st.intuition / 10) * 0.35 + (1 - st.loyalty / 10) * 0.2,
+      'wished-it-had-been-them': (1 - st.physical / 10) * 0.3 + (st.boldness / 10) * 0.15,
+    });
+    const note = line(GOOD_HANDS_LINES[branch], 'mission-good-hands', branch, ctx.ep, {
+      a, b, who: win.player, task: sideObjectiveLabel(win.id), mission: m.name,
+    });
+    const bondDelta = branch === 'admired' ? 1
+      : branch === 'found-it-suspicious' ? -0.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    // The person being TALKED ABOUT is the topic, and where the talk is
+    // hostile it is their standing with {a} that moves, not the pair's.
+    if (branch === 'found-it-suspicious') {
+      api.addBond(a, win.player, -1, { source: sceneWhy });
+    } else if (branch === 'admired') {
+      api.addBond(a, win.player, 1.5, { source: sceneWhy });
+    }
+    const existing = findOpenThread('trust', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc('trust', [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'admired') crowd = { name: win.player, colour: 'masterful', reason: 'was the best thing on that field and the road home said so', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: win.player, topicKind: 'road-praise', threadId: t?.id || existing?.id || null,
+      bondDelta, ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── mission-laughed-about-it ────────────────────────────────────────────
+// A bad afternoon is the best bonding material this format has, and the file
+// had no event that could say so. Gated on the tier actually being poor.
+const LAUGHED_LINES = {
+  'laughed-about-it': [
+    'It was a disaster and by the second mile {a} and {b} could not stop laughing about it.',
+    'Somebody has to find it funny first, and {a} did, and then {b} was gone too.',
+    'They have a joke now that nobody else in the castle has, which is worth more than the money was.',
+    'The afternoon was worthless and the walk home was the best hour of {a}’s week.',
+    '{a} did an impression of the whole thing and {b} had to stop walking.',
+    'Two people who have just failed at something together are two people with a thing in common.',
+    'Nothing about the day worked and both of them came home lighter.',
+    'It will be a running joke by Thursday and neither of them will remember starting it.',
+  ],
+  'too-soon': [
+    '{a} tried to make it funny and {b} was not ready for it to be funny.',
+    'It cost real money and {a} joked about it about ninety minutes too early.',
+    '{b} had wanted that afternoon to go well more than {a} realised.',
+    'The laugh landed on nothing and both of them heard it not land.',
+    '{a} apologised, which made it slightly worse.',
+    'There is a right hour for that joke and it was not on that road.',
+    '{b} said "it is not funny" and meant it, and {a} believed {b}.',
+    'It is a small misjudgement and {a} will be careful with {b} for a day or two.',
+  ],
+  'blamed-the-set-up': [
+    '{a} and {b} agreed, at length, that the afternoon had been unwinnable.',
+    'It is easier to be angry at the day than at each other, and they took the easier thing.',
+    'By the gate they had built a complete case against the whole design of it.',
+    'Neither of them said a word about anybody on their own team, which took effort.',
+    'They are wrong about it being unwinnable and they are right about not saying so.',
+    'A shared grievance about nobody in particular is the safest bond in this castle.',
+    '{a} started it and {b} improved it and by the drive it was a full theory.',
+    'It is the most agreeable conversation either of them has had all week.',
+  ],
+  'went-quiet-about-it': [
+    'Neither {a} nor {b} said anything about the afternoon for the whole road home.',
+    'It had cost too much to be discussed and they both knew it.',
+    'They walked five miles beside each other and talked about the hedge.',
+    'There is nothing to say when it goes that badly and both of them said it.',
+    '{a} tried once. {b} did not pick it up. That was the end of it.',
+    'The silence was not hostile and it was not comfortable either.',
+    'They will each say something about it to somebody else tonight, and not to each other.',
+    'By the gate the afternoon had become a thing neither of them was going to mention.',
+  ],
+};
+
+registerEvent({
+  id: 'mission-laughed-about-it',
+  family: 'trust',
+  window: 'journey-back',
+  roles: 'initiator-first',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous'],
+    voice: ['social', 'temperament', 'boldness', 'loyalty'],
+    relationship: ['neutral', 'close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const m = afternoon(ctx);
+    if (!m) return 0;
+    // ONLY WHEN THE DAY ACTUALLY WENT BADLY. Laughing off a triumph is not a
+    // scene, and the tier is on the record rather than guessed at.
+    if (m.tier !== 'scraped' && m.tier !== 'failed') return 0;
+    const [a, b] = ctx.actors;
+    const ta = teamOf(m, a);
+    return (ta && ta.members.includes(b)) ? 3 : 1.2;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'mission-laughed-about-it');
+    const sceneWhy = 'walked home off a bad afternoon together';
+    const [a, b] = ctx.actors;
+    const m = afternoon(ctx);
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const branch = forkOn(rng, {
+      'laughed-about-it': (sa.social / 10) * 0.35 + (sb.temperament / 10) * 0.25,
+      'too-soon': (sa.boldness / 10) * 0.25 + (1 - sb.temperament / 10) * 0.25,
+      'blamed-the-set-up': (sa.strategic / 10) * 0.3 + 0.15,
+      'went-quiet-about-it': (1 - sa.social / 10) * 0.3 + (1 - sb.social / 10) * 0.2,
+    });
+    const note = line(LAUGHED_LINES[branch], 'mission-laughed-about-it', branch, ctx.ep,
+      { a, b, mission: m.name, tier: tierPhrase(m, 'mission-laughed-about-it', ctx.ep) });
+    const bondDelta = branch === 'laughed-about-it' ? 2.5
+      : branch === 'blamed-the-set-up' ? 1.5
+        : branch === 'too-soon' ? -1 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread('trust', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc('trust', [a, b], { source: sceneWhy, seed: note });
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: 'road-partner', threadId: t?.id || existing?.id || null, bondDelta };
+  },
+});
+
+// ── mission-the-good-day ────────────────────────────────────────────────
+// The other end of the same rule: a triumph is a public fact, and what two
+// people do with a good day is not automatically warm. A visible alliance is
+// a target, and a season this format runs on knows it.
+const GOOD_DAY_LINES = {
+  'enjoyed-it': [
+    'For one afternoon {a} and {b} were just two people who had done a job well.',
+    'Nobody mentioned the game on that road and both of them noticed afterwards.',
+    'It went well, and going well is rare enough here to be worth an hour of not being careful.',
+    '{a} and {b} came home genuinely pleased, which in this castle is nearly a confession.',
+    'They had a good day. It is allowed, and it almost never happens.',
+    'The money was up and the sun was out and neither of them was thinking about Thursday.',
+    '{a} said it was the first time all week {a} had forgotten where {a} was.',
+    'It will not last past dinner and both of them are aware of that.',
+  ],
+  'too-visible': [
+    '{a} and {b} were the story of that afternoon and the story travels.',
+    'Being the two who won it is being the two everybody looked at.',
+    '{a} worked out on the road home that a good day has a cost attached.',
+    'The castle likes people who deliver right up until it starts counting them.',
+    'They did it together, publicly, and the room has now paired them in its head.',
+    '{b} would rather have had a quiet afternoon and says so.',
+    'You cannot be that useful and that close to somebody without being noticed for both.',
+    'It is a good problem and it is a problem.',
+  ],
+  'took-the-credit': [
+    '{a} spent the road home making sure the right version of the afternoon travelled.',
+    'It was a team result and {a} has been describing it in the first person.',
+    '{b} noticed which parts {a} was leaving out.',
+    '{a} is not lying about any of it and is not telling it straight either.',
+    'Credit is the only currency out there and {a} is collecting it.',
+    'By the gate three people had heard {a}’s account and none had heard {b}’s.',
+    '{b} let it go, which is not the same as not minding.',
+    'It is a small thing that will be a large thing in about a week.',
+  ],
+  'shared-it-out': [
+    '{a} made sure the people who did the work were the people who got named for it.',
+    '{a} could have taken it and handed it round instead.',
+    'It costs nothing to do that and almost nobody in this castle does it.',
+    '{b} noticed, and {b} will not be the only one.',
+    '{a} named four people and was not one of them, which the road heard.',
+    'Generosity with credit is the cheapest alliance there is and {a} is good at it.',
+    'Whether it was decent or clever, it worked, and both readings are available.',
+    '{a} came home with less credit and more people.',
+  ],
+};
+
+registerEvent({
+  id: 'mission-the-good-day',
+  family: 'trust',
+  window: 'journey-back',
+  roles: 'initiator-first',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['social', 'strategic', 'loyalty', 'temperament'],
+    relationship: ['neutral', 'close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const m = afternoon(ctx);
+    if (!m) return 0;
+    // MEASURED AT 1 FIRING IN 200 SEASONS with `triumph` AND both actors on
+    // the winning half. A triumph is rare and the intersection of the two is
+    // rarer still — a written event that is not in the game, which is the
+    // dead-content class this whole directory is audited for. `solid` is the
+    // common good afternoon and it carries the same scene; the winning half
+    // is what still makes it THEIR day rather than the castle's.
+    if (m.tier !== 'triumph' && m.tier !== 'solid') return 0;
+    const [a, b] = ctx.actors;
+    if (!onTheBetterHalf(m, a) || !onTheBetterHalf(m, b)) return 0;
+    return m.tier === 'triumph' ? 3 : 2;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'mission-the-good-day');
+    const sceneWhy = 'walked home off the best afternoon of the week';
+    const [a, b] = ctx.actors;
+    const m = afternoon(ctx);
+    const st = pStats(a);
+    const branch = forkOn(rng, {
+      'enjoyed-it': (st.temperament / 10) * 0.35 + 0.15,
+      'too-visible': (st.intuition / 10) * 0.3 + (st.strategic / 10) * 0.2,
+      'took-the-credit': (st.social / 10) * 0.3 + (1 - st.loyalty / 10) * 0.25,
+      'shared-it-out': (st.loyalty / 10) * 0.35 + (st.social / 10) * 0.2,
+    });
+    const note = line(GOOD_DAY_LINES[branch], 'mission-the-good-day', branch, ctx.ep,
+      { a, b, mission: m.name, best: m.bestTeam });
+    const bondDelta = branch === 'enjoyed-it' ? 2
+      : branch === 'shared-it-out' ? 2.5
+        : branch === 'took-the-credit' ? -1.5 : 0.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread('trust', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc('trust', [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'shared-it-out') crowd = { name: a, colour: 'selfless', reason: 'handed round the credit for an afternoon they could have kept', mult: 0.6 };
+    else if (branch === 'took-the-credit') crowd = { name: a, colour: 'selfish', reason: 'told a team result in the first person all the way home', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: 'road-partner', threadId: t?.id || existing?.id || null,
+      bondDelta, ...(crowd ? { crowd } : {}) };
+  },
+});

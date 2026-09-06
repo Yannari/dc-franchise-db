@@ -636,6 +636,13 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE AFTERNOON THAT WENT WELL (js/tr/castle/mission-fallout.js) ──
+  //
+  // The three from that batch where somebody IS under something: two people
+  // who could not get out of each other's way, competence turned into an
+  // accusation, and a team result told in the first person all the way home.
+  // `too-soon` belongs here too and is already on the list.
+  'found-it-suspicious', 'got-in-the-way', 'took-the-credit',
   // ── THE GROUP SCENES (js/tr/castle/group.js, 2026-09-05) ────────────
   //
   // A room, not a pair. Sorted on the same rule: adverse means somebody is
@@ -1035,6 +1042,17 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE WARM HALF OF THE SAME FOUR EVENTS ───────────────────────
+  //
+  // The register this file did not have. Its fourteen existing events run
+  // "what cost us", "a body short", "who was where" — an afternoon is also
+  // the only time these people do something TOGETHER, in daylight, with a
+  // shared result, and none of that had a scene. Nobody opposite is under
+  // anything in any of these, including the ones that cost a bond.
+  'admired', 'blamed-the-set-up', 'enjoyed-it', 'found-they-worked',
+  'laughed-about-it', 'noted-it-quietly', 'one-of-them-carried-it',
+  'polite-and-nothing', 'shared-it-out', 'too-visible',
+  'went-quiet-about-it', 'wished-it-had-been-them',
   // ── AND THE GROUP SCENES WHERE NOBODY IS UNDER ANYTHING ─────────────
   //
   // A room that agrees, a room that cannot, a kitchen that says nothing, a

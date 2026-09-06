@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(174);
+    expect(EVENTS.length).toBe(178);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -613,7 +613,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // story between the first two of its actors where one exists and opens
     // one where it does not -- a room arguing about a name is the same
     // story as the pair who started it, not a rival one.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(97);
+    // 97 -> 101: all four mission-fallout additions advance a thread. Each
+    // continues the trust story between its pair where one exists and opens
+    // one where it does not — an afternoon two people spent together is the
+    // same story as whatever they already had, not a rival one.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(101);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -1436,6 +1440,20 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 174 -> 178 AND 734 -> 750 on 2026-09-05. mission-fallout.js held fourteen
+// events and, read by their bond direction, every one of them was about
+// something the afternoon TOOK: "what cost us", "a body short", "who was
+// where", "the hour they went missing". An afternoon is also the only time
+// eighteen strangers do something together, in daylight, with a shared
+// result, and that half of it had no scene at all. These four are it — a pair
+// the draw put together who had no history, watching somebody be visibly
+// good at a thing, a disaster that becomes a joke on the road home, and a day
+// that went well and made an alliance visible.
+//
+// NOT ALL WARM, because "positive" is not a register: a good day is a target,
+// being carried is a debt, and noticing competence is the first half of
+// deciding somebody is dangerous.
+//
 // 167 -> 174 AND 706 -> 734 on 2026-09-05, AND THIS ONE IS NOT A CONTENT
 // BATCH. Actors per scene, measured over 40 played seasons (9,796 scenes):
 // one actor 45%, two actors 55%, THREE OR MORE 0%. Not rare -- none.
@@ -1836,10 +1854,26 @@ const BRANCHES = [
   'mission-back-through-the-gate:ended-badly',
   'mission-back-through-the-gate:quietly-dropped',
   'mission-back-through-the-gate:settled-it',
+  'mission-good-hands:admired',
+  'mission-good-hands:found-it-suspicious',
+  'mission-good-hands:noted-it-quietly',
+  'mission-good-hands:wished-it-had-been-them',
+  'mission-laughed-about-it:blamed-the-set-up',
+  'mission-laughed-about-it:laughed-about-it',
+  'mission-laughed-about-it:too-soon',
+  'mission-laughed-about-it:went-quiet-about-it',
+  'mission-same-half-first-time:found-they-worked',
+  'mission-same-half-first-time:got-in-the-way',
+  'mission-same-half-first-time:one-of-them-carried-it',
+  'mission-same-half-first-time:polite-and-nothing',
   'mission-same-side:closed-ranks',
   'mission-same-side:divided-it',
   'mission-same-side:one-sided',
   'mission-same-side:professional',
+  'mission-the-good-day:enjoyed-it',
+  'mission-the-good-day:shared-it-out',
+  'mission-the-good-day:too-visible',
+  'mission-the-good-day:took-the-credit',
   'mission-the-hour-they-went-missing:counted-the-cost',
   'mission-the-hour-they-went-missing:defended-the-hour',
   'mission-the-hour-they-went-missing:let-it-alone',

@@ -92,22 +92,89 @@ export function isSplitPanel(ranking) {
  * inside every window, so a legal answer always exists and this always finds
  * one.
  */
+/**
+ * How hard the host leans.
+ *
+ * MEASURED, not chosen. Two adjacent queens trade places only when their
+ * desired positions cross, so this is the bar a case has to clear before he
+ * touches the panel's order at all. Over 100 seasons at 13 queens:
+ *
+ *     0.45 → the host changes something on 21% of episodes
+ *     0.50 → 33%          ← the spec's target
+ *     0.60 → 50%
+ *     0.70 → 66%
+ *     0.80 → 75%
+ *
+ * AND A TENSION WORTH KNOWING ABOUT. The spec asks for two things at once —
+ * a change on about one episode in three, and the occasional two-place move
+ * that makes a robbery — and one continuous knob cannot deliver both: single
+ * swaps arrive long before two-place jumps, so the strength that produces any
+ * big moves (0.80+) has the host meddling three weeks in four. At 0.50 the
+ * two-place move never happens.
+ *
+ * That is the correct state for now rather than a compromise, because the
+ * input that is supposed to produce the dramatic cases is not wired yet.
+ * `storylineNeed` is all zeros until Plan 3's arc tracker fills it, and it is
+ * the term designed to be occasionally LARGE — the underdog who needs a win
+ * this week, the fighter who has earned the benefit of a toss-up. Star power
+ * and track record are mild and always-on by nature; they should nudge, not
+ * overrule. When the tracker lands, re-measure both numbers together rather
+ * than raising this constant to fake the tail.
+ */
+export const BEND_STRENGTH = 0.50;
+
 export function hostBend(ranking, { star = {}, storylineNeed = {}, trackPull = {}, split = false } = {}) {
   const n = ranking.length;
   if (!n) return [];
   const maxMove = split ? 3 : 2;
 
+  // ── STAR POWER IS RELATIVE, AND THIS IS WHY ───────────────────────
+  //
+  // Read raw, `star` is 0..10 and its term is therefore always positive: it
+  // lifted every queen at once and cancelled out. Measured over 100 seasons
+  // with the uncentred version, the host moved 0.02 queens per episode and
+  // never once moved anybody two places — step 3 of the engine was doing
+  // nothing at all and the "robbed" badge could not fire.
+  //
+  // What matters is not how big a star she is but how big a star she is
+  // COMPARED TO THE ROOM SHE IS IN, which is also the truer statement: being
+  // the most watchable queen left is what earns the benefit of the doubt, and
+  // that changes as the cast shrinks around her.
+  // Measured against the cast's OWN SPREAD rather than a fixed divisor, and
+  // that detail is the difference between this working and not. Star power is
+  // a weighted mean of five terms, so it regresses hard: across 520 queens it
+  // ran from 2.9 to 7.8 with the middle eighty percent inside 4.3–6.6. Divided
+  // by a constant 5 that became a bend of ±0.16, and since two adjacent queens
+  // must differ by more than 1/maxMove to trade places, nobody ever moved.
+  //
+  // Dividing by the standard deviation of the room makes it a z-score: the
+  // most watchable queen of THIS cast gets the full allowance whether the
+  // season is full of personalities or full of wallpaper, which is also the
+  // truer statement about how a favourite emerges.
+  const stars = ranking.map(r => star[r.name] || 0);
+  const meanStar = stars.length ? stars.reduce((a, b) => a + b, 0) / stars.length : 0;
+  const variance = stars.length
+    ? stars.reduce((s, v) => s + (v - meanStar) ** 2, 0) / stars.length : 0;
+  const sdStar = Math.sqrt(variance) || 1;
+  const relStar = name => Math.max(-1, Math.min(1, ((star[name] || 0) - meanStar) / sdStar));
+
   const rows = ranking.map(r => {
-    const bend = ((star[r.name] || 0) / 10) * 0.4
+    const bend = relStar(r.name) * 0.4
       + (storylineNeed[r.name] || 0) * 0.4
       + (trackPull[r.name] || 0) * 0.2;
     return {
       name: r.name,
       panelRank: r.panelRank,
       bend: Math.round(bend * 1000) / 1000,
-      // Where he would put her if nothing else were in the way. A bend of ±1
-      // is worth the full allowance.
-      desired: r.panelRank - bend * maxMove,
+      // Where he would put her if nothing else were in the way.
+      //
+      // BEND_STRENGTH is what decides how often he intervenes at all. Two
+      // adjacent queens trade places only when their desired positions cross,
+      // which needs their bends to differ by more than 1/(maxMove*strength) —
+      // so the constant is not a volume knob on a continuous effect, it is the
+      // bar a case has to clear before the host touches the panel's order.
+      // Tuned against the spec's two targets and re-measured over 100 seasons.
+      desired: r.panelRank - bend * maxMove * BEND_STRENGTH,
     };
   });
 

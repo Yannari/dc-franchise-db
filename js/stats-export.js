@@ -2982,6 +2982,25 @@ registerSeasonExporter(DEFAULT_FORMAT, exportAndFillNarratives);
 registerSeasonExporter('big-brother', exportAndFillBigBrotherSeason);
 registerSeasonExporter('traitors', exportTraitorsSeason);
 
+/**
+ * Drag Race, and a REFUSAL rather than a wrong export.
+ *
+ * The season document for this show is a THIRD round shape — `episodes[]`, a
+ * placement grid with no ballot anywhere — and nothing builds it yet (Plan 4).
+ * Falling through to the default would run the Total Drama pipeline over a
+ * runway and publish it: a season document in the wrong show's shape, with no
+ * error and no empty result. Refusing by name is the same choice
+ * POST /api/publish-season makes about an unregistered format, and for the same
+ * reason — being told nothing is recoverable, being told the wrong show is not.
+ */
+export async function exportDragRaceSeason() {
+  throw new Error(
+    `${SHOWS['drag-race'].name} has no export path yet — a season is played by `
+    + 'js/dr/season.js and the episodes[] document builder is not written. '
+    + `Refusing rather than exporting it as ${SHOWS[DEFAULT_FORMAT].name}.`);
+}
+registerSeasonExporter('drag-race', exportDragRaceSeason);
+
 export async function exportSeason(onStatus) {
   const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);
   // The prose comes after the record, because the fill patches the committed

@@ -93,9 +93,31 @@ describe('playDragSeason', () => {
       expect(out.winner, drFinale).toBeTruthy();
       expect(out.runnerUp, drFinale).toBeTruthy();
       expect(out.winner, drFinale).not.toBe(out.runnerUp);
-      expect(out.state.living.length, drFinale).toBe(FINALE_SIZE[drFinale]);
       expect(out.finale.rounds.length, drFinale).toBeGreaterThan(0);
+      // AT LEAST the finale size, not exactly it. A double shantay saves a
+      // queen who was going home, so the season arrives at the finale one
+      // heavier — which is what a double shantay means. The finale places the
+      // extra rather than dropping her.
+      expect(out.state.living.length, drFinale).toBeGreaterThanOrEqual(FINALE_SIZE[drFinale]);
+      expect(out.finale.placements.length, drFinale).toBe(out.state.living.length);
+      expect(new Set(out.finale.placements).size, drFinale).toBe(out.state.living.length);
     }
+  });
+
+  it('a double shantay carries an extra queen into the finale, and she is placed', () => {
+    // Found by playing a season in the browser: 13 queens, a double shantay in
+    // episode six, and five finalists instead of four. Correct, and worth
+    // pinning — the real show answers this with a later double elimination,
+    // which this engine does not do yet.
+    let found = null;
+    for (let s = 0; s < 40 && !found; s++) {
+      const out = playDragSeason({ cast: cast(13, 700 + s), seed: s, config: { drDoubleShantay: true } });
+      if (out.rows.some(r => r.dr.lipsync?.call === 'double-shantay')) found = out;
+    }
+    expect(found, 'no double shantay in 40 seasons').toBeTruthy();
+    expect(found.state.living.length).toBeGreaterThan(4);
+    expect(found.finale.placements.length).toBe(found.state.living.length);
+    expect(found.winner).toBeTruthy();
   });
 
   it('premiere types shape episode one', () => {

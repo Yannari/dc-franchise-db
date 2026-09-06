@@ -1164,7 +1164,7 @@ const CONSEQ = {
         '{a} tells it the same way again. Nobody has yet noticed that it is always exactly the same way.',
         'It survives another day, and every day it survives makes it harder for {a} to change any part of it.',
         '{a} gets through another one. The version {a} is telling has not moved a word since the first time.',
-        'Another day of ordinary. {a} is getting very good at ordinary, and that is its own kind of risk.',
+        'Another day of ordinary. {a} is getting very good at it, and that is when people stop noticing you.',
       ],
       adverse: [
         'The version is coming apart at the edges now, and {a} is patching it in front of the person who noticed.',
@@ -2219,7 +2219,7 @@ const CONSEQ_CALLBACK_WARNING = {
 const CONSEQ_CALLBACK_ENVY = {
   'left-out': [
     '{a} sat outside a conversation about {topic} that {a} had no part in, and felt the whole weight of having no history here to fall back on.',
-    'The story about {topic} was one {b} could tell and {a} could only listen to. In a returnee castle, that gap is its own kind of exposure.',
+    'The story about {topic} was one {b} could tell and {a} could only listen to. In a returnee castle, that gap leaves you standing in the open.',
     '{a} has no shared past with {topic} to trade on, and an hour of {b} reminiscing made sure {a} felt it.',
     'A story about {topic} went round that {a} was not in, and {a} learned again that a clean slate is also an empty hand here.',
   ],
@@ -2411,7 +2411,7 @@ const CONSEQ_AFTER_WRONG = {
     '{a} would not say {topic}’s name again tonight, and the not-saying was louder than anything {a} could have said.',
     'Whatever losing {topic} did to {a}, {a} took it somewhere the room could not follow.',
     '{a} carried {topic} out of that hall without a word, and nobody was going to make {a} put it down for them.',
-    '{a} answered every question about the table without once saying {topic}’s name, which was its own kind of answer.',
+    "{a} answered every question about the table without once saying {topic}’s name, and the room heard the gap where it should have been.",
   ],
 };
 // AFTER-RIGHT — the reveal said the banished player was a Traitor. The room

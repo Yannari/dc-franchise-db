@@ -1400,7 +1400,7 @@ const COMPOSED_TEXT = [
   '{names} take it standing, dry-eyed. It is not coldness so much as distance: {vic} was never '
   + 'theirs to lose, and the grief map of the room is being drawn in real time.',
   'A few of them — {names} — do not flinch. The table reads that too. Who breaks and who does '
-  + 'not is its own kind of information this morning.',
+  + 'not tells the room something it will spend the day using.',
 ];
 // ── the eyes turn: pushedThenDied, shown never stated ──────────────────
 const EYES_TEXT = [

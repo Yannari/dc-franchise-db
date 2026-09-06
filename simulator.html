@@ -753,6 +753,65 @@
               <div class="hint hint-tight">The ceiling the missions are earning against. Nobody banked a penny of it until somebody walks out with the lot.</div>
             </div>
 
+            <!-- ── THE MAIN STAGE'S OWN CONTROLS ────────────────────────
+                 Six ids, all named in CONFIG_SCOPE and all read by js/dr/*.
+                 The two doubles are ALLOWANCES rather than dials: the lip sync
+                 has to earn one, and the box only decides whether the engine
+                 is permitted to call it at all. -->
+            <div class="divider" id="sec-dr-divider"></div>
+            <div class="setup-section-label" id="sec-dr-options">MAIN STAGE OPTIONS</div>
+            <div class="bbopt-fixed">
+              <span class="bbopt-fixed-k">Verdict</span>
+              <span>The panel ranks the week, the bottom two lip sync, and the host alone decides who goes home. Nobody votes.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Premiere</label>
+              <select id="cfg-dr-premiere" onchange="saveConfig()" class="form-input">
+                <option value="standard">Standard — a maxi challenge from episode one</option>
+                <option value="talent-show">Talent show</option>
+                <option value="design">Design challenge</option>
+                <option value="runway">Runway only</option>
+                <option value="girl-groups">Girl groups</option>
+                <option value="split">Split premiere — two halves, two winners</option>
+                <option value="porkchop">Porkchop premiere — a lip sync elimination on night one</option>
+              </select>
+              <div class="hint hint-tight">What episode one is. The split premiere runs the cast in two halves with nobody going home; the porkchop sends somebody home on the first night.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Finale</label>
+              <select id="cfg-dr-finale" onchange="saveConfig()" class="form-input">
+                <option value="top4">Top 4 lip sync tournament</option>
+                <option value="top3">Top 3 lip sync tournament</option>
+                <option value="top2">Top 2 lip sync for the crown</option>
+                <option value="perform-then-lipsync">Final performance, then the host picks two to lip sync</option>
+              </select>
+              <div class="hint hint-tight">Where the season stops, and how the crown is decided once it gets there.</div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-double-shantay" style="width:14px;height:14px;margin-top:3px" checked onchange="saveConfig()">
+                <span>Double shantay allowed<div class="hint hint-tight">Both queens stay. Only when both lip syncs are genuinely excellent and close — it cannot be rolled.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-double-sashay" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Double sashay allowed<div class="hint hint-tight">Both queens go. Only when both lip syncs are genuinely bad. Rarer than the shantay and off by default.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-immunity" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Early wins carry immunity<div class="hint hint-tight">The seasons 1–5 rule: a maxi win in the first five episodes keeps that queen out of the bottom the following week.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-triple" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Triple lip sync on a tie<div class="hint hint-tight">When the bottom will not resolve into two, three queens lip sync instead.</div></span>
+              </label>
+            </div>
+
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
             <!-- Off by default and explicitly switched on, because it is the one
                  setting in this panel that costs money every time a season is

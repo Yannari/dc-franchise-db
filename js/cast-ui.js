@@ -1128,6 +1128,19 @@ export function saveConfig() {
     trArmourySize: parseInt(g('cfg-tr-armoury-size')?.value) || 4,
     trShieldCount: parseInt(g('cfg-tr-shield-count')?.value) || 1,
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
+    // ── the main stage ──
+    // The schedule and the judge weights are NOT read off the DOM: they are
+    // written by the timeline and the judges panel, so they are carried
+    // forward from the live config rather than reset to empty on every save.
+    drPremiere:  g('cfg-dr-premiere')?.value || 'standard',
+    drFinale:    g('cfg-dr-finale')?.value || 'top4',
+    drDoubleShantay: g('cfg-dr-double-shantay') ? g('cfg-dr-double-shantay').checked : true,
+    drDoubleSashay:  g('cfg-dr-double-sashay')?.checked || false,
+    drImmunity:      g('cfg-dr-immunity')?.checked || false,
+    drTripleLipsync: g('cfg-dr-triple')?.checked || false,
+    drSchedule: Array.isArray(seasonConfig.drSchedule) ? seasonConfig.drSchedule : [],
+    drJudgeWeights: seasonConfig.drJudgeWeights && typeof seasonConfig.drJudgeWeights === 'object'
+      ? seasonConfig.drJudgeWeights : {},
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
     riFormat:    g('cfg-ri-format')?.value || 'redemption',
@@ -1271,6 +1284,14 @@ export function renderConfig() {
   try { updateShieldUI(); } catch (e) {}
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
+  set('cfg-dr-premiere', seasonConfig.drPremiere || 'standard');
+  set('cfg-dr-finale', seasonConfig.drFinale || 'top4');
+  // Defaults ON, so the read has to be an explicit !== false rather than a
+  // truthiness test: an unset value here means "allowed", not "off".
+  if (g('cfg-dr-double-shantay')) g('cfg-dr-double-shantay').checked = seasonConfig.drDoubleShantay !== false;
+  chk('cfg-dr-double-sashay', seasonConfig.drDoubleSashay || false);
+  chk('cfg-dr-immunity', seasonConfig.drImmunity || false);
+  chk('cfg-dr-triple', seasonConfig.drTripleLipsync || false);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');

@@ -1597,6 +1597,18 @@ export function defaultConfig() {
     mole: 'disabled', molePlayers: [], moleCoordination: 'independent',
     coaches: 'disabled', coachesPerTribe: 1,
     romance: 'enabled',
+    // ── Drag Race ──────────────────────────────────────────────────
+    //
+    // Read only by js/dr/* and scoped to this show in CONFIG_SCOPE, so none of
+    // these controls is drawn over another format. The two doubles are
+    // ALLOWANCES rather than frequencies: the lip sync earns them or they do
+    // not happen, and the box only decides whether the engine may call one.
+    drPremiere: 'standard', drFinale: 'top4',
+    drDoubleShantay: true, drDoubleSashay: false, drImmunity: false, drTripleLipsync: false,
+    // The per-episode timeline: maxi, mini, rotating judge, guest, song, twist.
+    drSchedule: [],
+    // Per-judge taste overrides from the setup screen's tabs, keyed by judge id.
+    drJudgeWeights: {},
     aftermath: 'disabled',
     fanVoteFrequency: 'disabled',
     aftermayhemReturn: 'disabled',
@@ -1824,7 +1836,7 @@ export function normalizeAccentedNames() {
 export async function loadAll() {
   // These small items stay in localStorage
   try { const c = localStorage.getItem('simulator_cast'); if (c) players = JSON.parse(c); } catch(e) { players = []; }
-  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; if (seasonConfig.twistSchedule) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(Boolean); if (seasonConfig.bbCompSchedule) seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(Boolean); } } catch(e) {}
+  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; if (seasonConfig.twistSchedule) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(Boolean); if (seasonConfig.bbCompSchedule) seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(Boolean); if (seasonConfig.drSchedule) seasonConfig.drSchedule = seasonConfig.drSchedule.filter(Boolean); } } catch(e) {}
   try { const r = localStorage.getItem('simulator_rels'); if (r) relationships = JSON.parse(r); } catch(e) { relationships = []; }
 
   // ── gs: load from IndexedDB, fall back to localStorage for migration ──

@@ -20,7 +20,7 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
@@ -50,7 +50,35 @@ export function blueprintFor(config = {}, castSize = 0) {
   const N = Number(castSize) || 0;
   const house = seasonFormat(config) === 'big-brother';
   const castle = seasonFormat(config) === 'traitors';
+  const stage = seasonFormat(config) === 'drag-race';
   const segs = [];
+
+  // ── THE MAIN STAGE, BEFORE THE SHARED CHIPS ──────────────────────
+  //
+  // Returns first rather than pushing onto the common ones, because none of
+  // them is true here: there is no tribe to split into, no merge to reach and
+  // no jury to seat. A drag season is a number of queens, one workroom, and
+  // where the season stops. The cast noun comes from the registry rather than
+  // from a fourth arm on the ternary below — which is also why this branch
+  // sits above that push instead of editing it.
+  if (stage) {
+    const w = showWords('drag-race');
+    const castOk = N >= 8 && N <= 16;
+    segs.push({
+      label: `${N} ${N === 1 ? w.player : w.players}`,
+      ok: castOk,
+      why: castOk ? undefined : `Cast 8 to 16 ${w.players}`,
+    });
+    segs.push({ label: 'one werk room', ok: true });
+    const fin = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 }[config.drFinale || 'top4'] || 4;
+    const finOk = N > fin;
+    segs.push({
+      label: `finale at top ${fin}`,
+      ok: finOk,
+      why: finOk ? undefined : `A top ${fin} needs more than ${fin} ${w.players}`,
+    });
+    return segs;
+  }
 
   segs.push({
     label: `${N} ${house ? 'houseguest' : 'player'}${N === 1 ? '' : 's'}`,
@@ -1068,7 +1096,10 @@ const CONFIG_SCOPE = {
     idol:       ['total-drama'],
     advantages: ['total-drama'],
     qem:        ['total-drama'],
-    popularity: ['total-drama', 'big-brother', 'traitors'],  // a castle has an audience too
+    // A castle has an audience too, and so does a main stage: every drag scene
+    // writes the popularity ledger, so the switch turns real tracking off
+    // rather than sitting there as decoration.
+    popularity: ['total-drama', 'big-brother', 'traitors', 'drag-race'],
     survival:   ['total-drama'],
     mole:       ['total-drama'],
     // Sideline coaches train a TRIBE — a house and a castle have neither, so
@@ -1119,6 +1150,16 @@ const CONFIG_SCOPE = {
     'cfg-tr-endgame-reveal': ['traitors'],
     // The castle's endgame size (final 2-5). Only js/tr/ reads it.
     'cfg-tr-endgame-size':   ['traitors'],
+    // The main stage's own controls. Every one of these is read by js/dr/*:
+    // the premiere and finale shapes pick which weeks the season runs, and the
+    // four switches are ALLOWANCES the lip sync and the schedule consult. A
+    // control nothing reads does not belong in this map.
+    'cfg-dr-premiere':       ['drag-race'],
+    'cfg-dr-finale':         ['drag-race'],
+    'cfg-dr-double-shantay': ['drag-race'],
+    'cfg-dr-double-sashay':  ['drag-race'],
+    'cfg-dr-immunity':       ['drag-race'],
+    'cfg-dr-triple':         ['drag-race'],
     // COUNCIL SIZE IS NOT A CASTLE CONTROL. The `cfg-jury` slider is shared —
     // the house reads a jury size off it and Total Drama a panel — but the
     // castle ends on the fire round, not a jury vote, so nothing in js/tr/ ever
@@ -1134,7 +1175,7 @@ const CONFIG_SCOPE = {
   },
   sections: {
     'sec-season-options':     ['total-drama'],
-    'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors'],  // popularity lives here
+    'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors', 'drag-race'],  // popularity lives here
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
     // The container, not just its heading. The fixed-rule lines inside it are
@@ -1147,6 +1188,8 @@ const CONFIG_SCOPE = {
     // The castle's traitor-count/selection/pot controls and their heading.
     'sec-tr-options':        ['traitors'],
     'sec-tr-divider':        ['traitors'],
+    'sec-dr-options':        ['drag-race'],
+    'sec-dr-divider':        ['drag-race'],
     // The END GAME heading holds Total Drama's finale block AND the castle's
     // endgame controls (each control scoped within). Shown for both; a house
     // finale is fixed (final three, stated in HOUSE OPTIONS), so it stays hidden

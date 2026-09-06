@@ -159,7 +159,19 @@ const COMPARISON_BACKLOG = {
   'js/finale.js':                 2,
   'js/intentions.js':             1,
   'js/player-trivia.js':          2,
-  'js/quick-setup.js':            7,
+  // 7 -> 8 for the main stage's blueprint chip. `blueprintFor` draws a
+  // different DIAGRAM per show — tribes and a merge, a house and a jury, a
+  // castle and its traitor ratio, a workroom and where the season stops — and
+  // that is per-show layout rather than identity, which is why the file
+  // already carried one branch each for the house and the castle. The drag
+  // branch returns before the shared chips instead of adding a fourth arm to
+  // the `house ? 'houseguest' : 'player'` ternary, so this commit adds one
+  // comparison and no ternary.
+  //
+  // THE REAL FIX, when somebody has a reason to touch all four: let each
+  // registry entry declare its own blueprint builder, which would take this
+  // row to 0 rather than to 9 the next time a show is added.
+  'js/quick-setup.js':            8,
   'js/rankings-update.js':        1,
   'js/romance.js':                3,
   // 9 -> 11 for the castle's run wiring (Plan 8, Task 7), and the two are two

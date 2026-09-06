@@ -1029,7 +1029,7 @@ const BODY_READ_LINES = {
     '{a} had stopped listening to {b} some time ago and started watching them instead.',
     'Nothing {b} said was wrong. It was the shoulders, and {a} could not have explained it to anybody.',
     '{a} clocked how carefully {b} was sitting still, and people do not sit that still by accident.',
-    '{b} smiled at the right moment and held it about a second past the right length, and {a} counted the second.',
+    '{b} smiled at the right moment but held it too long, and {a} noticed.',
     '{a} watched {b} put a cup down twice before it went where {b} meant it to go.',
     '{b} answered somebody else’s question perfectly well. {a} was not watching the answer.',
     '{a} noticed that {b} had not touched breakfast and had cut all of it up anyway.',

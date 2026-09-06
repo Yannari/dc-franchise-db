@@ -22,6 +22,14 @@ import { coachCanPlay } from './advantages.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isDragSeason, simulateDragEpisode } from './dr-run.js';
+import { dragBadges } from './dr/badges.js';
+// Imported rather than read off `window`: these are static catalogues, and a
+// `typeof X !== 'undefined'` read would silently draw an empty dropdown if the
+// module load order ever changed.
+import { MAXI_TYPES as DR_MAXI_TYPES } from './dr/data/challenges.js';
+import { MINI_TYPES as DR_MINI_TYPES } from './dr/data/minis.js';
+import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
+import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { roundExits, exitVerbs } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -241,6 +249,10 @@ function _hubRailFace(name, cast = players) {
  * lines long — see tests/show-list-duplication.test.js.
  */
 const _isCastleRow = ep => !!ep && ep.format === 'traitors';
+// Same question for the main stage. A stored drag episode shares none of Total
+// Drama's eighty flags, so running them over it would be eighty reads of
+// fields that are not there; it gets its own card.
+const _isStageRow = ep => !!ep && ep.format === 'drag-race';
 
 export function getEpisodeEliminations(ep) {
   if (!ep) return [];
@@ -319,7 +331,15 @@ export function buildHubAftermath(ep) {
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
-  if (seasonFormat(ep) === 'traitors') {
+  if (seasonFormat(ep) === 'drag-race') {
+    // No vote to explain: the panel ranked the week and the host decided.
+    const exits = roundExits(ep, 'drag-race');
+    why = ep.dr && ep.dr.finale
+      ? `${ep.dr.finale.winner} was crowned.`
+      : exits.length
+        ? exits.map(x => `${x.name} ${x.verb} after the lip sync.`).join(' ')
+        : 'Nobody was sent home tonight.';
+  } else if (seasonFormat(ep) === 'traitors') {
     const exits = roundExits(ep, 'traitors');
     why = exits.length
       ? exits.map(x => `${x.name} was ${x.verb}.`).join(' ')
@@ -1109,6 +1129,19 @@ export function renderEpisodeHistory() {
     // A castle night shares none of Total Drama's eighty flags, and running
     // them over it would be eighty reads of fields that do not exist on the
     // row. It gets its own card, with the show's own two doors on it.
+    if (_isStageRow(ep)) {
+      const hasCp = _canReplay(ep.num);
+      const crowned = ep.dr && ep.dr.finale ? ep.dr.finale.winner : null;
+      const gone = _spoilerFree ? '???'
+        : crowned ? `${crowned} crowned`
+          : (roundExits(ep, 'drag-race').map(x => x.name).join(' + ') || '—');
+      return `<div class="ep-hist-card ${ep.num === currentNum ? 'active' : ''}" onclick="viewEpisode(${ep.num})">
+        <div class="ep-hist-ep">Episode ${ep.num}${hasCp
+          ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>` : ''}</div>
+        <div class="ep-hist-elim">${gone}</div>
+        <div>${_spoilerFree ? '' : dragBadges(ep)}</div>
+      </div>`;
+    }
     if (_isCastleRow(ep)) {
       const hasCp = _canReplay(ep.num);
       const gone = _spoilerFree ? '???'
@@ -2796,6 +2829,90 @@ export function _setTrMission(ep, missionId) {
   renderTimeline();
 }
 
+// ── THE MAIN STAGE'S TIMELINE ─────────────────────────────────────────
+//
+// Six dropdowns per episode, written into `seasonConfig.drSchedule` and read
+// by js/dr/season.js when it builds the running order. Everything unset is
+// rolled by the scheduler, so an author books the weeks they care about and
+// leaves the rest to the season.
+//
+// The guest list is drawn from the FRANCHISE ROSTER rather than from a list of
+// judges: this universe has no celebrities outside its own reality shows, so a
+// guest judge is somebody who played one. The whole roster entry is stored on
+// the schedule, because the engine derives that judge's taste from their stats
+// and must not have to go looking for a character who may since have been
+// renamed or retired.
+function _drEntry(ep) {
+  return (seasonConfig.drSchedule || []).find(c => c && Number(c.episode) === Number(ep));
+}
+
+export function _setDRPick(ep, key, value) {
+  if (!seasonConfig.drSchedule) seasonConfig.drSchedule = [];
+  let entry = _drEntry(ep);
+  if (!entry) { entry = { episode: Number(ep) }; seasonConfig.drSchedule.push(entry); }
+
+  if (key === 'guest') {
+    const pool = (typeof FRANCHISE_ROSTER !== 'undefined' && FRANCHISE_ROSTER && FRANCHISE_ROSTER.players) || [];
+    const p = pool.find(x => x.slug === value);
+    if (p) {
+      entry.guest = { name: p.name, slug: p.slug, archetype: p.archetype,
+        stats: { ...(p.stats || {}) }, voice: p.voice || '' };
+    } else delete entry.guest;
+  } else if (key === 'miniId' && value === 'none') {
+    // Null is a real answer meaning "no mini this week"; undefined means
+    // "roll one". The schedule builder distinguishes them with `in`.
+    entry.miniId = null;
+  } else if (value) entry[key] = value;
+  else delete entry[key];
+
+  // A week with nothing pinned leaves no residue in the saved config.
+  if (Object.keys(entry).length === 1) {
+    seasonConfig.drSchedule = seasonConfig.drSchedule.filter(c => c !== entry);
+  }
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
+function _drPickers(ep) {
+  const e = _drEntry(ep) || {};
+  const sel = (key, opts, cur, title) => {
+    const pinned = cur !== '' && cur != null;
+    let h = `<select onchange="event.stopPropagation();_setDRPick(${ep},'${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:${
+      pinned ? '#f9a8d4' : '#8b949e'};border:1px solid rgba(255,45,149,${pinned ? '0.45' : '0.18'});border-radius:3px;padding:1px 2px;margin:2px 2px 0 0;flex:1 1 46%;min-width:0;max-width:100%">`;
+    for (const [v, label] of opts) {
+      h += `<option value="${v}"${String(v) === String(cur) ? ' selected' : ''}>${label}</option>`;
+    }
+    return h + '</select>';
+  };
+
+  const types = DR_MAXI_TYPES;
+  const tent = types.filter(m => m.tentpole);
+  const rest = types.filter(m => !m.tentpole);
+  const minis = DR_MINI_TYPES;
+  const judges = DR_JUDGES.filter(j => !j.permanent);
+  const songs = DR_SONGS;
+  const pool = (typeof FRANCHISE_ROSTER !== 'undefined' && FRANCHISE_ROSTER && FRANCHISE_ROSTER.players) || [];
+  const castNames = new Set((typeof players !== 'undefined' ? players : []).map(p => p.name));
+
+  return sel('maxiId',
+    [['', '— maxi: schedule decides —'],
+      ...tent.map(m => [m.id, '★ ' + m.name]),
+      ...rest.map(m => [m.id, m.name])],
+    e.maxiId || '', 'Which maxi challenge runs this week')
+    + sel('miniId',
+      [['', '— mini: random —'], ['none', 'No mini challenge'], ...minis.map(m => [m.id, m.name])],
+      e.miniId === null ? 'none' : (e.miniId || ''), 'The mini challenge, and what winning it buys')
+    + sel('rotatingId',
+      [['', '— judge: rotate —'], ...judges.map(j => [j.id, j.name])],
+      e.rotatingId || '', 'The third seat on the panel')
+    + sel('guest',
+      [['', '— guest: none —'], ...pool.filter(p => !castNames.has(p.name)).map(p => [p.slug, p.name])],
+      (e.guest && e.guest.slug) || '', 'A guest judge, from the franchise roster')
+    + sel('songTitle',
+      [['', '— song: roll —'], ...songs.map(x => [x.title, `${x.title} — ${x.artist}`])],
+      e.songTitle || '', 'The lip sync song');
+}
+
 function _bbCompPicker(ep, slot, label) {
   const list = (typeof bbCompetitionsForSlot !== 'undefined' ? bbCompetitionsForSlot(slot) : []) || [];
   if (!list.length) return '';
@@ -3264,6 +3381,14 @@ export function renderTimeline() {
 
     // The castle's afternoon mission — one dropdown per episode, always shown
     // (a castle runs a mission every day), pinning which one runs.
+    // The main stage's six pickers, on every episode but the finale — the
+    // finale runs its own shape and has no maxi challenge to book.
+    const stageRow = (isDragSeason() && !isFinale)
+      ? `<div class="fd-ep-comps" style="display:flex;gap:2px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,45,149,0.16)">
+            ${_drPickers(ep)}
+          </div>`
+      : '';
+
     const missionRow = (isTraitorsSeason() && !isFinale)
       ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(201,162,74,0.14)">
             ${_trMissionPicker(ep)}${_trShieldTick(ep)}
@@ -3276,7 +3401,7 @@ export function renderTimeline() {
         <span class="${markerClass}">${markerText}</span>
       </div>
       ${twistTags ? `<div class="fd-ep-twists">${twistTags}</div>` : ''}
-      ${compRow}${missionRow}
+      ${compRow}${missionRow}${stageRow}
     </div>`;
   });
 

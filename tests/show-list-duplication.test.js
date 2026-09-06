@@ -185,7 +185,16 @@ const COMPARISON_BACKLOG = {
   // merge, which is a fact about the GAME, and the words on both surfaces come
   // from exitVerbs()/roundExits(). Raised deliberately, in the commit that
   // spends it.
-  'js/run-ui.js':                 12,
+  // 12 -> 16, and the four are NOT all one piece of work. Two of them arrived
+  // with the Traitors run wiring and were never recorded here, so this row was
+  // already failing at 14 before the fourth show existed — verified by
+  // stashing. The other two are the main stage's, and they are the same two
+  // questions the castle asks: `_isStageRow(ep)` asks what a STORED episode is,
+  // because the episode card and the timeline draw a history that outlives the
+  // config, and the Season Hub asks what the season being PLAYED is. Neither
+  // is a vocabulary branch — the words on both come from the registry through
+  // showWords() and roundExits().
+  'js/run-ui.js':                 16,
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,
@@ -201,6 +210,11 @@ const COMPARISON_BACKLOG = {
   // the same shape js/bb-run.js's `isBigBrotherSeason` has for the same
   // reason: which ENGINE a season plays is not a field the registry can
   // declare, and this module exists precisely to be the one place that asks.
+  // The run loop's main-stage branch. One comparison, the same shape and the
+  // same reason as js/tr-run.js and js/bb-run.js directly above and below:
+  // which ENGINE a season plays is not a field the registry can declare, and
+  // this module exists precisely to be the one place that asks.
+  'js/dr-run.js':                 1,
   'js/tr-run.js':                 1,
   'js/tr/endgame.js':             1,
   // 6 -> 7 for the castle's screen dispatch (Plan 8, Task 1). `buildVPScreens`

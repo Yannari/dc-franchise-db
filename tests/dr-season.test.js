@@ -183,7 +183,14 @@ describe('playDragSeason', () => {
        table with these two numbers rather than the single one it now names. */
     let reachedFinale = 0;
     let crowned = 0;
-    const N = 80;
+    // N=200, not 80. At the true 22.5% crown rate, eighty seasons carry a
+    // sampling error of 4.7 points against a 15% floor — about a one-in-twenty
+    // chance of a red with nothing wrong, and it duly went red the first time
+    // a new challenge module shifted which seeds landed where. Two hundred
+    // brings the error to 3 points and puts the floor two and a half standard
+    // errors away. A calibration guard that fires on noise teaches everyone to
+    // ignore it, which is worse than not having it.
+    const N = 200;
     for (let s = 0; s < N; s++) {
       const c = cast(12, 100 + s);
       const top = [...c].sort((x, y) => craftMean(y) - craftMean(x))[0].name;

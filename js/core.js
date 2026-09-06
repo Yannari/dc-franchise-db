@@ -1636,6 +1636,10 @@ export function defaultConfig() {
     // A PIN ALWAYS WINS except under 'off': asking for an Armoury on episode 4
     // is an instruction, not a preference, so it runs whatever the mode says.
     trShieldSource: 'mission',
+    // EMPTY ON PURPOSE. Murder shapes (a Double, Plain Sight, Name Your Own...)
+    // only come up on their own if the author ticks them here; every one of
+    // them can still be pinned to a night from the timeline whatever this says.
+    trRandomMurderTwists: [],
     // Episodes whose mission awards a Shield, pinned from the timeline.
     trShieldEpisodes: [],
     // How many boxes hide a Shield (the show's "double Shield" twist is 2).

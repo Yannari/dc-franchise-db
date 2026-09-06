@@ -41,6 +41,16 @@ import { alignmentAt } from '../js/tr/roles.js';
 import { rpBuildConclave, _ORDINARY_POOLS } from '../js/vp-tr/conclave.js';
 import roster from '../franchise_roster.json';
 
+// EVERY MURDER SHAPE TICKED ON, because this sweep is ABOUT them.
+// They no longer come up on their own — the author opts in, after a
+// Traitor being murdered by their own pact read as a bug twice over
+// (tests/tr-twists-are-opt-in.test.js) — so a sweep that needs a Double
+// or a Plain Sight to exist has to ask for one. Relying on the draw was
+// always the weaker arrangement: these arms went vacuous the moment the
+// default changed, which is exactly what a state reached by luck does.
+const ALL_MURDER_TWISTS = ['on-trial', 'plain-sight', 'face-to-face',
+  'dungeon', 'double', 'name-your-own'];
+
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
 
@@ -50,7 +60,8 @@ function sweep(seeds) {
   for (const seed of seeds) {
     setPlayers(ROSTER);
     seasonConfig.trShieldSource = 'mission';
-    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+    playTraitorsSeason({ cast: CAST, traitorCount: 3, seed ,
+      randomMurderTwists: ALL_MURDER_TWISTS });
     for (const ep of gs.episodeHistory || []) {
       const c = ep.tr && ep.tr.conclave;
       if (!c) continue;

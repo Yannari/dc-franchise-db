@@ -204,8 +204,27 @@ export function pickVariant(ep, living = null) {
   // (js/tr-run.js, from the Castle Options toggle) it is dropped from the
   // random pool — but a Double the author PINNED still runs, because the
   // schedule is honoured above this line.
+  // ── NOTHING FIRES BY CHANCE THAT THE AUTHOR DID NOT TICK ───────────
+  //
+  // Reported twice, the second time as a question rather than a bug: "why is a
+  // Traitor murdered?" The screen was narrating `name-your-own` correctly by
+  // then — the pact told to name one of its own — and the answer was that it
+  // had simply come up in the weighted draw, on 2.4% of nights and in about
+  // one season in six. Which is exactly the objection: "forbid them from
+  // randomly activating unless I checked them to do it."
+  //
+  // So the random pool is now OPT-IN, and empty by default. `gs.tr.randomMurderTwists`
+  // is the list of shapes the author allowed to come up on their own; anything
+  // not on it can still be PINNED to a night from the timeline, which is
+  // handled above this line and is untouched. A season that ticks nothing
+  // plays nothing but standard nights and whatever it scheduled.
+  //
+  // Not a weight change: a shape the author does want stays exactly as likely
+  // as it was, because the weights are read off the same table.
+  const allowed = (gs.tr && gs.tr.randomMurderTwists) || [];
   const noAutoDouble = !!(gs.tr && gs.tr.noAutoDouble);
   const pool = VARIANTS.filter(v => v.needs(alive.length, t, f)
+    && (v.id === 'standard' || allowed.includes(v.id))
     && !(noAutoDouble && v.id === 'double')
     && !(v.id === 'double' && doubleOvershoots));
   const total = pool.reduce((s, v) => s + v.weight, 0);

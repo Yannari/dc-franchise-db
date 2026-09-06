@@ -6,7 +6,7 @@ import { DEFAULT_ROSTER } from './roster-data.js';
 import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
-import { seasonFormat, formatIsRunnable, formatName } from './core.js';
+import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG } from './core.js';
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS } from './shows.js';
@@ -1059,6 +1059,34 @@ async function _fillAirWindowOptions() {
   return _airOptionsFilled;
 }
 
+/**
+ * The murder shapes the castle is allowed to spring unasked, as checkboxes.
+ *
+ * Reported as "forbid them from randomly activating unless I checked them to
+ * do it" — a Traitor being murdered by their own pact twice read as a bug,
+ * and it was a twist that had simply come up in the weighted draw. Nothing is
+ * ticked by default, so an unscheduled night is an ordinary murder.
+ *
+ * BUILT FROM TWIST_CATALOG, never from a list retyped here. This repo's
+ * standing failure is the same show data written down in two places and
+ * drifting (docs/ADDING-A-SHOW.md §13 exists for it), and a hard-coded six
+ * would silently omit the seventh shape the day one is added.
+ */
+export function renderRandomMurderTwists() {
+  const host = document.getElementById('cfg-tr-random-mv');
+  if (!host) return;
+  const on = new Set(seasonConfig.trRandomMurderTwists || []);
+  const shapes = TWIST_CATALOG.filter(c => c.category === 'murder' && c.variant
+    // A Recruitment is not a murder shape the pact chooses — it is the night
+    // the pact spends making an offer instead, and it has its own rules about
+    // when it may open. It stays schedulable and out of this list.
+    && c.variant !== 'recruit');
+  host.innerHTML = shapes.map(c =>
+    '<label class="acc-check-row"><input type="checkbox" value="' + c.variant + '"'
+    + (on.has(c.variant) ? ' checked' : '') + ' onchange="saveConfig()">'
+    + '<span>' + (c.emoji || '') + ' ' + c.name + '</span></label>').join('');
+}
+
 export function saveConfig() {
   const g = id => document.getElementById(id);
   seasonConfig = {
@@ -1091,6 +1119,11 @@ export function saveConfig() {
     trAutoRecruit: g('cfg-tr-auto-recruit') ? g('cfg-tr-auto-recruit').checked : true,
     trDensity: g('cfg-tr-density')?.value || TR_DENSITY_DEFAULT,
     trShieldSource: g('cfg-tr-shield-source')?.value || 'mission',
+    // The murder shapes ticked as allowed to come up on their own. Read off
+    // the boxes rather than off a list kept here, so a shape added to
+    // TWIST_CATALOG appears in the UI and in the season with no second edit.
+    trRandomMurderTwists: [...document.querySelectorAll('#cfg-tr-random-mv input:checked')]
+      .map(b => b.value),
     trShieldEpisodes: Array.isArray(seasonConfig.trShieldEpisodes) ? seasonConfig.trShieldEpisodes : [],
     trArmourySize: parseInt(g('cfg-tr-armoury-size')?.value) || 4,
     trShieldCount: parseInt(g('cfg-tr-shield-count')?.value) || 1,
@@ -1232,6 +1265,7 @@ export function renderConfig() {
   set('cfg-tr-density', seasonConfig.trDensity || TR_DENSITY_DEFAULT);
   try { updateDensityUI(); } catch (e) {}
   set('cfg-tr-shield-source', seasonConfig.trShieldSource || 'mission');
+  renderRandomMurderTwists();
   set('cfg-tr-armoury-size', seasonConfig.trArmourySize || 4);
   set('cfg-tr-shield-count', seasonConfig.trShieldCount || 1);
   try { updateShieldUI(); } catch (e) {}

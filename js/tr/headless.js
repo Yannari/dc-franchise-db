@@ -2572,6 +2572,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   murderSchedule = null, missionSchedule = null, armourySchedule = null,
   shieldEpisodes = null, chosenTraitors = null,
   rerollFromEp = null, rerollSeed = null, rerolls = null, autoDouble = true,
+  randomMurderTwists = null,
   endgameReveal = false, autoRecruit = true,
   announceTraitorCount = false } = {}) {
   // ── RE-RUN FROM AN EPISODE ──────────────────────────────────────────
@@ -2657,6 +2658,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // pickVariant drops `double` from the random pool but still honours a pinned
   // one. Defaults to on, so headless callers (calibration, tests) are unchanged.
   gs.tr.noAutoDouble = autoDouble === false;
+  // WHICH MURDER SHAPES MAY COME UP ON THEIR OWN. Empty (the default) means
+  // none of them do: every night is a standard murder unless the author pinned
+  // a shape to it from the timeline. See pickVariant in js/tr/murder-variants.js
+  // for why this is opt-in rather than opt-out.
+  gs.tr.randomMurderTwists = Array.isArray(randomMurderTwists) ? [...randomMurderTwists] : [];
   // Automatic recruitment off, when the Castle Option asks — the pact never
   // recruits on its own, only on a night the author pinned. Defaults to on, so
   // headless callers (calibration, tests) are unchanged.

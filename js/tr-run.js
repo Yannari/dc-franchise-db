@@ -229,6 +229,11 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
       // Auto double murders are on unless the Castle Options toggle turns them
       // off; a pinned Double still runs either way.
       autoDouble: seasonConfig.trAutoDouble !== false,
+      // The murder shapes the author ticked as allowed to happen on their own.
+      // Nothing is ticked by default, so a season surprises nobody: a shape
+      // either runs on a night it was pinned to, or it does not run.
+      randomMurderTwists: Array.isArray(seasonConfig.trRandomMurderTwists)
+        ? seasonConfig.trRandomMurderTwists : [],
       // Off by default: finale banishments stay blind (the modern show). On,
       // the endgame turns every banished player over like any earlier table.
       endgameReveal: seasonConfig.trEndgameReveal === true,

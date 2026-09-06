@@ -1750,6 +1750,13 @@ const CONSENSUS_LICENSED = [
   ['The split is arbitrary and everybody knows it', 'the teams are drawn in public'],
   ['Then the room has decided', 'the Round Table ballot'],
   ['Everybody knows one true thing now', 'the banishment reveal'],
+  // THE ACT BREAK IN FRONT OF THE UNMASKING. Not a claim about what a room
+  // believes — a statement of what the next card literally does: the endgame
+  // turns over every survivor, one after another, and the beat that follows
+  // this title draws one card per person until the room is out of people. A
+  // universal that is true by construction, and the only kind the licence is
+  // for.
+  ['Everybody Turns Over', 'the unmasking turns over every survivor in turn'],
   // SAME EVENT, SECOND POOL. `js/vp-tr/endgame.js` narrates the banished
   // player turning their own card over, in front of a seated room that is
   // watching them do it -- the one moment in the format where a universal

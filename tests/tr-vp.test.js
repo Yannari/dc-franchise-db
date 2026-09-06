@@ -69,6 +69,16 @@ import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
 import roster from '../franchise_roster.json';
 import { forbiddenFor, foreignWordsIn } from './helpers/show-vocabulary.js';
 
+// EVERY MURDER SHAPE TICKED ON, because this sweep is ABOUT them.
+// They no longer come up on their own — the author opts in, after a
+// Traitor being murdered by their own pact read as a bug twice over
+// (tests/tr-twists-are-opt-in.test.js) — so a sweep that needs a Double
+// or a Plain Sight to exist has to ask for one. Relying on the draw was
+// always the weaker arrangement: these arms went vacuous the moment the
+// default changed, which is exactly what a state reached by luck does.
+const ALL_MURDER_TWISTS = ['on-trial', 'plain-sight', 'face-to-face',
+  'dungeon', 'double', 'name-your-own'];
+
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);
 
@@ -84,7 +94,8 @@ function season(seed, cfg) {
   // for real instead of being told to skip it.
   if (cfg) Object.assign(seasonConfig, cfg);
   else seasonConfig.trShieldSource = 'mission';
-  const s = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+  const s = playTraitorsSeason({ cast: CAST, traitorCount: 3, seed ,
+    randomMurderTwists: ALL_MURDER_TWISTS });
   // `gs.episodeHistory` is what the VP reads, and it is written by the season
   // as it plays. Copied out because the next season replaces gs wholesale.
   return { season: s, episodes: (gs.episodeHistory || []).map(e => ({ ...e })) };
@@ -1654,7 +1665,8 @@ describe('the ring at the largest cast the show casts', () => {
   const bigTable = () => {
     const big = roster.players.slice(0, 24);
     setPlayers(big);
-    playTraitorsSeason({ cast: big.map(p => p.name), traitorCount: 5, seed: 5 });
+    playTraitorsSeason({ cast: big.map(p => p.name), traitorCount: 5, seed: 5 ,
+      randomMurderTwists: ALL_MURDER_TWISTS });
     const eps = (gs.episodeHistory || []).filter(e => e.tr && e.tr.table);
     // the LAST table of the season: every chair filled, most of them memorial
     const ep = { ...eps[eps.length - 1], num: ++_paintN };
@@ -3443,7 +3455,8 @@ describe('the endgame turns nobody over', () => {
     // never banished with nothing on screen to explain who chose them.
     let revealedTables = 0, voteSlates = 0;
     for (const seed of END_SEEDS) {
-      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed, endgameReveal: true });
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed, endgameReveal: true ,
+        randomMurderTwists: ALL_MURDER_TWISTS });
       const rows = gs.episodeHistory || [];
       const ep = rows[rows.length - 1];
       const eg = ep && ep.tr && ep.tr.endgame;
@@ -7450,7 +7463,8 @@ describe('a hash is turned into a choice in a way that key shape can stand', () 
     let pairs = 0, flips = 0, slates = 0, notes = 0, tables = 0;
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]) {
       setPlayers(ROSTER);
-      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed });
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed ,
+        randomMurderTwists: ALL_MURDER_TWISTS });
       for (const ep of (gs.episodeHistory || []).map(e => ({ ...e }))) {
         if (!(ep.tr && ep.tr.table)) continue;
         // A fresh reveal key per night, so this arm neither reads a screen
@@ -7977,7 +7991,8 @@ describe('both premiere screens name the same host', () => {
       // Play a season presented by one host...
       setPlayers(ROSTER);
       seasonConfig.host = played.value;
-      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 21 });
+      playTraitorsSeason({ cast: CAST, traitorCount: 3, seed: 21 ,
+        randomMurderTwists: ALL_MURDER_TWISTS });
       const ep = { ...gs.episodeHistory[0], num: -510 };
       expect(ep.tr.arrival.host, 'the season did not record which host presented it')
         .toBe(played.value);

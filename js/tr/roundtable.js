@@ -450,20 +450,54 @@ export function knows(speaker, source, ep) {
 // belongs in the bare-accusation path, not dressed up as a cited claim.
 const _BROADCAST_SOURCE = / at the Round Table$/;
 
-/** The evidence `speaker` may cite against `target`, or [] if none is sayable. */
-function _sourcesFor(speaker, target, ep) {
-  const b = believes(speaker, alignmentFactId(target), ep);
-  if (!b) return [];
-  if (b.valence === 'false' || b.valence === 'stale') return [];
-  if (b.sourceType === 'public') return [];
-  if ((b.effectiveConfidence || 0) <= 0) return [];
-  if (typeof b.source === 'string' && _BROADCAST_SOURCE.test(b.source)) return [];
-  return [{
+/**
+ * WHY `speaker` IS NAMING `target`, in the speaker's own terms.
+ *
+ * This used to return an array and an EMPTY array meant "no speech" -- the
+ * accusation was dropped on the floor and the screen printed the name with
+ * nothing under it. Measured across 40 seasons that happened to 381 of 1409
+ * accusations, 27%: better than a quarter of the debate was somebody standing
+ * up, saying a name, and offering the room no reason of any kind.
+ *
+ * The fix is NOT to invent evidence. A speaker who cannot cite a record still
+ * has a reason -- it is just a worse one, and saying which worse one it is is
+ * both honest and better television than silence. So every accusation now
+ * comes back with a `kind`, and only one of the five carries sources:
+ *
+ *   cited      a record the speaker holds and may say out loud
+ *   hearsay    the only thing under it is another player's accusation at this
+ *              same table. `from` is who said it first. THIS IS THE ROOM'S
+ *              ECHO and the format runs on it -- printing it as a bare name
+ *              hid the single most interesting thing about the claim.
+ *   public     a fact the whole room already has, so it is nobody's read and
+ *              persuades nobody
+ *   gone-cold  they held something and it has gone false or stale under them
+ *   feeling    no belief at all: a bond, a manner, a week of small things
+ *
+ * Unchanged: what may be CITED. `public` and `hearsay` are still barred from
+ * the citation path for exactly the reasons they always were -- a turret-tier
+ * fact is not a personal read, and "somebody else said so" is a rumour rather
+ * than evidence. They are now NAMED instead of silently dropped.
+ */
+function _reasonFor(speaker, target, ep) {
+  const cite = b => [{
     factId: alignmentFactId(target),
     subject: target,
     kind: b.sourceType,                       // 'deduced' | 'rumor'
     text: b.source || 'a read they could not fully place',
   }];
+  const b = believes(speaker, alignmentFactId(target), ep);
+  if (!b) return { kind: 'feeling', sources: [] };
+  if (b.valence === 'false' || b.valence === 'stale') return { kind: 'gone-cold', sources: [] };
+  if (b.sourceType === 'public') return { kind: 'public', sources: [] };
+  if ((b.effectiveConfidence || 0) <= 0) return { kind: 'feeling', sources: [] };
+  if (typeof b.source === 'string' && _BROADCAST_SOURCE.test(b.source)) {
+    // `broadcast` writes the source as `${accuser} at the Round Table`, so the
+    // name in front of that suffix is who the room caught it from.
+    const from = String(b.source).replace(_BROADCAST_SOURCE, '').trim();
+    return { kind: 'hearsay', sources: [], from: from || null };
+  }
+  return { kind: 'cited', sources: cite(b) };
 }
 
 /**
@@ -482,8 +516,12 @@ export function speechesFrom(accusations, ep) {
   const living = gs.activePlayers || [];
   const speeches = [];
   for (const a of accusations) {
-    const sources = _sourcesFor(a.accuser, a.target, ep);
-    if (!sources.length) continue;
+    // EVERY accusation gets a record now, cited or not -- see `_reasonFor`.
+    // `sources` stays an array and stays empty on the four uncitable kinds, so
+    // every existing reader of `speech.sources` behaves exactly as before and
+    // only a reader that asks for `reasonKind` sees the difference.
+    const reason = _reasonFor(a.accuser, a.target, ep);
+    const sources = reason.sources;
     const room = living.filter(n => n !== a.accuser && n !== a.target);
     const swayed = room.filter(l => {
       const lb = believes(l, alignmentFactId(a.target), ep);
@@ -494,7 +532,8 @@ export function speechesFrom(accusations, ep) {
       const board = suspicionBoard(l, ep, living);
       return board[0] && board[0].name === a.target && board[0].score > 0;
     });
-    speeches.push({ speaker: a.accuser, target: a.target, sources, swayed, mindChanges });
+    speeches.push({ speaker: a.accuser, target: a.target, sources, swayed, mindChanges,
+      reasonKind: reason.kind, hearsayFrom: reason.from || null });
   }
   return speeches;
 }

@@ -573,6 +573,13 @@ function _tableRecord(ep, { endgame = false } = {}) {
     speeches: (round.speeches || []).map(s => ({
       speaker: s.speaker, target: s.target,
       sources: (s.sources || []).map(src => ({ ...src })),
+      // WHY THIS NAME, when `sources` is empty -- which it is for better than
+      // a quarter of them. See `_reasonFor` in js/tr/roundtable.js. Public on
+      // every layer: `hearsay` names somebody who accused OUT LOUD at this
+      // table, and the other three kinds describe the ABSENCE of a record
+      // rather than any record's contents.
+      reasonKind: s.reasonKind || ((s.sources || []).length ? 'cited' : 'feeling'),
+      hearsayFrom: s.hearsayFrom || null,
       swayed: [...(s.swayed || [])], mindChanges: [...(s.mindChanges || [])] })),
     chosen: round.banished || null,
     dagger: round.dagger ? { ...round.dagger } : null,

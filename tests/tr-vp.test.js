@@ -8094,7 +8094,11 @@ describe('the debate cites sources and shows the votes an argument moved', () =>
     // see the reason, and a Faithful is never handed a reason they do not hold.
     let checked = 0;
     for (const t of MAND) {
-      const speeches = t.ep.tr.table.speeches || [];
+      // CITED speeches only. A speech is now every accusation — the ones with
+      // no citable record carry a `reasonKind` and an empty source list, and
+      // asking those to render a source text they do not have would fail on
+      // the absence rather than on the defect this guards.
+      const speeches = (t.ep.tr.table.speeches || []).filter(sp => (sp.sources || []).length);
       if (!speeches.length) continue;
       const html = tableFullyRevealed(t.ep);
       // At least one speech's source text is on the page.

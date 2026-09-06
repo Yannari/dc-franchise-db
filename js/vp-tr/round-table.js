@@ -1591,6 +1591,17 @@ const ACCUSED_DEFLECT = [
   '{T} answers a name with a name — before you look at me, look at {d}.',
   '{T} turns the whole table around by pointing at {d} and refusing to be the only one on trial.',
 ];
+// AND WHY THAT NAME. The deflection used to end at the name, so the counter --
+// the commonest move at any table -- was pure reflex: somebody accused, and
+// somebody said a name back with nothing under it. When the deflector holds a
+// citable record against the person they are pointing at, it goes on the wood
+// with the name. `{d}` is the name, `{dsrc}` their own stored reason.
+const DEFLECT_SOURCE = [
+  'And {T} is not doing it empty-handed: {dsrc}.',
+  'It is not just a name thrown back. {T} has a reason for {d}, and gives it: {dsrc}.',
+  '{T} puts something under it before anybody can call it a reflex: {dsrc}.',
+  'The room was ready to hear a name and nothing else. What it gets is a reason: {dsrc}.',
+];
 // HOW A SPEAKER PUTS THEIR EVIDENCE ON THE TABLE. `{src}` is the exact reason
 // their belief carries — drawn from the stored source, never invented — so the
 // claim is never "{A} finds {t} suspicious" but a thing that actually happened.
@@ -1601,6 +1612,53 @@ const CLAIM_SOURCE = [
   '{A} puts the reason on the wood where everyone can see it: {src}.',
   'It is not a hunch. {A} points to the thing itself: {src}.',
 ];
+// AND WHEN THERE IS NOTHING TO CITE, WHICH IS BETTER THAN A QUARTER OF THE
+// TIME. These four pools are the counterpart of CLAIM_SOURCE above and exist
+// for the same reason it does: the screen used to print the name and stop, so
+// 27% of the debate was somebody accusing somebody of murder and offering the
+// room no reason of any kind. None of these invents evidence. Each says which
+// KIND of nothing the speaker is working from, which is honest and is a better
+// scene than silence -- the hearsay pool especially, because the room's echo
+// is a thing the format runs on and a bare name hid it completely.
+// Keyed by `reasonKind` from js/tr/roundtable.js `_reasonFor`.
+const NO_SOURCE = {
+  // Somebody else said it first, at this table, and it went round.
+  hearsay: [
+    '{A} cannot point at anything {asub} saw. {Asub} can point at {f}, who said it first, and that is the whole of it.',
+    'Pressed for a reason, {A} gives one: {f} thinks so. That is not evidence and it has still moved the room.',
+    'It came from {f} and it has been going round ever since. {A} is repeating it back at the table it started at.',
+    'The reason is {f}. {A} does not say that out loud, and everybody who was here last night works it out anyway.',
+    '{A} is certain, and every bit of the certainty was handed over by {f} at this same wood.',
+    'Ask {A} where it came from and the answer is a person, not a thing. The person is {f}.',
+    'Every part of this reached {aobj} secondhand, from {f}, and {asub} is delivering it like a discovery.',
+  ],
+  // Something the whole room already has, so it reads as nobody's insight.
+  public: [
+    '{A} offers a reason everybody at this table already had, which persuades exactly nobody.',
+    'It is not a read. It is a thing the whole room watched happen, said back to the room slowly.',
+    '{A} has nothing the rest of them do not, and says it with the confidence of somebody who does.',
+    'Every person here could have made that speech. {A} is the one who chose to.',
+    'The room hears its own knowledge repeated at it and stays exactly where it was.',
+  ],
+  // They had something. It has stopped being true under them.
+  'gone-cold': [
+    '{A} is still working from something that stopped being true days ago, and has not noticed.',
+    'The reason {A} has is out of date. {Asub} says it with all of last week’s certainty.',
+    'That was a good read on Tuesday. {A} is the last person in the castle still holding it.',
+    'Whatever {A} had has gone cold, and {asub} is arguing from the shape it left behind.',
+    '{A} is answering a question the week has already moved past.',
+  ],
+  // No record at all. A bond, a manner, an accumulation of small things.
+  feeling: [
+    '{A} has no reason and does not pretend to have one. It is a feeling, and {A} says so out loud.',
+    'Asked why, {A} cannot say. Not evasively — {asub} genuinely cannot put a thing under it.',
+    'It is a week of very small things and not one of them will survive being said on its own.',
+    '{A} is going on the way {t} has been in the room, which is nothing, and is also the only thing {A} has.',
+    'There is no record behind this. There is a person who has decided, and a room deciding what to do with that.',
+    '{A} admits it is instinct. In this castle that is either the best tool in the room or the worst.',
+  ],
+};
+
 // A LISTENER MOVED. Not because the writer needed a flip — because the claim
 // reached them and it now sits at the top of what they believe. `{who}` is the
 // mover, `{t}` the name they have moved onto.
@@ -2064,8 +2122,14 @@ function _view(rec, observer) {
     // suspicion (never a `public`-tier turret belief; see roundtable.js's
     // `speechesFrom`). `swayed`/`mindChanges` are the listeners it reached and
     // moved. Nothing here is a fact a player at the table could not have heard.
-    speeches: (rec.speeches || []).filter(s => s && s.speaker && s.target
-      && (s.sources || []).length),
+    // A SOURCELESS SPEECH IS NO LONGER DROPPED HERE. It used to be, and the
+    // accusation then reached the screen as a name with nothing under it --
+    // 27% of them. What it carries instead is `reasonKind`, which describes
+    // the ABSENCE of a record rather than any record's contents, so the
+    // observer gating is unchanged: `hearsay` names a player who accused out
+    // loud at this table, and the other three say only that there is nothing
+    // to cite.
+    speeches: (rec.speeches || []).filter(s => s && s.speaker && s.target),
     chosen: rec.chosen || null,
     chosenAlignment: endgame ? null : (rec.chosenAlignment || null),
     truth: (isAudience && !endgame) ? (rec.truth || {}) : null,
@@ -2173,21 +2237,45 @@ function _buildBeats(v) {
   };
   clusters.forEach((c, ci) => {
     const speeches = speechFor.get(c.t) || [];
-    const src = speeches.length ? speeches[0].sources[0] : null;
+    // THE LEAD ACCUSER'S OWN SPEECH, not merely the first one filed against
+    // this name. `lead` is who the card quotes, so citing somebody else's
+    // reason under `lead`'s face would put a sentence in the wrong mouth --
+    // which is the defect the ACCUSE_SAID note two hundred lines up records
+    // being caught by a single read of the output.
+    const leadName = c.acc[0];
+    const mine = speeches.find(sp => sp.speaker === leadName) || speeches[0] || null;
+    const src = mine && (mine.sources || []).length ? mine.sources[0] : null;
     const movers = [...new Set(speeches.flatMap(s => s.mindChanges || []))]
       .filter(n => n !== c.t);
-    const lead = c.acc[0];
+    const lead = leadName;
     const pr = _pr(c.t);
+    const apr = _pr(lead);
     const subs = { A: lead, a: lead, T: c.t, t: c.t, sub: pr.sub, Sub: pr.Sub,
-      obj: pr.obj, pos: pr.pos, src: src ? _esc(src.text) : '' };
+      obj: pr.obj, pos: pr.pos, src: src ? _esc(src.text) : '',
+      // THE ACCUSER'S pronouns, under their own keys. `sub`/`pos` above are
+      // the ACCUSED's and always have been, so a sentence about the person
+      // doing the accusing had no pronoun available and had to say the name
+      // again -- three times in two sentences, in the rendered output.
+      asub: apr.sub, Asub: apr.Sub, aobj: apr.obj, apos: apr.pos,
+      f: mine && mine.hearsayFrom ? _esc(mine.hearsayFrom) : '' };
     let inner = '<div class="rt-accused">' + _av(c.t, 54)
       + '<span class="rt-accused-nm">' + _esc(c.t) + '</span>'
       + '<span class="rt-accused-ct">' + c.acc.length
       + (c.acc.length === 1 ? ' voice' : ' voices') + '<br>at this name</span></div>';
     inner += '<p>' + _fill(_pick(ACCUSE_LINES, key + '|acc|' + c.t), subs) + '</p>';
     inner += _said(lead, _fill(_pick(ACCUSE_SAID, key + '|say|' + c.t), subs));
-    // THE SOURCE, CITED — only when the speaker actually holds one.
-    if (src) inner += '<p>' + _fill(_pick(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
+    // THE SOURCE, CITED — only when the speaker actually holds one. And when
+    // they do not, WHICH KIND OF NOTHING they are working from, rather than
+    // the name-and-silence this printed before. `hearsay` needs a name it can
+    // point at, so it falls back to the `feeling` pool without one.
+    if (src) {
+      inner += '<p>' + _fill(_pick(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
+    } else {
+      let rk = (mine && mine.reasonKind) || 'feeling';
+      if (rk === 'hearsay' && !subs.f) rk = 'feeling';
+      const pool = NO_SOURCE[rk] || NO_SOURCE.feeling;
+      inner += '<p>' + _fill(_pick(pool, key + '|nosrc|' + rk + '|' + c.t), subs) + '</p>';
+    }
     if (c.acc.length > 1) {
       inner += '<div class="rt-faces">'
         + c.acc.slice(0, 8).map(n => _faceChip(n, 26)).join('') + '</div>';
@@ -2200,8 +2288,17 @@ function _buildBeats(v) {
     inner += _said(c.t, pickDefence(key + '|def|' + c.t));
     const deflectTo = [...byTarget.entries()].find(([tgt, accs]) => tgt !== c.t && accs.includes(c.t));
     if (deflectTo) {
-      inner += '<p>' + _fill(_pick(ACCUSED_DEFLECT, key + '|dfl|' + c.t),
-        { ...subs, d: _esc(deflectTo[0]) }) + '</p>';
+      const dsubs = { ...subs, d: _esc(deflectTo[0]) };
+      inner += '<p>' + _fill(_pick(ACCUSED_DEFLECT, key + '|dfl|' + c.t), dsubs) + '</p>';
+      // AND THE REASON FOR IT, when the deflector holds one. `v.speeches` is
+      // the whole table's, so this is the deflector's OWN record against the
+      // name they just said — never the reason somebody else has for it.
+      const back = v.speeches.find(sp => sp.speaker === c.t && sp.target === deflectTo[0]
+        && (sp.sources || []).length);
+      if (back) {
+        inner += '<p>' + _fill(_pick(DEFLECT_SOURCE, key + '|dsrc|' + c.t),
+          { ...dsubs, dsrc: _esc(back.sources[0].text) }) + '</p>';
+      }
     }
     // THE AUDIENCE'S PRIVILEGE. `v.truth` is null on every other layer and at
     // every finale table, so this block simply does not exist for them.

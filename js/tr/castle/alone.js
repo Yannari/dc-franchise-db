@@ -1104,7 +1104,7 @@ const SAID_NOTHING_LINES = {
     'It is not a secret any more. It is a gift {a} has not decided when to give.',
     '{a} has the name of the recipient and is waiting for a corridor rather than a room.',
     'Telling one person makes an ally. Telling two makes a rumour. {a} knows the difference.',
-    '{a} rehearsed how to bring it up so that it sounds like it just occurred to {obj}.',
+    '{a} rehearsed how to share the suspicion so that it sounds like it just occurred to {obj}.',
     '{a} chose somebody who will be grateful rather than somebody who will be useful, and knows that was sentimental.',
     'The whole evening was {a} standing near one person waiting for everybody else to leave.',
     '{a} will tell them tomorrow, on the road, where nobody can hear it.',

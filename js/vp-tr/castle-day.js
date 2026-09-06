@@ -388,7 +388,7 @@ const ESTABLISH_PAIR = {
 /** Nobody else in the room, which is a scene in its own right and not a fault. */
 const ESTABLISH_SOLO = [
   'There is nobody at {loc} but {a}, {when}.',
-  '{a} has {loc} to themselves, {when}, and nobody to perform for.',
+  '{a} is alone at {loc}, {when}, with nobody to perform for.',
   '{when}, {a} stops at {loc} on their own and stays there.',
   'Nobody else is at {loc}. {a} is there alone, {when}.',
   '{a} is at {loc} with the door shut and nobody on the other side of it, {when}.',
@@ -1581,7 +1581,7 @@ const REACT_SINGLE = {
 // for a vote that is coming, that is the only closing beat that is true.
 const FALLBACK_SOLO = {
   smooth: [
-    '{a} says nothing about what {a} worked out and goes down to dinner a step nearer a name.',
+    '{a} keeps what {a} worked out to {ref} and goes down to dinner closer to identifying a traitor.',
     'Nobody watched {a} work that out, which is the whole value of it.',
     '{a} carries the information downstairs and intends to use it at the right table.',
     'None of that helps {a} tonight. {a} is playing a longer game.',

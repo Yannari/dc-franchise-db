@@ -581,7 +581,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(178);
+    expect(EVENTS.length).toBe(183);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -617,7 +617,10 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continues the trust story between its pair where one exists and opens
     // one where it does not — an afternoon two people spent together is the
     // same story as whatever they already had, not a rival one.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(101);
+    // 101 -> 106: all five carry-on events advance a thread, which is the
+    // whole reason they exist — each one refuses to fire without a story to
+    // continue, so unlike an ordinary event none of them can open one.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(106);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -625,7 +628,12 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // already has a day behind it and cites those days; the other three
     // read the bond graph, the column or last night's accusations, none of
     // which is residue.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(64);
+    // 64 -> 69 on 2026-09-06: all five carry-on events cite residue, and for
+    // a structural reason rather than a stylistic one. They exist to
+    // CONTINUE a story, they go through `arcContinue`, and a continuation
+    // that does not say what it is continuing is the disconnected-vignette
+    // shape they were written against. The day tab is the payload.
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(69);
   });
 
   it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
@@ -682,7 +690,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // fewer places where the castle can start something it can never pick up
     // again — which is the number on this line that actually means something.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(11);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(6);
     // 17 -> 20 on 2026-09-05: the same three cells that left `zero` above
     // arrived here, because one advancer is what they gained. The two
     // numbers move together by construction and it is worth reading them
@@ -706,7 +714,12 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       // when the group events landed in them, which is the direction this
       // number should move -- a cell with one advancer can continue a
       // thread at most once every five rounds.
-      + 'living here can be advanced at most once every five rounds').toBe(18);
+      // 18 -> 23: the five cells that left the zero list arrived here, which
+      // is the movement to expect and is not yet the movement wanted. A cell
+      // with ONE advancer can continue a thread at most once every five
+      // rounds; a second event in each of those five is what would move them
+      // on, and is not written.
+      + 'living here can be advanced at most once every five rounds').toBe(23);
     // 24 -> 26 on 2026-09-05: two more cells reached two advancers when the
     // group events landed, which is the same movement as the `one` count
     // falling above and should be read with it.
@@ -777,6 +790,13 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continue an existing story rather than opening a new one, so the cell
     // that held the pool's most-quoted single-line event now has an advancer
     // in it. Nothing was added to this list.
+    // AND FIVE MORE LEFT IT ON 2026-09-06 — `cover|morning`, `grief|morning`,
+    // `romance|morning`, `suspicion|journey-out` and `testing|journey-out`,
+    // the five js/tr/castle/carry-on.js was written for. What is left is
+    // three `callback` cells, which fire zero in a debut season by design
+    // and need a returnee fixture rather than an event, and two that are
+    // next.
+    //
     // THREE NAMES LEFT THIS LIST ON 2026-09-05 and none joined it:
     // `romance|after-table`, `romance|journey-back` and `romance|journey-out`.
     // The family had no event at all on the road and one that could not
@@ -789,12 +809,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       'callback|journey-out',
       'callback|morning',
       'cover|journey-out',
-      'cover|morning',
       'grief|journey-out',
-      'grief|morning',
-      'romance|morning',
-      'suspicion|journey-out',
-      'testing|journey-out',
       'testing|morning',
     ]);
   });
@@ -1440,6 +1455,27 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 178 -> 183 AND 750 -> 770 on 2026-09-06, AND THE NUMBER THIS BATCH IS
+// ABOUT IS THE ZERO-ADVANCER COUNT BELOW: 11 -> 6.
+//
+// Measured first, the share of each window's scenes that CONTINUE a story
+// rather than open one, over 30 played seasons: night 67%, after-table 66%,
+// journey-back 58%, evening 54%, dawn 53% — and MORNING 42%, JOURNEY-OUT 44%.
+// A continued scene is the one that arrives with a day tab on it, so those
+// two hours read as disconnected vignettes next to the evening.
+//
+// The cause was not a weight. Ten of the eleven cells on the zero-advancer
+// list were in those two columns, so a story opened there could never be
+// picked up there again — a suspicion formed on the road out had to wait for
+// the evening. js/tr/castle/carry-on.js is five events that REFUSE TO FIRE
+// WITHOUT ONE: each weight() checks findOpenThread and returns 0, because an
+// event written to fill an advancer hole that spends half its firings opening
+// new threads has not filled it.
+//
+// After: morning 45%, journey-out 47%. A modest move for five events, and
+// the honest reading is that the gate is doing the limiting — these can only
+// win a draw when the pair convened happens to hold the right kind of story.
+//
 // 174 -> 178 AND 734 -> 750 on 2026-09-05. mission-fallout.js held fourteen
 // events and, read by their bond direction, every one of them was about
 // something the afternoon TOOK: "what cost us", "a body short", "who was
@@ -1621,6 +1657,26 @@ const BRANCHES = [
   'callback-warns-newbies:defended-them-instead',
   'callback-warns-newbies:used-it-immediately',
   'callback-warns-newbies:warned',
+  'carry-account-again:somebody-else-checked',
+  'carry-account-again:stopped-telling-it',
+  'carry-account-again:the-story-grew',
+  'carry-account-again:told-it-the-same',
+  'carry-doubt-on-the-road:found-the-hole',
+  'carry-doubt-on-the-road:let-it-cool',
+  'carry-doubt-on-the-road:tested-it-again',
+  'carry-doubt-on-the-road:was-talked-round',
+  'carry-grief-days-later:put-it-away',
+  'carry-grief-days-later:shared-it-properly',
+  'carry-grief-days-later:still-carrying-it',
+  'carry-grief-days-later:turned-it-to-use',
+  'carry-the-morning-after:admitted-it-in-daylight',
+  'carry-the-morning-after:nothing-changed-in-daylight',
+  'carry-the-morning-after:one-of-them-retreated',
+  'carry-the-morning-after:somebody-saw',
+  'carry-the-second-test:failed-it-this-time',
+  'carry-the-second-test:passed-it-again',
+  'carry-the-second-test:refused-to-play',
+  'carry-the-second-test:turned-it-around',
   'confront-about-the-vote:blamed-somebody-else',
   'confront-about-the-vote:owned-it',
   'confront-about-the-vote:turned-it-on-them',

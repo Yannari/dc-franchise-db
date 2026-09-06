@@ -408,7 +408,7 @@ const AFTER_GROUP_LINES = {
     '{a} and {b} both saw what {c} wrote and neither of them said a word about it.',
     'It is a favour, and {c} knows exactly how large a favour it is.',
     'They let it go, in front of each other, which makes it a shared decision.',
-    'Two people covering for a third is an alliance whether anybody names it or not.',
+    'Two people who agree without discussing it to say nothing about a third are an alliance, whether anybody names it or not.',
     'Nothing was agreed. All three of them understood it perfectly.',
   ],
   'went-to-bed-on-it': [

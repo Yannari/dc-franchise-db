@@ -636,6 +636,15 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // ── THE CONTINUATIONS (js/tr/castle/carry-on.js, 2026-09-06) ────────
+  //
+  // Five events written to fill the advancer holes in `morning` and
+  // `journey-out`. These are the branches where the person opposite is
+  // under something: an account that grew, a test failed the second time,
+  // a gap found on the road, a dead player enlisted into an argument.
+  'failed-it-this-time', 'found-the-hole', 'one-of-them-retreated',
+  'refused-to-play', 'somebody-else-checked', 'stopped-telling-it',
+  'tested-it-again', 'the-story-grew', 'turned-it-to-use',
   // ── THE AFTERNOON THAT WENT WELL (js/tr/castle/mission-fallout.js) ──
   //
   // The three from that batch where somebody IS under something: two people
@@ -1042,6 +1051,14 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── AND THE CONTINUATIONS THAT PRESS NOBODY ─────────────────────────
+  //
+  // Same five events. Grief shared without either of them meaning anything
+  // by it, an account told the same way twice, a thing said again in
+  // daylight, a doubt rested rather than asked again.
+  'admitted-it-in-daylight', 'let-it-cool', 'nothing-changed-in-daylight',
+  'passed-it-again', 'shared-it-properly', 'still-carrying-it',
+  'told-it-the-same', 'was-talked-round',
   // ── AND THE WARM HALF OF THE SAME FOUR EVENTS ───────────────────────
   //
   // The register this file did not have. Its fourteen existing events run

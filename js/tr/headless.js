@@ -82,6 +82,11 @@ import '../tr/castle/confrontation.js';
 // nothing else, so the composer's `group` mode (js/vp-tr/castle-day.js:1461,
 // with its own ESTABLISH_GROUP pool) had never once run in a played season.
 import '../tr/castle/group.js';
+// The hours that could only ever START something. `morning` and `journey-out`
+// ran at 42% and 44% continued scenes against 54-67% everywhere else, because
+// ten of the eleven (family x window) cells with no advancer at all are in
+// those two columns. These five refuse to fire without a story to continue.
+import '../tr/castle/carry-on.js';
 // The morning nobody was taken. Every other dawn scene in the pool needs a
 // body; a blocked night has none, and had no scene at all.
 import '../tr/castle/quiet-night.js';

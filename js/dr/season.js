@@ -282,7 +282,7 @@ export function runFinale(state, cfg, ctx) {
  * `config` is the setup screen's: drPremiere, drFinale, drImmunity,
  * drDoubleShantay, drDoubleSashay, drSchedule, drJudgeWeights.
  */
-export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, popDelta = null }) {
+export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, addBond = null, popDelta = null }) {
   const rng = rngFor(seed);
   const state = initDragState({ cast, seed, rng });
   const players = Object.fromEntries(cast.map(p => [p.name, p]));
@@ -293,7 +293,10 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, po
     state.popularity[n] = (state.popularity[n] || 0) + d;
     if (popDelta) popDelta(n, d);
   };
-  const ctx = { rng, players, bond, addBond: () => {}, popDelta: writePop };
+  // Bonds move during a maxi: somebody helps, somebody sabotages, a captain
+  // dumps a rival. A headless season with no relationship layer passes nothing
+  // and those writes go nowhere, which is correct rather than a gap.
+  const ctx = { rng, players, bond, addBond: addBond || (() => {}), popDelta: writePop };
 
   const finaleType = config.drFinale || 'top4';
   const premiere = config.drPremiere || 'standard';

@@ -19,7 +19,7 @@
 // Drop the import from js/main.js and the show silently un-ships with every
 // test still green.
 import { gs, players, seasonConfig, seasonFormat } from './core.js';
-import { getPerceivedBond } from './bonds.js';
+import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
 
 export const isDragSeason = () => seasonFormat(seasonConfig) === 'drag-race';
@@ -61,6 +61,9 @@ function _playWholeSeason() {
     seed: _seed(),
     config: _config(),
     bond,
+    // Real bonds, so helping somebody sew is remembered next week and by every
+    // other system that reads the relationship layer.
+    addBond: (a, b, d) => { try { addBond(a, b, d); } catch { /* no relationship layer yet */ } },
     // The live ledger, written alongside the season's own copy so a played
     // season and a headless one carry the same numbers.
     popDelta: (n, d) => {

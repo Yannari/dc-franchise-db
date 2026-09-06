@@ -29,9 +29,10 @@ import { miniById } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
 import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
-import { performQueen, runwayScore, blendScore, noise } from './perform.js';
+import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
+import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
 
 /** The running order. A scene's `step` is always one of these. */
@@ -65,47 +66,6 @@ export function reactionFor({ expected, received, temperament = 5, boldness = 5,
   return rng() < 0.4 ? 'idgaf' : (gap > 0 ? 'sadness' : 'relief');
 }
 
-/**
- * Who gets what. Plan 2 replaces this with a module per challenge type; this
- * version is deliberately plain so the spine can be tested on its own.
- */
-function assignRoles(maxi, living, rng, miniWinner) {
-  const order = [...living].sort(() => rng() - 0.5);
-  if (miniWinner && order.includes(miniWinner)) {
-    order.splice(order.indexOf(miniWinner), 1);
-    order.unshift(miniWinner);
-  }
-
-  const teams = [];
-  if (maxi.format === 'teams') {
-    const half = Math.ceil(order.length / 2);
-    teams.push(order.slice(0, half), order.slice(half));
-  } else if (maxi.format === 'cast') {
-    teams.push([...order]);
-  } else if (maxi.format === 'pairs') {
-    for (let i = 0; i < order.length; i += 2) teams.push(order.slice(i, i + 2));
-  }
-
-  const roles = {};
-  order.forEach((n, i) => {
-    roles[n] = !maxi.roles ? 'standard'
-      : i === 0 ? 'lead'
-        : i < 3 ? 'featured'
-          : i < Math.max(3, order.length - 2) ? 'standard' : 'ensemble';
-  });
-  return { roles, teams, order };
-}
-
-/** Craft-only preparation. Plan 2 adds help, sabotage and the walkthrough. */
-function prepareFor(player, maxi) {
-  const d = dragOf(player);
-  const s = player.stats || {};
-  const num = k => (Number.isFinite(Number(s[k])) ? Number(s[k]) : 5);
-  return (blendScore(d, maxi.blend) - 5) * 0.1
-    + (num('mental') - 5) * 0.03
-    + (num('strategic') - 5) * 0.02;
-}
-
 export function runDragWeek(state, cfg, ctx) {
   const { rng, players, bond = () => 0, popDelta = () => {} } = ctx;
   const maxi = maxiById(cfg.maxiId);
@@ -137,39 +97,26 @@ export function runDragWeek(state, cfg, ctx) {
     }
   }
 
-  // 4–5. The announcement and the draft.
+  // 4–7 / 11. The announcement, the draft, the werk room and the challenge —
+  // all of it the challenge module's, through the spine. The scenes it returns
+  // carry their own steps, so a type that performs on the main stage lands in
+  // `maxi-main` and one that films beforehand lands in `maxi-pre`, without
+  // this file knowing which is which.
   say('maxi-announce', 'maxi-announce', { challenge: maxi.name, desc: maxi.desc });
-  const assignment = assignRoles(maxi, living, rng, miniWinner);
-  say('choice', 'choice', { order: assignment.order, teams: assignment.teams, roles: assignment.roles });
 
-  // 6. Preparation.
-  const prep = Object.fromEntries(living.map(n => [n, prepareFor(P(n), maxi)]));
-  say('prep', 'prep', {});
-
-  // 7 / 11. The challenge itself, wherever it belongs.
-  const performances = {};
-  const runMaxi = () => {
-    for (const n of living) {
-      const team = assignment.teams.find(t => t.includes(n)) || null;
-      const chemistry = team && team.length > 1
-        ? team.filter(o => o !== n).reduce((s, o) => s + bond(n, o), 0) / (team.length - 1) * 0.1
-        : 0;
-      const r = performQueen({
-        player: P(n), maxi, role: assignment.roles[n], prep: prep[n],
-        chemistry, record: state.record[n], rng,
-      });
-      performances[n] = {
-        ...r,
-        role: assignment.roles[n],
-        team: team ? assignment.teams.indexOf(team) : null,
-        detail: {},
-      };
-    }
+  const maxiCtx = {
+    living, players, maxi, rng, state, cfg, miniWinner, mini,
+    bond,
+    addBond: ctx.addBond || (() => {}),
+    popDelta,
   };
-  if (maxi.stage === 'pre') {
-    runMaxi();
-    say('maxi-pre', 'maxi-performance', { challenge: maxi.name });
-  }
+  const M = runMaxi(maxiCtx);
+  applyEvents(M.events, maxiCtx);
+  const assignment = M.assignment;
+  const prep = M.prep;
+  const performances = M.performances;
+  const maxiEvents = M.events;
+  for (const sc of M.scenes) scenes.push({ ...sc, text: '' });
 
   // 8–10. Elimination day, the panel, the runway.
   say('werk-elim-day', 'werk-elim-day', { living: [...living] });
@@ -182,21 +129,23 @@ export function runDragWeek(state, cfg, ctx) {
   // is the look she BUILT, which is judged on the building rather than on
   // whether the theme suited her.
   const categoryStyles = cfg.categoryStyles || runwayById(category)?.styles || [];
-  const runway = { category, categoryStyles };
+  // A module may replace the runway entirely: a Ball is three walks, a
+  // makeover walks a pair. Anything that does not gets the one themed walk.
+  const walks = M.runwayOverride?.walks
+    || [{ category, sewn: maxi.runway === 'design' || maxi.runway === 'ball', categoryStyles }];
+  const runway = { category, categoryStyles, walks: walks.map(w => w.category) };
   for (const n of living) {
-    const sewn = maxi.runway === 'design' || maxi.runway === 'ball';
-    const r = runwayScore({
-      player: P(n), category, sewn,
-      categoryStyles: sewn ? [] : categoryStyles, rng,
-    });
-    runway[n] = { score: r.score, fit: r.fit };
+    const scored = walks.map(w => runwayScore({
+      player: P(n), category: w.category, sewn: !!w.sewn,
+      categoryStyles: w.sewn ? [] : (w.categoryStyles || []), rng,
+    }));
+    runway[n] = {
+      score: Math.round(scored.reduce((t, x) => t + x.score, 0) / scored.length * 100) / 100,
+      fit: scored[0].fit,
+      walks: scored.map(x => x.score),
+    };
   }
   say('runway', 'runway', { category });
-
-  if (maxi.stage === 'main') {
-    runMaxi();
-    say('maxi-main', 'maxi-performance', { challenge: maxi.name });
-  }
 
   // 12. The panel sees, and the host decides.
   const entries = living.map(n => ({
@@ -362,6 +311,22 @@ export function runDragWeek(state, cfg, ctx) {
   }));
   if (exitRows.length) say('exit', 'exit', { exits: exitRows });
 
+  // ── THE RUNNING ORDER IS THE WEEK'S, NOT THE MODULE'S ─────────────
+  //
+  // A challenge module hands back all of its scenes at once, so a type that
+  // performs on the main stage would otherwise be filed before the runway
+  // simply because `runMaxi` returned first. Each scene declares which STEP it
+  // belongs to and the week sorts by that, which is also what lets a module
+  // emit a werk-room beat and a main-stage beat in the same breath.
+  //
+  // A stable sort, so two scenes in the same step keep the order the module
+  // wrote them in — inside a step, sequence is the module's business.
+  const stepIndex = st => {
+    const i = SCENE_STEPS.indexOf(st);
+    return i === -1 ? SCENE_STEPS.length : i;
+  };
+  scenes.sort((a, b) => stepIndex(a.step) - stepIndex(b.step));
+
   const row = {
     num: cfg.num,
     format: 'drag-race',
@@ -385,6 +350,7 @@ export function runDragWeek(state, cfg, ctx) {
       call,
       reactions,
       lipsync,
+      events: maxiEvents,
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],
       scenes,

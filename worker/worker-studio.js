@@ -61,7 +61,7 @@ const VOICE_PATH = 'voice-profiles.json';
 const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote'];
+const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag'];
 
 export default {
   async fetch(request, env) {
@@ -614,6 +614,42 @@ const ARCHETYPES = new Set(['mastermind', 'schemer', 'hothead', 'challenge-beast
   'social-butterfly', 'loyal-soldier', 'wildcard', 'chaos-agent', 'floater',
   'underdog', 'hero', 'villain', 'goat', 'perceptive-player', 'showmancer']);
 
+// ── the Drag Race craft block ──────────────────────────────────────────
+//
+// Stored as ONE JSON column rather than seven more INTEGER ones. The nine
+// stats are columns because "most strategic characters" is a real SQL
+// question; nothing sorts a leaderboard by lipsync, the block is read as a
+// unit by the judging pipeline, and it carries a style string and a trait
+// list that would not fit the numeric shape anyway.
+const DRAG_KEYS = ['acting', 'comedy', 'dance', 'design', 'runway', 'lipsync', 'singing'];
+const DRAG_STYLES = new Set(['pageant', 'comedy', 'fashion', 'camp', 'club-kid', 'spooky',
+  'broadway', 'dancer', 'glamour', 'art']);
+
+/**
+ * Validate and serialise the craft block, or return null.
+ *
+ * Same rule as the stats above: only known keys survive, so a typo like
+ * "improv" — a stat this show deliberately folded into acting — can never
+ * become a field of garbage that later reads as a real number.
+ */
+function dragToJson(raw) {
+  if (raw == null) return null;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new ValidationError('drag must be an object');
+  }
+  const clean = {};
+  for (const k of DRAG_KEYS) {
+    const n = Number(raw[k]);
+    if (Number.isFinite(n)) clean[k] = Math.max(1, Math.min(10, Math.round(n)));
+  }
+  if (typeof raw.style === 'string' && DRAG_STYLES.has(raw.style)) clean.style = raw.style;
+  if (Array.isArray(raw.traits)) {
+    clean.traits = raw.traits.filter(t => typeof t === 'string' && t).slice(0, 3);
+  }
+  if (typeof raw.voice === 'string' && raw.voice.trim()) clean.voice = raw.voice.trim();
+  return Object.keys(clean).length ? JSON.stringify(clean) : null;
+}
+
 function rosterRowToJson(r) {
   const stats = {};
   for (const k of STAT_KEYS) if (r[k] != null) stats[k] = r[k];
@@ -639,6 +675,15 @@ function rosterRowToJson(r) {
   // franchise_roster.json wholesale FROM this table, so a field the database
   // never hears about is deleted the next time somebody presses the button.
   if (r.continuity_note) out.continuityNote = r.continuity_note;
+  // The craft block, for the show that scores it. Same reasoning as the
+  // continuity note directly above: publish rebuilds the roster file FROM this
+  // table, so a field read back here is a field that survives the button.
+  if (r.drag) {
+    try {
+      const drag = JSON.parse(r.drag);
+      if (drag && typeof drag === 'object' && !Array.isArray(drag)) out.drag = drag;
+    } catch { /* malformed legacy block is omitted rather than published broken */ }
+  }
   // The bio, as fields. Published alongside the rest so the static site can ask
   // demographic questions without reaching for D1 — and so the answer on the
   // site is the same one the database would give.
@@ -731,6 +776,8 @@ async function rosterSave(env, payload) {
     profileSources = JSON.stringify(payload.profileSources);
   }
 
+  const drag = dragToJson(payload.drag);
+
   const d = db(env);
   const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
 
@@ -738,9 +785,9 @@ async function rosterSave(env, payload) {
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
                          voice,profile_sources,continuity_note,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
-                         casting_interview,
+                         casting_interview,drag,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
@@ -753,6 +800,7 @@ async function rosterSave(env, payload) {
        descriptor=excluded.descriptor, backstory=excluded.backstory,
        personality=excluded.personality,
        casting_interview=excluded.casting_interview,
+       drag=excluded.drag,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -765,6 +813,7 @@ async function rosterSave(env, payload) {
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),
     text(payload.castingInterview),
+    drag,
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();

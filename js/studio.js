@@ -97,6 +97,27 @@ let _casts = [];            // named collections {id,name,slugs[]}
 let _activeCast = null;     // id of the cast currently being composed
 const _statOf = k => (_draft && _draft.stats[k]) || 5;
 
+// ── the Drag Race craft block ──────────────────────────────────────────
+//
+// Authored per character and read only by that show's judging pipeline. Kept
+// out of the nine stats on purpose: those are the PERSON and every show reads
+// them, these are what a panel scores. See js/dr/queen.js.
+const DRAG_KEYS = ['acting', 'comedy', 'dance', 'design', 'runway', 'lipsync', 'singing'];
+const DRAG_STYLE_LIST = ['pageant', 'comedy', 'fashion', 'camp', 'club-kid', 'spooky',
+  'broadway', 'dancer', 'glamour', 'art'];
+const _emptyDrag = () => ({
+  ...Object.fromEntries(DRAG_KEYS.map(k => [k, 5])), style: '', traits: [], voice: '',
+});
+// Whether anything was actually authored. An untouched block must NOT be sent:
+// a row of default fives is indistinguishable from a considered choice, and
+// storing it would claim every legacy character had been given a craft line.
+const _hasDrag = d => !!d && !!d.drag && (
+  DRAG_KEYS.some(k => Number(d.drag[k]) !== 5)
+  || !!d.drag.style
+  || (Array.isArray(d.drag.traits) && d.drag.traits.length)
+  || !!(d.drag.voice || '').trim());
+const _dragOf = k => (_draft && _draft.drag && _draft.drag[k]) || 5;
+
 // ── IndexedDB (rich store) ──────────────────────────────────────────────
 let _dbP = null;
 function _db() {
@@ -151,6 +172,7 @@ function _blankChar() {
     interview: {}, profileSources:{},
     _editingSlug: null,
     voice:'', avatarDataUri:'', portraits: [], removePortraits: [], stats: Object.fromEntries(STAT_KEYS.map(k => [k, 5])),
+    drag: _emptyDrag(),
   };
 }
 
@@ -1123,6 +1145,7 @@ async function _editBySlug(slug) {
     name: base.name, slug: base.slug, gender: base.gender || 'nb',
     sexuality: pick(base.sexuality, rich && rich.sexuality, parsed.sexuality, 'straight'),
     archetype: base.archetype || '', stats: { ...Object.fromEntries(STAT_KEYS.map(k => [k, 5])), ...(base.stats || {}) },
+    drag: { ..._emptyDrag(), ...(base.drag || {}) },
     age: pick(base.age, rich && rich.age, parsed.age),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
@@ -1597,6 +1620,23 @@ function _renderEditor() {
         <div class="st-radar-wrap"><canvas id="st-radar" width="220" height="220"></canvas></div>
       </div>
 
+      <details class="st-drag" id="st-drag-panel"${_hasDrag(d) ? ' open' : ''}>
+        <summary>Drag Race — craft <span class="st-hint">only this show reads these</span></summary>
+        <div class="st-sliders">${DRAG_KEYS.map(_dragSliderHTML).join('')}</div>
+        <label class="st-l">Drag style <span class="st-hint">what she is known for; blank derives it from the strongest craft</span>
+          <select class="st-input" id="st-f-drag-style">
+            <option value="">— derive from her stats —</option>
+            ${DRAG_STYLE_LIST.map(x => `<option value="${x}"${d.drag && d.drag.style === x ? ' selected' : ''}>${x}</option>`).join('')}
+          </select>
+        </label>
+        <label class="st-l">Signature traits <span class="st-hint">up to three, comma separated — padded, bearded, big-wigs, seamstress, wit…</span>
+          <input class="st-input" id="st-f-drag-traits" value="${_esc(((d.drag && d.drag.traits) || []).join(', '))}">
+        </label>
+        <label class="st-l">Persona voice <span class="st-hint">how the QUEEN talks on the main stage, if that differs from the person</span>
+          <textarea class="st-input st-area" id="st-f-drag-voice" rows="2">${_esc((d.drag && d.drag.voice) || '')}</textarea>
+        </label>
+      </details>
+
       <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — the bio line below is added automatically</span>
         <textarea class="st-input st-area" id="st-f-voice" rows="3" placeholder="e.g. Minimal, calm and dry; lets people underestimate the pretty one…">${_esc(d.voice)}</textarea>
       </label>
@@ -1827,6 +1867,19 @@ function _renderEditor() {
   ed.querySelectorAll('.st-slider').forEach(sl => sl.addEventListener('input', e => {
     const k = e.target.dataset.k; d.stats[k] = +e.target.value; _updateStatUI(k); _drawRadar(); _updateRead();
   }));
+  // craft (Drag Race). Its own attribute, so the nine-stat handler above never
+  // sees these and never writes one of them into d.stats.
+  ed.querySelectorAll('input[data-dk]').forEach(sl => sl.addEventListener('input', e => {
+    const k = e.target.dataset.dk;
+    d.drag[k] = +e.target.value;
+    const row = ed.querySelector(`.st-stat[data-dk="${k}"] .st-stat-val`);
+    if (row) { row.textContent = d.drag[k]; row.style.color = _statHue(d.drag[k]); }
+  }));
+  ed.querySelector('#st-f-drag-style')?.addEventListener('change', e => { d.drag.style = e.target.value; });
+  ed.querySelector('#st-f-drag-traits')?.addEventListener('input', e => {
+    d.drag.traits = e.target.value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 3);
+  });
+  ed.querySelector('#st-f-drag-voice')?.addEventListener('input', e => { d.drag.voice = e.target.value; });
   ed.querySelector('#st-seed').addEventListener('click', () => {
     if (!d.archetype) { _toast('Pick an archetype first', 'warn'); return; }
     d.stats = { ...ARCH_PRESET[d.archetype] }; _syncSliders(); _drawRadar(); _updateRead();
@@ -2332,6 +2385,17 @@ function _sliderHTML(k) {
     <span class="st-stat-val" style="color:${_statHue(v)}">${v}</span>
   </div>`;
 }
+// The same row as a stat slider, on its own data attribute so the two sets of
+// handlers can never cross. `data-dk` is what tests/dr-studio-drag.test.js
+// looks for.
+function _dragSliderHTML(k) {
+  const v = _dragOf(k);
+  return `<div class="st-stat" data-dk="${k}">
+    <span class="st-stat-lab">${k.slice(0, 3).toUpperCase()}</span>
+    <input type="range" data-dk="${k}" min="1" max="10" step="1" value="${v}">
+    <span class="st-stat-val" style="color:${_statHue(v)}">${v}</span>
+  </div>`;
+}
 function _updateStatUI(k) {
   const row = document.querySelector(`.st-stat[data-k="${k}"]`);
   if (!row) return;
@@ -2667,6 +2731,10 @@ async function _save() {
   const entry = { name: d.name, slug: d.slug, gender: d.gender, sexuality: d.sexuality,
     archetype: d.archetype, stats: { ...d.stats }, voice: d.voice,
     profileSources: d.profileSources, ...bio };
+  // Sent only when something was authored. An untouched block of fives would
+  // claim every character has a considered craft line, and the roster file is
+  // read by hand.
+  if (_hasDrag(d)) entry.drag = { ...d.drag, traits: [...(d.drag.traits || [])] };
 
   // 1) live projection into the roster the Cast Builder reads
   const arr = _roster().slice();

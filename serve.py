@@ -35,7 +35,11 @@ SEASONS_DIR = os.path.join(ROOT, 'data', 'seasons')
 PORTRAIT_SLUG = r'[a-z0-9][a-z0-9-]*'   # a portrait id / filename stem
 SLUG_RE = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 
-ROSTER_FIELDS = ('name', 'slug', 'gender', 'sexuality', 'archetype', 'stats')
+# 'drag' is the Drag Race craft block: seven 1-10 stats, a style, up to three
+# traits and a persona voice, stored as a nested object. It is here for the same
+# reason 'stats' is — a field this list does not name is dropped on every local
+# save, which looks exactly like the field never having been typed.
+ROSTER_FIELDS = ('name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'drag')
 
 
 def _read_json(path, default):

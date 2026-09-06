@@ -1,0 +1,25 @@
+-- ══════════════════════════════════════════════════════════════════════
+-- roster_drag_migration.sql — the Drag Race craft block
+-- ══════════════════════════════════════════════════════════════════════
+--
+-- ONE JSON COLUMN, not seven INTEGER ones, and the reason is the opposite of
+-- the reason the nine stats got real columns. Those are columns because
+-- "most strategic characters" is a query somebody wants to run in SQL. Nothing
+-- sorts a leaderboard by lipsync: the craft block is read as a unit by the
+-- judging pipeline and never queried a stat at a time. It also carries a style
+-- string and a trait list, which do not fit the same shape as the numbers.
+--
+-- Additive and safe to re-run against a database that has never seen it; SQLite
+-- has no ADD COLUMN IF NOT EXISTS, so a second run errors with "duplicate
+-- column name" and changes nothing.
+--
+-- Apply once, from the repo root:
+--   npx wrangler d1 execute dc-franchise --remote --config worker/wrangler.toml \
+--     --file=worker/roster_drag_migration.sql
+--
+-- The shape stored, all fields optional:
+--   { acting, comedy, dance, design, runway, lipsync, singing,  -- 1..10
+--     style,      -- one of the ten drag styles
+--     traits,     -- up to three tags
+--     voice }     -- persona voice, for the episode writer
+ALTER TABLE roster ADD COLUMN drag TEXT;

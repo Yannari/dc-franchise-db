@@ -106,10 +106,10 @@ const AGREE_LINES = {
   'landed-on-one': [
     '{names} talked it round for an hour and came out of it with one name between them.',
     'It took {names} three goes and a lot of doubling back, and then it was settled.',
-    'Nobody in that room proposed it exactly. By the end all {n} of them were saying it.',
+    'Nobody in that room proposed the name first. By the end all {n} of them were saying the same one.',
     '{a} said the name, {b} did not argue, and after that {c} had nowhere to stand.',
     '{names} went in with {n} opinions and came out with one, which is how blocs are made.',
-    'It is the first time this week a group has agreed on anything, and it is a name.',
+    '{names} agreed on a name, which is the first thing any group here has agreed on all week.',
   ],
   'two-against-one': [
     '{a} and {b} were already agreed, and {c} spent twenty minutes finding that out.',

@@ -1220,7 +1220,7 @@ const SHAPE_GUESS_LINES = {
     '{a} kept putting the same two names together and could not remember what for.',
     'The map got smaller every time {a} did it, which {a} decided was either clarity or exhaustion.',
     '{a} tried building it from the outside in for a change, and the middle came out empty.',
-    'By the end {a} had four groups and eleven people and no idea where {a} was in it.',
+    'By the end {a} had sorted everyone into four groups and could not work out which group {a} belonged to.',
     '{a} thought about writing it down and remembered what a written-down thing is worth here.',
     'It is the sort of thing that is obvious at eleven at night and gone by breakfast, and it was.',
     '{a} drew it out in the condensation on a window and then wiped the window.',

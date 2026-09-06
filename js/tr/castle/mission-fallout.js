@@ -288,7 +288,7 @@ const COST_US_LINES = {
     '{a} walked home turning over the one thing on the record with a name attached to it: {who}, sent to {task}, and it did not happen.',
     'Nobody else on that road seemed to have noticed that {who} had been the one asked to {task}. {a} had noticed.',
     '{a} spent the walk back from {mission} deciding what {who}’s missed job was actually worth, and did not say a word about it to anybody.',
-    'It was a small thing — {task}, one person, one job — and {a} carried it the whole way home without putting it down.',
+    'One person had been asked to {task} and had not done it, and {a} thought about that the whole way home.',
     'Everybody on that road was talking about {mission}. {a} was thinking about {who}, and about one job that did not get done.',
     'The estate manager had read out that nobody managed to {task}. {a} was the only one still thinking about it at the gate.',
   ],

@@ -272,10 +272,10 @@ const BEFORE_TABLE_LINES = {
   ],
   'not-worried-tonight': [
     '{a} does not expect to hear {posAdj} own name tonight and is behaving accordingly.',
-    'The hour before is only frightening if you think it is about you. {a} does not.',
-    '{a} ate properly, which is the surest sign in this castle that somebody feels safe.',
+    '{a} spent the hour before the table relaxed, which means {a} does not expect tonight to be about {obj}.',
+    '{a} ate a full meal before the table, unhurried, the way people eat when they do not expect to hear their own name.',
     '{a} spent the hour being pleasant to people rather than counting them.',
-    'There is a version of this evening where {a} is frightened. This is not it.',
+    '{a} is not frightened tonight, and it shows in the way {a} moves through the room.',
     '{a} has enough people in this room and knows roughly how many that is.',
     '{a} was the only one talking about something other than the vote.',
     'It may be confidence and it may be complacency, and {a} cannot tell which either.',
@@ -1548,7 +1548,7 @@ const OWN_REASON_LINES = {
     'The reason has not changed. What it would cost has.',
     '{a} has stopped mentioning it because saying it out loud here makes it a lever.',
     '{a} thought about home for a while and then stopped, on purpose.',
-    'Everybody in this castle wants it. {a} spent an hour on why.',
+    'Everybody here wants to win. {a} spent an hour working out why {a} wants it more than most.',
     '{a} would take a smaller share and go home tomorrow, some evenings. Not most.',
   ],
   'what-it-has-cost': [

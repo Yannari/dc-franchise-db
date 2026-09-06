@@ -257,7 +257,7 @@ const HYPOTHETICAL_LINES = {
   ],
   'made-a-condition': [
     '{b} said yes, and then said what it would take, and {a} had not expected a price.',
-    '"I would," {b} said. "If you’d told me about the other thing first." {a} took that in.',
+    '{b} agreed to the deal, but only if {a} answered a question of {b}’s first. {a} had not expected that.',
     '{b} answered {a}’s hypothetical with a real one, and there were terms in it.',
     '{a} got a commitment out of {b} with a condition bolted onto the end of it.',
     '{b} would do it. {b} named exactly what {a} would owe for it, out loud, without embarrassment.',

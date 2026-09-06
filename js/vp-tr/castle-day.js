@@ -1581,27 +1581,27 @@ const REACT_SINGLE = {
 // for a vote that is coming, that is the only closing beat that is true.
 const FALLBACK_SOLO = {
   smooth: [
-    '{a} says nothing to anybody about it and goes down to dinner a step nearer a name.',
+    '{a} says nothing about what {a} worked out and goes down to dinner a step nearer a name.',
     'Nobody watched {a} work that out, which is the whole value of it.',
-    '{a} carries it down the stairs and intends to spend it at the right table.',
-    'It buys {a} nothing tonight. {a} is not playing for tonight.',
-    '{a} comes away with the beginnings of something and the sense to keep quiet about it.',
+    '{a} carries the information downstairs and intends to use it at the right table.',
+    'None of that helps {a} tonight. {a} is playing a longer game.',
+    '{a} comes away with the start of a suspicion and the sense to keep quiet about it.',
     'Whoever is doing this has been a fraction less careful than they think, and {a} is a fraction closer for it.',
-    '{a} adds it to the rest and the rest is starting to have a shape.',
-    'Nothing about the evening changes. {a} goes into it knowing one more thing than the room does.',
-    '{a} will not act on it this week. {a} will not forget it either.',
-    'It is not evidence yet. {a} has been in this castle long enough to know what it is on the way to being.',
+    '{a} adds another observation to the pile, and the pile is starting to point somewhere.',
+    'Nothing about the evening changes. {a} goes into the round table knowing one more thing than the room does.',
+    '{a} will not act on what {a} learned this week, but {a} will not forget it either.',
+    'What {a} has is not evidence yet, but {a} has been here long enough to know where it is heading.',
   ],
   adverse: [
     '{a} goes back down having got something wrong and not yet knowing which part.',
-    'Somebody in this castle is going to make {a} pay for that hour, and {a} half knows it.',
-    '{a} leaves it there because leaving it there is all that is on offer.',
-    'It costs {a} nothing tonight and it is the kind of thing that arrives late.',
-    '{a} has spent something and cannot say what, which is the worst way to spend it.',
-    'Whatever {a} was building has a piece missing and {a} cannot find the piece.',
-    '{a} goes down to the hall carrying it and hoping it does not show.',
+    'Somebody is going to make {a} pay for that hour, and {a} half knows it.',
+    '{a} walks away because walking away is the only option left.',
+    'The damage will not show tonight. That is the kind of mistake that arrives late.',
+    '{a} lost ground this evening and cannot say exactly where.',
+    '{a} thought {a} had a theory forming, but there is a gap in it {a} cannot close.',
+    '{a} goes down to the hall hoping the mistake does not show on {pos} face.',
     'The week has got harder for {a} and nobody in the room did it to {a}.',
-    '{a} would take that hour back. This format does not do that.',
+    '{a} would take that hour back, but there is no taking it back.',
     '{a} is further from a name than {a} was this morning, and further along in the week.',
   ],
 };
@@ -1802,7 +1802,7 @@ const CONSEQ_ROAD_COVER_BACK = {
   held: [
     "{a}'s account of {topic} survived a whole day in the open. Nobody out there had a reason to doubt it, and {a} banks the day.",
     'A day of questions, and not one landed on {topic}. {a} comes home with the story intact.',
-    '{a} said {topic} the same way to each person who asked and none of them blinked — another ordinary day on the record.',
+    '{a} told the story of {topic} the same way to each person who asked, and none of them blinked.',
   ],
   frayed: [
     "{a}'s account of {topic} got home, but lost a piece on the road: {a} has a version to remember now that is not quite the one {a} left with.",
@@ -3074,17 +3074,17 @@ const RECALL_LEAD_DAYS_TOPIC = [
   'Back to {topic} — and none of this started this morning.',
   'It is {topic} once more, and this is older than this morning.',
   'The same subject, {topic}, picked up again from days ago.',
-  '{topic} once more, and not for the first time this week.',
+  'The matter of {topic} comes up once more, and not for the first time this week.',
   'This returns to {topic}, which has been running for some days now.',
-  '{topic} again, and this one has been running since earlier in the week.',
+  'The subject of {topic} comes up again, and this one has been running since earlier in the week.',
 ];
 const RECALL_LEAD_TODAY_TOPIC = [
   'Back to {topic} so soon — the same day has not even finished.',
   'It is {topic} again — the second time since breakfast.',
-  '{topic} once more, and it has not even been a full day.',
+  'The subject of {topic} comes up once more, and it has not even been a full day.',
   'The same subject, {topic}, comes round again the same afternoon.',
   'Back on {topic} within the hour, sooner than intended.',
-  '{topic} again, and the first go had barely finished cooling.',
+  'The question of {topic} comes round again, and the first go had barely finished cooling.',
 ];
 
 // THE FALLBACK LEAD, FOR A SCENE WITH NO RECORDED TOPIC — and it may not

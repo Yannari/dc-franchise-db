@@ -466,7 +466,7 @@ registerEvent({
     // out. A pure read of the round log — no rng draw, no state write, so the
     // firing stream is bit-identical to before.
     const victim = _lastMurdered();
-    const topic = victim ? `the night ${victim} was murdered` : 'yesterday out on the mission';
+    const topic = victim ? `the night ${victim} was murdered` : 'what happened on the mission';
     const sceneWhy = branch === 'stopped-rehearsing' ? 'decided the rehearsing was the dangerous part'
       : branch === 'could-not-get-it-straight' ? 'could not get one evening into the same order twice'
         : 'ran through their account of the night on the road';
@@ -1171,7 +1171,7 @@ registerEvent({
     else branch = 'nobody-asked';
 
     const victim = _lastMurdered();
-    const topic = victim ? `the night ${victim} was murdered` : 'yesterday out on the mission';
+    const topic = victim ? `the night ${victim} was murdered` : 'what happened on the mission';
     const line = pick(rng, STORY_SURVIVED_LINES[branch])
       .replace(/\{a\}/g, actor).replace(/\{topic\}/g, topic);
     const thread = findOpenThread('cover', [actor]);

@@ -31,6 +31,7 @@ import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
 import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
+import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -160,8 +161,8 @@ export function runDragWeek(state, cfg, ctx) {
   const ranking = panelRanking(views);
   const split = isSplitPanel(ranking);
 
-  // How the season's shape pulls on tonight. `trackPull` is the only one wired
-  // now; Plan 3 fills `storylineNeed` from the arc tracker.
+  // How the season's shape pulls on tonight — the two non-craft terms in the
+  // host's bend, both bounded.
   const trackPull = {};
   for (const n of living) {
     const rec = state.record[n];
@@ -169,7 +170,12 @@ export function runDragWeek(state, cfg, ctx) {
     const btms = rec.filter(r => r === 'BTM').length;
     trackPull[n] = Math.min(1, safeRun * 0.2) - Math.min(1, btms * 0.34);
   }
-  const storylineNeed = Object.fromEntries(living.map(n => [n, 0]));
+  // What the season's arcs want tonight. A room with no tracker (an older
+  // save, a week run in isolation by a test) gets zeroes and behaves exactly
+  // as it did before the tracker existed.
+  const storylineNeed = storylineNeedFor(state.storylines || [], {
+    living, episode: cfg.num, totalEpisodes: cfg.totalEpisodes || 12, state,
+  });
 
   const bend = hostBend(ranking, { star: state.star, storylineNeed, trackPull, split });
 
@@ -351,6 +357,10 @@ export function runDragWeek(state, cfg, ctx) {
       reactions,
       lipsync,
       events: maxiEvents,
+      // A SNAPSHOT, not the live list: replaying episode 4 must show episode
+      // 4's arcs, not the ones the season ended with.
+      storylines: arcSummary(state.storylines || []),
+      storylineNeed,
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],
       scenes,

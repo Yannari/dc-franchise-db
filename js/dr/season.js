@@ -7,6 +7,7 @@
 // per press. Nothing here touches `gs` or the DOM.
 import { initDragState } from './state.js';
 import { runDragWeek } from './week.js';
+import { assignStorylines, recordBeat, arcSummary } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
 import { MINI_TYPES } from './data/minis.js';
 import { JUDGES } from './data/judges.js';
@@ -155,6 +156,14 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   return out;
 }
 
+/** Record what the week did to the arcs, then hand the row straight back. */
+function beat(state, row) {
+  state.storylines = recordBeat(state.storylines || [], {
+    episode: row.num, row, state,
+  });
+  return row;
+}
+
 function weekCfg(sch, config, num, extra = {}) {
   return {
     num,
@@ -166,6 +175,9 @@ function weekCfg(sch, config, num, extra = {}) {
     runwayCategory: sch.runwayCategory,
     judgeWeights: config.drJudgeWeights || {},
     immunity: !!config.drImmunity,
+    // The arcs need to know how far through the season they are: what the
+    // frontrunner wants in week two is not what she wants in week eight.
+    totalEpisodes: extra.totalEpisodes || 12,
     // Defaults ON: an unset value means the format's ordinary rule applies.
     allowDoubleShantay: config.drDoubleShantay !== false,
     allowDoubleSashay: !!config.drDoubleSashay,
@@ -263,6 +275,12 @@ export function runFinale(state, cfg, ctx) {
       judges: [],
       guest: null,
       finale: { type, rounds, winner: placements[0], runnerUp: placements[1], placements },
+      // The finale carries the arcs too, and it is the one episode where they
+      // matter most: this is where the season finds out whether the
+      // frontrunner was really the frontrunner. The host does not BEND a
+      // finale, so there is no `storylineNeed` here — nothing was asked for.
+      storylines: arcSummary(state.storylines || []),
+      storylineNeed: {},
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],
       scenes: [
@@ -298,6 +316,9 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   // and those writes go nowhere, which is correct rather than a gap.
   const ctx = { rng, players, bond, addBond: addBond || (() => {}), popDelta: writePop };
 
+  // Cast the season's arcs from the room as it stands before anybody performs.
+  state.storylines = assignStorylines({ cast, state, bond, rng });
+
   const finaleType = config.drFinale || 'top4';
   const premiere = config.drPremiere || 'standard';
   const rows = [];
@@ -317,12 +338,14 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
       // the full cast is restored afterwards rather than reconciled — the
       // half-week cannot have removed anybody.
       state.living = group;
-      rows.push(runDragWeek(state, weekCfg(sch, config, num++, { noElimination: true }), ctx));
+      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { noElimination: true }), ctx)));
       state.living = wholeCast;
     }
   }
 
   const weeks = episodesFor(cast.length, finaleType);
+  // Episode one to the crowning, so an arc can ask "how far through are we".
+  const totalEpisodes = weeks + 1;
   const schedule = buildSchedule({
     episodes: weeks,
     castSize: cast.length,
@@ -334,14 +357,14 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   const finaleSize = FINALE_SIZE[finaleType] || 4;
   for (const sch of schedule) {
     if (state.living.length <= finaleSize) break;
-    rows.push(runDragWeek(state, weekCfg(sch, config, num++), ctx));
+    rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { totalEpisodes }), ctx)));
   }
 
   const last = schedule[schedule.length - 1] || {};
   const finale = runFinale(state, {
     num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
   }, ctx);
-  rows.push(finale);
+  rows.push(beat(state, finale));
 
   return { rows, state, winner: state.winner, runnerUp: state.runnerUp, finale: finale.dr.finale };
 }

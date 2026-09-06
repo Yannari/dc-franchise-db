@@ -1559,7 +1559,7 @@ const OWN_REASON_LINES = {
     '{a} is not sure {sub} is going to like the person who walks out of here.',
     'The prize gets bigger and so does the thing {a} has to be to win it.',
     '{a} thought about how {sub} will describe this week to somebody afterwards.',
-    'There is a version of this {a} could be proud of, and {sub} has stopped being on it.',
+    'There is a version of this {a} could be proud of, and {sub} is no longer in it.',
     '{a} would like to win and would also like to still be {ref} at the end.',
     '{a} has started keeping score of the wrong things.',
     'The money is real. So is what {a} did on Tuesday.',
@@ -1591,7 +1591,7 @@ const OWN_REASON_LINES = {
     '{a} did the sum, wrote nothing down, and will not forget any of it.',
     'There is an amount at which {a} would do something {sub} would not otherwise, and {sub} now knows what it is.',
     '{a} spent the evening finding out {sub} is more interested in the money than {sub} had assumed.',
-    'It is a lot split five ways. It is a life split two.',
+    'It is a lot split five ways. It is a life split two ways.',
   ],
 };
 
@@ -1874,12 +1874,12 @@ const WALKED_LAST_LINES = {
     '{a} led it home hard, which is either leadership or a message.',
     '{a} does not slow down for people and has stopped pretending to.',
     'Two of them asked {a} to ease off. {Sub} did, for about four minutes.',
-    '{a} arrived home unwinded, which several people noticed and one of them minded.',
+    '{a} arrived home not winded at all, which several people noticed and one of them minded.',
     'There is a kind of authority you get from being at the front of a tired group.',
     '{a} took the front on the way out and kept it on the way back.',
     'It is the only competition available on a road and {a} treated it as one.',
     '{a} was first up the drive and turned round to watch the rest of it arrive.',
-    'Being the strongest one here is a good week and a bad final table, and {a} knows both.',
+    'Being the strongest one here keeps you safe all week and gets you killed at the end, and {a} knows both.',
   ],
 };
 

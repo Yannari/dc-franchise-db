@@ -88,7 +88,7 @@ const DARE_LINES = {
     'It was a test of whether {b} would. {b} did, and then did considerably more, unasked.',
     '{a} wanted a yes. {a} got an afternoon, and is not sure what to do with it.',
     '{b} is either the most decent person in this castle or is working very hard at something.',
-    'The over-delivery was the interesting part and {a} does not yet know which kind it was.',
+    'The over-delivery was the interesting part and {a} does not yet know whether it was genuine.',
     '{b} finished the job {a} had invented and then found another one.',
     '{a} has an answer and it is not the binary answer {a} went in for.',
   ],

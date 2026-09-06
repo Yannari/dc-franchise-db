@@ -146,7 +146,14 @@ const COMPARISON_BACKLOG = {
   'js/bb/themes.js':              1,
   'js/cast-room.js':              1,
   'js/cast-ui.js':                3,
-  'js/core.js':                   2,
+  // 2 -> 0, paid off by the fourth show. `formatIsRunnable` was a ladder of
+  // `fmt === '<show>'` returns, one rung per show, so registering Drag Race
+  // meant adding a fourth rung — a show list with return statements in it.
+  // It reads `runnableFlag` off the registry now (`true` for always-runnable,
+  // the window flag's name otherwise), so a fifth show adds a field and
+  // touches no logic. Row kept at 0 rather than deleted: it records that this
+  // file was cleaned and must not silently re-grow one.
+  'js/core.js':                   0,
   'js/edit-layer.js':             1,
   'js/episode.js':                1,
   'js/finale.js':                 2,

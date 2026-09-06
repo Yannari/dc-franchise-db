@@ -455,6 +455,7 @@ const SHOW_TAGS = {
   'total-drama': 'Tribes, challenges, tribal council',
   'big-brother': 'One house, HOH, veto, live eviction',
   'traitors':    'A castle, a round table, a murder every night',
+  'drag-race':   'Werk room, runway, lip sync for your life',
 };
 export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
   id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',
@@ -976,6 +977,14 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Valeria',  label: 'Valeria Sandoval' },
     { value: 'Alistair', label: 'Alistair Crane' },
     { value: 'Claudia',  label: 'Claudia Winterbourne' },
+  ],
+  // One host, and unlike the castle's three this one is not a variable: the
+  // host of this show is also a permanent judge and the person who decides who
+  // goes home, so swapping the name would swap the panel too. The portrait
+  // pair is assets/avatars/rupaul.png (werk room) and rupaul-drag.png (main
+  // stage) — see js/dr/data/judges.js, which owns both.
+  'drag-race': [
+    { value: 'RuPaul', label: 'RuPaul' },
   ],
 };
 

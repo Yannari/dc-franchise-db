@@ -185,6 +185,45 @@ const SHOW_WORDS = {
       { id: 'survive', text: 'Who is still here in the morning?' },
     ],
   },
+  'drag-race': {
+    name: 'Drag Race',
+    short: 'DR',
+    episode: 'episode',
+    Episode: 'Episode',
+    episodeShort: 'Ep',
+    elimination: 'elimination',
+    eliminated: 'sashayed away',
+    challenge: 'maxi challenge',
+    home: 'werk room',
+    // ── NOBODY VOTES ON THIS SHOW ──────────────────────────────────
+    //
+    // Not "a different kind of vote": none. A panel ranks the week and the
+    // host decides, so every label built from a vote must be absent rather
+    // than translated, and every consumer has to handle the absence. A
+    // borrowed word here would put a ballot on a page about a runway.
+    vote: null,
+    finalVote: null,
+    comps: ['maxi challenge', 'lip sync'],
+    danger: 'the bottom',
+    Danger: 'The bottom',
+    onDanger: 'in the bottom',
+    nominated: 'landed in the bottom',
+    Pawn: 'A safe queen',
+    Ceremony: 'The main stage',
+    nominee: 'a bottom queen',
+    pawn: 'a safe queen',
+    ceremony: 'the main stage',
+    // No jury: nobody who leaves ever decides anything again.
+    jury: null,
+    safe: 'safe',
+    // There is no nomination on this show, so there is no label for one.
+    nominationLabel: null,
+    polls: [
+      { id: 'win', text: 'Who wins the next maxi challenge?' },
+      { id: 'lipsync', text: 'Who lip syncs next week?' },
+      { id: 'robbed', text: 'Who was robbed this week?' },
+    ],
+  },
 };
 
 /** The words this show uses. Unknown formats get the generic set, never a crash. */

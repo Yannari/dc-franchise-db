@@ -14,6 +14,8 @@
 export const SHOWS = {
   'total-drama': {
     prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬', accent: '#7d4cff',
+    // Always runnable: this is the engine every other show was grown from.
+    runnableFlag: true,
     // The season is decided by a body of eliminated players. Not universal:
     // a castle's last table is a decision by the people still sitting at it,
     // so a "Jury votes" column over one is a heading about a body that never
@@ -96,6 +98,8 @@ export const SHOWS = {
   },
   'big-brother': {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹', accent: '#38bdf8',
+    // Set at the bottom of js/bb-run.js. Read by formatIsRunnable().
+    runnableFlag: '_bbRunnable',
     hasJury: true,
     roundsPath: 'bb.weeks',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
@@ -144,6 +148,8 @@ export const SHOWS = {
   //    seasons. `historyFromLedger` below is that split.
   'traitors': {
     prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️', accent: '#b91c3c',
+    // Set at the bottom of js/tr-run.js. Read by formatIsRunnable().
+    runnableFlag: '_trRunnable',
     roundsPath: 'tr.rounds',
     // ── THE BALLOTS THE AUDIENCE NEVER SAW ────────────────────────────
     //
@@ -216,6 +222,74 @@ export const SHOWS = {
         ['tr.reads', 'Correct reads'], ['tr.daggersWon', 'Daggers won']],
     },
   },
+
+  // ── DRAG RACE ──────────────────────────────────────────────────────
+  //
+  // THE FIRST SHOW HERE WITH NO BALLOTS ANYWHERE. A panel ranks the week, the
+  // bottom two lip sync, and the host alone decides who leaves — so this
+  // show's rounds are a PLACEMENT GRID, not a vote. Three consequences every
+  // reader has to know about:
+  //
+  //   * `eliminated` is null on every round. Every existing reader of that
+  //     field means "the vote", and there isn't one. Departures ride on
+  //     `exits[]` and are read through roundExits() below.
+  //   * The per-round export is a third array (`episodes`), not
+  //     `votingHistory` or `weeks`. Borrowing `weeks` would have been worse
+  //     than a third shape: season_ref.html decides its ENTIRE layout from
+  //     whether that array is non-empty, so a drag season would have been
+  //     drawn a Power of Veto column over a runway.
+  //   * Two doors out — the lip sync and a disqualification — so `exitVerbs()`
+  //     returns two and no screen may print either as the default.
+  //
+  // Spec: docs/superpowers/specs/2026-09-06-drag-race-design.md
+  'drag-race': {
+    prefix: 'dr', name: 'Drag Race', short: 'DR', emoji: '👑', accent: '#ff2d95',
+    // Set at the bottom of js/dr-run.js. Absent until that file exists, which
+    // is deliberate: the setup screen must refuse a show with no engine.
+    runnableFlag: '_drRunnable',
+    roundsPath: 'dr.episodes',
+    words: {
+      player: 'queen', players: 'queens', round: 'Episode',
+      exit: 'sashayed away', exitAction: 'send home',
+      // THE SECOND EXIT VERB. Read through exitVerbs(); never printed as the
+      // first. A queen who is disqualified did not lose a lip sync, and saying
+      // so is the same bug class as "evicted" over a camp.
+      exitDq: 'disqualified',
+      challenge: 'maxi challenge', comp: 'maxi challenge', comps: 'maxi challenges won',
+      compBeast: 'challenge queen', compWon: 'maxi challenges',
+      // No merge and no jury: the season narrows to a finale and stops.
+      milestone: 'the finale',
+      audienceAward: 'Miss Congeniality',
+      fanWords: ['runway', 'lip sync', 'werk room', 'untucked', 'shantay', 'sashay',
+        'maxi challenge', 'snatch game', 'main stage', 'condragulations'],
+      host: 'RuPaul',
+    },
+    // PROVISIONAL until a season has been played and the signals printed
+    // (ADDING-A-SHOW.md §2.5). The shape's reasoning: this show sells
+    // personality and mess, not the arithmetic of a vote — there is no vote to
+    // do arithmetic on — so `mess` is the highest multiplier and `strategy`
+    // the lowest of any registered show. `steamroll` is punished because "the
+    // same three at the top every week" is the complaint about this format.
+    audience: { strategy: 0.4, blindside: 0.7, mess: 1.4, predictable: 0.8,
+      steamroll: 1.2, showmance: 0.6, twist: 0.9 },
+    careerStats: [
+      ['dr.wins',         'totalMaxiWins'],
+      ['dr.highs',        'totalHighs'],
+      ['dr.lows',         'totalLows'],
+      ['dr.bottoms',      'totalBottoms'],
+      ['dr.lipsyncWins',  'totalLipsyncWins'],
+      ['dr.congeniality', 'totalCongeniality'],
+    ],
+    articleStats: {
+      career: [['maxiWins', 'Maxi challenge wins'], ['lipsyncWins', 'Lip syncs won']],
+      season: [['dr.wins', 'Maxi challenge wins'], ['dr.lipsyncWins', 'Lip syncs won'],
+        ['dr.bottoms', 'Times in the bottom']],
+      comps: [['dr.wins', 'Maxi challenge wins'], ['dr.highs', 'Highs'],
+        ['dr.lows', 'Lows'], ['dr.bottoms', 'Bottoms']],
+    },
+    polls: ['Who wins the next maxi challenge?', 'Who lip syncs next week?',
+      'Who was robbed this week?', 'Who takes the crown?'],
+  },
 };
 
 /** The default for anything that predates formats — every old season is this. */
@@ -261,7 +335,10 @@ export function showWords(format) {
  */
 export function exitVerbs(format) {
   const w = showWords(format);
-  return [w.exit, w.exitMurder].filter(Boolean);
+  // The show's own verbs, in the order it uses them: the ordinary one first,
+  // then whatever second door that format declares. A show with none of the
+  // extras returns a list of one, which is what two of the four do.
+  return [w.exit, w.exitMurder, w.exitDq].filter(Boolean);
 }
 
 /**

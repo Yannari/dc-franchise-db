@@ -56,6 +56,31 @@ export const VOCAB = {
       'shield', 'dagger', 'mission', 'missions', 'turret', 'final table',
     ],
   },
+  'drag-race': {
+    own: [
+      'queen', 'queens', 'runway', 'lip sync', 'lip-sync', 'lipsync', 'werk room',
+      'untucked', 'shantay', 'sashay', 'sashayed away', 'maxi challenge',
+      'mini challenge', 'snatch game', 'main stage', 'condragulations',
+      'bottom two', 'miss congeniality',
+      /* ── AND "CHALLENGE", WHICH STOPPED BEING EXCLUSIVE THE DAY THIS
+         SHOW WAS REGISTERED ──────────────────────────────────────────
+         It is listed for Big Brother and Total Drama above, which was true
+         while they were the only two shows that held one. A MAXI CHALLENGE IS
+         A CHALLENGE: this show says the word in its registry entry, in its
+         career stat labels and in every sentence about what the queens did on
+         Tuesday. `forbiddenFor` subtracts a format's own words from the
+         forbidden set, so listing it here is what makes the word available to
+         the show that genuinely uses it while keeping it forbidden on a
+         castle, which calls them missions.
+         The precedent is the "competition" note above, and the rule it states:
+         this table is only for words that can be true of one show and false of
+         another. */
+      'challenge', 'challenges',
+    ],
+    // "Safe" is deliberately NOT here. Big Brother calls a houseguest safe and
+    // so does this show; a word two formats both own cannot be exclusive to
+    // either, and listing it would fail every Big Brother page.
+  },
 };
 
 /** Everything a given format is not allowed to say. */

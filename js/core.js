@@ -1526,14 +1526,23 @@ export function twistsForFormat(source) {
 //
 // Codex flips Big Brother on from the run-loop side by setting
 // window._bbRunnable once the engine is dispatched.
+// WHICH FLAG, ASKED OF THE REGISTRY RATHER THAN OF THE SLUG.
+//
+// This was a ladder of `fmt === '<show>'` tests, one rung per show, which is a
+// show list with a return statement in it: a fourth show had to add a rung and
+// a fifth would have too, and until somebody did, the setup screen said the
+// show was not wired when it was. `runnableFlag` in js/shows.js is the fact —
+// `true` for a show that is always runnable, the name of the window flag for a
+// show whose engine sets one, absent for a show that has no engine yet.
 export function formatIsRunnable(source) {
-  const fmt = seasonFormat(source);
-  if (fmt === 'total-drama') return true;
-  if (fmt === 'big-brother') return typeof window !== 'undefined' && !!window._bbRunnable;
-  // Off until the engine can finish a season. The flag exists so a half-built
-  // show cannot be started by somebody clicking through the setup screen.
-  if (fmt === 'traitors') return typeof window !== 'undefined' && !!window._trRunnable;
-  return false;
+  const flag = SHOWS[seasonFormat(source)]?.runnableFlag;
+  if (flag === true) return true;
+  // The flag exists so a half-built show cannot be started by somebody
+  // clicking through the setup screen. Its engine module sets it on load, so
+  // importing that module IS the wiring: drop the import and the show
+  // silently un-ships with nothing reporting it.
+  if (typeof flag !== 'string') return false;
+  return typeof window !== 'undefined' && !!window[flag];
 }
 
 export function formatName(source) {

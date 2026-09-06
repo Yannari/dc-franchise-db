@@ -352,6 +352,54 @@ than the §6.3 bounds). Storylines die or flip on events: the villain who
 apologises, the frontrunner who bombs Snatch Game, and the tracker writes the
 flip as a beat.
 
+### 7.1 The full arc catalogue (user, 2026-09-06)
+
+The seven arcs above are the ENGINE's families. The catalogue the user wants is
+fifteen families, each with named variants — the vocabulary the community
+actually uses about an edit. A family decides what the arc wants; the variant
+is flavour chosen from her stats, her drag style and what happens to her.
+
+| Family | Variants |
+|---|---|
+| Winner / Front-runner | Winner's Edit, Front-runner, Challenge Beast, Professional |
+| Underdog / Growth | Underdog, Dark Horse, Personal Growth, Transformation |
+| Robbed / Unfulfilled | Robbed Queen, Early Outsider, Finalist Without a Crown, Perennial Bridesmaid |
+| Villain / Rivalry | Villain, Fierce Competitor, Rivalry Arc, Bitter Edit |
+| Hero / Congeniality | Hero, Fan Favorite, Congeniality Edit |
+| Narrator / Personality | Narrator, Comedy Queen, Emotional Queen |
+| Fashion / Aesthetic | Fashion Queen, Look Queen, Club Kid, Alternative Queen |
+| Performance | Lip-Sync Assassin, Lip-Sync Diva |
+| Pageant / Traditional | Pageant Queen, Professional |
+| Weakness | One-Trick Pony, Fashion Disaster, Safe Queen |
+| Filler / Low-Visibility | Filler Queen, Safe Queen |
+| Representation / Personal | Representation Story, Family Story, Emotional Queen |
+| Relationship | Friendship Arc, Romance/Showmance, Rivalry |
+| Redemption / Returnee | Redemption Queen, RuDemption Queen, Comeback Queen |
+| Shock / Twist | Shock Elimination, Comeback Queen |
+
+**THE HARD SPLIT, and the reason the catalogue is safe to grow this far.** An
+arc is either an AGENDA or a LABEL, and only agendas touch `storylineNeed`:
+
+* **Agenda arcs** ask the host's bend for something — Front-runner, Underdog,
+  Villain, Fighter, Rivalry, Sisters, Redemption. Bounded as in §6.3.
+* **Label arcs** ask for NOTHING and are pure description: Robbed, Fashion
+  Queen, Pageant Queen, Narrator, Filler, Safe Queen, One-Trick Pony,
+  Representation, Shock. They are derived from what she IS and what already
+  happened, and they exist for the VP, the aftermath and the writer.
+
+Fifteen families all lobbying the bend would be fifteen thumbs on the scale and
+the season would stop being a contest. Most of this catalogue is label.
+
+**Two variants are gated on machinery that does not exist yet.** Redemption /
+Returnee and Comeback Queen need a returnee, which is the All Stars format —
+they are defined here and stay unassignable until it exists, rather than being
+faked on a first-run cast.
+
+**Naming:** the community's term for the Robbed family's fourth variant is a
+real queen's name. This universe has no real people (the same rule that makes
+the Snatch Game characters archetypes and keeps World Tour from naming a
+country), so it is written here as *Perennial Bridesmaid*.
+
 ---
 
 ## 8. The maxi challenge engine

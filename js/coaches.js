@@ -264,6 +264,45 @@ export function reassignCoaches(tribes) {
     moved.push({ coach: coach.name, from, to: best, followed: byTribe[best] || 0 });
   }
 
+  // ── AND THEN EVEN THEM OUT ──────────────────────────────────────────
+  //
+  // Reported: "coaches don't work well when the tribe got mixed with a twist
+  // like expansion or dissolve or schoolyard — redistribute them in the most
+  // equivalent way possible on all the teams."
+  //
+  // All three twists already called this function. The pass above only
+  // RESCUES: it moves a coach whose camp no longer exists and skips everybody
+  // else (`if (names.includes(coach.tribe)) continue`). A Tribe Expansion
+  // keeps every existing tribe and adds one, so nothing was orphaned, nothing
+  // moved, and the new tribe opened with no coach at all while the old ones
+  // kept the lot. A Schoolyard Pick that reuses the tribe names is the same
+  // story with the membership redrawn underneath them.
+  //
+  // So the load is levelled afterwards. The coach moved is the one with the
+  // LEAST to lose — fewest proteges on the tribe they are leaving — so a
+  // staff who has been working with a camp all season is the last to be taken
+  // off it, and a coach with nobody they have trained is the first.
+  const guard = activeCoaches().length * names.length + 4;
+  for (let i = 0; i < guard; i++) {
+    const heavy = names.slice().sort((a, b) => load[b] - load[a])[0];
+    const light = names.slice().sort((a, b) => load[a] - load[b])[0];
+    // One apart is as even as an odd number of coaches can be.
+    if (load[heavy] - load[light] < 2) break;
+    const onHeavy = activeCoaches().filter(c => c.tribe === heavy);
+    if (!onHeavy.length) break;
+    const tribe = (tribes || []).find(t => (t.name ?? t.tribeName) === heavy);
+    const members = (tribe && tribe.members) || [];
+    const pick = onHeavy.slice().sort((a, b) => {
+      const keep = c => Object.keys(gs.coachTraining?.[c.name] || {})
+        .filter(m => members.includes(m)).length;
+      return keep(a) - keep(b);
+    })[0];
+    pick.tribe = light;
+    load[heavy]--;
+    load[light]++;
+    moved.push({ coach: pick.name, from: heavy, to: light, followed: 0, balanced: true });
+  }
+
   // The save card belongs to a staff. If its camp is gone, it travels with
   // them; a card keyed to a tribe nobody is on can never be played again.
   if (gs.coachCards) {

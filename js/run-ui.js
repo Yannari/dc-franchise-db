@@ -288,6 +288,22 @@ export function getEpisodeEliminations(ep) {
     // placements) reports "No elimination" on the episode where the tribe
     // voted its own coach out.
     ...(ep.coachElimination || []).map(ce => ce.coach),
+    // ── AND THE ONE THE EXILE DUEL SENDS AWAY ─────────────────────────
+    //
+    // Reported: "episode 5, no elimination that week." Reproduced on the
+    // first try with an Exile Duel pinned to episode 5 — the row came back
+    // `eliminated: null, exilePlayer: P12`, so every caller of this helper
+    // said nobody left on the night the tribe voted somebody out.
+    //
+    // It is the coach case above, one twist later and for the same reason:
+    // js/episode.js nulls `eliminated` deliberately, because a player on
+    // exile is not out of the game — they can win the duel and come back. But
+    // "not permanently out" is not "nothing happened", and the timeline is a
+    // record of what the episode DID. Rescue Island already works this way:
+    // its exits set `eliminated` normally and the player returns later, so
+    // crediting the exile here makes the two formats agree rather than making
+    // this one an exception.
+    ep.exilePlayer,
   ].filter(Boolean);
   return [...new Set(names)];
 }

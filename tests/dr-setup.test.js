@@ -9,6 +9,8 @@
 import { describe, expect, it } from 'vitest';
 import { defaultConfig } from '../js/core.js';
 import { configScopeFor, blueprintFor } from '../js/quick-setup.js';
+import { readFileSync } from 'node:fs';
+import { SHOWS } from '../js/shows.js';
 
 describe('drag-race setup scope', () => {
   it('defaults every dr field', () => {
@@ -54,5 +56,49 @@ describe('drag-race setup scope', () => {
       .toMatch(/houseguest/);
     expect(blueprintFor({ format: 'total-drama', teams: 2, mergeAt: 12, jurySize: 9, finaleSize: 3 }, 18)[0].label)
       .toMatch(/player/);
+  });
+});
+
+describe('the setup screen shows one show at a time', () => {
+  /* ── FOUND BY READING THE SCREEN, NOT BY A TEST ────────────────────
+     Each show's options block opens with fixed rows stating the rules it does
+     not offer a choice about — how a tie breaks, how the endgame works. They
+     were plain divs with no id, so CONFIG_SCOPE could not reach them and every
+     show's rows were drawn at once: a Drag Race season was told a tie is
+     "broken by the Head of Household, live" AND that "the room stops
+     banishing", one above the other.
+
+     The section labels above them were scoped correctly, which is why nothing
+     caught it — the heading said CASTLE OPTIONS and was hidden, and the two
+     sentences under it stayed. */
+  const html = readFileSync('simulator.html', 'utf8');
+
+  it('every fixed explainer row carries an id', () => {
+    const rows = html.match(/<div class="bbopt-fixed"[^>]*>/g) || [];
+    expect(rows.length, 'no explainer rows found — did the markup change?').toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r, `an explainer row has no id: ${r}`).toMatch(/id="/);
+    }
+  });
+
+  it('and every one of them is scoped to exactly one show', () => {
+    const ids = [...html.matchAll(/<div class="bbopt-fixed" id="([^"]+)"/g)].map(m => m[1]);
+    for (const id of ids) {
+      const shows = Object.entries(SHOWS)
+        .filter(([fmt]) => configScopeFor(fmt).sections.includes(id))
+        .map(([fmt]) => fmt);
+      expect(shows.length, `${id} is shown on ${shows.length} shows, not 1`).toBe(1);
+    }
+  });
+
+  it('so no show is told another show\'s rules', () => {
+    // The concrete case: a drag season must not be offered a Head of Household
+    // or a Round Table, and a castle must not be offered a lip sync verdict.
+    const drag = configScopeFor('drag-race').sections;
+    expect(drag).toContain('sec-dr-fixed-verdict');
+    expect(drag).not.toContain('sec-tr-fixed-ties');
+    expect(drag).not.toContain('sec-bb-fixed-endgame');
+    expect(configScopeFor('traitors').sections).not.toContain('sec-dr-fixed-verdict');
+    expect(configScopeFor('big-brother').sections).not.toContain('sec-tr-fixed-ties');
   });
 });

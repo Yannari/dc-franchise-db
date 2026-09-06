@@ -1190,6 +1190,20 @@ const CONFIG_SCOPE = {
     'sec-tr-divider':        ['traitors'],
     'sec-dr-options':        ['drag-race'],
     'sec-dr-divider':        ['drag-race'],
+    // ── THE EXPLAINER ROWS, WHICH HAD NO IDS AND SO NO SCOPE ────────
+    //
+    // Each show's options block opens with a couple of fixed rows stating the
+    // rules it does not offer a choice about — how a tie breaks, how the
+    // endgame works. They were plain divs with no id, so this map could not
+    // reach them and all of them were drawn at once: a Drag Race season was
+    // told that a tie is "broken by the Head of Household, live" AND that "the
+    // room stops banishing", one above the other. Found by a fourth show
+    // arriving and somebody reading the screen.
+    'sec-bb-fixed-ties':     ['big-brother'],
+    'sec-bb-fixed-endgame':  ['big-brother'],
+    'sec-tr-fixed-ties':     ['traitors'],
+    'sec-tr-fixed-endgame':  ['traitors'],
+    'sec-dr-fixed-verdict':  ['drag-race'],
     // The END GAME heading holds Total Drama's finale block AND the castle's
     // endgame controls (each control scoped within). Shown for both; a house
     // finale is fixed (final three, stated in HOUSE OPTIONS), so it stays hidden

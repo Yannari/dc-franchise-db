@@ -80,14 +80,38 @@ describe('every episode of a season opens', () => {
     const html = rpBuildDragSummary(last);
     expect(html).toContain(last.dr.finale.winner);
     expect(html).toMatch(/crowned/i);
-    expect(generateDragSummaryText(last)).toMatch(/PLACEMENTS/);
+    /* THE PLACEMENTS SURVIVED THE MOVE TO THE REGISTRY. A finale row emits
+       only five scenes, so a transcript built from scenes alone would have
+       dropped the bracket and the finishing order — the one thing a finale
+       is for — the day the readout was replaced. `finaleBlock` renders them
+       from `dr.finale`, which is structured data and on no scene at all. */
+    const text = generateDragSummaryText(last);
+    expect(text).toMatch(/Placements/i);
+    expect(text).toContain(last.dr.finale.winner);
+    for (const n of last.dr.finale.placements) expect(text, n).toContain(n);
   });
 
-  it('says plainly that it is not the finished screen', () => {
-    // So nobody mistakes it for Plan 5's work and leaves it in place.
+  it('IS THE SCREENS NOW, not a readout of the engine', () => {
+    /* This used to assert the transcript called itself a readout, so nobody
+       would mistake it for the finished thing. It is the finished thing now:
+       `generateDragSummaryText` renders `dragScreensRevealed` and strips the
+       HTML, so one list feeds the viewing party and the transcript both.
+       The readout survives behind the `dr_debug_screen` flag.
+
+       And it prints the EPISODE, not the shadow row's key. The transcript
+       builds on a renumbered copy so it cannot consume the viewer's own
+       reveals, and reading that number for display put "EPISODE -5" at the
+       top of every transcribed screen. */
     const row = seasons[0].rows[1];
-    expect(rpBuildDragSummary(row)).toMatch(/not the finished screen/i);
-    expect(generateDragSummaryText(row)).toMatch(/readout/i);
+    const text = generateDragSummaryText(row);
+    expect(text).not.toMatch(/readout/i);
+    expect(text).toMatch('EPISODE 2');
+    expect(text).not.toMatch(/EPISODE -/);
+    // Nor the furniture: no status bar, no reveal buttons, no cast rail.
+    expect(text).not.toMatch(/Reveal all|QUEENS/);
+    // But the screens themselves are all there, by name.
+    expect(text).toMatch(/COLD OPEN/);
+    expect(text).toMatch(/CRITIQUES/);
   });
 
   it('survives a malformed row rather than taking the page down', () => {

@@ -17,6 +17,7 @@
 // built: the panel's ranking beside the host's final one, so a bend is visible
 // as a moving row.
 import { showWords } from '../shows.js';
+import { dragScreensRevealed } from './screens.js';
 import { judgeById } from '../dr/judges.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => (
@@ -129,15 +130,61 @@ export function rpBuildDragSummary(row) {
  * Plan 3 replaces this with prose written from the scene pools; until then a
  * transcript that states what happened is more useful than one that throws.
  */
+/**
+ * The episode, retranscribed from THE SCREENS THE VIEWER SEES.
+ *
+ * Not a second walk of the scene list. The castle learned this the expensive
+ * way: two readers of the same episode drift, and the transcript quietly
+ * stops mentioning a screen nobody remembered to add to the second copy. So
+ * this renders `dragScreensRevealed` — the same registry the viewing party
+ * builds from, fully opened on a shadow row — and strips the HTML.
+ *
+ * A screen added to js/vp-dr/screens.js therefore appears here without this
+ * function being touched, and a screen that is not there appears in neither.
+ */
 export function generateDragSummaryText(row) {
   const dr = row.dr || {};
-  const w = showWords('drag-race');
   const L = [];
   const ln = s => L.push(s);
 
   ln(`DRAG RACE — EPISODE ${dr.ep ?? row.num}`);
   ln('='.repeat(46));
-  ln('(Engine readout. The written episode is Plan 3.)');
+  ln('');
+
+  const screens = dragScreensRevealed(row);
+  if (screens.length) {
+    for (const sc of screens) {
+      // The chart is a grid; a stripped table is a wall of unreadable words,
+      // and the season page draws the real one.
+      if (sc.id === 'dr-chart') continue;
+      ln(sc.label.toUpperCase());
+      ln('-'.repeat(sc.label.length));
+      const text = String(sc.html)
+        /* THE FURNITURE IS NOT THE EPISODE. `_shell` wraps the HUD, the
+           section heading and the rail in dr-chrome comments, and they come
+           out here: a transcript that reads out its own status bar, screen
+           title and cast list before every section is mostly furniture.
+           The viewer wants all three; a reader wants none of them. */
+        .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '')
+        .replace(/<style[\s\S]*?<\/style>/g, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+        .replace(/[ 	]+/g, ' ')
+        .trim();
+      for (const line of text.split(/(?<=\.)\s+(?=[A-Z"])/)) {
+        const t = line.trim();
+        if (t) ln(`  ${t}`);
+      }
+      ln('');
+    }
+    return L.join('\n');
+  }
+
+  // ── THE FALLBACK, for a row the registry finds no screens on ──
+  // A season played before the screens existed still has to read as
+  // something, and an empty transcript is worse than a plain one.
+  const w = showWords('drag-race');
+  ln('(Engine readout — no screens matched this row.)');
   ln('');
 
   if (dr.finale) {

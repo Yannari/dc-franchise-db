@@ -31,6 +31,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildDragSummary } from './vp-dr/summary.js';
+import { dragScreens } from './vp-dr/screens.js';
 import { DRAG_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
@@ -14051,7 +14052,19 @@ export function buildVPScreens(epRecord) {
   // ONE SCREEN, and deliberately a readout rather than a designed one — the
   // real sixteen are Plan 5. See js/vp-dr/summary.js.
   if (epRecord.format === DRAG_FORMAT) {
-    return [{ id: 'dr-summary', label: 'Episode', html: rpBuildDragSummary(epRecord) }];
+    /* THE REGISTRY, not a screen list built here. js/vp-dr/screens.js is read
+       by the text backlog too, so a screen added there appears in both and a
+       screen missing from there appears in neither — which is the whole
+       reason the castle keeps its table in one file. */
+    const built = dragScreens(epRecord);
+    // The engine readout stays behind the same debug flag the other shows
+    // use: it is how a season is read while the designed screens are built.
+    try {
+      if (window.localStorage?.getItem('dr_debug_screen') === '1') {
+        built.push({ id: 'dr-debug', label: 'Debug', html: rpBuildDragSummary(epRecord) });
+      }
+    } catch { /* storage can throw; the debug tab is not worth a crash */ }
+    return built;
   }
   if (epRecord.format === 'traitors') {
     vpScreens = traitorsScreens(epRecord, epRecord.observer || 'audience');

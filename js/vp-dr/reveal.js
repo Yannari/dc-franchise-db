@@ -39,11 +39,13 @@ export function _state(ep, suffix) {
  */
 export function _controls(suffix, total, epNum) {
   const s = String(suffix);
-  return `<div class="dr-controls" id="dr-controls-${s}">
+  // Wrapped as chrome: the transcript strips these markers, and a reader does
+  // not want "Reveal all / Next / 0 of 4" between every section.
+  return `<!--dr-chrome--><div class="dr-controls" id="dr-controls-${s}">
     <button type="button" class="dr-btn dr-ghost" onclick="drRevealAll('${s}', ${total}, ${epNum})">Reveal all</button>
     <button type="button" class="dr-btn" onclick="drRevealNext('${s}', ${total}, ${epNum})">Next &rsaquo;</button>
     <span class="dr-counter" id="dr-counter-${s}">0 / ${total}</span>
-  </div>`;
+  </div><!--/dr-chrome-->`;
 }
 
 /**

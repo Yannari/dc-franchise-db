@@ -267,14 +267,18 @@ export function _bulbs(n = 12) {
 export function _hud(ep) {
   const dr = ep?.dr || {};
   const total = Number(dr.totalEpisodes) || 0;
-  const now = Number(ep?.num) || 0;
+  /* `dr.ep` FIRST. The transcript builds on a shadow row whose `num` is
+     negative — that is how reveal state is kept out of the viewer's own
+     episode — and reading it here printed "EPISODE -5" at the top of every
+     transcribed screen. The episode's real number is on the row itself. */
+  const now = Number(dr.ep ?? ep?.num) || 0;
   const pips = total
     ? `<div class="dr-pips">${Array.from({ length: total }, (_, i) => {
       const k = i + 1 < now ? 'dr-p-done' : i + 1 === now ? 'dr-p-now' : '';
       return `<i class="${k}"></i>`;
     }).join('')}</div>` : '';
   const left = (dr.living || []).length;
-  return `<div class="dr-hud">
+  return `<!--dr-chrome--><div class="dr-hud">
     <div><span class="dr-hud-k">EPISODE</span>
       <div class="dr-hud-v dr-disp dr-num">${String(now).padStart(2, '0')}</div>${pips}</div>
     <div><span class="dr-hud-k">MAXI CHALLENGE</span>
@@ -283,7 +287,7 @@ export function _hud(ep) {
     ? `<div class="dr-hud-cat dr-fash">Category is… ${esc(dr.runway.category)}</div>` : ''}</div>
     ${left ? `<div class="dr-hud-left"><span class="dr-hud-k">QUEENS<br>LEFT</span>
       <b class="dr-disp dr-num">${String(left).padStart(2, '0')}</b></div>` : '<span></span>'}
-  </div>`;
+  </div><!--/dr-chrome-->`;
 }
 
 /**
@@ -302,7 +306,7 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
     phase === 'stage' ? '<div class="dr-haze"></div>' : ''}</div>`;
   const body = sidebar
     ? `<div class="dr-game"><div>${content}</div>
-        <aside class="dr-panel dr-rail" id="dr-sidebar-inner">${sidebar}</aside></div>`
+        <!--dr-chrome--><aside class="dr-panel dr-rail" id="dr-sidebar-inner">${sidebar}</aside><!--/dr-chrome--></div>`
     // The mount exists even with no sidebar, so `_updateSidebar` has somewhere
     // to write if a later step decides it wants one.
     : `${content}<div id="dr-sidebar-inner" hidden></div>`;
@@ -310,9 +314,9 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
   <div class="dr-phase-${phase}">${atmo}
     <div class="dr-wrap">
       ${hud ? _hud(ep) : ''}
-      <div class="dr-sec">${_bulbs()}
+      <!--dr-chrome--><div class="dr-sec">${_bulbs()}
         <h2 class="dr-disp">${esc(title)}</h2>
-        ${subtitle ? `<p>${esc(subtitle)}</p>` : ''}</div>
+        ${subtitle ? `<p>${esc(subtitle)}</p>` : ''}</div><!--/dr-chrome-->
       ${body}
     </div>
   </div>`;

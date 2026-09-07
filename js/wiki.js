@@ -243,10 +243,16 @@ function _weekRowsFromDoc(found, name) {
     const eps = seasonRounds(doc, fmtOf(doc));
     if (!eps.length) return null;
     const format = fmtOf(doc);
+    /* ── AND IT DOES NOT STOP AT HER EXIT ──────────────────────────────
+       Both branches below break out of the loop when the player leaves, and
+       for them that is right: their grids record what somebody DID each
+       round, and after they go there is nothing to record. A track record
+       chart is the opposite — its entire value is that the columns line up
+       across every queen, and a row that stops early cannot be drawn beside
+       one that does not. The exporter marks her `OUT` for exactly this, and
+       the row runs to the end of the season. */
     const rows = [];
-    let gone = false;
     for (const e of eps) {
-      if (gone) break;
       const mineCell = (e.placements || []).find(p => p.name === name);
       // A queen who is not in this episode's grid at all was never in the
       // season — not somebody having a quiet week.
@@ -265,7 +271,6 @@ function _weekRowsFromDoc(found, name) {
         evictedName: exits.map(x => x.name).join(', '),
         exits: exits.map(x => ({ name: x.name, verb: x.verb, channel: x.channel })),
       });
-      if (mineOut) gone = true;
     }
     return rows.length ? rows : null;
   }
@@ -506,12 +511,21 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
         challengeWins: d.challengeWins || 0,
         votesReceived: d.votesReceived || 0,
         juryVotes: d.juryVotes || 0,
-        ...(d.bb ? { bb: { ...d.bb } } : {}),
-        // The castle's numbers, the same way the house's arrive. Without
-        // this a Traitors lead read "without winning a challenge" about
-        // somebody who won four missions: the word was wrong AND the count
-        // was never carried.
-        ...(d.tr ? { tr: { ...d.tr } } : {}),
+        /* ── THE SHOW'S OWN BLOCK, WHICHEVER SHOW IT IS ──────────────
+           This was `...(d.bb ? {bb} : {})` and `...(d.tr ? {tr} : {})` — a
+           list of the shows that existed when it was written, which is the
+           duplicate show list this repo keeps growing. A fourth show fell out
+           of both spreads, so `record` carried NONE of its numbers, and every
+           reader downstream that follows the registry's own `articleStats`
+           paths (`dr.wins`, `dr.lipsyncWins`) resolved undefined: the whole
+           per-show stat block on the article drew empty, with no error.
+
+           The block is named by the registry's prefix, so a show declaring
+           one gets it carried without this line being touched again. */
+        ...(() => {
+          const key = SHOWS[d.format || DEFAULT_FORMAT]?.prefix;
+          return key && d[key] ? { [key]: { ...d[key] } } : {};
+        })(),
       },
       // The per-week row, when the season document was reachable. Absent is a
       // normal state — a season nobody has published yet still gets an

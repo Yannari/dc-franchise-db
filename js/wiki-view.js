@@ -29,6 +29,7 @@ import { parseInterview } from './casting-interview.js';
 import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 import { joinOrigin } from './bio.js';
 
+import { RESULT_LABELS } from './dr/grid.js';
 import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs }
   from './shows.js';
 
@@ -1026,7 +1027,26 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       // off says how, and a week that was both (HOH one week, block the next)
       // can no longer hide half of itself.
       const cell = w => {
+        /* ── A CELL THAT IS A CALL, NOT A POSITION ─────────────────────
+           Everything below this is a house or a camp: where somebody stood
+           relative to a vote. A track record cell is a JUDGEMENT — what the
+           panel said about her that week — and there is no vote for her to
+           stand relative to. The six results come straight off the row the
+           exporter wrote; `RESULT_LABELS` is the same table js/dr/grid.js
+           colours the season page's chart with, so a queen's own row and the
+           season's full chart cannot disagree about what a week was. */
+        /* THE EXIT IS CHECKED FIRST, before the call. A row carrying both —
+           a record that marks her BTM on the night she also went home — must
+           say she left, not what the panel called her: the cell is the last
+           thing said about her that week. Reading the call first drew "BTM"
+           over a departure and the show's exit verb appeared nowhere. */
         if (w.evicted) return { label: exitWord(w), cls: 'wk-c-out', marks: [] };
+        if (w.result) {
+          const meta = RESULT_LABELS[w.result];
+          if (w.result === 'OUT') return { label: '', cls: 'wk-c-away', marks: [] };
+          if (w.result === 'ELIM') return { label: exitWord(w), cls: 'wk-c-out', marks: [] };
+          return { label: meta?.label || w.result, cls: `wk-c-dr wk-c-dr-${w.result.toLowerCase()}`, marks: [] };
+        }
         // Out of the house between two evictions, and the week nobody went
         // home: two states that are not "safe" and were both drawn as blank.
         if (w.notYet) return { label: 'Not in', cls: 'wk-c-away', marks: [] };
@@ -1060,7 +1080,12 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       const drawn = rows.map(cell);
       const marked = drawn.some(c => c.label || c.marks.length);
       const votedAny = rows.some(w => w.votedFor);
-      sub(node, `s${s2.season}-votes`, 'Voting History', `
+      /* WHAT THIS TABLE IS CALLED. "Voting History" over a show where nobody
+         votes is the heading naming a thing the table does not contain — and
+         the two sub-rows under it ("Voted to eliminate", "Votes against")
+         would be two empty rows asserting the same. */
+      const isCall = rows.some(w => w.result);
+      sub(node, `s${s2.season}-votes`, isCall ? 'Track Record' : 'Voting History', `
         <div class="wk-scroll">
           <table class="wk-table wk-weeks">
             <thead><tr><th>${roundWord}</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
@@ -1076,8 +1101,8 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
                 `<td>${w.votedFor
                   ? `<span class="wk-ballot">${L.avatar(w.votedFor)}${L.person(w.votedFor, { face: false })}</span>`
                   : ''}</td>`).join('')}</tr>` : ''}
-              <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
-                `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
+              ${isCall ? '' : `<tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
+                `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>`}
             </tbody>
           </table>
         </div>
@@ -1091,10 +1116,25 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
           if (n(w => w.nominated)) bits.push(`nominated ${n(w => w.nominated)}x`);
           if (n(w => w.onBlock)) bits.push(`on the block at the vote ${n(w => w.onBlock)}x`);
           const against = rows.reduce((t, w) => t + (w.votesAgainst || 0), 0);
-          const played = rows.filter(w => !w.away && !w.notYet && !w.noEviction).length;
+          const played = isCall
+            ? rows.filter(w => w.result && w.result !== 'OUT').length
+            : rows.filter(w => !w.away && !w.notYet && !w.noEviction).length;
           bits.push(`${played} ${played === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
-          bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
-            : 'never had a vote cast against them');
+          if (isCall) {
+            /* THE SUMMARY LINE IN THIS SHOW'S OWN TERMS. The alternative is
+               "never had a vote cast against them" under a track record
+               chart — a sentence that is true of every queen who ever
+               competed, on a show with no ballot, printed as if it were an
+               achievement. What the chart actually shows is the call. */
+            const n = k => rows.filter(w => w.result === k).length;
+            const w1 = n('WIN'); const btm = n('BTM') + n('ELIM');
+            if (w1) bits.push(`${w1} ${w1 === 1 ? words.comp : `${words.comp}s`} won`);
+            bits.push(btm ? `in the bottom ${btm} time${btm === 1 ? '' : 's'}`
+              : 'never in the bottom');
+          } else {
+            bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
+              : 'never had a vote cast against them');
+          }
           return esc(bits.join(' · '));
         })()}</p>`);
     }

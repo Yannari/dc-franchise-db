@@ -297,7 +297,14 @@ export const SHOWS = {
       ['dr.congeniality', 'totalCongeniality'],
     ],
     articleStats: {
-      career: [['maxiWins', 'Maxi challenge wins'], ['lipsyncWins', 'Lip syncs won']],
+      /* CAREER KEYS ARE THE LAST SEGMENT OF THE SEASON PATHS. `buildDossier`
+         sums each season path and files the total under `path.split('.').pop()`
+         — so `dr.wins` totals to `wins`, and asking here for `maxiWins`
+         resolved undefined and drew no career row at all. Same convention
+         every other show follows; see tests/show-list-duplication for the
+         guard that now checks it. */
+      career: [['wins', 'Maxi challenge wins'], ['lipsyncWins', 'Lip syncs won'],
+        ['bottoms', 'Times in the bottom']],
       season: [['dr.wins', 'Maxi challenge wins'], ['dr.lipsyncWins', 'Lip syncs won'],
         ['dr.bottoms', 'Times in the bottom']],
       comps: [['dr.wins', 'Maxi challenge wins'], ['dr.highs', 'Highs'],

@@ -162,7 +162,10 @@ function docFor(format) {
       challenge: { id: 'x', name: 'the maxi challenge' },
       placements: [
         { name: 'Testcase', result: 'WIN' },
-        ...leavers.map(x => ({ name: x.name, result: 'BTM' })),
+        // ELIM, not BTM: the queen who goes home is marked by her EXIT, and
+        // a fixture that marks her BTM is a fixture asserting the grid draws
+        // the call over the departure — which it did, and this caught it.
+        ...leavers.map(x => ({ name: x.name, result: 'ELIM' })),
       ],
       lipsync: { queens: ['Testcase', leavers[0]?.name || 'Otherperson'], song: 'A Song' },
       exits: leavers,

@@ -208,6 +208,26 @@ const EXTRA_CSS = `
 .dr-scene:not(:has(.dr-who)){grid-template-columns:1fr}
 .dr-who{display:flex;gap:7px}
 .dr-scene-body{color:#f4e3ed}
+/* ══ TWO SETS FOR THE SCREENS WITHOUT THEIR OWN ══ */
+.dr-hallwrap{position:relative}
+.dr-hall{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;overflow:hidden}
+.dr-hall i{position:absolute;display:block}
+/* THE GALA: the finale's stage, lit from above and gold at the floor. */
+.dr-hall-gala{background:radial-gradient(120% 70% at 50% 0%,rgba(255,200,61,.15),transparent 62%)}
+.dr-hall-gala .dr-hall-key{top:0;left:50%;width:420px;height:70%;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(255,233,168,.18),transparent 72%);
+  clip-path:polygon(40% 0,60% 0,100% 100%,0 100%)}
+.dr-hall-gala .dr-hall-floor{left:0;right:0;bottom:0;height:22%;
+  background:linear-gradient(180deg,transparent,rgba(255,200,61,.12));
+  border-top:1px solid rgba(255,200,61,.22)}
+/* THE SOFA: a reunion is a talk show, so it gets a talk show's key light. */
+.dr-hall-sofa{background:radial-gradient(100% 60% at 70% 0%,rgba(123,47,247,.20),transparent 62%)}
+.dr-hall-sofa .dr-hall-key{top:6%;right:8%;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,233,168,.16),transparent 66%)}
+.dr-hall-sofa .dr-hall-floor{left:6%;right:6%;bottom:8%;height:110px;border-radius:16px 16px 0 0;
+  background:linear-gradient(180deg,rgba(123,47,247,.18),rgba(0,0,0,.3));
+  border-top:2px solid rgba(255,255,255,.08)}
+
 .dr-waiting{opacity:.5}
 .dr-up{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#3BE08A}
 .dr-duel{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 0;
@@ -263,9 +283,21 @@ function buildSection(sec, row) {
     window._drSidebar[sec.suffix] = railFor(row, scenes, ep);
   }
   const rail = railFor(row, scenes, ep)[0] || '';
-  return `<style>${EXTRA_CSS}</style>${_shell(steps, ep, {
-    phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
-  })}${_controls(sec.suffix, scenes.length, ep.num)}`;
+  /* THE SEVEN SCREENS NOBODY BUILT A ROOM FOR. Everything without its own
+     builder falls here — the reunion and five sections of the finale night —
+     and they were drawn on the same gradient as a Tuesday in the werk room.
+     They are not a Tuesday. Two sets cover all of them: the finale's big
+     stage, gold and lit from above, and the reunion's sofa under a hot
+     television key light. Chosen from the section id, so a section added
+     later gets one without anybody remembering to. */
+  const set = sec.id.startsWith('dr-finale') ? 'gala'
+    : sec.id === 'dr-reunion' ? 'sofa' : '';
+  const room = set ? `<div class="dr-hall dr-hall-${set}" aria-hidden="true">
+      <i class="dr-hall-key"></i><i class="dr-hall-floor"></i></div>` : '';
+  return `<style>${EXTRA_CSS}</style>${_shell(
+    `<div class="dr-hallwrap">${room}${steps}</div>`, ep, {
+      phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
+    })}${_controls(sec.suffix, scenes.length, ep.num)}`;
 }
 
 /* THE SCREENS THAT HAVE THEIR OWN BUILDER. Everything else falls back to the

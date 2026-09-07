@@ -87,7 +87,41 @@ export const WERK_CSS = `
 @keyframes drRec{0%,100%{opacity:1}50%{opacity:.25}}
 
 /* ── SCENE CARDS ── container-queried, so they reflow to their own width ── */
-.dr-room{container-type:inline-size}
+.dr-room{container-type:inline-size;position:relative}
+
+/* ══ THE WERK ROOM ══ one set, four times of day ══
+   A wall of mirrors with bulbs around them, a bench of stations along the
+   bottom, and the sign on the wall. Absolute inside the content column so
+   the room is the screen rather than the browser window, and it runs the
+   full length of the night. */
+.dr-shop{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden}
+.dr-shop i{position:absolute;display:block}
+/* The bulbs around the mirror wall. */
+.dr-shop-mirrors{top:10px;left:6%;right:6%;height:210px;opacity:.5;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,233,168,.5) 0 7px,transparent 7px 46px) top/100% 4px no-repeat,
+    repeating-linear-gradient(90deg,rgba(255,233,168,.5) 0 7px,transparent 7px 46px) bottom/100% 4px no-repeat,
+    linear-gradient(180deg,rgba(255,255,255,.05),transparent 70%);
+  border-left:1px solid rgba(255,255,255,.07);
+  border-right:1px solid rgba(255,255,255,.07)}
+/* The bench of stations along the bottom. */
+.dr-shop-bench{left:0;right:0;bottom:0;height:26%;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.5));
+  border-top:1px solid rgba(255,255,255,.08)}
+/* The sign. */
+.dr-shop-sign{top:34px;right:9%;width:120px;height:3px;background:#FF3D9A;
+  box-shadow:0 0 26px 7px rgba(255,61,154,.45)}
+
+/* THE HOUR. Same room, different light. */
+.dr-shop-cold{background:linear-gradient(180deg,rgba(140,170,210,.13),transparent 45%)}
+.dr-shop-cold .dr-shop-mirrors{opacity:.28}
+.dr-shop-day{background:radial-gradient(100% 60% at 50% 0%,rgba(255,233,168,.10),transparent 60%)}
+.dr-shop-work{background:radial-gradient(90% 55% at 50% 100%,rgba(255,61,154,.13),transparent 68%)}
+.dr-shop-work .dr-shop-bench{background:linear-gradient(180deg,transparent,rgba(255,61,154,.14))}
+.dr-shop-mirror{background:linear-gradient(180deg,rgba(255,233,168,.16),transparent 38%),
+  linear-gradient(0deg,rgba(0,0,0,.55),transparent 55%)}
+.dr-shop-mirror .dr-shop-mirrors{opacity:1}
 .dr-card{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start;
   padding:15px 17px 15px 21px}
 .dr-card p{margin:6px 0 0;color:#f4e3ed;text-wrap:pretty}
@@ -217,6 +251,31 @@ function railWho(row, ep, title) {
 
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
+/**
+ * The werk room, drawn once and lit four ways.
+ *
+ * FOUR SCREENS HAPPEN IN THIS ROOM — the cold open, the morning, prep and
+ * elimination day — and all four were the same purple gradient as the main
+ * stage, which is somewhere else entirely. It is one room: a wall of
+ * mirrors with bulbs around them, a row of stations, a neon sign.
+ *
+ * What separates the four is the LIGHT, because what separates them in the
+ * show is the time of day. The cold open is the harsh morning after a night
+ * somebody left; the morning is flat working light; prep is late and warm
+ * with the machines running; elimination day is the mirrors lit for makeup
+ * and everything else dark. Same set, four hours of the day, which is the
+ * cheapest honest way to make four screens feel like four moments.
+ */
+const SHOP_LIGHT = {
+  coldopen: 'cold', morning: 'day', prep: 'work', elimday: 'mirror',
+};
+const shop = suffix => `<div class="dr-shop dr-shop-${SHOP_LIGHT[suffix] || 'day'}"
+    aria-hidden="true">
+    <i class="dr-shop-sign"></i>
+    <i class="dr-shop-mirrors"></i>
+    <i class="dr-shop-bench"></i>
+  </div>`;
+
 function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '' }) {
   const ep = epOf(row);
   const steps = scenes.map((sc, i) => sceneCard(sc, i, suffix, ep, row)).join('');
@@ -225,7 +284,7 @@ function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '
     window._drSidebar[suffix] = scenes.map(() => sidebar);
   }
   return `<style>${WERK_CSS}</style>${_shell(
-    `<div class="dr-room">${lead}${steps}</div>`, ep,
+    `<div class="dr-room">${shop(suffix)}${lead}${steps}</div>`, ep,
     { phase, title, subtitle, sidebar },
   )}${_controls(suffix, scenes.length, ep.num)}`;
 }

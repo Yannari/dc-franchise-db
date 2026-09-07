@@ -30,6 +30,22 @@ const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', d
 const judgeName = id => (JUDGES.find(j => j.id === id)?.name || id);
 
 export const STAGE_CSS = `
+/* ══ THE MAIN STAGE ══ the arch, the wash and the lip of the runway ══ */
+.dr-mainroom{position:relative}
+.dr-mainhall{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden;background:radial-gradient(110% 60% at 50% 0%,rgba(255,61,154,.16),transparent 62%)}
+.dr-mainhall i{position:absolute;display:block}
+/* The arch the whole night is framed by. */
+.dr-mh-arch{top:0;left:4%;right:4%;height:130px;
+  border:2px solid rgba(255,200,61,.22);border-top:0;border-radius:0 0 60px 60px;
+  box-shadow:0 14px 44px -22px rgba(255,200,61,.5)}
+.dr-mh-wash{top:0;left:50%;width:520px;height:64%;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(255,233,168,.13),transparent 74%)}
+/* The lip of the runway, where it meets the seats. */
+.dr-mh-lip{left:0;right:0;bottom:0;height:16%;
+  background:linear-gradient(180deg,transparent,rgba(255,200,61,.10));
+  border-top:1px solid rgba(255,200,61,.22)}
+
 /* ══ THE LOUNGE ══ where Untucked happens, which is not the main stage ══ */
 .dr-lounge{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
   overflow:hidden;background:
@@ -330,9 +346,16 @@ export function rpBuildMainStage(row) {
       <p style="margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty">${esc(sc.text)}</p>
     </div></div>`).join('');
 
-  return `<style>${STAGE_CSS}</style>${_shell(seats + bill + steps, ep, {
-    phase: 'stage', title: 'The Main Stage', subtitle: 'the panel takes its seats',
-  })}${_controls('mainstage', Math.max(1, scenes.length), ep.num)}`;
+  /* THE MAIN STAGE ITSELF. The one screen that is named after the room it
+     happens in was the only one on this night not drawing it: a proscenium
+     arch, the panel's table below it, and the top of the runway. */
+  const hall = `<div class="dr-mainhall" aria-hidden="true">
+      <i class="dr-mh-arch"></i><i class="dr-mh-wash"></i><i class="dr-mh-lip"></i>
+    </div>`;
+  return `<style>${STAGE_CSS}</style>${_shell(
+    `<div class="dr-mainroom">${hall}${seats}${bill}${steps}</div>`, ep, {
+      phase: 'stage', title: 'The Main Stage', subtitle: 'the panel takes its seats',
+    })}${_controls('mainstage', Math.max(1, scenes.length), ep.num)}`;
 }
 
 /** The runway: the category, then one walk at a time. */

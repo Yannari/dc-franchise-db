@@ -46,6 +46,33 @@ export const RESULTS_CSS = `
     transparent 44%),var(--dr-panel)}
 /* SAFE IS THE ABSENCE OF A RESULT and should recede rather than glow. */
 .dr-panel.dr-callrow.dr-quiet{opacity:.8}
+/* ══ THE LIP SYNC FLOOR ══ two spots on a black stage ══ */
+.dr-lsroom{position:relative}
+.dr-lsfloor{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden;background:linear-gradient(180deg,rgba(30,2,10,.6),transparent 42%)}
+.dr-lsfloor i{position:absolute;display:block}
+.dr-ls-a,.dr-ls-b{top:0;width:250px;height:60%;
+  background:linear-gradient(180deg,rgba(255,41,75,.24),transparent 74%);
+  clip-path:polygon(36% 0,64% 0,100% 100%,0 100%)}
+.dr-ls-a{left:14%}.dr-ls-b{right:14%}
+/* The speakers, under everything. */
+.dr-ls-thud{left:0;right:0;bottom:0;height:30%;
+  background:radial-gradient(70% 100% at 50% 100%,rgba(255,41,75,.20),transparent 72%);
+  animation:drThud 1.9s ease-in-out infinite}
+@keyframes drThud{0%,100%{opacity:.55}50%{opacity:1}}
+
+/* ══ THE WAY OUT ══ a lit door at the end of a dark corridor ══ */
+.dr-exitroom{position:relative}
+.dr-exitway{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden;background:linear-gradient(180deg,rgba(10,2,6,.55),transparent 50%)}
+.dr-exitway i{position:absolute;display:block}
+.dr-ex-door{top:14%;left:50%;width:120px;height:210px;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(255,233,168,.22),rgba(255,233,168,.05));
+  box-shadow:0 0 90px 26px rgba(255,200,61,.13)}
+.dr-ex-dark{inset:0;box-shadow:inset 0 0 200px 80px rgba(0,0,0,.7)}
+
+@media(prefers-reduced-motion:reduce){.dr-ls-thud{animation:none}}
+
 /* ══ THE LINE ══ the queens the panel kept back, standing for the call ══ */
 .dr-lineup-stage{position:sticky;top:0;z-index:6;display:flex;justify-content:center;
   gap:14px;flex-wrap:wrap;padding:16px 18px;margin:0 0 18px;
@@ -349,10 +376,17 @@ export function rpBuildLipSync(row) {
       <p>${esc(sc.text)}</p></div></div>`;
   }).join('');
 
-  return `<style>${RESULTS_CSS}</style>${_shell(vs + steps, ep, {
-    phase: 'lipsync', title: 'Lip Sync For Your Life',
-    subtitle: ls.call === 'double-shantay' ? 'both of them stay' : 'two queens, one song',
-  })}${_controls('lipsync', Math.max(1, beats.length), ep.num)}`;
+  /* THE FLOOR THEY FIGHT ON. Two hard spots on a black stage, and a low
+     throb from the speakers under everything. The VS panel already had its
+     own stripes; the room around it was the same purple as the werk room. */
+  const floor = `<div class="dr-lsfloor" aria-hidden="true">
+      <i class="dr-ls-a"></i><i class="dr-ls-b"></i><i class="dr-ls-thud"></i>
+    </div>`;
+  return `<style>${RESULTS_CSS}</style>${_shell(
+    `<div class="dr-lsroom">${floor}${vs}${steps}</div>`, ep, {
+      phase: 'lipsync', title: 'Lip Sync For Your Life',
+      subtitle: ls.call === 'double-shantay' ? 'both of them stay' : 'two queens, one song',
+    })}${_controls('lipsync', Math.max(1, beats.length), ep.num)}`;
 }
 
 /**
@@ -468,11 +502,17 @@ export function rpBuildExit(row) {
   const tail = finaleBlocks.map(wrap).join('');
   const total = Math.max(1, n);
 
-  return `<style>${RESULTS_CSS}</style>${_shell(lead + steps + tail, ep, {
-    phase: 'lipsync',
-    title: fin ? 'The Crowning' : 'Sashay Away',
-    subtitle: fin ? 'the last queen standing' : 'the mirror message',
-  })}${_controls('exit', total, ep.num)}`;
+  /* THE WAY OUT. A lit door at the back of a dark corridor, which is what
+     the last shot of an episode actually is. Not drawn on the crowning,
+     which is the same builder for a very different night. */
+  const corridor = fin ? '' : `<div class="dr-exitway" aria-hidden="true">
+      <i class="dr-ex-door"></i><i class="dr-ex-dark"></i></div>`;
+  return `<style>${RESULTS_CSS}</style>${_shell(
+    `<div class="dr-exitroom">${corridor}${lead}${steps}${tail}</div>`, ep, {
+      phase: 'lipsync',
+      title: fin ? 'The Crowning' : 'Sashay Away',
+      subtitle: fin ? 'the last queen standing' : 'the mirror message',
+    })}${_controls('exit', total, ep.num)}`;
 }
 
 

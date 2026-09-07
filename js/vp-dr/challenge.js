@@ -74,7 +74,13 @@ const CHAL_CSS = `
    Each is a fixed layer so it does not scroll with the prose — the room
    stays still and the night moves through it. All of them are cheap: a
    gradient, a repeat, and at most one slow animation. */
-/* THE ROOM IS THE SCREEN, NOT THE WINDOW. Fixed to the viewport, the
+/* NAMED dr-set, NOT dr-room: js/vp-dr/werk.js already uses .dr-room for its
+   content wrapper, and two files defining the same class differently is a
+   collision waiting for the day a screen pulls in both stylesheets.
+   (No backticks in here. This comment is inside a template literal and a
+   backtick ends it — the fourth time in this build.)
+
+   THE SET IS THE SCREEN, NOT THE WINDOW. Fixed to the viewport, the
    theatre's left curtain sat underneath the navigation sidebar and its
    footlights ran along the bottom of the browser rather than the bottom of
    the stage — the set was in the wrong building. Absolute inside the
@@ -82,18 +88,18 @@ const CHAL_CSS = `
    reader is actually looking at, and the walls then run the full length of
    the night rather than one screenful of it. */
 .dr-fam{position:relative;z-index:1}
-.dr-room{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+.dr-set{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
   overflow:hidden;border-radius:2px}
-.dr-room i{position:absolute;display:block}
+.dr-set i{position:absolute;display:block}
 
 /* A TELEVISION STUDIO: the tally light and the scan of a monitor.
    THE TALLY SAT AT 50% AND LANDED ON THE EPISODE HEADER — a red dot in the
    middle of the title, which reads as a fault rather than a camera. It goes
    in the corner where a tally actually is. */
-.dr-room-studio{background:
+.dr-set-studio{background:
   radial-gradient(120% 70% at 50% 0%,rgba(56,189,248,.16),transparent 62%),
   radial-gradient(90% 60% at 50% 110%,rgba(56,189,248,.08),transparent 70%)}
-.dr-room-studio::after{content:"";position:absolute;inset:0;
+.dr-set-studio::after{content:"";position:absolute;inset:0;
   box-shadow:inset 0 0 190px 60px rgba(0,0,0,.6)}
 .dr-tally{top:16px;right:20px;width:10px;height:10px;border-radius:50%;background:#FF294B;
   box-shadow:0 0 26px 7px rgba(255,41,75,.7);animation:drTally 3.4s ease-in-out infinite}
@@ -102,8 +108,8 @@ const CHAL_CSS = `
   rgba(255,255,255,.05) 0 1px,transparent 1px 4px)}
 
 /* A THEATRE: two curtains and a row of footlights. */
-.dr-room-stage{background:radial-gradient(120% 80% at 50% 100%,rgba(255,200,61,.18),transparent 65%)}
-.dr-room-stage::after{content:"";position:absolute;inset:0;
+.dr-set-stage{background:radial-gradient(120% 80% at 50% 100%,rgba(255,200,61,.18),transparent 65%)}
+.dr-set-stage::after{content:"";position:absolute;inset:0;
   box-shadow:inset 0 0 200px 70px rgba(0,0,0,.62)}
 .dr-curtain{top:0;bottom:0;width:13%;opacity:.85;
   background:repeating-linear-gradient(90deg,rgba(122,10,40,.5) 0 14px,rgba(60,4,20,.5) 14px 28px)}
@@ -113,7 +119,7 @@ const CHAL_CSS = `
   filter:blur(6px)}
 
 /* A COMEDY CLUB: brick, and one hard spot on the mic. */
-.dr-room-club{background:linear-gradient(180deg,rgba(10,6,8,.5),transparent 40%)}
+.dr-set-club{background:linear-gradient(180deg,rgba(10,6,8,.5),transparent 40%)}
 .dr-brick{inset:0;opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 26px),
     repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 54px)}
@@ -122,7 +128,7 @@ const CHAL_CSS = `
   clip-path:polygon(44% 0,56% 0,100% 100%,0 100%)}
 
 /* AN ATELIER: a cutting mat, and bolts of fabric leaning in the corners. */
-.dr-room-atelier{background:radial-gradient(100% 60% at 50% 100%,rgba(255,61,154,.09),transparent 70%)}
+.dr-set-atelier{background:radial-gradient(100% 60% at 50% 100%,rgba(255,61,154,.09),transparent 70%)}
 .dr-cutting{inset:auto 0 0 0;height:46%;opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(56,189,248,.16) 0 1px,transparent 1px 30px),
     repeating-linear-gradient(90deg,rgba(56,189,248,.16) 0 1px,transparent 1px 30px)}
@@ -133,7 +139,7 @@ const CHAL_CSS = `
   background:linear-gradient(180deg,rgba(56,189,248,.2),rgba(56,189,248,.04))}
 
 /* A DANCE FLOOR: marley, and the mirror wall behind it. */
-.dr-room-floor{background:linear-gradient(180deg,rgba(20,6,14,.6),transparent 45%)}
+.dr-set-floor{background:linear-gradient(180deg,rgba(20,6,14,.6),transparent 45%)}
 .dr-marley{inset:auto 0 0 0;height:38%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));
   border-top:1px solid rgba(255,255,255,.09)}
 .dr-mirror{top:8%;left:8%;right:8%;height:34%;opacity:.55;
@@ -141,7 +147,7 @@ const CHAL_CSS = `
   border:1px solid rgba(255,255,255,.08)}
 
 /* A SOUNDSTAGE: a barn-door flag and a boom shadow. */
-.dr-room-set{background:radial-gradient(110% 70% at 30% 0%,rgba(255,233,168,.09),transparent 60%)}
+.dr-set-set{background:radial-gradient(110% 70% at 30% 0%,rgba(255,233,168,.09),transparent 60%)}
 .dr-flag{top:0;left:14%;width:26%;height:32%;background:rgba(0,0,0,.45);
   clip-path:polygon(0 0,100% 0,72% 100%,0 78%)}
 .dr-boom{top:6%;right:10%;width:44%;height:8px;background:rgba(0,0,0,.5);
@@ -229,6 +235,21 @@ const CHAL_CSS = `
 .dr-team-q b{font-size:12.5px;font-weight:600;color:#f0dfe9}
 .dr-team-q i{font-size:9px;letter-spacing:.14em;text-transform:uppercase;
   font-style:normal;color:#C9A6BC}
+/* ══ THE DOORWAY ══ the host walks in and the room stops ══ */
+.dr-brief-room{position:relative}
+.dr-doorway{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;overflow:hidden}
+.dr-doorway i{position:absolute;display:block}
+.dr-door-light{top:0;left:50%;width:230px;height:56%;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(255,233,168,.20),transparent 76%);
+  clip-path:polygon(34% 0,66% 0,100% 100%,0 100%)}
+.dr-door-floor{left:0;right:0;bottom:0;height:24%;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.45));
+  border-top:1px solid rgba(255,255,255,.07)}
+/* The brief is the one the whole week hangs off, so it is brightest. */
+.dr-door-brief{background:radial-gradient(110% 60% at 50% 0%,rgba(255,233,168,.16),transparent 62%)}
+.dr-door-mini{background:radial-gradient(100% 55% at 50% 0%,rgba(56,189,248,.13),transparent 62%)}
+.dr-door-draft{background:radial-gradient(100% 55% at 50% 0%,rgba(255,61,154,.13),transparent 62%)}
+
 .dr-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
   gap:9px;margin-bottom:16px}
 .dr-chip-lg{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:center;
@@ -370,6 +391,20 @@ function perfCard(name, perf, i, suffix, ep, id) {
 /* ── the screens ────────────────────────────────────────────────── */
 
 /** The mini: who won it and what the win buys. */
+/**
+ * The set for the three screens where the host walks in and tells them
+ * something: the mini, the brief and the draft.
+ *
+ * All three are the same moment structurally — the room is working, the door
+ * goes, and everything stops — and all three were drawn on the werk room's
+ * gradient with no door in it. The set is that door: a lit rectangle at the
+ * back with the room falling away from it, and a floor the announcement
+ * lands on. The brief gets it brightest, because that is the one the whole
+ * week hangs off.
+ */
+const briefSet = kind => `<div class="dr-doorway dr-door-${kind}" aria-hidden="true">
+    <i class="dr-door-light"></i><i class="dr-door-floor"></i></div>`;
+
 export function rpBuildMini(row) {
   const ep = epOf(row);
   const m = row?.dr?.mini;
@@ -420,11 +455,12 @@ export function rpBuildMini(row) {
        <span style="color:#C9A6BC">Worth ${prize}.</span>${
   m.winner && i >= total - 1 ? `<br><br>Won by <b>${esc(m.winner)}</b>` : ''}</p>`);
   }
-  return `<style>${CHAL_CSS}</style>${_shell(lead + steps + winStep, ep, {
-    phase: 'werk', title: 'The Mini Challenge', subtitle: esc(m.name),
+  return `<style>${CHAL_CSS}</style>${_shell(
+    `<div class="dr-brief-room">${briefSet('mini')}${lead}${steps}${winStep}</div>`, ep, {
+      phase: 'werk', title: 'The Mini Challenge', subtitle: esc(m.name),
     sidebar: `<h4 class="dr-disp">The mini</h4><p style="font-size:13px">${esc(m.name)}<br>
       <span style="color:#C9A6BC">Worth ${prize}.</span></p>`,
-  })}${_controls('mini', Math.max(1, total), ep.num)}`;
+    })}${_controls('mini', Math.max(1, total), ep.num)}`;
 }
 
 /**
@@ -476,9 +512,10 @@ export function rpBuildMaxiAnnounce(row) {
   const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-announce-${i}">
     <div class="dr-panel dr-a-room" style="padding:14px 16px 14px 20px">
       <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p></div></div>`).join('');
-  return `<style>${CHAL_CSS}</style>${_shell(lead + steps, ep, {
-    phase: 'werk', title: 'The Maxi Challenge', subtitle: 'the brief',
-  })}${_controls('announce', Math.max(1, scenes.length), ep.num)}`;
+  return `<style>${CHAL_CSS}</style>${_shell(
+    `<div class="dr-brief-room">${briefSet('brief')}${lead}${steps}</div>`, ep, {
+      phase: 'werk', title: 'The Maxi Challenge', subtitle: 'the brief',
+    })}${_controls('announce', Math.max(1, scenes.length), ep.num)}`;
 }
 
 /**
@@ -499,6 +536,29 @@ function _choiceLabel(p) {
   return characterById(id)?.name
     || String(id).replace(/-/g, ' ').replace(/[a-z]/g, c => c.toUpperCase());
 }
+
+/* THE SAME ROOM AS werk.js DRAWS, for the one screen in this file that
+   happens in it. Copied rather than imported: a stylesheet constant is not
+   worth a module dependency, and the two are meant to look identical — if
+   they ever drift, prep is the one that is wrong. */
+const PREP_SHOP_CSS = `
+.dr-prep-room{position:relative}
+.dr-shop{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;overflow:hidden}
+.dr-shop i{position:absolute;display:block}
+.dr-shop-mirrors{top:10px;left:6%;right:6%;height:210px;opacity:.5;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,233,168,.5) 0 7px,transparent 7px 46px) top/100% 4px no-repeat,
+    repeating-linear-gradient(90deg,rgba(255,233,168,.5) 0 7px,transparent 7px 46px) bottom/100% 4px no-repeat,
+    linear-gradient(180deg,rgba(255,255,255,.05),transparent 70%);
+  border-left:1px solid rgba(255,255,255,.07);
+  border-right:1px solid rgba(255,255,255,.07)}
+.dr-shop-bench{left:0;right:0;bottom:0;height:26%;
+  background:linear-gradient(180deg,transparent,rgba(255,61,154,.14));
+  border-top:1px solid rgba(255,255,255,.08)}
+.dr-shop-sign{top:34px;right:9%;width:120px;height:3px;background:#FF3D9A;
+  box-shadow:0 0 26px 7px rgba(255,61,154,.45)}
+.dr-shop-work{background:radial-gradient(90% 55% at 50% 100%,rgba(255,61,154,.13),transparent 68%)}
+`;
 
 /** The draft: pick order, what came off the board, and the collisions. */
 export function rpBuildChoice(row) {
@@ -528,9 +588,10 @@ export function rpBuildChoice(row) {
         <span></span>
       </div></div>`;
   }).join('');
-  return `<style>${CHAL_CSS}</style>${_shell(board + steps, ep, {
-    phase: 'werk', title: 'The Draft', subtitle: 'who takes what',
-  })}${_controls('choice', Math.max(1, scenes.length), ep.num)}`;
+  return `<style>${CHAL_CSS}</style>${_shell(
+    `<div class="dr-brief-room">${briefSet('draft')}${board}${steps}</div>`, ep, {
+      phase: 'werk', title: 'The Draft', subtitle: 'who takes what',
+    })}${_controls('choice', Math.max(1, scenes.length), ep.num)}`;
 }
 
 /** Prep: the room at work, and the host's walkthrough. */
@@ -567,10 +628,21 @@ export function rpBuildPrep(row) {
     }).join('')}`
     : '';
 
-  return `<style>${CHAL_CSS}</style>${_shell(steps, ep, {
-    phase: 'werk', title: 'The Work Room', subtitle: 'building it',
-    sidebar: rail,
-  })}${_controls('prep', scenes.length, ep.num)}`;
+  /* PREP IS THE WERK ROOM, and it is built here rather than in werk.js
+     because it hangs off the challenge. Same set as the cold open, the
+     morning and elimination day — a mirror wall, a bench of stations, the
+     sign — lit for the hour it happens in, which is late and warm with the
+     machines running. The markup is duplicated rather than imported so
+     challenge.js does not have to depend on werk.js for one div; the CSS
+     that draws it is shared through WERK_CSS being the same picture. */
+  const shopPrep = `<div class="dr-shop dr-shop-work" aria-hidden="true">
+      <i class="dr-shop-sign"></i><i class="dr-shop-mirrors"></i>
+      <i class="dr-shop-bench"></i></div>`;
+  return `<style>${CHAL_CSS}${PREP_SHOP_CSS}</style>${_shell(
+    `<div class="dr-prep-room">${shopPrep}${steps}</div>`, ep, {
+      phase: 'werk', title: 'The Work Room', subtitle: 'building it',
+      sidebar: rail,
+    })}${_controls('prep', scenes.length, ep.num)}`;
 }
 
 /** The performance itself, with the panel this challenge type deserves. */
@@ -619,7 +691,7 @@ const ambientFor = fam => {
     floor: '<i class="dr-marley"></i><i class="dr-mirror"></i>',
     set: '<i class="dr-flag"></i><i class="dr-boom"></i>',
   }[fam] || '';
-  return `<div class="dr-room dr-room-${fam}">${inner}</div>`;
+  return `<div class="dr-set dr-set-${fam}">${inner}</div>`;
 };
 
 const FAMILY_SUB = {

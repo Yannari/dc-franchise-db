@@ -33,9 +33,10 @@
 // queens are physically doing. The narration says what happened, not what
 // the rules were, so a truncated desc leaves a result nobody can follow.
 // That is a project rule with its own test on the Big Brother side.
-import { _shell, _portrait, _icon } from './style.js';
+import { _shell, _portrait, _icon, _note } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { maxiById } from '../dr/data/challenges.js';
+import { characterById } from '../dr/data/snatch-characters.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -62,7 +63,14 @@ function _sceneData(ep, kind) {
 }
 
 const CHAL_CSS = `
-.dr-perf-line{margin:9px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
+/* THE NARRATION SPANS THE ROW. These paragraphs are injected into the
+   performance card just before its closing tags, which puts them inside
+   .dr-row — a three-column grid of bust / detail / score. Each paragraph
+   therefore landed in the next free CELL, so a queen's performance was
+   rendered eighty pixels wide, one word per line, down the score column.
+   1/-1 puts them back across the whole card. */
+.dr-perf-line{grid-column:1/-1;margin:9px 0 0;color:#f4e3ed;line-height:1.6;
+  max-width:74ch;text-wrap:pretty}
 .dr-track{margin-top:10px;color:#FFC83D;font-size:13px;line-height:1.5}
 .dr-track span{color:#C9A6BC}
 .dr-brief{padding:18px 22px;margin-bottom:14px;
@@ -94,9 +102,26 @@ const CHAL_CSS = `
 .dr-t-warn{color:#FF294B}.dr-t-good{color:#3BE08A}.dr-t-note{color:#FFC83D}
 
 /* The draft board: what is still on it, and who took what. */
-.dr-board{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
-.dr-chip-lg{padding:6px 12px;font-size:12px;border:1px solid rgba(255,255,255,.28)}
-.dr-chip-lg.dr-taken{opacity:.32;text-decoration:line-through}
+/* THE BOARD IS WHO TOOK WHAT. The dr-taken class used to strike the chip
+   through at a third opacity, from when a chip was a character crossed OFF
+   the board; it now names a queen and her pick and has to be readable.
+   NO BACKTICKS: this comment is inside a template literal. */
+.dr-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:9px;margin-bottom:16px}
+.dr-chip-lg{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:center;
+  padding:8px 11px;font-size:12px;border:1px solid var(--dr-line);
+  background:rgba(0,0,0,.24)}
+.dr-chip-lg .dr-por{border:1px solid rgba(255,255,255,.22)}
+.dr-took{display:block;min-width:0}
+.dr-took b{display:block;font-size:12px;font-weight:600;color:#f0dfe9;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-took i{display:block;font-style:normal;font-size:12.5px;color:#FFC83D;
+  line-height:1.25;text-wrap:pretty}
+.dr-took u{display:block;margin-top:2px;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:#FF294B;text-decoration:none}
+/* She wanted something else and did not get it. */
+.dr-chip-lg.dr-lost{border-color:rgba(255,41,75,.4)}
+.dr-nm-sub{font-size:10.5px;color:#FFC83D;line-height:1.25}
 
 /* Teams, side by side. */
 .dr-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -288,6 +313,25 @@ export function rpBuildMaxiAnnounce(row) {
   })}${_controls('announce', Math.max(1, scenes.length), ep.num)}`;
 }
 
+/**
+ * What a queen actually took, as words.
+ *
+ * The draft board read `p.name || p.role || who` — and `p.name` is the
+ * QUEEN'S name, which every pick carries, so the condition never fell
+ * through and the board drew nine chips each labelled with the name of the
+ * queen standing next to it. What she picked is on `p.choice`, and was
+ * being read by nothing.
+ *
+ * Snatch Game's pool has authored names; every other challenge's choices are
+ * slugs, so a slug is title-cased rather than printed raw.
+ */
+function _choiceLabel(p) {
+  const id = p?.choice || p?.pick || p?.part || '';
+  if (!id) return '';
+  return characterById(id)?.name
+    || String(id).replace(/-/g, ' ').replace(/[a-z]/g, c => c.toUpperCase());
+}
+
 /** The draft: pick order, what came off the board, and the collisions. */
 export function rpBuildChoice(row) {
   const ep = epOf(row);
@@ -296,8 +340,15 @@ export function rpBuildChoice(row) {
   const picks = Object.entries(a.picks || {});
   if (!picks.length && !scenes.length) return '';
 
-  const board = picks.length ? `<div class="dr-board">${picks.map(([who, p]) =>
-    `<span class="dr-chip-lg dr-taken">${esc(p?.name || p?.role || who)}</span>`).join('')}</div>` : '';
+  const board = picks.length ? `<div class="dr-board">${picks.map(([who, p]) => {
+    const took = _choiceLabel(p);
+    return `<span class="dr-chip-lg dr-taken${p?.lostTo ? ' dr-lost' : ''}">
+      ${_portrait(who, ep, { size: 28 })}
+      <span class="dr-took"><b>${esc(who)}</b>
+        <i>${took ? esc(took) : 'no pick'}</i>
+        ${p?.lostTo ? `<u>lost hers to ${esc(p.lostTo)}</u>` : ''}</span>
+    </span>`;
+  }).join('')}</div>` : '';
 
   const steps = scenes.map((sc, i) => {
     const who = (sc.data?.players || [])[0];
@@ -327,12 +378,30 @@ export function rpBuildPrep(row) {
         ${players.length ? _portrait(players[0], ep, { size: 46, station: !host }) : _icon('sewing')}
         <div>${players.length ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : ''}
           ${host ? '<span class="dr-sub">the walkthrough</span>' : ''}
-          <p style="margin:4px 0 0;color:#f4e3ed">${esc(sc.text)}</p></div>
+          ${_note(sc) ? `<span class="dr-sub">${esc(_note(sc))}</span>` : ''}
+          <p style="margin:4px 0 0;color:#f4e3ed;line-height:1.6">${esc(sc.text)}</p></div>
         <span></span>
       </div></div>`;
   }).join('');
+
+  /* THE RAIL IS WHAT EVERYBODY IS MAKING. Prep drew two cards and half a
+     page of nothing, on the one night the room is full of people building
+     different things — and the draft has already told us what each of them
+     took, so this is not a spoiler, it is the thing you want beside the
+     prose while you read it. */
+  const picks = Object.entries(row?.dr?.assignment?.picks || {});
+  const rail = picks.length
+    ? `<h4 class="dr-disp">On the table</h4>${picks.map(([who, p]) => {
+      const took = _choiceLabel(p);
+      return `<div class="dr-slot">${_portrait(who, ep, { size: 32 })}
+        <div><div class="dr-nm">${esc(who)}</div>
+        ${took ? `<div class="dr-nm-sub">${esc(took)}</div>` : ''}</div><span></span></div>`;
+    }).join('')}`
+    : '';
+
   return `<style>${CHAL_CSS}</style>${_shell(steps, ep, {
     phase: 'werk', title: 'The Work Room', subtitle: 'building it',
+    sidebar: rail,
   })}${_controls('prep', scenes.length, ep.num)}`;
 }
 

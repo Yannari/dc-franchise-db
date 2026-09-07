@@ -34,7 +34,7 @@
 // and `animation-timeline: view()` so cards also settle as they scroll into
 // frame. Every one of them degrades to the plain rule underneath: the
 // click-to-reveal is what actually governs, and none of this is load-bearing.
-import { _shell, _portrait, _icon } from './style.js';
+import { _shell, _portrait, _icon, _note } from './style.js';
 import { _controls } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -199,7 +199,7 @@ function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
       ${busts}
       <div>
         ${players.length ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : ''}
-        ${sc?.data?.note ? `<span class="dr-note">${esc(sc.data.note)}</span>` : ''}
+        ${_note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : ''}
         <p>${!players.length || opens ? '' : ''}${esc(sc.text || '')}</p>
         ${consequences(row, sc)}
       </div>

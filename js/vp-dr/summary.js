@@ -16,6 +16,7 @@
 // What it shows is the one thing worth watching while the engine is being
 // built: the panel's ranking beside the host's final one, so a bend is visible
 // as a moving row.
+import { _note } from './style.js';
 import { showWords } from '../shows.js';
 import { dragScreensRevealed } from './screens.js';
 import { judgeById } from '../dr/judges.js';
@@ -326,7 +327,7 @@ function _textWerkRoom(dr, ln) {
     if (sc.text) {
       ln(`  ${sc.text}`);
     } else {
-      ln(`  [${who}] ${sc.data?.note || sc.kind}`);
+      ln(`  [${who}] ${_note(sc) || sc.kind}`);
     }
   }
 }

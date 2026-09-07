@@ -254,6 +254,31 @@ const initialsOf = name => String(name || '?').trim().split(/\s+/)
  * Falls back to initials rather than a broken image, because the SHAPE of a
  * row must not depend on whether the art exists.
  */
+/**
+ * A scene's `note`, with the placeholders filled in.
+ *
+ * THE NOTE IS AUTHORED WITH {a} AND {b} the same way the prose is — it is
+ * the one-line description of what the event does, written before anybody
+ * is cast in it. The prose pools get substituted when a scene is drawn; the
+ * note never was, so the werk room printed "{B} SAYS SOMETHING DISMISSIVE
+ * ABOUT {A} THAT {A} DECIDES TO KEEP" as a caption over the paragraph that
+ * says it properly. Thirty-six of the two hundred and twenty-three notes
+ * carry a placeholder, across four pools.
+ *
+ * Returns '' when the note is missing, and — deliberately — when a
+ * placeholder has nobody to fill it. A caption is worth having only when it
+ * names the people it is about.
+ */
+export function _note(sc) {
+  const raw = String(sc?.data?.note || '');
+  if (!raw) return '';
+  const [a, b] = sc?.data?.players || [];
+  if (/\{[ab]\}/.test(raw) && !a) return '';
+  if (/\{b\}/.test(raw) && !b) return '';
+  return raw.replace(/\{a\}/g, a || '').replace(/\{b\}/g, b || '')
+    .replace(/\s+/g, ' ').trim();
+}
+
 export function _portrait(name, ep, { slug = '', size = 48, station = false, cls = '' } = {}) {
   const url = avatarUrl({
     playerSlug: slug || String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),

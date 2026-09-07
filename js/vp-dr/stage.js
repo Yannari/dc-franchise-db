@@ -19,7 +19,7 @@
 // view rather than from the call, so a MIXED plate beside a PRAISE plate is
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
-import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
+import { _shell, _portrait, _judgePortrait, _icon, _note } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
 
@@ -98,20 +98,67 @@ export const STAGE_CSS = `
   box-shadow:inset 0 1px 0 rgba(255,214,240,.2),0 8px 18px -6px rgba(0,0,0,.8);
   border:1px solid currentColor;color:#FF7BC8}
 
+/* ── THE PANEL'S TASTES, AND TONIGHT'S BILL ── */
+.dr-seat .dr-taste{display:block;max-width:150px;margin-top:4px;font-size:10px;
+  line-height:1.35;color:#C9A6BC;text-wrap:pretty}
+.dr-seat .dr-taste::before{display:inline-block;width:12px;font-weight:700}
+.dr-t-yes::before{content:"+";color:#3BE08A}
+.dr-t-no::before{content:"−";color:#FF294B}
+.dr-t-guest{color:#FFC83D!important;letter-spacing:.14em;text-transform:uppercase}
+.dr-callout{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  margin:0 0 14px;padding:16px 20px;border-left:4px solid #FFC83D;
+  background:linear-gradient(90deg,rgba(255,200,61,.14),transparent 60%),rgba(0,0,0,.3)}
+.dr-callout-k{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#C9A6BC}
+.dr-callout b{font-size:26px;color:#FFC83D;line-height:1.05;text-wrap:balance}
+.dr-lineup{margin:0 0 16px;padding:13px 18px;border:1px solid var(--dr-line);
+  background:rgba(0,0,0,.22)}
+.dr-lineup-k{display:block;margin-bottom:9px;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:#b892a8}
+.dr-lineup-row{display:flex;gap:14px;flex-wrap:wrap}
+.dr-lineup-q{display:flex;flex-direction:column;align-items:center;gap:4px;width:56px}
+.dr-lineup-q i{font-size:9.5px;font-style:normal;color:#e3cfdd;text-align:center;
+  line-height:1.2}
+.dr-lineup-q .dr-por{border:1px solid rgba(255,255,255,.2)}
+
 /* ── VISUAL-NOVEL CRITIQUE ── the bust breaks OUT of the box ── */
 .dr-vn{position:relative;margin:26px 0 14px;padding:15px 17px 15px 118px;min-height:104px}
 .dr-vn .dr-bust{position:absolute;left:-14px;bottom:0}
 .dr-vn .dr-por{border:2px solid rgba(255,255,255,.35)}
-.dr-plate{position:absolute;left:-14px;top:-16px;padding:4px 13px;font-size:12px;
-  letter-spacing:.14em;color:#1a0a02;z-index:2;background:var(--dr-tone,#FFC83D);
-  clip-path:polygon(0 0,100% 0,calc(100% - 9px) 100%,0 100%)}
-.dr-vn q{display:block;font-size:19px;line-height:1.3;margin-bottom:5px;text-wrap:balance}
+/* THE LOWER-THIRD, IN THE FLOW. Both of these were absolutely positioned:
+   the name plate at left:-14px, which the card clipped so the judge's name
+   read "MICHELLE V", and the tone tag at right:12px, which sat on top of the
+   first line of the quote. They are one header row now — nothing overlaps
+   text and nothing hangs off an edge. */
+.dr-vn-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:-4px 0 9px}
+.dr-plate{padding:4px 13px;font-size:12px;letter-spacing:.14em;color:#1a0a02;
+  background:var(--dr-tone,#FFC83D);
+  clip-path:polygon(0 0,100% 0,calc(100% - 9px) 100%,0 100%);padding-right:20px}
+/* THE QUOTE IS SPEECH AND IS SET AS SPEECH. It carried .dr-disp, which is
+   the condensed uppercase display face — fine on a three-word title, close
+   to unreadable on a forty-word critique, which is what a judge actually
+   says. And <q> supplies its own quotation marks, so a line that already
+   opened with one printed two. */
+.dr-vn q{display:block;font-family:Didot,'Bodoni MT',Georgia,serif;font-size:18px;
+  line-height:1.45;margin-bottom:7px;color:#fff6fb;text-wrap:pretty;quotes:none}
+.dr-vn q::before,.dr-vn q::after{content:none}
+/* ── THE JUDGES WHO DID NOT SPEAK ── */
+.dr-quiet-panel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:10px 0 4px;padding:9px 14px;border:1px dashed rgba(255,255,255,.14);
+  background:rgba(0,0,0,.22)}
+.dr-quiet-k{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#b892a8}
+.dr-quiet-j{display:inline-flex;align-items:center;gap:7px;padding:3px 9px 3px 3px;
+  border-left:3px solid var(--dr-tone,#FFC83D);background:rgba(255,255,255,.04)}
+.dr-quiet-j b{font-size:12px;font-weight:600;color:#f0dfe9}
+.dr-quiet-j i{font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dr-tone,#FFC83D);font-style:normal}
+.dr-quiet-j .dr-por{border:1px solid rgba(255,255,255,.25)}
 .dr-vn p{margin:0;color:#f0dfe9;font-size:14px;text-wrap:pretty}
 .dr-vn::before{background:var(--dr-tone,#FFC83D);box-shadow:0 0 14px var(--dr-tone,#FFC83D)}
 .dr-tone-praise{--dr-tone:#3BE08A}
 .dr-tone-mixed{--dr-tone:#FFC83D}
 .dr-tone-pan{--dr-tone:#FF294B}
-.dr-tonetag{position:absolute;right:12px;top:12px;font-size:9px;letter-spacing:.16em;
+.dr-tonetag{flex:none;font-size:9px;letter-spacing:.16em;
   padding:3px 8px;border:1px solid var(--dr-tone,#FFC83D);color:var(--dr-tone,#FFC83D)}
 .dr-reasons{margin-top:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#C9A6BC}
 .dr-split{display:inline-block;margin-left:8px;font-size:9px;letter-spacing:.14em;
@@ -138,18 +185,47 @@ export function rpBuildMainStage(row) {
   const guest = row?.dr?.guest;
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'main-stage' && s.text);
 
-  const seats = `<div class="dr-panelrow">${ids.map(id => `<span class="dr-seat">
-      ${_judgePortrait(id, { stage: true, size: 62 })}<b>${esc(judgeName(id))}</b></span>`).join('')}
+  /* WHAT EACH JUDGE IS LOOKING FOR, before she looks at anybody. The seats
+     were three portraits and three names on a screen that then had one line
+     of prose and half a page of nothing under it. `petPeeve` and `softSpot`
+     are authored on every judge and were being read by no screen at all —
+     and they are the most useful thing on this night, because they are what
+     the critiques twenty minutes later are going to turn on. */
+  const seatOf = id => {
+    const j = JUDGES.find(x => x.id === id) || {};
+    return `<span class="dr-seat">
+      ${_judgePortrait(id, { stage: true, size: 62 })}<b>${esc(judgeName(id))}</b>
+      ${j.softSpot ? `<span class="dr-taste dr-t-yes">${esc(j.softSpot)}</span>` : ''}
+      ${j.petPeeve ? `<span class="dr-taste dr-t-no">${esc(j.petPeeve)}</span>` : ''}
+    </span>`;
+  };
+  const seats = `<div class="dr-panelrow">${ids.map(seatOf).join('')}
     ${guest ? `<span class="dr-seat">${_portrait(guest.name || guest, ep, { size: 62 })}
       <b>${esc(guest.name || guest)}</b>${guest.credit
-    ? `<div style="font-size:9px;opacity:.7">${esc(guest.credit)}</div>` : ''}</span>` : ''}
+    ? `<div style="font-size:9px;opacity:.7">${esc(guest.credit)}</div>` : ''}
+      <span class="dr-taste dr-t-guest">guest judge</span></span>` : ''}
   </div>`;
+
+  /* THE CATEGORY, AND WHO IS ABOUT TO WALK IN IT. Both were already on the
+     row and neither was drawn here — the reader met the category for the
+     first time on the runway screen, after it had already been walked. */
+  const cat = row?.dr?.runway?.category;
+  const living = row?.dr?.living || [];
+  const bill = `${cat ? `<div class="dr-callout">
+      <span class="dr-callout-k dr-disp">The category is</span>
+      <b class="dr-disp">${esc(cat)}</b></div>` : ''}
+    ${living.length ? `<div class="dr-lineup">
+      <span class="dr-lineup-k dr-disp">Walking tonight</span>
+      <div class="dr-lineup-row">${living.map(n => `<span class="dr-lineup-q">
+        ${_portrait(n, ep, { size: 40 })}<i>${esc(n)}</i></span>`).join('')}</div>
+    </div>` : ''}`;
 
   const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-mainstage-${i}">
     <div class="dr-panel dr-a-score" style="padding:14px 16px 14px 20px">
-      <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p></div></div>`).join('');
+      <p style="margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty">${esc(sc.text)}</p>
+    </div></div>`).join('');
 
-  return `<style>${STAGE_CSS}</style>${_shell(seats + steps, ep, {
+  return `<style>${STAGE_CSS}</style>${_shell(seats + bill + steps, ep, {
     phase: 'stage', title: 'The Main Stage', subtitle: 'the panel takes its seats',
   })}${_controls('mainstage', Math.max(1, scenes.length), ep.num)}`;
 }
@@ -248,7 +324,7 @@ export function rpBuildCritiques(row) {
   for (const c of lines) {
     if (!byQueen.has(c.queen)) byQueen.set(c.queen, []);
     const spoken = said.get(`${c.queen}|${c.judgeName || judgeName(c.judge)}`);
-    byQueen.get(c.queen).push({ ...c, text: c.text || spoken?.text || '', note: spoken?.data?.note });
+    byQueen.get(c.queen).push({ ...c, text: c.text || spoken?.text || '', note: spoken ? _note(spoken) : '' });
   }
   const queens = [...byQueen.keys()];
 
@@ -256,15 +332,35 @@ export function rpBuildCritiques(row) {
     const hers = byQueen.get(name);
     const tones = new Set(hers.map(c => c.tone));
     const disagreed = tones.size > 1;
-    const cards = hers.map(c => `<div class="dr-panel dr-vn dr-tone-${esc(c.tone)}">
-        <span class="dr-plate dr-disp">${esc(c.judgeName || judgeName(c.judge))}</span>
-        <span class="dr-tonetag dr-disp">${esc(c.tone)}</span>
+    /* A JUDGE WHO DID NOT SPEAK DOES NOT GET A QUOTE BOX. The panel forms an
+       opinion of every queen — three judges, six queens, eighteen rows on
+       `dr.critiques` — but only two of them are given a line about each, so
+       ten of those eighteen were drawn as an empty pair of quote marks with
+       a portrait beside it. Forty-four per cent of this screen was blank
+       boxes.
+       The silent judge's opinion is still real and still counts, so it is
+       not thrown away: she goes in a tone strip under the spoken critiques,
+       which says what she thought without pretending she said it. */
+    const spokeUp = hers.filter(c => (c.text || c.line || '').trim());
+    const quiet = hers.filter(c => !(c.text || c.line || '').trim());
+    const cards = spokeUp.map(c => `<div class="dr-panel dr-vn dr-tone-${esc(c.tone)}">
+        <div class="dr-vn-head">
+          <span class="dr-plate dr-disp">${esc(c.judgeName || judgeName(c.judge))}</span>
+          <span class="dr-tonetag dr-disp">${esc(c.tone)}</span>
+        </div>
         ${_judgePortrait(c.judge, { stage: true, size: 118 })}
-        <q class="dr-disp">${esc(c.text || c.line || '')}</q>
+        <q>${esc(c.text || c.line || '')}</q>
         ${c.note ? `<p>${esc(c.note)}</p>` : ''}
         ${(c.reasons || []).length
     ? `<div class="dr-reasons">${c.reasons.map(esc).join(' · ')}</div>` : ''}
-      </div>`).join('');
+      </div>`).join('')
+      + (quiet.length ? `<div class="dr-quiet-panel">
+        <span class="dr-quiet-k dr-disp">Also on the panel</span>
+        ${quiet.map(c => `<span class="dr-quiet-j dr-tone-${esc(c.tone)}">
+          ${_judgePortrait(c.judge, { size: 30 })}
+          <b>${esc(c.judgeName || judgeName(c.judge))}</b>
+          <i class="dr-disp">${esc(c.tone)}</i></span>`).join('')}
+      </div>` : '');
     return `<div class="dr-step" id="dr-step-critiques-${i}">
       <div class="dr-panel dr-a-score" style="padding:14px 16px 14px 20px">
         ${_portrait(name, ep, { size: 54, station: true })}

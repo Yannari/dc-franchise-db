@@ -194,7 +194,15 @@ const COMPARISON_BACKLOG = {
   // config, and the Season Hub asks what the season being PLAYED is. Neither
   // is a vocabulary branch — the words on both come from the registry through
   // showWords() and roundExits().
-  'js/run-ui.js':                 16,
+  // 16 -> 15, paid off by the fourth show. The season hub keyed its venue on
+  // `format === 'traitors'`, with a `tr-castle` entry duplicating that show's
+  // own accent — so Drag Race, which had no boolean here, printed "HOSTED
+  // CAMP" in Total Drama's yellow across a runway season. A show with one
+  // venue declares it in the registry (`SHOWS[format].venue`) now, and the
+  // hub reads that; the exit line reads `roundExits(row, format)` too, which
+  // it had been calling for the castle alone while every other show fell
+  // through to "left the game".
+  'js/run-ui.js':                 15,
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,

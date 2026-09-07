@@ -1,6 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════
 // dr-run-ui.test.js — the run tab's pills, and the words on them
 // ══════════════════════════════════════════════════════════════════════
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { DR_BADGES, dragBadges } from '../js/dr/badges.js';
 import { playDragSeason } from '../js/dr/season.js';
@@ -48,6 +49,62 @@ describe('badges', () => {
     for (const b of DR_BADGES) {
       expect(b.text.length).toBeGreaterThan(2);
       expect(b.color).toMatch(/^#[0-9a-f]{6}$/i);
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The hub is this show's hub, and the viewing party actually renders
+// ══════════════════════════════════════════════════════════════════════
+describe('the live tab', () => {
+  it('declares a venue in the registry rather than a boolean in the hub', async () => {
+    const { SHOWS, showWords } = await import('../js/shows.js');
+    /* The season hub keyed its venue on `format === 'traitors'` plus a
+       `tr-castle` entry duplicating that show's accent, so a show with no
+       boolean fell through to `config.setting` — which on a runway season
+       still says whatever the season was built as. It printed "HOSTED CAMP"
+       in Total Drama's yellow across a drag hub. */
+    expect(SHOWS['drag-race'].venue?.label).toBe('The Werk Room');
+    expect(SHOWS.traitors.venue?.label).toBe('The Castle');
+    // A show whose venue is a season CHOICE must NOT declare one.
+    expect(SHOWS['total-drama'].venue).toBeUndefined();
+    expect(SHOWS['big-brother'].venue).toBeUndefined();
+    // And every show says what an ordinary round is called.
+    for (const f of Object.keys(SHOWS)) {
+      expect(showWords(f).quietRound, `${f} has no quietRound`).toBeTruthy();
+    }
+  });
+
+  it('the hub reads no hardcoded show name for a drag season', async () => {
+    const src = readFileSync('js/run-ui.js', 'utf8');
+    expect(src, 'the castle boolean is back').not.toMatch(/const _castle\s*=/);
+    expect(src, 'a tr-castle venue entry is back').not.toMatch(/'tr-castle':/);
+  });
+
+  /* THE BUG THAT MADE THE VIEWING PARTY BLANK. `buildVPScreens` sets the
+     module-level `vpScreens`, and every caller ignores the return value —
+     `buildVPScreens(ep); renderVPScreen();` is the shape at all of them. The
+     drag branch only RETURNED, so opening a drag episode left `vpScreens`
+     holding whatever the previous episode put there. Nothing failed, because
+     the returned value was correct; it simply never reached the renderer. */
+  it('populates the module-level vpScreens the renderer reads', async () => {
+    const { playDragSeason } = await import('../js/dr/season.js');
+    const vps = await import('../js/vp-screens.js');
+    const { rngFor } = await import('../js/dr/rng.js');
+    const S = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const g = rngFor(9); const r = () => 1 + Math.floor(g() * 10);
+    const cast = Array.from({ length: 12 }, (_, i) => ({
+      name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+      archetype: 'hero', age: 22 + i,
+      stats: Object.fromEntries(S.map(k => [k, r()])),
+      drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+    }));
+    const { rows } = playDragSeason({ cast, seed: 4, config: { drReunion: true } });
+    for (const row of rows) {
+      window.vpEpNum = row.num;
+      vps.buildVPScreens(row);
+      expect(vps.vpScreens.length, `episode ${row.num} drew nothing`).toBeGreaterThan(0);
     }
   });
 });

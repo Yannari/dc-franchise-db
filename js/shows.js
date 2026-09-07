@@ -39,6 +39,10 @@ export const SHOWS = {
     // hand out immunity. A juror was saying "three individual immunities" and
     // "challenge beast" about a houseguest's Heads of Household.
     words: { player: 'contestant', players: 'contestants', round: 'Episode', exit: 'voted out',
+      // What an ordinary round is called when nothing is scheduled. The
+      // season hub printed this, and read it off a chain of slug comparisons
+      // until a fourth show made the chain the thing the guard is for.
+      quietRound: 'Standard episode',
       // `exit` is what HAPPENED to them; `exitAction` is what the room DID.
       // A ballot column is headed with the act, not the participle, and it
       // was headed "Voted to evict" over a camp on every one of fourteen
@@ -111,6 +115,10 @@ export const SHOWS = {
        came back non-empty, and a show that exports neither is drawn nothing. */
     roundShape: 'weeks',
     words: { player: 'houseguest', players: 'houseguests', round: 'Week', exit: 'evicted',
+      // What an ordinary round is called when nothing is scheduled. The
+      // season hub printed this, and read it off a chain of slug comparisons
+      // until a fourth show made the chain the thing the guard is for.
+      quietRound: 'A normal week in the house',
       exitAction: 'evict',
       milestone: 'jury',
       fanWords: ['veto', 'nomination', 'eviction', 'houseguest', 'block',
@@ -156,6 +164,16 @@ export const SHOWS = {
   //    seasons. `historyFromLedger` below is that split.
   'traitors': {
     prefix: 'tr', name: 'The Traitors', short: 'TR', emoji: '🗡️', accent: '#b91c3c',
+    /* THE ONE PLACE THIS SHOW HAPPENS. A show whose venue never changes
+       declares it here; a show whose venue is a season CHOICE (Total Drama's
+       camp, Big Brother's house) leaves it out and the hub reads
+       `config.setting` as before.
+       Added because js/run-ui.js was carrying `const _castle = seasonFormat(
+       config) === 'traitors'` plus a `tr-castle` entry duplicating this show's
+       own accent — so every new show had to add a boolean, and Drag Race,
+       which did not, printed "HOSTED CAMP" in Total Drama's yellow across the
+       top of its hub. */
+    venue: { label: 'The Castle', icon: '🗡️' },
     // Set at the bottom of js/tr-run.js. Read by formatIsRunnable().
     runnableFlag: '_trRunnable',
     roundsPath: 'tr.rounds',
@@ -175,6 +193,10 @@ export const SHOWS = {
     // ballot names its own channel instead of somebody adding a branch.
     privateBallotChannels: ['murder'],
     words: { player: 'player', players: 'players', round: 'Episode', exit: 'banished',
+      // What an ordinary round is called when nothing is scheduled. The
+      // season hub printed this, and read it off a chain of slug comparisons
+      // until a fourth show made the chain the thing the guard is for.
+      quietRound: 'The castle continues',
       exitAction: 'banish',
       // No merge and no jury: the castle's boundary is the last table.
       milestone: 'the final table',
@@ -256,6 +278,7 @@ export const SHOWS = {
   // Spec: docs/superpowers/specs/2026-09-06-drag-race-design.md
   'drag-race': {
     prefix: 'dr', name: 'Drag Race', short: 'DR', emoji: '👑', accent: '#ff2d95',
+    venue: { label: 'The Werk Room', icon: '👑' },
     // Set at the bottom of js/dr-run.js. Absent until that file exists, which
     // is deliberate: the setup screen must refuse a show with no engine.
     runnableFlag: '_drRunnable',
@@ -265,6 +288,10 @@ export const SHOWS = {
        came back non-empty, and a show that exports neither is drawn nothing. */
     roundShape: 'placements',
     words: {
+      // What an ordinary round is called when nothing is scheduled. The
+      // season hub printed this, and read it off a chain of slug comparisons
+      // until a fourth show made the chain the thing the guard is for.
+      quietRound: 'A normal week',
       player: 'queen', players: 'queens', round: 'Episode',
       exit: 'sashayed away', exitAction: 'send home',
       // THE SECOND EXIT VERB. Read through exitVerbs(); never printed as the

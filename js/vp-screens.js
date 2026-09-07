@@ -14064,6 +14064,16 @@ export function buildVPScreens(epRecord) {
         built.push({ id: 'dr-debug', label: 'Debug', html: rpBuildDragSummary(epRecord) });
       }
     } catch { /* storage can throw; the debug tab is not worth a crash */ }
+    /* ASSIGN, THEN RETURN — the module-level `vpScreens` is what renders.
+       This branch only returned, and every caller ignores the return value:
+       `buildVPScreens(ep); renderVPScreen();` is the shape at all of them,
+       including the reveal handlers this show's own screens emit. So opening
+       a drag episode left `vpScreens` holding whatever the last episode put
+       there, and the viewing party drew the wrong show or nothing at all.
+       The castle branch below has always done both; this one did not, and
+       nothing failed because the return value is correct — it simply never
+       reaches the renderer. */
+    vpScreens = built;
     return built;
   }
   if (epRecord.format === 'traitors') {

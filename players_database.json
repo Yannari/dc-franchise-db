@@ -1004,8 +1004,8 @@
         }
       },
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 4,
-      "totalBottoms": 9,
+      "totalLipsyncWins": 5,
+      "totalBottoms": 11,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -1175,7 +1175,7 @@
       "tier": "S+",
       "totalMaxiWins": 10,
       "totalLipsyncWins": 0,
-      "totalBottoms": 1,
+      "totalBottoms": 2,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -2024,7 +2024,7 @@
       },
       "emoji": "💀",
       "tier": "S",
-      "totalMaxiWins": 9,
+      "totalMaxiWins": 16,
       "totalLipsyncWins": 2,
       "totalBottoms": 4,
       "latestAvatarFile": "",
@@ -3905,7 +3905,7 @@
       "tier": "D",
       "totalMaxiWins": 4,
       "totalLipsyncWins": 3,
-      "totalBottoms": 6,
+      "totalBottoms": 7,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -7827,7 +7827,7 @@
       },
       "totalMaxiWins": 0,
       "totalLipsyncWins": 5,
-      "totalBottoms": 8,
+      "totalBottoms": 9,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -8201,7 +8201,7 @@
           "totalCongeniality": 1
         }
       },
-      "totalMaxiWins": 1,
+      "totalMaxiWins": 2,
       "totalLipsyncWins": 3,
       "totalBottoms": 5,
       "latestAvatarFile": "",
@@ -11736,8 +11736,8 @@
         }
       },
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 8,
-      "totalBottoms": 14,
+      "totalLipsyncWins": 15,
+      "totalBottoms": 23,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -12159,7 +12159,7 @@
       },
       "totalMaxiWins": 3,
       "totalLipsyncWins": 1,
-      "totalBottoms": 6,
+      "totalBottoms": 8,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -12941,7 +12941,7 @@
       },
       "totalMaxiWins": 0,
       "totalLipsyncWins": 3,
-      "totalBottoms": 8,
+      "totalBottoms": 9,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -13258,7 +13258,7 @@
       },
       "totalMaxiWins": 1,
       "totalLipsyncWins": 3,
-      "totalBottoms": 7,
+      "totalBottoms": 8,
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0
@@ -14574,9 +14574,9 @@
         }
       },
       "emoji": "🪶",
-      "totalMaxiWins": 1,
-      "totalLipsyncWins": 2,
-      "totalBottoms": 9,
+      "totalMaxiWins": 2,
+      "totalLipsyncWins": 3,
+      "totalBottoms": 13,
       "latestAvatarFile": ""
     },
     {
@@ -15322,7 +15322,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 1,
-      "totalBottoms": 8,
+      "totalBottoms": 9,
       "avgPlacement": 11,
       "byShow": {
         "drag-race": {

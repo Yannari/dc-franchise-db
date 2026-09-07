@@ -30,7 +30,7 @@ import { MAXI_TYPES as DR_MAXI_TYPES } from './dr/data/challenges.js';
 import { MINI_TYPES as DR_MINI_TYPES } from './dr/data/minis.js';
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
-import { roundExits, exitVerbs } from './shows.js';
+import { roundExits, exitVerbs, SHOWS, showWords } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
 
@@ -208,12 +208,12 @@ const _HUB_SETTING_META = {
   'bb-compound': { label: 'The Compound', icon: '🏭', accent: '#8b949e' },
   'bb-resort': { label: 'The Resort', icon: '🌴', accent: '#3fb950' },
   'bb-manor': { label: 'The Manor', icon: '🕯️', accent: '#d29922' },
-  // The castle has one venue and js/settings.js does not list it, because
-  // nothing in js/tr/ reads a setting -- the castle layer writes its own
-  // events and never asks where it is. Keyed by FORMAT below rather than by
-  // `config.setting`, which on a castle still says whatever the season was
-  // built as and printed "HOSTED CAMP" across the top of a Traitors hub.
-  'tr-castle': { label: 'The Castle', icon: '🗡️', accent: '#b91c3c' },
+  /* A SHOW WITH ONE VENUE DECLARES IT IN THE REGISTRY, not here — see
+     `SHOWS[format].venue`. The castle used to live in this map, keyed by
+     format, with its accent copied from js/shows.js; keeping it meant every
+     new show needed its own boolean above the lookup, which is exactly the
+     show list this project keeps deleting. Everything left here is a season
+     CHOICE on a show that has several. */
 };
 
 function _hubEsc(value) {
@@ -407,8 +407,18 @@ export function buildHubAftermath(ep) {
 }
 
 export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = players, viewedEpisodeNum = null) {
-  const _castle = seasonFormat(config) === 'traitors';
-  const setting = _castle ? _HUB_SETTING_META['tr-castle']
+  const _hubFmt = seasonFormat(config);
+  /* THE VENUE COMES FROM THE REGISTRY WHEN THE SHOW HAS ONLY ONE.
+     This read `_castle ? _HUB_SETTING_META['tr-castle'] : ...`, so every show
+     with a fixed venue had to add a boolean here AND an entry duplicating its
+     own accent — and Drag Race, which had neither, fell through to
+     `config.setting`, which on a runway season still says whatever the season
+     was built as. The hub printed "HOSTED CAMP" in Total Drama's yellow over
+     a drag season. A fifth show now needs nothing in this file. */
+  const _showVenue = SHOWS[seasonFormat(config)]?.venue;
+  const setting = _showVenue
+    ? { label: _showVenue.label, icon: _showVenue.icon,
+      accent: SHOWS[seasonFormat(config)]?.accent || '#f0c040' }
     : (_HUB_SETTING_META[config?.setting] || _HUB_SETTING_META['hosted-camp']);
   const initialized = !!state?.initialized;
   const history = initialized ? (state.episodeHistory || []) : [];
@@ -428,18 +438,27 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const catalogEntry = nextScheduled && typeof TWIST_CATALOG !== 'undefined' ? TWIST_CATALOG.find(t => t.id === nextScheduled.type) : null;
   const twistLabel = nextScheduled
     ? nextScheduled.spoilerFree ? 'Production surprise scheduled' : (catalogEntry?.name || String(nextScheduled.type || 'Special episode').replace(/-/g, ' '))
-    : _castle ? 'The castle continues — no scheduled twist' : 'Standard episode — no scheduled twist';
-  const latestOutcome = _castle && latest
-    ? roundExits(latest, 'traitors').map(x => `${x.name} was ${x.verb}`).join(' · ')
+    : `${showWords(_hubFmt).quietRound} — no scheduled twist`;
+  /* EVERY SHOW'S OWN EXIT WORDS, from the registry. This asked `roundExits`
+     only for the castle and sent every other show down a branch ending in
+     "left the game" — so a drag season announced its eliminations in Total
+     Drama's words instead of "sashayed away", which the registry has always
+     been able to supply. `roundExits(row, format)` answers for all four. */
+  const _hubExits = latest ? roundExits(latest, _hubFmt) : [];
+  const latestOutcome = _hubExits.length
+    ? _hubExits.map(x => `${x.name} was ${x.verb}`).join(' · ')
     : latest ? (getEpisodeEliminations(latest).length
       ? `${getEpisodeEliminations(latest).join(' + ')} left the game`
       : 'The game moved without a vote') : '';
   const _hubHouse = typeof isBigBrotherSeason === 'function' && isBigBrotherSeason();
   const groups = !initialized ? []
-    // One castle, from the first breakfast to the last table. No tribes, no
-    // merge, and therefore never "Merged Cast" — which is what it said.
-    : _castle
-      ? [{ name: 'The Castle', color: setting.accent, members: active }]
+    /* ONE VENUE, FROM THE FIRST DAY TO THE LAST. No tribes, no merge, and
+       therefore never "Merged Cast" — which is what it said. Keyed on the
+       registry declaring a fixed venue rather than on `format === 'traitors'`,
+       so the werk room gets the same treatment the castle does and a fifth
+       show with one room needs nothing here. */
+    : _showVenue
+      ? [{ name: _showVenue.label, color: setting.accent, members: active }]
     // One house, from the first day to the last. There is nothing to split.
     : _hubHouse
       ? [{ name: displayState.phase === 'finale' ? 'Finalists' : 'The House', color: setting.accent, members: active }]

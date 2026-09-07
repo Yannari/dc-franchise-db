@@ -36,6 +36,9 @@ for (const k of ['window', 'document', 'localStorage', 'navigator', 'HTMLElement
 const { readFileSync, writeFileSync } = await import('node:fs');
 const { playDragSeason } = await import('../js/dr/season.js');
 const { buildDragSeasonDocument, seasonFilePath } = await import('../js/dr/export.js');
+// The registry's own constant, not the literal: a slug typed into a tool is
+// still a show comparison, and the guard counts it as one.
+const { DRAG_FORMAT } = await import('../js/shows.js');
 const { mergeDragSeason, mergeDragSeasonsDatabase } = await import('../js/stats-export.js');
 const { rngFor } = await import('../js/dr/rng.js');
 
@@ -101,4 +104,4 @@ console.log(`  ${doc.castSize} queens, ${doc.episodeCount} episodes, winner ${do
 console.log(`  cast: ${doc.placements.map(p => p.name).join(', ')}`);
 console.log(`players_database.json: ${playersDb.players.length} players`);
 console.log(`seasons_database.json: ${seasonsDb.seasons.length} seasons `
-  + `(${seasonsDb.seasons.filter(s => s.format === 'drag-race').length} drag)`);
+  + `(${seasonsDb.seasons.filter(s => s.format === DRAG_FORMAT).length} drag)`);

@@ -30,13 +30,25 @@ const strip = h => h.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g
 beforeEach(() => { window._tvState = {}; window._drSidebar = {}; });
 
 describe('the call', () => {
-  it('gives every queen a stamp, in the call order', () => {
+  it('gives every queen a stamp, and the safe ones share one card', () => {
+    /* THE SAFE QUEENS ARE ONE CARD, not one row each, and that is the
+       design rather than a shortcut: they share a single spoken line
+       between them — "you are safe, you may leave the stage" is said to the
+       group — so a row each produced a column of portraits with a rank
+       arrow, a rubber stamp and no words. Eight of thirteen rows silent on
+       the call that found this.
+       So the count is: one card for the safe, one row for everybody the
+       panel actually placed. */
     for (const row of ordinary) {
       const c = row.dr.call;
-      const total = ['win', 'high', 'safe', 'low', 'atRisk', 'bottom']
+      const placed = ['win', 'high', 'low', 'atRisk', 'bottom']
         .reduce((n, k) => n + (c[k] || []).length, 0);
-      const steps = (rpBuildResults(row).match(/id="dr-step-results-\d+"/g) || []);
-      expect(steps.length, `episode ${row.num}`).toBe(total);
+      const expected = placed + ((c.safe || []).length ? 1 : 0);
+      const html = rpBuildResults(row);
+      const steps = (html.match(/id="dr-step-results-\d+"/g) || []);
+      expect(steps.length, `episode ${row.num}`).toBe(expected);
+      // AND EVERY SAFE QUEEN IS STILL NAMED, on that one card.
+      for (const n of c.safe || []) expect(html, `${n} is not on the safe card`).toContain(n);
     }
   });
 

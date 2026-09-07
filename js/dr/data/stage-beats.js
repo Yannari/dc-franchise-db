@@ -280,6 +280,41 @@ export const STAGE_BEATS = [
       "\"You are safe.\" The sentence is three words and it means two things — you are not going, and you are not winning — and every queen who hears it decides for herself which half to carry. They walk to the back and the main stage shrinks to the queens who remain.",
     ])],
   },
+  /* ── THE THREE CALLS THAT HAD NO WORDS ──────────────────────────────
+     HIGH, LOW and BTM did not exist in this pool. The panel places a queen
+     in one of six outcomes and only three of them were ever spoken, so on a
+     thirteen-queen call nine rows drew a portrait, a rank arrow and a rubber
+     stamp and said nothing at all. Found by reading a rendered call, not by
+     any assertion — the screen was structurally perfect and mute.
+
+     They are three genuinely different sentences and should not be written
+     as one with the adjective swapped. HIGH is being told you nearly won and
+     did not. LOW is being told you were bad and are safe anyway, which is a
+     warning with no consequence attached. BTM is the cruellest of the three:
+     named in the bottom, made to stand there, and then saved BEFORE the song
+     — she does not lip sync and she does not get to prove anything.
+
+     FOR THE WRITER: six variants each, {a} is the queen. Read result-win and
+     result-bottom above for the voice. */
+  {
+    id: 'result-high', step: 'results', scope: 'per-queen', speaker: 'host',
+    note: 'She was among the top and did not win. {a} is the queen.',
+    tierBy: 'always',
+    tiers: [tier('high', 'Top of the week, and not the winner of it.', [])],
+  },
+  {
+    id: 'result-low', step: 'results', scope: 'per-queen', speaker: 'host',
+    note: 'Safe, but the panel had a note. {a} is the queen.',
+    tierBy: 'always',
+    tiers: [tier('low', 'A warning with nothing attached to it.', [])],
+  },
+  {
+    id: 'result-btm', step: 'results', scope: 'per-queen', speaker: 'host',
+    note: 'Named in the bottom and saved BEFORE the lip sync. She does not '
+      + 'sing. {a} is the queen.',
+    tierBy: 'always',
+    tiers: [tier('btm', 'Called to the bottom, then spared the song.', [])],
+  },
   {
     id: 'result-bottom', step: 'results', scope: 'per-queen', speaker: 'host',
     note: 'She is told she is up for elimination, one at a time.',
@@ -467,7 +502,10 @@ export function unwrittenStageTiers() {
 }
 
 /** How many beats a stage of this shape produces, for the count guard. */
-export function stageBeatCount({ walking = 0, onStage = 0, bottom = 0, exits = 0 }) {
+export function stageBeatCount({
+  walking = 0, onStage = 0, bottom = 0, exits = 0,
+  high = 0, low = 0, atRisk = 0,
+} = {}) {
   let n = 0;
   for (const b of STAGE_BEATS) {
     if (b.scope === 'once') { n += 1; continue; }
@@ -475,7 +513,17 @@ export function stageBeatCount({ walking = 0, onStage = 0, bottom = 0, exits = 0
     else if (b.step === 'critiques') n += onStage;
     else if (b.step === 'lipsync') n += bottom;
     else if (b.step === 'exit') n += exits;
-    else if (b.step === 'results') n += b.id === 'result-win' ? 1 : bottom;
+    else if (b.step === 'results') {
+      /* Each result call is its own count. This read "win ? 1 : bottom",
+         from when the only per-queen results were the winner and the
+         bottom two — with high, low and btm added it under-reported every
+         night by however many queens the panel placed in between. */
+      if (b.id === 'result-win') n += 1;
+      else if (b.id === 'result-high') n += high;
+      else if (b.id === 'result-low') n += low;
+      else if (b.id === 'result-btm') n += atRisk;
+      else n += bottom;
+    }
   }
   return n;
 }

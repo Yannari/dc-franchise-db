@@ -46,6 +46,9 @@ export const RESULTS_CSS = `
     transparent 44%),var(--dr-panel)}
 /* SAFE IS THE ABSENCE OF A RESULT and should recede rather than glow. */
 .dr-panel.dr-callrow.dr-quiet{opacity:.8}
+/* The safe queens, on one card, because they share one sentence. */
+.dr-safefaces{display:flex;flex-wrap:wrap;gap:5px;max-width:190px}
+.dr-safegroup h3{margin-bottom:2px}
 .dr-callrow h3{color:color-mix(in srgb,var(--v,#fff) 42%,#fff)}
 .dr-callrow h3{margin:0;font-size:18px}
 .dr-stamp{font-size:22px;padding:7px 14px;border:3px solid currentColor;transform:rotate(-6deg);
@@ -145,12 +148,20 @@ export function rpBuildResults(row) {
   const call = row?.dr?.call;
   if (!call) return '';
   const bend = new Map((row.dr.bend || []).map(b => [b.name, b]));
+  /* THE SAFE QUEENS ARE DISMISSED AS A GROUP AND GO FIRST. That is the
+     order the host calls it in — they leave the stage and the night narrows
+     to the people it is about — and it is also the only honest way to draw
+     them: they share ONE line between them, so giving each of them a row
+     produced a column of portraits with a rank arrow, a rubber stamp and no
+     words. Eight of thirteen rows silent on the screenshot that found this.
+     They get one card with all their faces on it instead. */
+  const safe = call.safe || [];
   const groups = [
-    ['WIN', call.win || []], ['HIGH', call.high || []], ['SAFE', call.safe || []],
+    ['WIN', call.win || []], ['HIGH', call.high || []],
     ['LOW', call.low || []], ['BTM', call.atRisk || []], ['BTM2', call.bottom || []],
   ];
   const named = groups.flatMap(([r, list]) => list.map(n => [r, n]));
-  if (!named.length) return '';
+  if (!named.length && !safe.length) return '';
 
   /* WHAT THE HOST ACTUALLY SAID. The row carries a written line for every
      call — `stage:result-win`, `-safe`, `-bottom` — and this screen drew a
@@ -158,9 +169,14 @@ export function rpBuildResults(row) {
      lines on the row, a hundred and seventy-seven characters on the screen.
      "Condragulations, you are the winner of this week's maxi challenge" is
      the single most quotable sentence the show has and it was on the floor. */
-  const RESULT_SCENE = { WIN: 'stage:result-win', HIGH: 'stage:result-win',
-    SAFE: 'stage:result-safe', LOW: 'stage:result-safe',
-    BTM: 'stage:result-bottom', BTM2: 'stage:result-bottom' };
+  /* ONE KIND PER CALL. This mapped HIGH onto the winner's line and LOW onto
+     the safe group's, which is how a queen told she was LOW read the words
+     said to the people being sent to the back. Each call has its own beat
+     now — js/dr/data/stage-beats.js grew result-high, result-low and
+     result-btm, which had never existed. */
+  const RESULT_SCENE = { WIN: 'stage:result-win', HIGH: 'stage:result-high',
+    LOW: 'stage:result-low', BTM: 'stage:result-btm',
+    BTM2: 'stage:result-bottom' };
   const spoken = new Set();
   const lineFor = (result, name) => {
     const kind = RESULT_SCENE[result];
@@ -171,12 +187,34 @@ export function rpBuildResults(row) {
     return sc?.text || '';
   };
 
-  const steps = named.map(([result, name], i) => {
+  const safeLine = (row.dr.scenes || []).find(x => x.kind === 'stage:result-safe')?.text || '';
+  const safeCard = safe.length ? `<div class="dr-step" id="dr-step-results-0">
+    <div class="dr-panel dr-a-score dr-callrow dr-quiet dr-safegroup"
+         style="--v:${GRID_RESULTS.SAFE?.color || '#4b5563'}">
+      <span class="dr-safefaces">${safe.map(n =>
+    _portrait(n, ep, { size: 40, station: true })).join('')}</span>
+      <div><h3 class="dr-disp">Safe</h3>
+        <span style="font-size:11px;color:#C9A6BC">${esc(safe.join(', '))}</span>
+        ${safeLine ? `<p class="dr-said">${esc(safeLine)}</p>` : ''}
+        ${/* A SAFE QUEEN THE HOST MOVED still has to be reported. Folding the
+              safe queens into one card took their individual rows away, and
+              the "the host moved her" badge went with them — so a bend that
+              landed on somebody safe became invisible, which is exactly the
+              decision this screen exists to expose. */
+    safe.filter(n => bend.get(n) && bend.get(n).panelRank !== bend.get(n).finalRank)
+      .map(n => `<span class="dr-moved dr-disp">the host moved her: ${esc(n)}</span>`)
+      .join(' ')}</div>
+      <span></span>
+      <span class="dr-stamp dr-disp" style="color:${GRID_RESULTS.SAFE?.color || '#4b5563'}">SAFE</span>
+    </div></div>` : '';
+  const offset = safe.length ? 1 : 0;
+
+  const steps = safeCard + named.map(([result, name], i) => {
     const b = bend.get(name);
     const moved = b && b.panelRank !== b.finalRank;
     const meta = GRID_RESULTS[result] || {};
     const said = lineFor(result, name);
-    return `<div class="dr-step" id="dr-step-results-${i}">
+    return `<div class="dr-step" id="dr-step-results-${i + offset}">
       <div class="dr-panel dr-a-score dr-callrow${
   result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
         ${_portrait(name, ep, { size: 52, station: true })}
@@ -191,17 +229,24 @@ export function rpBuildResults(row) {
 
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    window._drSidebar.results = named.map((_, i) => `<h4 class="dr-disp">The call</h4>${
-      named.slice(0, i + 1).map(([r, n]) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
+    const panelFor = k => `<h4 class="dr-disp">The call</h4>${
+      (safe.length ? `<div class="dr-slot"><span></span>
+        <div><div class="dr-nm">${esc(safe.length)} safe</div></div>
+        <span class="dr-chip dr-c-safe">SAFE</span></div>` : '')}${
+      named.slice(0, k).map(([r, n]) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
         <div><div class="dr-nm">${esc(n)}</div></div>
         <span class="dr-chip ${CHIP[r] || 'dr-c-safe'}">${esc(GRID_RESULTS[r]?.label || r)}</span>
-      </div>`).join('')}`);
+      </div>`).join('')}`;
+    window._drSidebar.results = [
+      ...(safe.length ? [panelFor(0)] : []),
+      ...named.map((_, i) => panelFor(i + 1)),
+    ];
   }
 
   return `<style>${RESULTS_CSS}</style>${_shell(steps, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who is safe',
     sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
-  })}${_controls('results', named.length, ep.num)}`;
+  })}${_controls('results', named.length + offset, ep.num)}`;
 }
 
 /** The lip sync, built as a fight. */

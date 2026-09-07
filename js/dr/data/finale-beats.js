@@ -37,6 +37,42 @@
 const tier = (id, note, lines = []) => ({ id, note, lines });
 
 export const FINALE_BEATS = [
+  /* ══ THE NIGHT OPENS ═════════════════════════════════════════════════
+     THE FINALE'S FIRST SCREEN HAD NO WORDS ON IT. It drew the finalists in
+     a row under a line naming the format — "Four queens. Two lip syncs,
+     then one more." — and that was the entire opening of the biggest night
+     of the season: a diagram. Every other screen in the show narrates
+     itself; this one introduced the finale the way a fixture list
+     introduces a football match.
+
+     Measured at 757 pixels and zero revealable cards, against the
+     crowning's 5,031 and sixteen.
+
+     FOR THE WRITER: six variants per tier. The three tiers are the shapes a
+     finale can take and they are genuinely different nights — say what is
+     actually about to happen. No {a}: this beat is the night, not a queen. */
+  {
+    id: 'finale-open', step: 'finale-open', scope: 'once', speaker: 'narrator',
+    note: 'The finale night opens. No {a}.',
+    tiers: [
+      tier('bracket', 'A lip sync bracket: semi-finals, then a final.', []),
+      tier('showcase', 'They perform solo, the host cuts the field, the last two sing.', []),
+      tier('duel', 'Two queens and one song for the crown.', []),
+    ],
+  },
+  {
+    id: 'finale-open-queen', step: 'finale-open', scope: 'per-finalist',
+    speaker: 'narrator',
+    note: 'One finalist, on the last day. {a} is the queen.',
+    writerNote: 'What she is like on the morning of the finale, which is not '
+      + 'what she was like in any other episode: she has already survived the '
+      + 'competition and the only thing left is to be better than the people '
+      + 'she survived it with. Some of them are calm and some of them have '
+      + 'not slept. Six variants, and they must not all be nerves — one of '
+      + 'these should be a queen who is genuinely enjoying it.',
+    tiers: [tier('open', 'A finalist, on the last day of it.', [])],
+  },
+
   // ══ THE CAST COMES BACK ══════════════════════════════════════════════
   {
     id: 'finale-return', step: 'finale-return', scope: 'once', speaker: 'narrator',
@@ -51,6 +87,27 @@ export const FINALE_BEATS = [
       "For one night the season is whole. Every queen who sat in that chair and heard her name called walks back through the door and the room answers each one as though she never left. The noise builds. The cast fills. The finalists, who have been steeling themselves all day, are undone by the first hug.",
       "Each returning queen gets a cheer proportional to how long she has been gone, which means the queen who went home in week two gets one of the biggest reactions of the night. She takes it with her whole face. Later she will say it was worth going home early for that entrance back.",
     ])],
+  },
+
+  /* ONE QUEEN, COMING BACK. The whole cast returning was a single
+     paragraph — the entire eliminated field walked back in and the screen
+     rendered one card, 694 pixels, for the loudest minute of the night.
+     This fires per returning queen so the room fills up on screen the way
+     it fills up in the room.
+
+     FOR THE WRITER: {a} is the returning queen, {b} is a finalist she goes
+     to. Eight variants, and they have to differ by WHEN she went home,
+     because that is the whole texture: the early boot nobody has seen since
+     the premiere arrives differently from the queen who left last week. */
+  {
+    id: 'finale-return-queen', step: 'finale-return', scope: 'per-returnee',
+    speaker: 'narrator',
+    note: '{a} is the returning queen. {b} is a finalist she reaches first.',
+    tiers: [
+      tier('early', 'She went home early and has been waiting the longest.', []),
+      tier('mid', 'She went out in the middle of it, with things unfinished.', []),
+      tier('late', 'She was here last week and it is still raw.', []),
+    ],
   },
 
   // ══ THE FINALE RUNWAY ════════════════════════════════════════════════

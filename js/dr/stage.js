@@ -196,9 +196,21 @@ export function renderStageBeats({
   }
   emit(beatById('deliberation'), split ? 'split' : 'agreed', []);
 
-  // ── the results ──
-  for (const n of call.win || []) emit(beatById('result-win'), 'win', [n]);
+  /* ── THE RESULTS, IN THE ORDER THE HOST CALLS THEM ──
+     SAFE FIRST. The host dismisses the safe queens before he turns to the
+     tops and the bottoms — they leave the stage and the night narrows to
+     the people it is about. This ran win, safe, bottom, which is neither
+     the order it happens in nor a dramatic order; it announced the winner
+     to a stage still full of queens who had not been told anything.
+
+     And HIGH, LOW and BTM now speak. All three were placed by the panel and
+     none of them had a beat in the pool, so nine rows of a thirteen-queen
+     call rendered a portrait and a stamp and no words. */
   if ((call.safe || []).length) emit(beatById('result-safe'), 'safe', []);
+  for (const n of call.win || []) emit(beatById('result-win'), 'win', [n]);
+  for (const n of call.high || []) emit(beatById('result-high'), 'high', [n]);
+  for (const n of call.low || []) emit(beatById('result-low'), 'low', [n]);
+  for (const n of call.atRisk || []) emit(beatById('result-btm'), 'btm', [n]);
   for (const n of call.bottom || []) emit(beatById('result-bottom'), 'bottom', [n]);
 
   // ── the lip sync, beat by beat ──

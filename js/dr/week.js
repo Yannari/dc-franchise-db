@@ -33,6 +33,7 @@ import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
+import { runMini, applyMiniEvents } from './mini.js';
 import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
@@ -92,6 +93,8 @@ export function runDragWeek(state, cfg, ctx) {
   // repeat itself across the morning and the afternoon, and filed into the
   // slots it belongs to. The maxi challenge writes its own prep scenes; these
   // are the ones that are about the room rather than about the work.
+  // Declared before the room is drawn because the mini writes into it too.
+  const werkEvents = [];
   const werkScenes = runWerkRoom({
     slots: ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
     living, players: ctx.players, state, storylines: state.storylines || [],
@@ -104,7 +107,6 @@ export function runDragWeek(state, cfg, ctx) {
       gone,
     },
   });
-  const werkEvents = [];
   for (const sc of werkScenes) {
     applyWerkScene(sc, ctx);
     scenes.push({
@@ -131,14 +133,25 @@ export function runDragWeek(state, cfg, ctx) {
   if (cfg.miniId) {
     const m = miniById(cfg.miniId);
     if (m) {
-      const scored = living
-        .map(n => ({ n, s: blendScore(dragOf(P(n)), m.blend) + noise(rng, 3) }))
-        .sort((a, b) => b.s - a.s);
-      // Kept, not discarded: every queen's attempt is a beat, and the beat is
-      // tiered on how she actually did. Only the winner used to survive this.
-      miniScores = Object.fromEntries(scored.map(x => [x.n, Math.round(x.s * 100) / 100]));
-      miniWinner = scored[0].n;
-      mini = { id: m.id, name: m.name, winner: miniWinner, buys: m.buys };
+      // The mini is its own thing now rather than a stat roll inlined here:
+      // a reading challenge is one queen doing a bit about another, and
+      // resolving that privately threw away the only part worth filming.
+      const res = runMini({
+        living, mini: m, players: ctx.players, rng, bond: ctx.bond, star: state.star,
+      });
+      miniScores = res.scores;
+      miniWinner = res.winner;
+      mini = {
+        id: m.id, name: m.name, winner: miniWinner, buys: m.buys,
+        interaction: res.interaction, detail: res.detail,
+      };
+      applyMiniEvents(res.events, ctx);
+      for (const e of res.events) {
+        werkEvents.push({
+          type: `mini:${e.type}`, players: e.players,
+          bond: e.bond || [], pop: e.pop || {}, state: e.state || {}, data: e.data || {},
+        });
+      }
       say('mini', 'mini', { mini });
     }
   }

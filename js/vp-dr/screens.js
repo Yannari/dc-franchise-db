@@ -29,6 +29,7 @@ import { rpBuildChart } from './chart.js';
 import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.js';
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
+import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -231,6 +232,10 @@ const BUILDERS = {
   'dr-choice': rpBuildChoice,
   'dr-prep': rpBuildPrep,
   'dr-maxi': rpBuildMaxi,
+  'dr-main-stage': rpBuildMainStage,
+  'dr-runway': rpBuildRunway,
+  'dr-critiques': rpBuildCritiques,
+  'dr-untucked': rpBuildUntucked,
 };
 
 const _sections = SECTIONS.map(sec => ({

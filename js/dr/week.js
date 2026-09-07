@@ -428,11 +428,19 @@ export function runDragWeek(state, cfg, ctx) {
 
   // The record, and who is left.
   for (const n of living) {
+    /* THE SAME NINE LABELS THE EXPORTER WRITES. This stored `BTM` for the
+       queens who lip synced — the old single-bottom name — while
+       js/dr/export.js had already moved to BTM2 for exactly them. The two
+       shapes of a season then disagreed: the season page's chart showed
+       BTM2 and the viewing party's showed BTM, off the same night. Nothing
+       failed, because both paths were internally consistent; it was visible
+       only by rendering the live chart and noticing BTM2 appeared nowhere. */
     const r = exits.includes(n) ? 'ELIM'
       : call.win.includes(n) ? 'WIN'
         : call.high.includes(n) ? 'HIGH'
-          : call.low.includes(n) ? 'LOW'
-            : call.bottom.includes(n) ? 'BTM' : 'SAFE';
+          : call.bottom.includes(n) ? 'BTM2'
+            : call.atRisk.includes(n) ? 'BTM'
+              : call.low.includes(n) ? 'LOW' : 'SAFE';
     state.record[n].push(r);
   }
   state.living = living.filter(n => !exits.includes(n));

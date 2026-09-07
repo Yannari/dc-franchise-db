@@ -25,7 +25,7 @@
 // this that stays true as the engine grows new scene kinds.
 import { _shell, _portrait, _icon } from './style.js';
 import { _controls, _state } from './reveal.js';
-import { buildTrackRecordGrid, TRACK_RECORD_CSS } from '../dr/grid.js';
+import { rpBuildChart } from './chart.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -215,33 +215,6 @@ function buildSection(sec, row) {
   })}${_controls(sec.suffix, scenes.length, ep.num)}`;
 }
 
-function buildChart(row) {
-  const ep = { num: row?.num ?? 0, format: 'drag-race', dr: row?.dr || {} };
-  const record = row?.dr?.record || {};
-  const names = Object.keys(record);
-  if (!names.length) return '';
-  /* THE SAME BUILDER THE SEASON PAGE AND THE ARTICLE USE. One grid, three
-     readers — three copies is three places for the columns to stop lining
-     up, which this repo has already shipped once. The row's `record` is a
-     per-queen list of results, so it is turned into the document shape the
-     builder reads rather than a second grid being written here. */
-  const width = Math.max(...names.map(n => (record[n] || []).length));
-  const episodes = Array.from({ length: width }, (_, i) => ({
-    episode: i + 1,
-    placements: names.map(n => ({ name: n, result: (record[n] || [])[i] || 'OUT' })),
-    exits: [],
-  }));
-  const doc = {
-    format: 'drag-race',
-    dr: { episodes },
-    placements: names.map((n, i) => ({ name: n, playerSlug: '', placement: i + 1 })),
-  };
-  return `<style>${TRACK_RECORD_CSS}</style>${_shell(
-    buildTrackRecordGrid(doc), ep,
-    { phase: 'chart', title: 'The Track Record', subtitle: `through episode ${ep.num}`, hud: false },
-  )}`;
-}
-
 /** The registry: seventeen entries, in the running order. */
 export const DRAG_SCREENS = [
   ...SECTIONS.map(sec => ({
@@ -260,8 +233,9 @@ export const DRAG_SCREENS = [
     suffix: CHART.suffix,
     badge: CHART.badge,
     when: row => Object.keys(row?.dr?.record || {}).length > 0,
-    build: row => buildChart(row),
-    revealAllName: 'drRevealAll',
+    build: row => rpBuildChart(row),
+    // Its own handlers: this screen steps by EPISODE, not by card.
+    revealAllName: 'drChartRevealAll',
   },
 ];
 

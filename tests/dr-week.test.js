@@ -85,7 +85,14 @@ describe('runDragWeek', () => {
     runDragWeek(st, cfg(), ctxFor(c));
     for (const p of c) {
       expect(st.record[p.name].length, `${p.name} got no result`).toBe(1);
-      expect(['WIN', 'HIGH', 'SAFE', 'LOW', 'BTM', 'ELIM']).toContain(st.record[p.name][0]);
+      /* BTM2 among them. `state.record` is the LIVE half of a season and the
+         exporter is the published half; this list said BTM where the exporter
+         said BTM2, so the season page's chart and the viewing party's showed
+         different labels for the same night. Both halves were internally
+         consistent, which is why nothing failed — it was visible only by
+         rendering the live chart and noticing BTM2 appeared nowhere on it. */
+      expect(['WIN', 'HIGH', 'SAFE', 'LOW', 'BTM', 'BTM2', 'ELIM'])
+        .toContain(st.record[p.name][0]);
     }
   });
 

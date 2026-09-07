@@ -896,7 +896,13 @@ export function buildWikiTab(s, { face = null } = {}) {
         const ls = cast.map(p => ({ name: p.name, n: p.dr?.lipsyncWins || 0 }));
         const topLs = most(ls);
         if (topLs?.n > 1) {
-          trivia.push(`${esc(topLs.name)} won ${topLs.n} lip syncs for her life.`);
+          /* NO PRONOUN. This said "for her life", which is the show's own
+             phrase and is wrong here in two ways: the sentence is about a
+             roster player whose pronouns this module has no access to, and
+             the phrase itself is second person ("lip sync for YOUR life"), so
+             the third-person rewrite was never going to read right. Naming
+             the act instead sidesteps both. */
+          trivia.push(`${esc(topLs.name)} survived the lip sync ${topLs.n} times.`);
         }
         // Somebody who was never in the bottom at all. The equivalent claim
         // to "never nominated", and true only when the record says zero.
@@ -942,8 +948,11 @@ export function buildWikiTab(s, { face = null } = {}) {
         } else if (shape === 'placements' && w) {
           const wins = w.dr?.wins || 0;
           const btm = w.dr?.bottoms || 0;
-          trivia.push(`${esc(winnerName)} won ${wins} ${esc(W.comp)}${wins === 1 ? '' : 's'}
-            and was in the bottom ${btm} time${btm === 1 ? '' : 's'}.`);
+          // "was in the bottom 0 times" is a number where a word belongs, and
+          // never reaching the bottom is the more interesting half of the
+          // sentence anyway.
+          trivia.push(`${esc(winnerName)} won ${wins} ${esc(W.comp)}${wins === 1 ? '' : 's'} and ${
+            btm ? `was in the bottom ${btm} time${btm === 1 ? '' : 's'}` : 'never landed in the bottom'}.`);
         } else if (w) {
           // The show's own word for what they won, and this page's own count
           // of what was written against them.

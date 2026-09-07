@@ -411,8 +411,14 @@ function drEvents(ep, meta) {
     out.push(e);
   }
 
-  // The bottom, which on this show is a public fact and a survivable one.
-  for (const [i, name] of call.btm.entries()) {
+  /* THE BOTTOM IS THE PAIR WHO LIP SYNCED, NOT THE `BTM` COLUMN.
+     The queen who goes home is marked ELIM, so `call.btm` holds only the one
+     who SURVIVED — and she is also the lip sync winner, so the feed emitted
+     `nomination` and `domination` about the same person every single week and
+     never once named the other queen standing beside her. The pair is the
+     bottom two by definition. */
+  const bottomPair = (ls?.queens || []).length ? [...ls.queens] : call.btm;
+  for (const [i, name] of bottomPair.entries()) {
     out.push(event('nomination', { ...meta, subject: name, jitter: (i % 4) * 0.012 }));
   }
 

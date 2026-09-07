@@ -156,3 +156,141 @@ they arrive.
 
 **For Plan 6:** reconcile the spec's §13 table with these two numbers rather
 than the single one it currently names.
+
+---
+
+## Plan 4, Task 8 — the first season published, and every page read against it
+
+`node tools/dr-publish-season.mjs 7 13` plays a season from THIRTEEN REAL
+ROSTER PLAYERS, builds the document, runs both database merges and writes the
+three files a publish writes. Cameron won; the cast was Cameron, Karol, Aiden,
+Sanders, Duncan, Justin, Gerry, Brody, Ivy, Diego, Nessa, Gyselle, Kai.
+
+Then every page's builder was rendered against that real document and read.
+Six things came out of the reading. All six passed the whole suite.
+
+### 1. The roster carries drag craft for NOBODY
+
+`franchise_roster.json` has 194 players and **0** with any authored drag
+stats. `dragOf` fills a missing stat with 5, so a cast taken off the roster is
+thirteen identical queens as far as craft is concerned, and the season is
+decided by star power, archetype and noise alone.
+
+**Measured rather than assumed** (`tools/dr-flat-roster.mjs`, 40 seasons per
+arm, the same thirteen players each time so the comparison is about the craft
+and not about who was drawn):
+
+| arm | most maxis by one queen | queens who won any |
+|---|---|---|
+| roster as it is | 4.45 | 4.15 |
+| same cast, craft varied | 4.97 | 3.63 |
+
+Smaller than expected, and in the opposite direction to the guess: varying
+craft **concentrates** the wins rather than spreading them. So the show is
+playable from the roster today — it just does not differentiate by craft, and
+craft moves a season less than star power does.
+
+**Two things follow.** The cast builder already has drag sliders
+(`getDragCraft` in `js/cast-ui.js`), so this is authorable per season and is
+not blocking. And the second row is a calibration question for Plan 6: if
+seven craft stats swing the win spread by half a win across a whole season,
+they are quieter than they look on paper.
+
+### 2. Every eliminated queen's article said she played ten episodes
+
+The infobox counts `weekRows.length`. That was the same number as "rounds she
+was in" for as long as every grid stopped at its player's exit — and Task 5
+deliberately stopped doing that, because a track record chart's rows have to
+run to the end of the season or the columns cannot line up. So the first queen
+eliminated was credited with **ten episodes on a season she was in for one**,
+directly above her own row saying "1 episode played".
+
+Fixed by counting the rounds that were hers: anything marked `OUT` was not.
+A regression I introduced two tasks earlier, invisible to the suite, obvious
+in the first article I read.
+
+### 3. The feed named the same queen twice a week and never named the other one
+
+`drEvents` read the bottom two off the `BTM` column. The queen who goes home
+is marked `ELIM`, so that column holds only the one who SURVIVED — who is
+also the lip sync winner. Every week the feed emitted `nomination(Gyselle)`
+and `domination(Gyselle)` about one person and never once named the queen
+standing next to her.
+
+The pair who lip synced IS the bottom two, by definition. This is the third
+time this exact mistake has been made in this show's code (the season page's
+game history and `dragBoardStats` were the other two), which is worth
+recording on its own: **`BTM` is not the bottom two, it is the survivor of
+it.**
+
+### 4. The ledger's finale round had no account of itself
+
+`roundLedger` on the last episode produced "the maxi challenge was The Finale"
+and stopped. A finale has no maxi winner, no call and no exit, so every clause
+the placement branch knew was silent — on the one night the season is about,
+in the fact block the AI article writer is prompted with. It names the
+finalists and the crowning now.
+
+### 5. A generated sentence used a pronoun it had no right to
+
+The season page's trivia said "**Brody** won 3 lip syncs for **her** life".
+Two things wrong: the sentence is about a roster player whose pronouns that
+module cannot see, and the show's own phrase is second person ("lip sync for
+YOUR life"), so the third-person rewrite was never going to read right.
+"Survived the lip sync 3 times" sidesteps both.
+
+The neighbouring line said "was in the bottom **0 times**" — a number where a
+word belongs. It says "never landed in the bottom".
+
+### 6. What the merges did to 169 existing players — checked, not assumed
+
+Publishing writes into `players_database.json` and `seasons_database.json`,
+which hold fourteen seasons of finished data. Verified before committing:
+
+- 169 → 170 players (one queen, Nessa, was new), 15 → 16 season rows.
+- **No player lost**, no badge lost, no season detail lost, across all 169.
+- 12 existing players gained a drag appearance; every one of them is a Total
+  Drama alum whose camp seasons are untouched.
+- `latestAvatarFile` moved from absent to `''` on three players. Harmless:
+  `_rebuildByShow` skips rows with no `avatarFile`, so the drag row never
+  shadows a real portrait, and every reader guards with `||` or `_safeFile`.
+
+### 7. A guard that had been skipping for two shows woke up and failed on itself
+
+`tests/e2e/show-pages.spec.js` has a test called "a two-show career is
+described as two careers", and its own comment says:
+
+> Nobody in the franchise has crossed shows yet, so today this skips; the day
+> somebody returns across one it starts guarding, without anybody remembering
+> to come back and rename them.
+
+Publishing thirteen roster players into a drag season is that day. Twelve of
+them are Total Drama alumni, so the franchise has twelve crossed careers where
+it had none, and the test ran for the first time since it was written.
+
+**And it failed on its own show list.** The body held
+`const NAME = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' }`
+with a `NAME[f] || f` fallback, so it asserted the page contains
+"1 drag-race" — while `player.html`, which reads `_showNameOf` off the
+registry, correctly says "1 Drag Race". The page was right and the guard was
+wrong, in the file whose entire purpose is catching duplicate show lists.
+
+Worth keeping in mind for the fifth show: a test that skips is a test whose
+assertions have never run, and the day it stops skipping it is as unproven as
+code written that morning. This one had been skipping since it was written.
+
+### Still open, and deliberately not fixed here
+
+- **D1 has no per-show appearance table for this show.** `td_appearances` and
+  `bb_appearances` exist; the third and fourth shows have neither, so a
+  published drag season syncs its placement and status and none of its
+  maxi/lip-sync counts. The Traitors is in the same position. The base
+  `appearances` row is format-keyed and correct.
+- **`player.seasons` is a bare array of numbers.** Duncan's drag season 1
+  collides with his Total Drama season 1, so nothing is pushed. No corruption
+  — `seasonDetails` is format-tagged and is what every reader uses — but it is
+  the show-blind field the project already has a note about, now with a second
+  show actually colliding in it.
+- **The live tab is unverified.** Everything above was rendered headlessly.
+  That `simulator.html` runs a drag season through the real run loop and that
+  the export button fires still wants one click-through.

@@ -99,10 +99,16 @@ test('a two-show career is described as two careers', async ({ page }) => {
   await page.waitForSelector('.pp-showhead', { timeout: 15000 });
 
   const shows = [...new Set((vet.seasonDetails || []).map(d => d.format || 'total-drama'))];
-  const NAME = { 'total-drama': 'Total Drama', 'big-brother': 'Big Brother' };
+  /* THE NAME COMES FROM THE REGISTRY, WHICH IS WHAT THE PAGE READS.
+     This held `{ 'total-drama': …, 'big-brother': … }` and fell back to the
+     raw slug — so the moment the third show produced a crossed career the
+     assertion looked for "1 drag-race" on a page that correctly says
+     "1 Drag Race", and the guard failed on its own map rather than on the
+     thing it guards. Exactly the duplicate show list this file exists to
+     catch, inside the file that catches it. */
   for (const f of shows) {
     const n = (vet.seasonDetails || []).filter(d => (d.format || 'total-drama') === f).length;
-    await expect(page.locator('.pp-meta')).toContainText(`${n} ${NAME[f] || f}`);
+    await expect(page.locator('.pp-meta')).toContainText(`${n} ${showName(f)}`);
   }
 
   // Each show gets its own heading and its own bars, because the career totals
@@ -283,7 +289,7 @@ test('the franchise page does not lend one show another show\'s narrative', asyn
 // prose rather than the page's, and holding a language model to a word list
 // would make this fail for reasons nobody can fix in the code.
 import { readFileSync } from 'node:fs';
-import { seasonRounds } from '../../js/shows.js';
+import { seasonRounds, showName } from '../../js/shows.js';
 
 const EXCLUSIVE = {
   'big-brother': ['head of household', 'power of veto', 'evicted', 'eviction',

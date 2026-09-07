@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 14,
-    "totalPlayers": 169,
+    "totalPlayers": 170,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -737,6 +737,39 @@
           65.2
         ]
       }
+    },
+    {
+      "seasonNumber": 1,
+      "format": "drag-race",
+      "seasonId": "dr-1",
+      "title": "Drag Race 1",
+      "subtitle": "",
+      "castSize": 13,
+      "episodeCount": 10,
+      "winner": {
+        "name": "Cameron",
+        "playerSlug": "cameron",
+        "vote": "",
+        "runnerUp": "Karol",
+        "keyStats": "",
+        "strategy": "",
+        "legacy": ""
+      },
+      "awards": {
+        "fanFavorite": null,
+        "bestStrategic": null,
+        "mostChallengeWins": {
+          "name": "Cameron",
+          "playerSlug": "cameron",
+          "detail": "3 maxi challenges"
+        }
+      },
+      "theme": "",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/dr-1-cast.png",
+      "emoji": "",
+      "airYear": 2027,
+      "airSlot": "winter"
     }
   ]
 }

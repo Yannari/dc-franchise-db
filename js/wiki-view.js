@@ -298,7 +298,14 @@ function infobox(dossier, show, root, L) {
   const seasonBlock = s => {
     const rec = s.record || {};
     const bb = rec.bb || {};
-    const rounds = (s.weekRows || []).length;
+    /* HOW MANY ROUNDS THEY WERE ACTUALLY IN, not how wide the grid is.
+       These were the same number while every grid stopped at its player's
+       exit. A track record chart does not — its rows run to the end of the
+       season by design, so the first queen eliminated was credited with ten
+       episodes on a season she was in for one. The row says which weeks were
+       hers: anything marked OUT was not. */
+    const rounds = (s.weekRows || [])
+      .filter(w => !(w.result === 'OUT' || w.away || w.notYet)).length;
     const pairs = [
       // WHEN, and HOW OLD THEY WERE THEN.
       //

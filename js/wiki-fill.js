@@ -297,6 +297,16 @@ export function roundLedger(doc = {}) {
           + (r.lipsync.song ? ` to "${r.lipsync.song}"` : ''));
       }
       if (r.mini?.winner) facts.push(`${r.mini.winner} won the mini challenge`);
+      /* THE FINALE HAS NO MAXI WINNER, NO CALL AND NO EXIT, so every clause
+         above it is silent and the last round of the ledger read "the maxi
+         challenge was The Finale" and stopped — on the one night the season
+         is about, in the block the article writer is prompted with. */
+      const fin = (r.placements || []).filter(x => x.result === 'WINNER' || x.result === 'FINALIST');
+      if (fin.length) {
+        const champ = fin.find(x => x.result === 'WINNER');
+        facts.push(`${fin.map(x => x.name).join(', ')} reached the finale`);
+        if (champ) facts.push(`${champ.name} was crowned`);
+      }
       const exits = _leftThisRound(r);
       for (const line of exits.facts) facts.push(line);
       return { n, word, gone: exits.gone,

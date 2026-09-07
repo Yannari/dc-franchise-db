@@ -1383,6 +1383,12 @@ export function simulateNext() {
     // `updatePopularity` reads a Total Drama episode — challenges, idols, a
     // tribal — and this show has none of them. js/dr-run.js writes the ledger
     // from the season's own events instead.
+    /* AND THE EPISODE IS SAVED. The Total Drama and Big Brother paths save
+       inside their popularity branch — `{ updatePopularity(ep); saveGameState(); }`
+       — so skipping the popularity update, which this show is right to do,
+       skipped persistence too. A drag season played fine and lost every
+       episode on reload. */
+    saveGameState();
     _refreshFeed();
     _autoRevealSpoiler(drEp.num);
     viewingEpNum = drEp.num;
@@ -1403,6 +1409,8 @@ export function simulateNext() {
     // `updatePopularity` reads a Total Drama episode — challenges, idols, a
     // tribal — and this show has none of them. The castle keeps its own two
     // ledgers in js/tr/crowd.js and the engine has already written them.
+    // Same omission as the drag path above, same reason.
+    saveGameState();
     _refreshFeed();
     _autoRevealSpoiler(trEp.num);
     viewingEpNum = trEp.num;
@@ -1425,7 +1433,12 @@ export function simulateNext() {
       alert('This Big Brother season is already complete.');
       return;
     }
-    if (seasonConfig.popularityEnabled !== false) { updatePopularity(bbEp); saveGameState(); }
+    /* SAVING IS NOT A POPULARITY FEATURE. These two were one statement, so a
+       season with popularity switched off never persisted either — and any
+       show that correctly skips `updatePopularity` (which reads a Total Drama
+       episode) skipped the save with it. */
+    if (seasonConfig.popularityEnabled !== false) updatePopularity(bbEp);
+    saveGameState();
     // The audience reacts AFTER popularity is updated — that is the number the
     // feed reads to decide who gets defended and who gets ratioed.
     _refreshFeed();
@@ -1446,7 +1459,8 @@ export function simulateNext() {
       if (h) h.aftermath = ep.aftermath;
     }
   }
-  if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+  if (seasonConfig.popularityEnabled !== false) updatePopularity(ep);
+  saveGameState();
   _refreshFeed();
   _autoRevealSpoiler(ep.num);
   viewingEpNum = ep.num;

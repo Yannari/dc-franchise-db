@@ -69,7 +69,15 @@ describe('the board', () => {
 
 describe('the currencies, measured', () => {
   const rows = [];
-  for (let s = 0; s < 60; s++) {
+  /* 250 SEASONS, NOT 60, AND THE NUMBER IS THE POINT. The claim below
+     compares two correlations about 0.016 apart on this fixture, and at 60
+     seasons the sampling error is wider than the gap: it read 0.525 vs 0.507
+     — the wrong way round — after one engine change and 0.500 vs 0.505 after
+     another, while the true values over 400 seasons are 0.511 and 0.527 and
+     have not moved at all. A test that flips on noise teaches nothing except
+     to loosen it, which is how a real flip gets waved through later. Measured
+     stable from 200 up; 250 for headroom. */
+  for (let s = 0; s < 250; s++) {
     const doc = buildDragSeasonDocument(
       playDragSeason({ cast: cast(12, 300 + s), seed: s }).rows, { seasonNumber: s + 1 });
     for (const p of doc.placements) {
@@ -103,8 +111,10 @@ describe('the currencies, measured', () => {
   });
 
   it('HIGHS IS CHEAPEST BECAUSE IT IS THE MOST PLACEMENT-SHAPED', () => {
-    // Measured -0.518 against maxi wins' -0.451: the opposite way round from
-    // the intuition that the biggest achievement is the most placement-like.
+    // Measured over 400 seasons on this fixture: highs |r|=0.527 against maxi
+    // wins' 0.511 — the opposite way round from the intuition that the biggest
+    // achievement is the most placement-like. The gap is real but only 0.016,
+    // which is why the sample above is 250 and not 60.
     // If this ever flips, the weights below it are being justified by a
     // sentence that is no longer true.
     expect(Math.abs(corr('highs'))).toBeGreaterThan(Math.abs(corr('maxiWins')));

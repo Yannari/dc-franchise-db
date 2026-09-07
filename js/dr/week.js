@@ -100,7 +100,12 @@ export function runDragWeek(state, cfg, ctx) {
   // 1–2. The room after the last exit, and the morning after that.
   const last = state.episodes[state.episodes.length - 1] || null;
   const gone = last ? last.exits.map(x => x.name) : [];
-  say('cold-open', 'cold-open', { gone });
+  /* NO COLD OPEN ON THE PREMIERE. The cold open is the morning AFTER an
+     elimination — its whole pool is the empty station, the lipstick message
+     on the mirror, the room going back over last night — and on episode one
+     nobody has left, nobody has slept, and the queens are still walking
+     through the door. The entrances are the opening. */
+  if (!isPremiere) say('cold-open', 'cold-open', { gone });
   say('werk-morning', 'werk-morning', { living: [...living] });
 
   // ── THE ROOM ──────────────────────────────────────────────────────
@@ -124,7 +129,11 @@ export function runDragWeek(state, cfg, ctx) {
   for (const sc of arrivals) if (sc.bond || sc.pop) applyEventLike(sc);
 
   const werkScenes = runWerkRoom({
-    slots: ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
+    // The cold-open slot goes with its marker: its events are written for a
+    // room that lost somebody last night, and the premiere's room has not.
+    slots: isPremiere
+      ? ['werk-morning', 'prep', 'werk-elim-day']
+      : ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
     living, players: ctx.players, state, storylines: state.storylines || [],
     rng,
     ctx: {

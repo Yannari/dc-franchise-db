@@ -536,7 +536,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'relief-and-guilt', slot: 'cold-open', cast: 'solo', weight: 1,
     note: 'She is glad it was not her and hates being glad.',
-    when: f => f.lastCall === 'BTM' || f.lastCall === 'LOW',
+    when: f => f.someoneLeft && (f.lastCall === 'BTM' || f.lastCall === 'BTM2' || f.lastCall === 'LOW'),
     effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
       "{a} is relieved and she hates that she is relieved. She survived and someone else did not and the maths of that is simple and ugly: their loss is her gain. She puts her face on and pretends she is not thinking about it, but she is thinking about it, and the mirror knows.",
@@ -693,7 +693,7 @@ export const WERK_EVENTS = [
   ev({
     id: 'counting-the-chairs', slot: 'cold-open', cast: 'solo', weight: 1,
     note: 'She works out how many are left and says the number out loud.',
-    when: f => f.episode > 2, effects: { pop: { a: 1 }, state: 'sober' },
+    when: f => f.episode > 2 && f.someoneLeft, effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
       "{a} counts the chairs. Out loud, pointing at each one, like a child counting something important. She gets to the number and says it again. The room does not need her to explain what the number means. Everyone has been counting. She is just the one who said it.",
       "\"How many are we now?\" {a} asks, and then counts before anyone answers. The number is smaller than it was. It is always smaller than it was. She says it with the tone of someone who is realising for the first time that this is a game she might actually win, and the thought sits on her face for a long time.",

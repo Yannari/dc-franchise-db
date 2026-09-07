@@ -100,9 +100,19 @@ describe('the registry', () => {
   it('every ordinary episode reaches the stage and the lip sync', () => {
     for (const row of rows.filter(r => !r.dr.finale)) {
       const ids = dragScreens(row).map(s => s.id);
-      for (const want of ['dr-cold-open', 'dr-main-stage', 'dr-critiques', 'dr-lipsync']) {
+      for (const want of ['dr-main-stage', 'dr-critiques', 'dr-lipsync']) {
         expect(ids, `episode ${row.num} has no ${want}`).toContain(want);
       }
+      /* THE COLD OPEN IS NOT ON THE PREMIERE, and that is the rule rather
+         than a gap. It is the morning AFTER an elimination — the empty
+         station, the lipstick message, the room going back over last night —
+         and on episode one nobody has left and the queens are still coming
+         through the door. The entrances are the opening. */
+      const premiere = row.num === 1;
+      expect(ids.includes('dr-cold-open'), `episode ${row.num} cold open`)
+        .toBe(!premiere);
+      expect(ids.includes('dr-arrivals'), `episode ${row.num} arrivals`)
+        .toBe(premiere);
     }
   });
 });

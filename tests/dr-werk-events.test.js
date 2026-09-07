@@ -6,6 +6,8 @@
 // header of js/dr/data/werk-events.js is checked here, so filling the pool is
 // a job with a green light at the end of it rather than a guess.
 import { describe, expect, it } from 'vitest';
+import { playDragSeason } from '../js/dr/season.js';
+import { rngFor } from '../js/dr/rng.js';
 import { WERK_EVENTS, WERK_IDS, SLOTS, unwrittenWerkEvents } from '../js/dr/data/werk-events.js';
 import { showWords } from '../js/shows.js';
 
@@ -250,5 +252,62 @@ describe('what the record does to the room', () => {
       expect(String(e.when), `${e.id} says lip sync but gates on BTM`)
         .not.toMatch(/===\s*'BTM'/);
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The premiere has no morning after
+// ══════════════════════════════════════════════════════════════════════
+describe('the cold open', () => {
+  function play(seed, config = {}) {
+    const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const rng = rngFor(seed); const r = () => 1 + Math.floor(rng() * 10);
+    const cast = Array.from({ length: 12 }, (_, i) => ({
+      name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+      archetype: 'hero', age: 22 + i,
+      stats: Object.fromEntries(STATS.map(k => [k, r()])),
+      drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+    }));
+    return playDragSeason({ cast, seed, config });
+  }
+
+  /* The cold open is the morning AFTER an elimination — the empty station,
+     the lipstick message, the room going back over last night. On episode one
+     nobody has left, nobody has slept, and the queens are still coming
+     through the door. The entrances are the opening. */
+  it('does not exist on the premiere, of either kind', () => {
+    for (const config of [{}, { drPremiere: 'split' }, { drPremiere: 'porkchop' }]) {
+      const { rows } = play(4, config);
+      const cold = (rows[0].dr.scenes || []).filter(s => s.step === 'cold-open');
+      expect(cold.length, `${JSON.stringify(config)} opened episode 1 on a cold open`).toBe(0);
+      // And every later episode still has one.
+      const later = (rows[1]?.dr?.scenes || []).filter(s => s.step === 'cold-open');
+      expect(later.length, 'the cold open vanished from episode 2').toBeGreaterThan(0);
+    }
+  });
+
+  /* AND NOBODY MOURNS A QUEEN WHO DID NOT LEAVE. A double shantay and a
+     split-premiere half both end with nobody going home, and the next
+     morning's pool would still hand out the empty station and "she survived
+     and someone else did not". */
+  it('never claims an exit after a night nobody left', () => {
+    const CLAIMS_EXIT = new Set(['the-empty-station', 'the-mirror-message',
+      'one-less-friend', 'relief-and-guilt', 'counting-the-chairs']);
+    let checked = 0;
+    for (let s = 0; s < 40; s++) {
+      const { rows } = play(s);
+      for (let i = 1; i < rows.length; i++) {
+        if ((rows[i - 1].exits || []).length) continue;
+        checked++;
+        for (const sc of rows[i].dr.scenes || []) {
+          const id = String(sc.kind || '').replace(/^werk:/, '');
+          expect(CLAIMS_EXIT.has(id),
+            `episode ${rows[i].num} ran "${id}" after a night nobody left`).toBe(false);
+        }
+      }
+    }
+    // The case has to be REACHED or this passes by never running.
+    expect(checked, 'no no-elimination week occurred in 40 seasons').toBeGreaterThan(0);
   });
 });

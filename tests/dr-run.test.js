@@ -15,6 +15,7 @@
 //      queue must rebuild the SAME season and drop what already aired.
 //   3. THE ROW REACHES gs.episodeHistory in the shape every screen reads.
 import { afterAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   gs as gsRef, setGs, setPlayers, players, seasonConfig, formatIsRunnable, defaultConfig,
 } from '../js/core.js';
@@ -113,5 +114,54 @@ describe('dr-run', () => {
     setPlayers([{ name: 'Solo', slug: 'solo', stats: {}, drag: {} }]);
     setGs({ episodeHistory: [], activePlayers: ['Solo'], eliminated: [], popularity: {} });
     expect(simulateDragEpisode()).toBe(null);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// A played episode has to survive a reload
+// ══════════════════════════════════════════════════════════════════════
+describe('persistence', () => {
+  /* THE BUG: the run tab saved inside its POPULARITY branch —
+       if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+     — so any show that correctly skips `updatePopularity` (it reads a Total
+     Drama episode: challenges, idols, a tribal) skipped persistence with it.
+     Drag and the castle both did. A season played perfectly and lost every
+     episode on reload. It also meant a Total Drama season with popularity
+     switched off never saved either. Saving is not a popularity feature. */
+  it('the run tab saves after a drag episode, outside the popularity branch', () => {
+    const src = readFileSync('js/run-ui.js', 'utf8');
+    // No show may couple the two again.
+    expect(src, 'saving is coupled to popularity again')
+      .not.toMatch(/popularityEnabled !== false\)\s*\{\s*updatePopularity\([^)]*\);\s*saveGameState\(\)/);
+    // And the drag branch must save at all.
+    const from = src.indexOf('const drEp = simulateDragEpisode();');
+    expect(from, 'the drag branch moved').toBeGreaterThan(-1);
+    const branch = src.slice(from, from + 1400);
+    expect(branch, 'the drag branch never saves').toMatch(/saveGameState\(\)/);
+  });
+
+  it('keeps the episodes it played across a reload', () => {
+    stage();
+    for (let i = 0; i < 3; i++) simulateDragEpisode();
+    expect(gsRef.episodeHistory.length).toBe(3);
+    const winners = gsRef.episodeHistory.map(e => e.dr.call.win[0]).join(',');
+
+    // Exactly what IndexedDB stores and hands back.
+    setGs(JSON.parse(JSON.stringify(gsRef)));
+    expect(gsRef.episodeHistory.length, 'the reload lost the season').toBe(3);
+    const next = simulateDragEpisode();
+    expect(next?.num, 'the season restarted instead of continuing').toBe(4);
+
+    /* AND THE HARDER RELOAD, where the queue did not survive. dr-run.js
+       rebuilds the same season from the seed and drops what already aired —
+       if the seed were lost it would rebuild a DIFFERENT season and stack it
+       onto the history, which is the corruption that guard exists for. */
+    const lost = JSON.parse(JSON.stringify(gsRef));
+    delete lost._drQueue;
+    setGs(lost);
+    const after = simulateDragEpisode();
+    expect(after?.num).toBe(5);
+    expect(gsRef.episodeHistory.slice(0, 3).map(e => e.dr.call.win[0]).join(','),
+      'the rebuild produced a different season').toBe(winners);
   });
 });

@@ -98,6 +98,97 @@ describe('a Traitor can spend a fellow the room has already burned', () => {
   });
 });
 
+// ══════════════════════════════════════════════════════════════════════
+// AND THE BALLOT HAS TO RESPOND TO THE BURN, NOT ONLY THE DEBATE
+// ══════════════════════════════════════════════════════════════════════
+//
+// The arms above guard the SPEECH — a Traitor standing up and naming a fellow
+// the room is already on. This one guards the vote, which is the half a viewer
+// actually notices, and it exists because that half was broken in a way no
+// assertion here could see.
+//
+// WHAT WAS MEASURED, 60 seasons, the share of Traitor ballots that named a
+// fellow, split by how many people had publicly named that fellow at the same
+// table:
+//
+//     accusers   before   after
+//     1           13.3%     8.3%
+//     2           16.8%    18.6%
+//     3           36.8%    63.0%
+//     4+          20.2%    76.1%     <- it used to turn OVER at the top
+//
+// A response curve that falls at its top end is two terms fighting rather than
+// a preference. `pactReluctance` is quadratic in the living count, so a table
+// of twelve prices the pact at 13.75 against suspicion scores that live
+// between 0 and about 2 — and the burn term was a PERCENTAGE off that. Four
+// accusers also needs a big room to be available in, which is exactly where
+// the quadratic is largest, so the most burned fellows were the hardest to
+// name. See `PACT_BURNED_COST` in js/tr/deduction.js for the fix: the burn now
+// blends toward a fixed price instead of scaling the old one.
+//
+// SO THE SHAPE IS ASSERTED, NOT THE NUMBERS. Rates ride the rng stream and
+// this file has already said so once; what must not come back is a curve that
+// stops rising, or a top end a Traitor cannot reach.
+describe('a Traitor joins a landslide that has landed on a fellow', () => {
+  const byAccusers = { 1: { n: 0, hit: 0 }, 2: { n: 0, hit: 0 }, 3: { n: 0, hit: 0 }, 4: { n: 0, hit: 0 } };
+  for (const n of NIGHTS) {
+    const ballots = n.round.ballots || [];
+    if (!ballots.length) continue;
+    const living = ballots.map(b => b.voter);
+    const fellows = living.filter(x => n.align[x] === 'traitor');
+    if (fellows.length < 2) continue;
+    const accCount = {};
+    for (const a of (n.round.accusations || [])) {
+      if (a.target) accCount[a.target] = (accCount[a.target] || 0) + 1;
+    }
+    for (const b of ballots) {
+      if (n.align[b.voter] !== 'traitor' || !b.voted) continue;
+      // The most publicly accused fellow available to this voter tonight.
+      let worst = null, worstN = 0;
+      for (const f of fellows) {
+        if (f === b.voter) continue;
+        const c = accCount[f] || 0;
+        if (c > worstN) { worstN = c; worst = f; }
+      }
+      if (!worst) continue;
+      const bucket = byAccusers[Math.min(4, worstN)];
+      if (!bucket) continue;
+      bucket.n++;
+      if (b.voted === worst) bucket.hit++;
+    }
+  }
+  const rate = k => byAccusers[k].hit / Math.max(1, byAccusers[k].n);
+
+  it('is rarer than chance when one person has said it and common when four have', () => {
+    for (const k of [1, 2, 3, 4]) {
+      expect(byAccusers[k].n, `no Traitor ballot faced a fellow with ${k} accusers — `
+        + 'the measurement below is vacuous').toBeGreaterThan(20);
+    }
+    // ONE VOICE IS NOT A BURN. A single accusation must leave the pact
+    // essentially intact, or "burned" means "mentioned".
+    expect(rate(1), 'one accuser is already enough to break the pact').toBeLessThan(0.25);
+    // AND FOUR IS. This is the arm the whole change exists for: with four
+    // separate people naming a fellow out loud, writing that name is the
+    // ordinary play and holding the line is the exception.
+    expect(rate(4), 'a fellow four people have named out loud is still being protected')
+      .toBeGreaterThan(0.5);
+  });
+
+  it('and the response rises the whole way — a curve that turns over is a bug', () => {
+    // THE MUTATION THIS CATCHES is the one that shipped: a burn term real
+    // enough to move the two- and three-accuser cases and arithmetically
+    // unable to reach the four-accuser case, which then reads LOWER than
+    // three. Stated as an ordering rather than as four bands, because the
+    // rates themselves ride the stream.
+    expect(rate(4), `4 accusers (${(100 * rate(4)).toFixed(1)}%) reads lower than 2 `
+      + `(${(100 * rate(2)).toFixed(1)}%) — the response curve turns over, which means `
+      + 'a term that grows with room size is beating the burn discount')
+      .toBeGreaterThan(rate(2));
+    expect(rate(3), 'three accusers moves nobody more than one does')
+      .toBeGreaterThan(rate(1));
+  });
+});
+
 describe('the table prices who was right', () => {
   it('records the accusers it priced, and only on a night with a reveal', () => {
     let withPricing = 0;

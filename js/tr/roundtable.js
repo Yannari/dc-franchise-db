@@ -90,9 +90,18 @@ function tableBurn(name, accusations, living) {
   for (const a of accusations) if (a.target === name) on++;
   return { on, share: on / room };
 }
-/** Below this nobody is burned enough to be worth spending. */
+/**
+ * Below this nobody is burned enough to be worth spending.
+ *
+ * A COUNT AND NOT A SHARE ANY MORE, for the reason `BURN_FULL_ACCUSERS` in
+ * js/tr/deduction.js gives at length: a share of the room means the same
+ * landslide reads as weaker in a bigger castle, so the 0.15 that let two
+ * accusers qualify in a room of twelve silently demanded three in a room of
+ * eighteen. Two people saying the same name out loud is the same event either
+ * way. The tie-break stays on the count, which is now what `tableBurn` ranks
+ * on as well.
+ */
 const SACRIFICE_MIN_ACCUSERS = 2;
-const SACRIFICE_MIN_SHARE = 0.15;
 
 /**
  * The fellow this Traitor could most plausibly throw to the room, or null.
@@ -106,8 +115,8 @@ function burnedFellow(speaker, ep, accusations, living) {
   for (const n of living) {
     if (n === speaker || alignmentAt(n, ep) !== 'traitor') continue;
     const b = tableBurn(n, accusations, living);
-    if (b.on < SACRIFICE_MIN_ACCUSERS || b.share < SACRIFICE_MIN_SHARE) continue;
-    if (!best || b.share > best.share) best = { name: n, ...b };
+    if (b.on < SACRIFICE_MIN_ACCUSERS) continue;
+    if (!best || b.on > best.on) best = { name: n, ...b };
   }
   return best;
 }
@@ -857,7 +866,9 @@ export function betrayals(round, ep) {
     if (!b.voted) continue;
     if (alignmentAt(b.voter, ep) !== 'traitor') continue;
     if (alignmentAt(b.voted, ep) !== 'traitor') continue;
-    const pair = `${b.voter} ${b.voted}`;
+    // A separator no name can contain, written as an escape: a literal NUL
+    // in the source makes grep call this file binary.
+    const pair = `${b.voter}\u0000${b.voted}`;
     if (seen.has(pair)) continue;
     seen.add(pair);
     turns.push({ voter: b.voter, target: b.voted, channel: b.channel });

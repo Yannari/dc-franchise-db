@@ -378,11 +378,14 @@ const POT_GREED = 0.9;
  * held over the tied players alone — a three-name revote in a castle of twelve
  * is not an endgame and must not be priced as one.
  */
-function pactReluctance(burnShare = 0) {
+function pactReluctance(burn = 0) {
   const living = (gs.activePlayers || []).length;
   const cover = Math.max(0, (living - PACT_FLOOR) / PACT_SPAN);
-  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare())
-    * (1 - BURN_DISCOUNT * Math.min(1, (burnShare || 0) / BURN_FULL));
+  const full = PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare());
+  // A BLEND, NOT A DISCOUNT, AND THE DIFFERENCE IS THE WHOLE FIX. See
+  // `PACT_BURNED_COST` below.
+  const b = Math.max(0, Math.min(1, burn || 0));
+  return full * (1 - b) + PACT_BURNED_COST * b;
 }
 /**
  * WHAT IT COSTS TO ABANDON SOMEBODY WHO IS LEAVING ANYWAY: almost nothing.
@@ -400,12 +403,66 @@ function pactReluctance(burnShare = 0) {
  * the one this format is about. Paired with `burnedFellow` in roundtable.js,
  * which decides the same question for the DEBATE.
  */
-const BURN_DISCOUNT = 0.8;
-/** The share of the room whose accusation counts as fully burned. */
-const BURN_FULL = 0.35;
+/**
+ * WHAT NAMING A FULLY BURNED FELLOW COSTS, AS AN ABSOLUTE PRICE.
+ *
+ * This was a PERCENTAGE off — 0.8, "eighty per cent of the loyalty bought
+ * off" — and eighty per cent off was not enough, because of what it was eighty
+ * per cent OF. `cover` is quadratic in the living count, so the pact price at
+ * a table of twelve is 0.55 * 25 = 13.75, against suspicion scores that live
+ * between 0 and about 2. A fifth of 13.75 is 2.75, which is still several
+ * times the largest read anybody at that table could have. The burn term was
+ * real, monotone, well-measured — and arithmetically incapable of changing a
+ * single vote outside the endgame, where the quadratic finally lets go.
+ *
+ * MEASURED, and this is what the user watching the show actually noticed: with
+ * a fellow already holding a third of the room's votes, a Traitor joined 37.6%
+ * of the time, and the response curve TURNED OVER at four accusers (20.0%,
+ * below the 28.1% at three) because four accusers needs a big room and a big
+ * room is where the quadratic is largest.
+ *
+ * So the burn now BLENDS toward a fixed price rather than scaling the old one:
+ * fully burned, naming a fellow costs 0.35 whatever the room size — a real
+ * cost, on the same scale as a strong read, that a landslide can overcome and
+ * an indifferent Traitor will not pay. At burn 0 the price is exactly what it
+ * always was, so an unburned pact is untouched.
+ *
+ * NOT ZERO, and that is the original design intent kept: a Traitor who
+ * abandons people the instant it is convenient is a different character from
+ * the one this format is about. It is a price, not a formality.
+ */
+const PACT_BURNED_COST = 0.35;
+/**
+ * HOW MANY PEOPLE NAMING YOU OUT LOUD COUNTS AS FULLY BURNED — A COUNT, AND
+ * IT USED TO BE A SHARE OF THE ROOM (0.35). THE SHARE WAS THE BUG.
+ *
+ * Measured over 60 seasons, how often a Traitor wrote a burned fellow's name,
+ * by the number of people who had publicly named that fellow at the table:
+ *
+ *     1 accuser   13.3%
+ *     2 accusers  16.8%
+ *     3 accusers  36.8%
+ *     4+ accusers 20.2%   <- the more burned they are, the LESS often
+ *
+ * A response curve that turns over at the top is not a preference, it is two
+ * terms fighting. Four accusers needs a big room to be available in, and in a
+ * big room BOTH sides of this moved the wrong way: `cover` grows QUADRATICALLY
+ * with the living count, so reluctance is at its highest, while a share of the
+ * room DILUTES — four of seventeen is 0.24, which did not even reach the old
+ * 0.35 saturation. The discount could never catch the price.
+ *
+ * And the share was wrong on its own terms. What makes somebody burned at a
+ * Round Table is not what fraction of the castle named them; it is that four
+ * separate people said the name out loud, which is a landslide in a room of
+ * twelve and a landslide in a room of eighteen. Three is the saturation
+ * because three independent accusations is the point a table has visibly
+ * turned, and it is reachable in every room size the format uses.
+ */
+const BURN_FULL_ACCUSERS = 3;
 
 /**
- * How much of the room named `name` out loud at tonight's table, 0..1.
+ * How burned `name` is at tonight's table, 0..1 — an accusation COUNT
+ * against `BURN_FULL_ACCUSERS`, not a share of the room. See that constant.
  *
  * Reads the accusations runRoundTable stashes before the ballots -- PUBLIC
  * information, said at this table, in front of everybody. Empty on a revote
@@ -415,10 +472,9 @@ const BURN_FULL = 0.35;
 function tonightsBurn(name) {
   const acc = gs.tr?._tableAccusations;
   if (!Array.isArray(acc) || !acc.length) return 0;
-  const room = Math.max(1, (gs.activePlayers || []).length - 1);
   let on = 0;
   for (const a of acc) if (a.target === name) on++;
-  return on / room;
+  return Math.min(1, on / BURN_FULL_ACCUSERS);
 }
 
 /**

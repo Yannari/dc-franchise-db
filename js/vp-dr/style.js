@@ -95,8 +95,17 @@ export const DR_CSS = `
   linear-gradient(180deg,#1B0730,#180830 60%,#140510)}
 .dr-phase-lipsync .dr-atmo{background:radial-gradient(800px 400px at 50% 10%,rgba(255,41,75,.34),transparent 70%),
   linear-gradient(180deg,#3A0413,#240510 55%,#140510)}
+/* THE CHART IS THE ONE LIGHT SCREEN, so every colour the dark screens set
+   has to be answered here. The section heading kept the dark theme's muted
+   pink for its subtitle, which on cream was "12 QUEENS - THROUGH EPISODE 7"
+   in a colour a reader has to lean in for. Contrast, not decoration. */
 .dr-phase-chart .dr-atmo{background:linear-gradient(180deg,#E9E2D2,#F4EFE4)}
 .dr-phase-chart .dr-wrap{color:#1a1a1a}
+.dr-phase-chart .dr-sec h2{color:#1a1a1a}
+.dr-phase-chart .dr-sec p{color:#6b4a5e}
+.dr-phase-chart .dr-hud{color:#3a2430;border-color:rgba(0,0,0,.18);
+  background:rgba(255,255,255,.5)}
+.dr-phase-chart .dr-hud b,.dr-phase-chart .dr-hud i{color:#1a1a1a}
 .dr-brick{position:absolute;inset:0;opacity:.15;
   background-image:linear-gradient(90deg,rgba(0,0,0,.6) 2px,transparent 2px),
     linear-gradient(180deg,rgba(0,0,0,.6) 2px,transparent 2px);

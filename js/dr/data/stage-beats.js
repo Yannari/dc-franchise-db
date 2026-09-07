@@ -57,7 +57,7 @@ export const STAGE_BEATS = [
       tier('split', 'Half the cast tonight, half of them next week.', [
         "\"Before we begin — you may have noticed the room is a little emptier than you expected.\" The host enjoys this. \"This season begins with a split premiere. Half of you compete tonight. The other half compete next week. Nobody is going home from either night, and then all of you will be in the same workroom, and I will already know a great deal more about you than you know about each other.\"",
         "\"There are twelve of you cast and six of you standing here, and both of those things are true,\" the host says. \"A split premiere. Your half tonight, their half next week, no eliminations in either. What happens tonight does not send you home. It does decide what everybody thinks of you before you have met most of them.\"",
-        "The host explains the shape of it plainly: the cast has been cut in half for the opening, each half gets its own night, and neither night ends in an elimination. \"You are not competing to survive,\" he says. \"You are competing to arrive.\" Six queens work out at the same moment that the other six are watching this later.",
+        "The host explains the shape of it plainly: the cast has been cut in half for the opening, each half gets its own night, and neither night ends in an elimination. \"You are not competing to survive,\" he says. \"You are competing to arrive.\" Half the room works out at the same moment that the other half are watching this later.",
         "\"Tonight is one half of a premiere.\" The host says it like a gift and it lands like a warning. \"The rest of your cast arrives next week and they will have seen everything you do in the next few hours. No eliminations tonight — but there is no unseeing a first impression, and you are making yours in front of a room that is not even full yet.\"",
       ]),
       tier('no-elimination', 'Everybody stays, and nobody has been told yet.', [
@@ -88,7 +88,7 @@ export const STAGE_BEATS = [
     tierBy: 'always',
     tiers: [
       tier('open', 'The stage opens and the category is announced.', [
-        "The lights come up and the host is already standing there in full drag, which means the room is real now. \"The category is,\" she says, and the whole panel leans in, \"eleganza — and I mean it.\" Somewhere backstage twelve queens hear it and check their reflections one more time.",
+        "The lights come up and the host is already standing there in full drag, which means the room is real now. \"The category is,\" she says, and the whole panel leans in, \"eleganza — and I mean it.\" Somewhere backstage every queen left hears it and checks her reflection one more time.",
         "Nobody has to be told to be quiet. The music drops out, the panel settles, and the host looks down the runway at an empty stage the way a person looks at a road they know something is coming down. \"Racers,\" she says. \"Start your engines.\"",
         "The panel is seated, the guest looks delighted to be there, and the host does the thing where she waits a beat too long on purpose. Then: the category, delivered like a dare. The first queen is already at the top of the runway with her shoulders back.",
         "It is the same words every week and it works every week. The stage is lit, the category is named, and the room changes temperature — because from this point on nothing that happened in the werk room counts for anything at all.",
@@ -110,7 +110,7 @@ export const STAGE_BEATS = [
       ]),
       tier('strong', 'Genuinely good. She knows it and the walk shows it.', [
         "{a} walks out with the kind of confidence that comes from having checked the mirror one last time and liked what she saw. The look is clean, the proportions are right, and the walk has intention in it. She is not reinventing anything tonight but she is doing it well and the panel can see that.",
-        "A solid walk from {a} — good posture, good timing, and a look that does exactly what it set out to do. She hits the end of the runway, pauses, turns, and walks back with the expression of somebody who knows she did not just embarrass herself. The judges nod. A nod is not a gasp, but a nod after twelve queens is worth something.",
+        "A solid walk from {a} — good posture, good timing, and a look that does exactly what it set out to do. She hits the end of the runway, pauses, turns, and walks back with the expression of somebody who knows she did not just embarrass herself. The judges nod. A nod is not a gasp, but a nod this late in the night is worth something.",
         "{a} comes out in something that works. The fit is right, the accessories are deliberate, and the walk has rhythm to it. It is not the look that stops the panel in its tracks, but it is the look that a judge remembers when they are arguing about who was safe and who was high, and that distinction matters.",
         "The look is good. {a} knows it is good. She walks with the kind of ease that only exists when you are not worried about something falling off or riding up, and the panel reads that ease as authority. She does not need the loudest look in the room to have one of the best ones.",
       ]),
@@ -391,9 +391,9 @@ export const STAGE_BEATS = [
         "\"I am sorry, my dears, but neither of you has shown me enough to stay.\" The words settle over both queens at the same time. There is a shared glance — not quite solidarity, not quite blame — and then they both begin the walk that leads away from the stage and toward the door.",
       ]),
       tier('triple', 'Three of them fought and one of them loses.', [
-        "Three queens stood on the stage and fought and one of them is going. The host names who stays — twice — and each \"shantay\" lands with relief for one and dread for the remaining. The queen who is left standing without a save closes her eyes for one second and then opens them and walks.",
+        "They stood on that stage together and fought and one of them is going. The host names who stays — twice — and each \"shantay\" lands with relief for one and dread for the remaining. The queen who is left standing without a save closes her eyes for one second and then opens them and walks.",
         "A three-way lip sync is a war with three fronts and tonight one queen lost on all of them. The host calls two names and both of those names get to stay and the third name is never said, which is its own kind of verdict. The departing queen hugs the other two because the fight was real even if the result was not what she wanted.",
-        "Three queens fought. Two of them stay. The one who does not is the one who knew, halfway through the song, that the stage was slipping away from her — and the knowing did not help, because knowing and fixing are not the same thing at the speed of a lip sync.",
+        "They all fought. All but one of them stay. The one who does not is the one who knew, halfway through the song, that the stage was slipping away from her — and the knowing did not help, because knowing and fixing are not the same thing at the speed of a lip sync.",
         "\"Shantay, you stay.\" Twice. And then the silence that follows the second one is the silence where the third queen understands that the third call is not coming. She nods. She hugs the two who stayed. She walks to the back to say her goodbyes and the walk is steady, which is the most she can give the room right now.",
       ]),
     ],

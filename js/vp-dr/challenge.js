@@ -51,10 +51,11 @@ export /* THE TRACK AND WHAT IT SOUNDS LIKE. The girl group's theme reached the 
 function _trackLine(row) {
   const d = _sceneData(row, 'group-parts');
   if (!d?.track) return '';
+  /* NO "X vs Y" LINE ANY MORE. The team board under this now names both
+     groups and lists who is in them, and printing the same two names again
+     one line above it was the only thing the brief said about the split. */
   return `<p class="dr-track"><b class="dr-disp">&ldquo;${esc(d.track)}&rdquo;</b>`
-    + `${d.sound ? ` &mdash; ${esc(d.sound)}` : ''}`
-    + `${(d.teamNames || []).length > 1
-      ? `<br><span>${d.teamNames.map(n => esc(n)).join(' vs ')}</span>` : ''}</p>`;
+    + `${d.sound ? ` &mdash; ${esc(d.sound)}` : ''}</p>`;
 }
 
 /** One scene's data off the row, by kind. */
@@ -106,6 +107,23 @@ const CHAL_CSS = `
    through at a third opacity, from when a chip was a character crossed OFF
    the board; it now names a queen and her pick and has to be readable.
    NO BACKTICKS: this comment is inside a template literal. */
+/* The mini's result card — the last click on that screen. */
+.dr-miniwin{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;
+  padding:16px 20px;border-left:4px solid #FFC83D;
+  background:linear-gradient(90deg,rgba(255,200,61,.16),transparent 55%),var(--dr-panel)}
+.dr-miniwin b{display:block;font-size:26px;color:#FFC83D;line-height:1.05}
+.dr-miniwin p{margin:4px 0 0;color:#f4e3ed}
+/* THE GROUPS, on the brief. */
+.dr-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;margin:0 0 14px}
+.dr-team{padding:12px 14px;border:1px solid var(--dr-line);background:rgba(0,0,0,.26)}
+.dr-team-k{margin-bottom:9px;padding-bottom:6px;font-size:15px;color:#FFC83D;
+  border-bottom:1px solid rgba(255,200,61,.28);text-wrap:balance}
+.dr-team-q{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;
+  padding:4px 0}
+.dr-team-q b{font-size:12.5px;font-weight:600;color:#f0dfe9}
+.dr-team-q i{font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  font-style:normal;color:#C9A6BC}
 .dr-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
   gap:9px;margin-bottom:16px}
 .dr-chip-lg{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:center;
@@ -258,10 +276,16 @@ export function rpBuildMini(row) {
     immunity: 'immunity from tonight',
     advantage: 'an advantage in the maxi',
   };
+  /* THE LEAD SAYS WHAT IS AT STAKE, NOT WHO WON IT. It read "Priya takes it
+     — and with it, pick-order" above eleven unrevealed beats: the screen
+     announced the winner before the challenge it is a recording of had been
+     watched. The rail did the same at every index. The prize is the right
+     thing to open with; the winner is the thing the last click is for. */
+  const prize = esc(BUYS[m.buys] || m.buys || 'the bragging rights');
   const lead = `<div class="dr-brief">
     <span class="dr-fmt">Mini challenge</span>
     <h3 class="dr-disp">${esc(m.name)}</h3>
-    <p><b>${esc(m.winner)}</b> takes it — and with it, ${esc(BUYS[m.buys] || m.buys || 'the bragging rights')}.</p>
+    <p>Whoever takes it takes ${prize}.</p>
   </div>`;
   const steps = scenes.map((sc, i) => {
     const who = (sc.data?.players || [])[0];
@@ -269,26 +293,66 @@ export function rpBuildMini(row) {
       <div class="dr-panel dr-a-score dr-row">
         ${who ? _portrait(who, ep, { size: 46 }) : '<span></span>'}
         <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
-          <p style="margin:4px 0 0;color:#f4e3ed">${esc(sc.text)}</p></div>
+          <p style="margin:4px 0 0;color:#f4e3ed;line-height:1.6">${esc(sc.text)}</p></div>
         <span></span>
       </div></div>`;
   }).join('');
+
+  // The result, as the last card rather than as the headline.
+  const winStep = m.winner ? `<div class="dr-step" id="dr-step-mini-${scenes.length}">
+    <div class="dr-panel dr-miniwin">
+      ${_portrait(m.winner, ep, { size: 64, station: true })}
+      <div><span class="dr-fmt">Wins the mini</span>
+        <b class="dr-disp">${esc(m.winner)}</b>
+        <p>She takes ${prize}.</p></div>
+    </div></div>` : '';
+  const total = scenes.length + (m.winner ? 1 : 0);
+
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    window._drSidebar.mini = scenes.map(() =>
+    window._drSidebar.mini = Array.from({ length: total }, (_, i) =>
       `<h4 class="dr-disp">The mini</h4><p style="font-size:13px">${esc(m.name)}<br>
-       Won by <b>${esc(m.winner)}</b></p>`);
+       <span style="color:#C9A6BC">Worth ${prize}.</span>${
+  m.winner && i >= total - 1 ? `<br><br>Won by <b>${esc(m.winner)}</b>` : ''}</p>`);
   }
-  return `<style>${CHAL_CSS}</style>${_shell(lead + steps, ep, {
+  return `<style>${CHAL_CSS}</style>${_shell(lead + steps + winStep, ep, {
     phase: 'werk', title: 'The Mini Challenge', subtitle: esc(m.name),
-    sidebar: `<h4 class="dr-disp">The mini</h4><p style="font-size:13px">${esc(m.name)}</p>`,
-  })}${_controls('mini', Math.max(1, scenes.length), ep.num)}`;
+    sidebar: `<h4 class="dr-disp">The mini</h4><p style="font-size:13px">${esc(m.name)}<br>
+      <span style="color:#C9A6BC">Worth ${prize}.</span></p>`,
+  })}${_controls('mini', Math.max(1, total), ep.num)}`;
 }
 
 /**
  * The brief. The catalogue's `desc` IN FULL — it is the only place the
  * viewer learns what the queens are physically doing.
  */
+/**
+ * The groups, with the queens actually in them.
+ *
+ * A team challenge said "2 teams." and then printed the two band names on
+ * one line — every roster the engine had built was on `assignment.teams`,
+ * indexed against `teamNames`, and drawn nowhere. Who is in a group with
+ * whom is the thing a team challenge IS, and the brief was the last screen
+ * before the room split up.
+ *
+ * Roles come off the picks, so a lead reads as a lead here rather than
+ * being something you work out later from a score.
+ */
+function _teamBoard(a, ep) {
+  const teams = a?.teams || [];
+  if (teams.length < 2) return '';
+  const names = a.teamNames || a.theme?.names || [];
+  return `<div class="dr-teams">${teams.map((members, i) => `
+    <div class="dr-team">
+      <div class="dr-team-k dr-disp">${esc(names[i] || `Group ${i + 1}`)}</div>
+      ${(members || []).map(n => `<div class="dr-team-q">
+        ${_portrait(n, ep, { size: 34 })}
+        <b>${esc(n)}</b>
+        ${a.picks?.[n]?.role ? `<i>${esc(a.picks[n].role)}</i>` : ''}
+      </div>`).join('')}
+    </div>`).join('')}</div>`;
+}
+
 export function rpBuildMaxiAnnounce(row) {
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
@@ -301,10 +365,9 @@ export function rpBuildMaxiAnnounce(row) {
     <span class="dr-fmt">${esc(cat.format || ch.format || 'maxi challenge')}</span>
     <h3 class="dr-disp">${esc(ch.name)}</h3>
     <p>${esc(cat.desc || 'The brief is on the table.')}</p>
-    ${(a.teams || []).length > 1
-    ? `<p style="margin-top:10px;color:#C9A6BC;font-size:13px">${a.teams.length} teams.</p>` : ''}
     ${_trackLine(row)}
-  </div>`;
+  </div>
+  ${_teamBoard(a, ep)}`;
   const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-announce-${i}">
     <div class="dr-panel dr-a-room" style="padding:14px 16px 14px 20px">
       <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p></div></div>`).join('');

@@ -89,7 +89,7 @@ export const MAXI_EVENTS = [
     id: 'spotlight-hog', from: 'girl-group', cast: 'pair',
     note: '{a} takes the front of the number for herself. It works for her and every queen behind her pays for it.',
     lines: [
-      "It is subtle enough to be deniable and obvious enough that everybody sees it. {a} drifts half a step forward on every formation, so by the final chorus she is not in the line, she is in front of it, and four queens are choreographed into being her backing. She says she did not plan it. She did it four times.",
+      "It is subtle enough to be deniable and obvious enough that everybody sees it. {a} drifts half a step forward on every formation, so by the final chorus she is not in the line, she is in front of it, and the rest of the group is choreographed into being her backing. She says she did not plan it. She did it four times.",
       "\"Can I just — sorry — can I take this bit?\" It is phrased as a question the first time. By the third time it is not phrased at all, {a} simply takes the bit, and the queen it belonged to stands there holding a verse she is no longer singing.",
       "{a} decides somewhere in rehearsal that this is her number, and once she has decided it the rest of the team is furniture. Every adjustment she suggests moves her forward. Every note she gives somebody else moves them back. It is a masterclass, and it is going to cost her.",
       "The number is good. It is good because {a} is very good and she is at the front of all of it, and the queens behind her know exactly how that happened. Nobody says anything in the rehearsal room. Everybody says something afterwards.",
@@ -304,7 +304,7 @@ export const MAXI_EVENTS = [
     note: 'The room is helping each other and nobody is helping her. An event, not an absence.',
     lines: [
       "The room is helping each other. Queens are crossing to other stations, offering advice, lending tools, checking hems. Nobody crosses to {a}'s station. Nobody offers. Nobody checks. The absence is loud enough that {a} can hear it, and the hearing changes the way she works — faster, quieter, and facing the mirror instead of the room.",
-      "{a} asks for help and the room gives her the specific silence of people who heard the question and chose not to answer it. It is not cruelty — it is calculation, twelve queens deciding independently that helping {a} is not in their interest tonight, and the independence is what makes it worse than a conspiracy.",
+      "{a} asks for help and the room gives her the specific silence of people who heard the question and chose not to answer it. It is not cruelty — it is calculation, a whole room deciding independently that helping {a} is not in their interest tonight, and the independence is what makes it worse than a conspiracy.",
       "Three queens walk past {a}'s station while she is struggling with something and all three of them keep walking. She does not ask again. She figures it out on her own, and the figuring-out takes twice as long as it would have taken with one person's help, and the room knows this and the room is fine with it.",
       "The room has decided, without discussing it, that {a} is on her own tonight. The decision is visible in the traffic pattern — help flows in every direction except toward her station — and {a} is aware of the pattern and the awareness settles into her work like a weight she is building under.",
     ],
@@ -337,7 +337,7 @@ export const MAXI_EVENTS = [
     lines: [
       "{a} has the picks and uses them precisely enough that {b} ends up on the other team without {a} ever having to say why. The room watches the draft happen and the room can count and the counting tells the room that {b}'s placement is not an accident — it is a decision, made by a captain who does not want that queen's energy near her work.",
       "Captain {a} picks around {b} with the surgical precision of somebody who has already decided {b} is a liability and has constructed a draft order that delivers {b} to the other side of the room without ever naming the reason. {b} ends up on the other team. The other team's captain looks at {b} and then at {a} and understands exactly what just happened.",
-      "{a} drafts five queens and {b} is not one of them, and the not-being-one-of-them is the tell. {b} walks to the other team and the walk has the energy of somebody who was not rejected — she was redirected, deliberately, by a captain who smiled while doing it.",
+      "{a} drafts her whole team and {b} is not on it, and the not-being-on-it is the tell. {b} walks to the other team and the walk has the energy of somebody who was not rejected — she was redirected, deliberately, by a captain who smiled while doing it.",
       "The draft unfolds and {a} makes sure {b} is the other captain's problem. She does it with picks, not words — choosing around {b} in a pattern that leaves {b} standing on the wrong side of the room when the music stops. The room notices. {b} notices. {a} is already talking to her team.",
     ],
   }),

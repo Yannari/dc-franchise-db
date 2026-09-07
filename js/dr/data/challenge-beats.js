@@ -41,7 +41,7 @@ export const CHALLENGE_BEATS = [
     tierBy: 'always',
     tiers: [
       tier('arrival', 'She has news and is going to take her time with it.', [
-        "The door goes and it is her, out of drag, in a suit that costs more than anybody's entire wardrobe, and thirteen queens stop mid-sentence like somebody hit a switch. She lets the silence run a second longer than it needs to. She always does. Then: \"Ladies.\"",
+        "The door goes and it is her, out of drag, in a suit that costs more than anybody's entire wardrobe, and the whole room stops mid-sentence like somebody hit a switch. She lets the silence run a second longer than it needs to. She always does. Then: \"Ladies.\"",
         "Nobody hears her come in. They just gradually notice, one at a time, that she is standing by the door watching them work with an expression of enormous private amusement. By the time the last queen clocks it, the room has gone from a workshop to an audience.",
         "\"Hello, hello, hello.\" Thirteen voices come back at once, ragged and delighted, and somebody at the back is already clapping for no reason at all. She waits for it to die down, which takes a while, because they know she is about to change the shape of their week.",
         "She comes in the way she always comes in — like the room was already hers and she has just been elsewhere for a while. Every queen straightens up without deciding to. Whatever anybody was arguing about ninety seconds ago is over.",
@@ -54,7 +54,7 @@ export const CHALLENGE_BEATS = [
     tierBy: 'always',
     tiers: [tier('brief', 'What they are doing this week, and what they are walking in.', [
       "\"This week,\" she says, and the pause after it is long enough to park a truck in, \"{c}.\" She explains the rules the way she always does — slowly, clearly, and with just enough delight to make it sound like she designed the challenge specifically to ruin somebody's week. The runway category lands at the end like an afterthought, except it is not an afterthought and everybody in the room knows it.",
-      "She lays out {c} with the cadence of somebody reading a bedtime story to children she intends to terrify. The maxi is explained, the rules are explained, and then the runway category drops and three queens in the room are already thinking about what they packed and two of them are realising they did not pack enough.",
+      "She lays out {c} with the cadence of somebody reading a bedtime story to children she intends to terrify. The maxi is explained, the rules are explained, and then the runway category drops and somewhere in the room three queens are already thinking about what they packed and two of them are realising they did not pack enough.",
       "\"{c}.\" She says the name of the challenge and lets it sit there like a gift nobody has unwrapped yet. Then she explains what it involves, piece by piece, and the room's face changes with each piece — interest, then concern, then the particular wide-eyed focus of people doing maths they did not study for. The runway category arrives last, delivered like dessert.",
       "The brief is delivered with the showmanship of somebody who has done this before and enjoys it more every time. {c} — the concept, the structure, the stakes, and the runway theme — laid out in four sentences, each one landing on a different queen's weak spot. By the time she is done the room has already split into the people who are excited and the people who are pretending to be.",
     ])],
@@ -66,14 +66,14 @@ export const CHALLENGE_BEATS = [
     tiers: [
       tier('delighted', 'This is her challenge and she cannot hide it.', [
         "{a} hears the brief and her face does something she cannot control. The corners of her mouth go up before she can stop them and the queen next to her notices and says nothing, because saying something would be admitting that {a} just became the favourite and nobody admits that out loud.",
-        "This is {a}'s challenge. She knows it before the host finishes explaining the rules. The brief lands on her like a coat she has been waiting to put on all season, and the only thing stopping her from grinning is the twelve other queens in the room who would notice.",
+        "This is {a}'s challenge. She knows it before the host finishes explaining the rules. The brief lands on her like a coat she has been waiting to put on all season, and the only thing stopping her from grinning is every other queen in the room, all of whom would notice.",
         "{a} is already building her approach before the host has finished talking. Her eyes go somewhere else — somewhere internal, somewhere she is casting and choreographing and picking fabric — and the queens around her can see her leaving the room without moving.",
         "The brief hits and {a} looks down at her station with the focus of somebody who already knows what she is going to do. Not a guess. Not a hope. A plan, arriving fully formed in the time it takes the host to explain the runway theme, and {a} is already three steps ahead of the explanation.",
       ]),
       tier('braced', 'She can do this. She is not thrilled about it.', [
         "{a} nods through the brief with the measured energy of somebody who is doing arithmetic in her head. She can do this. She has done things like this. She is not going to be the one who falls apart this week but she is also not going to be the one skipping to her station, and the difference between those two things is the distance between safe and high.",
         "The brief lands and {a} takes a breath and the breath says everything — she is not panicking, she is not delighted, she is in the middle ground where most queens live on most weeks, which is the ground where you survive by being better than two people and you go by being worse than one.",
-        "{a} listens, processes, and files the challenge under \"manageable\" which is not the same as \"exciting\" and she knows it. She will do the work, she will do it competently, and whether competence is enough depends entirely on what twelve other queens bring, which is the part she cannot control.",
+        "{a} listens, processes, and files the challenge under \"manageable\" which is not the same as \"exciting\" and she knows it. She will do the work, she will do it competently, and whether competence is enough depends entirely on what everybody else brings, which is the part she cannot control.",
         "She can do this. {a} repeats it to herself without moving her lips and the repetition is either confidence or a pep talk and at this stage in the season the difference barely matters. The brief is clear, the runway is doable, and she will figure out the rest at her station.",
       ]),
       tier('dreading', 'This is the week she was hoping would not come.', [
@@ -92,7 +92,7 @@ export const CHALLENGE_BEATS = [
     tierBy: 'always',
     tiers: [tier('announce', 'A quick one, and what winning it buys.', [
       "\"But first — a mini challenge.\" The room groans the way a room groans when it is delighted and pretending not to be. She explains it in thirty seconds because a mini is supposed to be fast and loud and over before anybody has time to think, and the prize at the end is real enough that every queen in the room starts paying attention.",
-      "The mini drops like a fire drill. She explains the rules, she explains the prize — which is the part that makes queens lean forward — and before the room has fully processed what is happening the clock is about to start and thirteen queens are looking at each other trying to decide who is about to embarrass themselves first.",
+      "The mini drops like a fire drill. She explains the rules, she explains the prize — which is the part that makes queens lean forward — and before the room has fully processed what is happening the clock is about to start and every queen in it is looking at the others trying to decide who is about to embarrass themselves first.",
       "\"Mini challenge.\" Two words and the room's energy changes because a mini is the one part of the week where being silly is the strategy and being serious is the mistake. She names the prize and it is good enough to matter and small enough to be fun and that balance is the whole point.",
       "She announces the mini with the energy of somebody setting off a party popper in an office. The rules are simple, the timeline is short, the prize is worth having, and the whole thing exists to remind everybody that this is supposed to be fun before the maxi reminds them that it is not.",
     ])],

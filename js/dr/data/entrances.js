@@ -400,7 +400,7 @@ export const ENTRANCE_REACTIONS = {
     'A single "hi" from somewhere near the back. {a} decides not to hear the tone of it.',
     "It goes quiet the way that means everybody heard it and nobody's helping.",
     '{b} says "hi" without turning round. {a} walks the rest of the way on her own.',
-    "The room's eleven queens deep and already made that noise eleven times. It doesn't make it again.",
+    "The room is several queens deep and has already made that noise for every one of them. It doesn't make it again.",
     "Someone laughs, realises they're the only one, and stops. {a} pretends not to hear that either.",
   ],
 };

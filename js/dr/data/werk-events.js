@@ -634,8 +634,8 @@ export const WERK_EVENTS = [
     when: f => f.phase > 0.6 && f.roomSize <= 6,
     effects: { pop: { a: 1 }, state: 'endgame' },
     lines: [
-      "{a} counts the stations out loud. Six. She can see everyone from where she is sitting. The room that started with thirteen queens now fits in a glance, and {a} says \"it is getting small in here\" and means it both ways — the physical room is the same, but the space to hide has gone.",
-      "\"There are six of us left.\" {a} says it to the mirror and the mirror does not answer, but the number sits in the room like furniture. It is a small number. It is the number where everyone knows where they stand and nobody can pretend they do not.",
+      "{a} counts the stations out loud and does not like the answer. She can see everyone from where she is sitting. The room that started full now fits in a glance, and {a} says \"it is getting small in here\" and means it both ways — the physical room is the same, but the space to hide has gone.",
+      "\"There are not many of us left.\" {a} says it to the mirror and the mirror does not answer, but the number sits in the room like furniture. It is a small number. It is the number where everyone knows where they stand and nobody can pretend they do not.",
       "{a} looks at the queens who are left and realises she likes every one of them, which is a problem, because some of them are going home and she is going to have to watch. The room is warmer now than it was at the start. It is also more dangerous, and {a} can feel both things at once.",
       "The room is small enough that {a} can hear every conversation from her station. She can hear who is nervous and who is confident and who is pretending. There is no hiding at this stage. Every choice is visible. Every runway is a statement. {a} knows this is the part that counts, and the weight of it shows in how carefully she works.",
     ],
@@ -898,7 +898,7 @@ export const WERK_EVENTS = [
       "{a} has never been in the bottom. Not once. She used to say that with her chest and this morning she says it to the mirror and hears how it actually sounds: untested. Everybody left in this room has fought for her spot at least once, and she has not.",
       "The thing nobody tells you about never being in the bottom is that you never find out whether you can win a lip sync. {a} knows every word of every song they have played this season. She has never had to prove it and it is starting to sit badly.",
       "\"I have never done it,\" {a} says, meaning the lip sync, meaning the thing that decides everything. She has been safe or high every week and she is proud of that and also aware that it is the one line on her résumé with nothing written next to it.",
-      "Six queens left and {a} is the only one who has never stood on that stage waiting to be saved. It ought to be a comfort. This morning it feels like a debt she has not paid yet.",
+      "The room is down to a handful and {a} is the only one left who has never stood on that stage waiting to be saved. It ought to be a comfort. This morning it feels like a debt she has not paid yet.",
     ],
   }),
 
@@ -986,7 +986,7 @@ export const WERK_EVENTS = [
     effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
     lines: [
       "Elimination day is a bad day to work out what you feel about somebody and {a} and {b} are doing it anyway, in a corner, quietly, with one eye on the clock. \"If it is me tonight,\" {b} starts, and {a} says \"do not\", and that is the closest either of them gets to the actual sentence.",
-      "They are competing against each other and there are eight queens left and this is an extremely stupid time for this. {a} says so. {b} agrees with her. Neither of them moves away.",
+      "They are competing against each other and there is almost nobody left to hide behind and this is an extremely stupid time for this. {a} says so. {b} agrees with her. Neither of them moves away.",
       "{a} does {b}'s back zip on elimination day and it takes longer than a zip takes. Nothing is said. The room is loud at the other end and this corner of it is not.",
       "\"When this is over,\" {b} says, and does not finish the sentence, and {a} says \"yeah\" as though she had. Whatever this is, it has a date on it now, and the date is after one of them goes home.",
     ],

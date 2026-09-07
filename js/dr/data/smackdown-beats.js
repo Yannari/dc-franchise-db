@@ -23,7 +23,7 @@ export const SMACKDOWN_BEATS = [
       "They come back one at a time and the room gets louder with each of them. \"Welcome back,\" the host says, once they are all standing there — the early boots, the mid-season cuts, the one who left last week and has not stopped thinking about it. \"Tonight you are not competing for the crown. You are competing for each other.\" He explains the bracket. Somebody at the end of the line has already worked out who she wants.",
       "\"You all left this competition before you were ready to.\" The host lets that sit with a row of queens who each have a private opinion about exactly how unready they were. \"So tonight we settle it the only way this show knows how.\" A bracket goes up behind him. The screaming takes a while to stop.",
       "The stage fills with queens who have not stood on it since the night they were told to sashay. The host does not pretend this is about the crown. \"Nobody here is going back into the competition,\" he says. \"This is about who walks out of this season with something.\" It is, if anything, louder than a normal elimination.",
-      "Eight queens, one bracket, one title. The host runs through it quickly because nobody in the room is listening — they are all looking at the names beside their own and doing the arithmetic on who they would rather face and who they absolutely would not.",
+      "Every queen this season sent home, one bracket, one title. The host runs through it quickly because nobody in the room is listening — they are all looking at the names beside their own and doing the arithmetic on who they would rather face and who they absolutely would not.",
     ])],
   },
   {
@@ -55,8 +55,8 @@ export const SMACKDOWN_BEATS = [
     note: 'The champion of the bracket takes her title.',
     tiers: [tier('crown', 'A title of her own, and it is not the crown.', [
       "\"{a}.\" The host says it and the room already knew. \"You came back here and you beat every queen they put in front of you.\" She is handed her title and does not know what to do with her face. It is not the crown. It is not nothing either, and everybody on that stage understands the difference.",
-      "{a} takes it, and the cast makes more noise for her than they made for anybody all night. \"I went home in week four,\" she says, when the host asks her how it feels. \"And tonight I beat seven queens.\" That is the whole speech and it does not need another line.",
-      "The title goes to {a}, who fought through the entire bracket and looks like somebody who has just been given back a thing she thought she had lost. She holds it up. Seven queens who lost to her tonight are the loudest people in the room.",
+      "{a} takes it, and the cast makes more noise for her than they made for anybody all night. \"I went home in week four,\" she says, when the host asks her how it feels. \"And tonight I beat every queen they put in front of me.\" That is the whole speech and it does not need another line.",
+      "The title goes to {a}, who fought through the entire bracket and looks like somebody who has just been given back a thing she thought she had lost. She holds it up. The queens who lost to her tonight are the loudest people in the room.",
       "\"The winner of the smackdown — and I do not say this lightly — is {a}.\" She wins a title, a sum of money and a night that is entirely hers, on a stage she was sent away from weeks ago. Some queens get a crown. This one got the last word.",
     ])],
   },

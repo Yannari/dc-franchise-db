@@ -97,11 +97,18 @@ export const RESULTS_CSS = `
   font-size:19px;color:#ffd0e8;margin-bottom:12px}
 
 /* ── THE EXIT ── */
-.dr-exit{position:relative;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;
-  padding:22px;border:1px solid rgba(255,41,75,.4);
+/* THREE COLUMNS, and the stamp lives in the third. It was absolutely
+   positioned at right:24px over a two-column card, so SASHAYED AWAY was
+   printed straight across the middle of the mirror message and neither was
+   readable. The rotation is a transform and costs no layout, so the stamp
+   still reads as slammed on. */
+.dr-exit{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:20px;
+  align-items:center;padding:22px;border:1px solid rgba(255,41,75,.4);
   background:linear-gradient(180deg,#20030c,#0d0206)}
+@media(max-width:760px){.dr-exit{grid-template-columns:auto 1fr}}
 .dr-exit .dr-por{filter:grayscale(1) brightness(.5)}
-.dr-bigstamp{position:absolute;right:24px;top:24px;font-size:34px;color:#FF294B;
+.dr-bigstamp{align-self:start;justify-self:end;font-size:34px;color:#FF294B;
+  white-space:nowrap;
   border:4px solid #FF294B;padding:8px 16px;transform:rotate(-11deg);
   text-shadow:0 0 26px rgba(255,41,75,.9);animation:drSlam .5s cubic-bezier(.2,1.6,.4,1) both}
 .dr-mirrorline{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;font-size:18px;
@@ -269,6 +276,10 @@ export function rpBuildExit(row) {
   if (!fin && !exits.length && !scenes.length) return '';
 
   let lead = '';
+  /* Held out here so the steps below can skip whatever the lead already
+     showed: the mirror message was drawn as the featured line on the card
+     AND again as an ordinary paragraph two cards down, word for word. */
+  let msg = null;
 
   if (fin) {
     /* THE FINALE. The bracket and the finishing order are structured data on
@@ -317,24 +328,27 @@ export function rpBuildExit(row) {
       </div>`;
   } else if (exits.length) {
     const gone = exits[0];
-    const msg = (row.dr.scenes || []).find(s => /mirror-message/.test(s.kind || ''));
+    msg = (row.dr.scenes || []).find(s => /mirror-message/.test(s.kind || ''));
+    // Portrait, words, stamp — in that order, because they are grid cells now.
     lead = `<div class="dr-exit">
-      <span class="dr-bigstamp dr-disp">${esc(gone.verb || w.exit)}</span>
       ${_portrait(gone.name, ep, { size: 128 })}
       <div><h3 class="dr-disp" style="margin:0;font-size:26px">${esc(gone.name)}</h3>
         ${msg ? `<p class="dr-mirrorline">${esc(msg.text)}</p>` : ''}</div>
+      <span class="dr-bigstamp dr-disp">${esc(gone.verb || w.exit)}</span>
     </div>`;
   }
 
-  const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-exit-${i}">
+  const rest = scenes.filter(sc => sc !== msg);
+  const steps = rest.map((sc, i) => `<div class="dr-step" id="dr-step-exit-${i}">
     <div class="dr-panel dr-a-lip" style="padding:14px 16px 14px 20px">
-      <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p></div></div>`).join('');
+      <p style="margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty">${esc(sc.text)}</p>
+    </div></div>`).join('');
 
   return `<style>${RESULTS_CSS}</style>${_shell(lead + steps, ep, {
     phase: 'lipsync',
     title: fin ? 'The Crowning' : 'Sashay Away',
     subtitle: fin ? 'the last queen standing' : 'the mirror message',
-  })}${_controls('exit', Math.max(1, scenes.length), ep.num)}`;
+  })}${_controls('exit', Math.max(1, rest.length), ep.num)}`;
 }
 
 

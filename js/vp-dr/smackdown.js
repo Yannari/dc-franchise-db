@@ -20,6 +20,7 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
 
 export const SMACKDOWN_CSS = `
 .sd-wrap{--sd-gold:#FFC83D;--sd-dead:#4a2a3c}
+.sd-bracket + .dr-step{margin-top:22px}
 .sd-hero{text-align:center;padding:10px 0 18px}
 .sd-hero .sd-title{font-size:11px;letter-spacing:.3em;color:var(--sd-gold)}
 .sd-hero h2{margin:6px 0 4px;font-size:30px;line-height:1.05}
@@ -56,6 +57,18 @@ export const SMACKDOWN_CSS = `
 .sd-champ .sd-name{font-size:17px;color:var(--sd-gold)}
 .sd-champ .sd-belt{font-size:9px;letter-spacing:.18em;color:#e3cfdd;text-align:center;
   text-wrap:balance}
+/* THE SCENE CARD, DEFINED HERE. dr-scene and dr-who live in
+   js/vp-dr/screens.js and are only emitted by the generic section builder —
+   this screen has its own builder, so it shipped markup with no styling
+   behind it and the prose ran under the portraits. A screen that names a
+   class has to carry it. NO BACKTICKS IN HERE: this comment sits inside a
+   template literal, and a backtick ends it. */
+.dr-scene{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  padding:15px 18px 15px 22px}
+.dr-scene:not(:has(.dr-who)){grid-template-columns:1fr}
+.dr-who{display:flex;gap:7px}
+.dr-scene-body{color:#f4e3ed;font-size:15px;line-height:1.6;max-width:74ch;
+  text-wrap:pretty}
 @media(prefers-reduced-motion:reduce){.sd-match,.sd-champ{transition:none}}
 `;
 
@@ -115,14 +128,15 @@ export function rpBuildSmackdown(row) {
 
   /* THE PROSE, one card per duel, in the order they were danced. The bracket
      above is the shape of the night; these are the night itself. */
+  /* NO TIER CHIPS. `open`, `blowout`, `crown` are the names of prose pools —
+     they belong in the data and never on screen. */
   const cards = [open, ...scenes, crown].filter(s => s?.text).map((sc, i) => {
     const who = (sc.data?.players || []).slice(0, 2);
     return `<div class="dr-step" id="dr-step-smackdown-${i}">
       <div class="dr-panel dr-a-lip dr-scene">
         ${who.length ? `<span class="dr-who">${who.map(n =>
     _portrait(n, ep, { size: 46 })).join('')}</span>` : ''}
-        <div class="dr-scene-body">${sc.data?.tier
-    ? `<span class="dr-tier">${esc(sc.data.tier)}</span>` : ''}${esc(sc.text)}</div>
+        <div class="dr-scene-body">${esc(sc.text)}</div>
       </div></div>`;
   }).join('');
 

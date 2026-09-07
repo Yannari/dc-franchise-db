@@ -54,10 +54,34 @@ export const STAGE_CSS = `
 .dr-walk h3{margin:0;font-size:18px}
 .dr-look{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;color:#ffd0e8;
   margin:4px 0 0;text-wrap:pretty}
+/* ── THE CATEGORY, AS A MARQUEE ──
+   It was a plain rectangle with centred text. A category announcement is the
+   one piece of signage this show puts on screen every week, so it gets the
+   thing signage has: a lit border, bulbs, and a name big enough to read from
+   the back. */
+.dr-marquee{position:relative;text-align:center;padding:26px 24px 28px;
+  border:1px solid rgba(255,200,61,.42);border-radius:2px;
+  background:radial-gradient(120% 140% at 50% 0%,rgba(255,200,61,.13),transparent 62%),
+    linear-gradient(180deg,#2A1020,#180A14);
+  box-shadow:inset 0 1px 0 rgba(255,214,240,.18),0 22px 50px -18px rgba(0,0,0,.85)}
+.dr-marquee::before,.dr-marquee::after{content:"";position:absolute;left:14px;right:14px;
+  height:7px;background:radial-gradient(circle at 50% 50%,#FFE9A8 0 2.1px,rgba(255,200,61,.28) 2.6px,transparent 3px) 0 0/17px 7px repeat-x}
+.dr-marquee::before{top:7px}
+.dr-marquee::after{bottom:7px}
+.dr-marquee .dr-cat-k{font-size:9.5px;letter-spacing:.34em;color:#FFC83D}
+.dr-marquee .dr-cat-v{font-size:34px;line-height:1.1;margin-top:8px;
+  text-shadow:0 0 26px rgba(255,123,200,.45);text-wrap:balance}
+
+/* The runway strip the cards stand on. */
+.dr-floor{height:3px;margin:16px 0 4px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,200,61,.55),transparent)}
+
 .dr-bar{height:10px;background:rgba(255,255,255,.12);margin-top:9px;overflow:hidden}
 .dr-bar i{display:block;height:100%;background:linear-gradient(90deg,#00E5FF,#FF3D9A);
   box-shadow:0 0 14px rgba(255,61,154,.7)}
-.dr-runscore{font-size:21px;font-variant-numeric:tabular-nums;padding:5px 12px;
+.dr-runscore{font-size:23px;font-variant-numeric:tabular-nums;padding:9px 14px;
+  border-radius:3px;background:linear-gradient(180deg,#31142A,#1C0A18);
+  box-shadow:inset 0 1px 0 rgba(255,214,240,.2),0 8px 18px -6px rgba(0,0,0,.8);
   border:1px solid currentColor;color:#FF7BC8}
 
 /* ── VISUAL-NOVEL CRITIQUE ── the bust breaks OUT of the box ── */
@@ -125,10 +149,10 @@ export function rpBuildRunway(row) {
   const walkers = order.length ? order : Object.keys(rw).filter(k => rw[k]?.score !== undefined);
   if (!walkers.length) return '';
 
-  const lead = `<div class="dr-panelrow" style="justify-content:center;text-align:center;display:block">
-    <div style="font-size:9px;letter-spacing:.3em;color:#ffc9e5">TONIGHT'S CATEGORY IS</div>
-    <div class="dr-fash" style="font-size:30px;margin-top:4px">${esc(rw.category)}</div>
-  </div>`;
+  const lead = `<div class="dr-marquee">
+      <div class="dr-cat-k dr-disp">Tonight&rsquo;s category is</div>
+      <div class="dr-cat-v dr-fash">${esc(rw.category)}</div>
+    </div><div class="dr-floor"></div>`;
 
   /* THE WALK ITSELF, WHICH THIS SCREEN WAS THROWING AWAY.
      Every queen has a written walk on the row — `stage:walk`, and often a

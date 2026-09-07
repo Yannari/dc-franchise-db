@@ -76,9 +76,21 @@ export const DR_CSS = `
 .dr-phase-werk .dr-atmo{background:radial-gradient(1100px 420px at 50% 0%,rgba(255,61,154,.24),transparent 72%),
   radial-gradient(600px 340px at 8% 34%,rgba(255,200,61,.09),transparent 72%),
   linear-gradient(180deg,#31091A,#220812 55%,#140510)}
-.dr-phase-stage .dr-atmo{background:radial-gradient(900px 420px at 50% 0%,rgba(255,61,154,.40),transparent 68%),
-  radial-gradient(900px 600px at 50% 40%,rgba(123,47,247,.28),transparent 70%),
-  linear-gradient(180deg,#2B0A4E,#1B0838 55%,#140510)}
+/* THE GROUND IS DARK AND THE LIGHT IS THE COLOUR.
+   This was one mid-purple wash from top to bottom, and the panels are also
+   mid-purple, so nothing separated from anything: no depth, no elevation, and
+   every shadow landing on a value it could not darken. A stage is a dark room
+   with light thrown at it. The pools stay hot, the floor and the edges drop
+   away, and a card now sits ON something. */
+.dr-phase-stage .dr-atmo{background:
+  radial-gradient(760px 300px at 50% -4%,rgba(255,61,154,.52),transparent 70%),
+  radial-gradient(1100px 520px at 50% 22%,rgba(123,47,247,.30),transparent 72%),
+  radial-gradient(600px 220px at 50% 100%,rgba(255,123,200,.16),transparent 74%),
+  linear-gradient(180deg,#1B0630 0%,#12041F 42%,#0A0210 100%)}
+/* The floor: a plane the runway sits on, and a vignette so the room ends. */
+.dr-phase-stage .dr-atmo::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 62%,rgba(255,200,61,.05) 78%,transparent),
+    radial-gradient(140% 78% at 50% 34%,transparent 52%,rgba(0,0,0,.62) 100%)}
 .dr-phase-untucked .dr-atmo{background:radial-gradient(800px 380px at 70% 8%,rgba(123,47,247,.26),transparent 70%),
   linear-gradient(180deg,#1B0730,#180830 60%,#140510)}
 .dr-phase-lipsync .dr-atmo{background:radial-gradient(800px 400px at 50% 10%,rgba(255,41,75,.34),transparent 70%),
@@ -112,10 +124,16 @@ export const DR_CSS = `
 .dr-hud-left b{font-size:23px;line-height:1;color:#fff}
 
 /* ── BEVELED CHROME ── a game object, not a card ── */
-.dr-panel{position:relative;background:linear-gradient(180deg,var(--dr-panel2),var(--dr-panel));
+/* ELEVATION, WHICH THE PANELS DID NOT HAVE. The fill sat in the same value
+   range as the ground behind it, so a 34px shadow had nothing to darken and
+   every card read as a flat patch of the same purple. A rim light along the
+   top edge and a deeper, tighter shadow give the card an edge you can see. */
+.dr-panel{position:relative;
+  background:linear-gradient(180deg,var(--dr-panel2),var(--dr-panel) 62%,#1B0A16);
   border:1px solid var(--dr-line);
   clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 34px rgba(0,0,0,.55)}
+  box-shadow:inset 0 1px 0 rgba(255,214,240,.16),inset 0 -1px 0 rgba(0,0,0,.5),
+    0 2px 6px rgba(0,0,0,.5),0 18px 44px -12px rgba(0,0,0,.8)}
 .dr-panel::before{content:"";position:absolute;left:0;top:14px;bottom:0;width:3px;
   background:var(--dr-accent,var(--dr-red));box-shadow:0 0 14px var(--dr-accent,var(--dr-red))}
 .dr-a-room{--dr-accent:var(--dr-gold)}

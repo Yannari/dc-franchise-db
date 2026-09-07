@@ -168,11 +168,20 @@ export function generateDragSummaryText(row) {
         .replace(/<style[\s\S]*?<\/style>/g, '')
         .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '')
         .replace(/<[^>]+>/g, ' ')
-        .replace(/&times;/g, 'x').replace(/&minus;/g, '-')
-        .replace(/&rsaquo;/g, '>').replace(/&nbsp;/g, ' ')
-        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+        /* THE WHOLE TYPOGRAPHIC SET, not the ones that had leaked so far.
+           This was an allowlist of five, so every new screen that wrote a
+           curly quote shipped the entity into the transcript verbatim — the
+           smackdown's song titles and the runway's "Tonight's category is"
+           each found it separately. */
+        .replace(/&(times|minus|rsaquo|lsaquo|nbsp|lt|gt|quot|apos|rsquo|lsquo|ldquo|rdquo|mdash|ndash|hellip|deg|amp);/g,
+          (_m, n) => ({
+            times: 'x', minus: '-', rsaquo: '>', lsaquo: '<', nbsp: ' ',
+            lt: '<', gt: '>', quot: '"', apos: "'", rsquo: '’',
+            lsquo: '‘', ldquo: '“', rdquo: '”',
+            mdash: '—', ndash: '–', hellip: '…', deg: '°',
+            amp: '&',
+          }[n]))
         .replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(Number(d)))
-        .replace(/&amp;/g, '&')
         .replace(/\s+/g, ' ')
         .trim();
 

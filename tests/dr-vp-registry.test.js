@@ -3,6 +3,7 @@
 // dr-vp-registry.test.js — one list, and nothing falls off the end of it
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it, beforeEach } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
 import { DRAG_SCREENS, dragScreens, dragScreensRevealed, sceneSections } from '../js/vp-dr/screens.js';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
@@ -201,4 +202,35 @@ describe('the smackdown screen', () => {
     expect(tierOf(near), 'beating the queen who left a week later is not an upset')
       .not.toBe('upset');
   });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Every screen module loads at all
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE THIRD TIME. A backtick inside a comment inside a CSS template literal
+// ends the literal, and everything after it parses as code: `.dr-scene` in a
+// comment became a reference to an undeclared `scene` and the whole registry
+// threw at import time. It is valid JavaScript, so no linter catches it, and
+// the failure surfaced four files away in an unrelated franchise test.
+//
+// So: import every screen module, on its own. It costs nothing and names the
+// file that broke instead of the one that imported it.
+describe('every vp-dr module evaluates', () => {
+  const files = readdirSync('js/vp-dr').filter(f => f.endsWith('.js'));
+
+  it('has modules to check', () => expect(files.length).toBeGreaterThan(5));
+
+  for (const f of files) {
+    it(`js/vp-dr/${f} loads`, async () => {
+      await expect(import(`../js/vp-dr/${f}`)).resolves.toBeTruthy();
+    });
+  }
+
+  /* NO STATIC BACKTICK CHECK. Two were tried: flagging any backtick in a
+     block comment fires on the harmless ones, and finding where a CSS literal
+     ends fires on every inline template literal in the file. The import above
+     is the check — a literal that closes early turns comment prose into code,
+     which throws on the first undeclared identifier, and this names the file
+     it happened in rather than the four-files-away test that imported it. */
 });

@@ -46,6 +46,36 @@ export const RESULTS_CSS = `
     transparent 44%),var(--dr-panel)}
 /* SAFE IS THE ABSENCE OF A RESULT and should recede rather than glow. */
 .dr-panel.dr-callrow.dr-quiet{opacity:.8}
+/* ══ THE LINE ══ the queens the panel kept back, standing for the call ══ */
+.dr-lineup-stage{position:sticky;top:0;z-index:6;display:flex;justify-content:center;
+  gap:14px;flex-wrap:wrap;padding:16px 18px;margin:0 0 18px;
+  background:radial-gradient(120% 110% at 50% 0%,rgba(56,189,248,.14),transparent 62%),
+    linear-gradient(180deg,#12071C,#0a0410 78%,rgba(6,2,8,.96));
+  border-bottom:1px solid rgba(255,255,255,.12);
+  box-shadow:0 18px 38px -22px rgba(0,0,0,.95)}
+.dr-standing{width:104px;text-align:center;opacity:.5;filter:grayscale(.55);
+  transition:opacity .35s,filter .35s,transform .35s}
+.dr-standing.called{opacity:1;filter:none;transform:translateY(-3px)}
+.dr-standing .dr-por{margin:0 auto;border:2px solid rgba(255,255,255,.18)}
+.dr-standing b{display:block;margin-top:6px;font-size:12px;color:#f0dfe9;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-standing-tag{display:block;min-height:13px;margin-top:3px;font-size:9.5px;
+  letter-spacing:.16em}
+/* Her stamp's colour is the chart's, so the line and the record agree. */
+.dr-r-WIN .dr-standing-tag{color:#38bdf8}
+.dr-r-WIN .dr-por{border-color:#38bdf8}
+.dr-r-HIGH .dr-standing-tag{color:#7dd3fc}
+.dr-r-HIGH .dr-por{border-color:#7dd3fc}
+.dr-r-LOW .dr-standing-tag{color:#fb923c}
+.dr-r-LOW .dr-por{border-color:#fb923c}
+.dr-r-BTM .dr-standing-tag{color:#fca5a5}
+.dr-r-BTM .dr-por{border-color:#fca5a5}
+.dr-r-BTM2 .dr-standing-tag{color:#f87171}
+.dr-r-BTM2 .dr-por{border-color:#f87171}
+.dr-step{scroll-margin-top:200px}
+@media(max-width:760px){.dr-lineup-stage{position:static}.dr-standing{width:78px}}
+@media(prefers-reduced-motion:reduce){.dr-standing{transition:none}}
+
 /* The safe queens, on one card, because they share one sentence. */
 .dr-safefaces{display:flex;flex-wrap:wrap;gap:5px;max-width:190px}
 .dr-safegroup h3{margin-bottom:2px}
@@ -230,8 +260,49 @@ export function rpBuildResults(row) {
     window._drSidebar.results = named.map((_, i) => panelFor(i + 1));
   }
 
-  return `<style>${RESULTS_CSS}</style>${_shell(steps, ep, {
-    phase: 'stage', title: 'The Call', subtitle: 'who is safe',
+  /* ── THE LINE, STILL STANDING ──
+     The call is the last thing that happens on the main stage and it drew
+     as a list: the queens were never on the screen, only their verdicts
+     were. This is the line they are standing in — the ones the panel kept
+     back after the safe were dismissed — and it stays at the top while the
+     calls are read, taking each queen's stamp as it lands.
+     Placement order would print the answer along the top of the screen, so
+     it is drawn in the order the panel ranked them, which the critiques
+     screen has already shown. */
+  const line = named.map(([, n]) => n);
+  const stand = line.length ? `<div class="dr-lineup-stage" id="dr-call-line">
+    ${line.map(n => `<div class="dr-standing" data-queen="${esc(n)}">
+      ${_portrait(n, ep, { size: 54, station: true })}
+      <b class="dr-disp">${esc(n)}</b>
+      <span class="dr-standing-tag dr-disp"></span>
+    </div>`).join('')}
+  </div>` : '';
+
+  /* Each step says what the line looks like after it — the stamp lands on
+     the queen it belongs to and the ones already called stay marked. */
+  if (typeof window !== 'undefined') {
+    const called = [];
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.results = (idx) => {
+      const upto = named.slice(0, idx + 1);
+      const map = new Map(upto);
+      const byName = new Map(upto.map(([r, n]) => [n, r]));
+      for (const el of document.querySelectorAll('.dr-standing')) {
+        const n = el.getAttribute('data-queen');
+        const r = byName.get(n);
+        el.classList.toggle('called', !!r);
+        for (const c of ['WIN', 'HIGH', 'LOW', 'BTM', 'BTM2']) {
+          el.classList.toggle(`dr-r-${c}`, r === c);
+        }
+        const tag = el.querySelector('.dr-standing-tag');
+        if (tag) tag.textContent = r ? (GRID_RESULTS[r]?.label || r) : '';
+      }
+      void map;
+    };
+  }
+
+  return `<style>${RESULTS_CSS}</style>${_shell(stand + steps, ep, {
+    phase: 'stage', title: 'The Call', subtitle: 'who the panel kept back',
     sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
   })}${_controls('results', named.length, ep.num)}`;
 }

@@ -30,6 +30,104 @@ const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', d
 const judgeName = id => (JUDGES.find(j => j.id === id)?.name || id);
 
 export const STAGE_CSS = `
+/* ══ THE LOUNGE ══ where Untucked happens, which is not the main stage ══ */
+.dr-lounge{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden;background:
+    radial-gradient(90% 55% at 50% 0%,rgba(123,47,247,.20),transparent 62%),
+    linear-gradient(180deg,rgba(18,6,24,.5),transparent 40%)}
+.dr-lounge i{position:absolute;display:block}
+/* The sign on the wall, lit and buzzing. */
+.dr-lo-sign{top:26px;left:50%;width:210px;height:3px;transform:translateX(-50%);
+  background:#FF3D9A;box-shadow:0 0 30px 8px rgba(255,61,154,.55);
+  animation:drBuzz 6s ease-in-out infinite}
+@keyframes drBuzz{0%,96%,100%{opacity:1}97%{opacity:.35}98.5%{opacity:.9}}
+/* The couch, along the back. */
+.dr-lo-couch{left:8%;right:8%;bottom:16%;height:120px;border-radius:14px 14px 0 0;
+  background:linear-gradient(180deg,rgba(123,47,247,.16),rgba(0,0,0,.35));
+  border-top:2px solid rgba(255,255,255,.07)}
+/* The bar, off to one side, under-lit. */
+.dr-lo-bar{right:2%;bottom:0;width:110px;height:34%;
+  background:linear-gradient(180deg,rgba(255,200,61,.10),transparent 70%);
+  border-left:1px solid rgba(255,200,61,.16)}
+
+/* THE ROOM'S TEMPERATURE, in the rail. */
+.dr-temp{position:relative;height:5px;margin:4px 0 5px;border-radius:3px;
+  background:linear-gradient(90deg,#FF294B,rgba(255,255,255,.18),#3BE08A)}
+.dr-temp i{position:absolute;top:-4px;width:3px;height:13px;background:#fff;
+  border-radius:2px;box-shadow:0 0 10px rgba(255,255,255,.8);transform:translateX(-50%);
+  transition:left .4s}
+.dr-temp-k{display:flex;justify-content:space-between;font-size:8.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:#b892a8}
+.dr-temp-v{margin:7px 0 0;font-size:14px;color:#ffd0e8}
+
+@media(prefers-reduced-motion:reduce){.dr-lo-sign{animation:none}.dr-temp i{transition:none}}
+
+/* ══ THE CATWALK ══ the walkway, drawn behind the walks ══
+   A perspective floor running away from the reader with a lit edge down
+   each side and the back wall at the top. Absolute inside the content
+   column so the walkway is the screen, and it runs the full length of the
+   night rather than one screenful. */
+.dr-catwalk{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden}
+.dr-catwalk i{position:absolute;display:block}
+.dr-cw-floor{inset:0;background:
+  linear-gradient(180deg,rgba(255,61,154,.12),transparent 30%),
+  linear-gradient(90deg,transparent,rgba(255,233,168,.05) 32%,
+    rgba(255,233,168,.05) 68%,transparent)}
+.dr-cw-edge{top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,rgba(255,200,61,.65),rgba(255,200,61,.06));
+  box-shadow:0 0 22px 3px rgba(255,200,61,.28)}
+.dr-cw-edge.dr-l{left:15%}
+.dr-cw-edge.dr-r{right:15%}
+.dr-cw-back{top:0;left:0;right:0;height:180px;
+  background:radial-gradient(60% 100% at 50% 0%,rgba(255,61,154,.26),transparent 70%)}
+
+/* THE PHOTOGRAPHERS' PIT, for a look that earns it. */
+.dr-walk{position:relative}
+.dr-pit{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:2px}
+.dr-pit i{position:absolute;top:8%;width:52px;height:52px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.85),transparent 62%);
+  opacity:0;animation:drFlash 2.6s ease-out infinite}
+.dr-pit i:nth-child(1){left:6%;animation-delay:.1s}
+.dr-pit i:nth-child(2){left:26%;animation-delay:.7s}
+.dr-pit i:nth-child(3){right:24%;animation-delay:1.3s}
+.dr-pit i:nth-child(4){right:5%;animation-delay:1.9s}
+@keyframes drFlash{0%,100%{opacity:0}3%{opacity:.9}12%{opacity:0}}
+.dr-flashy{border-color:rgba(255,233,168,.45)}
+
+@media(prefers-reduced-motion:reduce){.dr-pit i{animation:none;opacity:0}}
+
+/* ══ THE BENCH ══ the panel, seated, above the critiques it is giving ══
+   Sticky, because the panel does not leave while it is judging. The seat
+   of whoever is speaking about the current queen comes up in the light and
+   the others go back — which is what a bench looks like on the night. */
+.dr-bench{position:sticky;top:0;z-index:6;display:flex;justify-content:center;
+  gap:26px;padding:16px 18px 0;margin:0 0 20px;
+  background:radial-gradient(120% 130% at 50% 0%,rgba(255,61,154,.16),transparent 62%),
+    linear-gradient(180deg,#22091A,#12040C 78%,rgba(8,2,5,.96));
+  border-bottom:1px solid rgba(255,61,154,.28);
+  box-shadow:0 18px 38px -22px rgba(0,0,0,.95)}
+.dr-seat-j{position:relative;z-index:2;width:132px;text-align:center;padding-bottom:16px;
+  opacity:.45;filter:grayscale(.7);transition:opacity .35s,filter .35s,transform .35s}
+.dr-seat-j.on{opacity:1;filter:none;transform:translateY(-4px)}
+.dr-seat-j .dr-por{margin:0 auto;border:2px solid rgba(255,255,255,.22)}
+.dr-seat-j.on .dr-por{border-color:#FFC83D;box-shadow:0 0 34px -6px rgba(255,200,61,.75)}
+.dr-seat-j b{display:block;margin-top:7px;font-size:12.5px;color:#f0dfe9}
+.dr-seat-j i{display:block;margin-top:2px;font-size:9.5px;font-style:normal;
+  color:#b892a8;line-height:1.3}
+/* The desk they are sitting behind. */
+.dr-bench-desk{position:absolute;left:0;right:0;bottom:0;height:22px;z-index:1;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(0,0,0,.5));
+  border-top:1px solid rgba(255,255,255,.16)}
+@media(max-width:760px){
+  .dr-bench{position:static;gap:12px}
+  .dr-seat-j{width:96px}
+  .dr-seat-j i{display:none}
+}
+@media(prefers-reduced-motion:reduce){.dr-seat-j{transition:none}}
+/* The critiques scroll under a sticky bench, so they reserve its room. */
+.dr-step{scroll-margin-top:210px}
+
 /* ── THE DISMISSAL ── the safe queens, sent to Untucked ── */
 .dr-dismiss{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start;
   padding:15px 18px;border-left:3px solid #4b5563}
@@ -246,7 +344,21 @@ export function rpBuildRunway(row) {
   const walkers = order.length ? order : Object.keys(rw).filter(k => rw[k]?.score !== undefined);
   if (!walkers.length) return '';
 
-  const lead = `<div class="dr-marquee">
+  /* ── THE CATWALK ITSELF ──
+     The runway is the one thing a viewer sees every single episode and it
+     was a marquee over a column of cards on the same purple gradient as the
+     werk room. It has a shape — a lit walkway running away from you between
+     two banks of photographers — and that shape is drawable: a perspective
+     floor behind the cards, edge lights down both sides, and the queens
+     walking down it one at a time.
+     Anchored to the content column, not the window, so the walkway is the
+     screen rather than the browser. */
+  const cat = `<div class="dr-catwalk" aria-hidden="true">
+      <i class="dr-cw-floor"></i>
+      <i class="dr-cw-edge dr-l"></i><i class="dr-cw-edge dr-r"></i>
+      <i class="dr-cw-back"></i>
+    </div>`;
+  const lead = `${cat}<div class="dr-marquee">
       <div class="dr-cat-k dr-disp">Tonight&rsquo;s category is</div>
       <div class="dr-cat-v dr-fash">${esc(rw.category)}</div>
     </div><div class="dr-floor"></div>`;
@@ -266,8 +378,14 @@ export function rpBuildRunway(row) {
     const score = Number(w.score) || 0;
     const walk = lineFor('stage:walk', name);
     const fit = lineFor('stage:walk-fit', name);
+    /* THE PIT GOES OFF FOR A LOOK THAT DESERVES IT. Not decoration: the
+       flashes fire on the scores the panel is about to call high, so the
+       screen reacts to the look before anybody says a word about it, which
+       is what the room does. */
+    const big = score >= 8;
     return `<div class="dr-step" id="dr-step-runway-${i}">
-      <div class="dr-panel dr-a-score dr-walk">
+      <div class="dr-panel dr-a-score dr-walk${big ? ' dr-flashy' : ''}">
+        ${big ? '<span class="dr-pit"><i></i><i></i><i></i><i></i></span>' : ''}
         ${_portrait(name, ep, { size: 58, station: true })}
         <div><h3 class="dr-disp">${esc(name)}</h3>
           ${(w.walks || []).length > 1
@@ -313,6 +431,7 @@ export function rpBuildCritiques(row) {
   if (!lines.length) return '';
   const reactions = row?.dr?.reactions || {};
   const split = row?.dr?.panel?.split;
+  const ids = row?.dr?.judges || [];
 
   /* THE WORDS ARE ON THE SCENES, NOT ON `dr.critiques`.
      `critiques` carries the judgement — judge, tone, reasons, rank, gap —
@@ -359,6 +478,28 @@ export function rpBuildCritiques(row) {
     </div></div>` : '';
   const dOff = safe.length ? 1 : 0;
 
+  /* ── THE PANEL, SEATED ──
+     The critiques are the one screen in the show where three people sit in
+     a row and take turns, and it drew them as a stack of quote cards — the
+     panel was never actually ON the screen, only its opinions were. This is
+     the bench: it stays at the top while the critiques scroll under it, and
+     the judge currently speaking is the one in the light.
+     It is also where the reader learns the panel is not one voice. Each
+     judge carries her taste, so a queen praised by the judge who wants risk
+     and panned by the judge who wants polish is legible as a disagreement
+     rather than as noise. */
+  const bench = ids.length ? `<div class="dr-bench" id="dr-bench">
+    ${ids.map(id => {
+    const j = JUDGES.find(x => x.id === id) || {};
+    return `<div class="dr-seat-j" id="dr-seat-${esc(id)}" data-judge="${esc(id)}">
+        ${_judgePortrait(id, { stage: true, size: 54 })}
+        <b class="dr-disp">${esc(judgeName(id))}</b>
+        ${j.softSpot ? `<i>${esc(j.softSpot)}</i>` : ''}
+      </div>`;
+  }).join('')}
+    <div class="dr-bench-desk"></div>
+  </div>` : '';
+
   const steps = safeCard + queens.map((name, i) => {
     const hers = byQueen.get(name);
     const tones = new Set(hers.map(c => c.tone));
@@ -392,7 +533,9 @@ export function rpBuildCritiques(row) {
           <b>${esc(c.judgeName || judgeName(c.judge))}</b>
           <i class="dr-disp">${esc(c.tone)}</i></span>`).join('')}
       </div>` : '');
-    return `<div class="dr-step" id="dr-step-critiques-${i + dOff}">
+    const spokeIds = spokeUp.map(c => c.judge).filter(Boolean).join(',');
+    return `<div class="dr-step" id="dr-step-critiques-${i + dOff}"
+      data-judges="${esc(spokeIds)}">
       <div class="dr-panel dr-a-score" style="padding:14px 16px 14px 20px">
         ${_portrait(name, ep, { size: 54, station: true })}
         <b class="dr-disp" style="font-size:19px;margin-left:10px">${esc(name)}</b>
@@ -418,7 +561,21 @@ export function rpBuildCritiques(row) {
         The panel's order. The host has not decided yet.</p>`);
   }
 
-  return `<style>${STAGE_CSS}</style>${_shell(steps, ep, {
+  /* WHO IS TALKING, LIVE. Each step carries the judges who speak on it, and
+     the reveal hook lights those seats and dims the rest — so the bench is
+     doing what a bench does rather than being a decorative header. */
+  if (typeof window !== 'undefined') {
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.critiques = (idx) => {
+      const step = document.getElementById(`dr-step-critiques-${idx}`);
+      const who = (step?.getAttribute('data-judges') || '').split(',').filter(Boolean);
+      for (const seat of document.querySelectorAll('.dr-seat-j')) {
+        seat.classList.toggle('on', who.includes(seat.getAttribute('data-judge')));
+      }
+    };
+  }
+
+  return `<style>${STAGE_CSS}</style>${_shell(bench + steps, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),
@@ -468,7 +625,40 @@ export function rpBuildUntucked(row) {
           <p>${esc(sc.text)}</p></div>
       </div></div>`;
   }).join('');
-  return `<style>${STAGE_CSS}</style>${_shell(steps, ep, {
+  /* ── THE LOUNGE ──
+     Untucked is a room, and a specific one: low light, a long couch, a bar
+     nobody is really drinking at, and a sign on the wall. It was drawn on
+     the same gradient as every other screen, so the one part of the night
+     that is explicitly somewhere else looked like the rest of it. */
+  const lounge = `<div class="dr-lounge" aria-hidden="true">
+      <i class="dr-lo-sign"></i><i class="dr-lo-couch"></i><i class="dr-lo-bar"></i>
+    </div>`;
+
+  /* THE ROOM'S TEMPERATURE, which the scenes are already deciding. Every
+     Untucked beat carries a bond delta and the screen was spending it on a
+     border colour; summed as the night goes on it is the one number that
+     says whether this room is coming together or coming apart, and that is
+     what Untucked is FOR. Gated per step, so it never runs ahead. */
+  if (typeof window !== 'undefined') {
+    window._drSidebar = window._drSidebar || {};
+    let heat = 0;
+    window._drSidebar.untucked = scenes.map(sc => {
+      heat += Number(sc.effects?.bond) || 0;
+      const pct = Math.max(0, Math.min(100, 50 + heat * 12));
+      const word = heat > 1.2 ? 'coming together'
+        : heat < -1.2 ? 'coming apart' : 'holding';
+      return `<h4 class="dr-disp">The room</h4>
+        <div class="dr-temp"><i style="left:${pct}%"></i></div>
+        <div class="dr-temp-k"><span>apart</span><span>together</span></div>
+        <p class="dr-temp-v dr-disp">${esc(word)}</p>`;
+    });
+  }
+
+  return `<style>${STAGE_CSS}</style>${_shell(lounge + steps, ep, {
     phase: 'untucked', title: 'Untucked', subtitle: 'Illusions Lounge',
+    sidebar: `<h4 class="dr-disp">The room</h4>
+      <div class="dr-temp"><i style="left:50%"></i></div>
+      <div class="dr-temp-k"><span>apart</span><span>together</span></div>
+      <p class="dr-temp-v dr-disp">holding</p>`,
   })}${_controls('untucked', scenes.length, ep.num)}`;
 }

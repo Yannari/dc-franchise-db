@@ -280,6 +280,11 @@ export function rpBuildExit(row) {
      showed: the mirror message was drawn as the featured line on the card
      AND again as an ordinary paragraph two cards down, word for word. */
   let msg = null;
+  /* The finale's structured blocks, held back to run AFTER the prose. An
+     ARRAY, not a marked-up string: the first version concatenated them with
+     a sentinel div and split on it, which needs matching nested </div>s to
+     come out right and would fail silently the first time a block grew one. */
+  const finaleBlocks = [];
 
   if (fin) {
     /* THE FINALE. The bracket and the finishing order are structured data on
@@ -314,18 +319,28 @@ export function rpBuildExit(row) {
         ${_portrait(n, ep, { size: 34 })}<b class="dr-disp">${esc(n)}</b>
         ${i === 0 ? _icon('crown') : ''}</div>`).join('');
 
-    lead = `<div class="dr-panel dr-a-lip" style="padding:16px 18px 16px 22px">
-        <h3 class="dr-disp" style="margin:0 0 10px">The finale — ${esc(fin.type || '')}</h3>
-        ${duels}
-        <h4 class="dr-disp" style="margin:16px 0 6px">Placements</h4>
-        ${places}</div>
-      ${congBlock}
-      <div class="dr-crown">
-        ${_portrait(champ, ep, { size: 150 })}
-        <div class="dr-sash dr-disp">${esc(w.compWon ? 'The Winner' : 'Winner')}</div>
-        <h2 class="dr-disp">${esc(champ)}</h2>
-        ${_icon('crown')}
-      </div>`;
+    /* NOT A LEAD. THESE ARE THE LAST CLICKS OF THE SEASON.
+       All of this used to be drawn above the prose, ungated: the bracket
+       with every winner, the full finishing order, the crown and Miss
+       Congeniality, all legible at 0 / 5 on the screen whose entire job is
+       to withhold them. A viewer opening the finale was told who won before
+       reading a word of it — the worst instance of a bug class this build
+       has now hit on five screens.
+       They are steps now, in the order the night runs them, and the crown
+       is the last one. `finaleSteps` is appended after the prose below. */
+    finaleBlocks.push(`<div class="dr-panel dr-a-lip" style="padding:16px 18px 16px 22px">
+      <h3 class="dr-disp" style="margin:0 0 10px">The finale — ${esc(fin.type || '')}</h3>
+      ${duels}</div>`);
+    if (congBlock) finaleBlocks.push(congBlock);
+    finaleBlocks.push(`<div class="dr-panel dr-a-lip" style="padding:16px 18px 16px 22px">
+      <h4 class="dr-disp" style="margin:0 0 6px">Placements</h4>
+      ${places}</div>`);
+    finaleBlocks.push(`<div class="dr-crown">
+      ${_portrait(champ, ep, { size: 150 })}
+      <div class="dr-sash dr-disp">${esc(w.compWon ? 'The Winner' : 'Winner')}</div>
+      <h2 class="dr-disp">${esc(champ)}</h2>
+      ${_icon('crown')}
+    </div>`);
   } else if (exits.length) {
     const gone = exits[0];
     msg = (row.dr.scenes || []).find(s => /mirror-message/.test(s.kind || ''));
@@ -339,16 +354,22 @@ export function rpBuildExit(row) {
   }
 
   const rest = scenes.filter(sc => sc !== msg);
-  const steps = rest.map((sc, i) => `<div class="dr-step" id="dr-step-exit-${i}">
-    <div class="dr-panel dr-a-lip" style="padding:14px 16px 14px 20px">
+  let n = 0;
+  const wrap = inner => `<div class="dr-step" id="dr-step-exit-${n++}">${inner}</div>`;
+  const steps = rest.map(sc => wrap(
+    `<div class="dr-panel dr-a-lip" style="padding:14px 16px 14px 20px">
       <p style="margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty">${esc(sc.text)}</p>
-    </div></div>`).join('');
+    </div>`)).join('');
+  /* The held-back finale blocks become steps here, numbered on from the
+     prose so `_reapplyVisibility` walks one continuous run. */
+  const tail = finaleBlocks.map(wrap).join('');
+  const total = Math.max(1, n);
 
-  return `<style>${RESULTS_CSS}</style>${_shell(lead + steps, ep, {
+  return `<style>${RESULTS_CSS}</style>${_shell(lead + steps + tail, ep, {
     phase: 'lipsync',
     title: fin ? 'The Crowning' : 'Sashay Away',
     subtitle: fin ? 'the last queen standing' : 'the mirror message',
-  })}${_controls('exit', Math.max(1, rest.length), ep.num)}`;
+  })}${_controls('exit', total, ep.num)}`;
 }
 
 

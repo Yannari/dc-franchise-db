@@ -65,6 +65,18 @@ export function _reapplyVisibility(suffix, upToIdx, total) {
   if (counter) counter.textContent = `${Math.min(upToIdx + 1, total)} / ${total}`;
   const controls = document.getElementById(`dr-controls-${suffix}`);
   if (controls) controls.classList.toggle('dr-done', upToIdx >= total - 1);
+  /* A SCREEN THAT HAS MORE THAN STEPS TO REVEAL. The smackdown draws a
+     bracket above its prose and the bracket has to fill in with it — its
+     match boxes carry an `on` class that, until this existed, was written by
+     nobody: the tournament shipped complete at 28% opacity and the champion
+     was legible before the first click. Registered by suffix so a screen
+     opts in, and wrapped because a decoration must never take the reveal
+     down with it. */
+  const extra = (window._drRevealExtra || {})[suffix];
+  if (typeof extra === 'function') {
+    try { extra(upToIdx, total); } catch { /* a decoration, not the reveal */ }
+  }
+
   const newest = document.getElementById(`dr-step-${suffix}-${upToIdx}`);
   if (newest && newest.scrollIntoView) {
     // jsdom has no layout and throws here; a failed scroll must never take

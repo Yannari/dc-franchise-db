@@ -45,6 +45,7 @@ for(const el of document.querySelectorAll('.dr-step')) el.classList.add('dr-vis'
 document.getElementById('vp-sidebar').innerHTML =
   screens.map(x=>`<button class="rp-sidebar-item ${x.id===s.id?'active':''}"><span class="rp-sidebar-dot"></span><span>${x.label}</span></button>`).join('');
 window.__row=row;
+window.__rows=rows.map(r=>r.num+":"+(r.dr&&r.dr.finale?"FINALE":(r.dr&&r.dr.smackdown?"SMACK":(r.dr&&r.dr.reunion?"REUNION":"week"))));
 window.__ready=true;
 window.__screens=screens.map(x=>x.id);
 </script>

@@ -178,7 +178,12 @@ function step(sc, i, suffix, ep, accent) {
   const who = players.length
     ? `<span class="dr-who">${players.slice(0, 2).map(n =>
       _portrait(n, ep, { size: 46, station: true })).join('')}</span>` : '';
-  const tier = sc?.data?.tier ? `<span class="dr-tier">${esc(sc.data.tier)}</span>` : '';
+  /* NO TIER CHIP. `open`, `shaky`, `strong`, `blowout` are the names of
+     prose POOLS — an author's filing labels — and they were being printed
+     on the card in front of the line they selected, which both leaked the
+     internals and told the reader the verdict before the sentence did. The
+     same leak was removed from the smackdown's bracket earlier. */
+  const tier = '';
   /* ONLY WHEN THE LINE DOES NOT ALREADY SAY IT. Most scene prose opens with
      her name, so prefixing unconditionally produced "Q1 Q1 is the one who
      reads the mirror message out loud" — visible the moment a transcript was
@@ -199,8 +204,8 @@ const EXTRA_CSS = `
 .dr-scene:not(:has(.dr-who)){grid-template-columns:1fr}
 .dr-who{display:flex;gap:7px}
 .dr-scene-body{color:#f4e3ed}
-.dr-tier{display:inline-block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  padding:2px 7px;margin-right:8px;border:1px solid rgba(255,255,255,.3);color:#ffd0e8}
+.dr-waiting{opacity:.5}
+.dr-up{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#3BE08A}
 .dr-duel{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 0;
   border-bottom:1px solid rgba(255,255,255,.09)}
 .dr-vs{color:#FF294B;font-size:18px}
@@ -212,18 +217,36 @@ const EXTRA_CSS = `
   color:#C9A6BC;min-width:20px}
 `;
 
-/** The sidebar: who is still in the room, gated to the current step. */
+/**
+ * The sidebar: who is still in it, and who has been up so far.
+ *
+ * THE METER WAS `width:60%`, TYPED. Every queen on every one of these
+ * screens carried a bar filled to exactly the same hardcoded fraction, next
+ * to her name, on a night whose whole subject is that they are not equal —
+ * a reader takes that for a score, because it is drawn where a score goes.
+ * It was left as a placeholder with a comment saying the real sidebars come
+ * later, and the later never came. A bar that means nothing is worse than
+ * no bar, so it is gone.
+ *
+ * What replaces it is true and is gated: as the steps reveal, the queens who
+ * have already been up are ticked. The rail now tells you where you are in
+ * the running order, which is the one thing you cannot see from the cards.
+ */
 function railFor(row, scenes, ep) {
   const living = row?.dr?.living || [];
   if (!living.length) return [];
-  const rows = living.map(n => `<div class="dr-slot">
+  const upBy = [];
+  const seen = new Set();
+  for (const sc of scenes) {
+    for (const n of (sc?.data?.players || [])) seen.add(n);
+    upBy.push(new Set(seen));
+  }
+  const panelAt = done => `<h4 class="dr-disp">In the room · ${living.length}</h4>${
+    living.map(n => `<div class="dr-slot${done.has(n) ? '' : ' dr-waiting'}">
       ${_portrait(n, ep, { size: 38 })}
-      <div><div>${esc(n)}</div><div class="dr-meter"><i style="width:60%"></i></div></div>
-      <span></span></div>`).join('');
-  const panel = `<h4 class="dr-disp">In the room · ${living.length}</h4>${rows}`;
-  // One entry per step, all the same for now: the per-screen sidebars that
-  // actually change as the night goes on are Tasks 5-8.
-  return scenes.map(() => panel);
+      <div><div class="dr-nm">${esc(n)}</div></div>
+      <span class="dr-up">${done.has(n) ? 'up' : ''}</span></div>`).join('')}`;
+  return scenes.map((_, i) => panelAt(upBy[i] || new Set()));
 }
 
 function buildSection(sec, row) {

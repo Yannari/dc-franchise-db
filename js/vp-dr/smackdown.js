@@ -32,9 +32,14 @@ export const SMACKDOWN_CSS = `
 .sd-round{display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-height:100%}
 .sd-round-label{font-size:9px;letter-spacing:.24em;color:#b892a8;text-align:center;
   padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.09);margin-bottom:6px}
+/* AN UNREVEALED MATCH IS BLANK, NOT FAINT. At .28 opacity both names and
+   both scores were still perfectly readable, so dimming the bracket gave
+   away exactly as much as not dimming it. The box keeps its size — the
+   bracket must not reflow as it fills — and its contents are hidden. */
 .sd-match{border:1px solid var(--dr-line);background:var(--dr-panel);
-  border-radius:3px;overflow:hidden;opacity:.28;transition:opacity .25s}
-.sd-match.on{opacity:1}
+  border-radius:3px;overflow:hidden;transition:opacity .25s}
+.sd-match:not(.on) .sd-side,.sd-match:not(.on) .sd-song{visibility:hidden}
+.sd-match:not(.on){opacity:.5;border-style:dashed}
 .sd-song{font-size:9.5px;letter-spacing:.06em;color:#b892a8;padding:5px 8px 3px;
   border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
@@ -51,9 +56,10 @@ export const SMACKDOWN_CSS = `
 /* The champion's plinth at the end of the row. */
 .sd-champ{display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:14px 10px;border:1px solid var(--sd-gold);border-radius:3px;
-  background:linear-gradient(180deg,rgba(255,200,61,.14),transparent);opacity:.28;
+  background:linear-gradient(180deg,rgba(255,200,61,.14),transparent);
   transition:opacity .3s}
-.sd-champ.on{opacity:1}
+.sd-champ:not(.on) > *{visibility:hidden}
+.sd-champ:not(.on){opacity:.5;border-style:dashed}
 .sd-champ .sd-name{font-size:17px;color:var(--sd-gold)}
 .sd-champ .sd-belt{font-size:9px;letter-spacing:.18em;color:#e3cfdd;text-align:center;
   text-wrap:balance}
@@ -141,6 +147,27 @@ export function rpBuildSmackdown(row) {
   }).join('');
 
   const total = [open, ...scenes, crown].filter(s => s?.text).length;
+
+  /* THE BRACKET FILLS IN WITH THE PROSE. Step 0 is the host announcing it,
+     so nothing is decided; each duel card after that lights its own match;
+     the champion's plinth waits for the last card, which is the one that
+     crowns her. Without this the match boxes and the plinth were drawn
+     complete and merely dimmed — every score and the winner's name readable
+     from the first frame of a tournament nobody had watched yet.
+     The offset is the open card: duel i is step i+1 when there is one. */
+  if (typeof window !== 'undefined') {
+    const nDuels = sd.duels.length;
+    const off = open?.text ? 1 : 0;
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.smackdown = (idx) => {
+      for (let d = 0; d < nDuels; d++) {
+        const box = document.getElementById(`sd-match-${d}`);
+        if (box) box.classList.toggle('on', idx >= d + off);
+      }
+      const plinth = document.getElementById('sd-champ');
+      if (plinth) plinth.classList.toggle('on', idx >= total - 1);
+    };
+  }
   return `<style>${SMACKDOWN_CSS}</style>${_shell(lead + cards + _controls('smackdown', total), ep, {
     phase: 'lipsync',
     title: 'The Lip Sync Smackdown',

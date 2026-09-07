@@ -2,11 +2,17 @@
 DC Franchise Simulator — a Survivor-style franchise simulator.
 ES modules, no build step. Open `simulator.html` in a browser.
 
-**Two shows run on this engine**: Total Drama (`total-drama`) and Big Brother
-(`big-brother`). `js/shows.js` is the ONLY source of truth for slugs, prefixes,
-names and per-show vocabulary — 23 files import it. A bare integer in a URL,
-filename or storage key is Total Drama, permanently; every other show is
-prefixed (`bb-1`, `bb_episode_s1_e1`).
+**Four shows run on this engine**: Total Drama (`total-drama`), Big Brother
+(`big-brother`), The Traitors (`traitors`) and Drag Race (`drag-race`).
+`js/shows.js` is the ONLY source of truth for slugs, prefixes, names and
+per-show vocabulary — 66 non-test files import it, 100 counting tests. A bare
+integer in a URL, filename or storage key is Total Drama, permanently; every
+other show is prefixed (`bb-1`, `tr-1`, `dr-1`, `bb_episode_s1_e1`).
+
+`roundShape(format)` says what a round IS — `'ballots'`, `'weeks'` or
+`'placements'` — and replaces "which array is non-empty?" everywhere. A reader
+built on a ballot does not fail on a show without one; it returns empty and
+flattens silently.
 
 **Before adding a show, changing a format, or writing any sentence a screen
 generates about a season, read `docs/ADDING-A-SHOW.md`.** It lists every file
@@ -470,3 +476,59 @@ Challenges with timed races across multiple phases (e.g., Broadway Baby's climb 
 **No duplicate event arrays:**
 - Events belong in ONE array (e.g., `segmentData.events`). Do NOT also push them to a parallel array (e.g., `gatorEvents`) if the VP builder flattens both — this causes double rendering.
 - If a secondary array exists for metadata tracking, the VP builder must flatten from only ONE source.
+
+## Drag Race (`drag-race`)
+
+Fourth show. Full map: **`docs/drag-race.md`**. The rules that bite:
+
+### THERE IS NO VOTE
+No ballot, no jury, no alliance that can deliver numbers, and the queens have
+no say in who leaves. The panel ranks; the host decides alone. Any sentence,
+prompt or reader that implies otherwise is a bug — a model or a module carrying
+the other two formats will supply a vote unasked.
+
+### The two bottom calls are different nights
+`BTM2` lip synced and survived. `BTM` was named in the bottom and saved
+**before** the song. `LOW` was safe but critiqued. Collapsing BTM2 into BTM
+writes a lip sync that never happened; it has shipped twice and been caught
+twice.
+
+### Valid drag craft stats
+`acting`, `comedy`, `dance`, `design`, `runway`, `lipsync`, `singing` — on
+`player.drag`, alongside the nine shared stats. Do NOT invent more (no `charm`,
+`polish`, `stage presence`, `sewing`). A challenge asks for a *blend*;
+`blendScore` answers it.
+
+`player.drag.style` and `player.drag.voice` are AUTHORED. Used only when a
+human set them, never inferred — an inferred voice is a character the rest of
+the franchise has never met.
+
+### The three-step rule
+1. what she did (`perform.js`, `lipsync.js`) — reaches for no judge, no arc
+2. what the panel thought (`judging.js`)
+3. what the host decided (`hostBend`, max two places, bounded)
+
+**An engine change that lets the text layer decide a result is a bug.** Prose
+renders what already happened. A second opinion in the narration is how a
+screen crowns somebody the chart does not.
+
+### Scene and event shapes
+- A werk room event needs `players`, `when(facts)`, `effects` and `lines`.
+  `applyWerkScene` THROWS on a scene with no consequence — no cosmetic events.
+- Every scene is `{ step, kind, data, text }`. `sceneSections` opens a VP
+  section on a marker `kind`, so **a scene must be pushed after its own
+  marker** or it lands in the previous section (this left "Elimination Day"
+  empty on eight episodes of nine).
+- `{a}` and `{b}` are filled at render time. Never write a name into a pool.
+
+### Archetypes here
+The franchise rules apply unchanged — nice archetypes never scheme or sabotage;
+neutrals need `strategic >= 6 && loyalty <= 4`. Drag's schemes are reads,
+shade and idea theft rather than votes, but the eligibility rule is the same.
+
+### Before shipping a change
+`npm run audit:dr-spec` — a hundred seasons, ten measurements, every rate
+printed beside its chance line. Every real defect on this show came from that
+or from printing output and reading it; not one came from a passing suite going
+red. The known-hot number is domination (top queen takes ~50% of maxi wins vs
+~30% on the real show) — documented, diagnosed, and a design decision.

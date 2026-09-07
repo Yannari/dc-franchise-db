@@ -27,6 +27,7 @@
 //   {a}  the queen this beat is about
 //   {b}  the other queen — ONLY in a beat whose scope is 'pair'
 //   {j}  the judge speaking — only where `speaker` is 'judge'
+//   {s}  the lip sync song title, only in the lipsync step
 //
 // Same rules as the werk room, all enforced by tests: no real people, this
 // show's vocabulary only, never quote a stat by number, four variants minimum
@@ -250,10 +251,10 @@ export const STAGE_BEATS = [
     note: 'Two queens stand before the host. The last-chance speech and the song.',
     tierBy: 'always',
     tiers: [tier('intro', 'This is your last chance to impress me.', [
-      "\"Two queens stand before me.\" The room goes quiet in the way that means something is about to end for somebody. The host looks at both of them with an expression that is equal parts sympathy and expectation. \"This is your last chance to impress me and save yourself from elimination. The time has come for you to lip sync for your life. Good luck, and do not mess it up.\"",
-      "The stage clears except for the two of them and the host names the song and the energy changes. This is not a critique anymore and it is not a runway. This is a fight set to music, and both queens know that whatever happened before this moment does not matter if they win the next three minutes.",
-      "\"Prior to tonight, you were asked to prepare a lip sync performance.\" The host delivers the speech with the gravity it deserves, because this is the one part of the show that is not negotiable. Two queens, one song, one stays, one goes. The music starts and both of them take their positions.",
-      "The host looks at both queens and says the words that mean somebody is about to go. The song is named. The positions are taken. The track drops in and for a moment — just a moment — both queens stand perfectly still, because the first beat of a lip sync belongs to nobody and both of them know it.",
+      "\"Two queens stand before me.\" The room goes quiet in the way that means something is about to end for somebody. The host looks at both of them with an expression that is equal parts sympathy and expectation. \"This is your last chance to impress me and save yourself from elimination. The time has come for you to lip sync — {s} — for your life. Good luck, and don't fuck it up.\"",
+      "The stage clears except for the two of them. The host names the song — {s} — and the energy in the room changes shape. This is not a critique anymore and it is not a runway. It is a fight set to music, and both queens know that whatever happened before this moment counts for nothing if they win the next three minutes.",
+      "\"Prior to tonight, you were asked to prepare a lip sync performance of {s}.\" The host delivers the speech with the gravity it deserves, because this is the one part of the show that is not negotiable. Two queens, one song, one stays, one goes. \"Good luck, and don't fuck it up.\" The music starts and both of them take their positions.",
+      "The host looks at both queens and says the words that mean somebody is about to go home tonight. {s}. The positions are taken, the track drops in, and for a moment — just a moment — both of them stand perfectly still, because the first beat of a lip sync belongs to nobody and both of them know it.",
     ])],
   },
   {

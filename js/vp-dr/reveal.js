@@ -124,3 +124,24 @@ export function _restore(suffix, total, epNum) {
   _reapplyVisibility(suffix, idx, total);
   _updateSidebar(suffix, epNum);
 }
+
+/**
+ * The rail's first panel, so it never arrives empty.
+ *
+ * Every screen computes a full set of rail panels into `window._drSidebar` —
+ * one per revealable step, each showing the board as it stood at that step —
+ * and then handed `_shell` a bare heading, because `_updateSidebar` only swaps
+ * a panel in on a reveal CLICK. So the rail sat as a 53px box with a title and
+ * nothing under it until the viewer clicked, which is exactly when a reader
+ * decides whether a screen is worth reading.
+ *
+ * `fallback` is that heading, kept for a screen whose panels have not been
+ * computed yet — an empty rail is still better than a crash.
+ */
+export function _seedRail(suffix, fallback = '') {
+  try {
+    const panels = (globalThis.window?._drSidebar || {})[suffix];
+    if (Array.isArray(panels) && panels.length) return panels[0];
+  } catch { /* a rail must never take the screen down */ }
+  return fallback;
+}

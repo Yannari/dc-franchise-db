@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>VP preview</title>
+<link rel="stylesheet" href="css/simulator.css">
+<link rel="stylesheet" href="css/ui-system.css">
+<style>
+  html,body{margin:0;background:#07090d;color:#f0f6fc}
+  #visual-player{display:flex!important;height:100vh}
+  .rp-sidebar{width:172px}
+</style>
+<div id="visual-player" data-view-mode="watch">
+  <div class="rp-sidebar" id="vp-sidebar"></div>
+  <div class="rp-main">
+    <div class="rp-nav"><span class="rp-nav-ep">VIEWING PARTY · preview</span></div>
+    <div id="vp-content"></div>
+  </div>
+</div>
+<script type="module">
+import { playDragSeason } from './js/dr/season.js';
+import { dragScreens } from './js/vp-dr/screens.js';
+import { rngFor } from './js/dr/rng.js';
+window._tvState = {};
+const S=['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
+const g=rngFor(9); const r=()=>1+Math.floor(g()*10);
+const NAMES=['Anne Maria','Ren','Bowie','Priya','Millie','Nichelle','Jules','Misha','Kai','Sanders','Ivy','Duncan'];
+const cast=NAMES.map((name,i)=>({name,slug:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+  gender:'m',sexuality:'gay',archetype:'hero',age:22+i,
+  stats:Object.fromEntries(S.map(k=>[k,r()])),
+  drag:{acting:r(),comedy:r(),dance:r(),design:r(),runway:r(),lipsync:r(),singing:r()}}));
+const bonds={}; const key=(a,b)=>[a,b].sort().join('|');
+const {rows}=playDragSeason({cast,seed:4,config:{drSmackdown:true},
+  bond:(a,b)=>bonds[key(a,b)]||0,
+  addBond:(a,b,d)=>{const k=key(a,b);bonds[k]=Math.max(-10,Math.min(10,(bonds[k]||0)+d));},
+  popDelta:()=>{}});
+const params=new URLSearchParams(location.search);
+const epNum=Number(params.get('ep')||4);
+const want=params.get('screen')||'dr-runway';
+const row=rows.find(x=>x.num===epNum)||rows[3];
+window.vpEpNum=row.num;
+const screens=dragScreens(row);
+const s=screens.find(x=>x.id===want)||screens[0];
+document.getElementById('vp-content').innerHTML=s.html;
+// reveal everything so the screen is not sitting at step -1
+for(const el of document.querySelectorAll('.dr-step')) el.classList.add('dr-vis');
+document.getElementById('vp-sidebar').innerHTML =
+  screens.map(x=>`<button class="rp-sidebar-item ${x.id===s.id?'active':''}"><span class="rp-sidebar-dot"></span><span>${x.label}</span></button>`).join('');
+window.__ready=true;
+window.__screens=screens.map(x=>x.id);
+</script>

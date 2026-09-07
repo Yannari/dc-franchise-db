@@ -18,7 +18,7 @@
 // two names in it: the reveal is a fight and the screen is built like one.
 // The loser's portrait greys out under a stamp at the end.
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _seedRail } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
 import { showWords } from '../shows.js';
 
@@ -158,7 +158,7 @@ export function rpBuildResults(row) {
 
   return `<style>${RESULTS_CSS}</style>${_shell(steps, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who is safe',
-    sidebar: '<h4 class="dr-disp">The call</h4>',
+    sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
   })}${_controls('results', named.length, ep.num)}`;
 }
 

@@ -20,7 +20,7 @@
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _seedRail } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -39,11 +39,17 @@ export const STAGE_CSS = `
 .dr-seat b{display:block;margin-top:5px;font-size:12px;color:#fff}
 
 /* ── THE RUNWAY ── one walk, one meter ── */
-/* The walk reads as a paragraph now, so the row aligns to the TOP rather than
-   centring a portrait against three lines of prose. */
-.dr-walk-line{margin:9px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
-.dr-walk-fit{margin:6px 0 0;color:#C9A6BC;font-size:13px;line-height:1.5;text-wrap:pretty}
-.dr-walk{display:grid;grid-template-columns:auto 1fr auto;gap:15px;align-items:start;
+/* ── THE WALK CARD ──
+   The prose used to live in the middle cell of a three-column grid, between the
+   portrait and the score, which is the narrowest place on the card: a 178px
+   ribbon of text inside a 358px card. The header row keeps that shape — face,
+   name, bar, score — and the paragraph runs the FULL width underneath it,
+   where a paragraph belongs. */
+.dr-walk-line{grid-column:1/-1;margin:12px 0 0;color:#f4e3ed;font-size:15px;
+  line-height:1.6;max-width:74ch;text-wrap:pretty}
+.dr-walk-fit{grid-column:1/-1;margin:7px 0 0;color:#C9A6BC;font-size:13.5px;
+  line-height:1.55;max-width:74ch;text-wrap:pretty}
+.dr-walk{display:grid;grid-template-columns:auto 1fr auto;gap:15px;align-items:center;
   padding:14px 16px 14px 20px}
 .dr-walk h3{margin:0;font-size:18px}
 .dr-look{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;color:#ffd0e8;
@@ -146,10 +152,10 @@ export function rpBuildRunway(row) {
           ${(w.walks || []).length > 1
     ? `<p class="dr-look">${w.walks.length} looks tonight</p>` : ''}
           <div class="dr-bar"><i style="width:${Math.max(4, Math.min(100, score * 10))}%"></i></div>
-          ${walk ? `<p class="dr-walk-line">${esc(walk)}</p>` : ''}
-          ${fit ? `<p class="dr-walk-fit">${esc(fit)}</p>` : ''}
         </div>
         <span class="dr-runscore dr-disp">${n1(score)}</span>
+        ${walk ? `<p class="dr-walk-line">${esc(walk)}</p>` : ''}
+        ${fit ? `<p class="dr-walk-fit">${esc(fit)}</p>` : ''}
       </div></div>`;
   }).join('');
 
@@ -169,7 +175,7 @@ export function rpBuildRunway(row) {
 
   return `<style>${STAGE_CSS}</style>${_shell(lead + steps, ep, {
     phase: 'stage', title: 'The Runway', subtitle: esc(rw.category),
-    sidebar: '<h4 class="dr-disp">The runway</h4>',
+    sidebar: _seedRail('runway', '<h4 class="dr-disp">The runway</h4>'),
   })}${_controls('runway', walkers.length, ep.num)}`;
 }
 
@@ -250,7 +256,7 @@ export function rpBuildCritiques(row) {
   return `<style>${STAGE_CSS}</style>${_shell(steps, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
-    sidebar: '<h4 class="dr-disp">The panel, so far</h4>',
+    sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),
   })}${_controls('critiques', queens.length, ep.num)}`;
 }
 

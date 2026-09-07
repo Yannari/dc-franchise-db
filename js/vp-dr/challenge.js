@@ -34,7 +34,7 @@
 // the rules were, so a truncated desc leaves a result nobody can follow.
 // That is a project rule with its own test on the Big Brother side.
 import { _shell, _portrait, _icon } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _seedRail } from './reveal.js';
 import { maxiById } from '../dr/data/challenges.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -418,6 +418,6 @@ export function rpBuildMaxi(row) {
 
   return `<style>${CHAL_CSS}</style>${_shell(teams + steps + room, ep, {
     phase: 'stage', title: ch.name, subtitle: 'tape rolls',
-    sidebar: '<h4 class="dr-disp">So far</h4>',
+    sidebar: _seedRail('maxi', '<h4 class="dr-disp">So far</h4>'),
   })}${_controls('maxi', running.length, ep.num)}`;
 }

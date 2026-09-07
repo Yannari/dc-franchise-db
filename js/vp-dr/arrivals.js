@@ -12,7 +12,7 @@
 // the whole gag of a Drag Race entrance and it is the reason this screen
 // reveals per queen rather than per card.
 import { _shell, _portrait } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _seedRail } from './reveal.js';
 import { WERK_CSS, _station } from './werk.js';
 import { _judgePortrait } from './style.js';
 
@@ -170,7 +170,7 @@ export function rpBuildArrivals(row) {
       phase: 'werk',
       title: 'Entrances',
       subtitle: `${cast.length} queens, one door`,
-      sidebar: '<h4 class="dr-disp">In the room · 0</h4>',
+      sidebar: _seedRail('arrivals', '<h4 class="dr-disp">In the room · 0</h4>'),
     },
   )}${_controls('arrivals', cast.length + (hostBeat ? 1 : 0), ep.num)}`;
 }

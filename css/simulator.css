@@ -5781,6 +5781,14 @@
     .vp-mode-btn:focus-visible, .rp-sidebar-item:focus-visible, .rp-btn:focus-visible { outline:2px solid #58a6ff; outline-offset:2px; }
     .vp-stage-cue { max-width:760px; margin:22px auto -25px; padding:0 28px; display:flex; align-items:center; gap:8px; color:#344355; font:900 8px var(--font-body); letter-spacing:2.5px; text-transform:uppercase; }
     .vp-stage-cue span { color:var(--accent); }
+    /* ── A BROADCAST SCREEN IS NOT AN ARTICLE ──
+       The widths below are for a single column of reading text. A drag screen
+       is a two-column layout — cards beside a live rail — so 760px left the
+       rail 292 of it and squeezed the prose into a 178px ribbon inside a
+       1440px window. Measured, not guessed: window 1440, page 760, card 358,
+       paragraph 178. Higher specificity than the mode rules on purpose, since
+       those are the thing being overridden. */
+    #visual-player[data-view-mode] .rp-page[class*="dr-phase-"] { max-width:1180px; }
     #visual-player[data-view-mode="quick"] .rp-page { max-width:860px; }
     #visual-player[data-view-mode="deep"] .rp-page { max-width:980px; }
     /* ── Nav buttons ── */

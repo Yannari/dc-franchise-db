@@ -3,6 +3,8 @@
 // dr-vp-shell.test.js — the kit every screen is built from
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it, beforeEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { STAGE_CSS } from '../js/vp-dr/stage.js';
 import { DR_CSS, _shell, _icon, _portrait, _judgePortrait, DR_ICONS } from '../js/vp-dr/style.js';
 import {
   _state, _controls, _reapplyVisibility, drRevealNext, drRevealAll, _updateSidebar,
@@ -166,5 +168,55 @@ describe('reveals are DOM-only', () => {
     expect(html).toContain('id="dr-counter-mine"');
     expect(html).toMatch(/drRevealNext\('mine', *5, *3\)/);
     expect(html).toMatch(/drRevealAll\('mine', *5, *3\)/);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Measured in the browser, not guessed
+// ══════════════════════════════════════════════════════════════════════
+describe('the reader has room to read', () => {
+  /* Rendered at 1440px and measured: the page was capped at 760, the card
+     came out 358, and the paragraph read in a 178px ribbon — 88% of the
+     window thrown away. The mode widths are for a single column of reading
+     text; a drag screen is a two-column broadcast layout with a 292px rail
+     beside the cards, so it takes its own width. */
+  it('drag screens take a broadcast width, not an article width', () => {
+    const css = readFileSync('css/simulator.css', 'utf8');
+    expect(css, 'the drag width override is gone')
+      .toMatch(/\[data-view-mode\][^\n]*\.rp-page\[class\*="dr-phase-"\][^\n]*max-width:\s*1180px/);
+  });
+
+  /* THE PARAGRAPH IS A GRID CHILD. It used to sit in the middle cell of the
+     card's three-column grid — between the portrait and the score, the
+     narrowest place on it. */
+  it('the walk paragraph spans the card rather than sitting in a column', () => {
+    expect(STAGE_CSS).toMatch(/\.dr-walk-line\{[^}]*grid-column:\s*1\/-1/);
+    expect(STAGE_CSS).toMatch(/\.dr-walk-line\{[^}]*max-width:\s*74ch/);
+  });
+
+  /* THE RAIL MUST NOT ARRIVE EMPTY. Every screen computes a full set of rail
+     panels into `window._drSidebar` and then handed the shell a bare heading,
+     because the panel is only swapped in on a reveal CLICK — so the rail was
+     a 53px box with a title and nothing under it at the moment a reader
+     decides whether the screen is worth reading. */
+  it('seeds the rail with its first panel', async () => {
+    const { _seedRail } = await import('../js/vp-dr/reveal.js');
+    globalThis.window = globalThis.window || {};
+    window._drSidebar = { runway: ['<b>first panel</b>', '<b>second</b>'] };
+    expect(_seedRail('runway', '<h4>fallback</h4>')).toBe('<b>first panel</b>');
+    // A screen whose panels do not exist yet still gets its heading rather
+    // than a crash.
+    expect(_seedRail('nothing', '<h4>fallback</h4>')).toBe('<h4>fallback</h4>');
+    window._drSidebar = null;
+    expect(_seedRail('runway', '<h4>fallback</h4>')).toBe('<h4>fallback</h4>');
+  });
+
+  it('every screen that computes rail panels seeds from them', () => {
+    for (const f of ['arrivals', 'challenge', 'results', 'stage']) {
+      const src = readFileSync(`js/vp-dr/${f}.js`, 'utf8');
+      if (!src.includes('_drSidebar')) continue;
+      expect(src, `${f}.js hands the shell a bare heading again`)
+        .not.toMatch(/sidebar:\s*'<h4/);
+    }
   });
 });

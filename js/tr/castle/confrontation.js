@@ -1207,7 +1207,7 @@ const LET_THEM_GO_LINES = {
     '{b} had counted too, and had a different list.',
     'It is the corridor equivalent of a mirror, and {a} does not enjoy it.',
     'Both of them sat there. Only one of them made it somebody else’s fault.',
-    '{b} says it without heat, which is what makes it land.',
+    '{b} says it flatly, without any anger in it, which is what makes it land.',
     '{a} walks off first, which the corridor notes.',
   ],
   'both-admitted-it': [

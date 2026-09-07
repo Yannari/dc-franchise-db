@@ -978,7 +978,7 @@ const RECRUIT_COVER_LINES = {
     '{a}’s story is airtight and is about a night the castle already has a version of.',
     'Somebody said the thing at breakfast and {a} had to arrange a face for it.',
     'The account {a} prepared is now a defence rather than a screen, which is a different job.',
-    '{a} learned that the person {sub} brought in has been dining out on the story of it.',
+    '{a} learned that the person {a} brought in has been dining out on the story of it.',
     'What {a} had was a secret. What {a} has is a position, and it is worse.',
   ],
 };

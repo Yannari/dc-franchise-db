@@ -1169,6 +1169,21 @@ export const BENIGN_BRANCHES = new Set([
   'went-over-it', 'noticed-the-quiet', 'let-it-go',
   'decided-early', 'still-deciding', 'dreading-it',
   'was-right', 'was-wrong', 'counting-the-cost',
+  // ── AND THE FOUR ROAD-OUT SCENES ADDED ON 2026-09-07 (same file) ────
+  //
+  // Same rule again, and it is worth saying why `overdid-it` is here rather
+  // than opposite: it is the branch where somebody performs too hard on an
+  // open road and knows it. That is adverse to the ACTOR and this list is not
+  // about that — `_tone` frames the consequence between the people in the
+  // scene, and a scene with one person in it has nobody to be adverse
+  // towards. None of the sixteen moves a bond at all.
+  'thought-about-the-room', 'left-it-arranged', 'worked-out-who-could-double-back',
+  'did-not-think-about-it',
+  'walked-out-decided', 'changed-it-on-the-road', 'walked-out-with-nothing',
+  'let-the-day-decide',
+  'counted-the-mornings', 'stopped-counting', 'thought-about-the-last-one',
+  'took-the-morning-as-it-came',
+  'managed-the-face', 'stopped-managing-it', 'overdid-the-ease', 'never-thought-about-it',
   // ── AND THE SIXTEEN SOLO EVENTS ADDED ON 2026-09-05 (same file) ─────
   //
   // Same rule, applied whole: a scene with one actor in it has no

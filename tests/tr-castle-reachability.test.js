@@ -591,7 +591,14 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // scene weighted three times as heavily, because the heavy version crowded
     // the castle and pushed an unrelated romance branch under the variety
     // floor.
-    expect(EVENTS.length).toBe(197);
+    // 197 -> 201: four solo-only scenes for `journey-out`, and the count moved
+    // because a MEASUREMENT asked rather than because 200 is a round number.
+    // Mean events eligible facing ONE draw, 20 seasons: journey-out 1.33 with
+    // 28.5% of its draws barren — the worst in the pool, and the reason the
+    // window delivered 2.78 scenes an episode out of a phase budgeted 5-8.
+    // Twenty events fire in `journey-out` and two of them took a solo actor,
+    // while the composer convenes one person about 40% of the time.
+    expect(EVENTS.length).toBe(201);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -1585,6 +1592,12 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // js/tr/castle/alone.js, three branches each. See the event-count comment
 // above for why they were written and why the advancer/citer counts beside
 // it are deliberately unmoved.
+// 826 -> 842 on 2026-09-07: four solo-only scenes for `journey-out`, four
+// branches each. The window's SOLO draws faced 1.33 eligible events and came
+// up barren 28.5% of the time -- the worst shape in the pool, against
+// `journey-back` pairs at 7.09 and 0.4% -- because twenty events fire there
+// and two of them took one actor. See the header of js/tr/castle/alone.js for
+// the table that chose them.
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1860,6 +1873,10 @@ const BRANCHES = [
   'cover-swap-story-with-partner:too-identical',
   'cover-swap-story-with-partner:were-together-anyway',
   'cover-swap-story-with-partner:would-not-square-it',
+  'cover-what-you-look-like-walking:managed-the-face',
+  'cover-what-you-look-like-walking:never-thought-about-it',
+  'cover-what-you-look-like-walking:overdid-the-ease',
+  'cover-what-you-look-like-walking:stopped-managing-it',
   'grief-blame-the-room:blamed-room',
   'grief-blame-the-room:blamed-themselves',
   'grief-blame-the-room:named-a-number',
@@ -1868,6 +1885,10 @@ const BRANCHES = [
   'grief-castle-in-view:carried',
   'grief-castle-in-view:talked-past-it',
   'grief-castle-in-view:turned-sharp',
+  'grief-counted-the-mornings:counted-the-mornings',
+  'grief-counted-the-mornings:stopped-counting',
+  'grief-counted-the-mornings:thought-about-the-last-one',
+  'grief-counted-the-mornings:took-the-morning-as-it-came',
   'grief-empty-chair:empty-chair',
   'grief-empty-chair:laid-a-place',
   'grief-empty-chair:moved-it-away',
@@ -2230,6 +2251,10 @@ const BRANCHES = [
   'susp-said-nothing-about-it:holding-it',
   'susp-said-nothing-about-it:let-it-go',
   'susp-said-nothing-about-it:not-sure-it-counts',
+  'susp-the-empty-castle:did-not-think-about-it',
+  'susp-the-empty-castle:left-it-arranged',
+  'susp-the-empty-castle:thought-about-the-room',
+  'susp-the-empty-castle:worked-out-who-could-double-back',
   'susp-the-other-bed:never-woke',
   'susp-the-other-bed:said-it-out-loud',
   'susp-the-other-bed:the-bed-was-empty',
@@ -2258,6 +2283,10 @@ const BRANCHES = [
   'testing-ask-for-alibi-check:got-back-to-them',
   'testing-ask-for-alibi-check:inconsistent',
   'testing-ask-for-alibi-check:nobody-would-say',
+  'testing-carried-a-name-out:changed-it-on-the-road',
+  'testing-carried-a-name-out:let-the-day-decide',
+  'testing-carried-a-name-out:walked-out-decided',
+  'testing-carried-a-name-out:walked-out-with-nothing',
   'testing-cold-read-check:kept-it',
   'testing-cold-read-check:read-it-right',
   'testing-cold-read-check:read-it-wrong',

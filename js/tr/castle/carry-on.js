@@ -450,7 +450,18 @@ registerEvent({
   },
   weight(ctx) {
     if (ctx.actors?.length !== 2) return 0;
-    return storyBetween('suspicion', ctx.actors) ? 3 : 0;
+    // AND IT HAS TO BE YESTERDAY'S DOUBT. `SUSP_ON_LINES` names the day the
+    // story opened ("does not fit the thing {b} said on day {d}"), so a thread
+    // that opened THIS MORNING makes the line cite the day it is written on —
+    // a citation to a beat that is not earlier than itself, which is exactly
+    // what tests/tr-castle-reachability.test.js's citation arm forbids. It went
+    // unseen because two beats of one suspicion thread landing in one episode
+    // is rare; four events added to this window in 2026-09 made it common
+    // enough to fail a 60-season sweep. Carrying a doubt onto the road means
+    // carrying it from an earlier day, so this is the event's own precondition
+    // rather than a repair to the sentence.
+    const t = storyBetween('suspicion', ctx.actors);
+    return t && t.openedEp != null && t.openedEp < ctx.ep ? 3 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'carry-doubt-on-the-road');
@@ -470,7 +481,8 @@ registerEvent({
           : 'asked the same question a third way';
     const note = lineFor(SUSP_ON_LINES[branch],
       `carry-doubt-on-the-road|${branch}|${ctx.ep}`,
-      { a, b, d: String(t?.openedEp ?? ctx.ep) });
+      // `openedEp` is guaranteed present and earlier by the weight above.
+      { a, b, d: String(t.openedEp) });
     const bondDelta = branch === 'was-talked-round' ? 1.5
       : branch === 'found-the-hole' ? -2
         : branch === 'tested-it-again' ? -0.5 : 0;

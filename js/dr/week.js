@@ -33,6 +33,7 @@ import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
+import { renderStageBeats, runUntucked, applyUntuckedScene } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -391,6 +392,58 @@ export function runDragWeek(state, cfg, ctx) {
   //
   // A stable sort, so two scenes in the same step keep the order the module
   // wrote them in — inside a step, sequence is the module's business.
+  // ── THE STAGE, BEAT BY BEAT ───────────────────────────────────────
+  //
+  // Rendered here, immediately BEFORE the scene sort, and that placement is
+  // load-bearing: the sort is what puts a beat in its right step, so anything
+  // pushed after it is appended out of order. The first version of this ran
+  // after the sort and produced a running order that went runway, critiques,
+  // exit, runway again.
+  //
+  // It runs late in the night rather than at each step because
+  // every one of these beats depends on something computed at a different
+  // point in the night: the walks need the runway, the critiques need the
+  // call, the lip sync beats need the scores. Rendering them where they are
+  // *shown* rather than where they are *known* would mean threading half the
+  // night's results backwards through the function.
+  try {
+    const onStage = [...(call.win || []), ...(call.high || []),
+      ...(call.low || []), ...(call.bottom || [])];
+    const stageScenes = renderStageBeats({
+      walking: living, onStage, runway, call, reactions, lipsync,
+      exits: exits.slice(), split, judges: panel.map(j => j.id), rng,
+    });
+    for (const sc of stageScenes) scenes.push(sc);
+
+    // Untucked happens DURING the deliberation, so it is drawn from the call
+    // and from who named whom on the stage — not from anything that comes
+    // after the verdict, which the queens in that room do not have yet.
+    const untuckedScenes = runUntucked({
+      living, players: ctx.players, state, storylines: state.storylines || [],
+      call, namedOnStage: [], rng, ctx: { bond: ctx.bond, episode: cfg.num },
+    });
+    for (const sc of untuckedScenes) {
+      applyUntuckedScene(sc, ctx);
+      scenes.push(sc);
+      werkEvents.push({
+        type: `untucked:${sc.data.event}`, players: sc.data.players,
+        bond: sc.effects.bond && sc.data.players[1]
+          ? [[sc.data.players[0], sc.data.players[1], sc.effects.bond]] : [],
+        pop: Object.fromEntries(Object.entries(sc.effects.pop || {})
+          .map(([k, v]) => [k === 'a' ? sc.data.players[0] : sc.data.players[1], v])
+          .filter(([n]) => n)),
+        state: sc.effects.state ? { [sc.effects.state]: sc.data.players[0] } : {},
+        data: {},
+      });
+    }
+  } catch (err) {
+    // A stage that cannot be narrated must not stop a season being played.
+    // The result is already decided by this point; these beats only describe it.
+    scenes.push({
+      step: 'main-stage', kind: 'stage:error', data: { error: String(err && err.message) }, text: '',
+    });
+  }
+
   const stepIndex = st => {
     const i = SCENE_STEPS.indexOf(st);
     return i === -1 ? SCENE_STEPS.length : i;

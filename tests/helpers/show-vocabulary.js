@@ -101,8 +101,27 @@ export function forbiddenFor(format) {
  * to go first or a failure names the entire visual system instead of the
  * sentence that broke.
  */
+/**
+ * Proper nouns that contain another show's word and are allowed anyway.
+ *
+ * A TITLE IS A NAME, NOT VOCABULARY. "Murder On The Dancefloor" is a song a
+ * drag queen lip syncs to; the readout prints song titles, and the bare word
+ * "murder" belongs to The Traitors. Rejecting the episode for naming the
+ * record is the guard being wrong about what it is looking at.
+ *
+ * The exemption is deliberately the WHOLE PHRASE and never the word. Strip
+ * "murder on the dancefloor" and a queen who murders somebody in a Drag Race
+ * script still fails, which is the behaviour worth keeping. Add exact titles
+ * here, never bare words, and never derive this list automatically from the
+ * song bank — adding a song should not be able to silently widen a guard.
+ */
+export const PROPER_NOUNS = [
+  'murder on the dancefloor',
+];
+
 export function foreignWordsIn(text, format) {
-  const hay = String(text || '').toLowerCase();
+  let hay = String(text || '').toLowerCase();
+  for (const phrase of PROPER_NOUNS) hay = hay.split(phrase).join(' ');
   return forbiddenFor(format).filter(w =>
     // Built by concatenation, so the boundary must be written '\\b'. A bare
     // '\b' inside a string literal is U+0008 and the regex then matches

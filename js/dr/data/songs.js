@@ -85,12 +85,12 @@ export const SONGS = [
   { title: '360', artist: 'Charli XCX', tempo: 'dance', mood: 'fierce', genre: 'hyperpop', hook: 'dance-break' },
   { title: 'Von Dutch', artist: 'Charli XCX', tempo: 'dance', mood: 'rage', genre: 'hyperpop', hook: 'breakdown' },
   { title: 'Padam Padam', artist: 'Kylie Minogue', tempo: 'dance', mood: 'sexy', genre: 'dance-pop', hook: 'dance-break' },
-  // 'Murder On The Dancefloor' belonged here and cannot stay: the readout
-  // prints song titles, and "murder" is a word The Traitors owns, so the
-  // shared vocabulary guard rejects any episode that names it. Four shows
-  // depend on that guard being strict, so the title goes rather than the
-  // guard. Do not re-add it.
-  { title: 'Take Me Home', artist: 'Sophie Ellis-Bextor', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'none' },
+  // This title contains a word The Traitors owns. It is allowed because a
+  // TITLE IS A NAME rather than vocabulary — see PROPER_NOUNS in
+  // tests/helpers/show-vocabulary.js, which exempts the whole phrase and still
+  // rejects the bare word anywhere else.
+  { title: 'Murder On The Dancefloor', artist: 'Sophie Ellis-Bextor', tempo: 'dance', mood: 'fierce', genre: 'dance-pop', hook: 'none' },
+  { title: 'Take Me Home', artist: 'Sophie Ellis-Bextor', tempo: 'mid', mood: 'sad', genre: 'dance-pop', hook: 'key-change' },
   { title: 'Texas Hold Em', artist: 'Beyonce', tempo: 'mid', mood: 'funny', genre: 'r&b', hook: 'spoken' },
   { title: 'Cuff It', artist: 'Beyonce', tempo: 'mid', mood: 'sexy', genre: 'r&b', hook: 'dance-break' },
 

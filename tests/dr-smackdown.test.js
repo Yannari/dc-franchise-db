@@ -75,10 +75,18 @@ describe('the reunion Smackdown', () => {
   });
 
   it('is worth something to the queen who wins it', () => {
+    // The DELTA, not the total. A queen can win the Smackdown and still end
+    // the season net-negative — she was eliminated, and reactions to her
+    // critiques cost her popularity on the way. Asserting the total was
+    // positive measured the season rather than the Smackdown, and it went red
+    // the moment reactions started costing anything.
     const out = season(3, { drSmackdown: true });
     const sm = out.rows.find(r => r.dr?.smackdown).dr.smackdown;
     expect(out.smackdownWinner).toBe(sm.winner);
-    expect(out.state.popularity[sm.winner]).toBeGreaterThan(0);
+    const without = season(3, {});
+    const gained = (out.state.popularity[sm.winner] || 0)
+      - (without.state.popularity[sm.winner] || 0);
+    expect(gained, 'winning it changed nothing for her').toBeGreaterThan(0);
   });
 
   it('does not run when nobody has gone home', () => {

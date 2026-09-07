@@ -467,7 +467,7 @@ export function runDragWeek(state, cfg, ctx) {
       ...(call.low || []), ...(call.bottom || [])];
     const stageScenes = renderStageBeats({
       walking: living, onStage, runway, call, reactions, lipsync,
-      exits: exits.slice(), split, rng,
+      exits: exits.slice(), split, rng, critiques,
       // NAMES, not ids. A critique that reads "jamal leans back in the chair"
       // is the placeholder being filled with a database key, which is what it
       // did until somebody read the output.

@@ -118,39 +118,47 @@ export const STAGE_BEATS = [
   // ══ THE CRITIQUES: A JUDGE BEAT AND A REACTION, PER QUEEN ════════════
   {
     id: 'critique', step: 'critiques', scope: 'per-queen', speaker: 'judge',
-    note: 'What a judge says to her, to her face. Tiered by where she actually placed.',
-    tierBy: 'call',
+    note: 'What a judge says to her, to her face.',
+    // TIERED BY THAT JUDGE'S OWN TONE, not by the call. Keying it to the call
+    // meant every judge said the same thing about the same queen in different
+    // words, which undid the point of judges having taste. `critiqueLines`
+    // decides tone from each judge's view against her own median, so a judge
+    // who ranked her third is warm about her on a night the host put her in
+    // the bottom. The lines below did not name the call, so nothing had to be
+    // rewritten when the key changed.
+    tierBy: 'tone',
     tiers: [
-      tier('WIN', 'The judge is delighted and says so with a joke in it.', [
+      tier('praise', 'This judge rated her well above her own median and says so.', [
+
         "\"I have one note,\" {j} says, and pauses long enough for {a} to brace, \"and the note is: more of that.\" The panel laughs. {a} laughs. {j} is not joking — the look, the performance, the runway, all of it landed, and the critique is a celebration disguised as a sentence.",
         "{j} leans back in the chair and says \"I do not know what to tell you that you do not already know.\" The panel agrees. The critique is short because there is nothing to fix — {a} understood the assignment, executed it at the highest level, and left {j} with nothing to do but confirm it.",
         "\"You came out on that stage,\" {j} says, \"and I forgot I was judging.\" It is the kind of compliment that sounds like hyperbole until you look at {j}'s face and see that it is not. {a} takes a breath. The critique is everything she came here to hear.",
         "\"The word I keep coming back to,\" {j} says, \"is intention. Every single choice on that stage was a choice, and every single choice was right.\" {j} smiles at {a} in a way that says the competition part of the evening is, for this moment, beside the point.",
-      ]),
-      tier('HIGH', 'Real praise with one small note attached.', [
+      
         "\"I loved it,\" {j} says, and then adds the word \"almost\" and lets it sit there. The praise is real — the look was strong, the performance was present, the runway had life — but there is one thing, one small thing, and {j} names it precisely enough that {a} knows it is going to stay with her.",
         "{j} tells {a} what worked and the list is long and specific. Then {j} says \"but\" and the room shifts, because the \"but\" after that much praise means the note matters. It is a small note. {a} nods. She knows {j} is right and that is the worst part.",
         "\"You are so close,\" {j} says, and the way {j} says it makes clear that \"close\" is not a consolation prize — it is a location, and {a} can see the destination from where she is standing. The critique is generous and honest and {a} takes both of those things with her.",
         "The praise comes first and it is substantial — {j} goes through the look piece by piece and approves of nearly all of it. The \"nearly\" is a hemline, or a proportion, or a choice that read as safe when the rest of the look was brave, and {j} names it once and moves on.",
-      ]),
-      tier('SAFE', 'Brief. Pleasant. Forgettable, which is its own verdict.', [
+          ]),
+      tier('mixed', 'Somewhere in the middle of this judge board: real notes, real reservations.', [
+
         "{j} nods at {a} and says something pleasant that will not be remembered by anyone in the room by tomorrow morning. The look was fine. The walk was fine. The critique matches the performance — present, competent, and already fading from the conversation.",
         "\"You look good,\" {j} says, and the compliment is real but brief and {a} can feel the panel already thinking about the next queen. Being safe is not a punishment but it is not a story either, and {j}'s three sentences confirm that {a} is, tonight, part of the scenery.",
         "{j} gives {a} a nod and a sentence that amounts to \"nothing was wrong\" without quite reaching \"something was right.\" {a} smiles. The smile is the smile of somebody who knows that this critique will not be in the recap and has made peace with that.",
         "The critique is kind and efficient and over before {a} has time to react to it. {j} says what worked, does not say what did not — because nothing did not — and moves on. Safe is a temperature, not a verdict, and the temperature tonight is room.",
-      ]),
-      tier('LOW', 'Disappointed rather than angry. The worst kind.', [
+      
         "{j} does not raise her voice. That is how {a} knows it is bad. \"I expected more from you,\" {j} says, and the sentence is worse than any specific note because it means {j} has been paying attention to what {a} can do and tonight {a} did not do it.",
         "\"You are better than this,\" {j} says quietly, and it is the quietness that hits. If {j} were angry {a} could argue. But {j} is disappointed, and disappointment from somebody who believed in you is the one thing you cannot defend against on this stage.",
         "{j} looks at {a} for a long time before speaking, and the pause is its own critique. When {j} finally talks, the words are careful and kind and they land like they weigh something. {a} nods through all of it. She does not interrupt because she knows {j} is right.",
         "The critique is short because {j} does not need many words. {j} names the problem — one problem, clearly — and then says \"I know you know\" and stops. {a} does know. The worst critiques are the ones you agree with before they finish the sentence.",
-      ]),
-      tier('BTM', 'A real critique, delivered kindly and landing hard.', [
+          ]),
+      tier('pan', 'This judge rated her near the bottom of her own board and does not hide it.', [
+
         "{j} starts with \"I want to be honest with you\" and {a}'s face changes because that opening means whatever comes next is going to be true and true is going to hurt. {j} is kind about it — measured, specific, fair — and the kindness makes it worse because it removes the option of dismissing the critique as cruelty.",
         "\"This is hard to say,\" {j} begins, and then says it anyway, because that is the job. The look did not work. The performance did not save it. {j} walks through what went wrong with the precision of somebody who respects {a} too much to be vague, and {a} stands there and takes it and the taking is its own kind of bravery.",
         "{j} gives {a} the critique she does not want and does it with the kind of directness that only lands this hard when it comes from someone who is not trying to be cruel. Every note is specific. Every note is accurate. {a} can feel the stage getting smaller under her feet.",
         "The critique arrives without anger and without apology. {j} says what did not work and why it did not work and does not soften either of those things. {a} is standing very still, which is the standing-still of somebody who is listening hard because the alternative is falling apart, and falling apart is not something she can do in front of this panel.",
-      ]),
+          ]),
     ],
   },
   {

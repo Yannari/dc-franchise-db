@@ -86,9 +86,13 @@ const tierAt = (frac, table) => (table.find(([cut]) => frac <= cut) || table[tab
  * Returns scenes carrying their own `step`, so the week can push them and let
  * its own ordering put them where they belong.
  */
+/** How many judges actually speak to each queen. Not all of them, every time. */
+const JUDGES_PER_QUEEN = 2;
+
 export function renderStageBeats({
   walking = [], onStage = [], runway = {}, call = {}, reactions = {},
-  lipsync = null, exits = [], split = false, judges = [], rng = Math.random,
+  lipsync = null, exits = [], split = false, judges = [], critiques = [],
+  rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
   // placeholder the renderer does not substitute prints as literal braces on
@@ -136,11 +140,50 @@ export function renderStageBeats({
     else if (runway[n].fit === false) emit(fitBeat, 'off-theme', [n]);
   }
 
-  // ── a judge beat and a reaction, per queen still on stage ──
+  // ── the critiques, FROM THE PANEL'S OWN VIEWS ──
+  //
+  // Driven by `critiqueLines` rather than by the call, which is the whole
+  // point of that function existing: the tone is this judge's opinion against
+  // her own median, so two judges can say opposite things about one
+  // performance and the split is visible on the screen.
+  //
+  // Not every judge speaks to every queen — that would be a wall of text and
+  // is not what the stage does — so each queen gets the two judges with the
+  // strongest opinions about her, which is also who the edit would use.
   const critBeat = beatById('critique');
   const reactBeat = beatById('critique-reaction');
   for (const n of onStage) {
-    emit(critBeat, callOf(n), [n]);
+    // THE STRONGEST OPINION, PLUS ONE OTHER AT RANDOM. Taking the top two by
+    // conviction seemed obvious and was wrong: it selects the extremes by
+    // construction, so a "mixed" critique — the small-gap one — could almost
+    // never be chosen. Measured over 300 critiqued queens it produced 213
+    // praise, 317 pan and only 70 mixed. The edit does lead with the judge
+    // who has the most to say; the second voice is just another judge.
+    const all = critiques.filter(c => c.queen === n);
+    const ranked = [...all].sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
+    const hers = ranked.slice(0, 1);
+    const rest = ranked.slice(1);
+    if (rest.length && JUDGES_PER_QUEEN > 1) hers.push(rest[Math.floor(rng() * rest.length)]);
+    if (hers.length) {
+      for (const c of hers) {
+        const t = critBeat.tiers.find(x => x.id === c.tone) || critBeat.tiers[1];
+        scenes.push({
+          step: 'critiques',
+          kind: 'stage:critique',
+          data: {
+            beat: 'critique', tier: c.tone, players: [n], note: t.note,
+            judge: c.judgeName, reasons: c.reasons, gap: c.gap,
+          },
+          text: fill(pick(t.lines, rng, usedLines, `critique/${c.tone}`),
+            { a: n, j: c.judgeName, s: songTitle }),
+        });
+      }
+    } else {
+      // No panel view to read — a week run in isolation by a test. Fall back
+      // to the call so the stage is never silent.
+      emit(critBeat, callOf(n) === 'WIN' || callOf(n) === 'HIGH' ? 'praise'
+        : callOf(n) === 'BTM' ? 'pan' : 'mixed', [n]);
+    }
     if (reactions[n]) emit(reactBeat, reactions[n], [n]);
   }
   emit(beatById('deliberation'), split ? 'split' : 'agreed', []);

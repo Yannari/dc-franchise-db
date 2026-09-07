@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { critiqueLines, runReactions, whoShouldGoHome, rateAQueen } from '../js/dr/critiques.js';
 import { JUDGES } from '../js/dr/data/judges.js';
 import { rngFor } from '../js/dr/rng.js';
+import { initDragState } from '../js/dr/state.js';
+import { runDragWeek } from '../js/dr/week.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
 const mk = (name, stats = {}) => ({
@@ -156,5 +158,69 @@ describe('rate a queen', () => {
     const lo = events.find(e => e.type === 'rated-lowest');
     expect(hi.pop[hi.players[0]]).toBeGreaterThan(0);
     expect(lo.pop[lo.players[0]]).toBeLessThan(0);
+  });
+});
+
+describe('the panel reaches the screen', () => {
+  // An integration check, because critiqueLines was computed correctly and
+  // narrated by nobody for a whole commit: the renderer was still tiering
+  // critiques by the CALL, which is the thing critiqueLines replaced.
+  const S = STATS;
+
+  function week(seed) {
+    const r0 = rngFor(seed);
+    const r = () => 1 + Math.floor(r0() * 10);
+    const c = Array.from({ length: 10 }, (_, i) => ({
+      name: `Queen${i + 1}`, slug: `q${i}`, gender: 'f',
+      archetype: i % 2 ? 'villain' : 'hero', age: 22 + i,
+      stats: Object.fromEntries(S.map(k => [k, r()])),
+      drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+    }));
+    const st = initDragState({ cast: c, seed, rng: rngFor(seed) });
+    return runDragWeek(st, {
+      num: 5, maxiId: 'acting', miniId: 'reading', rotatingId: 'ross', guest: null,
+      songTitle: 'Toxic', judgeWeights: {}, immunity: false, totalEpisodes: 10,
+      allowDoubleShantay: false, allowDoubleSashay: false,
+    }, {
+      rng: rngFor(seed + 500), players: Object.fromEntries(c.map(p => [p.name, p])),
+      bond: () => 0, addBond: () => {}, popDelta: () => {},
+    });
+  }
+
+  it('critiques on the row are narrated, with the judge named', () => {
+    const scenes = week(9).dr.scenes.filter(s => s.kind === 'stage:critique');
+    expect(scenes.length, 'no critique reached a scene').toBeGreaterThan(3);
+    for (const sc of scenes) {
+      expect(['praise', 'mixed', 'pan']).toContain(sc.data.tier);
+      expect(sc.data.judge, 'a critique with no judge').toBeTruthy();
+      expect(sc.text.length).toBeGreaterThan(50);
+    }
+  });
+
+  it('THE PANEL VISIBLY DISAGREES, on about a quarter of critiqued queens', () => {
+    // Measured over 300: 24.7%. The floor guards against the selection rule
+    // silently collapsing back to one opinion per queen.
+    let queens = 0;
+    let split = 0;
+    const tones = {};
+    for (let s = 0; s < 60; s++) {
+      const byQ = {};
+      for (const sc of week(s).dr.scenes) {
+        if (sc.kind !== 'stage:critique') continue;
+        (byQ[sc.data.players[0]] ||= []).push(sc.data.tier);
+        tones[sc.data.tier] = (tones[sc.data.tier] || 0) + 1;
+      }
+      for (const list of Object.values(byQ)) {
+        queens++;
+        if (new Set(list).size > 1) split++;
+      }
+    }
+    expect(queens).toBeGreaterThan(200);
+    expect(split / queens, 'the panel never disagrees').toBeGreaterThan(0.12);
+    // And every tone is reachable. Selecting the two most opinionated judges
+    // used to make `mixed` nearly impossible by construction.
+    for (const t of ['praise', 'mixed', 'pan']) {
+      expect(tones[t], `tone "${t}" never fired`).toBeGreaterThan(20);
+    }
   });
 });

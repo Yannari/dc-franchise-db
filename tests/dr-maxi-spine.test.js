@@ -79,7 +79,9 @@ describe('the spine', () => {
   });
 
   it('a role type drafts every queen, and records the pick under her name', () => {
-    const out = runMaxi(ctxFor('acting'));
+    // girl-group, not acting: acting has its own module now and CONTESTS named
+    // parts rather than drafting a ladder, so it has no `ducked` to record.
+    const out = runMaxi(ctxFor('girl-group'));
     for (const n of Object.keys(out.performances)) {
       expect(out.assignment.roles[n], `${n} has no role`).toBeTruthy();
       expect(out.assignment.picks[n].name).toBe(n);

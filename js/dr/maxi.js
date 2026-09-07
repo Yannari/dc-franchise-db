@@ -22,6 +22,7 @@ import * as roast from './chal/roast.js';
 import * as talentShow from './chal/talent-show.js';
 import * as lalaparuza from './chal/lalaparuza.js';
 import * as design from './chal/design.js';
+import * as acting from './chal/acting.js';
 
 export const CHAL_MODULES = {
   'snatch-game': snatchGame,
@@ -36,9 +37,13 @@ export const CHAL_MODULES = {
   'talent-show': talentShow,
   'lipsync-challenge': lalaparuza,
   design,
-  acting: design,
-  commercial: design,
-  improv: design,
+  // Acting, the commercial and improv used to share the design module, which
+  // made three of nineteen challenges the design challenge with different
+  // weights. They have their own now, and it treats them as three different
+  // things rather than one.
+  acting,
+  commercial: acting,
+  improv: acting,
 };
 
 export function moduleFor(maxiId) {

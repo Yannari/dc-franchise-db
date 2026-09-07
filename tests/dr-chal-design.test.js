@@ -117,32 +117,12 @@ describe('the glue gun', () => {
   });
 });
 
-describe('the acting family', () => {
-  it('drafts parts and splits the room for acting, commercial and improv', () => {
-    for (const id of ['acting', 'commercial', 'improv']) {
-      const out = runMaxi(ctx(1, undefined, id));
-      expect(Object.keys(out.performances).length, id).toBe(6);
-      expect(out.assignment.teams.flat().sort(), id).toEqual([...NAMES].sort());
-      for (const t of out.assignment.teams) {
-        expect(t.filter(n => out.assignment.roles[n] === 'lead').length, `${id} team`).toBe(1);
-      }
-      // Only the design night walks its own build.
-      expect(out.runwayOverride, id).toBeNull();
-    }
-  });
-
-  it('gives an acting queen the edge on an acting night', () => {
-    const p = Object.fromEntries(NAMES.map(n => [n, mk(n, n === 'Cleo' ? { acting: 10, comedy: 9 } : { acting: 3, comedy: 3 })]));
-    let wins = 0;
-    for (let i = 0; i < 40; i++) {
-      const out = runMaxi(ctx(i, p, 'acting'));
-      if (Object.entries(out.performances).sort((a, b) => b[1].perf - a[1].perf)[0][0] === 'Cleo') wins++;
-    }
-    expect(wins / 40).toBeGreaterThan(0.4);
-  });
-
+describe('the design challenge only', () => {
+  // Acting, the commercial and improv moved to their own module — they are
+  // three different challenges rather than the design challenge with other
+  // weights, and tests/dr-chal-acting.test.js covers them.
   it('every event either type fires survives the consequence check', () => {
-    for (const id of ['design', 'acting', 'commercial', 'improv']) {
+    for (const id of ['design']) {
       for (let i = 0; i < 15; i++) {
         const c = ctx(i, undefined, id);
         expect(() => applyEvents(runMaxi(c).events, c), `${id} seed ${i}`).not.toThrow();

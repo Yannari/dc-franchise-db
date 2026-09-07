@@ -45,7 +45,8 @@ import { seasonWinners } from '../js/records.js';
 import { _setEndgameWatch } from '../js/tr/endgame.js';
 import { alignmentAt } from '../js/tr/roles.js';
 import { rpBuildConclave, conclaveVisibleTo, trConclaveRevealAll, _portrait } from '../js/vp-tr/conclave.js';
-import { rpBuildRoundTable, trRoundTableRevealAll, __rtStageHTML } from '../js/vp-tr/round-table.js';
+import { rpBuildRoundTable, trRoundTableRevealAll, __rtStageHTML,
+  _reasonRenderings } from '../js/vp-tr/round-table.js';
 import { rpBuildColdOpen, trColdOpenRevealAll } from '../js/vp-tr/cold-open.js';
 import { rpBuildHouseStatus, trHouseStatusRevealAll } from '../js/vp-tr/house-status.js';
 import { rpBuildMission, trMissionRevealAll } from '../js/vp-tr/mission.js';
@@ -8132,9 +8133,19 @@ describe('the debate cites sources and shows the votes an argument moved', () =>
       const speeches = (t.ep.tr.table.speeches || []).filter(sp => (sp.sources || []).length);
       if (!speeches.length) continue;
       const html = tableFullyRevealed(t.ep);
-      // At least one speech's source text is on the page.
+      // At least one speech's source is on the page — as ITSELF or as one of
+      // the closed set of rewordings `_reasonRenderings` allows.
+      //
+      // The two reasons this table leads with are 86% of everything it says
+      // first, and each was one fixed string, so 1,570 cards rendered the same
+      // eleven words. js/vp-tr/round-table.js now varies the SENTENCE and
+      // never the fact. This guard's point is unchanged and is the important
+      // half — the debate may not invent evidence — so it checks against the
+      // set the stored reason is permitted to become rather than against the
+      // one spelling it used to have.
       const anyRendered = speeches.some(s =>
-        s.sources.some(src => src.text && html.includes(src.text)));
+        s.sources.some(src => src.text
+          && _reasonRenderings(src.text).some(r => html.includes(r))));
       expect(anyRendered,
         `ep ${t.ep.num}: a table with speeches cited none of their sources`).toBe(true);
       checked++;

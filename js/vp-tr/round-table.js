@@ -1612,6 +1612,98 @@ const CLAIM_SOURCE = [
   '{A} gives the table a reason, not just a name: {src}.',
   '{A} does not stop at the name. {A} says why: {src}.',
 ];
+// ══════════════════════════════════════════════════════════════════════
+// SAYING THE SAME FACT MORE THAN ONE WAY
+// ══════════════════════════════════════════════════════════════════════
+//
+// TWO SENTENCES ARE 86% OF EVERYTHING THIS TABLE SAYS FIRST. Measured over 80
+// seasons, by what the card leads with:
+//
+//     43.6%  kept X in on the night X was revealed
+//     42.4%  wanted X gone the night X died
+//      6.6%  never once voted against X
+//
+// The first instinct was that the third one was the problem — it is 28.6% of
+// all CITATIONS and applies to nearly every pair in the room. It is not: the
+// specificity ordering in js/tr/roundtable.js already pushed it to last, so it
+// leads 6.6% of the time and cutting it would change almost nothing a viewer
+// reads. It is also deliberate (deduction.js: "the false positive is the
+// point"), so cutting it would remove intended behaviour to fix a symptom it
+// was not causing.
+//
+// THE REAL CAUSE IS THAT EACH OF THE TOP TWO IS ONE FIXED STRING. They are
+// minted once, in deduction.js, as a template — so 1,570 cards render the same
+// eleven words. The evidence is varied; the SENTENCE is not.
+//
+// SO THE FIX IS HERE AND NOT THERE. The stored source stays canonical, because
+// `clues` dedupes by sentence and `_resolveClue` matches on it — vary the text
+// at mint time and one fact becomes several clues. What varies is how the card
+// SAYS it, which is this file's job and costs the model nothing.
+const REASON_PHRASINGS = [
+  [/^kept (.+) in on the night .+ was revealed$/, [
+    'still had {1} down as safe on the night {1} was turned over',
+    'wrote a different name on the night {1} was revealed',
+    'was not among the people who called {1}, on the night it turned out {1} was one',
+    'had {1} nowhere near their slate the night {1} went',
+    'spent that whole table defending a name that came back a Traitor',
+    'looked at {1} on reveal night and picked somebody else',
+    'sat through {1}’s reveal having backed {1} an hour earlier',
+  ]],
+  [/^wanted (.+) gone the night .+ died$/, [
+    'put {1}’s name up at the table, and {1} did not survive the night',
+    'was pushing {1} hours before the Traitors got to {1}',
+    'wanted {1} out at the table and got it by morning, from a different direction',
+    'named {1} at that table. Nobody saw {1} again',
+    'and the Traitors agreed with {1} about {1} that same night',
+    'said {1} out loud, and the castle woke up one short',
+  ]],
+  [/^never once voted against (.+)$/, [
+    'went the whole way without ever writing {1}’s name',
+    'never once put {1} up, and was never once put up by {1}',
+    'passed up every chance to name {1}, week after week',
+    'has managed a whole season without naming {1} once',
+  ]],
+];
+
+/**
+ * EVERY LEGAL RENDERING OF ONE STORED REASON, for the guard that used to look
+ * for the raw string.
+ *
+ * tests/tr-vp.test.js asserts that a cited claim on the screen is one the
+ * speaker actually holds — the point being that the debate never invents
+ * evidence. `_sayReason` rewords, so the raw sentence is no longer on the page
+ * and a substring check would fail on the rewording rather than on an
+ * invention. This returns the closed set the reason is allowed to become, so
+ * the test can assert the page shows one of THEM and nothing else — which is
+ * the same guarantee, stated against the right set.
+ */
+export function _reasonRenderings(text) {
+  const raw = String(text || '');
+  for (const [re, pool] of REASON_PHRASINGS) {
+    const m = re.exec(raw);
+    if (!m) continue;
+    return [raw, ...pool.map(x => x.replace(/\{1\}/g, m[1]))];
+  }
+  return [raw];
+}
+
+/**
+ * Say a stored reason out loud, varying the words and never the fact.
+ *
+ * Keyed on the episode and the target so one card does not reword the same
+ * clue twice, and so a re-render of the same night is stable.
+ */
+function _sayReason(text, seed) {
+  const raw = String(text || '');
+  for (const [re, pool] of REASON_PHRASINGS) {
+    const m = re.exec(raw);
+    if (!m) continue;
+    const pick = pool[_hash(seed + '|' + raw) % pool.length];
+    return pick.replace(/\{1\}/g, m[1]);
+  }
+  return raw;
+}
+
 // AND THE SECOND THING, when the speaker's read is built out of more than one.
 // `speechesFrom` now hands over the belief's whole clue list rather than the
 // single loudest reason (see `_reasonFor` in js/tr/roundtable.js), because a
@@ -1622,7 +1714,7 @@ const CLAIM_SOURCE = [
 const CLAIM_SECOND = [
   'And it is not one thing. {A} has a second: {src2}.',
   'There is more than that, and {A} has been keeping it: {src2}.',
-  '{A} is not finished. The other half of it is {src2}.',
+  '{A} is not finished. The other half of it: {src2}.',
   'Then {A} puts a second thing beside the first — {src2} — and lets the room hold both.',
   'One of those on its own is nothing. {A} does not have one of those on its own: {src2}.',
   '{A} adds the part that makes the first part matter: {src2}.',
@@ -2290,8 +2382,10 @@ function _buildBeats(v) {
     const pr = _pr(c.t);
     const apr = _pr(lead);
     const subs = { A: lead, a: lead, T: c.t, t: c.t, sub: pr.sub, Sub: pr.Sub,
-      obj: pr.obj, pos: pr.pos, src: src ? _esc(src.text) : '',
-      src2: (mine && (mine.sources || [])[1]) ? _esc(mine.sources[1].text) : '',
+      obj: pr.obj, pos: pr.pos,
+      src: src ? _esc(_sayReason(src.text, key + '|1|' + c.t)) : '',
+      src2: (mine && (mine.sources || [])[1])
+        ? _esc(_sayReason(mine.sources[1].text, key + '|2|' + c.t)) : '',
       // THE ACCUSER'S pronouns, under their own keys. `sub`/`pos` above are
       // the ACCUSED's and always have been, so a sentence about the person
       // doing the accusing had no pronoun available and had to say the name
@@ -2348,7 +2442,7 @@ function _buildBeats(v) {
         && (sp.sources || []).length);
       if (back) {
         inner += '<p>' + _fill(_pick(DEFLECT_SOURCE, key + '|dsrc|' + c.t),
-          { ...dsubs, dsrc: _esc(back.sources[0].text) }) + '</p>';
+          { ...dsubs, dsrc: _esc(_sayReason(back.sources[0].text, key + '|d|' + c.t)) }) + '</p>';
       }
     }
     // THE AUDIENCE'S PRIVILEGE. `v.truth` is null on every other layer and at

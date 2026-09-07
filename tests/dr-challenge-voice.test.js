@@ -52,13 +52,14 @@ describe('the performance beat speaks the challenge', () => {
   it('routes every challenge to a family, never to the generic tier by accident', () => {
     for (const id of ['snatch-game', 'rusical', 'ball', 'makeover', 'roast', 'stand-up',
       'girl-group', 'rumix', 'music-video', 'acting', 'commercial', 'improv',
-      'design', 'talent-show', 'lipsync-challenge']) {
+      'design', 'talent-show', 'lipsync-challenge',
+      'photoshoot', 'choreography', 'singing', 'runway-challenge']) {
       const f = familyForChallenge(id);
       expect(f, id).toBeTruthy();
       expect(f.family, `${id} fell through to generic`).not.toBe('generic');
     }
-    // And a type with no module of its own does land on the fallback.
-    expect(familyForChallenge('photoshoot').family).toBe('generic');
+    // The fallback still exists for anything nobody registered.
+    expect(familyForChallenge('something-nobody-built').family).toBe('generic');
   });
 
   it('tags the beat with the family that narrated it', () => {

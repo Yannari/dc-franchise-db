@@ -47,7 +47,11 @@ describe('the event pool', () => {
       // added when the acting family and the Snatch Game host were built
       'host-played-along', 'left-to-hang', 'dropped-a-line', 'stepped-on-her',
       'one-note', 'ignored-the-note', 'took-a-bad-note', 'found-the-angle',
-      'tagline-died', 'froze', 'ran-with-it'];
+      'tagline-died', 'froze', 'ran-with-it',
+      // added when the last four generic types got their own mechanics
+      'used-the-set', 'blank-frame', 'blew-the-formation', 'nailed-the-solo',
+      'lost-in-rehearsal', 'cracked-a-note', 'forgot-the-lyric', 'sang-it-out',
+      'repeated-herself'];
     const missing = FIRED.filter(id => !MAXI_EVENT_IDS.includes(id));
     expect(missing, `these fire in the engine and have no prose: ${missing.join(', ')}`).toEqual([]);
   });

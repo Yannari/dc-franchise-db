@@ -54,10 +54,14 @@ describe('the spine', () => {
     for (const p of Object.values(out.performances)) expect(Number.isFinite(p.perf)).toBe(true);
   });
 
-  it('falls back to the generic module for a type with no file', () => {
-    expect(moduleFor('photoshoot')).toBe(generic);
+  it('falls back to the generic module only for an id nothing knows', () => {
+    // EVERY type in the catalogue now has a module of its own. The fallback is
+    // for a challenge somebody adds and forgets to register, not for a third
+    // of the catalogue the way it was.
     expect(moduleFor('nonsense')).toBe(generic);
-    expect(Number.isFinite(runMaxi(ctxFor('photoshoot')).performances.Ada.perf)).toBe(true);
+    for (const m of MAXI_TYPES) {
+      expect(moduleFor(m.id), `${m.id} still has no module`).not.toBe(generic);
+    }
   });
 
   it('every registered id is a real maxi type and exports at least one hook', () => {

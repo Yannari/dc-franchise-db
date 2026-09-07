@@ -23,6 +23,7 @@ import * as talentShow from './chal/talent-show.js';
 import * as lalaparuza from './chal/lalaparuza.js';
 import * as design from './chal/design.js';
 import * as acting from './chal/acting.js';
+import * as craft from './chal/craft.js';
 
 export const CHAL_MODULES = {
   'snatch-game': snatchGame,
@@ -44,6 +45,12 @@ export const CHAL_MODULES = {
   acting,
   commercial: acting,
   improv: acting,
+  // The last four that ran on the generic hooks. Every one of them had its
+  // rules written in the catalogue and nothing implementing them.
+  photoshoot: craft,
+  choreography: craft,
+  singing: craft,
+  'runway-challenge': craft,
 };
 
 export function moduleFor(maxiId) {

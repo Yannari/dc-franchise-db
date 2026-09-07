@@ -511,6 +511,26 @@ export const MAXI_EVENTS = [
       "{a} commits. The premise is strange and cold and she has never seen it before and none of that matters because she is already inside it, building a scene out of nerve and instinct, and the scene works because she trusts the premise more than the premise deserves and the trust becomes its own material.",
     ],
   }),
+
+  // ══ THE PHOTOSHOOT, THE STUDIO, THE BAND, THE THREE WALKS ════════════
+  e({ id: 'used-the-set', from: 'photoshoot', cast: 'solo',
+    note: 'The set was fighting her and she used it instead of resisting it. One frame, and it is the frame.' }),
+  e({ id: 'blank-frame', from: 'photoshoot', cast: 'solo',
+    note: 'Four frames and nothing behind the eyes in any of them.' }),
+  e({ id: 'blew-the-formation', from: 'choreography', cast: 'solo',
+    note: 'She goes the wrong way in a formation and takes the shape of the routine with her.' }),
+  e({ id: 'nailed-the-solo', from: 'choreography', cast: 'solo',
+    note: 'The eight counts written for her alone, and she takes them.' }),
+  e({ id: 'lost-in-rehearsal', from: 'choreography', cast: 'solo',
+    note: 'She cannot pick the material up in the room, hours before she has to do it in front of people.' }),
+  e({ id: 'cracked-a-note', from: 'singing', cast: 'solo',
+    note: 'Live, with a band, and the note goes. Everybody hears it.' }),
+  e({ id: 'forgot-the-lyric', from: 'singing', cast: 'solo',
+    note: 'The words leave her while the band keeps playing.' }),
+  e({ id: 'sang-it-out', from: 'singing', cast: 'solo',
+    note: 'She can actually sing, and the room finds out in about four bars.' }),
+  e({ id: 'repeated-herself', from: 'runway-challenge', cast: 'solo',
+    note: 'Three categories and she has given the panel the same look three times.' }),
 ];
 
 export const MAXI_EVENT_IDS = MAXI_EVENTS.map(x => x.id);

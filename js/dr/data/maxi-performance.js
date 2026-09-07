@@ -510,6 +510,50 @@ export const MAXI_PERFORMANCE = [
     }),
   },
   {
+    family: 'photoshoot', serves: ['photoshoot'],
+    label: 'four frames on a set that fights back, and only the best one counts',
+    tiers: tiers({
+      extraordinary: 'One frame that the panel would actually print.',
+      strong: 'She found the shot and knew when she had it.',
+      competent: 'A usable frame out of four.',
+      struggling: 'She fought the set instead of using it.',
+      collapse: 'Four frames and nothing in any of them.',
+    }),
+  },
+  {
+    family: 'choreography', serves: ['choreography'],
+    label: 'a routine learned this afternoon, formations, and one solo',
+    tiers: tiers({
+      extraordinary: 'Clean through every count and the solo is the best thing in it.',
+      strong: 'She dances it properly and holds her formation.',
+      competent: 'She keeps up. Nobody is carrying her and nobody is watching her.',
+      struggling: 'She is a count behind and the team is working around her.',
+      collapse: 'She loses the routine on stage and the formation goes with her.',
+    }),
+  },
+  {
+    family: 'singing', serves: ['singing'],
+    label: 'one song, live, with a band behind her',
+    tiers: tiers({
+      extraordinary: 'She can genuinely sing and the room finds out at once.',
+      strong: 'On pitch, in command, and moving while she does it.',
+      competent: 'She gets through the song and the song survives.',
+      struggling: 'Thin, flat in places, and rooted to the spot.',
+      collapse: 'A cracked note, a lost lyric, and a band still playing.',
+    }),
+  },
+  {
+    family: 'runway-challenge', serves: ['runway-challenge'],
+    label: 'three looks, three categories, judged one at a time',
+    tiers: tiers({
+      extraordinary: 'Three distinct looks, each answering its own category.',
+      strong: 'A strong trio with real range across them.',
+      competent: 'Three looks that work without surprising anybody.',
+      struggling: 'One good look and two that are versions of it.',
+      collapse: 'The same silhouette three times in different colours.',
+    }),
+  },
+  {
     family: 'generic', serves: ['photoshoot', 'choreography', 'runway-challenge', 'singing', 'and any type with no module of its own'],
     label: 'a solo craft challenge — the fallback when a type has no module',
     tiers: tiers({

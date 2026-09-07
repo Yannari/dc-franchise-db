@@ -274,7 +274,13 @@ function _textAssignment(dr, ln) {
     if (d.talent) bits.push(d.talent);
     if (d.material) bits.push(d.material);
     if (d.partner) bits.push(`makes over ${d.partner}`);
-    if (d.slot) bits.push(`slot ${d.slot}${d.slotKind === 'middle' ? '' : ` (${d.slotKind})`}`);
+    // `slotKind` is the ROAST's shape. The singing challenge has a slot with
+    // no kind, and printing the field regardless rendered "slot 1 (undefined)"
+    // for every queen — caught by the placeholder guard, not by reading.
+    if (d.slot) {
+      bits.push(`slot ${d.slot}`
+        + (d.slotKind && d.slotKind !== 'middle' ? ` (${d.slotKind})` : ''));
+    }
     if (d.live) bits.push('sings LIVE');
     if (typeof d.wins === 'number') bits.push(`${d.wins}W ${d.losses}L`);
     const pick = a.picks?.[n];

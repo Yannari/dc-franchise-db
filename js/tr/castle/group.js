@@ -623,6 +623,11 @@ registerEvent({
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'group-rounded-on-them');
     const actors = ctx.actors;
+    // REFUSE, RATHER THAN THROW ON `pStats(undefined)`. `weight()` already
+    // guarantees three, so this only ever fires for a caller that reached
+    // fire() directly — and one did: the belief gate's probe, which swallowed
+    // the exception and filed this event as dead content for two weeks.
+    if (!actors || actors.length < 3) return null;
     const [a, b, c] = actors;
     const sa = pStats(a);
     const sc = pStats(c);

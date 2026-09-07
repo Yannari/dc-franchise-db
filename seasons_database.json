@@ -747,24 +747,24 @@
       "castSize": 13,
       "episodeCount": 10,
       "winner": {
-        "name": "Karol",
-        "playerSlug": "karol",
+        "name": "Duncan",
+        "playerSlug": "duncan",
         "vote": "",
-        "runnerUp": "Ivy",
+        "runnerUp": "Karol",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
       },
       "awards": {
         "fanFavorite": {
-          "name": "Aiden",
-          "playerSlug": "aiden"
+          "name": "Sanders",
+          "playerSlug": "sanders"
         },
         "bestStrategic": null,
         "mostChallengeWins": {
-          "name": "Karol",
-          "playerSlug": "karol",
-          "detail": "3 maxi challenges"
+          "name": "Duncan",
+          "playerSlug": "duncan",
+          "detail": "7 maxi challenges"
         }
       },
       "theme": "",

@@ -179,16 +179,33 @@ export function dragCareerStats(rows, name, congeniality = null) {
   };
 }
 
-export function dragSeasonDetails(rows, seasonNumber, name) {
+/** Who she left the season attached to, if anybody. */
+export function dragShowmance(rows, name) {
+  const last = rows[rows.length - 1] || {};
+  for (const pair of last.dr?.romances || []) {
+    if (pair.includes(name)) return pair.find(n => n !== name) || null;
+  }
+  return null;
+}
+
+export function dragSeasonDetails(rows, seasonNumber, name, congeniality = null) {
   const placements = dragPlacements(rows);
   const row = placements.find(p => p.name === name);
-  const stats = dragCareerStats(rows, name);
+  const stats = dragCareerStats(rows, name, congeniality);
+  /* THE PAIR, IF THERE WAS ONE. `js/life-hook.js` reads `showmance` off the
+     appearance to work out who walked out of a season together — the field is
+     how a relationship survives past the finale into the life layer — and
+     until this was here the drag romance thread stopped at the season
+     boundary. Written only when there IS one, so an absent field means "no
+     pair" rather than "this show does not do that". */
+  const partner = dragShowmance(rows, name);
   return {
     season: seasonNumber,
     format: DRAG_FORMAT,
     placement: row?.placement ?? null,
     status: row?.status ?? null,
     challengeWins: stats.wins,
+    ...(partner ? { showmance: partner, showmanceEnded: 'intact' } : {}),
     dr: stats,
   };
 }
@@ -210,6 +227,14 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
       // the status against this show's vocabulary. `status` is prose and it
       // belongs to the registry; this is the fact underneath it.
       ...(congeniality && p.name === congeniality ? { congeniality: true } : {}),
+      /* AND THE PAIR. This has to be on the PLACEMENT, not only on
+         `dragSeasonDetails`, because the publish path never calls that
+         function — `mergeDragSeason` builds each appearance from the
+         document's placement rows. Writing it in the obvious place and
+         nowhere the pipeline reads is how a field ends up computed, stored
+         and invisible. */
+      ...(dragShowmance(rows, p.name)
+        ? { showmance: dragShowmance(rows, p.name), showmanceEnded: 'intact' } : {}),
       dr: stats,
     };
   });

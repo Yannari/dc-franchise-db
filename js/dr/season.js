@@ -627,6 +627,13 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     const next = (state.congenialityTally || []).find(t => t.name !== state.winner);
     state.congeniality = next ? next.name : null;
   }
+  /* THE SEASON'S PAIRS, ON THE ROW. `js/life-hook.js` reads `showmance` off an
+     APPEARANCE to decide who walked out of a season together, and a drag
+     appearance carried none — so the romance thread existed in the werk room,
+     on the screen and in the ratings signal, and stopped dead at the franchise
+     boundary. Kept on the finale row rather than threaded through the exporter
+     as another argument, the way `congeniality` had to be. */
+  finale.dr.romances = (state.romances || []).map(pair => [...pair]);
   if (state.congeniality) {
     finale.dr.congeniality = state.congeniality;
     finale.dr.congenialityTally = state.congenialityTally;

@@ -2495,6 +2495,13 @@ export function mergeDragSeason(existing, seasonDoc) {
         lipsyncWins: dr.lipsyncWins || 0,
         congeniality: dr.congeniality || 0,
       },
+      /* THE PAIR, CARRIED. `js/life-hook.js` reads `showmance` off an
+         appearance to decide who walked out of a season together — it is the
+         one field that lets a relationship survive past the finale — and
+         dropping it here would end the drag romance thread at the franchise
+         boundary with everything upstream of it working. */
+      ...(entry.showmance
+        ? { showmance: entry.showmance, showmanceEnded: entry.showmanceEnded || 'intact' } : {}),
       notes: _clean(entry.notes) ? [entry.notes] : [],
       gameplayStyle: _clean(entry.gameplayStyle),
       keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments

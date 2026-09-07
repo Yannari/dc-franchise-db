@@ -76,7 +76,14 @@ function _playWholeSeason() {
   // A mirror for the screens, not a second source of truth: every episode
   // screen reads its own row. `star` is here because the aftermath reads it
   // once at the end, never during.
-  gs.dr = { star: out.state.star, castOrder: out.state.castOrder, episodes: [] };
+  gs.dr = {
+    star: out.state.star, castOrder: out.state.castOrder, episodes: [],
+    // The sash. `stats-export.js` reads `gs.dr.congeniality` when it builds
+    // the season document, and until this line was here it read undefined on
+    // every played season — the award was computed, stored on the finale row,
+    // drawn on the crowning screen, and then dropped on the way to the file.
+    congeniality: out.congeniality || null,
+  };
   gs._drResult = { winner: out.winner, runnerUp: out.runnerUp };
   return true;
 }

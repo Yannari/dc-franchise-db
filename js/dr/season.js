@@ -6,6 +6,7 @@
 // js/dr-run.js calls this once, queues the rows, and hands one to the screen
 // per press. Nothing here touches `gs` or the DOM.
 import { initDragState } from './state.js';
+import { runAudienceVote } from '../audience.js';
 import { runDragWeek } from './week.js';
 import { assignStorylines, recordBeat, arcSummary } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
@@ -469,8 +470,35 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   }, ctx);
   rows.push(beat(state, finale, cast));
 
+  /* ── MISS CONGENIALITY ──
+     THE SHARED AUDIENCE VOTE, not a second way of printing the chart. This
+     show does not get to write its own: `runAudienceVote` is the one place
+     the franchise decides what "the country's favourite" means, and it is
+     already weighted in SPREADS rather than points so a show whose numbers
+     look nothing like Big Brother's resolves properly anyway.
+     Eligible is everybody but the winner — you cannot win the crown and the
+     sash on the same night — and the ledger it reads is `state.popularity`,
+     which every event in the season has been writing to since episode one.
+     Passed explicitly: the module-global `gs` is empty in a headless season,
+     and voting on an empty board still returns a name. */
+  const eligible = state.castOrder.filter(n => n !== state.winner);
+  const vote = runAudienceVote({
+    eligible, rng, blocks: 600,
+    _gs: { popularity: state.popularity, episodeHistory: rows },
+  });
+  if (vote) {
+    state.congeniality = vote.winner;
+    state.congenialityTally = vote.tally;
+    // The finale row carries it because the crowning screen draws the sash,
+    // and a screen that has to reach back into season state to know what it
+    // is drawing is a screen that shows nothing on a replayed episode.
+    finale.dr.congeniality = vote.winner;
+    finale.dr.congenialityTally = vote.tally;
+  }
+
   return {
     rows, state, winner: state.winner, runnerUp: state.runnerUp,
+    congeniality: state.congeniality || null,
     finale: finale.dr.finale, smackdownWinner: state.smackdownWinner || null,
   };
 }

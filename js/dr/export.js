@@ -153,7 +153,7 @@ export function dragPlacements(rows, cast = null) {
   });
 }
 
-export function dragCareerStats(rows, name) {
+export function dragCareerStats(rows, name, congeniality = null) {
   let wins = 0; let highs = 0; let lows = 0; let bottoms = 0; let lipsyncWins = 0;
   for (const row of rows) {
     const c = row.dr?.call || {};
@@ -169,7 +169,14 @@ export function dragCareerStats(rows, name) {
     // having won a lip sync for your life.
     if (ls && ls.call === 'double-shantay' && (ls.queens || []).includes(name)) lipsyncWins++;
   }
-  return { wins, highs, lows, bottoms, lipsyncWins, congeniality: 0 };
+  /* A COUNT, not a flag, because this line is summed across a career: a queen
+     who takes the sash on two seasons has congeniality 2, the same way she has
+     wins 2. It reads 0 for everybody when the caller does not say who won —
+     the season document knows, a single-row lookup may not. */
+  return {
+    wins, highs, lows, bottoms, lipsyncWins,
+    congeniality: congeniality && congeniality === name ? 1 : 0,
+  };
 }
 
 export function dragSeasonDetails(rows, seasonNumber, name) {
@@ -194,11 +201,15 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
   const cast = fullCast(rows);
 
   const withStats = placements.map(p => {
-    const stats = dragCareerStats(rows, p.name);
+    const stats = dragCareerStats(rows, p.name, congeniality);
     return {
       ...p,
       status: congeniality && p.name === congeniality
         ? showWords(DRAG_FORMAT).audienceAward : p.status,
+      // A FLAG ON THE ROW, so a reader can find her without string-matching
+      // the status against this show's vocabulary. `status` is prose and it
+      // belongs to the registry; this is the fact underneath it.
+      ...(congeniality && p.name === congeniality ? { congeniality: true } : {}),
       dr: stats,
     };
   });

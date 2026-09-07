@@ -747,21 +747,24 @@
       "castSize": 13,
       "episodeCount": 10,
       "winner": {
-        "name": "Gerry",
-        "playerSlug": "gerry",
+        "name": "Karol",
+        "playerSlug": "karol",
         "vote": "",
-        "runnerUp": "Sanders",
+        "runnerUp": "Ivy",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
       },
       "awards": {
-        "fanFavorite": null,
+        "fanFavorite": {
+          "name": "Aiden",
+          "playerSlug": "aiden"
+        },
         "bestStrategic": null,
         "mostChallengeWins": {
-          "name": "Cameron",
-          "playerSlug": "cameron",
-          "detail": "5 maxi challenges"
+          "name": "Karol",
+          "playerSlug": "karol",
+          "detail": "3 maxi challenges"
         }
       },
       "theme": "",

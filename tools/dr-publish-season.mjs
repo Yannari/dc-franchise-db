@@ -61,7 +61,7 @@ while (cast.length < CAST_SIZE && pool.length) {
 // relationships at all — every event gated on a bond silently cannot fire.
 const bonds = {};
 const key = (a, b) => [a, b].sort().join('|');
-const { rows } = playDragSeason({
+const out = playDragSeason({
   cast,
   seed: SEED,
   bond: (a, b) => bonds[key(a, b)] || 0,
@@ -70,8 +70,14 @@ const { rows } = playDragSeason({
     bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d));
   },
 });
+const { rows } = out;
 
-const doc = buildDragSeasonDocument(rows, { seasonNumber: SEASON_NUM, twists: [] });
+const doc = buildDragSeasonDocument(rows, {
+  seasonNumber: SEASON_NUM, twists: [],
+  // Without this the published season has no Miss Congeniality — the vote
+  // ran, the finale row carried it, and the file it was written to did not.
+  congeniality: out.congeniality || null,
+});
 
 const readJSON = (path, fallback) => {
   try { return JSON.parse(readFileSync(path, 'utf8')); } catch { return fallback; }

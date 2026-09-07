@@ -28,7 +28,7 @@ function ctx(seed = 1, players = Object.fromEntries(NAMES.map(n => [n, mk(n)])),
 
 describe('the partner pools', () => {
   it('has a pit crew and a family pool, each graded by how well they take to it', () => {
-    for (const key of ['pit-crew', 'family']) {
+    for (const key of ['superfans', 'veterans', 'seniors', 'athletes', 'pit-crew', 'loved-ones']) {
       expect(PARTNER_POOLS[key].length, key).toBeGreaterThanOrEqual(12);
       expect(new Set(PARTNER_POOLS[key].map(p => p.name)).size, key).toBe(PARTNER_POOLS[key].length);
       for (const p of PARTNER_POOLS[key]) {
@@ -50,23 +50,23 @@ describe('the pairing', () => {
     expect(typeof out.performances.Ada.detail.resemblance).toBe('number');
   });
 
-  it('a pit crew is shared, so no two queens get the same man', () => {
+  it('a themed cohort is shared, so no two queens get the same guest', () => {
     for (let i = 0; i < 20; i++) {
       const picks = Object.values(runMaxi(ctx(i)).assignment.picks).map(p => p.choice);
       expect(new Set(picks).size, `seed ${i}`).toBe(picks.length);
     }
   });
 
-  it('...but family is not: two queens can both bring their mother', () => {
+  it('...but loved ones are not: two queens can both bring their mother', () => {
     // Twelve relationships and four queens, so a collision is not guaranteed
     // in any one season — it just has to be POSSIBLE, which a draft forbids.
     let collided = false;
     for (let i = 0; i < 60 && !collided; i++) {
-      const picks = Object.values(runMaxi(ctx(i, undefined, { makeoverPool: 'family' })).assignment.picks)
+      const picks = Object.values(runMaxi(ctx(i, undefined, { makeoverPool: 'loved-ones' })).assignment.picks)
         .map(p => p.choice);
       collided = new Set(picks).size < picks.length;
     }
-    expect(collided, 'the family pool is being drafted as if there were one mother alive').toBe(true);
+    expect(collided, 'loved ones are being drafted as if there were one mother alive').toBe(true);
   });
 
   it('eliminated queens can be the partners, and a friend coming back is a moment', () => {

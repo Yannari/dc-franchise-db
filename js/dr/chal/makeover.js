@@ -8,11 +8,21 @@
 // queen who paints herself beautifully and leaves her partner behind takes a
 // note for it. Out-dressing your own sister is a loss, not a flex.
 //
-// Two kinds of pool, and they behave differently on purpose. A pit crew or a
-// returning queen is a SHARED resource — one of them, several queens who want
-// her, so it is drafted and somebody misses out. Family is not: two queens can
-// both bring their mother, and drafting relationship types as if there were
-// only one mother in the world would be nonsense.
+// ── CHECKED AGAINST THE SHOW, AND IT WAS WRONG ───────────────────────
+//
+// This was built with a pit crew and a pool of relationship types — "her
+// mother", "her brother" — drafted as if there were one mother in the world.
+// The real challenge is not that. The queens give a drag makeover to INVITED
+// GUESTS from a specific demographic, and the demographic changes every time
+// it is booked: superfans, military veterans, seniors, athletes, the queens
+// already sent home. Her job is to make a stranger read as her drag family.
+//
+// So a pool is a THEMED COHORT and which one it is comes from the season's
+// booking rather than from the queen. "Loved ones" is the single case where
+// the guest is already hers, which is why it alone is not drafted.
+//
+// The resemblance term was right and stays: a family resemblance across
+// cohesive looks is what the panel actually judges here.
 import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
@@ -24,18 +34,45 @@ const crew = (name, ease) => ({ id: name.toLowerCase().replace(/\W+/g, '-'), nam
 // `ease` is how well a partner takes to it: a dancer walks, a shy one has to
 // be carried through every step of it.
 export const PARTNER_POOLS = {
-  'pit-crew': [crew('Marco', 8), crew('Devon', 6), crew('Rafa', 9), crew('Ty', 5), crew('Bruno', 7),
-    crew('Kai', 8), crew('Sol', 4), crew('Ivo', 6), crew('Nate', 9), crew('Quin', 5),
-    crew('Ash', 7), crew('Rome', 6)],
-  family: [crew('her mother', 4), crew('her brother', 6), crew('her sister', 8), crew('her father', 3),
-    crew('her cousin', 7), crew('her best friend', 9), crew('her aunt', 5), crew('her nephew', 6),
-    crew('her uncle', 3), crew('her twin', 9), crew('her neighbour', 5), crew('her drag mother', 10)],
+  // The most-booked version: fans of the show, thrilled to be there.
+  superfans: [crew('Marco', 9), crew('Devon', 8), crew('Rafa', 9), crew('Ty', 7),
+    crew('Bruno', 8), crew('Kai', 9), crew('Sol', 7), crew('Ivo', 8),
+    crew('Nate', 9), crew('Quin', 7), crew('Ash', 8), crew('Rome', 8)],
+  // Service veterans. Game, disciplined, starting from zero.
+  veterans: [crew('Sergeant Hale', 5), crew('Corporal Diaz', 6), crew('Captain Boone', 4),
+    crew('Private Okafor', 7), crew('Major Reyes', 4), crew('Lieutenant Frost', 5),
+    crew('Sergeant Vance', 6), crew('Corporal Mbeki', 7), crew('Officer Lange', 5),
+    crew('Airman Cole', 6), crew('Gunner Petrov', 4), crew('Ensign Marsh', 6)],
+  // Older guests, who have usually seen more than the queen painting them.
+  seniors: [crew('Dot', 6), crew('Winifred', 5), crew('Harold', 4), crew('Estelle', 7),
+    crew('Mabel', 6), crew('Cyril', 3), crew('Norma', 7), crew('Reg', 4),
+    crew('Joyce', 6), crew('Albert', 3), crew('Pearl', 8), crew('Stan', 5)],
+  // Athletes: physically fearless and completely lost in a heel.
+  athletes: [crew('Ash Kovac', 6), crew('Bex Toure', 7), crew('Cam Whitlock', 5),
+    crew('Dani Ferraro', 8), crew('Emeka Bright', 6), crew('Frankie Sol', 7),
+    crew('Gio Vance', 5), crew('Hana Belov', 8), crew('Iggy Marsh', 6),
+    crew('Jules Okonkwo', 7), crew('Kit Rasmussen', 5), crew('Lex Amari', 6)],
+  // The show's own crew, when the season books that version.
+  'pit-crew': [crew('Marco', 8), crew('Devon', 6), crew('Rafa', 9), crew('Ty', 5),
+    crew('Bruno', 7), crew('Kai', 8), crew('Sol', 4), crew('Ivo', 6),
+    crew('Nate', 9), crew('Quin', 5), crew('Ash', 7), crew('Rome', 6)],
+  // The one cohort that is not shared: her own person, so nothing is drafted
+  // and two queens can both bring a sister.
+  'loved-ones': [crew('her mother', 4), crew('her brother', 6), crew('her sister', 8),
+    crew('her father', 3), crew('her cousin', 7), crew('her best friend', 9),
+    crew('her aunt', 5), crew('her nephew', 6), crew('her uncle', 3),
+    crew('her twin', 9), crew('her neighbour', 5), crew('her drag mother', 10)],
   // Built at run time from the queens already sent home.
   eliminated: null,
 };
 
-/** Family is personal; a pit crew and a returning queen are shared. */
-const CONTESTED = new Set(['pit-crew', 'eliminated']);
+/** Which cohorts a season can book. */
+export const PARTNER_COHORTS = ['superfans', 'veterans', 'seniors', 'athletes',
+  'pit-crew', 'loved-ones', 'eliminated'];
+
+/** Everybody competes for a shared guest; loved ones are already hers. */
+const CONTESTED = new Set(['superfans', 'veterans', 'seniors', 'athletes',
+  'pit-crew', 'eliminated']);
 
 function poolFor(cfg, state, players) {
   if (cfg?.makeoverPool === 'eliminated') {
@@ -45,16 +82,16 @@ function poolFor(cfg, state, players) {
       isQueen: true,
     }));
   }
-  return PARTNER_POOLS[cfg?.makeoverPool] || PARTNER_POOLS['pit-crew'];
+  return PARTNER_POOLS[cfg?.makeoverPool] || PARTNER_POOLS.superfans;
 }
 
 export function assign(ctx) {
   const { living, players, rng, miniWinner, mini, cfg, state, bond } = ctx;
-  const poolKey = cfg?.makeoverPool || 'pit-crew';
+  const poolKey = cfg?.makeoverPool || 'superfans';
   let pool = poolFor(cfg, state, players);
   // A returnee pool can be empty in an early week. Fall back rather than
   // pairing everybody with nobody.
-  if (!pool.length) pool = PARTNER_POOLS['pit-crew'];
+  if (!pool.length) pool = PARTNER_POOLS.superfans;
 
   const order = pickOrder({ living, miniWinner, mini, rng });
   const events = [];
@@ -107,7 +144,7 @@ export function assign(ctx) {
 
 export function prepare(ctx) {
   const { living, players, assignment, rng } = ctx;
-  const pool = assignment.pool || PARTNER_POOLS['pit-crew'];
+  const pool = assignment.pool || PARTNER_POOLS.superfans;
   const r = prepareRoom(ctx);
   const w = walkthrough({ ...ctx, prep: r.prep });
   const events = [...r.events, ...w.events];

@@ -12,15 +12,29 @@
 // actually pages through. Counting them across 8 seeds x 3 cast sizes, every
 // screen `traitorsScreens` builds for the audience:
 //
-//   cast 10   mean 81 cards/ep   castle 21.4   fixed 59.4   castle share 26%
-//   cast 14   mean 88 cards/ep   castle 25.6   fixed 62.9   castle share 29%
-//   cast 18   mean 94 cards/ep   castle 28.2   fixed 66.1   castle share 30%
+//   cast 10   mean 95.0 cards/ep    castle 28.8   fixed 66.2   castle share 30%
+//   cast 14   mean 104.5 cards/ep   castle 31.8   fixed 72.7   castle share 30%
+//   cast 18   mean 109.7 cards/ep   castle 33.3   fixed 76.5   castle share 30%
 //
-// THE CASTLE DAY IS UNDER A THIRD OF AN EPISODE. The other 70% is the spine —
-// cold open (15.2), Round Table (18.1), suspicion board (7.8), conclave (6.5),
-// status (5.0), mission (4.7) — and those are the show, not padding. A density
-// control may not touch them: an episode that skips its Round Table cards is
-// not a shorter episode of this show, it is a broken one.
+// RE-MEASURED, AND EVERY NUMBER IN THIS FILE MOVED. The table above used to
+// read 81/88/94, and by the time anybody re-ran it the estimator was telling an
+// author 94 cards for an episode that runs 110 — 16% short, against a band of
+// 8%. Nothing about the control changed; the SHOW got longer. Both halves grew:
+// the spine gained a wider Round Table and cold open, and the castle gained
+// scores of events across the confrontation, alibi, alone and group families,
+// which is the mechanism `runWindow` describes — a bigger pool means fewer
+// barren draws, so a phase spends more of the budget it already had. An
+// estimator fitted to a pool is a measurement with a shelf-life, and
+// tests/tr-density-controls.test.js is what notices when it expires. It went
+// red rather than drifting quietly, which is what it is for.
+//
+// THE CASTLE DAY IS STILL UNDER A THIRD OF AN EPISODE, and the share did not
+// move at all — 30% then, 30% now, at every cast size. The other 70% is the
+// spine — Round Table (25.2), cold open (16.2), suspicion board (8.9),
+// conclave (7.0), mission (5.1), status (5.0), arrival (4.4), selection (2.5),
+// endgame (1.7) — and those are the show, not padding. A density control may
+// not touch them: an episode that skips its Round Table cards is not a shorter
+// episode of this show, it is a broken one.
 //
 // So density scales the DISCRETIONARY layer only, and the honest consequence
 // is that it moves total episode length by roughly -11% to +8%, not by the 2x
@@ -43,12 +57,19 @@
 // therefore left at 1.75 — 2.5 and 4.0 deliver nothing extra and would only
 // make the setting lie harder about what it does.
 //
+// AND THE CAP MOVED WHEN THE POOL DID, WHICH IS THE SAME FINDING FROM THE
+// OTHER SIDE. Extended delivered 1.19x of the castle when that was written and
+// delivers 1.37x now, off an unchanged budget factor of 1.75. Nothing was
+// tuned: the events written since are what a 1.75 budget now has to spend
+// itself on. So the ceiling on this control is content, and the way to raise it
+// has never been the number below.
+//
 // Which is why each level carries TWO numbers. `factor` is the budget knob the
 // engine turns. `effective` is the multiplier the castle ACTUALLY produced
 // when the season was played and the cards were counted, and it is the one the
 // estimator uses — because an author is owed the measured length, not the
 // requested one. Compact shows the same gap in the other direction (asks 0.45,
-// delivers 0.62) via the one-scene floor and fair-share rounding.
+// delivers 0.63) via the one-scene floor and fair-share rounding.
 //
 // ── WHY FACTOR 1.0 HAS TO BE ARITHMETICALLY EXACT ────────────────────
 //
@@ -76,10 +97,10 @@ export const TR_DENSITY_LEVELS = [
     id: 'compact',
     label: 'Compact',
     factor: 0.45,
-    effective: 0.62,
+    effective: 0.63,
     blurb: 'Leaner castle days. The night itself is untouched — breakfast, the '
       + 'mission, the table and the murder all still run in full — but the '
-      + 'small scenes around them are cut back. About a tenth shorter.',
+      + 'small scenes around them are cut back. About an eighth shorter.',
   },
   {
     id: 'full',
@@ -93,9 +114,9 @@ export const TR_DENSITY_LEVELS = [
     id: 'extended',
     label: 'Extended',
     factor: 1.75,
-    effective: 1.19,
+    effective: 1.37,
     blurb: 'As much of the day as the castle can actually produce. Adds only '
-      + 'about 8% — on most nights the pool of scenes that could plausibly '
+      + 'about 11% — on most nights the pool of scenes that could plausibly '
       + 'happen runs out before the budget does.',
   },
 ];
@@ -146,21 +167,33 @@ export function scaledRange(min, max, factor) {
 
 // ── the estimator ─────────────────────────────────────────────────────
 //
-// Linear in cast size, fitted to the measurement at the top of this file.
-// Both lines are close to 0.85 cards per extra player, which is what you would
-// expect: a bigger castle means more people for a scene to be about AND more
-// names on every board the spine already draws.
+// Linear in cast size, least-squares over the three sweeps at the top of this
+// file. Both lines still rise with the cast, for the reason they always did: a
+// bigger castle means more people for a scene to be about AND more names on
+// every board the spine already draws.
 //
-//   fixed(size)      = 51.0 + 0.84 * size     10 -> 59.4  14 -> 62.8  18 -> 66.1
-//   castleFull(size) = 13.0 + 0.85 * size     10 -> 21.5  14 -> 24.9  18 -> 28.3
+//   fixed(size)      = 53.8 + 1.28 * size     10 -> 66.6  14 -> 71.8  18 -> 76.9
+//   castleFull(size) = 23.5 + 0.56 * size     10 -> 29.1  14 -> 31.3  18 -> 33.5
 //
-// The spread is the measured p10/p90 ratio against the mean (0.54 / 1.18 at
-// cast 18). It is wide because early episodes are genuinely short — episode
-// one has no Round Table and no private strategy to scramble over — so a
-// single "typical" number quoted alone would overstate the front of a season.
-const FIXED_BASE = 51.0, FIXED_PER_HEAD = 0.84;
-const CASTLE_BASE = 13.0, CASTLE_PER_HEAD = 0.85;
-const P10_RATIO = 0.54, P90_RATIO = 1.18;
+// THE TWO SLOPES CAME APART AT THE RE-FIT AND THE REASON IS WORTH KEEPING.
+// They were both ~0.85 before; the spine's is now more than twice the castle's.
+// Cast size feeds the spine ROSTER-WIDE — every extra player is another row on
+// the suspicion board, another name in the Round Table's count, another face in
+// status — while a castle day still fires a bounded number of scenes about two
+// people each. Adding players lengthens the boards linearly and the castle
+// barely at all. Worst residual across the seven measured sweeps: 3.2%, against
+// the 8% band the test holds.
+//
+// The spread is the measured p10/p90 ratio against the mean (0.91 / 1.09 at
+// cast 18), and IT NARROWED SHARPLY — it was 0.54 / 1.18. The old comment
+// explained the width by early episodes being genuinely short, and that is
+// still true of episode one, but the floor has risen: a thin night now has
+// enough castle written for it to reach 100 cards. The range is consequently
+// much tighter than it was, which is a real thing to tell an author rather
+// than a rounding artefact.
+const FIXED_BASE = 53.8, FIXED_PER_HEAD = 1.28;
+const CASTLE_BASE = 23.5, CASTLE_PER_HEAD = 0.56;
+const P10_RATIO = 0.91, P90_RATIO = 1.09;
 
 /**
  * Roughly how many reveal cards an episode will run to.
@@ -176,12 +209,20 @@ export function traitorsEstimatedCards(castSize = 18, densityId = TR_DENSITY_DEF
   const fixed = FIXED_BASE + FIXED_PER_HEAD * size;
   const castle = (CASTLE_BASE + CASTLE_PER_HEAD * size) * f;
   const typical = fixed + castle;
+  // THE PARTS SUM TO THE WHOLE BY CONSTRUCTION, NOT BY LUCK. Rounding all
+  // three independently let `castle + fixed` come out one card above
+  // `typical` at the re-fitted constants — the invariant the summary line
+  // prints and tests/tr-density-controls.test.js asserts. So the total and
+  // the fixed half are rounded and the castle half is what is left, which is
+  // also what it MEANS: the part of the shown number this control moves.
+  const total = Math.round(typical);
+  const fixedCards = Math.round(fixed);
   return {
-    typical: Math.round(typical),
+    typical: total,
     low: Math.round(typical * P10_RATIO),
     high: Math.round(typical * P90_RATIO),
-    castle: Math.round(castle),
-    fixed: Math.round(fixed),
+    castle: total - fixedCards,
+    fixed: fixedCards,
   };
 }
 

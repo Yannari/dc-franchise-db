@@ -1540,7 +1540,15 @@ registerEvent({
     const v = _victimLastNight(ctx.ep);
     if (!v) return 0;
     const threads = gs.tr?.threads || [];
-    return threads.some(t => t.kind === 'suspicion' && t.parties.includes(v)) ? 2 : 0;
+    // 2 -> 3, and the reason is the POOL rather than this event. The gate is a
+    // real coincidence -- somebody murdered last night who was ALSO carrying an
+    // open suspicion thread -- so it was never going to fire often, and at
+    // weight 2 it now loses draws it used to win simply because the castle pool
+    // has grown around it. `turned-on-each-other` fell to 33 firings against
+    // the 40 the variety floor needs to be a measurement rather than a coin
+    // flip. FIRST bump, on an untouched weight; if it needs a second one the
+    // answer is the gate, not the dial.
+    return threads.some(t => t.kind === 'suspicion' && t.parties.includes(v)) ? 3 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-wrongly-suspected-irony');

@@ -1659,6 +1659,25 @@ const NO_SOURCE = {
   ],
 };
 
+// ONE OF THEM IS SPENDING THEIR OWN. `sacrifice` is set by js/tr/roundtable.js
+// `debate()` when a Traitor joins a pile-on already forming on a FELLOW
+// Traitor — the format's signature move, and the engine could not make it
+// until the burn read existed. The screen must not say so: to the room this
+// is somebody finally agreeing, and the audience-only irony block at the foot
+// of the card is where the truth belongs. So these lines are written to be
+// true on both readings — a little too fluent, a little too well-timed, and
+// nothing in them that a Faithful in the room could not have thought.
+const SACRIFICE_LINES = [
+  '{A} has been quiet about {t} all week and picks tonight, of all nights, to stop being quiet.',
+  'It is the timing more than the words. {A} waits until the room has already decided, and then agrees, at length.',
+  '{A} joins it late and lands harder than anybody who started it.',
+  'Nobody needed {A} to say that. {A} said it anyway, and made sure the room watched {aobj} say it.',
+  '{A} adds nothing new about {t} and adds it with enormous conviction.',
+  'There is something practised about how quickly {A} arrives at the same answer as everybody else.',
+  '{A} comes in over the top of the room and gives {t} nowhere to stand.',
+  'Whatever {A} is doing, it is not discovering something. It is closing something.',
+];
+
 // A LISTENER MOVED. Not because the writer needed a flip — because the claim
 // reached them and it now sits at the top of what they believe. `{who}` is the
 // mover, `{t}` the name they have moved onto.
@@ -2201,6 +2220,10 @@ function _buildBeats(v) {
     byTarget.get(a.target).push(a.accuser);
   }
   const named = new Set(byTarget.keys());
+  // WHO IS BURYING THEIR OWN. Keyed accuser>target because one player may
+  // accuse across a season and only this one is a sacrifice.
+  const sacrificing = new Set((v.accusations || []).filter(a => a.sacrifice)
+    .map(a => a.accuser + '>' + a.target));
   const clusters = [...byTarget.entries()].map(([t, acc]) => ({ t, acc }))
     .sort((x, y) => y.acc.length - x.acc.length || String(x.t).localeCompare(String(y.t)))
     .slice(0, 5);
@@ -2264,6 +2287,11 @@ function _buildBeats(v) {
       + (c.acc.length === 1 ? ' voice' : ' voices') + '<br>at this name</span></div>';
     inner += '<p>' + _fill(_pick(ACCUSE_LINES, key + '|acc|' + c.t), subs) + '</p>';
     inner += _said(lead, _fill(_pick(ACCUSE_SAID, key + '|say|' + c.t), subs));
+    // THE MOVE, WITHOUT NAMING IT. See SACRIFICE_LINES: the room reads this as
+    // a late convert and the audience gets the truth in the irony block below.
+    if (sacrificing.has(lead + '>' + c.t)) {
+      inner += '<p>' + _fill(_pick(SACRIFICE_LINES, key + '|sac|' + c.t), subs) + '</p>';
+    }
     // THE SOURCE, CITED — only when the speaker actually holds one. And when
     // they do not, WHICH KIND OF NOTHING they are working from, rather than
     // the name-and-silence this printed before. `hearsay` needs a name it can
@@ -2307,8 +2335,18 @@ function _buildBeats(v) {
       const traitorAccusers = c.acc.filter(n => v.truth[n] === 'traitor').length;
       const steered = real === 'faithful' && traitorAccusers * 2 > c.acc.length;
       const pool = real === 'traitor' ? IRONY_TRUE : (steered ? IRONY_STEER : IRONY_FALSE);
+      // THE ONE CASE THE THREE GENERAL POOLS CANNOT COVER, because it is not
+      // about whether the room is right — it is right — but about WHO IS
+      // HELPING IT BE RIGHT, and why. The audience layer is the only one that
+      // may be told.
+      const betrayers = c.acc.filter(n => sacrificing.has(n + '>' + c.t));
+      const line = betrayers.length
+        ? _esc(betrayers[0]) + ' is not agreeing with the room. ' + _esc(betrayers[0])
+          + ' is burying somebody who was in the turret this week, before '
+          + _esc(c.t) + ' can be asked a question with an answer.'
+        : _fill(_pick(pool, key + '|iro|' + c.t), subs);
       inner += '<div class="rt-irony"><b>What the room cannot see</b><span>'
-        + _pick(pool, key + '|iro|' + c.t) + '</span></div>';
+        + line + '</span></div>';
     }
     if (ci === clusters.length - 1 && !movers.length) inner += _murmur(key + '|m2|' + c.t);
     push('debate', _card(null, 'The debate', 'hand', inner),

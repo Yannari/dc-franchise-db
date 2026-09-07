@@ -378,10 +378,47 @@ const POT_GREED = 0.9;
  * held over the tied players alone — a three-name revote in a castle of twelve
  * is not an endgame and must not be priced as one.
  */
-function pactReluctance() {
+function pactReluctance(burnShare = 0) {
   const living = (gs.activePlayers || []).length;
   const cover = Math.max(0, (living - PACT_FLOOR) / PACT_SPAN);
-  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare());
+  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare())
+    * (1 - BURN_DISCOUNT * Math.min(1, (burnShare || 0) / BURN_FULL));
+}
+/**
+ * WHAT IT COSTS TO ABANDON SOMEBODY WHO IS LEAVING ANYWAY: almost nothing.
+ *
+ * The price above reads the LIVING FIELD and the POT -- the arithmetic of how
+ * much cover a body is worth -- and had no term at all for the one thing that
+ * actually decides this at a real table, which is whether the room has already
+ * convicted them. Holding the line on a fellow with half the castle shouting
+ * their name buys nothing (they are going regardless) and costs a visible vote
+ * on the wrong side of a reveal that is minutes away.
+ *
+ * NOT ALL OF IT. 0.8, so a fully burned fellow still costs something to name:
+ * the pact is a relationship as well as a calculation, and a Traitor who
+ * abandons people the instant it is convenient is a different character from
+ * the one this format is about. Paired with `burnedFellow` in roundtable.js,
+ * which decides the same question for the DEBATE.
+ */
+const BURN_DISCOUNT = 0.8;
+/** The share of the room whose accusation counts as fully burned. */
+const BURN_FULL = 0.35;
+
+/**
+ * How much of the room named `name` out loud at tonight's table, 0..1.
+ *
+ * Reads the accusations runRoundTable stashes before the ballots -- PUBLIC
+ * information, said at this table, in front of everybody. Empty on a revote
+ * (the list is per-table, not per-ballot) and on any caller that never set it,
+ * so this contributes exactly zero rather than throwing.
+ */
+function tonightsBurn(name) {
+  const acc = gs.tr?._tableAccusations;
+  if (!Array.isArray(acc) || !acc.length) return 0;
+  const room = Math.max(1, (gs.activePlayers || []).length - 1);
+  let on = 0;
+  for (const a of acc) if (a.target === name) on++;
+  return on / room;
 }
 
 /**
@@ -466,7 +503,15 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   const fellows = isTraitor ? pool.filter(n => alignmentAt(n, ep) === 'traitor') : [];
   // Nothing to be reluctant about when there is nobody else left to name:
   // a room of Traitors only has Traitors to write down.
-  const reluctance = (fellows.length && fellows.length < pool.length) ? pactReluctance() : 0;
+  // PER FELLOW, not one number for all of them. Reluctance now reads how
+  // burned that particular fellow is (see `pactReluctance`), so a Traitor can
+  // hold the line on the quiet one and cut the doomed one loose in the same
+  // ballot -- which is the actual decision, and was previously a single price
+  // applied to the whole pact.
+  const canBeReluctant = fellows.length && fellows.length < pool.length;
+  const reluctanceFor = name => (canBeReluctant && fellows.includes(name))
+    ? pactReluctance(tonightsBurn(name)) : 0;
+  const reluctance = canBeReluctant ? pactReluctance() : 0;
 
   // WHAT THEY SAID THEY WOULD DO, IN THE CASTLE, EARLIER TODAY.
   //
@@ -496,12 +541,13 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   // bond-scaled), never through coordinated targeting.
 
   const scored = pool.map(name => {
-    const priced = reluctance > 0 && fellows.includes(name);
+    const priced = canBeReluctant && fellows.includes(name);
+    const own = priced ? reluctanceFor(name) : 0;
     return {
       name,
       score: suspicion(voter, name, ep) * _voteSuspicionMult
         + (priced ? pactNoise(voter, name, ep) : rng() * 0.35)
-        - (priced ? reluctance : 0)
+        - own
         + (intent && intent.target === name ? (intent.strength || 0) : 0)
         // THE BLOC THE VOTER STANDS IN. A TERM beside suspicion, never an
         // override, and taking no rng draw (see allianceVoteBias): a voter

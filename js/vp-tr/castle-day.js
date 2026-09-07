@@ -1599,7 +1599,7 @@ const FALLBACK_SOLO = {
     'The damage will not show tonight. That is the kind of mistake that arrives late.',
     '{a} lost ground this evening and cannot say exactly where.',
     '{a} thought {a} had a theory forming, but there is a gap in it {a} cannot close.',
-    '{a} goes down to the hall hoping the mistake does not show on {pos} face.',
+    '{a} goes down to the hall hoping the mistake does not show.',
     'The week has got harder for {a} and nobody in the room did it to {a}.',
     '{a} would take that hour back, but there is no taking it back.',
     '{a} is further from a name than {a} was this morning, and further along in the week.',

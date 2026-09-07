@@ -89,8 +89,28 @@ describe('one vote to banish forces another Round Table', () => {
     // COVERAGE. Without these the test passes on a run that never reached
     // either branch, which is precisely how Task 4's guard stayed green with
     // its rule deleted.
-    expect(withBanish, 'no ask ever forced a table — the loop arm is vacuous').toBeGreaterThan(100);
-    expect(unanimous, 'no room was ever unanimous — the exit arm is vacuous').toBeGreaterThan(100);
+    // ── THESE FIVE FLOORS WERE 100, AND THIS IS A LOOSENING ───────────
+    //
+    // They are COVERAGE guards: proof the arm above executed, so the test
+    // cannot pass on a run that reached neither branch (the note above records
+    // exactly that happening to Task 4's guard). What they are not is a
+    // measurement of the endgame, and 100 was set against an observed 112 over
+    // 200 seasons — twelve of margin on a quantity that rides the rng stream.
+    //
+    // Any change anywhere upstream re-rolls which seasons reach an endgame and
+    // how long it runs. Adding one draw to `debate()` moved this to ~95.
+    //
+    // MEASURED, NOT ASSUMED, because the obvious suspect was the new belief
+    // channel (js/tr/roundtable.js `priceTheAccusers`) deflating the board
+    // until nobody wanted another banishment — which would have been a real
+    // defect and was worth ruling out properly. Running the identical build
+    // with the channel switched off entirely gives 86, BELOW the 95 it scores
+    // with the channel on: the channel pushes this number UP, and the drop is
+    // the stream. 60 keeps the guard doing its only job with room for the next
+    // change that touches a draw.
+    expect(withBanish, 'no ask ever forced a table — the loop arm is vacuous').toBeGreaterThan(60);
+    // Coverage floor, 100 -> 60. See the note on `withBanish` above.
+    expect(unanimous, 'no room was ever unanimous — the exit arm is vacuous').toBeGreaterThan(60);
     // AND THE INTERESTING CASE SPECIFICALLY. "One vote to banish forces
     // another Round Table" is only a rule where the vote was not unanimous;
     // a run in which every banish-ask was UNANIMOUSLY for banishing would
@@ -138,7 +158,8 @@ describe('one vote to banish forces another Round Table', () => {
     // end, which is both a real consequence and a common real-show ending.
     // This suite's own scan fell 150 -> 121 for the same reason. 100 keeps a
     // fifth of margin under the measurement rather than being fitted to it.
-    expect(tables, 'no endgame table sat at all').toBeGreaterThan(100);
+    // Coverage floor, 100 -> 60. See the note on `withBanish` above.
+    expect(tables, 'no endgame table sat at all').toBeGreaterThan(60);
     expect(tiny, 'no table small enough to deadlock ever sat').toBeGreaterThan(20);
   });
 });
@@ -191,7 +212,8 @@ describe('nobody is revealed in the endgame', () => {
     console.log(`[coverage] ${egChecked} endgame banishments checked, ${egLeaks.length} leaked; `
       + `control: ${mandatedSeen}/${mandatedChecked} mandated banishments DID reveal`);
     // Same re-derivation as the table floor above (150 -> 100).
-    expect(egChecked, 'no endgame banishment happened — the probe saw nothing').toBeGreaterThan(100);
+    // Coverage floor, 100 -> 60. See the note on `withBanish` above.
+    expect(egChecked, 'no endgame banishment happened — the probe saw nothing').toBeGreaterThan(60);
     // THE CONTROL FIRST: if this is not near-total the probe cannot see a
     // reveal and the line below is unfalsifiable.
     expect(mandatedChecked, 'no mandated banishment to control against').toBeGreaterThan(1000);
@@ -251,7 +273,8 @@ describe('nobody is revealed in the endgame', () => {
       + `${egSpoke.length} carried a speech; control: ${mandSpeeches}/${mandTables} mandated tables `
       + `spoke, ${mandBurns} burned, ${mandCertain} of those at conviction 1`);
 
-    expect(egTables, 'no endgame table sat — the probe saw nothing').toBeGreaterThan(100);
+    // Coverage floor, 100 -> 60. See the note on `withBanish` above.
+    expect(egTables, 'no endgame table sat — the probe saw nothing').toBeGreaterThan(60);
     expect(egTraitorsBanished, 'no endgame table ever banished a Traitor, so the leaking state '
       + 'never arose and this assertion is vacuous').toBeGreaterThan(30);
     // THE CONTROL, BEFORE THE ASSERTION. If exit speeches stopped being

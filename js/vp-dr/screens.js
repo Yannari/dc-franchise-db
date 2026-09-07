@@ -48,6 +48,16 @@ const SECTIONS = [
   { id: 'dr-arrivals', label: 'Arrivals', suffix: 'arrivals', phase: 'werk', accent: 'dr-a-room',
     opens: ['arrivals', 'entrance-order'], badge: { text: 'ENTRANCES', color: '#FFC83D' },
     title: 'Entrances', subtitle: 'the first thirteen through the door' },
+  /* ── A QUEEN COMES BACK ──
+     First screen of the night when the season books one, because the return
+     is the first thing that happens: she is through the door before the room
+     has finished waking up. Ahead of the cold open on purpose. */
+  { id: 'dr-return', label: 'She’s Back', suffix: 'return', phase: 'werk',
+    accent: 'dr-a-bond',
+    opens: ['return:return-door', 'return:return-walk', 'return:return-room',
+      'return:return-rule'],
+    badge: { text: 'RETURNS', color: '#3BE08A' },
+    title: 'She’s Back', subtitle: 'somebody the show already sent home' },
   { id: 'dr-cold-open', label: 'Cold Open', suffix: 'coldopen', phase: 'werk', accent: 'dr-a-room',
     opens: ['cold-open'], badge: null, title: 'Cold Open', subtitle: 'the room, before anything' },
   { id: 'dr-werk-morning', label: 'The Werk Room', suffix: 'morning', phase: 'werk', accent: 'dr-a-room',

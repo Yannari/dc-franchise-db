@@ -320,6 +320,17 @@ export function runDragWeek(state, cfg, ctx) {
 
   // Early-season immunity, when the season is playing that rule.
   const immune = cfg.immunity && state.lastWinner && cfg.num <= 5 ? [state.lastWinner] : [];
+  /* AND THE QUEEN WHO JUST WALKED BACK IN. She competes on her return night
+     — she takes the challenge, the runway and a place on the chart like
+     anybody else — but she cannot be sent home on it.
+     Not a kindness: a twist that brings somebody back and eliminates her
+     three hours later has spent itself for nothing, and it measurably does.
+     The first season played with this booked returned a queen on episode
+     six who went into the bottom two the same night and lost. The show
+     would not do that and neither will this. */
+  if (cfg.returnedQueen && !immune.includes(cfg.returnedQueen)) {
+    immune.push(cfg.returnedQueen);
+  }
   const call = callWeek(bend, { castSize: living.length, immune });
 
   // ── THE TRIPLE LIP SYNC ────────────────────────────────────────────

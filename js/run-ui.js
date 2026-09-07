@@ -3369,6 +3369,24 @@ export function renderTimeline() {
         h += `</select>`;
         return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${h} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
       }
+      if (t.type === 'dr-returnee') {
+        /* WHO WALKS BACK IN. The whole cast is offered rather than only the
+           queens who are out, because a season is BOOKED BEFORE IT IS
+           PLAYED — at design time nobody has been eliminated yet, so a list
+           of the eliminated would be empty every time. The engine honours
+           the pick when she is actually gone by then and falls back to a
+           weighted random eliminated queen when she is not, which the
+           episode says out loud rather than silently doing nothing. */
+        const chosen = t.returneeName || '';
+        let whoHtml = `<select onchange="event.stopPropagation();updateTwist('${t.id}','returneeName',this.value)" onclick="event.stopPropagation()" title="Who comes back" style="font-size:10px;background:#1e1e2e;color:#cdd6f4;border:1px solid rgba(99,102,241,0.3);border-radius:3px;padding:1px 2px;margin-left:4px;min-width:0;max-width:100%">`;
+        whoHtml += `<option value="" ${chosen === '' ? 'selected' : ''}>Random — the show decides</option>`;
+        for (const p of (players || [])) {
+          if (!p?.name) continue;
+          whoHtml += `<option value="${p.name}" ${p.name === chosen ? 'selected' : ''}>${p.name}</option>`;
+        }
+        whoHtml += `</select>`;
+        return `<span class="fd-ep-twist-tag" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;max-width:100%;min-width:0">${cat.emoji} ${cat.name} ${whoHtml} <span onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')" style="cursor:pointer;margin-left:4px">×</span></span>`;
+      }
       if (t.type === 'bb-den-of-temptation') {
         // What is on the table in the Den. Same source as the box and the
         // shelf; 'random' lets the season surprise itself.
@@ -3736,6 +3754,7 @@ export function assignTwist(twistId) {
     }
     const entry = { id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId };
     if (twistId === 'returning-player') { entry.returnCount = 1; entry.returnReasons = ['random']; }
+    if (twistId === 'dr-returnee') entry.returneeName = '';
     if (twistId === 'bb-pandoras-box') entry.prize = 'diamond-veto';
     if (twistId === 'bb-app-store') entry.shelf = 'all';
     if (twistId === 'bb-den-of-temptation') entry.offer = 'random';

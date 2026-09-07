@@ -8,6 +8,7 @@
 import { initDragState } from './state.js';
 import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
+import { RETURNEE_BEATS } from './data/returnee-beats.js';
 import { runReunion } from './reunion.js';
 import { smackdownScenes } from './smackdown.js';
 import { runDragWeek } from './week.js';
@@ -120,6 +121,10 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          loop without it and the twist silently does not happen. */
       ...(pin.noElimination ? { noElimination: true } : {}),
       ...(pin.doubleElimination ? { doubleElimination: true } : {}),
+      /* A RETURNING QUEEN, and the name she was booked with. The name is
+         carried even when it is empty: an absent `returneeName` means the
+         show picks, which is a real choice and not a missing one. */
+      ...(pin.returnee ? { returnee: true, returneeName: pin.returneeName || null } : {}),
     });
   }
 
@@ -173,6 +178,54 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
  * her style, and without the real player objects every one of them sees a queen
  * of straight fives.
  */
+/**
+ * The scenes for a queen walking back into the competition.
+ *
+ * Emitted here rather than inside runDragWeek because a return changes only
+ * WHO IS IN THE ROOM — the week engine runs identically either way, and
+ * teaching it about a twist it does not need to know about is how a week
+ * engine ends up with a branch per twist.
+ *
+ * An unwritten tier emits nothing rather than an empty card, so the schema
+ * ships ahead of the prose and the twist still works: she is in the room and
+ * on the chart from the moment it is booked, with or without the words.
+ */
+function returnScenes(returned, { living, rng = Math.random }) {
+  const beatById = id => RETURNEE_BEATS.find(b => b.id === id);
+  const fill = (line, a, b) => String(line || '')
+    .replace(/\{a\}/g, a || '').replace(/\{b\}/g, b || '');
+  const scenes = [];
+  const name = returned.name;
+  // Whoever reaches her first: somebody already in the room, never herself.
+  const others = (living || []).filter(n => n !== name);
+  const greeter = others.length ? others[Math.floor(rng() * others.length)] : null;
+
+  const push = (id, tierId, players, extra = {}) => {
+    const b = beatById(id);
+    const t = b?.tiers?.find(x => x.id === tierId) || b?.tiers?.[0];
+    if (!t?.lines?.length) return;
+    const line = t.lines[Math.floor(rng() * t.lines.length)];
+    scenes.push({
+      step: 'return',
+      kind: `return:${b.id}`,
+      data: { beat: b.id, tier: t.id, players, note: t.note, ...extra },
+      text: fill(line, players[0], players[1]),
+    });
+  };
+
+  /* WHICH KIND OF RETURN IT IS, read off how long she has been gone. The
+     early boot nobody has seen since the premiere is walking back in against
+     a different room from the queen who left last week. */
+  const gap = Number(returned.gap) || 0;
+  const howLong = gap >= 4 ? 'early' : gap >= 2 ? 'mid' : 'late';
+
+  push('return-door', 'door', []);
+  push('return-walk', howLong, [name]);
+  push('return-room', 'room', [name, greeter].filter(Boolean));
+  push('return-rule', 'rule', [name], { honoured: returned.honoured });
+  return scenes;
+}
+
 function beat(state, row, cast) {
   state.storylines = recordBeat(state.storylines || [], {
     episode: row.num, row, state, cast,
@@ -588,7 +641,12 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   // A double elimination takes two queens in one night, so it SHORTENS the run
   // by a week exactly as a free week lengthens it.
   const scheduledDoubles = pins.filter(x => x.doubleElimination && !x.noElimination).length;
-  const weeks = Math.max(1, eliminationsNeeded + scheduledFree - scheduledDoubles);
+  /* A RETURNING QUEEN IS ANOTHER BODY TO GET RID OF, so she lengthens the
+     season exactly the way a free week does and for a more obvious reason:
+     the room she walks into is one bigger than the maths was built for. */
+  const scheduledReturns = pins.filter(x => x.returnee).length;
+  const weeks = Math.max(1,
+    eliminationsNeeded + scheduledFree + scheduledReturns - scheduledDoubles);
   // Episode one to the crowning, so an arc can ask "how far through are we".
   const totalEpisodes = weeks + 1;
   const schedule = buildSchedule({
@@ -632,8 +690,56 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
        REFUSED ON THE LAST ELIMINATION WEEK for the same reason a double
        shantay is: there would be no week left to repay it in. */
     const scheduledNoElim = !!week.noElimination && !lastElimWeek;
-    rows.push(beat(state, runDragWeek(state, weekCfg(week, config, num++, {
+
+    /* ── A QUEEN COMES BACK ──
+       Resolved BEFORE the week runs, because she has to be in the room for
+       the whole of it — she takes the mini, the maxi, the runway and the
+       call like anybody else, and a return that only appeared in the
+       narration would be a queen the chart does not have.
+       The author's pick wins when it is available. It can fail to be: a
+       season is booked before it is played, so the queen chosen on episode
+       six may still be competing when episode six arrives. Falling back to
+       a random eliminated queen is better than doing nothing, and the row
+       records which of the two happened so the screen can say so. */
+    let returned = null;
+    if (week.returnee && state.out.length) {
+      const wanted = week.returneeName || null;
+      const gone = [...state.out];
+      const exact = wanted && gone.includes(wanted) ? wanted : null;
+      /* WEIGHTED TOWARD WHAT SHE LEFT BEHIND. An early boot with a win on
+         her record has more to prove than a queen who went out in the
+         bottom every week, and the show would bring the first one back.
+         Read off the record the season already wrote. */
+      const weightOf = n => {
+        const rec = state.record?.[n] || [];
+        const wins = rec.filter(r => r === 'WIN').length;
+        const highs = rec.filter(r => r === 'HIGH').length;
+        const early = Math.max(0, 6 - rec.length);
+        return 1 + wins * 3 + highs * 1.5 + early * 0.6;
+      };
+      const pickWeighted = () => {
+        const total = gone.reduce((t, n) => t + weightOf(n), 0);
+        let roll = rng() * total;
+        return gone.find(n => (roll -= weightOf(n)) <= 0) || gone[gone.length - 1];
+      };
+      const who = exact || pickWeighted();
+      if (who) {
+        state.out = state.out.filter(n => n !== who);
+        state.living = [...state.living, who];
+        const wentOut = (state.record?.[who] || []).length;
+        returned = {
+          name: who, asked: wanted || null, honoured: !!exact,
+          // How long she has been gone, in episodes — the walk-back reads it.
+          gap: Math.max(0, num - 1 - wentOut),
+        };
+        state.returns = [...(state.returns || []), { ...returned, episode: num }];
+      }
+    }
+
+    const weekRow = beat(state, runDragWeek(state, weekCfg(week, config, num++, {
       totalEpisodes,
+      // She competes on her return night and cannot go home on it.
+      ...(returned ? { returnedQueen: returned.name } : {}),
       ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
       ...(scheduledNoElim ? { noElimination: true } : {}),
       // A DOUBLE ELIMINATION IS THE AUTHOR'S, pinned on the schedule the same
@@ -642,7 +748,20 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
       ...(week.doubleElimination && !scheduledNoElim
         ? { doubleElimination: true, formatNote: 'double-elimination' } : {}),
       finaleSize,
-    }), ctx), cast));
+    }), ctx), cast);
+    /* THE RETURN GOES ON THE FRONT OF THE NIGHT. Written after the week is
+       built rather than inside runDragWeek, so the week engine does not have
+       to learn about a twist that only changes who is in the room — and the
+       scenes land before the cold open, which is where a queen walking back
+       through the door actually happens. */
+    if (returned) {
+      weekRow.dr.returned = returned;
+      weekRow.dr.scenes = [
+        ...returnScenes(returned, { living: state.living, rng }),
+        ...(weekRow.dr.scenes || []),
+      ];
+    }
+    rows.push(weekRow);
     // No debt is taken on: the loop simply keeps going until the room is
     // finale-sized, so a free week is an extra week.
   }

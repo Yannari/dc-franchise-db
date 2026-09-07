@@ -57,6 +57,14 @@ function _twistsToSchedule() {
     if (!Number.isInteger(ep) || ep < 1) continue;
     const row = byEp.get(ep) || { episode: ep };
     row[t.episodeField] = true;
+    /* AND ANYTHING THE BOOKING ITSELF CHOSE. Every drag twist until now was
+       a boolean — it happens this week or it does not — and a returning
+       queen has to say WHO. `dataFields` on the catalogue entry names the
+       keys to carry across, so a fifth twist that needs an option is a
+       catalogue row and no change here. */
+    for (const k of t.dataFields || []) {
+      if (b[k] !== undefined && b[k] !== '') row[k] = b[k];
+    }
     byEp.set(ep, row);
   }
   // Anything pinned directly on drSchedule (a challenge, a guest) survives,

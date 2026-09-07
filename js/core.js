@@ -934,6 +934,14 @@ export const TWIST_CATALOG = [
   { id:'dr-smackdown', emoji:'\u{1F5E1}️', name:'LaLaPaRUza Smackdown', format:'drag-race',
     category:'returns', phase:'post-merge', engineType:'dr-smackdown', seasonWide:true,
     desc:'A reunion with a scoreboard. Every queen already sent home this season comes back one episode before the crowning and lip syncs the others out in rounds until one is left standing, and she takes a title of her own. Nobody re-enters the competition and no placement changes — this is the season’s eliminated cast getting the stage back for a night. Booked once per season rather than against an episode: it always sits directly before the finale.' },
+  /* THE ONE THAT PUTS SOMEBODY BACK IN. The smackdown gives the eliminated
+     cast a night; this gives one of them the competition back. dataFields
+     carries the booking's own choice through to the engine — every other
+     drag twist is a boolean and this one has to say WHO. */
+  { id:'dr-returnee', emoji:'\u{1F519}', name:'Returning Queen', format:'drag-race',
+    category:'returns', phase:'any', engineType:'dr-returnee', episodeField:'returnee',
+    dataFields:['returneeName'],
+    desc:'A queen already sent home walks back into the werk room and back into the competition. Pick her from the dropdown or leave it on Random and the show decides — weighted toward the queens who went out with the most left to prove. She keeps the record she made before she left, rejoins from that episode, and the season runs ONE EPISODE LONGER because the room she walked into just got bigger. If the queen you picked is somehow still competing when the episode arrives, the show falls back to a random eliminated queen rather than doing nothing.' },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

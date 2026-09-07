@@ -1,4 +1,4 @@
-# Prompt — fill the five empty prose tiers
+# Prompt — fill the empty prose tiers
 
 Paste everything below the line into the writing model.
 
@@ -67,6 +67,27 @@ The entire eliminated cast returning was one paragraph.
 **Eight variants per tier**, and they must differ by *when she went home* —
 that is the whole texture. The early boot nobody has seen since the premiere
 arrives differently from the queen who left last week and has not slept.
+
+### 4. `js/dr/data/returnee-beats.js` — the Returning Queen twist
+
+A queen the show already sent home walks back into the werk room and back
+into the competition. The engine, the twist card, the timeline dropdown and
+the screen are all built; only the prose is empty.
+
+| beat | tiers | what it is |
+|---|---|---|
+| `return-door` | `door` | Something is happening that is not on the schedule. **Do not name her** — naming her here throws away the only surprise the twist has. |
+| `return-walk` | `early`, `mid`, `late` | She walks in. Tiered by how she went out, because that is what she is walking back in against. |
+| `return-room` | `room` | The room reacting. `{a}` is her, `{b}` is the queen who reaches her first. |
+| `return-rule` | `rule` | The host says what is now true: back in, record intact, starting tonight. |
+
+**Six variants per tier.** Read the `writerNote` on each beat in the file —
+especially `return-room`, which is the beat the whole twist turns on and the
+one a lazy version gets wrong by making the room simply happy. It is good news
+for her friends and bad news for everybody's odds, and most of them feel both
+and can only show one. And it is bad news in a specific way: every queen still
+standing survived a night this one did not, and the show has just decided that
+did not count.
 
 ## Rules — enforced by tests, the build fails on any of them
 

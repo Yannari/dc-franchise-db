@@ -154,7 +154,7 @@ export const WERK_EVENTS = [
       "{b}’s wig is not happening. The lace is lifting, the part is crooked, and the glue is not setting. {a} watches for about thirty seconds, puts down her own brush, walks over and says \"sit.\" She takes the whole thing off, reglues the lace, pins the back, and hands {b} a wig that looks like it grew there.",
       "The plan was a high pony and the high pony has fallen and it is not going back up. {b} is holding it in one hand and staring at it like it owes her money. {a} comes over, looks at what is left, and says \"we are doing a bob now\" — cuts it, styles it, pins it, done. It looks better than the pony would have.",
       "{b}’s wig cap is showing through the front and she does not know how to fix it. {a} sits her down, pulls the hairline forward, blends the lace with concealer and a tiny brush, and talks her through it so she can do it herself next time. She will not be able to do it herself next time, but it is kind that {a} pretends she will.",
-      "\"Your hair looks insane,\" {a} says, and she does not mean it as a compliment. She takes {b}’s wig off the block, resets the curl pattern with a flat iron and three pins, and puts it on {b}’s head like she is crowning someone. {b} looks in the mirror and for the first time tonight she looks like she might survive the runway.",
+      "\"Your hair looks insane,\" {a} says, and she does not mean it as a compliment. She lifts {b}’s wig off its styling head, resets the curl pattern with a flat iron and three pins, and puts it on {b}’s head like she is crowning someone. {b} looks in the mirror and for the first time tonight she looks like she might survive the runway.",
     ],
   }),
 
@@ -191,7 +191,7 @@ export const WERK_EVENTS = [
     lines: [
       "{b} goes to the bathroom and {a} waits about four seconds before turning to the nearest queen and saying what she has been holding in all morning. It is not vicious — it is precise, which is worse. She lays out exactly what is wrong with {b}’s runway, {b}’s attitude, and {b}’s chances, and she does it like she is being helpful.",
       "\"I am just going to say it.\" {a} checks the doorway, confirms {b} is not in it, and says the thing. The room listens. Some of them agree. None of them will repeat it. {a} knows that, which is why she said it here and not to {b}’s face.",
-      "{a} does not even lower her voice, which is the brazen part. She talks about {b}’s performance like {b} is a contestant on a different show she is reviewing from home. Two queens laugh. One does not. {a} does not notice which one.",
+      "{a} does not even lower her voice, which is the brazen part. She talks about {b}’s performance like {b} is somebody on a different show she is reviewing from home. Two queens laugh. One does not. {a} does not notice which one.",
       "The second {b} steps out, {a} says \"am I the only one seeing this?\" and then answers her own question for about ninety seconds. She is funny about it, which makes it land harder, because the room is laughing at things they probably should not be laughing at.",
     ],
   }),

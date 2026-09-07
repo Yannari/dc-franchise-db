@@ -29,6 +29,17 @@ import { canScheme } from './rules.js';
 const ARC_BONUS = 2.5;
 /** How much a scene already used this season is discouraged. Not banned. */
 const REPEAT_PENALTY = 0.08;
+/**
+ * How hard the room pushes toward a queen nobody has seen tonight.
+ *
+ * MEASURED, and the reason this exists: drawing the subject at random gave 32%
+ * of a fourteen-queen cast ZERO scenes in a given episode — four or five queens
+ * silent every week — and fourteen queens across twenty seasons who never
+ * appeared once all season. That is not an edit, it is a dice roll. A queen who
+ * gets nothing should be the filler edit, chosen because nobody is watching
+ * her, and star power decides that below rather than chance.
+ */
+const UNSEEN_BONUS = 6;
 
 const stat = (p, k) => {
   const n = Number(p?.stats?.[k]);
@@ -89,7 +100,30 @@ function render(event, facts, rng) {
  * rather than an error: a quiet morning is allowed. The caller decides whether
  * to try again for a second scene.
  */
-export function drawWerkScene({ slot, living, players, state, storylines, rng, ctx, used = new Set() }) {
+/**
+ * Who this scene is about.
+ *
+ * Weighted toward whoever has not been on screen tonight, then by how much the
+ * camera wants her. The unseen bonus is much the larger term, so the room
+ * covers itself before it plays favourites — but a low-star queen benefits from
+ * it less, which is how a filler edit happens on purpose rather than by
+ * accident.
+ */
+function pickSubject(pool, seen, state, rng) {
+  const weights = pool.map(n => {
+    const times = seen[n] || 0;
+    const unseen = times === 0 ? UNSEEN_BONUS : 1 / (1 + times);
+    const star = 0.6 + ((state.star?.[n] ?? 5) / 10) * 0.8;
+    return { n, w: unseen * star };
+  });
+  const total = weights.reduce((t, x) => t + x.w, 0);
+  let roll = rng() * total;
+  return (weights.find(x => (roll -= x.w) <= 0) || weights[0]).n;
+}
+
+export function drawWerkScene({
+  slot, living, players, state, storylines, rng, ctx, used = new Set(), seen = {},
+}) {
   if (!living || living.length < 1) return null;
 
   const candidates = [];
@@ -97,12 +131,13 @@ export function drawWerkScene({ slot, living, players, state, storylines, rng, c
     if (ev.slot !== slot) continue;
 
     // A pair event needs somebody to be with. Rather than testing every pair
-    // in the room, which would make one well-connected queen dominate the
-    // season, each event gets one shuffled shot at a partner.
-    const a = living[Math.floor(rng() * living.length)];
+    // in the room, which would make one well-connected queen dominate, each
+    // event gets one shot at a subject and a partner — both drawn toward
+    // whoever has not been seen yet tonight.
+    const a = pickSubject(living, seen, state, rng);
     const others = living.filter(n => n !== a);
     const b = ev.cast === 'pair'
-      ? (others.length ? others[Math.floor(rng() * others.length)] : null)
+      ? (others.length ? pickSubject(others, seen, state, rng) : null)
       : null;
     if (ev.cast === 'pair' && !b) continue;
 
@@ -170,19 +205,35 @@ export function applyWerkScene(scene, ctx) {
 /**
  * Every werk room scene for one week, in slot order.
  *
- * `perSlot` is how many scenes each slot tries for. Four slots at up to two
- * scenes is the ~45 draws a season the pool was measured against.
+ * THE SCENE COUNT FOLLOWS THE ROOM. A fixed two per slot gave eight scenes to
+ * cover fourteen queens, and a third of the cast was silent every episode.
+ *
+ * Checked against a real episode rather than guessed: Wikipedia's summary of
+ * "Draggle Rock" lists five distinct werk room blocks — the return after an
+ * elimination, the mini challenge, picking teams and building characters, the
+ * host's walkthrough, and elimination-day preparation — and each block holds
+ * several separate conversations. So the honest target is roughly one scene
+ * per queen, which for a full cast is a dozen or more beats spread across the
+ * four slots, not eight.
  */
-export function runWerkRoom({ slots, living, players, state, storylines, rng, ctx, perSlot = 2 }) {
+export function runWerkRoom({ slots, living, players, state, storylines, rng, ctx, perSlot = null }) {
   const scenes = [];
+  const seen = {};
   const used = state._drWerkUsed instanceof Set
     ? state._drWerkUsed
     : (state._drWerkUsed = new Set(state._drWerkUsedList || []));
 
+  // Enough for everybody to get a moment, spread across the slots, with a
+  // floor so a top four still has a room worth watching.
+  const perSlotN = perSlot ?? Math.max(2, Math.ceil((living.length + 2) / slots.length));
+
   for (const slot of slots) {
-    for (let i = 0; i < perSlot; i++) {
+    for (let i = 0; i < perSlotN; i++) {
+      // Once every queen has had a scene, stop padding this slot.
+      if (i >= 2 && living.every(n => seen[n])) break;
+
       const scene = drawWerkScene({
-        slot, living, players, state, storylines, rng, ctx, used,
+        slot, living, players, state, storylines, rng, ctx, used, seen,
       });
       if (!scene) break;
       // A slot never runs the same scene twice in one night, whatever the
@@ -190,6 +241,7 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
       if (scenes.some(s => s.id === scene.id)) continue;
       scenes.push(scene);
       used.add(scene.id);
+      for (const n of scene.players) seen[n] = (seen[n] || 0) + 1;
     }
   }
 

@@ -159,6 +159,7 @@ export function generateDragSummaryText(row) {
   // What the challenge actually did. Without this the maxi engine is invisible
   // — the readout would print a challenge name and a rank and nothing that
   // happened in between, which is not something anybody can check by reading.
+  _textWerkRoom(dr, ln);
   _textAssignment(dr, ln);
   _textEvents(dr, ln);
 
@@ -205,6 +206,37 @@ export function generateDragSummaryText(row) {
 // the output is how every prose and balance bug in this project has been
 // found. A screen that prints a challenge name and a final rank with nothing
 // in between cannot be checked by anybody.
+
+/**
+ * The room, scene by scene.
+ *
+ * A scene with its lines written prints the prose. One still waiting on a
+ * writer prints its NOTE in brackets, so a half-written pool reads as a
+ * storyboard rather than as a blank — and so the gap is visible every time
+ * somebody dumps a season instead of only when a test is run.
+ */
+function _textWerkRoom(dr, ln) {
+  const werk = (dr.scenes || []).filter(s => String(s.kind || '').startsWith('werk:'));
+  if (!werk.length) return;
+  const SLOT_NAME = {
+    'cold-open': 'COLD OPEN', 'werk-morning': 'WERK ROOM — MORNING',
+    prep: 'WERK ROOM — WORKING', 'werk-elim-day': 'WERK ROOM — ELIMINATION DAY',
+  };
+  let current = null;
+  for (const sc of werk) {
+    if (sc.step !== current) {
+      current = sc.step;
+      ln('');
+      ln(SLOT_NAME[sc.step] || String(sc.step).toUpperCase());
+    }
+    const who = (sc.data?.players || []).join(' & ');
+    if (sc.text) {
+      ln(`  ${sc.text}`);
+    } else {
+      ln(`  [${who}] ${sc.data?.note || sc.kind}`);
+    }
+  }
+}
 
 /** How the night was handed out: parts, teams, characters, materials. */
 function _textAssignment(dr, ln) {

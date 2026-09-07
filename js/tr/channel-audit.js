@@ -356,6 +356,34 @@ const CHANNELS = {
    * of prose will make one admissible.
    */
   'synthetic-alibi-noisy': (S, rng) => _alibi(S, rng, 0.30, 0.12),
+
+  /**
+   * THE REAL ONE, as shipped: js/tr/castle/alibi.js firing in real seasons.
+   *
+   * Read off the scene record rather than off `gs.tr._alibiFindings`, because
+   * the audit plays many seasons and `gs` holds only the last — the same trap
+   * that silently zeroed two measurements in this project already. The scene
+   * and the finding are written in the same branch, so the castle event log is
+   * an exact record of what was found.
+   *
+   * The synthetic above says what this SHAPE is worth at 30/12. This says what
+   * the shipped event is actually worth, which is the number that matters.
+   */
+  'castle-alibi': (S) => {
+    const out = [];
+    for (const L of (S.log || [])) {
+      const living = S.livingAt(L.ep);
+      if (!living.length) continue;
+      for (const ce of (L.castleEvents || [])) {
+        if (ce.event?.id !== 'susp-account-of-the-night') continue;
+        if ((ce.consequences || {}).branch !== 'could-not-place-them') continue;
+        const subject = ce.consequences.topic;
+        if (!subject || !living.includes(subject)) continue;
+        out.push({ ep: L.ep, subject });
+      }
+    }
+    return out;
+  },
 };
 
 /**

@@ -636,6 +636,9 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // The alibi scene's one branch that costs the two people doing the checking:
+  // they could not reconstruct their own night, let alone anybody else's.
+  'two-accounts',
   // ── THE CONFRONTATION BATCH (confrontation.js, 2026-09-06) ──────────
   //
   // Eight events taking the thinnest family in the pool from 12 to 20,
@@ -1073,6 +1076,14 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── THE ALIBI SCENE (js/tr/castle/alibi.js) ─────────────────────────
+  //
+  // Including `could-not-place-them`, which SOUNDS like the adverse one and is
+  // not: `_tone` governs how the composer frames the consequence between the
+  // two people IN the scene, and those two agree — it is the absent third
+  // party the finding costs. The sibling `susp-timeline-crosscheck` classifies
+  // its own `did-not-line-up` benign for the identical reason.
+  'could-not-place-them', 'accounted-for', 'nobody-saw-anything',
   // ── AND THE NINE OF THE SAME EIGHT THAT PAY NOTHING OR PAY UP ───────
   //
   // An apology taken after being refused, two people admitting the same

@@ -23,7 +23,8 @@ import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
 import { traitorsRoundBallots, traitorsBeliefSnapshot, TRAITORS_FORMAT } from './export.js';
 // The show's two exit words, from the registry. Never written as literals.
 import { exitVerbs, roundExits } from '../shows.js';
-import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
+import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence,
+  alibiEvidence } from './deduction.js';
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
@@ -87,6 +88,7 @@ import '../tr/castle/group.js';
 // ten of the eleven (family x window) cells with no advancer at all are in
 // those two columns. These five refuse to fire without a story to continue.
 import '../tr/castle/carry-on.js';
+import '../tr/castle/alibi.js';
 // The morning nobody was taken. Every other dawn scene in the pool needs a
 // body; a blocked night has none, and had no scene at all.
 import '../tr/castle/quiet-night.js';
@@ -2807,6 +2809,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     ...runCastlePhase('breakfast-fallout', ep, castleRng), // dawn
     ...runCastlePhase('morning-life', ep, castleRng),      // morning + journey-out
   ];
+  // EVIDENCE SOURCE 5, after the phase that can produce a finding rather than
+  // inside the array that collects the scenes — it returns beliefs, not
+  // castle events, and splicing it in there would have put its return value
+  // into the episode's scene list. Takes its acceptance rolls off the CASTLE
+  // stream, so it displaces no game draw (the same arrangement missionEvidence
+  // has on the mission stream). See `alibiEvidence` in js/tr/deduction.js.
+  alibiEvidence(ep, castleRng);
   // The mission sits BETWEEN the two journey windows because that is what the
   // journey is: out to the mission, and back from it. Night one has one too —
   // the show does — even though it has no Round Table.
@@ -3003,6 +3012,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // event may read, so running this phase before or after them changes
     // nothing about what it draws.
     castleEvents.push(...runCastlePhase('morning-life', ep, castleRng)); // morning + journey-out
+    // EVIDENCE SOURCE 5, immediately after the phase that can produce a
+    // finding, and taking its acceptance rolls off the CASTLE stream — so it
+    // displaces no game draw, exactly like missionEvidence on the mission
+    // stream. See `alibiEvidence` in js/tr/deduction.js.
+    alibiEvidence(ep, castleRng);
     const mission = runMission(ep, missionRng);
     const armoury = runArmoury(ep, mission, missionRng);   // see night one
     // Source 4. Same round as the mission it reads, before the table it feeds.

@@ -831,6 +831,59 @@ const M = {
  * off precisely the innocent people the evidence indicts. Deleting that shape
  * from ballotEvidence was worth 0.20-0.23x of lift. Do not reintroduce it here.
  */
+/**
+ * EVIDENCE SOURCE 5: an hour somebody could not account for.
+ *
+ * `js/tr/castle/alibi.js` runs a morning reconstruction of the night and, when
+ * it finds a gap, records a FINDING on `gs.tr._alibiFindings`. It writes no
+ * belief — no castle file may (tests/tr-castle-belief-gate.test.js) — so this
+ * is where the observation becomes an inference, in the file that owns belief
+ * writes and beside the other four passes.
+ *
+ * ── WHY THIS ONE IS ADMISSIBLE WHEN THE REST OF THE CASTLE IS NOT ─────
+ *
+ * Every other castle suspicion scene chooses who it is about at random and
+ * decides the outcome from stats, so its subject is uncorrelated with the
+ * truth: priced, that channel is an ANTI-SIGNAL at edge -0.24, worse than its
+ * own contentless twin. This scene's OUTCOME reads `murderBallots` — who was
+ * actually awake choosing a name — so a gap is genuinely more likely to be
+ * found in a Traitor's night. The synthetic at the same catch and
+ * false-positive rates clears the gate at +0.198 on both disjoint blocks. See
+ * tests/tr-castle-channel-pricing.test.js for both numbers.
+ *
+ * ── ONLY THE TWO PEOPLE WHO DID THE CHECKING LEARN IT ────────────────
+ *
+ * Not the room. This was a conversation between two players over breakfast,
+ * not an announcement, and the difference is the whole reason the channel is
+ * safe to open: a room-wide write would put a Traitor-enriched belief into
+ * fifteen boards a night and re-sharpen the early game, which is precisely the
+ * curve the calibration bands protect. It reaches anybody else the way
+ * everything else does — by being repeated, through the existing propagation.
+ *
+ * WEIGHT. Below the ballot channels on purpose. This is two people failing to
+ * place somebody for an hour; the ballot record is the whole room's public
+ * behaviour over a week, and a morning's uncertainty must not outrank it.
+ */
+const ALIBI_GAP = 0.34;
+
+export function alibiEvidence(ep, rng = Math.random) {
+  const findings = (gs.tr?._alibiFindings || []).filter(f => f.ep === ep);
+  if (!findings.length) return [];
+  const living = gs.activePlayers || [];
+  const formed = [];
+  for (const f of findings) {
+    if (!living.includes(f.subject)) continue;
+    for (const observer of (f.checkers || [])) {
+      if (observer === f.subject || !living.includes(observer)) continue;
+      const belief = learn(observer, alignmentFactId(f.subject), {
+        source: f.source, sourceType: 'deduced', confidence: ALIBI_GAP, ep, rng,
+      });
+      if (belief) formed.push({ observer, subject: f.subject });
+    }
+  }
+  return formed;
+}
+
 export function murderEvidence(ep, rng = Math.random) {
   const rounds = gs.tr?.rounds || [];
   const round = rounds[rounds.length - 1];

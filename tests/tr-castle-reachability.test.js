@@ -581,7 +581,11 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(194);
+    // 194 -> 195: js/tr/castle/alibi.js, the first castle event whose OUTCOME is
+    // coupled to something that really happened (the conclave roll). See
+    // tests/tr-castle-channel-pricing.test.js for why that distinction is the
+    // whole point of it.
+    expect(EVENTS.length).toBe(195);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -2136,6 +2140,10 @@ const BRANCHES = [
   'romance-walked-together:kept-apart-on-purpose',
   'romance-walked-together:the-column-saw-it',
   'romance-walked-together:walked-the-whole-way',
+  'susp-account-of-the-night:accounted-for',
+  'susp-account-of-the-night:could-not-place-them',
+  'susp-account-of-the-night:nobody-saw-anything',
+  'susp-account-of-the-night:two-accounts',
   'susp-alliance-shape-guess:agreed-the-map',
   'susp-alliance-shape-guess:could-not-place-one',
   'susp-alliance-shape-guess:drew-it-alone',

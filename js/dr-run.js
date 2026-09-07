@@ -21,6 +21,7 @@
 import { gs, players, seasonConfig, seasonFormat } from './core.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
+import { updateEditLayer } from './edit-layer.js';
 
 export const isDragSeason = () => seasonFormat(seasonConfig) === 'drag-race';
 
@@ -109,9 +110,20 @@ export function simulateDragEpisode() {
 
   (gs.episodeHistory ||= []).push(row);
   if (gs.dr) (gs.dr.episodes ||= []).push(row);
+  // Set BEFORE the edit layer runs: it bills screen time against the active
+  // roster, and a queen who is not on it is billed nothing.
   gs.activePlayers = [...(row.dr?.living || [])];
   gs.episode = row.num;
   gs.eliminated = [...(gs.eliminated || []), ...row.exits.map(x => x.name)];
+
+  /* THE AUDIENCE PULSE, which this show was not calling at all. The edit layer
+     is where the franchise decides who a season made a star of, and both other
+     shows have fed it since their run loops were written. A drag season fed it
+     nothing — so every queen read "Invisible" and the pulse drew a season of
+     blank bars. The reader existed; the caller did not.
+     Wrapped because the edit is commentary on the run and must never be able
+     to take the run down with it. */
+  try { updateEditLayer(row); } catch { /* commentary, never the season */ }
 
   if (row.dr?.finale) {
     gs.phase = 'complete';

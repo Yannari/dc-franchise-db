@@ -51,6 +51,8 @@ function _ensureEdit() {
 // localStorage. Re-exported here because callers already import it from here.
 export { classifyEventTone } from './tone.js';
 import { classifyEventTone as _tone } from './tone.js';
+// The scene-cast extractor, shared so the pulse and the aftermath agree.
+import { dragSceneCast } from './dr/aftermath.js';
 
 function _blank() { return { units: 0, tones: Object.fromEntries(TONES.map(t => [t, 0])) }; }
 
@@ -93,6 +95,47 @@ function _deriveScreenTime(ep, active) {
     if (det) { add(det.holder, 4, 'strategic'); add(det.replacement, 2, 'emotional'); }
     const box = (ep.acts || []).find(a => a.type === 'pandoras-box');
     if (box?.opened) add(box.hoh, 2, 'strategic');
+  }
+
+  /* ── DRAG RACE: the scenes ARE the edit ──
+     Everything above reads a camp event, an act, a ballot or a challenge
+     score, and a runway night records none of those — so without this branch
+     every queen scored zero units, every read came back "Invisible", and the
+     audience pulse drew a whole season of blank bars. The information is all
+     there; it is just kept as scenes.
+     Billed the way the show bills them: being in a scene is being on screen,
+     the top and bottom of the call carry the night, a flagged performance is
+     the episode's thumbnail. `_tone` reads the scene kind unchanged —
+     `werk:idea-theft-accusation` and `untucked:the-read-lands` classify
+     without anyone writing a per-show tone table. */
+  const dr = ep.dr;
+  if (dr) {
+    const castSet = new Set(active);
+    for (const scene of dr.scenes || []) {
+      const tone = _tone({ type: scene.kind, badgeText: scene.data?.note || '' });
+      // ONE extractor, shared with the aftermath. See dragSceneCast: a local
+      // flat key list here missed the finale entirely.
+      const present = dragSceneCast(scene, castSet);
+      // Villainy belongs to the PERPETRATOR, actor-first, exactly as above.
+      [...present].forEach((n, i) => add(n, 1, tone === 'villainous' && i > 0 ? 'emotional' : tone));
+    }
+    for (const n of dr.call?.win || []) add(n, 3, 'heroic');
+    for (const n of dr.call?.high || []) add(n, 1.5, 'neutral');
+    for (const n of dr.call?.low || []) add(n, 1, 'emotional');
+    for (const n of [...(dr.call?.atRisk || []), ...(dr.call?.bottom || [])]) add(n, 3, 'emotional');
+    for (const [n, perf] of Object.entries(dr.performances || {})) {
+      if (perf?.moment) add(n, 3, 'heroic');
+    }
+    if (dr.lipsync?.winner) add(dr.lipsync.winner, 2, 'heroic');
+    // THE CROWNING, billed as the episode it is. A finale has no call and no
+    // maxi, so without this the last night of the season scores on scenes
+    // alone — five of them, against a hundred in an ordinary week.
+    const fin = dr.finale;
+    if (fin) {
+      for (const n of fin.placements || []) add(n, 4, 'emotional');
+      if (fin.runnerUp) add(fin.runnerUp, 3, 'emotional');
+      if (fin.winner) add(fin.winner, 8, 'heroic');
+    }
   }
 
   if (typeof ep.immunityWinner === 'string') add(ep.immunityWinner, 3, 'strategic');

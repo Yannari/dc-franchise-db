@@ -323,48 +323,81 @@ describe('the finale counts the track record', () => {
 // ══════════════════════════════════════════════════════════════════════
 // A double shantay is a debt, not a free week
 // ══════════════════════════════════════════════════════════════════════
-describe('the finale is the size the format says', () => {
-  /* LATENT UNTIL SOMETHING SHIFTED THE RNG. A double shantay sends nobody
-     home, the schedule is a fixed number of weeks, and nothing compensated —
-     so a season that produced one late walked into a top four with five
-     queens in it. It surfaced only when new werk room events moved the seeded
-     stream and one existing season started producing one; the old assertion
-     was pinned to a stream rather than to the rule. */
-  it('pays back every double shantay and never arrives oversized', () => {
-    const WANT = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
-    let doubles = 0; let paid = 0; let seasons = 0;
+describe('a night nobody leaves makes the season longer', () => {
+  /* IT USED TO MAKE THE SEASON SHORTER and then claw the elimination back
+     with a double the following week. That raised a fair question — who
+     decides when the double lands? — with a poor answer: nobody, it was
+     always the very next week, measured at a gap of 1 in all ten repayments
+     across 300 seasons. A season that keeps fourteen queens goes back to
+     fourteen and runs one episode longer, and a double elimination is a thing
+     an author schedules rather than a correction the engine applies. */
+  const WANT = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
+
+  it('never arrives at the finale oversized, whatever happens on the way', () => {
+    let doubles = 0; let seasons = 0;
     for (let s = 0; s < 30; s++) {
       for (const type of Object.keys(WANT)) {
         const out = playDragSeason({ cast: cast(14), seed: s, config: { drFinale: type } });
         seasons++;
         doubles += out.rows.filter(r => r.dr.lipsync?.call === 'double-shantay').length;
-        paid += out.rows.filter(r => r.dr.lipsync?.paidBack).length;
         expect(out.state.living.length, `seed ${s} ${type} reached the finale oversized`)
           .toBe(WANT[type]);
+        // Nothing is repaid any more, so nothing may claim to be.
+        expect(out.rows.some(r => r.dr.lipsync?.paidBack), 'a payback happened').toBe(false);
       }
     }
     expect(seasons).toBe(120);
-    // The mechanism has to be REACHED, or this test passes by never firing.
+    // The mechanism has to be REACHED or this passes by never firing.
     expect(doubles, 'no double shantay occurred, so nothing was tested')
       .toBeGreaterThan(0);
-    expect(paid, 'a double shantay happened and was never paid back').toBe(doubles);
   });
 
-  it('never keeps both on the last elimination week', () => {
-    // There is no week left to send two home in, so the debt could not be
-    // repaid — and the real show does not do one before a finale either.
-    for (let s = 0; s < 25; s++) {
-      const out = playDragSeason({ cast: cast(14), seed: s, config: { drFinale: 'top4' } });
-      const elim = out.rows.filter(r => !r.dr.finale);
-      const last = elim[elim.length - 1];
-      expect(last.dr.lipsync?.call, `seed ${s}`).not.toBe('double-shantay');
-    }
+  it('runs one episode longer for each free week', () => {
+    const base = playDragSeason({ cast: cast(14), seed: 4 });
+    const one = playDragSeason({
+      cast: cast(14), seed: 4, config: { drSchedule: [{ episode: 4, noElimination: true }] },
+    });
+    const two = playDragSeason({
+      cast: cast(14), seed: 4,
+      config: { drSchedule: [{ episode: 4, noElimination: true }, { episode: 7, noElimination: true }] },
+    });
+    expect(one.rows.length, 'one free week did not add an episode')
+      .toBe(base.rows.length + 1);
+    expect(two.rows.length, 'two free weeks did not add two')
+      .toBe(base.rows.length + 2);
+    /* AND THE ROOM DOES NOT SHRINK ON IT. Fourteen queens go into the free
+       week and fourteen come out — which is the whole request. */
+    const before = one.rows.find(r => r.num === 3);
+    const free = one.rows.find(r => r.num === 4);
+    expect(free.exits.length, 'the free week sent somebody home').toBe(0);
+    expect(free.dr.living.length, 'the room shrank on a night nobody left')
+      .toBe(before.dr.living.length);
+    for (const o of [base, one, two]) expect(o.state.living.length).toBe(4);
+  });
+
+  it('a scheduled double elimination takes two and shortens the run', () => {
+    const base = playDragSeason({ cast: cast(14), seed: 4 });
+    const out = playDragSeason({
+      cast: cast(14), seed: 4, config: { drSchedule: [{ episode: 5, doubleElimination: true }] },
+    });
+    expect(out.rows.length, 'the season did not shorten').toBe(base.rows.length - 1);
+    const week = out.rows.find(r => r.num === 5);
+    expect(week.exits.length, 'only one queen went home').toBe(2);
+    expect(week.dr.lipsync.call).toBe('double-elimination');
+    expect(out.state.living.length).toBe(4);
+  });
+
+  it('a free week and a double elimination cancel out', () => {
+    const base = playDragSeason({ cast: cast(14), seed: 4 });
+    const out = playDragSeason({
+      cast: cast(14), seed: 4,
+      config: { drSchedule: [{ episode: 4, noElimination: true }, { episode: 7, doubleElimination: true }] },
+    });
+    expect(out.rows.length).toBe(base.rows.length);
+    expect(out.state.living.length).toBe(4);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════
-// A week that is not shaped like the others has to SAY so
-// ══════════════════════════════════════════════════════════════════════
 describe('the format is announced', () => {
   const noteOn = row => (row.dr.scenes || []).find(s => s.kind === 'stage:format-note');
 
@@ -398,7 +431,7 @@ describe('the format is announced', () => {
      production announcing beforehand that the door stays shut. It costs the
      season an elimination and takes on the same debt, repaid by a later
      double — otherwise the cast maths lands a top four with five in it. */
-  it('runs a scheduled non-elimination week and repays it later', () => {
+  it('announces a scheduled non-elimination week', () => {
     for (const at of [3, 5, 6]) {
       const { rows } = playDragSeason({
         cast: cast(12), seed: 4, config: { drSchedule: [{ episode: at, noElimination: true }] },
@@ -406,12 +439,21 @@ describe('the format is announced', () => {
       const week = rows.find(r => r.num === at);
       expect(week.exits.length, `episode ${at} still sent somebody home`).toBe(0);
       expect(noteOn(week)?.data?.tier, `episode ${at} did not announce it`).toBe('no-elimination');
-      // Repaid, and not by the same episode that granted it.
-      const paid = rows.filter(r => r.dr.lipsync?.paidBack);
-      expect(paid.length, 'the free week was never repaid').toBe(1);
-      expect(paid[0].num, 'it repaid itself, so nobody was spared').toBeGreaterThan(at);
+      // Nothing is repaid: the season runs a week longer instead.
+      expect(rows.some(r => r.dr.lipsync?.paidBack), 'a payback happened').toBe(false);
       expect(rows[rows.length - 1].dr.finale.placements.length,
         'the finale came out oversized').toBe(4);
     }
+  });
+
+  it('announces a scheduled double elimination', () => {
+    const { rows } = playDragSeason({
+      cast: cast(12), seed: 4, config: { drSchedule: [{ episode: 5, doubleElimination: true }] },
+    });
+    const week = rows.find(r => r.num === 5);
+    expect(week.exits.length).toBe(2);
+    expect(noteOn(week)?.data?.tier, 'it was never announced').toBe('double-elimination');
+    const call = (week.dr.scenes || []).find(s => s.kind === 'stage:lipsync-call');
+    expect(call.data.tier, 'the call said one queen stays').toBe('double-elimination');
   });
 });

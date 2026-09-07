@@ -118,6 +118,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          it has to survive the build or the schedule entry reaches the season
          loop without it and the twist silently does not happen. */
       ...(pin.noElimination ? { noElimination: true } : {}),
+      ...(pin.doubleElimination ? { doubleElimination: true } : {}),
     });
   }
 
@@ -559,7 +560,25 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     }
   }
 
-  const weeks = episodesFor(cast.length, finaleType);
+  /* A NIGHT THAT SENDS NOBODY HOME MAKES THE SEASON LONGER.
+     It used to make the season SHORTER by one elimination and then claw that
+     back with a double the following week, which raised a fair question —
+     who decides when that double lands? — and had an unsatisfying answer:
+     nobody, it was always the very next week, measured at a gap of 1 in all
+     ten repayments across 300 seasons.
+     A season that keeps fourteen queens goes back to fourteen next week and
+     runs one episode longer. That is what the show does, it needs no
+     scheduling rule, and it makes a non-elimination week a gift rather than
+     a loan. `episodesFor` gives the number of eliminations a cast needs, and
+     the loop below runs until the room is finale-sized however many weeks
+     that takes. */
+  const eliminationsNeeded = episodesFor(cast.length, finaleType);
+  const pins = (config.drSchedule || []).filter(Boolean);
+  const scheduledFree = pins.filter(x => x.noElimination).length;
+  // A double elimination takes two queens in one night, so it SHORTENS the run
+  // by a week exactly as a free week lengthens it.
+  const scheduledDoubles = pins.filter(x => x.doubleElimination && !x.noElimination).length;
+  const weeks = Math.max(1, eliminationsNeeded + scheduledFree - scheduledDoubles);
   // Episode one to the crowning, so an arc can ask "how far through are we".
   const totalEpisodes = weeks + 1;
   const schedule = buildSchedule({
@@ -571,19 +590,27 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   });
 
   const finaleSize = FINALE_SIZE[finaleType] || 4;
-  for (const sch of schedule) {
+  /* THE SCHEDULE CAN RUN OUT AND THE SEASON CANNOT. A double shantay is
+     decided on the night, so no amount of counting up front predicts it —
+     when the booked weeks are used and the room is still too big, the season
+     books another. Capped so a bug cannot spin here forever. */
+  const spare = () => buildSchedule({
+    episodes: 1, castSize: cast.length, pinned: [], rng, premiere: 'standard',
+  })[0];
+  let guard = 0;
+  for (const sch of [...schedule, ...Array.from({ length: 8 }, () => null)]) {
     if (state.living.length <= finaleSize) break;
+    if (!sch && ++guard > 8) break;
+    const week = sch || spare();
     // A porkchop premiere is a runway with no challenge that still sends
     // somebody home, and the host says so before it starts.
     const porkchopNight = premiere === 'porkchop' && num === 1;
-    /* NO DOUBLE SHANTAY ON THE LAST ELIMINATION WEEK. Keeping both queens
-       here cannot be paid back — there is no week left to send two home in —
-       and the season then walks into a top four with five queens in it. The
-       real show does not do one the week before a finale either.
-       With this and the payback together, 31 double shantays across 360
-       measured seasons leave zero oversized finales; the payback alone left
-       five, every one of them from the final week. */
-    const lastElimWeek = state.living.length - 1 <= finaleSize;
+    /* THE LAST-WEEK RESTRICTION IS GONE WITH THE DEBT. It existed because a
+       double shantay on the final elimination week could not be repaid, and
+       the season walked into a top four with five queens in it. Nothing is
+       repaid now: the season simply runs another week, so the host may keep
+       both whenever the stage earns it. */
+    const lastElimWeek = false;
     /* A SCHEDULED NON-ELIMINATION WEEK. Pinned on `drSchedule` as
        `{ episode, noElimination: true }`. Distinct from a double shantay,
        which is the HOST deciding in the moment that both were too good to
@@ -594,19 +621,20 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
        the cast maths lands a top four with five queens in it.
        REFUSED ON THE LAST ELIMINATION WEEK for the same reason a double
        shantay is: there would be no week left to repay it in. */
-    const scheduledNoElim = !!sch.noElimination && !lastElimWeek;
-    rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, {
+    const scheduledNoElim = !!week.noElimination && !lastElimWeek;
+    rows.push(beat(state, runDragWeek(state, weekCfg(week, config, num++, {
       totalEpisodes,
       ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
       ...(scheduledNoElim ? { noElimination: true } : {}),
-      ...(lastElimWeek ? { allowDoubleShantay: false } : {}),
+      // A DOUBLE ELIMINATION IS THE AUTHOR'S, pinned on the schedule the same
+      // way a free week is. Refused on a week that already sends nobody home,
+      // because those two instructions cancel each other out.
+      ...(week.doubleElimination && !scheduledNoElim
+        ? { doubleElimination: true, formatNote: 'double-elimination' } : {}),
+      finaleSize,
     }), ctx), cast));
-    /* THE DEBT IS TAKEN ON AFTER THE WEEK, not before it. Incurred first, the
-       week's own lip sync sees `_owedElim > 0` and repays it on the spot —
-       the episode both grants the reprieve and cancels it, and somebody goes
-       home from the night nobody was supposed to. It is repaid by a LATER
-       double, which is the whole point. */
-    if (scheduledNoElim) state._owedElim = (state._owedElim || 0) + 1;
+    // No debt is taken on: the loop simply keeps going until the room is
+    // finale-sized, so a free week is an extra week.
   }
 
   // The Smackdown, if the season books one: the queens already sent home come

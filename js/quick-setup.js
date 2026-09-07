@@ -1189,6 +1189,7 @@ const CONFIG_SCOPE = {
     // control nothing reads does not belong in this map.
     'cfg-dr-premiere':       ['drag-race'],
     'cfg-dr-noelim':         ['drag-race'],
+    'cfg-dr-double-elim':    ['drag-race'],
     'cfg-dr-smackdown':      ['drag-race'],
     'cfg-dr-finale':         ['drag-race'],
     'cfg-dr-double-shantay': ['drag-race'],

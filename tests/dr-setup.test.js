@@ -258,6 +258,33 @@ describe('non-elimination weeks', () => {
       .toEqual([{ episode: 3, noElimination: true }, { episode: 5, noElimination: true }]);
     expect(_mergeDrSchedule([], null)).toEqual([]);
   });
+
+  /* ONE HELPER, TWO BOXES. The double-elimination list folds in the same way,
+     and the two must not tread on each other: setting one may not clear the
+     other, which is what a second copy of this logic would eventually do. */
+  it('keeps the two twist lists independent', async () => {
+    const { _mergeDrSchedule } = await import('../js/cast-ui.js');
+    let sched = _mergeDrSchedule([], '4, 7');
+    sched = _mergeDrSchedule(sched, '6', 'doubleElimination');
+    expect(sched).toEqual([
+      { episode: 4, noElimination: true },
+      { episode: 6, doubleElimination: true },
+      { episode: 7, noElimination: true },
+    ]);
+    // Removing a free week leaves the double alone.
+    sched = _mergeDrSchedule(sched, '4', 'noElimination');
+    expect(sched).toEqual([
+      { episode: 4, noElimination: true },
+      { episode: 6, doubleElimination: true },
+    ]);
+  });
+
+  it('offers both, scoped to this show', () => {
+    const html = readFileSync('simulator.html', 'utf8');
+    expect(html).toMatch(/id="cfg-dr-double-elim"/);
+    expect(readFileSync('js/quick-setup.js', 'utf8'))
+      .toMatch(/'cfg-dr-double-elim':\s*\['drag-race'\]/);
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════

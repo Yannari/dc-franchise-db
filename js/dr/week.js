@@ -486,15 +486,14 @@ export function runDragWeek(state, cfg, ctx) {
     if (lc.call === 'double-shantay') {
       state.lipsyncRecord[a].push('W');
       state.lipsyncRecord[b].push('W');
-      /* THE SEASON STILL OWES AN ELIMINATION. Nobody went home tonight, and
-         the schedule is a fixed number of weeks — so without this the season
-         simply arrives at the finale one queen too many, and a top four runs
-         with five in it. Latent since double shantays were added: it needed a
-         season that produced one late, and the first one to do so came out of
-         an unrelated change to the werk room.
-         The show's own answer is the one used here: the next elimination
-         sends two home. */
-      state._owedElim = (state._owedElim || 0) + 1;
+      /* NOTHING IS OWED. A night that sends nobody home makes the season one
+         episode LONGER — fourteen queens go back to fourteen and the run loop
+         keeps booking weeks until the room is finale-sized.
+         This used to take on a debt repaid by a double elimination the
+         following week, which invited a fair question with a poor answer:
+         nobody decided when that double landed, it was simply always the next
+         week. A double elimination is a thing an author schedules, not a
+         correction the engine applies behind them. */
     } else if (lc.call === 'double-sashay') {
       state.lipsyncRecord[a].push('L');
       state.lipsyncRecord[b].push('L');
@@ -505,14 +504,21 @@ export function runDragWeek(state, cfg, ctx) {
         state.lipsyncRecord[lc.loser].push('L');
         exits.push(lc.loser);
       }
-      // Paying back a double shantay: both queens who lip synced go. Never on
-      // a night that would empty the room below the finale's own size.
+      /* A SCHEDULED DOUBLE ELIMINATION: both queens who lip synced go home.
+         An author's choice on the schedule, never an automatic correction —
+         and refused on a night that would empty the room below the size the
+         finale needs. */
       const roomAfter = living.length - 2;
-      if (state._owedElim > 0 && lc.winner && roomAfter >= (cfg.finaleSize || 2)) {
+      if (cfg.doubleElimination && lc.winner && roomAfter >= (cfg.finaleSize || 2)) {
         state.lipsyncRecord[lc.winner].push('L');
         exits.push(lc.winner);
-        state._owedElim--;
-        lipsync.paidBack = true;
+        lipsync.doubleElimination = true;
+        /* THE CALL ON THE ROW TOO, not only on `lc`. `lipsync` was built from
+           `lc` several lines above, so renaming `lc.call` here changed the
+           local and left the row saying `shantay` — which is the tier that
+           means one queen stays, over a night both of them left. */
+        lc.call = 'double-elimination';
+        lipsync.call = 'double-elimination';
       }
     }
     say('lipsync', 'lipsync', { lipsync });

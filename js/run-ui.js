@@ -696,7 +696,14 @@ export function renderGameState() {
   const d = viewedEp?.gsSnapshot || gs;
   const isHistorical = !!(viewedEp?.gsSnapshot);
 
-  const phaseLabel = d.phase==='pre-merge'?'Pre-Merge':d.phase==='post-merge'?'Post-Merge':d.phase==='complete'?'Complete':'Finale';
+  /* SAME RULE ON THE HUB'S PHASE READOUT. A castle and a workroom never sit
+     in a merge phase, so this chain ended at "Finale" on every ordinary
+     night of both. */
+  const _hubNoMerge = !!SHOWS[seasonFormat(seasonConfig)]?.venue;
+  const phaseLabel = d.phase === 'complete' ? 'Complete'
+    : _hubNoMerge ? (d.phase === 'finale' ? 'Finale' : 'In progress')
+      : d.phase === 'pre-merge' ? 'Pre-Merge'
+        : d.phase === 'post-merge' ? 'Post-Merge' : 'Finale';
   let html = `<div class="gs-stats">
     <div class="gs-stat"><label>Episode</label><strong>${d.episode}</strong></div>
     <div class="gs-stat"><label>Phase</label><strong>${phaseLabel}</strong></div>
@@ -941,8 +948,21 @@ export function renderEpisodeView(epRecord) {
     _tEl.style.display = '';
     return;
   }
-  const tc = epRecord.isFinale ? '#f59e0b' : epRecord.isMerge ? '#10b981' : epRecord.challengeType==='tribe' ? tribeColor(epRecord.immunityWinner||'') : '#6366f1';
-  const phaseTag = epRecord.isFinale ? 'FINALE' : epRecord.isMerge ? 'MERGE' : epRecord.challengeType==='tribe' ? 'Pre-merge' : 'Post-merge';
+  /* PRE-MERGE AND POST-MERGE ARE TOTAL DRAMA'S WORDS. A show with no tribes
+     never merges, so every one of its episodes fell through this chain to
+     "Post-merge" — a badge naming a thing that had not happened and could
+     not. A show that declares a fixed venue (SHOWS[format].venue) has no
+     merge by definition; it gets its round word from the registry instead. */
+  const _epFmt = seasonFormat(epRecord) || seasonFormat(seasonConfig);
+  const _noMerge = !!SHOWS[_epFmt]?.venue;
+  const tc = epRecord.isFinale ? '#f59e0b'
+    : _noMerge ? (SHOWS[_epFmt]?.accent || '#6366f1')
+      : epRecord.isMerge ? '#10b981'
+        : epRecord.challengeType === 'tribe' ? tribeColor(epRecord.immunityWinner || '') : '#6366f1';
+  const phaseTag = epRecord.isFinale ? 'FINALE'
+    : _noMerge ? String(showWords(_epFmt).round || 'Episode').toUpperCase()
+      : epRecord.isMerge ? 'MERGE'
+        : epRecord.challengeType === 'tribe' ? 'Pre-merge' : 'Post-merge';
   const riTag = epRecord.riChoice === 'REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : epRecord.riChoice === 'WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
 
   const voteEntries = Object.entries(epRecord.votes||{}).sort(([,a],[,b])=>b-a);

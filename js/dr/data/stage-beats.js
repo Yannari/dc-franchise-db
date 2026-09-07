@@ -66,6 +66,12 @@ export const STAGE_BEATS = [
         "\"No sashay tonight, ladies.\" The host says it flatly, which somehow makes it bigger. \"This is a non-elimination week. Everything else is exactly as it always is — the challenge, the runway, the critiques, all of it counts and all of it goes on your record. You just all survive it.\"",
         "\"I want to see what you do when the stakes change,\" the host says. \"So: nobody goes home this week.\" One queen laughs. Another looks disappointed, which the host notices and files away. \"Some of you are relieved. One or two of you wanted a fight. Hold that thought.\"",
       ]),
+      tier('double-elimination', 'Two queens go home tonight.', [
+        "\"Before you start,\" the host says, and the room already knows the tone. \"Tonight, two of you are going home.\" Nobody moves. \"So whatever you were planning to save for later — there is no later. Not for two of you.\"",
+        "The host does not soften it. \"This is a double elimination.\" He waits while that travels down the line. \"Two queens leave this competition tonight, which means the bottom two are not fighting each other. They are both fighting to be the exception, and there is no exception.\"",
+        "\"I am going to be honest with you,\" the host says, \"because I would rather you heard it from me than worked it out on that stage. Two of you go home tonight.\" One queen swears quietly. Another closes her eyes. The rest do the arithmetic on who they think it will be and how sure they are.",
+        "\"Two of you will be leaving tonight.\" The host lets it land and then, because he is who he is, adds: \"So I would not phone this one in.\" It is not a joke and the room does not treat it as one.",
+      ]),
       tier('porkchop', 'Runway only, and it still sends somebody home.', [
         "\"No maxi challenge tonight.\" The host lets that sit for exactly as long as it needs to. \"Just the runway. What you brought, what you made of it, and what you look like walking down it. One of you is going home on the strength of a single look — so I hope you packed like it mattered, because tonight it is the only thing that does.\"",
         "The host explains that there is no challenge, only a category and a runway. \"Everything I know about you tonight, I will learn in the next four minutes,\" he says. \"And somebody is still leaving.\" The queens look at each other and then, more urgently, at their own garment bags.",
@@ -358,6 +364,12 @@ export const STAGE_BEATS = [
         "The host looks at both of them and the decision is in the eyes before it is in the words. \"Shantay, you stay.\" One queen lives to fight another week. The other queen is already being hugged by the safe queens in the back, because the walk to the door starts here.",
         "\"Shantay, you stay.\" One queen presses her palms together and mouths \"thank you\" and the relief rewrites her entire face. The other queen straightens her back because she is about to walk off this stage and she is going to do it the way she came onto it — upright, in drag, and looking like somebody who was here.",
         "The call is made and the stage splits into two halves — the half where somebody stays and the half where somebody goes. \"Shantay, you stay\" is said once and means everything to the person who hears it and everything different to the person who does not.",
+      ]),
+      tier('double-elimination', 'Both queens go. Nobody was safe on that stage.', [
+        "The host looks at the two of them for a long time and then does not say shantay to either one. \"I am sorry, my dears.\" A beat that costs the room something. \"Both of you — sashay away.\" It is the only call of the night and it takes two queens with it.",
+        "\"There is no shantay tonight.\" The host says it plainly and both queens hear the whole sentence before either reacts. \"Both of you are going home.\" They take each other's hands on the way to the back, which is more than either of them expected to have at the end of this.",
+        "Two queens lip synced for their lives and neither of them keeps it. The host tells them both, in the same sentence, in a voice that does not enjoy it: \"Sashay away.\" The queens still standing at the back of the stage do not make a sound.",
+        "The call is a double and the host does not draw it out. Both names, one after the other, both leaving. One of them starts to argue and stops. The other has already turned toward the door, because she worked it out four bars into the song.",
       ]),
       tier('no-elimination', 'A night that was never going to send anybody home.', [
         "The music stops and the host lets the room hold its breath for a moment it does not need to hold. \"Ladies,\" he says, \"I have already made my decision about tonight. Nobody is going home.\" The scream that follows is the loudest sound either queen has made all day, and neither of them is entirely sure whether to be relieved or robbed.",

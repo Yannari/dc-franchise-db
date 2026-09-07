@@ -30,25 +30,23 @@ const strip = h => h.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g
 beforeEach(() => { window._tvState = {}; window._drSidebar = {}; });
 
 describe('the call', () => {
-  it('gives every queen a stamp, and the safe ones share one card', () => {
-    /* THE SAFE QUEENS ARE ONE CARD, not one row each, and that is the
-       design rather than a shortcut: they share a single spoken line
-       between them — "you are safe, you may leave the stage" is said to the
-       group — so a row each produced a column of portraits with a rank
-       arrow, a rubber stamp and no words. Eight of thirteen rows silent on
-       the call that found this.
-       So the count is: one card for the safe, one row for everybody the
-       panel actually placed. */
+  it('gives every placed queen a stamp, and no row to the safe', () => {
+    /* THE SAFE QUEENS ARE NOT ON THIS SCREEN AT ALL, and that is the show
+       rather than an omission: the host names them before the critiques,
+       they leave the main stage and go straight to Untucked, and the panel
+       then critiques only the queens still standing. Their dismissal is the
+       first card of the critiques screen, which is the moment it happens.
+       Giving them a row here produced a column of portraits with a rank
+       arrow, a rubber stamp and no words — they share one spoken line
+       between them, so there is nothing to put in eight separate rows.
+       Eight of thirteen rows were silent on the call that found this. */
     for (const row of ordinary) {
       const c = row.dr.call;
       const placed = ['win', 'high', 'low', 'atRisk', 'bottom']
         .reduce((n, k) => n + (c[k] || []).length, 0);
-      const expected = placed + ((c.safe || []).length ? 1 : 0);
       const html = rpBuildResults(row);
       const steps = (html.match(/id="dr-step-results-\d+"/g) || []);
-      expect(steps.length, `episode ${row.num}`).toBe(expected);
-      // AND EVERY SAFE QUEEN IS STILL NAMED, on that one card.
-      for (const n of c.safe || []) expect(html, `${n} is not on the safe card`).toContain(n);
+      expect(steps.length, `episode ${row.num}`).toBe(placed);
     }
   });
 

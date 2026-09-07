@@ -62,12 +62,21 @@ describe('the runway', () => {
 });
 
 describe('the critiques', () => {
-  it('gives every critiqued queen a card, with every judge who spoke', () => {
+  it('dismisses the safe first, then gives every critiqued queen a card', () => {
+    /* THE DISMISSAL IS THE FIRST CARD. The host names the safe queens and
+       they leave the main stage for Untucked before the panel says a word,
+       which is why this screen has never shown the whole cast — and until
+       the card existed it never said so: a reader saw six queens critiqued
+       out of nine living and was told nothing about the other three. */
     const row = ordinary.find(r => (r.dr.critiques || []).length);
     const html = rpBuildCritiques(row);
     const queens = [...new Set(row.dr.critiques.map(c => c.queen))];
     for (const q of queens) expect(html, q).toContain(q);
-    expect((html.match(/id="dr-step-critiques-\d+"/g) || []).length).toBe(queens.length);
+    const safe = row.dr.call?.safe || [];
+    const cards = (html.match(/id="dr-step-critiques-\d+"/g) || []).length;
+    expect(cards).toBe(queens.length + (safe.length ? 1 : 0));
+    // And the dismissed queens are named on it, or they vanish from the night.
+    for (const n of safe) expect(html, `${n} was dismissed and never named`).toContain(n);
   });
 
   it('THE FINAL RANK IS NOT ON THIS SCREEN', () => {

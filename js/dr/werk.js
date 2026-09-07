@@ -274,22 +274,43 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
     ? state._drWerkUsed
     : (state._drWerkUsed = new Set(state._drWerkUsedList || []));
 
-  // Enough for everybody to get a moment, spread across the slots, with a
-  // floor so a top four still has a room worth watching.
-  const perSlotN = perSlot ?? Math.max(2, Math.ceil((living.length + 2) / slots.length));
+  /* ONE SCENE PER QUEEN WAS THE TARGET AND IT WAS THE WRONG ONE. The old
+     floor of two, combined with the break below, spent the week's whole
+     budget in the first slot: once every queen had appeared ANYWHERE, every
+     later slot stopped at two. Measured in a browser across a season, that
+     produced the werk room at three cards, prep at two and elimination day
+     at two — four screens carrying a couple of paragraphs each while the
+     maxi carried nine.
+     The floor is four and the break now wants everybody seen TWICE, so a
+     slot is only cut short when the room genuinely has nothing left to say.
+     Each of the four werk screens gets a night's worth rather than a
+     leftover. */
+  const perSlotN = perSlot ?? Math.max(4, Math.ceil((living.length + 2) / slots.length));
 
   for (const slot of slots) {
     for (let i = 0; i < perSlotN; i++) {
-      // Once every queen has had a scene, stop padding this slot.
-      if (i >= 2 && living.every(n => seen[n])) break;
+      // Once every queen has had two scenes, stop padding this slot.
+      if (i >= 3 && living.every(n => (seen[n] || 0) >= 2)) break;
 
-      const scene = drawWerkScene({
-        slot, living, players, state, storylines, rng, ctx, used, seen, usedLines,
-      });
+      /* A DUPLICATE RETRIES RATHER THAN SPENDING THE SLOT. The draw is
+         weighted, not exclusive — an event already used this season is
+         penalised but can still come up — so late in a season the same id
+         is offered repeatedly, and `continue` burned one of the slot's few
+         iterations every time it did. The room got quieter as the season
+         went on, which is exactly backwards: that is when the queens have
+         the most to say to each other.
+         Three attempts, then give the slot up. */
+      let scene = null;
+      for (let tries = 0; tries < 3 && !scene; tries++) {
+        const s2 = drawWerkScene({
+          slot, living, players, state, storylines, rng, ctx, used, seen, usedLines,
+        });
+        if (!s2) break;
+        // A slot never runs the same scene twice in one night, whatever the
+        // weighting says.
+        if (!scenes.some(x => x.id === s2.id)) scene = s2;
+      }
       if (!scene) break;
-      // A slot never runs the same scene twice in one night, whatever the
-      // weighting says.
-      if (scenes.some(s => s.id === scene.id)) continue;
       scenes.push(scene);
       used.add(scene.id);
       for (const n of scene.players) seen[n] = (seen[n] || 0) + 1;

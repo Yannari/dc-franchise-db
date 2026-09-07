@@ -353,13 +353,26 @@ describe('a night nobody leaves makes the season longer', () => {
   });
 
   it('runs one episode longer for each free week', () => {
-    const base = playDragSeason({ cast: cast(14), seed: 4 });
+    /* THE SPONTANEOUS DOUBLE SHANTAY IS OFF IN ALL THREE RUNS, and that is
+       the test being honest rather than the test being weakened. A shantay
+       the host decides in the moment ALSO adds a week, and each of these
+       three seasons runs a different RNG stream, so the comparison was only
+       ever valid while no run happened to produce one. It held until the
+       werk room started drawing a different number of scenes, which shifted
+       every downstream roll and gave `two` a free week nobody booked — the
+       count was right and the arithmetic was measuring two different things.
+       With it off, the only free weeks are the booked ones, which is what
+       this test is about. */
+    const noShantay = { drDoubleShantay: false };
+    const base = playDragSeason({ cast: cast(14), seed: 4, config: noShantay });
     const one = playDragSeason({
-      cast: cast(14), seed: 4, config: { drSchedule: [{ episode: 4, noElimination: true }] },
+      cast: cast(14), seed: 4,
+      config: { ...noShantay, drSchedule: [{ episode: 4, noElimination: true }] },
     });
     const two = playDragSeason({
       cast: cast(14), seed: 4,
-      config: { drSchedule: [{ episode: 4, noElimination: true }, { episode: 7, noElimination: true }] },
+      config: { ...noShantay,
+        drSchedule: [{ episode: 4, noElimination: true }, { episode: 7, noElimination: true }] },
     });
     expect(one.rows.length, 'one free week did not add an episode')
       .toBe(base.rows.length + 1);

@@ -294,9 +294,16 @@ describe('the cold open', () => {
   it('never claims an exit after a night nobody left', () => {
     const CLAIMS_EXIT = new Set(['the-empty-station', 'the-mirror-message',
       'one-less-friend', 'relief-and-guilt', 'counting-the-chairs']);
+    /* THE NO-ELIMINATION WEEK IS BOOKED, NOT WAITED FOR. This used to play
+       forty seasons and hope one of them produced a double shantay, which
+       made the test's own coverage a property of the RNG stream: a change
+       to how many werk room scenes are drawn shifts every downstream roll,
+       and the day that happened all forty seasons came back with nobody
+       spared and the guard reported "nothing was tested".
+       drSchedule pins one, so the case is reached in every season. */
     let checked = 0;
     for (let s = 0; s < 40; s++) {
-      const { rows } = play(s);
+      const { rows } = play(s, { drSchedule: [{ episode: 3, noElimination: true }] });
       for (let i = 1; i < rows.length; i++) {
         if ((rows[i - 1].exits || []).length) continue;
         checked++;

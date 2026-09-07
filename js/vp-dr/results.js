@@ -187,34 +187,21 @@ export function rpBuildResults(row) {
     return sc?.text || '';
   };
 
-  const safeLine = (row.dr.scenes || []).find(x => x.kind === 'stage:result-safe')?.text || '';
-  const safeCard = safe.length ? `<div class="dr-step" id="dr-step-results-0">
-    <div class="dr-panel dr-a-score dr-callrow dr-quiet dr-safegroup"
-         style="--v:${GRID_RESULTS.SAFE?.color || '#4b5563'}">
-      <span class="dr-safefaces">${safe.map(n =>
-    _portrait(n, ep, { size: 40, station: true })).join('')}</span>
-      <div><h3 class="dr-disp">Safe</h3>
-        <span style="font-size:11px;color:#C9A6BC">${esc(safe.join(', '))}</span>
-        ${safeLine ? `<p class="dr-said">${esc(safeLine)}</p>` : ''}
-        ${/* A SAFE QUEEN THE HOST MOVED still has to be reported. Folding the
-              safe queens into one card took their individual rows away, and
-              the "the host moved her" badge went with them — so a bend that
-              landed on somebody safe became invisible, which is exactly the
-              decision this screen exists to expose. */
-    safe.filter(n => bend.get(n) && bend.get(n).panelRank !== bend.get(n).finalRank)
-      .map(n => `<span class="dr-moved dr-disp">the host moved her: ${esc(n)}</span>`)
-      .join(' ')}</div>
-      <span></span>
-      <span class="dr-stamp dr-disp" style="color:${GRID_RESULTS.SAFE?.color || '#4b5563'}">SAFE</span>
-    </div></div>` : '';
-  const offset = safe.length ? 1 : 0;
-
-  const steps = safeCard + named.map(([result, name], i) => {
+  /* THE SAFE QUEENS ARE NOT ON THIS SCREEN. They are dismissed BEFORE the
+     critiques — the host names them, they leave the main stage and go
+     straight to Untucked, and the panel then critiques only the queens left
+     standing. So the safe card lives at the top of the critiques screen,
+     which is the moment it happens in, and this screen carries only the
+     queens the panel actually placed.
+     It was here for one commit, which was already an improvement on giving
+     each safe queen her own silent row, but it put the dismissal after the
+     critiques of people who were dismissed before them. */
+  const steps = named.map(([result, name], i) => {
     const b = bend.get(name);
     const moved = b && b.panelRank !== b.finalRank;
     const meta = GRID_RESULTS[result] || {};
     const said = lineFor(result, name);
-    return `<div class="dr-step" id="dr-step-results-${i + offset}">
+    return `<div class="dr-step" id="dr-step-results-${i}">
       <div class="dr-panel dr-a-score dr-callrow${
   result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
         ${_portrait(name, ep, { size: 52, station: true })}
@@ -229,24 +216,24 @@ export function rpBuildResults(row) {
 
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
+    /* The safe queens stay in the rail as CONTEXT — they were dismissed on
+       the critiques screen and are not steps here, but a reader wants to
+       know the room is smaller than the cast. */
     const panelFor = k => `<h4 class="dr-disp">The call</h4>${
-      (safe.length ? `<div class="dr-slot"><span></span>
-        <div><div class="dr-nm">${esc(safe.length)} safe</div></div>
+      (safe.length ? `<div class="dr-slot dr-waiting"><span></span>
+        <div><div class="dr-nm">${esc(safe.length)} already safe</div></div>
         <span class="dr-chip dr-c-safe">SAFE</span></div>` : '')}${
       named.slice(0, k).map(([r, n]) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
         <div><div class="dr-nm">${esc(n)}</div></div>
         <span class="dr-chip ${CHIP[r] || 'dr-c-safe'}">${esc(GRID_RESULTS[r]?.label || r)}</span>
       </div>`).join('')}`;
-    window._drSidebar.results = [
-      ...(safe.length ? [panelFor(0)] : []),
-      ...named.map((_, i) => panelFor(i + 1)),
-    ];
+    window._drSidebar.results = named.map((_, i) => panelFor(i + 1));
   }
 
   return `<style>${RESULTS_CSS}</style>${_shell(steps, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who is safe',
     sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
-  })}${_controls('results', named.length + offset, ep.num)}`;
+  })}${_controls('results', named.length, ep.num)}`;
 }
 
 /** The lip sync, built as a fight. */

@@ -30,6 +30,13 @@ const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', d
 const judgeName = id => (JUDGES.find(j => j.id === id)?.name || id);
 
 export const STAGE_CSS = `
+/* ── THE DISMISSAL ── the safe queens, sent to Untucked ── */
+.dr-dismiss{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start;
+  padding:15px 18px;border-left:3px solid #4b5563}
+.dr-dismiss-faces{display:flex;flex-wrap:wrap;gap:5px;max-width:200px}
+.dr-dismiss h3{margin:0 0 3px;font-size:16px;color:#C9A6BC}
+.dr-dismiss p{margin:7px 0 0;color:#f4e3ed;line-height:1.6;max-width:74ch;text-wrap:pretty}
+
 /* ── UNTUCKED: THE THREE PARTS OF THE NIGHT ── */
 .dr-band{display:flex;align-items:baseline;gap:12px;margin:26px 0 12px;
   padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.1)}
@@ -328,7 +335,31 @@ export function rpBuildCritiques(row) {
   }
   const queens = [...byQueen.keys()];
 
-  const steps = queens.map((name, i) => {
+  /* ── THE DISMISSAL, WHICH IS WHERE THIS SCREEN STARTS ──
+     The host names the safe queens and they leave the main stage and go
+     straight to Untucked; the panel then critiques only the queens still
+     standing. That is why this screen has never shown the whole cast, and
+     until now it never said so — a reader saw six queens critiqued out of
+     nine living and was told nothing about the other three.
+     They share one spoken line between them, so they share one card. */
+  const safe = row?.dr?.call?.safe || [];
+  const safeLine = (row.dr.scenes || []).find(x => x.kind === 'stage:result-safe')?.text || '';
+  const bendOf = new Map((row.dr.bend || []).map(b => [b.name, b]));
+  const safeCard = safe.length ? `<div class="dr-step" id="dr-step-critiques-0">
+    <div class="dr-panel dr-a-room dr-dismiss">
+      <span class="dr-dismiss-faces">${safe.map(n =>
+    _portrait(n, ep, { size: 42, station: true })).join('')}</span>
+      <div><h3 class="dr-disp">Safe — you may leave the stage</h3>
+        <span class="dr-sub">${esc(safe.join(', '))}</span>
+        ${safeLine ? `<p>${esc(safeLine)}</p>` : ''}
+        ${safe.filter(n => bendOf.get(n)
+    && bendOf.get(n).panelRank !== bendOf.get(n).finalRank)
+    .map(n => `<span class="dr-moved dr-disp">the host moved her: ${esc(n)}</span>`)
+    .join(' ')}</div>
+    </div></div>` : '';
+  const dOff = safe.length ? 1 : 0;
+
+  const steps = safeCard + queens.map((name, i) => {
     const hers = byQueen.get(name);
     const tones = new Set(hers.map(c => c.tone));
     const disagreed = tones.size > 1;
@@ -361,7 +392,7 @@ export function rpBuildCritiques(row) {
           <b>${esc(c.judgeName || judgeName(c.judge))}</b>
           <i class="dr-disp">${esc(c.tone)}</i></span>`).join('')}
       </div>` : '');
-    return `<div class="dr-step" id="dr-step-critiques-${i}">
+    return `<div class="dr-step" id="dr-step-critiques-${i + dOff}">
       <div class="dr-panel dr-a-score" style="padding:14px 16px 14px 20px">
         ${_portrait(name, ep, { size: 54, station: true })}
         <b class="dr-disp" style="font-size:19px;margin-left:10px">${esc(name)}</b>
@@ -391,7 +422,7 @@ export function rpBuildCritiques(row) {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),
-  })}${_controls('critiques', queens.length, ep.num)}`;
+  })}${_controls('critiques', queens.length + dOff, ep.num)}`;
 }
 
 /** Untucked: a room, not a stage — and it can get loud. */

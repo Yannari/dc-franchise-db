@@ -398,52 +398,118 @@ export const MAXI_EVENTS = [
   e({
     id: 'host-played-along', from: 'snatch-game', cast: 'solo',
     note: 'The host came at her directly and she took the setup and ran with it. The exchange is better than anything scripted.',
+    lines: [
+      "The host turns to {a} mid-panel and throws her a setup and {a} catches it and sends it back harder and faster and the exchange that follows is better than anything scripted — two people riffing in real time, building off each other's timing, until the panel is watching a scene that was not in the format and is better than the format.",
+      "He comes at her. Not a softball, not a layup — a real setup, aimed at the character, and {a} takes it and turns it into something the writers could not have written because the writers were not in the room when it happened. The exchange lasts eight seconds and the eight seconds are the best Snatch Game moment of the season.",
+      "{a}'s character catches the host's eye and the host goes at her directly and the directly produces something extraordinary — an improvised exchange between two people who are both performing and both genuinely funny and the intersection of those two things is a moment the room will replay.",
+      "The host feeds {a} a line and {a} feeds back something better and the volley goes on for three exchanges and by the end of it the host is laughing with her rather than at her, which is the distinction between a good Snatch Game and the Snatch Game the season is remembered for.",
+    ],
   }),
   e({
     id: 'left-to-hang', from: 'snatch-game', cast: 'solo',
     note: 'The host came at her and she had nothing to give back, so he let the silence sit and then moved on to somebody else.',
+    lines: [
+      "The host turns to {a} and throws her a setup and {a} has nothing. Not a weak answer — nothing. The pause stretches and the host lets it stretch, which is worse than moving on immediately because the stretching is a choice and the choice says the host wanted to see if something was coming and now knows that nothing is. He moves on. {a} sits in the chair.",
+      "He comes at her and she freezes. The character is gone — not thin, gone — and what is left is {a} sitting behind a desk with a wig on, mouth slightly open, producing silence into a room that expected a joke. The host waits. The waiting is a cruelty the format allows. Then he turns to the next queen.",
+      "{a} gets the host's attention and has no idea what to do with it. He feeds her a setup. She blinks. The blink becomes a pause and the pause becomes a silence and the silence becomes the specific kind of dead air that tells the panel everything they need to know about whether this Snatch Game is working. The host moves on without comment, which is the comment.",
+      "The setup arrives and nothing comes back. {a} opens her mouth and the character is not there and the silence that follows is the worst sound a Snatch Game can produce — a queen with the host's attention and nothing to say. He lets the beat land, then pivots to somebody who has something, and the pivoting is louder than anything {a} could have said.",
+    ],
   }),
 
   // ══ THE ACTING SET ═══════════════════════════════════════════════════
   e({
     id: 'dropped-a-line', from: 'acting', cast: 'solo',
     note: 'She loses the line on camera. There is no second take.',
+    lines: [
+      "{a} drops the line. Not a stumble, not a paraphrase — a full stop, mid-sentence, on camera, with the scene still running around her. There is no second take. The cameras keep rolling and {a} stands in the middle of a scene she is no longer in, mouth open, reaching for words that were in her head ten seconds ago and are not there now.",
+      "The line is gone. {a} had it in rehearsal, she had it in the walk-through, and it left her the moment the camera was live. She stops. The scene does not stop. The other queens keep acting and {a} is standing in the frame like a person who walked into the wrong room.",
+      "She forgets the line on camera and there is no second take and the forgetting becomes part of the scene — a character who was supposed to speak and instead produced three seconds of visible panic that will be in the edit because the edit does not have anything else to cut to.",
+      "{a} opens her mouth and the line is not there. The scene continues past her like a train she was supposed to be on and is now watching leave. No second take. No reset. She stands in the shot and the standing is what makes it into the final cut.",
+    ],
   }),
   e({
     id: 'stepped-on-her', from: 'acting', cast: 'pair',
     note: '{a} talks straight over {b} in a shared scene. It works for {a} on screen and {b} has to stand there.',
+    lines: [
+      "{a} talks straight over {b} in the middle of their scene. Not a half-beat overlap — a full steamroll, {a}'s line landing on top of {b}'s, and the camera stays on {a} because {a} is the one still talking. {b} stands there with the unfinished sentence still in her mouth and nowhere to put it.",
+      "The scene belongs to both of them and {a} takes it. She talks over {b}'s line, takes the focus, and delivers the rest of the scene as if the interruption was scripted. It was not scripted. {b} adjusts, which means {b} stops talking, which means {b}'s performance just became a reaction shot to {a}'s.",
+      "{a} steps on {b}'s line and the stepping works — for {a}. The energy reads as confident, the timing reads as bold, and the camera catches {a} delivering while {b} is left standing in the frame with nothing to do and no way to get the scene back without looking like she is fighting for it.",
+      "In the shared scene, {a} talks over {b} and the talking-over is not subtle. {b}'s line disappears under {a}'s delivery. On screen it looks like {a} is commanding the scene. Off screen, {b} is swallowing the rest of a line she rehearsed and will not get to say.",
+    ],
   }),
   e({
     id: 'one-note', from: 'acting', cast: 'solo',
     note: 'She plays the part exactly the way she plays everything. The panel has a word for this and will use it.',
+    lines: [
+      "{a} plays the part exactly the way she plays everything. The same energy, the same cadence, the same face she makes when she is being funny in the werk room, brought to a character that is supposed to be somebody else. The panel has a word for this. The word is one-note. They will use it.",
+      "The character is {a}. Not a version of {a} filtered through the part — just {a}, in a costume, saying lines in the same voice she uses for everything. The performance does not transform. It occupies. And the occupying is the note the judges are going to give her.",
+      "She brings herself to the part and nothing else. {a} plays the role the way she would play any role — the same register, the same timing, the same defaults — and the result is a performance that tells the panel she has one gear and the gear is not what this scene needed.",
+      "{a} delivers the lines and the delivery is identical to every other delivery she has given in every other scene she has been in. The part asked for a character. {a} brought herself. The distance between those two things is the distance between acting and reading words out loud in a costume.",
+    ],
   }),
   e({
     id: 'ignored-the-note', from: 'acting', cast: 'solo',
     note: 'The director gave her a good note and she heard it and did it her way anyway.',
+    lines: [
+      "The director gives {a} a note. A good note — specific, actionable, aimed at the thing in the performance that is not landing. {a} nods. {a} does it her way anyway. The take runs and the thing the note was about is still there, unchanged, and the director watches the monitor knowing the note was heard and ignored.",
+      "{a} gets a direction and does not take it. She heard it — she was looking at the person saying it, she was nodding — but when the cameras roll the performance is identical to the one before the note, which means she either did not understand it or understood it and chose herself over it.",
+      "The note was good. {a} ignored it. The director told her to pull back and she pushed forward, or the director told her to find the joke and she found the drama, and the result is a performance shaped by the queen's instinct rather than the direction, and the instinct is wrong.",
+      "She hears the note and does the opposite. {a} is given a clear direction between takes and the next take comes out identical to the last one, which is the specific kind of stubbornness that looks like confidence from the inside and looks like not listening from the panel.",
+    ],
   }),
   e({
     id: 'took-a-bad-note', from: 'acting', cast: 'solo',
     note: 'She was given a bad note and followed it, because it came from the person holding the clipboard.',
+    lines: [
+      "{a} takes a bad note. She takes it because it came from the person holding the clipboard, and the clipboard is authority, and {a} follows authority even when the authority is steering the scene into a wall. The take comes back worse than the one before it and {a} delivered the worse version with the confidence of somebody who was told to.",
+      "The direction was wrong and {a} followed it anyway. She was told to go bigger. She goes bigger. The bigger is worse. But the note came from the person directing the scene, so {a} commits to the bigger with the trust of a queen who has decided that the person behind the camera knows better than the person in front of it.",
+      "Somebody gave {a} a bad note and she took it to the letter. The performance shifts in the direction the note pointed and the direction is wrong and {a} does not know it is wrong because the note came from somebody she trusts more than her own instincts. The take that results is worse than the one she gave unprompted.",
+      "{a} is given a note that does not serve the scene and follows it with full commitment, because she was told to. The performance pivots in the direction of the note and the pivot is visible and the visibility is the problem — a queen doing something she does not believe in, on instruction, with the energy of obedience rather than conviction.",
+    ],
   }),
 
   // ══ THE COMMERCIAL ═══════════════════════════════════════════════════
   e({
     id: 'found-the-angle', from: 'commercial', cast: 'solo',
     note: 'The product has an obvious approach that never works, and she found the other one.',
+    lines: [
+      "The product has an obvious angle — the angle every queen sees, the angle that never works — and {a} finds the other one. She sells the thing sideways, through character or absurdity or deadpan commitment to a bit that should not work and does, and the thirty seconds she gets are the thirty seconds the panel will replay.",
+      "Every other queen sells the product straight. {a} sells it wrong, on purpose, and the wrongness is the angle. She finds the read of the product that nobody else saw — the one that makes it funny rather than just loud — and delivers it with the timing of somebody who knew the obvious approach would fail.",
+      "{a} finds the angle. The product is ridiculous and the obvious play is to be ridiculous with it and every queen who plays it obvious will be forgettable. {a} plays it specific. She finds the one thing about the product that can be turned, and turns it, and the turning is what makes the commercial work.",
+      "The product is unsellable and {a} sells it anyway. Not by being louder or sillier or more desperate than the obvious approach — by finding the angle nobody else found, the read of the product that makes it genuinely funny, and committing to that read for the full thirty seconds with the precision of somebody who knew what she was doing before the camera rolled.",
+    ],
   }),
   e({
     id: 'tagline-died', from: 'commercial', cast: 'solo',
     note: 'The line the whole spot was built to land on gets nothing.',
+    lines: [
+      "The tagline dies. {a} builds the whole thirty seconds toward it — the setup is there, the energy is there, the camera is in the right place — and the line lands on the room like a stone landing in a dry well. Nothing comes back. The spot was built for that moment and the moment produced silence.",
+      "She delivers the tagline and nothing happens. The line that the entire commercial was constructed around hits the air and falls out of it. {a}'s face in the half-second after she says it is the face of somebody who heard the silence before anyone else did.",
+      "The line dies on arrival. {a} has been selling for twenty-five seconds and the sell was building to the tagline and the tagline comes out flat and strange and lands in a place where laughter was supposed to be. The spot crumbles backward from the punchline — without it, the setup is just a queen talking.",
+      "{a}'s tagline gets nothing. Not a groan, not a courtesy laugh — the specific silence that means the room heard the line and decided it was not funny and the deciding happened faster than the line took to say. The whole commercial was a runway to that moment and the moment was a wall.",
+    ],
   }),
 
   // ══ IMPROV, WITH NO PREPARATION AT ALL ═══════════════════════════════
   e({
     id: 'froze', from: 'improv', cast: 'solo',
     note: 'She is handed a premise cold and nothing comes. The pause is on camera.',
+    lines: [
+      "{a} is handed a premise cold and nothing comes. She stands on the stage with the setup in her hands and no idea what to do with it and the pause is on camera — three seconds, four seconds, five — and the silence has a texture that everybody in the room recognises because it is the texture of a queen who has been asked to invent something and cannot.",
+      "The premise arrives and {a} freezes. Not a pause-for-effect freeze — a genuine, visible, I-have-nothing freeze, the kind where her eyes go flat and her mouth opens and the room waits and the waiting turns into the scene because the scene she was supposed to create is not coming.",
+      "Nothing comes. {a} is given a setup and the setup produces a blank and the blank is on camera and the camera is patient and the patience is cruel. She stands there. The premise sits in the air between her and the audience like a question nobody is going to answer.",
+      "{a} gets the premise and the premise gets silence. She opens her mouth and closes it and the closing is visible from the panel because the closing means she had a thought and the thought was not good enough and now she has no thought at all. The pause stretches. The cameras do not cut.",
+    ],
   }),
   e({
     id: 'ran-with-it', from: 'improv', cast: 'solo',
     note: 'She commits to a premise she was given seconds ago and builds something out of nothing.',
+    lines: [
+      "{a} is handed a premise she has never seen before and commits to it instantly and the committing builds something out of nothing — a character, a scene, a bit that escalates with every beat because she is not thinking, she is reacting, and the reacting is faster than thought and funnier than preparation.",
+      "The premise arrives cold and {a} runs with it. She does not pause. She does not plan. She opens her mouth and the premise becomes a scene and the scene becomes the best thing on the stage because nerve is a skill and {a} has more of it than anybody else in the room.",
+      "She builds something out of nothing. {a} gets a setup she was given seconds ago and turns it into a bit that escalates and the escalation has the quality of someone who is genuinely funny in real time — not performing funny, not reciting funny, inventing funny, right now, with no preparation and no safety net.",
+      "{a} commits. The premise is strange and cold and she has never seen it before and none of that matters because she is already inside it, building a scene out of nerve and instinct, and the scene works because she trusts the premise more than the premise deserves and the trust becomes its own material.",
+    ],
   }),
 ];
 

@@ -34,7 +34,8 @@ import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemory
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
-import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats } from './stage.js';
+import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats,
+  renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -428,7 +429,11 @@ export function runDragWeek(state, cfg, ctx) {
       ...(call.low || []), ...(call.bottom || [])];
     const stageScenes = renderStageBeats({
       walking: living, onStage, runway, call, reactions, lipsync,
-      exits: exits.slice(), split, judges: panel.map(j => j.id), rng,
+      exits: exits.slice(), split, rng,
+      // NAMES, not ids. A critique that reads "jamal leans back in the chair"
+      // is the placeholder being filled with a database key, which is what it
+      // did until somebody read the output.
+      judges: panel.map(j => j.name || j.id),
     });
     for (const sc of stageScenes) scenes.push(sc);
 
@@ -443,6 +448,12 @@ export function runDragWeek(state, cfg, ctx) {
     for (const sc of renderChallengeBeats({
       living, maxi, mini, miniWinner, miniScores,
       assignment: M.assignment || {}, performances: perfWithPlayers, rng,
+    })) scenes.push(sc);
+
+    // The challenge's own events, narrated. The modules produce these and
+    // narrate none of them, so without this they reach the row as bare types.
+    for (const sc of renderMaxiEventScenes(maxiEvents, {
+      step: maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main', rng,
     })) scenes.push(sc);
 
     const untuckedScenes = runUntucked({

@@ -21,6 +21,8 @@
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
+import { MAXI_EVENTS } from './data/maxi-events.js';
+import { familyForChallenge } from './data/maxi-performance.js';
 import { dragOf } from './queen.js';
 import { canScheme } from './rules.js';
 
@@ -374,17 +376,63 @@ export function renderChallengeBeats({
     emit(beatById('pick-reaction'), tierId, [n], { choice: p.choice });
   }
 
-  // ── the performance ──
+  // ── the performance, IN THIS CHALLENGE'S OWN VOICE ──
+  //
+  // The generic `performance` beat in challenge-beats.js is deliberately
+  // bypassed here. It has five tiers that do not know which night it is, and
+  // it is the reason a Snatch Game and a Rusical read identically. The family
+  // pool says the same tier in the challenge's own language: a collapse on a
+  // Snatch Game is being stuck in a chair unable to drop the character; on a
+  // Rusical it is being off-key in front of a live band.
   const step = maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main';
+  const family = familyForChallenge(maxi.id);
   const perfScores = Object.fromEntries(
     living.filter(n => performances[n]).map(n => [n, performances[n].perf]));
+
   for (const n of living) {
     if (!performances[n]) continue;
-    emit(beatById('performance'), tierAt(fractionalRank(n, perfScores), PERF_TIERS), [n],
-      { perf: performances[n].perf }, step);
+    const tierId = tierAt(fractionalRank(n, perfScores), PERF_TIERS);
+    const tier = family.tiers.find(t => t.id === tierId) || family.tiers[2];
+    scenes.push({
+      step,
+      kind: `perform:${family.family}`,
+      data: {
+        family: family.family, tier: tierId, players: [n],
+        note: tier.note, perf: performances[n].perf,
+      },
+      text: fill(pick(tier.lines, rng, usedLines, `${family.family}/${tierId}`), { a: n }),
+    });
     if (performances[n].moment) emit(beatById('performance-moment'), 'moment', [n], {}, step);
   }
 
+  return scenes;
+}
+
+/**
+ * Prose for the events the challenge modules fire.
+ *
+ * The modules decide everything and narrate nothing — they emit `{type,
+ * players, bond, pop}` and no text. Without this the specific beats that make
+ * a challenge memorable ("she died on the panel", "she took the front and the
+ * team paid for it") reach the row as bare event types and are shown to nobody.
+ *
+ * An event with no prose written yet renders with no text rather than being
+ * dropped, so the beat still exists and the gap is visible.
+ */
+export function renderMaxiEventScenes(events, { step = 'maxi-main', rng = Math.random } = {}) {
+  const scenes = [];
+  const used = new Set();
+  for (const ev of events || []) {
+    const spec = MAXI_EVENTS.find(x => x.id === ev.type);
+    if (!spec) continue;
+    const who = ev.players || [];
+    scenes.push({
+      step,
+      kind: `maxi:${ev.type}`,
+      data: { event: ev.type, players: who, note: spec.note, from: spec.from },
+      text: fill(pick(spec.lines, rng, used, ev.type), { a: who[0], b: who[1] }),
+    });
+  }
   return scenes;
 }
 

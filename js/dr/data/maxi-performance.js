@@ -549,6 +549,17 @@ export const MAXI_PERFORMANCE = [
 
 export const PERFORMANCE_FAMILIES = MAXI_PERFORMANCE.map(x => x.family);
 
+/**
+ * Which family narrates this challenge.
+ *
+ * By challenge id rather than by module, because the renderer has the id and
+ * should not have to know that rumix and music-video are the girl group.
+ */
+export function familyForChallenge(id) {
+  return MAXI_PERFORMANCE.find(x => x.serves.includes(id))
+    || MAXI_PERFORMANCE.find(x => x.family === 'generic');
+}
+
 export function performanceFor(family) {
   return MAXI_PERFORMANCE.find(x => x.family === family)
     || MAXI_PERFORMANCE.find(x => x.family === 'generic');

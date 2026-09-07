@@ -219,7 +219,12 @@ function _textWerkRoom(dr, ln) {
   // Every narrated scene, not just the werk room: the stage, Untucked and the
   // challenge phases all emit prose now, and a readout that showed one pool
   // out of four would be lying about what the episode contains.
-  const werk = (dr.scenes || []).filter(s => /^(werk|stage|untucked|chal):/.test(String(s.kind || '')));
+  // EVERY narrated kind. This filter is the third place a pool has been
+  // written, generated correctly and shown to nobody because the readout did
+  // not know its prefix — so it matches the whole family rather than a list
+  // that has to be remembered.
+  const werk = (dr.scenes || [])
+    .filter(s => /^(werk|stage|untucked|chal|perform|maxi):/.test(String(s.kind || '')));
   if (!werk.length) return;
   const SLOT_NAME = {
     'cold-open': 'COLD OPEN', 'werk-morning': 'WERK ROOM — MORNING',

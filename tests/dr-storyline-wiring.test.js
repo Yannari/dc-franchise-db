@@ -92,11 +92,18 @@ describe('storylines in a played season', () => {
   });
 
   it('most seasons get at least one arc to a second beat', () => {
+    // N=100, floor 0.75. Measured over 200 seasons the real rate is 91% and
+    // the busiest arc averages 4.3 beats — but at N=20 the sampling error is
+    // 6.4 points, and the first twenty seeds happened to return exactly 70%
+    // against a floor of "greater than 0.7". A knife-edge threshold on an
+    // underpowered sample goes red when an unrelated change shifts the seed
+    // stream, which is exactly what happened, and a guard that fires on noise
+    // teaches everyone to ignore it.
     let ok = 0;
-    for (let s = 0; s < 20; s++) {
+    for (let s = 0; s < 100; s++) {
       if (season(100 + s, s).state.storylines.some(x => x.beats.length >= 2)) ok++;
     }
-    expect(ok / 20).toBeGreaterThan(0.7);
+    expect(ok / 100).toBeGreaterThan(0.75);
   });
 
   it('stays serialisable, because the row goes into the save', () => {

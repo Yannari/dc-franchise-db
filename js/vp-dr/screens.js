@@ -31,6 +31,7 @@ import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
 import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
+import { rpBuildSmackdown } from './smackdown.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -87,6 +88,15 @@ const SECTIONS = [
   { id: 'dr-exit', label: 'Sashay', suffix: 'exit', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['exit'], badge: null,
     title: 'Sashay Away', subtitle: 'the mirror message' },
+
+  /* ── THE SMACKDOWN ──
+     Its own screen because it is its own night: a bracket, not a main stage.
+     None of its scene kinds matched a section before, so all eight of them
+     fell into the cold-open fallback and the episode arrived blank. */
+  { id: 'dr-smackdown', label: 'Smackdown', suffix: 'smackdown', phase: 'lipsync', accent: 'dr-a-lip',
+    opens: ['smackdown-open', 'smackdown-duel', 'smackdown-crown'],
+    badge: { text: 'SMACKDOWN', color: '#FF294B' },
+    title: 'The Lip Sync Smackdown', subtitle: 'the queens who already went home' },
 
   /* ── THE REUNION ──
      Between the last elimination and the crowning, which is where the real
@@ -258,6 +268,7 @@ const BUILDERS = {
   // `finale-open` is a marker with no prose, so the generic renderer drew
   // this screen empty on every finale.
   'dr-finale-open': rpBuildFinaleOpen,
+  'dr-smackdown': rpBuildSmackdown,
 };
 
 const _sections = SECTIONS.map(sec => ({

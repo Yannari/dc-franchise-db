@@ -26,14 +26,14 @@ const { rows } = playDragSeason({
 beforeEach(() => { window._tvState = {}; window._drSidebar = {}; });
 
 describe('the registry', () => {
-  it('is the twenty-six screens, in the running order', () => {
-    expect(DRAG_SCREENS.length).toBe(26);
+  it('is the twenty-seven screens, in the running order', () => {
+    expect(DRAG_SCREENS.length).toBe(27);
     const ids = DRAG_SCREENS.map(s => s.id);
     expect(ids[0]).toBe('dr-arrivals');
     expect(ids).toContain('dr-chart');
-    expect(new Set(ids).size).toBe(26);
+    expect(new Set(ids).size).toBe(27);
     expect(new Set(DRAG_SCREENS.map(s => s.suffix)).size, 'two screens share a suffix')
-      .toBe(26);
+      .toBe(27);
     for (const s of DRAG_SCREENS) {
       expect(typeof s.when, s.id).toBe('function');
       expect(typeof s.build, s.id).toBe('function');
@@ -136,5 +136,69 @@ describe('the transcript reads the same list', () => {
       const live = window._tvState[`dr:${row.num}:${s.suffix}`];
       expect(live?.idx ?? -1, `${s.id} was opened by the transcript`).toBe(-1);
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The smackdown had a full bracket and no screen at all
+// ══════════════════════════════════════════════════════════════════════
+describe('the smackdown screen', () => {
+  /* The episode carried eight queens, three rounds, a song per duel, scores
+     and a champion — and none of its scene kinds matched a section, so all
+     eight fell into the cold-open fallback and the night arrived blank. It
+     was reachable, booked, simulated, and invisible. */
+  it('draws the bracket rather than falling through to the cold open', async () => {
+    const { playDragSeason } = await import('../js/dr/season.js');
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const { rngFor } = await import('../js/dr/rng.js');
+    const S = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const g = rngFor(9); const r = () => 1 + Math.floor(g() * 10);
+    const cast = Array.from({ length: 12 }, (_, i) => ({
+      name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+      archetype: 'hero', age: 22 + i,
+      stats: Object.fromEntries(S.map(k => [k, r()])),
+      drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+    }));
+    const { rows } = playDragSeason({ cast, seed: 4, config: { drSmackdown: true } });
+    const sm = rows.find(x => x.dr.smackdown);
+    expect(sm, 'no smackdown episode').toBeTruthy();
+
+    const ids = dragScreens(sm).map(s => s.id);
+    expect(ids, 'the smackdown has no screen').toContain('dr-smackdown');
+    expect(ids, 'it fell through to the cold open again').not.toContain('dr-cold-open');
+
+    const html = dragScreens(sm).find(s => s.id === 'dr-smackdown').html;
+    // Every duel is on the bracket, and the champion has somewhere to stand.
+    for (const d of sm.dr.smackdown.duels) {
+      expect(html, `${d.a} vs ${d.b} is not on the bracket`).toContain(d.song);
+    }
+    expect(html).toMatch(/sd-champ/);
+    // And it reads: every scene carried text:'' before this.
+    const body = html.replace(/<style[\s\S]*?<\/style>/g, '')
+      .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '')
+      .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    expect(body.length, 'the bracket has no words on it').toBeGreaterThan(800);
+  });
+
+  it('never narrates a duel as an upset when it was not one', async () => {
+    const { smackdownScenes } = await import('../js/dr/smackdown.js');
+    /* "The winner was not the favourite" alone called 31% of duels an upset,
+       which makes the word mean nothing — lip sync ability has little to do
+       with how long a queen lasted. She has to have gone home clearly earlier
+       AND won it clearly. */
+    const duels = [{
+      round: 1, a: 'Early', b: 'Late', song: 'X',
+      scores: { Early: 9, Late: 3 }, winner: 'Early', loser: 'Late',
+    }];
+    const order = ['Early', 'A', 'B', 'C', 'Late'];
+    const near = ['Early', 'Late'];
+    const tierOf = f => smackdownScenes({
+      field: ['Early', 'Late'], duels, champion: 'Early', title: 't',
+      rng: () => 0, expectedOf: n => f.indexOf(n),
+    }).find(s => s.kind === 'smackdown-duel').data.tier;
+    expect(tierOf(order), 'a real upset was not called one').toBe('upset');
+    expect(tierOf(near), 'beating the queen who left a week later is not an upset')
+      .not.toBe('upset');
   });
 });

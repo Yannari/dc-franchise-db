@@ -9,6 +9,7 @@ import { initDragState } from './state.js';
 import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
 import { runReunion } from './reunion.js';
+import { smackdownScenes } from './smackdown.js';
 import { runDragWeek } from './week.js';
 import { assignStorylines, recordBeat, arcSummary } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
@@ -357,11 +358,20 @@ export function runSmackdown(state, cfg, ctx) {
       storylineNeed: {},
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],
-      scenes: [
-        { step: 'main-stage', kind: 'smackdown-open', data: { field }, text: '' },
-        ...duels.map(d => ({ step: 'lipsync', kind: 'smackdown-duel', data: { duel: d }, text: '' })),
-        { step: 'results', kind: 'smackdown-crown', data: { winner: champion, title: TITLE }, text: '' },
-      ],
+      /* THE NIGHT, NARRATED. Every one of these carried `text: ''` and there
+         was no screen to draw them on either, so an episode with a full
+         eight-queen bracket in its data arrived with nothing on it at all.
+         Its own step (`smackdown`), because a smackdown is not a main stage:
+         no runway, no panel, no critique, nobody going home. */
+      /* `expectedOf` IS HOW FAR SHE GOT. `state.out` is pushed in elimination
+         order, so a later index means she lasted longer and is the favourite
+         going into a duel. Without it the builder fell back to the bracket's
+         own seeding order, which is arbitrary — and three of seven duels came
+         back reading as upsets, which makes an upset mean nothing. */
+      scenes: smackdownScenes({
+        field, duels, champion, title: TITLE, rng,
+        expectedOf: n => (state.out || []).indexOf(n),
+      }),
     },
   };
 }

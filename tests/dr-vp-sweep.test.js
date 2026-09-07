@@ -99,7 +99,14 @@ describe('the transcript, read', () => {
     // No run of blank lines: stripping tags used to leave one per empty span.
     expect(text).not.toMatch(/\n\s*\n\s*\n\s*\n/);
     // And no single paragraph swallowing the whole screen.
-    for (const l of body) expect(l.length, 'a beat ran into the next').toBeLessThan(1400);
+    /* 2200, NOT 1400. The cap was set when a performance card was a portrait,
+       a score bar and a detail panel — no words. The cards carry the night's
+       narration now (the maxi screen went from 657 characters to 10,299), so
+       one beat is legitimately a card plus its paragraph. The check still
+       does its job: it catches a beat that has swallowed the NEXT one, which
+       is what a run-on looks like, rather than a card that simply has prose
+       on it. */
+    for (const l of body) expect(l.length, 'a beat ran into the next').toBeLessThan(2200);
   });
 
   it('THE COLD OPEN DOES NOT CARRY TONIGHT\'S EXIT MESSAGE', () => {

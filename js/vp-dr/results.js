@@ -28,6 +28,7 @@ const n1 = v => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '—');
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
 export const RESULTS_CSS = `
+.dr-said{margin:8px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
 .dr-callrow{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
   padding:13px 16px 13px 20px}
 .dr-callrow h3{margin:0;font-size:18px}
@@ -110,17 +111,38 @@ export function rpBuildResults(row) {
   const named = groups.flatMap(([r, list]) => list.map(n => [r, n]));
   if (!named.length) return '';
 
+  /* WHAT THE HOST ACTUALLY SAID. The row carries a written line for every
+     call — `stage:result-win`, `-safe`, `-bottom` — and this screen drew a
+     portrait, a rank arrow and a stamp and none of the words. Four written
+     lines on the row, a hundred and seventy-seven characters on the screen.
+     "Condragulations, you are the winner of this week's maxi challenge" is
+     the single most quotable sentence the show has and it was on the floor. */
+  const RESULT_SCENE = { WIN: 'stage:result-win', HIGH: 'stage:result-win',
+    SAFE: 'stage:result-safe', LOW: 'stage:result-safe',
+    BTM: 'stage:result-bottom', BTM2: 'stage:result-bottom' };
+  const spoken = new Set();
+  const lineFor = (result, name) => {
+    const kind = RESULT_SCENE[result];
+    const sc = (row.dr.scenes || []).find(x => x.kind === kind
+      && ((x.data?.players || []).includes(name) || !(x.data?.players || []).length)
+      && !spoken.has(x));
+    if (sc) spoken.add(sc);
+    return sc?.text || '';
+  };
+
   const steps = named.map(([result, name], i) => {
     const b = bend.get(name);
     const moved = b && b.panelRank !== b.finalRank;
     const meta = GRID_RESULTS[result] || {};
+    const said = lineFor(result, name);
     return `<div class="dr-step" id="dr-step-results-${i}">
       <div class="dr-panel dr-a-score dr-callrow">
         ${_portrait(name, ep, { size: 52, station: true })}
         <div><h3 class="dr-disp">${esc(name)}</h3>
           ${b ? `<span style="font-size:11px;color:#C9A6BC">panel ${b.panelRank} → ${b.finalRank}</span>` : ''}
+          ${said ? `<p class="dr-said">${esc(said)}</p>` : ''}
         </div>
-        ${moved ? `<span class="dr-moved dr-disp">the host moved her</span>` : '<span></span>'}
+        ${moved ? '<span class="dr-moved dr-disp">the host moved her</span>' : '<span></span>'}
         <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || result)}</span>
       </div></div>`;
   }).join('');

@@ -39,7 +39,11 @@ export const STAGE_CSS = `
 .dr-seat b{display:block;margin-top:5px;font-size:12px;color:#fff}
 
 /* ── THE RUNWAY ── one walk, one meter ── */
-.dr-walk{display:grid;grid-template-columns:auto 1fr auto;gap:15px;align-items:center;
+/* The walk reads as a paragraph now, so the row aligns to the TOP rather than
+   centring a portrait against three lines of prose. */
+.dr-walk-line{margin:9px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
+.dr-walk-fit{margin:6px 0 0;color:#C9A6BC;font-size:13px;line-height:1.5;text-wrap:pretty}
+.dr-walk{display:grid;grid-template-columns:auto 1fr auto;gap:15px;align-items:start;
   padding:14px 16px 14px 20px}
 .dr-walk h3{margin:0;font-size:18px}
 .dr-look{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;color:#ffd0e8;
@@ -120,9 +124,21 @@ export function rpBuildRunway(row) {
     <div class="dr-fash" style="font-size:30px;margin-top:4px">${esc(rw.category)}</div>
   </div>`;
 
+  /* THE WALK ITSELF, WHICH THIS SCREEN WAS THROWING AWAY.
+     Every queen has a written walk on the row — `stage:walk`, and often a
+     `stage:walk-fit` line about whether the look answered the category — and
+     this drew a portrait, a bar and a number and none of the words. Nine
+     descriptions on the row, a hundred and ten characters on the screen. The
+     runway is the one thing a viewer sees every single episode and it was the
+     emptiest thing in the reader. */
+  const lineFor = (kind, name) => (row.dr.scenes || []).find(sc =>
+    sc.kind === kind && (sc.data?.players || [])[0] === name)?.text || '';
+
   const steps = walkers.map((name, i) => {
     const w = rw[name] || {};
     const score = Number(w.score) || 0;
+    const walk = lineFor('stage:walk', name);
+    const fit = lineFor('stage:walk-fit', name);
     return `<div class="dr-step" id="dr-step-runway-${i}">
       <div class="dr-panel dr-a-score dr-walk">
         ${_portrait(name, ep, { size: 58, station: true })}
@@ -130,6 +146,8 @@ export function rpBuildRunway(row) {
           ${(w.walks || []).length > 1
     ? `<p class="dr-look">${w.walks.length} looks tonight</p>` : ''}
           <div class="dr-bar"><i style="width:${Math.max(4, Math.min(100, score * 10))}%"></i></div>
+          ${walk ? `<p class="dr-walk-line">${esc(walk)}</p>` : ''}
+          ${fit ? `<p class="dr-walk-fit">${esc(fit)}</p>` : ''}
         </div>
         <span class="dr-runscore dr-disp">${n1(score)}</span>
       </div></div>`;

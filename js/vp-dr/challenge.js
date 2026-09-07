@@ -62,6 +62,7 @@ function _sceneData(ep, kind) {
 }
 
 const CHAL_CSS = `
+.dr-perf-line{margin:9px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
 .dr-track{margin-top:10px;color:#FFC83D;font-size:13px;line-height:1.5}
 .dr-track span{color:#C9A6BC}
 .dr-brief{padding:18px 22px;margin-bottom:14px;
@@ -363,7 +364,42 @@ export function rpBuildMaxi(row) {
       </div>`;
     }).join('')}</div>` : '';
 
-  const steps = running.map((name, i) => perfCard(name, perfs[name], i, 'maxi', ep, ch.id)).join('');
+  /* AND THE NIGHT AS IT WAS WRITTEN. This drew a card per queen — portrait,
+     score bar, a detail panel — and dropped every word of the challenge:
+     9,452 characters of narration on the row against 657 on the screen. The
+     maxi is the longest part of an episode and it was the emptiest.
+     Her own lines sit with her card; anything about the room rather than one
+     queen (the taping, a bit stolen, the whole cast reacting) runs between
+     the cards in the order it happened. */
+  const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
+    && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
+  const usedScene = new Set();
+  const linesFor = name => maxiScenes.filter(sc => {
+    if (usedScene.has(sc)) return false;
+    const players = sc.data?.players || [];
+    if (players[0] !== name) return false;
+    usedScene.add(sc);
+    return true;
+  });
+
+  const steps = running.map((name, i) => {
+    const said = linesFor(name)
+      .map(sc => `<p class="dr-perf-line">${esc(sc.text)}</p>`).join('');
+    const card = perfCard(name, perfs[name], i, 'maxi', ep, ch.id);
+    return said
+      ? card.replace(/<\/div><\/div>$/, `${said}</div></div>`)
+      : card;
+  }).join('');
+
+  // Whatever was about the room rather than one queen, after the cards.
+  const room = maxiScenes.filter(sc => !usedScene.has(sc))
+    .map((sc, i) => `<div class="dr-step" id="dr-step-maxi-room-${i}">
+      <div class="dr-panel dr-a-room dr-scene">
+        ${(sc.data?.players || []).length
+    ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
+      .map(n => _portrait(n, ep, { size: 42 })).join('')}</span>` : ''}
+        <div class="dr-scene-body">${esc(sc.text)}</div>
+      </div></div>`).join('');
 
   /* THE RUNNING ORDER, GATED. The rail shows the queens up to the step the
      viewer has reached and nobody after — a panel carrying a score she has
@@ -380,7 +416,7 @@ export function rpBuildMaxi(row) {
         </div>`).join('')}`);
   }
 
-  return `<style>${CHAL_CSS}</style>${_shell(teams + steps, ep, {
+  return `<style>${CHAL_CSS}</style>${_shell(teams + steps + room, ep, {
     phase: 'stage', title: ch.name, subtitle: 'tape rolls',
     sidebar: '<h4 class="dr-disp">So far</h4>',
   })}${_controls('maxi', running.length, ep.num)}`;

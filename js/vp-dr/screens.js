@@ -32,6 +32,7 @@ import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMa
 import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
+import { rpBuildCrowning } from './crowning.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -136,6 +137,9 @@ const SECTIONS = [
     opens: ['finale:finale-crown-lipsync'], badge: { text: 'FOR THE CROWN', color: '#FF294B' },
     title: 'Lip Sync For The Crown', subtitle: 'two queens stand before me' },
   { id: 'dr-finale-crown', label: 'The Crowning', suffix: 'fincrown', phase: 'stage', accent: 'dr-a-score',
+    /* `crowning` catches every beat of the new ceremony pool, whose scenes
+       all carry that step; the two `finale:` kinds are the older five-line
+       version, still drawn while a tier of the new pool is unwritten. */
     opens: ['finale:finale-congeniality', 'finale:finale-runnerup', 'crowning'],
     badge: { text: 'CROWNED', color: '#FFC83D' },
     title: 'The Crowning', subtitle: "America's Next Drag Superstar" },
@@ -284,10 +288,12 @@ const BUILDERS = {
   'dr-results': rpBuildResults,
   'dr-lipsync': rpBuildLipSync,
   'dr-exit': rpBuildExit,
-  // The crowning keeps the designed builder — the bracket, the sash, the
-  // crown and the finishing order were always drawn well; they were drawn
-  // under the wrong heading.
-  'dr-finale-crown': rpBuildExit,
+  /* THE CROWNING HAS ITS OWN SCREEN NOW. It used to share rpBuildExit with
+     a weekly sashay, which is why the payoff of a whole season arrived as a
+     bracket, a list and a portrait with WINNER over it. js/vp-dr/crowning.js
+     stages it: a sticky line of lit name plates that goes dark from the
+     bottom up as the places are called. */
+  'dr-finale-crown': rpBuildCrowning,
   // `finale-open` is a marker with no prose, so the generic renderer drew
   // this screen empty on every finale.
   'dr-finale-open': rpBuildFinaleOpen,

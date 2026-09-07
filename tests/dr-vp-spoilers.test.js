@@ -99,19 +99,42 @@ describe('no screen prints its own answer above the fold', () => {
     }
   });
 
-  it('the crowning does not name the winner, the runner-up or the order', () => {
+  it('the crowning shows a line-up, not a result', () => {
     const row = rows.find(x => x?.dr?.finale);
     expect(row, 'no finale — nothing was tested').toBeTruthy();
     const scr = dragScreens(row).find(s => /crown|exit/.test(s.id));
     expect(scr, 'the finale drew no crowning screen').toBeTruthy();
+    const host = document.createElement('div');
+    host.innerHTML = scr.html;
+
+    /* NAMING THE FINALISTS IS NOT THE LEAK. The stage has to show the line
+       of queens standing on it — that is the screen — and they are drawn in
+       alphabetical order precisely so the arrangement says nothing. What
+       would leak is a plinth already marked: dark, or lit as one of the last
+       two, or wearing the crown, or carrying a placement, before the beat
+       that does that to her.
+       An earlier version of this asserted that no finalist was named at
+       rest and failed on the line-up itself, which would have meant
+       deleting the stage to satisfy the test. */
+    for (const el of host.querySelectorAll('.cr-plate')) {
+      const who = el.getAttribute('data-queen');
+      for (const cls of ['out', 'finaltwo', 'crowned']) {
+        expect(el.classList.contains(cls),
+          `${who} is already ${cls} before a click`).toBe(false);
+      }
+      expect((el.querySelector('.cr-place')?.textContent || '').trim(),
+        `${who} already carries a placement`).toBe('');
+    }
+
+    // And the finishing order is not written anywhere outside the steps.
     const text = alwaysVisible(scr.html);
-    const fin = row.dr.finale;
-    const secrets = [fin.winner, ...(fin.placements || []).slice(0, 3),
-      row.dr.congeniality].filter(Boolean);
-    const leaked = names(text, [...new Set(secrets)]);
-    expect(leaked, `the crowning names ${leaked.join(', ')} before any click`).toEqual([]);
-    // AND THE STEPS EXIST, or this passes because the screen is empty.
-    expect(scr.html).toMatch(/id="dr-step-exit-/);
+    expect(text, 'the finishing order is legible at rest').not.toMatch(/crowned|Placements/i);
+    // The steps exist, or this passes because the screen is empty.
+    expect(scr.html).toMatch(/id="dr-step-fincrown-/);
+    // AND THE RECORD IS STILL ON THE SCREEN, at the end. Cutting it is the
+    // other half of this mistake and cost the transcript its finishing order
+    // once already.
+    expect(scr.html).toMatch(/Placements/);
   });
 
   /* NO GENERAL "DOES ANY SCREEN NAME THE ELIMINATED QUEEN" CHECK. It was

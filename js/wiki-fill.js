@@ -19,7 +19,7 @@
 // eighteen — see `sliceCastThreads`.
 
 /** A dialogue line: `Name: words`. Same shape the episode player parses. */
-import { showWords, publicBallots, DEFAULT_FORMAT } from './shows.js';
+import { showWords, publicBallots, roundShape, seasonRounds, DEFAULT_FORMAT } from './shows.js';
 
 const DIALOGUE = /^([A-Z][a-zA-Z\s'\-]+):\s*(.+)$/;
 /** A bracketed tag: `[SCENE: KITCHEN]`, `[CONFESSIONAL: Ireland]`. */
@@ -214,17 +214,57 @@ export function episodeDigest(text, { cap = 5000 } = {}) {
 }
 
 /**
- * The season's rounds as the RECORD has them, from either show's shape.
+ * Who left this round and how, in ONE rule for every show.
  *
- * Big Brother exports `weeks`; Total Drama exports `votingHistory`. Both
- * are a list of rounds with somebody leaving at the end, and the article
- * says the same kind of thing about each — so they are normalised once,
- * here, rather than twice in two pages.
+ * A show with one way of leaving is described by the two fallback clauses,
+ * which is why they were the whole rule while there were two shows. A show
+ * with TWO doors — The Traitors banishes at the table and murders at night —
+ * cannot be: whichever clause won would print one verb over the other's
+ * departure, which is this repo's oldest bug class wearing a new hat. So a
+ * round may carry its own `exits[]`, each with the verb the REGISTRY gave
+ * that channel (js/shows.js `exitVerbs`, js/tr/export.js, js/dr/export.js),
+ * and when it does that list is what is rendered. Nothing is guessed.
+ */
+function _leftThisRound(r) {
+  const given = Array.isArray(r.exits) ? r.exits.filter(x => x?.name && x?.verb) : [];
+  if (given.length) {
+    return {
+      facts: given.map(x => `${x.name} was ${x.verb}`),
+      gone: given[0].name,
+      left: given.map(x => ({ name: x.name, verb: x.verb })),
+    };
+  }
+  if (r.evicted) return { facts: [`${r.evicted} was evicted`], gone: r.evicted, left: [] };
+  if (r.eliminated) return { facts: [`${r.eliminated} was eliminated`], gone: r.eliminated, left: [] };
+  return { facts: [], gone: null, left: [] };
+}
+
+/**
+ * The season's rounds as the RECORD has them, in whatever shape the show uses.
+ *
+ * Big Brother exports `weeks`; Total Drama and The Traitors export
+ * `votingHistory`; Drag Race exports neither, because nobody in that show
+ * votes on anything. All are a list of rounds with somebody leaving at the
+ * end, and the article says the same KIND of thing about each — so they are
+ * normalised once, here, rather than three times in three pages.
+ *
+ * The array is chosen by asking the REGISTRY what shape this show's rounds
+ * are (roundShape), not by asking which array came back non-empty. The old
+ * question worked for exactly two shows: a third that also exports
+ * `votingHistory` is not Total Drama, and a fourth that exports neither array
+ * fell out of both branches and produced an empty ledger — an article with a
+ * cast, a winner, and no account of a single episode.
  */
 export function roundLedger(doc = {}) {
-  const weeks = Array.isArray(doc.weeks) && doc.weeks.length ? doc.weeks : null;
-  const rows = weeks || (Array.isArray(doc.votingHistory) ? doc.votingHistory : []);
   const format = doc.format || DEFAULT_FORMAT;
+  const shape = roundShape(format);
+  const rows = shape === 'placements'
+    // Follows the registry's roundsPath, so the document and the live `gs`
+    // are read by the same rule.
+    ? seasonRounds(doc, format)
+    : (Array.isArray(doc.weeks) && doc.weeks.length
+      ? doc.weeks
+      : (Array.isArray(doc.votingHistory) ? doc.votingHistory : []));
   // The round's name, from the registry rather than from which array was
   // found: a third show that also exports `votingHistory` is not Total Drama.
   const word = showWords(format).round;
@@ -232,6 +272,36 @@ export function roundLedger(doc = {}) {
   return rows.map((r, idx) => {
     const n = Number(r.week ?? r.episode ?? r.round ?? idx + 1);
     const facts = [];
+    /* ── A ROUND WITH NO BALLOT IN IT ─────────────────────────────────
+       A placement round is the whole night's result: who won the maxi, who
+       was praised, who was in the bottom, what they lip synced to. There is
+       no tally clause below this branch because there is nothing to tally,
+       and printing an empty `votes:` line would be the show's own screens
+       claiming an election it never held. */
+    if (shape === 'placements') {
+      const call = { win: [], high: [], low: [], btm: [] };
+      for (const p of r.placements || []) {
+        if (p.result === 'WIN') call.win.push(p.name);
+        else if (p.result === 'HIGH') call.high.push(p.name);
+        else if (p.result === 'LOW') call.low.push(p.name);
+        else if (p.result === 'BTM' || p.result === 'ELIM') call.btm.push(p.name);
+      }
+      if (r.challenge?.name) facts.push(`the maxi challenge was ${r.challenge.name}`);
+      if (r.runwayCategory) facts.push(`the runway category was ${r.runwayCategory}`);
+      if (call.win.length) facts.push(`${call.win.join(' and ')} won the maxi challenge`);
+      if (call.high.length) facts.push(`high: ${call.high.join(', ')}`);
+      if (call.low.length) facts.push(`low: ${call.low.join(', ')}`);
+      if (call.btm.length) facts.push(`the bottom: ${call.btm.join(', ')}`);
+      if (r.lipsync?.queens?.length) {
+        facts.push(`${r.lipsync.queens.join(' and ')} lip synced`
+          + (r.lipsync.song ? ` to "${r.lipsync.song}"` : ''));
+      }
+      if (r.mini?.winner) facts.push(`${r.mini.winner} won the mini challenge`);
+      const exits = _leftThisRound(r);
+      for (const line of exits.facts) facts.push(line);
+      return { n, word, gone: exits.gone,
+        ...(exits.left.length ? { left: exits.left } : {}), facts };
+    }
     if (r.hoh) facts.push(`${r.hoh} won Head of Household`);
     if (r.winner) facts.push(`${r.winner} won the challenge`);
     if (r.immunityWinner && r.immunityWinner !== r.winner) facts.push(`${r.immunityWinner} had immunity`);
@@ -268,27 +338,16 @@ export function roundLedger(doc = {}) {
       .filter(([, c]) => Number.isFinite(Number(c)))
       .map(([name, c]) => `${name} ${c}`);
     if (tally.length) facts.push(`votes: ${tally.join(', ')}`);
-    // ── WHO LEFT, IN THE SHOW'S OWN VERB ──
-    //
-    // A show with ONE way of leaving can be described by the two clauses
-    // below, which is why they were the whole rule for two shows. A show with
-    // TWO — The Traitors banishes at the table and murders at night — cannot:
-    // whichever clause won would print one of its verbs over the other's
-    // departure, which is this repo's oldest bug class wearing a new hat. So a
-    // round may carry its own `exits[]`, each with the verb the REGISTRY gave
-    // that channel (js/tr/export.js, `exitVerbs` in js/shows.js), and when it
-    // does that list is what is rendered. Nothing is guessed here.
-    const exits = Array.isArray(r.exits) ? r.exits.filter(x => x?.name && x?.verb) : [];
-    if (exits.length) for (const x of exits) facts.push(`${x.name} was ${x.verb}`);
-    else if (r.evicted) facts.push(`${r.evicted} was evicted`);
-    else if (r.eliminated) facts.push(`${r.eliminated} was eliminated`);
+    // Who left, in the show's own verb. See _leftThisRound().
+    const exits = _leftThisRound(r);
+    for (const line of exits.facts) facts.push(line);
     if (r.quit) facts.push(`${r.quit} quit`);
     if (r.medevac) facts.push(`${r.medevac} was medically evacuated`);
 
-    return { n, word, gone: r.evicted || r.eliminated || exits[0]?.name || null,
+    return { n, word, gone: exits.gone,
       // Everybody who left this round and how, for a reader that needs more
       // than one name. `gone` keeps its shape for the readers that have one.
-      ...(exits.length ? { left: exits.map(x => ({ name: x.name, verb: x.verb })) } : {}),
+      ...(exits.left.length ? { left: exits.left } : {}),
       facts };
   });
 }

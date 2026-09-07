@@ -32,7 +32,7 @@ function _winnerBlockFor(doc, name) {
 }
 // The registry is the only list of shows. This file kept its own, so a show
 // registered anywhere else headed its section with a raw slug.
-import { SHOWS, DEFAULT_FORMAT, showName, roundExits } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, showName, roundExits, roundShape, seasonRounds } from './shows.js';
 
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
 
@@ -227,6 +227,48 @@ function _arr(v) { return Array.isArray(v) && v.length ? v : null; }
 function _weekRowsFromDoc(found, name) {
   if (!found) return null;
   const doc = found.doc;
+
+  /* ── THE RUNWAY ────────────────────────────────────────────────────
+     A show with no ballot has neither array below, so it reached the end of
+     this function and returned null — and the grid, the most characteristic
+     table on a character page, was missing from every queen's article for the
+     same reason a camp's used to be: the function knew two shapes and this is
+     a third. What a runway grid records is the CALL, week by week, which is
+     the exact thing that show's fans read a track record chart for.
+
+     The vote columns stay empty rather than being filled with something
+     adjacent. Nobody voted; a `votesAgainst` of 0 is the truth here, not a
+     placeholder. */
+  if (roundShape(fmtOf(doc)) === 'placements') {
+    const eps = seasonRounds(doc, fmtOf(doc));
+    if (!eps.length) return null;
+    const format = fmtOf(doc);
+    const rows = [];
+    let gone = false;
+    for (const e of eps) {
+      if (gone) break;
+      const mineCell = (e.placements || []).find(p => p.name === name);
+      // A queen who is not in this episode's grid at all was never in the
+      // season — not somebody having a quiet week.
+      if (!mineCell) continue;
+      const exits = roundExits(e, format);
+      const mineOut = exits.find(x => x.name === name) || null;
+      rows.push({
+        week: Number(e.episode),
+        result: mineCell.result || '',
+        evicted: !!mineOut,
+        exitVerb: mineOut?.verb || '',
+        exitChannel: mineOut?.channel || '',
+        votesAgainst: 0,
+        votedFor: '',
+        votedForSlug: '',
+        evictedName: exits.map(x => x.name).join(', '),
+        exits: exits.map(x => ({ name: x.name, verb: x.verb, channel: x.channel })),
+      });
+      if (mineOut) gone = true;
+    }
+    return rows.length ? rows : null;
+  }
 
   // ── the house ──
   const weeks = Array.isArray(doc.weeks) ? doc.weeks : [];

@@ -7,6 +7,7 @@ import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument, seasonFilePath as dragSeasonFilePath } from './dr/export.js';
+import { DRAG_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -3011,7 +3012,11 @@ export async function exportDragRaceSeason(onStatus) {
       `No ${SHOWS['drag-race'].name} season to export: gs.episodeHistory has no `
       + 'episodes with a `dr` block. Play a season first.');
   }
-  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== 'drag-race');
+  // Compared against the slug this exporter's own module declares, not a
+  // literal typed here: a comparison against a written-out slug is the
+  // two-show habit js/shows.js exists to end, and this file already carries
+  // five of them.
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== DRAG_FORMAT);
   if (foreign.length) {
     throw new Error(
       `This season's history contains ${foreign.length} episode(s) tagged `
@@ -3031,7 +3036,7 @@ export async function exportDragRaceSeason(onStatus) {
   _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
 
   const published = await _publishSeasonToSite({
-    format: 'drag-race',
+    format: DRAG_FORMAT,
     seasonNumber: seasonNum,
     path: dragSeasonFilePath(seasonNum),
     data: doc,

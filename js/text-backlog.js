@@ -102,6 +102,7 @@ import { rpBuildCoachBoard } from './vp-coaches.js';
 import { rpBuildBenches, rpBuildRelayPitch, rpBuildRelayFlagpole, rpBuildRelayBeam, rpBuildRelaySprint, rpBuildRelayFinish, rpBuildJuryVotes, rpBuildJuryLife } from './vp-finale.js';
 import { traitorsScreensRevealed, screenNarration } from './vp-tr/screens.js';
 import { generateDragSummaryText } from './vp-dr/summary.js';
+import { DRAG_FORMAT } from './shows.js';
 import { rpBuildRescueTitle, rpBuildRescueMaze, rpBuildRescueHaunted, rpBuildRescueShip, rpBuildRescueSlide, rpBuildRescueLake, rpBuildRescueDrive, rpBuildRescueChampion } from './chal/rescue-mission.js';
 // rpBuildAftermath is read off window (not statically imported) — aftermath.js already imports from
 // this module, so a static import here would create a circular dependency.
@@ -3718,7 +3719,7 @@ export function generateSummaryText(ep) {
   // drag episode shares no structure with a camp, so there is nothing in the
   // Total Drama path below for it to fall through to — it threw. The written
   // episode is Plan 3; this states what happened.
-  if (ep.format === 'drag-race') {
+  if (ep.format === DRAG_FORMAT) {
     return generateDragSummaryText(ep);
   }
 

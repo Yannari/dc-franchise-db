@@ -31,6 +31,7 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
 import { rpBuildDragSummary } from './vp-dr/summary.js';
+import { DRAG_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14049,7 +14050,7 @@ export function buildVPScreens(epRecord) {
   //
   // ONE SCREEN, and deliberately a readout rather than a designed one — the
   // real sixteen are Plan 5. See js/vp-dr/summary.js.
-  if (epRecord.format === 'drag-race') {
+  if (epRecord.format === DRAG_FORMAT) {
     return [{ id: 'dr-summary', label: 'Episode', html: rpBuildDragSummary(epRecord) }];
   }
   if (epRecord.format === 'traitors') {

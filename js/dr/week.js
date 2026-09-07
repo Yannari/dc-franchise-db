@@ -34,6 +34,7 @@ import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemory
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
+import { critiqueLines, runReactions, whoShouldGoHome, rateAQueen } from './critiques.js';
 import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats,
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
@@ -96,6 +97,12 @@ export function runDragWeek(state, cfg, ctx) {
   // are the ones that are about the room rather than about the work.
   // Declared before the room is drawn because the mini writes into it too.
   const werkEvents = [];
+  /** Apply an {bond, pop, state} event. The one place these three land. */
+  const applyEventLike = e => {
+    for (const [a, b, d] of e.bond || []) ctx.addBond(a, b, d);
+    for (const [n, d] of Object.entries(e.pop || {})) ctx.popDelta(n, d);
+    for (const [k, v] of Object.entries(e.state || {})) (state.flags ||= {})[k] = v;
+  };
   const werkScenes = runWerkRoom({
     slots: ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
     living, players: ctx.players, state, storylines: state.storylines || [],
@@ -267,7 +274,15 @@ export function runDragWeek(state, cfg, ctx) {
     }
   }
 
-  say('critiques', 'critiques', { call, split, tripled });
+  // ── WHAT THE PANEL ACTUALLY SAID, AND WHAT IT COST ────────────────
+  //
+  // Tone comes from each judge's OWN view rather than from the call, so a
+  // split panel produces genuinely opposed critiques of one performance
+  // instead of four people agreeing in different words.
+  const critiques = critiqueLines({ panel, views, call, entries, rng });
+
+
+  say('critiques', 'critiques', { call, split, tripled, critiques, twist: cfg.critiqueTwist || null });
 
   // How each critiqued queen took it. `expected` is HER read of the room —
   // never the panel's ranking, which she has not heard yet.
@@ -281,6 +296,29 @@ export function runDragWeek(state, cfg, ctx) {
       expected, received: finalRank[n], temperament: s.temperament, boldness: s.boldness, rng,
     });
     state.lastReaction[n] = reactions[n];
+  }
+
+  // A reaction used to be a label that changed nothing — the cosmetic-event
+  // bug this project refuses everywhere else, sitting on the main stage.
+  const reacted = runReactions({ reactions, state, rng });
+  for (const e of reacted.events) {
+    applyEventLike(e);
+    werkEvents.push(e);
+  }
+
+  // The two twists, when the episode books one.
+  let twist = null;
+  if (cfg.critiqueTwist === 'who-should-go') {
+    twist = whoShouldGoHome({ living, players: ctx.players, bond: ctx.bond, state, rng });
+  } else if (cfg.critiqueTwist === 'rate-a-queen') {
+    twist = rateAQueen({ living, players: ctx.players, bond: ctx.bond, state, rng });
+  }
+  if (twist) {
+    for (const e of twist.events) {
+      applyEventLike(e);
+      werkEvents.push(e);
+    }
+    for (const sc of twist.scenes) scenes.push(sc);
   }
 
   say('untucked', 'untucked', { safe: call.safe });
@@ -507,6 +545,8 @@ export function runDragWeek(state, cfg, ctx) {
       performances,
       runway,
       panel: { views, ranking, split },
+      critiques,
+      critiqueTwist: twist ? { kind: cfg.critiqueTwist, votes: twist.votes || null, tally: twist.tally || null, mean: twist.mean || null } : null,
       bend,
       call,
       reactions,

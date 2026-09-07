@@ -26,6 +26,8 @@
 import { _shell, _portrait, _icon } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
+import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.js';
+import { rpBuildArrivals } from './arrivals.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -215,18 +217,30 @@ function buildSection(sec, row) {
   })}${_controls(sec.suffix, scenes.length, ep.num)}`;
 }
 
-/** The registry: seventeen entries, in the running order. */
-export const DRAG_SCREENS = [
-  ...SECTIONS.map(sec => ({
+/* THE SCREENS THAT HAVE THEIR OWN BUILDER. Everything else falls back to the
+   generic scene renderer above, which is how a section stays reachable from
+   the day the registry lists it — Tasks 6-8 replace the rest the same way. */
+const BUILDERS = {
+  'dr-arrivals': rpBuildArrivals,
+  'dr-cold-open': rpBuildColdOpen,
+  'dr-werk-morning': rpBuildWerkMorning,
+  'dr-elim-day': rpBuildWerkElimDay,
+};
+
+const _sections = SECTIONS.map(sec => ({
     id: sec.id,
     label: sec.label,
     suffix: sec.suffix,
     badge: sec.badge,
     when: row => (sceneSections(row).get(sec.id) || []).length > 0
       || (sec.id === 'dr-exit' && !!row?.dr?.finale),
-    build: row => buildSection(sec, row),
+    build: row => (BUILDERS[sec.id] ? BUILDERS[sec.id](row) : buildSection(sec, row)),
     revealAllName: 'drRevealAll',
-  })),
+  }));
+
+/** The registry: seventeen entries, in the running order. */
+export const DRAG_SCREENS = [
+  ..._sections,
   {
     id: CHART.id,
     label: CHART.label,

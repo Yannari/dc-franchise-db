@@ -62,6 +62,13 @@ export const VOCAB = {
       'untucked', 'shantay', 'sashay', 'sashayed away', 'maxi challenge',
       'mini challenge', 'snatch game', 'main stage', 'condragulations',
       'bottom two', 'miss congeniality',
+      /* ── AND "CAMP", WHICH BOTH SHOWS OWN ──────────────────────────
+         Total Drama's camp is a PLACE. Drag's camp is a STYLE — one of the
+         ten in js/dr/queen.js, and the word a queen uses about her own
+         drag. The header of this file already says a word may belong to
+         more than one show; this is the clearest case of it, and leaving it
+         off meant a queen could not be described as what she is. */
+      'camp',
       /* ── AND "CHALLENGE", WHICH STOPPED BEING EXCLUSIVE THE DAY THIS
          SHOW WAS REGISTERED ──────────────────────────────────────────
          It is listed for Big Brother and Total Drama above, which was true

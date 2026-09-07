@@ -1,0 +1,310 @@
+// ══════════════════════════════════════════════════════════════════════
+// vp-dr/werk.js — the room, before and after the stage
+// ══════════════════════════════════════════════════════════════════════
+//
+// Four screens: the cold open, the morning, elimination day, and (in
+// arrivals.js) the premiere's entrances. All four take their words from
+// `scene.text` and their consequences from `row.dr.events`. NOTHING here
+// recomputes anything — a screen that calls a simulation function shows
+// tonight's answer on a replay of episode four, which is the bug class the
+// manual's §11.5B is entirely about.
+//
+// ── THE ROOM, DRAWN AS THE ROOM ───────────────────────────────────────
+//
+// Every device is a real thing in the real werk room, off the Fandom wiki:
+//
+//   MIRROR STATIONS   each queen has one, framed in bulbs. Here the bulbs
+//                     IGNITE around her portrait as her card arrives —
+//                     `@property` makes the glow animatable, which a plain
+//                     custom property is not.
+//   THE MIRROR        the departing queen writes on it in lipstick. The
+//                     cold open draws that message stroke by stroke.
+//   THE EMPTY STATION one chair with the bulbs dark. It is the first thing
+//                     the room notices and the first thing this screen shows.
+//   THE SHADE TREE    the confessional. Given a camera frame and a REC dot,
+//                     because a talking head is not a scene in the room.
+//   THE STATUETTES    one leaves with each queen. The shelf dims as they go.
+//
+// ── AND IT USES THE CURRENT CSS, WITH FALLBACKS ───────────────────────
+//
+// `@property` for animatable glows, `:has()` for the two-portrait layout,
+// `color-mix()` for accent tints, container queries so a panel reflows to
+// its own width rather than the viewport's, `@starting-style` for enter
+// animations that do not need a class toggle, `text-wrap: balance/pretty`,
+// and `animation-timeline: view()` so cards also settle as they scroll into
+// frame. Every one of them degrades to the plain rule underneath: the
+// click-to-reveal is what actually governs, and none of this is load-bearing.
+import { _shell, _portrait, _icon } from './style.js';
+import { _controls } from './reveal.js';
+
+const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+export const WERK_CSS = `
+@property --dr-glow{syntax:'<number>';inherits:false;initial-value:0}
+
+/* ── THE MIRROR STATION ── bulbs ignite around her as the card lands ── */
+.dr-mirror{position:relative;display:inline-block;--dr-glow:0}
+.dr-vis .dr-mirror{animation:drIgnite .7s ease forwards}
+@keyframes drIgnite{from{--dr-glow:0}to{--dr-glow:1}}
+.dr-mirror::before{content:"";position:absolute;inset:-7px;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 0,rgba(255,240,200,1) 0 1.8px,transparent 2.4px) 0 0/11px 11px repeat-x,
+    radial-gradient(circle at 50% 100%,rgba(255,240,200,1) 0 1.8px,transparent 2.4px) 0 100%/11px 11px repeat-x,
+    radial-gradient(circle at 0 50%,rgba(255,240,200,1) 0 1.8px,transparent 2.4px) 0 0/11px 11px repeat-y,
+    radial-gradient(circle at 100% 50%,rgba(255,240,200,1) 0 1.8px,transparent 2.4px) 100% 0/11px 11px repeat-y;
+  opacity:calc(.25 + var(--dr-glow) * .75);
+  filter:drop-shadow(0 0 calc(var(--dr-glow) * 7px) rgba(255,214,140,.9))}
+/* Her station goes dark when she does. */
+.dr-mirror.dr-dark::before{opacity:.12;filter:none}
+.dr-mirror.dr-dark img{filter:grayscale(1) brightness(.4)}
+
+/* ── THE MIRROR MESSAGE ── written in lipstick, drawn on reveal ── */
+.dr-mirrormsg{position:relative;margin:2px 0 0;padding:18px 20px;
+  background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.20);
+  box-shadow:inset 0 0 60px rgba(255,255,255,.06)}
+.dr-mirrormsg::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.16) 50%,transparent 58%)}
+.dr-lip{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;font-size:21px;
+  color:#FF6FA3;text-shadow:0 0 16px rgba(255,41,75,.75);text-wrap:pretty;
+  display:inline-block;overflow:hidden;white-space:pre-wrap}
+.dr-vis .dr-lip{animation:drWrite 1.5s steps(48,end) forwards;clip-path:inset(0 100% 0 0)}
+@keyframes drWrite{to{clip-path:inset(0 0 0 0)}}
+.dr-kiss{color:#FF294B;font-size:26px;line-height:1;margin-left:6px;
+  text-shadow:0 0 20px rgba(255,41,75,.9)}
+
+/* ── THE SHADE TREE ── the confessional is not a scene in the room ── */
+.dr-confess{--dr-accent:#FF7BC8;position:relative;
+  background:radial-gradient(120% 100% at 50% 0,rgba(255,123,200,.16),rgba(10,2,7,.9))}
+.dr-confess::after{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 70px rgba(0,0,0,.85);
+  background:repeating-linear-gradient(180deg,transparent 0 3px,rgba(0,0,0,.10) 3px 4px)}
+.dr-rec{position:absolute;top:10px;right:12px;display:flex;align-items:center;gap:6px;
+  font-size:9px;letter-spacing:.2em;color:#ffb8dd;z-index:2}
+.dr-rec i{width:8px;height:8px;border-radius:50%;background:#FF294B;
+  animation:drRec 1.6s ease-in-out infinite}
+@keyframes drRec{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── SCENE CARDS ── container-queried, so they reflow to their own width ── */
+.dr-room{container-type:inline-size}
+.dr-card{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start;
+  padding:15px 17px 15px 21px}
+.dr-card p{margin:6px 0 0;color:#f4e3ed;text-wrap:pretty}
+.dr-card h3{margin:0;font-size:17px;text-wrap:balance}
+@container (max-width:430px){.dr-card{grid-template-columns:1fr}}
+/* A scene naming two queens IS a social card — decided by the markup it has
+   rather than by a flag somebody has to remember to pass. */
+.dr-card:has(.dr-two){border-style:dashed;
+  background:color-mix(in srgb, var(--dr-accent,#7B2FF7) 9%, transparent)}
+.dr-two{display:flex;gap:8px}
+.dr-note{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#C9A6BC}
+
+/* ── BOND ARROWS ── what the scene actually cost ── */
+.dr-bond-row{display:flex;align-items:center;gap:9px;margin-top:10px;flex-wrap:wrap}
+.dr-arrow{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;font-size:11px;
+  font-weight:700;border:1px solid currentColor}
+.dr-up{color:#3BE08A}.dr-down{color:#FF294B}
+.dr-arrow svg{width:13px;height:13px}
+.dr-vis .dr-arrow svg path{stroke-dasharray:22;stroke-dashoffset:22;
+  animation:drDraw .5s ease .25s forwards}
+@keyframes drDraw{to{stroke-dashoffset:0}}
+
+/* ── THE CATEGORY BANNER ── elimination day has a subject ── */
+.dr-cat{padding:16px 20px;margin-bottom:14px;text-align:center;
+  background:linear-gradient(180deg,rgba(255,61,154,.20),rgba(10,2,7,.6));
+  border:1px solid rgba(255,61,154,.45)}
+.dr-cat small{display:block;font-size:9px;letter-spacing:.3em;color:#ffc9e5;margin-bottom:4px}
+.dr-cat b{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;font-weight:400;
+  font-size:27px;text-wrap:balance}
+
+/* ── THE STATUETTE SHELF ── one leaves with each queen ── */
+.dr-shelf{display:flex;gap:6px;align-items:flex-end;margin-top:12px}
+.dr-statuette{width:12px;height:28px;background:linear-gradient(180deg,#FFC83D,#7a5300)}
+.dr-statuette.dr-gone{opacity:.15}
+
+/* ── READY CHECKLIST ── the rail on elimination day ── */
+.dr-check{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px}
+.dr-check i{width:14px;height:14px;border:1px solid rgba(255,255,255,.4);display:inline-block;
+  position:relative;flex:0 0 14px}
+.dr-check.dr-ready i{background:#3BE08A;border-color:#3BE08A}
+.dr-check.dr-ready i::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:2px solid #06210f;border-top:0;border-left:0;transform:rotate(42deg)}
+
+/* Cards also settle as they scroll into frame, where the browser supports it.
+   The click-to-reveal is what governs; this is polish and nothing depends
+   on it. */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .dr-vis .dr-card{animation:drSettle linear both;animation-timeline:view();
+      animation-range:entry 0% entry 55%}
+    @keyframes drSettle{from{opacity:.35;transform:translateY(18px) scale(.985)}
+      to{opacity:1;transform:none}}
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .dr-vis .dr-mirror,.dr-vis .dr-lip,.dr-vis .dr-arrow svg path{animation:none}
+  .dr-mirror{--dr-glow:1}
+  .dr-vis .dr-lip{clip-path:none}
+}
+`;
+
+const ARROW_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5m0 0l-6 6m6-6l6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+const ARROW_DOWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15m0 0l6-6m-6 6l-6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+
+/** A queen at her station: portrait in a bulb frame that lights as she lands. */
+function station(name, ep, { size = 62, dark = false } = {}) {
+  return `<span class="dr-mirror${dark ? ' dr-dark' : ''}">${
+    _portrait(name, ep, { size })}</span>`;
+}
+
+/**
+ * What this scene actually cost, from the row's own events.
+ *
+ * Matched on the scene's KIND, because `dr.events` carries the same kind
+ * string. Nothing is recomputed and nothing is inferred from the prose.
+ */
+function consequences(row, sc) {
+  const ev = (row?.dr?.events || []).find(e => (e.type || e.kind) === sc.kind
+    && String((e.players || []).join()) === String((sc?.data?.players || []).join()));
+  if (!ev) return '';
+  const bits = [];
+  for (const [a, b, d] of ev.bond || []) {
+    const up = Number(d) > 0;
+    bits.push(`<span class="dr-arrow ${up ? 'dr-up' : 'dr-down'}">${up ? ARROW_UP : ARROW_DOWN}
+      ${esc(a)} &amp; ${esc(b)} ${up ? '+' : ''}${esc(d)}</span>`);
+  }
+  for (const [who, d] of Object.entries(ev.pop || {})) {
+    const up = Number(d) > 0;
+    bits.push(`<span class="dr-arrow ${up ? 'dr-up' : 'dr-down'}">${up ? ARROW_UP : ARROW_DOWN}
+      ${esc(who)} · audience ${up ? '+' : ''}${esc(d)}</span>`);
+  }
+  return bits.length ? `<div class="dr-bond-row">${bits.join('')}</div>` : '';
+}
+
+/** One scene, as a card. Two players make it a social card via `:has()`. */
+function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
+  const players = sc?.data?.players || [];
+  const confess = /confess|shade-tree|talking/.test(sc.kind || '');
+  const busts = players.length
+    ? `<span class="${players.length > 1 ? 'dr-two' : ''}">${
+      players.slice(0, 2).map(n => station(n, ep, { size: players.length > 1 ? 50 : 62 })).join('')
+    }</span>`
+    : '';
+  const first = String(players[0] || '');
+  const opens = first && String(sc.text || '').split(/(?<=[.!?])\s/)[0].includes(first);
+  return `<div class="dr-step" id="dr-step-${suffix}-${i}">
+    <div class="dr-panel ${accent} dr-card${confess ? ' dr-confess' : ''}">
+      ${confess ? '<span class="dr-rec"><i></i>REC</span>' : ''}
+      ${busts}
+      <div>
+        ${players.length ? `<h3 class="dr-disp">${esc(players.join(' &amp; '))}</h3>` : ''}
+        ${sc?.data?.note ? `<span class="dr-note">${esc(sc.data.note)}</span>` : ''}
+        <p>${!players.length || opens ? '' : ''}${esc(sc.text || '')}</p>
+        ${consequences(row, sc)}
+      </div>
+    </div></div>`;
+}
+
+/** Everybody still here, for a rail. */
+const livingOf = row => row?.dr?.living || [];
+
+function railWho(row, ep, title) {
+  const rows = livingOf(row).map(n => `<div class="dr-slot">${_portrait(n, ep, { size: 34 })}
+      <div><div class="dr-nm">${esc(n)}</div></div><span></span></div>`).join('');
+  return `<h4 class="dr-disp">${esc(title)} · ${livingOf(row).length}</h4>${rows}`;
+}
+
+const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
+
+function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '' }) {
+  const ep = epOf(row);
+  const steps = scenes.map((sc, i) => sceneCard(sc, i, suffix, ep, row)).join('');
+  if (typeof window !== 'undefined') {
+    window._drSidebar = window._drSidebar || {};
+    window._drSidebar[suffix] = scenes.map(() => sidebar);
+  }
+  return `<style>${WERK_CSS}</style>${_shell(
+    `<div class="dr-room">${lead}${steps}</div>`, ep,
+    { phase, title, subtitle, sidebar },
+  )}${_controls(suffix, scenes.length, ep.num)}`;
+}
+
+const sectionScenes = (row, opener, stopAt) => {
+  const all = row?.dr?.scenes || [];
+  const start = all.findIndex(s => s.kind === opener);
+  if (start === -1) return [];
+  const rest = all.slice(start + 1);
+  const end = rest.findIndex(s => stopAt.includes(s.kind));
+  return (end === -1 ? rest : rest.slice(0, end)).filter(s => s.text);
+};
+
+/**
+ * The cold open: the mirror message, the empty station, and what the room
+ * does about it.
+ */
+export function rpBuildColdOpen(row) {
+  const ep = epOf(row);
+  const scenes = sectionScenes(row, 'cold-open', ['werk-morning', 'mini', 'maxi-announce']);
+  const open = (row?.dr?.scenes || []).find(s => s.kind === 'cold-open');
+  const gone = open?.data?.gone || (row?.exits || []).map(x => x.name);
+  const msg = (row?.dr?.scenes || []).find(s => /mirror-message/.test(s.kind || ''));
+
+  const lead = gone.length ? `<div class="dr-step dr-vis" id="dr-step-coldopen-lead">
+    <div class="dr-panel dr-a-lip dr-card">
+      ${station(gone[0], ep, { size: 62, dark: true })}
+      <div>
+        <h3 class="dr-disp">${esc(gone.join(' &amp; '))} — the empty station</h3>
+        <span class="dr-note">the bulbs are off and nobody has said so out loud</span>
+        <div class="dr-mirrormsg">
+          <span class="dr-lip">${esc(msg?.text || 'The mirror still has her handwriting on it.')}</span>
+          <span class="dr-kiss dr-disp">&times;</span>
+        </div>
+        <div class="dr-shelf">${livingOf(row).map(() => '<span class="dr-statuette"></span>').join('')}${
+  gone.map(() => '<span class="dr-statuette dr-gone"></span>').join('')}</div>
+      </div>
+    </div></div>` : '';
+
+  return screen(row, {
+    suffix: 'coldopen', phase: 'werk', title: 'Cold Open',
+    subtitle: 'the room, before anything',
+    scenes, lead,
+    sidebar: railWho(row, ep, 'Still here'),
+  });
+}
+
+/** The morning: the room at work, and what it costs them. */
+export function rpBuildWerkMorning(row) {
+  const ep = epOf(row);
+  const scenes = sectionScenes(row, 'werk-morning', ['mini', 'maxi-announce', 'chal:mini-announce']);
+  return screen(row, {
+    suffix: 'morning', phase: 'werk', title: 'The Werk Room', subtitle: 'morning',
+    scenes,
+    sidebar: railWho(row, ep, 'In the room'),
+  });
+}
+
+/**
+ * Elimination day: getting ready, with the runway category named at the top
+ * so the room's talk has a subject.
+ */
+export function rpBuildWerkElimDay(row) {
+  const ep = epOf(row);
+  const scenes = sectionScenes(row, 'werk-elim-day', ['main-stage', 'stage:entrance']);
+  const cat = row?.dr?.runway?.category;
+  const lead = cat ? `<div class="dr-cat">
+      <small>tonight's category is</small><b>${esc(cat)}</b></div>` : '';
+
+  // Ready when she has a scene on this screen; the rest are still at it.
+  const named = new Set(scenes.flatMap(s => s?.data?.players || []));
+  const rail = `<h4 class="dr-disp">Getting ready</h4>${
+    livingOf(row).map(n => `<div class="dr-check ${named.has(n) ? 'dr-ready' : ''}">
+      <i></i>${_portrait(n, ep, { size: 26 })} ${esc(n)}</div>`).join('')}`;
+
+  return screen(row, {
+    suffix: 'elimday', phase: 'werk', title: 'Elimination Day',
+    subtitle: 'the last hour in the room', scenes, lead, sidebar: rail,
+  });
+}
+
+export { station as _station, WERK_CSS as _WERK_CSS };

@@ -23,6 +23,7 @@
 // scenes carry their data and an empty string, which is deliberate: a
 // placeholder sentence written here would be a sentence nobody ever came back
 // to replace.
+import { arrivalScenes } from './arrivals.js';
 import { dragOf } from './queen.js';
 import { maxiById } from './data/challenges.js';
 import { miniById } from './data/minis.js';
@@ -43,6 +44,8 @@ import { showWords } from '../shows.js';
 
 /** The running order. A scene's `step` is always one of these. */
 export const SCENE_STEPS = [
+  // The premiere only, and first: the door opens before anything else does.
+  'arrivals',
   'cold-open', 'werk-morning', 'mini', 'maxi-announce', 'choice', 'prep',
   'maxi-pre', 'werk-elim-day', 'main-stage', 'runway', 'maxi-main',
   'critiques', 'untucked', 'results', 'lipsync', 'exit',
@@ -83,6 +86,17 @@ export function runDragWeek(state, cfg, ctx) {
   const scenes = [];
   const say = (step, kind, data = {}) => scenes.push({ step, kind, data, text: '' });
 
+  /* 0. THE PREMIERE OPENS ON THE DOOR, not on an empty station.
+     Every other episode's cold open is about who left last night; the first
+     has nobody to be about. So the premiere gets the arrivals scene instead
+     — each queen through the door, her line, the room's answer, who she is
+     — and the host at the end of it. See js/dr/arrivals.js. */
+  const isPremiere = !state.episodes.length;
+  const arrivals = isPremiere ? arrivalScenes({
+    cast: [...living], players: ctx.players || {}, rng, star: state.star || {},
+  }) : [];
+  for (const sc of arrivals) scenes.push(sc);
+
   // 1–2. The room after the last exit, and the morning after that.
   const last = state.episodes[state.episodes.length - 1] || null;
   const gone = last ? last.exits.map(x => x.name) : [];
@@ -103,6 +117,12 @@ export function runDragWeek(state, cfg, ctx) {
     for (const [n, d] of Object.entries(e.pop || {})) ctx.popDelta(n, d);
     for (const [k, v] of Object.entries(e.state || {})) (state.flags ||= {})[k] = v;
   };
+  /* THE PREMIERE'S FIRST IMPRESSIONS ARE REAL. They are applied here rather
+     than inside arrivalScenes, so every bond in this episode lands through
+     the same function — one place, one rule, and nothing about arrivals is
+     special except when it happens. */
+  for (const sc of arrivals) if (sc.bond || sc.pop) applyEventLike(sc);
+
   const werkScenes = runWerkRoom({
     slots: ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
     living, players: ctx.players, state, storylines: state.storylines || [],

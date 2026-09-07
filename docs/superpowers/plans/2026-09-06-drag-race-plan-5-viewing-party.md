@@ -920,6 +920,52 @@ git commit -m "feat(drag-race): results with the bend made visible, the lip sync
 
 ---
 
+### Task 8b: The Miss Congeniality announcement
+
+**Added after the mockup was approved.** Plan 6 Task 2 builds the AWARD —
+`runAudienceVote`, `state.congeniality`, `doc.congeniality`. Nothing announces
+it. An award computed and never said out loud is the "written but unreachable"
+class this project keeps writing down, and on this show the announcement is a
+real beat: it happens on the finale, before the crown, and the queen who wins
+it is almost never the queen who wins the season.
+
+**Files:** `js/vp-dr/results.js` (Task 8), `tests/dr-vp-results.test.js`
+
+- The crowning screen gains a step BEFORE the winner: the host names Miss
+  Congeniality, the room reacts, and her portrait gets the sash treatment.
+- It reads `row.dr.congeniality`, and **is skipped entirely when the season
+  did not name one** — a blank sash is worse than no sash.
+- The transcript picks it up for free: it is a step on a registered screen.
+- Vocabulary: the registry's `words.audienceAward` (`Miss Congeniality`),
+  never a hardcoded string — the same field Total Drama uses for Fan Favorite.
+
+---
+
+### Task 8c: The Reunion — DEFERRED, and deliberately
+
+**Not built in Plan 5.** Recorded here so it is a decision rather than an
+omission, because it is the one episode this show has that nothing above
+covers.
+
+A reunion is not a viewing-party screen with different words. It is its own
+EPISODE TYPE: the eliminated queens come back, watch themselves, and are asked
+about the season — which needs (a) a per-queen memory of what actually
+happened to her, (b) the grudges and alliances the season produced, and (c) a
+prose layer written against both. The Traitors' `js/tr/` has the closest
+shape to it in this repo (the reunion-like final table), and `js/aftermath.js`
+is the Total Drama equivalent worth reading first.
+
+**Why it waits:** it reads the whole season rather than one row, so it cannot
+be a screen in the seventeen — every one of those takes `row` and shows that
+episode. A reunion takes the SEASON. That is a different function signature
+and a different plan.
+
+**Where it goes:** its own plan after Plan 6, with the finale and the
+aftermath shelf, once `readSignals` exists and there is a measured season to
+write against.
+
+---
+
 ### Task 9: The render sweep, the screenshots, and the read
 
 **Files:**

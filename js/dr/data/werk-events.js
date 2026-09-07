@@ -951,6 +951,71 @@ export const WERK_EVENTS = [
       "\"Twice,\" {a} says. \"Twice, for things other people did worse.\" {b} does not agree and does not say so, and the not-saying-so is loud enough that {a} stops talking. The complaint does not stay in that corner of the room, either.",
     ],
   }),
+
+  // ══ ROMANCE, WHICH IS NOT WHAT THIS SHOW IS ABOUT ════════════════════
+  //
+  // Deliberately small. Total Drama has a showmance pipeline because Total
+  // Drama is partly about that; this show is about the work, and a drag season
+  // that turned into a dating format would be the wrong show. What is true is
+  // that people locked in a room together for two months sometimes fall for
+  // each other, and it changes how they work.
+  //
+  // Every one is gated on `compatible` — the franchise's own attraction rule,
+  // shared with the life layer, so drag never pairs people the rest of the
+  // franchise would not — and on `romanceOpen`, which caps a season at two.
+  // `alreadyPaired` stops a queen running three of them at once.
+  ev({
+    id: 'something-there', slot: 'prep', cast: 'pair', weight: 1,
+    note: 'Two queens keep ending up at the same end of the room.',
+    arcs: ['bond'],
+    when: f => f.compatible && f.romanceOpen && !f.alreadyPaired
+      && f.bond >= 3 && f.episode >= 2,
+    effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
+    lines: [
+      "It is not a thing yet and both of them know it is not nothing. {a} and {b} have been at the same end of the werk room for four days running, and tonight {a} stays late for no reason she can name out loud and {b} does not ask her why.",
+      "{a} and {b} keep finding excuses. A zip that needs doing up. A second opinion on a hemline that was fine. Everybody else in the room worked it out about a week before they did, and everybody else in the room is being very kind about not saying so.",
+      "\"You are in my light,\" {b} says, not moving, and {a} does not move either. It goes on slightly too long to be nothing. Then somebody drops a glue gun at the other end of the room and the moment goes wherever those go.",
+      "Neither of them has said anything. {a} has started doing her make-up at the station next to {b}, which is further from the good mirror, and {b} has noticed that and has not mentioned it, and that is roughly where they are.",
+    ],
+  }),
+  ev({
+    id: 'quiet-thing', slot: 'werk-elim-day', cast: 'pair', weight: 1,
+    note: 'Whatever this is, it is happening on the worst possible night.',
+    arcs: ['bond'],
+    when: f => f.compatible && f.bond >= 5 && f.roomSize <= 9,
+    effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
+    lines: [
+      "Elimination day is a bad day to work out what you feel about somebody and {a} and {b} are doing it anyway, in a corner, quietly, with one eye on the clock. \"If it is me tonight,\" {b} starts, and {a} says \"do not\", and that is the closest either of them gets to the actual sentence.",
+      "They are competing against each other and there are eight queens left and this is an extremely stupid time for this. {a} says so. {b} agrees with her. Neither of them moves away.",
+      "{a} does {b}'s back zip on elimination day and it takes longer than a zip takes. Nothing is said. The room is loud at the other end and this corner of it is not.",
+      "\"When this is over,\" {b} says, and does not finish the sentence, and {a} says \"yeah\" as though she had. Whatever this is, it has a date on it now, and the date is after one of them goes home.",
+    ],
+  }),
+  ev({
+    id: 'competing-with-her', slot: 'werk-morning', cast: 'pair', weight: 1,
+    note: 'The thing between them is now a problem, because one of them has to lose.',
+    arcs: ['bond', 'weakness'],
+    when: f => f.compatible && f.bond >= 5 && f.bottomsB >= 1,
+    effects: { bond: -1, pop: { a: 1 }, state: 'romance' },
+    lines: [
+      "{b} was in the bottom last week and {a} was not, and this morning that fact is sitting between them like a third person. {a} tries to help. {b} lets her, and hates letting her, and neither of them enjoys the ten minutes it takes.",
+      "It was easier when they were both safe. Now {b} is fighting for her place and {a} is not, and every kind thing {a} says lands slightly wrong. \"Do not do that,\" {b} says, about nothing in particular, meaning all of it.",
+      "\"I cannot want you to do well,\" {b} says to {a}, plainly, without cruelty. \"I want you to do well and I cannot afford to.\" {a} says she knows. They work at opposite ends of the room for the rest of the morning.",
+      "The problem with whatever {a} and {b} have is that one of them is going home first, and this morning both of them are visibly aware of which one it currently looks like. Neither of them says it. It makes everything they do say sound careful.",
+    ],
+  }),
+  ev({
+    id: 'called-out-for-it', slot: 'werk-morning', cast: 'pair', weight: 1,
+    note: 'A third queen has noticed, and does not think it is cute.',
+    arcs: ['bond'], when: f => f.alreadyPaired && f.canScheme && f.bond <= 2,
+    effects: { bond: -2, pop: { a: -1 } },
+    lines: [
+      "\"Are we all just going to pretend that is not happening?\" {a} says it to the room and the room does not answer, which is its own answer. It is not really about the two of them. It is about {a} having decided there is a bloc forming and wanting it named.",
+      "{a} thinks it is convenient, and says so, and \"convenient\" is a much worse word than it looks. {b} tells her to leave it. {a} does not leave it, and by lunchtime three people have heard the word and one of them has repeated it.",
+      "{a} has counted the times a certain two queens have helped each other this week and she has the number ready. She delivers it like evidence. Nobody asked for evidence, and now nobody can un-hear it.",
+      "\"It is a race,\" {a} says, to nobody, loudly enough. Everybody knows exactly which two queens the remark is about. The room gets about four degrees colder and stays there.",
+    ],
+  }),
 ];
 
 /** Ids only, for guards and the transcript. */
@@ -960,3 +1025,10 @@ export const WERK_IDS = WERK_EVENTS.map(e => e.id);
 export function unwrittenWerkEvents() {
   return WERK_EVENTS.filter(e => !e.lines || e.lines.length < 4).map(e => e.id);
 }
+
+/* The romance thread's own ids, exported so readers do not keyword-match.
+   `js/ratings.js` looked for /showmance|romance|spark|flirt|kiss/ in an event
+   type and these are called things like `something-there` — a reader guessing
+   at names is how a signal reads zero while the events fire. */
+export const ROMANCE_EVENT_IDS = WERK_EVENTS
+  .filter(e => e.effects?.state === 'romance').map(e => e.id);

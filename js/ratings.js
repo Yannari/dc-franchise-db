@@ -24,6 +24,7 @@
 import { gs, players, seasonConfig } from './core.js';
 import { classifyEventTone } from './tone.js';
 import { SHOWS, DEFAULT_FORMAT, showWords, roundShape } from './shows.js';
+import { ROMANCE_EVENT_IDS } from './dr/data/werk-events.js';
 
 export const RATINGS_V = 1;
 
@@ -392,13 +393,20 @@ function readPlacementSignals(ep, prev, opts) {
     + tones.of('strategic') * 0.4);
 
   /* ── showmance ──
-     ANOTHER HONEST ZERO, for now. This show has no romance pipeline: no
-     scene kind in js/dr/ matches showmance, spark, flirt or kiss, so the
-     read is written against the shape it will have and returns nothing
-     until the pool exists. Measured, not assumed — a grep of every scene
-     kind a season produces finds none. */
-  const romance = (dr.events || []).filter(e =>
-    /showmance|romance|spark|flirt|kiss/.test(e.type || e.kind || '')).length;
+     THE HONEST ZERO IS PAID OFF. This was written against a pool that did not
+     exist yet and returned nothing, correctly. The pool exists now — small on
+     purpose, because this show is about the work — and it fires on about 40%
+     of seasons with a realistic cast.
+     MATCHED BY ID, NOT BY KEYWORD. The beats are called `something-there` and
+     `quiet-thing`, so the old /showmance|romance|spark|flirt|kiss/ test would
+     have gone on reading zero while they fired: a reader guessing at another
+     module's naming stops reading the day somebody names something well. The
+     keyword test is kept alongside for the other shows' pools. */
+  const romantic = new Set(ROMANCE_EVENT_IDS);
+  const romance = [...(dr.events || []), ...(dr.scenes || [])].filter(e => {
+    const k = String(e.type || e.kind || '').replace(/^werk:/, '');
+    return romantic.has(k) || /showmance|romance|spark|flirt|kiss/.test(k);
+  }).length;
   const showmance = clamp01(norm(romance, 3));
 
   // ── twist: the schedule's, plus a panel twist ──

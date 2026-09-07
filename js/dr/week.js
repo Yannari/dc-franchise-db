@@ -136,7 +136,18 @@ export function runDragWeek(state, cfg, ctx) {
     },
   });
   for (const sc of werkScenes) {
-    applyWerkScene(sc, ctx);
+    const applied = applyWerkScene(sc, ctx);
+    /* THE PAIRING, REMEMBERED. Without this `romanceOpen` and `alreadyPaired`
+       read an empty list forever: the cap would never bind, one queen could
+       run three of these at once, and a show that is explicitly NOT about
+       this would drift into being about it. */
+    if (applied?.state === 'romance' && sc.players?.length === 2) {
+      const pair = [...sc.players].sort();
+      state.romances ||= [];
+      if (!state.romances.some(r => r[0] === pair[0] && r[1] === pair[1])) {
+        state.romances.push(pair);
+      }
+    }
     scenes.push({
       step: sc.slot, kind: `werk:${sc.id}`,
       data: { players: sc.players, note: sc.note, eligible: sc.eligible },

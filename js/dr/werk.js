@@ -24,6 +24,11 @@
 import { WERK_EVENTS } from './data/werk-events.js';
 import { dragOf } from './queen.js';
 import { canScheme } from './rules.js';
+/* THE FRANCHISE'S OWN ATTRACTION RULE, not a second copy. js/attraction.js
+   takes plain player objects and imports nothing from the simulator, which is
+   why the life resolver uses it too — a drag season running headless can ask
+   the same question every other show asks. */
+import { romanticallyCompatible } from '../attraction.js';
 
 /** How much an arc match is worth. Multiplicative on the base weight. */
 const ARC_BONUS = 2.5;
@@ -106,6 +111,17 @@ function factsFor({ a, b, players, state, storylines, ctx }) {
     lostAnEnemy: !!(ctx.gone || []).some(g => ctx.bond(a, g) <= -4),
     arcsA: arcsOf(a),
     arcsB: b ? arcsOf(b) : [],
+    /* ROMANCE IS PRESENT AND IT IS NOT THE POINT. This show is about the
+       work, so there is no showmance pipeline here the way Total Drama has
+       one — what there is, is the ordinary fact that people in a room for two
+       months sometimes fall for each other. Gated on the franchise's own
+       compatibility rule so drag never pairs people the rest of the franchise
+       would not, and capped per season so it stays a thread rather than a
+       storyline. */
+    compatible: !!(pa && pb && romanticallyCompatible(pa, pb)),
+    romanceOpen: (state.romances || []).length < 2,
+    alreadyPaired: (state.romances || [])
+      .some(r => r.includes(a) || (b && r.includes(b))),
   };
 }
 

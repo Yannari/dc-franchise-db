@@ -8,6 +8,7 @@ import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
+const ARCH = ['villain', 'hero', 'floater', 'wildcard', 'goat', 'schemer'];
 function cast(n = 12, seed = 1) {
   const rng = rngFor(seed); const r = () => 1 + Math.floor(rng() * 10);
   return Array.from({ length: n }, (_, i) => ({
@@ -150,6 +151,68 @@ describe('the placements reader', () => {
       const spread = Math.max(...vals) - Math.min(...vals);
       expect(spread, `${k} is constant at ${vals[0].toFixed(2)} — it reads nothing`)
         .toBeGreaterThan(0.1);
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The showmance zero is paid off
+// ══════════════════════════════════════════════════════════════════════
+describe('showmance', () => {
+  /* IT WAS AN HONEST ZERO AND IS NOT ANY MORE. The read was written against a
+     pool that did not exist. The pool exists now — deliberately small, because
+     this show is about the work — and it fires on roughly 40% of seasons.
+     The cast here is a realistic one: the compatibility gate is the
+     franchise's own rule, so a test cast of straight women pairs nobody and
+     would let this pass by never firing. */
+  function realCast(n, seed) {
+    const rng = rngFor(seed); const r = () => 1 + Math.floor(rng() * 10);
+    return Array.from({ length: n }, (_, i) => ({
+      name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm',
+      sexuality: i % 7 === 0 ? 'bi' : 'gay',
+      archetype: ARCH[i % ARCH.length], age: 22 + i,
+      stats: Object.fromEntries(STATS.map(k => [k, r()])),
+      drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+    }));
+  }
+
+  it('reads the beats the room actually wrote', () => {
+    const vals = [];
+    for (let s = 0; s < 25; s++) {
+      const cast = realCast(12, 800 + s);
+      const bonds = {}; const pop = {};
+      const key = (a, b) => [a, b].sort().join('|');
+      const { rows } = playDragSeason({
+        cast, seed: s,
+        bond: (a, b) => bonds[key(a, b)] || 0,
+        addBond: (a, b, d) => { const k = key(a, b); bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d)); },
+        popDelta: (n, d) => { pop[n] = (pop[n] || 0) + d; },
+      });
+      let prev = null;
+      for (const row of rows.filter(r => !r.dr.finale)) {
+        const sig = readSignals({ ...row, format: 'drag-race' }, prev,
+          { format: 'drag-race', popularity: pop, house: row.dr.living, players: cast });
+        vals.push(sig.showmance); prev = sig;
+      }
+    }
+    const nonZero = vals.filter(v => v > 0).length;
+    expect(nonZero, 'the pool exists and the signal still reads nothing')
+      .toBeGreaterThan(0);
+    // AND IT IS NOT THE POINT OF THE SHOW. A drag season that turned into a
+    // dating format would be the wrong show.
+    expect(nonZero / vals.length, 'romance has taken over the season')
+      .toBeLessThan(0.35);
+  });
+
+  it('never exceeds two pairs in a season', () => {
+    for (let s = 0; s < 20; s++) {
+      const bonds = {}; const key = (a, b) => [a, b].sort().join('|');
+      const out = playDragSeason({
+        cast: realCast(12, 900 + s), seed: s,
+        bond: (a, b) => bonds[key(a, b)] || 0,
+        addBond: (a, b, d) => { const k = key(a, b); bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d)); },
+      });
+      expect((out.state.romances || []).length, `seed ${s}`).toBeLessThanOrEqual(2);
     }
   });
 });

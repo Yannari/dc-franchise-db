@@ -89,9 +89,12 @@ export const STAGE_BEATS = [
     tiers: [
       tier('open', 'The stage opens and the category is announced.', [
         "The lights come up and the host is already standing there in full drag, which means the room is real now. \"The category is,\" she says, and the whole panel leans in, \"eleganza — and I mean it.\" Somewhere backstage every queen left hears it and checks her reflection one more time.",
-        "Nobody has to be told to be quiet. The music drops out, the panel settles, and the host looks down the runway at an empty stage the way a person looks at a road they know something is coming down. \"Racers,\" she says. \"Start your engines.\"",
+        "\"Gentlemen, start your engines, and may the best woman win!\" The host delivers it the way she always delivers it — like a dare wrapped in a welcome — and the panel settles and the runway lights come up and the first queen is already at the top of the stage with her shoulders back. The category is named. The night begins.",
+        "\"Racers, start your engines, and may the best drag queen win!\" The host opens the stage and the room answers her before she has finished the sentence. The panel is seated, the guest judge looks delighted to be here, and the category is about to be named. Every queen backstage heard that and checked her reflection one more time.",
         "The panel is seated, the guest looks delighted to be there, and the host does the thing where she waits a beat too long on purpose. Then: the category, delivered like a dare. The first queen is already at the top of the runway with her shoulders back.",
         "It is the same words every week and it works every week. The stage is lit, the category is named, and the room changes temperature — because from this point on nothing that happened in the werk room counts for anything at all.",
+        "\"Gentlemen!\" The host lets the word carry. \"Start your engines.\" She names the category and the room shifts into the register it uses only for the main stage — quieter, sharper, the kind of attention that has a judgement in it. \"And may the best woman win.\" The runway lights come up. The first queen walks.",
+        "\"Start your engines, and may the best drag queen win.\" The host says it and then says the category and then does not say anything else, because the runway is about to say everything for her. The panel picks up their pens. The first queen appears at the top of the stage. The night is running.",
       ]),
     ],
   },

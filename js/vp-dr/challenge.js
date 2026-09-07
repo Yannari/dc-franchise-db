@@ -70,6 +70,85 @@ const CHAL_CSS = `
    therefore landed in the next free CELL, so a queen's performance was
    rendered eighty pixels wide, one word per line, down the score column.
    1/-1 puts them back across the whole card. */
+/* ══ THE SIX ROOMS ══ ambient, behind the cards, drawn in CSS ══
+   Each is a fixed layer so it does not scroll with the prose — the room
+   stays still and the night moves through it. All of them are cheap: a
+   gradient, a repeat, and at most one slow animation. */
+/* THE ROOM IS THE SCREEN, NOT THE WINDOW. Fixed to the viewport, the
+   theatre's left curtain sat underneath the navigation sidebar and its
+   footlights ran along the bottom of the browser rather than the bottom of
+   the stage — the set was in the wrong building. Absolute inside the
+   content column makes the edges of the room the edges of the screen the
+   reader is actually looking at, and the walls then run the full length of
+   the night rather than one screenful of it. */
+.dr-fam{position:relative;z-index:1}
+.dr-room{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
+  overflow:hidden;border-radius:2px}
+.dr-room i{position:absolute;display:block}
+
+/* A TELEVISION STUDIO: the tally light and the scan of a monitor.
+   THE TALLY SAT AT 50% AND LANDED ON THE EPISODE HEADER — a red dot in the
+   middle of the title, which reads as a fault rather than a camera. It goes
+   in the corner where a tally actually is. */
+.dr-room-studio{background:
+  radial-gradient(120% 70% at 50% 0%,rgba(56,189,248,.16),transparent 62%),
+  radial-gradient(90% 60% at 50% 110%,rgba(56,189,248,.08),transparent 70%)}
+.dr-room-studio::after{content:"";position:absolute;inset:0;
+  box-shadow:inset 0 0 190px 60px rgba(0,0,0,.6)}
+.dr-tally{top:16px;right:20px;width:10px;height:10px;border-radius:50%;background:#FF294B;
+  box-shadow:0 0 26px 7px rgba(255,41,75,.7);animation:drTally 3.4s ease-in-out infinite}
+@keyframes drTally{0%,88%,100%{opacity:1}92%{opacity:.2}}
+.dr-scan{inset:0;background:repeating-linear-gradient(180deg,
+  rgba(255,255,255,.05) 0 1px,transparent 1px 4px)}
+
+/* A THEATRE: two curtains and a row of footlights. */
+.dr-room-stage{background:radial-gradient(120% 80% at 50% 100%,rgba(255,200,61,.18),transparent 65%)}
+.dr-room-stage::after{content:"";position:absolute;inset:0;
+  box-shadow:inset 0 0 200px 70px rgba(0,0,0,.62)}
+.dr-curtain{top:0;bottom:0;width:13%;opacity:.85;
+  background:repeating-linear-gradient(90deg,rgba(122,10,40,.5) 0 14px,rgba(60,4,20,.5) 14px 28px)}
+.dr-curtain.dr-l{left:0}.dr-curtain.dr-r{right:0;transform:scaleX(-1)}
+.dr-foots{left:11%;right:11%;bottom:0;height:70px;
+  background:repeating-linear-gradient(90deg,rgba(255,233,168,.20) 0 6px,transparent 6px 34px);
+  filter:blur(6px)}
+
+/* A COMEDY CLUB: brick, and one hard spot on the mic. */
+.dr-room-club{background:linear-gradient(180deg,rgba(10,6,8,.5),transparent 40%)}
+.dr-brick{inset:0;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 54px)}
+.dr-clubspot{top:0;left:50%;width:380px;height:78%;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(255,233,168,.26),transparent 72%);
+  clip-path:polygon(44% 0,56% 0,100% 100%,0 100%)}
+
+/* AN ATELIER: a cutting mat, and bolts of fabric leaning in the corners. */
+.dr-room-atelier{background:radial-gradient(100% 60% at 50% 100%,rgba(255,61,154,.09),transparent 70%)}
+.dr-cutting{inset:auto 0 0 0;height:46%;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(56,189,248,.16) 0 1px,transparent 1px 30px),
+    repeating-linear-gradient(90deg,rgba(56,189,248,.16) 0 1px,transparent 1px 30px)}
+.dr-bolt-a,.dr-bolt-b{bottom:0;width:52px;height:44%;
+  background:linear-gradient(180deg,rgba(255,61,154,.22),rgba(255,61,154,.05))}
+.dr-bolt-a{left:3%;transform:rotate(7deg)}
+.dr-bolt-b{right:3%;transform:rotate(-9deg);
+  background:linear-gradient(180deg,rgba(56,189,248,.2),rgba(56,189,248,.04))}
+
+/* A DANCE FLOOR: marley, and the mirror wall behind it. */
+.dr-room-floor{background:linear-gradient(180deg,rgba(20,6,14,.6),transparent 45%)}
+.dr-marley{inset:auto 0 0 0;height:38%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));
+  border-top:1px solid rgba(255,255,255,.09)}
+.dr-mirror{top:8%;left:8%;right:8%;height:34%;opacity:.55;
+  background:linear-gradient(110deg,rgba(255,255,255,.07),transparent 45%,rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.08)}
+
+/* A SOUNDSTAGE: a barn-door flag and a boom shadow. */
+.dr-room-set{background:radial-gradient(110% 70% at 30% 0%,rgba(255,233,168,.09),transparent 60%)}
+.dr-flag{top:0;left:14%;width:26%;height:32%;background:rgba(0,0,0,.45);
+  clip-path:polygon(0 0,100% 0,72% 100%,0 78%)}
+.dr-boom{top:6%;right:10%;width:44%;height:8px;background:rgba(0,0,0,.5);
+  transform:rotate(-8deg);filter:blur(3px)}
+
+@media(prefers-reduced-motion:reduce){.dr-tally{animation:none}}
+
 .dr-perf-line{grid-column:1/-1;margin:9px 0 0;color:#f4e3ed;line-height:1.6;
   max-width:74ch;text-wrap:pretty}
 .dr-track{margin-top:10px;color:#FFC83D;font-size:13px;line-height:1.5}
@@ -86,10 +165,36 @@ const CHAL_CSS = `
   padding:13px 16px 13px 20px}
 .dr-row h3{margin:0;font-size:17px}
 .dr-row .dr-sub{font-size:11px;letter-spacing:.1em;color:#C9A6BC}
+/* THE SCORE LANDS. It is the verdict on a performance and it appeared the
+   same way the paragraph did — it should arrive after the reading, hard.
+   Only on a revealed card, so it fires on the click rather than on paint. */
 .dr-score{font-size:22px;font-variant-numeric:tabular-nums;padding:5px 12px;
   border:1px solid currentColor;color:#00E5FF}
 .dr-score.dr-hot{color:#FFC83D}
 .dr-score.dr-cold{color:#FF294B}
+.dr-step.dr-vis .dr-score{animation:drScore .5s cubic-bezier(.2,1.6,.35,1) both;
+  animation-delay:.12s}
+@keyframes drScore{from{opacity:0;transform:scale(2.1) rotate(-7deg)}
+  to{opacity:1;transform:scale(1) rotate(0)}}
+/* And the card itself arrives from the room rather than fading in place. */
+.dr-step.dr-vis .dr-panel{animation:drCard .42s ease-out both}
+@keyframes drCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* THE CARDS BELONG TO THEIR ROOM. Each family sets the accent its own left
+   rail and score take, so a Snatch Game card is not a Rusical card in a
+   different building. */
+.dr-fam-studio{--dr-fam:#38bdf8}
+.dr-fam-stage{--dr-fam:#FFC83D}
+.dr-fam-club{--dr-fam:#FF7A3D}
+.dr-fam-atelier{--dr-fam:#FF3D9A}
+.dr-fam-floor{--dr-fam:#3BE08A}
+.dr-fam-set{--dr-fam:#C4B5FD}
+.dr-fam .dr-panel{border-left-color:var(--dr-fam,#7a3a5e)}
+.dr-fam .dr-perf-line{border-left:0}
+
+@media(prefers-reduced-motion:reduce){
+  .dr-step.dr-vis .dr-score,.dr-step.dr-vis .dr-panel{animation:none}
+}
 
 /* A bar of per-round marks — Snatch Game's six, the Ball's three, a roast set. */
 .dr-marks{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
@@ -469,6 +574,60 @@ export function rpBuildPrep(row) {
 }
 
 /** The performance itself, with the panel this challenge type deserves. */
+/* ══════════════════════════════════════════════════════════════════════
+   THE SIX WORLDS A MAXI CHALLENGE HAPPENS IN
+   ══════════════════════════════════════════════════════════════════════
+
+   One builder serves nineteen challenges, so it drew all nineteen the same
+   way: a portrait, a score, a paragraph, nineteen times over. A Snatch Game
+   and a Ball and a stand-up set are three different rooms with three
+   different lights in them and the screen said nothing about which one you
+   were in.
+
+   It cannot have nineteen identities. It CAN have the rooms they happen in,
+   which is six — and a family is a real property of the challenge, not a
+   decoration: a queen doing comedy at a mic and a queen sewing at a station
+   are being judged on different things, and the screen should not pretend
+   otherwise.
+
+   `format` on the challenge is solo/teams/cast/pairs — that is the team
+   shape, not the subject — so the mapping is by hand and lives here.
+
+   Each world sets its own accent and its own ambient layer. The ambient is
+   CSS, not an image: a tally light and scanlines for a studio, footlights
+   and a curtain for a stage, a brick wall and a lit mic for a club. */
+const FAMILY = {
+  'snatch-game': 'studio', commercial: 'studio', 'music-video': 'studio',
+  photoshoot: 'studio',
+  rusical: 'stage', 'talent-show': 'stage', singing: 'stage', rumix: 'stage',
+  'lipsync-challenge': 'stage',
+  roast: 'club', 'stand-up': 'club', improv: 'club',
+  design: 'atelier', ball: 'atelier', makeover: 'atelier',
+  'runway-challenge': 'atelier',
+  choreography: 'floor', 'girl-group': 'floor',
+  acting: 'set',
+};
+const familyOf = id => FAMILY[id] || 'stage';
+
+/** The room, drawn in CSS. No images, no emoji. */
+const ambientFor = fam => {
+  const inner = {
+    studio: '<i class="dr-tally"></i><i class="dr-scan"></i>',
+    stage: '<i class="dr-curtain dr-l"></i><i class="dr-curtain dr-r"></i><i class="dr-foots"></i>',
+    club: '<i class="dr-brick"></i><i class="dr-clubspot"></i>',
+    atelier: '<i class="dr-cutting"></i><i class="dr-bolt-a"></i><i class="dr-bolt-b"></i>',
+    floor: '<i class="dr-marley"></i><i class="dr-mirror"></i>',
+    set: '<i class="dr-flag"></i><i class="dr-boom"></i>',
+  }[fam] || '';
+  return `<div class="dr-room dr-room-${fam}">${inner}</div>`;
+};
+
+const FAMILY_SUB = {
+  studio: 'tape rolls', stage: 'places, please', club: 'the room goes quiet',
+  atelier: 'the machines are running', floor: 'from the top',
+  set: 'quiet on set',
+};
+
 export function rpBuildMaxi(row) {
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
@@ -548,8 +707,10 @@ export function rpBuildMaxi(row) {
         </div>`).join('')}`);
   }
 
-  return `<style>${CHAL_CSS}</style>${_shell(teams + steps + room, ep, {
-    phase: 'stage', title: ch.name, subtitle: 'tape rolls',
-    sidebar: _seedRail('maxi', '<h4 class="dr-disp">So far</h4>'),
-  })}${_controls('maxi', running.length, ep.num)}`;
+  const fam = familyOf(ch.id);
+  return `<style>${CHAL_CSS}</style>${_shell(
+    `<div class="dr-fam dr-fam-${fam}">${ambientFor(fam)}${teams}${steps}${room}</div>`, ep, {
+      phase: 'stage', title: ch.name, subtitle: FAMILY_SUB[fam] || 'tape rolls',
+      sidebar: _seedRail('maxi', '<h4 class="dr-disp">So far</h4>'),
+    })}${_controls('maxi', running.length, ep.num)}`;
 }

@@ -543,6 +543,61 @@ export function knows(speaker, source, ep) {
 // belongs in the bare-accusation path, not dressed up as a cited claim.
 const _BROADCAST_SOURCE = / at the Round Table$/;
 
+// ══════════════════════════════════════════════════════════════════════
+// A REASON CAN STOP BEING ONE
+// ══════════════════════════════════════════════════════════════════════
+//
+// `ballotEvidence` mints "never once voted against X" for a pair who shared
+// many rounds and never named each other — the PAIR SILENCE signal, on the
+// theory that two Traitors protect each other. It is 29.3% of everything the
+// debate cites, the second most common reason in the game.
+//
+// Its whole inferential force is "you are covering for somebody who might be a
+// Traitor". So the night X is revealed, that force resolves — in one of two
+// directions, and the engine noticed neither:
+//
+//   X WAS A FAITHFUL   the premise is dead. Not weaker: DEAD. Never having
+//                      voted for a Faithful is what a Faithful does, and it is
+//                      also what everybody does — one ballot a night across a
+//                      room of fifteen. Measured 49 times over 60 seasons,
+//                      stated with a straight face as though it still meant
+//                      something.
+//   X WAS A TRAITOR    the premise is PROVEN, and the line is the best one
+//                      available at any table in this format: you never once
+//                      voted for a man we now know was a Traitor. Measured 56
+//                      times, delivered as boilerplate.
+//
+// FIXED AT CITATION TIME, NOT AT MINT TIME, because at mint time nobody knows.
+// The reveal is public, so this reads exactly what everybody at the table
+// watched happen and nothing else — and `speechesFrom` writes no belief and
+// takes no draw, so this changes what is SAID and never what is decided. What
+// the belief is WORTH is a separate question, noted below.
+const _PAIR_SILENCE = /^never once voted against (.+)$/;
+
+/** What the room publicly knows about a banished player, or null. */
+function _revealedAs(name) {
+  for (const r of (gs.tr?.rounds || [])) {
+    if (r.banished === name) return r.banishedWasTraitor ? 'traitor' : 'faithful';
+  }
+  return null;
+}
+
+/**
+ * Drop a clue whose premise the season has since killed, and sharpen one it
+ * has proved. Returns null to refuse the clue entirely.
+ */
+function _resolveClue(text) {
+  const m = _PAIR_SILENCE.exec(text || '');
+  if (!m) return text;
+  const verdict = _revealedAs(m[1]);
+  if (verdict === 'faithful') return null;
+  if (verdict === 'traitor') {
+    return `never once voted against ${m[1]}, and ${m[1]} was a Traitor`;
+  }
+  return text;
+}
+
+
 /**
  * WHY `speaker` IS NAMING `target`, in the speaker's own terms.
  *
@@ -605,10 +660,13 @@ function _reasonFor(speaker, target, ep) {
     const out = [];
     for (const c of [{ source: b.source, sourceType: b.sourceType },
       ...(Array.isArray(b.clues) ? b.clues : [])]) {
-      const text = c && c.source;
-      if (typeof text !== 'string' || !text.trim()) continue;
-      if (_BROADCAST_SOURCE.test(text)) continue;
-      if (seen.has(text)) continue;
+      const raw = c && c.source;
+      if (typeof raw !== 'string' || !raw.trim()) continue;
+      if (_BROADCAST_SOURCE.test(raw)) continue;
+      // A reason whose premise the season has since killed is not sayable, and
+      // one it has proved should say so. See `_resolveClue`.
+      const text = _resolveClue(raw);
+      if (!text || seen.has(text)) continue;
       seen.add(text);
       out.push({ factId: alignmentFactId(target), subject: target,
         kind: c.sourceType || b.sourceType, text });

@@ -492,6 +492,52 @@ function pactNoise(voter, name, ep) {
  * ever done; and a room with NO evidence votes for whoever sorts first, which
  * would decide episode one alphabetically.
  */
+/**
+ * THE BALLOT IS A PUBLIC RECORD AND A TRAITOR IS THE ONE PERSON WHO KNOWS IT.
+ *
+ * `ballotEvidence` mints "kept X in on the night X was revealed" — the single
+ * most-cited reason in this engine (995 of 2897 citations over 40 seasons) —
+ * for anybody who voted elsewhere on a night the room turned out to be right.
+ * A Faithful who does that was honestly wrong. A Traitor who does it has
+ * handed the room a permanent mark for nothing, because they KNEW the answer
+ * and voted somewhere else anyway. Following the room on a night that is
+ * already decided costs a Traitor nothing and buys a clean record.
+ *
+ * ── WHY ONLY TRAITORS, WHICH IS A CALIBRATION DECISION AND NOT A FLAVOUR ONE
+ *
+ * The note inside `chooseBanishmentVote` records bloc coordination being tried
+ * here and REJECTED: pooling reads so a group votes as a unit amplified the
+ * deduction channel at every phase and leaked information early (0.102 against
+ * a 0.10 ceiling). A bandwagon term handed to the WHOLE room is that same
+ * shape — every voter leaning toward the room's consensus makes the room's
+ * consensus self-reinforcing, and the calibrated model wants near-chance early
+ * and sharpening late.
+ *
+ * Given only to Traitors it cannot do that. It does not make the room a better
+ * detective; it makes one player's public record less incriminating. The
+ * amplification loop never forms because the people whose reads would be
+ * amplified are not the ones reading.
+ *
+ * ── AND ONLY THE ONES WHO WOULD THINK OF IT ───────────────────────────
+ *
+ * Scaled by strategic and intuition, so it is a thing clever Traitors do and
+ * not a property of the cloak. A hothead with no head for it still votes their
+ * read and still leaves the trail.
+ *
+ * PUBLIC INPUT ONLY: `tonightsBurn` counts what was said out loud at this
+ * table. No beliefs, no alignments, nothing a player in the room could not
+ * have heard for themselves.
+ */
+const BANDWAGON = 0.30;
+function bandwagon(voter, name, isTraitor) {
+  if (!isTraitor) return 0;
+  const share = tonightsBurn(name);
+  if (share <= 0) return 0;
+  const st = pStats(voter);
+  const savvy = ((st.strategic ?? 5) / 10) * 0.65 + ((st.intuition ?? 5) / 10) * 0.35;
+  return BANDWAGON * share * savvy;
+}
+
 export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   const pool = (candidates || []).filter(n => n !== voter);
   if (!pool.length) return null;
@@ -556,7 +602,9 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
         // not — is protected by the alliance they built, and an isolated one is
         // the free-agent vote. A strong read on an ally still beats the instinct
         // to protect them, which is the betrayal the format lives on.
-        + allianceVoteBias(voter, name, ep),
+        + allianceVoteBias(voter, name, ep)
+        // WHERE THE ROOM IS ALREADY GOING, and only a Traitor reads it.
+        + bandwagon(voter, name, isTraitor),
     };
   }).sort((a, b) => b.score - a.score);
   const chosen = scored[0].name;

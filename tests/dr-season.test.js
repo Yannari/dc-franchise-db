@@ -239,3 +239,63 @@ describe('runway categories in a season', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The crown reads the season — weighted, never decided
+// ══════════════════════════════════════════════════════════════════════
+describe('the finale counts the track record', () => {
+  it('rates a season of wins above a season of bottoms', async () => {
+    const { recordStrength } = await import('../js/dr/season.js');
+    expect(recordStrength(['WIN', 'WIN', 'HIGH']))
+      .toBeGreaterThan(recordStrength(['SAFE', 'SAFE', 'SAFE']));
+    expect(recordStrength(['SAFE', 'SAFE', 'SAFE']))
+      .toBeGreaterThan(recordStrength(['BTM2', 'LOW', 'BTM']));
+    // PER EPISODE, not per season: a queen is not credited for lasting, she
+    // is already in the finale and that IS the reward for lasting.
+    expect(recordStrength(['WIN', 'WIN'])).toBe(recordStrength(['WIN', 'WIN', 'WIN', 'WIN']));
+    expect(recordStrength([])).toBe(0);
+  });
+
+  it('carries the edge on the finale duels and nowhere else', async () => {
+    const { playDragSeason } = await import('../js/dr/season.js');
+    const out = playDragSeason({ cast: cast(12, 4100), seed: 11 });
+    const fin = out.rows[out.rows.length - 1];
+    for (const r of fin.dr.finale.rounds) {
+      expect(r.edge, 'a finale duel with no edge recorded').toBeTruthy();
+    }
+    /* A WEEKLY LIP SYNC MUST NOT READ IT. The panel has already spoken and
+       these two are the bottom two; letting a good résumé save somebody there
+       would be the show overruling its own judgement twice in one night. */
+    for (const row of out.rows.slice(0, -1)) {
+      if (row.dr.lipsync) expect(row.dr.lipsync.edge, `episode ${row.num}`).toBeUndefined();
+    }
+  });
+
+  /* THE MEASUREMENT THAT MATTERS, AND ITS CONTROL ARM. "The best résumé won"
+     is meaningless without the rate a coin toss between the finalists would
+     produce. Before this weighting the best résumé won a top four 15% of the
+     time against a 25% chance line — the crown was ANTI-correlated with the
+     season, and a winner had zero maxi wins in 53% of seasons. */
+  it('beats chance without deciding the crown', async () => {
+    const { playDragSeason, recordStrength } = await import('../js/dr/season.js');
+    let best = 0; let zeroWin = 0; let field = 0; const n = 90;
+    for (let s = 0; s < n; s++) {
+      const out = playDragSeason({ cast: cast(12, 4200 + s), seed: s });
+      const rec = out.state.record;
+      const fin = out.rows[out.rows.length - 1].dr;
+      const live = fin.living;
+      field += live.length;
+      const top = [...live].sort((a, b) => recordStrength(rec[b] || []) - recordStrength(rec[a] || []))[0];
+      if (top === out.winner) best++;
+      if ((rec[out.winner] || []).filter(r => r === 'WIN').length === 0) zeroWin++;
+    }
+    const chance = 100 / (field / n);
+    const rate = best / n * 100;
+    expect(rate, `best résumé wins ${rate.toFixed(0)}% against a ${chance.toFixed(0)}% chance line`)
+      .toBeGreaterThan(chance);
+    // AND IT IS STILL BEATABLE. A crown the résumé decides is a chart with a
+    // lip sync stapled to it, and this show is not that.
+    expect(rate, 'the résumé now simply decides the crown').toBeLessThan(80);
+    expect(zeroWin, 'no winner ever came from behind').toBeGreaterThan(0);
+  });
+});

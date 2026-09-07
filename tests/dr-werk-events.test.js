@@ -9,6 +9,29 @@ import { describe, expect, it } from 'vitest';
 import { WERK_EVENTS, WERK_IDS, SLOTS, unwrittenWerkEvents } from '../js/dr/data/werk-events.js';
 import { showWords } from '../js/shows.js';
 
+/**
+ * Are two lines the same beat reworded?
+ *
+ * Measured on the WHOLE line rather than its opening, and that distinction is
+ * the whole point. The first version compared the first eighteen characters
+ * and demanded all four differ, which is right for an ordinary scene and wrong
+ * for a ritual: three of the winner's lines open with "Condragulations"
+ * because that is the word the show says every single week, and the guard
+ * called correct prose a failure.
+ *
+ * Shared vocabulary across a whole line is the real signal for a reworded
+ * sentence, and a shared catchphrase at the front is not.
+ */
+function tooSimilar(x, y) {
+  const words = t => new Set(String(t).toLowerCase().match(/[a-z']+/g) || []);
+  const a = words(x);
+  const b = words(y);
+  if (!a.size || !b.size) return false;
+  let shared = 0;
+  for (const w of a) if (b.has(w)) shared++;
+  return shared / Math.min(a.size, b.size) > 0.6;
+}
+
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
 const mk = (name, drag = {}, over = {}) => ({
   name, slug: name.toLowerCase(), archetype: 'hero',
@@ -74,8 +97,12 @@ describe('the lines', () => {
       expect(e.lines.length, `${e.id} has ${e.lines.length} variants`).toBeGreaterThanOrEqual(4);
       expect(new Set(e.lines).size, `${e.id} repeats a line verbatim`).toBe(e.lines.length);
       // Four rewordings of one sentence is not four variants.
-      const openings = e.lines.map(l => l.slice(0, 18));
-      expect(new Set(openings).size, `${e.id}: variants all open the same way`).toBe(e.lines.length);
+      for (let i = 0; i < e.lines.length; i++) {
+        for (let k = i + 1; k < e.lines.length; k++) {
+          expect(tooSimilar(e.lines[i], e.lines[k]),
+            `${e.id}: variants ${i + 1} and ${k + 1} are the same beat reworded`).toBe(false);
+        }
+      }
     }
   });
 

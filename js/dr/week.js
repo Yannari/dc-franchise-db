@@ -33,7 +33,7 @@ import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
-import { renderStageBeats, runUntucked, applyUntuckedScene } from './stage.js';
+import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -127,12 +127,16 @@ export function runDragWeek(state, cfg, ctx) {
   // 3. The mini, and what winning it buys.
   let mini = null;
   let miniWinner = null;
+  let miniScores = {};
   if (cfg.miniId) {
     const m = miniById(cfg.miniId);
     if (m) {
       const scored = living
         .map(n => ({ n, s: blendScore(dragOf(P(n)), m.blend) + noise(rng, 3) }))
         .sort((a, b) => b.s - a.s);
+      // Kept, not discarded: every queen's attempt is a beat, and the beat is
+      // tiered on how she actually did. Only the winner used to survive this.
+      miniScores = Object.fromEntries(scored.map(x => [x.n, Math.round(x.s * 100) / 100]));
       miniWinner = scored[0].n;
       mini = { id: m.id, name: m.name, winner: miniWinner, buys: m.buys };
       say('mini', 'mini', { mini });
@@ -418,6 +422,16 @@ export function runDragWeek(state, cfg, ctx) {
     // Untucked happens DURING the deliberation, so it is drawn from the call
     // and from who named whom on the stage — not from anything that comes
     // after the verdict, which the queens in that room do not have yet.
+    // The four phases that used to be one marker line each. `player` is passed
+    // through on the performance so the aptitude read has real craft to look
+    // at rather than a name.
+    const perfWithPlayers = Object.fromEntries(Object.entries(performances)
+      .map(([n, v]) => [n, { ...v, player: P(n) }]));
+    for (const sc of renderChallengeBeats({
+      living, maxi, mini, miniWinner, miniScores,
+      assignment: M.assignment || {}, performances: perfWithPlayers, rng,
+    })) scenes.push(sc);
+
     const untuckedScenes = runUntucked({
       living, players: ctx.players, state, storylines: state.storylines || [],
       call, namedOnStage: [], rng, ctx: { bond: ctx.bond, episode: cfg.num },

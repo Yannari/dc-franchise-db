@@ -20,6 +20,7 @@
 // room it walked into.
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
+import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { dragOf } from './queen.js';
 import { canScheme } from './rules.js';
 
@@ -28,6 +29,14 @@ const RUNWAY_TIERS = [
   [0.15, 'stunning'], [0.40, 'strong'], [0.75, 'fine'], [0.92, 'weak'], [1.01, 'disaster'],
 ];
 const LIPSYNC_TIERS = [[0.25, 'legendary'], [0.60, 'strong'], [0.85, 'trying'], [1.01, 'lost']];
+const PERF_TIERS = [
+  [0.12, 'extraordinary'], [0.38, 'strong'], [0.72, 'competent'],
+  [0.90, 'struggling'], [1.01, 'collapse'],
+];
+const MINI_TIERS = [[0.30, 'nailed'], [0.70, 'decent'], [1.01, 'flat']];
+const APTITUDE_TIERS = [[0.30, 'delighted'], [0.70, 'braced'], [1.01, 'dreading']];
+/** How many queens get an out-loud reaction to the brief. Not the whole room. */
+const REACTING = 3;
 
 const pick = (lines, rng) => (lines && lines.length
   ? lines[Math.floor(rng() * lines.length)] : null);
@@ -254,6 +263,96 @@ export function applyUntuckedScene(scene, ctx) {
     if (name) ctx.popDelta(name, delta);
   }
   return changes;
+}
+
+/**
+ * The four phases that were bare markers: the announcement, the mini, the
+ * division of the room, and the performance itself.
+ *
+ * Same principle as the main stage — nothing is drawn, every beat fires and
+ * the tier comes from what happened. Kept in this file rather than duplicated
+ * because the tier machinery is identical; kept out of stage-beats.js because
+ * that data file was being written into at the time.
+ */
+export function renderChallengeBeats({
+  living = [], maxi = {}, mini = null, miniWinner = null, miniScores = {},
+  assignment = {}, performances = {}, rng = Math.random,
+}) {
+  const scenes = [];
+  const beatById = id => CHALLENGE_BEATS.find(b => b.id === id);
+
+  const emit = (beat, tierId, who, extra = {}, step = null) => {
+    if (!beat) return;
+    const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
+    if (!t) return;
+    scenes.push({
+      step: step || beat.step,
+      kind: `chal:${beat.id}`,
+      data: { beat: beat.id, tier: t.id, players: who, note: t.note, ...extra },
+      text: fill(pick(t.lines, rng), { a: who[0], c: maxi.name }),
+    });
+  };
+
+  // ── the host arrives and sets the week ──
+  emit(beatById('host-arrives'), 'arrival', []);
+  emit(beatById('the-brief'), 'brief', [], { challenge: maxi.name });
+
+  // Who is pleased about it. Ranked on how well the challenge's own blend
+  // suits her craft, so "this is her week" means the same thing the scoring
+  // means by it rather than a separate opinion.
+  const aptitude = {};
+  for (const n of living) {
+    const d = dragOf(performances[n]?.player || null);
+    aptitude[n] = Object.entries(maxi.blend || {})
+      .reduce((t, [k, w]) => t + (d[k] || 5) * w, 0);
+  }
+  const byAptitude = Object.keys(aptitude).length
+    ? Object.entries(aptitude).sort((a, b) => b[1] - a[1]).map(e => e[0])
+    : [...living];
+  for (const n of byAptitude.slice(0, REACTING)) {
+    emit(beatById('announce-reaction'),
+      tierAt(fractionalRank(n, aptitude), APTITUDE_TIERS), [n]);
+  }
+  for (const n of byAptitude.slice(-1)) {
+    if (byAptitude.length > REACTING) emit(beatById('announce-reaction'), 'dreading', [n]);
+  }
+
+  // ── the mini ──
+  if (mini) {
+    emit(beatById('mini-announce'), 'announce', [], { mini: mini.name, buys: mini.buys });
+    for (const n of living) {
+      if (miniScores[n] === undefined) continue;
+      emit(beatById('mini-attempt'), tierAt(fractionalRank(n, miniScores), MINI_TIERS), [n]);
+    }
+    if (miniWinner) emit(beatById('mini-win'), 'win', [miniWinner], { buys: mini.buys });
+  }
+
+  // ── how the room was divided ──
+  const kind = (assignment.teams || []).length > 1 ? 'captains'
+    : Object.keys(assignment.picks || {}).length ? 'draft' : 'solo';
+  emit(beatById('the-division'), kind, []);
+  for (const n of living) {
+    const p = assignment.picks?.[n];
+    if (!p) continue;
+    const tierId = String(p.choice || '').startsWith('leftover-') ? 'left-over'
+      : p.penalty > 0 ? 'settled'
+        : (assignment.order || []).indexOf(n) === (assignment.order || []).length - 1 ? 'picked-last'
+          : 'got-it';
+    emit(beatById('pick-reaction'), tierId, [n], { choice: p.choice });
+  }
+
+  // ── the performance ──
+  const step = maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main';
+  const perfScores = Object.fromEntries(
+    living.filter(n => performances[n]).map(n => [n, performances[n].perf]));
+  for (const n of living) {
+    if (!performances[n]) continue;
+    emit(beatById('performance'), tierAt(fractionalRank(n, perfScores), PERF_TIERS), [n],
+      { perf: performances[n].perf }, step);
+    if (performances[n].moment) emit(beatById('performance-moment'), 'moment', [n], {}, step);
+  }
+
+  return scenes;
 }
 
 export { dragOf };

@@ -51,7 +51,26 @@ describe('drag-race registry entry', () => {
 
   it('has social vocabulary, guard vocabulary, a host, and a setting', () => {
     expect(socialWords('drag-race').eliminated).toBe('sashayed away');
-    expect(socialWords('drag-race').nominationLabel).toBe(null);
+    /* THIS ASSERTED `null` AND WAS RIGHT UNTIL SOMETHING EMITTED THE KIND.
+       Written when nothing did, on the reasoning that this show has no
+       nomination. It has no BALLOT — but `drEvents` emits the `nomination`
+       kind for the bottom two, because that is the same fact a nomination is:
+       a room told in public who is in trouble and might survive it.
+       And a null here does not disappear. `eventLabel` falls through to
+       `map[kind] || kind.replace(...)`, so the timeline was headed
+       "Nomination" over a runway — the house's word, reached by way of the
+       field that exists to prevent exactly that. */
+    expect(socialWords('drag-race').nominationLabel).toBe('In the bottom');
+    // And it is not a borrowed one.
+    for (const other of ['total-drama', 'big-brother', 'traitors']) {
+      expect(socialWords('drag-race').nominationLabel)
+        .not.toBe(socialWords(other).nominationLabel);
+    }
+    // The prose field that three finale takes interpolate. `null` here
+    // published "Ted won, and null agreed"; the boolean question is
+    // SHOWS[format].hasJury, which stays false.
+    expect(socialWords('drag-race').jury).toBeTruthy();
+    expect(SHOWS['drag-race'].hasJury).toBeFalsy();
     expect(VOCAB['drag-race'].own).toContain('lip sync');
     expect(hostOptionsForFormat('drag-race')[0]).toEqual({ value: 'RuPaul', label: 'RuPaul' });
     expect(settingsForFormat('drag-race')).toEqual(['dr-werkroom']);

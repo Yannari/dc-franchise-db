@@ -213,11 +213,28 @@ const SHOW_WORDS = {
     nominee: 'a bottom queen',
     pawn: 'a safe queen',
     ceremony: 'the main stage',
-    // No jury: nobody who leaves ever decides anything again.
-    jury: null,
+    /* WHO DECIDES THE WINNER, as a phrase to put in a sentence.
+       This was `null`, on the true reasoning that nobody who leaves this show
+       ever decides anything again — but the field is INTERPOLATED, never
+       tested, and three finale takes in js/social/voices.js say
+       `${w.jury} agreed`. A registered show setting it null published
+       "Ted won, and null agreed" to the feed.
+       The boolean question — is there a jury — is `SHOWS[format].hasJury`,
+       and it stays false here. This is the prose, and the honest answer is
+       that on this show one person decides, out loud, on the stage. */
+    jury: 'the host',
     safe: 'safe',
-    // There is no nomination on this show, so there is no label for one.
-    nominationLabel: null,
+    /* WHAT THE TIMELINE CALLS BEING PUBLICLY IN DANGER.
+       This was `null` with the note "there is no nomination on this show",
+       written when nothing emitted the kind. `drEvents` does now: the bottom
+       two is precisely a room being told, in public, which people are in
+       trouble and might survive it — the same fact a nomination is, which is
+       why it reuses the kind rather than inventing one.
+       And a null here does not disappear: eventLabel falls through to
+       `map[kind] || kind.replace(...)`, so the timeline was headed
+       "Nomination" over a runway — the house's word, arrived at by way of
+       the field that exists to prevent exactly that. */
+    nominationLabel: 'In the bottom',
     polls: [
       { id: 'win', text: 'Who wins the next maxi challenge?' },
       { id: 'lipsync', text: 'Who lip syncs next week?' },

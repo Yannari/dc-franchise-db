@@ -99,13 +99,23 @@ describe('loading the boards', () => {
     const fetched = [];
     vi.stubGlobal('fetch', async url => {
       fetched.push(url);
-      if (url.endsWith('rankings_tr.json')) return { ok: false, status: 404 };
+      /* TWO boardless shows now, not one. Drag Race registered a board file
+         before anybody had published a season into it, which is exactly the
+         state this test is about — and the old fixture 404'd only the castle
+         and answered `ok` for everything else, so the drag board came back
+         tagged as Total Drama's and the count went to three. A fixture that
+         answers yes to a file that does not exist is testing the stub. */
+      if (url.endsWith('rankings_tr.json') || url.endsWith('rankings_dr.json')) {
+        return { ok: false, status: 404 };
+      }
       return { ok: true, json: async () => board(url.includes('_bb') ? 'big-brother' : DEFAULT_FORMAT) };
     });
     const boards = await loadRankingBoards();
     vi.unstubAllGlobals();
     expect(fetched, 'the Traitors board was never even asked for')
       .toContain('rankings_tr.json');
+    expect(fetched, 'the Drag Race board was never even asked for')
+      .toContain('rankings_dr.json');
     expect(boards.map(b => boardFormat(b))).toEqual([DEFAULT_FORMAT, 'big-brother']);
   });
 

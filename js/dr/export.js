@@ -21,7 +21,7 @@
 // no vote, and every existing reader of `eliminated` in this codebase means
 // "the person the house voted out". Writing a name there would make a drag
 // season read as a Big Brother eviction in half the site.
-import { SHOWS, showWords, DRAG_FORMAT } from '../shows.js';
+import { SHOWS, showWords, seasonRounds, DRAG_FORMAT } from '../shows.js';
 
 // Re-exported so this module's own readers need one import, not two.
 export { DRAG_FORMAT };
@@ -219,4 +219,41 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
       : null,
     congeniality: congeniality || null,
   };
+}
+
+/**
+ * The four numbers the ranking board prices, for one queen in one season.
+ *
+ * Separate from `dragCareerStats` on purpose: that one is the article's
+ * record and answers "what did she do", where this answers "what should a
+ * board pay for", and those are different questions. `highs` is in both and
+ * means the same thing; `lows` is in the record and NOT here, because a low
+ * is a night the panel had a note and nothing happened — a board paying or
+ * charging for it would be pricing the edit.
+ *
+ * The weights that consume these, and the correlation and DENSITY measured
+ * for each, live beside the config in js/rankings-update.js. A count of
+ * anything a longer run accumulates is placement measured twice, and this
+ * show has no column that is entirely free of that.
+ */
+export function dragBoardStats(doc, name) {
+  const rows = seasonRounds(doc, DRAG_FORMAT);
+  let maxiWins = 0; let lipsyncWins = 0; let highs = 0; let bottoms = 0;
+  for (const e of rows) {
+    const cell = (e.placements || []).find(p => p.name === name);
+    if (!cell) continue;
+    if (cell.result === 'WIN') maxiWins++;
+    else if (cell.result === 'HIGH') highs++;
+    // The bottom is the pair who lip synced. The one who goes home is marked
+    // ELIM, not BTM, so counting the column alone undercounts every episode
+    // by exactly one — and misses the single most consequential bottom there
+    // is, the one that ended somebody's season.
+    const ls = e.lipsync;
+    const inBottom = cell.result === 'BTM'
+      || (ls && (ls.queens || []).includes(name));
+    if (inBottom) bottoms++;
+    if (ls && (ls.winner === name
+      || (ls.call === 'double-shantay' && (ls.queens || []).includes(name)))) lipsyncWins++;
+  }
+  return { maxiWins, lipsyncWins, highs, bottoms };
 }

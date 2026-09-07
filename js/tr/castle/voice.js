@@ -1084,6 +1084,12 @@ export const BENIGN_BRANCHES = new Set([
   // party the finding costs. The sibling `susp-timeline-crosscheck` classifies
   // its own `did-not-line-up` benign for the identical reason.
   'could-not-place-them', 'accounted-for', 'nobody-saw-anything',
+  // The two other night-reading scenes (a door heard, an empty bed). Every
+  // branch is benign for the same reason: these are two people comparing notes
+  // over breakfast, and whatever the finding costs, it costs the person who is
+  // not in the room. None of the eight moves a bond downward.
+  'heard-it-go', 'passed-it-on', 'talked-themselves-out', 'slept-through',
+  'the-bed-was-empty', 'said-it-out-loud', 'they-had-a-reason', 'never-woke',
   // ── AND THE NINE OF THE SAME EIGHT THAT PAY NOTHING OR PAY UP ───────
   //
   // An apology taken after being refused, two people admitting the same

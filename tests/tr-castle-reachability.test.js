@@ -585,7 +585,13 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // coupled to something that really happened (the conclave roll). See
     // tests/tr-castle-channel-pricing.test.js for why that distinction is the
     // whole point of it.
-    expect(EVENTS.length).toBe(195);
+    // 195 -> 197: two more scenes that read the night (a door heard, an empty
+    // bed), sharing one detection rate with the first — see `noticed()` in
+    // js/tr/castle/alibi.js. Three scenes reading one fact rather than one
+    // scene weighted three times as heavily, because the heavy version crowded
+    // the castle and pushed an unrelated romance branch under the variety
+    // floor.
+    expect(EVENTS.length).toBe(197);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -2176,6 +2182,10 @@ const BRANCHES = [
   'susp-group-pressure-crack:overcorrected',
   'susp-group-pressure-crack:redirects',
   'susp-group-pressure-crack:walked-away',
+  'susp-heard-a-door:heard-it-go',
+  'susp-heard-a-door:passed-it-on',
+  'susp-heard-a-door:slept-through',
+  'susp-heard-a-door:talked-themselves-out',
   'susp-heard-in-the-corridor:caught',
   'susp-heard-in-the-corridor:checked-the-door',
   'susp-heard-in-the-corridor:heard',
@@ -2220,6 +2230,10 @@ const BRANCHES = [
   'susp-said-nothing-about-it:holding-it',
   'susp-said-nothing-about-it:let-it-go',
   'susp-said-nothing-about-it:not-sure-it-counts',
+  'susp-the-other-bed:never-woke',
+  'susp-the-other-bed:said-it-out-loud',
+  'susp-the-other-bed:the-bed-was-empty',
+  'susp-the-other-bed:they-had-a-reason',
   'susp-the-shape-of-the-column:read-the-order',
   'susp-the-shape-of-the-column:the-gap-in-the-middle',
   'susp-the-shape-of-the-column:the-wrong-pair',

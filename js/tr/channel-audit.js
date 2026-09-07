@@ -375,8 +375,14 @@ const CHANNELS = {
       const living = S.livingAt(L.ep);
       if (!living.length) continue;
       for (const ce of (L.castleEvents || [])) {
-        if (ce.event?.id !== 'susp-account-of-the-night') continue;
-        if ((ce.consequences || {}).branch !== 'could-not-place-them') continue;
+        // ALL THREE SCENES THAT READ THE NIGHT, and only the branches that
+        // actually file a finding. They share `noticed()` in
+        // js/tr/castle/alibi.js — one detection rate, priced once — so they
+        // are one channel and must be measured as one. Measuring the first
+        // alone would report a rate for a third of the emissions and call it
+        // the channel's.
+        const found = FINDING_BRANCHES[ce.event?.id];
+        if (!found || (ce.consequences || {}).branch !== found) continue;
         const subject = ce.consequences.topic;
         if (!subject || !living.includes(subject)) continue;
         out.push({ ep: L.ep, subject });
@@ -421,6 +427,13 @@ function _alibi(S, rng, hit, miss) {
  * is not evidence anybody could act on, and counting it would put a subject
  * outside the control's population.
  */
+/** Which branch of each night-reading scene files a finding. */
+const FINDING_BRANCHES = {
+  'susp-account-of-the-night': 'could-not-place-them',
+  'susp-heard-a-door': 'passed-it-on',
+  'susp-the-other-bed': 'said-it-out-loud',
+};
+
 function _castleThirdParty(S, adverseOnly) {
   const out = [];
   for (const L of (S.log || [])) {
@@ -429,6 +442,15 @@ function _castleThirdParty(S, adverseOnly) {
     for (const ce of (L.castleEvents || [])) {
       const c = ce.consequences || {};
       if (c.topicKind !== 'suspicion-third' || !c.topic) continue;
+      // THE COUPLED SCENES ARE NOT PART OF THIS MEASUREMENT. js/tr/castle/alibi.js
+      // produces `suspicion-third` scenes too, and it is deliberately coupled to
+      // the conclave — so leaving it in makes this channel a MIXTURE of the
+      // thing being tested (the ordinary, alignment-blind castle) and the thing
+      // it is being contrasted with. The test that owns these channels caught
+      // exactly that the day the coupled scenes landed: it reported the
+      // uncoupled castle as having "become informative" at +0.24 when what had
+      // really happened was that three coupled events joined its population.
+      if (FINDING_BRANCHES[ce.event?.id]) continue;
       if (adverseOnly && !ADVERSE_BRANCHES.has(String(c.branch || ''))) continue;
       if (!living.includes(c.topic)) continue;
       out.push({ ep: L.ep, subject: c.topic });

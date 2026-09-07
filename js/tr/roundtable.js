@@ -655,11 +655,40 @@ function _reasonFor(speaker, target, ep) {
   // it got into the list, so `_BROADCAST_SOURCE` filters the whole list rather
   // than just `b.source` -- otherwise this would launder exactly the thing the
   // citation path exists to refuse.
+  // ── WHAT MAKES A REASON WORTH SAYING IS NOT HOW SURE YOU ARE ────────
+  //
+  // `belief.clues` is sorted by CONFIDENCE, which is the right order for
+  // deciding a vote and the wrong one for choosing a sentence. The loudest
+  // clue this model produces is the ballot record, and it is loud because it
+  // is PUBLIC and enormous — everybody's votes, all week — not because it is
+  // telling. Measured: 96.7% of everything the table cited came from it, and
+  // 28.6% was `never once voted against X`, which is true of nearly every pair
+  // in a room where you name one person a night.
+  //
+  // A reason that fits almost everybody is a weak thing to say out loud even
+  // when the belief behind it is strong. So the CITATION order is specificity,
+  // not confidence: a thing that happened to one person on one night goes
+  // first, and the ballot record — which is always available and rarely
+  // surprising — goes last.
+  //
+  // DISPLAY ONLY, AND THAT IS WHY IT IS SAFE. `speechesFrom` writes no belief
+  // and takes no draw; a season is bit-identical with or without it being
+  // called. The vote still runs off confidence alone. This changes which true
+  // thing gets said, never which name gets written.
+  const GENERIC = /^never once voted against|^kept .* in on the night|^wanted .* gone the night/;
+  const specificity = (text) => {
+    if (/could not account for an hour|heard .*'s door|woke to .*'s bed empty/.test(text)) return 0;
+    if (GENERIC.test(text)) return 2;
+    return 1;                              // missions, murders, campaigns
+  };
   const cite = (b) => {
     const seen = new Set();
     const out = [];
-    for (const c of [{ source: b.source, sourceType: b.sourceType },
-      ...(Array.isArray(b.clues) ? b.clues : [])]) {
+    const pool = [{ source: b.source, sourceType: b.sourceType },
+      ...(Array.isArray(b.clues) ? b.clues : [])];
+    // Stable: equal specificity keeps the confidence order it arrived in.
+    pool.sort((x, y) => specificity(String(x.source || '')) - specificity(String(y.source || '')));
+    for (const c of pool) {
       const raw = c && c.source;
       if (typeof raw !== 'string' || !raw.trim()) continue;
       if (_BROADCAST_SOURCE.test(raw)) continue;

@@ -112,10 +112,11 @@ describe('a Traitor can spend a fellow the room has already burned', () => {
 // table:
 //
 //     accusers   before   after
-//     1           13.3%     8.3%
-//     2           16.8%    18.6%
-//     3           36.8%    63.0%
-//     4+          20.2%    76.1%     <- it used to turn OVER at the top
+//     1           13.3%     6.0%
+//     2           16.8%    35.1%
+//     3           36.8%    41.2%
+//     4           20.2%    59.2%     <- it used to turn OVER at the top
+//     5+           n/a     74.8%
 //
 // A response curve that falls at its top end is two terms fighting rather than
 // a preference. `pactReluctance` is quadratic in the living count, so a table
@@ -123,8 +124,20 @@ describe('a Traitor can spend a fellow the room has already burned', () => {
 // between 0 and about 2 — and the burn term was a PERCENTAGE off that. Four
 // accusers also needs a big room to be available in, which is exactly where
 // the quadratic is largest, so the most burned fellows were the hardest to
-// name. See `PACT_BURNED_COST` in js/tr/deduction.js for the fix: the burn now
-// blends toward a fixed price instead of scaling the old one.
+// name. See `PACT_BURNED_COST` in js/tr/deduction.js for that half of the fix:
+// the burn blends toward a fixed price instead of scaling the old one.
+//
+// AND THE SIGNAL ITSELF WAS MEASURING THE WRONG THING, which is the half that
+// reaches the ordinary table. It counted accusations against a saturation of
+// three, and a table's most-accused person has three or more only two-thirds
+// of the time — so on the other third the mechanism was simply switched off,
+// and a fellow with two accusers was joined at 18.6%. What burns somebody at a
+// Round Table is not a count, it is being THE NAME THE ROOM HAS SETTLED ON:
+// two accusers is a landslide when nobody else has more than two, and three is
+// nothing much when somebody else has five — that other person is the one
+// going, so there is no fellow to abandon. `tonightsBurn` is the fellow's
+// count against the table's LEADING count now, and the two-accuser table, the
+// most common kind there is, moved 18.6% -> 35.1%.
 //
 // SO THE SHAPE IS ASSERTED, NOT THE NUMBERS. Rates ride the rng stream and
 // this file has already said so once; what must not come back is a curve that
@@ -172,6 +185,63 @@ describe('a Traitor joins a landslide that has landed on a fellow', () => {
     // ordinary play and holding the line is the exception.
     expect(rate(4), 'a fellow four people have named out loud is still being protected')
       .toBeGreaterThan(0.5);
+  });
+
+  it('and the table SHOWS it: a fellow going down on a pile-on gets a fellow\'s vote', () => {
+    // ── THE NUMBER A VIEWER ACTUALLY SEES ────────────────────────────
+    //
+    // The arm above is a per-ballot rate, which is the right way to state the
+    // mechanism and the wrong way to state the experience. What somebody
+    // watching the reveal sees is one question: when a Traitor goes down with
+    // the room shouting their name, did any of their own write it too?
+    //
+    // MEASURED at cast 20, 150 seasons, on a Traitor banished with three or
+    // more public accusers against them:
+    //
+    //                     before   after
+    //     any room         39.3%    87.2%
+    //     rooms of 16+     19.0%    87.5%
+    //
+    // THE BIG-ROOM ROW IS THE ONE THAT WAS REPORTED FROM WATCHING A SEASON.
+    // A twenty-handed first table, four people naming the same Traitor, seven
+    // votes landing on her — and both her fellows wrote somebody else. On the
+    // old code that was not bad luck, it was the 81% case: `pactReluctance`
+    // prices the pact at 0.55 * 81 = 44.55 in a room of twenty, and eighty per
+    // cent off 44.55 is 8.91, against reads worth 2. The bigger the room, the
+    // more impossible it was — which is backwards, because a big room is
+    // exactly where a clean public vote is worth the most.
+    const cases = [];
+    for (const n of NIGHTS) {
+      const ballots = n.round.ballots || [];
+      if (!ballots.length || !n.round.banished) continue;
+      if (n.align[n.round.banished] !== 'traitor') continue;
+      const living = ballots.map(b => b.voter);
+      const others = living.filter(x => x !== n.round.banished && n.align[x] === 'traitor');
+      if (!others.length) continue;
+      const acc = (n.round.accusations || []).filter(a => a.target === n.round.banished).length;
+      if (acc < 3) continue;
+      cases.push({
+        joined: ballots.some(b => others.includes(b.voter) && b.voted === n.round.banished),
+        big: living.length >= 16,
+      });
+    }
+    expect(cases.length, 'no Traitor was ever banished off a pile-on, so this measures nothing')
+      .toBeGreaterThan(30);
+    const rate = cases.filter(c => c.joined).length / cases.length;
+    expect(rate, `only ${(100 * rate).toFixed(1)}% of burned Traitors got a vote from one of `
+      + 'their own — the room is watching people hold a line that costs them everything')
+      .toBeGreaterThan(0.6);
+    // AND IT MUST NOT FALL AWAY IN THE BIG ROOMS, which is the whole defect.
+    // Floored rather than banded: the sample here is the early tables of 60
+    // seasons and it is not large, so this asserts the direction the old code
+    // got wrong rather than pinning a rate.
+    const big = cases.filter(c => c.big);
+    if (big.length >= 15) {
+      const bigRate = big.filter(c => c.joined).length / big.length;
+      expect(bigRate, `${(100 * bigRate).toFixed(1)}% in rooms of 16+ — the pact price is `
+        + 'growing with the room faster than the burn can discount it again')
+        .toBeGreaterThan(0.5);
+    }
   });
 
   it('and the response rises the whole way — a curve that turns over is a bug', () => {

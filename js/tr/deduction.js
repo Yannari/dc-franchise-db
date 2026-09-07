@@ -433,8 +433,12 @@ function pactReluctance(burn = 0) {
  */
 const PACT_BURNED_COST = 0.35;
 /**
- * HOW MANY PEOPLE NAMING YOU OUT LOUD COUNTS AS FULLY BURNED — A COUNT, AND
- * IT USED TO BE A SHARE OF THE ROOM (0.35). THE SHARE WAS THE BUG.
+ * THE FEWEST PEOPLE WHO CAN BURN YOU. Below two nobody is burned: one voice
+ * is somebody with a theory, and if that were enough then "burned" would just
+ * mean "mentioned".
+ *
+ * IT USED TO BE A SATURATION COUNT OF THREE, AND BEFORE THAT A SHARE OF THE
+ * ROOM (0.35). Both were the same mistake in different clothes.
  *
  * Measured over 60 seasons, how often a Traitor wrote a burned fellow's name,
  * by the number of people who had publicly named that fellow at the table:
@@ -451,14 +455,22 @@ const PACT_BURNED_COST = 0.35;
  * room DILUTES — four of seventeen is 0.24, which did not even reach the old
  * 0.35 saturation. The discount could never catch the price.
  *
- * And the share was wrong on its own terms. What makes somebody burned at a
- * Round Table is not what fraction of the castle named them; it is that four
- * separate people said the name out loud, which is a landslide in a room of
- * twelve and a landslide in a room of eighteen. Three is the saturation
- * because three independent accusations is the point a table has visibly
- * turned, and it is reachable in every room size the format uses.
+ * AND A COUNT WAS WRONG TOO, WHICH TOOK A SECOND LOOK TO SEE. Measured over
+ * 883 tables, the most-accused person at a table has three or more accusers
+ * only two-thirds of the time — so a saturation of three switched the whole
+ * mechanism off on the other third, and a fellow with two accusers was joined
+ * at 18.6%. The threshold sat above the middle of its own distribution.
+ *
+ * What burns somebody at a Round Table is not a count in the abstract, it is
+ * BEING THE NAME THE ROOM HAS SETTLED ON. Two accusers is a landslide when
+ * nobody else has more than two. Three is nothing much when somebody else has
+ * five — that other person is the one going tonight, so there is no fellow to
+ * abandon and the pact should hold. So `tonightsBurn` reads the fellow's count
+ * against the TABLE'S LEADING count, which is room-size independent for the
+ * same reason a count was, and reaches the ordinary table as well as the
+ * lopsided one. The two-accuser table moved 18.6% -> 35.1%.
  */
-const BURN_FULL_ACCUSERS = 3;
+const BURN_MIN_ACCUSERS = 2;
 
 /**
  * How burned `name` is at tonight's table, 0..1 — an accusation COUNT
@@ -472,9 +484,12 @@ const BURN_FULL_ACCUSERS = 3;
 function tonightsBurn(name) {
   const acc = gs.tr?._tableAccusations;
   if (!Array.isArray(acc) || !acc.length) return 0;
-  let on = 0;
-  for (const a of acc) if (a.target === name) on++;
-  return Math.min(1, on / BURN_FULL_ACCUSERS);
+  const on = {};
+  for (const a of acc) if (a.target) on[a.target] = (on[a.target] || 0) + 1;
+  const mine = on[name] || 0;
+  if (mine < BURN_MIN_ACCUSERS) return 0;
+  const top = Math.max(...Object.values(on));
+  return Math.min(1, mine / Math.max(BURN_MIN_ACCUSERS, top));
 }
 
 /**

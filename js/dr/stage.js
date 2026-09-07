@@ -38,8 +38,29 @@ const APTITUDE_TIERS = [[0.30, 'delighted'], [0.70, 'braced'], [1.01, 'dreading'
 /** How many queens get an out-loud reaction to the brief. Not the whole room. */
 const REACTING = 3;
 
-const pick = (lines, rng) => (lines && lines.length
-  ? lines[Math.floor(rng() * lines.length)] : null);
+/**
+ * A line, avoiding one already used tonight.
+ *
+ * WITHOUT REPLACEMENT, and reading a dumped season is what forced it. A mini
+ * challenge is one beat per queen — thirteen of them — drawn from a tier of
+ * four variants, so picking independently per queen guaranteed collisions.
+ * The dump had "The mini hits and {a} hits harder" printed twice, verbatim,
+ * for two queens in the same episode.
+ *
+ * `used` is per render pass, so a line is free again next episode. When a tier
+ * genuinely runs out — four variants across five queens at the same tier — it
+ * falls back to any line rather than printing nothing, because a repeat is
+ * better than a blank.
+ */
+const pick = (lines, rng, used = null, key = '') => {
+  if (!lines || !lines.length) return null;
+  if (!used) return lines[Math.floor(rng() * lines.length)];
+  const fresh = lines.filter(l => !used.has(key + '\u0000' + l));
+  const pool = fresh.length ? fresh : lines;
+  const chosen = pool[Math.floor(rng() * pool.length)];
+  used.add(key + '\u0000' + chosen);
+  return chosen;
+};
 
 const fill = (line, { a, b, j, s, c } = {}) => (line || '')
   .replace(/\{a\}/g, a || '')
@@ -73,6 +94,7 @@ export function renderStageBeats({
   // the scene's `data` where only a later reader would see it.
   const songTitle = lipsync?.song || '';
   const scenes = [];
+  const usedLines = new Set();
   const beatById = id => STAGE_BEATS.find(b => b.id === id);
   const runwayScores = Object.fromEntries(
     walking.filter(n => runway[n]).map(n => [n, runway[n].score]));
@@ -86,7 +108,8 @@ export function renderStageBeats({
       step: beat.step,
       kind: `stage:${beat.id}`,
       data: { beat: beat.id, tier: t.id, players: who, note: t.note, judge: j, ...extra },
-      text: fill(pick(t.lines, rng), { a: who[0], b: who[1], j, s: songTitle }),
+      text: fill(pick(t.lines, rng, usedLines, `${beat.id}/${t.id}`),
+        { a: who[0], b: who[1], j, s: songTitle }),
     });
   };
 
@@ -164,6 +187,7 @@ export function runUntucked({
 }) {
   const scenes = [];
   const seen = {};
+  const usedLines = new Set();
   const used = state._drUntuckedUsed instanceof Set
     ? state._drUntuckedUsed
     : (state._drUntuckedUsed = new Set(state._drUntuckedUsedList || []));
@@ -243,7 +267,7 @@ export function runUntucked({
           event: chosen.ev.id, phase, players: who,
           note: chosen.ev.note, eligible: candidates.length,
         },
-        text: fill(pick(chosen.ev.lines, rng), { a: who[0], b: who[1] }),
+        text: fill(pick(chosen.ev.lines, rng, usedLines, chosen.ev.id), { a: who[0], b: who[1] }),
         effects: chosen.ev.effects,
       });
       used.add(chosen.ev.id);
@@ -286,6 +310,7 @@ export function renderChallengeBeats({
   assignment = {}, performances = {}, rng = Math.random,
 }) {
   const scenes = [];
+  const usedLines = new Set();
   const beatById = id => CHALLENGE_BEATS.find(b => b.id === id);
 
   const emit = (beat, tierId, who, extra = {}, step = null) => {
@@ -296,7 +321,8 @@ export function renderChallengeBeats({
       step: step || beat.step,
       kind: `chal:${beat.id}`,
       data: { beat: beat.id, tier: t.id, players: who, note: t.note, ...extra },
-      text: fill(pick(t.lines, rng), { a: who[0], c: maxi.name }),
+      text: fill(pick(t.lines, rng, usedLines, `${beat.id}/${t.id}`),
+        { a: who[0], c: maxi.name }),
     });
   };
 

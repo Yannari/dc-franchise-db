@@ -86,10 +86,20 @@ function factsFor({ a, b, players, state, storylines, ctx }) {
   };
 }
 
-/** Fill {a} and {b}. A line with no variants written yet renders as null. */
-function render(event, facts, rng) {
+/**
+ * Fill {a} and {b}. A line with no variants written yet renders as null.
+ *
+ * `used` makes the draw WITHOUT REPLACEMENT across one week, for the same
+ * reason the stage does it: an event that fires twice in a night would
+ * otherwise be able to print the identical sentence twice.
+ */
+function render(event, facts, rng, used = null) {
   if (!event.lines || !event.lines.length) return null;
-  const line = event.lines[Math.floor(rng() * event.lines.length)];
+  const fresh = used
+    ? event.lines.filter(l => !used.has(event.id + '\u0000' + l)) : event.lines;
+  const pool = fresh.length ? fresh : event.lines;
+  const line = pool[Math.floor(rng() * pool.length)];
+  if (used) used.add(event.id + '\u0000' + line);
   return line.replace(/\{a\}/g, facts.nameA).replace(/\{b\}/g, facts.nameB || '');
 }
 
@@ -123,6 +133,7 @@ function pickSubject(pool, seen, state, rng) {
 
 export function drawWerkScene({
   slot, living, players, state, storylines, rng, ctx, used = new Set(), seen = {},
+  usedLines = null,
 }) {
   if (!living || living.length < 1) return null;
 
@@ -167,7 +178,7 @@ export function drawWerkScene({
     id: picked.ev.id,
     slot,
     players: picked.facts.nameB ? [picked.facts.nameA, picked.facts.nameB] : [picked.facts.nameA],
-    text: render(picked.ev, picked.facts, rng),
+    text: render(picked.ev, picked.facts, rng, usedLines),
     note: picked.ev.note,
     effects: picked.ev.effects,
     // How much choice there actually was. This is the number that decides
@@ -219,6 +230,7 @@ export function applyWerkScene(scene, ctx) {
 export function runWerkRoom({ slots, living, players, state, storylines, rng, ctx, perSlot = null }) {
   const scenes = [];
   const seen = {};
+  const usedLines = new Set();
   const used = state._drWerkUsed instanceof Set
     ? state._drWerkUsed
     : (state._drWerkUsed = new Set(state._drWerkUsedList || []));
@@ -233,7 +245,7 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
       if (i >= 2 && living.every(n => seen[n])) break;
 
       const scene = drawWerkScene({
-        slot, living, players, state, storylines, rng, ctx, used, seen,
+        slot, living, players, state, storylines, rng, ctx, used, seen, usedLines,
       });
       if (!scene) break;
       // A slot never runs the same scene twice in one night, whatever the

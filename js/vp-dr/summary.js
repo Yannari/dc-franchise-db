@@ -216,11 +216,19 @@ export function generateDragSummaryText(row) {
  * somebody dumps a season instead of only when a test is run.
  */
 function _textWerkRoom(dr, ln) {
-  const werk = (dr.scenes || []).filter(s => String(s.kind || '').startsWith('werk:'));
+  // Every narrated scene, not just the werk room: the stage, Untucked and the
+  // challenge phases all emit prose now, and a readout that showed one pool
+  // out of four would be lying about what the episode contains.
+  const werk = (dr.scenes || []).filter(s => /^(werk|stage|untucked|chal):/.test(String(s.kind || '')));
   if (!werk.length) return;
   const SLOT_NAME = {
     'cold-open': 'COLD OPEN', 'werk-morning': 'WERK ROOM — MORNING',
-    prep: 'WERK ROOM — WORKING', 'werk-elim-day': 'WERK ROOM — ELIMINATION DAY',
+    'maxi-announce': 'THE ANNOUNCEMENT', mini: 'MINI CHALLENGE',
+    choice: 'THE DIVISION', prep: 'WERK ROOM — WORKING',
+    'maxi-pre': 'THE CHALLENGE', 'werk-elim-day': 'WERK ROOM — ELIMINATION DAY',
+    'main-stage': 'MAIN STAGE', runway: 'THE RUNWAY', 'maxi-main': 'THE CHALLENGE',
+    critiques: 'CRITIQUES', untucked: 'UNTUCKED', results: 'RESULTS',
+    lipsync: 'LIP SYNC FOR YOUR LIFE', exit: 'THE EXIT',
   };
   let current = null;
   for (const sc of werk) {

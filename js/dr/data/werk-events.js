@@ -347,8 +347,13 @@ export const WERK_EVENTS = [
   }),
   ev({
     id: 'bottom-hangover', slot: 'cold-open', cast: 'solo', weight: 2,
+    /* BTM2, NOT BTM. The note says she survived the lip sync, and since the
+       call was split into "named in the bottom and saved" (BTM) and "lip
+       synced and survived" (BTM2) this gate had been firing for exactly the
+       queens who never sang. The prose and the trigger described different
+       nights for two plans. */
     note: 'She survived the lip sync and has to walk back in and be normal.',
-    arcs: ['performance'], when: f => f.lastCall === 'BTM',
+    arcs: ['performance'], when: f => f.lastCall === 'BTM2',
     effects: { pop: { a: 1 }, state: 'rattled' },
     lines: [
       "{a} walks back in like someone who nearly did not walk back in. She puts her stuff down, sits at her station, and stares at nothing for about thirty seconds. When somebody asks if she is alright she says \"yeah\" in a voice that is holding together with effort. She survived the lip sync. She has not finished processing that.",
@@ -806,6 +811,144 @@ export const WERK_EVENTS = [
       "{a} has her head down and her hands moving and the outfit is taking shape the way outfits are supposed to take shape — steadily, piece by piece, without a single moment of panic. She does not need help. She does not need encouragement. She needs to be left alone, and the room obliges.",
       "The room is loud and {a} is in the middle of it, sewing, and if you did not look closely you would think she was not paying attention to anything except the fabric. She is paying attention to everything. She just does not need to react to any of it, because her hands know what to do and her brain is free to listen.",
       "{a} is having the kind of day where the garment cooperates and the machine behaves and the concept she drew on the napkin is turning into the thing she drew on the napkin. It is boring to describe. It is the best feeling in the room. She will not talk about it, because talking about it is how you ruin it.",
+    ],
+  }),
+
+  // ══ WHAT THE TRACK RECORD DOES TO A ROOM ═════════════════════════════
+  //
+  // Being the frontrunner, being permanently safe, and living in the bottom
+  // are the three states this competition puts a queen in, and each one costs
+  // her something socially. Before these, six of sixty-two werk room events
+  // read the record at all and they fired about four times a season between
+  // them — the chart was a scoreboard nobody in the room reacted to.
+  //
+  // Every one of these takes its trigger from `state.record`, so the drama
+  // follows the season that actually happened rather than a die roll.
+
+  // ── the frontrunner ──
+  ev({
+    id: 'frontrunner-iced-out', slot: 'werk-morning', cast: 'pair', weight: 2,
+    note: '{a} keeps winning and the room has quietly stopped including her.',
+    arcs: ['frontrunner'], when: f => f.winsA >= 2 && f.bond <= 1,
+    effects: { bond: -1, pop: { a: -1 } },
+    lines: [
+      "{a} walks over to where {b} and two others are talking and the conversation does not stop so much as change shape — it goes polite, and general, and about nothing. She stands in it for a minute and then goes back to her station. Nobody was rude to her. That is somehow worse.",
+      "It takes {a} three days to notice that nobody asks her opinion on anything any more. She asks {b} about a hemline and gets a real answer, and then the conversation ends, and {b} goes back to the group at the other end of the room. Winning has made her a competitor and stopped making her a friend.",
+      "\"We were just going to get food,\" {b} says, in the past tense, about a thing that has not happened yet. {a} says have fun. She sits back down at her station with her back to the room and works on a garment that does not need any more work.",
+      "The room has divided itself into people who are winning and people who are not, and {a} is the entire first category. {b} is polite to her and warm to everyone else and the difference is about four degrees, which is more than enough for {a} to feel it every time.",
+    ],
+  }),
+  ev({
+    id: 'frontrunner-asked-for-help', slot: 'prep', cast: 'pair', weight: 2,
+    note: '{b} swallows her pride and asks the queen who keeps beating her for help.',
+    arcs: ['frontrunner'], when: f => f.winsA >= 2 && f.neverTopA === false && f.bottomsB >= 1,
+    effects: { bond: 2, pop: { a: 2 } },
+    lines: [
+      "{b} has been staring at the same seam for an hour and finally walks over to the queen who has beaten her twice and asks for help, which costs her something. {a} does not make her ask twice and does not make it a moment. She just takes the garment and fixes it and hands it back.",
+      "\"I hate that I am asking you this.\" {b} says it flat, holding a bodice that is not working, and {a} laughs and says \"ask me anyway\" and then spends forty minutes on it. Neither of them says the thing about how they are competing. It is understood and it is set aside.",
+      "{a} sees {b} struggling from across the room and waits — because offering would be worse than being asked — until {b} looks up. Then she comes over. She does not fix it for her; she shows her how, which takes longer and matters more.",
+      "The frontrunner helping the queen in the bottom is the kind of thing that could read as condescension and does not, because {a} does it without an audience and without mentioning it afterwards. {b} notices that too. She will remember it when the room turns.",
+    ],
+  }),
+  ev({
+    id: 'frontrunner-cooling', slot: 'cold-open', cast: 'solo', weight: 2,
+    note: 'She was the one to beat and has not been called in weeks.',
+    arcs: ['frontrunner'],
+    when: f => (f.winsA >= 2 && f.sinceTopA >= 2) || (f.winsA >= 1 && f.sinceTopA >= 3),
+    effects: { pop: { a: -1 }, state: 'slipping' },
+    lines: [
+      "{a} won twice early and has not been called since, and she is doing the arithmetic on that in the mirror this morning. Nobody has said anything. Nobody needs to. She knows what a cooling frontrunner looks like because she has watched this show.",
+      "There is a version of this season where {a} was the one to beat, and it was two weeks ago. She can feel the room's attention having moved somewhere else. She does not like how much she misses it.",
+      "\"I peaked,\" {a} says to the mirror, half-joking, entirely serious. Two wins in the first half and nothing since. She gets to work earlier than anyone this morning and stays at it longer, which is either the fix or the panic.",
+      "The queens who are winning now were nowhere when {a} was winning, and she is trying very hard to be gracious about that and mostly managing it. Mostly. She has caught herself watching the runway looks at the other stations more closely than she used to.",
+    ],
+  }),
+
+  // ── the one who is always safe ──
+  ev({
+    id: 'coasting-called-out', slot: 'werk-morning', cast: 'pair', weight: 2,
+    note: '{b} tells {a} she is coasting, and she is not entirely wrong.',
+    arcs: ['filler', 'weakness'], when: f => f.safesA >= 3 && f.neverTopA,
+    effects: { bond: -1, pop: { a: -1 } },
+    lines: [
+      "\"You have not been in the bottom once,\" {b} says. \"You have not been in the top once either.\" {a} says that is called consistency. {b} says it is called invisible, and then apologises for how that came out, and does not take it back.",
+      "{b} means it kindly and it does not land kindly: \"I could not tell you what you did last week.\" {a} could. {a} remembers exactly what she did last week. The problem is that nobody else does, and {b} just proved it out loud.",
+      "The word {b} uses is \"safe\", and she uses it four times in one sentence, and by the fourth one it has stopped being a category and started being a verdict. {a} takes it standing. She has been thinking it herself for a fortnight.",
+      "\"When are you going to actually go for something?\" It is a fair question and {b} has no right to ask it and both of those are true. {a} does not answer. She goes back to her station and takes the safe idea off the rack and puts it away.",
+    ],
+  }),
+  ev({
+    id: 'safe-pact', slot: 'prep', cast: 'pair', weight: 2,
+    note: 'Two queens who have never been called agree to stop playing it safe.',
+    arcs: ['filler'], when: f => f.safesA >= 2 && f.neverTopA && f.bond >= 1,
+    effects: { bond: 2, pop: { a: 1 } },
+    lines: [
+      "{a} and {b} have both been safe every single week and they have both had enough of it. The conversation starts as a complaint and turns into a plan: neither of them plays it safe again. They shake on it, which is ridiculous, and they both mean it.",
+      "\"We are going to get sent home being boring,\" {b} says, and {a} says \"yes\" with real feeling. So they make each other a promise at their stations — the riskier idea, every week, from here. It is the most decisive either of them has been all season.",
+      "Nobody has mentioned {a} or {b} in a critique yet, and at eleven at night they agree that being forgettable is a worse way to go home than being wrong. They swap the ideas they were each too scared to try. Both ideas are better than what they had.",
+      "The pact is simple and they make it quietly: no more middle. {a} shows {b} the sketch she talked herself out of, and {b} tells her to make that one, and then shows {a} hers. Neither of them sleeps much afterwards.",
+    ],
+  }),
+  ev({
+    id: 'never-in-the-bottom', slot: 'cold-open', cast: 'solo', weight: 1,
+    note: 'She has never stood in the bottom, and it has started to frighten her.',
+    arcs: ['filler', 'frontrunner'], when: f => f.neverBottomA && f.roomSize <= 8,
+    effects: { pop: { a: 1 }, state: 'untested' },
+    lines: [
+      "{a} has never been in the bottom. Not once. She used to say that with her chest and this morning she says it to the mirror and hears how it actually sounds: untested. Everybody left in this room has fought for her spot at least once, and she has not.",
+      "The thing nobody tells you about never being in the bottom is that you never find out whether you can win a lip sync. {a} knows every word of every song they have played this season. She has never had to prove it and it is starting to sit badly.",
+      "\"I have never done it,\" {a} says, meaning the lip sync, meaning the thing that decides everything. She has been safe or high every week and she is proud of that and also aware that it is the one line on her résumé with nothing written next to it.",
+      "Six queens left and {a} is the only one who has never stood on that stage waiting to be saved. It ought to be a comfort. This morning it feels like a debt she has not paid yet.",
+    ],
+  }),
+
+  // ── the bottom ──
+  ev({
+    id: 'bottom-written-off', slot: 'werk-morning', cast: 'pair', weight: 2,
+    note: '{b} has stopped treating {a} like somebody who will be here next week.',
+    arcs: ['weakness'], when: f => f.bottomsA >= 2,
+    effects: { bond: -2, pop: { b: -1 } },
+    lines: [
+      "{b} asks {a} for her mirror \"since you probably will not need it long\" and laughs like it was a joke, and it does land as a joke, for about a second and a half. {a} laughs too. Then she does not. The room heard it and the room is very busy looking at something else.",
+      "It is in the small things: {b} plans around {a} rather than with her, talks about next week as though {a} is not in it, and has started using the past tense about her. {a} notices every single one and says nothing, and files all of it.",
+      "\"No offence,\" {b} says, having already caused it, \"but you have been in the bottom twice.\" It is true. That is what makes it unanswerable, and it is why {a} is still thinking about it at two in the morning.",
+      "{b} does not think she has written {a} off. {b} would deny it. But she has stopped asking {a}'s opinion, stopped including her in plans past Friday, and started talking about the top five as though the count is already settled. {a} is not deaf and {a} is not stupid.",
+    ],
+  }),
+  ev({
+    id: 'bottom-defiance', slot: 'werk-elim-day', cast: 'solo', weight: 2,
+    note: 'She has been in the bottom before and refuses to go quietly.',
+    arcs: ['weakness', 'performance'], when: f => f.bottomsA >= 2,
+    effects: { pop: { a: 2 }, state: 'defiant' },
+    lines: [
+      "{a} has stood in that bottom twice and survived it twice, and she is putting her face on this evening like somebody who intends to do it a third time. \"They keep putting me down there,\" she says. \"They keep having to keep me.\"",
+      "There is a way queens look on elimination day when they know it might be them, and {a} is not doing it. She is doing the other thing — the one where she picks the harder look, the bolder mouth, the song she actually knows. If it is her tonight, it will not be quiet.",
+      "\"I am not scared of that stage any more.\" {a} says it to her reflection and it is not bravado; she has been on it, twice, and come back. Whatever happens tonight, the thing she used to be frightened of has already happened to her and she is still here.",
+      "{a} does her make-up slower than usual tonight and harder. She has been in the bottom enough times to know exactly what it feels like to hear her name, and she has decided that if she hears it again she is going to make somebody work for it.",
+    ],
+  }),
+  ev({
+    id: 'bottom-solidarity', slot: 'cold-open', cast: 'pair', weight: 2,
+    note: 'Two queens who have both been down there find each other.',
+    arcs: ['weakness'], when: f => f.bottomsA >= 1 && f.bottomsB >= 1,
+    effects: { bond: 3, pop: { a: 1 } },
+    lines: [
+      "{a} and {b} have both stood in that bottom and neither of them has to explain to the other what the walk back to the werk room feels like. They end up at the same station at the same hour for the third morning running. Neither of them planned it. Both of them needed it.",
+      "\"You too?\" is the whole conversation, and then they sit with it. {a} and {b} have both survived a lip sync and there is a version of friendship that only exists between people who have done the same frightening thing, and this is it.",
+      "The queens who have never been in the bottom talk about it like weather. {a} and {b}, who have both been down there, talk about it like a place. They compare notes on the walk, the wait, the moment the music starts. It bonds them more than any challenge has.",
+      "There is a quiet at the far end of the werk room where {a} and {b} have started sitting, and it is not a strategic alliance and it is not a friendship exactly. It is two people who have both been told to fight for their lives, keeping each other company.",
+    ],
+  }),
+  ev({
+    id: 'bottom-blames-the-panel', slot: 'werk-morning', cast: 'pair', weight: 1,
+    note: 'She has been in the bottom twice and has opinions about why.',
+    arcs: ['weakness'], when: f => f.bottomsA >= 2 && f.canScheme,
+    effects: { bond: -1, pop: { a: -2 } },
+    lines: [
+      "\"They have decided who they like,\" {a} tells {b}, \"and it is not me.\" It is the kind of thing that is unanswerable and unprovable and slightly poisonous, and {b} makes a face that {a} chooses not to read. The panel did not decide anything. {a} was in the bottom because she was bad.",
+      "{a} has a theory about why she keeps being in the bottom and the theory has nothing to do with {a}. {b} listens to about ninety seconds of it before saying \"or the look was not finished\", which lands badly, because it is the true answer.",
+      "The story {a} is telling herself is that there is a narrative and she is on the wrong side of it. She tells it to {b} at length. {b} has been safe every week and has no stake in it and can hear, quite clearly, that {a} is describing her own hemline as a conspiracy.",
+      "\"Twice,\" {a} says. \"Twice, for things other people did worse.\" {b} does not agree and does not say so, and the not-saying-so is loud enough that {a} stops talking. The complaint does not stay in that corner of the room, either.",
     ],
   }),
 ];

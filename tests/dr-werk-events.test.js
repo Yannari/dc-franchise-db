@@ -207,3 +207,48 @@ describe('what is left to write', () => {
     expect(Array.isArray(left)).toBe(true);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The track record is a social fact, not just a chart
+// ══════════════════════════════════════════════════════════════════════
+describe('what the record does to the room', () => {
+  const RECORD_FACTS = /lastCall|winsA|winsB|safesA|bottoms|neverTop|neverBottom|sinceTop|lipSynced/;
+  const recordDriven = () => WERK_EVENTS.filter(e => RECORD_FACTS.test(String(e.when || '')));
+
+  it('has a real family of them, on all three states', () => {
+    const ids = recordDriven().map(e => e.id).join(' ');
+    expect(recordDriven().length, 'the chart is a scoreboard nobody reacts to')
+      .toBeGreaterThanOrEqual(12);
+    // Frontrunner, coasting, and the bottom are the three states a season
+    // puts a queen in, and each has to cost her something socially.
+    expect(ids).toMatch(/frontrunner/);
+    expect(ids).toMatch(/coasting|safe/);
+    expect(ids).toMatch(/bottom/);
+  });
+
+  it('every one of them costs somebody something', () => {
+    for (const e of recordDriven()) {
+      const f = e.effects || {};
+      const changes = (f.bond ? 1 : 0) + Object.keys(f.pop || {}).length + (f.state ? 1 : 0);
+      expect(changes, `${e.id} is cosmetic`).toBeGreaterThan(0);
+    }
+  });
+
+  /* BTM AND BTM2 ARE DIFFERENT NIGHTS. `bottom-hangover`'s note says she
+     survived the lip sync while its gate read `lastCall === 'BTM'` — which,
+     after the call was split, means the queens who were saved BEFORE the song
+     and never sang at all. The prose and the trigger described different
+     events for two whole plans. */
+  it('reads BTM2 for a lip sync survived, not BTM', () => {
+    const hangover = WERK_EVENTS.find(e => e.id === 'bottom-hangover');
+    expect(String(hangover.when)).toContain('BTM2');
+    // And any event whose prose talks about lip syncing must not gate on the
+    // call that means she did not.
+    for (const e of WERK_EVENTS) {
+      const prose = `${e.note || ''} ${(e.lines || []).join(' ')}`.toLowerCase();
+      if (!/survived the lip sync|won her lip sync/.test(prose)) continue;
+      expect(String(e.when), `${e.id} says lip sync but gates on BTM`)
+        .not.toMatch(/===\s*'BTM'/);
+    }
+  });
+});

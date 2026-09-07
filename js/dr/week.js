@@ -432,6 +432,15 @@ export function runDragWeek(state, cfg, ctx) {
     if (lc.call === 'double-shantay') {
       state.lipsyncRecord[a].push('W');
       state.lipsyncRecord[b].push('W');
+      /* THE SEASON STILL OWES AN ELIMINATION. Nobody went home tonight, and
+         the schedule is a fixed number of weeks — so without this the season
+         simply arrives at the finale one queen too many, and a top four runs
+         with five in it. Latent since double shantays were added: it needed a
+         season that produced one late, and the first one to do so came out of
+         an unrelated change to the werk room.
+         The show's own answer is the one used here: the next elimination
+         sends two home. */
+      state._owedElim = (state._owedElim || 0) + 1;
     } else if (lc.call === 'double-sashay') {
       state.lipsyncRecord[a].push('L');
       state.lipsyncRecord[b].push('L');
@@ -441,6 +450,15 @@ export function runDragWeek(state, cfg, ctx) {
       if (lc.loser) {
         state.lipsyncRecord[lc.loser].push('L');
         exits.push(lc.loser);
+      }
+      // Paying back a double shantay: both queens who lip synced go. Never on
+      // a night that would empty the room below the finale's own size.
+      const roomAfter = living.length - 2;
+      if (state._owedElim > 0 && lc.winner && roomAfter >= (cfg.finaleSize || 2)) {
+        state.lipsyncRecord[lc.winner].push('L');
+        exits.push(lc.winner);
+        state._owedElim--;
+        lipsync.paidBack = true;
       }
     }
     say('lipsync', 'lipsync', { lipsync });

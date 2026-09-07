@@ -106,10 +106,27 @@ describe('the transcript, read', () => {
     /* It matched any kind containing "mirror-message", which includes
        `stage:mirror-message` — written at the END of the same episode by the
        queen who had not left yet. The cold open opened on her words over a
-       card naming somebody else: a spoiler and a contradiction together. */
+       card naming somebody else: a spoiler and a contradiction together.
+
+       THE RULE IS STRUCTURAL, NOT "her name must not appear". This checked
+       that the cold open never contains tonight's eliminated queen at all,
+       which is stricter than the bug and wrong as a rule: she is in the room
+       all episode, and `bottom-hangover` -- she survived last night's lip
+       sync and has to walk back in and be normal -- is ABOUT her, from a
+       night that has already happened. The assertion only held while that
+       event was rare, and it began failing when a BTM/BTM2 fix doubled how
+       often it fires. What must never happen is a scene written at the END of
+       an episode being drawn at the START of it. */
     const row = rows.find(r2 => (r2.exits || []).length && r2.num > 1);
+    const coldScenes = (row.dr.scenes || []).filter(sc => sc.step === 'cold-open');
+    expect(coldScenes.length, 'no cold open at all').toBeGreaterThan(0);
+    for (const sc of coldScenes) {
+      expect(sc.kind, `${sc.kind} is an end-of-episode scene in the cold open`)
+        .not.toMatch(/^stage:|^finale:|^exit$/);
+    }
+    // And tonight's result cannot be foretold in it.
     const cold = generateDragSummaryText(row).split('\nTHE WERK ROOM\n')[0];
-    expect(cold).not.toContain(row.exits[0].name);
+    expect(cold).not.toMatch(/sashay|shantay|condragulation/i);
   });
 
   it('speaks this show and no other, all season', () => {

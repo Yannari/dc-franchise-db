@@ -190,6 +190,9 @@ function weekCfg(sch, config, num, extra = {}) {
     allowDoubleShantay: config.drDoubleShantay !== false,
     allowDoubleSashay: !!config.drDoubleSashay,
     tripleOnTie: !!config.drTripleLipsync,
+    // The floor a paid-back double shantay must never breach: a week may not
+    // empty the room below the size the finale needs.
+    finaleSize: FINALE_SIZE[config.drFinale || 'top4'] || 4,
     ...extra,
   };
 }
@@ -559,7 +562,18 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   const finaleSize = FINALE_SIZE[finaleType] || 4;
   for (const sch of schedule) {
     if (state.living.length <= finaleSize) break;
-    rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { totalEpisodes }), ctx), cast));
+    /* NO DOUBLE SHANTAY ON THE LAST ELIMINATION WEEK. Keeping both queens
+       here cannot be paid back — there is no week left to send two home in —
+       and the season then walks into a top four with five queens in it. The
+       real show does not do one the week before a finale either.
+       With this and the payback together, 31 double shantays across 360
+       measured seasons leave zero oversized finales; the payback alone left
+       five, every one of them from the final week. */
+    const lastElimWeek = state.living.length - 1 <= finaleSize;
+    rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, {
+      totalEpisodes,
+      ...(lastElimWeek ? { allowDoubleShantay: false } : {}),
+    }), ctx), cast));
   }
 
   // The Smackdown, if the season books one: the queens already sent home come

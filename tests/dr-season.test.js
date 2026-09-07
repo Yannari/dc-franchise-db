@@ -68,7 +68,18 @@ describe('playDragSeason', () => {
     const { rows, winner, runnerUp, finale, state } = playDragSeason({ cast: c, seed: 7, config: { drFinale: 'top4' } });
 
     expect(rows.length).toBe(11);
-    expect(rows.slice(0, 10).every(r => r.exits.length === 1)).toBe(true);
+    /* ONE EXIT A WEEK — UNLESS THE HOST KEPT BOTH. This asserted a flat
+       `exits.length === 1` on every pre-finale row, which is not the rule: a
+       double shantay is ON by default (`drDoubleShantay !== false`) and sends
+       nobody home. The assertion held only because this one seeded season
+       happened never to produce one, so it broke the moment new werk room
+       events shifted the RNG stream — a test pinned to a stream rather than
+       to the rule. Now it checks the rule, and the exception with it. */
+    for (const r of rows.slice(0, 10)) {
+      const doubled = r.dr.lipsync?.call === 'double-shantay';
+      expect(r.exits.length, `episode ${r.num} (${r.dr.lipsync?.call})`)
+        .toBe(doubled ? 0 : 1);
+    }
     expect(rows[10].dr.finale.type).toBe('top4');
     expect(finale.placements.length).toBe(4);
     expect(winner).toBe(finale.placements[0]);
@@ -104,11 +115,14 @@ describe('playDragSeason', () => {
     }
   });
 
-  it('a double shantay carries an extra queen into the finale, and she is placed', () => {
-    // Found by playing a season in the browser: 13 queens, a double shantay in
-    // episode six, and five finalists instead of four. Correct, and worth
-    // pinning — the real show answers this with a later double elimination,
-    // which this engine does not do yet.
+  it('a double shantay is repaid by a later double elimination', () => {
+    /* THE GAP THIS TEST USED TO PIN IS CLOSED. It previously asserted that a
+       double shantay carried an extra queen into the finale — five finalists
+       in a top four — and its own comment named the fix: "the real show
+       answers this with a later double elimination, which this engine does
+       not do yet." It does now. The next lip sync sends both queens home, and
+       a double shantay is refused on the last elimination week because there
+       would be no week left to repay it.
     // A wide search on purpose: a double shantay is a rare event by design
     // (measured at roughly one season in sixteen), so a narrow sweep finds one
     // or not depending on the seed rather than on the behaviour. An earlier
@@ -120,9 +134,15 @@ describe('playDragSeason', () => {
       if (out.rows.some(r => r.dr.lipsync?.call === 'double-shantay')) found = out;
     }
     expect(found, 'no double shantay in 200 seasons — it has stopped happening').toBeTruthy();
-    expect(found.state.living.length).toBeGreaterThan(4);
+    // The finale is the size the format asks for, not one more.
+    expect(found.state.living.length).toBe(4);
     expect(found.finale.placements.length).toBe(found.state.living.length);
     expect(found.winner).toBeTruthy();
+    // And the debt was visibly settled, rather than the shantay having been
+    // quietly suppressed — which would also produce a tidy top four.
+    const doubles = found.rows.filter(r => r.dr.lipsync?.call === 'double-shantay').length;
+    const paid = found.rows.filter(r => r.dr.lipsync?.paidBack).length;
+    expect(paid, `${doubles} double shantays, ${paid} repaid`).toBe(doubles);
   });
 
   it('premiere types shape episode one', () => {
@@ -297,5 +317,47 @@ describe('the finale counts the track record', () => {
     // lip sync stapled to it, and this show is not that.
     expect(rate, 'the résumé now simply decides the crown').toBeLessThan(80);
     expect(zeroWin, 'no winner ever came from behind').toBeGreaterThan(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// A double shantay is a debt, not a free week
+// ══════════════════════════════════════════════════════════════════════
+describe('the finale is the size the format says', () => {
+  /* LATENT UNTIL SOMETHING SHIFTED THE RNG. A double shantay sends nobody
+     home, the schedule is a fixed number of weeks, and nothing compensated —
+     so a season that produced one late walked into a top four with five
+     queens in it. It surfaced only when new werk room events moved the seeded
+     stream and one existing season started producing one; the old assertion
+     was pinned to a stream rather than to the rule. */
+  it('pays back every double shantay and never arrives oversized', () => {
+    const WANT = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
+    let doubles = 0; let paid = 0; let seasons = 0;
+    for (let s = 0; s < 30; s++) {
+      for (const type of Object.keys(WANT)) {
+        const out = playDragSeason({ cast: cast(14), seed: s, config: { drFinale: type } });
+        seasons++;
+        doubles += out.rows.filter(r => r.dr.lipsync?.call === 'double-shantay').length;
+        paid += out.rows.filter(r => r.dr.lipsync?.paidBack).length;
+        expect(out.state.living.length, `seed ${s} ${type} reached the finale oversized`)
+          .toBe(WANT[type]);
+      }
+    }
+    expect(seasons).toBe(120);
+    // The mechanism has to be REACHED, or this test passes by never firing.
+    expect(doubles, 'no double shantay occurred, so nothing was tested')
+      .toBeGreaterThan(0);
+    expect(paid, 'a double shantay happened and was never paid back').toBe(doubles);
+  });
+
+  it('never keeps both on the last elimination week', () => {
+    // There is no week left to send two home in, so the debt could not be
+    // repaid — and the real show does not do one before a finale either.
+    for (let s = 0; s < 25; s++) {
+      const out = playDragSeason({ cast: cast(14), seed: s, config: { drFinale: 'top4' } });
+      const elim = out.rows.filter(r => !r.dr.finale);
+      const last = elim[elim.length - 1];
+      expect(last.dr.lipsync?.call, `seed ${s}`).not.toBe('double-shantay');
+    }
   });
 });

@@ -72,9 +72,32 @@ function factsFor({ a, b, players, state, storylines, ctx }) {
     // event that did was drawn zero times in thirty seasons.
     sameTeam: false,
     lastCall: rec(a)[rec(a).length - 1] || null,
+    lastCallB: b ? rec(b)[rec(b).length - 1] || null : null,
     winsA: rec(a).filter(r => r === 'WIN').length,
     winsB: b ? rec(b).filter(r => r === 'WIN').length : 0,
     safesA: rec(a).filter(r => r === 'SAFE').length,
+    /* WHAT THE SEASON HAS BEEN DOING TO HER, which the room can see as
+       plainly as the chart can. Being the frontrunner, being permanently
+       safe, and living in the bottom are the three states this competition
+       puts a queen in, and each one should cost her something socially —
+       until these facts existed, only six of sixty-two werk room events read
+       the record at all, and they fired about four times a season between
+       them.
+       BOTH BOTTOM CALLS COUNT. BTM2 is a lip sync survived, BTM is being
+       named and then saved before the song — different nights, the same
+       target on your back the next morning. */
+    bottomsA: rec(a).filter(r => r === 'BTM' || r === 'BTM2').length,
+    bottomsB: b ? rec(b).filter(r => r === 'BTM' || r === 'BTM2').length : 0,
+    lipSyncedA: rec(a).filter(r => r === 'BTM2').length,
+    // Episodes since her last good night. A frontrunner cooling off and a
+    // queen who has never been called at all are different problems.
+    sinceTopA: (() => {
+      const r = rec(a);
+      const i = r.map((x, k) => (x === 'WIN' || x === 'HIGH' ? k : -1)).filter(k => k >= 0).pop();
+      return i === undefined ? r.length : r.length - 1 - i;
+    })(),
+    neverTopA: !rec(a).some(r => r === 'WIN' || r === 'HIGH'),
+    neverBottomA: rec(a).length >= 3 && !rec(a).some(r => r === 'BTM' || r === 'BTM2'),
     phase: ctx.phase ?? 0,
     episode: ctx.episode ?? 1,
     roomSize: (state.living || []).length,

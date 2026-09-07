@@ -159,22 +159,34 @@ export function generateDragSummaryText(row) {
       if (sc.id === 'dr-chart') continue;
       ln(sc.label.toUpperCase());
       ln('-'.repeat(sc.label.length));
-      const text = String(sc.html)
-        /* THE FURNITURE IS NOT THE EPISODE. `_shell` wraps the HUD, the
-           section heading and the rail in dr-chrome comments, and they come
-           out here: a transcript that reads out its own status bar, screen
-           title and cast list before every section is mostly furniture.
-           The viewer wants all three; a reader wants none of them. */
-        .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '')
+      /* ONE BEAT, ONE PARAGRAPH. The screens already mark each revealable
+         beat as a `dr-step`, so the transcript breaks on that boundary
+         rather than on whitespace: collapsing everything ran four cards
+         into one paragraph, and collapsing nothing left a blank line per
+         empty span. The markup already knows where the beats are. */
+      const clean = html => String(html)
         .replace(/<style[\s\S]*?<\/style>/g, '')
+        .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '')
         .replace(/<[^>]+>/g, ' ')
-        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-        .replace(/[ 	]+/g, ' ')
+        .replace(/&times;/g, 'x').replace(/&minus;/g, '-')
+        .replace(/&rsaquo;/g, '>').replace(/&nbsp;/g, ' ')
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+        .replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(Number(d)))
+        .replace(/&amp;/g, '&')
+        .replace(/\s+/g, ' ')
         .trim();
-      for (const line of text.split(/(?<=\.)\s+(?=[A-Z"])/)) {
-        const t = line.trim();
-        if (t) ln(`  ${t}`);
-      }
+
+      const body = String(sc.html)
+        .replace(/<style[\s\S]*?<\/style>/g, '')
+        .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '');
+      const chunks = body.split(/<div class="dr-step[^"]*"/);
+      // The split eats the opening `<div class="dr-step…` and leaves the rest
+      // of that tag on the front of the chunk, which the tag stripper cannot
+      // see because its `<` is gone. Take it off first.
+      const blocks = (chunks.length > 1 ? chunks.slice(1) : [body])
+        .map(c => (chunks.length > 1 ? c.replace(/^[^>]*>/, '') : c))
+        .map(clean).filter(Boolean);
+      for (const b of blocks) ln(`  ${b}`);
       ln('');
     }
     return L.join('\n');

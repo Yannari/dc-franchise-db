@@ -198,7 +198,7 @@ function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
       ${confess ? '<span class="dr-rec"><i></i>REC</span>' : ''}
       ${busts}
       <div>
-        ${players.length ? `<h3 class="dr-disp">${esc(players.join(' &amp; '))}</h3>` : ''}
+        ${players.length ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : ''}
         ${sc?.data?.note ? `<span class="dr-note">${esc(sc.data.note)}</span>` : ''}
         <p>${!players.length || opens ? '' : ''}${esc(sc.text || '')}</p>
         ${consequences(row, sc)}
@@ -248,7 +248,14 @@ export function rpBuildColdOpen(row) {
   const scenes = sectionScenes(row, 'cold-open', ['werk-morning', 'mini', 'maxi-announce']);
   const open = (row?.dr?.scenes || []).find(s => s.kind === 'cold-open');
   const gone = open?.data?.gone || (row?.exits || []).map(x => x.name);
-  const msg = (row?.dr?.scenes || []).find(s => /mirror-message/.test(s.kind || ''));
+  /* THE WERK ROOM'S MESSAGE, NOT THE STAGE'S. This matched any scene whose
+     kind contained "mirror-message" — which includes `stage:mirror-message`,
+     written by TONIGHT's eliminated queen at the END of the episode. So the
+     cold open opened on a message from a queen who had not left yet, over a
+     card naming the queen who had: a spoiler and a contradiction in the same
+     three lines. The cold open only ever knows the werk room's version. */
+  const msg = (row?.dr?.scenes || []).find(s => (s.kind || '').startsWith('werk:')
+    && /mirror-message/.test(s.kind));
 
   const lead = gone.length ? `<div class="dr-step dr-vis" id="dr-step-coldopen-lead">
     <div class="dr-panel dr-a-lip dr-card">

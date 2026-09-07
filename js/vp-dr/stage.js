@@ -169,10 +169,24 @@ export function rpBuildCritiques(row) {
   const reactions = row?.dr?.reactions || {};
   const split = row?.dr?.panel?.split;
 
+  /* THE WORDS ARE ON THE SCENES, NOT ON `dr.critiques`.
+     `critiques` carries the judgement — judge, tone, reasons, rank, gap —
+     and the LINE she actually said is a `stage:critique` scene. Reading only
+     the first gave a screen of "RuPaul praise challenge · risk" with no
+     critique on it: every judge accounted for and not one of them speaking.
+     Matched on queen and judge, which both records carry. */
+  const said = new Map();
+  for (const sc of row.dr.scenes || []) {
+    if (sc.kind !== 'stage:critique' || !sc.text) continue;
+    const q = (sc.data?.players || [])[0];
+    said.set(`${q}|${sc.data?.judge}`, sc);
+  }
+
   const byQueen = new Map();
   for (const c of lines) {
     if (!byQueen.has(c.queen)) byQueen.set(c.queen, []);
-    byQueen.get(c.queen).push(c);
+    const spoken = said.get(`${c.queen}|${c.judgeName || judgeName(c.judge)}`);
+    byQueen.get(c.queen).push({ ...c, text: c.text || spoken?.text || '', note: spoken?.data?.note });
   }
   const queens = [...byQueen.keys()];
 
@@ -185,7 +199,7 @@ export function rpBuildCritiques(row) {
         <span class="dr-tonetag dr-disp">${esc(c.tone)}</span>
         ${_judgePortrait(c.judge, { stage: true, size: 118 })}
         <q class="dr-disp">${esc(c.text || c.line || '')}</q>
-        ${c.body ? `<p>${esc(c.body)}</p>` : ''}
+        ${c.note ? `<p>${esc(c.note)}</p>` : ''}
         ${(c.reasons || []).length
     ? `<div class="dr-reasons">${c.reasons.map(esc).join(' · ')}</div>` : ''}
       </div>`).join('');

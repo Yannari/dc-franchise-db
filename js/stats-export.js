@@ -6,6 +6,7 @@ import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
+import { buildDragSeasonDocument, seasonFilePath as dragSeasonFilePath } from './dr/export.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -2983,21 +2984,64 @@ registerSeasonExporter('big-brother', exportAndFillBigBrotherSeason);
 registerSeasonExporter('traitors', exportTraitorsSeason);
 
 /**
- * Drag Race, and a REFUSAL rather than a wrong export.
+ * Drag Race.
  *
- * The season document for this show is a THIRD round shape — `episodes[]`, a
- * placement grid with no ballot anywhere — and nothing builds it yet (Plan 4).
- * Falling through to the default would run the Total Drama pipeline over a
- * runway and publish it: a season document in the wrong show's shape, with no
- * error and no empty result. Refusing by name is the same choice
- * POST /api/publish-season makes about an unregistered format, and for the same
- * reason — being told nothing is recoverable, being told the wrong show is not.
+ * This was a REFUSAL until the document builder existed, and the refusal was
+ * doing real work: falling through to the default would have run the Total
+ * Drama pipeline over a runway and published a season document in the wrong
+ * show's shape, with no error and no empty result.
+ *
+ * The builder exists now (js/dr/export.js), so the refusal is replaced rather
+ * than deleted — and the two things it was protecting are still checked here,
+ * because a real exporter can get them wrong just as quietly:
+ *
+ *   1. THE ROWS MUST BE THIS SHOW'S. A season restored from a save, or a tab
+ *      where somebody switched format after playing, can leave rows from
+ *      another show in `gs.episodeHistory`. Exporting those under a `dr-` id
+ *      is the split-brain the rest of this file refuses everywhere else.
+ *   2. THERE MUST BE A SEASON AT ALL. An empty history exports a document with
+ *      a cast of nobody, which publishes cleanly and is worse than an error.
  */
-export async function exportDragRaceSeason() {
-  throw new Error(
-    `${SHOWS['drag-race'].name} has no export path yet — a season is played by `
-    + 'js/dr/season.js and the episodes[] document builder is not written. '
-    + `Refusing rather than exporting it as ${SHOWS[DEFAULT_FORMAT].name}.`);
+export async function exportDragRaceSeason(onStatus) {
+  const _status = onStatus || (() => {});
+
+  const rows = (gs.episodeHistory || []).filter(r => r && r.dr);
+  if (!rows.length) {
+    throw new Error(
+      `No ${SHOWS['drag-race'].name} season to export: gs.episodeHistory has no `
+      + 'episodes with a `dr` block. Play a season first.');
+  }
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== 'drag-race');
+  if (foreign.length) {
+    throw new Error(
+      `This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a drag-race id.`);
+  }
+
+  _status('Building the season document...');
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+
+  const doc = buildDragSeasonDocument(rows, {
+    seasonNumber: seasonNum,
+    twists: (seasonConfig.drSchedule || []).filter(Boolean),
+    congeniality: gs.dr?.congeniality || null,
+  });
+
+  _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
+
+  const published = await _publishSeasonToSite({
+    format: 'drag-race',
+    seasonNumber: seasonNum,
+    path: dragSeasonFilePath(seasonNum),
+    data: doc,
+  }, onStatus);
+
+  // Same fallback every other show has: publishing off, or no worker
+  // configured, means the document comes down as a file rather than vanishing.
+  if (!published) _downloadJSON(doc, `dr-${seasonNum}-data.json`);
+  _status('Done.');
+  return doc;
 }
 registerSeasonExporter('drag-race', exportDragRaceSeason);
 

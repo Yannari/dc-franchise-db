@@ -1115,7 +1115,15 @@ async function syncSeasons(env) {
       // migration used to derive `format` for existing rows, so the two agree.
       // Everything else is Total Drama, because every season detail written so
       // far predates the second show.
-      const fmt = det.format ? fmtOf(det.format) : (det.bb ? 'big-brother' : 'total-drama');
+      /* WHICH SHOW THIS SEASON BELONGS TO. An explicit tag wins. With no tag,
+         a detail carrying a show's own block is that show — `det.bb` meant Big
+         Brother here, which was a two-show world: a detail with a `dr` block
+         and no tag was filed as Total Drama, and a queen's season landed in
+         the camp's rows. The block is found by asking the registry for each
+         show's prefix, so a fifth show is inferred without this line changing.
+         Everything with no tag and no block is the DEFAULT show, because every
+         season detail written before the second show carries neither. */
+      const fmt = det.format ? fmtOf(det.format) : (inferFormat(det) || DEFAULT_FORMAT);
       if (!validSeasons.has(`${fmt}|${sn}`)) { counts.skipped++; continue; }
       // The key must carry the format, or one player's Total Drama season 5 and
       // their Big Brother season 5 look like the same appearance and the second
@@ -1134,7 +1142,7 @@ async function syncSeasons(env) {
       // FORMAT, so a Big Brother season never writes a tribe. Every Total Drama
       // appearance gets a row: the read path LEFT JOINs this table, so a
       // missing row reads as zero challenge wins with no error anywhere.
-      if (fmt === 'total-drama') {
+      if (fmt === DEFAULT_FORMAT) {
         counts.tdAppearances++;
         stmts.push(d.prepare(
           `INSERT INTO td_appearances (player_id,season_number,tribe,challenge_wins,
@@ -1413,11 +1421,32 @@ async function liveSeasonClear(env, { keepFeed = false } = {}) {
  * Engagement counters come from the simulator, which owns them — a post ratioed
  * in the simulator arrives here already ratioed.
  */
+/**
+ * Which show an untagged season detail belongs to, from the block it carries.
+ *
+ * Every registered show keeps its per-season numbers under its own prefix
+ * (`bb`, `tr`, `dr`), so the presence of one names the show. This replaces
+ * `det.bb ? 'big-brother' : …`, a question with two answers asked of a
+ * registry that has four — under which any show but Big Brother was filed as
+ * Total Drama and its numbers written into the camp's table.
+ *
+ * Returns null when nothing identifies it; the caller supplies the default,
+ * because "no evidence" and "the default show" are different facts and only
+ * the caller knows whether it is allowed to guess.
+ */
+function inferFormat(det) {
+  if (!det) return null;
+  for (const [slug, show] of Object.entries(SHOWS)) {
+    if (show.prefix && det[show.prefix]) return slug;
+  }
+  return null;
+}
+
 function socialStatements(d, payload) {
   const posts = Array.isArray(payload?.posts) ? payload.posts : [];
   if (!posts.length) return [];
 
-  const format = String(payload.format || 'total-drama');
+  const format = String(payload.format || DEFAULT_FORMAT);
   const season = asInt(payload.season);
   const stmts = [d.prepare(socialDeleteSeasonQuery()).bind(format, season)];
 
@@ -1440,7 +1469,7 @@ function socialStatements(d, payload) {
  */
 async function socialGet(env, url) {
   const d = db(env);
-  const format = url.searchParams.get('format') || 'total-drama';
+  const format = url.searchParams.get('format') || DEFAULT_FORMAT;
   const season = asInt(url.searchParams.get('season'));
   const episode = asInt(url.searchParams.get('episode'));
   if (!season) throw new ValidationError('season is required');

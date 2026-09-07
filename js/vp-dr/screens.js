@@ -30,6 +30,7 @@ import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
 import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
+import { rpBuildResults, rpBuildLipSync, rpBuildExit } from './results.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -173,42 +174,11 @@ function railFor(row, scenes, ep) {
   return scenes.map(() => panel);
 }
 
-/**
- * The finale's own facts: the duels, and the order they finished in.
- *
- * NOT on a scene. `dr.finale` carries the bracket and the placements as
- * structured data, and the finale row only emits five scenes — so a screen
- * built from scenes alone loses the entire result of the season. The engine
- * readout printed them; the registry has to as well, or replacing the readout
- * silently drops the one thing a finale is for.
- */
-function finaleBlock(row, ep) {
-  const f = row?.dr?.finale;
-  if (!f) return '';
-  const rounds = (f.rounds || []).map(r => `<div class="dr-duel">
-      ${_portrait(r.a, ep, { size: 40 })}<b class="dr-disp">${esc(r.a)}</b>
-      <span class="dr-vs dr-disp">vs</span>
-      <b class="dr-disp">${esc(r.b)}</b>${_portrait(r.b, ep, { size: 40 })}
-      <span class="dr-duel-song dr-fash">${esc(r.song || '')}</span>
-      <span class="dr-duel-win dr-disp">${esc(r.winner)} wins</span>
-    </div>`).join('');
-  const places = (f.placements || []).map((n, i) => `<li>${_portrait(n, ep, { size: 34 })}
-      <b class="dr-disp">${esc(n)}</b>${i === 0 ? ` ${_icon('crown')}` : ''}</li>`).join('');
-  return `<div class="dr-step dr-vis" id="dr-step-${'exit'}-finale">
-    <div class="dr-panel dr-a-lip" style="padding:16px 18px 16px 22px">
-      <h3 class="dr-disp" style="margin:0 0 10px">The finale — ${esc(f.type || '')}</h3>
-      ${rounds}
-      <h4 class="dr-disp" style="margin:14px 0 6px">Placements</h4>
-      <ol class="dr-places">${places}</ol>
-    </div></div>`;
-}
-
 function buildSection(sec, row) {
   const ep = { num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} };
   const scenes = sceneSections(row).get(sec.id) || [];
-  const finale = sec.id === 'dr-exit' ? finaleBlock(row, ep) : '';
-  if (!scenes.length && !finale) return '';
-  const steps = scenes.map((sc, i) => step(sc, i, sec.suffix, ep, sec.accent)).join('') + finale;
+  if (!scenes.length) return '';
+  const steps = scenes.map((sc, i) => step(sc, i, sec.suffix, ep, sec.accent)).join('');
   if (typeof window !== 'undefined') {
     if (!window._drSidebar) window._drSidebar = {};
     window._drSidebar[sec.suffix] = railFor(row, scenes, ep);
@@ -236,6 +206,9 @@ const BUILDERS = {
   'dr-runway': rpBuildRunway,
   'dr-critiques': rpBuildCritiques,
   'dr-untucked': rpBuildUntucked,
+  'dr-results': rpBuildResults,
+  'dr-lipsync': rpBuildLipSync,
+  'dr-exit': rpBuildExit,
 };
 
 const _sections = SECTIONS.map(sec => ({

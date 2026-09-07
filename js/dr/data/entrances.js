@@ -31,7 +31,7 @@
 //
 // `{a}` is the arriving queen. `{b}` is whoever was already standing there.
 
-/** Entrance lines, by drag style, then by attitude. Six of each: 180 lines. */
+/** Entrance lines, by drag style, then by attitude. Eight of each: 240 lines. */
 export const ENTRANCE_LINES = {
   pageant: {
     big: [
@@ -41,6 +41,8 @@ export const ENTRANCE_LINES = {
       "I've been runner-up twice and I have absolutely no intention of making it three.",
       'Somewhere there is a sash with my name on it and I have come to collect the rest of the outfit.',
       'You can always tell the pageant girl. She is the one who ironed the inside of the bag.',
+      'Every queen in this room just became a runner-up and I have only just arrived.',
+      'I walked in ready, I walked in correct, and I walked in with a backup garment.',
     ],
     dry: [
       "I've done this before. Not this — but something with the same lighting.",
@@ -49,6 +51,8 @@ export const ENTRANCE_LINES = {
       'I have a binder. It has tabs. That is all you need to know about me.',
       'My talent is winning things politely. It upsets people.',
       "I peaked in an interview round in 2019 and I've been chasing it ever since.",
+      'Yes, I have a system. No, you may not borrow it.',
+      'I iron my lashes. That should tell you everything about how this is going to go.',
     ],
     warm: [
       "Hello! I've watched every season and I have already cried once in the car.",
@@ -57,6 +61,8 @@ export const ENTRANCE_LINES = {
       'Hi! If anybody needs a safety pin, a steamer or a pep talk, I am fully stocked.',
       "My mother is watching this and she will notice if I don't say hello properly. Hello properly!",
       "I'm the girl who compliments your shoes and means it. Your shoes are incredible.",
+      'I have rehearsed my thank-you speech and every one of you is already in it.',
+      'I am going to be so supportive it becomes a problem for everybody.',
     ],
   },
   comedy: {
@@ -67,6 +73,8 @@ export const ENTRANCE_LINES = {
       "I've got forty minutes of material and about nine seconds of look. Let's begin.",
       "They told me to make an entrance. I've made three. That was the third.",
       'I am here to be a problem, and I have brought jokes about being one.',
+      'The reading challenge starts NOW and I did not bring notes.',
+      'This is my serious face. It lasts about four seconds and then we are done.',
     ],
     dry: [
       "Hi. I'm going to be very funny in about four days, once I'm comfortable.",
@@ -75,6 +83,8 @@ export const ENTRANCE_LINES = {
       "That's the entrance. I'm not doing another one, this is what you get.",
       'I do comedy, which means I will be unbearable in exactly one week.',
       "Somebody laugh so I know the room works. Thank you. That's all I needed.",
+      'I am funny. Not right now, specifically. But in general, absolutely.',
+      'I brought a punchline and forgot the setup. Give me a minute.',
     ],
     warm: [
       'Oh good, other people. I was worried it was just me and the mirrors.',
@@ -83,6 +93,8 @@ export const ENTRANCE_LINES = {
       "Hello! I'm going to laugh at everything anybody says today out of pure nerves.",
       "Hi — I've decided we're all friends. You had no say. It's done.",
       'I brought a bit. I brought several bits. I have no other personality traits.',
+      'I am here to make friends and also jokes and the jokes will be about the friends.',
+      'Everybody relax. I am going to make this weird and we are all going to enjoy it.',
     ],
   },
   fashion: {
@@ -93,6 +105,8 @@ export const ENTRANCE_LINES = {
       'Everything I am wearing was made by me, and everything you are wearing was not.',
       "There's a silhouette in this room now. There wasn't one before.",
       'I have a point of view. Some of you have a wig and a hope.',
+      'This is couture and most of you are looking at it from the wrong angle.',
+      'I am wearing the best thing in this room and I made it on my bedroom floor.',
     ],
     dry: [
       "I made this on a train. Please don't touch the shoulder.",
@@ -101,6 +115,8 @@ export const ENTRANCE_LINES = {
       'The hem is raw on purpose. Everything about me is raw on purpose.',
       'I own four colours and I have brought all of them.',
       'I would explain the construction but you would have to care about darts.',
+      'I finished this at four in the morning and I have opinions about every stitch.',
+      'The seams are French. I am not. The seams do not care.',
     ],
     warm: [
       'Hi — sorry, is anybody else obsessed with that wallpaper? No? Just me.',
@@ -109,6 +125,8 @@ export const ENTRANCE_LINES = {
       'Hi! If your zip goes, come to me. I am extremely good at other people’s emergencies.',
       'Oh, the FABRIC in this room. Hello. Sorry. Hello properly.',
       "I've been sewing since I was nine and I still can't do a buttonhole. Hi!",
+      "Please touch the fabric. Actually wait — don't. Okay fine, you can touch it. Gently.",
+      'I want to see every garment in this room laid flat immediately so I can take notes.',
     ],
   },
   camp: {
@@ -119,6 +137,8 @@ export const ENTRANCE_LINES = {
       'I have never had a subtle thought in my life and it has served me beautifully.',
       'Somebody said tone it down once. I ate them.',
       'This is not a costume. This is a lifestyle and it has a support group.',
+      'None of this is ironic. ALL of this is ironic. Both at the same time, thank you.',
+      'I have been too much since birth and I have a mother who will back that up.',
     ],
     dry: [
       "I'm dressed as a feeling. You'll work out which one.",
@@ -127,6 +147,8 @@ export const ENTRANCE_LINES = {
       'There is a joke happening on my body and it is not finished yet.',
       'I look like a mistake somebody committed to. Correct.',
       'I dress like this at home. That is the frightening part.',
+      'This is a character. The character is also me. It is more complicated than it looks.',
+      'I committed to the bit before I knew what the bit was. No regrets.',
     ],
     warm: [
       "HELLO! Yes. That's it. That's the entrance. I peaked already.",
@@ -135,6 +157,8 @@ export const ENTRANCE_LINES = {
       'Hi! I make things out of foam and love and neither is structural.',
       'I have three costume changes and no plan. Hello!',
       'Everybody say hello to the thing on my head. It has a name and feelings.',
+      'I brought glitter for the room. Not for me — for the ROOM. This is a glitter room now.',
+      'We are going to have SO much fun and it is not optional.',
     ],
   },
   'club-kid': {
@@ -145,6 +169,8 @@ export const ENTRANCE_LINES = {
       'I have removed my own face and replaced it with a better idea.',
       'Nobody here is going to out-weird me. Several of you will try. I encourage it.',
       'This is what happens when nobody stops you. Nobody stopped me.',
+      'Art is supposed to make you uncomfortable. You are very welcome.',
+      'I spent a week on this face and I cannot eat in it and I am not sorry.',
     ],
     dry: [
       "This took nine hours. I'd like everyone to know that and then never mention it.",
@@ -153,6 +179,8 @@ export const ENTRANCE_LINES = {
       'I cannot sit down in this. I have made peace with standing all day.',
       'Yes, it lights up. No, I did not test it near water.',
       'I have been described as a warning sign, and I took it well.',
+      'I wore this on the bus. The bus handled it fine.',
+      'This is fashion-forward. Or possibly fashion-sideways. Either way you have not seen it.',
     ],
     warm: [
       'Hi! Sorry if I bump into you, I genuinely cannot see out of this.',
@@ -161,6 +189,8 @@ export const ENTRANCE_LINES = {
       'Hello! I look terrifying and I am extremely delicate, please be gentle.',
       'Hi! Somebody help me through the door, I have a wingspan situation.',
       'I made this at 3am and I still like it, which never happens. Hi!',
+      'I look completely insane and I give the best hugs. Both things are true.',
+      'Everything on my body was made with love and hot glue and you cannot tell which held what.',
     ],
   },
   spooky: {
@@ -171,6 +201,8 @@ export const ENTRANCE_LINES = {
       'I was buried in this. Somebody dug me up for the competition.',
       'The lights in here are too kind to me. Fix that.',
       'I am the reason your parents checked the closet. Hello.',
+      'I am the nightmare you dressed up as when you were small, but upgraded.',
+      'This face was built to haunt and it is doing exactly what it was built for.',
     ],
     dry: [
       "Yes, there's blood. No, it's not mine. It's syrup, calm down.",
@@ -179,6 +211,8 @@ export const ENTRANCE_LINES = {
       'I have one aesthetic and it is bad news. It works.',
       'Everything I make is upsetting and beautifully finished.',
       'I do horror. It is a service industry.',
+      'I scared three people in the car park. Accidentally. Good start.',
+      'Everything is fine. Everything is completely normal. Do not look behind me.',
     ],
     warm: [
       'Hi! I know I look like a warning. I’m actually very easy to get on with.',
@@ -187,6 +221,8 @@ export const ENTRANCE_LINES = {
       'Hi! If anybody needs fake blood I have brought an unreasonable amount.',
       'Hello! I am the friendliest ghoul you will meet this year, genuinely.',
       'Oh, everyone is so PRETTY. I’m going to ruin that and we’ll all have fun.',
+      'I am very sweet and I am covered in blood and there is no contradiction.',
+      'The horror is just the gift wrap. Inside is a perfectly nice person.',
     ],
   },
   broadway: {
@@ -197,14 +233,18 @@ export const ENTRANCE_LINES = {
       'The lip sync is a formality and I would like that noted now.',
       'I sing live. I am going to keep saying that until it becomes a problem.',
       'I have the range, the belt and the stamina. Two of those are threats.',
+      'I have a belt that will clear this room and I have not even warmed up.',
+      'Somebody cue the orchestra. Any orchestra. I will take the air conditioning.',
     ],
     dry: [
       "I'll be doing my own vocals, which will become relevant later.",
       "I know every word to everything. It's a burden and a talent.",
       "I've been on tour. This dressing room is nicer, which is worrying.",
       'I have a warm-up routine and I will be doing it where you can hear me.',
-      "I peaked as a understudy and I've been furious ever since.",
+      "I peaked as an understudy and I've been furious ever since.",
       'Musical theatre ruined my personality and built my career.',
+      'I sight-read, I harmonise, and I do not do small talk.',
+      'My vocal range is wider than my emotional range and both of them are professional.',
     ],
     warm: [
       'Hello! Does anybody want to warm up with me? Anybody? I’ll go alone.',
@@ -213,6 +253,8 @@ export const ENTRANCE_LINES = {
       'Hello! I have already worked out our harmonies. All of ours. You’re welcome.',
       'Hi! I will be singing constantly and I apologise in advance and not really.',
       'Oh this is a STAGE. Sorry. Hello. This is a stage though.',
+      'I will sing happy birthday to every queen in here and I will mean it every single time.',
+      'If anybody wants to duet I am available right now and I know every key.',
     ],
   },
   dancer: {
@@ -223,6 +265,8 @@ export const ENTRANCE_LINES = {
       'I have never lost a lip sync and I am not planning to start on television.',
       'You can teach a look. You cannot teach this.',
       'Somebody put a song on. Any song. I am not joking.',
+      'These legs have won me everything I have and they are nowhere near done.',
+      'I could do this in flats. I am doing it in heels. That is the difference.',
     ],
     dry: [
       "I'll be stretching in the corner. Not for a bit — for the whole time.",
@@ -231,6 +275,8 @@ export const ENTRANCE_LINES = {
       'I have two speeds and neither of them is conversation.',
       'My knees have a countdown on them. Let’s use the time.',
       'I do one thing extremely well and I have built a whole life on it.',
+      'I stretch before I socialise. Those are my priorities and that is their order.',
+      'If this goes wrong I will dance my way out and it will look completely intentional.',
     ],
     warm: [
       'Hi! If anybody wants choreography help, genuinely, come and find me.',
@@ -239,6 +285,8 @@ export const ENTRANCE_LINES = {
       'Hi! I will teach anybody anything. I love a group number. I have no shame.',
       'Hello! Please stretch. I mean it. I will be so annoying about this.',
       'I’m going to be jumping around all season, do not let it worry you.',
+      'My favourite thing is teaching somebody a move they did not think they could do.',
+      'I have already counted the beats in the entrance music. I have a whole routine.',
     ],
   },
   glamour: {
@@ -249,6 +297,8 @@ export const ENTRANCE_LINES = {
       'I do not have a bad angle. I have looked. Thoroughly.',
       'Somebody dim these lights before I embarrass everybody.',
       'I am here to be gorgeous professionally, which is harder than it looks.',
+      'I do not have a bad angle and I have checked every mirror in this building.',
+      'She is beautiful, she is here, and she is me.',
     ],
     dry: [
       'This face took two hours. Please act accordingly.',
@@ -257,6 +307,8 @@ export const ENTRANCE_LINES = {
       'Yes, it’s all mine. No, none of it is real. Both things are true.',
       'I have been called one-note. It is a very good note.',
       'I contour for a living and I will be doing it in this room at volume.',
+      'This is not my best face. My best face takes three hours and I was given two.',
+      'Pretty is a full-time job and I have never once missed a shift.',
     ],
     warm: [
       'Hello! Everyone looks incredible and I mean that and I hate it.',
@@ -265,6 +317,8 @@ export const ENTRANCE_LINES = {
       'Hello! If anybody wants their face done, I have brought far too much of everything.',
       'Hi! I’m so nervous I have applied lashes twice. These are the second ones.',
       'Everybody is stunning and I am going to be insufferable about all of you.',
+      'Everybody is gorgeous and I need foundation shades from the entire room immediately.',
+      'I came here to compete and also to exchange beauty tips. Honestly the tips matter more.',
     ],
   },
   art: {
@@ -275,6 +329,8 @@ export const ENTRANCE_LINES = {
       'I have never been the prettiest and I have always been the one you remember.',
       'This is not for the front row. This is for whoever is still thinking about it tomorrow.',
       'I do not do looks. I do arguments you can wear.',
+      'If you understand this on the first look then I have not done my job.',
+      'I am a statement. The statement is complicated and you are going to need a minute.',
     ],
     dry: [
       "It's a concept. There's a whole document. I won't be sharing the document.",
@@ -283,6 +339,8 @@ export const ENTRANCE_LINES = {
       'Half of this is deliberate. I will not be saying which half.',
       'I have been told this is not drag. By people, out loud, to my face.',
       'It’s about my childhood. Everything is about my childhood.',
+      'I brought the concept. You bring the understanding. We will meet in the middle eventually.',
+      'Yes, this is a look. No, I will not explain it. Not yet.',
     ],
     warm: [
       'Hi! I’ve brought a lot of ideas and about half of them are good.',
@@ -291,6 +349,8 @@ export const ENTRANCE_LINES = {
       'Hi! I want to know what everybody is scared of. Immediately. Sorry.',
       'Hello! I make strange things and I am extremely normal, I promise.',
       'I have a mood board. It has eleven pages. Would anybody like to see it?',
+      'I made this because I had a feeling and the feeling needed a shape.',
+      'If anybody wants to talk about what drag means I am AVAILABLE and I brought notes.',
     ],
   },
 };
@@ -346,7 +406,7 @@ export const ENTRANCE_REACTIONS = {
 };
 
 /* ══════════════════════════════════════════════════════════════════
-   THE REST OF THE ARRIVAL — SCHEMA ONLY, PROSE PENDING
+   THE REST OF THE ARRIVAL
    ══════════════════════════════════════════════════════════════════
 
    A premiere arrival is not a one-liner. Each queen walks in, the room
@@ -355,23 +415,13 @@ export const ENTRANCE_REACTIONS = {
    that is not on the CV. Then, when the room is full, the host arrives
    and the season starts.
 
-   So an arrival is FOUR beats per queen plus one for the host:
+   So an arrival is FIVE beats per queen plus one for the host:
 
-     arrival:walk       her entrance line + the room's reaction   [WRITTEN]
-     arrival:intro      name, city, what she does, years in drag  [PENDING]
-     arrival:backstory  the thing that is not on the CV           [PENDING]
-     arrival:room       how the others take her, once she settles [PENDING]
-     arrival:host       RuPaul comes through the door             [PENDING]
-
-   The two written pools are above. The three below are DELIBERATELY
-   EMPTY AND EXPORTED, with their shape and placeholders fixed here, so
-   the engine and the screen can be built and tested against them now and
-   the prose drops in without either being touched.
-
-   `arrivalBeats` treats an empty pool as "this beat does not happen
-   yet" rather than rendering a blank — so nothing on screen is a hole
-   waiting for text, and the day a pool is filled the beat simply starts
-   appearing. See docs/drag-race-arrivals-brief.md for the writing brief.
+     arrival:walk        her entrance line + the room's reaction
+     arrival:impression  somebody already here decides something about her
+     arrival:intro       name, city, what she does, years in drag
+     arrival:backstory   the thing that is not on the CV
+     arrival:host        RuPaul comes through the door
 
    ── PLACEHOLDERS EVERY POOL BELOW MAY USE ──
      {a}      the arriving queen's name

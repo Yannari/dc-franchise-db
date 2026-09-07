@@ -30,7 +30,7 @@ import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
 import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
-import { rpBuildResults, rpBuildLipSync, rpBuildExit } from './results.js';
+import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -255,6 +255,9 @@ const BUILDERS = {
   // crown and the finishing order were always drawn well; they were drawn
   // under the wrong heading.
   'dr-finale-crown': rpBuildExit,
+  // `finale-open` is a marker with no prose, so the generic renderer drew
+  // this screen empty on every finale.
+  'dr-finale-open': rpBuildFinaleOpen,
 };
 
 const _sections = SECTIONS.map(sec => ({

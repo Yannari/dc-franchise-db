@@ -158,10 +158,50 @@ function detailFor(id, perf) {
     case 'acting':
       return `<div class="dr-sub"><b>${esc(d.part || '—')}</b> in ${esc(d.script || '')}${
         d.dropped ? '<span class="dr-tag dr-t-warn">dropped a line</span>' : ''}</div>`;
-    case 'girl-group': case 'music-video': case 'rusical': case 'singing':
+    case 'girl-group': case 'music-video': case 'rusical': case 'singing': case 'rumix':
       return `<div class="dr-sub">${perf.role ? `${esc(perf.role)} · ` : ''}${
         d.teamWon ? '<span class="dr-tag dr-t-good">winning team</span>' : 'team'}</div>
         ${marks([d.verse, d.teamMean], ['her verse', 'the team'])}`;
+
+    /* ── THE NINE THAT HAD NO PANEL ──
+       Ten types were rendered and nine were not, and every one of those nine
+       carries real detail the engine had already computed — the product she
+       was selling, the fabric she was handed, the formation she blew. Their
+       cards drew a portrait, a score bar and no words at all.
+       It surfaced on `stand-up` alone, and only because a late episode with
+       four queens left produced a screen short enough to trip a
+       text-length check: the others were padded over the threshold by the
+       scenes around them. One instance of a nine-way gap. */
+    case 'stand-up':
+      return `<div class="dr-sub">slot ${esc(d.slot ?? '—')}${d.slotKind ? ` · ${esc(d.slotKind)}` : ''}${
+        d.duds ? `<span class="dr-tag dr-t-warn">${esc(d.duds)} dud${d.duds === 1 ? '' : 's'}</span>` : ''}</div>
+        ${marks(d.bits || [], (d.bits || []).map((_, i) => `bit ${i + 1}`))}`;
+    case 'photoshoot':
+      return `<div class="dr-sub">${esc(d.hazard || 'the shoot')}${
+        d.best !== undefined ? `<span class="dr-tag dr-t-good">best ${Number(d.best).toFixed(1)}</span>` : ''}</div>
+        ${marks(d.frames || [], (d.frames || []).map((_, i) => `frame ${i + 1}`))}`;
+    case 'design':
+      return `<div class="dr-sub">out of <b>${esc(d.material || '—')}</b>${
+        d.difficulty !== undefined ? ` · difficulty ${esc(d.difficulty)}` : ''}</div>
+        ${marks([d.buildQuality], ['the build'])}`;
+    case 'talent-show':
+      return `<div class="dr-sub"><b>${esc(d.talent || '—')}</b>${
+        d.landed === false ? '<span class="dr-tag dr-t-warn">did not land</span>'
+    : d.landed ? '<span class="dr-tag dr-t-good">landed it</span>' : ''}</div>`;
+    case 'runway-challenge':
+      return `<div class="dr-sub">${(d.cats || []).map(c => esc(c)).join(' · ') || 'three looks'}${
+        d.repeated ? '<span class="dr-tag dr-t-warn">repeated a look</span>' : ''}</div>
+        ${marks(d.walks || [], (d.walks || []).map((_, i) => `look ${i + 1}`))}`;
+    case 'lipsync-challenge':
+      return `<div class="dr-sub">${esc(d.wins ?? 0)}W &ndash; ${esc(d.losses ?? 0)}L${
+        (d.wins || 0) >= 3 ? '<span class="dr-tag dr-t-good">assassin</span>' : ''}</div>`;
+    case 'commercial':
+      return `<div class="dr-sub">selling <b>${esc(d.product || '—')}</b>${
+        d.foundAngle ? '<span class="dr-tag dr-t-good">found the angle</span>'
+    : '<span class="dr-tag dr-t-warn">never found the angle</span>'}</div>`;
+    case 'choreography':
+      return `<div class="dr-sub">${d.solo ? 'took the solo' : 'in the line'}${
+        d.blewFormation ? '<span class="dr-tag dr-t-warn">blew the formation</span>' : ''}</div>`;
     default:
       return '';
   }

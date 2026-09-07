@@ -17,6 +17,16 @@
 // taste, a panel, a star rating or a bend.
 import { dragOf, DRAG_STYLES } from './queen.js';
 
+/* How much a queen's runway varies from week to week.
+   NAMED BECAUSE IT WAS SWEPT, and left where it was because it is not the
+   lever it looks like. `craft` here is `d.runway`, a season constant, so the
+   same queen tops the runway 43% of weeks — but widening this to 2.5, 3.5 and
+   even 4.5 moved the top queen's share of maxi wins only 53% to 49%. The
+   concentration is not in any one term; it is three correlated season
+   constants (runway craft, polish, style bias) summing in the panel's view.
+   See tests/dr-spec-audit.test.js, measurement 2. */
+export const RUNWAY_FORM = 1.5;
+
 /** THE noise helper for js/dr/. Symmetric, bounded, seeded. */
 export function noise(rng, amt = 2.5) {
   return (rng() - 0.5) * 2 * amt;
@@ -156,7 +166,7 @@ export function runwayScore({
   // queen's crown rate fell from 22% to 12.5% when real categories landed.
   // At 0.15 a wheelhouse category is worth 1.5, comfortably less than the
   // craft gap: an edge, not a verdict.
-  const score = craft * 0.7 + (fit * 10) * 0.15 + presence * 0.15 + noise(rng, 1.5);
+  const score = craft * 0.7 + (fit * 10) * 0.15 + presence * 0.15 + noise(rng, RUNWAY_FORM);
   return {
     score: Math.round(score * 100) / 100,
     fit,

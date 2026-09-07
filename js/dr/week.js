@@ -135,6 +135,7 @@ export function runDragWeek(state, cfg, ctx) {
       gone,
     },
   });
+  const elimDayScenes = [];
   for (const sc of werkScenes) {
     const applied = applyWerkScene(sc, ctx);
     /* THE PAIRING, REMEMBERED. Without this `romanceOpen` and `alreadyPaired`
@@ -148,11 +149,21 @@ export function runDragWeek(state, cfg, ctx) {
         state.romances.push(pair);
       }
     }
-    scenes.push({
+    /* HELD BACK UNTIL ITS OWN MARKER. Every werk room slot is generated here
+       in one pass, but the `werk-elim-day` marker is not said until much later
+       in the night — so the elimination-day scenes were pushed BEFORE the
+       section that owns them and fell into whichever section was open at the
+       time. The viewing party then drew an "Elimination Day" screen holding
+       nothing but the marker: claimed, and empty, on eight episodes out of
+       nine. Caught by rendering every screen of a hundred seasons and
+       measuring how much text came out, not by any assertion. */
+    const scene = {
       step: sc.slot, kind: `werk:${sc.id}`,
       data: { players: sc.players, note: sc.note, eligible: sc.eligible },
       text: sc.text || '',
-    });
+    };
+    if (sc.slot === 'werk-elim-day') elimDayScenes.push(scene);
+    else scenes.push(scene);
     werkEvents.push({
       type: `werk:${sc.id}`, players: sc.players,
       bond: sc.effects.bond && sc.players[1]
@@ -218,6 +229,8 @@ export function runDragWeek(state, cfg, ctx) {
 
   // 8–10. Elimination day, the panel, the runway.
   say('werk-elim-day', 'werk-elim-day', { living: [...living] });
+  // ...and now the scenes that belong under it.
+  for (const sc of elimDayScenes) scenes.push(sc);
   const panel = panelFor({ rotatingId: cfg.rotatingId, guest: cfg.guest, weights: cfg.judgeWeights });
   say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
 
@@ -264,8 +277,24 @@ export function runDragWeek(state, cfg, ctx) {
   for (const n of living) {
     const rec = state.record[n];
     const safeRun = rec.slice(-5).filter(r => r === 'SAFE').length;
-    const btms = rec.filter(r => r === 'BTM').length;
-    trackPull[n] = Math.min(1, safeRun * 0.2) - Math.min(1, btms * 0.34);
+    // BOTH BOTTOM CALLS. This counted 'BTM' alone, and since the call was
+    // split that is only the queens saved before the song — the ones who
+    // actually lip synced were invisible to the host's lean.
+    const btms = rec.filter(r => r === 'BTM' || r === 'BTM2').length;
+    /* AND THE QUEEN WHO KEEPS WINNING GETS NO BENEFIT OF THE DOUBT.
+       This term lifted a queen on a safe run and pushed down one with
+       bottoms, and said nothing about a repeat winner — so a queen with high
+       craft topped the challenge, topped the runway, and then took the host's
+       star lean on top of all of it, with nothing pulling the other way.
+       Measured across a hundred seasons the top queen was taking 53% of a
+       season's maxi challenges; the real show's most dominant winners take
+       three or four of twelve.
+       The host lifts the queen who needs a moment. Somebody who won last week
+       does not need one. */
+    const recentWins = rec.slice(-3).filter(r => r === 'WIN').length;
+    trackPull[n] = Math.min(1, safeRun * 0.2)
+      - Math.min(1, btms * 0.34)
+      - Math.min(1, recentWins * 0.5);
   }
   // What the season's arcs want tonight. A room with no tracker (an older
   // save, a week run in isolation by a test) gets zeroes and behaves exactly

@@ -264,3 +264,48 @@ export function rpBuildExit(row) {
     subtitle: fin ? 'the last queen standing' : 'the mirror message',
   })}${_controls('exit', Math.max(1, scenes.length), ep.num)}`;
 }
+
+
+/**
+ * The Grand Finale title card.
+ *
+ * `finale-open` is a MARKER — it carries no prose, only the finalists — so the
+ * generic scene renderer drew this screen with nothing on it at all: claimed,
+ * and empty, on every finale. Found by rendering a hundred seasons and
+ * measuring how much text each screen produced.
+ */
+export function rpBuildFinaleOpen(row) {
+  const ep = row;
+  const fin = row?.dr?.finale;
+  const open = (row?.dr?.scenes || []).find(sc => sc.kind === 'finale-open');
+  const finalists = open?.data?.finalists || fin?.placements || row?.dr?.living || [];
+  if (!finalists.length) return '';
+
+  const SHAPE = {
+    top4: 'Four queens. Two lip syncs, then one more.',
+    top3: 'Three queens. One lip sync, then the crown.',
+    top2: 'Two queens. One song.',
+    'perform-then-lipsync': 'They perform, the host cuts it to two, and those two lip sync.',
+  };
+
+  const cards = finalists.map(n => `<div class="dr-fin-card">
+      ${_portrait(n, ep, { size: 96, station: true })}
+      <b class="dr-disp">${esc(n)}</b>
+    </div>`).join('');
+
+  const body = `<div class="dr-panel dr-a-score" style="padding:24px 20px;text-align:center">
+      <div class="dr-sash dr-disp">Grand Finale</div>
+      <h2 class="dr-disp" style="margin:10px 0 4px;font-size:30px">
+        One of them is crowned tonight</h2>
+      <p style="color:#C9A6BC;margin:0 0 18px">
+        ${esc(SHAPE[fin?.type] || 'The last night of the season.')}</p>
+      <div class="dr-fin-grid">${cards}</div>
+    </div>`;
+
+  return `<style>${RESULTS_CSS}
+.dr-fin-grid{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:6px}
+.dr-fin-card{display:flex;flex-direction:column;align-items:center;gap:8px}
+</style>${_shell(body, ep, {
+    phase: 'stage', title: 'Grand Finale', subtitle: "America's Next Drag Superstar",
+  })}`;
+}

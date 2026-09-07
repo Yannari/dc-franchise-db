@@ -30,6 +30,20 @@ const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', d
 const judgeName = id => (JUDGES.find(j => j.id === id)?.name || id);
 
 export const STAGE_CSS = `
+/* ── UNTUCKED: THE THREE PARTS OF THE NIGHT ── */
+.dr-band{display:flex;align-items:baseline;gap:12px;margin:26px 0 12px;
+  padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.1)}
+.dr-band b{font-size:15px;letter-spacing:.13em;text-transform:uppercase;color:#ffd0e8}
+.dr-band span{font-size:12px;color:#b892a8;font-style:italic}
+.dr-step:first-child .dr-band{margin-top:0}
+.dr-utk{padding:14px 16px 14px 20px;display:grid;grid-template-columns:auto 1fr;gap:14px}
+.dr-utk .dr-utk-who{display:flex;gap:7px}
+.dr-utk p{margin:5px 0 0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
+/* WHAT THE SCENE DID TO THEM. Warm: they ended closer. Cold: they did not. */
+.dr-panel.dr-u-warm{border-left:3px solid #FFC83D;
+  background:linear-gradient(90deg,rgba(255,200,61,.11),transparent 38%),var(--dr-panel)}
+.dr-panel.dr-u-cold{border-left:3px solid #FF294B;
+  background:linear-gradient(90deg,rgba(255,41,75,.13),transparent 38%),var(--dr-panel)}
 /* ── THE PANEL, taking its seats ── */
 .dr-panelrow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;
   padding:16px 18px;margin-bottom:14px;
@@ -289,17 +303,42 @@ export function rpBuildUntucked(row) {
   const ep = epOf(row);
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'untucked' && s.text);
   if (!scenes.length) return '';
+  /* THE ROOM HAS AN ARC AND THE SCREEN NOW SHOWS IT. Untucked runs
+     arrival → middle → late — off the stage still in the look, the long
+     wait where the fights happen, then being called back — and every event
+     carries which one it is. Nine identical lozenges threw that away; the
+     column now breaks into the three parts of the night.
+     And each card takes its colour from what the scene DID: the bond
+     delta is already on the scene, so a moment that pulled two queens
+     together and one that pushed them apart no longer look the same. */
+  const BAND = {
+    arrival: ['Off the stage', 'still in the look, still shaking'],
+    middle: ['The long wait', 'nobody knows the verdict yet'],
+    late: ['Called back', 'the door opens again'],
+  };
+  let band = null;
   const steps = scenes.map((sc, i) => {
     const players = sc.data?.players || [];
     // The fight escalating: the shell shakes on the beat that escalates it.
     const loud = /blow-up|walks-out|say-it-to-my-face|told-to-stop/.test(sc.kind || '');
-    return `<div class="dr-step" id="dr-step-untucked-${i}">
-      <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud ? ' dr-shake' : ''}"
-           style="padding:14px 16px 14px 20px;display:grid;grid-template-columns:auto 1fr;gap:14px">
-        <span style="display:flex;gap:7px">${players.slice(0, 2)
+    const d = Number(sc.effects?.bond) || 0;
+    const heat = d > 0.15 ? ' dr-u-warm' : d < -0.15 ? ' dr-u-cold' : '';
+    const ph = sc.data?.phase;
+    let head = '';
+    if (ph && ph !== band && BAND[ph]) {
+      band = ph;
+      head = `<div class="dr-band"><b class="dr-disp">${esc(BAND[ph][0])}</b>
+        <span>${esc(BAND[ph][1])}</span></div>`;
+    }
+    /* THE HEADER LIVES INSIDE THE STEP, so it arrives with the first card of
+       its band rather than sitting there before anything is revealed
+       announcing that a third act exists. */
+    return `<div class="dr-step" id="dr-step-untucked-${i}">${head}
+      <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud ? ' dr-shake' : ''}${heat} dr-utk">
+        <span class="dr-utk-who">${players.slice(0, 2)
     .map(n => _portrait(n, ep, { size: 46 })).join('')}</span>
         <div>${players.length ? `<b class="dr-disp">${esc(players.join(' & '))}</b>` : ''}
-          <p style="margin:5px 0 0;color:#f4e3ed">${esc(sc.text)}</p></div>
+          <p>${esc(sc.text)}</p></div>
       </div></div>`;
   }).join('');
   return `<style>${STAGE_CSS}</style>${_shell(steps, ep, {

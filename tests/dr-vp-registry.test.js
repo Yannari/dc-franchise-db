@@ -214,16 +214,30 @@ describe('the smackdown screen', () => {
 // threw at import time. It is valid JavaScript, so no linter catches it, and
 // the failure surfaced four files away in an unrelated franchise test.
 //
-// So: import every screen module, on its own. It costs nothing and names the
-// file that broke instead of the one that imported it.
+// So: import every screen module, on its own, from a test whose name says
+// vp-dr. Most of these are already in this file's static import graph, so a
+// broken one takes the whole suite down rather than one case — but it takes
+// down THIS suite, which points at the right directory, instead of surfacing
+// three files away in a franchise test that only imports the registry.
+// Measured: breaking js/vp-dr/chart.js turns this file red.
 describe('every vp-dr module evaluates', () => {
+  /* import.meta.glob, NOT a template-literal import(). Vite cannot analyse a
+     dynamic import whose path is a runtime variable — it refuses to transform
+     the file, the whole suite fails to load, and the run reports one fewer
+     test FILE and every remaining test passing. This version was written
+     first and skipped itself in silence, which is the failure mode it exists
+     to prevent. The glob is static and the count is checked against disk. */
+  const mods = import.meta.glob('../js/vp-dr/*.js');
   const files = readdirSync('js/vp-dr').filter(f => f.endsWith('.js'));
 
-  it('has modules to check', () => expect(files.length).toBeGreaterThan(5));
+  it('sees every module on disk', () => {
+    expect(files.length).toBeGreaterThan(5);
+    expect(Object.keys(mods).length).toBe(files.length);
+  });
 
-  for (const f of files) {
-    it(`js/vp-dr/${f} loads`, async () => {
-      await expect(import(`../js/vp-dr/${f}`)).resolves.toBeTruthy();
+  for (const [path, load] of Object.entries(mods)) {
+    it(`${path} loads`, async () => {
+      await expect(load()).resolves.toBeTruthy();
     });
   }
 

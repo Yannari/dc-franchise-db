@@ -29,8 +29,24 @@ const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', d
 
 export const RESULTS_CSS = `
 .dr-said{margin:8px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
+/* THE CARD TAKES THE COLOUR OF THE VERDICT. Every row on the call was the
+   same pink lozenge and only the rubber stamp differed, so a screen whose
+   whole job is sorting eight queens into six outcomes read as one block of
+   text. The verdict already has a colour in GRID_RESULTS; the row now wears
+   it — rail, wash and border — and the shape of the week is legible before
+   a word is read. */
 .dr-callrow{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
   padding:13px 16px 13px 20px}
+/* .dr-panel FIRST: the shell's accent class sets the same left border, and a
+   bare .dr-callrow ties with it on specificity — the tint applied to the
+   heading and to nothing else. */
+.dr-panel.dr-callrow{border:1px solid color-mix(in srgb,var(--v,#7a3a5e) 30%,var(--dr-line));
+  border-left:4px solid var(--v,#7a3a5e);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--v,#7a3a5e) 22%,transparent),
+    transparent 44%),var(--dr-panel)}
+/* SAFE IS THE ABSENCE OF A RESULT and should recede rather than glow. */
+.dr-panel.dr-callrow.dr-quiet{opacity:.8}
+.dr-callrow h3{color:color-mix(in srgb,var(--v,#fff) 42%,#fff)}
 .dr-callrow h3{margin:0;font-size:18px}
 .dr-stamp{font-size:22px;padding:7px 14px;border:3px solid currentColor;transform:rotate(-6deg);
   line-height:1;animation:drSlam .45s cubic-bezier(.2,1.6,.4,1) both}
@@ -59,6 +75,24 @@ export const RESULTS_CSS = `
 .dr-bolt{position:relative;z-index:2;font-size:56px;color:#fff;
   text-shadow:0 0 22px #FF294B,0 0 60px #FF294B;animation:drPulse 1.6s ease-in-out infinite}
 @keyframes drPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+/* THE BEAT CARDS UNDER THE VERSUS. */
+.dr-beat{display:grid;grid-template-columns:1fr;gap:13px;align-items:start;
+  padding:14px 16px 14px 20px}
+.dr-beat p{margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
+.dr-beat .dr-por{border:2px solid rgba(255,240,200,.45)}
+.dr-beat-a,.dr-beat-b{grid-template-columns:auto 1fr}
+/* .dr-panel FIRST, deliberately. The shell's accent classes set the same
+   left border, so a bare .dr-beat-a ties on specificity and loses to
+   whichever stylesheet was injected last — both sides came out the same red
+   and the whole point of the two colours went with it. */
+.dr-panel.dr-beat-a{border-left:3px solid #FFC83D;
+  background:linear-gradient(90deg,rgba(255,200,61,.13),transparent 40%),var(--dr-panel)}
+/* The second queen's beats mirror: her portrait sits on the right, the way
+   she does on the stage above. */
+.dr-panel.dr-beat-b{direction:rtl;border-left:0;border-right:3px solid #FF294B;
+  background:linear-gradient(270deg,rgba(255,41,75,.15),transparent 40%),var(--dr-panel)}
+.dr-beat-b > *{direction:ltr}
+.dr-beat-b .dr-por{transform:scaleX(-1)}
 .dr-song{text-align:center;font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;
   font-size:19px;color:#ffd0e8;margin-bottom:12px}
 
@@ -136,7 +170,8 @@ export function rpBuildResults(row) {
     const meta = GRID_RESULTS[result] || {};
     const said = lineFor(result, name);
     return `<div class="dr-step" id="dr-step-results-${i}">
-      <div class="dr-panel dr-a-score dr-callrow">
+      <div class="dr-panel dr-a-score dr-callrow${
+  result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
         ${_portrait(name, ep, { size: 52, station: true })}
         <div><h3 class="dr-disp">${esc(name)}</h3>
           ${b ? `<span style="font-size:11px;color:#C9A6BC">panel ${b.panelRank} → ${b.finalRank}</span>` : ''}
@@ -185,9 +220,24 @@ export function rpBuildLipSync(row) {
       </div>` : '<div></div>'}
     </div>`;
 
-  const steps = beats.map((sc, i) => `<div class="dr-step" id="dr-step-lipsync-${i}">
-    <div class="dr-panel dr-a-lip" style="padding:14px 16px 14px 20px">
-      <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p></div></div>`).join('');
+  /* WHOSE BEAT IS THIS. The duel is two queens and the beats below it were
+     eight identical paragraphs — you could not see, without reading, that
+     the fight went one way and then the other. Each beat now carries the
+     face of the queen it is about and leans to her side of the stage, so the
+     column reads as a rally. A beat about both of them, or about the room,
+     stays centred and unattributed, which is also information. */
+  const sideOf = sc => {
+    const who = (sc.data?.players || []).filter(n => n === a || n === b);
+    return who.length === 1 ? who[0] : null;
+  };
+  const steps = beats.map((sc, i) => {
+    const who = sideOf(sc);
+    const right = who && who === b;
+    return `<div class="dr-step" id="dr-step-lipsync-${i}">
+    <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}">
+      ${who ? _portrait(who, ep, { size: 42 }) : ''}
+      <p>${esc(sc.text)}</p></div></div>`;
+  }).join('');
 
   return `<style>${RESULTS_CSS}</style>${_shell(vs + steps, ep, {
     phase: 'lipsync', title: 'Lip Sync For Your Life',

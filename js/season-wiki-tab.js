@@ -17,6 +17,7 @@ import {
   roundShape, seasonRounds,
 } from './shows.js';
 import { buildTrackRecordGrid, RESULT_LABELS } from './dr/grid.js';
+import { avatarUrl } from './avatar-registry.js';
 
 export function buildWikiTab(s, { face = null } = {}) {
   const shows = { DEFAULT_FORMAT, showWords, showName, exitVerbs, roundExits, publicBallots,
@@ -26,13 +27,20 @@ export function buildWikiTab(s, { face = null } = {}) {
      is injected rather than imported so the builder stays callable with
      nothing but a document — the default is the same last-resort path the
      page falls back to anyway. */
-  const srFace = face || ((row, fallbackSlug, name) => {
-    const file = row && row.avatarFile;
-    if (file && /^[\w.-]+\.(png|jpg|jpeg|webp)$/i.test(file)) return `assets/avatars/${file}`;
-    const slug = fallbackSlug
-      || String((row && row.name) || name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    return `assets/avatars/${slug}.png`;
-  });
+  /* THE DEFAULT ASKS THE RESOLVER; IT DOES NOT BUILD A PATH.
+     The first version of this concatenated the avatars directory with a slug
+     tests/no-direct-avatar-paths.test.js exists to forbid — and forbids for a
+     real reason: with a portrait now a per-season choice, a slug cannot answer
+     "which of this person's looks does this season use?", so a built path
+     draws the wrong face confidently. `avatarUrl` is the one place that
+     question is allowed to be answered. */
+  const srFace = face || ((row, fallbackSlug, name) => avatarUrl({
+    playerSlug: fallbackSlug || row?.playerSlug || row?.slug
+      || String(row?.name || name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    avatarId: row?.avatarId,
+    avatarFile: row?.avatarFile,
+    show: s?.format || DEFAULT_FORMAT,
+  }));
       /* ── ONE SHAPE FROM TWO SHOWS ──────────────────────────────────
          Big Brother exports `weeks` — a Head of Household, a block, a veto,
          a vote. Total Drama exports `votingHistory` — an episode, a boot,

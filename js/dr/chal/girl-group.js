@@ -21,6 +21,73 @@ import { canScheme, evt } from '../rules.js';
 const PART_LADDER = ['lead', 'featured', 'featured', 'standard', 'standard',
   'ensemble', 'ensemble', 'ensemble'];
 
+/* ── THE TRACK, AND WHAT THE GROUP IS CALLED ──
+   The girl group challenge ran with no theme at all: teams were "team 1" and
+   "team 2", the track was nameless, and two groups performed the same nothing
+   every time it came up. A real one always has a sound and a name that falls
+   out of it, and the name is half the joke.
+
+   `names` are drawn from and belong to the theme, so a group is never called
+   something the track would not produce. One name per team, never repeated
+   inside a season — a second Sugar Rush three episodes later is the tell that
+   nobody looked. */
+export const GROUP_THEMES = [
+  { id: 'bubblegum', track: 'Sugar High',
+    sound: 'a relentless bubblegum-pop confection with a chorus engineered to lodge in the skull',
+    names: ['Sugar Rush', 'The Bonbons', 'Candy Coated', 'Saccharine'] },
+  { id: 'disco', track: 'Mirrorball',
+    sound: 'four-on-the-floor disco with a string section that will not quit',
+    names: ['The Glitterballs', 'Studio Sixty-Nine', 'Hustle', 'The Nightfevers'] },
+  { id: 'girl-power', track: 'Watch Me Werk',
+    sound: 'nineties girl-power stomp, all shouted ad-libs and a spoken-word bridge',
+    names: ['Girl Code', 'The Attitudes', 'Wannabe', 'Fierce Inc.'] },
+  { id: 'country', track: 'Ride or Die',
+    sound: 'stomp-clap country-pop with a key change nobody asked for',
+    names: ['The Rhinestones', 'Boots & Bows', 'The Honky Tonk Angels', 'Dixie Fried'] },
+  { id: 'rnb', track: 'Slow Burn',
+    sound: 'slinky late-night R&B built for runs, which is a trap for anybody who cannot do one',
+    names: ['Velvet', 'The Sirens', 'Smooth Operators', 'After Hours'] },
+  { id: 'punk', track: 'Tuck & Roll',
+    sound: 'three-chord punk played too fast, screamed more than sung',
+    names: ['The Safety Pins', 'Riot Grrrl', 'The Snatch', 'Loud & Wrong'] },
+  { id: 'hyperpop', track: 'GLITCH',
+    sound: 'hyperpop — pitched vocals, a beat that keeps falling over, and no chorus where you expect one',
+    names: ['404', 'The Glitches', 'Bubblecore', 'Nightcore Nasty'] },
+  { id: 'ballad', track: 'One More Look',
+    sound: 'a power ballad that lives or dies on the last eight bars',
+    names: ['The Torch Singers', 'Encore', 'Heartbreak Hotel', 'The Last Call'] },
+  { id: 'house', track: 'Feel It',
+    sound: 'a piano-house anthem with a drop the choreography has to earn',
+    names: ['The Warehouse', 'Peak Hour', 'The Divas of House', 'Four On The Floor'] },
+  { id: 'motown', track: 'Baby Please',
+    sound: 'Motown revue — tight harmonies, tighter choreography, and nowhere to hide',
+    names: ['The Supremes of Nothing', 'The Marvelous', 'Hit Factory', 'The Temptresses'] },
+  { id: 'rock', track: 'Heavy Rotation',
+    sound: 'arena rock with a guitar solo somebody has to mime through',
+    names: ['The Heartbreakers', 'Big Hair', 'Stadium', 'The Encores'] },
+  { id: 'club', track: 'After Party',
+    sound: 'a Eurodance club banger with a rap section that is nobody\'s friend',
+    names: ['The Afterparty', 'Neon', 'Two AM', 'The Ravers'] },
+];
+
+/**
+ * One theme for the night, and a distinct name for each team.
+ *
+ * Names come out of the theme's own list so a group is never called something
+ * its track would not produce, and no two teams share one.
+ */
+export function pickGroupTheme(rng, teamCount = 1) {
+  const theme = GROUP_THEMES[Math.floor(rng() * GROUP_THEMES.length)];
+  const pool = [...theme.names];
+  const names = [];
+  for (let i = 0; i < teamCount; i++) {
+    if (!pool.length) pool.push(...theme.names);
+    names.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
+  }
+  return { ...theme, names };
+}
+
+
 export function assign(ctx) {
   const { living, players, rng, miniWinner, mini, bond, maxi } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
@@ -44,6 +111,10 @@ export function assign(ctx) {
   // Each team drafts its own ladder, so every team has exactly one lead.
   const roles = {};
   const picks = {};
+  // The night's sound, and a name per team that falls out of it.
+  const theme = pickGroupTheme(rng, teams.length);
+  const teamNames = teams.map((_, i) => theme.names[i]);
+
   for (const t of teams) {
     const d = draftRoles({
       order: order.filter(n => t.includes(n)),
@@ -54,8 +125,9 @@ export function assign(ctx) {
   }
 
   return {
-    roles, teams, order, picks, events,
-    scenes: [{ step: 'choice', kind: 'group-parts', data: { teams, roles } }],
+    roles, teams, order, picks, events, theme, teamNames,
+    scenes: [{ step: 'choice', kind: 'group-parts',
+      data: { teams, roles, teamNames, track: theme.track, sound: theme.sound } }],
   };
 }
 

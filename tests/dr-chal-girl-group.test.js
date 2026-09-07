@@ -157,3 +157,33 @@ describe('the number', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The track, and what the groups are called
+// ══════════════════════════════════════════════════════════════════════
+describe('the girl group has a sound and a name', () => {
+  it('names every group out of the night\'s own theme', async () => {
+    const { GROUP_THEMES, pickGroupTheme } = await import('../js/dr/chal/girl-group.js');
+    expect(GROUP_THEMES.length, 'too few themes to avoid repeating').toBeGreaterThanOrEqual(10);
+    let x = 7;
+    const rng = () => ((x = (x * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 60; i++) {
+      const t = pickGroupTheme(rng, 2);
+      expect(t.track).toBeTruthy();
+      expect(t.sound).toBeTruthy();
+      // TWO GROUPS, TWO NAMES. A pair sharing one is the tell nobody looked.
+      expect(new Set(t.names).size, `both teams called ${t.names[0]}`).toBe(2);
+      // And a name must belong to the theme that produced it.
+      const src = GROUP_THEMES.find(g => g.id === t.id);
+      for (const n of t.names) expect(src.names).toContain(n);
+    }
+  });
+
+  it('every theme can name as many groups as a season asks for', async () => {
+    const { GROUP_THEMES } = await import('../js/dr/chal/girl-group.js');
+    for (const t of GROUP_THEMES) {
+      expect(t.names.length, `${t.id} cannot name two teams`).toBeGreaterThanOrEqual(2);
+      expect(new Set(t.names).size, `${t.id} repeats a name`).toBe(t.names.length);
+    }
+  });
+});

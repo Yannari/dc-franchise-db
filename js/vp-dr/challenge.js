@@ -42,7 +42,28 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
 const n1 = v => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '—');
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
-export const CHAL_CSS = `
+export /* THE TRACK AND WHAT IT SOUNDS LIKE. The girl group's theme reached the row
+   and no screen read it — the group names rendered, the song they were
+   recording did not, which is the same "computed and drawn nowhere" shape as
+   everything else this build has turned up. Drawn on the brief, where the
+   queens are actually told what they are making. */
+function _trackLine(row) {
+  const d = _sceneData(row, 'group-parts');
+  if (!d?.track) return '';
+  return `<p class="dr-track"><b class="dr-disp">&ldquo;${esc(d.track)}&rdquo;</b>`
+    + `${d.sound ? ` &mdash; ${esc(d.sound)}` : ''}`
+    + `${(d.teamNames || []).length > 1
+      ? `<br><span>${d.teamNames.map(n => esc(n)).join(' vs ')}</span>` : ''}</p>`;
+}
+
+/** One scene's data off the row, by kind. */
+function _sceneData(ep, kind) {
+  return (ep?.dr?.scenes || []).find(sc => sc.kind === kind)?.data || null;
+}
+
+const CHAL_CSS = `
+.dr-track{margin-top:10px;color:#FFC83D;font-size:13px;line-height:1.5}
+.dr-track span{color:#C9A6BC}
 .dr-brief{padding:18px 22px;margin-bottom:14px;
   background:linear-gradient(180deg,rgba(0,229,255,.10),rgba(10,2,7,.6));
   border:1px solid rgba(0,229,255,.4)}
@@ -216,6 +237,7 @@ export function rpBuildMaxiAnnounce(row) {
     <p>${esc(cat.desc || 'The brief is on the table.')}</p>
     ${(a.teams || []).length > 1
     ? `<p style="margin-top:10px;color:#C9A6BC;font-size:13px">${a.teams.length} teams.</p>` : ''}
+    ${_trackLine(row)}
   </div>`;
   const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-announce-${i}">
     <div class="dr-panel dr-a-room" style="padding:14px 16px 14px 20px">
@@ -284,11 +306,18 @@ export function rpBuildMaxi(row) {
   const order = (a.order || []).filter(n => perfs[n]);
   const running = order.length ? order : names;
 
+  /* THE GROUP'S OWN NAME. These read "Team 1" and "Team 2" — the girl group
+     challenge had no theme at all, so the track was nameless and two identical
+     groups performed the same nothing every time it came up. The theme now
+     names the night's sound and each group falls out of it. Falls back to the
+     number for any challenge that genuinely has unnamed teams. */
+  const teamNames = a.teamNames || _sceneData(ep, 'group-parts')?.teamNames || [];
   const teams = (a.teams || []).length > 1 ? `<div class="dr-teams">${
     a.teams.map((team, ti) => {
       const won = team.some(n => perfs[n]?.detail?.teamWon);
+      const label = teamNames[ti] || `Team ${ti + 1}`;
       return `<div class="dr-team ${won ? 'dr-won' : ''}">
-        <h4 class="dr-disp">Team ${ti + 1}${won ? ' — took it' : ''}</h4>
+        <h4 class="dr-disp">${esc(label)}${won ? ' — took it' : ''}</h4>
         ${team.map(n => `<div class="dr-member">${_portrait(n, ep, { size: 30 })}
           ${esc(n)}<span class="dr-role">${esc(perfs[n]?.role || '')}</span></div>`).join('')}
       </div>`;

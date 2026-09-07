@@ -1612,6 +1612,22 @@ const CLAIM_SOURCE = [
   '{A} gives the table a reason, not just a name: {src}.',
   '{A} does not stop at the name. {A} says why: {src}.',
 ];
+// AND THE SECOND THING, when the speaker's read is built out of more than one.
+// `speechesFrom` now hands over the belief's whole clue list rather than the
+// single loudest reason (see `_reasonFor` in js/tr/roundtable.js), because a
+// read assembled over a season could previously only be quoted as whichever
+// part of it shouted loudest — 1378 of 1769 citations were the same two
+// ballot phrases. A case is two or three things that agree; one fact is a
+// hunch with a date on it.
+const CLAIM_SECOND = [
+  'And it is not one thing. {A} has a second: {src2}.',
+  'There is more than that, and {A} has been keeping it: {src2}.',
+  '{A} is not finished. The other half of it is {src2}.',
+  'Then {A} puts a second thing beside the first — {src2} — and lets the room hold both.',
+  'One of those on its own is nothing. {A} does not have one of those on its own: {src2}.',
+  '{A} adds the part that makes the first part matter: {src2}.',
+];
+
 // AND WHEN THERE IS NOTHING TO CITE, WHICH IS BETTER THAN A QUARTER OF THE
 // TIME. These four pools are the counterpart of CLAIM_SOURCE above and exist
 // for the same reason it does: the screen used to print the name and stop, so
@@ -2275,6 +2291,7 @@ function _buildBeats(v) {
     const apr = _pr(lead);
     const subs = { A: lead, a: lead, T: c.t, t: c.t, sub: pr.sub, Sub: pr.Sub,
       obj: pr.obj, pos: pr.pos, src: src ? _esc(src.text) : '',
+      src2: (mine && (mine.sources || [])[1]) ? _esc(mine.sources[1].text) : '',
       // THE ACCUSER'S pronouns, under their own keys. `sub`/`pos` above are
       // the ACCUSED's and always have been, so a sentence about the person
       // doing the accusing had no pronoun available and had to say the name
@@ -2298,6 +2315,12 @@ function _buildBeats(v) {
     // point at, so it falls back to the `feeling` pool without one.
     if (src) {
       inner += '<p>' + _fill(_pick(CLAIM_SOURCE, key + '|src|' + c.t), subs) + '</p>';
+      // THE CASE, not the one fact. Only when a genuine second clue exists —
+      // `_reasonFor` dedupes by sentence, so this is never the first one
+      // reworded.
+      if (subs.src2) {
+        inner += '<p>' + _fill(_pick(CLAIM_SECOND, key + '|src2|' + c.t), subs) + '</p>';
+      }
     } else {
       let rk = (mine && mine.reasonKind) || 'feeling';
       if (rk === 'hearsay' && !subs.f) rk = 'feeling';

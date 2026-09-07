@@ -573,12 +573,51 @@ const _BROADCAST_SOURCE = / at the Round Table$/;
  * than evidence. They are now NAMED instead of silently dropped.
  */
 function _reasonFor(speaker, target, ep) {
-  const cite = b => [{
-    factId: alignmentFactId(target),
-    subject: target,
-    kind: b.sourceType,                       // 'deduced' | 'rumor'
-    text: b.source || 'a read they could not fully place',
-  }];
+  // ── WHY THIS READS THE CLUE LIST AND NOT JUST `source` ──────────────
+  //
+  // `learn` overwrites `belief.source` with whichever clue was STRONGEST, so a
+  // read built out of a whole season of small things could only ever be quoted
+  // as one of them. Measured: 1769 citations across 40 seasons came in 18
+  // shapes and 1378 of them were the SAME TWO ballot phrases, because the
+  // ballot record is the loudest thing the model has and nothing else ever
+  // won the slot. A new channel added the same week ("campaigned to get X
+  // out, and X was a Faithful") reached the screen 5 times in 1769 -- 0.3% --
+  // not because it was rare but because it was quiet.
+  //
+  // `knowledge.js` already keeps the fix and says so in its own comment:
+  // `_recordClue` holds the strongest few DISTINCT reasons per belief,
+  // explicitly so a screen can say "the wrong bell count, AND the
+  // contradiction later, AND defending a revealed Traitor -- a reasoned case
+  // rather than one fact". Nothing in this engine had ever read it.
+  //
+  // DISPLAY ONLY, and that is what makes it safe: `speechesFrom` takes no rng
+  // draw and writes no belief (a season is bit-identical with or without it),
+  // so quoting a quieter clue changes what the card SAYS and never what the
+  // room DOES. The decision still runs off the belief's confidence alone.
+  //
+  // THE SAME GATE APPLIES TO EVERY CLUE, not just to the winning one. A clue
+  // whose provenance is somebody's accusation at the table is hearsay however
+  // it got into the list, so `_BROADCAST_SOURCE` filters the whole list rather
+  // than just `b.source` -- otherwise this would launder exactly the thing the
+  // citation path exists to refuse.
+  const cite = (b) => {
+    const seen = new Set();
+    const out = [];
+    for (const c of [{ source: b.source, sourceType: b.sourceType },
+      ...(Array.isArray(b.clues) ? b.clues : [])]) {
+      const text = c && c.source;
+      if (typeof text !== 'string' || !text.trim()) continue;
+      if (_BROADCAST_SOURCE.test(text)) continue;
+      if (seen.has(text)) continue;
+      seen.add(text);
+      out.push({ factId: alignmentFactId(target), subject: target,
+        kind: c.sourceType || b.sourceType, text });
+      if (out.length >= 3) break;
+    }
+    return out.length ? out
+      : [{ factId: alignmentFactId(target), subject: target, kind: b.sourceType,
+        text: 'a read they could not fully place' }];
+  };
   const b = believes(speaker, alignmentFactId(target), ep);
   if (!b) return { kind: 'feeling', sources: [] };
   if (b.valence === 'false' || b.valence === 'stale') return { kind: 'gone-cold', sources: [] };
@@ -884,8 +923,15 @@ function priceTheAccusers(banished, wasTraitor, accusations, ep, rng) {
         sceneDoubt(observer, accuser, CALLED_IT_CREDIT,
           { source: `called ${banished} on the night ${banished} was revealed`, ep });
       } else {
+        // TWO WORDINGS FOR ONE PRICE. Driving a banishment and joining one
+        // are not the same act and the room can see the difference, so the
+        // reason a later speech quotes says which it was. The CONFIDENCE is
+        // deliberately identical: splitting it would be a second calibration
+        // question, and this is a wording fix.
         learn(observer, alignmentFactId(accuser), {
-          source: `drove ${banished} out, and ${banished} was a Faithful`,
+          source: accuser === drove
+            ? `campaigned to get ${banished} out, and ${banished} was a Faithful`
+            : `helped put ${banished} out, and ${banished} was a Faithful`,
           sourceType: 'deduced', confidence: WRONGLY_DROVE_OUT, ep, rng,
         });
       }

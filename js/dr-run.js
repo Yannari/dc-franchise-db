@@ -41,6 +41,12 @@ function _config() {
     drDoubleSashay: seasonConfig.drDoubleSashay,
     drImmunity: seasonConfig.drImmunity,
     drTripleLipsync: seasonConfig.drTripleLipsync,
+    /* THE SMACKDOWN, WHICH WAS UNREACHABLE. js/dr/season.js has read
+       `config.drSmackdown` since it was written and this function never
+       passed it, so the whole Lalaparuza reunion -- engine, challenge module
+       and all -- could not be switched on from a played season. There was no
+       control for it either, so nothing pointed at the gap. */
+    drSmackdown: !!seasonConfig.drSmackdown,
     drSchedule: (seasonConfig.drSchedule || []).filter(Boolean),
     drJudgeWeights: seasonConfig.drJudgeWeights || {},
   };

@@ -214,3 +214,105 @@ describe('the setup screen shows one show at a time', () => {
     expect(configScopeFor('big-brother').sections).not.toContain('sec-tr-fixed-ties');
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The one twist this show schedules
+// ══════════════════════════════════════════════════════════════════════
+describe('non-elimination weeks', () => {
+  it('is offered in the show\'s own options block', () => {
+    const html = readFileSync('simulator.html', 'utf8');
+    expect(html, 'no control for the twist').toMatch(/id="cfg-dr-noelim"/);
+    /* It lives beside Premiere in MAIN STAGE OPTIONS and not in FORMATS &
+       TWISTS, which is scoped to total-drama — every show keeps its own
+       options block, so a drag twist parked there would never be drawn. */
+    const i = html.indexOf('id="cfg-dr-noelim"');
+    const j = html.indexOf('id="sec-dr-options"');
+    expect(j, 'the drag options block moved').toBeGreaterThan(-1);
+    expect(i).toBeGreaterThan(j);
+  });
+
+  it('is scoped to this show', async () => {
+    const qs = readFileSync('js/quick-setup.js', 'utf8');
+    expect(qs).toMatch(/'cfg-dr-noelim':\s*\['drag-race'\]/);
+  });
+
+  /* THE SCHEDULE IS MERGED, NEVER REPLACED. `drSchedule` is one array holding
+     every pinned decision about a week — a challenge, a guest, a runway
+     category — and this box owns exactly one of them. Reading the box and
+     assigning the result would drop the rest the moment somebody types a
+     number in. */
+  it('folds into the schedule without eating what else is pinned', async () => {
+    const { _mergeDrSchedule } = await import('../js/cast-ui.js');
+    expect(_mergeDrSchedule([], '4, 7'))
+      .toEqual([{ episode: 4, noElimination: true }, { episode: 7, noElimination: true }]);
+    // Clearing the box clears the flag and nothing else.
+    expect(_mergeDrSchedule([{ episode: 4, noElimination: true }], '')).toEqual([]);
+    // A week pinned for a challenge keeps it, flagged or not.
+    expect(_mergeDrSchedule([{ episode: 4, maxiId: 'roast' }], '4'))
+      .toEqual([{ episode: 4, maxiId: 'roast', noElimination: true }]);
+    expect(_mergeDrSchedule([{ episode: 4, maxiId: 'roast', noElimination: true }], ''))
+      .toEqual([{ episode: 4, maxiId: 'roast' }]);
+    // Anything that is not a positive episode number is ignored rather than
+    // written into the schedule as NaN.
+    expect(_mergeDrSchedule([], 'abc; 3 and 5'))
+      .toEqual([{ episode: 3, noElimination: true }, { episode: 5, noElimination: true }]);
+    expect(_mergeDrSchedule([], null)).toEqual([]);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The Lalaparuza smackdown was built and could not be switched on
+// ══════════════════════════════════════════════════════════════════════
+describe('the smackdown', () => {
+  /* js/dr/season.js has read `config.drSmackdown` since it was written, and
+     js/dr-run.js's _config() never passed it — so the whole reunion, engine
+     and challenge module and all, was unreachable from a played season. There
+     was no control for it either, so nothing pointed at the gap. This is the
+     project's signature bug at its largest scale so far: a complete feature,
+     tested in isolation, that the game could not reach. */
+  it('is handed to the engine by the run loop', () => {
+    const src = readFileSync('js/dr-run.js', 'utf8');
+    const cfg = src.slice(src.indexOf('function _config'), src.indexOf('function _playWholeSeason'));
+    expect(cfg, '_config drops drSmackdown again').toMatch(/drSmackdown/);
+    // Every other option the engine reads has to survive the same trip.
+    for (const key of ['drPremiere', 'drFinale', 'drSchedule', 'drDoubleShantay']) {
+      expect(cfg, `_config drops ${key}`).toMatch(new RegExp(key));
+    }
+  });
+
+  it('has a control, scoped to this show', () => {
+    expect(readFileSync('simulator.html', 'utf8')).toMatch(/id="cfg-dr-smackdown"/);
+    expect(readFileSync('js/quick-setup.js', 'utf8'))
+      .toMatch(/'cfg-dr-smackdown':\s*\['drag-race'\]/);
+    const ui = readFileSync('js/cast-ui.js', 'utf8');
+    expect(ui, 'the config never reads the box').toMatch(/drSmackdown:\s*g\('cfg-dr-smackdown'\)/);
+    expect(ui, 'the box is never restored on load').toMatch(/set\('cfg-dr-smackdown'/);
+  });
+
+  it('adds an episode before the finale and crowns nobody new', async () => {
+    const { playDragSeason } = await import('../js/dr/season.js');
+    const { rngFor } = await import('../js/dr/rng.js');
+    const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const mk = () => {
+      const rng = rngFor(9); const r = () => 1 + Math.floor(rng() * 10);
+      return Array.from({ length: 12 }, (_, i) => ({
+        name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+        archetype: 'hero', age: 22 + i,
+        stats: Object.fromEntries(STATS.map(k => [k, r()])),
+        drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+      }));
+    };
+    const base = playDragSeason({ cast: mk(), seed: 4 });
+    const with_ = playDragSeason({ cast: mk(), seed: 4, config: { drSmackdown: true } });
+    expect(with_.rows.length, 'the smackdown did not run').toBe(base.rows.length + 1);
+    // It sits one episode before the crowning.
+    const i = with_.rows.findIndex(r => r.dr.smackdown || r.dr.challenge?.id === 'lalaparuza');
+    expect(i, 'no smackdown episode').toBeGreaterThan(-1);
+    expect(with_.rows[i + 1]?.dr?.finale, 'it is not before the finale').toBeTruthy();
+    // And it changes nothing about the competition.
+    expect(with_.winner).toBe(base.winner);
+    expect(with_.smackdownWinner, 'nobody won it').toBeTruthy();
+    expect(with_.rows[i].exits.length, 'the smackdown eliminated somebody').toBe(0);
+  });
+});

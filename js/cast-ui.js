@@ -115,6 +115,31 @@ export function showStatTab(which) {
   }
 }
 
+/**
+ * Fold the non-elimination box back into the pinned schedule.
+ *
+ * Takes "4, 7" and returns the schedule with those weeks flagged and any
+ * previously-flagged week that is no longer listed un-flagged — while leaving
+ * every OTHER pinned field on those entries alone. An episode that was pinned
+ * for a challenge and is now also a non-elimination week keeps its challenge.
+ */
+export function _mergeDrSchedule(schedule, raw) {
+  const wanted = new Set(String(raw ?? '')
+    .split(/[^0-9]+/).map(Number).filter(n => Number.isInteger(n) && n > 0));
+  const out = [];
+  for (const entry of schedule) {
+    if (!entry || entry.episode == null) continue;
+    const ep = Number(entry.episode);
+    const { noElimination, ...rest } = entry;
+    if (wanted.has(ep)) { out.push({ ...rest, noElimination: true }); wanted.delete(ep); }
+    // An entry that exists only to carry the flag disappears with it; one that
+    // pins anything else survives without it.
+    else if (Object.keys(rest).length > 1) out.push(rest);
+  }
+  for (const ep of wanted) out.push({ episode: ep, noElimination: true });
+  return out.sort((a, b) => a.episode - b.episode);
+}
+
 const DRAG_CRAFT = [
   { key: 'acting',  name: 'Acting',  color: '#f9a8d4' },
   { key: 'comedy',  name: 'Comedy',  color: '#fbbf24' },
@@ -1250,7 +1275,15 @@ export function saveConfig() {
     drDoubleSashay:  g('cfg-dr-double-sashay')?.checked || false,
     drImmunity:      g('cfg-dr-immunity')?.checked || false,
     drTripleLipsync: g('cfg-dr-triple')?.checked || false,
-    drSchedule: Array.isArray(seasonConfig.drSchedule) ? seasonConfig.drSchedule : [],
+    drSmackdown:     g('cfg-dr-smackdown')?.checked || false,
+    /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
+       carrying every pinned decision about a week — a challenge, a guest, a
+       runway category — and the box on screen only owns one of them. Reading
+       the box and assigning the result would silently drop everything else
+       the array holds the moment somebody types a number into it. */
+    drSchedule: _mergeDrSchedule(
+      Array.isArray(seasonConfig.drSchedule) ? seasonConfig.drSchedule : [],
+      g('cfg-dr-noelim')?.value),
     drJudgeWeights: seasonConfig.drJudgeWeights && typeof seasonConfig.drJudgeWeights === 'object'
       ? seasonConfig.drJudgeWeights : {},
     ri:          g('cfg-ri')?.checked || false,
@@ -1400,6 +1433,9 @@ export function renderConfig() {
   // not only a click on the tab strip.
   try { if (typeof window.renderDragJudges === 'function') window.renderDragJudges(); } catch (e) { /* optional chrome */ }
   set('cfg-dr-premiere', seasonConfig.drPremiere || 'standard');
+  set('cfg-dr-smackdown', !!seasonConfig.drSmackdown);
+  set('cfg-dr-noelim', (Array.isArray(seasonConfig.drSchedule) ? seasonConfig.drSchedule : [])
+    .filter(x => x && x.noElimination).map(x => x.episode).sort((a, b) => a - b).join(', '));
   set('cfg-dr-finale', seasonConfig.drFinale || 'top4');
   // Defaults ON, so the read has to be an explicit !== false rather than a
   // truthiness test: an unset value here means "allowed", not "off".

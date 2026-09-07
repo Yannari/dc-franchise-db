@@ -1188,6 +1188,8 @@ const CONFIG_SCOPE = {
     // four switches are ALLOWANCES the lip sync and the schedule consult. A
     // control nothing reads does not belong in this map.
     'cfg-dr-premiere':       ['drag-race'],
+    'cfg-dr-noelim':         ['drag-race'],
+    'cfg-dr-smackdown':      ['drag-race'],
     'cfg-dr-finale':         ['drag-race'],
     'cfg-dr-double-shantay': ['drag-race'],
     'cfg-dr-double-sashay':  ['drag-race'],

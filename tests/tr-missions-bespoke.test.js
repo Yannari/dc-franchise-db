@@ -28,6 +28,7 @@ import { TRAITORS_MISSIONS, _setBespokeMissionsEnabled } from '../js/tr/missions
 import { createMissionCtx, POT_CEILING, MISSION_BEHAVIOURS, statOf, archetypeFamily }
   from '../js/tr/missions/contract.js';
 import { bespokeMission } from '../js/tr/missions/index.js';
+import { sideObjectiveLabel } from '../js/tr/missions.js';
 import roster from '../franchise_roster.json';
 
 const ROSTER = roster.players.slice(0, 18);
@@ -62,6 +63,11 @@ function runs(mission, n, { cast = CAST, traitors = [], from = 0 } = {}) {
   }
   return out;
 }
+
+/** AGENTS.md's nine, and nothing else. A side objective scoring on `luck` or
+ *  `charisma` would silently read 5 for everybody through `statOf`. */
+const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+  'loyalty', 'boldness', 'intuition', 'temperament'];
 
 const norm = s => String(s).toLowerCase().replace(/[^a-z ]+/g, '').replace(/\s+/g, ' ').trim();
 
@@ -375,6 +381,111 @@ describe('The Ash Vault: the flue costs the castle money', () => {
 // ══════════════════════════════════════════════════════════════════════
 // 5. THE WRITING CONTRACTS, IN THE SENTENCES A VIEWER READS
 // ══════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════════
+// THE SOLO TASK, WHICH FOUR MISSIONS SHIPPED WITHOUT
+// ══════════════════════════════════════════════════════════════════════
+//
+// `sideObjectives[]` is the ONLY field on a mission record that attaches an
+// individual's name to what they personally did with their afternoon. Four
+// castle events in js/tr/castle/mission-fallout.js are built on it, and two of
+// them — `mission-what-cost-us` and `mission-took-the-extra` — weight to zero
+// without one, because there is no third party to have the argument about.
+//
+// All four bespoke missions shipped with `sideObjectives: []` written into the
+// record literal. Nothing failed: the field existed, the contract validated,
+// every reader coped with an empty array. What it cost was invisible from
+// inside any of those files — the LONGER, more detailed kind of afternoon was
+// the one nobody could say anything individual about on the walk home. Over 8
+// seasons the two naming events fired after 25 of 40 archetype afternoons and
+// after 0 of 30 bespoke ones.
+//
+// That is the defect class this file now guards: a field hard-coded to its
+// empty value, starving a downstream family that nobody thought to look at.
+// The arms below are both halves — the declaration, and the consequence.
+describe('a bespoke afternoon names somebody, like every other kind', () => {
+  it('every mission declares solo tasks, with a phrase the castle can use', () => {
+    for (const m of TRAITORS_MISSIONS) {
+      expect(Array.isArray(m.side), `${m.id} declares no side objectives`).toBe(true);
+      expect(m.side.length, `${m.id} declares fewer than two solo tasks`)
+        .toBeGreaterThanOrEqual(2);
+      for (const spec of m.side) {
+        expect(spec.id, `${m.id} has a side objective with no id`).toBeTruthy();
+        expect(STATS, `${m.id}/${spec.id} scores on an invented stat`)
+          .toContain(spec.stat);
+        // A BARE INFINITIVE, because the castle drops it into a sentence it
+        // writes itself ("Nobody had to {what}"). A label that opened with a
+        // subject or a tense would read as broken English on the screen, and
+        // it would read that way ONLY in the castle, three files away.
+        expect(spec.label, `${m.id}/${spec.id} is not a bare infinitive`)
+          .toMatch(/^[a-z]/);
+        expect(spec.label, `${m.id}/${spec.id} reads as a finished sentence`)
+          .not.toMatch(/[.!?]$/);
+      }
+    }
+  });
+
+  it('and the ids they record all resolve to that phrase', () => {
+    // THE ARM THAT WOULD HAVE CAUGHT THE HALF-FIX. `SIDE_OBJECTIVE_LABELS` was
+    // built from the seven archetypes alone, so a bespoke objective would have
+    // reached `journey-back` with a null phrase and taken its scene with it —
+    // the same silence, arrived at from the other end.
+    for (const m of TRAITORS_MISSIONS) {
+      for (const rec of runs(m, 6)) {
+        for (const o of (rec.sideObjectives || [])) {
+          expect(sideObjectiveLabel(o.id), `${m.id} recorded ${o.id}, which has no phrase`)
+            .toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it('somebody is actually named, and paid, on most afternoons', () => {
+    // GUARD ON THE GUARD: a `side` list that is declared and never run is the
+    // same silence with a nicer-looking source file. This asserts the RECORD,
+    // over real simulated afternoons, and it fails at zero — which is exactly
+    // what the shipped code scored.
+    let ran = 0, named = 0, paid = 0;
+    for (const m of TRAITORS_MISSIONS) {
+      for (const rec of runs(m, 12)) {
+        ran++;
+        const side = rec.sideObjectives || [];
+        if (side.length) named++;
+        if (side.some(o => o.achieved && o.bonus > 0)) paid++;
+        for (const o of side) {
+          expect(rec.teams.some(t => t.members.includes(o.player)),
+            `${m.id} named ${o.player}, who was not on the mission`).toBe(true);
+          expect(o.line, `${m.id}/${o.id} recorded no prose`).toBeTruthy();
+          expect(o.line).toContain(o.player);
+        }
+      }
+    }
+    expect(named / ran, `only ${named} of ${ran} afternoons named anybody`)
+      .toBeGreaterThan(0.9);
+    // Proportional to the stat with a floor, so a run of weak draws is
+    // possible and a run of forty is not. The band is loose on purpose: this
+    // arm exists to catch a channel gone SILENT, not to pin its rate.
+    expect(paid, 'no solo task was ever completed, so the bonus is unreachable')
+      .toBeGreaterThan(0);
+  });
+
+  it('the money follows the task, through payPot and not around it', () => {
+    // `payPot(quality, bonus)` has taken a bonus since it was written and no
+    // bespoke mission ever passed one — so a completed solo task was worth
+    // nothing here even once the field was populated. Two afternoons, same
+    // seed, and the one that paid a bonus banks more.
+    for (const m of TRAITORS_MISSIONS) {
+      for (const rec of runs(m, 8)) {
+        const bonus = (rec.sideObjectives || []).reduce((a, o) => a + o.bonus, 0);
+        if (!bonus) continue;
+        // gross is the afternoon's own pay plus every bonus on the record.
+        // The ceiling can cut what the POT takes; it cannot cut gross.
+        expect(rec.gross, `${m.id} recorded a ${bonus} bonus the pot never saw`)
+          .toBeGreaterThanOrEqual(bonus);
+      }
+    }
+  });
+});
 
 describe('the prose obeys the writing contracts', () => {
   /** Every rendered sentence one afternoon produces. */

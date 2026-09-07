@@ -34,7 +34,7 @@
 import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisy, noisyPair, payPot, placementsFrom,
-  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
+  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
 } from './contract.js';
 
 const TEAMS = ['Meridian', 'Antares'];
@@ -595,6 +595,20 @@ export const nightjarOrrery = {
   id: 'nightjar-orrery',
   name: 'The Nightjar Orrery',
   teams: TEAMS,
+  // ── THE SOLO TASK ───────────────────────────────────────────────────
+  //
+  // See the note on `runSideObjectives` (js/tr/missions/contract.js): this is
+  // the only field that names an individual, and the castle reads it. Both of
+  // these are the observatory's own: a ring one graduation out still turns and
+  // still feels right, so catching one is a thing only a person looking for it
+  // does, and the transit can be called off the shadow by somebody willing to
+  // be wrong in front of everybody.
+  side: [
+    { id: 'caught-a-graduation', label: 'catch a ring a single graduation out before it spoiled the rest',
+      stat: 'mental' },
+    { id: 'called-the-transit', label: 'call the transit off the shadow alone',
+      stat: 'boldness' },
+  ],
   desc: 'The estate observatory holds a room-sized brass orrery on a stone plinth, and the '
     + 'strongroom under its floor is locked by the machine itself. Each team works the dead '
     + 'astronomer\'s night-book at the reading desk to turn forty years of undated '
@@ -638,7 +652,12 @@ export const nightjarOrrery = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
-    const pay = payPot(quality);
+    // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
+    // has taken a bonus since it was written and no bespoke mission ever
+    // passed one, so a solo task was worth nothing here even when the field
+    // was empty of them entirely.
+    const sideObjectives = runSideObjectives(nightjarOrrery.side, scored, rng, null);
+    const pay = payPot(quality, sideObjectives.reduce((a, o) => a + o.bonus, 0));
 
     const rec = {
       id: 'nightjar-orrery', ep: ctx.ep, name: 'The Nightjar Orrery',
@@ -652,7 +671,7 @@ export const nightjarOrrery = {
       potBefore: pay.potBefore, gross: pay.gross, potEarned: pay.potEarned,
       potAfter: pay.potAfter, earned: pay.potEarned,
       shields: [],
-      sideObjectives: [],
+      sideObjectives,
       scenes: [...ledger.scenes, ...gearing.scenes, ...transit.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       tally: { rings, ringsTrue: { ...gearing.teamRings }, opened: { ...transit.opened } },

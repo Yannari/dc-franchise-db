@@ -101,7 +101,7 @@ import { shieldSource } from './armoury.js';
 // js/tr/missions/contract.js; `POT_CEILING` is re-exported from here so the
 // eleven modules and tests that already import it from this file keep working.
 import {
-  POT_CEILING, MISSION_MAX, SIDE_BONUS, DIFFICULTY, PASS_MARK, BEST_WEIGHT,
+  POT_CEILING, MISSION_MAX, DIFFICULTY, PASS_MARK, BEST_WEIGHT,
   SWING, MIN_PLAYERS,
 } from './missions/contract.js';
 export { POT_CEILING };
@@ -111,8 +111,9 @@ export { POT_CEILING };
 // applies the bonds, reads, claims and crowd moments it declares. When the
 // catalogue is off (its default) none of this runs and the archetype stream is
 // bit-identical to before — no rng draw is taken.
-import { pickBespokeMission, bespokeMission, bespokeMissionsEnabled, BESPOKE_MISSION_IDS } from './missions/index.js';
-import { createMissionCtx } from './missions/contract.js';
+import { pickBespokeMission, bespokeMission, bespokeMissionsEnabled, BESPOKE_MISSION_IDS,
+  TRAITORS_MISSIONS } from './missions/index.js';
+import { createMissionCtx, runSideObjectives, sideLabelsOf } from './missions/contract.js';
 import { applyMissionEffects } from './missions/apply.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -606,10 +607,14 @@ const ARCHETYPES = [
  * A pure read over the catalogue. It adds no field to the record and takes no
  * draw, so nothing about a played season moves.
  */
-export const SIDE_OBJECTIVE_LABELS = Object.freeze(ARCHETYPES.reduce((out, m) => {
-  for (const spec of m.side) out[spec.id] = spec.label;
-  return out;
-}, {}));
+//
+// BOTH CATALOGUES, because a castle scene reading a mission record does not
+// know or care which kind of afternoon produced it — and a bespoke objective
+// whose phrase was missing here would reach `journey-back` as a null and take
+// its scene with it.
+export const SIDE_OBJECTIVE_LABELS = Object.freeze([
+  ...ARCHETYPES, ...TRAITORS_MISSIONS,
+].reduce((out, m) => Object.assign(out, sideLabelsOf(m.side)), {}));
 
 /** The infinitive phrase for a recorded side objective, or null if unknown. */
 export function sideObjectiveLabel(id) {
@@ -1031,19 +1036,6 @@ function _tier(q) {
 // the labels are infinitives — an earlier draft had "had a go at cross the
 // last span" and "who did read the abbot's hand", which is what reading the
 // output rather than the assertions catches.
-const SIDE_WON = [
-  '{who} managed to {what}, and was paid for it.',
-  '{who} went and did the thing nobody was required to do: {what}.',
-  'Nobody had to {what}. {who} did, and was paid for it.',
-  '{who} broke off to {what}, and pulled it off.',
-];
-const SIDE_LOST = [
-  '{who} tried to {what} and did not get there.',
-  '{who} went for the extra — {what} — and came back with the story instead of the money.',
-  'Nobody managed to {what}. {who} came closest, which pays nothing.',
-  '{who} set out to {what}, briefly, and thought better of it.',
-];
-const _render = (tpl, who, what) => tpl.split('{who}').join(who).split('{what}').join(what);
 
 /**
  * The Chess mission's tell lines, which need a pronoun as well as a name.
@@ -1055,6 +1047,10 @@ const _render = (tpl, who, what) => tpl.split('{who}').join(who).split('{what}')
  * that works for both ("{they} could", "once {they} had started") — the table
  * has no conjugator and inventing one for four lines would be the wrong trade.
  */
+// The two-slot renderer. `{what}` goes unused by the Chess solver line, which
+// is the only caller left since the side-objective pool moved to contract.js.
+const _render = (tpl, who, what) => tpl.split('{who}').join(who).split('{what}').join(what);
+
 const _render3 = (tpl, who, pr) => tpl
   .split('{who}').join(who)
   .split('{they}').join(pr.sub)
@@ -1090,30 +1086,6 @@ function _freshPick(rng, pool, window = 0) {
   return chosen;
 }
 
-function _runSideObjectives(m, teams, rng, exclude = null) {
-  // The searcher is off down the niches and cannot also be the one taking the
-  // top step alone — a record that says both is a record contradicting itself,
-  // which is the defect class this plan has now found three times.
-  const field = teams.flatMap(t => t.members).filter(n => n !== exclude);
-  const out = [];
-  const count = rng() < 0.45 ? 2 : 1;
-  const chosen = [];
-  for (let i = 0; i < count && i < m.side.length; i++) {
-    const spec = m.side[i];
-    const candidates = field.filter(n => !chosen.includes(n));
-    if (!candidates.length) break;
-    const who = pick(rng, candidates);
-    chosen.push(who);
-    const p = 0.06 + (stat(who, spec.stat) / 10) * 0.62;
-    const achieved = rng() < p;
-    out.push({
-      id: spec.id, player: who, stat: spec.stat, achieved,
-      bonus: achieved ? SIDE_BONUS : 0,
-      line: _render(_freshPick(rng, achieved ? SIDE_WON : SIDE_LOST, 2), who, spec.label),
-    });
-  }
-  return out;
-}
 
 /**
  * What the searcher's absence cost the pot, in credits.
@@ -1230,7 +1202,11 @@ export function runMission(ep, rng) {
   const blend = BEST_WEIGHT * best + (1 - BEST_WEIGHT) * worst;
   const quality = clamp01((blend - DIFFICULTY) / (1 - DIFFICULTY));
 
-  const sideObjectives = _runSideObjectives(m, teams, rng, reliquary?.searcher || null);
+  // THE SHARED RUNNER (js/tr/missions/contract.js), not a copy of it. See the
+  // note there: the bespoke missions could not reach a private one, so they
+  // shipped with `sideObjectives: []` and a bespoke afternoon was the one the
+  // castle could say nothing individual about the next morning.
+  const sideObjectives = runSideObjectives(m.side, teams, rng, reliquary?.searcher || null);
   const gross = Math.round(MISSION_MAX * (quality < PASS_MARK ? 0 : quality))
     + sideObjectives.reduce((s, o) => s + o.bonus, 0);
 

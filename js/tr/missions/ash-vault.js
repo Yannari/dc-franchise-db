@@ -39,7 +39,7 @@ import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   MISSION_MAX, PASS_MARK,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
-  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
+  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
 } from './contract.js';
 import { awardShield } from '../powers.js';
 
@@ -661,6 +661,22 @@ export const ashVault = {
   id: 'ash-vault',
   name: 'The Ash Vault',
   teams: TEAMS,
+  // ── THE SOLO TASK ───────────────────────────────────────────────────
+  //
+  // See the note on `runSideObjectives` (js/tr/missions/contract.js). The
+  // burnt wing's two are what the crawl makes possible and nobody asks for:
+  // lying still under timbers that have started to move, and coming back out
+  // with a second box you were not sent in for.
+  //
+  // The searcher is EXCLUDED from both — they are down the kitchen flue for
+  // the hour, and a record saying the same person searched it and also dragged
+  // two boxes out of the crawl is a record contradicting itself.
+  side: [
+    { id: 'stayed-flat', label: 'stay flat in the crawl when the timbers started moving',
+      stat: 'temperament' },
+    { id: 'dragged-two', label: 'come back out of the crawl dragging two boxes',
+      stat: 'endurance' },
+  ],
   desc: 'The east wing burned forty years ago and has never been cleared; under the fallen '
     + 'roof there is a strongroom full of deed boxes. Working from a scaffold walkway, each '
     + 'team first shores the collapsed ceiling bay by bay with jacks and timbers, then '
@@ -718,7 +734,12 @@ export const ashVault = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
-    const pay = payPot(quality);
+    // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
+    // has taken a bonus since it was written and no bespoke mission ever
+    // passed one, so a solo task was worth nothing here even when the field
+    // was empty of them entirely.
+    const sideObjectives = runSideObjectives(ashVault.side, scored, rng, crawl.searcher);
+    const pay = payPot(quality, sideObjectives.reduce((a, o) => a + o.bonus, 0));
 
     // WHAT THE HUNT COST, IN THE POT'S OWN CURRENCY. The same afternoon scored
     // with the searcher's hour put back in, minus the afternoon as played,
@@ -758,7 +779,7 @@ export const ashVault = {
       // names, no second copy of the numbers.
       shields: crawl.found && won ? [shieldBlock] : [],
       shield: shieldBlock,
-      sideObjectives: [],
+      sideObjectives,
       scenes: [...shoring.scenes, ...crawl.scenes, ...sort.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       tally: { boxes, bays: { ...shoring.bays }, outOfTheCrawl: { ...crawl.teamBoxes },

@@ -39,7 +39,7 @@
 import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
-  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
+  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
 } from './contract.js';
 
 const TEAMS = ['Ink', 'Wax'];
@@ -616,6 +616,18 @@ export const longAccount = {
   id: 'long-account',
   name: 'The Long Account',
   teams: TEAMS,
+  // ── THE SOLO TASK ───────────────────────────────────────────────────
+  //
+  // See the note on `runSideObjectives` (js/tr/missions/contract.js). The
+  // counting room's two are the two shapes of nerve it asks for: holding your
+  // price behind a screen you cannot see out of, and going back at a claim the
+  // agent has already refused once.
+  side: [
+    { id: 'held-behind-the-screen', label: 'hold behind the screen with the room taking',
+      stat: 'loyalty' },
+    { id: 'argued-it-twice', label: 'argue a claim the agent had already struck at',
+      stat: 'social' },
+  ],
   desc: 'The estate\'s counting room holds a debt book, a locked strongbox and an agent '
     + 'sent to settle what the last owner owed. Each team spends twenty minutes with the '
     + 'book deciding which claims against the estate are real and which were invented, then '
@@ -656,7 +668,12 @@ export const longAccount = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
-    const pay = payPot(quality);
+    // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
+    // has taken a bonus since it was written and no bespoke mission ever
+    // passed one, so a solo task was worth nothing here even when the field
+    // was empty of them entirely.
+    const sideObjectives = runSideObjectives(longAccount.side, scored, rng, null);
+    const pay = payPot(quality, sideObjectives.reduce((a, o) => a + o.bonus, 0));
 
     const rec = {
       id: 'long-account', ep: ctx.ep, name: 'The Long Account',
@@ -670,7 +687,7 @@ export const longAccount = {
       potBefore: pay.potBefore, gross: pay.gross, potEarned: pay.potEarned,
       potAfter: pay.potAfter, earned: pay.potEarned,
       shields: [],
-      sideObjectives: [],
+      sideObjectives,
       scenes: [...survey.scenes, ...room.scenes, ...settlement.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       tally: { debts, claims: { ...survey.claims }, settled: { ...room.settled },

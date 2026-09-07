@@ -2244,6 +2244,50 @@ export function runFanVote() {
 
 // Returns an array of { ep, active, phase, engineType } for every episode in the season
 export function buildEpisodeMap() {
+  /* ── THE MAIN STAGE PROJECTS ITSELF ──
+     Everything below this branch is a Total Drama season: a merge, Rescue
+     Island, a fan vote, `seasonConfig.finaleSize`. A drag season has none of
+     them, so the timeline was drawing somebody else's shape — and, worse, it
+     could not see the two twists that change how long the season IS. A free
+     week adds an episode and a double elimination removes one; the timeline
+     showed the same eleven either way.
+     One elimination per week, plus a week for each free one, minus a week for
+     each double, plus the smackdown if it is booked, plus the crowning. */
+  const _drFmt = (typeof seasonFormat === 'function'
+    ? seasonFormat(seasonConfig) : seasonConfig.format) === 'drag-race';
+  if (_drFmt) {
+    const size = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
+    const finale = size[seasonConfig.drFinale] || 4;
+    const booked = (seasonConfig.twistSchedule || []).filter(Boolean);
+    const at = id => new Set(booked.filter(t => t.type === id || t.id === id)
+      .map(t => Number(t.episode)).filter(Number.isInteger));
+    const free = at('dr-no-elimination');
+    const dbl = at('dr-double-elimination');
+    const smackdown = booked.some(t => t.type === 'dr-smackdown' || t.id === 'dr-smackdown')
+      || !!seasonConfig.drSmackdown;
+
+    const eps = [];
+    let active = Math.max(finale, players.length || 12);
+    let ep = 1;
+    // A guard, not a rule: the loop below always shrinks unless the week is
+    // free, and a season cannot book more free weeks than it has episodes.
+    while (active > finale && ep < 60) {
+      const isFree = free.has(ep);
+      const isDouble = dbl.has(ep) && !isFree;
+      eps.push({
+        ep, active, phase: 'main',
+        engineType: isFree ? 'dr-no-elimination' : isDouble ? 'dr-double-elimination' : null,
+      });
+      if (!isFree) active = Math.max(finale, active - (isDouble ? 2 : 1));
+      ep++;
+    }
+    // The reunion sits between the last elimination and the crowning, which is
+    // where the show's own track record chart puts it.
+    if (smackdown) eps.push({ ep: ep++, active, phase: 'main', engineType: 'dr-smackdown' });
+    eps.push({ ep, active: finale, phase: 'finale', engineType: null });
+    return eps;
+  }
+
   // ── SOMEBODY WHO IS NOT THERE YET IS NOT IN THE COUNT ──
   //
   // A late arrival is cast normally and held out of the roster until the

@@ -108,3 +108,90 @@ describe('the live tab', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// The timeline has to predict the season that actually plays
+// ══════════════════════════════════════════════════════════════════════
+describe('the season timeline', () => {
+  /* `buildEpisodeMap` projected a TOTAL DRAMA season — a merge, Rescue
+     Island, a fan vote, `seasonConfig.finaleSize` — and a drag season has
+     none of them. Worse, it could not see the two twists that change how long
+     the season IS: a free week adds an episode and a double elimination
+     removes one, and the timeline drew the same eleven either way.
+     A projection that disagrees with the engine is the same bug this show
+     keeps producing, one screen further out. */
+  async function harness(n, config) {
+    const core = await import('../js/core.js');
+    const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'];
+    const cast = Array.from({ length: n }, (_, i) => ({
+      name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+      archetype: 'hero', age: 22 + i,
+      stats: Object.fromEntries(STATS.map(k => [k, 5])),
+      drag: { acting: 5, comedy: 5, dance: 5, design: 5, runway: 5, lipsync: 5, singing: 5 },
+    }));
+    core.setPlayers(cast);
+    core.setGs({
+      episodeHistory: [], activePlayers: cast.map(p => p.name),
+      eliminated: [], popularity: {}, phase: 'stage',
+    });
+    Object.assign(core.seasonConfig, {
+      format: 'drag-race', drFinale: 'top4', seasonNumber: 1,
+      twistSchedule: [], drSmackdown: false, drSchedule: [], ...config,
+    });
+    globalThis.seasonConfig = core.seasonConfig;
+    globalThis.seasonFormat = core.seasonFormat;
+    globalThis.players = core.players;
+    globalThis.gs = core.gs;
+    return core;
+  }
+
+  const CASES = [
+    ['baseline', {}],
+    ['a free week', { twistSchedule: [{ type: 'dr-no-elimination', episode: 4 }] }],
+    ['a double elimination', { twistSchedule: [{ type: 'dr-double-elimination', episode: 6 }] }],
+    ['the smackdown', { drSmackdown: true }],
+    ['all three', {
+      drSmackdown: true,
+      twistSchedule: [
+        { type: 'dr-no-elimination', episode: 4 },
+        { type: 'dr-double-elimination', episode: 6 },
+      ],
+    }],
+  ];
+
+  it('predicts exactly the season the engine plays', async () => {
+    const { buildEpisodeMap } = await import('../js/run-ui.js');
+    const { simulateDragEpisode } = await import('../js/dr-run.js');
+    for (const [label, config] of CASES) {
+      for (const n of [12, 14]) {
+        const core = await harness(n, config);
+        const predicted = buildEpisodeMap().length;
+        let guard = 0;
+        while (simulateDragEpisode() && guard++ < 40) { /* play it out */ }
+        expect(predicted, `${label}, cast of ${n}: the timeline lied`)
+          .toBe(core.gs.episodeHistory.length);
+      }
+    }
+  });
+
+  it('a free week adds an episode and a double takes one away', async () => {
+    const { buildEpisodeMap } = await import('../js/run-ui.js');
+    await harness(14, {});
+    const base = buildEpisodeMap().length;
+    await harness(14, { twistSchedule: [{ type: 'dr-no-elimination', episode: 4 }] });
+    expect(buildEpisodeMap().length, 'a free week did not lengthen it').toBe(base + 1);
+    await harness(14, { twistSchedule: [{ type: 'dr-double-elimination', episode: 6 }] });
+    expect(buildEpisodeMap().length, 'a double did not shorten it').toBe(base - 1);
+    await harness(14, { drSmackdown: true });
+    expect(buildEpisodeMap().length, 'the smackdown did not add its episode').toBe(base + 1);
+  });
+
+  it('never projects a merge, because this show has no tribes', async () => {
+    const { buildEpisodeMap } = await import('../js/run-ui.js');
+    await harness(14, {});
+    for (const e of buildEpisodeMap()) {
+      expect(['main', 'finale'], `episode ${e.ep} is in a ${e.phase} phase`).toContain(e.phase);
+    }
+  });
+});

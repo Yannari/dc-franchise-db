@@ -462,7 +462,12 @@ export function runDragWeek(state, cfg, ctx) {
     // the night's climax — but nobody goes home, so the call is resolved
     // without a loser rather than skipped.
     const lc = cfg.noElimination
-      ? { call: 'shantay', winner: sa.score >= sb.score ? a : b, loser: null, losers: [], gap: sa.score - sb.score }
+      /* ITS OWN CALL, NOT 'shantay'. The stage picks its prose by this value,
+         and `shantay` is the tier that says one queen stays and one goes — so
+         a night where nobody goes home was narrated as "the half where
+         somebody stays and the half where somebody goes" over an empty exit
+         list. A night with no elimination is a different call and says so. */
+      ? { call: 'no-elimination', winner: sa.score >= sb.score ? a : b, loser: null, losers: [], gap: sa.score - sb.score }
       : lipsyncCall({
         a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
         bendA: bendOf(a), bendB: bendOf(b),
@@ -575,6 +580,11 @@ export function runDragWeek(state, cfg, ctx) {
          night when everybody who has ever gone home went home tonight. This
          also holds for a double sashay opening the season. */
       firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length,
+      /* WHICH UNUSUAL NIGHT THIS IS, or null for an ordinary one. Read from
+         the week's own config rather than guessed from the shape of the
+         results — "six queens are here" is a symptom, not the announcement. */
+      formatNote: cfg.formatNote
+        || (cfg.noElimination ? 'no-elimination' : null),
       // NAMES, not ids. A critique that reads "jamal leans back in the chair"
       // is the placeholder being filled with a database key, which is what it
       // did until somebody read the output.

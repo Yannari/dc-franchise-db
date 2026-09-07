@@ -113,6 +113,11 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       // runway is the one thing a viewer sees every single episode, so a
       // repeat is more noticeable here than anywhere else.
       runwayCategory: pin.runwayCategory || null,
+      /* AND THE WEEK'S OWN SHAPE. Every field above is a piece of CONTENT the
+         author can pin; this is the one that changes what the week DOES, and
+         it has to survive the build or the schedule entry reaches the season
+         loop without it and the twist silently does not happen. */
+      ...(pin.noElimination ? { noElimination: true } : {}),
     });
   }
 
@@ -544,7 +549,12 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
       // the full cast is restored afterwards rather than reconciled — the
       // half-week cannot have removed anybody.
       state.living = group;
-      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { noElimination: true }), ctx), cast));
+      // `formatNote: 'split'` and not the generic no-elimination note: the
+      // room is half a cast AND nobody goes home, and the half-cast is the
+      // part a viewer cannot work out on their own.
+      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, {
+        noElimination: true, formatNote: 'split',
+      }), ctx), cast));
       state.living = wholeCast;
     }
   }
@@ -563,6 +573,9 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   const finaleSize = FINALE_SIZE[finaleType] || 4;
   for (const sch of schedule) {
     if (state.living.length <= finaleSize) break;
+    // A porkchop premiere is a runway with no challenge that still sends
+    // somebody home, and the host says so before it starts.
+    const porkchopNight = premiere === 'porkchop' && num === 1;
     /* NO DOUBLE SHANTAY ON THE LAST ELIMINATION WEEK. Keeping both queens
        here cannot be paid back — there is no week left to send two home in —
        and the season then walks into a top four with five queens in it. The
@@ -571,10 +584,29 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
        measured seasons leave zero oversized finales; the payback alone left
        five, every one of them from the final week. */
     const lastElimWeek = state.living.length - 1 <= finaleSize;
+    /* A SCHEDULED NON-ELIMINATION WEEK. Pinned on `drSchedule` as
+       `{ episode, noElimination: true }`. Distinct from a double shantay,
+       which is the HOST deciding in the moment that both were too good to
+       lose: this is production announcing beforehand that the door stays
+       shut, and the host says so on the main stage before the challenge.
+       It costs the season an elimination, so it takes on the same debt a
+       double shantay does and is repaid by the same later double — otherwise
+       the cast maths lands a top four with five queens in it.
+       REFUSED ON THE LAST ELIMINATION WEEK for the same reason a double
+       shantay is: there would be no week left to repay it in. */
+    const scheduledNoElim = !!sch.noElimination && !lastElimWeek;
     rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, {
       totalEpisodes,
+      ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
+      ...(scheduledNoElim ? { noElimination: true } : {}),
       ...(lastElimWeek ? { allowDoubleShantay: false } : {}),
     }), ctx), cast));
+    /* THE DEBT IS TAKEN ON AFTER THE WEEK, not before it. Incurred first, the
+       week's own lip sync sees `_owedElim > 0` and repays it on the spot —
+       the episode both grants the reprieve and cancels it, and somebody goes
+       home from the night nobody was supposed to. It is repaid by a LATER
+       double, which is the whole point. */
+    if (scheduledNoElim) state._owedElim = (state._owedElim || 0) + 1;
   }
 
   // The Smackdown, if the season books one: the queens already sent home come

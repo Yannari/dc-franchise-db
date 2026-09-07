@@ -361,3 +361,57 @@ describe('the finale is the size the format says', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// A week that is not shaped like the others has to SAY so
+// ══════════════════════════════════════════════════════════════════════
+describe('the format is announced', () => {
+  const noteOn = row => (row.dr.scenes || []).find(s => s.kind === 'stage:format-note');
+
+  /* A split premiere put six of twelve queens on screen and never said why
+     the other six were missing, and a no-elimination night ran a full lip
+     sync whose prose called it "the half where somebody stays and the half
+     where somebody goes" over an empty exit list. The engine knew both facts
+     and no line in the episode carried either. */
+  it('names a split premiere, on both halves', () => {
+    const { rows } = playDragSeason({ cast: cast(12), seed: 4, config: { drPremiere: 'split' } });
+    for (const row of rows.slice(0, 2)) {
+      expect(row.exits.length, `episode ${row.num} eliminated somebody`).toBe(0);
+      expect(noteOn(row)?.data?.tier, `episode ${row.num} did not say it was a split`)
+        .toBe('split');
+    }
+    // And an ordinary week says nothing — the note is for the exceptions.
+    expect(noteOn(rows[2])).toBeUndefined();
+  });
+
+  it('never says somebody went home on a night nobody did', () => {
+    const { rows } = playDragSeason({ cast: cast(12), seed: 4, config: { drPremiere: 'split' } });
+    const call = (rows[0].dr.scenes || []).find(s => s.kind === 'stage:lipsync-call');
+    expect(call, 'no lip sync call at all').toBeTruthy();
+    // The `shantay` tier is the one that says one stays and one goes.
+    expect(call.data.tier).toBe('no-elimination');
+    expect(call.text).not.toMatch(/sashay away|somebody goes|going home tonight/i);
+  });
+
+  /* A SCHEDULED NON-ELIMINATION WEEK, which is not a double shantay: that is
+     the host deciding in the moment that both were too good to lose, this is
+     production announcing beforehand that the door stays shut. It costs the
+     season an elimination and takes on the same debt, repaid by a later
+     double — otherwise the cast maths lands a top four with five in it. */
+  it('runs a scheduled non-elimination week and repays it later', () => {
+    for (const at of [3, 5, 6]) {
+      const { rows } = playDragSeason({
+        cast: cast(12), seed: 4, config: { drSchedule: [{ episode: at, noElimination: true }] },
+      });
+      const week = rows.find(r => r.num === at);
+      expect(week.exits.length, `episode ${at} still sent somebody home`).toBe(0);
+      expect(noteOn(week)?.data?.tier, `episode ${at} did not announce it`).toBe('no-elimination');
+      // Repaid, and not by the same episode that granted it.
+      const paid = rows.filter(r => r.dr.lipsync?.paidBack);
+      expect(paid.length, 'the free week was never repaid').toBe(1);
+      expect(paid[0].num, 'it repaid itself, so nobody was spared').toBeGreaterThan(at);
+      expect(rows[rows.length - 1].dr.finale.placements.length,
+        'the finale came out oversized').toBe(4);
+    }
+  });
+});

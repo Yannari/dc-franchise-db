@@ -5072,6 +5072,26 @@
     .form-select option { background: var(--bg); }
 
     /* ── STAT SLIDERS ── */
+    /* ── STAT TABS ──
+       Two sets of sliders sharing one space. Only drawn on a show that HAS a
+       second set (CONFIG_SCOPE scopes `sec-dr-craft-tabs` to drag-race), so
+       the other three shows see the panel exactly as before. */
+    .stat-tabs { display:flex; gap:2px; margin:0 0 10px; border-bottom:1px solid var(--border, #1a2130); }
+    .stat-tab { appearance:none; background:none; border:0; border-bottom:2px solid transparent;
+      padding:7px 12px; font:700 11px var(--font-body, inherit); letter-spacing:.04em;
+      color:var(--muted, #7c8999); cursor:pointer; transition:color .12s, border-color .12s; }
+    .stat-tab:hover { color:var(--text, #f0f6fc); }
+    .stat-tab.active { color:var(--text, #f0f6fc); border-bottom-color:var(--accent, #f0c040); }
+    .stat-tab:focus-visible { outline:2px solid #58a6ff; outline-offset:-2px; }
+    /* The tab strip hides the duplicate heading: the tab already says which
+       set you are looking at. */
+    .stat-tabs:not([hidden]) ~ .form-group > #stat-core-label { display:none; }
+    .stat-tabs:not([hidden]) ~ #sec-dr-craft > .form-label { display:none; }
+    /* `hidden` has to win. The UA rule for [hidden] is the weakest there is,
+       and .form-group sets display — so without this the tab switch would set
+       the attribute and nothing would move. */
+    #sec-stats-core[hidden], #sec-dr-craft[hidden] { display:none !important; }
+
     .stat-sliders { display: flex; flex-direction: column; gap: 9px; }
     .slider-row { display: flex; align-items: center; gap: 8px; }
     .slider-name { font-size: 11px; width: 66px; flex-shrink: 0; font-weight: 600; }

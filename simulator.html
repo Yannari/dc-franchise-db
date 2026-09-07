@@ -141,8 +141,20 @@
           </label>
         </div>
         <div class="divider"></div>
-        <div class="form-group">
-          <label class="form-label">Stats</label>
+        <!-- TWO SETS OF SLIDERS, ONE AT A TIME. Sixteen sliders stacked in one
+             column read as one undifferentiated list, and nine of them are the
+             franchise's and seven are this show's. The tab strip is drawn only
+             when a show HAS a second set: `sec-dr-craft-tabs` is scoped to
+             drag-race in CONFIG_SCOPE, so on the other three shows there is no
+             strip and the stats panel looks exactly as it did. -->
+        <div class="stat-tabs" id="sec-dr-craft-tabs">
+          <button type="button" class="stat-tab active" data-stat-tab="core"
+            onclick="showStatTab('core')">Stats</button>
+          <button type="button" class="stat-tab" data-stat-tab="craft"
+            onclick="showStatTab('craft')">Drag craft</button>
+        </div>
+        <div class="form-group" id="sec-stats-core">
+          <label class="form-label" id="stat-core-label">Stats</label>
           <div class="stat-sliders" id="stat-sliders"></div>
         </div>
         <!-- The craft a panel scores, on the show that has one. Scoped to

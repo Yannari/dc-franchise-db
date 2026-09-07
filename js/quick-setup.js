@@ -1140,6 +1140,10 @@ const CONFIG_SCOPE = {
     // The seven craft stats and the style, in the cast builder. Only this
     // show's judges score them.
     'sec-dr-craft':          ['drag-race'],
+    // The strip that switches between the two sets of sliders. Only a show
+    // with a SECOND set has anything to switch, so on the other three there
+    // is no strip and the stats panel is exactly what it was.
+    'sec-dr-craft-tabs':     ['drag-race'],
     'sec-dr-judges':         ['drag-race'],
     'f-drag-style':          ['drag-race'],
     'cfg-finale':            ['total-drama'],  // a house always ends at three
@@ -1276,6 +1280,12 @@ export function applyFormatScope() {
   // the jury opens. Neither is a visibility question, so scoping does not cover
   // it; the label has to be redrawn whenever the show changes.
   window.updateSlider?.('jury');
+
+  /* AND RESET THE SLIDER TABS. Switching away from drag hides the strip, and
+     without this the craft panel stays hidden behind a tab nobody can see any
+     more — or worse, the CORE panel does, leaving a stats editor with no
+     stats in it. `showStatTab` puts both back when there is no strip. */
+  window.showStatTab?.('core');
 
   _placeRomance(fmt);
   renderHouseStructure();

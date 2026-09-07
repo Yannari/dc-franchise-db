@@ -92,7 +92,7 @@ const JUDGES_PER_QUEEN = 2;
 export function renderStageBeats({
   walking = [], onStage = [], runway = {}, call = {}, reactions = {},
   lipsync = null, exits = [], split = false, judges = [], critiques = [],
-  firstOfSeason = false,
+  firstOfSeason = false, formatNote = null,
   rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
@@ -128,6 +128,12 @@ export function renderStageBeats({
 
   // ── the stage opens ──
   emit(beatById('entrance'), 'open', []);
+  /* AND THE FORMAT, WHEN IT IS NOT THE ORDINARY ONE. A split premiere put
+     half the cast on screen and never said why the other half were missing;
+     a no-elimination night ran a full lip sync and sent nobody home. The
+     engine knew both and no line in the episode carried either, so the viewer
+     was left to infer a format from an absence. */
+  if (formatNote) emit(beatById('format-note'), formatNote, []);
 
   // ── one walk per queen ──
   const walkBeat = beatById('walk');

@@ -87,6 +87,34 @@ export function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.ke
 // different jobs: the Studio authors a character permanently and writes to D1,
 // while this sets up THIS season's cast. Somebody assembling a Drag Race cast
 // should not have to leave the cast builder to say who can sing.
+/**
+ * Which set of sliders is on screen.
+ *
+ * Sixteen sliders in one column read as one undifferentiated list, and they
+ * are two different things: nine belong to the person and every show reads
+ * them, seven are what a panel scores. The tab strip is scoped to drag-race
+ * in CONFIG_SCOPE, so on a show with no second set there is no strip and
+ * nothing to switch — which is why this defaults the craft panel back to
+ * VISIBLE when the strip is gone, rather than leaving it hidden by a tab the
+ * user can no longer see.
+ */
+export function showStatTab(which) {
+  const strip = document.getElementById('sec-dr-craft-tabs');
+  const core = document.getElementById('sec-stats-core');
+  const craft = document.getElementById('sec-dr-craft');
+  if (!core || !craft) return;
+  // No strip (or it is scoped away) means one show, one set: show both as
+  // they were before tabs existed.
+  const tabbed = strip && !strip.hidden && strip.offsetParent !== null;
+  if (!tabbed) { core.hidden = false; craft.hidden = false; return; }
+  const craftOn = which === 'craft';
+  core.hidden = craftOn;
+  craft.hidden = !craftOn;
+  for (const b of strip.querySelectorAll('.stat-tab')) {
+    b.classList.toggle('active', b.dataset.statTab === which);
+  }
+}
+
 const DRAG_CRAFT = [
   { key: 'acting',  name: 'Acting',  color: '#f9a8d4' },
   { key: 'comedy',  name: 'Comedy',  color: '#fbbf24' },

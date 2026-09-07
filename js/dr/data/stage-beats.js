@@ -42,6 +42,39 @@
 const tier = (id, note, lines = []) => ({ id, note, lines });
 
 export const STAGE_BEATS = [
+  /* ── WHAT KIND OF NIGHT THIS IS ──
+     THE FORMAT HAS TO BE SAID OUT LOUD. A split premiere put six of twelve
+     queens on screen and never told anybody why the other six were missing;
+     a no-elimination night ran a full lip sync and then sent nobody home. The
+     engine knew both facts and no line in the episode carried either, so the
+     viewer was left to infer a format from an absence. If a week does not run
+     the ordinary way, the host says so before it starts. */
+  {
+    id: 'format-note', step: 'main-stage', scope: 'once', speaker: 'host',
+    note: 'The host explains a week that is not shaped like the others.',
+    tierBy: 'format',
+    tiers: [
+      tier('split', 'Half the cast tonight, half of them next week.', [
+        "\"Before we begin — you may have noticed the room is a little emptier than you expected.\" The host enjoys this. \"This season begins with a split premiere. Half of you compete tonight. The other half compete next week. Nobody is going home from either night, and then all of you will be in the same workroom, and I will already know a great deal more about you than you know about each other.\"",
+        "\"There are twelve of you cast and six of you standing here, and both of those things are true,\" the host says. \"A split premiere. Your half tonight, their half next week, no eliminations in either. What happens tonight does not send you home. It does decide what everybody thinks of you before you have met most of them.\"",
+        "The host explains the shape of it plainly: the cast has been cut in half for the opening, each half gets its own night, and neither night ends in an elimination. \"You are not competing to survive,\" he says. \"You are competing to arrive.\" Six queens work out at the same moment that the other six are watching this later.",
+        "\"Tonight is one half of a premiere.\" The host says it like a gift and it lands like a warning. \"The rest of your cast arrives next week and they will have seen everything you do in the next few hours. No eliminations tonight — but there is no unseeing a first impression, and you are making yours in front of a room that is not even full yet.\"",
+      ]),
+      tier('no-elimination', 'Everybody stays, and nobody has been told yet.', [
+        "\"There is something you should know before we start.\" The host waits until the room is entirely still. \"Tonight, nobody is going home.\" It takes a second to land and then the noise is enormous. \"Which does not mean tonight does not count. I am still watching. I am always watching. It simply means that whatever happens out there, all of you walk back into that workroom.\"",
+        "The host lets them get all the way to their marks before saying it. \"This week is not an elimination.\" Several queens react before he has finished the sentence. \"You will still be judged, you will still be ranked, and one of you will still win. But the door stays shut tonight.\"",
+        "\"No sashay tonight, ladies.\" The host says it flatly, which somehow makes it bigger. \"This is a non-elimination week. Everything else is exactly as it always is — the challenge, the runway, the critiques, all of it counts and all of it goes on your record. You just all survive it.\"",
+        "\"I want to see what you do when the stakes change,\" the host says. \"So: nobody goes home this week.\" One queen laughs. Another looks disappointed, which the host notices and files away. \"Some of you are relieved. One or two of you wanted a fight. Hold that thought.\"",
+      ]),
+      tier('porkchop', 'Runway only, and it still sends somebody home.', [
+        "\"No maxi challenge tonight.\" The host lets that sit for exactly as long as it needs to. \"Just the runway. What you brought, what you made of it, and what you look like walking down it. One of you is going home on the strength of a single look — so I hope you packed like it mattered, because tonight it is the only thing that does.\"",
+        "The host explains that there is no challenge, only a category and a runway. \"Everything I know about you tonight, I will learn in the next four minutes,\" he says. \"And somebody is still leaving.\" The queens look at each other and then, more urgently, at their own garment bags.",
+        "\"Some seasons open gently.\" A pause. \"This one does not.\" The host explains the shape of the night — a runway, no challenge, a lip sync, an elimination — and watches the room absorb that one of them is going home before anybody has had a chance to be good at anything except getting dressed.",
+        "\"Here is tonight,\" the host says. \"One category. One walk. One of you leaves.\" There is no challenge to hide inside and no team to carry anybody, and every queen in the line does the same quick mental inventory of what is hanging on her rail.",
+      ]),
+    ],
+  },
+
   // ══ THE MAIN STAGE OPENS ═════════════════════════════════════════════
   {
     id: 'entrance', step: 'main-stage', scope: 'once', speaker: 'host',
@@ -325,6 +358,13 @@ export const STAGE_BEATS = [
         "The host looks at both of them and the decision is in the eyes before it is in the words. \"Shantay, you stay.\" One queen lives to fight another week. The other queen is already being hugged by the safe queens in the back, because the walk to the door starts here.",
         "\"Shantay, you stay.\" One queen presses her palms together and mouths \"thank you\" and the relief rewrites her entire face. The other queen straightens her back because she is about to walk off this stage and she is going to do it the way she came onto it — upright, in drag, and looking like somebody who was here.",
         "The call is made and the stage splits into two halves — the half where somebody stays and the half where somebody goes. \"Shantay, you stay\" is said once and means everything to the person who hears it and everything different to the person who does not.",
+      ]),
+      tier('no-elimination', 'A night that was never going to send anybody home.', [
+        "The music stops and the host lets the room hold its breath for a moment it does not need to hold. \"Ladies,\" he says, \"I have already made my decision about tonight. Nobody is going home.\" The scream that follows is the loudest sound either queen has made all day, and neither of them is entirely sure whether to be relieved or robbed.",
+        "\"Now — you both fought for that.\" The host looks at the two of them and then at the room. \"But tonight is not an elimination. Both of you are staying.\" One of them puts her hands over her face. The other laughs, once, in the way somebody laughs when the adrenaline has nowhere to go.",
+        "There is no sashay tonight and the queens on that stage did not know that until this second. \"Shantay,\" the host says, and then, before anybody can work out who it was aimed at, \"you BOTH stay.\" The room comes apart. Somewhere in it, the queen who lost that lip sync is doing the arithmetic on how close that was.",
+        "The host thanks them both and does not reach for either phrase. \"Nobody is leaving this competition tonight,\" he says. \"Which means both of you go back to that workroom knowing exactly how it feels to stand here. Use it.\" They walk off together. Neither one says anything until the door closes.",
+        "\"Two queens stood before me,\" the host says, \"and two queens are walking back.\" It is not the sentence either of them was braced for. The relief arrives late and all at once, and one of them has to be helped off the stage by the other, which is the first real thing that has happened between them all season.",
       ]),
       tier('double-shantay', 'Both were too good to lose. Nobody goes home.', [
         "The host pauses longer than usual and both queens are standing there expecting the worst and then: \"Shantay, you both stay.\" The stage erupts. Nobody goes. The lip sync was too good to end with a loss and the panel has decided that both of them earned another week, and the relief that hits both queens at the same time is visible from the back of the room.",

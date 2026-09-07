@@ -33,7 +33,7 @@ import { recordFact, getFact, learn, believes, effectiveConfidence,
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
 import { pStats } from '../players.js';
-import { voteIntentFor } from './state.js';
+import { voteIntentFor, potNow, _setPotBlind } from './state.js';
 import { allianceVoteBias } from './alliances.js';
 import { _lineHash } from './castle/lines.js';
 
@@ -436,8 +436,8 @@ function tonightsBurn(name) {
  */
 export function potShare() {
   const ceiling = gs.tr?.potCeiling || 0;
-  if (_pactPotBlind || ceiling <= 0) return 0;
-  return Math.max(0, Math.min(1, (gs.tr?.pot || 0) / ceiling));
+  if (ceiling <= 0) return 0;
+  return Math.max(0, Math.min(1, potNow(gs) / ceiling));
 }
 
 // THE POT IS NOW A READER, AND THAT BREAKS AN EQUIVALENCE GUARD ON PURPOSE.
@@ -456,13 +456,17 @@ export function potShare() {
 // hold-out is holding something real out. "Mostly identical" has no failure
 // state; this does.
 //
+// AND THE FLAG ITSELF MOVED, FOR THE REASON `potShare()` GIVES ABOVE. It was
+// private to this file, so it blinded the pact and the endgame and nothing
+// else — while a castle scene (`grief-what-it-is-all-for`) was reading
+// `gs.tr.pot` directly for its weight and staying fully sighted. That is the
+// second private copy the paragraph above warns about, and it is what kept
+// tests/tr-missions.test.js red: blinding half the readers does not answer the
+// question the guard asks. The flag now lives beside the pot in js/tr/state.js
+// and there is one reader; this name is kept because three test files call it.
+//
 // Test-only. Nothing in the show may ever set it.
-let _pactPotBlind = false;
-export function _setPactPotBlind(on = false) {
-  const prev = _pactPotBlind;
-  _pactPotBlind = !!on;
-  return () => { _pactPotBlind = prev; };
-}
+export const _setPactPotBlind = _setPotBlind;
 
 /**
  * The noise term for a fellow Traitor, drawn from a HASH and not from `rng`.

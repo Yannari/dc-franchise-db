@@ -798,6 +798,37 @@ export function traitorsBackgroundBlockers(backgrounds = {}) {
 // Every one takes `g` (the game state) explicitly, like `castSize` and
 // `peopleLost` above, so this file stays free of a `gs` import.
 
+// ── THE POT, AND THE ONE PLACE IT IS ALLOWED TO BE HIDDEN ─────────────
+//
+// `gs.tr.pot` has two readers in different layers — the pact's price at the
+// ballot (js/tr/deduction.js) and one castle scene about the money
+// (`grief-what-it-is-all-for`, js/tr/castle/alone.js) — and
+// tests/tr-missions.test.js has to blind BOTH of them at once to ask its
+// question ("a money mission buys nothing but money"). It blinded only the
+// first for a month, and the castle scene is why that guard was red on main:
+// with missions off the pot is 0 forever, the scene's weight goes to 0, one
+// evening draw lands on a different event, and the castle stream — and then
+// the whole season through it — parts company for reasons that have nothing
+// to do with a mission granting anybody anything.
+//
+// So the blind is a property of the READER and there is exactly one reader.
+// That is the same argument `potShare()` in deduction.js already makes for
+// itself, and the second private copy it warns about is precisely what the
+// castle scene turned out to be.
+//
+// Test-only. Nothing in the show may ever set it.
+let _potBlind = false;
+export function _setPotBlind(on = false) {
+  const prev = _potBlind;
+  _potBlind = !!on;
+  return () => { _potBlind = prev; };
+}
+
+/** What is in the pot, or 0 to anything asking while the blind is down. */
+export function potNow(g) {
+  return _potBlind ? 0 : (g?.tr?.pot || 0);
+}
+
 /** What `voter` last said, this episode, they meant to do. Null when nothing was said. */
 export function voteIntentFor(g, voter, ep) {
   const list = g?.tr?.voteIntents || [];

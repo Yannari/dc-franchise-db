@@ -46,7 +46,7 @@ import { pStats, pronouns } from '../../players.js';
 import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { sceneApi } from './effects.js';
-import { peopleLost } from '../state.js';
+import { peopleLost, potNow } from '../state.js';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 /**
@@ -1606,7 +1606,13 @@ registerEvent({
   },
   weight(ctx) {
     if (!soloOnly(ctx)) return 0;
-    return (gs.tr?.pot || 0) > 0 ? 1.4 : 0;
+    // THROUGH `potNow`, NOT OFF `gs.tr.pot` — see that function in
+    // js/tr/state.js. A scene about the prize money needs there to BE prize
+    // money, which is correct; reading it directly meant this weight was the
+    // one pot reader tests/tr-missions.test.js could not blind, and a scene
+    // that exists in one arm and not the other re-rolls every castle draw
+    // after it.
+    return potNow(gs) > 0 ? 1.4 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-what-it-is-all-for');

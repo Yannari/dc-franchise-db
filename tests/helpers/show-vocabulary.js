@@ -53,7 +53,7 @@ export const VOCAB = {
     own: [
       'traitor', 'traitors', 'faithful', 'faithfuls', 'banish', 'banished',
       'banishment', 'murder', 'murdered', 'round table', 'conclave', 'castle',
-      'shield', 'dagger', 'mission', 'missions', 'turret', 'final table',
+      'dagger', 'mission', 'missions', 'turret', 'final table',
     ],
   },
   'drag-race': {

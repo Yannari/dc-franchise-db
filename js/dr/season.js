@@ -17,7 +17,7 @@ import { rngFor } from './rng.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
 import { judgeViews, panelRanking, hostBend } from './judging.js';
-import { lipsyncScore } from './lipsync.js';
+import { lipsyncScore, lipsyncCall } from './lipsync.js';
 
 /** How many queens are left standing when the finale begins. */
 export const FINALE_SIZE = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
@@ -208,6 +208,96 @@ function duel(state, a, b, ctx, song) {
   };
 }
 
+
+/** What the winner of the Smackdown is actually called. */
+const TITLE = 'Queen of She Done Already Done Had Herses';
+
+/**
+ * The reunion Smackdown, which is not a maxi challenge.
+ *
+ * Checked on the wiki, and it is a genuinely separate thing from the
+ * LaLaPaRuZa that runs as a challenge during the season: this one happens at
+ * the reunion, one week before the finale, and it is EXCLUSIVE TO NON-
+ * FINALISTS. Every queen the season already sent home comes back and lip syncs
+ * in a bracket, and the winner takes a title rather than a place in the final.
+ *
+ * So it decides nothing about the crown, which is exactly why it is worth
+ * having: it is the one night the eliminated queens are the show, and a queen
+ * who went home fourth can leave the season with something.
+ */
+export function runSmackdown(state, cfg, ctx) {
+  const { players } = ctx;
+  // ITS OWN STREAM, and this is not tidiness. Drawing from the season's rng
+  // would consume draws before the finale and change who gets crowned — a
+  // measured fact, not a worry: with a shared stream, turning the Smackdown on
+  // changed the winner of seed 1 from Q11 to Q10. An optional side event that
+  // decides the season is the worst kind of bug, because it looks like a
+  // feature working.
+  const rng = rngFor((cfg.seed || 1) * 7919 + 424242);
+  const field = [...(state.out || [])].filter(n => players[n]);
+  if (field.length < 2) return null;
+
+  const wins = Object.fromEntries(field.map(n => [n, 0]));
+  const duels = [];
+  let alive = [...field].sort(() => rng() - 0.5);
+  let round = 1;
+  let guard = 0;
+
+  while (alive.length > 1 && guard++ < 20) {
+    const next = [];
+    for (let i = 0; i + 1 < alive.length; i += 2) {
+      const a = alive[i];
+      const b = alive[i + 1];
+      const song = SONGS[Math.floor(rng() * SONGS.length)];
+      const sa = lipsyncScore({ player: players[a], song, lipsyncRecord: state.lipsyncRecord?.[a] || [], rng });
+      const sb = lipsyncScore({ player: players[b], song, lipsyncRecord: state.lipsyncRecord?.[b] || [], rng });
+      // No host bend here. Nothing is at stake but the title, and a bent
+      // result would be the one place an agenda could not possibly be excused.
+      const call = lipsyncCall({
+        a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
+      });
+      wins[call.winner]++;
+      duels.push({
+        round, a, b, song: song.title, artist: song.artist,
+        scores: { [a]: sa.score, [b]: sb.score }, winner: call.winner, loser: call.loser,
+      });
+      next.push(call.winner);
+    }
+    if (alive.length % 2) next.push(alive[alive.length - 1]);
+    alive = next;
+    round++;
+  }
+
+  const champion = alive[0] || null;
+  if (champion) {
+    state.smackdownWinner = champion;
+    state.popularity[champion] = (state.popularity[champion] || 0) + 6;
+  }
+
+  return {
+    num: cfg.num,
+    format: 'drag-race',
+    eliminated: null,
+    exits: [],
+    dr: {
+      ep: cfg.num,
+      challenge: { id: 'smackdown', name: 'The Lip Sync Smackdown', format: 'solo', stage: 'main' },
+      mini: null, judges: [], guest: null,
+      smackdown: { field, duels, winner: champion, title: TITLE },
+      storylines: arcSummary(state.storylines || []),
+      storylineNeed: {},
+      record: JSON.parse(JSON.stringify(state.record)),
+      living: [...state.living],
+      scenes: [
+        { step: 'main-stage', kind: 'smackdown-open', data: { field }, text: '' },
+        ...duels.map(d => ({ step: 'lipsync', kind: 'smackdown-duel', data: { duel: d }, text: '' })),
+        { step: 'results', kind: 'smackdown-crown', data: { winner: champion, title: TITLE }, text: '' },
+      ],
+    },
+  };
+}
+
+
 /**
  * The finale.
  *
@@ -366,11 +456,21 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, { totalEpisodes }), ctx), cast));
   }
 
+  // The Smackdown, if the season books one: the queens already sent home come
+  // back and lip sync for a title, one episode before the crowning.
+  if (config.drSmackdown && state.out.length >= 2) {
+    const smack = runSmackdown(state, { num: num++, seed }, ctx);
+    if (smack) rows.push(beat(state, smack, cast));
+  }
+
   const last = schedule[schedule.length - 1] || {};
   const finale = runFinale(state, {
     num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
   }, ctx);
   rows.push(beat(state, finale, cast));
 
-  return { rows, state, winner: state.winner, runnerUp: state.runnerUp, finale: finale.dr.finale };
+  return {
+    rows, state, winner: state.winner, runnerUp: state.runnerUp,
+    finale: finale.dr.finale, smackdownWinner: state.smackdownWinner || null,
+  };
 }

@@ -12,7 +12,7 @@
 // correct early reads is retroactively scored as a mistake the moment the flip
 // happens — which is both wrong and unfixable once seasons are saved.
 import { gs, players } from '../core.js';
-import { recordFact, learn } from '../knowledge.js';
+import { recordFact, learn, believes } from '../knowledge.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 
@@ -105,12 +105,75 @@ export function canRecruit(ep) {
 }
 
 /**
+ * HOW OFTEN THE ROOM FOLLOWS THIS PERSON WHEN THEY SPEAK, 0..1 — and it is
+ * EARNED, which is the whole reason it is not a stat.
+ *
+ * Influence is the obvious thing a recruiter should want and there is no
+ * `influence` stat, deliberately: the nine are fixed (AGENTS.md) and a tenth
+ * would be the wrong shape anyway. Sway over a Round Table is not something
+ * you arrive with, it is something that either happened or did not — you put a
+ * name up, and either the room wrote it down or the room ignored you. That is
+ * on the record already, so it can be measured instead of assigned.
+ *
+ * MEASURED over 30 seasons and 378 people-seasons with two or more speeches,
+ * the share of the room that landed on the name they put up: p10 0.150,
+ * p50 0.295, p90 0.458, max 0.759. A person the room follows half the time and
+ * a person it follows a seventh of the time are different players, and nothing
+ * in their stat line says which is which.
+ *
+ * `n` IS RETURNED BESIDE THE SHARE because one lucky speech is not a
+ * reputation. A caller wanting a reliable read should require a couple of
+ * them; a caller wanting any signal at all can take what there is.
+ *
+ * A pure read over rounds that have already closed. No draw, no write.
+ */
+export function roomFollows(name, ep) {
+  let n = 0, sum = 0;
+  for (const r of (gs.tr?.rounds || [])) {
+    if (!(r.ep < ep)) continue;
+    const ballots = (r.ballots || []).filter(b => b.voted);
+    if (ballots.length < 3) continue;
+    const tally = {};
+    for (const b of ballots) tally[b.voted] = (tally[b.voted] || 0) + 1;
+    for (const a of (r.accusations || [])) {
+      if (a.accuser !== name || !a.target) continue;
+      n++;
+      sum += (tally[a.target] || 0) / ballots.length;
+    }
+  }
+  return { n, share: n ? sum / n : 0 };
+}
+
+/**
  * Who do the Traitors approach?
  *
  * Not simply the strongest player. The sophisticated play is somebody whose
  * banishment would hurt, who has credibility with the room — and, best of all,
  * somebody already suspicious of them, because turning them neutralises the
  * threat instead of merely removing it.
+ *
+ * ── THE THIRD REASON WAS IN THIS COMMENT AND NOT IN THE CODE ──────────
+ *
+ * "Best of all, somebody already suspicious of them" was the most interesting
+ * line here and the scoring had no term for it: credibility and bond, and
+ * nothing that read what the target thinks. So the one recruitment motive a
+ * viewer would find satisfying — she was closing in on me, so I made her one
+ * of us — could not happen, and every approach was "well-liked and friendly".
+ *
+ * `heat` reads the target's belief about THE RECRUITER specifically, which is
+ * the version that means something: being generally suspicious of Traitors is
+ * everybody, being suspicious of the person about to knock on your door is a
+ * reason to knock. It is a LOOKUP and takes no draw, so a season with this in
+ * it consumes the same rng stream as one without.
+ *
+ * ── AND IT REPORTS WHY, BECAUSE THE SCREEN HAD NOTHING TO SAY ─────────
+ *
+ * This returned `{recruiter, target}` — the decision and none of its reasons —
+ * so js/vp-tr/recruitment.js could draw a superb corridor scene that never
+ * told you why this person was standing in it. `reason` names the term that
+ * actually won, as a phrase the screen can print, and `terms` carries the
+ * numbers for the debug view. Both are derived from the score that was already
+ * computed; nothing about the choice changed except that it can now be read.
  */
 export function chooseRecruit(ep, rng = Math.random) {
   const traitors = livingTraitors(ep);
@@ -121,9 +184,44 @@ export function chooseRecruit(ep, rng = Math.random) {
     const st = pStats(name);
     const credibility = ((st.social || 5) + (st.temperament || 5)) / 20;
     const bond = Math.max(0, getBond(recruiter, name)) / 10;
-    return { name, score: credibility * 0.8 + bond * 0.6 + rng() * 0.5 };
+    // What this person already thinks of the person about to ask.
+    const b = believes(name, alignmentFactId(recruiter), ep);
+    const heat = (b && b.valence !== 'false' && b.valence !== 'stale')
+      ? Math.max(0, Math.min(1, b.effectiveConfidence || 0)) : 0;
+    // ── WEIGHTED SO THE SITUATIONAL TERMS CAN ACTUALLY WIN ────────────
+    //
+    // Measured before rebalancing, per candidate: credibility mean 0.523 and
+    // NEVER zero, bond mean 0.112 and zero 54% of the time, heat mean 0.214
+    // and zero 29%. Credibility is a pair of stats, so everybody has one; the
+    // other two are situations, and only situations make a reason worth
+    // hearing. The result was that 83% of approaches scored highest on
+    // credibility and the screen said "the room believes them" almost every
+    // time — technically the winning term and useless as an explanation.
+    //
+    // So credibility is the FLOOR it always really was, and the two that
+    // depend on what has actually happened between these two people carry the
+    // decision when they are there. This changes who gets approached, in the
+    // direction the comment above has claimed since it was written.
+    // THE ROOM'S OWN VERDICT ON THEM, where there is one. Two speeches
+    // minimum: one name that happened to land is luck, and calling it
+    // influence on the screen would be the screen inventing a reputation.
+    // Normalised against 0.5 — following half the room is the top of the
+    // measured range (p90 is 0.458), so this saturates where the real ceiling
+    // is rather than at an imaginary 1.0.
+    const rf = roomFollows(name, ep);
+    const influence = rf.n >= 2 ? Math.min(1, rf.share / 0.5) : 0;
+    const terms = { credibility: credibility * 0.5, bond: bond * 1.2,
+      heat: heat * 1.6, influence: influence * 1.15 };
+    return { name, terms,
+      score: terms.credibility + terms.bond + terms.heat + terms.influence + rng() * 0.5 };
   }).sort((a, b) => b.score - a.score);
-  return { recruiter, target: scored[0].name };
+  const won = scored[0];
+  // The dominant term, and a floor under it: when nothing scored above the
+  // noise the honest answer is that there was no strong reason, and saying so
+  // is better than dressing up a coin flip as a plan.
+  const ranked = Object.entries(won.terms).sort((a, b) => b[1] - a[1]);
+  const reason = ranked[0][1] < 0.2 ? 'no-strong-reason' : ranked[0][0];
+  return { recruiter, target: won.name, reason, terms: won.terms };
 }
 
 /**

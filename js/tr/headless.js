@@ -23,7 +23,7 @@ import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
 import { traitorsRoundBallots, traitorsBeliefSnapshot, TRAITORS_FORMAT } from './export.js';
 // The show's two exit words, from the registry. Never written as literals.
 import { exitVerbs, roundExits } from '../shows.js';
-import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence,
+import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, followerEvidence,
   alibiEvidence } from './deduction.js';
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
@@ -320,7 +320,10 @@ function _night(ep, rng) {
       // and the reason refusal is fatal there: they have seen the only face.
       const offer = offerRecruitment(pick.target, ep, rng,
         { mode: livingTraitors(ep).length === 1 ? 'ultimatum' : 'note', recruiter: pick.recruiter });
-      const recruited = { ...offer, target: pick.target };
+      // WHY THIS PERSON, carried onto the record so the screen can say it.
+      // `chooseRecruit` computes it and used to drop it on the floor.
+      const recruited = { ...offer, target: pick.target,
+        reason: pick.reason || null, reasonTerms: pick.terms || null };
       scoreRecruitment(ep, recruited);
       if (last) { last.recruitment = recruited; if (offer.executed) last.executed = offer.executed; }
       // A refused ultimatum kills. It is not a `murdered` — see the note on
@@ -901,6 +904,10 @@ function _recruitmentRecord(night) {
     // verb, so the screen takes the word from the registry like everything
     // else and never writes one.
     executed: r.executed || null,
+    // WHY THIS PERSON. `chooseRecruit` computes it and this projection is the
+    // only path onto `ep.tr`, so a field missing HERE is a field the screen
+    // can never see however faithfully the rest of the chain carries it.
+    reason: r.reason || null,
   };
 }
 
@@ -2991,6 +2998,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // onto the round the table just produced.
     evidence(ep, rng);
     murderEvidence(ep, rng);
+    // EVIDENCE SOURCE 6 — the safe voter. Sits with the others that read the
+    // round that just closed, and before runRoundTable opens a new one, for
+    // the reason stated above: it walks `gs.tr.rounds` and would otherwise
+    // read a round the table is still writing. See `followerEvidence`.
+    followerEvidence(ep, rng);
     // EVIDENCE SOURCE 5 — the SHAPE of last night, spec 7.4. Sits here rather
     // than anywhere else for exactly murderEvidence's reason: it reads the
     // round that just closed and carries the same `round.ep === ep - 1`

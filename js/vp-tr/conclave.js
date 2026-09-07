@@ -405,6 +405,21 @@ const REASON_LINES = {
     '{T} has begun connecting evidence to me. I want {obj} removed before that suspicion spreads.',
     '{T} is the most dangerous name to me because {sub} already suspects me and will pull others along.',
   ],
+  // ── EARNED STANDING, WHICH IS NOT THE SAME AS BEING LIKED ─────────
+  //
+  // `beloved` is a social stat: people enjoy having them around. This is a
+  // TRACK RECORD — they have put names up and the reveals agreed with them —
+  // and the Traitors are pre-empting somebody who has not come at them yet.
+  // Written apart from `onto-me` because the reasoning is different: that one
+  // is fear of a person already looking at you, this one is fear of what
+  // happens the day they do.
+  'listened-to': [
+    '{T} has called this right before, and the room remembers. When {sub} says a name next, it will be written down.',
+    'Nobody has been more right than {t} this season. That is a problem whether or not {sub} is looking at me yet.',
+    '{T} has not said my name once. {T} does not need to — the castle has started taking {pos} word for things.',
+    'Every read {t} has offered has landed. I would rather not be the next one.',
+    'The table follows {t} now. Removing {obj} costs the Faithfuls the only voice they have all agreed on.',
+  ],
   'wasted-decoy': [
     'The Faithfuls already suspect {t}. Removing {obj} wastes a likely Round Table target and forces them to investigate somebody new.',
     '{T} is already drawing suspicion. If we remove {obj}, the castle loses the person it was most likely to vote against next.',

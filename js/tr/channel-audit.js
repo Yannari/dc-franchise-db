@@ -208,6 +208,51 @@ const CHANNELS = {
    * murderEvidence gates on `round.ep === ep - 1`, so a round only emits if the
    * NEXT episode was actually played — hence the playedEps check.
    */
+  /**
+   * CANDIDATE, NOT SHIPPED: "you only ever write a name somebody else put up".
+   *
+   * The move a Traitor now has — join the pile-on that has already formed on a
+   * burned fellow — buys real cover (measured: mean suspicion 0.478 for a
+   * Traitor who joined against 0.730 for one who did not) and it made the room
+   * measurably worse at finding Traitors late. This is the counter, and it is
+   * a thing players in this format actually say out loud: you have never once
+   * stuck your neck out.
+   *
+   * The raw signal, 80 seasons: a Traitor's ballot lands on an already-named
+   * target 61.2% of the time against a Faithful's 46.8%. The SPEECH version of
+   * the same idea does not discriminate at all (led 48.3% vs 45.2%), which is
+   * why this reads ballots and not accusations.
+   *
+   * Emits the living player with the highest safe-vote share so far, once per
+   * round, from the third round on — before that nobody has a record.
+   */
+  'follows-never-leads': (S) => {
+    const out = [];
+    const safe = {}, cast = {};
+    for (const round of S.rounds) {
+      const ep = round.ep + 1;
+      const named = {};
+      for (const a of (round.accusations || [])) {
+        if (a.target) named[a.target] = (named[a.target] || 0) + 1;
+      }
+      for (const b of (round.ballots || [])) {
+        if (!b.voted) continue;
+        cast[b.voter] = (cast[b.voter] || 0) + 1;
+        if ((named[b.voted] || 0) >= 2) safe[b.voter] = (safe[b.voter] || 0) + 1;
+      }
+      if (!S.playedEps.has(ep)) continue;
+      const living = S.livingAt(ep);
+      let best = null, bestShare = 0;
+      for (const n of living) {
+        if ((cast[n] || 0) < 3) continue;
+        const share = (safe[n] || 0) / cast[n];
+        if (share > bestShare) { bestShare = share; best = n; }
+      }
+      if (best && bestShare >= 0.6) out.push({ ep, subject: best });
+    }
+    return out;
+  },
+
   'pushed-then-died': (S) => {
     const out = [];
     for (const round of S.rounds) {

@@ -2373,7 +2373,25 @@ function _buildBeats(v) {
     // reason under `lead`'s face would put a sentence in the wrong mouth --
     // which is the defect the ACCUSE_SAID note two hundred lines up records
     // being caught by a single read of the output.
-    const leadName = c.acc[0];
+    // ── AND THE CARD QUOTES SOMEBODY WHO HAS A REASON, WHERE ONE EXISTS ──
+    //
+    // `c.acc[0]` is whoever filed first, and if that person's read was a
+    // feeling the card printed no reason at all -- on a table where five other
+    // accusers were all holding the same citable one. Measured: 1 table in 12
+    // came out that way, and it is exactly the "there is no reasoning" defect
+    // this screen has been chased about.
+    //
+    // The rule above is unchanged and is the reason this is a re-election
+    // rather than a swap: `lead` is whose FACE is on the card, so the sentence
+    // under it must be that person's own. So the card elects the first accuser
+    // in speaking order who actually holds a citable reason, and falls back to
+    // the first accuser when nobody does -- a name nobody can argue for is
+    // still a name that got said.
+    const cited = c.acc.find(n => {
+      const sp = speeches.find(x => x.speaker === n);
+      return sp && (sp.sources || []).length;
+    });
+    const leadName = cited || c.acc[0];
     const mine = speeches.find(sp => sp.speaker === leadName) || speeches[0] || null;
     const src = mine && (mine.sources || []).length ? mine.sources[0] : null;
     const movers = [...new Set(speeches.flatMap(s => s.mindChanges || []))]

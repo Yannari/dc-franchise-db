@@ -21,6 +21,7 @@ import { describe, expect, it } from 'vitest';
 import { gs, setPlayers, seasonConfig } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { alignmentAt } from '../js/tr/roles.js';
+import { pStats } from '../js/players.js';
 import roster from '../franchise_roster.json';
 
 const ROSTER = roster.players.slice(0, 20);
@@ -185,6 +186,55 @@ describe('a Traitor joins a landslide that has landed on a fellow', () => {
     // ordinary play and holding the line is the exception.
     expect(rate(4), 'a fellow four people have named out loud is still being protected')
       .toBeGreaterThan(0.5);
+  });
+
+  it('and WHO is sitting there changes it - loyalty is priced, not just the room', () => {
+    // Every number in `pactReluctance` was about the SITUATION - bodies left,
+    // pot, how burned the fellow is - so two Traitors at the same table, a
+    // loyal soldier and a snake, made the identical call. The pact was a
+    // property of the castle rather than of the people in it.
+    //
+    // MEASURED, cast 20, 120 seasons, share of Traitor ballots naming a fellow
+    // by the VOTER's own loyalty:
+    //
+    //     loyalty 0-3    15.2%
+    //     loyalty 4-6    14.8%
+    //     loyalty 7-10   11.4%
+    //
+    // Proportional and not a threshold (AGENTS.md): there is no loyalty above
+    // which betrayal is impossible and none below which it is automatic. A
+    // loyal Traitor with the whole room shouting at a fellow will still
+    // sometimes write the name. What moves is the price.
+    const band = { low: { n: 0, hit: 0 }, high: { n: 0, hit: 0 } };
+    for (const n of NIGHTS) {
+      const ballots = (n.round.ballots || []).filter(b => b.voted);
+      if (ballots.length < 5) continue;
+      const trs = new Set(ballots.map(b => b.voter).filter(x => n.align[x] === 'traitor'));
+      if (trs.size < 2) continue;
+      for (const b of ballots) {
+        if (!trs.has(b.voter)) continue;
+        const l = pStats(b.voter)?.loyalty ?? 5;
+        const k = l <= 3 ? 'low' : l >= 7 ? 'high' : null;
+        if (!k) continue;
+        band[k].n++;
+        if (trs.has(b.voted)) band[k].hit++;
+      }
+    }
+    expect(band.low.n, 'no low-loyalty Traitor ever voted').toBeGreaterThan(80);
+    expect(band.high.n, 'no high-loyalty Traitor ever voted').toBeGreaterThan(80);
+    const lowRate = band.low.hit / band.low.n;
+    const highRate = band.high.hit / band.high.n;
+    // THE DIRECTION, NOT THE GAP. The gap is a handful of points and rides the
+    // stream; what must hold is that the loyal Traitor is the one who holds
+    // the line. A mutation removing `pactCharacter` makes these equal.
+    expect(lowRate, `loyalty 0-3 betray at ${(100 * lowRate).toFixed(1)}% and 7-10 at `
+      + `${(100 * highRate).toFixed(1)}% - loyalty is not reaching the pact price`)
+      .toBeGreaterThan(highRate);
+    // AND NEITHER END IS ABSOLUTE: no stat gates this off or forces it.
+    expect(highRate, 'a loyal Traitor never betrays at all - the stat has become a gate')
+      .toBeGreaterThan(0.02);
+    expect(lowRate, 'a disloyal Traitor always betrays - the stat has become a gate')
+      .toBeLessThan(0.6);
   });
 
   it('and the table SHOWS it: a fellow going down on a pile-on gets a fellow\'s vote', () => {

@@ -202,7 +202,22 @@ describe('the rewired castle events leave the receipts their sentences claim', (
     const CASTNAMES = R.map(p => p.name);
     const byEvent = {};
     let contradictions = 0, hops = 0;
-    for (const seed of [1, 2, 3, 4, 5, 6]) {
+    // ── SIX SEEDS WAS NOT ENOUGH TO ASK THIS QUESTION (2026-09-07) ────
+    //
+    // The named-event liveness below went red after an unrelated change
+    // re-rolled the seasons, and nothing was broken: `trust-secret-swap`
+    // records a claim in 8 of 40 seeded seasons -- alive, and about a
+    // one-in-five event. At six seeds the chance of seeing NONE of it is
+    // 0.8^6 = 26%, so this arm failed one run in four on content that was
+    // working, and any stream-shifting edit anywhere in the engine could trip
+    // it. A liveness floor whose sample cannot reach the thing it guards is a
+    // coin flip wearing an assertion's clothes.
+    //
+    // Twenty seeds puts that at 0.8^20 = 1.2%, which is a guard. The five
+    // named events and the two aggregate floors below are unchanged in what
+    // they claim -- only the sample they claim it from.
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+      11, 12, 13, 14, 15, 16, 17, 18, 19, 20]) {
       setPlayers(R);
       seedFranchiseHistory(CASTNAMES);
       playTraitorsSeason({ cast: CASTNAMES, traitorCount: 3, seed });
@@ -221,11 +236,11 @@ describe('the rewired castle events leave the receipts their sentences claim', (
     for (const id of ['trust-secret-swap', 'susp-timeline-crosscheck',
       'susp-let-it-go-on-the-road-back', 'cover-story-survived-the-day',
       'mission-what-they-can-ask-me']) {
-      expect(byEvent[id], `${id} recorded no claim in six seasons`).toBeGreaterThan(0);
+      expect(byEvent[id], `${id} recorded no claim in twenty seasons`).toBeGreaterThan(0);
     }
     // A contradiction is TWO stored accounts and a declared incompatibility.
     expect(contradictions, 'nobody contradicted themselves on the record').toBeGreaterThan(5);
-    expect(hops, 'no fact travelled anywhere in six seasons').toBeGreaterThan(20);
+    expect(hops, 'no fact travelled anywhere in twenty seasons').toBeGreaterThan(20);
   });
 
   it('and every hop is between two people the season actually has', () => {

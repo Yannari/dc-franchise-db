@@ -25,6 +25,7 @@ import { knowersOf } from './knowledge-flow.js';
 import { alignmentAt } from './roles.js';
 import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade,
   sceneDoubt } from './deduction.js';
+import { addStanding, influenceOf } from './state.js';
 import { exitSpeech } from './exit.js';
 import { lineFor, _lineHash } from './castle/lines.js';
 import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
@@ -42,7 +43,14 @@ import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
  */
 export function broadcast(accuser, target, ep, rng = Math.random) {
   const room = (gs.activePlayers || []).filter(n => n !== accuser && n !== target);
-  const pitch = 0.25 + (pStats(accuser).social || 5) / 20;   // 0.25 .. 0.75
+  // HOW LOUD, AND HOW MUCH IT IS WORTH COMING FROM THEM. `social` is how well
+  // they say it; influence is whether the room has reason to take it from this
+  // particular person -- a Faithful who has called two Traitors correctly is
+  // listened to in a way the same sentence from a player who drove out two
+  // Faithfuls is not. Proportional, and centred so somebody with no record
+  // sounds exactly as they always did: 0.75x at the bottom, 1.25x at the top.
+  const standingPitch = 0.75 + influenceOf(gs, accuser, ep) * 0.5;
+  const pitch = (0.25 + (pStats(accuser).social || 5) / 20) * standingPitch;
   const heard = [];
   for (const listener of room) {
     const trust = 0.55 + Math.max(-0.35, Math.min(0.45, getBond(listener, accuser) / 22));
@@ -86,9 +94,15 @@ export function broadcast(accuser, target, ep, rng = Math.random) {
 /** How much of the room has publicly named `name` tonight, 0..1. */
 function tableBurn(name, accusations, living) {
   const room = Math.max(1, (living || []).length - 1);
-  let on = 0;
-  for (const a of accusations) if (a.target === name) on++;
-  return { on, share: on / room };
+  const by = {};
+  for (const a of accusations) if (a.target) by[a.target] = (by[a.target] || 0) + 1;
+  const on = by[name] || 0;
+  const top = Math.max(0, ...Object.values(by));
+  // `lead` IS THE ONE THE DECISION USES, and `share` is kept only because the
+  // record prints it. See `tonightsBurn` in js/tr/deduction.js: a share of the
+  // room says the same landslide is weaker in a bigger castle, which is
+  // backwards. What burns you is being the name the room has settled on.
+  return { on, share: on / room, lead: on / Math.max(SACRIFICE_MIN_ACCUSERS, top) };
 }
 /**
  * Below this nobody is burned enough to be worth spending.
@@ -172,7 +186,7 @@ function debate(ep, rng) {
         // the move gets easier the more certain the outcome already is.
         const st = pStats(speaker);
         const appetite = ((st.strategic || 5) / 10) * 0.6 + ((st.boldness || 5) / 10) * 0.4;
-        const chance = appetite * Math.min(1, doomed.share / 0.35)
+        const chance = appetite * Math.min(1, doomed.lead)
           * (1 - (st.loyalty || 5) / 20);
         if (roll < chance) { target = doomed.name; sacrifice = true; }
       }
@@ -995,6 +1009,12 @@ const WRONGLY_DROVE_OUT = 0.16;
  * The observer set is the living room, so the accuser is not told what the
  * room now thinks of them -- which is the point of the mechanic.
  */
+/** What a read is worth, and what it costs. See the note inside the loop. */
+const STANDING_RIGHT_LEAD = 1.0;
+const STANDING_RIGHT_JOIN = 0.5;
+const STANDING_WRONG_LEAD = -0.8;
+const STANDING_WRONG_JOIN = -0.35;
+
 function priceTheAccusers(banished, wasTraitor, accusations, ep, rng) {
   const living = (gs.activePlayers || []).filter(n => n !== banished);
   const named = [...new Set(accusations.filter(a => a.target === banished)
@@ -1006,6 +1026,26 @@ function priceTheAccusers(banished, wasTraitor, accusations, ep, rng) {
     && living.includes(a.accuser)) || {}).accuser || null;
   const priced = [];
   for (const accuser of named) {
+    // ── STANDING MOVES FIRST, AND FOR EVERYBODY WHO NAMED THEM ──────
+    //
+    // ABOVE the narrowing below, deliberately, and it was BELOW it for one
+    // measurement's worth of time: the belief credit is the lead accuser's
+    // alone while the belief mark is everybody's, and inheriting that
+    // asymmetry made standing a punishment meter. Measured over 1,200
+    // player-seasons it ran p10 -1.15 to p90 0.00 -- the ninetieth percentile
+    // of "how right have you been" was ZERO, because agreeing with a correct
+    // read paid nothing and agreeing with a wrong one cost.
+    //
+    // The narrowing exists for the BELIEF channel and is right there (crediting
+    // every accuser deflated the whole board -- endgame forced tables fell 112
+    // -> 72). It has no business deciding a track record: if you put a Traitor's
+    // name up you were right about that Traitor, whoever said it first.
+    //
+    // LEADING STILL PAYS MORE, both ways. Putting the name up first is a read;
+    // agreeing with it afterwards is a vote.
+    addStanding(gs, accuser, wasTraitor
+      ? (accuser === drove ? STANDING_RIGHT_LEAD : STANDING_RIGHT_JOIN)
+      : (accuser === drove ? STANDING_WRONG_LEAD : STANDING_WRONG_JOIN));
     // The credit is the lead accuser's alone (see the note on the constants);
     // the MARK is everybody's, because everybody who named a Faithful was
     // wrong about that Faithful, whoever started it.

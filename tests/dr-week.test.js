@@ -165,8 +165,10 @@ describe('runDragWeek', () => {
     const c = cast();
     const st = initDragState({ cast: c, seed: 5, rng: rngFor(5) });
     const row = runDragWeek(st, cfg(), ctxFor(c));
+    // `atRisk` is critiqued too — she was named in the bottom and then saved,
+    // which is a critique with a reaction like any other.
     const critiqued = [...new Set([...row.dr.call.win, ...row.dr.call.high,
-      ...row.dr.call.low, ...row.dr.call.bottom])];
+      ...row.dr.call.low, ...row.dr.call.atRisk, ...row.dr.call.bottom])];
     expect(Object.keys(row.dr.reactions).sort()).toEqual(critiqued.sort());
     for (const n of critiqued) expect(st.lastReaction[n]).toBeTruthy();
   });

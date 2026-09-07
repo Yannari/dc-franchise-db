@@ -47,7 +47,12 @@ function resultFor(row, name) {
   const c = dr.call || {};
   if ((c.win || []).includes(name)) return 'WIN';
   if ((c.high || []).includes(name)) return 'HIGH';
-  if ((c.bottom || []).includes(name)) return 'BTM';
+  // BTM2 is the bottom TWO — she lip synced and survived. BTM is a queen the
+  // panel NAMED in the bottom and then saved on the stage. They are different
+  // facts and the community's chart has always had both; this exporter used to
+  // emit one `BTM` meaning the first, under the second one's name.
+  if ((c.bottom || []).includes(name)) return 'BTM2';
+  if ((c.atRisk || []).includes(name)) return 'BTM';
   if ((c.low || []).includes(name)) return 'LOW';
   return 'SAFE';
 }
@@ -155,7 +160,9 @@ export function dragCareerStats(rows, name) {
     if ((c.win || []).includes(name)) wins++;
     if ((c.high || []).includes(name)) highs++;
     if ((c.low || []).includes(name)) lows++;
-    if ((c.bottom || []).includes(name)) bottoms++;
+    // "Times in the bottom" is both of them: being named is being in it,
+    // whether or not the night ended in a lip sync.
+    if ((c.bottom || []).includes(name) || (c.atRisk || []).includes(name)) bottoms++;
     const ls = row.dr?.lipsync;
     if (ls && ls.winner === name) lipsyncWins++;
     // A double shantay has no winner and both survived, which still counts as

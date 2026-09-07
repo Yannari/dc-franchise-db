@@ -121,8 +121,9 @@ export function renderStageBeats({
 
   const callOf = n => (call.win || []).includes(n) ? 'WIN'
     : (call.high || []).includes(n) ? 'HIGH'
-      : (call.bottom || []).includes(n) ? 'BTM'
-        : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
+      : (call.bottom || []).includes(n) ? 'BTM2'
+        : (call.atRisk || []).includes(n) ? 'BTM'
+          : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
 
   // ── the stage opens ──
   emit(beatById('entrance'), 'open', []);
@@ -182,7 +183,7 @@ export function renderStageBeats({
       // No panel view to read — a week run in isolation by a test. Fall back
       // to the call so the stage is never silent.
       emit(critBeat, callOf(n) === 'WIN' || callOf(n) === 'HIGH' ? 'praise'
-        : callOf(n) === 'BTM' ? 'pan' : 'mixed', [n]);
+        : callOf(n) === 'BTM2' || callOf(n) === 'BTM' ? 'pan' : 'mixed', [n]);
     }
     if (reactions[n]) emit(reactBeat, reactions[n], [n]);
   }
@@ -240,8 +241,9 @@ export function runUntucked({
   const bottom = new Set(call.bottom || []);
   const callOf = n => (call.win || []).includes(n) ? 'WIN'
     : (call.high || []).includes(n) ? 'HIGH'
-      : bottom.has(n) ? 'BTM'
-        : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
+      : bottom.has(n) ? 'BTM2'
+        : (call.atRisk || []).includes(n) ? 'BTM'
+          : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
   const named = new Set(namedOnStage);
   const arcsOf = n => storylines.filter(s => s.alive && s.players.includes(n)).map(s => s.arc);
   const bondOf = (a, b) => { try { return ctx.bond ? ctx.bond(a, b) : 0; } catch { return 0; } };

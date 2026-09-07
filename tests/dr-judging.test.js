@@ -126,7 +126,8 @@ describe('callWeek', () => {
 
   it('sizes the tops and bottoms by cast', () => {
     expect(callWeek(fr(12), { castSize: 12 })).toEqual({
-      win: ['A'], high: ['B', 'C'], safe: ['D', 'E', 'F', 'G', 'H', 'I'], low: ['J'], bottom: ['K', 'L'],
+      win: ['A'], high: ['B', 'C'], safe: ['D', 'E', 'F', 'G'],
+      low: ['H', 'I'], atRisk: ['J'], bottom: ['K', 'L'],
     });
     const ten = callWeek(fr(10), { castSize: 10 });
     expect(ten.win).toEqual(['A']);
@@ -134,14 +135,41 @@ describe('callWeek', () => {
     expect(ten.bottom).toEqual(['I', 'J']);
     const six = callWeek(fr(6), { castSize: 6 });
     expect(six.high).toEqual(['B']);
-    expect(six.low).toEqual([]);
     expect(six.bottom).toEqual(['E', 'F']);
+  });
+
+  it('THE ANNOUNCED BOTTOM IS BIGGER THAN THE LIP SYNC, above nine', () => {
+    /* BTM2 and BTM are different facts and the community chart has both: the
+       bottom TWO lip sync, and anybody else the panel named is saved on the
+       stage. `atRisk` used to be returned as `low`, which is BTM's meaning
+       under LOW's name — and left BTM unreachable in every season ever
+       played. Below nine the panel only calls two down, so there is nobody
+       to save and the group is correctly empty. */
+    for (let n = 9; n <= 14; n++) {
+      const c = callWeek(fr(n), { castSize: n });
+      expect(c.atRisk.length, `cast ${n} named nobody it then saved`).toBe(1);
+      expect(c.bottom.length).toBe(2);
+    }
+    for (let n = 5; n <= 8; n++) {
+      expect(callWeek(fr(n), { castSize: n }).atRisk).toEqual([]);
+    }
+  });
+
+  it('LOW is a queen the panel did NOT put in danger', () => {
+    // The other half of the same fix: LOW now means safe-with-a-note, so it
+    // must sit ABOVE the announced bottom rather than inside it.
+    const c = callWeek(fr(12), { castSize: 12 });
+    for (const nm of c.low) {
+      expect(c.atRisk, `${nm} is both LOW and in the bottom`).not.toContain(nm);
+      expect(c.bottom).not.toContain(nm);
+    }
+    expect(c.low.length).toBeGreaterThan(0);
   });
 
   it('accounts for everybody exactly once, at every cast size', () => {
     for (let n = 4; n <= 14; n++) {
       const c = callWeek(fr(n), { castSize: n });
-      const all = [...c.win, ...c.high, ...c.safe, ...c.low, ...c.bottom];
+      const all = [...c.win, ...c.high, ...c.safe, ...c.low, ...c.atRisk, ...c.bottom];
       expect(all.length, `cast ${n} lost or duplicated somebody`).toBe(n);
       expect(new Set(all).size).toBe(n);
       expect(c.win.length).toBe(1);
@@ -153,7 +181,7 @@ describe('callWeek', () => {
     const c = callWeek(fr(12), { castSize: 12, immune: ['L'] });
     expect(c.bottom).toEqual(['J', 'K']);
     expect(c.safe).toContain('L');
-    expect([...c.win, ...c.high, ...c.safe, ...c.low, ...c.bottom].length).toBe(12);
+    expect([...c.win, ...c.high, ...c.safe, ...c.low, ...c.atRisk, ...c.bottom].length).toBe(12);
   });
 
   it('an immune queen who was going to WIN still wins', () => {

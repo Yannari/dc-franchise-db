@@ -263,11 +263,18 @@ export function runDragWeek(state, cfg, ctx) {
   // "Level" is measured on the panel's own view rather than on a rank, because
   // ranks are always one apart and would make this fire every week or never.
   let tripled = false;
-  if (cfg.tripleOnTie && call.low.length && call.bottom.length === 2 && living.length > 4) {
+  /* THE QUEEN THIS PULLS IN IS THE ONE ALREADY NAMED IN THE BOTTOM.
+     This read `call.low`, which used to mean "in the announced bottom and not
+     lip syncing". It does not any more — that group is `atRisk`, and `low` is
+     now genuinely safe queens with a bad critique. Dragging a LOW queen into a
+     lip sync would be pulling in somebody the panel never put in danger. */
+  const pool = call.atRisk.length ? call.atRisk : call.low;
+  if (cfg.tripleOnTie && pool.length && call.bottom.length === 2 && living.length > 4) {
     const viewOf = n => (ranking.find(r => r.name === n) || {}).meanRank ?? 0;
-    const lowest = call.low[call.low.length - 1];
+    const lowest = pool[pool.length - 1];
     const highestBottom = call.bottom[0];
     if (Math.abs(viewOf(lowest) - viewOf(highestBottom)) < 1.25) {
+      call.atRisk = call.atRisk.filter(n => n !== lowest);
       call.low = call.low.filter(n => n !== lowest);
       call.bottom = [lowest, ...call.bottom];
       tripled = true;
@@ -288,7 +295,7 @@ export function runDragWeek(state, cfg, ctx) {
   // never the panel's ranking, which she has not heard yet.
   const finalRank = Object.fromEntries(bend.map(b => [b.name, b.finalRank]));
   const reactions = {};
-  for (const n of [...new Set([...call.win, ...call.high, ...call.low, ...call.bottom])]) {
+  for (const n of [...new Set([...call.win, ...call.high, ...call.low, ...call.atRisk, ...call.bottom])]) {
     const s = P(n).stats || {};
     const intuition = Number.isFinite(Number(s.intuition)) ? Number(s.intuition) : 5;
     const expected = Math.max(1, Math.round(living.length / 2 - (intuition - 5) * 0.4));

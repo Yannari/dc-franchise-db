@@ -747,10 +747,10 @@
       "castSize": 13,
       "episodeCount": 10,
       "winner": {
-        "name": "Cameron",
-        "playerSlug": "cameron",
+        "name": "Gerry",
+        "playerSlug": "gerry",
         "vote": "",
-        "runnerUp": "Karol",
+        "runnerUp": "Sanders",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
@@ -761,7 +761,7 @@
         "mostChallengeWins": {
           "name": "Cameron",
           "playerSlug": "cameron",
-          "detail": "3 maxi challenges"
+          "detail": "5 maxi challenges"
         }
       },
       "theme": "",

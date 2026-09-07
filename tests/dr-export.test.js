@@ -74,7 +74,8 @@ describe('dragEpisodes', () => {
   });
 
   it('uses only the results the grid knows', () => {
-    const OK = ['WIN', 'HIGH', 'SAFE', 'LOW', 'BTM', 'ELIM', 'OUT', 'WINNER', 'FINALIST'];
+    // BTM2 lip synced and survived; BTM was named in the bottom and saved.
+    const OK = ['WIN', 'HIGH', 'SAFE', 'LOW', 'BTM', 'BTM2', 'ELIM', 'OUT', 'WINNER', 'FINALIST'];
     for (const e of eps) {
       for (const p of e.placements) {
         expect(OK, `episode ${e.episode}: ${p.name} is "${p.result}"`).toContain(p.result);

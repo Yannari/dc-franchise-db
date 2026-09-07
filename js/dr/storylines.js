@@ -294,7 +294,7 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
   const find = arc => out.find(s => s.arc === arc);
   const beat = (s, kind, data = {}) => s.beats.push({ episode, kind, ...data });
   const inCall = n => [...(call.win || []), ...(call.high || []),
-    ...(call.low || []), ...(call.bottom || [])].includes(n);
+    ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])].includes(n);
 
   for (const s of out) {
     const [a, b] = s.players;
@@ -345,7 +345,7 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
   const downs = (state._drBendDowns ||= {});
   const won = new Set(call.win || []);
   const called = new Set([...(call.win || []), ...(call.high || []),
-    ...(call.low || []), ...(call.bottom || [])]);
+    ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])]);
   for (const x of bend) {
     const toppedAndLost = x.panelRank === 1 && !won.has(x.name);
     const lovedAndIgnored = x.panelRank <= SNUB_TOP && !called.has(x.name);

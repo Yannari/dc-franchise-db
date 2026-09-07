@@ -235,12 +235,38 @@ export function callWeek(finalRanking, { castSize, immune = [] } = {}) {
   // Immunity keeps her out of the bottom block and pulls the next queen in.
   // It cannot cost her a win she already had: the top is taken first.
   const eligible = rest.filter(nm => !immune.includes(nm));
-  const bottomBlock = eligible.slice(-down);
-  const bottom = bottomBlock.slice(-2);
-  const low = bottomBlock.slice(0, -2);
-  const safe = rest.filter(nm => !bottomBlock.includes(nm));
 
-  return { win: top.slice(0, 1), high: top.slice(1), safe, low, bottom };
+  /* ── THE ANNOUNCED BOTTOM IS NOT THE LIP SYNC ─────────────────────
+     The community's own chart has both and they are different facts —
+     checked against the season 16 source, where {{BTM|tomato|2}} appears ten
+     times and a plain {{BTM}} once:
+
+       BTM2   the bottom TWO: she lip synced, and survived it
+       BTM    named in the bottom, and saved before the lip sync
+       LOW    safe, but the panel had a note
+
+     This function used to return three groups, and the middle one was called
+     `low` while meaning "in the announced bottom and not lip syncing" — which
+     is BTM's meaning under LOW's name, and left BTM with no way to happen at
+     all. So the block splits properly now: the panel names `down` queens as
+     the bottom, the last two of them lip sync, and anybody else it named is
+     saved on the stage. LOW becomes what it actually is — the queens just
+     ABOVE that block, critiqued and safe. */
+  const bottomBlock = eligible.slice(-down);
+  const bottom = bottomBlock.slice(-2);          // lip sync → BTM2
+  const atRisk = bottomBlock.slice(0, -2);       // named, then saved → BTM
+
+  // How many are critiqued without being in danger. It follows `up`, because
+  // a night that calls three queens forward is a night with room for notes.
+  const lowCount = up >= 3 ? 2 : 1;
+  const low = down < eligible.length
+    ? eligible.slice(Math.max(0, eligible.length - down - lowCount), eligible.length - down)
+    : [];
+
+  const spoken = new Set([...bottomBlock, ...low]);
+  const safe = rest.filter(nm => !spoken.has(nm));
+
+  return { win: top.slice(0, 1), high: top.slice(1), safe, low, atRisk, bottom };
 }
 
 /**
@@ -257,6 +283,9 @@ export function judgeMemoryAfter(memory, panel, call) {
     const m = {};
     for (const [k, v] of Object.entries(prev)) m[k] = v * 0.7;
     for (const nm of call.bottom || []) m[nm] = (m[nm] || 0) - 0.4;
+    // Named in the bottom and saved still costs her, at half the weight: the
+    // panel said it out loud, it just did not end in a lip sync.
+    for (const nm of call.atRisk || []) m[nm] = (m[nm] || 0) - 0.2;
     for (const nm of call.win || []) m[nm] = (m[nm] || 0) + 0.3;
     out[j.id] = m;
   }

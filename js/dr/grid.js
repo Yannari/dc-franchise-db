@@ -39,7 +39,10 @@ export const RESULT_LABELS = {
   HIGH: { label: 'HIGH', title: 'Among the top queens', colour: '#7dd3fc', ink: '#0b2b3d' },
   SAFE: { label: 'SAFE', title: 'Safe', colour: '#374151', ink: '#e5e7eb' },
   LOW: { label: 'LOW', title: 'Among the bottom queens', colour: '#fb923c', ink: '#2b1400' },
-  BTM: { label: 'BTM', title: 'In the bottom, and lip synced', colour: '#f87171', ink: '#2b0000' },
+  // Two bottoms, because the show has two. BTM2 lip synced and survived it;
+  // BTM was named in the bottom and saved before the lip sync started.
+  BTM2: { label: 'BTM2', title: 'The bottom two — lip synced, and survived', colour: '#f87171', ink: '#2b0000' },
+  BTM: { label: 'BTM', title: 'Named in the bottom, and saved', colour: '#fca5a5', ink: '#2b0000' },
   ELIM: { label: 'ELIM', title: null, colour: '#7f1d1d', ink: '#fecaca' },
   OUT: { label: '', title: 'Already gone', colour: 'transparent', ink: 'transparent' },
 };

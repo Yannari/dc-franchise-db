@@ -53,7 +53,7 @@ const TERM_NAMES = {
  */
 export function critiqueLines({ panel, views, call, entries, rng = Math.random }) {
   const onStage = [...(call.win || []), ...(call.high || []),
-    ...(call.low || []), ...(call.bottom || [])];
+    ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])];
   const byName = Object.fromEntries((entries || []).map(e => [e.name, e]));
   const out = [];
 

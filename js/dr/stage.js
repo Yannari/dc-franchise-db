@@ -92,6 +92,7 @@ const JUDGES_PER_QUEEN = 2;
 export function renderStageBeats({
   walking = [], onStage = [], runway = {}, call = {}, reactions = {},
   lipsync = null, exits = [], split = false, judges = [], critiques = [],
+  firstOfSeason = false,
   rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
@@ -211,6 +212,9 @@ export function renderStageBeats({
 
   // ── the exit, which is a ritual and always happens ──
   for (const x of exits) {
+    // The porkchop belongs to the first queen out of a SEASON, not the first
+    // of a night — one per season, which is the whole joke.
+    if (firstOfSeason) emit(beatById('porkchop'), 'porkchop', [x]);
     emit(beatById('farewell'), 'goodbye', [x]);
     emit(beatById('mirror-message'), 'message', [x]);
   }

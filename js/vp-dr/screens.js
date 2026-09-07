@@ -85,8 +85,41 @@ const SECTIONS = [
     opens: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
     title: 'Lip Sync For Your Life', subtitle: 'two queens, one song' },
   { id: 'dr-exit', label: 'Sashay', suffix: 'exit', phase: 'lipsync', accent: 'dr-a-lip',
-    opens: ['exit', 'finale-open', 'finale-duel', 'crowning'], badge: null,
+    opens: ['exit'], badge: null,
     title: 'Sashay Away', subtitle: 'the mirror message' },
+
+  /* ── THE FINALE, WHICH IS ITS OWN NIGHT ──
+     All of this used to fall into `dr-exit` above — the stage opening, every
+     duel and the crowning, drawn under a heading that reads "Sashay Away: the
+     mirror message". The last night of a season was a footnote to somebody
+     leaving. These eight sections follow the order the show runs, and any of
+     them whose scenes are absent is skipped by `when` on its own: a bracket
+     finale has no cut, so it never draws a cut screen. */
+  { id: 'dr-finale-open', label: 'Grand Finale', suffix: 'finopen', phase: 'stage', accent: 'dr-a-score',
+    opens: ['finale-open'], badge: { text: 'FINALE', color: '#FFC83D' },
+    title: 'Grand Finale', subtitle: 'one of them gets crowned tonight' },
+  { id: 'dr-finale-return', label: 'The Cast Returns', suffix: 'finreturn', phase: 'werk', accent: 'dr-a-room',
+    opens: ['finale:finale-return'], badge: { text: 'REUNION', color: '#7B2FF7' },
+    title: 'The Season Comes Back', subtitle: 'everybody who went home, through that door' },
+  { id: 'dr-finale-runway', label: 'Eleganza', suffix: 'finrunway', phase: 'stage', accent: 'dr-a-score',
+    opens: ['finale:finale-eleganza'], badge: { text: 'RUNWAY', color: '#FF7BC8' },
+    title: 'Grande Finale Eleganza', subtitle: 'the best look she owns' },
+  { id: 'dr-finale-interview', label: 'Interviews', suffix: 'fininterview', phase: 'werk', accent: 'dr-a-bond',
+    opens: ['finale:finale-interview'], badge: { text: 'ONE ON ONE', color: '#00E5FF' },
+    title: 'The Interviews', subtitle: 'why should it be you' },
+  { id: 'dr-finale-showcase', label: 'The Showcase', suffix: 'finshowcase', phase: 'stage', accent: 'dr-a-score',
+    opens: ['finale:finale-showcase-open'], badge: { text: 'SHOWCASE', color: '#FF3D9A' },
+    title: 'The Showcase', subtitle: 'individual show-stopping original numbers' },
+  { id: 'dr-finale-cut', label: 'The Cut', suffix: 'fincut', phase: 'stage', accent: 'dr-a-lip',
+    opens: ['finale:finale-cut'], badge: { text: 'THE CUT', color: '#FF294B' },
+    title: 'The Cut', subtitle: 'the field becomes two' },
+  { id: 'dr-finale-lipsync', label: 'For The Crown', suffix: 'fincrownls', phase: 'lipsync', accent: 'dr-a-lip',
+    opens: ['finale:finale-crown-lipsync'], badge: { text: 'FOR THE CROWN', color: '#FF294B' },
+    title: 'Lip Sync For The Crown', subtitle: 'two queens stand before me' },
+  { id: 'dr-finale-crown', label: 'The Crowning', suffix: 'fincrown', phase: 'stage', accent: 'dr-a-score',
+    opens: ['finale:finale-congeniality', 'finale:finale-runnerup', 'crowning'],
+    badge: { text: 'CROWNED', color: '#FFC83D' },
+    title: 'The Crowning', subtitle: "America's Next Drag Superstar" },
 ];
 
 /** The chart is not a section of an episode; it is the season, every episode. */
@@ -209,6 +242,10 @@ const BUILDERS = {
   'dr-results': rpBuildResults,
   'dr-lipsync': rpBuildLipSync,
   'dr-exit': rpBuildExit,
+  // The crowning keeps the designed builder — the bracket, the sash, the
+  // crown and the finishing order were always drawn well; they were drawn
+  // under the wrong heading.
+  'dr-finale-crown': rpBuildExit,
 };
 
 const _sections = SECTIONS.map(sec => ({
@@ -216,8 +253,12 @@ const _sections = SECTIONS.map(sec => ({
     label: sec.label,
     suffix: sec.suffix,
     badge: sec.badge,
-    when: row => (sceneSections(row).get(sec.id) || []).length > 0
-      || (sec.id === 'dr-exit' && !!row?.dr?.finale),
+    /* SCENES, AND ONLY SCENES. This used to carry `|| (sec.id === 'dr-exit'
+       && row.dr.finale)`, which forced the sashay screen onto the finale back
+       when the crowning had nowhere else to live. The finale has its own eight
+       screens now, and that clause drew "Sashay Away: the mirror message" over
+       a night on which nobody sashays and there is no mirror message. */
+    when: row => (sceneSections(row).get(sec.id) || []).length > 0,
     build: row => (BUILDERS[sec.id] ? BUILDERS[sec.id](row) : buildSection(sec, row)),
     revealAllName: 'drRevealAll',
   }));

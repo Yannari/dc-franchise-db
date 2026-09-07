@@ -503,6 +503,11 @@ export function runDragWeek(state, cfg, ctx) {
     const stageScenes = renderStageBeats({
       walking: living, onStage, runway, call, reactions, lipsync,
       exits: exits.slice(), split, rng, critiques,
+      /* THE PORKCHOP GATE. `state.out` already carries tonight's exits by the
+         time beats render, so the season's first elimination is exactly the
+         night when everybody who has ever gone home went home tonight. This
+         also holds for a double sashay opening the season. */
+      firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length,
       // NAMES, not ids. A critique that reads "jamal leans back in the chair"
       // is the placeholder being filled with a database key, which is what it
       // did until somebody read the output.

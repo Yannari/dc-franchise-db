@@ -185,7 +185,15 @@ export function rpBuildExit(row) {
   const w = showWords('drag-race');
   const fin = row?.dr?.finale;
   const exits = row?.exits || [];
-  const scenes = (row.dr.scenes || []).filter(s => s.step === 'exit' && s.text);
+  /* THE CROWNING'S OWN PROSE, which this screen was dropping on the floor.
+     The filter was `step === 'exit'` alone, and the finale keeps its sash,
+     its runner-up, the crowning, the winner's speech and "prance, my queens"
+     on `finale-award` and `finale-crown`. All of it was written, stored on the
+     row, and rendered nowhere — the same shape as every other bug this build
+     has turned up, and the one that would have hurt most: the last thing the
+     host says in a season, missing from the screen that says it. */
+  const CROWN_STEPS = new Set(['exit', 'finale-award', 'finale-crown']);
+  const scenes = (row.dr.scenes || []).filter(s => CROWN_STEPS.has(s.step) && s.text);
   if (!fin && !exits.length && !scenes.length) return '';
 
   let lead = '';

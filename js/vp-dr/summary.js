@@ -180,12 +180,24 @@ export function generateDragSummaryText(row) {
         .replace(/<style[\s\S]*?<\/style>/g, '')
         .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '');
       const chunks = body.split(/<div class="dr-step[^"]*"/);
+      /* CHUNK ZERO IS NOT A STEP AND IT IS NOT NOTHING. This used to be
+         `chunks.slice(1)`, which threw away everything before the first
+         revealable card — and on the crowning screen that is the bracket, the
+         sash, the crown and the finishing order, the one thing a finale is
+         for. It went unnoticed while the finale had no step-shaped scenes to
+         split on: with one chunk the whole body was kept, and the day the
+         finale grew prose the lead silently vanished from every transcript.
+         The bug is general, not the finale's — any screen carrying both a
+         structured lead and revealable steps lost the lead. */
+      const head = chunks.length > 1 ? [chunks[0]] : [];
       // The split eats the opening `<div class="dr-step…` and leaves the rest
       // of that tag on the front of the chunk, which the tag stripper cannot
-      // see because its `<` is gone. Take it off first.
-      const blocks = (chunks.length > 1 ? chunks.slice(1) : [body])
-        .map(c => (chunks.length > 1 ? c.replace(/^[^>]*>/, '') : c))
-        .map(clean).filter(Boolean);
+      // see because its `<` is gone. Take it off first — but only on the
+      // chunks that actually had one.
+      const tail = chunks.length > 1
+        ? chunks.slice(1).map(c => c.replace(/^[^>]*>/, ''))
+        : [body];
+      const blocks = [...head, ...tail].map(clean).filter(Boolean);
       for (const b of blocks) ln(`  ${b}`);
       ln('');
     }

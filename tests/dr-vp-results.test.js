@@ -102,8 +102,14 @@ describe('the exit and the crown', () => {
     expect(html).toContain('Miss Congeniality');
     expect(html).toContain(finale.dr.living[1]);
     expect(html).toMatch(/dr-sash/);
-    // A blank sash is worse than no sash.
-    expect(rpBuildExit(finale)).not.toContain('Miss Congeniality');
+    /* A blank sash is worse than no sash. The no-award row has to drop the
+       ANNOUNCING SCENE as well as the field: a finale that named nobody never
+       had one, because `insertCongenialityScene` only runs when the vote
+       returns a winner. Nulling the field alone builds a row real data cannot
+       produce, and then tests the screen against it. */
+    const noAward = { ...finale, dr: { ...finale.dr, congeniality: null,
+      scenes: (finale.dr.scenes || []).filter(s => s.kind !== 'finale:finale-congeniality') } };
+    expect(rpBuildExit(noAward)).not.toContain('Miss Congeniality');
   });
 });
 

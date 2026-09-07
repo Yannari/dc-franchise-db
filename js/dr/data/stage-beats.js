@@ -370,6 +370,24 @@ export const STAGE_BEATS = [
       "The message is written in red and it says what it needs to say and nothing more. {a} puts the cap back on, puts the lipstick down, and looks at the mirror one more time — her own reflection framed by the words she left behind — and then she turns and the werk room is empty.",
     ])],
   },
+  /* THE PORKCHOP. Fires on the FIRST elimination of a season and never
+     again, because that is what the joke is: Victoria "Porkchop" Parker was
+     the first queen ever sent home on this show, and "you are getting the
+     porkchop" has meant "you went out first" ever since. Quoted from the
+     host's own line — "I'm sorry my dear, but you are getting the Porkchop."
+     A show whose vocabulary is this specific is not finished until its oldest
+     running joke is in it. */
+  {
+    id: 'porkchop', step: 'exit', scope: 'per-queen', speaker: 'host',
+    note: 'ONLY the first queen eliminated in a season. The oldest joke the show has.',
+    tierBy: 'always',
+    tiers: [tier('porkchop', 'First out. She gets the porkchop.', [
+      "\"I'm sorry, my dear,\" the host says, \"but you are getting the porkchop.\" {a} laughs despite everything, because every queen who has ever watched this show knows exactly what that means and exactly who it is named after. Somebody has to go first. This season it is her, and the joke is older than most of the room.",
+      "There is a title that comes with going out first and it is not a good one. The host delivers it with real affection: \"You are getting the porkchop.\" {a} takes it on the chin. \"Somebody's got to hold it,\" she says, and the room loves her for the answer more than it would have loved a better week.",
+      "{a} is the first queen out of this season, which means she inherits the porkchop — the oldest running joke this competition has, handed down from the first queen ever sent home. She knows it. She said the word herself before the host could. \"Porkchop,\" she says. \"Fine. I'll take it.\"",
+      "\"You are getting the porkchop, my dear.\" It lands as a kindness rather than a cut, because the host says it to exactly one queen a season and every one of them ends up wearing it as a badge. {a} presses her hand to her chest, says \"an honour,\" and means about half of it.",
+    ])],
+  },
   {
     id: 'closing', step: 'exit', scope: 'once', speaker: 'host',
     note: 'The host closes the night on the queens who are left.',

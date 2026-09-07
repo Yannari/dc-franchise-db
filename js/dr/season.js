@@ -7,6 +7,7 @@
 // per press. Nothing here touches `gs` or the DOM.
 import { initDragState } from './state.js';
 import { runAudienceVote } from '../audience.js';
+import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
 import { runDragWeek } from './week.js';
 import { assignStorylines, recordBeat, arcSummary } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
@@ -314,6 +315,24 @@ export function runFinale(state, cfg, ctx) {
   const song = () => pick(rng, SONGS);
   const rounds = [];
   let placements = [];
+  /* WHO NEVER GOT TO SING. On a bracket every finalist lip syncs and the
+     losers lost on the stage, so there is no cut and claiming one would put a
+     scene on the screen describing a thing the season did not do. Only
+     `perform-then-lipsync` narrows the field before the songs. */
+  let cutQueens = [];
+
+  /* THE SHOWCASE, WHICH EVERY FINALE HAS AND ONLY ONE FORMAT SCORES BY.
+     On the modern night the individual original numbers ARE the maxi
+     challenge and they decide the top two; on the S9 bracket the crown came
+     out of lip syncs alone and the numbers were a showcase. So it is
+     performed and shown on every format, and `perform-then-lipsync` is the
+     only one allowed to cut on it. Faithful, and it also means the screen
+     never implies a mechanic the season did not run. */
+  const showcaseMaxi = maxiById('talent-show');
+  const showcase = Object.fromEntries(finalists.map(n => [n,
+    performQueen({ player: ctx.players[n], maxi: showcaseMaxi, record: state.record[n], rng })]));
+  state.finalePerformance = Object.fromEntries(
+    Object.entries(showcase).map(([n, p]) => [n, p.perf]));
 
   if (type === 'top4' && finalists.length >= 4) {
     const s1 = duel(state, finalists[0], finalists[1], ctx, song());
@@ -329,9 +348,9 @@ export function runFinale(state, cfg, ctx) {
   } else if (type === 'perform-then-lipsync' && finalists.length >= 2) {
     // A final performance ranks them, the host picks two, and those two lip
     // sync. This is the one finale where the panel speaks at all.
-    const maxi = maxiById('talent-show');
-    const perf = Object.fromEntries(finalists.map(n => [n,
-      performQueen({ player: ctx.players[n], maxi, record: state.record[n], rng })]));
+    // The SAME showcase everybody performed, not a second one: running it
+    // twice would score a night the audience only watched once.
+    const perf = showcase;
     const panel = panelFor({ rotatingId: cfg.rotatingId || 'carson', weights: cfg.judgeWeights || {} });
     const entries = finalists.map(n => ({
       name: n, style: 'pageant', perf: perf[n].perf, runway: 5, risk: perf[n].risk, polish: 5,
@@ -342,8 +361,9 @@ export function runFinale(state, cfg, ctx) {
     const f = duel(state, order[0], order[1], ctx, song());
     rounds.push(f);
     placements = [f.winner, f.loser, ...order.slice(2)];
-    state.finalePerformance = Object.fromEntries(
-      Object.entries(perf).map(([n, p]) => [n, p.perf]));
+    // THE ONLY FORMAT WITH A CUT. These queens never sang: the host narrowed
+    // the field on the showcase and sent them to the back before the music.
+    cutQueens = order.slice(2);
   } else {
     // top2, and the fallback for any finale that arrives smaller than its
     // shape expects — two queens, one song, one crown.
@@ -380,9 +400,33 @@ export function runFinale(state, cfg, ctx) {
       storylineNeed: {},
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],
+      /* THE WHOLE NIGHT, NOT THREE MARKERS. This used to be exactly three
+         scenes carrying `text: ''` — the stage opening, the duels, and the
+         placements — which the viewing party then drew under a heading
+         called "Sashay Away: the mirror message". `finale-open` and
+         `crowning` are still emitted first and last so every existing reader
+         (screens.js, the badge list, the transcript) keeps working; the night
+         itself is now between them. */
       scenes: [
-        { step: 'main-stage', kind: 'finale-open', data: { finalists }, text: '' },
-        ...rounds.map(r => ({ step: 'lipsync', kind: 'finale-duel', data: { duel: r }, text: '' })),
+        { step: 'main-stage', kind: 'finale-open', data: { finalists, type }, text: '' },
+        ...renderFinaleBeats({
+          finalists,
+          // Everybody this season sent home, walking back in.
+          returning: [...(state.out || [])],
+          showcase: state.finalePerformance || {},
+          // WHO STOPPED SHORT OF THE LAST SONG. Read off the placements
+          // rather than tracked separately: the last duel's two queens are
+          // the top two, and everybody below them was cut before it.
+          cut: cutQueens,
+          rounds,
+          winner: placements[0] || null,
+          runnerUp: placements[1] || null,
+          placements,
+          // Filled in by playDragSeason once the vote runs — the finale
+          // cannot know it, because the vote reads a ledger this row closes.
+          congeniality: null,
+          rng,
+        }),
         { step: 'exit', kind: 'crowning', data: { placements }, text: '' },
       ],
     },
@@ -494,6 +538,11 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     // is drawing is a screen that shows nothing on a replayed episode.
     finale.dr.congeniality = vote.winner;
     finale.dr.congenialityTally = vote.tally;
+    // AND THE SCENE, not only the field. The award is announced on the night
+    // between the last lip sync and the runner-up, so it has to be a scene in
+    // the finale's own list — a value on the row with nothing reading it is
+    // exactly the shape of every other bug this build has found.
+    insertCongenialityScene(finale, vote.winner, rng);
   }
 
   return {

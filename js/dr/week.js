@@ -338,6 +338,28 @@ export function runDragWeek(state, cfg, ctx) {
      now genuinely safe queens with a bad critique. Dragging a LOW queen into a
      lip sync would be pulling in somebody the panel never put in danger. */
   const pool = call.atRisk.length ? call.atRisk : call.low;
+  /* A DOUBLE ELIMINATION IS A WIDER BOTTOM, NOT A DOUBLE SASHAY.
+     A double sashay is the host looking at TWO queens who lip synced head to
+     head and keeping neither — a verdict on that one performance. A double
+     elimination is a different night: the panel calls three or four queens to
+     the bottom, they lip sync together, and the two weakest go. This used to
+     take the ordinary bottom two and send both, which is the sashay wearing
+     the other one's name.
+     Three from a small room, four when there are enough queens left to fill
+     it — the bottom is as wide as the night can afford. */
+  let widened = 0;
+  if (cfg.doubleElimination && living.length >= 6) {
+    const want = living.length >= 9 ? 4 : 3;
+    while (call.bottom.length < want) {
+      const from = call.atRisk.length ? call.atRisk : call.low;
+      if (!from.length) break;
+      const pulled = from[from.length - 1];
+      call.atRisk = call.atRisk.filter(n => n !== pulled);
+      call.low = call.low.filter(n => n !== pulled);
+      call.bottom = [pulled, ...call.bottom];
+      widened++;
+    }
+  }
   if (cfg.tripleOnTie && pool.length && call.bottom.length === 2 && living.length > 4) {
     const viewOf = n => (ranking.find(r => r.name === n) || {}).meanRank ?? 0;
     const lowest = pool[pool.length - 1];
@@ -430,22 +452,29 @@ export function runDragWeek(state, cfg, ctx) {
         + rec.filter(r => r === 'HIGH').length
         - rec.filter(r => r === 'BTM').length;
     };
-    const worst = scored[scored.length - 1].r.score;
-    const tied = scored.filter(x => x.r.score === worst);
-    const goingHome = tied.length === 1
-      ? tied[0].n
-      : tied.slice().sort((x, y) => standing(x.n) - standing(y.n))[0].n;
+    /* HOW MANY LEAVE. One on an ordinary three-way; two when the night was
+       booked as a double elimination, which is what makes the bottom wide in
+       the first place. Never so many that the room cannot still reach the
+       finale. */
+    const wantOut = cfg.doubleElimination
+      ? Math.min(2, Math.max(0, living.length - (cfg.finaleSize || 4))) : 1;
+    const order = scored.slice().sort((x, y) =>
+      (x.r.score - y.r.score) || (standing(x.n) - standing(y.n)));
+    const out = order.slice(0, wantOut).map(x => x.n);
+    const goingHome = out[0] || null;
     lipsync = {
       song: song.title, artist: song.artist, queens: call.bottom.map(n => n),
       scores: Object.fromEntries(scored.map(x => [x.n, x.r.score])),
       beats: Object.fromEntries(scored.map(x => [x.n, x.r.beats])),
       stunts: Object.fromEntries(scored.map(x => [x.n, x.r.stunt])),
-      call: 'triple', winner: scored[0].n, loser: goingHome,
+      call: out.length > 1 ? 'double-elimination' : 'triple',
+      winner: scored[0].n, loser: goingHome, losers: [...out],
       gap: Math.round((scored[0].r.score - scored[scored.length - 1].r.score) * 100) / 100,
       triple: true,
+      ...(out.length > 1 ? { doubleElimination: true } : {}),
     };
-    for (const x of scored) state.lipsyncRecord[x.n].push(x.n === goingHome ? 'L' : 'W');
-    exits.push(goingHome);
+    for (const x of scored) state.lipsyncRecord[x.n].push(out.includes(x.n) ? 'L' : 'W');
+    exits.push(...out);
     say('lipsync', 'lipsync', { lipsync });
   } else if (call.bottom.length === 2) {
     const [a, b] = call.bottom;
@@ -504,22 +533,10 @@ export function runDragWeek(state, cfg, ctx) {
         state.lipsyncRecord[lc.loser].push('L');
         exits.push(lc.loser);
       }
-      /* A SCHEDULED DOUBLE ELIMINATION: both queens who lip synced go home.
-         An author's choice on the schedule, never an automatic correction —
-         and refused on a night that would empty the room below the size the
-         finale needs. */
-      const roomAfter = living.length - 2;
-      if (cfg.doubleElimination && lc.winner && roomAfter >= (cfg.finaleSize || 2)) {
-        state.lipsyncRecord[lc.winner].push('L');
-        exits.push(lc.winner);
-        lipsync.doubleElimination = true;
-        /* THE CALL ON THE ROW TOO, not only on `lc`. `lipsync` was built from
-           `lc` several lines above, so renaming `lc.call` here changed the
-           local and left the row saying `shantay` — which is the tier that
-           means one queen stays, over a night both of them left. */
-        lc.call = 'double-elimination';
-        lipsync.call = 'double-elimination';
-      }
+      /* NO DOUBLE ELIMINATION HERE. A head-to-head that sends both queens
+         home is a double SASHAY — the host keeping neither of two. A double
+         elimination widens the bottom to three or four and takes the two
+         weakest out of that, which is the branch above. */
     }
     say('lipsync', 'lipsync', { lipsync });
   }

@@ -911,6 +911,29 @@ export const TWIST_CATALOG = [
   { id:'tr-armoury', emoji:'🛡️', name:'The Armoury', format:'traitors',
     category:'power', phase:'any', engineType:'tr-armoury',
     desc:'The players who did best in today’s mission earn a visit to the Armoury. They go in one at a time and each opens a single box; one of them hides a shield, which blocks tonight’s murder and nothing else. The castle sees exactly WHO went in and never learns who came out with it — so the Traitors have to decide whether anybody in that group is worth the risk of wasting the night on a wall. Set the group size and how many shields are hidden in Castle Options.' },
+
+  // ── DRAG RACE ──────────────────────────────────────────────────────
+  //
+  // In the catalogue with everybody else's, because that is where a twist
+  // belongs and where every other show keeps theirs. They were checkboxes and
+  // a text box in MAIN STAGE OPTIONS, which is where a FORMAT choice lives —
+  // how the finale is shaped, whether the host may keep both — and a twist
+  // that happens on one named episode is not that.
+  //
+  // `episodeField` names the config key each one writes on `drSchedule`, so
+  // the designer can book it against an episode number the same way a swap or
+  // a double eviction is booked.
+  { id:'dr-no-elimination', emoji:'\u{1F6AB}', name:'No Elimination', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-no-elimination', episodeField:'noElimination',
+    desc:'The host tells the room before the challenge that nobody is going home. The week is judged and ranked exactly as normal, the bottom two still lip sync, and both of them walk back into the workroom. It is not a double shantay — that is the host deciding in the moment that two performances were too good to lose. This is production announcing beforehand that the door stays shut, and the season runs ONE EPISODE LONGER for it: fourteen queens go back to fourteen.',
+    incompatible:['dr-double-elimination'] },
+  { id:'dr-double-elimination', emoji:'⏩', name:'Double Elimination', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-double-elimination', episodeField:'doubleElimination',
+    desc:'A wider bottom and two queens gone. The panel calls THREE or FOUR to the bottom rather than two — four while the room can fill it, three once it cannot — and they lip sync together on the main stage; the two weakest performances both sashay away. It is not a double sashay, which is the host looking at one head-to-head lip sync and keeping neither. The season runs one episode SHORTER, so booking one of these against a No Elimination week cancels both out.',
+    incompatible:['dr-no-elimination'] },
+  { id:'dr-smackdown', emoji:'\u{1F5E1}️', name:'LaLaPaRUza Smackdown', format:'drag-race',
+    category:'returns', phase:'post-merge', engineType:'dr-smackdown', seasonWide:true,
+    desc:'A reunion with a scoreboard. Every queen already sent home this season comes back one episode before the crowning and lip syncs the others out in rounds until one is left standing, and she takes a title of her own. Nobody re-enters the competition and no placement changes — this is the season’s eliminated cast getting the stage back for a night. Booked once per season rather than against an episode: it always sits directly before the finale.' },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──

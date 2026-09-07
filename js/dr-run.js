@@ -18,7 +18,8 @@
 // `formatIsRunnable()` reads to decide whether the show can be started at all.
 // Drop the import from js/main.js and the show silently un-ships with every
 // test still green.
-import { gs, players, seasonConfig, seasonFormat } from './core.js';
+import { gs, players, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { DRAG_FORMAT } from './shows.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
 import { updateEditLayer } from './edit-layer.js';
@@ -31,6 +32,46 @@ function _seed() {
       + Math.floor(Math.random() * 1000) + 1;
   }
   return gs._drSeed;
+}
+
+/**
+ * The twist catalogue's schedule, in this engine's own words.
+ *
+ * The designer books twists onto `seasonConfig.twistSchedule` as
+ * `{ id, episode, type }` — the same array a tribe swap or a double eviction
+ * lands in — and js/dr/season.js reads `drSchedule` entries carrying its own
+ * flags. Translating here keeps both honest: the catalogue does not learn a
+ * per-show shape, and the engine does not learn what a twist card is.
+ *
+ * `episodeField` on the catalogue entry names the flag, so a fourth drag
+ * twist is a catalogue row and no change to this function.
+ */
+function _twistsToSchedule() {
+  const booked = (seasonConfig.twistSchedule || []).filter(Boolean);
+  const mine = new Map(twistsForFormat({ format: DRAG_FORMAT }).map(t => [t.id, t]));
+  const byEp = new Map();
+  for (const b of booked) {
+    const t = mine.get(b.type) || mine.get(b.id);
+    if (!t?.episodeField) continue;
+    const ep = Number(b.episode);
+    if (!Number.isInteger(ep) || ep < 1) continue;
+    const row = byEp.get(ep) || { episode: ep };
+    row[t.episodeField] = true;
+    byEp.set(ep, row);
+  }
+  // Anything pinned directly on drSchedule (a challenge, a guest) survives,
+  // and a twist booked on the same episode merges into it.
+  for (const pin of (seasonConfig.drSchedule || []).filter(Boolean)) {
+    const ep = Number(pin.episode);
+    if (!Number.isInteger(ep)) continue;
+    byEp.set(ep, { ...pin, ...(byEp.get(ep) || {}), episode: ep });
+  }
+  return [...byEp.values()].sort((x, y) => x.episode - y.episode);
+}
+
+/** Whether a season-wide drag twist is booked at all. */
+function _twistBooked(id) {
+  return (seasonConfig.twistSchedule || []).some(b => b && (b.type === id || b.id === id));
 }
 
 function _config() {
@@ -46,8 +87,10 @@ function _config() {
        passed it, so the whole Lalaparuza reunion -- engine, challenge module
        and all -- could not be switched on from a played season. There was no
        control for it either, so nothing pointed at the gap. */
-    drSmackdown: !!seasonConfig.drSmackdown,
-    drSchedule: (seasonConfig.drSchedule || []).filter(Boolean),
+    // Booked from the catalogue like everything else, with the old flag still
+    // honoured so a season saved before the twist existed still plays.
+    drSmackdown: _twistBooked('dr-smackdown') || !!seasonConfig.drSmackdown,
+    drSchedule: _twistsToSchedule(),
     drJudgeWeights: seasonConfig.drJudgeWeights || {},
   };
 }

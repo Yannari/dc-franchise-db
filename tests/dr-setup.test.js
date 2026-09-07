@@ -218,78 +218,50 @@ describe('the setup screen shows one show at a time', () => {
 // ══════════════════════════════════════════════════════════════════════
 // The one twist this show schedules
 // ══════════════════════════════════════════════════════════════════════
-describe('non-elimination weeks', () => {
-  it('is offered in the show\'s own options block', () => {
-    const html = readFileSync('simulator.html', 'utf8');
-    expect(html, 'no control for the twist').toMatch(/id="cfg-dr-noelim"/);
-    /* It lives beside Premiere in MAIN STAGE OPTIONS and not in FORMATS &
-       TWISTS, which is scoped to total-drama — every show keeps its own
-       options block, so a drag twist parked there would never be drawn. */
-    const i = html.indexOf('id="cfg-dr-noelim"');
-    const j = html.indexOf('id="sec-dr-options"');
-    expect(j, 'the drag options block moved').toBeGreaterThan(-1);
-    expect(i).toBeGreaterThan(j);
+describe('the twists are in the catalogue', () => {
+  /* THEY WERE CHECKBOXES AND TEXT BOXES IN MAIN STAGE OPTIONS, which is where
+     a FORMAT choice belongs — how the finale is shaped, whether the host may
+     keep both. A twist that happens on one named episode is not that, and
+     every other show books its twists on `twistSchedule` through the
+     designer. So does this one now. */
+  it('offers this show its own twists and no other show twists', async () => {
+    const { twistsForFormat } = await import('../js/core.js');
+    const mine = twistsForFormat({ format: 'drag-race' });
+    const ids = mine.map(t => t.id);
+    expect(ids).toContain('dr-no-elimination');
+    expect(ids).toContain('dr-double-elimination');
+    expect(ids).toContain('dr-smackdown');
+    // Scoped: a drag season is never offered another show's twist.
+    for (const t of mine) expect(t.format, `${t.id} is not scoped`).toBe('drag-race');
+    for (const other of ['traitors', 'big-brother', 'total-drama']) {
+      const theirs = twistsForFormat({ format: other }).map(t => t.id);
+      for (const id of ids) expect(theirs, `${other} was offered ${id}`).not.toContain(id);
+    }
   });
 
-  it('is scoped to this show', async () => {
+  it('every episode twist names the flag the engine reads', async () => {
+    const { twistsForFormat } = await import('../js/core.js');
+    for (const t of twistsForFormat({ format: 'drag-race' })) {
+      // Either it is booked against an episode and says which flag it sets,
+      // or it is season-wide. A twist that is neither cannot be applied.
+      expect(!!t.episodeField || !!t.seasonWide,
+        `${t.id} is neither an episode twist nor season-wide`).toBe(true);
+      expect(t.desc.length, `${t.id} has no description`).toBeGreaterThan(80);
+    }
+  });
+
+  it('the old controls are gone, and so is their scoping', () => {
+    const html = readFileSync('simulator.html', 'utf8');
+    for (const id of ['cfg-dr-noelim', 'cfg-dr-double-elim', 'cfg-dr-smackdown']) {
+      expect(html, `${id} is still in the page`).not.toContain(id);
+    }
     const qs = readFileSync('js/quick-setup.js', 'utf8');
-    expect(qs).toMatch(/'cfg-dr-noelim':\s*\['drag-race'\]/);
-  });
-
-  /* THE SCHEDULE IS MERGED, NEVER REPLACED. `drSchedule` is one array holding
-     every pinned decision about a week — a challenge, a guest, a runway
-     category — and this box owns exactly one of them. Reading the box and
-     assigning the result would drop the rest the moment somebody types a
-     number in. */
-  it('folds into the schedule without eating what else is pinned', async () => {
-    const { _mergeDrSchedule } = await import('../js/cast-ui.js');
-    expect(_mergeDrSchedule([], '4, 7'))
-      .toEqual([{ episode: 4, noElimination: true }, { episode: 7, noElimination: true }]);
-    // Clearing the box clears the flag and nothing else.
-    expect(_mergeDrSchedule([{ episode: 4, noElimination: true }], '')).toEqual([]);
-    // A week pinned for a challenge keeps it, flagged or not.
-    expect(_mergeDrSchedule([{ episode: 4, maxiId: 'roast' }], '4'))
-      .toEqual([{ episode: 4, maxiId: 'roast', noElimination: true }]);
-    expect(_mergeDrSchedule([{ episode: 4, maxiId: 'roast', noElimination: true }], ''))
-      .toEqual([{ episode: 4, maxiId: 'roast' }]);
-    // Anything that is not a positive episode number is ignored rather than
-    // written into the schedule as NaN.
-    expect(_mergeDrSchedule([], 'abc; 3 and 5'))
-      .toEqual([{ episode: 3, noElimination: true }, { episode: 5, noElimination: true }]);
-    expect(_mergeDrSchedule([], null)).toEqual([]);
-  });
-
-  /* ONE HELPER, TWO BOXES. The double-elimination list folds in the same way,
-     and the two must not tread on each other: setting one may not clear the
-     other, which is what a second copy of this logic would eventually do. */
-  it('keeps the two twist lists independent', async () => {
-    const { _mergeDrSchedule } = await import('../js/cast-ui.js');
-    let sched = _mergeDrSchedule([], '4, 7');
-    sched = _mergeDrSchedule(sched, '6', 'doubleElimination');
-    expect(sched).toEqual([
-      { episode: 4, noElimination: true },
-      { episode: 6, doubleElimination: true },
-      { episode: 7, noElimination: true },
-    ]);
-    // Removing a free week leaves the double alone.
-    sched = _mergeDrSchedule(sched, '4', 'noElimination');
-    expect(sched).toEqual([
-      { episode: 4, noElimination: true },
-      { episode: 6, doubleElimination: true },
-    ]);
-  });
-
-  it('offers both, scoped to this show', () => {
-    const html = readFileSync('simulator.html', 'utf8');
-    expect(html).toMatch(/id="cfg-dr-double-elim"/);
-    expect(readFileSync('js/quick-setup.js', 'utf8'))
-      .toMatch(/'cfg-dr-double-elim':\s*\['drag-race'\]/);
+    for (const id of ['cfg-dr-noelim', 'cfg-dr-double-elim', 'cfg-dr-smackdown']) {
+      expect(qs, `${id} is scoped but does not exist`).not.toContain(id);
+    }
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════
-// The Lalaparuza smackdown was built and could not be switched on
-// ══════════════════════════════════════════════════════════════════════
 describe('the smackdown', () => {
   /* js/dr/season.js has read `config.drSmackdown` since it was written, and
      js/dr-run.js's _config() never passed it — so the whole reunion, engine
@@ -307,13 +279,16 @@ describe('the smackdown', () => {
     }
   });
 
-  it('has a control, scoped to this show', () => {
-    expect(readFileSync('simulator.html', 'utf8')).toMatch(/id="cfg-dr-smackdown"/);
-    expect(readFileSync('js/quick-setup.js', 'utf8'))
-      .toMatch(/'cfg-dr-smackdown':\s*\['drag-race'\]/);
-    const ui = readFileSync('js/cast-ui.js', 'utf8');
-    expect(ui, 'the config never reads the box').toMatch(/drSmackdown:\s*g\('cfg-dr-smackdown'\)/);
-    expect(ui, 'the box is never restored on load').toMatch(/set\('cfg-dr-smackdown'/);
+  it('is booked from the twist catalogue, not a checkbox', () => {
+    /* It had a checkbox in MAIN STAGE OPTIONS, which is where a FORMAT choice
+       belongs. A reunion that happens on one episode is a twist, and every
+       other show books its twists through the designer. */
+    const run = readFileSync('js/dr-run.js', 'utf8');
+    expect(run, 'the catalogue booking is not read')
+      .toMatch(/_twistBooked\('dr-smackdown'\)/);
+    // The old config key stays honoured so a season saved before the twist
+    // existed still plays.
+    expect(run).toMatch(/seasonConfig\.drSmackdown/);
   });
 
   it('adds an episode before the finale and crowns nobody new', async () => {

@@ -814,23 +814,8 @@
             <!-- The one schedulable twist this show has. It lives here rather
                  than in FORMATS &amp; TWISTS, which is scoped to Total Drama —
                  every show keeps its own options block. -->
-            <label class="bbopt-row" for="cfg-dr-smackdown">
-              <input type="checkbox" id="cfg-dr-smackdown" onchange="saveConfig()">
-              <span class="bbopt-k">Lip Sync Lalaparuza</span>
-              <span class="bbopt-d">The queens already sent home come back one episode before the finale and lip sync each other out in rounds. The last one standing takes a title of her own. It changes nobody&rsquo;s placement and no eliminated queen re-enters the competition.</span>
-            </label>
-            <div class="form-group">
-              <label class="form-label">Non-elimination weeks</label>
-              <input type="text" id="cfg-dr-noelim" class="form-input" placeholder="e.g. 4, 7"
-                onchange="saveConfig()" inputmode="numeric">
-              <div class="hint hint-tight">Episode numbers, separated by commas. The host announces it on the main stage before the challenge: the week is judged and ranked exactly as normal, there is still a lip sync, and nobody goes home. It is not a double shantay — that is the host deciding in the moment. The season still owes that elimination, so the next lip sync sends BOTH queens home and the finale stays the size you asked for.</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Double eliminations</label>
-              <input type="text" id="cfg-dr-double-elim" class="form-input" placeholder="e.g. 6"
-                onchange="saveConfig()" inputmode="numeric">
-              <div class="hint hint-tight">Episode numbers, separated by commas. Both queens in the bottom go home, the host says so before the challenge, and the season runs one episode SHORTER. Refused on a week that would empty the room below the finale&rsquo;s size, and on a week you have already marked non-elimination.</div>
-            </div>
+                        
+            
             <div class="form-group">
               <label class="form-label">Finale</label>
               <select id="cfg-dr-finale" onchange="saveConfig()" class="form-input">

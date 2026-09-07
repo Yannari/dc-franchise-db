@@ -283,6 +283,7 @@ test('the franchise page does not lend one show another show\'s narrative', asyn
 // prose rather than the page's, and holding a language model to a word list
 // would make this fail for reasons nobody can fix in the code.
 import { readFileSync } from 'node:fs';
+import { seasonRounds } from '../../js/shows.js';
 
 const EXCLUSIVE = {
   'big-brother': ['head of household', 'power of veto', 'evicted', 'eviction',
@@ -313,7 +314,14 @@ function seasonsToCheck() {
       : `${ref}-data.json`;
     let doc;
     try { doc = JSON.parse(readFileSync(`data/seasons/${file}`, 'utf8')); } catch { continue; }
-    const rounds = (doc.weeks || []).length + (doc.votingHistory || []).length;
+    /* HOW MANY ROUNDS, ASKED OF THE REGISTRY. Counting `weeks` and
+       `votingHistory` is a two-show census: a season whose rounds are
+       placements has neither, scores zero, and is dropped from this loop —
+       so the show would never have been checked, and the file would have
+       reported a clean run over a page nobody looked at. Which is the exact
+       failure this function's own header warns about. */
+    const rounds = seasonRounds(doc, format).length
+      + (doc.weeks || []).length + (doc.votingHistory || []).length;
     if (rounds) chosen.set(format, ref);
   }
   return [...chosen.entries()];

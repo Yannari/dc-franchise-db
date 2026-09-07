@@ -457,7 +457,7 @@ export const ARRIVAL_BACKSTORY = {
     "I once glued four hundred plastic flowers to a bodysuit and wore it to the corner shop. Nobody said a word. I have been chasing that silence ever since.",
     "My drag is not pretty and it is not meant to be. It is meant to make you laugh and then think about why you laughed and then feel slightly uncomfortable about the answer.",
     "People ask if I am always like this and the answer is yes, I am always like this, and no, I do not know how to stop, and honestly I do not want to.",
-    "My whole thing is excess. More is more. If it is not too much it is not enough and the line between too much and enough does not exist in my house.",
+    "My whole thing is excess. More is more. If it is not too much it is not enough, and I have never once known where that line is.",
     "I started making costumes out of things that were not costumes because I could not afford things that were. The habit stuck. The aesthetic followed.",
   ],
   'club-kid': [

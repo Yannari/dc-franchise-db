@@ -28,6 +28,7 @@ import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.js';
 import { rpBuildArrivals } from './arrivals.js';
+import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -225,6 +226,11 @@ const BUILDERS = {
   'dr-cold-open': rpBuildColdOpen,
   'dr-werk-morning': rpBuildWerkMorning,
   'dr-elim-day': rpBuildWerkElimDay,
+  'dr-mini': rpBuildMini,
+  'dr-announce': rpBuildMaxiAnnounce,
+  'dr-choice': rpBuildChoice,
+  'dr-prep': rpBuildPrep,
+  'dr-maxi': rpBuildMaxi,
 };
 
 const _sections = SECTIONS.map(sec => ({

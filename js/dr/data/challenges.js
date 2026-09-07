@@ -127,7 +127,7 @@ export const MAXI_TYPES = [
     id: 'snatch-game', name: 'Snatch Game', tentpole: true, stage: 'pre', format: 'solo',
     blend: { comedy: 0.55, acting: 0.35, runway: 0.1 },
     runway: 'themed', assignment: 'draft', roles: 'characters', chalStyle: 'comedy', minCast: 5,
-    desc: 'Each queen picks a celebrity to impersonate on a spoof panel game show hosted by the host, with two guest contestants asking fill-in-the-blank questions. She sits on that panel in character for the entire taping, answering every question as her celebrity and playing off whoever is sitting beside her. Picking a character nobody in the room recognises, breaking character halfway through, or going the whole game without a single laugh is what dies on that panel. The funniest celebrity there wins.',
+    desc: 'Each queen picks a celebrity to impersonate on a spoof panel game show hosted by the host, with two celebrity guests asking fill-in-the-blank questions. She sits on that panel in character for the entire taping, answering every question as her celebrity and playing off whoever is sitting beside her. Picking a character nobody in the room recognises, breaking character halfway through, or going the whole game without a single laugh is what dies on that panel. The funniest celebrity there wins.',
   },
   {
     id: 'stand-up', name: 'Stand-Up Challenge', tentpole: false, stage: 'main', format: 'solo',

@@ -8,6 +8,7 @@
 import { initDragState } from './state.js';
 import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
+import { runReunion } from './reunion.js';
 import { runDragWeek } from './week.js';
 import { assignStorylines, recordBeat, arcSummary } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
@@ -583,42 +584,55 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     if (smack) rows.push(beat(state, smack, cast));
   }
 
-  const last = schedule[schedule.length - 1] || {};
-  const finale = runFinale(state, {
-    num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
-  }, ctx);
-  rows.push(beat(state, finale, cast));
-
+  /* THE REUNION, between the last elimination and the crowning — which is
+     where the real show's own track record chart puts it, as a column of its
+     own ahead of "Finale". It eliminates nobody and it is the only episode
+     that reads the WHOLE season rather than the row in front of it.
+     OPT-IN, because it changes a season's episode count and every caller that
+     has ever counted them. */
   /* ── MISS CONGENIALITY ──
      THE SHARED AUDIENCE VOTE, not a second way of printing the chart. This
      show does not get to write its own: `runAudienceVote` is the one place
      the franchise decides what "the country's favourite" means, and it is
      already weighted in SPREADS rather than points so a show whose numbers
-     look nothing like Big Brother's resolves properly anyway.
-     Eligible is everybody but the winner — you cannot win the crown and the
-     sash on the same night — and the ledger it reads is `state.popularity`,
-     which every event in the season has been writing to since episode one.
-     Passed explicitly: the module-global `gs` is empty in a headless season,
-     and voting on an empty board still returns a name. */
-  const eligible = state.castOrder.filter(n => n !== state.winner);
+     look nothing like Big Brother's resolves without a per-show constant.
+     RUN BEFORE THE REUNION, because that is where season nine announced it —
+     with the vote tallied in public — and a reunion topic that could never
+     fire is the written-but-unreachable bug in a bigger chair. The finale
+     announces it too, which is the modern format; both read one value.
+     Eligible is everybody but the winner, who is not known yet — so the
+     board is the whole cast and the winner is removed after. */
   const vote = runAudienceVote({
-    eligible, rng, blocks: 600,
+    eligible: [...state.castOrder], rng, blocks: 600,
     _gs: { popularity: state.popularity, episodeHistory: rows },
   });
   if (vote) {
     state.congeniality = vote.winner;
     state.congenialityTally = vote.tally;
-    // The finale row carries it because the crowning screen draws the sash,
-    // and a screen that has to reach back into season state to know what it
-    // is drawing is a screen that shows nothing on a replayed episode.
-    finale.dr.congeniality = vote.winner;
-    finale.dr.congenialityTally = vote.tally;
-    // AND THE SCENE, not only the field. The award is announced on the night
-    // between the last lip sync and the runner-up, so it has to be a scene in
-    // the finale's own list — a value on the row with nothing reading it is
-    // exactly the shape of every other bug this build has found.
-    insertCongenialityScene(finale, vote.winner, rng);
   }
+
+  if (config.drReunion) {
+    rows.push(beat(state, runReunion(state, { num: num++ }, ctx), cast));
+  }
+
+  const last = schedule[schedule.length - 1] || {};
+  const finale = runFinale(state, {
+    num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
+  }, ctx);
+  /* THE WINNER CANNOT TAKE THE SASH TOO. The vote ran before the crowning,
+     so it could not exclude a winner nobody knew yet — if the country's
+     favourite turns out to be the queen who wins, the sash goes to the runner
+     up on the tally instead. */
+  if (state.congeniality && state.congeniality === state.winner) {
+    const next = (state.congenialityTally || []).find(t => t.name !== state.winner);
+    state.congeniality = next ? next.name : null;
+  }
+  if (state.congeniality) {
+    finale.dr.congeniality = state.congeniality;
+    finale.dr.congenialityTally = state.congenialityTally;
+    insertCongenialityScene(finale, state.congeniality, rng);
+  }
+  rows.push(beat(state, finale, cast));
 
   return {
     rows, state, winner: state.winner, runnerUp: state.runnerUp,

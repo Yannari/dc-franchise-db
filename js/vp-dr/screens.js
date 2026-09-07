@@ -88,6 +88,15 @@ const SECTIONS = [
     opens: ['exit'], badge: null,
     title: 'Sashay Away', subtitle: 'the mirror message' },
 
+  /* ── THE REUNION ──
+     Between the last elimination and the crowning, which is where the real
+     show's own track record chart puts it. It is the one episode that reads
+     the WHOLE season rather than the row in front of it, and every topic on
+     it was derived from what actually happened. */
+  { id: 'dr-reunion', label: 'The Reunion', suffix: 'reunion', phase: 'untucked', accent: 'dr-a-bond',
+    opens: ['reunion-open'], badge: { text: 'REUNITED', color: '#7B2FF7' },
+    title: 'The Reunion', subtitle: 'the season, argued about' },
+
   /* ── THE FINALE, WHICH IS ITS OWN NIGHT ──
      All of this used to fall into `dr-exit` above — the stage opening, every
      duel and the crowning, drawn under a heading that reads "Sashay Away: the

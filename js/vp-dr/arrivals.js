@@ -22,32 +22,65 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
 const _judgeBust = () => _judgePortrait('rupaul', { stage: false, size: 84 });
 
 export const ARRIVALS_CSS = `
-.dr-entrance{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;
-  padding:18px 20px 18px 24px}
-.dr-entrance h3{margin:0 0 2px;font-size:24px;text-wrap:balance}
+/* ── THE ENTRANCE CARD ──
+   Rebuilt after looking at it. The portrait was 84px with a decorative arch
+   drawn behind it at 104x96, offset up by 12 — so a 20px lip of arch stuck
+   out on every side of the face and the whole frame read as broken rather
+   than decorative. The doorway is the PORTRAIT now: it takes the arch shape
+   itself, and the glow behind is sized from the same variable, so the two can
+   never disagree again.
+   The row also centred the portrait against a block of text five paragraphs
+   tall, which floated it into the middle of nowhere. It starts at the top,
+   beside her name, where a face belongs. */
+.dr-entrance{--dr-face:88px;
+  display:grid;grid-template-columns:var(--dr-face) 1fr;gap:20px;align-items:start;
+  padding:20px 22px}
+.dr-entrance h3{margin:2px 0 0;font-size:26px;line-height:1.05;text-wrap:balance}
 .dr-entrance .dr-line{font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;
-  font-size:18px;color:#ffd0e8;text-wrap:pretty}
-.dr-order{font-size:10px;letter-spacing:.24em;color:#C9A6BC}
-.dr-style{display:inline-block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  padding:3px 9px;margin:6px 0;border:1px solid rgba(255,200,61,.6);color:#FFC83D}
-.dr-entrance .dr-intro{margin:8px 0 0;color:#f4e3ed;text-wrap:pretty}
-.dr-entrance .dr-back{margin:6px 0 0;color:#e3cfdd;font-size:14px;text-wrap:pretty}
-.dr-entrance .dr-reaction{margin:10px 0 0;padding-left:12px;font-size:13.5px;color:#C9A6BC;
-  border-left:2px solid rgba(255,200,61,.5);text-wrap:pretty}
+  font-size:18px;line-height:1.45;color:#ffd8ec;margin:10px 0 0;text-wrap:pretty}
+.dr-order{display:block;font-size:9.5px;letter-spacing:.22em;color:#b892a8}
+
+/* The doorway she walks through — the frame IS the portrait. */
+.dr-door{position:relative;width:var(--dr-face);display:block}
+.dr-door .dr-bust,.dr-door .dr-por,.dr-door .dr-initials{
+  width:var(--dr-face)!important;height:calc(var(--dr-face) * 1.12)!important;display:block}
+.dr-door .dr-por,.dr-door .dr-initials{
+  border-radius:calc(var(--dr-face) / 2) calc(var(--dr-face) / 2) 8px 8px;
+  object-fit:cover;object-position:50% 12%;
+  border:1px solid rgba(255,224,190,.45)}
+.dr-door::before{content:"";position:absolute;left:-9px;right:-9px;top:-9px;bottom:-9px;
+  border-radius:calc(var(--dr-face) / 1.6) calc(var(--dr-face) / 1.6) 12px 12px;
+  background:linear-gradient(180deg,rgba(255,236,205,.18),transparent 62%);
+  z-index:0;pointer-events:none}
+.dr-door .dr-bust{position:relative;z-index:1}
+
+/* Her drag style. A chip, not a debug label: lower case with a small caps
+   feel, so it reads as a caption on the photograph rather than a build tag. */
+.dr-style{display:inline-block;margin:8px 0 0;padding:3px 10px;
+  font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  border:1px solid rgba(255,200,61,.45);border-radius:2px;
+  background:rgba(255,200,61,.08);color:#FFC83D}
+
+.dr-entrance .dr-intro{margin:10px 0 0;color:#f6e8f1;line-height:1.6;text-wrap:pretty}
+.dr-entrance .dr-back{margin:8px 0 0;color:#dcc4d5;font-size:14.5px;line-height:1.6;text-wrap:pretty}
+.dr-entrance .dr-reaction{margin:12px 0 0;padding:2px 0 2px 14px;font-size:13.5px;
+  color:#c3a2b7;border-left:2px solid rgba(255,200,61,.45);text-wrap:pretty}
+
 /* The first impression: the one thing the premiere actually costs. */
-.dr-impression{margin:9px 0 0;font-size:13px;display:flex;align-items:center;gap:9px;
-  flex-wrap:wrap;text-wrap:pretty}
+.dr-impression{margin:12px 0 0;font-size:13.5px;line-height:1.6;text-wrap:pretty}
 .dr-impression.dr-nice{color:#bff0d4}
 .dr-impression.dr-shady{color:#ffc9d2}
-.dr-impression .dr-arrow{padding:2px 9px;font-size:11px;font-weight:700;border:1px solid currentColor}
+.dr-impression .dr-arrow{display:inline-block;margin-right:8px;padding:2px 9px;
+  font-size:11px;font-weight:700;border:1px solid currentColor;border-radius:2px;
+  vertical-align:1px}
 .dr-impression .dr-up{color:#3BE08A}
 .dr-impression .dr-down{color:#FF294B}
-/* The doorway she walks through, behind the portrait. */
-.dr-door{position:relative}
-.dr-door::before{content:"";position:absolute;left:50%;top:-12px;transform:translateX(-50%);
-  width:104px;height:96px;border-radius:52px 52px 0 0;
-  background:linear-gradient(180deg,rgba(255,240,210,.20),transparent 70%);
-  border:1px solid rgba(255,240,200,.4);border-bottom:none;z-index:-1}
+
+@media(max-width:640px){
+  .dr-entrance{--dr-face:64px;gap:14px;padding:16px}
+  .dr-entrance h3{font-size:21px}
+  .dr-entrance .dr-line{font-size:16px}
+}
 `;
 
 /**

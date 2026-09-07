@@ -44,28 +44,45 @@ export const DR_PHASES = ['werk', 'stage', 'untucked', 'lipsync', 'chart'];
 export const DR_CSS = `
 .dr-wrap{--dr-red:#FF294B;--dr-pink:#FF3D9A;--dr-hot:#FF7BC8;--dr-violet:#7B2FF7;
   --dr-cyan:#00E5FF;--dr-gold:#FFC83D;--dr-green:#3BE08A;
-  --dr-ink:#0A0207;--dr-panel:#170912;--dr-panel2:#210C1A;--dr-line:#4A1F38;
-  --dr-text:#FFF0F7;--dr-dim:#C9A6BC;--dr-paper:#F4EFE4;
-  position:relative;z-index:2;max-width: 1100px;margin:0 auto;padding:18px 18px 96px;
+  /* LIFTED OFF THE FLOOR. The panels sat at #170912 over a #0A0207 ground —
+     about 4% lightness on 1%, which reads as a black screen with a faint pink
+     cast rather than a lit room, and the drop shadows had nothing to separate
+     from. Roughly doubled: still near-black, but every card has an edge. */
+  --dr-ink:#140510;--dr-panel:#26111D;--dr-panel2:#32172A;--dr-line:#66304C;
+  --dr-text:#FFF0F7;--dr-dim:#D6B6C8;--dr-paper:#F4EFE4;
+  /* NO HARDCODED WIDTH. #visual-player[data-view-mode] sets .rp-page to 860px
+     in quick and 980px in deep, and this forced 1100px regardless -- so a drag
+     screen ran wider than every other show and ignored the reader's own mode
+     switch. The shell emits .rp-page now and inherits it. */
+  position:relative;z-index:2;max-width:100%;margin:0 auto;padding:18px 18px 96px;
   color:var(--dr-text);font:15px/1.55 'Helvetica Neue',Helvetica,Arial,sans-serif}
 .dr-disp{font-family:Impact,Haettenschweiler,'Arial Narrow Bold','Franklin Gothic Bold',sans-serif;
   letter-spacing:.02em;text-transform:uppercase;font-weight:400}
 .dr-fash{font-family:Didot,'Bodoni MT','Playfair Display',Georgia,'Times New Roman',serif;font-style:italic}
 .dr-num{font-variant-numeric:tabular-nums}
 
-/* THE ATMOSPHERE STARTS BELOW THE NAV. top: 46px, never 0 — the app's nav
-   bar is 46px tall and a fixed layer at 0 paints straight over it. */
-.dr-atmo{position:fixed;top: 46px;left:0;right:0;bottom:0;z-index:0;pointer-events:none}
+/* THE ATMOSPHERE IS STICKY, NOT FIXED, and that is the whole difference.
+   .rp-main is the scroll container (flex:1; overflow-y:auto), so its scrollbar
+   sits at ITS right edge, inside the viewport. A position:fixed layer is
+   placed against the VIEWPORT, so it spanned the full window width and
+   painted straight over that scrollbar.
+   Sticky at the top with a negative bottom margin pulls it out of the layout
+   while keeping it inside the scrolling element: it stays put visually and the
+   scrollbar stays on top of nothing. Same pattern js/vp-tr/armoury.js uses for
+   the same reason. top:0 is correct here because the nav is sticky within this
+   same container and scrolls with it. */
+.dr-atmo{position:sticky;top:0;height:100vh;margin-bottom:-100vh;z-index:0;
+  pointer-events:none;overflow:hidden}
 .dr-phase-werk .dr-atmo{background:radial-gradient(1100px 420px at 50% 0%,rgba(255,61,154,.24),transparent 72%),
   radial-gradient(600px 340px at 8% 34%,rgba(255,200,61,.09),transparent 72%),
-  linear-gradient(180deg,#31091A,#1A040D 55%,#0A0207)}
+  linear-gradient(180deg,#31091A,#220812 55%,#140510)}
 .dr-phase-stage .dr-atmo{background:radial-gradient(900px 420px at 50% 0%,rgba(255,61,154,.40),transparent 68%),
   radial-gradient(900px 600px at 50% 40%,rgba(123,47,247,.28),transparent 70%),
-  linear-gradient(180deg,#2B0A4E,#14042A 55%,#0A0207)}
+  linear-gradient(180deg,#2B0A4E,#1B0838 55%,#140510)}
 .dr-phase-untucked .dr-atmo{background:radial-gradient(800px 380px at 70% 8%,rgba(123,47,247,.26),transparent 70%),
-  linear-gradient(180deg,#1B0730,#120522 60%,#0A0207)}
+  linear-gradient(180deg,#1B0730,#180830 60%,#140510)}
 .dr-phase-lipsync .dr-atmo{background:radial-gradient(800px 400px at 50% 10%,rgba(255,41,75,.34),transparent 70%),
-  linear-gradient(180deg,#3A0413,#1A0209 55%,#0A0207)}
+  linear-gradient(180deg,#3A0413,#240510 55%,#140510)}
 .dr-phase-chart .dr-atmo{background:linear-gradient(180deg,#E9E2D2,#F4EFE4)}
 .dr-phase-chart .dr-wrap{color:#1a1a1a}
 .dr-brick{position:absolute;inset:0;opacity:.15;
@@ -310,8 +327,14 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
     // The mount exists even with no sidebar, so `_updateSidebar` has somewhere
     // to write if a later step decides it wants one.
     : `${content}<div id="dr-sidebar-inner" hidden></div>`;
+  /* `.rp-page` IS WHAT THE READER SIZES AND SKINS. The harness looks for it
+     (`content.querySelector('.rp-page')`) to find the screen root for the
+     ambience bed, and `#visual-player[data-view-mode]` sets its max-width —
+     860px quick, 980px deep. This shell emitted only `.dr-phase-*`, so a drag
+     screen took none of it and ran wider than every other show. Every Big
+     Brother signature screen emits it; so does vp-screens.js. */
   return `<style>${DR_CSS}</style>
-  <div class="dr-phase-${phase}">${atmo}
+  <div class="rp-page dr-phase-${phase}">${atmo}
     <div class="dr-wrap">
       ${hud ? _hud(ep) : ''}
       <!--dr-chrome--><div class="dr-sec">${_bulbs()}

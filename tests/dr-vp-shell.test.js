@@ -16,9 +16,31 @@ describe('the shell', () => {
   it('carries its own identity and never covers the nav', () => {
     expect(DR_CSS).toMatch(/\.dr-/);
     expect(DR_CSS).toMatch(/prefers-reduced-motion/);
-    // The atmosphere starts BELOW the 46px nav or it paints over it.
-    expect(DR_CSS).toMatch(/top: *46px/);
-    expect(DR_CSS).toMatch(/max-width: *1100px/);
+    /* THE ATMOSPHERE MUST NOT COVER THE NAV OR THE SCROLLBAR, and those are
+       two different requirements that a single `top: 46px` only half met.
+       It used to be `position:fixed`, which is placed against the VIEWPORT —
+       so it spanned the full window width and painted over the scrollbar of
+       `.rp-main`, which is the actual scroll container (`flex:1;
+       overflow-y:auto`). Pushing it down 46px dodged the nav and did nothing
+       about the scrollbar.
+       Sticky inside the scroll container fixes both: it cannot reach the
+       scrollbar because it is inside the scrolling box, and `.rp-nav` is
+       sticky in that same container at z-index 50, so a z-index of 0 here
+       puts the atmosphere underneath it. Assert the RULE — never fixed, and
+       stacked below the nav — rather than the offset that used to implement
+       half of it. */
+    expect(DR_CSS, 'a fixed atmosphere covers the scroll container scrollbar')
+      .not.toMatch(/\.dr-atmo\{[^}]*position: *fixed/);
+    expect(DR_CSS).toMatch(/\.dr-atmo\{[^}]*position: *sticky/);
+    const atmoZ = (DR_CSS.match(/\.dr-atmo\{[^}]*z-index: *(\d+)/) || [])[1];
+    expect(Number(atmoZ), 'the atmosphere is not below the nav (z-index 50)')
+      .toBeLessThan(50);
+    /* AND NO HARDCODED WIDTH. `#visual-player[data-view-mode]` sizes .rp-page
+       to 860px (quick) and 980px (deep); this pinned 1100px and ignored the
+       reader's own mode switch, so a drag screen ran wider than every other
+       show's. The shell emits .rp-page and inherits. */
+    expect(DR_CSS, 'the shell forces its own width again')
+      .not.toMatch(/max-width: *1100px/);
     expect(DR_CSS).not.toMatch(/[\u{1F300}-\u{1FAFF}]/u);
   });
 

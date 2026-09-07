@@ -24,6 +24,33 @@ import { noise } from './perform.js';
 // than a craft stat: a fierce song is not a technical exercise.
 const MOOD_STAT = { sad: 'acting', funny: 'comedy', fierce: 'nerve', rage: 'nerve', sexy: 'nerve' };
 
+// Which drag styles a genre flatters. The same idea as a runway category
+// suiting a look, and deliberately worth much less than any craft term: a
+// pageant queen gets a lift on a country ballad and a club kid on hyperpop,
+// and neither of them beats somebody who can actually lip sync.
+//
+// This exists so `genre` is a field the engine READS. A tag nothing reads is a
+// tag that rots — it drifts out of step with the data around it and nobody
+// notices, because nothing was ever depending on it.
+const GENRE_STYLES = {
+  country: ['pageant', 'glamour'],
+  musical: ['broadway', 'camp'],
+  disco: ['dancer', 'glamour'],
+  house: ['club-kid', 'dancer'],
+  hyperpop: ['club-kid', 'art'],
+  'k-pop': ['club-kid', 'dancer'],
+  rock: ['spooky', 'art'],
+  soul: ['glamour', 'broadway'],
+  'r&b': ['glamour', 'dancer'],
+  latin: ['dancer', 'camp'],
+  freestyle: ['club-kid', 'camp'],
+  'hip-hop': ['club-kid', 'fashion'],
+  'dance-pop': ['dancer', 'club-kid'],
+  pop: ['pageant', 'fashion'],
+};
+/** Worth about a fifth of what the mood stat is worth. A nudge, not a term. */
+const GENRE_FIT = 0.4;
+
 // The bars the doubles have to clear. High enough that neither is a coin flip:
 // measured over a season these should be rare events, not a weekly outcome.
 const GREAT = 8.5;
@@ -64,7 +91,19 @@ export function lipsyncScore({
     + d.dance * (0.15 + (up ? 0.15 : 0))
     + moodStat * 0.20;
 
-  const score = core + stuntPts + confidence + noise(rng, 2.5);
+  // Does this kind of record suit the kind of queen she is?
+  //
+  // AN AUTHORED STYLE ONLY. `dragOf` falls back to inferring a style from her
+  // craft when nobody set one, and rewarding that inference here would pay her
+  // twice for the same stat: a queen with high dance is inferred a dancer, and
+  // dancer genres would then hand her a bonus on top of the dance term. It
+  // showed up as a dance-heavy queen out-scoring an acting-heavy one on a sad
+  // song, which is the exact thing the weighting is supposed to prevent.
+  const authoredStyle = typeof player?.drag?.style === 'string' ? player.drag.style : null;
+  const genreFit = authoredStyle && (GENRE_STYLES[song.genre] || []).includes(authoredStyle)
+    ? GENRE_FIT : 0;
+
+  const score = core + genreFit + stuntPts + confidence + noise(rng, 2.5);
 
   // Four beats for the narration to hang on. They are texture, not arithmetic:
   // the score above is the performance, and these say how it got there.
@@ -77,7 +116,7 @@ export function lipsyncScore({
     score: Math.round(score * 100) / 100,
     stunt,
     beats,
-    parts: { core, stuntPts, confidence, moodKey, hook: song.hook },
+    parts: { core, genreFit, stuntPts, confidence, moodKey, hook: song.hook },
   };
 }
 

@@ -78,7 +78,10 @@ describe('the schema', () => {
           if (b.speaker !== 'judge') {
             expect(l, `${b.id}/${t.id} has no judge but uses {j}`).not.toMatch(/\{j\}/);
           }
-          const bad = l.match(/\{(?!a\}|b\}|j\})[^}]*\}/);
+          if (b.step !== 'lipsync') {
+            expect(l, `${b.id}/${t.id} is not a lip sync but names a song`).not.toMatch(/\{s\}/);
+          }
+          const bad = l.match(/\{(?!a\}|b\}|j\}|s\})[^}]*\}/);
           expect(bad, `${b.id}/${t.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
         }
       }

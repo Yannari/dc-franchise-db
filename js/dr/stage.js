@@ -41,10 +41,12 @@ const REACTING = 3;
 const pick = (lines, rng) => (lines && lines.length
   ? lines[Math.floor(rng() * lines.length)] : null);
 
-const fill = (line, { a, b, j }) => (line || '')
+const fill = (line, { a, b, j, s, c } = {}) => (line || '')
   .replace(/\{a\}/g, a || '')
   .replace(/\{b\}/g, b || '')
-  .replace(/\{j\}/g, j || '');
+  .replace(/\{j\}/g, j || '')
+  .replace(/\{s\}/g, s || '')
+  .replace(/\{c\}/g, c || '');
 
 /** Rank in [0,1], 0 being best. */
 function fractionalRank(name, scores) {
@@ -65,6 +67,11 @@ export function renderStageBeats({
   walking = [], onStage = [], runway = {}, call = {}, reactions = {},
   lipsync = null, exits = [], split = false, judges = [], rng = Math.random,
 }) {
+  // The song is named in the lip sync speech, so it has to reach `fill`. A
+  // placeholder the renderer does not substitute prints as literal braces on
+  // the screen, which is the whole reason this is threaded rather than left in
+  // the scene's `data` where only a later reader would see it.
+  const songTitle = lipsync?.song || '';
   const scenes = [];
   const beatById = id => STAGE_BEATS.find(b => b.id === id);
   const runwayScores = Object.fromEntries(
@@ -79,7 +86,7 @@ export function renderStageBeats({
       step: beat.step,
       kind: `stage:${beat.id}`,
       data: { beat: beat.id, tier: t.id, players: who, note: t.note, judge: j, ...extra },
-      text: fill(pick(t.lines, rng), { a: who[0], b: who[1], j }),
+      text: fill(pick(t.lines, rng), { a: who[0], b: who[1], j, s: songTitle }),
     });
   };
 

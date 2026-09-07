@@ -170,3 +170,73 @@ describe('the taping', () => {
     }
   });
 });
+
+describe('the host, who is now in the room', () => {
+  it('engages somebody every round instead of scoring into a vacuum', () => {
+    const beats = runMaxi(ctx(1)).scenes.find(s => s.kind === 'snatch-taping').data.hostBeats;
+    expect(beats.length, 'the host never once said anything').toBeGreaterThan(3);
+    for (const b of beats) {
+      expect(b.round).toBeGreaterThanOrEqual(1);
+      expect(typeof b.worked).toBe('boolean');
+    }
+  });
+
+  it('goes where the television is — the best answer or the worst, never the middle', () => {
+    for (let s = 0; s < 15; s++) {
+      const out = runMaxi(ctx(s));
+      const { rounds, hostBeats } = out.scenes.find(x => x.kind === 'snatch-taping').data;
+      for (const b of hostBeats) {
+        const answers = rounds[b.round - 1].answers.slice().sort((x, y) => y.score - x.score);
+        const isTop = answers[0].name === b.name;
+        const isBottom = answers[answers.length - 1].name === b.name;
+        expect(isTop || isBottom, `seed ${s}: host went to the middle of the desk`).toBe(true);
+      }
+    }
+  });
+
+  it('a queen who can take a setup runs with it; one who cannot is left to hang', () => {
+    const sharp = Object.fromEntries(NAMES.map(n => [n, mk(n, { comedy: 10 },
+      { stats: { ...Object.fromEntries(STATS.map(k => [k, 5])), boldness: 10 } })]));
+    const blunt = Object.fromEntries(NAMES.map(n => [n, mk(n, { comedy: 1 },
+      { stats: { ...Object.fromEntries(STATS.map(k => [k, 5])), boldness: 1 } })]));
+    const find = (p, type) => {
+      for (let i = 0; i < 20; i++) {
+        const e = runMaxi(ctx(i, p)).events.find(x => x.type === type);
+        if (e) return e;
+      }
+      return null;
+    };
+    const played = find(sharp, 'host-played-along');
+    const hung = find(blunt, 'left-to-hang');
+    expect(played, 'nobody sharp ever took a setup').toBeTruthy();
+    expect(played.pop[played.players[0]]).toBeGreaterThan(0);
+    expect(hung, 'nobody blunt was ever left hanging').toBeTruthy();
+    expect(hung.pop[hung.players[0]]).toBeLessThan(0);
+  });
+
+  it('and the exchange actually moves her score', () => {
+    // If the host reached the transcript but not the number it would be a
+    // scene about nothing, which is the bug this was built to fix.
+    let checked = 0;
+    for (let s = 0; s < 20 && checked < 3; s++) {
+      const out = runMaxi(ctx(s));
+      const { hostBeats } = out.scenes.find(x => x.kind === 'snatch-taping').data;
+      for (const b of hostBeats) {
+        expect(Math.abs(b.delta), 'a host beat worth nothing').toBeGreaterThan(0);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('never lets one queen have the whole taping', () => {
+    for (let s = 0; s < 20; s++) {
+      const { hostBeats } = runMaxi(ctx(s)).scenes.find(x => x.kind === 'snatch-taping').data;
+      const per = {};
+      for (const b of hostBeats) per[b.name] = (per[b.name] || 0) + 1;
+      for (const [n, c] of Object.entries(per)) {
+        expect(c, `seed ${s}: ${n} got ${c} host beats`).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+});

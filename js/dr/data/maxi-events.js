@@ -393,6 +393,58 @@ export const MAXI_EVENTS = [
       "{a} and {b} styled each other and the result is a pair of queens who look like they were dressed by somebody who was thinking about something else. The wigs are wrong, the palettes clash, and both of them walk the runway with the stiff posture of people who are wearing an insult and know it.",
     ],
   }),
+
+  // ══ THE SNATCH GAME DESK, NOW THAT THE HOST IS AT IT ═════════════════
+  e({
+    id: 'host-played-along', from: 'snatch-game', cast: 'solo',
+    note: 'The host came at her directly and she took the setup and ran with it. The exchange is better than anything scripted.',
+  }),
+  e({
+    id: 'left-to-hang', from: 'snatch-game', cast: 'solo',
+    note: 'The host came at her and she had nothing to give back, so he let the silence sit and then moved on to somebody else.',
+  }),
+
+  // ══ THE ACTING SET ═══════════════════════════════════════════════════
+  e({
+    id: 'dropped-a-line', from: 'acting', cast: 'solo',
+    note: 'She loses the line on camera. There is no second take.',
+  }),
+  e({
+    id: 'stepped-on-her', from: 'acting', cast: 'pair',
+    note: '{a} talks straight over {b} in a shared scene. It works for {a} on screen and {b} has to stand there.',
+  }),
+  e({
+    id: 'one-note', from: 'acting', cast: 'solo',
+    note: 'She plays the part exactly the way she plays everything. The panel has a word for this and will use it.',
+  }),
+  e({
+    id: 'ignored-the-note', from: 'acting', cast: 'solo',
+    note: 'The director gave her a good note and she heard it and did it her way anyway.',
+  }),
+  e({
+    id: 'took-a-bad-note', from: 'acting', cast: 'solo',
+    note: 'She was given a bad note and followed it, because it came from the person holding the clipboard.',
+  }),
+
+  // ══ THE COMMERCIAL ═══════════════════════════════════════════════════
+  e({
+    id: 'found-the-angle', from: 'commercial', cast: 'solo',
+    note: 'The product has an obvious approach that never works, and she found the other one.',
+  }),
+  e({
+    id: 'tagline-died', from: 'commercial', cast: 'solo',
+    note: 'The line the whole spot was built to land on gets nothing.',
+  }),
+
+  // ══ IMPROV, WITH NO PREPARATION AT ALL ═══════════════════════════════
+  e({
+    id: 'froze', from: 'improv', cast: 'solo',
+    note: 'She is handed a premise cold and nothing comes. The pause is on camera.',
+  }),
+  e({
+    id: 'ran-with-it', from: 'improv', cast: 'solo',
+    note: 'She commits to a premise she was given seconds ago and builds something out of nothing.',
+  }),
 ];
 
 export const MAXI_EVENT_IDS = MAXI_EVENTS.map(x => x.id);

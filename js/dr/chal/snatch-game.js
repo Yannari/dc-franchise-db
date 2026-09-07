@@ -23,6 +23,24 @@ const ROUNDS = 6;
 const FLOP = 3;
 const KILL = 8.5;
 
+// ── THE HOST, WHO WAS NOT IN THIS AT ALL ──────────────────────────────
+//
+// Snatch Game was six rounds scored in isolation: every queen answered into a
+// vacuum and nobody on the other side of the desk existed. That is not the
+// segment. The host reads the question, and then he DECIDES what to do with
+// what she gives him — feed a queen who is working, or let one who is dying
+// hang there while he moves on.
+//
+// So each round he engages one queen, and which one is not random: he goes
+// where the television is. A queen who is landing gets more of him, which
+// compounds; a queen who is dying gets him too, because a struggling queen is
+// also television, and that is the crueller half of the format.
+const ENGAGE_PER_ROUND = 1;
+/** What a setup is worth to somebody who can take it. */
+const ROPE = 1.6;
+/** And what being left to hang costs. */
+const HANG = 1.2;
+
 /**
  * Her shortlist, best first.
  *
@@ -70,10 +88,15 @@ export function perform(ctx) {
   const performances = {};
   const events = [];
   const rounds = [];
+  const hostBeats = [];
   const charOf = n => characterById(assignment.picks[n]?.choice);
 
   const perRound = {};
   for (const n of living) perRound[n] = [];
+
+  // Whom the host has already worked with, so one queen does not get the
+  // whole taping.
+  const engaged = {};
 
   for (let r = 0; r < ROUNDS; r++) {
     const beat = [];
@@ -91,6 +114,43 @@ export function perform(ctx) {
       perRound[n].push(rounded);
       beat.push({ name: n, score: rounded });
     }
+
+    // ── AND THEN THE HOST DOES SOMETHING ABOUT IT ──
+    //
+    // He picks the most interesting thing on the desk this round — the best
+    // answer or the worst, never the middle, because the middle is not
+    // television. Whether the exchange helps her is not his decision: a queen
+    // with a character can take a setup and run, and a queen without one is
+    // simply given more rope.
+    const sorted = [...beat].sort((x, y) => y.score - x.score);
+    const candidates = [sorted[0], sorted[sorted.length - 1]]
+      .filter(x => x && (engaged[x.name] || 0) < 2);
+    for (let i = 0; i < ENGAGE_PER_ROUND && candidates.length; i++) {
+      const pickIdx = rng() < 0.5 ? 0 : candidates.length - 1;
+      const chosen = candidates.splice(pickIdx, 1)[0];
+      if (!chosen) break;
+      const n = chosen.name;
+      engaged[n] = (engaged[n] || 0) + 1;
+      const d = dragOf(players[n]);
+      // Can she take it? Comedy and nerve, because a setup only works on
+      // somebody willing to grab it.
+      const takes = (d.comedy + (Number(players[n]?.stats?.boldness) || 5)) / 2;
+      const worked = rng() < 0.25 + takes / 20;
+      const delta = worked ? ROPE : -HANG;
+      perRound[n][perRound[n].length - 1] =
+        Math.round((perRound[n][perRound[n].length - 1] + delta) * 100) / 100;
+      hostBeats.push({ round: r + 1, name: n, worked, delta });
+      events.push(worked
+        ? evt('host-played-along', {
+          players: [n], pop: { [n]: 2 },
+          data: { round: r + 1, character: charOf(n)?.name || null },
+        })
+        : evt('left-to-hang', {
+          players: [n], pop: { [n]: -1 },
+          data: { round: r + 1, character: charOf(n)?.name || null },
+        }));
+    }
+
     rounds.push({ round: r + 1, answers: beat });
   }
 
@@ -137,6 +197,7 @@ export function perform(ctx) {
         character: charOf(n)?.name || null,
         characterId: assignment.picks[n]?.choice || null,
         rounds: scores, flops, kills,
+        hostBeats: hostBeats.filter(h => h.name === n),
       },
     };
   }
@@ -145,6 +206,6 @@ export function perform(ctx) {
     performances,
     runwayOverride: null,
     events,
-    scenes: [{ step: 'maxi-pre', kind: 'snatch-taping', data: { rounds } }],
+    scenes: [{ step: 'maxi-pre', kind: 'snatch-taping', data: { rounds, hostBeats } }],
   };
 }

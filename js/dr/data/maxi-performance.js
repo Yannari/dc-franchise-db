@@ -261,7 +261,40 @@ export const MAXI_PERFORMANCE = [
     }),
   },
   {
-    family: 'design', serves: ['design', 'acting', 'commercial', 'improv'],
+    family: 'acting', serves: ['acting'],
+    label: 'the take — a named part in a scripted parody, shot once',
+    tiers: tiers({
+      extraordinary: 'She disappears into the part and the scene belongs to her.',
+      strong: 'A real character with real choices in it.',
+      competent: 'She says the lines correctly and nothing else happens.',
+      struggling: 'She is playing herself in a costume and it shows.',
+      collapse: 'She loses the scene on camera with no second take coming.',
+    }),
+  },
+  {
+    family: 'commercial', serves: ['commercial'],
+    label: 'thirty seconds, a partner, and a product nobody wants',
+    tiers: tiers({
+      extraordinary: 'A spot that would actually air, and a tagline people will repeat.',
+      strong: 'Funny, clear, well shared with her partner.',
+      competent: 'It sells the thing. Nobody will remember it.',
+      struggling: 'The concept is muddled and the pair are not helping each other.',
+      collapse: 'Thirty seconds of two people talking over a product nobody understood.',
+    }),
+  },
+  {
+    family: 'improv', serves: ['improv'],
+    label: 'a premise handed to her cold, on stage, with nothing prepared',
+    tiers: tiers({
+      extraordinary: 'She builds a whole person out of one sentence and never breaks.',
+      strong: 'Quick, committed, and genuinely funny without a script.',
+      competent: 'She keeps it going. That is the job and she does the job.',
+      struggling: 'She is reaching and the reaching is audible.',
+      collapse: 'Nothing comes, and the nothing is on camera.',
+    }),
+  },
+  {
+    family: 'design', serves: ['design'],
     label: 'the built look, or the scene she was cast in',
     tiers: tiers({
       extraordinary: ['She found something in the material nobody else saw.',

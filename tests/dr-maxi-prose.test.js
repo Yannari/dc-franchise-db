@@ -43,7 +43,11 @@ describe('the event pool', () => {
       'pulled-the-punch', 'read-landed', 'read-missed', 'reunion', 'roasted-the-panel',
       'sabotage', 'showstopper', 'shunned', 'spotlight-hog', 'stole-a-bit',
       'stunt-failed', 'stunt-landed', 'verse-of-the-week', 'walkthrough',
-      'wardrobe-malfunction', 'wrong-talent'];
+      'wardrobe-malfunction', 'wrong-talent',
+      // added when the acting family and the Snatch Game host were built
+      'host-played-along', 'left-to-hang', 'dropped-a-line', 'stepped-on-her',
+      'one-note', 'ignored-the-note', 'took-a-bad-note', 'found-the-angle',
+      'tagline-died', 'froze', 'ran-with-it'];
     const missing = FIRED.filter(id => !MAXI_EVENT_IDS.includes(id));
     expect(missing, `these fire in the engine and have no prose: ${missing.join(', ')}`).toEqual([]);
   });

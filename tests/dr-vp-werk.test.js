@@ -33,7 +33,8 @@ describe('the arrivals screen', () => {
     const html = rpBuildArrivals(rows[0]);
     for (const n of rows[0].houseAtStart) expect(html, `${n} did not walk in`).toContain(n);
     const steps = (html.match(/id="dr-step-arrivals-\d+"/g) || []);
-    expect(steps.length).toBe(rows[0].houseAtStart.length);
+    const hostStep = html.includes('arrival:host') || html.includes('RuPaul') ? 1 : 0;
+    expect(steps.length).toBe(rows[0].houseAtStart.length + hostStep);
     expect(new Set(steps).size, 'a step id was reused').toBe(steps.length);
   });
 

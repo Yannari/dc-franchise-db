@@ -388,7 +388,38 @@ export const ENTRANCE_REACTIONS = {
  * Keyed by attitude, same three buckets as the entrance line, because the
  * queen who arrives dry introduces herself dry.
  */
-export const ARRIVAL_INTROS = { big: [], dry: [], warm: [] };
+export const ARRIVAL_INTROS = {
+  big: [
+    "I'm {a}, {city}, {years} years in drag, and I did not come here to be safe.",
+    "{a}! {city}! {years} years of this! And every single one of them has been leading to this room!",
+    "The name is {a}, I have been doing drag for {years} years, and I am very, very good at it.",
+    "{a}, {city}. {years} years. I work as {job} out of drag and in drag I work harder.",
+    "My name is {a} and I have spent {years} years becoming the queen you are looking at right now.",
+    "I'm {a}, I've been doing this {years} years, and if you have not heard of me that is about to change.",
+    "{a}. {years} years. I came here to win and I dressed accordingly.",
+    "I am {a} and I have {years} years of drag behind me and absolutely none of them were quiet.",
+  ],
+  dry: [
+    "I'm {a}, I'm from {city}, I've been doing this {years} years, and I still have a day job I'm not going to tell you about.",
+    "{a}. {city}. {years} years. That is the whole introduction.",
+    "My name is {a}, I've been doing drag for {years} years, and I am tired but I look incredible.",
+    "{a}, {years} years. I work as {job} during the week and I do this at the weekend and neither job pays enough.",
+    "I'm {a}. {city}. {years} years of this. I am not going to say anything inspirational.",
+    "{a}. {years} years in drag. I work as {job} when nobody is watching.",
+    "My name is {a} and I have been doing drag for {years} years and I have very little else to say about that.",
+    "I'm {a}, {years} years. That's the short version and the long version is the same.",
+  ],
+  warm: [
+    "Hi! I'm {a}, I'm from {city}, I've been doing drag {years} years, and I am so happy to be in this room.",
+    "Hello! I'm {a}! {city}! {years} years of drag and every one of them was worth it to get here!",
+    "I'm {a}, I've been doing drag for {years} years, and I genuinely cannot believe I am standing here right now.",
+    "My name is {a}, {city}, {years} years in drag, and I just want everybody to know I love what I do.",
+    "I'm {a}! I work as {job} out of drag and I have been doing this for {years} years and I am thrilled.",
+    "{a}, {city}, {years} years in. I'm nervous and excited and I think those are the same thing right now.",
+    "Hi, I'm {a}, {years} years of drag, and I am going to try very hard not to cry during this introduction.",
+    "I'm {a} and I've been doing this {years} years and I still get butterflies every time I walk into a new room.",
+  ],
+};
 
 /**
  * The thing that is not on the CV.
@@ -397,8 +428,86 @@ export const ARRIVAL_INTROS = { big: [], dry: [], warm: [] };
  * herself and what an art queen volunteers are different confessions.
  */
 export const ARRIVAL_BACKSTORY = {
-  pageant: [], comedy: [], fashion: [], camp: [], 'club-kid': [],
-  spooky: [], broadway: [], dancer: [], glamour: [], art: [],
+  pageant: [
+    "I started in pageants because somebody told me I had stage presence and I believed them. I have been trying to prove them right ever since.",
+    "My first pageant I came fourth out of four and I drove home with the sash I bought myself. I have not come fourth since.",
+    "People think pageant queens have it together. I do not have it together. I have a system, and the system works, and behind the system it is chaos.",
+    "I paid for drag school with tips from a diner I worked at six nights a week. The diner is gone. The drag is not.",
+    "My mother made my first gown out of curtain lining because we could not afford fabric. I still have the gown. It is terrible. I love it.",
+    "Every title I have won was won in a borrowed pair of shoes. I still cannot afford the shoes. I can afford everything else.",
+  ],
+  comedy: [
+    "I started doing drag because I was funny and nobody was paying me for it. Now they pay me for it and I am still not sure they should.",
+    "I bombed my first gig so badly the bar owner turned the lights on. I went back the next week. And the week after that. And now the bar is closed and I am here.",
+    "People say comedy queens cannot do glamour. I cannot do glamour. That is not the point. The point is I am funnier than your glamour.",
+    "I was the class clown and then I was the office clown and then I was the bar clown and at some point the clown became the career.",
+    "My day job is {job} and the only thing that gets me through it is knowing I have a gig at the weekend where nobody calls me sir.",
+    "I have never been the prettiest queen in the room and I decided very early that being the funniest was a better thing to be anyway.",
+  ],
+  fashion: [
+    "I have been sewing since I was a child. My grandmother taught me on her machine and I still use her scissors. They are the only thing of hers I have.",
+    "I do not buy drag. I build drag. Every garment I own was made by me in a room that is too small for the fabric and too cold for the glue.",
+    "Fashion saved me. I know that sounds like a line but the truth is I did not know who I was until I started making things and the things told me.",
+    "I design everything I wear and I have never worn anything twice. That is not a brag, it is an illness.",
+    "People look at the garment. I want them to look at the construction. The construction is where the work is and the work is the whole point.",
+    "My first collection was six looks made out of bin bags and I showed it in a car park to three people and one of them was my flatmate. I think about that night all the time.",
+  ],
+  camp: [
+    "I fell into drag because nothing else I was doing was silly enough. I needed somewhere to put the silly and drag was the only place that wanted it.",
+    "I once glued four hundred plastic flowers to a bodysuit and wore it to the corner shop. Nobody said a word. I have been chasing that silence ever since.",
+    "My drag is not pretty and it is not meant to be. It is meant to make you laugh and then think about why you laughed and then feel slightly uncomfortable about the answer.",
+    "People ask if I am always like this and the answer is yes, I am always like this, and no, I do not know how to stop, and honestly I do not want to.",
+    "My whole thing is excess. More is more. If it is not too much it is not enough and the line between too much and enough does not exist in my house.",
+    "I started making costumes out of things that were not costumes because I could not afford things that were. The habit stuck. The aesthetic followed.",
+  ],
+  'club-kid': [
+    "I started going to clubs when I was far too young and the clubs taught me that the best version of me was the one nobody recognised.",
+    "I do not do pretty. I do not do ugly. I do the thing where you cannot tell which one it is and that confusion is the whole show.",
+    "It takes me nine hours to get ready and about four minutes for somebody to decide I am not for them. Both of those numbers are correct.",
+    "My parents do not understand what I do. I have shown them photographs. The photographs did not help. I love them and they are baffled by me.",
+    "I build things out of foam and wire and paint and I wear them in public and sometimes people cross the street. That is feedback.",
+    "The first time I went out in a look I had actually built from scratch, somebody asked if I was a public art installation. I said yes.",
+  ],
+  spooky: [
+    "I have always been drawn to the dark. Not the edgy dark, the beautiful dark — the dark where everything is more interesting because you cannot see all of it.",
+    "I do horror and people think that means I am scary. I am not scary. I am a very gentle person who happens to find beauty in things that make other people look away.",
+    "My first drag look was a ghost and my mother cried. Not because it was good. Because she did not understand why I wanted to be frightening and beautiful at the same time.",
+    "I am a spooky queen because the first queen I ever saw was a spooky queen and she looked like something I had never seen before and I wanted to look like that.",
+    "People ask why I always do horror. The answer is that horror lets you be ugly on purpose and the on-purpose is the art.",
+    "I make everything by hand. The blood, the prosthetics, the contacts. If it is not handmade it is not mine and if it is not mine it does not go on my face.",
+  ],
+  broadway: [
+    "I have been singing since before I could talk. That is not a metaphor. My mother has recordings. They are terrible. The instinct was there.",
+    "I wanted to be on a stage from the moment I saw a stage. Drag was the stage that said yes first and I have been saying yes back ever since.",
+    "I trained in musical theatre and the training taught me that the voice is the one thing you cannot fake. Everything else is costumes. The voice is real.",
+    "I have been an understudy three times and performed once and the once was the best night of my life. I am here because I want more of those nights.",
+    "My whole drag is built around the voice. If I can sing it, I can sell it. If I cannot sing it, I learn it. There is nothing in my repertoire I cannot perform live.",
+    "I come from a theatre family. My mother was chorus. My aunt was chorus. I am not going to be chorus.",
+  ],
+  dancer: [
+    "I have been dancing since I was four and I have had two knee surgeries and I still cannot stop. The knees are a problem. The dancing is not negotiable.",
+    "People underestimate dancers. They think we are just the body and not the brain. The brain decides every count and the body does what it is told. It is the hardest thinking I do.",
+    "I started dancing in heels because a queen told me it was impossible and I wanted to prove her wrong. I proved her wrong. I kept the heels.",
+    "My body is my instrument and the instrument has some wear on it but the wear is honest and the honest is the performance.",
+    "I work as {job} and I dance at night and the dancing is the part that makes the rest of it bearable.",
+    "Every queen I have ever lost to was a better lip syncer than a dancer. I am here to prove that the dancing is the lip sync.",
+  ],
+  glamour: [
+    "I have been beautiful on purpose since I was fifteen and I do not apologise for it. Beauty is a skill. I practised.",
+    "People think glamour is lazy. It is the opposite of lazy. This face takes two hours and the two hours are the most focused two hours of my day.",
+    "I come from a town where nobody does drag and I am the prettiest thing it has ever produced and the town does not know what to do with that.",
+    "My first mug was terrible. I looked like a haunted painting. But the instinct — the instinct to transform, to become — that was there from the start and the skill caught up.",
+    "I am a glamour queen and I know what people think that means and I am going to change what they think by the time I leave.",
+    "I do not have a secret talent. I do not have a hidden skill. What you see is what I spent two hours building and the building is the talent.",
+  ],
+  art: [
+    "I make things that do not make sense on purpose. The not-making-sense is the point. If it made sense it would be an outfit.",
+    "I was the weird kid and then I was the weird teenager and then I found drag and the weird became the whole aesthetic and I stopped trying to explain it.",
+    "My drag is not for everybody. I know that. The first time somebody told me my look was ugly I said thank you and I meant it and they did not know what to do.",
+    "I have a concept for every look and the concept has a concept and behind that concept there is usually something I am actually trying to say about being alive.",
+    "I do not come from a drag scene. I come from an art scene and the art scene said you are too much and the drag scene said you are not enough and I decided both of them were wrong.",
+    "People ask me what my drag is about and I cannot answer that question in a sentence. I can answer it in a look. That is why I do looks instead of sentences.",
+  ],
 };
 
 /**
@@ -408,7 +517,29 @@ export const ARRIVAL_BACKSTORY = {
  * been screaming for twenty minutes and a room that has gone quiet get
  * different first words.
  */
-export const ARRIVAL_HOST = { loud: [], nervous: [], ready: [] };
+export const ARRIVAL_HOST = {
+  loud: [
+    "Hello, hello, HELLO! Now I know you have been making a LOT of noise in here and I have heard every bit of it. Welcome to the competition. This is where it starts.",
+    "I could hear this room from the hallway and I have to say — that is exactly the energy I wanted to walk into. {b}, I see you. I see all of you. Let's go.",
+    "Well! Somebody has been having a good time in here. I love that for you. I love it less for your neighbours. {b}, you started this, I heard you first.",
+    "The VOLUME in this room tells me you are ready and the looks in this room tell me I was right to cast you. Hello. Hello to all of you. Hello to {b}, who was loud first.",
+    "I walked in and the energy hit me before the light did. That is a good room. That is a room full of queens who came to do something. Hello, gorgeous people.",
+  ],
+  nervous: [
+    "Hello, my beautiful queens. I know some of you are nervous. You should be. This is the real thing. But I would not have brought you here if I did not believe you belonged in this room.",
+    "Good evening. I see some faces in here that are trying very hard to look calm and I want you to know — that is exactly how every queen who has won this thing looked on night one. {b}, breathe.",
+    "Hello. I can feel the nerves in this room and I want to say something about that: nerves mean you care. The queens who do not care do not shake. You are shaking because this matters to you.",
+    "Some of you are terrified. I can see it. I want you to know that is allowed and it is correct and the queen who wins this will tell you she was terrified too. Hello. Welcome. You are here now.",
+    "Look at this room. Look at these faces. {b}, I see you. I see all of you. The nerves are normal. What you do with the nerves is the show.",
+  ],
+  ready: [
+    "Good evening, queens. You look ready. You look like a room full of people who packed for a fight and I am here to tell you the fight starts now.",
+    "Hello, gorgeous people. I see a room that is prepared and I see looks that are correct and I see queens who have done their homework. {b}, you set the tone. Now let's see what the rest of you do with it.",
+    "This is the room. These are the queens. This is the moment where everything you have done in drag up until now becomes the reason you are standing here. Hello. Let's begin.",
+    "I look at this room and I see queens who are ready to work. That is what I want. That is what this competition asks for. {b} was the first through the door and the rest of you followed and now the door is closed.",
+    "Hello. You are here because you earned it. Every one of you. The looks, the talent, the nerve — I can see it in this room already. Now show me what you do with it.",
+  ],
+};
 
 /**
  * The first impression — the moment somebody already in the room decides
@@ -420,7 +551,32 @@ export const ARRIVAL_HOST = { loud: [], nervous: [], ready: [] };
  * already real whether or not this pool has a line — see js/dr/arrivals.js —
  * so a line here is the SENTENCE for a thing that already happened.
  */
-export const ARRIVAL_IMPRESSIONS = { nice: [], shady: [] };
+export const ARRIVAL_IMPRESSIONS = {
+  nice: [
+    "{b} watches {a} come through the door and says to nobody in particular: she is going to be good. You can just tell.",
+    "{b} clocks the garment before the face and the garment is enough. She turns to the queen next to her and says: I want to know who made that.",
+    "{a} walks in and {b} is already smiling, the real smile, the one that means she has decided this is somebody she wants to know.",
+    "{b} sees {a} and something in her posture changes — she stands a little straighter, the way you do when somebody walks into the room who makes you want to be better.",
+    "{a} arrives and {b} says: okay, she came correct. That is said with respect. The respect is genuine.",
+    "{b} nods at {a} from across the room, the slow nod, the one that means I see you and I like what I see and I am going to remember you.",
+    "{a} walks in and {b} whispers to the queen next to her: that is a real one. You can see it in the walk.",
+    "{b} watches {a} settle in and decides she is somebody worth talking to. The decision is quiet but it is made and it is not going to change.",
+    "{a} comes through the door and {b} says: we needed her. I did not know that until she walked in and now I know it.",
+    "{b} sees {a} and the first thing she thinks is: I want to be in a room with her for a long time. That thought is the beginning of something.",
+  ],
+  shady: [
+    "{b} watches {a} walk in and the look she gives the queen beside her says everything her mouth is too polite to say.",
+    "{a} comes through the door and {b} takes one look at the garment and one look at the wig and turns back to her mirror. The turning-back is the read.",
+    "{b} clocks {a} and says, very quietly, to nobody who will repeat it: well. That is going to be interesting. She does not mean interesting kindly.",
+    "{a} walks in and {b} smiles the smile that is not a smile. It is an assessment. The assessment is not going well.",
+    "{b} watches {a} arrive and something about the entrance bothers her and she is not going to say what it is yet. She is going to save it.",
+    "{a} comes through the door and {b} says to the room: oh, so they cast one of THOSE. The room knows what she means. Nobody asks.",
+    "{b} takes one look at {a} and decides she has seen better. The decision is in the eyes and the eyes are not hiding it.",
+    "{a} arrives and {b} looks her up and down — the full scan, shoulder to shoe — and the verdict is a single raised eyebrow that says more than a sentence.",
+    "{b} watches {a} walk in and says to the queen next to her: she is going to think she is competition. That sentence has a shape to it and the shape is not a compliment.",
+    "{a} comes through the door and {b} gives the look — the specific look that means I have already decided where you are going to place and it is below me.",
+  ],
+};
 
 /**
  * Her attitude, PROPORTIONALLY.

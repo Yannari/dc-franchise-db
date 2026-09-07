@@ -68,6 +68,9 @@
 // must extend it.
 import { gs } from '../core.js';
 import { playTraitorsSeason, rngFor } from './headless.js';
+// The branch tone list the SCREEN already uses, so the audit measures the
+// scenes the show presents as damaging rather than a set invented here.
+import { ADVERSE_BRANCHES } from './castle/voice.js';
 
 // ── the season record, indexed for measurement ────────────────────────
 
@@ -286,7 +289,125 @@ const CHANNELS = {
     const pool = (rng() < 0.85 && faithfuls.length) ? faithfuls : living;
     return pool.length ? pool[Math.floor(rng() * pool.length)] : null;
   }),
+
+  // ══════════════════════════════════════════════════════════════════
+  // THE CASTLE, WHICH HAS NEVER BEEN ALLOWED TO SAY ANYTHING
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // NOT SHIPPED. These two price a channel that does not exist yet, which is
+  // exactly what this module is for: js/tr/castle/ writes ZERO beliefs by a
+  // guarded rule whose stated condition is "a castle event does not get to
+  // make the room RIGHT about somebody until its channel has been priced".
+  // This is that pricing, run before anything is opened.
+  //
+  // WHY IT MATTERS: measured over 60 seasons, 96.7% of every reason the Round
+  // Table cites is the VOTING RECORD, and three phrases are 95% of it. The
+  // castle runs ~67 suspicion scenes a season -- a story that changed, an hour
+  // nobody can place -- and none of it is admissible, so the debate can only
+  // ever argue from who voted for whom.
+  //
+  // THE CANDIDATE is the narrowest concrete class the castle has: two players
+  // checking a THIRD person's account (`topicKind: 'suspicion-third'`), on a
+  // branch that went badly for that third person. Not a mood, not a bond -- a
+  // specific claim about a specific person that a scene actually established.
+
+  /** The account did not hold. This is the thing worth opening, if anything is. */
+  'castle-third-party-adverse': (S) => _castleThirdParty(S, true),
+
+  /**
+   * THE CONTROL THAT MATTERS, AND IT IS NOT `any-faithful`.
+   *
+   * Same scenes, same rounds, same subjects -- every branch, adverse or not.
+   * If merely BEING THE ONE TALKED ABOUT predicts as well as being talked
+   * about badly, then the castle's suspicion machinery is pointing at people
+   * for reasons unconnected to what the scene found, and the "adverse" half
+   * carries nothing. This file records the same trap catching `pushedThenDied`
+   * at 1.21x against a contentless 1.20x, and the whole point of writing the
+   * twin BEFORE the result is that it cannot be rationalised afterwards.
+   */
+  'castle-third-party-any': (S) => _castleThirdParty(S, false),
+
+  // ── WHAT A CASTLE SCENE WOULD HAVE TO BE COUPLED TO ────────────────
+  //
+  // The two channels above fail because castle scenes are ALIGNMENT-BLIND by
+  // construction: the sampler picks who a scene is about from threads, bonds
+  // and who has not had a scene lately, and none of that touches who was
+  // actually out at night. A scene that finds a hole in somebody's evening
+  // finds it because the dice said so, so its subject cannot carry
+  // information however the branch is worded.
+  //
+  // These two say what the SAME SCENE would be worth if its outcome were
+  // coupled to a thing that really happened: the conclave. `murderBallots` is
+  // the record of who was awake and choosing a name, which is exactly the hour
+  // a morning alibi scene asks about.
+  //
+  // NEITHER IS A PROPOSAL. `-perfect` is the ceiling and is unshippable —
+  // every Traitor caught every night is not a game. `-noisy` is the honest
+  // shape of a real one: most attendees are never asked, and innocent people
+  // fail to account for their evening all the time.
+
+  /** The ceiling: everybody who was at the conclave, caught every time. */
+  'synthetic-alibi-perfect': (S) => _alibi(S, null, 1, 0),
+
+  /**
+   * The realistic shape: a scene reaches 30% of the people who were actually
+   * out, and wrongly snags 12% of the people who were not. If THIS clears the
+   * gate, a castle alibi channel is worth building; if it does not, no amount
+   * of prose will make one admissible.
+   */
+  'synthetic-alibi-noisy': (S, rng) => _alibi(S, rng, 0.30, 0.12),
 };
+
+/**
+ * Indictments a morning alibi scene would emit if it were coupled to the night.
+ *
+ * `hit` is the chance somebody who WAS at the conclave gets asked and cannot
+ * account for it; `miss` the chance somebody who was not gets snagged anyway.
+ * With rng null and hit 1 / miss 0 this is the ceiling.
+ */
+function _alibi(S, rng, hit, miss) {
+  const out = [];
+  for (const L of (S.log || [])) {
+    const attended = new Set((L.murderBallots || []).map(b => b.voter));
+    const living = S.livingAt(L.ep);
+    for (const n of living) {
+      const p = attended.has(n) ? hit : miss;
+      if (p <= 0) continue;
+      if (p < 1 && (!rng || rng() >= p)) continue;
+      out.push({ ep: L.ep, subject: n });
+    }
+  }
+  return out;
+}
+
+/**
+ * Castle scenes about a third party, as indictments they WOULD emit.
+ *
+ * `adverseOnly` picks the branches ADVERSE_BRANCHES classifies as going badly
+ * for the subject -- the same list js/vp-tr/castle-day.js uses to decide how to
+ * word a consequence, so this measures the scenes the screen already presents
+ * as damaging rather than a set invented for the audit.
+ *
+ * The subject must be LIVING in the round the belief would form, for the same
+ * reason `pushed-then-died` checks it: an indictment of somebody already gone
+ * is not evidence anybody could act on, and counting it would put a subject
+ * outside the control's population.
+ */
+function _castleThirdParty(S, adverseOnly) {
+  const out = [];
+  for (const L of (S.log || [])) {
+    const living = S.livingAt(L.ep);
+    if (!living.length) continue;
+    for (const ce of (L.castleEvents || [])) {
+      const c = ce.consequences || {};
+      if (c.topicKind !== 'suspicion-third' || !c.topic) continue;
+      if (adverseOnly && !ADVERSE_BRANCHES.has(String(c.branch || ''))) continue;
+      if (!living.includes(c.topic)) continue;
+      out.push({ ep: L.ep, subject: c.topic });
+    }
+  }
+  return out;
+}
 
 /** Two uniform indictments per round, in whichever rounds `slice` selects. */
 function _uniformAt(S, rng, slice) {

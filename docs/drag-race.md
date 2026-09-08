@@ -165,6 +165,77 @@ the runway's week-to-week variance to 4.5 moved it four points; weighting the
 challenge performance at a twentieth moved it none. Closing it means reworking
 what the panel weighs, which is a design decision.
 
+## Twists
+
+### Built
+
+Four, in `TWIST_CATALOG` (js/core.js), booked from the Episode Format Designer.
+
+| Twist | Booking | What it does |
+|---|---|---|
+| **No Elimination** | per episode | Announced before the challenge. Judged and ranked normally, the bottom two still lip sync, both walk back in. Season runs one episode **longer**. Not a double shantay. |
+| **Double Elimination** | per episode | The panel calls three or four to the bottom, they lip sync together, the two weakest go. Season runs one episode **shorter**. Cancels out against a No Elimination. |
+| **LaLaPaRUza Smackdown** | season-wide | The whole eliminated cast returns one episode before the finale and lip syncs each other out in rounds. Changes no placement. |
+| **Returning Queen** | per episode | One eliminated queen re-enters with her record intact. Pick her or leave it random. Season runs one episode **longer**. |
+
+Season-level format options live on the setup screen, not in the twist list:
+premiere shape (standard / talent show / design / runway / girl groups /
+split / porkchop), finale shape (top 4 / top 3 / top 2 / perform-then-lip-sync),
+double shantay, double sashay, early-win immunity, triple lip sync on a tie.
+
+### TODO
+
+Ordered by what the engine can already carry. Nothing below exists — checked
+for `badge`, `power`, `advantage`, `assassin`, `legacy`, `block`, `wildcard`,
+`golden` and `chocolate` in `js/dr/` first, because this repo has shipped the
+same feature twice by not looking.
+
+**Cheap — a flag and a rule, no new screen**
+
+1. **Reunion toggle.** Not a new twist: the reunion is BUILT, tested
+   (`tests/dr-reunion.test.js`) and documented above, and `config.drReunion` is
+   read by `playDragSeason` — but nothing in `cast-ui.js` or `simulator.html`
+   ever sets it. It is reachable only from a test. Written-but-unreachable,
+   this project's signature bug class. One checkbox.
+2. **Wildcard entry.** A queen who never competed walks in mid-season. The
+   Returning Queen engine already handles a bigger room and a longer season;
+   this differs only in where she comes from (the franchise roster, not
+   `state.out`) and in having no record to keep.
+3. **Immunity charm.** A maxi win buys immunity for a chosen later week rather
+   than automatically the next one. `drImmunity` already models the seasons
+   1–5 rule; this is the same field with a player-held trigger.
+
+**Medium — needs a decision the engine does not currently make**
+
+4. **Rate-a-Queen.** The queens rank each other and it feeds the call. The
+   engine has bonds, perceived threat and a jury-style read already; the new
+   part is letting a queen's ranking be strategic rather than honest.
+5. **The Block.** A queen blocks another from something she won. Needs a
+   holder, a target and a window — the shape of a Big Brother power, which
+   `js/bb/` has and `js/dr/` does not.
+6. **Lip Sync for Your Legacy.** The All Stars inversion: the top two lip sync
+   and the WINNER eliminates. Changes who decides, which is the deepest
+   assumption in `js/dr/judging.js` — the panel ranks and the host decides,
+   stated in every prose brief in the repo. Worth doing, worth doing carefully.
+
+**Expensive — a format, not a twist**
+
+7. **All Stars season type.** Badges, the winner-decides rule, no lip sync for
+   survival. Really items 4–6 plus a different elimination model; it should be
+   a season SHAPE like the premiere and finale options, not a per-episode pin.
+8. **Audience save / fan vote.** The edit layer already tracks popularity and
+   screen time, so the input exists. The question is whether a viewer vote can
+   overturn the panel, which is the same authority question as item 6.
+9. **Two winners.** The finale can already run four shapes; a double crown
+   changes what `placements[0]` means for the chart, the article, the
+   franchise ledger and every reader of `finale.winner`.
+
+**Known constraint on any new per-episode twist**
+
+The tentpole schedule has only episodes 2..N-2 to work with, and at a cast of
+ten or fewer it cannot already fit the six tentpoles it has. A twist that
+consumes an episode slot makes that worse. See the note in `buildSchedule`.
+
 ## Known gaps
 
 - The Ball supports three categories per theme (twelve themes, so it does not

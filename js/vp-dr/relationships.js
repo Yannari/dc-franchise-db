@@ -281,7 +281,7 @@ export function rpBuildRelationships(row) {
 
   return `<style>${REL_CSS}</style>${_shell(
     `${tabs}${content}`, ep, {
-      phase: 'untucked', title: 'The Room', subtitle: 'who she loves, who she hates',
+      phase: 'untucked', title: 'The Showroom', subtitle: 'who she loves, who she hates',
       sidebar,
     })}`;
 }

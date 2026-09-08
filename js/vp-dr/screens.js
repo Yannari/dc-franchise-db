@@ -513,7 +513,7 @@ const _afterUntucked = _order.findIndex(s2 => s2.id === 'dr-untucked') + 1;
 _order.splice(_afterUntucked || _order.length, 0, _rate);
 
 const _rel = {
-  id: 'dr-rel', icon: icon('heart'), label: 'The Room', suffix: 'rel',
+  id: 'dr-rel', icon: icon('heart'), label: 'Showroom', suffix: 'rel',
   badge: { text: 'BONDS', color: '#B07AFF' },
   when: row => (row?.dr?.bonds || []).some(([a, b, v]) => v !== 0),
   build: row => rpBuildRelationships(row),

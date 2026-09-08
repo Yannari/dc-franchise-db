@@ -114,8 +114,14 @@ const REL_CSS = `
 }
 `;
 
+const AUTHORED_ROLES = new Set(['mother', 'daughter', 'sister', 'grandmother',
+  'granddaughter', 'aunt', 'niece', 'cousin']);
+
 function label(bond, familyRel) {
-  if (familyRel) return { text: `drag ${familyRel}`, cls: 'rel-card-label-family' };
+  if (familyRel && AUTHORED_ROLES.has(familyRel)) {
+    return { text: `drag ${familyRel}`, cls: 'rel-card-label-family' };
+  }
+  if (familyRel) return { text: familyRel, cls: 'rel-card-label-family' };
   if (bond >= 7) return { text: 'ride or die', cls: 'rel-card-label-ally' };
   if (bond >= 5) return { text: 'close ally', cls: 'rel-card-label-ally' };
   if (bond >= 3) return { text: 'friendly', cls: 'rel-card-label-ally' };
@@ -163,9 +169,11 @@ function buildForQueen(name, bonds, families, living, ep) {
   const famRels = {};
   for (const f of families) {
     if (!f.members || !f.members.includes(name)) continue;
+    const authored = String(f.id || '').startsWith('authored:');
     for (const m of f.members) {
       if (m === name) continue;
-      famRels[m] = f.roles?.[m] || 'family';
+      const role = f.roles?.[m] || 'family';
+      famRels[m] = authored ? role : (f.name || 'family');
     }
   }
 
@@ -223,9 +231,11 @@ function sidebarForQueen(name, bonds, families, living, ep) {
   const famLinks = [];
   for (const f of families) {
     if (!f.members || !f.members.includes(name)) continue;
+    const authored = String(f.id || '').startsWith('authored:');
     for (const m of f.members) {
       if (m === name) continue;
-      famLinks.push({ name: m, rel: f.roles?.[m] || 'family' });
+      const role = f.roles?.[m] || 'family';
+      famLinks.push({ name: m, rel: authored ? `drag ${role}` : (f.name || 'family') });
     }
   }
 

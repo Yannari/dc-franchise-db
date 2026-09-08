@@ -161,6 +161,45 @@ export const RESULTS_CSS = `
   background:linear-gradient(270deg,rgba(255,41,75,.15),transparent 40%),var(--dr-panel)}
 .dr-beat-b > *{direction:ltr}
 .dr-beat-b .dr-por{transform:scaleX(-1)}
+/* ══ THE SCOREBOARD ══ the fight, scored as it happens ══ */
+.dr-mid{display:flex;flex-direction:column;align-items:center;gap:10px;
+  position:relative;z-index:2;min-width:150px}
+/* The four rounds of the song, lighting as it runs. */
+.dr-rounds{display:flex;gap:5px}
+.dr-rounds i{position:relative;width:26px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,.16);transition:background .3s,box-shadow .3s}
+/* ONLY THE ROUND THAT IS PLAYING IS NAMED. Four labels under four 26px
+   pips ran into each other — "VERSECHORUS HOOK ENDING" — so the strip
+   said less the more of it was lit. The name belongs to the round the song
+   is in; the others are pips. */
+.dr-rounds i b{position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFE9A8;
+  font-weight:400;white-space:nowrap;opacity:0;transition:opacity .3s}
+.dr-rounds i.now b{opacity:1}
+.dr-rounds i.on{background:#FF294B;box-shadow:0 0 10px rgba(255,41,75,.8)}
+.dr-rounds i.now{background:#FFE9A8;box-shadow:0 0 16px rgba(255,233,168,.95)}
+.dr-rounds i.on:last-child b{opacity:1}
+/* The tug of war: who is winning the exchange, right now. */
+.dr-tug{position:relative;width:130px;height:3px;margin-top:22px;border-radius:2px;
+  background:linear-gradient(90deg,rgba(255,41,75,.5),rgba(255,255,255,.18),rgba(255,41,75,.5))}
+.dr-tug i{position:absolute;top:-5px;left:50%;width:3px;height:13px;border-radius:2px;
+  background:#fff;box-shadow:0 0 12px rgba(255,255,255,.95);transform:translateX(-50%);
+  transition:left .55s cubic-bezier(.2,1,.3,1)}
+/* The number only exists once the call has been made. */
+.dr-final{display:block;margin-top:8px;min-height:22px;font-size:20px;color:#FFE9A8}
+/* And when it has, the stage picks a side. */
+.dr-vs.dr-decided .dr-fighter{transition:opacity .5s,filter .5s}
+.dr-vs.dr-won-a .dr-fighter.dr-r,.dr-vs.dr-won-b .dr-fighter:not(.dr-r){
+  opacity:.42;filter:grayscale(1)}
+.dr-vs.dr-won-a .dr-fighter:not(.dr-r) .dr-por,
+.dr-vs.dr-won-b .dr-fighter.dr-r .dr-por{
+  border-color:#FFE9A8;box-shadow:0 0 60px -4px rgba(255,233,168,.9)}
+.dr-energy i{transition:width .6s cubic-bezier(.2,1,.3,1)}
+
+@media(prefers-reduced-motion:reduce){
+  .dr-tug i,.dr-energy i,.dr-rounds i{transition:none}
+}
+
 .dr-song{text-align:center;font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;
   font-size:19px;color:#ffd0e8;margin-bottom:12px}
 
@@ -351,17 +390,43 @@ export function rpBuildLipSync(row) {
   const beats = (row.dr.scenes || []).filter(s => s.step === 'lipsync' && s.text);
   const scoreOf = nm => Number(ls.scores?.[nm] ?? ls[nm]?.score) || 0;
 
-  const vs = `<div class="dr-song">${esc(ls.song || '')}${
+  /* ══ THE SCOREBOARD ══
+     THE RESULT WAS ON THE SCREEN BEFORE THE SONG STARTED. Both energy bars
+     were drawn from the FINAL scores at build time, so at 0 / 6 — before a
+     single beat had been read — the longer bar told you who was staying.
+     The one screen in the format that is pure suspense had none.
+
+     It is a fight now and it is scored as one. The engine has always kept
+     `lipsync.beats[queen]` — four named rounds, verse, chorus, hook and
+     ending, with a delta for EACH queen in each — and no screen has ever
+     drawn a single one of them. So: four round pips that light as the song
+     runs, two bars that fill from nothing, and a tug-of-war between them
+     that swings to whoever is winning the exchange.
+     The final scores and the winner appear on the last card and nowhere
+     before it. */
+  const roundsOf = nm => (ls.beats?.[nm] || []).map(x => Number(x.delta) || 0);
+  const rA = roundsOf(a); const rB = roundsOf(b);
+  const ROUNDS = ['verse', 'chorus', 'hook', 'ending'];
+  const nR = Math.max(rA.length, rB.length, 0);
+
+  const vs = `<div class="dr-song dr-fash">${esc(ls.song || '')}${
     ls.artist ? ` — ${esc(ls.artist)}` : ''}</div>
-    <div class="dr-vs">
+    <div class="dr-vs" id="dr-vs">
       <div class="dr-fighter">${_portrait(a, ep, { size: 140 })}
         <b class="dr-disp">${esc(a)}</b>
-        <div class="dr-energy"><i style="width:${Math.max(6, Math.min(100, scoreOf(a) * 10))}%"></i></div>
+        <div class="dr-energy"><i id="dr-en-a" style="width:0%"></i></div>
+        <span class="dr-final dr-num" id="dr-fin-a"></span>
       </div>
-      <div class="dr-bolt dr-disp">VS</div>
+      <div class="dr-mid">
+        <div class="dr-bolt dr-disp">VS</div>
+        ${nR ? `<div class="dr-rounds" id="dr-rounds">${
+    ROUNDS.slice(0, nR).map(r => `<i data-r="${r}"><b>${r}</b></i>`).join('')}</div>` : ''}
+        <div class="dr-tug"><i id="dr-tug"></i></div>
+      </div>
       ${b ? `<div class="dr-fighter dr-r">${_portrait(b, ep, { size: 140 })}
         <b class="dr-disp">${esc(b)}</b>
-        <div class="dr-energy"><i style="width:${Math.max(6, Math.min(100, scoreOf(b) * 10))}%"></i></div>
+        <div class="dr-energy"><i id="dr-en-b" style="width:0%"></i></div>
+        <span class="dr-final dr-num" id="dr-fin-b"></span>
       </div>` : '<div></div>'}
     </div>`;
 
@@ -394,6 +459,66 @@ export function rpBuildLipSync(row) {
   const floor = `<div class="dr-lsfloor" aria-hidden="true">
       <i class="dr-ls-a"></i><i class="dr-ls-b"></i><i class="dr-ls-thud"></i>
     </div>`;
+  /* ── THE SONG RUNS AS YOU READ ──
+     The card count and the round count are different numbers — there are
+     four rounds and however many beats the night produced — so the song
+     advances WITH THE REVEAL rather than one card per round. That is the
+     honest mapping: the reader is moving through the performance, and by
+     the last beat card all four rounds have played.
+     The call card is excluded from that: by then the song is over, and it
+     is the step that finally shows the scores. */
+  const callAt = beats.findIndex(sc => /lipsync-call|lipsync-shantay|lipsync-sashay/
+    .test(sc.kind || ''));
+  const lastBeat = (callAt >= 0 ? callAt : beats.length) - 1;
+
+  if (typeof window !== 'undefined' && nR) {
+    const sum = (arr, k) => arr.slice(0, k).reduce((t, v) => t + v, 0);
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.lipsync = (idx) => {
+      const done = callAt >= 0 && idx >= callAt;
+      // How far through the song this click is.
+      const k = done ? nR
+        : Math.max(0, Math.min(nR, Math.round(((idx + 1) / Math.max(1, lastBeat + 1)) * nR)));
+
+      for (const el of document.querySelectorAll('#dr-rounds i')) {
+        const at = [...el.parentNode.children].indexOf(el);
+        el.classList.toggle('on', at < k);
+        el.classList.toggle('now', at === k - 1 && !done);
+      }
+
+      const sa = sum(rA, k); const sb = sum(rB, k);
+      /* AMPLIFIED ON PURPOSE, and this is a display scale rather than a
+         claim. A round delta is about a fifth of a point, so a true-to-scale
+         bar moves from 50% to 54% and the fight looks like two queens
+         standing still. The span maps the range the deltas actually occupy
+         onto the range the eye can read — the ORDER and the direction are
+         exactly the engine's, only the size of the swing is drawn larger. */
+      const span = 1.3;
+      const pctA = Math.max(4, Math.min(100, 50 + (sa / span) * 50));
+      const pctB = Math.max(4, Math.min(100, 50 + (sb / span) * 50));
+      const enA = document.getElementById('dr-en-a');
+      const enB = document.getElementById('dr-en-b');
+      const tug = document.getElementById('dr-tug');
+      /* ON THE CALL, THE BARS SNAP TO THE REAL SCORES. Until then they are
+         the exchange — who is winning the song — and the actual numbers are
+         not the reader's yet. */
+      if (enA) enA.style.width = `${done ? Math.max(6, Math.min(100, scoreOf(a) * 10)) : pctA}%`;
+      if (enB) enB.style.width = `${done ? Math.max(6, Math.min(100, scoreOf(b) * 10)) : pctB}%`;
+      if (tug) tug.style.left = `${Math.max(6, Math.min(94, 50 + (sa - sb) * 34))}%`;
+
+      const fa = document.getElementById('dr-fin-a');
+      const fb = document.getElementById('dr-fin-b');
+      if (fa) fa.textContent = done ? scoreOf(a).toFixed(1) : '';
+      if (fb) fb.textContent = done ? scoreOf(b).toFixed(1) : '';
+      const box = document.getElementById('dr-vs');
+      if (box) {
+        box.classList.toggle('dr-decided', done);
+        box.classList.toggle('dr-won-a', done && scoreOf(a) >= scoreOf(b));
+        box.classList.toggle('dr-won-b', done && scoreOf(b) > scoreOf(a));
+      }
+    };
+  }
+
   return `<style>${RESULTS_CSS}</style>${_shell(
     `<div class="dr-lsroom">${floor}${vs}${steps}</div>`, ep, {
       phase: 'lipsync', title: 'Lip Sync For Your Life',

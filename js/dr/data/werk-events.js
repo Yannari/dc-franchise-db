@@ -1142,6 +1142,175 @@ export const WERK_EVENTS = [
     ],
   }),
 
+  /* ══ MORE OF ALL THREE ═══════════════════════════════════════════════
+     The rooms were sized to the cast and the pool became the ceiling: a
+     thirteen-queen prep asks for thirteen scenes and gets eight, because
+     eight is all that is eligible. These widen every room and every cast —
+     solo, pair, and the couch — so the draw has somewhere to go.
+     {a} and {b} are who it is about; {c} and {d} are the rest of the room. */
+
+  // ── the morning ──
+  ev({
+    id: 'alone-in-the-room-early', slot: 'werk-morning', cast: 'solo', weight: 1.2,
+    note: '{a} is in the room before anybody else and works in the quiet for '
+      + 'twenty minutes, which is either discipline or not wanting to talk to '
+      + 'anybody yet, and she is not saying which.',
+    when: f => f.neverBottomA || f.winsA >= 1,
+    effects: { pop: { a: 1 }, state: 'early' },
+    lines: [],
+  }),
+  ev({
+    id: 'naming-the-frontrunner', slot: 'werk-morning', cast: 'group', weight: 1.3,
+    note: '{a}, {b} and {c} work out loud about who is actually winning this '
+      + 'season, and the queen they name is not in the conversation, and one '
+      + 'of the three of them is quietly offended not to have been named.',
+    when: f => f.groupSize >= 3 && f.phase >= 1,
+    effects: { bond: 0.5, pop: { a: 1 }, state: 'threat-talk' },
+    lines: [],
+  }),
+  ev({
+    id: 'unsolicited-advice', slot: 'werk-morning', cast: 'pair', weight: 1.2,
+    note: '{a} tells {b} what she should be doing differently. {b} did not '
+      + 'ask. The advice is correct, which is the annoying part.',
+    when: f => f.bottomsB >= 1,
+    effects: { bond: -1, pop: { a: -1 }, state: 'advice' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-early-favourite', slot: 'werk-morning', cast: 'group', weight: 1.1,
+    note: 'Somebody says out loud that {b} is going to win the whole thing '
+      + 'and {b} has to stand there while {a} and {c} agree about her in the '
+      + 'third person. It is a compliment and it is a target.',
+    when: f => f.groupSize >= 3 && f.winsB >= 1,
+    effects: { bond: 0.5, pop: { b: -1 }, state: 'painted-target' },
+    lines: [],
+  }),
+
+  // ── prep ──
+  ev({
+    id: 'borrowed-and-not-returned', slot: 'prep', cast: 'pair', weight: 1.2,
+    note: '{a} has something of {b}\'s — a tool, a fabric, a wig cap — and has '
+      + 'had it for two hours, and {b} needs it now and is being very polite '
+      + 'about needing it now.',
+    when: f => f.bond <= 2,
+    effects: { bond: -1, pop: { a: -1 }, state: 'borrowed' },
+    lines: [],
+  }),
+  ev({
+    id: 'second-guessing-out-loud', slot: 'prep', cast: 'solo', weight: 1.3,
+    note: '{a} asks the room whether it is working. Nobody answers honestly, '
+      + 'which she notices, and the not-answering tells her more than an '
+      + 'answer would have.',
+    when: f => f.bottomsA >= 1 || f.neverTopA,
+    effects: { pop: { a: -1 }, state: 'doubting' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-loud-one', slot: 'prep', cast: 'group', weight: 1.2,
+    note: '{a} has been talking for an hour and {b} and {c} have both stopped '
+      + 'responding and she has not noticed. Somebody is going to say '
+      + 'something eventually and it will not be kind.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: -1, pop: { a: -1 }, state: 'too-loud' },
+    lines: [],
+  }),
+  ev({
+    id: 'she-can-actually-sew', slot: 'prep', cast: 'group', weight: 1.1,
+    note: 'A queue forms at {a}\'s machine because {a} is the only one who '
+      + 'genuinely knows what she is doing, and she helps {b} and {c} and '
+      + 'loses two hours of her own day doing it.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 1.5, pop: { a: 2 }, state: 'the-seamstress' },
+    lines: [],
+  }),
+  ev({
+    id: 'copying-her-idea', slot: 'prep', cast: 'pair', weight: 1.1,
+    note: '{a} looks at what {b} is building and changes her own to be closer '
+      + 'to it. Not a copy exactly. Close enough that {b} sees it happen.',
+    when: f => f.canScheme,
+    effects: { bond: -1.5, pop: { a: -1 }, state: 'copied' },
+    lines: [],
+  }),
+  ev({
+    id: 'talking-about-home', slot: 'prep', cast: 'pair', weight: 1.2,
+    note: 'The work goes quiet and {a} tells {b} something real about her life '
+      + 'outside this room, and {b} puts her glue gun down to listen properly.',
+    when: f => f.bond >= 1,
+    effects: { bond: 2, pop: { a: 1 }, state: 'real-talk' },
+    lines: [],
+  }),
+  ev({
+    id: 'nobody-helps-her', slot: 'prep', cast: 'group', weight: 1.2,
+    note: '{a} is visibly behind and {b} and {c} both see it and both stay at '
+      + 'their own stations. Nobody is cruel. Nobody moves either.',
+    when: f => f.groupSize >= 3 && f.bond <= 0,
+    effects: { bond: -1, pop: { a: 1 }, state: 'left-to-it' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-mirror-pep-talk', slot: 'prep', cast: 'solo', weight: 1.1,
+    note: '{a} gives herself the talk in the mirror, out loud, and does not '
+      + 'realise how many people can hear her doing it.',
+    when: f => f.bottomsA >= 1,
+    effects: { pop: { a: 1 }, state: 'pep-talk' },
+    lines: [],
+  }),
+
+  // ── elimination day ──
+  ev({
+    id: 'packing-early', slot: 'werk-elim-day', cast: 'solo', weight: 1.2,
+    note: '{a} starts packing before she has been told anything, which is '
+      + 'either realism or giving up, and the room cannot tell which and does '
+      + 'not want to ask.',
+    when: f => f.bottomsA >= 1,
+    effects: { pop: { a: -1 }, state: 'packing' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-promise', slot: 'werk-elim-day', cast: 'pair', weight: 1.3,
+    note: '{a} and {b} promise each other something about the top of the '
+      + 'season — final two, or that neither will name the other — and one of '
+      + 'them means it more than the other.',
+    when: f => f.bond >= 3,
+    effects: { bond: 2, pop: { a: 1 }, state: 'the-promise' },
+    lines: [],
+  }),
+  ev({
+    id: 'last-drink-together', slot: 'werk-elim-day', cast: 'group', weight: 1.2,
+    note: '{a}, {b} and {c} have a drink in a room that is about to be one '
+      + 'smaller and all three of them are being careful not to say so.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 1, pop: { a: 1 }, state: 'last-drink' },
+    lines: [],
+  }),
+
+  // ── the cold open ──
+  ev({
+    id: 'reading-the-mirror', slot: 'cold-open', cast: 'group', weight: 1.4,
+    note: '{a} reads the mirror message out loud to {b} and {c} because '
+      + 'somebody has to, and gets most of the way through it before her '
+      + 'voice does something she was not expecting.',
+    when: f => f.someoneLeft && f.groupSize >= 3,
+    effects: { bond: 1.5, pop: { a: 1 }, state: 'mirror-read' },
+    lines: [],
+  }),
+  ev({
+    id: 'relief-badly-hidden', slot: 'cold-open', cast: 'solo', weight: 1.1,
+    note: '{a} is relieved that it was not her and is not hiding it as well '
+      + 'as she thinks she is, and somebody clocks it.',
+    when: f => f.someoneLeft && f.lastCall === 'BTM2',
+    effects: { pop: { a: -1 }, state: 'relieved' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-empty-chair', slot: 'cold-open', cast: 'pair', weight: 1.2,
+    note: '{a} and {b} both look at the station and neither of them takes it, '
+      + 'and the not-taking goes on for the rest of the day.',
+    when: f => f.someoneLeft,
+    effects: { bond: 1, pop: { a: 1 }, state: 'empty-chair' },
+    lines: [],
+  }),
+
 ];
 
 /** Ids only, for guards and the transcript. */

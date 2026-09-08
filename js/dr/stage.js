@@ -635,8 +635,14 @@ export function renderStageBeats({
  */
 export function runUntucked({
   living = [], players = {}, state = {}, storylines = [], call = {},
-  namedOnStage = [], rng = Math.random, ctx = {}, perPhase = 3,
+  namedOnStage = [], rng = Math.random, ctx = {}, perPhase = null,
 }) {
+  /* HOW MANY SCENES A PHASE GETS, and three was three regardless of whether
+     there were twelve queens on the couch or four. Untucked is the one room
+     where the whole cast is in shot at once, and nine scenes across a
+     thirteen-queen night means most of them sat there silently.
+     Scaled to the room, with a floor so a final four still has a segment. */
+  const per = perPhase ?? Math.max(3, Math.round(living.length * 0.55));
   const scenes = [];
   const seen = {};
   const usedLines = new Set();
@@ -664,20 +670,45 @@ export function runUntucked({
   };
 
   for (const phase of UNTUCKED_PHASES) {
-    for (let i = 0; i < perPhase; i++) {
+    for (let i = 0; i < per; i++) {
       const candidates = [];
       for (const ev of UNTUCKED_EVENTS) {
         if (ev.phase !== phase) continue;
         const a = subject(living);
         const others = living.filter(n => n !== a);
-        const b = ev.cast === 'pair' ? (others.length ? subject(others) : null) : null;
-        if (ev.cast === 'pair' && !b) continue;
+        const pairing = ev.cast === 'pair' || ev.cast === 'group';
+        const b = pairing ? (others.length ? subject(others) : null) : null;
+        if (pairing && !b) continue;
+
+        /* ── AND THE REST OF THE COUCH ──
+           Untucked is the one room where the entire cast is in shot at the
+           same time, and the pool only knew how to do one queen or two — so
+           the segment whose whole premise is everybody sitting together
+           watching each other read as a series of two-handers.
+           `{c}` and `{d}` are the queens who are simply there: the one who
+           says nothing while two others go at it, the one who laughs at the
+           wrong moment, the third voice in a conversation that was going to
+           stay civil until she joined it. */
+        const rest = [];
+        if (ev.cast === 'group') {
+          const pool = others.filter(n => n !== b);
+          const want = Math.min(pool.length, 1 + Math.floor(rng() * 2));
+          for (let g = 0; g < want; g++) {
+            const left = pool.filter(n => !rest.includes(n));
+            if (!left.length) break;
+            rest.push(subject(left));
+          }
+          if (!rest.length) continue;
+        }
 
         const facts = {
           a: players[a] || null,
           b: b ? players[b] || null : null,
           nameA: a,
           nameB: b,
+          nameC: rest[0] || null,
+          nameD: rest[1] || null,
+          groupSize: 1 + (b ? 1 : 0) + rest.length,
           bond: b ? bondOf(a, b) : 0,
           canScheme: canScheme(players[a]),
           lastCall: callOf(a),
@@ -711,8 +742,8 @@ export function runUntucked({
       const chosen = candidates.find(c => (roll -= c.weight) <= 0) || candidates[0];
       if (scenes.some(s => s.data.event === chosen.ev.id)) continue;
 
-      const who = chosen.facts.nameB
-        ? [chosen.facts.nameA, chosen.facts.nameB] : [chosen.facts.nameA];
+      const who = [chosen.facts.nameA, chosen.facts.nameB,
+        chosen.facts.nameC, chosen.facts.nameD].filter(Boolean);
       scenes.push({
         step: 'untucked',
         kind: `untucked:${chosen.ev.id}`,
@@ -720,7 +751,13 @@ export function runUntucked({
           event: chosen.ev.id, phase, players: who,
           note: chosen.ev.note, eligible: candidates.length,
         },
-        text: fill(pick(chosen.ev.lines, rng, usedLines, chosen.ev.id), { a: who[0], b: who[1] }),
+        text: fill(pick(chosen.ev.lines, rng, usedLines, chosen.ev.id),
+          /* {c} AND {d} ARE THE COUCH HERE, not the category and the pick.
+             This shares the module's `fill`, where those two names mean
+             something else on the stage beats — safe because no Untucked
+             line has a category or a draft choice to name, and the guard
+             rejects any placeholder outside a/b/c/d in this pool. */
+          { a: who[0], b: who[1], c: chosen.facts.nameC, d: chosen.facts.nameD }),
         effects: chosen.ev.effects,
       });
       used.add(chosen.ev.id);

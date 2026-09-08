@@ -411,10 +411,22 @@ describe('a night nobody leaves makes the season longer', () => {
   });
 
   it('a free week and a double elimination cancel out', () => {
-    const base = playDragSeason({ cast: cast(14), seed: 4 });
+    /* BOTH RUNS WITH THE DOUBLE SHANTAY OFF, because that is the one thing
+       that changes a season's length WITHOUT being scheduled — it is decided
+       on the night, from the rng, and the two runs here have different
+       schedules and therefore different rng streams. Leaving it on meant this
+       compared two lengths that could legitimately differ for a reason the
+       test is not about, and it held by luck until an unrelated change
+       shifted the draw. The property is that a booked free week and a booked
+       double cancel each other, and that is what this now measures. */
+    const noShantay = { drDoubleShantay: false };
+    const base = playDragSeason({ cast: cast(14), seed: 4, config: noShantay });
     const out = playDragSeason({
       cast: cast(14), seed: 4,
-      config: { drSchedule: [{ episode: 4, noElimination: true }, { episode: 7, doubleElimination: true }] },
+      config: {
+        ...noShantay,
+        drSchedule: [{ episode: 4, noElimination: true }, { episode: 7, doubleElimination: true }],
+      },
     });
     expect(out.rows.length).toBe(base.rows.length);
     expect(out.state.living.length).toBe(4);

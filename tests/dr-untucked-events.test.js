@@ -45,7 +45,9 @@ describe('the schema', () => {
     for (const e of UNTUCKED_EVENTS) {
       expect(e.id, 'an event with no id').toBeTruthy();
       expect(UNTUCKED_PHASES, `${e.id} is in phase "${e.phase}"`).toContain(e.phase);
-      expect(['solo', 'pair'], `${e.id} has cast "${e.cast}"`).toContain(e.cast);
+      // `group` is the couch: {a} and {b} are who it is about and {c}/{d} are
+      // the queens who are simply there, which is most of Untucked.
+      expect(['solo', 'pair', 'group'], `${e.id} has cast "${e.cast}"`).toContain(e.cast);
       expect(e.note, `${e.id} has no note for the writer`).toBeTruthy();
       expect(typeof e.when, `${e.id} has no eligibility test`).toBe('function');
       expect(Array.isArray(e.lines), `${e.id} lines is not an array`).toBe(true);
@@ -145,7 +147,12 @@ describe('the lines', () => {
       for (const l of e.lines) {
         expect(l, `${e.id} never names its subject`).toMatch(/\{a\}/);
         if (e.cast === 'solo') expect(l, `${e.id} is solo but uses {b}`).not.toMatch(/\{b\}/);
-        const bad = l.match(/\{(?!a\}|b\})[^}]*\}/);
+        // {c} and {d} name the rest of the couch and exist only in a group
+        // scene; elsewhere they render as an empty string mid-sentence.
+        if (e.cast !== 'group') {
+          expect(l, `${e.id} is ${e.cast} but names a third queen`).not.toMatch(/\{[cd]\}/);
+        }
+        const bad = l.match(/\{(?!a\}|b\}|c\}|d\})[^}]*\}/);
         expect(bad, `${e.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
       }
     }

@@ -542,6 +542,193 @@ export const UNTUCKED_EVENTS = [
       "The room is filing toward the door and {a} falls into step next to {b} and says something under her breath that makes {b} stop moving. {a} does not stop. She keeps walking, and by the time {b} has composed a reply {a} is already three steps ahead and not looking back.",
     ],
   }),
+  /* ══ MORE OF THE ROOM, AND THE ROOM ITSELF ═══════════════════════════
+     Forty-one events across three phases, all of them one queen or two, is a
+     thin segment for the one room where the entire cast sits in shot at the
+     same time — the draw runs out and the same scenes come round again.
+     These add the third cast Untucked never had (`group`: {c} and sometimes
+     {d} are the queens who are simply THERE) and widen all three phases.
+     Placeholders: {a} and {b} are who it is about, {c} and {d} the couch. */
+
+  // ── arrival: the door, the drinks, the first thing anybody says ──
+  ev({
+    id: 'straight-to-the-mirror', phase: 'arrival', cast: 'solo', weight: 1.2,
+    note: 'She does not sit down. {a} goes straight to the mirror and starts '
+      + 'fixing something that does not need fixing, because her hands need a '
+      + 'job and the alternative is talking about what just happened.',
+    when: f => f.lastCall === 'BTM2' || f.lastCall === 'LOW',
+    effects: { pop: { a: 1 }, state: 'unspoken' },
+    lines: [],
+  }),
+  ev({
+    id: 'pouring-for-everybody', phase: 'arrival', cast: 'group', weight: 1.4,
+    note: 'Somebody has to do it and {a} does it. She pours for {b} and {c} '
+      + 'before she pours for herself, which is either kindness or a way of '
+      + 'not sitting down yet, and the room takes it as kindness.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 1, pop: { a: 1 }, state: 'host-of-the-room' },
+    lines: [],
+  }),
+  ev({
+    id: 'nobody-says-it', phase: 'arrival', cast: 'group', weight: 1.3,
+    note: 'The obvious thing goes unsaid for a full minute. {a}, {b} and {c} '
+      + 'all know who is in trouble and all three of them talk about the '
+      + 'runway instead, and the avoidance is louder than the subject.',
+    when: f => f.groupSize >= 3 && (f.inBottom || f.bInBottom),
+    effects: { bond: 0.5, pop: { a: 1 }, state: 'avoidance' },
+    lines: [],
+  }),
+  ev({
+    id: 'still-in-the-wig', phase: 'arrival', cast: 'solo', weight: 1.1,
+    note: 'Everybody else is out of the shoes and {a} has not moved. She is '
+      + 'still fully in it, sitting upright, as if taking any of it off would '
+      + 'be admitting the night is over and she did not win it.',
+    when: f => f.lastCall === 'HIGH' || f.lastCall === 'WIN',
+    effects: { pop: { a: 1 }, state: 'holding-on' },
+    lines: [],
+  }),
+
+  // ── middle: where it goes wrong ──
+  ev({
+    id: 'the-whole-room-turns', phase: 'middle', cast: 'group', weight: 1.5,
+    note: 'It stops being between two people. {a} says something to {b} and '
+      + '{c} agrees out loud, and the moment a third voice arrives it is not '
+      + 'a disagreement any more, it is a side.',
+    when: f => f.groupSize >= 3 && f.tension,
+    effects: { bond: -2, pop: { a: -1, b: -1 }, state: 'pile-on' },
+    lines: [],
+  }),
+  ev({
+    id: 'laughed-at-the-wrong-time', phase: 'middle', cast: 'group', weight: 1.2,
+    note: '{c} laughs in the middle of something that was not funny to {b}, '
+      + 'and now {c} is in it, and {c} did not say a word.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: -1, pop: { c: -1 }, state: 'wrong-laugh' },
+    lines: [],
+  }),
+  ev({
+    id: 'holding-the-room', phase: 'middle', cast: 'group', weight: 1.2,
+    note: '{a} has the floor and is genuinely holding it — a story, an '
+      + 'impression, an account of something that happened years ago — and '
+      + '{b} and {c} are laughing properly for the first time all week.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 1.5, pop: { a: 2 }, state: 'room-is-hers' },
+    lines: [],
+  }),
+  ev({
+    id: 'that-is-not-what-i-said', phase: 'middle', cast: 'pair', weight: 1.3,
+    note: '{b} repeats back what {a} said and it is not what {a} said, and '
+      + 'the gap between the two versions is where the whole argument lives.',
+    when: f => f.tension || f.namedOnStage,
+    effects: { bond: -1.5, pop: { a: -1 }, state: 'misquoted' },
+    lines: [],
+  }),
+  ev({
+    id: 'apology-not-accepted', phase: 'middle', cast: 'pair', weight: 1.1,
+    note: '{a} apologises and {b} does not take it. Not rudely — she just '
+      + 'does not take it, and the room watches an apology sit there.',
+    when: f => f.bond <= -2,
+    effects: { bond: -1, pop: { b: -1 }, state: 'refused' },
+    lines: [],
+  }),
+  ev({
+    id: 'defended-by-somebody', phase: 'middle', cast: 'group', weight: 1.3,
+    note: '{b} is being got at and {c} — who has no stake in it and was not '
+      + 'asked — says something in her defence. It changes the room and it '
+      + 'costs {c} something with {a}.',
+    when: f => f.groupSize >= 3 && f.tension,
+    effects: { bond: 1.5, pop: { c: 2 }, state: 'defended' },
+    lines: [],
+  }),
+  ev({
+    id: 'reading-the-room-wrong', phase: 'middle', cast: 'solo', weight: 1.1,
+    note: '{a} makes a joke about the queen who is about to lip sync and it '
+      + 'lands in total silence. She hears it land. There is no way back.',
+    when: f => f.canScheme,
+    effects: { pop: { a: -2 }, state: 'misjudged' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-monitor', phase: 'middle', cast: 'group', weight: 1.4,
+    note: 'They can hear the panel deliberating and nobody admits to '
+      + 'listening. {a}, {b} and {c} are all facing away from the screen and '
+      + 'all three of them have stopped talking.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 0.5, pop: { a: 1 }, state: 'listening' },
+    lines: [],
+  }),
+  ev({
+    id: 'called-out-for-the-edit', phase: 'middle', cast: 'pair', weight: 1.0,
+    note: '{b} tells {a} she is playing to the camera, which is both true and '
+      + 'the rudest thing you can say in this room, because everybody is.',
+    when: f => f.canScheme && f.bond <= 1,
+    effects: { bond: -1.5, pop: { a: -1 }, state: 'accused-of-editing' },
+    lines: [],
+  }),
+  ev({
+    id: 'not-your-turn', phase: 'middle', cast: 'group', weight: 1.1,
+    note: '{a} is upset and {c} is more upset and louder about it, and the '
+      + 'room quietly resents {c} for taking a moment that was not hers.',
+    when: f => f.groupSize >= 3 && f.inBottom,
+    effects: { bond: -1, pop: { c: -2 }, state: 'stolen-moment' },
+    lines: [],
+  }),
+
+  // ── late: the walk back out ──
+  ev({
+    id: 'fixing-her-face-for-her', phase: 'late', cast: 'pair', weight: 1.3,
+    note: '{b} does {a}\'s makeup for her because {a} cannot do it herself '
+      + 'right now, and neither of them says why, and it is the kindest thing '
+      + 'that happens all night.',
+    when: f => f.inBottom,
+    effects: { bond: 2, pop: { b: 2 }, state: 'held-together' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-group-hug', phase: 'late', cast: 'group', weight: 1.2,
+    note: 'It is not performed. {a}, {b} and {c} end up holding onto each '
+      + 'other by the door and none of them started it and none of them lets '
+      + 'go first.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 2, pop: { a: 1 }, state: 'together' },
+    lines: [],
+  }),
+  ev({
+    id: 'unfinished-business', phase: 'late', cast: 'pair', weight: 1.2,
+    note: 'They are called back and it is not resolved. {a} and {b} stand up '
+      + 'to leave with the thing still sitting between them, and both of them '
+      + 'know it is going to be there tomorrow.',
+    when: f => f.tension,
+    effects: { bond: -1, pop: { a: -1 }, state: 'unresolved' },
+    lines: [],
+  }),
+  ev({
+    id: 'said-out-loud-at-last', phase: 'late', cast: 'group', weight: 1.1,
+    note: 'On the way out somebody finally says the thing the whole room has '
+      + 'been avoiding for an hour. {a} says it, {b} and {c} hear it, and '
+      + 'there is no time left to do anything about it.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: -1, pop: { a: 1 }, state: 'finally-said' },
+    lines: [],
+  }),
+  ev({
+    id: 'she-goes-quiet', phase: 'late', cast: 'solo', weight: 1.2,
+    note: '{a} has not spoken for twenty minutes and the room has not '
+      + 'noticed, and the not-noticing is the part she will remember.',
+    when: f => f.lastCall === 'SAFE',
+    effects: { pop: { a: -1 }, state: 'overlooked' },
+    lines: [],
+  }),
+  ev({
+    id: 'nothing-left-to-say', phase: 'late', cast: 'pair', weight: 1.0,
+    note: '{a} and {b} are about to walk back out to find out which of them '
+      + 'is leaving, and they look at each other, and neither of them says '
+      + 'anything because there is nothing that would help.',
+    when: f => f.bothInBottom,
+    effects: { bond: 1.5, pop: { a: 1 }, state: 'before-the-song' },
+    lines: [],
+  }),
+
 ];
 
 export const UNTUCKED_IDS = UNTUCKED_EVENTS.map(e => e.id);

@@ -24,6 +24,10 @@ import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
 import { familyForChallenge } from './data/maxi-performance.js';
 import { dragOf } from './queen.js';
+import {
+  themeFamilyFor, fitTierFor, themeLinesFor, voiceLinesFor,
+  swaggerGroupFor, swaggerLinesFor,
+} from './data/runway-voices.js';
 import { canScheme } from './rules.js';
 
 /** Where the cuts fall, as a fraction of the queens who walked. */
@@ -64,12 +68,13 @@ const pick = (lines, rng, used = null, key = '') => {
   return chosen;
 };
 
-const fill = (line, { a, b, j, s, c } = {}) => (line || '')
+const fill = (line, { a, b, j, s, c, k } = {}) => (line || '')
   .replace(/\{a\}/g, a || '')
   .replace(/\{b\}/g, b || '')
   .replace(/\{j\}/g, j || '')
   .replace(/\{s\}/g, s || '')
-  .replace(/\{c\}/g, c || '');
+  .replace(/\{c\}/g, c || '')
+  .replace(/\{k\}/g, k || '');
 
 /** Rank in [0,1], 0 being best. */
 function fractionalRank(name, scores) {
@@ -93,6 +98,14 @@ export function renderStageBeats({
   walking = [], onStage = [], runway = {}, call = {}, reactions = {},
   lipsync = null, exits = [], split = false, judges = [], critiques = [],
   firstOfSeason = false, formatNote = null,
+  /* WHAT THE OPENING AND THE RUNWAY NEED, none of which used to arrive here.
+     `category` is tonight's prompt, and without it the host could not say
+     what anybody was walking in; `panelSeats` is the panel as objects rather
+     than the flat list of names in `judges`, because introducing a judge
+     needs to know WHICH judge and whether she is a guest; `players` is the
+     roster records, because a queen narrating her own walk needs her drag
+     style and her archetype and the runway result carries neither. */
+  category = '', runwayKind = 'call', panelSeats = [], players = {},
   rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
@@ -106,17 +119,22 @@ export function renderStageBeats({
   const runwayScores = Object.fromEntries(
     walking.filter(n => runway[n]).map(n => [n, runway[n].score]));
 
-  const emit = (beat, tierId, who, extra = {}) => {
+  const emit = (beat, tierId, who, extra = {}, said = {}) => {
+    if (!beat) return;
     const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
     if (!t) return;
-    const j = beat.speaker === 'judge' && judges.length
-      ? judges[Math.floor(rng() * judges.length)] : null;
+    /* A NAMED JUDGE BEATS A DRAWN ONE. Every judge beat before this drew a
+       seat at random, which is right for "one of them says the deliberation
+       is split" and wrong for the beat that introduces a specific judge by
+       name. `said.j` is that judge; the random draw is the fallback. */
+    const j = said.j || (beat.speaker === 'judge' && judges.length
+      ? judges[Math.floor(rng() * judges.length)] : null);
     scenes.push({
       step: beat.step,
       kind: `stage:${beat.id}`,
       data: { beat: beat.id, tier: t.id, players: who, note: t.note, judge: j, ...extra },
       text: fill(pick(t.lines, rng, usedLines, `${beat.id}/${t.id}`),
-        { a: who[0], b: who[1], j, s: songTitle }),
+        { a: who[0], b: who[1], j, s: songTitle, c: category, k: said.k || '' }),
     });
   };
 
@@ -128,6 +146,31 @@ export function renderStageBeats({
 
   // ── the stage opens ──
   emit(beatById('entrance'), 'open', []);
+
+  /* ── AND THE PANEL IS INTRODUCED, ONE SEAT AT A TIME ──
+     The panel used to arrive as a row of portraits with a caption under each
+     one. Four people whose authored tastes are about to disagree in public,
+     and not one of them was spoken to before they started judging.
+
+     RUPAUL IS SKIPPED because he is the one doing the introducing, and a
+     guest is tiered on whether a credit came with her rather than on who she
+     is — a franchise alumnus has no authored judging voice to write to, only
+     a name and, if the season pinned one, a line about what she won. */
+  const introBeat = beatById('panel-intro');
+  for (const seat of panelSeats) {
+    if (!seat || seat.id === 'rupaul') continue;
+    const tierId = seat.guest ? (seat.credit ? 'guest-credited' : 'guest') : seat.id;
+    if (!introBeat.tiers.some(t => t.id === tierId)) continue;
+    emit(introBeat, tierId, [], { judgeId: seat.id, guest: !!seat.guest },
+      { j: seat.name || seat.id, k: seat.credit || '' });
+  }
+
+  /* ── AND ONLY NOW, WHAT THEY ARE WALKING IN ──
+     The category reached this function for the first time with this beat.
+     Before it, one hardcoded line in the pool said "eleganza" and every other
+     opening declined to name the prompt at all, so the viewer met the
+     category on the runway screen — after it had already been walked in. */
+  emit(beatById('category-call'), runwayKind, [], { category });
   /* AND THE FORMAT, WHEN IT IS NOT THE ORDINARY ONE. A split premiere put
      half the cast on screen and never said why the other half were missing;
      a no-elimination night ran a full lip sync and sent nobody home. The
@@ -135,17 +178,76 @@ export function renderStageBeats({
      was left to infer a format from an absence. */
   if (formatNote) emit(beatById('format-note'), formatNote, []);
 
-  // ── one walk per queen ──
+  /* ── ONE WALK PER QUEEN, IN HER OWN VOICE ──
+     The narrator used to do all of these and had one register for thirteen
+     women: a fashion queen who lives on proportion, a camp queen who built
+     the joke on purpose and a pageant queen who has done this since she was
+     nineteen all got the same sentence with a different name in it, and the
+     only thing that varied was how good the look was. The show does not do
+     that — it runs HER voiceover over her own walk.
+
+     THREE CLAUSES FROM THREE POOLS, joined here (js/dr/data/runway-voices.js
+     has the full argument for why they are separate):
+
+       theme    what she brought for THIS category, and whether the prompt is
+                her wheelhouse or a fight — the fit `runwayScore` measured.
+       voice    how it read on the walk, in her craft's own language.
+       swagger  what a woman like her thinks about that result.
+
+     ALL OR NOTHING ON THE REGISTER, and that is the only subtle rule here.
+     The voice pool ships empty and is filled one style at a time, so for most
+     of this file's life some styles speak and some do not. A queen whose
+     style has no voice lines yet keeps the third-person narrator walk exactly
+     as before — she does NOT get a first-person theme line glued to a
+     third-person narration, which reads like two people describing the same
+     dress. Filling a style's five voice tiers is what switches that style
+     over, and it switches over completely. */
   const walkBeat = beatById('walk');
   const fitBeat = beatById('walk-fit');
   for (const n of walking) {
     if (!runway[n]) continue;
-    emit(walkBeat, tierAt(fractionalRank(n, runwayScores), RUNWAY_TIERS), [n],
-      { score: runway[n].score });
-    // Only when the fit is notable either way. A look that neither answered
-    // nor ignored the category has nothing to say about the category.
-    if (runway[n].fit === true) emit(fitBeat, 'on-theme', [n]);
-    else if (runway[n].fit === false) emit(fitBeat, 'off-theme', [n]);
+    const r = runway[n];
+    const tierId = tierAt(fractionalRank(n, runwayScores), RUNWAY_TIERS);
+    const p = players[n] || null;
+    const style = dragOf(p).style;
+    const group = swaggerGroupFor(p && p.archetype);
+    const family = themeFamilyFor(r.category || category);
+    const fitId = fitTierFor(r.fit);
+    const craft = voiceLinesFor(style, tierId);
+
+    if (craft) {
+      const themed = themeLinesFor(family, fitId);
+      const nerve = swaggerLinesFor(group, tierId);
+      const say = (lines, key) => (lines
+        ? fill(pick(lines, rng, usedLines, key), { a: n, c: r.category || category })
+        : '');
+      const text = [
+        say(themed, `theme/${family}/${fitId}`),
+        say(craft, `voice/${style}/${tierId}`),
+        say(nerve, `swagger/${group}/${tierId}`),
+      ].filter(Boolean).join(' ');
+      scenes.push({
+        step: walkBeat.step,
+        kind: 'stage:walk',
+        data: {
+          beat: 'walk', tier: tierId, players: [n], note: walkBeat.tiers
+            .find(t => t.id === tierId)?.note || '',
+          score: r.score, voiced: true, style, swagger: group, family, fit: fitId,
+        },
+        text,
+      });
+    } else {
+      emit(walkBeat, tierId, [n], { score: r.score, voiced: false, style, fit: fitId });
+    }
+
+    /* WHETHER THE LOOK ANSWERED THE CATEGORY, WHICH HAS NEVER ONCE BEEN SAID.
+       `fit` arrives from `runwayScore` as 1, 0.5 or 0 and this compared it
+       against `true` and `false`, so neither branch could ever be taken and
+       both tiers of a written beat were dead prose. The middle value is still
+       skipped on purpose: a prompt that names no styles asks everybody the
+       same question, so there is nothing to say about the category. */
+    if (fitId === 'home') emit(fitBeat, 'on-theme', [n]);
+    else if (fitId === 'against') emit(fitBeat, 'off-theme', [n]);
   }
 
   // ── the critiques, FROM THE PANEL'S OWN VIEWS ──

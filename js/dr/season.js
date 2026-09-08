@@ -8,6 +8,7 @@
 import { initDragState } from './state.js';
 import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
+import { PARTNER_COHORTS } from './chal/makeover.js';
 import { RETURNEE_BEATS } from './data/returnee-beats.js';
 import { runReunion } from './reunion.js';
 import { smackdownScenes } from './smackdown.js';
@@ -115,6 +116,20 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       // runway is the one thing a viewer sees every single episode, so a
       // repeat is more noticeable here than anywhere else.
       runwayCategory: pin.runwayCategory || null,
+      /* THE MAKEOVER'S PARTNERS. Seven cohorts are authored — superfans,
+         veterans, seniors, athletes, the pit crew, loved ones, and the
+         queens already sent home — and NOTHING EVER SET THIS. The module
+         reads `cfg.makeoverPool`, no writer existed, so every makeover in
+         every season was superfans, six cohorts were dead data, and the
+         `reunion` event, which needs a partner who is herself a queen, could
+         not fire: measured at nought across twenty-five seasons.
+         The eliminated cohort waits until enough queens are out to make a
+         pool of it, which is also when the show would use it. */
+      makeoverPool: pin.makeoverPool
+        || (maxiId === 'makeover'
+          ? pick(rng, e >= 5 ? PARTNER_COHORTS
+            : PARTNER_COHORTS.filter(c => c !== 'eliminated'))
+          : null),
       /* AND THE WEEK'S OWN SHAPE. Every field above is a piece of CONTENT the
          author can pin; this is the one that changes what the week DOES, and
          it has to survive the build or the schedule entry reaches the season
@@ -242,6 +257,7 @@ function weekCfg(sch, config, num, extra = {}) {
     guest: sch.guest,
     songTitle: sch.songTitle,
     runwayCategory: sch.runwayCategory,
+    makeoverPool: sch.makeoverPool || null,
     judgeWeights: config.drJudgeWeights || {},
     immunity: !!config.drImmunity,
     // The arcs need to know how far through the season they are: what the

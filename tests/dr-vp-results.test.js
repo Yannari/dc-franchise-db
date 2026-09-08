@@ -55,9 +55,17 @@ describe('the call', () => {
        point she has not decided. This is the screen where she has, so it is
        the one place the two ranks appear together and a queen the host moved
        is marked as moved. */
-    const bentRow = ordinary.find(r => (r.dr.bend || []).some(b => b.panelRank !== b.finalRank));
-    expect(bentRow, 'the host never moved anybody all season').toBeTruthy();
-    const html = rpBuildResults(bentRow);
+    /* THE BADGE IS WHERE THE QUEEN IS. The safe queens are dismissed before
+       the critiques and are no longer on this screen at all, so a bend that
+       landed on a safe queen is reported on the critiques screen instead —
+       and this looked only here, then failed the first season in which the
+       only queen the host moved happened to be safe. It is the same fact in
+       two places because she is standing in two different rooms. */
+    const moved = r => (r.dr.bend || []).filter(b => b.panelRank !== b.finalRank);
+    const onCall = ordinary.find(r => moved(r)
+      .some(b => !(r.dr.call?.safe || []).includes(b.name)));
+    expect(onCall, 'the host never moved a queen who was still on the stage').toBeTruthy();
+    const html = rpBuildResults(onCall);
     expect(html).toMatch(/the host moved her/);
     expect(html).toMatch(/panel \d+ → \d+/);
   });

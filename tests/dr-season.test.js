@@ -67,7 +67,16 @@ describe('playDragSeason', () => {
     const c = cast(14);
     const { rows, winner, runnerUp, finale, state } = playDragSeason({ cast: c, seed: 7, config: { drFinale: 'top4' } });
 
-    expect(rows.length).toBe(11);
+    /* THE LENGTH IS A RULE, NOT A NUMBER — and the comment below already
+       said so about the exits while this line went on asserting a constant.
+       A double shantay sends nobody home and the season simply runs another
+       week to make the elimination up, so the length is the base plus
+       however many the host granted. Pinned to 11, this broke the next time
+       anything shifted the RNG stream, which is exactly what the note under
+       it warns about. */
+    const shantays = rows.filter(r => r.dr.lipsync?.call === 'double-shantay').length;
+    expect(rows.length, `${shantays} double shantay(s) this season`)
+      .toBe(11 + shantays);
     /* ONE EXIT A WEEK — UNLESS THE HOST KEPT BOTH. This asserted a flat
        `exits.length === 1` on every pre-finale row, which is not the rule: a
        double shantay is ON by default (`drDoubleShantay !== false`) and sends
@@ -75,12 +84,13 @@ describe('playDragSeason', () => {
        happened never to produce one, so it broke the moment new werk room
        events shifted the RNG stream — a test pinned to a stream rather than
        to the rule. Now it checks the rule, and the exception with it. */
-    for (const r of rows.slice(0, 10)) {
+    // Every row but the last: the finale is the last one, wherever it lands.
+    for (const r of rows.slice(0, -1)) {
       const doubled = r.dr.lipsync?.call === 'double-shantay';
       expect(r.exits.length, `episode ${r.num} (${r.dr.lipsync?.call})`)
         .toBe(doubled ? 0 : 1);
     }
-    expect(rows[10].dr.finale.type).toBe('top4');
+    expect(rows[rows.length - 1].dr.finale.type).toBe('top4');
     expect(finale.placements.length).toBe(4);
     expect(winner).toBe(finale.placements[0]);
     expect(runnerUp).toBe(finale.placements[1]);

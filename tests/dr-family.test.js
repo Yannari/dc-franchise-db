@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { JSDOM } from 'jsdom';
 import {
   assignDragFamilies, familyOf, relation, FAMILY_CAP, FAMILY_BOND,
-  familiesFromRelations, AUTHORED_RELATIONS, dragRelationsFrom,
+  familiesFromRelations, AUTHORED_RELATIONS, dragRelationsFrom, familyTree,
 } from '../js/dr/family.js';
 import { rngFor } from '../js/dr/rng.js';
 
@@ -352,14 +352,21 @@ describe('the kinship picker', () => {
   it('offers the drag terms on a drag season and nowhere else', async () => {
     const drag = await build('drag-race');
     expect(drag).toEqual(expect.arrayContaining(['drag-mother', 'drag-daughter', 'drag-sisters']));
-    // The shared terms stay shared — this gates by show, it does not replace.
-    expect(drag).toContain('exes');
+    // EXCLUSIVE, both ways round. A drag season has no twins and no in-laws.
+    for (const term of ['twins', 'siblings', 'parent-child', 'cousins', 'in-laws']) {
+      expect(drag, `${term} offered on a runway`).not.toContain(term);
+    }
+    // The termless axis is everybody's: these are true of anybody.
+    for (const term of ['exes', 'best-friends', 'married', 'colleagues']) {
+      expect(drag, `${term} should be offered to every show`).toContain(term);
+    }
 
     const td = await build('total-drama');
     for (const term of ['drag-mother', 'drag-daughter', 'drag-sisters']) {
       expect(td, `${term} offered to a camp`).not.toContain(term);
     }
     expect(td).toContain('siblings');
+    expect(td).toContain('exes');
   });
 });
 
@@ -402,5 +409,64 @@ describe('the family panel', () => {
     expect(text).toContain("Coco Deveraux Ivy Deveraux's daughter");
     expect(text).toContain("Nell Deveraux Ivy Deveraux's daughter");
     expect(text).toContain("Rita Deveraux Ivy Deveraux's sister");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The tree has a top, and it is not whoever is oldest.
+// ══════════════════════════════════════════════════════════════════════
+describe('familyTree', () => {
+  /* The house that broke the first panel: a queen, her two daughters, HER own
+     drag mother, and that mother's other daughter. Five people, three
+     generations, and the eldest by birthday sits in the MIDDLE of it. */
+  const CAST = [
+    q('Axel', 44, 'comedy'), q('Julia', 27, 'pageant'), q('Emmah', 25, 'camp'),
+    q('Scary Girl', 31, 'goth'), q('Brightly', 29, 'camp'),
+  ];
+  const rows = [
+    { a: 'Axel', b: 'Julia', kin: 'drag-mother' },
+    { a: 'Axel', b: 'Emmah', kin: 'drag-mother' },
+    { a: 'Scary Girl', b: 'Axel', kin: 'drag-mother' },
+    { a: 'Scary Girl', b: 'Brightly', kin: 'drag-mother' },
+  ];
+  const fams = familiesFromRelations(CAST, dragRelationsFrom(rows));
+  const tree = familyTree(fams, fams[0]);
+  const at = n => tree.find(x => x.name === n);
+
+  it('puts the head of the family on top, not the oldest queen', () => {
+    // Axel is 44 and Scary Girl is 31. A drag mother is often younger than her
+    // daughter, so age cannot decide this and the tree has to.
+    expect(tree[0].name).toBe('Scary Girl');
+    expect(tree[0].depth).toBe(0);
+    expect(fams[0].name).toBe("Scary Girl's girls");
+  });
+
+  it('gives every generation its own depth', () => {
+    expect(at('Axel').depth).toBe(1);
+    expect(at('Brightly').depth).toBe(1);
+    expect(at('Julia').depth).toBe(2);
+    expect(at('Emmah').depth).toBe(2);
+  });
+
+  it('says only what she is to the queen above her', () => {
+    /* The bug this replaces: every row read "Axel's daughter", "Axel's
+       mother", "Axel's sister" — the whole house described relative to
+       whoever came first in the list. */
+    expect(at('Julia').parent).toBe('Axel');
+    expect(at('Julia').term).toBe('daughter');
+    expect(at('Axel').parent).toBe('Scary Girl');
+    expect(at('Scary Girl').parent).toBeNull();
+    expect(new Set(tree.map(n => n.parent)).size).toBeGreaterThan(2);
+  });
+
+  it('sits sisters beside each other rather than under a mother nobody named', () => {
+    const sis = familiesFromRelations(CAST, dragRelationsFrom([
+      { a: 'Axel', b: 'Scary Girl', kin: 'drag-sisters' },
+    ]));
+    const t = familyTree(sis, sis[0]);
+    expect(t.every(n => n.depth === 0), 'sisters are one generation').toBe(true);
+    expect(t[1].term).toBe('sister');
+    // The invented parent that makes them measurable must never be a row.
+    expect(t.map(n => n.name)).toEqual(['Axel', 'Scary Girl']);
   });
 });

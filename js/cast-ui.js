@@ -11,7 +11,7 @@ import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS } from './shows.js';
 // The drag family is derived from the same rows the tab already saves.
-import { dragRelationsFrom, familiesFromRelations, relation } from './dr/family.js';
+import { dragRelationsFrom, familiesFromRelations, familyTree } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
@@ -1650,13 +1650,16 @@ export function buildKinshipSelect() {
   const keep = sel.value;
   const groups = new Map();
   let none = '';
-  /* A term that names a show belongs to that show. A drag mother is not a
-     relation a Total Drama cast can have, and offering her there is how a
-     season ends up carrying a relation no engine reads. Terms that name no
-     show are everybody's. */
+  /* THE TWO FAMILY AXES ARE EXCLUSIVE. A drag season has no twins and no
+     in-laws; a camp has no drag mothers. Offering either list to the other
+     show fills the picker with terms that show's engine will never read,
+     which is how a season ends up carrying a relation nothing acts on.
+     A term with no axis -- exes, best friends, married, worked together --
+     is true of anybody and shown everywhere. */
   const show = seasonConfig.format || 'total-drama';
+  const axis = show === 'drag-race' ? 'drag' : 'blood';
   for (const [key, def] of Object.entries(REL_KINSHIP)) {
-    if (def.show && def.show !== show) continue;
+    if (def.axis && def.axis !== axis) continue;
     const opt = `<option value="${key}">${def.label}</option>`;
     if (!def.group) { none += opt; continue; }
     if (!groups.has(def.group)) groups.set(def.group, []);
@@ -1797,17 +1800,21 @@ function renderDragFamilies() {
   }
 
   box.innerHTML = fams.map(f => {
-    // Read from the elder, because that is the way a family introduces itself.
-    const head = f.members.find(m => f.roles[m] === 'mother') || f.members[0];
-    const rest = f.members.filter(m => m !== head).map(m => {
-      const term = relation(fams, head, m) || 'family';
-      return `<div class="rel-fam-row">${miniAvatar(m, 24)}<span>${m}</span>`
-        + `<em>${head}'s ${term}</em></div>`;
-    }).join('');
+    /* Drawn as a tree, oldest generation first. The first version picked a
+       head and described everybody relative to her, which turned a house with
+       a grandmother, a mother, two daughters and an aunt into five rows all
+       saying "Axel's something" — the generations were there and the panel
+       flattened them onto one person. Each row now says only what she is to
+       the queen she is indented under. */
+    const tree = familyTree(fams, f);
+    const rows = tree.map(n => `<div class="rel-fam-row" style="padding-left:${14 + n.depth * 18}px">
+        ${miniAvatar(n.name, 24)}<span>${n.name}</span>
+        <em>${n.parent ? `${n.parent}'s ${n.term}` : 'the head of the house'}</em>
+      </div>`).join('');
     return `<div class="rel-fam">
-      <div class="rel-fam-head">${miniAvatar(head, 28)}<strong>${f.name}</strong>
+      <div class="rel-fam-head"><strong>${f.name}</strong>
         ${f.surname ? '<span class="rel-fam-tag">the room can see it</span>' : ''}</div>
-      ${rest}</div>`;
+      ${rows}</div>`;
   }).join('');
 }
 

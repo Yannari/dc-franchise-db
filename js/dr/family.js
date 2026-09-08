@@ -228,7 +228,7 @@ export function familiesFromRelations(cast = [], relations = []) {
   let synthetic = 0;
   for (const e of edges) {
     if (e.kind !== 'sister') continue;
-    const known = parents[e.a] || parents[e.b] || ` kin-${synthetic++}`;
+    const known = parents[e.a] || parents[e.b] || `\u0000kin-${synthetic++}`;
     parents[e.a] = parents[e.a] || known;
     parents[e.b] = parents[e.b] || known;
   }
@@ -246,7 +246,13 @@ export function familiesFromRelations(cast = [], relations = []) {
     if (members.length < 2) continue;
     const surnames = members.map(surnameOf);
     const shared = surnames[0] && surnames.every(x => x === surnames[0]) ? surnames[0] : null;
-    const elder = [...members].sort((x, y) => ageOfName(y) - ageOfName(x))[0];
+    /* Named after the top of the TREE, not the oldest by birthday. A drag
+       mother can be younger than her daughter and often is; "Axel's girls"
+       for a house whose head is Axel's own drag mother is simply wrong. Ties
+       — a house of sisters with nobody above them — fall back to age. */
+    const roots = members.filter(m => !parents[m] || !members.includes(parents[m]));
+    const elder = [...(roots.length ? roots : members)]
+      .sort((x, y) => ageOfName(y) - ageOfName(x))[0];
     out.push({
       id: `authored:${String(root).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
       kind: members.some(m => roles[m] === 'mother') ? 'line' : 'house',
@@ -465,6 +471,80 @@ function treeOf(families) {
     }
   }
   return { parent, sibs };
+}
+
+/** A parent key that exists only to give two sisters a common ancestor. */
+const isSynthetic = k => typeof k === 'string' && k.startsWith(' ');
+
+/**
+ * One family as a TREE, oldest generation first.
+ *
+ * ── WHY A TREE AND NOT A LIST OF TERMS ────────────────────────────────
+ *
+ * The first panel picked a head and described every other member relative to
+ * her, and a real house made it look ridiculous: with a mother, her two
+ * daughters, HER mother and her sister, every row read "Axel's daughter",
+ * "Axel's mother", "Axel's sister" — five people arranged around whichever
+ * one happened to be listed first, when three generations were sitting right
+ * there. It also named the house after the eldest by AGE rather than the
+ * eldest in the family, which are not the same person and in that house were
+ * not.
+ *
+ * So this returns the shape instead: every member with her depth and the one
+ * person she hangs off, and each row says what she is TO HER OWN MOTHER,
+ * which is the only relation that needs stating on a line that is already
+ * indented under her.
+ *
+ * Roots are the queens nobody is above. Sisters at the top of a house share
+ * an invented parent (see treeOf), so they come back as roots that name each
+ * other rather than as a generation of one.
+ */
+export function familyTree(families, family) {
+  if (!family) return [];
+  const { parent } = treeOf(families);
+  const mine = new Set(family.members);
+
+  const childrenOf = new Map();
+  const roots = [];
+  for (const m of family.members) {
+    const up = parent.get(m);
+    if (up && mine.has(up)) {
+      if (!childrenOf.has(up)) childrenOf.set(up, []);
+      childrenOf.get(up).push(m);
+    } else {
+      // No mother in this house, or an invented one: she is a root, and the
+      // invented key is what tells us the roots are sisters.
+      roots.push({ name: m, sisterKey: isSynthetic(up) ? up : null });
+    }
+  }
+
+  const out = [];
+  const seen = new Set();
+  const walk = (name, depth, from) => {
+    if (seen.has(name)) return;      // an author can always draw a circle
+    seen.add(name);
+    out.push({
+      name, depth, parent: from,
+      // What she is to the person she is drawn under. Roots hang off nobody.
+      term: from ? 'daughter' : null,
+    });
+    for (const kid of (childrenOf.get(name) || [])) walk(kid, depth + 1, name);
+  };
+  for (const r of roots) {
+    if (seen.has(r.name)) continue;
+    walk(r.name, 0, null);
+    // Sisters of a root sit beside her, not under her.
+    if (r.sisterKey) {
+      for (const other of roots) {
+        if (other.sisterKey !== r.sisterKey || seen.has(other.name)) continue;
+        walk(other.name, 0, null);
+        const row = out.find(x => x.name === other.name);
+        row.parent = r.name;
+        row.term = 'sister';
+      }
+    }
+  }
+  return out;
 }
 
 /** Every ancestor of `n`, nearest first, with the distance to each. */

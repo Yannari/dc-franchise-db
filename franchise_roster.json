@@ -5307,6 +5307,25 @@
         "temperament": 4
       },
       "profileSources": {}
+    },
+    {
+      "name": "Autumnatic",
+      "slug": "autumnatic",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 6,
+        "social": 8,
+        "strategic": 7,
+        "loyalty": 4,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "profileSources": {}
     }
   ]
 }

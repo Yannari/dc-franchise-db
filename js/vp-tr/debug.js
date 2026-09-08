@@ -130,6 +130,88 @@ function _receipts(list) {
 }
 
 /** The debug screen for one castle row. */
+/**
+ * WHAT THE COUNTRY THINKS, as two numbers that are not the same number.
+ *
+ * `affection` is who they liked and `spectacle` is who they watched, and this
+ * format's whole argument is that those are different people: a Traitor
+ * playing brilliantly generates television and not warmth (js/tr/crowd.js
+ * damps their upside to a quarter). Printed side by side so that divergence
+ * is visible rather than inferred.
+ *
+ * `standing` is affection PER ROUND PRESENT and it is the only one of the
+ * three anybody may rank by. The accrued total answers "how long did they
+ * last" -- it correlates about -0.54 with final placement among Faithfuls --
+ * so a board sorted on it is a survival table wearing an audience's clothes.
+ * The column is marked, because a debug screen that shows three numbers and
+ * does not say which one is the answer invites the same mistake.
+ */
+function _crowd(crowd) {
+  const rows = (crowd && crowd.rows) || [];
+  if (!rows.length) return '<div class="none">no crowd ledger on this row</div>';
+  const top = rows[0];
+  const bar = (v, max) => {
+    const w = Math.max(0, Math.min(1, Math.abs(v) / (max || 1))) * 60;
+    const neg = v < 0;
+    return `<span style="display:inline-block;width:${w.toFixed(0)}px;height:8px;
+      background:${neg ? '#f85149' : '#3fb950'};opacity:.75;vertical-align:middle"></span>`;
+  };
+  const maxAff = Math.max(...rows.map(r => Math.abs(r.affection)), 1);
+  const maxSpec = Math.max(...rows.map(r => Math.abs(r.spectacle)), 1);
+  return `<table>
+    <tr><th>who</th><th>standing &#9733;</th><th>affection</th><th></th>
+      <th>spectacle</th><th></th><th>rounds</th></tr>
+    ${rows.map(r => `<tr${r.out ? ' style="opacity:.5"' : ''}>
+      <td>${esc(r.name)}${r.out ? ' <span class="none">(out)</span>' : ''}</td>
+      <td>${r.standing.toFixed(3)}</td>
+      <td>${r.affection.toFixed(2)}</td><td>${bar(r.affection, maxAff)}</td>
+      <td>${r.spectacle.toFixed(2)}</td><td>${bar(r.spectacle, maxSpec)}</td>
+      <td>${esc(r.rounds)}</td></tr>`).join('')}
+  </table>
+  <div class="trdbg-note" style="margin:6px 0 0">&#9733; standing = affection per
+    round present, and the only column that may be ranked on. Sorted by it.
+    The country&#8217;s favourite tonight is <strong>${esc(top.name)}</strong>.</div>`;
+}
+
+/**
+ * WHAT STORY EVERYBODY IS IN.
+ *
+ * A story is what the audience actually follows, and until this section
+ * existed there was no way to see one except by reading the prose it
+ * produced. `heat` is heat AS OF TONIGHT (one point of decay per round of
+ * silence), so a thread that has not been mentioned since episode 2 reads
+ * cold here even though its stored peak is high -- that decay is what decides
+ * whether an event may continue it, so the decayed number is the true one.
+ *
+ * Closed arcs pay the crowd on the night they close (`scoreStories`), which
+ * is why the outcome is printed beside the heat: those two columns are the
+ * whole of why somebody's affection moved tonight without them doing
+ * anything.
+ */
+function _stories(crowd) {
+  const list = (crowd && crowd.stories) || [];
+  if (!list.length) return '<div class="none">no storyline is open</div>';
+  const open = list.filter(t => t.state === 'open');
+  const done = list.filter(t => t.state !== 'open');
+  const table = (arr, closed) => `<table>
+    <tr><th>kind</th><th>who</th><th>heat</th><th>beats</th><th>opened</th>
+      <th>act</th><th>${closed ? 'outcome' : 'last beat'}</th></tr>
+    ${arr.map(t => `<tr${t.closedTonight ? ' style="color:#f0883e"' : ''}>
+      <td>${esc(t.kind)}</td>
+      <td>${esc((t.parties || []).join(' &amp; '))}</td>
+      <td>${t.heat.toFixed(2)}</td>
+      <td>${esc(t.beats)}</td>
+      <td>${esc(t.opened == null ? '?' : `ep ${t.opened}`)}</td>
+      <td>${esc(t.act || '&#8212;')}</td>
+      <td>${closed ? esc(t.outcome || 'abandoned') : esc(`ep ${t.lastEp}`)}</td>
+    </tr>`).join('')}
+  </table>`;
+  return `${open.length ? `<div class="trdbg-note">Open tonight</div>${table(open, false)}`
+    : '<div class="none">nothing is open</div>'}
+    ${done.length ? `<div class="trdbg-note" style="margin-top:10px">Ended tonight
+      &#8212; these paid the crowd</div>${table(done, true)}` : ''}`;
+}
+
 export function rpBuildTraitorsDebug(epRecord) {
   const ep = epRecord || {};
   const tr = ep.tr || {};
@@ -142,6 +224,7 @@ export function rpBuildTraitorsDebug(epRecord) {
   const sel = tr.selection;
   const bel = tr.beliefs;
   const receipts = tr.receipts;
+  const crowd = tr.crowd;
 
   const exits = (ep.exits || []).length
     ? '<table><tr><th>name</th><th>verb</th><th>channel</th></tr>'
@@ -186,6 +269,10 @@ export function rpBuildTraitorsDebug(epRecord) {
         : '<span class="none">nobody</span>'],
       ['downstairs beats', esc((tr.downstairs || []).length)],
     ])}</section>
+
+    <section><h3>What the country thinks</h3>${_crowd(crowd)}</section>
+
+    <section><h3>Storylines</h3>${_stories(crowd)}</section>
 
     <section><h3>The selection</h3>${sel ? _rows([
       ['the rank, as it stood', _list(sel.line)],

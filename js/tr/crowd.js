@@ -54,6 +54,10 @@
 // enforced as a rule over the source in tests/tr-audience.test.js: no file
 // under js/tr/ but this one may mention `popularity` or `notoriety` at all.
 import { gs } from '../core.js';
+// The board, so the snapshot below reports the same standing the rest of the
+// franchise reads rather than a second version of the formula.
+import { audienceBoard } from '../audience.js';
+import { outcomeSense, heatAt } from './threads.js';
 import { alignmentAt } from './roles.js';
 
 /**
@@ -96,6 +100,24 @@ export const CROWD_COLOURS = {
   exposed:    { affection:  1.0, spectacle: 3.0 },
   selfish:    { affection: -1.5, spectacle: 1.0 },
   wronged:    { affection:  3.5, spectacle: 2.0 },
+
+  /* ── HOW A STORY ENDED, which is not the same as what somebody did ──
+     Every colour above is an ACT: a name argued for, a friend cut, a nerve
+     lost. These two are the end of an ARC, and they are deliberately weak in
+     affection and strong in spectacle, because being in a storyline is
+     television and not virtue. The country's affection still comes from
+     behaviour; what a resolved arc buys is being WATCHED.
+
+     Getting this wrong is measurable and was measured. Paying arcs at the
+     warmth of an act (`wronged`, 3.5) tripled the correlation between the
+     round-normalised standing and final placement, from 0.16 to 0.48 — arcs
+     resolve for people who are still there to resolve them, so a generous
+     arc payout is a survival bonus wearing a story's clothes. That is the
+     -0.952 accrual bug this file exists to keep out, arriving through a new
+     door. See tr-audience.test.js. */
+  vindicated: { affection:  0.5, spectacle: 2.5 },
+  unmasked:   { affection: -1.2, spectacle: 3.5 },
+  courted:    { affection:  0.6, spectacle: 1.5 },
 };
 
 /**
@@ -417,6 +439,83 @@ export function scoreMission(ep, mission) {
  * the room then failed to carry out is still a betrayal that was chosen, and
  * `endgameChoice` is the only place that fact exists.
  */
+/**
+ * A STORY THE COUNTRY FOLLOWED TO ITS END.
+ *
+ * ── WHY STORYLINES PAY, AND WHY THEY PAY ON CLOSING ───────────────────
+ *
+ * Everything else in this file scores a single act: a name argued for, a
+ * mission thrown, a fellow cut at the last table. But the audience of this
+ * format does not watch acts, it follows STORIES -- somebody was doubted for
+ * four episodes and turned out to be clean, somebody was defended by their
+ * closest ally right up until they were not. None of that reached either
+ * ledger, so a player could carry the season's most-watched arc and finish on
+ * the popularity of somebody who was never discussed.
+ *
+ * It pays ON CLOSING, not per beat. A story pays when it RESOLVES because
+ * that is when the audience learns what it was watching: paying per beat
+ * would drip affection into everybody who was ever in a scene, which is both
+ * untrue to how an audience works and the fastest way to flatten a ledger
+ * into a participation count.
+ *
+ * IT PAYS BY SENSE, NOT BY OUTCOME STRING. `outcomeSense` is the same fork
+ * the events branch on (spec 5.5), so a twelfth outcome added later gets
+ * scored the moment it is mapped there, rather than falling off the end of a
+ * list of known cases in this file.
+ *
+ *   walked   the room came for them and they came out the other side:
+ *            `vindicated`, a little warmth and a lot of television.
+ *   cracked  the room came for them and something came out: `unmasked`,
+ *            which COSTS affection. A reveal is the best television the
+ *            format makes and it is not a good look, and the negative sign
+ *            matters for more than flavour -- arcs resolve for people still
+ *            in the castle, so an all-positive arc payout is a survival
+ *            bonus in disguise.
+ *   coupled  it was a romance: `kind`, warm and quiet. A break-up pays the
+ *            same word at half, because the audience takes a side and the
+ *            format does not tell us whose.
+ *
+ * SCALED BY HOW MUCH STORY THERE WAS. A thread with one beat is an incident;
+ * one with five is the thing the season was about, and they must not pay the
+ * same. Capped at 1.0 so no single arc can outweigh a season of behaviour --
+ * the same reasoning as the hunt cap in `scoreMission`.
+ *
+ * Read off threads this episode CLOSED, which the engine has already written,
+ * so this takes no rng draw and changes no belief.
+ */
+export const STORY_SENSE_COLOUR = {
+  walked: 'vindicated',
+  cracked: 'unmasked',
+  coupled: 'courted',
+};
+
+/** A one-beat arc is an incident; a five-beat one is the season. */
+export function storyWeight(thread) {
+  const beats = (thread?.beats || []).length;
+  return Math.min(1, 0.3 + beats * 0.175);
+}
+
+export function scoreStories(ep, { threads = null } = {}) {
+  const out = [];
+  const all = threads || gs?.tr?.threads || [];
+  for (const t of all) {
+    // Closed IN THIS EPISODE. `lastEp` is stamped by `closeThread`, so a
+    // thread cannot be scored twice however often the season loop runs.
+    if (!t || t.state !== 'closed' || t.lastEp !== ep) continue;
+    const sense = outcomeSense(t.outcome);
+    if (!sense) continue;
+    const broke = t.outcome === 'broken-up';
+    const colour = STORY_SENSE_COLOUR[sense];
+    if (!colour) continue;
+    const mult = storyWeight(t) * (broke ? 0.5 : 1);
+    for (const name of t.parties || []) {
+      out.push(crowdMoment(name, colour, ep,
+        { mult, reason: `story:${t.kind}:${t.outcome}` }));
+    }
+  }
+  return out.filter(Boolean);
+}
+
 export function scoreEndgame(endgame) {
   const out = [];
   for (const ask of endgame?.ballots || []) {
@@ -448,4 +547,74 @@ export function applyEventCrowd(consequences, ep) {
   return list
     .map(d => crowdMoment(d?.name, d?.colour, ep, { mult: d?.mult ?? 1, reason: d?.reason || null }))
     .filter(Boolean);
+}
+
+/**
+ * WHAT THE COUNTRY MADE OF THEM, AND WHAT STORY THEY ARE IN, tonight.
+ *
+ * Both of these were computed all season and reachable from no screen. The
+ * crowd ledgers live on `gs` and are replaced wholesale by the next season;
+ * the threads live on `gs.tr` and are mutated in place, so by the finale the
+ * only readable version of episode 3's storylines was episode 3's version of
+ * them, which no longer existed. A debug screen that reads live state on a
+ * replayed episode is this project's §11.5 bug, so this snapshots.
+ *
+ * DELIBERATELY SMALL, because a per-episode snapshot of season-wide data is
+ * how `gs` got to 19MB the last time (see the Big Brother state-bloat note).
+ * Two numbers per player, and only the stories that are actually live or that
+ * ended tonight -- an arc closed in episode 2 is on episode 2's row and does
+ * not need to be on all fourteen.
+ *
+ * IT LIVES HERE AND NOT IN THE SEASON LOOP because this file owns the two
+ * ledgers: tr-audience.test.js enforces that nothing else under js/tr may so
+ * much as name them, on the grounds that popularity is written from ground
+ * truth and any engine read of it is alignment reaching the castle through a
+ * channel the belief gate does not watch. Snapshotting is a read.
+ */
+export function crowdSnapshot(ep, living) {
+  const board = audienceBoard({});
+  const rows = board.map(b => ({
+    name: b.name,
+    // The two ledgers, kept apart on purpose: affection is who they liked and
+    // spectacle is who they watched, and this show's whole point is that those
+    // are different people.
+    affection: Math.round(b.popularity * 100) / 100,
+    spectacle: Math.round((gs.tr?.notoriety?.[b.name] || 0) * 100) / 100,
+    // Affection per round present. THE RANKING NUMBER: the accrued total is
+    // "how long did they last" and ranking by it is the -0.952 bug.
+    standing: Math.round(b.standing * 1000) / 1000,
+    rounds: b.rounds,
+    out: !(living || []).includes(b.name),
+  }));
+  /* LIVE STORIES ONLY, plus whatever ended tonight. `heatAt` decays a point
+     per round of silence and an event may only continue a thread with heat
+     left, so a thread at zero is not a storyline anybody is in -- it is a
+     thing that once happened. Including them put 76 rows on episode 5, most
+     of them cold, which is both an unreadable table and a per-episode
+     snapshot of season-wide data, i.e. exactly the shape that took `gs` to
+     19MB on the other show. */
+  const stories = (gs.tr?.threads || [])
+    .filter(t => t && ((t.state === 'open' && heatAt(t, ep) > 0) || t.lastEp === ep))
+    .map(t => ({
+      kind: t.kind,
+      parties: [...(t.parties || [])],
+      state: t.state,
+      // Heat AS IT STANDS TONIGHT, not the stored peak: a story nobody has
+      // mentioned for three rounds is cold, and the stored number cannot say
+      // so. `openThreadsFor` filters on exactly this.
+      heat: Math.round(heatAt(t, ep) * 100) / 100,
+      beats: (t.beats || []).length,
+      act: t.act || null,
+      opened: t.beats?.[0]?.ep ?? null,
+      lastEp: t.lastEp,
+      outcome: t.outcome || null,
+      closedTonight: t.state !== 'open' && t.lastEp === ep,
+    }))
+    .sort((a, b) => b.heat - a.heat);
+  /* THE FAVOURITE IS SOMEBODY WHO IS STILL IN IT. The board ranks the whole
+     cast, and standing is affection per round, so somebody adored in three
+     episodes and murdered outranks everybody who has been there for ten --
+     `favourite` naming an eliminated player is true of the ledger and useless
+     as a fact about tonight. */
+  return { rows, stories, favourite: rows.find(r => !r.out)?.name || null };
 }

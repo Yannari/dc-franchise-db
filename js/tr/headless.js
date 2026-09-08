@@ -46,7 +46,7 @@ import { runEndgame } from './endgame.js';
 import { runArmoury, armouryBlockEvidence } from './armoury.js';
 import { computeAlliances } from './alliances.js';
 import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
-  scoreEndgame } from './crowd.js';
+  scoreEndgame, scoreStories, crowdSnapshot } from './crowd.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -2476,6 +2476,8 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
     // Everything the night's screens read, snapshotted here because `gs` is
     // replaced wholesale by the next season and rebuilt wholesale by a load.
     tr: {
+      // The crowd and the storylines, as they stood at the end of tonight.
+      crowd: crowdSnapshot(ep, gs.activePlayers || []),
       // THE EPISODE NUMBER, ON THE RECORD AS WELL AS ON THE ROW. `num` is the
       // VP's key -- it is what reveal state is stored under and a caller is
       // free to renumber a copy of a row to get a fresh one. Anything that is
@@ -3123,6 +3125,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // bit-identical with the ledgers in place. See js/tr/crowd.js.
     scoreMission(ep, mission);
     scoreTable(ep, r, { bondOf: getBond });
+    // AND THE STORIES THAT ENDED TONIGHT. Scored last because a story can be
+    // closed by anything above it -- a banishment resolves an accusation arc
+    // -- and this reads the threads after all of tonight's closing is done.
+    scoreStories(ep);
     _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents,
       beliefs: beliefsBeforeTable });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...(night || {}), mission,

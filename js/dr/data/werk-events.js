@@ -1024,6 +1024,124 @@ export const WERK_EVENTS = [
       "\"It is a race,\" {a} says, to nobody, loudly enough. Everybody knows exactly which two queens the remark is about. The room gets about four degrees colder and stays there.",
     ],
   }),
+
+
+  /* ══ THE ROOM, RATHER THAN TWO PEOPLE IN IT ═══════════════════════════
+     Every event above is one queen or two, which is why a room of thirteen
+     read as a series of private conversations happening in the same building.
+     Most of what happens in a werk room happens in FRONT of people: a fight
+     has an audience, a joke has a table, and being the queen who watched two
+     others go at it is its own scene with its own consequences.
+     `cast: 'group'` draws three or four — {a} and {b} are the two it is about
+     and {c}, and sometimes {d}, are the rest of the room. The third is often
+     just there, and just being there is the point. */
+  ev({
+    id: 'table-of-them', slot: 'werk-morning', cast: 'group', weight: 1.4,
+    note: 'Three or four of them at one station, and it is genuinely funny.',
+    arcs: ['bond'],
+    when: f => f.groupSize >= 3,
+    effects: { bond: 1, pop: { a: 1, b: 1 }, state: 'group-fun' },
+    lines: [
+      "{a} says something to {b} that was not meant to be funny and {c} hears it and repeats it back wrong, and the wrong version is better, and within a minute all of them are crying at a station where no work is being done. It is the first time this room has sounded like a room.",
+      "It starts as {a} and {b} arguing about something with no stakes and it ends with {c} refereeing a debate about it as if money were involved. Nothing is achieved. Everybody feels better. Somebody eventually says \"we have to actually do this\" and nobody moves.",
+      "{c} does an impression of {a} that {a} has not earned yet and does not deserve, and {b} laughs so hard she has to put her brush down. {a} takes it well, mostly, and files the accuracy of it away for later.",
+      "The three of them get onto their worst gigs and it turns into a contest nobody wants to win. {b} tells one that {a} and {c} genuinely cannot beat, and the room agrees, and for about four minutes none of them is thinking about the show at all.",
+      "Somebody puts music on and {a}, {b} and {c} are dancing at their stations without having agreed to, and the version of this room that exists at nine in the morning is a version the cameras will use in the recap and none of them will remember.",
+    ],
+  }),
+  ev({
+    id: 'watched-it-happen', slot: 'prep', cast: 'group', weight: 1.3,
+    note: 'Two of them go at it and {c} is standing right there for all of it.',
+    arcs: ['rivalry'],
+    when: f => f.groupSize >= 3 && f.bond <= 0,
+    effects: { bond: -1.5, pop: { a: -1, b: -1 }, state: 'group-fight' },
+    lines: [
+      "It goes off between {a} and {b} with no warning and {c} is four feet away holding a glue gun with nowhere to put it. She does not take a side. She does not leave either, because leaving would be a side, so she stands there being furniture while two women say things they will have to live with.",
+      "{a} says the thing to {b} and the room stops, and the worst part for {c} is that she agrees with {a} and cannot say so, because saying so turns two people arguing into three people arguing and she has a garment to finish.",
+      "{b} raises her voice at {a} and {c} watches the whole thing with a face doing nothing at all, which is a skill, and which everybody in the room clocks — because the queen who does not react is the queen who is going to be asked about it later, at length, on camera.",
+      "{a} and {b} are having it out and {c} says \"girls—\" once, quietly, and is ignored by both, and does not try again. She goes back to her station. Something about not being listened to sits with her longer than the argument does.",
+      "The argument between {a} and {b} is short and ugly and completely public, and the only person who comes out of it worse is {c}, who is asked by both of them afterwards who was right and gives two different answers.",
+    ],
+  }),
+  ev({
+    id: 'pulled-into-it', slot: 'prep', cast: 'group', weight: 1.1,
+    note: '{c} is dragged into a fight that was never hers.',
+    arcs: ['rivalry'],
+    when: f => f.groupSize >= 3 && f.bond <= -2,
+    effects: { bond: -1, pop: { a: -1 }, state: 'group-drag-in' },
+    lines: [
+      "\"Ask {c}.\" {a} says it like it settles the matter and it does not settle anything, because {c} did not ask to be the evidence in an argument between {a} and {b} and now has to say something in front of both of them.",
+      "{a} turns to {c} mid-sentence — \"you heard her say\" — and {c}'s stomach drops, because she did hear her say it, and confirming it costs her {b} and denying it costs her {a}, and there is no third option that gets her back to her station.",
+      "{b} tries to end it by saying everybody thinks so, and {a} says \"everybody?\" and looks directly at {c}, and {c} has about one second to decide what kind of season she is having.",
+      "Neither of them notices that {c} has stopped working and is just standing there being used as a witness. She notices. She will remember which of them dragged her in, and it was {a}.",
+    ],
+  }),
+  ev({
+    id: 'room-goes-quiet', slot: 'prep', cast: 'group', weight: 1.0,
+    note: 'One of them is struggling and the whole room adjusts around her.',
+    arcs: ['bond'],
+    when: f => f.groupSize >= 3 && f.bottomsA >= 1,
+    effects: { bond: 1.5, pop: { a: 1 }, state: 'group-care' },
+    lines: [
+      "{a} is not alright and everybody can see it, and what the room does is the thing rooms do when somebody is not alright: {b} turns the music down, {c} finds a reason to work at the next station, and nobody says the word about it. {a} keeps going. That is the help.",
+      "Nobody asks {a} what is wrong, which is correct, because asking would make her say it out loud. {b} brings her a drink she did not ask for and {c} takes over the thing she was struggling with, and the whole rescue happens without one direct sentence about it.",
+      "{a} says \"I am fine\" to nobody in particular and {b} and {c} exchange a look over her head that says neither of them believes it and both of them are going to let it go for now.",
+      "It is {c} who notices first and {b} who does something about it, and by the time {a} realises she is being looked after it has already been happening for twenty minutes. She does not know how to say thank you for that so she does not, and they do not need her to.",
+    ],
+  }),
+  ev({
+    id: 'three-way-read', slot: 'werk-morning', cast: 'group', weight: 1.2,
+    note: 'A reading session that is affectionate right up until it is not.',
+    arcs: ['rivalry', 'bond'],
+    when: f => f.groupSize >= 3 && f.phase >= 1,
+    effects: { bond: -0.5, pop: { a: 1, b: 1 }, state: 'group-read' },
+    lines: [
+      "It starts as three of them taking turns and it is funny — {a} gets {b}, {b} gets {c}, everybody screams — and then {a} says one about {c} that is a bit too accurate and the laugh comes half a second late and is not quite the same laugh.",
+      "{b} and {c} are trading reads and {a} joins in and misjudges the room by exactly one notch, which is all it takes. The other two keep smiling. The smiles have changed shape and {a} has not noticed yet.",
+      "Three of them at it and every single read lands, which is rarer than it sounds, and for ten minutes this room is the funniest place any of them has ever worked. Then {c} makes one about {a}'s drag rather than about {a}, and drag is not on the table, and everybody knows it is not.",
+      "The reads go around and {a} takes hers well and {b} takes hers well and {c} takes hers with a laugh that arrives on time and does not reach her face, and the other two notice and pretend not to and move on quickly.",
+    ],
+  }),
+  ev({
+    id: 'strategy-huddle', slot: 'werk-elim-day', cast: 'group', weight: 1.2,
+    note: 'Three of them talking about who is going home, in the room where she is.',
+    arcs: ['rivalry'],
+    when: f => f.groupSize >= 3 && f.canScheme,
+    effects: { bond: 1, pop: { a: -1 }, state: 'group-huddle' },
+    lines: [
+      "{a}, {b} and {c} are at the far end of the room having the conversation everybody has on elimination day and nobody admits to having. They keep their voices down. They are not as quiet as they think they are.",
+      "It is not an alliance because nobody says the word, but {a} says who she thinks is going and {b} agrees and {c} does not disagree, and three queens agreeing about a fourth is the closest this show gets to a plan.",
+      "{a} says a name and the temperature at that end of the room changes. {b} looks at the door. {c} says \"I did not hear that\" and stays exactly where she is, which is the opposite of not hearing it.",
+      "{a}, {b} and {c} work the maths out loud — who was low, who is due, who the panel likes — and the maths is cold and correct and would be devastating to overhear, and one of them keeps glancing over her shoulder while they do it.",
+    ],
+  }),
+  ev({
+    id: 'someone-is-missing', slot: 'cold-open', cast: 'group', weight: 1.3,
+    note: 'The morning after, and the room is arranged around a gap.',
+    arcs: ['bond'],
+    when: f => f.someoneLeft && f.groupSize >= 3,
+    effects: { bond: 1, pop: { a: 1 }, state: 'group-gap' },
+    lines: [
+      "The station is still there and it is empty and none of {a}, {b} or {c} takes it, and none of them says why, and by the afternoon somebody has put a wig on it as a joke that is not entirely a joke.",
+      "{a} walks in and says good morning to a room that is one person smaller and the greeting lands strangely, and {b} and {c} both feel it and neither of them mentions it, and they get on with the day because the day does not care.",
+      "{b} reads the mirror message out loud because nobody else will and {a} and {c} stand there and listen to it and then all three of them get very busy with things that did not need doing.",
+      "{a} talks about her in the past tense within about ninety seconds and {c} is the one who notices they are all doing it, and says so, and then {a}, {b} and {c} are quiet for a bit.",
+    ],
+  }),
+  ev({
+    id: 'everybody-in', slot: 'prep', cast: 'group', weight: 1.0,
+    note: 'The whole end of the room stops to help one queen finish.',
+    arcs: ['bond'],
+    when: f => f.groupSize >= 3 && f.bottomsA >= 1,
+    effects: { bond: 2, pop: { a: 1, b: 1 }, state: 'group-rescue' },
+    lines: [
+      "{a} is not going to finish and everybody can see the arithmetic. {b} takes the hem. {c} takes the headpiece. Nobody discusses it and nobody offers, they just arrive, and {a} keeps working with her jaw set because if she looks up at them she is going to cry and there is no time for that.",
+      "It is {b} who says \"give\" and holds out her hand, and {c} who is already threading a needle, and the three of them get a garment onto a rail with minutes left that {a} could not have got there alone and all of them know it.",
+      "The last hour turns into a production line — {a} building, {b} cutting, {c} gluing — and none of them is helping out of kindness exactly. They are helping because a room where somebody walks out with nothing is a worse room to be in.",
+      "{c} does the thing nobody wants to do and unpicks twenty minutes of {a}'s work because it was wrong, and {a} lets her, and {b} does not say \"told you\" although she did, and the restraint is the nicest thing anybody does all day.",
+    ],
+  }),
+
 ];
 
 /** Ids only, for guards and the transcript. */

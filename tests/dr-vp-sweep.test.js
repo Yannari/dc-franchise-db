@@ -145,7 +145,14 @@ describe('the transcript, read', () => {
        does its job: it catches a beat that has swallowed the NEXT one, which
        is what a run-on looks like, rather than a card that simply has prose
        on it. */
-    for (const l of body) expect(l.length, 'a beat ran into the next').toBeLessThan(2200);
+    /* 2600, AND THE REASON IS THE SAME ONE AS LAST TIME. The cap was 1400
+       when a card was a portrait and a score bar, and 2200 once the cards
+       carried the night's narration. A critique is now a measured reason plus
+       a bias clause joined into one paragraph, which is legitimately longer
+       again. The check still does its job — it catches a beat that has
+       swallowed the NEXT one, which is what a run-on looks like — rather than
+       a card that simply has more prose on it than it used to. */
+    for (const l of body) expect(l.length, 'a beat ran into the next').toBeLessThan(2600);
   });
 
   it('THE COLD OPEN DOES NOT CARRY TONIGHT\'S EXIT MESSAGE', () => {

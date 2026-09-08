@@ -686,7 +686,14 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   if (!schedule.some(e => e.bottomThree)) {
     const lo = Math.max(1, Math.floor(schedule.length / 3));
     const hi = Math.max(lo, Math.floor((schedule.length * 2) / 3));
-    const want = lo + Math.floor(rng() * Math.max(1, hi - lo + 1));
+    /* ITS OWN STREAM, so booking this does not move the season's. Drawing
+       from `rng` here consumed a number every later decision was expecting to
+       get, which silently reshuffled the schedule — it showed up as a
+       scheduled double elimination no longer shortening the run, with nothing
+       about double eliminations touched. Derived from the seed so a replay
+       still books the same week. */
+    const pickRng = rngFor(seed * 7919 + 13);
+    const want = lo + Math.floor(pickRng() * Math.max(1, hi - lo + 1));
     const slot = schedule.find(e => e.episode === want && !e.noElimination)
       || schedule.slice(lo).find(e => !e.noElimination);
     if (slot) slot.bottomThree = true;

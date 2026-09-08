@@ -49,7 +49,9 @@ describe('the schema', () => {
     for (const e of WERK_EVENTS) {
       expect(e.id, 'an event with no id').toBeTruthy();
       expect(SLOTS, `${e.id} sits in no known slot`).toContain(e.slot);
-      expect(['solo', 'pair'], `${e.id} has cast "${e.cast}"`).toContain(e.cast);
+      // `group` is three or four of them: {a} and {b} are the two it is about
+      // and {c}/{d} are the rest of the room, who are often just there.
+      expect(['solo', 'pair', 'group'], `${e.id} has cast "${e.cast}"`).toContain(e.cast);
       expect(e.note, `${e.id} has no note for the writer`).toBeTruthy();
       expect(typeof e.when, `${e.id} has no eligibility test`).toBe('function');
       expect(Array.isArray(e.lines), `${e.id} lines is not an array`).toBe(true);
@@ -117,7 +119,14 @@ describe('the lines', () => {
           // ineligible forever and the pool silently shrinks.
           expect(l, `${e.id} is solo but the line uses {b}`).not.toMatch(/\{b\}/);
         }
-        const bad = l.match(/\{(?!a\}|b\})[^}]*\}/);
+        /* {c} AND {d} ARE THE REST OF THE GROUP and exist only in a group
+           scene — a solo or pair pool naming them renders an empty string
+           mid-sentence, which is the same silent-shrink failure as {b} in a
+           solo pool. */
+        if (e.cast !== 'group') {
+          expect(l, `${e.id} is ${e.cast} but names a third queen`).not.toMatch(/\{[cd]\}/);
+        }
+        const bad = l.match(/\{(?!a\}|b\}|c\}|d\})[^}]*\}/);
         expect(bad, `${e.id} uses an unknown placeholder ${bad?.[0]}`).toBeNull();
       }
     }

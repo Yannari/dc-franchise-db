@@ -42,6 +42,7 @@ import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
 import { familyForChallenge } from './data/maxi-performance.js';
+import { chooseResultOrder } from './data/results-order.js';
 
 /** The running order. A scene's `step` is always one of these. */
 export const SCENE_STEPS = [
@@ -374,6 +375,34 @@ export function runDragWeek(state, cfg, ctx) {
     bottomNamed: cfg.bottomNamed || (cfg.bottomThree ? 3 : 2),
   });
 
+  /* ── HOW THE HOST RUNS THE CALL TONIGHT ──
+     The order is a decision and it is made from what happened, not rolled
+     flat and not fixed. A first win wants to be the last thing said; a queen
+     who has been winning all season standing in the bottom two wants to be
+     the FIRST thing said, because the room has to feel that before it is
+     told anything good; a blowout does not pretend the win is in doubt.
+     Weighted, so a season does not run the same shape twelve times. */
+  const recordOf = n => state.record?.[n] || [];
+  const winner = (call.win || [])[0];
+  const callOrder = chooseResultOrder({
+    winnerFirstWin: !!winner && !recordOf(winner).includes('WIN'),
+    // How far clear of second she finished, as a fraction of the board.
+    winnerGap: (() => {
+      const rows = [...bend].sort((a, b) => a.finalRank - b.finalRank);
+      if (rows.length < 3) return 0;
+      const spread = (rows[rows.length - 1].bend ?? 0) - (rows[0].bend ?? 0);
+      const lead = (rows[0].bend ?? 0) - (rows[1].bend ?? 0);
+      return spread > 0 ? Math.max(0, Math.min(1, lead / spread)) : 0;
+    })(),
+    // The best record among the two who are about to lip sync.
+    dangerStreak: Math.max(0, ...(call.bottom || []).map(n => {
+      const r = recordOf(n);
+      return (r.filter(x => x === 'WIN').length * 0.5
+        + r.filter(x => x === 'HIGH').length * 0.25);
+    }), 0),
+    rng,
+  });
+
   // ── THE TRIPLE LIP SYNC ────────────────────────────────────────────
   //
   // When the season allows it and the bottom will not resolve into two — the
@@ -686,6 +715,7 @@ export function runDragWeek(state, cfg, ctx) {
       // The panel's own disagreement and the host's overrule, so the
       // deliberation can be the argument instead of a note that one happened.
       views, ranking, bend,
+      callOrder,
     });
     for (const sc of stageScenes) scenes.push(sc);
 
@@ -771,6 +801,7 @@ export function runDragWeek(state, cfg, ctx) {
       performances,
       runway,
       panel: { views, ranking, split },
+      callOrder,
       critiques,
       critiqueTwist: twist ? { kind: cfg.critiqueTwist, votes: twist.votes || null, tally: twist.tally || null, mean: twist.mean || null } : null,
       bend,

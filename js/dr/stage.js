@@ -31,6 +31,7 @@ import {
 } from './data/maxi-voices.js';
 import { characterById } from './data/snatch-characters.js';
 import { reasonLinesFor, biasLinesFor } from './data/critique-voices.js';
+import { resultOrder } from './data/results-order.js';
 import {
   divergentTastes, advocacyLinesFor, hostCallLinesFor,
 } from './data/deliberation-voices.js';
@@ -149,6 +150,8 @@ export function renderStageBeats({
      is where the host overruled the board. The whole report on the three of
      them was one narrator line a night. */
   views = {}, ranking = [], bend = [],
+  // Which shape the host runs the call in tonight. See results-order.js.
+  callOrder = 'standard',
   rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
@@ -465,11 +468,39 @@ export function renderStageBeats({
      none of them had a beat in the pool, so nine rows of a thirteen-queen
      call rendered a portrait and a stamp and no words. */
   if ((call.safe || []).length) emit(beatById('result-safe'), 'safe', []);
-  for (const n of call.win || []) emit(beatById('result-win'), 'win', [n]);
-  for (const n of call.high || []) emit(beatById('result-high'), 'high', [n]);
-  for (const n of call.low || []) emit(beatById('result-low'), 'low', [n]);
-  for (const n of call.atRisk || []) emit(beatById('result-btm'), 'btm', [n]);
-  for (const n of call.bottom || []) emit(beatById('result-bottom'), 'bottom', [n]);
+
+  /* ── AND THEN IN THE ORDER SHE CHOSE TO CALL IT ──
+     This ran win, high, low, btm, bottom — the order the groups happen to be
+     written down in — so the winner was announced first every single week, to
+     a stage still full of queens who had not been told anything, and the
+     night ended on two names everybody had already guessed from the
+     critiques. The peak came first and the dread came last and neither of
+     them landed.
+     `callOrder` is chosen in week.js from what actually happened tonight, and
+     the hold is the pause before the block the night has been built to end
+     on. See js/dr/data/results-order.js for the shapes and why each exists. */
+  const shape = resultOrder(callOrder);
+  const BY_GROUP = {
+    WIN: ['result-win', 'win', call.win || []],
+    HIGH: ['result-high', 'high', call.high || []],
+    LOW: ['result-low', 'low', call.low || []],
+    BTM: ['result-btm', 'btm', call.atRisk || []],
+    BTM2: ['result-bottom', 'bottom', call.bottom || []],
+  };
+  // The hold goes before the last block that actually has anybody in it, so a
+  // night with no BTM does not pause in front of an empty call.
+  const filled = shape.groups.filter(g => (BY_GROUP[g] || [])[2]?.length);
+  const holdAt = filled.includes(shape.holdBefore)
+    ? shape.holdBefore : filled[filled.length - 1];
+
+  for (const g of shape.groups) {
+    const [beatId, tierId, who] = BY_GROUP[g] || [];
+    if (!who || !who.length) continue;
+    if (g === holdAt && filled.length > 1) {
+      emit(beatById('results-hold'), 'hold', [], { before: g, order: shape.id });
+    }
+    for (const n of who) emit(beatById(beatId), tierId, [n], { order: shape.id });
+  }
 
   // ── the lip sync, beat by beat ──
   if (lipsync) {

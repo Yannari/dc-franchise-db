@@ -18,6 +18,7 @@
 // two names in it: the reveal is a fight and the screen is built like one.
 // The loser's portrait greys out under a stamp at the end.
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
+import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
 import { showWords } from '../shows.js';
@@ -300,10 +301,18 @@ export function rpBuildResults(row) {
      words. Eight of thirteen rows silent on the screenshot that found this.
      They get one card with all their faces on it instead. */
   const safe = call.safe || [];
-  const groups = [
-    ['WIN', call.win || []], ['HIGH', call.high || []],
-    ['LOW', call.low || []], ['BTM', call.atRisk || []], ['BTM2', call.bottom || []],
-  ];
+  /* IN THE ORDER SHE CALLED IT, which this screen used to ignore. The groups
+     were hardcoded win-first, so the winner was drawn before anybody else had
+     been told anything and the night ended on two names the critiques had
+     already given away. The order is a decision the engine makes from what
+     happened — see js/dr/data/results-order.js — and the screen is the place
+     it is supposed to be visible. */
+  const byGroup = {
+    WIN: call.win || [], HIGH: call.high || [], LOW: call.low || [],
+    BTM: call.atRisk || [], BTM2: call.bottom || [],
+  };
+  const shape = resultOrder(row?.dr?.callOrder);
+  const groups = shape.groups.map(g => [g, byGroup[g] || []]);
   const named = groups.flatMap(([r, list]) => list.map(n => [r, n]));
   if (!named.length && !safe.length) return '';
 

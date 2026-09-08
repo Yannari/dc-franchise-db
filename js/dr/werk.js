@@ -58,7 +58,7 @@ const stat = (p, k) => {
  * room right now — nothing is a decision, so an event can never reach in and
  * change the week from inside its own `when`.
  */
-function factsFor({ a, b, players, state, storylines, ctx }) {
+function factsFor({ a, b, players, state, storylines, ctx, rest = [] }) {
   const arcsOf = n => storylines
     .filter(s => s.alive && s.players.includes(n))
     .map(s => s.arc);
@@ -70,6 +70,11 @@ function factsFor({ a, b, players, state, storylines, ctx }) {
     b: pb,
     nameA: a,
     nameB: b || null,
+    // The rest of the group, if this is a group scene. `groupSize` counts
+    // everybody in it, so a `when` can ask for a real crowd.
+    nameC: rest[0] || null,
+    nameD: rest[1] || null,
+    groupSize: 1 + (b ? 1 : 0) + rest.length,
     bond: b ? ctx.bond(a, b) : 0,
     canScheme: canScheme(pa),
     // NOT SUPPLIED, deliberately: the room is drawn before the challenge hands
@@ -146,7 +151,11 @@ function render(event, facts, rng, used = null) {
   const pool = fresh.length ? fresh : event.lines;
   const line = pool[Math.floor(rng() * pool.length)];
   if (used) used.add(event.id + '\u0000' + line);
-  return line.replace(/\{a\}/g, facts.nameA).replace(/\{b\}/g, facts.nameB || '');
+  return line
+    .replace(/\{a\}/g, facts.nameA)
+    .replace(/\{b\}/g, facts.nameB || '')
+    .replace(/\{c\}/g, facts.nameC || '')
+    .replace(/\{d\}/g, facts.nameD || '');
 }
 
 /**
@@ -193,12 +202,37 @@ export function drawWerkScene({
     // whoever has not been seen yet tonight.
     const a = pickSubject(living, seen, state, rng);
     const others = living.filter(n => n !== a);
-    const b = ev.cast === 'pair'
+    const pairing = ev.cast === 'pair' || ev.cast === 'group';
+    const b = pairing
       ? (others.length ? pickSubject(others, seen, state, rng) : null)
       : null;
-    if (ev.cast === 'pair' && !b) continue;
+    if (pairing && !b) continue;
 
-    const facts = factsFor({ a, b, players, state, storylines, ctx });
+    /* ── A GROUP IS THREE OR FOUR, AND THE THIRD IS OFTEN JUST THERE ──
+       The werk room only knew how to do one queen or two, which is why a room
+       of thirteen read as a series of private conversations. Most of what
+       happens in that room happens in front of people: a fight has an
+       audience, a joke has a table, and being the queen who watched two
+       others go at it is its own scene.
+       `{c}` and `{d}` are the rest of the group, drawn the same way as the
+       first two — toward whoever has not been seen tonight — so a group scene
+       spreads screen time rather than concentrating it. */
+    const rest = [];
+    if (ev.cast === 'group') {
+      const pool = others.filter(n => n !== b);
+      const want = Math.min(pool.length, 1 + Math.floor(rng() * 2));   // 1 or 2 more
+      const taken = new Set();
+      for (let g = 0; g < want; g++) {
+        const left = pool.filter(n => !taken.has(n));
+        if (!left.length) break;
+        const pickd = pickSubject(left, seen, state, rng);
+        taken.add(pickd);
+        rest.push(pickd);
+      }
+      if (!rest.length) continue;
+    }
+
+    const facts = factsFor({ a, b, players, state, storylines, ctx, rest });
     let ok = false;
     try { ok = !!ev.when(facts); } catch { ok = false; }
     if (!ok) continue;
@@ -223,7 +257,8 @@ export function drawWerkScene({
   return {
     id: picked.ev.id,
     slot,
-    players: picked.facts.nameB ? [picked.facts.nameA, picked.facts.nameB] : [picked.facts.nameA],
+    players: [picked.facts.nameA, picked.facts.nameB, picked.facts.nameC,
+      picked.facts.nameD].filter(Boolean),
     text: render(picked.ev, picked.facts, rng, usedLines),
     note: picked.ev.note,
     effects: picked.ev.effects,

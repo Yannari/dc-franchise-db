@@ -563,6 +563,24 @@ export const STAGE_BEATS = [
       ]),
     ],
   },
+  /* ── THE PAUSE BEFORE THE LAST THING SHE SAYS ──
+     The call is the most structured four minutes the show has and its order
+     is a decision — see js/dr/data/results-order.js. This is the beat where
+     the host stops, before whichever block the night has been built to end
+     on. She may say almost nothing; the silence is the beat, and the queens
+     still standing there are the ones it is happening to. */
+  {
+    id: 'results-hold', step: 'results', scope: 'once', speaker: 'host',
+    variants: 10,
+    note: 'The host holds the room before the last call of the night. Written '
+      + 'so it works whether what follows is a win or an elimination — it does '
+      + 'NOT know which, and a line that assumes good news or bad is wrong '
+      + 'half the time.',
+    tierBy: 'always',
+    tiers: [
+      tier('hold', 'She stops, and the room stops with her.', []),
+    ],
+  },
   {
     /* ── THE HOLD, AND THEN THE TWO NAMES ──
        `lipsync-call` below is one paragraph that names NEITHER queen: "one

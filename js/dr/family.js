@@ -166,6 +166,55 @@ const KIN_EDGES = {
 };
 
 /**
+ * Edges from the CHARACTER SHEETS, which is where a family is really authored.
+ *
+ * `drag.family = { mother, sisters[] }` lives on the queen, so it follows her
+ * into every cast she is ever booked on. Authoring it per-season in the
+ * Relationships tab meant retyping the same house for every season she played
+ * and getting a different answer each time somebody spelled it differently.
+ *
+ * ONLY EDGES BETWEEN QUEENS WHO ARE BOTH HERE. Her drag mother may be a real
+ * person who has never competed; that is fine and true, and it is still not a
+ * relationship this room can act on. The franchise genealogy keeps her --
+ * see js/dr/genealogy.js -- because a tree is allowed to name somebody who
+ * never played, where a season's bonds are not.
+ */
+export function relationsFromRoster(cast = []) {
+  const present = new Set(cast.map(p => p && p.name).filter(Boolean));
+  const out = [];
+  for (const p of cast) {
+    const fam = p && p.drag && p.drag.family;
+    if (!fam || !p.name) continue;
+    if (fam.mother && present.has(fam.mother) && fam.mother !== p.name) {
+      out.push({ a: p.name, b: fam.mother, kind: 'mother' });
+    }
+    for (const sis of fam.sisters || []) {
+      if (present.has(sis) && sis !== p.name) out.push({ a: p.name, b: sis, kind: 'sister' });
+    }
+  }
+  return dedupeEdges(out);
+}
+
+/** The same edge authored from both ends is one edge. */
+export function dedupeEdges(edges = []) {
+  const seen = new Set();
+  const out = [];
+  for (const e of edges) {
+    if (!e || !e.a || !e.b) continue;
+    // A mother edge is directional and a sister edge is not, so only the
+    // sister key is order-free. Getting this wrong would silently merge
+    // "Ivy is Coco's mother" with "Coco is Ivy's mother".
+    const key = e.kind === 'sister'
+      ? `sister|${[e.a, e.b].sort().join('|')}`
+      : `${e.kind}|${e.a}|${e.b}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(e);
+  }
+  return out;
+}
+
+/**
  * Authored edges out of the relationship list the cast builder saves.
  *
  * Everything that is not a drag term is dropped rather than guessed at: a pair
@@ -597,6 +646,50 @@ export function relation(families, a, b) {
   if (u === 1) return `${GREATS[Math.min(d - 2, 2)]}niece`;
   // Anything further out is a cousin, which is what everybody calls it.
   return 'cousin';
+}
+
+/**
+ * A family, back as the edges it was built from.
+ *
+ * ── WHY A SEASON HAS TO STORE EDGES AND NOT A TREE ────────────────────
+ *
+ * A family is a fact about a QUEEN, not about a season: the woman who put you
+ * in your first heels is still your drag mother three seasons later, and a
+ * franchise-wide genealogy is the union of every house every season has ever
+ * recorded. Unions are why this returns edges. Two season documents that both
+ * know "Coco's mother is Ivy" produce the same edge twice and it merges to
+ * one; two trees would have to be reconciled, and there is no correct way to
+ * reconcile two trees that disagree.
+ *
+ * Derived families are included, not just authored ones. A house the show
+ * itself put together in season 1 is as real by season 4 as one somebody
+ * typed, and dropping it would make the franchise tree quietly smaller than
+ * the seasons it is built from.
+ */
+export function edgesOf(family) {
+  if (!family || !family.members) return [];
+  const out = [];
+  const roles = family.roles || {};
+  const parents = family.parents || {};
+  for (const m of family.members) {
+    if (parents[m] && family.members.includes(parents[m])) {
+      out.push({ a: m, b: parents[m], kind: 'mother' });
+    }
+  }
+  /* Sisters keep no parent of their own, so the edge has to come back off the
+     role. Chained rather than crossed: three sisters are two edges, and the
+     union-find joins them into the one house either way. */
+  const sisters = family.members.filter(m => (roles[m] || 'sister') === 'sister' && !parents[m]);
+  for (let i = 1; i < sisters.length; i++) {
+    out.push({ a: sisters[i - 1], b: sisters[i], kind: 'sister' });
+  }
+  // A house of daughters with no mother in it still has to hold together.
+  if (!out.length && family.members.length > 1) {
+    for (let i = 1; i < family.members.length; i++) {
+      out.push({ a: family.members[i - 1], b: family.members[i], kind: 'sister' });
+    }
+  }
+  return out;
 }
 
 /**

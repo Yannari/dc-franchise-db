@@ -347,7 +347,7 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
      season's bonds, fights and breakdowns actually happen, and they scale
      with how many people are in the room. */
   // Pairings begun during THIS run, so the season cap binds inside one pass
-  // as well as across weeks. Keyed "a b", sorted.
+  // as well as across weeks. Keyed "a\u0000b", sorted.
 
   const BIG = new Set(['werk-morning', 'prep']);
   const sizeFor = slot => (perSlot != null ? perSlot

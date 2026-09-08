@@ -22,6 +22,7 @@
 // "the person the house voted out". Writing a name there would make a drag
 // season read as a Big Brother eviction in half the site.
 import { SHOWS, showWords, seasonRounds, DRAG_FORMAT } from '../shows.js';
+import { edgesOf } from './family.js';
 
 // Re-exported so this module's own readers need one import, not two.
 export { DRAG_FORMAT };
@@ -210,6 +211,27 @@ export function dragSeasonDetails(rows, seasonNumber, name, congeniality = null)
   };
 }
 
+/**
+ * Every house this season carried, as edges plus the shape they made.
+ *
+ * Read off the episode rows because that is where the season put them
+ * (js/dr/week.js). Any row will do -- families are cast once, before the
+ * first challenge -- so the first row carrying them wins.
+ */
+export function dragFamilies(rows) {
+  const row = (rows || []).find(r => (r?.dr?.families || []).length);
+  const fams = row?.dr?.families || [];
+  return fams.map(f => ({
+    id: f.id, name: f.name, kind: f.kind,
+    surname: f.surname || null,
+    authored: !!f.authored,
+    members: [...f.members],
+    // Kept for reading; `edges` is what a franchise tree is rebuilt from.
+    roles: { ...(f.roles || {}) },
+    edges: edgesOf(f),
+  }));
+}
+
 export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], congeniality = null } = {}) {
   const episodes = dragEpisodes(rows);
   const placements = dragPlacements(rows);
@@ -251,7 +273,16 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
     winners: winnerName ? [winnerName] : [],
     placements: withStats,
     // The registry's roundsPath is 'dr.episodes', so they live under `dr`.
-    dr: { episodes },
+    /* THE HOUSES, WHICH OUTLIVE THE SEASON. A drag family is a fact about a
+       queen and not about a run of episodes -- the woman who put you in your
+       first heels is still your drag mother three seasons later -- so a
+       franchise genealogy is the union of every house every season recorded.
+       This was computed at cast time, used all season and then dropped on the
+       way to the file, which made the whole thing per-season by accident.
+       Edges rather than a tree, because edges MERGE: the same mother recorded
+       by two seasons is one edge, where two trees that disagree cannot be
+       reconciled at all. */
+    dr: { episodes, families: dragFamilies(rows) },
     twists: [...twists],
     finale: finale
       ? {

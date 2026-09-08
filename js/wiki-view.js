@@ -939,6 +939,37 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     if (bits.length) section('personality', 'Personality', bits.join(''));
   }
 
+  // ── DRAG FAMILY ─────────────────────────────────────────────
+  //
+  // The one section on this page that is NOT about a season. A drag family
+  // spans the franchise: the queen who put her in her first pair of heels is
+  // still her drag mother in a season neither of them was cast in, and half
+  // the house is usually queens she has never competed against.
+  //
+  // Drawn as the tree it is, with her marked in it, and every row saying what
+  // that queen is TO HER — her grandmother, her cousin — because that is the
+  // question a reader has on somebody else's article. Each name links to that
+  // queen's own page, where the same tree is drawn centred on HER: clicking
+  // through is how you walk a family.
+  //
+  // Only on this show. A drag family is not a Total Drama fact and the article
+  // is scoped to one show.
+  if (format === 'drag-race' && dossier.dragFamily) {
+    const g = dossier.dragFamily;
+    const rows = g.nodes.map(n => {
+      const label = n.slug
+        ? `<a href="${root}/player.html?player=${encodeURIComponent(n.slug)}">${esc(n.name)}</a>`
+        : `<span class="wk-fam-off" title="has never competed">${esc(n.name)}</span>`;
+      const term = n.focus ? 'this queen'
+        : n.toFocus ? `her ${esc(n.toFocus)}`
+          : n.parent ? `${esc(n.parent)}'s ${esc(n.term)}` : '';
+      return `<li class="wk-fam-row${n.focus ? ' is-focus' : ''}" style="margin-left:${n.depth * 20}px">
+        <span class="wk-fam-name">${label}</span><span class="wk-fam-term">${term}</span></li>`;
+    }).join('');
+    section('drag-family', 'Drag family',
+      `<p class="wk-fam-house">${esc(g.family.name)}</p><ul class="wk-fam">${rows}</ul>`);
+  }
+
   // ── QUOTES ─────────────────────────────────────────────────────────
   //
   // Every fandom character page has these and nothing in this project could
@@ -1424,6 +1455,15 @@ const slugOf = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, 
 
 /** The stylesheet. Kept with the markup so the two cannot drift apart. */
 export const WIKI_CSS = `
+/* The drag family tree. Indented by generation, her row marked. */
+.wk-fam-house{font-weight:600;margin:0 0 8px}
+.wk-fam{list-style:none;margin:0;padding:0}
+.wk-fam-row{display:flex;align-items:baseline;gap:10px;padding:4px 8px;border-radius:6px}
+.wk-fam-row.is-focus{background:rgba(232,121,249,0.12);font-weight:600}
+.wk-fam-name{min-width:160px}
+.wk-fam-term{font-size:12px;opacity:.7}
+.wk-fam-off{opacity:.65;border-bottom:1px dotted currentColor}
+
 .wk-article{
   display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:26px;
   align-items:start; margin-top:6px;

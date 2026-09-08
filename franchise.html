@@ -94,6 +94,27 @@
   white-space: nowrap;
 }
 .tab-btn:hover { background: rgba(125,76,255,.15); color: #fff; }
+.fam-search{width:100%;max-width:340px;padding:9px 12px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
+  color:#fff;font-size:14px;margin:0 0 16px}
+.fam-grid{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:20px;align-items:start}
+@media(max-width:760px){.fam-grid{grid-template-columns:1fr}}
+.fam-list{max-height:70vh;overflow:auto}
+.fam-house{margin:0 0 14px}
+.fam-house h4{margin:0 0 6px;font-size:13px;letter-spacing:.04em}
+.fam-q{display:block;width:100%;text-align:left;padding:5px 10px;border-radius:6px;
+  border:0;background:transparent;color:#cfd3e1;font-size:13px;cursor:pointer}
+.fam-q:hover{background:rgba(125,76,255,.16);color:#fff}
+.fam-q.active{background:rgba(232,121,249,.18);color:#fff;font-weight:600}
+.fam-tree{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:18px;min-height:180px}
+.fam-row{display:flex;align-items:baseline;gap:12px;padding:5px 10px;border-radius:6px}
+.fam-row.is-focus{background:rgba(232,121,249,.14);font-weight:600}
+.fam-row a{color:#cfd3e1;text-decoration:none;border-bottom:1px solid transparent}
+.fam-row a:hover{color:#fff;border-bottom-color:currentColor}
+.fam-term{margin-left:auto;font-size:12px;opacity:.62}
+.fam-off{opacity:.6;border-bottom:1px dotted currentColor}
+.fam-empty{opacity:.55;padding:24px 8px;font-size:14px}
 .tab-btn.active {
   background: linear-gradient(135deg,rgba(125,76,255,.4),rgba(255,179,71,.25));
   color: #fff;
@@ -568,6 +589,7 @@
     <button class="tab-btn" data-tab="records" role="tab">📋 Records</button>
     <button class="tab-btn" data-tab="trivia" role="tab">💡 Trivia</button>
     <button class="tab-btn" data-tab="returnees" role="tab">🔄 Returnees</button>
+    <button class="tab-btn" data-tab="families" role="tab">🌳 Families</button>
     <button class="tab-btn" data-tab="history" role="tab">📈 History</button>
   </nav>
 
@@ -630,6 +652,22 @@
     <div class="lb-card" id="trivia-list"></div>
   </section>
 
+  <!-- TAB: FAMILIES — the one tab that is not about a season -->
+  <section class="tab-panel" id="tab-families">
+    <h2 class="section-title">🌳 Drag families</h2>
+    <p style="opacity:.65;margin:0 0 14px;font-size:14px">
+      Every house the franchise has recorded, from the character sheets and from
+      the seasons themselves. Only <strong>mother</strong>, <strong>daughter</strong>
+      and <strong>sister</strong> are ever written down — aunts, cousins and
+      grandmothers are worked out from those. Pick a queen to see the family
+      from where she stands.</p>
+    <input id="fam-search" class="fam-search" placeholder="Look up a queen…" autocomplete="off">
+    <div class="fam-grid">
+      <div id="fam-list" class="fam-list"></div>
+      <div id="fam-tree" class="fam-tree"></div>
+    </div>
+  </section>
+
   <section class="tab-panel" id="tab-returnees">
     <div id="returnees-content"><div style="opacity:.5;padding:32px;">Loading...</div></div>
   </section>
@@ -664,6 +702,7 @@ window._showSwitcherReady = new Promise(resolve => { window._showSwitcherResolve
   import { currentShow, ALL } from './js/show-switcher.js';
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   import { franchiseRecords } from './js/records.js';
+  import { buildFamilies } from './js/genealogy-tab.js';
   window.showSwitcher = { currentShow, ALL, SHOWS, DEFAULT_FORMAT };
   window.records = { franchiseRecords };
   window._showSwitcherResolve(window.showSwitcher);
@@ -762,6 +801,14 @@ function slugFor(name) { return _slugIndex.get(name) || ''; }
       fetch('voice-profiles.json').then(r => r.json()).catch(() => ({ profiles: {} })),
     ]);
     await window._showSwitcherReady;
+
+    /* ── DRAG FAMILIES ──────────────────────────────────────────
+       The one tab here that is not derived from seasons. A drag family belongs
+       to the QUEEN: authored on her character sheet, it holds across every
+       season she plays and across seasons she is not in at all, and half a
+       house is usually queens who have never competed. Built from the roster
+       unioned with every house the seasons themselves recorded. */
+    buildFamilies(rosterDb).catch(() => {});
 
     /* EVERYTHING BELOW IS DERIVED PER SHOW.
        franchise_database.json holds records, champions and milestones as

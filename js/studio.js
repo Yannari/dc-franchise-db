@@ -107,6 +107,7 @@ const DRAG_STYLE_LIST = ['pageant', 'comedy', 'fashion', 'camp', 'club-kid', 'sp
   'broadway', 'dancer', 'glamour', 'art'];
 const _emptyDrag = () => ({
   ...Object.fromEntries(DRAG_KEYS.map(k => [k, 5])), style: '', traits: [], voice: '',
+  family: { mother: '', sisters: [] },
 });
 // Whether anything was actually authored. An untouched block must NOT be sent:
 // a row of default fives is indistinguishable from a considered choice, and
@@ -115,7 +116,10 @@ const _hasDrag = d => !!d && !!d.drag && (
   DRAG_KEYS.some(k => Number(d.drag[k]) !== 5)
   || !!d.drag.style
   || (Array.isArray(d.drag.traits) && d.drag.traits.length)
-  || !!(d.drag.voice || '').trim());
+  || !!(d.drag.voice || '').trim()
+  // A family on its own is authorship: a queen with nothing but a drag mother
+  // must still send her block, or the one thing typed about her is dropped.
+  || !!(d.drag.family && (d.drag.family.mother || (d.drag.family.sisters || []).length)));
 const _dragOf = k => (_draft && _draft.drag && _draft.drag[k]) || 5;
 
 // ── IndexedDB (rich store) ──────────────────────────────────────────────
@@ -141,6 +145,20 @@ async function _idbDel(store, key) { const db = await _db(); return new Promise(
 
 // ── roster helpers (via window; cast-ui owns FRANCHISE_ROSTER) ───────────
 function _roster() { return (typeof window !== 'undefined' && window.FRANCHISE_ROSTER) || []; }
+/**
+ * Every name an author could mean, for the drag-mother box.
+ *
+ * A typed name that matches nobody is not an error -- a drag mother who has
+ * never played is still her drag mother, and the tree carries her as a name
+ * either way -- but nearly every one an author wants is already on the roster,
+ * and a datalist turns four keystrokes into a pick and kills the typos that
+ * would otherwise split one house into two.
+ */
+function _queenNameOptions() {
+  const names = [...new Set(_roster().map(r => r && r.name).filter(Boolean))].sort();
+  return names.map(n => `<option value="${_esc(n)}"></option>`).join('');
+}
+
 function _persistRoster(arr) {
   try { window.setFRANCHISE_ROSTER && window.setFRANCHISE_ROSTER(arr); } catch {}
   try { localStorage.setItem('simulator_franchise_roster', JSON.stringify(arr)); } catch {}
@@ -1635,6 +1653,24 @@ function _renderEditor() {
         <label class="st-l">Persona voice <span class="st-hint">how the QUEEN talks on the main stage, if that differs from the person</span>
           <textarea class="st-input st-area" id="st-f-drag-voice" rows="2">${_esc((d.drag && d.drag.voice) || '')}</textarea>
         </label>
+        <!-- ── HER FAMILY, ON HER ──────────────────────────────────────
+             A drag family belongs to the QUEEN, not to a season: the woman
+             who put you in your first heels is still your drag mother three
+             seasons later. Authored here, it follows her into every cast she
+             is ever booked on -- the Relationships tab imports it rather than
+             asking for it again, and the franchise genealogy is the union of
+             every character sheet plus every house a season built by itself.
+             Names, not slugs, because that is what the author is typing and
+             what the tab and the tree both read. -->
+        <label class="st-l">Drag mother <span class="st-hint">the queen who brought her up — one name</span>
+          <input class="st-input" id="st-f-drag-mother" list="st-queen-names"
+            value="${_esc((d.drag && d.drag.family && d.drag.family.mother) || '')}" placeholder="e.g. Ivy Deveraux">
+        </label>
+        <label class="st-l">Drag sisters <span class="st-hint">comma separated — aunts, cousins and grandmothers work themselves out</span>
+          <input class="st-input" id="st-f-drag-sisters"
+            value="${_esc(((d.drag && d.drag.family && d.drag.family.sisters) || []).join(', '))}" placeholder="e.g. Rita Deveraux, Nell Deveraux">
+        </label>
+        <datalist id="st-queen-names">${_queenNameOptions()}</datalist>
       </details>
 
       <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — the bio line below is added automatically</span>
@@ -1876,6 +1912,13 @@ function _renderEditor() {
     if (row) { row.textContent = d.drag[k]; row.style.color = _statHue(d.drag[k]); }
   }));
   ed.querySelector('#st-f-drag-style')?.addEventListener('change', e => { d.drag.style = e.target.value; });
+  ed.querySelector('#st-f-drag-mother')?.addEventListener('input', e => {
+    d.drag.family = { ...(d.drag.family || {}), mother: e.target.value.trim() };
+  });
+  ed.querySelector('#st-f-drag-sisters')?.addEventListener('input', e => {
+    d.drag.family = { ...(d.drag.family || {}),
+      sisters: e.target.value.split(',').map(x => x.trim()).filter(Boolean) };
+  });
   ed.querySelector('#st-f-drag-traits')?.addEventListener('input', e => {
     d.drag.traits = e.target.value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 3);
   });

@@ -11,7 +11,7 @@ import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS } from './shows.js';
 // The drag family is derived from the same rows the tab already saves.
-import { dragRelationsFrom, familiesFromRelations, familyTree } from './dr/family.js';
+import { dragRelationsFrom, familiesFromRelations, familyTree, relationsFromRoster } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
@@ -1783,12 +1783,63 @@ export function loadS9Bonds() {
  * Derived, never stored: it is recomputed from the rows every render, so it
  * cannot drift from them.
  */
+/**
+ * Carry the character sheets' families into the tab.
+ *
+ * The family is authored on the QUEEN (Studio → Drag Race → craft), because
+ * that is what it is a fact about: retyping the same house for every season
+ * she plays gets a different answer every time somebody spells a name
+ * differently. This ports it in as ordinary rows, which is the point — once
+ * they are here they are editable, deletable and no different from a row
+ * somebody typed, so a season can break up a family the roster still records.
+ *
+ * `type` is left NEUTRAL on purpose. The row records how they are RELATED;
+ * how they feel is the other axis and the author's to set. The warmth a
+ * family starts with is applied by the season itself (FAMILY_BOND in
+ * js/dr/family.js), so seeding it here as well would pay it twice.
+ *
+ * Adds only what is missing, so it can be run twice and cannot resurrect a
+ * pair somebody has already deleted-and-retyped as something else.
+ */
+export function importDragFamilies({ announce = false } = {}) {
+  const before = relationships.length;
+  const has = (a, b) => relationships.some(r => [r.a, r.b].sort().join('|') === [a, b].sort().join('|'));
+  for (const e of relationsFromRoster(players)) {
+    if (has(e.a, e.b)) continue;
+    // An edge reads "b is a's mother"; a row reads "A is B's mother".
+    const row = e.kind === 'sister'
+      ? { a: e.a, b: e.b, kin: 'drag-sisters' }
+      : { a: e.b, b: e.a, kin: 'drag-mother' };
+    relationships.push({
+      id: `fam-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+      type: 'neutral', bond: REL_TYPES.neutral?.bond ?? 0,
+      leanA: 0, leanB: 0, note: '', ...row,
+    });
+  }
+  const added = relationships.length - before;
+  if (added) { saveRels(); renderRelList(); }
+  if (announce) {
+    alert(added
+      ? `${added} family ${added === 1 ? 'relation' : 'relations'} imported from the cast.`
+      : 'Every family on this cast is already in the list.\n\n'
+        + 'Drag mothers and sisters are authored on the queen, in Studio → Drag Race — craft.');
+  }
+  return added;
+}
+
 function renderDragFamilies() {
   const box = document.getElementById('rel-families');
   if (!box) return;
   const drag = (seasonConfig.format || 'total-drama') === 'drag-race';
   box.style.display = drag ? '' : 'none';
+  const btn = document.getElementById('rel-import-fams');
+  if (btn) btn.style.display = drag ? '' : 'none';
   if (!drag) return;
+
+  /* THE FIRST RENDER PORTS THEM. After that the rows are the author's: an
+     import that ran on every render would resurrect a family somebody had
+     deliberately broken up for this season. The button re-runs it on demand. */
+  if (!relationships.some(r => String(r.kin || '').startsWith('drag-'))) importDragFamilies();
 
   const edges = dragRelationsFrom(relationships);
   const fams = familiesFromRelations(players.map(p => ({ name: p.name, age: p.age })), edges);

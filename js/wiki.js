@@ -23,6 +23,7 @@ import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel, ageNow } from './franchise-calendar.js';
 
 import { parseBio, joinOrigin } from './bio.js';
+import { franchiseFamilies, genealogyFor } from './dr/genealogy.js';
 import { seasonWinners } from './records.js';
 
 /** The singular `winner{}` block, but only when it is about this player. */
@@ -718,6 +719,19 @@ export function buildDossier(player, {
   const castingInterview = rosterRow.castingInterview || '';
   const relationships = relationshipsOf(player, { seasonDocs });
 
+  /* Her house, with a slug on everybody the roster knows, so the article can
+     link them and a reader can walk the tree one queen at a time. A drag
+     mother who never competed has no slug and stays plain text: linking her
+     would send a reader to a page that does not exist, and leaving her OUT
+     would break the line that runs through her. */
+  const _rosterList = roster.players || roster || [];
+  const _famSlugs = new Map(_rosterList.filter(r => r && r.name).map(r => [r.name, r.slug]));
+  const _fam = genealogyFor(
+    franchiseFamilies({ roster: _rosterList, seasonDocs }), player.name);
+  const _dragFamily = _fam
+    ? { ..._fam, nodes: _fam.nodes.map(n => ({ ...n, slug: _famSlugs.get(n.name) || null })) }
+    : null;
+
   return {
     id: player.id,
     name: player.name,
@@ -740,6 +754,14 @@ export function buildDossier(player, {
     career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs, seasonAir }), relationships),
     relationships,
     couple: coupleStatus(relationships),
+    /* ── HER DRAG FAMILY, ACROSS THE WHOLE FRANCHISE ──────────────────
+       Not per-season: the queen who put her in her first pair of heels is
+       still her drag mother in a season neither of them is cast in. Built
+       from the roster's character sheets unioned with every house a drag
+       season recorded, so it names queens who have never competed and queens
+       from seasons this player was not in. Null on a career with no drag
+       family, which is most of them, and the article draws no section. */
+    dragFamily: _dragFamily,
     // What happened to them between seasons. APPROVED ONLY — a proposal is a
     // suggestion, and a suggestion must not change what a page says about
     // somebody. Ordered by the franchise calendar, because `seq` is per-player

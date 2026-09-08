@@ -738,7 +738,14 @@ export const STAGE_BEATS = [
       + 'week and the bottom of it. Do not say who wins or who lip syncs; '
       + 'that is the call, and it has not happened yet.',
     tierBy: 'always',
-    tiers: [tier('announce', 'No critiques tonight. They are doing it.', [])],
+    tiers: [tier('announce', 'No critiques tonight. They are doing it.', [
+      '"Tonight," the host says, and the grin is already leaking through, "the judges will not be critiquing you." The queens look at each other. "Instead, you will be rating each other — top to bottom — and the results will determine who is in the top and who is in the bottom tonight." The arithmetic hits every face at once.',
+      '"This week, the panel is stepping back." The host lets that land. "You are going to rank each other. Every queen rates every other queen, and when those numbers come in, they decide who rises and who falls tonight." The queens stand on that stage and do the maths with their friendships.',
+      '"No critiques tonight." The host says it like a gift and means it like a dare. "Your sisters are going to rate you — every one of them, top to bottom — and the placements come from those numbers." The stage is silent in the particular way that means everybody is counting allies.',
+      '"The panel had a lot to say about what they saw tonight." The host pauses. "But they are not going to say any of it. Instead, the people who know your work best — the queens standing on this stage — will rank each other, and those rankings decide everything." Every smile in the room acquires a second meaning.',
+      '"I am handing the power to you." The host turns the sentence over like he is enjoying the weight of it. "Each of you will rate every other queen, top to bottom. The highest average rises. The lowest falls. The judges are watching — but tonight, the judges are not deciding."',
+      '"No panel tonight, ladies." The host lets the relief begin and then finishes the sentence. "You will be rating each other. Every queen in this room, ranked by every other queen in this room, and the numbers will tell me who was the best and who was the worst." The relief evaporates. The room recalculates.',
+    ])],
   },
 
   // ══ WHAT THE SONG IS FOR ═════════════════════════════════════════════
@@ -749,7 +756,7 @@ export const STAGE_BEATS = [
   // Rate-a-Queen with nothing at stake it is the top two, for the win. On a
   // Legacy night it is for the power to send somebody home.
   {
-    id: 'call-stakes', step: 'results', scope: 'once', speaker: 'host',
+    id: 'call-stakes', step: 'results', scope: 'pair', speaker: 'host',
     variants: 6,
     note: 'After the top and the bottom have been called: what the song is '
       + 'actually for tonight. {a} and {b} are the two who will sing it.',
@@ -758,9 +765,30 @@ export const STAGE_BEATS = [
       + 'because the picture is identical either way and the meaning is not.',
     tierBy: 'stakes',
     tiers: [
-      tier('life', 'The ordinary night: the bottom two, for their lives.', []),
-      tier('win', 'The top two, for the win. Nobody is going home.', []),
-      tier('legacy', 'The top two, and the winner decides who goes home.', []),
+      tier('life', 'The ordinary night: the bottom two, for their lives.', [
+        '"{a}, {b} — the time has come for you to lip sync for your life." The sentence means exactly what it always means: one of them stays and one of them does not, and the song is the only thing left between each of them and the door.',
+        '"Two queens stand before me." The host looks at {a} and then at {b} and the look says all of it. "This is a lip sync for your LIFE." The emphasis lands where it always does and the weight of it never gets lighter.',
+        '"Ladies, this is a lip sync for your life." {a} and {b} take their marks and the stakes are the simplest version of themselves: survive the song or go home tonight. There is no consolation round and there is no second chance.',
+        '"{a}, {b}." The host holds the pause. "One of you will stay, and one of you will sashay away." The words are the same as every other night and the meaning of them has never once been diminished by repetition.',
+        '"For your life." The host delivers it to both of them and both of them receive it standing. Whatever happened on the runway and whatever the panel said has been compressed into a song and a floor, and {a} and {b} already know the song is the only argument either of them has left.',
+        '"This is a lip sync for your life, ladies." The host steps back and the step is the last soft thing either of them will see tonight. {a} and {b} face the stage and the stage is suddenly the only thing left in the building.',
+      ]),
+      tier('win', 'The top two, for the win. Nobody is going home.', [
+        '"{a}, {b} — tonight you will be lip syncing not for your life, but for the WIN." The emphasis changes the room. Nobody is in danger and nobody is going home, and the song is a victory lap with a prize attached.',
+        '"This is not a lip sync for survival, ladies — this is a lip sync for the win." The host grins. {a} and {b} are the best two queens on the stage tonight and the song is going to decide which of them is the best one.',
+        '"{a}, {b}, you will be lip syncing for the WIN tonight." The host lets the word do its work. No one goes home. The song is a reward, not a punishment, and the queen who wins it wins the week.',
+        '"Ladies, tonight the lip sync is for the win." {a} and {b} look at each other and the look is not the look of two queens who are afraid. It is the look of two queens who are about to compete for something they both want, and the song is the arena.',
+        '"For the win." The host says it simply because it does not need to be complicated. {a} and {b} earned this song by being the best tonight, and whoever takes it gets to keep what the panel already gave them.',
+        '"No one is going home tonight." The host looks at {a} and {b} and the relief does not last because the next sentence replaces it with ambition. "Instead, you will lip sync for the WIN." Both queens adjust their stances. The fight just changed shape.',
+      ]),
+      tier('legacy', 'The top two, and the winner decides who goes home.', [
+        '"{a}, {b} — you will be lip syncing tonight, and the winner will have the power to eliminate one of the bottom queens." The sentence rewrites the stakes entirely. They are not fighting for themselves. They are fighting for the right to send somebody else home.',
+        '"This is a lip sync for your LEGACY." The host delivers it and the word fills the stage. {a} and {b} are not in danger. The bottom queens are in danger, and the winner of this song is the one who decides which of them goes.',
+        '"Ladies, you are the top two tonight, and that means you lip sync for the power to eliminate." {a} and {b} hear it and the responsibility is visible. Whoever wins the song chooses who leaves, and that choice is going to follow her for the rest of the season.',
+        '"Tonight, the winner of the lip sync will choose which queen in the bottom goes home." The host says it evenly. {a} and {b} are performing for the right to make a decision that nobody in this room is going to forget.',
+        '"For your legacy." The host pauses long enough for the meaning to settle. {a} and {b} are the best, the bottom queens are the worst, and the song connects those two facts with a power nobody asked for and somebody is about to win.',
+        '"The winner of this lip sync will decide who sashays away tonight." {a} and {b} take their marks knowing that this song is not about survival and it is not exactly about winning — it is about earning the authority to end somebody else\'s run, and that authority starts the moment the music does.',
+      ]),
     ],
   },
 

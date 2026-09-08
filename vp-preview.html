@@ -22,6 +22,12 @@
 import { playDragSeason } from './js/dr/season.js';
 import { dragScreens } from './js/vp-dr/screens.js';
 import { rngFor } from './js/dr/rng.js';
+/* THE REVEAL HANDLERS ARE ON WINDOW IN THE REAL APP (js/main.js exposes them
+   for the inline onclick attributes the screens emit). The harness has to do
+   the same or every reveal button here is a ReferenceError, which made the
+   buttons untestable and hid whatever they would have shown. */
+import * as drChart from './js/vp-dr/chart.js';
+Object.assign(window, drChart);
 window._tvState = {};
 const S=['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
 const g=rngFor(9); const r=()=>1+Math.floor(g()*10);

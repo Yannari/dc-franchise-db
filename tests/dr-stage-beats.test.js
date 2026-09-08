@@ -180,3 +180,32 @@ describe('what is left to write', () => {
     expect(Array.isArray(left)).toBe(true);
   });
 });
+
+describe('THE RUNWAY IS NOT THE CALL', () => {
+  /* A queen was described as being "in the top" on a night she was
+     ELIMINATED. Found by playing forty seasons and reading every scene whose
+     SUBJECT was a queen eliminated that episode — 50,764 scenes, one real
+     offender, and it was not where it looked: the line lived in the
+     `off-theme` tier, on a queen wearing the WRONG look.
+
+     It read "A different runway, a different night, and {a} is in the top."
+     The intent is a counterfactual — on another night this look would place —
+     but the present tense states it as tonight's result, so a reader gets a
+     placement claim in the show's own call vocabulary several cards before
+     the panel has said anything, and sometimes about a queen who is going
+     home. The runway happens BEFORE the critiques; it cannot know the call. */
+  const CALL_CLAIM = /\{a\}\s+(?:is|was)\s+(?:in the top|in the bottom|safe|high|low)\b/i;
+
+  it('no runway line tells the reader a queen placed', () => {
+    const bad = [];
+    for (const b of STAGE_BEATS) {
+      if (b.step !== 'runway') continue;
+      for (const t of b.tiers || []) {
+        for (const line of t.lines || []) {
+          if (CALL_CLAIM.test(line)) bad.push(`${b.id}/${t.id}: ${line.slice(0, 90)}`);
+        }
+      }
+    }
+    expect(bad, 'the runway announced a call it cannot know yet').toEqual([]);
+  });
+});

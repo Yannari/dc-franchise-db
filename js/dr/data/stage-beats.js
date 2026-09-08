@@ -295,7 +295,7 @@ export const STAGE_BEATS = [
         "It is a good look. It is not this look. {a} walks the runway in something that would have been strong last week or next week but tonight the category asked for something specific and this is not it. The craft is there. The read is not.",
         "{a} comes out in something beautiful that has nothing to do with the category. The judges watch with the particular expression of people who can see the skill and cannot find the brief, and that gap between talent and assignment is where the critique is going to live tonight.",
         "The look is polished, the construction is clean, and it answers a question nobody asked. {a} walks the runway with confidence, which makes it worse — she clearly thinks she nailed it, and the panel is going to have to explain why the thing she nailed was not the thing they were looking for.",
-        "A different runway, a different night, and {a} is in the top. Tonight she is wearing something that lives three postcodes away from the category, and the distance is going to cost her regardless of how well it is made.",
+        "On a different runway, on a different night, this look puts {a} in the top. Tonight she is wearing something that lives three postcodes away from the category, and the distance is going to cost her regardless of how well it is made.",
       ]),
     ],
   },

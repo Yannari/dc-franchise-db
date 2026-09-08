@@ -65,6 +65,18 @@ export const GRID_RESULTS = {
 };
 
 /**
+ * How good a call is, for sorting an episode's column.
+ *
+ * Best first. Distinct from PPE_POINTS because these are ranks, not scores:
+ * BTM and BTM2 both score 1 as points, but being saved before the song and
+ * having to lip sync for it are not the same week, and a sort should put
+ * them in the right order.
+ */
+const ORDER_OF = {
+  WINNER: 0, WIN: 1, FINALIST: 2, HIGH: 3, SAFE: 4, LOW: 5, BTM: 6, BTM2: 7, ELIM: 8, OUT: 9,
+};
+
+/**
  * PPE — points per episode, the number the fandom ranks queens by.
  *
  * NOT INVENTED HERE. The scale was derived from a real progress table and
@@ -103,6 +115,22 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const slugOf = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const cap = t => String(t || '').replace(/^./, c => c.toUpperCase());
+/** A row's episode number, from either shape a row comes in. */
+const epOf = r => Number(r?.num ?? r?.dr?.ep) || 0;
+
+/**
+ * What to head that episode's column with.
+ *
+ * A night that is not a maxi challenge still has a name, and reading only
+ * `dr.challenge.name` left those columns blank — the header said "Ep. 9" over
+ * a column and nothing else, which is the state the chart was built to end.
+ */
+const challengeName = r => r?.dr?.challenge?.name
+  || (r?.dr?.finale ? 'The Finale' : '')
+  || (r?.dr?.smackdown ? 'The Lip Sync Smackdown' : '')
+  || (r?.dr?.reunion ? 'The Reunion' : '')
+  || '';
+
 /** Her initials, for the photo cell when she has no portrait on file. */
 const initials = n => String(n || '').trim().split(/\s+/).slice(0, 2)
   .map(x => x[0] || '').join('').toUpperCase();
@@ -125,7 +153,7 @@ function fromDocument(doc, format) {
       return {
         episode: Number(e.episode) || 0,
         result: cell.result || 'OUT',
-        challenge: e.challenge?.name || '',
+        challenge: e.challenge?.name || (e.finale ? 'The Finale' : ''),
         mini: (e.mini?.winner || null) === p.name,
         role: e.assignment?.roles?.[p.name] || null,
         panelRank: cell.panelRank ?? null,
@@ -162,38 +190,84 @@ function fromRows(rows, format) {
     return lengthOf(b) - lengthOf(a);
   });
 
-  const width = Math.max(...names.map(n => (record[n] || []).length));
-  const byEp = new Map(list.map(r => [Number(r.num ?? r.dr?.ep) || 0, r]));
-  return ordered.map((n, i) => ({
-    name: n,
-    slug: slugOf(n),
-    placement: i + 1,
-    /* MID-SEASON THERE IS NO RANK. The order above is "longest record first",
-       which is the honest reading order and is NOT a placement — the queen
-       sitting at the top of the chart in week four has not won anything. The
-       chart says TBA until a finale exists, exactly as the fandom's own
-       tables do, rather than printing a number that will change. */
-    ranked: finalOrder.length > 0,
-    cells: Array.from({ length: width }, (_, k) => {
-      const epNum = k + 1;
-      const r = byEp.get(epNum);
-      const bend = (r?.dr?.bend || []).find(b => b.name === n) || {};
-      const arc = (r?.dr?.storylines || []).find(s => (s.players || []).includes(n));
-      const exit = (r?.exits || []).find(x => x.name === n) || null;
-      return {
-        episode: epNum,
-        result: (record[n] || [])[k] || 'OUT',
-        challenge: r?.dr?.challenge?.name || '',
-        mini: (r?.dr?.mini?.winner || null) === n,
-        role: r?.dr?.assignment?.roles?.[n] || null,
-        panelRank: bend.panelRank ?? null,
-        finalRank: bend.finalRank ?? null,
-        storyline: arc?.variantName || arc?.arc || null,
-        lipsync: r?.dr?.lipsync?.song || null,
-        exitVerb: exit?.verb || null,
-      };
-    }),
-  }));
+  const byEp = new Map(list.map(r => [epOf(r), r]));
+
+  /* ── WHICH EPISODE EACH ENTRY CAME FROM ──
+     THE RECORD'S INDEX IS NOT THE EPISODE NUMBER, and treating it as one is
+     an off-by-one waiting for any episode that judges nobody. Two of them
+     exist already:
+
+       · A LIP SYNC SMACKDOWN or any night with no call pushes nothing, so
+         every column after it slid one episode to the left. Measured on a
+         played season: the FINALE's result was being drawn under the
+         Smackdown's name, and the finale had no column at all.
+       · A SPLIT PREMIERE is worse, because it shifts PER QUEEN. Each half of
+         the room plays its own night, so the second half's first entry is
+         episode two while the first half's is episode one. There is no
+         single offset that fixes that — index 0 genuinely means different
+         episodes for different queens.
+
+     So the mapping is derived instead of assumed. Every row carries its own
+     `dr.record` snapshot, so a queen's record growing between two rows says
+     exactly which episode produced the new entry. This is the same failure
+     the Big Brother ledger had, and it stays invisible until you read a
+     chart against the episodes it claims to describe. */
+  const epsFor = new Map(names.map(n => [n, []]));
+  const seen = new Map(names.map(n => [n, 0]));
+  for (const r of [...list].sort((x, y) => epOf(x) - epOf(y))) {
+    const snap = r?.dr?.record || {};
+    for (const n of names) {
+      const had = seen.get(n) || 0;
+      const now = (snap[n] || []).length;
+      for (let i = had; i < now; i++) epsFor.get(n).push(epOf(r));
+      if (now > had) seen.set(n, now);
+    }
+  }
+  /* A queen whose entries could not be placed — a chart built from one row,
+     or a season with no per-row snapshots — falls back to the old reading, so
+     a partial source still draws something rather than nothing. */
+  for (const n of names) {
+    const got = epsFor.get(n);
+    const want = (record[n] || []).length;
+    if (got.length !== want) epsFor.set(n, Array.from({ length: want }, (_, k) => k + 1));
+  }
+
+  // The columns are the episodes that actually judged somebody, in order.
+  const columnEps = [...new Set([...epsFor.values()].flat())].sort((x, y) => x - y);
+
+  return ordered.map((n, i) => {
+    const mine = new Map((epsFor.get(n) || []).map((e, k) => [e, (record[n] || [])[k]]));
+    return {
+      name: n,
+      slug: slugOf(n),
+      placement: i + 1,
+      /* MID-SEASON THERE IS NO RANK. The order above is "longest record
+         first", which is the honest reading order and is NOT a placement —
+         the queen sitting at the top of the chart in week four has not won
+         anything. The chart says TBA until a finale exists, exactly as the
+         fandom's own tables do, rather than printing a number that will
+         change under the reader. */
+      ranked: finalOrder.length > 0,
+      cells: columnEps.map(epNum => {
+        const r = byEp.get(epNum);
+        const bend = (r?.dr?.bend || []).find(b => b.name === n) || {};
+        const arc = (r?.dr?.storylines || []).find(s => (s.players || []).includes(n));
+        const exit = (r?.exits || []).find(x => x.name === n) || null;
+        return {
+          episode: epNum,
+          result: mine.get(epNum) || 'OUT',
+          challenge: challengeName(r),
+          mini: (r?.dr?.mini?.winner || null) === n,
+          role: r?.dr?.assignment?.roles?.[n] || null,
+          panelRank: bend.panelRank ?? null,
+          finalRank: bend.finalRank ?? null,
+          storyline: arc?.variantName || arc?.arc || null,
+          lipsync: r?.dr?.lipsync?.song || null,
+          exitVerb: exit?.verb || null,
+        };
+      }),
+    };
+  });
 }
 
 /**
@@ -226,9 +300,27 @@ export function buildTrackRecordGrid(source, {
   const rows = gridRows(source, { format });
   if (!rows.length) return '';
   const w = showWords(format);
-  const width = Math.max(0, Math.min(rows[0].cells.length,
-    Number.isFinite(upToEpisode) ? upToEpisode : Infinity));
+  /* CUT BY EPISODE, NOT BY COLUMN COUNT. The two are not the same number the
+     moment a night judges nobody: taking the first N columns of a season with
+     a Smackdown in it showed one episode too many, and on a split premiere it
+     cut a different week for every queen. A column is in if the episode it
+     belongs to has aired. */
+  const lastEp = Number.isFinite(upToEpisode) ? upToEpisode : Infinity;
+  const keep = rows[0].cells.map((c, i) => (c.episode || i + 1) <= lastEp);
+  const width = keep.filter(Boolean).length;
   if (!width) return '';
+  const shownOf = cells => cells.filter((_, i) => keep[i]);
+
+  /* ── SORTING, THE WAY A SPREADSHEET DOES IT ──
+     A track record is a table people interrogate: who has the best average,
+     who went out first, who was in the bottom that week. Sorting is done in
+     the DOM by `drGridSort` below — rows are reordered, never rebuilt, so it
+     costs nothing and cannot disagree with what was drawn.
+     Every column sorts, including each episode's: sorting by a week orders
+     the cast by how that week went for them, best call first. */
+  const sortTh = (key, label) => `<th scope="col" rowspan="2" class="dr-tr-h dr-tr-sort"`
+    + ` data-sort="${esc(key)}" tabindex="0" role="button"`
+    + ` title="Sort by ${esc(label)}"><span>${esc(label)}</span><i></i></th>`;
 
   /* ── TWO HEADER ROWS, BECAUSE THE COLUMN NEEDS A NAME ──
      A column headed "3" tells the reader nothing about why the calls in it
@@ -237,13 +329,15 @@ export function buildTrackRecordGrid(source, {
      reference table does. Now the episode number sits above the challenge
      that produced it, so the chart can be read for what kind of week each
      one was. */
-  const headEps = rows[0].cells.slice(0, width)
-    .map(c => `<th scope="col" class="dr-tr-ep" title="${esc(w.round)} ${c.episode}">Ep. ${c.episode}</th>`).join('');
-  const headChals = rows[0].cells.slice(0, width)
+  const headEps = shownOf(rows[0].cells)
+    .map(c => `<th scope="col" class="dr-tr-ep dr-tr-sort" data-sort="ep:${c.episode}"`
+      + ` tabindex="0" role="button" title="Sort by ${esc(w.round)} ${c.episode}">`
+      + `<span>Ep. ${c.episode}</span><i></i></th>`).join('');
+  const headChals = shownOf(rows[0].cells)
     .map(c => `<th scope="col" class="dr-tr-chal">${esc(c.challenge || '')}</th>`).join('');
 
   const body = rows.map(p => {
-    const shownCells = p.cells.slice(0, width);
+    const shownCells = shownOf(p.cells);
     const cells = shownCells.map(c => {
       const meta = GRID_RESULTS[c.result] || GRID_RESULTS.SAFE;
       /* The exit's word is the ROUND's, never a default. One `exitWord` per
@@ -300,14 +394,20 @@ export function buildTrackRecordGrid(source, {
       ? `<td class="dr-tr-ppe" title="Points per episode: ${esc(w.round)}s she competed in only"`
         + `>${ppe == null ? '—' : ppe.toFixed(2)}</td>` : '';
 
-    return `<tr>${rankCell}<th scope="row" class="dr-tr-name">${esc(p.name)}</th>`
+    /* The sort keys travel ON the row, so sorting never needs the data that
+       built it — the table is self-contained wherever it is dropped. */
+    const epKeys = shownCells
+      .map(c => `${c.episode}:${ORDER_OF[c.result] ?? 99}`).join(',');
+    return `<tr data-rank="${p.placement}" data-name="${esc(p.name)}"`
+      + ` data-ppe="${ppe == null ? -1 : ppe}" data-eps="${esc(epKeys)}">`
+      + `${rankCell}<th scope="row" class="dr-tr-name">${esc(p.name)}</th>`
       + `${photoCell}${cells}${ppeCell}</tr>`;
   }).join('');
 
   // The legend names only what this season produced. A key listing a result
   // nothing on the chart uses is a reader hunting for a colour that is not there.
   const used = new Set();
-  for (const p of rows) for (const c of p.cells.slice(0, width)) used.add(c.result);
+  for (const p of rows) for (const c of shownOf(p.cells)) used.add(c.result);
   const legend = Object.entries(GRID_RESULTS)
     .filter(([k]) => used.has(k) && k !== 'OUT')
     .map(([k, m]) => `<span class="dr-tr-key"><i style="background:${m.color}"></i>`
@@ -319,11 +419,11 @@ export function buildTrackRecordGrid(source, {
     <div class="sr-scroll"><table class="track-record">
       <thead>
         <tr>
-          ${cols.rank ? '<th scope="col" rowspan="2" class="dr-tr-h">Rank</th>' : ''}
-          <th scope="col" rowspan="2" class="dr-tr-h">${esc(cap(w.player))}</th>
+          ${cols.rank ? sortTh('rank', 'Rank') : ''}
+          ${sortTh('name', cap(w.player))}
           ${cols.photo ? '<th scope="col" rowspan="2" class="dr-tr-h">Photo</th>' : ''}
           ${headEps}
-          ${cols.ppe ? '<th scope="col" rowspan="2" class="dr-tr-h">PPE</th>' : ''}
+          ${cols.ppe ? sortTh('ppe', 'PPE') : ''}
         </tr>
         <tr>${headChals}</tr>
       </thead>
@@ -331,6 +431,77 @@ export function buildTrackRecordGrid(source, {
     </table></div>
     <div class="dr-tr-legend">${legend}</div>
   </div>`;
+}
+
+/**
+ * Sort a drawn chart, in the DOM.
+ *
+ * Bound once per document rather than per table, and it reorders the <tr>s
+ * that are already there — nothing is rebuilt, so a sorted chart cannot
+ * disagree with the chart it was sorted from, and the reveal state, the
+ * tooltips and the images all survive.
+ *
+ * Clicking the same header twice reverses it, exactly as a spreadsheet does.
+ * The default direction is the useful one per column: rank and episode
+ * ascend (best first), PPE descends (best first), name ascends.
+ */
+export function drGridSort(th) {
+  const table = th?.closest('table.track-record');
+  const key = th?.getAttribute('data-sort');
+  if (!table || !key) return;
+  const body = table.querySelector('tbody');
+  if (!body) return;
+
+  const wasKey = table.getAttribute('data-sorted-by');
+  const wasDir = table.getAttribute('data-sorted-dir') === 'desc' ? -1 : 1;
+  const base = key === 'ppe' ? -1 : 1;
+  const dir = wasKey === key ? -wasDir : base;
+
+  const epNum = key.startsWith('ep:') ? key.slice(3) : null;
+  const valueOf = tr => {
+    if (key === 'name') return tr.getAttribute('data-name') || '';
+    if (key === 'ppe') return Number(tr.getAttribute('data-ppe'));
+    if (key === 'rank') return Number(tr.getAttribute('data-rank'));
+    /* An episode's column. A queen with no cell that week — she had already
+       gone, or the split premiere put her in the other half — sorts to the
+       bottom whichever way the column is pointed, because "no result" is not
+       a good result or a bad one. */
+    const hit = (tr.getAttribute('data-eps') || '').split(',')
+      .find(x => x.startsWith(`${epNum}:`));
+    return hit ? Number(hit.split(':')[1]) : 99;
+  };
+
+  const rows = [...body.querySelectorAll('tr')];
+  rows.sort((a, b) => {
+    const x = valueOf(a); const y = valueOf(b);
+    let cmp = typeof x === 'string' ? x.localeCompare(y) : x - y;
+    // A stable tiebreak, so equal cells never shuffle between clicks.
+    if (!cmp) cmp = Number(a.getAttribute('data-rank')) - Number(b.getAttribute('data-rank'));
+    return cmp * dir;
+  });
+  for (const tr of rows) body.appendChild(tr);
+
+  table.setAttribute('data-sorted-by', key);
+  table.setAttribute('data-sorted-dir', dir === -1 ? 'desc' : 'asc');
+  for (const el of table.querySelectorAll('th.dr-tr-sort')) {
+    const on = el === th;
+    el.classList.toggle('dr-on', on);
+    el.classList.toggle('dr-desc', on && dir === -1);
+    el.setAttribute('aria-sort', on ? (dir === -1 ? 'descending' : 'ascending') : 'none');
+  }
+}
+
+if (typeof document !== 'undefined' && !document._drGridSortBound) {
+  document._drGridSortBound = true;
+  document.addEventListener('click', e => {
+    const th = e.target?.closest?.('th.dr-tr-sort');
+    if (th) drGridSort(th);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const th = e.target?.closest?.('th.dr-tr-sort');
+    if (th) { e.preventDefault(); drGridSort(th); }
+  });
 }
 
 /** The CSS the chart needs, so a page that draws it does not invent its own. */
@@ -345,11 +516,28 @@ td.dr-tr-cell{font-weight:700;letter-spacing:.03em;font-size:11px;min-width:56px
   line-height:1.25;vertical-align:middle}
 /* ── THE REFERENCE TABLE'S OWN COLUMNS ── */
 .dr-tr-h{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+/* ── SORTABLE HEADERS ──
+   The arrow is drawn always but faint, so a reader can see WHICH columns
+   sort before clicking one, rather than discovering it by accident. */
+th.dr-tr-sort{cursor:pointer;user-select:none;position:relative;white-space:nowrap}
+th.dr-tr-sort:hover,th.dr-tr-sort:focus-visible{background:rgba(255,255,255,.10);outline:none}
+.dr-phase-chart th.dr-tr-sort:hover,.dr-phase-chart th.dr-tr-sort:focus-visible{
+  background:#E0D6C2}
+th.dr-tr-sort>i{display:inline-block;width:0;height:0;margin-left:5px;vertical-align:middle;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-top:5px solid currentColor;opacity:.28;transition:opacity .15s,transform .15s}
+th.dr-tr-sort.dr-on>i{opacity:1}
+th.dr-tr-sort.dr-on.dr-desc>i{transform:rotate(180deg)}
+th.dr-tr-sort:focus-visible{box-shadow:inset 0 0 0 2px #FF2D8B}
 th.dr-tr-ep{font-weight:700;font-size:11px;letter-spacing:.05em}
 /* The challenge name is a caption for the column, not a heading competing
    with the episode number above it. */
-th.dr-tr-chal{font-weight:600;font-size:10px;line-height:1.3;white-space:normal;
-  max-width:104px;opacity:.9}
+/* Specificity has to beat the nowrap on table.track-record th above, or the
+   long names overflow their column instead of wrapping inside it. NO
+   BACKTICKS IN HERE: this block is a template literal and a backtick in a
+   comment ends it, which has broken this repo five times now. */
+table.track-record th.dr-tr-chal{font-weight:600;font-size:10px;line-height:1.3;
+  white-space:normal;padding:3px 6px;min-width:74px;max-width:112px;opacity:.9}
 td.dr-tr-rank{font-weight:700;font-size:12px;min-width:44px;letter-spacing:.04em}
 td.dr-tr-photo{padding:0;width:56px}
 td.dr-tr-photo img{display:block;width:52px;height:52px;object-fit:cover;margin:1px auto}

@@ -38,10 +38,31 @@ function upTo(row) {
  * when the season is not on the window (a replayed episode, a test).
  */
 function sourceFor(row) {
-  const season = (typeof window !== 'undefined' && window._drSeasonRows) || null;
-  if (Array.isArray(season) && season.length) {
-    // Never past tonight, even if the window holds a finished season.
-    return season.filter(r => (Number(r?.num ?? r?.dr?.ep) || 0) <= upTo(row));
+  const cap = upTo(row);
+  const mine = r => r && (r.dr || r.format === 'drag-race')
+    && (Number(r.num ?? r.dr?.ep) || 0) <= cap;
+
+  // An explicit season wins — that is how a test or a preview pins one.
+  const pinned = (typeof window !== 'undefined' && window._drSeasonRows) || null;
+  if (Array.isArray(pinned) && pinned.length) return pinned.filter(mine);
+
+  /* ── AND OTHERWISE THE SEASON THAT HAS ACTUALLY AIRED ──
+     `window._drSeasonRows` was READ here and WRITTEN NOWHERE in the whole
+     application, so this fell through to `[row]` every single time the chart
+     was drawn in the simulator: one row, for tonight.
+     That is invisible in the results themselves, because the last row's
+     `dr.record` carries the entire season's calls — the grid was full and
+     looked right. What it silently lost was everything held per EPISODE:
+     the challenge that produced each column, who won that week's mini, who
+     captained a team. All of those resolve by looking up the row for that
+     episode, and there was only ever one row to find, so every column except
+     tonight's came back blank.
+     js/dr-run.js pushes each played row onto gs.episodeHistory, so that is
+     the season, and it is the same list the rest of the viewing party reads. */
+  const hist = (typeof window !== 'undefined' && window.gs?.episodeHistory) || null;
+  if (Array.isArray(hist) && hist.length) {
+    const played = hist.filter(mine);
+    if (played.length) return played;
   }
   return [row];
 }
@@ -54,16 +75,27 @@ export function rpBuildChart(row) {
   const rows = gridRows(source);
   if (!rows.length) return '';
 
-  const total = Math.min(rows[0].cells.length, upTo(row));
+  /* ── COLUMNS ARE NOT EPISODES, AND THIS SCREEN COUNTS IN COLUMNS ──
+     The reveal steps one COLUMN at a time, but the grid cuts by EPISODE, and
+     the two stop agreeing the moment a night judges nobody. Reading a column
+     count as an episode number cut the finale off the end of a finished
+     season: nine columns, but the last of them is episode ten.
+     So the reveal counts columns and hands the grid the episode that column
+     belongs to. */
+  const colEps = rows[0].cells
+    .map(c => c.episode)
+    .filter(e => e <= upTo(row));
+  const total = colEps.length;
+  if (!total) return '';
   const { idx } = _state({ num: ep.num }, SUFFIX);
   // Before the first click the chart shows the season up to LAST week, so the
   // screen is never blank and tonight is the thing being revealed.
   const shown = idx < 0 ? Math.max(1, total - 1) : Math.min(idx + 1, total);
 
   const grid = buildTrackRecordGrid(source, {
-    upToEpisode: shown,
+    upToEpisode: colEps[shown - 1],
     interactive: true,
-    title: `Through ${ep.dr?.challenge?.name ? `episode ${shown}` : `episode ${shown}`}`,
+    title: `Through episode ${colEps[shown - 1]}`,
   });
 
   const controls = `<!--dr-chrome--><div class="dr-controls" id="dr-controls-${SUFFIX}">
@@ -79,7 +111,12 @@ export function rpBuildChart(row) {
     {
       phase: 'chart',
       title: 'The Track Record',
-      subtitle: `${rows.length} queens · through episode ${shown}`,
+      /* NO EPISODE HERE. The shell's subtitle is drawn once and the chart
+         repaints under it, so an episode number in it goes stale the first
+         time the reader fills a column — it read "through episode 8" over a
+         chart showing episode 10. The <h3> inside the mount carries it and
+         is repainted with the grid. */
+      subtitle: `${rows.length} queens`,
       hud: false,
     },
   )}${controls}`;
@@ -98,12 +135,15 @@ function _paint(epNum, shown) {
   if (!mount) return;
   const row = { num: epNum, dr: {} };
   const source = sourceFor(row);
+  const rows = gridRows(source);
+  const colEps = rows.length
+    ? rows[0].cells.map(c => c.episode).filter(e => e <= epNum) : [];
+  const total = colEps.length;
+  const upToEpisode = colEps[Math.min(shown, total) - 1];
   mount.innerHTML = buildTrackRecordGrid(source, {
-    upToEpisode: shown, interactive: true, title: `Through episode ${shown}`,
+    upToEpisode, interactive: true, title: `Through episode ${upToEpisode ?? shown}`,
   });
   const counter = document.getElementById(`dr-counter-${SUFFIX}`);
-  const rows = gridRows(source);
-  const total = rows.length ? Math.min(rows[0].cells.length, epNum) : 0;
   if (counter) counter.textContent = `${shown} / ${total}`;
   const controls = document.getElementById(`dr-controls-${SUFFIX}`);
   if (controls) controls.classList.toggle('dr-done', shown >= total);

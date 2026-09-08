@@ -33,7 +33,7 @@
 // queens are physically doing. The narration says what happened, not what
 // the rules were, so a truncated desc leaves a result nobody can follow.
 // That is a project rule with its own test on the Big Brother side.
-import { _shell, _portrait, _icon, _note } from './style.js';
+import { _shell, _portrait, _icon, _note, _judgePortrait } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { maxiById } from '../dr/data/challenges.js';
 import { characterById } from '../dr/data/snatch-characters.js';
@@ -522,9 +522,29 @@ export function rpBuildMaxiAnnounce(row) {
     ${_trackLine(row)}
   </div>
   ${_teamBoard(a, ep)}`;
-  const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-announce-${i}">
-    <div class="dr-panel dr-a-room" style="padding:14px 16px 14px 20px">
-      <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p></div></div>`).join('');
+  /* WHO IS TALKING, WHICH THIS SCREEN NEVER SAID.
+     Three different people speak on this night — the host walks in, the host
+     explains the week, and then individual queens react to it — and all three
+     were drawn as the same anonymous card with a paragraph in it. The main
+     stage draws its panel and the prep room draws a portrait per scene; the
+     one screen where RuPaul actually enters the room drew nobody at all.
+     OUT OF DRAG, deliberately. She arrives in the werk room in a suit, and
+     `portraitStage` is the other picture — the one for the night she hosts
+     from the main stage. A screen that uses the wrong one is wrong twice,
+     which is why js/dr/data/judges.js carries both. */
+  const steps = scenes.map((sc, i) => {
+    const host = /host-arrives|the-brief/.test(sc.kind || '');
+    const who = (sc.data?.players || [])[0];
+    const face = host ? _judgePortrait('rupaul', { size: 46 })
+      : who ? _portrait(who, ep, { size: 46 }) : '';
+    return `<div class="dr-step" id="dr-step-announce-${i}">
+      <div class="dr-panel ${host ? 'dr-a-score' : 'dr-a-room'} dr-row"
+        style="padding:14px 16px 14px 20px">
+        ${face}
+        <div><p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p>
+          ${host ? '<span class="dr-sub">the host</span>' : ''}</div>
+      </div></div>`;
+  }).join('');
   return `<style>${CHAL_CSS}</style>${_shell(
     `<div class="dr-brief-room">${briefSet('brief')}${lead}${steps}</div>`, ep, {
       phase: 'werk', title: 'The Maxi Challenge', subtitle: 'the brief',

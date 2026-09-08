@@ -57,6 +57,30 @@ export function moduleFor(maxiId) {
   return CHAL_MODULES[maxiId] || generic;
 }
 
+/* ── WHY THIS FILE DOES NOT DRAW FROM MAXI_EVENTS ──
+   Fifty-three events are authored and, across a season, nine of the
+   twenty-one belonging to challenges that actually played ever fire. The
+   obvious fix — draw a few from the pool each week — was written here and
+   deleted, because it is wrong and this engine says so out loud:
+
+     drag-race: event "reunion" has no consequence — every event must move
+     a bond, a popularity number or a state flag
+
+   A maxi event is CAUSED. The roast module compares real bit scores, moves
+   them, and emits `stole-a-bit` carrying the bond and popularity it just
+   changed; the prose in maxi-events.js is the narration for a thing that
+   mechanically happened. Sprinkling those lines onto a random pair and
+   inventing a consequence to satisfy the check would be a narrated event
+   with a made-up cause, which is the exact bug the rule guards against —
+   and it cannot even guess the SIGN, because whether "ignored the note" is
+   good or bad for her is a simulation question.
+
+   So the unfired events are a real gap in the SIMULATION, not in the
+   renderer: eleven challenges run on chal/_generic.js and chal/craft.js,
+   which produce no situations of their own. Closing it means giving those
+   modules real triggers, the way roast.js and snatch-game.js have them.
+   That is per-challenge work and it is worth doing; it is not a knob. */
+
 /** Run one maxi challenge end to end. */
 export function runMaxi(ctx) {
   const mod = moduleFor(ctx.maxi.id);

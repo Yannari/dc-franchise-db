@@ -62,8 +62,20 @@ describe('the maxi', () => {
       const names = Object.keys(row.dr.performances || {});
       expect(html.length, `episode ${row.num} drew nothing`).toBeGreaterThan(400);
       for (const n of names) expect(html, `${n} on episode ${row.num}`).toContain(n);
-      const steps = (html.match(/id="dr-step-maxi-\d+"/g) || []);
-      expect(steps.length, `episode ${row.num}`).toBe(names.length);
+      /* THE STEP IDS ARE KEYED BY WHICH MAXI SCREEN THIS IS. A challenge
+         filmed during the week and one performed live on the main stage are
+         two sections in two different slots of the night, so they carry two
+         suffixes — `maxi` and `maxistage` — and this looked only for the
+         first. It passed for as long as the two were one screen. */
+      // From the CATALOGUE, which is where the stage lives — the row's own
+      // challenge object does not carry it, so reading it there silently
+      // treated every challenge as a main-stage one.
+      const sfx = maxiById(row.dr.challenge?.id)?.stage === 'pre' ? 'maxi' : 'maxistage';
+      // String.raw: in a plain template literal that \d is a JavaScript
+      // escape and the pattern becomes "d+", which matches nothing.
+      const steps = (html.match(new RegExp(String.raw`id="dr-step-${sfx}-\d+"`, 'g')) || []);
+      expect(steps.length, `episode ${row.num} (${row.dr.challenge?.id})`)
+        .toBe(names.length);
     }
   });
 

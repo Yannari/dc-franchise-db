@@ -493,8 +493,20 @@ export function renderMaxiEventScenes(events, { step = 'maxi-main', rng = Math.r
     const spec = MAXI_EVENTS.find(x => x.id === ev.type);
     if (!spec) continue;
     const who = ev.players || [];
+    /* WHERE THE EVENT HAPPENS, which the event has always known and this
+       renderer always ignored. Every entry in maxi-events.js carries a
+       `from` — and four of them say `prep`, meaning the werk room while the
+       queens are still building: the host's walkthrough is the obvious one.
+       Stamped with the maxi's step, RuPaul stopping at a station to look at
+       a half-built garment was drawn on the card for the performance she
+       gives afterwards, which is not only the wrong screen but the wrong
+       moment in the night — the note is given so that the runway can answer
+       it, and the runway had already happened.
+       Only `prep` is rerouted: every other `from` names the challenge the
+       event belongs to, which is the screen it is already on. */
+    const at = spec.from === 'prep' ? 'prep' : step;
     scenes.push({
-      step,
+      step: at,
       kind: `maxi:${ev.type}`,
       data: { event: ev.type, players: who, note: spec.note, from: spec.from },
       text: fill(pick(spec.lines, rng, used, ev.type), { a: who[0], b: who[1] }),

@@ -88,8 +88,16 @@ const CHAL_CSS = `
    reader is actually looking at, and the walls then run the full length of
    the night rather than one screenful of it. */
 .dr-fam{position:relative;z-index:1}
+/* THESE WERE TOO FAINT TO READ AND THAT WAS THE BUG. Calibrated as ambient
+   wash — a 10% gradient behind a card that is already a gradient — they were
+   invisible at a glance, which for a set is the same as not existing. The
+   opacities below are two to three times what they were, and each room now
+   owns its BACKDROP rather than tinting somebody else's: the panel behind
+   the cards is darkened so the room around it can be seen at all. */
 .dr-set{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
   overflow:hidden;border-radius:2px}
+/* The cards sit on the room, not in front of a wash of it. */
+.dr-fam .dr-panel{background:rgba(10,3,8,.78);backdrop-filter:blur(2px)}
 .dr-set i{position:absolute;display:block}
 
 /* A TELEVISION STUDIO: the tally light and the scan of a monitor.
@@ -97,38 +105,42 @@ const CHAL_CSS = `
    middle of the title, which reads as a fault rather than a camera. It goes
    in the corner where a tally actually is. */
 .dr-set-studio{background:
-  radial-gradient(120% 70% at 50% 0%,rgba(56,189,248,.16),transparent 62%),
-  radial-gradient(90% 60% at 50% 110%,rgba(56,189,248,.08),transparent 70%)}
+  radial-gradient(120% 70% at 50% 0%,rgba(56,189,248,.42),transparent 62%),
+  radial-gradient(90% 60% at 50% 110%,rgba(56,189,248,.22),transparent 70%),
+  linear-gradient(180deg,#04121c,#02060c)}
 .dr-set-studio::after{content:"";position:absolute;inset:0;
   box-shadow:inset 0 0 190px 60px rgba(0,0,0,.6)}
 .dr-tally{top:16px;right:20px;width:10px;height:10px;border-radius:50%;background:#FF294B;
   box-shadow:0 0 26px 7px rgba(255,41,75,.7);animation:drTally 3.4s ease-in-out infinite}
 @keyframes drTally{0%,88%,100%{opacity:1}92%{opacity:.2}}
 .dr-scan{inset:0;background:repeating-linear-gradient(180deg,
-  rgba(255,255,255,.05) 0 1px,transparent 1px 4px)}
+  rgba(255,255,255,.11) 0 1px,transparent 1px 4px)}
 
 /* A THEATRE: two curtains and a row of footlights. */
-.dr-set-stage{background:radial-gradient(120% 80% at 50% 100%,rgba(255,200,61,.18),transparent 65%)}
+.dr-set-stage{background:radial-gradient(120% 80% at 50% 100%,rgba(255,200,61,.34),transparent 65%),
+  linear-gradient(180deg,#160209,#0a0105)}
 .dr-set-stage::after{content:"";position:absolute;inset:0;
   box-shadow:inset 0 0 200px 70px rgba(0,0,0,.62)}
-.dr-curtain{top:0;bottom:0;width:13%;opacity:.85;
-  background:repeating-linear-gradient(90deg,rgba(122,10,40,.5) 0 14px,rgba(60,4,20,.5) 14px 28px)}
+.dr-curtain{top:0;bottom:0;width:15%;opacity:1;
+  background:repeating-linear-gradient(90deg,#7a0a28 0 14px,#3c0414 14px 28px);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.7)}
 .dr-curtain.dr-l{left:0}.dr-curtain.dr-r{right:0;transform:scaleX(-1)}
-.dr-foots{left:11%;right:11%;bottom:0;height:70px;
-  background:repeating-linear-gradient(90deg,rgba(255,233,168,.20) 0 6px,transparent 6px 34px);
-  filter:blur(6px)}
+.dr-foots{left:15%;right:15%;bottom:0;height:90px;
+  background:repeating-linear-gradient(90deg,rgba(255,233,168,.55) 0 7px,transparent 7px 34px);
+  filter:blur(7px)}
 
 /* A COMEDY CLUB: brick, and one hard spot on the mic. */
-.dr-set-club{background:linear-gradient(180deg,rgba(10,6,8,.5),transparent 40%)}
-.dr-brick{inset:0;opacity:.5;
-  background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 26px),
-    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 54px)}
+.dr-set-club{background:linear-gradient(180deg,#0d0709,#050203)}
+.dr-brick{inset:0;opacity:1;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.075) 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.075) 0 1px,transparent 1px 54px)}
 .dr-clubspot{top:0;left:50%;width:380px;height:78%;transform:translateX(-50%);
   background:linear-gradient(180deg,rgba(255,233,168,.26),transparent 72%);
   clip-path:polygon(44% 0,56% 0,100% 100%,0 100%)}
 
 /* AN ATELIER: a cutting mat, and bolts of fabric leaning in the corners. */
-.dr-set-atelier{background:radial-gradient(100% 60% at 50% 100%,rgba(255,61,154,.09),transparent 70%)}
+.dr-set-atelier{background:radial-gradient(100% 60% at 50% 100%,rgba(255,61,154,.30),transparent 70%),
+  linear-gradient(180deg,#150414,#07010a)}
 .dr-cutting{inset:auto 0 0 0;height:46%;opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(56,189,248,.16) 0 1px,transparent 1px 30px),
     repeating-linear-gradient(90deg,rgba(56,189,248,.16) 0 1px,transparent 1px 30px)}
@@ -139,7 +151,7 @@ const CHAL_CSS = `
   background:linear-gradient(180deg,rgba(56,189,248,.2),rgba(56,189,248,.04))}
 
 /* A DANCE FLOOR: marley, and the mirror wall behind it. */
-.dr-set-floor{background:linear-gradient(180deg,rgba(20,6,14,.6),transparent 45%)}
+.dr-set-floor{background:linear-gradient(180deg,#12040e,#050208)}
 .dr-marley{inset:auto 0 0 0;height:38%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));
   border-top:1px solid rgba(255,255,255,.09)}
 .dr-mirror{top:8%;left:8%;right:8%;height:34%;opacity:.55;
@@ -147,7 +159,8 @@ const CHAL_CSS = `
   border:1px solid rgba(255,255,255,.08)}
 
 /* A SOUNDSTAGE: a barn-door flag and a boom shadow. */
-.dr-set-set{background:radial-gradient(110% 70% at 30% 0%,rgba(255,233,168,.09),transparent 60%)}
+.dr-set-set{background:radial-gradient(110% 70% at 30% 0%,rgba(255,233,168,.26),transparent 60%),
+  linear-gradient(180deg,#100a04,#050302)}
 .dr-flag{top:0;left:14%;width:26%;height:32%;background:rgba(0,0,0,.45);
   clip-path:polygon(0 0,100% 0,72% 100%,0 78%)}
 .dr-boom{top:6%;right:10%;width:44%;height:8px;background:rgba(0,0,0,.5);
@@ -734,7 +747,15 @@ export function rpBuildMaxi(row) {
      Her own lines sit with her card; anything about the room rather than one
      queen (the taping, a bit stolen, the whole cast reacting) runs between
      the cards in the order it happened. */
+  /* NOT THE ONES THAT HAPPEN IN THE WERK ROOM. This filtered on kind alone,
+     and the host's walkthrough is a `maxi:` kind that happens at a station
+     while the queens are still building — js/dr/data/maxi-events.js has said
+     `from: 'prep'` about it since it was written. Caught on kind, RuPaul
+     looking at a half-built garment was drawn on the card for the
+     performance given afterwards: the wrong screen, and the wrong moment in
+     the night, because the note is given so the runway can answer it. */
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
+    && sc.step !== 'prep'
     && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
   const usedScene = new Set();
   const linesFor = name => maxiScenes.filter(sc => {
@@ -745,10 +766,19 @@ export function rpBuildMaxi(row) {
     return true;
   });
 
+  /* WHICH OF THE TWO MAXI SCREENS THIS IS. A challenge filmed during the
+     week and a challenge performed live on the main stage are two different
+     nights and two different slots in the running order, so they are two
+     sections — and the reveal state, the step ids and the controls are keyed
+     by suffix, which therefore has to follow the stage rather than be typed
+     once. js/dr/data/challenges.js has recorded the stage since it was
+     written; this is the first screen to read it. */
+  const sfx = (maxiById(ch.id)?.stage === 'pre') ? 'maxi' : 'maxistage';
+
   const steps = running.map((name, i) => {
     const said = linesFor(name)
       .map(sc => `<p class="dr-perf-line">${esc(sc.text)}</p>`).join('');
-    const card = perfCard(name, perfs[name], i, 'maxi', ep, ch.id);
+    const card = perfCard(name, perfs[name], i, sfx, ep, ch.id);
     return said
       ? card.replace(/<\/div><\/div>$/, `${said}</div></div>`)
       : card;
@@ -756,7 +786,7 @@ export function rpBuildMaxi(row) {
 
   // Whatever was about the room rather than one queen, after the cards.
   const room = maxiScenes.filter(sc => !usedScene.has(sc))
-    .map((sc, i) => `<div class="dr-step" id="dr-step-maxi-room-${i}">
+    .map((sc, i) => `<div class="dr-step" id="dr-step-${sfx}-room-${i}">
       <div class="dr-panel dr-a-room dr-scene">
         ${(sc.data?.players || []).length
     ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
@@ -769,7 +799,7 @@ export function rpBuildMaxi(row) {
      not been shown is the spoiler this screen exists to avoid. */
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    window._drSidebar.maxi = running.map((_, i) => `<h4 class="dr-disp">So far</h4>${
+    window._drSidebar[sfx] = running.map((_, i) => `<h4 class="dr-disp">So far</h4>${
       running.slice(0, i + 1)
         .map(n => ({ n, p: Number(perfs[n]?.perf) || 0 }))
         .sort((x, y) => y.p - x.p)
@@ -783,6 +813,6 @@ export function rpBuildMaxi(row) {
   return `<style>${CHAL_CSS}</style>${_shell(
     `<div class="dr-fam dr-fam-${fam}">${ambientFor(fam)}${teams}${steps}${room}</div>`, ep, {
       phase: 'stage', title: ch.name, subtitle: FAMILY_SUB[fam] || 'tape rolls',
-      sidebar: _seedRail('maxi', '<h4 class="dr-disp">So far</h4>'),
-    })}${_controls('maxi', running.length, ep.num)}`;
+      sidebar: _seedRail(sfx, '<h4 class="dr-disp">So far</h4>'),
+    })}${_controls(sfx, running.length, ep.num)}`;
 }

@@ -44,34 +44,77 @@ const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
  * atmosphere. `accent` picks the panel rail's colour family, so a reader can
  * tell what KIND of thing a panel is without reading a word of it.
  */
+/* ══════════════════════════════════════════════════════════════════════
+   ONE ICON PER SCREEN, for the sidebar
+   ══════════════════════════════════════════════════════════════════════
+
+   The navigation was a column of identical grey dots and a label, which is
+   a list of strings rather than a running order — a reader scanning it had
+   to actually read every word to find the runway.
+
+   Drawn, not typed: SVG paths, no emoji, so they take the sidebar's colour
+   and go gold on the screen you are on like everything else in this build.
+   Each one is the OBJECT of its screen rather than a generic symbol — the
+   mini is a stopwatch, the draft is a hand of cards, prep is a pair of
+   scissors, the call is a rubber stamp, sashay is a door standing open. */
+const ICON_PATHS = {
+  arrivals: 'M3 12h13M11 7l5 5-5 5M17 4v16',
+  return: 'M13 5l-5 5 5 5M8 10h7a4 4 0 010 8h-3',
+  mirror: 'M12 3a5 7 0 100 14 5 7 0 000-14zM12 17v4M8 21h8',
+  room: 'M3 10l9-6 9 6M5 10v10h14V10M10 20v-6h4v6',
+  clock: 'M12 4a8 8 0 100 16 8 8 0 000-16zM12 8v4l3 2M9 2h6',
+  brief: 'M7 4h10v17H7zM9 2h6v3H9zM10 10h4M10 14h4',
+  cards: 'M4 8l6-3 5 10-6 3zM13 5l6 2-2 11-5-2',
+  scissors: 'M6 4l12 14M18 4L6 18M6 19a2 2 0 100-4 2 2 0 000 4zM18 19a2 2 0 100-4 2 2 0 000 4z',
+  star: 'M12 3l2.6 6h6.4l-5.2 4 2 6.5L12 15.8 6.2 19.5l2-6.5L3 9h6.4z',
+  arch: 'M4 21V10a8 8 0 0116 0v11M4 21h16M9 21v-8a3 3 0 016 0v8',
+  runway: 'M9 3h6l4 18H5zM12 3v18M8 12h8',
+  speech: 'M4 5h16v11H9l-5 4z M8 9h8M8 12h5',
+  couch: 'M4 12V9a2 2 0 012-2h12a2 2 0 012 2v3M3 12h18v6H3zM6 18v2M18 18v2',
+  stamp: 'M8 3h8v6l2 4H6l2-4zM5 17h14v3H5z',
+  mic: 'M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3zM7 11a5 5 0 0010 0M12 16v5M9 21h6',
+  door: 'M5 3h11v18H5zM13 12h1.5M16 8l4 4-4 4',
+  grid: 'M3 5h18v14H3zM3 10h18M3 15h18M9 5v14M15 5v14',
+  crown: 'M3 18l-1-11 6 5 4-8 4 8 6-5-1 11zM3 18h18v3H3z',
+  bracket: 'M4 5h5v6h5V5h5M4 19h5v-6M14 19h5v-6M9 11h5',
+  sofa: 'M3 11a2 2 0 014 0v5H3zM17 11a2 2 0 014 0v5h-4zM7 9a2 2 0 012-2h6a2 2 0 012 2v7H7z',
+};
+
+/** One sidebar icon, as inline SVG. Inherits colour from the sidebar item. */
+function icon(key) {
+  const d = ICON_PATHS[key];
+  if (!d) return '';
+  return `<svg class="rp-scr-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+}
+
 const SECTIONS = [
-  { id: 'dr-arrivals', label: 'Arrivals', suffix: 'arrivals', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-arrivals', icon: icon('arrivals'), label: 'Arrivals', suffix: 'arrivals', phase: 'werk', accent: 'dr-a-room',
     opens: ['arrivals', 'entrance-order'], badge: { text: 'ENTRANCES', color: '#FFC83D' },
     title: 'Entrances', subtitle: 'the first thirteen through the door' },
   /* ── A QUEEN COMES BACK ──
      First screen of the night when the season books one, because the return
      is the first thing that happens: she is through the door before the room
      has finished waking up. Ahead of the cold open on purpose. */
-  { id: 'dr-return', label: 'She’s Back', suffix: 'return', phase: 'werk',
+  { id: 'dr-return', icon: icon('return'), label: 'She’s Back', suffix: 'return', phase: 'werk',
     accent: 'dr-a-bond',
     opens: ['return:return-door', 'return:return-walk', 'return:return-room',
       'return:return-rule'],
     badge: { text: 'RETURNS', color: '#3BE08A' },
     title: 'She’s Back', subtitle: 'somebody the show already sent home' },
-  { id: 'dr-cold-open', label: 'Cold Open', suffix: 'coldopen', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-cold-open', icon: icon('mirror'), label: 'Cold Open', suffix: 'coldopen', phase: 'werk', accent: 'dr-a-room',
     opens: ['cold-open'], badge: null, title: 'Cold Open', subtitle: 'the room, before anything' },
-  { id: 'dr-werk-morning', label: 'The Werk Room', suffix: 'morning', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-werk-morning', icon: icon('room'), label: 'The Werk Room', suffix: 'morning', phase: 'werk', accent: 'dr-a-room',
     opens: ['werk-morning'], badge: null, title: 'The Werk Room', subtitle: 'morning' },
-  { id: 'dr-mini', label: 'Mini', suffix: 'mini', phase: 'werk', accent: 'dr-a-score',
+  { id: 'dr-mini', icon: icon('clock'), label: 'Mini', suffix: 'mini', phase: 'werk', accent: 'dr-a-score',
     opens: ['mini'], badge: { text: 'MINI', color: '#00E5FF' },
     title: 'The Mini Challenge', subtitle: 'first blood' },
-  { id: 'dr-announce', label: 'The Brief', suffix: 'announce', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-announce', icon: icon('brief'), label: 'The Brief', suffix: 'announce', phase: 'werk', accent: 'dr-a-room',
     opens: ['maxi-announce'], badge: null, title: 'The Maxi Challenge', subtitle: 'the brief' },
-  { id: 'dr-choice', label: 'The Draft', suffix: 'choice', phase: 'werk', accent: 'dr-a-bond',
+  { id: 'dr-choice', icon: icon('cards'), label: 'The Draft', suffix: 'choice', phase: 'werk', accent: 'dr-a-bond',
     opens: ['improv-premises', 'snatch-picks', 'ball-theme', 'group-parts', 'roast-order',
       'makeover-pairs', 'singing-order', 'walkthrough'],
     badge: { text: 'PICKS', color: '#7B2FF7' }, title: 'The Draft', subtitle: 'who takes what' },
-  { id: 'dr-prep', label: 'Prep', suffix: 'prep', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-prep', icon: icon('scissors'), label: 'Prep', suffix: 'prep', phase: 'werk', accent: 'dr-a-room',
     opens: ['prep-room', 'writing-room', 'band-rehearsal', 'recording-booth', 'ball-build',
       'makeover-build', 'no-rehearsal'],
     badge: null, title: 'The Work Room', subtitle: 'building it' },
@@ -91,28 +134,50 @@ const SECTIONS = [
      not. Every maxi scene carries `maxi-pre` or `maxi-main` as its step,
      whatever its kind, so the step is what opens the section — and a
      twentieth challenge gets a screen without anybody remembering to. */
-  { id: 'dr-maxi', label: 'The Maxi', suffix: 'maxi', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-maxi', icon: icon('star'), label: 'The Maxi', suffix: 'maxi', phase: 'stage', accent: 'dr-a-score',
     opens: [],
-    opensStep: ['maxi-pre', 'maxi-main'],
+    opensStep: ['maxi-pre'],
     badge: { text: 'MAXI', color: '#FF3D9A' }, title: 'The Challenge', subtitle: 'tape rolls' },
-  { id: 'dr-elim-day', label: 'Elimination Day', suffix: 'elimday', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-elim-day', icon: icon('mirror'), label: 'Elimination Day', suffix: 'elimday', phase: 'werk', accent: 'dr-a-room',
     opens: ['werk-elim-day'], badge: null, title: 'Elimination Day', subtitle: 'the last hour in the room' },
-  { id: 'dr-main-stage', label: 'Main Stage', suffix: 'mainstage', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-main-stage', icon: icon('arch'), label: 'Main Stage', suffix: 'mainstage', phase: 'stage', accent: 'dr-a-score',
     opens: ['main-stage'], badge: null, title: 'The Main Stage', subtitle: 'the panel takes its seats' },
-  { id: 'dr-runway', label: 'Runway', suffix: 'runway', phase: 'stage', accent: 'dr-a-score',
+  /* ── THE CHALLENGE THAT IS THE MAIN STAGE ──
+     Nineteen challenges split into two kinds and js/dr/data/challenges.js
+     has recorded which since it was written: `stage: 'pre'` is filmed during
+     the week — the Snatch Game taping, an acting scene, a commercial, a
+     photoshoot — and the queens then walk the runway and take their
+     critiques. `stage: 'main'` IS the main stage: the talent show, the
+     Rusical, the ball, the roast, stand-up. The queens perform it in front
+     of the panel, on the night, as the show.
+
+     One maxi section drew both in the same slot, before Elimination Day, so
+     the Talent Show Extravaganza was performed before the room had finished
+     getting ready for it and before the panel had sat down. The engine knew
+     — it puts those scenes on `maxi-main` and the others on `maxi-pre` —
+     and the running order ignored it.
+
+     Two sections, same builder, opening on the step that says which night
+     it is. Only one of them ever has scenes in an episode. */
+  { id: 'dr-maxi-stage', icon: icon('star'), label: 'The Maxi', suffix: 'maxistage', phase: 'stage',
+    accent: 'dr-a-score',
+    opens: [], opensStep: ['maxi-main'],
+    badge: { text: 'MAXI', color: '#FF3D9A' },
+    title: 'The Challenge', subtitle: 'live, on the main stage' },
+  { id: 'dr-runway', icon: icon('runway'), label: 'Runway', suffix: 'runway', phase: 'stage', accent: 'dr-a-score',
     opens: ['runway'], badge: { text: 'RUNWAY', color: '#FF7BC8' },
     title: 'The Runway', subtitle: 'category is…' },
-  { id: 'dr-critiques', label: 'Critiques', suffix: 'critiques', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-critiques', icon: icon('speech'), label: 'Critiques', suffix: 'critiques', phase: 'stage', accent: 'dr-a-score',
     opens: ['critiques'], badge: null, title: 'The Critiques', subtitle: 'the panel speaks' },
-  { id: 'dr-untucked', label: 'Untucked', suffix: 'untucked', phase: 'untucked', accent: 'dr-a-bond',
+  { id: 'dr-untucked', icon: icon('couch'), label: 'Untucked', suffix: 'untucked', phase: 'untucked', accent: 'dr-a-bond',
     opens: ['untucked'], badge: { text: 'UNTUCKED', color: '#7B2FF7' },
     title: 'Untucked', subtitle: 'Illusions Lounge' },
-  { id: 'dr-results', label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
     opens: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
-  { id: 'dr-lipsync', label: 'Lip Sync', suffix: 'lipsync', phase: 'lipsync', accent: 'dr-a-lip',
+  { id: 'dr-lipsync', icon: icon('mic'), label: 'Lip Sync', suffix: 'lipsync', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
     title: 'Lip Sync For Your Life', subtitle: 'two queens, one song' },
-  { id: 'dr-exit', label: 'Sashay', suffix: 'exit', phase: 'lipsync', accent: 'dr-a-lip',
+  { id: 'dr-exit', icon: icon('door'), label: 'Sashay', suffix: 'exit', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['exit'], badge: null,
     title: 'Sashay Away', subtitle: 'the mirror message' },
 
@@ -120,7 +185,7 @@ const SECTIONS = [
      Its own screen because it is its own night: a bracket, not a main stage.
      None of its scene kinds matched a section before, so all eight of them
      fell into the cold-open fallback and the episode arrived blank. */
-  { id: 'dr-smackdown', label: 'Smackdown', suffix: 'smackdown', phase: 'lipsync', accent: 'dr-a-lip',
+  { id: 'dr-smackdown', icon: icon('bracket'), label: 'Smackdown', suffix: 'smackdown', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['smackdown-open', 'smackdown-duel', 'smackdown-crown'],
     badge: { text: 'SMACKDOWN', color: '#FF294B' },
     title: 'The Lip Sync Smackdown', subtitle: 'the queens who already went home' },
@@ -130,7 +195,7 @@ const SECTIONS = [
      show's own track record chart puts it. It is the one episode that reads
      the WHOLE season rather than the row in front of it, and every topic on
      it was derived from what actually happened. */
-  { id: 'dr-reunion', label: 'The Reunion', suffix: 'reunion', phase: 'untucked', accent: 'dr-a-bond',
+  { id: 'dr-reunion', icon: icon('sofa'), label: 'The Reunion', suffix: 'reunion', phase: 'untucked', accent: 'dr-a-bond',
     opens: ['reunion-open'], badge: { text: 'REUNITED', color: '#7B2FF7' },
     title: 'The Reunion', subtitle: 'the season, argued about' },
 
@@ -141,28 +206,28 @@ const SECTIONS = [
      leaving. These eight sections follow the order the show runs, and any of
      them whose scenes are absent is skipped by `when` on its own: a bracket
      finale has no cut, so it never draws a cut screen. */
-  { id: 'dr-finale-open', label: 'Grand Finale', suffix: 'finopen', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-finale-open', icon: icon('star'), label: 'Grand Finale', suffix: 'finopen', phase: 'stage', accent: 'dr-a-score',
     opens: ['finale-open'], badge: { text: 'FINALE', color: '#FFC83D' },
     title: 'Grand Finale', subtitle: 'one of them gets crowned tonight' },
-  { id: 'dr-finale-return', label: 'The Cast Returns', suffix: 'finreturn', phase: 'werk', accent: 'dr-a-room',
+  { id: 'dr-finale-return', icon: icon('return'), label: 'The Cast Returns', suffix: 'finreturn', phase: 'werk', accent: 'dr-a-room',
     opens: ['finale:finale-return'], badge: { text: 'REUNION', color: '#7B2FF7' },
     title: 'The Season Comes Back', subtitle: 'everybody who went home, through that door' },
-  { id: 'dr-finale-runway', label: 'Eleganza', suffix: 'finrunway', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-finale-runway', icon: icon('runway'), label: 'Eleganza', suffix: 'finrunway', phase: 'stage', accent: 'dr-a-score',
     opens: ['finale:finale-eleganza'], badge: { text: 'RUNWAY', color: '#FF7BC8' },
     title: 'Grande Finale Eleganza', subtitle: 'the best look she owns' },
-  { id: 'dr-finale-interview', label: 'Interviews', suffix: 'fininterview', phase: 'werk', accent: 'dr-a-bond',
+  { id: 'dr-finale-interview', icon: icon('speech'), label: 'Interviews', suffix: 'fininterview', phase: 'werk', accent: 'dr-a-bond',
     opens: ['finale:finale-interview'], badge: { text: 'ONE ON ONE', color: '#00E5FF' },
     title: 'The Interviews', subtitle: 'why should it be you' },
-  { id: 'dr-finale-showcase', label: 'The Showcase', suffix: 'finshowcase', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-finale-showcase', icon: icon('mic'), label: 'The Showcase', suffix: 'finshowcase', phase: 'stage', accent: 'dr-a-score',
     opens: ['finale:finale-showcase-open'], badge: { text: 'SHOWCASE', color: '#FF3D9A' },
     title: 'The Showcase', subtitle: 'individual show-stopping original numbers' },
-  { id: 'dr-finale-cut', label: 'The Cut', suffix: 'fincut', phase: 'stage', accent: 'dr-a-lip',
+  { id: 'dr-finale-cut', icon: icon('scissors'), label: 'The Cut', suffix: 'fincut', phase: 'stage', accent: 'dr-a-lip',
     opens: ['finale:finale-cut'], badge: { text: 'THE CUT', color: '#FF294B' },
     title: 'The Cut', subtitle: 'the field becomes two' },
-  { id: 'dr-finale-lipsync', label: 'For The Crown', suffix: 'fincrownls', phase: 'lipsync', accent: 'dr-a-lip',
+  { id: 'dr-finale-lipsync', icon: icon('mic'), label: 'For The Crown', suffix: 'fincrownls', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['finale:finale-crown-lipsync'], badge: { text: 'FOR THE CROWN', color: '#FF294B' },
     title: 'Lip Sync For The Crown', subtitle: 'two queens stand before me' },
-  { id: 'dr-finale-crown', label: 'The Crowning', suffix: 'fincrown', phase: 'stage', accent: 'dr-a-score',
+  { id: 'dr-finale-crown', icon: icon('crown'), label: 'The Crowning', suffix: 'fincrown', phase: 'stage', accent: 'dr-a-score',
     /* `crowning` catches every beat of the new ceremony pool, whose scenes
        all carry that step; the two `finale:` kinds are the older five-line
        version, still drawn while a tier of the new pool is unwritten. */
@@ -344,6 +409,7 @@ const BUILDERS = {
   'dr-choice': rpBuildChoice,
   'dr-prep': rpBuildPrep,
   'dr-maxi': rpBuildMaxi,
+  'dr-maxi-stage': rpBuildMaxi,
   'dr-main-stage': rpBuildMainStage,
   'dr-runway': rpBuildRunway,
   'dr-critiques': rpBuildCritiques,
@@ -368,6 +434,10 @@ const _sections = SECTIONS.map(sec => ({
     label: sec.label,
     suffix: sec.suffix,
     badge: sec.badge,
+    // The sidebar's icon. This mapper rebuilds the section into the shape the
+    // reader consumes, so a field it does not name is a field that does not
+    // exist downstream — which is how twenty-eight icons reached nothing.
+    icon: sec.icon,
     /* SCENES, AND ONLY SCENES. This used to carry `|| (sec.id === 'dr-exit'
        && row.dr.finale)`, which forced the sashay screen onto the finale back
        when the crowning had nowhere else to live. The finale has its own eight
@@ -383,6 +453,7 @@ export const DRAG_SCREENS = [
   ..._sections,
   {
     id: CHART.id,
+    icon: icon('grid'),
     label: CHART.label,
     suffix: CHART.suffix,
     badge: CHART.badge,

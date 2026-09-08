@@ -798,8 +798,14 @@ export function renderVPScreen() {
         const phaseHead = phase.id !== lastPhase
           ? '<div class="rp-sidebar-phase"><span>' + phase.icon + '</span>' + phase.label + '</div>' : '';
         lastPhase = phase.id;
+        /* A SCREEN MAY DRAW ITS OWN ICON. The navigation was a column of
+           identical grey dots and a label, which is a list of strings
+           rather than a running order — you had to read every word to find
+           the runway. A show that gives its screens an `icon` gets it here;
+           one that does not keeps the dot, so nothing else changes. */
+        const mark = s.icon || '<span class="rp-sidebar-dot"></span>';
         return phaseHead + '<button class="rp-sidebar-item ' + (i === vpCurrentScreen ? 'active' : i < vpCurrentScreen ? 'done' : '') +
-          '" onclick="vpGoTo(' + i + ')"><span class="rp-sidebar-dot"></span><span>' + s.label + '</span></button>';
+          '" onclick="vpGoTo(' + i + ')">' + mark + '<span>' + s.label + '</span></button>';
       }).join('');
   }
 

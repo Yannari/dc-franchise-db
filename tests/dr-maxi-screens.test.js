@@ -49,8 +49,36 @@ describe('every maxi challenge reaches a screen', () => {
       const row = out.rows.find(x => x.dr?.challenge?.id === t.id);
       expect(row, `${t.id} never ran`).toBeTruthy();
 
-      const screen = dragScreens(row).find(x => x.id === 'dr-maxi');
-      expect(screen, `${t.id} ran a full challenge and drew no maxi screen`).toBeTruthy();
+      /* AND IT LANDS IN THE RIGHT SLOT. A challenge filmed during the week
+         and a challenge performed live in front of the panel are two
+         different nights: `stage: 'pre'` runs before Elimination Day, and
+         `stage: 'main'` IS the main stage and runs after the panel has sat
+         down. One section drew both in the pre slot, so the Talent Show
+         Extravaganza was performed before the room had finished getting
+         ready for it. The engine always knew — those scenes go on
+         `maxi-main` — and the running order ignored it. */
+      const want = t.stage === 'pre' ? 'dr-maxi' : 'dr-maxi-stage';
+      const shown = dragScreens(row);
+      const screen = shown.find(x => x.id === want);
+      expect(screen,
+        `${t.id} is a ${t.stage}-stage challenge and drew no ${want} screen`).toBeTruthy();
+      // And not in the other one, or both nights claim the same challenge.
+      const other = t.stage === 'pre' ? 'dr-maxi-stage' : 'dr-maxi';
+      expect(shown.find(x => x.id === other),
+        `${t.id} drew ${other} as well`).toBeFalsy();
+
+      /* A MAIN-STAGE CHALLENGE COMES AFTER THE PANEL SITS DOWN. The order
+         of the sidebar is the order of the night, so this is the assertion
+         the whole split exists for. */
+      const ids = shown.map(x => x.id);
+      if (t.stage !== 'pre' && ids.includes('dr-main-stage')) {
+        expect(ids.indexOf(want), `${t.id} is performed before the main stage`)
+          .toBeGreaterThan(ids.indexOf('dr-main-stage'));
+      }
+      if (t.stage === 'pre' && ids.includes('dr-elim-day')) {
+        expect(ids.indexOf(want), `${t.id} is filmed after elimination day`)
+          .toBeLessThan(ids.indexOf('dr-elim-day'));
+      }
 
       /* AND THE SCREEN CARRIES THE CHALLENGE, not merely exists. A section
          that opens and holds somebody else's scenes is the same bug wearing

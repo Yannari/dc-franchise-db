@@ -22,8 +22,26 @@ function cast(n = 12, seed = 1) {
   }));
 }
 const bonds = {}; const key = (a, b) => [a, b].sort().join('|');
+/* THE CHALLENGES THESE TESTS NEED ARE PINNED, NOT HOPED FOR.
+   Four of the cases below look up a specific challenge — the Ball's three
+   looks, the Snatch Game's characters, the makeover's partner, a team card —
+   and they used to find them because this seed happened to schedule them.
+   It stopped happening: six tentpoles compete for five slots on an eight
+   episode season, so one is dropped, and which one is now drawn rather than
+   being whichever sat last in the TENTPOLES array. The Ball lost the draw and
+   a test about how a Ball is DRAWN failed for a reason that has nothing to do
+   with drawing a Ball.
+   A test that needs a Ball books a Ball. */
 const { rows } = playDragSeason({
   cast: cast(12, 6), seed: 3,
+  config: {
+    drSchedule: [
+      { episode: 2, maxiId: 'snatch-game' },
+      { episode: 3, maxiId: 'ball' },
+      { episode: 4, maxiId: 'makeover' },
+      { episode: 5, maxiId: 'girl-group' },
+    ],
+  },
   bond: (a, b) => bonds[key(a, b)] || 0,
   addBond: (a, b, d) => { const k = key(a, b); bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d)); },
 });

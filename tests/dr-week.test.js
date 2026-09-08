@@ -65,12 +65,13 @@ describe('runDragWeek', () => {
     expect(row.exits[0].channel).toBe('lipsync');
     expect(row.exits[0].slug).toBeTruthy();
 
-    expect(row.dr.call.win.length).toBe(1);
+    expect(row.dr.call.win.length).toBeGreaterThanOrEqual(1);
+    expect(row.dr.call.win.length).toBeLessThanOrEqual(2);
     expect(row.dr.call.bottom.length).toBe(2);
     expect(row.dr.call.bottom).toContain(row.exits[0].name);
 
     expect(st.living.length).toBe(11);
-    expect(st.record[row.dr.call.win[0]]).toEqual(['WIN']);
+    for (const w of row.dr.call.win) expect(st.record[w]).toEqual(['WIN']);
     expect(st.record[row.exits[0].name]).toEqual(['ELIM']);
     expect(st.out).toEqual([row.exits[0].name]);
     expect(row.dr.lipsync.song).toBe('Toxic');

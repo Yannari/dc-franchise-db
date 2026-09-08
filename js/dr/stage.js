@@ -553,7 +553,7 @@ export function renderStageBeats({
     if (g === holdAt && filled.length > 1) {
       emit(beatById('results-hold'), 'hold', [], { before: g, order: shape.id });
     }
-    for (const n of who) emit(beatById(beatId), tierId, [n], { order: shape.id });
+    for (const n of who) emit(beatById(beatId), tierId === 'win' && who.length > 1 ? 'double-win' : tierId, [n], { order: shape.id, ...(tierId === 'win' && who.length > 1 ? { doubleWin: true } : {}) });
   }
 
   /* AND WHAT THE SONG IS FOR, said last, after the names. Two queens standing

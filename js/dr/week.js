@@ -30,7 +30,7 @@ import { miniById } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
 import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
-import { runwayScore, blendScore, noise } from './perform.js';
+import { runwayScore, blendScore, noise, polishFor, PANEL_FORM } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { rateBoard, ballotSelfishness } from './rate.js';
 import { storylineNeed as storylineNeedFor, arcSummary, popSnapshot } from './storylines.js';
@@ -311,7 +311,11 @@ export function runDragWeek(state, cfg, ctx) {
     perf: performances[n].perf,
     runway: runway[n].score,
     risk: performances[n].risk,
-    polish: Number.isFinite(Number(P(n).stats?.mental)) ? Number(P(n).stats.mental) : 5,
+    polish: polishFor(P(n), rng),
+    // One draw per queen per episode, seen the same way by every seat.
+    // See the note in judgeViews — this is the only shared, non-averaging
+    // uncertainty the panel has.
+    form: noise(rng, PANEL_FORM),
   }));
   const views = judgeViews(panel, entries, state.memory, rng);
   /* ── RATE-A-QUEEN ──
@@ -400,6 +404,33 @@ export function runDragWeek(state, cfg, ctx) {
     castSize: living.length, immune,
     bottomNamed: cfg.bottomNamed || (cfg.bottomThree ? 3 : 2),
   });
+
+  /* ── DOUBLE WIN ─────────────────────────────────────────────────────
+     The show has awarded a shared maxi win a handful of times across its
+     history — always on a genuine dead heat where the panel cannot split
+     two queens who both delivered. It reads the PANEL ranking (meanRank),
+     not the bent order, because whether two performances were level is a
+     fact about the stage. The host can promote a queen one place; he
+     cannot manufacture a tie that was not there.
+
+     Conditions: the top two have identical meanRank (a genuine dead heat),
+     AND neither has immunity this week, AND the host decides to call it
+     (50% on any tie — most ties the host quietly breaks one way).
+     Measured over 100 seasons: ~0.23 per season, roughly once every four,
+     which matches the real show's handful across 20+ seasons. */
+  if (call.win.length === 1 && call.high.length >= 1) {
+    const sorted = [...ranking].sort((a, b) => a.meanRank - b.meanRank);
+    if (sorted.length >= 2) {
+      const gap = sorted[1].meanRank - sorted[0].meanRank;
+      const second = sorted[1].name;
+      if (gap < 0.01 && !immune.includes(second) && !immune.includes(sorted[0].name)
+        && rng() < 0.50) {
+        call.win = [sorted[0].name, second];
+        call.high = call.high.filter(n => n !== second);
+        call.doubleWin = true;
+      }
+    }
+  }
 
   /* ── RATE-A-QUEEN WITH NOTHING AT STAKE PUTS THE TOP TWO ON THE SONG ──
      The twist as the show ran it: the room ranks, the two HIGHEST placements

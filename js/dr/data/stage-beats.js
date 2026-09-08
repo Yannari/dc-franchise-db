@@ -408,12 +408,20 @@ export const STAGE_BEATS = [
     id: 'result-win', step: 'results', scope: 'per-queen', speaker: 'host',
     note: 'The winner is told. The show has a word for this and uses it every time.',
     tierBy: 'always',
-    tiers: [tier('win', 'Condragulations. She has won the week.', [
-      "\"Condragulations, {a}.\" The word fills the stage and {a} takes a breath so deep it moves her shoulders. She has won the week. The panel is smiling, the safe queens in the back are watching on the monitor, and for one moment — just one — {a} does not have to be competing. She is just good at this.",
-      "\"Condragulations, {a}, you are the winner of this week\'s maxi challenge.\" {a} puts her hands together and mouths \"thank you\" and the gratitude is so genuine that it lands harder than the victory. She came to win and she won, and the winning feels like the beginning of something rather than the end of it.",
-      "The word lands and {a}'s face does the thing where it tries to be professional and fails beautifully. \"Condragulations.\" She nods, she smiles, she says \"thank you\" and means it in a way that includes everyone who helped her get here and several people who did not. She has won the week and the week is hers.",
-      "\"Condragulations, you are the winner of this week\'s maxi challenge.\" {a} closes her eyes for one second — just one — and when she opens them she is still standing on the same stage but the stage feels different now. She won. The judges saw what she brought and the judges said yes, and that yes is the one she came here for.",
-    ])],
+    tiers: [
+      tier('win', 'Condragulations. She has won the week.', [
+        "\"Condragulations, {a}.\" The word fills the stage and {a} takes a breath so deep it moves her shoulders. She has won the week. The panel is smiling, the safe queens in the back are watching on the monitor, and for one moment — just one — {a} does not have to be competing. She is just good at this.",
+        "\"Condragulations, {a}, you are the winner of this week\'s maxi challenge.\" {a} puts her hands together and mouths \"thank you\" and the gratitude is so genuine that it lands harder than the victory. She came to win and she won, and the winning feels like the beginning of something rather than the end of it.",
+        "The word lands and {a}'s face does the thing where it tries to be professional and fails beautifully. \"Condragulations.\" She nods, she smiles, she says \"thank you\" and means it in a way that includes everyone who helped her get here and several people who did not. She has won the week and the week is hers.",
+        "\"Condragulations, you are the winner of this week\'s maxi challenge.\" {a} closes her eyes for one second — just one — and when she opens them she is still standing on the same stage but the stage feels different now. She won. The judges saw what she brought and the judges said yes, and that yes is the one she came here for.",
+      ]),
+      tier('double-win', 'A shared win. Two queens were too close to separate.', [
+        "\"Condragulations, {a} — you are the winner of this week\'s maxi challenge.\" A pause. \"And you are not the only one.\" {a}\'s face opens before the meaning does — she looks at the queen beside her and the queen beside her is getting the same news, and neither of them expected to share a stage this way. Two winners. The panel could not split them and the panel did not try.",
+        "\"Condragulations, {a}.\" The host holds. \"Tonight, the panel has decided that there is not one winner but two.\" {a} turns to her co-winner and the look between them is not competition — it is recognition. They both brought it. The judges saw it. And for once, the show does not make them choose.",
+        "\"I have to be honest,\" the host says. \"The judges could not decide. {a} — condragulations, you are a winner of this week\'s maxi challenge.\" The word hits different with that article. A winner, not THE winner. {a} takes it in and the queen standing next to her takes it in too. Two wins. One week. The panel said yes to both of them.",
+        "\"Condragulations, {a}.\" {a} smiles. \"Tonight, both of you have won.\" The smile changes — it widens, it cracks, it becomes the kind of face you make when you expected to fight for something and instead somebody handed it to you alongside the person you expected to fight. She earned it. So did the other one. The panel is allowed to say that.",
+      ]),
+    ],
   },
   {
     id: 'result-safe', step: 'results', scope: 'once', speaker: 'host',
@@ -1216,7 +1224,7 @@ export function thinStageTiers() {
 /** How many beats a stage of this shape produces, for the count guard. */
 export function stageBeatCount({
   walking = 0, onStage = 0, bottom = 0, exits = 0,
-  high = 0, low = 0, atRisk = 0, judges = 0,
+  high = 0, low = 0, atRisk = 0, judges = 0, win = 1,
 } = {}) {
   let n = 0;
   for (const b of STAGE_BEATS) {
@@ -1233,7 +1241,7 @@ export function stageBeatCount({
          from when the only per-queen results were the winner and the
          bottom two — with high, low and btm added it under-reported every
          night by however many queens the panel placed in between. */
-      if (b.id === 'result-win') n += 1;
+      if (b.id === 'result-win') n += win || 1;
       else if (b.id === 'result-high') n += high;
       else if (b.id === 'result-low') n += low;
       else if (b.id === 'result-btm') n += atRisk;

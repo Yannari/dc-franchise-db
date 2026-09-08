@@ -48,8 +48,8 @@ export const JUDGES = [
     voice: 'Warm, oracular, decides in one sentence. Loves a story and a comeback, and will say the quiet part out loud kindly.',
     taste: { challenge: 0.45, runway: 0.25, risk: 0.20, polish: 0.10 },
     styleBias: { comedy: 0.4, camp: 0.3, pageant: 0.1, art: -0.1 },
-    // Warm, and decides in one sentence. She can be devastating and it arrives kindly,
-    // which puts her above Michelle and short of the softest seat.
+    // Warm, and decides in one sentence. She can be devastating and it still arrives
+    // kindly.
     warmth: 0.70,
     petPeeve: 'a queen who plays it safe',
     softSpot: 'a big personality',
@@ -60,9 +60,8 @@ export const JUDGES = [
     voice: 'Direct and technical. Hard on construction and a hidden waist, soft on a live vocal, and never softens a note to be liked.',
     taste: { challenge: 0.40, runway: 0.40, risk: 0.05, polish: 0.15 },
     styleBias: { pageant: 0.4, fashion: 0.3, glamour: 0.2, 'club-kid': -0.2 },
-    // Harder than RuPaul and not as hard as Law. She does not soften a note to be liked
-    // and she is capable of being genuinely warm, which is why the praise means
-    // something.
+    // Harder than RuPaul and not as hard as Law. She never softens a note to be liked,
+    // and she is capable of real warmth, which is what makes the praise land.
     warmth: 0.20,
     petPeeve: 'a hidden waist',
     softSpot: 'a live vocal',
@@ -73,9 +72,9 @@ export const JUDGES = [
     voice: 'Puns first, fashion second. Delighted by camp, a reveal, and anybody willing to look ridiculous on purpose.',
     taste: { challenge: 0.35, runway: 0.40, risk: 0.15, polish: 0.10 },
     styleBias: { camp: 0.4, comedy: 0.3, fashion: 0.2, spooky: -0.1 },
-    // On the nice side. Even his pans arrive wrapped in a joke and he would rather be
-    // delighted than right.
-    warmth: 0.78,
+    // The softest seat on the panel. Puns first and delight second, and even his pans
+    // arrive wrapped in a joke.
+    warmth: 0.90,
     petPeeve: 'a look with no idea behind it',
     softSpot: 'a joke that lands',
   },
@@ -85,9 +84,9 @@ export const JUDGES = [
     voice: 'Enthusiastic and comedy-minded, cries easily, and will forgive a look entirely for a performance that moved him.',
     taste: { challenge: 0.55, runway: 0.20, risk: 0.15, polish: 0.10 },
     styleBias: { comedy: 0.5, camp: 0.3, broadway: 0.2, art: -0.1 },
-    // The softest seat on the panel. Cries easily and forgives a look entirely for a
-    // performance that moved him.
-    warmth: 0.90,
+    // On the nice side and just short of Carson. He cries easily and forgives a look
+    // for a performance that moved him, but he will name the dead air.
+    warmth: 0.78,
     petPeeve: 'dead air in the middle of a bit',
     softSpot: 'a heartfelt moment',
   },
@@ -121,9 +120,9 @@ export const JUDGES = [
     voice: 'A choreographer watching feet and counting. Kind about effort, exact about timing, and he can tell who learned it this morning.',
     taste: { challenge: 0.50, runway: 0.20, risk: 0.10, polish: 0.20 },
     styleBias: { dancer: 0.5, broadway: 0.3, 'club-kid': 0.1, fashion: -0.1 },
-    // On the nice side. Kind about effort and exact about timing — he will tell her she
-    // was off the count and mean it gently.
-    warmth: 0.75,
+    // Nearer the middle. He values EFFORT, which cuts both ways: generous to a queen
+    // who clearly worked, exact with one who did not.
+    warmth: 0.60,
     petPeeve: 'being off the count',
     softSpot: 'a clean eight',
   },

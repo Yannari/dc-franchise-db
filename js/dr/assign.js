@@ -114,6 +114,9 @@ export function captainSplit({ order, captains, players, bond, rng }) {
 /** How far down the list a queen with nothing left has fallen. */
 const LEFTOVER_DEPTH = 4;
 
+/** How many queens get an out-loud reaction to losing a pick. Not all of them. */
+const FOLLOW_UPS = 3;
+
 /**
  * What missing your first choice costs, by how far you fell.
  *
@@ -147,7 +150,15 @@ function penaltyFor(depth, scale = 1) {
  * the penalty on top of that charges her twice for the same fact. Only the
  * conflict — the event, the bond — belongs everywhere.
  */
-export function contestFor({ order, choices, players, rng, penaltyScale = 1 }) {
+export function contestFor({
+  order, choices, players, rng, penaltyScale = 1,
+  // How these two feel about each other already. Losing your part to a friend
+  // is a different afternoon from losing it to somebody you cannot stand, and
+  // without this the draft only knows what kind of person each queen is and
+  // not what is between them. Absent for a caller that has no bond layer,
+  // which reads as strangers — correct on a premiere.
+  bond = () => 0,
+}) {
   const taken = new Set();
   const holder = {};
   const picks = {};
@@ -156,6 +167,106 @@ export function contestFor({ order, choices, players, rng, penaltyScale = 1 }) {
   // shortlists all lose the same slot to the same queen, and reporting that as
   // twelve separate conflicts buries the one that actually happened.
   const fought = new Set();
+
+  /* ── AND WHO MAKES SOMETHING OF IT ──
+     A DRAFT WITH ONE EVENT IN IT IS NOT A DRAFT. The dedupe below is right —
+     thirteen queens with near-identical shortlists all losing the same slot
+     to the same queen is one story, not twelve — but reporting that single
+     story and nothing else gave a thirteen-queen hand-out exactly one moment
+     of conflict, on a screen whose entire subject is people wanting the same
+     thing.
+     What was missing is the REACTION, and it is not the same reaction from
+     everybody. A hothead says something out loud. A villain took it on
+     purpose and lets the room see that she did. A hero decides it does not
+     matter and means it. The archetype law in rules.js already draws that
+     line and this is exactly the kind of call it exists for, so the follow-up
+     is chosen by who these two people are rather than rolled. */
+  const arch = n => (players && players[n] && players[n].archetype) || null;
+  const HOT = new Set(['hothead', 'chaos-agent', 'wildcard']);
+  const TOOK_ON_PURPOSE = new Set(['villain', 'mastermind', 'schemer']);
+  const GRACIOUS = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer']);
+  const NICE_ISH = new Set([...GRACIOUS, 'underdog', 'goat']);
+  const bondOf = (a, b) => { try { return Number(bond(a, b)) || 0; } catch { return 0; } };
+  const stat = (n, k) => {
+    const v = Number(players && players[n] && players[n].stats && players[n].stats[k]);
+    return Number.isFinite(v) ? v : 5;
+  };
+  const lean = (a, set, amt) => (set.has(a) ? amt : 1);
+
+  /**
+   * What she does about it — WEIGHTED, never thresholded.
+   *
+   * The first version cut at `bond >= 3` and `bond <= -2`, which is the exact
+   * pattern the rest of this engine refuses: a queen one bond point warmer
+   * behaved like a different person, and the same pair produced the same
+   * scene every time they met. Everything here is a proportion, so a warm
+   * bond makes a blow-up unlikely rather than impossible and a hothead is
+   * likelier to say something rather than certain to.
+   *
+   * THREE INPUTS, and they disagree on purpose. What is already between the
+   * two of them outweighs what either is like — a hothead does not go off at
+   * her closest friend over a slot — but temperament is what decides whether
+   * somebody who is upset lets it show, which is a different question from
+   * whether she is upset. Boldness decides whether she says it out loud.
+   *
+   * And most of the time nothing happens, which is why the empty outcome
+   * carries real weight: a draft where every loss becomes a scene is not a
+   * draft, it is a brawl.
+   */
+  const followUp = (keeper, loser, over) => {
+    const b = bondOf(keeper, loser);
+    const warm = Math.max(0, Math.min(1, (b + 10) / 20));   // 0 hostile, 1 devoted
+    const temper = stat(loser, 'temperament');              // high: keeps it together
+    const bold = stat(loser, 'boldness');
+    const loyal = stat(loser, 'loyalty');
+
+    const w = {
+      // She says it to her face. Volatile, bold, and not close to her.
+      'contest-said-it': ((10 - temper) / 10) * (bold / 10) * 3.2 * (1 - warm)
+        * lean(arch(loser), HOT, 2.2),
+      // Of all the queens in the room, it had to be that one.
+      'contest-old-grudge': Math.max(0, -b / 10) * 3.0 * ((10 - temper) / 10 + 0.4),
+      // The keeper knew, took it anyway, and lets the room see that she did.
+      'contest-took-it': (canScheme(players && players[keeper]) ? 1 : 0.15)
+        * (stat(keeper, 'boldness') / 10) * 2.4 * (1 - warm)
+        * lean(arch(keeper), TOOK_ON_PURPOSE, 1.8),
+      // She wanted it and will not make her friend feel bad about it.
+      'contest-friendly-fire': warm * warm * 3.4 * (loyal / 10)
+        * lean(arch(loser), GRACIOUS, 1.5),
+      // She decides it does not matter, and means it.
+      'contest-let-it-go': (temper / 10) * 1.6 * lean(arch(loser), NICE_ISH, 2.0),
+      // She takes the pick and gets on with her day, which is most drafts.
+      '': 2.6,
+    };
+
+    const total = Object.values(w).reduce((t, x) => t + x, 0);
+    let roll = (rng ? rng() : Math.random()) * total;
+    let chosen = '';
+    for (const [id, weight] of Object.entries(w)) {
+      roll -= weight;
+      if (roll <= 0) { chosen = id; break; }
+    }
+    if (!chosen) return null;
+
+    // The keeper is the subject of her own move; everywhere else it is the
+    // queen who lost, because it is her reaction.
+    const subject = chosen === 'contest-took-it' ? [keeper, loser] : [loser, keeper];
+    const HIT = {
+      'contest-said-it': { bond: -1.5, pop: { loser: 1, keeper: -1 } },
+      'contest-old-grudge': { bond: NICE_ISH.has(arch(loser)) ? -1.0 : -2.0, pop: { loser: 1, keeper: -1 } },
+      'contest-took-it': { bond: -1.0, pop: { keeper: 2 } },
+      'contest-friendly-fire': { bond: 0.5, pop: { loser: 1 } },
+      'contest-let-it-go': { bond: 1.0, pop: { loser: 1 } },
+    }[chosen];
+    const pop = {};
+    for (const [who, d] of Object.entries(HIT.pop)) pop[who === 'keeper' ? keeper : loser] = d;
+    return evt(chosen, {
+      players: subject,
+      bond: [[subject[0], subject[1], HIT.bond]],
+      pop,
+      data: { over, keeper, loser, bond: b },
+    });
+  };
 
   for (const n of order) {
     const wants = choices[n] || [];
@@ -191,8 +302,14 @@ export function contestFor({ order, choices, players, rng, penaltyScale = 1 }) {
         data: { over: wants[0], keeper: lostTo, loser: n },
       }));
     }
+    /* THE REACTION IS NOT DEDUPED THE WAY THE CONFLICT IS. Ten queens losing
+       one slot to one queen is a single fight, but each of those ten still
+       has her own response to losing, and a hothead's is not a hero's. Capped
+       so the screen is a draft rather than a brawl. */
+    if (lostTo && events.filter(e => e.type !== 'contest').length < FOLLOW_UPS) {
+      const f = followUp(lostTo, n, wants[0]);
+      if (f) events.push(f);
+    }
   }
-  void players;
-  void rng;
   return { picks, events };
 }

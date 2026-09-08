@@ -22,7 +22,7 @@ import { evt } from '../rules.js';
 const ASSASSIN = 3;
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini } = ctx;
+  const { living, players, rng, miniWinner, mini, bond } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
 
   // Everybody names who they would rather face: the weakest lip syncer they
@@ -39,7 +39,7 @@ export function assign(ctx) {
   // whole of the event below.
   const named = Object.fromEntries(order.map(n => [n, choices[n][0]]));
   const { picks, events } = contestFor({
-      order, choices, players, rng,
+      order, choices, players, rng, bond,
       // No preparation penalty here — nothing is prepared for an opponent; the duel scores her.
       penaltyScale: 0,
     });

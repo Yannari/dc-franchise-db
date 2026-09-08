@@ -63,7 +63,7 @@ export const RUSICALS = [
 export const rusicalById = id => RUSICALS.find(r => r.id === id) || null;
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini, cfg } = ctx;
+  const { living, players, rng, miniWinner, mini, cfg, bond } = ctx;
   const show = rusicalById(cfg?.rusical) || RUSICALS[Math.floor(rng() * RUSICALS.length)];
   const order = pickOrder({ living, miniWinner, mini, rng });
 
@@ -84,7 +84,7 @@ export function assign(ctx) {
       .map(p => p.name)];
   }));
 
-  const { picks, events } = contestFor({ order, choices, players, rng });
+  const { picks, events } = contestFor({ order, choices, players, rng, bond });
   const roles = {};
   for (const n of order) {
     roles[n] = parts.find(p => p.name === picks[n]?.choice)?.role || 'ensemble';

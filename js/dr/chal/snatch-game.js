@@ -62,10 +62,10 @@ function wantsFor(player) {
 }
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini } = ctx;
+  const { living, players, rng, miniWinner, mini, bond } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
   const choices = Object.fromEntries(order.map(n => [n, wantsFor(players[n])]));
-  const { picks, events } = contestFor({ order, choices, players, rng });
+  const { picks, events } = contestFor({ order, choices, players, rng, bond });
   const roles = Object.fromEntries(order.map(n => [n, 'standard']));
   return {
     roles, teams: [], order, picks, events,

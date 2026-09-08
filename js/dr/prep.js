@@ -94,6 +94,9 @@ export function prepareRoom({ living, players, maxi, rng, bond }) {
  * ignored and bad advice taken are both possible, and both cost — which is the
  * whole reason the scene is worth simulating rather than narrating.
  */
+/** How many of the host's stops get a card. The rest still happen. */
+const FEATURED_VISITS = 3;
+
 export function walkthrough({ living, players, maxi, prep, rng }) {
   const notes = [];
   const events = [];
@@ -121,14 +124,24 @@ export function walkthrough({ living, players, maxi, prep, rng }) {
      room. NOTHING READS IT YET — it is recorded here because the engine is
      where the fact lives, and a screen that wants it will not have to
      recompute the ranking. */
-  const moves = notes.map(x => Math.abs(x.delta));
-  const cut = [...moves].sort((a, b) => b - a)[Math.min(2, moves.length - 1)] ?? 0;
+  /* THE TOP THREE BY RANK, NOT BY VALUE. This took the third-largest |delta|
+     as a threshold and marked everybody at or above it — and `delta` only
+     ever takes four values, so the third-largest is almost always the largest,
+     and "featured" meant every queen the note landed hard on. On a thirteen
+     queen room that was nine or ten of them, which is not a shortlist.
+     Ranked and sliced, with ties broken by name so a replay of the same seed
+     marks the same three. */
+  const featured = new Set([...notes]
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.name.localeCompare(b.name))
+    .slice(0, FEATURED_VISITS)
+    .filter(x => Math.abs(x.delta) > 0)
+    .map(x => x.name));
   for (const note of notes) {
     events.push(evt('walkthrough', {
       players: [note.name], pop: { [note.name]: note.took ? 1 : -1 },
       data: {
         right: note.right, took: note.took, challenge: maxi.id,
-        featured: Math.abs(note.delta) >= cut && cut > 0,
+        featured: featured.has(note.name),
       },
     }));
   }

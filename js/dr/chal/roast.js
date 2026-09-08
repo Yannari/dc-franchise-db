@@ -50,13 +50,13 @@ function slotPreference(slots, boldness) {
 }
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini } = ctx;
+  const { living, players, rng, miniWinner, mini, bond } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
   const slots = order.map((_, i) => `slot-${i + 1}`);
   const choices = Object.fromEntries(order.map(n =>
     [n, slotPreference(slots, Number(players[n]?.stats?.boldness) || 5)]));
   const { picks, events } = contestFor({
-      order, choices, players, rng,
+      order, choices, players, rng, bond,
       // No preparation penalty here — same jokes, a different position: the slot difficulty already scores it.
       penaltyScale: 0,
     });

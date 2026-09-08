@@ -516,8 +516,16 @@ export function renderStageBeats({
        never prints both versions of it. */
     const gone = new Set(lipsync.losers || (lipsync.loser ? [lipsync.loser] : []));
     const stayed = (lipsync.queens || []).filter(n => !gone.has(n));
-    const named = beatById('lipsync-shantay').tiers[0].lines.length
-      || beatById('lipsync-sashay').tiers[0].lines.length;
+    /* ONLY THE ORDINARY CALL IS REPLACED. `lipsync-call` has tiers for the
+       nights that are not "one stays and one goes" — a double shantay, a
+       double elimination, a triple, a scheduled no-elimination — and each of
+       those is a specific thing the host says that the named beats do not
+       cover. Skipping the whole beat took those out of the show along with
+       the ordinary one, and a no-elimination night went by without the host
+       ever saying nobody was going home. */
+    const ordinary = (lipsync.call || 'shantay') === 'shantay';
+    const named = ordinary && (beatById('lipsync-shantay').tiers[0].lines.length
+      || beatById('lipsync-sashay').tiers[0].lines.length);
 
     if (named) {
       emit(beatById('lipsync-suspense'), 'held', []);
@@ -528,6 +536,16 @@ export function renderStageBeats({
       for (const n of gone) emit(beatById('lipsync-sashay'), 'sashay', [n]);
     } else {
       emit(beatById('lipsync-call'), lipsync.call || 'shantay', []);
+    }
+    /* AND THEN SHE SPEAKS. The last card on the lip sync screen is the only
+       one in her own voice — the host has said her name and she answers it.
+       Tiered by swagger group so the queen who has been narrating her own
+       runway walks all season leaves sounding like herself.
+       `named` is deliberately not required: a queen goes home on an unnamed
+       call too, and she gets her last words either way. */
+    for (const n of gone) {
+      emit(beatById('sashay-words'),
+        swaggerGroupFor(players[n] && players[n].archetype), [n]);
     }
   }
 
@@ -841,9 +859,22 @@ export function renderChallengeBeats({
   for (const n of living) {
     const p = assignment.picks?.[n];
     if (!p) continue;
+    /* HOW FAR SHE FELL, NOT WHAT IT COST HER. This read `p.penalty > 0`, and
+       most drafts set `penaltyScale: 0` on purpose — a roast slot or a pile
+       of materials is not something she prepared for, so missing her first
+       choice charges her nothing. Which meant `penalty` was zero for the
+       whole cast and every queen who lost her pick was narrated as having got
+       exactly what she wanted. The board beside the cards read `lostTo` and
+       said the opposite on the same screen: ten queens marked "lost hers to
+       Julia", ten cards saying she got what she asked for.
+       `depth` is the honest field — 0 is her first choice, higher is further
+       down her own list — and it is recorded on every draft regardless of
+       what the miss costs. */
+    const order = assignment.order || [];
+    const depth = Number.isFinite(p.depth) ? p.depth : (p.penalty > 0 ? 1 : 0);
     const tierId = String(p.choice || '').startsWith('leftover-') ? 'left-over'
-      : p.penalty > 0 ? 'settled'
-        : (assignment.order || []).indexOf(n) === (assignment.order || []).length - 1 ? 'picked-last'
+      : order.indexOf(n) === order.length - 1 && order.length > 1 ? 'picked-last'
+        : depth > 0 || p.lostTo ? 'settled'
           : 'got-it';
     const lines = kindId ? pickLinesFor(kindId, tierId) : null;
     if (!lines) { emit(pickBeat, tierId, [n], { choice: p.choice, voiced: false }); continue; }
@@ -927,7 +958,12 @@ export function renderMaxiEventScenes(events, {
        it, and the runway had already happened.
        Only `prep` is rerouted: every other `from` names the challenge the
        event belongs to, which is the screen it is already on. */
-    const at = spec.from === 'prep' ? 'prep' : step;
+    /* WHERE THE EVENT HAPPENS. `prep` is the werk room mid-build, and
+       `assign` is the DRAFT — two queens wanting the same thing is the most
+       dramatic moment the hand-out has, and it was being stamped with the
+       maxi's step and drawn on the performance screen, half an episode after
+       the argument. The draft screen is where the fight is. */
+    const at = spec.from === 'prep' ? 'prep' : spec.from === 'assign' ? 'choice' : step;
     /* THE WALKTHROUGH IS THE WORST-REPEATING BEAT IN THE SHOW, and it is
        arithmetic: four variants, fired once per queen, ten times on a
        thirteen-queen night. The draw exhausts and falls back to any line, so

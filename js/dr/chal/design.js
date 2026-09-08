@@ -47,7 +47,7 @@ const AMBITION = 0.5;
 const CAN_SEW = 7;
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini, maxi } = ctx;
+  const { living, players, rng, miniWinner, mini, maxi, bond } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
 
   if (IS_DESIGN(maxi.id)) {
@@ -59,7 +59,7 @@ export function assign(ctx) {
       return [n, [...MATERIALS].sort((a, b) => value(b) - value(a)).map(m => m.id)];
     }));
     const { picks, events } = contestFor({
-      order, choices, players, rng,
+      order, choices, players, rng, bond,
       // No preparation penalty here — the pile is handed to her on the day; its difficulty already scores it.
       penaltyScale: 0,
     });

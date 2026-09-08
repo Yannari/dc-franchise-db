@@ -111,12 +111,19 @@ describe('the resemblance', () => {
 
   it('a strong designer makes the more convincing family', () => {
     const p = Object.fromEntries(NAMES.map(n => [n, mk(n, n === 'Cleo' ? { design: 10 } : { design: 2 })]));
+    /* TWO HUNDRED, NOT FORTY. At n=40 one standard error on a rate near 0.45
+       is about 0.08, so this assertion was a coin toss on the seed: it read
+       0.40 after an unrelated change elsewhere shifted the draw by a few
+       calls, with nothing about the makeover touched. A guard that measures
+       an effect has to be powered to measure it. At n=200 the error is about
+       0.035 and the threshold means what it says. */
+    const RUNS = 200;
     let wins = 0;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < RUNS; i++) {
       const o = runMaxi(ctx(i, p));
       if (Object.entries(o.performances).sort((a, b) => b[1].perf - a[1].perf)[0][0] === 'Cleo') wins++;
     }
-    expect(wins / 40).toBeGreaterThan(0.45);
+    expect(wins / RUNS).toBeGreaterThan(0.45);
   });
 
   it('every event it fires survives the consequence check', () => {

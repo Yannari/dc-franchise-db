@@ -39,7 +39,7 @@ const NOTE_HELP = 0.9;
 const NOTE_COST = 0.6;
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini, maxi } = ctx;
+  const { living, players, rng, miniWinner, mini, maxi, bond } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
 
   // ── IMPROV: nothing is cast, because nothing is prepared ──
@@ -104,7 +104,7 @@ export function assign(ctx) {
         .sort((a, b) => (b.spotlight * 2 + d[b.needs]) - (a.spotlight * 2 + d[a.needs]))
         .map(p => p.name)];
     }));
-    const c = contestFor({ order: teamOrder, choices, players, rng });
+    const c = contestFor({ order: teamOrder, choices, players, rng, bond });
     events.push(...c.events);
     for (const n of teamOrder) {
       picks[n] = { ...c.picks[n], part: c.picks[n].choice };

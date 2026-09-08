@@ -321,6 +321,65 @@ export const MAXI_EVENTS = [
   }),
 
   // ══ THE HAND-OUT ═════════════════════════════════════════════════════
+  /* THE REACTION, WHICH IS NOT THE CONFLICT. `contest` below is the fact —
+     two queens wanted one thing and one of them got it — and it fires once
+     per contested thing, which is right: ten queens losing the same slot to
+     the same queen is one story. What each of those ten DOES about it is ten
+     stories, and the draft had none of them.
+     Which one fires is a weighted roll in js/dr/assign.js off the bond
+     between the pair, the loser's temperament and boldness, and both
+     archetypes — so a hothead is likelier to say something rather than
+     certain to, and most drafts produce nothing at all. */
+  e({
+    id: 'contest-said-it', from: 'assign', cast: 'pair',
+    note: '{a} lost it to {b} and says so, out loud, in the room.',
+    lines: [
+      "{a} does not wait until she is at her station. \"So we are just taking whatever we want,\" she says, to nobody, at a volume that is clearly for {b}, and {b} turns around because the alternative is pretending not to have heard it and the room already knows she heard it. Nobody else says anything. Everybody else is delighted.",
+      "\"You knew.\" {a} says it flatly and {b} says \"I picked first\" and {a} says \"you knew\" again, the same two words, which is worse the second time. The exchange lasts nine seconds and will be replayed by both of them for the rest of the week.",
+      "{a} lets out one short laugh with nothing funny in it. \"Of course,\" she says. \"Of course that is how that goes.\" {b} offers a shrug that is meant to be friendly and lands as something else entirely, and the temperature in the room drops about four degrees.",
+      "It comes out before {a} has decided to say it. \"That was mine and you knew it was mine.\" The room goes quiet in the specific way a room goes quiet when two queens are about to have the argument everybody has been waiting for. {b} puts her hands up. {a} is not finished.",
+    ],
+  }),
+  e({
+    id: 'contest-old-grudge', from: 'assign', cast: 'pair',
+    note: 'Of every queen in the room it had to be {b}. There was history before this.',
+    lines: [
+      "Of all the queens in the room it had to be {b}. {a} does not say anything, which is the loudest thing she could have done — the two of them have been circling each other since the first day and this is the first time the competition has handed one of them something the other wanted.",
+      "{a} watches {b} take it and the watching is the whole event. There is history between these two and the history has a shape now: a slot, a pick order, and a queen who was always going to end up on the wrong side of it. {a} goes back to her station and does not speak for twenty minutes.",
+      "This would be survivable from anybody else. From {b} it is not, and {a} knows that about herself and hates it, and the knowing does not change the fact that she is now building a performance out of spite instead of out of a plan.",
+      "\"Naturally.\" {a} says the single word to her own reflection and it carries further than she meant it to. She and {b} have not been right since the second day and the draft has just poured something on it. {b} hears it. {b} decides, visibly, not to respond, which is its own kind of response.",
+    ],
+  }),
+  e({
+    id: 'contest-took-it', from: 'assign', cast: 'pair',
+    note: '{a} knew {b} wanted it, took it anyway, and is not pretending otherwise.',
+    lines: [
+      "{a} knew. That is the part {b} cannot get past — {a} knew, because {b} had said it out loud two days ago, and {a} picked it anyway and did not blink. \"I am not here to be polite,\" {a} says pleasantly, to the room rather than to {b}, and goes to her station.",
+      "{a} takes it and holds the look with {b} for exactly one second longer than she needs to, which converts an accident into a statement. She is not apologising and she is not going to, and the room reads the whole transaction correctly and files it.",
+      "\"Somebody was going to,\" {a} says, which is true and is not the point, and she says it with the ease of a queen who has already decided that being disliked this early is a price rather than a problem. {b} says nothing. {b} will remember it.",
+      "{a} does not take it quietly. She takes it, turns, and asks {b} — sweetly, loudly, in front of everybody — whether she had her eye on it too. {b} says no. Everybody knows that is a lie, including {a}, who asked precisely so that {b} would have to tell it.",
+    ],
+  }),
+  e({
+    id: 'contest-friendly-fire', from: 'assign', cast: 'pair',
+    note: '{a} lost it to a friend, and is not going to make {b} feel bad about it.',
+    lines: [
+      "{a} wanted it and {b} got it and the first thing {a} does is tell {b} she is going to be incredible in it, which is true and is also costing {a} something to say. {b} knows exactly what it cost. That is what makes them friends and what is going to make this week complicated.",
+      "The pick lands and {a} laughs, genuinely, and says \"of course you did,\" and hugs her. The disappointment arrives about forty minutes later at her own station with nobody watching, which is when {a} deals with everything.",
+      "{b} takes it and immediately looks at {a}, because {b} knew {a} wanted it too, and {a} shakes her head before {b} can start. \"Do not. It is fine. It is genuinely fine.\" It is mostly fine. The gap between mostly and genuinely is where the rest of the week lives.",
+      "They both wanted it and they are friends and the friendship absorbs it in about four seconds — a look, a shrug, a hand on an arm — but everybody who has been watching these two knows a small thing just got put in a drawer rather than thrown away.",
+    ],
+  }),
+  e({
+    id: 'contest-let-it-go', from: 'assign', cast: 'pair',
+    note: '{a} lost it to {b} and decides it does not matter. She means it.',
+    lines: [
+      "{a} loses it to {b} and the reaction is a shrug that is not performed. She wanted it; she does not have it; the day is still eight hours long. She is at her station working on the alternative before {b} has finished celebrating, which the room notices even if nobody says so.",
+      "\"It is a slot,\" {a} says, to a queen who asked whether she is alright. \"It is not the week.\" She says it evenly and she goes back to work and the evenness is either enormous maturity or an excellent impression of it, and this early nobody can tell which.",
+      "{b} takes it and {a} does not spend one second on it. No look, no comment, no muttering to the queen next to her — she reads what is left, picks the best of it, and starts. Somebody at the next station says \"you are very calm\" and {a} says \"I am very busy.\"",
+      "The pick goes to {b} and {a} lets it go so completely that two queens check on her about it, which annoys her more than losing the pick did. \"I am fine,\" she says. \"I promise you I am fine.\" She is. It is the most disarming thing she does all day.",
+    ],
+  }),
   e({
     id: 'contest', from: 'assign', cast: 'pair',
     note: 'Both of them wanted the same character, part or material. {a} got it because she picked first.',

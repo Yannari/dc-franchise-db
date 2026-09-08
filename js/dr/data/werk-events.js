@@ -982,7 +982,14 @@ export const WERK_EVENTS = [
     id: 'quiet-thing', slot: 'werk-elim-day', cast: 'pair', weight: 1,
     note: 'Whatever this is, it is happening on the worst possible night.',
     arcs: ['bond'],
-    when: f => f.compatible && f.bond >= 5 && f.roomSize <= 9,
+    // THE CAP IS ON EVERY EVENT THAT STARTS ONE, not just the first.
+    // This and `competing-with-her` both write `state: 'romance'` and
+    // neither checked `romanceOpen` or `alreadyPaired`, so the season
+    // limit only ever bound on one of the three ways in — a leak that
+    // stayed invisible while the werk room drew four scenes a slot and
+    // produced a third pairing the moment the rooms were sized to the cast.
+    when: f => f.compatible && f.romanceOpen && !f.alreadyPaired
+      && f.bond >= 5 && f.roomSize <= 9,
     effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
     lines: [
       "Elimination day is a bad day to work out what you feel about somebody and {a} and {b} are doing it anyway, in a corner, quietly, with one eye on the clock. \"If it is me tonight,\" {b} starts, and {a} says \"do not\", and that is the closest either of them gets to the actual sentence.",
@@ -995,7 +1002,8 @@ export const WERK_EVENTS = [
     id: 'competing-with-her', slot: 'werk-morning', cast: 'pair', weight: 1,
     note: 'The thing between them is now a problem, because one of them has to lose.',
     arcs: ['bond', 'weakness'],
-    when: f => f.compatible && f.bond >= 5 && f.bottomsB >= 1,
+    when: f => f.compatible && f.romanceOpen && !f.alreadyPaired
+      && f.bond >= 5 && f.bottomsB >= 1,
     effects: { bond: -1, pop: { a: 1 }, state: 'romance' },
     lines: [
       "{b} was in the bottom last week and {a} was not, and this morning that fact is sitting between them like a third person. {a} tries to help. {b} lets her, and hates letting her, and neither of them enjoys the ten minutes it takes.",

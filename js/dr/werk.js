@@ -119,9 +119,16 @@ function factsFor({ a, b, players, state, storylines, ctx }) {
        would not, and capped per season so it stays a thread rather than a
        storyline. */
     compatible: !!(pa && pb && romanticallyCompatible(pa, pb)),
+    /* COUNTED WITHIN THIS PASS TOO, not only across weeks. `state.romances`
+       is written by the caller AFTER this whole run returns, so inside one
+       pass the list never grows — and every scene in the pass read the same
+       stale count. That was harmless while a room got four scenes and stopped
+       binding the moment the rooms were sized to the cast: three romances
+       started in a single werk room, all of them believing they were the
+       second, because the caller only wrote the list once the whole run
+       had returned. It is written at the point the pairing happens now. */
     romanceOpen: (state.romances || []).length < 2,
-    alreadyPaired: (state.romances || [])
-      .some(r => r.includes(a) || (b && r.includes(b))),
+    alreadyPaired: (state.romances || []).some(r => r.includes(a) || (b && r.includes(b))),
   };
 }
 
@@ -285,9 +292,27 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
      slot is only cut short when the room genuinely has nothing left to say.
      Each of the four werk screens gets a night's worth rather than a
      leftover. */
-  const perSlotN = perSlot ?? Math.max(4, Math.ceil((living.length + 2) / slots.length));
+  /* HOW MANY SCENES A ROOM GETS, and it is not four everywhere.
+     This was `max(4, ceil((living + 2) / slots))`, which on a thirteen-queen
+     premiere is four — four scenes to cover thirteen women in a room they
+     spend the whole day in, against thirteen walkthrough cards on the same
+     screen. Read the prep screen and it is the host's notes with a couple of
+     werk-room moments buried in them, which is the opposite of what the
+     werk room is for.
+     THE ROOMS ARE NOT THE SAME SIZE. The cold open is a few minutes and
+     elimination day is the last hour; the morning and prep are where the
+     season's bonds, fights and breakdowns actually happen, and they scale
+     with how many people are in the room. */
+  // Pairings begun during THIS run, so the season cap binds inside one pass
+  // as well as across weeks. Keyed "a b", sorted.
+
+  const BIG = new Set(['werk-morning', 'prep']);
+  const sizeFor = slot => (perSlot != null ? perSlot
+    : BIG.has(slot) ? Math.max(6, living.length)
+      : Math.max(4, Math.ceil(living.length / 2.5)));
 
   for (const slot of slots) {
+    const perSlotN = sizeFor(slot);
     for (let i = 0; i < perSlotN; i++) {
       // Once every queen has had two scenes, stop padding this slot.
       if (i >= 3 && living.every(n => (seen[n] || 0) >= 2)) break;
@@ -313,6 +338,23 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
       if (!scene) break;
       scenes.push(scene);
       used.add(scene.id);
+      /* A PAIRING IS RECORDED THE MOMENT IT HAPPENS, not after the run.
+         `romanceOpen` and `alreadyPaired` read `state.romances`, and the
+         caller only wrote that list once this whole pass had returned — so
+         every scene in a pass saw the same stale count. Harmless while a room
+         drew four scenes and not harmless once the rooms were sized to the
+         cast: three pairings started inside one werk room, each of them
+         correctly believing it was the second.
+         The caller still writes the same list and its push is now a
+         de-duplicating no-op, which is the right shape: one owner, written
+         at the point the fact becomes true. */
+      if (scene.effects && scene.effects.state === 'romance' && scene.players.length === 2) {
+        const pair = [...scene.players].sort();
+        state.romances ||= [];
+        if (!state.romances.some(r => r[0] === pair[0] && r[1] === pair[1])) {
+          state.romances.push(pair);
+        }
+      }
       for (const n of scene.players) seen[n] = (seen[n] || 0) + 1;
     }
   }

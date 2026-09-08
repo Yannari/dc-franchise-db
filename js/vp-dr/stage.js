@@ -624,7 +624,7 @@ export function rpBuildCritiques(row) {
             <i>${esc(who)}</i>${sc.data?.spread
     ? `<b>${sc.data.spread} ranks apart</b>` : ''}</span>` : ''}
           ${isHost && sc.data?.panelRank && sc.data?.finalRank
-    ? `<span class="dr-delib-q"><b>panel ${sc.data.panelRank} &rarr; ${sc.data.finalRank}</b></span>` : ''}
+    ? `<span class="dr-delib-q"><b>panel ${sc.data.panelRank} → ${sc.data.finalRank}</b></span>` : ''}
         </div>
       </div></div>`;
   }).join('');

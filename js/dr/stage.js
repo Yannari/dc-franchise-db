@@ -988,8 +988,15 @@ export function renderChallengeBeats({
   }
 
   // ── how the room was divided ──
+  /* A DRAFT IS A CONTEST, NOT A LIST. This read "there are picks" as "there
+     was a draft", so a challenge where every queen simply chooses her own act
+     — nothing exclusive, nothing taken from anybody — was announced with a
+     pick order and narrated as a scramble. An assignment that says
+     `contested: false` gets the solo tier, which is what it always was:
+     no teams, no partners, no draft, everybody on her own. */
   const kind = (assignment.teams || []).length > 1 ? 'captains'
-    : Object.keys(assignment.picks || {}).length ? 'draft' : 'solo';
+    : (assignment.contested !== false && Object.keys(assignment.picks || {}).length)
+      ? 'draft' : 'solo';
   emit(beatById('the-division'), kind, []);
   /* ── AND WHAT SHE ACTUALLY GOT ──
      Eleven of these fired on one Snatch Game and between them they said "the

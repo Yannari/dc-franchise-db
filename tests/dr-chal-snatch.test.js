@@ -6,6 +6,8 @@ import { SNATCH_CHARACTERS } from '../js/dr/data/snatch-characters.js';
 import { DRAG_STYLES } from '../js/dr/queen.js';
 import { maxiById } from '../js/dr/data/challenges.js';
 import { rngFor } from '../js/dr/rng.js';
+import { characterById } from '../js/dr/data/snatch-characters.js';
+import { playDragSeason } from '../js/dr/season.js';
 import { runMaxi, applyEvents } from '../js/dr/maxi.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -238,5 +240,95 @@ describe('the host, who is now in the room', () => {
         expect(c, `seed ${s}: ${n} got ${c} host beats`).toBeLessThanOrEqual(2);
       }
     }
+  });
+});
+
+describe('THE PICK IS A DECISION, AND DIFFICULTY IS A GAMBLE', () => {
+  /* Two things were wrong and only measuring found either.
+
+     THE PICK HAD NO MOTIVE. The shortlist was one sum for the whole cast —
+     style match, the stat the character needs, MINUS its difficulty — so
+     every queen in every season shortlisted the safest thing she could carry
+     and hard characters came off the board only when the easy ones were gone.
+     Nobody ever chose a tightrope.
+
+     AND DIFFICULTY ONLY EVER COST. It was subtracted and the round noise was
+     flat, so a hard character was strictly worse. Pooled over 120 tapings
+     before the fix: hard characters bombed 40% of the time and shone 7%,
+     against 17% and 28% for easy ones. */
+  const STATS2 = ['physical', 'endurance', 'mental', 'social', 'strategic',
+    'loyalty', 'boldness', 'intuition', 'temperament'];
+  const mk = (n, seed, bold) => {
+    const rng = rngFor(seed); const r = () => 1 + Math.floor(rng() * 10);
+    return Array.from({ length: n }, (_, i) => {
+      const stats = Object.fromEntries(STATS2.map(k => [k, r()]));
+      stats.boldness = bold;
+      return {
+        name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'f', archetype: 'floater', age: 25, stats,
+        drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+      };
+    });
+  };
+  const avgDifficulty = bold => {
+    const out = [];
+    for (let seed = 1; seed <= 12; seed++) {
+      const s = playDragSeason({ cast: mk(12, seed, bold), seed,
+        config: { drSchedule: [{ episode: 5, maxiId: 'snatch-game' }] },
+        bond: () => 0, addBond: () => {}, popDelta: () => {} });
+      const ep = s.rows.find(r => r.dr.challenge?.id === 'snatch-game');
+      if (!ep) continue;
+      for (const p of Object.values(ep.dr.assignment.picks)) {
+        const c = characterById(p.choice);
+        if (c) out.push(c.difficulty);
+      }
+    }
+    return out.reduce((a, b) => a + b, 0) / out.length;
+  };
+
+  it('a bold room reaches further than a timid one', () => {
+    const timid = avgDifficulty(1);
+    const brave = avgDifficulty(10);
+    expect(brave, `timid ${timid.toFixed(2)} vs brave ${brave.toFixed(2)}`)
+      .toBeGreaterThan(timid + 0.4);
+  });
+
+  it('a hard character swings wider than an easy one', () => {
+    /* The first attempt at this scaled the ROUND noise by difficulty and
+       changed nothing measurable: across six rounds it averaged out and the
+       spread was flat at about 2.2 whatever she picked. Whether a character
+       WORKS is one fact about the night, not six independent ones. */
+    const easy = []; const hard = [];
+    for (let seed = 1; seed <= 40; seed++) {
+      const cast0 = mk(12, seed * 3, 6);
+      const s = playDragSeason({ cast: cast0, seed,
+        config: { drSchedule: [{ episode: 5, maxiId: 'snatch-game' }] },
+        bond: () => 0, addBond: () => {}, popDelta: () => {} });
+      const ep = s.rows.find(r => r.dr.challenge?.id === 'snatch-game');
+      if (!ep) continue;
+      for (const p of Object.values(ep.dr.assignment.picks)) {
+        const c = characterById(p.choice);
+        const perf = ep.dr.performances?.[p.name]?.perf;
+        if (!c || perf == null) continue;
+        const q = s.rows[0] && cast0.find(x => x.name === p.name);
+        const base = q ? q.drag.comedy * 0.55 + q.drag.acting * 0.35 : 0;
+        const residual = perf - base;
+        if (c.difficulty <= 2) easy.push(residual);
+        else if (c.difficulty >= 4) hard.push(residual);
+      }
+    }
+    expect(hard.length, 'nobody ever took a hard character').toBeGreaterThan(20);
+    const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+    const sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(x => (x - m) ** 2))); };
+    /* MEASURED AGAINST HER OWN CRAFT, not raw. The plain spread of `perf`
+       mixes two things — how varied the QUEENS are and how varied the
+       CHARACTER makes a night — and the queens taking easy characters are a
+       broader population, so raw spread said easy was wider even while the
+       mechanic worked. Subtracting her craft baseline leaves the part the
+       character is responsible for, which is the part under test. */
+    expect(sd(hard), `hard sd ${sd(hard).toFixed(2)} vs easy ${sd(easy).toFixed(2)}`)
+      .toBeGreaterThan(sd(easy));
+    // And it is a gamble rather than a tax: the ceiling has to be reachable.
+    const shone = hard.filter(x => x > mean(easy) + 1.5).length / hard.length;
+    expect(shone, 'a hard character never pays off').toBeGreaterThan(0.1);
   });
 });

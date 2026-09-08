@@ -45,7 +45,7 @@ const cast=NAMES.map((name,i)=>({name,slug:name.toLowerCase().replace(/[^a-z0-9]
   stats:Object.fromEntries(S.map(k=>[k,r()])),
   drag:{acting:r(),comedy:r(),dance:r(),design:r(),runway:r(),lipsync:r(),singing:r()}}));
 const bonds={}; const key=(a,b)=>[a,b].sort().join('|');
-const {rows}=playDragSeason({cast,seed:4,config:{drSmackdown:true,drSchedule:[{episode:3,rateAQueen:true}]},
+const {rows}=playDragSeason({cast,seed:4,config:{drSmackdown:true,drSchedule:[{episode:1,maxiId:'talent-show'},{episode:2,maxiId:'snatch-game'},{episode:3,rateAQueen:true}]},
   bond:(a,b)=>bonds[key(a,b)]||0,
   addBond:(a,b,d)=>{const k=key(a,b);bonds[k]=Math.max(-10,Math.min(10,(bonds[k]||0)+d));},
   popDelta:()=>{}});

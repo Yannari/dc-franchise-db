@@ -65,9 +65,16 @@ export function assign(ctx) {
       reached: a.reached, passedUp: Math.round(a.passedUp * 100) / 100,
     };
   }
+  /* NOTHING HERE IS CONTESTED, AND THE SCREEN HAS TO KNOW. Every queen picks
+     her own act, two of them may pick the same one, and no pick is ever taken
+     off anybody — `penalty` is 0 and `lostTo` is null for the whole room by
+     construction. The stage read "has picks" as "is a draft", so a talent
+     show was narrated as a pick order with queens fighting over slots and
+     thirteen of thirteen "got exactly what she asked for", which is not a
+     draft, it is a formality with draft prose over it. */
   return {
     roles: Object.fromEntries(living.map(n => [n, 'standard'])),
-    teams: [], order: [...living], picks, events: [],
+    teams: [], order: [...living], picks, events: [], contested: false,
     scenes: [{ step: 'choice', kind: 'talent-picks', data: { picks } }],
   };
 }

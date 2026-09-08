@@ -981,6 +981,63 @@ function _choiceLabel(p) {
    happens in it. Copied rather than imported: a stylesheet constant is not
    worth a module dependency, and the two are meant to look identical — if
    they ever drift, prep is the one that is wrong. */
+/* ══════════════════════════════════════════════════════════════════════
+   THE DRAFT BOARD
+   ══════════════════════════════════════════════════════════════════════
+   A draft is a board with names coming off it, so it is drawn as one: a
+   numbered order down the left of each seat, the pick beside the name, and a
+   red strike on the queen who reached for something that had gone. On a
+   night with nothing contested the numbers disappear — there is no order to
+   pick in — and the board becomes a line-up of what everybody is doing, with
+   the clashes marked instead, because two queens landing on the same act is
+   the only jeopardy that kind of night has. */
+const DRAFT_CSS = `
+.dr-draft{position:relative}
+.dr-boardwrap{position:relative;z-index:2;margin:0 0 18px;border-radius:10px;overflow:hidden;
+  border:1px solid rgba(124,58,237,.35);background:rgba(16,6,26,.86);
+  box-shadow:0 20px 44px -26px rgba(0,0,0,.95)}
+.dr-boardhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding:9px 14px;border-bottom:1px solid rgba(124,58,237,.3);
+  background:linear-gradient(90deg,rgba(123,47,247,.22),transparent)}
+.dr-boardhead b{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:#E9D5FF}
+.dr-boardhead span{font-family:'Space Mono',ui-monospace,monospace;font-size:10px;color:#c4b5fd}
+.dr-seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:8px;
+  padding:11px}
+.dr-seat{position:relative;display:grid;grid-template-columns:auto auto 1fr;gap:10px;
+  align-items:center;padding:8px 10px;border-radius:8px;
+  background:linear-gradient(180deg,rgba(124,58,237,.16),rgba(30,10,50,.5));
+  border:1px solid rgba(196,181,253,.16)}
+/* The slot she picked in. Gone entirely when nothing was contested: a
+   number implies an order, and an order implies somebody went last. */
+.dr-seat-n{font-style:normal;font-family:'Space Mono',ui-monospace,monospace;font-size:11px;
+  color:#c4b5fd;min-width:16px;text-align:right}
+.dr-seat .dr-por,.dr-seat .dr-initials{border-radius:50%;display:block}
+.dr-seat-b{min-width:0}
+.dr-seat-b b{display:block;font-size:13px;letter-spacing:.03em;color:#fff;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-seat-took{display:block;font-size:11px;color:#E9D5FF;opacity:.92;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-seat-b u{display:block;text-decoration:none;font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;color:#FF7A9A;margin-top:2px}
+.dr-seat-b s{display:block;text-decoration:none;font-size:9px;letter-spacing:.04em;
+  color:#FFD23F;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* She reached for something that had gone. */
+.dr-seat-lost{border-color:rgba(255,41,75,.45);
+  background:linear-gradient(180deg,rgba(255,41,75,.16),rgba(30,10,50,.5))}
+.dr-seat-lost::after{content:"";position:absolute;left:8px;right:8px;top:50%;height:1px;
+  background:rgba(255,122,154,.5)}
+/* Two queens doing the same thing, on a night where that is allowed. */
+.dr-seat-clash{border-color:rgba(255,210,63,.42)}
+
+/* The pick, said on her own card as well as on the board — the card used to
+   describe a choice it never named. */
+.dr-took-tag{display:inline-block;margin-left:9px;padding:2px 8px;border-radius:20px;
+  font-family:'Space Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.06em;
+  color:#E9D5FF;background:rgba(124,58,237,.28);border:1px solid rgba(196,181,253,.3);
+  text-transform:none;vertical-align:middle}
+@media(max-width:620px){.dr-seats{grid-template-columns:1fr}}
+`;
+
 const PREP_SHOP_CSS = `
 .dr-prep-room{position:relative}
 .dr-shop{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;overflow:hidden}
@@ -1025,7 +1082,27 @@ const PREP_SHOP_CSS = `
 .dr-prep-room .dr-step{position:relative;z-index:1}
 `;
 
-/** The draft: pick order, what came off the board, and the collisions. */
+/**
+ * The draft — or the line-up, when nothing was actually contested.
+ *
+ * ── TWO NIGHTS, NOT ONE ───────────────────────────────────────────────
+ *
+ * Most challenges hand out something exclusive: one Cher, one part, one pile
+ * of fabric. Somebody reaches for a thing and finds it gone, and that is a
+ * draft. Measured across five challenges, four of them contest between three
+ * and nine picks a night.
+ *
+ * The talent show contests NOTHING. Every queen picks her own act, two of
+ * them may pick the same one, and nothing is ever taken off anybody — and
+ * this screen still called it a draft, printed a pick order and narrated
+ * thirteen queens all getting "exactly what she asked for" with "the quiet
+ * fury of people who wanted the same thing". Nobody was furious. Nobody lost
+ * anything. It was a list with a fight drawn over it.
+ *
+ * So the screen asks the assignment which night it is. What does not change
+ * is that you can see WHAT EVERYBODY IS DOING — that is the useful thing on
+ * both kinds of night, and on the uncontested ones it is the only thing.
+ */
 export function rpBuildChoice(row) {
   const ep = epOf(row);
   const a = row?.dr?.assignment || {};
@@ -1033,29 +1110,65 @@ export function rpBuildChoice(row) {
   const picks = Object.entries(a.picks || {});
   if (!picks.length && !scenes.length) return '';
 
-  const board = picks.length ? `<div class="dr-board">${picks.map(([who, p]) => {
+  const contested = a.contested !== false && picks.some(([, p]) => p?.lostTo);
+  const order = (a.order || []).filter(n => a.picks?.[n]);
+
+  /* WHO ELSE IS DOING IT. On a night with no draft two queens can land on the
+     same act, and that is the only real jeopardy such a night has — so it is
+     the thing the board should show, in place of the collisions it has
+     nothing to draw. */
+  const byChoice = {};
+  for (const [who, p] of picks) {
+    const k = String(p?.choice ?? '');
+    (byChoice[k] ||= []).push(who);
+  }
+
+  const seat = (who, p, idx) => {
     const took = _choiceLabel(p);
-    return `<span class="dr-chip-lg dr-taken${p?.lostTo ? ' dr-lost' : ''}">
-      ${_portrait(who, ep, { size: 28 })}
-      <span class="dr-reax"><b>${esc(who)}</b>
-        <i>${took ? esc(took) : 'no pick'}</i>
-        ${p?.lostTo ? `<u>lost hers to ${esc(p.lostTo)}</u>` : ''}</span>
-    </span>`;
-  }).join('')}</div>` : '';
+    const shared = (byChoice[String(p?.choice ?? '')] || []).filter(n => n !== who);
+    return `<div class="dr-seat${p?.lostTo ? ' dr-seat-lost' : ''}${
+      shared.length ? ' dr-seat-clash' : ''}">
+      ${contested ? `<i class="dr-seat-n">${idx + 1}</i>` : ''}
+      ${_portrait(who, ep, { size: 44 })}
+      <div class="dr-seat-b">
+        <b class="dr-disp">${esc(who)}</b>
+        <span class="dr-seat-took">${took ? esc(took) : 'no pick'}</span>
+        ${p?.lostTo ? `<u>lost hers to ${esc(p.lostTo)}</u>` : ''}
+        ${shared.length ? `<s>also ${esc(shared.join(', '))}</s>` : ''}
+      </div></div>`;
+  };
+
+  const seated = order.length ? order.map(n => [n, a.picks[n]]) : picks;
+  const board = picks.length
+    ? `<div class="dr-boardwrap">
+        <div class="dr-boardhead">
+          <b class="dr-disp">${contested ? 'The board' : 'The line-up'}</b>
+          <span>${contested
+    ? `${picks.filter(([, p]) => p?.lostTo).length} of ${picks.length} lost a pick`
+    : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`}</span>
+        </div>
+        <div class="dr-seats">${seated.map(([who, p], i) => seat(who, p, i)).join('')}</div>
+      </div>`
+    : '';
 
   const steps = scenes.map((sc, i) => {
     const who = (sc.data?.players || [])[0];
+    const p = who ? a.picks?.[who] : null;
+    const took = p ? _choiceLabel(p) : '';
     return `<div class="dr-step" id="dr-step-choice-${i}">
-      <div class="dr-panel dr-a-bond dr-row">
-        ${who ? _portrait(who, ep, { size: 46 }) : '<span></span>'}
-        <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
-          <p style="margin:4px 0 0;color:#f4e3ed">${esc(sc.text)}</p></div>
-        <span></span>
+      <div class="dr-panel dr-a-bond dr-card dr-k-${who ? 'solo' : 'confess'}">
+        ${who ? _portrait(who, ep, { size: 54, station: true }) : ''}
+        <div>${who ? `<h3 class="dr-disp">${esc(who)}${
+    took ? `<span class="dr-took-tag">${esc(took)}</span>` : ''}</h3>` : ''}
+          <p>${esc(sc.text)}</p></div>
       </div></div>`;
   }).join('');
-  return `<style>${CHAL_CSS}</style>${_shell(
-    `<div class="dr-brief-room">${briefSet('draft')}${board}${steps}</div>`, ep, {
-      phase: 'werk', title: 'The Draft', subtitle: 'who takes what',
+
+  return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}</style>${_shell(
+    `<div class="dr-brief-room dr-draft">${briefSet('draft')}${board}${steps}</div>`, ep, {
+      phase: 'werk',
+      title: contested ? 'The Draft' : 'The Line-Up',
+      subtitle: contested ? 'who takes what, and who misses out' : 'what everybody is doing',
     })}${_controls('choice', Math.max(1, scenes.length), ep.num)}`;
 }
 

@@ -10,6 +10,7 @@ import { maxiById } from '../js/dr/data/challenges.js';
 import { playDragSeason } from '../js/dr/season.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 import { rngFor } from '../js/dr/rng.js';
+import { readFileSync } from 'node:fs';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
 function cast(n = 12, seed = 1) {
@@ -167,5 +168,48 @@ describe('the rest of the challenge screens', () => {
         expect(foreignWordsIn(text, 'drag-race'), `episode ${row.num}`).toEqual([]);
       }
     }
+  });
+});
+
+describe('EVERY CHALLENGE HAS ITS OWN ROOM', () => {
+  /* Nineteen challenges used to share six backdrops and one card, so four
+     nights were "the studio" and five were "the stage". A Snatch Game and a
+     Ball came out as the same screen in a different colour. The guard is an
+     allowlist-free one on purpose: it starts from the challenges that exist
+     and asks each of them for a room, rather than checking the rooms that
+     happen to be written. */
+  it('every maxi in the catalogue has a skin, a set and a palette', async () => {
+    const { MAXI_TYPES } = await import('../js/dr/data/challenges.js');
+    const { skinFor, SKIN_IDS } = await import('../js/vp-dr/challenge.js');
+    const src = readFileSync('js/vp-dr/challenge.js', 'utf8');
+
+    const missing = [];
+    for (const m of MAXI_TYPES) {
+      if (!SKIN_IDS.includes(m.id)) { missing.push(`${m.id}: no skin`); continue; }
+      const skin = skinFor(m.id);
+      if (!skin.props) missing.push(`${m.id}: no props`);
+      if (!skin.sub) missing.push(`${m.id}: no subtitle`);
+      if (!src.includes(`.dr-set-${m.id}{`)) missing.push(`${m.id}: no .dr-set-${m.id} room`);
+      if (!src.includes(`.dr-chal-${m.id}{`)) missing.push(`${m.id}: no palette`);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('no two challenges share a subtitle or a set of props', async () => {
+    const { skinFor, SKIN_IDS } = await import('../js/vp-dr/challenge.js');
+    const subs = SKIN_IDS.map(id => skinFor(id).sub);
+    const props = SKIN_IDS.map(id => skinFor(id).props);
+    const dupe = list => list.filter((v, i) => list.indexOf(v) !== i);
+    expect(dupe(subs), 'two challenges are announced the same way').toEqual([]);
+    expect(dupe(props), 'two challenges are drawn in the same room').toEqual([]);
+
+    /* AND NO TWO LEAD COLOURS. Gold led five of the nineteen at first, so
+       five different nights read as the gold one whatever room they were
+       drawn in. The lead colour is the strongest signal on the screen. */
+    const src = readFileSync('js/vp-dr/challenge.js', 'utf8');
+    const leads = [...src.matchAll(/\.dr-chal-([a-z-]+)\{--c1:(#[0-9a-fA-F]{6})/g)]
+      .map(m => m[2].toUpperCase());
+    expect(leads.length).toBe(SKIN_IDS.length);
+    expect(dupe(leads), 'two challenges lead on the same colour').toEqual([]);
   });
 });

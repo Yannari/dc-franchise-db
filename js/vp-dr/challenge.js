@@ -168,6 +168,281 @@ const CHAL_CSS = `
 
 @media(prefers-reduced-motion:reduce){.dr-tally{animation:none}}
 
+/* ══════════════════════════════════════════════════════════════════
+   ONE ROOM PER CHALLENGE
+   ══════════════════════════════════════════════════════════════════
+   Nineteen challenges used to share SIX backdrops and one card. Measured
+   with a structural fingerprint of the rendered card: Snatch Game, the Ball
+   and the Roast produced the same skeleton — portrait, name, marks, score,
+   prose — over one of six tinted gradients. A night in a comedy club and a
+   night on a film set were the same screen with a different colour behind.
+   Every challenge now has its OWN room, its OWN palette and its OWN card
+   frame. Rooms are CSS only, no images and no emoji.
+   NO BACKTICKS ANYWHERE IN THIS BLOCK. It is a template literal and one
+   inside a comment ends it, which has broken this repo five times. */
+
+.dr-chal{--c1:#FF2D8B;--c2:#38bdf8;--ink:#F4EFE4}
+.dr-chal .dr-score{color:var(--c1)}
+.dr-chal .dr-panel{border-left:2px solid var(--c1)}
+.dr-chal .dr-sub b{color:var(--c2)}
+.dr-chal .dr-mark{background:linear-gradient(180deg,var(--c1),var(--c2))}
+
+/* ── 1. SNATCH GAME - a game show floor ── */
+.dr-chal-snatch-game{--c1:#FFD23F;--c2:#38bdf8}
+.dr-set-snatch-game{background:radial-gradient(120% 70% at 50% 0%,rgba(56,189,248,.4),transparent 62%),
+  linear-gradient(180deg,#04121c,#02060c)}
+.dr-podia{inset:auto 0 0 0;height:36%;
+  background:repeating-linear-gradient(90deg,rgba(255,210,63,.16) 0 62px,transparent 62px 104px);
+  border-top:2px solid rgba(255,210,63,.35)}
+.dr-qcard{top:12%;left:50%;width:190px;height:70px;transform:translateX(-50%) rotate(-3deg);
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
+  border:1px solid rgba(255,210,63,.4)}
+
+/* ── 2. COMMERCIAL - a live ad shoot behind colour bars ── */
+.dr-chal-commercial{--c1:#22d3ee;--c2:#F87171}
+.dr-set-commercial{background:linear-gradient(180deg,#0a0f14,#03060a)}
+.dr-bars{top:0;left:0;right:0;height:34%;opacity:.22;background:linear-gradient(90deg,
+  #c0c0c0 0 14.28%,#c0c000 14.28% 28.56%,#00c0c0 28.56% 42.84%,#00c000 42.84% 57.12%,
+  #c000c0 57.12% 71.4%,#c00000 71.4% 85.68%,#0000c0 85.68% 100%)}
+.dr-onair{top:16px;left:50%;transform:translateX(-50%);width:132px;height:26px;
+  border:2px solid rgba(248,113,113,.75);box-shadow:0 0 24px rgba(248,113,113,.5)}
+
+/* ── 3. MUSIC VIDEO - sprockets and a dolly track ── */
+.dr-chal-music-video{--c1:#FF2D8B;--c2:#2dd4bf}
+.dr-set-music-video{background:radial-gradient(100% 60% at 50% 0%,rgba(45,212,191,.26),transparent 66%),
+  linear-gradient(180deg,#0a0413,#040108)}
+.dr-sprock-l,.dr-sprock-r{top:0;bottom:0;width:34px;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.16) 0 10px,transparent 10px 30px)}
+.dr-sprock-l{left:0}
+.dr-sprock-r{right:0}
+.dr-dolly{inset:auto 8% 6% 8%;height:6px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent)}
+
+/* ── 4. PHOTOSHOOT - a contact sheet and one strobe pop ── */
+.dr-chal-photoshoot{--c1:#e5e7eb;--c2:#FFD23F}
+.dr-set-photoshoot{background:linear-gradient(180deg,#0b0b0d,#030304)}
+.dr-contact{inset:0;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.1) 0 2px,transparent 2px 96px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0 2px,transparent 2px 140px)}
+.dr-strobe{top:0;left:50%;width:520px;height:60%;transform:translateX(-50%);
+  background:radial-gradient(60% 70% at 50% 0%,rgba(255,255,255,.22),transparent 70%);
+  animation:drPop 6s ease-out infinite}
+@keyframes drPop{0%,7%,100%{opacity:.25}3%{opacity:1}}
+
+/* ── 5. RUSICAL - a proscenium and a music staff ── */
+.dr-chal-rusical{--c1:#e11d48;--c2:#FFD23F}
+.dr-set-rusical{background:radial-gradient(120% 80% at 50% 100%,rgba(255,200,61,.34),transparent 65%),
+  linear-gradient(180deg,#180309,#0a0105)}
+.dr-arch{top:0;left:6%;right:6%;height:64%;border:14px solid rgba(255,210,63,.16);
+  border-top-width:26px;border-radius:50% 50% 0 0/28% 28% 0 0}
+.dr-staff{inset:auto 12% 12% 12%;height:52px;opacity:.5;
+  background:repeating-linear-gradient(180deg,rgba(255,233,168,.5) 0 1px,transparent 1px 13px)}
+
+/* ── 6. TALENT SHOW - a marquee of bulbs over a star drop ── */
+.dr-chal-talent-show{--c1:#f59e0b;--c2:#fde68a}
+.dr-set-talent-show{background:radial-gradient(110% 70% at 50% 0%,rgba(255,210,63,.28),transparent 62%),
+  linear-gradient(180deg,#140a02,#070301)}
+.dr-marquee{top:10px;left:4%;right:4%;height:14px;
+  background:repeating-radial-gradient(circle at 10px 7px,rgba(255,233,168,.95) 0 3px,transparent 3px 22px);
+  filter:drop-shadow(0 0 7px rgba(255,210,63,.7))}
+.dr-stardrop{inset:0;opacity:.45;background:
+  radial-gradient(1.4px 1.4px at 18% 30%,#fff,transparent),
+  radial-gradient(1.6px 1.6px at 64% 18%,#fff,transparent),
+  radial-gradient(1.2px 1.2px at 82% 46%,#fff,transparent),
+  radial-gradient(1.5px 1.5px at 36% 62%,#fff,transparent)}
+
+/* ── 7. SINGING - a mic halo over a waveform ── */
+.dr-chal-singing{--c1:#a78bfa;--c2:#f472b6}
+.dr-set-singing{background:radial-gradient(90% 60% at 50% 20%,rgba(167,139,250,.3),transparent 68%),
+  linear-gradient(180deg,#0b0616,#040209)}
+.dr-halo{top:12%;left:50%;width:230px;height:230px;transform:translateX(-50%);border-radius:50%;
+  border:1px solid rgba(167,139,250,.35);box-shadow:0 0 90px rgba(167,139,250,.28) inset}
+.dr-wave{inset:auto 0 12% 0;height:74px;opacity:.6;
+  background:repeating-linear-gradient(90deg,rgba(244,114,182,.6) 0 3px,transparent 3px 11px);
+  mask-image:radial-gradient(70% 100% at 50% 50%,#000,transparent)}
+
+/* ── 8. RUMIX - a mixing desk ── */
+.dr-chal-rumix{--c1:#4ade80;--c2:#22d3ee}
+.dr-set-rumix{background:linear-gradient(180deg,#04120c,#010604)}
+.dr-faders{inset:auto 10% 10% 10%;height:120px;
+  background:repeating-linear-gradient(90deg,rgba(74,222,128,.28) 0 2px,transparent 2px 44px)}
+.dr-vu{top:12%;left:50%;width:280px;height:10px;transform:translateX(-50%);
+  background:linear-gradient(90deg,#4ade80,#FFD23F 70%,#F87171);opacity:.55}
+
+/* ── 9. LIP SYNC CHALLENGE - two spots and a hard waveform ── */
+.dr-chal-lipsync-challenge{--c1:#FF294B;--c2:#FF2D8B}
+.dr-set-lipsync-challenge{background:radial-gradient(80% 70% at 30% 0%,rgba(255,41,75,.3),transparent 64%),
+  radial-gradient(80% 70% at 70% 0%,rgba(255,45,139,.3),transparent 64%),
+  linear-gradient(180deg,#12030a,#050106)}
+.dr-lsbars{inset:auto 6% 8% 6%;height:110px;
+  background:repeating-linear-gradient(90deg,rgba(255,45,139,.55) 0 5px,transparent 5px 15px);
+  mask-image:linear-gradient(90deg,transparent,#000 20%,#000 80%,transparent)}
+
+/* ── 10. ROAST - brick, one hard spot, a mic stand ── */
+.dr-chal-roast{--c1:#fb923c;--c2:#FFD23F}
+.dr-set-roast{background:linear-gradient(180deg,#0d0705,#050202)}
+.dr-micstand{inset:auto 50% 0 auto;width:3px;height:34%;transform:translateX(50%);
+  background:linear-gradient(180deg,rgba(255,255,255,.3),transparent)}
+
+/* ── 11. STAND-UP - a basement room and a red neon sign ── */
+.dr-chal-stand-up{--c1:#F87171;--c2:#fb923c}
+.dr-set-stand-up{background:radial-gradient(70% 50% at 50% 10%,rgba(248,113,113,.22),transparent 70%),
+  linear-gradient(180deg,#0a0406,#030102)}
+.dr-neon{top:9%;left:50%;width:150px;height:36px;transform:translateX(-50%);
+  border:2px solid rgba(248,113,113,.85);border-radius:6px;
+  box-shadow:0 0 30px rgba(248,113,113,.65),0 0 60px rgba(248,113,113,.3) inset;
+  animation:drBuzz 5s steps(1) infinite}
+@keyframes drBuzz{0%,92%,100%{opacity:1}94%{opacity:.35}96%{opacity:1}97%{opacity:.5}}
+.dr-stool{inset:auto 50% 4% auto;width:56px;height:8px;transform:translateX(50%);
+  background:rgba(255,255,255,.14);border-radius:3px}
+
+/* ── 12. IMPROV - suggestion cards pinned on a wall ── */
+.dr-chal-improv{--c1:#2dd4bf;--c2:#FFD23F}
+.dr-set-improv{background:radial-gradient(100% 60% at 50% 0%,rgba(45,212,191,.22),transparent 66%),
+  linear-gradient(180deg,#04100f,#020706)}
+.dr-cards{inset:0;opacity:.5;background:
+  linear-gradient(4deg,transparent 47%,rgba(255,255,255,.09) 47% 53%,transparent 53%),
+  linear-gradient(-7deg,transparent 62%,rgba(255,255,255,.07) 62% 67%,transparent 67%)}
+.dr-chairs{inset:auto 0 6% 0;height:44px;background:repeating-linear-gradient(90deg,
+  transparent 0 40%,rgba(255,255,255,.12) 40% 44%,transparent 44% 100%)}
+
+/* ── 13. DESIGN - a cutting table and pattern pieces ── */
+.dr-chal-design{--c1:#38bdf8;--c2:#FF2D8B}
+.dr-set-design{background:linear-gradient(180deg,#0a0d12,#040609)}
+.dr-mat{inset:auto 0 0 0;height:52%;opacity:.55;
+  background:repeating-linear-gradient(0deg,rgba(56,189,248,.16) 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(90deg,rgba(56,189,248,.16) 0 1px,transparent 1px 26px)}
+.dr-pattern{top:14%;left:12%;width:180px;height:150px;transform:rotate(-8deg);
+  border:1px dashed rgba(255,255,255,.26)}
+
+/* ── 14. BALL - three lit alcoves, because a ball is three looks ── */
+.dr-chal-ball{--c1:#f0abfc;--c2:#FFD23F}
+.dr-set-ball{background:radial-gradient(110% 70% at 50% 100%,rgba(255,210,63,.26),transparent 68%),
+  linear-gradient(180deg,#120a02,#060301)}
+.dr-alcoves{inset:6% 8% 18% 8%;border-bottom:1px solid rgba(255,210,63,.3);
+  background:repeating-linear-gradient(90deg,rgba(255,210,63,.13) 0 22%,transparent 22% 33.3%)}
+
+/* ── 15. MAKEOVER - two vanity mirrors, side by side ── */
+.dr-chal-makeover{--c1:#f472b6;--c2:#FFD23F}
+.dr-set-makeover{background:radial-gradient(90% 60% at 50% 30%,rgba(244,114,182,.24),transparent 70%),
+  linear-gradient(180deg,#140510,#070209)}
+.dr-vanity{top:14%;left:12%;right:12%;height:44%;
+  border-top:2px dotted rgba(255,233,168,.5);border-bottom:2px dotted rgba(255,233,168,.5);
+  background:repeating-linear-gradient(90deg,transparent 0 44%,rgba(255,255,255,.05) 44% 56%,transparent 56%)}
+
+/* ── 16. RUNWAY CHALLENGE - a catwalk in perspective ── */
+.dr-chal-runway-challenge{--c1:#5eead4;--c2:#f0abfc}
+.dr-set-runway-challenge{background:linear-gradient(180deg,#0c0413,#040108)}
+.dr-catwalk{inset:auto 0 0 0;height:56%;
+  background:linear-gradient(180deg,transparent,rgba(240,171,252,.16));
+  clip-path:polygon(38% 0,62% 0,100% 100%,0 100%)}
+
+/* ── 17. CHOREOGRAPHY - marley, a barre and the mirror wall ── */
+.dr-chal-choreography{--c1:#818cf8;--c2:#f472b6}
+.dr-set-choreography{background:linear-gradient(180deg,#06111a,#02060a)}
+.dr-barre{top:44%;left:0;right:0;height:4px;background:rgba(255,255,255,.22)}
+.dr-mirrorwall{top:8%;left:6%;right:6%;height:34%;opacity:.5;
+  border:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(110deg,rgba(255,255,255,.08),transparent 45%,rgba(255,255,255,.05))}
+
+/* ── 18. GIRL GROUP - risers and a row of mic stands ── */
+.dr-chal-girl-group{--c1:#c084fc;--c2:#22d3ee}
+.dr-set-girl-group{background:radial-gradient(110% 60% at 50% 0%,rgba(34,211,238,.24),transparent 64%),
+  linear-gradient(180deg,#0a0616,#040209)}
+.dr-risers{inset:auto 0 0 0;height:34%;background:
+  linear-gradient(180deg,transparent,rgba(0,0,0,.55)),
+  repeating-linear-gradient(90deg,rgba(244,114,182,.14) 0 90px,transparent 90px 96px)}
+.dr-mics{inset:auto 12% 22% 12%;height:90px;background:repeating-linear-gradient(90deg,
+  transparent 0 46px,rgba(255,255,255,.22) 46px 48px,transparent 48px 120px)}
+
+/* ── 19. ACTING - a soundstage, a flag and the boom ── */
+.dr-chal-acting{--c1:#94a3b8;--c2:#FFD23F}
+.dr-set-acting{background:radial-gradient(110% 70% at 30% 0%,rgba(255,233,168,.24),transparent 60%),
+  linear-gradient(180deg,#100a04,#050302)}
+
+@media(prefers-reduced-motion:reduce){
+  .dr-strobe,.dr-neon{animation:none}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AND ONE CARD PER CHALLENGE
+   ══════════════════════════════════════════════════════════════════
+   The room alone was not enough. Every challenge still put its queens on
+   the identical panel, so the screens differed only in what was behind
+   them. Each challenge now stamps its own object on the card: the thing
+   that challenge physically produces. Drawn with ::before on the panel, so
+   nothing in the markup changes and every card keeps its reveal id.
+   Bounded, quiet, and never over the text. */
+
+.dr-chal .dr-panel{position:relative;overflow:hidden}
+.dr-chal .dr-panel::before{content:"";position:absolute;pointer-events:none;opacity:.5}
+
+/* A game show podium, under her. */
+.dr-chal-snatch-game .dr-panel::before{left:0;right:0;bottom:0;height:5px;
+  background:repeating-linear-gradient(90deg,var(--c1) 0 26px,transparent 26px 44px)}
+/* Colour bars down the edge of a tape. */
+.dr-chal-commercial .dr-panel::before{top:0;bottom:0;right:0;width:7px;
+  background:linear-gradient(180deg,#c0c000,#00c0c0,#00c000,#c000c0,#c00000)}
+/* Film sprockets. */
+.dr-chal-music-video .dr-panel::before{top:0;bottom:0;right:0;width:14px;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.5) 0 6px,transparent 6px 18px)}
+/* A contact-sheet frame notch. */
+.dr-chal-photoshoot .dr-panel::before{top:6px;right:8px;width:34px;height:22px;
+  border:2px solid rgba(255,255,255,.5);border-radius:2px}
+/* A stave running under the card. */
+.dr-chal-rusical .dr-panel::before{left:0;right:0;bottom:4px;height:20px;
+  background:repeating-linear-gradient(180deg,var(--c1) 0 1px,transparent 1px 5px);opacity:.28}
+/* Marquee bulbs across the top. */
+.dr-chal-talent-show .dr-panel::before{left:0;right:0;top:0;height:6px;
+  background:repeating-radial-gradient(circle at 6px 3px,var(--c1) 0 2px,transparent 2px 14px)}
+/* A single hanging mic cable. */
+.dr-chal-singing .dr-panel::before{top:0;right:34px;width:2px;height:30px;background:var(--c1)}
+/* A fader travelling the width of the card. */
+.dr-chal-rumix .dr-panel::before{left:0;right:0;bottom:0;height:3px;
+  background:linear-gradient(90deg,var(--c1),var(--c2))}
+/* A hard waveform strip. */
+.dr-chal-lipsync-challenge .dr-panel::before{left:0;right:0;bottom:0;height:8px;
+  background:repeating-linear-gradient(90deg,var(--c1) 0 3px,transparent 3px 9px)}
+/* Brick, in the corner. */
+.dr-chal-roast .dr-panel::before{left:0;top:0;bottom:0;width:16px;opacity:.35;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.3) 0 1px,transparent 1px 12px)}
+/* A neon underline that buzzes on. */
+.dr-chal-stand-up .dr-panel::before{left:14px;bottom:6px;width:56px;height:2px;
+  background:var(--c1);box-shadow:0 0 12px var(--c1)}
+/* A pinned suggestion card, cornered. */
+.dr-chal-improv .dr-panel::before{top:-10px;right:16px;width:26px;height:26px;
+  transform:rotate(12deg);border:1px solid rgba(255,255,255,.45);
+  background:rgba(255,255,255,.07)}
+/* Cutting-mat grid, bottom corner. */
+.dr-chal-design .dr-panel::before{right:0;bottom:0;width:64px;height:44px;opacity:.3;
+  background:repeating-linear-gradient(0deg,var(--c1) 0 1px,transparent 1px 11px),
+    repeating-linear-gradient(90deg,var(--c1) 0 1px,transparent 1px 11px)}
+/* Three alcoves, because a ball is three looks. */
+.dr-chal-ball .dr-panel::before{left:0;right:0;top:0;height:3px;
+  background:repeating-linear-gradient(90deg,var(--c1) 0 30%,transparent 30% 33.33%)}
+/* Two mirrors, because a makeover is two people. */
+.dr-chal-makeover .dr-panel::before{top:8px;right:10px;width:44px;height:20px;
+  border-left:2px solid var(--c1);border-right:2px solid var(--c1);opacity:.7}
+/* The catwalk, in perspective. */
+.dr-chal-runway-challenge .dr-panel::before{left:50%;bottom:0;width:120px;height:4px;
+  transform:translateX(-50%);background:linear-gradient(90deg,transparent,var(--c1),transparent)}
+/* An eight-count ruler. */
+.dr-chal-choreography .dr-panel::before{left:0;right:0;bottom:0;height:4px;
+  background:repeating-linear-gradient(90deg,var(--c1) 0 2px,transparent 2px 12.5%)}
+/* Risers, stepped. */
+.dr-chal-girl-group .dr-panel::before{right:0;bottom:0;width:54px;height:18px;
+  background:linear-gradient(90deg,var(--c1) 0 33%,transparent 33%),
+    linear-gradient(180deg,transparent 50%,var(--c2) 50%);opacity:.5}
+/* A clapperboard, because acting is takes. */
+.dr-chal-acting .dr-panel::before{left:0;right:0;top:0;height:9px;
+  background:repeating-linear-gradient(115deg,var(--c1) 0 12px,#111 12px 24px)}
+
+/* WHAT ONE MARK MEANS, said once per card. The marks were anonymous bars on
+   every challenge that detailFor does not label — a row of numbers with no
+   noun. The engine has always known they were rounds, looks, bits. */
+.dr-chal .dr-unit{display:block;margin-top:2px;font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.55}
+
 .dr-perf-line{grid-column:1/-1;margin:9px 0 0;color:#f4e3ed;line-height:1.6;
   max-width:74ch;text-wrap:pretty}
 .dr-track{margin-top:10px;color:#FFC83D;font-size:13px;line-height:1.5}
@@ -202,13 +477,8 @@ const CHAL_CSS = `
 /* THE CARDS BELONG TO THEIR ROOM. Each family sets the accent its own left
    rail and score take, so a Snatch Game card is not a Rusical card in a
    different building. */
-.dr-fam-studio{--dr-fam:#38bdf8}
-.dr-fam-stage{--dr-fam:#FFC83D}
-.dr-fam-club{--dr-fam:#FF7A3D}
-.dr-fam-atelier{--dr-fam:#FF3D9A}
-.dr-fam-floor{--dr-fam:#3BE08A}
-.dr-fam-set{--dr-fam:#C4B5FD}
-.dr-fam .dr-panel{border-left-color:var(--dr-fam,#7a3a5e)}
+/* The six family accents are gone: the palette is per challenge now and
+   lives on .dr-chal-<id> with that challenge's room. */
 .dr-fam .dr-perf-line{border-left:0}
 
 @media(prefers-reduced-motion:reduce){
@@ -837,37 +1107,75 @@ export function rpBuildPrep(row) {
    Each world sets its own accent and its own ambient layer. The ambient is
    CSS, not an image: a tally light and scanlines for a studio, footlights
    and a curtain for a stage, a brick wall and a lit mic for a club. */
-const FAMILY = {
-  'snatch-game': 'studio', commercial: 'studio', 'music-video': 'studio',
-  photoshoot: 'studio',
-  rusical: 'stage', 'talent-show': 'stage', singing: 'stage', rumix: 'stage',
-  'lipsync-challenge': 'stage',
-  roast: 'club', 'stand-up': 'club', improv: 'club',
-  design: 'atelier', ball: 'atelier', makeover: 'atelier',
-  'runway-challenge': 'atelier',
-  choreography: 'floor', 'girl-group': 'floor',
-  acting: 'set',
+/**
+ * ── ONE SKIN PER CHALLENGE ──
+ *
+ * Was a table of six FAMILIES: nineteen challenges mapped onto six backdrops,
+ * so four different nights shared the studio and five shared the stage. With
+ * one card shape underneath, a Snatch Game and a Ball came out as the same
+ * screen in a different colour — which is exactly what they looked like.
+ *
+ * Each entry is the room that challenge happens in:
+ *   props   the scenery, drawn in CSS, no images and no emoji
+ *   sub     what the screen is called under the title, in that room's words
+ *   unit    what one mark on the card MEANS here, so the marks stop being
+ *           anonymous bars: rounds in a game show, looks at a ball, bits in
+ *           a roast. The engine has always known; the card never said.
+ *
+ * The palette lives in CSS beside the room, on .dr-chal-<id>.
+ */
+const SKIN = {
+  'snatch-game': { props: '<i class="dr-podia"></i><i class="dr-qcard"></i>',
+    sub: 'and the answer is', unit: 'round' },
+  commercial: { props: '<i class="dr-bars"></i><i class="dr-onair"></i>',
+    sub: 'we are rolling', unit: 'take' },
+  'music-video': { props: '<i class="dr-sprock-l"></i><i class="dr-sprock-r"></i><i class="dr-dolly"></i>',
+    sub: 'playback, from the top', unit: 'setup' },
+  photoshoot: { props: '<i class="dr-contact"></i><i class="dr-strobe"></i>',
+    sub: 'give me something', unit: 'frame' },
+  rusical: { props: '<i class="dr-arch"></i><i class="dr-staff"></i>',
+    sub: 'places, please', unit: 'number' },
+  'talent-show': { props: '<i class="dr-stardrop"></i><i class="dr-marquee"></i>',
+    sub: 'next on the bill', unit: 'act' },
+  singing: { props: '<i class="dr-halo"></i><i class="dr-wave"></i>',
+    sub: 'live vocals', unit: 'verse' },
+  rumix: { props: '<i class="dr-vu"></i><i class="dr-faders"></i>',
+    sub: 'in the booth', unit: 'bar' },
+  'lipsync-challenge': { props: '<i class="dr-lsbars"></i>',
+    sub: 'to the track', unit: 'section' },
+  roast: { props: '<i class="dr-brick"></i><i class="dr-clubspot"></i><i class="dr-micstand"></i>',
+    sub: 'the room goes quiet', unit: 'bit' },
+  'stand-up': { props: '<i class="dr-neon"></i><i class="dr-stool"></i>',
+    sub: 'five minutes, no net', unit: 'bit' },
+  improv: { props: '<i class="dr-cards"></i><i class="dr-chairs"></i>',
+    sub: 'nothing is written', unit: 'scene' },
+  design: { props: '<i class="dr-mat"></i><i class="dr-pattern"></i>',
+    sub: 'the machines are running', unit: 'piece' },
+  ball: { props: '<i class="dr-alcoves"></i>',
+    sub: 'three looks, one queen', unit: 'look' },
+  makeover: { props: '<i class="dr-vanity"></i>',
+    sub: 'two of you now', unit: 'read' },
+  'runway-challenge': { props: '<i class="dr-catwalk"></i>',
+    sub: 'the walk is the challenge', unit: 'pass' },
+  choreography: { props: '<i class="dr-mirrorwall"></i><i class="dr-barre"></i><i class="dr-marley"></i>',
+    sub: 'from the top, five six seven eight', unit: 'eight' },
+  'girl-group': { props: '<i class="dr-risers"></i><i class="dr-mics"></i>',
+    sub: 'one track, everybody on it', unit: 'verse' },
+  acting: { props: '<i class="dr-flag"></i><i class="dr-boom"></i>',
+    sub: 'quiet on set', unit: 'scene' },
 };
-const familyOf = id => FAMILY[id] || 'stage';
+
+/* A challenge with no skin of its own still gets a room rather than a blank
+   gradient — but it is a fallback, not a family, and adding a challenge
+   without adding its room is a thing the test below will say out loud. */
+const DEFAULT_SKIN = { props: '<i class="dr-curtain dr-l"></i><i class="dr-curtain dr-r"></i><i class="dr-foots"></i>',
+  sub: 'places, please', unit: 'round' };
+
+export const skinFor = id => SKIN[id] || DEFAULT_SKIN;
+export const SKIN_IDS = Object.keys(SKIN);
 
 /** The room, drawn in CSS. No images, no emoji. */
-const ambientFor = fam => {
-  const inner = {
-    studio: '<i class="dr-tally"></i><i class="dr-scan"></i>',
-    stage: '<i class="dr-curtain dr-l"></i><i class="dr-curtain dr-r"></i><i class="dr-foots"></i>',
-    club: '<i class="dr-brick"></i><i class="dr-clubspot"></i>',
-    atelier: '<i class="dr-cutting"></i><i class="dr-bolt-a"></i><i class="dr-bolt-b"></i>',
-    floor: '<i class="dr-marley"></i><i class="dr-mirror"></i>',
-    set: '<i class="dr-flag"></i><i class="dr-boom"></i>',
-  }[fam] || '';
-  return `<div class="dr-set dr-set-${fam}">${inner}</div>`;
-};
-
-const FAMILY_SUB = {
-  studio: 'tape rolls', stage: 'places, please', club: 'the room goes quiet',
-  atelier: 'the machines are running', floor: 'from the top',
-  set: 'quiet on set',
-};
+const ambientFor = id => `<div class="dr-set dr-set-${id}">${skinFor(id).props}</div>`;
 
 export function rpBuildMaxi(row) {
   const ep = epOf(row);
@@ -965,10 +1273,10 @@ export function rpBuildMaxi(row) {
         </div>`).join('')}`);
   }
 
-  const fam = familyOf(ch.id);
+  const skin = skinFor(ch.id);
   return `<style>${CHAL_CSS}</style>${_shell(
-    `<div class="dr-fam dr-fam-${fam}">${ambientFor(fam)}${teams}${steps}${room}</div>`, ep, {
-      phase: 'stage', title: ch.name, subtitle: FAMILY_SUB[fam] || 'tape rolls',
+    `<div class="dr-fam dr-chal dr-chal-${ch.id}">${ambientFor(ch.id)}${teams}${steps}${room}</div>`, ep, {
+      phase: 'stage', title: ch.name, subtitle: skin.sub,
       sidebar: _seedRail(sfx, '<h4 class="dr-disp">So far</h4>'),
     })}${_controls(sfx, running.length, ep.num)}`;
 }

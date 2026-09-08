@@ -558,7 +558,12 @@ export const UNTUCKED_EVENTS = [
       + 'job and the alternative is talking about what just happened.',
     when: f => f.lastCall === 'BTM2' || f.lastCall === 'LOW',
     effects: { pop: { a: 1 }, state: 'unspoken' },
-    lines: [],
+    lines: [
+      "{a} walks through the door and does not sit down. She goes straight to the mirror and starts blending under her eye like there is a crisis happening there, and there is not — the crisis is everywhere else and {a} is choosing foundation over feelings because her hands need something to do that is not shaking.",
+      "Everybody finds the couch and {a} finds the mirror. She picks up a brush and starts fixing her contour, which was fine, because if she sits down somebody is going to ask her how she is feeling and the answer to that is a sound, not a sentence. The brush moves in circles and the room lets her have it.",
+      "{a} is at the mirror before the door closes behind her, already wiping at a brow that does not need wiping, already touching up a highlight that was set three hours ago. The other queens pour drinks and settle in and {a} keeps her back to the room because turning around means making eye contact and eye contact means talking about it.",
+      "The first thing {a} does is pick up a sponge and dab at nothing. Her mug is perfect and everybody knows it and she knows they know, but the mirror is the one place she can look without seeing somebody who wants to ask her what happened out there. She blends for four straight minutes and nobody interrupts.",
+    ],
   }),
   ev({
     id: 'pouring-for-everybody', phase: 'arrival', cast: 'group', weight: 1.4,
@@ -567,7 +572,12 @@ export const UNTUCKED_EVENTS = [
       + 'not sitting down yet, and the room takes it as kindness.',
     when: f => f.groupSize >= 3,
     effects: { bond: 1, pop: { a: 1 }, state: 'host-of-the-room' },
-    lines: [],
+    lines: [
+      "{a} pours for {b} first and then for {c} and then for herself last, which is the order of someone who was raised right or someone who is not ready to sit down, and the room reads it as generosity because generosity is the kinder interpretation. {b} takes the glass and says thank you and {c} takes the glass and says nothing, which is also a thank you.",
+      "\"What do you want.\" {a} is already at the bottles before {b} and {c} have decided where to sit. She pours three drinks and carries two of them across the room with the balance of someone who has tended bar in heels, and the pouring is the first kind thing that happens backstage and {a} did it without being asked.",
+      "{a} grabs three glasses and starts pouring before anybody asks because somebody has to do it and {a} would rather be the queen pouring than the queen sitting down and thinking about what just happened out there. {b} gets hers first, {c} gets hers second, and {a} finally sits down with her own and the sitting down is the hard part.",
+      "The drinks appear because {a} made them — {b}'s with extra ice the way {b} takes it, {c}'s neat, her own last and largest — and the making of them bought {a} three minutes of not having to talk about the stage. She hands them out and finally sits and the room is a little softer for having something to hold.",
+    ],
   }),
   ev({
     id: 'nobody-says-it', phase: 'arrival', cast: 'group', weight: 1.3,
@@ -576,7 +586,12 @@ export const UNTUCKED_EVENTS = [
       + 'runway instead, and the avoidance is louder than the subject.',
     when: f => f.groupSize >= 3 && (f.inBottom || f.bInBottom),
     effects: { bond: 0.5, pop: { a: 1 }, state: 'avoidance' },
-    lines: [],
+    lines: [
+      "Everybody knows who is in trouble and nobody says it. {a} brings up the runway and {b} agrees the runway was strong and {c} says something about fabric choices, and the three of them build a conversation out of everything except the thing they are actually thinking about, and the gap where the real topic should be has its own weight in the room.",
+      "{a} says \"those looks tonight\" and {b} says \"right?\" and {c} says something about a silhouette, and the three of them are talking about clothes like nobody on that stage just got dragged by three judges in a row. The avoidance is collaborative — all three of them are building the same wall around the same subject and nobody acknowledges the wall.",
+      "\"Can we talk about the fabric {c} used?\" {a} says it and the room latches on because the alternative is talking about who is going home, and talking about who is going home means looking at the person who might be going home, and nobody is ready to do that yet. {b} agrees the fabric was gorgeous. {c} accepts the compliment. The real conversation waits.",
+      "{a} and {b} and {c} are sitting in a circle discussing hemlines like hemlines are the most important thing in the world, and all three of them know hemlines are not the most important thing in the world, and the not-saying is a kindness that is also a cowardice and nobody can tell where one ends and the other starts.",
+    ],
   }),
   ev({
     id: 'still-in-the-wig', phase: 'arrival', cast: 'solo', weight: 1.1,
@@ -585,7 +600,12 @@ export const UNTUCKED_EVENTS = [
       + 'be admitting the night is over and she did not win it.',
     when: f => f.lastCall === 'HIGH' || f.lastCall === 'WIN',
     effects: { pop: { a: 1 }, state: 'holding-on' },
-    lines: [],
+    lines: [
+      "Everybody else has kicked off the heels and {a} is still fully beat, still in the wig, still sitting upright like she is about to walk a second runway. Taking any of it off would mean the night is over and she does not want the night to be over because she won it, or nearly won it, and the drag is the proof.",
+      "{a} has not taken off a single thing. The corset is still cinched, the lashes are still on, the wig is still pinned, and the other queens are in robes and slides and {a} is sitting there in full regalia like a painting that refuses to come off the wall. Somebody asks if she wants to change and she says \"I am fine\" and she means it differently than they think.",
+      "The shoes are still on and {a} is the only queen in the room who has not unzipped anything. She is holding onto the look the way you hold onto a good night — tightly, past the point where it is comfortable — because the moment she starts taking it apart the moment is over and {a} is not ready for the moment to be over.",
+      "Every queen in the room has pulled a wig off except {a}, who is sitting cross-legged on the couch still in full drag like she is being photographed right now. The holding on is the tell — the queens who had the best night are always the last to let go of it, and {a} had a good night and is wearing it like armour she does not want to remove.",
+    ],
   }),
 
   // ── middle: where it goes wrong ──
@@ -596,7 +616,12 @@ export const UNTUCKED_EVENTS = [
       + 'a disagreement any more, it is a side.',
     when: f => f.groupSize >= 3 && f.tension,
     effects: { bond: -2, pop: { a: -1, b: -1 }, state: 'pile-on' },
-    lines: [],
+    lines: [
+      "{a} says it to {b} and it might have stayed between them except {c} says \"she is right though\" out loud, and the out-loud is what changes it. A disagreement is two people and a side is three and the moment {c}'s voice arrived {b} could feel the room shift — not a conversation any more, a verdict.",
+      "\"I have been thinking that too.\" {c} says it and {a} turns to {c} and nods and {b} watches the nod happen and the nod is the thing — the moment two queens agree in front of you about you, you are not in an argument, you are in a minority. {b} sits back and the sitting back is not agreement, it is retreat.",
+      "{a} makes the point and {b} opens her mouth to answer and {c} cuts in with \"honestly\" — and everything after \"honestly\" is {c} agreeing with {a}, and {b} closes her mouth because the math just changed. One voice against hers was a fight. Two voices against hers is a room.",
+      "It was between {a} and {b} until {c} leaned forward and said \"no, she has a point\" and then it was not between {a} and {b} any more. {b} looks at {c} with the face of someone who just learned something about where {c} stands, and {c} does not look away, which is brave, and {b} picks up her drink, which is all she can do.",
+    ],
   }),
   ev({
     id: 'laughed-at-the-wrong-time', phase: 'middle', cast: 'group', weight: 1.2,
@@ -604,7 +629,12 @@ export const UNTUCKED_EVENTS = [
       + 'and now {c} is in it, and {c} did not say a word.',
     when: f => f.groupSize >= 3,
     effects: { bond: -1, pop: { c: -1 }, state: 'wrong-laugh' },
-    lines: [],
+    lines: [
+      "{a} is talking and {b} is telling her side of it and {c} laughs — not a big laugh, just a noise, a breath through the nose — and {b} stops talking and looks at {c} and {c}'s face says she knows it landed wrong. She did not say a word and she is now in the middle of something she was watching from the couch.",
+      "The laugh comes from {c} and it comes at the wrong second — right when {b} is saying the thing that mattered most — and the room hears it and {b} hears it and {a} hears it and {c} immediately tries to turn it into a cough, which makes it worse. {c} was not even in this and now she is, and she got there by making one sound.",
+      "{c} snorts during {b}'s sentence and the snort hangs in the air like a flare. {a} looks at {c}. {b} looks at {c}. {c} looks at the floor. Nobody asked {c} for an opinion and the laugh was louder than any opinion she could have given, and the problem with a laugh at the wrong time is that you cannot take it back — it already happened and everyone already heard what it meant.",
+      "It is not funny and {c} laughs anyway — a short sharp thing that escapes before she can catch it — and {b} turns her whole body toward {c} and says \"what is funny\" in a voice that is not actually asking what is funny. {a} watches this happen and does not intervene because {c} put herself there and {c} is going to have to get herself out.",
+    ],
   }),
   ev({
     id: 'holding-the-room', phase: 'middle', cast: 'group', weight: 1.2,
@@ -613,7 +643,12 @@ export const UNTUCKED_EVENTS = [
       + '{b} and {c} are laughing properly for the first time all week.',
     when: f => f.groupSize >= 3,
     effects: { bond: 1.5, pop: { a: 2 }, state: 'room-is-hers' },
-    lines: [],
+    lines: [
+      "{a} starts telling the story and by the second sentence {b} is leaning forward and {c} has stopped checking her phone and the room belongs to {a} now — fully, completely, the way a room belongs to a person who knows how to hold it. She does the voice, she does the face, she lands the punchline, and the laughter is real and loud and the first honest laughter anybody has had all week.",
+      "\"Okay wait, wait, wait — \" {a} starts again from the top with the hand gestures and {b} is already crying laughing and {c} has her head on the armrest wheezing, and {a} has not even reached the good part yet. She is doing an impression of somebody none of them have met and it is so specific and so accurate that the room forgets they are on a show for three minutes.",
+      "{a} has the floor and she is not giving it back. The story is about something that happened in the hotel and the telling of it is better than the thing itself — every beat lands, every pause earns a scream, {b} is doubled over and {c} is clapping with her hands over her mouth, and {a} rides it like a set at a club because she has done sets at clubs and this is the same muscle.",
+      "Nobody asked {a} to perform but she is performing — standing up, using the whole couch as a stage, telling a story that has four acts and a twist ending — and {b} laughs so hard she spills her drink and {c} says \"stop, STOP\" but does not mean stop. {a} keeps going because the room is lighter than it has been in days and she is the reason and she knows it.",
+    ],
   }),
   ev({
     id: 'that-is-not-what-i-said', phase: 'middle', cast: 'pair', weight: 1.3,
@@ -621,7 +656,12 @@ export const UNTUCKED_EVENTS = [
       + 'the gap between the two versions is where the whole argument lives.',
     when: f => f.tension || f.namedOnStage,
     effects: { bond: -1.5, pop: { a: -1 }, state: 'misquoted' },
-    lines: [],
+    lines: [
+      "\"You said you did not care.\" {b} says it back to {a} and {a}'s face changes because that is not what {a} said — what {a} said was closer to \"I am not worried about it\" which is a completely different sentence, and the distance between the two sentences is where the whole argument is going to live for the next forty minutes.",
+      "{b} repeats {a}'s words back and gets them wrong — not wildly wrong, wrong by one shade, the shade that changes the meaning — and {a} says \"that is not what I said\" and {b} says \"that is exactly what you said\" and neither of them is lying, exactly, but one of them is remembering a sentence that did not happen and the other one knows which.",
+      "\"What I SAID was — \" {a} starts over because the version {b} just told the room is not the version {a} remembers and the gap between the two is small enough to be an accident and large enough to change whose fault it is. {b} looks certain. {a} looks certain. One of them is wrong and neither of them is going to be the one who admits it.",
+      "{b} paraphrases and the paraphrase is a rewrite — {a}'s \"I did not love it\" becomes {b}'s \"she hated it\" — and {a} opens her hands and says \"those are two different things\" and {b} says \"girl, same thing\" and it is NOT the same thing and {a} knows it and the room is about to find out how much that difference matters to her.",
+    ],
   }),
   ev({
     id: 'apology-not-accepted', phase: 'middle', cast: 'pair', weight: 1.1,
@@ -629,7 +669,12 @@ export const UNTUCKED_EVENTS = [
       + 'does not take it, and the room watches an apology sit there.',
     when: f => f.bond <= -2,
     effects: { bond: -1, pop: { b: -1 }, state: 'refused' },
-    lines: [],
+    lines: [
+      "{a} says she is sorry and means it — the voice is right, the eyes are right, the whole body says sorry — and {b} looks at her and says \"okay\" in a tone that is not okay, and the apology sits on the floor between them like something nobody picks up. {b} is not being cruel. {b} is just not ready, and not-ready looks a lot like no.",
+      "\"I want to apologise for what I said.\" {a} delivers it and {b} nods once and says \"I heard you\" and that is it — no hug, no \"it is fine,\" no reset. {a} stands there holding the apology she just gave and {b} takes a sip of her drink and the sip is the answer. The room watches an apology get received and not accepted and nobody knows where to look.",
+      "{a} reaches out and {b} does not reach back. The sorry is real and {b} can see it is real and still does not take it, not because she is petty but because sorry does not undo the thing and {b} is not going to pretend it does. {a} sits back down and the distance between them is the same distance it was before the apology, and {a} can feel it.",
+      "The apology comes and {b} says \"thank you for saying that\" which is the polite version of no. {a} hears the \"thank you\" and hears the full stop after it and knows the door she just knocked on did not open. {b} is not punishing her. {b} is just telling the truth, which is that sorry is a word and the word is not enough yet.",
+    ],
   }),
   ev({
     id: 'defended-by-somebody', phase: 'middle', cast: 'group', weight: 1.3,
@@ -638,7 +683,12 @@ export const UNTUCKED_EVENTS = [
       + 'costs {c} something with {a}.',
     when: f => f.groupSize >= 3 && f.tension,
     effects: { bond: 1.5, pop: { c: 2 }, state: 'defended' },
-    lines: [],
+    lines: [
+      "{a} is going after {b} and {c} — who was not in it, had no dog in it, was sitting on the other couch with a drink — leans forward and says \"that is not fair.\" Three words and the room changes direction. {a} looks at {c} with surprise because {c} was not supposed to be in this, and {b} looks at {c} with something closer to gratitude than anything else that has happened all night.",
+      "Nobody asked {c} to say anything and {c} says it anyway — \"leave her alone\" — and {a} turns because a new voice means a new front and {c} is now standing in one she did not have to stand in. {b} goes quiet because somebody just took her side without being asked and the taking-her-side costs {c} something with {a} and {c} knows it costs her and says it anyway.",
+      "{c} was watching from the edge of the couch and {a} was pressing {b} and {c} finally says \"she already said she is sorry, what more do you want\" and the room goes still. {a} did not expect a third voice. {b} did not expect a defender. {c} did not expect to be in this but she is in it now and the being-in-it changes {a}'s math.",
+      "\"I am going to say something.\" {c} says it like a warning and then says the thing, which is that {a} is wrong about {b} and that somebody needed to say it and it might as well be her. {a} takes it badly because taking it well would mean agreeing, and {b} takes it with the quiet relief of a queen who was drowning and just got a hand from someone she did not think was watching.",
+    ],
   }),
   ev({
     id: 'reading-the-room-wrong', phase: 'middle', cast: 'solo', weight: 1.1,
@@ -646,7 +696,12 @@ export const UNTUCKED_EVENTS = [
       + 'lands in total silence. She hears it land. There is no way back.',
     when: f => f.canScheme,
     effects: { pop: { a: -2 }, state: 'misjudged' },
-    lines: [],
+    lines: [
+      "{a} makes the joke about the queen who is about to lip sync and the joke lands in silence — total, airless, the kind of silence where you can hear the ice in someone's glass. {a} hears it land and her face does the thing where the smile stays but the eyes realise. There is no recovering from a joke that the room decided was not funny.",
+      "\"Well, at least she will get to perform twice tonight.\" {a} says it and nobody laughs. Not a single sound. The room gives her the quiet that means you went too far and {a} can feel the too-far in her chest and tries to laugh at her own joke and the self-laugh makes it worse because now she is laughing alone in a room full of people who decided not to.",
+      "{a} goes for the read and misses — the timing is wrong, the target is wrong, the room is not in the mood for it — and the silence after the punchline is the loudest thing that has happened all night. {a} picks up her glass and drinks from it because the alternative is standing in the silence she built and the silence is unbearable.",
+      "The joke leaves {a}'s mouth and dies on arrival. The room does not laugh and does not pretend to laugh and {a} can feel the not-pretending, which is worse than being told it was not funny because at least being told gives you a response. The nothing is the response, and the nothing says everything, and {a} takes a long sip and does not try again.",
+    ],
   }),
   ev({
     id: 'the-monitor', phase: 'middle', cast: 'group', weight: 1.4,
@@ -655,7 +710,12 @@ export const UNTUCKED_EVENTS = [
       + 'all three of them have stopped talking.',
     when: f => f.groupSize >= 3,
     effects: { bond: 0.5, pop: { a: 1 }, state: 'listening' },
-    lines: [],
+    lines: [
+      "The screen is on and none of them are watching it and all of them are listening. {a} faces the wall. {b} faces the couch. {c} faces the ceiling. Every one of them has stopped talking at the same time and the stopped-talking is its own confession because if they were not listening they would still be having a conversation and they are not.",
+      "{a} picks up a magazine and is not reading it. {b} examines her nails. {c} refills a drink that was already full. The panel is audible through the monitor and all three of them can hear names being said and none of them will admit to hearing names being said, and the pretending-not-to-listen is a group activity that requires total commitment from everyone in the room.",
+      "Somebody's name comes through the monitor and {a} flinches and pretends the flinch was a stretch. {b} crosses her legs the other way. {c} puts her glass down gently. None of them look at the screen and all of them know what is being said on the screen and the knowing is written on every face in the room for anyone who bothered to look.",
+      "The room goes quiet at exactly the same second, which is the second the judges' voices become audible from the monitor, and {a} and {b} and {c} all develop a sudden interest in things that are not the monitor — a hangnail, a stain on the couch, the label on a bottle — and the performance of not-listening is so coordinated it might as well be listening.",
+    ],
   }),
   ev({
     id: 'called-out-for-the-edit', phase: 'middle', cast: 'pair', weight: 1.0,
@@ -663,7 +723,12 @@ export const UNTUCKED_EVENTS = [
       + 'the rudest thing you can say in this room, because everybody is.',
     when: f => f.canScheme && f.bond <= 1,
     effects: { bond: -1.5, pop: { a: -1 }, state: 'accused-of-editing' },
-    lines: [],
+    lines: [
+      "\"You are performing right now.\" {b} says it to {a} and the room goes quiet because that is the one thing you are not supposed to say out loud — everybody in this room is performing, all the time, and naming it is the rudest thing you can do. {a}'s face drops because being called out for the edit means {b} sees through the version of {a} that {a} built for the camera.",
+      "{b} looks at {a} and says \"that was for the camera and we both know it\" and {a}'s whole body stiffens because {b} just said the unsayable. Every queen in this room is giving a performance and the contract is that nobody admits it, and {b} just tore the contract up in front of everyone. {a} says \"I do not know what you are talking about\" which is its own kind of performance.",
+      "\"Girl, you are doing a confessional right now and we are not in the booth.\" {b} says it and {a} goes red — or would if the foundation allowed it — because the accusation is that the crying or the monologue or the reaction was not real, it was content, and the worst part is that {a} cannot deny it without it sounding like more content.",
+      "{b} tells {a} she is playing it up and the telling is brutal because it is true and true is the hardest thing to defend against. {a} was giving a moment and {b} saw the giving and named it and naming it makes the moment worthless. {a} says \"everything I said was real\" and maybe it was, but {b} has made it impossible for the room to believe it now.",
+    ],
   }),
   ev({
     id: 'not-your-turn', phase: 'middle', cast: 'group', weight: 1.1,
@@ -671,7 +736,12 @@ export const UNTUCKED_EVENTS = [
       + 'room quietly resents {c} for taking a moment that was not hers.',
     when: f => f.groupSize >= 3 && f.inBottom,
     effects: { bond: -1, pop: { c: -2 }, state: 'stolen-moment' },
-    lines: [],
+    lines: [
+      "{a} is upset and has earned being upset and {c} starts crying louder, which is the problem — {c}'s tears are bigger and {c}'s voice is louder and suddenly the room is comforting {c} instead of {a}, and {a} sits there watching her moment walk across the room to somebody else. {b} notices. {a} says nothing. The nothing says it.",
+      "It was {a}'s turn to be held and {c} took it — not maliciously, but {c} is a louder griever and grief at volume wins the room. {a} wipes her eyes quietly while three queens surround {c} and {b} is the only one who looks at {a} and sees the thing that just happened, which is that {a}'s pain got outperformed.",
+      "{c} makes it about herself and the room lets her because {c} is louder and louder gets the attention. {a} was the one in the bottom. {a} was the one the judges spoke to. But {c} is the one sobbing on the couch and the sobbing takes up all the air and {a} is left sitting in the corner of her own story with no audience. {b} catches her eye and the catching is the only acknowledgment {a} gets.",
+      "\"I just feel SO — \" {c} launches into it and {a} watches her own moment become {c}'s moment in real time. {a} was in the bottom, {a} was shaking, {a} needed the room and the room went to {c} because {c} made noise and {a} did not. {b} stays near {a} but the nearness is not enough to undo the stealing, and the room quietly resents {c} for a taking nobody will name.",
+    ],
   }),
 
   // ── late: the walk back out ──
@@ -682,7 +752,12 @@ export const UNTUCKED_EVENTS = [
       + 'that happens all night.',
     when: f => f.inBottom,
     effects: { bond: 2, pop: { b: 2 }, state: 'held-together' },
-    lines: [],
+    lines: [
+      "{a} cannot do her own face right now — the hands are shaking or the eyes will not stop — and {b} sits down next to her and picks up a brush and starts fixing {a}'s mascara without asking. Neither of them says why. {b} blends and buffs and {a} sits still and lets herself be held together by someone else's hands, and it is the kindest thing that happens all night.",
+      "{b} sees {a} trying to fix her liner and failing and takes the pencil out of {a}'s hand gently and says \"let me\" and {a} lets her. {b} draws the line steady and clean and {a} closes her eyes and the closing is trust — trust that {b}'s hand is going to do what {a}'s hand could not, which is make her look like somebody who has not been crying for twenty minutes.",
+      "{a}'s hands are shaking and {b} notices and does not mention the shaking. She just sits down and says \"close your eyes\" and starts doing {a}'s lashes for her, one at a time, carefully, the way you do somebody's lashes when you are trying to give them a minute of not-thinking. Neither of them names what this is. It does not need a name.",
+      "\"Come here.\" {b} pulls {a} to the mirror and starts rebuilding her face — primer where the tears wrecked it, powder where the nose went red — and {a} sits in the chair and does not speak and {b} does not speak and the not-speaking is the point. The makeup is the excuse. The sitting still while somebody takes care of you is the real thing.",
+    ],
   }),
   ev({
     id: 'the-group-hug', phase: 'late', cast: 'group', weight: 1.2,
@@ -691,7 +766,12 @@ export const UNTUCKED_EVENTS = [
       + 'go first.',
     when: f => f.groupSize >= 3,
     effects: { bond: 2, pop: { a: 1 }, state: 'together' },
-    lines: [],
+    lines: [
+      "It is not staged. {a} stands up and {b} is already standing and {c} reaches for both of them and suddenly the three of them are holding on by the door and nobody started it and nobody is letting go first. The hug is tight and long and the tightness says everything the room could not say for the last hour — that they are scared and they are in this and they are holding each other up.",
+      "{a} and {b} and {c} end up in a knot of arms by the doorway and none of them planned it. {a}'s head is on {b}'s shoulder and {c}'s arms are around both of them and the holding on is real — not a camera moment, not a wrap-up, just three people who have been through something together standing in a circle and not letting go because letting go means walking back out there.",
+      "Somebody reaches and then somebody else reaches and then {a} and {b} and {c} are all in it — arms, foreheads, the whole thing — and the hug lasts longer than a performed hug lasts because nobody wants to be the one who breaks it. {a} squeezes and {b} squeezes back and {c} holds the outside and the three of them stand there until they are ready, which takes a while.",
+      "The hug starts without a beginning — {a} turns to {b} and {c} is already there and the three of them close the gap at the same time, and the timing is the thing that makes it real. Nobody said \"bring it in.\" Nobody opened their arms. The holding just happened because the room had been hard and the holding was the opposite of hard and all three of them needed the opposite.",
+    ],
   }),
   ev({
     id: 'unfinished-business', phase: 'late', cast: 'pair', weight: 1.2,
@@ -700,7 +780,12 @@ export const UNTUCKED_EVENTS = [
       + 'know it is going to be there tomorrow.',
     when: f => f.tension,
     effects: { bond: -1, pop: { a: -1 }, state: 'unresolved' },
-    lines: [],
+    lines: [
+      "They are called back and {a} stands up and {b} stands up and neither of them says anything on the way to the door. The thing that was between them an hour ago is still between them — same size, same shape, no smaller for having been talked about — and both of them walk out knowing it will be there tomorrow morning when the cameras turn back on.",
+      "{a} and {b} get the call and the fight is not done. The fight is exactly where they left it — mid-sentence, mid-grudge, the apology that was not offered and the apology that would not have been accepted — and {a} looks at {b} by the door and {b} does not look back, and the not-looking is the answer to every question {a} was thinking about asking.",
+      "\"We should go.\" {a} says it and {b} nods and the nod is the only thing they have agreed on in an hour. They walk to the door side by side and the side-by-side is closer than either of them wants to be to the other and the unfinished thing walks out with them like a third person neither of them invited.",
+      "{a} and {b} stand up at the same time and do not acknowledge the standing or each other. The conversation is not over — it is paused, the way you pause something you fully intend to come back to — and both of them know the pause is temporary and the stage is next and the thing will be here when they get back, unchanged and waiting.",
+    ],
   }),
   ev({
     id: 'said-out-loud-at-last', phase: 'late', cast: 'group', weight: 1.1,
@@ -709,7 +794,12 @@ export const UNTUCKED_EVENTS = [
       + 'there is no time left to do anything about it.',
     when: f => f.groupSize >= 3,
     effects: { bond: -1, pop: { a: 1 }, state: 'finally-said' },
-    lines: [],
+    lines: [
+      "On the way out {a} turns and says the thing — the thing the whole room has been circling for an hour, the thing everyone was thinking and nobody was willing to put into words — and {b} and {c} hear it and there is no time to respond because the door is open and the stage is waiting and the thing just sits there, said at last, with no resolution and no take-back.",
+      "\"Somebody had to say it.\" {a} says it at the door and the it is the real thing, the honest thing, the thing that would have changed the whole conversation if anyone had been brave enough to say it an hour ago. {b} stops walking. {c} looks at {a}. There are three seconds before they walk out and in those three seconds nobody responds because what do you say to the truth when it arrives too late.",
+      "{a} drops it on the way out like a grenade — the real opinion, the actual read, the thing the room agreed not to say — and {b} and {c} hear it hit and there is no time to pick it up. They walk out with it ringing in their ears and {a} walks out knowing she said it and the saying was brave and the timing was cowardly and both of those things are true at the same time.",
+      "The door opens and {a} says it — finally, at the worst possible moment, with no runway left for a response — and {b}'s jaw drops and {c} exhales and {a} walks through the door without looking back because looking back would mean seeing the faces and the faces would mean having a conversation and there is no time for a conversation. The said thing follows all three of them onto the stage.",
+    ],
   }),
   ev({
     id: 'she-goes-quiet', phase: 'late', cast: 'solo', weight: 1.2,
@@ -717,7 +807,12 @@ export const UNTUCKED_EVENTS = [
       + 'noticed, and the not-noticing is the part she will remember.',
     when: f => f.lastCall === 'SAFE',
     effects: { pop: { a: -1 }, state: 'overlooked' },
-    lines: [],
+    lines: [
+      "{a} has not said a word in twenty minutes and the room has not noticed because the room is busy with louder things — the fight, the crying, the queen who is telling a story — and {a} sits on the end of the couch with a drink she has not sipped and watches all of it happen without her. The not-noticing is the part she will carry home.",
+      "The room is full of voices and {a} is not one of them. She went quiet somewhere between the second fight and the third drink and nobody registered the going-quiet because the loud queens stayed loud and {a}'s silence disappeared into the noise. She is right there — three feet from the couch, visible to everyone — and invisible in the way that only a safe queen in a room full of drama can be.",
+      "{a} has been sitting in the same position for twenty minutes and has said exactly nothing and the nothing has gone undetected. The room talks around her, over her, past her, and {a} listens to all of it and contributes to none of it and the contribution of none is the thing — she was safe tonight, safe and forgettable, and the room is proving the forgettable part right now.",
+      "Twenty minutes of silence from {a} and not one queen has looked over and said \"you okay?\" Not because they do not care but because {a} is safe and safe is invisible when the room has a bottom two to worry about. {a} finishes her drink alone in a full room, which is its own kind of loneliness, and the loneliness is what she will remember about this week.",
+    ],
   }),
   ev({
     id: 'nothing-left-to-say', phase: 'late', cast: 'pair', weight: 1.0,
@@ -726,7 +821,12 @@ export const UNTUCKED_EVENTS = [
       + 'anything because there is nothing that would help.',
     when: f => f.bothInBottom,
     effects: { bond: 1.5, pop: { a: 1 }, state: 'before-the-song' },
-    lines: [],
+    lines: [
+      "{a} and {b} are about to walk out and one of them is not coming back and they both know it and neither of them says anything. They look at each other and the look holds for a long time — long enough to say what words would ruin — and then they stand up together and walk to the door together and the togetherness is the last thing they share before the song decides.",
+      "There is nothing to say and {a} and {b} do not try to say it. They sit side by side and the side-by-side is honest in a way that talking would not be, because talking would mean one of them would have to pretend she is not scared and they are both scared and the pretending would be worse than the silence. {a} reaches over and squeezes {b}'s hand once and lets go.",
+      "{a} looks at {b} and {b} looks at {a} and the looking is the whole conversation. One of them is going home and the other is staying and neither of them knows which is which and the not-knowing sits between them like a third person. They do not hug and they do not cry and they do not say \"good luck\" because good luck means one of them loses and they both already know that.",
+      "The call comes and {a} and {b} stand up at the same time and there is a second where they face each other and the facing is everything — the fear, the respect, the understanding that what happens next is not personal even though it will feel personal — and neither of them says a word because there is no word that would make this moment smaller. They walk out in silence and the silence is enough.",
+    ],
   }),
 
 ];

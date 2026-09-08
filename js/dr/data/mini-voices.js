@@ -239,7 +239,12 @@ export const MINI_VOICES = [
         'The puppet hangs in {a}\'s hand like what it is — felt and foam — because {a} cannot find anything to do with it. {b} watches from across the room without recognition, which is the worst outcome a puppet set can have.',
         'It is clear from the first three seconds that {a} does not have a take on {b}. The puppet flails, the voice wanders, and the room gives {a} the silence of queens who are grateful they drew a different puppet.',
       ]),
-      tier('passed', 'She has the puppet and no voice to put in it. She holds it up, says nothing anybody can use, and hands it back.', []),
+      tier('passed', 'She has the puppet and no voice to put in it. She holds it up, says nothing anybody can use, and hands it back.', [
+        '{a} picks up the puppet of {b} and holds it up and opens her mouth and what comes out is {a}\'s voice, not {b}\'s, saying nothing in particular about anyone. She moves the puppet\'s mouth twice, producing silence that has a felt body attached to it, and puts it down. \"I do not have one,\" she says, and the room believes her.',
+        'The puppet goes up and {a} stares at it like she is meeting {b} for the first time, which is what it looks like when a queen has spent weeks in the same room as somebody and observed nothing. She tries a voice. The voice is hers. She tries a mannerism. The mannerism is also hers. She puts the puppet on the table and says \"next\" before the host has to.',
+        '{a} holds the puppet of {b} in front of her face and says three words that could be about any queen in any room, and {b} watches from across the table with the specific patience of a queen who was expecting to be clocked and instead was ignored. {a} puts the puppet down and shrugs, which is its own kind of confession.',
+        'Nothing. {a} picks up the puppet, looks at {b}, looks back at the puppet, and produces a silence that tells the room she has no impression, no angle, no material. She makes the puppet wave, which gets a sympathy laugh and nothing else, and hands it back with the energy of a queen returning something she borrowed and never used.',
+      ]),
       tier('win', 'She saw {b} more clearly than {b} sees herself, and made it funny.', [
         '{a} wins {c} and the win is deserved — she took a felt puppet and made it more {b} than {b} has ever been, and the room is still quoting lines from the set while the host hands out the prize.',
         'The host announces {a} as the winner and the room agrees, because {a} turned a puppet into a person and that person was {b}, rendered so accurately that {b} spent the whole set alternating between horror and hysterical laughter.',
@@ -416,7 +421,12 @@ export const MINI_VOICES = [
         '{a} answers the question about {b} and the answer is correct and delivered with the energy of a person taking an exam, and {b} stares at her with the expression of a queen who was hoping to be roasted and was instead informed.',
         '{a} tries for a joke about {b} and the joke misses, and the miss leaves her standing in the gap between what she said and what was funny, and {b} is across the room with an expression that is charitable but not amused.',
       ]),
-      tier('passed', 'She does not know, cannot make not knowing funny, and says so — which is the one answer the quiz has no points for.', []),
+      tier('passed', 'She does not know, cannot make not knowing funny, and says so — which is the one answer the quiz has no points for.', [
+        '{a} looks at the question about {b} and has nothing — not a wrong answer, not a right answer, nothing. She says \"I genuinely do not know\" in a voice that is not playing for a laugh, and the room gives her the silence of queens who can feel the difference between a bit and an admission.',
+        'The question is about {b} and {a} opens her mouth and closes it and the closing is the answer. \"Pass,\" she says, and the passing scores nothing, because {c} has points for right and points for funny and no points at all for a queen who stands there with an empty page.',
+        '{a} stares at the question about {b} and cannot find either the truth or a joke about the truth. She tries to start twice — \"she is...\" and then nothing, \"I think...\" and then nothing — and the two false starts are worse than silence because they prove she was reaching and came back with air.',
+        '\"I have nothing.\" {a} says it flatly about the question on {b}, and the flatness is not a performance — she genuinely cannot produce a wrong answer that is funny or a right answer that is correct, and saying so out loud in a room full of queens who all had something is the loneliest moment in {c}.',
+      ]),
       tier('win', 'She understood that the quiz was not a quiz.', [
         '{a} wins {c} because she understood from the first question that accuracy was a trap, and every answer she gave was wrong and funny and specific to the queen it was about, and the room is still laughing at the answer about {b} while the host announces the prize.',
         'The host calls {a} as the winner of {c} and nobody is surprised, because {a} played every question like a setup for a punchline, and every punchline landed, and the wrong answers she gave taught the room more about the queens than the right answers ever could have.',

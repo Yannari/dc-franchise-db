@@ -671,7 +671,12 @@ export const MAXI_EVENTS = [
     note: 'She has most of them and not all of them. A phrase goes, she '
       + 'catches up, and anybody watching her mouth knows. Survivable, and '
       + 'the kind of thing a judge brings up as a note rather than a verdict.',
-    lines: [],
+    lines: [
+      "{a} has most of the words and not all of them. A phrase drops out in the second verse and her mouth keeps moving but the shape it makes is not the lyric — it is the approximation of the lyric, the noise you produce when the line leaves you and muscle memory has to cover for recall. She catches up at the chorus. Anybody watching her mouth knows she lost it.",
+      "The words are there and then they are not and then they are back. {a} fumbles a line mid-number, covers it with a half-sung shape that is close enough to survive the wide shot and not close enough to survive the panel, and picks up the next phrase clean. It is survivable. It is also the thing a judge writes on the clipboard.",
+      "{a} drops a phrase and catches it two bars later and the gap between the dropping and the catching is a queen mouthing air while a band plays the song she is supposed to know. She recovers. The recovery is real — she finishes the number clean — but the fumble is on camera and the camera does not forget things the way a live audience does.",
+      "She loses a line in the bridge and her face does the thing where it tightens and releases in the same beat — the tightening is the panic, the releasing is the decision to keep going. {a} mouths through the lost phrase, finds the next one, and finishes the number at full voice. The panel saw the gap. The gap is a note, not a verdict.",
+    ],
   }),
   e({
     id: 'lost-the-words', from: 'rusical', cast: 'solo',
@@ -679,7 +684,12 @@ export const MAXI_EVENTS = [
       + 'not stop for her. The worst thirty seconds available on this night — '
       + 'and it is worth writing what she DOES about it, because standing '
       + 'there is one performance and inventing something is another.',
-    lines: [],
+    lines: [
+      "{a} loses the words completely. Not a stumble — gone, all of them, mid-number, on a stage with a live band that does not stop for her. She stands there for four bars with her mouth closed and her body still moving because the choreography is the only thing left in her that remembers what it is supposed to do. The band plays. The words do not come back.",
+      "The words leave and {a} invents something. She cannot remember the lyric so she makes one up — nonsense, or close to it, delivered with enough energy that the back of the room might not catch it. The front of the room catches it. The panel catches it. But {a} is still performing, which is not nothing, and the performing-through is its own kind of answer to the thirty seconds that just happened.",
+      "{a} goes blank on stage and what she does about it is dance harder. The lyric is gone and she replaces it with movement — selling the choreography at twice the energy, using the body to fill the space the voice abandoned. It is not the number. It is a queen deciding in real time that standing still is worse than doing the wrong thing at full commitment.",
+      "The words disappear and {a} stands in the number with her mouth half open and nothing coming out while a band plays the song she was supposed to know. She freezes for two bars. Then she mouths something — not the lyric, not even close — and dances through the rest of the section with the rigid energy of a queen who has decided that finishing is the only option available and finishing badly still counts as finishing.",
+    ],
   }),
 
 ];

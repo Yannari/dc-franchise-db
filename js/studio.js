@@ -145,18 +145,10 @@ async function _idbDel(store, key) { const db = await _db(); return new Promise(
 
 // ── roster helpers (via window; cast-ui owns FRANCHISE_ROSTER) ───────────
 function _roster() { return (typeof window !== 'undefined' && window.FRANCHISE_ROSTER) || []; }
-/**
- * Every name an author could mean, for the drag-mother box.
- *
- * A typed name that matches nobody is not an error -- a drag mother who has
- * never played is still her drag mother, and the tree carries her as a name
- * either way -- but nearly every one an author wants is already on the roster,
- * and a datalist turns four keystrokes into a pick and kills the typos that
- * would otherwise split one house into two.
- */
-function _queenNameOptions() {
+function _queenNameSelect(selected) {
   const names = [...new Set(_roster().map(r => r && r.name).filter(Boolean))].sort();
-  return names.map(n => `<option value="${_esc(n)}"></option>`).join('');
+  return `<option value="">— pick a queen —</option>${names.map(n =>
+    `<option value="${_esc(n)}"${n === selected ? ' selected' : ''}>${_esc(n)}</option>`).join('')}`;
 }
 
 const DRAG_TRAIT_LIST = [
@@ -184,7 +176,7 @@ function _renderFamilyLinks(d) {
   const links = Array.isArray(raw) ? raw.filter(l => l && l.rel) : _normFamily(raw);
   if (!links.length) return '<div class="st-hint" style="margin:4px 0 2px">No family links yet.</div>';
   return links.map((l, i) => `<div class="st-fam-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin:3px 0">
-    <input class="st-input st-fam-name" list="st-queen-names" value="${_esc(l.name)}" placeholder="Queen name" style="flex:1">
+    <select class="st-input st-fam-name" style="flex:1">${_queenNameSelect(l.name)}</select>
     <select class="st-input st-fam-rel" style="width:140px">${FAMILY_RELS.map(r =>
       `<option value="${r}"${r === l.rel ? ' selected' : ''}>${r}</option>`).join('')}</select>
     <button type="button" class="st-btn st-btn-sm st-fam-rm" title="Remove" style="padding:2px 7px">×</button>
@@ -1733,7 +1725,6 @@ function _renderEditor() {
         <div class="st-l">Drag family <span class="st-hint">pick a name from the roster + the relationship to this queen</span></div>
         <div id="st-f-drag-family">${_renderFamilyLinks(d)}</div>
         <button type="button" class="st-btn st-btn-sm" id="st-f-drag-family-add">+ Add link</button>
-        <datalist id="st-queen-names">${_queenNameOptions()}</datalist>
       </details>
 
       <label class="st-l">Voice profile <span class="st-hint">how they TALK + personality — the bio line below is added automatically</span>

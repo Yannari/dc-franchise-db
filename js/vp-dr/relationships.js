@@ -116,12 +116,14 @@ const REL_CSS = `
 
 function label(bond, familyRel) {
   if (familyRel) return { text: `drag ${familyRel}`, cls: 'rel-card-label-family' };
-  if (bond >= 6) return { text: 'close ally', cls: 'rel-card-label-ally' };
+  if (bond >= 7) return { text: 'ride or die', cls: 'rel-card-label-ally' };
+  if (bond >= 5) return { text: 'close ally', cls: 'rel-card-label-ally' };
   if (bond >= 3) return { text: 'friendly', cls: 'rel-card-label-ally' };
   if (bond >= 1) return { text: 'warm', cls: 'rel-card-label-ally' };
-  if (bond <= -6) return { text: 'bitter rival', cls: 'rel-card-label-rival' };
-  if (bond <= -3) return { text: 'tension', cls: 'rel-card-label-rival' };
-  if (bond <= -1) return { text: 'cool', cls: 'rel-card-label-rival' };
+  if (bond <= -7) return { text: 'bitter enemy', cls: 'rel-card-label-rival' };
+  if (bond <= -5) return { text: 'rival', cls: 'rel-card-label-rival' };
+  if (bond <= -3) return { text: 'friction', cls: 'rel-card-label-rival' };
+  if (bond <= -1) return { text: 'tension', cls: 'rel-card-label-rival' };
   return { text: 'neutral', cls: 'rel-card-label-neutral' };
 }
 
@@ -174,13 +176,13 @@ function buildForQueen(name, bonds, families, living, ep) {
   let html = '';
 
   if (allies.length) {
-    html += sectionHead(`Her people · ${allies.length}`, 'ally');
+    html += sectionHead(`Allies · ${allies.length}`, 'ally');
     html += `<div class="rel-list">${allies.map(p =>
       card(p.other, p.bond, famRels[p.other], ep)).join('')}</div>`;
   }
 
   if (rivals.length) {
-    html += sectionHead(`At war · ${rivals.length}`, 'rival');
+    html += sectionHead(`Rivals · ${rivals.length}`, 'rival');
     html += `<div class="rel-list">${rivals.map(p =>
       card(p.other, p.bond, famRels[p.other], ep)).join('')}</div>`;
   }

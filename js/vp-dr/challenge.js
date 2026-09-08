@@ -232,6 +232,33 @@ const CHAL_CSS = `
    the board; it now names a queen and her pick and has to be readable.
    NO BACKTICKS: this comment is inside a template literal. */
 /* The mini's result card — the last click on that screen. */
+/* ══ THE MINI ══ one queen aiming at another ══ */
+.dr-minirow{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+  padding:14px 16px 14px 20px}
+.dr-minirow p{margin:6px 0 0;color:#f4e3ed;line-height:1.6;max-width:74ch;text-wrap:pretty}
+.dr-aim{display:flex;align-items:center;gap:6px}
+.dr-aim .dr-por{border:1px solid rgba(255,255,255,.22)}
+/* The shot, drawn from her to her mark. */
+.dr-aim-arrow{position:relative;width:26px;height:2px;background:rgba(255,255,255,.28);
+  flex:0 0 auto}
+.dr-aim-arrow::after{content:"";position:absolute;right:-1px;top:-3px;
+  border-left:7px solid rgba(255,255,255,.28);
+  border-top:4px solid transparent;border-bottom:4px solid transparent}
+/* It landed. */
+.dr-aim-arrow.dr-hit{background:#FF3D9A;box-shadow:0 0 12px rgba(255,61,154,.8)}
+.dr-aim-arrow.dr-hit::after{border-left-color:#FF3D9A}
+.dr-step.dr-vis .dr-aim-arrow{animation:drAim .5s cubic-bezier(.2,1,.3,1) both .1s}
+@keyframes drAim{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1)}}
+.dr-aim-target{opacity:.75}
+.dr-step.dr-vis .dr-aim-arrow.dr-hit + .dr-bust{animation:drStruck .45s ease-out .38s}
+@keyframes drStruck{0%{transform:none}35%{transform:translateX(4px) rotate(3deg)}
+  100%{transform:none}}
+.dr-aim-k{display:block;margin-top:2px;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:#FF7BC8}
+@media(prefers-reduced-motion:reduce){
+  .dr-step.dr-vis .dr-aim-arrow,.dr-step.dr-vis .dr-aim-arrow.dr-hit + .dr-bust{animation:none}
+}
+
 .dr-miniwin{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;
   padding:16px 20px;border-left:4px solid #FFC83D;
   background:linear-gradient(90deg,rgba(255,200,61,.16),transparent 55%),var(--dr-panel)}
@@ -440,14 +467,30 @@ export function rpBuildMini(row) {
     <h3 class="dr-disp">${esc(m.name)}</h3>
     <p>Whoever takes it takes ${prize}.</p>
   </div>`;
+  /* WHO SHE WAS AIMING AT, WHICH THE SCREEN NEVER SAID. A reading mini is
+     one queen reading ANOTHER — `mini.detail[queen] = { target, pulled }`
+     has carried that since the mini engine was written, and the card drew a
+     portrait and a paragraph, so the whole point of the format ("she read
+     HER, and it landed") was in the data and nowhere on the page.
+     Three of the seven minis are `targets` and one is `pairs`; a solo mini
+     has no target and simply does not draw the arrow. */
+  const aimOf = n => (m.detail?.[n]?.target) || null;
+  const landed = n => !!m.detail?.[n]?.pulled;
+
   const steps = scenes.map((sc, i) => {
     const who = (sc.data?.players || [])[0];
+    const at = who ? aimOf(who) : null;
     return `<div class="dr-step" id="dr-step-mini-${i}">
-      <div class="dr-panel dr-a-score dr-row">
-        ${who ? _portrait(who, ep, { size: 46 }) : '<span></span>'}
+      <div class="dr-panel dr-a-score dr-minirow">
+        <div class="dr-aim">
+          ${who ? _portrait(who, ep, { size: 46 }) : '<span></span>'}
+          ${at ? `<span class="dr-aim-arrow ${landed(who) ? 'dr-hit' : ''}"></span>
+            ${_portrait(at, ep, { size: 34, cls: 'dr-aim-target' })}` : ''}
+        </div>
         <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
-          <p style="margin:4px 0 0;color:#f4e3ed;line-height:1.6">${esc(sc.text)}</p></div>
-        <span></span>
+          ${at ? `<span class="dr-aim-k">reads ${esc(at)}${
+    landed(who) ? ' — and it lands' : ''}</span>` : ''}
+          <p>${esc(sc.text)}</p></div>
       </div></div>`;
   }).join('');
 

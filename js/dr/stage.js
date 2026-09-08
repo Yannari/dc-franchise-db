@@ -565,6 +565,14 @@ export function renderChallengeBeats({
   // ── the mini ──
   if (mini) {
     emit(beatById('mini-announce'), 'announce', [], { mini: mini.name, buys: mini.buys });
+    /* EVERY QUEEN WHO COMPETED GETS HER CARD. A cap was tried here and it
+       was the wrong answer to the right complaint: the mini did outrun the
+       maxi, but the fix for that is the maxi being bigger, not the room
+       being cut. A queen who competed and got no card is a queen the
+       episode forgot.
+       Screen time is unequal by EARNING it — the tier a queen lands in
+       decides how much the card says about her, which is what the tiers
+       were for. */
     for (const n of living) {
       if (miniScores[n] === undefined) continue;
       emit(beatById('mini-attempt'), tierAt(fractionalRank(n, miniScores), MINI_TIERS), [n]);

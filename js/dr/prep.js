@@ -110,8 +110,26 @@ export function walkthrough({ living, players, maxi, prep, rng }) {
 
     prep[n] = (prep[n] || 0) + delta;
     notes.push({ name: n, right, took, delta: Math.round(delta * 100) / 100 });
+  }
+
+  /* EVERY QUEEN IS SEEN. The host walks the whole room and the screen shows
+     the whole room — a queen who gets no card on a night she was in is a
+     queen the episode forgot, and that is worse than a long screen.
+     Screen time is still UNEQUAL, and that is the point: it is earned by
+     what happened rather than rationed by a cap. The visits that moved the
+     most carry `featured` on their data so a screen can give them the extra
+     room. NOTHING READS IT YET — it is recorded here because the engine is
+     where the fact lives, and a screen that wants it will not have to
+     recompute the ranking. */
+  const moves = notes.map(x => Math.abs(x.delta));
+  const cut = [...moves].sort((a, b) => b - a)[Math.min(2, moves.length - 1)] ?? 0;
+  for (const note of notes) {
     events.push(evt('walkthrough', {
-      players: [n], pop: { [n]: took ? 1 : -1 }, data: { right, took, challenge: maxi.id },
+      players: [note.name], pop: { [note.name]: note.took ? 1 : -1 },
+      data: {
+        right: note.right, took: note.took, challenge: maxi.id,
+        featured: Math.abs(note.delta) >= cut && cut > 0,
+      },
     }));
   }
   void noise;

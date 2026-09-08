@@ -41,11 +41,19 @@ export const ARRIVALS_CSS = `
   border-bottom:1px solid rgba(255,200,61,.26);
   box-shadow:0 18px 40px -24px rgba(0,0,0,.95)}
 
-/* The arch itself, lit from inside. */
-.dr-df-arch{position:relative;height:120px;border-radius:84px 84px 4px 4px;
-  border:2px solid rgba(255,200,61,.42);border-bottom:0;
-  background:linear-gradient(180deg,rgba(255,233,168,.20),rgba(255,200,61,.05) 70%,transparent);
-  overflow:visible}
+/* The arch itself. The frame and its bulbs are the SVG; the box behind them
+   only holds the light. The border and radius that used to draw the arch are
+   gone — two arches, one CSS and one drawn, never quite agreed. */
+.dr-df-arch{position:relative;height:132px;overflow:visible}
+.dr-arch-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+/* THE BULBS. Warm, glowing, and idling out of step with each other so the
+   frame breathes rather than pulsing as one object. */
+.dr-bulb{fill:#FFE9A8;filter:drop-shadow(0 0 5px rgba(255,200,61,.95));
+  animation:drBulb 3.6s ease-in-out infinite}
+@keyframes drBulb{0%,100%{opacity:.9}50%{opacity:.55}}
+/* Somebody is coming through: the whole frame surges. */
+.dr-doorframe.open .dr-bulbs{animation:drBulbSurge .85s ease-out}
+@keyframes drBulbSurge{0%{filter:brightness(2.1)}100%{filter:none}}
 .dr-df-glow{position:absolute;inset:6px 6px 0;border-radius:78px 78px 2px 2px;
   background:radial-gradient(70% 100% at 50% 100%,rgba(255,233,168,.55),transparent 72%);
   transition:opacity .5s;opacity:.55}
@@ -100,6 +108,8 @@ export const ARRIVALS_CSS = `
 @media(prefers-reduced-motion:reduce){
   .dr-arrivals .dr-step{transform:none}
   .dr-df-q,.dr-df-glow,.dr-df-spill{transition:none}
+  .dr-bulb{animation:none}
+  .dr-doorframe.open .dr-bulbs{animation:none}
   .dr-doorframe.open .dr-df-glow,.dr-doorframe.open .dr-df-spill{animation:none}
 }
 
@@ -199,6 +209,52 @@ function impressionOf(beats, name) {
   </p>`;
 }
 
+/**
+ * The doorway, with its bulbs.
+ *
+ * A lit dome read as a doorway and nothing more — the least detailed thing
+ * on a screen built around it. A stage door on this show is a FRAME with
+ * bulbs around it, the same object as a dressing-room mirror, so it gets
+ * one: the arch drawn as a path and the bulbs placed along it by angle
+ * rather than guessed at, which is the only way they sit evenly on a curve.
+ *
+ * SVG because the project's rule is SVG for anything with a shape — a ring
+ * of bulbs following a semicircle is not something CSS can place.
+ *
+ * They idle at slightly different rates so the frame breathes instead of
+ * pulsing as one object, and the whole thing surges when the door opens.
+ */
+function doorArch() {
+  const W = 170; const H = 132; const R = 78; const CX = 85; const CY = 82;
+  const bulbs = [];
+  // Around the arc, from one shoulder to the other.
+  const ARC = 13;
+  for (let i = 0; i < ARC; i++) {
+    const a = Math.PI * (i / (ARC - 1));
+    bulbs.push([CX - Math.cos(a) * R, CY - Math.sin(a) * R]);
+  }
+  // Down both jambs to the floor.
+  for (let i = 1; i <= 3; i++) {
+    const y = CY + (H - CY) * (i / 3.2);
+    bulbs.push([CX - R, y], [CX + R, y]);
+  }
+  const dots = bulbs.map(([x, y], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}"
+    r="3.1" class="dr-bulb" style="animation-delay:${(i % 7) * 0.42}s"/>`).join('');
+  return `<svg class="dr-arch-svg" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <defs>
+      <radialGradient id="drDoorLight" cx="50%" cy="100%" r="80%">
+        <stop offset="0" stop-color="#FFE9A8" stop-opacity=".55"/>
+        <stop offset="1" stop-color="#FFC83D" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <path d="M${CX - R} ${H} L${CX - R} ${CY} A${R} ${R} 0 0 1 ${CX + R} ${CY} L${CX + R} ${H} Z"
+      fill="url(#drDoorLight)"/>
+    <path d="M${CX - R} ${H} L${CX - R} ${CY} A${R} ${R} 0 0 1 ${CX + R} ${CY} L${CX + R} ${H}"
+      fill="none" stroke="rgba(255,200,61,.45)" stroke-width="2"/>
+    <g class="dr-bulbs">${dots}</g>
+  </svg>`;
+}
+
 export function rpBuildArrivals(row) {
   const ep = { num: row?.num ?? row?.dr?.ep ?? 1, format: 'drag-race', dr: row?.dr || {} };
   const cast = row?.houseAtStart || row?.dr?.living || [];
@@ -268,7 +324,7 @@ export function rpBuildArrivals(row) {
      part that actually builds, because the twelfth queen walks into a
      completely different room from the first. */
   const doorway = `<div class="dr-doorframe" id="dr-doorframe">
-      <div class="dr-df-arch"><i class="dr-df-glow"></i><i class="dr-df-spill"></i></div>
+      <div class="dr-df-arch">${doorArch()}<i class="dr-df-glow"></i><i class="dr-df-spill"></i></div>
       <div class="dr-df-side">
         <div class="dr-df-k dr-disp">In the room</div>
         <div class="dr-df-count dr-num" id="dr-df-count">0</div>

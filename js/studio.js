@@ -107,7 +107,7 @@ const DRAG_STYLE_LIST = ['pageant', 'comedy', 'fashion', 'camp', 'club-kid', 'sp
   'broadway', 'dancer', 'glamour', 'art'];
 const _emptyDrag = () => ({
   ...Object.fromEntries(DRAG_KEYS.map(k => [k, 5])), style: '', traits: [], voice: '',
-  family: { mother: '', sisters: [] },
+  family: [],
 });
 // Whether anything was actually authored. An untouched block must NOT be sent:
 // a row of default fives is indistinguishable from a considered choice, and
@@ -119,7 +119,7 @@ const _hasDrag = d => !!d && !!d.drag && (
   || !!(d.drag.voice || '').trim()
   // A family on its own is authorship: a queen with nothing but a drag mother
   // must still send her block, or the one thing typed about her is dropped.
-  || !!(d.drag.family && (d.drag.family.mother || (d.drag.family.sisters || []).length)));
+  || !!(Array.isArray(d.drag.family) ? d.drag.family.length : d.drag.family && (d.drag.family.mother || (d.drag.family.sisters || []).length)));
 const _dragOf = k => (_draft && _draft.drag && _draft.drag[k]) || 5;
 
 // ── IndexedDB (rich store) ──────────────────────────────────────────────
@@ -157,6 +157,63 @@ function _roster() { return (typeof window !== 'undefined' && window.FRANCHISE_R
 function _queenNameOptions() {
   const names = [...new Set(_roster().map(r => r && r.name).filter(Boolean))].sort();
   return names.map(n => `<option value="${_esc(n)}"></option>`).join('');
+}
+
+const FAMILY_RELS = ['mother', 'daughter', 'sister', 'grandmother', 'granddaughter', 'aunt', 'niece', 'cousin'];
+
+function _normFamily(fam) {
+  if (Array.isArray(fam)) return fam.filter(l => l && l.name && l.rel);
+  if (fam && typeof fam === 'object' && !Array.isArray(fam)) {
+    const out = [];
+    if (fam.mother) out.push({ name: fam.mother, rel: 'mother' });
+    for (const s of fam.sisters || []) if (s) out.push({ name: s, rel: 'sister' });
+    return out;
+  }
+  return [];
+}
+
+function _renderFamilyLinks(d) {
+  const links = _normFamily(d.drag && d.drag.family);
+  if (!links.length) return '<div class="st-hint" style="margin:4px 0 2px">No family links yet.</div>';
+  return links.map((l, i) => `<div class="st-fam-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin:3px 0">
+    <input class="st-input st-fam-name" list="st-queen-names" value="${_esc(l.name)}" placeholder="Queen name" style="flex:1">
+    <select class="st-input st-fam-rel" style="width:140px">${FAMILY_RELS.map(r =>
+      `<option value="${r}"${r === l.rel ? ' selected' : ''}>${r}</option>`).join('')}</select>
+    <button type="button" class="st-btn st-btn-sm st-fam-rm" title="Remove" style="padding:2px 7px">×</button>
+  </div>`).join('');
+}
+
+function _readFamilyLinks(container) {
+  const out = [];
+  for (const row of container.querySelectorAll('.st-fam-row')) {
+    const name = (row.querySelector('.st-fam-name')?.value || '').trim();
+    const rel = row.querySelector('.st-fam-rel')?.value || 'sister';
+    if (name) out.push({ name, rel });
+  }
+  return out;
+}
+
+function _wireFamilyLinks(ed, d) {
+  const container = ed.querySelector('#st-f-drag-family');
+  if (!container) return;
+  d.drag.family = _normFamily(d.drag.family);
+  const sync = () => { d.drag.family = _readFamilyLinks(container); };
+  container.addEventListener('input', sync);
+  container.addEventListener('change', sync);
+  container.addEventListener('click', e => {
+    if (e.target.closest('.st-fam-rm')) {
+      e.target.closest('.st-fam-row').remove();
+      sync();
+    }
+  });
+  ed.querySelector('#st-f-drag-family-add')?.addEventListener('click', () => {
+    d.drag.family.push({ name: '', rel: 'mother' });
+    container.innerHTML = _renderFamilyLinks({ drag: d.drag });
+    const last = container.querySelector('.st-fam-row:last-child .st-fam-name');
+    if (last) last.focus();
+    container.addEventListener('input', sync);
+    container.addEventListener('change', sync);
+  });
 }
 
 function _persistRoster(arr) {
@@ -1662,14 +1719,9 @@ function _renderEditor() {
              every character sheet plus every house a season built by itself.
              Names, not slugs, because that is what the author is typing and
              what the tab and the tree both read. -->
-        <label class="st-l">Drag mother <span class="st-hint">the queen who brought her up — one name</span>
-          <input class="st-input" id="st-f-drag-mother" list="st-queen-names"
-            value="${_esc((d.drag && d.drag.family && d.drag.family.mother) || '')}" placeholder="e.g. Ivy Deveraux">
-        </label>
-        <label class="st-l">Drag sisters <span class="st-hint">comma separated — aunts, cousins and grandmothers work themselves out</span>
-          <input class="st-input" id="st-f-drag-sisters"
-            value="${_esc(((d.drag && d.drag.family && d.drag.family.sisters) || []).join(', '))}" placeholder="e.g. Rita Deveraux, Nell Deveraux">
-        </label>
+        <div class="st-l">Drag family <span class="st-hint">pick a name from the roster + the relationship to this queen</span></div>
+        <div id="st-f-drag-family">${_renderFamilyLinks(d)}</div>
+        <button type="button" class="st-btn st-btn-sm" id="st-f-drag-family-add">+ Add link</button>
         <datalist id="st-queen-names">${_queenNameOptions()}</datalist>
       </details>
 
@@ -1912,13 +1964,7 @@ function _renderEditor() {
     if (row) { row.textContent = d.drag[k]; row.style.color = _statHue(d.drag[k]); }
   }));
   ed.querySelector('#st-f-drag-style')?.addEventListener('change', e => { d.drag.style = e.target.value; });
-  ed.querySelector('#st-f-drag-mother')?.addEventListener('input', e => {
-    d.drag.family = { ...(d.drag.family || {}), mother: e.target.value.trim() };
-  });
-  ed.querySelector('#st-f-drag-sisters')?.addEventListener('input', e => {
-    d.drag.family = { ...(d.drag.family || {}),
-      sisters: e.target.value.split(',').map(x => x.trim()).filter(Boolean) };
-  });
+  _wireFamilyLinks(ed, d);
   ed.querySelector('#st-f-drag-traits')?.addEventListener('input', e => {
     d.drag.traits = e.target.value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 3);
   });

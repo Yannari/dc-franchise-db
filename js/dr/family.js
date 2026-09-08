@@ -179,20 +179,37 @@ const KIN_EDGES = {
  * see js/dr/genealogy.js -- because a tree is allowed to name somebody who
  * never played, where a season's bonds are not.
  */
+function _normFamily(fam) {
+  if (Array.isArray(fam)) return fam.filter(l => l && l.name && l.rel);
+  if (fam && typeof fam === 'object') {
+    const out = [];
+    if (fam.mother) out.push({ name: fam.mother, rel: 'mother' });
+    for (const s of fam.sisters || []) if (s) out.push({ name: s, rel: 'sister' });
+    return out;
+  }
+  return [];
+}
+
 export function relationsFromRoster(cast = []) {
   const present = new Set(cast.map(p => p && p.name).filter(Boolean));
   const out = [];
   for (const p of cast) {
-    const fam = p && p.drag && p.drag.family;
-    if (!fam || !p.name) continue;
-    if (fam.mother && present.has(fam.mother) && fam.mother !== p.name) {
-      out.push({ a: p.name, b: fam.mother, kind: 'mother' });
-    }
-    for (const sis of fam.sisters || []) {
-      if (present.has(sis) && sis !== p.name) out.push({ a: p.name, b: sis, kind: 'sister' });
+    const links = _normFamily(p && p.drag && p.drag.family);
+    if (!links.length || !p.name) continue;
+    for (const l of links) {
+      if (!present.has(l.name) || l.name === p.name) continue;
+      if (l.rel === 'mother') out.push({ a: p.name, b: l.name, kind: 'mother' });
+      else if (l.rel === 'daughter') out.push({ a: l.name, b: p.name, kind: 'mother' });
+      else if (l.rel === 'sister') out.push({ a: p.name, b: l.name, kind: 'sister' });
+      else out.push({ a: p.name, b: l.name, kind: 'sister' });
     }
   }
   return dedupeEdges(out);
+}
+
+/** Names of everyone this queen has a family link to (any rel type). */
+export function rosterFamilyNames(p) {
+  return _normFamily(p && p.drag && p.drag.family).map(l => l.name);
 }
 
 /** The same edge authored from both ends is one edge. */

@@ -275,6 +275,37 @@ const CHAL_CSS = `
 .dr-team-q b{font-size:12.5px;font-weight:600;color:#f0dfe9}
 .dr-team-q i{font-size:9px;letter-spacing:.14em;text-transform:uppercase;
   font-style:normal;color:#C9A6BC}
+/* ══ HOW THE ROOM TOOK THE BRIEF ══
+   NAMED dr-reax, NOT dr-took: .dr-took is already the DRAFT board's chip in
+   this same stylesheet, so the first version of this inherited its
+   display:block and its gold — the board came out as a vertical column of
+   faces all labelled the same colour. Two things with one class name in one
+   file, which is the third time in this build.
+   A face per queen, dark until her reaction is read, then wearing the
+   colour of her verdict. Green delighted, gold braced, red dreading —
+   the same three the prose is tiered by. */
+.dr-reax{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:12px;
+  justify-content:center;padding:14px 16px;margin:0 0 18px;
+  background:linear-gradient(180deg,#1a0713,#0b0309 78%,rgba(6,2,5,.96));
+  border-bottom:1px solid rgba(255,255,255,.12);
+  box-shadow:0 16px 34px -22px rgba(0,0,0,.95)}
+.dr-reax-q{width:74px;text-align:center;opacity:.32;filter:grayscale(1);
+  transition:opacity .4s,filter .4s,transform .4s}
+.dr-reax-q.on{opacity:1;filter:none;transform:translateY(-2px)}
+.dr-reax-q .dr-por{margin:0 auto;display:block;border:2px solid transparent;
+  transition:border-color .4s;border-color:var(--took,transparent)}
+.dr-reax-q b{display:block;margin-top:4px;font-size:9.5px;font-weight:600;color:#e3cfdd;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-reax-q i{display:block;font-style:normal;font-size:8.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--took,transparent);min-height:11px}
+/* Her card wears the same colour as her face on the board. */
+.dr-hasreact{border-left-color:var(--took)!important}
+.dr-reax-k{display:block;margin-bottom:3px;font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--took)}
+.dr-brief-room .dr-step{scroll-margin-top:150px}
+@media(max-width:760px){.dr-took{position:static}.dr-reax-q{width:56px}}
+@media(prefers-reduced-motion:reduce){.dr-reax-q,.dr-reax-q .dr-por{transition:none}}
+
 /* ══ THE DOORWAY ══ the host walks in and the room stops ══ */
 .dr-brief-room{position:relative}
 .dr-doorway{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;overflow:hidden}
@@ -450,11 +481,22 @@ export function rpBuildMini(row) {
   const m = row?.dr?.mini;
   if (!m) return '';
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'mini' && s.text);
+  /* NOUN PHRASES, BECAUSE THEY ARE DROPPED INTO A SENTENCE.
+     `captain` read "she picks the teams", a whole clause, and the two places
+     that use this map say "Whoever takes it takes ${prize}." and "She takes
+     ${prize}." — so every captaincy mini in the show rendered the sentence
+     "Whoever takes it takes she picks the teams."
+     AND THE MAP HAD DRIFTED OFF THE DATA. js/dr/data/minis.js uses exactly
+     four values — pick-order, captain, first-pick and prize — and this
+     carried `immunity` and `advantage`, which nothing has ever set, while
+     missing two of the four that are real. `pick-order` therefore fell
+     through to the raw slug and drew the literal string "pick-order" on the
+     card. A test now checks the two agree. */
   const BUYS = {
+    'pick-order': 'first choice when the parts go out',
+    captain: 'the captaincy, and the right to pick the teams',
     'first-pick': 'first pick of the draft',
-    captain: 'she picks the teams',
-    immunity: 'immunity from tonight',
-    advantage: 'an advantage in the maxi',
+    prize: 'a prize, and a moment on screen',
   };
   /* THE LEAD SAYS WHAT IS AT STAKE, NOT WHO WON IT. It read "Priya takes it
      — and with it, pick-order" above eleven unrevealed beats: the screen
@@ -575,21 +617,72 @@ export function rpBuildMaxiAnnounce(row) {
      `portraitStage` is the other picture — the one for the night she hosts
      from the main stage. A screen that uses the wrong one is wrong twice,
      which is why js/dr/data/judges.js carries both. */
+  /* ── HOW THE ROOM TOOK IT ──
+     The brief is the moment the host says what the week is, and half the
+     room lights up while half of it dies inside. Every reaction carries a
+     TIER — delighted, braced, dreading — and the screen spent it on
+     nothing: identical paragraphs where the entire point is that they
+     disagree.
+     A board of faces above the cards, each taking her verdict's colour as
+     her card is read. A queen the engine gave no reaction stays neutral
+     rather than being dropped: she is in the room either way, and a face
+     missing from a board reads as a queen missing from the week. */
+  const TIER_COLOUR = { delighted: '#3BE08A', braced: '#FFC83D', dreading: '#FF294B' };
+  /* THE ROOM AT THE START OF THE NIGHT, not the end of it. `dr.living` is
+     who is left AFTER the elimination, and the brief happens hours before
+     that — so the queen who goes home tonight heard the brief, reacted to
+     it, had a card on this very screen, and was missing from the board
+     about it. Caught by the board itself: her card said "dreading" and her
+     face was not there to say it.
+     `houseAtStart` is the honest list; living plus tonight's exits is the
+     same thing for a row that does not carry one. */
+  const room = (row?.houseAtStart?.length ? row.houseAtStart
+    : [...(row?.dr?.living || []), ...(row?.exits || []).map(x => x.name)])
+    .filter(Boolean);
+  const board = room.length ? `<div class="dr-reax" id="dr-reax">
+      ${room.map(n => `<div class="dr-reax-q" data-queen="${esc(n)}">
+        ${_portrait(n, ep, { size: 40 })}<b>${esc(n)}</b><i></i>
+      </div>`).join('')}
+    </div>` : '';
+
+  if (typeof window !== 'undefined') {
+    const upTo = []; const seen = {};
+    for (const sc of scenes) {
+      const w = (sc.data?.players || [])[0];
+      if (w && sc.data?.tier) seen[w] = sc.data.tier;
+      upTo.push({ ...seen });
+    }
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.announce = (idx) => {
+      const at = upTo[Math.max(0, Math.min(idx, upTo.length - 1))] || {};
+      for (const el of document.querySelectorAll('#dr-reax .dr-reax-q')) {
+        const t = idx >= 0 ? at[el.getAttribute('data-queen')] : null;
+        el.classList.toggle('on', !!t);
+        el.style.setProperty('--took', t ? (TIER_COLOUR[t] || '#C9A6BC') : 'transparent');
+        const tag = el.querySelector('i');
+        if (tag) tag.textContent = t || '';
+      }
+    };
+  }
+
   const steps = scenes.map((sc, i) => {
     const host = /host-arrives|the-brief/.test(sc.kind || '');
     const who = (sc.data?.players || [])[0];
+    const t = sc.data?.tier;
+    const col = !host && t && TIER_COLOUR[t];
     const face = host ? _judgePortrait('rupaul', { size: 46 })
       : who ? _portrait(who, ep, { size: 46 }) : '';
     return `<div class="dr-step" id="dr-step-announce-${i}">
-      <div class="dr-panel ${host ? 'dr-a-score' : 'dr-a-room'} dr-row"
-        style="padding:14px 16px 14px 20px">
+      <div class="dr-panel ${host ? 'dr-a-score' : 'dr-a-room'} dr-row${col ? ' dr-hasreact' : ''}"
+        style="padding:14px 16px 14px 20px${col ? `;--took:${col}` : ''}">
         ${face}
-        <div><p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p>
+        <div>${col ? `<span class="dr-reax-k">${esc(t)}</span>` : ''}
+          <p style="margin:0;color:#f4e3ed">${esc(sc.text)}</p>
           ${host ? '<span class="dr-sub">the host</span>' : ''}</div>
       </div></div>`;
   }).join('');
   return `<style>${CHAL_CSS}</style>${_shell(
-    `<div class="dr-brief-room">${briefSet('brief')}${lead}${steps}</div>`, ep, {
+    `<div class="dr-brief-room">${briefSet('brief')}${lead}${board}${steps}</div>`, ep, {
       phase: 'werk', title: 'The Maxi Challenge', subtitle: 'the brief',
     })}${_controls('announce', Math.max(1, scenes.length), ep.num)}`;
 }
@@ -648,7 +741,7 @@ export function rpBuildChoice(row) {
     const took = _choiceLabel(p);
     return `<span class="dr-chip-lg dr-taken${p?.lostTo ? ' dr-lost' : ''}">
       ${_portrait(who, ep, { size: 28 })}
-      <span class="dr-took"><b>${esc(who)}</b>
+      <span class="dr-reax"><b>${esc(who)}</b>
         <i>${took ? esc(took) : 'no pick'}</i>
         ${p?.lostTo ? `<u>lost hers to ${esc(p.lostTo)}</u>` : ''}</span>
     </span>`;

@@ -109,7 +109,13 @@ export const STAGE_BEATS = [
       + 'the main stage the main stage.',
     tierBy: 'always',
     tiers: [
-      tier('open', 'He takes the stage and the room becomes the main stage.', []),
+      tier('open', 'He takes the stage and the room becomes the main stage.', [
+        'The lights drop and the werk room disappears and what replaces it is the main stage — the real one, the one with the runway and the panel and the spots that turn every flaw into a verdict. The host walks out in drag, which is the signal, and the signal means everything that happened this morning was rehearsal.',
+        'She takes the stage the way she always takes it — heels first, shoulders back, a wig that costs more than most of the looks about to walk this runway — and the room reorganises itself around her. The werk room had opinions. The main stage has consequences.',
+        'The runway lights come up in sequence and the host is already standing at the mark when the last one hits. She is in full drag tonight, which means the room is no longer a set — it is a stage, and a stage is a place where somebody goes home. The temperature changes. The queens backstage can feel it from behind the curtain.',
+        'There is a moment, between the werk room and the main stage, where the show changes register entirely. The host walks out in drag and the lighting shifts and the music underneath drops into something slower and more deliberate, and every queen still standing knows that whatever she built today is about to be measured.',
+        'The stage is lit and the host is on it and the host is in drag and the room belongs to the competition now. She stands at the mark with the ease of somebody who has done this more times than any of the queens backstage have been alive, and the ease is the authority, and the authority is what makes this the main stage rather than a runway with chairs.',
+      ]),
     ],
   },
   /* ── ONE JUDGE AT A TIME, AND THE JOKE IS THEIRS ──
@@ -132,26 +138,70 @@ export const STAGE_BEATS = [
       tier('michelle', 'Permanent, so she is introduced every single week and '
         + 'this tier is read more often than any other in the file — it wants '
         + 'the most variants. The running joke is the bluntness, and the fact '
-        + 'that she has never once softened a note to be liked.', []),
+        + 'that she has never once softened a note to be liked.', [
+        'The host turns to the panel and lands on {j} first, because {j} is always first. \"She does not want to be your friend,\" the host says. \"She wants to see your waist.\" {j} does not argue with either half of that sentence.',
+        '\"Joining me, as always, the woman who has never once pretended a note was smaller than it was — {j}.\" {j} nods once. The nod is professional and warm and carries the full weight of a person who will say exactly what she thinks in approximately forty minutes.',
+        'The host does the fill-in-the-blank. \"She gives good blank,\" she says. \"It\'s {j}.\" {j} laughs and shakes her head and mouths something at the host that the microphone does not catch, and the blank was almost certainly about the bluntness, and {j} would not have it any other way.',
+        '\"You already know her and she already has notes — {j}.\" The panel laughs. {j} does not laugh, because the joke is that it is not a joke: she has been watching from the moment the first queen walked into the werk room this morning and the notes are already written.',
+        'The host gestures to {j} with the particular fondness reserved for somebody who has been sitting in that chair long enough to own it. \"If your waist is hidden, she will find it,\" the host says. \"If your corset is crooked, she will name the degree. {j}, everybody.\" {j} tilts her head as if to say: and?',
+        '\"She is here every single week,\" the host says, \"and every single week she tells somebody something they did not want to hear, and every single week she is correct. {j}.\" The room applauds and {j} accepts the applause with the composure of a woman who has been right about a hemline more often than most people have been right about anything.',
+        'The host looks at {j} and smiles the smile of somebody who knows what is coming later and is looking forward to watching other people discover it. \"My dear {j},\" she says, and {j} is already shaking her head because the introduction is going to be about the bluntness, and the introduction is always about the bluntness, and the bluntness has earned it.',
+        '\"The only person in this building who will look you in the eye and tell you your padding is wrong while the camera is running — {j}.\" {j} points at the host as if to confirm: yes, and I will do it again tonight. The panel has started, and the panel starts with her every week because she sets the standard the rest of them measure against.',
+      ]),
       tier('carson', 'Puns first, fashion second. He will pun back and the '
         + 'host knows it, so this introduction is a setup rather than a '
-        + 'punchline.', []),
+        + 'punchline.', [
+        '"Also joining us — the man who has never met a pun he could not turn into a runway critique — {j}." {j} grins and immediately says something back that is worse and better at the same time, and the host pretends not to laugh and fails.',
+        'The host plays the fill-in-the-blank and {j} answers it before she has finished the question, which is a pun, which is worse than the answer she had written, which is the entire bit. The host pretends to be annoyed and {j} pretends not to notice and the panel is already having a better time than the queens backstage.',
+        '"He will look at your look, and then he will look at your look again, and then he will say something about it that makes you laugh while you are trying to take notes — {j}." {j} takes a small bow from his chair, which is a thing only he can do without it reading as sarcasm.',
+        '"The man who will find the comedy in your couture — {j}." {j} waves at the room with the enthusiasm of somebody who is genuinely delighted to be sitting in this chair and has been genuinely delighted to be sitting in this chair for longer than some of these queens have been doing drag.',
+      ]),
       tier('ross', 'Enthusiastic, comedy-minded, cries easily. The joke is '
-        + 'affectionate and he takes it as a compliment, which is the joke.', []),
+        + 'affectionate and he takes it as a compliment, which is the joke.', [
+        '"The hilarious {j}!" The host says it the way she has said it for years — with warmth, with emphasis, and with the knowledge that {j} is already tearing up about something that has not happened yet. He waves. The wave is enormous. The wave is always enormous.',
+        'The host does the fill-in-the-blank and {j} answers it with something so earnest that the room cannot tell if it is a joke and neither can he, and the host says \"I\'m sorry, {j}, not a match\" and {j} laughs and the laugh is the point — it always is.',
+        '"He will cry at your performance and he will cry at your runway and he will cry at the lighting if the lighting is good enough — {j}." {j} points at the host and says \"that is fair\" and is already dabbing at the corner of one eye, which proves the point before the point has finished landing.',
+        '"The always delightful {j}!" {j} puts his hand on his chest and mouths \"thank you\" with the sincerity of a man who has been on this panel long enough to own his seat and still reacts to the introduction as though he has been invited for the first time.',
+      ]),
       tier('law', 'A fashion authority, unimpressed by default. The host '
         + 'introduces him the way you introduce weather that is about to '
-        + 'happen to somebody.', []),
+        + 'happen to somebody.', [
+        '"The legendary {j}!" The host says it and {j} does not wave, does not stand, does not smile — he nods, once, with the economy of a man who has dressed people for a living and has decided what he thinks about everybody in the building before the building was finished.',
+        'The host introduces {j} the way you introduce weather: briefly, accurately, and with the understanding that he is going to happen regardless of the introduction. {j} looks at the runway and the runway looks back and the runway blinks first.',
+        '"He will not tell you your look is fine when your look is not fine — {j}." {j} adjusts his cuff without looking at it, which is a gesture that costs nothing and communicates everything: proportion matters, and it matters in the chair as much as it matters on the stage.',
+        'The host plays the fill-in-the-blank and {j} answers it with one word and a look that makes the one word feel like a complete sentence, a judgement, and a warning. The host moves on. The runway has not started and {j} has already reviewed it.',
+      ]),
       tier('ts', 'Loud, loving and unfiltered. She talks over her own '
-        + 'introduction, which is part of the introduction.', []),
+        + 'introduction, which is part of the introduction.', [
+        'The host starts to introduce {j} and {j} talks over the introduction, which is the introduction. She is already waving at the queens backstage through a camera she may or may not be looking into, and the host gives up on the sentence and lets her have it, because giving {j} the room is faster than finishing.',
+        '"The incomparable —" and {j} finishes the sentence for her, louder, with a gesture that includes the entire stage. The host laughs. The panel laughs. {j} has been on camera for four seconds and has already made the room hers, which is what happens when nerve is a personality and the personality has a microphone.',
+        'The host starts the fill-in-the-blank and {j} answers over her before the question is finished, and the answer is louder than the question and funnier than the answer the host had prepared, and the host gives up the bit entirely because {j} has already taken it.',
+        '"She will read you if she loves you and she will read you if she does not — {j}!" {j} claps once, points at the host, and says something back that the host was not expecting and the room was not ready for, and the panel has not started yet and she has already won a round of it.',
+      ]),
       tier('jamal', 'A choreographer who counts. The joke is that he is '
-        + 'already watching their feet and none of them have moved yet.', []),
+        + 'already watching their feet and none of them have moved yet.', [
+        '"The incredible {j}!" The host introduces him and {j} smiles with the patience of a man who has been counting other people\'s eights for his entire career. He is already watching the queens\' posture and none of them have stepped onto the stage yet. He will know who rehearsed by the walk to the mark.',
+        'The host introduces {j} and {j} waves and the wave has rhythm in it, because everything {j} does has rhythm in it — he is a choreographer the way other people are left-handed, and the panel is about to benefit from a man who can tell who learned the routine this morning by watching her stand still.',
+        '"He taught your favourite queen\'s favourite dance — {j}." {j} nods. The nod is on the beat of something only he can hear. The queens backstage know that the choreography judge is in the chair tonight, which means the performance challenge just got a second scoring rubric that none of them rehearsed for.',
+        '"And {j}!" The host says it warmly and {j} raises a hand from the panel with the composure of a man who has spent decades in rehearsal rooms and treats the main stage the way he treats an eight-count — with attention to what is about to happen rather than what already has.',
+      ]),
       tier('guest', 'A guest judge from the franchise with no credit to hand — '
         + 'so the line may name {j} and claim nothing else about her. This is '
-        + 'the fallback tier and it has to read correctly for a stranger.', []),
+        + 'the fallback tier and it has to read correctly for a stranger.', [
+        '"And a very special guest joining us tonight — please welcome {j}!" The panel applauds and {j} waves from the guest seat with the particular energy of somebody who has been waiting to sit in this chair and is now sitting in it and is processing both of those things at the same time.',
+        '"Joining us on the panel — {j}!" The host gestures and {j} smiles and the smile is the smile of somebody who is aware that the queens backstage just heard that name and are right now recalibrating what they think tonight is going to feel like.',
+        '"And tonight we are joined by {j}!" {j} takes the introduction with a nod and a wave, settling into the guest chair with the energy of somebody who knows this panel is not a holiday — the critiques are real, the stakes are real, and the chair comes with an opinion that will be asked for.',
+        'The host turns to the guest seat. "{j} is with us!" {j} raises a hand and the hand is steady and the steadiness says more than a wave would — this is not a visit, it is a job, and {j} arrived ready to do it.',
+      ]),
       tier('guest-credited', 'A guest whose credit is known. {k} is a ready-'
         + 'made phrase like "the winner of the ninth season" that drops '
         + 'straight into the sentence. NEVER invent a credit — {k} is the only '
-        + 'claim about her past this line is allowed to make.', []),
+        + 'claim about her past this line is allowed to make.', [
+        '"And joining us tonight — {k}, {j}!" The panel applauds and {j} waves and the credit hangs in the air for a moment because it means something on this stage and everybody in the building knows it means something and {j} knows they know.',
+        '"Please welcome to the panel — {j}, {k}!" The host lets the credit land before the applause covers it, because the credit is the introduction and the name is the person and both of them matter on a stage where the judges have histories the queens are already thinking about.',
+        '"And our very special guest tonight — {k} — {j}!" {j} takes the seat and the seat carries the weight of the credit and {j} carries both of them with the posture of somebody who walked into this room with a record that precedes the introduction.',
+        '"Joining the panel — {j}, who is {k}!" The host says it with genuine warmth and {j} acknowledges the credit with a nod that says yes, that is who I am, and the queens backstage have just learned something about who is watching them tonight.',
+      ]),
     ],
   },
   /* ── AND THEN, AND ONLY THEN, WHAT THEY ARE WALKING IN ──
@@ -176,9 +226,19 @@ export const STAGE_BEATS = [
         "\"Start your engines, and may the best drag queen win.\" The host says it and then says {c} and then does not say anything else, because the runway is about to say everything for her. The panel picks up their pens. The first queen appears at the top of the stage. The night is running.",
       ]),
       tier('sewn', 'She MADE it — a design week or a Ball, where the category '
-        + 'is the brief she sewed to and the judgement is on the building.', []),
+        + 'is the brief she sewed to and the judgement is on the building.', [
+        '"Tonight\'s category is {c} — and you made it.\" The host lets that land, because the distinction matters: this is not what she packed, it is what she built. The panel has seen her thread a needle in the werk room and the runway is about to show whether the needle held.',
+        '"Gentlemen, start your engines!\" The host names {c} and adds, almost as an aside, \"and I remind you — these looks were sewn in that room.\" The panel leans in. Sewn is a different kind of walk: every seam is a decision and every decision is about to be inspected under these lights.',
+        '"The category tonight is {c}, and every stitch you are about to see was put in by the queen wearing it.\" The host says it and the room shifts, because a design runway is a runway where the construction is the critique and the construction starts the moment the first queen turns the corner.',
+        '"Start your engines, and may the best woman win!\" She names {c} and waits a beat. \"Made, from scratch, in that werk room.\" The queens backstage check their hems one last time, because the panel is about to judge the building and the building is about to walk.',
+      ]),
       tier('ball', 'Three categories in one night. The host names all of them '
-        + 'and lets the room work out how much sewing that was.', []),
+        + 'and lets the room work out how much sewing that was.', [
+        '"Tonight is a Ball, ladies.\" The host names {c} first, then the other two categories, one at a time, and watches the room absorb how much runway that is. Three walks. Three looks. At least one of them sewn. The panel picks up their pens and the pens are going to be busy tonight.',
+        '"Start your engines!\" The host opens the stage and names all three categories, starting with {c}, and the list alone is enough to make somebody in the back close her eyes and count garment bags. A Ball is three runways in a single night, and a single night is all any of them have.',
+        '"The Ball begins with {c}.\" The host names the first category and then the second and then the third and then says nothing else, because three categories in one night speaks for itself. The panel settles in. This is a long stage and every look on it was built for tonight.',
+        '"This is a Ball, which means three categories, three looks, one night.\" The host names {c} and then the rest and the list lands on the room like a brief that nobody can renegotiate. Every queen backstage just did the arithmetic on how many garments that is and whether the garments she has are the garments she needs.',
+      ]),
     ],
   },
 
@@ -437,6 +497,7 @@ export const STAGE_BEATS = [
   // ══ THE LIP SYNC, BEAT BY BEAT ═══════════════════════════════════════
   {
     id: 'lipsync-intro', step: 'lipsync', scope: 'once', speaker: 'host',
+    variants: 10,
     note: 'Two queens stand before the host. The last-chance speech and the song.',
     tierBy: 'always',
     tiers: [tier('intro', 'This is your last chance to impress me.', [
@@ -500,6 +561,52 @@ export const STAGE_BEATS = [
     ],
   },
   {
+    /* ── THE HOLD, AND THEN THE TWO NAMES ──
+       `lipsync-call` below is one paragraph that names NEITHER queen: "one
+       queen lives to fight another week, the other queen is going home." It
+       is a description of a verdict rather than the verdict, and the verdict
+       is the most watched thirty seconds the show has.
+       The real thing is a sequence and the host runs it: she holds the room
+       for as long as she can bear to, she says one queen's name and lets her
+       go, and then she turns to the other one. So three beats, all spoken by
+       her, all naming somebody. `lipsync-call` stays as the fallback for as
+       long as these are unwritten, and is skipped once they are. */
+    id: 'lipsync-suspense', step: 'lipsync', scope: 'once', speaker: 'host',
+    variants: 10,
+    note: 'After the song and before the names. She holds the room, and the '
+      + 'holding is the point — nobody breathes, including the two queens. She '
+      + 'may say almost nothing here; the silence is the beat.',
+    tierBy: 'always',
+    tiers: [
+      tier('held', 'The pause before she says a name.', []),
+    ],
+  },
+  {
+    id: 'lipsync-shantay', step: 'lipsync', scope: 'per-queen', speaker: 'host',
+    variants: 10,
+    note: 'SHE SAYS THE NAME. "{a}, shantay you stay." One per queen who '
+      + 'survives the song — usually one, sometimes both on a double shantay, '
+      + 'and several in a lalaparuza. The words themselves are fixed and the '
+      + 'show says them every week; what varies is what she says around them '
+      + 'and what {a} does when she hears her own name.',
+    tierBy: 'always',
+    tiers: [
+      tier('shantay', 'She stays, and she hears it first.', []),
+    ],
+  },
+  {
+    id: 'lipsync-sashay', step: 'lipsync', scope: 'per-queen', speaker: 'host',
+    variants: 10,
+    note: 'AND THEN THE OTHER ONE. She turns to {a}, says something that is '
+      + 'hers alone — the host is warm here and has been watching her all '
+      + 'season — and then "now sashay away." The kindness before the sentence '
+      + 'is the part that varies; the sentence does not.',
+    tierBy: 'always',
+    tiers: [
+      tier('sashay', 'She goes, and the host tells her so herself.', []),
+    ],
+  },
+  {
     id: 'lipsync-call', step: 'lipsync', scope: 'once', speaker: 'host',
     note: 'The verdict. Shantay, sashay, or one of the rarer calls.',
     tierBy: 'call',
@@ -547,6 +654,7 @@ export const STAGE_BEATS = [
   // ══ THE EXIT ═════════════════════════════════════════════════════════
   {
     id: 'farewell', step: 'exit', scope: 'per-queen', speaker: 'narrator',
+    variants: 10,
     note: 'What she says to the room on her way out.',
     tierBy: 'always',
     tiers: [tier('goodbye', 'The last thing she says to the queens still standing.', [
@@ -558,6 +666,7 @@ export const STAGE_BEATS = [
   },
   {
     id: 'mirror-message', step: 'exit', scope: 'per-queen', speaker: 'narrator',
+    variants: 10,
     note: 'The lipstick message she leaves on the werk room mirror. A fixed ritual — it always happens.',
     tierBy: 'always',
     tiers: [tier('message', 'Written in lipstick, for whoever comes back in tomorrow.', [
@@ -587,6 +696,7 @@ export const STAGE_BEATS = [
   },
   {
     id: 'closing', step: 'exit', scope: 'once', speaker: 'host',
+    variants: 10,
     note: 'The host closes the night on the queens who are left.',
     tierBy: 'always',
     tiers: [tier('close', 'If you cannot love yourself, how in the hell are you going to love somebody else?', [
@@ -603,12 +713,44 @@ export const STAGE_BEATS = [
 
 export const STAGE_IDS = STAGE_BEATS.map(b => b.id);
 
+/**
+ * HOW MANY VARIANTS A BEAT ACTUALLY NEEDS, which is four almost everywhere
+ * and is not four for a ritual.
+ *
+ * `usedLines` prevents a repeat WITHIN one render pass, and a beat that fires
+ * once a night has nothing to collide with inside that pass — so the draw is
+ * free every episode and a four-variant pool is seen three times over a
+ * twelve-episode season. That is fine for a beat nobody is watching closely
+ * and wrong for the mirror message, the goodbye and the two words the host
+ * says at the end of a lip sync, which are the most watched lines in the
+ * show and the ones a viewer can already recite.
+ *
+ * So a beat may declare `variants`. Nothing else changes: the hard floor
+ * stays at four everywhere, because a tier below four repeats inside a single
+ * episode, which is a bug rather than a thinness.
+ */
+export const stageVariantTarget = b => b.variants || 4;
+
 /** Every (beat, tier) pair still waiting on prose. */
 export function unwrittenStageTiers() {
   const out = [];
   for (const b of STAGE_BEATS) {
     for (const t of b.tiers) {
       if (!t.lines || t.lines.length < 4) out.push(`${b.id}/${t.id}`);
+    }
+  }
+  return out;
+}
+
+/** Written, but thinner than the ritual it carries. Reported, never failed. */
+export function thinStageTiers() {
+  const out = [];
+  for (const b of STAGE_BEATS) {
+    const want = stageVariantTarget(b);
+    if (want <= 4) continue;
+    for (const t of b.tiers) {
+      const n = (t.lines || []).length;
+      if (n >= 4 && n < want) out.push(`${b.id}/${t.id} (${n}/${want})`);
     }
   }
   return out;

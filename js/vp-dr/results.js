@@ -28,6 +28,14 @@ const n1 = v => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '—');
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
 export const RESULTS_CSS = `
+/* THE HOST'S OWN LINES ON THE LIP SYNC, with her face on them. She speaks
+   five of the beats on this screen — the address, the hold, the shantay, the
+   sashay and the fallback call — and they were drawn as anonymous paragraphs
+   with the queen's portrait beside them, which reads as narration about her
+   rather than her talking. In drag, because she is on the main stage. */
+.dr-hostsay{display:inline-flex;align-items:center;gap:-6px}
+.dr-hostsay > :nth-child(2){margin-left:-14px;box-shadow:0 0 0 3px #1a0f18}
+
 .dr-said{margin:8px 0 0;color:#f4e3ed;line-height:1.55;text-wrap:pretty}
 /* THE CARD TAKES THE COLOUR OF THE VERDICT. Every row on the call was the
    same pink lozenge and only the rubber stamp differed, so a screen whose
@@ -372,7 +380,11 @@ export function rpBuildLipSync(row) {
     const right = who && who === b;
     return `<div class="dr-step" id="dr-step-lipsync-${i}">
     <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}">
-      ${who ? _portrait(who, ep, { size: 42 }) : ''}
+      ${/^stage:(lipsync-intro|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call)$/
+    .test(sc.kind || '')
+    ? `<span class="dr-hostsay">${_judgePortrait('rupaul', { stage: true, size: 42 })}
+        ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`
+    : who ? _portrait(who, ep, { size: 42 }) : ''}
       <p>${esc(sc.text)}</p></div></div>`;
   }).join('');
 

@@ -504,7 +504,31 @@ export function renderStageBeats({
       const stunt = lipsync.stunts?.[n];
       if (stunt === 'landed' || stunt === 'failed') emit(stuntBeat, stunt, [n]);
     }
-    emit(beatById('lipsync-call'), lipsync.call || 'shantay', []);
+    /* ── THE HOLD, AND THEN THE TWO NAMES ──
+       `lipsync-call` is one paragraph that names neither queen — "one queen
+       lives to fight another week, the other is going home" — which is a
+       description of the verdict rather than the verdict, on the most watched
+       thirty seconds the show has. The host runs it as a sequence: she holds
+       the room, she says one name and lets that queen go, and then she turns
+       to the other one.
+       THE OLD BEAT IS THE FALLBACK, not a duplicate. It fires only while the
+       named ones are unwritten, so the screen never loses its verdict and
+       never prints both versions of it. */
+    const gone = new Set(lipsync.losers || (lipsync.loser ? [lipsync.loser] : []));
+    const stayed = (lipsync.queens || []).filter(n => !gone.has(n));
+    const named = beatById('lipsync-shantay').tiers[0].lines.length
+      || beatById('lipsync-sashay').tiers[0].lines.length;
+
+    if (named) {
+      emit(beatById('lipsync-suspense'), 'held', []);
+      // The stay is said first, because that is the order she says it in and
+      // the order is the whole cruelty of it: one queen is released and the
+      // other is left standing there knowing.
+      for (const n of stayed) emit(beatById('lipsync-shantay'), 'shantay', [n]);
+      for (const n of gone) emit(beatById('lipsync-sashay'), 'sashay', [n]);
+    } else {
+      emit(beatById('lipsync-call'), lipsync.call || 'shantay', []);
+    }
   }
 
   // ── the exit, which is a ritual and always happens ──

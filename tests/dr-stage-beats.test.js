@@ -5,7 +5,9 @@
 // Run this while filling js/dr/data/stage-beats.js. It reports what is still
 // unwritten and rejects anything that breaks a rule.
 import { describe, expect, it } from 'vitest';
-import { STAGE_BEATS, STAGE_IDS, unwrittenStageTiers, stageBeatCount } from '../js/dr/data/stage-beats.js';
+import {
+  STAGE_BEATS, STAGE_IDS, unwrittenStageTiers, thinStageTiers, stageBeatCount,
+} from '../js/dr/data/stage-beats.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 /**
@@ -164,10 +166,17 @@ describe('the lines', () => {
 describe('what is left to write', () => {
   it('reports the gap rather than hiding it', () => {
     const left = unwrittenStageTiers();
+    const thin = thinStageTiers();
     const total = STAGE_BEATS.reduce((n, b) => n + b.tiers.length, 0);
+    /* THIN IS REPORTED, NOT FAILED. A ritual beat fires once a night and has
+       nothing to collide with inside a single render pass, so a four-variant
+       pool is seen three times across a twelve-episode season — thin rather
+       than broken. The hard floor stays at four everywhere, because below
+       four a tier repeats inside ONE episode, which is the actual bug. */
     // eslint-disable-next-line no-console
     console.log(`main stage: ${total - left.length} of ${total} tiers written.`
-      + `\nstill to write (${left.length}): ${left.join(', ')}`);
+      + `\nstill to write (${left.length}): ${left.join(', ')}`
+      + `\nthin for a ritual (${thin.length}): ${thin.join(', ')}`);
     expect(Array.isArray(left)).toBe(true);
   });
 });

@@ -190,3 +190,121 @@ challenge it is one sentence about `{b}` that takes the whole room out.
 
 A line that would print correctly under any of the seven minis, or over any
 tempo, is a line that has not been written yet.
+
+---
+
+# Part 3 — the maxi draft and the walkthrough
+
+**`js/dr/data/maxi-voices.js`** — 33 tiers, ~200 lines.
+
+The maxi *performance* is already written and already specific. These are the
+two beats on the same night that were not.
+
+## `PICK_VOICES` — 4 role kinds × 4 outcomes (16 tiers)
+
+Eleven pick cards printed on one Snatch Game and between them they said "the
+pick", "it", "this one" and "what is available" — on a night where the thing
+being picked is a person she has to *be* for six questions.
+
+**`{d}` is the thing she got**, already resolved to a readable name. Use it in
+most lines; a tier that never reaches for it is rejected.
+
+| Kind | What `{d}` is | Which challenges |
+|---|---|---|
+| `characters` | A person she now has to BE — voice, hair, six answers. The most consequential pick in the season | Snatch Game |
+| `parts` | A scripted role with lines already written. Size, jokes and fit all decided before she opens her mouth | acting, improv, music video, Rusical |
+| `slots` | Real estate in a group number — a verse, an eight-count, a place in the running order | choreography, girl group, roast, rumix, singing, stand-up |
+| `partner` | **A person, not a thing.** The queen she has to make over, or the one she has to face | makeover, lip sync challenge |
+
+Outcomes: `got-it`, `settled`, `left-over`, `picked-last`.
+
+**`{d}` is not always pretty** — a title-cased slug for anything without an
+authored name, so it can read "Red Lame" or "Slot Three". Write around it as an
+object: *"she got {d}"* is safe, *"the {d} she had been planning all week"* is
+not. A leftover resolves to the phrase "what nobody else wanted", so
+`left-over` lines must read correctly with that in place of a name.
+
+## `WALKTHROUGH_VOICES` — 17 families (17 tiers)
+
+The host walks the room mid-build and stops at each station. This printed the
+**same paragraph six times** in one prep room — four variants against ten fires
+— and it was wrong anyway: *"looks at what she is building"* over a Snatch
+Game, where nothing is built. It also promised *"the thing is specific"* and
+was never specific.
+
+**So say the note.** Not that a note was given — what it was about. A Snatch
+Game note is the character choice and whether she has jokes for it. A design
+note is construction and whether the material is used or hidden. A Rusical note
+is whether she knows the words yet.
+
+**One tier per family, no good/bad split.** The host's note is neither, and how
+a queen takes it is a separate beat that already exists. Write the range inside
+the pool — some notes are a rescue, some are a warning.
+
+**Eight variants**, because it fires once per queen.
+
+Placeholders: `{a}`, `{c}`, `{d}` (pick pool only). No `{b}`, no `{j}`, no `{s}`.
+
+---
+
+# Part 4 — the deliberation
+
+**`js/dr/data/deliberation-voices.js`** — 11 tiers, ~60 lines.
+
+## Why this is the most valuable of the four
+
+The whole reason the judging engine has a step 2 is that judges weigh
+different things — Law puts 0.55 on the runway, Ross 0.20 — which is what lets
+a look queen and a comedy queen genuinely disagree about the same night, and
+what makes "she was robbed" possible at all.
+
+All of it was computed every week and thrown away, and it turned out to be
+worse than that: **no screen in the entire viewing party referenced the
+deliberation.** The beat had written prose, fired every week, and was drawn
+nowhere. It is now the close of the critiques screen — the safe are dismissed
+at the top, the rest are critiqued through the middle, then they all go to
+Untucked and the panel talks with the stage empty.
+
+## `ADVOCACY` — 4 taste dimensions × 2 stances (8 tiers, 6 variants)
+
+For each queen the panel is furthest apart on, the judge who ranked her
+**highest** speaks for her and the judge who ranked her **lowest** speaks
+against. That pairing is measured, not assigned.
+
+What each argues *from* is the dimension the two of them **differ on most** —
+so it really is Michelle on the runway against RuPaul on the challenge.
+
+| Dimension | What that judge is watching |
+|---|---|
+| `challenge` | What the queen DID. Forgives a bad look for a good night; unmoved by a beautiful queen who did nothing |
+| `runway` | The garment. Construction, proportion, whether the idea survived a body. Can be entirely uninterested in how funny somebody was |
+| `risk` | The nerve. Would rather see an ambitious mess than a safe success, and says so |
+| `polish` | Whether it was *finished*. Unimpressed by a good idea badly made |
+
+Stances: `champion`, `dismiss`.
+
+## `HOST_CALL` — 3 outcomes (3 tiers, 4 variants)
+
+`hostBend` reorders the panel's board, and that reorder is the most
+consequential decision of the night. Recorded on every row since the engine was
+written, shown only as a small badge, never spoken.
+
+- `lifted` — she moves `{a}` **up**, overruling people who just spent ten
+  minutes explaining why she should be lower
+- `dropped` — she moves `{a}` **down**. Harder to do and harder to say
+- `stood-by` — she leaves the board alone. **No queen was moved, so `{a}` is
+  rejected here** — it would render empty
+
+She does not argue in the panel's terms. They are arguing about a garment and a
+performance; she is thinking about a season.
+
+## Register — different from everywhere else in the show
+
+**A closed room.** Nobody is performing. The queens are in Untucked and cannot
+hear this, and judges who are warm on the main stage are blunt here. This is
+the only place where a judge says what she actually thinks without softening it
+for the person standing in front of her.
+
+Placeholders: `{a}` the queen, `{j}` the judge speaking, `{e}` the judge on the
+other side (advocacy only — the host pool has no second judge and rejects both
+`{j}` and `{e}`).

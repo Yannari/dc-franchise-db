@@ -150,6 +150,10 @@ describe('the season timeline', () => {
     ['baseline', {}],
     ['a free week', { twistSchedule: [{ type: 'dr-no-elimination', episode: 4 }] }],
     ['a double elimination', { twistSchedule: [{ type: 'dr-double-elimination', episode: 6 }] }],
+    ['a returning queen', { twistSchedule: [{ type: 'dr-returnee', episode: 5 }] }],
+    ['a returning queen by name', {
+      twistSchedule: [{ type: 'dr-returnee', episode: 6, returneeName: 'Q1' }],
+    }],
     ['the smackdown', { drSmackdown: true }],
     ['all three', {
       drSmackdown: true,
@@ -185,6 +189,27 @@ describe('the season timeline', () => {
     expect(buildEpisodeMap().length, 'a double did not shorten it').toBe(base - 1);
     await harness(14, { drSmackdown: true });
     expect(buildEpisodeMap().length, 'the smackdown did not add its episode').toBe(base + 1);
+    /* A RETURNING QUEEN IS ANOTHER BODY TO ELIMINATE. The engine ran the
+       extra week from the day the twist shipped; this loop only ever knew
+       how to shrink the room, so the designer drew eleven episodes for a
+       season that played twelve. */
+    await harness(14, { twistSchedule: [{ type: 'dr-returnee', episode: 5 }] });
+    expect(buildEpisodeMap().length, 'a returning queen did not lengthen it')
+      .toBe(base + 1);
+    /* AND THE ROOM HOLDS LEVEL ON THE NIGHT SHE COMES BACK, rather than
+       growing — which is the arithmetic being right, not wrong. She walks in
+       AFTER the previous week took somebody, so her episode has the same
+       count as the one before it instead of one fewer. That is the whole
+       shape of the twist in one number, and it is worth asserting against a
+       season without it rather than in the abstract. */
+    const withHer = buildEpisodeMap();
+    await harness(14, {});
+    const without = buildEpisodeMap();
+    const at = (m, n) => m.find(e => e.ep === n)?.active;
+    expect(at(without, 5), 'the room shrank as normal without the twist')
+      .toBe(at(without, 4) - 1);
+    expect(at(withHer, 5), 'the room shrank on the night she came back')
+      .toBe(at(withHer, 4));
   });
 
   it('never projects a merge, because this show has no tribes', async () => {

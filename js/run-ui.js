@@ -2263,6 +2263,15 @@ export function buildEpisodeMap() {
       .map(t => Number(t.episode)).filter(Number.isInteger));
     const free = at('dr-no-elimination');
     const dbl = at('dr-double-elimination');
+    /* A RETURNING QUEEN MAKES THE ROOM BIGGER, and this loop only ever knew
+       how to shrink it. The engine already ran the extra week — the season
+       needs one more elimination because there is one more queen to
+       eliminate — but the timeline drew the old length, so the designer
+       showed eleven episodes for a season that plays twelve.
+       She walks in at the top of her episode, so the count for that week
+       includes her, and the week then takes somebody as normal: net zero on
+       the night, one more week overall. */
+    const back = at('dr-returnee');
     const smackdown = booked.some(t => t.type === 'dr-smackdown' || t.id === 'dr-smackdown')
       || !!seasonConfig.drSmackdown;
 
@@ -2272,11 +2281,19 @@ export function buildEpisodeMap() {
     // A guard, not a rule: the loop below always shrinks unless the week is
     // free, and a season cannot book more free weeks than it has episodes.
     while (active > finale && ep < 60) {
+      // She is in the room before the week runs, so this week's count has her.
+      if (back.has(ep)) active += 1;
       const isFree = free.has(ep);
       const isDouble = dbl.has(ep) && !isFree;
       eps.push({
         ep, active, phase: 'main',
-        engineType: isFree ? 'dr-no-elimination' : isDouble ? 'dr-double-elimination' : null,
+        /* The shape-changing twists name the episode first, because that is
+           what the pill is telling the designer. A return that shares an
+           episode with one of them still counts — the arithmetic above does
+           not care which name the week is drawn under. */
+        engineType: isFree ? 'dr-no-elimination'
+          : isDouble ? 'dr-double-elimination'
+            : back.has(ep) ? 'dr-returnee' : null,
       });
       if (!isFree) active = Math.max(finale, active - (isDouble ? 2 : 1));
       ep++;

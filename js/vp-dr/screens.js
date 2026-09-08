@@ -75,9 +75,25 @@ const SECTIONS = [
     opens: ['prep-room', 'writing-room', 'band-rehearsal', 'recording-booth', 'ball-build',
       'makeover-build', 'no-rehearsal'],
     badge: null, title: 'The Work Room', subtitle: 'building it' },
+  /* OPENS ON THE STEP, NOT ON A LIST OF KINDS. This named seven scene kinds
+     — improv-take, snatch-taping, group-number, roast-set, ball-walks,
+     makeover-reveal, singing-performance — and there are nineteen
+     challenges. The other twelve emit their own kinds, so nine of them
+     opened no maxi section at all: their performances were swept into
+     whichever screen was open before, and The Talent Show Extravaganza,
+     The Rusical, Acting, Design, Photoshoot, Choreography, Commercial, the
+     Runway Challenge and the Lalaparuza each ran a full challenge that had
+     no screen. The scenes were all there. Thirty-one of them, on the talent
+     show, rendered under the previous heading.
+
+     An allowlist of kinds is the wrong shape for this: it has to be
+     extended every time a challenge is added and nothing fails when it is
+     not. Every maxi scene carries `maxi-pre` or `maxi-main` as its step,
+     whatever its kind, so the step is what opens the section — and a
+     twentieth challenge gets a screen without anybody remembering to. */
   { id: 'dr-maxi', label: 'The Maxi', suffix: 'maxi', phase: 'stage', accent: 'dr-a-score',
-    opens: ['improv-take', 'snatch-taping', 'group-number', 'roast-set', 'ball-walks',
-      'makeover-reveal', 'singing-performance'],
+    opens: [],
+    opensStep: ['maxi-pre', 'maxi-main'],
     badge: { text: 'MAXI', color: '#FF3D9A' }, title: 'The Challenge', subtitle: 'tape rolls' },
   { id: 'dr-elim-day', label: 'Elimination Day', suffix: 'elimday', phase: 'werk', accent: 'dr-a-room',
     opens: ['werk-elim-day'], badge: null, title: 'Elimination Day', subtitle: 'the last hour in the room' },
@@ -172,12 +188,17 @@ const CHART = {
 export function sceneSections(row) {
   const scenes = row?.dr?.scenes || [];
   const openerOf = new Map();
-  for (const s of SECTIONS) for (const k of s.opens) openerOf.set(k, s.id);
+  for (const s of SECTIONS) for (const k of s.opens || []) openerOf.set(k, s.id);
+  // A section may also open on a STEP, which is what a screen serving many
+  // challenges needs: the kinds differ per challenge and the step does not.
+  const openerByStep = new Map();
+  for (const s of SECTIONS) for (const k of s.opensStep || []) openerByStep.set(k, s.id);
 
   const out = new Map(SECTIONS.map(s => [s.id, []]));
   let current = null;
   for (const sc of scenes) {
-    const opened = openerOf.get(sc.kind);
+    // Kind first: it is the more specific claim.
+    const opened = openerOf.get(sc.kind) ?? openerByStep.get(sc.step);
     if (opened) current = opened;
     // Before any marker: the first section that this row actually has.
     if (!current) current = SECTIONS.find(s => s.id !== 'dr-arrivals')?.id || SECTIONS[0].id;

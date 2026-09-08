@@ -44,9 +44,14 @@ describe('the call', () => {
       const c = row.dr.call;
       const placed = ['win', 'high', 'low', 'atRisk', 'bottom']
         .reduce((n, k) => n + (c[k] || []).length, 0);
+      /* COUNTED AS ROWS, not as steps. Step ids were the proxy and they
+         stopped being one: the host's own cards — the pause before the last
+         call, and the line naming what the lip sync is for — are steps too,
+         and neither is a queen. The claim this test makes is about ROWS, so
+         it counts them. */
       const html = rpBuildResults(row);
-      const steps = (html.match(/id="dr-step-results-\d+"/g) || []);
-      expect(steps.length, `episode ${row.num}`).toBe(placed);
+      const rows_ = (html.match(/class="dr-panel dr-a-score dr-callrow/g) || []);
+      expect(rows_.length, `episode ${row.num}`).toBe(placed);
     }
   });
 

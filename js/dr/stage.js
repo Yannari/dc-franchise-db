@@ -326,6 +326,15 @@ export function renderStageBeats({
   // strongest opinions about her, which is also who the edit would use.
   const critBeat = beatById('critique');
   const reactBeat = beatById('critique-reaction');
+  /* ── EVERYTHING FROM HERE TO THE RESULTS IS THE PANEL TALKING ──
+     The judges' critiques, the queens' reactions to them, the deliberation
+     and the host's overrule. On a Rate-a-Queen night none of it happens: the
+     panel has handed the call to the room, so it says nothing between the
+     runway and the results, and the host announces that instead.
+     The guard has to open HERE rather than at the deliberation. Opened lower
+     down it left the critiques themselves firing, so the twist that is
+     supposed to silence the panel produced ten lines of panel. */
+  if (!rateAQueen) {
   for (const n of onStage) {
     // THE STRONGEST OPINION, PLUS ONE OTHER AT RANDOM. Taking the top two by
     // conviction seemed obvious and was wrong: it selects the extremes by
@@ -432,13 +441,7 @@ export function renderStageBeats({
      and do not appear here at all — the host announces the shape of the night
      instead and the queens go and rank each other. Returning early is the
      point: everything below this is the panel talking. */
-  if (rateAQueen) {
-    emit(beatById('rate-announce'), 'announce', []);
-  } else {
-    emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
-  }
-  if (!rateAQueen) {
-
+  emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
   for (const row of contested) {
     const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
     if (ids.length < 2) continue;
@@ -493,6 +496,12 @@ export function renderStageBeats({
     });
   }
 
+  } // ── end of the panel's night ──
+
+  /* AND ON A RATE-A-QUEEN NIGHT, THE ONE THING THE HOST DOES SAY. It replaces
+     the whole section above rather than joining it. */
+  if (rateAQueen) emit(beatById('rate-announce'), 'announce', []);
+
   /* ── THE RESULTS, IN THE ORDER THE HOST CALLS THEM ──
      SAFE FIRST. The host dismisses the safe queens before he turns to the
      tops and the bottoms — they leave the stage and the night narrows to
@@ -515,7 +524,6 @@ export function renderStageBeats({
      `callOrder` is chosen in week.js from what actually happened tonight, and
      the hold is the pause before the block the night has been built to end
      on. See js/dr/data/results-order.js for the shapes and why each exists. */
-  }
 
   const shape = resultOrder(callOrder);
   const BY_GROUP = {

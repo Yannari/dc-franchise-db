@@ -448,10 +448,25 @@ export function rpBuildResults(row) {
     };
   }
 
-  return `<style>${RESULTS_CSS}</style>${_shell(stand + steps, ep, {
+  /* ── AND WHAT THE LIP SYNC IS FOR, WHICH IS THE LAST THING SAID ──
+     `stage:call-stakes` is the host naming the terms — for your life, for the
+     win, for a place in the show's history — and it is the sentence that
+     turns a list of names into a threat. It was written, emitted every week
+     and drawn by nothing: the sweep that asserts written prose reaches a page
+     caught it, which is the only check that would have.
+     It goes last because it IS the handoff: the call ends, the stakes are
+     named, and the next screen is two queens on the mark. */
+  const stakes = (row.dr.scenes || []).find(x => x.kind === 'stage:call-stakes' && x.text);
+  const stakesCard = stakes ? `<div class="dr-step" id="dr-step-results-${named.length}">
+      <div class="dr-panel dr-a-room dr-hold dr-stakes">
+        ${_judgePortrait('rupaul', { stage: true, size: 40 })}
+        <p>${esc(stakes.text)}</p>
+      </div></div>` : '';
+
+  return `<style>${RESULTS_CSS}</style>${_shell(stand + steps + stakesCard, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who the panel kept back',
     sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
-  })}${_controls('results', named.length, ep.num)}`;
+  })}${_controls('results', named.length + (stakes ? 1 : 0), ep.num)}`;
 }
 
 /** The lip sync, built as a fight. */

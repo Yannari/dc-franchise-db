@@ -528,7 +528,13 @@ export function runDragWeek(state, cfg, ctx) {
      going to tell them anything.
      The scene still fires — the screen is built from it and the reactions
      read it — with an empty critique list and a flag saying why. */
-  const critiques = cfg.rateAQueen ? {} : critiqueLines({ panel, views, call, entries, rng });
+  /* AN EMPTY LIST, NOT AN EMPTY OBJECT. `critiqueLines` returns an array and
+     the stage renderer calls `.filter` on it, so `{}` threw — inside a
+     try/catch that turns a narration failure into a silent `stage:error`
+     scene, which is the right call for a played season and meant this cost
+     the viewer THREE SCREENS with nothing anywhere saying why: no results, no
+     lip sync, no exit on any Rate-a-Queen night. */
+  const critiques = cfg.rateAQueen ? [] : critiqueLines({ panel, views, call, entries, rng });
 
   say('critiques', 'critiques', {
     call, split, tripled, critiques, twist: cfg.critiqueTwist || null,

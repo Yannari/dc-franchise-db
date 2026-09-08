@@ -152,6 +152,9 @@ export function renderStageBeats({
   views = {}, ranking = [], bend = [],
   // Which shape the host runs the call in tonight. See results-order.js.
   callOrder = 'standard',
+  // The challenge family, so a critique about what she DID can be about what
+  // she did tonight rather than about challenges in general.
+  challengeFamily = 'generic',
   rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
@@ -340,7 +343,11 @@ export function renderStageBeats({
            she is looking for. Written, it says something only this judge
            would say about only this performance. */
         const r = c.reason || {};
-        const said = reasonLinesFor(r.dimension, r.direction);
+        // WHICH NIGHT IT WAS. Without this the `challenge` dimension had one
+        // pool for the whole season and Michelle could not say she does not
+        // see the family resemblance, because no critique knew it was a
+        // makeover.
+        const said = reasonLinesFor(r.dimension, r.direction, challengeFamily);
         const bias = said ? biasLinesFor(r.styleLean) : null;
         const text = said
           ? [
@@ -357,7 +364,7 @@ export function renderStageBeats({
           data: {
             beat: 'critique', tier: c.tone, players: [n], note: t.note,
             judge: c.judgeName, reasons: c.reasons, gap: c.gap,
-            reason: c.reason || null, voiced: !!said,
+            reason: c.reason || null, voiced: !!said, family: challengeFamily,
           },
           text,
         });

@@ -188,6 +188,125 @@ export const CRITIQUE_REASONS = [
 ];
 
 // ══════════════════════════════════════════════════════════════════════
+// POOL 2 — WHAT SHE DID, IN THE NIGHT'S OWN WORDS
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE JUDGE VARIED AND THE CHALLENGE DID NOT. Pool 1's `challenge` tier is one
+// pool for every night of the season, so the same praise printed over a
+// makeover, a Snatch Game and a Rusical — the judge's name changed, her pet
+// peeve changed, and what she was actually talking about did not:
+//
+//   makeover     "That is what I come here to see," Michelle Visage tells her
+//   snatch-game  RuPaul tells her she found a big personality
+//   rusical      "You came out here and you DID something"
+//
+// Not one of those is about a makeover, a character or a live vocal. Michelle
+// does not say "I do not see the family resemblance" because no critique has
+// ever known it was a makeover.
+//
+// So the `challenge` dimension — and only that one — is keyed by the challenge
+// family as well. The other three ask the same question every week: the
+// garment is the garment, nerve is nerve, and finished is finished. What she
+// DID is the only thing that changes with the night, which is why this is
+// thirty-four tiers rather than a hundred and thirty-six.
+//
+// Same families as js/dr/data/maxi-performance.js, so a challenge with a
+// performance pool automatically has a critique to go with it.
+//
+// WRITE THE NIGHT'S OWN VOCABULARY. A makeover fault is the resemblance and
+// whether the two of them read as family; a Snatch Game fault is the character
+// and whether she could hold it; a Rusical fault is the words and the key. A
+// line that would work on any other night is the line this pool replaces.
+
+const chal = (family, note, ...rest) => ({
+  family, note, tiers: tiersFrom(DIRECTIONS, rest.flat()),
+});
+
+export const CRITIQUE_CHALLENGE = [
+  chal('snatch-game',
+    'The character: whether she picked one she could do, whether she held it '
+    + 'for six questions, and whether it was funny as that person rather than '
+    + 'as herself.',
+    'The character was alive and she never once dropped it.',
+    'She could not hold it, or she picked somebody she cannot do.'),
+  chal('girl-group',
+    'Her verse, her eight-count, and whether she disappeared into the group '
+    + 'or stood out of it.',
+    'Her verse was the one the number needed and she sold it.',
+    'She was carried, or she was off the count, or she vanished.'),
+  chal('rusical',
+    'THE WORDS AND THE KEY. A live vocal in front of a band, a part with lines '
+    + 'in it, and nowhere to hide.',
+    'She sang it, in key, and acted it at the same time.',
+    'The words went, or the key did, and the band did not stop for her.'),
+  chal('roast',
+    'Her own material, her own timing, a live room. Whether the jokes were '
+    + 'hers and whether they landed.',
+    'She wrote it, she landed it, and she held the room.',
+    'The material was thin or the timing was gone and the room went quiet.'),
+  chal('makeover',
+    'THE RESEMBLANCE. Whether the two of them read as family — the paint, the '
+    + 'proportions, the walk she taught her — and whether she made her partner '
+    + 'comfortable enough to sell it.',
+    'They read as sisters and her partner is having the night of her life.',
+    'They do not look related, or she painted a stranger and left her there.'),
+  chal('ball',
+    'Three looks and one of them sewn on the day. Whether the trio holds '
+    + 'together and whether the built one holds up.',
+    'All three land and the sewn one is the best of them.',
+    'The trio does not cohere, or the built look is unfinished.'),
+  chal('design',
+    'What she made out of what she was handed, and whether the material is '
+    + 'used or hidden.',
+    'She used the material rather than disguising it, and it is a garment.',
+    'It is glue and hope, or the material is being apologised for.'),
+  chal('talent-show',
+    'The act. Whether she had one, whether it had an ending, and whether it '
+    + 'was worth the four minutes.',
+    'The act was hers, it was finished, and the room wanted more of it.',
+    'The act had no ending, or it was a runway walk with music.'),
+  chal('lalaparuza',
+    'Lip syncs back to back. Whether she performed the song or just knew it.',
+    'She performed every one of them and got better as they went.',
+    'She ran out somewhere in the middle and the rest was survival.'),
+  chal('acting',
+    'A scripted part on camera. Lines, character, and whether she made a '
+    + 'choice rather than reading the page.',
+    'She made a choice and committed to it, and the camera got it.',
+    'She read the lines, or she lost them, or she played herself.'),
+  chal('commercial',
+    'Thirty seconds, a product, a co-star and a tagline. Whether it sells.',
+    'She sold something ridiculous and made it look easy.',
+    'The concept was unfollowable, or the tagline died on camera.'),
+  chal('improv',
+    'No script. Whether she was quick, and whether quick was funny.',
+    'She was fast and it was funny and she made her partner better.',
+    'She reached for a script that does not exist, or she steamrollered.'),
+  chal('photoshoot',
+    'One frame with something going wrong in it. Whether the face held.',
+    'The face never moved and the frame is the one they will print.',
+    'She flinched, or the concept never reached the picture.'),
+  chal('choreography',
+    'The count. Whether she learned it and whether she hit it.',
+    'She hit every count and made the queen next to her look better.',
+    'She was off the count and it is visible in every wide shot.'),
+  chal('singing',
+    'A live vocal with nothing over it.',
+    'She can genuinely sing and she chose to prove it.',
+    'She cannot, and there was no arrangement to hide behind.'),
+  chal('runway-challenge',
+    'The looks are the whole night. Whether she brought enough of them.',
+    'She packed for this and it shows in every walk.',
+    'She had one good look and a week that needed several.'),
+  chal('generic',
+    'FALLBACK for a challenge with no family of its own. The line may not '
+    + 'assume a garment, a script, a team or a stage, because it could be any '
+    + 'of them — so write about how she met the brief, not about the brief.',
+    'She did what the week asked and did it better than anybody.',
+    'She did not do what the week asked, and everything else is decoration.'),
+];
+
+// ══════════════════════════════════════════════════════════════════════
 // POOL 2 — WHEN THE JUDGE IS THE REASON
 // ══════════════════════════════════════════════════════════════════════
 //
@@ -232,7 +351,17 @@ export const CRITIQUE_BIAS = [
 export const BIAS_SPEAKS = 0.3;
 
 /** The reason lines for this dimension and direction, or null. */
-export function reasonLinesFor(dimension, direction) {
+export function reasonLinesFor(dimension, direction, family = null) {
+  /* THE NIGHT'S OWN WORDS FIRST. Only the `challenge` dimension varies with
+     which challenge it was — the garment, the nerve and the finish ask the
+     same question every week — so a family pool is consulted for that one and
+     the generic tier stays as the fallback for a family nobody has written. */
+  if (dimension === 'challenge' && family) {
+    const c = CRITIQUE_CHALLENGE.find(x => x.family === family)
+      || CRITIQUE_CHALLENGE.find(x => x.family === 'generic');
+    const ct = c && c.tiers.find(y => y.id === direction);
+    if (ct && ct.lines.length) return ct.lines;
+  }
   const d = CRITIQUE_REASONS.find(x => x.dimension === dimension);
   const t = d && d.tiers.find(y => y.id === direction);
   return t && t.lines.length ? t.lines : null;
@@ -255,6 +384,13 @@ export function biasLinesFor(styleLean) {
 /** Every tier still short of its variant count. */
 export function unwrittenCritiqueVoices() {
   const out = [];
+  for (const c of CRITIQUE_CHALLENGE) {
+    for (const t of c.tiers) {
+      if (t.lines.length < CRITIQUE_VARIANTS) {
+        out.push(`challenge:${c.family}/${t.id} (${t.lines.length}/${CRITIQUE_VARIANTS})`);
+      }
+    }
+  }
   for (const d of CRITIQUE_REASONS) {
     for (const t of d.tiers) {
       if (t.lines.length < CRITIQUE_VARIANTS) {
@@ -270,5 +406,7 @@ export function unwrittenCritiqueVoices() {
 
 /** How many tiers exist, for the progress report. */
 export function critiqueVoiceTierCount() {
-  return CRITIQUE_REASONS.reduce((n, d) => n + d.tiers.length, 0) + CRITIQUE_BIAS.length;
+  return CRITIQUE_REASONS.reduce((n, d) => n + d.tiers.length, 0)
+    + CRITIQUE_CHALLENGE.reduce((n, c) => n + c.tiers.length, 0)
+    + CRITIQUE_BIAS.length;
 }

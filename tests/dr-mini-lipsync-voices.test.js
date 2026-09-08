@@ -41,6 +41,7 @@ import { JUDGES } from '../js/dr/data/judges.js';
 import {
   CRITIQUE_REASONS, CRITIQUE_BIAS, DIMENSIONS, DIRECTIONS, CRITIQUE_VARIANTS,
   BIAS_SPEAKS, biasLinesFor, unwrittenCritiqueVoices, critiqueVoiceTierCount,
+  CRITIQUE_CHALLENGE, reasonLinesFor,
 } from '../js/dr/data/critique-voices.js';
 import {
   ADVOCACY, HOST_CALL, TASTE_IDS, DELIBERATION_VARIANTS,
@@ -440,6 +441,37 @@ describe('the critique reasoning', () => {
     ...CRITIQUE_REASONS.flatMap(d => d.tiers.map(t => ({ pool: 'reason', key: `${d.dimension}/${t.id}`, t }))),
     ...CRITIQUE_BIAS.map(b => ({ pool: 'bias', key: b.id, t: { id: b.id, lines: b.lines } })),
   ].filter(x => x.t.lines.length);
+
+  it('has the words that belong to this challenge, for every family', () => {
+    /* THE JUDGE VARIED AND THE CHALLENGE DID NOT. One `challenge` pool for the
+       whole season meant the same praise printed over a makeover, a Snatch
+       Game and a Rusical — so Michelle could not say she does not see the
+       family resemblance, because no critique knew it was a makeover. */
+    const mine = CRITIQUE_CHALLENGE.map(c => c.family);
+    for (const f of MAXI_PERFORMANCE) {
+      expect(mine, `family "${f.family}" has a performance pool but no critique`)
+        .toContain(f.family);
+    }
+    expect(mine, 'there is no fallback family').toContain('generic');
+    for (const c of CRITIQUE_CHALLENGE) {
+      expect(c.tiers.map(t => t.id), `challenge:${c.family}`).toEqual(DIRECTIONS);
+      expect(c.note, `challenge:${c.family} has no note`).toBeTruthy();
+    }
+  });
+
+  it('takes the family for the challenge dimension and ignores it elsewhere', () => {
+    const written = CRITIQUE_CHALLENGE.find(c => c.tiers.some(t => t.lines.length));
+    if (written) {
+      expect(reasonLinesFor('challenge', 'fault', written.family))
+        .not.toBe(reasonLinesFor('challenge', 'fault', null));
+    }
+    // A garment is a garment whatever the challenge was, so the other three
+    // dimensions do not vary with the night and must not pretend to.
+    expect(reasonLinesFor('runway', 'fault', 'makeover'))
+      .toBe(reasonLinesFor('runway', 'fault', null));
+    expect(reasonLinesFor('polish', 'praise', 'ball'))
+      .toBe(reasonLinesFor('polish', 'praise', null));
+  });
 
   it('covers every dimension a judge can be weighing', () => {
     const mine = CRITIQUE_REASONS.map(d => d.dimension);

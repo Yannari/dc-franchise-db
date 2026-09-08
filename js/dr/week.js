@@ -718,6 +718,7 @@ export function runDragWeek(state, cfg, ctx) {
       // deliberation can be the argument instead of a note that one happened.
       views, ranking, bend,
       callOrder,
+      challengeFamily: familyForChallenge(maxi.id).family,
     });
     for (const sc of stageScenes) scenes.push(sc);
 

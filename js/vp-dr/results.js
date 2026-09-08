@@ -29,6 +29,12 @@ const n1 = v => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '—');
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
 export const RESULTS_CSS = `
+/* The pause before the last call. Deliberately not a call row: it is not
+   about a queen and should read as a gap in the column rather than a row. */
+.dr-hold{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;
+  padding:12px 16px;opacity:.92}
+.dr-hold p{margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
+
 /* THE HOST'S OWN LINES ON THE LIP SYNC, with her face on them. She speaks
    five of the beats on this screen — the address, the hold, the shantay, the
    sashay and the fallback call — and they were drawn as anonymous paragraphs
@@ -349,12 +355,30 @@ export function rpBuildResults(row) {
      It was here for one commit, which was already an improvement on giving
      each safe queen her own silent row, but it put the dismissal after the
      critiques of people who were dismissed before them. */
+  /* AND THE PAUSE, WHICH IS A CARD. `stage:results-hold` is the beat where
+     the host stops before the last call of the night, and it carries `before`
+     — the group it precedes — so it goes in at that seam rather than at the
+     end. It is not about a queen, so it gets no portrait and no stamp: it is
+     the room holding its breath, and it should look like a gap in the
+     column rather than another row in it. */
+  const hold = (row.dr.scenes || []).find(x => x.kind === 'stage:results-hold' && x.text);
+  const holdBefore = hold?.data?.before || null;
+  const holdCard = i => `<div class="dr-step" id="dr-step-results-${i}">
+      <div class="dr-panel dr-a-room dr-hold">
+        ${_judgePortrait('rupaul', { stage: true, size: 40 })}
+        <p>${esc(hold.text)}</p>
+      </div></div>`;
+
+  let holdDrawn = !hold;
   const steps = named.map(([result, name], i) => {
     const b = bend.get(name);
     const moved = b && b.panelRank !== b.finalRank;
     const meta = GRID_RESULTS[result] || {};
     const said = lineFor(result, name);
-    return `<div class="dr-step" id="dr-step-results-${i}">
+    // The seam: the first row of the block the host paused before.
+    let before = '';
+    if (!holdDrawn && holdBefore === result) { before = holdCard(-1); holdDrawn = true; }
+    return `${before}<div class="dr-step" id="dr-step-results-${i}">
       <div class="dr-panel dr-a-score dr-callrow${
   result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
         ${_portrait(name, ep, { size: 52, station: true })}

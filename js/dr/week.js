@@ -32,7 +32,7 @@ import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
 import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
-import { rateBoard } from './rate.js';
+import { rateBoard, ballotSelfishness } from './rate.js';
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
@@ -401,6 +401,38 @@ export function runDragWeek(state, cfg, ctx) {
     bottomNamed: cfg.bottomNamed || (cfg.bottomThree ? 3 : 2),
   });
 
+  /* ── RATE-A-QUEEN WITH NOTHING AT STAKE PUTS THE TOP TWO ON THE SONG ──
+     The twist as the show ran it: the room ranks, the two HIGHEST placements
+     lip sync, and the winner of that takes the week. Nobody goes home — the
+     premiere it was built for was a non-elimination night — so the song is
+     for the win rather than for a life.
+     That is only true when the week is booked with no elimination. A
+     Rate-a-Queen on an ordinary week keeps the ordinary shape: the room's
+     ranking still decides the call, and the bottom two still sing to stay.
+     `call.bottom` is simply WHO SINGS, so the swap is honest rather than a
+     special case threaded through the lip sync below. */
+  /* ── LIP SYNC FOR YOUR LEGACY ──
+     The All Stars inversion, and the deepest rule change the show has: the
+     top two sing, and the WINNER eliminates. It is the same staging as a
+     Rate-a-Queen no-elimination night — the two best perform, the song is for
+     a prize rather than for a life — except the prize is the power to send
+     somebody home.
+     `legacy` therefore shares topTwoSing; what it does not share is the empty
+     exit list. */
+  const legacy = !!(cfg.legacy && bend.length >= 4);
+  const topTwoSing = legacy || !!(cfg.rateAQueen && cfg.noElimination && bend.length >= 2);
+  if (topTwoSing) {
+    const top2 = bend.slice(0, 2).map(r => r.name);
+    call.bottom = top2;
+    call.atRisk = [];
+    // Nobody is safe-with-a-note on a night the room ranked for a prize, and
+    // the win is not awarded until the song is over.
+    call.win = [];
+    call.high = bend.slice(2, 4).map(r => r.name).filter(n => !top2.includes(n));
+    call.low = [];
+    call.safe = bend.slice(2).map(r => r.name).filter(n => !call.high.includes(n));
+  }
+
   /* ── HOW THE HOST RUNS THE CALL TONIGHT ──
      The order is a decision and it is made from what happened, not rolled
      flat and not fixed. A first win wants to be the last thing said; a queen
@@ -601,13 +633,23 @@ export function runDragWeek(state, cfg, ctx) {
     // with two queens performing for their lives and both staying, which is
     // the night's climax — but nobody goes home, so the call is resolved
     // without a loser rather than skipped.
-    const lc = cfg.noElimination
+    /* A LEGACY NIGHT RESOLVES WITHOUT A LOSER TOO. The song decides who holds
+       the power, not who goes home — so it takes the no-loser branch, and the
+       elimination happens below when the winner spends it. Gated on
+       `noElimination` alone, a legacy lip sync fell through to an ordinary
+       shantay and sent the RUNNER-UP home as well as the queen the winner
+       chose: two exits on a single elimination night. */
+    const lc = (cfg.noElimination || legacy)
       /* ITS OWN CALL, NOT 'shantay'. The stage picks its prose by this value,
          and `shantay` is the tier that says one queen stays and one goes — so
          a night where nobody goes home was narrated as "the half where
          somebody stays and the half where somebody goes" over an empty exit
          list. A night with no elimination is a different call and says so. */
-      ? { call: 'no-elimination', winner: sa.score >= sb.score ? a : b, loser: null, losers: [], gap: sa.score - sb.score }
+      ? {
+        call: legacy ? 'legacy' : (topTwoSing ? 'for-the-win' : 'no-elimination'),
+        winner: sa.score >= sb.score ? a : b, loser: null, losers: [],
+        gap: sa.score - sb.score,
+      }
       : lipsyncCall({
         a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
         bendA: bendOf(a), bendB: bendOf(b),
@@ -625,7 +667,40 @@ export function runDragWeek(state, cfg, ctx) {
       beats: { [a]: sa.beats, [b]: sb.beats },
       stunts: { [a]: sa.stunt, [b]: sb.stunt },
       call: lc.call, winner: lc.winner, loser: lc.loser, gap: lc.gap,
+      ...(topTwoSing ? { forTheWin: true } : {}),
     };
+
+    /* AND ON A TOP-TWO NIGHT THE SONG AWARDS THE WEEK. The record is written
+       further down from `call.win`, so the winner has to be moved into it
+       before that happens — otherwise the night the room ranked for a prize
+       goes on the chart as a week nobody won. */
+    if (topTwoSing && lc.winner) {
+      call.win = [lc.winner];
+      call.high = [a, b].filter(n => n !== lc.winner);
+      state.lastWinner = lc.winner;
+    }
+
+    /* AND ON A LEGACY NIGHT SHE SPENDS IT. The queen who won the song chooses
+       who goes home, out of the bottom of the room — not out of the whole
+       cast, because the two who just sang are the top two and the show does
+       not let her send a rival home for beating her.
+       WHO SHE PICKS IS THE SAME QUESTION AS A BALLOT. A queen with the
+       appetite for it takes out the biggest threat she can reach; one without
+       it takes the queen the room already ranked last, which is the polite
+       answer and also the honest one. Reusing ballotSelfishness rather than a
+       second rule, so a hero eliminates like a hero here too. */
+    if (legacy) {
+      const pool = bend.slice(2).map(r => r.name).filter(n => n !== a && n !== b);
+      if (pool.length) {
+        const appetite = ballotSelfishness(P(lc.winner));
+        const chosen = appetite >= 0.4 ? pool[0] : pool[pool.length - 1];
+        exits.push(chosen);
+        lipsync.eliminated = chosen;
+        lipsync.chosenBy = lc.winner;
+        lipsync.legacy = true;
+        say('lipsync', 'legacy-choice', { winner: lc.winner, eliminated: chosen, pool });
+      }
+    }
 
     if (lc.call === 'double-shantay') {
       state.lipsyncRecord[a].push('W');

@@ -164,6 +164,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          author can pin; this is the one that changes what the week DOES, and
          it has to survive the build or the schedule entry reaches the season
          loop without it and the twist silently does not happen. */
+      ...(pin.legacy ? { legacy: true } : {}),
       ...(pin.rateAQueen ? { rateAQueen: true } : {}),
       ...(pin.critiqueTwist ? { critiqueTwist: pin.critiqueTwist } : {}),
       ...(pin.noElimination ? { noElimination: true } : {}),
@@ -868,6 +869,7 @@ export function playDragSeason({
       // She competes on her return night and cannot go home on it.
       ...(returned ? { returnedQueen: returned.name } : {}),
       ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
+      ...(week.legacy ? { legacy: true } : {}),
       ...(week.rateAQueen ? { rateAQueen: true } : {}),
       /* THE CRITIQUE TWISTS WERE UNREACHABLE. js/dr/critiques.js exports
          whoShouldGoHome and rateAQueen, week.js dispatches on

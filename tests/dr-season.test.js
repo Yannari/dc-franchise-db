@@ -611,3 +611,45 @@ describe('EVERY PER-EPISODE TWIST REACHES THE ENGINE', () => {
     }
   });
 });
+
+describe('WHO SINGS, AND WHAT FOR', () => {
+  /* Three different nights use the same two-queen lip sync and mean entirely
+     different things by it, so each is asserted on what it COSTS rather than
+     on a flag being set. */
+  const play = sched => playDragSeason({ cast: cast(12, 5), seed: 5,
+    config: { drSchedule: sched }, bond: () => 0, addBond: () => {}, popDelta: () => {} });
+  const ep2 = s => s.rows.find(r => r.num === 2);
+
+  it('an ordinary Rate-a-Queen still sends the bottom two to sing for their lives', () => {
+    const e = ep2(play([{ episode: 2, rateAQueen: true }]));
+    const top2 = e.dr.rateAQueen.board.slice(0, 2).map(r => r.name);
+    expect(e.dr.lipsync.queens, 'the top two sang on a normal week')
+      .not.toEqual(expect.arrayContaining(top2));
+    expect(e.dr.lipsync.loser, 'nobody lost the song').toBeTruthy();
+    expect(e.exits.length).toBe(1);
+  });
+
+  it('Rate-a-Queen on a no-elimination week puts the TOP two on the song, for the win', () => {
+    const e = ep2(play([{ episode: 2, rateAQueen: true, noElimination: true }]));
+    const top2 = e.dr.rateAQueen.board.slice(0, 2).map(r => r.name);
+    expect([...e.dr.lipsync.queens].sort()).toEqual([...top2].sort());
+    expect(e.dr.lipsync.call).toBe('for-the-win');
+    expect(e.dr.lipsync.loser, 'somebody lost a song nobody could lose').toBe(null);
+    expect(e.exits.length, 'a no-elimination week sent somebody home').toBe(0);
+    // The song awards the week, so the chart must record a winner.
+    expect(e.dr.call.win).toEqual([e.dr.lipsync.winner]);
+  });
+
+  it('a Legacy night lets the winner of the song eliminate, and only her choice goes', () => {
+    const e = ep2(play([{ episode: 2, legacy: true }]));
+    expect(e.dr.lipsync.call).toBe('legacy');
+    expect(e.dr.lipsync.loser, 'the runner-up must not be a casualty').toBe(null);
+    expect(e.dr.lipsync.chosenBy).toBe(e.dr.lipsync.winner);
+    /* The bug this catches: gated on the wrong flag, the song resolved as an
+       ordinary shantay and sent the RUNNER-UP home as well as the queen the
+       winner chose — two exits on a one-elimination night. */
+    expect(e.exits.map(x => x.name)).toEqual([e.dr.lipsync.eliminated]);
+    // And she cannot send home the queen who just beat her.
+    expect(e.dr.lipsync.queens).not.toContain(e.dr.lipsync.eliminated);
+  });
+});

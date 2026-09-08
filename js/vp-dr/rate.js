@@ -125,8 +125,15 @@ export const RATE_CSS = `
 .raq-tile{position:relative;display:block;margin:0 auto;overflow:hidden;
   clip-path:polygon(50% 0,100% 100%,0 100%);
   background:linear-gradient(180deg,#FF3DC8,#8a1a6a)}
-.raq-tile img{position:absolute;left:50%;top:100%;width:88%;height:auto;
-  transform:translate(-50%,-88%);display:block}
+/* THE IMAGE MUST COVER THE WHOLE TILE. At 88% width and auto height it did
+   not reach the corners, so the tile's own pink gradient showed through along
+   the bottom edge and read as a border the design never asked for. inset:0
+   plus object-fit:cover guarantees coverage; the scale and the low
+   transform-origin then push the face down out of the point and into the
+   wide part of the triangle, which is the only part you can actually see. */
+.raq-tile img{position:absolute;inset:0;width:100%;height:100%;display:block;
+  object-fit:cover;object-position:50% 14%;
+  transform:scale(1.5);transform-origin:50% 72%}
 
 /* ── THE GRID OF QUEENS ── */
 .raq-grid{position:relative;z-index:2;padding:10px;display:grid;

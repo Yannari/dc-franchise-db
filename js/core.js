@@ -90,16 +90,25 @@ export const REL_KINSHIP = {
   // off this axis and could not cast a mother and son. A parent and child is
   // also not one relation: a father and son in a house is a different
   // programme from a mother and daughter, and the screens say so.
-  twins:       { label: 'Twins',           family: true,  tense: false, group: 'Family' },
-  siblings:    { label: 'Siblings',        family: true,  tense: false, group: 'Family' },
-  'step-siblings': { label: 'Step-siblings', family: true, tense: false, group: 'Family' },
-  'parent-child': { label: 'Parent & child', family: true, tense: false, group: 'Family' },
-  grandparent: { label: 'Grandparent & grandchild', family: true, tense: false, group: 'Family' },
-  'aunt-uncle': { label: 'Aunt/uncle & niece/nephew', family: true, tense: false, group: 'Family' },
-  cousins:     { label: 'Cousins',         family: true,  tense: false, group: 'Family' },
-  'in-laws':   { label: 'In-laws',         family: true,  tense: false, group: 'Family' },
+  twins:       { label: 'Twins',           family: true,  tense: false, axis: 'blood', group: 'Family' },
+  siblings:    { label: 'Siblings',        family: true,  tense: false, axis: 'blood', group: 'Family' },
+  'step-siblings': { label: 'Step-siblings', family: true, tense: false, axis: 'blood', group: 'Family' },
+  'parent-child': { label: 'Parent & child', family: true, tense: false, axis: 'blood', group: 'Family' },
+  grandparent: { label: 'Grandparent & grandchild', family: true, tense: false, axis: 'blood', group: 'Family' },
+  'aunt-uncle': { label: 'Aunt/uncle & niece/nephew', family: true, tense: false, axis: 'blood', group: 'Family' },
+  cousins:     { label: 'Cousins',         family: true,  tense: false, axis: 'blood', group: 'Family' },
+  'in-laws':   { label: 'In-laws',         family: true,  tense: false, axis: 'blood', group: 'Family' },
 
   /* ── the drag family, which is a different thing to a family ──
+
+     EXCLUSIVE WITH THE BLOOD TERMS ABOVE, both ways round. A drag season has
+     no twins and no in-laws, and a camp has no drag mothers; offering either
+     list to the other show clutters a picker with terms that show's engine
+     will never read, which is how a season ends up carrying a relation
+     nothing acts on. `axis` is the switch and js/cast-ui.js is the only
+     reader: 'drag' on a runway, 'blood' everywhere else, and every term with
+     no axis at all -- exes, best friends, worked together, married -- is
+     offered to all four shows, because those are true of anybody.
 
      A drag mother is not a parent and `parent-child` is the wrong word for
      her: she is the queen who put you in your first pair of heels, and the
@@ -112,11 +121,11 @@ export const REL_KINSHIP = {
      "mother" alone does not say whose. Only these three are ever authored;
      every other term in a drag family is derived from them. */
   'drag-mother':   { label: "Drag mother — A is B's mother", family: true, tense: false,
-    group: 'Drag family', show: 'drag-race' },
+    axis: 'drag', group: 'Drag family' },
   'drag-daughter': { label: "Drag daughter — A is B's daughter", family: true, tense: false,
-    group: 'Drag family', show: 'drag-race' },
+    axis: 'drag', group: 'Drag family' },
   'drag-sisters':  { label: 'Drag sisters', family: true, tense: false,
-    group: 'Drag family', show: 'drag-race' },
+    axis: 'drag', group: 'Drag family' },
 
   // ── together ──
   married:     { label: 'Married',         family: true,  tense: false, group: 'Together' },
@@ -334,6 +343,11 @@ export const TWIST_CATEGORIES = [
   { id: 'social', label: 'Social' },
   { id: 'challenge', label: 'Challenge' },
   { id: 'murder', label: 'Murder Twists' },
+  /* ALL STARS IS ITS OWN SHELF. The format's twists are not variations on a
+     regular season's — they change WHO DECIDES, which is the deepest rule the
+     show has — so they group on their own rather than being scattered through
+     Elimination and Social where a reader would have to tell which is which. */
+  { id: 'all-stars', label: 'All Stars' },
 ];
 
 export const TWIST_CATEGORY_LABEL = Object.fromEntries(
@@ -957,6 +971,11 @@ export const TWIST_CATALOG = [
      cast a night; this gives one of them the competition back. dataFields
      carries the booking's own choice through to the engine — every other
      drag twist is a boolean and this one has to say WHO. */
+  /* ── ALL STARS ── */
+  { id:'dr-legacy', emoji:'\u{1F3C6}', name:'Lip Sync For Your Legacy', format:'drag-race',
+    category:'all-stars', phase:'any', engineType:'dr-legacy', episodeField:'legacy',
+    desc:'The All Stars rule, and the biggest change the show ever makes to itself: the TOP two lip sync instead of the bottom two, and the queen who wins the song decides who goes home. Nobody sings to save herself — the two best performances of the week fight for the power, and everybody below them waits to find out what the winner does with it. A queen with the appetite takes out the biggest threat she can reach; one without it sends home the queen the room already ranked last.',
+    incompatible:['dr-no-elimination','dr-double-elimination','dr-bottom-three'] },
   /* ENGINE FEATURES THAT WERE NOT BOOKABLE. All three already ran — week.js
      has read bottomThree and dispatched on critiqueTwist since they were
      written — and none had a way in from the designer, so they were reachable
@@ -966,12 +985,12 @@ export const TWIST_CATALOG = [
     desc:'The panel names THREE queens in the bottom instead of two, keeps them on the stage, and saves one of them there before the song. Only two lip sync. The queen who is saved is the only way a chart ever records BTM rather than BTM2 — named in the bottom and let go without ever having to fight for it — so without this week that row of the track record can never happen.',
     incompatible:['dr-no-elimination'] },
   { id:'dr-who-should-go', emoji:'\u{1F5E3}', name:'Who Should Go Home?', format:'drag-race',
-    category:'twist', phase:'any', engineType:'dr-who-should-go', episodeField:'critiqueTwist',
+    category:'social', phase:'any', engineType:'dr-who-should-go', episodeField:'critiqueTwist',
     episodeValue:'who-should-go',
     desc:'While the panel deliberates, each queen is asked which of the others should sashay away, and the answers are read out. It changes no placement — the host still decides — but the room finds out who named whom, and it costs the ones who answered honestly. The oldest of the format twists and still the meanest.',
     incompatible:['dr-rate-social'] },
   { id:'dr-rate-social', emoji:'⭐', name:'Rate-a-Queen (scores)', format:'drag-race',
-    category:'twist', phase:'any', engineType:'dr-rate-social', episodeField:'critiqueTwist',
+    category:'social', phase:'any', engineType:'dr-rate-social', episodeField:'critiqueTwist',
     episodeValue:'rate-a-queen',
     desc:'Every queen scores every other queen out of ten and the averages are read to the room. Distinct from the Rate-a-Queen that decides the week: this one changes nothing about the call and everything about how the room feels afterwards, because the highest and the lowest both find out where they stand with the people they live with.',
     incompatible:['dr-who-should-go'] },
@@ -979,7 +998,7 @@ export const TWIST_CATALOG = [
      who goes home or how many; this changes WHO DECIDES, which is the deepest
      assumption the show has. */
   { id:'dr-rate-a-queen', emoji:'\u{1F5F3}\uFE0F', name:'Rate-a-Queen', format:'drag-race',
-    category:'twist', phase:'any', engineType:'dr-rate-a-queen', episodeField:'rateAQueen',
+    category:'elim', phase:'any', engineType:'dr-rate-a-queen', episodeField:'rateAQueen',
     desc:'The queens rank each other and the panel sits the night out. Each queen ranks everyone but herself, best to worst, and the ballots are added with a Borda count — top of a ballot scores the most, bottom scores one — and that total is the week: highest is the win, lowest two lip sync. The host does not overrule it, which is the point. Nobody can rank herself safe, she can only push somebody else down, so a room full of schemers produces a board that has very little to do with who was actually good. Ran on season 16 and again, revised, on season 17.',
     incompatible:[] },
   { id:'dr-returnee', emoji:'\u{1F519}', name:'Returning Queen', format:'drag-race',

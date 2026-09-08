@@ -30,7 +30,9 @@ import {
   pickKindFor, pickLinesFor, walkthroughLinesFor,
 } from './data/maxi-voices.js';
 import { characterById } from './data/snatch-characters.js';
-import { reasonLinesFor, biasLinesFor } from './data/critique-voices.js';
+import {
+  reasonLinesFor, biasLinesFor, deliveryLinesFor,
+} from './data/critique-voices.js';
 import { resultOrder } from './data/results-order.js';
 import {
   divergentTastes, advocacyLinesFor, hostCallLinesFor,
@@ -348,11 +350,23 @@ export function renderStageBeats({
         // see the family resemblance, because no critique knew it was a
         // makeover.
         const said = reasonLinesFor(r.dimension, r.direction, challengeFamily);
-        const bias = said ? biasLinesFor(r.styleLean) : null;
+        /* ONE EXTRA CLAUSE AT MOST, and the delivery outranks the bias.
+           A reason plus a bias plus a note on how she said it is three
+           clauses about one queen, and the transcript already had a card run
+           past two thousand characters. Which she gets: how hard this judge
+           speaks is a fact about the person talking and fires only at the
+           ends of the panel, so when it is there it is the more interesting
+           of the two; her taste for this kind of drag fills the slot the rest
+           of the time. */
+        const delivery = said ? deliveryLinesFor(r.warmth, r.direction) : null;
+        const bias = said && !delivery ? biasLinesFor(r.styleLean) : null;
         const text = said
           ? [
             fill(pick(said, rng, usedLines, `reason/${r.dimension}/${r.direction}`),
               { a: n, j: c.judgeName, p: r.peeve, o: r.softSpot, y: r.style }),
+            delivery ? fill(pick(delivery, rng, usedLines,
+              `delivery/${r.warmth <= 0.25 ? 'blunt' : 'kind'}/${r.direction}`),
+            { a: n, j: c.judgeName, p: r.peeve, o: r.softSpot }) : '',
             bias ? fill(pick(bias, rng, usedLines, `bias/${r.styleLean > 0 ? 'for' : 'against'}`),
               { a: n, j: c.judgeName, y: r.style }) : '',
           ].filter(Boolean).join(' ')

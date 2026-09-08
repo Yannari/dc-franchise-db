@@ -48,6 +48,9 @@ export const JUDGES = [
     voice: 'Warm, oracular, decides in one sentence. Loves a story and a comeback, and will say the quiet part out loud kindly.',
     taste: { challenge: 0.45, runway: 0.25, risk: 0.20, polish: 0.10 },
     styleBias: { comedy: 0.4, camp: 0.3, pageant: 0.1, art: -0.1 },
+    // Warm, and decides in one sentence. She can be devastating and it arrives kindly,
+    // which puts her above Michelle and short of the softest seat.
+    warmth: 0.70,
     petPeeve: 'a queen who plays it safe',
     softSpot: 'a big personality',
   },
@@ -57,6 +60,10 @@ export const JUDGES = [
     voice: 'Direct and technical. Hard on construction and a hidden waist, soft on a live vocal, and never softens a note to be liked.',
     taste: { challenge: 0.40, runway: 0.40, risk: 0.05, polish: 0.15 },
     styleBias: { pageant: 0.4, fashion: 0.3, glamour: 0.2, 'club-kid': -0.2 },
+    // Harder than RuPaul and not as hard as Law. She does not soften a note to be liked
+    // and she is capable of being genuinely warm, which is why the praise means
+    // something.
+    warmth: 0.20,
     petPeeve: 'a hidden waist',
     softSpot: 'a live vocal',
   },
@@ -66,6 +73,9 @@ export const JUDGES = [
     voice: 'Puns first, fashion second. Delighted by camp, a reveal, and anybody willing to look ridiculous on purpose.',
     taste: { challenge: 0.35, runway: 0.40, risk: 0.15, polish: 0.10 },
     styleBias: { camp: 0.4, comedy: 0.3, fashion: 0.2, spooky: -0.1 },
+    // On the nice side. Even his pans arrive wrapped in a joke and he would rather be
+    // delighted than right.
+    warmth: 0.78,
     petPeeve: 'a look with no idea behind it',
     softSpot: 'a joke that lands',
   },
@@ -75,6 +85,9 @@ export const JUDGES = [
     voice: 'Enthusiastic and comedy-minded, cries easily, and will forgive a look entirely for a performance that moved him.',
     taste: { challenge: 0.55, runway: 0.20, risk: 0.15, polish: 0.10 },
     styleBias: { comedy: 0.5, camp: 0.3, broadway: 0.2, art: -0.1 },
+    // The softest seat on the panel. Cries easily and forgives a look entirely for a
+    // performance that moved him.
+    warmth: 0.90,
     petPeeve: 'dead air in the middle of a bit',
     softSpot: 'a heartfelt moment',
   },
@@ -84,6 +97,9 @@ export const JUDGES = [
     voice: 'Fashion authority, unimpressed by default. A look either is or it is not, and he will not pretend otherwise to be nice.',
     taste: { challenge: 0.25, runway: 0.55, risk: 0.10, polish: 0.10 },
     styleBias: { fashion: 0.6, art: 0.3, glamour: 0.2, comedy: -0.2, camp: -0.2 },
+    // THE HARDEST SEAT ON THE PANEL. Unimpressed by default; a look either is or it is
+    // not, and he will not pretend otherwise to be nice.
+    warmth: 0.05,
     petPeeve: 'a cheap fabric under a good idea',
     softSpot: 'proportion',
   },
@@ -93,6 +109,9 @@ export const JUDGES = [
     voice: 'Loud, loving and unfiltered. Rewards nerve and a body, and reads a coward the second she sees one.',
     taste: { challenge: 0.40, runway: 0.25, risk: 0.30, polish: 0.05 },
     styleBias: { 'club-kid': 0.3, dancer: 0.3, comedy: 0.2, pageant: 0.1, art: -0.1 },
+    // In between, and genuinely both. Loud and loving until she sees a coward, and then
+    // not.
+    warmth: 0.50,
     petPeeve: 'no nerve',
     softSpot: 'a stunt she did not see coming',
   },
@@ -102,6 +121,9 @@ export const JUDGES = [
     voice: 'A choreographer watching feet and counting. Kind about effort, exact about timing, and he can tell who learned it this morning.',
     taste: { challenge: 0.50, runway: 0.20, risk: 0.10, polish: 0.20 },
     styleBias: { dancer: 0.5, broadway: 0.3, 'club-kid': 0.1, fashion: -0.1 },
+    // On the nice side. Kind about effort and exact about timing — he will tell her she
+    // was off the count and mean it gently.
+    warmth: 0.75,
     petPeeve: 'being off the count',
     softSpot: 'a clean eight',
   },

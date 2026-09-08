@@ -91,8 +91,11 @@ describe('every authored maxi event can happen', () => {
          A reachability guard that depends on the seed is not measuring
          reachability, so these get double the sample. It costs seconds and it
          is the difference between the guard catching a genuinely dead event
-         and the guard reporting on the seed. */
-      const CONJUNCTION = new Set(['ball', 'photoshoot']);
+         and the guard reporting on the seed.
+         The Rusical joins them for the same reason: `lost-the-words` wants a
+         queen who was beaten to her part AND has a poor memory AND draws the
+         noise badly, which is deliberately about one queen a season. */
+      const CONJUNCTION = new Set(['ball', 'photoshoot', 'rusical']);
       const runs = t.id === 'makeover' || CONJUNCTION.has(t.id) ? SEASONS * 2 : SEASONS;
       for (let s = 0; s < runs; s++) {
         /* The makeover is pinned onto the cohort under test as well as the
@@ -108,6 +111,15 @@ describe('every authored maxi event can happen', () => {
         try { rows = play(s, pin); } catch { continue; }
         const row = rows.find(x => x.dr?.challenge?.id === t.id);
         if (!row) continue;
+        /* THE ENGINE'S OWN LIST, NOT ONLY THE RENDERED SCENES. An event whose
+           prose is not written yet emits no scene at all — that is deliberate
+           and it is what stops an empty card reaching a reader — but it made
+           this guard unable to tell "cannot happen" from "not written yet",
+           and it reported a brand new event as unreachable on the day it was
+           added. `row.events` is what the engine actually fired. */
+        for (const ev of row.dr.events || []) {
+          if (ev?.type) seen.add(String(ev.type).replace(/^(maxi|mini|werk):/, ''));
+        }
         for (const sc of row.dr.scenes || []) {
           if (sc.data?.event) seen.add(sc.data.event);
         }

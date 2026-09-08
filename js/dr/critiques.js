@@ -139,6 +139,10 @@ export function critiqueLines({ panel, views, call, entries, rng = Math.random }
           ofN: field.length,
           styleLean: Math.round(styleLean * 100) / 100,
           style: e.style || null,
+          // How hard this judge says things, authored on the panel and
+          // derived from her social stat for a guest. The delivery clause
+          // only speaks at the ends, so most weeks this changes nothing.
+          warmth: Number.isFinite(Number(j.warmth)) ? Number(j.warmth) : null,
           peeve: j.petPeeve || null,
           softSpot: j.softSpot || null,
         },

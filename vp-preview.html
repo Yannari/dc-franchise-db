@@ -43,6 +43,13 @@ const {rows}=playDragSeason({cast,seed:4,config:{drSmackdown:true},
   bond:(a,b)=>bonds[key(a,b)]||0,
   addBond:(a,b,d)=>{const k=key(a,b);bonds[k]=Math.max(-10,Math.min(10,(bonds[k]||0)+d));},
   popDelta:()=>{}});
+/* THE CHART READS THE SEASON, NOT THE ROW, and this has to be set BEFORE
+   any screen is built. rpBuildChart takes per-episode facts — the challenge
+   that produced a column, who won that week's mini, who led a team — from
+   window._drSeasonRows, exactly as the real viewing party does. Setting it
+   after dragScreens() ran left every one of those blank, which is a property
+   of the harness rather than the screen. */
+window._drSeasonRows=rows;
 const params=new URLSearchParams(location.search);
 const epNum=Number(params.get('ep')||4);
 const want=params.get('screen')||'dr-runway';

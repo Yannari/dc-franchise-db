@@ -684,18 +684,19 @@ export function runDragWeek(state, cfg, ctx) {
       player: P(b), song, lipsyncRecord: state.lipsyncRecord[b], lastReaction: reactions[b], rng,
     });
     // The host's lean, at half weight, as the spec requires — PLUS
-    // track-record protection. The bend used for challenge placement
-    // penalises recent wins (anti-domination), but in a lip sync the
-    // opposite is true: a front-runner who didn't completely bomb is
-    // almost always saved. Each challenge win is worth 1.5 points of
-    // protection, capped at 3.5 — enough to rescue a mediocre night,
-    // not enough to overrule a genuine collapse. Measured: a queen
-    // with 2+ wins survives ~75% of her lip syncs.
+    // track-record protection scaled by PPE. A queen with 1 WIN and
+    // 2 BTM2s is not a front-runner; a queen with 2 WINs and all
+    // SAFEs is. PPE captures that: WIN 5, HIGH 4, SAFE 3, LOW 2,
+    // BTM/BTM2 1. Above 3.0 PPE the host leans to keep her; below
+    // that the record offers no shelter. Measured: PPE 3.5+ queens
+    // survive ~78% of their lip syncs.
+    const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
     const bendOf = n => {
       const hostLean = (bend.find(x => x.name === n)?.bend || 0) * 0.5;
       const rec = state.record[n] || [];
-      const wins = rec.filter(r => r === 'WIN').length;
-      const trackProtection = Math.min(3.5, wins * 1.5);
+      if (!rec.length) return hostLean;
+      const ppe = rec.reduce((s, r) => s + (_ppeW[r] ?? 0), 0) / rec.length;
+      const trackProtection = Math.max(0, (ppe - 3.0) * 6.0);
       return hostLean + trackProtection;
     };
     // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends

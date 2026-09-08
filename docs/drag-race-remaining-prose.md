@@ -1,4 +1,4 @@
-# Drag Race — everything still waiting on prose. 60 slots.
+# Drag Race — everything still waiting on prose. 94 slots.
 
 You are filling empty `lines` arrays in an existing simulator. **Do not change
 any other field** — ids, phases, casts, `when`, `effects` and weights are all
@@ -121,7 +121,33 @@ really is Michelle on the runway against RuPaul on the challenge.
 
 `{a}` the queen, `{j}` the judge speaking, `{e}` the judge on the other side.
 
-## 6. `js/dr/data/stage-beats.js` — 6 slots
+## 6. `js/dr/data/critique-voices.js` — 34 slots, **6 variants each**
+
+`CRITIQUE_CHALLENGE`: `{family}/{praise|fault}` for all 17 challenge families.
+
+**This is the one that makes a critique sound like it is about tonight.** The
+`challenge` dimension used to be a single pool for the whole season, so the
+same praise printed over a makeover, a Snatch Game and a Rusical — the judge's
+name changed, her pet peeve changed, and what she was talking about did not.
+Michelle could not say *"I do not see the family resemblance"* because no
+critique had ever known it was a makeover.
+
+**Write the night's own vocabulary.** A makeover fault is the resemblance and
+whether the two of them read as family. A Snatch Game fault is the character
+and whether she could hold it for six questions. A Rusical fault is the words
+and the key. **A line that would work on any other night is the line this pool
+exists to replace.**
+
+The other three dimensions — runway, risk, polish — are deliberately *not*
+per-family and are already written: a garment is a garment whatever the
+challenge was.
+
+`{a}` the queen, `{j}` the judge, `{p}` her pet peeve, `{o}` her soft spot.
+Keep using `{p}` in faults and `{o}` in praise — that is what makes the same
+makeover critique sound different from Michelle and from Ross. The engine
+joins your line to a bias clause sometimes, so end cleanly.
+
+## 7. `js/dr/data/stage-beats.js` — 6 slots
 
 **`results-hold/hold`** — 10 variants. The pause before the last call of the
 night. It does **not** know whether what follows is a win or an elimination,

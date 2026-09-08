@@ -102,17 +102,26 @@ const SECTIONS = [
     badge: { text: 'RETURNS', color: '#3BE08A' },
     title: 'She’s Back', subtitle: 'somebody the show already sent home' },
   { id: 'dr-cold-open', icon: icon('mirror'), label: 'Cold Open', suffix: 'coldopen', phase: 'werk', accent: 'dr-a-room',
-    opens: ['cold-open'], badge: null, title: 'Cold Open', subtitle: 'the room, before anything' },
+    opens: ['cold-open'],
+    opensStep: ['cold-open'], badge: null, title: 'Cold Open', subtitle: 'the room, before anything' },
   { id: 'dr-werk-morning', icon: icon('room'), label: 'The Werk Room', suffix: 'morning', phase: 'werk', accent: 'dr-a-room',
-    opens: ['werk-morning'], badge: null, title: 'The Werk Room', subtitle: 'morning' },
+    opens: ['werk-morning'],
+    opensStep: ['werk-morning'], badge: null, title: 'The Werk Room', subtitle: 'morning' },
   { id: 'dr-mini', icon: icon('clock'), label: 'Mini', suffix: 'mini', phase: 'werk', accent: 'dr-a-score',
-    opens: ['mini'], badge: { text: 'MINI', color: '#00E5FF' },
+    opens: ['mini'],
+    opensStep: ['mini'], badge: { text: 'MINI', color: '#00E5FF' },
     title: 'The Mini Challenge', subtitle: 'first blood' },
   { id: 'dr-announce', icon: icon('brief'), label: 'The Brief', suffix: 'announce', phase: 'werk', accent: 'dr-a-room',
-    opens: ['maxi-announce'], badge: null, title: 'The Maxi Challenge', subtitle: 'the brief' },
+    opens: ['maxi-announce'],
+    opensStep: ['maxi-announce'], badge: null, title: 'The Maxi Challenge', subtitle: 'the brief' },
   { id: 'dr-choice', icon: icon('cards'), label: 'The Draft', suffix: 'choice', phase: 'werk', accent: 'dr-a-bond',
-    opens: ['improv-premises', 'snatch-picks', 'ball-theme', 'group-parts', 'roast-order',
-      'makeover-pairs', 'singing-order', 'walkthrough'],
+    /* NOT `ball-theme` OR `walkthrough`. Both were listed here and neither
+       belongs: the ball's theme is announced with the brief and carries step
+       `maxi-announce`, and the host's walkthrough happens mid-build and
+       carries `prep`. A kind opener beats a step opener, so listing them here
+       reached past their own sections and pulled them into the draft. */
+    opens: ['improv-premises', 'snatch-picks', 'group-parts', 'roast-order',
+      'makeover-pairs', 'singing-order'],
     /* AND ON THE STEP, which is the difference between this screen existing
        and not. The eight kinds above are markers a challenge MODULE emits, so
        a challenge that drafts without emitting one of them produced a full
@@ -125,6 +134,7 @@ const SECTIONS = [
   { id: 'dr-prep', icon: icon('scissors'), label: 'Prep', suffix: 'prep', phase: 'werk', accent: 'dr-a-room',
     opens: ['prep-room', 'writing-room', 'band-rehearsal', 'recording-booth', 'ball-build',
       'makeover-build', 'no-rehearsal'],
+    opensStep: ['prep'],
     badge: null, title: 'The Work Room', subtitle: 'building it' },
   /* OPENS ON THE STEP, NOT ON A LIST OF KINDS. This named seven scene kinds
      — improv-take, snatch-taping, group-number, roast-set, ball-walks,
@@ -147,7 +157,8 @@ const SECTIONS = [
     opensStep: ['maxi-pre'],
     badge: { text: 'MAXI', color: '#FF3D9A' }, title: 'The Challenge', subtitle: 'tape rolls' },
   { id: 'dr-elim-day', icon: icon('mirror'), label: 'Elimination Day', suffix: 'elimday', phase: 'werk', accent: 'dr-a-room',
-    opens: ['werk-elim-day'], badge: null, title: 'Elimination Day', subtitle: 'the last hour in the room' },
+    opens: ['werk-elim-day'],
+    opensStep: ['werk-elim-day'], badge: null, title: 'Elimination Day', subtitle: 'the last hour in the room' },
   { id: 'dr-main-stage', icon: icon('arch'), label: 'Main Stage', suffix: 'mainstage', phase: 'stage', accent: 'dr-a-score',
     opens: ['main-stage'], badge: null, title: 'The Main Stage', subtitle: 'the panel takes its seats' },
   /* ── THE CHALLENGE THAT IS THE MAIN STAGE ──
@@ -173,20 +184,26 @@ const SECTIONS = [
     badge: { text: 'MAXI', color: '#FF3D9A' },
     title: 'The Challenge', subtitle: 'live, on the main stage' },
   { id: 'dr-runway', icon: icon('runway'), label: 'Runway', suffix: 'runway', phase: 'stage', accent: 'dr-a-score',
-    opens: ['runway'], badge: { text: 'RUNWAY', color: '#FF7BC8' },
+    opens: ['runway'],
+    opensStep: ['runway'], badge: { text: 'RUNWAY', color: '#FF7BC8' },
     title: 'The Runway', subtitle: 'category is…' },
   { id: 'dr-critiques', icon: icon('speech'), label: 'Critiques', suffix: 'critiques', phase: 'stage', accent: 'dr-a-score',
-    opens: ['critiques'], badge: null, title: 'The Critiques', subtitle: 'the panel speaks' },
+    opens: ['critiques'],
+    opensStep: ['critiques'], badge: null, title: 'The Critiques', subtitle: 'the panel speaks' },
   { id: 'dr-untucked', icon: icon('couch'), label: 'Untucked', suffix: 'untucked', phase: 'untucked', accent: 'dr-a-bond',
-    opens: ['untucked'], badge: { text: 'UNTUCKED', color: '#7B2FF7' },
+    opens: ['untucked'],
+    opensStep: ['untucked'], badge: { text: 'UNTUCKED', color: '#7B2FF7' },
     title: 'Untucked', subtitle: 'Illusions Lounge' },
   { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
-    opens: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
+    opens: ['results'],
+    opensStep: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
   { id: 'dr-lipsync', icon: icon('mic'), label: 'Lip Sync', suffix: 'lipsync', phase: 'lipsync', accent: 'dr-a-lip',
-    opens: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
+    opens: ['lipsync'],
+    opensStep: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
     title: 'Lip Sync For Your Life', subtitle: 'two queens, one song' },
   { id: 'dr-exit', icon: icon('door'), label: 'Sashay', suffix: 'exit', phase: 'lipsync', accent: 'dr-a-lip',
-    opens: ['exit'], badge: null,
+    opens: ['exit'],
+    opensStep: ['exit'], badge: null,
     title: 'Sashay Away', subtitle: 'the mirror message' },
 
   /* ── THE SMACKDOWN ──
@@ -258,6 +275,15 @@ const CHART = {
  * kind nobody has listed is still an episode, and losing its opening scenes
  * silently is the failure this whole file is arranged against.
  */
+/* EVERY SECTION OPENS ON ITS OWN STEP, not only on a marker kind.
+   A section swallows every scene after it until the next one opens, and the
+   openers were an allowlist of kinds a challenge MODULE happens to emit — so
+   a challenge that skipped one left its section closed and the section before
+   it took the lot. Measured: `dr-choice` was holding twenty-nine kinds that
+   belong to prep and the announcement, which is how a read from the mini came
+   to be filed under a Ball. A kind list cannot cover a beat that fires for
+   every challenge; the step can, and every step is already unique to one
+   section. */
 export function sceneSections(row) {
   const scenes = row?.dr?.scenes || [];
   const openerOf = new Map();

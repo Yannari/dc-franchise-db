@@ -66,6 +66,37 @@ describe('the sweep', () => {
     }
   });
 
+  it('NO SCENE IS FILED UNDER A SECTION IT DOES NOT BELONG TO', () => {
+    /* `sceneSections` files by POSITION IN THE ARRAY, not by step — a section
+       opens on a marker and swallows everything after it until the next one.
+       So a scene pushed at the wrong index is filed under the wrong night and
+       reads as being about something it is not: a read from the mini, pushed
+       after the challenge beats, landed inside the Ball, where "she went for
+       her and the room gave her nothing" reads as being about the gown.
+       Nothing about the scene is wrong — its step says `mini` — and no other
+       check looks, because every one of them asks whether a scene was filed
+       rather than where. */
+    const SECTION_STEPS = {
+      'dr-mini': 'mini', 'dr-runway': 'runway', 'dr-critiques': 'critiques',
+      'dr-untucked': 'untucked', 'dr-results': 'results', 'dr-lipsync': 'lipsync',
+      'dr-exit': 'exit', 'dr-prep': 'prep', 'dr-choice': 'choice',
+      'dr-announce': 'maxi-announce', 'dr-cold-open': 'cold-open',
+      'dr-werk-morning': 'werk-morning', 'dr-elim-day': 'werk-elim-day',
+    };
+    const wrong = [];
+    for (const row of rows) {
+      for (const [sectionId, list] of sceneSections(row)) {
+        const want = SECTION_STEPS[sectionId];
+        if (!want) continue;
+        for (const sc of list) {
+          if (!sc.step || sc.step === want) continue;
+          wrong.push(`${sc.kind} (step ${sc.step}) filed under ${sectionId}`);
+        }
+      }
+    }
+    expect([...new Set(wrong)], 'scenes filed under the wrong night').toEqual([]);
+  });
+
   it('EVERY WRITTEN SCENE IS ACTUALLY DRAWN, not merely filed', () => {
     /* THE HOLE THE TEST ABOVE LEAVES, and it is the one that mattered.
        `sceneSections` files every scene into a section bucket, so that check

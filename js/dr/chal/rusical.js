@@ -144,8 +144,46 @@ export function perform(ctx) {
     // The whole point of going live: a much wider swing, tilted by whether she
     // can actually sing. It is the biggest voluntary risk in a maxi challenge.
     const liveSwing = isLive ? noise(rng, 1.5) + (d.singing - 5) * 0.2 : noise(rng, 0.4);
+
+    /* ── DOES SHE KNOW THE WORDS ────────────────────────────────────
+       The most recognisable failure on a Rusical and there was no term for
+       it anywhere: the score was craft, prep, the part's range and a live
+       swing, and a queen could be word-perfect or visibly guessing and the
+       number would not know the difference.
+       THE DRAFT IS WHERE IT COMES FROM, which is why this is here and not a
+       loose roll. `depth` is how far down her own list she fell, and a queen
+       who lost the part she prepared for has had the same afternoon as
+       everybody else to learn a different set of words. The rest is her own
+       memory and the time she put in.
+       Proportional and noisy, so a strong queen who drew badly can still
+       lose them and a weak one who got her first choice usually will not. */
+    const depth = Math.max(0, Number(assignment.picks[n]?.depth) || 0);
+    const memory = Number.isFinite(Number(players[n]?.stats?.mental))
+      ? Number(players[n].stats.mental) : 5;
+    /* CALIBRATED, and the first version was not. It read 58% of the cast
+       losing the words completely, which is not a Rusical, it is a fire —
+       losing them has to be the thing that happens to one queen and is
+       talked about for the rest of the season. Measured to roughly three
+       quarters solid, a fifth shaky and a twentieth lost. */
+    const security = 5 + memory * 0.35 + (prep[n] || 0) * 0.8 + d.singing * 0.2
+      - depth * 0.9 - (part.role === 'lead' ? 0.9 : part.role === 'featured' ? 0.45 : 0)
+      + noise(rng, 2.0);
+    const words = security >= 4.0 ? 'solid' : security >= 1.5 ? 'shaky' : 'lost';
+    // It costs what it should: a wobble is survivable and losing them in
+    // front of a live band is the thing the panel opens the critique with.
+    const wordsCost = words === 'lost' ? -2.6 : words === 'shaky' ? -0.9 : 0.3;
+
     const perf = (base - 5) * range + 5 + (prep[n] || 0)
-      - (assignment.picks[n]?.penalty || 0) + liveSwing + noise(rng, 2.0 * range);
+      - (assignment.picks[n]?.penalty || 0) + liveSwing + wordsCost
+      + noise(rng, 2.0 * range);
+
+    if (words !== 'solid') {
+      events.push(evt(words === 'lost' ? 'lost-the-words' : 'shaky-on-the-words', {
+        players: [n],
+        pop: { [n]: words === 'lost' ? -2 : -1 },
+        data: { words, part: part.name, role: part.role, depth, live: isLive },
+      }));
+    }
 
     if (part.role === 'ensemble' && perf < 5) {
       events.push(evt('invisible', { players: [n], pop: { [n]: -1 }, data: { part: part.name } }));

@@ -308,3 +308,36 @@ for the person standing in front of her.
 Placeholders: `{a}` the queen, `{j}` the judge speaking, `{e}` the judge on the
 other side (advocacy only — the host pool has no second judge and rejects both
 `{j}` and `{e}`).
+
+---
+
+# Part 5 — two more pools, added later
+
+## `maxi-events.js` — the Rusical's words (2 events, 4+ lines each)
+
+`shaky-on-the-words` and `lost-the-words`. **These are a mechanic, not a
+mood** — both move her score and her popularity, and which one fires comes
+out of the draft: `depth` is how far down her own list she fell, so the queen
+who was beaten to the part she prepared for has had one afternoon to learn a
+different set of words. Measured across eight seasons: 80% solid, 12% shaky,
+7% lost, **zero at depth 0** and clustering at depth 5–8.
+
+- `shaky-on-the-words` — she has most of them and not all. A phrase goes, she
+  catches up, and anybody watching her mouth knows. A note, not a verdict.
+- `lost-the-words` — she loses them completely, on a stage, with a live band
+  that does not stop for her. Worth writing what she **does** about it:
+  standing there is one performance and inventing something is another.
+
+## `challenge-beats.js` — `mini-turn` (3 tiers, written; extend if you like)
+
+The host calling each queen up in a targeting mini: `first`, `next`, `last`.
+**This beat is exempt from the 80-character floor** — it is a name shouted
+over a noisy room, and "And last but not least... {a}!" is exactly right at
+thirty-two characters.
+
+## `mini-voices.js` — `passed` for `puppets` and `quiz`
+
+`reading/passed` is written; the other two targeting minis have the tier and
+the note and no lines. She stands up, opens her mouth, and has nothing —
+rare, earned, and the moment everybody remembers. Only `targets` minis have
+it: you cannot pass a dance-off, you dance badly, which is `flat`.

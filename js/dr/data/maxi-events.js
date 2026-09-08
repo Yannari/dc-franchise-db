@@ -653,6 +653,35 @@ export const MAXI_EVENTS = [
       "The same look walks three times in three different colours and {a} is inside it every time. The runway asks for range and she gives it a garment she is comfortable in, presented three ways that are not different enough to be three looks. One look. Three times. The panel's note will be short.",
     ],
   }),
+  /* ══ THE WORDS ═══════════════════════════════════════════════════════
+     The most recognisable failure on a Rusical and there was no term for it
+     anywhere: the score was craft, prep, the part's range and a live swing,
+     so a queen could be word-perfect or visibly guessing and the number could
+     not tell the difference.
+     IT COMES OUT OF THE DRAFT, which is what makes it a story rather than a
+     roll. `depth` is how far down her own list she fell, and a queen who lost
+     the part she prepared for has had the same single afternoon as everybody
+     else to learn a different set of words — so the queen who was beaten to
+     her first choice is the queen most likely to be caught. Her memory, her
+     prep and the size of the part do the rest.
+     BOTH OF THESE COST HER SCORE, which is the point: this is a mechanic with
+     prose on it, not prose about nothing. */
+  e({
+    id: 'shaky-on-the-words', from: 'rusical', cast: 'solo',
+    note: 'She has most of them and not all of them. A phrase goes, she '
+      + 'catches up, and anybody watching her mouth knows. Survivable, and '
+      + 'the kind of thing a judge brings up as a note rather than a verdict.',
+    lines: [],
+  }),
+  e({
+    id: 'lost-the-words', from: 'rusical', cast: 'solo',
+    note: 'She loses them completely, on a stage, with a live band that does '
+      + 'not stop for her. The worst thirty seconds available on this night — '
+      + 'and it is worth writing what she DOES about it, because standing '
+      + 'there is one performance and inventing something is another.',
+    lines: [],
+  }),
+
 ];
 
 export const MAXI_EVENT_IDS = MAXI_EVENTS.map(x => x.id);

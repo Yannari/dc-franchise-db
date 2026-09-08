@@ -737,8 +737,20 @@ export function runDragWeek(state, cfg, ctx) {
       assignment: M.assignment || {}, performances: perfWithPlayers, rng,
     })) scenes.push(sc);
 
-    // ...and now the mini's own events, under the cards they belong to.
-    for (const sc of miniEventScenes) scenes.push(sc);
+    /* ...AND NOW THE MINI'S OWN EVENTS, UNDER THE CARDS THEY BELONG TO —
+       which means SPLICED IN AFTER THE LAST MINI SCENE rather than appended.
+       `sceneSections` files a scene by where it sits in the array, not by its
+       step, so pushing these at the end of the challenge beats put "she went
+       for her and the room gave her nothing" inside the maxi's section: a
+       read, filed under a Ball, reading as though it were about the gown. */
+    if (miniEventScenes.length) {
+      let at = -1;
+      for (let i = scenes.length - 1; i >= 0; i--) {
+        if (scenes[i].step === 'mini') { at = i; break; }
+      }
+      if (at >= 0) scenes.splice(at + 1, 0, ...miniEventScenes);
+      else for (const sc of miniEventScenes) scenes.push(sc);
+    }
 
     // The challenge's own events, narrated. The modules produce these and
     // narrate none of them, so without this they reach the row as bare types.

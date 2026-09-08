@@ -1042,11 +1042,11 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3,
     effects: { bond: 1, pop: { a: 1, b: 1 }, state: 'group-fun' },
     lines: [
-      "{a} says something to {b} that was not meant to be funny and {c} hears it and repeats it back wrong, and the wrong version is better, and within a minute all of them are crying at a station where no work is being done. It is the first time this room has sounded like a room.",
-      "It starts as {a} and {b} arguing about something with no stakes and it ends with {c} refereeing a debate about it as if money were involved. Nothing is achieved. Everybody feels better. Somebody eventually says \"we have to actually do this\" and nobody moves.",
-      "{c} does an impression of {a} that {a} has not earned yet and does not deserve, and {b} laughs so hard she has to put her brush down. {a} takes it well, mostly, and files the accuracy of it away for later.",
-      "The three of them get onto their worst gigs and it turns into a contest nobody wants to win. {b} tells one that {a} and {c} genuinely cannot beat, and the room agrees, and for about four minutes none of them is thinking about the show at all.",
-      "Somebody puts music on and {a}, {b} and {c} are dancing at their stations without having agreed to, and the version of this room that exists at nine in the morning is a version the cameras will use in the recap and none of them will remember.",
+      "{a} says something to {b} that was not meant to be funny and {c} repeats it back wrong from across the room and the wrong version is ten times funnier. {b} is on the floor. {a} is yelling \"that is NOT what I said\" through tears and {c} is already doing it again with a hand on her hip. No work gets done for fifteen minutes. Nobody cares.",
+      "{b} and {c} are arguing about wigs — not this week's wigs, wigs as a concept, the philosophy of wigs — and {a} gets dragged in as a judge and takes it so seriously she stands up and delivers a verdict with her hand out like she is on the panel. {c} screams. {b} throws a sponge at her. The whole station is chaos and every queen in the room is pretending not to watch.",
+      "{c} starts doing {a}'s runway walk across the room and {b} loses it — full-body, hands-on-knees, gasping. {a} says \"I do NOT walk like that\" and {c} does it again, slower, with the exact pause {a} does at the end of the runway. {a} tries to be mad and cannot, because it is perfect.",
+      "Worst gigs. {a} opens with a venue that did not have a stage. {c} tops it with a venue that did not have a door. {b} waits, sips her coffee, and tells one about a bar where she was the entertainment AND the bouncer AND the sound system broke during her number. {a} and {c} put their brushes down because there is no beating that.",
+      "{a} plays something on her phone and {c} starts doing the choreography at her station — full out, heels on, knocking into {b}'s mannequin. {b} joins in. Then {a} joins her own song. Three queens in full padding doing a routine in the space between two sewing machines, and the rest of the room is screaming.",
     ],
   }),
   ev({
@@ -1056,11 +1056,11 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bond <= 0,
     effects: { bond: -1.5, pop: { a: -1, b: -1 }, state: 'group-fight' },
     lines: [
-      "It goes off between {a} and {b} with no warning and {c} is four feet away holding a glue gun with nowhere to put it. She does not take a side. She does not leave either, because leaving would be a side, so she stands there being furniture while two women say things they will have to live with.",
-      "{a} says the thing to {b} and the room stops, and the worst part for {c} is that she agrees with {a} and cannot say so, because saying so turns two people arguing into three people arguing and she has a garment to finish.",
-      "{b} raises her voice at {a} and {c} watches the whole thing with a face doing nothing at all, which is a skill, and which everybody in the room clocks — because the queen who does not react is the queen who is going to be asked about it later, at length, on camera.",
-      "{a} and {b} are having it out and {c} says \"girls—\" once, quietly, and is ignored by both, and does not try again. She goes back to her station. Something about not being listened to sits with her longer than the argument does.",
-      "The argument between {a} and {b} is short and ugly and completely public, and the only person who comes out of it worse is {c}, who is asked by both of them afterwards who was right and gives two different answers.",
+      "{a} and {b} go at it right there — voices up, fingers pointing — and {c} is four feet away holding a glue gun with nowhere to put it down. She looks at the exit. She looks at her garment. She puts the glue gun on the table very carefully and suddenly her hemline needs urgent attention on the side of the station furthest from both of them.",
+      "{a} says something sharp to {b} and {b} fires back and it escalates in about three sentences and {c} is standing right there trying to thread a needle like her life depends on it. \"I can hear you,\" {c} says, to nobody, and nobody hears her, which she will remember longer than whatever they were fighting about.",
+      "{b} raises her voice at {a} and the whole room flinches except {c}, who keeps her face perfectly blank — not calm, blank, the drag queen version of a poker face. Everybody clocks that. Later both of them will corner {c} separately and ask \"so who was right\" and {c} will give two different answers and mean neither.",
+      "\"Can we NOT do this right now?\" {c} says it loud enough that {a} and {b} both turn and look at her, and for one second she thinks it worked, and then {a} says \"this does not involve you\" and {b} says \"stay out of it\" and they go right back to it. {c} picks up her coffee and moves to the other end of the room.",
+      "The fight between {a} and {b} is short and loud and ugly and {c} is trapped between their stations pretending to count rhinestones. When it ends — not because it is resolved, because they both run out of air — {c} exhales and {a} looks at her and says \"sorry you had to hear that\" and {c} says \"girl, the whole building heard that.\"",
     ],
   }),
   ev({
@@ -1070,10 +1070,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bond <= -2,
     effects: { bond: -1, pop: { a: -1 }, state: 'group-drag-in' },
     lines: [
-      "\"Ask {c}.\" {a} says it like it settles the matter and it does not settle anything, because {c} did not ask to be the evidence in an argument between {a} and {b} and now has to say something in front of both of them.",
-      "{a} turns to {c} mid-sentence — \"you heard her say\" — and {c}'s stomach drops, because she did hear her say it, and confirming it costs her {b} and denying it costs her {a}, and there is no third option that gets her back to her station.",
-      "{b} tries to end it by saying everybody thinks so, and {a} says \"everybody?\" and looks directly at {c}, and {c} has about one second to decide what kind of season she is having.",
-      "Neither of them notices that {c} has stopped working and is just standing there being used as a witness. She notices. She will remember which of them dragged her in, and it was {a}.",
+      "\"Ask {c}. Go on, ask her.\" {a} waves a hand at {c} like she is exhibit A, and {c} freezes with a pin in her mouth because she did NOT volunteer for this. {b} looks at her. {a} looks at her. {c} takes the pin out very slowly and says \"I am going to get coffee\" and walks away from both of them, which is the smartest thing anyone does all day.",
+      "{a} turns to {c} mid-sentence — \"you were THERE, tell her\" — and {c}'s face does the thing where every possible answer is wrong. She heard it. She knows {a} is right. But saying so means {b} never speaks to her again, so she says \"I do not remember\" in a voice that convinces nobody.",
+      "\"Everybody thinks so,\" {b} says, and {a} goes \"everybody?\" and stares directly at {c}, and {c} is suddenly the deciding vote in an election she did not know was happening. She says \"leave me out of this\" and {a} says \"that IS a side\" and {c} says \"girl, I have a GARMENT to finish\" and goes back to her station shaking her head.",
+      "{a} drags {c} into it by name — \"even {c} said it\" — and {c} drops her scissors because she said nothing of the kind, or at least nothing she meant to be repeated in the middle of a screaming match. {b} turns to her. \"You said that?\" {c} mouths the words \"I am going to kill you\" at {a} over {b}'s shoulder.",
     ],
   }),
   ev({
@@ -1083,10 +1083,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bottomsA >= 1,
     effects: { bond: 1.5, pop: { a: 1 }, state: 'group-care' },
     lines: [
-      "{a} is not alright and everybody can see it, and what the room does is the thing rooms do when somebody is not alright: {b} turns the music down, {c} finds a reason to work at the next station, and nobody says the word about it. {a} keeps going. That is the help.",
-      "Nobody asks {a} what is wrong, which is correct, because asking would make her say it out loud. {b} brings her a drink she did not ask for and {c} takes over the thing she was struggling with, and the whole rescue happens without one direct sentence about it.",
-      "{a} says \"I am fine\" to nobody in particular and {b} and {c} exchange a look over her head that says neither of them believes it and both of them are going to let it go for now.",
-      "It is {c} who notices first and {b} who does something about it, and by the time {a} realises she is being looked after it has already been happening for twenty minutes. She does not know how to say thank you for that so she does not, and they do not need her to.",
+      "{a} is not okay and the room knows it before {a} does. {b} turns the music down without being asked. {c} moves her stuff to the station next to {a}'s and starts working there like she always works there. Nobody says \"are you alright\" because that question would make {a} have to answer it, and right now just having people near her is the answer.",
+      "{b} puts a water bottle on {a}'s table and {c} picks up the pattern piece {a} has been staring at for ten minutes and starts cutting it for her. \"I am fine,\" {a} says, and {b} says \"obviously\" in a voice that means the opposite, and {c} keeps cutting. The rescue is quiet and total and nobody acknowledges it is happening.",
+      "{c} is the one who clocks it first — {a} has been at her station for an hour and has not picked up a single tool. {c} nudges {b}. {b} goes over with two coffees, sits down, and starts talking about absolutely nothing — her wig, her weekend, a thing her cat did — until {a} is laughing, wetly, without knowing when she started.",
+      "\"Go take a walk,\" {b} says. {a} says she does not need to. \"Go take a walk,\" {c} says. {a} looks at both of them and her chin wobbles and she goes, and when she comes back her face is washed and {b} has reorganised her station and {c} has steamed the garment. Nobody mentions it. {a} sits down and gets back to work.",
     ],
   }),
   ev({
@@ -1096,10 +1096,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.phase >= 1,
     effects: { bond: -0.5, pop: { a: 1, b: 1 }, state: 'group-read' },
     lines: [
-      "It starts as three of them taking turns and it is funny — {a} gets {b}, {b} gets {c}, everybody screams — and then {a} says one about {c} that is a bit too accurate and the laugh comes half a second late and is not quite the same laugh.",
-      "{b} and {c} are trading reads and {a} joins in and misjudges the room by exactly one notch, which is all it takes. The other two keep smiling. The smiles have changed shape and {a} has not noticed yet.",
-      "Three of them at it and every single read lands, which is rarer than it sounds, and for ten minutes this room is the funniest place any of them has ever worked. Then {c} makes one about {a}'s drag rather than about {a}, and drag is not on the table, and everybody knows it is not.",
-      "The reads go around and {a} takes hers well and {b} takes hers well and {c} takes hers with a laugh that arrives on time and does not reach her face, and the other two notice and pretend not to and move on quickly.",
+      "{a} reads {b} and {b} screams. {b} reads {c} and {c} howls. {c} reads {a} and it is funny and sharp and everyone is dying — and then {a} fires one back at {c} that goes past the wig and into something real and the laugh comes half a beat late. {c} says \"okay\" in a voice that means we are done now.",
+      "{b} and {c} are going back and forth — quick, vicious, funny, the whole room is living — and {a} jumps in with one that misjudges the room by exactly one notch. The other two keep smiling but the smiles have gone careful. \"Girl,\" {b} says, and the way she says it is a warning {a} does not hear.",
+      "The reads are FLYING. {a} lands three in a row. {c} fires back with one so good that {b} has to sit down. For ten minutes this is the funniest room any of them has ever been in. Then {c} makes one about {a}'s drag — not {a}, her DRAG — and the air changes, because drag was not on the table.",
+      "{a} takes her read well. {b} takes hers well. {c} laughs when hers lands but the laugh has no eyes in it and {a} catches it and {b} catches it and they both pivot to something safe so fast you would think they rehearsed it. {c} goes back to her mirror. The session is over.",
     ],
   }),
   ev({
@@ -1109,10 +1109,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.canScheme,
     effects: { bond: 1, pop: { a: -1 }, state: 'group-huddle' },
     lines: [
-      "{a}, {b} and {c} are at the far end of the room having the conversation everybody has on elimination day and nobody admits to having. They keep their voices down. They are not as quiet as they think they are.",
-      "It is not an alliance because nobody says the word, but {a} says who she thinks is going and {b} agrees and {c} does not disagree, and three queens agreeing about a fourth is the closest this show gets to a plan.",
-      "{a} says a name and the temperature at that end of the room changes. {b} looks at the door. {c} says \"I did not hear that\" and stays exactly where she is, which is the opposite of not hearing it.",
-      "{a}, {b} and {c} work the maths out loud — who was low, who is due, who the panel likes — and the maths is cold and correct and would be devastating to overhear, and one of them keeps glancing over her shoulder while they do it.",
+      "{a}, {b} and {c} are huddled at the far station talking elimination and they all keep checking the door. {a} says a name. {b} nods. {c} says \"I did not say anything\" while literally standing in the huddle. They are not as quiet as they think they are, and at least two other queens have already clocked the huddle.",
+      "\"Who do you think it is tonight?\" {a} asks, and {b} says a name without hesitating, and {c} says \"same\" without looking up from her sewing, and suddenly three queens agree about a fourth and the fourth is ten feet away gluing rhinestones with no idea her name just came out of three mouths at once.",
+      "{a} leans over to {b} and {c} and says \"between us\" — which on this show means the cameras, the editors, and every viewer at home will hear it — and lays out who she thinks is going. {b} winces because it is accurate. {c} says \"do not put this on me\" and then adds her own theory anyway.",
+      "{c} keeps watch while {a} and {b} run the numbers out loud: who has been low, who the panel keeps saving, who is due. The maths is cold and correct and would destroy someone if overheard. \"We are terrible people,\" {b} says, and {a} says \"we are realistic people\" and {c} says \"we are both\" and goes back to work.",
     ],
   }),
   ev({
@@ -1122,10 +1122,10 @@ export const WERK_EVENTS = [
     when: f => f.someoneLeft && f.groupSize >= 3,
     effects: { bond: 1, pop: { a: 1 }, state: 'group-gap' },
     lines: [
-      "The station is still there and it is empty and none of {a}, {b} or {c} takes it, and none of them says why, and by the afternoon somebody has put a wig on it as a joke that is not entirely a joke.",
-      "{a} walks in and says good morning to a room that is one person smaller and the greeting lands strangely, and {b} and {c} both feel it and neither of them mentions it, and they get on with the day because the day does not care.",
-      "{b} reads the mirror message out loud because nobody else will and {a} and {c} stand there and listen to it and then all three of them get very busy with things that did not need doing.",
-      "{a} talks about her in the past tense within about ninety seconds and {c} is the one who notices they are all doing it, and says so, and then {a}, {b} and {c} are quiet for a bit.",
+      "The station is still there. {a} sets her bag down two stations over and does not look at it. {b} puts a coffee on the empty counter like it is an altar offering and {c} says \"girl, she is not dead\" but does not move it, and by lunch somebody has parked a wig head on the chair wearing sunglasses and nobody admits to doing it.",
+      "{a} walks in, says \"morning\" to the room and her voice hits the gap where one person used to answer. {b} is already at her station pretending to organise brushes. {c} reads the lipstick message on the mirror out loud — somebody had to — and when she finishes, all three of them start fussing with fabric at the same time like they rehearsed it.",
+      "{b} says \"so\" and lets it hang there for about eight seconds. {a} picks up a garment and puts it back down. {c} finally says \"I keep turning around to ask her something\" and {a} says \"me too\" and {b} says \"she would hate this energy, let us work\" and they do, but the room stays quieter than it should be for another hour.",
+      "{a} catches herself using the past tense inside ninety seconds and stops mid-sentence. {c} says \"you just said was\" and {a} says \"I know\" and {b} says \"we are all doing it, it is fine\" and then nobody talks for a while, which is the most honest thing any of them does all morning.",
     ],
   }),
   ev({
@@ -1135,10 +1135,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bottomsA >= 1,
     effects: { bond: 2, pop: { a: 1, b: 1 }, state: 'group-rescue' },
     lines: [
-      "{a} is not going to finish and everybody can see the arithmetic. {b} takes the hem. {c} takes the headpiece. Nobody discusses it and nobody offers, they just arrive, and {a} keeps working with her jaw set because if she looks up at them she is going to cry and there is no time for that.",
-      "It is {b} who says \"give\" and holds out her hand, and {c} who is already threading a needle, and the three of them get a garment onto a rail with minutes left that {a} could not have got there alone and all of them know it.",
-      "The last hour turns into a production line — {a} building, {b} cutting, {c} gluing — and none of them is helping out of kindness exactly. They are helping because a room where somebody walks out with nothing is a worse room to be in.",
-      "{c} does the thing nobody wants to do and unpicks twenty minutes of {a}'s work because it was wrong, and {a} lets her, and {b} does not say \"told you\" although she did, and the restraint is the nicest thing anybody does all day.",
+      "{a} is staring at a garment that is not going to make it and the whole room can see the maths. {b} walks over, picks up the hem without asking, and says \"I am not being nice, I just cannot watch this.\" {c} is already threading a needle. {a} keeps her jaw tight because if she looks at either of them right now she is going to lose it and there is no time for that.",
+      "\"Give it here,\" {b} says, hand out, and {a} hesitates for exactly one second before handing the bodice over. {c} grabs the glue gun and says \"nobody talk to me for ten minutes\" and the three of them get a look onto a rail that {a} could not have finished alone and every single one of them knows it.",
+      "The last hour turns into a factory floor — {a} stitching, {b} cutting, {c} pressing — and {b} says \"this is not charity, a room where someone walks out empty-handed is a worse room for all of us\" and {c} says \"also your taste is better when you are panicking\" and {a} laughs for the first time in three hours.",
+      "{c} does the thing nobody wants to do: she unpicks twenty minutes of {a}'s work because it was wrong. {a} watches her rip every stitch and says nothing. {b} bites her lip because she called it an hour ago and the restraint of not saying so is the kindest thing anyone does all day. They finish with four minutes on the clock.",
     ],
   }),
 

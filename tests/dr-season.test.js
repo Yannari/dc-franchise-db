@@ -745,3 +745,47 @@ describe('THE ROOM DOUBLES', () => {
     expect(Object.keys(pops).length, 'no reputation moved at all').toBeGreaterThan(0);
   });
 });
+
+describe('NO QUEEN IS IN TWO PLACES ON THE CALL', () => {
+  /* The call screen drew the same queen twice with contradictory stamps: BTM2
+     above her own WIN. `call.bottom` was being used for two different
+     questions — who is in the bottom, and who sings — and on a night where
+     the TOP two sing those are opposite answers, so the two singers ended up
+     in `win`/`high` AND in `bottom` at the same time.
+     Who sings is `call.singers` now. On a night nobody can lose, nobody is in
+     the bottom. */
+  const play = sched => playDragSeason({ cast: cast(12, 5), seed: 5,
+    config: { drSchedule: sched }, bond: () => 0, addBond: () => {}, popDelta: () => {} });
+  const ep2 = s => s.rows.find(r => r.num === 2);
+  const GROUPS = ['win', 'high', 'low', 'atRisk', 'bottom', 'safe'];
+
+  const cases = [
+    ['an ordinary week', []],
+    ['a Rate-a-Queen elimination week', [{ episode: 2, rateAQueen: true }]],
+    ['a Rate-a-Queen no-elimination week', [{ episode: 2, rateAQueen: true, noElimination: true }]],
+    ['a Legacy week', [{ episode: 2, legacy: true }]],
+    ['a double elimination', [{ episode: 2, doubleElimination: true }]],
+  ];
+
+  for (const [label, sched] of cases) {
+    it(`puts every queen in exactly one group on ${label}`, () => {
+      const call = ep2(play(sched)).dr.call;
+      const seen = {};
+      for (const g of GROUPS) for (const n of (call[g] || [])) (seen[n] ||= []).push(g);
+      const twice = Object.entries(seen).filter(([, v]) => v.length > 1)
+        .map(([n, v]) => `${n} is ${v.join(' and ')}`);
+      expect(twice).toEqual([]);
+    });
+  }
+
+  it('still sends somebody to the song, and the right somebody', () => {
+    // Top two on a night for the win; bottom two on a night for a life.
+    const win = ep2(play([{ episode: 2, rateAQueen: true, noElimination: true }]));
+    const top2 = win.dr.rateAQueen.board.slice(0, 2).map(r => r.name);
+    expect([...win.dr.lipsync.queens].sort()).toEqual([...top2].sort());
+    expect(win.dr.call.bottom, 'somebody was in the bottom on a night nobody could lose').toEqual([]);
+
+    const life = ep2(play([{ episode: 2, rateAQueen: true }]));
+    expect([...life.dr.lipsync.queens].sort()).toEqual([...life.dr.call.bottom].sort());
+  });
+});

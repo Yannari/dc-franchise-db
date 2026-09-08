@@ -409,8 +409,11 @@ export function runDragWeek(state, cfg, ctx) {
      That is only true when the week is booked with no elimination. A
      Rate-a-Queen on an ordinary week keeps the ordinary shape: the room's
      ranking still decides the call, and the bottom two still sing to stay.
-     `call.bottom` is simply WHO SINGS, so the swap is honest rather than a
-     special case threaded through the lip sync below. */
+     WHO SINGS AND WHO IS IN THE BOTTOM ARE TWO DIFFERENT QUESTIONS, and
+     collapsing them put the same queen in two call groups at once: she was
+     the WIN and she was also in `call.bottom`, so the results screen drew her
+     twice with contradictory stamps — BTM2 above her own WIN. On a night the
+     top two sing, NOBODY is in the bottom. `call.singers` is who sings. */
   /* ── LIP SYNC FOR YOUR LEGACY ──
      The All Stars inversion, and the deepest rule change the show has: the
      top two sing, and the WINNER eliminates. It is the same staging as a
@@ -423,7 +426,8 @@ export function runDragWeek(state, cfg, ctx) {
   const topTwoSing = legacy || !!(cfg.rateAQueen && cfg.noElimination && bend.length >= 2);
   if (topTwoSing) {
     const top2 = bend.slice(0, 2).map(r => r.name);
-    call.bottom = top2;
+    call.singers = top2;
+    call.bottom = [];
     call.atRisk = [];
     // Nobody is safe-with-a-note on a night the room ranked for a prize, and
     // the win is not awarded until the song is over.
@@ -575,11 +579,16 @@ export function runDragWeek(state, cfg, ctx) {
   const song = (cfg.songTitle && songById(cfg.songTitle)) || pick(rng, SONGS);
   let lipsync = null;
   const exits = [];
-  if (call.bottom.length > 2) {
+  /* WHO SINGS. The bottom two on an ordinary night, and on a night the top
+     two sing it is them — set above, where `call.bottom` is left empty
+     because nobody is in the bottom on a night nobody can lose. */
+  const singers = call.singers || call.bottom;
+
+  if (singers.length > 2) {
     // A triple. Everybody performs, the lowest goes home, and the call is
     // reported as a shantay for the two who survived it — the doubles are a
     // head-to-head judgement and do not apply to three.
-    const scored = call.bottom.map(n => ({
+    const scored = singers.map(n => ({
       n,
       r: lipsyncScore({
         player: P(n), song, lipsyncRecord: state.lipsyncRecord[n], lastReaction: reactions[n], rng,
@@ -616,7 +625,7 @@ export function runDragWeek(state, cfg, ctx) {
       // THE TAGS THE SONG ALREADY HAS. `lipsyncScore` reads tempo and hook
       // to decide who wins and the narration read neither, so a ballad and
       // an uptempo were described in identical words.
-      tempo: song.tempo, mood: song.mood, hook: song.hook, queens: call.bottom.map(n => n),
+      tempo: song.tempo, mood: song.mood, hook: song.hook, queens: singers.map(n => n),
       scores: Object.fromEntries(scored.map(x => [x.n, x.r.score])),
       beats: Object.fromEntries(scored.map(x => [x.n, x.r.beats])),
       stunts: Object.fromEntries(scored.map(x => [x.n, x.r.stunt])),
@@ -629,8 +638,8 @@ export function runDragWeek(state, cfg, ctx) {
     for (const x of scored) state.lipsyncRecord[x.n].push(out.includes(x.n) ? 'L' : 'W');
     exits.push(...out);
     say('lipsync', 'lipsync', { lipsync });
-  } else if (call.bottom.length === 2) {
-    const [a, b] = call.bottom;
+  } else if (singers.length === 2) {
+    const [a, b] = singers;
     const sa = lipsyncScore({
       player: P(a), song, lipsyncRecord: state.lipsyncRecord[a], lastReaction: reactions[a], rng,
     });
@@ -965,6 +974,17 @@ export function runDragWeek(state, cfg, ctx) {
         return out.sort((x, y) => Math.abs(y[2]) - Math.abs(x[2]));
       })(),
       families: state.dragFamilies || [],
+      /* WHAT THE AUDIENCE MAKES OF THEM, per episode.
+         Every scene in this show writes the ledger -- a queen who defends
+         somebody gains, a queen who throws a friend under the bus loses --
+         and it lived only on `state`, which is one object for the whole
+         season. So there was no way to draw episode 4's fan standing, and no
+         screen drew it at all: the most-written number in the show was
+         invisible. Snapshotted for the same reason the arcs below are, and
+         rounded because a ledger printed to fourteen decimal places is not
+         more true, only longer. */
+      popularity: Object.fromEntries(Object.entries(state.popularity || {})
+        .map(([n, v]) => [n, Math.round(v * 10) / 10])),
       // A SNAPSHOT, not the live list: replaying episode 4 must show episode
       // 4's arcs, not the ones the season ended with.
       storylines: arcSummary(state.storylines || []),

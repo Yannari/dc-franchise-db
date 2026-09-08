@@ -99,7 +99,31 @@ so read `swaggerLinesFor` for the voice before writing:
 - `professional` — treats it as a result, takes it like one, shakes hands
 - `scrapper` — points out she was never supposed to get this far
 
-### 5. `js/dr/data/returnee-beats.js` — the Returning Queen twist
+### 5. `js/dr/data/split-beats.js` — the two halves meet
+
+A split premiere runs the cast in two halves over two episodes and nobody goes
+home. Then the room DOUBLES: everybody walks into a werk room with twice as
+many people in it, and half of them are strangers who have already been on
+television. That moment did not exist — the engine restored the full cast with
+one line of state and said nothing about it — so the most distinctive thing a
+split premiere does was the one thing it never showed.
+
+| beat | tiers | what it is |
+|---|---|---|
+| `rejoin-open` | `open` | The door opens and the room is twice the size. **No `{a}`** — naming one queen makes it her scene instead of the room's. |
+| `rejoin-read` | `threat`, `warm`, `unimpressed` | `{a}` sizing up `{b}`, who was in the OTHER half. They have never shared a room and `{a}` has already watched her compete. |
+| `rejoin-winners` | `winners` | The two queens who each won their own half, meeting. `{a}` won the first night, `{b}` the second. |
+
+**Six variants per tier.** The specific strangeness to write is that she has an
+opinion about somebody she has never met, formed entirely from watching her
+work — and the meeting either confirms it or does not. For `rejoin-winners`:
+each of them has been the best queen in the room for a week and exactly one of
+them is about to stop being that. Neither says so.
+
+`rejoin-read` carries a bond consequence that only fires if the line exists, so
+an unwritten tier costs nothing and a written one changes the season.
+
+### 6. `js/dr/data/returnee-beats.js` — the Returning Queen twist
 
 A queen the show already sent home walks back into the werk room and back
 into the competition. The engine, the twist card, the timeline dropdown and

@@ -124,16 +124,19 @@ export const RATE_CSS = `
    the wide part of the triangle instead of in the point. */
 .raq-tile{position:relative;display:block;margin:0 auto;overflow:hidden;
   clip-path:polygon(50% 0,100% 100%,0 100%);
-  background:linear-gradient(180deg,#FF3DC8,#8a1a6a)}
-/* THE IMAGE MUST COVER THE WHOLE TILE. At 88% width and auto height it did
-   not reach the corners, so the tile's own pink gradient showed through along
-   the bottom edge and read as a border the design never asked for. inset:0
-   plus object-fit:cover guarantees coverage; the scale and the low
-   transform-origin then push the face down out of the point and into the
-   wide part of the triangle, which is the only part you can actually see. */
-.raq-tile img{position:absolute;inset:0;width:100%;height:100%;display:block;
-  object-fit:cover;object-position:50% 14%;
-  transform:scale(1.5);transform-origin:50% 72%}
+  background:#2a0740}
+/* ── GETTING A FACE INTO A TRIANGLE ──
+   A triangle is nearly zero width at the top and full width at the bottom,
+   and a portrait puts the face near the TOP — so the two fight each other.
+   Scaling the image up to cover the tile only made it worse: it zoomed past
+   the face entirely.
+   What works is geometry, not zoom. The image is pushed DOWN by a fifth of
+   the tile so the face lands about two thirds of the way down, which is where
+   the triangle is wide enough to hold it, and it overflows the base rather
+   than being scaled to fit. The tile's own background is dark rather than
+   pink, so the sliver at the apex the image cannot reach reads as shadow
+   instead of as the pink border it used to read as. */
+.raq-tile img{position:absolute;left:0;top:20%;width:100%;height:auto;display:block}
 
 /* ── THE GRID OF QUEENS ── */
 .raq-grid{position:relative;z-index:2;padding:10px;display:grid;
@@ -295,7 +298,11 @@ export function rpBuildRate(row) {
     <div class="raq-bhead"><h4>The tally</h4>
       <span id="raq-count">0 of ${picks.length} scores in</span></div>
     <div class="raq-rows" id="raq-rows" style="height:${field.length * ROW_H}px">${
-  field.map(n => `<div class="raq-row" data-q="${esc(n)}" style="transform:translateY(0px)">
+  /* EACH ROW STARTS AT ITS OWN SLOT. They are absolutely positioned, so
+     rendering them all at translateY(0) stacked the whole board on one line
+     until the first reveal ran — the screen was broken in its resting state,
+     which is the state a thumbnail and a first glance both get. */
+  field.map((n, i) => `<div class="raq-row" data-q="${esc(n)}" style="transform:translateY(${i * ROW_H}px)">
         <span class="raq-rank">–</span>${_portrait(n, ep, { size: 24 })}
         <span class="raq-nm">${esc(n)}</span>
         <span class="raq-bar"><i style="width:0%"></i></span>

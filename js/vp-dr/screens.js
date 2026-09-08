@@ -102,6 +102,14 @@ const SECTIONS = [
       'return:return-rule'],
     badge: { text: 'RETURNS', color: '#3BE08A' },
     title: 'She’s Back', subtitle: 'somebody the show already sent home' },
+  /* THE TWO HALVES MEETING, once, after a split premiere and before anything
+     else that night. It is not the cold open: the cold open is about who left
+     last night, and on this night nobody has. */
+  { id: 'dr-rejoin', icon: icon('room'), label: 'The Room Doubles', suffix: 'rejoin',
+    phase: 'werk', accent: 'dr-a-room',
+    opens: ['rejoin'],
+    opensStep: ['rejoin'], badge: { text: 'SPLIT', color: '#38bdf8' },
+    title: 'The Room Doubles', subtitle: 'half of them have never met' },
   { id: 'dr-cold-open', icon: icon('mirror'), label: 'Cold Open', suffix: 'coldopen', phase: 'werk', accent: 'dr-a-room',
     opens: ['cold-open'],
     opensStep: ['cold-open'], badge: null, title: 'Cold Open', subtitle: 'the room, before anything' },

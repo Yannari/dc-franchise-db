@@ -10,6 +10,7 @@ import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
 import { PARTNER_COHORTS } from './chal/makeover.js';
 import { RETURNEE_BEATS } from './data/returnee-beats.js';
+import { SPLIT_BEATS } from './data/split-beats.js';
 import { runReunion } from './reunion.js';
 import { smackdownScenes } from './smackdown.js';
 import { runDragWeek } from './week.js';
@@ -656,6 +657,70 @@ export function runFinale(state, cfg, ctx) {
 }
 
 /**
+ * The two halves of a split premiere meeting for the first time.
+ *
+ * Drawn like every other beat pool: a tier with no lines emits no scene, so
+ * the phase appears the moment the prose exists and draws nothing — rather
+ * than an empty card — until then. See js/dr/data/split-beats.js.
+ *
+ * THE BONDS ARE REAL AND THEY ONLY HAPPEN IF THE SCENE DOES. A mechanic that
+ * moves relationships with nothing on screen to show for it is the invisible
+ * consequence this codebase refuses everywhere else, so the ledger is written
+ * inside the same branch that produced the card.
+ */
+function rejoinScenes(state, ctx) {
+  const { rng, addBond = () => {} } = ctx;
+  const [first, second] = state.splitHalves || [];
+  if (!first || !second) return [];
+  const beatBy = id => SPLIT_BEATS.find(b => b.id === id);
+  const out = [];
+  const say = (beat, tierId, who, data = {}) => {
+    if (!beat) return null;
+    const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
+    if (!t?.lines?.length) return null;
+    const line = t.lines[Math.floor(rng() * t.lines.length)];
+    const sc = {
+      step: 'rejoin',
+      kind: `split:${beat.id}`,
+      data: { beat: beat.id, tier: t.id, players: who, note: t.note, ...data },
+      text: String(line).replace(/\{a\}/g, who[0] || '').replace(/\{b\}/g, who[1] || ''),
+    };
+    out.push(sc);
+    return sc;
+  };
+
+  say(beatBy('rejoin-open'), 'open', []);
+
+  /* THE READS. One per queen, about somebody from the other half — she has
+     watched this person compete and never met her, which is the specific
+     strangeness of the twist. */
+  const alive = new Set(state.living);
+  const reads = [['threat', 0.34], ['warm', 0.36], ['unimpressed', 0.3]];
+  for (const [half, other] of [[first, second], [second, first]]) {
+    for (const a of half) {
+      if (!alive.has(a)) continue;
+      const pool = other.filter(n => alive.has(n));
+      if (!pool.length) continue;
+      const b = pool[Math.floor(rng() * pool.length)];
+      let roll = rng();
+      let tierId = 'warm';
+      for (const [id, w] of reads) { if (roll < w) { tierId = id; break; } roll -= w; }
+      const sc = say(beatBy('rejoin-read'), tierId, [a, b]);
+      // Only if it was actually shown.
+      if (sc) {
+        const delta = tierId === 'warm' ? 2 : tierId === 'unimpressed' ? -1 : 0;
+        if (delta) { addBond(a, b, delta); sc.data.bond = [[a, b, delta]]; }
+      }
+    }
+  }
+
+  const [w1, w2] = state.splitWinners || [];
+  if (w1 && w2 && alive.has(w1) && alive.has(w2)) say(beatBy('rejoin-winners'), 'winners', [w1, w2]);
+
+  return out;
+}
+
+/**
  * Play a season.
  *
  * `config` is the setup screen's: drPremiere, drFinale, drImmunity,
@@ -704,13 +769,29 @@ export function playDragSeason({
 
   // A SPLIT PREMIERE runs the cast in two halves with nobody going home, so
   // the season proper starts at episode three with everybody still in.
+  let rejoinDue = false;
   if (premiere === 'split' && cast.length >= 10) {
     const order = [...state.castOrder].sort(() => rng() - 0.5);
     const half = Math.ceil(order.length / 2);
     const wholeCast = [...state.living];
+    /* ── THE AUTHOR PICKS THE SPLIT'S CHALLENGE ──
+       This passed `pinned: []` and forced `premiere: 'talent-show'`, so both
+       halves ran a talent show whatever the designer had booked and a pin on
+       episode one silently slid to episode three — the split had eaten the
+       first two slots and nothing told it. A split premiere is not one shape:
+       the two halves can be given the same challenge or two different ones,
+       and that is the interesting decision in booking it.
+       Read off drSchedule the same way every other week is. */
+    rejoinDue = true;
+    const splitPins = (config.drSchedule || []).filter(Boolean);
+    const pinFor = n => splitPins.find(x => Number(x.episode) === n) || {};
+    let splitHalf = 0;
     for (const group of [order.slice(0, half), order.slice(half)]) {
+      const pin = pinFor(splitHalf + 1);
+      splitHalf += 1;
       const sch = buildSchedule({
-        episodes: 1, castSize: group.length, pinned: [], rng, premiere: 'talent-show',
+        episodes: 1, castSize: group.length, pinned: pin.maxiId ? [{ ...pin, episode: 1 }] : [],
+        rng, premiere: pin.maxiId ? 'standard' : 'talent-show',
       })[0];
       // The week only ever sees this half of the room. Nobody goes home, so
       // the full cast is restored afterwards rather than reconciled — the
@@ -722,6 +803,13 @@ export function playDragSeason({
       rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, {
         noElimination: true, formatNote: 'split',
       }), ctx), cast));
+      /* WHO WAS IN WHICH HALF, so the rejoin can know who is a stranger to
+         whom. Without it every queen in the room looks the same to the scene
+         that is about them not knowing each other. */
+      const justRan = rows[rows.length - 1];
+      state.splitHalves = [...(state.splitHalves || []), [...group]];
+      state.splitWinners = [...(state.splitWinners || []),
+        (justRan?.dr?.call?.win || [])[0] || null];
       state.living = wholeCast;
     }
   }
@@ -758,10 +846,21 @@ export function playDragSeason({
     eliminationsNeeded + scheduledFree + scheduledReturns - scheduledDoubles);
   // Episode one to the crowning, so an arc can ask "how far through are we".
   const totalEpisodes = weeks + 1;
+  /* ── THE SPLIT HAS ALREADY SPENT TWO EPISODES ──
+     A split premiere plays episodes one and two before the season proper
+     starts, and those two read their own pins above. Passing the whole
+     schedule through again applied the same pins a SECOND time, so a
+     Snatch Game booked for the split also turned up as the first ordinary
+     week. The season proper starts at three, so its pins are renumbered
+     against that — episode three is its episode one — and the two the split
+     consumed are dropped. */
+  const splitAte = premiere === 'split' && cast.length >= 10 ? 2 : 0;
   const schedule = buildSchedule({
     episodes: weeks,
     castSize: cast.length,
-    pinned: (config.drSchedule || []).filter(Boolean),
+    pinned: (config.drSchedule || []).filter(Boolean)
+      .filter(x => Number(x.episode) > splitAte)
+      .map(x => (splitAte ? { ...x, episode: Number(x.episode) - splitAte } : x)),
     rng,
     premiere: premiere === 'split' ? 'standard' : premiere,
   });
@@ -898,6 +997,25 @@ export function playDragSeason({
         ...returnScenes(returned, { living: state.living, rng }),
         ...(weekRow.dr.scenes || []),
       ];
+    }
+    /* ── THE TWO HALVES MEET ──
+       Once, on the first ordinary week after a split premiere, before
+       anything else on the night. The room doubles and half of it is
+       strangers — and until now the engine restored the full cast with one
+       line of state and said nothing at all about it, which made the most
+       distinctive thing a split premiere does the one thing it never showed.
+
+       The bonds are the point rather than the decoration: two queens who have
+       never shared a room do not start at zero with each other the way two
+       queens who spent a week together do, and a first read that goes well
+       is worth something for the rest of the season. */
+    if (rejoinDue && state.splitHalves?.length === 2) {
+      const scenes = rejoinScenes(state, ctx);
+      if (scenes.length) {
+        weekRow.dr.scenes = [...scenes, ...(weekRow.dr.scenes || [])];
+        weekRow.dr.rejoin = { halves: state.splitHalves.map(h => [...h]) };
+      }
+      rejoinDue = false;
     }
     rows.push(weekRow);
     // No debt is taken on: the loop simply keeps going until the room is

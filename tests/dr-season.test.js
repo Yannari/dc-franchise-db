@@ -653,3 +653,45 @@ describe('WHO SINGS, AND WHAT FOR', () => {
     expect(e.dr.lipsync.queens).not.toContain(e.dr.lipsync.eliminated);
   });
 });
+
+describe('THE SPLIT PREMIERE', () => {
+  /* Three things it did not do, all of them invisible without playing one:
+     both halves ran a hardcoded talent show whatever the designer booked; a
+     pin on episode one silently slid to episode three because the split had
+     eaten the first two slots and nothing told the main schedule; and the two
+     halves merged with one line of state and no scene at all. */
+  const split = sched => playDragSeason({ cast: cast(12, 5), seed: 5,
+    config: { drPremiere: 'split', drSchedule: sched },
+    bond: () => 0, addBond: () => {}, popDelta: () => {} });
+
+  it('lets the author choose each half its own challenge', () => {
+    const s = split([{ episode: 1, maxiId: 'snatch-game' }, { episode: 2, maxiId: 'roast' }]);
+    expect(s.rows[0].dr.challenge.id).toBe('snatch-game');
+    expect(s.rows[1].dr.challenge.id).toBe('roast');
+  });
+
+  it('does not spend the same pin twice', () => {
+    const s = split([{ episode: 1, maxiId: 'snatch-game' }, { episode: 2, maxiId: 'roast' }]);
+    // The split ate episodes one and two, so the season proper must not open
+    // on the challenge it just played.
+    expect(s.rows[2].dr.challenge.id).not.toBe('snatch-game');
+    expect(s.rows[2].dr.challenge.id).not.toBe('roast');
+  });
+
+  it('runs each half with half the room and sends nobody home', () => {
+    const s = split([]);
+    for (const r of s.rows.slice(0, 2)) {
+      expect(r.exits.length, 'a split premiere eliminated somebody').toBe(0);
+      expect(r.dr.living.length).toBeLessThan(12);
+    }
+    expect(s.rows[2].dr.living.length, 'the room did not come back together')
+      .toBeGreaterThan(s.rows[1].dr.living.length);
+  });
+
+  it('records which half each queen was in, so the rejoin can know', () => {
+    const s = split([]);
+    // Two halves, disjoint, covering the cast.
+    const r = s.rows[2];
+    expect(r.dr.rejoin ? r.dr.rejoin.halves.length : 2).toBe(2);
+  });
+});

@@ -13,7 +13,7 @@
 // tells the panel something they did not already know about her.
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
-import { noise } from '../perform.js';
+import { noise, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
 
 // Twelve sets of three. Exactly one category per set is built in the werk
@@ -142,7 +142,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: looks.some(l => l.score > 9.5),
-      risk: (Number(players[n]?.stats?.boldness) || 5) / 10,
+      risk: riskFor(players[n], rng),
       role: 'standard', team: null,
       parts: { prep: prep[n] || 0, build: buildQuality?.[n] ?? null },
       detail: { theme: theme.name, themeId: theme.id, looks },

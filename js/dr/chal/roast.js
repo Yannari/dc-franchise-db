@@ -14,7 +14,7 @@
 import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
-import { noise } from '../perform.js';
+import { noise, riskFor } from '../perform.js';
 import { canScheme, evt } from '../rules.js';
 
 // A multiplier on the SPREAD, never a ceiling: the closer can win the night or
@@ -150,7 +150,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: perf > 10,
-      risk: (Number(s.boldness) || 5) / 10,
+      risk: riskFor(players[n], rng),
       role: 'standard', team: null,
       parts: { prep: prep[n] || 0, roomTemp: Math.round(roomTemp * 100) / 100 },
       detail: {

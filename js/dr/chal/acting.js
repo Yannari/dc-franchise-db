@@ -24,7 +24,7 @@ import { pickOrder, contestFor, draftRoles } from '../assign.js';
 import { prepareRoom } from '../prep.js';
 import { SCRIPTS, PRODUCTS, PREMISES } from '../data/scenes.js';
 import { dragOf } from '../queen.js';
-import { blendScore, noise, ROLE_RANGES } from '../perform.js';
+import { blendScore, noise, ROLE_RANGES, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
 
 const stat = (p, k) => {
@@ -265,7 +265,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: perf > 11,
-      risk: stat(players[n], 'boldness') / 10,
+      risk: riskFor(players[n], rng),
       role: assignment.roles?.[n] || 'standard',
       team: team ? assignment.teams.indexOf(team) : null,
       parts: { prep: prepTerm, chem },

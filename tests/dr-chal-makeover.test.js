@@ -111,13 +111,28 @@ describe('the resemblance', () => {
 
   it('a strong designer makes the more convincing family', () => {
     const p = Object.fromEntries(NAMES.map(n => [n, mk(n, n === 'Cleo' ? { design: 10 } : { design: 2 })]));
-    /* TWO HUNDRED, NOT FORTY. At n=40 one standard error on a rate near 0.45
-       is about 0.08, so this assertion was a coin toss on the seed: it read
-       0.40 after an unrelated change elsewhere shifted the draw by a few
-       calls, with nothing about the makeover touched. A guard that measures
-       an effect has to be powered to measure it. At n=200 the error is about
-       0.035 and the threshold means what it says. */
-    const RUNS = 200;
+    /* A THOUSAND, NOT TWO HUNDRED — and this is the second time this guard has
+       been widened for the same reason, which is the interesting part.
+
+       At n=40 one standard error on a rate near 0.45 was about 0.08, so the
+       assertion was a coin toss on the seed; it read 0.40 after an unrelated
+       change shifted the draw by a few calls. Raised to 200. Then `riskFor`
+       added one draw per queen in this module and it read exactly 0.450
+       against a `> 0.45` threshold — red again, with the effect untouched.
+
+       MEASURED, rather than guessed at this time: the true rate is 49.1%
+       +/- 0.8 at n=4000, against 25% for chance. The effect is large and was
+       never in doubt. At n=200 the standard error is 3.5 points, so a true
+       rate of 0.489 lands at or under 0.45 about thirteen percent of the
+       time — this guard flaked one run in eight and blamed whatever had most
+       recently touched the rng.
+
+       At n=1000 the error is 1.6 points and the threshold sits 2.4 standard
+       errors away. THE THRESHOLD IS NOT THE THING TO MOVE: lowering it to
+       admit the observed value would weaken the guard to fit the change that
+       tripped it, which is how a test ends up passing against the bug it was
+       written for. */
+    const RUNS = 1000;
     let wins = 0;
     for (let i = 0; i < RUNS; i++) {
       const o = runMaxi(ctx(i, p));

@@ -15,7 +15,7 @@ import { SNATCH_CHARACTERS, characterById } from '../data/snatch-characters.js';
 import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
-import { noise } from '../perform.js';
+import { noise, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
 
 const ROUNDS = 6;
@@ -353,7 +353,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: kills >= 2,
-      risk: (Number(players[n]?.stats?.boldness) || 5) / 10,
+      risk: riskFor(players[n], rng),
       role: 'standard',
       team: null,
       parts: { base: perf, prep: prep[n] || 0 },

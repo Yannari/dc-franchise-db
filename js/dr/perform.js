@@ -27,6 +27,17 @@ import { dragOf, DRAG_STYLES } from './queen.js';
    See tests/dr-spec-audit.test.js, measurement 2. */
 export const RUNWAY_FORM = 1.5;
 
+/* The same idea for finish. Slightly under the runway's, because a queen who
+   can sew is a bit more reliable week to week than a queen who can style — the
+   work is done before she walks rather than in front of the panel. */
+export const POLISH_FORM = 1.4;
+
+/* How differently a queen can land from one week to the next, in the panel's
+   eyes — the shared half of it. Tuned by measurement, not taste: see
+   tools/dr-domination.mjs. Too small and the board is a ranking of stats; too
+   large and craft stops mattering and every week is a coin toss. */
+export const PANEL_FORM = 1.5;
+
 /** THE noise helper for js/dr/. Symmetric, bounded, seeded. */
 export function noise(rng, amt = 2.5) {
   return (rng() - 0.5) * 2 * amt;
@@ -41,6 +52,83 @@ export function blendScore(drag, blend) {
     w += v;
   }
   return w ? s / w : 5;
+}
+
+/* ── HOW BIG SHE WENT TONIGHT, IN ONE PLACE ────────────────────────────
+   The panel scores this: `judgeViews` weights `risk * 10` at up to 0.30, so
+   its shape decides seasons.
+
+   IT WAS `boldness / 10` — WRITTEN OUT NINE TIMES, once in every challenge
+   module — and that is a season constant with no variance whatsoever. A queen
+   with boldness 3 handed the panel 3.0 on this axis and a queen with boldness
+   10 handed them 10.0, the same two numbers every single week of every single
+   season. Measured: two queens in a 13-queen cast never won a maxi across 120
+   seasons, and this is one of the two terms that made that possible.
+   CLAUDE.md forbids exactly this — "never guarantee results from stats alone,
+   upsets must happen regularly" — and a constant is a guarantee.
+
+   Boldness now raises the ODDS of going big rather than fixing the size of it.
+   The means still separate clearly (0.29 for boldness 3 against 0.60 for
+   boldness 10, so a bold queen still reads as a risk-taker and still scores
+   better on average), and the ranges now cross, so a cautious queen can have
+   the biggest night on that stage and sometimes does.
+
+   NOT USED BY EVERY MODULE ON PURPOSE. A Rusical's live vocal and a
+   LaLaPaRuZa's song are risks the NIGHT carries rather than risks her
+   personality chose, so those modules set their own value and should keep
+   doing it. This is the rule for "how big did this queen go", not for "how
+   exposed was this format". */
+export function riskFor(player, rng = Math.random) {
+  const b = Number(player?.stats?.boldness);
+  const bold = (Number.isFinite(b) ? b : 5) / 10;
+  return Math.max(0.05, Math.min(1, 0.15 + bold * 0.45 + noise(rng, 0.28)));
+}
+
+/* ── HER TECHNICAL FINISH, WHICH THE PANEL WEIGHS ──────────────────────
+   `judgeViews` weights polish at up to 0.20, and `js/dr/week.js` handed it
+   HER RAW `mental` STAT. Two problems, and they compound.
+
+   It had ZERO week-to-week variance. Every other input to the panel moves:
+   the performance swings, the runway carries RUNWAY_FORM, each judge adds
+   their own noise. Polish was the one term that was the same number in
+   episode one and episode ten of every season a queen ever played, which
+   made it the most reliable thing on the board — an eight-point spread
+   between mental 10 and mental 2, banked before anybody performed.
+
+   And it was not craft. This is a show scored on what she can DO, and the
+   single most dependable term in the panel's arithmetic was a stat with no
+   drag in it at all. A queen with a good head and no hands out-polished a
+   seamstress, permanently.
+
+   Finish is now mostly her hands and partly her head, and it has form like
+   everything else. The scale is unchanged (1..10), so critiques and the
+   judges' own weights read exactly as before. */
+export function polishFor(player, rng = Math.random) {
+  const d = dragOf(player);
+  const m = Number(player?.stats?.mental);
+  const mental = Number.isFinite(m) ? m : 5;
+  /* MOSTLY HER HEAD, AND DELIBERATELY SO — measured, after trying it the
+     other way twice.
+
+     Making polish craft-derived is the obvious move on a craft show and it
+     is wrong here, because `perf` and `runway` ALREADY read her craft and
+     the panel weights those at up to 0.55 each. A craft-based polish is a
+     third helping of the same number: top-three share went 61.9% -> 70.8%
+     with design+runway, and 71.7% with design alone. Craft correlates with
+     itself, so every craft term stacks.
+
+     Mental is ORTHOGONAL to craft, and that is the point of it. It is the
+     lane a queen with ordinary hands and a good head can win in, and taking
+     it away flattens the cast into one axis.
+
+     So the axis stays and the two things actually wrong with it are fixed:
+     the spread is compressed (an eight-point gap banked before anybody
+     performed is now about five) and it has form like every other term, so
+     mental 2 on a good night can out-finish mental 10 on a bad one. A small
+     design term keeps it honest about being a craft show without letting
+     craft count a third time. */
+  return Math.max(1, Math.min(10,
+    5 + (mental - 5) * 0.55 + (d.design - 5) * 0.15 + noise(rng, POLISH_FORM)));
 }
 
 // ── A ROLE SHIFTS PROBABILITY, IT NEVER CAPS ──────────────────────────
@@ -101,9 +189,24 @@ export function performQueen({
   const range = ROLE_RANGES[role] ?? 1.0;
   const bold = num('boldness') / 10;                 // 0.1..1
 
-  // How big she went. Not a score: a screen reads it to say whether the night
-  // was a gamble, and the lip sync reads the same idea separately.
-  const risk = bold * (0.5 + rng() * 0.5);
+  /* ── HOW BIG SHE WENT TONIGHT ──
+     Not a score: a screen reads it to say whether the night was a gamble,
+     and the lip sync reads the same idea separately. But the panel DOES
+     score it — `judgeViews` weights `risk * 10` at up to 0.30 — so its
+     shape decides seasons.
+
+     IT USED TO BE `bold * (0.5 + rng() * 0.5)`, WHICH NEVER OVERLAPPED.
+     Boldness 10 drew from [0.50, 1.00] and boldness 3 from [0.15, 0.30]:
+     the timid queen's biggest night of her life scored below the bold
+     queen's smallest, every week, forever. That is a guarantee from a stat,
+     which CLAUDE.md forbids in as many words — upsets must happen.
+
+     Boldness now raises the ODDS of going big rather than setting a floor
+     under it. The means still separate (0.29 against 0.60, so a bold queen
+     still reads as a risk-taker and still scores better on average), and
+     the ranges now cross, so a cautious queen can have the biggest night on
+     the stage and occasionally does. */
+  const risk = riskFor(player, rng);
 
   // Boldness widens the swing as well as the role does. A bold queen in a big
   // part is the widest thing on the stage, which is correct.

@@ -15,7 +15,7 @@
 import { pickOrder, draftRoles, captainSplit } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
-import { noise, ROLE_RANGES } from '../perform.js';
+import { noise, ROLE_RANGES, riskFor } from '../perform.js';
 import { canScheme, evt } from '../rules.js';
 
 const PART_LADDER = ['lead', 'featured', 'featured', 'standard', 'standard',
@@ -243,7 +243,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: perf > 11,
-      risk: (Number(players[n]?.stats?.boldness) || 5) / 10,
+      risk: riskFor(players[n], rng),
       role: assignment.roles[n],
       team: ti,
       parts: { prep: prep[n] || 0, teamBonus },

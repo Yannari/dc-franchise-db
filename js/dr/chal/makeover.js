@@ -26,7 +26,7 @@
 import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
-import { noise } from '../perform.js';
+import { noise, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
 
 const crew = (name, ease) => ({ id: name.toLowerCase().replace(/\W+/g, '-'), name, ease });
@@ -191,7 +191,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: resemblance > 9 && perf > 9,
-      risk: (Number(players[n]?.stats?.boldness) || 5) / 10,
+      risk: riskFor(players[n], rng),
       role: 'standard', team: null,
       parts: { prep: prep[n] || 0 },
       detail: {

@@ -399,10 +399,30 @@ describe('a night nobody leaves makes the season longer', () => {
   });
 
   it('a scheduled double elimination takes two and shortens the run', () => {
-    const base = playDragSeason({ cast: cast(14), seed: 4 });
+    /* THE BASELINE HAS TO BE CONTROLLED, and it was not. `allowDoubleShantay`
+       defaults ON (js/dr/season.js: "an unset value means the format's
+       ordinary rule applies"), and a double shantay sends nobody home, which
+       makes a season one episode LONGER. So the reference season carried its
+       own random length modifier and this compared a fixed -1 against it.
+
+       It read base=12 out=10 the first time the panel gained a per-episode
+       form term: the extra variance let two queens both go GREAT and close on
+       episode 5 of the baseline, a double shantay fired, and the baseline
+       grew by one while the double-elimination season did not. Nothing about
+       the double elimination had changed.
+
+       Turning the other length modifier off is what makes this a measurement
+       of one thing. */
+    const noFreeWeeks = { drDoubleShantay: false };
+    const base = playDragSeason({ cast: cast(14), seed: 4, config: noFreeWeeks });
     const out = playDragSeason({
-      cast: cast(14), seed: 4, config: { drSchedule: [{ episode: 5, doubleElimination: true }] },
+      cast: cast(14),
+      seed: 4,
+      config: { ...noFreeWeeks, drSchedule: [{ episode: 5, doubleElimination: true }] },
     });
+    // And the baseline really is unmodified, so -1 means what it says.
+    expect(base.rows.some(r => r.dr?.lipsync?.call === 'double-shantay'),
+      'the reference season lengthened itself').toBe(false);
     expect(out.rows.length, 'the season did not shorten').toBe(base.rows.length - 1);
     const week = out.rows.find(r => r.num === 5);
     expect(week.exits.length, 'only one queen went home').toBe(2);
@@ -537,16 +557,33 @@ describe('TWO WINNERS', () => {
     }
   });
 
+  /* ── HOW WIDE THE WINDOW HAS TO BE ──
+     Sixty seeds, and it read `n > 0`. The measured rate of a double crown is
+     about 1.5% of seasons, so the chance of sixty seasons containing none is
+     0.985^60 — roughly FORTY PERCENT. This test was a coin weighted 3:2, and
+     it passed for as long as it did because the rng stream happened to put
+     one inside the window; the first change anywhere upstream that consumed
+     an extra draw moved the stream and it went red without anything being
+     broken. That is what it did when `form` was added to the panel entries:
+     the mechanism still fired at 1.5% across 200 seasons and this went red.
+
+     A rare event needs a window sized against its rate. At 1.5%, 300 seeds
+     miss entirely about 1% of the time, which is a test rather than a bet. */
+  const DOUBLE_CROWN_SEEDS = 300;
+
   it('is rare even when allowed, and cannot be rolled', () => {
     let n = 0;
-    for (let seed = 1; seed <= 60; seed++) if (play(seed, { drDoubleCrown: true }).doubleCrown) n++;
-    // It reads the raw duel: both excellent AND level. A handful in sixty.
+    for (let seed = 1; seed <= DOUBLE_CROWN_SEEDS; seed++) {
+      if (play(seed, { drDoubleCrown: true }).doubleCrown) n++;
+    }
+    // It reads the raw duel: both excellent AND level.
     expect(n, 'a double crown should be an exception, not a coin flip').toBeGreaterThan(0);
-    expect(n).toBeLessThan(12);
+    // Rare, not a format. Well under a tenth of seasons.
+    expect(n / DOUBLE_CROWN_SEEDS, 'a double crown has become ordinary').toBeLessThan(0.1);
   });
 
   it('gives both queens the crown and neither the runner-up slot', () => {
-    for (let seed = 1; seed <= 60; seed++) {
+    for (let seed = 1; seed <= DOUBLE_CROWN_SEEDS; seed++) {
       const s = play(seed, { drDoubleCrown: true });
       if (!s.doubleCrown) continue;
       const last = s.rows[s.rows.length - 1];
@@ -562,7 +599,7 @@ describe('TWO WINNERS', () => {
       expect(named.length, 'a crowning that crowns nobody out loud').toBeGreaterThan(0);
       return;
     }
-    throw new Error('no double crown in 60 seasons — the window is too tight to test');
+    throw new Error(`no double crown in ${DOUBLE_CROWN_SEEDS} seasons — the window is too tight to test`);
   });
 });
 

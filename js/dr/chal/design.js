@@ -14,7 +14,7 @@
 import { pickOrder, contestFor, draftRoles } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
-import { blendScore, noise, ROLE_RANGES } from '../perform.js';
+import { blendScore, noise, ROLE_RANGES, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
 
 // `difficulty` cuts BOTH ways, which is what makes the pick a decision rather
@@ -157,7 +157,7 @@ export function perform(ctx) {
     performances[n] = {
       perf: Math.round(perf * 100) / 100,
       moment: perf > 11,
-      risk: (Number(players[n]?.stats?.boldness) || 5) / 10,
+      risk: riskFor(players[n], rng),
       role: assignment.roles[n],
       team: team ? assignment.teams.indexOf(team) : null,
       parts: { prep: prep[n] || 0, chem, ambition },

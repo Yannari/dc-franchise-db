@@ -34,6 +34,23 @@ export function judgeViews(panel, entries, memory = {}, rng = Math.random) {
         + t.polish * (e.polish ?? 5)
         + ((j.styleBias || {})[e.style] || 0)
         + (mem[e.name] || 0)
+        /* ── THE NIGHT SHE HAD, WHICH THE WHOLE ROOM SEES THE SAME WAY ──
+           `noise` below is PER JUDGE, and a four-seat panel averages four
+           independent draws to almost nothing — so the panel as a body had
+           no shared uncertainty at all. Every term that could move a queen
+           was either a season constant or a wobble that cancelled itself.
+
+           Measured before this existed: across 120 seasons, one queen in a
+           thirteen-queen cast won no maxi challenge ever — roughly 1200
+           chances at under 0.1% each. Not "she rarely wins": she cannot.
+           CLAUDE.md's rule is that stats must never guarantee a result.
+
+           `form` is one draw per queen per episode, added once and seen
+           identically by every seat, because "she was off tonight" is a fact
+           about her night and not four separate opinions. It does not
+           average away, which is the entire point, and it is what lets a
+           queen the board has behind actually take a week. */
+        + (e.form || 0)
         + noise(rng, 1.0);
       return { name: e.name, view: Math.round(view * 100) / 100 };
     });

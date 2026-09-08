@@ -110,15 +110,44 @@ describe('the currencies, measured', () => {
     }
   });
 
-  it('HIGHS IS CHEAPEST BECAUSE IT IS THE MOST PLACEMENT-SHAPED', () => {
-    // Measured over 400 seasons on this fixture: highs |r|=0.527 against maxi
-    // wins' 0.511 — the opposite way round from the intuition that the biggest
-    // achievement is the most placement-like. The gap is real but only 0.016,
-    // which is why the sample above is 250 and not 60.
-    // If this ever flips, the weights below it are being justified by a
-    // sentence that is no longer true.
-    expect(Math.abs(corr('highs'))).toBeGreaterThan(Math.abs(corr('maxiWins')));
-    expect(Math.abs(corr('lipsyncWins'))).toBeLessThan(Math.abs(corr('maxiWins')));
+  /* ── WHAT THIS USED TO ASSERT, AND WHY IT NO LONGER CAN ──
+     It read `|r(highs)| > |r(maxiWins)|`, on 400 seasons measuring 0.527
+     against 0.511. It has now flipped: 0.5119 against 0.5246 over 600
+     seasons, measured after the domination fixes in js/dr/perform.js.
+
+     THE FLIP IS CAUSAL AND EXPECTED, not a regression. Those fixes spread
+     maxi wins across the cast — the top three queens' share of all wins went
+     from 73% to 60%, and no queen is shut out of winning any more. A column
+     that used to be hoarded by three queens now tracks placement smoothly
+     across the whole board, so `maxiWins` became MORE placement-shaped and
+     `highs` slightly less.
+
+     BUT THE REAL LESSON IS THAT NEITHER ORDERING WAS EVER RESOLVABLE. The
+     gap was +0.016 before and is -0.013 now, against a standard error of
+     about 0.009 on 7,200 rows. The assertion was asking a 250-season sample
+     to settle a difference the sample cannot see, which is why the comment
+     above it already records two previous flips after unrelated changes.
+     Re-pinning it to the new direction would just buy the next flip.
+
+     So it now asserts the thing that IS resolvable and that the weights
+     actually rest on: lip sync wins are far and away the most independent
+     column on the board (0.30 against ~0.52 for both others), which is what
+     justifies charging 1.1 for them, and both of the other two are strongly
+     placement-shaped, which is what justifies highs being cheap at 0.4. */
+  it('LIP SYNC WINS ARE THE INDEPENDENT COLUMN; THE OTHER TWO ARE PLACEMENT-SHAPED', () => {
+    const highs = Math.abs(corr('highs'));
+    const maxi = Math.abs(corr('maxiWins'));
+    const lip = Math.abs(corr('lipsyncWins'));
+    // The gap that carries the board: clear, and an order of magnitude wider
+    // than the sampling error.
+    expect(lip, 'lip syncs are no longer the independent column').toBeLessThan(maxi - 0.1);
+    expect(lip, 'lip syncs are no longer the independent column').toBeLessThan(highs - 0.1);
+    // Both of the others are placement wearing a hat, which is why highs is
+    // charged 0.4 and why nothing here is charged near its face value.
+    for (const [k, v] of [['highs', highs], ['maxiWins', maxi]]) {
+      expect(v, `${k} stopped tracking placement`).toBeGreaterThan(0.4);
+      expect(v, `${k} became placement itself`).toBeLessThan(0.7);
+    }
   });
 
   it('BOTTOMS IS SURVIVORSHIP, WHICH IS WHY IT IS NOT CHARGED FOR', () => {

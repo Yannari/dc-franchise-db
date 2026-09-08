@@ -43,8 +43,9 @@ function _seed() {
  * flags. Translating here keeps both honest: the catalogue does not learn a
  * per-show shape, and the engine does not learn what a twist card is.
  *
- * `episodeField` on the catalogue entry names the flag, so a fourth drag
- * twist is a catalogue row and no change to this function.
+ * `episodeField` on the catalogue entry names the flag and `episodeValue`
+ * the value when it is not a boolean, so a new drag twist is a catalogue row
+ * and no change to this function.
  */
 function _twistsToSchedule() {
   const booked = (seasonConfig.twistSchedule || []).filter(Boolean);
@@ -56,7 +57,13 @@ function _twistsToSchedule() {
     const ep = Number(b.episode);
     if (!Number.isInteger(ep) || ep < 1) continue;
     const row = byEp.get(ep) || { episode: ep };
-    row[t.episodeField] = true;
+    /* TRUE FOR A FLAG, A NAME FOR A CHOICE. Most drag twists are booleans:
+       the week either sends nobody home or it does. Two of them share one
+       engine field and are told apart by its VALUE — `critiqueTwist` is
+       'who-should-go' or 'rate-a-queen' — and writing `true` there would
+       switch on a twist the engine has no branch for, which is a booking
+       that silently does nothing. */
+    row[t.episodeField] = t.episodeValue ?? true;
     /* AND ANYTHING THE BOOKING ITSELF CHOSE. Every drag twist until now was
        a boolean — it happens this week or it does not — and a returning
        queen has to say WHO. `dataFields` on the catalogue entry names the

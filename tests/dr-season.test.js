@@ -565,3 +565,49 @@ describe('TWO WINNERS', () => {
     throw new Error('no double crown in 60 seasons — the window is too tight to test');
   });
 });
+
+describe('EVERY PER-EPISODE TWIST REACHES THE ENGINE', () => {
+  /* Three of these ran in the engine and could not be booked from anywhere:
+     `bottomThree` had no catalogue row, and `critiqueTwist` was never set by
+     the season at all — js/dr/critiques.js exported two twists that week.js
+     dispatched on and nothing ever asked for. Dead code reachable only from a
+     test, which is the class this repo keeps shipping.
+     The test books each one and asserts the WEEK CHANGED, not that a flag was
+     copied: a booking that arrives and does nothing is the same bug. */
+  const play = sched => playDragSeason({ cast: cast(12, 5), seed: 5,
+    config: { drSchedule: sched }, bond: () => 0, addBond: () => {}, popDelta: () => {} });
+
+  it('Rate-a-Queen hands the board to the room', () => {
+    const s = play([{ episode: 2, rateAQueen: true }]);
+    const ep = s.rows.find(r => r.num === 2);
+    expect(ep.dr.rateAQueen, 'the twist never ran').toBeTruthy();
+    /* A ballot per queen, and nobody ranked herself — which is the rule that
+       makes the twist work: she cannot vote herself safe, only push somebody
+       else down. Counted against the ballots rather than `dr.living`, because
+       that field is the room AFTER the elimination and the votes were cast
+       before it. */
+    const { ballots } = ep.dr.rateAQueen;
+    const voters = Object.keys(ballots);
+    expect(voters.length).toBeGreaterThan(3);
+    for (const v of voters) {
+      expect(ballots[v], 'she ranked herself').not.toContain(v);
+      expect(ballots[v].length, 'a ballot must cover everybody else').toBe(voters.length - 1);
+    }
+  });
+
+  it('Bottom Three puts a third queen on the stage and saves her', () => {
+    const s = play([{ episode: 3, bottomThree: true }]);
+    const ep = s.rows.find(r => r.num === 3);
+    // atRisk is BTM — named in the bottom and let go without lip syncing.
+    expect(ep.dr.call.atRisk.length, 'no third queen was named').toBeGreaterThan(0);
+    expect(ep.dr.call.bottom.length, 'only two ever lip sync').toBe(2);
+  });
+
+  it('both critique twists arrive with their own name, not a bare true', () => {
+    for (const kind of ['who-should-go', 'rate-a-queen']) {
+      const s = play([{ episode: 4, critiqueTwist: kind }]);
+      const ep = s.rows.find(r => r.num === 4);
+      expect(ep.dr.critiqueTwist?.kind, `${kind} did not run`).toBe(kind);
+    }
+  });
+});

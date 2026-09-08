@@ -20,6 +20,7 @@ import { JUDGES } from './data/judges.js';
 import { SONGS } from './data/songs.js';
 import { RUNWAY_CATEGORIES } from './data/runways.js';
 import { rngFor } from './rng.js';
+import { assignDragFamilies } from './family.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
 import { judgeViews, panelRanking, hostBend } from './judging.js';
@@ -163,6 +164,8 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          author can pin; this is the one that changes what the week DOES, and
          it has to survive the build or the schedule entry reaches the season
          loop without it and the twist silently does not happen. */
+      ...(pin.rateAQueen ? { rateAQueen: true } : {}),
+      ...(pin.critiqueTwist ? { critiqueTwist: pin.critiqueTwist } : {}),
       ...(pin.noElimination ? { noElimination: true } : {}),
       ...(pin.doubleElimination ? { doubleElimination: true } : {}),
       ...(pin.bottomThree ? { bottomThree: true } : {}),
@@ -673,6 +676,16 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   // and those writes go nowhere, which is correct rather than a gap.
   const ctx = { rng, players, bond, addBond: addBond || (() => {}), popDelta: writePop };
 
+  /* ── WHO WAS ALREADY RELATED ──
+     Cast before the arcs, because a family is a fact about the room that the
+     arcs should be able to see rather than a thread laid over the top of one.
+     The bonds are applied through the caller's own `addBond`, so a headless
+     season with no relationship layer gets the families and none of the
+     points, which is correct — there is nowhere to put them. */
+  const fam = assignDragFamilies({ cast, rng });
+  state.dragFamilies = fam.families;
+  if (addBond) for (const [a, b, d] of fam.bonds) addBond(a, b, d);
+
   // Cast the season's arcs from the room as it stands before anybody performs.
   state.storylines = assignStorylines({ cast, state, bond, rng });
 
@@ -848,6 +861,12 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
       // She competes on her return night and cannot go home on it.
       ...(returned ? { returnedQueen: returned.name } : {}),
       ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
+      ...(week.rateAQueen ? { rateAQueen: true } : {}),
+      /* THE CRITIQUE TWISTS WERE UNREACHABLE. js/dr/critiques.js exports
+         whoShouldGoHome and rateAQueen, week.js dispatches on
+         cfg.critiqueTwist, and NOTHING EVER SET IT — the season never passed
+         the field, so both were dead code reachable only from a test. */
+      ...(week.critiqueTwist ? { critiqueTwist: week.critiqueTwist } : {}),
       ...(scheduledNoElim ? { noElimination: true } : {}),
       // The night the panel names three and saves one of them on the stage.
       // Pointless on a week that sends nobody home, so it is refused there.

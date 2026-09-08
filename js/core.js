@@ -938,6 +938,31 @@ export const TWIST_CATALOG = [
      cast a night; this gives one of them the competition back. dataFields
      carries the booking's own choice through to the engine — every other
      drag twist is a boolean and this one has to say WHO. */
+  /* ENGINE FEATURES THAT WERE NOT BOOKABLE. All three already ran — week.js
+     has read bottomThree and dispatched on critiqueTwist since they were
+     written — and none had a way in from the designer, so they were reachable
+     only from a test. */
+  { id:'dr-bottom-three', emoji:'\u{1F53B}', name:'Bottom Three', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-bottom-three', episodeField:'bottomThree',
+    desc:'The panel names THREE queens in the bottom instead of two, keeps them on the stage, and saves one of them there before the song. Only two lip sync. The queen who is saved is the only way a chart ever records BTM rather than BTM2 — named in the bottom and let go without ever having to fight for it — so without this week that row of the track record can never happen.',
+    incompatible:['dr-no-elimination'] },
+  { id:'dr-who-should-go', emoji:'\u{1F5E3}', name:'Who Should Go Home?', format:'drag-race',
+    category:'twist', phase:'any', engineType:'dr-who-should-go', episodeField:'critiqueTwist',
+    episodeValue:'who-should-go',
+    desc:'While the panel deliberates, each queen is asked which of the others should sashay away, and the answers are read out. It changes no placement — the host still decides — but the room finds out who named whom, and it costs the ones who answered honestly. The oldest of the format twists and still the meanest.',
+    incompatible:['dr-rate-social'] },
+  { id:'dr-rate-social', emoji:'⭐', name:'Rate-a-Queen (scores)', format:'drag-race',
+    category:'twist', phase:'any', engineType:'dr-rate-social', episodeField:'critiqueTwist',
+    episodeValue:'rate-a-queen',
+    desc:'Every queen scores every other queen out of ten and the averages are read to the room. Distinct from the Rate-a-Queen that decides the week: this one changes nothing about the call and everything about how the room feels afterwards, because the highest and the lowest both find out where they stand with the people they live with.',
+    incompatible:['dr-who-should-go'] },
+  /* THE ONE THAT TAKES THE CALL OFF THE PANEL. Every other drag twist changes
+     who goes home or how many; this changes WHO DECIDES, which is the deepest
+     assumption the show has. */
+  { id:'dr-rate-a-queen', emoji:'\u{1F5F3}\uFE0F', name:'Rate-a-Queen', format:'drag-race',
+    category:'twist', phase:'any', engineType:'dr-rate-a-queen', episodeField:'rateAQueen',
+    desc:'The queens rank each other and the panel sits the night out. Each queen ranks everyone but herself, best to worst, and the ballots are added with a Borda count — top of a ballot scores the most, bottom scores one — and that total is the week: highest is the win, lowest two lip sync. The host does not overrule it, which is the point. Nobody can rank herself safe, she can only push somebody else down, so a room full of schemers produces a board that has very little to do with who was actually good. Ran on season 16 and again, revised, on season 17.',
+    incompatible:[] },
   { id:'dr-returnee', emoji:'\u{1F519}', name:'Returning Queen', format:'drag-race',
     category:'returns', phase:'any', engineType:'dr-returnee', episodeField:'returnee',
     dataFields:['returneeName'],

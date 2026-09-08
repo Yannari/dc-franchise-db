@@ -32,6 +32,7 @@ import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
 import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
+import { rateBoard } from './rate.js';
 import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
@@ -313,7 +314,23 @@ export function runDragWeek(state, cfg, ctx) {
     polish: Number.isFinite(Number(P(n).stats?.mental)) ? Number(P(n).stats.mental) : 5,
   }));
   const views = judgeViews(panel, entries, state.memory, rng);
-  const ranking = panelRanking(views);
+  /* ── RATE-A-QUEEN ──
+     The twist where the ROOM ranks the room and the panel sits it out. The
+     queens rank each other best to worst and the ballots are added with a
+     Borda count — see js/dr/rate.js, which is where the counting and the
+     reasons a ballot lies both live.
+     It substitutes for the panel's board rather than adjusting it, which is
+     the whole point of the twist: on this night the judges do not decide.
+     `ballots` is kept so the screen can show who ranked whom, because a
+     ranking nobody can see is just a different set of numbers. */
+  const rated = cfg.rateAQueen
+    ? rateBoard({
+      living,
+      truth: Object.fromEntries(living.map(n => [n, performances[n].perf])),
+      players, bond, rng,
+    })
+    : null;
+  const ranking = rated ? rated.ranking : panelRanking(views);
   const split = isSplitPanel(ranking);
 
   // How the season's shape pulls on tonight — the two non-craft terms in the
@@ -352,7 +369,14 @@ export function runDragWeek(state, cfg, ctx) {
   state._drPhase = (cfg.totalEpisodes || 12) > 1
     ? (cfg.num - 1) / ((cfg.totalEpisodes || 12) - 1) : 0;
 
-  const bend = hostBend(ranking, { star: state.star, storylineNeed, trackPull, split });
+  /* AND THE HOST DOES NOT BEND A NIGHT HE DID NOT JUDGE. Every other week he
+     can overrule the board for the story; on a Rate-a-Queen the room's answer
+     IS the answer, and a bend here would quietly hand the call back to the
+     person the twist took it from. The bent shape is still built, because
+     callWeek reads finalRank, but it is the queens' order unchanged. */
+  const bend = rated
+    ? ranking.map((r, i) => ({ ...r, finalRank: i + 1, panelRank: r.panelRank }))
+    : hostBend(ranking, { star: state.star, storylineNeed, trackPull, split });
 
   // Early-season immunity, when the season is playing that rule.
   const immune = cfg.immunity && state.lastWinner && cfg.num <= 5 ? [state.lastWinner] : [];
@@ -820,11 +844,35 @@ export function runDragWeek(state, cfg, ctx) {
       critiques,
       critiqueTwist: twist ? { kind: cfg.critiqueTwist, votes: twist.votes || null, tally: twist.tally || null, mean: twist.mean || null } : null,
       bend,
+      /* THE BALLOTS, so a screen can show who ranked whom. Null on every
+         ordinary week, which is how a reader tells the two apart. */
+      rateAQueen: rated ? { ballots: rated.ballots, board: rated.ranking } : null,
       call,
       reactions,
       lipsync,
       events: [...maxiEvents, ...werkEvents],
       werk: werkScenes.map(s2 => ({ id: s2.id, slot: s2.slot, players: s2.players, eligible: s2.eligible })),
+      /* ── THE ROOM'S RELATIONSHIPS, WHICH NEVER LEFT THE CALLER ──
+         Bonds move in every werk room and every Untucked and lived only in
+         the caller's own closure, so no screen could draw them: a season
+         built entirely out of who likes whom showed the viewer a per-scene
+         delta chip and nothing else. A snapshot per episode is what makes a
+         standing relationship visible at all, and it is a snapshot rather
+         than a live read for the same reason everything else on the row is —
+         replaying episode four must show episode four.
+         Only pairs that are ACTUALLY something: a room of twelve is
+         sixty-six pairs and most of them are zero. */
+      bonds: (() => {
+        const out = [];
+        for (let i = 0; i < living.length; i++) {
+          for (let j = i + 1; j < living.length; j++) {
+            const v = Math.round((ctx.bond(living[i], living[j]) || 0) * 10) / 10;
+            if (Math.abs(v) >= 2) out.push([living[i], living[j], v]);
+          }
+        }
+        return out.sort((x, y) => Math.abs(y[2]) - Math.abs(x[2]));
+      })(),
+      families: state.dragFamilies || [],
       // A SNAPSHOT, not the live list: replaying episode 4 must show episode
       // 4's arcs, not the ones the season ended with.
       storylines: arcSummary(state.storylines || []),

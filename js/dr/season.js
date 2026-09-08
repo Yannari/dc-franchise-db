@@ -136,6 +136,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          loop without it and the twist silently does not happen. */
       ...(pin.noElimination ? { noElimination: true } : {}),
       ...(pin.doubleElimination ? { doubleElimination: true } : {}),
+      ...(pin.bottomThree ? { bottomThree: true } : {}),
       /* A RETURNING QUEEN, and the name she was booked with. The name is
          carried even when it is empty: an absent `returneeName` means the
          show picks, which is a real choice and not a missing one. */
@@ -652,6 +653,12 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
      the loop below runs until the room is finale-sized however many weeks
      that takes. */
   const eliminationsNeeded = episodesFor(cast.length, finaleType);
+  /* ONE BOTTOM-THREE NIGHT A SEASON, booked rather than rolled per week.
+     The show names three and saves one of them on the stage often enough that
+     BTM is a real call, and it is the only way that call can happen at all —
+     an ordinary week names the two who lip sync. Booked in the middle third,
+     where the field is still big enough for a third name to mean something
+     and small enough that the room feels it. */
   const pins = (config.drSchedule || []).filter(Boolean);
   const scheduledFree = pins.filter(x => x.noElimination).length;
   // A double elimination takes two queens in one night, so it SHORTENS the run
@@ -672,6 +679,18 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     rng,
     premiere: premiere === 'split' ? 'standard' : premiere,
   });
+
+  /* AND THE BOTTOM-THREE NIGHT, booked onto whichever middle episode the
+     author has not already claimed. Rolled once, from the season's own rng,
+     so a replay of the same seed books the same week. */
+  if (!schedule.some(e => e.bottomThree)) {
+    const lo = Math.max(1, Math.floor(schedule.length / 3));
+    const hi = Math.max(lo, Math.floor((schedule.length * 2) / 3));
+    const want = lo + Math.floor(rng() * Math.max(1, hi - lo + 1));
+    const slot = schedule.find(e => e.episode === want && !e.noElimination)
+      || schedule.slice(lo).find(e => !e.noElimination);
+    if (slot) slot.bottomThree = true;
+  }
 
   const finaleSize = FINALE_SIZE[finaleType] || 4;
   /* THE SCHEDULE CAN RUN OUT AND THE SEASON CANNOT. A double shantay is
@@ -758,6 +777,9 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
       ...(returned ? { returnedQueen: returned.name } : {}),
       ...(porkchopNight ? { formatNote: 'porkchop' } : {}),
       ...(scheduledNoElim ? { noElimination: true } : {}),
+      // The night the panel names three and saves one of them on the stage.
+      // Pointless on a week that sends nobody home, so it is refused there.
+      ...(week.bottomThree && !scheduledNoElim ? { bottomThree: true } : {}),
       // A DOUBLE ELIMINATION IS THE AUTHOR'S, pinned on the schedule the same
       // way a free week is. Refused on a week that already sends nobody home,
       // because those two instructions cancel each other out.

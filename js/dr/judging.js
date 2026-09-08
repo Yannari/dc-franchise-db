@@ -218,7 +218,13 @@ export function hostBend(ranking, { star = {}, storylineNeed = {}, trackPull = {
  * gets two and two, because calling six of eight queens forward is not a
  * critique, it is a group photo.
  */
-export function callWeek(finalRanking, { castSize, immune = [] } = {}) {
+export function callWeek(finalRanking, {
+  castSize, immune = [],
+  // How many the panel names as the bottom. Two is the ordinary week — the
+  // pair who lip sync. A format that announces a bottom THREE and then saves
+  // one of them passes 3, which is what `atRisk` is for.
+  bottomNamed = 2,
+} = {}) {
   const n = castSize || finalRanking.length;
   // How many are called up. It drops to ONE at four or fewer, and that is not
   // cosmetic: with three queens left, calling two of them forward leaves a
@@ -226,7 +232,15 @@ export function callWeek(finalRanking, { castSize, immune = [] } = {}) {
   // cannot reach a final two. One win and two lip syncing is also what the
   // format actually does that late.
   const up = n >= 12 ? 3 : n >= 5 ? 2 : 1;
-  const down = n >= 9 ? 3 : 2;
+  /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom
+     forward and sends everybody else off before a word is said, and the block
+     it calls is the pair who lip sync. This returned three, which put a third
+     queen on stage in danger every week and made BTM — named in the bottom
+     and then saved — the ordinary case rather than the rare one it is.
+     `atRisk` still exists and still works, because a bottom-three night is a
+     real format the chart records; it is just not what an ordinary week is,
+     so it is asked for with `bottomNamed` rather than arriving by default. */
+  const down = Math.max(2, bottomNamed);
 
   const order = [...finalRanking].sort((a, b) => a.finalRank - b.finalRank).map(r => r.name);
   const top = order.slice(0, up);
@@ -258,7 +272,11 @@ export function callWeek(finalRanking, { castSize, immune = [] } = {}) {
 
   // How many are critiqued without being in danger. It follows `up`, because
   // a night that calls three queens forward is a night with room for notes.
-  const lowCount = up >= 3 ? 2 : 1;
+  /* AND ONE LOW. Six queens are critiqued on an ordinary night — three at
+     the top, three at the bottom — which is one win, two high, one low and
+     the two who lip sync. Two lows made it seven and diluted a stage whose
+     whole tension is that being on it means something. */
+  const lowCount = 1;
   const low = down < eligible.length
     ? eligible.slice(Math.max(0, eligible.length - down - lowCount), eligible.length - down)
     : [];

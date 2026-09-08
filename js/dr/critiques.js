@@ -83,6 +83,45 @@ export function critiqueLines({ panel, views, call, entries, rng = Math.random }
       contrib.sort((a, b) => (tone === 'pan' ? a[1] - b[1] : b[1] - a[1]));
       const reasons = contrib.slice(0, 2).map(([k]) => TERM_NAMES[k]);
 
+      /* ── WHY, AND IN WHOSE WORDS ──────────────────────────────────
+         The critique used to be three generic paragraphs keyed on nothing
+         but `tone`, so a judge said the same sentence about a collapsed
+         Snatch Game and a hemline, and `reasons` — computed right here —
+         reached the screen as two tags above prose that never mentioned
+         them. The judges' authored `petPeeve` and `softSpot` were read by
+         no critique at all.
+
+         So this records WHAT SHE ACTUALLY DID, measured, and WHO IS
+         LOOKING:
+
+           dimension  the term that moved this judge most on this queen,
+                      which is her taste times the queen's real number — so
+                      Law arrives at the runway and Ross at the challenge
+                      because that is what each of them is weighing.
+           direction  praise or fault, from the sign of that term against
+                      the field rather than from the call.
+           standing   where she actually placed on that dimension tonight,
+                      out of the queens on stage. "Best look of the night"
+                      and "third best" are different critiques.
+           styleLean  this judge's authored bias for or against her kind of
+                      drag, when it is strong enough to be the reason.
+           peeve/soft the judge's own words for what she is looking for.
+
+         Nothing here decides anything — the verdict was settled upstairs.
+         This is the explanation, and it is the first time the explanation
+         has been made of facts. */
+      const dim = (contrib[0] || [])[0] || 'challenge';
+      const dimValue = { challenge: e.perf, runway: e.runway,
+        risk: (e.risk ?? 0.5) * 10, polish: e.polish }[dim] ?? 5;
+      const field = onStage
+        .map(nm => byName[nm])
+        .filter(Boolean)
+        .map(x => ({ challenge: x.perf, runway: x.runway,
+          risk: (x.risk ?? 0.5) * 10, polish: x.polish }[dim] ?? 5))
+        .sort((x, y) => y - x);
+      const place = field.indexOf(dimValue);
+      const styleLean = Number((j.styleBias || {})[e.style] || 0);
+
       out.push({
         judge: j.id,
         judgeName: j.name || j.id,
@@ -91,6 +130,18 @@ export function critiqueLines({ panel, views, call, entries, rng = Math.random }
         reasons,
         rank: row.rank,
         gap: Math.round(gap * 100) / 100,
+        reason: {
+          dimension: dim,
+          direction: tone === 'pan' ? 'fault' : tone === 'praise' ? 'praise' : (gap >= 0 ? 'praise' : 'fault'),
+          // 1-indexed, and out of the queens standing there rather than the
+          // whole cast: the middle went home before anybody spoke.
+          standing: place >= 0 ? place + 1 : null,
+          ofN: field.length,
+          styleLean: Math.round(styleLean * 100) / 100,
+          style: e.style || null,
+          peeve: j.petPeeve || null,
+          softSpot: j.softSpot || null,
+        },
       });
     }
   }

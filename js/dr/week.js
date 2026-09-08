@@ -364,7 +364,15 @@ export function runDragWeek(state, cfg, ctx) {
   if (cfg.returnedQueen && !immune.includes(cfg.returnedQueen)) {
     immune.push(cfg.returnedQueen);
   }
-  const call = callWeek(bend, { castSize: living.length, immune });
+  /* A BOTTOM THREE IS A REAL NIGHT AND HAS TO BE BOOKABLE. The ordinary week
+     names the two who lip sync; the show also runs weeks where it names three
+     and saves one of them on the stage, which is what `atRisk`/BTM is and the
+     only thing that makes that call reachable at all. Left to the schedule
+     rather than rolled here, so a season can be replayed. */
+  const call = callWeek(bend, {
+    castSize: living.length, immune,
+    bottomNamed: cfg.bottomNamed || (cfg.bottomThree ? 3 : 2),
+  });
 
   // ── THE TRIPLE LIP SYNC ────────────────────────────────────────────
   //

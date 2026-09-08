@@ -30,6 +30,7 @@ import {
   pickKindFor, pickLinesFor, walkthroughLinesFor,
 } from './data/maxi-voices.js';
 import { characterById } from './data/snatch-characters.js';
+import { reasonLinesFor, biasLinesFor } from './data/critique-voices.js';
 import {
   divergentTastes, advocacyLinesFor, hostCallLinesFor,
 } from './data/deliberation-voices.js';
@@ -78,7 +79,7 @@ const pick = (lines, rng, used = null, key = '') => {
   return chosen;
 };
 
-const fill = (line, { a, b, j, s, c, k, d, e } = {}) => (line || '')
+const fill = (line, { a, b, j, s, c, k, d, e, p, o, y } = {}) => (line || '')
   .replace(/\{a\}/g, a || '')
   .replace(/\{b\}/g, b || '')
   .replace(/\{j\}/g, j || '')
@@ -86,7 +87,10 @@ const fill = (line, { a, b, j, s, c, k, d, e } = {}) => (line || '')
   .replace(/\{c\}/g, c || '')
   .replace(/\{k\}/g, k || '')
   .replace(/\{d\}/g, d || '')
-  .replace(/\{e\}/g, e || '');
+  .replace(/\{e\}/g, e || '')
+  .replace(/\{p\}/g, p || '')
+  .replace(/\{o\}/g, o || '')
+  .replace(/\{y\}/g, y || '');
 
 /**
  * What she picked, as words.
@@ -324,15 +328,35 @@ export function renderStageBeats({
     if (hers.length) {
       for (const c of hers) {
         const t = critBeat.tiers.find(x => x.id === c.tone) || critBeat.tiers[1];
+        /* ── THE REASON, IN THE VOICE OF WHOEVER IS GIVING IT ──
+           The generic tier is three paragraphs keyed on tone alone, so the
+           same words covered a collapsed challenge and a hemline and named
+           neither. `c.reason` is measured — the term that actually moved
+           this judge on this queen, which way it moved her, where the queen
+           really placed on it tonight, and the judge's own words for what
+           she is looking for. Written, it says something only this judge
+           would say about only this performance. */
+        const r = c.reason || {};
+        const said = reasonLinesFor(r.dimension, r.direction);
+        const bias = said ? biasLinesFor(r.styleLean) : null;
+        const text = said
+          ? [
+            fill(pick(said, rng, usedLines, `reason/${r.dimension}/${r.direction}`),
+              { a: n, j: c.judgeName, p: r.peeve, o: r.softSpot, y: r.style }),
+            bias ? fill(pick(bias, rng, usedLines, `bias/${r.styleLean > 0 ? 'for' : 'against'}`),
+              { a: n, j: c.judgeName, y: r.style }) : '',
+          ].filter(Boolean).join(' ')
+          : fill(pick(t.lines, rng, usedLines, `critique/${c.tone}`),
+            { a: n, j: c.judgeName, s: songTitle });
         scenes.push({
           step: 'critiques',
           kind: 'stage:critique',
           data: {
             beat: 'critique', tier: c.tone, players: [n], note: t.note,
             judge: c.judgeName, reasons: c.reasons, gap: c.gap,
+            reason: c.reason || null, voiced: !!said,
           },
-          text: fill(pick(t.lines, rng, usedLines, `critique/${c.tone}`),
-            { a: n, j: c.judgeName, s: songTitle }),
+          text,
         });
       }
     } else {

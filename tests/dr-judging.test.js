@@ -125,9 +125,14 @@ describe('callWeek', () => {
   }));
 
   it('sizes the tops and bottoms by cast', () => {
+    /* SIX QUEENS ARE CRITIQUED ON AN ORDINARY NIGHT and everybody else is
+       dismissed before a word is said — one win, two high, one low, two who
+       lip sync. The show calls a top three and a bottom three forward and
+       sends the middle off, and this used to keep eight on stage, which made
+       being called forward ordinary rather than the thing the night is about. */
     expect(callWeek(fr(12), { castSize: 12 })).toEqual({
-      win: ['A'], high: ['B', 'C'], safe: ['D', 'E', 'F', 'G'],
-      low: ['H', 'I'], atRisk: ['J'], bottom: ['K', 'L'],
+      win: ['A'], high: ['B', 'C'], safe: ['D', 'E', 'F', 'G', 'H', 'I'],
+      low: ['J'], atRisk: [], bottom: ['K', 'L'],
     });
     const ten = callWeek(fr(10), { castSize: 10 });
     expect(ten.win).toEqual(['A']);
@@ -146,7 +151,12 @@ describe('callWeek', () => {
        played. Below nine the panel only calls two down, so there is nobody
        to save and the group is correctly empty. */
     for (let n = 9; n <= 14; n++) {
-      const c = callWeek(fr(n), { castSize: n });
+      // ASKED FOR, NOT ASSUMED. An ordinary week names the two who lip sync
+      // and nobody else, which is what the show does; a bottom-three night is
+      // a format decision and says so.
+      expect(callWeek(fr(n), { castSize: n }).atRisk.length,
+        `cast ${n} put a third queen in danger on an ordinary week`).toBe(0);
+      const c = callWeek(fr(n), { castSize: n, bottomNamed: 3 });
       expect(c.atRisk.length, `cast ${n} named nobody it then saved`).toBe(1);
       expect(c.bottom.length).toBe(2);
     }

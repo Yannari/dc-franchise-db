@@ -39,6 +39,10 @@ import {
 import { SONGS } from '../js/dr/data/songs.js';
 import { JUDGES } from '../js/dr/data/judges.js';
 import {
+  CRITIQUE_REASONS, CRITIQUE_BIAS, DIMENSIONS, DIRECTIONS, CRITIQUE_VARIANTS,
+  BIAS_SPEAKS, biasLinesFor, unwrittenCritiqueVoices, critiqueVoiceTierCount,
+} from '../js/dr/data/critique-voices.js';
+import {
   ADVOCACY, HOST_CALL, TASTE_IDS, DELIBERATION_VARIANTS,
   divergentTastes, unwrittenDeliberationVoices, deliberationTierCount,
 } from '../js/dr/data/deliberation-voices.js';
@@ -424,6 +428,107 @@ describe('the deliberation', () => {
     // eslint-disable-next-line no-console
     console.log(`deliberation: ${deliberationTierCount() - left.length} of `
       + `${deliberationTierCount()} tiers.\n  ${left.join(', ')}`);
+    expect(Array.isArray(left)).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// And the critiques, in js/dr/data/critique-voices.js.
+// ══════════════════════════════════════════════════════════════════════
+describe('the critique reasoning', () => {
+  const cWritten = [
+    ...CRITIQUE_REASONS.flatMap(d => d.tiers.map(t => ({ pool: 'reason', key: `${d.dimension}/${t.id}`, t }))),
+    ...CRITIQUE_BIAS.map(b => ({ pool: 'bias', key: b.id, t: { id: b.id, lines: b.lines } })),
+  ].filter(x => x.t.lines.length);
+
+  it('covers every dimension a judge can be weighing', () => {
+    const mine = CRITIQUE_REASONS.map(d => d.dimension);
+    for (const k of DIMENSIONS) expect(mine, `no reason pool for "${k}"`).toContain(k);
+    for (const j of JUDGES) {
+      for (const k of Object.keys(j.taste || {})) {
+        expect(DIMENSIONS, `judge "${j.id}" weighs "${k}", which has no pool`).toContain(k);
+      }
+    }
+    for (const d of CRITIQUE_REASONS) {
+      expect(d.tiers.map(t => t.id), `reason:${d.dimension}`).toEqual(DIRECTIONS);
+    }
+  });
+
+  it('stays quiet about a bias too small to be the reason', () => {
+    /* A LEAN IS A TILT, NOT A VERDICT. styleBias is worth a fraction of a
+       point on purpose, and announcing it every week would turn each judge
+       into one joke about one kind of drag. */
+    expect(biasLinesFor(0)).toBeNull();
+    expect(biasLinesFor(0.2)).toBeNull();
+    expect(biasLinesFor(-0.2)).toBeNull();
+    // And the strong authored ones do speak: Law is -0.2 on camp, +0.6 on
+    // fashion, so the file has to have an opinion about the big ones.
+    const law = JUDGES.find(j => j.id === 'law');
+    const strong = Object.values(law.styleBias).filter(v => Math.abs(v) >= BIAS_SPEAKS);
+    expect(strong.length, 'no judge has a lean strong enough to ever speak').toBeGreaterThan(0);
+  });
+
+  it('uses the judge’s own words for what she cannot forgive', () => {
+    /* {p} AND {o} ARE THE VOICE. Every judge has an authored petPeeve and
+       softSpot and no critique had ever read either of them — which is why a
+       pan from Michelle and a pan from Ross were the same paragraph. A fault
+       tier that never reaches for {p} has been written as a narrator. */
+    for (const d of CRITIQUE_REASONS) {
+      const fault = d.tiers.find(t => t.id === 'fault');
+      const praise = d.tiers.find(t => t.id === 'praise');
+      if (fault.lines.length) {
+        expect(fault.lines.some(l => /\{p\}/.test(l)),
+          `reason:${d.dimension}/fault never names what this judge cannot forgive`).toBe(true);
+      }
+      if (praise.lines.length) {
+        expect(praise.lines.some(l => /\{o\}/.test(l)),
+          `reason:${d.dimension}/praise never names what this judge is looking for`).toBe(true);
+      }
+    }
+    for (const j of JUDGES) {
+      expect(j.petPeeve, `judge "${j.id}" has no pet peeve for {p}`).toBeTruthy();
+      expect(j.softSpot, `judge "${j.id}" has no soft spot for {o}`).toBeTruthy();
+    }
+  });
+
+  it('keeps the style name to the bias clause', () => {
+    for (const { pool, key, t } of cWritten) {
+      for (const l of t.lines) {
+        if (pool !== 'bias') {
+          expect(l, `${pool}:${key} names her style, which is the bias clause's job`)
+            .not.toMatch(/\{y\}/);
+        }
+        const bad = l.match(/\{(?!a\}|j\}|p\}|o\}|y\})[^}]*\}/);
+        expect(bad, `${pool}:${key} uses unknown placeholder ${bad?.[0]}`).toBeNull();
+      }
+    }
+  });
+
+  it('meets the variant floor and writes distinct prose', () => {
+    for (const { pool, key, t } of cWritten) {
+      const need = pool === 'bias' ? 4 : CRITIQUE_VARIANTS;
+      expect(t.lines.length, `${pool}:${key} has ${t.lines.length}, needs ${need}`)
+        .toBeGreaterThanOrEqual(need);
+      expect(new Set(t.lines).size, `${pool}:${key} repeats a line`).toBe(t.lines.length);
+      for (let i = 0; i < t.lines.length; i++) {
+        for (let k = i + 1; k < t.lines.length; k++) {
+          expect(tooSimilar(t.lines[i], t.lines[k]),
+            `${pool}:${key}: variants ${i + 1} and ${k + 1} are the same line reworded`).toBe(false);
+        }
+      }
+      for (const l of t.lines) {
+        const bad = foreignWordsIn(l, 'drag-race');
+        expect(bad, `${pool}:${key} says "${bad[0]}", which belongs to another show`).toEqual([]);
+        expect(l.length, `${pool}:${key} has a one-liner`).toBeGreaterThan(60);
+      }
+    }
+  });
+
+  it('reports the gap rather than hiding it', () => {
+    const left = unwrittenCritiqueVoices();
+    // eslint-disable-next-line no-console
+    console.log(`critiques: ${critiqueVoiceTierCount() - left.length} of `
+      + `${critiqueVoiceTierCount()} tiers.\n  ${left.join(', ')}`);
     expect(Array.isArray(left)).toBe(true);
   });
 });

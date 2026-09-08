@@ -180,7 +180,14 @@ describe('a pair reaches the life layer', () => {
     expect(rowA.showmanceEnded).toBe('intact');
     // And a queen with no pair has no field at all — absent means "no pair",
     // never "this show does not do that".
-    const single = d.placements.find(p => ![a, b].includes(p.name));
+    /* EVERY PAIRED QUEEN, not just the first pair. A season is capped at two
+       pairings, and this excluded only `romances[0]` — so the moment a season
+       actually produced its second pair, "a queen with no pair" picked
+       somebody who had one and the assertion failed on a season that was
+       behaving correctly. */
+    const paired = new Set((out.state.romances || []).flat());
+    const single = d.placements.find(p => !paired.has(p.name));
+    expect(single, 'every queen in the season is paired').toBeTruthy();
     expect(single.showmance).toBeUndefined();
   });
 

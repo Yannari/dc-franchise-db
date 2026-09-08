@@ -558,7 +558,7 @@ export function renderStageBeats({
 
   // ── the lip sync, beat by beat ──
   if (lipsync) {
-    emit(beatById('lipsync-intro'), 'intro', [],
+    emit(beatById('lipsync-intro'), stakes === 'win' ? 'win' : 'intro', [],
       { song: lipsync.song, artist: lipsync.artist });
     /* ── THE SONG DECIDES WHAT THE PERFORMANCE WAS ──
        `lipsync-beat` had four tiers keyed on how well she did and nothing

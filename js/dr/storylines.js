@@ -163,8 +163,16 @@ export function assignStorylines({ cast, state, bond, rng }) {
     return s2;
   };
 
-  // Presence, not craft: the queen the edit would follow is the one who is
-  // both good and watchable, which is what star power is for.
+  /* Presence, not craft: the queen the edit would follow is the one who is
+     both good and watchable, which is what star power is for.
+
+     THIS IS A PREDICTION AND ONLY A PREDICTION. It is cast before anybody has
+     performed, so it is the edit's guess at who the season is about, and the
+     season is allowed to disagree with it -- `recordBeat` moves the arc when
+     somebody else is plainly winning instead. Without that the label sat on
+     whoever had the best stat line on day one for fourteen episodes while
+     another queen won four maxis, which is not a front-runner, it is a
+     forecast nobody updated. */
   const byPresence = [...cast].sort((a, b) =>
     (craftMean(b) * star(b.name)) - (craftMean(a) * star(a.name)));
   add('frontrunner', [byPresence[0].name]);
@@ -280,6 +288,18 @@ export function storylineNeed(storylines, { living, episode, totalEpisodes, stat
   return need;
 }
 
+/* How well a record reads, for the front-runner comparison only.
+   A LOCAL COPY OF THE IDEA IN `recordStrength`, deliberately: js/dr/season.js
+   imports this file, so importing it back would be a cycle. It is used as a
+   TIE-BREAK behind the win count and never as the decision, so the two
+   drifting apart cannot change who the season says is in front. */
+const RANK_POINTS = { WIN: 4, HIGH: 2, SAFE: 0, LOW: -1, BTM: -2, BTM2: -2, ELIM: -3 };
+function recordRank(record = []) {
+  const rated = (record || []).filter(r => r in RANK_POINTS);
+  if (!rated.length) return 0;
+  return rated.reduce((n, r) => n + RANK_POINTS[r], 0) / rated.length;
+}
+
 export function recordBeat(storylines, { episode, row, state, cast = null }) {
   const call = row.dr?.call || { win: [], high: [], low: [], bottom: [] };
   const bend = row.dr?.bend || [];
@@ -296,11 +316,54 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
   const inCall = n => [...(call.win || []), ...(call.high || []),
     ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])].includes(n);
 
+  /* ── WHO IS ACTUALLY IN FRONT ─────────────────────────────────────
+     The front-runner arc is cast from stats before episode one, and it used
+     to stay where it was put no matter what happened: the queen who won the
+     first three challenges was not the front-runner, and the one who had not
+     placed since the premiere still was.
+
+     The edit does not work that way. It follows whoever is winning, and the
+     early favourite who fades IS a story rather than a mistake to be hidden
+     -- so the old arc flips to `overtaken` and keeps its beats, and the new
+     leader gets an arc of her own.
+
+     Wins first, then the whole record, because a maxi win is the currency the
+     label is about; the margin is TWO clear wins so a single good week does
+     not hand the season's spine to somebody who has had one. And the arc only
+     moves to a queen with no solo agenda of her own: an underdog who starts
+     winning is the underdog arc paying off, which is a better story than
+     relabelling her, and the exclusivity rule in `assignStorylines` says the
+     same thing. */
+  const winsOf = n => (state.record?.[n] || []).filter(r => r === 'WIN').length;
+  const leader = [...(state.living || [])]
+    .sort((x, y) => (winsOf(y) - winsOf(x))
+      || (recordRank(state.record?.[y]) - recordRank(state.record?.[x])))[0];
+  /* WHO ALREADY HAS A STORY OF HER OWN. Recomputed on demand rather than
+     captured once, because everything below can add one. */
+  const heldAgenda = () => new Set(out
+    .filter(x => isAgenda(x.arc) && x.players.length === 1 && x.alive)
+    .map(x => x.players[0]));
+  const taken = heldAgenda();
+
   for (const s of out) {
     const [a, b] = s.players;
     if (s.arc === 'frontrunner') {
       if ((call.win || []).includes(a)) beat(s, 'win');
       if ((call.bottom || []).includes(a)) beat(s, 'stumble');
+      const clearlyAhead = leader && leader !== a && winsOf(leader) - winsOf(a) >= 2;
+      if (s.alive && !s.flipped && clearlyAhead) {
+        s.flipped = 'overtaken';
+        beat(s, 'overtaken', { by: leader });
+        // Her own arc, if she is not already carrying one.
+        if (!taken.has(leader)) {
+          out.push({
+            id: `frontrunner-${episode}-${leader}`, arc: 'frontrunner', players: [leader],
+            since: episode, alive: true, variantId: null, variantName: null,
+            beats: [{ episode, kind: 'took-over', from: a }],
+          });
+          taken.add(leader);
+        }
+      }
     }
     if (s.arc === 'underdog' && (call.win || []).includes(a)) beat(s, 'breakthrough');
     if (s.arc === 'villain') {
@@ -327,10 +390,23 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
     if (s.players.some(n => (state.out || []).includes(n))) s.alive = false;
   }
 
-  // Earned, never assigned: two lip syncs survived.
+  /* Earned, never assigned: two lip syncs survived.
+
+     AND SUBJECT TO THE SAME EXCLUSIVITY AS THE CAST ONES. `assignStorylines`
+     enforces one solo agenda per queen at cast time, and states why: two of
+     them on the same person counts her twice in the host's bend, which is the
+     difference between a lean and a shove. This block pushed straight past
+     that, so a villain who survived two lip syncs quietly became a villain
+     AND a fighter and was weighted as both. Measured: 2 seasons in 20 had a
+     queen holding two live agendas, every one of them `performance` on top of
+     something else.
+
+     She keeps the arc she already has, because it has beats behind it and
+     this one would be starting from nothing. */
   if (!find('performance')) {
+    const held = heldAgenda();
     const fighter = Object.entries(state.lipsyncRecord || {})
-      .find(([, r]) => (r || []).filter(x => x === 'W').length >= FIGHTS);
+      .find(([n, r]) => (r || []).filter(x => x === 'W').length >= FIGHTS && !held.has(n));
     if (fighter) {
       out.push({
         id: 'performance-1', arc: 'performance', players: [fighter[0]], since: episode,

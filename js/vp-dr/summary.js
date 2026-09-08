@@ -16,7 +16,7 @@
 // What it shows is the one thing worth watching while the engine is being
 // built: the panel's ranking beside the host's final one, so a bend is visible
 // as a moving row.
-import { _note } from './style.js';
+import { _note, _portrait } from './style.js';
 import { showWords } from '../shows.js';
 import { dragScreensRevealed } from './screens.js';
 import { judgeById } from '../dr/judges.js';
@@ -64,7 +64,7 @@ const POP_TIERS = [
 ];
 const popTier = v => (POP_TIERS.find(([at]) => v >= at) || [0, 'HATED', '#f85149']).slice(1);
 
-function _fanPulse(dr) {
+function _fanPulse(dr, ep) {
   const pop = dr.popularity || {};
   const living = new Set(dr.living || []);
   const names = Object.keys(pop);
@@ -80,6 +80,7 @@ function _fanPulse(dr) {
     const w = (Math.abs(r.v) / max) * 100;
     return `<tr style="${r.out ? 'opacity:.45;' : ''}border-bottom:1px solid rgba(255,255,255,.06)">
       <td style="padding:3px 6px;color:#6e7681;width:22px;text-align:right">${i + 1}</td>
+      <td style="padding:3px 2px 3px 6px;width:26px">${_portrait(r.n, ep, { size: 22 })}</td>
       <td style="padding:3px 6px;font-weight:600">${esc(r.n)}${r.out ? ' <span style="opacity:.6">(out)</span>' : ''}</td>
       <td style="padding:3px 6px;color:${colour};font-size:10px;letter-spacing:.08em">${label}</td>
       <td style="padding:3px 6px;width:45%">
@@ -95,7 +96,7 @@ function _fanPulse(dr) {
     invisible &#8212; it is disliked, which on this show is still an edit.</div>`;
 }
 
-function _storylines(dr) {
+function _storylines(dr, ep) {
   const arcs = dr.storylines || [];
   if (!arcs.length) return '<div style="opacity:.6;font-size:12px">No arcs cast yet.</div>';
   const living = dr.living || [];
@@ -123,6 +124,7 @@ function _storylines(dr) {
     const list = mine(n);
     const told = list.filter(a => a.beats > 0);
     return `<tr style="border-bottom:1px solid rgba(255,255,255,.06)">
+      <td style="padding:4px 2px 4px 6px;width:24px;vertical-align:top">${_portrait(n, ep, { size: 20 })}</td>
       <td style="padding:4px 6px;font-weight:600;white-space:nowrap;vertical-align:top">${esc(n)}</td>
       <td style="padding:4px 6px">${list.length ? list.map(pill).join('')
     : '<span style="opacity:.45;font-size:11px">no arc</span>'}
@@ -142,14 +144,17 @@ function _storylines(dr) {
 /** The two panels, as one block the summary can drop in. */
 export function _dragPulseAndArcs(row) {
   const dr = (row && row.dr) || {};
+  // `_portrait` reads the show and the episode off this, the same shape every
+  // other screen in this directory hands it.
+  const ep = { num: (row && row.num) || dr.ep || 0, format: 'drag-race', dr };
   const box = (title, body) => `<section style="border:1px solid rgba(255,255,255,.09);
     border-radius:8px;padding:12px 14px;margin:0 0 12px;background:rgba(255,255,255,.02)">
     <h3 style="margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
       color:#FF6ADB">${title}</h3>${body}</section>`;
   return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0"
     class="dr-dbg-cols">
-    ${box('Fan pulse', _fanPulse(dr))}
-    ${box('Storylines', _storylines(dr))}
+    ${box('Fan pulse', _fanPulse(dr, ep))}
+    ${box('Storylines', _storylines(dr, ep))}
   </div>
   <style>@media(max-width:900px){.dr-dbg-cols{grid-template-columns:1fr}}</style>`;
 }
@@ -164,9 +169,11 @@ export function rpBuildDragSummary(row) {
     <div style="max-width:1100px;margin:0 auto;padding:16px;font-family:system-ui,sans-serif;color:#cdd6f4">
       <div style="border:1px dashed rgba(255,45,149,.5);border-radius:6px;padding:8px 12px;margin-bottom:14px;
                   background:rgba(255,45,149,.07);font-size:12px;line-height:1.5">
-        <b style="color:#ff2d95">Engine readout — not the finished screen.</b>
-        The viewing party proper is Plan 5. This shows what the engine decided,
-        so a season can be read while it is being built.
+        <b style="color:#ff2d95">Engine readout.</b>
+        What the engine decided, in the order it decided it — the numbers under
+        the episode rather than the episode. The viewing party itself is every
+        other screen in this deck; this one is for reading a season while
+        working on it, and it is the only screen here that withholds nothing.
       </div>
       <h2 style="margin:0 0 4px;font-size:20px">Episode ${esc(dr.ep ?? row.num)}</h2>
       <div style="color:#8b949e;font-size:13px;margin-bottom:14px">

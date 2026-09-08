@@ -19,7 +19,7 @@
 // view rather than from the call, so a MIXED plate beside a PRAISE plate is
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
-import { _shell, _portrait, _judgePortrait, _icon, _note } from './style.js';
+import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
 
@@ -736,11 +736,16 @@ export function rpBuildUntucked(row) {
     });
   }
 
-  return `<style>${STAGE_CSS}</style>${_shell(lounge + steps, ep, {
+  return `<style>${STAGE_CSS}${ROOM_RAIL_CSS}</style>${_shell(lounge + steps, ep, {
     phase: 'untucked', title: 'Untucked', subtitle: 'Illusions Lounge',
+    /* THE TEMPERATURE GAUGE WAS A PICTURE OF NOTHING — a needle pinned at
+       fifty per cent with the word "holding" under it, on every episode of
+       every season, because no relationship state had ever reached a screen.
+       The rail under it is the real thing: who is close, who is at war, and
+       which of them are family. */
     sidebar: `<h4 class="dr-disp">The room</h4>
       <div class="dr-temp"><i style="left:50%"></i></div>
       <div class="dr-temp-k"><span>apart</span><span>together</span></div>
-      <p class="dr-temp-v dr-disp">holding</p>`,
+      <p class="dr-temp-v dr-disp">holding</p>${_roomRail(row)}`,
   })}${_controls('untucked', scenes.length, ep.num)}`;
 }

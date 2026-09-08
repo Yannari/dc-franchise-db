@@ -829,6 +829,52 @@ export const UNTUCKED_EVENTS = [
     ],
   }),
 
+  /* ══ FAMILY, WHERE IT COSTS ══════════════════════════════════════════
+     The werk room is where a family is a head start. Untucked is where the
+     bill arrives: the two of them in the bottom together, or one of them
+     watching the other be told she is going. See js/dr/family.js. */
+  ev({
+    id: 'both-of-us-down-here', phase: 'arrival', cast: 'pair', weight: 2.0,
+    note: 'THE WORST NIGHT EITHER OF THEM WILL HAVE. {a} and {b} are family '
+      + 'and they are both in the bottom, which means one of them is about to '
+      + 'send the other home. Neither of them can say the useful thing '
+      + 'because the useful thing is "I hope it is you".',
+    arcs: ['bond'],
+    when: f => f.sameFamily && f.bothInBottom,
+    effects: { bond: 1, pop: { a: 2, b: 2 }, state: 'family-in-the-bottom' },
+    lines: [],
+  }),
+  ev({
+    id: 'she-defends-her-family', phase: 'middle', cast: 'group', weight: 1.6,
+    note: '{c} says something about {b} and {a} — who is {b}\'s family — does '
+      + 'not let it go, and the room finds out how much that bond is worth '
+      + 'when it is tested in public rather than at a sewing machine.',
+    arcs: ['rivalry'],
+    when: f => f.sameFamily && f.groupSize >= 3,
+    effects: { bond: -1.5, pop: { a: 2 }, state: 'family-defended' },
+    lines: [],
+  }),
+  ev({
+    id: 'you-are-not-my-mother-here', phase: 'middle', cast: 'pair', weight: 1.4,
+    note: '{b} gives {a} a note the way she has given it for years and {a} '
+      + 'says the thing she has been holding since the first day: this is not '
+      + 'the bar and {b} is not her mother in this room.',
+    arcs: ['rivalry'],
+    when: f => f.relation === 'mother' && f.inBottom,
+    effects: { bond: -2, pop: { a: 1 }, state: 'family-strain' },
+    lines: [],
+  }),
+  ev({
+    id: 'proud-of-you-anyway', phase: 'late', cast: 'pair', weight: 1.5,
+    note: '{a} is family and says the thing families say before somebody goes '
+      + 'out to lip sync for her life. It is not strategy and it is not for '
+      + 'the camera, and it is the last private thing either of them gets.',
+    arcs: ['bond'],
+    when: f => f.sameFamily && (f.inBottom || f.bInBottom),
+    effects: { bond: 2, pop: { a: 1 }, state: 'family-goodbye' },
+    lines: [],
+  }),
+
 ];
 
 export const UNTUCKED_IDS = UNTUCKED_EVENTS.map(e => e.id);

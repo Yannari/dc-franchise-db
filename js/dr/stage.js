@@ -43,6 +43,7 @@ import {
   swaggerGroupFor, swaggerLinesFor,
 } from './data/runway-voices.js';
 import { canScheme } from './rules.js';
+import { familyFacts } from './family.js';
 
 /** Where the cuts fall, as a fraction of the queens who walked. */
 const RUNWAY_TIERS = [
@@ -727,6 +728,10 @@ export function runUntucked({
           b: b ? players[b] || null : null,
           nameA: a,
           nameB: b,
+          // The same pre-alliance the werk room reads. Untucked is where it
+          // costs something: two of them in the bottom two, in a room with
+          // nowhere to go.
+          ...familyFacts(state.dragFamilies, a, b),
           nameC: rest[0] || null,
           nameD: rest[1] || null,
           groupSize: 1 + (b ? 1 : 0) + rest.length,

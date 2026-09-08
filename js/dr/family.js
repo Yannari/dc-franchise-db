@@ -93,6 +93,16 @@ function affinity(a, b) {
   // Either clearly a generation apart or clearly contemporaries. The muddle
   // in between — six or seven years — is the least likely to read as either.
   const shape = gap >= GENERATION ? 1 : gap <= 4 ? 0.9 : 0.35;
+
+  /* A SHARED SURNAME IS AN AUTHOR TALKING. Names are entered by hand in the
+     casting studio, so two queens called Deveraux are two queens somebody
+     MEANT to be related — that is a stronger signal than any amount of style
+     matching and it should not be possible for the draw to ignore it. It is
+     not required, though: plenty of drag mothers and daughters do not share a
+     name, and demanding one would refuse the most common real case. */
+  const shared = surnameOf(a.name) && surnameOf(a.name) === surnameOf(b.name);
+  if (shared) return 4;
+
   return (0.15 + sameStyle * 0.85) * shape;
 }
 
@@ -103,11 +113,187 @@ function affinity(a, b) {
  * caller decides whether to apply them, which keeps this testable and keeps
  * a headless season that does not want families from getting them.
  */
-export function assignDragFamilies({ cast = [], rng = Math.random, cap = FAMILY_CAP } = {}) {
-  const families = [];
-  const bonds = [];
-  const taken = new Set();
-  if (cast.length < 4) return { families, bonds };
+/** The three relations anybody actually authors. Everything else is derived. */
+export const AUTHORED_RELATIONS = ['mother', 'daughter', 'sister'];
+
+/**
+ * Families out of authored PAIRS.
+ *
+ * ── WHY PAIRS AND NOT A ROLE PER QUEEN ────────────────────────────────
+ *
+ * The first shape was `family: { name, role }` — one word per member — and it
+ * cannot describe a family. Put Ivy, her sister Rita, and Ivy's two daughters
+ * in one house and the roles read mother, sister, daughter, daughter: nothing
+ * in that says Rita is IVY's sister rather than the girls', and nothing says
+ * the two daughters are Ivy's rather than Rita's. It resolved Rita to nobody,
+ * which is exactly right for the data and useless for the family.
+ *
+ * A relation is between two people, so it is stored between two people:
+ *
+ *   { a: 'Coco Deveraux', b: 'Ivy Deveraux', kind: 'mother' }
+ *
+ * reads "Ivy is Coco's mother", the same direction `relation(f, a, b)` answers
+ * in. That is one row in an editable tab and it is unambiguous.
+ *
+ * Families are then the connected components of the graph — nobody has to
+ * name a house for one to exist — and a component that shares a surname takes
+ * it, which is what makes it visible from the door.
+ */
+export function familiesFromRelations(cast = [], relations = []) {
+  const inCast = new Set(cast.map(p => p && p.name).filter(Boolean));
+  const edges = [];
+  for (const r of relations || []) {
+    if (!r || !inCast.has(r.a) || !inCast.has(r.b) || r.a === r.b) continue;
+    if (!AUTHORED_RELATIONS.includes(r.kind)) continue;
+    edges.push(r);
+  }
+  if (!edges.length) return [];
+
+  // Union-find over everybody an edge touches: a family is whoever is
+  // connected, which means an author never has to name one.
+  const up = new Map();
+  const find = x => {
+    while (up.get(x) !== x) { up.set(x, up.get(up.get(x))); x = up.get(x); }
+    return x;
+  };
+  const join = (x, y) => {
+    if (!up.has(x)) up.set(x, x);
+    if (!up.has(y)) up.set(y, y);
+    up.set(find(x), find(y));
+  };
+  for (const e of edges) join(e.a, e.b);
+
+  const parents = {};
+  const roles = {};
+  for (const e of edges) {
+    // "b is a's mother" puts a under b; "b is a's daughter" puts b under a.
+    if (e.kind === 'mother') { parents[e.a] = e.b; roles[e.b] = 'mother'; roles[e.a] = roles[e.a] || 'daughter'; }
+    if (e.kind === 'daughter') { parents[e.b] = e.a; roles[e.a] = 'mother'; roles[e.b] = roles[e.b] || 'daughter'; }
+    if (e.kind === 'sister') {
+      roles[e.a] = roles[e.a] || 'sister';
+      roles[e.b] = roles[e.b] || 'sister';
+    }
+  }
+  /* SISTERS NEED A COMMON ANCESTOR OR THEY ARE NOT MEASURABLE. The kinship
+     walk works on distance to a shared node, so two sisters with no authored
+     parent have nothing between them and resolve to nobody — and every term
+     that runs THROUGH them dies with it: Rita cannot be Coco's aunt if Rita
+     is not anybody's sister.
+     So a sister edge slots into the tree: it takes whichever parent either of
+     them already has, and invents one when neither does. The invented node is
+     never a queen, appears in no member list and is named nothing — it exists
+     only so that two sisters are one step from the same place. */
+  let synthetic = 0;
+  for (const e of edges) {
+    if (e.kind !== 'sister') continue;
+    const known = parents[e.a] || parents[e.b] || ` kin-${synthetic++}`;
+    parents[e.a] = parents[e.a] || known;
+    parents[e.b] = parents[e.b] || known;
+  }
+
+  const groups = new Map();
+  for (const n of up.keys()) {
+    const root = find(n);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(n);
+  }
+
+  const ageOfName = n => ageOf(cast.find(p => p.name === n));
+  const out = [];
+  for (const [root, members] of groups) {
+    if (members.length < 2) continue;
+    const surnames = members.map(surnameOf);
+    const shared = surnames[0] && surnames.every(x => x === surnames[0]) ? surnames[0] : null;
+    const elder = [...members].sort((x, y) => ageOfName(y) - ageOfName(x))[0];
+    out.push({
+      id: `authored:${String(root).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      kind: members.some(m => roles[m] === 'mother') ? 'line' : 'house',
+      name: shared ? `The House of ${shared}` : `${elder}'s girls`,
+      surname: shared,
+      authored: true,
+      members,
+      roles: Object.fromEntries(members.map(m => [m, roles[m] || 'sister'])),
+      // The tree itself, which is what the kinship walk reads.
+      parents: Object.fromEntries(members.filter(m => parents[m]).map(m => [m, parents[m]])),
+    });
+  }
+  return out;
+}
+
+/**
+ * The older flat form, kept because a preset may still use it.
+ *
+ * `family: 'The Static Sisters'` on two queens is a house and needs nothing
+ * else. It cannot describe a line with more than one generation in it — see
+ * `familiesFromRelations` for why — so a `role` here is taken at face value
+ * and nothing is inferred from it.
+ */
+export function familiesFromCast(cast = []) {
+  const byName = new Map();
+  for (const p of cast) {
+    const raw = p && (p.family || p.dragFamily);
+    if (!raw) continue;
+    const name = typeof raw === 'string' ? raw : raw.name;
+    if (!name) continue;
+    const role = typeof raw === 'string' ? null : raw.role || null;
+    if (!byName.has(name)) byName.set(name, []);
+    byName.get(name).push({ name: p.name, role });
+  }
+
+  const out = [];
+  for (const [name, members] of byName) {
+    if (members.length < 2) continue;
+    const roles = {};
+    for (const m of members) roles[m.name] = m.role || 'sister';
+    const mothers = members.filter(m => m.role === 'mother');
+    const surnames = members.map(m => surnameOf(m.name));
+    const shared = surnames[0] && surnames.every(x => x === surnames[0]) ? surnames[0] : null;
+    const parents = {};
+    // One mother is unambiguous; two are not, and guessing would invent a
+    // family nobody authored.
+    if (mothers.length === 1) {
+      for (const m of members) if (m.role === 'daughter') parents[m.name] = mothers[0].name;
+    }
+    out.push({
+      id: `authored:${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      kind: mothers.length ? 'line' : 'house',
+      name,
+      surname: shared,
+      authored: true,
+      members: members.map(m => m.name),
+      roles,
+      parents,
+    });
+  }
+  return out;
+}
+
+export function assignDragFamilies({
+  cast = [], rng = Math.random, cap = FAMILY_CAP,
+  // Authored pairs from the relationship tab. These outrank everything.
+  relations = [],
+} = {}) {
+  /* Whatever the author entered, kept whole. Derivation only ever fills the
+     space left over — it is the fallback for a cast nobody has annotated,
+     which is most of the 194-player roster. */
+  const authored = familiesFromRelations(cast, relations);
+  const inAuthored = new Set(authored.flatMap(f => f.members));
+  const families = [
+    ...authored,
+    // The flat form only covers queens the pairs did not already claim.
+    ...familiesFromCast(cast).filter(f => !f.members.some(m => inAuthored.has(m))),
+  ];
+  const bonds = families.flatMap(f => {
+    const out = [];
+    for (let i = 0; i < f.members.length; i++) {
+      for (let j = i + 1; j < f.members.length; j++) {
+        out.push([f.members[i], f.members[j], FAMILY_BOND]);
+      }
+    }
+    return out;
+  });
+  const taken = new Set(families.flatMap(f => f.members));
+  if (cast.length < 4 || families.length >= cap) return { families, bonds };
 
   // Every pair worth considering, best first, with the roll folded in so the
   // same cast does not produce the same family every season.
@@ -130,15 +316,25 @@ export function assignDragFamilies({ cast = [], rng = Math.random, cap = FAMILY_
     const [elder, younger] = ageOf(a) >= ageOf(b) ? [a, b] : [b, a];
     const surname = surnameOf(elder.name);
 
-    if (gap >= GENERATION && surname) {
-      /* A LINE. She took her mother's name, which is the institution working
-         exactly as it does — and it is why this needs a surname to exist at
-         all: without one there is nothing for the daughter to take. */
+    /* A LINE IS THE AGE GAP; THE NAME IS OPTIONAL AND IS THE GIVEAWAY.
+       The first version named the family after the elder's surname whether or
+       not the younger shared it, which produced the House of Sharpe with a
+       daughter called Rae — a house whose daughter never took the name. The
+       fix is not to demand the name: most drag mothers and daughters do not
+       share one, and requiring it would refuse the common case.
+       So the gap makes the line and the SHARED name makes it visible. Two
+       queens called Deveraux are noticed from the door and asked about in
+       front of everybody; a mother and daughter with different names have to
+       tell people, which is the better scene anyway. */
+    const shared = surname && surnameOf(younger.name) === surname;
+    if (gap >= GENERATION) {
       families.push({
         id: `line:${younger.slug || younger.name}`,
         kind: 'line',
-        name: `The House of ${surname}`,
-        surname,
+        // Named for the shared surname where there is one, and for the mother
+        // where there is not — "Ivy's girls" is what the room would say.
+        name: shared ? `The House of ${surname}` : `${elder.name}'s girls`,
+        surname: shared ? surname : null,
         members: [elder.name, younger.name],
         roles: { [elder.name]: 'mother', [younger.name]: 'daughter' },
       });
@@ -170,20 +366,115 @@ export function familyOf(families, name) {
   return (families || []).find(f => f.members.includes(name)) || null;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   KINSHIP — a tree, not three words
+   ══════════════════════════════════════════════════════════════════════
+
+   `mother`, `daughter` and `sister` are the only relations anybody AUTHORS,
+   because they are the only ones anybody thinks in: you know who your drag
+   mother is and you know who your sisters are. Everything else in a family is
+   implied by those and should not have to be typed — if Ivy is Coco's mother
+   and Ivy has a drag sister, that sister is Coco's aunt whether anybody wrote
+   it down or not.
+
+   So the authored edges build a tree and the term is COMPUTED from it. Two
+   numbers do all of it: how far up from A to the nearest common ancestor, and
+   how far back down to B.
+
+     up  down
+      0    1   daughter          1    0   mother
+      0    2   granddaughter     2    0   grandmother
+      0    3   great-grand...    3    0   great-grandmother
+      1    1   sister            2    2   cousin
+      2    1   aunt              1    2   niece
+      3    1   great-aunt        1    3   great-niece
+
+   SIBLINGS GET A SYNTHETIC PARENT when they have no authored one, which is
+   what turns a flat house into a tree the same walk can read. It is invisible
+   — it has no name and appears in nothing — and without it two sisters have
+   no common ancestor and the resolver has nothing to measure. */
+
+const GREATS = ['', 'great-', 'great-great-'];
+
+/** The authored edges, as a tree. Cheap enough to rebuild per lookup. */
+function treeOf(families) {
+  const parent = new Map();
+  const sibs = new Map();
+  let synth = 0;
+
+  for (const f of families || []) {
+    const roles = f.roles || {};
+    const mothers = f.members.filter(m => roles[m] === 'mother');
+    // An explicit `of` wins; otherwise a family's single mother is the parent
+    // of everybody it lists as a daughter, which is the flat form still
+    // meaning what an author expects it to mean.
+    for (const m of f.members) {
+      const of = (f.parents && f.parents[m]) || null;
+      if (of) { parent.set(m, of); continue; }
+      if (roles[m] === 'daughter' && mothers.length === 1) parent.set(m, mothers[0]);
+    }
+    // Sisters share a parent. If none of them has one, invent it.
+    const sisters = f.members.filter(m => (roles[m] || 'sister') === 'sister');
+    if (sisters.length > 1) {
+      const known = sisters.map(x => parent.get(x)).find(Boolean);
+      const key = known || `\u0000synthetic-${f.id}-${synth++}`;
+      for (const x of sisters) if (!parent.has(x)) parent.set(x, key);
+      sibs.set(f.id, sisters);
+    }
+  }
+  return { parent, sibs };
+}
+
+/** Every ancestor of `n`, nearest first, with the distance to each. */
+function chain(parent, n) {
+  const out = new Map([[n, 0]]);
+  let cur = n;
+  let d = 0;
+  const guard = new Set([n]);
+  while (parent.has(cur)) {
+    cur = parent.get(cur);
+    d += 1;
+    if (guard.has(cur)) break;      // an author can always draw a circle
+    guard.add(cur);
+    out.set(cur, d);
+  }
+  return out;
+}
+
 /**
- * What these two are to each other, or null.
+ * What B is to A, or null.
  *
  * Directional on purpose: `relation(f, 'Ivy', 'Coco')` is what COCO is to
  * IVY, so a card can say "her daughter" rather than "they are related".
  */
 export function relation(families, a, b) {
-  const f = familyOf(families, a);
-  if (!f || !f.members.includes(b)) return null;
-  const mine = f.roles[a];
-  const theirs = f.roles[b];
-  if (mine === 'mother' && theirs === 'daughter') return 'daughter';
-  if (mine === 'daughter' && theirs === 'mother') return 'mother';
-  return 'sister';
+  if (!a || !b || a === b) return null;
+  const { parent } = treeOf(families);
+  const up = chain(parent, a);
+  const down = chain(parent, b);
+
+  let best = null;
+  for (const [node, u] of up) {
+    const d = down.get(node);
+    if (d === undefined) continue;
+    if (!best || u + d < best.u + best.d) best = { u, d };
+  }
+  if (!best) return null;
+
+  const { u, d } = best;
+  if (u === 0 && d === 0) return null;
+  // Straight down the line: her daughter, her granddaughter.
+  if (u === 0) return d === 1 ? 'daughter' : `${GREATS[Math.min(d - 2, 2)]}granddaughter`;
+  // Straight up: her mother, her grandmother.
+  if (d === 0) return u === 1 ? 'mother' : `${GREATS[Math.min(u - 2, 2)]}grandmother`;
+  // Level with each other: sisters, then cousins.
+  if (u === d) return u === 1 ? 'sister' : 'cousin';
+  // Off to the side and up: her aunt, her great-aunt.
+  if (d === 1) return `${GREATS[Math.min(u - 2, 2)]}aunt`;
+  // Off to the side and down: her niece.
+  if (u === 1) return `${GREATS[Math.min(d - 2, 2)]}niece`;
+  // Anything further out is a cousin, which is what everybody calls it.
+  return 'cousin';
 }
 
 /**
@@ -199,7 +490,9 @@ export function relation(families, a, b) {
  * confession, and a confession is worth more.
  */
 export function familyIsObvious(family) {
-  return !!(family && family.kind === 'line' && family.surname);
+  // The shared surname, and nothing else. A line without one looks like any
+  // other two queens until somebody says otherwise.
+  return !!(family && family.surname);
 }
 
 /**

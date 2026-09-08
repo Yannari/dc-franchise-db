@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   assignDragFamilies, familyOf, relation, FAMILY_CAP, FAMILY_BOND,
+  familiesFromRelations, AUTHORED_RELATIONS,
 } from '../js/dr/family.js';
 import { rngFor } from '../js/dr/rng.js';
 
@@ -145,5 +146,87 @@ describe('casting the families', () => {
     }
     expect(shapes.size, 'the roll never breaks a tie between equal pairings')
       .toBeGreaterThan(1);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The genealogy: three authored terms, everything else derived.
+// ══════════════════════════════════════════════════════════════════════
+describe('kinship', () => {
+  const CLAN = [
+    q('Ivy Deveraux', 55, 'pageant'), q('Rita Deveraux', 52, 'pageant'),
+    q('Coco Deveraux', 30, 'pageant'), q('Nell Deveraux', 28, 'pageant'),
+    q('Mimi Deveraux', 24, 'pageant'), q('Stranger', 33, 'comedy'),
+  ];
+  /* Ivy and Rita are sisters. Coco is Ivy's, Nell is Rita's, and Mimi is
+     Coco's — three generations, which is the smallest family that can
+     produce an aunt, a cousin and a great-aunt at the same time. */
+  const REL = [
+    { a: 'Ivy Deveraux', b: 'Rita Deveraux', kind: 'sister' },
+    { a: 'Coco Deveraux', b: 'Ivy Deveraux', kind: 'mother' },
+    { a: 'Nell Deveraux', b: 'Rita Deveraux', kind: 'mother' },
+    { a: 'Mimi Deveraux', b: 'Coco Deveraux', kind: 'mother' },
+  ];
+  const fams = assignDragFamilies({ cast: CLAN, relations: REL, rng: rngFor(1) }).families;
+  const rel = (a, b) => relation(fams, a, b);
+
+  it('derives every term from the three anybody would author', () => {
+    /* AUTHORED: mother, daughter, sister. Nobody types "great-aunt" and
+       nobody should have to — if Ivy is Coco's mother and Rita is Ivy's
+       sister then Rita is Coco's aunt, whether or not anybody wrote it. */
+    expect(rel('Ivy Deveraux', 'Coco Deveraux')).toBe('daughter');
+    expect(rel('Coco Deveraux', 'Ivy Deveraux')).toBe('mother');
+    expect(rel('Ivy Deveraux', 'Rita Deveraux')).toBe('sister');
+    expect(rel('Ivy Deveraux', 'Mimi Deveraux')).toBe('granddaughter');
+    expect(rel('Mimi Deveraux', 'Ivy Deveraux')).toBe('grandmother');
+    expect(rel('Coco Deveraux', 'Rita Deveraux')).toBe('aunt');
+    expect(rel('Rita Deveraux', 'Coco Deveraux')).toBe('niece');
+    expect(rel('Coco Deveraux', 'Nell Deveraux')).toBe('cousin');
+    expect(rel('Mimi Deveraux', 'Rita Deveraux')).toBe('great-aunt');
+  });
+
+  it('is directional, so a card can say whose she is', () => {
+    // "her daughter" and "her mother" are different sentences about the same
+    // pair, and a screen needs to be able to pick one.
+    expect(rel('Ivy Deveraux', 'Coco Deveraux'))
+      .not.toBe(rel('Coco Deveraux', 'Ivy Deveraux'));
+  });
+
+  it('relates nobody to a queen outside the family', () => {
+    expect(rel('Ivy Deveraux', 'Stranger')).toBeNull();
+    expect(rel('Stranger', 'Mimi Deveraux')).toBeNull();
+    expect(rel('Ivy Deveraux', 'Ivy Deveraux'), 'nobody is her own anything').toBeNull();
+  });
+
+  it('gathers the whole clan into one family without anybody naming it', () => {
+    // Connected components: an author writes pairs, not a house.
+    expect(fams.length).toBe(1);
+    expect(fams[0].members.sort()).toEqual([
+      'Coco Deveraux', 'Ivy Deveraux', 'Mimi Deveraux', 'Nell Deveraux', 'Rita Deveraux',
+    ]);
+    expect(fams[0].name).toBe('The House of Deveraux');
+    expect(fams[0].kind).toBe('line');
+  });
+
+  it('survives a circle, because an author can always draw one', () => {
+    const loop = [
+      { a: 'Ivy Deveraux', b: 'Coco Deveraux', kind: 'mother' },
+      { a: 'Coco Deveraux', b: 'Ivy Deveraux', kind: 'mother' },
+    ];
+    const f = assignDragFamilies({ cast: CLAN, relations: loop, rng: rngFor(1) }).families;
+    expect(() => relation(f, 'Ivy Deveraux', 'Coco Deveraux')).not.toThrow();
+  });
+
+  it('ignores a relation naming somebody who is not in the cast', () => {
+    // A relationship tab outlives the cast it was written against: swap one
+    // queen out and her rows are still there, pointing at nobody. They must
+    // drop rather than seat a ghost at the table.
+    const ghost = [{ a: 'Ivy Deveraux', b: 'Nobody At All', kind: 'mother' }];
+    expect(familiesFromRelations(CLAN, ghost)).toEqual([]);
+    // The season still gets its derived families — dropping a bad row is not
+    // the same as cancelling the feature — but nothing claims to be authored.
+    const f = assignDragFamilies({ cast: CLAN, relations: ghost, rng: rngFor(1) }).families;
+    expect(f.some(x => x.authored)).toBe(false);
+    expect(f.flatMap(x => x.members)).not.toContain('Nobody At All');
   });
 });

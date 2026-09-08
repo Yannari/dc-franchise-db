@@ -1401,6 +1401,74 @@ export const WERK_EVENTS = [
     ],
   }),
 
+  /* ══ FAMILY ══════════════════════════════════════════════════════════
+     Two of them arrived already related — see js/dr/family.js — and the room
+     finds out in one of two ways, which are two different scenes.
+     A LINE IS OBVIOUS. Two queens with the same surname walk in and somebody
+     asks before the door has closed, in front of everybody, and the answer is
+     a small event in the life of the season.
+     A HOUSE IS NOT. Two club kids out of the same bar look like two club
+     kids, and the room only learns it because one of them says so — which
+     makes it a confession rather than a question, and worth more.
+     `familyFacts` puts `inFamily`, `relation`, `sameFamily`, `familyKind` and
+     `familyObvious` on every werk-room fact set, and they are false on a
+     season with no families, so nothing here fires by accident.
+     A family is a PRE-ALLIANCE: warm, useful, and no protection at all from a
+     panel that has never heard of it. */
+  ev({
+    id: 'same-name-question', slot: 'werk-morning', cast: 'pair', weight: 2.2,
+    note: 'THE DETECTION. Somebody has noticed {a} and {b} have the same name '
+      + 'and asks the room the obvious question. Both of them have been '
+      + 'waiting for it and one of them enjoys it more than the other. Only '
+      + 'fires for a line, because a house has no name to give it away.',
+    arcs: ['bond'],
+    when: f => f.sameFamily && f.familyObvious && f.phase === 0,
+    effects: { bond: 1, pop: { a: 1, b: 1 }, state: 'family-revealed' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-house-confession', slot: 'prep', cast: 'pair', weight: 1.6,
+    note: 'THE OTHER DETECTION. Nobody could have guessed — {a} and {b} came '
+      + 'up in the same bar and look like two queens who happen to do the '
+      + 'same kind of drag. One of them says it out loud, and saying it is a '
+      + 'decision: it makes both of them a target as a bloc.',
+    arcs: ['bond'],
+    when: f => f.sameFamily && !f.familyObvious && f.phase >= 1,
+    effects: { bond: 1.5, pop: { a: 1 }, state: 'family-revealed' },
+    lines: [],
+  }),
+  ev({
+    id: 'mother-teaching', slot: 'prep', cast: 'pair', weight: 1.8,
+    note: '{a} is {b}\'s drag mother and does what a drag mother does — takes '
+      + 'the thing out of her hands and shows her, without being asked and '
+      + 'without softening it. Nobody else in this room could say it to {b} '
+      + 'that way and both of them know it.',
+    arcs: ['bond'],
+    when: f => f.relation === 'daughter',
+    effects: { bond: 1.5, pop: { a: 1, b: 1 }, state: 'mothered' },
+    lines: [],
+  }),
+  ev({
+    id: 'out-of-her-shadow', slot: 'werk-morning', cast: 'pair', weight: 1.4,
+    note: '{a} is tired of being introduced as {b}\'s daughter. She did not '
+      + 'come here to be somebody\'s anything. It is the first crack in a '
+      + 'family and it is a real one, because she is right.',
+    arcs: ['rivalry'],
+    when: f => f.relation === 'mother' && f.phase >= 1,
+    effects: { bond: -2, pop: { a: 1 }, state: 'family-strain' },
+    lines: [],
+  }),
+  ev({
+    id: 'the-room-notices-the-bloc', slot: 'werk-elim-day', cast: 'group', weight: 1.5,
+    note: '{a} and {b} are family and {c} has worked out that they will never '
+      + 'be a problem for each other, which makes them a bloc whether they '
+      + 'meant to be one or not. Nobody accuses anybody. Everybody adjusts.',
+    arcs: ['rivalry'],
+    when: f => f.sameFamily && f.groupSize >= 3 && f.phase >= 1,
+    effects: { bond: -1, pop: { a: -1, b: -1 }, state: 'bloc-noticed' },
+    lines: [],
+  }),
+
 ];
 
 /** Ids only, for guards and the transcript. */

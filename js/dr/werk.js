@@ -24,6 +24,7 @@
 import { WERK_EVENTS } from './data/werk-events.js';
 import { dragOf } from './queen.js';
 import { canScheme } from './rules.js';
+import { familyFacts } from './family.js';
 /* THE FRANCHISE'S OWN ATTRACTION RULE, not a second copy. js/attraction.js
    takes plain player objects and imports nothing from the simulator, which is
    why the life resolver uses it too — a drag season running headless can ask
@@ -72,6 +73,13 @@ function factsFor({ a, b, players, state, storylines, ctx, rest = [] }) {
     nameB: b || null,
     // The rest of the group, if this is a group scene. `groupSize` counts
     // everybody in it, so a `when` can ask for a real crowd.
+    /* WHO THEY WERE BEFORE THEY GOT HERE. A family is a pre-alliance: it
+       buys a warm bond, the benefit of the doubt and somebody to sit with,
+       and an event can ask for it — a drag daughter being coached by her
+       mother is not the same scene as one stranger helping another.
+       Empty on a season with no families, so every existing event is
+       unaffected. */
+    ...familyFacts(state.dragFamilies, a, b),
     nameC: rest[0] || null,
     nameD: rest[1] || null,
     groupSize: 1 + (b ? 1 : 0) + rest.length,

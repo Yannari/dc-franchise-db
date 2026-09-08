@@ -34,7 +34,7 @@
 // and `animation-timeline: view()` so cards also settle as they scroll into
 // frame. Every one of them degrades to the plain rule underneath: the
 // click-to-reveal is what actually governs, and none of this is load-bearing.
-import { _shell, _portrait, _icon, _note } from './style.js';
+import { _shell, _portrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -481,11 +481,14 @@ function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '
 
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    window._drSidebar[suffix] = scenes.map(() => sidebar);
+    // THE ROOM UNDER THE ROOM. The station board says who is here; the rail
+    // says what they are to each other, which is the thing every scene on
+    // this screen has been quietly changing and no screen has ever drawn.
+    window._drSidebar[suffix] = scenes.map(() => sidebar + _roomRail(row));
   }
-  return `<style>${WERK_CSS}</style>${_shell(
+  return `<style>${WERK_CSS}${ROOM_RAIL_CSS}</style>${_shell(
     `<div class="dr-room">${shop(suffix)}${board}${lead}${steps}</div>`, ep,
-    { phase, title, subtitle, sidebar },
+    { phase, title, subtitle, sidebar: sidebar + _roomRail(row) },
   )}${_controls(suffix, scenes.length, ep.num)}`;
 }
 

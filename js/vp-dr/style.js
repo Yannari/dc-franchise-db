@@ -443,3 +443,74 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
     </div>
   </div>`;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE ROOM — who is close, who is at war, and who moved tonight
+   ══════════════════════════════════════════════════════════════════════
+
+   Bonds move in every werk room and every Untucked and lived only in the
+   caller's closure, so no screen could draw them: a show built almost
+   entirely out of who likes whom showed the viewer a per-scene delta chip and
+   nothing else. `row.dr.bonds` is the snapshot; this is the rail.
+
+   IT SHOWS STANDING, NOT DELTAS. The delta chips on the cards already say
+   what changed in a scene. What was missing is the state — that these two
+   have been at each other for three weeks — which is the thing a delta can
+   never show and the thing the season is actually about.
+
+   Gated to the queens still in the room, and drawn only where there is
+   something to draw: a premiere where nobody has met produces no rail rather
+   than a column of zeroes. */
+export const ROOM_RAIL_CSS = `
+.dr-room-rail h4{margin:0 0 8px}
+.dr-rr-grp{margin:0 0 12px}
+.dr-rr-k{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:#C9A6BC;margin:0 0 5px}
+.dr-rr{display:flex;align-items:center;gap:6px;margin:0 0 5px;font-size:11px}
+.dr-rr i{font-style:normal;color:#f4e3ed;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.dr-rr b{margin-left:auto;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.dr-rr-warm b{color:#7CE7B0}
+.dr-rr-cold b{color:#FF6B8A}
+.dr-rr-fam{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#FFC83D}
+`;
+
+/**
+ * The rail for one episode.
+ *
+ * `families` are drawn on the pair they belong to rather than as a list of
+ * their own: "Ivy + Coco  +6  daughter" says the relationship and the fact in
+ * one line, and a separate family box would repeat both.
+ */
+export function _roomRail(row, { limit = 4 } = {}) {
+  const bonds = row?.dr?.bonds || [];
+  const families = row?.dr?.families || [];
+  const living = new Set(row?.dr?.living || []);
+  const rel = (a, b) => {
+    const f = families.find(x => x.members.includes(a) && x.members.includes(b));
+    if (!f) return '';
+    const r = f.roles[b];
+    return r === 'mother' || r === 'daughter' ? r : 'family';
+  };
+
+  const live = bonds.filter(([a, b]) => living.has(a) && living.has(b));
+  const warm = live.filter(x => x[2] > 0).slice(0, limit);
+  const cold = live.filter(x => x[2] < 0).sort((x, y) => x[2] - y[2]).slice(0, limit);
+  if (!warm.length && !cold.length) return '';
+
+  const rows = (list, cls) => list.map(([a, b, v]) => {
+    const r = rel(a, b);
+    return `<div class="dr-rr ${cls}">
+      <i>${esc(a)} + ${esc(b)}</i>
+      ${r ? `<span class="dr-rr-fam">${esc(r)}</span>` : ''}
+      <b>${v > 0 ? '+' : ''}${v}</b>
+    </div>`;
+  }).join('');
+
+  return `<div class="dr-room-rail"><h4 class="dr-disp">The room</h4>
+    ${warm.length ? `<div class="dr-rr-grp"><span class="dr-rr-k">Closest</span>
+      ${rows(warm, 'dr-rr-warm')}</div>` : ''}
+    ${cold.length ? `<div class="dr-rr-grp"><span class="dr-rr-k">At war</span>
+      ${rows(cold, 'dr-rr-cold')}</div>` : ''}
+  </div>`;
+}

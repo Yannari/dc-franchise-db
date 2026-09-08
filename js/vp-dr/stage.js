@@ -148,6 +148,13 @@ export const STAGE_CSS = `
 .dr-step{scroll-margin-top:210px}
 
 /* ── THE DISMISSAL ── the safe queens, sent to Untucked ── */
+.dr-delib{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  padding:14px 16px 14px 20px}
+.dr-delib p{margin:4px 0 0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
+.dr-delib .dr-sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#C9A6BC}
+.dr-delib-q{display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+  font-size:11px;color:#C9A6BC}
+.dr-delib-q b{color:#FF7BC8;letter-spacing:.08em}
 .dr-dismiss{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start;
   padding:15px 18px;border-left:3px solid #4b5563}
 .dr-dismiss-faces{display:flex;flex-wrap:wrap;gap:5px;max-width:200px}
@@ -573,6 +580,41 @@ export function rpBuildCritiques(row) {
     </div>`;
   }).join('');
 
+  /* ── THE DELIBERATION, WHICH NO SCREEN HAS EVER DRAWN ──
+     `stage:deliberation` has had written prose in stage-beats.js the whole
+     time and there is not one reference to it anywhere in js/vp-dr — this
+     screen builds its cards from `byQueen` and stops. So the beat existed,
+     fired every week, and was shown to nobody.
+     It belongs here and at the end: the safe queens were dismissed at the top
+     of this screen, the rest are critiqued through the middle of it, and then
+     they all go to Untucked and the panel says what it actually thinks with
+     the stage empty. The arguments name the judge on each side and the queen
+     they are fighting over; the host's call is last, because she is. */
+  const delib = (row.dr.scenes || []).filter(sc =>
+    /^stage:deliberation/.test(sc.kind || '') && sc.text);
+  const delibCards = delib.map((sc, i) => {
+    const isHost = sc.kind === 'stage:deliberation-host';
+    const arg = sc.kind === 'stage:deliberation-argument';
+    const who = (sc.data?.players || [])[0];
+    const jid = (row?.dr?.judges || []).find(id => judgeName(id) === sc.data?.judge);
+    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + i}">
+      <div class="dr-panel ${isHost ? 'dr-a-score' : 'dr-a-room'} dr-delib">
+        ${isHost ? _judgePortrait('rupaul', { stage: true, size: 44 })
+    : jid ? _judgePortrait(jid, { size: 44 }) : ''}
+        <div>
+          <span class="dr-sub">${isHost ? 'the host decides'
+    : arg ? `${esc(sc.data?.judge || '')} · ${esc(sc.data?.taste || '')}`
+      : 'the panel deliberates'}</span>
+          <p>${esc(sc.text)}</p>
+          ${who && arg ? `<span class="dr-delib-q">${_portrait(who, ep, { size: 26 })}
+            <i>${esc(who)}</i>${sc.data?.spread
+    ? `<b>${sc.data.spread} ranks apart</b>` : ''}</span>` : ''}
+          ${isHost && sc.data?.panelRank && sc.data?.finalRank
+    ? `<span class="dr-delib-q"><b>panel ${sc.data.panelRank} &rarr; ${sc.data.finalRank}</b></span>` : ''}
+        </div>
+      </div></div>`;
+  }).join('');
+
   /* THE PANEL'S RUNNING RANKING — the screen's whole point. Gated to the
      queens critiqued so far, and it is the PANEL's order, never the host's. */
   if (typeof window !== 'undefined') {
@@ -601,11 +643,11 @@ export function rpBuildCritiques(row) {
     };
   }
 
-  return `<style>${STAGE_CSS}</style>${_shell(bench + steps, ep, {
+  return `<style>${STAGE_CSS}</style>${_shell(bench + steps + delibCards, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),
-  })}${_controls('critiques', queens.length + dOff, ep.num)}`;
+  })}${_controls('critiques', queens.length + dOff + delib.length, ep.num)}`;
 }
 
 /** Untucked: a room, not a stage — and it can get loud. */

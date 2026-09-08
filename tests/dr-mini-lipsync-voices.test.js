@@ -30,7 +30,18 @@ import {
   unwrittenLipsyncVoices, lipsyncVoiceTierCount,
 } from '../js/dr/data/lipsync-voices.js';
 import { MINI_TYPES } from '../js/dr/data/minis.js';
+import { MAXI_TYPES } from '../js/dr/data/challenges.js';
+import { MAXI_PERFORMANCE } from '../js/dr/data/maxi-performance.js';
+import {
+  PICK_VOICES, WALKTHROUGH_VOICES, MAXI_VARIANTS,
+  pickKindFor, unwrittenMaxiVoices, maxiVoiceTierCount,
+} from '../js/dr/data/maxi-voices.js';
 import { SONGS } from '../js/dr/data/songs.js';
+import { JUDGES } from '../js/dr/data/judges.js';
+import {
+  ADVOCACY, HOST_CALL, TASTE_IDS, DELIBERATION_VARIANTS,
+  divergentTastes, unwrittenDeliberationVoices, deliberationTierCount,
+} from '../js/dr/data/deliberation-voices.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
 function tooSimilar(x, y) {
@@ -234,5 +245,183 @@ describe('what is left to write', () => {
       + `\nlip sync: ${lipsyncVoiceTierCount() - l.length} of ${lipsyncVoiceTierCount()} tiers.`
       + `\n  ${l.join(', ')}`);
     expect(Array.isArray(m)).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// And the maxi's own two, which live in js/dr/data/maxi-voices.js.
+// ══════════════════════════════════════════════════════════════════════
+describe('the maxi draft and walkthrough', () => {
+  const mxWritten = [
+    ...PICK_VOICES.flatMap(k => k.tiers.map(t => ({ pool: 'pick', key: k.kind, t }))),
+    ...WALKTHROUGH_VOICES.map(w => ({
+      pool: 'walkthrough', key: w.family, t: { id: 'note', lines: w.lines },
+    })),
+  ].filter(x => x.t.lines.length);
+
+  it('files every challenge that hands anything out', () => {
+    for (const c of MAXI_TYPES) {
+      const k = pickKindFor(c.id);
+      if (c.assignment === 'none') {
+        expect(k, `"${c.id}" hands out nothing but resolves to "${k}"`).toBeNull();
+        continue;
+      }
+      expect(k, `"${c.id}" drafts something and has no pick kind`).toBeTruthy();
+      expect(PICK_VOICES.map(x => x.kind), `"${c.id}" resolves to a kind with no pool`)
+        .toContain(k);
+    }
+  });
+
+  it('carries a walkthrough note for every performance family', () => {
+    // Same anti-drift rule as the brief: a family added to maxi-performance.js
+    // and not here silently takes the fallback, which is the one pool that
+    // cannot say what the work is.
+    const mine = WALKTHROUGH_VOICES.map(w => w.family);
+    for (const f of MAXI_PERFORMANCE) {
+      expect(mine, `family "${f.family}" has no walkthrough note`).toContain(f.family);
+    }
+    expect(new Set(mine).size, 'a family is listed twice').toBe(mine.length);
+  });
+
+  it('names what she picked, which is the whole point of the pick pool', () => {
+    /* THE MEASUREMENT. Eleven pick cards on one Snatch Game said "the pick",
+       "it" and "this one" over a night where the thing picked is a person she
+       has to be for six questions. A written tier that never reaches for {d}
+       has been written as the beat it was already. */
+    for (const k of PICK_VOICES) {
+      const written = k.tiers.filter(t => t.lines.length);
+      if (!written.length) continue;
+      for (const t of written) {
+        const uses = t.lines.filter(l => /\{d\}/.test(l)).length;
+        expect(uses, `pick:${k.kind}/${t.id} never says what she got`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('meets the variant floor, which is higher for a beat that fires per queen', () => {
+    for (const { pool, key, t } of mxWritten) {
+      const need = pool === 'walkthrough' ? MAXI_VARIANTS.walkthrough : (MAXI_VARIANTS[t.id] || 4);
+      expect(t.lines.length, `${pool}:${key}/${t.id} has ${t.lines.length}, needs ${need}`)
+        .toBeGreaterThanOrEqual(need);
+    }
+  });
+
+  it('writes distinct prose in this show and no other', () => {
+    for (const { pool, key, t } of mxWritten) {
+      expect(new Set(t.lines).size, `${pool}:${key} repeats a line`).toBe(t.lines.length);
+      for (let i = 0; i < t.lines.length; i++) {
+        for (let j = i + 1; j < t.lines.length; j++) {
+          expect(tooSimilar(t.lines[i], t.lines[j]),
+            `${pool}:${key}: variants ${i + 1} and ${j + 1} are the same line reworded`).toBe(false);
+        }
+      }
+      for (const l of t.lines) {
+        const bad = foreignWordsIn(l, 'drag-race');
+        expect(bad, `${pool}:${key} says "${bad[0]}", which belongs to another show`).toEqual([]);
+        expect(l.length, `${pool}:${key} has a one-liner`).toBeGreaterThan(60);
+        const ph = l.match(/\{(?!a\}|c\}|d\})[^}]*\}/);
+        expect(ph, `${pool}:${key} uses unknown placeholder ${ph?.[0]}`).toBeNull();
+      }
+    }
+  });
+
+  it('reports the gap rather than hiding it', () => {
+    const left = unwrittenMaxiVoices();
+    // eslint-disable-next-line no-console
+    console.log(`maxi: ${maxiVoiceTierCount() - left.length} of ${maxiVoiceTierCount()} tiers.`
+      + `\n  ${left.join(', ')}`);
+    expect(Array.isArray(left)).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// And the deliberation, in js/dr/data/deliberation-voices.js.
+// ══════════════════════════════════════════════════════════════════════
+describe('the deliberation', () => {
+  const dWritten = [
+    ...ADVOCACY.flatMap(a => a.tiers.map(t => ({ pool: 'advocacy', key: a.taste, t }))),
+    ...HOST_CALL.map(h => ({ pool: 'host', key: h.id, t: { id: h.id, lines: h.lines } })),
+  ].filter(x => x.t.lines.length);
+
+  it('has a pool for every dimension a judge can be watching', () => {
+    const mine = ADVOCACY.map(a => a.taste);
+    for (const k of TASTE_IDS) expect(mine, `no advocacy pool for "${k}"`).toContain(k);
+    for (const j of JUDGES) {
+      const keys = Object.keys(j.taste || {});
+      for (const k of keys) expect(TASTE_IDS, `judge "${j.id}" weighs "${k}"`).toContain(k);
+    }
+  });
+
+  it('makes two judges argue from different premises, not the same one', () => {
+    /* THE BUG THIS EXISTS FOR. Giving each judge her own largest weight
+       produced "Michelle defends Q10 on the challenge, RuPaul buries Q10 on
+       the challenge" — because RuPaul is 0.45 there and Michelle 0.40, so the
+       biggest number is the same one for both and the scene printed two
+       people agreeing about the premise while disagreeing about nothing.
+       The argument is the dimension they are furthest APART on. */
+    const ru = JUDGES.find(j => j.id === 'rupaul');
+    const mi = JUDGES.find(j => j.id === 'michelle');
+    const d = divergentTastes(mi, ru);
+    expect(d.forTaste, 'the two sides argue from the same place')
+      .not.toBe(d.againstTaste);
+
+    // And it holds across the whole panel, not just that pair.
+    let same = 0;
+    let pairs = 0;
+    for (const a of JUDGES) {
+      for (const b of JUDGES) {
+        if (a.id === b.id) continue;
+        pairs++;
+        const x = divergentTastes(a, b);
+        if (x.forTaste === x.againstTaste) same++;
+      }
+    }
+    expect(same / pairs, 'most of the panel argues from one premise')
+      .toBeLessThan(0.2);
+  });
+
+  it('does not name a queen in the call where there is not one', () => {
+    // `stood-by` is the host leaving the board alone: no queen was moved, so
+    // {a} would render as an empty string.
+    const stood = HOST_CALL.find(h => h.id === 'stood-by');
+    for (const l of stood.lines) {
+      expect(l, 'host:stood-by names a queen, and none was moved').not.toMatch(/\{a\}/);
+    }
+  });
+
+  it('meets the variant floor and writes distinct prose', () => {
+    for (const { pool, key, t } of dWritten) {
+      const need = pool === 'host'
+        ? DELIBERATION_VARIANTS.host : DELIBERATION_VARIANTS.advocacy;
+      expect(t.lines.length, `${pool}:${key} has ${t.lines.length}, needs ${need}`)
+        .toBeGreaterThanOrEqual(need);
+      expect(new Set(t.lines).size, `${pool}:${key} repeats a line`).toBe(t.lines.length);
+      for (let i = 0; i < t.lines.length; i++) {
+        for (let j = i + 1; j < t.lines.length; j++) {
+          expect(tooSimilar(t.lines[i], t.lines[j]),
+            `${pool}:${key}: variants ${i + 1} and ${j + 1} are the same line reworded`).toBe(false);
+        }
+      }
+      for (const l of t.lines) {
+        const bad = foreignWordsIn(l, 'drag-race');
+        expect(bad, `${pool}:${key} says "${bad[0]}", which belongs to another show`).toEqual([]);
+        expect(l.length, `${pool}:${key} has a one-liner`).toBeGreaterThan(60);
+        const ph = l.match(/\{(?!a\}|j\}|e\})[^}]*\}/);
+        expect(ph, `${pool}:${key} uses unknown placeholder ${ph?.[0]}`).toBeNull();
+        // Only the advocacy pool has a second judge to point at.
+        if (pool === 'host') {
+          expect(l, `host:${key} names a judge, and the host is the one speaking`)
+            .not.toMatch(/\{[je]\}/);
+        }
+      }
+    }
+  });
+
+  it('reports the gap rather than hiding it', () => {
+    const left = unwrittenDeliberationVoices();
+    // eslint-disable-next-line no-console
+    console.log(`deliberation: ${deliberationTierCount() - left.length} of `
+      + `${deliberationTierCount()} tiers.\n  ${left.join(', ')}`);
+    expect(Array.isArray(left)).toBe(true);
   });
 });

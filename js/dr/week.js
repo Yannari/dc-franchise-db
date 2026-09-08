@@ -41,6 +41,7 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
+import { familyForChallenge } from './data/maxi-performance.js';
 
 /** The running order. A scene's `step` is always one of these. */
 export const SCENE_STEPS = [
@@ -250,6 +251,9 @@ export function runDragWeek(state, cfg, ctx) {
   const panelSeats = panel.map(j => ({
     id: j.id, name: j.name || j.id, guest: !!j.guest,
     credit: j.guest ? guestCredit : '',
+    // Her taste, because the deliberation argues from the dimension two
+    // judges are furthest apart on and cannot find that without the numbers.
+    taste: j.taste,
   }));
   say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
 
@@ -656,6 +660,9 @@ export function runDragWeek(state, cfg, ctx) {
       runwayKind,
       panelSeats,
       players,
+      // The panel's own disagreement and the host's overrule, so the
+      // deliberation can be the argument instead of a note that one happened.
+      views, ranking, bend,
     });
     for (const sc of stageScenes) scenes.push(sc);
 
@@ -679,6 +686,8 @@ export function runDragWeek(state, cfg, ctx) {
     // narrate none of them, so without this they reach the row as bare types.
     for (const sc of renderMaxiEventScenes(maxiEvents, {
       step: maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main', rng,
+      // So the host's walkthrough note can be about this week's actual work.
+      family: familyForChallenge(maxi.id).family,
     })) scenes.push(sc);
 
     const untuckedScenes = runUntucked({

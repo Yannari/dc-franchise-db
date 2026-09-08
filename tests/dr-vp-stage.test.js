@@ -73,8 +73,21 @@ describe('the critiques', () => {
     const queens = [...new Set(row.dr.critiques.map(c => c.queen))];
     for (const q of queens) expect(html, q).toContain(q);
     const safe = row.dr.call?.safe || [];
+    /* AND THE DELIBERATION CLOSES IT. The queens all go to Untucked and the
+       panel argues with the stage empty — scenes that existed with written
+       prose and were drawn by no screen at all until they were added here,
+       so they are counted rather than tolerated. */
+    const delib = (row.dr.scenes || [])
+      .filter(sc => /^stage:deliberation/.test(sc.kind || '') && sc.text).length;
+    expect(delib, 'the panel deliberates every week').toBeGreaterThan(0);
     const cards = (html.match(/id="dr-step-critiques-\d+"/g) || []).length;
-    expect(cards).toBe(queens.length + (safe.length ? 1 : 0));
+    expect(cards).toBe(queens.length + (safe.length ? 1 : 0) + delib);
+    // Every deliberation scene reaches the screen, not just the first.
+    for (const sc of (row.dr.scenes || [])) {
+      if (!/^stage:deliberation/.test(sc.kind || '') || !sc.text) continue;
+      expect(html, `"${sc.kind}" fired and was drawn nowhere`)
+        .toContain(sc.text.slice(0, 40).replace(/&/g, '&amp;'));
+    }
     // And the dismissed queens are named on it, or they vanish from the night.
     for (const n of safe) expect(html, `${n} was dismissed and never named`).toContain(n);
   });

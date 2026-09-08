@@ -26,6 +26,13 @@ import { familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
 import { miniLinesFor, miniNamesOther } from './data/mini-voices.js';
 import { tempoLinesFor, hookLinesFor } from './data/lipsync-voices.js';
+import {
+  pickKindFor, pickLinesFor, walkthroughLinesFor,
+} from './data/maxi-voices.js';
+import { characterById } from './data/snatch-characters.js';
+import {
+  divergentTastes, advocacyLinesFor, hostCallLinesFor,
+} from './data/deliberation-voices.js';
 import { dragOf } from './queen.js';
 import {
   themeFamilyFor, fitTierFor, themeLinesFor, voiceLinesFor,
@@ -71,13 +78,36 @@ const pick = (lines, rng, used = null, key = '') => {
   return chosen;
 };
 
-const fill = (line, { a, b, j, s, c, k } = {}) => (line || '')
+const fill = (line, { a, b, j, s, c, k, d, e } = {}) => (line || '')
   .replace(/\{a\}/g, a || '')
   .replace(/\{b\}/g, b || '')
   .replace(/\{j\}/g, j || '')
   .replace(/\{s\}/g, s || '')
   .replace(/\{c\}/g, c || '')
-  .replace(/\{k\}/g, k || '');
+  .replace(/\{k\}/g, k || '')
+  .replace(/\{d\}/g, d || '')
+  .replace(/\{e\}/g, e || '');
+
+/**
+ * What she picked, as words.
+ *
+ * The same resolution the challenge screen does: Snatch Game's pool has
+ * authored names, everything else is a slug. A leftover carries a
+ * `leftover-` prefix that is bookkeeping rather than a thing, so it is
+ * stripped — "she is left with Leftover 3" is the engine talking.
+ */
+function choiceLabel(id) {
+  const raw = String(id || '');
+  if (!raw) return 'what was left';
+  // A LEFTOVER IS NOT A NAME. The draft resolver marks unclaimed roles
+  // `leftover-3`, which is bookkeeping: stripping the prefix prints "she is
+  // left with 3" and keeping it prints "Leftover 3". Both are the engine
+  // talking, so it resolves to a phrase — the tier is already called
+  // `left-over` and the line around it knows it is describing scraps.
+  if (/^leftover-/.test(raw)) return 'what nobody else wanted';
+  return characterById(raw)?.name
+    || raw.replace(/-/g, ' ').replace(/\b[a-z]/g, ch => ch.toUpperCase());
+}
 
 /** Rank in [0,1], 0 being best. */
 function fractionalRank(name, scores) {
@@ -109,6 +139,12 @@ export function renderStageBeats({
      roster records, because a queen narrating her own walk needs her drag
      style and her archetype and the runway result carries neither. */
   category = '', runwayKind = 'call', panelSeats = [], players = {},
+  /* THE DELIBERATION'S OWN MATERIAL, all of it already computed and none of
+     it previously offered to a renderer. `views` is each judge's private
+     ranking, `ranking` carries the per-queen spread between them, and `bend`
+     is where the host overruled the board. The whole report on the three of
+     them was one narrator line a night. */
+  views = {}, ranking = [], bend = [],
   rng = Math.random,
 }) {
   // The song is named in the lip sync speech, so it has to reach `fill`. A
@@ -299,7 +335,92 @@ export function renderStageBeats({
     }
     if (reactions[n]) emit(reactBeat, reactions[n], [n]);
   }
-  emit(beatById('deliberation'), split ? 'split' : 'agreed', []);
+  /* ── THE DELIBERATION, WITH THE NAMES ON THE TABLE ──
+     The queens are in the back and the panel says what it actually thinks.
+     This was one line: "one judge argues for the look, another argues for the
+     performance" — which names no judge, no queen and no look, and is a
+     description of an argument rather than the argument.
+     WHO ARGUES IS NOT ASSIGNED, IT IS MEASURED. For each queen the panel is
+     furthest apart on, the judge who ranked her highest speaks for her and
+     the judge who ranked her lowest speaks against, and each argues from her
+     own dominant taste — so Law defends a garment and Ross defends a
+     performance because that is what those two are actually watching. The
+     pairing falls out of the numbers rather than being written. */
+  const seatOf = id => panelSeats.find(x => x.id === id) || null;
+  const nameOf = id => (seatOf(id)?.name) || id;
+  const rankOf = (id, n) => (views[id] || []).find(r => r.name === n)?.rank ?? null;
+
+  // The queens worth arguing about: most disagreed-on first, and only where
+  // there is a real disagreement. A panel that agrees has no scene here, which
+  // is correct — `deliberation/agreed` above has already said so.
+  const contested = [...ranking]
+    .filter(r => (r.spread || 0) >= 2 && onStage.includes(r.name))
+    .sort((x, y) => (y.spread || 0) - (x.spread || 0))
+    .slice(0, 3);
+
+  /* THE OPENING LINE HAS TO AGREE WITH WHAT FOLLOWS IT. This read
+     `isSplitPanel(ranking)`, which is a different question — it asks whether
+     the panel disagrees at the ENDS of the board, where it changes who goes
+     home. A night could be "agreed" by that measure and still have a queen
+     the panel is three ranks apart on, and the scene then printed "there is
+     nothing to argue about" immediately before two judges argued about her.
+     So the opening is chosen by whether this scene actually has an argument
+     in it. `split` still drives the host's bend, which is what it is for. */
+  emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
+
+  for (const row of contested) {
+    const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
+    if (ids.length < 2) continue;
+    const sorted = [...ids].sort((x, y) => rankOf(x, row.name) - rankOf(y, row.name));
+    const forId = sorted[0];
+    const againstId = sorted[sorted.length - 1];
+    // What they are actually fighting over, rather than what each of them
+    // happens to weight most — see divergentTastes for why those differ.
+    const { forTaste, againstTaste } = divergentTastes(seatOf(forId), seatOf(againstId));
+
+    for (const [id, stance, otherId, tasteId] of [
+      [forId, 'champion', againstId, forTaste],
+      [againstId, 'dismiss', forId, againstTaste],
+    ]) {
+      const lines = advocacyLinesFor(tasteId, stance);
+      if (!lines) continue;
+      scenes.push({
+        step: 'critiques',
+        kind: 'stage:deliberation-argument',
+        data: {
+          beat: 'deliberation-argument', tier: stance, players: [row.name],
+          note: 'One judge argues for or against a queen, from what she watches.',
+          judge: nameOf(id), taste: tasteId, spread: row.spread,
+        },
+        text: fill(pick(lines, rng, usedLines, `advocacy/${tasteId}/${stance}`),
+          { a: row.name, j: nameOf(id), e: nameOf(otherId) }),
+      });
+    }
+  }
+
+  /* AND THE HOST'S CALL, which has been recorded on every row since the
+     judging engine was written and shown only as a badge on the results
+     screen — never spoken, and never in the room where it is made. */
+  const moved = bend.filter(b => b.panelRank !== b.finalRank && onStage.includes(b.name));
+  const biggest = moved.sort((x, y) =>
+    Math.abs(y.panelRank - y.finalRank) - Math.abs(x.panelRank - x.finalRank))[0];
+  const outcome = !biggest ? 'stood-by'
+    : (biggest.finalRank < biggest.panelRank ? 'lifted' : 'dropped');
+  const hostLines = hostCallLinesFor(outcome);
+  if (hostLines) {
+    scenes.push({
+      step: 'critiques',
+      kind: 'stage:deliberation-host',
+      data: {
+        beat: 'deliberation-host', tier: outcome,
+        players: biggest ? [biggest.name] : [],
+        note: 'What the host does with the board the panel handed her.',
+        panelRank: biggest?.panelRank ?? null, finalRank: biggest?.finalRank ?? null,
+      },
+      text: fill(pick(hostLines, rng, usedLines, `host/${outcome}`),
+        { a: biggest?.name || '' }),
+    });
+  }
 
   /* ── THE RESULTS, IN THE ORDER THE HOST CALLS THEM ──
      SAFE FIRST. The host dismisses the safe queens before he turns to the
@@ -684,6 +805,15 @@ export function renderChallengeBeats({
   const kind = (assignment.teams || []).length > 1 ? 'captains'
     : Object.keys(assignment.picks || {}).length ? 'draft' : 'solo';
   emit(beatById('the-division'), kind, []);
+  /* ── AND WHAT SHE ACTUALLY GOT ──
+     Eleven of these fired on one Snatch Game and between them they said "the
+     pick", "it", "this one" and "what is available" — on a night where the
+     thing being picked is a person she has to BE for six questions. The
+     choice has been on `assignment.picks[n].choice` since the draft resolver
+     was written and the card even title-cases it; the prose could not say it.
+     `{d}` is that choice, resolved the same way the card resolves it. */
+  const pickBeat = beatById('pick-reaction');
+  const kindId = pickKindFor(maxi.id);
   for (const n of living) {
     const p = assignment.picks?.[n];
     if (!p) continue;
@@ -691,7 +821,19 @@ export function renderChallengeBeats({
       : p.penalty > 0 ? 'settled'
         : (assignment.order || []).indexOf(n) === (assignment.order || []).length - 1 ? 'picked-last'
           : 'got-it';
-    emit(beatById('pick-reaction'), tierId, [n], { choice: p.choice });
+    const lines = kindId ? pickLinesFor(kindId, tierId) : null;
+    if (!lines) { emit(pickBeat, tierId, [n], { choice: p.choice, voiced: false }); continue; }
+    const t = pickBeat.tiers.find(x => x.id === tierId) || pickBeat.tiers[0];
+    scenes.push({
+      step: pickBeat.step,
+      kind: 'chal:pick-reaction',
+      data: {
+        beat: 'pick-reaction', tier: tierId, players: [n], note: t.note,
+        choice: p.choice, pickKind: kindId, voiced: true,
+      },
+      text: fill(pick(lines, rng, usedLines, `pick/${kindId}/${tierId}`),
+        { a: n, c: maxi.name, d: choiceLabel(p.choice) }),
+    });
   }
 
   // ── the performance, IN THIS CHALLENGE'S OWN VOICE ──
@@ -737,7 +879,13 @@ export function renderChallengeBeats({
  * An event with no prose written yet renders with no text rather than being
  * dropped, so the beat still exists and the gap is visible.
  */
-export function renderMaxiEventScenes(events, { step = 'maxi-main', rng = Math.random } = {}) {
+export function renderMaxiEventScenes(events, {
+  step = 'maxi-main', rng = Math.random,
+  // Which challenge these events belong to, so the walkthrough can speak in
+  // its language. Defaults to the fallback family rather than throwing, so a
+  // caller that has not been updated still renders.
+  family = 'generic',
+} = {}) {
   const scenes = [];
   const used = new Set();
   for (const ev of events || []) {
@@ -756,11 +904,26 @@ export function renderMaxiEventScenes(events, { step = 'maxi-main', rng = Math.r
        Only `prep` is rerouted: every other `from` names the challenge the
        event belongs to, which is the screen it is already on. */
     const at = spec.from === 'prep' ? 'prep' : step;
+    /* THE WALKTHROUGH IS THE WORST-REPEATING BEAT IN THE SHOW, and it is
+       arithmetic: four variants, fired once per queen, ten times on a
+       thirteen-queen night. The draw exhausts and falls back to any line, so
+       one paragraph printed VERBATIM SIX TIMES in a single prep room — and
+       it was the wrong paragraph anyway, describing "what she is building"
+       over a Snatch Game, where nothing is built.
+       So it takes the family's own note pool when one is written, keyed the
+       same way the performance is. Everything else in this renderer is a
+       one-or-two-fire event and keeps the shared pool. */
+    const wt = ev.type === 'walkthrough' ? walkthroughLinesFor(family) : null;
     scenes.push({
       step: at,
       kind: `maxi:${ev.type}`,
-      data: { event: ev.type, players: who, note: spec.note, from: spec.from },
-      text: fill(pick(spec.lines, rng, used, ev.type), { a: who[0], b: who[1] }),
+      data: {
+        event: ev.type, players: who, note: spec.note, from: spec.from,
+        ...(wt ? { family, voiced: true } : {}),
+      },
+      text: wt
+        ? fill(pick(wt, rng, used, `walkthrough/${family}`), { a: who[0], b: who[1] })
+        : fill(pick(spec.lines, rng, used, ev.type), { a: who[0], b: who[1] }),
     });
   }
   return scenes;

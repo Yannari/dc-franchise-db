@@ -36,6 +36,7 @@
 import { _shell, _portrait, _icon, _note, _judgePortrait } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { maxiById } from '../dr/data/challenges.js';
+import { sceneCard, WERK_CSS } from './werk.js';
 import { characterById } from '../dr/data/snatch-characters.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -997,6 +998,31 @@ const PREP_SHOP_CSS = `
 .dr-shop-sign{top:34px;right:9%;width:120px;height:3px;background:#FF3D9A;
   box-shadow:0 0 26px 7px rgba(255,61,154,.45)}
 .dr-shop-work{background:radial-gradient(90% 55% at 50% 100%,rgba(255,61,154,.13),transparent 68%)}
+
+/* ── THE WALKTHROUGH CARD ──
+   One card, three stops. The host at the head of it once, then each queen
+   he stops at with her own portrait and her own words, separated by a rule
+   rather than by a whole new card. */
+.dr-walkcard{display:block}
+.dr-walkhead{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;
+  padding-bottom:12px;border-bottom:1px solid rgba(255,233,168,.22)}
+.dr-walkhead h3{margin:0}
+.dr-stops{display:block}
+.dr-stop{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  padding:14px 0;border-bottom:1px dashed rgba(255,255,255,.10)}
+.dr-stop:last-child{border-bottom:0;padding-bottom:0}
+.dr-stop>div>b{display:block;font-size:15px;letter-spacing:.04em;color:#FFE9A8;margin-bottom:4px}
+/* THE LINE LENGTH IS THE READABILITY FIX. The prose ran the full width of
+   the shell, which is well past the point a reader can find the start of the
+   next line without hunting for it. */
+.dr-stop p{margin:0;max-width:62ch;line-height:1.65;color:#f4e3ed}
+.dr-prep-room .dr-card p{max-width:66ch}
+
+/* The room has to sit BEHIND the cards and still be visible. It was drawn at
+   z-index -1 against a stacking context that put it behind the shell as
+   well, so the set the screen was given never actually reached the screen. */
+.dr-prep-room{position:relative;z-index:0}
+.dr-prep-room .dr-step{position:relative;z-index:1}
 `;
 
 /** The draft: pick order, what came off the board, and the collisions. */
@@ -1038,17 +1064,46 @@ export function rpBuildPrep(row) {
   const ep = epOf(row);
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'prep' && s.text);
   if (!scenes.length) return '';
-  const steps = scenes.map((sc, i) => {
-    const players = sc.data?.players || [];
-    const host = /walkthrough|host/.test(sc.kind || '');
+
+  const isWalk = sc => /walkthrough/.test(sc.kind || '');
+
+  /* ── THE WALKTHROUGH, THREE STOPS TO A CARD ──
+     The host visits every queen at her station, so a ten-queen room produced
+     TEN cards on this screen — ten clicks of the same shot, which is most of
+     the screen and all of the reason it dragged. Measured on one episode:
+     fourteen cards, ten of them the walkthrough.
+     It is one continuous walk, not ten events, so it is drawn as one: three
+     stops to a card, the host at the head of it, each stop keeping its own
+     queen and her own words. Fourteen cards become six.
+     Order is preserved — the stops are consecutive in the scene list, so a
+     merged card never straddles something that happened in between. */
+  const groups = [];
+  for (const sc of scenes) {
+    const last = groups[groups.length - 1];
+    if (isWalk(sc) && last && last.walk && last.items.length < 3) last.items.push(sc);
+    else groups.push({ walk: isWalk(sc), items: [sc] });
+  }
+
+  const steps = groups.map((g, i) => {
+    if (!g.walk) return sceneCard(g.items[0], i, 'prep', ep, row);
+
+    const stops = g.items.map(sc => {
+      const who = (sc.data?.players || [])[0];
+      return `<div class="dr-stop">
+        ${who ? _portrait(who, ep, { size: 44, station: true }) : '<span></span>'}
+        <div>${who ? `<b class="dr-disp">${esc(who)}</b>` : ''}
+          <p>${esc(sc.text)}</p></div>
+      </div>`;
+    }).join('');
+
     return `<div class="dr-step" id="dr-step-prep-${i}">
-      <div class="dr-panel ${host ? 'dr-a-score' : 'dr-a-room'} dr-row">
-        ${players.length ? _portrait(players[0], ep, { size: 46, station: !host }) : _icon('sewing')}
-        <div>${players.length ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : ''}
-          ${host ? '<span class="dr-sub">the walkthrough</span>' : ''}
-          ${_note(sc) ? `<span class="dr-sub">${esc(_note(sc))}</span>` : ''}
-          <p style="margin:4px 0 0;color:#f4e3ed;line-height:1.6">${esc(sc.text)}</p></div>
-        <span></span>
+      <div class="dr-panel dr-a-score dr-card dr-walkcard">
+        <div class="dr-walkhead">
+          ${_judgePortrait('rupaul', { size: 46 })}
+          <div><h3 class="dr-disp">The walkthrough</h3>
+            <span class="dr-note">He comes round the room, station by station.</span></div>
+        </div>
+        <div class="dr-stops">${stops}</div>
       </div></div>`;
   }).join('');
 
@@ -1071,17 +1126,15 @@ export function rpBuildPrep(row) {
      because it hangs off the challenge. Same set as the cold open, the
      morning and elimination day — a mirror wall, a bench of stations, the
      sign — lit for the hour it happens in, which is late and warm with the
-     machines running. The markup is duplicated rather than imported so
-     challenge.js does not have to depend on werk.js for one div; the CSS
-     that draws it is shared through WERK_CSS being the same picture. */
+     machines running. */
   const shopPrep = `<div class="dr-shop dr-shop-work" aria-hidden="true">
       <i class="dr-shop-sign"></i><i class="dr-shop-mirrors"></i>
       <i class="dr-shop-bench"></i></div>`;
-  return `<style>${CHAL_CSS}${PREP_SHOP_CSS}</style>${_shell(
+  return `<style>${CHAL_CSS}${WERK_CSS}${PREP_SHOP_CSS}</style>${_shell(
     `<div class="dr-prep-room">${shopPrep}${steps}</div>`, ep, {
       phase: 'werk', title: 'The Work Room', subtitle: 'building it',
       sidebar: rail,
-    })}${_controls('prep', scenes.length, ep.num)}`;
+    })}${_controls('prep', groups.length, ep.num)}`;
 }
 
 /** The performance itself, with the panel this challenge type deserves. */

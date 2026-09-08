@@ -101,20 +101,27 @@ export const WERK_CSS = `
   box-shadow:0 16px 34px -22px rgba(0,0,0,.95)}
 .dr-st-rail{position:absolute;left:14px;right:14px;top:6px;height:2px;
   background:linear-gradient(90deg,transparent,rgba(255,233,168,.22),transparent)}
-.dr-station{position:relative;width:66px;text-align:center;opacity:.3;
+/* SCOPED TO THE BOARD. .dr-station is TWO things in this codebase: a tile on
+   the station board here, dimmed until she is the one being talked about,
+   and a portrait modifier in style.js that frames a face with mirror bulbs.
+   Unscoped, this rule greyed out every station-framed portrait on any screen
+   that also loaded WERK_CSS — which the prep screen now does, and which is
+   how it surfaced: the queens in the host's walkthrough came out at 30%
+   opacity and fully desaturated. Third class-name collision of its kind. */
+.dr-stations .dr-station{position:relative;width:66px;text-align:center;opacity:.3;
   filter:grayscale(1);transition:opacity .4s,filter .4s,transform .4s}
-.dr-station.on{opacity:1;filter:none;transform:translateY(-2px)}
-.dr-station .dr-por{border:1px solid rgba(255,255,255,.18);margin:0 auto;display:block}
-.dr-station b{display:block;margin-top:4px;font-size:9px;font-weight:600;color:#e3cfdd;
+.dr-stations .dr-station.on{opacity:1;filter:none;transform:translateY(-2px)}
+.dr-stations .dr-station .dr-por{border:1px solid rgba(255,255,255,.18);margin:0 auto;display:block}
+.dr-stations .dr-station b{display:block;margin-top:4px;font-size:9px;font-weight:600;color:#e3cfdd;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* The bulbs over her mirror, lit only when she is. */
 .dr-st-bulbs{display:block;height:3px;margin:0 auto 5px;width:80%;border-radius:2px;
   background:rgba(255,233,168,.14);transition:background .4s,box-shadow .4s}
-.dr-station.on .dr-st-bulbs{background:#FFE9A8;box-shadow:0 0 14px rgba(255,200,61,.75)}
+.dr-stations .dr-station.on .dr-st-bulbs{background:#FFE9A8;box-shadow:0 0 14px rgba(255,200,61,.75)}
 /* The cards scroll under a sticky board, so they reserve its room. */
 .dr-room .dr-step{scroll-margin-top:170px}
-@media(max-width:760px){.dr-stations{position:static}.dr-station{width:52px}}
-@media(prefers-reduced-motion:reduce){.dr-station,.dr-st-bulbs{transition:none}}
+@media(max-width:760px){.dr-stations{position:static}.dr-stations .dr-station{width:52px}}
+@media(prefers-reduced-motion:reduce){.dr-stations .dr-station,.dr-st-bulbs{transition:none}}
 
 /* ══ THE WERK ROOM ══ one set, four times of day ══
    A wall of mirrors with bulbs around them, a bench of stations along the
@@ -327,7 +334,12 @@ function consequences(row, sc) {
 }
 
 /** One scene, as a card. Two players make it a social card via `:has()`. */
-function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
+/* EXPORTED because Prep is the same room on the same night and was drawing
+   its own card: a flat panel with one portrait, an inline style and no
+   consequence badges, beside an Elimination Day card with lit mirrors, both
+   faces of a pair and its effects. Two builders for one object is how they
+   drifted apart in the first place. */
+export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
   const players = sc?.data?.players || [];
   const confess = /confess|shade-tree|talking/.test(sc.kind || '');
   const busts = players.length

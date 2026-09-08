@@ -488,7 +488,11 @@ export function runDragWeek(state, cfg, ctx) {
     const out = order.slice(0, wantOut).map(x => x.n);
     const goingHome = out[0] || null;
     lipsync = {
-      song: song.title, artist: song.artist, queens: call.bottom.map(n => n),
+      song: song.title, artist: song.artist,
+      // THE TAGS THE SONG ALREADY HAS. `lipsyncScore` reads tempo and hook
+      // to decide who wins and the narration read neither, so a ballad and
+      // an uptempo were described in identical words.
+      tempo: song.tempo, mood: song.mood, hook: song.hook, queens: call.bottom.map(n => n),
       scores: Object.fromEntries(scored.map(x => [x.n, x.r.score])),
       beats: Object.fromEntries(scored.map(x => [x.n, x.r.beats])),
       stunts: Object.fromEntries(scored.map(x => [x.n, x.r.stunt])),
@@ -530,7 +534,11 @@ export function runDragWeek(state, cfg, ctx) {
       });
 
     lipsync = {
-      song: song.title, artist: song.artist, queens: [a, b],
+      song: song.title, artist: song.artist,
+      // THE TAGS THE SONG ALREADY HAS. `lipsyncScore` reads tempo and hook
+      // to decide who wins and the narration read neither, so a ballad and
+      // an uptempo were described in identical words.
+      tempo: song.tempo, mood: song.mood, hook: song.hook, queens: [a, b],
       scores: { [a]: sa.score, [b]: sb.score },
       beats: { [a]: sa.beats, [b]: sb.beats },
       stunts: { [a]: sa.stunt, [b]: sb.stunt },
@@ -661,6 +669,9 @@ export function runDragWeek(state, cfg, ctx) {
       .map(([n, v]) => [n, { ...v, player: P(n) }]));
     for (const sc of renderChallengeBeats({
       living, maxi, mini, miniWinner, miniScores,
+      // The mini engine's own record of who each queen went after, which the
+      // narration needs to name her — it reached the row and stopped there.
+      miniDetail: mini?.detail || {},
       assignment: M.assignment || {}, performances: perfWithPlayers, rng,
     })) scenes.push(sc);
 

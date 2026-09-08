@@ -24,6 +24,8 @@ import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
 import { familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
+import { miniLinesFor, miniNamesOther } from './data/mini-voices.js';
+import { tempoLinesFor, hookLinesFor } from './data/lipsync-voices.js';
 import { dragOf } from './queen.js';
 import {
   themeFamilyFor, fitTierFor, themeLinesFor, voiceLinesFor,
@@ -320,11 +322,64 @@ export function renderStageBeats({
   if (lipsync) {
     emit(beatById('lipsync-intro'), 'intro', [],
       { song: lipsync.song, artist: lipsync.artist });
+    /* ── THE SONG DECIDES WHAT THE PERFORMANCE WAS ──
+       `lipsync-beat` had four tiers keyed on how well she did and nothing
+       about the record she was doing it to, so a queen fighting for her life
+       to a six-minute ballad and one doing it to a hyperpop banger got the
+       same paragraph. js/dr/data/songs.js tags every title with a `tempo` and
+       a `hook` and its own header says the narration should build a beat out
+       of the hook — `lipsyncScore` reads both to decide who WINS, and the
+       words describing the win read neither.
+       Tempo is the axis rather than mood because tempo changes the JOB: a
+       ballad is stillness and a face, an uptempo is cardio. Mood changes the
+       colour of a performance; the old prose was wrong about the job, putting
+       dance breaks over songs that have none. */
     const lsBeat = beatById('lipsync-beat');
     const stuntBeat = beatById('lipsync-stunt');
     for (const n of lipsync.queens || []) {
-      emit(lsBeat, tierAt(fractionalRank(n, lipsync.scores || {}), LIPSYNC_TIERS), [n],
-        { score: lipsync.scores?.[n] });
+      const tierId = tierAt(fractionalRank(n, lipsync.scores || {}), LIPSYNC_TIERS);
+      const tempoLines = tempoLinesFor(lipsync.tempo, tierId);
+      if (tempoLines) {
+        const t = lsBeat.tiers.find(x => x.id === tierId) || lsBeat.tiers[0];
+        scenes.push({
+          step: lsBeat.step,
+          kind: 'stage:lipsync-beat',
+          data: {
+            beat: 'lipsync-beat', tier: tierId, players: [n], note: t.note,
+            score: lipsync.scores?.[n], tempo: lipsync.tempo, voiced: true,
+          },
+          text: fill(pick(tempoLines, rng, usedLines, `tempo/${lipsync.tempo}/${tierId}`),
+            { a: n, s: songTitle }),
+        });
+      } else {
+        emit(lsBeat, tierId, [n], { score: lipsync.scores?.[n], voiced: false });
+      }
+
+      /* THE ONE MOMENT THE SONG IS DECIDED AT, which every song names and
+         nothing has ever narrated. Whoever is top of this lip sync took it
+         and everybody else did not — there is no middle at a key change. */
+      if (lipsync.hook) {
+        const took = tierId === 'legendary' || tierId === 'strong';
+        const hookLines = hookLinesFor(lipsync.hook, took ? 'nailed' : 'missed');
+        if (hookLines) {
+          /* NO BEAT IN stage-beats.js FOR THIS ONE, deliberately. Its prose
+             lives entirely in lipsync-voices.js keyed by the song's hook, so
+             a stub beat there would be a second place to look for lines that
+             are not in it — and `unwrittenStageTiers` would report a gap that
+             another file is responsible for. It carries its own note. */
+          scenes.push({
+            step: 'lipsync',
+            kind: 'stage:lipsync-hook',
+            data: {
+              beat: 'lipsync-hook', tier: took ? 'nailed' : 'missed', players: [n],
+              note: 'The moment in the song where the lip sync is decided.',
+              hook: lipsync.hook, voiced: true,
+            },
+            text: fill(pick(hookLines, rng, usedLines, `hook/${lipsync.hook}/${took}`),
+              { a: n, s: songTitle }),
+          });
+        }
+      }
       const stunt = lipsync.stunts?.[n];
       if (stunt === 'landed' || stunt === 'failed') emit(stuntBeat, stunt, [n]);
     }
@@ -479,6 +534,10 @@ export function applyUntuckedScene(scene, ctx) {
  */
 export function renderChallengeBeats({
   living = [], maxi = {}, mini = null, miniWinner = null, miniScores = {},
+  // WHO SHE WENT AFTER. `{ [queen]: { target } }` on a `targets` mini and
+  // `{ partner }` on a `pairs` one, straight off the mini engine's own record.
+  // It has always existed and this renderer never asked for it.
+  miniDetail = {},
   assignment = {}, performances = {}, rng = Math.random,
 }) {
   const scenes = [];
@@ -562,9 +621,45 @@ export function renderChallengeBeats({
     if (byAptitude.length > REACTING) react(n, 'dreading');
   }
 
-  // ── the mini ──
+  /* ── THE MINI, IN THE MINI'S OWN WORDS ──
+     `mini-attempt` had three tiers keyed on how well she did and no idea what
+     she was doing, so a Werk Room Dance-Off — eight counts, no warning, and
+     nobody says a word — was narrated in the language of a reading challenge:
+     "funny enough", "gets a laugh", "the timing of somebody who has done this
+     in a bar". Those lines print under all seven minis because the beat could
+     not tell them apart.
+     AND IT NAMES WHO SHE WENT AFTER. Three of the seven are `targets`: she
+     does a bit ABOUT another queen, to her face, and the mini engine has
+     recorded which queen since the day it was written. The screen learned to
+     draw that; the prose still could not say it. `pairs` is the same shape
+     with a partner instead of a victim. */
   if (mini) {
-    emit(beatById('mini-announce'), 'announce', [], { mini: mini.name, buys: mini.buys });
+    const mEmit = (beatId, tierId, who, extra = {}) => {
+      const beat = beatById(beatId);
+      const lines = miniLinesFor(mini.id, tierId);
+      if (!lines) { emit(beat, tierId, who, { ...extra, mini: mini.id, voiced: false }); return; }
+      const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
+      scenes.push({
+        step: beat.step,
+        // `chal:`, matching every other beat this renderer emits. The stage
+        // renderer uses `stage:`; a mini is a challenge beat and the VP reads
+        // the prefix to tell the two nights apart.
+        kind: `chal:${beatId}`,
+        data: {
+          beat: beatId, tier: tierId, players: who, note: t.note,
+          mini: mini.id, voiced: true, ...extra,
+        },
+        text: fill(pick(lines, rng, usedLines, `mini/${mini.id}/${tierId}`),
+          { a: who[0], b: who[1], c: mini.name }),
+      });
+    };
+    // The second name only where the mini has one. A solo mini has no target
+    // and its pool may not use {b} — the guard rejects it, so it is
+    // unreachable rather than merely absent.
+    const otherFor = n => (miniNamesOther(mini.id)
+      ? (miniDetail[n]?.target || miniDetail[n]?.partner || null) : null);
+
+    mEmit('mini-announce', 'announce', [], { name: mini.name, buys: mini.buys });
     /* EVERY QUEEN WHO COMPETED GETS HER CARD. A cap was tried here and it
        was the wrong answer to the right complaint: the mini did outrun the
        maxi, but the fix for that is the maxi being bigger, not the room
@@ -575,9 +670,14 @@ export function renderChallengeBeats({
        were for. */
     for (const n of living) {
       if (miniScores[n] === undefined) continue;
-      emit(beatById('mini-attempt'), tierAt(fractionalRank(n, miniScores), MINI_TIERS), [n]);
+      const other = otherFor(n);
+      mEmit('mini-attempt', tierAt(fractionalRank(n, miniScores), MINI_TIERS),
+        other ? [n, other] : [n], { target: other });
     }
-    if (miniWinner) emit(beatById('mini-win'), 'win', [miniWinner], { buys: mini.buys });
+    if (miniWinner) {
+      const other = otherFor(miniWinner);
+      mEmit('mini-win', 'win', other ? [miniWinner, other] : [miniWinner], { buys: mini.buys });
+    }
   }
 
   // ── how the room was divided ──

@@ -498,9 +498,17 @@ export const STAGE_BEATS = [
   {
     id: 'lipsync-intro', step: 'lipsync', scope: 'once', speaker: 'host',
     variants: 10,
-    note: 'Two queens stand before the host. The last-chance speech and the song.',
-    tierBy: 'always',
-    tiers: [tier('intro', 'This is your last chance to impress me.', [
+    note: 'Two queens stand before the host. The speech, and the song.',
+    /* TIERED ON WHAT THE SONG IS FOR, because the speech is not the same
+       speech. This beat was `tierBy: 'always'` with one pool, and every line
+       in that pool promises an elimination — "one stays, one goes", "save
+       yourself from elimination", "for your LIFE". On a for-the-win night
+       nobody can lose and on a legacy night the loser of the song is in no
+       danger at all, so the last-chance speech was a lie told twice a season
+       in the host's own voice. Measured on a Rate-a-Queen no-elimination
+       night: "Two queens, one song, one stays, one goes." Nobody went. */
+    tierBy: 'stakes',
+    tiers: [tier('life', 'This is your last chance to impress me.', [
       "\"Two queens stand before me.\" The room goes quiet in the way that means something is about to end for somebody. The host looks at both of them with an expression that is equal parts sympathy and expectation. \"This is your last chance to impress me and save yourself from elimination. The time has come for you to lip sync — {s} — for your life. Good luck, and don\'t fuck it up.\"",
       "The stage clears except for the two of them. The host names the song — {s} — and the energy in the room changes shape. This is not a critique anymore and it is not a runway. It is a fight set to music, and both queens know that whatever happened before this moment counts for nothing if they win the next three minutes.",
       "\"Prior to tonight, you were asked to prepare a lip sync performance of {s}.\" The host delivers the speech with the gravity it deserves, because this is the one part of the show that is not negotiable. Two queens, one song, one stays, one goes. \"Good luck, and don\'t fuck it up.\" The music starts and both of them take their positions.",
@@ -511,7 +519,10 @@ export const STAGE_BEATS = [
       "The host announces {s} and the announcement is a starting gun. Both queens hear the title and both queens react — one adjusts her wig, one rolls her shoulders — and the safe queens at the back of the stage go silent, because whatever is about to happen on this floor is going to decide who walks back into the werkroom and who does not.",
       "\"For your life.\" The host says it and the phrase lands on both queens at the same time, and the weight of it is the weight of everything they have done in this competition compressed into the next three minutes of {s}. The track starts. One of them moves first. The other follows half a beat later.",
       "The stage belongs to two queens and a song. The host steps back after delivering the speech — the same speech, the same gravity, the same \"don\'t fuck it up\" — and the music fills the space the host leaves behind, and {s} begins, and both queens know that the next three minutes are the only three minutes that matter.",
-    ])],
+    ]),
+    tier('win', 'The top two, and the song is the prize. Nobody can lose.', []),
+    tier('legacy', 'The top two, and the song decides who holds the power.', []),
+    ],
   },
   {
     id: 'lipsync-beat', step: 'lipsync', scope: 'per-queen', speaker: 'narrator',
@@ -671,6 +682,83 @@ export const STAGE_BEATS = [
       ]),
     ],
   },
+  // ══ THE NIGHT THE SONG IS A PRIZE ════════════════════════════════════
+  //
+  // A for-the-win night and a legacy night both put the two BEST queens on
+  // the song, and neither of them can be eliminated by it. The stage had no
+  // prose for either: `lipsync-call` has no tier for those calls, and
+  // stage.js falls back to `tiers[0]` — the shantay tier — so a night nobody
+  // could lose was narrated as "the half where somebody stays and the half
+  // where somebody goes", and THE WINNER'S NAME WAS NEVER SAID. Measured on
+  // a Rate-a-Queen no-elimination night: the queen who won the song, and the
+  // week with it, is not named once on her own screen.
+  //
+  // These four beats are the named sequence for those nights, and they are
+  // the exact counterpart of lipsync-shantay/lipsync-sashay: she says the
+  // name, the queen answers, and then she turns to the other one.
+  //
+  // THE VOCABULARY IS THE WHOLE POINT. Nobody is saved here, so nothing in
+  // these pools may say "shantay", "safe", "stay", or "sashay" — those are
+  // survival words and this is not a survival night. See the pool notes.
+  {
+    id: 'lipsync-win-name', step: 'lipsync', scope: 'per-queen', speaker: 'host',
+    variants: 10,
+    note: 'SHE SAYS THE NAME OF THE QUEEN WHO TOOK THE SONG. The counterpart '
+      + 'of `lipsync-shantay` on a night nobody can go home. {a} won the lip '
+      + 'sync; on a `win` night that also wins her the week, and on a '
+      + '`legacy` night it wins her the power to eliminate.',
+    tierBy: 'stakes',
+    tiers: [
+      tier('win', 'She took the song, and the song was the week.', []),
+      tier('legacy', 'She took the song, and the song was the power.', []),
+    ],
+  },
+  {
+    id: 'lipsync-win-reaction', step: 'lipsync', scope: 'per-queen', speaker: 'queen',
+    variants: 6,
+    note: 'AND THEN SHE ANSWERS IT — {a}, in her own voice, in the second '
+      + 'after the host says her name. The exact counterpart of '
+      + '`sashay-words`, which is the last card of an elimination night: this '
+      + 'is the last card of a night she won. Tiered by swagger group so the '
+      + 'queen who has been narrating her own runway walks all season sounds '
+      + 'like herself when she finally gets something.',
+    tierBy: 'swagger',
+    tiers: [
+      tier('predator', 'She expected this and says so.', []),
+      tier('sunshine', 'She is delighted and hides none of it.', []),
+      tier('firecracker', 'The adrenaline has nowhere to go.', []),
+      tier('professional', 'She takes it like a craftsman, not a fan.', []),
+      tier('scrapper', 'She has not had much and she knows what this is.', []),
+    ],
+  },
+  {
+    id: 'lipsync-win-runnerup', step: 'lipsync', scope: 'per-queen', speaker: 'host',
+    variants: 8,
+    note: 'AND THEN THE OTHER ONE. {a} lost the song and IS NOT IN DANGER AND '
+      + 'WAS NEVER IN DANGER — she was one of the two best queens on this '
+      + 'stage tonight, which is how she got on it. She is not saved, she is '
+      + 'not safe, and she is not staying: none of those words apply to a '
+      + 'queen who was never at risk. She came second in a fight for a prize.',
+    tierBy: 'stakes',
+    tiers: [
+      tier('win', 'She came second for the week.', []),
+      tier('legacy', 'She came second for the power, and somebody else now holds it.', []),
+    ],
+  },
+  {
+    id: 'lipsync-legacy-choice', step: 'lipsync', scope: 'pair', speaker: 'host',
+    variants: 8,
+    note: 'THE LEGACY NIGHT ONLY, AND THE THING THAT WAS NEVER NARRATED AT '
+      + 'ALL. {a} won the song and now spends it: she names {b}, and {b} goes '
+      + 'home. week.js emitted this as a marker with an empty string for '
+      + 'text and nothing in js/ rendered that kind, so on a legacy night the '
+      + 'queen who was eliminated left the season without the screen ever '
+      + 'saying who sent her or that she had been sent.',
+    tierBy: 'always',
+    tiers: [
+      tier('choice', 'She holds the power and she uses it, out loud, on {b}.', []),
+    ],
+  },
   {
     id: 'lipsync-call', step: 'lipsync', scope: 'once', speaker: 'host',
     note: 'The verdict. Shantay, sashay, or one of the rarer calls.',
@@ -707,6 +795,17 @@ export const STAGE_BEATS = [
         "It is the rarest call and neither queen was prepared for it. Both of them are going. The host delivers it with gravity and both queens nod because the nod is the only thing available to them — there is no argument to make when both performances failed to clear the bar.",
         "\"I am sorry, my dears, but neither of you has shown me enough to stay.\" The words settle over both queens at the same time. There is a shared glance — not quite solidarity, not quite blame — and then they both begin the walk that leads away from the stage and toward the door.",
       ]),
+      /* THE TWO CALLS THAT HAD NO TIER. `week.js` emits `for-the-win` and
+         `legacy`, and neither existed here — so `stage.js`'s
+         `tiers.find(id) || tiers[0]` handed both of them the SHANTAY tier,
+         which is the tier that says one queen stays and one goes. Two nights
+         a season narrated as an elimination that did not happen.
+         These are the FALLBACK for those calls; the named sequence above
+         (`lipsync-win-name` and the beats around it) is what actually runs
+         once its pools are written, exactly as `lipsync-shantay` supersedes
+         the `shantay` tier below. */
+      tier('for-the-win', 'The top two sang for the win. Nobody went home.', []),
+      tier('legacy', 'The top two sang for the power to eliminate.', []),
       tier('triple', 'Three of them fought and one of them loses.', [
         "They stood on that stage together and fought and one of them is going. The host names who stays — twice — and each \"shantay\" lands with relief for one and dread for the remaining. The queen who is left standing without a save closes her eyes for one second and then opens them and walks.",
         "A three-way lip sync is a war with three fronts and tonight one queen lost on all of them. The host calls two names and both of those names get to stay and the third name is never said, which is its own kind of verdict. The departing queen hugs the other two because the fight was real even if the result was not what she wanted.",

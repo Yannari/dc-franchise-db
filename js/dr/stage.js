@@ -172,6 +172,14 @@ export function renderStageBeats({
   const scenes = [];
   const usedLines = new Set();
   const beatById = id => STAGE_BEATS.find(b => b.id === id);
+  /* HOW MANY LINES A SPECIFIC TIER ACTUALLY HAS, which is the question
+     "is this pool written yet?" — asked by every beat that supersedes an
+     older one, so a half-filled file never leaves the screen with neither
+     version of a verdict on it. `tiers[0].lines.length` is the wrong
+     question for a multi-tier beat: it answers for one tier and is read as
+     though it answered for the beat. */
+  const tierLines = (id, tierId) =>
+    (beatById(id)?.tiers.find(t => t.id === tierId)?.lines || []).length;
   const runwayScores = Object.fromEntries(
     walking.filter(n => runway[n]).map(n => [n, runway[n].score]));
 
@@ -558,8 +566,13 @@ export function renderStageBeats({
 
   // ── the lip sync, beat by beat ──
   if (lipsync) {
-    emit(beatById('lipsync-intro'), 'intro', [],
-      { song: lipsync.song, artist: lipsync.artist });
+    /* THE SPEECH IS TIERED ON WHAT THE SONG IS FOR. It used to be one pool
+       hardcoded to 'intro', and every line in it promised an elimination —
+       so a for-the-win night opened with "one stays, one goes" over a night
+       nobody could lose. `stakes` is already computed for `call-stakes`
+       above; this is the same question asked one beat later. */
+    emit(beatById('lipsync-intro'), stakes, [],
+      { song: lipsync.song, artist: lipsync.artist, stakes });
     /* ── THE SONG DECIDES WHAT THE PERFORMANCE WAS ──
        `lipsync-beat` had four tiers keyed on how well she did and nothing
        about the record she was doing it to, so a queen fighting for her life
@@ -644,7 +657,37 @@ export function renderStageBeats({
     const named = ordinary && (beatById('lipsync-shantay').tiers[0].lines.length
       || beatById('lipsync-sashay').tiers[0].lines.length);
 
-    if (named) {
+    /* ── AND THE NIGHT THE SONG IS A PRIZE HAS ITS OWN NAMED SEQUENCE ──
+       `for-the-win` and `legacy` put the two BEST queens on the song and
+       neither of them can be eliminated by it. Both fell through `ordinary`
+       to `lipsync-call`, which had no tier for either, which meant
+       `tiers[0]` — the shantay tier — over a night nobody could lose. The
+       winner's name was never said on her own screen.
+       Same shape as the shantay sequence and for the same reason: the hold,
+       the name, and then the other one. What differs is the vocabulary,
+       which is why these are their own beats and not another tier of
+       `lipsync-shantay` — nobody is saved here, so nothing may say stay. */
+    const prize = lipsync.call === 'for-the-win' || lipsync.call === 'legacy';
+    const prizeStakes = lipsync.call === 'legacy' ? 'legacy' : 'win';
+    const prizeWritten = prize && !!(tierLines('lipsync-win-name', prizeStakes)
+      || tierLines('lipsync-win-reaction', 'scrapper'));
+    const runnerUp = (lipsync.queens || []).find(n => n !== lipsync.winner) || null;
+
+    if (prizeWritten) {
+      emit(beatById('lipsync-suspense'), 'held', []);
+      // She says the winner first, because on this night the winner is the
+      // announcement — the other queen is not waiting to find out whether
+      // she is safe, she is waiting to find out that she lost.
+      if (lipsync.winner) {
+        emit(beatById('lipsync-win-name'), prizeStakes, [lipsync.winner], { stakes: prizeStakes });
+        emit(beatById('lipsync-win-reaction'),
+          swaggerGroupFor(players[lipsync.winner] && players[lipsync.winner].archetype),
+          [lipsync.winner], { stakes: prizeStakes });
+      }
+      if (runnerUp) {
+        emit(beatById('lipsync-win-runnerup'), prizeStakes, [runnerUp], { stakes: prizeStakes });
+      }
+    } else if (named) {
       emit(beatById('lipsync-suspense'), 'held', []);
       // The stay is said first, because that is the order she says it in and
       // the order is the whole cruelty of it: one queen is released and the
@@ -653,6 +696,18 @@ export function renderStageBeats({
       for (const n of gone) emit(beatById('lipsync-sashay'), 'sashay', [n]);
     } else {
       emit(beatById('lipsync-call'), lipsync.call || 'shantay', []);
+    }
+
+    /* ── AND ON A LEGACY NIGHT SHE SPENDS IT, OUT LOUD ──
+       week.js resolves the choice and emitted it through `say()`, which
+       writes `text: ''`, and nothing in js/ rendered that kind — so the
+       queen she sent home left the season without the screen ever saying
+       who sent her. `eliminated` is set on the lipsync object before this
+       function runs, which is the only reason it can be named here. */
+    if (lipsync.call === 'legacy' && lipsync.winner && lipsync.eliminated) {
+      emit(beatById('lipsync-legacy-choice'), 'choice',
+        [lipsync.winner, lipsync.eliminated],
+        { winner: lipsync.winner, eliminated: lipsync.eliminated });
     }
     /* AND THEN SHE SPEAKS. The last card on the lip sync screen is the only
        one in her own voice — the host has said her name and she answers it.

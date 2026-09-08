@@ -209,3 +209,79 @@ describe('THE RUNWAY IS NOT THE CALL', () => {
     expect(bad, 'the runway announced a call it cannot know yet').toEqual([]);
   });
 });
+
+describe('A NIGHT NOBODY CAN LOSE IS NOT AN ELIMINATION', () => {
+  /* THE BUG THIS EXISTS FOR, found by reading a dump and not by any of the
+     300 assertions above it.
+
+     `week.js` resolves a lip sync to one of eight `call` values.
+     `lipsync-call` had tiers for six of them, and `stage.js` picks a tier
+     with `tiers.find(id) || tiers[0]` — so the two it had no prose for,
+     `for-the-win` and `legacy`, were silently served `tiers[0]`, which is
+     the SHANTAY tier. Measured on a Rate-a-Queen no-elimination night:
+
+       [call-stakes  tier=win]      "...lip syncing for the WIN. No one goes home."
+       [lipsync-call tier=shantay]  "...the half where somebody stays and the
+                                     half where somebody goes."
+
+     Two cards apart, contradicting each other, and the queen who actually
+     won the song was never named on her own screen.
+
+     A missing tier cannot be reported by `unwrittenStageTiers` — that reports
+     tiers that exist and are empty, and these did not exist. So the coverage
+     has to be asserted against the calls the engine can emit. */
+  const CALLS = ['shantay', 'double-shantay', 'double-sashay',
+    'double-elimination', 'triple', 'no-elimination', 'for-the-win', 'legacy'];
+
+  it('lipsync-call has a tier for every call week.js can emit', () => {
+    const beat = STAGE_BEATS.find(b => b.id === 'lipsync-call');
+    const have = new Set((beat.tiers || []).map(t => t.id));
+    const missing = CALLS.filter(c => !have.has(c));
+    expect(missing,
+      'a call with no tier is served tiers[0] — the shantay prose — silently')
+      .toEqual([]);
+  });
+
+  /* AND THE VOCABULARY, WHICH IS THE ACTUAL RULE. Nobody is saved on a
+     for-the-win or a legacy night: the two queens on that song are the two
+     BEST queens of the week and neither can be eliminated by it. So the
+     survival words are not available, and this is a denylist rather than an
+     allowlist on purpose — the first version of this bug shipped because
+     nothing was checking what the prose was allowed to say, only that it
+     existed. A pool that says "shantay" here is the same defect back. */
+  const SURVIVAL = /\b(shantay|sashay|you stay|are safe|you're safe|is safe|save yourself|for your life|elimination|going home|goes home|go home)\b/i;
+  const PRIZE_POOLS = [
+    ['lipsync-win-name', null],
+    ['lipsync-win-reaction', null],
+    ['lipsync-win-runnerup', null],
+    ['lipsync-intro', ['win', 'legacy']],
+    ['lipsync-call', ['for-the-win', 'legacy']],
+  ];
+
+  it('no prize-night line uses survival vocabulary', () => {
+    const bad = [];
+    for (const [id, only] of PRIZE_POOLS) {
+      const beat = STAGE_BEATS.find(b => b.id === id);
+      expect(beat, `${id} is missing`).toBeTruthy();
+      for (const t of beat.tiers || []) {
+        if (only && !only.includes(t.id)) continue;
+        for (const line of t.lines || []) {
+          const hit = line.match(SURVIVAL);
+          if (hit) bad.push(`${id}/${t.id}: "${hit[0]}" — ${line.slice(0, 80)}`);
+        }
+      }
+    }
+    expect(bad, 'a night nobody can lose was written in survival words').toEqual([]);
+  });
+
+  /* THE LEGACY NIGHT'S ELIMINATION, which was narrated by nothing at all:
+     week.js emitted it through `say()`, whose scenes carry `text: ''`, and
+     no renderer in js/ matched the kind. The queen left the season without
+     the screen saying who sent her. It is a pair beat because it needs both
+     names in one sentence — she names her. */
+  it('the legacy choice is a pair beat that can name both queens', () => {
+    const beat = STAGE_BEATS.find(b => b.id === 'lipsync-legacy-choice');
+    expect(beat, 'lipsync-legacy-choice is missing').toBeTruthy();
+    expect(beat.scope).toBe('pair');
+  });
+});

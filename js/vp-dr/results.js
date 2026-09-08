@@ -238,6 +238,26 @@ export const RESULTS_CSS = `
   color:#ffd7e8}
 .dr-fare.dr-vis .dr-farebox{animation:drFareLift .55s cubic-bezier(.2,1,.3,1) both}
 
+/* ── THE SAME CARD, THE OPPOSITE OUTCOME ──
+   .dr-fare snuffs her light out; a queen who just WON the song gets the
+   identical furniture with the snuff cancelled and the spot brought up
+   instead. Cancelling is explicit on all three animated parts, because the
+   snuff is declared on the base class and an override that misses one leaves
+   a winner sitting under a dying light.
+   NO BACKTICKS IN HERE — this comment lives inside a template literal, and
+   quoting a class name the way the rest of the file does ends the string. */
+.dr-crowned .dr-farelabel{color:#FFD76B}
+.dr-crowned .dr-farebox::before{animation:drBloom 1.1s ease-out .35s both}
+.dr-crowned .dr-farepor .dr-por,.dr-crowned .dr-farepor .dr-initials{
+  border-color:rgba(255,215,107,.9);box-shadow:0 0 58px -4px rgba(255,215,107,.85)}
+.dr-fare.dr-crowned.dr-vis .dr-farepor .dr-por,
+.dr-fare.dr-crowned.dr-vis .dr-farepor .dr-initials{animation:drBloom 1s ease-out .35s both}
+.dr-crowned .dr-faresay{color:#ffeccc}
+@keyframes drBloom{
+  from{opacity:.25;filter:brightness(.7)}
+  to{opacity:1;filter:brightness(1.12)}
+}
+
 @media(prefers-reduced-motion:reduce){
   .dr-tug i,.dr-energy i,.dr-rounds i{transition:none}
   .dr-fare.dr-vis .dr-farebox{animation:none}
@@ -245,6 +265,11 @@ export const RESULTS_CSS = `
      not a queen who goes home with her light still on. */
   .dr-fare.dr-vis .dr-farepor .dr-por,.dr-fare.dr-vis .dr-farepor .dr-initials,
   .dr-farebox::before{animation:none;filter:brightness(.42) grayscale(1)}
+  /* ...and the win has to land too. Same reasoning inverted: no drawn-out
+     bloom, but a winner must not inherit the greyscale the snuff applies. */
+  .dr-fare.dr-crowned.dr-vis .dr-farepor .dr-por,
+  .dr-fare.dr-crowned.dr-vis .dr-farepor .dr-initials,
+  .dr-crowned .dr-farebox::before{animation:none;filter:none}
 }
 
 .dr-song{text-align:center;font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;
@@ -543,6 +568,24 @@ export function rpBuildLipSync(row) {
        with a sentence under it. The light goes out ON REVEAL — see .dr-fare
        in the CSS — so the reader sees her lit, reads what she said, and then
        watches the room take the light off her. */
+    /* HER OWN VOICE, ON A NIGHT SHE WON. The exact counterpart of the
+       sashay card below and deliberately the same furniture — portrait, name,
+       one sentence under it — because the two cards are the same moment with
+       opposite outcomes, and a win that arrives as another grey paragraph is
+       why the for-the-win night read flat. The light comes ON here; see
+       .dr-crowned in the CSS, against .dr-fare, where it goes out. */
+    if ((sc.kind || '') === 'stage:lipsync-win-reaction') {
+      const her = (sc.data?.players || [])[0] || '';
+      const legacy = (sc.data?.stakes || '') === 'legacy';
+      return `<div class="dr-step dr-fare dr-crowned" id="dr-step-lipsync-${i}">
+      <div class="dr-panel dr-a-lip dr-farebox">
+        <span class="dr-farelabel dr-disp">${legacy ? 'She holds the power' : 'Winner of the week'}</span>
+        <span class="dr-farepor">${_portrait(her, ep, { size: 132 })}</span>
+        <b class="dr-farename dr-disp">${esc(her)}</b>
+        <p class="dr-faresay dr-fash">${esc(sc.text)}</p>
+      </div></div>`;
+    }
+
     if ((sc.kind || '') === 'stage:sashay-words') {
       const her = (sc.data?.players || [])[0] || goesHome;
       return `<div class="dr-step dr-fare" id="dr-step-lipsync-${i}">
@@ -556,7 +599,7 @@ export function rpBuildLipSync(row) {
 
     return `<div class="dr-step" id="dr-step-lipsync-${i}">
     <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}">
-      ${/^stage:(lipsync-intro|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call)$/
+      ${/^stage:(lipsync-intro|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call|lipsync-win-name|lipsync-win-runnerup|lipsync-legacy-choice)$/
     .test(sc.kind || '')
     ? `<span class="dr-hostsay">${_judgePortrait('rupaul', { stage: true, size: 42 })}
         ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`

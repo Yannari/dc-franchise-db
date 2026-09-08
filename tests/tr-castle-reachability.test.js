@@ -581,7 +581,24 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // continuing them and none cites residue, so the two counts below are
     // deliberately unmoved — which is the check that the count moved for the
     // reason given.
-    expect(EVENTS.length).toBe(183);
+    // 194 -> 195: js/tr/castle/alibi.js, the first castle event whose OUTCOME is
+    // coupled to something that really happened (the conclave roll). See
+    // tests/tr-castle-channel-pricing.test.js for why that distinction is the
+    // whole point of it.
+    // 195 -> 197: two more scenes that read the night (a door heard, an empty
+    // bed), sharing one detection rate with the first — see `noticed()` in
+    // js/tr/castle/alibi.js. Three scenes reading one fact rather than one
+    // scene weighted three times as heavily, because the heavy version crowded
+    // the castle and pushed an unrelated romance branch under the variety
+    // floor.
+    // 197 -> 201: four solo-only scenes for `journey-out`, and the count moved
+    // because a MEASUREMENT asked rather than because 200 is a round number.
+    // Mean events eligible facing ONE draw, 20 seasons: journey-out 1.33 with
+    // 28.5% of its draws barren — the worst in the pool, and the reason the
+    // window delivered 2.78 scenes an episode out of a phase budgeted 5-8.
+    // Twenty events fire in `journey-out` and two of them took a solo actor,
+    // while the composer convenes one person about 40% of the time.
+    expect(EVENTS.length).toBe(201);
     // 71 -> 73 (TASK 7 STAGE 6), and both are named rather than counted:
     // `susp-misread-tell` and `susp-defensive-overcorrect`. Each was rewritten
     // from a single branch onto `arcContinue`, so each can now genuinely
@@ -620,7 +637,9 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // 101 -> 106: all five carry-on events advance a thread, which is the
     // whole reason they exist — each one refuses to fire without a story to
     // continue, so unlike an ordinary event none of them can open one.
-    expect(EVENTS.filter(e => e.advancesThread).length).toBe(106);
+    // 106 -> 109: the last three carry-on events, same as the five before
+    // them — they exist only to continue a story and cannot open one.
+    expect(EVENTS.filter(e => e.advancesThread).length).toBe(117);
     // Pinned alongside, because Task 2 proved the two are NOT the same thing:
     // citing residue needs no flag, so eleven events cite without declaring.
     // 63 -> 64: exactly one of the four new journey-out events declares it.
@@ -633,7 +652,10 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // CONTINUE a story, they go through `arcContinue`, and a continuation
     // that does not say what it is continuing is the disconnected-vignette
     // shape they were written against. The day tab is the payload.
-    expect(EVENTS.filter(e => e.citesResidue).length).toBe(69);
+    // 69 -> 72: all three cite residue for the same structural reason as the
+    // five before them — a continuation that does not say what it continues
+    // is the disconnected-vignette shape they exist against.
+    expect(EVENTS.filter(e => e.citesResidue).length).toBe(72);
   });
 
   it('45 non-empty family x window cells: 18 with no advancer, 17 with one, 10 with two or more', () => {
@@ -690,7 +712,7 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // fewer places where the castle can start something it can never pick up
     // again — which is the number on this line that actually means something.
     expect(zero, 'cells with NO event that can advance a thread — a thread opened here '
-      + 'can never be continued here, whatever either continuation lever is set to').toBe(6);
+      + 'can never be continued here, whatever either continuation lever is set to').toBe(3);
     // 17 -> 20 on 2026-09-05: the same three cells that left `zero` above
     // arrived here, because one advancer is what they gained. The two
     // numbers move together by construction and it is worth reading them
@@ -719,7 +741,18 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       // with ONE advancer can continue a thread at most once every five
       // rounds; a second event in each of those five is what would move them
       // on, and is not written.
-      + 'living here can be advanced at most once every five rounds').toBe(23);
+      // 26 -> 22 (THE CONFRONTATION BATCH, 2026-09-06). This one moved the
+      // OTHER WAY, and that is the direction to want. The eight new events
+      // went into windows confrontation already occupied, so no cell left
+      // `zero`; four cells that held a single advancer now hold two, which is
+      // the count that matters against the five-episode pair cooldown — a
+      // thread living in a one-advancer cell can be picked up at most once
+      // every five rounds, and in a two-advancer cell it can alternate.
+      // 23 -> 26: the three cells that left the zero list arrived here. Every
+      // cell a debut season can reach now has AN advancer; none of the new
+      // ones has two, so a thread opened in them is still continuable only
+      // once every five rounds. That is the next thing to move, not this.
+      + 'living here can be advanced at most once every five rounds').toBe(22);
     // 24 -> 26 on 2026-09-05: two more cells reached two advancers when the
     // group events landed, which is the same movement as the `one` count
     // falling above and should be read with it.
@@ -733,7 +766,8 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
     // confrontation family was registered. `none` and `one` are unchanged,
     // which is what says a cell gained an advancer rather than the shape
     // of the grid moving underneath all three numbers.
-    expect(many, 'cells with two or more advancers').toBe(26);
+    // 26 -> 30: the four cells the confrontation batch lifted out of `one`.
+    expect(many, 'cells with two or more advancers').toBe(30);
     // Named, not just counted: a change that swapped one zero cell for another
     // would keep every total above and still be a different game.
     // SEVEN, AND THE SHAPE OF THE LIST IS THE FINDING. Six of them are the
@@ -808,9 +842,6 @@ describe('advancer coverage: the pool shape Plan 5 quotes', () => {
       'callback|dawn',
       'callback|journey-out',
       'callback|morning',
-      'cover|journey-out',
-      'grief|journey-out',
-      'testing|morning',
     ]);
   });
 
@@ -1455,6 +1486,15 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // in `evening`, with seven of the eight families on exactly one — the
 // eligible-event exhaustion this plan measured in `journey-back` and `night`
 // and then fixed in both, leaving this one starved. Zero branches removed.
+// 183 -> 186 AND 770 -> 782 on 2026-09-06, AND THE ZERO-ADVANCER LIST IS NOW
+// THREE, ALL OF THEM `callback`. Those three are not an oversight: that family
+// reads franchise history and fires ZERO in a debut season by design, so an
+// event written for `callback|dawn` cannot be verified by playing one. They
+// wait for a returnee fixture rather than being guessed at.
+//
+// Every cell a debut season can reach now has an event that can continue a
+// story in it. 11 -> 6 -> 3 across two batches.
+//
 // 178 -> 183 AND 750 -> 770 on 2026-09-06, AND THE NUMBER THIS BATCH IS
 // ABOUT IS THE ZERO-ADVANCER COUNT BELOW: 11 -> 6.
 //
@@ -1552,6 +1592,12 @@ describe('THE CLOSER FLOOR: an event that can end a story must actually end one'
 // js/tr/castle/alone.js, three branches each. See the event-count comment
 // above for why they were written and why the advancer/citer counts beside
 // it are deliberately unmoved.
+// 826 -> 842 on 2026-09-07: four solo-only scenes for `journey-out`, four
+// branches each. The window's SOLO draws faced 1.33 eligible events and came
+// up barren 28.5% of the time -- the worst shape in the pool, against
+// `journey-back` pairs at 7.09 and 0.4% -- because twenty events fire there
+// and two of them took one actor. See the header of js/tr/castle/alone.js for
+// the table that chose them.
 const BRANCHES = [
   'after-i-need-you-tomorrow:agreed',
   'after-i-need-you-tomorrow:conditional',
@@ -1661,6 +1707,10 @@ const BRANCHES = [
   'carry-account-again:stopped-telling-it',
   'carry-account-again:the-story-grew',
   'carry-account-again:told-it-the-same',
+  'carry-account-on-the-road:asked-about-it-out-there',
+  'carry-account-on-the-road:let-it-lie-out-there',
+  'carry-account-on-the-road:rehearsed-on-the-walk',
+  'carry-account-on-the-road:somebody-else-was-there',
   'carry-doubt-on-the-road:found-the-hole',
   'carry-doubt-on-the-road:let-it-cool',
   'carry-doubt-on-the-road:tested-it-again',
@@ -1669,10 +1719,18 @@ const BRANCHES = [
   'carry-grief-days-later:shared-it-properly',
   'carry-grief-days-later:still-carrying-it',
   'carry-grief-days-later:turned-it-to-use',
+  'carry-one-short-on-the-road:counted-the-column',
+  'carry-one-short-on-the-road:nobody-said-the-name',
+  'carry-one-short-on-the-road:talked-about-them-walking',
+  'carry-one-short-on-the-road:walking-where-they-walked',
   'carry-the-morning-after:admitted-it-in-daylight',
   'carry-the-morning-after:nothing-changed-in-daylight',
   'carry-the-morning-after:one-of-them-retreated',
   'carry-the-morning-after:somebody-saw',
+  'carry-the-morning-test:answered-too-well',
+  'carry-the-morning-test:nothing-to-read',
+  'carry-the-morning-test:set-it-over-breakfast',
+  'carry-the-morning-test:they-saw-it-coming',
   'carry-the-second-test:failed-it-this-time',
   'carry-the-second-test:passed-it-again',
   'carry-the-second-test:refused-to-play',
@@ -1681,14 +1739,26 @@ const BRANCHES = [
   'confront-about-the-vote:owned-it',
   'confront-about-the-vote:turned-it-on-them',
   'confront-about-the-vote:would-not-answer',
+  'confront-apology-refused:apologised-for-the-wrong-thing',
+  'confront-apology-refused:refused-it',
+  'confront-apology-refused:took-it-badly-and-then-took-it',
+  'confront-apology-refused:used-it',
   'confront-blamed-for-the-mission:blamed-them-back',
   'confront-blamed-for-the-mission:named-the-weak-link',
   'confront-blamed-for-the-mission:nobody-backed-it',
   'confront-blamed-for-the-mission:took-the-blame',
+  'confront-carried-it-home:dropped-it-at-the-gate',
+  'confront-carried-it-home:one-of-them-apologised',
+  'confront-carried-it-home:somebody-else-carried-it',
+  'confront-carried-it-home:still-going-inside',
   'confront-defend-the-accused:drew-fire',
   'confront-defend-the-accused:fell-flat',
   'confront-defend-the-accused:too-late',
   'confront-defend-the-accused:worked',
+  'confront-first-light:caught-them-alone',
+  'confront-first-light:it-turned-into-breakfast',
+  'confront-first-light:not-at-this-hour',
+  'confront-first-light:somebody-walked-in',
   'confront-in-the-corridor:cleared-the-air',
   'confront-in-the-corridor:made-it-worse',
   'confront-in-the-corridor:nobody-heard-it',
@@ -1717,10 +1787,30 @@ const BRANCHES = [
   'confront-the-broken-word:had-a-reason',
   'confront-the-broken-word:said-it-plainly',
   'confront-the-broken-word:threw-it-back',
+  'confront-the-empty-chair:defended-the-room',
+  'confront-the-empty-chair:nobody-said-anything',
+  'confront-the-empty-chair:we-got-it-wrong',
+  'confront-the-empty-chair:you-drove-it',
+  'confront-through-the-door:never-opened-it',
+  'confront-through-the-door:opened-it',
+  'confront-through-the-door:said-the-unsayable',
+  'confront-through-the-door:wrong-door',
   'confront-to-the-face:blew-up',
   'confront-to-the-face:cracked',
   'confront-to-the-face:held',
   'confront-to-the-face:turned',
+  'confront-waited-up:had-it-out',
+  'confront-waited-up:lost-their-nerve',
+  'confront-waited-up:they-were-ready-too',
+  'confront-waited-up:woke-the-corridor',
+  'confront-would-not-walk-with:called-out-for-it',
+  'confront-would-not-walk-with:closed-the-gap',
+  'confront-would-not-walk-with:dragged-others-in',
+  'confront-would-not-walk-with:made-it-obvious',
+  'confront-you-let-them-go:both-admitted-it',
+  'confront-you-let-them-go:said-nothing-at-all',
+  'confront-you-let-them-go:saved-themselves',
+  'confront-you-let-them-go:turned-it-on-the-accuser',
   'cover-alibi-crumbles:abandoned-it',
   'cover-alibi-crumbles:checked-against-somebody',
   'cover-alibi-crumbles:collapses',
@@ -1783,6 +1873,10 @@ const BRANCHES = [
   'cover-swap-story-with-partner:too-identical',
   'cover-swap-story-with-partner:were-together-anyway',
   'cover-swap-story-with-partner:would-not-square-it',
+  'cover-what-you-look-like-walking:managed-the-face',
+  'cover-what-you-look-like-walking:never-thought-about-it',
+  'cover-what-you-look-like-walking:overdid-the-ease',
+  'cover-what-you-look-like-walking:stopped-managing-it',
   'grief-blame-the-room:blamed-room',
   'grief-blame-the-room:blamed-themselves',
   'grief-blame-the-room:named-a-number',
@@ -1791,6 +1885,10 @@ const BRANCHES = [
   'grief-castle-in-view:carried',
   'grief-castle-in-view:talked-past-it',
   'grief-castle-in-view:turned-sharp',
+  'grief-counted-the-mornings:counted-the-mornings',
+  'grief-counted-the-mornings:stopped-counting',
+  'grief-counted-the-mornings:thought-about-the-last-one',
+  'grief-counted-the-mornings:took-the-morning-as-it-came',
   'grief-empty-chair:empty-chair',
   'grief-empty-chair:laid-a-place',
   'grief-empty-chair:moved-it-away',
@@ -2069,6 +2167,10 @@ const BRANCHES = [
   'romance-walked-together:kept-apart-on-purpose',
   'romance-walked-together:the-column-saw-it',
   'romance-walked-together:walked-the-whole-way',
+  'susp-account-of-the-night:accounted-for',
+  'susp-account-of-the-night:could-not-place-them',
+  'susp-account-of-the-night:nobody-saw-anything',
+  'susp-account-of-the-night:two-accounts',
   'susp-alliance-shape-guess:agreed-the-map',
   'susp-alliance-shape-guess:could-not-place-one',
   'susp-alliance-shape-guess:drew-it-alone',
@@ -2101,6 +2203,10 @@ const BRANCHES = [
   'susp-group-pressure-crack:overcorrected',
   'susp-group-pressure-crack:redirects',
   'susp-group-pressure-crack:walked-away',
+  'susp-heard-a-door:heard-it-go',
+  'susp-heard-a-door:passed-it-on',
+  'susp-heard-a-door:slept-through',
+  'susp-heard-a-door:talked-themselves-out',
   'susp-heard-in-the-corridor:caught',
   'susp-heard-in-the-corridor:checked-the-door',
   'susp-heard-in-the-corridor:heard',
@@ -2145,6 +2251,14 @@ const BRANCHES = [
   'susp-said-nothing-about-it:holding-it',
   'susp-said-nothing-about-it:let-it-go',
   'susp-said-nothing-about-it:not-sure-it-counts',
+  'susp-the-empty-castle:did-not-think-about-it',
+  'susp-the-empty-castle:left-it-arranged',
+  'susp-the-empty-castle:thought-about-the-room',
+  'susp-the-empty-castle:worked-out-who-could-double-back',
+  'susp-the-other-bed:never-woke',
+  'susp-the-other-bed:said-it-out-loud',
+  'susp-the-other-bed:the-bed-was-empty',
+  'susp-the-other-bed:they-had-a-reason',
   'susp-the-shape-of-the-column:read-the-order',
   'susp-the-shape-of-the-column:the-gap-in-the-middle',
   'susp-the-shape-of-the-column:the-wrong-pair',
@@ -2169,6 +2283,10 @@ const BRANCHES = [
   'testing-ask-for-alibi-check:got-back-to-them',
   'testing-ask-for-alibi-check:inconsistent',
   'testing-ask-for-alibi-check:nobody-would-say',
+  'testing-carried-a-name-out:changed-it-on-the-road',
+  'testing-carried-a-name-out:let-the-day-decide',
+  'testing-carried-a-name-out:walked-out-decided',
+  'testing-carried-a-name-out:walked-out-with-nothing',
   'testing-cold-read-check:kept-it',
   'testing-cold-read-check:read-it-right',
   'testing-cold-read-check:read-it-wrong',

@@ -489,6 +489,59 @@ describe('a mission grants NOTHING but money', () => {
       .toBeGreaterThan(0);
   });
 
+  it('and the POT hold-out is holding a CASTLE SCENE out, not only a price', () => {
+    // WHY THIS ARM EXISTS: THE GUARD ABOVE WAS RED ON MAIN FOR A MONTH AND
+    // THIS IS THE THING IT WAS RED ABOUT.
+    //
+    // `_setPactPotBlind` was written for the pact's price — the sentence above
+    // says "the price is charged, it just cannot see the money" — and the flag
+    // was private to js/tr/deduction.js, so that is all it blinded. Meanwhile
+    // one castle scene, `grief-what-it-is-all-for` (js/tr/castle/alone.js), is
+    // a person alone in the evening doing the division on the prize, and its
+    // weight read `gs.tr.pot` DIRECTLY. With missions off the pot is 0 all
+    // season, that scene is never eligible, one evening draw lands somewhere
+    // else, and every castle draw after it in the season is a different scene.
+    // The banishment log follows a few episodes later, and the failure reads
+    // like a mission granting somebody immunity when it is a scene about money
+    // needing there to be money.
+    //
+    // The pot now has ONE reader (`potNow`, js/tr/state.js) and the blind is a
+    // property of it, which is the argument `potShare()` was already making in
+    // its own doc comment — the second private copy it warns about turned out
+    // to be this event's weight.
+    //
+    // So: unblind the pot, hold out everything else the guard holds out, and
+    // the arms must diverge. If this goes green, either the scene has stopped
+    // reading the pot — and the hold-out above is holding nothing out — or
+    // something has put every pot reader behind the blind twice.
+    const project = (s) => s.log.map(r =>
+      (r.castleEvents || []).map(e => e.event?.id || '').join(',')).join(String.fromCharCode(10));
+    let on, off;
+    try {
+      _setKnowledgeMissionEnabled(false);
+      _setShieldMissionEnabled(false);
+      _setMissionFalloutEnabled(false);
+      _setBespokeMissionsEnabled(true);
+      _setMissionEffectsEnabled(false);
+      // NOT blinded this time. That is the mutation, and it is the only one.
+      on = seasons(8).map(project);
+      _setMissionsEnabled(false);
+      off = seasons(8).map(project);
+    } finally {
+      _setMissionsEnabled(true);
+      _setKnowledgeMissionEnabled(true);
+      _setShieldMissionEnabled(true);
+      _setMissionFalloutEnabled(true);
+      _setBespokeMissionsEnabled(false);
+      _setMissionEffectsEnabled(true);
+    }
+    const diverged = on.filter((v, i) => v !== off[i]).length;
+    expect(diverged, 'letting the castle see the pot changed no scene across eight '
+      + 'seasons, so the pot hold-out above is holding nothing out and the '
+      + 'equivalence guard is quietly wider than it claims')
+      .toBeGreaterThan(0);
+  });
+
   it('and the FIFTH hold-out is holding something real out: mission conduct', () => {
     // THE ARM THAT MAKES THE FIFTH NARROWING A NARROWING AND NOT A HOLE, the
     // same shape as the Chess, Shield and road-home arms: switch the held-out

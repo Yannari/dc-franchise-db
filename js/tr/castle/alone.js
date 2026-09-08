@@ -46,7 +46,7 @@ import { pStats, pronouns } from '../../players.js';
 import { getBond } from '../../bonds.js';
 import { registerEvent } from '../events.js';
 import { sceneApi } from './effects.js';
-import { peopleLost } from '../state.js';
+import { peopleLost, potNow } from '../state.js';
 
 function pick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
 /**
@@ -233,7 +233,7 @@ const BEFORE_TABLE_LINES = {
     '{a} has been sure three times tonight and unsure four.',
     '{a} had two names and an hour, and used the hour badly.',
     '{a} kept waiting for one more piece and the evening did not provide one.',
-    'Nothing tipped it. {a} went down still holding both.',
+    'Nothing tipped it. {a} went down to the table still torn between two names.',
     '{a} would have taken any excuse to be sure and was not offered one.',
     '{a} went down to the table genuinely not knowing what to write.',
     'Two names, no way to choose between them, and an hour to go.',
@@ -1104,7 +1104,7 @@ const SAID_NOTHING_LINES = {
     'It is not a secret any more. It is a gift {a} has not decided when to give.',
     '{a} has the name of the recipient and is waiting for a corridor rather than a room.',
     'Telling one person makes an ally. Telling two makes a rumour. {a} knows the difference.',
-    '{a} rehearsed how to bring it up so that it sounds like it just occurred to {obj}.',
+    '{a} rehearsed how to share the suspicion so that it sounds like it just occurred to {obj}.',
     '{a} chose somebody who will be grateful rather than somebody who will be useful, and knows that was sentimental.',
     'The whole evening was {a} standing near one person waiting for everybody else to leave.',
     '{a} will tell them tomorrow, on the road, where nobody can hear it.',
@@ -1606,7 +1606,13 @@ registerEvent({
   },
   weight(ctx) {
     if (!soloOnly(ctx)) return 0;
-    return (gs.tr?.pot || 0) > 0 ? 1.4 : 0;
+    // THROUGH `potNow`, NOT OFF `gs.tr.pot` — see that function in
+    // js/tr/state.js. A scene about the prize money needs there to BE prize
+    // money, which is correct; reading it directly meant this weight was the
+    // one pot reader tests/tr-missions.test.js could not blind, and a scene
+    // that exists in one arm and not the other re-rolls every castle draw
+    // after it.
+    return potNow(gs) > 0 ? 1.4 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'grief-what-it-is-all-for');
@@ -2017,6 +2023,428 @@ registerEvent({
         : 'noticed that nobody treats them any differently at all';
     const line = fill(pick(rng, HOW_THEYRE_TREATED_LINES[branch]), a);
     const t = api.openArc('grief', [a], { source: sceneWhy, seed: line });
+    return { branch, actor: a, speaker: a, threadId: t?.id, bondDelta: 0 };
+  },
+});
+
+// ── the road out, on your own: four more, and the measurement that asked
+//    for them ────────────────────────────────────────────────────────────
+//
+// MEASURED OVER 20 SEASONS, mean events ELIGIBLE facing one draw, worst first:
+//
+//     journey-out  solo   1.33   28.5% barren   <- the worst in the pool
+//     evening      solo   2.45   21.7% barren
+//     morning      solo   1.96   19.2% barren
+//     dawn         solo   2.27   19.2% barren
+//     after-table  pair   3.85    4.1% barren
+//     journey-back pair   7.09    0.4% barren
+//
+// A BARREN DRAW IS BUDGET THROWN AWAY. `runWindow` skips it and tries again,
+// and three in a row end the window early — so `journey-out` was delivering
+// 2.78 scenes an episode out of a phase budgeted 5-8 across two windows, the
+// thinnest window in the castle. The cause is not the writing: twenty events
+// fire in `journey-out` and exactly TWO of them accept one actor, while the
+// composer convenes one person about 40% of the time.
+//
+// So these are four more solo-only scenes for the road out, and they were
+// chosen by that table rather than by a target number of events. The rules at
+// the top of this file all still apply — pools of twelve to match the two
+// journey-out scenes already here, arcs OPENED rather than continued, weights
+// at 1.4 alongside them.
+//
+// AND FOUR SUBJECTS THE WALK ACTUALLY OFFERS, not four ways of saying the
+// road is long. The castle stands EMPTY for the afternoon with everybody's
+// things in it; a name decided last night has an hour on the road to survive;
+// the column is one person shorter every morning and somebody is counting; and
+// an open road is the one place in the castle where there is nothing to stand
+// behind while people look at you.
+
+const EMPTY_CASTLE_LINES = {
+  'thought-about-the-room': [
+    '{a} got a mile out and remembered the door to {posAdj} room does not lock.',
+    'Everything {a} owns is in a room the whole castle walks past.',
+    '{a} spent the first mile listing what is in that room and what any of it says about {obj}.',
+    'The building is empty all afternoon. {a} thought about that for longer than {sub} meant to.',
+    '{a} would like to have left the room tidier, and cannot now say why.',
+    'There is nothing in there worth taking. {a} still does not like it.',
+    '{a} thought about the notebook on the windowsill and kept walking.',
+    'An empty castle is a castle anybody can be alone in, and {a} worked that out at the ford.',
+    '{a} has nothing to hide in that room and would still rather nobody looked.',
+    'It is not the things. {a} could not tell you what it is.',
+    '{a} looked back at the building once and thought about who else might.',
+    'Four hours of nobody in the corridors. {a} did the arithmetic on that twice.',
+  ],
+  'left-it-arranged': [
+    '{a} left the door at an angle {sub} would know again, and said nothing about it.',
+    'The book on the table is square to the edge. It was not square to the edge yesterday.',
+    '{a} set two things where a person moving through would move them, and walked out.',
+    'It takes four seconds to leave a room in a shape you can read on the way back.',
+    '{a} has started arranging {posAdj} own room like a trap, which {sub} finds slightly ridiculous.',
+    'Nobody taught {a} to do that. {Sub} worked it out on day three.',
+    '{a} does not expect to catch anybody. {Sub} would like to know if there is anybody to catch.',
+    'The chair is at an angle and the case is under the bed by a hand-width. {a} will check.',
+    '{a} left the room in a way that will answer a question by six o’clock.',
+    'It is a small paranoia and {a} has decided to keep it.',
+    '{a} walked out of that room the way you leave a room you intend to read later.',
+    'A pen across the pages, and out. {a} did not look back at it.',
+  ],
+  'worked-out-who-could-double-back': [
+    '{a} spent the road working out how long it would take somebody to turn round.',
+    'The ford is twenty minutes out. {a} has now thought about that number properly.',
+    '{a} counted who was still at the gate when the column left, and remembered two of them.',
+    'Anybody could be back inside in half an hour, and {a} would like to know who would.',
+    '{a} thought about the walk in reverse and who is fit enough to do it fast.',
+    'It would need a reason and a lie about where you had been. {a} listed both.',
+    '{a} does not think anybody did. {Sub} has worked out how they could.',
+    'Somebody at the back of a long column is somebody nobody is looking at, and {a} noticed that.',
+    '{a} has decided the risk is real and has told nobody, which is its own decision.',
+    'The road out is also the road back, and {a} spent an hour on that sentence.',
+    '{a} worked out that two people could vanish for an hour and be believed.',
+    'By the field {a} had a method. {Sub} did not have a name to attach to it.',
+  ],
+  'did-not-think-about-it': [
+    'It did not occur to {a} once that the castle was standing empty behind {obj}.',
+    '{a} left the door open and thought about lunch.',
+    'The building will be there when {a} gets back and that is the whole of {posAdj} position.',
+    '{a} has never once wondered what is in anybody else’s room, and assumes the reverse.',
+    'There are people out here to think about. {a} would rather do that.',
+    '{a} would be genuinely surprised to learn anybody thinks about this.',
+    'Nothing in that room is worth an afternoon of worrying, and {a} does not spend one.',
+    '{a} walked out without checking anything and will walk back in the same way.',
+    'The room is a room. {a} has a mission in about an hour.',
+    '{a} spent the walk out on the weather and considers that time well used.',
+    'It is possible {a} is right about this. It is also possible {sub} is the only one.',
+    '{a} could not tell you whether {sub} shut the door.',
+  ],
+};
+
+registerEvent({
+  id: 'susp-the-empty-castle',
+  family: 'suspicion',
+  window: 'journey-out',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['intuition', 'strategic', 'mental', 'temperament'],
+    relationship: ['neutral'],
+  },
+  weight(ctx) {
+    if (!soloOnly(ctx)) return 0;
+    // A castle with four people left in it is not a building anybody can get
+    // lost in for an afternoon, and the whole scene is about the size of the
+    // empty space behind you.
+    return (ctx.living || []).length >= 6 ? 1.4 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'susp-the-empty-castle');
+    const a = ctx.actors[0];
+    const st = pStats(a);
+    const scores = {
+      'thought-about-the-room': (st.intuition / 10) * 0.35 + 0.2,
+      'left-it-arranged': (st.strategic / 10) * 0.4 + (st.intuition / 10) * 0.2,
+      'worked-out-who-could-double-back': (st.mental / 10) * 0.35 + (st.strategic / 10) * 0.25,
+      'did-not-think-about-it': (st.temperament / 10) * 0.3 + (1 - st.strategic / 10) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'thought-about-the-room';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'left-it-arranged' ? 'left their room in a shape they could read later'
+      : branch === 'worked-out-who-could-double-back' ? 'worked out who could turn back for the empty castle'
+      : branch === 'did-not-think-about-it' ? 'walked out without a thought for what was behind them'
+        : 'thought about the room they had left standing open';
+    const line = fill(pick(rng, EMPTY_CASTLE_LINES[branch]), a);
+    const t = api.openArc('suspicion', [a], { source: sceneWhy, seed: line });
+    return { branch, actor: a, speaker: a, threadId: t?.id, bondDelta: 0 };
+  },
+});
+
+const CARRIED_NAME_LINES = {
+  'walked-out-decided': [
+    '{a} walked out of that gate with a name already written and an hour to test it.',
+    'It was decided before breakfast. The road is just where {a} checks the working.',
+    '{a} has a name for tonight and spent the walk looking for a reason to keep it.',
+    'The decision was made in the dark and it survived the daylight, which is the test that matters.',
+    '{a} carried a name out and carried the same one back, unchanged.',
+    'Nothing about the morning moved {a} off it, and {sub} was watching for something that would.',
+    '{a} walked out settled, which is rarer here than it sounds.',
+    'The name did not come up on the road. {a} did not need it to.',
+    '{a} has known since last night and has spent the hour rehearsing not showing it.',
+    'It is easier to walk when you have already decided, and {a} walked easily.',
+    '{a} spent the road building the sentence rather than choosing the name.',
+    'By the field {a} was no longer deciding. {Sub} was preparing.',
+  ],
+  'changed-it-on-the-road': [
+    '{a} left the castle sure and arrived at the field sure of somebody else.',
+    'It took two miles and one thing {a} could not stop looking at.',
+    '{a} changed {posAdj} mind out there and has not told anybody either version.',
+    'The name {a} walked out with is not the name {sub} is carrying now.',
+    'Something in the way the column arranged itself did it, and {a} could not say what.',
+    '{a} argued {ref} out of it on the road and has decided the second answer is the honest one.',
+    'A decision made at midnight does not always survive a field at nine, and this one did not.',
+    '{a} spent an hour dismantling last night’s certainty and rebuilding it round a different person.',
+    'Nobody said anything to {a} out there. {Sub} still came back with a different name.',
+    'It moved once on the road and {a} is now braced for it to move again.',
+    '{a} would rather be right late than wrong early, and swapped it at the ford.',
+    'The old name is not gone. It is behind the new one, waiting.',
+  ],
+  'walked-out-with-nothing': [
+    '{a} has no name for tonight and is not pretending otherwise.',
+    'The road out is where people arrive at a decision. {a} arrived at the field.',
+    '{a} spent the hour hoping somebody would say something that made it obvious.',
+    'It is genuinely open. {a} finds that more uncomfortable than any particular answer.',
+    '{a} could argue for four of them and has committed to none.',
+    'There is a version of this where {a} decides on the walk back instead, and {sub} is counting on it.',
+    '{a} walked out with an empty page and did not enjoy the hour.',
+    'Everybody around {a} looked like they had already worked something out. {Sub} had not.',
+    '{a} has stopped trying to force it and is waiting for the day to hand {obj} something.',
+    'Nothing about anybody has moved far enough for {a} to write a name against it.',
+    '{a} spent the road out being honest with {ref} about how little {sub} has.',
+    'No name, no theory, and a table in nine hours.',
+  ],
+  'let-the-day-decide': [
+    '{a} has decided not to decide until the mission has happened, which is a decision.',
+    'The afternoon will show {a} something. It usually does.',
+    '{a} walked out deliberately empty-handed and calls it patience.',
+    'There is no point choosing before the day has run, and {a} has stopped doing it.',
+    '{a} would rather be moved by something real than by something {sub} thought at three in the morning.',
+    'The mission is four hours long. {a} intends to spend all four of them watching.',
+    '{a} has learned that a name chosen at breakfast is a name chosen with no evidence.',
+    'It is the calmest way to walk to a mission and {a} arrived at it the hard way.',
+    '{a} left the question open on purpose and is comfortable carrying it.',
+    'Somebody will do something today. {a} will write the name after that.',
+    '{a} spent the road not thinking about tonight, which took some doing.',
+    'The day gets a vote before {a} does. That is the rule {sub} is running on.',
+  ],
+};
+
+registerEvent({
+  id: 'testing-carried-a-name-out',
+  family: 'testing',
+  window: 'journey-out',
+  variationAxes: {
+    outcome: ['accepted', 'ambiguous', 'rejected'],
+    voice: ['strategic', 'intuition', 'temperament', 'loyalty'],
+    relationship: ['neutral'],
+  },
+  weight(ctx) {
+    if (!soloOnly(ctx)) return 0;
+    // Nothing to carry out on the first morning: there has been no table.
+    return ctx.ep >= 2 ? 1.4 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'testing-carried-a-name-out');
+    const a = ctx.actors[0];
+    const st = pStats(a);
+    const scores = {
+      'walked-out-decided': (st.strategic / 10) * 0.4 + (st.boldness / 10) * 0.2,
+      'changed-it-on-the-road': (st.intuition / 10) * 0.4 + (1 - st.temperament / 10) * 0.2,
+      'walked-out-with-nothing': (1 - st.strategic / 10) * 0.35 + 0.15,
+      'let-the-day-decide': (st.temperament / 10) * 0.35 + (st.loyalty / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'walked-out-with-nothing';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'walked-out-decided' ? 'walked out of the gate with tonight already decided'
+      : branch === 'changed-it-on-the-road' ? 'changed their mind about tonight somewhere on the road'
+      : branch === 'let-the-day-decide' ? 'left tonight open until the day had run'
+        : 'walked out with no name for tonight at all';
+    const line = fill(pick(rng, CARRIED_NAME_LINES[branch]), a);
+    const t = api.openArc('testing', [a], { source: sceneWhy, seed: line });
+    return { branch, actor: a, speaker: a, threadId: t?.id, bondDelta: 0 };
+  },
+});
+
+const MORNINGS_LINES = {
+  'counted-the-mornings': [
+    '{a} did the arithmetic on the road: two go every day, and there are not many days left.',
+    'The column was fourteen on the first morning. {a} knows exactly what it is now.',
+    '{a} worked out how many more of these walks there can be, and the number was small.',
+    'It is a shorter road every morning because there are fewer people on it, and {a} has started counting.',
+    '{a} counted the column twice and got the same answer both times.',
+    'Two a day. {a} has known that since the start and only did the division this morning.',
+    '{a} put a number on how many mornings are left and has not enjoyed carrying it.',
+    'There is a last one of these and {a} can now say roughly when it is.',
+    '{a} spent the walk out on subtraction.',
+    'The gate looked the same. The number going through it did not, and {a} noticed.',
+    '{a} has been keeping the count since the third day and has not told anybody.',
+    'Nine walked out this morning. {a} remembers when it took twice as long to leave.',
+  ],
+  'stopped-counting': [
+    '{a} used to count them and has stopped, which took a decision.',
+    'The number does not help. {a} worked that out and put it down.',
+    '{a} knows the column is shorter and has chosen not to know by how much.',
+    'It is a walk. {a} has decided to let it be a walk.',
+    '{a} caught {ref} counting at the gate and deliberately lost the number.',
+    'There is nothing at the end of that arithmetic worth having, and {a} arrived there early.',
+    '{a} would rather do the morning than measure it.',
+    'Counting the mornings is a way of not being in one, and {a} has stopped.',
+    '{a} let the column be whatever size it was and looked at the hedges instead.',
+    'The maths was making {a} worse at the game. {Sub} dropped it.',
+    '{a} does not know how many are left and is not going to find out this morning.',
+    'It used to be the first thing {a} did at the gate. It is not any more.',
+  ],
+  'thought-about-the-last-one': [
+    '{a} thought about the last of these walks and who will be on it.',
+    'There is a morning at the end of this with two people on the road, and {a} has pictured it.',
+    '{a} spent a mile deciding whether {sub} wants to be there for that.',
+    'The final walk out is short and quiet, and {a} has been imagining it since the ford.',
+    '{a} tried to put names on the last column and could only manage one.',
+    'It is a strange thing to look forward to and {a} looked forward to it anyway.',
+    '{a} would like to make it that far and is not sure {sub} would like what {sub} had to do.',
+    'The end of this road has a shape and {a} has started seeing it from here.',
+    '{a} thought about who {sub} would want beside {obj} on the last morning, and it was not a strategic answer.',
+    'Somewhere out there is a morning where nobody is walking behind {a}.',
+    '{a} spent the hour at the end of the season rather than in this bit of it.',
+    'There is one more of these walks that matters and {a} has been rehearsing it.',
+  ],
+  'took-the-morning-as-it-came': [
+    '{a} was not counting anything. It was a good morning and {sub} was out in it.',
+    'The road is the road. {a} walked it.',
+    '{a} spent the hour on the hedges, the weather and nothing whatever.',
+    'There will be a last one of these. {a} declines to spend this one on it.',
+    '{a} has decided the walk out is the best part of the day and treats it that way.',
+    'Nothing about the column struck {a} as meaning anything this morning.',
+    '{a} arrived at the field having thought about almost nothing, and felt better for it.',
+    'It is an hour outdoors in a week with very few of those, and {a} took it as one.',
+    '{a} noticed the frost and did not notice the headcount.',
+    'The game starts when they get there. {a} has decided the road is not the game.',
+    '{a} let the morning be a morning, which is harder here than it sounds.',
+    'Somebody behind {a} was counting. {Sub} was looking at birds.',
+  ],
+};
+
+registerEvent({
+  id: 'grief-counted-the-mornings',
+  family: 'grief',
+  window: 'journey-out',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected'],
+    voice: ['mental', 'temperament', 'loyalty', 'boldness'],
+    relationship: ['neutral'],
+  },
+  weight(ctx) {
+    if (!soloOnly(ctx)) return 0;
+    // The column has to have got visibly shorter for any of this to be true.
+    return peopleLost(gs) >= 2 ? 1.4 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'grief-counted-the-mornings');
+    const a = ctx.actors[0];
+    const st = pStats(a);
+    const scores = {
+      'counted-the-mornings': (st.mental / 10) * 0.4 + (st.strategic / 10) * 0.15,
+      'stopped-counting': (st.temperament / 10) * 0.35 + 0.15,
+      'thought-about-the-last-one': (st.loyalty / 10) * 0.3 + (1 - st.temperament / 10) * 0.25,
+      'took-the-morning-as-it-came': (st.boldness / 10) * 0.25 + (st.temperament / 10) * 0.25,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'counted-the-mornings';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'counted-the-mornings' ? 'did the arithmetic on how many mornings are left'
+      : branch === 'stopped-counting' ? 'stopped counting the column on purpose'
+      : branch === 'thought-about-the-last-one' ? 'spent the road thinking about the last walk out'
+        : 'let the morning be a morning';
+    const line = fill(pick(rng, MORNINGS_LINES[branch]), a);
+    const t = api.openArc('grief', [a], { source: sceneWhy, seed: line });
+    return { branch, actor: a, speaker: a, threadId: t?.id, bondDelta: 0 };
+  },
+});
+
+const OPEN_ROAD_LINES = {
+  'managed-the-face': [
+    'There is nothing to stand behind on an open road, and {a} spent the hour aware of it.',
+    '{a} walked out there arranging {posAdj} face for anybody who happened to look round.',
+    'It is an hour of being visible from every angle and {a} treated it as work.',
+    '{a} has an expression for the road out now and puts it on at the gate.',
+    'Nobody was watching {a} particularly. {Sub} performed anyway, in case.',
+    '{a} kept {posAdj} shoulders down and {posAdj} pace even, and thought about both the whole way.',
+    'A corridor gives you doorways. A field gives you nothing, and {a} noticed the difference.',
+    '{a} laughed at the right moment twice, having watched for the right moment.',
+    'It is exhausting to be looked at for an hour and {a} would not admit that to anybody.',
+    '{a} caught {ref} checking how {sub} was standing, and corrected it.',
+    'The walk out is the longest anybody sees {a} without a wall nearby, and {sub} knows it.',
+    '{a} arrived at the field tired in a way the walk does not explain.',
+  ],
+  'stopped-managing-it': [
+    'Somewhere on that road {a} stopped arranging {ref} and just walked.',
+    '{a} has decided it is too long an hour to spend performing.',
+    'The face came off at the ford and {a} did not put it back on.',
+    'It is a relief to be unwatched-looking for a mile, and {a} took the mile.',
+    '{a} let {ref} be exactly as tired as {sub} is.',
+    'Anybody looking at {a} out there got the real thing, and {sub} decided that was fine.',
+    '{a} was too tired to hold anything up and found the road easier for it.',
+    'There is a point where managing it costs more than being read does. {a} passed it.',
+    '{a} walked out honest and is only mildly worried about what that showed.',
+    'The performance is for the table. {a} has stopped bringing it outdoors.',
+    '{a} stopped watching {ref} at about the second field.',
+    'It was the first hour this week {a} spent not being anybody in particular.',
+  ],
+  'overdid-the-ease': [
+    '{a} was cheerful out there in a way nobody is cheerful at that hour.',
+    'It came out too big. {a} heard it happen and could not stop it happening.',
+    '{a} told a story to nobody in particular and it landed on nobody in particular.',
+    'The laugh was a half-second too long and {a} has been thinking about it since.',
+    '{a} filled a silence that did not need filling and then filled the next one.',
+    'Trying not to look like anything is its own look, and {a} wore it the whole way.',
+    '{a} was so relaxed out there that somebody behind {obj} noticed how relaxed {sub} was.',
+    'It is hard to walk normally once you have started thinking about walking normally.',
+    '{a} overexplained something nobody had asked about, twice, on an open road.',
+    'Somebody glanced at {a} and {sub} answered a question that had not been asked.',
+    '{a} came out of that hour fairly sure {sub} had made it worse.',
+    'The effort showed, which is the one thing the effort was for stopping.',
+  ],
+  'never-thought-about-it': [
+    'It has not occurred to {a} that anybody looks at {obj} on that road.',
+    '{a} walked out exactly as {sub} walks anywhere.',
+    'There is no performance in it. There has never been a performance in it.',
+    '{a} would be baffled to hear that anybody spends the hour managing their face.',
+    'The road is for getting to the mission and {a} has no second use for it.',
+    '{a} spent the walk hungry and thinking about being hungry.',
+    'Nobody has ever accused {a} of arranging {ref}, and nobody could.',
+    'It is a walk to work. {a} treats it as one.',
+    '{a} has no idea what {sub} looked like out there and has never wondered.',
+    'Whatever the column read off {a} this morning, {sub} did not put it there deliberately.',
+    '{a} is the same on the road as at the table, which is either a strength or the whole problem.',
+    'The thought has not crossed {a}’s mind in nine days.',
+  ],
+};
+
+registerEvent({
+  id: 'cover-what-you-look-like-walking',
+  family: 'cover',
+  window: 'journey-out',
+  variationAxes: {
+    outcome: ['ambiguous', 'accepted', 'rejected', 'backfire'],
+    voice: ['social', 'temperament', 'strategic', 'boldness'],
+    relationship: ['neutral'],
+  },
+  weight(ctx) {
+    if (!soloOnly(ctx)) return 0;
+    // Being looked at needs a column to be looked at by.
+    return (ctx.living || []).length >= 5 ? 1.4 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'cover-what-you-look-like-walking');
+    const a = ctx.actors[0];
+    const st = pStats(a);
+    const scores = {
+      'managed-the-face': (st.social / 10) * 0.35 + (st.strategic / 10) * 0.25,
+      'stopped-managing-it': (st.temperament / 10) * 0.4 + 0.1,
+      'overdid-the-ease': (1 - st.social / 10) * 0.3 + (st.boldness / 10) * 0.2,
+      'never-thought-about-it': (1 - st.strategic / 10) * 0.3 + (st.temperament / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((acc, k) => acc + Math.max(0, scores[k]), 0);
+    let roll = rng() * total, branch = 'never-thought-about-it';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'managed-the-face' ? 'spent the open road arranging how they looked'
+      : branch === 'stopped-managing-it' ? 'stopped performing somewhere on the road out'
+      : branch === 'overdid-the-ease' ? 'was a shade too relaxed on an open road'
+        : 'walked out without a thought for who was looking';
+    const line = fill(pick(rng, OPEN_ROAD_LINES[branch]), a);
+    const t = api.openArc('cover', [a], { source: sceneWhy, seed: line });
     return { branch, actor: a, speaker: a, threadId: t?.id, bondDelta: 0 };
   },
 });

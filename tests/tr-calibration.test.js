@@ -1511,6 +1511,10 @@ describe('the castle, measured over many seasons', () => {
   // rate this file cannot measure to better than +/-3pp.
   it('THE PACT BREAKS LATE AND NEVER EARLY, over the decisions themselves', () => {
     const big = { n: 0, b: 0 }, mandated = { n: 0, b: 0 }, endgame = { n: 0, b: 0 };
+    // THE FULL CASTLE, SPLIT BY WHETHER THE ROOM HAD ALREADY CONVICTED A
+    // FELLOW. See the re-derivation on the band below for why the pooled
+    // number stopped being the right question.
+    const bigBurned = { n: 0, b: 0 }, bigQuiet = { n: 0, b: 0 };
     const restore = _setPactWatch(d => {
       // No choice was on offer unless there was a fellow AND a non-fellow.
       if (!d.fellows.length || d.fellows.length >= d.pool.length) return;
@@ -1519,6 +1523,11 @@ describe('the castle, measured over many seasons', () => {
       if (!bucket) return;
       bucket.n++;
       if (d.betrayed) bucket.b++;
+      if (bucket === big) {
+        const sub = (d.burn || 0) > 0 ? bigBurned : bigQuiet;
+        sub.n++;
+        if (d.betrayed) sub.b++;
+      }
     });
     // 300 SEASONS FOR THIS ARM, NOT THE FILE'S 200, and the reason is a
     // design change rather than flakiness. The fire now stops at two rather
@@ -1537,6 +1546,8 @@ describe('the castle, measured over many seasons', () => {
     try { run(300); } finally { restore(); }
 
     const pct = (x) => (x.b / x.n * 100).toFixed(2);
+    console.log(`pact: full castle burned ${bigBurned.b}/${bigBurned.n}`
+      + ` quiet ${bigQuiet.b}/${bigQuiet.n}`);
     console.log(`pact: full castle (10+ living) ${big.b}/${big.n} betrayals`
       + ` = ${pct(big)}%; late MANDATED (<=6 living) ${mandated.b}/${mandated.n}`
       + ` = ${pct(mandated)}%; ENDGAME (<=6 living) ${endgame.b}/${endgame.n}`
@@ -1562,12 +1573,54 @@ describe('the castle, measured over many seasons', () => {
     expect(endgame.n, 'no endgame table ever put the question to a Traitor with a fellow '
       + 'opposite — the endgame arm is vacuous').toBeGreaterThan(150);
 
-    // Early: the pact is not for sale while there is a castle full of people
-    // to spend instead. Measured 0/2,770 here and 0/16,385 at 1,200 seasons;
-    // the band is written as a rate rather than as zero so that a single freak
-    // room does not go red on something the model does permit in principle.
-    expect(big.b / big.n, 'Traitors are naming each other in a full castle — '
-      + 'the price is not being charged early').toBeLessThan(0.005);
+    // ── RE-DERIVED, AND IT IS A DELIBERATE LOOSENING (2026-09-07) ────
+    //
+    // THIS BAND USED TO BE ONE NUMBER: betrayal in a full castle, under 0.5%,
+    // measured 0/2,770 here and 0/16,385 at 1,200 seasons. It was true because
+    // the engine made it impossible -- `pactReluctance` is quadratic in the
+    // living count, so a full castle priced the pact at 44 against reads worth
+    // 2 -- and it was a fair statement of the format while that was so.
+    //
+    // It is no longer the right question, and the reason came from watching
+    // the show rather than from the code. A twenty-handed table, four people
+    // naming the same Traitor out loud, seven votes landing on her, and both
+    // her fellows wrote somebody else -- which is not a pact holding under
+    // pressure, it is a pact that cannot see the pressure. Traitors can now
+    // join a pile-on the room has already formed on a burned fellow.
+    //
+    // SO THE POOLED NUMBER MEASURES TWO DIFFERENT DECISIONS AND BANDS
+    // NEITHER. "Would you name a fellow" and "would you name a fellow the room
+    // has already convicted" are not the same question. Split, at 150 seasons:
+    //
+    //     facing a burned fellow   86/408   = 21.1%
+    //     no burned fellow         17/1,888 =  0.9%
+    //     pooled                  103/2,296 =  4.5%
+    //
+    // The quiet arm is what this band was always protecting -- the pact is not
+    // for sale while there is a castle full of people to spend instead -- and
+    // it still holds at 0.9%. The burned arm is the new behaviour, and a floor
+    // under it is what stops the price quietly going back up: this arm would
+    // have failed at zero on the engine that produced the table above.
+    //
+    // AND THE PRICE IS STILL THE BINDING CONSTRAINT ON HOW FAR THIS GOES.
+    // `PACT_BURNED_COST` was 0.35 for one afternoon and the burned arm reached
+    // 63%; the BOARD PRECISION arm above then read 1.26x against a placebo at
+    // 1.40x -- the room's reads were worse than noise, because a Traitor who
+    // joins a pile-on buys real cover (measured: mean suspicion 0.478 against
+    // 0.730 for one who does not) and the castle was drowning in it. A room
+    // that cannot read anybody is not a better show than a pact that never
+    // breaks. 1.0 is where both hold.
+    expect(bigQuiet.n, 'no full-castle decision was taken with a quiet pact — '
+      + 'the arm that protects the price is vacuous').toBeGreaterThan(1000);
+    expect(bigQuiet.b / bigQuiet.n, 'Traitors are naming each other in a full castle '
+      + 'with nobody burned — the price is not being charged early')
+      .toBeLessThan(0.02);
+    expect(bigBurned.n, 'the room never convicted a fellow in a full castle — '
+      + 'the burned arm is vacuous').toBeGreaterThan(150);
+    expect(bigBurned.b / bigBurned.n, 'a fellow the whole room has named out loud is '
+      + 'still untouchable in a full castle — the burn discount is not reaching '
+      + 'the big rooms, which is the shape that made this band wrong')
+      .toBeGreaterThan(0.08);
 
     // LATE AND MANDATED. Task 6's own population, and the one the original
     // band was cut against. 11.41% here, 20.23% at 1,200; the floor is a

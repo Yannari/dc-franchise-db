@@ -23,7 +23,8 @@ import { selectTraitors, recordAlignment, livingTraitors, livingFaithfuls,
 import { traitorsRoundBallots, traitorsBeliefSnapshot, TRAITORS_FORMAT } from './export.js';
 // The show's two exit words, from the registry. Never written as literals.
 import { exitVerbs, roundExits } from '../shows.js';
-import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence } from './deduction.js';
+import { seedTraitorKnowledge, ballotEvidence, murderEvidence, missionEvidence, followerEvidence,
+  alibiEvidence } from './deduction.js';
 import { variantEvidence } from './murder-variants.js';
 import { runRoundTable } from './roundtable.js';
 import { resolveMurder } from './murder.js';
@@ -45,7 +46,7 @@ import { runEndgame } from './endgame.js';
 import { runArmoury, armouryBlockEvidence } from './armoury.js';
 import { computeAlliances } from './alliances.js';
 import { initCrowd, scoreNight, scoreRecruitment, scoreTable, scoreMission,
-  scoreEndgame } from './crowd.js';
+  scoreEndgame, scoreStories, crowdSnapshot } from './crowd.js';
 
 // TASK 6 WIRING DECISION: the castle event pool is now live in every real
 // season. Side-effect imports only — nothing here is called directly; each
@@ -87,6 +88,7 @@ import '../tr/castle/group.js';
 // ten of the eleven (family x window) cells with no advancer at all are in
 // those two columns. These five refuse to fire without a story to continue.
 import '../tr/castle/carry-on.js';
+import '../tr/castle/alibi.js';
 // The morning nobody was taken. Every other dawn scene in the pool needs a
 // body; a blocked night has none, and had no scene at all.
 import '../tr/castle/quiet-night.js';
@@ -318,7 +320,10 @@ function _night(ep, rng) {
       // and the reason refusal is fatal there: they have seen the only face.
       const offer = offerRecruitment(pick.target, ep, rng,
         { mode: livingTraitors(ep).length === 1 ? 'ultimatum' : 'note', recruiter: pick.recruiter });
-      const recruited = { ...offer, target: pick.target };
+      // WHY THIS PERSON, carried onto the record so the screen can say it.
+      // `chooseRecruit` computes it and used to drop it on the floor.
+      const recruited = { ...offer, target: pick.target,
+        reason: pick.reason || null, reasonTerms: pick.terms || null };
       scoreRecruitment(ep, recruited);
       if (last) { last.recruitment = recruited; if (offer.executed) last.executed = offer.executed; }
       // A refused ultimatum kills. It is not a `murdered` — see the note on
@@ -573,6 +578,13 @@ function _tableRecord(ep, { endgame = false } = {}) {
     speeches: (round.speeches || []).map(s => ({
       speaker: s.speaker, target: s.target,
       sources: (s.sources || []).map(src => ({ ...src })),
+      // WHY THIS NAME, when `sources` is empty -- which it is for better than
+      // a quarter of them. See `_reasonFor` in js/tr/roundtable.js. Public on
+      // every layer: `hearsay` names somebody who accused OUT LOUD at this
+      // table, and the other three kinds describe the ABSENCE of a record
+      // rather than any record's contents.
+      reasonKind: s.reasonKind || ((s.sources || []).length ? 'cited' : 'feeling'),
+      hearsayFrom: s.hearsayFrom || null,
       swayed: [...(s.swayed || [])], mindChanges: [...(s.mindChanges || [])] })),
     chosen: round.banished || null,
     dagger: round.dagger ? { ...round.dagger } : null,
@@ -892,6 +904,10 @@ function _recruitmentRecord(night) {
     // verb, so the screen takes the word from the registry like everything
     // else and never writes one.
     executed: r.executed || null,
+    // WHY THIS PERSON. `chooseRecruit` computes it and this projection is the
+    // only path onto `ep.tr`, so a field missing HERE is a field the screen
+    // can never see however faithfully the rest of the chain carries it.
+    reason: r.reason || null,
   };
 }
 
@@ -1301,7 +1317,35 @@ function _castleRecord(ep, fired) {
       && isLastTonight;
     const voices = sceneSpeakers(f.event, c);
 
+    // ── WHAT KIND OF READ THIS IS, when it is a read at all ────────────
+    //
+    // A Faithful wondering about somebody is asking whether they are a
+    // Traitor. A TRAITOR wondering about somebody cannot be asking that: the
+    // turret showed them the whole pact, so they know by elimination that
+    // everybody outside it is innocent. What a Traitor watches a Faithful for
+    // is whether that Faithful is getting close to THEM — a threat read, not
+    // a guilt read, and the two want opposite words on the card.
+    //
+    // `null` on every scene that is not a suspicion read, so the screen's
+    // existing behaviour is unchanged wherever this does not apply. See the
+    // note on `_view` in js/vp-tr/castle-day.js for why this is stripped for
+    // every observer but the audience and the doubter.
+    const _doubter = voices?.speaker ?? (f.actors || [])[0] ?? null;
+    const _subject = (c && c.topic) || voices?.respondent || null;
+    let readKind = null;
+    if ((f.event.family || t.kind) === 'suspicion' && _doubter && _subject
+      && _doubter !== _subject) {
+      const dIsTraitor = alignmentAt(_doubter, ep) === 'traitor';
+      const sIsTraitor = alignmentAt(_subject, ep) === 'traitor';
+      // A Traitor reading a FELLOW is not a read at all — they were introduced
+      // in the turret. `pact` tells the screen to draw nothing rather than to
+      // draw the wrong thing.
+      readKind = !dIsTraitor ? 'guilt' : (sIsTraitor ? 'pact' : 'threat');
+    }
+
     scenes.push({
+      readKind,
+      readDoubter: readKind ? _doubter : null,
       window: f.event.window,
       family: f.event.family || t.kind,
       eventId: f.event.id,
@@ -2432,6 +2476,8 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
     // Everything the night's screens read, snapshotted here because `gs` is
     // replaced wholesale by the next season and rebuilt wholesale by a load.
     tr: {
+      // The crowd and the storylines, as they stood at the end of tonight.
+      crowd: crowdSnapshot(ep, gs.activePlayers || []),
       // THE EPISODE NUMBER, ON THE RECORD AS WELL AS ON THE ROW. `num` is the
       // VP's key -- it is what reveal state is stored under and a caller is
       // free to renumber a copy of a row to get a fresh one. Anything that is
@@ -2772,6 +2818,13 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     ...runCastlePhase('breakfast-fallout', ep, castleRng), // dawn
     ...runCastlePhase('morning-life', ep, castleRng),      // morning + journey-out
   ];
+  // EVIDENCE SOURCE 5, after the phase that can produce a finding rather than
+  // inside the array that collects the scenes — it returns beliefs, not
+  // castle events, and splicing it in there would have put its return value
+  // into the episode's scene list. Takes its acceptance rolls off the CASTLE
+  // stream, so it displaces no game draw (the same arrangement missionEvidence
+  // has on the mission stream). See `alibiEvidence` in js/tr/deduction.js.
+  alibiEvidence(ep, castleRng);
   // The mission sits BETWEEN the two journey windows because that is what the
   // journey is: out to the mission, and back from it. Night one has one too —
   // the show does — even though it has no Round Table.
@@ -2947,6 +3000,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // onto the round the table just produced.
     evidence(ep, rng);
     murderEvidence(ep, rng);
+    // EVIDENCE SOURCE 6 — the safe voter. Sits with the others that read the
+    // round that just closed, and before runRoundTable opens a new one, for
+    // the reason stated above: it walks `gs.tr.rounds` and would otherwise
+    // read a round the table is still writing. See `followerEvidence`.
+    followerEvidence(ep, rng);
     // EVIDENCE SOURCE 5 — the SHAPE of last night, spec 7.4. Sits here rather
     // than anywhere else for exactly murderEvidence's reason: it reads the
     // round that just closed and carries the same `round.ep === ep - 1`
@@ -2968,6 +3026,11 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // event may read, so running this phase before or after them changes
     // nothing about what it draws.
     castleEvents.push(...runCastlePhase('morning-life', ep, castleRng)); // morning + journey-out
+    // EVIDENCE SOURCE 5, immediately after the phase that can produce a
+    // finding, and taking its acceptance rolls off the CASTLE stream — so it
+    // displaces no game draw, exactly like missionEvidence on the mission
+    // stream. See `alibiEvidence` in js/tr/deduction.js.
+    alibiEvidence(ep, castleRng);
     const mission = runMission(ep, missionRng);
     const armoury = runArmoury(ep, mission, missionRng);   // see night one
     // Source 4. Same round as the mission it reads, before the table it feeds.
@@ -3062,6 +3125,10 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // bit-identical with the ledgers in place. See js/tr/crowd.js.
     scoreMission(ep, mission);
     scoreTable(ep, r, { bondOf: getBond });
+    // AND THE STORIES THAT ENDED TONIGHT. Scored last because a story can be
+    // closed by anything above it -- a banishment resolves an accusation arc
+    // -- and this reads the threads after all of tonight's closing is done.
+    scoreStories(ep);
     _recordEpisode(ep, { banished: r.banished, night, mission, castle: castleEvents,
       beliefs: beliefsBeforeTable });
     log.push({ ep, banished: r.banished, wasTraitor: r.wasTraitor, ...(night || {}), mission,

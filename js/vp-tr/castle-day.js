@@ -343,7 +343,7 @@ const ESTABLISH_PAIR = {
     'An hour after breakfast, {a} steers {b} towards {loc} and lets the door swing shut.',
     '{a} and {b} end up at {loc} together, with a job between them that neither is really doing.',
     '{a} and {b} pause their chores at {loc} to speak in private.',
-    '{a} joins {b} at {loc} and waits until nobody else is close enough to hear.',
+    '{a} joins {b} at {loc} and waits for the room to empty before saying anything.',
   ],
   'journey-out': [
     '{a} and {b} fall behind the group near {loc} on the walk to the mission.',
@@ -388,7 +388,7 @@ const ESTABLISH_PAIR = {
 /** Nobody else in the room, which is a scene in its own right and not a fault. */
 const ESTABLISH_SOLO = [
   'There is nobody at {loc} but {a}, {when}.',
-  '{a} has {loc} to themselves, {when}, and nobody to perform for.',
+  '{a} is alone at {loc}, {when}, with nobody to perform for.',
   '{when}, {a} stops at {loc} on their own and stays there.',
   'Nobody else is at {loc}. {a} is there alone, {when}.',
   '{a} is at {loc} with the door shut and nobody on the other side of it, {when}.',
@@ -1581,7 +1581,7 @@ const REACT_SINGLE = {
 // for a vote that is coming, that is the only closing beat that is true.
 const FALLBACK_SOLO = {
   smooth: [
-    '{a} says nothing about what {a} worked out and goes down to dinner a step nearer a name.',
+    '{a} keeps it quiet and goes down to dinner closer to identifying a traitor.',
     'Nobody watched {a} work that out, which is the whole value of it.',
     '{a} carries the information downstairs and intends to use it at the right table.',
     'None of that helps {a} tonight. {a} is playing a longer game.',
@@ -1599,7 +1599,7 @@ const FALLBACK_SOLO = {
     'The damage will not show tonight. That is the kind of mistake that arrives late.',
     '{a} lost ground this evening and cannot say exactly where.',
     '{a} thought {a} had a theory forming, but there is a gap in it {a} cannot close.',
-    '{a} goes down to the hall hoping the mistake does not show on {pos} face.',
+    '{a} goes down to the hall hoping the mistake does not show.',
     'The week has got harder for {a} and nobody in the room did it to {a}.',
     '{a} would take that hour back, but there is no taking it back.',
     '{a} is further from a name than {a} was this morning, and further along in the week.',
@@ -1800,12 +1800,12 @@ const CONSEQ_ROAD_COVER = {
 // last victim was murdered) either lasted the whole day out or came apart on it.
 const CONSEQ_ROAD_COVER_BACK = {
   held: [
-    "{a}'s account of {topic} survived a whole day in the open. Nobody out there had a reason to doubt it, and {a} banks the day.",
+    "{a}'s story about {topic} held up all day. Nobody questioned it, and {a} comes home with it intact.",
     'A day of questions, and not one landed on {topic}. {a} comes home with the story intact.',
-    '{a} told the story of {topic} the same way to each person who asked, and none of them blinked.',
+    '{a} told the same story about {topic} to each person who asked, and none of them questioned it.',
   ],
   frayed: [
-    "{a}'s account of {topic} got home, but lost a piece on the road: {a} has a version to remember now that is not quite the one {a} left with.",
+    "{a}'s story about {topic} got home, but it changed on the road: {a} has to remember a different version now than the one {a} left with.",
     'The story of {topic} held, barely. {a} spends the walk in learning which loose end to watch.',
     'One person remembered {topic} differently and {a} had to agree with them. The account is a repair now, not a clean run.',
   ],
@@ -2708,7 +2708,24 @@ function _receiptConsequence(s, subs, tone, key, used) {
     if (seen.has(pair)) continue;
     seen.add(pair);
     if (chip.type === 'suspicion') {
-      const pool = chip.dir > 0 ? [
+      // A TRAITOR IS NOT GETTING MORE SUSPICIOUS, and cannot be. They were
+      // shown the pact in the turret, so they know by elimination that the
+      // person opposite is innocent. What moves for them is how close that
+      // person is getting — which is a different sentence, not a softer one.
+      // `pact` draws nothing at all: a Traitor reading a fellow is two people
+      // who were introduced to each other at midnight.
+      if (s.readKind === 'pact') continue;
+      const pool = s.readKind === 'threat' ? (chip.dir > 0 ? [
+        '{a} is watching {b} more carefully from here.',
+        '{b} is getting closer than {a} would like.',
+        '{a} has started planning around {b}.',
+        '{a} would rather {b} were not paying this much attention.',
+      ] : [
+        '{a} stops worrying about {b} for now.',
+        '{a} decides {b} is looking the wrong way after all.',
+        '{b} is further off it than {a} feared.',
+        '{a} breathes out a little where {b} is concerned.',
+      ]) : chip.dir > 0 ? [
         '{a} is more suspicious of {b} after that.',
         "{b} is higher on {a}'s list tonight.",
         '{a} files {b} under the names worth keeping an eye on.',
@@ -2779,13 +2796,13 @@ function _groundedAction(s, subs) {
     'road-third-name': '{a} brings up {topic} on the walk.',
     'road-suspect-walk': '{other} watches how {topic} behaves on the walk.',
     /* viewer phrase */ 'road-cover': '{a} rehearses what to say about {topic}.',
-    /* viewer phrase */ 'road-cover-back': '{a} checks whether their account of {topic} survived the day.',
+    /* viewer phrase */ 'road-cover-back': '{a} checks whether their story about {topic} still holds up.',
     'road-walk-test': '{other} uses the walk to test {topic}.',
     'suspicion-third': '{a} raises a concern about {topic}.',
     'testing-probe': '{other} checks what {topic} has said and done.',
     /* viewer phrase */ 'cover-deflect': '{a} tries to redirect suspicion toward {topic}.',
     /* viewer phrase */ 'cover-blend': '{a} uses the grief around {topic} to appear Faithful.',
-    /* viewer phrase */ 'cover-account': '{a} reviews their account of {topic}.',
+    /* viewer phrase */ 'cover-account': '{a} reviews their story about {topic}.',
     /* viewer phrase */ 'cover-weight': '{a} considers how to keep hiding {topic}.',
     'grief-loss': '{a} is still reacting to the loss of {topic}.',
     'grief-vigil': '{a} cannot stop thinking about {topic}.',
@@ -4298,6 +4315,23 @@ function _view(ep, observer, segment = null) {
   // ── IMPACT CHIPS: what each scene actually moved, observer-gated ───────
   // Read the episode's receipts once and attach the movements to each scene,
   // gated by the same layer/watcher this view was built for.
+  // ── THE READ LABEL, STRIPPED FOR EVERYBODY IT WOULD TELL SOMETHING ──
+  //
+  // `readKind` is computed in js/tr/headless.js off ground truth: `threat`
+  // means the doubter is a Traitor watching somebody they KNOW is innocent,
+  // `pact` means they are reading a fellow. Either value names the doubter's
+  // alignment to anybody who can see it, so it is exactly as sensitive as the
+  // alignment itself and is dropped for every observer except the two who
+  // already have it — the AUDIENCE, and the DOUBTER, who is that person.
+  //
+  // Same gate the suspicion chip below already applies, and applied here
+  // rather than at each use so a later reader cannot pick the field up
+  // without it.
+  for (const s of scenes) {
+    if (!s.readKind) continue;
+    if (!isAudience && watcher !== s.readDoubter) { s.readKind = null; }
+  }
+
   const _receipts = (ep.tr && Array.isArray(ep.tr.receipts)) ? ep.tr.receipts : [];
   const _epNum = c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0;
   for (const s of scenes) {

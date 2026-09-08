@@ -566,6 +566,14 @@ const NT_CSS = `
 .nt-who-sub{font-family:var(--nt-body);font-style:italic;font-size:15px;
   color:rgba(219,227,238,.55);margin-top:2px}
 
+/* WHY THIS PERSON. Set apart from the beat's own prose by a rule rather than
+   by a box: it is the recruiter's reasoning rather than the narration, and it
+   should read as an aside somebody has leaned in to tell you. */
+.nt-why{margin-top:12px;padding-left:14px;
+  border-left:2px solid rgba(200,69,90,.45);
+  font-family:var(--nt-body);font-style:italic;
+  color:rgba(219,227,238,.72)}
+
 /* THE ANONYMOUS ASKER. A hood with nothing in it -- not a blanked portrait,
    a different drawing, because there is no face to blank. */
 .nt-hood{
@@ -973,12 +981,77 @@ function _view(ep, observer) {
     recruiterKnown: known && !!r.recruiter,
     executed: r.executed || null,
     doors: _verbs(),
+    // WHY THEM, and under the SAME gate as the recruiter's name rather than a
+    // looser one: this is the recruiter's own reasoning, and a target who
+    // never learned who asked has certainly not been told what they were
+    // chosen for. `known` already encodes exactly that.
+    reason: known ? (r.reason || null) : null,
     // The two facts the sticky terms strip states BEFORE the answer is read,
     // because they are the mechanic and the mechanic is not a spoiler.
     anonymous: mode === 'note',
     fatalToRefuse: mode === 'ultimatum',
   };
 }
+
+// ── WHY THIS PERSON, WHICH THE SCREEN COULD NOT SAY ──────────────────
+//
+// The corridor scene drew the approach, the offer, the pause and the answer,
+// and never once said why the recruiter was standing in front of THIS person.
+// It could not: `chooseRecruit` (js/tr/roles.js) returned the decision without
+// any of its reasons, so there was nothing on the record to print. It now
+// reports the term that won, and these are the four it can be.
+//
+// ONE OF THEM IS "NO STRONG REASON", and it is here on purpose. The scoring
+// has a noise term, so some approaches genuinely are a shrug — and a screen
+// that invents a motive for every one of them is worse than a screen with no
+// motive at all, because a viewer cannot tell the invented ones from the real
+// ones. Saying it plainly costs nothing and keeps the other three honest.
+const WHY_LABEL = {
+  heat: 'They were closing in',
+  credibility: 'The room believes them',
+  bond: 'They were already close',
+  influence: 'The room follows them',
+  'no-strong-reason': 'No strong reason',
+};
+const WHY_SUB = {
+  heat: 'turning them beats removing them',
+  credibility: 'a voice worth having upstairs',
+  bond: 'the only door that opens easily',
+  influence: 'they have moved a vote before',
+  'no-strong-reason': 'available, plausible, and there',
+};
+const WHY_THEM = {
+  heat: [
+    '{who} had been circling {asker} for days. Turning {who} is quieter than removing {who}.',
+    'Of everybody in the castle, {who} was the one getting close to {asker} — which is exactly why {who} was asked.',
+    '{asker} did not pick somebody safe. {asker} picked the person who had {asker} in their sights.',
+    'The most dangerous read in the room belonged to {who}, and this is what {asker} decided to do about it.',
+  ],
+  credibility: [
+    'When {who} says something at that table, the room takes it as said. That is worth more upstairs than downstairs.',
+    '{who} is believed. {asker} would rather have that pointed somewhere else entirely.',
+    'It is not friendship and it is not fear — {who} simply carries the room, and a Traitor who carries the room is a problem solved.',
+    '{asker} wanted the voice the castle actually listens to, and it is {who}.',
+  ],
+  bond: [
+    '{asker} went to the one person in the castle {asker} could stand this close to without it looking strange.',
+    'They were already close. {asker} was gambling that close survives finding out.',
+    'Of every door {asker} could have knocked on, this is the one where the conversation had somewhere to start.',
+    '{asker} chose the friend, which is either the safest version of this or the most expensive.',
+  ],
+  influence: [
+    'When {who} puts a name up at that table, the room writes it down. {asker} has been watching that happen.',
+    '{who} has moved a vote in that room more than once, and {asker} would rather that were pointed upstairs.',
+    'It is not that {who} is liked. It is that the table follows {who}, and {asker} has counted the times.',
+    '{asker} did not go looking for a friend. {asker} went looking for the person the room actually follows.',
+  ],
+  'no-strong-reason': [
+    'There was no great plan in it. {who} was available, plausible, and there.',
+    '{asker} needed a name tonight and {who} was the one that came up.',
+    'Nobody in the castle stood out as the obvious choice, so the choice was closer to a shrug than a scheme.',
+    'It was not much of a decision. It was a decision that had to be made by morning.',
+  ],
+};
 
 // ══════════════════════════════════════════════════════════════════════
 // THE BEATS
@@ -1006,6 +1079,10 @@ function _buildBeats(v) {
       + '</div></div></div>'
       + '<p>' + _esc(_fill(_pick(ASKER_KNOWN[v.mode], key + '|asker'),
         { who: v.recruiter })) + '</p>'
+      + (v.reason && WHY_THEM[v.reason]
+        ? '<p class="nt-why">' + _esc(_fill(_pick(WHY_THEM[v.reason], key + '|why'),
+          { who: v.target, asker: v.recruiter })) + '</p>'
+        : '')
     : '<div class="nt-who"><span class="nt-hood">'
       + _icon('cloak', 32, 'rgba(200,69,90,.7)') + '</span>'
       + '<div><div class="nt-who-nm"><em>No name on it</em></div>'
@@ -1122,6 +1199,8 @@ function _terms(state, idx) {
       v.fatalToRefuse ? 'wax' : null, false)
     + _term('The hand', v.recruiterKnown ? _esc(v.recruiter) : 'Not known to you',
       v.recruiterKnown ? null : 'and it never will be', null, !seen.has('asker'))
+    + (v.reason ? _term('Why them', WHY_LABEL[v.reason] || 'Not recorded',
+      WHY_SUB[v.reason] || null, null, !seen.has('asker')) : '')
     + _term('The answer', v.accepted ? 'Yes' : 'No',
       v.accepted ? 'one more chair upstairs' : (v.executed ? 'and it was the last one' : ''),
       v.accepted ? 'wax' : null, !seen.has('answer'))

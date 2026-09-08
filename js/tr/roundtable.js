@@ -23,7 +23,9 @@ import { resolveVotes } from '../voting.js';
 import { learn, believes } from '../knowledge.js';
 import { knowersOf } from './knowledge-flow.js';
 import { alignmentAt } from './roles.js';
-import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade } from './deduction.js';
+import { alignmentFactId, suspicionBoard, chooseBanishmentVote, recordRound, revealCascade,
+  sceneDoubt } from './deduction.js';
+import { addStanding, influenceOf } from './state.js';
 import { exitSpeech } from './exit.js';
 import { lineFor, _lineHash } from './castle/lines.js';
 import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
@@ -41,7 +43,14 @@ import { daggerWeights, daggerDrawnAt, DAGGER_VOTES } from './powers.js';
  */
 export function broadcast(accuser, target, ep, rng = Math.random) {
   const room = (gs.activePlayers || []).filter(n => n !== accuser && n !== target);
-  const pitch = 0.25 + (pStats(accuser).social || 5) / 20;   // 0.25 .. 0.75
+  // HOW LOUD, AND HOW MUCH IT IS WORTH COMING FROM THEM. `social` is how well
+  // they say it; influence is whether the room has reason to take it from this
+  // particular person -- a Faithful who has called two Traitors correctly is
+  // listened to in a way the same sentence from a player who drove out two
+  // Faithfuls is not. Proportional, and centred so somebody with no record
+  // sounds exactly as they always did: 0.75x at the bottom, 1.25x at the top.
+  const standingPitch = 0.75 + influenceOf(gs, accuser, ep) * 0.5;
+  const pitch = (0.25 + (pStats(accuser).social || 5) / 20) * standingPitch;
   const heard = [];
   for (const listener of room) {
     const trust = 0.55 + Math.max(-0.35, Math.min(0.45, getBond(listener, accuser) / 22));
@@ -54,6 +63,76 @@ export function broadcast(accuser, target, ep, rng = Math.random) {
     if (belief) heard.push(listener);
   }
   return heard;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CUTTING A BURNED FELLOW LOOSE
+// ══════════════════════════════════════════════════════════════════════
+//
+// THE MOVE THE FORMAT RUNS ON AND THIS ENGINE COULD NOT MAKE. When the room
+// has already convicted one Traitor, the others' best play is to help bury
+// them: the name is leaving anyway, and being seen to drive out a Traitor is
+// the cheapest cover in the game. Measured over 40 seasons before this
+// existed: a banished Traitor had a mean of 3.38 public accusers on the night
+// they went down, so the information was there, in public, every time -- and
+// the number of times a fellow Traitor joined in was ZERO, because `debate()`
+// filtered the pact out of a Traitor's pool outright.
+//
+// THAT FILTER WAS RIGHT AND IS KEPT. Reading a Traitor's board straight makes
+// the faction stand up on night one and name each other, which is a
+// confession rather than a debate -- their read on a fellow is a `public`
+// turret belief and tops every board. So this is NOT a board read and does
+// not touch the pool. The board still runs over non-pact names only, and the
+// sacrifice is a SEPARATE, deliberate decision taken afterwards: the Traitor
+// is not suspicious of their fellow, they are spending them.
+//
+// AND IT CANNOT FIRE ON NIGHT ONE, structurally rather than by a date check.
+// `burn` is computed from the accusations made SO FAR TONIGHT, and `debate()`
+// fills that list in speaking order -- so a Traitor can only join a pile-on
+// that already exists. Nobody is burned before the room burns them.
+
+/** How much of the room has publicly named `name` tonight, 0..1. */
+function tableBurn(name, accusations, living) {
+  const room = Math.max(1, (living || []).length - 1);
+  const by = {};
+  for (const a of accusations) if (a.target) by[a.target] = (by[a.target] || 0) + 1;
+  const on = by[name] || 0;
+  const top = Math.max(0, ...Object.values(by));
+  // `lead` IS THE ONE THE DECISION USES, and `share` is kept only because the
+  // record prints it. See `tonightsBurn` in js/tr/deduction.js: a share of the
+  // room says the same landslide is weaker in a bigger castle, which is
+  // backwards. What burns you is being the name the room has settled on.
+  return { on, share: on / room, lead: on / Math.max(SACRIFICE_MIN_ACCUSERS, top) };
+}
+/**
+ * Below this nobody is burned enough to be worth spending.
+ *
+ * A COUNT AND NOT A SHARE ANY MORE, for the reason `BURN_FULL_ACCUSERS` in
+ * js/tr/deduction.js gives at length: a share of the room means the same
+ * landslide reads as weaker in a bigger castle, so the 0.15 that let two
+ * accusers qualify in a room of twelve silently demanded three in a room of
+ * eighteen. Two people saying the same name out loud is the same event either
+ * way. The tie-break stays on the count, which is now what `tableBurn` ranks
+ * on as well.
+ */
+const SACRIFICE_MIN_ACCUSERS = 2;
+
+/**
+ * The fellow this Traitor could most plausibly throw to the room, or null.
+ *
+ * PUBLIC INFORMATION ONLY on the burn side -- who has been named out loud at
+ * this table tonight. The pact membership is of course private, but a Traitor
+ * knowing who their fellows are is the one thing they are allowed to know.
+ */
+function burnedFellow(speaker, ep, accusations, living) {
+  let best = null;
+  for (const n of living) {
+    if (n === speaker || alignmentAt(n, ep) !== 'traitor') continue;
+    const b = tableBurn(n, accusations, living);
+    if (b.on < SACRIFICE_MIN_ACCUSERS) continue;
+    if (!best || b.on > best.on) best = { name: n, ...b };
+  }
+  return best;
 }
 
 /** Who speaks, and about whom. The loudest reads in the room get aired. */
@@ -75,7 +154,44 @@ function debate(ep, rng) {
     // Boldness decides who speaks anyway.
     const willSpeak = (top?.score || 0) > 0.12 || rng() < (pStats(speaker).boldness || 5) / 45;
     if (!willSpeak || !top) continue;
-    accusations.push({ accuser: speaker, target: top.name });
+    // ── AND THEN THE OTHER DECISION, taken after the read and never by it.
+    //
+    // A draw is taken for EVERY Traitor who speaks, whether or not a burned
+    // fellow exists, so the rng stream does not depend on the pact's exposure
+    // -- a season where nobody is burned consumes the same numbers as one
+    // where somebody is, and the two stay comparable.
+    let target = top.name;
+    let sacrifice = false;
+    if (alignmentAt(speaker, ep) === 'traitor') {
+      // THE DRAW IS TAKEN EVEN WHERE THE MOVE CANNOT BE MADE, so the endgame
+      // consumes the same stream as it did before this feature existed.
+      const roll = rng();
+      // AND IT CANNOT BE MADE IN THE ENDGAME, which is a design point rather
+      // than a tuning one. The entire payoff is `priceTheAccusers` crediting
+      // somebody who named a player the reveal then confirms as a Traitor --
+      // and the endgame has NO REVEAL (spec §8; `runRoundTable` is called with
+      // `reveal: false` and the pricing is gated on it). There is no cover to
+      // buy at a table where nobody is ever told who was right, so a Traitor
+      // throwing a fellow there is pure loss.
+      //
+      // It also fired far too easily once the room was small: `burnedFellow`
+      // wants two accusers and a 15% share, and in a room of four that is the
+      // same two people. Six endgame liveness floors dropped ~28% before this
+      // gate went in, which is how it was found.
+      const inEndgame = gs.tr?.endgameFrom != null && ep >= gs.tr.endgameFrom;
+      const doomed = inEndgame ? null : burnedFellow(speaker, ep, accusations, living);
+      if (doomed) {
+        // Nerve and calculation both. A bold strategist spends a doomed ally;
+        // a loyal one goes down with them. Scaled by HOW burned they are, so
+        // the move gets easier the more certain the outcome already is.
+        const st = pStats(speaker);
+        const appetite = ((st.strategic || 5) / 10) * 0.6 + ((st.boldness || 5) / 10) * 0.4;
+        const chance = appetite * Math.min(1, doomed.lead)
+          * (1 - (st.loyalty || 5) / 20);
+        if (roll < chance) { target = doomed.name; sacrifice = true; }
+      }
+    }
+    accusations.push({ accuser: speaker, target, ...(sacrifice ? { sacrifice: true } : {}) });
   }
   for (const a of accusations) broadcast(a.accuser, a.target, ep, rng);
   return accusations;
@@ -450,20 +566,180 @@ export function knows(speaker, source, ep) {
 // belongs in the bare-accusation path, not dressed up as a cited claim.
 const _BROADCAST_SOURCE = / at the Round Table$/;
 
-/** The evidence `speaker` may cite against `target`, or [] if none is sayable. */
-function _sourcesFor(speaker, target, ep) {
+// ══════════════════════════════════════════════════════════════════════
+// A REASON CAN STOP BEING ONE
+// ══════════════════════════════════════════════════════════════════════
+//
+// `ballotEvidence` mints "never once voted against X" for a pair who shared
+// many rounds and never named each other — the PAIR SILENCE signal, on the
+// theory that two Traitors protect each other. It is 29.3% of everything the
+// debate cites, the second most common reason in the game.
+//
+// Its whole inferential force is "you are covering for somebody who might be a
+// Traitor". So the night X is revealed, that force resolves — in one of two
+// directions, and the engine noticed neither:
+//
+//   X WAS A FAITHFUL   the premise is dead. Not weaker: DEAD. Never having
+//                      voted for a Faithful is what a Faithful does, and it is
+//                      also what everybody does — one ballot a night across a
+//                      room of fifteen. Measured 49 times over 60 seasons,
+//                      stated with a straight face as though it still meant
+//                      something.
+//   X WAS A TRAITOR    the premise is PROVEN, and the line is the best one
+//                      available at any table in this format: you never once
+//                      voted for a man we now know was a Traitor. Measured 56
+//                      times, delivered as boilerplate.
+//
+// FIXED AT CITATION TIME, NOT AT MINT TIME, because at mint time nobody knows.
+// The reveal is public, so this reads exactly what everybody at the table
+// watched happen and nothing else — and `speechesFrom` writes no belief and
+// takes no draw, so this changes what is SAID and never what is decided. What
+// the belief is WORTH is a separate question, noted below.
+const _PAIR_SILENCE = /^never once voted against (.+)$/;
+
+/** What the room publicly knows about a banished player, or null. */
+function _revealedAs(name) {
+  for (const r of (gs.tr?.rounds || [])) {
+    if (r.banished === name) return r.banishedWasTraitor ? 'traitor' : 'faithful';
+  }
+  return null;
+}
+
+/**
+ * Drop a clue whose premise the season has since killed, and sharpen one it
+ * has proved. Returns null to refuse the clue entirely.
+ */
+function _resolveClue(text) {
+  const m = _PAIR_SILENCE.exec(text || '');
+  if (!m) return text;
+  const verdict = _revealedAs(m[1]);
+  if (verdict === 'faithful') return null;
+  if (verdict === 'traitor') {
+    return `never once voted against ${m[1]}, and ${m[1]} was a Traitor`;
+  }
+  return text;
+}
+
+
+/**
+ * WHY `speaker` IS NAMING `target`, in the speaker's own terms.
+ *
+ * This used to return an array and an EMPTY array meant "no speech" -- the
+ * accusation was dropped on the floor and the screen printed the name with
+ * nothing under it. Measured across 40 seasons that happened to 381 of 1409
+ * accusations, 27%: better than a quarter of the debate was somebody standing
+ * up, saying a name, and offering the room no reason of any kind.
+ *
+ * The fix is NOT to invent evidence. A speaker who cannot cite a record still
+ * has a reason -- it is just a worse one, and saying which worse one it is is
+ * both honest and better television than silence. So every accusation now
+ * comes back with a `kind`, and only one of the five carries sources:
+ *
+ *   cited      a record the speaker holds and may say out loud
+ *   hearsay    the only thing under it is another player's accusation at this
+ *              same table. `from` is who said it first. THIS IS THE ROOM'S
+ *              ECHO and the format runs on it -- printing it as a bare name
+ *              hid the single most interesting thing about the claim.
+ *   public     a fact the whole room already has, so it is nobody's read and
+ *              persuades nobody
+ *   gone-cold  they held something and it has gone false or stale under them
+ *   feeling    no belief at all: a bond, a manner, a week of small things
+ *
+ * Unchanged: what may be CITED. `public` and `hearsay` are still barred from
+ * the citation path for exactly the reasons they always were -- a turret-tier
+ * fact is not a personal read, and "somebody else said so" is a rumour rather
+ * than evidence. They are now NAMED instead of silently dropped.
+ */
+function _reasonFor(speaker, target, ep) {
+  // ── WHY THIS READS THE CLUE LIST AND NOT JUST `source` ──────────────
+  //
+  // `learn` overwrites `belief.source` with whichever clue was STRONGEST, so a
+  // read built out of a whole season of small things could only ever be quoted
+  // as one of them. Measured: 1769 citations across 40 seasons came in 18
+  // shapes and 1378 of them were the SAME TWO ballot phrases, because the
+  // ballot record is the loudest thing the model has and nothing else ever
+  // won the slot. A new channel added the same week ("campaigned to get X
+  // out, and X was a Faithful") reached the screen 5 times in 1769 -- 0.3% --
+  // not because it was rare but because it was quiet.
+  //
+  // `knowledge.js` already keeps the fix and says so in its own comment:
+  // `_recordClue` holds the strongest few DISTINCT reasons per belief,
+  // explicitly so a screen can say "the wrong bell count, AND the
+  // contradiction later, AND defending a revealed Traitor -- a reasoned case
+  // rather than one fact". Nothing in this engine had ever read it.
+  //
+  // DISPLAY ONLY, and that is what makes it safe: `speechesFrom` takes no rng
+  // draw and writes no belief (a season is bit-identical with or without it),
+  // so quoting a quieter clue changes what the card SAYS and never what the
+  // room DOES. The decision still runs off the belief's confidence alone.
+  //
+  // THE SAME GATE APPLIES TO EVERY CLUE, not just to the winning one. A clue
+  // whose provenance is somebody's accusation at the table is hearsay however
+  // it got into the list, so `_BROADCAST_SOURCE` filters the whole list rather
+  // than just `b.source` -- otherwise this would launder exactly the thing the
+  // citation path exists to refuse.
+  // ── WHAT MAKES A REASON WORTH SAYING IS NOT HOW SURE YOU ARE ────────
+  //
+  // `belief.clues` is sorted by CONFIDENCE, which is the right order for
+  // deciding a vote and the wrong one for choosing a sentence. The loudest
+  // clue this model produces is the ballot record, and it is loud because it
+  // is PUBLIC and enormous — everybody's votes, all week — not because it is
+  // telling. Measured: 96.7% of everything the table cited came from it, and
+  // 28.6% was `never once voted against X`, which is true of nearly every pair
+  // in a room where you name one person a night.
+  //
+  // A reason that fits almost everybody is a weak thing to say out loud even
+  // when the belief behind it is strong. So the CITATION order is specificity,
+  // not confidence: a thing that happened to one person on one night goes
+  // first, and the ballot record — which is always available and rarely
+  // surprising — goes last.
+  //
+  // DISPLAY ONLY, AND THAT IS WHY IT IS SAFE. `speechesFrom` writes no belief
+  // and takes no draw; a season is bit-identical with or without it being
+  // called. The vote still runs off confidence alone. This changes which true
+  // thing gets said, never which name gets written.
+  const GENERIC = /^never once voted against|^kept .* in on the night|^wanted .* gone the night/;
+  const specificity = (text) => {
+    if (/could not account for an hour|heard .*'s door|woke to .*'s bed empty/.test(text)) return 0;
+    if (GENERIC.test(text)) return 2;
+    return 1;                              // missions, murders, campaigns
+  };
+  const cite = (b) => {
+    const seen = new Set();
+    const out = [];
+    const pool = [{ source: b.source, sourceType: b.sourceType },
+      ...(Array.isArray(b.clues) ? b.clues : [])];
+    // Stable: equal specificity keeps the confidence order it arrived in.
+    pool.sort((x, y) => specificity(String(x.source || '')) - specificity(String(y.source || '')));
+    for (const c of pool) {
+      const raw = c && c.source;
+      if (typeof raw !== 'string' || !raw.trim()) continue;
+      if (_BROADCAST_SOURCE.test(raw)) continue;
+      // A reason whose premise the season has since killed is not sayable, and
+      // one it has proved should say so. See `_resolveClue`.
+      const text = _resolveClue(raw);
+      if (!text || seen.has(text)) continue;
+      seen.add(text);
+      out.push({ factId: alignmentFactId(target), subject: target,
+        kind: c.sourceType || b.sourceType, text });
+      if (out.length >= 3) break;
+    }
+    return out.length ? out
+      : [{ factId: alignmentFactId(target), subject: target, kind: b.sourceType,
+        text: 'a read they could not fully place' }];
+  };
   const b = believes(speaker, alignmentFactId(target), ep);
-  if (!b) return [];
-  if (b.valence === 'false' || b.valence === 'stale') return [];
-  if (b.sourceType === 'public') return [];
-  if ((b.effectiveConfidence || 0) <= 0) return [];
-  if (typeof b.source === 'string' && _BROADCAST_SOURCE.test(b.source)) return [];
-  return [{
-    factId: alignmentFactId(target),
-    subject: target,
-    kind: b.sourceType,                       // 'deduced' | 'rumor'
-    text: b.source || 'a read they could not fully place',
-  }];
+  if (!b) return { kind: 'feeling', sources: [] };
+  if (b.valence === 'false' || b.valence === 'stale') return { kind: 'gone-cold', sources: [] };
+  if (b.sourceType === 'public') return { kind: 'public', sources: [] };
+  if ((b.effectiveConfidence || 0) <= 0) return { kind: 'feeling', sources: [] };
+  if (typeof b.source === 'string' && _BROADCAST_SOURCE.test(b.source)) {
+    // `broadcast` writes the source as `${accuser} at the Round Table`, so the
+    // name in front of that suffix is who the room caught it from.
+    const from = String(b.source).replace(_BROADCAST_SOURCE, '').trim();
+    return { kind: 'hearsay', sources: [], from: from || null };
+  }
+  return { kind: 'cited', sources: cite(b) };
 }
 
 /**
@@ -482,8 +758,12 @@ export function speechesFrom(accusations, ep) {
   const living = gs.activePlayers || [];
   const speeches = [];
   for (const a of accusations) {
-    const sources = _sourcesFor(a.accuser, a.target, ep);
-    if (!sources.length) continue;
+    // EVERY accusation gets a record now, cited or not -- see `_reasonFor`.
+    // `sources` stays an array and stays empty on the four uncitable kinds, so
+    // every existing reader of `speech.sources` behaves exactly as before and
+    // only a reader that asks for `reasonKind` sees the difference.
+    const reason = _reasonFor(a.accuser, a.target, ep);
+    const sources = reason.sources;
     const room = living.filter(n => n !== a.accuser && n !== a.target);
     const swayed = room.filter(l => {
       const lb = believes(l, alignmentFactId(a.target), ep);
@@ -494,7 +774,8 @@ export function speechesFrom(accusations, ep) {
       const board = suspicionBoard(l, ep, living);
       return board[0] && board[0].name === a.target && board[0].score > 0;
     });
-    speeches.push({ speaker: a.accuser, target: a.target, sources, swayed, mindChanges });
+    speeches.push({ speaker: a.accuser, target: a.target, sources, swayed, mindChanges,
+      reasonKind: reason.kind, hearsayFrom: reason.from || null });
   }
   return speeches;
 }
@@ -599,7 +880,9 @@ export function betrayals(round, ep) {
     if (!b.voted) continue;
     if (alignmentAt(b.voter, ep) !== 'traitor') continue;
     if (alignmentAt(b.voted, ep) !== 'traitor') continue;
-    const pair = `${b.voter} ${b.voted}`;
+    // A separator no name can contain, written as an escape: a literal NUL
+    // in the source makes grep call this file binary.
+    const pair = `${b.voter}\u0000${b.voted}`;
     if (seen.has(pair)) continue;
     seen.add(pair);
     turns.push({ voter: b.voter, target: b.voted, channel: b.channel });
@@ -660,6 +943,142 @@ function _betrayalLine(turn, k, turns, ep) {
  * `banishedWasTraitor` because that is the export shape and the audience is
  * not the room.
  */
+// ══════════════════════════════════════════════════════════════════════
+// BEING RIGHT PAYS, AND BEING WRONG COSTS
+// ══════════════════════════════════════════════════════════════════════
+//
+// Until this existed the table's verdict priced ONE of the four cases.
+// `revealCascade` indicts the people who KEPT a revealed Traitor in (0.5), and
+// stops -- `if (!wasTraitor) return []`, on the grounds that a revealed
+// Faithful tells you the room was wrong rather than who is guilty. True about
+// the room. Not true about the person who DROVE IT, who has just spent the
+// evening being confidently wrong in public, and paid nothing for it.
+//
+//   named the banished, and they were a Traitor    -> the room doubts them less
+//   named the banished, and they were a Faithful   -> a small mark against them
+//   kept the banished in, and they were a Traitor  -> revealCascade, unchanged
+//   kept the banished in, and they were a Faithful -> nothing, correctly
+//
+// AND THIS IS WHY THE SACRIFICE ABOVE PAYS FOR ITSELF, with no special case
+// anywhere: a Traitor who buries a burned fellow gets the first line's credit,
+// because the name they gave the room really was a Traitor. The cover is
+// bought by the same rule that punishes being wrong, which is the whole
+// argument for writing it as a rule instead of as a Traitor power.
+//
+// ── THE MAGNITUDES ARE SMALL ON PURPOSE ───────────────────────────────
+//
+// This is a NEW CHANNEL into the deduction model and the calibrated curve
+// wants near-chance early and sharpening late, so a generous version of this
+// would let the room solve itself by week two off nothing but who shouted.
+// The note on MURDER_WEIGHTS in deduction.js is the standing warning: an
+// earlier channel there priced at 0.48 on a 1.21x lift that a CONTENTLESS
+// control also scored 1.20x. So both numbers here are deliberately under the
+// 0.5 keeper indictment, and the arm that matters is the control, not the
+// headline.
+//
+// A CORRECT CALL IS WORTH MORE THAN A WRONG ONE COSTS, and the asymmetry is
+// the format's rather than a thumb on the scale: driving out a Traitor is rare
+// and hard, and being wrong about a Faithful is what most of the room does
+// most nights. Pricing them the same would make the average accuser steadily
+// more suspicious every week, which is a drift, not a signal.
+// ── AND THE CREDIT IS NARROW AS WELL AS SMALL ─────────────────────────
+//
+// The first version paid every accuser of a revealed Traitor, and `sceneDoubt`
+// lowers a belief in EVERY observer -- so one correct banishment fired credit
+// across the whole room, times every person who had joined the pile-on. Over a
+// season that is broad, systematic downward pressure on the entire board, and
+// it showed up where nothing was looking: endgame asks that forced another
+// table fell from over 100 in 200 seasons to 72, because rooms were arriving
+// at the endgame with too little suspicion left to want anybody gone. A
+// channel that quietly deflates the model is worse than one that inflates it,
+// because the symptom is the room getting NICER rather than sharper and no
+// band is watching for that.
+//
+// So only the person who actually drove it is paid. Being one of eight people
+// who named the right man is not the same as being the reason he went, and
+// pricing them the same was both wrong about the format and the thing that
+// broke the phase.
+const CALLED_IT_CREDIT = 0.12;
+const WRONGLY_DROVE_OUT = 0.16;
+
+/**
+ * Price everybody who publicly named the person the room has just banished.
+ *
+ * PUBLIC ON EVERY LAYER. It reads tonight's accusations (said out loud, at
+ * this table) and the reveal (said out loud, at that door), and nothing else.
+ * The observer set is the living room, so the accuser is not told what the
+ * room now thinks of them -- which is the point of the mechanic.
+ */
+/** What a read is worth, and what it costs. See the note inside the loop. */
+const STANDING_RIGHT_LEAD = 1.0;
+const STANDING_RIGHT_JOIN = 0.5;
+const STANDING_WRONG_LEAD = -0.8;
+const STANDING_WRONG_JOIN = -0.35;
+
+function priceTheAccusers(banished, wasTraitor, accusations, ep, rng) {
+  const living = (gs.activePlayers || []).filter(n => n !== banished);
+  const named = [...new Set(accusations.filter(a => a.target === banished)
+    .map(a => a.accuser))].filter(n => living.includes(n));
+  // WHO DROVE IT: the first person to put that name up tonight. `accusations`
+  // is in speaking order, so this is the one who said it before the room
+  // agreed rather than after.
+  const drove = (accusations.find(a => a.target === banished
+    && living.includes(a.accuser)) || {}).accuser || null;
+  const priced = [];
+  for (const accuser of named) {
+    // ── STANDING MOVES FIRST, AND FOR EVERYBODY WHO NAMED THEM ──────
+    //
+    // ABOVE the narrowing below, deliberately, and it was BELOW it for one
+    // measurement's worth of time: the belief credit is the lead accuser's
+    // alone while the belief mark is everybody's, and inheriting that
+    // asymmetry made standing a punishment meter. Measured over 1,200
+    // player-seasons it ran p10 -1.15 to p90 0.00 -- the ninetieth percentile
+    // of "how right have you been" was ZERO, because agreeing with a correct
+    // read paid nothing and agreeing with a wrong one cost.
+    //
+    // The narrowing exists for the BELIEF channel and is right there (crediting
+    // every accuser deflated the whole board -- endgame forced tables fell 112
+    // -> 72). It has no business deciding a track record: if you put a Traitor's
+    // name up you were right about that Traitor, whoever said it first.
+    //
+    // LEADING STILL PAYS MORE, both ways. Putting the name up first is a read;
+    // agreeing with it afterwards is a vote.
+    addStanding(gs, accuser, wasTraitor
+      ? (accuser === drove ? STANDING_RIGHT_LEAD : STANDING_RIGHT_JOIN)
+      : (accuser === drove ? STANDING_WRONG_LEAD : STANDING_WRONG_JOIN));
+    // The credit is the lead accuser's alone (see the note on the constants);
+    // the MARK is everybody's, because everybody who named a Faithful was
+    // wrong about that Faithful, whoever started it.
+    if (wasTraitor && accuser !== drove) continue;
+    for (const observer of living) {
+      if (observer === accuser) continue;
+      if (wasTraitor) {
+        // THEY CALLED IT. `sceneDoubt` lowers an existing read and refuses
+        // when there is none to lower, which is the correct shape here: this
+        // buys the accuser cover with people who already doubted them and
+        // does not make them a suspect in the eyes of somebody who never had
+        // a thought about them.
+        sceneDoubt(observer, accuser, CALLED_IT_CREDIT,
+          { source: `called ${banished} on the night ${banished} was revealed`, ep });
+      } else {
+        // TWO WORDINGS FOR ONE PRICE. Driving a banishment and joining one
+        // are not the same act and the room can see the difference, so the
+        // reason a later speech quotes says which it was. The CONFIDENCE is
+        // deliberately identical: splitting it would be a second calibration
+        // question, and this is a wording fix.
+        learn(observer, alignmentFactId(accuser), {
+          source: accuser === drove
+            ? `campaigned to get ${banished} out, and ${banished} was a Faithful`
+            : `helped put ${banished} out, and ${banished} was a Faithful`,
+          sourceType: 'deduced', confidence: WRONGLY_DROVE_OUT, ep, rng,
+        });
+      }
+    }
+    priced.push(accuser);
+  }
+  return priced;
+}
+
 export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   const living = [...(gs.activePlayers || [])];
   const accusations = debate(ep, rng);
@@ -673,6 +1092,13 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
   // in the `round` literal at the bottom of this function — after the ballots
   // were cast — so every clash was decoration by construction. See `clashes`.
   const tableClashes = clashes(ep, rng, accusations);
+
+  // WHAT THE BALLOT IS ALLOWED TO SEE OF THE ARGUMENT. `chooseBanishmentVote`
+  // prices a fellow Traitor by how burned they are (`tonightsBurn` in
+  // deduction.js) and has no other way to reach tonight's table. Set before
+  // the ballots and cleared after them, so nothing outside this table -- a
+  // later round, a murder, a castle scene -- can read a stale argument.
+  if (gs.tr) gs.tr._tableAccusations = accusations;
 
   const weights = daggerWeights(ep, living);
   const daggerHolder = weights ? Object.keys(weights)[0] : null;
@@ -750,9 +1176,17 @@ export function runRoundTable(ep, rng = Math.random, { reveal = true } = {}) {
       drawn.banished = banished;
     }
   }
+  if (gs.tr) gs.tr._tableAccusations = null;
   recordRound(round);
   gs.activePlayers = living.filter(n => n !== banished);
-  if (reveal) revealCascade(banished, wasTraitor, ep, rng);
+  if (reveal) {
+    revealCascade(banished, wasTraitor, ep, rng);
+    // AFTER the cascade, and only when there was a reveal: the room cannot
+    // price who was right until it has been told who was right. Suppressed at
+    // the finale for the same reason the cascade is (spec §8) -- the endgame
+    // has no reveals and the survivors go on nerve alone.
+    round.accusersPriced = priceTheAccusers(banished, wasTraitor, accusations, ep, rng);
+  }
   // THE SPEECH, on the round record where the export shape and the VP can read
   // it. Generated from what the LEAVER believes, so it must run after the
   // removal — a banished player names somebody still in the castle.

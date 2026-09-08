@@ -50,13 +50,18 @@
 // pattern from `npm test` and this project has shipped four guards into that
 // hole. Collection verified by running the suite and watching the count.
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import fs, { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { gs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { EVENTS } from '../js/tr/events.js';
 import { seedFranchiseHistory } from './helpers/tr-castle-fixture.js';
 import { _setDrawRule } from '../js/tr/castle/lines.js';
 import roster from '../franchise_roster.json';
+
+/** This file's own directory, for the source scan below. */
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 import { rpBuildCastleDay, castleDayScenes, castleDayChips, BRANCH_TONES, TOPIC_READY } from '../js/vp-tr/castle-day.js';
 import { rpBuildConclave } from '../js/vp-tr/conclave.js';
 import { rpBuildRoundTable } from '../js/vp-tr/round-table.js';
@@ -785,6 +790,70 @@ function allScenes(ep) {
   return castleDayScenes(ep, 'audience');
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// A PRONOUN TOKEN IN A NAME-ONLY POOL IS A RAW PLACEHOLDER ON SCREEN
+// ══════════════════════════════════════════════════════════════════════
+//
+// `lineFor(pool, key, subs)` (js/tr/castle/lines.js) substitutes exactly the
+// keys the CALLER hands it, and every pool in this directory except
+// js/tr/castle/alone.js is called with names — `{a}`, `{b}`, `{mission}`,
+// `{team}`. A line written with `{pos}` or `{sub}` in one of those pools
+// therefore reaches the screen with the braces still on it.
+//
+// FOUND BY THE TRANSCRIPT AND NOT BY ANY ASSERTION, which is the point of
+// writing this one. tests/tr-vp.test.js renders a whole seeded season and
+// forbids `/\{[A-Za-z]+\}/`; it went red on
+//
+//     "Carrie walked at the back on purpose, where nobody could see {pos} expression."
+//
+// only after four unrelated events re-rolled the castle stream and that line
+// finally came up. Two more of the same shape were sitting in cover.js and
+// suspicion.js, unfired and invisible — one bad line in a twelve-line pool
+// needs the pool drawn, the branch taken and the season to run long enough,
+// so a rendering guard finds these on a schedule set by luck.
+//
+// This finds them at rest. It is a source scan rather than a render, and it
+// is deliberately a DENYLIST of the tokens that cannot work rather than an
+// allowlist of the ones that can: an allowlist would go quiet the moment
+// somebody invented a new token.
+//
+// `alone.js` is exempt and is the reason the rule can be this blunt — its
+// scenes have ONE actor, so `fill()` there substitutes the name once and the
+// pronouns after it (see that file's header for the "Beardoself" bug that
+// made it necessary). Nothing else in the directory has a pronoun to hand.
+describe('no line pool asks for a pronoun the composer will not give it', () => {
+  // NOT `{them}`, AND THAT IS A CORRECTION THE FIRST DRAFT NEEDED. This list
+  // started with `them`/`they`/`their` on it and reported eighteen offenders,
+  // every one of them a false positive: js/tr/castle/consequences.js passes
+  // `them` as the NAME of the third party a scene is about ("{a} had said
+  // {them}'s name at that table"), which reads as a pronoun and is a name key.
+  // A token is only a defect here if no call site supplies it, so the list is
+  // the six that belong exclusively to `fill()` in js/tr/castle/alone.js.
+  const PRONOUN_TOKEN = /\{(pos|posAdj|sub|Sub|obj|ref)\}/g;
+  const EXEMPT = new Set(['alone.js']);
+
+  it('outside the solo library, pools substitute names and nothing else', () => {
+    const dir = path.join(HERE, '..', 'js', 'tr', 'castle');
+    const offenders = [];
+    for (const name of fs.readdirSync(dir)) {
+      if (!name.endsWith('.js') || EXEMPT.has(name)) continue;
+      const src = fs.readFileSync(path.join(dir, name), 'utf8');
+      src.split(String.fromCharCode(10)).forEach((line, i) => {
+        // Prose lives in quoted strings; a doc comment discussing `{pos}` is
+        // not a defect and this file, for one, does it above.
+        if (/^\s*(\/\/|\*)/.test(line)) return;
+        for (const m of line.matchAll(PRONOUN_TOKEN)) {
+          offenders.push(`${name}:${i + 1} ${m[0]} — ${line.trim().slice(0, 90)}`);
+        }
+      });
+    }
+    expect(offenders, 'these pools ask lineFor() for a pronoun it is never given, so the '
+      + 'token reaches the screen with its braces on. Rewrite the line around the name, '
+      + 'or move the scene to js/tr/castle/alone.js where pronouns are substituted')
+      .toEqual([]);
+  });
+});
+
 describe('THE CASTLE DAY READS AS TELEVISION', () => {
   it('has days to read at all', () => {
     expect(TASK6_ROWS.length, 'the season recorded no castle day — every arm below is vacuous')
@@ -1152,9 +1221,34 @@ describe('THE CASTLE DAY READS AS TELEVISION', () => {
     // 643 with a 43-card margin and still reddens on the ~414 a barren-draw
     // regression would reach under grounding. Not expected to move again unless
     // a future family changes the establish/reaction/consequence beat shape.
-    expect(composed, 'too few composed cards to measure a repeat rate against — the '
-      + 'castle is rendering materially less than it did when this rate was derived')
-      .toBeGreaterThan(400);
+    // ── AND IT IS PER EPISODE, BECAUSE THE SEASON LENGTH IS NOT THE
+    //    THROUGHPUT (2026-09-07) ─────────────────────────────────────────
+    //
+    // This was an absolute count over ONE season, and four events added to
+    // `journey-out` failed it at 396 against a floor of 400. Nothing had
+    // collapsed. The added events re-rolled the castle stream, seed 20260901
+    // ended a day earlier than it used to, and the arm read one fewer
+    // episode's worth of cards as a throughput regression:
+    //
+    //     eps 8   composed 396   49.5 per episode
+    //
+    // A season here runs 8 to 10 episodes depending on how the murders and the
+    // tables land, so an absolute count over one season carries a ±25% swing
+    // that has nothing to do with what this floor is for. The collapse it
+    // screens for is a rendering rate — the comment above puts a barren-draw
+    // regression at ~414 over ten days, which is 41.4 an episode — so the rate
+    // is what it should always have asserted, and the count was measuring
+    // season length with a throughput label on it.
+    //
+    // 45 sits between the two: above the 41.4 a regression reaches, below the
+    // 49.5 the castle renders, and blind to whether the season ran eight days
+    // or ten. It is not expected to move unless the establish/reaction/
+    // consequence beat shape changes.
+    const perEpisode = composed / TASK6_ROWS.length;
+    expect(perEpisode, `${composed} composed cards over ${TASK6_ROWS.length} episodes `
+      + `(${perEpisode.toFixed(1)}/ep) — too few to measure a repeat rate against, and `
+      + 'the castle is rendering materially less per day than when this rate was derived')
+      .toBeGreaterThan(45);
     expect(twice / composed, `${twice} of ${composed} composed cards repeated inside `
       + 'a single episode - the screen pools are too narrow for the throughput')
       .toBeLessThan(0.02);

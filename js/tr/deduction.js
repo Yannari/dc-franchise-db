@@ -33,7 +33,7 @@ import { recordFact, getFact, learn, believes, effectiveConfidence,
 import { alignmentFactId, livingTraitors, alignmentAt } from './roles.js';
 import { getBond } from '../bonds.js';
 import { pStats } from '../players.js';
-import { voteIntentFor } from './state.js';
+import { voteIntentFor, potNow, _setPotBlind } from './state.js';
 import { allianceVoteBias } from './alliances.js';
 import { _lineHash } from './castle/lines.js';
 
@@ -209,10 +209,42 @@ export function ballotEvidence(ep, rng = Math.random) {
   // innocent friends are supposed to keep getting caught by it.
   const eps = [...new Set(ballots.map(b => b.ep))].sort((x, y) => x - y);
   const votersByEp = new Map(eps.map(e => [e, new Set(ballots.filter(b => b.ep === e).map(b => b.voter))]));
+
+  // ── AND A SAFE VOTE DOES NOT BREAK A SILENCE ────────────────────────
+  //
+  // ONE vote against your partner, ever, used to clear this read permanently.
+  // That was fine while a Traitor essentially never wrote a fellow's name; it
+  // stopped being fine the moment they could join a pile-on that had already
+  // formed on a burned fellow, because the cheapest vote in the game then
+  // erased the most expensive evidence in the game. Measured: a Traitor who
+  // joined sat at mean suspicion 0.478 at the next table against 0.730 for one
+  // who did not, and the room's whole board precision fell with it.
+  //
+  // WHAT A SILENCE IS EVIDENCE OF is that you have never taken a risk against
+  // this person. Writing a name eight people have already shouted is not a
+  // risk; it is the safest ballot available that night, and it is the one a
+  // Traitor casts precisely because it costs nothing. So it does not count.
+  //
+  // A vote breaks the silence when it was CAST INTO SILENCE -- when fewer than
+  // two people had put that name up at the table before the slates were
+  // written. That is the same threshold `followerEvidence` uses for the same
+  // reason, and it keeps the rule honest in both directions: a Faithful who
+  // genuinely turned on a friend, before the room did, still clears it.
+  const namedAt = new Map();
+  for (const round of (gs.tr?.rounds || [])) {
+    const named = {};
+    for (const acc of (round.accusations || [])) {
+      if (acc.target) named[acc.target] = (named[acc.target] || 0) + 1;
+    }
+    namedAt.set(round.ep, named);
+  }
+  const broke = (x, y) => ballots.some(v => v.voter === x && v.voted === y
+    && ((namedAt.get(v.ep) || {})[y] || 0) < 2);
+
   for (const a of living) {
     for (const b of living) {
       if (a >= b) continue;
-      if (ballots.some(x => (x.voter === a && x.voted === b) || (x.voter === b && x.voted === a))) continue;
+      if (broke(a, b) || broke(b, a)) continue;
       // Only rounds in which BOTH of them actually cast a ballot were chances to
       // name each other. A pair who overlapped for two nights is not a pattern.
       let pCoincidence = 1, shared = 0;
@@ -378,10 +410,189 @@ const POT_GREED = 0.9;
  * held over the tied players alone — a three-name revote in a castle of twelve
  * is not an endgame and must not be priced as one.
  */
-function pactReluctance() {
+function pactReluctance(burn = 0, voter = null) {
   const living = (gs.activePlayers || []).length;
   const cover = Math.max(0, (living - PACT_FLOOR) / PACT_SPAN);
-  return PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare());
+  const full = PACT_LOYALTY * cover * cover * (1 - POT_GREED * potShare());
+  // A BLEND, NOT A DISCOUNT, AND THE DIFFERENCE IS THE WHOLE FIX. See
+  // `PACT_BURNED_COST` below.
+  const b = Math.max(0, Math.min(1, burn || 0));
+  // WHOSE PACT IT IS. See `pactCharacter`.
+  return (full * (1 - b) + PACT_BURNED_COST * b) * pactCharacter(voter);
+}
+
+/**
+ * HOW MUCH THIS PARTICULAR TRAITOR MINDS. 0.5x at loyalty 0, 1.5x at 10.
+ *
+ * Every number above this line is about the SITUATION — how many bodies are
+ * left, what is in the pot, how badly the room has turned on the fellow — and
+ * for a long time that was the whole model. Two Traitors at the same table,
+ * one of them a loyal soldier and one of them a snake, priced the same
+ * betrayal identically and made the same call. The pact was a property of the
+ * castle rather than of the people in it, which is the opposite of what makes
+ * a season worth watching: the interesting question at a burned fellow's table
+ * is not "what does the arithmetic say", it is "who is sitting there".
+ *
+ * PROPORTIONAL AND NOT A THRESHOLD (AGENTS.md): a stat multiplies, it does not
+ * gate. There is no loyalty above which betrayal is impossible and none below
+ * which it is automatic — a loyal Traitor with a fellow the whole room is
+ * shouting at will still sometimes write the name, and a disloyal one holding
+ * a quiet pact in a big room still usually will not. What changes is the
+ * price, and therefore how much pressure it takes.
+ *
+ * CENTRED AT 1.0 SO THE AVERAGE IS UNMOVED. Loyalty 5 pays exactly what every
+ * Traitor paid before this existed, so the population behaviour the guards
+ * band is preserved and what this adds is SPREAD around it.
+ *
+ * Defaults to the midpoint for a caller with no voter — `chooseBanishmentVote`
+ * takes one for the decision, and the watch record's summary line does not.
+ */
+const PACT_CHARACTER_SPAN = 1.6;
+function pactCharacter(voter) {
+  if (!voter) return 1;
+  const loyalty = pStats(voter)?.loyalty;
+  if (typeof loyalty !== 'number' || !isFinite(loyalty)) return 1;
+  // ── CENTRED ON THE ROOM, NOT ON THE MIDDLE OF THE SCALE ───────────
+  //
+  // This centred on a flat 5 and the comment claimed the average was
+  // therefore unmoved. It was not: a cast whose mean loyalty is above 5 pays
+  // MORE than it used to at every seat, and the endgame -- where the pact is
+  // supposed to break -- fell from 62%+ to 59.3% and took a calibrated band
+  // with it. A spread that also shifts the mean is two changes wearing one
+  // constant.
+  //
+  // So the anchor is the living room's own mean. The factor is then exactly
+  // 1.0 for an average player in any cast, the feature is pure spread, and a
+  // roster edit cannot silently reprice the pact for everybody.
+  const living = gs.activePlayers || [];
+  let sum = 0, n = 0;
+  for (const p of living) {
+    const l = pStats(p)?.loyalty;
+    if (typeof l === 'number' && isFinite(l)) { sum += l; n++; }
+  }
+  const mean = n ? sum / n : 5;
+  const dev = (loyalty - mean) / 10;
+  return Math.max(0.2, Math.min(1.8, 1 + PACT_CHARACTER_SPAN * dev));
+}
+/**
+ * WHAT IT COSTS TO ABANDON SOMEBODY WHO IS LEAVING ANYWAY: almost nothing.
+ *
+ * The price above reads the LIVING FIELD and the POT -- the arithmetic of how
+ * much cover a body is worth -- and had no term at all for the one thing that
+ * actually decides this at a real table, which is whether the room has already
+ * convicted them. Holding the line on a fellow with half the castle shouting
+ * their name buys nothing (they are going regardless) and costs a visible vote
+ * on the wrong side of a reveal that is minutes away.
+ *
+ * NOT ALL OF IT. 0.8, so a fully burned fellow still costs something to name:
+ * the pact is a relationship as well as a calculation, and a Traitor who
+ * abandons people the instant it is convenient is a different character from
+ * the one this format is about. Paired with `burnedFellow` in roundtable.js,
+ * which decides the same question for the DEBATE.
+ */
+/**
+ * WHAT NAMING A FULLY BURNED FELLOW COSTS, AS AN ABSOLUTE PRICE.
+ *
+ * This was a PERCENTAGE off — 0.8, "eighty per cent of the loyalty bought
+ * off" — and eighty per cent off was not enough, because of what it was eighty
+ * per cent OF. `cover` is quadratic in the living count, so the pact price at
+ * a table of twelve is 0.55 * 25 = 13.75, against suspicion scores that live
+ * between 0 and about 2. A fifth of 13.75 is 2.75, which is still several
+ * times the largest read anybody at that table could have. The burn term was
+ * real, monotone, well-measured — and arithmetically incapable of changing a
+ * single vote outside the endgame, where the quadratic finally lets go.
+ *
+ * MEASURED, and this is what the user watching the show actually noticed: with
+ * a fellow already holding a third of the room's votes, a Traitor joined 37.6%
+ * of the time, and the response curve TURNED OVER at four accusers (20.0%,
+ * below the 28.1% at three) because four accusers needs a big room and a big
+ * room is where the quadratic is largest.
+ *
+ * So the burn now BLENDS toward a fixed price rather than scaling the old one:
+ * fully burned, naming a fellow costs 1.0 whatever the room size — a real
+ * cost, on the same scale as a strong read, that a landslide can overcome and
+ * an indifferent Traitor will not pay. At burn 0 the price is exactly what it
+ * always was, so an unburned pact is untouched.
+ *
+ * ── 0.35 WAS TRIED FIRST AND THE ROOM WENT BLIND ─────────────────────
+ *
+ * At 0.35 the top of the response curve reached 59-75% and it read superbly.
+ * It also cost the castle its eyesight: tests/tr-calibration.test.js's BOARD
+ * PRECISION arm fell to 1.26x against a placebo at 1.40x — the room's reads
+ * were literally worse than noise. The mechanism is not subtle once measured.
+ * A Traitor who joins a pile-on buys real cover (mean suspicion 0.478 at the
+ * next table against 0.730 for one who did not), partly because a single vote
+ * against a fellow used to erase the pair-silence read on that pair for good;
+ * once the move was common the castle drowned in laundered Traitors.
+ *
+ * A room that cannot read anybody is not a better show than a pact that never
+ * breaks. 1.0 keeps the move — a burned fellow banished gets a fellow's vote
+ * 51.5% of the time, against 39.3% before any of this and 19.0% in the big
+ * rooms where it was reported — and leaves the board intact.
+ *
+ * NOT ZERO, and that is the original design intent kept: a Traitor who
+ * abandons people the instant it is convenient is a different character from
+ * the one this format is about. It is a price, not a formality.
+ */
+const PACT_BURNED_COST = 1.0;
+/**
+ * THE FEWEST PEOPLE WHO CAN BURN YOU. Below two nobody is burned: one voice
+ * is somebody with a theory, and if that were enough then "burned" would just
+ * mean "mentioned".
+ *
+ * IT USED TO BE A SATURATION COUNT OF THREE, AND BEFORE THAT A SHARE OF THE
+ * ROOM (0.35). Both were the same mistake in different clothes.
+ *
+ * Measured over 60 seasons, how often a Traitor wrote a burned fellow's name,
+ * by the number of people who had publicly named that fellow at the table:
+ *
+ *     1 accuser   13.3%
+ *     2 accusers  16.8%
+ *     3 accusers  36.8%
+ *     4+ accusers 20.2%   <- the more burned they are, the LESS often
+ *
+ * A response curve that turns over at the top is not a preference, it is two
+ * terms fighting. Four accusers needs a big room to be available in, and in a
+ * big room BOTH sides of this moved the wrong way: `cover` grows QUADRATICALLY
+ * with the living count, so reluctance is at its highest, while a share of the
+ * room DILUTES — four of seventeen is 0.24, which did not even reach the old
+ * 0.35 saturation. The discount could never catch the price.
+ *
+ * AND A COUNT WAS WRONG TOO, WHICH TOOK A SECOND LOOK TO SEE. Measured over
+ * 883 tables, the most-accused person at a table has three or more accusers
+ * only two-thirds of the time — so a saturation of three switched the whole
+ * mechanism off on the other third, and a fellow with two accusers was joined
+ * at 18.6%. The threshold sat above the middle of its own distribution.
+ *
+ * What burns somebody at a Round Table is not a count in the abstract, it is
+ * BEING THE NAME THE ROOM HAS SETTLED ON. Two accusers is a landslide when
+ * nobody else has more than two. Three is nothing much when somebody else has
+ * five — that other person is the one going tonight, so there is no fellow to
+ * abandon and the pact should hold. So `tonightsBurn` reads the fellow's count
+ * against the TABLE'S LEADING count, which is room-size independent for the
+ * same reason a count was, and reaches the ordinary table as well as the
+ * lopsided one. The two-accuser table moved 18.6% -> 35.1%.
+ */
+const BURN_MIN_ACCUSERS = 2;
+
+/**
+ * How burned `name` is at tonight's table, 0..1 — an accusation COUNT
+ * against `BURN_FULL_ACCUSERS`, not a share of the room. See that constant.
+ *
+ * Reads the accusations runRoundTable stashes before the ballots -- PUBLIC
+ * information, said at this table, in front of everybody. Empty on a revote
+ * (the list is per-table, not per-ballot) and on any caller that never set it,
+ * so this contributes exactly zero rather than throwing.
+ */
+function tonightsBurn(name) {
+  const acc = gs.tr?._tableAccusations;
+  if (!Array.isArray(acc) || !acc.length) return 0;
+  const on = {};
+  for (const a of acc) if (a.target) on[a.target] = (on[a.target] || 0) + 1;
+  const mine = on[name] || 0;
+  if (mine < BURN_MIN_ACCUSERS) return 0;
+  const top = Math.max(...Object.values(on));
+  return Math.min(1, mine / Math.max(BURN_MIN_ACCUSERS, top));
 }
 
 /**
@@ -399,8 +610,8 @@ function pactReluctance() {
  */
 export function potShare() {
   const ceiling = gs.tr?.potCeiling || 0;
-  if (_pactPotBlind || ceiling <= 0) return 0;
-  return Math.max(0, Math.min(1, (gs.tr?.pot || 0) / ceiling));
+  if (ceiling <= 0) return 0;
+  return Math.max(0, Math.min(1, potNow(gs) / ceiling));
 }
 
 // THE POT IS NOW A READER, AND THAT BREAKS AN EQUIVALENCE GUARD ON PURPOSE.
@@ -419,13 +630,17 @@ export function potShare() {
 // hold-out is holding something real out. "Mostly identical" has no failure
 // state; this does.
 //
+// AND THE FLAG ITSELF MOVED, FOR THE REASON `potShare()` GIVES ABOVE. It was
+// private to this file, so it blinded the pact and the endgame and nothing
+// else — while a castle scene (`grief-what-it-is-all-for`) was reading
+// `gs.tr.pot` directly for its weight and staying fully sighted. That is the
+// second private copy the paragraph above warns about, and it is what kept
+// tests/tr-missions.test.js red: blinding half the readers does not answer the
+// question the guard asks. The flag now lives beside the pot in js/tr/state.js
+// and there is one reader; this name is kept because three test files call it.
+//
 // Test-only. Nothing in the show may ever set it.
-let _pactPotBlind = false;
-export function _setPactPotBlind(on = false) {
-  const prev = _pactPotBlind;
-  _pactPotBlind = !!on;
-  return () => { _pactPotBlind = prev; };
-}
+export const _setPactPotBlind = _setPotBlind;
 
 /**
  * The noise term for a fellow Traitor, drawn from a HASH and not from `rng`.
@@ -455,6 +670,52 @@ function pactNoise(voter, name, ep) {
  * ever done; and a room with NO evidence votes for whoever sorts first, which
  * would decide episode one alphabetically.
  */
+/**
+ * THE BALLOT IS A PUBLIC RECORD AND A TRAITOR IS THE ONE PERSON WHO KNOWS IT.
+ *
+ * `ballotEvidence` mints "kept X in on the night X was revealed" — the single
+ * most-cited reason in this engine (995 of 2897 citations over 40 seasons) —
+ * for anybody who voted elsewhere on a night the room turned out to be right.
+ * A Faithful who does that was honestly wrong. A Traitor who does it has
+ * handed the room a permanent mark for nothing, because they KNEW the answer
+ * and voted somewhere else anyway. Following the room on a night that is
+ * already decided costs a Traitor nothing and buys a clean record.
+ *
+ * ── WHY ONLY TRAITORS, WHICH IS A CALIBRATION DECISION AND NOT A FLAVOUR ONE
+ *
+ * The note inside `chooseBanishmentVote` records bloc coordination being tried
+ * here and REJECTED: pooling reads so a group votes as a unit amplified the
+ * deduction channel at every phase and leaked information early (0.102 against
+ * a 0.10 ceiling). A bandwagon term handed to the WHOLE room is that same
+ * shape — every voter leaning toward the room's consensus makes the room's
+ * consensus self-reinforcing, and the calibrated model wants near-chance early
+ * and sharpening late.
+ *
+ * Given only to Traitors it cannot do that. It does not make the room a better
+ * detective; it makes one player's public record less incriminating. The
+ * amplification loop never forms because the people whose reads would be
+ * amplified are not the ones reading.
+ *
+ * ── AND ONLY THE ONES WHO WOULD THINK OF IT ───────────────────────────
+ *
+ * Scaled by strategic and intuition, so it is a thing clever Traitors do and
+ * not a property of the cloak. A hothead with no head for it still votes their
+ * read and still leaves the trail.
+ *
+ * PUBLIC INPUT ONLY: `tonightsBurn` counts what was said out loud at this
+ * table. No beliefs, no alignments, nothing a player in the room could not
+ * have heard for themselves.
+ */
+const BANDWAGON = 0.30;
+function bandwagon(voter, name, isTraitor) {
+  if (!isTraitor) return 0;
+  const share = tonightsBurn(name);
+  if (share <= 0) return 0;
+  const st = pStats(voter);
+  const savvy = ((st.strategic ?? 5) / 10) * 0.65 + ((st.intuition ?? 5) / 10) * 0.35;
+  return BANDWAGON * share * savvy;
+}
+
 export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   const pool = (candidates || []).filter(n => n !== voter);
   if (!pool.length) return null;
@@ -466,7 +727,15 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   const fellows = isTraitor ? pool.filter(n => alignmentAt(n, ep) === 'traitor') : [];
   // Nothing to be reluctant about when there is nobody else left to name:
   // a room of Traitors only has Traitors to write down.
-  const reluctance = (fellows.length && fellows.length < pool.length) ? pactReluctance() : 0;
+  // PER FELLOW, not one number for all of them. Reluctance now reads how
+  // burned that particular fellow is (see `pactReluctance`), so a Traitor can
+  // hold the line on the quiet one and cut the doomed one loose in the same
+  // ballot -- which is the actual decision, and was previously a single price
+  // applied to the whole pact.
+  const canBeReluctant = fellows.length && fellows.length < pool.length;
+  const reluctanceFor = name => (canBeReluctant && fellows.includes(name))
+    ? pactReluctance(tonightsBurn(name), voter) : 0;
+  const reluctance = canBeReluctant ? pactReluctance(0, voter) : 0;
 
   // WHAT THEY SAID THEY WOULD DO, IN THE CASTLE, EARLIER TODAY.
   //
@@ -496,12 +765,13 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
   // bond-scaled), never through coordinated targeting.
 
   const scored = pool.map(name => {
-    const priced = reluctance > 0 && fellows.includes(name);
+    const priced = canBeReluctant && fellows.includes(name);
+    const own = priced ? reluctanceFor(name) : 0;
     return {
       name,
       score: suspicion(voter, name, ep) * _voteSuspicionMult
         + (priced ? pactNoise(voter, name, ep) : rng() * 0.35)
-        - (priced ? reluctance : 0)
+        - own
         + (intent && intent.target === name ? (intent.strength || 0) : 0)
         // THE BLOC THE VOTER STANDS IN. A TERM beside suspicion, never an
         // override, and taking no rng draw (see allianceVoteBias): a voter
@@ -510,12 +780,21 @@ export function chooseBanishmentVote(voter, candidates, ep, rng = Math.random) {
         // not — is protected by the alliance they built, and an isolated one is
         // the free-agent vote. A strong read on an ally still beats the instinct
         // to protect them, which is the betrayal the format lives on.
-        + allianceVoteBias(voter, name, ep),
+        + allianceVoteBias(voter, name, ep)
+        // WHERE THE ROOM IS ALREADY GOING, and only a Traitor reads it.
+        + bandwagon(voter, name, isTraitor),
     };
   }).sort((a, b) => b.score - a.score);
   const chosen = scored[0].name;
   if (_pactWatch) _pactWatch({ voter, ep, chosen, fellows: [...fellows], pool: [...pool],
     reluctance, living: (gs.activePlayers || []).length,
+    // HOW BURNED THE MOST BURNED FELLOW WAS, and it is the difference between
+    // the two questions this decision now answers. "Would you name a fellow"
+    // and "would you name a fellow the room has already convicted" are not the
+    // same question, and a band that pools them measures neither. Diagnostic
+    // only: nothing in the engine reads it, and it recomputes nothing --
+    // `reluctanceFor` used exactly this number a few lines above.
+    burn: fellows.reduce((m, f) => Math.max(m, tonightsBurn(f)), 0),
     // `potShare()`, NOT A SECOND COPY OF IT (whole-plan review, F7). This line
     // used to recompute the ratio inline, in the file whose own comment on
     // `potShare` forbids exactly that — so it reported a pot the DECISION could
@@ -737,6 +1016,170 @@ const M = {
  * off precisely the innocent people the evidence indicts. Deleting that shape
  * from ballotEvidence was worth 0.20-0.23x of lift. Do not reintroduce it here.
  */
+/**
+ * EVIDENCE SOURCE 5: an hour somebody could not account for.
+ *
+ * `js/tr/castle/alibi.js` runs a morning reconstruction of the night and, when
+ * it finds a gap, records a FINDING on `gs.tr._alibiFindings`. It writes no
+ * belief — no castle file may (tests/tr-castle-belief-gate.test.js) — so this
+ * is where the observation becomes an inference, in the file that owns belief
+ * writes and beside the other four passes.
+ *
+ * ── WHY THIS ONE IS ADMISSIBLE WHEN THE REST OF THE CASTLE IS NOT ─────
+ *
+ * Every other castle suspicion scene chooses who it is about at random and
+ * decides the outcome from stats, so its subject is uncorrelated with the
+ * truth: priced, that channel is an ANTI-SIGNAL at edge -0.24, worse than its
+ * own contentless twin. This scene's OUTCOME reads `murderBallots` — who was
+ * actually awake choosing a name — so a gap is genuinely more likely to be
+ * found in a Traitor's night. The synthetic at the same catch and
+ * false-positive rates clears the gate at +0.198 on both disjoint blocks. See
+ * tests/tr-castle-channel-pricing.test.js for both numbers.
+ *
+ * ── ONLY THE TWO PEOPLE WHO DID THE CHECKING LEARN IT ────────────────
+ *
+ * Not the room. This was a conversation between two players over breakfast,
+ * not an announcement, and the difference is the whole reason the channel is
+ * safe to open: a room-wide write would put a Traitor-enriched belief into
+ * fifteen boards a night and re-sharpen the early game, which is precisely the
+ * curve the calibration bands protect. It reaches anybody else the way
+ * everything else does — by being repeated, through the existing propagation.
+ *
+ * WEIGHT. Below the ballot channels on purpose. This is two people failing to
+ * place somebody for an hour; the ballot record is the whole room's public
+ * behaviour over a week, and a morning's uncertainty must not outrank it.
+ */
+const ALIBI_GAP = 0.34;
+
+export function alibiEvidence(ep, rng = Math.random) {
+  const findings = (gs.tr?._alibiFindings || []).filter(f => f.ep === ep);
+  if (!findings.length) return [];
+  const living = gs.activePlayers || [];
+  const formed = [];
+  for (const f of findings) {
+    if (!living.includes(f.subject)) continue;
+    for (const observer of (f.checkers || [])) {
+      if (observer === f.subject || !living.includes(observer)) continue;
+      const belief = learn(observer, alignmentFactId(f.subject), {
+        source: f.source, sourceType: 'deduced', confidence: ALIBI_GAP, ep, rng,
+      });
+      if (belief) formed.push({ observer, subject: f.subject });
+    }
+  }
+  return formed;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// EVIDENCE SOURCE: THE PERSON WHO HAS NEVER PUT A NAME UP FIRST
+// ══════════════════════════════════════════════════════════════════════
+//
+// WHY IT EXISTS, AND IT IS A REPAIR RATHER THAN AN ADDITION. Traitors can now
+// join a pile-on that has formed on a burned fellow, which is the format and
+// which the room asked for. It buys real cover: measured over 60 seasons, a
+// Traitor who joined sat at mean suspicion 0.478 at the next table against
+// 0.730 for one who voted elsewhere. Once that move became common the room got
+// measurably worse at its job -- late lift fell from 6.6pp to 4.7pp -- because
+// the castle had no way to notice somebody doing it.
+//
+// This is the way to notice. It is also a thing players in this format say out
+// loud, which is the test of whether a channel belongs in the show at all: you
+// have never once stuck your neck out.
+//
+// ── PRICED BEFORE IT WAS BUILT (js/tr/channel-audit.js) ──────────────
+//
+//     follows-never-leads   n=1137   ratio 1.807   control 1.139   edge +0.667
+//
+// against a gate of +0.15. That is the strongest channel this project has
+// measured -- the coupled alibi scene, which was written to demonstrate that a
+// castle channel COULD pass, reached +0.626. The raw signal behind it, 80
+// seasons: a Traitor's ballot lands on an already-named target 61.2% of the
+// time against a Faithful's 46.8%.
+//
+// AND IT READS BALLOTS, NOT SPEECHES, WHICH THE MEASUREMENT DECIDED. The
+// obvious version of this idea is "never leads an accusation", and it does not
+// discriminate at all: Traitors lead 48.3% of their speeches, Faithfuls 45.2%.
+// A Traitor is perfectly willing to say a name out loud. What they will not do
+// is WRITE one nobody else has said.
+//
+// ── AND IT CANNOT FIRE EARLY, WHICH IS THE CALIBRATION ARGUMENT ──────
+//
+// Three ballots minimum before anybody has a record at all, and a 0.6 share
+// before it says anything, so the first tables of a season emit nothing. The
+// calibrated model wants near-chance early and sharpening late; a channel that
+// needs a voting history to exist can only sharpen late by construction.
+//
+// PUBLIC INFORMATION ONLY. Every ballot is read aloud and every accusation is
+// made in front of the room. This is arithmetic anybody at that table could do
+// with a pencil, which is the standing rule for what a Faithful may know.
+
+/** Three ballots before anybody has a record worth reading. */
+const FOLLOW_MIN_BALLOTS = 3;
+/** Below this share nobody is conspicuously safe -- the room's own mean is 0.47. */
+const FOLLOW_MIN_SHARE = 0.6;
+/**
+ * What the read is worth. Deliberately under `pushedThenDied` (0.62): it is a
+ * PATTERN rather than an event, and a pattern should nag rather than convict.
+ */
+const FOLLOW_CONFIDENCE = 0.34;
+/** How much of the room is paying that kind of attention at all. */
+const FOLLOW_NOTICE = 0.8;
+
+export function followerEvidence(ep, rng = Math.random) {
+  const living = gs.activePlayers || [];
+  if (living.length < 5) return [];
+  const safe = {}, cast = {};
+  for (const round of (gs.tr?.rounds || [])) {
+    if (round.ep >= ep) continue;
+    const named = {};
+    for (const a of (round.accusations || [])) {
+      if (a.target) named[a.target] = (named[a.target] || 0) + 1;
+    }
+    for (const b of (round.ballots || [])) {
+      if (!b.voted) continue;
+      cast[b.voter] = (cast[b.voter] || 0) + 1;
+      // TWO PEOPLE, because one accusation is a suggestion. A name two people
+      // have already said out loud is a name you can hide behind.
+      if ((named[b.voted] || 0) >= 2) safe[b.voter] = (safe[b.voter] || 0) + 1;
+    }
+  }
+  // ONE SUBJECT A ROUND, and the most conspicuous one. Emitting every player
+  // over the line would hand the room a list, and a list of four names is not
+  // a read -- it is the amplification this format's calibration forbids.
+  let subject = null, best = FOLLOW_MIN_SHARE;
+  for (const n of living) {
+    if ((cast[n] || 0) < FOLLOW_MIN_BALLOTS) continue;
+    const share = (safe[n] || 0) / cast[n];
+    if (share > best) { best = share; subject = n; }
+  }
+  if (!subject) return [];
+  const formed = [];
+  const source = `has never once written a name somebody else had not already put up`;
+  for (const observer of living) {
+    if (observer === subject) continue;
+    // ── NOT THE WHOLE ROOM, AND THE BAND SAID SO ────────────────────
+    //
+    // The first cut told every living player, every round, and it cost the
+    // board its precision: tr-calibration's BOARD PRECISION arm fell to 1.27x
+    // against a 1.58x floor, and the comment on that arm names this exact
+    // failure in advance -- "an engine that starts forming many more reads
+    // will trade precision for coverage". It was right, and the fix is not a
+    // weaker confidence, it is a smaller audience.
+    //
+    // Noticing that somebody has never written an unpopular name means having
+    // kept track of several tables' worth of ballots, and most people at that
+    // table are not doing that. So it is PROPORTIONAL to the two stats that
+    // would: `mental` to have counted, `intuition` to think it means anything.
+    const st = pStats(observer);
+    const notices = ((st.mental ?? 5) / 10) * 0.5 + ((st.intuition ?? 5) / 10) * 0.5;
+    if (rng() > notices * FOLLOW_NOTICE) continue;
+    const belief = learn(observer, alignmentFactId(subject), {
+      source, sourceType: 'deduced', confidence: FOLLOW_CONFIDENCE, ep, rng,
+    });
+    if (belief) formed.push({ observer, subject });
+  }
+  return formed;
+}
+
 export function murderEvidence(ep, rng = Math.random) {
   const rounds = gs.tr?.rounds || [];
   const round = rounds[rounds.length - 1];

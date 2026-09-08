@@ -800,7 +800,7 @@ const BODY_SHORT_LINES = {
     'The murdered player used to point out the castle when it appeared over the hill, and {a} looked for it alone this time.',
     '{a} carried the kit for two on {mission} without mentioning why it was heavier.',
     'The murdered player was still on the team sheet, and {a} had read the sheet four times without crossing the name out.',
-    '{a} walked at the back on purpose, where nobody could see {pos} expression.',
+    '{a} walked at the back on purpose, out of everybody’s sight for the whole hour.',
     'It had been a good afternoon, which {a} felt oddly guilty about the whole way home.',
   ],
   useful: [

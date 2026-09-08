@@ -1216,9 +1216,9 @@ const NOBODY_SAID = {
     'Two people got through a whole table without being mentioned, and {a} found that unnerving rather than restful.',
   ],
   'made-it-a-plan': [
-    '{a} and {b} agreed that whatever they had done this week they would do again next week, in detail.',
+    '{a} and {b} agreed to keep doing what had kept them off the table — stay quiet, vote together, let louder people draw the room’s attention.',
     'Neither had been named. {a} and {b} spent the corridor turning that into something deliberate.',
-    '“Same again,” {b} said, and the two of them worked out exactly what same again would have to mean.',
+    '”Same again next week,” {b} said — same seats, same quiet, same way of staying out of everyone’s mouth — and {a} agreed to all of it.',
     '{a} and {b} treated the quiet evening as a method rather than as luck, and settled it between them.',
     'They came out of it with an actual arrangement, {a} and {b}, which is more than most corridors produce.',
   ],

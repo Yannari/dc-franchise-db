@@ -362,6 +362,90 @@ export function freshPick(rng, pool, window = 2) {
   return chosen;
 }
 
+// ── THE SOLO TASK, SHARED ─────────────────────────────────────────────
+//
+// `sideObjectives[]` is the ONE place a mission record names an individual and
+// says what they personally went and did, which makes it the only channel the
+// `journey-back` castle window can argue about afterwards
+// (js/tr/castle/mission-fallout.js reads it in four events) and the only thing
+// js/tr/crowd.js can build a crowd moment out of. The seven archetypes have
+// filled it since they were written. The four bespoke missions shipped with
+// `sideObjectives: []` hard-coded, so a bespoke afternoon — the LONGER, more
+// detailed kind — was the one nobody could say anything individual about the
+// next morning.
+//
+// So the runner moved here, where both kinds can reach it, and the archetypes
+// now call the same function rather than keeping a private copy of it. That is
+// the point rather than tidiness: two copies of a scoring loop drift, and this
+// plan has already lost a guard to a rule that existed twice.
+//
+// EVERY DRAW IS IN THE SAME ORDER IT WAS IN js/tr/missions.js — the count,
+// then per objective the person, the outcome and the line. An archetype
+// afternoon therefore consumes the mission stream exactly as it did before,
+// and a season replays.
+const SIDE_WON = [
+  '{who} managed to {what}, and was paid for it.',
+  '{who} went and did the thing nobody was required to do: {what}.',
+  'Nobody had to {what}. {who} did, and was paid for it.',
+  '{who} broke off to {what}, and pulled it off.',
+];
+const SIDE_LOST = [
+  '{who} tried to {what} and did not get there.',
+  '{who} went for the extra — {what} — and came back with the story instead of the money.',
+  'Nobody managed to {what}. {who} came closest, which pays nothing.',
+  '{who} set out to {what}, briefly, and thought better of it.',
+];
+const _renderSide = (tpl, who, what) =>
+  tpl.split('{who}').join(who).split('{what}').join(what);
+
+/**
+ * Run one afternoon's solo tasks.
+ *
+ * `specs` is the mission's `side` list — `{ id, label, stat }`, where `label`
+ * is a BARE INFINITIVE ("take the ford first and alone") because the castle
+ * drops it into a sentence it writes itself. `teams` is the scored pair, and
+ * `exclude` is anybody who was somewhere else all afternoon (the Reliquary
+ * searcher, a bespoke mission's equivalent): a record that says the same person
+ * was down the niches AND took the top step alone is a record contradicting
+ * itself.
+ *
+ * Returns `[{ id, player, stat, achieved, bonus, line }]`, possibly empty.
+ * Callers pass the summed `bonus` to `payPot`, which is what turns a solo task
+ * into money.
+ */
+export function runSideObjectives(specs, teams, rng, exclude = null) {
+  const side = Array.isArray(specs) ? specs : [];
+  if (!side.length) return [];
+  const field = (teams || []).flatMap(t => t.members || []).filter(n => n !== exclude);
+  const out = [];
+  const count = rng() < 0.45 ? 2 : 1;
+  const chosen = [];
+  for (let i = 0; i < count && i < side.length; i++) {
+    const spec = side[i];
+    const candidates = field.filter(n => !chosen.includes(n));
+    if (!candidates.length) break;
+    const who = candidates[Math.min(candidates.length - 1, Math.floor(rng() * candidates.length))];
+    chosen.push(who);
+    // PROPORTIONAL, and the floor is deliberate: a solo task nobody weak can
+    // ever land is a task only the same three people are ever named for.
+    const p = 0.06 + (statOf(who, spec.stat) / 10) * 0.62;
+    const achieved = rng() < p;
+    out.push({
+      id: spec.id, player: who, stat: spec.stat, achieved,
+      bonus: achieved ? SIDE_BONUS : 0,
+      line: _renderSide(freshPick(rng, achieved ? SIDE_WON : SIDE_LOST, 2), who, spec.label),
+    });
+  }
+  return out;
+}
+
+/** The infinitive phrase for each objective a list of specs declares. */
+export function sideLabelsOf(specs) {
+  const out = {};
+  for (const spec of (specs || [])) out[spec.id] = spec.label;
+  return out;
+}
+
 /** Weighted single draw. One rng call whatever the field size, so the stream is cast-stable. */
 export function weightedPick(rng, items, weightOf) {
   const w = items.map(weightOf);

@@ -478,7 +478,7 @@ const SAT_UP_LINES = {
   'nobody-wanted-to-go-up': [
     '{names} stayed downstairs long after there was any reason to, because upstairs is where it happens.',
     'The fire went out and all {n} of them were still in the room.',
-    'Nobody says it. Everybody knows that going to bed is the part where somebody is chosen.',
+    'Nobody says it. Going to bed is the part where somebody is chosen.',
     'They talked about nothing for two hours rather than be the first to stand up.',
     'It is the safest place in the castle and none of them would say why they are in it.',
     'Three people sitting in a cold room at one in the morning, being extremely casual.',
@@ -623,6 +623,11 @@ registerEvent({
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'group-rounded-on-them');
     const actors = ctx.actors;
+    // REFUSE, RATHER THAN THROW ON `pStats(undefined)`. `weight()` already
+    // guarantees three, so this only ever fires for a caller that reached
+    // fire() directly — and one did: the belief gate's probe, which swallowed
+    // the exception and filed this event as dead content for two weeks.
+    if (!actors || actors.length < 3) return null;
     const [a, b, c] = actors;
     const sa = pStats(a);
     const sc = pStats(c);

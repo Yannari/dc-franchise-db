@@ -636,6 +636,31 @@ export const ADVERSE_OUTCOMES = new Set(['test-exposed', 'failed-maliciously', '
 export const SMOOTH_OUTCOMES = new Set(['denied-convincingly', 'passed-clean',
   'defended-by-history', 'turned-back', 'buried', 'became-showmance']);
 export const ADVERSE_BRANCHES = new Set([
+  // The alibi scene's one branch that costs the two people doing the checking:
+  // they could not reconstruct their own night, let alone anybody else's.
+  'two-accounts',
+  // ── THE CONFRONTATION BATCH (confrontation.js, 2026-09-06) ──────────
+  //
+  // Eight events taking the thinnest family in the pool from 12 to 20,
+  // weighted into the three windows it held ONE event in. Classified by the
+  // SIGN OF THE BOND EACH BRANCH PAYS rather than by how the card reads: a
+  // scene can sound warm and still cost two points, and since `_tone` governs
+  // how the composer frames the consequence, the consequence is the honest
+  // key. Everything here is negative.
+  'called-out-for-it', 'caught-them-alone', 'defended-the-room',
+  'dragged-others-in', 'dropped-it-at-the-gate', 'had-it-out',
+  'made-it-obvious', 'never-opened-it', 'not-at-this-hour',
+  'said-nothing-at-all', 'said-the-unsayable', 'saved-themselves',
+  'somebody-else-carried-it', 'somebody-walked-in', 'still-going-inside',
+  'they-were-ready-too', 'turned-it-on-the-accuser', 'we-got-it-wrong',
+  'woke-the-corridor', 'wrong-door', 'you-drove-it',
+  // ── THE LAST THREE REACHABLE CELLS (carry-on.js, 2026-09-06) ────────
+  //
+  // Being asked about an account where you cannot sit down, losing it to a
+  // third pair of ears, being caught setting a test, and an answer better
+  // than the question deserved. In each the person opposite is under it.
+  'answered-too-well', 'asked-about-it-out-there',
+  'somebody-else-was-there', 'they-saw-it-coming',
   // ── THE CONTINUATIONS (js/tr/castle/carry-on.js, 2026-09-06) ────────
   //
   // Five events written to fill the advancer holes in `morning` and
@@ -1051,6 +1076,38 @@ export const ADVERSE_BRANCHES = new Set([
  * them — which is the whole point.
  */
 export const BENIGN_BRANCHES = new Set([
+  // ── THE ALIBI SCENE (js/tr/castle/alibi.js) ─────────────────────────
+  //
+  // Including `could-not-place-them`, which SOUNDS like the adverse one and is
+  // not: `_tone` governs how the composer frames the consequence between the
+  // two people IN the scene, and those two agree — it is the absent third
+  // party the finding costs. The sibling `susp-timeline-crosscheck` classifies
+  // its own `did-not-line-up` benign for the identical reason.
+  'could-not-place-them', 'accounted-for', 'nobody-saw-anything',
+  // The two other night-reading scenes (a door heard, an empty bed). Every
+  // branch is benign for the same reason: these are two people comparing notes
+  // over breakfast, and whatever the finding costs, it costs the person who is
+  // not in the room. None of the eight moves a bond downward.
+  'heard-it-go', 'passed-it-on', 'talked-themselves-out', 'slept-through',
+  'the-bed-was-empty', 'said-it-out-loud', 'they-had-a-reason', 'never-woke',
+  // ── AND THE NINE OF THE SAME EIGHT THAT PAY NOTHING OR PAY UP ───────
+  //
+  // An apology taken after being refused, two people admitting the same
+  // ugly thing, a door opened halfway through, a row that became breakfast,
+  // a snub walked straight at -- and the three that cost nothing because
+  // nothing happened: a nerve lost on a landing, a room that stayed quiet,
+  // an apology aimed at the wrong injury and accepted without warmth.
+  'apologised-for-the-wrong-thing', 'both-admitted-it', 'closed-the-gap',
+  'it-turned-into-breakfast', 'lost-their-nerve', 'nobody-said-anything',
+  'one-of-them-apologised', 'opened-it', 'took-it-badly-and-then-took-it',
+  // ── AND THE HALF OF THE SAME THREE THAT PRESS NOBODY ────────────────
+  //
+  // Rehearsing an account to yourself on a road, counting the column at the
+  // gate, saying a dead player's name out loud for two miles, a test that
+  // came back blank.
+  'counted-the-column', 'let-it-lie-out-there', 'nobody-said-the-name',
+  'nothing-to-read', 'rehearsed-on-the-walk', 'set-it-over-breakfast',
+  'talked-about-them-walking', 'walking-where-they-walked',
   // ── AND THE CONTINUATIONS THAT PRESS NOBODY ─────────────────────────
   //
   // Same five events. Grief shared without either of them meaning anything
@@ -1112,6 +1169,21 @@ export const BENIGN_BRANCHES = new Set([
   'went-over-it', 'noticed-the-quiet', 'let-it-go',
   'decided-early', 'still-deciding', 'dreading-it',
   'was-right', 'was-wrong', 'counting-the-cost',
+  // ── AND THE FOUR ROAD-OUT SCENES ADDED ON 2026-09-07 (same file) ────
+  //
+  // Same rule again, and it is worth saying why `overdid-it` is here rather
+  // than opposite: it is the branch where somebody performs too hard on an
+  // open road and knows it. That is adverse to the ACTOR and this list is not
+  // about that — `_tone` frames the consequence between the people in the
+  // scene, and a scene with one person in it has nobody to be adverse
+  // towards. None of the sixteen moves a bond at all.
+  'thought-about-the-room', 'left-it-arranged', 'worked-out-who-could-double-back',
+  'did-not-think-about-it',
+  'walked-out-decided', 'changed-it-on-the-road', 'walked-out-with-nothing',
+  'let-the-day-decide',
+  'counted-the-mornings', 'stopped-counting', 'thought-about-the-last-one',
+  'took-the-morning-as-it-came',
+  'managed-the-face', 'stopped-managing-it', 'overdid-the-ease', 'never-thought-about-it',
   // ── AND THE SIXTEEN SOLO EVENTS ADDED ON 2026-09-05 (same file) ─────
   //
   // Same rule, applied whole: a scene with one actor in it has no

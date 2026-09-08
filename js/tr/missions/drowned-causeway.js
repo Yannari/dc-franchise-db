@@ -41,7 +41,7 @@
 import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
-  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick,
+  pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
 } from './contract.js';
 
 /** The two teams. Named for what is on the sandbar rather than for a colour. */
@@ -649,6 +649,20 @@ export const drownedCauseway = {
   id: 'drowned-causeway',
   name: 'The Drowned Causeway',
   teams: TEAMS,
+  // ── THE SOLO TASK ───────────────────────────────────────────────────
+  //
+  // `sideObjectives[]` is the only place a mission record names one person and
+  // says what they personally went and did, and it is what the `journey-back`
+  // castle window argues about the next morning. Both of these are things the
+  // afternoon makes available and nobody is required to do: the ledge empties
+  // from the shore end, so staying on it is a choice, and the tide is called
+  // by whoever is looking at the water rather than at the boxes.
+  side: [
+    { id: 'last-off-the-ledge', label: 'stay out on the ledge until the last box was over',
+      stat: 'endurance' },
+    { id: 'called-the-tide', label: 'call the tide turning before anybody else saw it',
+      stat: 'intuition' },
+  ],
   // AGENTS.md: the description states the set-up, the mechanic, what goes
   // wrong and the win condition, in that order, and it is the only place the
   // viewer is told what the players are physically doing.
@@ -702,7 +716,12 @@ export const drownedCauseway = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
-    const pay = payPot(quality);
+    // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
+    // has taken a bonus since it was written and no bespoke mission ever
+    // passed one, so a solo task was worth nothing here even when the field
+    // was empty of them entirely.
+    const sideObjectives = runSideObjectives(drownedCauseway.side, scored, rng, null);
+    const pay = payPot(quality, sideObjectives.reduce((a, o) => a + o.bonus, 0));
     const boxesUp = (ledge.teamBoxes[TEAMS[0]] || 0) + (ledge.teamBoxes[TEAMS[1]] || 0);
 
     const rec = {
@@ -717,7 +736,7 @@ export const drownedCauseway = {
       potBefore: pay.potBefore, gross: pay.gross, potEarned: pay.potEarned,
       potAfter: pay.potAfter, earned: pay.potEarned,
       shields: [],
-      sideObjectives: [],
+      sideObjectives,
       scenes: [...wade.scenes, ...ledge.scenes, ...bell.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       // The afternoon's own countable fact, for anything downstream that wants

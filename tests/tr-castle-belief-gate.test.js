@@ -169,13 +169,33 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
     try {
       for (const ev of EVENTS) {
         let produced = false;
-        for (const roll of SWEEP_ROLLS) {
-          probeWorld({ aTraitor: true, bTraitor: true, turret: true });
-          const ctx = { ep: PROBE_EP, window: ev.window, act: 'middle',
-            living: [...PROBE_CAST], actors: [PROBE_CAST[0], PROBE_CAST[1]] };
-          let out = null;
-          try { out = ev.fire(ctx, forkRng(roll)); } catch { /* recorded as inert below */ }
-          if (out != null) produced = true;
+        // TWO ACTORS AND THREE, because a pair context cannot reach a scene
+        // written for a group.
+        //
+        // This probe used to build one ctx with `[PROBE_CAST[0],
+        // PROBE_CAST[1]]`, and js/tr/castle/group.js contains scenes that
+        // destructure a THIRD actor — `const [a, b, c] = ctx.actors` — so
+        // `pStats(c)` threw on undefined, the throw was swallowed by the catch
+        // below, and the event was filed as dead content. It is not dead; the
+        // guard could not see it. That mattered exactly as much as a real dead
+        // event would: an event this arm cannot enter is an event whose belief
+        // writes are unchecked, which is the one thing this file exists to
+        // prevent.
+        //
+        // Reported as ONE inert entry (`group-rounded-on-them`) for two weeks
+        // while six sibling group events passed — they happen to iterate
+        // `ctx.actors` instead of destructuring, so a pair context reached
+        // them. A guard whose blind spot depends on how an author wrote a
+        // destructuring statement is not a guard.
+        for (const size of [2, 3]) {
+          for (const roll of SWEEP_ROLLS) {
+            probeWorld({ aTraitor: true, bTraitor: true, turret: true });
+            const ctx = { ep: PROBE_EP, window: ev.window, act: 'middle',
+              living: [...PROBE_CAST], actors: PROBE_CAST.slice(0, size) };
+            let out = null;
+            try { out = ev.fire(ctx, forkRng(roll)); } catch { /* recorded as inert below */ }
+            if (out != null) produced = true;
+          }
         }
         if (produced) ran.add(ev.id); else inert.push(ev.id);
       }
@@ -211,8 +231,26 @@ describe('CASTLE EVENTS WRITE ZERO BELIEFS (the plan\'s #1 constraint)', () => {
   // anywhere under js/tr/. The set is closed and small, and js/tr/scene-api.js
   // is deliberately NOT in it: the write path a scene uses does not hold the
   // primitive, it asks the priced channel for one.
-  const LEARN_IMPORTERS = ['deduction.js', 'murder-variants.js', 'powers.js',
-    'roles.js', 'roundtable.js'];
+  //
+  // ── armoury.js JOINED THIS SET AND THE LIST WAS NOT UPDATED ─────────
+  //
+  // Added by commit 70b26a0f ("a blocked Armoury night is no longer dead
+  // air"), which mints a real channel: an Armoury night that ate a murder
+  // tells the room the target was one of N entrants, so whoever pushed an
+  // entrant at that table wanted what the Traitors wanted. It is a deliberate,
+  // documented write, priced in its own file at ceiling * (targets/entrants) —
+  // a quarter of the case for pushing one of four — and it is NOT a castle
+  // file, so none of the three arms above is being evaded.
+  //
+  // ADDED HERE HONESTLY: what this line records is that the import is
+  // INTENTIONAL, not that the channel has been priced the way this project
+  // prices channels. `gateChannel()` has never been run against its selection
+  // rule, and js/tr/channel-audit.js has no `armoury-*` entry. That is worth
+  // doing — the same measurement caught a castle channel this month that read
+  // as obviously informative and scored WORSE than a contentless control — and
+  // it is a separate job from unblocking a suite that has been red on main.
+  const LEARN_IMPORTERS = ['armoury.js', 'deduction.js', 'murder-variants.js',
+    'powers.js', 'roles.js', 'roundtable.js'];
 
   it('only the priced channels import learn(), and the scene API is not one of them', () => {
     const TR_DIR = path.join(HERE, '..', 'js', 'tr');

@@ -195,6 +195,17 @@ export function initTraitorsState() {
     // chooseBanishmentVote as one term beside suspicion and noise — a corridor
     // conversation can move a ballot and can never own one.
     voteIntents: [],
+    // ── STANDING: WHAT BEING RIGHT IS WORTH ─────────────────────────
+    //
+    // name -> a running number, 0 at the start of a season. It goes UP when
+    // you put a name up and the reveal agreed with you, and DOWN when you
+    // drove somebody out who turned out to be a Faithful. Nothing else writes
+    // it; `priceTheAccusers` (js/tr/roundtable.js) is the only author, on the
+    // one night the castle is ever told who was right.
+    //
+    // A PLAIN OBJECT, because it has to survive JSON.stringify with the rest
+    // of the season (AGENTS.md: functions and Sets do not).
+    standing: {},
 
     // What somebody said they were GOING to do, and what became of it:
     // `{ id, sourceSceneId, promisedAction, owner, ep, threadId, status,
@@ -797,6 +808,123 @@ export function traitorsBackgroundBlockers(backgrounds = {}) {
 //
 // Every one takes `g` (the game state) explicitly, like `castSize` and
 // `peopleLost` above, so this file stays free of a `gs` import.
+
+// ── THE POT, AND THE ONE PLACE IT IS ALLOWED TO BE HIDDEN ─────────────
+//
+// `gs.tr.pot` has two readers in different layers — the pact's price at the
+// ballot (js/tr/deduction.js) and one castle scene about the money
+// (`grief-what-it-is-all-for`, js/tr/castle/alone.js) — and
+// tests/tr-missions.test.js has to blind BOTH of them at once to ask its
+// question ("a money mission buys nothing but money"). It blinded only the
+// first for a month, and the castle scene is why that guard was red on main:
+// with missions off the pot is 0 forever, the scene's weight goes to 0, one
+// evening draw lands on a different event, and the castle stream — and then
+// the whole season through it — parts company for reasons that have nothing
+// to do with a mission granting anybody anything.
+//
+// So the blind is a property of the READER and there is exactly one reader.
+// That is the same argument `potShare()` in deduction.js already makes for
+// itself, and the second private copy it warns about is precisely what the
+// castle scene turned out to be.
+//
+// Test-only. Nothing in the show may ever set it.
+let _potBlind = false;
+export function _setPotBlind(on = false) {
+  const prev = _potBlind;
+  _potBlind = !!on;
+  return () => { _potBlind = prev; };
+}
+
+/** What is in the pot, or 0 to anything asking while the blind is down. */
+export function potNow(g) {
+  return _potBlind ? 0 : (g?.tr?.pot || 0);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// INFLUENCE — EARNED, NOT ASSIGNED
+// ══════════════════════════════════════════════════════════════════════
+//
+// There is no `influence` stat and there should not be: the nine are fixed
+// (AGENTS.md), and sway over a Round Table is not something a player arrives
+// with. It is something that either happened or did not. So it is measured
+// from two things the season already records, and both of them are public:
+//
+//   TRACK RECORD (`standing`)  — you named somebody and the reveal agreed, or
+//                                you drove out a Faithful. Written once a
+//                                night, at the only moment the castle is told
+//                                who was right.
+//   SWAY (`roomFollows`)       — when you put a name up, did the room write it
+//                                down? Measured over 30 seasons at p10 0.150,
+//                                p50 0.295, p90 0.458: a person the room
+//                                follows half the time and one it follows a
+//                                seventh of the time are different players,
+//                                and no stat line says which is which.
+//
+// THE TWO ARE NOT THE SAME THING and that is why both are in it. You can be
+// right and ignored, and you can be followed and wrong; the player who is
+// dangerous to a Traitor is the one who is both.
+//
+// AND IT IS SLOW BY CONSTRUCTION, WHICH IS THE CALIBRATION ARGUMENT. Standing
+// only moves on a reveal, so on night one everybody sits at exactly neutral
+// and influence changes nothing about anything. It can only sharpen as the
+// season goes on, which is the shape this format's calibration demands
+// (near-chance early, sharpening late) rather than a threat to it.
+
+/** How many points of standing take somebody from neutral to the top. */
+const STANDING_SPAN = 6;
+
+/** The raw running total. 0 for anybody the reveal has never priced. */
+export function standingOf(g, name) {
+  const v = g?.tr?.standing?.[name];
+  return typeof v === 'number' && isFinite(v) ? v : 0;
+}
+
+/** Move it. The ONLY writer is `priceTheAccusers`. */
+export function addStanding(g, name, delta) {
+  if (!g?.tr || !name || !delta) return;
+  if (!g.tr.standing || typeof g.tr.standing !== 'object') g.tr.standing = {};
+  g.tr.standing[name] = (g.tr.standing[name] || 0) + delta;
+}
+
+/**
+ * How often the room followed `name` when they spoke, `{ n, share }`.
+ *
+ * `n` is returned beside the share because one lucky speech is not a
+ * reputation: a caller wanting a reliable read should require a couple of
+ * them. A pure read over rounds that have already closed — no draw, no write.
+ */
+export function roomFollows(g, name, ep) {
+  let n = 0, sum = 0;
+  for (const r of (g?.tr?.rounds || [])) {
+    if (!(r.ep < ep)) continue;
+    const ballots = (r.ballots || []).filter(b => b.voted);
+    if (ballots.length < 3) continue;
+    const tally = {};
+    for (const b of ballots) tally[b.voted] = (tally[b.voted] || 0) + 1;
+    for (const a of (r.accusations || [])) {
+      if (a.accuser !== name || !a.target) continue;
+      n++;
+      sum += (tally[a.target] || 0) / ballots.length;
+    }
+  }
+  return { n, share: n ? sum / n : 0 };
+}
+
+/**
+ * One number, 0..1, NEUTRAL AT 0.5 — so a caller reads `influence - 0.5` as a
+ * signed lever and somebody with no history moves nothing.
+ *
+ * Weighted toward the track record, because being right is the thing that
+ * makes somebody dangerous; sway without a record is a loud player, and the
+ * room works that out eventually. Sway needs two speeches before it counts at
+ * all — normalised against 0.5, which is where the measured ceiling sits.
+ */
+export function influenceOf(g, name, ep) {
+  const record = 0.5 + standingOf(g, name) / STANDING_SPAN;
+  const rf = roomFollows(g, name, ep);
+  const sway = rf.n >= 2 ? Math.min(1, rf.share / 0.5) : 0.5;
+  return Math.max(0, Math.min(1, record * 0.65 + sway * 0.35));
+}
 
 /** What `voter` last said, this episode, they meant to do. Null when nothing was said. */
 export function voteIntentFor(g, voter, ep) {

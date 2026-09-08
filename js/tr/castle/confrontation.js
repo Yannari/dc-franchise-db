@@ -33,19 +33,19 @@ const TOPIC = 'confrontation';
 // (the topic) answers — and the branch is how `{b}` takes it.
 const FACE_LINES = {
   held: [
-    '{a} said it to {b}’s face, in front of the room, and {b} did not blink.',
-    '{a} put it to {b} straight, no softening, and {b} held the look and gave nothing back.',
-    '{a} named it out loud at {b}, and {b} let the accusation sit there and go cold.',
-    '{a} came at {b} directly, and {b} took it standing — which the room clocked as much as the accusation.',
+    '{a} accused {b} to {b}’s face, in front of the room, and {b} did not flinch.',
+    '{a} said it plainly — called {b} suspicious — and {b} held the look and gave nothing back.',
+    '{a} said {b}’s name out loud as an accusation, and {b} let it sit there until it went cold.',
+    '{a} accused {b} directly, and {b} stood there and took it while the room watched both of them.',
   ],
   cracked: [
-    '{a} pushed {b} on it, hard, and {b} came apart a little: a stammer, a look away, a hand that would not settle.',
-    '{a} would not let it go, and {b}’s answer got smaller and shakier the longer it ran.',
-    '{a} kept the pressure on {b}, and {b} folded — half an answer, then none at all.',
+    '{a} pushed {b} on the accusation, hard, and {b} came apart a little: a stammer, a look away, a hand that would not settle.',
+    '{a} would not let the question go, and {b}’s answer got smaller and shakier the longer it ran.',
+    '{a} kept pressing {b} for an explanation, and {b} folded — half an answer, then none at all.',
     '{a} said it plainly and {b} could not meet it, and the people watching filed that away.',
   ],
   turned: [
-    '{a} came for {b} and walked straight into it: {b} turned the whole thing round and put {a} on the back foot.',
+    '{a} accused {b} and {b} turned the whole thing round, and suddenly {a} was the one answering questions.',
     '{a} accused {b} to {b}’s face, and {b} answered with a question {a} could not climb out from under.',
     '{b} did not defend — {b} attacked, and by the end it was {a} doing the explaining.',
     '{a} thought {b} was cornered. {b} was not, and made certain the room saw who really was.',
@@ -130,9 +130,9 @@ registerEvent({
 // already is. `{a}` fronts it, `{b}` (topic) is the one being surrounded.
 const PILE_LINES = {
   weathered: [
-    'It stopped being a conversation and became a circle, three or four voices at {b} at once, and {b} stood in the middle of it and did not give.',
+    'Three or four people started questioning {b} at once, and {b} stood in the middle of it and did not give.',
     'The room closed on {b} with {a} loudest, and {b} took every question without raising a hand or a voice.',
-    '{a} led the others onto {b} all at once, and {b} weathered it like weather — head down, steady, still there at the end.',
+    '{a} led the others onto {b} all at once, and {b} kept calm and waited it out.',
     '{b} had four people’s doubt landing at the same time, {a} first among them, and answered all of it without cracking.',
   ],
   crumbled: [
@@ -150,8 +150,8 @@ const PILE_LINES = {
   'turned-it-back': [
     '{b} took the pile-on, picked the loudest voice in it, and turned the whole thing onto {a} instead.',
     'Cornered, {b} asked {a} one question back, and the nearest half of the table turned to look at {a}.',
-    '{b} mounted no defence at all, and spent the entire time asking why {a} was so certain. By the end so was everybody.',
-    'The room came for {b} and left holding a question about {a}, which is not how a pile-on is supposed to end.',
+    '{b} did not defend at all — just kept asking why {a} was so sure, until the rest of the room started wondering the same thing about {a}.',
+    'The room came for {b} and walked away suspicious of {a} instead, which nobody had planned.',
     '{b} let it run for a minute and then put a single thing to {a} that nobody had an answer for.',
     'It stopped being about {b} somewhere in the middle, and {a} is the reason it stopped.',
     '{b} was outnumbered and came out of it with the room\'s attention pointed at {a}.',
@@ -238,14 +238,14 @@ const DEFEND_LINES = {
   'fell-flat': [
     '{a} spoke up for {b}, and it did not move anybody — the doubt about {b} sat there exactly as heavy as before.',
     '{a} made the case for {b} and the room heard it and kept its face, and nothing about {b} changed.',
-    '{a} defended {b} into a silence that gave nothing back, and {b} is no lighter for it.',
+    '{a} defended {b} and the room went quiet but nobody changed their mind, and {b} is no safer for it.',
     '{a} tried, for {b}, and it slid off — a defence nobody argued with and nobody bought either.',
   ],
   'drew-fire': [
     '{a} stood up for {b}, and the next question was why {a} cared so much — now there are two of them being watched.',
     'Defending {b} cost {a}: the moment {a} spoke, the doubt widened to take {a} in as well.',
     '{a} put themselves between {b} and the room and caught some of it — standing up for the accused made {a} one of them.',
-    '{a} meant to draw the doubt off {b} and drew it onto themselves instead, and now {a} and {b} sink or float together.',
+    '{a} meant to draw the suspicion off {b} and drew it onto themselves instead, and now both of them are being watched.',
   ],
   'too-late': [
     '{a} defended {b} well and did it a full ten minutes after the room had stopped caring.',
@@ -361,7 +361,7 @@ const BREAKFAST_LINES = {
     '{a} came at {b} an hour after a body and it landed as grief rather than as a case.',
     'The room did not hear an accusation. It heard somebody upset, and it looked away from {a} rather than at {b}.',
     '{a} said it while {a} was still shaking, and that is all anybody took from it.',
-    'It was the wrong morning to be right, and {a} was too raw to be either.',
+    '{a} was too upset to make the accusation land, and the room heard grief instead of a case.',
     '{b} did not even have to answer. The room did the answering for {b}, gently, at {a}.',
     '{a} spent that accusation at the worst possible hour and got nothing back for it.',
   ],
@@ -456,7 +456,7 @@ const VOTE_LINES = {
     '{b} explained the vote by explaining somebody else’s, which {a} noticed and filed.',
     '"I only wrote it because—" and the rest of {b}’s sentence was a third person’s name.',
     '{b} answered {a} by handing {a} somebody else to be angry with.',
-    'It is a good technique and {a} has seen it before, which is the problem.',
+    '{a} recognised what {b} was doing — blaming someone else for the vote — because {a} has seen it before.',
     '{b} spread the vote around until it belonged to nobody, least of all {b}.',
     '{a} came for one answer and left holding two more names and no answer at all.',
   ],
@@ -473,7 +473,7 @@ const VOTE_LINES = {
     '{b} did not defend the vote. {b} attacked {a}’s, and did it in front of two other people.',
     '"Ask yourself that," said {b}, and the corridor went quiet.',
     '{b} had clearly been waiting for {a} to raise it and had the answer ready in the shape of a question.',
-    '{a} started that conversation and did not finish it, and the difference was {b}’s doing.',
+    '{a} started asking about the vote and ended up defending {a}’s own, which was {b}’s doing.',
     'By the end it was {a} explaining a slate, which is not how {a} had planned the evening.',
   ],
 };
@@ -545,7 +545,7 @@ const CORRIDOR_LINES = {
   'said-what-they-meant': [
     'No room, no audience, no performance: {a} said the actual thing to {b} outside the bedroom door.',
     'It is a different conversation with nobody watching, and {a} and {b} finally had that one.',
-    '{a} told {b} the truth of it in a corridor at midnight, which is where truths get told here.',
+    '{a} told {b} the truth in a corridor at midnight, with nobody around to hear it.',
     '{b} heard the version {a} has not said downstairs all week.',
     'Two people said what they thought of each other with no third person to play to.',
     'It was quieter than the hall version and considerably worse to hear.',
@@ -555,16 +555,16 @@ const CORRIDOR_LINES = {
     '{a} and {b} said the whole thing to each other and then, oddly, shook on it.',
     'It turned out to be a misunderstanding with four days on it, and four days is a long time here.',
     '{b} explained, {a} believed it, and the corridor got twenty minutes and settled it.',
-    'Whatever that was, it ended with both of them agreeing it had been stupid.',
+    'The argument ended with both of them agreeing it had been stupid.',
     'They went up separately and came down together, and the hall noticed that in the morning.',
   ],
   'made-it-worse': [
     'Away from the room there was nothing to keep it civil, and neither of them kept it civil.',
     '{a} said something in that corridor {a} will not be able to take back.',
     'It got personal in a way it had not managed to downstairs, because downstairs there were witnesses.',
-    'Whatever this was about, it is about something else now.',
+    'The argument started about suspicion and ended somewhere personal.',
     'They ran out of accusations somewhere around midnight and started on each other instead.',
-    'Two doors closed hard at the same end of the corridor, and the corridor remembered it all night.',
+    'Two doors slammed at the same end of the corridor, and neither of them came back out.',
   ],
   'nobody-heard-it': [
     'Whatever happened in that corridor, it stayed there, and the castle will run tomorrow on not knowing.',
@@ -657,7 +657,7 @@ const LONG_WALK_LINES = {
     'They said everything worth saying in the first half mile and had four more to walk.',
     'The argument finished long before the road did, and then it was just two people walking.',
     '{a} and {b} ran out of things to accuse each other of and kept walking anyway.',
-    'There is nothing more awkward than being furious with somebody for another hour with nothing left to say.',
+    '{a} and {b} ran out of things to say and still had four miles of walking next to each other.',
     'It ended in silence, not agreement, and the silence went on for miles.',
     'By the gate it had gone cold, and cold between those two is not better than loud.',
   ],
@@ -847,7 +847,7 @@ const BROKEN_WORD_LINES = {
     'There was no shouting. {a} simply repeated {b}’s own words back at {b}, exactly.',
     'There is nothing to argue with when somebody quotes you accurately, and {b} did not try.',
     '{a} had the sentence word for word, which suggests {a} has been carrying it for days.',
-    'It was not an accusation. It was a receipt, and {b} had to stand there for it.',
+    '{a} did not accuse {b} of anything new — just repeated what {b} had promised and let the broken promise speak for itself.',
   ],
   'denied-saying-it': [
     '{b} said {b} had never promised that, and said it with a completely straight face.',
@@ -867,7 +867,7 @@ const BROKEN_WORD_LINES = {
   ],
   'threw-it-back': [
     '{b} listed, from memory, the two things {a} had promised {b} and not done.',
-    'It stopped being about {b}’s broken word about four seconds in.',
+    'The conversation stopped being about {b}’s broken promise almost immediately — {b} made sure of that.',
     '{a} raised one promise and {b} raised two, and now there are three on the floor.',
     '{b} was clearly waiting to be asked about this and had the counter-charge ready.',
     'Neither of them has kept a word to the other this week and now both of them know it.',
@@ -1050,6 +1050,855 @@ registerEvent({
     // line to the right mouth.
     return { branch, pair: [a, b], speaker: b, respondent: a,
       topic: a, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE FAMILY IS STILL THE THINNEST IN THE POOL
+// ══════════════════════════════════════════════════════════════════════
+//
+// After the September batch that put confrontation into six new windows it
+// stood at TWELVE events against trust's 41 and suspicion's 36 — bottom of
+// the table, in the register this format runs on. Measured share of scenes:
+// 5.0% of the castle is an argument, against suspicion's 26%.
+//
+// These eight take it to twenty, weighted into the windows it holds ONE event
+// in: journey-back, after-table and night had a single confrontation each, so
+// the hour after a banishment — the angriest hour the format has — could
+// produce exactly one shape of row.
+//
+// Same gate as the rest of the file: a live suspicion or confrontation
+// thread, or real hostility on the bond. Personality scales the weight but
+// does not open the door, which is the distinction the archetype
+// investigation turned on — who picks a fight may depend on temper, but who
+// gets SUSPECTED must not.
+
+// ── confront-carried-it-home ────────────────────────────────────────────
+// journey-back. An argument that started out there and does not stop at the
+// gate — the one shape a road row can take that the road cannot contain.
+const CARRIED_HOME_LINES = {
+  'still-going-inside': [
+    'It started at the ford and it was still going in the boot room.',
+    '{a} followed {b} through the door still talking, which is how the whole castle found out.',
+    'They came up the drive arguing and did not stop for the threshold.',
+    'The hall got the last four minutes of a conversation that had been running for five miles.',
+    '{a} would not let it end at the gate, and a gate is where these are supposed to end.',
+    'Everybody else went to change. Those two stood in the corridor and finished it.',
+    'It has stopped being about the afternoon and neither of them can say when.',
+    '{b} tried three times to walk away and {a} kept finding one more sentence.',
+  ],
+  'dropped-it-at-the-gate': [
+    'Whatever that was on the road, {a} and {b} left it on the other side of the gate.',
+    'They came in separately and neither said a word about the last hour.',
+    'It is not resolved. It is filed, which in this castle is nearly the same thing.',
+    'Both of them decided the castle did not need to see it, and both were right.',
+    '{a} was still angry in the hall and said nothing at all about why.',
+    'They will pick it up tomorrow on the way out, and both know it.',
+    'The gate did what gates do and the argument stayed outside.',
+    'It cost them the walk and it did not cost them the evening.',
+  ],
+  'somebody-else-carried-it': [
+    'Neither {a} nor {b} mentioned it inside. Somebody who had been walking behind them did.',
+    'The row arrived at the castle before they did, in a third person’s mouth.',
+    'By dinner two people who were not on that road had opinions about it.',
+    '{a} spent the evening being asked about a conversation {a} had thought was private.',
+    'It is a small castle and a long road and neither of them thought about the acoustics.',
+    'The version going round the hall is not either of their versions.',
+    '{b} has heard it repeated back with a detail {b} does not recognise.',
+    'Somebody made that argument public and it was not one of the two people in it.',
+  ],
+  'one-of-them-apologised': [
+    'Halfway up the drive {a} said sorry, properly, and meant it.',
+    'It ended better than it had any right to, in the last quarter mile.',
+    '{a} climbed down, which is rarer here than being right.',
+    '{b} did not expect an apology and did not know what to do with one.',
+    'They came in together, which the hall noticed as much as it would have noticed a row.',
+    'It is not that {a} was wrong. It is that {a} would rather have {b}.',
+    'The apology cost {a} something and bought more than it cost.',
+    'Whatever that was, it is over, and both of them are quietly relieved.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-carried-it-home',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'journey-back',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['temperament', 'boldness', 'loyalty', 'social'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    if (!t && getBond(a, b) > -2) return 0;
+    return t ? 2.5 : 1;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-carried-it-home');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const scores = {
+      'still-going-inside': (1 - sa.temperament / 10) * 0.4 + (sa.boldness / 10) * 0.2,
+      'dropped-it-at-the-gate': (sa.temperament / 10) * 0.35 + 0.1,
+      'somebody-else-carried-it': (ctx.living || []).length >= 7 ? 0.3 : 0.1,
+      'one-of-them-apologised': (sa.loyalty / 10) * 0.3 + (sa.social / 10) * 0.15,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'still-going-inside';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'still-going-inside' ? 'brought the argument in through the door'
+      : branch === 'dropped-it-at-the-gate' ? 'left it on the other side of the gate'
+        : branch === 'somebody-else-carried-it' ? 'had their row repeated by somebody who overheard it'
+          : 'climbed down on the last quarter mile';
+    const note = lineFor(CARRIED_HOME_LINES[branch],
+      `confront-carried-it-home|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'one-of-them-apologised' ? 2
+      : branch === 'dropped-it-at-the-gate' ? -0.5
+        : branch === 'somebody-else-carried-it' ? -1.5 : -2.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'one-of-them-apologised') crowd = { name: a, colour: 'kind', reason: 'climbed down first, on a road, in front of people', mult: 0.5 };
+    else if (branch === 'still-going-inside') crowd = { name: a, colour: 'selfish', reason: 'brought a five-mile argument in through the front door', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── confront-you-let-them-go ────────────────────────────────────────────
+// after-table. Not about the vote cast — about the defence NOT made. The
+// specific accusation the hour after a banishment produces and this file
+// could not say.
+const LET_THEM_GO_LINES = {
+  'said-nothing-at-all': [
+    '{a} wants to know why {b} sat there and said nothing while it happened.',
+    '"You were their friend," {a} tells {b}, "and you did not open your mouth."',
+    'Silence at a table is a choice and {a} has decided to treat it as one.',
+    '{b} had one sentence that might have changed it and did not use it.',
+    '{a} counted the people who spoke up and {b} was not among them.',
+    'It is an accusation about an absence, which is the hardest kind to answer.',
+    '{b} says there was nothing to be done. {a} says there was, and does not say what.',
+    'Everybody at that table was quiet. {a} has picked one of them to be angry at.',
+  ],
+  'saved-themselves': [
+    '{a} says plainly what the room was thinking: {b} went quiet to stay safe.',
+    '"You could see where it was going and you got out of the way."',
+    'It is a fair reading and it is a brutal thing to say out loud in a corridor.',
+    '{b} does not deny it, exactly. {b} explains it, which is not the same.',
+    '{a} has decided {b} is the kind of player who will do that again.',
+    'The accusation is really a prediction, and {b} hears the prediction.',
+    'Self-preservation is not a crime here and it is not forgotten either.',
+    '{a} would have done the same and would not admit it.',
+  ],
+  'turned-it-on-the-accuser': [
+    '{b} points out, evenly, that {a} did not speak up either.',
+    '"Where were you?" ends that conversation faster than any defence.',
+    '{a} came for {b} about a silence and had one of their own.',
+    '{b} had counted too, and had a different list.',
+    'It is the corridor equivalent of a mirror, and {a} does not enjoy it.',
+    'Both of them sat there. Only one of them made it somebody else’s fault.',
+    '{b} says it flatly, without any anger in it, which is what makes it land.',
+    '{a} walks off first, which the corridor notes.',
+  ],
+  'both-admitted-it': [
+    'They stood in the corridor and admitted, both of them, that they had let it happen.',
+    'It is not an argument by the end. It is two people being honest at midnight.',
+    '{a} says it first and {b} agrees before {a} has finished.',
+    'Neither of them defended somebody they liked, and both of them know why.',
+    'There is no comfort in it. There is something between them that was not there before.',
+    'They agreed to speak up next time, which is a promise this castle rarely keeps.',
+    '{a} said the ugly thing about {a} and {b} matched it.',
+    'It is the first honest conversation either has had since the reveal.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-you-let-them-go',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'after-table',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'boldness', 'temperament', 'social'],
+    relationship: ['neutral', 'close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b])
+      || findOpenThread('trust', [a, b]);
+    if (!t && getBond(a, b) > -1) return 0;
+    return t ? 2.5 : 1;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-you-let-them-go');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'said-nothing-at-all': (sa.loyalty / 10) * 0.35 + (sa.boldness / 10) * 0.2,
+      'saved-themselves': (sa.boldness / 10) * 0.3 + (1 - sb.loyalty / 10) * 0.2,
+      'turned-it-on-the-accuser': (sb.temperament / 10) * 0.3 + (sb.social / 10) * 0.2,
+      'both-admitted-it': ((sa.loyalty + sb.loyalty) / 20) * 0.3,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'said-nothing-at-all';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'both-admitted-it' ? 'admitted together that they had let it happen'
+      : branch === 'turned-it-on-the-accuser' ? 'was asked where they had been'
+        : branch === 'saved-themselves' ? 'was accused of going quiet to stay safe'
+          : 'was asked why they said nothing at all';
+    const note = lineFor(LET_THEM_GO_LINES[branch],
+      `confront-you-let-them-go|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'both-admitted-it' ? 2
+      : branch === 'turned-it-on-the-accuser' ? -2 : -1.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'saved-themselves') crowd = { name: b, colour: 'cowardly', reason: 'went quiet at the table to stay out of it', mult: 0.5 };
+    else if (branch === 'both-admitted-it') crowd = { name: a, colour: 'exposed', reason: 'admitted out loud to having said nothing when it counted', mult: 0.4 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── confront-waited-up ──────────────────────────────────────────────────
+// night. Somebody sat up specifically to have it out — the deliberate
+// version, as against `confront-in-the-corridor`'s chance meeting.
+const WAITED_UP_LINES = {
+  'had-it-out': [
+    '{a} sat in the dark for an hour waiting for {b} to come up, and said all of it.',
+    'It was not a chance meeting. {a} had been waiting since eleven.',
+    '{b} came round the corner and found somebody who had prepared.',
+    '{a} had the whole thing ordered and delivered it without raising a voice.',
+    'Waiting up for somebody is its own message before a word is said.',
+    '{b} listened to the end, which {a} had not expected.',
+    'It took four minutes and {a} had spent an hour on it.',
+    'Nothing about it was spontaneous and that is what made it frightening.',
+  ],
+  'lost-their-nerve': [
+    '{a} waited up, rehearsed it, and said good night.',
+    'The whole speech went unused and {a} is still holding it.',
+    '{b} looked tired and {a} could not do it.',
+    'It is harder at midnight than it was at nine, and {a} found that out.',
+    '{a} will have to wait up again, and knows the second time is worse.',
+    'One hour of preparation and four words of delivery.',
+    '{b} has no idea what nearly happened on that landing.',
+    '{a} went to bed angrier than when {a} sat down.',
+  ],
+  'they-were-ready-too': [
+    '{b} had been expecting it for a day and had an answer waiting.',
+    'Two people who had both rehearsed, meeting at midnight.',
+    'It was less an argument than two prepared statements.',
+    '{a} got nothing new and gave away that {a} had been thinking about it.',
+    '{b} had even worked out which corridor {a} would pick.',
+    'Nobody was surprised and nobody moved.',
+    'It ended politely, which neither of them wanted.',
+    'They will do this again and both know the next one is the real one.',
+  ],
+  'woke-the-corridor': [
+    'It got loud enough that two doors opened and one of them stayed open.',
+    'A midnight argument in a stone corridor is a public argument.',
+    'Whatever {a} had planned to say privately is now known by four people.',
+    'Somebody coughed pointedly and neither of them stopped.',
+    'The castle heard the shape of it if not the words.',
+    'By breakfast three people will know there was a row and none will know what about.',
+    '{b} noticed the audience before {a} did and stopped talking.',
+    'It was the loudest thing that happened all night and nobody will admit to listening.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-waited-up',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'night',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'strategic', 'temperament', 'intuition'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // Sitting up for somebody needs a live story, not just dislike.
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    return t ? 2.5 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-waited-up');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'had-it-out': (sa.boldness / 10) * 0.4 + (sa.temperament / 10) * 0.15,
+      'lost-their-nerve': (1 - sa.boldness / 10) * 0.4,
+      'they-were-ready-too': (sb.intuition / 10) * 0.3 + (sb.strategic / 10) * 0.2,
+      'woke-the-corridor': (1 - sa.temperament / 10) * 0.3 + 0.1,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'had-it-out';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'lost-their-nerve' ? 'waited up for them and said good night instead'
+      : branch === 'they-were-ready-too' ? 'found somebody who had rehearsed an answer'
+        : branch === 'woke-the-corridor' ? 'had it out loudly enough that doors opened'
+          : 'waited up in the dark to say all of it';
+    const note = lineFor(WAITED_UP_LINES[branch],
+      `confront-waited-up|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'lost-their-nerve' ? 0
+      : branch === 'they-were-ready-too' ? -1 : -2.5;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'woke-the-corridor') crowd = { name: a, colour: 'selfish', reason: 'had a private row at a volume the whole floor could hear', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── confront-apology-refused ────────────────────────────────────────────
+// morning. The one direction this family had no event for: somebody trying
+// to END a row, and being told no.
+const APOLOGY_LINES = {
+  'refused-it': [
+    '{a} apologised properly and {b} did not take it.',
+    '"I am not going to pretend that is enough," said {b}, and meant it.',
+    'It is worse to apologise and be refused than never to have tried.',
+    '{a} came with something real and left holding it.',
+    '{b} is entitled to refuse and both of them know what refusing costs.',
+    'The apology was the last card {a} had for this.',
+    '{b} said thank you and did not say it was all right.',
+    'They are further apart at nine than they were at eight.',
+  ],
+  'took-it-badly-and-then-took-it': [
+    '{b} said no, walked ten yards, came back, and said all right.',
+    'It took two attempts and the second one was {b}’s.',
+    '{a} was already gone when {b} decided to accept it.',
+    'Pride got about four minutes and then lost.',
+    'Neither of them will describe that as an apology being accepted, and it was.',
+    '{b} did not say sorry back, which {a} noticed and let go.',
+    'It is mended badly, which is still mended.',
+    'They are civil by lunch and it is not nothing.',
+  ],
+  'used-it': [
+    '{a} apologised and asked for something in the same breath.',
+    'It was sincere and it was also a transaction, and {b} heard both.',
+    '{b} accepted the apology and declined the request.',
+    'An apology with a condition on it is a deal, and this castle knows the difference.',
+    '{a} may not have realised {a} was doing it. {b} noticed anyway.',
+    'The words were right and the timing said what the timing said.',
+    '{b} will remember the ask longer than the sorry.',
+    'It cost {a} more than saying nothing would have.',
+  ],
+  'apologised-for-the-wrong-thing': [
+    '{a} apologised at length for something {b} had not minded.',
+    'The actual injury went unmentioned, and {b} was not going to raise it.',
+    'It is a generous, useless apology and {b} accepted it without warmth.',
+    '{a} thinks this is settled. It is not settled.',
+    'They have now had the conversation and cannot have it again.',
+    '{b} said "it is fine" about a thing that was fine.',
+    'The wrong apology closes the door on the right one.',
+    '{a} walked away feeling better, which is the worst outcome available.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-apology-refused',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'morning',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'temperament', 'social', 'intuition'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // There has to be something to apologise FOR: a confrontation these two
+    // have already had. This is the only event in the file that requires the
+    // family's own thread and will not take a suspicion.
+    return findOpenThread(FAMILY, [a, b]) ? 3 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-apology-refused');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'refused-it': (1 - sb.temperament / 10) * 0.35 + (1 - sb.loyalty / 10) * 0.2,
+      'took-it-badly-and-then-took-it': (sb.temperament / 10) * 0.3 + (sb.loyalty / 10) * 0.2,
+      'used-it': (sa.strategic / 10) * 0.3 + (1 - sa.loyalty / 10) * 0.15,
+      'apologised-for-the-wrong-thing': (1 - sa.intuition / 10) * 0.3 + 0.1,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'refused-it';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'refused-it' ? 'apologised and was told it was not enough'
+      : branch === 'took-it-badly-and-then-took-it' ? 'refused an apology and came back for it'
+        : branch === 'used-it' ? 'apologised and asked for something in the same breath'
+          : 'apologised at length for the wrong thing';
+    const note = lineFor(APOLOGY_LINES[branch],
+      `confront-apology-refused|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'took-it-badly-and-then-took-it' ? 2
+      : branch === 'refused-it' ? -1.5
+        : branch === 'used-it' ? -1 : 0.5;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    // THE ONE BRANCH IN THIS FAMILY THAT ENDS A STORY. Without it a
+    // confrontation arc can only ever escalate, and a castle where nothing is
+    // ever mended is a castle with one note in it.
+    if (branch === 'took-it-badly-and-then-took-it' && (existing || t)) {
+      api.resolveArc((existing || t).id, 'passed-clean', { source: sceneWhy });
+    }
+    let crowd = null;
+    if (branch === 'refused-it') crowd = { name: b, colour: 'cruel', reason: 'was offered a real apology and would not take it', mult: 0.4 };
+    else if (branch === 'took-it-badly-and-then-took-it') crowd = { name: b, colour: 'kind', reason: 'came back and took an apology they had refused', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── confront-through-the-door ───────────────────────────────────────────
+// night. The argument nobody has to look at each other through — which is
+// exactly why people say the thing they would not say to a face.
+const THROUGH_DOOR_LINES = {
+  'said-the-unsayable': [
+    'A closed door makes people brave. {a} said a thing through it that {a} would never say to a face.',
+    'It is easier through an inch of oak, and {a} used that.',
+    'The worst sentence of the week was delivered to a door handle.',
+    '{b} did not open it, and {a} kept talking anyway.',
+    'Not having to watch somebody hear it is a kind of permission.',
+    '{a} will have to look at {b} at breakfast having said that.',
+    'There was no answer from inside, which {a} took as licence to continue.',
+    'Whatever that was, it cannot be taken back, and it was not even said to a face.',
+  ],
+  'never-opened-it': [
+    '{a} knocked, talked for a minute, and got nothing.',
+    'The door stayed shut and {a} eventually stopped.',
+    '{b} was awake. {b} simply decided not to be available.',
+    'Being ignored is worse than being argued with and both of them know it.',
+    '{a} said the whole thing to a closed door and walked away still holding all of it.',
+    'There is no answer to no answer.',
+    '{b} listened to every word and gave {a} nothing to work with.',
+    'It ended without ending, which is how these get worse.',
+  ],
+  'opened-it': [
+    'The door opened halfway through and the whole tone changed.',
+    'It is much harder to say once somebody is standing in front of you, and {a} found that out.',
+    '{b} opened it and asked {a} to come in, which took the fight out of it.',
+    'Two minutes of shouting and twenty minutes of talking.',
+    '{a} had a speech and got a conversation instead.',
+    'It went better than either of them had any right to expect at that hour.',
+    '{b} chose to hear it properly, which is not nothing.',
+    'They both came out of that room lighter than they went in.',
+  ],
+  'wrong-door': [
+    '{a} had that argument at the wrong door and somebody else heard all of it.',
+    'Stone corridors and identical doors at one in the morning.',
+    'A third person now knows exactly what {a} thinks of {b}, and {b} does not.',
+    '{a} realised halfway through and could not stop.',
+    'It is a very specific kind of humiliation and {a} is living in it.',
+    'The person on the other side of that door will remember every word.',
+    '{b} slept through the entire thing.',
+    'By breakfast the wrong person is holding this and has decided what to do with it.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-through-the-door',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'night',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'temperament', 'social', 'intuition'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    if (!t && getBond(a, b) > -3) return 0;
+    return t ? 2 : 0.8;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-through-the-door');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'said-the-unsayable': (1 - sa.temperament / 10) * 0.35 + (1 - sa.social / 10) * 0.15,
+      'never-opened-it': (sb.temperament / 10) * 0.3 + (1 - sb.boldness / 10) * 0.2,
+      'opened-it': (sb.boldness / 10) * 0.3 + (sb.social / 10) * 0.2,
+      'wrong-door': 0.12,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'said-the-unsayable';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'said-the-unsayable' ? 'said it through a closed door instead of to a face'
+      : branch === 'never-opened-it' ? 'talked at a door that never opened'
+        : branch === 'opened-it' ? 'was let in halfway through'
+          : 'had the argument at the wrong door';
+    const note = lineFor(THROUGH_DOOR_LINES[branch],
+      `confront-through-the-door|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'opened-it' ? 1.5
+      : branch === 'wrong-door' ? -0.5
+        : branch === 'never-opened-it' ? -2 : -3;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    // NO CROWD ON ANY BRANCH. Same reason as `confront-in-the-corridor`: the
+    // country did not see this one either, and the whole premise of the
+    // `wrong-door` branch is that exactly one unintended person did.
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta };
+  },
+});
+
+// ── confront-the-empty-chair ────────────────────────────────────────────
+// after-table. Not about who voted how — about whether the room got it
+// RIGHT, argued over the seat of the person who has just gone.
+const EMPTY_CHAIR_LINES = {
+  'we-got-it-wrong': [
+    '{a} says out loud what half the room is thinking: that was a mistake.',
+    '{a} tells the room they have just sent home a Faithful, and the room does not want to hear it.',
+    'Saying it does not undo it and {a} says it anyway.',
+    '{b} tells {a} there is no point in this, and there is not, and {a} keeps going.',
+    'The chair is still pulled out and {a} is standing behind it making the case.',
+    'Nobody in that room can prove {a} wrong and nobody wants {a} right.',
+    'It is the first honest thing said since the vote and it lands badly.',
+    '{a} is grieving out loud and it is coming out as an accusation.',
+  ],
+  'you-drove-it': [
+    '{a} puts it squarely on {b}: that was {b}’s name in the room all afternoon.',
+    '"That was you," says {a}. "That was your idea and you know it."',
+    'Somebody always gets blamed for a bad banishment and {b} has just been chosen.',
+    '{b} points out that everybody voted. {a} points out who spoke first.',
+    'The distinction between voting for something and building it is small and {a} is standing on it.',
+    '{b} did not hold the pen. {b} did write the sentence.',
+    'It is the accusation that follows every wrong result, and tonight it has {b}’s name on it.',
+    '{a} has decided who is responsible and is not taking submissions.',
+  ],
+  'defended-the-room': [
+    '{b} says the room did the best it could with what it had, and means it.',
+    '{b} points out there was nothing else to go on, which is true and is no comfort.',
+    'Somebody has to say the room is not a mob and {b} does it.',
+    '{a} does not accept it. Several people nearby quietly do.',
+    'It is a decent argument made at the worst possible hour.',
+    '{b} is defending everybody at that table, including the two who do not deserve it.',
+    'The Traitors in that room heard {b} defend them and said nothing.',
+    'It steadies the room and it costs {b} something with {a}.',
+  ],
+  'nobody-said-anything': [
+    'The argument that should have happened did not, and the chair stayed where it was.',
+    '{a} opened {a}’s mouth, looked at the chair, and let it go.',
+    'They cleared the room instead, which is easier than the conversation.',
+    'Everybody had the same thought and nobody was going to be first.',
+    'It will be said tomorrow, badly, by somebody less careful.',
+    '{a} and {b} looked at each other and both decided not to.',
+    'A room can decide to be quiet, and this one did.',
+    'The silence after a wrong banishment is its own verdict.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-the-empty-chair',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'after-table',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['loyalty', 'boldness', 'social', 'temperament'],
+    relationship: ['neutral', 'rival', 'close-ally'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b])
+      || findOpenThread('grief', [a, b]);
+    if (!t && getBond(a, b) > -1) return 0;
+    return t ? 2.5 : 1;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-the-empty-chair');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'we-got-it-wrong': (sa.loyalty / 10) * 0.3 + (sa.boldness / 10) * 0.2,
+      'you-drove-it': (sa.boldness / 10) * 0.3 + (sb.strategic / 10) * 0.2,
+      'defended-the-room': (sb.social / 10) * 0.3 + (sb.temperament / 10) * 0.2,
+      'nobody-said-anything': (1 - sa.boldness / 10) * 0.3 + 0.1,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'we-got-it-wrong';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'we-got-it-wrong' ? 'said out loud that the room had got it wrong'
+      : branch === 'you-drove-it' ? 'put the banishment squarely on one person'
+        : branch === 'defended-the-room' ? 'defended the room against the accusation'
+          : 'swallowed it and cleared the room instead';
+    const note = lineFor(EMPTY_CHAIR_LINES[branch],
+      `confront-the-empty-chair|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'you-drove-it' ? -2.5
+      : branch === 'we-got-it-wrong' ? -1
+        : branch === 'defended-the-room' ? -0.5 : 0;
+    if (bondDelta) api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'we-got-it-wrong') crowd = { name: a, colour: 'wronged', reason: 'stood behind an empty chair and said the room had got it wrong', mult: 0.5 };
+    else if (branch === 'defended-the-room') crowd = { name: b, colour: 'kind', reason: 'defended the room on the worst night it had had', mult: 0.4 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── confront-first-light ────────────────────────────────────────────────
+// dawn. Being downstairs before everybody else is a choice, and waiting
+// there for one specific person is a different choice.
+const FIRST_LIGHT_LINES = {
+  'caught-them-alone': [
+    '{a} was in the kitchen at six for one reason and {b} walked into it.',
+    'There is nowhere to go in an empty kitchen at first light.',
+    '{a} had picked the one hour of the day with no witnesses in it.',
+    '{b} came down for tea and got a conversation {b} had been avoiding.',
+    'No audience means no performance, and it was worse for that.',
+    '{a} did not raise a voice once and {b} would have preferred shouting.',
+    'By the time anybody else came down it was finished and neither of them said so.',
+    'It is the most deliberate thing {a} has done all week.',
+  ],
+  'somebody-walked-in': [
+    'It was going fine until a third person came down for the kettle.',
+    'They stopped mid-sentence and started talking about the weather.',
+    'The whole thing got about ninety seconds before the castle woke up.',
+    'Whoever that was is now certain something is going on between {a} and {b}.',
+    'An argument cut off at the knees is worse than one finished.',
+    'Both of them will spend the day knowing it is unfinished.',
+    '{a} had four things to say and got through one.',
+    'The kettle boiled and the conversation did not.',
+  ],
+  'not-at-this-hour': [
+    '{b} said, flatly, that {b} was not doing this before breakfast, and left.',
+    'Refusing to have an argument is a way of winning one and {b} knows it.',
+    '{a} had prepared for every answer except no.',
+    '{b} took a cup of tea and went back upstairs.',
+    'It is not cowardice and it does read a little like it.',
+    '{a} is left in an empty kitchen holding all of it.',
+    '"Not at six in the morning," said {b}, and that was the whole exchange.',
+    '{b} will have to have it eventually and has bought a day.',
+  ],
+  'it-turned-into-breakfast': [
+    'The confrontation lasted four minutes and then they made breakfast together.',
+    'Something got said early and honestly and it defused rather than detonated.',
+    'By seven they were cooking for the whole castle, which nobody expected.',
+    '{a} came down to have it out and stayed to help.',
+    'First light is a forgiving hour and both of them used it.',
+    'The people who came down later found two people who had clearly been talking a long time.',
+    'It is the only argument this week that ended with somebody being fed.',
+    'Whatever that was, it is settled, and it was settled before anybody saw it.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-first-light',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'dawn',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'temperament', 'social', 'loyalty'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    const [a, b] = ctx.actors;
+    // Getting up early for somebody needs a live story, the same as going to
+    // their door at night does.
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    return t ? 2.5 : 0;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-first-light');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'caught-them-alone': (sa.boldness / 10) * 0.3 + (sa.strategic / 10) * 0.2,
+      'somebody-walked-in': (ctx.living || []).length >= 8 ? 0.3 : 0.15,
+      'not-at-this-hour': (sb.temperament / 10) * 0.3 + (1 - sb.social / 10) * 0.15,
+      'it-turned-into-breakfast': ((sa.social + sb.social) / 20) * 0.35,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'caught-them-alone';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'caught-them-alone' ? 'picked the one hour with no witnesses in it'
+      : branch === 'somebody-walked-in' ? 'got ninety seconds before the castle woke up'
+        : branch === 'not-at-this-hour' ? 'was told it was not happening before breakfast'
+          : 'came down to have it out and stayed to cook';
+    const note = lineFor(FIRST_LIGHT_LINES[branch],
+      `confront-first-light|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'it-turned-into-breakfast' ? 2.5
+      : branch === 'not-at-this-hour' ? -1.5
+        : branch === 'somebody-walked-in' ? -0.5 : -2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    // The second branch in this family that can END a story rather than only
+    // escalate it — see the note on `confront-apology-refused`.
+    if (branch === 'it-turned-into-breakfast' && (existing || t)) {
+      api.resolveArc((existing || t).id, 'passed-clean', { source: sceneWhy });
+    }
+    let crowd = null;
+    if (branch === 'it-turned-into-breakfast') crowd = { name: a, colour: 'kind', reason: 'came down to have a row and cooked for the castle instead', mult: 0.5 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
+      ...(crowd ? { crowd } : {}) };
+  },
+});
+
+// ── confront-would-not-walk-with ────────────────────────────────────────
+// journey-out. The cut direct. No words at all, done where everybody can
+// count who is walking beside whom.
+const WOULD_NOT_WALK_LINES = {
+  'made-it-obvious': [
+    '{a} waited for {b} to pick a side of the column and took the other one.',
+    'Nothing was said. Everybody understood it by the second mile.',
+    'It is possible to have an entire argument by choosing where to stand.',
+    '{a} made sure it was visible, which is the whole point of doing it that way.',
+    '{b} clocked it inside a minute and did not give {a} the satisfaction.',
+    'The column arranged itself around a fight nobody had had out loud.',
+    '{a} would rather walk at the back alone than beside {b}.',
+    'A public snub costs nothing to deliver and is very expensive to receive.',
+  ],
+  'dragged-others-in': [
+    '{a} did not just avoid {b}; {a} took two people along.',
+    'By the ford there was a side of the column and there was {b}.',
+    'It stopped being a falling-out and became an arrangement.',
+    'The people {a} recruited did not entirely want to be recruited.',
+    'Somebody had to choose who to walk with and everybody noticed the choosing.',
+    '{b} walked most of it with nobody, which the rest of them watched happen.',
+    'Isolating somebody on a road that long is a deliberate act.',
+    'That is the cruellest thing anybody has done this week and not a word of it was said.',
+  ],
+  'called-out-for-it': [
+    'Somebody asked {a}, out loud, what exactly {a} was doing.',
+    'A silent snub only works while nobody names it, and it got named.',
+    '{a} had no answer ready because {a} had not expected to need one.',
+    'Being asked to justify a cold shoulder is worse than being argued with.',
+    'The column was not going to let that run the whole way.',
+    '{b} did not have to say anything; somebody else did it for {b}.',
+    '{a} spent the rest of the walk looking petty rather than dangerous.',
+    'It backfired well before they reached the far end.',
+  ],
+  'closed-the-gap': [
+    '{b} simply walked over and fell in beside {a}, which took the whole thing apart.',
+    'You cannot snub somebody who refuses to be snubbed.',
+    '{b} talked about nothing for a long stretch until {a} answered.',
+    'It was the bravest small thing anybody did on that road.',
+    '{a} had built a whole afternoon of coldness and {b} dismantled it by walking.',
+    'They came back into the castle side by side and nobody quite knows how.',
+    '{b} did not mention the snub once, which is what made it work.',
+    'Whatever {a} had planned did not survive contact with somebody being decent.',
+  ],
+};
+
+registerEvent({
+  id: 'confront-would-not-walk-with',
+  roles: 'initiator-first',
+  family: FAMILY,
+  window: 'journey-out',
+  advancesThread: true,
+  variationAxes: {
+    outcome: ['accepted', 'rejected', 'ambiguous', 'backfire'],
+    voice: ['boldness', 'social', 'temperament', 'loyalty'],
+    relationship: ['neutral', 'rival'],
+  },
+  weight(ctx) {
+    if (ctx.actors?.length !== 2) return 0;
+    // A snub has to be SEEN to be a snub — it needs a column to be seen from.
+    if ((ctx.living || []).length < 6) return 0;
+    const [a, b] = ctx.actors;
+    const t = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    if (!t && getBond(a, b) > -2) return 0;
+    return t ? 2 : 1;
+  },
+  fire(ctx, rng) {
+    const api = sceneApi(ctx, 'confront-would-not-walk-with');
+    const [a, b] = ctx.actors;
+    const sa = pStats(a);
+    const sb = pStats(b);
+    const scores = {
+      'made-it-obvious': (sa.boldness / 10) * 0.3 + (1 - sa.temperament / 10) * 0.2,
+      'dragged-others-in': (sa.social / 10) * 0.3 + (sa.strategic / 10) * 0.2,
+      'called-out-for-it': (ctx.living || []).length >= 8 ? 0.28 : 0.14,
+      'closed-the-gap': (sb.social / 10) * 0.25 + (sb.loyalty / 10) * 0.2,
+    };
+    const keys = Object.keys(scores);
+    const total = keys.reduce((s, k) => s + Math.max(0, scores[k]), 0) || 1;
+    let roll = rng() * total, branch = 'made-it-obvious';
+    for (const k of keys) { roll -= Math.max(0, scores[k]); if (roll <= 0) { branch = k; break; } }
+    const sceneWhy = branch === 'made-it-obvious' ? 'refused to walk on the same side of the column'
+      : branch === 'dragged-others-in' ? 'took two others along and left one person walking alone'
+        : branch === 'called-out-for-it' ? 'was asked out loud what exactly they were doing'
+          : 'had the snub dismantled by somebody who walked over anyway';
+    const note = lineFor(WOULD_NOT_WALK_LINES[branch],
+      `confront-would-not-walk-with|${branch}|${ctx.ep}`, { a, b });
+    const bondDelta = branch === 'closed-the-gap' ? 1.5
+      : branch === 'dragged-others-in' ? -3
+        : branch === 'called-out-for-it' ? -1.5 : -2;
+    api.addBond(a, b, bondDelta, { source: sceneWhy });
+    const existing = findOpenThread(FAMILY, [a, b]) || findOpenThread('suspicion', [a, b]);
+    const t = existing
+      ? api.advanceArc(existing.id, note, { source: sceneWhy })
+      : api.openArc(FAMILY, [a, b], { source: sceneWhy, seed: note });
+    let crowd = null;
+    if (branch === 'dragged-others-in') crowd = { name: a, colour: 'cruel', reason: 'arranged a column so that one person walked the whole way alone', mult: 0.6 };
+    else if (branch === 'closed-the-gap') crowd = { name: b, colour: 'heroic', reason: 'walked straight at a public snub and talked through it', mult: 0.5 };
+    else if (branch === 'called-out-for-it') crowd = { name: a, colour: 'selfish', reason: 'was asked to explain a cold shoulder and had no answer', mult: 0.4 };
+    return { branch, pair: [a, b], speaker: a, respondent: b,
+      topic: b, topicKind: TOPIC, threadId: t?.id || existing?.id || null, bondDelta,
       ...(crowd ? { crowd } : {}) };
   },
 });

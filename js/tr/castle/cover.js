@@ -115,7 +115,7 @@ function _accountTopic() {
 const PREEMPTIVE_LINES = {
   'alibi-built': [
     '{a} had an answer ready for a question nobody had asked yet.',
-    'Nobody had raised it. {a} raised it themselves, cleared it up, and moved the conversation along.',
+    'Nobody had asked where {a} was that night. {a} brought it up anyway, explained it away, and moved the conversation along.',
     '{a} worked out overnight what the awkward question was going to be, and had the boring answer waiting for it.',
     '{a} volunteered a detail so small nobody would ever have thought to check it, which was the whole point.',
     'The story {a} told at breakfast was answering something, and nobody at the table could have said what.',
@@ -978,7 +978,7 @@ const RECRUIT_COVER_LINES = {
     '{a}’s story is airtight and is about a night the castle already has a version of.',
     'Somebody said the thing at breakfast and {a} had to arrange a face for it.',
     'The account {a} prepared is now a defence rather than a screen, which is a different job.',
-    '{a} learned that the person {sub} brought in has been dining out on the story of it.',
+    '{a} learned that the person {a} brought in has been dining out on the story of it.',
     'What {a} had was a secret. What {a} has is a position, and it is worse.',
   ],
 };
@@ -1529,7 +1529,13 @@ registerEvent({
     // because anything about the pact changed but because a window that used to
     // run out of draws now fills them. The gate is unchanged; only its share of
     // the pair draws it can win is.
-    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 3 : 0;
+    // 3 -> 4 on 2026-09-06, the second bump for the same reason: eleven
+    // more events landed in windows this one competes in and its firing
+    // count fell 43 -> 31 -> (weight 3) -> 38, against a variety floor of
+    // 40. Nothing about the pact gate has changed; the pool around it has
+    // grown twice. If a third bump is ever needed, widen the gate instead
+    // — a weight climbing to keep pace with the pool is a smell.
+    return isTraitor(a, ctx.ep) && knowsAlignmentOf(a, b, ctx.ep) ? 4 : 0;
   },
   fire(ctx, rng) {
     const api = sceneApi(ctx, 'cover-swap-story-with-partner');

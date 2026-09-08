@@ -268,8 +268,25 @@ describe('every Round Table speech cites a source its speaker knows', () => {
       runRoundTable(2, seededRng(seed));
       const round = gs.tr.rounds[gs.tr.rounds.length - 1];
       for (const s of round.speeches || []) {
-        expect(s.sources.length,
-          `seed ${seed}: ${s.speaker} spoke with no source`).toBeGreaterThan(0);
+        // A SPEECH IS NOW EVERY ACCUSATION, cited or not — the uncited ones
+        // used to be dropped on the floor and reached the screen as a name
+        // with nothing under it (27% of them). What this file guards is
+        // unchanged and is the thing that matters: whatever IS cited must be
+        // something the speaker actually holds. The uncited ones are held to
+        // their own contract instead — a named `reasonKind` and no sources,
+        // so nothing can arrive uncited AND unexplained.
+        if (!s.sources.length) {
+          expect(['hearsay', 'public', 'gone-cold', 'feeling'],
+            `seed ${seed}: ${s.speaker} spoke with no source and no reason kind`)
+            .toContain(s.reasonKind);
+          if (s.reasonKind === 'hearsay') {
+            expect(typeof s.hearsayFrom,
+              `seed ${seed}: hearsay with nobody to attribute it to`).toBe('string');
+          }
+          continue;
+        }
+        expect(s.reasonKind, `seed ${seed}: a cited speech is not marked cited`)
+          .toBe('cited');
         for (const source of s.sources) {
           expect(knows(s.speaker, source, 2),
             `seed ${seed}: ${s.speaker} cited a source they do not know`).toBe(true);
@@ -278,7 +295,7 @@ describe('every Round Table speech cites a source its speaker knows', () => {
         sawSpeech++;
       }
     }
-    expect(sawSpeech, 'no table across 60 seeds produced a speech').toBeGreaterThan(20);
+    expect(sawSpeech, 'no table across 60 seeds produced a cited speech').toBeGreaterThan(20);
     expect(checkedSources, 'no source was ever checked').toBeGreaterThan(20);
   });
 
@@ -305,7 +322,17 @@ describe('every Round Table speech cites a source its speaker knows', () => {
     expect(s.valence, 'the turret belief is not accurate — precondition failed')
       .toBe('accurate');
     const speeches = speechesFrom([{ accuser: 'Gwen', target: 'Duncan' }], 2);
-    expect(speeches.length, 'a public-tier belief became a table speech').toBe(0);
+    // STRONGER THAN THE DROP IT REPLACES. This used to assert the accusation
+    // vanished, which passes just as well if `speechesFrom` returns nothing
+    // for any reason at all. Now the speech comes back and has to be
+    // classified `public` with an EMPTY source list, so the assertion is
+    // pinned to the one thing that matters — a turret fact is not citable —
+    // and cannot be satisfied by the function simply failing.
+    expect(speeches.length, 'the accusation vanished instead of being classified').toBe(1);
+    expect(speeches[0].reasonKind, 'a public-tier belief was not classified public')
+      .toBe('public');
+    expect(speeches[0].sources.length, 'a public-tier belief became a cited source')
+      .toBe(0);
   });
 
   // And across a real sweep no cited source is ever public-tier, so the guard
@@ -345,7 +372,11 @@ describe('every Round Table speech cites a source its speaker knows', () => {
         for (const mover of s.mindChanges || []) {
           expect(s.swayed, `seed ${seed}: a mind-change was not among the swayed`)
             .toContain(mover);
-          const b = believes(mover, s.sources[0].factId, 2);
+          // `s.sources[0].factId` before — which is the same fact as the
+          // target's alignment and is now absent on an uncited speech. The
+          // target is on every speech, so this reads the identical belief
+          // and works for all five reason kinds.
+          const b = believes(mover, alignmentFactId(s.target), 2);
           expect(b, `seed ${seed}: ${mover} moved with no belief`).toBeTruthy();
           sawMove++;
         }

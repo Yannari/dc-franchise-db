@@ -121,8 +121,15 @@ describe('popularity is written', () => {
     // "consistent", it just now paid people for losing their nerve. A test
     // must read the value under test — and the value under test here is the
     // sign of the word, not the sign of the number beside it.
-    const MEANS_LIKED = ['heroic', 'selfless', 'kind', 'wronged', 'exposed', 'masterful'];
-    const MEANS_DISLIKED = ['cowardly', 'cruel', 'selfish'];
+    /* `vindicated`, `unmasked` and `courted` are how a STORY ended rather than
+       what somebody did, and they are weak in affection and strong in
+       spectacle on purpose: being in a storyline is television, not virtue.
+       The signs are still signs — being cleared is liked, being caught is
+       not — and the sizes are answerable to the correlation guard below,
+       which is what stopped them being as warm as an act. */
+    const MEANS_LIKED = ['heroic', 'selfless', 'kind', 'wronged', 'exposed', 'masterful',
+      'vindicated', 'courted'];
+    const MEANS_DISLIKED = ['cowardly', 'cruel', 'selfish', 'unmasked'];
     for (const c of MEANS_LIKED) {
       expect(CROWD_COLOURS[c], `${c} is not in the colour table`).toBeTruthy();
       expect(CROWD_COLOURS[c].affection, `${c} should not cost affection`).toBeGreaterThan(0);
@@ -177,11 +184,31 @@ describe('popularity is written', () => {
           `seed ${s.seed}: ${name} has no row in the notoriety ledger`).toBe(true);
       }
     }
-    // NOT VACUOUS: some seasons really do leave somebody on exactly zero, which
-    // is the case the seeding exists for. Measured 5 seasons in the first 20.
-    const zeroed = RUN.seasons.slice(0, 20)
-      .filter(s => CAST.some(n => s.popularity[n] === 0));
-    expect(zeroed.length).toBeGreaterThan(0);
+  });
+
+  it('seeds a zero row before anything has happened', () => {
+    /* THE NON-VACUITY CLAUSE, ASKED DIRECTLY.
+       This used to read "5 of the first 20 seasons leave somebody on exactly
+       zero", which was true when it was measured and is now false: every
+       player in 400 accrues something, because the crowd beats have grown to
+       cover the whole cast. Nothing broke -- the seeding is still the reason
+       a row exists -- but the guard was measuring a CALIBRATION and reporting
+       it as a defect, and no edit to the seeding could have made it pass
+       again. Zero being reachable in a played season is not the property that
+       matters. Zero being REPRESENTABLE is, so that is what is asserted, on
+       the one function responsible for it. */
+    setPlayers(ROSTER);
+    setGs({ ...gs, popularity: undefined, tr: { ...(gs.tr || {}), notoriety: undefined } });
+    initCrowd(CAST);
+    for (const name of CAST) {
+      expect(gs.popularity[name], `${name} has no row before the season starts`).toBe(0);
+      expect(gs.tr.notoriety[name], `${name} has no notoriety row`).toBe(0);
+    }
+    // And a player nobody watches keeps it: one moment for somebody else must
+    // not disturb the rest of the ledger.
+    crowdMoment(CAST[0], 'heroic', 1);
+    expect(gs.popularity[CAST[0]]).toBeGreaterThan(0);
+    for (const name of CAST.slice(1)) expect(gs.popularity[name]).toBe(0);
   });
 });
 

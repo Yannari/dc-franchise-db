@@ -14,7 +14,7 @@ import { gs, players } from '../core.js';
 import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
-import { murderPreferenceFor } from './state.js';
+import { murderPreferenceFor, influenceOf } from './state.js';
 import { shieldSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion,
@@ -152,7 +152,23 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // The one who is onto them. Read off PUBLIC behaviour only — a Traitor
     // cannot see beliefs, only who has been saying their name out loud.
     const accused = _accusedMe(traitor, name);
-    let score = beloved * 1.1 - heat * 1.3 + accused * 1.4;
+    // ── AND HOW MUCH THE ROOM LISTENS TO THEM ───────────────────────
+    //
+    // `accused` is whether they have come at ME. This is the other threat, and
+    // it is the one the format is really about: a Faithful with a track record
+    // of correct calls is dangerous whether or not they have said your name
+    // yet, because when they do say it the room will write it down. Being good
+    // at this game is what gets you killed for it.
+    //
+    // PUBLIC INFORMATION, like every other term here. Standing is written at
+    // the reveal in front of everybody and sway is counted off the ballots
+    // that were read out; a Traitor reading it is reading the same table
+    // everybody else watched. See `influenceOf`, js/tr/state.js.
+    //
+    // SIGNED AROUND NEUTRAL, so somebody with no record contributes exactly
+    // nothing and this cannot tilt an early night when nobody has one.
+    const clout = influenceOf(gs, name, ep) - 0.5;
+    let score = beloved * 1.1 - heat * 1.3 + accused * 1.4 + clout * INFLUENCE_THREAT;
 
     // Never someone they visibly clashed with — the room connects it by
     // breakfast — and never someone they cannot bring themselves to name.
@@ -235,7 +251,7 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // actually drove THIS pick instead of recomputing it — a recompute can
     // silently disagree with the number that won, and Task 2 keys
     // murderCost off this label.
-    return { name, score, beloved, heat, accused, sacrifice: isSacrifice };
+    return { name, score, beloved, heat, accused, clout, sacrifice: isSacrifice };
   }).sort((a, b) => b.score - a.score);
 
   const pick = scored[0];
@@ -288,9 +304,22 @@ function _accusedMe(traitor, name) {
  * rather than recomputing them, so the label can never disagree with the
  * number that actually won.
  */
+/**
+ * How much a proven read is worth as a threat, against `accused * 1.4` for
+ * somebody who has actually named you. Slightly under it on purpose: being
+ * come at directly is still the louder reason to act, and this is the quieter
+ * one that accumulates.
+ */
+const INFLUENCE_THREAT = 1.1;
+
 function _reasonFor(pick) {
   if (pick.sacrifice) return 'sacrifice';         // a friend spent for cover
   if (pick.accused > 0) return 'onto-me';
+  // AFTER `onto-me` and BEFORE the decoy: somebody who has not come at you yet
+  // but whom the room follows is a threat you are choosing to pre-empt, which
+  // is a different sentence from either. 0.22 of the 0..0.5 signed range, so
+  // it needs a real record rather than one lucky call.
+  if ((pick.clout || 0) > 0.22) return 'listened-to';
   if (pick.heat > 0.25) return 'wasted-decoy';  // a bad reason, deliberately reachable
   if (pick.beloved >= 0.7) return 'beloved';
   return 'convenient';

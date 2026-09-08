@@ -159,6 +159,8 @@ function _queenNameOptions() {
   return names.map(n => `<option value="${_esc(n)}"></option>`).join('');
 }
 
+const DRAG_TRAIT_LIST = ['padded', 'bearded', 'big-wigs', 'high-concept', 'seamstress',
+  'choreographer', 'hometown-pageant', 'live-vocalist', 'stunt-queen', 'body', 'face', 'wit'];
 const FAMILY_RELS = ['mother', 'daughter', 'sister', 'grandmother', 'granddaughter', 'aunt', 'niece', 'cousin'];
 
 function _normFamily(fam) {
@@ -198,6 +200,7 @@ function _wireFamilyLinks(ed, d) {
   if (!container) return;
   d.drag.family = _normFamily(d.drag.family);
   const sync = () => { d.drag.family = _readFamilyLinks(container); };
+  // Delegation on the container survives innerHTML replacements.
   container.addEventListener('input', sync);
   container.addEventListener('change', sync);
   container.addEventListener('click', e => {
@@ -211,8 +214,6 @@ function _wireFamilyLinks(ed, d) {
     container.innerHTML = _renderFamilyLinks({ drag: d.drag });
     const last = container.querySelector('.st-fam-row:last-child .st-fam-name');
     if (last) last.focus();
-    container.addEventListener('input', sync);
-    container.addEventListener('change', sync);
   });
 }
 
@@ -1704,9 +1705,13 @@ function _renderEditor() {
             ${DRAG_STYLE_LIST.map(x => `<option value="${x}"${d.drag && d.drag.style === x ? ' selected' : ''}>${x}</option>`).join('')}
           </select>
         </label>
-        <label class="st-l">Signature traits <span class="st-hint">up to three, comma separated — padded, bearded, big-wigs, seamstress, wit…</span>
-          <input class="st-input" id="st-f-drag-traits" value="${_esc(((d.drag && d.drag.traits) || []).join(', '))}">
-        </label>
+        <div class="st-l">Signature traits <span class="st-hint">pick up to 3 — affects first impression + look score</span></div>
+        <div id="st-f-drag-traits" style="display:flex;flex-wrap:wrap;gap:4px 8px;margin:2px 0 6px">${
+          DRAG_TRAIT_LIST.map(t => {
+            const checked = (d.drag && d.drag.traits || []).includes(t);
+            return `<label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:0.92em"><input type="checkbox" class="st-trait-cb" value="${t}"${checked ? ' checked' : ''}> ${t}</label>`;
+          }).join('')
+        }</div>
         <label class="st-l">Persona voice <span class="st-hint">how the QUEEN talks on the main stage, if that differs from the person</span>
           <textarea class="st-input st-area" id="st-f-drag-voice" rows="2">${_esc((d.drag && d.drag.voice) || '')}</textarea>
         </label>
@@ -1965,8 +1970,12 @@ function _renderEditor() {
   }));
   ed.querySelector('#st-f-drag-style')?.addEventListener('change', e => { d.drag.style = e.target.value; });
   _wireFamilyLinks(ed, d);
-  ed.querySelector('#st-f-drag-traits')?.addEventListener('input', e => {
-    d.drag.traits = e.target.value.split(',').map(x => x.trim()).filter(Boolean).slice(0, 3);
+  ed.querySelector('#st-f-drag-traits')?.addEventListener('change', e => {
+    if (!e.target.classList.contains('st-trait-cb')) return;
+    const box = ed.querySelector('#st-f-drag-traits');
+    const all = [...box.querySelectorAll('.st-trait-cb:checked')].map(cb => cb.value);
+    if (all.length > 3) { e.target.checked = false; return; }
+    d.drag.traits = all;
   });
   ed.querySelector('#st-f-drag-voice')?.addEventListener('input', e => { d.drag.voice = e.target.value; });
   ed.querySelector('#st-seed').addEventListener('click', () => {

@@ -183,6 +183,12 @@ function fromRows(rows, format) {
   if (!names.length) return null;
 
   const finalOrder = last?.dr?.finale?.placements || [];
+  /* A DOUBLE CROWN HAS NO SECOND PLACE. Both queens are first, so the chart
+     must not print one of them as the runner-up — the record already gives
+     them both a WINNER cell, and a rank column saying 2 beside it is the
+     chart contradicting itself. */
+  const coWinners = last?.dr?.finale?.doubleCrown
+    ? (last?.dr?.finale?.winners || []) : [];
   const lengthOf = n => (record[n] || []).filter(r => r && r !== 'OUT').length;
   const ordered = [...names].sort((a, b) => {
     const ia = finalOrder.indexOf(a); const ib = finalOrder.indexOf(b);
@@ -240,7 +246,7 @@ function fromRows(rows, format) {
     return {
       name: n,
       slug: slugOf(n),
-      placement: i + 1,
+      placement: coWinners.includes(n) ? 1 : i + 1,
       /* MID-SEASON THERE IS NO RANK. The order above is "longest record
          first", which is the honest reading order and is NOT a placement —
          the queen sitting at the top of the chart in week four has not won

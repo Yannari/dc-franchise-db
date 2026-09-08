@@ -854,6 +854,18 @@
                 <span>Triple lip sync on a tie<div class="hint hint-tight">When the bottom will not resolve into two, three queens lip sync instead.</div></span>
               </label>
             </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-reunion" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Reunion episode<div class="hint hint-tight">Between the last elimination and the crowning. Nobody goes home; it is the only episode that reads the whole season rather than the week in front of it, so a quiet season gets a short reunion.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-double-crown" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Two winners allowed<div class="hint hint-tight">Both finalists take the crown. Like the double shantay it cannot be rolled: only when the last lip sync is a genuine dead heat and both are excellent. It has happened once in the real show's history.</div></span>
+              </label>
+            </div>
 
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
             <!-- Off by default and explicitly switched on, because it is the one

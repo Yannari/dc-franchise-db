@@ -94,6 +94,33 @@ const tier = (id, note, lines = []) => ({ id, note, lines });
 
 export const CROWNING_BEATS = [
   // ══ THE ROOM, BEFORE ANYTHING ════════════════════════════════════════
+  /* ── THE ONE NIGHT THERE ARE TWO ──
+     All Stars 4 crowned Trinity the Tuck and Monet X Change together: the
+     only double crown in the show's history, announced by voiceover, the two
+     never shown on stage together because the call was made late.
+     The season simulates it only when the last lip sync is a genuine dead
+     heat and the option is switched on, so it is rare — twice in sixty
+     seasons measured. But `crown-name` says "you are THE winner of this
+     season of Drag Race", singular, and on that night the ceremony would say
+     it to one of two queens who both won. This beat replaces it.
+     {a} and {b} are the two, and the prose must not rank them: there is no
+     first and no second, which is the whole point and the whole controversy. */
+  {
+    id: 'crown-double', step: 'crowning', scope: 'once', speaker: 'host',
+    variants: 6,
+    note: 'The host crowns BOTH. {a} and {b} are the two winners and neither '
+      + 'placed above the other.',
+    writerNote: 'He cannot separate them, and he says so. The catchphrase is '
+      + 'the same words made plural — "Con-drag-ulations, you are BOTH the '
+      + 'winners of this season of Drag Race" — and everything around it '
+      + 'varies. Write the room taking a second to understand, because a '
+      + 'double crown is not a thing anybody in that room expected to hear. '
+      + 'Do not rank them, do not hint that one was closer: they tied, and a '
+      + 'line that leaks an order takes away the only thing this beat is.',
+    tierBy: 'always',
+    tiers: [tier('double', 'Two queens, one crown each.', [])],
+  },
+
   {
     id: 'crown-hall', step: 'crowning', scope: 'once', speaker: 'narrator',
     note: 'The hall before the ceremony starts. No {a}.',

@@ -323,18 +323,29 @@ export function rpBuildCrowning(row) {
   if (!scenes.length) return '';
 
   // The room's state accumulates as the beats go by.
+  /* TWO CROWNS, WHEN THE SEASON MADE TWO. All Stars 4 crowned Trinity the
+     Tuck and Monet X Change together and it is the only time it has happened,
+     so this is an exception the ceremony has to survive rather than a shape
+     it is built around. `crowned` is a list: one name on every ordinary
+     season, two when the finale could not separate them. Without this the
+     chart showed two WINNER cells and the ceremony lit one plinth, which is
+     the screen disagreeing with the record it was drawn from. */
+  const alsoCrowned = fin.doubleCrown ? (fin.winners || []) : [];
   const out = [];
-  let crowned = null;
+  let crowned = [];
   const steps = scenes.map((sc, i) => {
     const beat = sc.data?.beat || String(sc.kind || '').split(':')[1] || '';
     const who = (sc.data?.players || [])[0];
 
     if (beat === 'crown-place' && who) out.push(who);
-    if (NAME_BEATS.has(beat) && who) crowned = who;
+    // The naming beat crowns her — and her co-winner with her, if there is one.
+    if (NAME_BEATS.has(beat) && who) {
+      crowned = alsoCrowned.length ? [...alsoCrowned] : [who];
+    }
 
     const standing = line.filter(n => !out.includes(n));
     const attr = `out:${out.join(',')}|two:${
-      standing.length === 2 && !crowned ? standing.join(',') : ''}|crown:${crowned || ''}`;
+      standing.length === 2 && !crowned.length ? standing.join(',') : ''}|crown:${crowned.join(',')}`;
 
     let body;
     if (beat === 'crown-final-two') {
@@ -369,7 +380,7 @@ export function rpBuildCrowning(row) {
      said who came where. tests/dr-vp-summary.test.js caught it.
      So they stay, as the last two clicks — after the ceremony has actually
      announced everything on them. */
-  const afterCrown = `out:${line.filter(n => n !== crowned).join(',')}|two:|crown:${crowned || ''}`;
+  const afterCrown = `out:${line.filter(n => !crowned.includes(n)).join(',')}|two:|crown:${crowned.join(',')}`;
   const duels = (fin.rounds || []).map(r => `<div class="cr-duel">
       ${_portrait(r.a, ep, { size: 34 })}<b class="dr-disp">${esc(r.a)}</b>
       <span class="cr-vs">vs</span>
@@ -408,15 +419,15 @@ export function rpBuildCrowning(row) {
       const attr = step?.getAttribute('data-stage') || 'out:|two:|crown:';
       const part = k => (attr.split('|').find(x => x.startsWith(`${k}:`)) || '')
         .slice(k.length + 1).split(',').filter(Boolean);
-      const gone = part('out'); const two = part('two'); const win = part('crown')[0];
+      const gone = part('out'); const two = part('two'); const wins = part('crown');
 
       let lit = 0;
       for (const el of document.querySelectorAll('.cr-plate')) {
         const n = el.getAttribute('data-queen');
-        const isOut = gone.includes(n) || (win && n !== win);
+        const isOut = gone.includes(n) || (wins.length && !wins.includes(n));
         el.classList.toggle('out', !!isOut);
         el.classList.toggle('finaltwo', two.includes(n));
-        el.classList.toggle('crowned', n === win);
+        el.classList.toggle('crowned', wins.includes(n));
         if (!isOut) lit += 1;
         const tag = el.querySelector('.cr-place');
         if (tag) tag.textContent = gone.includes(n) && placeOf[n] ? ord(placeOf[n]) : '';
@@ -434,7 +445,7 @@ export function rpBuildCrowning(row) {
         const isNameBeat = step?.getAttribute('data-crownbeat') === '1';
         if (isNameBeat && !stageEl.classList.contains('flash')) {
           stageEl.classList.add('flash');
-        } else if (!win) {
+        } else if (!wins.length) {
           stageEl.classList.remove('flash');
         }
       }

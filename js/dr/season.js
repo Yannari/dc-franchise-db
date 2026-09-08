@@ -553,9 +553,42 @@ export function runFinale(state, cfg, ctx) {
     placements = [f.winner, f.loser, ...finalists.slice(2)];
   }
 
+  /* ── TWO WINNERS ──
+     All Stars 4 crowned Trinity the Tuck and Monet X Change together: the
+     only double crown in the show's history, announced by voiceover, and the
+     two were never shown on stage together because the decision was made
+     late. So it is a rare exception rather than a format, and it is modelled
+     as one — off unless the season asks for it, and then only on a genuine
+     dead heat in the last song.
+
+     It reads the RAW duel scores for the same reason the double shantay does:
+     whether two finales were level is a fact about the stage, not something
+     the host's agenda gets to manufacture. Same CLOSE window the weekly
+     double shantay uses, and both have to be excellent.
+
+     `winner` and `placements[0]` KEEP THEIR MEANING. Every reader in the repo
+     — the chart, the article, the franchise ledger, the aftermath, the
+     rankings — reads one or the other, and a shape change there is a change
+     to all of them. The second crown is additive: `winners` is the list, and
+     it has one name in it on every ordinary season. */
+  const lastRound = rounds[rounds.length - 1] || null;
+  const crownGap = lastRound && lastRound.scores
+    ? Math.abs((lastRound.scores[lastRound.a] || 0) - (lastRound.scores[lastRound.b] || 0))
+    : Infinity;
+  const bothGreat = lastRound && lastRound.scores
+    && Math.min(lastRound.scores[lastRound.a] || 0, lastRound.scores[lastRound.b] || 0) >= 8.5;
+  const doubleCrown = !!cfg.doubleCrown && !!lastRound && bothGreat && crownGap < 0.6
+    && placements.length >= 2;
+
+  const winners = doubleCrown ? [placements[0], placements[1]] : [placements[0]];
   state.winner = placements[0];
-  state.runnerUp = placements[1];
-  for (const n of state.living) state.record[n].push(n === placements[0] ? 'WINNER' : 'FINALIST');
+  state.winners = winners;
+  state.doubleCrown = doubleCrown;
+  // On a double crown nobody is the runner-up, because nobody came second.
+  state.runnerUp = doubleCrown ? null : placements[1];
+  for (const n of state.living) {
+    state.record[n].push(winners.includes(n) ? 'WINNER' : 'FINALIST');
+  }
 
   const row = {
     num: cfg.num,
@@ -571,7 +604,8 @@ export function runFinale(state, cfg, ctx) {
       mini: null,
       judges: [],
       guest: null,
-      finale: { type, rounds, winner: placements[0], runnerUp: placements[1], placements },
+      finale: { type, rounds, winner: placements[0], winners, doubleCrown,
+        runnerUp: doubleCrown ? null : placements[1], placements },
       // The finale carries the arcs too, and it is the one episode where they
       // matter most: this is where the season finds out whether the
       // frontrunner was really the frontrunner. The host does not BEND a
@@ -600,7 +634,9 @@ export function runFinale(state, cfg, ctx) {
           cut: cutQueens,
           rounds,
           winner: placements[0] || null,
-          runnerUp: placements[1] || null,
+          winners,
+          doubleCrown,
+          runnerUp: doubleCrown ? null : (placements[1] || null),
           placements,
           // Filled in by playDragSeason once the vote runs — the finale
           // cannot know it, because the vote reads a ledger this row closes.
@@ -881,6 +917,7 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
   const last = schedule[schedule.length - 1] || {};
   const finale = runFinale(state, {
     num: num++, type: finaleType, rotatingId: last.rotatingId, judgeWeights: config.drJudgeWeights,
+    doubleCrown: !!config.drDoubleCrown,
   }, ctx);
   /* THE WINNER CANNOT TAKE THE SASH TOO. The vote ran before the crowning,
      so it could not exclude a winner nobody knew yet — if the country's
@@ -908,5 +945,6 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
     rows, state, winner: state.winner, runnerUp: state.runnerUp,
     congeniality: state.congeniality || null,
     finale: finale.dr.finale, smackdownWinner: state.smackdownWinner || null,
+    winners: state.winners || [state.winner], doubleCrown: !!state.doubleCrown,
   };
 }

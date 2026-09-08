@@ -523,3 +523,45 @@ describe('EVERY TENTPOLE IS REACHABLE', () => {
     });
   }
 });
+
+describe('TWO WINNERS', () => {
+  /* All Stars 4 crowned two queens and it is the only time it has happened,
+     so this is an exception the season must survive rather than a shape it is
+     built around: off unless asked for, and then only on a dead heat. */
+  const play = (seed, config) => playDragSeason({ cast: cast(12, seed), seed, config,
+    bond: () => 0, addBond: () => {}, popDelta: () => {} });
+
+  it('never happens unless the season allows it', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      expect(play(seed, {}).doubleCrown, `seed ${seed}`).toBe(false);
+    }
+  });
+
+  it('is rare even when allowed, and cannot be rolled', () => {
+    let n = 0;
+    for (let seed = 1; seed <= 60; seed++) if (play(seed, { drDoubleCrown: true }).doubleCrown) n++;
+    // It reads the raw duel: both excellent AND level. A handful in sixty.
+    expect(n, 'a double crown should be an exception, not a coin flip').toBeGreaterThan(0);
+    expect(n).toBeLessThan(12);
+  });
+
+  it('gives both queens the crown and neither the runner-up slot', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const s = play(seed, { drDoubleCrown: true });
+      if (!s.doubleCrown) continue;
+      const last = s.rows[s.rows.length - 1];
+      const fin = last.dr.finale;
+      expect(s.winners.length).toBe(2);
+      expect(fin.runnerUp, 'nobody came second').toBe(null);
+      // The record is what the chart reads, so it has to agree.
+      const crowned = Object.entries(last.dr.record)
+        .filter(([, v]) => v.includes('WINNER')).map(([k]) => k).sort();
+      expect(crowned).toEqual([...s.winners].sort());
+      // And the ceremony still names somebody out loud, written pool or not.
+      const named = last.dr.scenes.filter(x => /crown-name|crown-double/.test(x.kind || ''));
+      expect(named.length, 'a crowning that crowns nobody out loud').toBeGreaterThan(0);
+      return;
+    }
+    throw new Error('no double crown in 60 seasons — the window is too tight to test');
+  });
+});

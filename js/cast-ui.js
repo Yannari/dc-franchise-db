@@ -1250,6 +1250,12 @@ export function saveConfig() {
     drDoubleSashay:  g('cfg-dr-double-sashay')?.checked || false,
     drImmunity:      g('cfg-dr-immunity')?.checked || false,
     drTripleLipsync: g('cfg-dr-triple')?.checked || false,
+    /* THE REUNION WAS BUILT AND UNREACHABLE. js/dr/reunion.js runs, it has a
+       test file of its own, docs/drag-race.md describes it, and
+       playDragSeason has always read config.drReunion — but nothing ever
+       wrote that key, so the episode existed only inside tests. */
+    drReunion:       g('cfg-dr-reunion')?.checked || false,
+    drDoubleCrown:   g('cfg-dr-double-crown')?.checked || false,
     /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
        carrying every pinned decision about a week — a challenge, a guest, a
        runway category — and the box on screen only owns one of them. Reading
@@ -1417,6 +1423,8 @@ export function renderConfig() {
   chk('cfg-dr-double-sashay', seasonConfig.drDoubleSashay || false);
   chk('cfg-dr-immunity', seasonConfig.drImmunity || false);
   chk('cfg-dr-triple', seasonConfig.drTripleLipsync || false);
+  chk('cfg-dr-reunion', seasonConfig.drReunion || false);
+  chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');

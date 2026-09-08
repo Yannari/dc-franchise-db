@@ -660,7 +660,14 @@ export function runFinale(state, cfg, ctx) {
  * `config` is the setup screen's: drPremiere, drFinale, drImmunity,
  * drDoubleShantay, drDoubleSashay, drSchedule, drJudgeWeights.
  */
-export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, addBond = null, popDelta = null }) {
+export function playDragSeason({
+  cast, seed = 1, config = {}, bond = () => 0, addBond = null, popDelta = null,
+  /* Authored drag-family edges from the Relationships tab, in the shape
+     `{ a, b, kind }` -- see js/dr/family.js. A season that passes none
+     still gets derived families; passing them is how a user's own house
+     survives into the room. */
+  relations = [],
+}) {
   const rng = rngFor(seed);
   const state = initDragState({ cast, seed, rng });
   const players = Object.fromEntries(cast.map(p => [p.name, p]));
@@ -682,7 +689,7 @@ export function playDragSeason({ cast, seed = 1, config = {}, bond = () => 0, ad
      The bonds are applied through the caller's own `addBond`, so a headless
      season with no relationship layer gets the families and none of the
      points, which is correct — there is nowhere to put them. */
-  const fam = assignDragFamilies({ cast, rng });
+  const fam = assignDragFamilies({ cast, rng, relations });
   state.dragFamilies = fam.families;
   if (addBond) for (const [a, b, d] of fam.bonds) addBond(a, b, d);
 

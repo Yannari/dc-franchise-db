@@ -18,10 +18,11 @@
 // `formatIsRunnable()` reads to decide whether the show can be started at all.
 // Drop the import from js/main.js and the show silently un-ships with every
 // test still green.
-import { gs, players, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { gs, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
+import { dragRelationsFrom } from './dr/family.js';
 import { updateEditLayer } from './edit-layer.js';
 
 export const isDragSeason = () => seasonFormat(seasonConfig) === 'drag-race';
@@ -125,6 +126,12 @@ function _playWholeSeason() {
     cast,
     seed: _seed(),
     config: _config(),
+    /* THE AUTHORED HOUSES. The Relationships tab has always had two axes --
+       how they feel, and how they know each other -- and the feeling half
+       reached a drag season through initGameState's bond seeding from the
+       first day. The knowing half did not: a user could write "Ivy is Coco's
+       drag mother" and the room met two strangers. */
+    relations: dragRelationsFrom(relationships),
     bond,
     // Real bonds, so helping somebody sew is remembered next week and by every
     // other system that reads the relationship layer.

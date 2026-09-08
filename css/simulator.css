@@ -5189,6 +5189,19 @@
     .rel-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
     .rel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
     .rel-card:hover { border-color: #475569; }
+
+    /* The drag family tree, derived from the rows above. */
+    .rel-families { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .rel-fam { background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid #e879f9; border-radius: 10px; padding: 10px 14px; }
+    .rel-fam-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .rel-fam-head strong { font-size: 13px; }
+    .rel-fam-tag { font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+      color: #e879f9; margin-left: auto; }
+    .rel-fam-row { display: flex; align-items: center; gap: 8px; font-size: 12px;
+      padding: 3px 0 3px 14px; }
+    .rel-fam-row em { margin-left: auto; font-style: normal; font-size: 11px;
+      color: var(--muted); }
     .rel-players { flex: 1; min-width: 0; }
     .rel-names { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .rel-arrow { font-size: 10px; color: var(--muted); }

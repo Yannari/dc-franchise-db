@@ -10,6 +10,8 @@ import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG } from './cor
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS } from './shows.js';
+// The drag family is derived from the same rows the tab already saves.
+import { dragRelationsFrom, familiesFromRelations, relation } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
@@ -1648,7 +1650,13 @@ export function buildKinshipSelect() {
   const keep = sel.value;
   const groups = new Map();
   let none = '';
+  /* A term that names a show belongs to that show. A drag mother is not a
+     relation a Total Drama cast can have, and offering her there is how a
+     season ends up carrying a relation no engine reads. Terms that name no
+     show are everybody's. */
+  const show = seasonConfig.format || 'total-drama';
   for (const [key, def] of Object.entries(REL_KINSHIP)) {
+    if (def.show && def.show !== show) continue;
     const opt = `<option value="${key}">${def.label}</option>`;
     if (!def.group) { none += opt; continue; }
     if (!groups.has(def.group)) groups.set(def.group, []);
@@ -1656,7 +1664,9 @@ export function buildKinshipSelect() {
   }
   sel.innerHTML = none + [...groups.entries()]
     .map(([g, list]) => `<optgroup label="${g}">${list.join('')}</optgroup>`).join('');
-  if (keep && REL_KINSHIP[keep]) sel.value = keep;
+  // Only restore a term this show still offers, or the select keeps a value
+  // it is no longer showing and the form saves a relation nobody can see.
+  if (keep && REL_KINSHIP[keep] && sel.querySelector(`option[value="${keep}"]`)) sel.value = keep;
 }
 export function updateRelAvatars() {
   const a = document.getElementById('rel-a')?.value;
@@ -1758,7 +1768,51 @@ export function loadS9Bonds() {
   relationships = [];
   saveRels(); renderRelList();
 }
+/**
+ * What the authored rows actually BUILT, on a drag season.
+ *
+ * Three rows produce a family with terms nobody typed — write "Ivy is Coco's
+ * mother", "Nell is Coco's sister" and "Ivy is Rita's sister" and the room now
+ * contains an aunt, a cousin and a grandmother. None of that is visible in a
+ * list of pairs, so the tab showed an author three lines and hid the tree they
+ * make. This draws the tree back.
+ *
+ * Derived, never stored: it is recomputed from the rows every render, so it
+ * cannot drift from them.
+ */
+function renderDragFamilies() {
+  const box = document.getElementById('rel-families');
+  if (!box) return;
+  const drag = (seasonConfig.format || 'total-drama') === 'drag-race';
+  box.style.display = drag ? '' : 'none';
+  if (!drag) return;
+
+  const edges = dragRelationsFrom(relationships);
+  const fams = familiesFromRelations(players.map(p => ({ name: p.name, age: p.age })), edges);
+  if (!fams.length) {
+    box.innerHTML = `<div class="rel-empty">No drag families yet.<br>`
+      + `Give a pair <strong>Drag mother</strong> or <strong>Drag sisters</strong> `
+      + `and the aunts and cousins work themselves out.</div>`;
+    return;
+  }
+
+  box.innerHTML = fams.map(f => {
+    // Read from the elder, because that is the way a family introduces itself.
+    const head = f.members.find(m => f.roles[m] === 'mother') || f.members[0];
+    const rest = f.members.filter(m => m !== head).map(m => {
+      const term = relation(fams, head, m) || 'family';
+      return `<div class="rel-fam-row">${miniAvatar(m, 24)}<span>${m}</span>`
+        + `<em>${head}'s ${term}</em></div>`;
+    }).join('');
+    return `<div class="rel-fam">
+      <div class="rel-fam-head">${miniAvatar(head, 28)}<strong>${f.name}</strong>
+        ${f.surname ? '<span class="rel-fam-tag">the room can see it</span>' : ''}</div>
+      ${rest}</div>`;
+  }).join('');
+}
+
 export function renderRelList() {
+  renderDragFamilies();
   const list = document.getElementById('rel-list');
   if (!relationships.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or load <strong>S9/S10 Bonds</strong> preset.</div>`; return; }
   const sorted = [...relationships].sort((a,b) => { if(a.type==='unbreakable'&&b.type!=='unbreakable') return -1; if(b.type==='unbreakable'&&a.type!=='unbreakable') return 1; return Math.abs(b.bond)-Math.abs(a.bond); });

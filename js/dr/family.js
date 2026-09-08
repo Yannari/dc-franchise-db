@@ -139,6 +139,48 @@ export const AUTHORED_RELATIONS = ['mother', 'daughter', 'sister'];
  * name a house for one to exist — and a component that shares a surname takes
  * it, which is what makes it visible from the door.
  */
+/* ══════════════════════════════════════════════════════════════════════
+   THE RELATIONSHIP TAB → EDGES
+   ══════════════════════════════════════════════════════════════════════
+
+   The cast builder's Relationships tab already carried both halves of this:
+   `type` is how two queens FEEL about each other (which seeds a bond through
+   initGameState, and always did work here) and `kin` is how they KNOW each
+   other. A pair can be drag sisters and at war at the same time, which is the
+   whole reason those are two fields and not one.
+
+   What was missing is that no drag term existed on the kin axis and nothing
+   read it. `drag-mother` / `drag-daughter` / `drag-sisters` are authored in
+   the tab; this turns them into the edges the tree is built from.
+
+   Direction is the only fiddly part, so it is stated once here: a tab row
+   reads "A is B's mother", and an edge reads "b is a's mother". They are
+   opposite ways round on purpose -- the tab is written from A, the resolver
+   answers about B -- and this is the only place that has to know it. */
+const KIN_EDGES = {
+  // A is B's mother  →  B's mother is A
+  'drag-mother': (a, b) => ({ a: b, b: a, kind: 'mother' }),
+  // A is B's daughter  →  A's mother is B
+  'drag-daughter': (a, b) => ({ a, b, kind: 'mother' }),
+  'drag-sisters': (a, b) => ({ a, b, kind: 'sister' }),
+};
+
+/**
+ * Authored edges out of the relationship list the cast builder saves.
+ *
+ * Everything that is not a drag term is dropped rather than guessed at: a pair
+ * who are `best-friends` are close, and the bond already says so.
+ */
+export function dragRelationsFrom(relationships = []) {
+  const out = [];
+  for (const r of relationships || []) {
+    const make = r && KIN_EDGES[r.kin];
+    if (!make || !r.a || !r.b || r.a === r.b) continue;
+    out.push(make(r.a, r.b));
+  }
+  return out;
+}
+
 export function familiesFromRelations(cast = [], relations = []) {
   const inCast = new Set(cast.map(p => p && p.name).filter(Boolean));
   const edges = [];

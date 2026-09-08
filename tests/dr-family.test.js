@@ -1,10 +1,12 @@
+// @vitest-environment jsdom
 // ══════════════════════════════════════════════════════════════════════
 // dr-family.test.js — who was already related when they walked in
 // ══════════════════════════════════════════════════════════════════════
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { JSDOM } from 'jsdom';
 import {
   assignDragFamilies, familyOf, relation, FAMILY_CAP, FAMILY_BOND,
-  familiesFromRelations, AUTHORED_RELATIONS,
+  familiesFromRelations, AUTHORED_RELATIONS, dragRelationsFrom,
 } from '../js/dr/family.js';
 import { rngFor } from '../js/dr/rng.js';
 
@@ -26,6 +28,25 @@ const CAST = [
   q('Bowie', 26, 'art'),
   q('Damien', 30, 'spooky'),
 ];
+
+/* ── PUT THE GLOBALS BACK ────────────────────────────────────────────
+   js/cast-ui.js reads `players`, `relationships`, `seasonConfig` and
+   `miniAvatar` as bare globals, because in the browser js/main.js puts them
+   there. A test that supplies them has to take them away again: module state
+   is reset between files but globalThis is not, so a leaked `players` is
+   still standing when the next file in the same worker runs, and the failure
+   lands over there rather than here. Measured: three unrelated files went red
+   in a batch and green alone. */
+const GLOBALS = ['seasonConfig', 'players', 'relationships', 'REL_KINSHIP',
+  'REL_TYPES', 'miniAvatar', 'document', 'window'];
+const _before = new Map(GLOBALS.map(k => [k, Object.getOwnPropertyDescriptor(global, k)]));
+afterEach(() => {
+  for (const k of GLOBALS) {
+    const d = _before.get(k);
+    if (d) Object.defineProperty(global, k, d);
+    else delete global[k];
+  }
+});
 
 describe('casting the families', () => {
   it('never puts a queen in two families', () => {
@@ -228,5 +249,158 @@ describe('kinship', () => {
     const f = assignDragFamilies({ cast: CLAN, relations: ghost, rng: rngFor(1) }).families;
     expect(f.some(x => x.authored)).toBe(false);
     expect(f.flatMap(x => x.members)).not.toContain('Nobody At All');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The Relationships tab is the author's end of all of this.
+// ══════════════════════════════════════════════════════════════════════
+describe('authored from the relationships tab', () => {
+  const CAST = [
+    q('Ivy Deveraux', 55, 'pageant'), q('Coco Deveraux', 30, 'pageant'),
+    q('Nell Deveraux', 28, 'pageant'), q('Stranger', 33, 'comedy'),
+  ];
+  // What the cast builder actually saves: two axes on one row.
+  const TAB = [
+    { a: 'Ivy Deveraux', b: 'Coco Deveraux', kin: 'drag-mother', type: 'enemy', bond: -4 },
+    { a: 'Nell Deveraux', b: 'Coco Deveraux', kin: 'drag-sisters', type: 'ally', bond: 4 },
+    { a: 'Stranger', b: 'Ivy Deveraux', kin: 'best-friends', type: 'ally', bond: 5 },
+    { a: 'Stranger', b: 'Coco Deveraux', kin: 'none', type: 'neutral', bond: 0 },
+  ];
+
+  it('reads a tab row in the direction the tab is written in', () => {
+    /* THE ONE FIDDLY BIT. A row says "A is B's mother"; an edge says "b is a's
+       mother". They are opposite ways round because the tab is written from A
+       and the resolver answers about B, and getting it backwards silently
+       inverts every family in the season. */
+    const edges = dragRelationsFrom([TAB[0]]);
+    expect(edges).toEqual([{ a: 'Coco Deveraux', b: 'Ivy Deveraux', kind: 'mother' }]);
+    const fams = familiesFromRelations(CAST, edges);
+    expect(relation(fams, 'Coco Deveraux', 'Ivy Deveraux')).toBe('mother');
+    expect(relation(fams, 'Ivy Deveraux', 'Coco Deveraux')).toBe('daughter');
+  });
+
+  it('takes the same row from the other end', () => {
+    const row = { a: 'Coco Deveraux', b: 'Ivy Deveraux', kin: 'drag-daughter' };
+    const fams = familiesFromRelations(CAST, dragRelationsFrom([row]));
+    expect(relation(fams, 'Coco Deveraux', 'Ivy Deveraux')).toBe('mother');
+  });
+
+  it('ignores the terms that are not a drag family', () => {
+    // `best-friends` is real and already says everything it means through the
+    // bond. Reading it as kinship would put half a cast in one house.
+    expect(dragRelationsFrom([TAB[2], TAB[3]])).toEqual([]);
+  });
+
+  it('builds the house the tab describes, feelings and all', () => {
+    const fams = familiesFromRelations(CAST, dragRelationsFrom(TAB));
+    expect(fams.length).toBe(1);
+    expect(fams[0].members.sort())
+      .toEqual(['Coco Deveraux', 'Ivy Deveraux', 'Nell Deveraux']);
+    // Nell is Coco's sister, so Ivy is her mother too — authored once, true twice.
+    expect(relation(fams, 'Nell Deveraux', 'Ivy Deveraux')).toBe('mother');
+    // And the feelings axis is untouched: they are family AND at war, which is
+    // the entire reason `kin` and `type` are two fields.
+    expect(TAB[0].bond).toBe(-4);
+  });
+});
+
+describe(`a played season carries the author's houses`, () => {
+  it('threads tab relations through playDragSeason', async () => {
+    const { playDragSeason } = await import('../js/dr/season.js');
+    const cast = [
+      'Ivy Deveraux', 'Coco Deveraux', 'Nell Deveraux', 'Wayne Cross',
+      'Julia Vale', 'Bowie Sharpe', 'Emmah Rae', 'Caleb Storm',
+    ].map((n, i) => q(n, 24 + i * 3, 'pageant'));
+    const relations = dragRelationsFrom([
+      { a: 'Ivy Deveraux', b: 'Coco Deveraux', kin: 'drag-mother' },
+      { a: 'Nell Deveraux', b: 'Coco Deveraux', kin: 'drag-sisters' },
+    ]);
+    const { state } = playDragSeason({ cast, seed: 4, relations });
+    const house = (state.dragFamilies || []).find(f => f.authored);
+    expect(house, 'the authored house survived into the season').toBeTruthy();
+    expect(house.members.sort())
+      .toEqual(['Coco Deveraux', 'Ivy Deveraux', 'Nell Deveraux']);
+    // A season that authors nothing still gets its own families rather than
+    // an empty room.
+    const plain = playDragSeason({ cast, seed: 4 });
+    expect(plain.state.dragFamilies.some(f => f.authored)).toBe(false);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// ...and that an author can actually reach the terms.
+// ══════════════════════════════════════════════════════════════════════
+describe('the kinship picker', () => {
+  /* A term nobody can select is a term that does not exist. Both halves are
+     worth pinning: the drag terms must APPEAR on a runway, and must NOT appear
+     on a camp — a Total Drama pair cannot have a drag mother, and offering her
+     is how a season ends up carrying a relation no engine reads. */
+  const build = async (format) => {
+    const dom = new JSDOM('<select id="rel-kin"></select>');
+    global.document = dom.window.document;
+    global.window = dom.window;
+    const core = await import('../js/core.js');
+    core.seasonConfig.format = format;
+    global.REL_KINSHIP = core.REL_KINSHIP;
+    global.seasonConfig = core.seasonConfig;
+    const { buildKinshipSelect } = await import('../js/cast-ui.js');
+    buildKinshipSelect();
+    return [...dom.window.document.querySelectorAll('#rel-kin option')].map(o => o.value);
+  };
+
+  it('offers the drag terms on a drag season and nowhere else', async () => {
+    const drag = await build('drag-race');
+    expect(drag).toEqual(expect.arrayContaining(['drag-mother', 'drag-daughter', 'drag-sisters']));
+    // The shared terms stay shared — this gates by show, it does not replace.
+    expect(drag).toContain('exes');
+
+    const td = await build('total-drama');
+    for (const term of ['drag-mother', 'drag-daughter', 'drag-sisters']) {
+      expect(td, `${term} offered to a camp`).not.toContain(term);
+    }
+    expect(td).toContain('siblings');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The tab shows the tree the rows make, not just the rows.
+// ══════════════════════════════════════════════════════════════════════
+describe('the family panel', () => {
+  it('draws terms nobody typed', async () => {
+    const dom = new JSDOM('<div id="rel-list"></div><div id="rel-families"></div>');
+    global.document = dom.window.document;
+    const core = await import('../js/core.js');
+    core.seasonConfig.format = 'drag-race';
+    core.setPlayers([
+      { name: 'Ivy Deveraux', age: 55 }, { name: 'Coco Deveraux', age: 30 },
+      { name: 'Nell Deveraux', age: 28 }, { name: 'Rita Deveraux', age: 52 },
+    ]);
+    core.setRelationships([
+      { a: 'Ivy Deveraux', b: 'Coco Deveraux', kin: 'drag-mother', type: 'ally', bond: 4 },
+      { a: 'Nell Deveraux', b: 'Coco Deveraux', kin: 'drag-sisters', type: 'ally', bond: 3 },
+      { a: 'Rita Deveraux', b: 'Ivy Deveraux', kin: 'drag-sisters', type: 'enemy', bond: -5 },
+    ]);
+    for (const k of ['seasonConfig', 'players', 'relationships', 'REL_KINSHIP', 'REL_TYPES'])
+      Object.defineProperty(global, k, { get: () => core[k], configurable: true });
+    global.miniAvatar = () => '<i></i>';
+
+    const { renderRelList } = await import('../js/cast-ui.js');
+    renderRelList();
+    // Read through the markup rather than textContent: the name and its term
+    // sit in sibling elements, so textContent runs them together.
+    const text = dom.window.document.getElementById('rel-families')
+      .innerHTML.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+
+    expect(text).toContain('The House of Deveraux');
+    // Everybody who shares the surname is visibly related from the door.
+    expect(text).toContain('the room can see it');
+    // AUTHORED: Coco's mother is Ivy. DERIVED: Nell is Coco's sister, so Ivy
+    // is her mother too — three rows, and the fourth relation for free. That
+    // derived line is the whole point of the panel; the rows above it already
+    // say the rest.
+    expect(text).toContain("Coco Deveraux Ivy Deveraux's daughter");
+    expect(text).toContain("Nell Deveraux Ivy Deveraux's daughter");
+    expect(text).toContain("Rita Deveraux Ivy Deveraux's sister");
   });
 });

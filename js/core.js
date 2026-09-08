@@ -99,6 +99,25 @@ export const REL_KINSHIP = {
   cousins:     { label: 'Cousins',         family: true,  tense: false, group: 'Family' },
   'in-laws':   { label: 'In-laws',         family: true,  tense: false, group: 'Family' },
 
+  /* ── the drag family, which is a different thing to a family ──
+
+     A drag mother is not a parent and `parent-child` is the wrong word for
+     her: she is the queen who put you in your first pair of heels, and the
+     relation is chosen rather than inherited. It is also the one relation on
+     this axis that BUILDS SOMETHING -- js/dr/family.js walks these edges into
+     a tree, so authoring three of them produces aunts, cousins and
+     grandmothers nobody typed.
+
+     Direction is in the label because the tab shows A and B in order and
+     "mother" alone does not say whose. Only these three are ever authored;
+     every other term in a drag family is derived from them. */
+  'drag-mother':   { label: "Drag mother — A is B's mother", family: true, tense: false,
+    group: 'Drag family', show: 'drag-race' },
+  'drag-daughter': { label: "Drag daughter — A is B's daughter", family: true, tense: false,
+    group: 'Drag family', show: 'drag-race' },
+  'drag-sisters':  { label: 'Drag sisters', family: true, tense: false,
+    group: 'Drag family', show: 'drag-race' },
+
   // ── together ──
   married:     { label: 'Married',         family: true,  tense: false, group: 'Together' },
   engaged:     { label: 'Engaged',         family: true,  tense: false, group: 'Together' },

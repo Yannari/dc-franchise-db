@@ -89,6 +89,33 @@ export const WERK_CSS = `
 /* ── SCENE CARDS ── container-queried, so they reflow to their own width ── */
 .dr-room{container-type:inline-size;position:relative}
 
+/* ══ THE STATIONS ══ the room, and who the night reached ══
+   A row of mirrors with a queen at each one. Sticky, because the room does
+   not leave while you read about it, and each mirror is DARK until the
+   night reaches that queen — so the screen shows you who it has been about
+   and, by the last card, who it forgot. */
+.dr-stations{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:10px;
+  justify-content:center;padding:15px 16px 13px;margin:0 0 18px;
+  background:linear-gradient(180deg,#1a0713,#0b0309 78%,rgba(6,2,5,.96));
+  border-bottom:1px solid rgba(255,233,168,.2);
+  box-shadow:0 16px 34px -22px rgba(0,0,0,.95)}
+.dr-st-rail{position:absolute;left:14px;right:14px;top:6px;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,233,168,.22),transparent)}
+.dr-station{position:relative;width:66px;text-align:center;opacity:.3;
+  filter:grayscale(1);transition:opacity .4s,filter .4s,transform .4s}
+.dr-station.on{opacity:1;filter:none;transform:translateY(-2px)}
+.dr-station .dr-por{border:1px solid rgba(255,255,255,.18);margin:0 auto;display:block}
+.dr-station b{display:block;margin-top:4px;font-size:9px;font-weight:600;color:#e3cfdd;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* The bulbs over her mirror, lit only when she is. */
+.dr-st-bulbs{display:block;height:3px;margin:0 auto 5px;width:80%;border-radius:2px;
+  background:rgba(255,233,168,.14);transition:background .4s,box-shadow .4s}
+.dr-station.on .dr-st-bulbs{background:#FFE9A8;box-shadow:0 0 14px rgba(255,200,61,.75)}
+/* The cards scroll under a sticky board, so they reserve its room. */
+.dr-room .dr-step{scroll-margin-top:170px}
+@media(max-width:760px){.dr-stations{position:static}.dr-station{width:52px}}
+@media(prefers-reduced-motion:reduce){.dr-station,.dr-st-bulbs{transition:none}}
+
 /* ══ THE WERK ROOM ══ one set, four times of day ══
    A wall of mirrors with bulbs around them, a bench of stations along the
    bottom, and the sign on the wall. Absolute inside the content column so
@@ -279,12 +306,51 @@ const shop = suffix => `<div class="dr-shop dr-shop-${SHOP_LIGHT[suffix] || 'day
 function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '' }) {
   const ep = epOf(row);
   const steps = scenes.map((sc, i) => sceneCard(sc, i, suffix, ep, row)).join('');
+
+  /* ── THE STATIONS ──
+     A werk room IS a row of mirrors with a queen at each one, and all four
+     of these screens drew a column of cards in front of a wall. The wall was
+     right and the room was missing: you could not see who was in it, or
+     which of them the night had been about.
+     One station per queen, sticky above the cards, and HER MIRROR LIGHTS
+     WHEN THE NIGHT REACHES HER — so a screen that spends four cards on two
+     queens looks like what it is, and by the last click you can see who the
+     episode forgot. That is the same fact the aftermath's screen-time
+     numbers carry, drawn where somebody watching will notice it. */
+  const room = livingOf(row);
+  const board = room.length ? `<div class="dr-stations" id="dr-stations-${suffix}">
+      <div class="dr-st-rail"></div>
+      ${room.map(n => `<div class="dr-station" data-queen="${esc(n)}">
+        <i class="dr-st-bulbs"></i>
+        ${_portrait(n, ep, { size: 34 })}
+        <b>${esc(n)}</b>
+      </div>`).join('')}
+    </div>` : '';
+
+  /* Who the night has reached, per step, read off the step itself — the
+     same hook the crowning, the smackdown and the entrances use. */
+  if (typeof window !== 'undefined') {
+    const upTo = [];
+    const seen = new Set();
+    for (const sc of scenes) {
+      for (const n of (sc?.data?.players || [])) seen.add(n);
+      upTo.push([...seen]);
+    }
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra[suffix] = (idx) => {
+      const lit = new Set(upTo[Math.max(0, Math.min(idx, upTo.length - 1))] || []);
+      for (const el of document.querySelectorAll(`#dr-stations-${suffix} .dr-station`)) {
+        el.classList.toggle('on', idx >= 0 && lit.has(el.getAttribute('data-queen')));
+      }
+    };
+  }
+
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
     window._drSidebar[suffix] = scenes.map(() => sidebar);
   }
   return `<style>${WERK_CSS}</style>${_shell(
-    `<div class="dr-room">${shop(suffix)}${lead}${steps}</div>`, ep,
+    `<div class="dr-room">${shop(suffix)}${board}${lead}${steps}</div>`, ep,
     { phase, title, subtitle, sidebar },
   )}${_controls(suffix, scenes.length, ep.num)}`;
 }

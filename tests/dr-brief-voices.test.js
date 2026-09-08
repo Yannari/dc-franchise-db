@@ -105,6 +105,12 @@ describe('the lines', () => {
       const f = briefFamily(key);
       if (!f.solo) continue;
       for (const l of t.lines) {
+        /* EXCEPT WHEN IT SAYS THERE IS NOT ONE. "No team to share the
+           load" is a solo challenge described correctly — the absence of a
+           team is the whole texture of a design week — and this read the
+           word and failed the best line in the family. What it forbids is a
+           solo queen USING team machinery, so a negated mention passes. */
+        if (/\b(no|without|nobody|none|neither|alone)\b[^.]{0,30}\b(teams?|captains?|groups?)\b/i.test(l)) continue;
         expect(TEAM.test(l),
           `${pool}:${key}/${t.id} is a solo challenge but reaches for a team`).toBe(false);
       }

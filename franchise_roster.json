@@ -5345,6 +5345,26 @@
       "descriptor": "The Crafty Club-Kid Comedienne",
       "backstory": "Autumnatic is a beloved staple of the underground New York drag scene, known for shutting down the club with her booming voice and high-energy performances. She came up in the scene idolizing old-school club kids, aiming for structural, avant-garde silhouettes. However, her grand concepts rarely translate to the finished garment, earning her a reputation for having a brilliant mind but a terrible eye for fashion. Despite looking like she got dressed in the dark at a construction site, her undeniable charisma, quick wit, and fierce lipsync skills keep her fully booked and highly respected.",
       "personality": "Loud, endlessly charismatic, and completely delusional about her fashion sense. She will confidently strut down the runway in a geometrically questionable, hot-glued piece of upholstery and defend it to the judges as \"high-concept art.\" She is a natural leader in the Werk Room, cracking jokes, giving hilarious commentary on the other queens' drama, and refusing to ever take herself too seriously."
+    },
+    {
+      "name": "Cheryl Hole",
+      "slug": "cheryl-hole",
+      "gender": "f",
+      "sexuality": "gay",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 4,
+        "endurance": 3,
+        "mental": 3,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 4,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 2
+      },
+      "voice": "sharp, fast-paced British accent loaded with cheeky colloquialisms and a loud, infectious cackle. She loves poking fun at her own mediocre runways before anyone else can—for example: \"Right, girls, I know this dress looks like it was put together with a glue stick and a dream, but at least I'm having a lovely time! Who wants a gin and tonic?\"",
+      "profileSources": {}
     }
   ]
 }

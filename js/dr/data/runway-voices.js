@@ -172,7 +172,7 @@ export const RUNWAY_THEMES = [
       tier('neutral', 'She can do correct. Correct is not what she is known for.', [
         'I can do {c} — correct, polished, appropriate — it is just not what people book me for, and the panel knows that.',
         '{c} asks for symmetry and taste and I brought both, but the look is going to read as an impression of somebody else\'s drag and we all know it.',
-        'My {c} is clean and it is finished and it is the look of a queen who learned the rules rather than growing up inside them.',
+        'I packed a {c} that is clean and finished, the look of a queen who learned the rules rather than growing up inside them.',
         'I packed a {c} look that is technically right, and technically right is the most dangerous place to be on this stage.',
       ]),
       tier('against', 'Being asked to be tasteful by people who cast her for not being.', [
@@ -191,7 +191,7 @@ export const RUNWAY_THEMES = [
         '{c} asked for construction and concept and I brought both, because this is the only week the competition scores on the thing I am actually trained for.',
         'This is my {c} and the engineering is the point — every seam is structural, every panel is doing something, and the whole thing says what I wanted it to say.',
       ]),
-      tier('neutral', 'She built something. Whether it is an idea is somebody else’s call.', [
+      tier('neutral', 'She built something. Whether it is an idea is somebody else\'s call.', [
         'I built a {c} look that holds together — clean lines, solid construction — and whether it has an idea in it is something the panel gets to decide.',
         'My {c} is constructed well, finished properly, and standing up on its own, which is the most I can promise about a category that asks for a concept I am not sure I have.',
         'The {c} silhouette is there and the construction is honest, and I am walking it knowing that solid is not the same as interesting.',
@@ -199,7 +199,7 @@ export const RUNWAY_THEMES = [
       ]),
       tier('against', 'The prompt wants a concept and she brought a garment.', [
         '{c} wants a design idea and I brought a garment, and the distance between those two things is going to show on the walk.',
-        'I do not think in silhouettes and {c} is asking me to, and what I am wearing is the best shape I could manage without a designer’s eye.',
+        'I do not think in silhouettes and {c} is asking me to, and what I am wearing is the best shape I could manage without a designer\'s eye.',
         'My {c} is a dress, and the prompt wanted an argument, and I can feel the difference every time I look at the queens who actually have one.',
         '{c} asks for construction I do not have the vocabulary for, and the look I am walking is the closest I could get with the tools I actually own.',
       ]),
@@ -312,7 +312,7 @@ export const RUNWAY_THEMES = [
       tier('against', 'A brief she read three times and still does not have an angle on.', [
         'I read the {c} brief and I did not see myself in it anywhere — the look I built is my best guess at a prompt I still do not fully understand.',
         '{c} asked for something I do not have a reference for, and the garment I am wearing is a honest attempt at a language I never learned.',
-        'My {c} is the look of a queen who read the prompt three times and built the most sincere version of something she has no instinct for.',
+        'I read the {c} prompt three times and built the most sincere version of something I have no instinct for, and sincerity is all I can offer tonight.',
         'I do not know what {c} wanted from me, and the look I am walking in tonight is the result of that confusion made into a garment.',
       ]),
     ]),
@@ -358,7 +358,7 @@ export const RUNWAY_VOICES = [
         'The look reads as trained, which it is, and the walk reads as prepared, which it was, and I am satisfied with a night that lands where I expected it to.',
       ]),
       tier('fine', 'Textbook. Nothing to fault and nothing to remember.', [
-        'The walk is textbook and the look is correct and nobody is going to remember this by tomorrow, which is the worst kind of safe.',
+        'I walked a textbook walk in a correct look and nobody is going to remember this by tomorrow, which is the worst kind of safe.',
         'I hit every mark and did not miss a beat and the result is perfectly forgettable, which for a queen who has spent years on this is not a compliment.',
         'Everything is technically right and nothing is interesting, and I can feel the panel filing me under competent, which is the faintest praise I know.',
         'The training held and the technique was fine and the look did what it was supposed to do, and fine is the word that is going to haunt me tonight.',
@@ -393,14 +393,14 @@ export const RUNWAY_VOICES = [
       ]),
       tier('fine', 'A smile, not a laugh, and she knows the difference.', [
         'I got a smile, which is not a laugh, and I know the difference — a smile means they see the joke and a laugh means the joke worked, and those are two different things.',
-        'The bit reads but it does not break — the panel is amused, not undone — and for a comedy queen, amused is the most disappointing positive review.',
+        'I can see the bit reading but it does not break — the panel is amused, not undone — and for me, amused is the most disappointing positive review.',
         'They got it. They saw the joke, they appreciated the joke, and they moved on, and the moving-on is the part that tells me it was not enough.',
-        'A polite smile from the panel, which means the concept was clear but the execution did not surprise anybody, and surprise was the whole point.',
+        'I got a polite smile from the panel, which means the concept was clear but the execution did not surprise anybody, and surprise was the whole point.',
       ]),
       tier('weak', 'The joke does not read as a joke, which is worse than not being funny.', [
-        'The joke is not reading as a joke — it is reading as a bad look — and that is worse than not being funny, because at least a bad comedian is understood.',
+        'I can tell the joke is not reading as a joke — it is reading as a bad look — and that is worse than not being funny, because at least a bad comedian is understood.',
         'I can see the panel looking at the construction and not seeing the bit, which means the bit failed at the one thing it was supposed to do, which is be visible.',
-        'The gag did not land because they did not know there was a gag, and a joke that reads as a mistake is the loneliest place a comedy queen can stand.',
+        'I can see my gag did not land because they did not know there was a gag, and a joke that reads as a mistake is the loneliest place I can stand.',
         'Nobody is laughing because nobody can tell there is anything to laugh at, and I am walking a look that was built around a joke that is invisible.',
       ]),
       tier('disaster', 'Silence, and she has to keep walking through it.', [
@@ -429,7 +429,7 @@ export const RUNWAY_VOICES = [
         'It is a look — a finished, constructed, presentable look — and that is the most I will say for it, because saying more would be lying.',
         'The garment exists and it walks and it does not fall apart, and that is the review I am giving it, because I know what I am capable of and this is not it.',
         'I am wearing something I made and it is adequate and the adequacy of it is the thing I am going to think about tonight when I take it off.',
-        'The look is fine in the way a garment is fine when you did not have the time or the vision to make it interesting.',
+        'I know the look is fine in the way a garment is fine when I did not have the time or the vision to make it interesting.',
       ]),
       tier('weak', 'A taste failure, diagnosed in real time by the person who made it.', [
         'The proportions are wrong and I know they are wrong because I can see them while I am walking, and the diagnosis is arriving in real time and it is not kind.',
@@ -451,18 +451,18 @@ export const RUNWAY_VOICES = [
         'I went all the way and the room came with me — every absurd detail, every oversized choice, every inch of this that a tasteful queen would have cut, and they are all in.',
         'The commitment paid off and I can hear it — the panel is not just amused, they are delighted, and delighted is the sound of camp landing exactly where it should.',
         'I built the most ridiculous version of myself I could, and the room is responding to the ridiculous with the kind of joy that proves I was right to commit.',
-        'Everything is too much and too much is the point, and the panel gets it, and getting it is the victory — not polite amusement, actual joy.',
+        'I gave them everything and everything is too much and too much is the point, and the panel gets it — not polite amusement, actual joy.',
       ]),
       tier('strong', 'Big and committed and it lands.', [
         'It is big and it is committed and it is landing, and I can feel the room going along with the choices even if they are not losing their minds over them.',
         'The camp is reading — the proportions are absurd, the details are deliberate, and the panel sees that I meant every inch of it.',
         'I built something ridiculous and walked it like I built something ridiculous, and the reaction tells me the commitment is visible even if the gag is not transcendent.',
-        'The look is doing what camp does when it works — it is too much, obviously too much, and the room is enjoying it without needing to be told to.',
+        'I can feel the look doing what camp does when it works — it is too much, obviously too much, and the room is enjoying it without needing to be told to.',
       ]),
       tier('fine', 'They are amused. She was going for something louder than amused.', [
         'They are amused, which is the word I was afraid of — amused means they see the camp and they appreciate the camp and the camp did not move them.',
         'I wanted a scream and I got a chuckle, and for a camp queen the difference between those two sounds is the difference between the top and the middle.',
-        'The commitment is there and the construction is there and the panel is smiling politely, which is the worst possible reaction to something that was built to be absurd.',
+        'I put the commitment in and the construction is there and the panel is smiling politely, which is the worst possible reaction to something I built to be absurd.',
         'I went big and they went mild, and I can feel the gap between the reaction I designed for and the reaction I am actually getting.',
       ]),
       tier('weak', 'Committed to something the room does not want to go along with.', [
@@ -482,13 +482,13 @@ export const RUNWAY_VOICES = [
     'Nightlife, not theatre. Silhouette over sewing, nerve over finish, and a '
     + 'suspicion that this panel is not the room her drag was made for.', [
       tier('stunning', 'The shape does what it does in a dark room, in the light, in front of them.', [
-        'The shape is doing what it does at three in the morning in a room with no lights, except tonight it is doing it under stage lighting, in front of a panel, and it still works.',
+        'I can feel the shape doing what it does at three in the morning in a room with no lights, except tonight it is doing it under stage lighting, in front of a panel, and it still works.',
         'I built this for a room the panel has never been in, and the fact that it translates to this stage is the victory — the silhouette, the nerve, all of it, reading.',
-        'The look was made for darkness and it is working in the light, which is the riskiest thing a club kid can attempt, and tonight the risk paid.',
+        'I made this look for darkness and it is working in the light, which is the riskiest thing I can attempt, and tonight the risk paid.',
         'I can feel the shape landing the way it lands in the venue I built it for, except this time the people watching can actually see it, and they like what they see.',
       ]),
       tier('strong', 'It reads, and reading was the risk.', [
-        'It reads, and reading was the whole risk — nightlife drag under panel lights is a translation that can fail, and tonight the translation held.',
+        'I can feel it reading, and reading was the whole risk — my nightlife drag under panel lights is a translation that can fail, and tonight the translation held.',
         'The look is landing and the panel is following the silhouette, which means the thing I do in the dark is legible in the light, which is all I was hoping for.',
         'The shape works and the nerve is there and the walk reads as intentional rather than unfinished, which is the line my drag walks every time it leaves the club.',
         'I can see the panel seeing it — not perfectly, not the way a dark room sees it, but enough to know the look is communicating what I built it to communicate.',
@@ -500,7 +500,7 @@ export const RUNWAY_VOICES = [
         'The look reads as a look, which is all a panel needs, and it is not enough for me, because I did not come here to be understood — I came here to be felt.',
       ]),
       tier('weak', 'Under these lights it looks like what it is made of.', [
-        'Under these lights the look is showing its construction, and in a dark room the construction is invisible, and on this stage it is the only thing anybody can see.',
+        'Under these lights my look is showing its construction, and in a dark room the construction is invisible, and on this stage it is the only thing anybody can see.',
         'The silhouette that works at midnight looks like craft supplies under panel lights, and I can feel the gap between the idea and the execution widening with every step.',
         'I built this for a room that forgives, and this stage does not forgive, and the result is that every seam and every shortcut is visible and telling.',
         'The look is translating badly — the thing I see when I wear it is not the thing the panel sees when I walk it — and the lights are the problem and also the truth.',
@@ -518,7 +518,7 @@ export const RUNWAY_VOICES = [
       tier('stunning', 'The temperature of the room actually changes.', [
         'I can feel the room change — not a gasp, not a laugh, something lower and slower — and the look is doing what it was built to do, which is make the air different.',
         'The walk is slow and the face is deliberate and the thing I am building is not a look, it is a feeling, and tonight the feeling arrived.',
-        'Nobody is cheering and nobody should be — the silence from the panel is the compliment, and the fact that they are not sure whether to be impressed or unsettled is the whole point.',
+        'I can hear that nobody is cheering and nobody should be — the silence from the panel is the compliment, and the fact that they are not sure whether to be impressed or unsettled is my whole point.',
         'I am building an atmosphere rather than presenting a garment, and the atmosphere has landed — the room is quieter than it was when I walked out, and quieter is the win.',
       ]),
       tier('strong', 'Unsettling and controlled. She holds it the whole way.', [
@@ -529,15 +529,15 @@ export const RUNWAY_VOICES = [
       ]),
       tier('fine', 'Atmospheric enough. Nobody is frightened.', [
         'The atmosphere is there, barely, and nobody is frightened, which means I built a mood that did not quite commit enough to land.',
-        'The look reads as dark and the walk reads as intentional and the result is atmospheric without being affecting, which is another way of saying it did not work.',
+        'I can tell the look reads as dark and the walk reads as intentional and the result is atmospheric without being affecting, which is another way of saying I did not pull it off.',
         'I wanted dread and I got aesthetic, and the gap between those two words is the gap between a great night and a forgettable one.',
-        'The face is doing something and the silhouette is doing something and neither of them is doing enough, and the room is appreciating the effort without feeling the result.',
+        'I know my face is doing something and the silhouette is doing something and neither of them is doing enough, and the room is appreciating the effort without feeling the result.',
       ]),
       tier('weak', 'Costume, not dread, and the difference is everything.', [
-        'The look reads as costume, not as dread, and the difference is everything — a costume is something you put on, and dread is something you become.',
+        'I can see the look reads as costume, not as dread, and the difference is everything — a costume is something I put on, and dread is something I become.',
         'I built something dark and walked it darkly and it is reading as dress-up, which is the specific failure of a spooky queen who did not commit hard enough tonight.',
         'The face is painted and the walk is slow and the panel is seeing a garment rather than a feeling, which means every intentional choice I made is invisible.',
-        'It is reading as a look rather than an experience, and a spooky queen whose walk reads as a look has failed at the only thing her drag is supposed to do.',
+        'I can feel it reading as a look rather than an experience, and my walk reading as a look means I have failed at the only thing my drag is supposed to do.',
       ]),
       tier('disaster', 'It reads as funny, which is the one thing it must not do.', [
         'It is reading as funny, which is the single worst outcome for a queen who built something intended to frighten — funny means I failed so completely the failure is entertaining.',
@@ -551,32 +551,32 @@ export const RUNWAY_VOICES = [
     + 'a beginning and an ending and she has rehearsed the ending.', [
       tier('stunning', 'She plays the room and the room plays back.', [
         'I am playing the room and the room is playing back — the entrance has a beat, the turn has a beat, and the ending I rehearsed is landing exactly where I put it.',
-        'The walk has a beginning, a middle and an ending, and all three are working, and the panel is watching it the way an audience watches a scene.',
+        'I gave the walk a beginning, a middle and an ending, and all three are working, and the panel is watching it the way an audience watches a scene.',
         'I can feel the room responding to the pacing — the slow build, the held moment, the final beat — and the response tells me the staging is reading as intention.',
         'Every beat is hitting and the staging is clean and the walk has the structure of a scene, which is what I do with a runway whether the runway asked for it or not.',
       ]),
       tier('strong', 'A performance, delivered. The technique holds.', [
-        'The performance is delivered and the technique held — the entrance worked, the turn worked, and the whole thing read as intentional.',
+        'I delivered the performance and the technique held — the entrance worked, the turn worked, and the whole thing read as intentional.',
         'I performed the walk and the performance landed — not transcendent, not historic, but solid and staged and delivered the way I was trained to deliver it.',
-        'The stagecraft is visible and the pacing is clean, and the panel saw a queen who knows how to use a stage, which tonight was enough.',
+        'I made the stagecraft visible and the pacing clean, and the panel saw a queen who knows how to use a stage, which tonight was enough for me.',
         'I hit my marks and I held my moments and the walk read as rehearsed in the way that means professional, not in the way that means stiff.',
       ]),
       tier('fine', 'Competent stagecraft with nothing behind it tonight.', [
         'The technique is there and nothing is behind it — I hit every mark and held every beat and the whole thing felt like staging without a performance attached.',
         'I performed the walk competently and the competence is all there is tonight, which for a queen who lives on a stage is an admission.',
-        'The pacing is right and the staging is clean and the energy is absent, and without the energy the whole thing is a demonstration rather than a moment.',
+        'I got the pacing right and the staging clean and the energy is absent, and without the energy the whole thing is a demonstration rather than a moment.',
         'The walk has structure and the structure is empty, and I can feel the difference between performing and going through the motions tonight.',
       ]),
       tier('weak', 'Too big for the room, and she can hear that it is too big.', [
         'I am projecting to a back row that does not exist and the panel is right there, and everything I am doing is too big for the distance between us.',
-        'The performance is oversized — the gestures, the pacing, the held moments — and the panel is close enough to see the effort rather than the effect.',
+        'I know my performance is oversized — the gestures, the pacing, the held moments — and the panel is close enough to see the effort rather than the effect.',
         'I am doing too much and I can hear it, and the instinct that makes me fill a theatre is filling this runway past the point where it reads as natural.',
-        'The technique is showing as technique rather than as presence, and the difference is that effort at the wrong scale looks like it is trying too hard.',
+        'I can feel the technique showing as technique rather than as presence, and the difference is that my effort at the wrong scale looks like it is trying too hard.',
       ]),
       tier('disaster', 'The ending she rehearsed does not survive contact with the runway.', [
         'The ending I rehearsed did not survive contact with the stage — the timing is off, the beat is gone, and the whole walk unravelled from the entrance.',
         'I had a plan and the plan fell apart the moment I walked out, and everything after that is a performer trying to recover a moment that already passed.',
-        'The stagecraft collapsed and the technique did not save it, and the walk that was supposed to be a performance is a woman in a garment with nothing to say.',
+        'I felt the stagecraft collapse and the technique did not save me, and the walk that was supposed to be a performance is just me in a garment with nothing to say.',
         'I lost the room at the first beat and spent the rest of the walk trying to get it back, and every attempt made the distance worse.',
       ]),
     ]),
@@ -631,12 +631,12 @@ export const RUNWAY_VOICES = [
       ]),
       tier('fine', 'Pretty. Pretty is the faintest praise on this stage.', [
         'I am pretty tonight, and pretty is the faintest praise this stage offers — it means I showed up and my face was done and nobody gasped.',
-        'The beauty is there, technically, and nobody is moved by it, and the distance between pretty and stunning is the distance between noticed and remembered.',
+        'I know the beauty is there, technically, and nobody is moved by it, and the distance between pretty and stunning is the distance between noticed and remembered.',
         'I look fine and fine is the word that haunts a glamour queen — it means the face is clean and the walk is smooth and neither of them is doing anything.',
-        'The mug is right and the body is right and the result is pleasant, and pleasant from a queen who sells beauty is the same as forgettable.',
+        'I know my mug is right and my body is right and the result is pleasant, and pleasant from me is the same as forgettable.',
       ]),
       tier('weak', 'The face is doing all the work and it cannot carry it alone.', [
-        'The face is doing all the work and the face cannot carry it alone tonight — the mug is right but the silhouette is wrong, and the imbalance shows.',
+        'I can feel my face doing all the work and the face cannot carry it alone tonight — the mug is right but the silhouette is wrong, and the imbalance shows.',
         'I am relying on beauty to save a walk that the beauty cannot save, because beauty needs a frame and the frame tonight is not holding.',
         'The mug is the only thing working and I can feel the panel looking past it to the garment, which is where the problem is.',
         'My face is beautiful and my walk is not, and a glamour queen whose body cannot sell what her face is promising is a queen in trouble.',
@@ -644,7 +644,7 @@ export const RUNWAY_VOICES = [
       tier('disaster', 'The one thing she sells did not turn up tonight.', [
         'The one thing I sell did not show up tonight — the beauty is not there, the mug is off, and without it I have nothing, because beauty was the whole act.',
         'I built my entire drag on being beautiful and tonight I am not, and there is no plan B because I never needed one before.',
-        'The face is wrong and the body is wrong and the walk is wrong, and a glamour queen having a bad beauty night is a queen with no other trick to pull.',
+        'I know my face is wrong and my body is wrong and the walk is wrong, and a glamour queen having a bad beauty night is a queen with no other trick to pull.',
         'I am supposed to be the most beautiful queen on this stage and I am not even close tonight, and the absence of the one thing I do is louder than anything else.',
       ]),
     ]),
@@ -652,7 +652,7 @@ export const RUNWAY_VOICES = [
     'Conceptual, difficult, uninterested in being liked. If it has to be '
     + 'explained she will explain it, and she resents having to.', [
       tier('stunning', 'The idea arrives whole and lands without a word of explanation.', [
-        'The idea arrived whole — no explanation, no caption, no footnote — and the panel is sitting with it the way they sit with something they cannot dismiss.',
+        'I walked an idea out whole — no explanation, no caption, no footnote — and I can see the panel sitting with it the way they sit with something they cannot dismiss.',
         'I walked out an argument and the argument landed without a single word of setup, which is the only victory an art queen recognises.',
         'The concept is reading and I did not have to explain it, and the moment a difficult idea communicates on its own is the moment I live for.',
         'The look says what I built it to say and the panel heard it, and the silence is not confusion, it is the silence of people deciding what they think, which is all I wanted.',
@@ -661,13 +661,13 @@ export const RUNWAY_VOICES = [
         'It is difficult and they followed me anyway, which is the best version of a night where the look asks the room to do some work.',
         'The concept is not obvious and the panel went with it, and getting a difficult idea through to a room that did not have to go along with it is a win I will take.',
         'I walked something hard and the panel tracked it, and for a queen who makes conceptual drag, being tracked is the victory — not being adored, being understood.',
-        'The idea is in the room and the room is sitting with it, and sitting with it means it worked, even if the reaction is not the gasp a pretty gown gets.',
+        'I put the idea in the room and the room is sitting with it, and sitting with it means it worked, even if the reaction is not the gasp a pretty gown gets.',
       ]),
       tier('fine', 'They see a garment. She made an argument.', [
         'They see a garment and I made an argument, and the gap between those two readings is the gap that defines every walk I do.',
-        'The concept is in there but the panel is looking at the surface, and a concept that does not survive surface-reading is a concept that needed better execution.',
+        'I know the concept is in there but the panel is looking at the surface, and a concept that does not survive surface-reading needed me to execute it better.',
         'I built an idea and they saw a dress, and the distance between idea and dress is the distance between what I intended and what I delivered tonight.',
-        'The panel is appreciating the construction and missing the concept, which means the concept was not strong enough to survive being worn.',
+        'I can see the panel appreciating the construction and missing the concept, which means my concept was not strong enough to survive being worn.',
       ]),
       tier('weak', 'The concept did not survive being made out of fabric.', [
         'The concept did not survive being made out of fabric — the idea was clear in my head and unclear on my body, and the translation failed.',
@@ -677,7 +677,7 @@ export const RUNWAY_VOICES = [
       ]),
       tier('disaster', 'Nobody can tell what it is, and you had to be there is not available on a runway.', [
         'Nobody can tell what I am wearing or why, and the explanation I have is too long for a runway and too late for the panel, who have already decided.',
-        'The concept is invisible and the execution is baffling and the whole walk is the sound of an idea that needed a gallery wall and got a runway instead.',
+        'I walked out something whose concept is invisible and whose execution is baffling, and the whole walk is the sound of my idea needing a gallery wall and getting a runway instead.',
         'I built something only I understand, and a runway is not a context where understanding is optional — it is the whole transaction, and the transaction failed.',
         'The look is illegible and I am walking it knowing it is illegible, and the worst part is that the idea was good, and good does not matter when nobody can see it.',
       ]),
@@ -734,7 +734,7 @@ export const RUNWAY_SWAGGER = [
         'Somebody is going to eat this night for me. I am already deciding who.',
         'The walk is over and I am already in the next conversation, the one where this becomes somebody else\'s problem.',
         'I have had worse nights and survived them by making sure the panel was looking at another queen, and tonight is no different.',
-        'This is a disaster, and the disaster plan is the same as it always is: make sure when the panel looks for somebody to send home, they are looking at somebody else.',
+        'I know this is a disaster, and my disaster plan is the same as it always is: make sure when the panel looks for somebody to send home, they are looking at somebody else.',
       ]),
     ]),
   swagger('sunshine',
@@ -774,29 +774,104 @@ export const RUNWAY_SWAGGER = [
   swagger('firecracker',
     'hothead, chaos-agent, wildcard. Feels it immediately and entirely. No '
     + 'distance between what happened and what she thinks about it.', [
-      tier('stunning', 'Euphoric and completely without composure about it.'),
-      tier('strong', 'Buzzing. Wants to do it again immediately.'),
-      tier('fine', 'Bored by her own walk, which is the worst thing that could have happened.'),
-      tier('weak', 'Furious, and not with herself.'),
-      tier('disaster', 'Detonating internally, and the internally part will not last.'),
+      tier('stunning', 'Euphoric and completely without composure about it.', [
+        'I am losing my mind right now and I do not care who sees it — that was the best I have ever felt on a stage and the feeling is all over my face.',
+        'I cannot keep it together and I am not trying to — the walk was everything, and the adrenaline is hitting me like a wall.',
+        'I am shaking, actually shaking, because that was it, that was the night, and the high is so big I cannot stand still.',
+        'I want to run back out there and do it again, right now, and the fact that I cannot is the only thing stopping me from losing it completely.',
+      ]),
+      tier('strong', 'Buzzing. Wants to do it again immediately.', [
+        'I am buzzing and I want to go again — the energy is still in my body and there is nowhere to put it and I love this feeling.',
+        'That was fun and I am still in it and I want to walk that runway one more time before the high goes away.',
+        'The adrenaline is still going and I am feeding off it and the night is not over and I am already restless.',
+        'I feel electric right now and the walk was good and I want more of this — more stage, more lights, more of whatever just happened.',
+      ]),
+      tier('fine', 'Bored by her own walk, which is the worst thing that could have happened.', [
+        'I am bored by my own walk, which is the worst possible outcome for somebody who needs to feel something to function.',
+        'Nothing happened out there, emotionally, and I am a queen who runs on emotion, and a night where I feel nothing is worse than a night where I fail.',
+        'I did not feel it tonight and the walk shows it and the boredom is eating me alive because I came here to burn, not to coast.',
+        'The walk was fine and the feeling is flat and flat is the one thing I cannot survive, because my whole drag is about the high.',
+      ]),
+      tier('weak', 'Furious, and not with herself.', [
+        'I am furious and I am not even sure at who yet, but the fury is here and it is looking for somewhere to land.',
+        'Something went wrong and I am angry about it and the anger is not directed inward, which means it is about to be directed somewhere else.',
+        'I want to throw something and I am going to redirect that energy before it becomes somebody else\'s problem, but right now it is very loud in my head.',
+        'I am seething and the seething is going to come out, and the question is not whether it comes out but when and at who.',
+      ]),
+      tier('disaster', 'Detonating internally, and the internally part will not last.', [
+        'I am about to explode and the only thing keeping me together is the fact that the cameras are still rolling.',
+        'I can feel the detonation happening and the internally part has about thirty seconds before it becomes externally.',
+        'I am going to lose it, fully, and the countdown started the moment I finished that walk, and there is not enough composure in my body to stop it.',
+        'I am holding a scream behind my teeth and the scream is winning and the backstage is about to find out what that sounds like.',
+      ]),
     ]),
   swagger('professional',
     'challenge-beast, perceptive-player. Assesses. Knows where she probably '
     + 'landed before the panel opens its mouth, and is usually right.', [
-      tier('stunning', 'Notes the result and moves on. There is a critique to survive.'),
-      tier('strong', 'Where she expected to be. That is the job.'),
-      tier('fine', 'Middle of the pack, correctly identified, mildly annoying.'),
-      tier('weak', 'Diagnosing the error while still walking, so it does not happen twice.'),
-      tier('disaster', 'A failure she can name precisely, which does not help at all.'),
+      tier('stunning', 'Notes the result and moves on. There is a critique to survive.', [
+        'I know where I landed and I am already thinking about critique — the walk was strong, the result is clear, and there is still a panel to face.',
+        'Good. Noted. There is a critique coming and the critique is the part that matters, so I am not celebrating until the scoring is done.',
+        'The walk went well and I registered that and moved on, because the night is not over and a strong runway means nothing if the critique goes sideways.',
+        'I am satisfied with the result and I am putting the satisfaction away, because what comes next requires focus, not feelings.',
+      ]),
+      tier('strong', 'Where she expected to be. That is the job.', [
+        'Where I expected to be, which is where I should be, which is the job done.',
+        'I predicted this placement before I walked and I was right, and being right is the only satisfaction I need from tonight.',
+        'That is exactly where I thought I would land, and landing where I think I will land is the whole skill.',
+        'A predictable result from a predictable performance, and I am fine with predictable because predictable means I understand the game.',
+      ]),
+      tier('fine', 'Middle of the pack, correctly identified, mildly annoying.', [
+        'Middle of the field, which I called before the walk started, and being right about a mediocre night is its own specific irritation.',
+        'I knew this was a middle-of-the-room walk and I was correct, and the correctness does not make the result less annoying.',
+        'Average night, accurately assessed, mildly irritating. I can diagnose it and I can fix it and tonight is data.',
+        'I landed exactly where I thought I would and exactly where I did not want to, and both of those things are useful information.',
+      ]),
+      tier('weak', 'Diagnosing the error while still walking, so it does not happen twice.', [
+        'I am diagnosing the error while I am still on the stage, because this mistake has a name and if I can name it I can fix it.',
+        'I know what went wrong and I am filing it so it does not happen again — the mistake was specific, identifiable, and correctable.',
+        'The analysis is already running — what broke, when it broke, what I should have done instead — and by the time I reach the back of the stage I will have the answer.',
+        'Something failed and I can see what it was and I am already rebuilding the approach, because a failure I understand is a failure that dies tonight.',
+      ]),
+      tier('disaster', 'A failure she can name precisely, which does not help at all.', [
+        'I can name every single thing that went wrong and the naming does not help at all, because knowing what happened is not the same as not having let it happen.',
+        'I know precisely what failed and precisely when and precisely why, and the precision is not a comfort — it is a record of a disaster I saw coming and could not stop.',
+        'I have the diagnosis and it does not matter, because the walk already happened and me understanding it does not undo it.',
+        'I can explain this failure in detail and the detail makes it worse, because a queen who can see exactly what she did wrong and still did it wrong has a problem the analysis cannot fix.',
+      ]),
     ]),
   swagger('scrapper',
     'underdog, goat, floater. Did not expect to be here and has not stopped '
     + 'noticing. Every good night is a surprise and every bad one is a confirmation.', [
-      tier('stunning', 'Astonished by herself, and daring anybody to take it off her.'),
-      tier('strong', 'Waiting for somebody to tell her it does not count.'),
-      tier('fine', 'Survived another one. That was the entire ambition.'),
-      tier('weak', 'The thing she was afraid of, happening on schedule.'),
-      tier('disaster', 'Confirmation. She had a whole speech ready for this and no need to give it.'),
+      tier('stunning', 'Astonished by herself, and daring anybody to take it off her.', [
+        'I just did that, and I have no idea how, and I am daring anybody in this room to tell me it does not count.',
+        'I was not supposed to have a night like this and I am having one, and the shock is still on my face and I do not care.',
+        'I am astonished by myself right now, genuinely astonished, and the astonishment feels like the beginning of something I have been waiting for.',
+        'That was mine and I earned it and I am holding onto it with both hands because a queen like me does not get nights like this often.',
+      ]),
+      tier('strong', 'Waiting for somebody to tell her it does not count.', [
+        'It went well and I am waiting for somebody to tell me it does not count, because that is what I am used to.',
+        'I am happy and I am suspicious of the happiness, because the last time I felt this good about a walk somebody told me it was not as good as I thought.',
+        'A good night, and the voice in my head is already asking what the catch is, because there is always a catch for a queen like me.',
+        'The walk was strong and I know it was strong and I still cannot quite believe it was strong, because believing good things is not a skill I have practised.',
+      ]),
+      tier('fine', 'Survived another one. That was the entire ambition.', [
+        'I survived another one and that was the entire ambition, and the ambition was met, and I am going to take the win even if the win is just still being here.',
+        'Another week, another walk, another night where I was not the worst, and for me that is the goal and I hit it.',
+        'I am still standing and the walk is done and nobody is looking at me, which is exactly where I want to be — invisible and safe.',
+        'Not great, not terrible, and I will take it with both hands because a quiet night is a surviving night and surviving is the whole game.',
+      ]),
+      tier('weak', 'The thing she was afraid of, happening on schedule.', [
+        'This is the thing I was afraid of, happening on the schedule I expected it to happen on, and the only surprise is that it took this long.',
+        'I knew this night was coming and here it is, right on time, and the preparation does not make it hurt less.',
+        'I predicted this and I was right, and being right about my own failure is the specific punishment of a queen who knows exactly where she stands.',
+        'The bad night arrived, the one I have been bracing for since the first week, and it is exactly as bad as I thought it would be.',
+      ]),
+      tier('disaster', 'Confirmation. She had a whole speech ready for this and no need to give it.', [
+        'Confirmation. I had a whole speech ready for this — the gracious one, the grateful one — and I do not even need to give it because the walk said everything.',
+        'I knew this was going to happen and I prepared for it and the preparation was wasted because there is no preparing for how it actually feels.',
+        'This is the night I have been expecting since I walked through the door, and it is here, and I am too tired to be surprised.',
+        'I knew I did not belong here and the runway just proved it, and the proof is exactly as crushing as I imagined it would be during every night I spent worrying about it.',
+      ]),
     ]),
 ];
 

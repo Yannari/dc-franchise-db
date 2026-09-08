@@ -707,9 +707,21 @@ function rejoinScenes(state, ctx) {
       for (const [id, w] of reads) { if (roll < w) { tierId = id; break; } roll -= w; }
       const sc = say(beatBy('rejoin-read'), tierId, [a, b]);
       // Only if it was actually shown.
+      /* AND EVERY READ COSTS SOMETHING. A warm one buys a bond she would not
+         otherwise have; an unimpressed one costs her a little. A THREAT read
+         moves no bond — being frightened of somebody is not disliking her —
+         but it is not free either: the queen the other half was worried about
+         walks in with a reputation, and that is the audience noticing her
+         before she has done anything in this room. Without this the threat
+         tier was a card that changed nothing, which is the cosmetic-event
+         bug this codebase refuses everywhere else. */
       if (sc) {
         const delta = tierId === 'warm' ? 2 : tierId === 'unimpressed' ? -1 : 0;
         if (delta) { addBond(a, b, delta); sc.data.bond = [[a, b, delta]]; }
+        if (tierId === 'threat') {
+          ctx.popDelta?.(b, 1);
+          sc.data.pop = { [b]: 1 };
+        }
       }
     }
   }

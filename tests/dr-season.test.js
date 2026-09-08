@@ -695,3 +695,53 @@ describe('THE SPLIT PREMIERE', () => {
     expect(r.dr.rejoin ? r.dr.rejoin.halves.length : 2).toBe(2);
   });
 });
+
+describe('THE ROOM DOUBLES', () => {
+  /* The rejoin phase, once, on the first ordinary week after a split. Asserted
+     on what it PRODUCES rather than on the flag being set: a phase that fires
+     and draws nothing is the same bug as one that never fires. */
+  const bonds = {}; const pops = {};
+  const key = (a, b) => [a, b].sort().join('|');
+  const s = playDragSeason({
+    cast: cast(12, 5), seed: 5, config: { drPremiere: 'split' },
+    bond: (a, b) => bonds[key(a, b)] || 0,
+    addBond: (a, b, d) => { bonds[key(a, b)] = (bonds[key(a, b)] || 0) + d; },
+    popDelta: (n, d) => { pops[n] = (pops[n] || 0) + d; },
+  });
+  const rejoinOf = r => (r.dr.scenes || []).filter(x => x.step === 'rejoin');
+
+  it('happens once, on the week the halves come back together', () => {
+    const weeks = s.rows.filter(r => rejoinOf(r).length);
+    expect(weeks.length, 'the rejoin fired on more than one night').toBe(1);
+    expect(weeks[0].num, 'it did not fire on the first ordinary week').toBe(3);
+    // Never on either half of the split itself.
+    expect(rejoinOf(s.rows[0]).length).toBe(0);
+    expect(rejoinOf(s.rows[1]).length).toBe(0);
+  });
+
+  it('gives every queen a read of somebody from the other half', () => {
+    const r = s.rows[2];
+    const reads = rejoinOf(r).filter(x => /rejoin-read/.test(x.kind));
+    expect(reads.length).toBe(r.dr.living.length);
+    const halves = r.dr.rejoin.halves;
+    for (const sc of reads) {
+      const [a, b] = sc.data.players;
+      const sameHalf = halves.some(h => h.includes(a) && h.includes(b));
+      expect(sameHalf, `${a} read ${b}, who was in her own half`).toBe(false);
+    }
+  });
+
+  it('every read costs something', () => {
+    /* The cosmetic-event bug this codebase refuses everywhere else. A warm
+       read buys a bond, an unimpressed one costs one, and a THREAT read moves
+       no bond — being frightened of somebody is not disliking her — so it
+       pays in reputation instead. Before that it was a card that changed
+       nothing. */
+    const reads = rejoinOf(s.rows[2]).filter(x => /rejoin-read/.test(x.kind));
+    for (const sc of reads) {
+      const paid = !!sc.data.bond || !!sc.data.pop;
+      expect(paid, `a ${sc.data.tier} read changed nothing`).toBe(true);
+    }
+    expect(Object.keys(pops).length, 'no reputation moved at all').toBeGreaterThan(0);
+  });
+});

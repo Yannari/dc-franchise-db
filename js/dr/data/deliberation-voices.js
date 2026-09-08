@@ -95,8 +95,31 @@ export const DELIBERATION_VARIANTS = { advocacy: 6, host: 4 };
 // POOL 1 — ONE JUDGE'S ARGUMENT, FROM WHAT SHE ACTUALLY WATCHES
 // ══════════════════════════════════════════════════════════════════════
 
-const taste = (id, note, champion, dismiss) => ({
-  taste: id, note, tiers: [tier('champion', champion), tier('dismiss', dismiss)],
+/**
+ * One judge's two stances, from whatever shape the author used.
+ *
+ * VARARGS, because a helper that only takes NOTES cannot be filled — there is
+ * nowhere for the lines to go, so anybody writing prose has to break out of
+ * it, and the file stops parsing the moment they do. That happened to the
+ * pick pool in maxi-voices.js. Notes, note-and-lines pairs, and already-built
+ * tiers all work here, in stance order.
+ */
+const STANCES = ['champion', 'dismiss'];
+const tiersFrom = (ids, args) => {
+  const out = [];
+  let i = 0;
+  for (const id of ids) {
+    const v = args[i];
+    if (v && typeof v === 'object' && !Array.isArray(v)) { out.push(v); i += 1; continue; }
+    if (Array.isArray(args[i + 1])) { out.push(tier(id, v, args[i + 1])); i += 2; continue; }
+    out.push(tier(id, v));
+    i += 1;
+  }
+  return out;
+};
+
+const taste = (id, note, ...rest) => ({
+  taste: id, note, tiers: tiersFrom(STANCES, rest.flat()),
 });
 
 export const ADVOCACY = [

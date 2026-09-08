@@ -70,6 +70,29 @@ const tier = (id, note, lines = []) => ({ id, note, lines });
 
 /** The three cuts, best to worst. These are `MINI_TIERS` in js/dr/stage.js. */
 export const MINI_TIER_IDS = ['nailed', 'decent', 'flat'];
+/**
+ * Build tiers from whatever shape the author used.
+ *
+ * A HELPER THAT ONLY TAKES NOTES CANNOT BE FILLED. The pick pool in
+ * maxi-voices.js shipped that way and the file stopped parsing the first time
+ * somebody wrote prose into it, because there was nowhere for the lines to go
+ * and they had to break out of the helper to put them somewhere. Same shape,
+ * same trap, so the same tolerance: notes, note-and-lines pairs, and
+ * already-built tiers, mixed freely and in tier order.
+ */
+const tiersFrom = (ids, args) => {
+  const out = [];
+  let i = 0;
+  for (const id of ids) {
+    const v = args[i];
+    if (v && typeof v === 'object' && !Array.isArray(v)) { out.push(v); i += 1; continue; }
+    if (Array.isArray(args[i + 1])) { out.push(tier(id, v, args[i + 1])); i += 2; continue; }
+    out.push(tier(id, v));
+    i += 1;
+  }
+  return out;
+};
+
 
 /**
  * HOW MANY VARIANTS EACH TIER NEEDS, and it is not four.
@@ -92,12 +115,12 @@ export const MINI_VARIANTS = { announce: 4, nailed: 6, decent: 8, flat: 6, win: 
  * is legal. It is restated here rather than imported so the writer can see it
  * next to the lines, and a test checks the two files agree.
  */
-const mini = (id, name, cast, note, tiers) => ({ id, name, cast, note, tiers });
+const MINI_TIER_ORDER = ['announce', 'nailed', 'decent', 'flat', 'win'];
+const mini = (id, name, cast, note, ...rest) => ({
+  id, name, cast, note, tiers: tiersFrom(MINI_TIER_ORDER, rest.flat()),
+});
 
-const T = (announce, nailed, decent, flat, win) => [
-  tier('announce', announce), tier('nailed', nailed),
-  tier('decent', decent), tier('flat', flat), tier('win', win),
-];
+const T = (...args) => args;
 
 export const MINI_VOICES = [
   mini('reading', 'Reading Is Fundamental', 'targets',
@@ -105,65 +128,310 @@ export const MINI_VOICES = [
     + 'in front of everybody, and it has to be funny rather than cruel. The '
     + 'oldest ritual in the room. A read that lands is a friendship that '
     + 'survives it; a read that misses is a grudge.',
-    T('The library opens and the host explains the only rule: make it funny.',
-      'One sentence about {b} and the room is gone. Nobody recovers for a minute.',
-      'A decent read. {b} laughs, which is the correct answer either way.',
-      'It comes out mean instead of funny, or it does not come out at all.',
-      'She had the sharpest tongue in the room and everybody now knows it.')),
+    [
+      tier('announce', 'The library opens and the host explains the only rule: make it funny.', [
+        'The host opens the library and the room shifts — everybody loves {c} and everybody is afraid of it, because the rule is simple and the rule is merciless: be funny or be the one who was not funny, in front of everybody.',
+        '"It\'s time for {c}!" The host announces it and half the room grins and the other half swallows, because a reading challenge is a room full of queens about to say the worst thing they can think of about each other and hoping it lands as comedy.',
+        'The host explains {c} the way the host always explains it — one rule, no exceptions. Read her. Make it funny. If it is not funny it is just mean, and mean without a punchline is the fastest way to make an enemy in a room you still have to live in.',
+        '{c} is announced and the werk room divides instantly into queens who have been preparing a read since the first day and queens who are right now trying to think of one, and the gap between those two groups is about to become very public.',
+      ]),
+      tier('nailed', 'One sentence about {b} and the room is gone. Nobody recovers for a minute.', [
+        '{a} stands up and delivers one sentence about {b} and the room folds in half. {b} is laughing so hard she cannot defend herself, which is the whole point — a read that lands this cleanly is a read that was true, and the truth is what made it funny.',
+        'The read hits {b} so precisely that {b} puts her hands over her face and the queens on either side of her are screaming, because {a} found the one thing everybody has noticed about {b} and nobody has said out loud and said it out loud.',
+        '{a} looks at {b} and says one thing — one perfect, devastating, specific thing — and the room comes apart. {b} is doubled over. The host is doubled over. {a} is standing there with the composure of somebody who knew exactly what she was going to say before she stood up.',
+        'One line about {b} and it is over. {a} reads her so cleanly that {b} cannot even be mad about it — the read was too funny to be an insult and too true to be a joke, and that is the exact target a reading challenge is asking you to hit.',
+        '{a} takes {b} apart in one sentence and the sentence is so good that the host repeats it, which never happens. {b} is laughing with her whole body. The read was specific, it was earned, and it landed like something {a} has been holding since the first week.',
+        'The room goes silent for half a second after {a} reads {b}, and the silence is the gap between the joke landing and the room deciding to lose its mind about it, and then the room loses its mind about it.',
+      ]),
+      tier('decent', 'A decent read. {b} laughs, which is the correct answer either way.', [
+        '{a} reads {b} and it lands — not a demolition, but a solid hit. {b} laughs and the laugh is real, which is the best outcome a decent read can ask for. The room makes noise. {a} sits down with the expression of somebody who knows she did not win but did not embarrass herself.',
+        'The read finds something about {b} that is true and says it in a way that gets a laugh, and the laugh is enough. {a} is not going to be quoted later tonight but she is not going to be pitied either, and in {c} that middle ground is a perfectly fine place to stand.',
+        '{a} goes after {b} and the read is solid — it has a setup, it has a punchline, and {b} laughs at the punchline, which means it worked even if it did not bring the room down. A serviceable read in a room full of comedians is harder than it looks.',
+        'A clean read from {a}. She picks something about {b} that everybody has noticed, phrases it well enough to get a reaction, and sits back down. {b} nods, which is the nod of a queen who has been read competently and cannot argue with it.',
+        '{a} stands up and reads {b} and the room responds — not a roar, but a genuine laugh, the kind that says the read was funny and fair and did its job. {b} takes it well because there is nothing to take badly.',
+        'The read about {b} is fine. It is observant, it is delivered with timing, and it gets {b} to laugh rather than flinch. {a} was not the sharpest tongue in the room tonight but she was not the dullest one either.',
+        '{a} finds an angle on {b} and the angle works — it is not the angle everybody expected and it is not the funniest thing said in the room today, but it gets a real laugh and a real reaction and that is what {c} is scored on.',
+        '{b} laughs at {a}\'s read, and the laugh settles it. It was not the read of the night but it was a read, and a read that gets the target laughing is a read that did what {c} asks you to do.',
+      ]),
+      tier('flat', 'It comes out mean instead of funny, or it does not come out at all.', [
+        '{a} reads {b} and the room does not laugh. The read was either too mean or too soft or too confusing, and {b} is standing there with the expression of a queen who has just been insulted without the insult having the decency to be funny.',
+        'The read misses. {a} goes after {b} and the punchline lands in the wrong place and the setup did not earn it and {b} looks at her the way you look at somebody who just tried to roast you and burned themselves instead.',
+        '{a} stands up and tries and the try is visible and the result is not. The read about {b} is vague where it should be specific, soft where it should be sharp, and the room gives her a courtesy laugh that is worse than silence.',
+        'It comes out mean. {a} goes after {b} and the room can hear that the line was supposed to be funny and was not, and the gap between intended comedy and actual cruelty is a gap the room will remember longer than {a} wants it to.',
+        '{a} reads {b} and {b} does not laugh. The silence after a flat read in {c} is the loudest silence in the werk room, because everybody heard it and everybody knows it did not work and {a} has to sit back down in the middle of that knowledge.',
+        '{a} opens her mouth and either nothing comes out or what comes out is a sentence that thinks it is funnier than it is, and {b} stands there with an expression that is not quite offended and not quite pitying and is somewhere uncomfortable between the two.',
+      ]),
+      tier('win', 'She had the sharpest tongue in the room and everybody now knows it.', [
+        '{a} won {c} and the win is the kind of win that follows a queen around — she had the sharpest read in a room full of sharp reads, and the room is still talking about the line she used on {b} while the host announces the prize.',
+        'The host announces {a} as the winner of {c} and nobody in the werk room argues, because {a} read every queen she was pointed at and every read was funnier than the last, and the last one is the one the room will be quoting at the mirror stations tomorrow.',
+        '{a} takes {c} and the win feels inevitable in the way only a win can feel inevitable after the fact — she was the funniest, she was the sharpest, and the gap between her reads and the next best was wide enough to be comfortable.',
+        '{a} won the reading challenge and the prize is the prize but the real prize is the room knowing that she is the queen you do not want aimed at you, and {a} knows it, and the walk back to her station has a swagger in it that was not there before.',
+      ]),
+    ]),
   mini('puppets', 'Puppet Parody', 'targets',
     'She is handed a puppet of {b} and has to BE her — the voice, the walk, the '
     + 'thing {b} says twenty times a day and does not know she says. Played to '
     + '{b}\'s face while {b} watches.',
-    T('Everybody gets a puppet of somebody else and has to play her.',
-      'The impression is so exact that {b} puts her hands over her face.',
-      'She finds one thing {b} does and does it, and one thing is enough.',
-      'The puppet is a voice she cannot do about a person she has not watched.',
-      'She saw {b} more clearly than {b} sees herself, and made it funny.')),
+    [
+      tier('announce', 'Everybody gets a puppet of somebody else and has to play her.', [
+        'The host wheels out a rack of puppets and the room erupts — everybody knows what {c} is and everybody knows the queen who gets their puppet is about to show them something about themselves they cannot unsee.',
+        '"It\'s {c}!" Puppets come out, each one a caricature of somebody in the room, and the queens scramble to find out which queen they drew and whether that queen is somebody they have been watching closely enough to become.',
+        'The host announces {c} and every queen in the room starts doing math — who have they been studying, who have they been sitting next to, who has a catchphrase they can land with a felt mouth and a hand up its back.',
+        '{c} is announced. Puppets are distributed. Each queen looks at the puppet she has been handed and either grins because she knows exactly what to do or panics because she has somehow spent weeks in the same room as {b} and has nothing.',
+      ]),
+      tier('nailed', 'The impression is so exact that {b} puts her hands over her face.', [
+        '{a} picks up the puppet and becomes {b} — the walk, the voice, the phrase {b} says at the mirror station every single morning without knowing she says it — and {b} is across the room with her hands over her face because she has just been shown herself and it is devastating and hilarious.',
+        'The voice is right. The posture is right. The thing {a} does with the puppet\'s hands is something {b} does with her own hands and has never once noticed, and now the entire room is looking at {b} to confirm it, and {b} is dying.',
+        '{a} holds the puppet up and delivers a performance so specific to {b} that the room forgets they are looking at felt and foam. {b} is screaming. The other queens are screaming. The impression found the thing about {b} that is truest and funniest and used it.',
+        'It is not an impersonation so much as an autopsy — {a} dissects {b}\'s mannerisms, her catchphrases, the way she flips her hair before she disagrees with anybody, and {b} watches from three feet away with the expression of somebody who has just been told what they look like from the outside.',
+        'The puppet looks like {b} but the voice coming out of {a}\'s mouth IS {b}, and {b} knows it, and the room knows it, and the moment when {b} starts laughing at herself instead of defending herself is the moment {a} wins the room.',
+        '{a} channels {b} so accurately through felt and foam that the queens on either side of {b} are pointing at her and howling, because every single mannerism is correct, and {b} cannot argue with any of it.',
+      ]),
+      tier('decent', 'She finds one thing {b} does and does it, and one thing is enough.', [
+        '{a} finds one thing about {b} — a phrase, a gesture, the way she stands when she is about to disagree — and commits to it hard enough that the puppet bit works. Not the funniest in the room, but a real observation delivered with enough conviction to land.',
+        'The puppet version of {b} has one good bit and {a} rides it the whole way through. {b} laughs and points at {a} and the laugh is genuine, which is all a decent puppet performance needs — the target has to admit it.',
+        '{a} goes for {b}\'s most obvious mannerism and does it well enough that the room laughs. It is not a deep cut but it is an accurate one, and an accurate obvious thing is better than an inaccurate subtle one every time.',
+        'A solid puppet performance — {a} found something real about {b}, committed to the voice, and made it through without the room losing interest. {b} nods at the end, which is the nod of a queen who has been impersonated competently and cannot be mad about it.',
+        'The impression has one strong angle and {a} pushes it for everything it is worth. {b} watches with the half-smile of a queen who knows she has been clocked but also knows it could have been worse.',
+        '{a} gets a genuine reaction from {b} and a laugh from the room, which means the puppet bit worked. The impersonation is not a demolition but it is a real observation wrapped in a felt body, and that is exactly what {c} is asking for.',
+        '{a} grabs the puppet and leans into the one thing she has noticed about {b} all season. It gets a laugh, {b} waves it off with a grin, and the room moves on to the next queen knowing {a} did her job.',
+        'Not the read of the century, but {a} finds a hook — something {b} does or says — and builds the puppet bit around it. The room makes noise. {b} shakes her head while laughing. A clean, middle-of-the-pack puppet set.',
+      ]),
+      tier('flat', 'The puppet is a voice she cannot do about a person she has not watched.', [
+        '{a} picks up the puppet and opens her mouth and what comes out is not {b} — it is a generic impression of a generic queen, and {b} watches it with the patient expression of somebody who knows they are not being seen.',
+        'The voice is wrong and the material is thinner than the felt, and {b} sits through an impression of herself that could be an impression of anybody. {a} can feel the room not laughing and pushes harder, which makes it worse.',
+        '{a} has not been watching {b}. That becomes obvious in the first sentence, because the puppet says nothing specific, does nothing {b} actually does, and {b} is sitting right there knowing it.',
+        '{a} tries a voice that is not {b}\'s voice, makes a joke that is not about {b}, and finishes the puppet set to polite silence from a room that has just watched somebody impersonate a person they have apparently never met.',
+        'The puppet hangs in {a}\'s hand like what it is — felt and foam — because {a} cannot find anything to do with it. {b} watches from across the room without recognition, which is the worst outcome a puppet set can have.',
+        'It is clear from the first three seconds that {a} does not have a take on {b}. The puppet flails, the voice wanders, and the room gives {a} the silence of queens who are grateful they drew a different puppet.',
+      ]),
+      tier('win', 'She saw {b} more clearly than {b} sees herself, and made it funny.', [
+        '{a} wins {c} and the win is deserved — she took a felt puppet and made it more {b} than {b} has ever been, and the room is still quoting lines from the set while the host hands out the prize.',
+        'The host announces {a} as the winner and the room agrees, because {a} turned a puppet into a person and that person was {b}, rendered so accurately that {b} spent the whole set alternating between horror and hysterical laughter.',
+        '{a} takes {c} because she saw every queen she impersonated more clearly than they see themselves, and the gap between her puppet work and the runner-up was the gap between observation and guesswork.',
+        '{a} won {c} and everybody in the room knows which line did it — the moment {a} made the puppet do the thing {b} does, the thing {b} has done every day in the werk room and never noticed, and {b} finally saw it and could not stop laughing.',
+      ]),
+    ]),
   mini('quick-drag', 'Quick Drag', 'solo',
     'A full look, face and all, against a clock that is far too short. Not a '
     + 'performance — a race, in silence, with everybody visibly panicking at '
     + 'their own station.',
-    T('A full look, start to finish, on a clock nobody thinks is fair.',
-      'Finished, painted and standing there before the clock stops.',
-      'She gets there. Something is unfinished and she is standing in front of it.',
-      'Time runs out on a half-built look and she has to present it anyway.',
-      'She built a whole look in the time everybody else needed for a face.')),
+    [
+      tier('announce', 'A full look, start to finish, on a clock nobody thinks is fair.', [
+        'The host announces {c} and reads the clock out loud, and the clock is a number that makes half the room laugh and the other half stop laughing, because a full face and a full look in that time is not a challenge — it is a controlled panic.',
+        '{c} — a full look, head to toe, face painted and outfit assembled, on a timer that was designed to be too short. The queens look at the clock, look at their stations, and start doing triage on which parts of their face they are willing to skip.',
+        'The host sets the clock for {c} and the room goes quiet the way a room goes quiet when everybody has just been told to do something impossible and is trying to figure out which corners to cut first.',
+        '"It\'s {c}!" The clock starts and every queen in the room is suddenly moving at a speed nobody has seen from them before, because a full drag look in this time means no blending, no second passes, no fixing mistakes — just speed and instinct.',
+      ]),
+      tier('nailed', 'Finished, painted and standing there before the clock stops.', [
+        '{a} is done. The clock is still running and she is standing at her station with a full face, a full look, and the posture of somebody who has clearly done this exact exercise before, possibly in a bathroom with a broken lock and a gig in twenty minutes.',
+        'The timer has not stopped and {a} is already standing back from the mirror, arms crossed, painted and styled and looking at the other queens the way somebody looks at people who are still working on something she has already finished.',
+        '{a} puts the brush down with time to spare and turns around, and the face is done — not rushed, not half-blended, done. The queens on either side of her are still contouring. She is standing there with a completed look and a calm expression, which is the most insulting part.',
+        'Finished. {a} is standing in a complete look while the clock is still counting and the queens around her are still painting, and the gap between done and not done is visible to everybody in the room, especially the queens who are not done.',
+        'The clock stops and {a} has been ready for a full fifteen seconds, standing at her station with a look that does not appear to have been built in a panic, which is the hardest thing to achieve in {c} — not the speed, but the appearance that speed was not required.',
+        '{a} steps back from the mirror and the look is finished — wig, face, outfit, all of it — and the room makes a noise because the clock still has time on it, which should not be possible and yet there she is.',
+      ]),
+      tier('decent', 'She gets there. Something is unfinished and she is standing in front of it.', [
+        '{a} makes the buzzer and she is standing in a look that reads as complete from the front, which is all {c} is asking for. The blend is not perfect and she knows it, but the blend is not what the judges are looking at — the overall impression is, and the overall impression works.',
+        'The clock stops and {a} is standing in something — not her best, not her worst, but a look she assembled under pressure and can stand behind. One eye is slightly more blended than the other. Nobody will mention it unless they are looking for it.',
+        '{a} finishes as the buzzer sounds and the look is there — a recognizable drag face on a body wearing clothes that go together. It is not the look she would have built with an hour, but it is a look she built with the time she had, and it holds up from arm\'s length.',
+        'She made it. {a} is standing in a completed look when the clock stops, and the look is serviceable — the wig is on, the face is painted, the outfit matches. It is the kind of result that survives a glance and rewards nobody who stares, and in {c} that is passing.',
+        'The timer runs out and {a} is there, upright, in drag, with a face that reads and a look that coheres, and that is the entire ask of {c}. She will not win on polish but she will not lose on effort.',
+        '{a} puts the last thing in place as the buzzer goes and steps back to reveal a look that is ninety percent of what she wanted — the missing ten percent is something she decided to skip when the clock hit thirty seconds, and it was the right call.',
+        '{a} is standing when time is called and the look holds together. The wig could be better, the contour could be sharper, but the silhouette is correct and the face reads from the back of the room, which is where the host is standing.',
+        'A completed look from {a} — not flawless, but finished, which is the bar that {c} sets and the bar that most queens clear on nerve rather than speed.',
+      ]),
+      tier('flat', 'Time runs out on a half-built look and she has to present it anyway.', [
+        'The buzzer sounds and {a} is standing at her station with one eye done and the other eye not done and a wig that is not quite on, and the room can see every single second she ran out of.',
+        '{a} is not finished. The clock stops and she puts her hands down and turns around and the look is a look that stopped happening in the middle of happening, and presenting it requires the kind of bravery that {c} was not supposed to test.',
+        'Time runs out and {a} has a face that is halfway between two ideas and an outfit that committed to neither of them, and she stands there in the wreckage of a look that needed three more minutes it was never going to get.',
+        'The buzzer catches {a} mid-contour, and mid-contour is where she stays. She turns around and shows the room what a queen looks like when the clock is the enemy and the clock won.',
+        '{a} puts the brush down when the buzzer goes and the brush still had work to do, and now the work it was going to do is visible as the work it did not do, and {a} has to stand in that.',
+        'The clock stops and {a}\'s look stops with it — half-wigged, half-painted, wearing an expression that says she knew this was coming and could not stop it from coming anyway.',
+      ]),
+      tier('win', 'She built a whole look in the time everybody else needed for a face.', [
+        '{a} wins {c} and the win is a statement about preparation — she built a full look in the time most queens needed for a mug, and the look does not have the fingerprints of panic on it, which is the difference between fast and ready.',
+        'The host calls {a} as the winner of {c} and the room does not argue, because everybody watched her finish early and everybody is still looking at a face that should not have been possible in the time allotted.',
+        '{a} takes {c} because she treated the timer as a boundary, not a crisis, and built a look inside it that would have been competitive without the time constraint, which is the only way to win a speed challenge — by making speed look optional.',
+        '{a} won {c} and the look she built in a panic is better than looks some queens build with an afternoon, and the room knows it, and the walk back to her station has the energy of somebody who has been underestimated about the wrong thing.',
+      ]),
+    ]),
   mini('photoshoot', 'Photoshoot Mini', 'solo',
     'One frame each, with something going wrong IN SHOT on every take — water, '
     + 'wind, something thrown. The face has to stay right while it happens.',
-    T('One frame each, and something goes wrong in every single one of them.',
-      'It hits her mid-frame and the face does not move. That is the shot.',
-      'She gets a usable frame out of it, eventually, and knows which one.',
-      'She flinches, and the camera has already taken the picture.',
-      'She has been photographed her whole life and it shows in one frame.')),
+    [
+      tier('announce', 'One frame each, and something goes wrong in every single one of them.', [
+        'The host announces {c} and the camera is already set up, which means every queen in the room is about to discover what her face does when something unexpected hits it mid-pose, and the camera is going to capture whatever that is.',
+        '{c} — one shot each, no reshoots, and the host mentions casually that there will be obstacles. The queens look at the set and try to figure out what is about to be thrown at them, sprayed at them, or dropped on them.',
+        'The host explains {c} and the rules are simple: pose, hold it, and deal with whatever happens next without losing the face. The camera does not care about excuses and the shutter does not wait for recovery.',
+        '"It\'s time for {c}!" The set is lit, the camera is loaded, and somewhere just off frame there is a fan, or a hose, or a bucket, or something worse, and the queens are about to find out which one.',
+      ]),
+      tier('nailed', 'It hits her mid-frame and the face does not move. That is the shot.', [
+        'Water hits {a} in the face and her expression does not change — not the jaw, not the eyes, not the angle of the chin. The camera fires and the frame is a queen who looks like she expected to be drenched and planned for it, and the shot is the best one taken today.',
+        '{a} is mid-pose when the obstacle hits and she absorbs it without blinking, without flinching, without breaking whatever the face was doing before it happened, and the camera catches a queen who appears to be posing in chaos voluntarily.',
+        'The thing hits her and she stays. {a} holds the pose through whatever just happened to her body and the camera takes a picture of a queen who did not move, and the picture is better than any picture taken of a queen who was not hit with anything.',
+        'Wind, water, confetti — it does not matter what hit {a} because {a}\'s face did not acknowledge it. The shutter fires and the frame is a queen in the middle of an obstacle looking like she chose to be there, which is the entire job of {c}.',
+        '{a} takes the hit mid-pose and the hit makes the photo better, not worse, because the obstacle gave the shot motion and drama and {a}\'s face gave it composure, and the combination is the best frame of the day.',
+        'Whatever they threw at {a}, she wore it. The camera fires and the shot is a queen standing in the wreckage of a surprise with an expression that says she has modeled through worse, and the shot is stunning.',
+      ]),
+      tier('decent', 'She gets a usable frame out of it, eventually, and knows which one.', [
+        '{a} flinches and recovers, and the recovery is fast enough that the camera catches her on the way back to the pose rather than on the way out of it, and the resulting frame is not perfect but it is usable and it reads as intentional.',
+        'The obstacle hits and {a} breaks the pose for half a second and then puts it back together, and the frame the camera takes is the frame of a queen who was surprised and dealt with it rather than a queen who was never surprised at all.',
+        '{a} takes the hit and the face moves, but the body stays, and the frame has enough of the original pose in it to read as a photograph rather than a candid shot of somebody being attacked. A usable shot from a queen who had to work for it.',
+        'She gets hit, she adjusts, and the frame that comes out of it is a queen who pivoted mid-obstacle and found a new angle that works. Not the angle she walked in with, but an angle that holds up on camera.',
+        'The obstacle lands and {a} is visibly dealing with it, but dealing with it well — the face recovers, the body finds a line, and the camera takes a frame that could be printed without apology.',
+        '{a} does not hold the original pose through the obstacle, but she finds a second pose inside the chaos, and the second pose is good enough. The camera catches a queen adapting, and adapting well reads better than freezing.',
+        'A solid frame from {a} — not the shot of the day, but a shot of a queen who took a hit and made it look like she was posing with it rather than surviving it, and in {c} that distinction is the whole game.',
+        'The camera fires and the shot shows {a} mid-recovery from whatever just happened to her, and the recovery is photogenic enough that the frame works. Not a model\'s frame, but a performer\'s frame, and the difference is the difference between stillness and survival.',
+      ]),
+      tier('flat', 'She flinches, and the camera has already taken the picture.', [
+        '{a} flinches. The camera fires while the flinch is happening and the frame is a queen with her eyes closed and her chin tucked and the posture of a person who has just been startled, and the frame is not going to improve because the frame has already been taken.',
+        'The obstacle hits {a} and her body does what bodies do — it ducks, it turns, it closes its eyes — and the camera captures all of it, and none of it is a pose, and none of it is a photograph anybody would choose to print.',
+        '{a} sees it coming and cannot stop herself from reacting to it, and the reaction is a flinch, and the camera takes a picture of the flinch, and the flinch is the shot, and the shot is not the shot {a} wanted.',
+        'Water hits {a} in the face and she gasps and the gasp becomes the frame, and the frame is a queen caught mid-surprise with the expression of somebody who forgot there was a camera in the room.',
+        'The camera fires at the exact moment {a} breaks, and the frame has the energy of a person being startled rather than a queen being photographed, and the gap between those two things is the gap {c} is measuring.',
+        'It hits her and she moves, and the movement is away from the camera and away from the pose and into the posture of a person who was not ready, and the camera does not forgive people who are not ready.',
+      ]),
+      tier('win', 'She has been photographed her whole life and it shows in one frame.', [
+        '{a} wins {c} and the winning frame is a frame that does not look like it was taken during a challenge — it looks like it was taken by a photographer who had all day and a queen who had all the composure in the world, and neither of those things was true.',
+        'The host announces {a} as the winner and puts the winning shot on screen, and the room makes a noise because the shot is a queen in the middle of an obstacle looking like she is on a magazine cover, and nobody else\'s shot looks like that.',
+        '{a} takes {c} because her frame is the only frame that could be published without context — without explaining the water, the wind, the thing that hit her — because the frame does not show any of it. It shows a queen posing.',
+        '{a} won {c} and the winning shot has the quality of a queen who has done this before, who knows what a camera wants, and who gave it to the camera while something was trying to take it away from her.',
+      ]),
+    ]),
   mini('dance-off', 'Werk Room Dance-Off', 'solo',
     'THE MINI THIS FILE WAS BUILT FOR. The music starts with NO WARNING and '
     + 'she has eight counts. No costume, no concept, no preparation — a body, a '
     + 'floor, and a room standing in a circle. Nothing here is about being '
     + 'funny; the old prose thought it was.',
-    T('The music starts with no warning and everybody has eight counts.',
-      'Eight counts of something the room did not know she had.',
-      'She moves well and commits and the circle makes noise for her.',
-      'She does not dance, and eight counts is a long time to not dance for.',
-      'She took the floor cold and the room has not stopped talking about it.')),
+    [
+      tier('announce', 'The music starts with no warning and everybody has eight counts.', [
+        'The music drops and nobody was told it was coming. {c} — no warning, no warm-up, no time to think about what the body is going to do. The beat starts and the queens have eight counts to prove they have a body that knows what to do when a beat starts.',
+        'The host hits play and the room has a beat and no instructions and the beat does not care whether anybody was ready, and {c} is about to separate the queens who dance from the queens who have been saying they dance.',
+        '{c} starts the way it always starts — with music and no explanation. The queens look at each other, the beat drops, and now it is a circle and a floor and eight counts and whatever your body does when it has nothing to fall back on.',
+        'Music. No warning. {c} is announced by the fact that it is happening, and every queen in the room now has eight counts to show the room what she does when a beat finds her with no choreography, no concept, and no costume — just a body and a floor.',
+      ]),
+      tier('nailed', 'Eight counts of something the room did not know she had.', [
+        '{a} hits the floor and the room goes quiet and then the room goes loud, because whatever {a}\'s body is doing it is doing it like it has been waiting for this beat specifically, and the eight counts she gets are eight counts of something nobody in the room knew she could do.',
+        'The beat drops and {a} drops with it — not the arms-up, bounce-in-place thing that most queens default to when the music starts, but actual movement, choreography that she is building on the fly and landing like she rehearsed it.',
+        '{a} takes the floor cold and the floor disappears, because what her body does in those eight counts is the kind of dancing that makes the rest of the room stop dancing and watch, which is the highest compliment a circle can pay.',
+        'Eight counts. {a} takes them and fills every single one with a move that has weight and intention and the confidence of a queen whose body has been in rooms like this before and has never lost one.',
+        'The music hits and {a}\'s body responds before her face does — hips, feet, shoulders, all of it moving like the beat is a conversation she has been having her whole life, and the room forms a circle not because they were told to but because they want to watch.',
+        '{a} steps into the center and the eight counts she gets are not enough, which is the problem with being this good at {c} — the room wants more and the format says no, and {a} walks back into the circle knowing she left the room wanting.',
+      ]),
+      tier('decent', 'She moves well and commits and the circle makes noise for her.', [
+        '{a} moves and the movement has conviction — not the most technical eight counts of the day, but the kind of dancing that comes from a queen who committed to whatever her body was going to do and did not apologize for it midway through.',
+        'The beat drops and {a} finds it. She is not the best dancer in the room but she is not pretending to be — she rides the rhythm, she commits to the movement, and the circle makes noise for her because the noise was earned.',
+        '{a} takes the floor and does something with the eight counts she is given — something real, something that reads as dancing rather than standing in the vicinity of music, and the room responds to the commitment more than the technique.',
+        'A solid showing from {a} — she hears the beat, she moves to it, and the movement has enough personality in it to hold the room\'s attention for the eight counts she gets. The circle claps and means it.',
+        '{a} dances and the dancing is the dancing of a queen who may not be a dancer but who has a body that listens to music and knows how to respond to it, and that is what {c} is measuring — not ability, but instinct.',
+        'The music starts and {a} moves and the moving is good — hips finding the pocket, feet doing something intentional, shoulders committing to whatever the arms are about to do. The circle makes noise. The noise is genuine.',
+        '{a} steps in and gives the room eight counts of a queen who showed up to dance and danced, and the eight counts hold together, and the room appreciates them, and the walk back to the edge of the circle has the posture of somebody who did not embarrass herself.',
+        'The beat finds {a} and {a} lets it in. The eight counts are not a showstopper but they are a show — real movement, real rhythm, a queen engaging with the music rather than waiting for it to end.',
+      ]),
+      tier('flat', 'She does not dance, and eight counts is a long time to not dance for.', [
+        '{a} steps into the center and the body freezes. The music is playing and the beat is right there and {a}\'s arms are moving but the arms are moving in the way arms move when the brain is sending instructions the body does not know how to execute.',
+        'The beat drops and {a} does not drop with it. She bounces. She sways. She does the thing that people do when music is playing and they do not want to be standing still but do not know what else to do, and eight counts of that is a very long time.',
+        '{a} takes the floor and the floor takes her right back, because the movement is not movement — it is the absence of stillness, which is not the same thing, and the room can tell the difference, and {a} can tell that the room can tell the difference.',
+        'Eight counts of {a} searching for a dance that does not arrive. The arms go up and come back down and the hips shift but the shift has no rhythm in it and the feet are doing nothing, and the room gives her the merciful silence of queens who have been there.',
+        'The music is playing and {a} is in the center and she is moving, technically, but the movement has the quality of a person standing in a room where music is happening rather than a person dancing to music, and the room claps politely when it is over.',
+        '{a} does not dance. She stands in the middle of the circle and does something with her body for eight counts and the something is not dancing, and the circle is kind enough not to make it worse, and {a} walks back to the edge knowing exactly what just happened.',
+      ]),
+      tier('win', 'She took the floor cold and the room has not stopped talking about it.', [
+        '{a} wins {c} and the win was obvious from the first two counts — she hit the floor and the floor belonged to her and the room knew it and the room has not stopped talking about the moment when the beat dropped and {a} dropped with it.',
+        'The host calls {a} as the winner and the room confirms it with the kind of noise that means everybody in the circle already knew, because when {a} took her eight counts the rest of the room stopped being dancers and started being an audience.',
+        '{a} takes {c} because her body heard the music before her brain did, and what happened in those eight counts was the kind of moment that makes a mini challenge feel like a main stage, and the walk back to her station has the energy of a queen who just told the room something about herself.',
+        '{a} won {c} and the eight counts she danced are the eight counts the room will be referencing in confessionals tomorrow, because what {a} did on that floor was not a mini challenge performance — it was a moment.',
+      ]),
+    ]),
   mini('quiz', 'Herstory Quiz', 'targets',
     'A quiz about the queens themselves, scored on how funny the WRONG answers '
     + 'are. The questions are about {b}, and getting it right is worth less '
     + 'than getting it wrong beautifully.',
-    T('A quiz about each other, scored on the wrong answers.',
-      'A wrong answer about {b} so good the right one would have been a waste.',
-      'She plays along and gets a laugh out of not knowing.',
-      'She answers correctly and flatly, which is the only way to lose this.',
-      'She understood that the quiz was not a quiz.')),
+    [
+      tier('announce', 'A quiz about each other, scored on the wrong answers.', [
+        'The host announces {c} and explains the scoring, and the scoring is the best part: a right answer is worth a right answer, but a wrong answer that is funnier than the truth is worth more, and the queens immediately stop trying to remember facts and start trying to be funny.',
+        '{c} — a quiz about the queens in this room, and the host makes it clear that this is not a trivia contest. The wrong answers are scored, which means the queen who knows the least about her sisters but is the funniest about not knowing has the advantage.',
+        'The host sets up {c} and the room realizes this is not a test of who has been paying attention — it is a test of who can say something about another queen that is funnier than the truth, and the truth is the floor, not the ceiling.',
+        '"It\'s {c}!" Questions about the queens, scored on comedy rather than accuracy, and the room shifts from studying each other\'s faces for answers to studying each other\'s faces for material.',
+      ]),
+      tier('nailed', 'A wrong answer about {b} so good the right one would have been a waste.', [
+        '{a} does not know the answer about {b} and does not need to, because the wrong answer she gives is so precisely observed and so perfectly delivered that {b} is laughing harder than she would have laughed at the right one.',
+        'The question is about {b} and {a} answers it wrong on purpose, and the wrong answer is funnier than any right answer could have been, because it takes something true about {b} and bends it into comedy, and {b} is across the room screaming.',
+        '{a} looks at the question about {b}, looks at {b}, and delivers an answer that is factually incorrect and emotionally devastating, and {b} puts her face in her hands because the wrong answer revealed something the right answer would have hidden.',
+        'A wrong answer about {b} that lands harder than the truth — {a} took the question, found the funniest possible version of the wrong answer, and delivered it with the timing of a queen who understood from the first question that {c} is a comedy show, not a quiz.',
+        'The answer is wrong and the room does not care because {a} just said something about {b} that everybody was thinking and nobody had said yet, and {b} is laughing and pointing at {a} with the energy of a queen who has just been got.',
+        '{a} answers the question about {b} with something so funny that the host has to stop the game to recover, and {b} is doubled over, and the right answer has been forgotten by everybody in the room including the person who wrote it.',
+      ]),
+      tier('decent', 'She plays along and gets a laugh out of not knowing.', [
+        '{a} does not know the answer about {b} and leans into not knowing, and the lean gets a laugh — not the biggest laugh of the quiz, but a real one, earned by a queen who understood that admitting ignorance with charm is worth more than guessing with confidence.',
+        'The question is about {b} and {a} answers it with a shrug and a line that gets the room to make noise, and the noise is the noise of a queen who played {c} the way it is supposed to be played — wrong answers, right energy.',
+        '{a} goes for a joke about {b} and the joke lands well enough that {b} laughs and the room laughs and the moment passes without anybody remembering what the right answer was, which is the ideal outcome of a decent round in {c}.',
+        'A solid answer from {a} — she does not know what {b}\'s answer is and makes not knowing into the bit, and the bit works. {b} shakes her head with a grin. The room moves on. {a} scored where {c} is actually scored.',
+        '{a} plays the question about {b} for comedy and the comedy is serviceable — not the funniest answer of the quiz, but a real attempt at humor rather than a real attempt at accuracy, and in {c} that is the better instinct to have.',
+        'The question is about {b} and {a} gives an answer that gets {b} to laugh once, genuinely, which is the basic unit of success in {c}. Not a standout round, but a round that contributed something to the room rather than draining something from it.',
+        '{a} answers and the answer is wrong and funny enough — {b} reacts, the room reacts, and {a} moves on with the energy of a queen who played the game correctly if not spectacularly.',
+        'A wrong answer about {b} that gets the job done — {a} finds something to say that is not the truth and is funnier than the truth, and the gap between decent and great in {c} is delivery, and {a}\'s delivery was solid.',
+      ]),
+      tier('flat', 'She answers correctly and flatly, which is the only way to lose this.', [
+        '{a} gives the right answer about {b}. The right answer. In a quiz scored on wrong answers. {b} nods and the room is silent, because accuracy in {c} is the one thing nobody is rewarding, and {a} just demonstrated that she does not understand what game she is playing.',
+        'The question is about {b} and {a} answers it correctly, which would be impressive in a real quiz and is worthless here, because {c} is not a quiz and the right answer is the thing that has the least value in the room.',
+        '{a} tries to be funny about {b} and the attempt does not land — the wrong answer is not wrong enough or not funny enough or not specific enough, and {b} sits through it without laughing, which is the clearest scoring system {c} has.',
+        'A flat round from {a}. She either gives the right answer about {b} and gets nothing for it, or gives a wrong answer about {b} that is not funny enough to earn anything, and the silence after either outcome sounds the same.',
+        '{a} answers the question about {b} and the answer is correct and delivered with the energy of a person taking an exam, and {b} stares at her with the expression of a queen who was hoping to be roasted and was instead informed.',
+        '{a} tries for a joke about {b} and the joke misses, and the miss leaves her standing in the gap between what she said and what was funny, and {b} is across the room with an expression that is charitable but not amused.',
+      ]),
+      tier('win', 'She understood that the quiz was not a quiz.', [
+        '{a} wins {c} because she understood from the first question that accuracy was a trap, and every answer she gave was wrong and funny and specific to the queen it was about, and the room is still laughing at the answer about {b} while the host announces the prize.',
+        'The host calls {a} as the winner of {c} and nobody is surprised, because {a} played every question like a setup for a punchline, and every punchline landed, and the wrong answers she gave taught the room more about the queens than the right answers ever could have.',
+        '{a} takes {c} because she had the best wrong answers in the room — the funniest, the most specific, the most observant — and the gap between playing the quiz right and playing it well is the gap {a} found and lived in for the whole game.',
+        '{a} won {c} and the win is the win of a queen who listened to the rules, heard that wrong answers are scored, and decided to be the wrongest and the funniest person in the room for the next fifteen minutes, and succeeded.',
+      ]),
+    ]),
   mini('wig-swap', 'Wig Swap', 'pairs',
     'She styles {b}\'s wig and then has to WEAR the one {b} did for her. Two '
     + 'jobs, and the second one is out of her hands entirely — she is judged '
     + 'in something somebody else made.',
-    T('Everybody styles somebody else\'s wig, and wears the one done for them.',
-      'What she built for {b} is better than anything {b} owns.',
-      'A serviceable wig, and she wears what {b} gave her without complaint.',
-      'She was given something unwearable, or she made one, or both.',
-      'She did right by {b} and got away with what {b} did to her.')),
+    [
+      tier('announce', 'Everybody styles somebody else\'s wig, and wears the one done for them.', [
+        'The host announces {c} and the rules are two jobs in one: style a wig for another queen, and then walk out wearing whatever wig that queen styled for you. Half the room starts planning what to build and the other half starts worrying about what will be built for them.',
+        '{c} — each queen is paired up and each pair swaps wigs. She styles the wig her partner will wear, and then she puts on the wig her partner styled for her, and she has no control over what that wig looks like until it is on her head.',
+        'The host explains {c} and the room does the math: the wig she builds is for somebody else, and the wig she wears is built by somebody else, and whether the somebody else who got her name is an ally or an enemy is about to matter very much.',
+        '"It\'s {c}!" Every queen is about to discover two things: how well she can style a wig for a queen who is not her, and how well a queen who is not her can style a wig she has to wear in front of the host and the cameras.',
+      ]),
+      tier('nailed', 'What she built for {b} is better than anything {b} owns.', [
+        '{a} hands {b} a wig and the wig is better than anything {b} brought from home — the shape is right, the color is right, and {b} puts it on and looks at herself in the mirror with the expression of a queen who has just been given a gift by somebody who understands her face.',
+        'The wig {a} built for {b} sits on {b}\'s head like it was always meant to be there, and {b} knows it, and the room knows it, and {a} stands back with the satisfied expression of a queen who studied {b}\'s bone structure and made a wig that honors it.',
+        '{a} styled a wig for {b} that {b} would choose for herself if she saw it on a shelf, and that is the highest compliment in {c} — not a funny wig, not a safe wig, but a wig that says I see your face and I know what goes on it.',
+        '{a} gives {b} a wig and {b} puts it on and the room goes quiet because the wig is genuinely beautiful, styled to {b}\'s proportions with the care of a queen who treated somebody else\'s head like it mattered as much as her own.',
+        'What {a} built for {b} is the kind of wig that starts conversations — the shape, the style, the way it frames {b}\'s face like {a} has been mentally styling {b} since the first day and has been waiting for {c} to prove it.',
+        'The wig {a} hands to {b} is so well-styled that {b} puts it on and immediately angles toward the mirror, because the wig does something for her face that her own wigs do not always do, and {a} built it in twenty minutes.',
+      ]),
+      tier('decent', 'A serviceable wig, and she wears what {b} gave her without complaint.', [
+        '{a} styles a wig for {b} and the wig is solid — it fits, it flatters well enough, and {b} puts it on without wincing, which is the baseline of a decent {c} performance. On the other end, {a} wears what {b} gave her and makes it work.',
+        'The wig {a} built for {b} is a wig — styled, presentable, and sitting on {b}\'s head in a way that does not require apology. It is not {b}\'s best wig night, but it is a wig night she can stand in, and {a} delivered that.',
+        '{a} hands {b} a wig that reads as competent and wears whatever {b} handed back without complaint, and the pair of them stand together looking like two queens who did right by each other if not spectacularly by each other.',
+        'A clean swap — {a}\'s wig for {b} has the right shape and roughly the right energy, and {b}\'s wig for {a} is wearable, and the two of them look like queens who took {c} seriously and executed it without drama.',
+        '{a} styles something for {b} that works and wears something from {b} that also works, and the mutual serviceability of the exchange is the best version of a decent {c} result — nobody was sabotaged, nobody was embarrassed, both wigs function.',
+        'The wig {a} gives {b} is fine. It sits on the head, it has a shape, the color does not fight {b}\'s paint. {a} wears what she was given in return with the composure of a queen who has worn worse and said nothing about it.',
+        '{a} and {b} swap wigs and both wigs are wearable, and in {c} wearable-in-both-directions is a result that puts a pair in the safe middle of the pack, which is exactly where this pair lands.',
+        'Neither queen flinched when the swap happened, and that says everything — {a} received something wearable and delivered something wearable, and mutual competence is the quietest compliment two queens can pay each other in {c}.',
+      ]),
+      tier('flat', 'She was given something unwearable, or she made one, or both.', [
+        '{a} hands {b} a wig and {b} puts it on and {b}\'s face says everything — the wig does not sit right, does not suit her, does not do the one thing a wig is supposed to do, and {a} is standing there watching her own work fail on somebody else\'s head.',
+        'The wig {a} built for {b} is wrong — wrong shape, wrong color, wrong energy — and {b} wears it with the expression of a queen who is being polite about something impolite, and the room can see the gap between what {a} intended and what {a} delivered.',
+        '{a} styled a wig for {b} and the wig looks like it was styled for a different queen, or a different species, and {b} stands in it with the patient expression of a queen who has been given a problem to wear on her head and is choosing not to make it worse.',
+        'What {a} gives {b} is a wig that sits on {b}\'s head like it landed there from somewhere else, and what {b} gives {a} is not much better, and the two of them stand together looking like queens who did not take the swap seriously enough or did not have the skills to take it seriously at all.',
+        'The wig is unwearable. {a} hands it to {b} and {b} holds it for a moment before putting it on, the way you hold something you know is going to be a problem, and the problem is confirmed the moment it touches her head.',
+        '{a} opens the wig box from {b} and what is inside is a wig in the way that anything with hair on it is technically a wig, and {a} puts it on with the composure of a queen who has just learned something about what {b} thinks of her.',
+      ]),
+      tier('win', 'She did right by {b} and got away with what {b} did to her.', [
+        '{a} wins {c} and the win sits on two things — the wig she built for {b} was beautiful, and the wig she was given by her own partner was something she wore with enough grace that nobody pitied her, and the combination of generosity and survival is what {c} rewards.',
+        'The host calls {a} as the winner of {c} because the wig she styled was the best wig handed to anybody today, and the wig she wore was handled with the composure of a queen who makes anything work once it is on her head.',
+        '{a} takes {c} because she understood both halves of the game — she built a wig for {b} with the care of somebody who wanted {b} to look good, and she wore what she was given with the confidence of somebody who trusts her own face more than she trusts somebody else\'s styling.',
+        '{a} won {c} and the room agrees because her wig was the one everybody wished they had been given, and the wig she was given was the one everybody feared they would get, and she made both situations work.',
+      ]),
+    ]),
 ];
 
 // ══════════════════════════════════════════════════════════════════════

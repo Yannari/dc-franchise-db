@@ -253,7 +253,9 @@ describe('what is left to write', () => {
 // ══════════════════════════════════════════════════════════════════════
 describe('the maxi draft and walkthrough', () => {
   const mxWritten = [
-    ...PICK_VOICES.flatMap(k => k.tiers.map(t => ({ pool: 'pick', key: k.kind, t }))),
+    // Keyed by kind AND tier: "pick:slots" alone does not say which of the
+    // four tiers the duplicate is in, which is the first thing you need.
+    ...PICK_VOICES.flatMap(k => k.tiers.map(t => ({ pool: 'pick', key: `${k.kind}/${t.id}`, t }))),
     ...WALKTHROUGH_VOICES.map(w => ({
       pool: 'walkthrough', key: w.family, t: { id: 'note', lines: w.lines },
     })),

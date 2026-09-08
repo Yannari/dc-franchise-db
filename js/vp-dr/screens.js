@@ -113,6 +113,14 @@ const SECTIONS = [
   { id: 'dr-choice', icon: icon('cards'), label: 'The Draft', suffix: 'choice', phase: 'werk', accent: 'dr-a-bond',
     opens: ['improv-premises', 'snatch-picks', 'ball-theme', 'group-parts', 'roast-order',
       'makeover-pairs', 'singing-order', 'walkthrough'],
+    /* AND ON THE STEP, which is the difference between this screen existing
+       and not. The eight kinds above are markers a challenge MODULE emits, so
+       a challenge that drafts without emitting one of them produced a full
+       set of `chal:the-division` and `chal:pick-reaction` cards — one per
+       queen, all written — into a section that never opened, and the whole
+       draft was invisible. An allowlist of markers cannot cover a beat that
+       fires for every challenge; the step can. */
+    opensStep: ['choice'],
     badge: { text: 'PICKS', color: '#7B2FF7' }, title: 'The Draft', subtitle: 'who takes what' },
   { id: 'dr-prep', icon: icon('scissors'), label: 'Prep', suffix: 'prep', phase: 'werk', accent: 'dr-a-room',
     opens: ['prep-room', 'writing-room', 'band-rehearsal', 'recording-booth', 'ball-build',

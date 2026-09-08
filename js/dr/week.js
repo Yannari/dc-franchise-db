@@ -190,6 +190,11 @@ export function runDragWeek(state, cfg, ctx) {
   let mini = null;
   let miniWinner = null;
   let miniScores = {};
+  /* HELD, NOT PUSHED HERE. The mini's own cards — the announce, one attempt
+     per queen, the win — are produced by `renderChallengeBeats` further down,
+     so pushing the events at this point puts "she read her to the floor"
+     above the card announcing the mini it happened in. */
+  let miniEventScenes = [];
   if (cfg.miniId) {
     const m = miniById(cfg.miniId);
     if (m) {
@@ -213,6 +218,16 @@ export function runDragWeek(state, cfg, ctx) {
         });
       }
       say('mini', 'mini', { mini });
+      /* AND THE MINI'S OWN EVENTS, NARRATED. Five of them — read-landed,
+         read-missed, pulled-the-punch, did-her-proud, did-her-dirty — have
+         had authored prose in js/dr/data/maxi-events.js under `from: 'mini'`
+         since that file was written, and every one of them moves a bond and a
+         popularity score. `renderMaxiEventScenes` is the thing that turns
+         them into words and it was only ever handed the MAXI's events, so a
+         queen could read another queen to the floor, lose half a bond point
+         over it and gain two popularity, and the episode said nothing.
+         Written, consequential, and drawn by nobody. */
+      miniEventScenes = renderMaxiEventScenes(res.events, { step: 'mini', rng });
     }
   }
 
@@ -681,6 +696,9 @@ export function runDragWeek(state, cfg, ctx) {
       miniDetail: mini?.detail || {},
       assignment: M.assignment || {}, performances: perfWithPlayers, rng,
     })) scenes.push(sc);
+
+    // ...and now the mini's own events, under the cards they belong to.
+    for (const sc of miniEventScenes) scenes.push(sc);
 
     // The challenge's own events, narrated. The modules produce these and
     // narrate none of them, so without this they reach the row as bare types.

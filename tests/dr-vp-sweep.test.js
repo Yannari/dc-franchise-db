@@ -65,6 +65,45 @@ describe('the sweep', () => {
       expect(filed, `episode ${row.num}`).toBe((row.dr.scenes || []).length);
     }
   });
+
+  it('EVERY WRITTEN SCENE IS ACTUALLY DRAWN, not merely filed', () => {
+    /* THE HOLE THE TEST ABOVE LEAVES, and it is the one that mattered.
+       `sceneSections` files every scene into a section bucket, so that check
+       passes as long as a bucket exists — it says nothing about whether the
+       section's BUILDER reads the bucket. Several do not: the critiques
+       screen builds its cards from `dr.critiques`, the runway screen looks up
+       two kinds by name, the results screen walks the call. A scene filed
+       into one of those sections and ignored by its builder is filed, counted,
+       and invisible.
+
+       That is exactly how `stage:deliberation` survived: written prose in
+       stage-beats.js, emitted every single week, filed under the critiques
+       section, and not one reference to it anywhere in js/vp-dr. It was
+       shipped and shown to nobody for the life of the show.
+
+       So this asserts the only thing that actually matters — the words reach
+       a page. Rendering every screen of every episode and searching the HTML
+       is slow and blunt and catches a whole class of bug that no per-screen
+       test can, because the failure is always a screen NOT doing something. */
+    const missing = [];
+    for (const row of rows) {
+      const html = dragScreens(row).map(s => s.html).join(' ');
+      const plain = html.replace(/<style[\s\S]*?<\/style>/g, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&rsquo;/g, "'")
+        .replace(/&mdash;/g, '—').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/\s+/g, ' ');
+      for (const sc of row.dr.scenes || []) {
+        if (!sc.text || sc.text.length < 40) continue;
+        // A distinctive slice from the middle, so a card that truncates the
+        // opening or wraps the tail still counts as having drawn it.
+        const probe = sc.text.slice(10, 60).replace(/\s+/g, ' ');
+        if (!plain.includes(probe)) missing.push(`ep${row.num} ${sc.kind} (${sc.step})`);
+      }
+    }
+    const kinds = [...new Set(missing.map(m => m.split(' ')[1]))];
+    expect(kinds, `written scenes that no screen draws: ${kinds.join(', ')}`).toEqual([]);
+  });
 });
 
 describe('the transcript, read', () => {

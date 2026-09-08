@@ -543,6 +543,26 @@ export function rpBuildFinaleOpen(row) {
       <b class="dr-disp">${esc(n)}</b>
     </div>`).join('');
 
+  /* AND THE WRITTEN OPENING, WHICH THIS SCREEN WAS STEPPING OVER.
+     There are two things called finale-open. `finale-open` is the marker this
+     builder reads — finalists and a type, no words — and `finale:finale-open`
+     and `finale:finale-open-queen` are the AUTHORED prose in
+     js/dr/data/finale-beats.js: the host's opening and one card per finalist.
+     Reading the marker and ignoring the prose meant a written scene per
+     finalist fired on the biggest night of the season and reached no screen.
+     The near-identical kind is exactly why it went unnoticed. */
+  const said = (row?.dr?.scenes || []).filter(sc =>
+    /^finale:finale-open/.test(sc.kind || '') && sc.text);
+  const spoken = said.map(sc => {
+    const who = (sc.data?.players || [])[0];
+    return `<div class="dr-panel dr-a-room" style="padding:14px 16px;display:grid;
+      grid-template-columns:${who ? 'auto 1fr' : '1fr'};gap:14px;align-items:center;
+      text-align:left;margin-top:12px">
+      ${who ? _portrait(who, ep, { size: 48, station: true }) : ''}
+      <p style="margin:0;color:#f4e3ed;line-height:1.6">${esc(sc.text)}</p>
+    </div>`;
+  }).join('');
+
   const body = `<div class="dr-panel dr-a-score" style="padding:24px 20px;text-align:center">
       <div class="dr-sash dr-disp">Grand Finale</div>
       <h2 class="dr-disp" style="margin:10px 0 4px;font-size:30px">
@@ -550,7 +570,7 @@ export function rpBuildFinaleOpen(row) {
       <p style="color:#C9A6BC;margin:0 0 18px">
         ${esc(SHAPE[fin?.type] || 'The last night of the season.')}</p>
       <div class="dr-fin-grid">${cards}</div>
-    </div>`;
+    </div>${spoken}`;
 
   return `<style>${RESULTS_CSS}
 .dr-fin-grid{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:6px}

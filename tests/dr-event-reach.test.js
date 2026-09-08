@@ -79,14 +79,21 @@ describe('every authored maxi event can happen', () => {
          cohorts land on the eliminated queens twice and prove nothing. It
          alternates onto that cohort and gets double the seasons — the guard
          is about REACHABILITY, not about how often a cohort comes up. */
-      /* AND THE BALL, for a different reason with the same shape. Its
-         `showstopper` needs a queen whose design is high AND whose prep went
-         well AND whose noise fell the right way, which is a rare enough
-         conjunction that twelve seasons is a coin toss on whether it appears
-         at all — it passed on one RNG stream and failed on the next without
-         anything about the ball changing. A reachability guard that depends
-         on the seed is not measuring reachability. */
-      const runs = t.id === 'makeover' || t.id === 'ball' ? SEASONS * 2 : SEASONS;
+      /* AND THE CONJUNCTION EVENTS, which is a general problem rather than
+         two special cases. Some events need several independent things to go
+         the same way at once: the ball's `showstopper` wants high design AND
+         a good prep AND favourable noise; the photoshoot's `blank-frame`
+         wants EVERY frame under the bar, not one. Twelve seasons is a coin
+         toss on whether a conjunction like that appears at all — both of
+         these passed on one RNG stream and failed on the next without
+         anything about the challenge changing, purely because an unrelated
+         edit elsewhere shifted the draw by a few calls.
+         A reachability guard that depends on the seed is not measuring
+         reachability, so these get double the sample. It costs seconds and it
+         is the difference between the guard catching a genuinely dead event
+         and the guard reporting on the seed. */
+      const CONJUNCTION = new Set(['ball', 'photoshoot']);
+      const runs = t.id === 'makeover' || CONJUNCTION.has(t.id) ? SEASONS * 2 : SEASONS;
       for (let s = 0; s < runs; s++) {
         /* The makeover is pinned onto the cohort under test as well as the
            episode: its seven cohorts are drawn at random per season, so a

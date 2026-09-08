@@ -472,6 +472,17 @@ export function rpBuildCritiques(row) {
      the first gave a screen of "RuPaul praise challenge · risk" with no
      critique on it: every judge accounted for and not one of them speaking.
      Matched on queen and judge, which both records carry. */
+  /* HOW SHE TOOK IT, IN WORDS. `stage:critique-reaction` has authored prose
+     per tier and this card printed only the tier NAME — "She takes it:
+     gracious." — so a written paragraph per critiqued queen fired every week
+     and was drawn nowhere. The label stays because it is a useful summary;
+     the paragraph goes under it. */
+  const reactionSaid = new Map();
+  for (const sc of row.dr.scenes || []) {
+    if (sc.kind !== 'stage:critique-reaction' || !sc.text) continue;
+    reactionSaid.set((sc.data?.players || [])[0], sc.text);
+  }
+
   const said = new Map();
   for (const sc of row.dr.scenes || []) {
     if (sc.kind !== 'stage:critique' || !sc.text) continue;
@@ -576,7 +587,10 @@ export function rpBuildCritiques(row) {
       </div>
       ${cards}
       ${reactions[name]
-    ? `<div class="dr-react">She takes it: <b>${esc(reactions[name])}</b>.</div>` : ''}
+    ? `<div class="dr-react">She takes it: <b>${esc(reactions[name])}</b>.
+        ${reactionSaid.get(name)
+      ? `<p style="margin:6px 0 0;color:#f4e3ed;line-height:1.6">${esc(reactionSaid.get(name))}</p>`
+      : ''}</div>` : ''}
     </div>`;
   }).join('');
 

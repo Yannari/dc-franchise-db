@@ -27,14 +27,15 @@ const { rows } = playDragSeason({
 beforeEach(() => { window._tvState = {}; window._drSidebar = {}; });
 
 describe('the registry', () => {
-  it('is the thirty-one screens, in the running order', () => {
-    expect(DRAG_SCREENS.length).toBe(31);
+  it('is the thirty-two screens, in the running order', () => {
+    expect(DRAG_SCREENS.length).toBe(32);
     const ids = DRAG_SCREENS.map(s => s.id);
     expect(ids[0]).toBe('dr-arrivals');
     expect(ids).toContain('dr-chart');
-    expect(new Set(ids).size).toBe(31);
+    expect(ids).toContain('dr-rel');
+    expect(new Set(ids).size).toBe(32);
     expect(new Set(DRAG_SCREENS.map(s => s.suffix)).size, 'two screens share a suffix')
-      .toBe(31);
+      .toBe(32);
     for (const s of DRAG_SCREENS) {
       expect(typeof s.when, s.id).toBe('function');
       expect(typeof s.build, s.id).toBe('function');

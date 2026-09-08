@@ -27,6 +27,7 @@ import { _shell, _portrait, _icon } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
+import { rpBuildRelationships } from './relationships.js';
 import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.js';
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
@@ -79,6 +80,7 @@ const ICON_PATHS = {
   crown: 'M3 18l-1-11 6 5 4-8 4 8 6-5-1 11zM3 18h18v3H3z',
   bracket: 'M4 5h5v6h5V5h5M4 19h5v-6M14 19h5v-6M9 11h5',
   sofa: 'M3 11a2 2 0 014 0v5H3zM17 11a2 2 0 014 0v5h-4zM7 9a2 2 0 012-2h6a2 2 0 012 2v7H7z',
+  heart: 'M12 21C7 17 3 13.5 3 9.5 3 7 5 5 7.5 5c1.5 0 3 .8 4.5 2.5C13.5 5.8 15 5 16.5 5 19 5 21 7 21 9.5 21 13.5 17 17 12 21z',
 };
 
 /** One sidebar icon, as inline SVG. Inherits colour from the sidebar item. */
@@ -509,6 +511,14 @@ const _rate = {
 };
 const _afterUntucked = _order.findIndex(s2 => s2.id === 'dr-untucked') + 1;
 _order.splice(_afterUntucked || _order.length, 0, _rate);
+
+const _rel = {
+  id: 'dr-rel', icon: icon('heart'), label: 'The Room', suffix: 'rel',
+  badge: { text: 'BONDS', color: '#B07AFF' },
+  when: row => (row?.dr?.bonds || []).some(([a, b, v]) => v !== 0),
+  build: row => rpBuildRelationships(row),
+};
+_order.push(_rel);
 
 export const DRAG_SCREENS = [
   ..._order,

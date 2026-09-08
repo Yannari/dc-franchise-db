@@ -111,24 +111,80 @@ export const CRITIQUE_REASONS = [
     'WHAT SHE DID IN THE CHALLENGE — the performance, the character, the joke, '
     + 'the verse. A judge arriving here is unmoved by a beautiful queen who did '
     + 'nothing and will forgive a rough look for a night that worked.',
-    'The work was the best thing on that stage and {j} says so plainly.',
-    'She did not do the challenge, and no amount of the rest covers it.'),
+    tier('praise', 'The work was the best thing on that stage and {j} says so plainly.', [
+      "{j} leans into the mic and says what the room already knows: {a} understood the assignment better than anybody else tonight.",
+      "\"That is what I come here to see,\" {j} tells {a}, and you can hear the relief of a judge who finally got a performance worth praising.",
+      "{j} points at {a} and tells her she found {o} in the middle of a challenge that ate most of the cast alive, and she made it look easy.",
+      "The critique is short because {j} does not need many words: {a} did the work, the work was excellent, and {o} was the cherry on top.",
+      "{j} says {a} gave them exactly what they were looking for — commitment, clarity, and a performance the room will not forget by next week.",
+      "\"You came out here and you DID something,\" {j} says, and the emphasis on the verb is the whole review — because half the cast tonight did not.",
+    ]),
+    tier('fault', 'She did not do the challenge, and no amount of the rest covers it.', [
+      "{j} looks at {a} and says she does not know what happened up there, because whatever it was, it was not the challenge they were given.",
+      "\"I was confused,\" {j} says flatly. \"I did not know what you were doing, and I do not think you knew either.\" {a} has nothing to answer with.",
+      "{j} tells {a} that a beautiful queen standing in a beautiful garment cannot rescue a performance that never arrived, and {p} made it worse.",
+      "The critique lands like a verdict: {j} says {a} was lost from the first beat, and the look could not carry a challenge this empty.",
+      "{j} shakes her head and tells {a} she has seen what {a} can do, and tonight was not it — the character was hollow, the commitment absent, and {p} was all she could see.",
+      "\"You gave us nothing to judge,\" {j} says, and the nothing is the point — {a} was physically present and creatively elsewhere.",
+    ])),
   dim('runway',
     'THE GARMENT. Construction, proportion, the idea, and whether it survived '
     + 'contact with a body. A judge arriving here can be entirely uninterested '
     + 'in how funny she was.',
-    'The look is the best thing that walked and {j} takes it apart to say why.',
-    'The garment does not hold up, and a good night does not fix a bad seam.'),
+    tier('praise', 'The look is the best thing that walked and {j} takes it apart to say why.', [
+      "{j} studies the garment from hem to neckline and tells {a} that this is the look of the night — proportion, idea, finish, all of it working.",
+      "\"I cannot stop staring at you,\" {j} says, and then walks {a} through every detail that makes the garment sing — the line, the fabric, the movement.",
+      "{j} points out that {a} found {o} on a runway where most queens brought costumes, and the difference between the two has never been clearer.",
+      "The critique is a love letter to the construction: {j} tells {a} that every seam is intentional, every choice is earned, and the garment stands on its own.",
+      "{j} says the look told a story before {a} opened her mouth, and a runway that speaks for itself is what {o} looks like in practice.",
+      "\"This is what fashion looks like on this stage,\" {j} tells {a}, and the sentence is so plain it functions as the highest compliment available.",
+    ]),
+    tier('fault', 'The garment does not hold up, and a good night does not fix a bad seam.', [
+      "{j} tells {a} the garment fell apart the moment she moved, and {p} is not something this panel can overlook no matter how charming the queen inside it is.",
+      "\"I wanted to love this,\" {j} says, \"but I cannot get past the construction.\" {a} nods because she already knew — the garment betrayed her the second she hit the light.",
+      "{j} says {a} had an idea and then ran out of skill before the idea was finished, and {p} turned a concept into a costume.",
+      "The critique is specific and it stings: {j} names the hem, the closure, the weight of the fabric, and tells {a} that a look this ambitious needed hands that matched the ambition.",
+      "{j} looks at {a} and says the runway saved nobody tonight, and a queen who walked a garment this unfinished was asking the panel to look the other way.",
+      "\"Baby, I love you, but I do not love that garment,\" {j} says, and {a} takes it because {p} is sitting right there on the stage and everybody saw it.",
+    ])),
   dim('risk',
     'THE NERVE. Whether she tried something that could have failed. A judge '
     + 'arriving here would rather see an ambitious mess than a safe success.',
-    'She went for something, and {j} rewards the going more than the result.',
-    'She played it safe, and safe is what {j} came here to warn her about.'),
+    tier('praise', 'She went for something, and {j} rewards the going more than the result.', [
+      "{j} tells {a} that what she attempted tonight could have been a disaster, and the fact that it was not is a credit to the nerve it took to try.",
+      "\"You scared me,\" {j} says, smiling. \"I thought you were going to eat it. And then you did not, and now I am standing here praising the audacity.\"",
+      "{j} says {a} brought {o} to the stage tonight — the willingness to fail publicly, which is the only road to something the panel has not seen before.",
+      "The critique is an endorsement of risk: {j} tells {a} that a safe version of tonight would have landed her in the middle, and the gamble put her at the top.",
+      "{j} looks at {a} and says the thing every queen needs to hear once — that the mess was worth it, that the ambition read louder than the stumble, and that {o} is rarer than perfection.",
+      "\"Other queens played it smart tonight and I have already forgotten them,\" {j} tells {a}. \"I will not forget you. That is what nerve buys.\"",
+    ]),
+    tier('fault', 'She played it safe, and safe is what {j} came here to warn her about.', [
+      "{j} tells {a} she was good tonight — competent, polished, perfectly fine — and asks her whether perfectly fine is really what she travelled here to deliver.",
+      "\"I have seen this from you before,\" {j} says. \"And I liked it before. But I cannot keep rewarding the same safe choice every week, and {p} is starting to show.\"",
+      "{j} says {a} made every correct decision and not a single interesting one, and the panel can tell the difference between a queen who is coasting and a queen who is competing.",
+      "The critique is gentle but the message is not: {j} tells {a} she needs to take a risk soon, because {p} is what happens when talent hides behind reliability.",
+      "{j} leans forward and asks {a} what she is afraid of, because the queen standing on that stage tonight was managing her position instead of fighting for it.",
+      "\"You are too talented for this,\" {j} says, and the compliment is the sharpest part of the pan — because the talent is real and the cowardice is wasting it.",
+    ])),
   dim('polish',
     'THE FINISH. Whether it was FINISHED — the paint, the seam, the timing, '
     + 'the thing between a professional and somebody having a go.',
-    'It was finished, and almost nothing on that stage tonight was.',
-    'It is unfinished, and she knew it was unfinished when she walked out.'),
+    tier('praise', 'It was finished, and almost nothing on that stage tonight was.', [
+      "{j} tells {a} the difference tonight was the finish — every detail was handled, every transition was clean, and {o} was present from the first moment to the last.",
+      "\"Professionalism,\" {j} says, pointing at {a}. \"That is what I am looking at. A queen who treated every inch of this like it mattered.\"",
+      "{j} says {a} was not the flashiest thing on that stage, but she was the most complete, and completion is what separates a competitor from a professional.",
+      "The critique is about craft: {j} tells {a} that the paint was correct, the garment was pressed, the timing was exact, and that {o} held the whole package together.",
+      "{j} looks at {a} and tells her that she did the work before the cameras turned on, and the preparation showed in every beat of the performance.",
+      "\"Some queens brought a moment. You brought a SHOW,\" {j} tells {a}, and the distinction is that a show has been rehearsed, refined, and finished.",
+    ]),
+    tier('fault', 'It is unfinished, and she knew it was unfinished when she walked out.', [
+      "{j} asks {a} whether she ran out of time or ran out of effort, because the result is a concept that never became a finished product, and {p} is all over it.",
+      "\"Close is not the same as done,\" {j} tells {a}. \"And tonight you were close, and the gap between close and done is where {p} lives.\"",
+      "{j} says {a} had every ingredient except the last ten percent, and the last ten percent is the part that turns a rehearsal into a performance.",
+      "The critique is surgical: {j} names three details that were almost right and tells {a} that almost-right reads as unfinished under these lights, especially when {p} is visible.",
+      "{j} tells {a} that polish is not a bonus round — it is the baseline, and a queen who walks onto this stage with seams showing and paint unblended is asking for exactly this conversation.",
+      "\"You have the talent,\" {j} says. \"What you do not have is the discipline to finish what you start, and the gap is {p} staring back at me from that stage.\"",
+    ])),
 ];
 
 // ══════════════════════════════════════════════════════════════════════
@@ -153,9 +209,19 @@ export const CRITIQUE_REASONS = [
 const bias = (id, note, lines = []) => ({ id, note, lines: lines.slice() });
 
 export const CRITIQUE_BIAS = [
-  bias('for', 'This judge has always been sold on {y}, and here is a {y} queen.'),
+  bias('for', 'This judge has always been sold on {y}, and here is a {y} queen.', [
+    "— and everybody on that panel knows {j} has a weakness for {y}, so the praise lands with a footnote the room can read.",
+    "— and {j} would be the first to admit that a {y} queen walks in with a head start, because that is what taste looks like when it is honest.",
+    "— and the lean is showing: {j} lights up at {y} the way some people light up at dessert, and {a} is serving exactly that.",
+    "— and the bias is public knowledge by now: {j} loves {y}, {a} brought {y}, and the score reflects the match.",
+  ]),
   bias('against', 'This judge has never been sold on {y}, and everybody in the '
-    + 'room including {a} knows it before {j} opens her mouth.'),
+    + 'room including {a} knows it before {j} opens her mouth.', [
+    "— and the room felt {j} sharpen the moment {a} walked, because a {y} queen has always had to work harder under this particular gaze.",
+    "— and the impatience is not personal, it is taste: {j} has never been sold on {y}, and a queen bringing {y} to this stage knows the hill is steeper.",
+    "— and {a} knew before the critique started that {j} and {y} have never seen eye to eye, so every note tonight carries a grain of salt the room can taste.",
+    "— and the lean is as familiar as the judge: {j} arrives at {y} already unconvinced, and {a} needed to be twice as good to land at the same score.",
+  ]),
 ];
 
 // ══════════════════════════════════════════════════════════════════════

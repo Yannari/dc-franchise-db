@@ -210,6 +210,8 @@ export function runDragWeek(state, cfg, ctx) {
       mini = {
         id: m.id, name: m.name, winner: miniWinner, buys: m.buys,
         interaction: res.interaction, detail: res.detail,
+        // Who reads when. The turn is the format for a targeting mini.
+        turnOrder: res.turnOrder || null,
       };
       applyMiniEvents(res.events, ctx);
       for (const e of res.events) {

@@ -65,6 +65,9 @@ function targetFor(n, living, players, bond, star, rng) {
  * the interaction produced. A caller that ignores `events` gets exactly the
  * old behaviour, which is what makes this safe to drop in.
  */
+/** Under this and she has nothing to say, which is its own result. */
+const PASSES = 2.2;
+
 export function runMini({ living, mini, players, rng, bond = () => 0, star = {} }) {
   const scores = {};
   const events = [];
@@ -72,6 +75,17 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {} 
 
   const interaction = mini.interaction || 'solo';
   const pairs = [];
+
+  /* ── A TARGETING MINI IS TAKEN IN TURNS, AND THE TURN IS THE FORMAT ──
+     The library is not thirteen simultaneous reads; it is one queen at a
+     time, announced by the host, standing up in front of everybody. Who goes
+     first and who goes last is the shape of the whole segment — the last read
+     of the night is the one the room has been waiting for — and none of that
+     existed: `living` order was used as if it were nothing.
+     Shuffled once here so the order is a real draw and so the same seed
+     replays the same library. */
+  const turnOrder = interaction === 'targets'
+    ? [...living].sort(() => rng() - 0.5) : [...living];
 
   if (interaction === 'pairs') {
     // Split the room. An odd queen out works alone, which is its own result.
@@ -86,7 +100,16 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {} 
 
     if (interaction === 'targets') {
       const target = targetFor(n, living, players, bond, star, rng);
-      detail[n] = { target };
+      const at = turnOrder.indexOf(n);
+      detail[n] = {
+        target,
+        // Where in the running order she stands, and what the host calls it:
+        // the first queen up, one of the middle, or the last one — which the
+        // host announces as such and the room hears as such.
+        turn: at,
+        position: at === 0 ? 'first'
+          : at === turnOrder.length - 1 ? 'last' : 'next',
+      };
       if (target) {
         // A read of somebody you like lands softer — you pull it, and the room
         // can tell. A read of somebody you cannot stand has teeth.
@@ -105,6 +128,15 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {} 
     }
 
     scores[n] = Math.round(s * 100) / 100;
+
+    /* SHE HAS NOTHING. The worst thing that happens in a library is not a
+       bad read, it is a queen who stands up, opens her mouth and passes —
+       and that was unreachable, because the floor of the pool was "a read
+       that did not land". Proportional to how far under she is rather than a
+       flat cut, so it is rare and it is earned. */
+    if (interaction === 'targets' && detail[n]) {
+      detail[n].passed = scores[n] < PASSES;
+    }
   }
 
   // ── what the interaction did to the room ──
@@ -162,6 +194,7 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {} 
     winner: order.length ? order[0][0] : null,
     scores,
     detail,
+    turnOrder,
     pairs,
     events,
     interaction,

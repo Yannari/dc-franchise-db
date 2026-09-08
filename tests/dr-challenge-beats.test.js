@@ -111,7 +111,10 @@ describe('the lines', () => {
   it('writes prose, not a caption', () => {
     for (const { b, t } of written) {
       for (const l of t.lines) {
-        expect(l.length, `${b.id}/${t.id} has a one-liner`).toBeGreaterThan(80);
+        // An announcement beat is a name called over a room, not a paragraph;
+        // it still has to be a real line rather than a stub.
+        expect(l.length, `${b.id}/${t.id} has a one-liner`)
+          .toBeGreaterThan(b.announcement ? 25 : 80);
       }
     }
   });

@@ -70,6 +70,17 @@ const tier = (id, note, lines = []) => ({ id, note, lines });
 
 /** The three cuts, best to worst. These are `MINI_TIERS` in js/dr/stage.js. */
 export const MINI_TIER_IDS = ['nailed', 'decent', 'flat'];
+
+/**
+ * AND THE PASS, which is only possible in a targeting mini.
+ *
+ * The worst thing that happens in a library is not a bad read — it is a queen
+ * who stands up, opens her mouth, and has nothing. The pool's floor was "a
+ * read that did not land", so the moment everybody remembers could not
+ * happen. `passed` is rare and earned: the engine only sets it when she is
+ * genuinely under, not on a flat roll.
+ */
+export const MINI_PASS_ID = 'passed';
 /**
  * Build tiers from whatever shape the author used.
  *
@@ -106,7 +117,9 @@ const tiersFrom = (ids, args) => {
  * The draw is without replacement within an episode, so hitting these numbers
  * removes the repeat entirely rather than making it less likely.
  */
-export const MINI_VARIANTS = { announce: 4, nailed: 6, decent: 8, flat: 6, win: 4 };
+export const MINI_VARIANTS = {
+  announce: 4, nailed: 6, decent: 8, flat: 6, win: 4, passed: 4,
+};
 
 /**
  * One mini's whole voice.
@@ -116,56 +129,77 @@ export const MINI_VARIANTS = { announce: 4, nailed: 6, decent: 8, flat: 6, win: 
  * next to the lines, and a test checks the two files agree.
  */
 const MINI_TIER_ORDER = ['announce', 'nailed', 'decent', 'flat', 'win'];
+
+/* AND `passed` ONLY WHERE PASSING IS A THING. A queen can stand up in the
+   library with nothing to say; she cannot "pass" a dance-off — she dances
+   badly, which is what `flat` is. Adding the tier to every mini gave four
+   solo pools a tier with no note and nothing to write in it. */
 const mini = (id, name, cast, note, ...rest) => ({
-  id, name, cast, note, tiers: tiersFrom(MINI_TIER_ORDER, rest.flat()),
+  id,
+  name,
+  cast,
+  note,
+  tiers: tiersFrom(
+    cast === 'targets' ? [...MINI_TIER_ORDER, 'passed'] : MINI_TIER_ORDER,
+    rest.flat(),
+  ),
 });
 
 const T = (...args) => args;
 
 export const MINI_VOICES = [
   mini('reading', 'Reading Is Fundamental', 'targets',
-    'THE LIBRARY. She stands up and takes one queen apart — {b} — to her face, '
-    + 'in front of everybody, and it has to be funny rather than cruel. The '
-    + 'oldest ritual in the room. A read that lands is a friendship that '
-    + 'survives it; a read that misses is a grudge.',
+    'THE LIBRARY, AND THE LINE IS THE READ. She stands up, the host has just '
+    + 'called her name, and she says ONE THING about {b}, to her face, in '
+    + 'front of everybody. So the line is not a description of a read — it IS '
+    + 'the read, in quotation marks, in her mouth, followed by what the room '
+    + 'did with it. A line like \"{a} reads {b} beautifully\" is the thing this '
+    + 'pool exists to replace. Funny rather than cruel: a read that lands is a '
+    + 'friendship that survives it, and a read that misses is a grudge.',
     [
       tier('announce', 'The library opens and the host explains the only rule: make it funny.', [
         'The host opens the library and the room shifts — everybody loves {c} and everybody is afraid of it, because the rule is simple and the rule is merciless: be funny or be the one who was not funny, in front of everybody.',
-        '"It\'s time for {c}!" The host announces it and half the room grins and the other half swallows, because a reading challenge is a room full of queens about to say the worst thing they can think of about each other and hoping it lands as comedy.',
+        '\"It is time for {c}!\" The host announces it and half the room grins and the other half swallows, because a reading challenge is a room full of queens about to say the worst thing they can think of about each other and hoping it lands as comedy.',
         'The host explains {c} the way the host always explains it — one rule, no exceptions. Read her. Make it funny. If it is not funny it is just mean, and mean without a punchline is the fastest way to make an enemy in a room you still have to live in.',
         '{c} is announced and the werk room divides instantly into queens who have been preparing a read since the first day and queens who are right now trying to think of one, and the gap between those two groups is about to become very public.',
       ]),
       tier('nailed', 'One sentence about {b} and the room is gone. Nobody recovers for a minute.', [
-        '{a} stands up and delivers one sentence about {b} and the room folds in half. {b} is laughing so hard she cannot defend herself, which is the whole point — a read that lands this cleanly is a read that was true, and the truth is what made it funny.',
-        'The read hits {b} so precisely that {b} puts her hands over her face and the queens on either side of her are screaming, because {a} found the one thing everybody has noticed about {b} and nobody has said out loud and said it out loud.',
-        '{a} looks at {b} and says one thing — one perfect, devastating, specific thing — and the room comes apart. {b} is doubled over. The host is doubled over. {a} is standing there with the composure of somebody who knew exactly what she was going to say before she stood up.',
-        'One line about {b} and it is over. {a} reads her so cleanly that {b} cannot even be mad about it — the read was too funny to be an insult and too true to be a joke, and that is the exact target a reading challenge is asking you to hit.',
-        '{a} takes {b} apart in one sentence and the sentence is so good that the host repeats it, which never happens. {b} is laughing with her whole body. The read was specific, it was earned, and it landed like something {a} has been holding since the first week.',
-        'The room goes silent for half a second after {a} reads {b}, and the silence is the gap between the joke landing and the room deciding to lose its mind about it, and then the room loses its mind about it.',
+        '\"{b}. Sweetheart. Your drag is so old your wigs have osteoporosis.\" The room folds in half. {b} is laughing too hard to defend herself, which is the only correct response.',
+        '\"{b}, your idea of a wardrobe is one swimsuit in four different colours.\" {a} sits down immediately, which is the professional move, and the screaming goes on without her.',
+        '\"{b}, everybody calls you a triple threat. I have been trying all week to find the other two.\" One queen has to put her head on the table. {b} says \"I hate you\" and means the opposite.',
+        '\"{b}, I love your confidence. I would love it more if it came with anything.\" It is over. {a} has won the library with eleven words and everybody in the room knows it.',
+        '\"{b}, you say you are a pageant queen. Which pageant? Where? Was anybody there?\" The specificity is what kills. {b} covers her face with both hands.',
+        '\"{b}, you told us on day one you were here to win. Just to be clear — win what?\" {a} delivers it kindly, which makes it so much worse, and the room does not recover for a full minute.',
       ]),
       tier('decent', 'A decent read. {b} laughs, which is the correct answer either way.', [
-        '{a} reads {b} and it lands — not a demolition, but a solid hit. {b} laughs and the laugh is real, which is the best outcome a decent read can ask for. The room makes noise. {a} sits down with the expression of somebody who knows she did not win but did not embarrass herself.',
-        'The read finds something about {b} that is true and says it in a way that gets a laugh, and the laugh is enough. {a} is not going to be quoted later tonight but she is not going to be pitied either, and in {c} that middle ground is a perfectly fine place to stand.',
-        '{a} goes after {b} and the read is solid — it has a setup, it has a punchline, and {b} laughs at the punchline, which means it worked even if it did not bring the room down. A serviceable read in a room full of comedians is harder than it looks.',
-        'A clean read from {a}. She picks something about {b} that everybody has noticed, phrases it well enough to get a reaction, and sits back down. {b} nods, which is the nod of a queen who has been read competently and cannot argue with it.',
-        '{a} stands up and reads {b} and the room responds — not a roar, but a genuine laugh, the kind that says the read was funny and fair and did its job. {b} takes it well because there is nothing to take badly.',
-        'The read about {b} is fine. It is observant, it is delivered with timing, and it gets {b} to laugh rather than flinch. {a} was not the sharpest tongue in the room tonight but she was not the dullest one either.',
-        '{a} finds an angle on {b} and the angle works — it is not the angle everybody expected and it is not the funniest thing said in the room today, but it gets a real laugh and a real reaction and that is what {c} is scored on.',
-        '{b} laughs at {a}\'s read, and the laugh settles it. It was not the read of the night but it was a read, and a read that gets the target laughing is a read that did what {c} asks you to do.',
+        '\"{b}, that look you wore yesterday? I have thoughts. Mostly medical.\" Good laugh, honest laugh, and {b} takes it the way it was meant.',
+        '\"{b}, you are so talented. At things we have not seen yet.\" It lands, the room gives it up, and {a} sits down having done the job without doing anything more than the job.',
+        '\"{b}, I would read you but I do not want to be the third person this week.\" A cheat, and the room forgives it, because it is funny about the room rather than about {b}.',
+        '\"{b}, your makeup was beautiful today. From very far away. In the dark.\" {b} points at her and laughs and it is fine — a solid read that nobody will be quoting tomorrow.',
+        '\"{b}, do you ever get tired? Because I get tired.\" Not the sharpest thing said tonight but the timing is right and the timing carries it.',
+        '\"{b}, you are the reason the rest of us look prepared.\" A real laugh from about half the room and a wince from the other half, which averages out to a decent read.',
+        '\"{b}, I have never seen somebody work so hard to arrive in second.\" It is a good line and {a} rushes it slightly, and rushing it costs her the top of the room.',
+        '\"{b}, congratulations on your drag. Genuinely. However you got there.\" {b} laughs. So does everybody. Nobody screams, and screaming was available.',
       ]),
       tier('flat', 'It comes out mean instead of funny, or it does not come out at all.', [
-        '{a} reads {b} and the room does not laugh. The read was either too mean or too soft or too confusing, and {b} is standing there with the expression of a queen who has just been insulted without the insult having the decency to be funny.',
-        'The read misses. {a} goes after {b} and the punchline lands in the wrong place and the setup did not earn it and {b} looks at her the way you look at somebody who just tried to roast you and burned themselves instead.',
-        '{a} stands up and tries and the try is visible and the result is not. The read about {b} is vague where it should be specific, soft where it should be sharp, and the room gives her a courtesy laugh that is worse than silence.',
-        'It comes out mean. {a} goes after {b} and the room can hear that the line was supposed to be funny and was not, and the gap between intended comedy and actual cruelty is a gap the room will remember longer than {a} wants it to.',
-        '{a} reads {b} and {b} does not laugh. The silence after a flat read in {c} is the loudest silence in the werk room, because everybody heard it and everybody knows it did not work and {a} has to sit back down in the middle of that knowledge.',
-        '{a} opens her mouth and either nothing comes out or what comes out is a sentence that thinks it is funnier than it is, and {b} stands there with an expression that is not quite offended and not quite pitying and is somewhere uncomfortable between the two.',
+        '\"{b}, you are just not very good.\" There is no joke in it and the room hears that there is no joke in it, and the silence that follows costs {a} more than it costs {b}.',
+        '\"{b}, nobody here likes you.\" It is not a read, it is a sentence, and two queens actually wince. {a} realises halfway through and cannot stop.',
+        '\"{b}, your look yesterday was ugly and your look today is ugly.\" Cruel without a punchline is the one thing the library does not forgive, and the room does not give her anything for it.',
+        '\"{b}, remember when — no, sorry, hold on.\" {a} has the shape of a read and none of the words, and she gets to the end of the sentence with nothing at the end of it.',
+        '\"{b}, at least you are trying.\" Delivered like a punchline that never arrives. One person laughs, out of kindness, and the kindness is the worst part.',
+        '\"{b}, I will not say what I want to say.\" The room waits. She does not say it. A read you refuse to finish is a read you did not have.',
+      ]),
+      tier('passed', 'She stands up with nothing and the room watches her find that out.', [
+        '{a} stands up, looks straight at {b}, opens her mouth — and nothing arrives. \"I... pass.\" She sits down. The room is kind about it and the kindness is unbearable.',
+        '\"{b}. {b}. Okay. {b} is...\" {a} tries three separate openings, abandons all of them, and says \"I have nothing\" to a room that had worked that out two openings ago.',
+        '{a} gets as far as {b}\"s name and stalls completely. The pause goes past funny and out the other side. \"Next,\" she says finally, to nobody, and the host mercifully moves on.',
+        'She had one prepared and it has gone. {a} stands there searching for it with everybody watching her search, and then laughs at herself and passes, which is the most likeable thing she does all day and also a zero.',
       ]),
       tier('win', 'She had the sharpest tongue in the room and everybody now knows it.', [
-        '{a} won {c} and the win is the kind of win that follows a queen around — she had the sharpest read in a room full of sharp reads, and the room is still talking about the line she used on {b} while the host announces the prize.',
-        'The host announces {a} as the winner of {c} and nobody in the werk room argues, because {a} read every queen she was pointed at and every read was funnier than the last, and the last one is the one the room will be quoting at the mirror stations tomorrow.',
-        '{a} takes {c} and the win feels inevitable in the way only a win can feel inevitable after the fact — she was the funniest, she was the sharpest, and the gap between her reads and the next best was wide enough to be comfortable.',
-        '{a} won the reading challenge and the prize is the prize but the real prize is the room knowing that she is the queen you do not want aimed at you, and {a} knows it, and the walk back to her station has a swagger in it that was not there before.',
+        '{a} wins the library and the win is not close. She read {b} into the floor and the room has not stopped talking about it, and now she gets to decide something about the maxi on top of that.',
+        'The host does not have to think about it. {a} takes {c} and the queens applaud in the specific way a room applauds somebody who was genuinely, unarguably the funniest person in it.',
+        '{a} takes the library and the reaction is half admiration and half recalculation, because a queen who is that quick with a microphone is a queen who is going to be quick at everything else too.',
+        'It is {a}, and it was {a} from the third read onward. She collects the win with the composure of somebody who knew what she had before she stood up.',
       ]),
     ]),
   mini('puppets', 'Puppet Parody', 'targets',
@@ -205,6 +239,7 @@ export const MINI_VOICES = [
         'The puppet hangs in {a}\'s hand like what it is — felt and foam — because {a} cannot find anything to do with it. {b} watches from across the room without recognition, which is the worst outcome a puppet set can have.',
         'It is clear from the first three seconds that {a} does not have a take on {b}. The puppet flails, the voice wanders, and the room gives {a} the silence of queens who are grateful they drew a different puppet.',
       ]),
+      tier('passed', 'She has the puppet and no voice to put in it. She holds it up, says nothing anybody can use, and hands it back.', []),
       tier('win', 'She saw {b} more clearly than {b} sees herself, and made it funny.', [
         '{a} wins {c} and the win is deserved — she took a felt puppet and made it more {b} than {b} has ever been, and the room is still quoting lines from the set while the host hands out the prize.',
         'The host announces {a} as the winner and the room agrees, because {a} turned a puppet into a person and that person was {b}, rendered so accurately that {b} spent the whole set alternating between horror and hysterical laughter.',
@@ -381,6 +416,7 @@ export const MINI_VOICES = [
         '{a} answers the question about {b} and the answer is correct and delivered with the energy of a person taking an exam, and {b} stares at her with the expression of a queen who was hoping to be roasted and was instead informed.',
         '{a} tries for a joke about {b} and the joke misses, and the miss leaves her standing in the gap between what she said and what was funny, and {b} is across the room with an expression that is charitable but not amused.',
       ]),
+      tier('passed', 'She does not know, cannot make not knowing funny, and says so — which is the one answer the quiz has no points for.', []),
       tier('win', 'She understood that the quiz was not a quiz.', [
         '{a} wins {c} because she understood from the first question that accuracy was a trap, and every answer she gave was wrong and funny and specific to the queen it was about, and the room is still laughing at the answer about {b} while the host announces the prize.',
         'The host calls {a} as the winner of {c} and nobody is surprised, because {a} played every question like a setup for a punchline, and every punchline landed, and the wrong answers she gave taught the room more about the queens than the right answers ever could have.',

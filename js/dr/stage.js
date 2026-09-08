@@ -895,11 +895,28 @@ export function renderChallengeBeats({
        Screen time is unequal by EARNING it — the tier a queen lands in
        decides how much the card says about her, which is what the tiers
        were for. */
-    for (const n of living) {
+    /* ── ONE QUEEN AT A TIME, IN THE ORDER SHE IS CALLED ──
+       A targeting mini is taken in turns and the turn IS the format: the host
+       names her, she stands up, she says her one thing to somebody's face.
+       This rendered as thirteen simultaneous attempts in `living` order, so
+       the running order — first up, and the last one everybody has been
+       waiting for — reached the screen as nothing at all. */
+    const order = miniNamesOther(mini.id) && Array.isArray(mini.turnOrder)
+      ? mini.turnOrder.filter(n => living.includes(n)) : living;
+
+    for (const n of order) {
       if (miniScores[n] === undefined) continue;
       const other = otherFor(n);
-      mEmit('mini-attempt', tierAt(fractionalRank(n, miniScores), MINI_TIERS),
-        other ? [n, other] : [n], { target: other });
+      const d = miniDetail[n] || {};
+      if (d.position) {
+        mEmit('mini-turn', d.position, [n], { turn: d.turn, position: d.position });
+      }
+      // She stood up and had nothing, which is its own result and was
+      // unreachable while the floor of the pool was "a read that missed".
+      const tierId = d.passed
+        ? 'passed' : tierAt(fractionalRank(n, miniScores), MINI_TIERS);
+      mEmit('mini-attempt', tierId, other ? [n, other] : [n],
+        { target: other, passed: !!d.passed, position: d.position || null });
     }
     if (miniWinner) {
       const other = otherFor(miniWinner);

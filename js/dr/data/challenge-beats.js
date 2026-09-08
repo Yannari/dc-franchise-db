@@ -97,6 +97,50 @@ export const CHALLENGE_BEATS = [
       "She announces the mini with the energy of somebody setting off a party popper in an office. The rules are simple, the timeline is short, the prize is worth having, and the whole thing exists to remind everybody that this is supposed to be fun before the maxi reminds them that it is not.",
     ])],
   },
+  /* ── THE HOST CALLS THE NEXT QUEEN UP ──
+     A targeting mini is taken in turns and the turn is the format: one queen
+     at a time, named out loud, standing up in front of everybody. "First
+     up..." and "And last but not least..." are not decoration — the last read
+     of the night is the one the room has been waiting for, and none of that
+     reached the screen because the segment was rendered as thirteen
+     simultaneous attempts. */
+  {
+    id: 'mini-turn', step: 'mini', scope: 'per-queen', speaker: 'host',
+    /* AN ANNOUNCEMENT IS NOT A PARAGRAPH. Every other pool in this file is
+       held to eighty characters because a one-liner there is a caption
+       pretending to be a scene. This beat's whole job is a name shouted over
+       a noisy room — "And last but not least... {a}!" is thirty-two
+       characters and is exactly right, and padding it to reach a floor
+       written for paragraphs would make it worse. */
+    announcement: true,
+    note: 'The host names the next queen to take her turn. Short and loud — '
+      + 'this is an announcement, not a paragraph. {a} is the queen called.',
+    tierBy: 'position',
+    tiers: [
+      tier('first', 'The first queen up, and the room does not know what to expect yet.', [
+        "\"First up...\" The host lets the pause do the work, because the pause is half of it. \"It is {a}!\" The room makes a noise it will make twelve more times tonight.",
+        "\"Opening the library for us tonight — {a}!\" The room is already screaming before she is out of her chair.",
+        "\"We begin with {a}.\" Said flatly, which somehow raises the stakes rather than lowering them.",
+        "\"Let us start where it hurts. {a}!\" The host is enjoying this more than anybody.",
+        "\"The library is open, and first through the door is {a}!\" Somebody at the back shouts something encouraging and somebody else shouts something that is not.",
+      ]),
+      tier('next', 'One of the middle. The rhythm is established and she has to keep it.', [
+        "\"Next is... {a}!\" The host says it over the noise of the last one, which is the only way to get through thirteen of these.",
+        "\"Following that — and good luck — {a}.\"",
+        "\"Up next, {a}!\" The host does not have to raise her voice; the room does it for her.",
+        "\"And now {a}.\" A beat. \"No pressure.\"",
+        "\"Keep it going. {a}!\" The host is running this like a room she has run a hundred times, because she has.",
+        "\"Next up... {a}!\" The queen before her sits down still laughing.",
+      ]),
+      tier('last', 'The last one, and everybody has been waiting to see what she does.', [
+        "\"And last but not least... {a}!\"",
+        "\"Closing the library tonight — {a}.\" Everybody has been waiting for this one.",
+        "\"Last one. {a}, the room is yours.\" And it is, briefly, and everybody in it is looking at her.",
+        "\"And finally, {a}!\" She stands up like somebody who has been saving something.",
+        "\"To close us out... {a}!\" The host sits back. She knows what is coming.",
+      ]),
+    ],
+  },
   {
     id: 'mini-attempt', step: 'mini', scope: 'per-queen', speaker: 'narrator',
     note: 'Her go at it. One beat per queen who attempts, tiered by how it went.',

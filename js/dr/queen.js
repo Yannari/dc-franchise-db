@@ -26,8 +26,13 @@ export const DRAG_STATS = ['acting', 'comedy', 'dance', 'design', 'runway', 'lip
 export const DRAG_STYLES = ['pageant', 'comedy', 'fashion', 'camp', 'club-kid', 'spooky',
   'broadway', 'dancer', 'glamour', 'art'];
 
-export const DRAG_TRAITS = ['padded', 'bearded', 'big-wigs', 'high-concept', 'seamstress',
-  'choreographer', 'hometown-pageant', 'live-vocalist', 'stunt-queen', 'body', 'face', 'wit'];
+export const DRAG_TRAITS = [
+  'padded', 'bearded', 'big-wigs', 'high-concept', 'seamstress',
+  'choreographer', 'hometown-pageant', 'live-vocalist', 'stunt-queen',
+  'body', 'face', 'wit', 'look-queen', 'camp-queen', 'shade-queen',
+  'reveal-queen', 'crafty', 'impersonator', 'splits-and-dips',
+  'pageant-polished', 'punk', 'androgynous', 'glamazon', 'narrator',
+];
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const toStat = v => {
@@ -87,7 +92,10 @@ const ARCH_STAR = {
 };
 
 // Traits that read on camera before she has done anything.
-const LOOK_TRAITS = new Set(['padded', 'body', 'face', 'big-wigs', 'bearded']);
+const LOOK_TRAITS = new Set([
+  'padded', 'body', 'face', 'big-wigs', 'bearded',
+  'look-queen', 'glamazon', 'reveal-queen', 'pageant-polished',
+]);
 
 /**
  * How much the show WANTS her, in [0, 10]. Hidden from the cast and from every

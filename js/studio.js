@@ -159,8 +159,13 @@ function _queenNameOptions() {
   return names.map(n => `<option value="${_esc(n)}"></option>`).join('');
 }
 
-const DRAG_TRAIT_LIST = ['padded', 'bearded', 'big-wigs', 'high-concept', 'seamstress',
-  'choreographer', 'hometown-pageant', 'live-vocalist', 'stunt-queen', 'body', 'face', 'wit'];
+const DRAG_TRAIT_LIST = [
+  'padded', 'bearded', 'big-wigs', 'high-concept', 'seamstress',
+  'choreographer', 'hometown-pageant', 'live-vocalist', 'stunt-queen',
+  'body', 'face', 'wit', 'look-queen', 'camp-queen', 'shade-queen',
+  'reveal-queen', 'crafty', 'impersonator', 'splits-and-dips',
+  'pageant-polished', 'punk', 'androgynous', 'glamazon', 'narrator',
+];
 const FAMILY_RELS = ['mother', 'daughter', 'sister', 'grandmother', 'granddaughter', 'aunt', 'niece', 'cousin'];
 
 function _normFamily(fam) {
@@ -175,7 +180,8 @@ function _normFamily(fam) {
 }
 
 function _renderFamilyLinks(d) {
-  const links = _normFamily(d.drag && d.drag.family);
+  const raw = d.drag && d.drag.family;
+  const links = Array.isArray(raw) ? raw.filter(l => l && l.rel) : _normFamily(raw);
   if (!links.length) return '<div class="st-hint" style="margin:4px 0 2px">No family links yet.</div>';
   return links.map((l, i) => `<div class="st-fam-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;margin:3px 0">
     <input class="st-input st-fam-name" list="st-queen-names" value="${_esc(l.name)}" placeholder="Queen name" style="flex:1">

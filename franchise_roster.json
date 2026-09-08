@@ -5288,6 +5288,25 @@
       "backstory": "Before appearing on the show, Samuel “Sami” Thitivoranan worked as a risk analyst, a job his coworkers considered him very good at. He has been married at some point, enjoys working out at the gym, puzzles, surfing, psychological horror movies, and Thai foods such as mango sticky rice and Tom Yum Goong. His childhood tastes included Rocko’s Modern Life, and his interests suggest someone analytical, social, and comfortable mixing practical routines with geeky hobbies.",
       "personality": "Sami presents himself as chill, laid back, and easy to connect with, but under pressure he becomes a careful schemer. He is good at reading people and situations, using charm and analysis to stay near power without taking visible blame. His loyalty is pragmatic rather than sentimental: he will work with people when it benefits him, but he will not hesitate to hide his intentions, deny manipulation, or double down when sharper players begin to see through him. He is also easily frightened, which gives his calm persona a more vulnerable edge.",
       "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Analytical, charming, dangerous.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"I think I got picked because I look calm, but there’s a lot going on behind the eyes. I’m a risk analyst for a living, so I’m literally paid to figure out which bad idea has the best upside.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part will be not having clean separation between game and personal space. I can handle pressure, but if someone is chewing loudly, crying theatrically, and blocking my path to the bathroom, my odds of staying zen drop fast.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to make people feel like keeping me is the safe move, even when it isn’t. I want to build trust early, gather information quietly, and only make a bold move when the reward is worth the exposure.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m approachable and useful; I can cook, listen, work out, solve puzzles, whatever makes me valuable. I’d like to hide how comfortable I am with cutting a deal loose when the numbers stop making sense, because people get emotional about that for some reason.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A deck of cards, because games reveal people faster than conversations do.\\n- A photo from home, because I’m not completely made of spreadsheets and bad intentions.\\n- Chili flakes, because bland food is not a hardship I’m interested in pretending is character-building.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I’m big on the gym, puzzles, surfing when I can, and psychological horror movies when I want to relax in the least relaxing way possible. I also love Thai food — mango sticky rice, Tom Yum Goong, all of it — and I have a soft spot for weird cartoons from when I was a kid.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Drama is useful until it becomes radioactive. If people want to fight, I’ll usually let them, take notes, and decide whether stepping in improves my position or just gets sauce on my shirt.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"I’m not going in looking for one, but I’m also not going to pretend I’m immune to charm and bad decisions. The risk is obvious, though: feelings make people sloppy, and I prefer other people being sloppy.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if you’re going to gamble, at least know the odds.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I want to test whether my instincts are as good under pressure as they are on paper. Also, I’d like a story big enough that it scares me a little to tell it later.\"}]"
+    },
+    {
+      "name": "Anita Crown Davenport",
+      "slug": "anita-crown-davenport",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 3,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 3,
+        "temperament": 4
+      },
+      "profileSources": {}
     }
   ]
 }

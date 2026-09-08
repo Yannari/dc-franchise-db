@@ -68,8 +68,37 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   const used = new Set();
   for (const p of Object.values(byEp)) if (p.maxiId) used.add(p.maxiId);
 
-  // Where the tentpoles land. Anything already pinned is not booked twice.
+  /* ── WHERE THE TENTPOLES LAND ──
+     Anything already pinned is not booked twice.
+
+     AND WHEN THEY DO NOT ALL FIT, THE ONE THAT MISSES OUT IS DRAWN. There
+     are six tentpoles and only episodes 2..N-2 can hold one, so a season
+     shorter than fourteen queens has fewer slots than tentpoles and somebody
+     has to be left out. This walked TENTPOLES in array order and broke when
+     the slots ran out, so the ARRAY'S OWN ORDER decided who was cut — the
+     same challenge, every season, for every seed. Measured over 20 seasons
+     per cast size:
+
+       cast 12 (8 eps, 5 slots): the Rusical missed 20 times out of 20
+       cast 10 (6 eps, 3 slots): Makeover, Roast and Rusical, 20 out of 20
+       cast  8 (4 eps, 1 slot):  only the Snatch Game EVER happened
+
+     So the Rusical was unreachable on a twelve-queen season and four of the
+     six were unreachable on an eight — not rare, absent.
+
+     THE FOUR BURNED DRAWS ARE LOAD-BEARING. See js/dr/rng.js: the LCG's
+     first draw is a linear function of the seed, so a fresh stream opens on
+     almost the same number every time and Math.floor(rng() * 6) is 1 for
+     every seed from 1 to 20. The schedule is the first thing a season
+     decides, so it reads that unmixed head — and the shuffle put the same
+     tentpole last in all forty seasons, which is the bug it was added to
+     fix. Four draws in, the stream is mixed. */
   const tentpolesLeft = TENTPOLES.filter(t => !used.has(t));
+  rng(); rng(); rng(); rng();
+  for (let i = tentpolesLeft.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [tentpolesLeft[i], tentpolesLeft[j]] = [tentpolesLeft[j], tentpolesLeft[i]];
+  }
   const slots = [];
   for (let e = 2; e <= episodes - 2; e++) if (!byEp[e]?.maxiId) slots.push(e);
   const tentpoleAt = {};

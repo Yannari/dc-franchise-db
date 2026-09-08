@@ -3008,11 +3008,21 @@ function _drPickers(ep) {
   const pool = (typeof FRANCHISE_ROSTER !== 'undefined' && FRANCHISE_ROSTER && FRANCHISE_ROSTER.players) || [];
   const castNames = new Set((typeof players !== 'undefined' ? players : []).map(p => p.name));
 
+  /* THE STAR MEANS TENTPOLE, and nothing on this screen said so. Six of the
+     nineteen maxi challenges are the ones the schedule books once every
+     season on its own — the Snatch Game, the Ball, Girl Group, Makeover, the
+     Roast and the Rusical — and they sort to the top of this list with a
+     star. The other thirteen fill whatever slots are left. Pinning one here
+     takes it out of the automatic booking, so it runs on the week you chose
+     instead of a week the schedule picked. */
   return sel('maxiId',
     [['', '— maxi: schedule decides —'],
       ...tent.map(m => [m.id, '★ ' + m.name]),
       ...rest.map(m => [m.id, m.name])],
-    e.maxiId || '', 'Which maxi challenge runs this week')
+    e.maxiId || '',
+    'Which maxi challenge runs this week. ★ marks a tentpole: one of the six '
+    + 'the schedule books once a season by itself. Pinning one here moves it '
+    + 'to this week instead.')
     + sel('miniId',
       [['', '— mini: random —'], ['none', 'No mini challenge'], ...minis.map(m => [m.id, m.name])],
       e.miniId === null ? 'none' : (e.miniId || ''), 'The mini challenge, and what winning it buys')

@@ -492,3 +492,34 @@ describe('the format is announced', () => {
     expect(call.data.tier, 'the call said one queen stays').toBe('double-elimination');
   });
 });
+
+describe('EVERY TENTPOLE IS REACHABLE', () => {
+  /* The six starred challenges are the ones the schedule promises once a
+     season. Below a fourteen-queen cast there are fewer slots (episodes
+     2..N-2) than tentpoles, so one has to be left out — and it was ALWAYS
+     THE SAME ONE, because the loop walked the TENTPOLES array in order and
+     stopped when the slots ran out. Measured over 20 seasons per cast size:
+
+       cast 12: the Rusical missed 20 out of 20
+       cast 10: Makeover, Roast and Rusical, 20 out of 20
+       cast  8: only the Snatch Game ever happened
+
+     Not rare — absent, for every seed, forever. Which one misses out is now
+     drawn instead. This test does not care WHICH is dropped; it cares that
+     none of the six is unreachable. */
+  for (const castSize of [10, 12, 14]) {
+    it(`books every tentpole at least once across seasons of ${castSize}`, () => {
+      const eps = episodesFor(castSize);
+      const booked = Object.fromEntries(TENTPOLES.map(t => [t, 0]));
+      const N = 25;
+      for (let seed = 1; seed <= N; seed++) {
+        const sch = buildSchedule({ episodes: eps, castSize, pinned: [], rng: rngFor(seed) });
+        for (const id of new Set(sch.map(e => e.maxiId))) {
+          if (booked[id] !== undefined) booked[id]++;
+        }
+      }
+      const never = Object.entries(booked).filter(([, v]) => v === 0).map(([k]) => k);
+      expect(never, `unreachable on a cast of ${castSize}`).toEqual([]);
+    });
+  }
+});

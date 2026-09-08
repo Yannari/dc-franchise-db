@@ -158,7 +158,46 @@ export const WERK_CSS = `
    rather than by a flag somebody has to remember to pass. */
 .dr-card:has(.dr-two){border-style:dashed;
   background:color-mix(in srgb, var(--dr-accent,#7B2FF7) 9%, transparent)}
-.dr-two{display:flex;gap:8px}
+/* ══ TWO QUEENS, AND WHAT THE SCENE DID TO THEM ══
+   A pair card draws the bond as a line between the faces: green where the
+   scene brought them together, red where it did not. The delta is already
+   on the event and was only ever spent on a chip underneath the prose, so
+   the shape of the room had to be read rather than seen. */
+.dr-two{position:relative;display:flex;gap:14px;align-items:center}
+.dr-pair .dr-two::before{content:"";position:absolute;left:50%;top:50%;
+  width:14px;height:2px;transform:translate(-50%,-50%);
+  background:rgba(255,255,255,.22);border-radius:2px}
+.dr-pair.dr-warm .dr-two::before{background:#3BE08A;
+  box-shadow:0 0 10px rgba(59,224,138,.8)}
+.dr-pair.dr-cold .dr-two::before{background:#FF294B;
+  box-shadow:0 0 10px rgba(255,41,75,.8)}
+/* The line draws itself as the card lands. */
+.dr-step.dr-vis .dr-pair .dr-two::before{animation:drTie .45s ease-out both .15s}
+@keyframes drTie{from{transform:translate(-50%,-50%) scaleX(0)}
+  to{transform:translate(-50%,-50%) scaleX(1)}}
+/* A pair that fell out leans away from each other. */
+.dr-pair.dr-cold .dr-two .dr-bust:first-child{transform:rotate(-2.5deg)}
+.dr-pair.dr-cold .dr-two .dr-bust:last-child{transform:rotate(2.5deg)}
+
+/* ══ A CONFESSIONAL IS A CAMERA LOOKING AT HER ══
+   Corner marks and a tally, so a piece to camera reads as one rather than
+   as another paragraph with a red dot in the corner. */
+.dr-confess{position:relative}
+.dr-vf{position:absolute;width:14px;height:14px;border:2px solid rgba(255,184,221,.5);
+  pointer-events:none}
+.dr-vf-tl{top:7px;left:7px;border-right:0;border-bottom:0}
+.dr-vf-tr{top:7px;right:7px;border-left:0;border-bottom:0}
+.dr-vf-bl{bottom:7px;left:7px;border-right:0;border-top:0}
+.dr-vf-br{bottom:7px;right:7px;border-left:0;border-top:0}
+
+/* The consequence lands after the sentence that caused it. */
+.dr-step.dr-vis .dr-bond-row{animation:drChip .4s ease-out both .28s}
+@keyframes drChip{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+@media(prefers-reduced-motion:reduce){
+  .dr-step.dr-vis .dr-pair .dr-two::before,
+  .dr-step.dr-vis .dr-bond-row{animation:none}
+}
 .dr-note{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#C9A6BC}
 
 /* ── BOND ARROWS ── what the scene actually cost ── */
@@ -225,9 +264,14 @@ function station(name, ep, { size = 62, dark = false } = {}) {
  * Matched on the scene's KIND, because `dr.events` carries the same kind
  * string. Nothing is recomputed and nothing is inferred from the prose.
  */
-function consequences(row, sc) {
-  const ev = (row?.dr?.events || []).find(e => (e.type || e.kind) === sc.kind
+/** The engine event this scene narrates, if it has one. */
+function eventFor(row, sc) {
+  return (row?.dr?.events || []).find(e => (e.type || e.kind) === sc.kind
     && String((e.players || []).join()) === String((sc?.data?.players || []).join()));
+}
+
+function consequences(row, sc) {
+  const ev = eventFor(row, sc);
   if (!ev) return '';
   const bits = [];
   for (const [a, b, d] of ev.bond || []) {
@@ -254,9 +298,26 @@ function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
     : '';
   const first = String(players[0] || '');
   const opens = first && String(sc.text || '').split(/(?<=[.!?])\s/)[0].includes(first);
+
+  /* WHAT KIND OF SCENE THIS IS, drawn rather than described. Every card in
+     the werk room looked the same whatever was happening in it — a
+     confessional to camera, two queens falling out, and one queen sewing
+     alone are three different shots and the screen gave them one frame.
+     A CONFESSIONAL is a camera looking at her: a viewfinder, corner marks
+     and a running tally light. A PAIR is two faces with the bond between
+     them drawn as a line — green when the scene brought them together, red
+     when it did not — so you can read the room from the shapes before you
+     read a word. */
+  const ev = eventFor(row, sc);
+  const bondDelta = Number((ev?.bond || [])[0]?.[2]) || 0;
+  const pairCls = players.length > 1
+    ? ` dr-pair${bondDelta > 0 ? ' dr-warm' : bondDelta < 0 ? ' dr-cold' : ''}` : '';
+
   return `<div class="dr-step" id="dr-step-${suffix}-${i}">
-    <div class="dr-panel ${accent} dr-card${confess ? ' dr-confess' : ''}">
-      ${confess ? '<span class="dr-rec"><i></i>REC</span>' : ''}
+    <div class="dr-panel ${accent} dr-card${confess ? ' dr-confess' : ''}${pairCls}">
+      ${confess ? `<span class="dr-rec"><i></i>REC</span>
+        <span class="dr-vf dr-vf-tl"></span><span class="dr-vf dr-vf-tr"></span>
+        <span class="dr-vf dr-vf-bl"></span><span class="dr-vf dr-vf-br"></span>` : ''}
       ${busts}
       <div>
         ${players.length ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : ''}

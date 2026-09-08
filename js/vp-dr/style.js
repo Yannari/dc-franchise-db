@@ -55,11 +55,37 @@ export const DR_CSS = `
      screen ran wider than every other show and ignored the reader's own mode
      switch. The shell emits .rp-page now and inherits it. */
   position:relative;z-index:2;max-width:100%;margin:0 auto;padding:18px 18px 96px;
-  color:var(--dr-text);font:15px/1.55 'Helvetica Neue',Helvetica,Arial,sans-serif}
-.dr-disp{font-family:Impact,Haettenschweiler,'Arial Narrow Bold','Franklin Gothic Bold',sans-serif;
-  letter-spacing:.02em;text-transform:uppercase;font-weight:400}
-.dr-fash{font-family:Didot,'Bodoni MT','Playfair Display',Georgia,'Times New Roman',serif;font-style:italic}
-.dr-num{font-variant-numeric:tabular-nums}
+  color:var(--dr-text);font:400 15.5px/1.62 'DM Sans','Helvetica Neue',Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+/* ══ THE TYPE ══ and this was the whole "it looks like 2006" ══
+   simulator.html has been loading Anton, DM Sans and Space Mono from Google
+   Fonts for the life of the project, and these screens used NONE of them.
+   The display face was Impact — a system font from 1992, whose real problem
+   is not age but that it is the default everybody has seen a million times —
+   and the body ran in Helvetica Neue falling through to Arial. The fashion
+   face asked for Didot and Bodoni MT, neither of which ships on Windows, so
+   every serif line on every screen was rendering as Times New Roman.
+
+   Three faces now, and each has a job:
+     ANTON            the display face. Condensed, heavy, made for exactly
+                      this — a name across a stage.
+     PLAYFAIR DISPLAY the fashion serif, with real italics and a 900 weight,
+                      for a category and for anything anybody SAYS.
+     DM SANS          the body. It has a proper 300 and a true optical size,
+                      which is what makes long prose read as designed rather
+                      than as a browser default.
+   Space Mono carries the numbers, because a score is data and should look
+   like it rather than like a word. */
+.dr-disp{font-family:'Anton','Archivo Black',Impact,'Arial Narrow Bold',sans-serif;
+  letter-spacing:.012em;text-transform:uppercase;font-weight:400}
+.dr-fash{font-family:'Playfair Display',Didot,Georgia,serif;font-style:italic;
+  font-weight:500}
+.dr-num,.dr-score,.dr-runscore,.dr-counter{
+  font-family:'Space Mono','SF Mono',Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+/* Anything quoted is spoken, and speech is set in the serif everywhere. */
+.dr-said,.dr-vn q,.cr-said q,.dr-hold p{font-family:'Playfair Display',Georgia,serif}
 
 /* THE ATMOSPHERE IS STICKY, NOT FIXED, and that is the whole difference.
    .rp-main is the scroll container (flex:1; overflow-y:auto), so its scrollbar
@@ -190,15 +216,35 @@ export const DR_CSS = `
 .dr-c-elim{background:#7f1d1d;color:#fecaca}
 
 /* ── STEPS: hidden until revealed, and they RISE rather than blink in ── */
-.dr-step{opacity:0;transform:translateY(14px);transition:opacity .45s ease,transform .45s ease;
-  margin:14px 0}
+/* ══ HOW A CARD ARRIVES ══ and this was the whole "static" ══
+   A fourteen-pixel fade is not an entrance, it is a card apologising for
+   being there. This one comes UP and OUT: slightly further, slightly
+   scaled, on a spring rather than a linear ease, with the panel's own edge
+   lighting up a beat behind it — so the eye is told where to look instead
+   of noticing later that something changed.
+   Everything is still finished within half a second: a reader clicking
+   through sixteen cards must never wait on the animation. */
+.dr-step{opacity:0;transform:translate3d(0,26px,0) scale(.985);
+  transition:opacity .34s ease,transform .46s cubic-bezier(.16,1,.3,1);
+  margin:14px 0;will-change:opacity,transform}
 .dr-step.dr-vis{opacity:1;transform:none}
+/* The edge catches the light a beat after the card lands. */
+.dr-step .dr-panel{box-shadow:0 0 0 rgba(255,61,154,0);
+  transition:box-shadow .5s ease .18s}
+.dr-step.dr-vis .dr-panel{box-shadow:-1px 0 0 rgba(255,61,154,.5),
+  0 14px 34px -20px rgba(0,0,0,.9)}
+
+/* THE NEWEST CARD IS THE ONE BEING READ. Every card before it settles back
+   a little, so the column has a focus instead of being a wall of equals —
+   the same thing a camera does when it holds on somebody. */
+.dr-step.dr-vis{filter:none}
+.dr-step.dr-vis:not(:last-of-type){opacity:.94}
 
 /* ── STICKY CONTROLS ── */
 .dr-controls{position:fixed;left:0;right:0;bottom:0;z-index:80;display:flex;gap:12px;
   align-items:center;justify-content:center;padding:12px;
   background:linear-gradient(180deg,rgba(10,2,7,0),rgba(10,2,7,.97) 40%)}
-.dr-btn{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;letter-spacing:.06em;
+.dr-btn{font-family:'Anton','Archivo Black',Impact,sans-serif;letter-spacing:.06em;
   text-transform:uppercase;font-size:16px;padding:11px 26px;cursor:pointer;border:none;color:#fff;
   background:linear-gradient(90deg,var(--dr-red,#FF294B),var(--dr-violet,#7B2FF7));
   clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);
@@ -214,7 +260,8 @@ export const DR_CSS = `
 
 @media(prefers-reduced-motion:reduce){
   .dr-wrap *,.dr-wrap *::before,.dr-wrap *::after{animation:none!important;transition:none!important}
-  .dr-step{opacity:1;transform:none}
+  .dr-step{opacity:1;transform:none;transition:none}
+  .dr-step .dr-panel{transition:none}
 }
 @media(max-width:900px){.dr-game{grid-template-columns:1fr}.dr-rail{position:static}
   .dr-hud{grid-template-columns:1fr}}

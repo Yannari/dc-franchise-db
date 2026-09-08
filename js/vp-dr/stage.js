@@ -118,12 +118,15 @@ export const STAGE_CSS = `
    of whoever is speaking about the current queen comes up in the light and
    the others go back — which is what a bench looks like on the night. */
 .dr-bench{position:sticky;top:0;z-index:6;display:flex;justify-content:center;
-  gap:26px;padding:16px 18px 0;margin:0 0 20px;
+  gap:26px;padding:16px 18px 0;margin:0 0 20px;align-items:flex-end;
   background:radial-gradient(120% 130% at 50% 0%,rgba(255,61,154,.16),transparent 62%),
     linear-gradient(180deg,#22091A,#12040C 78%,rgba(8,2,5,.96));
   border-bottom:1px solid rgba(255,61,154,.28);
   box-shadow:0 18px 38px -22px rgba(0,0,0,.95)}
-.dr-seat-j{position:relative;z-index:2;width:132px;text-align:center;padding-bottom:16px;
+/* THE DESK WAS EATING THE NAMES. It is a 22px bar pinned to the bottom of
+   the bench, and the seats only reserved 16px, so a judge's taste line ran
+   under it and the longer ones were cut in half. */
+.dr-seat-j{position:relative;z-index:2;width:132px;text-align:center;padding-bottom:30px;
   opacity:.45;filter:grayscale(.7);transition:opacity .35s,filter .35s,transform .35s}
 .dr-seat-j.on{opacity:1;filter:none;transform:translateY(-4px)}
 .dr-seat-j .dr-por{margin:0 auto;border:2px solid rgba(255,255,255,.22)}

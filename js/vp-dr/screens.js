@@ -468,7 +468,12 @@ export const DRAG_SCREENS = [
 export function dragScreens(row) {
   return DRAG_SCREENS
     .filter(s => s.when(row))
-    .map(s => ({ id: s.id, label: s.label, html: s.build(row) }))
+    /* `icon` TRAVELS WITH THE SCREEN. This is the second mapper in this file
+       to rebuild a screen into a smaller shape and drop the field on the way
+       — the reader gets whatever these object literals name and nothing
+       else, which is how twenty-eight icons reached the sidebar as nothing,
+       twice. */
+    .map(s => ({ id: s.id, label: s.label, icon: s.icon, html: s.build(row) }))
     .filter(s => s.html);
 }
 
@@ -488,7 +493,7 @@ export function dragScreensRevealed(row) {
     if (!html) return null;
     const total = (sceneSections(shadow).get(s.id) || []).length;
     if (total && typeof window !== 'undefined') _state(shadow, s.suffix).idx = total - 1;
-    return { id: s.id, label: s.label, html };
+    return { id: s.id, label: s.label, icon: s.icon, html };
   }).filter(Boolean);
   return out;
 }

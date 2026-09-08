@@ -85,8 +85,16 @@ describe('the critiques', () => {
     // Every deliberation scene reaches the screen, not just the first.
     for (const sc of (row.dr.scenes || [])) {
       if (!/^stage:deliberation/.test(sc.kind || '') || !sc.text) continue;
-      expect(html, `"${sc.kind}" fired and was drawn nowhere`)
-        .toContain(sc.text.slice(0, 40).replace(/&/g, '&amp;'));
+      /* ESCAPED THE SAME WAY THE SCREEN ESCAPES IT. This escaped `&` and
+         stopped, so a deliberation line that opens on a quotation mark —
+         "I disagree." is one of the written variants — was rendered
+         perfectly and reported as drawn nowhere, because `esc()` had turned
+         its first character into &quot; and the raw string no longer
+         matched. The screen was right and the assertion was reading it
+         wrong. */
+      const asDrawn = sc.text.slice(0, 40).replace(/[&<>"]/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      expect(html, `"${sc.kind}" fired and was drawn nowhere`).toContain(asDrawn);
     }
     // And the dismissed queens are named on it, or they vanish from the night.
     for (const n of safe) expect(html, `${n} was dismissed and never named`).toContain(n);

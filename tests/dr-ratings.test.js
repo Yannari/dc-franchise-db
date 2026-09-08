@@ -81,8 +81,19 @@ describe('the placements reader', () => {
        scene kind matches), and `twist` (a season played with no pinned
        twists has none). Everything else must fire. */
     const ALLOWED_ZERO = new Set(['returns', 'showmance', 'twist']);
-    const dead = SIGNALS.filter(k => !ALLOWED_ZERO.has(k) && read.every(s => s[k] === 0));
-    expect(dead, `never once fired: ${dead.join(', ')}`).toEqual([]);
+    /* ACROSS SEVERAL SEASONS, NOT ONE. The claim is that a signal is
+       REACHABLE — that something in this show can move it — and one seeded
+       season is not evidence either way for the rarer ones. `powerShift`
+       fires when a queen who was in the bottom wins the next week, or one
+       of the top three crashes into it; that is a real thing this format
+       does and it simply did not happen in season four, so a test pinned to
+       season four reported the signal as dead the first time the RNG stream
+       moved under it. Four seasons, and a signal that never fires in any of
+       them is genuinely unreachable. */
+    const across = [4, 5, 6, 7].map(seed => readAll(seed));
+    const dead = SIGNALS.filter(k => !ALLOWED_ZERO.has(k)
+      && across.every(one => one.every(s => s[k] === 0)));
+    expect(dead, `never once fired in four seasons: ${dead.join(', ')}`).toEqual([]);
   });
 
   it('reads the HOST OVERRULING THE PANEL as this show\'s surprise', () => {

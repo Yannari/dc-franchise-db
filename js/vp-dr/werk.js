@@ -149,11 +149,39 @@ export const WERK_CSS = `
 .dr-shop-mirror{background:linear-gradient(180deg,rgba(255,233,168,.16),transparent 38%),
   linear-gradient(0deg,rgba(0,0,0,.55),transparent 55%)}
 .dr-shop-mirror .dr-shop-mirrors{opacity:1}
-.dr-card{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start;
-  padding:15px 17px 15px 21px}
-.dr-card p{margin:6px 0 0;color:#f4e3ed;text-wrap:pretty}
-.dr-card h3{margin:0;font-size:17px;text-wrap:balance}
-@container (max-width:430px){.dr-card{grid-template-columns:1fr}}
+/* ══ THE CARD ══ a surface, not a rectangle ══
+   Every card sat flat at the same height in the same shape. A werk room
+   card is a lit surface in a dark room: it gets a top edge catching the
+   light, a floor shadow under it, and a layout chosen by what KIND of shot
+   it is — see sceneCard. */
+.dr-card{position:relative;display:grid;grid-template-columns:auto 1fr;gap:16px;
+  align-items:start;padding:16px 18px 16px 22px;
+  background:linear-gradient(180deg,rgba(255,255,255,.055),transparent 42%),var(--dr-panel);
+  box-shadow:0 18px 30px -26px rgba(0,0,0,.95)}
+.dr-card::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),transparent)}
+.dr-card p{margin:8px 0 0;color:#f4e3ed;text-wrap:pretty;max-width:74ch}
+.dr-card h3{margin:0;font-size:19px;line-height:1.1;text-wrap:balance}
+
+/* CONFESSIONAL — a piece to camera. Her face is the shot and the words are
+   speech, so they are set as speech. */
+.dr-k-confess{grid-template-columns:auto 1fr;gap:20px;
+  background:linear-gradient(180deg,rgba(255,61,154,.10),transparent 55%),var(--dr-panel)}
+.dr-k-confess .dr-mirror .dr-por{width:78px!important;height:78px!important}
+.dr-k-confess p{font-family:'Playfair Display',Georgia,serif;font-size:17.5px;
+  line-height:1.5;color:#ffe4f2}
+
+/* PAIR — two mirrors side by side, facing each other, prose beneath. */
+.dr-k-pair{grid-template-columns:1fr;gap:10px}
+.dr-pairtop{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.dr-k-pair .dr-two .dr-bust:first-child .dr-por{transform:scaleX(-1)}
+
+/* SOLO — one queen at her station. */
+.dr-k-solo .dr-mirror .dr-por{width:62px!important;height:62px!important}
+
+@container (max-width:430px){
+  .dr-card,.dr-pairtop{grid-template-columns:1fr}
+}
 /* A scene naming two queens IS a social card — decided by the markup it has
    rather than by a flag somebody has to remember to pass. */
 .dr-card:has(.dr-two){border-style:dashed;
@@ -163,6 +191,17 @@ export const WERK_CSS = `
    scene brought them together, red where it did not. The delta is already
    on the event and was only ever spent on a chip underneath the prose, so
    the shape of the room had to be read rather than seen. */
+/* HER MIRROR, WITH BULBS. The werk room's signature object is a lit mirror
+   and the portraits sat in a plain square — the one prop the room is known
+   for was the one thing not drawn. */
+.dr-mirror{position:relative;display:inline-block;padding-top:7px}
+.dr-mirror::before{content:"";position:absolute;top:0;left:6%;right:6%;height:3px;
+  border-radius:2px;
+  background:repeating-linear-gradient(90deg,#FFE9A8 0 4px,transparent 4px 11px);
+  opacity:.55;box-shadow:0 0 9px rgba(255,200,61,.5)}
+.dr-mirror .dr-por{border:1px solid rgba(255,233,168,.35)}
+.dr-mirror.dr-dark::before{opacity:.14;box-shadow:none}
+
 .dr-two{position:relative;display:flex;gap:14px;align-items:center}
 .dr-pair .dr-two::before{content:"";position:absolute;left:50%;top:50%;
   width:14px;height:2px;transform:translate(-50%,-50%);
@@ -313,18 +352,40 @@ function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
   const pairCls = players.length > 1
     ? ` dr-pair${bondDelta > 0 ? ' dr-warm' : bondDelta < 0 ? ' dr-cold' : ''}` : '';
 
+  /* ── FOUR SHOTS, FOUR LAYOUTS ──
+     Colour alone was not enough: every card was the same rectangle at the
+     same height whatever was happening in it, so the column read as one
+     long thing. These are four different shots and they are laid out as
+     four different shots.
+
+       (There is no room-wide variant. One was written — no portrait,
+       centred, an establishing beat — and then measured: of 185 werk scenes
+       across a season, 185 name somebody and none name nobody. A branch for
+       a case the engine never produces is the exact bug this codebase is
+       built to avoid, so it is not here.)
+       CONFESSIONAL  a piece to camera: her face big on the left, the words
+              set as speech in the serif, viewfinder and tally around it.
+       PAIR   two mirrors side by side, the queens facing each other across
+              the tie, the prose full width beneath them.
+       SOLO   one queen at her station, portrait left, prose right. */
+  const kind = confess ? 'confess' : players.length > 1 ? 'pair' : 'solo';
+
+  const head = players.length
+    ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : '';
+  const note = _note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : '';
+  const body = `<p>${esc(sc.text || '')}</p>${consequences(row, sc)}`;
+  void opens;
+
+  const inner = kind === 'pair'
+    ? `<div class="dr-pairtop">${busts}<div>${head}${note}</div></div>${body}`
+    : `${busts}<div>${head}${note}${body}</div>`;
+
   return `<div class="dr-step" id="dr-step-${suffix}-${i}">
-    <div class="dr-panel ${accent} dr-card${confess ? ' dr-confess' : ''}${pairCls}">
+    <div class="dr-panel ${accent} dr-card dr-k-${kind}${pairCls}">
       ${confess ? `<span class="dr-rec"><i></i>REC</span>
         <span class="dr-vf dr-vf-tl"></span><span class="dr-vf dr-vf-tr"></span>
         <span class="dr-vf dr-vf-bl"></span><span class="dr-vf dr-vf-br"></span>` : ''}
-      ${busts}
-      <div>
-        ${players.length ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : ''}
-        ${_note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : ''}
-        <p>${!players.length || opens ? '' : ''}${esc(sc.text || '')}</p>
-        ${consequences(row, sc)}
-      </div>
+      ${inner}
     </div></div>`;
 }
 

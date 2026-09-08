@@ -1464,6 +1464,31 @@ export const WIKI_CSS = `
 .wk-fam-term{font-size:12px;opacity:.7}
 .wk-fam-off{opacity:.65;border-bottom:1px dotted currentColor}
 
+/* The genealogy browser under the article: look anybody up, and see the house
+   from where SHE stands. Same tree, different question. */
+.wk-genealogy{margin:36px 0 0;padding:22px 0 0;border-top:1px solid rgba(255,255,255,.1)}
+.wk-genealogy h2{margin:0 0 6px}
+.wk-gen-sub{opacity:.62;font-size:13px;margin:0 0 14px;max-width:60ch}
+.fam-search{width:100%;max-width:340px;padding:9px 12px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
+  color:inherit;font-size:14px;margin:0 0 16px}
+.fam-grid{display:grid;grid-template-columns:minmax(200px,280px) 1fr;gap:20px;align-items:start}
+@media(max-width:760px){.fam-grid{grid-template-columns:1fr}}
+.fam-list{max-height:60vh;overflow:auto}
+.fam-house{margin:0 0 14px}
+.fam-house h4{margin:0 0 6px;font-size:13px;letter-spacing:.04em}
+.fam-q{display:block;width:100%;text-align:left;padding:5px 10px;border-radius:6px;
+  border:0;background:transparent;color:inherit;opacity:.8;font-size:13px;cursor:pointer}
+.fam-q:hover{background:rgba(232,121,249,.14);opacity:1}
+.fam-q.active{background:rgba(232,121,249,.2);opacity:1;font-weight:600}
+.fam-tree{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:18px;min-height:160px}
+.fam-row{display:flex;align-items:baseline;gap:12px;padding:5px 10px;border-radius:6px}
+.fam-row.is-focus{background:rgba(232,121,249,.14);font-weight:600}
+.fam-term{margin-left:auto;font-size:12px;opacity:.62}
+.fam-off{opacity:.6;border-bottom:1px dotted currentColor}
+.fam-empty{opacity:.55;padding:24px 8px;font-size:14px}
+
 .wk-article{
   display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:26px;
   align-items:start; margin-top:6px;

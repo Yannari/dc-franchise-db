@@ -11,6 +11,9 @@
 // The genealogy itself is js/dr/genealogy.js. This draws it.
 import { franchiseFamilies, genealogyFor } from './dr/genealogy.js';
 
+/** Fetched documents, keyed by which seasons they are. */
+const _docCache = { key: null, docs: [] };
+
 // Names are authored text and go into markup, so they are escaped. Local to
 // this tab: the rest of the page builds its own strings its own way.
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -35,6 +38,9 @@ export async function buildFamilies(rosterDb) {
      static import and the two data files stay page-relative. */
   const seasonsIdx = await fetch('seasons_database.json')
     .then(r => r.json()).catch(() => null);
+  /* The wiki draws once with whatever is loaded and again when the season
+     documents land, so this runs twice on a normal page view. Cached: the
+     franchise's houses do not change between two paints of the same page. */
   const roster = rosterDb?.players || rosterDb || [];
   const slugOf = new Map(roster.filter(r => r && r.name).map(r => [r.name, r.slug]));
 
@@ -42,9 +48,14 @@ export async function buildFamilies(rosterDb) {
   const ids = (seasonsIdx?.seasons || seasonsIdx || [])
     .filter(x => (x.format || x.show) === 'drag-race')
     .map(x => x.seasonId || `dr-${x.seasonNumber || x.season}`);
-  const docs = (await Promise.all([...new Set(ids)].map(id =>
-    fetch(`data/seasons/${id}-data.json`).then(r => r.ok ? r.json() : null).catch(() => null)
-  ))).filter(Boolean);
+  const key = [...new Set(ids)].sort().join(',');
+  if (_docCache.key !== key) {
+    _docCache.key = key;
+    _docCache.docs = (await Promise.all([...new Set(ids)].map(id =>
+      fetch(`data/seasons/${id}-data.json`).then(r => r.ok ? r.json() : null).catch(() => null)
+    ))).filter(Boolean);
+  }
+  const docs = _docCache.docs;
 
   const fams = franchiseFamilies({ roster, seasonDocs: docs });
   if (!fams.length) {

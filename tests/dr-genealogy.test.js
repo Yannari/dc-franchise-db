@@ -3,6 +3,7 @@
 // dr-genealogy.test.js — the franchise tree, and the tab that draws it
 // ══════════════════════════════════════════════════════════════════════
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { franchiseFamilies, genealogyFor, genealogyIndex, rosterEdges, seasonEdges }
   from '../js/dr/genealogy.js';
 
@@ -149,5 +150,27 @@ describe('the Families tab', () => {
     // An empty state that says where the field is, rather than a blank box.
     expect(el.tree().textContent).toContain('No drag families recorded yet');
     expect(el.tree().textContent).toContain('Drag Race');
+  });
+});
+
+// The browser lives on the WIKI, which is about people. The franchise page is
+// seasons, records and champions, and a drag family is none of those -- it
+// holds across seasons and half a house never competed at all. Asserted
+// because "which page is this on" is invisible from inside the module.
+describe('where the browser is mounted', () => {
+  // Relative to the repo root, the way the other page guards read theirs.
+  const read = f => readFileSync(f, 'utf8');
+
+  it('is on the wiki and not on the franchise page', () => {
+    const player = read('player.html');
+    expect(player).toContain('genealogy-tab.js');
+    expect(player).toContain('fam-tree');
+    // Only on the show it belongs to.
+    expect(player).toMatch(/format === 'drag-race'\)\s*_renderGenealogy/);
+
+    const franchise = read('franchise.html');
+    expect(franchise, 'the franchise page is for seasons').not.toContain('genealogy-tab');
+    expect(franchise).not.toContain('fam-list');
+    expect(franchise).not.toContain('data-tab="families"');
   });
 });

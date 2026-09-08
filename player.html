@@ -981,6 +981,34 @@ function _renderWiki(player) {
   host.querySelectorAll('[data-wiki-show]').forEach(b => {
     b.onclick = () => { _wikiShow = b.dataset.wikiShow; _renderWiki(player); };
   });
+
+  /* ── THE GENEALOGY BROWSER ─────────────────────────────────────
+     Under the article, and only here. It belongs to the WIKI because it is a
+     fact about people: the franchise page is seasons, records and champions,
+     and a drag family is none of those — it holds across seasons and half a
+     house is usually queens who never competed at all.
+
+     The article above already draws HER house. This is the lookup: any queen
+     in the franchise, and the tree redrawn from where she stands. */
+  if (format === 'drag-race') _renderGenealogy(host);
+}
+
+async function _renderGenealogy(host) {
+  const box = document.createElement('section');
+  box.className = 'wk-genealogy';
+  box.innerHTML = `<h2>🌳 Drag families</h2>
+    <p class="wk-gen-sub">Every house the franchise has recorded. Only
+      <strong>mother</strong>, <strong>daughter</strong> and <strong>sister</strong>
+      are ever written down — aunts, cousins and grandmothers are worked out from
+      those. Pick a queen to see her family from where she stands.</p>
+    <input id="fam-search" class="fam-search" placeholder="Look up a queen…" autocomplete="off">
+    <div class="fam-grid"><div id="fam-list" class="fam-list"></div>
+      <div id="fam-tree" class="fam-tree"></div></div>`;
+  host.appendChild(box);
+  try {
+    const { buildFamilies } = await import('./js/genealogy-tab.js');
+    await buildFamilies(window.__roster || []);
+  } catch { box.remove(); }
 }
 
 /**

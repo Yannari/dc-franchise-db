@@ -195,6 +195,12 @@ export const RESULTS_CSS = `
 .dr-vs.dr-won-b .dr-fighter.dr-r .dr-por{
   border-color:#FFE9A8;box-shadow:0 0 60px -4px rgba(255,233,168,.9)}
 .dr-energy i{transition:width .6s cubic-bezier(.2,1,.3,1)}
+/* THE QUEEN WHO IS GOING. Once the call is made she reads as gone
+   everywhere on the screen, not only on the plate that announced it. */
+.dr-lsroom .dr-bust.dr-gone .dr-por,
+.dr-lsroom .dr-bust.dr-gone .dr-initials{
+  filter:grayscale(1) brightness(.55);border-color:rgba(255,255,255,.14);
+  box-shadow:none;transition:filter .5s,border-color .5s}
 
 @media(prefers-reduced-motion:reduce){
   .dr-tug i,.dr-energy i,.dr-rounds i{transition:none}
@@ -471,7 +477,14 @@ export function rpBuildLipSync(row) {
     .test(sc.kind || ''));
   const lastBeat = (callAt >= 0 ? callAt : beats.length) - 1;
 
-  if (typeof window !== 'undefined' && nR) {
+  /* THE HOOK RUNS WHENEVER THERE IS A DUEL, not only when there is round
+     data. It was gated on `nR` — the number of scored rounds — which tied
+     two unrelated things together: whether the scoreboard can animate, and
+     whether the queen who LOST is shown to have lost. A night whose engine
+     wrote no per-round deltas therefore ended with both queens still lit
+     and nothing marking the sashay at all. The rounds and the tug check
+     `nR` for themselves; the verdict does not need it. */
+  if (typeof window !== 'undefined') {
     const sum = (arr, k) => arr.slice(0, k).reduce((t, v) => t + v, 0);
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.lipsync = (idx) => {
@@ -481,6 +494,7 @@ export function rpBuildLipSync(row) {
         : Math.max(0, Math.min(nR, Math.round(((idx + 1) / Math.max(1, lastBeat + 1)) * nR)));
 
       for (const el of document.querySelectorAll('#dr-rounds i')) {
+        if (!nR) break;
         const at = [...el.parentNode.children].indexOf(el);
         el.classList.toggle('on', at < k);
         el.classList.toggle('now', at === k - 1 && !done);
@@ -510,11 +524,31 @@ export function rpBuildLipSync(row) {
       const fb = document.getElementById('dr-fin-b');
       if (fa) fa.textContent = done ? scoreOf(a).toFixed(1) : '';
       if (fb) fb.textContent = done ? scoreOf(b).toFixed(1) : '';
+      /* THE QUEEN WHO IS GOING. ls.loser is the engine's word for it, and a
+         double shantay has no loser — on that night nobody dims, which is
+         the whole point of the call. */
+      const goes = ls.call === 'double-shantay' ? null : ls.loser;
+
       const box = document.getElementById('dr-vs');
       if (box) {
-        box.classList.toggle('dr-decided', done);
-        box.classList.toggle('dr-won-a', done && scoreOf(a) >= scoreOf(b));
-        box.classList.toggle('dr-won-b', done && scoreOf(b) > scoreOf(a));
+        /* THE SIDE THAT DIMS IS THE SIDE THE ENGINE SENT HOME, not the side
+           holding the lower number. Comparing scoreOf(a) to scoreOf(b) was a
+           second, independent verdict that could disagree with the first: it
+           declared a winner on a double shantay, where there is none, and on
+           a tie it quietly handed the song to whoever sat in slot A. */
+        box.classList.toggle('dr-decided', !!(done && goes));
+        box.classList.toggle('dr-won-a', !!(done && goes && goes === b));
+        box.classList.toggle('dr-won-b', !!(done && goes && goes === a));
+      }
+
+      /* AND SHE GREYS OUT EVERYWHERE SHE APPEARS ON THIS SCREEN. The queen
+         who is sashaying away was still in full colour on every beat card
+         she was in — the screen said she lost in one place and carried on
+         showing her as though she had not. */
+      for (const el of document.querySelectorAll('.dr-lsroom .dr-bust')) {
+        const img = el.querySelector('img.dr-por, .dr-initials');
+        const nm = img?.getAttribute('alt') || img?.getAttribute('title');
+        el.classList.toggle('dr-gone', !!(done && goes && nm === goes));
       }
     };
   }

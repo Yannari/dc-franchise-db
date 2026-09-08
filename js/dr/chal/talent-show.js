@@ -39,8 +39,18 @@ export function chooseTalent(player, rng = Math.random) {
 /** The pick, plus what she passed up to make it. */
 export function chooseAct(player, rng = Math.random) {
   const d = dragOf(player);
+  /* ── WHAT SHE CAN DO, AND WHAT SHE ACTUALLY DOES ──
+     `blendScore` says which act her craft suits best, and on its own that is
+     the whole decision — so two queens with the same numbers bring the same
+     act. A roster player who arrives with no drag block gets every drag stat
+     defaulted to 5, and a whole cast of them produced ONE act: measured on a
+     bare thirteen-queen roster, 1 distinct act across 13 queens, thirteen
+     live vocals in a row.
+     A talent is something a person HAS, not something her stats imply, so the
+     draw is personal. It is seeded, so a replayed season brings the same
+     acts. */
   const ranked = [...TALENTS]
-    .map(t => ({ t, s: blendScore(d, t.blend) }))
+    .map(t => ({ t, s: blendScore(d, t.blend) + (rng() - 0.5) * 1.1 }))
     .sort((a, b) => b.s - a.s);
   const safest = ranked[0];
   const bold = (Number(player?.stats?.boldness) || 5) / 10;

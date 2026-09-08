@@ -350,3 +350,67 @@ describe('THE PICK IS A DECISION, AND DIFFICULTY IS A GAMBLE', () => {
     expect(shone, 'a hard character never pays off').toBeGreaterThan(0.1);
   });
 });
+
+describe('A ROOM THAT AGREES WITH ITSELF STILL PICKS DIFFERENTLY', () => {
+  /* The bug this exists for, from a played season: thirteen queens, and the
+     board read "12 of 13 lost a pick" with every single one of them losing it
+     to the queen who picked first.
+
+     The cause was not the draft. A franchise roster player arrives with no
+     `drag` block, so dragOf defaults EVERY drag stat to 5 and derives the
+     same style — which makes a whole cast numerically identical. Craft alone
+     then produces one shortlist in one order, thirteen times: everybody's
+     first choice was the same person, the first queen took him, and the
+     shared top eight ran out so four queens got no character at all.
+
+     A talent is something a person HAS, not something her stats imply. The
+     shortlist carries a personal draw now, seeded so a replay is identical. */
+  const BARE = n => Array.from({ length: n }, (_, i) => ({
+    name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'f',
+    archetype: ['villain', 'hero', 'schemer', 'floater', 'mastermind', 'goat'][i % 6],
+    age: 21 + i,
+    stats: Object.fromEntries(['physical', 'endurance', 'mental', 'social', 'strategic',
+      'loyalty', 'boldness', 'intuition', 'temperament'].map(k => [k, 5])),
+    // deliberately no `drag` block: this is the shape that caused it
+  }));
+  const run = (maxiId, seed) => {
+    const s = playDragSeason({ cast: BARE(13), seed,
+      config: { drSchedule: [{ episode: 2, maxiId }] },
+      bond: () => 0, addBond: () => {}, popDelta: () => {} });
+    const ep = s.rows.find(r => r.dr.challenge?.id === maxiId);
+    return ep ? Object.values(ep.dr.assignment.picks) : null;
+  };
+
+  it('an identical cast does not all reach for the same character', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const picks = run('snatch-game', seed);
+      if (!picks) continue;
+      const byWinner = {};
+      for (const p of picks) if (p.lostTo) byWinner[p.lostTo] = (byWinner[p.lostTo] || 0) + 1;
+      const worst = Math.max(0, ...Object.values(byWinner));
+      expect(worst, `one queen took ${worst} of ${picks.length} first choices on seed ${seed}`)
+        .toBeLessThan(picks.length / 2);
+    }
+  });
+
+  it('the board never runs out of characters', () => {
+    // Eight was a shorter list than the cast, so a room that agreed with
+    // itself exhausted it and queens were handed a "leftover" placeholder.
+    for (let seed = 1; seed <= 6; seed++) {
+      const picks = run('snatch-game', seed);
+      if (!picks) continue;
+      const leftovers = picks.filter(p => String(p.choice).startsWith('leftover-'));
+      expect(leftovers.map(p => p.name), `seed ${seed} ran out`).toEqual([]);
+    }
+  });
+
+  it('and an identical cast does not all bring the same act', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const picks = run('talent-show', seed);
+      if (!picks) continue;
+      const distinct = new Set(picks.map(p => p.choice)).size;
+      expect(distinct, `seed ${seed}: ${distinct} act(s) across ${picks.length} queens`)
+        .toBeGreaterThan(2);
+    }
+  });
+});

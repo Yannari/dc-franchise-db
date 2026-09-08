@@ -49,10 +49,19 @@ describe('the acts', () => {
 });
 
 describe('choosing', () => {
+  /* HER SAFEST ACT, which is the thing craft decides. A queen can also REACH
+     past it on her nerve, and that branch is tested on its own below — so
+     this one holds the nerve still with a draw that never buys the reach.
+     It used to pass rngFor(1) and assert the same three acts, which read as
+     the same test and was not: adding a per-act personal draw shifted the
+     sequence by eight values, the nerve check landed on a different number,
+     and the singer came back with an aerial routine. Nothing about craft had
+     changed. A seed is not the rule, and this asserts the rule. */
   it('a singer sings and a dancer dances', () => {
-    expect(chooseTalent(mk('S', { singing: 10 }), rngFor(1)).id).toBe('live-vocal');
-    expect(chooseTalent(mk('D', { dance: 10, lipsync: 8 }), rngFor(1)).id).toBe('dance-number');
-    expect(chooseTalent(mk('C', { comedy: 10 }), rngFor(1)).id).toBe('comedy-set');
+    const noReach = () => 1;
+    expect(chooseTalent(mk('S', { singing: 10 }), noReach).id).toBe('live-vocal');
+    expect(chooseTalent(mk('D', { dance: 10, lipsync: 8 }), noReach).id).toBe('dance-number');
+    expect(chooseTalent(mk('C', { comedy: 10 }), noReach).id).toBe('comedy-set');
   });
 
   it('a bold queen reaches past her safest act far more often than a timid one', () => {

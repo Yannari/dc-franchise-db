@@ -102,20 +102,56 @@ function appetiteFor(player, record = [], slot = 0, field = 1) {
  * A queen reaches for a character that suits her style and that she can carry
  * — and how far past "can carry" she is willing to go is `appetite`.
  */
-function wantsFor(player, appetite = 0) {
+function wantsFor(player, appetite = 0, rng = Math.random) {
   const d = dragOf(player);
   return [...SNATCH_CHARACTERS]
     .map(c => {
-      const styleFit = c.style === d.style ? 3 : 0;
-      const canCarry = d[c.needs] - c.difficulty;
+      /* BIG ENOUGH TO OUTRANK TASTE, deliberately. The two tests pulling on
+         this term want opposite things — a spooky queen must reach for a
+         spooky character, and a room of numerically identical queens must not
+         all reach for the SAME one — and a single mid-sized term cannot do
+         both. So the scales are separated: style is the coarse sort and taste
+         is the fine one, wide enough to shuffle a whole style block and still
+         narrow enough to lose to a match. */
+      const styleFit = c.style === d.style ? 5 : 0;
+      /* HALF A PENALTY, because difficulty is no longer a quality gap — it
+         is a choice about how wide the night is. Subtracting it in full made
+         the five easiest characters lead every shortlist by more than taste
+         could overcome, so a room of identical queens still converged on the
+         same handful and one of them took six others' first choice. */
+      const canCarry = d[c.needs] - c.difficulty * 0.5;
       /* THE REACH. Positive appetite pays for difficulty instead of charging
          for it, so a bold queen with nothing to lose shortlists the Silent
          Film Star on purpose rather than inheriting it. */
-      const reach = appetite * c.difficulty * 0.9;
-      return { c, score: styleFit + canCarry + reach + (d.comedy - 5) * 0.2 };
+      /* AND IN SCALE WITH THE OTHER TERMS, which is what it was not. At 0.9
+         this ran to +/-6.3 against a style match worth 3 and a craft range of
+         about 2.5, so appetite was not one consideration among three — it was
+         the shortlist, and every queen with the same nerve reached for the
+         same hardest character. Measured on an identical cast: six of twelve
+         queens lost their first choice to one queen. */
+      const reach = appetite * c.difficulty * 0.6;
+      /* ── AND WHO SHE HAPPENS TO DO ──
+         Craft says which characters she COULD carry; it does not say which one
+         she has been doing in her kitchen since she was fourteen, and that is
+         most of why a queen picks somebody. Without it two queens with the
+         same numbers want the same person in the same order, and a roster
+         player who arrives with no drag stats gets every stat defaulted to 5
+         — so a whole cast of them produced ONE shortlist, thirteen times.
+         That is the bug this fixes and it is worth stating plainly: every
+         queen wanted Richard Simmons, the queen picking first took him,
+         twelve of thirteen were recorded as having lost their pick to her,
+         and the shared top eight ran out so four queens got nothing at all. */
+      /* SMALL ENOUGH TO LOSE TO CRAFT. At ±3.5 it beat the +3 a style match
+         is worth, so a spooky queen stopped reaching for spooky characters —
+         taste has to break ties, not overrule the two things the shortlist is
+         actually about. */
+      const personal = (rng() - 0.5) * 6;
+      return { c, score: styleFit + canCarry + reach + personal + (d.comedy - 5) * 0.2 };
     })
     .sort((a, b) => b.score - a.score)
-    .slice(0, 8)
+    /* LONG ENOUGH THAT THE BOARD CANNOT EMPTY. Eight was shorter than the
+       cast, so a room that agreed with itself ran out of characters. */
+    .slice(0, 20)
     .map(x => x.c.id);
 }
 
@@ -129,7 +165,7 @@ export function assign(ctx) {
   const choices = {};
   order.forEach((n, i) => {
     appetite[n] = appetiteFor(players[n], state?.record?.[n] || [], i, order.length);
-    choices[n] = wantsFor(players[n], appetite[n]);
+    choices[n] = wantsFor(players[n], appetite[n], rng);
   });
   const { picks, events } = contestFor({ order, choices, players, rng, bond });
   const roles = Object.fromEntries(order.map(n => [n, 'standard']));

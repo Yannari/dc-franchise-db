@@ -147,6 +147,10 @@ export function renderStageBeats({
      roster records, because a queen narrating her own walk needs her drag
      style and her archetype and the runway result carries neither. */
   category = '', runwayKind = 'call', panelSeats = [], players = {},
+  /* WHAT THE SONG IS FOR, and whether the panel is even speaking tonight.
+     The same two queens on the same stage means something completely
+     different on a night nobody can lose. */
+  stakes = 'life', rateAQueen = false,
   /* THE DELIBERATION'S OWN MATERIAL, all of it already computed and none of
      it previously offered to a renderer. `views` is each judge's private
      ranking, `ranking` carries the per-queen spread between them, and `bend`
@@ -423,7 +427,17 @@ export function renderStageBeats({
      nothing to argue about" immediately before two judges argued about her.
      So the opening is chosen by whether this scene actually has an argument
      in it. `split` still drives the host's bend, which is what it is for. */
-  emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
+  /* ON A RATE-A-QUEEN NIGHT THERE IS NOTHING TO DELIBERATE. The panel has
+     handed the call to the room, so the judges do not argue, do not critique
+     and do not appear here at all — the host announces the shape of the night
+     instead and the queens go and rank each other. Returning early is the
+     point: everything below this is the panel talking. */
+  if (rateAQueen) {
+    emit(beatById('rate-announce'), 'announce', []);
+  } else {
+    emit(beatById('deliberation'), contested.length ? 'split' : 'agreed', []);
+  }
+  if (!rateAQueen) {
 
   for (const row of contested) {
     const ids = Object.keys(views).filter(id => rankOf(id, row.name) !== null);
@@ -501,6 +515,8 @@ export function renderStageBeats({
      `callOrder` is chosen in week.js from what actually happened tonight, and
      the hold is the pause before the block the night has been built to end
      on. See js/dr/data/results-order.js for the shapes and why each exists. */
+  }
+
   const shape = resultOrder(callOrder);
   const BY_GROUP = {
     WIN: ['result-win', 'win', call.win || []],
@@ -522,6 +538,14 @@ export function renderStageBeats({
       emit(beatById('results-hold'), 'hold', [], { before: g, order: shape.id });
     }
     for (const n of who) emit(beatById(beatId), tierId, [n], { order: shape.id });
+  }
+
+  /* AND WHAT THE SONG IS FOR, said last, after the names. Two queens standing
+     on a stage about to lip sync is the same picture whether they are
+     fighting to survive or fighting to win, and the call never said which. */
+  if (lipsync && (lipsync.queens || []).length >= 2) {
+    const [ls1, ls2] = lipsync.queens;
+    emit(beatById('call-stakes'), stakes, [ls1, ls2], { stakes });
   }
 
   // ── the lip sync, beat by beat ──

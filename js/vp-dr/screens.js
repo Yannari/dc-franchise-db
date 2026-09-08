@@ -492,19 +492,26 @@ const _sections = SECTIONS.map(sec => ({
   }));
 
 /** The registry: seventeen entries, in the running order. */
+/* ── RATE-A-QUEEN GOES WHERE THE CALL IS MADE ──
+   It is not a scene section — it has no prose at all, it is a board — so it
+   registers on the DATA the way the track record does. But it belongs in the
+   RUNNING ORDER, and the running order for that night is: the panel says
+   nothing, the queens go to Untucked, and THEN the room ranks the room and
+   the call falls out of it. So it is spliced in after Untucked and before The
+   Call rather than parked at the end with the chart. */
+const _order = [..._sections];
+const _rate = {
+  id: 'dr-rate', icon: icon('star'), label: 'Rate-a-Queen', suffix: 'rate',
+  badge: { text: 'RATE-A-QUEEN', color: '#FF3DC8' },
+  when: row => !!row?.dr?.rateAQueen?.ballots,
+  build: row => rpBuildRate(row),
+  revealAllName: 'drRevealAll',
+};
+const _afterUntucked = _order.findIndex(s2 => s2.id === 'dr-untucked') + 1;
+_order.splice(_afterUntucked || _order.length, 0, _rate);
+
 export const DRAG_SCREENS = [
-  ..._sections,
-  /* RATE-A-QUEEN SITS BEFORE THE CHART AND AFTER EVERYTHING ELSE, because it
-     is the night's verdict arriving from the room rather than the panel. Not
-     a scene section: it has no prose at all, it is a board, so it registers
-     on the DATA the way the track record does. */
-  {
-    id: 'dr-rate', icon: icon('star'), label: 'Rate-a-Queen', suffix: 'rate',
-    badge: { text: 'RATE-A-QUEEN', color: '#FF3DC8' },
-    when: row => !!row?.dr?.rateAQueen?.ballots,
-    build: row => rpBuildRate(row),
-    revealAllName: 'drRevealAll',
-  },
+  ..._order,
   {
     id: CHART.id,
     icon: icon('grid'),

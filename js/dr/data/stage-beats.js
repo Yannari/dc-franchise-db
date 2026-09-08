@@ -716,6 +716,54 @@ export const STAGE_BEATS = [
     ],
   },
 
+  // ══ THE NIGHT THE PANEL SAYS NOTHING ═════════════════════════════════
+  //
+  // On a Rate-a-Queen week the judges do not critique. That is the twist:
+  // the room decides, so there is nothing for the panel to say between the
+  // runway and the call, and the host says so instead.
+  //
+  // It sits in the CRITIQUES slot because that is the hole it fills — the
+  // queens are still standing on the stage waiting to be told something, and
+  // what they are told is that nobody is going to tell them anything.
+  {
+    id: 'rate-announce', step: 'critiques', scope: 'once', speaker: 'host',
+    variants: 6,
+    note: 'The host tells the room the panel is sitting this one out and they '
+      + 'are deciding it themselves. No {a} — it is said to everybody.',
+    writerNote: 'He is enjoying this and he should not hide it. The sentence '
+      + 'underneath is "I am taking my own power away and handing it to the '
+      + 'people you have been living with", and every queen on that stage '
+      + 'does the arithmetic on that in real time. Say what they have to do — '
+      + 'rank each other, top to bottom — and what it decides: the top of the '
+      + 'week and the bottom of it. Do not say who wins or who lip syncs; '
+      + 'that is the call, and it has not happened yet.',
+    tierBy: 'always',
+    tiers: [tier('announce', 'No critiques tonight. They are doing it.', [])],
+  },
+
+  // ══ WHAT THE SONG IS FOR ═════════════════════════════════════════════
+  //
+  // Two queens standing on a stage about to lip sync is the same picture
+  // whether they are fighting to survive or fighting to win, and the screen
+  // never said which. On an ordinary night it is for her life. On a
+  // Rate-a-Queen with nothing at stake it is the top two, for the win. On a
+  // Legacy night it is for the power to send somebody home.
+  {
+    id: 'call-stakes', step: 'results', scope: 'once', speaker: 'host',
+    variants: 6,
+    note: 'After the top and the bottom have been called: what the song is '
+      + 'actually for tonight. {a} and {b} are the two who will sing it.',
+    writerNote: 'One or two sentences, said last, after the names. The whole '
+      + 'job is to make the stakes unmistakable before the music starts, '
+      + 'because the picture is identical either way and the meaning is not.',
+    tierBy: 'stakes',
+    tiers: [
+      tier('life', 'The ordinary night: the bottom two, for their lives.', []),
+      tier('win', 'The top two, for the win. Nobody is going home.', []),
+      tier('legacy', 'The top two, and the winner decides who goes home.', []),
+    ],
+  },
+
   // ══ HER LAST WORDS, ON THE LIP SYNC SCREEN ═══════════════════════════
   //
   // Not the same beat as `farewell` below, and the difference is the whole

@@ -225,7 +225,18 @@ export function perform(ctx) {
       const fit = c
         ? (c.style === d.style ? 1.2 : 0) - Math.max(0, c.difficulty - d[c.needs] / 2) * 0.22
         : -1;
-      const score = d.comedy * 0.55 + d.acting * 0.35 + fit + (prep[n] || 0)
+      /* ── `needs` NOW CARRIES THE IMPRESSION IT SAID IT CARRIED ──
+         The field is documented as "which stat carries the impression" and it
+         did not: the score was comedy 0.55 / acting 0.35 for every character
+         on the desk, so a part she has to INHABIT paid her comedy exactly as
+         much as a loud quotable one did. `needs` only ever showed up in the
+         shortlist and in the out-of-depth penalty.
+         The weights tilt now. The sum is the same either way, so nobody gets
+         more total credit for the kind of bit she picked — the question is
+         which of her two stats has to hold it up. */
+      const wComedy = c?.needs === 'acting' ? 0.34 : 0.62;
+      const wActing = 0.9 - wComedy;
+      const score = d.comedy * wComedy + d.acting * wActing + fit + (prep[n] || 0)
         - (assignment.picks[n]?.penalty || 0) + (nightOf[n] || 0) + noise(rng, 1.5);
       const rounded = Math.round(score * 100) / 100;
       perRound[n].push(rounded);

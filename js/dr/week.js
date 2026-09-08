@@ -516,10 +516,20 @@ export function runDragWeek(state, cfg, ctx) {
   // Tone comes from each judge's OWN view rather than from the call, so a
   // split panel produces genuinely opposed critiques of one performance
   // instead of four people agreeing in different words.
-  const critiques = critiqueLines({ panel, views, call, entries, rng });
+  /* ── NO CRITIQUES ON A RATE-A-QUEEN NIGHT ──
+     That is the twist rather than a side effect of it: the panel has handed
+     the call to the room, so there is nothing for four judges to say between
+     the runway and the results. The queens are still standing on the stage
+     waiting to be told something, and what they are told is that nobody is
+     going to tell them anything.
+     The scene still fires — the screen is built from it and the reactions
+     read it — with an empty critique list and a flag saying why. */
+  const critiques = cfg.rateAQueen ? {} : critiqueLines({ panel, views, call, entries, rng });
 
-
-  say('critiques', 'critiques', { call, split, tripled, critiques, twist: cfg.critiqueTwist || null });
+  say('critiques', 'critiques', {
+    call, split, tripled, critiques, twist: cfg.critiqueTwist || null,
+    ...(cfg.rateAQueen ? { rateAQueen: true } : {}),
+  });
 
   // How each critiqued queen took it. `expected` is HER read of the room —
   // never the panel's ranking, which she has not heard yet.
@@ -816,6 +826,11 @@ export function runDragWeek(state, cfg, ctx) {
       // The panel's own disagreement and the host's overrule, so the
       // deliberation can be the argument instead of a note that one happened.
       views, ranking, bend,
+      /* WHAT THE SONG IS FOR. The same two queens on the same stage means
+         something completely different on a night nobody can lose, and the
+         call never said which. */
+      stakes: legacy ? 'legacy' : (topTwoSing ? 'win' : 'life'),
+      rateAQueen: !!cfg.rateAQueen,
       callOrder,
       challengeFamily: familyForChallenge(maxi.id).family,
     });

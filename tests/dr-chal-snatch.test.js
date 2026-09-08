@@ -42,15 +42,33 @@ describe('the character list', () => {
     }
   });
 
-  it('names nobody real: every character is an archetype, not a person', () => {
+  it('names real people, and still says which SHAPE of bit each one is', () => {
+    /* This used to assert the opposite — every name had to begin with "The",
+       because no real person may appear anywhere in this simulator. That rule
+       is deliberately overruled for this file and only this file: the Snatch
+       Game is the one challenge whose premise is impersonating somebody the
+       audience knows, and "she did the Ageless Diva" describes a Snatch Game
+       rather than being one. The archetypes survive as a field, so the shape
+       is still there and several people live inside each shape. */
     for (const c of SNATCH_CHARACTERS) {
-      expect(c.name, `${c.id} does not read as an archetype`).toMatch(/^The /);
+      expect(c.archetype, `${c.id} belongs to no archetype`).toBeTruthy();
+      expect(c.name, `${c.id} kept a placeholder name`).not.toMatch(/^The /);
     }
-    // Both halves of the difficulty range are stocked, or the draft has no
-    // stakes: everybody would reach for the same easy shelf.
+    // Every archetype has more than one person in it, or it is a label rather
+    // than a shape and two seasons will draw the same impression.
+    const byArch = {};
+    for (const c of SNATCH_CHARACTERS) (byArch[c.archetype] ||= []).push(c.id);
+    const lonely = Object.entries(byArch).filter(([, v]) => v.length < 2).map(([k]) => k);
+    expect(lonely, 'these archetypes hold one person each').toEqual([]);
+  });
+
+  it('stocks both ends of the difficulty range', () => {
+    // Or the pick has no stakes: everybody reaches for the same easy shelf.
     const d = SNATCH_CHARACTERS.map(c => c.difficulty);
     expect(Math.min(...d)).toBe(1);
     expect(Math.max(...d)).toBe(5);
+    // And enough of them that a long season does not run out.
+    expect(SNATCH_CHARACTERS.length).toBeGreaterThan(40);
   });
 });
 

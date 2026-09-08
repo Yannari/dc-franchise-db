@@ -99,7 +99,36 @@ so read `swaggerLinesFor` for the voice before writing:
 - `professional` — treats it as a result, takes it like one, shakes hands
 - `scrapper` — points out she was never supposed to get this far
 
-### 5. `js/dr/data/split-beats.js` — the two halves meet
+### 5. `js/dr/data/stage-beats.js` — the night the panel says nothing
+
+On a Rate-a-Queen week the judges do not critique. That is the twist rather
+than a side effect of it: the panel has handed the call to the room, so there
+is nothing for four judges to say between the runway and the results. The
+queens are still standing on that stage waiting to be told something, and what
+they are told is that nobody is going to tell them anything.
+
+| beat | tiers | what it is |
+|---|---|---|
+| `rate-announce` | `announce` | The host says the panel is sitting this one out. **No `{a}`** — it is said to everybody. |
+| `call-stakes` | `life`, `win`, `legacy` | After the top and bottom are called: what the song is actually FOR. `{a}` and `{b}` are the two who will sing it. |
+
+**Six variants per tier.**
+
+`rate-announce`: he is enjoying this and should not hide it. The sentence
+underneath is "I am taking my own power away and handing it to the people you
+have been living with", and every queen does that arithmetic in real time. Say
+what they have to do — rank each other, top to bottom — and what it decides:
+the top of the week and the bottom of it. **Do not say who wins or who lip
+syncs**; that is the call and it has not happened yet.
+
+`call-stakes` is one or two sentences, said last, after the names. Two queens
+about to lip sync is the same picture whether they are fighting to survive or
+fighting to win, and the call never said which — that is the whole job.
+`life` is the ordinary night, the bottom two for their lives. `win` is the top
+two and nobody is going home. `legacy` is the top two, and the winner decides
+who does.
+
+### 6. `js/dr/data/split-beats.js` — the two halves meet
 
 A split premiere runs the cast in two halves over two episodes and nobody goes
 home. Then the room DOUBLES: everybody walks into a werk room with twice as

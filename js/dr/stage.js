@@ -162,6 +162,14 @@ export function renderStageBeats({
     if (!beat) return;
     const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
     if (!t) return;
+    /* AN UNWRITTEN TIER EMITS NOTHING. Every beat file's header promises
+       this — "an unwritten tier emits no scene rather than an empty card" —
+       and it was not true: a tier with no lines still pushed a scene whose
+       text was the empty string, which draws a card with a portrait, a
+       border and no words in it. Measured on a new beat whose pool was
+       deliberately empty: eight of eight nights emitted a blank plate.
+       This is what makes filling a pool a beat at a time actually safe. */
+    if (!t.lines || !t.lines.length) return;
     /* A NAMED JUDGE BEATS A DRAWN ONE. Every judge beat before this drew a
        seat at random, which is right for "one of them says the deliberation
        is split" and wrong for the beat that introduces a specific judge by
@@ -711,6 +719,7 @@ export function renderChallengeBeats({
     if (!beat) return;
     const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
     if (!t) return;
+    if (!t.lines || !t.lines.length) return;  // see the note on the emit above
     scenes.push({
       step: step || beat.step,
       kind: `chal:${beat.id}`,

@@ -687,6 +687,51 @@ export const STAGE_BEATS = [
     ],
   },
 
+  // ══ HER LAST WORDS, ON THE LIP SYNC SCREEN ═══════════════════════════
+  //
+  // Not the same beat as `farewell` below, and the difference is the whole
+  // reason this exists. `farewell` is the NARRATOR describing a goodbye in
+  // the werk room, minutes later, in third person. This is HER, on the
+  // stage, in the second after the host says her name — first person, in
+  // quotation marks, out loud, to the room.
+  //
+  // It is the last card on the lip sync screen and the only one that is her
+  // own voice, so it is the closing note of the whole night.
+  //
+  // SHAPE: gratitude, then the one-liner. "Thank you for the opportunity"
+  // is the thing every queen says and the thing the audience expects, and
+  // what makes it hers is whatever she puts after it. Keep it SHORT — two
+  // or three sentences. This is a parting shot, not the goodbye speech;
+  // the speech is `farewell` and it happens on the next screen.
+  //
+  // Tiered by SWAGGER GROUP, the same five attitudes js/dr/data/runway-
+  // voices.js already sorts queens into, so a queen's exit line sounds like
+  // the queen who has been narrating her own runway walks all season.
+  {
+    id: 'sashay-words', step: 'lipsync', scope: 'per-queen', speaker: 'queen',
+    variants: 6,
+    note: 'Her own last words on the stage. {a} is her. First person, in quotes.',
+    writerNote: 'GRATITUDE THEN THE ONE-LINER, and the one-liner is the '
+      + 'character. Two or three sentences, spoken aloud, in quotation marks. '
+      + 'Every queen thanks the show — that part is ritual and should stay '
+      + 'recognisable — and then she says the thing only she would say. The '
+      + 'tiers are the five swagger groups from runway-voices.js, so match '
+      + 'the voice that has been narrating her walks: predator leaves with a '
+      + 'threat wrapped in a compliment, sunshine means every word of it, '
+      + 'firecracker goes out loud and unserious, professional treats it as '
+      + 'a result and shakes hands, scrapper points out she was never '
+      + 'supposed to get this far. NOT a speech — she gets a real one on the '
+      + 'next screen. This is the parting shot.',
+    tierBy: 'swagger',
+    tiers: [
+      tier('predator', 'She leaves a threat behind, beautifully wrapped.', []),
+      tier('sunshine', 'She means it, all of it, with no edge at all.', []),
+      tier('firecracker', 'Loud, funny, refusing to be sad on camera.', []),
+      tier('professional', 'A result. She takes it like one and shakes hands.', []),
+      tier('scrapper', 'She was never supposed to be here this long and says so.', []),
+    ],
+  },
+
   // ══ THE EXIT ═════════════════════════════════════════════════════════
   {
     id: 'farewell', step: 'exit', scope: 'per-queen', speaker: 'narrator',

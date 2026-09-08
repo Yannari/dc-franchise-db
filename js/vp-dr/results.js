@@ -195,15 +195,49 @@ export const RESULTS_CSS = `
 .dr-vs.dr-won-b .dr-fighter.dr-r .dr-por{
   border-color:#FFE9A8;box-shadow:0 0 60px -4px rgba(255,233,168,.9)}
 .dr-energy i{transition:width .6s cubic-bezier(.2,1,.3,1)}
-/* THE QUEEN WHO IS GOING. Once the call is made she reads as gone
-   everywhere on the screen, not only on the plate that announced it. */
-.dr-lsroom .dr-bust.dr-gone .dr-por,
-.dr-lsroom .dr-bust.dr-gone .dr-initials{
-  filter:grayscale(1) brightness(.55);border-color:rgba(255,255,255,.14);
-  box-shadow:none;transition:filter .5s,border-color .5s}
+/* ── HER LAST CARD, AND THE LIGHT GOING OUT ──
+   Modelled on the Total Drama torch snuff (css/simulator.css, torchSnuff):
+   an ANIMATION rather than a transition, and a HELD DELAY before it runs.
+   The delay is the whole effect. She is revealed lit, the reader has time
+   to read what she said, and only then does the light come off her —
+   greying her the instant the card appears reads as a state, greying her a
+   beat late reads as something happening to her.
+   It keys off .dr-vis, the class the reveal adds, so the snuff cannot
+   desync from the reveal the way a hook-driven one can. */
+@keyframes drSnuff{
+  from{filter:brightness(1) grayscale(0)}
+  to{filter:brightness(.42) grayscale(1)}
+}
+@keyframes drFareLift{
+  from{opacity:0;transform:translate3d(0,18px,0)}
+  to{opacity:1;transform:none}
+}
+.dr-farebox{text-align:center;padding:26px 20px 22px;position:relative;overflow:hidden}
+/* The spot she is standing in, which goes down with her. */
+.dr-farebox::before{content:'';position:absolute;left:50%;top:-40px;width:280px;height:220px;
+  transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,233,168,.22),transparent 70%);
+  animation:drSnuff 1.6s ease-in 1.5s both}
+.dr-farelabel{display:block;font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  color:#FF7FA8;margin-bottom:14px}
+.dr-farepor{display:inline-block;position:relative}
+.dr-farepor .dr-por,.dr-farepor .dr-initials{
+  border-radius:50%;border:2px solid rgba(255,233,168,.55);
+  box-shadow:0 0 46px -6px rgba(255,233,168,.7)}
+.dr-fare.dr-vis .dr-farepor .dr-por,.dr-fare.dr-vis .dr-farepor .dr-initials{
+  animation:drSnuff 1.4s ease-in 1.5s both}
+.dr-farename{display:block;margin-top:12px;font-size:26px;letter-spacing:.04em;color:#fff}
+.dr-faresay{max-width:44ch;margin:10px auto 0;font-size:17px;line-height:1.65;
+  color:#ffd7e8}
+.dr-fare.dr-vis .dr-farebox{animation:drFareLift .55s cubic-bezier(.2,1,.3,1) both}
 
 @media(prefers-reduced-motion:reduce){
   .dr-tug i,.dr-energy i,.dr-rounds i{transition:none}
+  .dr-fare.dr-vis .dr-farebox{animation:none}
+  /* The snuff still has to LAND — reduced motion means no drawn-out fade,
+     not a queen who goes home with her light still on. */
+  .dr-fare.dr-vis .dr-farepor .dr-por,.dr-fare.dr-vis .dr-farepor .dr-initials,
+  .dr-farebox::before{animation:none;filter:brightness(.42) grayscale(1)}
 }
 
 .dr-song{text-align:center;font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;
@@ -393,6 +427,10 @@ export function rpBuildLipSync(row) {
   const ls = row?.dr?.lipsync;
   if (!ls || !(ls.queens || []).length) return '';
   const [a, b] = ls.queens;
+  /* WHO IS ACTUALLY GOING. `ls.loser` is the engine's word for it, and a
+     double shantay has no loser at all — on that night nobody's light goes
+     out, which is the whole point of the call. */
+  const goesHome = ls.call === 'double-shantay' ? null : ls.loser;
   const beats = (row.dr.scenes || []).filter(s => s.step === 'lipsync' && s.text);
   const scoreOf = nm => Number(ls.scores?.[nm] ?? ls[nm]?.score) || 0;
 
@@ -449,6 +487,25 @@ export function rpBuildLipSync(row) {
   const steps = beats.map((sc, i) => {
     const who = sideOf(sc);
     const right = who && who === b;
+
+    /* ── HER LAST CARD ──
+       The queen who is going gets the closing card on this screen, and it is
+       the only one in her own voice. It does not use the beat layout: a beat
+       card is a paragraph with a small face on it, and this is a portrait
+       with a sentence under it. The light goes out ON REVEAL — see .dr-fare
+       in the CSS — so the reader sees her lit, reads what she said, and then
+       watches the room take the light off her. */
+    if ((sc.kind || '') === 'stage:sashay-words') {
+      const her = (sc.data?.players || [])[0] || goesHome;
+      return `<div class="dr-step dr-fare" id="dr-step-lipsync-${i}">
+      <div class="dr-panel dr-a-lip dr-farebox">
+        <span class="dr-farelabel dr-disp">Sashay away</span>
+        <span class="dr-farepor">${_portrait(her, ep, { size: 132 })}</span>
+        <b class="dr-farename dr-disp">${esc(her)}</b>
+        <p class="dr-faresay dr-fash">${esc(sc.text)}</p>
+      </div></div>`;
+    }
+
     return `<div class="dr-step" id="dr-step-lipsync-${i}">
     <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}">
       ${/^stage:(lipsync-intro|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call)$/
@@ -524,11 +581,7 @@ export function rpBuildLipSync(row) {
       const fb = document.getElementById('dr-fin-b');
       if (fa) fa.textContent = done ? scoreOf(a).toFixed(1) : '';
       if (fb) fb.textContent = done ? scoreOf(b).toFixed(1) : '';
-      /* THE QUEEN WHO IS GOING. ls.loser is the engine's word for it, and a
-         double shantay has no loser — on that night nobody dims, which is
-         the whole point of the call. */
-      const goes = ls.call === 'double-shantay' ? null : ls.loser;
-
+      const goes = goesHome;
       const box = document.getElementById('dr-vs');
       if (box) {
         /* THE SIDE THAT DIMS IS THE SIDE THE ENGINE SENT HOME, not the side
@@ -541,15 +594,9 @@ export function rpBuildLipSync(row) {
         box.classList.toggle('dr-won-b', !!(done && goes && goes === a));
       }
 
-      /* AND SHE GREYS OUT EVERYWHERE SHE APPEARS ON THIS SCREEN. The queen
-         who is sashaying away was still in full colour on every beat card
-         she was in — the screen said she lost in one place and carried on
-         showing her as though she had not. */
-      for (const el of document.querySelectorAll('.dr-lsroom .dr-bust')) {
-        const img = el.querySelector('img.dr-por, .dr-initials');
-        const nm = img?.getAttribute('alt') || img?.getAttribute('title');
-        el.classList.toggle('dr-gone', !!(done && goes && nm === goes));
-      }
+      /* HER LIGHT IS NOT DRIVEN FROM HERE. The sashay is its own card at the
+         end of the screen and it snuffs itself on reveal (.dr-fare), which
+         is one fewer thing that can fall out of step with the reveal. */
     };
   }
 

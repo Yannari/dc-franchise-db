@@ -68,7 +68,38 @@ The entire eliminated cast returning was one paragraph.
 that is the whole texture. The early boot nobody has seen since the premiere
 arrives differently from the queen who left last week and has not slept.
 
-### 4. `js/dr/data/returnee-beats.js` — the Returning Queen twist
+### 4. `js/dr/data/stage-beats.js` — her last words, in her own voice
+
+The lip sync screen now ends on a card that is just her: her portrait, her
+name, and one thing she says. The light goes out on that portrait a beat
+after you read it, so this line is the last thing on the screen and the last
+thing anybody hears from her.
+
+| beat | tiers | what it is |
+|---|---|---|
+| `sashay-words` | `predator`, `sunshine`, `firecracker`, `professional`, `scrapper` | Her own parting words, first person, in quotation marks. `{a}` is her. |
+
+**Six variants per tier. Keep them SHORT — two or three sentences.** This is
+a parting shot, not the goodbye speech; she gets a real speech on the very
+next screen (`farewell`), and the two must not read the same. `farewell` is
+the narrator describing her goodbye in the werk room afterwards. This is her,
+out loud, on the stage, in the second after the host says her name.
+
+**The shape is gratitude then the one-liner.** "Thank you for the
+opportunity" is what every queen says and it should stay recognisable — what
+makes the line hers is whatever she puts after it.
+
+The five tiers are the **swagger groups** from `js/dr/data/runway-voices.js`,
+the same five attitudes that have been narrating her runway walks all season,
+so read `swaggerLinesFor` for the voice before writing:
+
+- `predator` — leaves a threat behind, beautifully wrapped
+- `sunshine` — means every word of it, no edge at all
+- `firecracker` — loud, funny, refusing to be sad on camera
+- `professional` — treats it as a result, takes it like one, shakes hands
+- `scrapper` — points out she was never supposed to get this far
+
+### 5. `js/dr/data/returnee-beats.js` — the Returning Queen twist
 
 A queen the show already sent home walks back into the werk room and back
 into the competition. The engine, the twist card, the timeline dropdown and

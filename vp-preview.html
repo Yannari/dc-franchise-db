@@ -26,8 +26,16 @@ window._tvState = {};
 const S=['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
 const g=rngFor(9); const r=()=>1+Math.floor(g()*10);
 const NAMES=['Anne Maria','Ren','Bowie','Priya','Millie','Nichelle','Jules','Misha','Kai','Sanders','Ivy','Duncan'];
+/* ONE ARCHETYPE PER QUEEN, NOT 'hero' TWELVE TIMES. The harness used to give
+   every queen the same archetype, which quietly disabled every archetype-gated
+   thing in the engine and made this a bad instrument twice: once when three
+   camp events looked dead that were not, and once when all eight sashay lines
+   drew the same tier. Twelve queens, twelve archetypes, so every branch has
+   somebody who can take it. */
+const ARCH=['hero','villain','mastermind','schemer','hothead','chaos-agent',
+  'wildcard','challenge-beast','perceptive-player','underdog','goat','floater'];
 const cast=NAMES.map((name,i)=>({name,slug:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
-  gender:'m',sexuality:'gay',archetype:'hero',age:22+i,
+  gender:'m',sexuality:'gay',archetype:ARCH[i%ARCH.length],age:22+i,
   stats:Object.fromEntries(S.map(k=>[k,r()])),
   drag:{acting:r(),comedy:r(),dance:r(),design:r(),runway:r(),lipsync:r(),singing:r()}}));
 const bonds={}; const key=(a,b)=>[a,b].sort().join('|');

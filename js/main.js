@@ -3,6 +3,14 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import * as core from './core.js';
+import * as vpDrRevealMod from './vp-dr/reveal.js';
+import * as vpDrScreensMod from './vp-dr/screens.js';
+import * as vpDrChartMod from './vp-dr/chart.js';
+import * as vpDrWerkMod from './vp-dr/werk.js';
+import * as vpDrArrivalsMod from './vp-dr/arrivals.js';
+import * as vpDrChalMod from './vp-dr/challenge.js';
+import * as vpDrStageMod from './vp-dr/stage.js';
+import * as vpDrResultsMod from './vp-dr/results.js';
 import * as playersMod from './players.js';
 import * as coachEpisodeMod from './coach-episode.js';
 import * as coachStatusMod from './coach-status-events.js';
@@ -147,6 +155,12 @@ import * as trDebugMod from './vp-tr/debug.js';
 // reads that flag, and the setup screen, Quick Setup and the run tab all read
 // `formatIsRunnable`. Nothing here is optional.
 import * as trRunMod from './tr-run.js';
+// The run loop's main-stage branch, and the module that sets
+// window._drRunnable. Importing it IS the wiring: formatIsRunnable reads that
+// flag, and the setup screen, Quick Setup and the run tab all read
+// formatIsRunnable. Nothing here is optional.
+import * as drRunMod from './dr-run.js';
+import * as drJudgesUiMod from './dr/judges-ui.js';
 import * as bbRunMod from './bb-run.js';
 import * as twistContractMod from './bb/twist-contract.js';
 import * as rivalsMod from './bb/rivals.js';
@@ -251,7 +265,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, monsterCashMod, mineOverMatterMod, treasureIslandMod, operationClassifiedMod, hideAndBeSneakyMod, offTheChainMod, alienEggMod, beachBlanketBogusMod, crazytownMod, chefshankMod, oneFluMod, mastersOfDisastersMod, fullMetalDramaMod, oceansHeistMod, millionBucksBCMod, sportsMarathonMod, superHeroldMod, hauntedHouseMod, hungOutMod, merryGoRoundMod, mazeOfTheFallenMod, demonsPlainerVpMod, princessPrideMod, getAClueMod, rockNRuleMod, crouchingCourtneyMod, houstonMod, topDogMod, walkEgyptMod, crazyFunTimeMod, frozenCrossingMod, vikingSourMod, bridalBrawlsMod, greatFakeOutMod, africanLyingSafariMod, rapaPhooeyMod, drumhellerMod, planesTrainsMod, picnicHangingDorkMod, slapSlapRevMod, broadwayBabyMod, amazonRaceMod, nightMuseumMod, brutalerMod,
   truthOrSharkMod, rockTheDockMod, tropicalTakedownMod, midnightManhuntMod, greecesPiecesMod, hangarBlackMod, iceIceBabyMod, findersCreepersMod, backstabbersAhoyMod, projectRunawayMod, hawaiianPunchMod, aftermayhemMod, socialManipMod, auctionVpMod, settingsMod, themesMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
-  castUiMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
+  castUiMod, castRoomMod, studioMod, quickSetupMod, trArrivalMod, trConclaveMod, trRoundTableMod, trColdOpenMod, trHouseStatusMod, trMissionMod, trArmouryMod, trRecruitmentMod, trEndgameMod, trCastleDayMod, trSelectionMod, trSuspicionMod, trConfessionalsMod, trDebugMod, trRunMod, drRunMod, drJudgesUiMod, vpDrRevealMod, vpDrScreensMod, vpDrChartMod, vpDrWerkMod, vpDrArrivalsMod, vpDrChalMod, vpDrStageMod, vpDrResultsMod, bbRunMod, rivalsMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod, vpCoachesMod,
   savestateMod,
   statsExportMod,
   audioMod,

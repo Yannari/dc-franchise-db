@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>VP preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/simulator.css">
+<link rel="stylesheet" href="css/ui-system.css">
+<style>
+  html,body{margin:0;background:#07090d;color:#f0f6fc}
+  #visual-player{display:flex!important;height:100vh}
+  .rp-sidebar{width:172px}
+</style>
+<div id="visual-player" data-view-mode="watch">
+  <div class="rp-sidebar" id="vp-sidebar"></div>
+  <div class="rp-main">
+    <div class="rp-nav"><span class="rp-nav-ep">VIEWING PARTY · preview</span></div>
+    <div id="vp-content"></div>
+  </div>
+</div>
+<script type="module">
+import { playDragSeason } from './js/dr/season.js';
+import { dragScreens } from './js/vp-dr/screens.js';
+import { rngFor } from './js/dr/rng.js';
+/* THE REVEAL HANDLERS ARE ON WINDOW IN THE REAL APP (js/main.js exposes them
+   for the inline onclick attributes the screens emit). The harness has to do
+   the same or every reveal button here is a ReferenceError, which made the
+   buttons untestable and hid whatever they would have shown. */
+import * as drChart from './js/vp-dr/chart.js';
+Object.assign(window, drChart);
+window._tvState = {};
+const S=['physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'];
+const g=rngFor(9); const r=()=>1+Math.floor(g()*10);
+const NAMES=['Anne Maria','Ren','Bowie','Priya','Millie','Nichelle','Jules','Misha','Kai','Sanders','Ivy','Duncan'];
+/* ONE ARCHETYPE PER QUEEN, NOT 'hero' TWELVE TIMES. The harness used to give
+   every queen the same archetype, which quietly disabled every archetype-gated
+   thing in the engine and made this a bad instrument twice: once when three
+   camp events looked dead that were not, and once when all eight sashay lines
+   drew the same tier. Twelve queens, twelve archetypes, so every branch has
+   somebody who can take it. */
+const ARCH=['hero','villain','mastermind','schemer','hothead','chaos-agent',
+  'wildcard','challenge-beast','perceptive-player','underdog','goat','floater'];
+const cast=NAMES.map((name,i)=>({name,slug:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+  gender:'m',sexuality:'gay',archetype:ARCH[i%ARCH.length],age:22+i,
+  stats:Object.fromEntries(S.map(k=>[k,r()])),
+  drag:{acting:r(),comedy:r(),dance:r(),design:r(),runway:r(),lipsync:r(),singing:r()}}));
+const bonds={}; const key=(a,b)=>[a,b].sort().join('|');
+const {rows}=playDragSeason({cast,seed:4,config:{drSmackdown:true,drSchedule:[{episode:3,rateAQueen:true}]},
+  bond:(a,b)=>bonds[key(a,b)]||0,
+  addBond:(a,b,d)=>{const k=key(a,b);bonds[k]=Math.max(-10,Math.min(10,(bonds[k]||0)+d));},
+  popDelta:()=>{}});
+/* THE CHART READS THE SEASON, NOT THE ROW, and this has to be set BEFORE
+   any screen is built. rpBuildChart takes per-episode facts — the challenge
+   that produced a column, who won that week's mini, who led a team — from
+   window._drSeasonRows, exactly as the real viewing party does. Setting it
+   after dragScreens() ran left every one of those blank, which is a property
+   of the harness rather than the screen. */
+window._drSeasonRows=rows;
+const params=new URLSearchParams(location.search);
+const epNum=Number(params.get('ep')||4);
+const want=params.get('screen')||'dr-runway';
+const row=rows.find(x=>x.num===epNum)||rows[3];
+window.vpEpNum=row.num;
+const screens=dragScreens(row);
+const s=screens.find(x=>x.id===want)||screens[0];
+document.getElementById('vp-content').innerHTML=s.html;
+// reveal everything so the screen is not sitting at step -1
+for(const el of document.querySelectorAll('.dr-step')) el.classList.add('dr-vis');
+document.getElementById('vp-sidebar').innerHTML =
+  screens.map(x=>`<button class="rp-sidebar-item ${x.id===s.id?'active':''}">${x.icon||'<span class="rp-sidebar-dot"></span>'}<span>${x.label}</span></button>`).join('');
+window.__row=row;
+window.__rows=rows.map(r=>r.num+":"+(r.dr&&r.dr.finale?"FINALE":(r.dr&&r.dr.smackdown?"SMACK":(r.dr&&r.dr.reunion?"REUNION":"week"))));
+window.__rowsAll=rows;
+window.__audit=()=>{
+  const out={};
+  for(const r of rows){
+    for(const sc of dragScreens(r)){
+      const d=document.createElement('div'); d.innerHTML=sc.html;
+      d.querySelectorAll('style').forEach(e=>e.remove());
+      // chrome markers are not prose
+      const steps=[...d.querySelectorAll('.dr-step')];
+      const txt=steps.map(e=>e.textContent).join(' ').replace(/\s+/g,' ').trim();
+      const o=out[sc.id]||(out[sc.id]={eps:0,steps:0,chars:0,empty:0});
+      o.eps++; o.steps+=steps.length; o.chars+=txt.length;
+      if(txt.length<40) o.empty++;
+    }
+  }
+  return out;
+};
+window.__visual=(id,epNum)=>{
+  const r=rows.find(x=>x.num===epNum); if(!r) return null;
+  const sc=dragScreens(r).find(x=>x.id===id); if(!sc) return null;
+  const host=document.getElementById('vp-content');
+  host.innerHTML=sc.html;
+  for(const el of host.querySelectorAll('.dr-step')) el.classList.add('dr-vis');
+  const page=host.querySelector('.rp-page')||host;
+  const steps=[...host.querySelectorAll('.dr-step')];
+  const txt=host.textContent.replace(/\s+/g,' ').trim();
+  return { id, ep:epNum, h:Math.round(page.getBoundingClientRect().height),
+    steps:steps.length, chars:txt.length,
+    imgs:host.querySelectorAll('img').length };
+};
+window.__ready=true;
+window.__screens=screens.map(x=>x.id);
+</script>

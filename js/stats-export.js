@@ -6,6 +6,8 @@ import { summariseWeek } from './bb-run.js';
 import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
+import { buildDragSeasonDocument } from './dr/export.js';
+import { DRAG_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -2416,6 +2418,197 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
   return db;
 }
 
+/**
+ * A drag season into players_database.json.
+ *
+ * Written next to the Big Brother merge rather than in js/dr/export.js because
+ * it needs the private helpers that keep every show's careers consistent —
+ * `_stripSeasonFromAll`, `_tagSeasonDetail`, `_rebuildByShow`, `_winnerBadge`.
+ * A second copy of those rules is how two shows' careers drift apart.
+ *
+ * `challengeWins` is maxi wins ALONE. Big Brother folds two competitions into
+ * it because the house has two; a runway has one, and adding lip syncs to it
+ * would make "challenge wins" mean "nights she was on the stage at the end",
+ * which is a different and much commoner thing. Lip syncs are their own number
+ * and are additional, exactly as the arena is for the house.
+ */
+export function mergeDragSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== DRAG_FORMAT) {
+    throw new Error(`mergeDragSeason expects a ${DRAG_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Drag Race season document has no seasonNumber');
+
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.players) db.players = [];
+
+  // Take this season off everybody first, so a queen dropped from a re-exported
+  // cast does not keep the appearance, the season count and the fame with it.
+  _stripSeasonFromAll(db, seasonNum, DRAG_FORMAT);
+
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    const dr = entry.dr || {};
+
+    let player = db.players.find(x => x.id === slug || x.name === name);
+    if (!player) {
+      player = {
+        id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0,
+        tier: '', badges: [], seasonDetails: [],
+      };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+    if (entry.emoji && entry.emoji !== '[AI_FILL]') player.emoji = entry.emoji;
+    _stripSeasonFromPlayer(player, seasonNum, DRAG_FORMAT);
+
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalChallengeWins = (player.totalChallengeWins || 0) + (dr.wins || 0);
+    player.totalMaxiWins = (player.totalMaxiWins || 0) + (dr.wins || 0);
+    player.totalLipsyncWins = (player.totalLipsyncWins || 0) + (dr.lipsyncWins || 0);
+    player.totalBottoms = (player.totalBottoms || 0) + (dr.bottoms || 0);
+    /* NO totalVotesAgainst AND NO totalJuryVotes. Both exist on every player
+       record and both would take `+ 0` here without complaint — and a zero
+       written by a show that has no ballot is indistinguishable from a zero
+       earned on a show that does. Left untouched, so a career that includes a
+       camp still reports the camp's votes and nothing dilutes them. */
+
+    player.seasonDetails.push(_tagSeasonDetail({
+      season: seasonNum,
+      avatarId: entry.avatarId || null,
+      avatarFile: entry.avatarFile || '',
+      placement: entry.placement,
+      status: entry.status,
+      challengeWins: dr.wins || 0,
+      popularity: Number(entry.popularity) || 0,
+      dr: {
+        wins: dr.wins || 0,
+        highs: dr.highs || 0,
+        lows: dr.lows || 0,
+        bottoms: dr.bottoms || 0,
+        lipsyncWins: dr.lipsyncWins || 0,
+        congeniality: dr.congeniality || 0,
+      },
+      /* THE PAIR, CARRIED. `js/life-hook.js` reads `showmance` off an
+         appearance to decide who walked out of a season together — it is the
+         one field that lets a relationship survive past the finale — and
+         dropping it here would end the drag romance thread at the franchise
+         boundary with everything upstream of it working. */
+      ...(entry.showmance
+        ? { showmance: entry.showmance, showmanceEnded: entry.showmanceEnded || 'intact' } : {}),
+      notes: _clean(entry.notes) ? [entry.notes] : [],
+      gameplayStyle: _clean(entry.gameplayStyle),
+      keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments
+        : (_clean(entry.keyMoments) ? [entry.keyMoments] : []),
+    }, DRAG_FORMAT));
+
+    const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
+    player.avgPlacement = places.length
+      ? Math.round(places.reduce((t, v) => t + v, 0) / places.length * 100) / 100
+      : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+
+    _rebuildByShow(player);
+
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      // DR1 Winner. The bare number is Total Drama's, permanently.
+      const badge = _winnerBadge(seasonNum, DRAG_FORMAT);
+      if (!player.badges.includes(badge)) player.badges.push(badge);
+    }
+  }
+
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
+/**
+ * A drag season into seasons_database.json — the index the seasons page draws.
+ *
+ * Format-matched throughout, so re-publishing Drag Race 1 leaves Total Drama 1
+ * and Big Brother 1 exactly where they were.
+ */
+export function mergeDragSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== DRAG_FORMAT) {
+    throw new Error(`mergeDragSeasonsDatabase expects a ${DRAG_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Drag Race season document has no seasonNumber');
+
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, DRAG_FORMAT, seasonNum);
+  // Read before the filter: the row is rebuilt from the document, so anything
+  // the document does not carry would not survive a re-publish.
+  const priorRatings = (db.seasons.find(x =>
+    x.seasonNumber === seasonNum && x.format === DRAG_FORMAT) || {}).ratings || null;
+
+  db.seasons = db.seasons.filter(x =>
+    !(x.seasonNumber === seasonNum && x.format === DRAG_FORMAT));
+
+  const awards = seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {};
+  const named = a => (a?.name ? { name: a.name, playerSlug: a.playerSlug || _slug(a.name) } : null);
+  const topComp = (seasonDoc.placements || [])
+    .map(x => ({ name: x.name, wins: x.dr?.wins || 0 }))
+    .filter(x => x.wins > 0)
+    .sort((a, b) => b.wins - a.wins)[0] || null;
+
+  db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
+    seasonNumber: seasonNum,
+    format: DRAG_FORMAT,
+    seasonId: seasonId(DRAG_FORMAT, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[DRAG_FORMAT].name} ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    episodeCount: seasonDoc.episodeCount,
+    /* NO `jurySize: 0`. The field means "how many people voted at the end", and
+       a zero is a claim about a jury that sat and cast nothing. This show has
+       none, so the row does not carry the field — `SHOWS[fmt].hasJury` is the
+       question, and every reader already asks it. */
+    winner: {
+      name: seasonDoc.winner?.name || null,
+      playerSlug: seasonDoc.winner?.playerSlug || _slug(seasonDoc.winner?.name || ''),
+      // Deliberately empty: nobody voted, and a tally string here is rendered
+      // as one by four different screens.
+      vote: '',
+      runnerUp: _clean(seasonDoc.placements?.[1]?.name),
+      keyStats: _clean(seasonDoc.winner?.keyStats),
+      strategy: _clean(seasonDoc.winner?.strategy),
+      legacy: _clean(seasonDoc.winner?.legacy),
+    },
+    awards: {
+      // Miss Congeniality IS this show's audience award; the registry says so.
+      fanFavorite: named(awards.fanFavorite)
+        || (seasonDoc.congeniality ? named({ name: seasonDoc.congeniality }) : null),
+      bestStrategic: named(awards.bestStrategic),
+      mostChallengeWins: topComp
+        ? {
+          name: topComp.name, playerSlug: _slug(topComp.name),
+          detail: `${topComp.wins} ${SHOWS[DRAG_FORMAT].words.comp}${topComp.wins === 1 ? '' : 's'}`,
+        }
+        : null,
+    },
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId(DRAG_FORMAT, seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
+  });
+
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  return db;
+}
+
 // ── 18. downloadSeasonExport ────────────────────────────────────────
 
 // ── 18. Export & Fill Narratives (combined) ─────────────────────────────
@@ -2981,6 +3174,112 @@ export async function exportTraitorsSeason() {
 registerSeasonExporter(DEFAULT_FORMAT, exportAndFillNarratives);
 registerSeasonExporter('big-brother', exportAndFillBigBrotherSeason);
 registerSeasonExporter('traitors', exportTraitorsSeason);
+
+/**
+ * Drag Race.
+ *
+ * This was a REFUSAL until the document builder existed, and the refusal was
+ * doing real work: falling through to the default would have run the Total
+ * Drama pipeline over a runway and published a season document in the wrong
+ * show's shape, with no error and no empty result.
+ *
+ * The builder exists now (js/dr/export.js), so the refusal is replaced rather
+ * than deleted — and the two things it was protecting are still checked here,
+ * because a real exporter can get them wrong just as quietly:
+ *
+ *   1. THE ROWS MUST BE THIS SHOW'S. A season restored from a save, or a tab
+ *      where somebody switched format after playing, can leave rows from
+ *      another show in `gs.episodeHistory`. Exporting those under a `dr-` id
+ *      is the split-brain the rest of this file refuses everywhere else.
+ *   2. THERE MUST BE A SEASON AT ALL. An empty history exports a document with
+ *      a cast of nobody, which publishes cleanly and is worse than an error.
+ */
+export async function exportDragRaceSeason(onStatus) {
+  const _status = onStatus || (() => {});
+
+  const rows = (gs.episodeHistory || []).filter(r => r && r.dr);
+  if (!rows.length) {
+    throw new Error(
+      `No ${SHOWS['drag-race'].name} season to export: gs.episodeHistory has no `
+      + 'episodes with a `dr` block. Play a season first.');
+  }
+  // Compared against the slug this exporter's own module declares, not a
+  // literal typed here: a comparison against a written-out slug is the
+  // two-show habit js/shows.js exists to end, and this file already carries
+  // five of them.
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== DRAG_FORMAT);
+  if (foreign.length) {
+    throw new Error(
+      `This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a drag-race id.`);
+  }
+
+  _status('Building the season document...');
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+
+  const doc = buildDragSeasonDocument(rows, {
+    seasonNumber: seasonNum,
+    twists: (seasonConfig.drSchedule || []).filter(Boolean),
+    congeniality: gs.dr?.congeniality || null,
+  });
+
+  _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
+
+  /* ── THE DATABASES, WHICH THE FIRST VERSION OF THIS PUBLISHED WITHOUT ──
+     A season document alone leaves the site describing a season none of its
+     players know they played: no row in seasons_database.json, no appearance
+     on any career, nothing for the rankings board to read. Both merges are
+     format-matched, so re-publishing this season leaves the other shows'
+     season 1 exactly where it is. */
+  _status('Merging databases...');
+  let playersDb = null; let seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+    playersDb = mergeDragSeason(playersExisting, doc);
+    seasonsDb = mergeDragSeasonsDatabase(seasonsExisting, doc);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    // Publishing a season document with no databases behind it would leave the
+    // site describing a season none of its players know they played.
+    throw new Error(`Could not merge the databases: ${err.message || err}`);
+  }
+
+  /* THE PAYLOAD THE WORKER ACTUALLY READS. The first version of this sent
+     `{ path, data }`. `publishSeason` looks at neither: it reads
+     `payload.season` and derives the filename itself from the format. So
+     `docs` came back empty, the worker threw "nothing to publish", and
+     `_publishSeasonToSite` swallowed the error and fell through to a download
+     reporting that the network had failed. A publish that quietly commits
+     nothing, and reports it as somebody else's problem. */
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum,
+    format: DRAG_FORMAT,
+    season: doc,
+    players: playersDb,
+    seasons: seasonsDb,
+  }, onStatus);
+  if (published) { _status('Done.'); return published; }
+
+  // Publishing off, or no worker configured: the documents come down as files
+  // rather than vanishing. The filename comes from the registry, never a
+  // typed-out prefix.
+  _status('Downloading files...');
+  _downloadJSON(doc, `${seasonId(DRAG_FORMAT, seasonNum)}-data.json`);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
+  _status('Done.');
+  return doc;
+}
+registerSeasonExporter('drag-race', exportDragRaceSeason);
 
 export async function exportSeason(onStatus) {
   const out = await seasonExporterFor(seasonFormat(seasonConfig) || DEFAULT_FORMAT)(onStatus);

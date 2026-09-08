@@ -742,6 +742,93 @@ export const RU_SHOW = {
       strategicScore: p.strategicScore ?? 0,
     }),
   },
+  // ══ DRAG RACE ═════════════════════════════════════════════════════
+  //
+  // MEASURED BEFORE IT WAS WRITTEN, over 60 seasons and 720 player-seasons,
+  // as a correlation against final placement (negative = the number goes up
+  // as the finish gets better), with DENSITY beside it because a column
+  // nobody scores is decoration whatever its correlation says:
+  //
+  //     column        r pooled   r top4   r rest   density   mean
+  //     maxi wins      -0.451    +0.106   -0.311     29%     0.67
+  //     lip syncs won  -0.295    -0.265   -0.322     31%     0.67
+  //     highs          -0.518    +0.096   -0.412     42%     0.75
+  //     bottoms        -0.005    -0.265   -0.317     79%     1.33
+  //
+  // Only the pooled column is stable. Across four independent blocks of
+  // fifteen seasons the pooled maxi figure holds at -0.42/-0.44/-0.42/-0.49,
+  // while the top-4 arm swings -0.004/+0.291/+0.239/-0.077 on n=60 — that is
+  // noise, and nothing here is priced off it.
+  //
+  // ── THE PENALTY COLUMN THIS PLAN ASKED FOR IS NOT HERE ──
+  //
+  // The brief specified `bottoms` at -0.5, to "separate a queen who cruised
+  // from one who was saved four times". The measurement says that is exactly
+  // backwards. Pooled, bottoms is r = -0.005 — and that zero is not
+  // independence, it is two effects at different levels cancelling:
+  // finalists average 1.01 bottoms and everyone else 1.50, so ACROSS groups
+  // more bottoms looks worse, while WITHIN the 75% who are not finalists
+  // more bottoms runs at -0.317 in the pooled set and -0.28/-0.22/-0.41/-0.34
+  // across the blocks. Being in the bottom four times means you were there
+  // for four more episodes. Charging for it is charging for survivorship,
+  // which is the trap this project already has a note about, and it would
+  // have been charged to 79% of the board.
+  //
+  // ── AND HIGHS IS THE MOST PLACEMENT-LIKE, NOT THE LEAST ──
+  //
+  // The brief priced it thin on the instinct that it accumulates with rounds
+  // survived. Correct instinct, and stronger than expected: at -0.518 it is
+  // the most placement-shaped column this show produces, ahead of maxi wins.
+  // It stays cheapest. Lip syncs won is the most independent of the three
+  // (-0.295, and it holds in BOTH arms rather than cancelling), so it is
+  // priced close to the top despite being the smaller achievement.
+  'drag-race': {
+    // The show's own currency, and a win is not available to somebody who
+    // already left. Priced first because it is what the season is for.
+    comp1: { label: 'Maxi', weight: 1.4, title: '+1.4 per maxi challenge win' },
+    // THIS SHOW'S VETO: won under pressure, on the night that would otherwise
+    // have ended you. r = -0.295 is the most independent figure on the board,
+    // so more of each point is a point the base was not already paying.
+    comp2: { label: 'Lip syncs', weight: 1.1,
+      title: '+1.1 per lip sync for your life won' },
+    // Thin on purpose. See the -0.518 above: this is the column closest to
+    // being placement wearing a hat.
+    comp3: { label: 'Highs', weight: 0.4, title: '+0.4 per high placement' },
+    // NO ADVANTAGE LIFECYCLE. This show has nothing found, played, wasted or
+    // carried out of the game, and an empty group contributes nothing rather
+    // than a penalty — the Traitors' `strategic` precedent, one block up.
+    adv: null,
+    // Nothing exports a strategic figure for a runway either, and there is no
+    // obvious candidate: the closest thing this show has to strategy is
+    // choosing what to make, which the panel already priced in the call.
+    strat: { weight: 0, scale: 10 },
+    /* ── A COLUMN WHOSE JOB IS TO STOP A WRONG DEFAULT ────────────────
+       `_ruScore` falls back to `RU_SHOW['total-drama'].social` when a show
+       declares none, and that fallback is the VOTES CURVE: it reads the
+       column as votes cast against, finds zero, and hands every queen on the
+       board a bonus for votes she was never eligible to receive. So the
+       column is declared.
+       It is declared at ZERO because on this show it would be paid twice.
+       The bottom two and the lip sync are the same event — winning your lip
+       sync IS surviving the bottom — and comp2 already prices it. On Big
+       Brother the two genuinely differ (a veto is not the block), which is
+       why the house pays both. Here the number is shown and not scored. */
+    social: { kind: 'survived', label: 'Bottom', weight: 0, cap: 6,
+      title: 'Times in the bottom two · shown, not scored — the lip syncs '
+        + 'column already prices surviving one',
+      prose: { zero: 'never landed in the bottom', one: 'in the bottom once',
+        many: n => `in the bottom ${n} times` } },
+    // Where this show keeps its numbers. See `read` on the house's entry for
+    // why this is a function per show and not a ternary in the loader.
+    read: (p) => ({
+      comp1: p.dr?.wins ?? 0,
+      comp2: p.dr?.lipsyncWins ?? 0,
+      comp3: p.dr?.highs ?? 0,
+      social: p.dr?.bottoms ?? 0,
+      advFound: 0, advPlayed: 0, advWasted: 0, advHeld: 0,
+      strategicScore: 0,
+    }),
+  },
 };
 
 /**

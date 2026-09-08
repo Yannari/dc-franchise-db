@@ -1178,6 +1178,168 @@ reference. Use its CRAFT. Ignore its FORMAT.
 ═══════════════════════════════════════════════════════════
 `;
 
+// ══════════════════════════════════════════════════════════════════════
+// DRAG RACE OVERRIDE
+// ══════════════════════════════════════════════════════════════════════
+//
+// Same reason as the Big Brother block above, and a sharper version of it.
+// That show at least has a vote the model can get right; this one has none at
+// all, and a writer carrying two ballot-shaped shows in its head will supply
+// one unasked — queens "campaigning", the panel "casting their votes", a
+// "jury" of eliminated queens. None of those exist. The panel RANKS and the
+// host DECIDES, and the only thing the queens themselves decide is a lip sync.
+//
+// The other trap is subtler and costs the show its most-watched five minutes:
+// being NAMED in the bottom and LIP SYNCING are two different fates. A queen
+// can be called to the bottom and then saved before the song starts. Told only
+// "she was in the bottom", the model writes her a lip sync she never danced.
+function isDragRace(text) {
+  if (!text || typeof text !== "string") return false;
+  const head = text.slice(0, 60000);
+  return /MAXI CHALLENGE|LIP SYNC FOR YOUR LIFE|WERK ROOM|MAIN STAGE/i.test(head);
+}
+
+const DR_OVERRIDE = `
+═══════════════════════════════════════════════════════════
+⚠️ THIS IS A DRAG RACE EPISODE — THE FORMAT BELOW IS OVERRIDDEN
+═══════════════════════════════════════════════════════════
+
+Everything after this block describes Total Drama: tribes, tribal council,
+immunity challenges, camp, a vote. THIS EPISODE HAS NONE OF THOSE. Where the
+two conflict, THIS BLOCK WINS. Take the writing craft from below — the voice,
+the invention rules, the emotional depth — and none of its vocabulary and
+none of its section list.
+
+THE GAME YOU ARE WRITING:
+- A cast of drag queens in one workroom, competing week to week. No tribes,
+  no swap, no merge, no camp.
+- Each episode has a MINI CHALLENGE (small, fast, often for an advantage) and
+  a MAXI CHALLENGE (the main event: acting, comedy, design, singing, dance).
+- Then a RUNWAY CATEGORY on the MAIN STAGE, where every queen presents a look.
+- The PANEL — the host and the regular judges, plus any guest judge — critiques
+  the queens on the main stage, then deliberates while the queens wait.
+- ⛔ THERE IS NO VOTE. NOT ONE. Nobody is voted for. Nobody campaigns for
+  support. There is no ballot, no jury, no alliance that can deliver numbers,
+  and the queens have NO say in who goes home. The panel ranks on performance
+  and runway; THE HOST MAKES THE FINAL CALL ALONE.
+- The bottom two LIP SYNC FOR THEIR LIVES to one song. The host watches, then
+  says "shantay you stay" to one and "sashay away" to the other.
+- Occasionally the host keeps BOTH ("double shantay") and nobody goes home.
+
+⛔ THE DISTINCTION YOU WILL GET WRONG IF YOU DO NOT READ IT TWICE:
+Being NAMED IN THE BOTTOM and LIP SYNCING are two different fates.
+  • "NAMED IN THE BOTTOM AND THEN SAVED" — she was called to the bottom, made
+    to stand there, and then told she was safe BEFORE the song started. She
+    did NOT lip sync. Write the fear, never the performance.
+  • "THE BOTTOM TWO" — only these two lip synced. Only these two.
+Writing a lip sync for a queen who was saved is inventing the most-watched
+five minutes of the episode. Take the two names from the beat sheet's own
+"THE BOTTOM TWO" line and no others.
+
+VOCABULARY — never use the left column, always the right:
+  tribal council            -> the main stage / the critiques / the lip sync
+  immunity challenge        -> the maxi challenge
+  individual immunity       -> winning the maxi challenge
+  tribe / tribe swap        -> the werk room / there is no swap
+  merge / post-merge        -> there is no merge
+  camp                      -> the werk room (and "camp" in drag means a STYLE,
+                               never a place — do not use it for a location)
+  voted out / eliminated    -> sashayed away / sent home
+  the vote / the jury       -> neither exists; delete the sentence
+  Chris / the host of TD    -> RuPaul
+  confessional              -> a werk room confessional, at her station,
+                               in the mirror
+
+THE ROOMS, which are the scene vocabulary:
+  the WERK ROOM (stations, mirrors, the wall of fabric, the lipstick message a
+  departing queen leaves on the mirror), the MAIN STAGE and its runway, and
+  UNTUCKED — the lounge where the queens wait during deliberation and where the
+  night's fight actually happens. Untucked is not a footnote; it is where the
+  reads land.
+
+═══════════════════════════════════════════════════════════
+FACTS ARE NOT YOURS TO WRITE
+═══════════════════════════════════════════════════════════
+
+You may invent how it FELT. You may never invent what HAPPENED. Every one of
+these is read straight from the beat sheet, copied, and never inferred,
+reconstructed, or smoothed into a better story:
+
+  • which maxi challenge it was, and what the queens actually had to do
+  • who won the mini challenge and what it bought her
+  • which character, part, team or category each queen took
+  • the runway category, in the exact words the beat sheet uses
+  • who won the night, who was high, safe, low, named in the bottom, and
+    which TWO lip synced
+  • the song they lip synced to
+  • who stayed, who went home, and whether the host kept both
+  • at the finale: who was crowned, who came second, and the final order
+
+If the beat sheet does not say something, YOU DO NOT KNOW IT. Write around
+the gap. Do not fill it.
+
+VOICE: where the beat sheet gives a queen's voice, that IS her voice — use it
+and do not smooth it into house style. A queen with no voice on file gets your
+best read of her from what she does in the beats, never a borrowed one.
+
+TONE: this show is funny and it is sincere in the same breath, and it must be
+both. The reads are fast and cruel and land between people who like each
+other. Underneath it, these are performers who left something behind to be
+here, and the show never lets you forget that for a whole episode. Comedy that
+has no cost is not this show; sincerity with no jokes in it is not either.
+
+═══════════════════════════════════════════════════════════
+OUTPUT FORMAT — DRAG RACE (REPLACES THE STRUCTURE BELOW)
+═══════════════════════════════════════════════════════════
+
+=== META ===
+SEASON: [name]
+EPISODE [num] - "[invented episode title]"
+QUEENS REMAINING: [count]
+
+## THE WERK ROOM
+[The morning after. The empty station, the lipstick message if there was one,
+who is shaken and who is pretending not to be.]
+
+## THE MINI CHALLENGE
+[What it was, who won, what it bought her.]
+
+## THE MAXI CHALLENGE
+[The assignment in the host's words. Who took what. The rehearsal or build —
+who helped, who sabotaged, who could not get it. Then the performance itself,
+queen by queen, with the ones the beat sheet flagged getting the most room.]
+
+## UNTUCKED / THE LOUNGE
+[The wait. The fight, if there was one. Write it as a scene with the room
+present, not as narration.]
+
+## THE MAIN STAGE
+[The runway category and the looks. Then the critiques, judge by judge, in the
+panel's own register — the host is warm and lethal; the regulars each have a
+lane. Then the queens leave the stage and the panel deliberates.]
+
+## THE VERDICT
+[The call, in order: the winner, the high, the safe, the low, the bottom. Name
+who was saved before the lip sync and make the reprieve land.]
+
+## THE LIP SYNC
+[Only the two queens the beat sheet names. The song. What each one does with
+it. Then the host's call.]
+
+## THE EXIT
+[The walk, the mirror message, what the room does after.]
+
+---
+
+## NEXT WEEK QUESTIONS
+[4-5 questions the episode actually raised.]
+
+═══════════════════════════════════════════════════════════
+END OF DRAG RACE OVERRIDE — everything below is Total Drama
+reference. Use its CRAFT. Ignore its FORMAT.
+═══════════════════════════════════════════════════════════
+`;
+
 /**
  * The analytics pipeline's text passes, on OpenAI.
  *
@@ -1231,7 +1393,9 @@ async function enhanceSummary(simulatorSummary, season, episode, env, prevSummar
     : "";
 
   // Placed first so it is the first thing read: it disclaims the rest.
-  const bbBlock = isBigBrother(simulatorSummary) ? BB_OVERRIDE : "";
+  // The show override, one of them at most: a season is one show.
+  const bbBlock = isBigBrother(simulatorSummary) ? BB_OVERRIDE
+    : isDragRace(simulatorSummary) ? DR_OVERRIDE : "";
 
   // ── ALREADY IN SHAPE: FILL THE SLOTS, DO NOT REBUILD ──
   //
@@ -1763,7 +1927,8 @@ async function generateSummary(rawText, season, episode, env, prevSummary = "", 
     });
   }
 
-  const bbBlock = isBigBrother(rawText) ? BB_OVERRIDE : "";
+  const bbBlock = isBigBrother(rawText) ? BB_OVERRIDE
+    : isDragRace(rawText) ? DR_OVERRIDE : "";
 
   const instructions = `${bbBlock}You are a Total Drama franchise analyst and TV writer's room assistant. Convert the raw BrantSteele simulation output into a structured episode summary. Your summaries are used to generate full episode scripts — so they must be SPECIFIC, STORY-DRIVEN, and full of usable dramatic detail. Vague relationship labels ("brewing instability", "minor positive relationships") are USELESS. Concrete story moments are EVERYTHING.
 
@@ -2807,6 +2972,50 @@ house's belief and the truth apart. Your narration follows the truth; only
 the houseguests are allowed to be wrong.
 ═══════════════════════════════════════════════════════════
 
+` : isDragRace(summaryText) ? `
+═══════════════════════════════════════════════════════════
+⚠️ THIS IS A DRAG RACE EPISODE, NOT TOTAL DRAMA
+═══════════════════════════════════════════════════════════
+There are no tribes, no camp, no tribal council, no immunity challenge, no
+merge, and no Chris. There is one werk room of drag queens, a mini challenge,
+a maxi challenge, a runway category on the main stage, critiques from the
+panel, and a lip sync between the bottom two.
+
+⛔ THERE IS NO VOTE. NOT ONE. Nobody is voted for, nobody campaigns for
+support, there is no ballot and no jury, and the queens have NO say in who
+goes home. The panel ranks; RuPaul decides alone. Never write a queen
+counting numbers or working a room for votes — the currency does not exist
+on this show. What she can work is the panel's opinion of her, and nothing
+else.
+
+⛔ NAMED IN THE BOTTOM ≠ LIP SYNCED. A queen can be called to the bottom and
+told she is safe BEFORE the song. Only the two the beat sheet calls "THE
+BOTTOM TWO" lip sync. Writing a lip sync for a queen who was saved invents
+the biggest scene of the episode.
+
+The scene vocabulary is the werk room (stations, mirrors, the fabric wall,
+the lipstick message on the mirror), the main stage and its runway, and
+Untucked — the lounge where they wait out deliberation. Confessionals are
+werk room confessionals, at her station or in the mirror.
+
+WRITE UNTUCKED. If the beat sheet contains a read, a confrontation or a
+row in the lounge, it gets a full scene with the room present — not a line
+of narration. That is where this show lives.
+
+Note on the word "camp": in drag it is a STYLE, never a place. Never use it
+for a location.
+
+LOCKED, NEVER INVENTED: the maxi challenge and what it required, who won the
+mini, which part or character each queen took, the runway category, who won
+the night, who was high, safe, low, named in the bottom, which two lip synced,
+the song, who stayed and who sashayed away.
+
+TONE: funny and sincere in the same breath, and it has to be both. The reads
+are fast and cruel and land between people who like each other; underneath it
+these are performers who gave something up to be here. Comedy with no cost is
+not this show, and sincerity with no jokes in it is not either.
+═══════════════════════════════════════════════════════════
+
 ` : '';
 
   const instructions = `${bbScreen}
@@ -3779,6 +3988,11 @@ async function generateRankingsReasoning(body, env) {
       'Good example (winner): "TR1\'s most controlled Traitor. Bowie took the cloak on the first night and spent nine of them steering the table onto other people\'s names — he argued for two murders he had no stomach for, sat through a Round Table that all but had him, and walked out of the endgame with the pot because the last Faithful still believed him."',
       'Good example (non-winner): "The best read of the season, and it came a night late. Millie called the Traitor correctly in episode six and could not get a second voice behind her; they murdered her before she could try again, and the room banished her name two rounds later off nothing but her own argument."',
       'Good example (early boot): "Gone before she could be wrong about anybody. Nichelle was the first name the conclave agreed on — not for what she had seen, but for how quickly the room listened to her."',
+    ],
+    "Drag Race": [
+      `Good example (winner): "DR1's most complete winner. Bowie took three maxi challenges across an eight-week run and never once stood in the bottom — she won the acting week off a part nobody else wanted, held the room together through the makeover, and beat the season's best lip syncer in the final duel on a song that suited neither of them."`,
+      `Good example (non-winner): "The best queen never to be crowned. Millie was called safe five weeks running before the panel finally saw her, then won twice in a row and walked into a finale against the one queen in the room who could out-dance her."`,
+      `Good example (early boot): "Gone before the season could use her. Nichelle was named in the bottom in week two on a design challenge she had no business losing, lip synced to a song she had never heard, and sashayed away with the best runway of the night still on her back."`,
     ],
   };
   /* NO FALLBACK TO ANOTHER SHOW'S EXAMPLES.

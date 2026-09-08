@@ -90,14 +90,42 @@ export const REL_KINSHIP = {
   // off this axis and could not cast a mother and son. A parent and child is
   // also not one relation: a father and son in a house is a different
   // programme from a mother and daughter, and the screens say so.
-  twins:       { label: 'Twins',           family: true,  tense: false, group: 'Family' },
-  siblings:    { label: 'Siblings',        family: true,  tense: false, group: 'Family' },
-  'step-siblings': { label: 'Step-siblings', family: true, tense: false, group: 'Family' },
-  'parent-child': { label: 'Parent & child', family: true, tense: false, group: 'Family' },
-  grandparent: { label: 'Grandparent & grandchild', family: true, tense: false, group: 'Family' },
-  'aunt-uncle': { label: 'Aunt/uncle & niece/nephew', family: true, tense: false, group: 'Family' },
-  cousins:     { label: 'Cousins',         family: true,  tense: false, group: 'Family' },
-  'in-laws':   { label: 'In-laws',         family: true,  tense: false, group: 'Family' },
+  twins:       { label: 'Twins',           family: true,  tense: false, axis: 'blood', group: 'Family' },
+  siblings:    { label: 'Siblings',        family: true,  tense: false, axis: 'blood', group: 'Family' },
+  'step-siblings': { label: 'Step-siblings', family: true, tense: false, axis: 'blood', group: 'Family' },
+  'parent-child': { label: 'Parent & child', family: true, tense: false, axis: 'blood', group: 'Family' },
+  grandparent: { label: 'Grandparent & grandchild', family: true, tense: false, axis: 'blood', group: 'Family' },
+  'aunt-uncle': { label: 'Aunt/uncle & niece/nephew', family: true, tense: false, axis: 'blood', group: 'Family' },
+  cousins:     { label: 'Cousins',         family: true,  tense: false, axis: 'blood', group: 'Family' },
+  'in-laws':   { label: 'In-laws',         family: true,  tense: false, axis: 'blood', group: 'Family' },
+
+  /* ── the drag family, which is a different thing to a family ──
+
+     EXCLUSIVE WITH THE BLOOD TERMS ABOVE, both ways round. A drag season has
+     no twins and no in-laws, and a camp has no drag mothers; offering either
+     list to the other show clutters a picker with terms that show's engine
+     will never read, which is how a season ends up carrying a relation
+     nothing acts on. `axis` is the switch and js/cast-ui.js is the only
+     reader: 'drag' on a runway, 'blood' everywhere else, and every term with
+     no axis at all -- exes, best friends, worked together, married -- is
+     offered to all four shows, because those are true of anybody.
+
+     A drag mother is not a parent and `parent-child` is the wrong word for
+     her: she is the queen who put you in your first pair of heels, and the
+     relation is chosen rather than inherited. It is also the one relation on
+     this axis that BUILDS SOMETHING -- js/dr/family.js walks these edges into
+     a tree, so authoring three of them produces aunts, cousins and
+     grandmothers nobody typed.
+
+     Direction is in the label because the tab shows A and B in order and
+     "mother" alone does not say whose. Only these three are ever authored;
+     every other term in a drag family is derived from them. */
+  'drag-mother':   { label: "Drag mother — A is B's mother", family: true, tense: false,
+    axis: 'drag', group: 'Drag family' },
+  'drag-daughter': { label: "Drag daughter — A is B's daughter", family: true, tense: false,
+    axis: 'drag', group: 'Drag family' },
+  'drag-sisters':  { label: 'Drag sisters', family: true, tense: false,
+    axis: 'drag', group: 'Drag family' },
 
   // ── together ──
   married:     { label: 'Married',         family: true,  tense: false, group: 'Together' },
@@ -315,6 +343,11 @@ export const TWIST_CATEGORIES = [
   { id: 'social', label: 'Social' },
   { id: 'challenge', label: 'Challenge' },
   { id: 'murder', label: 'Murder Twists' },
+  /* ALL STARS IS ITS OWN SHELF. The format's twists are not variations on a
+     regular season's — they change WHO DECIDES, which is the deepest rule the
+     show has — so they group on their own rather than being scattered through
+     Elimination and Social where a reader would have to tell which is which. */
+  { id: 'all-stars', label: 'All Stars' },
 ];
 
 export const TWIST_CATEGORY_LABEL = Object.fromEntries(
@@ -911,6 +944,67 @@ export const TWIST_CATALOG = [
   { id:'tr-armoury', emoji:'🛡️', name:'The Armoury', format:'traitors',
     category:'power', phase:'any', engineType:'tr-armoury',
     desc:'The players who did best in today’s mission earn a visit to the Armoury. They go in one at a time and each opens a single box; one of them hides a shield, which blocks tonight’s murder and nothing else. The castle sees exactly WHO went in and never learns who came out with it — so the Traitors have to decide whether anybody in that group is worth the risk of wasting the night on a wall. Set the group size and how many shields are hidden in Castle Options.' },
+
+  // ── DRAG RACE ──────────────────────────────────────────────────────
+  //
+  // In the catalogue with everybody else's, because that is where a twist
+  // belongs and where every other show keeps theirs. They were checkboxes and
+  // a text box in MAIN STAGE OPTIONS, which is where a FORMAT choice lives —
+  // how the finale is shaped, whether the host may keep both — and a twist
+  // that happens on one named episode is not that.
+  //
+  // `episodeField` names the config key each one writes on `drSchedule`, so
+  // the designer can book it against an episode number the same way a swap or
+  // a double eviction is booked.
+  { id:'dr-no-elimination', emoji:'\u{1F6AB}', name:'No Elimination', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-no-elimination', episodeField:'noElimination',
+    desc:'The host tells the room before the challenge that nobody is going home. The week is judged and ranked exactly as normal, the bottom two still lip sync, and both of them walk back into the workroom. It is not a double shantay — that is the host deciding in the moment that two performances were too good to lose. This is production announcing beforehand that the door stays shut, and the season runs ONE EPISODE LONGER for it: fourteen queens go back to fourteen.',
+    incompatible:['dr-double-elimination'] },
+  { id:'dr-double-elimination', emoji:'⏩', name:'Double Elimination', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-double-elimination', episodeField:'doubleElimination',
+    desc:'A wider bottom and two queens gone. The panel calls THREE or FOUR to the bottom rather than two — four while the room can fill it, three once it cannot — and they lip sync together on the main stage; the two weakest performances both sashay away. It is not a double sashay, which is the host looking at one head-to-head lip sync and keeping neither. The season runs one episode SHORTER, so booking one of these against a No Elimination week cancels both out.',
+    incompatible:['dr-no-elimination'] },
+  { id:'dr-smackdown', emoji:'\u{1F5E1}️', name:'LaLaPaRUza Smackdown', format:'drag-race',
+    category:'returns', phase:'post-merge', engineType:'dr-smackdown', seasonWide:true,
+    desc:'A reunion with a scoreboard. Every queen already sent home this season comes back one episode before the crowning and lip syncs the others out in rounds until one is left standing, and she takes a title of her own. Nobody re-enters the competition and no placement changes — this is the season’s eliminated cast getting the stage back for a night. Booked once per season rather than against an episode: it always sits directly before the finale.' },
+  /* THE ONE THAT PUTS SOMEBODY BACK IN. The smackdown gives the eliminated
+     cast a night; this gives one of them the competition back. dataFields
+     carries the booking's own choice through to the engine — every other
+     drag twist is a boolean and this one has to say WHO. */
+  /* ── ALL STARS ── */
+  { id:'dr-legacy', emoji:'\u{1F3C6}', name:'Lip Sync For Your Legacy', format:'drag-race',
+    category:'all-stars', phase:'any', engineType:'dr-legacy', episodeField:'legacy',
+    desc:'The All Stars rule, and the biggest change the show ever makes to itself: the TOP two lip sync instead of the bottom two, and the queen who wins the song decides who goes home. Nobody sings to save herself — the two best performances of the week fight for the power, and everybody below them waits to find out what the winner does with it. A queen with the appetite takes out the biggest threat she can reach; one without it sends home the queen the room already ranked last.',
+    incompatible:['dr-no-elimination','dr-double-elimination','dr-bottom-three'] },
+  /* ENGINE FEATURES THAT WERE NOT BOOKABLE. All three already ran — week.js
+     has read bottomThree and dispatched on critiqueTwist since they were
+     written — and none had a way in from the designer, so they were reachable
+     only from a test. */
+  { id:'dr-bottom-three', emoji:'\u{1F53B}', name:'Bottom Three', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-bottom-three', episodeField:'bottomThree',
+    desc:'The panel names THREE queens in the bottom instead of two, keeps them on the stage, and saves one of them there before the song. Only two lip sync. The queen who is saved is the only way a chart ever records BTM rather than BTM2 — named in the bottom and let go without ever having to fight for it — so without this week that row of the track record can never happen.',
+    incompatible:['dr-no-elimination'] },
+  { id:'dr-who-should-go', emoji:'\u{1F5E3}', name:'Who Should Go Home?', format:'drag-race',
+    category:'social', phase:'any', engineType:'dr-who-should-go', episodeField:'critiqueTwist',
+    episodeValue:'who-should-go',
+    desc:'While the panel deliberates, each queen is asked which of the others should sashay away, and the answers are read out. It changes no placement — the host still decides — but the room finds out who named whom, and it costs the ones who answered honestly. The oldest of the format twists and still the meanest.',
+    incompatible:['dr-rate-social'] },
+  { id:'dr-rate-social', emoji:'⭐', name:'Rate-a-Queen (scores)', format:'drag-race',
+    category:'social', phase:'any', engineType:'dr-rate-social', episodeField:'critiqueTwist',
+    episodeValue:'rate-a-queen',
+    desc:'Every queen scores every other queen out of ten and the averages are read to the room. Distinct from the Rate-a-Queen that decides the week: this one changes nothing about the call and everything about how the room feels afterwards, because the highest and the lowest both find out where they stand with the people they live with.',
+    incompatible:['dr-who-should-go'] },
+  /* THE ONE THAT TAKES THE CALL OFF THE PANEL. Every other drag twist changes
+     who goes home or how many; this changes WHO DECIDES, which is the deepest
+     assumption the show has. */
+  { id:'dr-rate-a-queen', emoji:'\u{1F5F3}\uFE0F', name:'Rate-a-Queen', format:'drag-race',
+    category:'elim', phase:'any', engineType:'dr-rate-a-queen', episodeField:'rateAQueen',
+    desc:'The queens rank each other and the panel sits the night out. Each queen ranks everyone but herself, best to worst, and the ballots are added with a Borda count — top of a ballot scores the most, bottom scores one — and that total is the week: highest is the win, lowest two lip sync. The host does not overrule it, which is the point. Nobody can rank herself safe, she can only push somebody else down, so a room full of schemers produces a board that has very little to do with who was actually good. Ran on season 16 and again, revised, on season 17.',
+    incompatible:[] },
+  { id:'dr-returnee', emoji:'\u{1F519}', name:'Returning Queen', format:'drag-race',
+    category:'returns', phase:'any', engineType:'dr-returnee', episodeField:'returnee',
+    dataFields:['returneeName'],
+    desc:'A queen already sent home walks back into the werk room and back into the competition. Pick her from the dropdown or leave it on Random and the show decides — weighted toward the queens who went out with the most left to prove. She keeps the record she made before she left, rejoins from that episode, and the season runs ONE EPISODE LONGER because the room she walked into just got bigger. If the queen you picked is somehow still competing when the episode arrives, the show falls back to a random eliminated queen rather than doing nothing.' },
 ];
 
 // ── Triple Dog Dare — dare pools by category ──
@@ -1526,14 +1620,23 @@ export function twistsForFormat(source) {
 //
 // Codex flips Big Brother on from the run-loop side by setting
 // window._bbRunnable once the engine is dispatched.
+// WHICH FLAG, ASKED OF THE REGISTRY RATHER THAN OF THE SLUG.
+//
+// This was a ladder of `fmt === '<show>'` tests, one rung per show, which is a
+// show list with a return statement in it: a fourth show had to add a rung and
+// a fifth would have too, and until somebody did, the setup screen said the
+// show was not wired when it was. `runnableFlag` in js/shows.js is the fact —
+// `true` for a show that is always runnable, the name of the window flag for a
+// show whose engine sets one, absent for a show that has no engine yet.
 export function formatIsRunnable(source) {
-  const fmt = seasonFormat(source);
-  if (fmt === 'total-drama') return true;
-  if (fmt === 'big-brother') return typeof window !== 'undefined' && !!window._bbRunnable;
-  // Off until the engine can finish a season. The flag exists so a half-built
-  // show cannot be started by somebody clicking through the setup screen.
-  if (fmt === 'traitors') return typeof window !== 'undefined' && !!window._trRunnable;
-  return false;
+  const flag = SHOWS[seasonFormat(source)]?.runnableFlag;
+  if (flag === true) return true;
+  // The flag exists so a half-built show cannot be started by somebody
+  // clicking through the setup screen. Its engine module sets it on load, so
+  // importing that module IS the wiring: drop the import and the show
+  // silently un-ships with nothing reporting it.
+  if (typeof flag !== 'string') return false;
+  return typeof window !== 'undefined' && !!window[flag];
 }
 
 export function formatName(source) {
@@ -1588,6 +1691,18 @@ export function defaultConfig() {
     mole: 'disabled', molePlayers: [], moleCoordination: 'independent',
     coaches: 'disabled', coachesPerTribe: 1,
     romance: 'enabled',
+    // ── Drag Race ──────────────────────────────────────────────────
+    //
+    // Read only by js/dr/* and scoped to this show in CONFIG_SCOPE, so none of
+    // these controls is drawn over another format. The two doubles are
+    // ALLOWANCES rather than frequencies: the lip sync earns them or they do
+    // not happen, and the box only decides whether the engine may call one.
+    drPremiere: 'standard', drFinale: 'top4',
+    drDoubleShantay: true, drDoubleSashay: false, drImmunity: false, drTripleLipsync: false,
+    // The per-episode timeline: maxi, mini, rotating judge, guest, song, twist.
+    drSchedule: [],
+    // Per-judge taste overrides from the setup screen's tabs, keyed by judge id.
+    drJudgeWeights: {},
     aftermath: 'disabled',
     fanVoteFrequency: 'disabled',
     aftermayhemReturn: 'disabled',
@@ -1815,7 +1930,7 @@ export function normalizeAccentedNames() {
 export async function loadAll() {
   // These small items stay in localStorage
   try { const c = localStorage.getItem('simulator_cast'); if (c) players = JSON.parse(c); } catch(e) { players = []; }
-  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; if (seasonConfig.twistSchedule) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(Boolean); if (seasonConfig.bbCompSchedule) seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(Boolean); } } catch(e) {}
+  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) { const saved = JSON.parse(cfg); seasonConfig = { ...defaultConfig(), ...saved }; seasonConfig.advantages = { ...defaultConfig().advantages, ...(saved.advantages || {}) }; if (seasonConfig.twistSchedule) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(Boolean); if (seasonConfig.bbCompSchedule) seasonConfig.bbCompSchedule = seasonConfig.bbCompSchedule.filter(Boolean); if (seasonConfig.drSchedule) seasonConfig.drSchedule = seasonConfig.drSchedule.filter(Boolean); } } catch(e) {}
   try { const r = localStorage.getItem('simulator_rels'); if (r) relationships = JSON.parse(r); } catch(e) { relationships = []; }
 
   // ── gs: load from IndexedDB, fall back to localStorage for migration ──

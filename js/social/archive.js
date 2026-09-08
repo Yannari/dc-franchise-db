@@ -19,7 +19,7 @@ import { seasonWinners } from '../records.js';
 import { buildEpisodeFeed } from './feed.js';
 import { seasonDataFile } from './adapter.js';
 import { feedSeed } from './live.js';
-import { roundExits, publicBallots, SHOWS } from '../shows.js';
+import { roundExits, publicBallots, roundShape, seasonRounds, SHOWS } from '../shows.js';
 
 /**
  * Episodes of a published season.
@@ -33,6 +33,20 @@ import { roundExits, publicBallots, SHOWS } from '../shows.js';
  */
 export function episodesOf(doc, format) {
   if (!doc) return [];
+  /* ── A SHOW WHOSE RECORD IS NEITHER OF THOSE TWO ──────────────────
+     Drag Race publishes one entry per episode under the path the registry
+     names, and no ballot anywhere. It fell through both branches below: no
+     `weeks`, no `votingHistory`, and its episodes are not at `doc.episodes`
+     either — so `known` came back empty and the whole season was given ONE
+     night, the finale, on a fourteen-episode run. The archive looked like it
+     worked. It always does. */
+  if (roundShape(format) === 'placements') {
+    return seasonRounds(doc, format).map((record, i) => ({
+      record: { ...record, episode: Number(record?.episode ?? i + 1) },
+      episode: Number(record?.episode ?? i + 1),
+    })).map((e, i, all) => (i === all.length - 1
+      ? { ...e, record: { ...e.record, isFinale: true } } : e));
+  }
   if (format === 'big-brother') {
     return (doc.weeks || []).map((record, i) => ({
       record, episode: Number(record?.week ?? record?.num ?? i + 1),
@@ -206,7 +220,13 @@ export function eventsForEpisode(doc, format, season, episode) {
 
   const meta = { format, season, episode: found.episode };
   const events = extractEvents(found.record, meta);
-  if (format !== 'big-brother') events.push(...tribalEvents(found.record, meta));
+  /* THE SHAPE CHECK GOES AT THE TOP, NOT INSIDE A BRANCH. This is where the
+     Traitors bug lived: the archive iterated ballots without asking whether
+     this show's ballots are the audience's to see. A placement round has no
+     ballot at all, so tribalEvents has nothing to read and must not be asked. */
+  if (format !== 'big-brother' && roundShape(format) !== 'placements') {
+    events.push(...tribalEvents(found.record, meta));
+  }
   // The document's own account of the night, which nothing had ever read.
   events.push(...momentEvents(doc, format, season, found.episode));
   // The finale is whichever night the document calls the finale — either the
@@ -377,7 +397,14 @@ export function stillIn(doc, format, episode) {
 
   const ep = Number(episode) || 0;
   const gone = new Set();
-  for (const v of doc?.votingHistory || []) {
+  /* WHERE THE LEAVING IS RECORDED, from the registry. On a show with no
+     ballot `votingHistory` is empty, so nobody was ever marked gone and the
+     predictions panel offered the full cast — including the eliminated — in
+     PLACEMENT ORDER, which is the exact leak this function was written to
+     stop, wearing the fourth show's clothes. */
+  const record = roundShape(format) === 'placements'
+    ? seasonRounds(doc, format) : (doc?.votingHistory || []);
+  for (const v of record) {
     const when = Number(v?.episode) || 0;
     if (!when || when > ep) continue;
     /* ── EVERY DOOR OUT ────────────────────────────────────────────────

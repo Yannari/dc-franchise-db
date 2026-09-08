@@ -25,6 +25,10 @@ export const SETTING_LIST = ['hosted-camp', 'survival-island', 'carnival', 'film
 export const SETTINGS_BY_FORMAT = {
   'total-drama': SETTING_LIST,
   'big-brother': ['bb-house', 'bb-compound', 'bb-resort', 'bb-manor'],
+  // One venue, because the show has one. A list of one still goes through the
+  // same scoping so the dropdown draws the right thing and `defaultSettingFor`
+  // has an answer that is not a summer camp.
+  'drag-race': ['dr-werkroom'],
 };
 
 export function settingsForFormat(fmt) {
@@ -353,6 +357,25 @@ export const SEASON_SETTINGS = {
       `The drink cart runs out three rows early. {a} flags down nothing and {b} laughs at the sheer futility.`,
       `Somewhere over the ocean the engines drone on. {a} and {b} press their faces to the window at the same cloud and don't say why.`,
     ],
+  },
+
+  // ── DRAG RACE ──────────────────────────────────────────────────────
+  //
+  // One venue, because the show has one: a workroom with a mirror station per
+  // queen and a stage through the far door. This entry exists so the setting
+  // dropdown has something true to offer and the vocabulary dictionary has a
+  // place to resolve; the drag engine writes its own scenes and does not draw
+  // on the shared camp-event reskin pools.
+  'dr-werkroom': {
+    label: 'The Werk Room', emoji: '💄',
+    blurb: 'A workroom of lit mirrors and sewing machines, a rack per queen, and a door at the end that opens onto the main stage.',
+    vocab: { place: 'the werk room', shelter: 'the mirror stations', gather: 'the werk room',
+             water: 'the sinks', sleep: 'the hotel', downtime: 'the lounge', foodSource: 'the craft table' },
+    arrival: { vehicle: 'werk room door', verb: 'walks through the werk room door', point: 'the werk room',
+               onPoint: 'in the werk room', headline: 'One workroom. One crown.',
+               groupCall: 'Ladies, to the main stage!' },
+    reskin: {},
+    atmosphere: [],
   },
 };
 

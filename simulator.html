@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="assets/cast/dc_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/simulator.css">
   <link rel="stylesheet" href="css/ui-system.css">
 </head>
@@ -141,9 +141,43 @@
           </label>
         </div>
         <div class="divider"></div>
-        <div class="form-group">
-          <label class="form-label">Stats</label>
+        <!-- TWO SETS OF SLIDERS, ONE AT A TIME. Sixteen sliders stacked in one
+             column read as one undifferentiated list, and nine of them are the
+             franchise's and seven are this show's. The tab strip is drawn only
+             when a show HAS a second set: `sec-dr-craft-tabs` is scoped to
+             drag-race in CONFIG_SCOPE, so on the other three shows there is no
+             strip and the stats panel looks exactly as it did. -->
+        <div class="stat-tabs" id="sec-dr-craft-tabs">
+          <button type="button" class="stat-tab active" data-stat-tab="core"
+            onclick="showStatTab('core')">Stats</button>
+          <button type="button" class="stat-tab" data-stat-tab="craft"
+            onclick="showStatTab('craft')">Drag craft</button>
+        </div>
+        <div class="form-group" id="sec-stats-core">
+          <label class="form-label" id="stat-core-label">Stats</label>
           <div class="stat-sliders" id="stat-sliders"></div>
+        </div>
+        <!-- The craft a panel scores, on the show that has one. Scoped to
+             drag-race in CONFIG_SCOPE, so it is not drawn over a camp. -->
+        <div class="form-group" id="sec-dr-craft">
+          <label class="form-label">Drag craft <span style="font-weight:400;color:var(--muted);font-size:10px">(what the judges score)</span></label>
+          <div class="stat-sliders" id="drag-stat-sliders"></div>
+          <div class="form-group" style="margin-top:8px">
+            <label class="form-label">Drag style</label>
+            <select id="f-drag-style" class="form-select">
+              <option value="">Auto — from her strongest craft</option>
+              <option value="pageant">Pageant</option>
+              <option value="comedy">Comedy</option>
+              <option value="fashion">Fashion</option>
+              <option value="camp">Camp</option>
+              <option value="club-kid">Club kid</option>
+              <option value="spooky">Spooky</option>
+              <option value="broadway">Broadway</option>
+              <option value="dancer">Dancer</option>
+              <option value="glamour">Glamour</option>
+              <option value="art">Art</option>
+            </select>
+          </div>
         </div>
         <div class="divider"></div>
         <button class="btn btn-primary" id="submit-btn" onclick="submitPlayer()">Add Player</button>
@@ -229,6 +263,7 @@
                 <option value="total-drama">Total Drama — tribes, challenges, tribal council</option>
                 <option value="big-brother">Big Brother — one house, HOH, veto, live eviction</option>
                 <option value="traitors">The Traitors — a castle, a round table, a murder every night</option>
+                <option value="drag-race">Drag Race — werk room, runway, lip sync for your life</option>
               </select>
               <div id="cfg-format-note" class="hint" style="margin-top:6px"></div>
             </div>
@@ -583,11 +618,11 @@
             <div class="setup-section-label" id="sec-bb-options">HOUSE OPTIONS</div>
             <div id="bb-options-body">
             <!-- Fixed by the format: stated once, compactly, not argued. -->
-            <div class="bbopt-fixed">
+            <div class="bbopt-fixed" id="sec-bb-fixed-ties">
               <span class="bbopt-fixed-k">Ties</span>
               <span>Broken by the Head of Household, live. No revote, no rocks.</span>
             </div>
-            <div class="bbopt-fixed">
+            <div class="bbopt-fixed" id="sec-bb-fixed-endgame">
               <span class="bbopt-fixed-k">Endgame</span>
               <span>Always a final three: a three-part Head of Household, then the jury votes.</span>
             </div>
@@ -664,11 +699,11 @@
                  and not configurable, with every test green. -->
             <div class="divider" id="sec-tr-divider"></div>
             <div class="setup-section-label" id="sec-tr-options">CASTLE OPTIONS</div>
-            <div class="bbopt-fixed">
+            <div class="bbopt-fixed" id="sec-tr-fixed-ties">
               <span class="bbopt-fixed-k">Ties</span>
               <span>The table votes again, and the tied are the question: they do not answer it.</span>
             </div>
-            <div class="bbopt-fixed">
+            <div class="bbopt-fixed" id="sec-tr-fixed-endgame">
               <span class="bbopt-fixed-k">Endgame</span>
               <span>The room stops banishing and is asked, privately, whether to banish or to end it.</span>
             </div>
@@ -750,6 +785,86 @@
               <label class="form-label">The pot</label>
               <input type="number" id="cfg-tr-pot" class="form-input" min="1000" max="500000" step="1000" value="120000" onchange="saveConfig()">
               <div class="hint hint-tight">The ceiling the missions are earning against. Nobody banked a penny of it until somebody walks out with the lot.</div>
+            </div>
+
+            <!-- ── THE MAIN STAGE'S OWN CONTROLS ────────────────────────
+                 Six ids, all named in CONFIG_SCOPE and all read by js/dr/*.
+                 The two doubles are ALLOWANCES rather than dials: the lip sync
+                 has to earn one, and the box only decides whether the engine
+                 is permitted to call it at all. -->
+            <div class="divider" id="sec-dr-divider"></div>
+            <div class="setup-section-label" id="sec-dr-options">MAIN STAGE OPTIONS</div>
+            <div class="bbopt-fixed" id="sec-dr-fixed-verdict">
+              <span class="bbopt-fixed-k">Verdict</span>
+              <span>The panel ranks the week, the bottom two lip sync, and the host alone decides who goes home. Nobody votes.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Premiere</label>
+              <select id="cfg-dr-premiere" onchange="saveConfig()" class="form-input">
+                <option value="standard">Standard — a maxi challenge from episode one</option>
+                <option value="talent-show">Talent show</option>
+                <option value="design">Design challenge</option>
+                <option value="runway">Runway only</option>
+                <option value="girl-groups">Girl groups</option>
+                <option value="split">Split premiere — two halves, two winners</option>
+                <option value="porkchop">Porkchop premiere — a lip sync elimination on night one</option>
+              </select>
+              <div class="hint hint-tight">What episode one is. The split premiere runs the cast in two halves with nobody going home; the porkchop sends somebody home on the first night.</div>
+            </div>
+            <!-- The one schedulable twist this show has. It lives here rather
+                 than in FORMATS &amp; TWISTS, which is scoped to Total Drama —
+                 every show keeps its own options block. -->
+                        
+            
+            <div class="form-group">
+              <label class="form-label">Finale</label>
+              <select id="cfg-dr-finale" onchange="saveConfig()" class="form-input">
+                <option value="top4">Top 4 lip sync tournament</option>
+                <option value="top3">Top 3 lip sync tournament</option>
+                <option value="top2">Top 2 lip sync for the crown</option>
+                <option value="perform-then-lipsync">Final performance, then the host picks two to lip sync</option>
+              </select>
+              <div class="hint hint-tight">Where the season stops, and how the crown is decided once it gets there.</div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-double-shantay" style="width:14px;height:14px;margin-top:3px" checked onchange="saveConfig()">
+                <span>Double shantay allowed<div class="hint hint-tight">Both queens stay. Only when both lip syncs are genuinely excellent and close — it cannot be rolled.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-double-sashay" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Double sashay allowed<div class="hint hint-tight">Both queens go. Only when both lip syncs are genuinely bad. Rarer than the shantay and off by default.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-immunity" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Early wins carry immunity<div class="hint hint-tight">The seasons 1–5 rule: a maxi win in the first five episodes keeps that queen out of the bottom the following week.</div></span>
+              </label>
+            </div>
+            <div class="form-group" id="sec-dr-judges">
+              <label class="form-label">The panel <span style="font-weight:400;color:var(--muted);font-size:10px">(what each judge is watching)</span></label>
+              <div id="dr-judges-panel"></div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-triple" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Triple lip sync on a tie<div class="hint hint-tight">When the bottom will not resolve into two, three queens lip sync instead.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-reunion" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Reunion episode<div class="hint hint-tight">Between the last elimination and the crowning. Nobody goes home; it is the only episode that reads the whole season rather than the week in front of it, so a quiet season gets a short reunion.</div></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-double-crown" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>Two winners allowed<div class="hint hint-tight">Both finalists take the crown. Like the double shantay it cannot be rolled: only when the last lip sync is a genuine dead heat and both are excellent. It has happened once in the real show's history.</div></span>
+              </label>
             </div>
 
             <div class="setup-section-label" id="sec-season-options">SEASON OPTIONS</div>
@@ -1066,6 +1181,8 @@
             <div class="setup-header-actions">
               <button class="btn btn-secondary btn-sm" onclick="loadS9Bonds()">S9 Bonds</button>
               <button class="btn btn-secondary btn-sm" onclick="loadS10Bonds()">S10 Bonds</button>
+              <button class="btn btn-secondary btn-sm" id="rel-import-fams" style="display:none"
+                onclick="importDragFamilies({announce:true})" title="Drag mothers and sisters are authored on the queen, in Studio">Import Families</button>
               <button class="btn btn-secondary btn-sm" onclick="clearRelationships()">Clear</button>
               <button class="btn btn-primary btn-sm" onclick="openRelForm(null)" style="width:auto">+ Add</button>
             </div>
@@ -1173,6 +1290,8 @@
             </div>
           </div>
           <div class="rel-list" id="rel-list"></div>
+          <!-- Drawn only on a drag season: the tree the rows above make. -->
+          <div class="rel-families" id="rel-families" style="display:none"></div>
         </div>
       </div>
 

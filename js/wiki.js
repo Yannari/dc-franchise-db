@@ -23,6 +23,7 @@ import { approvedFor, lineFor as lifeLine, kindOf } from './life-events.js';
 import { airLabel, ageNow } from './franchise-calendar.js';
 
 import { parseBio, joinOrigin } from './bio.js';
+import { franchiseFamilies, genealogyFor } from './dr/genealogy.js';
 import { seasonWinners } from './records.js';
 
 /** The singular `winner{}` block, but only when it is about this player. */
@@ -32,7 +33,7 @@ function _winnerBlockFor(doc, name) {
 }
 // The registry is the only list of shows. This file kept its own, so a show
 // registered anywhere else headed its section with a raw slug.
-import { SHOWS, DEFAULT_FORMAT, showName, roundExits } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, showName, roundExits, roundShape, seasonRounds } from './shows.js';
 
 const fmtOf = d => d?.format || DEFAULT_FORMAT;
 
@@ -227,6 +228,53 @@ function _arr(v) { return Array.isArray(v) && v.length ? v : null; }
 function _weekRowsFromDoc(found, name) {
   if (!found) return null;
   const doc = found.doc;
+
+  /* ── THE RUNWAY ────────────────────────────────────────────────────
+     A show with no ballot has neither array below, so it reached the end of
+     this function and returned null — and the grid, the most characteristic
+     table on a character page, was missing from every queen's article for the
+     same reason a camp's used to be: the function knew two shapes and this is
+     a third. What a runway grid records is the CALL, week by week, which is
+     the exact thing that show's fans read a track record chart for.
+
+     The vote columns stay empty rather than being filled with something
+     adjacent. Nobody voted; a `votesAgainst` of 0 is the truth here, not a
+     placeholder. */
+  if (roundShape(fmtOf(doc)) === 'placements') {
+    const eps = seasonRounds(doc, fmtOf(doc));
+    if (!eps.length) return null;
+    const format = fmtOf(doc);
+    /* ── AND IT DOES NOT STOP AT HER EXIT ──────────────────────────────
+       Both branches below break out of the loop when the player leaves, and
+       for them that is right: their grids record what somebody DID each
+       round, and after they go there is nothing to record. A track record
+       chart is the opposite — its entire value is that the columns line up
+       across every queen, and a row that stops early cannot be drawn beside
+       one that does not. The exporter marks her `OUT` for exactly this, and
+       the row runs to the end of the season. */
+    const rows = [];
+    for (const e of eps) {
+      const mineCell = (e.placements || []).find(p => p.name === name);
+      // A queen who is not in this episode's grid at all was never in the
+      // season — not somebody having a quiet week.
+      if (!mineCell) continue;
+      const exits = roundExits(e, format);
+      const mineOut = exits.find(x => x.name === name) || null;
+      rows.push({
+        week: Number(e.episode),
+        result: mineCell.result || '',
+        evicted: !!mineOut,
+        exitVerb: mineOut?.verb || '',
+        exitChannel: mineOut?.channel || '',
+        votesAgainst: 0,
+        votedFor: '',
+        votedForSlug: '',
+        evictedName: exits.map(x => x.name).join(', '),
+        exits: exits.map(x => ({ name: x.name, verb: x.verb, channel: x.channel })),
+      });
+    }
+    return rows.length ? rows : null;
+  }
 
   // ── the house ──
   const weeks = Array.isArray(doc.weeks) ? doc.weeks : [];
@@ -464,12 +512,21 @@ export function careerOf(player, { seasonTitles = new Map(), seasonDocs = [], se
         challengeWins: d.challengeWins || 0,
         votesReceived: d.votesReceived || 0,
         juryVotes: d.juryVotes || 0,
-        ...(d.bb ? { bb: { ...d.bb } } : {}),
-        // The castle's numbers, the same way the house's arrive. Without
-        // this a Traitors lead read "without winning a challenge" about
-        // somebody who won four missions: the word was wrong AND the count
-        // was never carried.
-        ...(d.tr ? { tr: { ...d.tr } } : {}),
+        /* ── THE SHOW'S OWN BLOCK, WHICHEVER SHOW IT IS ──────────────
+           This was `...(d.bb ? {bb} : {})` and `...(d.tr ? {tr} : {})` — a
+           list of the shows that existed when it was written, which is the
+           duplicate show list this repo keeps growing. A fourth show fell out
+           of both spreads, so `record` carried NONE of its numbers, and every
+           reader downstream that follows the registry's own `articleStats`
+           paths (`dr.wins`, `dr.lipsyncWins`) resolved undefined: the whole
+           per-show stat block on the article drew empty, with no error.
+
+           The block is named by the registry's prefix, so a show declaring
+           one gets it carried without this line being touched again. */
+        ...(() => {
+          const key = SHOWS[d.format || DEFAULT_FORMAT]?.prefix;
+          return key && d[key] ? { [key]: { ...d[key] } } : {};
+        })(),
       },
       // The per-week row, when the season document was reachable. Absent is a
       // normal state — a season nobody has published yet still gets an
@@ -662,6 +719,19 @@ export function buildDossier(player, {
   const castingInterview = rosterRow.castingInterview || '';
   const relationships = relationshipsOf(player, { seasonDocs });
 
+  /* Her house, with a slug on everybody the roster knows, so the article can
+     link them and a reader can walk the tree one queen at a time. A drag
+     mother who never competed has no slug and stays plain text: linking her
+     would send a reader to a page that does not exist, and leaving her OUT
+     would break the line that runs through her. */
+  const _rosterList = roster.players || roster || [];
+  const _famSlugs = new Map(_rosterList.filter(r => r && r.name).map(r => [r.name, r.slug]));
+  const _fam = genealogyFor(
+    franchiseFamilies({ roster: _rosterList, seasonDocs }), player.name);
+  const _dragFamily = _fam
+    ? { ..._fam, nodes: _fam.nodes.map(n => ({ ...n, slug: _famSlugs.get(n.name) || null })) }
+    : null;
+
   return {
     id: player.id,
     name: player.name,
@@ -684,6 +754,14 @@ export function buildDossier(player, {
     career: _withLoyalties(careerOf(player, { seasonTitles, seasonDocs, seasonAir }), relationships),
     relationships,
     couple: coupleStatus(relationships),
+    /* ── HER DRAG FAMILY, ACROSS THE WHOLE FRANCHISE ──────────────────
+       Not per-season: the queen who put her in her first pair of heels is
+       still her drag mother in a season neither of them is cast in. Built
+       from the roster's character sheets unioned with every house a drag
+       season recorded, so it names queens who have never competed and queens
+       from seasons this player was not in. Null on a career with no drag
+       family, which is most of them, and the article draws no section. */
+    dragFamily: _dragFamily,
     // What happened to them between seasons. APPROVED ONLY — a proposal is a
     // suggestion, and a suggestion must not change what a page says about
     // somebody. Ordered by the franchise calendar, because `seq` is per-player

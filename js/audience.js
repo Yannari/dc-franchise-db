@@ -154,9 +154,18 @@ export function audienceBoard({ eligible = null, _gs = gs } = {}) {
  * flatten into a raffle.
  *
  * Returns { winner, tally } or null when there is nobody to vote for.
+ *
+ * `_gs` IS FORWARDED, and has to be. It used to be accepted nowhere here and
+ * `audienceBoard({ eligible })` fell through to the module-global `gs`, so any
+ * caller running a season headlessly — every test harness, every audit, every
+ * offline export — voted on an empty popularity ledger. That does not throw
+ * and does not read as broken: a board of all-zero standings still returns a
+ * name, and the sash still renders over it.
  */
-export function runAudienceVote({ eligible = null, rng = Math.random, blocks = 750, scale = 1 } = {}) {
-  const board = audienceBoard({ eligible });
+export function runAudienceVote({
+  eligible = null, rng = Math.random, blocks = 750, scale = 1, _gs = gs,
+} = {}) {
+  const board = audienceBoard({ eligible, _gs });
   if (board.length < 2) return null;
 
   // ── MEASURED IN SPREADS, NOT IN POINTS ──

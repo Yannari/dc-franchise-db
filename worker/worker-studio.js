@@ -61,7 +61,7 @@ const VOICE_PATH = 'voice-profiles.json';
 const LIFE_PATH = 'life_events.json';
 const AVATAR_DIR = 'assets/avatars';
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
-const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote'];
+const ROSTER_FIELDS = ['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats', 'voice', 'profileSources', 'continuityNote', 'drag'];
 
 export default {
   async fetch(request, env) {
@@ -614,6 +614,42 @@ const ARCHETYPES = new Set(['mastermind', 'schemer', 'hothead', 'challenge-beast
   'social-butterfly', 'loyal-soldier', 'wildcard', 'chaos-agent', 'floater',
   'underdog', 'hero', 'villain', 'goat', 'perceptive-player', 'showmancer']);
 
+// ── the Drag Race craft block ──────────────────────────────────────────
+//
+// Stored as ONE JSON column rather than seven more INTEGER ones. The nine
+// stats are columns because "most strategic characters" is a real SQL
+// question; nothing sorts a leaderboard by lipsync, the block is read as a
+// unit by the judging pipeline, and it carries a style string and a trait
+// list that would not fit the numeric shape anyway.
+const DRAG_KEYS = ['acting', 'comedy', 'dance', 'design', 'runway', 'lipsync', 'singing'];
+const DRAG_STYLES = new Set(['pageant', 'comedy', 'fashion', 'camp', 'club-kid', 'spooky',
+  'broadway', 'dancer', 'glamour', 'art']);
+
+/**
+ * Validate and serialise the craft block, or return null.
+ *
+ * Same rule as the stats above: only known keys survive, so a typo like
+ * "improv" — a stat this show deliberately folded into acting — can never
+ * become a field of garbage that later reads as a real number.
+ */
+function dragToJson(raw) {
+  if (raw == null) return null;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new ValidationError('drag must be an object');
+  }
+  const clean = {};
+  for (const k of DRAG_KEYS) {
+    const n = Number(raw[k]);
+    if (Number.isFinite(n)) clean[k] = Math.max(1, Math.min(10, Math.round(n)));
+  }
+  if (typeof raw.style === 'string' && DRAG_STYLES.has(raw.style)) clean.style = raw.style;
+  if (Array.isArray(raw.traits)) {
+    clean.traits = raw.traits.filter(t => typeof t === 'string' && t).slice(0, 3);
+  }
+  if (typeof raw.voice === 'string' && raw.voice.trim()) clean.voice = raw.voice.trim();
+  return Object.keys(clean).length ? JSON.stringify(clean) : null;
+}
+
 function rosterRowToJson(r) {
   const stats = {};
   for (const k of STAT_KEYS) if (r[k] != null) stats[k] = r[k];
@@ -639,6 +675,15 @@ function rosterRowToJson(r) {
   // franchise_roster.json wholesale FROM this table, so a field the database
   // never hears about is deleted the next time somebody presses the button.
   if (r.continuity_note) out.continuityNote = r.continuity_note;
+  // The craft block, for the show that scores it. Same reasoning as the
+  // continuity note directly above: publish rebuilds the roster file FROM this
+  // table, so a field read back here is a field that survives the button.
+  if (r.drag) {
+    try {
+      const drag = JSON.parse(r.drag);
+      if (drag && typeof drag === 'object' && !Array.isArray(drag)) out.drag = drag;
+    } catch { /* malformed legacy block is omitted rather than published broken */ }
+  }
   // The bio, as fields. Published alongside the rest so the static site can ask
   // demographic questions without reaching for D1 — and so the answer on the
   // site is the same one the database would give.
@@ -731,6 +776,8 @@ async function rosterSave(env, payload) {
     profileSources = JSON.stringify(payload.profileSources);
   }
 
+  const drag = dragToJson(payload.drag);
+
   const d = db(env);
   const existing = await d.prepare('SELECT slug FROM roster WHERE slug = ?').bind(slug).first();
 
@@ -738,9 +785,9 @@ async function rosterSave(env, payload) {
     `INSERT INTO roster (slug,name,gender,sexuality,archetype,${STAT_KEYS.join(',')},
                          voice,profile_sources,continuity_note,age,birthdate,ethnicity,nationality,
                          hometown,occupation,descriptor,backstory,personality,
-                         casting_interview,
+                         casting_interview,drag,
                          is_returnee,retired,updated_at)
-     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+     VALUES (?,?,?,?,?,${STAT_KEYS.map(() => '?').join(',')},?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
      ON CONFLICT(slug) DO UPDATE SET
        name=excluded.name, gender=excluded.gender, sexuality=excluded.sexuality,
        archetype=excluded.archetype,
@@ -753,6 +800,7 @@ async function rosterSave(env, payload) {
        descriptor=excluded.descriptor, backstory=excluded.backstory,
        personality=excluded.personality,
        casting_interview=excluded.casting_interview,
+       drag=excluded.drag,
        is_returnee=excluded.is_returnee,
        retired=excluded.retired, updated_at=datetime('now')`
   ).bind(
@@ -765,6 +813,7 @@ async function rosterSave(env, payload) {
     text(payload.hometown), text(payload.occupation),
     text(payload.descriptor), text(payload.backstory), text(payload.personality),
     text(payload.castingInterview),
+    drag,
     payload.isReturnee ? 1 : 0,
     payload.retired ? 1 : 0,
   ).run();
@@ -1066,7 +1115,15 @@ async function syncSeasons(env) {
       // migration used to derive `format` for existing rows, so the two agree.
       // Everything else is Total Drama, because every season detail written so
       // far predates the second show.
-      const fmt = det.format ? fmtOf(det.format) : (det.bb ? 'big-brother' : 'total-drama');
+      /* WHICH SHOW THIS SEASON BELONGS TO. An explicit tag wins. With no tag,
+         a detail carrying a show's own block is that show — `det.bb` meant Big
+         Brother here, which was a two-show world: a detail with a `dr` block
+         and no tag was filed as Total Drama, and a queen's season landed in
+         the camp's rows. The block is found by asking the registry for each
+         show's prefix, so a fifth show is inferred without this line changing.
+         Everything with no tag and no block is the DEFAULT show, because every
+         season detail written before the second show carries neither. */
+      const fmt = det.format ? fmtOf(det.format) : (inferFormat(det) || DEFAULT_FORMAT);
       if (!validSeasons.has(`${fmt}|${sn}`)) { counts.skipped++; continue; }
       // The key must carry the format, or one player's Total Drama season 5 and
       // their Big Brother season 5 look like the same appearance and the second
@@ -1085,7 +1142,7 @@ async function syncSeasons(env) {
       // FORMAT, so a Big Brother season never writes a tribe. Every Total Drama
       // appearance gets a row: the read path LEFT JOINs this table, so a
       // missing row reads as zero challenge wins with no error anywhere.
-      if (fmt === 'total-drama') {
+      if (fmt === DEFAULT_FORMAT) {
         counts.tdAppearances++;
         stmts.push(d.prepare(
           `INSERT INTO td_appearances (player_id,season_number,tribe,challenge_wins,
@@ -1364,11 +1421,32 @@ async function liveSeasonClear(env, { keepFeed = false } = {}) {
  * Engagement counters come from the simulator, which owns them — a post ratioed
  * in the simulator arrives here already ratioed.
  */
+/**
+ * Which show an untagged season detail belongs to, from the block it carries.
+ *
+ * Every registered show keeps its per-season numbers under its own prefix
+ * (`bb`, `tr`, `dr`), so the presence of one names the show. This replaces
+ * `det.bb ? 'big-brother' : …`, a question with two answers asked of a
+ * registry that has four — under which any show but Big Brother was filed as
+ * Total Drama and its numbers written into the camp's table.
+ *
+ * Returns null when nothing identifies it; the caller supplies the default,
+ * because "no evidence" and "the default show" are different facts and only
+ * the caller knows whether it is allowed to guess.
+ */
+function inferFormat(det) {
+  if (!det) return null;
+  for (const [slug, show] of Object.entries(SHOWS)) {
+    if (show.prefix && det[show.prefix]) return slug;
+  }
+  return null;
+}
+
 function socialStatements(d, payload) {
   const posts = Array.isArray(payload?.posts) ? payload.posts : [];
   if (!posts.length) return [];
 
-  const format = String(payload.format || 'total-drama');
+  const format = String(payload.format || DEFAULT_FORMAT);
   const season = asInt(payload.season);
   const stmts = [d.prepare(socialDeleteSeasonQuery()).bind(format, season)];
 
@@ -1391,7 +1469,7 @@ function socialStatements(d, payload) {
  */
 async function socialGet(env, url) {
   const d = db(env);
-  const format = url.searchParams.get('format') || 'total-drama';
+  const format = url.searchParams.get('format') || DEFAULT_FORMAT;
   const season = asInt(url.searchParams.get('season'));
   const episode = asInt(url.searchParams.get('episode'));
   if (!season) throw new ValidationError('season is required');

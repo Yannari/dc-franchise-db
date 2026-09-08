@@ -30,6 +30,9 @@ import { bbThreatProfile, bbHeat } from './bb/shared-strategy.js';
 // not look like anything already in this repo.
 import { traitorsScreens } from './vp-tr/screens.js';
 import { rpBuildTraitorsDebug } from './vp-tr/debug.js';
+import { rpBuildDragSummary } from './vp-dr/summary.js';
+import { dragScreens } from './vp-dr/screens.js';
+import { DRAG_FORMAT } from './shows.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
 import { rpBuildBBCoinOfDestiny } from './vp-bb-coin.js';
@@ -14039,6 +14042,40 @@ export function buildVPScreens(epRecord) {
   // rides on all live in `js/vp-tr/screens.js` — one copy, because the text
   // backlog retranscribes the same list and a second copy of it is how the
   // transcript quietly stops mentioning a screen.
+  // ── THE MAIN STAGE ────────────────────────────────────────────────
+  //
+  // Returns its own screen for the same reason the castle does: a drag episode
+  // has no tribes, no challenge record and no Tribal Council, and the Total
+  // Drama path below reads all three. Without this branch, opening a drag
+  // episode threw and the show could be played but never watched.
+  //
+  // ONE SCREEN, and deliberately a readout rather than a designed one — the
+  // real sixteen are Plan 5. See js/vp-dr/summary.js.
+  if (epRecord.format === DRAG_FORMAT) {
+    /* THE REGISTRY, not a screen list built here. js/vp-dr/screens.js is read
+       by the text backlog too, so a screen added there appears in both and a
+       screen missing from there appears in neither — which is the whole
+       reason the castle keeps its table in one file. */
+    const built = dragScreens(epRecord);
+    // The engine readout stays behind the same debug flag the other shows
+    // use: it is how a season is read while the designed screens are built.
+    try {
+      if (window.localStorage?.getItem('dr_debug_screen') === '1') {
+        built.push({ id: 'dr-debug', label: 'Debug', html: rpBuildDragSummary(epRecord) });
+      }
+    } catch { /* storage can throw; the debug tab is not worth a crash */ }
+    /* ASSIGN, THEN RETURN — the module-level `vpScreens` is what renders.
+       This branch only returned, and every caller ignores the return value:
+       `buildVPScreens(ep); renderVPScreen();` is the shape at all of them,
+       including the reveal handlers this show's own screens emit. So opening
+       a drag episode left `vpScreens` holding whatever the last episode put
+       there, and the viewing party drew the wrong show or nothing at all.
+       The castle branch below has always done both; this one did not, and
+       nothing failed because the return value is correct — it simply never
+       reaches the renderer. */
+    vpScreens = built;
+    return built;
+  }
   if (epRecord.format === 'traitors') {
     vpScreens = traitorsScreens(epRecord, epRecord.observer || 'audience');
     // The debug tab, behind the same flag Total Drama's sits behind. Pushed

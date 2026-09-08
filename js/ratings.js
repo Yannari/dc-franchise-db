@@ -23,7 +23,8 @@
 // that and never write it. This file has an opinion about the SEASON.
 import { gs, players, seasonConfig } from './core.js';
 import { classifyEventTone } from './tone.js';
-import { SHOWS, DEFAULT_FORMAT, showWords } from './shows.js';
+import { SHOWS, DEFAULT_FORMAT, showWords, roundShape } from './shows.js';
+import { ROMANCE_EVENT_IDS } from './dr/data/werk-events.js';
 
 export const RATINGS_V = 1;
 
@@ -292,6 +293,175 @@ const DIRTY = new Set(['villain', 'mastermind', 'schemer']);
  * is how the two signals with memory — steamroll and powerShift — see far
  * enough back to mean anything. Passing null makes this the first week.
  */
+/**
+ * The same eleven signals, read off a night with no vote in it.
+ *
+ * Every reader above this line is built on a ballot: who flipped, who was
+ * named on Monday, which bloc decided. This show has none of those, and a
+ * reader that finds no ballot returns eleven zeroes — a season the ratings
+ * engine scores as flat because it could not see any of it.
+ *
+ * So each signal is re-derived from what a runway night ACTUALLY produces.
+ * The signal keeps its meaning; only its source changes:
+ *
+ *   blindside    THE PANEL BEING OVERRULED. `bend` is how far the host moved
+ *                somebody off the panel's ranking, and on this show that is
+ *                the surprise — not a flipped vote, which cannot happen.
+ *   predictable  the frontrunner winning again, and the bottom two being
+ *                exactly the two lowest scores. A season where the best queen
+ *                wins every week has no show in it.
+ *   steamroll    this week's top three against last week's. "The same three
+ *                at the top every week" is the complaint about this format,
+ *                and the registry's own audience weights already punish it.
+ *   powerShift   bottom-to-win, or win-to-bottom. The arc a viewer notices.
+ *   mess         the werk room and the lounge: confrontations, blow-ups,
+ *                sabotage, a stolen bit. This show's mess is never at a vote.
+ *   strategy     the storyline beats recorded this episode. There is no vote
+ *                to be strategic about; the game here is the edit.
+ *   returns      an honest ZERO on a regular season rather than a missing
+ *                read. The field exists for All Stars and says so.
+ *
+ * `likability`, `showmance`, `twist` and `villainy` are computed the same way
+ * for every show and are left to the shared code.
+ */
+function readPlacementSignals(ep, prev, opts) {
+  const { format, tones, pop, house } = opts;
+  const dr = ep.dr || {};
+  const call = dr.call || {};
+  const bend = dr.bend || [];
+  const field = Math.max(2, (dr.living || house || []).length);
+
+  // ── blindside: how far the host went against her panel ──
+  // Scaled by the field, because moving somebody two places in a room of
+  // twelve is a smaller thing than moving her two places in a room of four.
+  const biggestBend = bend.reduce((m, b) =>
+    Math.max(m, Math.abs((Number(b.panelRank) || 0) - (Number(b.finalRank) || 0))), 0);
+  const blindside = norm(biggestBend, Math.max(1.5, field * 0.35));
+
+  // ── predictable: the expected queen won, and the bottom was the bottom ──
+  const perfOf = n => Number(dr.performances?.[n]?.perf) || 0;
+  const ranked = (dr.living || []).slice().sort((a, b) => perfOf(b) - perfOf(a));
+  const winner = (call.win || [])[0];
+  const topScorerWon = winner && ranked[0] === winner ? 1 : 0;
+  const bottomPair = new Set([...(call.bottom || []), ...(ep.exits || []).map(x => x.name)]);
+  const worstTwo = ranked.slice(-2);
+  const bottomWasObvious = worstTwo.length && worstTwo.every(n => bottomPair.has(n)) ? 1 : 0;
+  // A repeat winner is the most predictable thing this show does.
+  const repeatWin = winner && prev?.lastWinner === winner ? 1 : 0;
+  const predictable = clamp01(topScorerWon * 0.4 + bottomWasObvious * 0.35 + repeatWin * 0.25);
+
+  // ── steamroll: the same three at the top, week after week ──
+  const topThree = [...(call.win || []), ...(call.high || [])].slice(0, 3);
+  let overlap = 0;
+  if (prev?.topThree?.length && topThree.length) {
+    const before = new Set(prev.topThree);
+    overlap = topThree.filter(n => before.has(n)).length
+      / Math.max(topThree.length, prev.topThree.length);
+  }
+  const steamroll = clamp01((prev?.steamroll || 0) * 0.55 + overlap * 0.55);
+
+  // ── powerShift: bottom to win, or win to bottom ──
+  const wasBottom = new Set(prev?.bottom || []);
+  const wasTop = new Set(prev?.topThree || []);
+  const rose = (call.win || []).some(n => wasBottom.has(n)) ? 1 : 0;
+  const fell = [...(call.bottom || []), ...(call.atRisk || [])].some(n => wasTop.has(n)) ? 1 : 0;
+  const powerShift = clamp01(rose * 0.65 + fell * 0.5);
+
+  /* ── mess: the werk room and the lounge ──
+     Counted off the row's own events by TYPE rather than by tone, because a
+     confrontation and a spotlight hog are the things this show is watched
+     for and neither of them classifies as "comic" or "emotional". */
+  const MESSY = /confront|blow-up|spotlight-hog|sabotage|stole|dump|read-lands-wrong|walks-out|crash-out|told-to-stop|say-it-to-my-face|idea-theft|doubling-down/;
+  const messyEvents = (dr.events || []).filter(e => MESSY.test(e.type || e.kind || '')).length;
+  const messyScenes = (dr.scenes || []).filter(s => MESSY.test(s.kind || '')).length;
+  const mess = clamp01(norm(messyEvents + messyScenes, 6) * 0.75
+    + (tones.of('comic') + tones.of('emotional')) * 0.5);
+
+  /* ── strategy: the edit, because there is no vote ──
+     THE BEATS THAT ADVANCED TONIGHT, not the arcs that exist. `arc.beats` is
+     a cumulative COUNT, not an array, so `(s.beats || []).length || 1` scored
+     one per arc — and a season carries 15 to 28 arcs, which saturates any
+     norm. The signal came out at exactly 0.70 on every episode of every
+     season: min equal to max, a constant wearing a signal's name. Worse than
+     a zero, because it looks like it is reading something.
+     The delta is what happened tonight, and a flipped arc — a storyline that
+     turned — is the strongest thing the edit does. */
+  const beatTotal = (dr.storylines || []).reduce((n, s) => n + (Number(s.beats) || 0), 0);
+  const advanced = Math.max(0, beatTotal - (Number(prev?.beatTotal) || 0));
+  const flips = (dr.storylines || []).filter(s => s.flipped).length;
+  const strategy = clamp01(norm(advanced, 4) * 0.55 + norm(flips, 2) * 0.3
+    + tones.of('strategic') * 0.4);
+
+  /* ── showmance ──
+     THE HONEST ZERO IS PAID OFF. This was written against a pool that did not
+     exist yet and returned nothing, correctly. The pool exists now — small on
+     purpose, because this show is about the work — and it fires on about 40%
+     of seasons with a realistic cast.
+     MATCHED BY ID, NOT BY KEYWORD. The beats are called `something-there` and
+     `quiet-thing`, so the old /showmance|romance|spark|flirt|kiss/ test would
+     have gone on reading zero while they fired: a reader guessing at another
+     module's naming stops reading the day somebody names something well. The
+     keyword test is kept alongside for the other shows' pools. */
+  const romantic = new Set(ROMANCE_EVENT_IDS);
+  const romance = [...(dr.events || []), ...(dr.scenes || [])].filter(e => {
+    const k = String(e.type || e.kind || '').replace(/^werk:/, '');
+    return romantic.has(k) || /showmance|romance|spark|flirt|kiss/.test(k);
+  }).length;
+  const showmance = clamp01(norm(romance, 3));
+
+  // ── twist: the schedule's, plus a panel twist ──
+  const twist = clamp01(norm((Array.isArray(ep.twists) ? ep.twists.length : 0)
+    + (dr.critiqueTwist ? 1 : 0), 2));
+
+  // ── likability: the spread of the audience's regard, show-agnostic ──
+  const living = dr.living || [];
+  const scores = living.map(n => Number(pop[n]) || 0);
+  const biggest = Math.max(1, ...scores.map(Math.abs));
+  const mean = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+  const likability = clamp01(0.5 + 0.5 * (mean / biggest));
+
+  /* ── villainy ──
+     ARCHETYPES COME FROM THE CALLER. `archetypeOf` reads the module-global
+     `players`, which is the running app's cast — empty in a headless season,
+     a test, or a replay of a published document. So villainy read zero for
+     every drag season ever measured, and would have read zero in the
+     ratings tool too. The row's own cast wins; the global is the fallback. */
+  const arche = opts.players || {};
+  const archOf = n => (Array.isArray(arche) ? arche.find(p => p.name === n)?.archetype
+    : arche[n]?.archetype) || archetypeOf(n);
+  const dirty = living.filter(n => DIRTY.has(archOf(n))).length;
+  const villainy = clamp01((living.length ? dirty / living.length : 0) * 0.6
+    + tones.of('villainous') * 0.8);
+
+  return {
+    ep: ep.num ?? dr.ep ?? 0,
+    format,
+    blindside,
+    predictable,
+    steamroll,
+    powerShift,
+    showmance,
+    twist,
+    // AN HONEST ZERO. A regular season has no returnees and says so, rather
+    // than leaving the field undefined and letting a reader guess.
+    returns: 0,
+    likability,
+    villainy,
+    mess,
+    strategy,
+    // Carried for next week's memory, not scored themselves.
+    beatTotal,
+    topThree,
+    bottom: [...(call.bottom || []), ...(call.atRisk || [])],
+    lastWinner: winner || null,
+    bloc: [],
+    holder: winner || null,
+    target: null,
+    boot: (ep.exits || [])[0]?.name || null,
+    nominees: [...(call.bottom || [])],
+  };
+}
+
 export function readSignals(ep, prev, opts = {}) {
   if (!ep) return null;
   const format = opts.format || ep.format || seasonConfig?.format || DEFAULT_FORMAT;
@@ -299,6 +469,18 @@ export function readSignals(ep, prev, opts = {}) {
   const house = opts.house || ep.houseAtStart || gs?.activePlayers || [];
   const events = airedEvents(ep);
   const tones = toneShare(events);
+
+  /* ── A NIGHT WITH NO BALLOT IN IT ─────────────────────────────────
+     Every read below this line starts from a vote: who flipped, who was
+     named on Monday, which bloc decided. A show whose rounds are
+     PLACEMENTS has none of them, so all eleven signals came back at or
+     near zero and the ratings engine scored a whole season as flat —
+     not because it was flat, because nothing could see it. Asked of the
+     registry rather than of a slug, so a fifth show declaring the same
+     shape gets the same reader. */
+  if (roundShape(format) === 'placements') {
+    return readPlacementSignals(ep, prev, { ...opts, format, events, tones, pop, house });
+  }
 
   const log = ep.votingLog || [];
   const voters = log.length || 1;

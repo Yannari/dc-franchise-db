@@ -20,7 +20,7 @@
 import { EVENT_KINDS } from './topics.js';
 import { classifyEventTone } from '../tone.js';
 import { withReceipts } from './receipts.js';
-import { roundExits, publicBallots } from '../shows.js';
+import { roundExits, publicBallots, roundShape } from '../shows.js';
 
 /** A nominal episode runtime, in ms. Posts are stamped across it. */
 export const EPISODE_MS = 42 * 60 * 1000;
@@ -363,6 +363,86 @@ export function ballotEvents(ep, meta) {
 }
 
 /** Total Drama: the challenge winner, the boot, and a broken showmance. */
+/**
+ * A night with no ballot in it.
+ *
+ * A placement round is a grid of results — who won the maxi, who was praised,
+ * who was in the bottom, who lip synced, who left. There is nothing to count
+ * and nobody to blame for a vote, so the events are read off the CALL.
+ *
+ * The kinds are the ones that already exist rather than four new ones: being
+ * called to the bottom IS this show's nomination (a name the room can see is
+ * in danger and might survive), and leaving IS its eviction. Inventing
+ * `maxi-win` and `lipsync` here would have meant every topic in topics.js
+ * being taught two more triggers before a single post could be written about
+ * them — the "written but unreachable" trade this repo keeps making.
+ */
+function drEvents(ep, meta) {
+  const out = [];
+  /* ── TWO SHAPES OF THE SAME NIGHT ─────────────────────────────────
+     A PLAYED row carries `dr.call` (four name lists) and `dr.lipsync`; the
+     PUBLISHED episode carries `placements` (a result per queen) and a
+     flattened `lipsync`. Both reach this function — the live feed reads the
+     first, the archive the second — and a reader that knew only one would
+     work perfectly on one path and emit nothing on the other, which is the
+     failure this repo has shipped twice (see project_bb_headless_vs_played).
+     So both are folded to the same four lists here, once. */
+  const call = { win: [], high: [], low: [], btm: [] };
+  const raw = ep.dr?.call;
+  if (raw) {
+    call.win = [...(raw.win || [])];
+    call.high = [...(raw.high || [])];
+    call.low = [...(raw.low || [])];
+    call.btm = [...(raw.bottom || [])];
+  } else {
+    for (const p of ep.placements || []) {
+      if (p.result === 'WIN') call.win.push(p.name);
+      else if (p.result === 'HIGH') call.high.push(p.name);
+      else if (p.result === 'LOW') call.low.push(p.name);
+      else if (p.result === 'BTM') call.btm.push(p.name);
+    }
+  }
+  const challenge = ep.challenge || ep.dr?.challenge || null;
+  const ls = ep.lipsync || ep.dr?.lipsync || null;
+
+  for (const [i, name] of call.win.entries()) {
+    const e = event('comp-win', { ...meta, subject: name, jitter: (i % 3) * 0.01 });
+    if (challenge?.name) e.receipt = `won ${challenge.name}`;
+    out.push(e);
+  }
+
+  /* THE BOTTOM IS THE PAIR WHO LIP SYNCED, NOT THE `BTM` COLUMN.
+     The queen who goes home is marked ELIM, so `call.btm` holds only the one
+     who SURVIVED — and she is also the lip sync winner, so the feed emitted
+     `nomination` and `domination` about the same person every single week and
+     never once named the other queen standing beside her. The pair is the
+     bottom two by definition. */
+  const bottomPair = (ls?.queens || []).length ? [...ls.queens] : call.btm;
+  for (const [i, name] of bottomPair.entries()) {
+    out.push(event('nomination', { ...meta, subject: name, jitter: (i % 4) * 0.012 }));
+  }
+
+  /* THE LIP SYNC IS THE NIGHT'S ARGUMENT, and the one who wins it is the one
+     the audience talks about. `domination` is the closest existing kind: a
+     performance that settled the question in front of everybody. Only the
+     WINNER gets it; the loser gets the exit below, and giving her both would
+     have the feed celebrating her on the way out. */
+  if (ls?.winner) {
+    const e = event('domination', { ...meta, subject: ls.winner });
+    if (ls.song) e.receipt = `won the lip sync to "${ls.song}"`;
+    out.push(e);
+  }
+
+  // Every door out, in the show's own verb. A double shantay takes nobody and
+  // correctly produces no exit event at all.
+  for (const [i, x] of roundExits(ep, meta?.format).entries()) {
+    const e = event('eviction', { ...meta, subject: x.name, jitter: (i % 4) * 0.012 });
+    e.receipt = `${x.name} ${x.verb}`;
+    out.push(e);
+  }
+  return out;
+}
+
 function tdEvents(ep, meta) {
   const out = [];
   if (ep.immunityWinner) out.push(event('comp-win', { ...meta, subject: ep.immunityWinner }));
@@ -475,6 +555,14 @@ export function extractEvents(ep, { format, season, episode } = {}) {
   // eviction vote — so running the weekly reader over it produces nothing and
   // then a nameless `finale`. It has its own shape and its own reader.
   if (isFinale && meta.format === 'big-brother') out.push(...bbFinaleEvents(ep, meta));
+  /* ── WHICH READER, ASKED OF THE REGISTRY ──────────────────────────
+     This was a ternary, which is a two-show world: everything that was not
+     Big Brother was read by the Total Drama reader. A Drag Race night went
+     through it and came out with `episode-aired` and nothing else — no maxi
+     winner, no bottom two, no lip sync, because tdEvents looks for
+     `immunityWinner` and a runway has none. An empty feed on a full night
+     looks exactly like a working one, which is why it needed a shape. */
+  else if (roundShape(meta.format) === 'placements') out.push(...drEvents(ep, meta));
   else out.push(...(meta.format === 'big-brother' ? bbEvents(ep, meta) : tdEvents(ep, meta)));
   out.push(...campEvents(ep, meta));
   // Whatever the advantages did, and what the ballot says about the vote —

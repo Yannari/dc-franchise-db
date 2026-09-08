@@ -53,8 +53,40 @@ export const VOCAB = {
     own: [
       'traitor', 'traitors', 'faithful', 'faithfuls', 'banish', 'banished',
       'banishment', 'murder', 'murdered', 'round table', 'conclave', 'castle',
-      'shield', 'dagger', 'mission', 'missions', 'turret', 'final table',
+      'dagger', 'mission', 'missions', 'turret', 'final table',
     ],
+  },
+  'drag-race': {
+    own: [
+      'queen', 'queens', 'runway', 'lip sync', 'lip-sync', 'lipsync', 'werk room',
+      'untucked', 'shantay', 'sashay', 'sashayed away', 'maxi challenge',
+      'mini challenge', 'snatch game', 'main stage', 'condragulations',
+      'bottom two', 'miss congeniality',
+      /* ── AND "CAMP", WHICH BOTH SHOWS OWN ──────────────────────────
+         Total Drama's camp is a PLACE. Drag's camp is a STYLE — one of the
+         ten in js/dr/queen.js, and the word a queen uses about her own
+         drag. The header of this file already says a word may belong to
+         more than one show; this is the clearest case of it, and leaving it
+         off meant a queen could not be described as what she is. */
+      'camp',
+      /* ── AND "CHALLENGE", WHICH STOPPED BEING EXCLUSIVE THE DAY THIS
+         SHOW WAS REGISTERED ──────────────────────────────────────────
+         It is listed for Big Brother and Total Drama above, which was true
+         while they were the only two shows that held one. A MAXI CHALLENGE IS
+         A CHALLENGE: this show says the word in its registry entry, in its
+         career stat labels and in every sentence about what the queens did on
+         Tuesday. `forbiddenFor` subtracts a format's own words from the
+         forbidden set, so listing it here is what makes the word available to
+         the show that genuinely uses it while keeping it forbidden on a
+         castle, which calls them missions.
+         The precedent is the "competition" note above, and the rule it states:
+         this table is only for words that can be true of one show and false of
+         another. */
+      'challenge', 'challenges',
+    ],
+    // "Safe" is deliberately NOT here. Big Brother calls a houseguest safe and
+    // so does this show; a word two formats both own cannot be exclusive to
+    // either, and listing it would fail every Big Brother page.
   },
 };
 
@@ -76,8 +108,27 @@ export function forbiddenFor(format) {
  * to go first or a failure names the entire visual system instead of the
  * sentence that broke.
  */
+/**
+ * Proper nouns that contain another show's word and are allowed anyway.
+ *
+ * A TITLE IS A NAME, NOT VOCABULARY. "Murder On The Dancefloor" is a song a
+ * drag queen lip syncs to; the readout prints song titles, and the bare word
+ * "murder" belongs to The Traitors. Rejecting the episode for naming the
+ * record is the guard being wrong about what it is looking at.
+ *
+ * The exemption is deliberately the WHOLE PHRASE and never the word. Strip
+ * "murder on the dancefloor" and a queen who murders somebody in a Drag Race
+ * script still fails, which is the behaviour worth keeping. Add exact titles
+ * here, never bare words, and never derive this list automatically from the
+ * song bank — adding a song should not be able to silently widen a guard.
+ */
+export const PROPER_NOUNS = [
+  'murder on the dancefloor',
+];
+
 export function foreignWordsIn(text, format) {
-  const hay = String(text || '').toLowerCase();
+  let hay = String(text || '').toLowerCase();
+  for (const phrase of PROPER_NOUNS) hay = hay.split(phrase).join(' ');
   return forbiddenFor(format).filter(w =>
     // Built by concatenation, so the boundary must be written '\\b'. A bare
     // '\b' inside a string literal is U+0008 and the regex then matches

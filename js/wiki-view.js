@@ -29,6 +29,7 @@ import { parseInterview } from './casting-interview.js';
 import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 import { joinOrigin } from './bio.js';
 
+import { RESULT_LABELS } from './dr/grid.js';
 import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs }
   from './shows.js';
 
@@ -297,7 +298,14 @@ function infobox(dossier, show, root, L) {
   const seasonBlock = s => {
     const rec = s.record || {};
     const bb = rec.bb || {};
-    const rounds = (s.weekRows || []).length;
+    /* HOW MANY ROUNDS THEY WERE ACTUALLY IN, not how wide the grid is.
+       These were the same number while every grid stopped at its player's
+       exit. A track record chart does not — its rows run to the end of the
+       season by design, so the first queen eliminated was credited with ten
+       episodes on a season she was in for one. The row says which weeks were
+       hers: anything marked OUT was not. */
+    const rounds = (s.weekRows || [])
+      .filter(w => !(w.result === 'OUT' || w.away || w.notYet)).length;
     const pairs = [
       // WHEN, and HOW OLD THEY WERE THEN.
       //
@@ -931,6 +939,37 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
     if (bits.length) section('personality', 'Personality', bits.join(''));
   }
 
+  // ── DRAG FAMILY ─────────────────────────────────────────────
+  //
+  // The one section on this page that is NOT about a season. A drag family
+  // spans the franchise: the queen who put her in her first pair of heels is
+  // still her drag mother in a season neither of them was cast in, and half
+  // the house is usually queens she has never competed against.
+  //
+  // Drawn as the tree it is, with her marked in it, and every row saying what
+  // that queen is TO HER — her grandmother, her cousin — because that is the
+  // question a reader has on somebody else's article. Each name links to that
+  // queen's own page, where the same tree is drawn centred on HER: clicking
+  // through is how you walk a family.
+  //
+  // Only on this show. A drag family is not a Total Drama fact and the article
+  // is scoped to one show.
+  if (format === 'drag-race' && dossier.dragFamily) {
+    const g = dossier.dragFamily;
+    const rows = g.nodes.map(n => {
+      const label = n.slug
+        ? `<a href="${root}/player.html?player=${encodeURIComponent(n.slug)}">${esc(n.name)}</a>`
+        : `<span class="wk-fam-off" title="has never competed">${esc(n.name)}</span>`;
+      const term = n.focus ? 'this queen'
+        : n.toFocus ? `her ${esc(n.toFocus)}`
+          : n.parent ? `${esc(n.parent)}'s ${esc(n.term)}` : '';
+      return `<li class="wk-fam-row${n.focus ? ' is-focus' : ''}" style="margin-left:${n.depth * 20}px">
+        <span class="wk-fam-name">${label}</span><span class="wk-fam-term">${term}</span></li>`;
+    }).join('');
+    section('drag-family', 'Drag family',
+      `<p class="wk-fam-house">${esc(g.family.name)}</p><ul class="wk-fam">${rows}</ul>`);
+  }
+
   // ── QUOTES ─────────────────────────────────────────────────────────
   //
   // Every fandom character page has these and nothing in this project could
@@ -1026,7 +1065,26 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       // off says how, and a week that was both (HOH one week, block the next)
       // can no longer hide half of itself.
       const cell = w => {
+        /* ── A CELL THAT IS A CALL, NOT A POSITION ─────────────────────
+           Everything below this is a house or a camp: where somebody stood
+           relative to a vote. A track record cell is a JUDGEMENT — what the
+           panel said about her that week — and there is no vote for her to
+           stand relative to. The six results come straight off the row the
+           exporter wrote; `RESULT_LABELS` is the same table js/dr/grid.js
+           colours the season page's chart with, so a queen's own row and the
+           season's full chart cannot disagree about what a week was. */
+        /* THE EXIT IS CHECKED FIRST, before the call. A row carrying both —
+           a record that marks her BTM on the night she also went home — must
+           say she left, not what the panel called her: the cell is the last
+           thing said about her that week. Reading the call first drew "BTM"
+           over a departure and the show's exit verb appeared nowhere. */
         if (w.evicted) return { label: exitWord(w), cls: 'wk-c-out', marks: [] };
+        if (w.result) {
+          const meta = RESULT_LABELS[w.result];
+          if (w.result === 'OUT') return { label: '', cls: 'wk-c-away', marks: [] };
+          if (w.result === 'ELIM') return { label: exitWord(w), cls: 'wk-c-out', marks: [] };
+          return { label: meta?.label || w.result, cls: `wk-c-dr wk-c-dr-${w.result.toLowerCase()}`, marks: [] };
+        }
         // Out of the house between two evictions, and the week nobody went
         // home: two states that are not "safe" and were both drawn as blank.
         if (w.notYet) return { label: 'Not in', cls: 'wk-c-away', marks: [] };
@@ -1060,7 +1118,12 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       const drawn = rows.map(cell);
       const marked = drawn.some(c => c.label || c.marks.length);
       const votedAny = rows.some(w => w.votedFor);
-      sub(node, `s${s2.season}-votes`, 'Voting History', `
+      /* WHAT THIS TABLE IS CALLED. "Voting History" over a show where nobody
+         votes is the heading naming a thing the table does not contain — and
+         the two sub-rows under it ("Voted to eliminate", "Votes against")
+         would be two empty rows asserting the same. */
+      const isCall = rows.some(w => w.result);
+      sub(node, `s${s2.season}-votes`, isCall ? 'Track Record' : 'Voting History', `
         <div class="wk-scroll">
           <table class="wk-table wk-weeks">
             <thead><tr><th>${roundWord}</th>${rows.map(w => `<th>${w.week}</th>`).join('')}</tr></thead>
@@ -1076,8 +1139,8 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
                 `<td>${w.votedFor
                   ? `<span class="wk-ballot">${L.avatar(w.votedFor)}${L.person(w.votedFor, { face: false })}</span>`
                   : ''}</td>`).join('')}</tr>` : ''}
-              <tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
-                `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>
+              ${isCall ? '' : `<tr class="wk-weeks-sub"><th>Votes against</th>${rows.map(w =>
+                `<td>${w.votesAgainst || ''}</td>`).join('')}</tr>`}
             </tbody>
           </table>
         </div>
@@ -1091,10 +1154,25 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
           if (n(w => w.nominated)) bits.push(`nominated ${n(w => w.nominated)}x`);
           if (n(w => w.onBlock)) bits.push(`on the block at the vote ${n(w => w.onBlock)}x`);
           const against = rows.reduce((t, w) => t + (w.votesAgainst || 0), 0);
-          const played = rows.filter(w => !w.away && !w.notYet && !w.noEviction).length;
+          const played = isCall
+            ? rows.filter(w => w.result && w.result !== 'OUT').length
+            : rows.filter(w => !w.away && !w.notYet && !w.noEviction).length;
           bits.push(`${played} ${played === 1 ? roundWord.toLowerCase() : `${roundWord.toLowerCase()}s`} played`);
-          bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
-            : 'never had a vote cast against them');
+          if (isCall) {
+            /* THE SUMMARY LINE IN THIS SHOW'S OWN TERMS. The alternative is
+               "never had a vote cast against them" under a track record
+               chart — a sentence that is true of every queen who ever
+               competed, on a show with no ballot, printed as if it were an
+               achievement. What the chart actually shows is the call. */
+            const n = k => rows.filter(w => w.result === k).length;
+            const w1 = n('WIN'); const btm = n('BTM') + n('ELIM');
+            if (w1) bits.push(`${w1} ${w1 === 1 ? words.comp : `${words.comp}s`} won`);
+            bits.push(btm ? `in the bottom ${btm} time${btm === 1 ? '' : 's'}`
+              : 'never in the bottom');
+          } else {
+            bits.push(against ? `${against} vote${against === 1 ? '' : 's'} cast against them`
+              : 'never had a vote cast against them');
+          }
           return esc(bits.join(' · '));
         })()}</p>`);
     }
@@ -1377,6 +1455,40 @@ const slugOf = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, 
 
 /** The stylesheet. Kept with the markup so the two cannot drift apart. */
 export const WIKI_CSS = `
+/* The drag family tree. Indented by generation, her row marked. */
+.wk-fam-house{font-weight:600;margin:0 0 8px}
+.wk-fam{list-style:none;margin:0;padding:0}
+.wk-fam-row{display:flex;align-items:baseline;gap:10px;padding:4px 8px;border-radius:6px}
+.wk-fam-row.is-focus{background:rgba(232,121,249,0.12);font-weight:600}
+.wk-fam-name{min-width:160px}
+.wk-fam-term{font-size:12px;opacity:.7}
+.wk-fam-off{opacity:.65;border-bottom:1px dotted currentColor}
+
+/* The genealogy browser under the article: look anybody up, and see the house
+   from where SHE stands. Same tree, different question. */
+.wk-genealogy{margin:36px 0 0;padding:22px 0 0;border-top:1px solid rgba(255,255,255,.1)}
+.wk-genealogy h2{margin:0 0 6px}
+.wk-gen-sub{opacity:.62;font-size:13px;margin:0 0 14px;max-width:60ch}
+.fam-search{width:100%;max-width:340px;padding:9px 12px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);
+  color:inherit;font-size:14px;margin:0 0 16px}
+.fam-grid{display:grid;grid-template-columns:minmax(200px,280px) 1fr;gap:20px;align-items:start}
+@media(max-width:760px){.fam-grid{grid-template-columns:1fr}}
+.fam-list{max-height:60vh;overflow:auto}
+.fam-house{margin:0 0 14px}
+.fam-house h4{margin:0 0 6px;font-size:13px;letter-spacing:.04em}
+.fam-q{display:block;width:100%;text-align:left;padding:5px 10px;border-radius:6px;
+  border:0;background:transparent;color:inherit;opacity:.8;font-size:13px;cursor:pointer}
+.fam-q:hover{background:rgba(232,121,249,.14);opacity:1}
+.fam-q.active{background:rgba(232,121,249,.2);opacity:1;font-weight:600}
+.fam-tree{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:18px;min-height:160px}
+.fam-row{display:flex;align-items:baseline;gap:12px;padding:5px 10px;border-radius:6px}
+.fam-row.is-focus{background:rgba(232,121,249,.14);font-weight:600}
+.fam-term{margin-left:auto;font-size:12px;opacity:.62}
+.fam-off{opacity:.6;border-bottom:1px dotted currentColor}
+.fam-empty{opacity:.55;padding:24px 8px;font-size:14px}
+
 .wk-article{
   display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:26px;
   align-items:start; margin-top:6px;

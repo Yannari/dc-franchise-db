@@ -38,7 +38,7 @@
 // The vacuity arm below now FAILS if a registered format has no entry in VOCAB,
 // so the next show cannot be added silently.
 import { describe, expect, it } from 'vitest';
-import { SHOWS, DEFAULT_FORMAT, showWords, exitVerbs } from '../js/shows.js';
+import { SHOWS, DEFAULT_FORMAT, showWords, exitVerbs, roundShape } from '../js/shows.js';
 import { buildDossier } from '../js/wiki.js';
 import { renderArticle } from '../js/wiki-view.js';
 import { roundLedger } from '../js/wiki-fill.js';
@@ -149,6 +149,33 @@ function docFor(format) {
       })),
     ],
   };
+  /* ── ONE FIXTURE PER ROUND SHAPE, ASKED OF THE REGISTRY ───────────
+     This fixture was itself a two-show world: everything that was not Big
+     Brother got a `votingHistory`. A show whose rounds are PLACEMENTS reads
+     neither array, so it was handed a document its own ledger finds empty —
+     and every arm below then passed by describing nothing, which is the
+     failure mode this whole file exists to catch. */
+  if (roundShape(format) === 'placements') {
+    const path = SHOWS[format].roundsPath.split('.');
+    const round = {
+      episode: 1,
+      challenge: { id: 'x', name: 'the maxi challenge' },
+      placements: [
+        { name: 'Testcase', result: 'WIN' },
+        // ELIM, not BTM: the queen who goes home is marked by her EXIT, and
+        // a fixture that marks her BTM is a fixture asserting the grid draws
+        // the call over the departure — which it did, and this caught it.
+        ...leavers.map(x => ({ name: x.name, result: 'ELIM' })),
+      ],
+      lipsync: { queens: ['Testcase', leavers[0]?.name || 'Otherperson'], song: 'A Song' },
+      exits: leavers,
+    };
+    const doc = { ...base };
+    let node = doc;
+    for (const k of path.slice(0, -1)) node = (node[k] ||= {});
+    node[path[path.length - 1]] = [round];
+    return doc;
+  }
   if (format === 'big-brother') {
     return { ...base, weeks: [
       { week: 1, hoh: 'Testcase', initialNominees: ['Otherperson'], finalNominees: ['Otherperson'],

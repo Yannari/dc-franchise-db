@@ -146,13 +146,32 @@ const COMPARISON_BACKLOG = {
   'js/bb/themes.js':              1,
   'js/cast-room.js':              1,
   'js/cast-ui.js':                3,
-  'js/core.js':                   2,
+  // 2 -> 0, paid off by the fourth show. `formatIsRunnable` was a ladder of
+  // `fmt === '<show>'` returns, one rung per show, so registering Drag Race
+  // meant adding a fourth rung — a show list with return statements in it.
+  // It reads `runnableFlag` off the registry now (`true` for always-runnable,
+  // the window flag's name otherwise), so a fifth show adds a field and
+  // touches no logic. Row kept at 0 rather than deleted: it records that this
+  // file was cleaned and must not silently re-grow one.
+  'js/core.js':                   0,
   'js/edit-layer.js':             1,
   'js/episode.js':                1,
   'js/finale.js':                 2,
   'js/intentions.js':             1,
   'js/player-trivia.js':          2,
-  'js/quick-setup.js':            7,
+  // 7 -> 8 for the main stage's blueprint chip. `blueprintFor` draws a
+  // different DIAGRAM per show — tribes and a merge, a house and a jury, a
+  // castle and its traitor ratio, a workroom and where the season stops — and
+  // that is per-show layout rather than identity, which is why the file
+  // already carried one branch each for the house and the castle. The drag
+  // branch returns before the shared chips instead of adding a fourth arm to
+  // the `house ? 'houseguest' : 'player'` ternary, so this commit adds one
+  // comparison and no ternary.
+  //
+  // THE REAL FIX, when somebody has a reason to touch all four: let each
+  // registry entry declare its own blueprint builder, which would take this
+  // row to 0 rather than to 9 the next time a show is added.
+  'js/quick-setup.js':            8,
   'js/rankings-update.js':        1,
   'js/romance.js':                3,
   // 9 -> 11 for the castle's run wiring (Plan 8, Task 7), and the two are two
@@ -166,7 +185,24 @@ const COMPARISON_BACKLOG = {
   // merge, which is a fact about the GAME, and the words on both surfaces come
   // from exitVerbs()/roundExits(). Raised deliberately, in the commit that
   // spends it.
-  'js/run-ui.js':                 12,
+  // 12 -> 16, and the four are NOT all one piece of work. Two of them arrived
+  // with the Traitors run wiring and were never recorded here, so this row was
+  // already failing at 14 before the fourth show existed — verified by
+  // stashing. The other two are the main stage's, and they are the same two
+  // questions the castle asks: `_isStageRow(ep)` asks what a STORED episode is,
+  // because the episode card and the timeline draw a history that outlives the
+  // config, and the Season Hub asks what the season being PLAYED is. Neither
+  // is a vocabulary branch — the words on both come from the registry through
+  // showWords() and roundExits().
+  // 16 -> 15, paid off by the fourth show. The season hub keyed its venue on
+  // `format === 'traitors'`, with a `tr-castle` entry duplicating that show's
+  // own accent — so Drag Race, which had no boolean here, printed "HOSTED
+  // CAMP" in Total Drama's yellow across a runway season. A show with one
+  // venue declares it in the registry (`SHOWS[format].venue`) now, and the
+  // hub reads that; the exit line reads `roundExits(row, format)` too, which
+  // it had been calling for the castle alone while every other show fell
+  // through to "left the game".
+  'js/run-ui.js':                 15,
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,
@@ -182,6 +218,11 @@ const COMPARISON_BACKLOG = {
   // the same shape js/bb-run.js's `isBigBrotherSeason` has for the same
   // reason: which ENGINE a season plays is not a field the registry can
   // declare, and this module exists precisely to be the one place that asks.
+  // The run loop's main-stage branch. One comparison, the same shape and the
+  // same reason as js/tr-run.js and js/bb-run.js directly above and below:
+  // which ENGINE a season plays is not a field the registry can declare, and
+  // this module exists precisely to be the one place that asks.
+  'js/dr-run.js':                 1,
   'js/tr-run.js':                 1,
   'js/tr/endgame.js':             1,
   // 6 -> 7 for the castle's screen dispatch (Plan 8, Task 1). `buildVPScreens`

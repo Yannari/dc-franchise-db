@@ -43,6 +43,11 @@ export const BOARD_FILES = {
   // scores are not comparable: js/rankings-update.js prices a Shield against a
   // murder ballot, which is not a sentence about either other show.
   traitors: 'rankings_tr.json',
+  // Drag Race, for the same reason and with a sharper edge: this board's
+  // scores are maxi wins and lip syncs priced against each other, which is
+  // not a sentence about a camp, a house or a castle. A shared file would
+  // rank a queen's crown against a jury vote.
+  'drag-race': 'rankings_dr.json',
 };
 
 /** The board file for a show, or null if that show does not have one. */

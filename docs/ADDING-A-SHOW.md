@@ -818,8 +818,11 @@ built from, so a difference means the code moved and this file did not.
 # Ignore vendored and worktree copies in all of these, or the counts inflate.
 EX='node_modules|\.claude/'
 
-# Everything that imports the registry (§1). Expect 36 lines — 35 non-test
-# files plus js/shows.js itself.
+# Everything that imports the registry (§1). Expect 67 lines — 66 non-test
+# files plus js/shows.js itself, and 100 counting tests. It was 36 before the
+# fourth show; drag added roughly thirty files that legitimately ask the
+# registry what show they are rendering, which is the number going UP being
+# the healthy outcome.
 grep -rln "shows\.js" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests" | sort
 
 # MAP-SHAPED duplicates (§9). Expect exactly these 7 files, all of them per-show
@@ -838,9 +841,14 @@ grep -rn "'total-drama'" --include=*.html --include=*.js .   | grep -Ev "$EX" | 
 # invisible to it. Every such ternary is a two-show world that calls a third
 # show by the default show's name — which is exactly how js/social/session.js
 # came to generate an entire season's social feed in Total Drama's words while
-# passing every audit in this document. Expect 13 hits across 7 files:
-#   js/wiki-view.js (4)  js/social/adapter.js (3)  js/cast-ui.js (2)
+# passing every audit in this document. Expect 11 hits across 7 files:
+#   js/wiki-view.js (3)  js/cast-ui.js (2)  js/shows.js (2)
 #   js/run-ui.js  js/social/events.js  player.html  worker/worker-season-live.js
+# Re-derived at the fourth show and DIFFERENT from what this line said: it read
+# 13 across a list that included js/social/adapter.js (3, now none) and omitted
+# js/shows.js (2, which is the registry itself and allowed). The count moved
+# down while the file list moved sideways — which is exactly why the paragraph
+# is worth re-running rather than trusting.
 grep -rn "=== 'big-brother' ?" --include=*.js --include=*.html .   | grep -Ev "$EX" | grep -v "^./tests/"
 
 # Portrait paths. Anything here that is not the resolver, a documented
@@ -1210,3 +1218,106 @@ user selected; it does not choose the cast or enforce a ratio between source
 shows. Derive eligible source shows from `js/shows.js` and compatible ledger
 records. Never write `['total-drama', 'big-brother']` into Traitors casting
 logic: that list is true today and stale the day the next show ships.
+
+---
+
+## 15. What the fourth show actually found
+
+The third show's §14 was written by a show that still had a vote. The fourth
+does not have one, and almost everything below follows from that.
+
+### What was already broken and only a fourth show could show it
+
+**`runAudienceVote` never forwarded `_gs`.** It called
+`audienceBoard({ eligible })` and fell through to the module-global `gs`, so
+every headless caller — every harness, audit and offline export — voted on an
+empty popularity ledger. It does not throw and does not read as broken: a board
+of all-zero standings still returns a name, and the sash still renders over it.
+Two Big Brother callers had always run inside a live page and never noticed.
+
+**A test can pass by being unfailable, twice in one file.** One handed
+`alumniPool` a `_players` option that does not exist, got an empty pool, and
+returned early on the empty check. Another asked for `minNative: 0` — and the
+guard is `native.length >= minNative`, so zero means "no natives is already
+enough" and it returns the empty native list without ever topping up, the
+opposite of what the number reads like. Both reported that a casting path
+worked while never walking it. **Before trusting a new guard, break the thing
+it guards and watch it fail.**
+
+**A headless season is not the game.** `playDragSeason` with no `bond` function
+falls back to `() => 0`, so every bond-gated event becomes unreachable. An
+event measured a flat zero across forty seasons and looked dead; the gate was
+satisfiable in 13% of queen-episodes and the harness had switched it off. Any
+audit harness must carry the same layers the run loop carries.
+
+### What a show with no vote reveals
+
+**Every reader built on a ballot returns silently empty.** `readSignals` gave
+eleven zeroes for a whole season because it looks for who flipped and who was
+named. The fix was a `roundShape(format) === 'placements'` branch — but the
+lesson is that a reader with no data does not fail, it flattens. Two of its
+signals then had to be re-derived and one, `strategy`, came back as a
+**constant**: 0.70 on every episode of forty seasons, min equal to max. It
+passed the existing stability test, because 0.70 is a respectable mean. **Guard
+the spread, not the average** — a constant wearing a signal's name is worse
+than a zero, because a zero is visibly not reading.
+
+**The edit layer had a reader and no caller.** `_deriveScreenTime` looks for
+camp events, acts, ballots and challenge scores, and a runway night records
+none of them — but worse, `dr-run.js` never called `updateEditLayer` at all. So
+every queen read "Invisible" and the audience pulse drew a season of blank
+bars, which looks like a rendering fault and is a wiring one.
+
+**Naming things well breaks keyword readers.** The ratings `showmance` signal
+matched `/showmance|romance|spark|flirt|kiss/` against an event type, and this
+show's romance beats are called `something-there` and `quiet-thing`. A reader
+guessing at another module's naming stops reading the day somebody names
+something well. Match by exported id.
+
+### The bug class that survives every audit in this document
+
+**Computed, stored, and drawn nowhere.** It happened five times on this show
+alone: Miss Congeniality had no scene; `dr-run.js` never wrote
+`gs.dr.congeniality`, which `stats-export.js` had always read; the crowning
+screen filtered scenes on `step === 'exit'` while the winner's speech lives on
+`finale-crown`; the girl group's track reached the row and no screen read it;
+and `showmance` was written onto `dragSeasonDetails`, which the publish path
+never calls — `mergeDragSeason` builds appearances from the document's
+placement rows.
+
+None of these throw. None fail a test that checks the field exists. The only
+thing that finds them is **rendering the real output and measuring how much of
+it is there**: `npm run audit:dr-spec` renders every screen of a hundred
+seasons and measures the text each produces, which is how 64 claimed-but-empty
+screens and a nine-way gap in challenge panels surfaced at once.
+
+### A test pinned to a stream is not a test of a rule
+
+Three broke here without anything being wrong. One asserted every pre-finale
+row has exactly one exit — false, because a double shantay is on by default and
+sends nobody home; it held only because that seeded season never produced one,
+and broke the moment new werk-room events shifted the RNG. Another demanded the
+cold open never name tonight's eliminated queen — stricter than the bug it was
+written for, and wrong as a rule, since she is in the room all episode. A
+third pinned a known-wrong behaviour and named its own fix in a comment.
+
+**Assert the rule and its exceptions.** If new prose can break your test, it
+was measuring the random stream.
+
+### What the next show should do differently
+
+1. **Write the audit before the polish.** Every real defect on this show came
+   from `audit:dr-spec` or from printing output and reading it. Not one came
+   from a passing suite going red.
+2. **Print the chance line beside every rate.** "The best résumé wins 39% of
+   finales" is not a finding until you know a coin toss gives 25% — and on the
+   first measurement it was *15%*, i.e. anti-correlated, which no absolute
+   number would have shown.
+3. **Check the source before writing the mechanic.** The BTM/BTM2 split, the
+   finale's five different era-shapes, and the porkchop all came from
+   `api.php?action=parse&prop=wikitext` on the show's wiki. Direct page fetches
+   return 402; the API does not.
+4. **Expect the show's own vocabulary to fight the registry.** "Camp" means a
+   style here and a place on Total Drama; "competition" and "house" belong to
+   other shows. The vocabulary guard caught all three, including once inside a
+   comment explaining a previous fix.

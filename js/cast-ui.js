@@ -10,6 +10,8 @@ import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG } from './cor
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS } from './shows.js';
+// The drag family is derived from the same rows the tab already saves.
+import { dragRelationsFrom, familiesFromRelations, familyTree, relationsFromRoster } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
   clearPlayerHistory, recordSeasonToLedger, buildFranchiseMeta, healLedgerRecord } from './franchise-meta.js';
 import { persistFranchiseLedger, applyPreAlliances } from './savestate.js';
@@ -54,6 +56,7 @@ export function buildStatSliders() {
       <span class="slider-val" id="val-${s.key}" style="color:${s.color}">5</span>
     </div>`).join('');
   STATS.forEach(s => setSlider(s.key, 5, false));
+  buildDragSliders();
 }
 
 export function setSlider(key, val, resetArchetype) {
@@ -73,6 +76,113 @@ export function applyArchetype(key) {
 }
 export function getStats() { const s = {}; STATS.forEach(st => { s[st.key] = parseInt(document.getElementById('slider-'+st.key).value); }); return s; }
 export function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.key] || 5, false)); }
+
+// ══════════════════════════════════════════════════════════════════════
+// THE DRAG CRAFT SLIDERS
+// ══════════════════════════════════════════════════════════════════════
+//
+// The nine stats above are the PERSON and every show reads them. These seven
+// are what a panel scores, and only one show has a panel — so they live behind
+// `sec-dr-craft`, which CONFIG_SCOPE draws for drag-race alone.
+//
+// They are here as well as in the Casting Studio on purpose, and the two do
+// different jobs: the Studio authors a character permanently and writes to D1,
+// while this sets up THIS season's cast. Somebody assembling a Drag Race cast
+// should not have to leave the cast builder to say who can sing.
+/**
+ * Which set of sliders is on screen.
+ *
+ * Sixteen sliders in one column read as one undifferentiated list, and they
+ * are two different things: nine belong to the person and every show reads
+ * them, seven are what a panel scores. The tab strip is scoped to drag-race
+ * in CONFIG_SCOPE, so on a show with no second set there is no strip and
+ * nothing to switch — which is why this defaults the craft panel back to
+ * VISIBLE when the strip is gone, rather than leaving it hidden by a tab the
+ * user can no longer see.
+ */
+export function showStatTab(which) {
+  const strip = document.getElementById('sec-dr-craft-tabs');
+  const core = document.getElementById('sec-stats-core');
+  const craft = document.getElementById('sec-dr-craft');
+  if (!core || !craft) return;
+  // No strip (or it is scoped away) means one show, one set: show both as
+  // they were before tabs existed.
+  const tabbed = strip && !strip.hidden && strip.offsetParent !== null;
+  if (!tabbed) { core.hidden = false; craft.hidden = false; return; }
+  const craftOn = which === 'craft';
+  core.hidden = craftOn;
+  craft.hidden = !craftOn;
+  for (const b of strip.querySelectorAll('.stat-tab')) {
+    b.classList.toggle('active', b.dataset.statTab === which);
+  }
+}
+
+const DRAG_CRAFT = [
+  { key: 'acting',  name: 'Acting',  color: '#f9a8d4' },
+  { key: 'comedy',  name: 'Comedy',  color: '#fbbf24' },
+  { key: 'dance',   name: 'Dance',   color: '#4ade80' },
+  { key: 'design',  name: 'Design',  color: '#60a5fa' },
+  { key: 'runway',  name: 'Runway',  color: '#c084fc' },
+  { key: 'lipsync', name: 'Lip sync', color: '#f85149' },
+  { key: 'singing', name: 'Singing', color: '#38bdf8' },
+];
+
+export function buildDragSliders() {
+  const container = document.getElementById('drag-stat-sliders');
+  if (!container) return;
+  container.innerHTML = DRAG_CRAFT.map(s => `
+    <div class="slider-row">
+      <span class="slider-name" style="color:${s.color}">${s.name}</span>
+      <input type="range" min="1" max="10" value="5" class="stat-slider" id="dslider-${s.key}"
+        oninput="setDragSlider('${s.key}', this.value)">
+      <span class="slider-val" id="dval-${s.key}" style="color:${s.color}">5</span>
+    </div>`).join('');
+  DRAG_CRAFT.forEach(s => setDragSlider(s.key, 5));
+}
+
+export function setDragSlider(key, val) {
+  const n = parseInt(val);
+  const craft = DRAG_CRAFT.find(s => s.key === key);
+  if (!craft) return;
+  const pct = ((n - 1) / 9 * 100).toFixed(1) + '%';
+  const el = document.getElementById('dslider-' + key);
+  if (el) {
+    el.value = n;
+    el.style.background = `linear-gradient(to right,${craft.color} 0%,${craft.color} ${pct},var(--slider-track) ${pct})`;
+  }
+  const vEl = document.getElementById('dval-' + key);
+  if (vEl) vEl.textContent = n;
+}
+
+/**
+ * The craft block as the engine wants it, or undefined.
+ *
+ * Undefined when nothing was touched: a row of fives is indistinguishable from
+ * a considered choice, and storing it would claim every cast member had been
+ * given a craft line. js/dr/queen.js reads a missing block as middling
+ * everything, so the two mean the same thing to the engine and only one of
+ * them lies to a reader.
+ */
+export function getDragCraft() {
+  if (!document.getElementById('dslider-acting')) return undefined;
+  const out = {};
+  let touched = false;
+  for (const s of DRAG_CRAFT) {
+    const v = parseInt(document.getElementById('dslider-' + s.key).value);
+    out[s.key] = v;
+    if (v !== 5) touched = true;
+  }
+  const style = document.getElementById('f-drag-style')?.value || '';
+  if (style) { out.style = style; touched = true; }
+  return touched ? out : undefined;
+}
+
+export function putDragCraft(drag) {
+  const d = drag || {};
+  DRAG_CRAFT.forEach(s => setDragSlider(s.key, d[s.key] || 5));
+  const sel = document.getElementById('f-drag-style');
+  if (sel) sel.value = d.style || '';
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // DERIVED
@@ -175,6 +285,7 @@ export function submitPlayer() {
     gender: getGender(),
     sexuality: sexuality !== 'straight' ? sexuality : undefined,
     archetype: document.getElementById('f-archetype').value, stats: getStats(),
+    drag: getDragCraft(),
     isReturnee: document.getElementById('f-returnee')?.checked || false,
     isCoach: document.getElementById('f-coach')?.checked || false,
     // Alumni / Celebrity / Civilian — stored ONLY when the user overrode the
@@ -206,6 +317,7 @@ export function editPlayer(id) {
   renderPortraitPickerInto();
   updateBackgroundPreview();
   putStats(p.stats);
+  putDragCraft(p.drag);
   document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
   document.getElementById('submit-btn').textContent = 'Update Player';
   document.getElementById('edit-actions').style.display = 'flex';
@@ -239,6 +351,7 @@ export function resetForm() {
   renderPortraitPickerInto();
   document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
+  putDragCraft(null);
 }
 // ── Franchise Roster: fetched from JSON on load, embedded copy as fallback ──
 export let FRANCHISE_ROSTER = DEFAULT_ROSTER;
@@ -291,6 +404,7 @@ export function fillFromRoster(p) {
   document.getElementById('f-archetype').value = p.archetype || '';
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc || '';
   if (p.stats) putStats(p.stats);
+  putDragCraft(p.drag);
   // Always default to non-returnee when adding from roster — set per-season in cast builder
   const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
   const coachEl = document.getElementById('f-coach'); if (coachEl) coachEl.checked = false;
@@ -1128,6 +1242,35 @@ export function saveConfig() {
     trArmourySize: parseInt(g('cfg-tr-armoury-size')?.value) || 4,
     trShieldCount: parseInt(g('cfg-tr-shield-count')?.value) || 1,
     trPotCeiling: Math.max(1000, parseInt(g('cfg-tr-pot')?.value) || 120000),
+    // ── the main stage ──
+    // The schedule and the judge weights are NOT read off the DOM: they are
+    // written by the timeline and the judges panel, so they are carried
+    // forward from the live config rather than reset to empty on every save.
+    drPremiere:  g('cfg-dr-premiere')?.value || 'standard',
+    drFinale:    g('cfg-dr-finale')?.value || 'top4',
+    drDoubleShantay: g('cfg-dr-double-shantay') ? g('cfg-dr-double-shantay').checked : true,
+    drDoubleSashay:  g('cfg-dr-double-sashay')?.checked || false,
+    drImmunity:      g('cfg-dr-immunity')?.checked || false,
+    drTripleLipsync: g('cfg-dr-triple')?.checked || false,
+    /* THE REUNION WAS BUILT AND UNREACHABLE. js/dr/reunion.js runs, it has a
+       test file of its own, docs/drag-race.md describes it, and
+       playDragSeason has always read config.drReunion — but nothing ever
+       wrote that key, so the episode existed only inside tests. */
+    drReunion:       g('cfg-dr-reunion')?.checked || false,
+    drDoubleCrown:   g('cfg-dr-double-crown')?.checked || false,
+    /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
+       carrying every pinned decision about a week — a challenge, a guest, a
+       runway category — and the box on screen only owns one of them. Reading
+       the box and assigning the result would silently drop everything else
+       the array holds the moment somebody types a number into it. */
+    /* THE TWISTS MOVED TO THE CATALOGUE. Non-elimination and double
+       elimination are booked on `twistSchedule` like every other show's
+       twists, and js/dr-run.js translates them into this engine's flags. What
+       is left here is anything pinned directly — a challenge, a guest — which
+       the designer's own controls own. */
+    drSchedule: Array.isArray(seasonConfig.drSchedule) ? seasonConfig.drSchedule : [],
+    drJudgeWeights: seasonConfig.drJudgeWeights && typeof seasonConfig.drJudgeWeights === 'object'
+      ? seasonConfig.drJudgeWeights : {},
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
     riFormat:    g('cfg-ri-format')?.value || 'redemption',
@@ -1271,6 +1414,19 @@ export function renderConfig() {
   try { updateShieldUI(); } catch (e) {}
   set('cfg-tr-pot', seasonConfig.trPotCeiling || 120000);
   if (typeof window.updateTraitorPickerUI === 'function') window.updateTraitorPickerUI();
+  // The judges panel: drawn here so it survives a reload and a show switch,
+  // not only a click on the tab strip.
+  try { if (typeof window.renderDragJudges === 'function') window.renderDragJudges(); } catch (e) { /* optional chrome */ }
+  set('cfg-dr-premiere', seasonConfig.drPremiere || 'standard');
+  set('cfg-dr-finale', seasonConfig.drFinale || 'top4');
+  // Defaults ON, so the read has to be an explicit !== false rather than a
+  // truthiness test: an unset value here means "allowed", not "off".
+  if (g('cfg-dr-double-shantay')) g('cfg-dr-double-shantay').checked = seasonConfig.drDoubleShantay !== false;
+  chk('cfg-dr-double-sashay', seasonConfig.drDoubleSashay || false);
+  chk('cfg-dr-immunity', seasonConfig.drImmunity || false);
+  chk('cfg-dr-triple', seasonConfig.drTripleLipsync || false);
+  chk('cfg-dr-reunion', seasonConfig.drReunion || false);
+  chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');
@@ -1494,7 +1650,16 @@ export function buildKinshipSelect() {
   const keep = sel.value;
   const groups = new Map();
   let none = '';
+  /* THE TWO FAMILY AXES ARE EXCLUSIVE. A drag season has no twins and no
+     in-laws; a camp has no drag mothers. Offering either list to the other
+     show fills the picker with terms that show's engine will never read,
+     which is how a season ends up carrying a relation nothing acts on.
+     A term with no axis -- exes, best friends, married, worked together --
+     is true of anybody and shown everywhere. */
+  const show = seasonConfig.format || 'total-drama';
+  const axis = show === 'drag-race' ? 'drag' : 'blood';
   for (const [key, def] of Object.entries(REL_KINSHIP)) {
+    if (def.axis && def.axis !== axis) continue;
     const opt = `<option value="${key}">${def.label}</option>`;
     if (!def.group) { none += opt; continue; }
     if (!groups.has(def.group)) groups.set(def.group, []);
@@ -1502,7 +1667,9 @@ export function buildKinshipSelect() {
   }
   sel.innerHTML = none + [...groups.entries()]
     .map(([g, list]) => `<optgroup label="${g}">${list.join('')}</optgroup>`).join('');
-  if (keep && REL_KINSHIP[keep]) sel.value = keep;
+  // Only restore a term this show still offers, or the select keeps a value
+  // it is no longer showing and the form saves a relation nobody can see.
+  if (keep && REL_KINSHIP[keep] && sel.querySelector(`option[value="${keep}"]`)) sel.value = keep;
 }
 export function updateRelAvatars() {
   const a = document.getElementById('rel-a')?.value;
@@ -1604,7 +1771,106 @@ export function loadS9Bonds() {
   relationships = [];
   saveRels(); renderRelList();
 }
+/**
+ * What the authored rows actually BUILT, on a drag season.
+ *
+ * Three rows produce a family with terms nobody typed — write "Ivy is Coco's
+ * mother", "Nell is Coco's sister" and "Ivy is Rita's sister" and the room now
+ * contains an aunt, a cousin and a grandmother. None of that is visible in a
+ * list of pairs, so the tab showed an author three lines and hid the tree they
+ * make. This draws the tree back.
+ *
+ * Derived, never stored: it is recomputed from the rows every render, so it
+ * cannot drift from them.
+ */
+/**
+ * Carry the character sheets' families into the tab.
+ *
+ * The family is authored on the QUEEN (Studio → Drag Race → craft), because
+ * that is what it is a fact about: retyping the same house for every season
+ * she plays gets a different answer every time somebody spells a name
+ * differently. This ports it in as ordinary rows, which is the point — once
+ * they are here they are editable, deletable and no different from a row
+ * somebody typed, so a season can break up a family the roster still records.
+ *
+ * `type` is left NEUTRAL on purpose. The row records how they are RELATED;
+ * how they feel is the other axis and the author's to set. The warmth a
+ * family starts with is applied by the season itself (FAMILY_BOND in
+ * js/dr/family.js), so seeding it here as well would pay it twice.
+ *
+ * Adds only what is missing, so it can be run twice and cannot resurrect a
+ * pair somebody has already deleted-and-retyped as something else.
+ */
+export function importDragFamilies({ announce = false } = {}) {
+  const before = relationships.length;
+  const has = (a, b) => relationships.some(r => [r.a, r.b].sort().join('|') === [a, b].sort().join('|'));
+  for (const e of relationsFromRoster(players)) {
+    if (has(e.a, e.b)) continue;
+    // An edge reads "b is a's mother"; a row reads "A is B's mother".
+    const row = e.kind === 'sister'
+      ? { a: e.a, b: e.b, kin: 'drag-sisters' }
+      : { a: e.b, b: e.a, kin: 'drag-mother' };
+    relationships.push({
+      id: `fam-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+      type: 'neutral', bond: REL_TYPES.neutral?.bond ?? 0,
+      leanA: 0, leanB: 0, note: '', ...row,
+    });
+  }
+  const added = relationships.length - before;
+  if (added) { saveRels(); renderRelList(); }
+  if (announce) {
+    alert(added
+      ? `${added} family ${added === 1 ? 'relation' : 'relations'} imported from the cast.`
+      : 'Every family on this cast is already in the list.\n\n'
+        + 'Drag mothers and sisters are authored on the queen, in Studio → Drag Race — craft.');
+  }
+  return added;
+}
+
+function renderDragFamilies() {
+  const box = document.getElementById('rel-families');
+  if (!box) return;
+  const drag = (seasonConfig.format || 'total-drama') === 'drag-race';
+  box.style.display = drag ? '' : 'none';
+  const btn = document.getElementById('rel-import-fams');
+  if (btn) btn.style.display = drag ? '' : 'none';
+  if (!drag) return;
+
+  /* THE FIRST RENDER PORTS THEM. After that the rows are the author's: an
+     import that ran on every render would resurrect a family somebody had
+     deliberately broken up for this season. The button re-runs it on demand. */
+  if (!relationships.some(r => String(r.kin || '').startsWith('drag-'))) importDragFamilies();
+
+  const edges = dragRelationsFrom(relationships);
+  const fams = familiesFromRelations(players.map(p => ({ name: p.name, age: p.age })), edges);
+  if (!fams.length) {
+    box.innerHTML = `<div class="rel-empty">No drag families yet.<br>`
+      + `Give a pair <strong>Drag mother</strong> or <strong>Drag sisters</strong> `
+      + `and the aunts and cousins work themselves out.</div>`;
+    return;
+  }
+
+  box.innerHTML = fams.map(f => {
+    /* Drawn as a tree, oldest generation first. The first version picked a
+       head and described everybody relative to her, which turned a house with
+       a grandmother, a mother, two daughters and an aunt into five rows all
+       saying "Axel's something" — the generations were there and the panel
+       flattened them onto one person. Each row now says only what she is to
+       the queen she is indented under. */
+    const tree = familyTree(fams, f);
+    const rows = tree.map(n => `<div class="rel-fam-row" style="padding-left:${14 + n.depth * 18}px">
+        ${miniAvatar(n.name, 24)}<span>${n.name}</span>
+        <em>${n.parent ? `${n.parent}'s ${n.term}` : 'the head of the house'}</em>
+      </div>`).join('');
+    return `<div class="rel-fam">
+      <div class="rel-fam-head"><strong>${f.name}</strong>
+        ${f.surname ? '<span class="rel-fam-tag">the room can see it</span>' : ''}</div>
+      ${rows}</div>`;
+  }).join('');
+}
+
 export function renderRelList() {
+  renderDragFamilies();
   const list = document.getElementById('rel-list');
   if (!relationships.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or load <strong>S9/S10 Bonds</strong> preset.</div>`; return; }
   const sorted = [...relationships].sort((a,b) => { if(a.type==='unbreakable'&&b.type!=='unbreakable') return -1; if(b.type==='unbreakable'&&a.type!=='unbreakable') return 1; return Math.abs(b.bond)-Math.abs(a.bond); });

@@ -20,7 +20,7 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
@@ -50,7 +50,35 @@ export function blueprintFor(config = {}, castSize = 0) {
   const N = Number(castSize) || 0;
   const house = seasonFormat(config) === 'big-brother';
   const castle = seasonFormat(config) === 'traitors';
+  const stage = seasonFormat(config) === 'drag-race';
   const segs = [];
+
+  // ── THE MAIN STAGE, BEFORE THE SHARED CHIPS ──────────────────────
+  //
+  // Returns first rather than pushing onto the common ones, because none of
+  // them is true here: there is no tribe to split into, no merge to reach and
+  // no jury to seat. A drag season is a number of queens, one workroom, and
+  // where the season stops. The cast noun comes from the registry rather than
+  // from a fourth arm on the ternary below — which is also why this branch
+  // sits above that push instead of editing it.
+  if (stage) {
+    const w = showWords('drag-race');
+    const castOk = N >= 8 && N <= 16;
+    segs.push({
+      label: `${N} ${N === 1 ? w.player : w.players}`,
+      ok: castOk,
+      why: castOk ? undefined : `Cast 8 to 16 ${w.players}`,
+    });
+    segs.push({ label: 'one werk room', ok: true });
+    const fin = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 }[config.drFinale || 'top4'] || 4;
+    const finOk = N > fin;
+    segs.push({
+      label: `finale at top ${fin}`,
+      ok: finOk,
+      why: finOk ? undefined : `A top ${fin} needs more than ${fin} ${w.players}`,
+    });
+    return segs;
+  }
 
   segs.push({
     label: `${N} ${house ? 'houseguest' : 'player'}${N === 1 ? '' : 's'}`,
@@ -455,6 +483,7 @@ const SHOW_TAGS = {
   'total-drama': 'Tribes, challenges, tribal council',
   'big-brother': 'One house, HOH, veto, live eviction',
   'traitors':    'A castle, a round table, a murder every night',
+  'drag-race':   'Werk room, runway, lip sync for your life',
 };
 export const SHOWS = Object.keys(SHOW_REGISTRY).map(id => ({
   id, name: showName(id), icon: showIcon(id), tag: SHOW_TAGS[id] || '',
@@ -977,6 +1006,14 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Alistair', label: 'Alistair Crane' },
     { value: 'Claudia',  label: 'Claudia Winterbourne' },
   ],
+  // One host, and unlike the castle's three this one is not a variable: the
+  // host of this show is also a permanent judge and the person who decides who
+  // goes home, so swapping the name would swap the panel too. The portrait
+  // pair is assets/avatars/rupaul.png (werk room) and rupaul-drag.png (main
+  // stage) — see js/dr/data/judges.js, which owns both.
+  'drag-race': [
+    { value: 'RuPaul', label: 'RuPaul' },
+  ],
 };
 
 export function hostOptionsForFormat(fmt) {
@@ -1059,7 +1096,10 @@ const CONFIG_SCOPE = {
     idol:       ['total-drama'],
     advantages: ['total-drama'],
     qem:        ['total-drama'],
-    popularity: ['total-drama', 'big-brother', 'traitors'],  // a castle has an audience too
+    // A castle has an audience too, and so does a main stage: every drag scene
+    // writes the popularity ledger, so the switch turns real tracking off
+    // rather than sitting there as decoration.
+    popularity: ['total-drama', 'big-brother', 'traitors', 'drag-race'],
     survival:   ['total-drama'],
     mole:       ['total-drama'],
     // Sideline coaches train a TRIBE — a house and a castle have neither, so
@@ -1085,6 +1125,27 @@ const CONFIG_SCOPE = {
     'cfg-bb-havenot-count':  ['big-brother'],
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama'],  // a house has no tribes to join
+    // The cast form's castle-only field, which says so on its own label —
+    // "Background (The Traitors)" — and was drawn on every show anyway, so a
+    // queen was being cast as a Civilian. The label naming a show is exactly
+    // the signal that it needs a row here; the guard in tests/dr-setup.test.js
+    // now enforces that.
+    'f-background':          ['traitors'],
+    // A coach trains a TRIBE from the sideline. A house, a castle and a
+    // workroom have no tribes, so the per-character tick meant nothing on
+    // three of the four shows and was offered on all of them. The `coaches`
+    // accordion above has been scoped since Big Brother; this checkbox, which
+    // is the thing you actually tick, never was.
+    'f-coach':               ['total-drama'],
+    // The seven craft stats and the style, in the cast builder. Only this
+    // show's judges score them.
+    'sec-dr-craft':          ['drag-race'],
+    // The strip that switches between the two sets of sliders. Only a show
+    // with a SECOND set has anything to switch, so on the other three there
+    // is no strip and the stats panel is exactly what it was.
+    'sec-dr-craft-tabs':     ['drag-race'],
+    'sec-dr-judges':         ['drag-race'],
+    'f-drag-style':          ['drag-race'],
     'cfg-finale':            ['total-drama'],  // a house always ends at three
     // The castle's own controls: how many traitors, and the pot they are
     // playing for. No other format's engine reads either.
@@ -1110,6 +1171,30 @@ const CONFIG_SCOPE = {
     'cfg-tr-endgame-reveal': ['traitors'],
     // The castle's endgame size (final 2-5). Only js/tr/ reads it.
     'cfg-tr-endgame-size':   ['traitors'],
+    // ── FIVE MORE CASTLE CONTROLS THAT WERE NEVER SCOPED ────────────
+    //
+    // The murder shapes the castle may spring unasked, the scene density, and
+    // the three shield/armoury settings. All castle-only, none of them in this
+    // map, so every one of them was drawn on a Big Brother, Total Drama and
+    // Drag Race season too — a runway was being asked which murder twists it
+    // would allow. Found by reading the screen after the fourth show landed.
+    'cfg-tr-random-mv':      ['traitors'],
+    'cfg-tr-density':        ['traitors'],
+    'cfg-tr-shield-source':  ['traitors'],
+    'cfg-tr-armoury-size':   ['traitors'],
+    'cfg-tr-shield-count':   ['traitors'],
+    // The main stage's own controls. Every one of these is read by js/dr/*:
+    // the premiere and finale shapes pick which weeks the season runs, and the
+    // four switches are ALLOWANCES the lip sync and the schedule consult. A
+    // control nothing reads does not belong in this map.
+    'cfg-dr-premiere':       ['drag-race'],
+    'cfg-dr-finale':         ['drag-race'],
+    'cfg-dr-double-shantay': ['drag-race'],
+    'cfg-dr-double-sashay':  ['drag-race'],
+    'cfg-dr-immunity':       ['drag-race'],
+    'cfg-dr-triple':         ['drag-race'],
+    'cfg-dr-reunion':        ['drag-race'],
+    'cfg-dr-double-crown':   ['drag-race'],
     // COUNCIL SIZE IS NOT A CASTLE CONTROL. The `cfg-jury` slider is shared —
     // the house reads a jury size off it and Total Drama a panel — but the
     // castle ends on the fire round, not a jury vote, so nothing in js/tr/ ever
@@ -1125,7 +1210,7 @@ const CONFIG_SCOPE = {
   },
   sections: {
     'sec-season-options':     ['total-drama'],
-    'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors'],  // popularity lives here
+    'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors', 'drag-race'],  // popularity lives here
     'sec-bb-options':         ['big-brother'],
     'sec-bb-divider':         ['big-brother'],
     // The container, not just its heading. The fixed-rule lines inside it are
@@ -1138,6 +1223,22 @@ const CONFIG_SCOPE = {
     // The castle's traitor-count/selection/pot controls and their heading.
     'sec-tr-options':        ['traitors'],
     'sec-tr-divider':        ['traitors'],
+    'sec-dr-options':        ['drag-race'],
+    'sec-dr-divider':        ['drag-race'],
+    // ── THE EXPLAINER ROWS, WHICH HAD NO IDS AND SO NO SCOPE ────────
+    //
+    // Each show's options block opens with a couple of fixed rows stating the
+    // rules it does not offer a choice about — how a tie breaks, how the
+    // endgame works. They were plain divs with no id, so this map could not
+    // reach them and all of them were drawn at once: a Drag Race season was
+    // told that a tie is "broken by the Head of Household, live" AND that "the
+    // room stops banishing", one above the other. Found by a fourth show
+    // arriving and somebody reading the screen.
+    'sec-bb-fixed-ties':     ['big-brother'],
+    'sec-bb-fixed-endgame':  ['big-brother'],
+    'sec-tr-fixed-ties':     ['traitors'],
+    'sec-tr-fixed-endgame':  ['traitors'],
+    'sec-dr-fixed-verdict':  ['drag-race'],
     // The END GAME heading holds Total Drama's finale block AND the castle's
     // endgame controls (each control scoped within). Shown for both; a house
     // finale is fixed (final three, stated in HOUSE OPTIONS), so it stays hidden
@@ -1181,6 +1282,12 @@ export function applyFormatScope() {
   // the jury opens. Neither is a visibility question, so scoping does not cover
   // it; the label has to be redrawn whenever the show changes.
   window.updateSlider?.('jury');
+
+  /* AND RESET THE SLIDER TABS. Switching away from drag hides the strip, and
+     without this the craft panel stays hidden behind a tab nobody can see any
+     more — or worse, the CORE panel does, leaving a stats editor with no
+     stats in it. `showStatTab` puts both back when there is no strip. */
+  window.showStatTab?.('core');
 
   _placeRomance(fmt);
   renderHouseStructure();

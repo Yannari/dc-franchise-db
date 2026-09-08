@@ -1,0 +1,213 @@
+// ══════════════════════════════════════════════════════════════════════
+// dr-run.js — the run loop's main-stage branch, and the runnable flag
+// ══════════════════════════════════════════════════════════════════════
+//
+// Same shape as js/tr-run.js. The engine plays the WHOLE season in one call
+// (js/dr/season.js) and the rows are queued on `gs._drQueue`; each press of
+// "Simulate Episode N" shifts one onto `gs.episodeHistory`.
+//
+// The season is played in one go rather than a night at a time because the
+// finale's shape depends on the whole run, and because a re-aired episode must
+// be the episode that aired. The seed lives on `gs._drSeed`, so a queue lost to
+// a reload rebuilds the SAME season and drops the rows that already went out —
+// without that, replaying from a checkpoint regenerates a different season and
+// stacks it onto the history, which is the "episodes that never happened"
+// corruption the castle hit.
+//
+// IMPORTING THIS MODULE IS THE WIRING. It sets `window._drRunnable`, which
+// `formatIsRunnable()` reads to decide whether the show can be started at all.
+// Drop the import from js/main.js and the show silently un-ships with every
+// test still green.
+import { gs, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { DRAG_FORMAT } from './shows.js';
+import { getPerceivedBond, addBond } from './bonds.js';
+import { playDragSeason } from './dr/season.js';
+import { dragRelationsFrom } from './dr/family.js';
+import { updateEditLayer } from './edit-layer.js';
+
+export const isDragSeason = () => seasonFormat(seasonConfig) === 'drag-race';
+
+function _seed() {
+  if (!gs._drSeed) {
+    gs._drSeed = (Number(seasonConfig.seasonNumber) || 0) * 1000
+      + Math.floor(Math.random() * 1000) + 1;
+  }
+  return gs._drSeed;
+}
+
+/**
+ * The twist catalogue's schedule, in this engine's own words.
+ *
+ * The designer books twists onto `seasonConfig.twistSchedule` as
+ * `{ id, episode, type }` — the same array a tribe swap or a double eviction
+ * lands in — and js/dr/season.js reads `drSchedule` entries carrying its own
+ * flags. Translating here keeps both honest: the catalogue does not learn a
+ * per-show shape, and the engine does not learn what a twist card is.
+ *
+ * `episodeField` on the catalogue entry names the flag and `episodeValue`
+ * the value when it is not a boolean, so a new drag twist is a catalogue row
+ * and no change to this function.
+ */
+function _twistsToSchedule() {
+  const booked = (seasonConfig.twistSchedule || []).filter(Boolean);
+  const mine = new Map(twistsForFormat({ format: DRAG_FORMAT }).map(t => [t.id, t]));
+  const byEp = new Map();
+  for (const b of booked) {
+    const t = mine.get(b.type) || mine.get(b.id);
+    if (!t?.episodeField) continue;
+    const ep = Number(b.episode);
+    if (!Number.isInteger(ep) || ep < 1) continue;
+    const row = byEp.get(ep) || { episode: ep };
+    /* TRUE FOR A FLAG, A NAME FOR A CHOICE. Most drag twists are booleans:
+       the week either sends nobody home or it does. Two of them share one
+       engine field and are told apart by its VALUE — `critiqueTwist` is
+       'who-should-go' or 'rate-a-queen' — and writing `true` there would
+       switch on a twist the engine has no branch for, which is a booking
+       that silently does nothing. */
+    row[t.episodeField] = t.episodeValue ?? true;
+    /* AND ANYTHING THE BOOKING ITSELF CHOSE. Every drag twist until now was
+       a boolean — it happens this week or it does not — and a returning
+       queen has to say WHO. `dataFields` on the catalogue entry names the
+       keys to carry across, so a fifth twist that needs an option is a
+       catalogue row and no change here. */
+    for (const k of t.dataFields || []) {
+      if (b[k] !== undefined && b[k] !== '') row[k] = b[k];
+    }
+    byEp.set(ep, row);
+  }
+  // Anything pinned directly on drSchedule (a challenge, a guest) survives,
+  // and a twist booked on the same episode merges into it.
+  for (const pin of (seasonConfig.drSchedule || []).filter(Boolean)) {
+    const ep = Number(pin.episode);
+    if (!Number.isInteger(ep)) continue;
+    byEp.set(ep, { ...pin, ...(byEp.get(ep) || {}), episode: ep });
+  }
+  return [...byEp.values()].sort((x, y) => x.episode - y.episode);
+}
+
+/** Whether a season-wide drag twist is booked at all. */
+function _twistBooked(id) {
+  return (seasonConfig.twistSchedule || []).some(b => b && (b.type === id || b.id === id));
+}
+
+function _config() {
+  return {
+    drPremiere: seasonConfig.drPremiere,
+    drFinale: seasonConfig.drFinale,
+    drDoubleShantay: seasonConfig.drDoubleShantay,
+    drDoubleSashay: seasonConfig.drDoubleSashay,
+    drImmunity: seasonConfig.drImmunity,
+    drTripleLipsync: seasonConfig.drTripleLipsync,
+    /* THE SMACKDOWN, WHICH WAS UNREACHABLE. js/dr/season.js has read
+       `config.drSmackdown` since it was written and this function never
+       passed it, so the whole Lalaparuza reunion -- engine, challenge module
+       and all -- could not be switched on from a played season. There was no
+       control for it either, so nothing pointed at the gap. */
+    // Booked from the catalogue like everything else, with the old flag still
+    // honoured so a season saved before the twist existed still plays.
+    drSmackdown: _twistBooked('dr-smackdown') || !!seasonConfig.drSmackdown,
+    drSchedule: _twistsToSchedule(),
+    drJudgeWeights: seasonConfig.drJudgeWeights || {},
+  };
+}
+
+function _playWholeSeason() {
+  const cast = (players || []).filter(p => p && p.name);
+  if (cast.length < 4) return false;
+
+  // Perceived bonds, not real ones: what a queen believes about the room is
+  // what shapes how she works with it. Wrapped because a season can be started
+  // before the relationship layer has anything in it.
+  const bond = (a, b) => {
+    try { return getPerceivedBond(a, b) || 0; } catch { return 0; }
+  };
+
+  const out = playDragSeason({
+    cast,
+    seed: _seed(),
+    config: _config(),
+    /* THE AUTHORED HOUSES. The Relationships tab has always had two axes --
+       how they feel, and how they know each other -- and the feeling half
+       reached a drag season through initGameState's bond seeding from the
+       first day. The knowing half did not: a user could write "Ivy is Coco's
+       drag mother" and the room met two strangers. */
+    relations: dragRelationsFrom(relationships),
+    bond,
+    // Real bonds, so helping somebody sew is remembered next week and by every
+    // other system that reads the relationship layer.
+    addBond: (a, b, d) => { try { addBond(a, b, d); } catch { /* no relationship layer yet */ } },
+    // The live ledger, written alongside the season's own copy so a played
+    // season and a headless one carry the same numbers.
+    popDelta: (n, d) => {
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[n] = (gs.popularity[n] || 0) + d;
+    },
+  });
+
+  gs._drQueue = out.rows;
+  // A mirror for the screens, not a second source of truth: every episode
+  // screen reads its own row. `star` is here because the aftermath reads it
+  // once at the end, never during.
+  gs.dr = {
+    star: out.state.star, castOrder: out.state.castOrder, episodes: [],
+    // The sash. `stats-export.js` reads `gs.dr.congeniality` when it builds
+    // the season document, and until this line was here it read undefined on
+    // every played season — the award was computed, stored on the finale row,
+    // drawn on the crowning screen, and then dropped on the way to the file.
+    congeniality: out.congeniality || null,
+  };
+  gs._drResult = { winner: out.winner, runnerUp: out.runnerUp };
+  return true;
+}
+
+/** One episode onto the history. Returns the row, or null when the season is over. */
+export function simulateDragEpisode() {
+  if (!gs) return null;
+
+  if (!Array.isArray(gs._drQueue)) {
+    // The queue was lost — a reload, or an older save. Rebuild the SAME season
+    // from the seed and drop the episodes that already aired, rather than
+    // replaying from episode one on top of them.
+    const aired = (gs.episodeHistory || []).length;
+    if (!_playWholeSeason()) return null;
+    if (aired > 0 && Array.isArray(gs._drQueue)) gs._drQueue = gs._drQueue.slice(aired);
+  }
+
+  const row = (gs._drQueue || []).shift();
+  if (!row) {
+    gs.phase = 'complete';
+    return null;
+  }
+
+  (gs.episodeHistory ||= []).push(row);
+  if (gs.dr) (gs.dr.episodes ||= []).push(row);
+  // Set BEFORE the edit layer runs: it bills screen time against the active
+  // roster, and a queen who is not on it is billed nothing.
+  gs.activePlayers = [...(row.dr?.living || [])];
+  gs.episode = row.num;
+  gs.eliminated = [...(gs.eliminated || []), ...row.exits.map(x => x.name)];
+
+  /* THE AUDIENCE PULSE, which this show was not calling at all. The edit layer
+     is where the franchise decides who a season made a star of, and both other
+     shows have fed it since their run loops were written. A drag season fed it
+     nothing — so every queen read "Invisible" and the pulse drew a season of
+     blank bars. The reader existed; the caller did not.
+     Wrapped because the edit is commentary on the run and must never be able
+     to take the run down with it. */
+  try { updateEditLayer(row); } catch { /* commentary, never the season */ }
+
+  if (row.dr?.finale) {
+    gs.phase = 'complete';
+    gs.drWinner = row.dr.finale.winner || null;
+    gs.drRunnerUp = row.dr.finale.runnerUp || null;
+  } else {
+    gs.phase = gs._drQueue.length ? 'stage' : 'complete';
+  }
+  return row;
+}
+
+export function dragEpisodesLeft() {
+  return Array.isArray(gs?._drQueue) ? gs._drQueue.length : 0;
+}
+
+if (typeof window !== 'undefined') window._drRunnable = true;

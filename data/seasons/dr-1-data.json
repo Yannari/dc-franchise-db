@@ -1,0 +1,1718 @@
+{
+  "seasonNumber": 1,
+  "format": "drag-race",
+  "seasonId": "dr-1",
+  "castSize": 13,
+  "episodeCount": 10,
+  "winner": {
+    "name": "Duncan",
+    "playerSlug": "duncan",
+    "vote": ""
+  },
+  "winners": [
+    "Duncan"
+  ],
+  "placements": [
+    {
+      "name": "Duncan",
+      "playerSlug": "duncan",
+      "placement": 1,
+      "status": "Winner",
+      "dr": {
+        "wins": 7,
+        "highs": 2,
+        "lows": 0,
+        "bottoms": 0,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Karol",
+      "playerSlug": "karol",
+      "placement": 2,
+      "status": "Runner-up",
+      "dr": {
+        "wins": 0,
+        "highs": 2,
+        "lows": 4,
+        "bottoms": 0,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Sanders",
+      "playerSlug": "sanders",
+      "placement": 3,
+      "status": "Miss Congeniality",
+      "congeniality": true,
+      "dr": {
+        "wins": 1,
+        "highs": 3,
+        "lows": 2,
+        "bottoms": 0,
+        "lipsyncWins": 0,
+        "congeniality": 1
+      }
+    },
+    {
+      "name": "Kai",
+      "playerSlug": "kai",
+      "placement": 4,
+      "status": "Finalist",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 9,
+        "lipsyncWins": 7,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Cameron",
+      "playerSlug": "cameron",
+      "placement": 5,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 3,
+        "lows": 2,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Aiden",
+      "playerSlug": "aiden",
+      "placement": 6,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 1,
+        "lows": 0,
+        "bottoms": 2,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Gerry",
+      "playerSlug": "gerry",
+      "placement": 7,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 1,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Gyselle",
+      "playerSlug": "gyselle",
+      "placement": 8,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 1,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 4,
+        "lipsyncWins": 1,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Justin",
+      "playerSlug": "justin",
+      "placement": 9,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 1,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Brody",
+      "playerSlug": "brody",
+      "placement": 10,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 2,
+        "lipsyncWins": 1,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Nessa",
+      "playerSlug": "nessa",
+      "placement": 11,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 1,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Ivy",
+      "playerSlug": "ivy",
+      "placement": 12,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Diego",
+      "playerSlug": "diego",
+      "placement": 13,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    }
+  ],
+  "dr": {
+    "episodes": [
+      {
+        "episode": 1,
+        "challenge": {
+          "id": "stand-up",
+          "name": "Stand-Up Challenge",
+          "format": "solo",
+          "stage": "main"
+        },
+        "mini": {
+          "id": "quick-drag",
+          "name": "Quick Drag",
+          "winner": "Aiden"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "carson"
+        ],
+        "guest": null,
+        "runwayCategory": "Hometown Pride",
+        "song": {
+          "title": "I Will Always Love You",
+          "artist": "Dolly Parton"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "SAFE",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": null
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "HIGH",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "LOW",
+            "panelRank": 9,
+            "finalRank": 9,
+            "storyline": null
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": null
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "BTM2",
+            "panelRank": 13,
+            "finalRank": 12,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "LOW",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "ELIM",
+            "panelRank": 12,
+            "finalRank": 13,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Brody",
+            "Diego"
+          ],
+          "winner": "Brody",
+          "loser": "Diego",
+          "call": "shantay",
+          "song": "I Will Always Love You"
+        },
+        "exits": [
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 2,
+        "challenge": {
+          "id": "girl-group",
+          "name": "Girl Group Challenge",
+          "format": "teams",
+          "stage": "pre"
+        },
+        "mini": {
+          "id": "reading",
+          "name": "Reading Is Fundamental",
+          "winner": "Brody"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ross"
+        ],
+        "guest": null,
+        "runwayCategory": "Curtain Up",
+        "song": {
+          "title": "Free Your Mind",
+          "artist": "En Vogue"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "HIGH",
+            "panelRank": 3,
+            "finalRank": 2,
+            "storyline": null
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "LOW",
+            "panelRank": 10,
+            "finalRank": 9,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "LOW",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": null
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": null
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 3,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "ELIM",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "BTM2",
+            "panelRank": 12,
+            "finalRank": 12,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM",
+            "panelRank": 9,
+            "finalRank": 10,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Ivy",
+            "Gyselle"
+          ],
+          "winner": "Gyselle",
+          "loser": "Ivy",
+          "call": "shantay",
+          "song": "Free Your Mind"
+        },
+        "exits": [
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 3,
+        "challenge": {
+          "id": "rusical",
+          "name": "The Rusical",
+          "format": "cast",
+          "stage": "main"
+        },
+        "mini": {
+          "id": "quiz",
+          "name": "Herstory Quiz",
+          "winner": "Justin"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "law"
+        ],
+        "guest": null,
+        "runwayCategory": "Creatures of the Deep",
+        "song": {
+          "title": "Good Luck, Babe!",
+          "artist": "Chappell Roan"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "LOW",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": null
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 5,
+            "storyline": null
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "BTM",
+            "panelRank": 9,
+            "finalRank": 9,
+            "storyline": null
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 6,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "ELIM",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Nessa",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Nessa",
+          "call": "shantay",
+          "song": "Good Luck, Babe!"
+        },
+        "exits": [
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 4,
+        "challenge": {
+          "id": "makeover",
+          "name": "Makeover Challenge",
+          "format": "partnered",
+          "stage": "main"
+        },
+        "mini": {
+          "id": "puppets",
+          "name": "Puppet Parody",
+          "winner": "Karol"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ts"
+        ],
+        "guest": null,
+        "runwayCategory": "Showgirl",
+        "song": {
+          "title": "Dancing on My Own",
+          "artist": "Robyn"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": null
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 6,
+            "storyline": null
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": null
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "LOW",
+            "panelRank": 6,
+            "finalRank": 7,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "BTM",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "ELIM",
+            "panelRank": 10,
+            "finalRank": 9,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 9,
+            "finalRank": 10,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Brody",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Brody",
+          "call": "shantay",
+          "song": "Dancing on My Own"
+        },
+        "exits": [
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 5,
+        "challenge": {
+          "id": "snatch-game",
+          "name": "Snatch Game",
+          "format": "solo",
+          "stage": "pre"
+        },
+        "mini": {
+          "id": "reading",
+          "name": "Reading Is Fundamental",
+          "winner": "Gerry"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "jamal"
+        ],
+        "guest": null,
+        "runwayCategory": "Club Kid Couture",
+        "song": {
+          "title": "Cuff It",
+          "artist": "Beyonce"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": null
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "LOW",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "ELIM",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": null
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "hero"
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "BTM",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 9,
+            "finalRank": 9,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Justin",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Justin",
+          "call": "shantay",
+          "song": "Cuff It"
+        },
+        "exits": [
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 6,
+        "challenge": {
+          "id": "ball",
+          "name": "The Ball",
+          "format": "solo",
+          "stage": "main"
+        },
+        "mini": {
+          "id": "photoshoot",
+          "name": "Photoshoot Mini",
+          "winner": "Karol"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "carson"
+        ],
+        "guest": null,
+        "runwayCategory": "Feathers and Fringe",
+        "song": {
+          "title": "Emotions",
+          "artist": "Mariah Carey"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "hero"
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 5,
+            "storyline": "filler"
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "hero"
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "LOW",
+            "panelRank": 5,
+            "finalRank": 6,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "ELIM",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Gyselle",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Gyselle",
+          "call": "shantay",
+          "song": "Emotions"
+        },
+        "exits": [
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 7,
+        "challenge": {
+          "id": "roast",
+          "name": "The Roast",
+          "format": "solo",
+          "stage": "main"
+        },
+        "mini": {
+          "id": "reading",
+          "name": "Reading Is Fundamental",
+          "winner": "Duncan"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ross"
+        ],
+        "guest": null,
+        "runwayCategory": "Best Drag",
+        "song": {
+          "title": "MacArthur Park",
+          "artist": "Donna Summer"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "LOW",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "hero"
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "ELIM",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "filler"
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "hero"
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": null
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Gerry",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Gerry",
+          "call": "shantay",
+          "song": "MacArthur Park"
+        },
+        "exits": [
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 8,
+        "challenge": {
+          "id": "singing",
+          "name": "Singing Challenge",
+          "format": "solo",
+          "stage": "main"
+        },
+        "mini": {
+          "id": "reading",
+          "name": "Reading Is Fundamental",
+          "winner": "Duncan"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "law"
+        ],
+        "guest": null,
+        "runwayCategory": "The Colour Wheel",
+        "song": {
+          "title": "Piece of My Heart",
+          "artist": "Janis Joplin"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "hero"
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "filler"
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "ELIM",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "hero"
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "LOW",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "robbed"
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Aiden",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Aiden",
+          "call": "shantay",
+          "song": "Piece of My Heart"
+        },
+        "exits": [
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 9,
+        "challenge": {
+          "id": "rumix",
+          "name": "Rumix Challenge",
+          "format": "cast",
+          "stage": "pre"
+        },
+        "mini": {
+          "id": "puppets",
+          "name": "Puppet Parody",
+          "winner": "Sanders"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ts"
+        ],
+        "guest": null,
+        "runwayCategory": "Something Borrowed",
+        "song": {
+          "title": "All That Jazz",
+          "artist": "Catherine Zeta-Jones"
+        },
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "hero"
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "ELIM",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "filler"
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "hero"
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "LOW",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "robbed"
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "BTM2",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Cameron",
+            "Kai"
+          ],
+          "winner": "Kai",
+          "loser": "Cameron",
+          "call": "shantay",
+          "song": "All That Jazz"
+        },
+        "exits": [
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 10,
+        "challenge": {
+          "id": "finale",
+          "name": "The Finale",
+          "format": "solo",
+          "stage": "main"
+        },
+        "mini": null,
+        "judges": [],
+        "guest": null,
+        "runwayCategory": null,
+        "song": null,
+        "placements": [
+          {
+            "name": "Sanders",
+            "playerSlug": "sanders",
+            "result": "FINALIST",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Duncan",
+            "playerSlug": "duncan",
+            "result": "WINNER",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "hero"
+          },
+          {
+            "name": "Cameron",
+            "playerSlug": "cameron",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "villain"
+          },
+          {
+            "name": "Justin",
+            "playerSlug": "justin",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "narrator"
+          },
+          {
+            "name": "Gerry",
+            "playerSlug": "gerry",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "filler"
+          },
+          {
+            "name": "Aiden",
+            "playerSlug": "aiden",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "hero"
+          },
+          {
+            "name": "Karol",
+            "playerSlug": "karol",
+            "result": "FINALIST",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "robbed"
+          },
+          {
+            "name": "Ivy",
+            "playerSlug": "ivy",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          },
+          {
+            "name": "Gyselle",
+            "playerSlug": "gyselle",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Brody",
+            "playerSlug": "brody",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "frontrunner"
+          },
+          {
+            "name": "Nessa",
+            "playerSlug": "nessa",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Kai",
+            "playerSlug": "kai",
+            "result": "FINALIST",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "underdog"
+          },
+          {
+            "name": "Diego",
+            "playerSlug": "diego",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": "representation"
+          }
+        ],
+        "lipsync": null,
+        "exits": [],
+        "eliminated": null,
+        "twists": []
+      }
+    ]
+  },
+  "twists": [],
+  "finale": {
+    "type": "top4",
+    "rounds": [
+      {
+        "a": "Duncan",
+        "b": "Sanders",
+        "song": "Love Hangover",
+        "winner": "Duncan"
+      },
+      {
+        "a": "Kai",
+        "b": "Karol",
+        "song": "Believe",
+        "winner": "Karol"
+      },
+      {
+        "a": "Duncan",
+        "b": "Karol",
+        "song": "Chandelier",
+        "winner": "Duncan"
+      }
+    ],
+    "placements": [
+      "Duncan",
+      "Karol",
+      "Sanders",
+      "Kai"
+    ]
+  },
+  "congeniality": "Sanders"
+}

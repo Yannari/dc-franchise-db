@@ -14,7 +14,7 @@ import { SPLIT_BEATS } from './data/split-beats.js';
 import { runReunion } from './reunion.js';
 import { smackdownScenes } from './smackdown.js';
 import { runDragWeek } from './week.js';
-import { assignStorylines, recordBeat, arcSummary } from './storylines.js';
+import { assignStorylines, recordBeat, arcSummary, popSnapshot } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
 import { MINI_TYPES } from './data/minis.js';
 import { JUDGES } from './data/judges.js';
@@ -458,6 +458,7 @@ export function runSmackdown(state, cfg, ctx) {
       challenge: { id: 'smackdown', name: 'The Lip Sync Smackdown', format: 'solo', stage: 'main' },
       mini: null, judges: [], guest: null,
       smackdown: { field, duels, winner: champion, title: TITLE },
+      popularity: popSnapshot(state),
       storylines: arcSummary(state.storylines || []),
       storylineNeed: {},
       record: JSON.parse(JSON.stringify(state.record)),
@@ -615,6 +616,7 @@ export function runFinale(state, cfg, ctx) {
       // matter most: this is where the season finds out whether the
       // frontrunner was really the frontrunner. The host does not BEND a
       // finale, so there is no `storylineNeed` here — nothing was asked for.
+      popularity: popSnapshot(state),
       storylines: arcSummary(state.storylines || []),
       storylineNeed: {},
       record: JSON.parse(JSON.stringify(state.record)),

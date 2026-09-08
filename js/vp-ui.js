@@ -56,10 +56,24 @@ function _vpPhaseForScreen(id = '') {
   return { id:'camp', label:'Camp', icon:'●' };
 }
 
+/**
+ * Whether a screen is an engine readout rather than television.
+ *
+ * Matched by SHAPE, not by a list. Total Drama's is `debug`, the castle's is
+ * `tr-debug` and the workroom's is `dr-debug`, and the filter below knew only
+ * the first -- so two of the three sat in the middle of the watch-mode
+ * running order, between the runway and the lip sync, showing tables of
+ * engine state to somebody who had asked to watch an episode. A fourth show
+ * would have arrived the same way.
+ */
+const _vpIsDebug = id => id === 'debug' || String(id || '').endsWith('-debug');
+
 function _vpQuickScreen(index) {
   const screen = vpScreens[index];
   if (!screen) return false;
-  if (screen.id === 'debug') return false;
+  // Same rule as watch mode: an engine readout is never one of the few
+  // screens a quick pass is meant to show you.
+  if (_vpIsDebug(screen.id)) return false;
   const phase = _vpPhaseForScreen(screen.id).id;
   if (index === 0 || index === vpScreens.length - 1) return true;
   if (phase === 'reveal' || phase === 'aftermath') return true;
@@ -69,8 +83,9 @@ function _vpQuickScreen(index) {
   return false;
 }
 
+
 function _vpVisibleIndexes() {
-  if (_vpViewMode === 'watch') return vpScreens.map((s, i) => s.id === 'debug' ? -1 : i).filter(i => i >= 0);
+  if (_vpViewMode === 'watch') return vpScreens.map((s, i) => _vpIsDebug(s.id) ? -1 : i).filter(i => i >= 0);
   if (_vpViewMode === 'deep') return vpScreens.map((_, i) => i);
   const visible = vpScreens.map((_, i) => i).filter(_vpQuickScreen);
   return visible.length ? visible : vpScreens.map((_, i) => i);

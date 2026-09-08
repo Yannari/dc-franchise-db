@@ -40,6 +40,120 @@ function resultFor(row, name) {
   return 'SAFE';
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   FAN PULSE, and the arcs the season is telling
+   ══════════════════════════════════════════════════════════════════
+
+   Two things this show computed all season and drew nowhere.
+
+   POPULARITY is written by nearly every scene -- defending somebody in the
+   werk room pays, throwing a friend under the bus costs -- and it lived only
+   on the season state, so no episode could show it and nobody could see why
+   a queen the edit loved was doing well. The tiers are Total Drama's, because
+   the ledger is the same ledger and two shows disagreeing about what 12
+   means would be worse than either scale being wrong.
+
+   STORYLINES are the arcs cast at the start and advanced by beats. `alive`
+   is whether the arc is still running; `flipped` is an arc that turned into
+   its opposite, which is the most interesting thing that can happen to one
+   and had no reader at all. */
+const POP_TIERS = [
+  [12, 'LOVED', '#7CE7B0'], [7, 'FAN FAVOURITE', '#7CE7B0'], [3, 'RISING', '#FFC83D'],
+  [0.0001, 'STEADY', '#8b949e'], [-0.0001, 'INVISIBLE', '#6e7681'],
+  [-5, 'FADING', '#f0883e'], [-10, 'UNPOPULAR', '#FF6B8A'],
+];
+const popTier = v => (POP_TIERS.find(([at]) => v >= at) || [0, 'HATED', '#f85149']).slice(1);
+
+function _fanPulse(dr) {
+  const pop = dr.popularity || {};
+  const living = new Set(dr.living || []);
+  const names = Object.keys(pop);
+  if (!names.length) {
+    return '<div style="opacity:.6;font-size:12px">No fan ledger on this episode.</div>';
+  }
+  const rows = names.map(n => ({ n, v: Number(pop[n]) || 0, out: !living.has(n) }))
+    .sort((a, b) => b.v - a.v);
+  const max = Math.max(1, ...rows.map(r => Math.abs(r.v)));
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    ${rows.map((r, i) => {
+    const [label, colour] = popTier(r.v);
+    const w = (Math.abs(r.v) / max) * 100;
+    return `<tr style="${r.out ? 'opacity:.45;' : ''}border-bottom:1px solid rgba(255,255,255,.06)">
+      <td style="padding:3px 6px;color:#6e7681;width:22px;text-align:right">${i + 1}</td>
+      <td style="padding:3px 6px;font-weight:600">${esc(r.n)}${r.out ? ' <span style="opacity:.6">(out)</span>' : ''}</td>
+      <td style="padding:3px 6px;color:${colour};font-size:10px;letter-spacing:.08em">${label}</td>
+      <td style="padding:3px 6px;width:45%">
+        <span style="display:block;height:7px;background:rgba(255,255,255,.07);border-radius:3px">
+          <i style="display:block;height:100%;width:${w.toFixed(0)}%;border-radius:3px;
+            background:${r.v < 0 ? '#f85149' : colour}"></i></span></td>
+      <td style="padding:3px 6px;text-align:right;font-variant-numeric:tabular-nums">${r.v.toFixed(1)}</td>
+    </tr>`;
+  }).join('')}
+  </table>
+  <div style="opacity:.55;font-size:11px;margin-top:6px">Every scene writes this:
+    defending somebody pays, selling somebody out costs. Negative is not
+    invisible &#8212; it is disliked, which on this show is still an edit.</div>`;
+}
+
+function _storylines(dr) {
+  const arcs = dr.storylines || [];
+  if (!arcs.length) return '<div style="opacity:.6;font-size:12px">No arcs cast yet.</div>';
+  const living = dr.living || [];
+
+  /* ── BY QUEEN, AND TOLD ARCS FIRST ────────────────────────────────
+     The first version listed all twenty-three arcs flat, and most of them
+     had ZERO BEATS -- an arc that was cast at the start and has never
+     actually happened on screen. Ivy came out carrying "frontrunner",
+     "fashion", "narrator" and "representation", three of which the season
+     has never told, which answers the question "what storyline is she on"
+     with a shrug.
+     So: grouped by the queen it is about, because that is the question, and
+     an arc with beats is printed ahead of one without. `beats` is the count
+     of times the season has actually said it. */
+  const mine = n => arcs.filter(a => (a.players || []).includes(n) && a.alive)
+    .sort((x, y) => y.beats - x.beats);
+  const pill = a => `<span style="display:inline-block;padding:1px 7px;margin:0 4px 3px 0;
+    border-radius:9px;font-size:10.5px;
+    background:${a.beats ? 'rgba(255,106,219,.16)' : 'rgba(255,255,255,.05)'};
+    color:${a.beats ? '#FF6ADB' : '#6e7681'}"
+    title="${a.beats ? `${a.beats} beat${a.beats === 1 ? '' : 's'} so far` : 'cast, never told'}"
+    >${esc(a.arc)}${a.beats ? ` \u00b7${a.beats}` : ''}${a.flipped ? ` \u2192${esc(a.flipped)}` : ''}</span>`;
+
+  const rows = living.map(n => {
+    const list = mine(n);
+    const told = list.filter(a => a.beats > 0);
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,.06)">
+      <td style="padding:4px 6px;font-weight:600;white-space:nowrap;vertical-align:top">${esc(n)}</td>
+      <td style="padding:4px 6px">${list.length ? list.map(pill).join('')
+    : '<span style="opacity:.45;font-size:11px">no arc</span>'}
+        ${told.length ? '' : '<span style="opacity:.45;font-size:10px"> \u2014 nothing told yet</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  const done = arcs.filter(a => !a.alive);
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>
+    <div style="opacity:.55;font-size:11px;margin-top:7px">Bright = the season has
+      actually told it, with the number of beats. Grey = cast and never used.
+      ${'\u2192'} marks an arc that turned into its opposite.</div>
+    ${done.length ? `<div style="opacity:.55;font-size:11px;margin-top:8px">Finished:
+      ${esc(done.map(a => `${a.arc} (${(a.players || []).join(', ')})`).join(' \u00b7 '))}</div>` : ''}`;
+}
+
+/** The two panels, as one block the summary can drop in. */
+export function _dragPulseAndArcs(row) {
+  const dr = (row && row.dr) || {};
+  const box = (title, body) => `<section style="border:1px solid rgba(255,255,255,.09);
+    border-radius:8px;padding:12px 14px;margin:0 0 12px;background:rgba(255,255,255,.02)">
+    <h3 style="margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+      color:#FF6ADB">${title}</h3>${body}</section>`;
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0"
+    class="dr-dbg-cols">
+    ${box('Fan pulse', _fanPulse(dr))}
+    ${box('Storylines', _storylines(dr))}
+  </div>
+  <style>@media(max-width:900px){.dr-dbg-cols{grid-template-columns:1fr}}</style>`;
+}
+
 export function rpBuildDragSummary(row) {
   const dr = row.dr || {};
   const w = showWords('drag-race');
@@ -61,9 +175,14 @@ export function rpBuildDragSummary(row) {
         ${dr.judges?.length ? ` · panel: ${esc(dr.judges.map(id => judgeById(id)?.name || id).join(', '))}` : ''}
       </div>`;
 
+  // Drawn before anything episode-shaped, so they are on the finale row too:
+  // the fan ledger and the arcs are season-long and a finale is where they
+  // both pay off.
+  const pulse = _dragPulseAndArcs(row);
+
   if (dr.finale) {
     const f = dr.finale;
-    return `${head}
+    return `${head}${pulse}
       <h3 style="font-size:15px;margin:16px 0 6px">The finale — ${esc(f.type)}</h3>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         ${f.rounds.map(r => `<tr>
@@ -97,7 +216,7 @@ export function rpBuildDragSummary(row) {
   }).join('');
 
   const ls = dr.lipsync;
-  return `${head}
+  return `${head}${pulse}
     <h3 style="font-size:15px;margin:16px 0 6px">The panel, and what the host did with it</h3>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <tr style="color:#8b949e;font-size:11px;letter-spacing:.5px">

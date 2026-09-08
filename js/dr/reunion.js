@@ -17,6 +17,7 @@
 // the same five confrontations would be a format, not a memory.
 
 import { REUNION_BEATS } from './data/reunion-beats.js';
+import { arcSummary, popSnapshot } from './storylines.js';
 import { recordStrength } from './season.js';
 
 const pickLine = (lines, rng, used, key) => {
@@ -176,7 +177,8 @@ export function runReunion(state, cfg, ctx) {
       // NOT a finale and NOT a normal week: its own flag, so no reader has to
       // infer what this episode is from the absence of a challenge.
       reunion: { topics, cast },
-      storylines: state.storylines || [],
+      popularity: popSnapshot(state),
+      storylines: arcSummary(state.storylines || []),
       storylineNeed: {},
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],

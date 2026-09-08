@@ -14059,8 +14059,15 @@ export function buildVPScreens(epRecord) {
     const built = dragScreens(epRecord);
     // The engine readout stays behind the same debug flag the other shows
     // use: it is how a season is read while the designed screens are built.
+    /* THE FLAG THE BUTTON ACTUALLY SETS. This was gated on `dr_debug_screen`,
+       which nothing in the UI writes -- the toolbar's wrench sets `vp_debug`,
+       the way it does for the house and the castle -- so the one screen that
+       reads out this show's engine could only be opened by typing into
+       localStorage by hand. Both are honoured: a season already switched on
+       the old way stays switched on. */
     try {
-      if (window.localStorage?.getItem('dr_debug_screen') === '1') {
+      const ls = window.localStorage;
+      if (ls?.getItem('vp_debug') === 'true' || ls?.getItem('dr_debug_screen') === '1') {
         built.push({ id: 'dr-debug', label: 'Debug', html: rpBuildDragSummary(epRecord) });
       }
     } catch { /* storage can throw; the debug tab is not worth a crash */ }

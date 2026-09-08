@@ -33,7 +33,7 @@ import { panelFor } from './judges.js';
 import { runwayScore, blendScore, noise } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { rateBoard, ballotSelfishness } from './rate.js';
-import { storylineNeed as storylineNeedFor, arcSummary } from './storylines.js';
+import { storylineNeed as storylineNeedFor, arcSummary, popSnapshot } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
 import { critiqueLines, runReactions, whoShouldGoHome, rateAQueen } from './critiques.js';
@@ -983,8 +983,7 @@ export function runDragWeek(state, cfg, ctx) {
          invisible. Snapshotted for the same reason the arcs below are, and
          rounded because a ledger printed to fourteen decimal places is not
          more true, only longer. */
-      popularity: Object.fromEntries(Object.entries(state.popularity || {})
-        .map(([n, v]) => [n, Math.round(v * 10) / 10])),
+      popularity: popSnapshot(state),
       // A SNAPSHOT, not the live list: replaying episode 4 must show episode
       // 4's arcs, not the ones the season ended with.
       storylines: arcSummary(state.storylines || []),

@@ -438,9 +438,34 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
   return out;
 }
 
+/**
+ * The fan ledger, as a row can keep it.
+ *
+ * Beside `arcSummary` because it is the same job: `state` is ONE OBJECT for
+ * the whole season and both of these are read per episode, so a row that
+ * keeps the reference shows the finale's numbers on episode two and looks
+ * perfectly correct on the last row, which is the row anybody checks.
+ *
+ * There are FOUR places that build a drag row -- an ordinary week, a
+ * smackdown, the finale and the reunion -- and the first version of this was
+ * written into one of them. That is the shape of this project's oldest
+ * recurring bug (docs/ADDING-A-SHOW.md, and the `episodeHistory.push` note in
+ * CLAUDE.md), so it is a function and not four copies of an expression.
+ */
+export function popSnapshot(state) {
+  return Object.fromEntries(Object.entries((state && state.popularity) || {})
+    .map(([n, v]) => [n, Math.round(v * 10) / 10]));
+}
+
 export function arcSummary(storylines) {
   return storylines.map(s => ({
     arc: s.arc, players: [...s.players], beats: s.beats.length,
     alive: !!s.alive, flipped: s.flipped || null,
+    /* THE NAMED VERSION OF THE ARC, which the season document reads as
+       `s.variantName || s.arc` and which this dropped -- so every episode
+       exported the generic word and only the reunion, which kept the live
+       objects, carried the specific one. Cheap to keep and it is what the
+       arc is actually called. */
+    variantName: s.variantName || null,
   }));
 }

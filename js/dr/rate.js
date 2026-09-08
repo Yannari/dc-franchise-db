@@ -97,7 +97,7 @@ export function ballotFor(voter, others, { truth, players = {}, bond = () => 0, 
     const seen = (truth[n] || 0) + (rng() - 0.5) * blur;
     const friend = bond(voter, n) / 10;
     const threat = play * (target.get(n) || 0);
-    return { name: n, mark: seen + friend * 0.9 - threat };
+    return { name: n, seen, friend, threat, mark: seen + friend * 0.9 - threat };
   });
 
   scored.sort((a, b) => b.mark - a.mark || a.name.localeCompare(b.name));
@@ -106,20 +106,41 @@ export function ballotFor(voter, others, { truth, players = {}, bond = () => 0, 
      A ballot that is simply the night's order needs no explanation and gets
      none. What is worth saying out loud is when a ranking is NOT about the
      performance: she buried the queen she has to beat, she carried a friend,
-     or she plainly did not see what everybody else saw. The screen prints
-     these beside the choice; a pick with no reason attached is a queen
-     calling it as she saw it, which is most of them.
-     Derived from the same terms that produced the order, so the reason can
-     never disagree with the ranking it explains. */
+     or she plainly did not see what everybody else saw.
+
+     ── A REASON EXPLAINS A MOVE, NOT A FEELING ──
+
+     This used to fire on the SIZE OF THE TERM — a bond of 4 was "her friend
+     in the room" whether or not the friendship changed anything — and the
+     result was a screen captioning a queen ranked TWELFTH with "her friend in
+     the room". Both halves were true and together they read as nonsense: the
+     friendship was real and it moved her from thirteenth, which is not what
+     a reader takes from a label sitting beside a number.
+
+     So the comparison is against the ballot she WOULD have written on the
+     performance alone. Positions, not marks: a term that shifts a mark by
+     0.4 and reorders nobody has not done anything, and only a term that
+     actually moved her past somebody earns a line. The distance is carried
+     with the reason so the screen can say how far. */
+  const byPerf = [...scored].sort((a, b) => b.seen - a.seen || a.name.localeCompare(b.name));
+  const perfPos = new Map(byPerf.map((x, i) => [x.name, i]));
+  const honest = [...others].sort((x, y) => (truth[y] || 0) - (truth[x] || 0)
+    || x.localeCompare(y));
+  const truthPos = new Map(honest.map((n, i) => [n, i]));
+
   const reasons = {};
-  for (const s of scored) {
-    const t = play * (target.get(s.name) || 0);
-    const friend = bond(voter, s.name) / 10;
-    const drift = s.mark - (truth[s.name] || 0);
-    if (t >= 0.9) reasons[s.name] = 'threat';
-    else if (friend >= 0.35) reasons[s.name] = 'friend';
-    else if (friend <= -0.35) reasons[s.name] = 'grudge';
-    else if (Math.abs(drift) >= 0.9) reasons[s.name] = 'misread';
+  for (const [i, s] of scored.entries()) {
+    // Positive: the ballot put her ABOVE where the night alone would have.
+    const moved = (perfPos.get(s.name) ?? i) - i;
+    if (s.threat > 0 && moved <= -1) reasons[s.name] = { why: 'threat', places: -moved };
+    else if (s.friend > 0 && moved >= 1) reasons[s.name] = { why: 'friend', places: moved };
+    else if (s.friend < 0 && moved <= -1) reasons[s.name] = { why: 'grudge', places: -moved };
+    else {
+      // Nothing she DECIDED moved this queen. If the ballot still disagrees
+      // with the night by a couple of places, she simply did not see it.
+      const blind = (truthPos.get(s.name) ?? i) - i;
+      if (Math.abs(blind) >= 2) reasons[s.name] = { why: 'misread', places: Math.abs(blind) };
+    }
   }
 
   const order = scored.map(x => x.name);

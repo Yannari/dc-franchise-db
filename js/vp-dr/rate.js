@@ -40,12 +40,33 @@ const ROW_H = 34;
    from the same terms that produced the ballot, so a reason can never
    disagree with the ranking it explains — and most picks have none, because
    most of the time she is calling it as she saw it. */
+/**
+ * A reason, as a sentence about a MOVE.
+ *
+ * These used to be four bare labels and the screen printed one whenever the
+ * term behind it was large -- so a queen ranked TWELFTH was captioned "her
+ * friend in the room". Both halves were true and together they read as
+ * nonsense: the friendship was real and it had moved her up from thirteenth,
+ * which is not what anybody takes from a label sitting beside a number.
+ *
+ * js/dr/rate.js now only records a reason when the term actually moved her
+ * past somebody, and how far. So the sentence says the direction: a friend
+ * carries you UP, a threat is pushed DOWN, and the number is the distance
+ * between the ballot she wrote and the one the night alone would have.
+ */
 const WHY = {
-  threat: 'the one she has to beat',
-  friend: 'her friend in the room',
-  grudge: 'no love lost',
-  misread: 'she did not see it',
+  threat: (n) => `buried ${n === 1 ? 'a place' : `${_word(n)} places`} — the one she has to beat`,
+  friend: (n) => `carried ${n === 1 ? 'a place' : `${_word(n)} places`} — her friend in the room`,
+  grudge: (n) => `dropped ${n === 1 ? 'a place' : `${_word(n)} places`} — no love lost`,
+  misread: (n) => `${_word(n)} places off the night — she did not see it`,
 };
+const _word = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+  'eight', 'nine', 'ten'][n] || String(n);
+/** The sentence for one pick, or '' when the ballot simply followed the night. */
+function _why(r) {
+  if (!r || !WHY[r.why]) return '';
+  return WHY[r.why](Math.max(1, Number(r.places) || 1));
+}
 
 export const RATE_CSS = `
 /* NO overflow:hidden UP THIS TREE: it silently kills position:sticky on the
@@ -260,7 +281,7 @@ export function rpBuildRate(row) {
     const b = raq.ballots[v] || [];
     b.forEach((n, k) => picks.push({
       v, vi, n, rank: k + 1, pts: b.length - k, last: k === b.length - 1,
-      why: WHY[reasons[v]?.[n]] || '',
+      why: _why(reasons[v]?.[n]),
     }));
   });
 
@@ -324,18 +345,21 @@ export function rpBuildRate(row) {
     const b = raq.ballots[v] || [];
     const tiles = b.map((n, k) => {
       const id = idx++;
-      const why = WHY[reasons[v]?.[n]] || '';
+      const why = _why(reasons[v]?.[n]);
       return `<div class="dr-step" id="dr-step-rate-${id}">
         <span class="raq-pick"><em>${k + 1}</em>${tile(n, ep, 44)}<b>${esc(n)}</b>
           ${why ? `<s>${esc(why)}</s>` : ''}</span></div>`;
     }).join('');
     return `<div class="raq-vhead" data-vi="${vi}">${_portrait(v, ep, { size: 26 })}
-        <b>${esc(v)}</b><i>ranks the room</i></div>
+        <b>${esc(v)}</b><i>ranks the room, best first</i></div>
       <div class="raq-picks">${tiles}</div>`;
   }).join('');
 
   if (typeof window !== 'undefined') {
-    window._drRateData = { picks, field, voters, rowH: ROW_H };
+    window._drRateData = { picks, field, voters, rowH: ROW_H,
+      // Built here because `_portrait` is a build-time function and the
+      // reveal handler runs long after this has returned a string.
+      portraits: Object.fromEntries(voters.map(v => [v, _portrait(v, ep, { size: 36 })])) };
 
     /** Jump the reveal to a given choice — the tabs' handler. */
     window.drRateGo = (num, to) => {
@@ -382,13 +406,24 @@ export function rpBuildRate(row) {
 
       const vname = document.getElementById('raq-vname');
       if (vname && just) vname.textContent = just.v;
+      /* AND HER FACE. The name was updated here and the portrait beside it was
+         not, so "Now rating" changed queen every few clicks while the picture
+         stayed on whoever voted first -- the one label on the screen whose
+         entire job is to say who is talking, disagreeing with itself. */
+      const vpor = document.getElementById('raq-vpor');
+      if (vpor && just && d.portraits) vpor.innerHTML = d.portraits[just.v] || '';
       const call = document.getElementById('raq-call');
       if (call) {
         call.classList.toggle('on', !!just);
         if (just) {
           document.getElementById('raq-callpts').textContent = just.pts;
           document.getElementById('raq-callnm').textContent = just.n;
-          document.getElementById('raq-callrank').textContent = `her number ${just.rank}`;
+          /* WHICH END IS THE GOOD END. "her number 12" alone does not say
+             whether twelve is praise, and the whole screen hangs on that. */
+          document.getElementById('raq-callrank').textContent =
+            just.rank === 1 ? 'her number 1 — top of the ballot'
+              : just.last ? `her number ${just.rank} — bottom of the ballot`
+                : `her number ${just.rank}`;
           document.getElementById('raq-callwhy').textContent = just.why ? `— ${just.why}` : '';
         }
       }
@@ -427,8 +462,15 @@ export function rpBuildRate(row) {
     };
   }
 
+  /* THE TALLY GOES IN THE RAIL. It was inline under the stage, which means it
+     scrolls off the moment you start reading the ballots — and the tally is
+     the one thing you want in front of you WHILE you click Next, because the
+     whole point of stepping through is watching the board move. The rail is
+     `position:sticky`, so there it stays. Same markup and the same element
+     ids, so the reveal handler updates it without knowing it moved. */
   return `<style>${RATE_CSS}</style>${_shell(
-    `<div class="raq">${stage}${board}${tabs}<div class="raq-log">${log}</div></div>`, ep, {
+    `<div class="raq">${stage}${tabs}<div class="raq-log">${log}</div></div>`, ep, {
       phase: 'werk', title: 'Rate-a-Queen', subtitle: 'the room ranks the room',
+      sidebar: board,
     })}${_controls('rate', picks.length, ep.num)}`;
 }

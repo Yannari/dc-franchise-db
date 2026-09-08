@@ -241,6 +241,16 @@ export function runDragWeek(state, cfg, ctx) {
   // ...and now the scenes that belong under it.
   for (const sc of elimDayScenes) scenes.push(sc);
   const panel = panelFor({ rotatingId: cfg.rotatingId, guest: cfg.guest, weights: cfg.judgeWeights });
+  /* THE PANEL AS SEATS, for the beat that introduces them one at a time. A
+     guest's credit is authored on the pinned guest and is the ONLY claim the
+     introduction is allowed to make about her past — there is no deriving
+     "the winner of the ninth season" from a roster row, and a host who
+     invents one is worse than a host who does not mention it. */
+  const guestCredit = (cfg.guest && cfg.guest.credit) || '';
+  const panelSeats = panel.map(j => ({
+    id: j.id, name: j.name || j.id, guest: !!j.guest,
+    credit: j.guest ? guestCredit : '',
+  }));
   say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
 
   const category = cfg.runwayCategory || `${maxi.name} eleganza`;
@@ -254,6 +264,10 @@ export function runDragWeek(state, cfg, ctx) {
   const walks = M.runwayOverride?.walks
     || [{ category, sewn: maxi.runway === 'design' || maxi.runway === 'ball', categoryStyles }];
   const runway = { category, categoryStyles, walks: walks.map(w => w.category) };
+  // Which shape of category call the host makes: three looks, one she sewed,
+  // or one she brought. Read from the walks rather than from the challenge,
+  // because a module may replace the runway without changing the challenge.
+  const runwayKind = walks.length > 1 ? 'ball' : (walks[0] && walks[0].sewn ? 'sewn' : 'call');
   for (const n of living) {
     const scored = walks.map(w => runwayScore({
       player: P(n), category: w.category, sewn: !!w.sewn,
@@ -623,6 +637,17 @@ export function runDragWeek(state, cfg, ctx) {
       // is the placeholder being filled with a database key, which is what it
       // did until somebody read the output.
       judges: panel.map(j => j.name || j.id),
+      /* THE CATEGORY, THE PANEL AS PEOPLE, AND THE ROSTER. The opening needs
+         all three and had none of them: it could not name what anybody was
+         walking in, it could not introduce a judge by anything except a name
+         drawn at random, and a queen narrating her own runway could not
+         reach her own drag style. `judges` above stays as it is — a flat
+         list of names is still the right thing for the beats that just want
+         somebody on the panel to have said it. */
+      category,
+      runwayKind,
+      panelSeats,
+      players,
     });
     for (const sc of stageScenes) scenes.push(sc);
 
@@ -691,7 +716,11 @@ export function runDragWeek(state, cfg, ctx) {
       challenge: { id: maxi.id, name: maxi.name, format: maxi.format, stage: maxi.stage },
       mini,
       judges: panel.map(j => j.id),
-      guest: cfg.guest ? { name: cfg.guest.name, slug: cfg.guest.slug || slugOf(cfg.guest.name) } : null,
+      // `credit` was read by the main stage screen and written by nothing, so
+      // a guest judge's card always rendered without one.
+      guest: cfg.guest
+        ? { name: cfg.guest.name, slug: cfg.guest.slug || slugOf(cfg.guest.name), credit: guestCredit }
+        : null,
       assignment,
       performances,
       runway,

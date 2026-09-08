@@ -36,7 +36,12 @@ export const SCRIPTS = [
     P('featured', 'The Witness', 0.7, 'comedy'),
     P('standard', 'The Prosecutor', 0.45, 'acting'),
     P('standard', 'The Stenographer', 0.45, 'comedy'),
-    P('ensemble', 'The Jury', 0.2, 'comedy')] },
+    /* NOT "The Jury": that word belongs to the camp and the house, and a
+       Drag Race screen printing it is the exact bug the vocabulary guard
+       exists for. It was a landmine rather than a bug for as long as no
+       season happened to draw this scene AND cast this part — which one
+       finally did. The gallery is the same room and the same crowd. */
+    P('ensemble', 'The Gallery', 0.2, 'comedy')] },
   { id: 'space', name: 'Deep Space Drag', blurb: 'A crew, a hull breach, and nobody qualified to fix it.', parts: [
     P('lead', 'The Captain', 1.0, 'acting'),
     P('featured', 'The Android', 0.7, 'acting'),

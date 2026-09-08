@@ -31,7 +31,7 @@ function tooSimilar(x, y) {
   return shared / Math.min(a.size, b.size) > 0.6;
 }
 
-const SCOPES = ['once', 'per-queen', 'pair'];
+const SCOPES = ['once', 'per-queen', 'pair', 'per-judge'];
 const STEPS = ['main-stage', 'runway', 'critiques', 'untucked', 'results', 'lipsync', 'exit'];
 
 describe('the schema', () => {
@@ -75,15 +75,47 @@ describe('the schema', () => {
           if (b.scope !== 'pair') {
             expect(l, `${b.id}/${t.id} is ${b.scope} but uses {b}`).not.toMatch(/\{b\}/);
           }
-          if (b.speaker !== 'judge') {
+          /* A BEAT MAY NAME A JUDGE IF IT HAS ONE. `speaker: 'judge'` means
+             the judge is talking; `judged: true` means the HOST is talking
+             ABOUT a judge, which is what the panel introductions do. Both
+             have a judge in scope, so both may use {j}. */
+          if (b.speaker !== 'judge' && !b.judged) {
             expect(l, `${b.id}/${t.id} has no judge but uses {j}`).not.toMatch(/\{j\}/);
+          }
+          // {k} is a guest judge's credit and exists nowhere else.
+          if (!b.judged) {
+            expect(l, `${b.id}/${t.id} has no judge but uses {k}`).not.toMatch(/\{k\}/);
+          }
+          /* {c} IS THE CATEGORY AND ONLY ONE BEAT SAYS IT. Naming the prompt
+             twice in an opening reads as a stutter, and naming it in a beat
+             that fires before the host has announced it is a spoiler. */
+          if (!b.category) {
+            expect(l, `${b.id}/${t.id} does not announce the category but uses {c}`)
+              .not.toMatch(/\{c\}/);
           }
           if (b.step !== 'lipsync') {
             expect(l, `${b.id}/${t.id} is not a lip sync but names a song`).not.toMatch(/\{s\}/);
           }
-          const bad = l.match(/\{(?!a\}|b\}|j\}|s\})[^}]*\}/);
+          const bad = l.match(/\{(?!a\}|b\}|j\}|s\}|c\}|k\})[^}]*\}/);
           expect(bad, `${b.id}/${t.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
         }
+      }
+    }
+  });
+});
+
+describe('the announcement', () => {
+  /* THE ONE BEAT THAT HAS TO SAY SOMETHING SPECIFIC. Every other pool in this
+     file is free prose; this one carries the only statement of what the
+     queens were asked to walk in, and a variant that forgets {c} renders an
+     opening that announces nothing. */
+  it('every written category call names the category', () => {
+    const b = STAGE_BEATS.find(x => x.category);
+    expect(b, 'no beat is marked as the one that announces the category').toBeTruthy();
+    for (const t of b.tiers) {
+      for (const l of t.lines) {
+        expect(l, `${b.id}/${t.id} announces the category without naming it`)
+          .toMatch(/\{c\}/);
       }
     }
   });

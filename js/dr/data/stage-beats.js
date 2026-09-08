@@ -30,13 +30,13 @@
 //   {s}  the lip sync song title, only in the lipsync step
 //
 // Same rules as the werk room, all enforced by tests: no real people, this
-// show's vocabulary only, never quote a stat by number, four variants minimum
+// show\'s vocabulary only, never quote a stat by number, four variants minimum
 // per tier, prose rather than captions.
 //
 // THE REGISTER IS DIFFERENT HERE. The werk room is intimate and funny; the
 // main stage is performance and verdict. Judges are witty but land a real
 // judgement. A queen receiving a critique is on camera and knows it. Keep the
-// stage beats tighter and more declarative than the werk room's.
+// stage beats tighter and more declarative than the werk room\'s.
 
 /** A tier of lines: what it is for, then the lines themselves. */
 const tier = (id, note, lines = []) => ({ id, note, lines });
@@ -81,21 +81,104 @@ export const STAGE_BEATS = [
     ],
   },
 
-  // ══ THE MAIN STAGE OPENS ═════════════════════════════════════════════
+  /* ══ THE MAIN STAGE OPENS ═════════════════════════════════════════════
+     THREE BEATS, WHERE THERE USED TO BE ONE.
+     `entrance` was doing the whole opening by itself — the lights, the panel,
+     the engines and the category, all inside a single paragraph. Which meant
+     the panel arrived on screen as a row of portraits nobody had said a word
+     about: four people with authored voices, pet peeves and soft spots, whose
+     disagreement half an hour later is the entire point of the judging
+     engine, and the guest judge in particular was introduced to the viewer by
+     a caption. The show does not do that. The host takes the stage, presents
+     the panel one seat at a time with a joke at each of their expense, and
+     only then names the category. So:
+
+       entrance       he takes the stage. No panel, no category.
+       panel-intro    once per judge. The joke is HERS, not a generic one.
+       category-call  the engines line, and what they are walking in.
+
+     The old opening\'s seven lines were all category calls — every one of them
+     either starts the engines or names the category — so they moved down to
+     `category-call` intact, and the two beats above it start empty. */
   {
     id: 'entrance', step: 'main-stage', scope: 'once', speaker: 'host',
-    note: 'The host opens the stage and names the runway category for the night.',
+    note: 'The host takes the stage. He does NOT introduce the panel here and '
+      + 'he does NOT name the category — each has its own beat below. This is '
+      + 'the welcome and nothing else: the lights, the room, the change in '
+      + 'temperature, and the fact that he is in drag now, which is what makes '
+      + 'the main stage the main stage.',
     tierBy: 'always',
     tiers: [
-      tier('open', 'The stage opens and the category is announced.', [
-        "The lights come up and the host is already standing there in full drag, which means the room is real now. \"The category is,\" she says, and the whole panel leans in, \"eleganza — and I mean it.\" Somewhere backstage every queen left hears it and checks her reflection one more time.",
-        "\"Gentlemen, start your engines, and may the best woman win!\" The host delivers it the way she always delivers it — like a dare wrapped in a welcome — and the panel settles and the runway lights come up and the first queen is already at the top of the stage with her shoulders back. The category is named. The night begins.",
-        "\"Racers, start your engines, and may the best drag queen win!\" The host opens the stage and the room answers her before she has finished the sentence. The panel is seated, the guest judge looks delighted to be here, and the category is about to be named. Every queen backstage heard that and checked her reflection one more time.",
-        "The panel is seated, the guest looks delighted to be there, and the host does the thing where she waits a beat too long on purpose. Then: the category, delivered like a dare. The first queen is already at the top of the runway with her shoulders back.",
-        "It is the same words every week and it works every week. The stage is lit, the category is named, and the room changes temperature — because from this point on nothing that happened in the werk room counts for anything at all.",
-        "\"Gentlemen!\" The host lets the word carry. \"Start your engines.\" She names the category and the room shifts into the register it uses only for the main stage — quieter, sharper, the kind of attention that has a judgement in it. \"And may the best woman win.\" The runway lights come up. The first queen walks.",
-        "\"Start your engines, and may the best drag queen win.\" The host says it and then says the category and then does not say anything else, because the runway is about to say everything for her. The panel picks up their pens. The first queen appears at the top of the stage. The night is running.",
+      tier('open', 'He takes the stage and the room becomes the main stage.', []),
+    ],
+  },
+  /* ── ONE JUDGE AT A TIME, AND THE JOKE IS THEIRS ──
+     TIERED BY WHO IS SITTING THERE, which is the only tiering in this file
+     not about how well something went. A pun at Carson\'s expense is not a pun
+     at Law\'s expense: Carson will do the bit back and Law will look at the
+     host until he stops. Writing one generic "and joining us tonight" line
+     and swapping the name into it is exactly the failure this beat exists to
+     fix, so each tier is written to that judge\'s authored voice, pet peeve
+     and soft spot in js/dr/data/judges.js. Read those first.
+     RuPaul has no tier: he is the one doing the introducing. */
+  {
+    id: 'panel-intro', step: 'main-stage', scope: 'per-judge', speaker: 'host',
+    judged: true,
+    note: 'The host presents one judge, with a joke, a pun or a read at their '
+      + 'expense. Fires once per judge on tonight\'s panel, in seating order. '
+      + '{j} is that judge\'s name.',
+    tierBy: 'judge',
+    tiers: [
+      tier('michelle', 'Permanent, so she is introduced every single week and '
+        + 'this tier is read more often than any other in the file — it wants '
+        + 'the most variants. The running joke is the bluntness, and the fact '
+        + 'that she has never once softened a note to be liked.', []),
+      tier('carson', 'Puns first, fashion second. He will pun back and the '
+        + 'host knows it, so this introduction is a setup rather than a '
+        + 'punchline.', []),
+      tier('ross', 'Enthusiastic, comedy-minded, cries easily. The joke is '
+        + 'affectionate and he takes it as a compliment, which is the joke.', []),
+      tier('law', 'A fashion authority, unimpressed by default. The host '
+        + 'introduces him the way you introduce weather that is about to '
+        + 'happen to somebody.', []),
+      tier('ts', 'Loud, loving and unfiltered. She talks over her own '
+        + 'introduction, which is part of the introduction.', []),
+      tier('jamal', 'A choreographer who counts. The joke is that he is '
+        + 'already watching their feet and none of them have moved yet.', []),
+      tier('guest', 'A guest judge from the franchise with no credit to hand — '
+        + 'so the line may name {j} and claim nothing else about her. This is '
+        + 'the fallback tier and it has to read correctly for a stranger.', []),
+      tier('guest-credited', 'A guest whose credit is known. {k} is a ready-'
+        + 'made phrase like "the winner of the ninth season" that drops '
+        + 'straight into the sentence. NEVER invent a credit — {k} is the only '
+        + 'claim about her past this line is allowed to make.', []),
+    ],
+  },
+  /* ── AND THEN, AND ONLY THEN, WHAT THEY ARE WALKING IN ──
+     {c} IS NOT OPTIONAL HERE. Twenty categories in js/dr/data/runways.js, and
+     the old opening named one of them in a single hardcoded line and left the
+     rest to a screen caption. This is the beat that says it out loud. */
+  {
+    id: 'category-call', step: 'main-stage', scope: 'once', speaker: 'host',
+    category: true,
+    note: 'The engines line, and the category. {c} is tonight\'s category and '
+      + 'must appear — this is the only beat in the episode that tells the '
+      + 'viewer what the queens were asked to walk in.',
+    tierBy: 'runway-kind',
+    tiers: [
+      tier('call', 'An ordinary themed runway: she brought it, she walks it.', [
+        "The lights come up and the host is already standing there in full drag, which means the room is real now. \"The category is,\" she says, and the whole panel leans in, \"{c} — and I mean it.\" Somewhere backstage every queen left hears it and checks her reflection one more time.",
+        "\"Gentlemen, start your engines, and may the best woman win!\" The host delivers it the way she always delivers it — like a dare wrapped in a welcome — and the panel settles and the runway lights come up and the first queen is already at the top of the stage with her shoulders back. The category is named — {c} — and the night begins.",
+        "\"Racers, start your engines, and may the best drag queen win!\" The host opens the stage and the room answers her before she has finished the sentence. The panel is seated, the guest judge looks delighted to be here, and the category, {c}, is about to be named. Every queen backstage heard that and checked her reflection one more time.",
+        "The panel is seated, the guest looks delighted to be there, and the host does the thing where she waits a beat too long on purpose. Then: {c}, delivered like a dare. The first queen is already at the top of the runway with her shoulders back.",
+        "It is the same words every week and it works every week. The stage is lit, {c} is named, and the room changes temperature — because from this point on nothing that happened in the werk room counts for anything at all.",
+        "\"Gentlemen!\" The host lets the word carry. \"Start your engines.\" She names {c} and the room shifts into the register it uses only for the main stage — quieter, sharper, the kind of attention that has a judgement in it. \"And may the best woman win.\" The runway lights come up. The first queen walks.",
+        "\"Start your engines, and may the best drag queen win.\" The host says it and then says {c} and then does not say anything else, because the runway is about to say everything for her. The panel picks up their pens. The first queen appears at the top of the stage. The night is running.",
       ]),
+      tier('sewn', 'She MADE it — a design week or a Ball, where the category '
+        + 'is the brief she sewed to and the judgement is on the building.', []),
+      tier('ball', 'Three categories in one night. The host names all of them '
+        + 'and lets the room work out how much sewing that was.', []),
     ],
   },
 
@@ -161,10 +244,10 @@ export const STAGE_BEATS = [
   {
     id: 'critique', step: 'critiques', scope: 'per-queen', speaker: 'judge',
     note: 'What a judge says to her, to her face.',
-    // TIERED BY THAT JUDGE'S OWN TONE, not by the call. Keying it to the call
+    // TIERED BY THAT JUDGE\'S OWN TONE, not by the call. Keying it to the call
     // meant every judge said the same thing about the same queen in different
     // words, which undid the point of judges having taste. `critiqueLines`
-    // decides tone from each judge's view against her own median, so a judge
+    // decides tone from each judge\'s view against her own median, so a judge
     // who ranked her third is warm about her on a night the host put her in
     // the bottom. The lines below did not name the call, so nothing had to be
     // rewritten when the key changed.
@@ -247,15 +330,15 @@ export const STAGE_BEATS = [
     tiers: [
       tier('agreed', 'The panel is of one mind and it does not take long.', [
         "The queens are sent to the back and the panel barely argues. The winner was clear, the bottom was clear, and the middle sorted itself. The deliberation is three sentences and a nod. \"Bring back my girls,\" the host says, and the queens are called back before they have had time to fix their faces.",
-        "The panel agrees and the agreement takes less time than the walk to the judge's table. Somebody won, somebody lost, and the path between those two facts was straight enough that the deliberation is a formality. The judges look at each other, confirm, and the host calls them back.",
+        "The panel agrees and the agreement takes less time than the walk to the judge\'s table. Somebody won, somebody lost, and the path between those two facts was straight enough that the deliberation is a formality. The judges look at each other, confirm, and the host calls them back.",
         "It is a quick night. The panel runs through the names and every name lands in the same place for every judge, which means there is nothing to argue about, which means the queens in the back are going to be called back sooner than they expect. The verdict was decided before the deliberation started.",
         "\"Are we in agreement?\" one of the judges says, and the other judges nod, and that is the deliberation. No argument, no debate, no second look at the notes. \"Bring back my girls!\" the host says, and the queens file in still adjusting their wigs.",
       ]),
       tier('split', 'The judges genuinely disagree, and it is close.', [
         "The panel does not agree. One judge argues for the look, another argues for the performance, and a third is going back through her notes with the expression of somebody who has changed her mind twice and is about to change it a third time. The queens in the back can feel the deliberation running long. They are right to worry.",
         "It is close and the panel knows it is close and the closeness produces the kind of argument that sounds collegial and is not. Two judges want different queens in the bottom and both of them have a case and neither of them is backing down. The deliberation is going to take a while.",
-        "\"I disagree.\" The word lands on the judge's table and the deliberation, which had been moving toward a conclusion, reverses direction entirely. One judge thinks the look saved the performance. Another judge thinks the performance buried the look. The queens in the back are fixing their faces and they are going to need the time.",
-        "The judges are arguing. Not performing an argument for the camera — genuinely arguing, with notes and references and the kind of intensity that means somebody's placement is going to change in the next three minutes. It is close. The margin between safe and bottom is a hemline and a missed beat, and the panel cannot agree on which one mattered more. Eventually the host settles it. \"Bring back my girls.\" The queens return to a panel that is still not entirely in agreement.",
+        "\"I disagree.\" The word lands on the judge\'s table and the deliberation, which had been moving toward a conclusion, reverses direction entirely. One judge thinks the look saved the performance. Another judge thinks the performance buried the look. The queens in the back are fixing their faces and they are going to need the time.",
+        "The judges are arguing. Not performing an argument for the camera — genuinely arguing, with notes and references and the kind of intensity that means somebody\'s placement is going to change in the next three minutes. It is close. The margin between safe and bottom is a hemline and a missed beat, and the panel cannot agree on which one mattered more. Eventually the host settles it. \"Bring back my girls.\" The queens return to a panel that is still not entirely in agreement.",
       ]),
     ],
   },
@@ -267,9 +350,9 @@ export const STAGE_BEATS = [
     tierBy: 'always',
     tiers: [tier('win', 'Condragulations. She has won the week.', [
       "\"Condragulations, {a}.\" The word fills the stage and {a} takes a breath so deep it moves her shoulders. She has won the week. The panel is smiling, the safe queens in the back are watching on the monitor, and for one moment — just one — {a} does not have to be competing. She is just good at this.",
-      "\"Condragulations, {a}, you are the winner of this week's maxi challenge.\" {a} puts her hands together and mouths \"thank you\" and the gratitude is so genuine that it lands harder than the victory. She came to win and she won, and the winning feels like the beginning of something rather than the end of it.",
+      "\"Condragulations, {a}, you are the winner of this week\'s maxi challenge.\" {a} puts her hands together and mouths \"thank you\" and the gratitude is so genuine that it lands harder than the victory. She came to win and she won, and the winning feels like the beginning of something rather than the end of it.",
       "The word lands and {a}'s face does the thing where it tries to be professional and fails beautifully. \"Condragulations.\" She nods, she smiles, she says \"thank you\" and means it in a way that includes everyone who helped her get here and several people who did not. She has won the week and the week is hers.",
-      "\"Condragulations, you are the winner of this week's maxi challenge.\" {a} closes her eyes for one second — just one — and when she opens them she is still standing on the same stage but the stage feels different now. She won. The judges saw what she brought and the judges said yes, and that yes is the one she came here for.",
+      "\"Condragulations, you are the winner of this week\'s maxi challenge.\" {a} closes her eyes for one second — just one — and when she opens them she is still standing on the same stage but the stage feels different now. She won. The judges saw what she brought and the judges said yes, and that yes is the one she came here for.",
     ])],
   },
   {
@@ -304,7 +387,7 @@ export const STAGE_BEATS = [
     note: 'She was among the top and did not win. {a} is the queen.',
     tierBy: 'always',
     tiers: [tier('high', 'Top of the week, and not the winner of it.', [
-      "\"You were in the top tonight, {a}.\" The host says it simply, because simple is what it is: she was good. Not the best — somebody else was the best — but good, and good on this stage is a thing the panel does not say lightly. She nods. The nod holds a season's worth of work and a night's worth of almost.",
+      "\"You were in the top tonight, {a}.\" The host says it simply, because simple is what it is: she was good. Not the best — somebody else was the best — but good, and good on this stage is a thing the panel does not say lightly. She nods. The nod holds a season\'s worth of work and a night\'s worth of almost.",
       "\"{a}, you did not win tonight.\" A pause. \"But you came close, and I want you to know that close is not a consolation. It is a position.\" She takes that standing straight. The host moves on. Close was real and close was earned and close is going to keep her up tonight.",
       "\"I want to be clear about something, {a},\" the host says. \"You were in the top. Not safe — the top. The judges saw what you brought tonight and it was exceptional.\" She presses her lips together. Being told you were almost the best is its own particular experience, and she is having it in front of everybody.",
       "\"{a}, you were one of the best out there tonight.\" The host lets that settle. \"Not the winner — but one of the best, and that is a sentence I do not say to fill time.\" She takes a breath and the breath is the closest thing to a visible reaction she allows herself. High is not a win. High is the view of a win from one step below it.",
@@ -322,7 +405,7 @@ export const STAGE_BEATS = [
       "\"{a}, you are safe.\" The host holds her gaze. \"That is not the same as good. You know the difference and so do I.\" She takes it without argument, because arguing with a warning you have not been punished for is the one thing this stage does not forgive.",
       "\"Safe,\" the host says to {a}, and the word arrives alone. Then: \"But there was a conversation at the panel about you tonight, and the conversation was not entirely comfortable.\" She swallows. Safe with a note is the quietest version of trouble and the trouble is that it is not loud enough to fight.",
       "\"{a}.\" The host looks at her. \"You are safe. I want you to hear that first.\" She hears it. \"What I also want you to hear is that safe tonight was closer to the bottom than it was to the top, and that is a place you do not want to live.\" She stands there and takes the geography of it.",
-      "\"You're not in danger tonight, {a}.\" The host says it kindly and the kindness is part of the warning. \"But the panel had notes, and the notes were not small. Take them back with you.\" She will. A warning from this stage has no penalty attached and every penalty implied.",
+      "\"You\'re not in danger tonight, {a}.\" The host says it kindly and the kindness is part of the warning. \"But the panel had notes, and the notes were not small. Take them back with you.\" She will. A warning from this stage has no penalty attached and every penalty implied.",
     ])],
   },
   {
@@ -333,7 +416,7 @@ export const STAGE_BEATS = [
     tiers: [tier('btm', 'Called to the bottom, then spared the song.', [
       "\"{a}.\" The host says her name and the name is enough — she knows. \"You were in the bottom tonight.\" A pause that costs her something. \"But you are safe. You will not be lip syncing.\" She exhales and the exhale is enormous and the relief is immediate and incomplete, because being saved before the song means she never got to prove she could survive it.",
       "\"You are in the bottom, {a}.\" She braces. The host lets her brace for exactly as long as is bearable and then says: \"But I am not sending you to the lip sync tonight.\" The reprieve lands and she does not know what to do with it. Saved is saved, but saved without the fight is a verdict she cannot appeal.",
-      "\"{a}, I need you to hear me.\" The host's voice is level. \"You were in the bottom. You were close to lip syncing tonight, and I want you to feel how close that was.\" He pauses. \"You are safe.\" She presses her hands together. The proximity to the song is the punishment, and the punishment is that she will never know if she could have won it.",
+      "\"{a}, I need you to hear me.\" The host\'s voice is level. \"You were in the bottom. You were close to lip syncing tonight, and I want you to feel how close that was.\" He pauses. \"You are safe.\" She presses her hands together. The proximity to the song is the punishment, and the punishment is that she will never know if she could have won it.",
       "\"You are safe, {a}.\" The host holds. \"But you were named in the bottom, and I do not want you to forget that. You stood here. You were in it.\" She nods. Being told you were in the bottom and then saved is the cruelest mercy this stage offers — she does not lip sync, she does not go home, and she does not get the three minutes that might have changed the way the room sees her.",
       "\"{a}.\" The host looks at her and she is already still, already preparing for the walk to the end of the stage, and then he does not send her there. \"You are in the bottom, but you are not lip syncing tonight.\" The halt is visible — her body was already moving toward the fight and now the fight is not hers. She stands on her mark with the posture of a person who was ready and was not asked.",
       "\"Bottom tonight, {a}.\" The words land flat. \"But safe.\" He does not dress it up. She takes both pieces of information at the same time — the danger and the pardon — and the pardon does not cancel the danger, it sits on top of it. She walks to the back knowing she was in the bottom and not knowing if she could have lip synced her way out. She will never know. That is the point.",
@@ -357,13 +440,13 @@ export const STAGE_BEATS = [
     note: 'Two queens stand before the host. The last-chance speech and the song.',
     tierBy: 'always',
     tiers: [tier('intro', 'This is your last chance to impress me.', [
-      "\"Two queens stand before me.\" The room goes quiet in the way that means something is about to end for somebody. The host looks at both of them with an expression that is equal parts sympathy and expectation. \"This is your last chance to impress me and save yourself from elimination. The time has come for you to lip sync — {s} — for your life. Good luck, and don't fuck it up.\"",
+      "\"Two queens stand before me.\" The room goes quiet in the way that means something is about to end for somebody. The host looks at both of them with an expression that is equal parts sympathy and expectation. \"This is your last chance to impress me and save yourself from elimination. The time has come for you to lip sync — {s} — for your life. Good luck, and don\'t fuck it up.\"",
       "The stage clears except for the two of them. The host names the song — {s} — and the energy in the room changes shape. This is not a critique anymore and it is not a runway. It is a fight set to music, and both queens know that whatever happened before this moment counts for nothing if they win the next three minutes.",
-      "\"Prior to tonight, you were asked to prepare a lip sync performance of {s}.\" The host delivers the speech with the gravity it deserves, because this is the one part of the show that is not negotiable. Two queens, one song, one stays, one goes. \"Good luck, and don't fuck it up.\" The music starts and both of them take their positions.",
+      "\"Prior to tonight, you were asked to prepare a lip sync performance of {s}.\" The host delivers the speech with the gravity it deserves, because this is the one part of the show that is not negotiable. Two queens, one song, one stays, one goes. \"Good luck, and don\'t fuck it up.\" The music starts and both of them take their positions.",
       "The host looks at both queens and says the words that mean somebody is about to go home tonight. {s}. The positions are taken, the track drops in, and for a moment — just a moment — both of them stand perfectly still, because the first beat of a lip sync belongs to nobody and both of them know it.",
-      "\"Ladies, this is your last chance to impress me and save yourself from elimination.\" The host holds the pause. \"The time has come for you to lip sync for your LIFE.\" The emphasis on the last word fills the stage. \"{s}. Now make me proud — and don't fuck it up.\" Both queens take their marks and the music is already coming up under his voice.",
+      "\"Ladies, this is your last chance to impress me and save yourself from elimination.\" The host holds the pause. \"The time has come for you to lip sync for your LIFE.\" The emphasis on the last word fills the stage. \"{s}. Now make me proud — and don\'t fuck it up.\" Both queens take their marks and the music is already coming up under his voice.",
       "\"Two queens stand before me.\" Both of them have heard the sentence from the back of the stage for weeks and neither of them has heard it from here. It is not a longer speech than usual and it does not feel like the same one. The song is {s}. Somewhere behind them the safe queens have stopped talking. Whatever either of them did earlier tonight has stopped counting, and the only thing left is three minutes and a floor.",
-      "The host lets the stage settle. Two queens, two marks, one song. \"The time has come,\" he says, and the room holds its breath on the pause, \"for you to lip sync... for your life.\" He names the song — {s} — and steps back. \"And remember: don't fuck it up.\" The track drops. Both of them move.",
+      "The host lets the stage settle. Two queens, two marks, one song. \"The time has come,\" he says, and the room holds its breath on the pause, \"for you to lip sync... for your life.\" He names the song — {s} — and steps back. \"And remember: don\'t fuck it up.\" The track drops. Both of them move.",
     ])],
   },
   {
@@ -385,7 +468,7 @@ export const STAGE_BEATS = [
       ]),
       tier('trying', 'She is giving everything and it is not quite landing.', [
         "{a} is trying. The effort is visible in every movement — too much, sometimes, which is its own problem. She knows most of the words and fills in the gaps with energy, but the energy without the precision produces a performance that reads as spirited rather than skilled, and spirited does not always win.",
-        "She is fighting but the fight is not landing. {a} moves across the stage with the intensity of somebody who knows this might be her last performance and cannot quite convert that knowledge into the kind of lip sync that changes a panel's mind. The emotion is real. The execution is not matching it.",
+        "She is fighting but the fight is not landing. {a} moves across the stage with the intensity of somebody who knows this might be her last performance and cannot quite convert that knowledge into the kind of lip sync that changes a panel\'s mind. The emotion is real. The execution is not matching it.",
         "{a} gives everything she has and what she has tonight is not quite enough. The words slip in the second verse, the energy peaks too early, and by the final chorus she is running on commitment alone. Commitment is not nothing — the panel can see how much she wants this — but wanting is not the same as delivering.",
         "The lip sync starts strong and then {a} loses the thread somewhere in the middle — a wrong word, a beat she misreads — and spends the rest of the song trying to recover. The recovery is valiant but the stumble was visible and visible stumbles on this stage do not disappear with effort.",
       ]),
@@ -429,7 +512,7 @@ export const STAGE_BEATS = [
       ]),
       tier('double-elimination', 'Both queens go. Nobody was safe on that stage.', [
         "The host looks at the two of them for a long time and then does not say shantay to either one. \"I am sorry, my dears.\" A beat that costs the room something. \"Both of you — sashay away.\" It is the only call of the night and it takes two queens with it.",
-        "\"There is no shantay tonight.\" The host says it plainly and both queens hear the whole sentence before either reacts. \"Both of you are going home.\" They take each other's hands on the way to the back, which is more than either of them expected to have at the end of this.",
+        "\"There is no shantay tonight.\" The host says it plainly and both queens hear the whole sentence before either reacts. \"Both of you are going home.\" They take each other\'s hands on the way to the back, which is more than either of them expected to have at the end of this.",
         "Two queens lip synced for their lives and neither of them keeps it. The host tells them both, in the same sentence, in a voice that does not enjoy it: \"Sashay away.\" The queens still standing at the back of the stage do not make a sound.",
         "The call is a double and the host does not draw it out. Both names, one after the other, both leaving. One of them starts to argue and stops. The other has already turned toward the door, because she worked it out four bars into the song.",
       ]),
@@ -488,7 +571,7 @@ export const STAGE_BEATS = [
      again, because that is what the joke is: Victoria "Porkchop" Parker was
      the first queen ever sent home on this show, and "you are getting the
      porkchop" has meant "you went out first" ever since. Quoted from the
-     host's own line — "I'm sorry my dear, but you are getting the Porkchop."
+     host\'s own line — "I\'m sorry my dear, but you are getting the Porkchop."
      A show whose vocabulary is this specific is not finished until its oldest
      running joke is in it. */
   {
@@ -496,9 +579,9 @@ export const STAGE_BEATS = [
     note: 'ONLY the first queen eliminated in a season. The oldest joke the show has.',
     tierBy: 'always',
     tiers: [tier('porkchop', 'First out. She gets the porkchop.', [
-      "\"I'm sorry, my dear,\" the host says, \"but you are getting the porkchop.\" {a} laughs despite everything, because every queen who has ever watched this show knows exactly what that means and exactly who it is named after. Somebody has to go first. This season it is her, and the joke is older than most of the room.",
-      "There is a title that comes with going out first and it is not a good one. The host delivers it with real affection: \"You are getting the porkchop.\" {a} takes it on the chin. \"Somebody's got to hold it,\" she says, and the room loves her for the answer more than it would have loved a better week.",
-      "{a} is the first queen out of this season, which means she inherits the porkchop — the oldest running joke this competition has, handed down from the first queen ever sent home. She knows it. She said the word herself before the host could. \"Porkchop,\" she says. \"Fine. I'll take it.\"",
+      "\"I\'m sorry, my dear,\" the host says, \"but you are getting the porkchop.\" {a} laughs despite everything, because every queen who has ever watched this show knows exactly what that means and exactly who it is named after. Somebody has to go first. This season it is her, and the joke is older than most of the room.",
+      "There is a title that comes with going out first and it is not a good one. The host delivers it with real affection: \"You are getting the porkchop.\" {a} takes it on the chin. \"Somebody\'s got to hold it,\" she says, and the room loves her for the answer more than it would have loved a better week.",
+      "{a} is the first queen out of this season, which means she inherits the porkchop — the oldest running joke this competition has, handed down from the first queen ever sent home. She knows it. She said the word herself before the host could. \"Porkchop,\" she says. \"Fine. I\'ll take it.\"",
       "\"You are getting the porkchop, my dear.\" It lands as a kindness rather than a cut, because the host says it to exactly one queen a season and every one of them ends up wearing it as a badge. {a} presses her hand to her chest, says \"an honour,\" and means about half of it.",
     ])],
   },
@@ -511,8 +594,8 @@ export const STAGE_BEATS = [
       "\"Now, let the music play.\" The host closes the night with the words that mean the stage is done and the werk room is next, and the queens who survived walk off into whatever comes tomorrow. Somebody just left and the room is lighter by one voice and heavier by everything that voice said.",
       "The host delivers the closing and the queens respond and the ritual is the same as it has been every week. That is the comfort of it — the same words, the same amen, the same walk off the stage — and the comfort is real even when the night was hard, because the words mean you are still here to hear them.",
       "The closing words land the way they always do — familiar, earned, and aimed at a room full of people who needed to hear them tonight more than most nights. The queens say amen and the host smiles and the music plays and the stage empties one last time until next week, when all of this starts again with one fewer voice in the room.",
-      "\"If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen up in here?\" The amen comes back louder than it has any right to be on a night where somebody just walked out the door. The host nods. \"Now, let the music play.\" The queens walk off the stage and the walking is the last thing they do as this week's cast. Next week they are a smaller room.",
-      "\"Remember: we're all born naked and the rest is drag.\" The host lets that land, and then: \"If you can't love yourself, how in the hell are you gonna love somebody else?\" The room gives back the amen without being asked, because the amen has been part of this ritual long enough that it does not need a question mark any more. The music plays. The queens walk.",
+      "\"If you can\'t love yourself, how in the hell are you gonna love somebody else? Can I get an amen up in here?\" The amen comes back louder than it has any right to be on a night where somebody just walked out the door. The host nods. \"Now, let the music play.\" The queens walk off the stage and the walking is the last thing they do as this week\'s cast. Next week they are a smaller room.",
+      "\"Remember: we\'re all born naked and the rest is drag.\" The host lets that land, and then: \"If you can\'t love yourself, how in the hell are you gonna love somebody else?\" The room gives back the amen without being asked, because the amen has been part of this ritual long enough that it does not need a question mark any more. The music plays. The queens walk.",
       "\"Can I get an amen?\" The host says it and the room says amen and the exchange is the same one it has been every week and the sameness is the entire comfort. \"Now let the music play.\" The stage empties. The queens who survived tonight walk to the back with the posture of people who have one more week, and one more week is the only currency this competition trades in.",
     ])],
   },
@@ -534,10 +617,13 @@ export function unwrittenStageTiers() {
 /** How many beats a stage of this shape produces, for the count guard. */
 export function stageBeatCount({
   walking = 0, onStage = 0, bottom = 0, exits = 0,
-  high = 0, low = 0, atRisk = 0,
+  high = 0, low = 0, atRisk = 0, judges = 0,
 } = {}) {
   let n = 0;
   for (const b of STAGE_BEATS) {
+    // The panel introductions: one per seat, minus the host, who is doing
+    // the introducing. Callers pass the number who actually get introduced.
+    if (b.scope === 'per-judge') { n += judges; continue; }
     if (b.scope === 'once') { n += 1; continue; }
     if (b.step === 'runway') n += walking;
     else if (b.step === 'critiques') n += onStage;

@@ -23,6 +23,7 @@ import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
 import { familyForChallenge } from './data/maxi-performance.js';
+import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
 import { dragOf } from './queen.js';
 import {
   themeFamilyFor, fitTierFor, themeLinesFor, voiceLinesFor,
@@ -212,7 +213,7 @@ export function renderStageBeats({
     const style = dragOf(p).style;
     const group = swaggerGroupFor(p && p.archetype);
     const family = themeFamilyFor(r.category || category);
-    const fitId = fitTierFor(r.fit);
+    const fitId = fitTierFor(style, r.category || category);
     const craft = voiceLinesFor(style, tierId);
 
     if (craft) {
@@ -497,9 +498,34 @@ export function renderChallengeBeats({
     });
   };
 
-  // ── the host arrives and sets the week ──
+  /* ── THE HOST ARRIVES AND SETS THE WEEK, IN THIS CHALLENGE'S OWN WORDS ──
+     Everything below the arrival used to be challenge-blind. The brief named
+     the challenge and said nothing about it, and the reactions did not even
+     do that: read a Talent Show episode and three queens react to a solo act
+     on a bare stage by "casting", "choreographing" and "picking fabric",
+     because those sentences were written for a girl group and print under
+     every family there is.
+     Same fix as the performance one screen later — the family pool says the
+     same tier in the challenge's own language — and it falls back the same
+     way, so a family nobody has written yet keeps the generic beat. */
+  const briefFam = familyForChallenge(maxi.id).family;
   emit(beatById('host-arrives'), 'arrival', []);
-  emit(beatById('the-brief'), 'brief', [], { challenge: maxi.name });
+
+  const briefBeat = beatById('the-brief');
+  const brief = briefLinesFor(briefFam);
+  if (brief) {
+    scenes.push({
+      step: briefBeat.step,
+      kind: 'chal:the-brief',
+      data: {
+        beat: 'the-brief', tier: 'brief', players: [], challenge: maxi.name,
+        note: briefBeat.tiers[0].note, family: briefFam, voiced: true,
+      },
+      text: fill(pick(brief, rng, usedLines, `brief/${briefFam}`), { c: maxi.name }),
+    });
+  } else {
+    emit(briefBeat, 'brief', [], { challenge: maxi.name, family: briefFam, voiced: false });
+  }
 
   // Who is pleased about it. Ranked on how well the challenge's own blend
   // suits her craft, so "this is her week" means the same thing the scoring
@@ -513,12 +539,27 @@ export function renderChallengeBeats({
   const byAptitude = Object.keys(aptitude).length
     ? Object.entries(aptitude).sort((a, b) => b[1] - a[1]).map(e => e[0])
     : [...living];
+  const reactBeat = beatById('announce-reaction');
+  const react = (n, tierId) => {
+    const lines = reactionLinesFor(briefFam, tierId);
+    if (!lines) { emit(reactBeat, tierId, [n], { family: briefFam, voiced: false }); return; }
+    const t = reactBeat.tiers.find(x => x.id === tierId) || reactBeat.tiers[0];
+    scenes.push({
+      step: reactBeat.step,
+      kind: 'chal:announce-reaction',
+      data: {
+        beat: 'announce-reaction', tier: tierId, players: [n],
+        note: t.note, family: briefFam, voiced: true,
+      },
+      text: fill(pick(lines, rng, usedLines, `react/${briefFam}/${tierId}`),
+        { a: n, c: maxi.name }),
+    });
+  };
   for (const n of byAptitude.slice(0, REACTING)) {
-    emit(beatById('announce-reaction'),
-      tierAt(fractionalRank(n, aptitude), APTITUDE_TIERS), [n]);
+    react(n, tierAt(fractionalRank(n, aptitude), APTITUDE_TIERS));
   }
   for (const n of byAptitude.slice(-1)) {
-    if (byAptitude.length > REACTING) emit(beatById('announce-reaction'), 'dreading', [n]);
+    if (byAptitude.length > REACTING) react(n, 'dreading');
   }
 
   // ── the mini ──

@@ -61,10 +61,30 @@ describe('the call', () => {
        and this looked only here, then failed the first season in which the
        only queen the host moved happened to be safe. It is the same fact in
        two places because she is standing in two different rooms. */
+    /* AND IT LOOKS ACROSS SEASONS, NOT ONE. Twice now this has failed
+       without anything it guards having changed: the host bends a handful of
+       calls a season and whether any of those queens is still on the stage
+       is a roll. Pinning it to one seed makes it a test of that seed — the
+       comment above is the first time that happened, and the second was an
+       unrelated change upstream shifting the RNG stream by a few draws.
+       Searching a few seasons for the situation is what the assertion
+       actually means: this must be RENDERABLE, not certain on seed 3. */
     const moved = r => (r.dr.bend || []).filter(b => b.panelRank !== b.finalRank);
-    const onCall = ordinary.find(r => moved(r)
-      .some(b => !(r.dr.call?.safe || []).includes(b.name)));
-    expect(onCall, 'the host never moved a queen who was still on the stage').toBeTruthy();
+    const hasBend = r => moved(r).some(b => !(r.dr.call?.safe || []).includes(b.name));
+    let onCall = ordinary.find(hasBend);
+    for (let seed = 4; !onCall && seed < 12; seed++) {
+      const b2 = {};
+      const { rows: more } = playDragSeason({
+        cast: cast(12, seed), seed,
+        bond: (a, b) => b2[key(a, b)] || 0,
+        addBond: (a, b, d) => {
+          const k = key(a, b); b2[k] = Math.max(-10, Math.min(10, (b2[k] || 0) + d));
+        },
+      });
+      onCall = more.filter(r => !r.dr.finale).find(hasBend);
+    }
+    expect(onCall, 'the host never moved a queen who was still on the stage in any season')
+      .toBeTruthy();
     const html = rpBuildResults(onCall);
     expect(html).toMatch(/the host moved her/);
     expect(html).toMatch(/panel \d+ → \d+/);

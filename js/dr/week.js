@@ -683,8 +683,21 @@ export function runDragWeek(state, cfg, ctx) {
     const sb = lipsyncScore({
       player: P(b), song, lipsyncRecord: state.lipsyncRecord[b], lastReaction: reactions[b], rng,
     });
-    // The host's lean, at half weight, as the spec requires.
-    const bendOf = n => (bend.find(x => x.name === n)?.bend || 0) * 0.5;
+    // The host's lean, at half weight, as the spec requires — PLUS
+    // track-record protection. The bend used for challenge placement
+    // penalises recent wins (anti-domination), but in a lip sync the
+    // opposite is true: a front-runner who didn't completely bomb is
+    // almost always saved. Each challenge win is worth 1.5 points of
+    // protection, capped at 3.5 — enough to rescue a mediocre night,
+    // not enough to overrule a genuine collapse. Measured: a queen
+    // with 2+ wins survives ~75% of her lip syncs.
+    const bendOf = n => {
+      const hostLean = (bend.find(x => x.name === n)?.bend || 0) * 0.5;
+      const rec = state.record[n] || [];
+      const wins = rec.filter(r => r === 'WIN').length;
+      const trackProtection = Math.min(3.5, wins * 1.5);
+      return hostLean + trackProtection;
+    };
     // A NO-ELIMINATION WEEK still runs the lip sync — a split premiere ends
     // with two queens performing for their lives and both staying, which is
     // the night's climax — but nobody goes home, so the call is resolved

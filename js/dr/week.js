@@ -846,7 +846,9 @@ export function runDragWeek(state, cfg, ctx) {
       bend,
       /* THE BALLOTS, so a screen can show who ranked whom. Null on every
          ordinary week, which is how a reader tells the two apart. */
-      rateAQueen: rated ? { ballots: rated.ballots, board: rated.ranking } : null,
+      rateAQueen: rated
+        ? { ballots: rated.ballots, board: rated.ranking, reasons: rated.reasons }
+        : null,
       call,
       reactions,
       lipsync,

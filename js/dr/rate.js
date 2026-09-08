@@ -101,7 +101,30 @@ export function ballotFor(voter, others, { truth, players = {}, bond = () => 0, 
   });
 
   scored.sort((a, b) => b.mark - a.mark || a.name.localeCompare(b.name));
-  return scored.map(x => x.name);
+
+  /* ── AND WHY, WHERE THERE IS A WHY ──
+     A ballot that is simply the night's order needs no explanation and gets
+     none. What is worth saying out loud is when a ranking is NOT about the
+     performance: she buried the queen she has to beat, she carried a friend,
+     or she plainly did not see what everybody else saw. The screen prints
+     these beside the choice; a pick with no reason attached is a queen
+     calling it as she saw it, which is most of them.
+     Derived from the same terms that produced the order, so the reason can
+     never disagree with the ranking it explains. */
+  const reasons = {};
+  for (const s of scored) {
+    const t = play * (target.get(s.name) || 0);
+    const friend = bond(voter, s.name) / 10;
+    const drift = s.mark - (truth[s.name] || 0);
+    if (t >= 0.9) reasons[s.name] = 'threat';
+    else if (friend >= 0.35) reasons[s.name] = 'friend';
+    else if (friend <= -0.35) reasons[s.name] = 'grudge';
+    else if (Math.abs(drift) >= 0.9) reasons[s.name] = 'misread';
+  }
+
+  const order = scored.map(x => x.name);
+  order.reasons = reasons;
+  return order;
 }
 
 /**
@@ -118,6 +141,7 @@ export function rateBoard({ living = [], truth = {}, players = {}, bond = () => 
   if (field.length < 3) return null;
 
   const ballots = {};
+  const reasons = {};
   const points = Object.fromEntries(field.map(n => [n, 0]));
   const placings = Object.fromEntries(field.map(n => [n, []]));
 
@@ -125,6 +149,7 @@ export function rateBoard({ living = [], truth = {}, players = {}, bond = () => 
     const others = field.filter(n => n !== voter);
     const ballot = ballotFor(voter, others, { truth, players, bond, rng });
     ballots[voter] = ballot;
+    reasons[voter] = ballot.reasons || {};
     // Borda: the top of a ballot of N scores N, the bottom scores 1.
     ballot.forEach((n, i) => {
       points[n] += ballot.length - i;
@@ -148,5 +173,5 @@ export function rateBoard({ living = [], truth = {}, players = {}, bond = () => 
     || a.name.localeCompare(b.name));
   rows.forEach((r, i) => { r.panelRank = i + 1; });
 
-  return { ranking: rows, ballots };
+  return { ranking: rows, ballots, reasons };
 }

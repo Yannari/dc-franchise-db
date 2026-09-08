@@ -26,6 +26,7 @@
 import { _shell, _portrait, _icon } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
+import { rpBuildRate } from './rate.js';
 import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.js';
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
@@ -485,6 +486,17 @@ const _sections = SECTIONS.map(sec => ({
 /** The registry: seventeen entries, in the running order. */
 export const DRAG_SCREENS = [
   ..._sections,
+  /* RATE-A-QUEEN SITS BEFORE THE CHART AND AFTER EVERYTHING ELSE, because it
+     is the night's verdict arriving from the room rather than the panel. Not
+     a scene section: it has no prose at all, it is a board, so it registers
+     on the DATA the way the track record does. */
+  {
+    id: 'dr-rate', icon: icon('star'), label: 'Rate-a-Queen', suffix: 'rate',
+    badge: { text: 'RATE-A-QUEEN', color: '#FF3DC8' },
+    when: row => !!row?.dr?.rateAQueen?.ballots,
+    build: row => rpBuildRate(row),
+    revealAllName: 'drRevealAll',
+  },
   {
     id: CHART.id,
     icon: icon('grid'),

@@ -32,7 +32,18 @@ const season = (seed) => {
     stats: Object.fromEntries(STATS.map(k => [k, r()])),
     drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
   }));
-  return playDragSeason({ cast, seed });
+  /* A ROOM WITH RELATIONSHIPS IN IT. Without pre-game bonds no relationship
+     arc is ever cast, so the rule that ends one has nothing to act on and the
+     guard below would pass on an empty set. */
+  const b = {};
+  const key = (x, y) => [x, y].sort().join('|');
+  b[key('Ivy', 'Coco')] = -7; b[key('Nell', 'Rita')] = 7;
+  b[key('Mimi', 'Bowie')] = -6; b[key('Julia', 'Emmah')] = 6;
+  return playDragSeason({
+    cast, seed,
+    bond: (x, y) => b[key(x, y)] || 0,
+    addBond: (x, y, d) => { const k = key(x, y); b[k] = Math.max(-10, Math.min(10, (b[k] || 0) + d)); },
+  });
 };
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
 const RUNS = SEEDS.map(season);
@@ -113,6 +124,64 @@ describe('the front-runner follows the record', () => {
       const doubled = Object.entries(held).filter(([, v]) => v > 1);
       expect(doubled, `two live solo agendas on one queen: ${JSON.stringify(doubled)}`)
         .toEqual([]);
+    }
+  });
+});
+
+describe('every arc is rechecked, not just the front-runner', () => {
+  const allArcs = RUNS.flatMap(r => r.state.storylines);
+
+  it('ends a label that has stopped being true, in every family that can', () => {
+    /* ANTI-VACUITY, PER RULE. Each of these is a different rule in
+       `recordBeat` and each can be dead on its own — the first version of the
+       relationship rule never fired once in 20 seasons and looked fine,
+       because it compared the live bond against ZERO when the pairs are
+       eliminated long before a rivalry crosses into friendship. */
+    const flips = {};
+    for (const a of allArcs) if (a.flipped) flips[`${a.arc}:${a.flipped}`] = (flips[`${a.arc}:${a.flipped}`] || 0) + 1;
+    for (const rule of ['frontrunner:overtaken', 'underdog:arrived',
+      'relationship:reconciled', 'relationship:fallen-out']) {
+      expect(flips[rule] || 0, `${rule} never fires in 20 seasons`).toBeGreaterThan(0);
+    }
+  });
+
+  it('never follows more than three queens at once', () => {
+    /* Three, not the finale's size. A season does have two or three the edit
+       is openly following by the merge, but four of fourteen is a quarter of
+       the cast wearing the label, and a word that describes a quarter of the
+       room has stopped describing anybody. */
+    for (const run of RUNS) {
+      for (const row of run.rows) {
+        const live = row.dr.storylines
+          .filter(a => a.arc === 'frontrunner' && a.alive && !a.flipped);
+        expect(live.length, `ep ${row.num} follows ${live.length} front-runners`)
+          .toBeLessThanOrEqual(3);
+      }
+    }
+  });
+
+  it('never calls somebody a front-runner who has not won', () => {
+    // The original bug in one sentence: the label came from a stat line.
+    for (const run of RUNS) {
+      const live = run.state.storylines
+        .filter(a => a.arc === 'frontrunner' && a.alive && !a.flipped && a.since > 1);
+      for (const a of live) {
+        expect(winsOf(run.state, a.players[0]),
+          `${a.players[0]} was made a front-runner with no win`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('says why every ending happened', () => {
+    // A flip with no beat is a label that changed with no story behind it,
+    // which is exactly what a screen cannot draw.
+    for (const a of allArcs.filter(x => x.flipped)) {
+      expect(a.beats.length, `${a.arc} flipped to ${a.flipped} with no beats`)
+        .toBeGreaterThan(0);
+      const ENDINGS = { overtaken: 'overtaken', arrived: 'arrived',
+        reconciled: 'made-up', 'fallen-out': 'fell-out', redeemed: 'redemption' };
+      expect(a.beats.some(b => b.kind === ENDINGS[a.flipped]),
+        `${a.arc} flipped to ${a.flipped} with no beat saying so`).toBe(true);
     }
   });
 });

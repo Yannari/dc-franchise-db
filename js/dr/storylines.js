@@ -316,56 +316,95 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
   const inCall = n => [...(call.win || []), ...(call.high || []),
     ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])].includes(n);
 
-  /* ── WHO IS ACTUALLY IN FRONT ─────────────────────────────────────
-     The front-runner arc is cast from stats before episode one, and it used
-     to stay where it was put no matter what happened: the queen who won the
-     first three challenges was not the front-runner, and the one who had not
-     placed since the premiere still was.
+  /* ══ THE RECHECK ═══════════════════════════════════════════════════
+     Every arc is re-asked, every week: IS THIS STILL TRUE?
 
-     The edit does not work that way. It follows whoever is winning, and the
-     early favourite who fades IS a story rather than a mistake to be hidden
-     -- so the old arc flips to `overtaken` and keeps its beats, and the new
-     leader gets an arc of her own.
+     All of them were cast in episode one from stats and bonds — a forecast of
+     the season the room looked capable of — and then never revisited. So the
+     front-runner was whoever had the best stat line on day one, the underdog
+     was still an underdog after winning four maxis, and a rivalry stayed a
+     rivalry after the two of them made up in the werk room. The labels were
+     true at cast and drifted for fourteen episodes, which is worse than
+     having none: a screen that says "front-runner" beside a queen in the
+     bottom two is actively lying to the reader.
 
-     Wins first, then the whole record, because a maxi win is the currency the
-     label is about; the margin is TWO clear wins so a single good week does
-     not hand the season's spine to somebody who has had one. And the arc only
-     moves to a queen with no solo agenda of her own: an underdog who starts
-     winning is the underdog arc paying off, which is a better story than
-     relabelling her, and the exclusivity rule in `assignStorylines` says the
-     same thing. */
+     A label that stops being true either MOVES or is CLOSED, and it keeps its
+     beats when it goes — the early favourite who fades is a story, not a
+     mistake to hide.
+
+     ── HOW MANY FRONT-RUNNERS ─────────────────────────────────────────
+     More than one, and never more than THREE. A season does have two or three
+     queens the edit is openly following by the merge, and forcing a single
+     one made every other winner invisible. But four of fourteen is not a
+     front-runner, it is a quarter of the cast wearing the label, and a word
+     that describes a quarter of the room has stopped describing anybody.
+     Three regardless of the finale's size: a top four still only has a
+     handful the season is actually about, and the crown is decided on the
+     night rather than by who was being followed. */
   const winsOf = n => (state.record?.[n] || []).filter(r => r === 'WIN').length;
-  const leader = [...(state.living || [])]
-    .sort((x, y) => (winsOf(y) - winsOf(x))
-      || (recordRank(state.record?.[y]) - recordRank(state.record?.[x])))[0];
-  /* WHO ALREADY HAS A STORY OF HER OWN. Recomputed on demand rather than
-     captured once, because everything below can add one. */
+  const recentWin = n => (state.record?.[n] || []).slice(-3).includes('WIN');
+  const living = [...(state.living || [])];
+  const topWins = living.length ? Math.max(...living.map(winsOf)) : 0;
+  const FRONT_CAP = 3;
+
+  /* Who reads as a front-runner tonight: two wins, or one win and level with
+     the best in the room. A queen with no win is never one of them however
+     good her stat line looked in episode one. */
+  const isAhead = n => winsOf(n) >= 2 || (winsOf(n) >= 1 && winsOf(n) >= topWins);
+  /* And who has stopped being one: two clear wins off the pace AND nothing in
+     the last three weeks. Either alone is a bad month, not a fall. */
+  const hasFallen = n => (topWins - winsOf(n)) >= 2 && !recentWin(n);
+
+  /* ── A FLIPPED ARC IS STILL AN ARC SHE IS HOLDING ──
+     This excluded `flipped`, and the exclusion looked reasonable: an
+     overtaken favourite's story is over, so why should it block a new one.
+     Because it does not stop being HERS. A flipped arc stays alive on
+     purpose — it is what happened, and the screens read it — so the moment
+     she was ahead again the block below opened a second frontrunner arc on
+     top of the first, and the week after that a third. Measured on a played
+     season: one queen holding five live solo agendas, every one of them
+     counted separately in the host's bend.
+     A queen who loses the lead and takes it back has ONE front-runner story
+     with a comeback in the middle of it, which is also the better story. */
   const heldAgenda = () => new Set(out
     .filter(x => isAgenda(x.arc) && x.players.length === 1 && x.alive)
     .map(x => x.players[0]));
-  const taken = heldAgenda();
+
+  const openArc = (arc, name, kind, extra = {}) => {
+    out.push({
+      id: `${arc}-${episode}-${name}`, arc, players: [name], since: episode,
+      alive: true, variantId: null, variantName: null,
+      beats: [{ episode, kind, ...extra }],
+    });
+  };
 
   for (const s of out) {
     const [a, b] = s.players;
-    if (s.arc === 'frontrunner') {
+    if (s.arc === 'frontrunner' && !s.flipped) {
+      /* A RESOLVED ARC STOPS ACCRUING. Once she has been overtaken this story
+         has ended, and a win afterwards belongs to the new arc the top-up
+         pass gives her rather than to the one that already said she fell
+         behind — otherwise the last thing written on a closed story is a beat
+         from after it closed. */
       if ((call.win || []).includes(a)) beat(s, 'win');
       if ((call.bottom || []).includes(a)) beat(s, 'stumble');
-      const clearlyAhead = leader && leader !== a && winsOf(leader) - winsOf(a) >= 2;
-      if (s.alive && !s.flipped && clearlyAhead) {
+      // She is not in front any more. The arc closes as a fade rather than
+      // being deleted, because the fade is the interesting part.
+      if (s.alive && !s.flipped && living.includes(a) && hasFallen(a)) {
         s.flipped = 'overtaken';
-        beat(s, 'overtaken', { by: leader });
-        // Her own arc, if she is not already carrying one.
-        if (!taken.has(leader)) {
-          out.push({
-            id: `frontrunner-${episode}-${leader}`, arc: 'frontrunner', players: [leader],
-            since: episode, alive: true, variantId: null, variantName: null,
-            beats: [{ episode, kind: 'took-over', from: a }],
-          });
-          taken.add(leader);
-        }
+        beat(s, 'overtaken', { by: living.filter(n => winsOf(n) === topWins)[0] || null });
       }
     }
-    if (s.arc === 'underdog' && (call.win || []).includes(a)) beat(s, 'breakthrough');
+    if (s.arc === 'underdog') {
+      if ((call.win || []).includes(a)) beat(s, 'breakthrough');
+      /* AN UNDERDOG WHO IS WINNING IS NOT AN UNDERDOG. It is the arc paying
+         off — the best thing that can happen to one — so it closes as
+         `arrived` and the front-runner pass below is free to pick her up. */
+      if (s.alive && !s.flipped && living.includes(a) && winsOf(a) >= 2) {
+        s.flipped = 'arrived';
+        beat(s, 'arrived');
+      }
+    }
     if (s.arc === 'villain') {
       // Redemption has to cost her something and be seen: she helped somebody
       // AND the panel put her up. Either alone is just a good week.
@@ -382,12 +421,72 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
       }
     }
     if (s.arc === 'rivalry' && a && b && inCall(a) && inCall(b)) beat(s, 'collision');
+    /* A RELATIONSHIP IS THE ONE ARC ITS OWN SUBJECT CAN END. It was cast off
+       the bond in episode one and bonds move all season: two queens who made
+       up in the werk room were still carrying a rivalry, and a friendship
+       that curdled was still a friendship. The pair's live bond is on the row
+       (`dr.bonds`), which is the same number every other screen reads. */
+    if (s.arc === 'relationship' && a && b && s.alive && !s.flipped
+        && living.includes(a) && living.includes(b)) {
+      /* MEASURED AGAINST WHERE IT STARTED, not against zero. A rivalry cast
+         at -8 that is now -3 has thawed by five points and is no longer the
+         story it was, and waiting for it to cross into positive would mean
+         waiting for something the engine almost never does. The absolute
+         crossing still counts when it happens.
+         `bonds` on the row lists only pairs at |v| >= 2, so a pair that is
+         absent while both are still in the room has a bond near zero — which
+         for a rivalry cast at -8 is the whole point. */
+      const pair = (row.dr?.bonds || [])
+        .find(([x, y]) => (x === a && y === b) || (x === b && y === a));
+      const now = pair ? pair[2] : 0;
+      const was = s.pairBond ?? 0;
+      const wasRivalry = was <= -5;
+      if (wasRivalry && (now >= 2 || now - was >= 5)) {
+        s.flipped = 'reconciled';
+        beat(s, 'made-up', { bond: now, from: was });
+      }
+      if (!wasRivalry && (now <= -4 || was - now >= 5)) {
+        s.flipped = 'fallen-out';
+        beat(s, 'fell-out', { bond: now, from: was });
+      }
+    }
     if (s.arc === 'sisters' && (call.bottom || []).includes(a) && (call.bottom || []).includes(b)) {
       beat(s, 'sisters-in-the-bottom');
     }
     // An arc whose people are gone is over. The beats stay: a dead arc is
     // still what happened, and the screens read it.
     if (s.players.some(n => (state.out || []).includes(n))) s.alive = false;
+  }
+
+  /* ── AND WHO IS IN FRONT NOW ──────────────────────────────────────
+     Run after the loop above, so a queen whose underdog arc just closed as
+     `arrived` is eligible tonight rather than next week. Up to the cap, best
+     record first, and never onto a queen who already has a story of her own:
+     a villain who is winning is a villain having a good season, and giving
+     her a second agenda would count her twice in the host's bend. */
+  {
+    const held = heldAgenda();
+    const already = new Set(out
+      .filter(x => x.arc === 'frontrunner' && x.alive && !x.flipped).map(x => x.players[0]));
+    /* SHE TAKES HER OWN STORY BACK. Before anybody new is considered, a
+       queen whose front-runner arc was flipped and who is ahead again revives
+       it rather than starting a second one. */
+    for (const s of out) {
+      if (s.arc !== 'frontrunner' || !s.alive || s.flipped !== 'overtaken') continue;
+      const n = s.players[0];
+      if (!living.includes(n) || !isAhead(n)) continue;
+      s.flipped = null;
+      beat(s, 'retook', {});
+      already.add(n);
+    }
+
+    const room = FRONT_CAP - already.size;
+    if (room > 0) {
+      const candidates = living
+        .filter(n => !already.has(n) && !held.has(n) && isAhead(n))
+        .sort((x, y) => (winsOf(y) - winsOf(x)) || (recordRank(state.record?.[y]) - recordRank(state.record?.[x])));
+      for (const n of candidates.slice(0, room)) openArc('frontrunner', n, 'took-over');
+    }
   }
 
   /* Earned, never assigned: two lip syncs survived.

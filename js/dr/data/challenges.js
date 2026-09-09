@@ -100,8 +100,14 @@ export const MAXI_TYPES = [
     desc: 'Each queen writes and delivers a stand-up set roasting a guest of honour and the panel itself, in a running order the mini challenge decided — and opening the show and closing it are the two hardest slots in the room. Sets are written in the werk room and delivered live, once. A joke that does not land, a set that runs long, or a queen who roasts the room instead of the honouree is what dies on that stage. The biggest laughs win.',
   },
   {
-    id: 'rumix', name: 'Rumix Challenge', tentpole: false, stage: 'pre', format: 'cast',
-    blend: { singing: 0.4, dance: 0.4, comedy: 0.2 },
+    /* MAIN STAGE, NOT TAPED. This was `stage: 'pre'`, which files it with the
+       challenges that are shot and played back and put its screen before the
+       runway. The recording is the PREP; the challenge is performing the verse
+       live to her own vocal. And comedy carries more of the blend than dance
+       does now, because the wiki calls this the Verse Challenge and the verse
+       is written to be quotable. */
+    id: 'rumix', name: 'Rumix Challenge', tentpole: false, stage: 'main', format: 'cast',
+    blend: { singing: 0.4, comedy: 0.3, dance: 0.3 },
     runway: 'themed', assignment: 'draft', roles: 'slots', chalStyle: 'physical', minCast: 5,
     desc: 'The remaining queens each write a verse for a remix of one of the host’s own songs, record it with a vocal coach, then learn a single group choreography and film the number together. Verse order is drafted, and whoever takes the last verse has to close the track. A verse that does not scan, a recording the coach cannot rescue, or a queen who gets lost inside the choreography is what fails. The queen whose verse and performance carry the track wins.',
   },

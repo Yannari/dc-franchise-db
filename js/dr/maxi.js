@@ -16,6 +16,8 @@ import * as generic from './chal/_generic.js';
 import * as snatchGame from './chal/snatch-game.js';
 import * as ball from './chal/ball.js';
 import * as girlGroup from './chal/girl-group.js';
+import * as rumix from './chal/rumix.js';
+import * as musicVideo from './chal/music-video.js';
 import * as rusical from './chal/rusical.js';
 import * as makeover from './chal/makeover.js';
 import * as roast from './chal/roast.js';
@@ -29,8 +31,15 @@ export const CHAL_MODULES = {
   'snatch-game': snatchGame,
   ball,
   'girl-group': girlGroup,
-  rumix: girlGroup,
-  'music-video': girlGroup,
+  /* THE RUMIX AND THE MUSIC VIDEO USED TO BE THE GIRL GROUP. All three pointed
+     here, so three of nineteen challenges were one challenge with different
+     `blend` weights — same draft, same prep, same performance, same prose, and
+     a WINNING TEAM tag on two formats that have no teams. They have their own
+     modules now: the Rumix is a verse written and recorded and then performed
+     live, and the music video is a day on set with a director whose read
+     reaches the panel. */
+  rumix,
+  'music-video': musicVideo,
   rusical,
   makeover,
   roast,

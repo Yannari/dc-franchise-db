@@ -65,6 +65,19 @@ export function judgeViews(panel, entries, memory = {}, rng = Math.random) {
            who had already survived her.
            Defaults to 0, so every ordinary week is unchanged. */
         + (e.resume || 0)
+        /* ── WHAT SOMEBODY WHO WAS THERE TOLD THEM ──
+           A few challenges are shot away from the main stage with a
+           professional running the room — a director on the music video, and
+           the acting and commercial challenges next. He is not on the panel
+           and he does not score her; he REPORTS, which is what happens on the
+           real show and is why "she was a dream on set" reaches the critiques
+           at all.
+           One small bounded term, because it must be able to tip a close call
+           and must never decide a week: the day is evidence about the night,
+           not a second verdict on it. Defaults to 0, so every challenge that
+           has no such figure is untouched — see js/dr/chal/music-video.js,
+           which is the only writer of it today. */
+        + (e.impression || 0)
         + noise(rng, 1.0);
       return { name: e.name, view: Math.round(view * 100) / 100 };
     });

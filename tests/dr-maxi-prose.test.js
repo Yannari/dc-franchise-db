@@ -51,7 +51,11 @@ describe('the event pool', () => {
       // added when the last four generic types got their own mechanics
       'used-the-set', 'blank-frame', 'blew-the-formation', 'nailed-the-solo',
       'lost-in-rehearsal', 'cracked-a-note', 'forgot-the-lyric', 'sang-it-out',
-      'repeated-herself'];
+      'repeated-herself',
+      // added when the Rumix and the music video stopped being the girl group
+      'booth-rescue', 'booth-lost-it', 'lifted-a-bar', 'no-verse', 'quotable-bar',
+      'cast-forward', 'director-loved-her', 'director-wrote-her-off',
+      'lost-in-the-background'];
     const missing = FIRED.filter(id => !MAXI_EVENT_IDS.includes(id));
     expect(missing, `these fire in the engine and have no prose: ${missing.join(', ')}`).toEqual([]);
   });

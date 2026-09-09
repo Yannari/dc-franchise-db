@@ -22,7 +22,7 @@ import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
-import { familyForChallenge } from './data/maxi-performance.js';
+import { performanceFor, familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
 import { miniLinesFor, miniNamesOther } from './data/mini-voices.js';
 import { tempoLinesFor, hookLinesFor } from './data/lipsync-voices.js';
@@ -1192,6 +1192,20 @@ export function renderChallengeBeats({
     if (!performances[n]) continue;
     const tierId = tierAt(fractionalRank(n, perfScores), PERF_TIERS);
     const tier = family.tiers.find(t => t.id === tierId) || family.tiers[2];
+    /* ── A FAMILY CAN SHIP AHEAD OF ITS PROSE, AND MUST NOT SHIP SILENT ──
+       `pick` on an empty pool returns nothing and `fill` turns that into an
+       empty string, so a family whose tiers are not written yet would push a
+       performance scene per queen with no words in it — one blank card each,
+       every episode, on every challenge that family serves. That is worse
+       than the wrong flavour, and it is invisible to any guard that counts
+       scenes rather than reading them.
+       So an unwritten tier borrows the generic wording for the SAME tier.
+       It reads as a performance rather than as this challenge's performance,
+       which is the honest state of a family with no lines yet, and it goes
+       away the moment somebody writes them. */
+    const words = tier.lines?.length
+      ? tier
+      : (performanceFor('generic').tiers.find(t => t.id === tierId) || tier);
     scenes.push({
       step,
       kind: `perform:${family.family}`,
@@ -1199,7 +1213,7 @@ export function renderChallengeBeats({
         family: family.family, tier: tierId, players: [n],
         note: tier.note, perf: performances[n].perf,
       },
-      text: fill(pick(tier.lines, rng, usedLines, `${family.family}/${tierId}`), { a: n }),
+      text: fill(pick(words.lines, rng, usedLines, `${family.family}/${tierId}`), { a: n }),
     });
     if (performances[n].moment) emit(beatById('performance-moment'), 'moment', [n], {}, step);
   }
@@ -1262,6 +1276,21 @@ export function renderMaxiEventScenes(events, {
         : ev.type === 'sabotage' ? sabotageLinesFor(family)
           : ev.type === 'shunned' ? shunnedLinesFor(family)
             : null;
+    /* ── AN EVENT WITH NO PROSE EMITS NO SCENE ──
+       `pick` on an empty pool returns nothing and `fill` makes that an empty
+       string, so an event whose lines are not written yet pushed a card with
+       no words in it — visible on screen as a blank row and invisible to any
+       guard that counts scenes instead of reading them. Measured on the first
+       episode of the rebuilt Rumix: three blank narration scenes, one per
+       unwritten event that happened to fire.
+       Skipping is right rather than falling back to another event's words:
+       the MECHANICAL effect has already been applied by `applyEvents`, so
+       what is lost is the sentence about it and not the thing itself, and a
+       different event's sentence would be a lie about what happened.
+       This is the same rule the beat emitters above already keep — see the
+       `if (!t.lines || !t.lines.length) return;` in both of them. */
+    const pool = familyLines || spec.lines;
+    if (!pool || !pool.length) continue;
     scenes.push({
       step: at,
       kind: `maxi:${ev.type}`,

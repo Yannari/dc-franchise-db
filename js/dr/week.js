@@ -321,6 +321,9 @@ export function runDragWeek(state, cfg, ctx) {
     // See the note in judgeViews — this is the only shared, non-averaging
     // uncertainty the panel has.
     form: noise(rng, PANEL_FORM),
+    /* What the director told them about the day, on the challenges that have
+       one. Undefined everywhere else, and `judgeViews` reads it as zero. */
+    impression: performances[n].impression || 0,
   }));
   const views = judgeViews(panel, entries, state.memory, rng);
   /* ── RATE-A-QUEEN ──

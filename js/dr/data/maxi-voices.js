@@ -351,6 +351,8 @@ export const PICK_VOICES = [
 const walk = (family, note, lines = []) => ({ family, note, lines: lines.slice() });
 
 export const WALKTHROUGH_VOICES = [
+  walk('rumix', 'The bars she has written, and whether she can actually say them.'),
+  walk('music-video', 'Her part, and whether she knows how big to play it for a lens.'),
   walk('snatch-game', 'The character, and whether she has six answers for it.', [
     'The host stops at {a}\'s station and asks about the character. {a} drops into the voice mid-answer, testing it on the one person in the room whose reaction matters. The host either laughs or she does not — and the laugh or the silence tells {a} everything she needs to know.',
     'The host sits down across from {a}. The question is the question: who is she doing, and does she have the jokes. {a} runs through a line in character. The host\'s face either opens or tightens. The tightening is the warning.',

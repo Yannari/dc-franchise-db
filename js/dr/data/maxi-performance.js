@@ -81,7 +81,12 @@ export const MAXI_PERFORMANCE = [
     }),
   },
   {
-    family: 'girl-group', serves: ['girl-group', 'rumix', 'music-video'],
+    /* IT SERVES THE GIRL GROUP AND NOTHING ELSE NOW. The Rumix and the music
+       video borrowed this pool because they borrowed the whole module, so a
+       queen who flopped a music video was narrated forgetting the CHOREOGRAPHY
+       of a group number she was never in — which is the line that got this
+       reported. Both have their own family below. */
+    family: 'girl-group', serves: ['girl-group'],
     label: 'the group number — her verse and her place in the choreography',
     tiers: tiers({
       extraordinary: ['She takes the number and makes it hers without stepping on anybody.',
@@ -114,6 +119,28 @@ export const MAXI_PERFORMANCE = [
         "{a} forgets the choreo halfway through and the forgetting is total — not a stumble, not a half-step, a complete loss of where she is in the number. She grabs for the verse and the verse comes out in the wrong place and for ten seconds she is a queen standing on a stage with no idea what she is supposed to be doing.",
         "Everybody can see her counting. {a} is on stage and her mouth is making shapes that are not lyrics and her feet are making shapes that are not choreography and the distance between what is happening and what was rehearsed is the distance between surviving the week and being in the bottom, and the distance is growing with every bar.",
       ],
+    }),
+  },
+  {
+    family: 'rumix', serves: ['rumix'],
+    label: 'the verse — what she wrote, what got on tape, and what she did with it live',
+    tiers: tiers({
+      extraordinary: 'She wrote a bar the season will quote and then landed it live.',
+      strong: 'A real verse, cleanly recorded, sold properly on the night.',
+      competent: 'The verse is there and nobody will be quoting it.',
+      struggling: 'The verse does not scan and the booth could not save it.',
+      collapse: 'She has no verse, and a solo stage has nowhere to hide.',
+    }),
+  },
+  {
+    family: 'music-video', serves: ['music-video'],
+    label: 'the shoot — the day on set, and what the camera actually kept',
+    tiers: tiers({
+      extraordinary: 'The tape is hers. The camera never wants to leave her.',
+      strong: 'She is genuinely good on camera and the day went well.',
+      competent: 'She is in the video. That is the extent of it.',
+      struggling: 'The takes pile up and the footage is not there.',
+      collapse: 'There is barely anything of her on the tape.',
     }),
   },
   {

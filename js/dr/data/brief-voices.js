@@ -162,6 +162,24 @@ export const BRIEF_FAMILIES = [
         'A group number means a team, and a team means witnesses, and {a} is about to be the reason the choreography looks uneven and everybody in the room can do that math.',
       ]),
     ]),
+  fam('rumix', true,
+    'A track, and a verse each to write and record. Writing is the challenge; '
+    + 'the booth decides what survives it, and she performs it live.',
+    tier('brief', 'A verse to write, a booth to record it in, and a live stage tonight.'),
+    [
+      tier('delighted', 'She writes, and a verse is the one thing here she can do alone.'),
+      tier('braced', 'She can write or she can sing, and this asks for both in one day.'),
+      tier('dreading', 'She has never written a bar in her life and it is going on tape.'),
+    ]),
+  fam('music-video', true,
+    'One video for the whole cast, parts handed out by the host, and a day on '
+    + 'set with a director who will tell the panel how she was.',
+    tier('brief', 'A video, parts she does not get to choose, and a day in front of a camera.'),
+    [
+      tier('delighted', 'She is a camera queen and somebody is finally pointing one at her.'),
+      tier('braced', 'She can act or she can dance, and the part she is given decides which.'),
+      tier('dreading', 'She is sized for a stage and a lens will make that obvious.'),
+    ]),
   fam('rusical', false,
     'A staged musical number with a live vocal and a live band. The most '
     + 'technical week of the season and the least forgiving.',

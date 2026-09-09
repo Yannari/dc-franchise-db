@@ -244,6 +244,55 @@ export const MAXI_EVENTS = [
     ],
   }),
 
+  // ══ THE VERSE ════════════════════════════════════════════════════════
+  e({
+    id: 'booth-rescue', from: 'rumix', cast: 'solo',
+    note: 'The verse on paper was worse than the verse on tape. The session saved it.',
+    lines: [],
+  }),
+  e({
+    id: 'booth-lost-it', from: 'rumix', cast: 'solo',
+    note: 'She wrote something real and could not get it on tape. The panel hears the tape.',
+    lines: [],
+  }),
+  e({
+    id: 'lifted-a-bar', from: 'rumix', cast: 'pair',
+    note: '{a} took a line off {b}, who was writing at the next station.',
+    lines: [],
+  }),
+  e({
+    id: 'no-verse', from: 'rumix', cast: 'solo',
+    note: 'Four bars of filler. There is no verse, and a solo stage cannot hide that.',
+    lines: [],
+  }),
+  e({
+    id: 'quotable-bar', from: 'rumix', cast: 'solo',
+    note: 'One line better than everything around it, and she landed it live. The cast will quote it.',
+    lines: [],
+  }),
+
+  // ══ THE SHOOT ════════════════════════════════════════════════════════
+  e({
+    id: 'cast-forward', from: 'music-video', cast: 'solo',
+    note: 'The host hands a big part to a queen who has been safe for weeks. She did not ask for it.',
+    lines: [],
+  }),
+  e({
+    id: 'director-loved-her', from: 'music-video', cast: 'solo',
+    note: 'She made the day. The director says so, and he says it to the panel.',
+    lines: [],
+  }),
+  e({
+    id: 'director-wrote-her-off', from: 'music-video', cast: 'solo',
+    note: 'She cost the day — and possibly argued about it. The panel will hear that too.',
+    lines: [],
+  }),
+  e({
+    id: 'lost-in-the-background', from: 'music-video', cast: 'solo',
+    note: 'A small part and she never found the camera. There is nothing of her in the edit.',
+    lines: [],
+  }),
+
   // ══ THE BRACKET ══════════════════════════════════════════════════════
   e({
     id: 'assassin', from: 'lalaparuza', cast: 'solo',

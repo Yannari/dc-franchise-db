@@ -262,6 +262,15 @@ export const CRITIQUE_CHALLENGE = [
       "{j} looks at {a} and says the number would have been tighter without her, and that is the worst thing you can say about a queen in a girl group — that the group was stronger than the part she brought to it.",
       "\"I could not find you,\" {j} says. \"Four queens on that stage and you were the one I kept losing, and {p} was all I saw when I finally found you.\"",
     ])),
+  chal('rumix',
+    'The verse itself — whether it was written, whether it was recorded, and '
+    + 'whether she could stand inside it on a stage.',
+    tier('praise', 'The verse was hers and she delivered it like she meant it.'),
+    tier('fault', 'The bars were filler, or the tape was thin, or she lost her own verse live.')),
+  chal('music-video',
+    'What ended up on the tape, and what the director said about the day.',
+    tier('praise', 'She understood the camera and gave the edit everything it needed.'),
+    tier('fault', 'She was unfindable in the frame, or the day cost her more than the part was worth.')),
   chal('rusical',
     'THE WORDS AND THE KEY. A live vocal in front of a band, a part with lines '
     + 'in it, and nowhere to hide.',

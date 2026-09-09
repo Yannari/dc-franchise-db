@@ -416,8 +416,25 @@ async function _rosterPull() {
     // Keep season counts on the side: the simulator's roster shape must stay
     // exactly what it expects, but the Studio wants to know who never played.
     _seasonCounts = new Map(j.players.map(p => [p.slug, p.seasonCount || 0]));
-    // Strip the DB-only fields the simulator doesn't expect.
-    _persistRoster(j.players.map(({ voice, retired, updatedAt, seasonCount, ...p }) => p));
+    /* ── MERGED ONTO WHAT IS ALREADY HERE, NEVER SUBSTITUTED FOR IT ──
+       This replaced the local roster wholesale with whatever D1 returned, and
+       that destroyed real work. The `drag` column had never been added to the
+       live database (worker/roster_drag_migration.sql was written and never
+       applied), so /api/roster returned 208 players with no craft on any of
+       them — and every Studio load quietly overwrote a roster that HAD craft
+       with one that did not. Nobody had to press anything.
+
+       A server that does not know about a field must not be able to delete
+       it. The player LIST still comes from D1, so a character deleted there
+       still disappears here; what survives is any field the response simply
+       did not carry. This is the same failure the roster publish has had
+       twice before, where regenerating the file wholesale ate authored
+       demographics — one defence, in the one place both paths pass through. */
+    const _prev = new Map(_roster().map(p => [p.slug || p.name, p]));
+    _persistRoster(j.players.map(({ voice, retired, updatedAt, seasonCount, ...p }) => {
+      const was = _prev.get(p.slug || p.name);
+      return was ? { ...was, ...p } : p;
+    }));
     _d1Up = true;
     return true;
   } catch (e) {
@@ -1219,7 +1236,12 @@ async function _editBySlug(slug) {
     name: base.name, slug: base.slug, gender: base.gender || 'nb',
     sexuality: pick(base.sexuality, rich && rich.sexuality, parsed.sexuality, 'straight'),
     archetype: base.archetype || '', stats: { ...Object.fromEntries(STAT_KEYS.map(k => [k, 5])), ...(base.stats || {}) },
-    drag: { ..._emptyDrag(), ...(base.drag || {}) },
+    /* THE SAME TRUST ORDER THE BIO FIELDS USE ABOVE: the roster row first
+       because it is real columns, then the Studio's own draft. It read the
+       roster ALONE, so a craft line that had not made it to the server had
+       nowhere to come back from — and until the `drag` column exists in the
+       live database, the roster row is exactly where it has not made it to. */
+    drag: { ..._emptyDrag(), ...((rich && rich.drag) || {}), ...(base.drag || {}) },
     age: pick(base.age, rich && rich.age, parsed.age),
     ethnicity: pick(base.ethnicity, rich && rich.ethnicity, parsed.ethnicity, legacy.ethnicity),
     nationality: pick(base.nationality, rich && rich.nationality, parsed.nationality, legacy.nationality),
@@ -2851,6 +2873,13 @@ async function _save() {
     occupation: d.occupation, backstory: d.backstory, personality: d.personality,
     continuityNote: d.continuityNote,
     castingInterview: iv, profileSources: d.profileSources,
+    /* AND HER CRAFT. This record is the offline copy of everything the editor
+       is holding, and it carried the nine stats' worth of prose and not the
+       seven drag numbers — so the craft had no home outside the roster
+       projection, which is exactly the thing that got overwritten. Stored
+       whether or not `_hasDrag` would send it to the server: this is the local
+       draft, and a row of fives here costs nothing and loses nothing. */
+    drag: d.drag ? { ...d.drag, traits: [...(d.drag.traits || [])] } : null,
     voice: d.voice, avatarDataUri: d.avatarDataUri || '' };
   try { await _idbPut('characters', rich); } catch {}
   if (d.avatarDataUri) { window.__studioAvatars = window.__studioAvatars || {}; window.__studioAvatars[d.slug] = d.avatarDataUri; }

@@ -5806,7 +5806,24 @@
       "occupation": "Horror-show host and nightlife promoter",
       "descriptor": "The Glamour Ghoul",
       "backstory": "Sharon spent years producing underground horror revues, promoting alternative club nights, and carefully building a provocative online image. She learned early that controversy attracted attention and became skilled at creating feuds, rumors, and dramatic moments that kept her name circulating. Her willingness to transform from grotesque creature to glamorous star earned her a devoted local following. Sharon enters Drag Race determined to become famous at any cost and views every friendship, argument, and confession as a possible storyline.",
-      "personality": "Sharon is calculating, ambitious, catty, and extremely perceptive. She knows how to identify another queen’s insecurity and press on it until they lose focus. Fame is her priority, so she willingly plays the villain if it guarantees screen time. Her intelligence and nerve make her formidable in acting, comedy, branding, and conceptual runway challenges, but she is only average at dancing and singing. Sharon’s weakness is the conscience she pretends not to possess: when someone is genuinely hurting, her cruelty often gives way to unexpected loyalty and protection. She wants the audience to fear her, yet secretly hopes they recognize the heart beneath the horror."
+      "personality": "Sharon is calculating, ambitious, catty, and extremely perceptive. She knows how to identify another queen’s insecurity and press on it until they lose focus. Fame is her priority, so she willingly plays the villain if it guarantees screen time. Her intelligence and nerve make her formidable in acting, comedy, branding, and conceptual runway challenges, but she is only average at dancing and singing. Sharon’s weakness is the conscience she pretends not to possess: when someone is genuinely hurting, her cruelty often gives way to unexpected loyalty and protection. She wants the audience to fear her, yet secretly hopes they recognize the heart beneath the horror.",
+      "drag": {
+        "acting": 7,
+        "comedy": 5,
+        "dance": 5,
+        "design": 7,
+        "runway": 8,
+        "lipsync": 6,
+        "singing": 5,
+        "style": "spooky",
+        "traits": [
+          "high-concept",
+          "look-queen",
+          "shade-queen"
+        ],
+        "voice": "Sharon speaks in a smooth, amused tone that makes every conversation feel like a trap. She studies people’s insecurities, disguises insults as compliments, and rarely loses her smile while provoking someone: “Darling, I’m not inside your head—you simply left the door unlocked,” “She has star quality, assuming the star already burned out,” and, when showing her softer side, “I may be a nightmare, but even nightmares know when someone needs protecting.”",
+        "family": []
+      }
     },
     {
       "name": "Taystee",

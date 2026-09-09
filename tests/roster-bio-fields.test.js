@@ -170,7 +170,17 @@ describe('the published roster stays readable by the simulator', () => {
     const allowed = new Set(['name', 'slug', 'gender', 'sexuality', 'archetype', 'stats',
       // The casting interview travels as one JSON string; js/casting-interview.js
       // owns its shape and nothing between here and the page unpacks it.
-      'isReturnee', 'castingInterview', 'voice', 'profileSources', ...BIO_FIELDS]);
+      /* AND THE DRAG CRAFT BLOCK. Seven 1-10 numbers, a style, up to three
+         traits and a persona voice, read as a unit by js/dr/queen.js. It
+         reached the published roster for the first time the day the Studio's
+         write path was finally whole end to end, and this allowlist — written
+         before the block existed — reported it as a stray.
+         An allowlist that has not been told about a new field calls a
+         correct publish a defect, which is the failure mode of every
+         allowlist in this repo. `continuityNote` is here for the same
+         reason: the worker publishes it and this did not know. */
+      'isReturnee', 'castingInterview', 'voice', 'profileSources',
+      'drag', 'continuityNote', ...BIO_FIELDS]);
     const strays = new Set();
     for (const p of players) for (const k of Object.keys(p)) if (!allowed.has(k)) strays.add(k);
     expect([...strays], 'an unexpected key reached the published roster').toEqual([]);

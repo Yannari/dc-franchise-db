@@ -1073,9 +1073,26 @@ window.addEventListener('DOMContentLoaded', () => {
       const base = data?.players?.length ? data.players : null;
       if (!base) return;
       if (_lsRoster) {
-        // JSON is the base so new players always appear; user's local edits override by name.
+        /* JSON is the base so new players always appear; the user's local edits
+           override it FIELD BY FIELD.
+
+           THE WHOLE RECORD USED TO WIN, and that is a data loss dressed as a
+           merge. A locally cached row is whatever the roster looked like the
+           last time this browser wrote it — so the moment the published file
+           gained a field the cache predates, the cache deleted it on load. It
+           did exactly that with the Drag Race craft block: seven queens were
+           published with craft, and the cast builder showed every one of them
+           at a flat five, because a stale local row replaced the fresh one
+           wholesale.
+
+           This is the same failure as `_rosterPull` in js/studio.js and the
+           roster publish before it — three copies of one mistake. A cache may
+           override a field it has an opinion about; it may never delete a
+           field it has never heard of. See docs/ADDING-A-SHOW.md §8.1. */
         const byName = new Map(base.map(p => [p.name, p]));
-        _lsRoster.forEach(p => { if (p && p.name) byName.set(p.name, p); });
+        _lsRoster.forEach(p => {
+          if (p && p.name) byName.set(p.name, { ...(byName.get(p.name) || {}), ...p });
+        });
         FRANCHISE_ROSTER = [...byName.values()];
         console.log(`Roster merged: ${base.length} JSON + ${_lsRoster.length} local = ${FRANCHISE_ROSTER.length}`);
       } else {

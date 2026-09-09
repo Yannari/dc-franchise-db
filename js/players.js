@@ -63,9 +63,8 @@ export function romanticCompat(a, b) {
 
 export function pronouns(nameOrPlayer) {
   const p = typeof nameOrPlayer === 'string' ? players.find(x => x.name === nameOrPlayer) : nameOrPlayer;
-  // The table lives in js/pronouns-of.js so that things outside the simulator
-  // can ask — the life layer could not import this file (it pulls in core.js)
-  // and wrote every sentence in singular they as a result.
+  // In drag, every queen is she/her on the main stage.
+  try { if (seasonFormat(seasonConfig) === 'drag-race') return pronounsOf('f'); } catch {}
   return pronounsOf(p?.gender || 'nb');
 }
 

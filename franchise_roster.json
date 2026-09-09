@@ -5639,7 +5639,6 @@
       "name": "Taystee",
       "slug": "taystee",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "floater",
       "stats": {
         "physical": 4,
@@ -5652,14 +5651,23 @@
         "intuition": 4,
         "temperament": 7
       },
+      "sexuality": "gay",
       "voice": "aystee speaks in a relaxed, self-satisfied tone, giving the impression that looking beautiful is a full-time responsibility. She is not especially talkative and often responds to criticism with a glance, a shrug, or a reminder that she still looks good: “I didn’t come here to be funny—I came here to be photographed,” “If relying on my body is wrong, blame the body for being reliable,” and, before a lip sync, “I know the words, I know my angles, and that is honestly enough.”",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 26,
+      "birthdate": "2000-04-02",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Dallas, Texas",
+      "occupation": "aspiring fashion model",
+      "descriptor": "The Body on the Runway",
+      "backstory": "Taystee dreamed of becoming a professional model but repeatedly struggled to get signed by agencies.  Drag gave her control over the entire image: she could be the stylist, model, and final product. She developed a reputation for serving beautiful photos and competent nightclub performances, though she rarely experimented outside her preferred silhouette. Taystee enters the competition because she wants a larger platform, prettier clothes, and proof that she belongs in front of a camera.",
+      "personality": "Taystee is vain, calm, image-conscious, and uncomplicated about her ambitions. She does not want to revolutionize drag or become a comedy legend—she simply wants to feel beautiful and be admired. Her sewing ability and natural modeling instincts make her dangerous in design and runway challenges, while her lip-syncing is competent enough to survive against an average opponent. Acting, comedy, and singing quickly expose her lack of range. Taystee often coasts socially and avoids unnecessary drama, but criticism of her body or appearance strikes directly at her confidence. Her greatest obstacle is learning that beauty can carry her into the competition, but it may not carry her through it."
     },
     {
       "name": "Velvet Vixen",
       "slug": "velvet-vixen",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "loyal-soldier",
       "stats": {
         "physical": 8,
@@ -5672,7 +5680,17 @@
         "intuition": 5,
         "temperament": 4
       },
-      "profileSources": {}
+      "sexuality": "gay",
+      "profileSources": {},
+      "age": 23,
+      "birthdate": "2003-11-23",
+      "ethnicity": "Punjabi Indian",
+      "nationality": "Canadian",
+      "hometown": "Toronto, Ontario",
+      "occupation": "Dance instructor and nightclub performer",
+      "descriptor": "The Desi Dance Dynamo",
+      "backstory": "Velvet grew up training in jazz, contemporary dance, hip-hop, Bollywood, and bhangra. She originally planned to become a professional backup dancer but became frustrated with auditions that treated her as interchangeable. After performing in drag for a queer South Asian dance night, she discovered that Velvet allowed her to be both the choreographer and the star. She quickly built a reputation for explosive nightclub numbers, although most of her costumes were commissioned or assembled at the last minute. She enters Drag Race certain that her movement will separate her from the cast.",
+      "personality": "Velvet is energetic, talkative, competitive, and emotionally transparent. She learns choreography immediately and performs every lip sync as though it were a stadium finale. Her confidence becomes impatience when teammates cannot match her pace, and she frequently interrupts people without realizing it. Velvet is not naturally strategic, struggles to sew, and tends to overpower acting scenes instead of listening to her partners. Criticism makes her defensive, but her emotions pass quickly and she rarely holds a grudge for long. Behind the chaos is a passionate performer who genuinely wants everyone to experience the same joy she feels when the music begins."
     }
   ]
 }

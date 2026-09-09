@@ -472,6 +472,18 @@ export const FINALE_BEATS = [
     ])],
   },
 
+  // ══ PRE-DUEL INTERVIEW — bracket format only ══════════════════════════
+  // RuPaul talks to each queen right before her lip sync. Short, pointed,
+  // one beat per queen. {a} is the queen, {b} is her opponent.
+  {
+    id: 'finale-preduel', step: 'finale-lipsync', scope: 'per-duel', speaker: 'host',
+    note: 'RuPaul addresses {a} before she lip syncs. {b} is the opponent.',
+    tiers: [
+      tier('semi', 'Before a semi-final lip sync.', []),
+      tier('final', 'Before the final lip sync.', []),
+    ],
+  },
+
   // ══ THE CROWN LIP SYNC ═══════════════════════════════════════════════
   {
     id: 'finale-crown-lipsync', step: 'finale-lipsync', scope: 'once', speaker: 'host',

@@ -617,6 +617,29 @@ export const CROWN_LS_CSS = `
 .cls-final{display:block;margin-top:8px;min-height:24px;font-size:24px;color:var(--cls-warm);
   font-variant-numeric:tabular-nums}
 
+/* ── PRE-DUEL INTERVIEW ── RuPaul talks to a queen before her fight ── */
+.cls-preduel{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:start;
+  padding:20px 22px;margin-bottom:14px;
+  border:1px solid rgba(255,233,168,.25);border-left:4px solid rgba(255,200,61,.5);
+  background:linear-gradient(90deg,rgba(255,200,61,.1),transparent 40%),rgba(10,4,1,.9)}
+.cls-preduel .cls-pd-host{text-align:center;min-width:56px}
+.cls-preduel .cls-pd-host .dr-por{border:2px solid rgba(255,200,61,.5);
+  box-shadow:0 0 22px rgba(255,200,61,.4)}
+.cls-preduel .cls-pd-queen{text-align:center;min-width:56px}
+.cls-preduel .cls-pd-queen .dr-por{border:2px solid rgba(255,123,200,.4);
+  box-shadow:0 0 18px rgba(255,61,154,.3)}
+.cls-pd-name{display:block;margin-top:5px;font-size:11px;color:#fff6fb}
+.cls-pd-text{padding:4px 0}
+.cls-pd-text p{margin:0;color:#f4e3ed;font-size:15px;line-height:1.6;text-wrap:pretty;
+  border-left:3px solid rgba(255,233,168,.3);padding-left:14px}
+.dr-step.dr-vis .cls-preduel{animation:ivIn .5s cubic-bezier(.2,1,.3,1) both}
+
+/* ── ROUND HEADER — separates bracket rounds ── */
+.cls-round-hdr{text-align:center;padding:18px 16px 10px;
+  border-top:2px solid rgba(255,200,61,.3);margin-top:12px}
+.cls-round-hdr b{font-size:11px;letter-spacing:.35em;text-transform:uppercase;
+  color:var(--cls-gold)}
+
 /* ── HOST CEREMONY ── the host speaks with weight ── */
 .cls-hostsay{padding:24px 26px;text-align:center;
   border-top:2px solid rgba(255,200,61,.4);border-bottom:2px solid rgba(255,200,61,.4);
@@ -660,44 +683,21 @@ export const CROWN_LS_CSS = `
 
 export function rpBuildCrownLipSync(row) {
   const ep = epOf(row);
+  const LS_KINDS = new Set([
+    'finale:finale-crown-lipsync', 'finale-duel',
+    'finale:finale-preduel', 'finale:finale-interview',
+  ]);
   const scenes = (row?.dr?.scenes || []).filter(s =>
-    (s.kind === 'finale:finale-crown-lipsync' || s.kind === 'finale-duel')
-    && (s.text || s.data?.duel));
+    LS_KINDS.has(s.kind) && (s.text || s.data?.duel));
   if (!scenes.length) return '';
 
   const finalists = row?.dr?.finale?.placements || row?.dr?.living || [];
-
   const duels = scenes.filter(s => s.data?.duel).map(s => s.data.duel);
-  const firstDuel = duels[0];
-  const a = firstDuel?.a || '';
-  const b = firstDuel?.b || '';
-  const scoreA = Number(firstDuel?.scores?.[a]) || 0;
-  const scoreB = Number(firstDuel?.scores?.[b]) || 0;
-  const maxScore = Math.max(scoreA, scoreB, 1);
-
-  const vs = firstDuel ? `<div class="cls-vs" id="cls-vs">
-    <div class="cls-fighter" id="cls-f-a">
-      ${_portrait(a, ep, { size: 120, station: true })}
-      <b class="dr-disp">${esc(a)}</b>
-      <div class="cls-energy"><i id="cls-en-a" style="width:0%"></i></div>
-      <span class="cls-final dr-num" id="cls-fin-a"></span>
-    </div>
-    <div style="text-align:center">
-      ${firstDuel.song ? `<div class="cls-duel-song">${esc(firstDuel.song)}${
-        firstDuel.artist ? `<span class="dr-song-artist" style="display:block;font-size:13px;color:#C9A6BC;font-style:normal">${esc(firstDuel.artist)}</span>` : ''
-      }</div>` : ''}
-      <div class="cls-bolt dr-disp">VS</div>
-    </div>
-    <div class="cls-fighter cls-r" id="cls-f-b">
-      ${_portrait(b, ep, { size: 120, station: true })}
-      <b class="dr-disp">${esc(b)}</b>
-      <div class="cls-energy"><i id="cls-en-b" style="width:0%"></i></div>
-      <span class="cls-final dr-num" id="cls-fin-b"></span>
-    </div>
-  </div>` : '';
+  const isBracket = duels.length > 1;
 
   let n = 0;
   const steps = [];
+  const duelMeta = [];
 
   for (const sc of scenes) {
     if (sc.kind === 'finale:finale-crown-lipsync' && sc.text) {
@@ -709,76 +709,111 @@ export function rpBuildCrownLipSync(row) {
           <span class="cls-host-label">RuPaul</span>
           <q>${esc(sc.text)}</q>
         </div></div>`);
+    } else if (sc.kind === 'finale:finale-preduel' && sc.text) {
+      const who = (sc.data?.players || [])[0] || '';
+      steps.push(`<div class="dr-step" id="dr-step-fincrownls-${n++}">
+        <div class="cls-preduel">
+          <div class="cls-pd-host">
+            ${_judgePortrait('rupaul', { stage: true, size: 48 })}
+          </div>
+          <div class="cls-pd-text"><p>${esc(sc.text)}</p></div>
+          <div class="cls-pd-queen">
+            ${_portrait(who, ep, { size: 52, station: true })}
+            <span class="cls-pd-name dr-disp">${esc(who)}</span>
+          </div>
+        </div></div>`);
+    } else if (sc.kind === 'finale:finale-interview' && sc.text) {
+      const who = (sc.data?.players || [])[0] || '';
+      steps.push(`<div class="dr-step" id="dr-step-fincrownls-${n++}">
+        <div class="cls-preduel">
+          <div class="cls-pd-host">
+            ${_judgePortrait('rupaul', { stage: true, size: 48 })}
+          </div>
+          <div class="cls-pd-text"><p>${esc(sc.text)}</p></div>
+          <div class="cls-pd-queen">
+            ${_portrait(who, ep, { size: 52, station: true })}
+            <span class="cls-pd-name dr-disp">${esc(who)}</span>
+          </div>
+        </div></div>`);
     } else if (sc.data?.duel) {
       const d = sc.data.duel;
+      const di = duelMeta.length;
+      const sA = Number(d.scores?.[d.a]) || 0;
+      const sB = Number(d.scores?.[d.b]) || 0;
+      const mx = Math.max(sA, sB, 1);
+      const rLabel = sc.data?.roundLabel || (di < duels.length - 1 ? 'Semi-Final' : 'The Final');
+      duelMeta.push({ a: d.a, b: d.b, sA, sB, mx, winner: d.winner || '' });
+
+      if (isBracket) {
+        steps.push(`<div class="dr-step" id="dr-step-fincrownls-${n++}">
+          <div class="cls-round-hdr"><b>${esc(
+            di < duels.length - 1 ? `Semi-Final ${di + 1}` : 'The Final')}</b></div>
+        </div>`);
+      }
+
       steps.push(`<div class="dr-step" id="dr-step-fincrownls-${n++}"
-        data-duel-a="${esc(d.a)}" data-duel-b="${esc(d.b)}"
-        data-score-a="${scoreA}" data-score-b="${scoreB}"
-        data-winner="${esc(d.winner || '')}">
-        <div class="cls-duel">
-          <div class="cls-duel-name" id="cls-d-a">
-            ${_portrait(d.a, ep, { size: 80, station: true })}
+        data-duel-idx="${di}" data-winner="${esc(d.winner || '')}">
+        <div class="cls-vs" id="cls-vs-${di}">
+          <div class="cls-fighter" id="cls-f-${di}-a">
+            ${_portrait(d.a, ep, { size: isBracket ? 100 : 120, station: true })}
             <b class="dr-disp">${esc(d.a)}</b>
+            <div class="cls-energy"><i id="cls-en-${di}-a" style="width:0%"></i></div>
+            <span class="cls-final dr-num" id="cls-fin-${di}-a"></span>
           </div>
-          <div class="cls-duel-mid">
-            ${d.song ? `<div class="cls-duel-song">${esc(d.song)}</div>` : ''}
-            <div class="cls-duel-vs dr-disp">VS</div>
-            <span class="cls-duel-winner dr-disp" id="cls-verdict" hidden></span>
+          <div style="text-align:center">
+            ${d.song ? `<div class="cls-duel-song">${esc(d.song)}${
+              d.artist ? `<span style="display:block;font-size:13px;color:#C9A6BC;font-style:normal">${esc(d.artist)}</span>` : ''
+            }</div>` : ''}
+            <div class="cls-bolt dr-disp">VS</div>
+            <span class="cls-duel-winner dr-disp" id="cls-verdict-${di}" hidden></span>
           </div>
-          <div class="cls-duel-name" id="cls-d-b">
-            ${_portrait(d.b, ep, { size: 80, station: true })}
+          <div class="cls-fighter cls-r" id="cls-f-${di}-b">
+            ${_portrait(d.b, ep, { size: isBracket ? 100 : 120, station: true })}
             <b class="dr-disp">${esc(d.b)}</b>
+            <div class="cls-energy"><i id="cls-en-${di}-b" style="width:0%"></i></div>
+            <span class="cls-final dr-num" id="cls-fin-${di}-b"></span>
           </div>
         </div></div>`);
     }
   }
-
-  const totalSteps = n;
-  const duelIdx = steps.findIndex(s => /data-duel-a/.test(s));
 
   if (typeof window !== 'undefined') {
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.fincrownls = (idx) => {
       const floor = document.querySelector('.cls-floor');
       const step = document.getElementById(`dr-step-fincrownls-${idx}`);
+      if (!step) return;
 
-      const isDuel = step?.dataset?.winner !== undefined;
-      const done = isDuel;
-      const pct = totalSteps > 1 ? (idx / (totalSteps - 1)) : 0;
-
-      const enA = document.getElementById('cls-en-a');
-      const enB = document.getElementById('cls-en-b');
-      const finA = document.getElementById('cls-fin-a');
-      const finB = document.getElementById('cls-fin-b');
-      const fA = document.getElementById('cls-f-a');
-      const fB = document.getElementById('cls-f-b');
-      const verdict = document.getElementById('cls-verdict');
-      const dA = document.getElementById('cls-d-a');
-      const dB = document.getElementById('cls-d-b');
-
-      if (enA && enB) {
-        const fill = done ? 1 : Math.min(1, pct * 1.3);
-        enA.style.width = (fill * (scoreA / maxScore) * 100) + '%';
-        enB.style.width = (fill * (scoreB / maxScore) * 100) + '%';
-      }
-
-      if (done) {
+      const di = step.dataset.duelIdx;
+      if (di !== undefined) {
+        const m = duelMeta[Number(di)];
+        if (!m) return;
+        const enA = document.getElementById(`cls-en-${di}-a`);
+        const enB = document.getElementById(`cls-en-${di}-b`);
+        const finA = document.getElementById(`cls-fin-${di}-a`);
+        const finB = document.getElementById(`cls-fin-${di}-b`);
+        const fA = document.getElementById(`cls-f-${di}-a`);
+        const fB = document.getElementById(`cls-f-${di}-b`);
+        const verdict = document.getElementById(`cls-verdict-${di}`);
         const w = step.dataset.winner;
-        if (finA) finA.textContent = scoreA.toFixed(1);
-        if (finB) finB.textContent = scoreB.toFixed(1);
-        if (fA && w) fA.style.opacity = w === a ? '1' : '.35';
-        if (fB && w) fB.style.opacity = w === b ? '1' : '.35';
-        if (fA && w && w !== a) fA.style.filter = 'grayscale(.6) brightness(.5)';
-        if (fB && w && w !== b) fB.style.filter = 'grayscale(.6) brightness(.5)';
-        if (dA) { dA.classList.toggle('cls-won', w === a); dA.classList.toggle('cls-lost', w !== a); }
-        if (dB) { dB.classList.toggle('cls-won', w === b); dB.classList.toggle('cls-lost', w !== b); }
-        if (verdict && w) { verdict.hidden = false; verdict.textContent = w + ' takes the crown'; }
-      }
 
-      if (floor) {
-        floor.classList.remove('cls-focus-a', 'cls-focus-b');
-        if (done) {
-          floor.classList.add(step.dataset.winner === a ? 'cls-focus-a' : 'cls-focus-b');
+        if (enA) enA.style.width = (m.sA / m.mx * 100) + '%';
+        if (enB) enB.style.width = (m.sB / m.mx * 100) + '%';
+        if (finA) finA.textContent = m.sA.toFixed(1);
+        if (finB) finB.textContent = m.sB.toFixed(1);
+        if (fA && w) { fA.style.opacity = w === m.a ? '1' : '.35';
+          if (w !== m.a) fA.style.filter = 'grayscale(.6) brightness(.5)'; }
+        if (fB && w) { fB.style.opacity = w === m.b ? '1' : '.35';
+          if (w !== m.b) fB.style.filter = 'grayscale(.6) brightness(.5)'; }
+        if (verdict && w) {
+          verdict.hidden = false;
+          const isLast = Number(di) === duelMeta.length - 1;
+          verdict.textContent = w + (isLast ? ' takes the crown' : ' advances');
+        }
+        if (floor) {
+          floor.classList.remove('cls-focus-a', 'cls-focus-b');
+          if (w === m.a) floor.classList.add('cls-focus-a');
+          else if (w === m.b) floor.classList.add('cls-focus-b');
         }
       }
     };
@@ -795,7 +830,6 @@ export function rpBuildCrownLipSync(row) {
         <i class="cls-spot-a"></i><i class="cls-spot-b"></i>
         <i class="cls-thud"></i><i class="cls-haze"></i>
       </div>
-      ${vs}
       ${steps.join('')}
     </div>`, ep, {
       phase: 'lipsync', title: 'Lip Sync For The Crown',

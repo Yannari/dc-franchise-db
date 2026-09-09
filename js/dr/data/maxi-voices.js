@@ -367,7 +367,7 @@ export const WALKTHROUGH_VOICES = [
     '{a} walks the host through her concept for the part. The host listens, watches her mark the choreography, and gives her one note that is either \"trust the camera\" or \"you are hiding from the camera.\"',
     'The host pulls {a} aside. The part she was given — does she understand it. {a} explains what she is going to do. The host either likes the read or steers her away from it. The direction is quick and specific.',
     'The host asks {a} to show her what the character looks like on camera. Not on a stage. Not for a crowd. For a lens two feet away. {a} adjusts or she does not, and the host\'s note says which.',
-    '{a} runs her scene for the host. The host gives her the note: \"The director is watching you closer than the panel ever does. What he sees is what the judges hear about.\" The note is about precision.',
+    '{a} runs her scene for the host. The host gives her the note: \"The director is watching you closer than the panel ever does. What she sees is what the judges hear about.\" The note is about precision.',
     'The host stops at {a}\'s station and asks to see the performance. {a} shows her. The host reads {a}\'s face on an imaginary monitor and tells her what the camera will pick up that a live audience would miss.',
     'The host checks in with {a}. She asks one question — do you know your part — and {a}\'s answer tells the host everything. A queen who knows her part says what the character does. A queen who does not says what the costume looks like.',
   ]),

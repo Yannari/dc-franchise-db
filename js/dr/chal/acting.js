@@ -22,7 +22,7 @@
 //               nerve carries it where craft would carry the other two.
 import { pickOrder, contestFor, draftRoles } from '../assign.js';
 import { prepareRoom } from '../prep.js';
-import { SCRIPTS, PRODUCTS, PREMISES } from '../data/scenes.js';
+import { SCRIPTS, PRODUCTS, PREMISES, scriptFor } from '../data/scenes.js';
 import { dragOf } from '../queen.js';
 import { blendScore, noise, ROLE_RANGES, riskFor } from '../perform.js';
 /* The same ceiling the music video uses, imported rather than re-declared:
@@ -88,10 +88,22 @@ export function assign(ctx) {
     };
   }
 
-  // ── ACTING: a script, split into casts, with named parts drafted ──
-  const script = pickOne(SCRIPTS, rng);
+  /* ── ACTING: TWO SHAPES, BECAUSE THE SHOW HAS TWO ──
+     A six-part script is the scene that runs TWICE: the room cut in half, two
+     casts, the same script, judged against each other. An ensemble script is
+     one production with a part for everybody, where the danger is not losing a
+     head-to-head but disappearing inside a crowd of twelve.
+
+     The shape follows the SCRIPT rather than the room size, which is what
+     makes both reachable on a twelve-queen season — it used to split on
+     `order.length >= 8` alone, so a big room could only ever get the first
+     kind. `scriptFor` only offers an ensemble that has a part for everybody,
+     so nobody is ever cast as "Extra 7". */
+  const script = scriptFor(order.length, rng);
   const half = Math.ceil(order.length / 2);
-  const teams = order.length >= 8 ? [order.slice(0, half), order.slice(half)] : [[...order]];
+  const teams = script.ensemble || order.length < 8
+    ? [[...order]]
+    : [order.slice(0, half), order.slice(half)];
   const picks = {};
   const roles = {};
   const events = [];

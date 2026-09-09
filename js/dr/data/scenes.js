@@ -86,6 +86,97 @@ export const SCRIPTS = [
     P('ensemble', 'The Portrait', 0.2, 'comedy')] },
 ];
 
+/* ── AND THE OTHER KIND OF ACTING CHALLENGE ──
+   There are two, and the engine only had one. A six-part script is the scene
+   that runs TWICE — the room cut in half, two casts, the same script, judged
+   against each other. The other kind is one production the whole room is in:
+   a big ensemble with a part for everybody, where the danger is not losing a
+   head-to-head but disappearing inside a crowd of twelve.
+
+   They are different challenges to be in and they need different scripts, so
+   the shape is a property of the SCRIPT rather than a rule in the module. A
+   script with enough parts for the room runs once, with everybody in it;
+   anything smaller runs twice.
+
+   THE LADDER IS DELIBERATELY BOTTOM-HEAVY here. A twelve-hander has one lead
+   and a lot of people with two lines, which is the whole tension of the form:
+   most of the room has to make something out of very little, and the queen
+   who does is the story of the episode. */
+export const ENSEMBLE_SCRIPTS = [
+  { id: 'airport', name: 'Terminal Drama', ensemble: true,
+    blurb: 'A grounded flight, a delayed crowd, and nobody in charge.', parts: [
+      P('lead', 'The Gate Agent', 1.0, 'comedy'),
+      P('featured', 'The Passenger With A Connection', 0.7, 'comedy'),
+      P('featured', 'The Pilot Who Has Given Up', 0.7, 'acting'),
+      P('standard', 'The Duty Free Girl', 0.45, 'comedy'),
+      P('standard', 'The One Filming Everything', 0.45, 'comedy'),
+      P('standard', 'The Air Marshal', 0.45, 'acting'),
+      P('standard', 'The Emotional Support Animal', 0.45, 'comedy'),
+      P('ensemble', 'The Standby List', 0.2, 'comedy'),
+      P('ensemble', 'The Sleeper In Row Nine', 0.2, 'comedy'),
+      P('ensemble', 'The Woman On The Phone', 0.2, 'comedy'),
+      P('ensemble', 'The Trolley', 0.2, 'acting'),
+      P('ensemble', 'The Announcement', 0.2, 'comedy')] },
+  { id: 'wedding', name: 'Something Borrowed', ensemble: true,
+    blurb: 'One wedding, two families, and a secret that will not keep.', parts: [
+      P('lead', 'The Bride', 1.0, 'acting'),
+      P('featured', 'The Ex Who Came Anyway', 0.7, 'comedy'),
+      P('featured', 'The Mother Of The Bride', 0.7, 'comedy'),
+      P('standard', 'The Officiant', 0.45, 'comedy'),
+      P('standard', 'The Best Woman', 0.45, 'acting'),
+      P('standard', 'The Caterer', 0.45, 'comedy'),
+      P('standard', 'The Photographer', 0.45, 'comedy'),
+      P('ensemble', 'The Flower Girl', 0.2, 'comedy'),
+      P('ensemble', 'The Uncle At The Bar', 0.2, 'comedy'),
+      P('ensemble', 'The One Who Objects', 0.2, 'acting'),
+      P('ensemble', 'The Band', 0.2, 'comedy'),
+      P('ensemble', 'The Cake', 0.2, 'comedy')] },
+  { id: 'newsroom', name: 'Breaking Nothing', ensemble: true,
+    blurb: 'A rolling news channel with no news and four hours to fill.', parts: [
+      P('lead', 'The Anchor', 1.0, 'acting'),
+      P('featured', 'The Field Reporter', 0.7, 'comedy'),
+      P('featured', 'The Weather Girl', 0.7, 'comedy'),
+      P('standard', 'The Expert Nobody Booked', 0.45, 'comedy'),
+      P('standard', 'The Producer In Her Ear', 0.45, 'acting'),
+      P('standard', 'The Sports Desk', 0.45, 'comedy'),
+      P('standard', 'The Traffic Helicopter', 0.45, 'comedy'),
+      P('ensemble', 'The Autocue', 0.2, 'acting'),
+      P('ensemble', 'The Caller On Line Two', 0.2, 'comedy'),
+      P('ensemble', 'The Crawl Along The Bottom', 0.2, 'comedy'),
+      P('ensemble', 'The Intern With The Coffee', 0.2, 'comedy'),
+      P('ensemble', 'The Camera Two Operator', 0.2, 'comedy')] },
+  { id: 'cruise', name: 'All At Sea', ensemble: true,
+    blurb: 'A pleasure cruise, a missing captain, and the buffet closing early.', parts: [
+      P('lead', 'The Cruise Director', 1.0, 'comedy'),
+      P('featured', 'The Widow In Cabin One', 0.7, 'acting'),
+      P('featured', 'The Lounge Singer', 0.7, 'comedy'),
+      P('standard', 'The Ship Doctor', 0.45, 'acting'),
+      P('standard', 'The Bingo Caller', 0.45, 'comedy'),
+      P('standard', 'The Honeymooner', 0.45, 'comedy'),
+      P('standard', 'The Stowaway', 0.45, 'acting'),
+      P('ensemble', 'The Deckhand', 0.2, 'comedy'),
+      P('ensemble', 'The Buffet Queue', 0.2, 'comedy'),
+      P('ensemble', 'The Seasick One', 0.2, 'comedy'),
+      P('ensemble', 'The Foghorn', 0.2, 'comedy'),
+      P('ensemble', 'The Lifeboat Drill', 0.2, 'acting')] },
+];
+
+/**
+ * A script for a room this size, and the shape that comes with it.
+ *
+ * An ensemble script needs a part for everybody, so it is only reachable while
+ * the room is still big enough to fill one; below that the two-cast scenes are
+ * the whole pool, which is also when they read best — six queens, one script,
+ * everybody with something to do.
+ */
+export function scriptFor(roomSize, rng) {
+  const ensembles = ENSEMBLE_SCRIPTS.filter(s => s.parts.length >= roomSize);
+  // Half and half while both are available. Neither shape should become the
+  // acting challenge; the point is that a season can have one of each.
+  const pool = ensembles.length && rng() < 0.5 ? ensembles : SCRIPTS;
+  return pool[Math.floor(rng() * pool.length)];
+}
+
 // ── COMMERCIAL: PRODUCTS ──────────────────────────────────────────────
 //
 // A pair gets thirty seconds and a product that is difficult to sell. `angle`

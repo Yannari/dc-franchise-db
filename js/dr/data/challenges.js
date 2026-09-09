@@ -31,7 +31,11 @@ export const MAXI_TYPES = [
     id: 'acting', name: 'Acting Challenge', tentpole: false, stage: 'pre', format: 'teams',
     blend: { acting: 0.6, comedy: 0.3, runway: 0.1 },
     runway: 'themed', assignment: 'draft', roles: 'parts', chalStyle: 'comedy', minCast: 6,
-    desc: 'The queens are split into casts for a scripted parody and each takes a part with its own lines and a costume already waiting on the rack. They rehearse, get one walkthrough from the host, then shoot the scene in front of a director who does not do a second take. Forgetting lines, stepping on a scene partner, or playing every part the same way is what buries a queen here. Whoever makes her part land hardest on screen wins.',
+    /* IT IS TWO CHALLENGES AND THE DESC ONLY DESCRIBED ONE. Some scripts are
+       a six-hander the room plays twice, cast against cast; others are one
+       ensemble with a part for everybody. A viewer who is told to expect a
+       split and gets a twelve-hander has been told the wrong rules. */
+    desc: 'A scripted parody is cast from a script with named parts, each with its own lines and a costume already on the rack — either a small script the room plays twice as two rival casts, or one ensemble with a part for every queen. They take the parts, get a walkthrough from the host, then tape the scene on a set with a director who does not do a second take. Forgetting lines, stepping on a scene partner, or playing every part the same way is what buries a queen here. Whoever makes her part land hardest on camera wins.',
   },
   {
     id: 'ball', name: 'The Ball', tentpole: true, stage: 'main', format: 'solo',

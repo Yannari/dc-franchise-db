@@ -1127,9 +1127,17 @@ export function renderChallengeBeats({
      pick order and narrated as a scramble. An assignment that says
      `contested: false` gets the solo tier, which is what it always was:
      no teams, no partners, no draft, everybody on her own. */
+  /* FOUR ANSWERS, NOT THREE. `contested: false` used to mean "solo" — every
+     queen on her own — and that is one of two very different things it can
+     mean. A challenge where the HOST hands out parts is not solo: there is a
+     call sheet, there are leads and ensemble, and she had no say in which she
+     got. `roles` beyond a flat 'standard' is what tells them apart. */
+  const roleSet = new Set(Object.values(assignment.roles || {}));
+  const castNotChosen = assignment.contested === false && roleSet.size > 1;
   const kind = (assignment.teams || []).length > 1 ? 'captains'
-    : (assignment.contested !== false && Object.keys(assignment.picks || {}).length)
-      ? 'draft' : 'solo';
+    : castNotChosen ? 'cast'
+      : (assignment.contested !== false && Object.keys(assignment.picks || {}).length)
+        ? 'draft' : 'solo';
   emit(beatById('the-division'), kind, []);
   /* ── AND WHAT SHE ACTUALLY GOT ──
      Eleven of these fired on one Snatch Game and between them they said "the
@@ -1140,9 +1148,21 @@ export function renderChallengeBeats({
      `{d}` is that choice, resolved the same way the card resolves it. */
   const pickBeat = beatById('pick-reaction');
   const kindId = pickKindFor(maxi.id);
+  /* ── A QUEEN WHO CHOSE NOTHING GETS NO PICK CARD ──
+     `picks` is keyed by queen whatever produced it, so a hand-out that merely
+     RECORDS what she was given landed in this loop and was narrated as a
+     draft: "she grabs the role everybody knew had the material", over a part
+     the host assigned to her. The call sheet is its own beat — what she was
+     cast as, which she found out at the same moment everybody else did. */
+  const castBeat = beatById('call-sheet');
   for (const n of living) {
     const p = assignment.picks?.[n];
     if (!p) continue;
+    if (p.chosen === false) {
+      emit(castBeat, assignment.roles?.[n] || 'standard', [n],
+        { role: assignment.roles?.[n] || 'standard' });
+      continue;
+    }
     /* HOW FAR SHE FELL, NOT WHAT IT COST HER. This read `p.penalty > 0`, and
        most drafts set `penaltyScale: 0` on purpose — a roast slot or a pile
        of materials is not something she prepared for, so missing her first
@@ -1173,6 +1193,25 @@ export function renderChallengeBeats({
       text: fill(pick(lines, rng, usedLines, `pick/${kindId}/${tierId}`),
         { a: n, c: maxi.name, d: choiceLabel(p.choice) }),
     });
+  }
+
+  /* ── THE DAY ON SET, ONE CARD PER QUEEN ──
+     The module emits a single `studio-day` scene carrying every queen's note
+     and no text, which is a data payload rather than a screen — so the whole
+     director mechanic was invisible and the challenge read no differently
+     from the one it was split out of. Read back off that scene rather than
+     recomputed, so what is drawn is what actually happened. */
+  const studio = scenes.find(s => s.kind === 'studio-day');
+  if (studio) {
+    const dayBeat = beatById('studio-day');
+    for (const note of studio.data?.notes || []) {
+      const tierId = note.argued ? 'argued'
+        : note.impression >= 0.45 ? 'made-the-day'
+          : note.impression <= -0.3 ? 'slow' : 'easy';
+      emit(dayBeat, tierId, [note.name], {
+        role: note.role, took: note.took, argued: note.argued,
+      });
+    }
   }
 
   // ── the performance, IN THIS CHALLENGE'S OWN VOICE ──

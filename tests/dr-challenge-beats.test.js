@@ -31,7 +31,14 @@ function tooSimilar(x, y) {
 }
 
 const SCOPES = ['once', 'per-queen'];
-const STEPS = ['maxi-announce', 'mini', 'choice', 'maxi-perform'];
+/* `prep` JOINED THE LIST WHEN THE SHOOT DAY GOT A SCREEN. It was always a real
+   step — js/vp-dr/screens.js opens The Work Room on it and the host's
+   walkthrough has carried it since it was written — but no CHALLENGE BEAT had
+   ever sat there, because until the music video nothing happened during the
+   build that was worth a card per queen. `studio-day` is: the director's hours
+   with her are the challenge on that one, and they reached the viewer as a
+   data payload with no words until this. */
+const STEPS = ['maxi-announce', 'mini', 'choice', 'prep', 'maxi-perform'];
 
 describe('the schema', () => {
   it('every beat is complete and uniquely named', () => {

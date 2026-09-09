@@ -118,8 +118,14 @@ export function assign(ctx) {
   const picks = Object.fromEntries(ranked.map(n =>
     [n, { name: n, role: roles[n], chosen: false, ducked: false }]));
 
+  /* `contested: false` IS WHAT STOPS THE DRAFT PROSE. js/dr/stage.js reads it
+     to choose the division beat, and without it a challenge where the host
+     casts every part was announced with "You will be picking in order" and
+     narrated with a card per queen saying she GRABBED the part with the jokes
+     — over a hand-out she had no say in. Exactly the bug the split was for,
+     one screen earlier. */
   return {
-    roles, teams: [], order: ranked, picks, events,
+    roles, teams: [], order: ranked, picks, contested: false, events,
     scenes: [{ step: 'choice', kind: 'call-sheet', data: { order: ranked, roles } }],
   };
 }

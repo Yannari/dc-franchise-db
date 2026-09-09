@@ -97,7 +97,7 @@ These are not style preferences. Breaking any of them ships a bug.
 
 ## 3. Exactly what to fill in
 
-Six pools across five files. Every one already has its entry with a `note`
+Seven pools across six files. Every one already has its entry with a `note`
 telling you what that slot is for — the note is the spec, follow it.
 
 ### A. `js/dr/data/maxi-performance.js` — the per-queen performance beat
@@ -177,6 +177,55 @@ The shoot (`from: 'music-video'`):
 
 `lifted-a-bar` is the only `cast: 'pair'` one — it is the only one that may use
 `{b}`.
+
+### F. `js/dr/data/challenge-beats.js` — the two beats the shoot day needs
+
+**Added after the first pass, because the shoot had no screen.** The music
+video computes a director's impression per queen and feeds it to the panel, and
+it reached the viewer as one scene carrying data and no words — so the whole
+mechanic was invisible and the challenge still read like the one it was split
+out of. Reported as "we don't have a video moment with the director". These two
+pools are that moment.
+
+**`id: 'call-sheet'`** — per queen, on the draft screen. She finds out what she
+is playing at the same moment everybody else does, and she had no say in it.
+Four tiers, **4 lines each**:
+
+| tier | what it is |
+|---|---|
+| `lead` | Handed the whole video. She did not ask for it and now she owns it. |
+| `featured` | A real part, and the pressure of having been named. |
+| `standard` | Something to do, nothing that will carry her. |
+| `ensemble` | The back of the frame. She has to make herself findable. |
+
+Do not write these as picks. Nobody chose anything — that is the entire point,
+and the old draft prose ("she grabs the role everybody knew had the material")
+is what these replace.
+
+**`id: 'studio-day'`** — per queen, on the prep screen, one card each the way
+the host's walkthrough gives one card each. This is the director. He is not on
+the panel, he does not score her, and he **will tell the panel how the day
+went**. Four tiers, **4 lines each**:
+
+| tier | what it is |
+|---|---|
+| `made-the-day` | He starts building the video around her. |
+| `easy` | She takes the note, gives him the take, he moves on. |
+| `slow` | They get there. Getting there takes most of the afternoon. |
+| `argued` | She was asked for something and told him no, in front of the crew. |
+
+**32 lines.** Keep him unnamed, or give him a role rather than a name — "the
+director" is what every other professional in this show is called, and this
+universe has no real people in it.
+
+**`the-division`, `tier('cast', ...)`** — the once-per-episode beat that tells
+the room how it is being split. It has `draft`, `captains` and `solo`; `cast`
+is new and empty. **4 lines**: no draft at all, the host reads out who is
+playing what, and the room hears its own casting. Very different energy from
+`solo` — this is one production with a call sheet, not thirteen queens each
+doing their own thing.
+
+**36 lines in this section.**
 
 ---
 

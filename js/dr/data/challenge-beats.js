@@ -196,12 +196,55 @@ export const CHALLENGE_BEATS = [
         "Two captains. One room. The quiet cruelty of watching people decide your value out loud. Every queen chosen walks to her team with relief. Every queen still standing tries not to count how many are left.",
         "Captain picks. The two queens start choosing and the room watches itself get divided in real time. \"I will take...\" A pause. A name. A sigh of relief or a swallowed reaction. Repeat until the room is split.",
       ]),
+      /* THE HOST CASTS IT AND NOBODY PICKS ANYTHING. `solo` is the closest
+         existing tier and it is still wrong — solo is thirteen queens each
+         doing their own thing, this is one production with a call sheet. */
+      tier('cast', 'No draft at all. The host reads out who is playing what.'),
       tier('solo', 'Everybody is on their own this week.', [
         "No teams. No partners. No captain, no draft, no safety net. Everybody is on her own this week. The room is relieved they cannot be dragged down and terrified they have nobody to hide behind.",
         "\"You are all on your own.\" The sentence changes the room. Some queens straighten up — solo means their talent is the only variable. Others go quiet. Solo means there is nobody to share the blame with. \"Just me and my sewing machine,\" someone says.",
         "Solo week. The relief is immediate. Everybody is glad they do not have to depend on somebody else. Everybody is also aware that depending on somebody else was a place to put the blame. This week the blame lives at home.",
         "Nobody is paired. Nobody is grouped. Solo means the best version of yourself wins and the worst version goes. No buffer. No partner. No excuse. \"Good,\" {a} says. She means it. Probably.",
       ]),
+    ],
+  },
+  {
+    /* ── THE CALL SHEET ──
+       The pick-reaction beat below cannot serve this: every one of its tiers
+       is about what she CHOSE and how far down her own list it was, and on
+       this challenge she chose nothing. Being handed the lead and being handed
+       the back of the frame are different afternoons, and neither of them is
+       a draft. */
+    id: 'call-sheet', step: 'choice', scope: 'per-queen', speaker: 'narrator',
+    note: 'What the host cast her as. She had no say and everybody heard it at once.',
+    tierBy: 'role',
+    tiers: [
+      tier('lead', 'She was handed the whole video and did not ask for it.'),
+      tier('featured', 'A real part, and the pressure that comes with being named.'),
+      tier('standard', 'Something to do, and nothing that will carry her.'),
+      tier('ensemble', 'The back of the frame. She has to make herself findable.'),
+    ],
+  },
+  {
+    /* ── THE DAY ON SET ──
+       THE WHOLE MECHANIC WAS INVISIBLE. `js/dr/chal/music-video.js` computes a
+       director's impression per queen — did she read the note, could she do
+       it, did she come apart on the ninth take, did she argue — and feeds it
+       to the panel through `judgeViews`. It reached the screen as ONE scene
+       carrying a data payload and no words, so the shoot was a thing that
+       happened to the numbers and nowhere else. Reported as "we don't have a
+       video moment with the director": correct, and the §11.5 A bug class
+       written by the person who had just finished writing about it.
+       One card per queen, like the host's walkthrough, because the day is the
+       challenge on this one. */
+    id: 'studio-day', step: 'prep', scope: 'per-queen', speaker: 'narrator',
+    note: 'Her hours in front of the director, and what he will tell the panel.',
+    tierBy: 'impression',
+    tiers: [
+      tier('made-the-day', 'He starts building the video around her.'),
+      tier('easy', 'She takes the note, gives him the take, and he moves on.'),
+      tier('slow', 'They get there. Getting there takes most of the afternoon.'),
+      tier('argued', 'She was asked for something and told him no, in front of the crew.'),
     ],
   },
   {

@@ -5463,6 +5463,26 @@
         "temperament": 4
       },
       "profileSources": {}
+    },
+    {
+      "name": "Minnie Skurr",
+      "slug": "minnie-skurr",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "goat",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 3,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 6,
+        "boldness": 4,
+        "intuition": 4,
+        "temperament": 7
+      },
+      "voice": "Minnie speaks quickly in a youthful mix of English and Spanish, sounding like an enthusiastic dance-team captain who is always ready with gossip, encouragement, or a playful boast. She stretches words when excited, calls people “babe” and “mami,” and sometimes talks before thinking: “Mami, if the beat drops, so do I,” “That look is giving substitute teacher on laundry day,” and, when nervous, “I’m totally calm, babe—my leg is just shaking because it wants to dance.”",
+      "profileSources": {}
     }
   ]
 }

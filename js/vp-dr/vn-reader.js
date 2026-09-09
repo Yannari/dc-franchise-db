@@ -13,7 +13,7 @@
 // stage already has its own VN treatment (dr-vn-ms).
 
 const VN_SCREENS = new Set([
-  'prep', 'untucked', 'cold-open', 'werk-morning', 'elim-day', 'arrivals',
+  'prep', 'untucked', 'coldopen', 'morning', 'elimday', 'arrivals',
 ]);
 
 let vnEnabled = false;

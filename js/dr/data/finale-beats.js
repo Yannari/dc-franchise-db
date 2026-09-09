@@ -479,8 +479,22 @@ export const FINALE_BEATS = [
     id: 'finale-preduel', step: 'finale-lipsync', scope: 'per-duel', speaker: 'host',
     note: 'RuPaul addresses {a} before she lip syncs. {b} is the opponent.',
     tiers: [
-      tier('semi', 'Before a semi-final lip sync.', []),
-      tier('final', 'Before the final lip sync.', []),
+      tier('semi', 'Before a semi-final lip sync.', [
+        "\"{a}.\" The host says the name and waits. \"You have done everything this competition has asked of you. Now it is asking for one more thing. {b} is standing right there and she wants this as badly as you do. Show me why it should not be her.\"",
+        "\"There are four queens on this stage and two of them are about to go home.\" The host looks at {a}. \"You are {record} this season. That record got you here. It does not get you past {b}. The lip sync does. So lip sync.\"",
+        "\"{a}, I need you to hear me.\" The host steps closer. \"This is not the final. This is the fight to earn the final. {b} is the only thing between you and the crown and she is not planning to move. What are you going to do about it?\"",
+        "\"You have spent this entire season proving you belong on this stage.\" The host holds {a} in place with a look. \"Prove it one more time. Right now. Against {b}. And do not leave anything for later — there may not be a later.\"",
+        "\"{a}.\" A pause that goes on longer than it should. \"The crown is not yours yet. It is not even in the room yet. What is in this room is {b}, and she came here to end your run tonight. Are you going to let her?\"",
+        "\"I have watched you all season,\" the host says to {a}. \"I know what you can do when it matters. This is the moment I find out if you know it too. {b} is ready. The question is whether you are.\"",
+      ]),
+      tier('final', 'Before the final lip sync.', [
+        "\"{a}.\" The host says the name like it is the last time he will say it without a title in front of it. \"You fought your way here. One lip sync left. One queen in your way. Show me the queen who deserves a crown.\"",
+        "\"You are standing in the final two of this competition and the queen across from you is {b}.\" The host does not blink. \"{a}, there is nothing left to say. There is only what you do in the next three minutes.\"",
+        "\"{a}, look at me.\" The host waits until she does. \"Everything you have survived this season — every bottom, every critique, every week you thought you were going home — it was for this. Do not waste it. This is the last song.\"",
+        "\"One of you is about to be crowned,\" the host says, and then he looks only at {a}. \"I do not need you to be perfect. I need you to be undeniable. {b} is going to give me everything she has. You give me more.\"",
+        "\"{a}.\" The room is so quiet the name carries to the back wall. \"This is the moment your season becomes a story someone tells. Win this lip sync and nobody will ever say your name without saying the word crown. Now go earn it.\"",
+        "\"There is no next week,\" the host tells {a}. \"There is no second chance. There is you, and there is {b}, and there is one crown. This is the lip sync you will remember for the rest of your life. Make sure you win it.\"",
+      ]),
     ],
   },
 

@@ -771,94 +771,136 @@ function perfCard(name, perf, i, suffix, ep, id) {
 /* ══════════════════════════════════════════════════════════════════
    THE BALL — three looks, three judges, one leaderboard
    ══════════════════════════════════════════════════════════════════
-   A ballroom scoring screen: each look category is announced, then every
-   queen walks and three judges raise a paddle from 0 to 10. The leaderboard
-   re-sorts after each score lands, Eurovision-style. The final placement
-   comes from the three-step rule — the best score doesn't guarantee the win.
+   A ballroom scoring screen: each CATEGORY walks the full cast, then the
+   next. Judges raise a paddle from 0 to 10 for each queen on each look,
+   and the leaderboard re-sorts after every score. The final placement
+   comes from the three-step rule — best score does not guarantee the win.
 */
 
-const BALL_ROW_H = 36;
+const BALL_ROW_H = 38;
 
 const BALL_CSS = `
-.ball{position:relative;padding:20px 16px 26px;border-radius:6px;
+/* ── THE BALLROOM ── a gilded hall with a lit runway ── */
+.ball{position:relative;padding:24px 16px 30px;border-radius:6px;
   background:
-    radial-gradient(120% 80% at 50% 0%,rgba(240,171,252,.18),transparent 60%),
-    repeating-linear-gradient(0deg,rgba(255,210,63,.06) 0 1px,transparent 1px 34px),
-    repeating-linear-gradient(90deg,rgba(255,210,63,.06) 0 1px,transparent 1px 68px),
-    linear-gradient(180deg,#1a0e08,#0c0604)}
+    radial-gradient(80% 45% at 50% 100%,rgba(255,210,63,.18),transparent 70%),
+    radial-gradient(120% 60% at 50% 0%,rgba(240,171,252,.14),transparent 55%),
+    linear-gradient(180deg,#120804,#080402)}
 
-.ball-look{max-width:1000px;margin:0 auto 18px;padding:12px 14px;border-radius:8px;
-  background:linear-gradient(135deg,rgba(255,210,63,.12),rgba(240,171,252,.08));
-  border:1px solid rgba(255,210,63,.3);
-  box-shadow:0 0 30px rgba(255,210,63,.12)}
-.ball-look h3{margin:0 0 2px;font-family:'Anton','Arial Narrow Bold',sans-serif;
-  font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:#FFD23F;
-  text-shadow:0 0 12px rgba(255,210,63,.6)}
-.ball-look small{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;
+/* ── CATEGORY BANNER — the runway announcement ── */
+.ball-cat{position:relative;max-width:1000px;margin:6px auto 20px;padding:18px 20px 14px;
+  border-radius:10px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(255,210,63,.08),rgba(18,8,4,.95));
+  border:1px solid rgba(255,210,63,.4);
+  box-shadow:0 0 50px rgba(255,210,63,.18),inset 0 0 60px rgba(255,210,63,.06)}
+.ball-cat::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,210,63,.06) 40%,rgba(255,210,63,.06) 60%,transparent);
+  pointer-events:none}
+.ball-cat-num{position:absolute;top:8px;right:14px;
+  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(240,171,252,.7)}
+.ball-cat h3{margin:0 0 3px;font-family:'Anton','Arial Narrow Bold',sans-serif;
+  font-size:clamp(18px,3vw,26px);letter-spacing:.08em;text-transform:uppercase;
+  color:#FFD23F;text-shadow:0 0 18px rgba(255,210,63,.7),0 0 50px rgba(255,210,63,.3)}
+.ball-cat small{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;
   text-transform:uppercase;color:#f0abfc}
+.ball-cat-bar{position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,#FFD23F 20%,#f0abfc 80%,transparent)}
 
-.ball-entry{max-width:1000px;margin:0 auto 10px;display:grid;
-  grid-template-columns:50px 1fr;gap:10px;align-items:center;
-  padding:10px 12px;border-radius:8px;
-  background:linear-gradient(135deg,rgba(240,171,252,.08),rgba(10,6,4,.8));
-  border:1px solid rgba(240,171,252,.14)}
-.ball-entry h4{margin:0;font-size:13px;color:#fff;font-weight:700}
-.ball-paddles{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-.ball-paddle{display:inline-flex;flex-direction:column;align-items:center;gap:2px;
-  padding:5px 8px 4px;border-radius:6px;min-width:52px;
-  background:linear-gradient(180deg,rgba(255,210,63,.22),rgba(255,210,63,.06));
-  border:1px solid rgba(255,210,63,.35);
-  box-shadow:0 0 14px rgba(255,210,63,.15);
-  transform:rotateY(90deg);animation:ballFlip .4s cubic-bezier(.2,1.2,.4,1) forwards}
+/* ── QUEEN WALK CARD — portrait, name, paddles, prose ── */
+.ball-walk{position:relative;max-width:1000px;margin:0 auto 14px;
+  display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start;
+  padding:14px 16px;border-radius:10px;
+  background:linear-gradient(145deg,rgba(240,171,252,.06),rgba(10,5,2,.88));
+  border:1px solid rgba(240,171,252,.16);
+  box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.ball-walk::after{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;
+  border-radius:10px 0 0 10px;
+  background:linear-gradient(180deg,#FFD23F,#f0abfc)}
+.ball-walk .dr-por,.ball-walk .dr-initials{border-radius:50%;
+  border:2px solid rgba(255,210,63,.45);box-shadow:0 0 16px rgba(255,210,63,.3)}
+.ball-walk h4{margin:0 0 8px;font-size:14px;color:#fff;font-weight:700;letter-spacing:.02em}
+
+/* ── SCORE PADDLES — flipping golden cards ── */
+.ball-paddles{display:flex;gap:10px;flex-wrap:wrap}
+.ball-paddle{position:relative;display:inline-flex;flex-direction:column;align-items:center;
+  gap:3px;padding:8px 10px 6px;border-radius:8px;min-width:60px;
+  background:linear-gradient(165deg,rgba(255,220,100,.28),rgba(255,180,40,.08));
+  border:1px solid rgba(255,210,63,.5);
+  box-shadow:0 0 20px rgba(255,210,63,.2),inset 0 1px 0 rgba(255,255,255,.12);
+  transform:rotateY(90deg);animation:ballFlip .45s cubic-bezier(.2,1.3,.4,1) forwards}
 @keyframes ballFlip{to{transform:rotateY(0)}}
-.ball-paddle b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:22px;
-  color:#FFD23F;line-height:1;text-shadow:0 0 10px rgba(255,210,63,.7)}
-.ball-paddle small{font-size:7px;letter-spacing:.1em;text-transform:uppercase;
-  color:#f0abfc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px}
+.ball-paddle b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:28px;
+  color:#FFD23F;line-height:1;
+  text-shadow:0 0 8px rgba(255,210,63,.9),0 0 24px rgba(255,210,63,.4)}
+.ball-paddle small{font-size:8px;letter-spacing:.08em;text-transform:uppercase;
+  color:#f0abfc;opacity:.85}
+.ball-paddle-sum{display:inline-flex;align-items:baseline;gap:4px;
+  margin-left:6px;padding:4px 10px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(255,210,63,.18),rgba(255,210,63,.06));
+  border:1px solid rgba(255,210,63,.3)}
+.ball-paddle-sum b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:18px;
+  color:#FFD23F;line-height:1}
+.ball-paddle-sum small{font-size:8px;letter-spacing:.1em;color:#f0abfc}
 
+.ball-walk .dr-perf-line{margin:10px 0 2px;font-size:12px;line-height:1.55;
+  color:rgba(255,255,255,.82);border-left:2px solid rgba(255,210,63,.3);padding-left:10px}
+
+/* ── THE SIDEBAR SCOREBOARD ── */
 .ball-board{max-width:1000px;margin:0 auto 12px;border-radius:8px;overflow:hidden;
-  border:1px solid rgba(255,210,63,.28);background:rgba(14,8,4,.92)}
+  border:1px solid rgba(255,210,63,.28);
+  background:linear-gradient(180deg,rgba(14,8,4,.95),rgba(8,4,2,.98))}
 .ball-bhead{display:flex;justify-content:space-between;align-items:baseline;
-  padding:8px 13px;border-bottom:1px solid rgba(255,210,63,.18)}
-.ball-bhead h4{margin:0;font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:13px;
-  letter-spacing:.12em;color:#FFD23F;text-transform:uppercase}
+  padding:9px 13px;border-bottom:1px solid rgba(255,210,63,.22);
+  background:linear-gradient(90deg,rgba(255,210,63,.08),transparent)}
+.ball-bhead h4{margin:0;font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:14px;
+  letter-spacing:.12em;color:#FFD23F;text-transform:uppercase;
+  text-shadow:0 0 10px rgba(255,210,63,.4)}
 .ball-bhead span{font-family:'Space Mono',monospace;font-size:10px;color:#e7c9a4}
-.ball-rows{position:relative;margin:7px 10px 9px}
+.ball-rows{position:relative;margin:8px 10px 10px}
 .ball-row{position:absolute;left:0;right:0;top:0;height:${BALL_ROW_H - 4}px;
-  display:grid;grid-template-columns:24px 30px auto 2fr 48px;
-  gap:8px;align-items:center;padding:0 6px;border-radius:6px;
+  display:grid;grid-template-columns:22px 28px auto 2fr 46px;
+  gap:7px;align-items:center;padding:0 6px;border-radius:6px;
   transition:transform .62s cubic-bezier(.34,.9,.3,1),background .3s}
-.ball-rank{font-family:'Space Mono',monospace;font-size:12px;color:#f0abfc;text-align:right}
+.ball-rank{font-family:'Space Mono',monospace;font-size:11px;color:#f0abfc;text-align:right;
+  font-weight:700}
 .ball-row .dr-por,.ball-row .dr-initials{border-radius:50%;display:block}
-.ball-nm{font-size:12px;color:#fff;font-weight:600;overflow:hidden;
+.ball-nm{font-size:11px;color:#fff;font-weight:600;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-.ball-bar{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.ball-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
 .ball-bar i{display:block;height:100%;border-radius:4px;
   background:linear-gradient(90deg,#f0abfc,#FFD23F);
+  box-shadow:0 0 8px rgba(255,210,63,.4);
   transition:width .55s cubic-bezier(.2,.9,.25,1)}
-.ball-pts{font-family:'Space Mono',monospace;font-size:13px;color:#FFD9C4;text-align:right}
-.ball-row.ball-scored{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent)}
+.ball-pts{font-family:'Space Mono',monospace;font-size:13px;color:#FFD9C4;
+  text-align:right;font-weight:700}
+.ball-row.ball-scored{background:linear-gradient(90deg,rgba(255,210,63,.25),transparent)}
 .ball-row.ball-scored .ball-pts{color:#FFD23F;animation:ballTick .45s ease-out}
-@keyframes ballTick{0%{transform:scale(1)}45%{transform:scale(1.55)}100%{transform:scale(1)}}
-.ball-row.ball-top{background:linear-gradient(90deg,rgba(255,210,63,.2),transparent)}
+@keyframes ballTick{0%{transform:scale(1)}45%{transform:scale(1.6)}100%{transform:scale(1)}}
+.ball-row.ball-top{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent)}
 .ball-row.ball-top .ball-pts{color:#FFD23F}
-.ball-row.ball-btm{background:linear-gradient(90deg,rgba(255,41,75,.18),transparent)}
+.ball-row.ball-top .ball-rank{color:#FFD23F}
+.ball-row.ball-btm{background:linear-gradient(90deg,rgba(255,41,75,.2),transparent)}
 .ball-row.ball-btm .ball-pts{color:#FF6B8A}
 
-.ball-final{max-width:1000px;margin:16px auto;padding:14px;border-radius:8px;
-  background:linear-gradient(135deg,rgba(255,210,63,.14),rgba(240,171,252,.06));
-  border:1px solid rgba(255,210,63,.35);
-  box-shadow:0 0 40px rgba(255,210,63,.15)}
-.ball-final h3{margin:0 0 10px;font-family:'Anton','Arial Narrow Bold',sans-serif;
-  font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:#FFD23F;
-  text-shadow:0 0 14px rgba(255,210,63,.7)}
-.ball-final-row{display:grid;grid-template-columns:28px 36px 1fr 48px;
-  gap:8px;align-items:center;padding:6px 8px;border-radius:6px;margin-bottom:4px;
-  background:rgba(255,255,255,.03)}
-.ball-final-row.ball-f-win{background:linear-gradient(90deg,rgba(255,210,63,.2),transparent)}
-.ball-final-row.ball-f-btm{background:linear-gradient(90deg,rgba(255,41,75,.14),transparent)}
-.ball-final-pos{font-family:'Space Mono',monospace;font-size:12px;color:#f0abfc;text-align:right}
-.ball-final-nm{font-size:12px;color:#fff;font-weight:600}
+/* ── PANEL PLACEMENT — the final word ── */
+.ball-final{max-width:1000px;margin:20px auto;padding:18px;border-radius:10px;
+  background:linear-gradient(145deg,rgba(255,210,63,.1),rgba(10,5,2,.92));
+  border:1px solid rgba(255,210,63,.4);
+  box-shadow:0 0 60px rgba(255,210,63,.12)}
+.ball-final h3{margin:0 0 14px;font-family:'Anton','Arial Narrow Bold',sans-serif;
+  font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#FFD23F;
+  text-shadow:0 0 18px rgba(255,210,63,.7)}
+.ball-final-row{display:grid;grid-template-columns:30px 40px 1fr 52px;
+  gap:10px;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:5px;
+  background:rgba(255,255,255,.02);transition:background .3s}
+.ball-final-row.ball-f-win{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent);
+  border:1px solid rgba(255,210,63,.25)}
+.ball-final-row.ball-f-win .ball-final-pos{color:#FFD23F;font-weight:700}
+.ball-final-row.ball-f-btm{background:linear-gradient(90deg,rgba(255,41,75,.15),transparent)}
+.ball-final-row .dr-por,.ball-final-row .dr-initials{border-radius:50%}
+.ball-final-pos{font-family:'Space Mono',monospace;font-size:13px;color:#f0abfc;text-align:right}
+.ball-final-nm{font-size:13px;color:#fff;font-weight:600}
 .ball-final-sc{font-family:'Space Mono',monospace;font-size:12px;color:#FFD9C4;text-align:right}
 
 @media(prefers-reduced-motion:reduce){
@@ -884,21 +926,41 @@ function rpBuildBall(row) {
     return j ? j.name.split(' ')[0] : id;
   });
 
+  const firstDetail = perfs[running[0]]?.detail || {};
+  const numLooks = (firstDetail.looks || []).length || 3;
+  const lookCategories = (firstDetail.looks || []).map(l => l.label);
+  const lookMeta = (firstDetail.looks || []).map(l => ({ sewn: l.sewn }));
+  const theme = firstDetail.theme || 'the ball';
+
+  /* ── BUILD STEPS: per CATEGORY, not per queen ──
+     Look 1 → all queens walk → Look 2 → all queens walk → Look 3 → all queens.
+     This is how the real ball works: one runway pass per category. */
   const steps = [];
   const sfx = 'ball';
-
-  for (const name of running) {
-    const d = perfs[name]?.detail || {};
-    const looks = d.looks || [];
-    for (let li = 0; li < looks.length; li++) {
-      const look = looks[li];
+  for (let li = 0; li < numLooks; li++) {
+    for (const name of running) {
+      const d = perfs[name]?.detail || {};
+      const look = (d.looks || [])[li] || { label: `Look ${li + 1}`, score: 5, sewn: false };
       const jScores = _derivePaddleScores(look.score, judgeIds.length, name, li);
-      steps.push({ name, look, lookIdx: li, jScores, total: looks.length });
+      steps.push({ name, look, lookIdx: li, jScores });
     }
   }
 
-  const lookCategories = (perfs[running[0]]?.detail?.looks || []).map(l => l.label);
-  const theme = perfs[running[0]]?.detail?.theme || 'the ball';
+  /* ── PROSE: each queen gets her lines on her FIRST appearance ── */
+  const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
+    && sc.step !== 'prep'
+    && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
+  const proseByQueen = {};
+  const usedScene = new Set();
+  for (const name of running) {
+    proseByQueen[name] = maxiScenes.filter(sc => {
+      if (usedScene.has(sc)) return false;
+      if ((sc.data?.players || [])[0] !== name) return false;
+      usedScene.add(sc);
+      return true;
+    }).map(sc => sc.text);
+  }
+  const proseShown = new Set();
 
   let stepIdx = 0;
   const html = [];
@@ -906,39 +968,42 @@ function rpBuildBall(row) {
 
   for (const s of steps) {
     if (s.lookIdx !== lastLookIdx) {
-      const look = s.look;
+      const meta = lookMeta[s.lookIdx] || {};
       html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
-        <div class="ball-look"><h3>${esc(lookCategories[s.lookIdx] || `Look ${s.lookIdx + 1}`)}</h3>
-        <small>${look.sewn ? '✂ constructed on the day' : 'brought from home'}</small>
+        <div class="ball-cat">
+          <span class="ball-cat-num">look ${s.lookIdx + 1} of ${numLooks}</span>
+          <h3>${esc(lookCategories[s.lookIdx] || `Look ${s.lookIdx + 1}`)}</h3>
+          <small>${meta.sewn ? '✂ constructed on the day' : 'brought from home'}</small>
+          <i class="ball-cat-bar"></i>
         </div></div>`);
       stepIdx++;
       lastLookIdx = s.lookIdx;
     }
 
+    const paddleTotal = s.jScores.reduce((a, b) => a + b, 0);
     const paddleHtml = s.jScores.map((sc, ji) =>
-      `<span class="ball-paddle" style="animation-delay:${(ji * 0.12).toFixed(2)}s">
+      `<span class="ball-paddle" style="animation-delay:${(ji * 0.14).toFixed(2)}s">
         <b>${sc}</b><small>${esc(judgeNames[ji] || `J${ji + 1}`)}</small></span>`
-    ).join('');
+    ).join('')
+      + `<span class="ball-paddle-sum"><b>${paddleTotal}</b><small>total</small></span>`;
 
-    const said = (row.dr.scenes || []).filter(sc => sc.text
-      && sc.step !== 'prep'
-      && /^(perform:|maxi:|chal:performance)/.test(sc.kind || '')
-      && (sc.data?.players || [])[0] === s.name);
-    const proseHtml = s.lookIdx === 0
-      ? said.map(sc => `<p class="dr-perf-line">${esc(sc.text)}</p>`).join('') : '';
+    const lines = !proseShown.has(s.name) && proseByQueen[s.name]?.length
+      ? proseByQueen[s.name].map(t => `<p class="dr-perf-line">${esc(t)}</p>`).join('')
+      : '';
+    if (lines) proseShown.add(s.name);
 
     html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
-      <div class="ball-entry">
-        ${_portrait(s.name, ep, { size: 50, station: true })}
-        <div><h4 class="dr-disp">${esc(s.name)}${s.look.fit ? '<span class="dr-tag dr-t-good">in her element</span>' : ''}${
+      <div class="ball-walk">
+        ${_portrait(s.name, ep, { size: 60, station: true })}
+        <div><h4 class="dr-disp">${esc(s.name)}${
+      s.look.fit ? '<span class="dr-tag dr-t-good">in her element</span>' : ''}${
       s.look.sewn && (s.look.score > 9) ? '<span class="dr-tag dr-t-note">showstopper</span>' : ''}</h4>
           <div class="ball-paddles">${paddleHtml}</div>
-          ${proseHtml}</div>
+          ${lines}</div>
       </div></div>`);
     stepIdx++;
   }
 
-  const callOrder = row?.dr?.callOrder || [];
   const ranking = row?.dr?.panel?.ranking || [];
 
   html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
@@ -948,7 +1013,7 @@ function rpBuildBall(row) {
       const p = perfs[r.name];
       return `<div class="ball-final-row ${cls}">
         <span class="ball-final-pos">${i + 1}</span>
-        ${_portrait(r.name, ep, { size: 32 })}
+        ${_portrait(r.name, ep, { size: 36 })}
         <span class="ball-final-nm dr-disp">${esc(r.name)}</span>
         <span class="ball-final-sc">${n1(p?.perf)}</span></div>`;
     }).join('')}</div></div>`);
@@ -956,18 +1021,18 @@ function rpBuildBall(row) {
   const totalSteps = stepIdx;
 
   const board = `<div class="ball-board">
-    <div class="ball-bhead"><h4>The scoreboard</h4>
+    <div class="ball-bhead"><h4>Scoreboard</h4>
       <span id="ball-count">0 / ${steps.length} scores</span></div>
     <div class="ball-rows" id="ball-rows" style="height:${running.length * BALL_ROW_H}px">${
     running.map((n, i) => `<div class="ball-row" data-q="${esc(n)}" style="transform:translateY(${i * BALL_ROW_H}px)">
-      <span class="ball-rank">${i + 1}</span>${_portrait(n, ep, { size: 24 })}
+      <span class="ball-rank">${i + 1}</span>${_portrait(n, ep, { size: 26 })}
       <span class="ball-nm">${esc(n)}</span>
       <span class="ball-bar"><i style="width:0%"></i></span>
       <span class="ball-pts">0</span>
     </div>`).join('')}</div></div>`;
 
   if (typeof window !== 'undefined') {
-    window._drBallData = { steps, running, rowH: BALL_ROW_H, judgeNames, totalSteps };
+    window._drBallData = { steps, running, rowH: BALL_ROW_H, judgeNames, totalSteps, numLooks };
 
     window._drSidebar = window._drSidebar || {};
     const sidebarPanels = [];
@@ -977,15 +1042,14 @@ function rpBuildBall(row) {
     for (let qi = 0; qi < steps.length; qi++) {
       const s = steps[qi];
       if (s.lookIdx !== prevLookIdx) {
-        sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, sidebarPanels.length));
+        sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep));
         prevLookIdx = s.lookIdx;
       }
-
       const jTotal = s.jScores.reduce((a, b) => a + b, 0);
       cumPts[s.name] = (cumPts[s.name] || 0) + jTotal;
-      sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, sidebarPanels.length));
+      sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep));
     }
-    sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, sidebarPanels.length, true));
+    sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, true));
     window._drSidebar[sfx] = sidebarPanels;
 
     window._drRevealExtra = window._drRevealExtra || {};
@@ -996,24 +1060,20 @@ function rpBuildBall(row) {
       const pts = Object.fromEntries(d.running.map(n => [n, 0]));
       let scoreSteps = 0;
       let domStep = 0;
-      let prevLookIdx = -1;
+      let prevLI = -1;
       for (let qi = 0; qi < d.steps.length; qi++) {
         const s = d.steps[qi];
-        if (s.lookIdx !== prevLookIdx) {
-          domStep++;
-          prevLookIdx = s.lookIdx;
-        }
+        if (s.lookIdx !== prevLI) { domStep++; prevLI = s.lookIdx; }
         domStep++;
         if (domStep - 1 > upToIdx) break;
-        const jTotal = s.jScores.reduce((a, b) => a + b, 0);
-        pts[s.name] += jTotal;
+        pts[s.name] += s.jScores.reduce((a, b) => a + b, 0);
         scoreSteps++;
       }
 
       const order = [...d.running].sort((a, b) => pts[b] - pts[a] || a.localeCompare(b));
       const max = Math.max(1, ...Object.values(pts));
       const done = upToIdx >= d.totalSteps - 2;
-      const justName = scoreSteps > 0 ? d.steps[Math.min(scoreSteps - 1, d.steps.length - 1)]?.name : null;
+      const justName = scoreSteps > 0 ? d.steps[scoreSteps - 1]?.name : null;
 
       const rows = new Map([...document.querySelectorAll('.ball-row')]
         .map(el => [el.getAttribute('data-q'), el]));
@@ -1055,7 +1115,7 @@ function _derivePaddleScores(lookScore, numJudges, name, lookIdx) {
   return scores;
 }
 
-function _ballSidebarPanel(running, cumPts, ep, stepNum, isFinal = false) {
+function _ballSidebarPanel(running, cumPts, ep, isFinal = false) {
   const sorted = [...running]
     .map(n => ({ n, p: cumPts[n] || 0 }))
     .sort((a, b) => b.p - a.p);

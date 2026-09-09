@@ -254,6 +254,18 @@ const _isCastleRow = ep => !!ep && ep.format === 'traitors';
 // fields that are not there; it gets its own card.
 const _isStageRow = ep => !!ep && ep.format === 'drag-race';
 
+/* And the SEASON-level question, the counterpart of `isTraitorsSeason()`. Asked
+   by the live timeline refresh, which is allowed to redraw only for a show
+   whose `buildEpisodeMap` branch reports real nights rather than a projection.
+   Reads `seasonFormat` for the same reason that function exists: the format
+   lives in more than one shape on the config. */
+function _isDragSeason() {
+  try {
+    return (typeof seasonFormat === 'function'
+      ? seasonFormat(seasonConfig) : seasonConfig && seasonConfig.format) === 'drag-race';
+  } catch { return false; }
+}
+
 export function getEpisodeEliminations(ep) {
   if (!ep) return [];
   if (ep.multiTribalElims?.length) return [...new Set(ep.multiTribalElims.filter(Boolean))];
@@ -676,9 +688,18 @@ export function renderRunTab() {
   // and over, looking like a live figure. A projection presented as live is
   // worse than a projection left alone.
   //
-  // So the refresh is limited to the show it works for. The other two get the
-  // timeline they always had: drawn on the setup screen and on twist edits.
-  if (isTraitorsSeason()) {
+  // So the refresh is limited to the shows it works for. Total Drama and Big
+  // Brother get the timeline they always had: drawn on the setup screen and on
+  // twist edits.
+  //
+  // DRAG RACE JOINS THE CASTLE. Its branch in `buildEpisodeMap` reads the real
+  // nights off `episodeHistory` now rather than projecting from the cast size,
+  // so redrawing it reports what happened instead of repeating a guess — which
+  // is the whole condition this comment sets. It matters most on exactly the
+  // call the projection cannot see: a double shantay sends nobody home, the
+  // season runs a week longer, and the timeline used to sit one episode short
+  // for the rest of the run.
+  if (isTraitorsSeason() || _isDragSeason()) {
     try { renderTimeline(); } catch (e) { /* timeline is optional chrome */ }
   }
 }
@@ -2320,9 +2341,51 @@ export function buildEpisodeMap() {
     const smackdown = booked.some(t => t.type === 'dr-smackdown' || t.id === 'dr-smackdown')
       || !!seasonConfig.drSmackdown;
 
+    /* ── ONCE PLAYED, READ THE REAL NIGHT, NOT A GUESS ──────────────────
+       Same gap the castle had, and the same fix. The projection below counts
+       one elimination a week and knows only what was SCHEDULED — so a call
+       the panel makes on the night is invisible to it. A double shantay sends
+       nobody home and the season runs a week LONGER; the timeline kept
+       drawing the projected length and came up exactly one episode short,
+       every time, for the rest of the season. A double sashay does the same
+       in reverse.
+       These are rolled, not booked, which is precisely why the map cannot
+       predict them and must not try. Once a night exists it carries what it
+       actually did — `exits` is who it really removed — so the timeline
+       reports that and projects only the weeks still to come. */
+    const _drRows = (gs && gs.episodeHistory || [])
+      .filter(r => r && r.num != null && (r.dr || r.format === 'drag-race'))
+      .sort((a, b) => a.num - b.num);
+
     const eps = [];
     let active = Math.max(finale, players.length || 12);
     let ep = 1;
+
+    for (const r of _drRows) {
+      const gone = (r.exits || []).length;
+      eps.push({
+        ep: r.num,
+        active,
+        phase: r.dr && r.dr.finale ? 'finale' : 'main',
+        /* WHAT THE NIGHT WAS, from the night. A booked twist still names the
+           week, but a call the host made on the stage names it too — a week
+           the timeline shows as ordinary while the season grew by one is the
+           thing that made this hard to see. */
+        engineType: (r.dr && r.dr.lipsync && r.dr.lipsync.call === 'double-shantay')
+          ? 'dr-double-shantay'
+          : (r.dr && r.dr.lipsync && r.dr.lipsync.call === 'double-sashay')
+            ? 'dr-double-sashay'
+            : (free.has(r.num) ? 'dr-no-elimination'
+              : dbl.has(r.num) ? 'dr-double-elimination'
+                : back.has(r.num) ? 'dr-returnee' : null),
+      });
+      if (back.has(r.num)) active += 1;
+      active = Math.max(finale, active - gone);
+      ep = r.num + 1;
+    }
+    // A finished season has nothing left to project.
+    if (_drRows.length && active <= finale
+      && _drRows.some(r => r.dr && r.dr.finale)) return eps;
     // A guard, not a rule: the loop below always shrinks unless the week is
     // free, and a season cannot book more free weeks than it has episodes.
     while (active > finale && ep < 60) {

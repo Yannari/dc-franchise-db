@@ -402,6 +402,15 @@ export default {
         return json(await lifeEventsSave(env, body), 200, cors);
       }
 
+      if (request.method === 'POST' && url.pathname === '/api/season-ratings') {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        const body = await request.json().catch(() => ({}));
+        return json(await seasonRatingsSave(env, body), 200, cors);
+      }
+
       if (request.method === 'POST' && url.pathname.startsWith('/api/roster')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
@@ -1981,6 +1990,66 @@ async function lifeEventsSave(env, payload = {}) {
 async function getJson(env, path, fallback) {
   const f = await getFile(env, path);
   return f ? decodeJson(f.content) : fallback;
+}
+
+const SEASONS_DB = 'seasons_database.json';
+
+/**
+ * Merge TV ratings into seasons_database.json.
+ *
+ * A PORT OF serve.py's `write_season_ratings`. It existed on localhost only,
+ * which meant the seasons page's rating badge could be written from a laptop
+ * and never from the live site — the same one-runtime-only hole that lost the
+ * portrait catalog. tests/studio-backend-parity.test.js now fails if either
+ * server grows a write endpoint the other lacks.
+ *
+ * MERGED, never rewritten. Only the `ratings` key of a matched season is
+ * touched; every other field and every unmatched season is left exactly as it
+ * was. A backfill that rewrote the file would silently drop any season whose
+ * save the browser happened not to have — which is the roster publish's old
+ * bug wearing a different hat.
+ */
+async function seasonRatingsSave(env, payload = {}) {
+  const ratings = payload.ratings;
+  if (!ratings || typeof ratings !== 'object' || Array.isArray(ratings)
+    || !Object.keys(ratings).length) {
+    throw new ValidationError('ratings must be a non-empty object keyed by seasonId');
+  }
+  for (const [key, r] of Object.entries(ratings)) {
+    if (!r || typeof r !== 'object') throw new ValidationError(`ratings[${key}] is not an object`);
+    if (typeof r.score !== 'number' || !Number.isFinite(r.score)) {
+      throw new ValidationError(`ratings[${key}] has no numeric score`);
+    }
+    if (!r.tier || typeof r.tier !== 'object' || !r.tier.label) {
+      throw new ValidationError(`ratings[${key}] has no tier label`);
+    }
+  }
+
+  const file = await getFile(env, SEASONS_DB);
+  if (!file) throw new ValidationError('seasons_database.json not found');
+  const doc = decodeJson(file.content);
+  if (!Array.isArray(doc.seasons)) throw new ValidationError('seasons_database.json has no seasons list');
+
+  const matched = [], unmatched = [];
+  for (const [key, r] of Object.entries(ratings)) {
+    /* By seasonId where there is one. A bare integer is Total Drama,
+       permanently, so a legacy row with no seasonId matches td-N. */
+    const hit = doc.seasons.find(row => (row.seasonId || `td-${row.seasonNumber}`) === key);
+    if (!hit) { unmatched.push(key); continue; }
+    hit.ratings = r;
+    matched.push(key);
+  }
+
+  if (matched.length) {
+    await putFile(env, SEASONS_DB, encodeJson(doc),
+      `studio: season ratings (${matched.length})`, file.sha);
+  }
+  return {
+    ok: true,
+    wrote: matched.length ? [SEASONS_DB] : [],
+    rated: matched.sort(),
+    unmatched: unmatched.sort(),
+  };
 }
 
 const PORTRAIT_CATALOG = `${AVATAR_DIR}/portrait-catalog.json`;

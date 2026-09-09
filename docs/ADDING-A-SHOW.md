@@ -378,24 +378,37 @@ That last one is the quiet trap: an appearance with no `format` is Total Drama,
 so if your export forgets to stamp it, a racer joins the Total Drama career of
 whoever shares their slug.
 
-### 8.1 A per-show player field has six links, and five of them will look fine
+### 8.1 A per-show player field has NINE links, and eight of them look fine
 
 Your show will want player data the other shows do not have. Drag Race has
 `drag` — seven craft numbers, a style, traits and a persona voice. Big Brother
 will want aptitudes. Every one of these has to survive the same chain, and it
-is longer than it looks:
+is much longer than it looks. Nine links, and the field is invisible if any one
+of them is missing:
 
-| # | Link | How it fails |
-|---|---|---|
-| 1 | The **D1 column** (`worker/*_migration.sql`) | written, never applied |
-| 2 | The **worker** reads and writes it (`ROSTER_FIELDS`, the INSERT, the row reader) | written, never **deployed** |
-| 3 | The **client sends it** (`_rosterPush`) | a `_hasDrag`-style gate says there is nothing to send |
-| 4 | The **offline draft keeps it** (IndexedDB `characters`) | the rich record lists fields by hand and yours is not on it |
-| 5 | The **pull does not delete it** (`_rosterPull`) | the local roster is replaced wholesale by a server copy that lacks the field |
-| 6 | The **publish carries it** into `franchise_roster.json` | the file is regenerated from D1 and drops what D1 does not have |
+| # | Link | Where | How it fails |
+|---|---|---|---|
+| 1 | The **D1 column** | `worker/*_migration.sql` | written, never applied |
+| 2 | The **worker** reads and writes it | `ROSTER_FIELDS`, the INSERT, the row reader | written, never **deployed** |
+| 2b | The **local server** does the same | `serve.py` `ROSTER_FIELDS` | the OTHER writer, and it is a separate implementation |
+| 3 | The **client sends it** | `_rosterPush` | a `_hasDrag`-style gate says there is nothing to send |
+| 4 | The **offline draft keeps it** | IndexedDB `characters` | the rich record lists fields by hand and yours is not on it |
+| 5 | The **pull does not delete it** | `_rosterPull` | the local roster is replaced wholesale by a server copy that lacks the field |
+| 6 | The **publish carries it** | `franchise_roster.json` | the file is regenerated from D1 and drops what D1 does not have |
+| 7 | The **roster allowlist knows it** | `tests/roster-bio-fields.test.js` | a correct publish is reported as a stray key |
+| 8 | The **browser cache merges it** | `js/run-ui.js` | a stale local row replaces the fresh published one WHOLE |
+| 9 | The **cast is not a stale copy** | `localStorage['simulator_cast']` | a cast record is a SNAPSHOT of the roster row, taken the day it was added |
 
-Drag Race shipped with 1, 2, 3 and 6 correct and **4 and 5 wrong**, and the
-worker at 2 was committed but never deployed. The result: an author set craft
+**Link 9 is the one that will waste your afternoon.** The other eight are about
+the roster; this one is about the fact that nothing reads the roster at run
+time. `players` is a copy, taken once, and the engine and the cast builder both
+read the copy. A cast assembled before your field existed carries none of it,
+and the roster can be perfect — published, live, verified with `curl` — while
+every screen still shows the default. Backfill it from the roster on load,
+where the cast has nothing, and let anything edited on the cast form win.
+
+Drag Race shipped with 1, 3 and 6 correct and **4, 5, 7, 8 and 9 wrong**, and
+the worker at 2 was committed but never deployed. The result: an author set craft
 on a dozen queens, the Studio showed it, and every value was silently gone by
 the next page load. Nothing errored. No screen said anything. The engine then
 scored a whole season on seven flat fives, which is why every lip sync in that
@@ -417,6 +430,22 @@ persist(fromServer.map(p => {
 
 This is the same failure as the roster publish that ate researched demographics
 twice. One defence, in the one place both paths go through.
+
+**THERE ARE TWO SERVERS AND THEY ARE DIFFERENT PROGRAMS.** `serve.py` is a
+Python process on a laptop writing straight into the working tree; the worker
+is Cloudflare's, serving a static site and writing through the GitHub Contents
+API. Same endpoints, same payloads, two implementations — and that is exactly
+how one of them went months without portrait support while the other had it.
+The failure mode is specific and quiet: the client posts a field, the runtime
+that does not implement it ignores it and still answers `ok: true`, so the UI
+reports success and the author finds out weeks later. **Anything you add to one
+must be added to the other in the same change, and a source guard should assert
+both.** `tests/dr-studio-drag.test.js` and `tests/studio-portraits.test.js`
+both read `serve.py` and `worker/worker-studio.js` for exactly this reason.
+
+The honest fix is to have one implementation — retire `serve.py`'s write
+endpoints and point localhost at the worker. Until somebody does that, assume
+the two have drifted and check.
 
 **And verify the round trip with the API, not the UI.** The Studio showed the
 craft correctly the entire time it was being thrown away, because it was
@@ -847,6 +876,45 @@ Two mistakes that compounded into a data loss, both worth knowing on sight.
    uploads through an import endpoint that OAuth tokens are often refused on;
    `--command` uses the ordinary query path and works, which is also the faster
    way to ask a one-line question like this one.
+
+### L. Guards that were never running at all
+
+Section J covers tests that pass against the bug. These are worse: tests that
+never executed, and read as somebody else's problem.
+
+1. **A source guard that reads the wrong tree.** Several read their targets
+   with a bare relative path — `readFileSync('js/studio.js')` — which node
+   resolves against the process's working directory. Run from a git WORKTREE
+   that is the MAIN checkout, so the guard opened a different copy of the file
+   than the branch had changed: it passed for code that was not there and
+   failed for code that was, and neither result said which file it had opened.
+   Anchor to the test's own directory:
+
+   ```js
+   const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+   const read = rel => readFileSync(join(ROOT, rel), 'utf8');
+   ```
+
+2. **A shebang stops a whole suite from loading.** `tools/gen-avatar-manifest.mjs`
+   opened with `#!/usr/bin/env node`. Vitest injects its own imports at the top
+   of an imported ESM module, landing them ABOVE the `#!`, which is a parse
+   error — so `tests/portrait-catalog.test.js` failed to COLLECT and its whole
+   suite reported as one red file that looked unrelated to anything. It had
+   never run. When it finally did it caught real drift on the first attempt:
+   `available-files.json` listed 251 files against 266 on disk, so fifteen
+   avatars would have drawn as "Missing file". A module a test imports must not
+   have a shebang; invoke it as `node tools/...` where you need it as a script.
+
+3. **An allowlist that was never told about the new field.** The roster guard
+   enumerates permitted keys, so the day `drag` first reached the published
+   roster — correctly, after the whole write path was finally whole — it
+   reported the fix as a defect. Every allowlist in this repo has this
+   property. When you add a field, grep the tests for its neighbours.
+
+**A red suite is not evidence that a guard ran.** Check the test COUNT, not the
+colour: a file that fails to collect contributes zero passing tests and it is
+easy to read the failure as environmental and move on. That is what happened
+here for however long the shebang had been there.
 
 ### What a third show inherits from this work
 

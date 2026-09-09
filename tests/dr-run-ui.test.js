@@ -137,7 +137,24 @@ describe('the season timeline', () => {
     });
     Object.assign(core.seasonConfig, {
       format: 'drag-race', drFinale: 'top4', seasonNumber: 1,
-      twistSchedule: [], drSmackdown: false, drSchedule: [], ...config,
+      twistSchedule: [], drSmackdown: false, drSchedule: [],
+      /* ── THE LENGTH MODIFIERS THE TIMELINE CANNOT SEE COMING ──
+         This test asserts that `buildEpisodeMap()` predicts exactly the season
+         the engine plays, and the engine has three ways to change its own
+         length AFTER the map is drawn: a double shantay sends nobody home and
+         adds an episode, a double sashay takes two and removes one, a triple
+         can do either. All three are decided on the night, by the panel, from
+         the raw lip sync — the map cannot know, and it is not supposed to.
+
+         `drDoubleShantay` DEFAULTS ON, so the season was stochastic while the
+         prediction was fixed, and the test passed on the luck of the rng: it
+         failed run alone and passed run beside another file, which is the
+         signature of a guard measuring something it did not mean to. Turned
+         off so this measures the one thing it claims — that the schedule and
+         the map agree. A case that wants a length modifier books it in
+         `config`, where the map is told about it too. */
+      drDoubleShantay: false, drDoubleSashay: false, drTripleLipsync: false,
+      ...config,
     });
     globalThis.seasonConfig = core.seasonConfig;
     globalThis.seasonFormat = core.seasonFormat;

@@ -5458,8 +5458,12 @@
         "runway": 6,
         "lipsync": 4,
         "singing": 5,
-        "style": "",
-        "traits": [],
+        "style": "art",
+        "traits": [
+          "high-concept",
+          "look-queen",
+          "crafty"
+        ],
         "voice": "",
         "family": []
       }

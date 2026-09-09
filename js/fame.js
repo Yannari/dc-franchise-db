@@ -251,6 +251,26 @@ const MULTI_SHOW_CAP = 16;
 const RECORD_POINTS = 6;
 const RECORD_CAP = 12;
 const LOCK_SCORE = 95;
+
+/* ── BEING ON SCREEN WITHOUT COMPETING ──
+   A guest judge is on the show. The audience sees her, the edit introduces her
+   by what she won, and on the real show judging is a large part of how alumni
+   stay relevant — which is exactly what this module measures.
+
+   PER SEASON JUDGED, NOT PER EPISODE: seven appearances in one season is one
+   story, not seven. At 2 points a season it is a nudge — a pre-jury season is
+   worth about 7 — and the cap is the load-bearing half of it. This is the ONLY
+   term in the model with a feedback loop: fame gets you invited, and being
+   invited raises fame. Nothing else here can amplify itself. Capped at 8, a
+   whole career of judging carries somebody from `Recognised` to `Cult
+   Following` and can never manufacture a `Star`, so the loop is a nudge rather
+   than a spiral.
+
+   1.5 stars is 20 points and is also the bar the Drag Race guest picker draws
+   at, so judging CAN eventually make a borderline alumnus eligible herself.
+   That is intended: it is how the show actually works. */
+const JUDGE_POINTS = 2;
+const JUDGE_CAP = 8;
 const LOCK_MIN_SEASONS = 2;
 
 /**
@@ -307,6 +327,12 @@ export function computeFame({ players, rankings, seasons, franchise } = {}) {
     let locked = false;
     let seasonsPlayed = 0;
     let bonusPaid = 0;
+    let judgePaid = 0;
+    /* `judged` is a SEPARATE list from `seasonDetails` on purpose: she was not
+       a contestant, and putting a judging credit in the placements would leak
+       her into cast lists, placement averages, the alumni pool and the
+       returnee picker as somebody who played. */
+    const judgedSeasons = new Set((p.judged || []).map(detailKey));
     const shows = [];
     const timeline = [];
     // Records reflect a finished career, so they land on the last appearance.
@@ -316,6 +342,17 @@ export function computeFame({ players, rankings, seasons, franchise } = {}) {
       const detail = mine.get(season.seasonId);
 
       if (!detail) {
+        /* SHE JUDGED IT. On screen, so this season is not one she was away
+           for — she gains instead of fading. Checked before the lock so a
+           locked career still records the appearance on its timeline, which
+           is what the profile reads to say where somebody has been. */
+        if (judgedSeasons.has(season.seasonId)) {
+          const delta = Math.min(JUDGE_POINTS, Math.max(0, JUDGE_CAP - judgePaid));
+          judgePaid += delta;
+          if (!locked) score += delta;
+          timeline.push({ seasonId: season.seasonId, event: 'judged', delta, score });
+          continue;
+        }
         if (locked) continue;
         const delta = score * DECAY_FACTOR - score;      // negative, never past 0
         if (delta) {
@@ -363,7 +400,10 @@ export function computeFame({ players, rankings, seasons, franchise } = {}) {
     if (stars === 5 && seasonsPlayed < LOCK_MIN_SEASONS) stars = 4.5;
 
     out.set(p.id, { stars, score: Math.round(score * 100) / 100,
-      locked, seasonsPlayed, shows, timeline });
+      locked, seasonsPlayed, shows, timeline,
+      // Reported so a profile can say "judged three seasons" without walking
+      // the timeline, and so a guard can tell the term fired.
+      seasonsJudged: judgedSeasons.size });
   }
   return out;
 }

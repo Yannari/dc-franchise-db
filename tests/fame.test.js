@@ -397,3 +397,60 @@ describe('naming each rung of the ladder', () => {
     expect(renderStars({ ...base, stars: 1.5, locked: false })).toMatch(/1\.5 stars/);
   });
 });
+
+describe('judging a season you did not play', () => {
+  /* A guest judge is on the show. The audience sees her, the edit introduces
+     her by what she won, and on the real show judging is a large part of how
+     alumni stay relevant — which is what this module measures. It was worth
+     nothing: the episode recorded her, the season document kept her, and no
+     player record ever gained anything, so somebody could guest on every
+     season ever made and be no more famous for it. */
+  const judging = (id, played, judged) => ({
+    id, name: id, seasonDetails: played, judged,
+  });
+  const judgedTd = n => ({ format: 'total-drama', season: n, seasonId: `td-${n}`, episodes: 8 });
+
+  it('pays her instead of fading her', () => {
+    const dbs = { players: { players: [
+      judging('judge', [td(1, 'Jury')], [judgedTd(2), judgedTd(3)]),
+      judging('absent', [td(1, 'Jury')], []),
+    ] }, rankings: {}, seasons: franchiseOf() };
+    const all = computeFame(dbs);
+    expect(all.get('judge').score,
+      'judging a season is worth no more than sitting at home')
+      .toBeGreaterThan(all.get('absent').score);
+    expect(all.get('judge').seasonsJudged).toBe(2);
+    expect(all.get('judge').timeline.some(t => t.event === 'judged')).toBe(true);
+  });
+
+  it('never lets her judge her way to a career', () => {
+    /* THE ONE TERM IN THIS MODEL WITH A FEEDBACK LOOP: fame gets you invited,
+       and being invited raises fame. Nothing else here can amplify itself, so
+       the cap is not tuning — it is what stops a spiral. Judging every season
+       of the franchise must stay worth less than a couple of real ones. */
+    const everySeason = Array.from({ length: 14 }, (_, i) => judgedTd(i + 2));
+    const dbs = { players: { players: [
+      judging('lifer', [td(1, 'Pre-jury')], everySeason),
+      judging('player', [td(1, 'Pre-jury'), td(2, 'Jury'), td(3, 'Finalist')], []),
+    ] }, rankings: {}, seasons: franchiseOf() };
+    const all = computeFame(dbs);
+    expect(all.get('lifer').score - 7,
+      'the judging cap does not bind — a career of guest spots is unbounded')
+      .toBeLessThanOrEqual(9);
+    expect(all.get('lifer').score,
+      'judging fourteen seasons beat actually competing in three')
+      .toBeLessThan(all.get('player').score);
+  });
+
+  it('is not an appearance: it never counts as a season played', () => {
+    /* `judged` is its own list precisely so she cannot leak into cast lists,
+       placement averages, the alumni pool or the returnee picker as somebody
+       who played the season. */
+    const dbs = { players: { players: [
+      judging('guest', [td(1, 'Jury')], [judgedTd(2), judgedTd(3), judgedTd(4)]),
+    ] }, rankings: {}, seasons: franchiseOf() };
+    const r = computeFame(dbs).get('guest');
+    expect(r.seasonsPlayed, 'a judging credit was counted as a season played').toBe(1);
+    expect(r.shows, 'judging added a show she never competed on').toEqual(['total-drama']);
+  });
+});

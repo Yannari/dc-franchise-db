@@ -149,13 +149,32 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
     return a.seasonName ? `from ${a.seasonName}` : '';
   };
 
+  /* ── A NEW FACE BEFORE A FAMILIAR ONE ──
+     The bag below stops anybody appearing twice in one season. This stops the
+     same names appearing every season: a queen who has judged four times is
+     weighted a fifth as heavily as one who never has, so the show reaches for
+     somebody it has not used yet and a serial judge becomes an exception
+     rather than a fixture. Never zero — a favourite can come back, she just
+     has to win the draw against fresher faces. */
+  const guestWeight = a => 1 / (1 + (Number(a.timesJudged) || 0));
+  const pickWeighted = bag => {
+    const total = bag.reduce((t, a) => t + guestWeight(a), 0);
+    if (!total) return Math.floor(rng() * bag.length);
+    let roll = rng() * total;
+    for (let i = 0; i < bag.length; i++) {
+      roll -= guestWeight(bag[i]);
+      if (roll <= 0) return i;
+    }
+    return bag.length - 1;
+  };
+
   const guestBag = famous.slice();
   const drawGuest = () => {
     if (!guestBag.length) {
       if (!famous.length) return null;
       guestBag.push(...famous);          // a long season may go round twice
     }
-    const a = guestBag.splice(Math.floor(rng() * guestBag.length), 1)[0];
+    const a = guestBag.splice(pickWeighted(guestBag), 1)[0];
     if (!a) return null;
     const r = rosterOf(a.name);
     return {

@@ -2524,6 +2524,37 @@ export function mergeDragSeason(existing, seasonDoc) {
     }
   }
 
+  /* ── AND THE PEOPLE WHO JUDGED IT ──
+     A guest judge is on the show without competing, and js/fame.js scores that:
+     the audience sees her, the edit introduces her by what she won, and on the
+     real show judging is a large part of how alumni stay relevant.
+
+     `judged` IS ITS OWN LIST, never a `seasonDetails` entry. She had no
+     placement and was not in the cast, so a judging credit filed as an
+     appearance would leak her into cast lists, placement averages, the alumni
+     pool and the returnee picker as somebody who played the season. One
+     entry per SEASON however many episodes she sat on — seven appearances is
+     one story, not seven — and only for a judge the roster already knows,
+     because a guest is drawn from the franchise and an unknown slug here would
+     invent a player nobody cast.
+
+     Idempotent: re-exporting a season must not stack credits, which is the
+     same rule `seasonDetails` follows two hundred lines up. */
+  const judgedBy = new Map();
+  for (const ep of seasonDoc.dr?.episodes || []) {
+    const g = ep && ep.guest;
+    const slug = g && (g.playerSlug || _slug(g.name || ''));
+    if (!slug) continue;
+    judgedBy.set(slug, (judgedBy.get(slug) || 0) + 1);
+  }
+  for (const [slug, episodes] of judgedBy) {
+    const judge = db.players.find(x => x.id === slug);
+    if (!judge) continue;                       // not a franchise player, no credit
+    judge.judged = (judge.judged || [])
+      .filter(j => !(j && j.format === DRAG_FORMAT && Number(j.season) === seasonNum));
+    judge.judged.push({ format: DRAG_FORMAT, season: seasonNum, episodes });
+  }
+
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;

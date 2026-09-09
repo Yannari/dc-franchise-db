@@ -114,6 +114,43 @@ describe('the guest judge', () => {
     }
   });
 
+  it('reaches for a face it has not used before', () => {
+    /* The bag stops anybody appearing twice in ONE season. This is the other
+       half: across seasons, a queen who has judged before is weighted down, so
+       the show does not hand the same favour to the same person every year.
+       Never zero — a favourite can come back, she just has to win the draw
+       against fresher faces. */
+    const db = read('players_database.json');
+    const veterans = ['duncan', 'alejandro', 'cameron'];
+    for (const p of db.players) {
+      if (veterans.includes(p.id)) {
+        p.judged = Array.from({ length: 5 },
+          (_, i) => ({ format: 'drag-race', season: i + 1, episodes: 8 }));
+      }
+    }
+    setAlumniDatabase(db);
+    try {
+      const seen = {};
+      for (let seed = 1; seed <= 30; seed++) {
+        const out = playDragSeason({ cast, seed, bond: () => 0, addBond: () => {} });
+        for (const row of out.rows) {
+          const g = row.dr && row.dr.guest;
+          if (g) seen[g.slug] = (seen[g.slug] || 0) + 1;
+        }
+      }
+      const total = Object.values(seen).reduce((a, b) => a + b, 0);
+      const vetShare = veterans.reduce((t, v) => t + (seen[v] || 0), 0) / total;
+      const fresh = Object.entries(seen)
+        .filter(([id]) => !veterans.includes(id))
+        .sort((a, b) => b[1] - a[1])[0];
+      expect(total, 'no guests were booked at all').toBeGreaterThan(20);
+      expect(vetShare, 'a queen who has judged five times is booked as often as a new face')
+        .toBeLessThan((fresh[1] / total) * 3);
+    } finally {
+      setAlumniDatabase(read('players_database.json'));   // leave the pool as we found it
+    }
+  });
+
   it('is introduced with a credit the ledger can prove', () => {
     /* The credit is the ONE claim the host may make about her past, so it has
        to name the season the placement actually happened in. The first version

@@ -150,6 +150,12 @@ export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) 
       /* Null when nobody has called `setFameContext` — "we cannot say" rather
          than "not famous", so a caller can tell the two apart. */
       fameStars: fameStarsOf(p.id),
+      /* How often she has already judged. A guest booking is a favour the show
+         hands out, and handing it to the same face every season is how a
+         rotation stops being one — so a caller can weight against a repeat.
+         Counted across every show, because being on television recently is
+         the fact that matters, not which set it was. */
+      timesJudged: Array.isArray(p.judged) ? p.judged.length : 0,
     });
   }
   if (!format) return all;

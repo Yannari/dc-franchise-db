@@ -5315,7 +5315,25 @@
       "occupation": "Makeup Artist and Pageant Competitor",
       "descriptor": "The Eager Pageant Princess",
       "backstory": "Anita is a fresh, bright-eyed addition to the legendary Davenport drag dynasty. While she idolizes the seasoned matriarchs of her house, she is still finding her own footing in the drag world. She spends most of her time enthusiastically competing in local pageants—frequently landing First Alternate—because she focuses more on giving the judges exactly what she thinks they want rather than showing any vulnerability. She is polished, incredibly determined, and desperate for validation and a crown of her own.",
-      "personality": "Bubbly, overly rehearsed, and a massive people-pleaser. She treats every casual conversation in the Werk Room like an interview question, constantly maintaining perfect posture and an unwavering, bright smile. She wants everyone to like her and can be a bit naive, often missing the shade thrown her way because she takes everything at face value and tries to turn it into a positive affirmation."
+      "personality": "Bubbly, overly rehearsed, and a massive people-pleaser. She treats every casual conversation in the Werk Room like an interview question, constantly maintaining perfect posture and an unwavering, bright smile. She wants everyone to like her and can be a bit naive, often missing the shade thrown her way because she takes everything at face value and tries to turn it into a positive affirmation.",
+      "voice": "Aggressively polite and rehearsed. She speaks like she is constantly delivering a Miss America Q&A answer, keeping her tone uplifting, diplomatic, and sprinkling in \"thank you so much!\" at every opportunity, even during critiques.",
+      "drag": {
+        "acting": 4,
+        "comedy": 3,
+        "dance": 5,
+        "design": 4,
+        "runway": 6,
+        "lipsync": 6,
+        "singing": 7,
+        "style": "glamour",
+        "traits": [
+          "big-wigs",
+          "hometown-pageant",
+          "live-vocalist"
+        ],
+        "voice": "Aggressively polite and rehearsed. She speaks like she is constantly delivering a Miss America Q&A answer, keeping her tone uplifting, diplomatic, and sprinkling in \"thank you so much!\" at every opportunity, even during critiques.",
+        "family": []
+      }
     },
     {
       "name": "Autumnatic",

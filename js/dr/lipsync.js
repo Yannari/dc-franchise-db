@@ -56,33 +56,53 @@ const GENRE_FIT = 0.4;
    to keep being in the bottom. */
 export const CONFIDENCE_CAP = 0.4;
 
-/* The bars the doubles have to clear. High enough that neither is a coin flip:
-   measured over a season these should be rare events, not a weekly outcome.
+/* The bars the doubles have to clear.
 
-   GREAT WAS 8.5, WHICH MEANT NEVER. Measured across 2,679 head-to-heads on a
-   flat-craft cast: not one double shantay, because the score distribution runs
-   p10 2.7 / median 4.9 / p90 7.2 and 8.5 sits above the top decile — needing
-   BOTH queens there, and within 0.6 of each other, put the event outside the
-   range the engine can produce. It was not rare, it was unreachable, which is
-   a different thing and worth saying out loud: a rule nobody can trigger reads
-   in the code exactly like a rule that is merely strict.
+   CALIBRATED AGAINST THE SHOW, not against taste. Counting only the
+   PERFORMANCE-based double shantays — excluding the two that were really
+   bureaucracy, S4 after Willam's disqualification and S9 after Eureka's
+   injury — the US main series has had seven across seventeen seasons:
 
-   At 7.5 both queens have to be top-decile and level, which is the thing the
-   call is supposed to mean. Measured over 300 seasons per population:
+     S3  Carmen Carrera & Yara Sofia          S10 Eureka & Kameron Michaels
+     S5  Roxxxy Andrews & Alyssa Edwards      S10 Aquaria & Eureka
+     S6  Darienne Lake & BenDeLaCreme         S11 Yvie Oddly & Brooke Lynn Hytes
+     S17 Jewels Sparkles & Onya Nurve
 
-     threshold   flat cast   authored cast
-     8.5         0.00%       0.19%
-     8.0         0.04%       0.48%
-     7.5         0.45%       1.42%     <- here
-     7.0         1.16%       2.87%
+   Six seasons of seventeen have one, and across ~190 lip syncs that is about
+   3.7% of them. It is an exception, but a FAR more common exception than it
+   feels like from memory, which is why this was set by measurement in the end
+   and not by instinct.
 
-   About one season in twenty-five on a flat cast and one in eight on a
-   crafted one. CLOSE stays at 0.6: "level" is what makes it a dead heat
-   rather than a good night, and widening it is how the exception becomes a
-   format. AWFUL is untouched — the double sashay is off unless a season asks
-   for it. */
-const GREAT = 7.5;
-const CLOSE = 0.6;
+   GREAT WAS 8.5, WHICH MEANT NEVER: it sat above the top decile of the score
+   distribution (p10 2.7, median 4.9, p90 7.2 flat), so both queens clearing
+   it AND landing within 0.6 was outside the range the engine can produce.
+   Measured: 0 in 2,679 head-to-heads. Not rare — unreachable, which reads in
+   the code exactly like a rule that is merely strict.
+
+   Measured over 300 seasons per population, against the show's 3.7%/35%:
+
+     G/C          flat cast              authored cast
+     7.5 / 0.6    0.45%,  4% of seasons  1.44%, 12%
+     7.0 / 0.6    1.15%, 10%             2.99%, 24%
+     7.0 / 0.9    1.45%, 12%             4.13%, 31%   <- here
+     6.5 / 0.6    2.56%, 20%             5.01%, 36%
+     6.5 / 0.9    3.12%, 24%             6.75%, 45%
+
+   CLOSE widened rather than GREAT lowered again, and the choice matters. What
+   defines the call on the real show is that BOTH were outstanding and the
+   host cannot separate them; dropping GREAT to 6.5 would make "outstanding"
+   mean "a bit above median", which is the wrong sentence even at the right
+   rate. Keeping the excellence bar and admitting that a dead heat is not
+   measured to a tenth of a point gets the rate honestly.
+
+   The flat-craft column runs low, and that is correct rather than a miss: a
+   cast with no authored craft cannot produce two genuinely outstanding
+   performances on the same night, because nobody is outstanding at anything.
+   It rises on its own as queens are authored.
+
+   AWFUL is untouched — the double sashay is off unless a season asks. */
+const GREAT = 7.0;
+const CLOSE = 0.9;
 const AWFUL = 3.5;
 
 /**

@@ -51,6 +51,20 @@ export function judgeViews(panel, entries, memory = {}, rng = Math.random) {
            average away, which is the entire point, and it is what lets a
            queen the board has behind actually take a week. */
         + (e.form || 0)
+        /* ── WHAT THEY ALREADY KNOW ABOUT HER, WHICH IS NORMALLY NOTHING ──
+           A weekly panel judges the night. It does not get to say "but she
+           won two challenges" — the show has already paid her for those, and
+           letting a résumé into a weekly view would be the panel overruling
+           its own earlier judgement a second time.
+           A FINALE IS THE ONE NIGHT WHERE IT IS THE ACTUAL QUESTION. "Your
+           track record" is said out loud on that stage, and the finale used
+           to have no way to say it: the field was narrowed on a single
+           showcase with `runway` and `polish` hardcoded to 5, so the queen
+           with the best season was cut before the song a third of the time
+           and the résumé term in the crown duel only ever applied to the two
+           who had already survived her.
+           Defaults to 0, so every ordinary week is unchanged. */
+        + (e.resume || 0)
         + noise(rng, 1.0);
       return { name: e.name, view: Math.round(view * 100) / 100 };
     });

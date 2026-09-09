@@ -18,6 +18,15 @@ const mk = seed => { const g = rngFor(seed); const r = () => 1 + Math.floor(g() 
 
 for (const type of ['top4', 'top3', 'top2', 'perform-then-lipsync']) {
   let zeroWins = 0, bestResume = 0, bestShowcase = 0, n = 0, fieldSize = 0;
+  /* ── AND WHETHER SHE EVEN GOT TO SING ──
+     This audit asked whether the CROWN reads the season and never asked
+     whether the CUT does, and the cut was where it failed: on
+     perform-then-lipsync the field was narrowed on the showcase alone, so
+     the queen with the best season was sent to the back before the résumé
+     term in the crown duel could ever apply to her. A number for "does the
+     best résumé win" cannot see that, because by then she is not in the
+     duel. Chance here is the share of the field that gets cut. */
+  let cutBest = 0, cutFields = 0, cutSize = 0;
   const winnerWins = [];
   for (let s = 0; s < RUNS; s++) {
     const out = playDragSeason({ cast: mk(400 + s), seed: s, config: { drFinale: type } });
@@ -32,6 +41,13 @@ for (const type of ['top4', 'top3', 'top2', 'perform-then-lipsync']) {
     const sh = out.state.finalePerformance || {};
     const bs = [...field].sort((x, y) => (sh[y] || 0) - (sh[x] || 0))[0];
     if (bs === out.winner) bestShowcase++;
+    // Everybody below the last duel's two never sang.
+    const cut = f.finale.cut || field.slice(2);
+    if (cut.length && field.length > cut.length) {
+      cutFields++;
+      cutSize += cut.length / field.length;
+      if (cut.includes(top)) cutBest++;
+    }
     fieldSize += field.length;
     n++;
   }
@@ -44,4 +60,13 @@ for (const type of ['top4', 'top3', 'top2', 'perform-then-lipsync']) {
   console.log(`${type.padEnd(21)} maxi wins ${mean.toFixed(2)} | zero-win ${pct(zeroWins)}`
     + ` | chance ${chance.toFixed(0)}% | resume ${pct(bestResume)} (${lead(bestResume)})`
     + ` | showcase ${pct(bestShowcase)} (${lead(bestShowcase)})`);
+  if (cutFields) {
+    // Below the cut-chance line is the whole point: it means the season is
+    // protecting her from the cut rather than the cut ignoring the season.
+    const cutChance = 100 * (cutSize / cutFields);
+    const got = 100 * cutBest / cutFields;
+    console.log(`${''.padEnd(21)} best résumé CUT before the song ${got.toFixed(0)}%`
+      + ` (chance ${cutChance.toFixed(0)}%, ${(got - cutChance >= 0 ? '+' : '')}`
+      + `${(got - cutChance).toFixed(0)}pp)`);
+  }
 }

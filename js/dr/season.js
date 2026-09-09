@@ -429,6 +429,10 @@ export function runSmackdown(state, cfg, ctx) {
   const field = [...(state.out || [])].filter(n => players[n]);
   if (field.length < 2) return null;
 
+  // Fatigue: each lip sync costs stamina, shared with the LaLaPaRuZa.
+  const FATIGUE_CURVE = [1.0, 0.88, 0.78, 0.65, 0.52];
+  const fatigue = n => FATIGUE_CURVE[Math.min(lipsyncCount[n] || 0, FATIGUE_CURVE.length - 1)];
+  const lipsyncCount = Object.fromEntries(field.map(n => [n, 0]));
   const wins = Object.fromEntries(field.map(n => [n, 0]));
   const duels = [];
   let alive = [...field].sort(() => rng() - 0.5);
@@ -443,15 +447,20 @@ export function runSmackdown(state, cfg, ctx) {
       const song = SONGS[Math.floor(rng() * SONGS.length)];
       const sa = lipsyncScore({ player: players[a], song, lipsyncRecord: state.lipsyncRecord?.[a] || [], rng });
       const sb = lipsyncScore({ player: players[b], song, lipsyncRecord: state.lipsyncRecord?.[b] || [], rng });
-      // No host bend here. Nothing is at stake but the title, and a bent
-      // result would be the one place an agenda could not possibly be excused.
+      const adjA = sa.score * fatigue(a);
+      const adjB = sb.score * fatigue(b);
       const call = lipsyncCall({
-        a: { name: a, score: sa.score }, b: { name: b, score: sb.score },
+        a: { name: a, score: adjA }, b: { name: b, score: adjB },
       });
       wins[call.winner]++;
+      lipsyncCount[a] = (lipsyncCount[a] || 0) + 1;
+      lipsyncCount[b] = (lipsyncCount[b] || 0) + 1;
       duels.push({
         round, a, b, song: song.title, artist: song.artist,
-        scores: { [a]: sa.score, [b]: sb.score }, winner: call.winner, loser: call.loser,
+        scores: { [a]: sa.score, [b]: sb.score },
+        fatigue: { [a]: fatigue(a), [b]: fatigue(b) },
+        adjusted: { [a]: Math.round(adjA * 100) / 100, [b]: Math.round(adjB * 100) / 100 },
+        winner: call.winner, loser: call.loser,
       });
       next.push(call.winner);
     }

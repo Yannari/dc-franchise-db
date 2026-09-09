@@ -38,6 +38,7 @@ import { _controls, _seedRail } from './reveal.js';
 import { maxiById } from '../dr/data/challenges.js';
 import { sceneCard, WERK_CSS } from './werk.js';
 import { characterById } from '../dr/data/snatch-characters.js';
+import { rpBuildTournament } from './smackdown.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -1344,6 +1345,7 @@ export const SKIN_IDS = Object.keys(SKIN);
 const ambientFor = id => `<div class="dr-set dr-set-${id}">${skinFor(id).props}</div>`;
 
 export function rpBuildMaxi(row) {
+  if (row?.dr?.tournament) return rpBuildTournament(row);
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
   const perfs = row?.dr?.performances || {};

@@ -254,7 +254,7 @@ export function runDragWeek(state, cfg, ctx) {
   const prep = M.prep;
   const performances = M.performances;
   const maxiEvents = M.events;
-  for (const sc of M.scenes) scenes.push({ ...sc, text: '' });
+  for (const sc of M.scenes) scenes.push(sc.text ? sc : { ...sc, text: '' });
 
   // 8–10. Elimination day, the panel, the runway.
   say('werk-elim-day', 'werk-elim-day', { living: [...living] });
@@ -616,12 +616,45 @@ export function runDragWeek(state, cfg, ctx) {
   const song = (cfg.songTitle && songById(cfg.songTitle)) || pick(rng, SONGS);
   let lipsync = null;
   const exits = [];
+
+  // ── TOURNAMENT EXIT (LaLaPaRuZa) ───────────────────────────────────
+  //
+  // The tournament bracket already decided who goes home — the two queens
+  // in sudden death were the BTM2 and the host's lean (track record)
+  // already influenced each duel outcome. No separate lip sync is needed.
+  if (M.tournamentExit) {
+    const te = M.tournamentExit;
+    if (te.eliminated && !cfg.noElimination) {
+      exits.push(te.eliminated);
+      state.lipsyncRecord[te.eliminated]?.push('L');
+    }
+    if (te.lastSurvivor) state.lipsyncRecord[te.lastSurvivor]?.push('W');
+    // Build a synthetic lipsync record for the final duel so the exit
+    // scene and the stage beats have something to render.
+    const finalDuel = te.duels.find(d => d.round === 3 && d.loser === te.eliminated);
+    if (finalDuel) {
+      lipsync = {
+        song: finalDuel.song, artist: finalDuel.artist || '',
+        tempo: null, mood: null, hook: null,
+        queens: [finalDuel.a, finalDuel.b],
+        scores: finalDuel.adjusted,
+        beats: {}, stunts: {},
+        call: 'tournament', winner: finalDuel.winner, loser: finalDuel.loser,
+        gap: Math.abs((finalDuel.adjusted[finalDuel.a] || 0) - (finalDuel.adjusted[finalDuel.b] || 0)),
+        tournament: true,
+      };
+      say('lipsync', 'lipsync', { lipsync });
+    }
+  }
+
   /* WHO SINGS. The bottom two on an ordinary night, and on a night the top
      two sing it is them — set above, where `call.bottom` is left empty
      because nobody is in the bottom on a night nobody can lose. */
   const singers = call.singers || call.bottom;
 
-  if (singers.length > 2) {
+  if (M.tournamentExit) {
+    // Tournament already handled exits above — skip the standard lip sync.
+  } else if (singers.length > 2) {
     // A triple. Everybody performs, the lowest goes home, and the call is
     // reported as a shantay for the two who survived it — the doubles are a
     // head-to-head judgement and do not apply to three.
@@ -1002,6 +1035,7 @@ export function runDragWeek(state, cfg, ctx) {
       call,
       reactions,
       lipsync,
+      ...(M.tournamentExit ? { tournament: M.tournamentExit } : {}),
       events: [...maxiEvents, ...werkEvents],
       werk: werkScenes.map(s2 => ({ id: s2.id, slot: s2.slot, players: s2.players, eligible: s2.eligible })),
       /* ── THE ROOM'S RELATIONSHIPS, WHICH NEVER LEFT THE CALLER ──

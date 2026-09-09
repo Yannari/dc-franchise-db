@@ -5444,8 +5444,8 @@
       "voice": "Loud, warm, theatrical, and shamelessly corny. She speaks quickly, laughs at her own jokes, uses food metaphors constantly, and becomes surprisingly sharp when another queen underestimates her.",
       "profileSources": {},
       "drag": {
-        "acting": 6,
-        "comedy": 8,
+        "acting": 4,
+        "comedy": 7,
         "dance": 2,
         "design": 6,
         "runway": 4,
@@ -5456,7 +5456,9 @@
           "live-vocalist",
           "wit",
           "camp-queen"
-        ]
+        ],
+        "voice": "",
+        "family": []
       },
       "age": 39,
       "birthdate": "1987-04-12",

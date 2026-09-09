@@ -47,6 +47,31 @@ describe('the choosing', () => {
     expect(picks.Ada.choice).toBe('Fay');
   });
 
+  it('a bold villain targets front-runners or rivals, not the weakest', () => {
+    const p = Object.fromEntries(NAMES.map(n => [n, mk(n, {
+      lipsync: n === 'Ada' ? 5 : n === 'Fay' ? 1 : 5,
+    })]));
+    p.Ada = { ...p.Ada, archetype: 'villain', stats: { ...p.Ada.stats, boldness: 10 } };
+    let boldPicks = 0;
+    for (let i = 0; i < 40; i++) {
+      const c = ctx(i, p);
+      c.state.record = { Bee: ['WIN', 'WIN', 'HIGH'], Cleo: ['SAFE'], Dot: ['SAFE'], Eve: ['SAFE'], Fay: ['LOW'], Ada: ['SAFE'] };
+      const out = runMaxi(c);
+      const strat = out.assignment.strategies?.Ada;
+      if (strat === 'frontrunner' || strat === 'rival') boldPicks++;
+    }
+    expect(boldPicks / 40).toBeGreaterThan(0.3);
+  });
+
+  it('nice archetypes always play safe', () => {
+    const p = Object.fromEntries(NAMES.map(n => [n, mk(n)]));
+    p.Ada = { ...p.Ada, archetype: 'hero', stats: { ...p.Ada.stats, boldness: 10 } };
+    for (let i = 0; i < 20; i++) {
+      const out = runMaxi(ctx(i, p));
+      expect(out.assignment.strategies?.Ada, `seed ${i}`).toBe('safe');
+    }
+  });
+
   it('being named twice is an event that costs the choosers', () => {
     const p = Object.fromEntries(NAMES.map(n => [n, mk(n, { lipsync: n === 'Fay' ? 1 : 9 })]));
     let picked = null;

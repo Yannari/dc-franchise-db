@@ -36,19 +36,71 @@ const fatigueFactor = (lipsyncsAlready) =>
 // Exported so the smackdown can share the same curve.
 export { FATIGUE_CURVE, fatigueFactor };
 
+// A bold queen with a grudge picks her rival. A safe queen picks the
+// weakest lip syncer. Boldness * 0.5 is the chance of going bold, but
+// only if there IS a rival (bond <= -3) or she's villainous enough to
+// target the front-runner. Nice archetypes always play safe.
+const NICE_SET = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const VILLAIN_SET = new Set(['villain', 'mastermind', 'schemer']);
+
+function pickStrategy(name, others, { players, bond, rng, state }) {
+  const p = players[name];
+  const bold = (Number(p?.stats?.boldness) || 5) / 10;
+  const arch = p?.archetype;
+
+  if (NICE_SET.has(arch) || rng() > bold * 0.5) {
+    const sorted = [...others].sort((a, b) =>
+      dragOf(players[a]).lipsync - dragOf(players[b]).lipsync);
+    return { list: sorted, strategy: 'safe' };
+  }
+
+  // Bold path: look for a rival first (worst bond), then front-runner
+  const rival = others.reduce((w, n) => (bond(name, n) < bond(name, w) ? n : w), others[0]);
+  if (bond(name, rival) <= -3) {
+    const rest = others.filter(n => n !== rival);
+    return { list: [rival, ...rest], strategy: 'rival' };
+  }
+
+  // Villains target front-runners — the queen with the best track record
+  if (VILLAIN_SET.has(arch)) {
+    const rec = state?.record || {};
+    const _w = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+    const ppe = n => {
+      const r = rec[n] || [];
+      return r.length ? r.reduce((s, x) => s + (_w[x] ?? 0), 0) / r.length : 3;
+    };
+    const sorted = [...others].sort((a, b) => ppe(b) - ppe(a));
+    return { list: sorted, strategy: 'frontrunner' };
+  }
+
+  // Fallback: safe play
+  const sorted = [...others].sort((a, b) =>
+    dragOf(players[a]).lipsync - dragOf(players[b]).lipsync);
+  return { list: sorted, strategy: 'safe' };
+}
+
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini, bond } = ctx;
+  const { living, players, rng, miniWinner, mini, bond, state } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
 
-  const choices = Object.fromEntries(order.map(n => [n, order
-    .filter(o => o !== n)
-    .sort((a, b) => dragOf(players[a]).lipsync - dragOf(players[b]).lipsync)]));
+  const strategies = {};
+  const choices = Object.fromEntries(order.map(n => {
+    const others = order.filter(o => o !== n);
+    const { list, strategy } = pickStrategy(n, others, { players, bond, rng, state });
+    strategies[n] = strategy;
+    return [n, list];
+  }));
 
   const named = Object.fromEntries(order.map(n => [n, choices[n][0]]));
   const { picks, events } = contestFor({
     order, choices, players, rng, bond,
     penaltyScale: 0,
   });
+
+  // Tag each pick with its strategy
+  for (const [n, pick] of Object.entries(picks)) {
+    pick.strategy = strategies[n] || 'safe';
+  }
 
   const chosenCount = {};
   for (const n of order) {
@@ -66,10 +118,23 @@ export function assign(ctx) {
     }));
   }
 
+  // Bold plays against rivals generate heat
+  for (const n of order) {
+    if (strategies[n] === 'rival' && picks[n]) {
+      const target = picks[n].choice;
+      events.push(evt('bold-pick', {
+        players: [n, target],
+        bond: [[n, target, -1]],
+        pop: { [n]: 2 },
+        data: { strategy: 'rival' },
+      }));
+    }
+  }
+
   return {
     roles: Object.fromEntries(order.map(n => [n, 'standard'])),
-    teams: [], order, picks, named, events,
-    scenes: [{ step: 'choice', kind: 'bracket-picks', data: { picks, named } }],
+    teams: [], order, picks, named, strategies, events,
+    scenes: [{ step: 'choice', kind: 'bracket-picks', data: { picks, named, strategies } }],
   };
 }
 
@@ -129,8 +194,9 @@ export function perform(ctx) {
     const loser = winner === a ? b : a;
     lipsyncCount[a] = (lipsyncCount[a] || 0) + 1;
     lipsyncCount[b] = (lipsyncCount[b] || 0) + 1;
+    const strategy = chosen && assignment.strategies?.[a] || null;
     duels.push({
-      round, roundLabel, a, b, chosen: !!chosen,
+      round, roundLabel, a, b, chosen: !!chosen, strategy,
       song: song.title, artist: song.artist,
       scores: { [a]: sa.score, [b]: sb.score },
       fatigue: { [a]: fatA, [b]: fatB },

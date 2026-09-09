@@ -69,10 +69,10 @@ export const WERK_EVENTS = [
     when: f => strongAt(f.a, 'design') && weakAt(f.b, 'design') && f.bond >= 0,
     effects: { bond: 1.5, pop: { a: 2 } },
     lines: [
-      "{b} has been fighting the same seam for an hour and it is winning. {a} watches for a while, then pulls up a stool without being asked, takes the whole thing out of her hands and starts again from the shoulder. She does not say anything about it. She just does it.",
-      "\"Give it to me before you cry on it.\" {a} does not even look up when she says it — she just holds a hand out until {b} puts the garment in it, and then she rebuilds the bodice in the time it took {b} to ruin it.",
-      "{b} is close to giving up and everyone in the room can see it. {a} comes over, turns the fabric inside out, finds the problem in about four seconds and says \"okay, this is fixable, sit down.\" It is the first time all day {b} has breathed properly.",
-      "Nobody asks {a} to help. She just ends up at {b}'s station with pins in her mouth, doing the thing {b} could not do, and when {b} starts to thank her she waves it off — \"you would do it for me\" — which is generous, because {b} probably could not.",
+      "{b} has been fighting the same seam for an hour. {a} watches, says nothing, then just pulls up a stool and takes the whole thing out of her hands. Rips it back to the shoulder, restarts. {b} goes \"you do not have to —\" and {a} says \"girl, hush\" and keeps sewing.",
+      "\"Give me that before you cry on it.\" {a} holds her hand out and {b} puts the garment in it and {a} rebuilds the bodice in ten minutes flat. {b} just watches. \"How did you —\" \"Do not ask questions, just say thank you.\" \"{b} says thank you.\"",
+      "{b} is about to lose it. The whole room can see it. {a} walks over, flips the fabric inside out, finds the problem in four seconds. \"Okay, mama, this is fixable. Sit down.\" First time all day {b} has taken a full breath.",
+      "Nobody asks {a} to help. She just shows up at {b}'s station with pins in her mouth, fixes the whole mess, and when {b} starts thanking her she waves it off. \"Girl, you would do it for me.\" She would not — {b} cannot sew — but it is a kind lie.",
     ],
   }),
   ev({
@@ -81,10 +81,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.canScheme && f.bond <= 2,
     effects: { bond: -1.5, pop: { a: -2 } },
     lines: [
-      "{a} takes four bolts off the wall when everybody else took two, and does it like she is the only person in the room. She is not. {b} counts them from across the table and says nothing, which is louder than saying something.",
-      "The fabric wall is supposed to be shared. {a} does not seem to have heard about that, or has heard and has decided she does not care. {b} watches her carry it all back to her station in two trips and makes a note she will keep for later.",
-      "\"She took the whole bolt,\" {b} says to nobody in particular, watching {a} lay out enough fabric for three outfits on a station built for one. {a} hears it and does not turn around, which is a choice {b} also files away.",
-      "{b} goes to the wall for the stretch velvet and it is gone. All of it. {a} is cutting into it at her station like it was always hers. {b} stands there for a second, looks at the empty hook, looks at {a}, and walks back without a word.",
+      "{a} takes four bolts off the wall. Everybody else took two. {b} counts from across the table and says nothing — just files it. {a} does not even look guilty. Girl walks back to her station like she paid for it.",
+      "The fabric wall is supposed to be shared. {a} did not get that memo. {b} watches her carry it all back in two trips and mutters \"the nerve\" under her breath. {a} hears it. Does not turn around.",
+      "\"She took the whole bolt,\" {b} says to the room. {a} is laying out enough fabric for three outfits on one station. She hears {b} and keeps cutting. No tea, no shade — just total shamelessness.",
+      "{b} goes to the wall for the stretch velvet. Gone. All of it. {a} is cutting into it across the room like it was always hers. {b} looks at the empty hook, looks at {a}, walks back to her station without a word. She will remember this.",
     ],
   }),
   ev({
@@ -93,10 +93,10 @@ export const WERK_EVENTS = [
     when: f => !strongAt(f.a, 'design'),
     effects: { pop: { a: 1 }, state: 'lostTime' },
     lines: [
-      "The machine eats the chiffon about halfway through the second panel and {a} sits there staring at it like it has personally betrayed her. She pulls it out, the fabric tears, and that is twenty minutes she is not getting back.",
-      "{a} hears the sound before she sees it — that awful crunch of the needle hitting something it should not have hit. She lifts the presser foot and the whole thing comes out mangled. She says a word the cameras will have to bleep and starts again from nothing.",
-      "The bobbin jams and {a} spends ten minutes trying to fix it with a seam ripper and her fingernails before somebody tells her to just rethread it. By then the damage is done — the skirt is bunched in the middle and she does not have time to cut a new one.",
-      "There is a moment where {a} is sewing and then a moment where {a} is holding two pieces of fabric that are no longer attached to each other, and the moment between those two moments was the machine deciding it had done enough for today.",
+      "The machine eats the chiffon and {a} just sits there staring at it. She pulls it out — fabric tears. \"No. No no no.\" That is twenty minutes she is not getting back and everybody in the room heard the rip.",
+      "{a} hears it before she sees it — that crunch of the needle hitting something wrong. She lifts the presser foot and the whole thing comes out mangled. She says a word the cameras will bleep. Starts over from nothing.",
+      "The bobbin jams. {a} spends ten minutes fighting it with a seam ripper and her nails before somebody says \"girl, just rethread it.\" By then the damage is done. The skirt is bunched and she does not have time to cut another.",
+      "One second {a} is sewing. Next second she is holding two pieces of fabric that are no longer attached. \"Are you KIDDING me?\" The machine decided it was done for the day. {a} has not.",
     ],
   }),
   ev({
@@ -105,10 +105,10 @@ export const WERK_EVENTS = [
     when: f => true,
     effects: { bond: 0.5 },
     lines: [
-      "{a} and {b} are side by side at the mirrors doing their faces, and the conversation happens the way it does when you are both looking straight ahead. Nobody turns. They talk to each other's reflections about last night, about today, about nothing much. It is the most relaxed either of them has been all week.",
-      "They are both contouring and {b} glances over at {a}'s technique and says \"teach me that\" without any ego about it. {a} shows her, they do the same cheekbone at the same time, and for about five minutes it is two queens getting ready, not two queens in a challenge.",
-      "{a} catches {b}'s eye in the mirror and pulls a face — the full ugly-cry drag face, chin forward, nostrils wide — and {b} does one back. They go back and forth until one of them breaks, and breaking is laughing so hard the eyeliner goes on crooked.",
-      "Neither of them says much. {a} is blending. {b} is gluing down a brow. They pass the setting spray back and forth without asking for it, because they have been beside each other long enough to know the routine. The room is loud behind them but the mirror is quiet.",
+      "{a} and {b} are side by side at the mirrors beating their faces. They talk to each other's reflections — last night, today, nothing much. Nobody turns around. It is the most relaxed either of them has been all week.",
+      "{b} glances at {a}'s contour and says \"teach me that.\" No ego. {a} shows her, they do the same cheekbone at the same time, and for five minutes it is just two queens getting ready. Not two queens fighting for a crown. Just two queens.",
+      "{a} catches {b}'s eye in the mirror and pulls the face — full ugly-cry drag face, chin forward, nostrils wide. {b} does one back. They go back and forth until {b} breaks and laughs so hard the eyeliner goes on crooked. \"Girl, you RUINED my wing.\"",
+      "Not much talking. {a} is blending. {b} is gluing a brow. They pass the setting spray without asking — been beside each other long enough to know the routine. The room is loud behind them but the mirror is quiet.",
     ],
   }),
   ev({
@@ -117,10 +117,10 @@ export const WERK_EVENTS = [
     arcs: ['hero', 'fashion'], when: f => weakAt(f.a, 'runway') && f.bond >= 2,
     effects: { bond: 1, pop: { b: 1 } },
     lines: [
-      "{a} is staring at her accessories like they personally let her down, and {b} crosses the room with a pair of earrings and a necklace and puts them on the table without ceremony. \"Wear these. Give them back tomorrow.\" {a} starts to say she cannot and {b} is already walking away.",
-      "\"What are you wearing with that?\" {b} asks, and {a} holds up her only option, and {b}'s face says everything her mouth is too polite to say. She goes to her own case and comes back with a belt and a pair of cuffs that turn {a}'s outfit into something that belongs on the stage.",
-      "{b} sees {a} holding two brooches against the neckline and hating both. She comes over, opens her own jewellery roll, and says \"pick one.\" {a} picks the biggest. {b} laughs and says \"I knew you would\" and lets her take it anyway.",
-      "{a} has nothing for her neck and the dress needs something for the neck. {b} unclasps her own choker, drops it into {a}'s hand, and says \"do not lose it, it was my grandmother's.\" It was not her grandmother's. They both know that. {a} wears it like it was.",
+      "{a} is staring at her accessories like they owe her money. {b} crosses the room, drops a pair of earrings and a chain on the table. \"Wear these. Give them back tomorrow.\" {a} starts to say she cannot — {b} is already walking away.",
+      "\"What are you wearing with that?\" {b} asks. {a} holds up her only option. {b}'s face says everything. She goes to her own case, comes back with a belt and a pair of cuffs, and {a}'s outfit goes from \"girl, no\" to stage-ready in thirty seconds.",
+      "{b} sees {a} holding two brooches against the neckline, hating both. Opens her own jewellery roll. \"Pick one.\" {a} picks the biggest. {b} laughs — \"I KNEW you would\" — and lets her take it anyway.",
+      "{a} has nothing for her neck and the dress is begging for something. {b} unclasps her own choker, drops it in {a}'s hand. \"Do not lose it, it was my grandmother's.\" It was not her grandmother's. They both know that. {a} wears it like it was.",
     ],
   }),
   ev({
@@ -128,10 +128,10 @@ export const WERK_EVENTS = [
     note: 'She burns herself on the glue gun and keeps going.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [
-      "{a} burns two fingers on the glue gun and says \"ow\" in a voice that means it really hurt, and then she blows on them once and goes right back to glueing. The room looks over. She waves the hand. \"I am fine.\" She is not fine. She finishes the headpiece anyway.",
-      "The glue gun gets {a} on the thumb and she drops it on the table, which gets glue on the table, which gets glue on the fabric, which gets the word \"no\" said very loudly to an empty room. She peels it off, trims the edge, and keeps going with a blister forming under the tape.",
-      "A string of hot glue lands on {a}'s wrist and she does a full silent scream — mouth open, no sound — which is funnier than it should be given that it actually left a mark. She wraps it in a paper towel and does not stop working.",
-      "{a} pulls the trigger on the glue gun and it comes out sideways onto her finger. She stares at it hardening on her skin, says \"well that is going to scar,\" and picks up the next rhinestone with the other hand. The outfit has to be finished. The finger will heal.",
+      "{a} burns two fingers on the glue gun. \"Ow.\" She blows on them once and goes right back to glueing. The room looks over. She waves the hand. \"I am FINE.\" She is not fine. She finishes the headpiece anyway.",
+      "The glue gun gets {a} on the thumb. She drops it on the table — glue on the table — glue on the fabric — \"NO.\" She peels it off, trims the edge, keeps going with a blister forming under the tape.",
+      "Hot glue lands on {a}'s wrist and she does the full silent scream — mouth open, no sound. Funnier than it should be given that it actually left a mark. She wraps it in a paper towel and does not stop working.",
+      "{a} pulls the trigger and the glue comes out sideways onto her finger. She watches it harden on her skin. \"Well, that is going to scar.\" Picks up the next rhinestone with the other hand. The outfit has to be finished. The finger will heal.",
     ],
   }),
   ev({
@@ -139,10 +139,10 @@ export const WERK_EVENTS = [
     note: 'Something structural fails while she is getting into it, minutes before the stage.',
     when: f => true, effects: { pop: { a: -1 }, state: 'lostTime' },
     lines: [
-      "The hip pad shifts during the final zip and the whole silhouette goes sideways. {a} stands in the mirror, sees it, unzips, and starts rebuilding the padding from the waist down with fifteen minutes on the clock. Her hands are shaking but her face says she has done this before.",
-      "{a} bends to check the hem and something in the back gives — not a seam, something structural, the boning or the corset lacing — and the whole top half of the dress changes shape. She catches it in the mirror, says a word she will not repeat, and starts taping from the inside out.",
-      "The breast plate shifts during the final tuck and suddenly the neckline is sitting wrong on one side. {a} tries to pull it back without undoing everything else and cannot. She takes the whole top off, resets it, and puts it back together in the time it takes most people to do their lips.",
-      "Five minutes before places and {a}’s waist cincher snaps a hook. Not bends — snaps, the metal kind, the load-bearing one. She holds the garment together with one hand, digs through her kit for a safety pin with the other, and builds a fix that will last exactly long enough if she does not breathe too deeply.",
+      "The hip pad shifts during the final zip and the whole silhouette goes sideways. {a} sees it in the mirror, unzips, starts rebuilding the padding from the waist down. Fifteen minutes on the clock. Her hands are shaking but her face says she has done this before.",
+      "{a} bends to check the hem and something gives in the back — not a seam, something structural. The whole top half of the dress changes shape. She catches it in the mirror. Says a word the cameras will bleep. Starts taping from the inside out.",
+      "The breast plate shifts during the final tuck. Neckline sitting wrong on one side. {a} tries to pull it back without undoing everything else — she cannot. Takes the whole top off, resets it, puts it back together in the time it takes most queens to do their lips.",
+      "Five minutes before places and {a}’s waist cincher snaps a hook. Not bends — snaps. The metal kind. The load-bearing one. She holds the garment together with one hand, digs through her kit with the other, and builds a safety-pin fix that will last exactly long enough if she does not breathe too deep.",
     ],
   }),
   ev({
@@ -151,10 +151,10 @@ export const WERK_EVENTS = [
     arcs: ['hero', 'pageant'], when: f => strongAt(f.a, 'runway') && f.bond >= 0,
     effects: { bond: 1, pop: { a: 1 } },
     lines: [
-      "{b}’s wig is not happening. The lace is lifting, the part is crooked, and the glue is not setting. {a} watches for about thirty seconds, puts down her own brush, walks over and says \"sit.\" She takes the whole thing off, reglues the lace, pins the back, and hands {b} a wig that looks like it grew there.",
-      "The plan was a high pony and the high pony has fallen and it is not going back up. {b} is holding it in one hand and staring at it like it owes her money. {a} comes over, looks at what is left, and says \"we are doing a bob now\" — cuts it, styles it, pins it, done. It looks better than the pony would have.",
-      "{b}’s wig cap is showing through the front and she does not know how to fix it. {a} sits her down, pulls the hairline forward, blends the lace with concealer and a tiny brush, and talks her through it so she can do it herself next time. She will not be able to do it herself next time, but it is kind that {a} pretends she will.",
-      "\"Your hair looks insane,\" {a} says, and she does not mean it as a compliment. She lifts {b}’s wig off its styling head, resets the curl pattern with a flat iron and three pins, and puts it on {b}’s head like she is crowning someone. {b} looks in the mirror and for the first time tonight she looks like she might survive the runway.",
+      "{b}’s wig is not happening. Lace lifting, part crooked, glue not setting. {a} watches for thirty seconds, puts down her own brush, walks over. \"Sit.\" Takes the whole thing off, reglues the lace, pins the back, hands {b} a wig that looks like it grew there.",
+      "The plan was a high pony and the high pony has fallen and it is not going back up. {b} is holding it like it owes her money. {a} comes over, looks at what is left. \"We are doing a bob now.\" Cuts it, styles it, pins it, done. Looks better than the pony would have.",
+      "{b}’s wig cap is showing through the front. {a} sits her down, pulls the hairline forward, blends the lace with concealer and a tiny brush. Talks her through it so she can do it herself next time. She will not be able to do it herself next time — but it is kind that {a} pretends she will.",
+      "\"Your hair looks insane,\" {a} says, and not as a compliment. She lifts {b}’s wig off the styling head, resets the curl pattern with a flat iron and three pins, puts it on {b}’s head like she is crowning somebody. {b} looks in the mirror. First time all night she looks like she might survive the runway.",
     ],
   }),
 
@@ -165,10 +165,10 @@ export const WERK_EVENTS = [
     arcs: ['narrator'], when: f => f.bond >= 1 && d(f.a).comedy >= 6,
     effects: { bond: 1, pop: { a: 2 } },
     lines: [
-      "{a} has been waiting all morning to use this one and you can tell. She waits until the room is quiet, looks {b} up and down very slowly, and delivers it with the timing of somebody who has done this in a club for ten years. {b} screams. Everybody screams. {b} also does not have a comeback, which is the part she will think about later.",
-      "\"I am not going to say anything about that outfit,\" says {a}, and then says three things about the outfit. {b} takes it like a professional — hand on chest, head back, howling — because the alternative is admitting it landed.",
-      "It starts as nothing, one comment across the room, and then {a} finds the angle and will not let it go. By the third one {b} is on the floor. By the fifth {b} is saying \"okay, okay, you got me\" through actual tears, and the room has decided {a} is funny, which is worth more than a challenge win some weeks.",
-      "{a} reads {b} so precisely that {b}'s first reaction is not to laugh but to say \"how long have you been sitting on that?\" — and the honest answer is since the moment {b} walked in wearing it.",
+      "{a} has been waiting all morning to use this one. You can tell. She waits until the room is quiet, looks {b} up and down slow, and delivers it with ten years of club timing. {b} SCREAMS. The room screams. {b} does not have a comeback, which is the part she will think about later.",
+      "\"I am not going to say anything about that outfit.\" {a} then says three things about the outfit. {b} takes it like a pro — hand on chest, head back, howling — because the alternative is admitting it landed.",
+      "It starts as nothing. One comment across the room. Then {a} finds the angle and will not let it go. By the third read {b} is on the floor. By the fifth she is going \"okay, okay, you GOT me\" through actual tears. The room has decided {a} is funny, and that is worth more than a challenge win some weeks.",
+      "{a} reads {b} so precisely that {b}'s first reaction is not to laugh — it is \"how long have you been sitting on that?\" Honest answer? Since the moment {b} walked in wearing it.",
     ],
   }),
   ev({
@@ -177,10 +177,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.bond <= 2,
     effects: { bond: -2, pop: { a: -2 } },
     lines: [
-      "{a} goes for the joke and gets the angle wrong — too specific, too soon, aimed at something {b} is actually insecure about. The room goes quiet in that way where you can hear the sewing machines. {b} smiles but the smile does not reach her eyes, and {a} knows immediately that she has miscalculated.",
-      "It starts funny. The first line lands. The second one is sharper. The third one is the one where {b} stops laughing and says \"okay\" in a voice that means stop. {a} does stop, but the room has already decided what it saw, and what it saw was mean.",
-      "{a} reads {b} about the wig and then about the outfit and then about the walk, and somewhere between the second and the third one it stops being a read and starts being a list of complaints. {b} turns back to her mirror. The room does not laugh. {a} says \"I was joking\" into a silence that does not believe her.",
-      "\"Girl, that silhouette is —\" and {a} finishes the sentence with a face instead of a word. {b} sees it. Everyone sees it. It is not shade, it is just unkind, and the difference matters. {a} goes back to her station and the room lets her go without anyone saying anything, which is the loudest thing they could have done.",
+      "{a} goes for the joke and gets the angle wrong. Too specific. Too soon. Aimed at something {b} is actually insecure about. The room goes quiet — you can hear the sewing machines. {b} smiles but the smile does not reach her eyes. {a} knows immediately she miscalculated.",
+      "It starts funny. First line lands. Second one is sharper. The third one is where {b} stops laughing and says \"okay\" in a voice that means stop. {a} does stop — but the room already decided what it saw, and what it saw was mean.",
+      "{a} reads {b} about the wig, then the outfit, then the walk, and somewhere between the second and the third it stops being a read and starts being a list. {b} turns back to her mirror. The room does not laugh. {a} says \"I was joking\" into a silence that does not believe her.",
+      "\"Girl, that silhouette is —\" and {a} finishes the sentence with a face instead of a word. {b} sees it. Everyone sees it. That is not shade — that is just unkind, and the difference matters. {a} goes back to her station. The room lets her go without a word, which is the loudest thing they could have done.",
     ],
   }),
   ev({
@@ -189,10 +189,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.canScheme && f.bond <= 0,
     effects: { bond: -1, pop: { a: -1 } },
     lines: [
-      "{b} goes to the bathroom and {a} waits about four seconds before turning to the nearest queen and saying what she has been holding in all morning. It is not vicious — it is precise, which is worse. She lays out exactly what is wrong with {b}’s runway, {b}’s attitude, and {b}’s chances, and she does it like she is being helpful.",
-      "\"I am just going to say it.\" {a} checks the doorway, confirms {b} is not in it, and says the thing. The room listens. Some of them agree. None of them will repeat it. {a} knows that, which is why she said it here and not to {b}’s face.",
-      "{a} does not even lower her voice, which is the brazen part. She talks about {b}’s performance like {b} is somebody on a different show she is reviewing from home. Two queens laugh. One does not. {a} does not notice which one.",
-      "The second {b} steps out, {a} says \"am I the only one seeing this?\" and then answers her own question for about ninety seconds. She is funny about it, which makes it land harder, because the room is laughing at things they probably should not be laughing at.",
+      "{b} goes to the bathroom and {a} waits about four seconds. Turns to the nearest queen and says what she has been holding in all morning. It is not vicious — it is precise, which is worse. {b}’s runway, {b}’s attitude, {b}’s chances. She lays it all out like she is being helpful.",
+      "\"I am just going to say it.\" {a} checks the doorway, confirms {b} is not in it, and says the thing. The room listens. Some of them agree. None of them will repeat it. {a} knows that — that is why she said it here and not to {b}’s face.",
+      "{a} does not even lower her voice. That is the brazen part. She talks about {b}’s performance like {b} is somebody on a different show she is reviewing from home. Two queens laugh. One does not. {a} does not notice which one.",
+      "The second {b} steps out, {a} goes \"am I the only one seeing this?\" and then answers her own question for ninety seconds. She is funny about it, which makes it land harder — the room is laughing at things they probably should not be laughing at.",
     ],
   }),
   ev({
@@ -201,10 +201,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.bond <= -2,
     effects: { bond: -2.5, state: 'frost' },
     lines: [
-      "{b} comes back in and the sentence {a} was in the middle of just stops. Everybody hears it stop. {b} looks around the room once, slowly, and sits back down without asking what they were talking about. She does not need to ask. She knows.",
-      "The room is mid-laugh when {b} walks through the door, and the laugh dies in the kind of way that answers every question at once. {a} picks up her brush. Somebody says \"anyway.\" {b} sits at her station and does not look at anyone, because looking at someone means having to decide whether to say something.",
-      "{a} does not see {b} come back in. She is still going — the sentence, the gesture, the impression — and the queen facing the door tries to warn her with her eyes, but {a} is mid-word when she turns and sees {b} standing there. The silence that follows has a texture.",
-      "{b} catches the last three words. Not the whole thing. Just enough. She hangs up her garment bag very carefully, sits down very carefully, and says \"are we having fun\" in a voice that is not asking. {a} says nothing. Nobody says anything. The room gets very interested in sewing.",
+      "{b} comes back in and the sentence {a} was in the middle of just stops. Everybody hears it stop. {b} looks around the room once, slow, sits back down. Does not ask what they were talking about. She does not need to ask.",
+      "The room is mid-laugh when {b} walks through the door. The laugh dies in the kind of way that answers every question at once. {a} picks up her brush. Somebody says \"anyway.\" {b} sits at her station and does not look at anyone.",
+      "{a} does not see {b} come back in. She is still going — the sentence, the gesture, the impression — and the queen facing the door tries to warn her with her eyes. {a} is mid-word when she turns and sees {b} standing there. The silence that follows has a texture.",
+      "{b} catches the last three words. Not the whole thing. Just enough. She hangs up her garment bag very carefully, sits down very carefully, and goes \"are we having fun\" in a voice that is not asking. {a} says nothing. The room gets very interested in sewing.",
     ],
   }),
   ev({
@@ -213,10 +213,10 @@ export const WERK_EVENTS = [
     arcs: ['narrator'], when: f => d(f.a).comedy >= 5,
     effects: { bond: 1, pop: { a: 1, b: 1 } },
     lines: [
-      "{a} calls {b} something offhand — a play on the look, the walk, the way she holds her coffee — and {b} screams laughing. By lunch everyone in the room is using it. By the next day it is just what {b} is called, and {b} loves it, and {a} never lets her forget who gave it to her.",
-      "It comes out of nowhere. {a} watches {b} do something perfectly ordinary, says two words that have no business being that funny, and the name sticks to {b} like glitter. For the rest of the season every queen in the room will call {b} by the nickname and {b} will pretend to hate it and obviously does not.",
-      "{b} is mid-sentence and {a} interrupts with the name. Just drops it, flat, no setup. {b} stops talking, processes it, and then laughs so hard she puts her head on the table. \"That is my name now, isn't it.\" It is her name now.",
-      "\"You know what you remind me of?\" {a} says, and what follows is so specific and so accurate that {b} cannot even be offended. The room picks it up immediately. {b} tries to give {a} one back and it does not land, which only makes the first one stick harder.",
+      "{a} calls {b} something offhand — a play on the look, the walk, the way she holds her coffee — and {b} screams. By lunch the whole room is using it. By the next day it is just what {b} is called. {a} never lets her forget who gave it to her.",
+      "It comes out of nowhere. {a} watches {b} do something perfectly ordinary, says two words that have no business being that funny, and the name sticks like glitter. The whole season every queen will call {b} that. {b} pretends to hate it. She obviously does not.",
+      "{b} is mid-sentence and {a} interrupts with the name. Just drops it flat. No setup. {b} stops talking, processes it, then laughs so hard she puts her head on the table. \"That is my name now, is it not.\" It is her name now.",
+      "\"You know what you remind me of?\" What follows is so specific and so accurate that {b} cannot even be offended. The room picks it up immediately. {b} tries to give {a} one back. It does not land, which only makes the first one stick harder.",
     ],
   }),
   ev({
@@ -225,10 +225,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.canScheme && st(f.a, 'boldness') >= 7,
     effects: { pop: { a: -1 }, state: 'declared' },
     lines: [
-      "Nobody asks. {a} just says it, to the room, mid-morning, while everyone is working. \"I did not come here to be liked.\" The sewing machines keep going but the queens stop talking, and the silence that follows is the sound of twelve people recalculating where {a} sits in the room.",
-      "\"Let me be honest,\" {a} says, and then she is. She lays out what she thinks of the level in here, what she plans to do about it, and how sorry she is not going to be about doing it. Two queens look at each other. One of them mouths \"wow.\" {a} goes back to her work like she said something ordinary.",
-      "{a} says it in the mirror, to herself, but loud enough for the room: \"I am here to win, I am not here to hold anyone's hand, and if that makes me the villain then fine.\" She does not turn around. She does not have to. Everyone heard it.",
-      "The room is talking about how they are all in this together and {a} lets the sentence finish and then says \"no we are not\" with a cheerfulness that makes it worse. She means it. She is not performing. The room adjusts, and {a} goes back to glueing like the temperature did not just drop four degrees.",
+      "Nobody asks. {a} just says it, mid-morning, while everyone is working. \"I did not come here to be liked.\" The sewing machines keep going but the queens stop talking. That silence is the sound of twelve people recalculating where {a} sits in the room.",
+      "\"Let me be honest.\" Then she is. What she thinks of the level in here, what she plans to do about it, how sorry she is not going to be. Two queens look at each other. One mouths \"wow.\" {a} goes back to her work like she said something ordinary.",
+      "{a} says it to herself in the mirror, but loud enough for the room. \"I am here to win. I am not here to hold hands. If that makes me the villain then fine.\" Does not turn around. Does not have to. Everyone heard it.",
+      "The room is talking about how they are all in this together and {a} lets the sentence finish and then goes \"no we are not\" with a cheerfulness that makes it worse. She means it. She is not performing. {a} goes back to glueing like the temperature did not just drop four degrees.",
     ],
   }),
 
@@ -239,10 +239,10 @@ export const WERK_EVENTS = [
     arcs: ['villain', 'relationship'], when: f => f.bond <= 1,
     effects: { bond: -2, pop: { a: -1 } },
     lines: [
-      "\"That is my concept.\" {a} says it across the room and means it. {b} looks up, confused, because the concepts are not that similar, but {a} has decided they are and {a} is loud about it. The room watches them go back and forth for three rounds before somebody changes the subject.",
-      "{a} sees {b}'s sketch and stops working. \"Are you kidding me?\" {b} did not copy it — anyone looking can see that — but {a} has convinced herself otherwise, and a convinced {a} is not somebody who listens. The argument that follows is short and ugly and settles nothing.",
-      "It is the same colour palette and that is enough for {a}. She holds up her fabric, holds up {b}'s fabric, and says \"explain this\" like she is a prosecutor. {b} tries. {a} does not hear any of it. The room has opinions about who is right but nobody wants to be in the middle.",
-      "{a} walks past {b}'s station, looks down, and says \"oh you are doing that too\" with a sweetness that has teeth in it. {b} says she came up with it herself. {a} says \"sure.\" {b} says she did. {a} says \"I said sure\" and walks away, which is not the same as believing her.",
+      "\"That is my concept.\" {a} says it across the room and means it. {b} looks up confused — the concepts are not that similar — but {a} has decided they are and {a} is loud about it. Three rounds of back and forth before somebody changes the subject.",
+      "{a} sees {b}'s sketch and stops working. \"Are you kidding me.\" {b} did not copy it — anyone can see that — but {a} has convinced herself, and a convinced {a} does not listen. The argument is short, ugly, settles nothing.",
+      "Same colour palette. That is enough for {a}. She holds up her fabric, holds up {b}'s, goes \"explain this\" like a prosecutor. {b} tries. {a} does not hear any of it. The room has opinions but nobody wants to be in the middle.",
+      "{a} walks past {b}'s station, looks down. \"Oh, you are doing that too.\" Sweet voice. Teeth in it. {b} says she came up with it herself. {a} says \"sure.\" {b} says she did. {a} says \"I said sure\" and walks away, which is not the same as believing her.",
     ],
   }),
   ev({
@@ -251,10 +251,10 @@ export const WERK_EVENTS = [
     arcs: ['filler', 'weakness'], when: f => st(f.a, 'boldness') <= 5,
     effects: { pop: { a: -1 }, state: 'playedSafe' },
     lines: [
-      "{a} starts describing the concept out loud and you can hear her talk herself out of it in real time. The sentence begins big — \"I am going to do a whole —\" and ends with \"actually I will just do a gown.\" The room watches the ambition leave her body.",
-      "She had a vision. She drew it on the back of the brief and everything. Then she held it up, tilted her head, and put it face down on the table. \"It is too much,\" she says, and starts cutting a safe silhouette she knows she can finish. {a} will not remember the vision. The judges will not see it.",
-      "{a} pitches the idea to herself in the mirror and does not like what she hears back. She scraps the headpiece, simplifies the shape, and ends up with an outfit that nobody will hate but nobody will remember, which is exactly the kind of decision that puts a queen in the middle of the pack.",
-      "\"What if I —\" {a} says, and then stops, and then says \"no,\" and then picks up the scissors and cuts something predictable. Somewhere between the idea and the fabric it got smaller, and by the time she is sewing she has forgotten the version that might have won.",
+      "{a} starts describing the concept out loud and you can hear her talk herself out of it in real time. \"I am going to do a whole —\" ends with \"actually I will just do a gown.\" The room watches the ambition leave her body.",
+      "{a} had a vision. Drew it on the back of the brief and everything. Then she held it up, tilted her head, put it face down on the table. \"It is too much.\" Starts cutting a safe silhouette she knows she can finish. The judges will not see what {a} almost did.",
+      "{a} pitches the idea to herself in the mirror and does not like what she hears back. Scraps the headpiece. Simplifies the shape. Ends up with an outfit nobody will hate and nobody will remember — the exact kind of safe that puts you in the middle of the pack.",
+      "\"What if I —\" {a} stops. \"No.\" Picks up the scissors and cuts something predictable. Somewhere between the idea and the fabric it got smaller, and by the time she is sewing she has forgotten the version that might have won.",
     ],
   }),
   ev({
@@ -263,10 +263,10 @@ export const WERK_EVENTS = [
     arcs: ['fashion', 'villain'], when: f => st(f.a, 'boldness') >= 7,
     effects: { pop: { a: 2 }, state: 'committed' },
     lines: [
-      "Three queens tell {a} it will not work. {a} listens to all three of them, nods politely, and keeps cutting the same pattern she was cutting before they opened their mouths. She has either seen something they have not or she is about to crash, and the room is going to have to wait until the runway to find out which.",
-      "\"That is going to look crazy,\" somebody says, and {a} says \"good\" without looking up. She has committed. The concept is enormous, impractical, probably impossible to walk in, and she is building it anyway. The room has stopped trying to talk her out of it. {a} is not listening.",
-      "The whole room thinks it is a mistake. {a} knows the whole room thinks it is a mistake. She finishes the third panel, holds it up, and says \"trust me\" to nobody in particular. Nobody does. {a} does not care. She has been here before — in her head, this is already on the runway.",
-      "{a} describes the concept and watches the faces around her go through concern, confusion, and something close to pity. She takes it all in, smiles, and says \"watch.\" By the time she is halfway through building it, two of the queens who doubted her are watching from across the room, not helping, just watching.",
+      "Three queens tell {a} it will not work. {a} listens to all three, nods politely, keeps cutting the same pattern. She has either seen something they have not or she is about to crash. The room will have to wait until the runway to find out which.",
+      "\"That is going to look crazy.\" {a} says \"good\" without looking up. The concept is enormous, impractical, probably impossible to walk in. She is building it anyway. The room has stopped trying to talk her out of it. {a} is not listening.",
+      "The whole room thinks it is a mistake. {a} knows they think it is a mistake. She finishes the third panel, holds it up. \"Trust me.\" Nobody does. {a} does not care — in her head, this is already on the runway.",
+      "{a} describes the concept and watches the faces go through concern, confusion, and something close to pity. She takes it all in, smiles. \"Watch.\" By the time she is halfway through building it, two queens who doubted her are watching from across the room. Not helping. Just watching.",
     ],
   }),
   ev({
@@ -280,10 +280,10 @@ export const WERK_EVENTS = [
     arcs: ['relationship'], when: f => f.bond <= 3,
     effects: { bond: -1.5, pop: { a: -1 } },
     lines: [
-      "{a} sees {b}'s concept board and her face drops, because it is her concept, or close enough. They both know only one of them can do it. Neither of them moves. The conversation that follows is polite and then firm and then polite again, and at the end of it they are both still doing the same thing.",
-      "\"We cannot both do this.\" {a} says it first, which is supposed to mean {b} should be the one to change. {b} does not change. {a} does not change. They spend the next hour working on identical ideas three stations apart, both pretending the other one is not there.",
-      "{b} holds up the reference photo and {a} holds up hers and they are close enough that the room winces. Somebody suggests one of them pivot. Both of them say they had it first. The word \"first\" gets said four more times and settles nothing.",
-      "They figure it out at the same time — {a} looks at {b}'s station, {b} looks at {a}'s — and the look they share is the one where you realise the room just got smaller. Neither is willing to admit who had it first, so they both keep going, and the runway is going to be awkward.",
+      "{a} sees {b}'s concept board and her face drops. That is her concept — or close enough. They both know only one of them can do it. Neither moves. Polite, then firm, then polite again, and at the end of it they are both still doing the same thing.",
+      "\"We cannot both do this.\" {a} says it first, which is supposed to mean {b} should change. {b} does not change. {a} does not change. They spend the next hour working on identical ideas three stations apart, pretending the other one is not there.",
+      "{b} holds up the reference photo. {a} holds up hers. Close enough that the room winces. Somebody suggests one of them pivot. Both say they had it first. The word \"first\" gets said four more times and settles nothing.",
+      "They figure it out at the same time — {a} looks at {b}'s station, {b} looks at {a}'s. That look. The one where you realise the room just got smaller. Neither will admit who had it first, so they both keep going. The runway is going to be awkward.",
     ],
   }),
   ev({
@@ -292,10 +292,10 @@ export const WERK_EVENTS = [
     arcs: ['hero'], when: f => f.bond >= 1,
     effects: { bond: 1.5, pop: { a: 1 } },
     lines: [
-      "{a} runs the choreography with {b} four times, and the first three times are bad, and the fourth time something clicks. {b} does the step right and {a} screams like she just won something. \"Again,\" she says, and {b} does it again, and this time she does not need to be told where her arms go.",
-      "\"Say the line like you mean it.\" {b} says the line. \"No, like you MEAN it.\" {b} says it again. {a} shakes her head, sits down, does the line herself, and the difference between how it sounds when {a} does it and how it sounds when {b} does it is the whole lesson. {b} tries a third time and gets closer.",
-      "{a} catches {b} mouthing the lyrics wrong and instead of laughing she pulls her aside and walks through it line by line, slow, until {b} has it. It takes twenty minutes that {a} should be spending on her own performance. She spends them anyway.",
-      "They are in the corner going through the blocking and {a} is patient in a way she is not patient about anything else. She adjusts {b}'s stance, moves her shoulders back, says \"there,\" and makes her hold it until it feels natural. By the fifth run {b} looks like a different queen. {a} says nothing about it, which is the compliment.",
+      "{a} runs the choreo with {b} four times. First three are bad. Fourth time something clicks — {b} hits the step and {a} screams like she won something. \"Again.\" {b} does it again. This time she does not need to be told where her arms go.",
+      "\"Say the line like you mean it.\" {b} says the line. \"No — like you MEAN it.\" {b} says it again. {a} shakes her head, does the line herself. The difference between how it sounds when {a} does it and when {b} does it is the whole lesson. Third try, {b} gets closer.",
+      "{a} catches {b} mouthing the lyrics wrong. Instead of laughing she pulls her aside and walks through it line by line, slow, until {b} has it. Twenty minutes {a} should be spending on her own performance. She spends them anyway.",
+      "They are in the corner going through the blocking and {a} is patient in a way she is not patient about anything else. Adjusts {b}'s stance, moves her shoulders back. \"There.\" Makes her hold it until it feels natural. Fifth run, {b} looks like a different queen. {a} says nothing about it — which is the compliment.",
     ],
   }),
   ev({
@@ -303,10 +303,10 @@ export const WERK_EVENTS = [
     note: 'She is nowhere near finished and the room can see it.',
     when: f => st(f.a, 'temperament') <= 5, effects: { pop: { a: -1 }, state: 'unfinished' },
     lines: [
-      "It is late and {a} is still cutting. The bodice is not right, the sleeves are not right, and the hem is not started. She keeps picking things up and putting them down without finishing any of them, and the queens who are still awake are watching without saying anything, because there is nothing to say.",
-      "{a} has a pile of fabric that is supposed to be a garment and a garment that is supposed to be finished and neither thing is true. She is sewing fast, which is the problem — fast sewing is scared sewing, and scared sewing makes mistakes, and mistakes take time she does not have.",
-      "The room is emptying out and {a} is still at her station. She has been at her station for nine hours. The left side of the dress looks good. The right side of the dress does not exist yet. She is going to have to choose between finishing it badly or not finishing it, and everyone can see the math except her.",
-      "Somebody asks {a} if she needs help and she says no too quickly. She does need help. The outfit is half-built and the challenge is tomorrow and her eyes have the look of someone who knows exactly how far behind she is and is pretending she does not.",
+      "It is late and {a} is still cutting. Bodice not right. Sleeves not right. Hem not started. She keeps picking things up and putting them down without finishing any of them. The queens still awake are watching without saying anything — there is nothing to say.",
+      "{a} has a pile of fabric that is supposed to be a garment and a garment that is supposed to be finished. Neither thing is true. She is sewing fast — fast sewing is scared sewing, scared sewing makes mistakes, and mistakes take time she does not have.",
+      "The room is emptying out and {a} is still at her station. Nine hours. The left side of the dress looks good. The right side does not exist yet. She is going to have to choose between finishing it badly or not finishing it. Everyone can see the math except her.",
+      "Somebody asks {a} if she needs help. She says no too quickly. She does need help. The outfit is half-built, the challenge is tomorrow, and her eyes have the look of someone who knows exactly how far behind she is and is pretending she does not.",
     ],
   }),
   ev({
@@ -315,10 +315,10 @@ export const WERK_EVENTS = [
     arcs: ['frontrunner'], when: f => f.lastCall === 'WIN',
     effects: { pop: { a: 1 }, state: 'confident' },
     lines: [
-      "{a} walks back into the room and does not need to say a word. The way she puts her bag down, the way she looks at the mirror, the way she takes her time — everything about her says she won last week and she knows it. The room knows it too. A couple of queens say congratulations. {a} thanks them like she expected it.",
-      "There is a different energy to {a} this morning. She arrived first, set up without rushing, and has been humming to herself since she sat down. She looks lighter. She looks like a queen who proved something last week and is still carrying the proof.",
-      "{a} is glowing and it is the annoying kind of glowing — the kind where she looks good without trying, answers questions without worrying, and walks into the room like it was built for her. She earned it. That does not stop the rest of the room from noticing.",
-      "Last week {a} was wound tight. This week she is loose, easy, smiling at things she would normally let pass. A win will do that. The judges said her name and everything that was heavy about the week before just lifted. She sews with the posture of a queen who got told she is good at this, because she did.",
+      "{a} walks back into the room and does not need to say a word. The way she puts her bag down, looks at the mirror, takes her time — everything says she won last week and she knows it. A couple queens say congratulations. {a} thanks them like she expected it.",
+      "Different energy to {a} this morning. Arrived first, set up without rushing, been humming since she sat down. She looks lighter. She looks like a queen who proved something last week and is still carrying the proof.",
+      "{a} is glowing. The annoying kind — looks good without trying, answers questions without worrying, walks into the room like it was built for her. She earned it. That does not stop the rest of the room from noticing.",
+      "Last week {a} was wound tight. This week she is loose, easy, smiling at things she would normally let pass. A win will do that. The judges said her name and everything heavy about the week before just lifted. She sews with the posture of a queen who got told she is good at this.",
     ],
   }),
   ev({
@@ -327,10 +327,10 @@ export const WERK_EVENTS = [
     arcs: ['frontrunner'], when: f => f.winsA >= 2,
     effects: { bond: -1, pop: { a: 1 } },
     lines: [
-      "\"You are always up there,\" {b} says, and it is technically a compliment and technically not. {a} takes it with a smile that says she heard the second part. The room has noticed that {a} keeps winning, and {b} is the one who said it out loud, and saying it out loud changes something.",
-      "{b} watches {a} unpack her win from last week and says \"must be nice\" with enough sugar on it that it could go either way. {a} chooses to take it well. {b} chooses to let her. But the line has been drawn and both of them know where it is.",
-      "\"How many is that now?\" {b} asks, and she knows the answer, which is why the question is not really a question. {a} does not take the bait, because {a} is smart enough to hear the edge underneath it. The room files this one away for later.",
-      "{b} brings it up like she is making conversation — \"you have been on a run\" — but the way she says \"run\" sounds a lot like \"must be nice to keep being the favourite\" and {a} is not deaf. She says thank you. She does not say anything else. The room goes quiet for a beat longer than it should.",
+      "\"You are always up there,\" {b} says. Technically a compliment. Technically not. {a} takes it with a smile that says she heard the second part. The room has noticed {a} keeps winning. {b} is the one who said it out loud, and saying it out loud changes things.",
+      "{b} watches {a} unpack her win from last week. \"Must be nice.\" Enough sugar on it that it could go either way. {a} chooses to take it well. {b} chooses to let her. But the line has been drawn and both of them know where it is.",
+      "\"How many is that now?\" {b} asks — and she knows the answer, which is why the question is not really a question. {a} does not take the bait. She is smart enough to hear the edge underneath it. The room files this one away.",
+      "\"You have been on a run.\" The way {b} says \"run\" sounds a lot like \"must be nice to keep being the favourite\" and {a} is not deaf. She says thank you. Does not say anything else. The room goes quiet a beat longer than it should.",
     ],
   }),
   ev({
@@ -339,10 +339,10 @@ export const WERK_EVENTS = [
     arcs: ['filler', 'weakness'], when: f => f.safesA >= 3,
     effects: { pop: { a: -1 }, state: 'restless' },
     lines: [
-      "Safe. Again. {a} sits at her station and does not celebrate because there is nothing to celebrate. She was not bad enough to be in danger and not good enough to be noticed, and that middle ground is starting to feel like quicksand. She picks up her brush and looks at herself and does not know what to change.",
-      "{a} is doing the maths and it is not good maths. Four weeks of safe means four weeks the judges did not need to say her name. She has survived every elimination by being invisible, and she is starting to realise that invisible is not a strategy, it is a symptom.",
-      "\"I would rather be in the bottom than safe again,\" {a} says, and she means it, and the room is not sure whether that is brave or reckless. Being safe is supposed to be good. {a} does not feel good. She feels like she is on a show and nobody is watching her.",
-      "Another week, another time the judges looked past her. {a} smiles about it because smiling is what you do, but the smile is getting thinner. She came here to be memorable and instead she is furniture. The mirror does not tell her anything she does not already know.",
+      "Safe. Again. {a} sits at her station and does not celebrate because there is nothing to celebrate. Not bad enough to be in danger, not good enough to be noticed. That middle ground is starting to feel like quicksand.",
+      "{a} is doing the maths. Four weeks of safe means four weeks the judges did not need to say her name. She has survived every week by being invisible, and she is starting to realise invisible is not a strategy — it is a symptom.",
+      "\"I would rather be in the bottom than safe again.\" {a} means it. The room is not sure if that is brave or reckless. Being safe is supposed to be good. {a} does not feel good. She feels like she is on a show and nobody is watching her.",
+      "Another week, another time the judges looked past her. {a} smiles because smiling is what you do, but the smile is getting thinner. She came here to be memorable. Instead she is furniture.",
     ],
   }),
   ev({
@@ -356,10 +356,10 @@ export const WERK_EVENTS = [
     arcs: ['performance'], when: f => f.lastCall === 'BTM2',
     effects: { pop: { a: 1 }, state: 'rattled' },
     lines: [
-      "{a} walks back in like someone who nearly did not walk back in. She puts her stuff down, sits at her station, and stares at nothing for about thirty seconds. When somebody asks if she is alright she says \"yeah\" in a voice that is holding together with effort. She survived the lip sync. She has not finished processing that.",
-      "The door opens and the room goes quiet because everyone wants to know who is coming back through it. It is {a}. She looks tired in a way that makeup will not fix. She sits down, puts her hands flat on the table, and breathes. \"That was close,\" she says, to nobody. It was.",
-      "{a} is back and trying to be normal about it, which means she is not normal about it. She laughs too hard at the first joke someone makes, works too fast, talks too much. The lip sync was last night and it is still in her body — the adrenaline, the relief, the fear that she will be back there next week.",
-      "\"I am never doing that again,\" {a} says, meaning the bottom two, meaning the lip sync, meaning the part where she stood on that stage and did not know if it was over. She is lying. She might do it again. But the version of her that walked out last night and the version that walked in this morning are not the same queen.",
+      "{a} walks back in like someone who nearly did not walk back in. Puts her stuff down, sits at her station, stares at nothing for thirty seconds. \"You alright?\" \"Yeah.\" She is holding together with effort. She survived the lip sync. She has not finished processing that.",
+      "The door opens and the room goes quiet — everyone wants to know who is coming back through it. {a}. She looks tired in a way makeup will not fix. Sits down, puts her hands flat on the table, breathes. \"That was close.\" It was.",
+      "{a} is back and trying to be normal about it, which means she is not normal about it. Laughs too hard at the first joke, works too fast, talks too much. The lip sync was last night and it is still in her body — the adrenaline, the relief, the fear she will be back there next week.",
+      "\"I am never doing that again,\" {a} says. Meaning the bottom two. Meaning the lip sync. Meaning the part where she stood on that stage and did not know if it was over. She might do it again. But the version that walked out last night and the version that walked in this morning are not the same queen.",
     ],
   }),
 
@@ -370,10 +370,10 @@ export const WERK_EVENTS = [
     arcs: ['narrator', 'representation'], when: f => st(f.a, 'temperament') <= 4,
     effects: { pop: { a: 2 }, state: 'fragile' },
     lines: [
-      "It comes out of nowhere. {a} is fine and then she is not fine and there is no transition between the two. She puts her brush down, puts her hands over her face, and cries in a way that sounds like it has been building for longer than today. The room does not rush over. The room gives her space. Somebody puts a hand on her back and lets it stay.",
-      "{a} tries to keep working through it and that is the part that breaks the room. The tears are running and she is still sewing, still trying to get the seam straight, and her hands are shaking too much for the line to hold. She puts it down eventually. She has to. The garment can wait. This cannot.",
-      "She starts to say something about home and the sentence collapses halfway through. {a} sits down on the floor — not a chair, the floor — and the room gets very quiet. Nobody tells her she is strong. Nobody tells her anything. They let it happen because it needs to happen and everybody in the room knows it.",
-      "The makeup {a} spent forty minutes on is gone in about ninety seconds. She is crying and laughing about crying and saying \"I am sorry\" to nobody, and the queen next to her says \"do not be sorry\" and means it. {a} will redo her face. She will be fine. But right now she is not fine and that is allowed.",
+      "It comes out of nowhere. {a} is fine and then she is not fine — no transition. Puts her brush down, hands over her face, and cries in a way that has been building longer than today. The room does not rush over. Somebody puts a hand on her back and lets it stay.",
+      "{a} tries to keep working through it and that is the part that breaks the room. The tears are running and she is still sewing, hands shaking too much for the line to hold. She puts it down eventually. She has to. The garment can wait. This cannot.",
+      "She starts to say something about home and the sentence collapses halfway through. {a} sits on the floor — not a chair, the floor — and the room gets very quiet. Nobody tells her she is strong. They let it happen because it needs to happen.",
+      "The mug {a} spent forty minutes on is gone in ninety seconds. Crying, laughing about crying, saying \"I am sorry\" to nobody. The queen next to her goes \"do not be sorry\" and means it. {a} will redo her face. She will be fine. Right now she is not fine and that is allowed.",
     ],
   }),
   ev({
@@ -382,10 +382,10 @@ export const WERK_EVENTS = [
     arcs: ['hero'], when: f => f.bond >= 0,
     effects: { bond: 2, pop: { a: 2 } },
     lines: [
-      "{b} is crying at her station and pretending she is not, which is somehow worse. {a} does not ask what is wrong. She sits down on the floor next to the chair, close enough that their shoulders touch, and stays there. After a while {b} starts talking. {a} mostly says \"mm\" and \"yeah\" and does not once try to make it better, which is exactly the correct thing to do.",
-      "\"Do you want me to talk you out of it or do you want me to sit here?\" {b} says sit here. So {a} sits there, for a long time, and neither of them says anything much, and at the end of it {b} is able to put her face back on.",
-      "It is the middle of the afternoon and {b} has gone very quiet, which is louder than crying. {a} clocks it from across the room. She brings over two waters, puts one down, does not mention it, and starts talking about absolutely nothing until {b} laughs — properly, wetly — and says \"I hate you.\" She means thank you.",
-      "{a} finds {b} in the corner and does not do the thing where you tell somebody they are strong. She says \"yeah, this is hard, it is supposed to be hard,\" and lets it be true. {b} will remember that longer than she will remember what she was crying about.",
+      "{b} is crying at her station and pretending she is not, which is somehow worse. {a} does not ask what is wrong. Sits on the floor next to the chair, close enough their shoulders touch, and stays. After a while {b} starts talking. {a} mostly says \"mm\" and \"yeah\" and does not once try to make it better. That is the correct thing to do.",
+      "\"Do you want me to talk you out of it or do you want me to sit here?\" {b} says sit here. So {a} sits there, for a long time, and neither of them says much. At the end of it {b} is able to put her face back on.",
+      "Middle of the afternoon and {b} has gone very quiet — which is louder than crying. {a} clocks it from across the room. Brings over two waters, puts one down, does not mention it, starts talking about absolutely nothing until {b} laughs — properly, wetly — and goes \"I hate you.\" She means thank you.",
+      "{a} finds {b} in the corner and does not do the thing where you tell somebody they are strong. \"Yeah. This is hard. It is supposed to be hard.\" Lets it be true. {b} will remember that longer than she will remember what she was crying about.",
     ],
   }),
   ev({
@@ -394,10 +394,10 @@ export const WERK_EVENTS = [
     arcs: ['representation'], when: f => st(f.a, 'loyalty') >= 6,
     effects: { bond: 1.5, pop: { a: 3 } },
     lines: [
-      "{a} starts telling {b} about where she grew up, and it is not a rehearsed version. It is messy, specific, full of people the room will never meet. {b} listens without performing the listening, which is why {a} keeps going. By the end of it the room is quieter than it has been all day.",
-      "\"My mother —\" {a} starts, and then corrects herself, and the correction tells {b} more than the rest of the story. It is not sad, exactly. It is real. {a} describes a kitchen, a smell, a thing someone used to say, and {b} nods because she has a version of this too.",
-      "{a} tells {b} about the town and the bar and the first person who told her she was good at this, and she tells it like she is seeing it again. The room slows down. Queens who were not listening start listening. {a} does not notice. She is somewhere else.",
-      "It starts with a question — {b} asks where {a} is from — and {a} gives an answer that is longer and truer than either of them expected. She talks about the people who raised her, the ones who did not understand, the one who did. {b} does not say much. The right thing to do is not say much.",
+      "{a} starts telling {b} about where she grew up. Not the rehearsed version. Messy, specific, full of people the room will never meet. {b} listens without performing the listening, which is why {a} keeps going. By the end the room is quieter than it has been all day.",
+      "\"My mother —\" {a} starts, then corrects herself. The correction tells {b} more than the rest of the story. Not sad, exactly. Real. A kitchen, a smell, a thing someone used to say. {b} nods because she has a version of this too.",
+      "{a} tells {b} about the town and the bar and the first person who told her she was good at this. Tells it like she is seeing it again. The room slows down. Queens who were not listening start listening. {a} does not notice. She is somewhere else.",
+      "{b} asks where {a} is from and {a} gives an answer that is longer and truer than either of them expected. The people who raised her, the ones who did not understand, the one who did. {b} does not say much. The right thing to do is not say much.",
     ],
   }),
   ev({
@@ -406,10 +406,10 @@ export const WERK_EVENTS = [
     arcs: ['representation', 'underdog'], when: f => true,
     effects: { pop: { a: 2 } },
     lines: [
-      "{a} tells the room about the first night she did drag and it is not the polished origin story. It is a borrowed wig, the wrong shoes, a bar where nobody knew her name. She did not look good. She did not feel good. But she went back the next week, and the week after that, and somewhere in the repetition she became this.",
-      "\"I was terrible,\" {a} says, grinning. She describes the first wig — crooked, cheap, wrong colour — and the first lip sync — forgot the words, tripped over the monitor cable — and the room is laughing because the queen telling the story is not that person anymore, except she is.",
-      "Somebody asks {a} when she started and {a} goes quiet for a second before she answers. She talks about a friend who dared her, a night that changed everything, and a mirror that showed her someone she did not know she could be. She says it simply, without performing it, and the room lets the sentence sit.",
-      "{a} describes the first time she got into drag in a bathroom she should not have been in, using products she borrowed from someone she has lost touch with, and went to a venue she was scared to walk into. She does not make it sound brave. She makes it sound necessary, which is different and harder to say out loud.",
+      "{a} tells the room about the first night she did drag. Not the polished origin story. A borrowed wig, the wrong shoes, a bar where nobody knew her name. She did not look good. She did not feel good. But she went back the next week, and the week after that, and somewhere in the repetition she became this.",
+      "\"I was terrible,\" {a} says, grinning. The first wig — crooked, cheap, wrong colour. The first lip sync — forgot the words, tripped over the monitor cable. The room is laughing because the queen telling the story is not that person anymore. Except she is.",
+      "Somebody asks {a} when she started and she goes quiet for a second. A friend who dared her. A night that changed everything. A mirror that showed her someone she did not know she could be. She says it simply, no performance, and the room lets the sentence sit.",
+      "{a} describes the first time she got into drag in a bathroom she should not have been in, using products borrowed from someone she has lost touch with, headed to a venue she was scared to walk into. She does not make it sound brave. She makes it sound necessary — which is different, and harder to say out loud.",
     ],
   }),
   ev({
@@ -418,10 +418,10 @@ export const WERK_EVENTS = [
     arcs: ['underdog'], when: f => st(f.a, 'temperament') <= 6,
     effects: { pop: { a: 1 }, state: 'fragile' },
     lines: [
-      "{a} says it while she is working, not while she is performing, which is how the room knows she means it: \"I do not think I am supposed to be here.\" Nobody argues with her. Somebody should. Instead they let the sentence hang there, and {a} keeps sewing like she did not just say the truest thing she has said all week.",
-      "\"Everyone in here is better than me.\" {a} says it flat, to the mirror, not looking for a response. She is not fishing — she believes it, and the room can hear the belief. A couple of queens try to correct her. {a} nods like she heard them and keeps working. She did not hear them.",
-      "{a} looks at the row of stations and names, in her head, what every other queen is good at, and then she gets to her own station and draws a blank. She does not say any of this out loud. She does not have to. The way she is sitting says it for her — small, careful, taking up less room than she takes.",
-      "It comes out mid-conversation, casual, almost offhand: \"I keep waiting for them to realise they let the wrong person in.\" {a} laughs after she says it. The laugh is supposed to make it a joke. It is not a joke. The queen sitting next to her knows it is not a joke and squeezes her arm, once, and they both go back to work.",
+      "{a} says it while she is working, not performing, which is how the room knows she means it. \"I do not think I am supposed to be here.\" Nobody argues. Somebody should. They let the sentence hang and {a} keeps sewing like she did not just say the truest thing she has said all week.",
+      "\"Everyone in here is better than me.\" {a} says it flat, to the mirror. She is not fishing — she believes it. A couple queens try to correct her. {a} nods like she heard them, keeps working. She did not hear them.",
+      "{a} looks at the row of stations and names, in her head, what every other queen is good at. Gets to her own station and draws a blank. She does not say it out loud. She does not have to. The way she is sitting says it — small, careful, taking up less room than she needs.",
+      "It comes out mid-conversation, almost offhand: \"I keep waiting for them to realise they let the wrong person in.\" {a} laughs after she says it. The laugh is supposed to make it a joke. It is not a joke. The queen next to her knows it, squeezes her arm once, and they both go back to work.",
     ],
   }),
   ev({
@@ -430,10 +430,10 @@ export const WERK_EVENTS = [
     arcs: ['representation'], when: f => f.bond >= 2,
     effects: { bond: 1.5, pop: { a: 1, b: 1 } },
     lines: [
-      "{a} and {b} are both getting padded and neither of them is performing about it. They talk about hips the way you talk about hips when nobody is watching — what works, what does not, what they wish they could change. It is the most ordinary conversation in the room and also the most honest one.",
-      "They are getting undressed side by side and {a} says something about her body that is not a joke, and {b} says something back that is not a joke either, and for about three minutes they are two people being truthful about what they see in the mirror. It is not a moment. It is just real.",
-      "{b} is taping and {a} is taping and {b} says \"I hate this part\" and {a} says \"me too\" and they both laugh, but underneath the laugh is a conversation about what it costs to do this — the discomfort, the negotiation with the body you have, the body you build on top of it.",
-      "{a} catches {b} looking at herself in the mirror, not the drag version, the in-between version, and {a} says \"you look good\" and means the person, not the outfit. {b} says \"shut up\" but she does not mean shut up. They go back to getting ready and neither of them mentions it again, but something shifted.",
+      "{a} and {b} are both getting padded and neither of them is performing about it. They talk about hips the way you talk about hips when nobody is watching — what works, what does not, what they wish they could change. The most ordinary conversation in the room and also the most honest one.",
+      "They are getting undressed side by side and {a} says something about her body that is not a joke. {b} says something back that is not a joke either. For about three minutes they are two people being truthful about what they see in the mirror. Not a moment. Just real.",
+      "{b} is taping and {a} is taping. \"I hate this part.\" \"Me too.\" They both laugh, but underneath it is a conversation about what it costs to do this — the discomfort, the negotiation with the body you have, the body you build on top of it.",
+      "{a} catches {b} looking at herself in the mirror. Not the drag version — the in-between version. \"You look good,\" {a} says, and means the person, not the outfit. {b} says \"shut up\" but does not mean shut up. They go back to getting ready. Something shifted.",
     ],
   }),
   ev({
@@ -442,10 +442,10 @@ export const WERK_EVENTS = [
     arcs: ['villain', 'relationship'], when: f => f.bond <= -2,
     effects: { bond: 3, pop: { a: 2 }, state: 'mended' },
     lines: [
-      "{a} pulls {b} aside before the room fills up and says it without preamble: \"I was wrong last week and I am sorry.\" She does not explain it or qualify it or make it about herself. She says it, and then she waits. {b} takes a breath, nods, and that is it. The thing that was between them is smaller now.",
-      "\"I owe you an apology.\" {a} says it looking at {b}, not at the floor, and the room pretends not to listen. She names the specific thing she did, says why it was wrong, and does not ask for forgiveness because asking for forgiveness is making it about you. {b} says \"thank you for saying that,\" and they both go back to work.",
-      "{a} sits at {b}'s station first thing in the morning with two coffees. She puts one down and says \"I was terrible to you and I know it.\" {b} picks up the coffee. They talk for a few minutes, quietly, and by the end of it something between them has unclenched.",
-      "It is not a performance. {a} does not do it in front of the room. She waits until they are side by side at the mirrors, leans over, and says \"I should not have said that about you. I am sorry.\" {b} looks at her for a long time, then nods. It is not forgiveness yet. It is the door to forgiveness opening.",
+      "{a} pulls {b} aside before the room fills up. No preamble. \"I was wrong last week and I am sorry.\" Does not explain it, qualify it, or make it about herself. Says it and waits. {b} takes a breath, nods. The thing that was between them is smaller now.",
+      "\"I owe you an apology.\" {a} says it looking at {b}, not the floor. Names the specific thing she did, says why it was wrong, does not ask for forgiveness — because asking is making it about you. {b} says \"thank you for saying that\" and they both go back to work.",
+      "{a} sits at {b}'s station first thing in the morning with two coffees. Puts one down. \"I was terrible to you and I know it.\" {b} picks up the coffee. They talk for a few minutes, quiet, and by the end something between them has unclenched.",
+      "{a} does not do it in front of the room. Waits until they are side by side at the mirrors, leans over. \"I should not have said that about you. I am sorry.\" {b} looks at her for a long time, then nods. Not forgiveness yet. The door to forgiveness opening.",
     ],
   }),
   ev({
@@ -454,10 +454,10 @@ export const WERK_EVENTS = [
     arcs: ['relationship'], when: f => f.bond <= -5,
     effects: { bond: -1, pop: { b: -1 }, state: 'frost' },
     lines: [
-      "{a} tries. She sits down, says the words, means them. {b} listens to the whole thing, waits until {a} is finished, and says \"okay\" in a tone that closes a door rather than opening one. {a} nods, stands up, and walks back to her station. The apology was offered. It was not accepted. The room felt both.",
-      "\"I hear you,\" {b} says, and it is the most devastating version of not accepting an apology, because it acknowledges that the words happened without agreeing that the words were enough. {a} does not push it. There is nothing to push against. {b} goes back to her mirror and the distance between their stations feels wider than before.",
-      "{a} says she is sorry and {b} says \"I appreciate you saying that\" with the flattest delivery the room has heard all season. It is not unkind. It is just done. {b} has moved past the anger and into something colder, and cold does not forgive the way hot does.",
-      "{a} starts the apology and gets about two sentences in before {b} holds up a hand. \"Not now.\" {a} stops. \"Not now\" might mean later and it might mean never, and the way {b} says it does not clarify which. {a} goes back to work. {b} goes back to work. The room exhales very quietly.",
+      "{a} tries. Sits down, says the words, means them. {b} listens to the whole thing, waits until {a} is finished, and says \"okay\" in a tone that closes a door. {a} nods, stands up, walks back to her station. The apology was offered. It was not accepted. The room felt both.",
+      "\"I hear you.\" The most devastating version of not accepting an apology — it acknowledges the words happened without agreeing they were enough. {a} does not push it. There is nothing to push against. {b} goes back to her mirror and the distance between their stations feels wider.",
+      "{a} says she is sorry and {b} says \"I appreciate you saying that\" with the flattest delivery the room has heard all season. Not unkind. Just done. {b} has moved past the anger into something colder, and cold does not forgive the way hot does.",
+      "{a} starts the apology and gets two sentences in before {b} holds up a hand. \"Not now.\" {a} stops. \"Not now\" might mean later. Might mean never. The way {b} says it does not clarify which. They both go back to work. The room exhales very quietly.",
     ],
   }),
 
@@ -468,10 +468,10 @@ export const WERK_EVENTS = [
     arcs: ['narrator'], when: f => d(f.a).comedy >= 7,
     effects: { pop: { a: 3 }, state: 'roomBit' },
     lines: [
-      "{a} starts a character voice at nine in the morning and by noon the entire room is doing it. She created a persona — an assistant, a weather announcer, something fictional and very specific — and everyone keeps adding to it. The bit has layers now. {a} started it, but the room owns it.",
-      "It begins when {a} narrates her own walk to the fabric wall in a voice that is not hers and has no business being that funny. By the time she does it a third time, two other queens are answering in character, and by lunch the room has a whole scene going that nobody planned and nobody wants to stop.",
-      "{a} holds up a piece of fabric and pretends to be a judge critiquing it, and the impression is so sharp that the room loses ten minutes to doing their own versions. It becomes the thing of the day — every decision is narrated in the judge voice, every critique is delivered with the same hand gesture.",
-      "Nobody asked {a} to be the entertainment but she has decided that today she is. She assigns everyone a character from a made-up show that does not exist, and within an hour the room is performing it, complete with a plot, a villain, and a dramatic elimination that gets more elaborate every time someone adds to it.",
+      "{a} starts a character voice at nine in the morning and by noon the entire room is doing it. Some persona — an assistant, a weather announcer, something specific — and everyone keeps adding to it. The bit has layers now. {a} started it but the room owns it.",
+      "It begins when {a} narrates her own walk to the fabric wall in a voice that has no business being that funny. Third time she does it, two queens are answering in character. By lunch the room has a whole scene going that nobody planned and nobody wants to stop.",
+      "{a} holds up a piece of fabric and pretends to be a judge critiquing it. The impression is so sharp the room loses ten minutes doing their own versions. It becomes the thing of the day — every decision narrated in the judge voice, every critique delivered with the same hand gesture.",
+      "Nobody asked {a} to be the entertainment but she decided today she is. Assigns everyone a character from a show that does not exist, and within an hour the room is performing it — plot, villain, dramatic exit that gets more elaborate every time someone adds to it.",
     ],
   }),
   ev({
@@ -480,10 +480,10 @@ export const WERK_EVENTS = [
     arcs: ['narrator'], when: f => d(f.a).comedy >= 7,
     effects: { bond: 0.5, pop: { a: 2 } },
     lines: [
-      "{a} does {b}. The walk. The hand on the hip. The way she says \"absolutely\" when she means maybe. It is three seconds long and it is perfect, and {b}'s face goes through six stages before landing on laughter because the alternative is admitting how accurate it was.",
-      "\"You know what you do?\" {a} says, and then she does it — the exact way {b} checks her reflection, the exact pause before {b} answers a question — and the room erupts. {b} says \"I do not do that\" and everyone in the room says \"you do that\" at the same time.",
-      "{a} stands up, puts her shoulders back, tilts her chin, and becomes {b}. The posture, the voice, the little thing she does with her hands when she is thinking. It lasts ten seconds and it is devastating. {b} watches it happen and says \"I hate you\" with a grin that means she cannot believe how good it was.",
-      "It starts with the walk. {a} crosses the room the way {b} crosses the room — deliberate, slow, with the pause at the end — and by the time she turns around the entire room is dying. {b} is trying not to laugh and failing. \"Am I really like that?\" she asks, and the silence that follows is the answer.",
+      "{a} does {b}. The walk. The hand on the hip. The way she says \"absolutely\" when she means maybe. Three seconds long and it is perfect. {b}'s face goes through six stages before landing on laughter, because the alternative is admitting how accurate it was.",
+      "\"You know what you do?\" Then {a} does it — the exact way {b} checks her reflection, the exact pause before she answers a question. The room erupts. {b} goes \"I do NOT do that\" and every queen says \"you do that\" at the same time.",
+      "{a} stands up, puts her shoulders back, tilts her chin, and becomes {b}. The posture, the voice, the little thing with the hands. Ten seconds. Devastating. {b} watches it happen and says \"I hate you\" with a grin that means she cannot believe how good it was.",
+      "It starts with the walk. {a} crosses the room the way {b} does — deliberate, slow, the pause at the end — and by the time she turns around the room is dying. {b} is trying not to laugh. Failing. \"Am I really like that?\" The silence is the answer.",
     ],
   }),
   ev({
@@ -491,10 +491,10 @@ export const WERK_EVENTS = [
     note: 'She tries for the room and gets nothing.',
     when: f => d(f.a).comedy <= 5, effects: { pop: { a: -1 } },
     lines: [
-      "{a} goes for the joke and the room gives her nothing. Not silence — worse than silence, the polite half-laugh that says we heard it but we are not going to pretend. {a} sits back down and does not try again for the rest of the morning, which is its own kind of loud.",
-      "The setup is long. The delivery is confident. The punchline lands on a room that does not react, and {a} watches it die in real time. She says \"okay\" to herself, picks up her needle, and goes back to work. Comedy is timing and the timing was wrong and she knows it.",
-      "{a} tells a joke that needed the room and the room was not in on it. Two queens smile. Nobody laughs. {a} tries to save it with a second pass and the second pass is worse, which is the rule about saving jokes — the rescue attempt always costs more than the original failure.",
-      "\"You had to be there\" is the thing you say when a joke does not land, except they were there and it still did not land. {a} delivers the line, waits for the reaction, gets a room full of queens looking at their sewing, and learns something about her comedy that she did not want to learn today.",
+      "{a} goes for the joke and the room gives her nothing. Not silence — worse. The polite half-laugh that says we heard it but we are not going to pretend. {a} sits back down and does not try again all morning, which is its own kind of loud.",
+      "Long setup. Confident delivery. The punchline lands on a room that does not react. {a} watches it die in real time. \"Okay.\" Picks up her needle. Comedy is timing and the timing was wrong and she knows it.",
+      "{a} tells a joke that needed the room and the room was not in on it. Two queens smile. Nobody laughs. {a} tries to save it with a second pass — the second pass is worse, which is the rule. The rescue attempt always costs more than the original failure.",
+      "\"You had to be there\" — except they were there and it still did not land. {a} delivers the line, waits for the reaction, gets a room full of queens looking at their sewing. She learns something about her comedy she did not want to learn today.",
     ],
   }),
   ev({
@@ -503,10 +503,10 @@ export const WERK_EVENTS = [
     arcs: ['narrator'], when: f => st(f.a, 'boldness') >= 6,
     effects: { pop: { a: 2 } },
     lines: [
-      "{a} arrives wearing the wig from last night’s runway as a hat, upside down, with sunglasses perched on top of it, and acts like nothing is unusual. She sits at her station, pours coffee into a mug she brought from home that says something unprintable, and starts the day like this is a normal person doing a normal thing.",
-      "Nobody sees {a} do it, but when the room comes back from the break, every single mannequin head is facing the wall. {a} is at her station looking innocent. The investigation takes ten minutes. The laughter takes longer. She never admits it.",
-      "{a} walks into the room on her knees, wearing a robe over her shoulders like a cape, doing a royal wave. It is fully committed, absolutely insane, and the room is screaming before she gets to her station. She stands up, dusts off her knees, and says \"good morning\" like a person who did not just enter a room on all fours.",
-      "Somebody left a pair of heels unattended and {a} puts them on, adds a feather boa from the accessories wall, and does a full runway walk around the room, narrating her own critiques in both voices. It is so stupid and so committed that the whole room stops working to watch, and when she is done she puts everything back exactly where she found it.",
+      "{a} arrives wearing the wig from last night’s runway as a hat — upside down, sunglasses perched on top. Acts like nothing is unusual. Pours coffee into a mug that says something unprintable. Starts the day like this is a normal person doing a normal thing.",
+      "Nobody sees {a} do it, but when the room comes back from break every single mannequin head is facing the wall. {a} is at her station looking innocent. The investigation takes ten minutes. The laughter takes longer. She never admits it.",
+      "{a} walks into the room on her knees, robe over her shoulders like a cape, doing a royal wave. Fully committed, absolutely insane. The room is screaming before she gets to her station. She stands up, dusts off her knees. \"Good morning.\"",
+      "Somebody left a pair of heels unattended and {a} puts them on, adds a feather boa from the wall, and does a full runway walk around the room narrating her own critiques in both voices. So stupid and so committed the whole room stops working. When she is done she puts everything back exactly where she found it.",
     ],
   }),
 
@@ -516,10 +516,10 @@ export const WERK_EVENTS = [
     note: 'She looks at the station of whoever went home last night.',
     when: f => f.someoneLeft, effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
-      "The room is one station emptier than it was and nobody has said so out loud. {a} keeps almost looking at it. When she finally does, it is only for a second, and then she picks her own brush up again like nothing happened. That is what the room does now.",
-      "Somebody has already tidied the empty station, which is somehow the worst part — it looks like nobody was ever there. {a} stands in front of it for a moment on her way past. \"She should not have gone,\" she says, to nobody, and then goes and sits down.",
-      "{a} is the first one back in the room and she has it to herself for about ninety seconds. She uses them standing at the empty mirror, reading the message left on it, not touching anything. When the others come in she is already at her own station with her back to it.",
-      "\"It is getting real now.\" {a} says it to the room and the room does not answer, because everybody is thinking the same thing and saying it twice would make it heavier. The empty chair stays empty all day. Nobody moves their stuff into the space.",
+      "One station emptier and nobody has said so. {a} keeps almost looking at it. When she finally does, it is only for a second, then she picks her own brush up like nothing happened. That is what the room does now.",
+      "Somebody already tidied the empty station, which is the worst part — looks like nobody was ever there. {a} stands in front of it on her way past. \"She should not have gone.\" Says it to nobody. Sits down.",
+      "{a} is the first one back in the room. Has it to herself for ninety seconds. Uses them standing at the empty mirror, reading the message left on it, not touching anything. When the others come in she is already at her own station with her back to it.",
+      "\"It is getting real now.\" {a} says it and the room does not answer, because everybody is thinking the same thing and saying it twice would make it heavier. The empty chair stays empty all day.",
     ],
   }),
   ev({
@@ -527,10 +527,10 @@ export const WERK_EVENTS = [
     note: 'She reads the message the eliminated queen left in lipstick.',
     when: f => f.someoneLeft, effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
-      "{a} finds the message on the mirror before anyone else does — written in lipstick, the way queens do when they go, a couple of words and a name. She reads it twice. She does not wipe it off. She leaves it for the room to find, because it was meant for all of them.",
-      "The lipstick on the mirror is smudged where somebody wrote too fast, and {a} stands there trying to make out the last word. When she gets it, she does not say anything. She puts her hand on the glass for a second, right next to the writing, and then she walks away and starts her day.",
-      "{a} is the one who reads the mirror message out loud, because someone has to. She reads it clearly, without commentary, and then the room is quiet for a moment that belongs to the queen who left it. Nobody touches the mirror for the rest of the morning.",
-      "There is a heart drawn in lipstick where her name used to be. {a} sees it first and calls the others over, and they all stand around the mirror reading the words she left behind. It is short. It is kind. {a} takes a photo of it with her eyes and sits down, and the room moves on because the room has to move on.",
+      "{a} finds the message on the mirror before anyone else. Lipstick, the way queens do when they go — a couple of words and a name. She reads it twice. Does not wipe it off. Leaves it for the room, because it was meant for all of them.",
+      "The lipstick is smudged where somebody wrote too fast. {a} stands there trying to make out the last word. When she gets it she does not say anything. Puts her hand on the glass for a second, right next to the writing, then walks away and starts her day.",
+      "{a} is the one who reads the mirror message out loud, because someone has to. Reads it clearly, no commentary, and the room is quiet for a moment that belongs to the queen who left it. Nobody touches the mirror for the rest of the morning.",
+      "There is a heart drawn in lipstick where her name used to be. {a} sees it first, calls the others over. They stand around the mirror reading the words she left. Short. Kind. {a} sits down and the room moves on because the room has to move on.",
     ],
   }),
   ev({
@@ -539,10 +539,10 @@ export const WERK_EVENTS = [
     when: f => f.someoneLeft && (f.lastCall === 'BTM' || f.lastCall === 'BTM2' || f.lastCall === 'LOW'),
     effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
-      "{a} is relieved and she hates that she is relieved. She survived and someone else did not and the maths of that is simple and ugly: their loss is her gain. She puts her face on and pretends she is not thinking about it, but she is thinking about it, and the mirror knows.",
-      "The first thing {a} feels when she sits down this morning is glad, and the second thing she feels is ashamed of being glad. She was in the bottom and she stayed and the other queen went home and somewhere in the middle of all that is a person who is grateful it was not her, and she does not like that person very much right now.",
-      "{a} should be celebrating — she is still here — but the way she is still here is by being the one who was slightly less bad, and that is not the kind of victory that feels good. She is quiet all morning. She works. She does not talk about last night. The relief is real and the guilt is real and they sit together badly.",
-      "It is the morning after and {a} is alive in the way you are alive after something almost went wrong. She catches herself being happy and corrects it, then catches herself correcting it and wonders if that is worse. The queen who left was her friend. {a} is still here. Both things are true and neither one cancels the other.",
+      "{a} is relieved and she hates that she is relieved. She survived and someone else did not. The maths is simple and ugly — their loss is her gain. She puts her face on and pretends she is not thinking about it. The mirror knows she is.",
+      "First thing {a} feels sitting down this morning is glad. Second thing is ashamed of being glad. She was in the bottom. She stayed. The other queen went home. Somewhere in the middle of that is a person who is grateful it was not her, and she does not like that person very much right now.",
+      "{a} should be celebrating — she is still here — but the way she is still here is by being the one who was slightly less bad. That is not the kind of victory that feels good. She is quiet all morning. Works. Does not talk about last night.",
+      "Morning after and {a} is alive the way you are alive after something almost went wrong. She catches herself being happy and corrects it, then catches herself correcting it. The queen who left was her friend. {a} is still here. Both things are true and neither cancels the other.",
     ],
   }),
   ev({
@@ -551,10 +551,10 @@ export const WERK_EVENTS = [
     arcs: ['relationship'], when: f => f.lostAFriend,
     effects: { pop: { a: 2 }, state: 'adrift' },
     lines: [
-      "The queen who went home was the one {a} sat with, ate with, talked to at the end of every day. {a} looks at the empty station and does not cry, which is somehow more noticeable. She moves through the morning like she is looking for someone who is not there, because she is.",
-      "{a} keeps turning to say something to a station that is empty. She does it three times before she stops doing it, and each time the pause where the answer would have been is longer. The room notices. Nobody fills the space. It was not their space to fill.",
-      "\"She was my person in here.\" {a} says it once, early, and does not say it again. She works alone all day. She eats alone. She is not upset, exactly — she is recalibrating, figuring out who she is in a room that no longer has the one person who made it make sense.",
-      "The hardest part is not the missing queen. The hardest part is that the room keeps going. {a} sits at her station and watches everyone work and laugh and argue and she wonders when she stopped being someone who could do that, and the answer is last night, when her closest friend sashayed away.",
+      "The queen who went home was the one {a} sat with, ate with, talked to at the end of every day. {a} looks at the empty station and does not cry, which is somehow more noticeable. She moves through the morning like she is looking for someone who is not there. Because she is.",
+      "{a} keeps turning to say something to a station that is empty. Does it three times before she stops. Each time the pause where the answer would have been is longer. The room notices. Nobody fills the space. It was not their space to fill.",
+      "\"She was my person in here.\" {a} says it once, early, and does not say it again. Works alone all day. Eats alone. She is not upset, exactly — she is recalibrating. Figuring out who she is in a room that no longer has the one person who made it make sense.",
+      "The hardest part is not the missing queen. The hardest part is the room keeps going. {a} watches everyone work and laugh and argue and she wonders when she stopped being someone who could do that. The answer is last night, when her closest friend sashayed away.",
     ],
   }),
   ev({
@@ -563,10 +563,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.lostAnEnemy,
     effects: { pop: { a: -1 } },
     lines: [
-      "{a} walks into the room, looks at the empty station, and does not pretend to be sad about it. \"Good,\" she says, under her breath but not far enough under. A couple of queens hear it. Nobody challenges her, because they all know exactly who left and they all know exactly how {a} felt about her.",
-      "The station is empty and {a} is lighter this morning, physically lighter, like she has been carrying something that has been put down. She does not say anything unkind. She does not have to. The absence of grief is loud enough.",
-      "{a} sits down, looks at the gap in the row of stations, and sips her coffee with the energy of someone who has been waiting for this specific chair to be empty. She is not cruel about it. She is just honest, and the honesty is that the room is better for her now.",
-      "\"I am not going to pretend,\" {a} says, and she does not pretend. The queen who left was the one who made her life difficult every single day and now that queen is gone and {a} is not hiding the relief. A few queens exchange looks. {a} does not care about the looks. She cares about having her room back.",
+      "{a} walks into the room, looks at the empty station, and does not pretend to be sad. \"Good.\" Under her breath but not far enough under. A couple queens hear it. Nobody challenges her — they all know who left and how {a} felt about her.",
+      "The station is empty and {a} is lighter this morning. Physically lighter, like she has been carrying something that just got put down. She does not say anything unkind. She does not have to. The absence of grief is loud enough.",
+      "{a} sits down, looks at the gap, sips her coffee with the energy of someone who has been waiting for this specific chair to be empty. Not cruel about it. Just honest. The honesty is that the room is better for her now.",
+      "\"I am not going to pretend.\" And she does not. The queen who left made her life difficult every single day. Now she is gone and {a} is not hiding the relief. A few queens exchange looks. {a} does not care about the looks. She cares about having her room back.",
     ],
   }),
 
@@ -577,10 +577,10 @@ export const WERK_EVENTS = [
     arcs: ['frontrunner'], when: f => f.winsA >= 1 && f.winsB >= 1,
     effects: { bond: 1, pop: { a: -1, b: -1 } },
     lines: [
-      "{a} and {b} are working near each other and they both know they are the two. Nobody else in the room has their record. They do not say it — saying it would make them targets — but the way they glance at each other's work has changed from curiosity to measurement.",
-      "\"You know it is going to be us at the end,\" {a} says, quiet enough that the room does not hear. {b} does not argue. She nods once. They go back to their stations and work harder than they were working before, and the respect between them is real, which is exactly why it is also dangerous.",
-      "{b} and {a} end up at the mirror at the same time and {b} says \"I am glad you are still here\" and means it, and the part she does not say is that she is glad because she wants to beat {a} when it matters, not have her go early to someone worse. {a} hears both parts.",
-      "They are having coffee and talking about nothing when {a} says \"I think we are the ones who make it\" and {b} says \"I think so too\" and for a second they are allies and rivals in the same breath. Neither of them will say this in front of the group. The group does not need to know.",
+      "{a} and {b} are working near each other and they both know they are the two. Nobody else has their record. They do not say it — saying it makes them targets — but the way they glance at each other's work has changed from curiosity to measurement.",
+      "\"You know it is going to be us at the end.\" {a} says it quiet enough the room does not hear. {b} does not argue. Nods once. They go back to their stations and work harder than before. The respect is real, which is exactly why it is also dangerous.",
+      "{b} and {a} end up at the mirror at the same time. \"I am glad you are still here,\" {b} says, and means it. The part she does not say is she is glad because she wants to beat {a} when it matters, not have her go early to someone worse. {a} hears both parts.",
+      "Having coffee, talking about nothing. {a} says \"I think we are the ones who make it.\" {b} says \"I think so too.\" For a second they are allies and rivals in the same breath. Neither will say this in front of the group.",
     ],
   }),
   ev({
@@ -589,10 +589,10 @@ export const WERK_EVENTS = [
     arcs: ['underdog'], when: f => f.bond <= 2,
     effects: { bond: -1, pop: { a: 2 }, state: 'fuel' },
     lines: [
-      "{b} says it to the room, not to {a}, which is the part that stings: \"I do not see it.\" Four words about {a}'s chances, said while {a} is right there, said like it is obvious. {a} hears it. {a} files it. {a} will use it later, on the runway, when it matters more than anything {b} has ever sewn.",
-      "\"She is sweet but she is not a threat,\" {b} says, and {a} is standing close enough to hear every word. {a} does not correct her. She goes back to her station and works with the kind of focus you only get from someone who has just been told she cannot do the thing she is about to do.",
-      "{b} ranks the queens out loud — a game, not meant to be cruel — and puts {a} near the bottom. {a} laughs along. She does not argue. But the way she picks up her scissors afterwards is different, and the way she cuts is different, and if {b} were watching she would see it, but {b} is not watching, which is {b}'s mistake.",
-      "{a} overhears {b} telling someone that {a} is not ready for this level, and the sentence does not make {a} angry — it makes {a} quiet, which is worse. She tucks the words away in the part of her brain where fuel lives, and she will pull them out on the night she needs them most.",
+      "{b} says it to the room, not to {a}, which is the part that stings. \"I do not see it.\" Four words about {a}'s chances, said while {a} is right there, said like it is obvious. {a} hears it. Files it. Will use it later, on the runway, when it matters.",
+      "\"She is sweet but she is not a threat.\" {a} is standing close enough to hear every word. Does not correct her. Goes back to her station and works with the kind of focus you only get from someone who just got told she cannot do the thing she is about to do.",
+      "{b} ranks the queens out loud — a game, not meant to be cruel — and puts {a} near the bottom. {a} laughs along. Does not argue. But the way she picks up her scissors afterwards is different. If {b} were watching she would see it. {b} is not watching, which is {b}'s mistake.",
+      "{a} overhears {b} telling someone she is not ready for this level. The sentence does not make {a} angry — it makes her quiet, which is worse. She tucks the words away in the part of her brain where fuel lives. She will pull them out the night she needs them most.",
     ],
   }),
   ev({
@@ -600,10 +600,10 @@ export const WERK_EVENTS = [
     note: 'The whole room ends up singing along to something and forgetting the competition for four minutes.',
     when: f => true, effects: { pop: { a: 1 }, state: 'roomWarm' },
     lines: [
-      "It starts with {a} humming something and then someone joins in and then someone else joins in and within ninety seconds the whole room is singing along to the same song. Nobody planned it. Nobody remembers who started it. For about four minutes there is no challenge, no judges, no elimination — just a room full of queens making noise together.",
-      "{a} plays something on her phone and the first queen who hears it starts singing. By the chorus every station in the room has stopped working. They are all singing, badly, happily, at a volume that makes the mirrors shake. When it ends somebody says \"one more\" and they do one more.",
-      "The room is tense and then {a} starts singing under her breath and somebody picks it up and somebody else harmonises and within a minute the whole room is doing the thing where you sing a song together and nobody is performing it. They are just in a room, together, being loud about something that is not the challenge.",
-      "{a} does a run — an actual, full, vocal run — and the queen next to her gasps and says \"do that again,\" and {a} does it again, and the whole room applauds like they are at a show that is not this show. For a few minutes the sewing machines are quiet and the room is warm and nobody remembers what they were worried about.",
+      "{a} starts humming. Someone joins in. Someone else joins in. Ninety seconds and the whole room is singing the same song. Nobody planned it. For four minutes there is no challenge, no judges, no runway — just queens making noise together.",
+      "{a} plays something on her phone and the first queen who hears it starts singing. By the chorus every station has stopped working. Singing, badly, happily, at a volume that makes the mirrors shake. When it ends somebody says \"one more\" and they do one more.",
+      "The room is tense. Then {a} starts singing under her breath, somebody picks it up, somebody harmonises, and within a minute the whole room is doing the thing where you sing together and nobody is performing it. Just being loud about something that is not the challenge.",
+      "{a} does a run — an actual, full, vocal run — and the queen next to her gasps. \"Do that again.\" {a} does it again. The whole room applauds like they are at a different show. For a few minutes the machines are quiet and nobody remembers what they were worried about.",
     ],
   }),
   ev({
@@ -611,10 +611,10 @@ export const WERK_EVENTS = [
     note: 'They rehash what the judges said last week, and disagree about it.',
     when: f => f.episode > 1, effects: { bond: -0.5, pop: { a: 1 } },
     lines: [
-      "\"Did you hear what the judges said about the construction?\" {a} asks, and {b} heard, and they disagree about what it meant. {a} thinks the critique was about proportion. {b} thinks it was about fabric choice. They go back and forth about it for ten minutes and neither of them changes the other's mind.",
-      "{a} and {b} are going over last week's critiques and {a} thinks the judges were wrong about {b}. {b} does not think the judges were wrong about {b}. This is an awkward thing to disagree about, because one of them is saying \"you deserved better\" and the other is saying \"no, I earned that.\"",
-      "\"They clocked you for the same thing they praised her for,\" {a} says, and {b} looks up, because {a} is right and it is the kind of right that makes the whole judging feel uneven. They talk about it, not loudly, but with enough heat that the queens nearby start listening.",
-      "{b} replays the judges' comments word by word and {a} offers a different reading — not better, just different — and the conversation turns into a debate about whether the judges even saw the same outfit {b} sent down the runway. By the end of it they have not agreed on anything, but they both feel heard.",
+      "\"Did you hear what the judges said about the construction?\" {b} heard. They disagree about what it meant. {a} thinks proportion. {b} thinks fabric choice. Ten minutes of back and forth and neither changes the other's mind.",
+      "{a} thinks the judges were wrong about {b}. {b} does not think the judges were wrong about {b}. Awkward thing to disagree about — one of them is saying \"you deserved better\" and the other is saying \"no, I earned that.\"",
+      "\"They clocked you for the same thing they praised her for.\" {b} looks up, because {a} is right and it is the kind of right that makes the whole judging feel uneven. They talk about it — not loud, but with enough heat that the queens nearby start listening.",
+      "{b} replays the judges' comments word by word. {a} offers a different reading — not better, just different — and it turns into a debate about whether the judges even saw the same outfit {b} sent down the runway. By the end they have not agreed on anything, but they both feel heard.",
     ],
   }),
   ev({
@@ -622,10 +622,10 @@ export const WERK_EVENTS = [
     note: 'Early season. She is still working out who everybody is.',
     when: f => f.phase < 0.45, effects: { pop: { a: 1 } },
     lines: [
-      "{a} is still learning who everyone is. She watches from her station — who talks to whom, who works alone, who fills the silence and who sits in it. She has not figured out where she fits yet, and the not-knowing is both exciting and uncomfortable, like the first week of any room you have ever walked into.",
-      "The room is full of people {a} does not know yet, and she is paying attention in the way you pay attention when everything is new. Who is funny, who is serious, who takes up space and who gives it away. She files it all without writing any of it down, and by the end of the week she will have a map.",
-      "{a} is still in the phase where she laughs at every joke, agrees with every opinion, and mirrors whoever she is sitting next to. She has not found her voice in the room yet. She is still borrowing everyone else's, and the room is too new for anyone to notice.",
-      "Early days. {a} is being careful — careful with her opinions, careful with her humour, careful with how much space she takes. The room has not settled yet. Nobody knows who is an ally and who is a rival, and until that shakes out, {a} is going to keep being polite and watching.",
+      "{a} is still learning who everyone is. Watches from her station — who talks to whom, who works alone, who fills the silence, who sits in it. She has not figured out where she fits yet. The not-knowing is exciting and uncomfortable, like the first week of any room.",
+      "The room is full of people {a} does not know yet. She is paying attention the way you do when everything is new. Who is funny, who is serious, who takes up space, who gives it away. By the end of the week she will have a map.",
+      "{a} is still in the phase where she laughs at every joke, agrees with every opinion, mirrors whoever she is next to. She has not found her voice in the room yet. Still borrowing everyone else's, and the room is too new for anyone to notice.",
+      "Early days. {a} is being careful — opinions, humour, how much space she takes. The room has not settled yet. Nobody knows who is an ally and who is a rival. Until that shakes out she is going to keep being polite and watching.",
     ],
   }),
   ev({
@@ -634,10 +634,10 @@ export const WERK_EVENTS = [
     when: f => f.phase > 0.6 && f.roomSize <= 6,
     effects: { pop: { a: 1 }, state: 'endgame' },
     lines: [
-      "{a} counts the stations out loud and does not like the answer. She can see everyone from where she is sitting. The room that started full now fits in a glance, and {a} says \"it is getting small in here\" and means it both ways — the physical room is the same, but the space to hide has gone.",
-      "\"There are not many of us left.\" {a} says it to the mirror and the mirror does not answer, but the number sits in the room like furniture. It is a small number. It is the number where everyone knows where they stand and nobody can pretend they do not.",
-      "{a} looks at the queens who are left and realises she likes every one of them, which is a problem, because some of them are going home and she is going to have to watch. The room is warmer now than it was at the start. It is also more dangerous, and {a} can feel both things at once.",
-      "The room is small enough that {a} can hear every conversation from her station. She can hear who is nervous and who is confident and who is pretending. There is no hiding at this stage. Every choice is visible. Every runway is a statement. {a} knows this is the part that counts, and the weight of it shows in how carefully she works.",
+      "{a} counts the stations out loud and does not like the answer. The room that started full now fits in a glance. \"It is getting small in here.\" She means it both ways — the room is the same size but the space to hide has gone.",
+      "\"There are not many of us left.\" {a} says it to the mirror. The number sits in the room like furniture. Small enough that everyone knows where they stand and nobody can pretend they do not.",
+      "{a} looks at the queens who are left and realises she likes every one of them, which is a problem — some of them are going home and she is going to have to watch. The room is warmer now than at the start. Also more dangerous. She can feel both.",
+      "The room is small enough that {a} can hear every conversation from her station. Who is nervous, who is confident, who is pretending. No hiding at this stage. Every choice is visible. Every runway is a statement. The weight of that shows in how carefully she works.",
     ],
   }),
   // ── FILLING THE THIN SLOTS ───────────────────────────────────────────
@@ -651,10 +651,10 @@ export const WERK_EVENTS = [
     note: 'She is the first back in the room and has it to herself for a minute.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [
-      "{a} is the first one back in the room and she has it to herself for a minute before anyone else arrives. She turns the lights on, walks past the stations, and sits at hers in the quiet. She looks at the empty chairs and the silent machines and the mirrors that are just mirrors when nobody is in front of them. It is a different room without people in it.",
-      "The door opens and {a} walks into a room that does not have anyone in it yet. She puts her bag down slowly, sets up her station the way she likes it, and has about ninety seconds of peace. She uses them to breathe, to think about nothing, to be a person in a room before she has to be a queen in a challenge.",
-      "{a} arrives before the call and the werkroom is hers alone. No music, no chatter, no machines. She walks the length of the mirrors, touches the edge of her station, and sits down in the kind of silence that only exists when you are the first person somewhere. When the door opens again, she is ready.",
-      "There is a version of the room that only exists at this hour, before the rest of them arrive, and {a} has it to herself. She sits. She breathes. She looks at the fabric wall like it is a menu for a day that has not started. When the first voice comes through the door, the room changes, but for one minute it was hers.",
+      "{a} is the first one back. Turns the lights on, walks past the stations, sits at hers in the quiet. Empty chairs, silent machines, mirrors that are just mirrors when nobody is in front of them. Different room without people in it.",
+      "The door opens and {a} walks into a room with nobody in it yet. Puts her bag down, sets up her station the way she likes it, and has ninety seconds of peace. She uses them to breathe, to think about nothing, to be a person before she has to be a queen.",
+      "{a} arrives before the call and the werkroom is hers alone. No music, no chatter, no machines. She walks the length of the mirrors, touches the edge of her station, sits down in the kind of silence that only exists when you are the first person somewhere.",
+      "There is a version of the room that only exists at this hour, before the rest arrive. {a} has it to herself. She sits. Breathes. Looks at the fabric wall like a menu for a day that has not started. When the first voice comes through the door the room changes — but for one minute it was hers.",
     ],
   }),
   ev({
@@ -662,10 +662,10 @@ export const WERK_EVENTS = [
     note: 'Two queens who are not really awake yet, being companionable about it.',
     when: f => true, effects: { bond: 0.5 },
     lines: [
-      "{a} and {b} are both holding coffee and neither of them is talking. They are sitting close enough that it is companionable and far enough apart that it is not a conversation. Every now and then one of them sighs, and the other one nods, and that is all the communication the morning requires.",
-      "It is too early for words. {a} and {b} are at their stations with their mugs, not making eye contact, not performing, just existing side by side in that pre-drag state where the wig is off and the defences are down. One of them yawns. The other one yawns back. That is the whole scene.",
-      "{b} puts a coffee on {a}'s station without being asked. {a} drinks it without saying thank you, because at this hour \"thank you\" is too many syllables and the coffee says it better anyway. They sit in the quiet and let the morning happen around them.",
-      "Neither of them is a morning person and they have found each other, the way non-morning people do — by the coffee, by the silence, by the mutual understanding that nothing said before the second cup actually counts. {a} and {b} sit together and do not speak, and it is the most social either of them will be for an hour.",
+      "{a} and {b} are both holding coffee and neither is talking. Close enough that it is companionable, far enough that it is not a conversation. One sighs. The other nods. That is all the communication the morning requires.",
+      "Too early for words. {a} and {b} are at their stations with their mugs. Not performing, just existing side by side in that pre-drag state where the wig is off and the defences are down. One yawns. The other yawns back. That is the whole scene.",
+      "{b} puts a coffee on {a}'s station without being asked. {a} drinks it without saying thank you — at this hour \"thank you\" is too many syllables and the coffee says it better. They sit in the quiet and let the morning happen around them.",
+      "{a} and {b} are both non-morning people and they have found each other the way non-morning people do — by the coffee, by the silence, by the understanding that nothing said before the second cup actually counts.",
     ],
   }),
   ev({
@@ -673,10 +673,10 @@ export const WERK_EVENTS = [
     note: 'They go back over what happened on the main stage, still processing it.',
     when: f => f.episode > 1, effects: { bond: 0.5, pop: { a: 1 } },
     lines: [
-      "{a} and {b} are still processing last night. \"Did you see her face when they called the bottom?\" {b} asks, and {a} did, and they go through it moment by moment — the call, the reaction, the lip sync, the decision — trying to make sense of it now that the adrenaline is gone.",
-      "\"I thought they were going to say my name,\" {a} says, and {b} says \"me too\" and the honesty of that opens the conversation up. They talk about what the judges saw, what they missed, and whether last night changed anything, and by the end of it they are both looking at today differently.",
-      "{b} brings it up first: \"Last night was wild.\" {a} agrees. They pick apart the elimination, the critiques, the moment when the whole room held its breath, and the conversation turns into the kind of analysis that only makes sense when you are in it. Outside this room it would sound obsessive. In here it is just morning.",
-      "They are both replaying it. {a} goes through what the judges said and {b} interrupts with what the judges meant, and they disagree, and the disagreement is useful because it shows them both angles they did not have last night. The main stage always looks different the morning after.",
+      "{a} and {b} are still processing last night. \"Did you see her face when they called the bottom?\" They go through it moment by moment — the call, the reaction, the lip sync, the decision — trying to make sense of it now that the adrenaline is gone.",
+      "\"I thought they were going to say my name.\" {a} says it. {b} says \"me too\" and the honesty opens the conversation. What the judges saw, what they missed, whether last night changed anything. By the end they are both looking at today differently.",
+      "\"Last night was wild.\" {a} agrees. They pick apart the critiques, the moment when the whole room held its breath. The kind of analysis that only makes sense when you are in it. Outside this room it would sound obsessive. In here it is just morning.",
+      "They are both replaying it. {a} goes through what the judges said and {b} interrupts with what the judges meant. They disagree, and the disagreement is useful — shows them both angles they did not have last night. The main stage always looks different the morning after.",
     ],
   }),
   ev({
@@ -684,10 +684,10 @@ export const WERK_EVENTS = [
     note: 'She never took the makeup off and the room can tell what kind of night she had.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [
-      "{a} walks in and she is still in last night's face. The lashes are off but the foundation is there, the liner is smudged, and the look on her face says she either could not sleep or chose not to. She sits down, stares at the mirror, and does not start getting ready. She starts getting present.",
-      "The eyeliner from the runway is still on and {a} has not tried to fix it, which tells the room everything about the kind of night she had. She sits at her station with the look of someone who lay in bed going over every second of the main stage. She will take it off. She will get ready. But right now she is still in last night.",
-      "{a} arrives looking like a queen who fell asleep in her makeup, because she did. One side of the liner is sharp and the other side is on the pillow somewhere. She does not rush to fix it. She lets the room see her like this, which is either vulnerability or exhaustion, and this morning they are the same thing.",
-      "There is glitter in {a}'s hairline and a smudge of lipstick on her jaw and she walks in like neither of those things exist. The room clocks it immediately. Somebody says \"rough night?\" and {a} says \"I do not want to talk about it\" with a grin that means she absolutely wants to talk about it, just not yet.",
+      "{a} walks in still in last night's face. Lashes off but the foundation is there, liner smudged. She sits down, stares at the mirror, and does not start getting ready. She starts getting present.",
+      "The eyeliner from the runway is still on and {a} has not tried to fix it. That tells the room everything about the kind of night she had. She sat in bed going over every second of the main stage. She will take it off. She will get ready. But right now she is still in last night.",
+      "{a} arrives looking like a queen who fell asleep in her makeup, because she did. One side of the liner is sharp. The other side is on the pillow somewhere. She does not rush to fix it. Lets the room see her like this — either vulnerability or exhaustion, and this morning they are the same thing.",
+      "Glitter in {a}'s hairline. Lipstick smudge on her jaw. She walks in like neither exists. The room clocks it immediately. \"Rough night?\" {a} says \"I do not want to talk about it\" with a grin that means she absolutely wants to talk about it. Just not yet.",
     ],
   }),
   ev({
@@ -695,10 +695,10 @@ export const WERK_EVENTS = [
     note: 'She works out how many are left and says the number out loud.',
     when: f => f.episode > 2 && f.someoneLeft, effects: { pop: { a: 1 }, state: 'sober' },
     lines: [
-      "{a} counts the chairs. Out loud, pointing at each one, like a child counting something important. She gets to the number and says it again. The room does not need her to explain what the number means. Everyone has been counting. She is just the one who said it.",
-      "\"How many are we now?\" {a} asks, and then counts before anyone answers. The number is smaller than it was. It is always smaller than it was. She says it with the tone of someone who is realising for the first time that this is a game she might actually win, and the thought sits on her face for a long time.",
-      "{a} looks at the empty stations and the occupied ones and says a number into the room. Nobody responds because the number does not need a response. It is a fact. The fact is that there are fewer of them than there used to be, and every week the fact gets heavier.",
-      "She does not do it dramatically. {a} just scans the room, counts the queens who are in it, and nods to herself. The nod says: this is real now. The number is small enough that everyone left is someone she knows, someone she has worked beside, someone she will have to beat. She picks up her brush and starts.",
+      "{a} counts the chairs. Out loud, pointing at each one. Gets to the number and says it again. The room does not need her to explain what it means. Everyone has been counting. She is just the one who said it.",
+      "\"How many are we now?\" {a} counts before anyone answers. The number is smaller than it was. Always smaller. She says it with the tone of someone realising for the first time that she might actually win this thing.",
+      "{a} looks at the empty stations and the occupied ones and says a number into the room. Nobody responds because the number does not need a response. Fewer of them than there used to be. Every week the fact gets heavier.",
+      "{a} scans the room, counts the queens in it, nods to herself. The nod says: this is real now. The number is small enough that everyone left is someone she knows, someone she has worked beside, someone she will have to beat.",
     ],
   }),
   ev({
@@ -706,10 +706,10 @@ export const WERK_EVENTS = [
     note: 'The unglamorous mechanics of getting into drag, done side by side.',
     when: f => true, effects: { bond: 0.5, pop: { a: 1 } },
     lines: [
-      "{a} and {b} are side by side doing the unglamorous part — the taping, the tucking, the padding, the part nobody puts on a poster. They do it like people who have done this a thousand times, passing the tape back and forth without looking, complaining about the same things they always complain about. It is routine. It is also the most intimate the room gets.",
-      "\"Hand me the tape.\" {b} does not specify which tape. {a} knows which tape. This is what happens when two queens have been getting into drag next to each other long enough — the shorthand replaces the sentence. They work in near-silence, taping and tucking, and the only conversation is functional: \"higher,\" \"hold this,\" \"zip me.\"",
-      "{a} is padding and {b} is taping and neither of them is performing about it. The process of turning into a drag queen is mechanical and sweaty and involves a lot of medical tape, and doing it next to someone means you have seen them at their least glamorous, which is its own kind of bond.",
-      "They are both in the in-between stage — not boy, not queen, somewhere in the middle where the padding is on but the face is not — and {b} says \"I look insane\" and {a} says \"you look exactly how I look\" and they both laugh at the absurdity of what they are about to become. Getting into drag is ridiculous. They love it.",
+      "{a} and {b} are side by side doing the unglamorous part — taping, tucking, padding. The part nobody puts on a poster. Passing the tape without looking, complaining about the same things they always complain about. Routine. Also the most intimate the room gets.",
+      "\"Hand me the tape.\" {b} does not specify which tape. {a} knows which tape. That is what happens when two queens get into drag next to each other long enough — shorthand replaces the sentence. \"Higher.\" \"Hold this.\" \"Zip me.\"",
+      "{a} is padding and {b} is taping and neither is performing about it. The process of turning into a drag queen is mechanical, sweaty, and involves a lot of medical tape. Doing it next to someone means you have seen them at their least glamorous, which is its own kind of bond.",
+      "They are in the in-between stage — not boy, not queen, somewhere in the middle where the padding is on but the face is not. {b} goes \"I look insane\" and {a} says \"you look exactly how I look\" and they both laugh at the absurdity of what they are about to become. Getting into drag is ridiculous. They love it.",
     ],
   }),
   ev({
@@ -717,10 +717,10 @@ export const WERK_EVENTS = [
     note: 'Fully painted, alone with the mirror for a second before the stage.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [
-      "{a} is fully painted, fully dressed, and alone with the mirror for the first time all day. She looks at herself, not the way you check your makeup — deeper than that, the way you look at a person you have built. She adjusts one thing. Then she stops adjusting and just looks. The queen in the mirror looks back.",
-      "Everyone else is still getting ready. {a} is done. She stands in front of the mirror in the finished look and takes it in — the wig, the jewellery, the silhouette, the thing she was imagining when she cut the first pattern. It is not perfect. It is close. She nods once, to herself, and that nod is the moment before the stage.",
-      "{a} turns in the mirror, checks the back, checks the side, and then faces forward and holds still. This is the version of herself she is sending out tonight. For a second she is not a queen in a challenge — she is a person looking at what she made of herself, and it is enough. It is going to have to be enough.",
-      "The room is chaos behind her. {a} does not hear it. She is standing at the mirror with her eyes on her own eyes, and the look she gives herself is not vanity — it is recognition. She knows what she looks like. She knows what it cost. She breathes in, breathes out, and turns to walk to the stage.",
+      "{a} is fully painted, fully dressed, and alone with the mirror for the first time all day. She looks at herself — not the way you check makeup, deeper than that, the way you look at a person you built. Adjusts one thing. Stops adjusting. Just looks. The queen in the mirror looks back.",
+      "Everyone else is still getting ready. {a} is done. She stands in front of the mirror in the finished look — the wig, the jewellery, the silhouette, the thing she imagined when she cut the first pattern. Not perfect. Close. She nods once to herself. That nod is the moment before the stage.",
+      "{a} turns in the mirror, checks the back, checks the side, faces forward and holds still. This is the version of herself she is sending out tonight. For a second she is not a queen in a challenge — she is a person looking at what she made, and it is enough.",
+      "The room is chaos behind her. {a} does not hear it. Standing at the mirror with her eyes on her own eyes. The look she gives herself is not vanity — it is recognition. She knows what she looks like. She knows what it cost. Breathes in, breathes out, turns to walk to the stage.",
     ],
   }),
   ev({
@@ -728,10 +728,10 @@ export const WERK_EVENTS = [
     note: 'The smallest favour in the room, asked of somebody she is not close to.',
     when: f => true, effects: { bond: 1 },
     lines: [
-      "\"Zip me up?\" {a} asks, and {b} is the closest queen, not the closest friend, just the closest body. {b} zips. {a} says thanks. {b} says you are welcome. It is the smallest interaction in the room and it means almost nothing, except that it means they are in the same place doing the same thing, and that counts.",
-      "{a} cannot reach the back of the dress. She turns to {b}, who she has barely spoken to all week, and says \"can you get this?\" {b} gets it. She pulls the zipper up, smooths the fabric without being asked, and pats {a} on the shoulder once. They do not discuss it. It is just a thing queens do for each other.",
-      "The zipper is stuck and {a} is twisting in front of the mirror trying to reach it. {b} sees her struggling, comes over without being asked, and works it loose. \"You have something caught in it — there.\" {a} says thanks. {b} shrugs. They go back to their own stations. The whole exchange takes fifteen seconds.",
-      "{a} holds the back of her dress closed and looks around the room for anyone. {b} catches her eye. \"Please.\" {b} walks over, zips it, and says \"you look good\" — not as a compliment, as a fact — and walks back. {a} did not expect kindness from that direction. The zipper is up. The wall between them is slightly down.",
+      "\"Zip me up?\" {b} is the closest queen. Not the closest friend — the closest body. {b} zips. {a} says thanks. {b} says you are welcome. Smallest interaction in the room. Means almost nothing, except they are in the same place doing the same thing, and that counts.",
+      "{a} cannot reach the back of the dress. Turns to {b}, who she has barely spoken to all week. \"Can you get this?\" {b} pulls the zipper up, smooths the fabric without being asked, pats her shoulder once. They do not discuss it. Just a thing queens do for each other.",
+      "Zipper stuck. {a} is twisting in front of the mirror trying to reach it. {b} sees her, comes over without being asked, works it loose. \"You have something caught in it — there.\" Thanks. Shrug. Back to their stations. Fifteen seconds.",
+      "{a} holds the back of her dress closed and looks around for anyone. {b} catches her eye. \"Please.\" {b} walks over, zips it, says \"you look good\" — not a compliment, a fact — and walks back. {a} did not expect kindness from that direction. Zipper up. Wall between them slightly down.",
     ],
   }),
   ev({
@@ -739,10 +739,10 @@ export const WERK_EVENTS = [
     note: 'One of them wishes the other luck and it is not a performance.',
     when: f => f.bond >= 1, effects: { bond: 1, pop: { a: 1 } },
     lines: [
-      "{a} touches {b}'s arm on the way past and says \"good luck tonight\" and the way she says it — quiet, without an audience — tells {b} she means it. {b} says it back. They hold eye contact for a second longer than they need to, and the moment is real, and then they are both walking to the stage.",
-      "\"You are going to be amazing,\" {a} says, and it is not the throwaway version. She stops what she is doing, looks at {b}, and says it with the weight of someone who has watched {b} work all week and knows what {b} has built. {b} does not know what to do with sincerity this close to the runway, so she hugs {a} instead of answering.",
-      "{a} catches {b} before the door and says \"I hope you get what you deserve tonight\" and means it as kindness, which {b} can tell, because the unkind version of that sentence sounds completely different. {b} smiles. They walk out together. The room is behind them now.",
-      "They are both about to walk to the stage and {a} says \"hey\" — just that — and {b} looks back, and {a} says \"kill it.\" Two words. No performance. {b} nods and the nod has gratitude in it, and they go out separately because this is still a challenge but for a second it was just two queens who wanted the best for each other.",
+      "{a} touches {b}'s arm on the way past. \"Good luck tonight.\" Quiet, no audience. {b} says it back. They hold eye contact a second longer than they need to. The moment is real, and then they are both walking to the stage.",
+      "\"You are going to be amazing.\" Not the throwaway version. {a} stops, looks at {b}, says it with the weight of someone who watched her work all week. {b} does not know what to do with sincerity this close to the runway. She hugs {a} instead of answering.",
+      "{a} catches {b} before the door. \"I hope you get what you deserve tonight.\" Means it as kindness, which {b} can tell — the unkind version sounds completely different. {b} smiles. They walk out together. The room is behind them now.",
+      "{a} says \"hey\" — just that — and {b} looks back. \"Kill it.\" Two words. No performance. {b} nods and the nod has gratitude in it. They go out separately because this is still a challenge, but for a second it was just two queens who wanted the best for each other.",
     ],
   }),
   ev({
@@ -751,10 +751,10 @@ export const WERK_EVENTS = [
     arcs: ['villain'], when: f => f.bond <= -1,
     effects: { bond: -1, pop: { a: -1 } },
     lines: [
-      "\"Good luck,\" {a} says to {b}, and the smile that comes with it is the kind of smile that means I hope you need it. {b} smiles back the same way. They both know what just happened. The words were right and the meaning was wrong and neither of them is going to be the one who breaks the performance.",
-      "{a} squeezes {b}'s shoulder and says \"you got this\" with a warmth so convincing that anyone watching would think they were friends. They are not friends. {b} knows they are not friends. The squeeze is a message and the message is I am better than you and we both know it, wrapped in a gesture nobody can call unkind.",
-      "\"I really hope it goes well for you tonight.\" {a} says it sweetly, sincerely, directly to {b}'s face, and {b} thanks her, and the room sees a nice moment between two queens, and the room is wrong. {a} hopes nothing of the sort. The hope was theatre. The sweetness was a weapon.",
-      "{a} wishes {b} luck right before they walk out, and the timing is deliberate — too close to the stage for {b} to respond properly, just far enough away that the room sees {a} being gracious. {b} says \"thanks\" through a smile that is holding back something sharper, and they walk to the stage side by side like queens who get along.",
+      "\"Good luck.\" {a} says it to {b} with the kind of smile that means I hope you need it. {b} smiles back the same way. They both know what just happened. Words right, meaning wrong, and neither is going to break the performance.",
+      "{a} squeezes {b}'s shoulder. \"You got this.\" Warmth so convincing anyone watching would think they were friends. They are not friends. The squeeze is a message — I am better than you and we both know it — wrapped in a gesture nobody can call unkind.",
+      "\"I really hope it goes well for you tonight.\" Sweet, sincere, directly to {b}'s face. {b} thanks her. The room sees a nice moment. The room is wrong. {a} hopes nothing of the sort. The sweetness was a weapon.",
+      "{a} wishes {b} luck right before they walk out — timing deliberate, too close to the stage for {b} to respond properly, far enough that the room sees {a} being gracious. {b} says \"thanks\" through a smile holding back something sharper.",
     ],
   }),
   ev({
@@ -762,10 +762,10 @@ export const WERK_EVENTS = [
     note: 'The call comes and she is nowhere near ready.',
     when: f => true, effects: { pop: { a: -1 }, state: 'lostTime' },
     lines: [
-      "The call comes and {a} is holding one shoe. The other shoe is somewhere. The wig is on but the lace is not glued. The left earring is in and the right one is on the floor. She is running and she knows she is running and the panic has a sound to it — the sound of a queen saying \"no no no\" very quickly to herself.",
-      "{a} hears \"places\" and her face does the thing faces do when someone says a word that means you are out of time. The garment is not steamed. The accessories are not chosen. She grabs the first thing she can reach, clips the second, and walks to the door with the confidence of a queen who is absolutely not ready.",
-      "Everyone else is lined up. {a} is still at her station, still pinning, still making decisions that should have been made an hour ago. She finishes the last pin as the door opens, grabs her clutch, and walks out still adjusting the neckline. She will adjust it all the way to the stage. She will still not be happy with it.",
-      "\"I need five minutes.\" {a} does not have five minutes. She has about ninety seconds and she uses them like a person defusing something — fast, precise, no wasted movement. Wig on. Jewellery on. One last look in the mirror that she does not have time to take. She walks to the stage wearing an outfit that was still being built ten seconds ago.",
+      "The call comes and {a} is holding one shoe. The other shoe is somewhere. Wig on but the lace is not glued. Left earring in, right one on the floor. \"No no no no no\" — the sound of a queen who is running and knows she is running.",
+      "{a} hears \"places\" and her face does the thing. The garment is not steamed. Accessories not chosen. She grabs the first thing she can reach, clips the second, walks to the door with the confidence of a queen who is absolutely not ready.",
+      "Everyone else is lined up. {a} is still at her station, still pinning, still making decisions that should have been made an hour ago. Finishes the last pin as the door opens, grabs her clutch, walks out still adjusting the neckline. Will adjust it all the way to the stage.",
+      "\"I need five minutes.\" {a} does not have five minutes. She has ninety seconds and uses them like a person defusing something — fast, precise, no wasted movement. Wig on. Jewellery on. One last look she does not have time for. {a} walks to the stage wearing an outfit that was still being built ten seconds ago.",
     ],
   }),
   ev({
@@ -773,10 +773,10 @@ export const WERK_EVENTS = [
     note: 'She has a plan for today and is turning it over before saying it to anyone.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [
-      "{a} is sitting at her station before the room wakes up, turning a thought over. She has a plan for today — not a flashy one, just a clear one — and she is rehearsing it in her head before she says it to anyone. The coffee is getting cold. She does not notice. She is already inside the challenge.",
-      "The brief is on the table and {a} has read it three times. Nobody else is reading it three times. She is sitting with her chin on her fist, looking at something on the wall that is not actually on the wall, running the idea forward and backward until it settles. When somebody asks what she is thinking she says \"I am still thinking\" and that is the end of the conversation.",
-      "{a} is quiet this morning and the quiet is not worried — it is planning. She sketches something on the back of a page, crosses it out, sketches it again. She has not spoken to anyone yet. She will, when the shape is right. Right now the shape is still forming and she is letting it form without interrupting it.",
-      "Everyone else is chatting. {a} is not. She is working something out behind her eyes, the way you work out a problem you need to get right before you can afford to get it wrong in front of people. She will share the plan when it is a plan. Right now it is a direction, and directions need quiet.",
+      "{a} is at her station before the room wakes up, turning a thought over. A plan for today — not flashy, just clear — rehearsing it in her head before she says it to anyone. Coffee getting cold. She does not notice. Already inside the challenge.",
+      "The brief is on the table and {a} has read it three times. Nobody else is reading it three times. Chin on fist, looking at something that is not on the wall. \"What are you thinking?\" \"I am still thinking.\" That is the end of the conversation.",
+      "{a} is quiet this morning and the quiet is not worried — it is planning. Sketches something on the back of a page, crosses it out, sketches it again. She has not spoken to anyone yet. She will, when the shape is right.",
+      "Everyone else is chatting. {a} is not. Working something out behind her eyes, the way you work out a problem you need to get right before you can afford to get it wrong in front of people. She will share the plan when it is a plan. Right now it is a direction.",
     ],
   }),
   ev({
@@ -785,10 +785,10 @@ export const WERK_EVENTS = [
     arcs: ['frontrunner'], when: f => f.episode > 2,
     effects: { bond: 0.5, pop: { a: -1 } },
     lines: [
-      "\"Who do you think is going to take it?\" {a} asks, and {b} gives the honest answer, and the honest answer is a name they both keep circling back to. They talk about why — the track record, the consistency, the way the judges look at her — and neither of them says \"it should be me instead\" but they are both thinking it.",
-      "{a} and {b} are ranking the room and they keep agreeing, which is worse than disagreeing because it means the answer is obvious. There is a queen in here who is better than both of them and they can see it and saying it out loud does not make it less true.",
-      "\"She is going to win,\" {a} says, not bitter, just clear. {b} does not argue. They talk about the queen they are both watching, the one whose name keeps coming up, the one who makes everything look easy. The conversation is honest and a little bruising and neither of them feels better for having it.",
-      "{b} says a name and {a} nods, because they have both been thinking it. The room has a frontrunner and everyone knows who it is, and {a} and {b} are having the version of the conversation where you admit it to each other quietly, away from the mirrors, where the admission cannot be used against you.",
+      "\"Who do you think is going to take it?\" {a} asks. {b} gives the honest answer, and the honest answer is a name they both keep circling back to. The track record, the consistency, the way the judges look at her. Neither says \"it should be me instead\" but they are both thinking it.",
+      "{a} and {b} are ranking the room and they keep agreeing, which is worse than disagreeing because it means the answer is obvious. There is a queen in here who is better than both of them and they can see it.",
+      "\"She is going to win.\" {a} says it not bitter, just clear. {b} does not argue. They talk about the queen they are both watching, the one whose name keeps coming up. The conversation is honest and a little bruising and neither of them feels better for having it.",
+      "{b} says a name and {a} nods. They have both been thinking it. The room has a frontrunner and everyone knows who it is. This is the version of the conversation where you admit it quietly, away from the mirrors, where the admission cannot be used against you.",
     ],
   }),
   ev({
@@ -796,10 +796,10 @@ export const WERK_EVENTS = [
     note: 'Two queens reading the challenge brief and arriving at opposite conclusions.',
     when: f => true, effects: { bond: 0.5, pop: { a: 1 } },
     lines: [
-      "{a} and {b} read the challenge brief at the same time and arrive at completely different conclusions. {a} thinks the brief is asking for one thing. {b} thinks it is asking for the opposite. They argue about it — not angrily, productively — and neither of them changes their mind, which means at least one of them is going to be wrong on the runway.",
-      "\"That is not what this means,\" {b} says, pointing at the brief. {a} points at the same line and says \"that is exactly what it means.\" They read it out loud together, word by word, and by the end of the sentence they are more confused than they were at the start. They go back to their stations having learned nothing and gained a conversation.",
-      "{a} reads the brief and sees an opportunity. {b} reads the brief and sees a trap. They compare notes over coffee and realise they are reading the same words differently, which is the interesting part — the brief has not changed, but their brains have given it two different shapes, and the runway will tell them which shape was right.",
-      "\"What do you think they want?\" {a} asks, and {b} says what she thinks, and {a} says \"I thought the opposite\" and they both laugh because neither of them is sure. The brief is deliberately open, which means the queen who reads it bravely will either win or crash, and the queen who reads it cautiously will be safe and forgotten.",
+      "{a} and {b} read the brief at the same time and arrive at completely different conclusions. {a} thinks one thing. {b} thinks the opposite. They argue — not angrily, productively — and neither changes their mind. At least one of them is going to be wrong on the runway.",
+      "\"That is not what this means.\" {b} points at the brief. {a} points at the same line — \"that is exactly what it means.\" They read it out loud together, word by word, and by the end they are more confused than at the start. Back to their stations having learned nothing and gained a conversation.",
+      "{a} reads the brief and sees an opportunity. {b} reads it and sees a trap. They compare notes over coffee and realise they are reading the same words differently. The runway will tell them which reading was right.",
+      "\"What do you think they want?\" {b} says what she thinks. {a} says \"I thought the opposite\" and they both laugh — neither is sure. The brief is deliberately open, which means the queen who reads it bravely will either win or crash. The one who reads it cautiously will be safe and forgotten.",
     ],
   }),
   ev({
@@ -807,10 +807,10 @@ export const WERK_EVENTS = [
     note: 'No drama. She works, and it is going well, and that is the scene.',
     when: f => true, effects: { pop: { a: 1 }, state: 'onTrack' },
     lines: [
-      "No drama. {a} is working and it is working. The seams are straight, the vision is clear, and she is humming something to herself while the room does the room's thing around her. Sometimes the story is not a crisis. Sometimes it is a queen who knows what she is doing, doing it.",
-      "{a} has her head down and her hands moving and the outfit is taking shape the way outfits are supposed to take shape — steadily, piece by piece, without a single moment of panic. She does not need help. She does not need encouragement. She needs to be left alone, and the room obliges.",
-      "The room is loud and {a} is in the middle of it, sewing, and if you did not look closely you would think she was not paying attention to anything except the fabric. She is paying attention to everything. She just does not need to react to any of it, because her hands know what to do and her brain is free to listen.",
-      "{a} is having the kind of day where the garment cooperates and the machine behaves and the concept she drew on the napkin is turning into the thing she drew on the napkin. It is boring to describe. It is the best feeling in the room. She will not talk about it, because talking about it is how you ruin it.",
+      "No drama. {a} is working and it is working. Seams straight, vision clear, humming to herself while the room does the room's thing around her. Sometimes the story is not a crisis. Sometimes it is a queen who knows what she is doing, doing it.",
+      "{a} has her head down and her hands moving. The outfit is taking shape the way outfits are supposed to — steadily, piece by piece, no panic. She does not need help. Does not need encouragement. Needs to be left alone. The room obliges.",
+      "The room is loud. {a} is in the middle of it, sewing. If you did not look closely you would think she was not paying attention to anything except the fabric. She is paying attention to everything. She just does not need to react to any of it.",
+      "{a} is having the kind of day where the garment cooperates and the machine behaves and the concept she drew on the napkin is becoming the thing she drew on the napkin. Boring to describe. Best feeling in the room. She will not talk about it — talking about it is how you ruin it.",
     ],
   }),
 
@@ -832,10 +832,10 @@ export const WERK_EVENTS = [
     arcs: ['frontrunner'], when: f => f.winsA >= 2 && f.bond <= 1,
     effects: { bond: -1, pop: { a: -1 } },
     lines: [
-      "{a} walks over to where {b} and two others are talking and the conversation does not stop so much as change shape — it goes polite, and general, and about nothing. She stands in it for a minute and then goes back to her station. Nobody was rude to her. That is somehow worse.",
-      "It takes {a} three days to notice that nobody asks her opinion on anything any more. She asks {b} about a hemline and gets a real answer, and then the conversation ends, and {b} goes back to the group at the other end of the room. Winning has made her a competitor and stopped making her a friend.",
-      "\"We were just going to get food,\" {b} says, in the past tense, about a thing that has not happened yet. {a} says have fun. She sits back down at her station with her back to the room and works on a garment that does not need any more work.",
-      "The room has divided itself into people who are winning and people who are not, and {a} is the entire first category. {b} is polite to her and warm to everyone else and the difference is about four degrees, which is more than enough for {a} to feel it every time.",
+      "{a} walks over to where {b} and two others are talking. The conversation does not stop — it changes shape. Goes polite, general, about nothing. She stands in it for a minute and goes back to her station. Nobody was rude. That is somehow worse.",
+      "It takes {a} three days to notice nobody asks her opinion any more. She asks {b} about a hemline, gets a real answer, conversation ends, {b} goes back to the group. Winning has made her a competitor and stopped making her a friend.",
+      "\"We were just going to get food,\" {b} says, past tense, about a thing that has not happened yet. {a} says have fun. Sits back down with her back to the room and works on a garment that does not need more work.",
+      "The room has divided into people who are winning and people who are not, and {a} is the entire first category. {b} is polite to her and warm to everyone else. The difference is about four degrees. More than enough for {a} to feel it every time.",
     ],
   }),
   ev({
@@ -844,10 +844,10 @@ export const WERK_EVENTS = [
     arcs: ['frontrunner'], when: f => f.winsA >= 2 && f.neverTopA === false && f.bottomsB >= 1,
     effects: { bond: 2, pop: { a: 2 } },
     lines: [
-      "{b} has been staring at the same seam for an hour and finally walks over to the queen who has beaten her twice and asks for help, which costs her something. {a} does not make her ask twice and does not make it a moment. She just takes the garment and fixes it and hands it back.",
-      "\"I hate that I am asking you this.\" {b} says it flat, holding a bodice that is not working, and {a} laughs and says \"ask me anyway\" and then spends forty minutes on it. Neither of them says the thing about how they are competing. It is understood and it is set aside.",
-      "{a} sees {b} struggling from across the room and waits — because offering would be worse than being asked — until {b} looks up. Then she comes over. She does not fix it for her; she shows her how, which takes longer and matters more.",
-      "The frontrunner helping the queen in the bottom is the kind of thing that could read as condescension and does not, because {a} does it without an audience and without mentioning it afterwards. {b} notices that too. She will remember it when the room turns.",
+      "{b} has been staring at the same seam for an hour and finally walks over to the queen who has beaten her twice. Asks for help, which costs her something. {a} does not make her ask twice. Takes the garment, fixes it, hands it back.",
+      "\"I hate that I am asking you this.\" {b} says it flat, holding a bodice that is not working. {a} laughs — \"ask me anyway\" — then spends forty minutes on it. Neither says the thing about competing. Understood and set aside.",
+      "{a} sees {b} struggling from across the room and waits — offering would be worse than being asked — until {b} looks up. Then she comes over. Does not fix it for her. Shows her how, which takes longer and matters more.",
+      "The frontrunner helping the bottom queen could read as condescension. It does not, because {a} does it without an audience and does not mention it afterwards. {b} notices that too. She will remember it when the room turns.",
     ],
   }),
   ev({
@@ -857,10 +857,10 @@ export const WERK_EVENTS = [
     when: f => (f.winsA >= 2 && f.sinceTopA >= 2) || (f.winsA >= 1 && f.sinceTopA >= 3),
     effects: { pop: { a: -1 }, state: 'slipping' },
     lines: [
-      "{a} won twice early and has not been called since, and she is doing the arithmetic on that in the mirror this morning. Nobody has said anything. Nobody needs to. She knows what a cooling frontrunner looks like because she has watched this show.",
-      "There is a version of this season where {a} was the one to beat, and it was two weeks ago. She can feel the room's attention having moved somewhere else. She does not like how much she misses it.",
-      "\"I peaked,\" {a} says to the mirror, half-joking, entirely serious. Two wins in the first half and nothing since. She gets to work earlier than anyone this morning and stays at it longer, which is either the fix or the panic.",
-      "The queens who are winning now were nowhere when {a} was winning, and she is trying very hard to be gracious about that and mostly managing it. Mostly. She has caught herself watching the runway looks at the other stations more closely than she used to.",
+      "{a} won twice early and has not been called since. She is doing the arithmetic in the mirror this morning. Nobody has said anything. Nobody needs to. She knows what a cooling frontrunner looks like.",
+      "There is a version of this season where {a} was the one to beat, and it was two weeks ago. She can feel the room's attention having moved somewhere else. Does not like how much she misses it.",
+      "\"I peaked.\" {a} says it to the mirror, half-joking, entirely serious. Two wins in the first half and nothing since. She gets to work earlier than anyone and stays longer — either the fix or the panic.",
+      "The queens winning now were nowhere when {a} was winning. She is trying very hard to be gracious about that. Mostly managing it. Mostly. She has caught herself watching the runway looks at the other stations more closely than she used to.",
     ],
   }),
 
@@ -871,10 +871,10 @@ export const WERK_EVENTS = [
     arcs: ['filler', 'weakness'], when: f => f.safesA >= 3 && f.neverTopA,
     effects: { bond: -1, pop: { a: -1 } },
     lines: [
-      "\"You have not been in the bottom once,\" {b} says. \"You have not been in the top once either.\" {a} says that is called consistency. {b} says it is called invisible, and then apologises for how that came out, and does not take it back.",
-      "{b} means it kindly and it does not land kindly: \"I could not tell you what you did last week.\" {a} could. {a} remembers exactly what she did last week. The problem is that nobody else does, and {b} just proved it out loud.",
-      "The word {b} uses is \"safe\", and she uses it four times in one sentence, and by the fourth one it has stopped being a category and started being a verdict. {a} takes it standing. She has been thinking it herself for a fortnight.",
-      "\"When are you going to actually go for something?\" It is a fair question and {b} has no right to ask it and both of those are true. {a} does not answer. She goes back to her station and takes the safe idea off the rack and puts it away.",
+      "\"You have not been in the bottom once.\" Pause. \"You have not been in the top once either.\" {a} says that is called consistency. {b} says it is called invisible — then apologises for how that came out. Does not take it back.",
+      "{b} means it kindly and it does not land kindly. \"I could not tell you what you did last week.\" {a} could. She remembers exactly what she did. The problem is nobody else does, and {b} just proved it out loud.",
+      "The word {b} uses is \"safe\" and she uses it four times in one sentence. By the fourth one it has stopped being a category and started being a verdict. {a} takes it standing. She has been thinking it herself for a fortnight.",
+      "\"When are you going to actually go for something?\" Fair question. {b} has no right to ask it. Both of those are true. {a} does not answer. Goes back to her station and takes the safe idea off the rack and puts it away.",
     ],
   }),
   ev({
@@ -883,10 +883,10 @@ export const WERK_EVENTS = [
     arcs: ['filler'], when: f => f.safesA >= 2 && f.neverTopA && f.bond >= 1,
     effects: { bond: 2, pop: { a: 1 } },
     lines: [
-      "{a} and {b} have both been safe every single week and they have both had enough of it. The conversation starts as a complaint and turns into a plan: neither of them plays it safe again. They shake on it, which is ridiculous, and they both mean it.",
-      "\"We are going to get sent home being boring,\" {b} says, and {a} says \"yes\" with real feeling. So they make each other a promise at their stations — the riskier idea, every week, from here. It is the most decisive either of them has been all season.",
-      "Nobody has mentioned {a} or {b} in a critique yet, and at eleven at night they agree that being forgettable is a worse way to go home than being wrong. They swap the ideas they were each too scared to try. Both ideas are better than what they had.",
-      "The pact is simple and they make it quietly: no more middle. {a} shows {b} the sketch she talked herself out of, and {b} tells her to make that one, and then shows {a} hers. Neither of them sleeps much afterwards.",
+      "{a} and {b} have both been safe every single week and they have both had enough. The conversation starts as a complaint and turns into a plan: neither plays it safe again. They shake on it, which is ridiculous. They both mean it.",
+      "\"We are going to get sent home being boring.\" {a} says \"yes\" with real feeling. So they make each other a promise — the riskier idea, every week, from here. Most decisive either of them has been all season.",
+      "Nobody has mentioned {a} or {b} in a critique yet, and at eleven at night they agree that being forgettable is a worse way to go home than being wrong. They swap the ideas they were each too scared to try. Both are better than what they had.",
+      "The pact is simple. No more middle. {a} shows {b} the sketch she talked herself out of. {b} tells her to make that one, then shows {a} hers. Neither of them sleeps much afterwards.",
     ],
   }),
   ev({
@@ -895,10 +895,10 @@ export const WERK_EVENTS = [
     arcs: ['filler', 'frontrunner'], when: f => f.neverBottomA && f.roomSize <= 8,
     effects: { pop: { a: 1 }, state: 'untested' },
     lines: [
-      "{a} has never been in the bottom. Not once. She used to say that with her chest and this morning she says it to the mirror and hears how it actually sounds: untested. Everybody left in this room has fought for her spot at least once, and she has not.",
-      "The thing nobody tells you about never being in the bottom is that you never find out whether you can win a lip sync. {a} knows every word of every song they have played this season. She has never had to prove it and it is starting to sit badly.",
-      "\"I have never done it,\" {a} says, meaning the lip sync, meaning the thing that decides everything. She has been safe or high every week and she is proud of that and also aware that it is the one line on her résumé with nothing written next to it.",
-      "The room is down to a handful and {a} is the only one left who has never stood on that stage waiting to be saved. It ought to be a comfort. This morning it feels like a debt she has not paid yet.",
+      "{a} has never been in the bottom. Not once. She used to say that with her chest. This morning she says it to the mirror and hears how it sounds: untested. Everyone left has fought for her spot at least once. She has not.",
+      "The thing nobody tells you about never being in the bottom is you never find out whether you can win a lip sync. {a} knows every word of every song they have played this season. She has never had to prove it. That is starting to sit badly.",
+      "\"I have never done it.\" {a} means the lip sync. The thing that decides everything. She has been safe or high every week and she is proud of that — and also aware it is the one line on her résumé with nothing written next to it.",
+      "The room is down to a handful and {a} is the only one who has never stood on that stage waiting to be saved. It ought to be a comfort. This morning it feels like a debt she has not paid.",
     ],
   }),
 
@@ -909,10 +909,10 @@ export const WERK_EVENTS = [
     arcs: ['weakness'], when: f => f.bottomsA >= 2,
     effects: { bond: -2, pop: { b: -1 } },
     lines: [
-      "{b} asks {a} for her mirror \"since you probably will not need it long\" and laughs like it was a joke, and it does land as a joke, for about a second and a half. {a} laughs too. Then she does not. The room heard it and the room is very busy looking at something else.",
-      "It is in the small things: {b} plans around {a} rather than with her, talks about next week as though {a} is not in it, and has started using the past tense about her. {a} notices every single one and says nothing, and files all of it.",
-      "\"No offence,\" {b} says, having already caused it, \"but you have been in the bottom twice.\" It is true. That is what makes it unanswerable, and it is why {a} is still thinking about it at two in the morning.",
-      "{b} does not think she has written {a} off. {b} would deny it. But she has stopped asking {a}'s opinion, stopped including her in plans past Friday, and started talking about the top five as though the count is already settled. {a} is not deaf and {a} is not stupid.",
+      "{b} asks {a} for her mirror \"since you probably will not need it long\" and laughs like it was a joke. Lands as a joke for about a second and a half. {a} laughs too. Then she does not. The room is very busy looking at something else.",
+      "It is in the small things. {b} plans around {a} rather than with her, talks about next week like {a} is not in it, started using the past tense. {a} notices every single one and says nothing. Files all of it.",
+      "\"No offence\" — having already caused it — \"but you have been in the bottom twice.\" It is true. That is what makes it unanswerable. That is why {a} is still thinking about it at two in the morning.",
+      "{b} does not think she has written {a} off. She would deny it. But she has stopped asking {a}'s opinion, stopped including her past Friday, started talking about the top five like the count is settled. {a} is not deaf and {a} is not stupid.",
     ],
   }),
   ev({
@@ -921,10 +921,10 @@ export const WERK_EVENTS = [
     arcs: ['weakness', 'performance'], when: f => f.bottomsA >= 2,
     effects: { pop: { a: 2 }, state: 'defiant' },
     lines: [
-      "{a} has stood in that bottom twice and survived it twice, and she is putting her face on this evening like somebody who intends to do it a third time. \"They keep putting me down there,\" she says. \"They keep having to keep me.\"",
-      "There is a way queens look on elimination day when they know it might be them, and {a} is not doing it. She is doing the other thing — the one where she picks the harder look, the bolder mouth, the song she actually knows. If it is her tonight, it will not be quiet.",
-      "\"I am not scared of that stage any more.\" {a} says it to her reflection and it is not bravado; she has been on it, twice, and come back. Whatever happens tonight, the thing she used to be frightened of has already happened to her and she is still here.",
-      "{a} does her make-up slower than usual tonight and harder. She has been in the bottom enough times to know exactly what it feels like to hear her name, and she has decided that if she hears it again she is going to make somebody work for it.",
+      "{a} has stood in that bottom twice and survived it twice. She is putting her face on this evening like somebody who intends to do it a third time. \"They keep putting me down there. They keep having to keep me.\"",
+      "There is a way queens look on elimination day when they know it might be them. {a} is not doing that. She is doing the other thing — harder look, bolder mouth, the song she actually knows. If it is her tonight, it will not be quiet.",
+      "\"I am not scared of that stage any more.\" {a} says it flat. Not bravado. She has been on it twice and come back. Whatever happens tonight, the thing she used to be frightened of has already happened to her and she is still here.",
+      "{a} does her mug slower than usual tonight. Harder. She has been in the bottom enough times to know exactly what it feels like to hear her name, and she has decided that if she hears it again she is going to make somebody work for it.",
     ],
   }),
   ev({
@@ -933,10 +933,10 @@ export const WERK_EVENTS = [
     arcs: ['weakness'], when: f => f.bottomsA >= 1 && f.bottomsB >= 1,
     effects: { bond: 3, pop: { a: 1 } },
     lines: [
-      "{a} and {b} have both stood in that bottom and neither of them has to explain to the other what the walk back to the werk room feels like. They end up at the same station at the same hour for the third morning running. Neither of them planned it. Both of them needed it.",
-      "\"You too?\" is the whole conversation, and then they sit with it. {a} and {b} have both survived a lip sync and there is a version of friendship that only exists between people who have done the same frightening thing, and this is it.",
-      "The queens who have never been in the bottom talk about it like weather. {a} and {b}, who have both been down there, talk about it like a place. They compare notes on the walk, the wait, the moment the music starts. It bonds them more than any challenge has.",
-      "There is a quiet at the far end of the werk room where {a} and {b} have started sitting, and it is not a strategic alliance and it is not a friendship exactly. It is two people who have both been told to fight for their lives, keeping each other company.",
+      "{a} and {b} have both stood in that bottom and neither has to explain what the walk back feels like. They end up at the same station at the same hour for the third morning running. Neither planned it. Both needed it.",
+      "\"You too?\" That is the whole conversation. {a} and {b} have both survived a lip sync and there is a version of friendship that only exists between people who have done the same frightening thing. This is it.",
+      "The queens who have never been in the bottom talk about it like weather. {a} and {b}, who have both been down there, talk about it like a place. The walk, the wait, the moment the music starts. It bonds them more than any challenge has.",
+      "There is a quiet at the far end of the room where {a} and {b} have started sitting. Not a strategic alliance. Not a friendship exactly. Two people who have both been told to fight for their lives, keeping each other company.",
     ],
   }),
   ev({
@@ -945,10 +945,10 @@ export const WERK_EVENTS = [
     arcs: ['weakness'], when: f => f.bottomsA >= 2 && f.canScheme,
     effects: { bond: -1, pop: { a: -2 } },
     lines: [
-      "\"They have decided who they like,\" {a} tells {b}, \"and it is not me.\" It is the kind of thing that is unanswerable and unprovable and slightly poisonous, and {b} makes a face that {a} chooses not to read. The panel did not decide anything. {a} was in the bottom because she was bad.",
-      "{a} has a theory about why she keeps being in the bottom and the theory has nothing to do with {a}. {b} listens to about ninety seconds of it before saying \"or the look was not finished\", which lands badly, because it is the true answer.",
-      "The story {a} is telling herself is that there is a narrative and she is on the wrong side of it. She tells it to {b} at length. {b} has been safe every week and has no stake in it and can hear, quite clearly, that {a} is describing her own hemline as a conspiracy.",
-      "\"Twice,\" {a} says. \"Twice, for things other people did worse.\" {b} does not agree and does not say so, and the not-saying-so is loud enough that {a} stops talking. The complaint does not stay in that corner of the room, either.",
+      "\"They have decided who they like and it is not me.\" Unanswerable, unprovable, slightly poisonous. {b} makes a face that {a} chooses not to read. The panel did not decide anything. {a} was in the bottom because she was bad.",
+      "{a} has a theory about why she keeps being in the bottom and the theory has nothing to do with {a}. {b} listens to ninety seconds of it before saying \"or the look was not finished\" — which lands badly, because it is the true answer.",
+      "The story {a} is telling herself is that there is a narrative and she is on the wrong side of it. She tells it to {b} at length. {b} can hear, quite clearly, that {a} is describing her own hemline as a conspiracy.",
+      "\"Twice. Twice, for things other people did worse.\" {b} does not agree and does not say so. The not-saying-so is loud enough that {a} stops talking. The complaint does not stay in that corner of the room either.",
     ],
   }),
 
@@ -972,10 +972,10 @@ export const WERK_EVENTS = [
       && f.bond >= 3 && f.episode >= 2,
     effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
     lines: [
-      "It is not a thing yet and both of them know it is not nothing. {a} and {b} have been at the same end of the werk room for four days running, and tonight {a} stays late for no reason she can name out loud and {b} does not ask her why.",
-      "{a} and {b} keep finding excuses. A zip that needs doing up. A second opinion on a hemline that was fine. Everybody else in the room worked it out about a week before they did, and everybody else in the room is being very kind about not saying so.",
-      "\"You are in my light,\" {b} says, not moving, and {a} does not move either. It goes on slightly too long to be nothing. Then somebody drops a glue gun at the other end of the room and the moment goes wherever those go.",
-      "Neither of them has said anything. {a} has started doing her make-up at the station next to {b}, which is further from the good mirror, and {b} has noticed that and has not mentioned it, and that is roughly where they are.",
+      "Not a thing yet. Both of them know it is not nothing. {a} and {b} have been at the same end of the werkroom for four days running. Tonight {a} stays late for no reason she can name out loud and {b} does not ask why.",
+      "{a} and {b} keep finding excuses. A zip that needs doing up. A second opinion on a hemline that was fine. Everyone else worked it out a week before they did. Everyone else is being very kind about not saying so.",
+      "\"You are in my light,\" {b} says, not moving. {a} does not move either. It goes on slightly too long to be nothing. Then somebody drops a glue gun and the moment goes wherever those go.",
+      "Neither has said anything. {a} has started doing her face at the station next to {b}, which is further from the good mirror. {b} has noticed and has not mentioned it. That is roughly where they are.",
     ],
   }),
   ev({
@@ -992,10 +992,10 @@ export const WERK_EVENTS = [
       && f.bond >= 5 && f.roomSize <= 9,
     effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
     lines: [
-      "Elimination day is a bad day to work out what you feel about somebody and {a} and {b} are doing it anyway, in a corner, quietly, with one eye on the clock. \"If it is me tonight,\" {b} starts, and {a} says \"do not\", and that is the closest either of them gets to the actual sentence.",
-      "They are competing against each other and there is almost nobody left to hide behind and this is an extremely stupid time for this. {a} says so. {b} agrees with her. Neither of them moves away.",
-      "{a} does {b}'s back zip on elimination day and it takes longer than a zip takes. Nothing is said. The room is loud at the other end and this corner of it is not.",
-      "\"When this is over,\" {b} says, and does not finish the sentence, and {a} says \"yeah\" as though she had. Whatever this is, it has a date on it now, and the date is after one of them goes home.",
+      "Elimination day is a bad day to work out what you feel about somebody and {a} and {b} are doing it anyway. In a corner, quietly, one eye on the clock. \"If it is me tonight —\" \"Do not.\" That is the closest either gets to the actual sentence.",
+      "They are competing against each other. Almost nobody left to hide behind. Extremely stupid time for this. {a} says so. {b} agrees. Neither moves away.",
+      "{a} does {b}'s back zip on elimination day and it takes longer than a zip takes. Nothing is said. The room is loud at the other end. This corner is not.",
+      "\"When this is over —\" {b} does not finish the sentence. {a} says \"yeah\" as though she had. Whatever this is, it has a date on it now. The date is after one of them goes home.",
     ],
   }),
   ev({
@@ -1006,10 +1006,10 @@ export const WERK_EVENTS = [
       && f.bond >= 5 && f.bottomsB >= 1,
     effects: { bond: -1, pop: { a: 1 }, state: 'romance' },
     lines: [
-      "{b} was in the bottom last week and {a} was not, and this morning that fact is sitting between them like a third person. {a} tries to help. {b} lets her, and hates letting her, and neither of them enjoys the ten minutes it takes.",
-      "It was easier when they were both safe. Now {b} is fighting for her place and {a} is not, and every kind thing {a} says lands slightly wrong. \"Do not do that,\" {b} says, about nothing in particular, meaning all of it.",
-      "\"I cannot want you to do well,\" {b} says to {a}, plainly, without cruelty. \"I want you to do well and I cannot afford to.\" {a} says she knows. They work at opposite ends of the room for the rest of the morning.",
-      "The problem with whatever {a} and {b} have is that one of them is going home first, and this morning both of them are visibly aware of which one it currently looks like. Neither of them says it. It makes everything they do say sound careful.",
+      "{b} was in the bottom last week and {a} was not. This morning that fact sits between them like a third person. {a} tries to help. {b} lets her, hates letting her. Neither enjoys the ten minutes it takes.",
+      "It was easier when they were both safe. Now {b} is fighting for her place and {a} is not, and every kind thing {a} says lands slightly wrong. \"Do not do that,\" {b} says. About nothing in particular. Meaning all of it.",
+      "\"I cannot want you to do well.\" {b} says it plainly, no cruelty. \"I want you to do well and I cannot afford to.\" {a} says she knows. They work at opposite ends of the room for the rest of the morning.",
+      "The problem with whatever {a} and {b} have is that one of them is going home first. This morning both are visibly aware of which one it currently looks like. Neither says it. It makes everything they do say sound careful.",
     ],
   }),
   ev({
@@ -1018,10 +1018,10 @@ export const WERK_EVENTS = [
     arcs: ['bond'], when: f => f.alreadyPaired && f.canScheme && f.bond <= 2,
     effects: { bond: -2, pop: { a: -1 } },
     lines: [
-      "\"Are we all just going to pretend that is not happening?\" {a} says it to the room and the room does not answer, which is its own answer. It is not really about the two of them. It is about {a} having decided there is a bloc forming and wanting it named.",
-      "{a} thinks it is convenient, and says so, and \"convenient\" is a much worse word than it looks. {b} tells her to leave it. {a} does not leave it, and by lunchtime three people have heard the word and one of them has repeated it.",
-      "{a} has counted the times a certain two queens have helped each other this week and she has the number ready. She delivers it like evidence. Nobody asked for evidence, and now nobody can un-hear it.",
-      "\"It is a race,\" {a} says, to nobody, loudly enough. Everybody knows exactly which two queens the remark is about. The room gets about four degrees colder and stays there.",
+      "\"Are we all just going to pretend that is not happening?\" {a} says it to the room. The room does not answer, which is its own answer. Not really about them. About {a} deciding there is a bloc and wanting it named.",
+      "{a} thinks it is convenient, and says so. \"Convenient\" is a much worse word than it looks. {b} tells her to leave it. {a} does not leave it. By lunchtime three people have heard the word and one has repeated it.",
+      "{a} has counted the times those two queens helped each other this week. She has the number ready. Delivers it like evidence. Nobody asked for evidence. Now nobody can un-hear it.",
+      "\"It is a race.\" {a} says it to nobody, loudly enough. Everybody knows exactly which two queens the remark is about. The room gets four degrees colder and stays there.",
     ],
   }),
 
@@ -1042,11 +1042,11 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3,
     effects: { bond: 1, pop: { a: 1, b: 1 }, state: 'group-fun' },
     lines: [
-      "{a} says something to {b} that was not meant to be funny and {c} repeats it back wrong from across the room and the wrong version is ten times funnier. {b} is on the floor. {a} is yelling \"that is NOT what I said\" through tears and {c} is already doing it again with a hand on her hip. No work gets done for fifteen minutes. Nobody cares.",
-      "{b} and {c} are arguing about wigs — not this week's wigs, wigs as a concept, the philosophy of wigs — and {a} gets dragged in as a judge and takes it so seriously she stands up and delivers a verdict with her hand out like she is on the panel. {c} screams. {b} throws a sponge at her. The whole station is chaos and every queen in the room is pretending not to watch.",
-      "{c} starts doing {a}'s runway walk across the room and {b} loses it — full-body, hands-on-knees, gasping. {a} says \"I do NOT walk like that\" and {c} does it again, slower, with the exact pause {a} does at the end of the runway. {a} tries to be mad and cannot, because it is perfect.",
-      "Worst gigs. {a} opens with a venue that did not have a stage. {c} tops it with a venue that did not have a door. {b} waits, sips her coffee, and tells one about a bar where she was the entertainment AND the bouncer AND the sound system broke during her number. {a} and {c} put their brushes down because there is no beating that.",
-      "{a} plays something on her phone and {c} starts doing the choreography at her station — full out, heels on, knocking into {b}'s mannequin. {b} joins in. Then {a} joins her own song. Three queens in full padding doing a routine in the space between two sewing machines, and the rest of the room is screaming.",
+      "{a} says something to {b} that was not meant to be funny. {c} repeats it back wrong from across the room — ten times funnier. {b} is on the floor. {a} is yelling \"that is NOT what I said\" through tears and {c} is already doing it again with a hand on her hip. No work gets done for fifteen minutes. Nobody cares.",
+      "{b} and {c} are arguing about wigs. Not this week's wigs — wigs as a concept, the philosophy of wigs. {a} gets dragged in as judge, takes it so seriously she stands up and delivers a verdict with her hand out like she is on the panel. {c} screams. {b} throws a sponge. The whole station is chaos.",
+      "{c} starts doing {a}'s runway walk across the room and {b} loses it — full-body, hands-on-knees, gasping. \"I do NOT walk like that.\" {c} does it again. Slower. With the exact pause {a} does at the end. {a} tries to be mad and cannot, because it is perfect.",
+      "Worst gigs. {a} opens with a venue that did not have a stage. {c} tops it — venue did not have a door. {b} waits, sips her coffee, tells one about a bar where she was the entertainment AND the bouncer AND the sound system broke during her number. {a} and {c} put their brushes down. No beating that.",
+      "{a} plays something on her phone and {c} starts doing the choreography — full out, heels on, knocking into {b}'s mannequin. {b} joins in. Then {a} joins her own song. Three queens in full padding doing a routine between two sewing machines. The rest of the room is screaming.",
     ],
   }),
   ev({
@@ -1056,8 +1056,8 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bond <= 0,
     effects: { bond: -1.5, pop: { a: -1, b: -1 }, state: 'group-fight' },
     lines: [
-      "{a} and {b} go at it right there — voices up, fingers pointing — and {c} is four feet away holding a glue gun with nowhere to put it down. She looks at the exit. She looks at her garment. She puts the glue gun on the table very carefully and suddenly her hemline needs urgent attention on the side of the station furthest from both of them.",
-      "{a} says something sharp to {b} and {b} fires back and it escalates in about three sentences and {c} is standing right there trying to thread a needle like her life depends on it. \"I can hear you,\" {c} says, to nobody, and nobody hears her, which she will remember longer than whatever they were fighting about.",
+      "{a} and {b} go at it right there — voices up, fingers pointing — and {c} is four feet away holding a glue gun. She looks at the exit. Looks at her garment. Puts the glue gun down very carefully. Suddenly her hemline needs urgent attention on the far side of her station.",
+      "{a} says something sharp to {b}. {b} fires back. It escalates in about three sentences. {c} is standing right there trying to thread a needle like her life depends on it. \"I can hear you,\" {c} goes, to nobody. Nobody hears her.",
       "{b} raises her voice at {a} and the whole room flinches except {c}, who keeps her face perfectly blank — not calm, blank, the drag queen version of a poker face. Everybody clocks that. Later both of them will corner {c} separately and ask \"so who was right\" and {c} will give two different answers and mean neither.",
       "\"Can we NOT do this right now?\" {c} says it loud enough that {a} and {b} both turn and look at her, and for one second she thinks it worked, and then {a} says \"this does not involve you\" and {b} says \"stay out of it\" and they go right back to it. {c} picks up her coffee and moves to the other end of the room.",
       "The fight between {a} and {b} is short and loud and ugly and {c} is trapped between their stations pretending to count rhinestones. When it ends — not because it is resolved, because they both run out of air — {c} exhales and {a} looks at her and says \"sorry you had to hear that\" and {c} says \"girl, the whole building heard that.\"",
@@ -1083,8 +1083,8 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bottomsA >= 1,
     effects: { bond: 1.5, pop: { a: 1 }, state: 'group-care' },
     lines: [
-      "{a} is not okay and the room knows it before {a} does. {b} turns the music down without being asked. {c} moves her stuff to the station next to {a}'s and starts working there like she always works there. Nobody says \"are you alright\" because that question would make {a} have to answer it, and right now just having people near her is the answer.",
-      "{b} puts a water bottle on {a}'s table and {c} picks up the pattern piece {a} has been staring at for ten minutes and starts cutting it for her. \"I am fine,\" {a} says, and {b} says \"obviously\" in a voice that means the opposite, and {c} keeps cutting. The rescue is quiet and total and nobody acknowledges it is happening.",
+      "{a} is not okay and the room knows it before {a} does. {b} turns the music down without being asked. {c} moves her stuff to the station next to {a}'s like she always works there. Nobody says \"are you alright\" because that question would make {a} have to answer it.",
+      "{b} puts a water bottle on {a}'s table. {c} picks up the pattern piece {a} has been staring at for ten minutes and starts cutting it for her. \"I am fine,\" {a} goes. {b} goes \"obviously\" in a voice that means the opposite. {c} keeps cutting.",
       "{c} is the one who clocks it first — {a} has been at her station for an hour and has not picked up a single tool. {c} nudges {b}. {b} goes over with two coffees, sits down, and starts talking about absolutely nothing — her wig, her weekend, a thing her cat did — until {a} is laughing, wetly, without knowing when she started.",
       "\"Go take a walk,\" {b} says. {a} says she does not need to. \"Go take a walk,\" {c} says. {a} looks at both of them and her chin wobbles and she goes, and when she comes back her face is washed and {b} has reorganised her station and {c} has steamed the garment. Nobody mentions it. {a} sits down and gets back to work.",
     ],
@@ -1135,7 +1135,7 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bottomsA >= 1,
     effects: { bond: 2, pop: { a: 1, b: 1 }, state: 'group-rescue' },
     lines: [
-      "{a} is staring at a garment that is not going to make it and the whole room can see the maths. {b} walks over, picks up the hem without asking, and says \"I am not being nice, I just cannot watch this.\" {c} is already threading a needle. {a} keeps her jaw tight because if she looks at either of them right now she is going to lose it and there is no time for that.",
+      "{a} is staring at a garment that is not going to make it. {b} walks over, picks up the hem without asking. \"I am not being nice, I just cannot watch this.\" {c} is already threading a needle. {a} keeps her jaw tight because if she looks at either of them right now she is going to lose it.",
       "\"Give it here,\" {b} says, hand out, and {a} hesitates for exactly one second before handing the bodice over. {c} grabs the glue gun and says \"nobody talk to me for ten minutes\" and the three of them get a look onto a rail that {a} could not have finished alone and every single one of them knows it.",
       "The last hour turns into a factory floor — {a} stitching, {b} cutting, {c} pressing — and {b} says \"this is not charity, a room where someone walks out empty-handed is a worse room for all of us\" and {c} says \"also your taste is better when you are panicking\" and {a} laughs for the first time in three hours.",
       "{c} does the thing nobody wants to do: she unpicks twenty minutes of {a}'s work because it was wrong. {a} watches her rip every stitch and says nothing. {b} bites her lip because she called it an hour ago and the restraint of not saying so is the kindest thing anyone does all day. They finish with four minutes on the clock.",
@@ -1158,10 +1158,10 @@ export const WERK_EVENTS = [
     when: f => f.neverBottomA || f.winsA >= 1,
     effects: { pop: { a: 1 }, state: 'early' },
     lines: [
-      "{a} is in the room before anybody else and the room is quiet in the way it is only quiet when one person is in it. She has her garment on the form and her tools laid out and she works for twenty minutes without speaking, which is either discipline or not wanting to talk to anybody yet, and by the time the door opens she has done more than most queens will do in the first hour.",
-      "The lights are on and {a} is already at her station and the coffee is already cold, which means she has been here longer than the coffee has. She works in the silence and the working has the rhythm of somebody who came early on purpose and is getting something done before the room fills up and the getting-things-done becomes a performance.",
-      "{a} walks in when the room is empty and sets up her station without music, without talking, without the mirror. She sews for twenty minutes in a quiet that would be eerie if it were not also productive, and by the time the second queen walks in {a} has a full hour of work on everybody else.",
-      "Nobody sees {a} arrive because {a} arrives before there is anybody to see her. She works in the empty room with the focus of a queen who has decided that the morning belongs to her and the talking belongs to everybody else, and the garment she is building is further along than anything in the room by the time the room has people in it.",
+      "{a} is in the room before anybody else. Garment already on the form, tools already out. She sews for twenty straight minutes without a word. By the time the door opens she is a whole hour ahead.",
+      "The lights are on and {a} is already at her station. Her coffee is cold — girl has been here a WHILE. No music, no mirror, just the machine going. She is getting it done before the room fills up and the real show starts.",
+      "{a} walks in when the room is empty and sets up like she has done this a hundred times. No talking, no playlist. Just work. By the time the second queen walks in {a} has a full hour on everybody and it shows.",
+      "Nobody sees {a} arrive. She is just there — station set, garment pinned, head down. She does not want company. She wants a head start, and by the time the room wakes up she already has one.",
     ],
   }),
   ev({
@@ -1172,10 +1172,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.phase >= 1,
     effects: { bond: 0.5, pop: { a: 1 }, state: 'threat-talk' },
     lines: [
-      "{a} says a name out loud — the name of the queen she thinks is winning the whole season — and {b} agrees immediately and {c} nods slowly, and the queen they are talking about is across the room gluing rhinestones with no idea her track record is being read aloud at the far station. {c} is also quietly doing the maths on why her own name did not come up.",
-      "\"Be honest,\" {a} says. \"Who is taking this?\" {b} says a name without hesitating and {c} says \"same\" and {a} says \"same\" and suddenly three queens agree about a fourth and none of them are the fourth. {c} goes quiet after that, because {c} thought she was in the conversation as a candidate, not as a voter.",
-      "{a}, {b} and {c} are at the far end ranking the season out loud — who has the track record, who the panel keeps saving, who is peaking — and they land on the same queen, and the same queen is ten feet away sewing in silence. {b} says \"it is not even close\" and {c} does not disagree but goes back to her fabric with the energy of someone who just heard she is not in the running.",
-      "\"She is going to win,\" {a} says, about a queen who is not in the conversation, and {b} laughs and says \"obviously\" and {c} says nothing for about four seconds, which is the silence of a queen recalculating her own position. The name they agreed on hangs in the room like a verdict nobody appealed.",
+      "{a} says a name out loud — the queen she thinks is winning this whole thing. {b} goes \"oh one hundred percent.\" {c} nods. The queen they are talking about is across the room gluing rhinestones, no idea. {c} goes quiet after — girl just realised her name did not come up.",
+      "\"Be honest. Who is taking this?\" {b} says a name without blinking. {c} goes \"same.\" {a} goes \"same.\" Three queens agree on a fourth and none of them are her. {c} thought she was in this conversation as a candidate, not a voter.",
+      "{a}, {b} and {c} are ranking the season out loud at the far station. Track record, who the panel keeps saving, who is peaking. They all land on the same queen — and she is ten feet away sewing, does not hear a word. {b} goes \"it is not even close.\"",
+      "\"She is going to win,\" {a} goes, about a queen who is not in the room. {b} laughs. \"Obviously.\" {c} does not say anything for a few seconds — just recalculating. Her name was not the one they said and she felt that.",
     ],
   }),
   ev({
@@ -1185,10 +1185,10 @@ export const WERK_EVENTS = [
     when: f => f.bottomsB >= 1,
     effects: { bond: -1, pop: { a: -1 }, state: 'advice' },
     lines: [
-      "{a} walks over to {b}'s station and says \"can I say something\" in the voice of someone who is going to say it regardless. The advice is specific and correct and delivered with the warmth of a dentist explaining a cavity, and {b} says \"thank you\" in a voice that means the opposite and goes back to work carrying the weight of being right and being told so.",
-      "\"You should change the neckline.\" {a} says it to {b} unprompted, mid-morning, from three stations away, and {b}'s face does the thing where it decides between gratitude and fury and picks a tight smile. The neckline is wrong. {a} is right. The being-right-without-being-asked is what makes it land like an insult.",
-      "{a} gives {b} a note on her construction and {b} did not ask for a note and {b} is not receiving it well, which {a} seems not to notice. \"I am trying to help,\" {a} says, and {b} says \"I know\" and the I-know is the coldest two syllables anybody produces all morning. The advice is correct, which is the annoying part.",
-      "{a} leans over and tells {b} what is wrong with her garment the way someone tells you there is spinach in your teeth — technically a favour, delivered with an energy that makes you feel worse about the spinach. {b} does not respond. {b} changes the garment later, in silence, when {a} is not watching, because the advice was right and admitting that out loud is not available to her.",
+      "{a} walks over to {b}'s station. \"Can I say something?\" She is going to say it regardless. Tells {b} exactly what is wrong, no sugarcoating. {b} goes \"thank you\" in a voice that means the dead opposite and goes back to work.",
+      "\"You should change the neckline.\" {a} just says it, unprompted, from three stations away. {b} stares at her. The neckline IS wrong. That is the annoying part — {a} is right and {b} did not ask.",
+      "{a} gives {b} a note on her construction. {b} did not ask for a note. \"I am trying to help,\" {a} goes. \"I know,\" {b} goes — coldest two syllables of the morning. The advice is correct. {b} will never admit that.",
+      "{a} leans over and tells {b} what is wrong with her garment. Not mean about it — just blunt. {b} does not respond. Changes it later, in silence, when {a} is not watching, because the advice was right and saying so out loud is not happening.",
     ],
   }),
   ev({
@@ -1199,10 +1199,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.winsB >= 1,
     effects: { bond: 0.5, pop: { b: -1 }, state: 'painted-target' },
     lines: [
-      "{a} says \"let us be real, {b} is winning this\" and {c} nods and {b} is standing right there holding a glue gun while two queens discuss her season arc in the third person. {b} says \"stop\" and laughs but the laugh has an edge because a compliment that loud is also a target that big, and every queen in earshot just heard {b}'s name attached to the word winning.",
-      "\"She is the one to beat,\" {a} says about {b}, to {c}, while {b} is three feet away pretending to be absorbed in her fabric. {c} agrees. {b} says \"I can hear you\" and {a} says \"I know\" and the knowing is the point — it is a compliment delivered as a warning, and {b} has to stand in both halves of it.",
-      "{a} and {c} agree out loud that {b} is going to take the whole thing and {b} has to sit there and receive it like a gift she did not ask for and cannot return. \"You are making me a target,\" {b} says, and {a} says \"you made yourself a target the first week\" and {c} says \"she is not wrong\" and {b} goes back to work carrying a crown she has not won yet.",
-      "{a} calls {b} the frontrunner in front of {c} and {c} agrees immediately and {b}'s face does the thing where gratitude and panic arrive at the same time. \"Thank you and also please stop talking,\" {b} says, because being named the favourite in a room full of queens is a promotion and a bullseye in the same breath.",
+      "\"Let us be real — {b} is winning this.\" {a} says it right in front of {b}. {c} nods. {b} is standing there holding a glue gun while two queens discuss her in the third person. {b} goes \"stop\" and laughs but that laugh has teeth.",
+      "\"She is the one to beat.\" {a} says it about {b}, to {c}, while {b} is three feet away. {b} goes \"I can hear you.\" {a} goes \"I know.\" That is the whole bit — a compliment and a target in the same sentence.",
+      "{a} and {c} agree out loud that {b} is going to take the whole thing. \"You are making me a target,\" {b} goes. \"Girl, you made yourself a target the first week,\" {a} goes. {c} goes \"she is not wrong.\" {b} goes back to work.",
+      "{a} calls {b} the frontrunner in front of {c}. {c} agrees immediately. {b}'s face cannot decide between grateful and panicked. \"Thank you and also stop talking,\" {b} goes — being named the favourite in this room is a bullseye and a compliment at the same time.",
     ],
   }),
 
@@ -1215,10 +1215,10 @@ export const WERK_EVENTS = [
     when: f => f.bond <= 2,
     effects: { bond: -1, pop: { a: -1 }, state: 'borrowed' },
     lines: [
-      "{a} has had {b}'s scissors for two hours and {b} needs them now and is being very polite about it. \"Whenever you are done\" means right now and {a} knows it means right now and does not put them down for another ten minutes, and {b} stands at her station cutting fabric with her teeth rather than asking a second time.",
-      "\"Sorry, can I just grab my — \" {b} reaches across {a}'s station for the thing {a} borrowed at nine o'clock and it is now past eleven. {a} says \"oh, was that yours?\" which is a question nobody in the room believes, and {b} takes it back with a smile that could cut glass.",
-      "{b} has been waiting for her steamer back from {a} since the morning and the waiting has a shape — three glances, two almost-asks, and one very polite \"do you still need that\" that costs {b} more dignity than it should. {a} hands it over like she is doing {b} a favour, which is the part that sticks.",
-      "{a} borrowed {b}'s heat gun two hours ago and {b} needs it and is being aggressively polite about needing it. \"Take your time,\" {b} says, in a voice that means the opposite of take your time, and {a} either does not hear the tone or has decided not to, and {b} goes back to her station and improvises with a lighter.",
+      "{a} has had {b}'s scissors for two hours. {b} needs them. \"Whenever you are done\" — which means NOW — and {a} does not put them down for another ten minutes. {b} ends up cutting fabric with her teeth rather than asking twice.",
+      "\"Sorry, can I just grab my — \" {b} reaches across {a}'s station. Borrowed at nine. It is past eleven. {a} goes \"oh, was that yours?\" Girl. {b} takes it back with a look that could strip paint.",
+      "{b} has been waiting for her steamer back since morning. Three glances, two almost-asks, one very polite \"do you still need that.\" {a} hands it over like she is doing {b} a favour. THAT is the part that sticks.",
+      "{a} borrowed {b}'s heat gun two hours ago. {b} needs it. \"Take your time,\" {b} goes, in a voice that means the OPPOSITE of take your time. {a} either does not hear the tone or does not care. {b} goes back to her station and improvises with a lighter.",
     ],
   }),
   ev({
@@ -1229,10 +1229,10 @@ export const WERK_EVENTS = [
     when: f => f.bottomsA >= 1 || f.neverTopA,
     effects: { pop: { a: -1 }, state: 'doubting' },
     lines: [
-      "{a} holds the garment up and says \"is this working\" to the room and the room gives her the specific silence of queens who have opinions they are choosing not to share. One of them says \"it is a direction\" which is the least helpful thing you can say to somebody holding a garment and the most honest thing anybody is willing to offer, and {a} hears the gap between what they said and what they meant.",
-      "\"Somebody tell me the truth.\" {a} says it to the room and the truth does not arrive. Three queens look at her garment and two of them say \"I like it\" and one says nothing, and the one who says nothing is the one {a} trusts, and the nothing is the answer.",
-      "{a} asks whether the concept is reading and the room gives her a round of \"yeah\"s that carry no conviction at all, and she can hear the lack of conviction the way you can hear a flat note in a chord — something is off and nobody is naming what. She goes back to her station knowing more from the silence than from the words.",
-      "\"Be honest with me.\" {a} holds the look up and the room is not honest with her. The compliments are polite and the polite is loud and {a} puts the garment back on the form and stares at it for a long time, because the not-answering told her everything the answering did not.",
+      "{a} holds the garment up. \"Is this working?\" The room goes quiet. One queen goes \"it is a direction\" — which is the least helpful thing you can say and the most honest thing anybody is willing to offer. {a} hears it. She heard the silence too.",
+      "\"Somebody tell me the truth.\" {a} says it to the room. Three queens look at her garment. Two go \"I like it.\" One says nothing. The one who says nothing is the one {a} trusts, and the nothing is the answer.",
+      "{a} asks if the concept is reading and the room gives her a round of \"yeah\"s that do not convince anybody. She can hear it. Goes back to her station knowing more from the silence than the words.",
+      "\"Be honest with me.\" {a} holds the look up. The room is not honest with her — just polite. She puts the garment back on the form and stares at it. The polite \"I like it\"s told her more than any real answer would have.",
     ],
   }),
   ev({
@@ -1243,10 +1243,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3,
     effects: { bond: -1, pop: { a: -1 }, state: 'too-loud' },
     lines: [
-      "{a} has been giving a TED talk about herself for forty-five minutes and {b} stopped responding twenty minutes ago and {c} stopped ten minutes before that, and {a} is still going. She has not paused long enough for either of them to leave, which is its own kind of talent — holding two people hostage with enthusiasm alone.",
-      "\"And THEN — \" {a} launches into another story and {b} has fully glazed over and {c} has started sewing without looking up. {a} does not notice that she lost the room because {a} does not check for the room. She is performing to an audience of herself and the audience is delighted.",
-      "{a} is talking and talking and talking and {b} is giving her the \"mmhmm\" that means nothing and {c} has put her headphones on — one ear in, which is the polite version of two ears in — and {a} reads this as encouragement. Somebody is going to snap eventually and when they do it will be {c}, who has been silent long enough to be dangerous.",
-      "The room has a narrator and it is {a}, who has been telling a story that started with her wig and has now reached her childhood and shows no signs of landing. {b} catches {c}'s eye across the room and they have a full conversation without words — one look that says \"somebody has to say something\" and another that says \"it is not going to be me.\"",
+      "{a} has been giving a TED talk about herself for forty-five minutes. {b} stopped responding twenty minutes ago. {c} stopped ten before that. {a} is still going. She has not paused long enough for either of them to leave — holding two queens hostage with enthusiasm alone.",
+      "\"And THEN — \" {a} launches into another story. {b} has fully glazed over. {c} is sewing without looking up. {a} does not notice she lost the room because {a} does not check for the room. Girl is performing to an audience of herself and the audience is delighted.",
+      "{a} is talking and talking and talking. {b} is giving her the \"mmhmm\" that means nothing. {c} has put one headphone in — the polite version of two. {a} reads this as encouragement. Somebody is going to snap and it is going to be {c}.",
+      "The room has a narrator and it is {a}. The story started with her wig and has now reached her childhood and shows no signs of landing. {b} catches {c}'s eye across the room — one look that says \"somebody has to say something\" and another that says \"it is not going to be me.\"",
     ],
   }),
   ev({
@@ -1257,10 +1257,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3,
     effects: { bond: 1.5, pop: { a: 2 }, state: 'the-seamstress' },
     lines: [
-      "{a} is the only queen in this room who can actually sew and everyone knows it and a queue has formed at her station — {b} first with a busted zipper, then {c} with a hem that is doing something architectural. {a} fixes both and loses two hours she needed for her own garment and does not complain about it once, which is the part that costs her.",
-      "\"Can you just — \" {b} brings her bodice to {a}'s machine and {a} looks at it and says \"sit down\" and fixes it in four minutes. {c} sees this and brings her own disaster over and {a} fixes that too, and the room starts treating {a}'s station like a walk-in clinic and {a} lets them because she cannot say no to fabric in distress.",
-      "{a} can sew. Actually sew — French seams, invisible zippers, the works — and the room has figured this out and now {b} is at her station asking for help with a dart and {c} is behind {b} holding something that used to be a sleeve. {a} helps them both and her own look suffers for it, and the generous thing becomes the expensive thing.",
-      "There is a line at {a}'s sewing machine because {a} is the only one who knows what a serger is and {b} needs her edges finished and {c} needs a whole new panel and {a} spends two hours being everybody's mom when she should have been being her own queen. The helping is real and the cost is real and the room does not notice the cost.",
+      "{a} is the only queen in this room who can actually sew and everybody knows it. A queue forms at her station — {b} first with a busted zipper, then {c} with a hem that is doing something architectural. {a} fixes both. Loses two hours of her own time and does not complain once.",
+      "\"Can you just — \" {b} brings her bodice to {a}'s machine. {a} looks at it, goes \"sit down,\" fixes it in four minutes. {c} sees this and brings her own disaster over. {a} fixes that too. Her station is a walk-in clinic now and {a} lets it happen because she cannot say no to fabric in distress.",
+      "{a} can sew. Actually sew — French seams, invisible zippers, the works. The room has figured this out. {b} is at her station with a busted dart. {c} is behind {b} holding something that USED to be a sleeve. {a} helps them both and her own look suffers for it.",
+      "There is a line at {a}'s machine because she is the only one who knows what a serger is. {b} needs edges finished. {c} needs a whole new panel. {a} spends two hours being everybody's mama when she should be working on her own lewk. The room does not notice what it costs her.",
     ],
   }),
   ev({
@@ -1270,10 +1270,10 @@ export const WERK_EVENTS = [
     when: f => f.canScheme,
     effects: { bond: -1.5, pop: { a: -1 }, state: 'copied' },
     lines: [
-      "{a} walks past {b}'s station three times before {b} clocks what is happening — {a} is not walking past, she is shopping. The fourth time {a} comes back to her own station and starts reworking her silhouette and the new silhouette looks a lot like {b}'s silhouette, and {b} sees it happen in real time and says nothing, which is louder than saying something.",
-      "\"That is cute,\" {a} says about {b}'s concept, and forty minutes later {a}'s concept has changed direction and the new direction looks familiar. {b} watches it happen and her face does the math — not a copy exactly, but close enough that the runway will notice and {b} will be the one who looks like she followed.",
-      "{a} glances at {b}'s fabric wall and then goes back to her station and cuts something new. {b} does not say anything at first, but when {a} holds up the new piece the shape is {b}'s shape with different fabric, and {b} puts her iron down and stares at the ceiling because the alternative to staring at the ceiling is saying something she cannot take back.",
-      "{b} built her concept from scratch and {a} saw it and liked it and has now adjusted her own to be close enough that it reads as the same idea twice. Not stolen — borrowed. But borrowed without asking, and {b} knows that on the runway two of the same thing makes both worse, and the one who had it first is not always the one who gets credit.",
+      "{a} walks past {b}'s station three times. {b} clocks it — girl is not walking past, she is SHOPPING. Fourth pass {a} goes back to her own station and starts reworking her silhouette. The new silhouette looks a LOT like {b}'s. {b} sees it happen and says nothing.",
+      "\"That is cute,\" {a} goes about {b}'s concept. Forty minutes later {a}'s concept has changed direction and the new direction looks real familiar. {b} watches it happen. Not a copy exactly — but close enough that the runway is going to notice.",
+      "{a} glances at {b}'s fabric wall. Goes back to her station. Cuts something new. When {a} holds up the new piece the shape is {b}'s shape in different fabric. {b} puts her iron down and stares at the ceiling because the other option is saying something she cannot take back.",
+      "{b} built her concept from scratch and {a} saw it and liked it and has now adjusted her own to match. Not stolen — \"inspired.\" But two of the same thing on the runway makes both worse, and the one who had it first does not always get the credit.",
     ],
   }),
   ev({
@@ -1283,10 +1283,10 @@ export const WERK_EVENTS = [
     when: f => f.bond >= 1,
     effects: { bond: 2, pop: { a: 1 }, state: 'real-talk' },
     lines: [
-      "The glue guns go quiet and {a} tells {b} something about her life outside this room — not the drag part, the other part, the part that made drag necessary — and {b} puts her work down to listen properly because you do not hot-glue through somebody telling you the real thing.",
-      "{a} starts talking about home and the talking changes — the performing voice drops out and the real one comes in — and {b} stops sewing and turns her chair because this is not werkroom banter, this is {a} trusting {b} with something she does not give to everyone, and the room gets small and honest for a minute.",
-      "\"I never told anyone in here this.\" {a} says it to {b} and then says the thing, and it is about her family, or the town she left, or the version of herself she was before drag gave her a name, and {b} listens without interrupting, which is the only right thing to do when someone hands you the real story.",
-      "{b} asks {a} something small about home and {a} gives her the big answer — the whole thing, the real thing, the thing that sits underneath all the looks and the humour — and {b} holds it carefully because she knows what it costs to say it out loud in a room full of cameras and strangers who are only mostly strangers now.",
+      "The glue guns go quiet and {a} tells {b} something about her life outside this room. Not the drag part — the part before drag. {b} puts her work down and just listens.",
+      "{a} starts talking about home and her voice changes. The performing voice drops and the real one comes in. {b} stops sewing. This is not werkroom banter — {a} is trusting {b} with something she does not give to everybody.",
+      "\"I never told anyone in here this.\" {a} says it to {b} and then says it — her family, the town she left, who she was before all this. {b} does not interrupt. She just lets {a} talk.",
+      "{b} asks {a} something small about home and {a} gives her the whole answer. The real one. {b} does not say anything for a moment — just takes it in. She knows what it costs to say that stuff on camera.",
     ],
   }),
   ev({
@@ -1296,10 +1296,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3 && f.bond <= 0,
     effects: { bond: -1, pop: { a: 1 }, state: 'left-to-it' },
     lines: [
-      "{a} is behind and everyone can see she is behind — the fabric is not cut, the form is empty, the clock is loud — and {b} sees it and stays at her station and {c} sees it and stays at hers. Nobody is being cruel. Nobody is moving either. The help does not arrive because the help has its own garment to finish.",
-      "The room can hear {a}'s sewing machine jamming and nobody walks over. {b} glances once and looks away. {c} does not glance at all. {a} unjams it herself and the unjamming takes twelve minutes she does not have, and the room stays exactly where it is — not unkind, just occupied, which from {a}'s station looks like the same thing.",
-      "{a} is visibly drowning — fabric everywhere, pattern pieces on the floor, the form still naked at half-time — and {b} and {c} are both close enough to help and far enough away to pretend they did not see. It is not that they do not care. It is that caring would cost them time they have already spent, and the math does not work.",
-      "\"Does anyone have a — \" {a} starts to ask and does not finish the sentence because the room gives her the silence that means no. {b} has extra fabric and does not offer it. {c} has extra time and does not share it. {a} goes back to work alone and the aloneness of it is the thing the room remembers.",
+      "{a} is behind and everyone can see it. Fabric not cut, form empty, clock loud. {b} sees it. Stays at her station. {c} sees it. Stays at hers. Nobody is being cruel. Nobody is moving either.",
+      "The room can hear {a}'s sewing machine jamming. Nobody walks over. {b} glances once and looks away. {c} does not glance at all. {a} unjams it herself — twelve minutes she does not have. The room stays where it is.",
+      "{a} is drowning. Fabric everywhere, pattern pieces on the floor, form still naked at half-time. {b} and {c} are both close enough to help and far enough away to pretend they did not see. It is not that they do not care. It is that caring costs time they already spent.",
+      "\"Does anyone have a — \" {a} starts to ask and does not finish because the room gives her the silence that means no. {b} has extra fabric and does not offer it. {c} has extra time and does not share it. {a} goes back to work alone.",
     ],
   }),
   ev({
@@ -1309,10 +1309,10 @@ export const WERK_EVENTS = [
     when: f => f.bottomsA >= 1,
     effects: { pop: { a: 1 }, state: 'pep-talk' },
     lines: [
-      "{a} is in the mirror giving herself the talk — \"you belong here, you are that girl, you did not come this far to go home fourth\" — and she does not realise the mirror is in full view of three other stations and everyone can hear every word. The pep talk is working on her. The eavesdropping is working on the room.",
-      "\"Get it together.\" {a} says it to her own reflection and means it, and the reflection stares back and {a} fixes her hair and says it again louder — \"GET it together\" — and somebody three stations over exchanges a look with somebody else because {a} is coaching herself out loud and the coaching has volume.",
-      "{a} stands at the mirror and runs through the list of reasons she deserves to be here and the list is longer than she expected and she says every reason out loud to a reflection that is listening better than the room is. The room IS listening, though — every word carries, and {a} finds out later that her pep talk was everyone else's entertainment.",
-      "The mirror gets the whole speech — the fear, the comeback, the \"I am not going home tonight\" delivered like a promise to her own face — and {a} delivers it with the energy of someone who thinks she is alone. She is not alone. Two queens are pretending not to hear and one is not pretending at all.",
+      "{a} is in the mirror giving herself the talk. \"You belong here. You are THAT girl. You did not come this far to go home fourth.\" She does not realise the mirror is in full view of three stations. The pep talk is working on her. The eavesdropping is working on the room.",
+      "\"Get it together.\" {a} says it to her own reflection. Fixes her hair. Says it again louder — \"GET it together.\" Somebody three stations over exchanges a look because {a} is coaching herself out loud and the coaching has VOLUME.",
+      "{a} stands at the mirror and runs through every reason she deserves to be here. Says them all out loud. She thinks she is talking to herself — but every word carries. The whole room heard her pep talk and nobody is going to tell her.",
+      "The mirror gets the whole speech — the fear, the comeback, the \"I am not going home tonight\" delivered like a promise to her own face. {a} thinks she is alone. She is not. Two queens are pretending not to hear and one is not pretending at all.",
     ],
   }),
 
@@ -1325,10 +1325,10 @@ export const WERK_EVENTS = [
     when: f => f.bottomsA >= 1,
     effects: { pop: { a: -1 }, state: 'packing' },
     lines: [
-      "{a} starts folding wigs into her suitcase before the judges have said a word and the room notices because the room notices everything. It is either preparation or surrender and nobody asks which because the answer might be honest, and honest is not what anybody wants right now.",
-      "The suitcase is open and {a} is putting things in it — slowly, carefully, the way you pack when you are packing for real and not for show — and the room pretends not to see. One queen catches another queen's eye and neither says anything because what do you say to someone folding their garment bags before they have been told to go.",
-      "{a} is packing. Not dramatically, not for camera — just quietly putting her things in order, tucking the shoes in first the way she always does, and the quiet is the part that makes the room uncomfortable. If she were crying it would be easier to watch. The calm packing is worse.",
-      "Nobody has said anything yet and {a} is already zipping compartments. She folds a robe and puts it in the case and the case is half full and the judges have not deliberated yet and the room cannot decide whether this is self-awareness or giving up or just a queen who hates packing in a hurry.",
+      "{a} starts folding wigs into her suitcase before the judges have said a word. The room notices. Nobody asks if it is preparation or surrender because the answer might be honest.",
+      "The suitcase is open and {a} is putting things in it. Slowly. Carefully. The way you pack when you are packing for real. The room pretends not to see. What do you say to someone folding garment bags before she has been told to go.",
+      "{a} is packing. Not for camera — just quietly putting her things in order, shoes in first the way she always does. The calm is the part that makes the room uncomfortable. If she were crying it would be easier to watch. The calm packing is worse.",
+      "Nobody has said anything yet and {a} is already zipping compartments. Folds a robe, puts it in the case. The case is half full. The judges have not even deliberated yet. The room cannot decide if this is self-awareness or giving up.",
     ],
   }),
   ev({
@@ -1339,10 +1339,10 @@ export const WERK_EVENTS = [
     when: f => f.bond >= 3,
     effects: { bond: 2, pop: { a: 1 }, state: 'the-promise' },
     lines: [
-      "\"Final two. You and me.\" {a} says it to {b} and {b} says it back and they shake on it or hug on it or just hold the look long enough that it becomes a contract. One of them means it more than the other and neither of them knows which one that is yet, and the promise sits in the room like a bet neither can afford to lose.",
-      "{a} and {b} find a corner and make the pact — top two, no matter what, they will not write each other's name, they will not vote for each other, they will drag each other to the end if they have to. The words are serious and the moment is real and one of them will break it eventually because this game breaks everything eventually.",
-      "\"Promise me something.\" {a} grabs {b}'s hand and {b} does not pull away and the promise is the big one — the end, the final two, the we-will-get-there-together — and {b} promises it and means it right now in this moment with complete sincerity, which is not the same as meaning it in week seven when meaning it costs something.",
-      "{a} tells {b} she wants them both at the end and {b} says \"obviously\" like it was already decided, and they seal it with a look that carries more weight than either of them is ready to hold. The promise is real today. Whether it survives the season is a different question and they both know it and neither says so.",
+      "\"Final two. You and me.\" {a} says it. {b} says it back. They shake on it. One of them means it more than the other and neither knows which one that is yet.",
+      "{a} and {b} find a corner and make the pact. Top two. No matter what. They will drag each other to the end if they have to. The words are serious. One of them will break it eventually because this race breaks everything eventually.",
+      "\"Promise me something.\" {a} grabs {b}'s hand. The promise is the big one — the end, the final two, the we-will-get-there-together. {b} promises it and means it right now. Whether she means it in week seven when it costs something is a different question.",
+      "{a} tells {b} she wants them both at the end. {b} goes \"obviously\" like it was already decided. The promise is real today. Whether it survives the season is the question neither of them is asking out loud.",
     ],
   }),
   ev({
@@ -1352,10 +1352,10 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3,
     effects: { bond: 1, pop: { a: 1 }, state: 'last-drink' },
     lines: [
-      "{a} pours three glasses and {b} takes hers and {c} takes hers and they stand in a circle that will be one person smaller by tomorrow and all three of them are being very careful not to say that. They talk about the good parts — the funny moments, the early challenges — and the not-talking-about-it is louder than the talking.",
-      "\"One more drink before — \" {a} does not finish the sentence. {b} and {c} raise their glasses and the toast is to something vague and cheerful because the specific and honest toast would be too heavy to carry. Somebody is leaving and all three know it and the drink is the last thing they share before the last thing they share.",
-      "The three of them sit on the couch and {a} has poured something and nobody is drinking fast because fast means it is over and none of them want it to be over. {b} tells a joke and {c} laughs too hard at it and {a} watches both of them with the face of someone memorising a room she might not be in tomorrow.",
-      "{a} and {b} and {c} share a drink and the sharing has the shape of a goodbye that nobody is willing to call a goodbye. They clink glasses and somebody says \"to us\" and the \"us\" has a shelf life and everyone knows it and the drink is warm and the moment is warm and the warmth is the part that makes it hard.",
+      "{a} pours three glasses. {b} takes hers. {c} takes hers. They stand in a circle that is going to be one person smaller by tomorrow and all three of them are being careful not to say that.",
+      "\"One more drink before — \" {a} does not finish the sentence. {b} and {c} raise their glasses. The toast is vague and cheerful because the honest one would be too heavy. Somebody is leaving and all three know it.",
+      "The three of them sit on the couch. {a} poured something. Nobody is drinking fast because fast means it is over. {b} tells a joke. {c} laughs too hard at it. {a} watches both of them like she is memorising the room.",
+      "{a} and {b} and {c} share a drink. They clink glasses and somebody goes \"to us\" and the \"us\" has a shelf life and everyone knows it. Nobody says that part out loud.",
     ],
   }),
 
@@ -1368,10 +1368,10 @@ export const WERK_EVENTS = [
     when: f => f.someoneLeft && f.groupSize >= 3,
     effects: { bond: 1.5, pop: { a: 1 }, state: 'mirror-read' },
     lines: [
-      "{a} reads the lipstick message on the mirror out loud — the goodbye, the love-you, the see-you-on-the-outside — and gets through most of it before her voice catches on a word she was not expecting to catch on. {b} puts a hand on her shoulder and {c} stands close and the three of them look at the mirror and the mirror looks back without the person who wrote on it.",
-      "\"I will read it.\" {a} volunteers before anyone asks and starts reading the mirror message to {b} and {c} and the reading is steady until it isn't — the part about being grateful, or the part that names someone in the room, and {a}'s voice does the thing where it drops half a register and everyone pretends not to hear the drop.",
-      "{a} stands at the mirror and reads the words left behind — the thank you, the fight-for-me, the smiley face drawn in lipstick — and {b} and {c} listen and {a} makes it through the first sentence fine and the second sentence fine and the third sentence is where the voice goes somewhere she did not give it permission to go.",
-      "The mirror has writing on it and {a} reads it out loud because somebody has to and {a} is the one who is brave enough to do it while her voice is still mostly steady. {b} leans against {c} and {c} holds still and {a} finishes the message and the room sits with it for a moment before anybody speaks, because speaking too fast after the mirror message feels wrong.",
+      "{a} reads the lipstick message on the mirror out loud. The goodbye, the love-you, the see-you-on-the-outside. She gets through most of it before her voice catches. {b} puts a hand on her shoulder. {c} stands close.",
+      "\"I will read it.\" {a} volunteers before anyone asks. Reads it to {b} and {c}. Steady at first — then she hits the part that names someone in the room and her voice drops half a register. Everyone pretends not to hear the drop.",
+      "{a} stands at the mirror and reads the words left behind. The thank you. The fight-for-me. The smiley face drawn in lipstick. She makes it through the first sentence fine. Second sentence fine. Third sentence is where the voice goes.",
+      "The mirror has writing on it and {a} reads it out loud because somebody has to. {b} leans against {c}. {a} finishes the message and the room sits with it for a moment before anybody speaks.",
     ],
   }),
   ev({
@@ -1381,10 +1381,10 @@ export const WERK_EVENTS = [
     when: f => f.someoneLeft && f.lastCall === 'BTM2',
     effects: { pop: { a: -1 }, state: 'relieved' },
     lines: [
-      "{a} hears the name that is not hers and the relief arrives before the face can catch up — a full-body exhale, a dropped jaw put back, a smile pressed flat half a second too late — and somebody across the room sees all of it and the seeing is the problem. The relief is human. The not-hiding-it is the read.",
-      "It was not her name and {a} knows it was not her name and the knowing shows on her face like a light turning on in a dark room — sudden and visible and impossible to pretend was not there. She recovers, makes the sad face, but the recovery came second and the relief came first and at least one queen clocked the order.",
-      "{a}'s shoulders drop two inches when somebody else's name is called and the drop is visible from across the room. She tries to rearrange her face into something sympathetic and the rearranging takes a beat too long and in that beat three queens see exactly how relieved she is. The sympathy arrives. It arrives second.",
-      "The name is not {a}'s and {a}'s whole body says \"thank god\" before her mouth can say \"oh no.\" The gap between the body's honesty and the mouth's performance is about one second and in that second everyone nearby reads the real headline, which is that {a} is glad it is not her and is doing a poor job of pretending otherwise.",
+      "{a} hears the name and it is not hers. The relief hits before the face can catch up — full exhale, shoulders drop, smile pressed flat a second too late. Somebody across the room sees all of it.",
+      "It is not her name and {a} KNOWS it is not her name and you can see the knowing on her face. She recovers. Makes the sad face. But the relief came first and at least one queen clocked the order.",
+      "{a}'s shoulders drop two inches when the other name is called. Visible from across the room. She tries to rearrange her face into something sympathetic and it takes a beat too long. The sympathy arrives. It arrives second.",
+      "The name is not {a}'s and her whole body goes \"thank god\" before her mouth can go \"oh no.\" That gap is about one second. In that second everyone nearby reads the real headline — {a} is glad it is not her and is doing a bad job of hiding it.",
     ],
   }),
   ev({
@@ -1394,10 +1394,10 @@ export const WERK_EVENTS = [
     when: f => f.someoneLeft,
     effects: { bond: 1, pop: { a: 1 }, state: 'empty-chair' },
     lines: [
-      "The station is empty and {a} and {b} both look at it and neither moves toward it. The wigs are gone, the mirror is wiped, the chair is pushed in, and the pushed-in chair is the part that gets you because it means somebody took the time to push it in before they left. {a} and {b} stand near it without saying anything and the not-saying is the tribute.",
-      "{a} walks past the empty station and stops and {b} stops with her and they both look at the clean mirror and the bare counter and the space where somebody used to be. Neither takes the spot. Neither moves her things over. The station stays empty for the rest of the day because filling it would feel like erasing somebody and neither of them wants to be the one who does that.",
-      "The chair is there and nobody is in it and {a} and {b} both see it at the same time and the seeing hits different when it is real — when the person who sat there yesterday is actually gone and the station is actually bare and the room is actually one voice quieter. They look at each other and look away and the station stays empty.",
-      "{b} catches {a} staring at the empty station and does not say \"are you okay\" because \"are you okay\" is a question that does not help when the answer is obvious. Instead {b} stands next to {a} and they both look at the chair and the silence is the gentlest thing anyone does all day.",
+      "The station is empty. {a} and {b} both look at it. Neither moves toward it. Wigs gone, mirror wiped, chair pushed in. The pushed-in chair is the part that gets you — somebody took the time to push it in before she left.",
+      "{a} walks past the empty station and stops. {b} stops with her. Clean mirror, bare counter, the space where somebody used to be. Neither takes the spot. The station stays empty for the rest of the day.",
+      "The chair is there and nobody is in it. {a} and {b} both see it at the same time. Hits different when it is real — the person who sat there yesterday is gone and the room is one voice quieter. They look at each other. Look away.",
+      "{b} catches {a} staring at the empty station. Does not ask if she is okay because the answer is obvious. Just stands next to her. They both look at the chair. Nobody says anything.",
     ],
   }),
 
@@ -1424,7 +1424,12 @@ export const WERK_EVENTS = [
     arcs: ['bond'],
     when: f => f.sameFamily && f.familyObvious && f.phase === 0,
     effects: { bond: 1, pop: { a: 1, b: 1 }, state: 'family-revealed' },
-    lines: [],
+    lines: [
+      "Somebody goes \"wait — are y'all related?\" {a} and {b} look at each other. {a} goes \"she is my sister.\" The room erupts. {b} just stands there smiling because she has been waiting for somebody to clock it all day.",
+      "\"Hold on. Same last name?\" A queen points at {a} and then at {b}. {a} goes \"yeah, she is my family.\" {b} nods. The room goes loud. Two queens start asking questions at the same time and neither waits for an answer.",
+      "{a} and {b} get asked the question before the first hour is up. \"Are you two — \" \"Yes.\" {a} says it flat. {b} grins. The room reacts like it is a twist reveal on the main stage. {a} goes \"girl, it is not that serious\" but it kind of is.",
+      "A queen clocks the name and goes \"wait a minute.\" {a} goes \"yeah. That is my sister.\" {b} waves from across the room. The energy shifts — every queen in earshot is recalculating what these two mean as a pair.",
+    ],
   }),
   ev({
     id: 'the-house-confession', slot: 'prep', cast: 'pair', weight: 1.6,
@@ -1435,7 +1440,12 @@ export const WERK_EVENTS = [
     arcs: ['bond'],
     when: f => f.sameFamily && !f.familyObvious && f.phase >= 1,
     effects: { bond: 1.5, pop: { a: 1 }, state: 'family-revealed' },
-    lines: [],
+    lines: [
+      "{a} tells {b} they came up in the same bar and {b} goes \"I KNEW it.\" She did not know it. But the drag makes sense now — the references, the silhouettes, the way they both paint. {a} goes \"we did not want it to be a thing\" but it is already a thing.",
+      "\"Can I tell you something?\" {a} pulls {b} aside and tells her — same scene, same city, same mama. {b}'s eyes go wide. \"Girl, why did you not SAY that?\" {a} goes \"because then it becomes a target.\" {b} goes quiet because {a} is right.",
+      "{a} drops it casual — \"yeah, we are from the same place\" — and {b} stops what she is doing. \"The same PLACE place?\" Same bar. Same crew. {b} looks at {a} different after that. The drag she has been watching suddenly has context.",
+      "{a} decides to tell {b} they are from the same scene. She does it quiet, away from the group. {b} goes \"shut UP\" and then goes \"wait, does everyone know?\" {a} goes \"no, and I would like to keep it that way.\" {b} nods. The secret sits between them now.",
+    ],
   }),
   ev({
     id: 'mother-teaching', slot: 'prep', cast: 'pair', weight: 1.8,
@@ -1446,7 +1456,12 @@ export const WERK_EVENTS = [
     arcs: ['bond'],
     when: f => f.relation === 'daughter',
     effects: { bond: 1.5, pop: { a: 1, b: 1 }, state: 'mothered' },
-    lines: [],
+    lines: [
+      "{a} takes the garment out of {b}'s hands. Does not ask. Just takes it, looks at it, goes \"no\" and starts fixing the seam herself. {b} stands there watching because when your drag mama says no she means no and you learn more in the silence than the lecture.",
+      "{a} walks over to {b}'s station and starts adjusting her padding without a word. {b} goes \"I had it\" and {a} goes \"you did not\" and that is the end of that conversation. Nobody else in this room could talk to {b} like that. {a} can because {a} made her.",
+      "\"Sit down.\" {a} says it to {b} and {b} sits. {a} takes apart the neckline {b} spent an hour on. Rebuilds it in ten minutes. {b} watches and does not argue because when your drag mother teaches you something you shut up and learn.",
+      "{a} looks at what {b} is building and goes \"baby, no.\" Takes the fabric, flips it, shows her the grain. {b} goes \"I knew that\" and {a} goes \"then why was it backwards.\" The room watches a drag mother do what a drag mother does — fix it without softening it.",
+    ],
   }),
   ev({
     id: 'out-of-her-shadow', slot: 'werk-morning', cast: 'pair', weight: 1.4,
@@ -1456,7 +1471,12 @@ export const WERK_EVENTS = [
     arcs: ['rivalry'],
     when: f => f.relation === 'mother' && f.phase >= 1,
     effects: { bond: -2, pop: { a: 1 }, state: 'family-strain' },
-    lines: [],
+    lines: [
+      "{a} is tired of being introduced as {b}'s daughter. She did not come here to be somebody's anything. \"I have my own drag,\" she goes to nobody in particular, loud enough that {b} hears it from across the room. {b} does not respond. The not responding says plenty.",
+      "A queen asks {a} about {b} and {a} goes \"can we talk about literally anything else.\" She is done being the daughter. She is here as herself. {b} catches the tone from two stations over and her face does something complicated.",
+      "\"She is not the reason I am here.\" {a} says it flat, about {b}, to a queen who asked a simple question. The edge in her voice is real. She came here to be {a}, not {b}'s kid, and every time someone connects them she feels smaller.",
+      "{a} snaps when somebody calls her a mini-{b}. \"I am not mini anything.\" The room goes quiet. {b} looks at her and does not say a word. It is the first real crack between them and it is a real one because {a} is right — she has her own name and her own drag and her own reason to be here.",
+    ],
   }),
   ev({
     id: 'the-room-notices-the-bloc', slot: 'werk-elim-day', cast: 'group', weight: 1.5,
@@ -1466,7 +1486,12 @@ export const WERK_EVENTS = [
     arcs: ['rivalry'],
     when: f => f.sameFamily && f.groupSize >= 3 && f.phase >= 1,
     effects: { bond: -1, pop: { a: -1, b: -1 }, state: 'bloc-noticed' },
-    lines: [],
+    lines: [
+      "{c} has figured out that {a} and {b} are never going to be a problem for each other. Nobody accuses anyone. {c} just adjusts — starts thinking about them as a pair instead of two singles. That changes the maths for everybody.",
+      "{c} watches {a} and {b} work together and goes quiet. She does not say it out loud but you can see her doing the calculation — those two are never going to come for each other, which means they are a bloc whether they meant to be or not.",
+      "\"They are always going to pick each other,\" {c} says, about {a} and {b}, not to them but near enough that the words carry. Nobody argues. {a} and {b} exchange a look. {c} just named the thing everybody was thinking.",
+      "{c} clocks {a} helping {b} for the third time this week and the pattern is loud now. Those two are a unit. Nobody accuses anyone of anything but {c} starts moving different — she is thinking about them as a pair and that changes who is a threat.",
+    ],
   }),
 
 ];

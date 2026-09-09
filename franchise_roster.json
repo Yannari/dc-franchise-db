@@ -5573,17 +5573,8 @@
         "temperament": 4
       },
       "sexuality": "queer",
-      "profileSources": {},
-      "age": 38,
-      "birthdate": "1988-03-23",
-      "ethnicity": "Greek American",
-      "nationality": "American",
-      "hometown": "Chicago, Illinois",
-      "occupation": "Improv teacher and dinner-theatre host",
-      "descriptor": "The Mustachioed Matriarch",
-      "backstory": "Marge spent years performing character comedy in improv theatres, queer cabarets, and interactive murder-mystery dinners. Their bearded drag persona began as a one-night parody of a judgmental neighborhood mother and unexpectedly became the audience favorite. Marge eventually turned the character into a full-time act built around improvised monologues, audience participation, and deliberately old-fashioned glamour. They enter Drag Race to prove that facial hair and femininity can share the same spotlight.",
-      "personality": "Marge is perceptive, talkative, nurturing, and almost incapable of minding their own business. They quickly become the workroom confidant, collecting information while pretending merely to offer snacks and advice. Their humor and acting ability make them dangerous in character challenges, roasts, and improvisation. However, Marge struggles with choreography, becomes impatient during construction challenges, and can lose their temper when younger queens dismiss them as dated. Beneath the nosiness is a loyal performer who genuinely wants others to succeed—just preferably after Marge does.",
       "voice": "Marge speaks like an affectionate but intrusive aunt who knows everybody’s business and has already formed an opinion about it. Their warm, theatrical delivery can turn from motherly advice to devastating shade without changing volume: “Sweetheart, I’m not gossiping—I’m providing the community with important updates,” “That hemline is rising faster than her chances are falling,” and, when challenged, “Don’t mistake my casserole energy for weakness, dear. That dish is served hot.”",
+      "profileSources": {},
       "drag": {
         "acting": 7,
         "comedy": 8,
@@ -5598,9 +5589,17 @@
           "wit",
           "camp-queen"
         ],
-        "voice": "Marge speaks like an affectionate but intrusive aunt who knows everybody’s business and has already formed an opinion about it. Their warm, theatrical delivery can turn from motherly advice to devastating shade without changing volume: “Sweetheart, I’m not gossiping—I’m providing the community with important updates,” “That hemline is rising faster than her chances are falling,” and, when challenged, “Don’t mistake my casserole energy for weakness, dear. That dish is served hot.”",
-        "family": []
-      }
+        "voice": "Marge speaks like an affectionate but intrusive aunt who knows everybody’s business and has already formed an opinion about it. Their warm, theatrical delivery can turn from motherly advice to devastating shade without changing volume: “Sweetheart, I’m not gossiping—I’m providing the community with important updates,” “That hemline is rising faster than her chances are falling,” and, when challenged, “Don’t mistake my casserole energy for weakness, dear. That dish is served hot.”"
+      },
+      "age": 38,
+      "birthdate": "1988-03-23",
+      "ethnicity": "Greek American",
+      "nationality": "American",
+      "hometown": "Chicago, Illinois",
+      "occupation": "Improv teacher and dinner-theatre host",
+      "descriptor": "The Mustachioed Matriarch",
+      "backstory": "Marge spent years performing character comedy in improv theatres, queer cabarets, and interactive murder-mystery dinners. Their bearded drag persona began as a one-night parody of a judgmental neighborhood mother and unexpectedly became the audience favorite. Marge eventually turned the character into a full-time act built around improvised monologues, audience participation, and deliberately old-fashioned glamour. They enter Drag Race to prove that facial hair and femininity can share the same spotlight.",
+      "personality": "Marge is perceptive, talkative, nurturing, and almost incapable of minding their own business. They quickly become the workroom confidant, collecting information while pretending merely to offer snacks and advice. Their humor and acting ability make them dangerous in character challenges, roasts, and improvisation. However, Marge struggles with choreography, becomes impatient during construction challenges, and can lose their temper when younger queens dismiss them as dated. Beneath the nosiness is a loyal performer who genuinely wants others to succeed—just preferably after Marge does."
     },
     {
       "name": "Minnie Skurr",
@@ -5621,15 +5620,6 @@
       "sexuality": "gay",
       "voice": "Minnie speaks quickly in a youthful mix of English and Spanish, sounding like an enthusiastic dance-team captain who is always ready with gossip, encouragement, or a playful boast. She stretches words when excited, calls people “babe” and “mami,” and sometimes talks before thinking: “Mami, if the beat drops, so do I,” “That look is giving substitute teacher on laundry day,” and, when nervous, “I’m totally calm, babe—my leg is just shaking because it wants to dance.”",
       "profileSources": {},
-      "age": 22,
-      "birthdate": "2004-08-11",
-      "ethnicity": "Cuban American",
-      "nationality": "American",
-      "hometown": "Miami, Florida",
-      "occupation": "Dance instructor and college student",
-      "descriptor": "The Pocket-Sized Powerhouse",
-      "backstory": "Minnie began dancing as a child and spent her teenage years competing in jazz, hip-hop, and cheer-dance competitions. She discovered drag through queer nightclub performances and started sneaking into open-stage nights shortly after turning eighteen. Unable to afford elaborate costumes, she developed an inexpensive preppy aesthetic using altered school uniforms, dancewear, and accessories from local malls. After only three years in drag, she enters the competition eager to prove that being young and polished does not make her disposable.",
-      "personality": "Minnie is energetic, ambitious, friendly, and visibly inexperienced. She learns choreography almost immediately and performs with fearless physicality, but she struggles when a challenge requires subtle acting, improvisation, or original jokes. Her youthful confidence can sound cocky, especially when she dismisses older styles of drag as outdated. Minnie wants everyone to like her and becomes emotional when criticized, yet she recovers quickly once the music begins. She is an obvious performance threat with enough raw potential to grow, but her limited experience could cause her to unravel outside her comfort zone.",
       "drag": {
         "acting": 4,
         "comedy": 3,
@@ -5644,9 +5634,17 @@
           "body",
           "splits-and-dips"
         ],
-        "voice": "Minnie speaks quickly in a youthful mix of English and Spanish, sounding like an enthusiastic dance-team captain who is always ready with gossip, encouragement, or a playful boast. She stretches words when excited, calls people “babe” and “mami,” and sometimes talks before thinking: “Mami, if the beat drops, so do I,” “That look is giving substitute teacher on laundry day,” and, when nervous, “I’m totally calm, babe—my leg is just shaking because it wants to dance.”",
-        "family": []
-      }
+        "voice": "Minnie speaks quickly in a youthful mix of English and Spanish, sounding like an enthusiastic dance-team captain who is always ready with gossip, encouragement, or a playful boast. She stretches words when excited, calls people “babe” and “mami,” and sometimes talks before thinking: “Mami, if the beat drops, so do I,” “That look is giving substitute teacher on laundry day,” and, when nervous, “I’m totally calm, babe—my leg is just shaking because it wants to dance.”"
+      },
+      "age": 22,
+      "birthdate": "2004-08-11",
+      "ethnicity": "Cuban American",
+      "nationality": "American",
+      "hometown": "Miami, Florida",
+      "occupation": "Dance instructor and college student",
+      "descriptor": "The Pocket-Sized Powerhouse",
+      "backstory": "Minnie began dancing as a child and spent her teenage years competing in jazz, hip-hop, and cheer-dance competitions. She discovered drag through queer nightclub performances and started sneaking into open-stage nights shortly after turning eighteen. Unable to afford elaborate costumes, she developed an inexpensive preppy aesthetic using altered school uniforms, dancewear, and accessories from local malls. After only three years in drag, she enters the competition eager to prove that being young and polished does not make her disposable.",
+      "personality": "Minnie is energetic, ambitious, friendly, and visibly inexperienced. She learns choreography almost immediately and performs with fearless physicality, but she struggles when a challenge requires subtle acting, improvisation, or original jokes. Her youthful confidence can sound cocky, especially when she dismisses older styles of drag as outdated. Minnie wants everyone to like her and becomes emotional when criticized, yet she recovers quickly once the music begins. She is an obvious performance threat with enough raw potential to grow, but her limited experience could cause her to unravel outside her comfort zone."
     },
     {
       "name": "Paige Turner",

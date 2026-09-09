@@ -1029,7 +1029,11 @@ function rpBuildBall(row) {
     }
   }
 
-  /* ── PROSE: each queen gets her lines on her FIRST appearance ── */
+  /* ── PROSE: engine prose on the SEWN look, runway reads on the rest ──
+     The engine writes one block per queen about her whole ball ("three looks,
+     one voice..."). That belongs on the sewn look — the climax, where the
+     judges have seen the full trio. The earlier runway walks get short
+     per-look commentary generated from the score so they are never bare. */
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
     && sc.step !== 'prep'
     && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
@@ -1043,7 +1047,15 @@ function rpBuildBall(row) {
       return true;
     }).map(sc => sc.text);
   }
-  const proseShown = new Set();
+
+  const _runwayRead = (name, score, label) => {
+    const lo = label.toLowerCase();
+    if (score >= 9) return `${name} owns the ${lo} category. The look is immaculate and the walk sells it twice.`;
+    if (score >= 7) return `A strong ${lo} from ${name}. The look reads from the back of the room and the silhouette is clean.`;
+    if (score >= 5) return `${name} walks the ${lo} competently — nothing wrong, nothing the panel will remember tomorrow.`;
+    if (score >= 3) return `The ${lo} does not land. ${name} walks it with commitment but the look itself is the problem.`;
+    return `${name}'s ${lo} is a miss. The concept is unclear and the execution does not rescue it.`;
+  };
 
   let stepIdx = 0;
   const html = [];
@@ -1070,10 +1082,14 @@ function rpBuildBall(row) {
     ).join('')
       + `<span class="ball-paddle-sum"><b>${paddleTotal}</b><small>total</small></span>`;
 
-    const lines = !proseShown.has(s.name) && proseByQueen[s.name]?.length
-      ? proseByQueen[s.name].map(t => `<p class="dr-perf-line">${esc(t)}</p>`).join('')
-      : '';
-    if (lines) proseShown.add(s.name);
+    let lines;
+    if (s.look.sewn) {
+      lines = (proseByQueen[s.name] || [])
+        .map(t => `<p class="dr-perf-line">${esc(t)}</p>`).join('');
+    } else {
+      const read = _runwayRead(s.name, s.look.score, s.look.label);
+      lines = `<p class="dr-perf-line">${esc(read)}</p>`;
+    }
 
     html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
       <div class="ball-walk${s.look.sewn ? ' ball-sewn' : ''}">

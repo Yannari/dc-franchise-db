@@ -6,6 +6,7 @@
 // prose over it and nothing else. A smackdown scene that could change a duel
 // would be a second source of truth for a night that already has one.
 import { SMACKDOWN_BEATS } from './data/smackdown-beats.js';
+import { TOURNAMENT_BEATS } from './data/tournament-beats.js';
 
 const pickLine = (lines, rng, used, key) => {
   if (!lines?.length) return '';
@@ -76,5 +77,82 @@ export function smackdownScenes({
     emit('smackdown-crown', 'crown', { a: champion },
       { winner: champion, title, players: [champion] });
   }
+  return out;
+}
+
+// ── TOURNAMENT (LaLaPaRuZa — active queens, someone goes home) ──────
+
+const tBeatById = id => TOURNAMENT_BEATS.find(x => x.id === id);
+
+function tournamentDuelTier(duel, rankOf) {
+  const gap = Math.abs((duel.adjusted?.[duel.a] ?? 0) - (duel.adjusted?.[duel.b] ?? 0));
+  const ra = rankOf(duel.a);
+  const rb = rankOf(duel.b);
+  const favourite = ra >= rb ? duel.a : duel.b;
+  const seedGap = Math.abs(ra - rb);
+  if (duel.winner !== favourite && seedGap >= 2 && gap >= 1.0) return 'upset';
+  return gap >= 2.5 ? 'blowout' : 'close';
+}
+
+export function tournamentScenes({
+  duels = [], eliminated = null, r1Winners = [], r1Losers = [],
+  r2Safe = [], r2Losers = [], lastSurvivor = null,
+  rng = Math.random, rankOf = null, living = [],
+}) {
+  const used = new Set();
+  const rank = rankOf || (() => 0);
+  const out = [];
+
+  const emit = (id, tierId, subs, data) => {
+    const beat = tBeatById(id);
+    const t = beat?.tiers.find(x => x.id === tierId) || beat?.tiers[0];
+    if (!t) return;
+    out.push({
+      step: 'maxi-main', kind: id,
+      data: { beat: id, tier: t.id, note: t.note, ...data },
+      text: fill(pickLine(t.lines, rng, used, `${id}/${t.id}`), subs),
+    });
+  };
+
+  emit('tournament-open', 'open', {}, { players: [...living] });
+
+  const r1Duels = duels.filter(d => d.round === 1);
+  const r2Duels = duels.filter(d => d.round === 2);
+  const r3Duels = duels.filter(d => d.round === 3);
+
+  for (const d of r1Duels) {
+    emit('tournament-duel', tournamentDuelTier(d, rank),
+      { a: d.winner, b: d.loser, c: d.song },
+      { duel: d, players: [d.a, d.b] });
+  }
+
+  if (r1Losers.length) {
+    emit('tournament-r1-split', 'split',
+      {}, { safe: [...r1Winners], danger: [...r1Losers], players: [...r1Losers] });
+  }
+
+  for (const d of r2Duels) {
+    emit('tournament-duel', tournamentDuelTier(d, rank),
+      { a: d.winner, b: d.loser, c: d.song },
+      { duel: d, players: [d.a, d.b] });
+  }
+
+  if (r2Losers.length) {
+    emit('tournament-r2-split', 'split',
+      {}, { safe: [...r2Safe], danger: [...r2Losers], players: [...r2Losers] });
+  }
+
+  for (const d of r3Duels) {
+    emit('tournament-sudden-death', 'death',
+      { a: d.winner, b: d.loser, c: d.song },
+      { duel: d, players: [d.a, d.b] });
+  }
+
+  if (eliminated) {
+    emit('tournament-elim', 'elim',
+      { a: lastSurvivor || '', b: eliminated },
+      { eliminated, players: [eliminated] });
+  }
+
   return out;
 }

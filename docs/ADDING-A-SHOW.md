@@ -378,6 +378,51 @@ That last one is the quiet trap: an appearance with no `format` is Total Drama,
 so if your export forgets to stamp it, a racer joins the Total Drama career of
 whoever shares their slug.
 
+### 8.1 A per-show player field has six links, and five of them will look fine
+
+Your show will want player data the other shows do not have. Drag Race has
+`drag` — seven craft numbers, a style, traits and a persona voice. Big Brother
+will want aptitudes. Every one of these has to survive the same chain, and it
+is longer than it looks:
+
+| # | Link | How it fails |
+|---|---|---|
+| 1 | The **D1 column** (`worker/*_migration.sql`) | written, never applied |
+| 2 | The **worker** reads and writes it (`ROSTER_FIELDS`, the INSERT, the row reader) | written, never **deployed** |
+| 3 | The **client sends it** (`_rosterPush`) | a `_hasDrag`-style gate says there is nothing to send |
+| 4 | The **offline draft keeps it** (IndexedDB `characters`) | the rich record lists fields by hand and yours is not on it |
+| 5 | The **pull does not delete it** (`_rosterPull`) | the local roster is replaced wholesale by a server copy that lacks the field |
+| 6 | The **publish carries it** into `franchise_roster.json` | the file is regenerated from D1 and drops what D1 does not have |
+
+Drag Race shipped with 1, 2, 3 and 6 correct and **4 and 5 wrong**, and the
+worker at 2 was committed but never deployed. The result: an author set craft
+on a dozen queens, the Studio showed it, and every value was silently gone by
+the next page load. Nothing errored. No screen said anything. The engine then
+scored a whole season on seven flat fives, which is why every lip sync in that
+season was a coin toss.
+
+**Link 5 is the one to build first, because it is the only one that destroys
+data rather than failing to save it.** A server response that does not carry a
+field must never be able to delete that field locally — merge onto what is
+already there, and let the server own the LIST of players but not the set of
+columns:
+
+```js
+const prev = new Map(local.map(p => [p.slug || p.name, p]));
+persist(fromServer.map(p => {
+  const was = prev.get(p.slug || p.name);
+  return was ? { ...was, ...p } : p;   // server wins per field, never per record
+}));
+```
+
+This is the same failure as the roster publish that ate researched demographics
+twice. One defence, in the one place both paths go through.
+
+**And verify the round trip with the API, not the UI.** The Studio showed the
+craft correctly the entire time it was being thrown away, because it was
+rendering its own in-memory draft. `curl .../api/roster` and look for the field
+is a ten-second check that would have caught it on day one.
+
 ### Popularity, and the prize nobody votes on
 
 `gs.popularity` is a running total your show increments as it goes — every
@@ -775,6 +820,33 @@ Three ways a test has lied in this repo, all worth checking for in a new one:
 3. **Not verifying the guard fails.** Every fix in this session was checked by
    reverting the code and watching the test fail. 25 of 25, 6 of 12, 15 of 15 —
    the "before" number is the evidence the test works.
+
+### K. Committed is not deployed, and an absent field is not a missing column
+
+Two mistakes that compounded into a data loss, both worth knowing on sight.
+
+1. **A worker in the repo is not the worker that is running.** The drag block's
+   full support — validator, INSERT, row reader — was committed months before
+   it worked, and the deployed worker predated it, so every save dropped the
+   field on arrival. Nothing errors: the write returns 200 and the column stays
+   null. If a field you can see in `worker/` never appears in the data,
+   redeploy before you debug anything else. `npx wrangler deploy --config
+   worker/wrangler.toml` is cheaper than an hour of reading.
+2. **A JSON response that omits nulls looks exactly like a missing column.**
+   The roster reader only emits `drag` when the row is non-null, so 208 rows of
+   null produced a response with no `drag` key anywhere — and that was read as
+   "the migration was never applied". It had been. The proof cost one command
+   and contradicted the diagnosis:
+
+   ```
+   $ wrangler d1 execute … --command "ALTER TABLE roster ADD COLUMN drag TEXT;"
+   duplicate column name: drag
+   ```
+
+   **Never infer a schema from an API response.** Ask the database. `--file`
+   uploads through an import endpoint that OAuth tokens are often refused on;
+   `--command` uses the ordinary query path and works, which is also the faster
+   way to ask a one-line question like this one.
 
 ### What a third show inherits from this work
 

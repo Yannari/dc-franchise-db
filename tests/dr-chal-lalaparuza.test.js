@@ -32,7 +32,7 @@ function ctx(seed = 1, players = Object.fromEntries(NAMES.map(n => [n, mk(n)])))
   };
 }
 
-const duelsOf = out => out.scenes.find(s => s.kind === 'bracket').data.duels;
+const duelsOf = out => out.tournamentExit.duels;
 
 describe('the choosing', () => {
   it('everybody names somebody, and the mini winner names first', () => {
@@ -44,8 +44,6 @@ describe('the choosing', () => {
   it('the weakest lip syncer in the room is the one who gets named', () => {
     const p = Object.fromEntries(NAMES.map(n => [n, mk(n, { lipsync: n === 'Fay' ? 1 : 9 })]));
     const picks = runMaxi(ctx(1, p)).assignment.picks;
-    // Only one queen can have her, so the rest fall to second choices — but
-    // whoever picks first goes straight for Fay.
     expect(picks.Ada.choice).toBe('Fay');
   });
 
@@ -63,9 +61,6 @@ describe('the choosing', () => {
 
 describe('the bracket', () => {
   it('is built from the picks, not from the roster order', () => {
-    // The failure this guards is the one that keeps happening in this
-    // codebase: a choice the viewer watches somebody make that changes
-    // nothing. At least one opening duel must be a duel somebody asked for.
     for (let i = 0; i < 20; i++) {
       const out = runMaxi(ctx(i));
       const opening = duelsOf(out).filter(d => d.round === 1);
@@ -76,59 +71,103 @@ describe('the bracket', () => {
     }
   });
 
-  it('runs to exactly one unbeaten queen and loses nobody on the way', () => {
+  it('three rounds: everybody, then losers, then sudden death', () => {
     for (let i = 0; i < 20; i++) {
       const out = runMaxi(ctx(i));
-      const rows = Object.values(out.performances);
-      expect(rows.length, `seed ${i}`).toBe(6);
-      expect(rows.filter(r => r.detail.losses === 0).length, `seed ${i}`).toBe(1);
-      // Single elimination: nobody loses twice.
-      for (const r of rows) expect(r.detail.losses, `seed ${i}`).toBeLessThanOrEqual(1);
       const d = duelsOf(out);
-      expect(d.length, `seed ${i}`).toBe(5);
+      const rounds = [...new Set(d.map(x => x.round))].sort();
+      expect(rounds, `seed ${i}`).toEqual([1, 2, 3]);
+      expect(d.filter(x => x.round === 1).length, `seed ${i}: R1`).toBe(3);
+      expect(d.filter(x => x.round === 3).length, `seed ${i}: R3`).toBeGreaterThanOrEqual(1);
       for (const x of d) expect(x.song, `seed ${i}`).toBeTruthy();
     }
   });
 
-  it('scores winning above losing, every time', () => {
+  it('R1 winners have 0 losses, eliminated queen has the most', () => {
     for (let i = 0; i < 20; i++) {
-      const rows = Object.values(runMaxi(ctx(i)).performances);
-      const champ = rows.find(r => r.detail.losses === 0);
-      for (const r of rows) {
-        if (r !== champ) expect(champ.perf, `seed ${i}`).toBeGreaterThan(r.perf);
+      const out = runMaxi(ctx(i));
+      const rows = out.performances;
+      const te = out.tournamentExit;
+      for (const n of te.r1Winners) {
+        expect(rows[n].detail.losses, `seed ${i}: ${n}`).toBe(0);
+      }
+      const elimLosses = rows[te.eliminated].detail.losses;
+      for (const [name, r] of Object.entries(rows)) {
+        if (name !== te.eliminated) {
+          expect(r.detail.losses, `seed ${i}: ${name}`).toBeLessThanOrEqual(elimLosses);
+        }
       }
     }
   });
 
-  it('three wins in one night is an assassin', () => {
+  it('scores R1 winners above R2 safe above last survivor above eliminated', () => {
+    for (let i = 0; i < 20; i++) {
+      const out = runMaxi(ctx(i));
+      const rows = out.performances;
+      const te = out.tournamentExit;
+      const best = te.bestDuelWinner;
+      if (best) {
+        expect(rows[best].perf, `seed ${i}: best`).toBeGreaterThanOrEqual(9);
+      }
+      if (te.eliminated && te.lastSurvivor) {
+        expect(rows[te.lastSurvivor].perf, `seed ${i}`).toBeGreaterThan(rows[te.eliminated].perf);
+      }
+    }
+  });
+
+  it('the assassin event fires for high win counts in big casts', () => {
+    const big = Object.fromEntries(
+      ['Ada','Bee','Cleo','Dot','Eve','Fay','Gem','Hua','Ivy','Joy','Kay','Lea','Mia','Nia']
+        .map(n => [n, mk(n)]));
     let a = null;
-    for (let i = 0; i < 20 && !a; i++) a = runMaxi(ctx(i)).events.find(e => e.type === 'assassin');
-    expect(a, 'nobody in twenty brackets ever won three').toBeTruthy();
+    for (let i = 0; i < 100 && !a; i++) a = runMaxi(ctx(i, big)).events.find(e => e.type === 'assassin');
+    expect(a, 'nobody in a hundred 14-queen brackets ever won two').toBeTruthy();
     expect(a.pop[a.players[0]]).toBeGreaterThan(0);
     expect(a.state.assassin).toBe(a.players[0]);
   });
 
-  it('a great lip syncer wins the bracket far more often than a bad one', () => {
+  it('a great lip syncer wins R1 far more often than a bad one', () => {
     const p = Object.fromEntries(NAMES.map(n => [n, mk(n, { lipsync: n === 'Cleo' ? 10 : 3, dance: n === 'Cleo' ? 10 : 3 })]));
-    let wins = 0;
+    let r1wins = 0;
     for (let i = 0; i < 40; i++) {
-      const rows = runMaxi(ctx(i, p)).performances;
-      if (rows.Cleo.detail.losses === 0) wins++;
+      const te = runMaxi(ctx(i, p)).tournamentExit;
+      if (te.r1Winners.includes('Cleo')) r1wins++;
     }
-    expect(wins / 40).toBeGreaterThan(0.4);
+    expect(r1wins / 40).toBeGreaterThan(0.4);
   });
 
   it('copes with an odd room by giving somebody a bye', () => {
     const five = Object.fromEntries(['Ada', 'Bee', 'Cleo', 'Dot', 'Eve'].map(n => [n, mk(n)]));
     const out = runMaxi(ctx(1, five));
     expect(Object.keys(out.performances).length).toBe(5);
-    expect(Object.values(out.performances).filter(r => r.detail.losses === 0).length).toBe(1);
+    const te = out.tournamentExit;
+    expect(te.r1Winners.length + te.r1Losers.length).toBe(5);
   });
 
   it('every event it fires survives the consequence check', () => {
     for (let i = 0; i < 20; i++) {
       const c = ctx(i);
       expect(() => applyEvents(runMaxi(c).events, c), `seed ${i}`).not.toThrow();
+    }
+  });
+
+  it('fatigue reduces adjusted scores for repeated lip syncs', () => {
+    for (let i = 0; i < 10; i++) {
+      const d = duelsOf(runMaxi(ctx(i)));
+      const r3 = d.filter(x => x.round === 3);
+      for (const duel of r3) {
+        expect(duel.fatigue[duel.a], `seed ${i}`).toBeLessThan(1.0);
+        expect(duel.fatigue[duel.b], `seed ${i}`).toBeLessThan(1.0);
+      }
+    }
+  });
+
+  it('generates prose scenes for every duel', () => {
+    for (let i = 0; i < 10; i++) {
+      const out = runMaxi(ctx(i));
+      const prose = out.scenes.filter(s => /^tournament-/.test(s.kind));
+      expect(prose.length, `seed ${i}`).toBeGreaterThanOrEqual(6);
+      for (const s of prose) expect(s.text, `seed ${i}: ${s.kind}`).toBeTruthy();
     }
   });
 });

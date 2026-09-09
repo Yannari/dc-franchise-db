@@ -2,24 +2,24 @@
 // vp-dr/smackdown.js — the bracket, drawn as a bracket
 // ══════════════════════════════════════════════════════════════════════
 //
-// The episode carried a full eight-queen tournament — three rounds, a song per
-// duel, scores, a champion — and had no screen at all: none of its scene kinds
-// matched a section, so every one of them fell into the cold-open fallback and
-// the night arrived blank.
+// Shared between the reunion Smackdown (eliminated queens, no stakes) and
+// the LaLaPaRuZa (active queens, someone goes home). Both are lip sync
+// tournaments and both render the same way: a bracket that fills in as
+// you reveal it, round by round, with losers greying out.
 //
-// A smackdown is not a main stage. There is no runway, no panel, no critique
-// and nobody goes home, because everybody here already went home once. So it
-// gets the one shape a tournament actually has: a bracket that fills in as you
-// reveal it, round by round, with the losers greying out and the champion left
-// standing at the end.
+// THE LALAPARUZA IS A LOSERS' BRACKET. Round 1 winners sit safe; losers
+// pair up again in Round 2; Round 2 losers face sudden death in Round 3.
+// The smackdown is a standard elimination bracket. The visual language is
+// the same; the data shape is slightly different.
 import { _shell, _portrait } from './style.js';
 import { _controls } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+// ── SHARED CSS ────────────────────────────────────────────────────────
 export const SMACKDOWN_CSS = `
-.sd-wrap{--sd-gold:#FFC83D;--sd-dead:#4a2a3c}
+.sd-wrap{--sd-gold:#FFC83D;--sd-dead:#4a2a3c;--sd-fire:#FF294B;--sd-safe:#39E88B}
 .sd-bracket + .dr-step{margin-top:22px}
 .sd-hero{text-align:center;padding:10px 0 18px}
 .sd-hero .sd-title{font-size:11px;letter-spacing:.3em;color:var(--sd-gold)}
@@ -32,10 +32,6 @@ export const SMACKDOWN_CSS = `
 .sd-round{display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-height:100%}
 .sd-round-label{font-size:9px;letter-spacing:.24em;color:#b892a8;text-align:center;
   padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.09);margin-bottom:6px}
-/* AN UNREVEALED MATCH IS BLANK, NOT FAINT. At .28 opacity both names and
-   both scores were still perfectly readable, so dimming the bracket gave
-   away exactly as much as not dimming it. The box keeps its size — the
-   bracket must not reflow as it fills — and its contents are hidden. */
 .sd-match{border:1px solid var(--dr-line);background:var(--dr-panel);
   border-radius:3px;overflow:hidden;transition:opacity .25s}
 .sd-match:not(.on) .sd-side,.sd-match:not(.on) .sd-song{visibility:hidden}
@@ -53,6 +49,14 @@ export const SMACKDOWN_CSS = `
 .sd-lose b,.sd-lose .sd-sc{color:var(--sd-dead)}
 .sd-lose .dr-por,.sd-lose .dr-initials{filter:grayscale(1) brightness(.5)}
 
+/* Fatigue bar. A thin strip under the score showing how tired she is. */
+.sd-fat{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:2px;
+  overflow:hidden;width:40px}
+.sd-fat-fill{height:100%;border-radius:2px;transition:width .3s}
+.sd-fat-ok{background:var(--sd-safe)}
+.sd-fat-mid{background:var(--sd-gold)}
+.sd-fat-low{background:var(--sd-fire)}
+
 /* The champion's plinth at the end of the row. */
 .sd-champ{display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:14px 10px;border:1px solid var(--sd-gold);border-radius:3px;
@@ -63,29 +67,54 @@ export const SMACKDOWN_CSS = `
 .sd-champ .sd-name{font-size:17px;color:var(--sd-gold)}
 .sd-champ .sd-belt{font-size:9px;letter-spacing:.18em;color:#e3cfdd;text-align:center;
   text-wrap:balance}
-/* THE SCENE CARD, DEFINED HERE. dr-scene and dr-who live in
-   js/vp-dr/screens.js and are only emitted by the generic section builder —
-   this screen has its own builder, so it shipped markup with no styling
-   behind it and the prose ran under the portraits. A screen that names a
-   class has to carry it. NO BACKTICKS IN HERE: this comment sits inside a
-   template literal, and a backtick ends it. */
+
+/* The eliminated queen, for LaLaPaRuZa. */
+.sd-elim{display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:14px 10px;border:1px solid var(--sd-fire);border-radius:3px;
+  background:linear-gradient(180deg,rgba(255,41,75,.14),transparent);
+  transition:opacity .3s}
+.sd-elim:not(.on) > *{visibility:hidden}
+.sd-elim:not(.on){opacity:.5;border-style:dashed}
+.sd-elim .sd-name{font-size:17px;color:var(--sd-fire)}
+.sd-elim .sd-label{font-size:9px;letter-spacing:.18em;color:#e3cfdd;text-align:center}
+
+/* Round result badges */
+.sd-badge{font-size:8px;letter-spacing:.12em;padding:2px 6px;border-radius:2px;
+  text-align:center;margin-top:2px}
+.sd-badge-safe{background:rgba(57,232,139,.15);color:var(--sd-safe)}
+.sd-badge-low{background:rgba(255,200,61,.15);color:var(--sd-gold)}
+.sd-badge-danger{background:rgba(255,41,75,.15);color:var(--sd-fire)}
+
 .dr-scene{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
   padding:15px 18px 15px 22px}
 .dr-scene:not(:has(.dr-who)){grid-template-columns:1fr}
 .dr-who{display:flex;gap:7px}
 .dr-scene-body{color:#f4e3ed;font-size:15px;line-height:1.6;max-width:74ch;
   text-wrap:pretty}
-@media(prefers-reduced-motion:reduce){.sd-match,.sd-champ{transition:none}}
+@media(prefers-reduced-motion:reduce){.sd-match,.sd-champ,.sd-elim{transition:none}}
 `;
 
-/** One side of a duel row. */
-function side(name, ep, score, won) {
+// ── HELPERS ──────────────────────────────────────────────────────────
+
+function fatigueBar(factor) {
+  const pct = Math.round(factor * 100);
+  const cls = pct >= 85 ? 'sd-fat-ok' : pct >= 70 ? 'sd-fat-mid' : 'sd-fat-low';
+  return `<div class="sd-fat"><div class="sd-fat-fill ${cls}" style="width:${pct}%"></div></div>`;
+}
+
+function side(name, ep, score, won, fatFactor) {
+  const hasFatigue = fatFactor != null && fatFactor < 1.0;
   return `<div class="sd-side ${won ? 'sd-win' : 'sd-lose'}">
     ${_portrait(name, ep, { size: 26 })}
     <b>${esc(name)}</b>
-    <span class="sd-sc">${Number(score ?? 0).toFixed(1)}</span>
+    <span class="sd-sc">
+      ${Number(score ?? 0).toFixed(1)}
+      ${hasFatigue ? fatigueBar(fatFactor) : ''}
+    </span>
   </div>`;
 }
+
+// ── SMACKDOWN (reunion bracket) ──────────────────────────────────────
 
 /**
  * The smackdown, as a bracket.
@@ -106,7 +135,6 @@ export function rpBuildSmackdown(row) {
   const nameOf = n => (n === rounds.length ? 'FINAL'
     : n === rounds.length - 1 ? 'SEMI-FINALS' : `ROUND ${n}`);
 
-  // Index every duel so a reveal can address its own match box.
   const idxOf = new Map(sd.duels.map((d, i) => [d, i]));
 
   const bracket = rounds.map(rn => `<div class="sd-round">
@@ -114,8 +142,8 @@ export function rpBuildSmackdown(row) {
       ${sd.duels.filter(d => d.round === rn).map(d => `
         <div class="sd-match" id="sd-match-${idxOf.get(d)}">
           <div class="sd-song">&ldquo;${esc(d.song)}&rdquo;</div>
-          ${side(d.a, ep, d.scores?.[d.a], d.winner === d.a)}
-          ${side(d.b, ep, d.scores?.[d.b], d.winner === d.b)}
+          ${side(d.a, ep, d.adjusted?.[d.a] ?? d.scores?.[d.a], d.winner === d.a, d.fatigue?.[d.a])}
+          ${side(d.b, ep, d.adjusted?.[d.b] ?? d.scores?.[d.b], d.winner === d.b, d.fatigue?.[d.b])}
         </div>`).join('')}
     </div>`).join('')
     + `<div class="sd-round"><div class="sd-round-label">CHAMPION</div>
@@ -132,10 +160,6 @@ export function rpBuildSmackdown(row) {
     </div>
     <div class="sd-bracket">${bracket}</div>`;
 
-  /* THE PROSE, one card per duel, in the order they were danced. The bracket
-     above is the shape of the night; these are the night itself. */
-  /* NO TIER CHIPS. `open`, `blowout`, `crown` are the names of prose pools —
-     they belong in the data and never on screen. */
   const cards = [open, ...scenes, crown].filter(s => s?.text).map((sc, i) => {
     const who = (sc.data?.players || []).slice(0, 2);
     return `<div class="dr-step" id="dr-step-smackdown-${i}">
@@ -148,13 +172,6 @@ export function rpBuildSmackdown(row) {
 
   const total = [open, ...scenes, crown].filter(s => s?.text).length;
 
-  /* THE BRACKET FILLS IN WITH THE PROSE. Step 0 is the host announcing it,
-     so nothing is decided; each duel card after that lights its own match;
-     the champion's plinth waits for the last card, which is the one that
-     crowns her. Without this the match boxes and the plinth were drawn
-     complete and merely dimmed — every score and the winner's name readable
-     from the first frame of a tournament nobody had watched yet.
-     The offset is the open card: duel i is step i+1 when there is one. */
   if (typeof window !== 'undefined') {
     const nDuels = sd.duels.length;
     const off = open?.text ? 1 : 0;
@@ -172,5 +189,99 @@ export function rpBuildSmackdown(row) {
     phase: 'lipsync',
     title: 'The Lip Sync Smackdown',
     subtitle: 'the queens who already went home, settling it',
+  })}`;
+}
+
+// ── LALAPARUZA TOURNAMENT (maxi challenge) ──────────────────────────
+
+/**
+ * The LaLaPaRuZa, as a losers-bracket tournament.
+ *
+ * Three columns: Round 1 (everybody), Round 2 (Round 1 losers), and
+ * Sudden Death (Round 2 losers). The eliminated queen's card goes red
+ * at the end instead of the champion plinth going gold.
+ *
+ * Reveals per DUEL. Each click fills one match, greys the loser, and
+ * shows a round-result badge on the winner (SAFE for R1 winners, LOW
+ * for R2 winners). The eliminated queen's plinth lights on the last duel.
+ */
+export function rpBuildTournament(row) {
+  const te = row?.dr?.tournament;
+  if (!te?.duels?.length) return '';
+  const ep = row;
+  const duels = te.duels;
+
+  const rounds = [...new Set(duels.map(d => d.round))].sort((a, b) => a - b);
+  const roundName = r => {
+    if (r === 3) return 'SUDDEN DEATH';
+    return duels.find(d => d.round === r)?.roundLabel || `ROUND ${r}`;
+  };
+
+  const bracket = rounds.map(rn => `<div class="sd-round">
+      <div class="sd-round-label">${roundName(rn)}</div>
+      ${duels.filter(d => d.round === rn).map((d, di) => {
+    const gIdx = duels.indexOf(d);
+    return `
+        <div class="sd-match" id="sd-tm-${gIdx}">
+          <div class="sd-song">&ldquo;${esc(d.song)}&rdquo;</div>
+          ${side(d.a, ep, d.adjusted?.[d.a] ?? d.scores?.[d.a],
+    d.winner === d.a, d.fatigue?.[d.a])}
+          ${side(d.b, ep, d.adjusted?.[d.b] ?? d.scores?.[d.b],
+    d.winner === d.b, d.fatigue?.[d.b])}
+        </div>`;
+  }).join('')}
+    </div>`).join('');
+
+  // The eliminated queen's plinth at the end.
+  const elimPlinth = te.eliminated ? `<div class="sd-round">
+      <div class="sd-round-label">ELIMINATED</div>
+      <div class="sd-elim" id="sd-tm-elim">
+        ${_portrait(te.eliminated, ep, { size: 84, station: true })}
+        <div class="sd-name dr-disp">${esc(te.eliminated)}</div>
+        <div class="sd-label">SASHAY AWAY</div>
+      </div>
+    </div>` : '';
+
+  const castSize = Object.keys(row?.dr?.performances || {}).length;
+  const lead = `<div class="sd-hero">
+      <div class="sd-title dr-disp">Lip Sync LaLaPaRUza</div>
+      <h2 class="dr-disp">${castSize} queens, one survivor</h2>
+      <p>Win your round and sit safe. Lose, and you lip sync again.</p>
+    </div>
+    <div class="sd-bracket">${bracket}${elimPlinth}</div>`;
+
+  // Prose cards from the scenes.
+  const textScenes = (row.dr.scenes || []).filter(s =>
+    s.text && /^tournament-/.test(s.kind || ''));
+  const cards = textScenes.map((sc, i) => {
+    const who = (sc.data?.players || []).slice(0, 2);
+    return `<div class="dr-step" id="dr-step-tournament-${i}">
+      <div class="dr-panel dr-a-lip dr-scene">
+        ${who.length ? `<span class="dr-who">${who.map(n =>
+    _portrait(n, ep, { size: 46 })).join('')}</span>` : ''}
+        <div class="dr-scene-body">${esc(sc.text)}</div>
+      </div></div>`;
+  }).join('');
+
+  const total = textScenes.length || duels.length;
+  const suffix = 'tournament';
+
+  if (typeof window !== 'undefined') {
+    const nDuels = duels.length;
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra[suffix] = (idx) => {
+      for (let d = 0; d < nDuels; d++) {
+        const box = document.getElementById(`sd-tm-${d}`);
+        if (box) box.classList.toggle('on', idx >= d);
+      }
+      const plinth = document.getElementById('sd-tm-elim');
+      if (plinth) plinth.classList.toggle('on', idx >= total - 1);
+    };
+  }
+
+  return `<style>${SMACKDOWN_CSS}</style>${_shell(lead + cards + _controls(suffix, total), ep, {
+    phase: 'stage',
+    title: 'Lip Sync LaLaPaRUza',
+    subtitle: 'the losers bracket — lose twice and you are done',
   })}`;
 }

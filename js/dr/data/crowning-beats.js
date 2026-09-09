@@ -118,7 +118,14 @@ export const CROWNING_BEATS = [
       + 'Do not rank them, do not hint that one was closer: they tied, and a '
       + 'line that leaks an order takes away the only thing this beat is.',
     tierBy: 'always',
-    tiers: [tier('double', 'Two queens, one crown each.', [])],
+    tiers: [tier('double', 'Two queens, one crown each.', [
+      "\"I cannot separate you.\" The host says it and the room takes a second to understand what it means. \"Con-drag-ulations — {a} and {b}, you are BOTH the winners of this season of Drag Race.\" Two crowns. Two scepters. The room erupts because it has never seen this before and the novelty is louder than anything that has happened all night.",
+      "The host looks at {a} and looks at {b} and makes no distinction between them. \"I have one crown to give and tonight I am giving it twice.\" The room goes silent and then goes very loud. \"{a} and {b} — con-drag-ulations, you are both America's Next Drag Superstars.\" The plural lands and the landing is history.",
+      "\"Tonight I am doing something I have never done.\" The host holds the pause until the room is silent enough to hear what comes next. \"Con-drag-ulations — {a} and {b}, you are both the winners of this season of Drag Race.\" {a} grabs {b}'s hand and neither of them lets go and the room comes apart.",
+      "\"I cannot choose between you and I will not pretend I can.\" The host is direct about it. \"You both earned this crown and you will both wear it.\" He says their names together — \"{a} and {b}\" — and the together is the point. Two crowns are placed. The room holds both of them.",
+      "\"For the first time in Drag Race history —\" the host lets the room catch up to the sentence — \"I am crowning two winners.\" He looks at {a} and {b} and the looking treats them as a single verdict, because that is what they are. \"Con-drag-ulations, both of you.\" The noise that follows is the noise of a room rewriting its expectations in real time.",
+      "The host does not rank them. \"Con-drag-ulations, {a} and {b} — you are both the winners.\" The words arrive and the room needs a full second to process them, and in that second {a} and {b} turn to each other with faces that say the same thing: did he just say both of us? He did. Two crowns. One night. The cast floods the stage.",
+    ])],
   },
 
   {

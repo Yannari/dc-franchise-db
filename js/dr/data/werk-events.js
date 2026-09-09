@@ -63,7 +63,7 @@ const strongAt = (p, k) => d(p)[k] >= 7;
 export const WERK_EVENTS = [
   // ══ THE ROOM ITSELF: craft, mirrors, machines ════════════════════════
   ev({
-    id: 'sewing-rescue', slot: 'prep', cast: 'pair', weight: 2,
+    id: 'sewing-rescue', slot: 'prep', cast: 'pair', weight: 2, needs: 'design',
     note: '{b} cannot make the garment work and {a} sits down and fixes it for her.',
     arcs: ['hero'],
     when: f => strongAt(f.a, 'design') && weakAt(f.b, 'design') && f.bond >= 0,
@@ -76,7 +76,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'fabric-hoard', slot: 'prep', cast: 'pair', weight: 1,
+    id: 'fabric-hoard', slot: 'prep', cast: 'pair', weight: 1, needs: 'design',
     note: '{a} takes more than her share off the fabric wall and {b} notices.',
     arcs: ['villain'], when: f => f.canScheme && f.bond <= 2,
     effects: { bond: -1.5, pop: { a: -2 } },
@@ -88,7 +88,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'machine-jam', slot: 'prep', cast: 'solo', weight: 1,
+    id: 'machine-jam', slot: 'prep', cast: 'solo', weight: 1, needs: 'design',
     note: 'Her machine eats the fabric and she loses time she did not have.',
     when: f => !strongAt(f.a, 'design'),
     effects: { pop: { a: 1 }, state: 'lostTime' },
@@ -124,7 +124,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'glue-gun-burn', slot: 'prep', cast: 'solo', weight: 1,
+    id: 'glue-gun-burn', slot: 'prep', cast: 'solo', weight: 1, needs: 'design',
     note: 'She burns herself on the glue gun and keeps going.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [
@@ -234,7 +234,7 @@ export const WERK_EVENTS = [
 
   // ══ THE CHALLENGE, BEFORE AND AFTER ══════════════════════════════════
   ev({
-    id: 'idea-theft-accusation', slot: 'prep', cast: 'pair', weight: 1,
+    id: 'idea-theft-accusation', slot: 'prep', cast: 'pair', weight: 1, needs: 'design',
     note: '{a} accuses {b} of taking her concept. Whether it is true is left open.',
     arcs: ['villain', 'relationship'], when: f => f.bond <= 1,
     effects: { bond: -2, pop: { a: -1 } },
@@ -246,7 +246,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'talking-herself-out', slot: 'prep', cast: 'solo', weight: 2,
+    id: 'talking-herself-out', slot: 'prep', cast: 'solo', weight: 2, needs: 'design',
     note: 'She has an idea, hears herself describe it, and abandons it for something safe.',
     arcs: ['filler', 'weakness'], when: f => st(f.a, 'boldness') <= 5,
     effects: { pop: { a: -1 }, state: 'playedSafe' },
@@ -258,7 +258,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'doubling-down', slot: 'prep', cast: 'solo', weight: 1,
+    id: 'doubling-down', slot: 'prep', cast: 'solo', weight: 1, needs: 'design',
     note: 'Everyone tells her the concept will not read. She does it anyway.',
     arcs: ['fashion', 'villain'], when: f => st(f.a, 'boldness') >= 7,
     effects: { pop: { a: 2 }, state: 'committed' },
@@ -299,7 +299,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'panic-the-night-before', slot: 'prep', cast: 'solo', weight: 1,
+    id: 'panic-the-night-before', slot: 'prep', cast: 'solo', weight: 1, needs: 'design',
     note: 'She is nowhere near finished and the room can see it.',
     when: f => st(f.a, 'temperament') <= 5, effects: { pop: { a: -1 }, state: 'unfinished' },
     lines: [
@@ -803,7 +803,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'head-down-working', slot: 'prep', cast: 'solo', weight: 2,
+    id: 'head-down-working', slot: 'prep', cast: 'solo', weight: 2, needs: 'design',
     note: 'No drama. She works, and it is going well, and that is the scene.',
     when: f => true, effects: { pop: { a: 1 }, state: 'onTrack' },
     lines: [
@@ -839,7 +839,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'frontrunner-asked-for-help', slot: 'prep', cast: 'pair', weight: 2,
+    id: 'frontrunner-asked-for-help', slot: 'prep', cast: 'pair', weight: 2, needs: 'design',
     note: '{b} swallows her pride and asks the queen who keeps beating her for help.',
     arcs: ['frontrunner'], when: f => f.winsA >= 2 && f.neverTopA === false && f.bottomsB >= 1,
     effects: { bond: 2, pop: { a: 2 } },
@@ -1129,7 +1129,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'everybody-in', slot: 'prep', cast: 'group', weight: 1.0,
+    id: 'everybody-in', slot: 'prep', cast: 'group', weight: 1.0, needs: 'design',
     note: 'The whole end of the room stops to help one queen finish.',
     arcs: ['bond'],
     when: f => f.groupSize >= 3 && f.bottomsA >= 1,
@@ -1208,7 +1208,7 @@ export const WERK_EVENTS = [
 
   // ── prep ──
   ev({
-    id: 'borrowed-and-not-returned', slot: 'prep', cast: 'pair', weight: 1.2,
+    id: 'borrowed-and-not-returned', slot: 'prep', cast: 'pair', weight: 1.2, needs: 'design',
     note: '{a} has something of {b}\'s — a tool, a fabric, a wig cap — and has '
       + 'had it for two hours, and {b} needs it now and is being very polite '
       + 'about needing it now.',
@@ -1222,7 +1222,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'second-guessing-out-loud', slot: 'prep', cast: 'solo', weight: 1.3,
+    id: 'second-guessing-out-loud', slot: 'prep', cast: 'solo', weight: 1.3, needs: 'design',
     note: '{a} asks the room whether it is working. Nobody answers honestly, '
       + 'which she notices, and the not-answering tells her more than an '
       + 'answer would have.',
@@ -1250,7 +1250,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'she-can-actually-sew', slot: 'prep', cast: 'group', weight: 1.1,
+    id: 'she-can-actually-sew', slot: 'prep', cast: 'group', weight: 1.1, needs: 'design',
     note: 'A queue forms at {a}\'s machine because {a} is the only one who '
       + 'genuinely knows what she is doing, and she helps {b} and {c} and '
       + 'loses two hours of her own day doing it.',
@@ -1264,7 +1264,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'copying-her-idea', slot: 'prep', cast: 'pair', weight: 1.1,
+    id: 'copying-her-idea', slot: 'prep', cast: 'pair', weight: 1.1, needs: 'design',
     note: '{a} looks at what {b} is building and changes her own to be closer '
       + 'to it. Not a copy exactly. Close enough that {b} sees it happen.',
     when: f => f.canScheme,
@@ -1290,7 +1290,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'nobody-helps-her', slot: 'prep', cast: 'group', weight: 1.2,
+    id: 'nobody-helps-her', slot: 'prep', cast: 'group', weight: 1.2, needs: 'design',
     note: '{a} is visibly behind and {b} and {c} both see it and both stay at '
       + 'their own stations. Nobody is cruel. Nobody moves either.',
     when: f => f.groupSize >= 3 && f.bond <= 0,
@@ -1448,7 +1448,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'mother-teaching', slot: 'prep', cast: 'pair', weight: 1.8,
+    id: 'mother-teaching', slot: 'prep', cast: 'pair', weight: 1.8, needs: 'design',
     note: '{a} is {b}\'s drag mother and does what a drag mother does — takes '
       + 'the thing out of her hands and shows her, without being asked and '
       + 'without softening it. Nobody else in this room could say it to {b} '

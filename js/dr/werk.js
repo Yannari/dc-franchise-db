@@ -196,13 +196,14 @@ function pickSubject(pool, seen, state, rng) {
 
 export function drawWerkScene({
   slot, living, players, state, storylines, rng, ctx, used = new Set(), seen = {},
-  usedLines = null,
+  usedLines = null, blend = null,
 }) {
   if (!living || living.length < 1) return null;
 
   const candidates = [];
   for (const ev of WERK_EVENTS) {
     if (ev.slot !== slot) continue;
+    if (ev.needs && blend && !blend[ev.needs]) continue;
 
     // A pair event needs somebody to be with. Rather than testing every pair
     // in the room, which would make one well-connected queen dominate, each
@@ -316,7 +317,7 @@ export function applyWerkScene(scene, ctx) {
  * per queen, which for a full cast is a dozen or more beats spread across the
  * four slots, not eight.
  */
-export function runWerkRoom({ slots, living, players, state, storylines, rng, ctx, perSlot = null }) {
+export function runWerkRoom({ slots, living, players, state, storylines, rng, ctx, perSlot = null, blend = null }) {
   const scenes = [];
   const seen = {};
   const usedLines = new Set();
@@ -371,7 +372,7 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
       let scene = null;
       for (let tries = 0; tries < 3 && !scene; tries++) {
         const s2 = drawWerkScene({
-          slot, living, players, state, storylines, rng, ctx, used, seen, usedLines,
+          slot, living, players, state, storylines, rng, ctx, used, seen, usedLines, blend,
         });
         if (!s2) break;
         // A slot never runs the same scene twice in one night, whatever the

@@ -985,7 +985,7 @@ export function renderChallengeBeats({
   /* The beats that are ABOUT the person running the room. Every beat here can
      quote her through `{m}`; only these three draw her face, or the screen
      grows a portrait of Michelle beside a queen picking a verse slot. */
-  const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal']);
+  const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal', 'studio-taping']);
   /* Who is running THIS room. A Rumix has two of them on one afternoon —
      Michelle in the booth, Jamal on the number — so it is resolved per beat
      rather than per challenge. */
@@ -1265,14 +1265,41 @@ export function renderChallengeBeats({
      Between the booth and the shoot in the running order, which is the order
      it happens in on both challenges: she records, she learns it, she
      performs it — or she learns it, then they shoot it. */
-  const rehScene = moduleScenes.find(s => s.kind === 'rehearsal');
+  const rehScene = moduleScenes.find(s => s.kind === 'choreo-call');
   if (rehScene) {
     const rehBeat = beatById('rehearsal');
     for (const note of rehScene.data?.notes || []) {
+      /* A NOTE WITH NO TIER IS NOT THIS BEAT'S NOTE. `emit` falls back to the
+         first tier when it cannot find the id, which is right for a caller
+         that means "the only tier" and catastrophic for one that has read the
+         wrong scene: it printed the top tier for every queen in the room.
+         Belt as well as the braces of the rename above. */
+      if (!note.tier) continue;
       emit(rehBeat, note.tier, [note.name], {
         railTag: { 'first-pass': 'first pass', 'got-there': 'got there',
           'behind-the-count': 'behind', 'still-counting': 'still counting' }[note.tier],
         delta: note.delta,
+      });
+    }
+  }
+
+  /* ── THE SAME AFTERNOON, ON A SCRIPTED SET ──
+     Two kinds and no more. It matched `rehearsal` for a while, which
+     js/dr/chal/talent-show.js and js/dr/chal/design.js ALSO emit with a
+     completely different note shape — the guard below caught it, but a finder
+     that has to be saved by a guard is the wrong finder. Improv emits
+     `no-rehearsal` and gets nothing, correctly: it is the one challenge in
+     this family with no preparation at all. */
+  const dirScene = moduleScenes.find(s =>
+    s.kind === 'studio-taping' || s.kind === 'commercial-pitch');
+  if (dirScene) {
+    const dirBeat = beatById('studio-taping');
+    for (const note of dirScene.data?.notes || []) {
+      if (!note.tier) continue;
+      emit(dirBeat, note.tier, [note.name], {
+        railTag: { 'made-the-scene': 'made the scene', 'takes-direction': 'easy',
+          'many-resets': 'resets', 'argued-with-him': 'argued' }[note.tier],
+        took: note.took, good: note.good, argued: note.argued,
       });
     }
   }

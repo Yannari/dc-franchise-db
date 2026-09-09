@@ -78,7 +78,8 @@ describe('the schema', () => {
        found this is about her: "the camera will not find her, {m} will not
        build a setup around her". She is spoken about rather than present, so
        js/dr/stage.js draws no portrait on that card. */
-    const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal', 'call-sheet']);
+    const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal', 'call-sheet',
+      'studio-taping']);
     for (const b of CHALLENGE_BEATS) {
       for (const t of b.tiers) {
         for (const l of t.lines) {

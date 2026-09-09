@@ -25,6 +25,10 @@ import { prepareRoom } from '../prep.js';
 import { SCRIPTS, PRODUCTS, PREMISES } from '../data/scenes.js';
 import { dragOf } from '../queen.js';
 import { blendScore, noise, ROLE_RANGES, riskFor } from '../perform.js';
+/* The same ceiling the music video uses, imported rather than re-declared:
+   two different bounds on "how far can one afternoon move a night" would be
+   two different answers to one question. */
+import { IMPRESSION_CAP } from './music-video.js';
 import { evt } from '../rules.js';
 
 const stat = (p, k) => {
@@ -135,11 +139,14 @@ export function prepare(ctx) {
   const r = prepareRoom(ctx);
   const events = [...r.events];
   const notes = [];
+  const impression = {};
   const prep = { ...r.prep };
 
   if (maxi.id === 'improv') {
+    // No preparation means no afternoon, which means nobody formed a view of
+    // one. `impression` stays empty and the judging term is zero.
     return {
-      prep, events, notes,
+      prep, events, notes, impression,
       scenes: [...r.scenes, { step: 'prep', kind: 'no-rehearsal', data: {} }],
     };
   }
@@ -151,7 +158,39 @@ export function prepare(ctx) {
     const took = (good ? reads : !reads) && acts;
     const delta = good ? (took ? NOTE_HELP : -NOTE_COST) : (took ? -NOTE_HELP : 0.2);
     prep[n] = (prep[n] || 0) + delta;
-    notes.push({ name: n, good, took, delta: Math.round(delta * 100) / 100 });
+
+    /* ── AND WHAT HE MAKES OF HER, which is a different question ──
+       `delta` above is what the note did to the WORK. This is what the day did
+       to his opinion of her, and the two come apart all the time: a queen can
+       take every note and still be exhausting, and a queen can argue and be
+       right. The music video proved the shape — see js/dr/chal/music-video.js
+       — and these two were always the next ones, because a scripted scene and
+       a thirty-second advert are both somebody else's set.
+       He is ON THE PANEL (MENTORS in js/dr/data/judges.js), so this is not a
+       report reaching the judges; it is one judge's own afternoon.
+       Bounded and widened by the size of her part, for the same reason: the
+       lead is in every setup and every setup is another chance to impress him
+       or to run out of his patience. */
+    const d = dragOf(players[n]);
+    const p = players[n];
+    const range = ROLE_RANGES[assignment.roles?.[n]] ?? 1;
+    const raw = ((stat(p, 'intuition') - 5) * 0.09
+      + (d.acting * 0.5 + d.comedy * 0.5 - 5) * 0.10
+      + (stat(p, 'temperament') - 5) * 0.10
+      + (stat(p, 'social') - 5) * 0.05
+      + (good && took ? 0.25 : good && !took ? -0.25 : 0)
+      + noise(rng, 0.5)) * range;
+    const view = Math.round(Math.max(-IMPRESSION_CAP, Math.min(IMPRESSION_CAP, raw)) * 100) / 100;
+    impression[n] = view;
+
+    const argued = view < -0.3 && stat(p, 'temperament') <= 5 && rng() < 0.45;
+    notes.push({
+      name: n, good, took, argued, impression: view,
+      delta: Math.round(delta * 100) / 100,
+      tier: argued ? 'argued-with-him'
+        : view >= 0.45 ? 'made-the-scene'
+          : view <= -0.3 ? 'many-resets' : 'takes-direction',
+    });
 
     // Only the notable halves are events. A queen quietly taking a sensible
     // note is a rehearsal, not a scene.
@@ -167,17 +206,24 @@ export function prepare(ctx) {
   }
 
   return {
-    prep, events, notes,
+    prep, events, notes, impression,
     scenes: [...r.scenes, {
       step: 'prep',
-      kind: assignment.form === 'commercial' ? 'commercial-pitch' : 'rehearsal',
+      /* A TAPING, NOT A REHEARSAL. This was `rehearsal`, which is the dance
+         word — js/dr/chal/talent-show.js and the choreography room both use it
+         and mean it. A scripted parody is shot on a set with a director at a
+         monitor, and calling it a rehearsal both mis-describes it and made
+         this scene collide with the choreography beat: for one commit the
+         acting challenge rendered ten cards about somebody nailing the
+         spacing of "the number". */
+      kind: assignment.form === 'commercial' ? 'commercial-pitch' : 'studio-taping',
       data: { notes },
     }],
   };
 }
 
 export function perform(ctx) {
-  const { living, players, maxi, assignment, prep, rng, bond } = ctx;
+  const { living, players, maxi, assignment, prep, rng, bond, impression } = ctx;
   const performances = {};
   const events = [];
   const form = assignment.form || 'acting';
@@ -268,7 +314,12 @@ export function perform(ctx) {
       risk: riskFor(players[n], rng),
       role: assignment.roles?.[n] || 'standard',
       team: team ? assignment.teams.indexOf(team) : null,
-      parts: { prep: prepTerm, chem },
+      /* On its way to the panel. js/dr/week.js reads it off here and
+         js/dr/judging.js weighs it full for the seat who was on the set and
+         half for the three who only heard about it. Zero on improv, which has
+         no afternoon for anybody to have had a view of. */
+      impression: impression?.[n] || 0,
+      parts: { prep: prepTerm, chem, impression: impression?.[n] || 0 },
       detail,
     };
   }

@@ -174,7 +174,7 @@ const SECTIONS = [
     badge: { text: 'REHEARSAL', color: '#a78bfa' },
     title: 'Rehearsal', subtitle: 'the number, and who has it by the end of the day' },
   { id: 'dr-set', icon: icon('camera'), label: 'On Set', suffix: 'set', phase: 'werk', accent: 'dr-a-score',
-    opens: ['chal:studio-day'],
+    opens: ['chal:studio-day', 'chal:studio-taping'],
     badge: { text: 'SHOOT', color: '#f59e0b' },
     title: 'On Set', subtitle: 'the day the director will report back on' },
   /* OPENS ON THE STEP, NOT ON A LIST OF KINDS. This named seven scene kinds

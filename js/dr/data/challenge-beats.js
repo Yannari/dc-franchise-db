@@ -214,6 +214,30 @@ export const CHALLENGE_BEATS = [
     ],
   },
   {
+    /* ── THE STUDIO TAPING ──
+       The scripted parody and the advert, the way `studio-day` is the music
+       video's. A separate pool rather than a shared one because that pool
+       talks about the call sheet, the shot list and the edit — this is a scene
+       being blocked and a product being sold, and borrowing the video's words
+       is the bug the whole split exists to stop.
+       NOT A REHEARSAL. That word belongs to the room where a number is taught,
+       and this is a set: a script, a camera, a monitor and somebody behind it.
+       IMPROV AND THE ROAST HAVE NO DAY LIKE THIS. Improv is unscripted by
+       definition and the roast is a set written alone and delivered live, so
+       neither has an afternoon anybody could form a view of — and inventing
+       one would be a director's notes on a rehearsal the format exists to
+       not have. */
+    id: 'studio-taping', step: 'prep', scope: 'per-queen', speaker: 'narrator',
+    note: 'Her hours on the set in front of {m}, and what the day did to what she thinks of her.',
+    tierBy: 'impression',
+    tiers: [
+      tier('made-the-scene', 'She gave him something better than what was written.'),
+      tier('takes-direction', 'A note, a take, and on to the next setup.'),
+      tier('many-resets', 'They go again, and again, and the room feels the afternoon.'),
+      tier('argued-with-him', 'She was asked for something and said no, in front of the crew.'),
+    ],
+  },
+  {
     /* ── THE REHEARSAL ROOM ──
        A Rumix is performed live with choreography and a music video is danced,
        and neither had a rehearsal in either the engine or the episode: the

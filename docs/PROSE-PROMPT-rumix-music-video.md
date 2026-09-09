@@ -333,6 +333,49 @@ room moves on and she is still mouthing numbers, and everybody saw).
 
 **24 lines.**
 
+### J. `studio-taping` — acting and the commercial, on a set
+
+**Acting and the commercial now have the director's read too**, which is what
+the music video was the prototype for. Same mechanic: the day forms a bounded
+opinion of her, that opinion reaches the panel, and the person who formed it is
+sitting on it.
+
+**It is a TAPING, not a rehearsal.** That word belongs to the room where a
+number is taught — the choreography beat in section I owns it. This is a set: a
+script, a camera, a monitor, and Michelle behind it, which is what the show
+actually looks like. Writing "rehearsal" into this pool is describing the wrong
+room.
+
+**It is a separate pool from `studio-day` and must stay one.** That pool talks
+about the call sheet, the shot list and building the video around her. This is
+a scene being blocked and a product being sold.
+
+`{m}` is **Michelle Visage** on both. The wiki is explicit that the queens
+write and direct the commercial themselves — she is the one giving notes, not
+the one making it, and a line should not have her calling the shots on that
+one the way she does on a scripted parody.
+
+**Three challenges in this family and only two have a day.** Improv is
+unscripted by definition and the roast is written alone and delivered live, so
+neither gets a card. Never write a line that assumes a rehearsal happened, and
+remember the pool is shared between a scripted scene and a thirty-second
+advert — a line has to work for both.
+
+Four tiers, **4 lines each**:
+
+| tier | what it is |
+|---|---|
+| `made-the-scene` | She gave her something better than what was written. |
+| `takes-direction` | A note, a take, and on to the next setup. |
+| `many-resets` | They go again, and again, and the room feels the afternoon. |
+| `argued-with-him` | She was asked for something and said no, in front of the crew. |
+
+Same dialogue rule as section H: at least half the lines carrying something
+Michelle actually says, in her own voice — direct, technical, exact about the
+craft, never softened to be liked.
+
+**16 lines.**
+
 ---
 
 ## 4. How to know it worked

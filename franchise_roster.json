@@ -5293,7 +5293,7 @@
       "name": "Anita Crown Davenport",
       "slug": "anita-crown-davenport",
       "gender": "m",
-      "archetype": "floater",
+      "archetype": "wildcard",
       "stats": {
         "physical": 6,
         "endurance": 6,

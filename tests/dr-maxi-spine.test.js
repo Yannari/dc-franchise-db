@@ -82,19 +82,16 @@ describe('the spine', () => {
     expect(runMaxi(ctxFor('snatch-game')).assignment.order[0]).toBe('Ada');
   });
 
-  it('a role type drafts every queen, and records the pick under her name', () => {
-    // girl-group, not acting: acting has its own module now and CONTESTS named
-    // parts rather than drafting a ladder, so it has no `ducked` to record.
+  it('girl-group assigns roles silently and picks a choreographer per team', () => {
     const out = runMaxi(ctxFor('girl-group'));
     for (const n of Object.keys(out.performances)) {
       expect(out.assignment.roles[n], `${n} has no role`).toBeTruthy();
-      expect(out.assignment.picks[n].name).toBe(n);
-      expect(typeof out.assignment.picks[n].ducked).toBe('boolean');
     }
-    // Two teams, so two leads: one ladder across the room would hand one team
-    // both big parts and leave the other with none.
+    // Two teams, so two leads: one per team.
     const leads = Object.values(out.assignment.roles).filter(r => r === 'lead');
     expect(leads.length).toBe(2);
+    // No formal picks — girl groups don't draft roles.
+    expect(Object.keys(out.assignment.picks)).toHaveLength(0);
   });
 
   it('a captains type splits the room without losing or cloning anybody', () => {

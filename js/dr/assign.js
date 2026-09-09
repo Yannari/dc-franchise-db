@@ -74,7 +74,7 @@ export function draftRoles({ order, roleNames, rng, players = {} }) {
  * which is a real strategy and reads as one — the room notices, and it costs
  * her. Once per split, because a captain who dumps everybody is a cartoon.
  */
-export function captainSplit({ order, captains, players, bond, rng }) {
+export function captainSplit({ order, captains, players, bond, rng, valueFn }) {
   const teams = captains.map(c => [c]);
   const pool = order.filter(n => !captains.includes(n));
   const events = [];
@@ -102,8 +102,13 @@ export function captainSplit({ order, captains, players, bond, rng }) {
       }
     }
 
-    const best = pool.reduce((b, n) => (bond(cap, n) > bond(cap, b) ? n : b), pool[0]);
-    const chosen = bond(cap, best) > 2 ? best : pool[Math.floor(rng() * pool.length)];
+    let chosen;
+    if (valueFn) {
+      chosen = pool.reduce((b, n) => (valueFn(cap, n) > valueFn(cap, b) ? n : b), pool[0]);
+    } else {
+      const best = pool.reduce((b, n) => (bond(cap, n) > bond(cap, b) ? n : b), pool[0]);
+      chosen = bond(cap, best) > 2 ? best : pool[Math.floor(rng() * pool.length)];
+    }
     teams[turn % captains.length].push(chosen);
     pool.splice(pool.indexOf(chosen), 1);
     turn++;

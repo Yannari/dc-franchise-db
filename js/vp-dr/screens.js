@@ -145,7 +145,7 @@ const SECTIONS = [
     badge: { text: 'PICKS', color: '#7B2FF7' }, title: 'The Draft', subtitle: 'who takes what' },
   { id: 'dr-prep', icon: icon('scissors'), label: 'Prep', suffix: 'prep', phase: 'werk', accent: 'dr-a-room',
     opens: ['prep-room', 'writing-room', 'band-rehearsal', 'recording-booth', 'ball-build',
-      'makeover-build', 'no-rehearsal'],
+      'makeover-build', 'no-rehearsal', 'choreographer-pick'],
     opensStep: ['prep'],
     badge: null, title: 'The Work Room', subtitle: 'building it' },
   /* OPENS ON THE STEP, NOT ON A LIST OF KINDS. This named seven scene kinds

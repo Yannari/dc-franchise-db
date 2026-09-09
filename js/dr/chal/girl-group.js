@@ -11,7 +11,7 @@
 // block (best = WIN, rest = HIGH) and only the losing team provides BTM2/LOW.
 // Individual scores still carry a nudge (+0.8 / -0.4) so the host bend and
 // within-team ranking reflect how much the team carried or cost each queen.
-import { pickOrder, contestFor, captainSplit } from '../assign.js';
+import { pickOrder, captainSplit } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, ROLE_RANGES, riskFor } from '../perform.js';
@@ -88,27 +88,42 @@ export function pickGroupTheme(rng, teamCount = 1) {
 
 
 /**
- * Build each queen's preference list for group roles.
+ * Silently sort each team into roles by aptitude.
  *
- * Bold singers want lead. Strong dancers want featured (the choreo-heavy
- * slot). A queen who is neither reaches for standard — more verse, less
- * spotlight — and ensemble is nobody's first choice. The list always
- * contains every available role so `contestFor` never falls through.
+ * Girl groups do NOT have a formal role draft — the team sorts itself out
+ * in the werk room. Roles still exist for scoring (lead amplifies swing,
+ * ensemble dampens it) but they are assigned by stats, not picked on camera.
  */
-function rolePreferences(name, players, available, rng) {
+function assignRoles(team, players, rng) {
+  const scored = team.map(n => {
+    const d = dragOf(players[n]);
+    const bold = Number(players[n]?.stats?.boldness) || 5;
+    return { name: n, v: d.singing * 0.4 + bold * 0.3 + d.dance * 0.2 + noise(rng, 1) };
+  }).sort((a, b) => b.v - a.v);
+  const ladder = PART_LADDER.slice(0, team.length);
+  const roles = {};
+  for (let i = 0; i < scored.length; i++) roles[scored[i].name] = ladder[i] || 'ensemble';
+  return roles;
+}
+
+/**
+ * How valuable a queen is as a team pick for a girl group.
+ *
+ * Captains pick based on friendship (bonds), how well the queen is doing
+ * in the competition (PPE from state.record), and stats that matter for a
+ * group number (dance, singing).
+ */
+function pickValue(cap, name, { bond, players, state, rng }) {
+  const b = bond(cap, name);
   const d = dragOf(players[name]);
-  const bold = Number(players[name]?.stats?.boldness) || 5;
-  const score = role => {
-    if (role === 'lead')     return d.singing * 0.4 + bold * 0.3 + d.comedy * 0.2 + noise(rng, 1.5);
-    if (role === 'featured') return d.dance * 0.4 + d.singing * 0.3 + bold * 0.15 + noise(rng, 1.5);
-    if (role === 'standard') return (10 - bold) * 0.3 + d.singing * 0.25 + d.comedy * 0.2 + noise(rng, 1.5);
-    return noise(rng, 1.0);
-  };
-  return [...available].sort((a, b) => score(b) - score(a));
+  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+  const rec = state?.record?.[name] || [];
+  const ppe = rec.length ? rec.reduce((s, x) => s + (_ppeW[x] ?? 0), 0) / rec.length : 3;
+  return b * 1.2 + ppe * 0.8 + (d.dance + d.singing) * 0.15 + noise(rng, 1.5);
 }
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini, bond, maxi } = ctx;
+  const { living, players, rng, miniWinner, mini, bond, maxi, state } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
   const events = [];
   let teams;
@@ -119,9 +134,6 @@ export function assign(ctx) {
   if (teamCount === 1) {
     teams = [[...order]];
   } else {
-    // Captain draft ALWAYS runs for multi-team girl groups. Two (or three)
-    // captains pick teammates in alternating rounds — bonds drive picks,
-    // schemers can dump rivals, and the events carry consequences.
     const captains = [];
     if (miniWinner && order.includes(miniWinner)) {
       captains.push(miniWinner);
@@ -137,7 +149,8 @@ export function assign(ctx) {
       captains.push(boldest);
       pool.splice(pool.indexOf(boldest), 1);
     }
-    const split = captainSplit({ order, captains, players, bond, rng });
+    const valueFn = (cap, name) => pickValue(cap, name, { bond, players, state, rng });
+    const split = captainSplit({ order, captains, players, bond, rng, valueFn });
     teams = split.teams;
     events.push(...split.events);
   }
@@ -145,54 +158,51 @@ export function assign(ctx) {
   const theme = pickGroupTheme(rng, teams.length);
   const teamNames = teams.map((_, i) => theme.names[i]);
 
-  // Each team drafts roles via contestFor — queens compete for lead/featured
-  // with real preferences, conflicts, and follow-up events.
   const roles = {};
-  const picks = {};
-  for (const t of teams) {
-    const teamOrder = order.filter(n => t.includes(n));
-    const available = PART_LADDER.slice(0, t.length);
-    const choices = {};
-    for (const n of teamOrder) {
-      choices[n] = rolePreferences(n, players, available, rng);
-    }
-    const draft = contestFor({
-      order: teamOrder, choices, players, rng, bond,
-      penaltyScale: 0,
-    });
-    for (const [n, p] of Object.entries(draft.picks)) {
-      const role = String(p.choice).startsWith('leftover-')
-        ? available[available.length - 1] : p.choice;
-      roles[n] = role;
-      picks[n] = { ...p, role, choice: role };
-    }
-    events.push(...draft.events);
-  }
+  for (const t of teams) Object.assign(roles, assignRoles(t, players, rng));
 
   return {
-    roles, teams, order, picks, events, theme, teamNames,
+    roles, teams, order, picks: {}, events, theme, teamNames,
     scenes: [
       { step: 'choice', kind: 'team-pick',
         data: { teams, teamNames, captains: teams.map(t => t[0]) } },
-      { step: 'choice', kind: 'group-parts',
-        data: { teams, roles, teamNames, track: theme.track, sound: theme.sound } },
     ],
   };
 }
 
 export function prepare(ctx) {
-  const { living, players, rng } = ctx;
+  const { living, players, rng, assignment } = ctx;
   const r = prepareRoom(ctx);
   const w = walkthrough({ ...ctx, prep: r.prep });
   const events = [...r.events, ...w.events];
   const verse = {};
   const booth = {};
+  const choreographers = {};
+
+  // Each team picks a choreographer. The best dancer who is also bold enough
+  // to take charge usually gets it; the choreographer's dance stat gives the
+  // whole team a prep bonus or penalty.
+  for (const team of (assignment?.teams || [living])) {
+    const candidates = team.map(n => {
+      const d = dragOf(players[n]);
+      const bold = Number(players[n]?.stats?.boldness) || 5;
+      return { name: n, v: d.dance * 0.6 + bold * 0.25 + noise(rng, 1.5) };
+    }).sort((a, b) => b.v - a.v);
+    const choreo = candidates[0].name;
+    choreographers[choreo] = team;
+    const d = dragOf(players[choreo]);
+    const quality = (d.dance - 5) * 0.3;
+    for (const n of team) w.prep[n] = (w.prep[n] || 0) + quality;
+    events.push(evt('choreographer', {
+      players: [choreo, ...team.filter(n => n !== choreo)],
+      pop: { [choreo]: d.dance >= 7 ? 2 : d.dance <= 4 ? -2 : 0 },
+      data: { choreographer: choreo, team: [...team], dance: d.dance },
+    }));
+  }
 
   for (const n of living) {
     const d = dragOf(players[n]);
     const s = players[n]?.stats || {};
-    // Writing the verse is its own job, and a comic can write her way out of
-    // a voice she does not have.
     const v = d.singing * 0.5 + d.comedy * 0.3 + (Number(s.mental) || 5) * 0.02 + noise(rng, 2);
     verse[n] = Math.round(v * 100) / 100;
     if (v < 3) {
@@ -201,10 +211,6 @@ export function prepare(ctx) {
       events.push(evt('verse-of-the-week', { players: [n], pop: { [n]: 3 }, data: { verse: verse[n] } }));
     }
 
-    // The booth adjusts everybody's prep, because everybody records. It only
-    // becomes an EVENT at the ends: a scene per queen per week is not drama,
-    // it is a status line, and it would churn six popularity numbers a week
-    // for nothing anybody watches.
     const ok = d.singing >= 6;
     booth[n] = ok ? 0.5 : -0.5;
     w.prep[n] = (w.prep[n] || 0) + booth[n];
@@ -217,8 +223,13 @@ export function prepare(ctx) {
   }
 
   return {
-    prep: w.prep, events, verse,
-    scenes: [...r.scenes, { step: 'prep', kind: 'recording-booth', data: { verse, booth } }],
+    prep: w.prep, events, verse, choreographers,
+    scenes: [
+      ...r.scenes,
+      { step: 'prep', kind: 'choreographer-pick',
+        data: { choreographers, teams: assignment?.teams || [living] } },
+      { step: 'prep', kind: 'recording-booth', data: { verse, booth } },
+    ],
   };
 }
 

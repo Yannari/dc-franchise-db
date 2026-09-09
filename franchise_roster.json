@@ -5673,12 +5673,14 @@
         "runway": 5,
         "lipsync": 6,
         "singing": 5,
+        "style": "comedy",
         "traits": [
           "wit",
           "shade-queen",
           "narrator"
         ],
-        "voice": "Paige speaks in a measured, educated tone, delivering every insult like a helpful correction from behind the circulation desk. She loves literary references, pauses before punchlines, and calls misbehaving queens “young lady” regardless of their age: “Please lower your voice; your outfit is already making enough noise,” “I would read her, but that book was remaindered years ago,” and, when underestimated, “Darling, I’ve been in this scene so long that your drag mother still owed late fees.”"
+        "voice": "Paige speaks in a measured, educated tone, delivering every insult like a helpful correction from behind the circulation desk. She loves literary references, pauses before punchlines, and calls misbehaving queens “young lady” regardless of their age: “Please lower your voice; your outfit is already making enough noise,” “I would read her, but that book was remaindered years ago,” and, when underestimated, “Darling, I’ve been in this scene so long that your drag mother still owed late fees.”",
+        "family": []
       },
       "age": 44,
       "birthdate": "1982-05-27",

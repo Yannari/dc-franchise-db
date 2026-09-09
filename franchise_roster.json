@@ -5629,7 +5629,24 @@
       "occupation": "Dance instructor and college student",
       "descriptor": "The Pocket-Sized Powerhouse",
       "backstory": "Minnie began dancing as a child and spent her teenage years competing in jazz, hip-hop, and cheer-dance competitions. She discovered drag through queer nightclub performances and started sneaking into open-stage nights shortly after turning eighteen. Unable to afford elaborate costumes, she developed an inexpensive preppy aesthetic using altered school uniforms, dancewear, and accessories from local malls. After only three years in drag, she enters the competition eager to prove that being young and polished does not make her disposable.",
-      "personality": "Minnie is energetic, ambitious, friendly, and visibly inexperienced. She learns choreography almost immediately and performs with fearless physicality, but she struggles when a challenge requires subtle acting, improvisation, or original jokes. Her youthful confidence can sound cocky, especially when she dismisses older styles of drag as outdated. Minnie wants everyone to like her and becomes emotional when criticized, yet she recovers quickly once the music begins. She is an obvious performance threat with enough raw potential to grow, but her limited experience could cause her to unravel outside her comfort zone."
+      "personality": "Minnie is energetic, ambitious, friendly, and visibly inexperienced. She learns choreography almost immediately and performs with fearless physicality, but she struggles when a challenge requires subtle acting, improvisation, or original jokes. Her youthful confidence can sound cocky, especially when she dismisses older styles of drag as outdated. Minnie wants everyone to like her and becomes emotional when criticized, yet she recovers quickly once the music begins. She is an obvious performance threat with enough raw potential to grow, but her limited experience could cause her to unravel outside her comfort zone.",
+      "drag": {
+        "acting": 4,
+        "comedy": 3,
+        "dance": 9,
+        "design": 4,
+        "runway": 7,
+        "lipsync": 8,
+        "singing": 3,
+        "style": "dancer",
+        "traits": [
+          "choreographer",
+          "body",
+          "splits-and-dips"
+        ],
+        "voice": "Minnie speaks quickly in a youthful mix of English and Spanish, sounding like an enthusiastic dance-team captain who is always ready with gossip, encouragement, or a playful boast. She stretches words when excited, calls people “babe” and “mami,” and sometimes talks before thinking: “Mami, if the beat drops, so do I,” “That look is giving substitute teacher on laundry day,” and, when nervous, “I’m totally calm, babe—my leg is just shaking because it wants to dance.”",
+        "family": []
+      }
     },
     {
       "name": "Paige Turner",

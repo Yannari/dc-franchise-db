@@ -161,7 +161,18 @@ describe('the currencies, measured', () => {
        column. Charging it would have charged 79% of the board for surviving. */
     const rest = rows.filter(r => !r.finalist);
     const top = rows.filter(r => r.finalist);
-    expect(Math.abs(corr('bottoms')), 'pooled bottoms should read near zero').toBeLessThan(0.1);
+    /* NEAR ZERO, AND THE BAR MOVED ONCE, ON PURPOSE — 0.1 to 0.15.
+       The zero here was never independence; it is the two effects in the
+       comment above cancelling. Capping the lip sync confidence bonus (see
+       js/dr/lipsync.js) deliberately weakened one of them: a queen who keeps
+       landing in the bottom no longer survives on the strength of having
+       landed there before, so more bottoms now predicts a worse placement
+       slightly better than it did and the cancellation is less perfect.
+       Measured 0.112 against a sampling error near 0.018 on 3,000 rows.
+       That is still near zero and still not a thing to charge for, which is
+       what the weight below rests on — and the three assertions that carry
+       the actual reasoning are unchanged and still pass. */
+    expect(Math.abs(corr('bottoms')), 'pooled bottoms should read near zero').toBeLessThan(0.15);
     expect(corr('bottoms', rest), 'within the non-finalists it must run negative').toBeLessThan(-0.15);
     const meanOf = pool => pool.reduce((t, r) => t + r.bottoms, 0) / pool.length;
     expect(meanOf(top), 'finalists should average fewer bottoms than the rest')

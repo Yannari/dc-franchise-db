@@ -822,9 +822,16 @@
                 <option value="top4">Top 4 lip sync tournament</option>
                 <option value="top3">Top 3 lip sync tournament</option>
                 <option value="top2">Top 2 lip sync for the crown</option>
-                <option value="perform-then-lipsync">Final performance, then the host picks two to lip sync</option>
+                <option value="perform-then-lipsync">Top 4 showcase, then the host picks two</option>
+                <option value="perform-then-lipsync-3">Top 3 showcase, then the host picks two</option>
               </select>
               <div class="hint hint-tight">Where the season stops, and how the crown is decided once it gets there.</div>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="cfg-dr-smackdown" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
+                <span>LaLaPaRUza Smackdown<div class="hint hint-tight">One episode before the finale: every eliminated queen comes back and lip syncs the others out in rounds for a title of her own. Adds one episode.</div></span>
+              </label>
             </div>
             <div class="form-group">
               <label style="display:flex;gap:8px;align-items:flex-start">

@@ -2898,6 +2898,21 @@ async function _save() {
     // what the old returnee manifest existed to prevent, and what came back
     // the moment uploading and registering were separate steps. The server
     // does both, and reports per-portrait problems rather than failing silent.
+    /* ── THE FILENAME IS DERIVED AT SAVE, NOT WHEN THE ROW WAS ADDED ──
+       `_addPortraitRow` names the file `_portraitFilename(d.slug || 'slug', …)`
+       and `p.file` was then only ever recomputed by the SHOW dropdown's change
+       handler. In CREATE mode the slug does not exist yet when the row is
+       added — it is derived from a name the author is still typing — so a
+       portrait added before the name was finished saved as `slug-look-1.png`:
+       a real file, on disk, belonging to no character, registered under a slug
+       nobody has. It reads exactly as "my returnee avatar does not save".
+       Anybody who happened to touch the show dropdown got a correct name,
+       which is why it worked sometimes.
+       Derived here instead, from the slug as it stands at the moment of
+       saving, for every row the catalog has not already accepted. */
+    for (const q of (d.portraits || [])) {
+      if (!q.registered && d.slug) q.file = _portraitFilename(d.slug, q.show, q.id);
+    }
     const _porRows = (d.portraits || []).filter(q => q.id && q.file && (q.label || '').trim());
     if (_porRows.length || (d.removePortraits || []).length) {
       try {

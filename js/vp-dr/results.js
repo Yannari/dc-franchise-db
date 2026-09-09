@@ -64,17 +64,48 @@ export const RESULTS_CSS = `
 /* ══ THE LIP SYNC FLOOR ══ two spots on a black stage ══ */
 .dr-lsroom{position:relative}
 .dr-lsfloor{position:absolute;inset:-24px -18px;z-index:-1;pointer-events:none;
-  overflow:hidden;background:linear-gradient(180deg,rgba(30,2,10,.6),transparent 42%)}
+  overflow:hidden;background:linear-gradient(180deg,rgba(30,2,10,.7),rgba(8,1,4,.9) 60%)}
 .dr-lsfloor i{position:absolute;display:block}
-.dr-ls-a,.dr-ls-b{top:0;width:250px;height:60%;
-  background:linear-gradient(180deg,rgba(255,41,75,.24),transparent 74%);
-  clip-path:polygon(36% 0,64% 0,100% 100%,0 100%)}
-.dr-ls-a{left:14%}.dr-ls-b{right:14%}
+.dr-ls-a,.dr-ls-b{top:-20%;width:320px;height:80%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,41,75,.38),rgba(255,200,61,.08) 40%,transparent 72%);
+  clip-path:polygon(36% 0,64% 0,100% 100%,0 100%);
+  transition:opacity .6s cubic-bezier(.2,1,.3,1),transform .6s cubic-bezier(.2,1,.3,1),
+    filter .6s cubic-bezier(.2,1,.3,1)}
+.dr-ls-a{left:10%}.dr-ls-b{right:10%}
 /* The speakers, under everything. */
-.dr-ls-thud{left:0;right:0;bottom:0;height:30%;
-  background:radial-gradient(70% 100% at 50% 100%,rgba(255,41,75,.20),transparent 72%);
+.dr-ls-thud{left:0;right:0;bottom:0;height:35%;
+  background:radial-gradient(70% 100% at 50% 100%,rgba(255,41,75,.18),transparent 72%);
   animation:drThud 1.9s ease-in-out infinite}
-@keyframes drThud{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes drThud{0%,100%{opacity:.45}50%{opacity:1}}
+/* A haze across the floor — the smoke machine. */
+.dr-ls-haze{left:0;right:0;bottom:0;height:50%;
+  background:linear-gradient(180deg,transparent,rgba(255,41,75,.06) 40%,rgba(255,200,61,.04));
+  animation:drHaze 6s ease-in-out infinite alternate}
+@keyframes drHaze{0%{opacity:.4;transform:scaleX(1)}100%{opacity:.7;transform:scaleX(1.08)}}
+
+/* ── SPOTLIGHT TRACKING ── the stage follows the performer ── */
+.dr-lsfloor.dr-focus-a .dr-ls-a{opacity:1;transform:scale(1.15);
+  filter:brightness(1.5) saturate(1.3)}
+.dr-lsfloor.dr-focus-a .dr-ls-b{opacity:.15;transform:scale(.88);filter:brightness(.5)}
+.dr-lsfloor.dr-focus-b .dr-ls-b{opacity:1;transform:scale(1.15);
+  filter:brightness(1.5) saturate(1.3)}
+.dr-lsfloor.dr-focus-b .dr-ls-a{opacity:.15;transform:scale(.88);filter:brightness(.5)}
+/* The fighters dim to follow the spots. */
+.dr-vs.dr-focus-a .dr-fighter.dr-r{opacity:.45;filter:brightness(.55) saturate(.4)}
+.dr-vs.dr-focus-b .dr-fighter:not(.dr-r){opacity:.45;filter:brightness(.55) saturate(.4)}
+.dr-vs.dr-focus-a .dr-fighter:not(.dr-r){opacity:1;filter:brightness(1.1)}
+.dr-vs.dr-focus-b .dr-fighter.dr-r{opacity:1;filter:brightness(1.1)}
+/* The loser's spot exits the stage, the winner's fills it. */
+.dr-lsfloor.dr-exit-b .dr-ls-b{opacity:0;transform:translateX(60%) scale(.4)}
+.dr-lsfloor.dr-exit-a .dr-ls-a{opacity:0;transform:translateX(-60%) scale(.4)}
+.dr-lsfloor.dr-exit-b .dr-ls-a,.dr-lsfloor.dr-exit-a .dr-ls-b{
+  transform:scale(1.6);filter:brightness(1.8) saturate(1.5);transition-duration:.9s}
+/* Stunt flash — photographer burst on one side of the stage. */
+.dr-stunt-burst{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;
+  background:radial-gradient(circle at var(--burst-x,50%) 40%,
+    rgba(255,233,168,.85),rgba(255,200,61,.2) 30%,transparent 55%);
+  transition:opacity .2s}
+.dr-stunt-burst.dr-flash{opacity:1;transition:none}
 
 /* ══ THE WAY OUT ══ a lit door at the end of a dark corridor ══ */
 .dr-exitroom{position:relative}
@@ -86,7 +117,11 @@ export const RESULTS_CSS = `
   box-shadow:0 0 90px 26px rgba(255,200,61,.13)}
 .dr-ex-dark{inset:0;box-shadow:inset 0 0 200px 80px rgba(0,0,0,.7)}
 
-@media(prefers-reduced-motion:reduce){.dr-ls-thud{animation:none}}
+@media(prefers-reduced-motion:reduce){
+  .dr-ls-thud,.dr-ls-haze{animation:none}
+  .dr-ls-a,.dr-ls-b,.dr-fighter,.dr-fighter .dr-por{transition:none}
+  .dr-stunt-burst{display:none}
+}
 
 /* ══ THE LINE ══ the queens the panel kept back, standing for the call ══ */
 .dr-lineup-stage{position:sticky;top:0;z-index:6;display:flex;justify-content:center;
@@ -131,76 +166,91 @@ export const RESULTS_CSS = `
   border:1px solid #FFC83D;color:#FFC83D}
 
 /* ── THE VERSUS ── */
-.dr-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;
-  padding:22px;margin-bottom:14px;border:1px solid rgba(255,41,75,.5);position:relative;
-  overflow:hidden;background:radial-gradient(600px 260px at 50% 40%,rgba(255,41,75,.26),transparent 70%),
-    linear-gradient(180deg,#2a0410,#120207)}
+.dr-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;
+  padding:32px 26px 28px;margin-bottom:18px;border:1px solid rgba(255,41,75,.45);
+  position:relative;overflow:hidden;
+  background:radial-gradient(700px 340px at 50% 38%,rgba(255,41,75,.22),transparent 68%),
+    radial-gradient(400px 200px at 22% 30%,rgba(255,200,61,.08),transparent 70%),
+    radial-gradient(400px 200px at 78% 30%,rgba(255,41,75,.08),transparent 70%),
+    linear-gradient(180deg,#1a0510,#0a0205)}
 .dr-vs::before{content:"";position:absolute;inset:0;
-  background:repeating-linear-gradient(115deg,transparent 0 22px,rgba(255,41,75,.09) 22px 44px);
-  animation:drSlide 8s linear infinite}
-@keyframes drSlide{to{transform:translateX(44px)}}
-.dr-fighter{position:relative;z-index:2;text-align:center}
-.dr-fighter .dr-por{margin:0 auto;border:3px solid rgba(255,240,200,.6);
-  box-shadow:0 0 46px rgba(255,41,75,.6)}
+  background:repeating-linear-gradient(115deg,transparent 0 26px,rgba(255,41,75,.06) 26px 52px);
+  animation:drSlide 10s linear infinite}
+@keyframes drSlide{to{transform:translateX(52px)}}
+.dr-fighter{position:relative;z-index:2;text-align:center;
+  transition:opacity .55s cubic-bezier(.2,1,.3,1),filter .55s cubic-bezier(.2,1,.3,1)}
+.dr-fighter .dr-por{margin:0 auto;border:3px solid rgba(255,240,200,.55);
+  box-shadow:0 0 38px rgba(255,41,75,.5),0 0 80px -10px rgba(255,200,61,.15);
+  transition:box-shadow .6s cubic-bezier(.2,1,.3,1),border-color .6s}
 .dr-fighter.dr-r .dr-por{transform:scaleX(-1)}
-.dr-fighter b{display:block;margin-top:8px;font-size:20px}
-.dr-energy{height:12px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);
-  margin-top:9px;overflow:hidden}
-.dr-energy i{display:block;height:100%;background:linear-gradient(90deg,#FFC83D,#FF294B)}
-.dr-bolt{position:relative;z-index:2;font-size:56px;color:#fff;
-  text-shadow:0 0 22px #FF294B,0 0 60px #FF294B;animation:drPulse 1.6s ease-in-out infinite}
-@keyframes drPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.dr-fighter b{display:block;margin-top:10px;font-size:22px;letter-spacing:.02em}
+/* THE SCORE UNDER HER NAME, because a queen with 3.3 against a queen with
+   2.9 should feel like a fight she is winning before the song starts. */
+.dr-fighter-ppe{display:block;margin-top:3px;font-size:13px;color:#C9A6BC;
+  font-variant-numeric:tabular-nums}
+.dr-energy{height:14px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.22);
+  margin-top:10px;overflow:hidden;border-radius:1px;position:relative}
+.dr-energy i{display:block;height:100%;border-radius:1px}
+.dr-energy-a i{background:linear-gradient(90deg,rgba(255,200,61,.3),#FFC83D,#FFE9A8);
+  box-shadow:0 0 18px rgba(255,200,61,.6)}
+.dr-energy-b i{background:linear-gradient(90deg,rgba(255,41,75,.3),#FF294B,#FF7FA8);
+  box-shadow:0 0 18px rgba(255,41,75,.6)}
+.dr-bolt{position:relative;z-index:2;font-size:48px;color:rgba(255,255,255,.9);
+  text-shadow:0 0 28px #FF294B,0 0 70px rgba(255,41,75,.7),0 0 120px rgba(255,41,75,.3);
+  animation:drPulse 2s ease-in-out infinite}
+@keyframes drPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
 /* THE BEAT CARDS UNDER THE VERSUS. */
-.dr-beat{display:grid;grid-template-columns:1fr;gap:13px;align-items:start;
-  padding:14px 16px 14px 20px}
-.dr-beat p{margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
-.dr-beat .dr-por{border:2px solid rgba(255,240,200,.45)}
+.dr-beat{display:grid;grid-template-columns:1fr;gap:14px;align-items:start;
+  padding:16px 18px 16px 22px}
+.dr-beat p{margin:0;color:#f4e3ed;font-size:15px;line-height:1.65;text-wrap:pretty}
+.dr-beat .dr-por{border:2px solid rgba(255,240,200,.4);
+  transition:border-color .4s,box-shadow .4s}
 .dr-beat-a,.dr-beat-b{grid-template-columns:auto 1fr}
 /* .dr-panel FIRST, deliberately. The shell's accent classes set the same
    left border, so a bare .dr-beat-a ties on specificity and loses to
    whichever stylesheet was injected last — both sides came out the same red
    and the whole point of the two colours went with it. */
-.dr-panel.dr-beat-a{border-left:3px solid #FFC83D;
-  background:linear-gradient(90deg,rgba(255,200,61,.13),transparent 40%),var(--dr-panel)}
+.dr-panel.dr-beat-a{border-left:4px solid #FFC83D;
+  background:linear-gradient(90deg,rgba(255,200,61,.15),rgba(255,200,61,.03) 35%,transparent 60%),var(--dr-panel)}
+.dr-panel.dr-beat-a .dr-por{border-color:rgba(255,200,61,.6);
+  box-shadow:0 0 22px rgba(255,200,61,.25)}
 /* The second queen's beats mirror: her portrait sits on the right, the way
    she does on the stage above. */
-.dr-panel.dr-beat-b{direction:rtl;border-left:0;border-right:3px solid #FF294B;
-  background:linear-gradient(270deg,rgba(255,41,75,.15),transparent 40%),var(--dr-panel)}
+.dr-panel.dr-beat-b{direction:rtl;border-left:0;border-right:4px solid #FF294B;
+  background:linear-gradient(270deg,rgba(255,41,75,.17),rgba(255,41,75,.04) 35%,transparent 60%),var(--dr-panel)}
 .dr-beat-b > *{direction:ltr}
-.dr-beat-b .dr-por{transform:scaleX(-1)}
+.dr-beat-b .dr-por{transform:scaleX(-1);border-color:rgba(255,41,75,.55);
+  box-shadow:0 0 22px rgba(255,41,75,.25)}
 /* ══ THE SCOREBOARD ══ the fight, scored as it happens ══ */
-.dr-mid{display:flex;flex-direction:column;align-items:center;gap:10px;
-  position:relative;z-index:2;min-width:150px}
+.dr-mid{display:flex;flex-direction:column;align-items:center;gap:12px;
+  position:relative;z-index:2;min-width:160px}
 /* The four rounds of the song, lighting as it runs. */
-.dr-rounds{display:flex;gap:5px}
-.dr-rounds i{position:relative;width:26px;height:4px;border-radius:2px;
-  background:rgba(255,255,255,.16);transition:background .3s,box-shadow .3s}
-/* ONLY THE ROUND THAT IS PLAYING IS NAMED. Four labels under four 26px
-   pips ran into each other — "VERSECHORUS HOOK ENDING" — so the strip
-   said less the more of it was lit. The name belongs to the round the song
-   is in; the others are pips. */
-.dr-rounds i b{position:absolute;top:9px;left:50%;transform:translateX(-50%);
-  font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#FFE9A8;
-  font-weight:400;white-space:nowrap;opacity:0;transition:opacity .3s}
+.dr-rounds{display:flex;gap:6px}
+.dr-rounds i{position:relative;width:30px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.12);transition:background .4s,box-shadow .4s}
+.dr-rounds i b{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#FFE9A8;
+  font-weight:400;white-space:nowrap;opacity:0;transition:opacity .4s}
 .dr-rounds i.now b{opacity:1}
-.dr-rounds i.on{background:#FF294B;box-shadow:0 0 10px rgba(255,41,75,.8)}
-.dr-rounds i.now{background:#FFE9A8;box-shadow:0 0 16px rgba(255,233,168,.95)}
+.dr-rounds i.on{background:#FF294B;box-shadow:0 0 14px rgba(255,41,75,.85)}
+.dr-rounds i.now{background:#FFE9A8;box-shadow:0 0 20px rgba(255,233,168,1),0 0 40px rgba(255,233,168,.3)}
 .dr-rounds i.on:last-child b{opacity:1}
 /* The tug of war: who is winning the exchange, right now. */
-.dr-tug{position:relative;width:130px;height:3px;margin-top:22px;border-radius:2px;
-  background:linear-gradient(90deg,rgba(255,41,75,.5),rgba(255,255,255,.18),rgba(255,41,75,.5))}
-.dr-tug i{position:absolute;top:-5px;left:50%;width:3px;height:13px;border-radius:2px;
-  background:#fff;box-shadow:0 0 12px rgba(255,255,255,.95);transform:translateX(-50%);
-  transition:left .55s cubic-bezier(.2,1,.3,1)}
+.dr-tug{position:relative;width:140px;height:4px;margin-top:24px;border-radius:2px;
+  background:linear-gradient(90deg,#FFC83D 0%,rgba(255,255,255,.12) 50%,#FF294B 100%)}
+.dr-tug i{position:absolute;top:-6px;left:50%;width:4px;height:16px;border-radius:3px;
+  background:#fff;box-shadow:0 0 16px rgba(255,255,255,.95),0 0 30px rgba(255,255,255,.3);
+  transform:translateX(-50%);transition:left .6s cubic-bezier(.2,1,.3,1)}
 /* The number only exists once the call has been made. */
-.dr-final{display:block;margin-top:8px;min-height:22px;font-size:20px;color:#FFE9A8}
+.dr-final{display:block;margin-top:10px;min-height:24px;font-size:22px;color:#FFE9A8;
+  font-variant-numeric:tabular-nums}
 /* And when it has, the stage picks a side. */
-.dr-vs.dr-decided .dr-fighter{transition:opacity .5s,filter .5s}
+.dr-vs.dr-decided .dr-fighter{transition:opacity .6s,filter .6s}
 .dr-vs.dr-won-a .dr-fighter.dr-r,.dr-vs.dr-won-b .dr-fighter:not(.dr-r){
-  opacity:.42;filter:grayscale(1)}
+  opacity:.32;filter:grayscale(1) brightness(.5)}
 .dr-vs.dr-won-a .dr-fighter:not(.dr-r) .dr-por,
 .dr-vs.dr-won-b .dr-fighter.dr-r .dr-por{
-  border-color:#FFE9A8;box-shadow:0 0 60px -4px rgba(255,233,168,.9)}
+  border-color:#FFE9A8;box-shadow:0 0 70px -4px rgba(255,233,168,.95),0 0 120px rgba(255,200,61,.3)}
 .dr-energy i{transition:width .6s cubic-bezier(.2,1,.3,1)}
 /* ── HER LAST CARD, AND THE LIGHT GOING OUT ──
    Modelled on the Total Drama torch snuff (css/simulator.css, torchSnuff):
@@ -273,7 +323,9 @@ export const RESULTS_CSS = `
 }
 
 .dr-song{text-align:center;font-family:Didot,'Bodoni MT',Georgia,serif;font-style:italic;
-  font-size:19px;color:#ffd0e8;margin-bottom:12px}
+  font-size:21px;color:#ffd0e8;margin-bottom:16px;text-shadow:0 0 30px rgba(255,61,154,.3)}
+.dr-song-artist{font-size:13px;display:block;margin-top:4px;font-style:normal;
+  letter-spacing:.18em;text-transform:uppercase;color:#C9A6BC;font-family:inherit}
 
 /* ── THE EXIT ── */
 /* THREE COLUMNS, and the stamp lives in the third. It was absolutely
@@ -527,11 +579,12 @@ export function rpBuildLipSync(row) {
   const nR = Math.max(rA.length, rB.length, 0);
 
   const vs = `<div class="dr-song dr-fash">${esc(ls.song || '')}${
-    ls.artist ? ` — ${esc(ls.artist)}` : ''}</div>
+    ls.artist ? `<span class="dr-song-artist">${esc(ls.artist)}</span>` : ''}</div>
     <div class="dr-vs" id="dr-vs">
+      <div class="dr-stunt-burst" id="dr-stunt-burst"></div>
       <div class="dr-fighter">${_portrait(a, ep, { size: 140 })}
         <b class="dr-disp">${esc(a)}</b>
-        <div class="dr-energy"><i id="dr-en-a" style="width:0%"></i></div>
+        <div class="dr-energy dr-energy-a"><i id="dr-en-a" style="width:0%"></i></div>
         <span class="dr-final dr-num" id="dr-fin-a"></span>
       </div>
       <div class="dr-mid">
@@ -542,7 +595,7 @@ export function rpBuildLipSync(row) {
       </div>
       ${b ? `<div class="dr-fighter dr-r">${_portrait(b, ep, { size: 140 })}
         <b class="dr-disp">${esc(b)}</b>
-        <div class="dr-energy"><i id="dr-en-b" style="width:0%"></i></div>
+        <div class="dr-energy dr-energy-b"><i id="dr-en-b" style="width:0%"></i></div>
         <span class="dr-final dr-num" id="dr-fin-b"></span>
       </div>` : '<div></div>'}
     </div>`;
@@ -610,8 +663,9 @@ export function rpBuildLipSync(row) {
   /* THE FLOOR THEY FIGHT ON. Two hard spots on a black stage, and a low
      throb from the speakers under everything. The VS panel already had its
      own stripes; the room around it was the same purple as the werk room. */
-  const floor = `<div class="dr-lsfloor" aria-hidden="true">
+  const floor = `<div class="dr-lsfloor" id="dr-lsfloor" aria-hidden="true">
       <i class="dr-ls-a"></i><i class="dr-ls-b"></i><i class="dr-ls-thud"></i>
+      <i class="dr-ls-haze"></i>
     </div>`;
   /* ── THE SONG RUNS AS YOU READ ──
      The card count and the round count are different numbers — there are
@@ -632,12 +686,15 @@ export function rpBuildLipSync(row) {
      wrote no per-round deltas therefore ended with both queens still lit
      and nothing marking the sashay at all. The rounds and the tug check
      `nR` for themselves; the verdict does not need it. */
+  const stepSides = beats.map(sc => sideOf(sc));
+  const stuntA = ls[a]?.stunt || 'none';
+  const stuntB = ls[b]?.stunt || 'none';
+
   if (typeof window !== 'undefined') {
     const sum = (arr, k) => arr.slice(0, k).reduce((t, v) => t + v, 0);
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.lipsync = (idx) => {
       const done = callAt >= 0 && idx >= callAt;
-      // How far through the song this click is.
       const k = done ? nR
         : Math.max(0, Math.min(nR, Math.round(((idx + 1) / Math.max(1, lastBeat + 1)) * nR)));
 
@@ -649,21 +706,12 @@ export function rpBuildLipSync(row) {
       }
 
       const sa = sum(rA, k); const sb = sum(rB, k);
-      /* AMPLIFIED ON PURPOSE, and this is a display scale rather than a
-         claim. A round delta is about a fifth of a point, so a true-to-scale
-         bar moves from 50% to 54% and the fight looks like two queens
-         standing still. The span maps the range the deltas actually occupy
-         onto the range the eye can read — the ORDER and the direction are
-         exactly the engine's, only the size of the swing is drawn larger. */
       const span = 1.3;
       const pctA = Math.max(4, Math.min(100, 50 + (sa / span) * 50));
       const pctB = Math.max(4, Math.min(100, 50 + (sb / span) * 50));
       const enA = document.getElementById('dr-en-a');
       const enB = document.getElementById('dr-en-b');
       const tug = document.getElementById('dr-tug');
-      /* ON THE CALL, THE BARS SNAP TO THE REAL SCORES. Until then they are
-         the exchange — who is winning the song — and the actual numbers are
-         not the reader's yet. */
       if (enA) enA.style.width = `${done ? Math.max(6, Math.min(100, scoreOf(a) * 10)) : pctA}%`;
       if (enB) enB.style.width = `${done ? Math.max(6, Math.min(100, scoreOf(b) * 10)) : pctB}%`;
       if (tug) tug.style.left = `${Math.max(6, Math.min(94, 50 + (sa - sb) * 34))}%`;
@@ -672,22 +720,50 @@ export function rpBuildLipSync(row) {
       const fb = document.getElementById('dr-fin-b');
       if (fa) fa.textContent = done ? scoreOf(a).toFixed(1) : '';
       if (fb) fb.textContent = done ? scoreOf(b).toFixed(1) : '';
-      const goes = goesHome;
+
+      /* ── SPOTLIGHT TRACKING ── the stage follows the performer ── */
+      const floor = document.getElementById('dr-lsfloor');
       const box = document.getElementById('dr-vs');
+      const side = idx < stepSides.length ? stepSides[idx] : null;
+      if (floor) {
+        floor.classList.remove('dr-focus-a', 'dr-focus-b', 'dr-exit-a', 'dr-exit-b');
+        if (done && goesHome) {
+          floor.classList.add(goesHome === a ? 'dr-exit-a' : 'dr-exit-b');
+        } else if (side === a) {
+          floor.classList.add('dr-focus-a');
+        } else if (side === b) {
+          floor.classList.add('dr-focus-b');
+        }
+      }
       if (box) {
-        /* THE SIDE THAT DIMS IS THE SIDE THE ENGINE SENT HOME, not the side
-           holding the lower number. Comparing scoreOf(a) to scoreOf(b) was a
-           second, independent verdict that could disagree with the first: it
-           declared a winner on a double shantay, where there is none, and on
-           a tie it quietly handed the song to whoever sat in slot A. */
+        box.classList.remove('dr-focus-a', 'dr-focus-b');
+        if (!done && side === a) box.classList.add('dr-focus-a');
+        if (!done && side === b) box.classList.add('dr-focus-b');
+      }
+
+      /* ── STUNT FLASH ── photographer burst when a stunt lands ── */
+      const burst = document.getElementById('dr-stunt-burst');
+      if (burst) {
+        burst.classList.remove('dr-flash');
+        const sc = idx < beats.length ? beats[idx] : null;
+        const isStunt = sc && /stunt|split|reveal|death.?drop|cartwheel|jump/i
+          .test(sc.text || '');
+        const side2 = stepSides[idx];
+        const landed = (side2 === a && stuntA === 'landed')
+          || (side2 === b && stuntB === 'landed');
+        if (isStunt && landed) {
+          void burst.offsetWidth;
+          burst.classList.add('dr-flash');
+          setTimeout(() => burst.classList.remove('dr-flash'), 350);
+        }
+      }
+
+      const goes = goesHome;
+      if (box) {
         box.classList.toggle('dr-decided', !!(done && goes));
         box.classList.toggle('dr-won-a', !!(done && goes && goes === b));
         box.classList.toggle('dr-won-b', !!(done && goes && goes === a));
       }
-
-      /* HER LIGHT IS NOT DRIVEN FROM HERE. The sashay is its own card at the
-         end of the screen and it snuffs itself on reveal (.dr-fare), which
-         is one fewer thing that can fall out of step with the reveal. */
     };
   }
 

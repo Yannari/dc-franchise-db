@@ -28,7 +28,7 @@ import { judgeViews, panelRanking, hostBend } from './judging.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 
 /** How many queens are left standing when the finale begins. */
-export const FINALE_SIZE = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
+export const FINALE_SIZE = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4, 'perform-then-lipsync-3': 3 };
 
 // What episode one IS, when it is not simply the first ordinary week.
 const PREMIERE_MAXI = {
@@ -317,6 +317,15 @@ function weekCfg(sch, config, num, extra = {}) {
    the reward for that. This measures how well she was DOING, not how long. */
 const RECORD_POINTS = { WIN: 2, HIGH: 1, SAFE: 0, LOW: -0.5, BTM: -1, BTM2: -1.25 };
 
+/* HOW HARD THE SEASON PULLS AT A FINALE. Shared by the cut (the panel's
+   view of the showcase) and the crown duel, so the two cannot drift apart.
+   Tuned against tools/dr-finale-audit.mjs, whose header states the target
+   exactly: the question is not "does the best résumé win" — that would be a
+   chart with a lip sync stapled on — but "does it help, and can it still be
+   beaten". */
+export const RESUME_SCALE = 1.35;
+export const RESUME_CLAMP = 2.3;
+
 export function recordStrength(record = []) {
   const rated = record.filter(r => r in RECORD_POINTS);
   if (!rated.length) return 0;
@@ -353,14 +362,23 @@ function duel(state, a, b, ctx, song, finale = null) {
     const clamp = (v, m) => Math.max(-m, Math.min(m, v));
     for (const n of [a, b]) {
       /* THE RESUME TERM HAS TO OUT-PULL THE ASSASSIN. `lipsyncScore` pays a
-         confidence bonus of up to +1.2 for past lip sync wins, and a queen
-         only banks those by being in the bottom — so the two terms point in
-         opposite directions and at ±1.4 they simply cancelled. Measured over
-         400 seasons per format, the best resume was winning a top two 46% of
-         the time against a 50% chance line: still anti-correlated after the
-         first attempt. The lip sync assassin is a real and wanted archetype,
-         so the answer is to out-weigh her rather than delete her. */
-      edge[n] = clamp((recordStrength(state.record[n] || []) - recAvg) * 1.35, 2.3)
+         confidence bonus for past lip sync wins, and a queen only banks it by
+         being in the bottom — so the two terms point in opposite directions
+         and at ±1.4 they simply cancelled. Measured over 400 seasons per
+         format, the best resume was winning a top two 46% of the time against
+         a 50% chance line: still anti-correlated after the first attempt. The
+         lip sync assassin is a real and wanted archetype, so the answer is to
+         out-weigh her rather than delete her.
+         THAT BONUS IS NOW +0.4 AND NO LONGER ACCUMULATES (it was +0.4 per win
+         to a cap of +1.2, which let a queen survive five lip syncs in a row —
+         see the note in js/dr/lipsync.js). These constants were measured
+         against the old, larger version, so they are if anything now more than
+         enough; they are left as they are because the audit's targets still
+         read correctly, not because nobody looked. */
+      // THE SAME TWO CONSTANTS THE CUT USES. They were written out here and
+      // the cut had none at all; now both read the season through one rule,
+      // so tuning one cannot silently leave the other behind.
+      edge[n] = clamp((recordStrength(state.record[n] || []) - recAvg) * RESUME_SCALE, RESUME_CLAMP)
         + clamp(((Number(showcase[n]) || 0) - showAvg) * 0.24, 1.3);
     }
     sa.score += edge[a] || 0;
@@ -531,15 +549,42 @@ export function runFinale(state, cfg, ctx) {
     const f = duel(state, s1.winner, finalists[2], ctx, song(), fctx);
     rounds.push(s1, f);
     placements = [f.winner, f.loser, s1.loser, ...finalists.slice(3)];
-  } else if (type === 'perform-then-lipsync' && finalists.length >= 2) {
+  } else if ((type === 'perform-then-lipsync' || type === 'perform-then-lipsync-3') && finalists.length >= 2) {
     // A final performance ranks them, the host picks two, and those two lip
     // sync. This is the one finale where the panel speaks at all.
     // The SAME showcase everybody performed, not a second one: running it
     // twice would score a night the audience only watched once.
     const perf = showcase;
     const panel = panelFor({ rotatingId: cfg.rotatingId || 'carson', weights: cfg.judgeWeights || {} });
+    /* ── THE SEASON, ON THE ONE NIGHT IT IS THE QUESTION ──
+       This narrowed the field on the showcase ALONE. `runway` and `polish`
+       below are hardcoded — there is no runway and no build at a showcase —
+       so the whole ranking was one performance plus noise, and twelve
+       episodes counted for nothing.
+
+       `duel()` already fixed this for the CROWN, and its comment says why:
+       ignoring the record "produced a winner with zero maxi challenge wins
+       in 20 of 40 measured seasons". But the fix went on the last song and
+       not on the cut that decides who sings it, so the résumé only ever
+       applied to the two queens who had already survived the queen with the
+       best résumé. Measured before this: the best-record finalist was cut
+       before the song 33-35% of the time (chance is 50%), and on this format
+       22% of seasons crowned a queen with no maxi wins at all.
+
+       SAME SHAPE AND SAME CONSTANTS AS `duel`'s résumé edge, deliberately —
+       centred on this field's mean, scaled, clamped — so the cut and the
+       crown read the season through one rule rather than two that can drift
+       apart. It is an edge, not a verdict: the clamp means a strong showcase
+       still beats a strong season, which is the whole point of holding a
+       finale at all. */
+    const recAvgF = finalists.length
+      ? finalists.reduce((t, x) => t + recordStrength(state.record[x] || []), 0) / finalists.length
+      : 0;
+    const resumeOf = n => Math.max(-RESUME_CLAMP, Math.min(RESUME_CLAMP,
+      (recordStrength(state.record[n] || []) - recAvgF) * RESUME_SCALE));
     const entries = finalists.map(n => ({
       name: n, style: 'pageant', perf: perf[n].perf, runway: 5, risk: perf[n].risk, polish: 5,
+      resume: resumeOf(n),
     }));
     const ranking = panelRanking(judgeViews(panel, entries, state.memory, rng));
     const order = hostBend(ranking, { star: state.star, storylineNeed: {}, trackPull: {}, split: false })
@@ -649,6 +694,8 @@ export function runFinale(state, cfg, ctx) {
           // cannot know it, because the vote reads a ledger this row closes.
           congeniality: null,
           rng,
+          players: ctx.players,
+          record: state.record,
         }),
         { step: 'exit', kind: 'crowning', data: { placements }, text: '' },
       ],

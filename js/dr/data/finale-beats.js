@@ -211,6 +211,196 @@ export const FINALE_BEATS = [
     ])],
   },
 
+  // ══ THE INTERVIEW DIALOGUE ════════════════════════════════════════════
+  // Michelle asks, the queen answers — real dialogue, tiered by archetype.
+  // Substitutions: {a} name, {wins} win count, {bottoms} BTM2 count,
+  // {best}/{worst} top/bottom drag craft, {arc} archetype, {style} drag style,
+  // {record} compact record string.
+  {
+    id: 'finale-interview-ask', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'michelle',
+    note: 'Michelle asks the finalist her question. Tiered by archetype category.',
+    tiers: [
+      tier('fighter', 'Question for a fighter queen.', [
+        "\"You have {wins} wins this season and you earned most of them by being the best person in the room, not the most political.\" Michelle leans forward. \"Is that enough? Is being the best competitor enough to be the winner of this whole thing?\"",
+        "\"Your record says fighter — {wins} wins, {bottoms} time in the bottom, and every time you came back swinging.\" Michelle tilts her head. \"{a}, do you think the crown should go to the queen who fought hardest, or the queen who fought smartest?\"",
+        "\"{a}, you have done things on this stage that made me hold my breath.\" Michelle holds the beat. \"But this competition also asks you to be vulnerable. Can you show me who you are when you are not fighting?\"",
+        "\"Let me read your season back to you: {record}.\" Michelle looks up from the card. \"{a}, that record tells me you know how to win a challenge. What it does not tell me is what happens when nobody is keeping score.\"",
+        "\"{a}, your {best} has been the weapon all season.\" Michelle watches her. \"But a Drag Superstar needs more than one weapon. What did this competition teach you about the parts of drag that do not come naturally to you?\"",
+        "\"You have fought for everything you have in this competition and you have the {wins} wins to prove it.\" Michelle pauses. \"But there is a difference between a fighter and a queen. Which one am I looking at tonight?\"",
+      ]),
+      tier('schemer', 'Question for a strategic queen.', [
+        "\"You have played this game as well as anyone I have seen on this stage.\" Michelle narrows her eyes. \"{a}, I need to know — is the queen sitting in front of me the real one, or is she another move?\"",
+        "\"{a}, your record is {record} and some of those weeks you won without being the best performer in the room.\" Michelle holds her gaze. \"You won because you are smart. Is smart enough to wear this crown?\"",
+        "\"There is a word the other queens use for you and the word is strategic.\" Michelle lets it sit. \"{a}, is there a version of you that we have not seen because you were too busy calculating?\"",
+        "\"You have {wins} wins and not all of them were clean.\" Michelle is direct about it. \"{a}, if I crown you tonight, am I crowning the queen who played the best game or the queen who was the best drag artist?\"",
+        "\"{a}, you read every room you walked into this season.\" Michelle watches her. \"You knew who was weak. You knew who was dangerous. What I do not know is what you want this crown FOR. Tell me.\"",
+        "\"Your {best} is strong and your mind is stronger and you have used both of them all season.\" Michelle leans in. \"{a}, can you be honest with me for three minutes — not strategic, not careful, just honest?\"",
+      ]),
+      tier('heart', 'Question for a heart queen.', [
+        "\"{a}, everybody in this room loves you.\" Michelle says it plainly. \"But love does not win you the crown. Why should I give it to you instead of somebody who has more wins than you do?\"",
+        "\"You have been the heart of this cast from the premiere and every queen who went home said your name when she was asked who she wanted to win.\" Michelle pauses. \"{a}, is being loved the same as being the best?\"",
+        "\"{a}, your {best} has carried you and your heart has carried the rest of the cast.\" Michelle is gentle and the gentleness has a blade in it. \"But this is a competition. Are you a competitor, or are you the queen everybody else competes around?\"",
+        "\"Your record is {record}.\" Michelle reads it and looks up. \"{a}, there are queens with stronger numbers. Tell me why the numbers are not the whole story.\"",
+        "\"{a}, I have watched you lift up every queen in this room, including the ones trying to beat you.\" Michelle tilts her head. \"Who lifts you up? And what happens if nobody does?\"",
+        "\"You are the queen this cast chose to root for.\" Michelle lets it land. \"{a}, if I told you that being kind is not a qualification, what would you tell me back?\"",
+      ]),
+      tier('wild', 'Question for a wild-card queen.', [
+        "\"{a}, I never know what I am going to get from you.\" Michelle watches her. \"Some weeks that has been the most exciting thing on this stage. Some weeks it has been the most frustrating. Which version of you is sitting here right now?\"",
+        "\"Your record is {record} and it reads like two different queens.\" Michelle taps the card. \"{a}, can you explain to me who you are as a drag artist, in one sentence, without contradicting yourself?\"",
+        "\"{a}, you have been unpredictable all season and unpredictable is a difficult thing to crown.\" Michelle leans forward. \"Convince me that what you do is intentional and not just chaos.\"",
+        "\"The best nights of this season have been yours and so have some of the worst.\" Michelle holds her gaze. \"{a}, a Drag Superstar has to be consistent. Can you be consistent and still be you?\"",
+        "\"{a}, your {best} is world-class and your {worst} is — well, it is not.\" Michelle lets the gap speak. \"The crown does not come off on the weeks you are bad at things. Can you promise me those weeks are behind you?\"",
+        "\"Nobody on this stage does what you do.\" Michelle says it like a fact. \"{a}, that is either the strongest argument for the crown or the weakest, and I genuinely do not know which. Help me decide.\"",
+      ]),
+    ],
+  },
+  {
+    id: 'finale-interview-answer', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'queen',
+    note: 'The queen answers Michelle. Her voice, her story.',
+    tiers: [
+      tier('fighter', 'Fighter answers.', [
+        "\"I did not come here to be liked. I came here to be the best.\" {a} sits forward and the posture is the same posture she has had in every challenge — locked in, ready, no wasted energy. \"I have {wins} wins. I earned every single one of them. That is my argument.\"",
+        "\"I have been in the bottom {bottoms} times and I survived all of them, and the surviving was never luck.\" {a} looks at Michelle. \"I am a fighter. That is not a personality — that is a skill set. I fight well and I do it under pressure and I do not stop.\"",
+        "\"My {best} got me here and my stubbornness kept me here.\" {a} does not blink. \"I am not the most polished queen in this room. I am the one who wanted it badly enough to outwork everybody else.\"",
+        "\"Yes. Being the best competitor is enough.\" {a} says it flatly. \"This is a competition. I competed. I have the record to prove it and the record does not lie about me even if I am not the queen you expected to be sitting in this chair.\"",
+        "\"Every week I walked onto that stage and gave them something to judge and the judgment was the point.\" {a} folds her hands. \"I was not playing a game. I was doing the work. The work is {wins} wins and I did not need to make friends to get them.\"",
+        "\"I fought for this seat.\" {a} is calm about it and the calm is the most dangerous thing in the room. \"I am a {arc} and that means I show up and I deliver and when somebody tries to take what I built I take it back. Crown me or do not. My record says what it says.\"",
+      ]),
+      tier('schemer', 'Schemer answers.', [
+        "\"The real one.\" {a} smiles and the smile is the one she has been giving the judges all season — warm, precise, and exactly calibrated. \"The game and the queen are the same thing. I am strategic because I care enough to be.\"",
+        "\"I have {wins} wins and you are right — not all of them came from being the most talented person in the room.\" {a} looks at her hands. \"Some of them came from knowing which room I was in. That is a drag skill. I will not apologise for it.\"",
+        "\"Every queen sitting in this chair tonight is going to tell you she is real.\" {a} tilts her head. \"I am going to tell you I am good at this — all of it, the drag and the game and the part where you have to look a judge in the eye and make her believe you. I am doing that right now and it is working.\"",
+        "\"You asked if I can be honest for three minutes.\" {a} pauses. \"Here is honest: I wanted this crown more than I have ever wanted anything and I was willing to be smart about getting it. If that makes me strategic, I will take strategic over sentimental any day of the week.\"",
+        "\"I read every room because the rooms were worth reading.\" {a} leans back. \"I want this crown because I know what to do with it. I know the platform. I know the work. I have been thinking about what comes after since week two, and that is not cold — that is preparation.\"",
+        "\"My {best} opened doors and my brain kept them open.\" {a} holds Michelle's gaze. \"I played the game the way the game is built. I did not cheat. I did not lie to anybody who did not deserve it. I was smarter than the competition and I am not going to pretend that is a flaw.\"",
+      ]),
+      tier('heart', 'Heart answers.', [
+        "\"No, love is not the same as being the best. But it is not nothing.\" {a} takes a breath. \"I have {wins} wins. I earned them. But I also made this cast better by being in it, and I think that counts. I think it has to.\"",
+        "\"The numbers are not the whole story because the numbers do not measure what I gave the people around me.\" {a} is steady. \"Every queen who went home hugged me first. That is not a statistic. It is a season.\"",
+        "\"I am a competitor.\" {a} says it firmly and the firmness surprises the room. \"I competed every single week. I did not win as many challenges as some of these queens and I also did not break a single person on my way here. I would rather have this record than a longer one I got by being cruel.\"",
+        "\"My {best} carried me, yes. And my heart carried the cast.\" {a} looks at Michelle. \"You are asking me to choose between those two things and I am telling you I do not have to. I brought both of them to this competition and both of them are the reason I am sitting here.\"",
+        "\"Being kind is a qualification.\" {a} says it without hesitation. \"This crown goes to a person who represents something, and I would rather represent the queen who made the room bigger than the queen who made it smaller. That is my answer.\"",
+        "\"I lift myself up.\" {a} smiles and the smile has weight in it. \"I have been doing it my whole life. Every queen who helped me here, I helped back. That is not weakness. That is how I work. I work in community and the community is why I am still here.\"",
+      ]),
+      tier('wild', 'Wild-card answers.', [
+        "\"Both versions are sitting here right now.\" {a} laughs and the laugh is genuine. \"I am the exciting version and I am the frustrating version and I cannot separate them and I stopped trying around week four. What you see is what you get and what you get has {wins} wins.\"",
+        "\"I am intentional. I know it does not always look like it.\" {a} shifts in the chair. \"My drag is not safe. It is not predictable. And every time I was unpredictable on this stage something interesting happened. That is not chaos. That is range.\"",
+        "\"I cannot promise you consistency because consistency is not what I do.\" {a} is honest about it and the honesty is disarming. \"What I can promise you is that every time I walk onto a stage something will happen, and it will be something nobody else in this room could have done.\"",
+        "\"My {worst} is bad and my {best} is the best in this building.\" {a} shrugs. \"I would rather be extraordinary at one thing than fine at everything. The crown should go to somebody you remember, and you are going to remember me.\"",
+        "\"I am a {arc} and the word means exactly what it sounds like.\" {a} grins. \"I do not fit in a box. I have tried. The box breaks. My argument for the crown is that nobody else on this stage could have done my season, and my argument against is the same sentence. Take it or leave it.\"",
+        "\"Help you decide? Sure.\" {a} leans forward. \"I have done things on this stage that made you laugh and things that made you wince and things that made you say what is she DOING and the answer every single time was: something nobody else thought of. Crown that or do not. I am going to keep doing it either way.\"",
+      ]),
+    ],
+  },
+  {
+    id: 'finale-interview-follow', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'michelle',
+    note: 'Michelle follows up — pushes deeper.',
+    tiers: [
+      tier('fighter', 'Follow-up for a fighter.', [
+        "\"You say you are not here to be liked.\" Michelle does not let it go. \"But the crown goes to a person who has to represent this show for a year. Can you do that? Can you represent something bigger than a fight?\"",
+        "\"You have {bottoms} bottoms and each time you came back harder.\" Michelle leans in. \"What would have happened to you if you had not come back? Is there a version of {a} who loses and stays lost?\"",
+        "\"The work is undeniable. But I need to see past the work.\" Michelle holds her gaze. \"Who are you when the challenge is over and the camera is off and nobody is scoring you? I have not seen that queen all season.\"",
+        "\"{a}, you mentioned your record and I do not dispute it.\" Michelle taps the card. \"But a record is a thing you did. I am asking about who you ARE. Tell me something about yourself that is not a statistic.\"",
+        "\"You say the work speaks for itself.\" Michelle nods once. \"It does. But a Drag Superstar also speaks for herself, and I have heard you talk about challenges all season and almost never about anything else. Give me the rest of it.\"",
+        "\"What scares you?\" Michelle asks it simply. \"{a}, you have been fearless on that stage for weeks. I need to know that you are not fearless everywhere, because fearless everywhere is not honest — it is a wall.\"",
+      ]),
+      tier('schemer', 'Follow-up for a schemer.', [
+        "\"You said the game and the queen are the same thing.\" Michelle does not blink. \"Then who are you when nobody is playing? When the cameras are down and the competition is over, who is left?\"",
+        "\"{a}, you are brilliant at this and I mean that.\" Michelle holds the pause. \"But brilliance that only works inside a game is a game skill, not a life skill. What do you do with this crown outside of a competition?\"",
+        "\"You said you would not apologise for being strategic.\" Michelle tilts her head. \"I am not asking you to. I am asking you whether you know the difference between being strategic and being guarded, because from here they look the same.\"",
+        "\"Every answer you have given me tonight has been good and I need one that is not good — I need one that is true.\" Michelle watches her. \"Say something that does not help you win.\"",
+        "\"{a}, you said you know what to do with this crown.\" Michelle's voice drops. \"Tell me what it costs you. Not what it earns. What does it cost a queen like you to carry this for a year?\"",
+        "\"You read every room.\" Michelle nods. \"What happens when you walk into a room you cannot read? When have you been wrong, and what did it feel like?\"",
+      ]),
+      tier('heart', 'Follow-up for a heart.', [
+        "\"You said being kind is a qualification.\" Michelle leans forward. \"But the queens with more wins than you were not less kind — they were better at the challenges. What do you say to that?\"",
+        "\"{a}, I love you. Everybody loves you.\" Michelle's voice is warm and the warmth has an edge. \"But I need you to tell me you want this crown selfishly. I need to hear that you want it for YOU, not for the community.\"",
+        "\"You said the numbers do not tell the whole story.\" Michelle holds her gaze. \"But the numbers tell some of it. {wins} wins, {bottoms} bottoms. Are you asking me to ignore the math, or are you asking me to see past it?\"",
+        "\"Who is {a} when she is not taking care of somebody else?\" Michelle watches her. \"I have seen you carry every queen in this room. I have not seen you carry yourself, and I need to before tonight is over.\"",
+        "\"You said you work in community.\" Michelle pauses. \"A crown is lonely. The person wearing it stands alone for a year. Can you do that? Can you be the one who is not holding anybody else's hand?\"",
+        "\"{a}, you mentioned the queens who helped you.\" Michelle tilts her head. \"What about the week nobody helped? The week you were alone in the bottom and had to fight your way out with nobody in your corner. Tell me about that queen.\"",
+      ]),
+      tier('wild', 'Follow-up for a wild-card.', [
+        "\"You said you are range, not chaos.\" Michelle does not let it pass. \"But range without discipline is chaos, and discipline without range is boring. Where do you sit between those two and can you hold that line for a year?\"",
+        "\"{a}, you said you would keep doing this either way.\" Michelle nods. \"I believe you. But the crown is not for someone who keeps doing it either way — it is for someone who does it WITH the crown. What changes?\"",
+        "\"You said nobody else could have done your season.\" Michelle watches her. \"That is true. But could you do someone else's? Could you be consistent for twelve weeks if the crown depended on it?\"",
+        "\"The box breaks when you try to fit in it. Fine.\" Michelle leans in. \"But a Drag Superstar is the box. She is the standard. Can you be a standard and still be unpredictable?\"",
+        "\"{a}, your best nights have been transcendent and I mean that.\" Michelle pauses. \"Your worst nights scared me. Not for you — for the crown. Can you promise me the worst nights are behind you?\"",
+        "\"You want me to remember you.\" Michelle holds her gaze. \"I will. But I also need to trust you. And trust requires knowing what I am getting. Tell me what I am getting, specifically, every time you walk onto a stage from here.\"",
+      ]),
+    ],
+  },
+  {
+    id: 'finale-interview-close', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'queen',
+    note: 'The queen closes. Her last word before the showcase.',
+    tiers: [
+      tier('fighter', 'Fighter closing.', [
+        "\"I am not going to give you a speech.\" {a} stands. \"I am going to go out on that stage and do what I have done every week of this competition, which is fight harder than the person standing across from me. That is the answer. It has always been the answer.\"",
+        "\"Thank you.\" {a} says it once and means it and does not decorate it. She straightens her shoulders and walks back to her mark with the stride of somebody who has said everything she intends to say and is ready to let the work finish the conversation.",
+        "\"I came here to win and I have not stopped.\" {a} looks at Michelle one last time. \"Whatever happens tonight, my record is my record and nobody can take that from me. But I would prefer the crown, if it is all the same to you.\" She does not smile. She means it.",
+        "\"You asked who I am when I am not fighting.\" {a} pauses. \"I am still figuring that out. But I know who I am when I am fighting, and tonight is a fight, and I am ready for it.\" She stands and the standing is the end of the conversation.",
+        "\"My {best} is the best in this room and my work ethic is the reason.\" {a} presses her palms on the armrests and pushes herself up. \"I do not need you to love me. I need you to respect the record. The record is right there.\"",
+        "\"{wins} wins. {bottoms} times in the bottom. Still here.\" {a} holds up one finger for each number. \"That is the closing argument. I fought for every one of those numbers and tonight I am going to fight one more time.\"",
+      ]),
+      tier('schemer', 'Schemer closing.', [
+        "\"I told you something true tonight.\" {a} stands and smooths her gown. \"Whether you believe it is up to you. But I will say this: every queen who has sat in this chair has performed for you. I just performed less well than the others because I was busy being honest, and honest is harder than it looks.\"",
+        "\"I want this crown.\" {a} says it without performance. \"I have wanted it since the day I was cast and every decision I have made in this competition was a step toward this chair. I am not ashamed of that. I am proud of it. Crown the queen who wanted it most.\"",
+        "\"You asked for something that does not help me win.\" {a} pauses. \"Here it is: I am terrified. I have been terrified all season and the strategy was how I managed it. Every read, every move, every calculated decision — that was a scared queen doing the best she could with the tools she had.\"",
+        "\"I played the game better than anyone else and I will not dress it up.\" {a} stands. \"But the game was drag. The moves were performances. The victories were runways and challenges and songs. Call it strategic if you want. I call it preparation.\"",
+        "\"Thank you for pushing.\" {a} holds Michelle's gaze. \"Nobody has pushed me like that all season, and the fact that I am still sitting here and not falling apart is the answer to the question you asked.\" She rises. \"I am real. I am also good at this. Both things can be true.\"",
+        "\"The crown should go to the queen who understood the assignment.\" {a} straightens. \"I understood every assignment I was given and a few I was not. If that scares you, it should. Scared is what talent plus intention looks like from the outside.\"",
+      ]),
+      tier('heart', 'Heart closing.', [
+        "\"I want it for me.\" {a} says it and the room hears something it has not heard all season — not the queen who lifts everyone else, the queen who wants something for herself. \"I want the crown. I want it selfishly. I want it because I earned it and because it would change my life and I am asking you for it.\"",
+        "\"The queen you have not seen is the queen who cried in the hotel room every night and got up the next morning and chose kindness again.\" {a} takes a breath. \"That is not weakness. That is a decision I made twelve times and I would make it twelve more.\"",
+        "\"I can be alone.\" {a} holds Michelle's gaze. \"I do not want to be. But I can be. And the queen who can stand alone and chooses to stand with people is stronger than the queen who stands alone because she does not know how to do anything else.\"",
+        "\"Thank you for asking me the hard question.\" {a} stands slowly. \"The answer is yes — I am a competitor, and I am also the heart, and both of those things will follow me out of this building tonight. Crown the whole queen or do not crown her at all.\"",
+        "\"My record is {record} and I am proud of every letter in it.\" {a} presses her hand to her chest. \"Including the losses. The losses taught me more than the wins and the wins taught me I belonged here. That is the whole story.\"",
+        "\"I want this crown for every queen who was told she was too soft for this.\" {a} stands and the standing is quiet and firm. \"Being soft in a hard room is the hardest thing I have ever done and I did it for an entire season and I am still here.\"",
+      ]),
+      tier('wild', 'Wild-card closing.', [
+        "\"What you are getting is me.\" {a} stands. \"Every time. The version you love and the version that scares you and the version that does something nobody expected. That is the offer. Take it or leave it, but do not ask me to be less.\"",
+        "\"I cannot promise you I will be consistent. I can promise you I will be unforgettable.\" {a} grins and the grin is the one that has launched a thousand confessional clips this season. \"And if you have to choose between those two, you know which one makes better television.\"",
+        "\"I broke the box. I would break it again.\" {a} tilts her head. \"A Drag Superstar who fits neatly into a category is a Drag Superstar you have already seen. I am something you have not seen, and that is either the reason to crown me or the reason not to, and I am betting on the first one.\"",
+        "\"The worst nights are behind me because the worst nights taught me where the floor is.\" {a} is serious for the first time in the conversation. \"I know the floor now. I will not hit it again. But I will dance right above it, because that is where the interesting work happens.\"",
+        "\"Thank you for asking me the difficult question.\" {a} stands and the standing has energy in it. \"Here is my answer in one sentence: I am the queen this season needed and the queen nobody predicted and both of those things are the same thing. Crown that.\"",
+        "\"I came to this competition to be remembered and I will be remembered whether I win or not.\" {a} pauses. \"But winning would be better. Winning would mean you believed in the thing I am doing. And the thing I am doing is showing everybody that a {arc} can wear a crown.\"",
+      ]),
+    ],
+  },
+
+  // ══ THE CUT — SUSPENSE AND LAST WORDS ════════════════════════════════
+  {
+    id: 'finale-cut-suspense', step: 'finale-cut', scope: 'once', speaker: 'host',
+    note: 'The host deliberates. Building suspense before naming the two who go on.',
+    tiers: [tier('suspense', 'The room holds its breath.', [
+      "The host stands in front of the finalists and takes his time, and the time he takes is the loudest silence of the season. \"I have watched everything tonight. The showcases, the interviews, the runway.\" He looks at each queen in turn. \"And I have to make a decision that will change two of your lives in very different ways.\"",
+      "\"I want you to know that this decision was not easy.\" The host's voice drops a register and the room follows it down. \"Every one of you showed me something tonight. But only two of you will lip sync for the crown, and that is the cruelest math this show does.\"",
+      "The host paces. He does not usually pace. The finalists watch him and the watching is the particular stillness of people who know that the next sentence out of his mouth determines whether they are part of the ending or the audience for it. He stops. He turns.",
+      "\"I have consulted with the judges and I have made my decision.\" The host holds the room for three full seconds before continuing and the three seconds contain every performance, every critique, and every week that led to this stage. The finalists are motionless.",
+      "\"What I am about to do is the hardest part of my job.\" The host means it and the room believes him. \"I am about to tell some of you that tonight is over, and I am about to tell two of you that it is not. Both of those sentences are life-changing and I do not take either one lightly.\"",
+      "Nobody moves. The host looks at the finalists and the finalists look back and the exchange is the last moment all of them will be in this together — after the next sentence, the group splits and the splitting is permanent. He takes a breath. The room takes one with him.",
+    ])],
+  },
+  {
+    id: 'finale-cut-lastwords', step: 'finale-cut', scope: 'per-cut', speaker: 'queen',
+    note: 'The cut queen speaks — her last words as a competitor.',
+    tiers: [tier('cut', 'Her last words.', [
+      "\"I got here.\" {a} says it to the room and the room hears it and the room knows what it means. \"I got all the way to the finale and nobody can take that from me.\" She straightens her back and walks to the side of the stage with the posture of a person who has decided how this ends for her.",
+      "\"Thank you.\" {a} says it once and the once is enough. She hugs the two queens still standing and whispers something in each ear that neither of them will repeat, and then she takes her place in the audience and watches the rest of the night from a chair she never planned to sit in.",
+      "\"I wanted that stage.\" {a} is honest about it and the honesty costs her and she pays it in front of everyone. \"I wanted to lip sync for the crown and I did not get to and that is going to take me a minute.\" She breathes. \"But I am proud of the season I ran and I am proud of being here.\"",
+      "{a} does not make a speech. She presses her lips together and nods once at the two queens going on and the nod says everything she cannot say right now — good luck, win it, do the thing I came here to do — and then she turns and walks to the side and the walk is steady.",
+      "\"I am going to watch the two best queens in this competition lip sync for the crown and I am going to cheer louder than anybody in this room.\" {a} says it and means it and the meaning is visible in the way she grabs the nearest queen and pulls her into a hug that lasts longer than the sentence.",
+      "\"This is not the end of me.\" {a} says it with a certainty that does not waver. \"This is the middle. You will see me again.\" She steps to the side with the kind of composure that only a queen who has spent an entire season being watched can produce on short notice.",
+      "\"I am heartbroken and I am grateful and those two things are happening at the same time and I do not know how to sort them out.\" {a} laughs through it. \"So I am going to sit down and figure it out while I watch the best lip sync of the season. Go get it.\"",
+      "{a} takes a breath that shakes on the way in and is steady on the way out. \"I did everything I could,\" she says. \"The record says what it says. The night went the way it went. I am a finalist and I am proud of that word.\" She walks to the side and the word follows her.",
+    ])],
+  },
+
   // ══ THE SHOWCASE ═════════════════════════════════════════════════════
   {
     id: 'finale-showcase-open', step: 'finale-showcase', scope: 'once', speaker: 'host',
@@ -280,6 +470,32 @@ export const FINALE_BEATS = [
       "{a} mouths the words before the host has finished saying them. She knew. She may have known since the showcase. She holds it together for the room and then she turns to the returning cast and the cast catches her, because that is what the cast is for tonight.",
       "Third or fourth, on the biggest night of the season. {a} steps forward, hugs both finalists hard enough to threaten a wig, and says something quiet that nobody else can hear. Whatever it was, it makes the queen about to be crowned laugh through tears.",
     ])],
+  },
+
+  // ══ PRE-DUEL INTERVIEW — bracket format only ══════════════════════════
+  // RuPaul talks to each queen right before her lip sync. Short, pointed,
+  // one beat per queen. {a} is the queen, {b} is her opponent.
+  {
+    id: 'finale-preduel', step: 'finale-lipsync', scope: 'per-duel', speaker: 'host',
+    note: 'RuPaul addresses {a} before she lip syncs. {b} is the opponent.',
+    tiers: [
+      tier('semi', 'Before a semi-final lip sync.', [
+        "\"{a}.\" The host says the name and waits. \"You have done everything this competition has asked of you. Now it is asking for one more thing. {b} is standing right there and she wants this as badly as you do. Show me why it should not be her.\"",
+        "\"There are four queens on this stage and two of them are about to go home.\" The host looks at {a}. \"You are {record} this season. That record got you here. It does not get you past {b}. The lip sync does. So lip sync.\"",
+        "\"{a}, I need you to hear me.\" The host steps closer. \"This is not the final. This is the fight to earn the final. {b} is the only thing between you and the crown and she is not planning to move. What are you going to do about it?\"",
+        "\"You have spent this entire season proving you belong on this stage.\" The host holds {a} in place with a look. \"Prove it one more time. Right now. Against {b}. And do not leave anything for later — there may not be a later.\"",
+        "\"{a}.\" A pause that goes on longer than it should. \"The crown is not yours yet. It is not even in the room yet. What is in this room is {b}, and she came here to end your run tonight. Are you going to let her?\"",
+        "\"I have watched you all season,\" the host says to {a}. \"I know what you can do when it matters. This is the moment I find out if you know it too. {b} is ready. The question is whether you are.\"",
+      ]),
+      tier('final', 'Before the final lip sync.', [
+        "\"{a}.\" The host says the name like it is the last time he will say it without a title in front of it. \"You fought your way here. One lip sync left. One queen in your way. Show me the queen who deserves a crown.\"",
+        "\"You are standing in the final two of this competition and the queen across from you is {b}.\" The host does not blink. \"{a}, there is nothing left to say. There is only what you do in the next three minutes.\"",
+        "\"{a}, look at me.\" The host waits until she does. \"Everything you have survived this season — every bottom, every critique, every week you thought you were going home — it was for this. Do not waste it. This is the last song.\"",
+        "\"One of you is about to be crowned,\" the host says, and then he looks only at {a}. \"I do not need you to be perfect. I need you to be undeniable. {b} is going to give me everything she has. You give me more.\"",
+        "\"{a}.\" The room is so quiet the name carries to the back wall. \"This is the moment your season becomes a story someone tells. Win this lip sync and nobody will ever say your name without saying the word crown. Now go earn it.\"",
+        "\"There is no next week,\" the host tells {a}. \"There is no second chance. There is you, and there is {b}, and there is one crown. This is the lip sync you will remember for the rest of your life. Make sure you win it.\"",
+      ]),
+    ],
   },
 
   // ══ THE CROWN LIP SYNC ═══════════════════════════════════════════════

@@ -34,7 +34,8 @@
 // the rules were, so a truncated desc leaves a result nobody can follow.
 // That is a project rule with its own test on the Big Brother side.
 import { _shell, _portrait, _icon, _note, _judgePortrait } from './style.js';
-import { _controls, _seedRail } from './reveal.js';
+import { _controls, _seedRail, _state, _reapplyVisibility } from './reveal.js';
+import { JUDGES } from '../dr/data/judges.js';
 import { maxiById } from '../dr/data/challenges.js';
 import { sceneCard, WERK_CSS } from './werk.js';
 import { characterById } from '../dr/data/snatch-characters.js';
@@ -765,6 +766,304 @@ function perfCard(name, perf, i, suffix, ep, id) {
     perf?.moment ? '<span class="dr-tag dr-t-note">moment</span>' : ''}</h3>${body}</div>
       <span class="dr-score dr-disp ${scoreClass(perf?.perf)}">${n1(perf?.perf)}</span>
     </div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THE BALL — three looks, three judges, one leaderboard
+   ══════════════════════════════════════════════════════════════════
+   A ballroom scoring screen: each look category is announced, then every
+   queen walks and three judges raise a paddle from 0 to 10. The leaderboard
+   re-sorts after each score lands, Eurovision-style. The final placement
+   comes from the three-step rule — the best score doesn't guarantee the win.
+*/
+
+const BALL_ROW_H = 36;
+
+const BALL_CSS = `
+.ball{position:relative;padding:20px 16px 26px;border-radius:6px;
+  background:
+    radial-gradient(120% 80% at 50% 0%,rgba(240,171,252,.18),transparent 60%),
+    repeating-linear-gradient(0deg,rgba(255,210,63,.06) 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(90deg,rgba(255,210,63,.06) 0 1px,transparent 1px 68px),
+    linear-gradient(180deg,#1a0e08,#0c0604)}
+
+.ball-look{max-width:1000px;margin:0 auto 18px;padding:12px 14px;border-radius:8px;
+  background:linear-gradient(135deg,rgba(255,210,63,.12),rgba(240,171,252,.08));
+  border:1px solid rgba(255,210,63,.3);
+  box-shadow:0 0 30px rgba(255,210,63,.12)}
+.ball-look h3{margin:0 0 2px;font-family:'Anton','Arial Narrow Bold',sans-serif;
+  font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:#FFD23F;
+  text-shadow:0 0 12px rgba(255,210,63,.6)}
+.ball-look small{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:#f0abfc}
+
+.ball-entry{max-width:1000px;margin:0 auto 10px;display:grid;
+  grid-template-columns:50px 1fr;gap:10px;align-items:center;
+  padding:10px 12px;border-radius:8px;
+  background:linear-gradient(135deg,rgba(240,171,252,.08),rgba(10,6,4,.8));
+  border:1px solid rgba(240,171,252,.14)}
+.ball-entry h4{margin:0;font-size:13px;color:#fff;font-weight:700}
+.ball-paddles{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.ball-paddle{display:inline-flex;flex-direction:column;align-items:center;gap:2px;
+  padding:5px 8px 4px;border-radius:6px;min-width:52px;
+  background:linear-gradient(180deg,rgba(255,210,63,.22),rgba(255,210,63,.06));
+  border:1px solid rgba(255,210,63,.35);
+  box-shadow:0 0 14px rgba(255,210,63,.15);
+  transform:rotateY(90deg);animation:ballFlip .4s cubic-bezier(.2,1.2,.4,1) forwards}
+@keyframes ballFlip{to{transform:rotateY(0)}}
+.ball-paddle b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:22px;
+  color:#FFD23F;line-height:1;text-shadow:0 0 10px rgba(255,210,63,.7)}
+.ball-paddle small{font-size:7px;letter-spacing:.1em;text-transform:uppercase;
+  color:#f0abfc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px}
+
+.ball-board{max-width:1000px;margin:0 auto 12px;border-radius:8px;overflow:hidden;
+  border:1px solid rgba(255,210,63,.28);background:rgba(14,8,4,.92)}
+.ball-bhead{display:flex;justify-content:space-between;align-items:baseline;
+  padding:8px 13px;border-bottom:1px solid rgba(255,210,63,.18)}
+.ball-bhead h4{margin:0;font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:13px;
+  letter-spacing:.12em;color:#FFD23F;text-transform:uppercase}
+.ball-bhead span{font-family:'Space Mono',monospace;font-size:10px;color:#e7c9a4}
+.ball-rows{position:relative;margin:7px 10px 9px}
+.ball-row{position:absolute;left:0;right:0;top:0;height:${BALL_ROW_H - 4}px;
+  display:grid;grid-template-columns:24px 30px auto 2fr 48px;
+  gap:8px;align-items:center;padding:0 6px;border-radius:6px;
+  transition:transform .62s cubic-bezier(.34,.9,.3,1),background .3s}
+.ball-rank{font-family:'Space Mono',monospace;font-size:12px;color:#f0abfc;text-align:right}
+.ball-row .dr-por,.ball-row .dr-initials{border-radius:50%;display:block}
+.ball-nm{font-size:12px;color:#fff;font-weight:600;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.ball-bar{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.ball-bar i{display:block;height:100%;border-radius:4px;
+  background:linear-gradient(90deg,#f0abfc,#FFD23F);
+  transition:width .55s cubic-bezier(.2,.9,.25,1)}
+.ball-pts{font-family:'Space Mono',monospace;font-size:13px;color:#FFD9C4;text-align:right}
+.ball-row.ball-scored{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent)}
+.ball-row.ball-scored .ball-pts{color:#FFD23F;animation:ballTick .45s ease-out}
+@keyframes ballTick{0%{transform:scale(1)}45%{transform:scale(1.55)}100%{transform:scale(1)}}
+.ball-row.ball-top{background:linear-gradient(90deg,rgba(255,210,63,.2),transparent)}
+.ball-row.ball-top .ball-pts{color:#FFD23F}
+.ball-row.ball-btm{background:linear-gradient(90deg,rgba(255,41,75,.18),transparent)}
+.ball-row.ball-btm .ball-pts{color:#FF6B8A}
+
+.ball-final{max-width:1000px;margin:16px auto;padding:14px;border-radius:8px;
+  background:linear-gradient(135deg,rgba(255,210,63,.14),rgba(240,171,252,.06));
+  border:1px solid rgba(255,210,63,.35);
+  box-shadow:0 0 40px rgba(255,210,63,.15)}
+.ball-final h3{margin:0 0 10px;font-family:'Anton','Arial Narrow Bold',sans-serif;
+  font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:#FFD23F;
+  text-shadow:0 0 14px rgba(255,210,63,.7)}
+.ball-final-row{display:grid;grid-template-columns:28px 36px 1fr 48px;
+  gap:8px;align-items:center;padding:6px 8px;border-radius:6px;margin-bottom:4px;
+  background:rgba(255,255,255,.03)}
+.ball-final-row.ball-f-win{background:linear-gradient(90deg,rgba(255,210,63,.2),transparent)}
+.ball-final-row.ball-f-btm{background:linear-gradient(90deg,rgba(255,41,75,.14),transparent)}
+.ball-final-pos{font-family:'Space Mono',monospace;font-size:12px;color:#f0abfc;text-align:right}
+.ball-final-nm{font-size:12px;color:#fff;font-weight:600}
+.ball-final-sc{font-family:'Space Mono',monospace;font-size:12px;color:#FFD9C4;text-align:right}
+
+@media(prefers-reduced-motion:reduce){
+  .ball-row,.ball-bar i,.ball-paddle{transition:none;animation:none;transform:none}
+  .ball-row.ball-scored .ball-pts{animation:none}
+}
+`;
+
+function rpBuildBall(row) {
+  const ep = epOf(row);
+  const ch = row?.dr?.challenge;
+  const perfs = row?.dr?.performances || {};
+  const names = Object.keys(perfs);
+  if (!ch || !names.length) return '';
+  const a = row?.dr?.assignment || {};
+  const order = (a.order || []).filter(n => perfs[n]);
+  const running = order.length ? order : names;
+
+  const panelViews = row?.dr?.panel?.views || {};
+  const judgeIds = Object.keys(panelViews).slice(0, 3);
+  const judgeNames = judgeIds.map(id => {
+    const j = JUDGES.find(x => x.id === id);
+    return j ? j.name.split(' ')[0] : id;
+  });
+
+  const steps = [];
+  const sfx = 'ball';
+
+  for (const name of running) {
+    const d = perfs[name]?.detail || {};
+    const looks = d.looks || [];
+    for (let li = 0; li < looks.length; li++) {
+      const look = looks[li];
+      const jScores = _derivePaddleScores(look.score, judgeIds.length, name, li);
+      steps.push({ name, look, lookIdx: li, jScores, total: looks.length });
+    }
+  }
+
+  const lookCategories = (perfs[running[0]]?.detail?.looks || []).map(l => l.label);
+  const theme = perfs[running[0]]?.detail?.theme || 'the ball';
+
+  let stepIdx = 0;
+  const html = [];
+  let lastLookIdx = -1;
+
+  for (const s of steps) {
+    if (s.lookIdx !== lastLookIdx) {
+      const look = s.look;
+      html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+        <div class="ball-look"><h3>${esc(lookCategories[s.lookIdx] || `Look ${s.lookIdx + 1}`)}</h3>
+        <small>${look.sewn ? '✂ constructed on the day' : 'brought from home'}</small>
+        </div></div>`);
+      stepIdx++;
+      lastLookIdx = s.lookIdx;
+    }
+
+    const paddleHtml = s.jScores.map((sc, ji) =>
+      `<span class="ball-paddle" style="animation-delay:${(ji * 0.12).toFixed(2)}s">
+        <b>${sc}</b><small>${esc(judgeNames[ji] || `J${ji + 1}`)}</small></span>`
+    ).join('');
+
+    const said = (row.dr.scenes || []).filter(sc => sc.text
+      && sc.step !== 'prep'
+      && /^(perform:|maxi:|chal:performance)/.test(sc.kind || '')
+      && (sc.data?.players || [])[0] === s.name);
+    const proseHtml = s.lookIdx === 0
+      ? said.map(sc => `<p class="dr-perf-line">${esc(sc.text)}</p>`).join('') : '';
+
+    html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+      <div class="ball-entry">
+        ${_portrait(s.name, ep, { size: 50, station: true })}
+        <div><h4 class="dr-disp">${esc(s.name)}${s.look.fit ? '<span class="dr-tag dr-t-good">in her element</span>' : ''}${
+      s.look.sewn && (s.look.score > 9) ? '<span class="dr-tag dr-t-note">showstopper</span>' : ''}</h4>
+          <div class="ball-paddles">${paddleHtml}</div>
+          ${proseHtml}</div>
+      </div></div>`);
+    stepIdx++;
+  }
+
+  const callOrder = row?.dr?.callOrder || [];
+  const ranking = row?.dr?.panel?.ranking || [];
+
+  html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+    <div class="ball-final"><h3>Panel placement</h3>${
+    (ranking.length ? ranking : running.map((n, i) => ({ name: n, panelRank: i + 1 }))).map((r, i) => {
+      const cls = i === 0 ? 'ball-f-win' : i >= ranking.length - 2 ? 'ball-f-btm' : '';
+      const p = perfs[r.name];
+      return `<div class="ball-final-row ${cls}">
+        <span class="ball-final-pos">${i + 1}</span>
+        ${_portrait(r.name, ep, { size: 32 })}
+        <span class="ball-final-nm dr-disp">${esc(r.name)}</span>
+        <span class="ball-final-sc">${n1(p?.perf)}</span></div>`;
+    }).join('')}</div></div>`);
+  stepIdx++;
+  const totalSteps = stepIdx;
+
+  const board = `<div class="ball-board">
+    <div class="ball-bhead"><h4>The scoreboard</h4>
+      <span id="ball-count">0 / ${steps.length} scores</span></div>
+    <div class="ball-rows" id="ball-rows" style="height:${running.length * BALL_ROW_H}px">${
+    running.map((n, i) => `<div class="ball-row" data-q="${esc(n)}" style="transform:translateY(${i * BALL_ROW_H}px)">
+      <span class="ball-rank">${i + 1}</span>${_portrait(n, ep, { size: 24 })}
+      <span class="ball-nm">${esc(n)}</span>
+      <span class="ball-bar"><i style="width:0%"></i></span>
+      <span class="ball-pts">0</span>
+    </div>`).join('')}</div></div>`;
+
+  if (typeof window !== 'undefined') {
+    window._drBallData = { steps, running, rowH: BALL_ROW_H, judgeNames, totalSteps };
+
+    window._drSidebar = window._drSidebar || {};
+    const sidebarPanels = [];
+    const cumPts = Object.fromEntries(running.map(n => [n, 0]));
+    let prevLookIdx = -1;
+
+    for (let qi = 0; qi < steps.length; qi++) {
+      const s = steps[qi];
+      if (s.lookIdx !== prevLookIdx) {
+        sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, sidebarPanels.length));
+        prevLookIdx = s.lookIdx;
+      }
+
+      const jTotal = s.jScores.reduce((a, b) => a + b, 0);
+      cumPts[s.name] = (cumPts[s.name] || 0) + jTotal;
+      sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, sidebarPanels.length));
+    }
+    sidebarPanels.push(_ballSidebarPanel(running, cumPts, ep, sidebarPanels.length, true));
+    window._drSidebar[sfx] = sidebarPanels;
+
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra[sfx] = (upToIdx) => {
+      const d = window._drBallData;
+      if (!d) return;
+
+      const pts = Object.fromEntries(d.running.map(n => [n, 0]));
+      let scoreSteps = 0;
+      let domStep = 0;
+      let prevLookIdx = -1;
+      for (let qi = 0; qi < d.steps.length; qi++) {
+        const s = d.steps[qi];
+        if (s.lookIdx !== prevLookIdx) {
+          domStep++;
+          prevLookIdx = s.lookIdx;
+        }
+        domStep++;
+        if (domStep - 1 > upToIdx) break;
+        const jTotal = s.jScores.reduce((a, b) => a + b, 0);
+        pts[s.name] += jTotal;
+        scoreSteps++;
+      }
+
+      const order = [...d.running].sort((a, b) => pts[b] - pts[a] || a.localeCompare(b));
+      const max = Math.max(1, ...Object.values(pts));
+      const done = upToIdx >= d.totalSteps - 2;
+      const justName = scoreSteps > 0 ? d.steps[Math.min(scoreSteps - 1, d.steps.length - 1)]?.name : null;
+
+      const rows = new Map([...document.querySelectorAll('.ball-row')]
+        .map(el => [el.getAttribute('data-q'), el]));
+      order.forEach((n, r) => {
+        const el = rows.get(n);
+        if (!el) return;
+        el.style.transform = `translateY(${r * d.rowH}px)`;
+        el.querySelector('.ball-rank').textContent = scoreSteps ? r + 1 : '–';
+        el.querySelector('.ball-bar i').style.width = `${Math.round((pts[n] / max) * 100)}%`;
+        el.querySelector('.ball-pts').textContent = pts[n];
+        el.classList.toggle('ball-scored', !!justName && n === justName && !done);
+        el.classList.toggle('ball-top', done && r === 0);
+        el.classList.toggle('ball-btm', done && r >= order.length - 2);
+      });
+
+      const count = document.getElementById('ball-count');
+      if (count) count.textContent = `${scoreSteps} / ${d.steps.length} scores`;
+    };
+  }
+
+  return `<style>${CHAL_CSS}${BALL_CSS}</style>${_shell(
+    `<div class="dr-fam dr-chal dr-chal-ball ball">${ambientFor('ball')}${html.join('')}</div>`, ep, {
+      phase: 'stage', title: ch.name || theme, subtitle: 'three looks, one queen',
+      sidebar: board,
+    })}${_controls(sfx, totalSteps, ep.num)}`;
+}
+
+function _derivePaddleScores(lookScore, numJudges, name, lookIdx) {
+  const n = numJudges || 3;
+  const base = Math.max(0, Math.min(10, lookScore));
+  const scores = [];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  for (let j = 0; j < n; j++) {
+    const seed = Math.abs(hash * 31 + j * 17 + lookIdx * 7);
+    const wobble = ((seed % 30) - 15) / 10;
+    scores.push(Math.max(0, Math.min(10, Math.round(base + wobble))));
+  }
+  return scores;
+}
+
+function _ballSidebarPanel(running, cumPts, ep, stepNum, isFinal = false) {
+  const sorted = [...running]
+    .map(n => ({ n, p: cumPts[n] || 0 }))
+    .sort((a, b) => b.p - a.p);
+  return `<h4 class="dr-disp">${isFinal ? 'Final scores' : 'Scoreboard'}</h4>${
+    sorted.map(({ n, p }) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
+      <div><div class="dr-nm">${esc(n)}</div></div>
+      <span class="dr-chip ${p >= 50 ? 'dr-c-win' : p >= 30 ? 'dr-c-high' : p >= 15 ? 'dr-c-safe' : 'dr-c-low'}">${p}</span>
+    </div>`).join('')}`;
 }
 
 /* ── the screens ────────────────────────────────────────────────── */
@@ -1642,6 +1941,7 @@ const ambientFor = id => `<div class="dr-set dr-set-${id}">${skinFor(id).props}<
 
 export function rpBuildMaxi(row) {
   if (row?.dr?.tournament) return rpBuildTournament(row);
+  if (row?.dr?.challenge?.id === 'ball') return rpBuildBall(row);
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
   const perfs = row?.dr?.performances || {};

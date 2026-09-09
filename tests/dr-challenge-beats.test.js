@@ -71,6 +71,7 @@ describe('the schema', () => {
   });
 
   it('never uses {b}, because nothing here is a pair beat', () => {
+    const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal']);
     for (const b of CHALLENGE_BEATS) {
       for (const t of b.tiers) {
         for (const l of t.lines) {
@@ -78,7 +79,16 @@ describe('the schema', () => {
           if (b.speaker !== 'host') {
             expect(l, `${b.id}/${t.id} has no host but uses {c}`).not.toMatch(/\{c\}/);
           }
-          const bad = l.match(/\{(?!a\}|c\})[^}]*\}/);
+          /* `{m}` IS WHOEVER RAN THE ROOM, and only three beats have one —
+             the booth, the shoot and the rehearsal. Allowed there and banned
+             everywhere else on purpose: a `{m}` in a beat with no mentor
+             renders as nothing, which is a sentence with a hole in it. */
+          if (!MENTORED.has(b.id)) {
+            expect(l, `${b.id}/${t.id} uses {m} but has no mentor`).not.toMatch(/\{m\}/);
+          }
+          const bad = MENTORED.has(b.id)
+            ? l.match(/\{(?!a\}|c\}|m\})[^}]*\}/)
+            : l.match(/\{(?!a\}|c\})[^}]*\}/);
           expect(bad, `${b.id}/${t.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
         }
       }

@@ -89,6 +89,9 @@ describe('the maxi', () => {
       // From the CATALOGUE, which is where the stage lives — the row's own
       // challenge object does not carry it, so reading it there silently
       // treated every challenge as a main-stage one.
+      // The ball has its own screen with a different step structure — its
+      // own test below covers it.
+      if (row.dr.challenge?.id === 'ball') continue;
       const sfx = maxiById(row.dr.challenge?.id)?.stage === 'pre' ? 'maxi' : 'maxistage';
       // String.raw: in a plain template literal that \d is a JavaScript
       // escape and the pattern becomes "d+", which matches nothing.

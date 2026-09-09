@@ -106,7 +106,15 @@ const pick = (lines, rng, used = null, key = '') => {
   return chosen;
 };
 
-const fill = (line, { a, b, j, s, c, k, d, e, p, o, y } = {}) => (line || '')
+/* ── EVERY PLACEHOLDER THIS FILE KNOWS ──
+   Destructured, so a key the caller passes and this list does not name is
+   silently dropped and its `{x}` ships to the screen verbatim. That happened
+   the day `{m}` was added: the mentor's name was handed in correctly, the
+   portrait resolved correctly, and every line would have printed "and {m}".
+   tests/dr-placeholders.test.js is the guard — it renders real seasons and
+   fails on any `{x}` that survives into a scene. */
+const fill = (line, { a, b, j, s, c, k, d, e, p, o, y, m } = {}) => (line || '')
+  .replace(/\{m\}/g, m || '')
   .replace(/\{a\}/g, a || '')
   .replace(/\{b\}/g, b || '')
   .replace(/\{j\}/g, j || '')

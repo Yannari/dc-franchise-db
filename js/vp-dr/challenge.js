@@ -671,10 +671,46 @@ function detailFor(id, perf) {
     case 'acting':
       return `<div class="dr-sub"><b>${esc(d.part || '—')}</b> in ${esc(d.script || '')}${
         d.dropped ? '<span class="dr-tag dr-t-warn">dropped a line</span>' : ''}</div>`;
-    case 'girl-group': case 'music-video': case 'rusical': case 'singing': case 'rumix':
-      return `<div class="dr-sub">${perf.role ? `${esc(perf.role)} · ` : ''}${
-        d.teamWon ? '<span class="dr-tag dr-t-good">winning team</span>' : 'team'}</div>
-        ${marks([d.verse, d.teamMean], ['her verse', 'the team'])}`;
+    /* ── THE VERSE, AND THE SHOOT ──
+       Both used to render out of the girl group case below, because both used
+       to BE the girl group: one module served all three. They are `format:
+       'cast'` — one room, one track — so `d.teamWon` was `ti === bestTeam`
+       with a single team, and every queen on the screen wore a WINNING TEAM
+       tag on a challenge that has no teams to win. Their own modules now
+       compute their own detail, and it is the detail the night is actually
+       about. */
+    case 'rumix':
+      return `<div class="dr-sub">verse ${esc(d.slot ?? '—')}${
+        d.slotKind ? ` · ${esc(d.slotKind)}` : ''}${
+        d.hook ? '<span class="dr-tag dr-t-good">hook</span>' : ''}${
+        d.filler ? `<span class="dr-tag dr-t-warn">${esc(d.filler)} filler bar${
+          d.filler === 1 ? '' : 's'}</span>` : ''}</div>
+        ${marks(d.bars || [], (d.bars || []).map((_, i) => `bar ${i + 1}`))}
+        ${marks([d.booth, d.live], ['on tape', 'live'])}`;
+    case 'music-video':
+      return `<div class="dr-sub"><b>${esc(d.part || '—')}</b>${
+        d.takes ? ` · ${esc(d.takes)} take${d.takes === 1 ? '' : 's'}` : ''}${
+        d.findable === false
+          ? '<span class="dr-tag dr-t-warn">lost in the background</span>' : ''}${
+        Number(d.impression) >= 0.45
+          ? `<span class="dr-tag dr-t-good">the director’s pick</span>`
+          : Number(d.impression) <= -0.45
+            ? '<span class="dr-tag dr-t-warn">a bad day on set</span>' : ''}</div>`;
+    case 'girl-group': case 'rusical': case 'singing': {
+      /* ONLY SAY TEAM WHEN THERE IS A TEAM, and only print a mark that has a
+         number behind it. The Rusical and the singing challenge are also
+         whole-cast, and they carry neither `verse` nor `teamMean` — so this
+         line printed the word "team" and two empty marks over both of them.
+         The girl group genuinely has teams and is unchanged. */
+      const onATeam = (d.teamMean !== undefined && d.teamMean !== null);
+      const vals = [d.verse, onATeam ? d.teamMean : undefined];
+      const labs = ['her verse', 'the team'];
+      const keep = vals.map((v, i) => [v, labs[i]]).filter(([v]) => Number.isFinite(Number(v)));
+      return `<div class="dr-sub">${perf.role ? `${esc(perf.role)}` : ''}${
+        onATeam ? `${perf.role ? ' · ' : ''}${
+          d.teamWon ? '<span class="dr-tag dr-t-good">winning team</span>' : 'team'}` : ''}</div>
+        ${marks(keep.map(x => x[0]), keep.map(x => x[1]))}`;
+    }
 
     /* ── THE NINE THAT HAD NO PANEL ──
        Ten types were rendered and nine were not, and every one of those nine
@@ -1326,7 +1362,8 @@ export function rpBuildChoice(row) {
 export function rpBuildPrep(row) {
   const ep = epOf(row);
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'prep' && s.text);
-  if (!scenes.length) return '';
+  const hasChoreo = !!_sceneData(row, 'choreographer-pick')?.choreographers;
+  if (!scenes.length && !hasChoreo) return '';
 
   const isWalk = sc => /walkthrough/.test(sc.kind || '');
 
@@ -1341,6 +1378,34 @@ export function rpBuildPrep(row) {
      Order is preserved — the stops are consecutive in the scene list, so a
      merged card never straddles something that happened in between. */
   const groups = [];
+
+  /* ── CHOREOGRAPHER PICK ──
+     The girl group's prep starts with each team choosing a choreographer.
+     Rendered as one card per team at the top of the prep screen. */
+  const choreoData = _sceneData(row, 'choreographer-pick');
+  if (choreoData?.choreographers) {
+    const ca = row?.dr?.assignment || {};
+    const ctNames = ca.teamNames || [];
+    for (const [choreo] of Object.entries(choreoData.choreographers)) {
+      const ti = (ca.teams || []).findIndex(t => t.includes(choreo));
+      const label = ctNames[ti] || `Team ${ti + 1}`;
+      const choreoEvt = (row?.dr?.scenes || []).find(s =>
+        s.kind === 'maxi:choreographer' && s.data?.players?.[0] === choreo);
+      const idx = groups.length;
+      groups.push({ walk: false, items: [], custom:
+        `<div class="dr-step" id="dr-step-prep-${idx}">
+          <div class="dr-panel dr-a-bond dr-card dr-k-solo">
+            ${_portrait(choreo, ep, { size: 54, station: true })}
+            <div>
+              <h3 class="dr-disp">${esc(choreo)}
+                <span class="dr-took-tag">choreographer &middot; ${esc(label)}</span></h3>
+              <p>${choreoEvt?.text ? esc(choreoEvt.text)
+          : `${esc(choreo)} takes charge of the choreography for ${esc(label)}.`}</p>
+            </div>
+          </div></div>` });
+    }
+  }
+
   for (const sc of scenes) {
     const last = groups[groups.length - 1];
     if (isWalk(sc) && last && last.walk && last.items.length < 3) last.items.push(sc);
@@ -1348,6 +1413,7 @@ export function rpBuildPrep(row) {
   }
 
   const steps = groups.map((g, i) => {
+    if (g.custom) return g.custom;
     if (!g.walk) return sceneCard(g.items[0], i, 'prep', ep, row);
 
     const stops = g.items.map(sc => {

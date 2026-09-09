@@ -1099,6 +1099,34 @@ window.addEventListener('DOMContentLoaded', () => {
         FRANCHISE_ROSTER = base;
         console.log(`Roster loaded from JSON: ${base.length} players`);
       }
+      /* ── AND THE CAST THAT WAS SAVED BEFORE THE FIELD EXISTED ──
+         `players` is restored from localStorage['simulator_cast'] by
+         js/core.js, and a cast record is a COPY of the roster row taken on the
+         day it was added. So a cast assembled before the drag craft block
+         existed carries no craft, and nothing ever went back for it: the
+         roster could be perfect and the cast builder still drew every queen at
+         a flat five, because it reads the cast and not the roster. The ENGINE
+         reads the same array, so the season ran on flat craft too.
+
+         Backfilled by name, and only where the cast has nothing — a craft line
+         edited on the cast form is this season's decision and outranks the
+         permanent record. Runs after the fetch because that is when there is a
+         roster to copy from. */
+      try {
+        const rosterByName = new Map(FRANCHISE_ROSTER.map(p => [p.name, p]));
+        let filled = 0;
+        for (const pl of (window.players || [])) {
+          if (!pl || pl.drag) continue;
+          const src = rosterByName.get(pl.name);
+          if (src && src.drag) { pl.drag = { ...src.drag }; filled++; }
+        }
+        if (filled) {
+          localStorage.setItem('simulator_cast', JSON.stringify(window.players));
+          console.log(`Cast craft backfilled from the roster for ${filled} player(s)`);
+          try { window.renderCast?.(); } catch { /* the data is right either way */ }
+        }
+      } catch { /* a cast that cannot be read is not a cast to repair */ }
+
       // Anything already drawn from the roster is now out of date.
       //
       // js/cast-ui.js carries a hardcoded copy of the roster — 104 characters,

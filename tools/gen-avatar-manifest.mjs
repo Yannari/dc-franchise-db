@@ -1,5 +1,14 @@
-#!/usr/bin/env node
 // Portrait catalog maintenance.
+//
+// NO SHEBANG, DELIBERATELY. This module is imported by
+// tests/portrait-catalog.test.js, and vitest transforms an imported ESM file by
+// injecting its own imports at the top — which lands them BEFORE the `#!` line
+// and makes the file a parse error. The whole test file then fails to collect,
+// so the catalog guard did not run at all and reported as one red suite that
+// looked like somebody else's problem.
+// It is still run directly everywhere it matters — `npm run avatars:check` and
+// tests/portrait-release-gates.test.js both invoke it as `node tools/...`,
+// which needs no shebang.
 //
 //   node tools/gen-avatar-manifest.mjs --check        validate the catalog
 //   node tools/gen-avatar-manifest.mjs --write-files  regenerate available-files.json

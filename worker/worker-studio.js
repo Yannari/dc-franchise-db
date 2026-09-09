@@ -6,9 +6,21 @@
 //
 //   GET  /api/ping       -> {ok:true, roster:<count>}          (server detection)
 //   GET  /api/avatars    -> {avatars:[<slug>, ...]}            (library picker)
-//   POST /api/character   {roster:{...}, voice:{name,text}, avatar:{slug,dataUri}}
-//        -> upserts franchise_roster.json + voice-profiles.json + assets/avatars/<slug>.png
+//   POST /api/character   {roster:{...}, voice:{name,text}, avatar:{slug,dataUri},
+//                          portraits:[{id,show,label,file,dataUri,makeDefault}],
+//                          removePortraits:[<id>]}
+//        -> upserts franchise_roster.json + voice-profiles.json
+//           + assets/avatars/<slug>.png
+//           + each portrait file, assets/avatars/portrait-catalog.json
+//             and assets/avatars/available-files.json
 //        (requires  Authorization: Bearer <STUDIO_TOKEN>)
+//
+//        THE PORTRAIT HALF MUST MATCH serve.py. The Studio talks to serve.py on
+//        localhost and to this worker on the live site, and this endpoint used
+//        to read roster/voice/avatar and DROP `portraits` — silently, returning
+//        ok:true — so a look authored on the live site uploaded, reported
+//        success and never existed. tests/studio-portraits.test.js holds the
+//        two implementations to the same rules.
 //
 // D1-backed read endpoints (PUBLIC — no token, read-only, safe to call from any page):
 //   GET  /api/leaderboard?stat=wins&limit=20&minSeasons=1
@@ -1803,7 +1815,49 @@ async function writeCharacter(env, payload) {
     result.wrote.push(VOICE_PATH);
   }
 
-  // 3) avatar PNG (optional) — dataUri already carries base64 after the comma
+  /* 3) portraits (optional) — the FILES and their catalog entries, together.
+     Written before the single-avatar path below so a first save that creates
+     the character still registers its extra art, which is the order serve.py
+     uses for the same reason.
+
+     Uploading an image puts it in the repo; the CATALOG is what makes it
+     selectable. Doing both in one save is the whole point — art sitting in the
+     folder that nothing can choose is the failure the old returnee manifest
+     existed to prevent, and it comes back the moment the two steps separate. */
+  const portraits = Array.isArray(payload.portraits) ? payload.portraits : [];
+  const removePortraits = Array.isArray(payload.removePortraits) ? payload.removePortraits : [];
+  if (portraits.length || removePortraits.length) {
+    for (const item of portraits) {
+      const uri = String((item && item.dataUri) || '');
+      const fname = String((item && item.file) || '').trim();
+      // A row that only renames a label arrives without an image, and that is
+      // not an error — the catalog pass below still files it.
+      if (!uri.startsWith('data:image') || !uri.includes(',')) continue;
+      // The filename becomes a path in a git commit, so it is validated here
+      // and not trusted; applyPortraits reports the rejection properly.
+      if (!PORTRAIT_FILE.test(fname)) continue;
+      const b64 = uri.slice(uri.indexOf(',') + 1);
+      const path = `${AVATAR_DIR}/${fname}`;
+      const had = await getFile(env, path);
+      await putFile(env, path, b64, `studio: portrait ${fname} for ${name}`, had && had.sha);
+      result.wrote.push(path);
+    }
+
+    const refs = await portraitRefs(env);
+    const problems = await applyPortraits(env, slug, portraits, removePortraits, refs);
+    result.wrote.push(PORTRAIT_CATALOG);
+    /* Reported rather than raised: the files and the roster row are already
+       written by now, and a silent partial success is how art ends up on disk
+       that nothing can pick. The Studio surfaces each one as a toast. */
+    if (problems.length) result.portraitProblems = problems;
+
+    try {
+      await rewriteAvailableFiles(env);
+      result.wrote.push(AVAILABLE_FILES);
+    } catch (e) { /* the art and the catalog landed; the inventory regenerates */ }
+  }
+
+  // 4) avatar PNG (optional) — dataUri already carries base64 after the comma
   const avatar = payload.avatar || {};
   const dataUri = avatar.dataUri || '';
   if (dataUri.startsWith('data:image') && dataUri.includes(',')) {
@@ -1929,6 +1983,153 @@ async function getJson(env, path, fallback) {
   return f ? decodeJson(f.content) : fallback;
 }
 
+const PORTRAIT_CATALOG = `${AVATAR_DIR}/portrait-catalog.json`;
+const AVAILABLE_FILES = `${AVATAR_DIR}/available-files.json`;
+const PORTRAIT_SHOW_ANY = 'global';
+const PORTRAIT_ID = /^[a-z0-9][a-z0-9-]*$/;
+const PORTRAIT_FILE = /^[a-z0-9][a-z0-9-]*\.(png|webp|jpe?g|gif)$/;
+
+/**
+ * Register a character's looks in assets/avatars/portrait-catalog.json.
+ *
+ * A PORT OF serve.py's `apply_portraits`, rule for rule, and the port is the
+ * whole point: the Studio talks to serve.py on localhost and to this worker on
+ * the live site, and until now only ONE of them implemented portraits. The
+ * worker read `roster`, `voice` and `avatar` and dropped `portraits` on the
+ * floor — silently, returning ok:true — so a look authored on the live site
+ * was uploaded, reported as saved, and never existed. It read as "my returnee
+ * portrait does not save at all", which is exactly what it was.
+ *
+ * The rules live on the server because the browser is not the only writer:
+ *   - a portrait id is STABLE. Changing the file behind a registered id
+ *     rewrites what every season that recorded it already drew, so it is
+ *     refused;
+ *   - a label is free to change, because nothing keys off it;
+ *   - an id a saved season references cannot be removed;
+ *   - `show` must be a key from js/shows.js, or 'global'.
+ *
+ * Returns the list of problems rather than throwing: by the time this runs the
+ * images and the roster row are already written, and a silent partial success
+ * is how art ends up on disk that nothing can pick.
+ */
+async function applyPortraits(env, slug, portraits, removals, refs) {
+  const doc = await getJson(env, PORTRAIT_CATALOG, { schemaVersion: 1, players: {} });
+  if (typeof doc.schemaVersion !== 'number') doc.schemaVersion = 1;
+  if (!doc.players || typeof doc.players !== 'object') doc.players = {};
+  const validShows = new Set([...Object.keys(SHOWS), PORTRAIT_SHOW_ANY]);
+  const problems = [];
+
+  const entry = doc.players[slug] || (doc.players[slug] = { defaults: {}, portraits: [] });
+  if (!entry.defaults || typeof entry.defaults !== 'object') entry.defaults = {};
+  if (!Array.isArray(entry.portraits)) entry.portraits = [];
+  const byId = new Map(entry.portraits.filter(x => x && x.id).map(x => [x.id, x]));
+
+  /* The profile default always exists: it is the character's own portrait, and
+     every other look is measured against it. */
+  if (!byId.has('base')) {
+    const base = { id: 'base', show: PORTRAIT_SHOW_ANY, label: 'Profile default', file: `${slug}.png` };
+    entry.portraits.unshift(base);
+    byId.set('base', base);
+  }
+  if (!entry.defaults[PORTRAIT_SHOW_ANY]) entry.defaults[PORTRAIT_SHOW_ANY] = 'base';
+
+  for (const item of (portraits || [])) {
+    const pid = String((item && item.id) || '').trim().toLowerCase();
+    const show = String((item && item.show) || PORTRAIT_SHOW_ANY).trim();
+    const label = String((item && item.label) || '').trim();
+    const fname = String((item && item.file) || '').trim();
+
+    if (!PORTRAIT_ID.test(pid)) { problems.push(`bad portrait id "${pid}"`); continue; }
+    if (!validShows.has(show)) { problems.push(`${pid}: unknown show "${show}"`); continue; }
+    if (!label) { problems.push(`${pid}: needs a label`); continue; }
+    if (!PORTRAIT_FILE.test(fname)) { problems.push(`${pid}: unsafe filename "${fname}"`); continue; }
+
+    const existing = byId.get(pid);
+    if (existing) {
+      if (existing.file !== fname) {
+        problems.push(`${pid}: already points at ${existing.file} — changing the file behind `
+          + 'a registered portrait rewrites the seasons that used it');
+        continue;
+      }
+      /* Re-filing under another show is allowed and is NOT a history rewrite: a
+         season that used this look recorded the FILE, and the resolver prefers
+         that snapshot, so its screens do not move. What changes is which show's
+         picker offers it from now on — but a default pointing at it from the
+         show it just left would dangle, and validation fails on that. */
+      if (existing.show !== show) {
+        for (const k of Object.keys(entry.defaults)) {
+          if (entry.defaults[k] === pid && k !== show && k !== PORTRAIT_SHOW_ANY) delete entry.defaults[k];
+        }
+      }
+      existing.label = label;
+      existing.show = show;
+    } else {
+      const made = { id: pid, show, label, file: fname };
+      entry.portraits.push(made);
+      byId.set(pid, made);
+    }
+
+    if (item.makeDefault && show !== PORTRAIT_SHOW_ANY) entry.defaults[show] = pid;
+  }
+
+  for (const raw of (removals || [])) {
+    const pid = String(raw || '').trim().toLowerCase();
+    if (pid === 'base') { problems.push('the profile default cannot be removed'); continue; }
+    if (refs.has(`${slug}|${pid}`)) {
+      problems.push(`${pid} is recorded in a saved season and cannot be unregistered`);
+      continue;
+    }
+    entry.portraits = entry.portraits.filter(x => x && x.id !== pid);
+    for (const k of Object.keys(entry.defaults)) {
+      if (entry.defaults[k] === pid && k !== PORTRAIT_SHOW_ANY) delete entry.defaults[k];
+    }
+  }
+
+  const existingCat = await getFile(env, PORTRAIT_CATALOG);
+  await putFile(env, PORTRAIT_CATALOG, encodeJson(doc),
+    `studio: portrait catalog for ${slug}`, existingCat && existingCat.sha);
+  return problems;
+}
+
+/**
+ * Which (slug, portraitId) pairs a saved season already drew.
+ *
+ * A look a season recorded cannot be unregistered — the season's screens would
+ * lose their faces. serve.py reads the season files on disk; here the live
+ * seasons are rows, and `portrait_id` is the column publishSeason writes.
+ * A database without that column is not an error: it means no season has ever
+ * recorded one, and an empty set is the correct answer.
+ */
+async function portraitRefs(env) {
+  const out = new Set();
+  try {
+    const rows = await env.DB.prepare(
+      'SELECT slug, portrait_id FROM appearances WHERE portrait_id IS NOT NULL').all();
+    for (const r of (rows.results || [])) {
+      if (r.slug && r.portrait_id) out.add(`${r.slug}|${r.portrait_id}`);
+    }
+  } catch { /* no column, no references */ }
+  return out;
+}
+
+/**
+ * Regenerate available-files.json from what is actually in the directory.
+ *
+ * The browser treats this inventory as authoritative at runtime: it tells a
+ * registered portrait whose file is missing from one that is merely not loaded
+ * yet, without probing every filename and filling the console with 404s. Art
+ * uploaded but absent from the inventory draws disabled and labelled "Missing
+ * file" while sitting in the repo — so it is rewritten in the same save.
+ */
+async function rewriteAvailableFiles(env) {
+  const files = (await listAvatarFiles(env)).sort();
+  const body = { generatedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), files };
+  const existing = await getFile(env, AVAILABLE_FILES);
+  await putFile(env, AVAILABLE_FILES, encodeJson(body),
+    'studio: available files', existing && existing.sha);
+  return files;
+}
+
 const RETURNEE_MANIFEST = `${AVATAR_DIR}/returnee-manifest.json`;
 
 /**
@@ -1961,6 +2162,24 @@ async function listAvatars(env) {
     .filter(f => f.type === 'file' && /\.png$/i.test(f.name))
     .map(f => f.name.slice(0, -4))
     .sort();
+}
+
+/**
+ * Every image FILE in the avatar directory, extensions included.
+ *
+ * `listAvatars` above answers a different question — it returns slugs, .png
+ * only, because its caller asks "is there art for this character". The
+ * inventory needs the filename as written and every extension the catalog
+ * accepts, or a queen whose look is a .webp reads as missing.
+ */
+async function listAvatarFiles(env) {
+  const r = await fetch(`${ghBase(env)}/${AVATAR_DIR}?ref=${encodeURIComponent(branch(env))}`, { headers: ghHeaders(env) });
+  if (!r.ok) return [];
+  const items = await r.json();
+  if (!Array.isArray(items)) return [];
+  return items
+    .filter(f => f.type === 'file' && /\.(png|webp|jpe?g|gif)$/i.test(f.name))
+    .map(f => f.name);
 }
 
 function httpErr(msg, status) { const e = new Error(msg); e.status = status; return e; }

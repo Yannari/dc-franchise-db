@@ -1172,12 +1172,23 @@ export function renderChallengeBeats({
      mean. A challenge where the HOST hands out parts is not solo: there is a
      call sheet, there are leads and ensemble, and she had no say in which she
      got. `roles` beyond a flat 'standard' is what tells them apart. */
+  /* ── THE MODULE SAYS HOW IT SPLIT THE ROOM, WHEN IT KNOWS ──
+     Inferring it from `teams.length > 1` meant CAPTAINS, always, for any
+     challenge that groups anybody — so the acting challenge, which cuts the
+     room into two casts and then drafts named parts inside each, opened with
+     "Two captains. The host names them and the room splits — the people doing
+     the choosing and the people being chosen." There are no captains on that
+     night and nobody chooses a teammate. The commercial, which pairs the room
+     off, got the same sentence.
+     `assignment.division` is the module's own answer and it wins. The
+     inference stays for the modules that have not been given one. */
   const roleSet = new Set(Object.values(assignment.roles || {}));
   const castNotChosen = assignment.contested === false && roleSet.size > 1;
-  const kind = (assignment.teams || []).length > 1 ? 'captains'
-    : castNotChosen ? 'cast'
-      : (assignment.contested !== false && Object.keys(assignment.picks || {}).length)
-        ? 'draft' : 'solo';
+  const kind = assignment.division
+    || ((assignment.teams || []).length > 1 ? 'captains'
+      : castNotChosen ? 'cast'
+        : (assignment.contested !== false && Object.keys(assignment.picks || {}).length)
+          ? 'draft' : 'solo');
   emit(beatById('the-division'), kind, []);
   /* ── AND WHAT SHE ACTUALLY GOT ──
      Eleven of these fired on one Snatch Game and between them they said "the

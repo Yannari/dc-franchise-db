@@ -199,6 +199,19 @@ export const CHALLENGE_BEATS = [
       /* THE HOST CASTS IT AND NOBODY PICKS ANYTHING. `solo` is the closest
          existing tier and it is still wrong — solo is thirteen queens each
          doing their own thing, this is one production with a call sheet. */
+      /* THE ACTING CHALLENGE AND THE COMMERCIAL. Both were rendering the
+         CAPTAINS tier, because both group the room and the renderer inferred
+         captains from `teams.length > 1` — and neither has one. Acting cuts
+         the cast in two and drafts named PARTS inside each half; the
+         commercial pairs the room off and hands each pair a product. The
+         screen opened "Two captains. The host names them and the room splits
+         — the people doing the choosing and the people being chosen" over a
+         night where nobody chose anybody.
+         Unwritten on purpose: `emit` skips a tier with no lines, so until
+         these are written the screen says nothing about the split, which is
+         better than saying something false about it. */
+      tier('two-casts', 'The room is cut in two, and the parts are fought over inside each half.'),
+      tier('pairs', 'Two by two, and a product each.'),
       tier('cast', 'No draft at all. The host reads out who is playing what.', [
         "No picks. No draft. The host reads the cast list. Every queen hears her part in the same sentence as everybody else — lead, featured, ensemble — and nobody chose any of it. The room takes it in silence because there is nothing to argue with. The call sheet is the call sheet.",
         "The host announces who is playing what and the room listens. No volunteers, no trades, no captain making choices under pressure. She reads the list. One queen gets the lead and did not raise her hand for it. One queen gets the background and could not have stopped it.",

@@ -376,6 +376,29 @@ craft, never softened to be liked.
 
 **16 lines.**
 
+### K. `the-division` — two tiers that were saying the wrong thing
+
+Not a new pool, two new tiers on an existing beat, and they are empty because
+what was there before was FALSE rather than missing.
+
+`the-division` is the once-a-night line that tells the room how it is being
+split. It inferred captains from "this challenge groups people", so the acting
+challenge and the commercial both opened with *"Two captains. The host names
+them and the room splits — the people doing the choosing and the people being
+chosen."* Neither has a captain in it and nobody chooses a teammate on either.
+
+**4 lines each:**
+
+| tier | what it is |
+|---|---|
+| `two-casts` | The acting challenge. The room is cut in two — every script has six parts — and the named parts are fought over inside each half. Not two teams competing: two casts of the same scene. |
+| `pairs` | The commercial. Two by two, and each pair is handed a product with a trap in it. |
+
+Until they are written the screen says nothing about the split, which is the
+right silence: `emit` skips a tier with no lines.
+
+**8 lines.**
+
 ---
 
 ## 4. How to know it worked

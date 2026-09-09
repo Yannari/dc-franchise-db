@@ -60,6 +60,7 @@ export function assign(ctx) {
     return {
       roles: Object.fromEntries(order.map(n => [n, 'standard'])),
       teams: [], order, picks, events: [], form: 'improv',
+      division: 'solo',
       scenes: [{ step: 'choice', kind: 'improv-premises', data: { picks } }],
     };
   }
@@ -82,6 +83,7 @@ export function assign(ctx) {
     return {
       roles: Object.fromEntries(order.map(n => [n, 'standard'])),
       teams, order, picks, events: [], form: 'commercial',
+      division: 'pairs',
       scenes: [{ step: 'choice', kind: 'commercial-products', data: { teams, picks } }],
     };
   }
@@ -118,6 +120,11 @@ export function assign(ctx) {
 
   return {
     roles, teams, order, picks, events, script, form: 'acting',
+    /* WHAT THIS ACTUALLY IS, so js/dr/stage.js does not have to guess it from
+       the shape of `teams` and land on "captains" — there are none here. The
+       room is cut in two because every script has six parts and a twelve-queen
+       room in one cast would be six real parts and six called "Extra 7". */
+    division: teams.length > 1 ? 'two-casts' : 'draft',
     scenes: [{ step: 'choice', kind: 'acting-cast', data: { script: script.name, picks } }],
   };
 }

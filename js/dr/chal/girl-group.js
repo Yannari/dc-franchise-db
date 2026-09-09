@@ -11,7 +11,7 @@
 // block (best = WIN, rest = HIGH) and only the losing team provides BTM2/LOW.
 // Individual scores still carry a nudge (+0.8 / -0.4) so the host bend and
 // within-team ranking reflect how much the team carried or cost each queen.
-import { pickOrder, draftRoles, captainSplit } from '../assign.js';
+import { pickOrder, contestFor, captainSplit } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, ROLE_RANGES, riskFor } from '../perform.js';
@@ -87,6 +87,26 @@ export function pickGroupTheme(rng, teamCount = 1) {
 }
 
 
+/**
+ * Build each queen's preference list for group roles.
+ *
+ * Bold singers want lead. Strong dancers want featured (the choreo-heavy
+ * slot). A queen who is neither reaches for standard — more verse, less
+ * spotlight — and ensemble is nobody's first choice. The list always
+ * contains every available role so `contestFor` never falls through.
+ */
+function rolePreferences(name, players, available, rng) {
+  const d = dragOf(players[name]);
+  const bold = Number(players[name]?.stats?.boldness) || 5;
+  const score = role => {
+    if (role === 'lead')     return d.singing * 0.4 + bold * 0.3 + d.comedy * 0.2 + noise(rng, 1.5);
+    if (role === 'featured') return d.dance * 0.4 + d.singing * 0.3 + bold * 0.15 + noise(rng, 1.5);
+    if (role === 'standard') return (10 - bold) * 0.3 + d.singing * 0.25 + d.comedy * 0.2 + noise(rng, 1.5);
+    return noise(rng, 1.0);
+  };
+  return [...available].sort((a, b) => score(b) - score(a));
+}
+
 export function assign(ctx) {
   const { living, players, rng, miniWinner, mini, bond, maxi } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
@@ -98,41 +118,65 @@ export function assign(ctx) {
 
   if (teamCount === 1) {
     teams = [[...order]];
-  } else if (mini?.buys === 'captain' && miniWinner) {
-    const captains = [miniWinner];
-    const rest = order.filter(n => n !== miniWinner);
-    for (let i = 1; i < teamCount; i++) captains.push(rest.splice(0, 1)[0]);
+  } else {
+    // Captain draft ALWAYS runs for multi-team girl groups. Two (or three)
+    // captains pick teammates in alternating rounds — bonds drive picks,
+    // schemers can dump rivals, and the events carry consequences.
+    const captains = [];
+    if (miniWinner && order.includes(miniWinner)) {
+      captains.push(miniWinner);
+    }
+    const pool = order.filter(n => !captains.includes(n));
+    while (captains.length < teamCount && pool.length) {
+      const boldest = pool.reduce((best, n) => {
+        const b = Number(players[n]?.stats?.boldness) || 5;
+        const s = Number(players[n]?.stats?.social) || 5;
+        return (b + s * 0.5) > (Number(players[best]?.stats?.boldness) || 5)
+          + (Number(players[best]?.stats?.social) || 5) * 0.5 ? n : best;
+      }, pool[0]);
+      captains.push(boldest);
+      pool.splice(pool.indexOf(boldest), 1);
+    }
     const split = captainSplit({ order, captains, players, bond, rng });
     teams = split.teams;
     events.push(...split.events);
-  } else {
-    const size = Math.ceil(order.length / teamCount);
-    teams = [];
-    for (let i = 0; i < teamCount; i++) {
-      teams.push(order.slice(i * size, Math.min((i + 1) * size, order.length)));
-    }
   }
 
-  // Each team drafts its own ladder, so every team has exactly one lead.
-  const roles = {};
-  const picks = {};
-  // The night's sound, and a name per team that falls out of it.
   const theme = pickGroupTheme(rng, teams.length);
   const teamNames = teams.map((_, i) => theme.names[i]);
 
+  // Each team drafts roles via contestFor — queens compete for lead/featured
+  // with real preferences, conflicts, and follow-up events.
+  const roles = {};
+  const picks = {};
   for (const t of teams) {
-    const d = draftRoles({
-      order: order.filter(n => t.includes(n)),
-      roleNames: PART_LADDER.slice(0, t.length), rng, players,
+    const teamOrder = order.filter(n => t.includes(n));
+    const available = PART_LADDER.slice(0, t.length);
+    const choices = {};
+    for (const n of teamOrder) {
+      choices[n] = rolePreferences(n, players, available, rng);
+    }
+    const draft = contestFor({
+      order: teamOrder, choices, players, rng, bond,
+      penaltyScale: 0,
     });
-    Object.assign(roles, d.roles);
-    for (const p of d.picks) picks[p.name] = { ...p, choice: p.role, penalty: 0 };
+    for (const [n, p] of Object.entries(draft.picks)) {
+      const role = String(p.choice).startsWith('leftover-')
+        ? available[available.length - 1] : p.choice;
+      roles[n] = role;
+      picks[n] = { ...p, role, choice: role };
+    }
+    events.push(...draft.events);
   }
 
   return {
     roles, teams, order, picks, events, theme, teamNames,
-    scenes: [{ step: 'choice', kind: 'group-parts',
-      data: { teams, roles, teamNames, track: theme.track, sound: theme.sound } }],
+    scenes: [
+      { step: 'choice', kind: 'team-pick',
+        data: { teams, teamNames, captains: teams.map(t => t[0]) } },
+      { step: 'choice', kind: 'group-parts',
+        data: { teams, roles, teamNames, track: theme.track, sound: theme.sound } },
+    ],
   };
 }
 

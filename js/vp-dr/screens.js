@@ -132,7 +132,7 @@ const SECTIONS = [
        `maxi-announce`, and the host's walkthrough happens mid-build and
        carries `prep`. A kind opener beats a step opener, so listing them here
        reached past their own sections and pulled them into the draft. */
-    opens: ['improv-premises', 'snatch-picks', 'group-parts', 'roast-order',
+    opens: ['team-pick', 'improv-premises', 'snatch-picks', 'group-parts', 'roast-order',
       'makeover-pairs', 'singing-order'],
     /* AND ON THE STEP, which is the difference between this screen existing
        and not. The eight kinds above are markers a challenge MODULE emits, so

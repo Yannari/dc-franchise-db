@@ -267,6 +267,26 @@ export const PICK_VOICES = [
         '{a} is last and {d} is last. A last-picked queen and a last-available position. That combination produces either the most invisible performance of the night or the most surprising one.',
       ]),
     ),
+  kind('group-slots',
+    'A POSITION IN A GIRL GROUP — lead, featured, standard or ensemble. {d} '
+    + 'names the actual slot (Lead, Featured, Standard, Ensemble), not a '
+    + 'character. The prose must know what each one IS: lead has the most verse '
+    + 'and the front of the choreo; featured has a strong slot and room to '
+    + 'stand out; standard is a solid verse and a place in the number; ensemble '
+    + 'is backup — fewest bars, most choreography, smallest spotlight.', P(
+      tier('got-it', 'She got the position she wanted — and {d} is worth wanting.', [
+        '{a} takes {d}. The position she walked in wanting and the position she got. She is already counting bars at her station.',
+      ]),
+      tier('settled', '{d} is not what she came for, but she can build on it.', [
+        '{a} takes {d}. Not the position she wanted. She is recalculating how to make a smaller spotlight look bigger.',
+      ]),
+      tier('left-over', '{d} is what nobody else wanted, and she knows why.', [
+        '{a} is left with {d}. The position the room avoided. She takes it and starts figuring out how to be noticed from the back of the number.',
+      ]),
+      tier('picked-last', 'Picked last. {d} is barely a position.', [
+        'Last pick. {a} takes {d}. The smallest slot in the number. The shortest verse. She has the least to work with and the most to prove.',
+      ]),
+    ),
   kind('partner',
     'A PERSON, not a thing. {d} is another queen — the one she has to make '
     + 'over, or the one she has to face. Everything about her week now depends '
@@ -516,11 +536,14 @@ export const WALKTHROUGH_VOICES = [
  * a draft whose `roles` is null is drafting a PERSON. `assignment: 'none'`
  * challenges return null and never reach the pick pool at all.
  */
+const GROUP_CHALLENGES = new Set(['girl-group', 'rumix', 'music-video']);
+
 export function pickKindFor(challengeId) {
   const c = MAXI_TYPES.find(x => x.id === challengeId);
   if (!c || c.assignment === 'none') return null;
   if (c.roles === 'characters') return 'characters';
   if (c.roles === 'parts') return 'parts';
+  if (GROUP_CHALLENGES.has(c.id)) return 'group-slots';
   if (c.roles === 'slots') return 'slots';
   return 'partner';
 }

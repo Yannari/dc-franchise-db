@@ -5712,12 +5712,19 @@
       "drag": {
         "acting": 9,
         "comedy": 5,
-        "dance": 5,
-        "design": 5,
-        "runway": 5,
-        "lipsync": 5,
-        "singing": 5,
-        "traits": []
+        "dance": 6,
+        "design": 9,
+        "runway": 8,
+        "lipsync": 6,
+        "singing": 3,
+        "style": "fashion",
+        "traits": [
+          "high-concept",
+          "look-queen",
+          "androgynous"
+        ],
+        "voice": "",
+        "family": []
       },
       "age": 25,
       "birthdate": "2001-07-06",

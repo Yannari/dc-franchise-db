@@ -5578,6 +5578,26 @@
         "temperament": 4
       },
       "profileSources": {}
+    },
+    {
+      "name": "Sharon Needles",
+      "slug": "sharon-needles",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "villain",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 7,
+        "social": 6,
+        "strategic": 9,
+        "loyalty": 2,
+        "boldness": 8,
+        "intuition": 8,
+        "temperament": 4
+      },
+      "voice": "Sharon speaks in a smooth, amused tone that makes every conversation feel like a trap. She studies people’s insecurities, disguises insults as compliments, and rarely loses her smile while provoking someone: “Darling, I’m not inside your head—you simply left the door unlocked,” “She has star quality, assuming the star already burned out,” and, when showing her softer side, “I may be a nightmare, but even nightmares know when someone needs protecting.”",
+      "profileSources": {}
     }
   ]
 }

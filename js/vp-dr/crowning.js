@@ -46,7 +46,7 @@
 // The line of plinths is drawn in ALPHABETICAL order for the same reason:
 // placement order would print the result along the top of the screen in the
 // arrangement of the plinths themselves.
-import { _shell, _portrait, _icon } from './style.js';
+import { _shell, _portrait, _icon, _judgePortrait } from './style.js';
 import { _controls } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -226,16 +226,52 @@ export const CROWN_CSS = `
 .cr-n{min-width:22px;font-variant-numeric:tabular-nums;color:#C9A6BC;font-size:15px}
 .cr-record .dr-por{border:1px solid rgba(255,255,255,.2)}
 
+/* ══ THE WINNER MOMENT ══ her portrait, her speech, her final card ══ */
+.cr-winner{text-align:center;padding:40px 24px 36px;position:relative;overflow:hidden;
+  background:radial-gradient(500px 350px at 50% 30%,rgba(255,200,61,.25),transparent 65%),
+    radial-gradient(400px 300px at 50% 80%,rgba(255,61,154,.1),transparent 60%),
+    linear-gradient(180deg,#241a00,#0a0400)}
+.cr-winner::before{content:"";position:absolute;inset:0;
+  background:repeating-conic-gradient(from 0deg at 50% 50%,
+    rgba(255,200,61,.04) 0 10deg,transparent 10deg 20deg);
+  animation:crRays 40s linear infinite}
+@keyframes crRays{to{transform:rotate(360deg)}}
+.cr-winner .dr-por{margin:0 auto;border:4px solid var(--cr-gold);
+  box-shadow:0 0 80px -4px rgba(255,200,61,.9),0 0 140px rgba(255,200,61,.3)}
+.cr-winner-label{display:block;margin-top:18px;font-size:10px;letter-spacing:.36em;
+  text-transform:uppercase;color:var(--cr-gold)}
+.cr-winner-name{display:block;margin-top:8px;font-size:42px;line-height:1.1;
+  color:var(--cr-gold);text-shadow:0 0 40px rgba(255,200,61,.5)}
+.cr-winner-speech{max-width:50ch;margin:18px auto 0;font-family:Didot,'Bodoni MT',Georgia,serif;
+  font-style:italic;font-size:19px;line-height:1.65;color:#fff6fb;text-wrap:pretty}
+.dr-step.dr-vis .cr-winner{animation:crWinIn .8s cubic-bezier(.2,1,.3,1) both}
+@keyframes crWinIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+
+/* ══ THE PRANCE ══ the last line of the season ══ */
+.cr-prance{text-align:center;padding:36px 24px;position:relative;
+  border-top:2px solid rgba(255,200,61,.4);
+  background:linear-gradient(180deg,rgba(255,200,61,.12),transparent 40%,
+    rgba(255,61,154,.06))}
+.cr-prance q{display:block;font-family:Didot,'Bodoni MT',Georgia,serif;font-size:24px;
+  line-height:1.5;color:var(--cr-gold);quotes:none;text-wrap:pretty;max-width:60ch;margin:0 auto}
+.cr-prance-host{display:flex;justify-content:center;margin-bottom:14px}
+.cr-prance-label{display:block;margin-top:6px;font-size:9px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--cr-warm)}
+.dr-step.dr-vis .cr-prance{animation:crPranceIn .6s cubic-bezier(.2,.9,.3,1) both}
+@keyframes crPranceIn{from{opacity:0;transform:scaleX(.88)}to{opacity:1;transform:none}}
+
 @media(max-width:760px){
   .cr-stage{position:static}
   .cr-plate{width:112px;padding:11px 8px 9px}
   .cr-name{font-size:15px}
   .cr-said q{font-size:18px}
+  .cr-winner-name{font-size:30px}
 }
 @media(prefers-reduced-motion:reduce){
   .cr-plate,.cr-plate::before,.cr-crown,.cr-sweep,.cr-conf i,
   .dr-step.dr-vis .cr-said,.dr-step.dr-vis .cr-told,.dr-step.dr-vis .cr-hold,
-  .cr-stage.flash{animation:none;transition:none}
+  .cr-stage.flash,.cr-winner::before,
+  .dr-step.dr-vis .cr-winner,.dr-step.dr-vis .cr-prance{animation:none;transition:none}
 }
 `;
 
@@ -357,8 +393,26 @@ export function rpBuildCrowning(row) {
           <b class="dr-disp">${esc(who || '')}</b></div>
       </div>
       <div class="cr-said" style="border-top:0"><q>${esc(sc.text)}</q></div>`;
+    } else if (beat === 'crown-speech' || beat === 'finale-speech') {
+      body = `<div class="cr-winner">
+        ${who ? _portrait(who, ep, { size: 160, station: true }) : ''}
+        <span class="cr-winner-label dr-disp">America's Next Drag Superstar</span>
+        <b class="cr-winner-name dr-disp">${esc(who || '')}</b>
+        <p class="cr-winner-speech">${esc(sc.text)}</p>
+      </div>`;
+    } else if (beat === 'crown-prance' || beat === 'finale-prance') {
+      body = `<div class="cr-prance">
+        <div class="cr-prance-host">
+          ${_judgePortrait('rupaul', { stage: true, size: 56 })}
+        </div>
+        <span class="cr-prance-label">The host</span>
+        <q>${esc(sc.text)}</q>
+      </div>`;
     } else if (SPOKEN.has(beat)) {
       body = `<div class="cr-said${NAME_BEATS.has(beat) ? ' cr-name-beat' : ''}">
+        <div style="display:flex;justify-content:center;margin-bottom:10px">
+          ${_judgePortrait('rupaul', { stage: true, size: 44 })}
+        </div>
         <span class="cr-who">The host</span><q>${esc(sc.text)}</q></div>`;
     } else {
       body = `<div class="cr-told">

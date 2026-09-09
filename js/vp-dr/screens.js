@@ -35,6 +35,7 @@ import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } fr
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
+import { rpBuildShowcase, rpBuildInterview, rpBuildCut, rpBuildCrownLipSync } from './finale-screens.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -471,6 +472,10 @@ const BUILDERS = {
   // `finale-open` is a marker with no prose, so the generic renderer drew
   // this screen empty on every finale.
   'dr-finale-open': rpBuildFinaleOpen,
+  'dr-finale-showcase': rpBuildShowcase,
+  'dr-finale-interview': rpBuildInterview,
+  'dr-finale-cut': rpBuildCut,
+  'dr-finale-lipsync': rpBuildCrownLipSync,
   'dr-smackdown': rpBuildSmackdown,
 };
 

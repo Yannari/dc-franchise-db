@@ -5762,7 +5762,25 @@
       "occupation": "LGBTQ+ community organizer and tattoo artist",
       "descriptor": "The Radical Rookie",
       "backstory": "iot spent years organizing queer-rights demonstrations, producing benefit concerts, creating political zines, and raising money for LGBTQ+ youth housing and healthcare. They had performed spoken-word pieces and hosted underground events but never considered themselves a drag queen. After appearing in drag at a community fundraiser, Riot discovered that performance could carry their message further than a speech alone. They began developing a full drag character only two years before joining the show. Riot enters the competition to understand what being a drag queen means to them and to place the causes they have fought for under a national spotlight.",
-      "personality": "Riot is principled, courageous, stubborn, and deeply protective of marginalized people. Their years of organizing make them mentally resilient and comfortable confronting authority, but they can turn ordinary disagreements into moral debates. Riot performs lip syncs with genuine anger and emotional conviction, while their DIY background helps in unconventional design challenges. However, they lack polish, formal dance training, vocal ability, and experience with mainstream drag expectations. They may criticize challenges they consider shallow, irritating queens who believe Riot takes the competition too seriously. Beneath their hardened exterior is a newcomer sincerely searching for their place in drag."
+      "personality": "Riot is principled, courageous, stubborn, and deeply protective of marginalized people. Their years of organizing make them mentally resilient and comfortable confronting authority, but they can turn ordinary disagreements into moral debates. Riot performs lip syncs with genuine anger and emotional conviction, while their DIY background helps in unconventional design challenges. However, they lack polish, formal dance training, vocal ability, and experience with mainstream drag expectations. They may criticize challenges they consider shallow, irritating queens who believe Riot takes the competition too seriously. Beneath their hardened exterior is a newcomer sincerely searching for their place in drag.",
+      "voice": "Riot speaks with the raw confidence of a protest leader holding a microphone in a crowded basement venue. Their delivery is direct, passionate, and occasionally confrontational, with little patience for empty language or fake activism: “My drag isn’t here to make power comfortable,” “If my look bothers you, good—it means you finally noticed something,” and, when challenged, “I’ve been fighting for queer people longer than you’ve been fighting for camera time.”",
+      "drag": {
+        "acting": 3,
+        "comedy": 5,
+        "dance": 4,
+        "design": 3,
+        "runway": 4,
+        "lipsync": 6,
+        "singing": 4,
+        "style": "club-kid",
+        "traits": [
+          "punk",
+          "androgynous",
+          "narrator"
+        ],
+        "voice": "Riot speaks with the raw confidence of a protest leader holding a microphone in a crowded basement venue. Their delivery is direct, passionate, and occasionally confrontational, with little patience for empty language or fake activism: “My drag isn’t here to make power comfortable,” “If my look bothers you, good—it means you finally noticed something,” and, when challenged, “I’ve been fighting for queer people longer than you’ve been fighting for camera time.”",
+        "family": []
+      }
     },
     {
       "name": "Sharon Needles",

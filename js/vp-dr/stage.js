@@ -309,7 +309,7 @@ export const STAGE_CSS = `
 @media(prefers-reduced-motion:reduce){.dr-shake{animation:none}}
 
 /* ══ VISUAL-NOVEL MAIN STAGE ══ dialogue boxes with speaker portraits ══ */
-.dr-vn-ms{position:relative;margin:14px 0;padding:16px 20px 16px 110px;min-height:96px;
+.dr-vn-ms{position:relative;margin:14px 0;padding:18px 22px 18px 120px;min-height:104px;
   border-left:3px solid var(--dr-role,#FFC83D);border-radius:3px;
   background:linear-gradient(90deg,var(--dr-role-bg,rgba(255,200,61,.08)),transparent 48%),
     var(--dr-panel,rgba(10,2,7,.8));
@@ -319,11 +319,11 @@ export const STAGE_CSS = `
 .dr-vn-ms .dr-bust{position:absolute;left:12px;top:50%;transform:translateY(-50%)}
 .dr-vn-ms .dr-por,.dr-vn-ms .dr-initials{border:2px solid var(--dr-role,#FFC83D);
   box-shadow:0 0 18px -4px var(--dr-role-glow,rgba(255,200,61,.45))}
-.dr-vn-ms-plate{display:inline-block;padding:3px 14px 3px 10px;margin-bottom:8px;
-  font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+.dr-vn-ms-plate{display:inline-block;padding:4px 16px 4px 11px;margin-bottom:9px;
+  font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
   color:#1a0a02;background:var(--dr-role,#FFC83D);
   clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
-.dr-vn-ms p{margin:0;color:#f4e3ed;font-size:15px;line-height:1.65;text-wrap:pretty;
+.dr-vn-ms p{margin:0;color:#f4e3ed;font-size:18px;line-height:1.6;text-wrap:pretty;
   font-family:Didot,'Bodoni MT',Georgia,serif}
 .dr-vn-ms-host{--dr-role:#FFC83D;--dr-role-bg:rgba(255,200,61,.08);
   --dr-role-glow:rgba(255,200,61,.40)}
@@ -397,18 +397,18 @@ export function rpBuildMainStage(row) {
     let portrait = '';
     let plate = '';
     if (speaker === 'host') {
-      portrait = _judgePortrait('rupaul', { stage: true, size: 72 });
+      portrait = _judgePortrait('rupaul', { stage: true, size: 82 });
       plate = 'RuPaul';
     } else if (speaker === 'judge') {
       const jid = sc.data?.judge;
       if (jid) {
-        portrait = _gPor(jid, { stage: true, size: 72 });
+        portrait = _gPor(jid, { stage: true, size: 82 });
         plate = guest && String(jid).startsWith('guest:') ? guest.name : judgeName(jid);
       }
     } else if (speaker === 'queen') {
       const q = (sc.data?.players || [])[0];
       if (q) {
-        portrait = _portrait(q, ep, { size: 72 });
+        portrait = _portrait(q, ep, { size: 82 });
         plate = q;
       }
     }

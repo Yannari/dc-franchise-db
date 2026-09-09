@@ -780,128 +780,187 @@ function perfCard(name, perf, i, suffix, ep, id) {
 const BALL_ROW_H = 38;
 
 const BALL_CSS = `
-/* ── THE BALLROOM ── a gilded hall with a lit runway ── */
-.ball{position:relative;padding:24px 16px 30px;border-radius:6px;
+/* ═══════════════════════════════════════════════════════
+   THE MAIN STAGE — blue star-panel walls, silver runway,
+   dramatic spotlights, crystalline glam
+   ═══════════════════════════════════════════════════════ */
+
+/* ── THE STAGE — blue-lit star panels + reflective floor ── */
+.ball{position:relative;padding:28px 16px 34px;border-radius:6px;overflow:hidden;
+  background:linear-gradient(180deg,#0a0820 0%,#0d1040 35%,#10143a 60%,#080618 100%)}
+/* star-panel wall — a grid of lit squares behind everything */
+.ball::before{content:"";position:absolute;inset:0;opacity:.35;pointer-events:none;
   background:
-    radial-gradient(80% 45% at 50% 100%,rgba(255,210,63,.18),transparent 70%),
-    radial-gradient(120% 60% at 50% 0%,rgba(240,171,252,.14),transparent 55%),
-    linear-gradient(180deg,#120804,#080402)}
+    radial-gradient(circle 3px at 32px 32px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 96px 32px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 160px 32px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 224px 32px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 288px 32px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 32px 96px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 96px 96px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 160px 96px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 224px 96px,rgba(140,180,255,.9),transparent 4px),
+    radial-gradient(circle 3px at 288px 96px,rgba(140,180,255,.9),transparent 4px),
+    repeating-linear-gradient(0deg,rgba(80,120,200,.12) 0 1px,transparent 1px 64px),
+    repeating-linear-gradient(90deg,rgba(80,120,200,.12) 0 1px,transparent 1px 64px)}
+/* runway spotlight wash from below */
+.ball::after{content:"";position:absolute;bottom:0;left:0;right:0;height:55%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 40% 70% at 50% 100%,rgba(180,200,255,.1),transparent),
+    radial-gradient(ellipse 80% 40% at 50% 100%,rgba(255,215,80,.06),transparent),
+    linear-gradient(0deg,rgba(200,210,255,.04),transparent 60%)}
 
-/* ── CATEGORY BANNER — the runway announcement ── */
-.ball-cat{position:relative;max-width:1000px;margin:6px auto 20px;padding:18px 20px 14px;
-  border-radius:10px;overflow:hidden;
-  background:linear-gradient(135deg,rgba(255,210,63,.08),rgba(18,8,4,.95));
-  border:1px solid rgba(255,210,63,.4);
-  box-shadow:0 0 50px rgba(255,210,63,.18),inset 0 0 60px rgba(255,210,63,.06)}
+/* ── CATEGORY BANNER — the runway call-out, lit from behind ── */
+.ball-cat{position:relative;z-index:1;max-width:1000px;margin:8px auto 22px;
+  padding:22px 24px 18px;border-radius:12px;overflow:hidden;
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 0%,rgba(80,120,220,.2),transparent 70%),
+    linear-gradient(145deg,rgba(20,30,80,.92),rgba(10,14,50,.96));
+  border:1px solid rgba(100,140,255,.35);
+  box-shadow:0 0 60px rgba(80,130,255,.2),0 0 120px rgba(80,130,255,.08),
+    inset 0 1px 0 rgba(180,200,255,.12)}
+/* shimmer stripe across the banner */
 .ball-cat::before{content:"";position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,210,63,.06) 40%,rgba(255,210,63,.06) 60%,transparent);
+  background:linear-gradient(105deg,transparent 30%,rgba(180,210,255,.06) 45%,
+    rgba(180,210,255,.06) 55%,transparent 70%);
   pointer-events:none}
-.ball-cat-num{position:absolute;top:8px;right:14px;
-  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;
-  text-transform:uppercase;color:rgba(240,171,252,.7)}
-.ball-cat h3{margin:0 0 3px;font-family:'Anton','Arial Narrow Bold',sans-serif;
-  font-size:clamp(18px,3vw,26px);letter-spacing:.08em;text-transform:uppercase;
-  color:#FFD23F;text-shadow:0 0 18px rgba(255,210,63,.7),0 0 50px rgba(255,210,63,.3)}
-.ball-cat small{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;
-  text-transform:uppercase;color:#f0abfc}
+.ball-cat-num{position:absolute;top:10px;right:16px;
+  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(140,180,255,.6)}
+.ball-cat h3{margin:0 0 4px;font-family:'Anton','Arial Narrow Bold',sans-serif;
+  font-size:clamp(20px,3.5vw,30px);letter-spacing:.08em;text-transform:uppercase;
+  color:#FFD23F;
+  text-shadow:0 0 20px rgba(255,210,63,.8),0 0 60px rgba(255,210,63,.3),
+    0 2px 4px rgba(0,0,0,.5)}
+.ball-cat small{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(180,200,255,.7)}
 .ball-cat-bar{position:absolute;bottom:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,transparent,#FFD23F 20%,#f0abfc 80%,transparent)}
+  background:linear-gradient(90deg,transparent,rgba(100,160,255,.6) 15%,#FFD23F 50%,
+    rgba(100,160,255,.6) 85%,transparent)}
 
-/* ── QUEEN WALK CARD — portrait, name, paddles, prose ── */
-.ball-walk{position:relative;max-width:1000px;margin:0 auto 14px;
-  display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start;
-  padding:14px 16px;border-radius:10px;
-  background:linear-gradient(145deg,rgba(240,171,252,.06),rgba(10,5,2,.88));
-  border:1px solid rgba(240,171,252,.16);
-  box-shadow:0 4px 20px rgba(0,0,0,.4)}
+/* ── QUEEN WALK CARD — she hits the runway ── */
+.ball-walk{position:relative;z-index:1;max-width:1000px;margin:0 auto 16px;
+  display:grid;grid-template-columns:72px 1fr;gap:16px;align-items:start;
+  padding:16px 18px 14px;border-radius:12px;
+  background:
+    linear-gradient(160deg,rgba(40,60,140,.18),rgba(8,10,30,.92) 40%),
+    linear-gradient(0deg,rgba(180,200,255,.03),transparent 40%);
+  border:1px solid rgba(100,140,255,.18);
+  box-shadow:0 6px 30px rgba(0,0,20,.5),0 0 1px rgba(140,180,255,.3)}
+/* left accent — the runway edge light */
 .ball-walk::after{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;
-  border-radius:10px 0 0 10px;
-  background:linear-gradient(180deg,#FFD23F,#f0abfc)}
+  border-radius:12px 0 0 12px;
+  background:linear-gradient(180deg,rgba(100,160,255,.8),#FFD23F,rgba(100,160,255,.5))}
 .ball-walk .dr-por,.ball-walk .dr-initials{border-radius:50%;
-  border:2px solid rgba(255,210,63,.45);box-shadow:0 0 16px rgba(255,210,63,.3)}
-.ball-walk h4{margin:0 0 8px;font-size:14px;color:#fff;font-weight:700;letter-spacing:.02em}
+  border:2px solid rgba(180,200,255,.4);
+  box-shadow:0 0 20px rgba(80,130,255,.35),0 0 40px rgba(80,130,255,.15)}
+.ball-walk h4{margin:0 0 10px;font-size:15px;color:#fff;font-weight:700;
+  letter-spacing:.03em;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
-/* ── SCORE PADDLES — flipping golden cards ── */
-.ball-paddles{display:flex;gap:10px;flex-wrap:wrap}
+/* ── SCORE PADDLES — metallic gold cards that flip in ── */
+.ball-paddles{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .ball-paddle{position:relative;display:inline-flex;flex-direction:column;align-items:center;
-  gap:3px;padding:8px 10px 6px;border-radius:8px;min-width:60px;
-  background:linear-gradient(165deg,rgba(255,220,100,.28),rgba(255,180,40,.08));
-  border:1px solid rgba(255,210,63,.5);
-  box-shadow:0 0 20px rgba(255,210,63,.2),inset 0 1px 0 rgba(255,255,255,.12);
-  transform:rotateY(90deg);animation:ballFlip .45s cubic-bezier(.2,1.3,.4,1) forwards}
+  gap:3px;padding:10px 12px 7px;border-radius:10px;min-width:66px;
+  background:
+    linear-gradient(170deg,rgba(255,225,120,.3),rgba(255,190,50,.1) 40%,rgba(255,170,30,.05));
+  border:1px solid rgba(255,210,63,.55);
+  box-shadow:0 0 24px rgba(255,210,63,.25),0 0 50px rgba(255,210,63,.08),
+    inset 0 1px 0 rgba(255,255,200,.2),inset 0 -1px 0 rgba(0,0,0,.15);
+  transform:rotateY(90deg);animation:ballFlip .5s cubic-bezier(.2,1.3,.4,1) forwards}
 @keyframes ballFlip{to{transform:rotateY(0)}}
-.ball-paddle b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:28px;
+.ball-paddle b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:32px;
   color:#FFD23F;line-height:1;
-  text-shadow:0 0 8px rgba(255,210,63,.9),0 0 24px rgba(255,210,63,.4)}
+  text-shadow:0 0 10px rgba(255,210,63,1),0 0 30px rgba(255,210,63,.5),
+    0 0 60px rgba(255,180,40,.2)}
 .ball-paddle small{font-size:8px;letter-spacing:.08em;text-transform:uppercase;
-  color:#f0abfc;opacity:.85}
-.ball-paddle-sum{display:inline-flex;align-items:baseline;gap:4px;
-  margin-left:6px;padding:4px 10px;border-radius:20px;
-  background:linear-gradient(135deg,rgba(255,210,63,.18),rgba(255,210,63,.06));
-  border:1px solid rgba(255,210,63,.3)}
-.ball-paddle-sum b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:18px;
-  color:#FFD23F;line-height:1}
-.ball-paddle-sum small{font-size:8px;letter-spacing:.1em;color:#f0abfc}
+  color:rgba(180,200,255,.7)}
+/* the total badge */
+.ball-paddle-sum{display:inline-flex;align-items:baseline;gap:5px;
+  margin-left:8px;padding:5px 14px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(255,215,80,.2),rgba(255,200,50,.06));
+  border:1px solid rgba(255,210,63,.4);
+  box-shadow:0 0 16px rgba(255,210,63,.15)}
+.ball-paddle-sum b{font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:20px;
+  color:#FFD23F;line-height:1;text-shadow:0 0 8px rgba(255,210,63,.6)}
+.ball-paddle-sum small{font-size:8px;letter-spacing:.1em;
+  color:rgba(180,200,255,.6)}
 
-.ball-walk .dr-perf-line{margin:10px 0 2px;font-size:12px;line-height:1.55;
-  color:rgba(255,255,255,.82);border-left:2px solid rgba(255,210,63,.3);padding-left:10px}
+/* prose lines — lit-runway accent */
+.ball-walk .dr-perf-line{margin:12px 0 2px;font-size:12.5px;line-height:1.6;
+  color:rgba(220,225,255,.82);
+  border-left:2px solid rgba(100,160,255,.4);padding-left:12px}
 
-/* ── THE SIDEBAR SCOREBOARD ── */
-.ball-board{max-width:1000px;margin:0 auto 12px;border-radius:8px;overflow:hidden;
-  border:1px solid rgba(255,210,63,.28);
-  background:linear-gradient(180deg,rgba(14,8,4,.95),rgba(8,4,2,.98))}
+/* ── THE SIDEBAR SCOREBOARD — chrome + blue glass ── */
+.ball-board{max-width:1000px;margin:0 auto 12px;border-radius:10px;overflow:hidden;
+  border:1px solid rgba(100,140,255,.3);
+  background:linear-gradient(180deg,rgba(10,14,50,.96),rgba(6,8,30,.98));
+  box-shadow:0 4px 24px rgba(0,0,20,.4)}
 .ball-bhead{display:flex;justify-content:space-between;align-items:baseline;
-  padding:9px 13px;border-bottom:1px solid rgba(255,210,63,.22);
-  background:linear-gradient(90deg,rgba(255,210,63,.08),transparent)}
+  padding:10px 14px;border-bottom:1px solid rgba(100,140,255,.22);
+  background:linear-gradient(90deg,rgba(80,120,220,.12),transparent)}
 .ball-bhead h4{margin:0;font-family:'Anton','Arial Narrow Bold',sans-serif;font-size:14px;
-  letter-spacing:.12em;color:#FFD23F;text-transform:uppercase;
-  text-shadow:0 0 10px rgba(255,210,63,.4)}
-.ball-bhead span{font-family:'Space Mono',monospace;font-size:10px;color:#e7c9a4}
+  letter-spacing:.14em;color:#FFD23F;text-transform:uppercase;
+  text-shadow:0 0 12px rgba(255,210,63,.5)}
+.ball-bhead span{font-family:'Space Mono',monospace;font-size:10px;
+  color:rgba(180,200,255,.65)}
 .ball-rows{position:relative;margin:8px 10px 10px}
 .ball-row{position:absolute;left:0;right:0;top:0;height:${BALL_ROW_H - 4}px;
-  display:grid;grid-template-columns:22px 28px auto 2fr 46px;
+  display:grid;grid-template-columns:22px 28px auto 2fr 48px;
   gap:7px;align-items:center;padding:0 6px;border-radius:6px;
   transition:transform .62s cubic-bezier(.34,.9,.3,1),background .3s}
-.ball-rank{font-family:'Space Mono',monospace;font-size:11px;color:#f0abfc;text-align:right;
-  font-weight:700}
+.ball-rank{font-family:'Space Mono',monospace;font-size:11px;
+  color:rgba(140,180,255,.8);text-align:right;font-weight:700}
 .ball-row .dr-por,.ball-row .dr-initials{border-radius:50%;display:block}
-.ball-nm{font-size:11px;color:#fff;font-weight:600;overflow:hidden;
+.ball-nm{font-size:11px;color:rgba(220,225,255,.92);font-weight:600;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
-.ball-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.ball-bar{height:8px;border-radius:4px;
+  background:rgba(80,120,200,.1);overflow:hidden}
 .ball-bar i{display:block;height:100%;border-radius:4px;
-  background:linear-gradient(90deg,#f0abfc,#FFD23F);
-  box-shadow:0 0 8px rgba(255,210,63,.4);
+  background:linear-gradient(90deg,rgba(100,160,255,.7),#FFD23F);
+  box-shadow:0 0 10px rgba(100,160,255,.4);
   transition:width .55s cubic-bezier(.2,.9,.25,1)}
-.ball-pts{font-family:'Space Mono',monospace;font-size:13px;color:#FFD9C4;
-  text-align:right;font-weight:700}
-.ball-row.ball-scored{background:linear-gradient(90deg,rgba(255,210,63,.25),transparent)}
+.ball-pts{font-family:'Space Mono',monospace;font-size:13px;
+  color:rgba(220,225,255,.85);text-align:right;font-weight:700}
+/* just scored — golden flash */
+.ball-row.ball-scored{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent)}
 .ball-row.ball-scored .ball-pts{color:#FFD23F;animation:ballTick .45s ease-out}
-@keyframes ballTick{0%{transform:scale(1)}45%{transform:scale(1.6)}100%{transform:scale(1)}}
-.ball-row.ball-top{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent)}
+@keyframes ballTick{0%{transform:scale(1)}45%{transform:scale(1.7)}100%{transform:scale(1)}}
+/* leader */
+.ball-row.ball-top{background:linear-gradient(90deg,rgba(255,210,63,.18),transparent)}
 .ball-row.ball-top .ball-pts{color:#FFD23F}
 .ball-row.ball-top .ball-rank{color:#FFD23F}
-.ball-row.ball-btm{background:linear-gradient(90deg,rgba(255,41,75,.2),transparent)}
+/* bottom */
+.ball-row.ball-btm{background:linear-gradient(90deg,rgba(255,50,90,.18),transparent)}
 .ball-row.ball-btm .ball-pts{color:#FF6B8A}
 
-/* ── PANEL PLACEMENT — the final word ── */
-.ball-final{max-width:1000px;margin:20px auto;padding:18px;border-radius:10px;
-  background:linear-gradient(145deg,rgba(255,210,63,.1),rgba(10,5,2,.92));
-  border:1px solid rgba(255,210,63,.4);
-  box-shadow:0 0 60px rgba(255,210,63,.12)}
-.ball-final h3{margin:0 0 14px;font-family:'Anton','Arial Narrow Bold',sans-serif;
-  font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#FFD23F;
-  text-shadow:0 0 18px rgba(255,210,63,.7)}
-.ball-final-row{display:grid;grid-template-columns:30px 40px 1fr 52px;
-  gap:10px;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:5px;
-  background:rgba(255,255,255,.02);transition:background .3s}
-.ball-final-row.ball-f-win{background:linear-gradient(90deg,rgba(255,210,63,.22),transparent);
-  border:1px solid rgba(255,210,63,.25)}
+/* ── PANEL PLACEMENT — the winner's spotlight ── */
+.ball-final{position:relative;z-index:1;max-width:1000px;margin:24px auto;
+  padding:20px;border-radius:12px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,210,63,.1),transparent 60%),
+    linear-gradient(160deg,rgba(20,30,80,.9),rgba(8,10,30,.95));
+  border:1px solid rgba(255,210,63,.35);
+  box-shadow:0 0 80px rgba(255,210,63,.1),0 0 40px rgba(80,130,255,.08)}
+.ball-final h3{margin:0 0 16px;font-family:'Anton','Arial Narrow Bold',sans-serif;
+  font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:#FFD23F;
+  text-shadow:0 0 20px rgba(255,210,63,.8),0 0 50px rgba(255,210,63,.3)}
+.ball-final-row{display:grid;grid-template-columns:30px 44px 1fr 54px;
+  gap:10px;align-items:center;padding:10px 12px;border-radius:10px;margin-bottom:6px;
+  background:rgba(40,60,140,.08);transition:background .3s}
+.ball-final-row.ball-f-win{
+  background:linear-gradient(90deg,rgba(255,210,63,.2),rgba(80,120,220,.08));
+  border:1px solid rgba(255,210,63,.3);
+  box-shadow:0 0 30px rgba(255,210,63,.1)}
 .ball-final-row.ball-f-win .ball-final-pos{color:#FFD23F;font-weight:700}
-.ball-final-row.ball-f-btm{background:linear-gradient(90deg,rgba(255,41,75,.15),transparent)}
-.ball-final-row .dr-por,.ball-final-row .dr-initials{border-radius:50%}
-.ball-final-pos{font-family:'Space Mono',monospace;font-size:13px;color:#f0abfc;text-align:right}
+.ball-final-row.ball-f-btm{background:linear-gradient(90deg,rgba(255,50,90,.12),transparent)}
+.ball-final-row .dr-por,.ball-final-row .dr-initials{border-radius:50%;
+  box-shadow:0 0 10px rgba(80,130,255,.2)}
+.ball-final-pos{font-family:'Space Mono',monospace;font-size:13px;
+  color:rgba(140,180,255,.8);text-align:right}
 .ball-final-nm{font-size:13px;color:#fff;font-weight:600}
-.ball-final-sc{font-family:'Space Mono',monospace;font-size:12px;color:#FFD9C4;text-align:right}
+.ball-final-sc{font-family:'Space Mono',monospace;font-size:12px;
+  color:rgba(220,225,255,.75);text-align:right}
 
 @media(prefers-reduced-motion:reduce){
   .ball-row,.ball-bar i,.ball-paddle{transition:none;animation:none;transform:none}

@@ -224,10 +224,30 @@ export const CHALLENGE_BEATS = [
     note: 'The choreographer teaches the number. Who has it by the end of the day.',
     tierBy: 'choreo',
     tiers: [
-      tier('first-pass', 'She has it after one run and spends the rest of the day helping.'),
-      tier('got-there', 'It takes the afternoon and by the end of it she has the number.'),
-      tier('behind-the-count', 'She is a half-count late all day and she knows it.'),
-      tier('still-counting', 'The room moves on without her. She is mouthing numbers.'),
+      tier('first-pass', 'She has it after one run and spends the rest of the day helping.', [
+        '{m} runs the number once and {a} already has the spacing, the timing, and every transition nailed.',
+        '"You are done," {m} tells {a}, and waves her over to help the girl who is still counting her feet.',
+        '{a} picks up the choreo so fast that {m} starts using her as the mirror — the other queens learn it off her body.',
+        '{m} teaches the eight-count once and {a} gives it back clean. He moves on to the next girl and {a} quietly runs it again on her own.',
+      ]),
+      tier('got-there', 'It takes the afternoon and by the end of it she has the number.', [
+        '{a} is a half-beat late for the first hour but {m} stays on her, and by the afternoon run-through she has every count.',
+        '"There it is," {m} says when {a} finally locks the transition. It took her all day but the number is in her body now.',
+        '{m} gives {a} the same correction three times and on the fourth pass she lands it. He nods and moves down the line.',
+        '{a} struggles with the opening eight-count all morning, but {m} sees the work and by the end of the day she is hitting every mark.',
+      ]),
+      tier('behind-the-count', 'She is a half-count late all day and she knows it.', [
+        '{a} is a half-count behind every transition and {m} keeps clapping the beat louder, right next to her ear.',
+        '"Where are you?" {m} asks {a} on the third run-through, and she does not have an answer because she is still finding one.',
+        '{m} watches {a} miss the same pickup for the fifth time and his face says everything his mouth does not.',
+        '{a} knows the steps but her body is late to every single one of them, and {m} is running out of afternoon to fix it.',
+      ]),
+      tier('still-counting', 'The room moves on without her. She is mouthing numbers.', [
+        'The rest of the room is running the number and {a} is in the back mouthing counts. {m} sees it and says nothing.',
+        '"Five, six — {a}, look up," {m} says, but she is staring at the floor counting her feet and the music is already past her.',
+        '{m} moves the group to the next section and {a} is still rehearsing the first one. The gap is getting wider every hour.',
+        '{a} asks {m} to walk her through it one more time and he does, but the room has moved on and she is learning yesterday.',
+      ]),
     ],
   },
   {
@@ -251,7 +271,7 @@ export const CHALLENGE_BEATS = [
       tier('clean-session', 'In, done, out. No drama and no rescue needed.', [
         "{a} walks in, puts on the headphones, and records. Three takes. {m} listens, plays back the third, and says \"That is it.\" {a} is out of the booth in ten minutes. No crisis. No rescue. The queens waiting outside do not even look up.",
         "\"You know this verse,\" {m} says after take one. She records two more anyway — because that is what a session is — and {a} is done. Clean. Professional. The tape sounds exactly like the verse she wrote, and {m} does not need to fix what was never broken.",
-        "A quick session. {m} plays the track, {a} delivers the bars, and {m} gives one note: \"Breathe after the second line, not before it.\" {a} adjusts. Done. {m} moves on to the next queen. Some sessions are a rescue mission. This one was paperwork.",
+        "A quick session. {m} plays the track, {a} delivers the bars, and {m} gives one note: \"Breathe after the second line, not before it.\" {a} adjusts. Done. {m} moves on to the next queen. Some sessions are a rescue operation. This one was paperwork.",
         "{m} nods after take two and pulls off her headphones. \"We are good.\" {a} looks surprised — she expected more takes. {m} did not need them. The verse was learned, the delivery was clean, and the tape captured what {a} brought. No drama. No story. Just a queen who came prepared.",
       ]),
       tier('many-takes', 'They get it eventually, and everybody knows how long it took.', [
@@ -298,7 +318,7 @@ export const CHALLENGE_BEATS = [
         "\"Standard,\" the host reads, and {a} hears it. The role exists in the video. It will not carry her to the top or sink her to the bottom unless she decides to make it do one of those things. Queens with standard parts survive by being better than the part. Queens with standard parts go home by being exactly as invisible as the part allows.",
       ]),
       tier('ensemble', 'The back of the frame. She has to make herself findable.', [
-        "\"Ensemble.\" The host says it and moves on before the word has landed. {a} hears it. The back of the video. The camera will not find her. {m} will not build a setup around her. If she wants to exist in the final cut, she has to make herself findable — and that is the whole challenge from here.",
+        "\"Ensemble.\" The host says it and moves on before the word has landed. {a} hears it. The back of the video. The camera will not find her. The director will not build a setup around her. If she wants to exist in the final cut, she has to make herself findable — and that is the whole challenge from here.",
         "{a} gets the ensemble. \"Everybody has a job this week,\" the host says. {a}'s job is to not disappear. The back of the frame. No featured moment, no close-up, no scene the edit is built around. She is in the video unless she gives the camera no reason to come back to her.",
         "The host reads {a}'s name at the bottom of the call sheet. Ensemble. The polite word for the background. {a} takes it quietly. Queens have stood out from the ensemble before — found the camera, given the editor a reaction, made themselves matter from the back of the frame. Queens have also vanished from it.",
         "\"You are in the ensemble,\" the host says. {a} nods. She knows what it means: she is starting this challenge behind everybody who got a name on the call sheet. The camera will not come to her. She has to go to the camera. That is the only path out of the background.",

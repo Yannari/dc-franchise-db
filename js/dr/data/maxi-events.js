@@ -341,12 +341,22 @@ export const MAXI_EVENTS = [
   e({
     id: 'picked-it-up', from: 'rehearsal', cast: 'solo',
     note: 'She has the whole number after one run, and spends the afternoon helping.',
-    lines: [],
+    lines: [
+      '{a} learns the choreography in a single pass and spends the rest of the afternoon spotting the queens who are still counting.',
+      'The choreographer runs the number once and {a} already has it — he sends her across the room to mirror for the girls still learning.',
+      '{a} nails the choreo so fast that the choreographer pulls her aside and tells her to help the back row find the beat.',
+      'One run-through is all {a} needs. She has the spacing, the timing, and every transition, and the choreographer uses her as the example for the room.',
+    ],
   }),
   e({
     id: 'cannot-count', from: 'rehearsal', cast: 'solo',
     note: 'The room moves on and she is still mouthing numbers. Everybody saw.',
-    lines: [],
+    lines: [
+      'The room moves to the next section and {a} is in the back still mouthing counts from the first one. The choreographer sees it.',
+      '{a} is staring at her feet counting steps while every other queen in the room is running the number. The gap is obvious.',
+      'The choreographer claps the beat louder and louder and {a} is still a full count behind. The other queens are pretending not to notice.',
+      '{a} asks for one more walk-through but the room has already moved on, and the choreographer only has so many hours in the day.',
+    ],
   }),
   e({
     id: 'workshopped', from: 'rumix', cast: 'pair',

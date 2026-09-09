@@ -93,18 +93,24 @@ export function assign(ctx) {
   const events = [];
   let teams;
 
-  if (maxi.format === 'cast') {
+  const threeTeams = order.length >= 10 && maxi.format !== 'cast' && rng() < 0.5;
+  const teamCount = maxi.format === 'cast' ? 1 : threeTeams ? 3 : 2;
+
+  if (teamCount === 1) {
     teams = [[...order]];
   } else if (mini?.buys === 'captain' && miniWinner) {
-    // The mini's captaincy is spent here: she builds her own team, with
-    // everything captainSplit charges a schemer for doing it badly.
-    const second = order.find(n => n !== miniWinner);
-    const split = captainSplit({ order, captains: [miniWinner, second], players, bond, rng });
+    const captains = [miniWinner];
+    const rest = order.filter(n => n !== miniWinner);
+    for (let i = 1; i < teamCount; i++) captains.push(rest.splice(0, 1)[0]);
+    const split = captainSplit({ order, captains, players, bond, rng });
     teams = split.teams;
     events.push(...split.events);
   } else {
-    const half = Math.ceil(order.length / 2);
-    teams = [order.slice(0, half), order.slice(half)];
+    const size = Math.ceil(order.length / teamCount);
+    teams = [];
+    for (let i = 0; i < teamCount; i++) {
+      teams.push(order.slice(i * size, Math.min((i + 1) * size, order.length)));
+    }
   }
 
   // Each team drafts its own ladder, so every team has exactly one lead.
@@ -173,7 +179,7 @@ export function prepare(ctx) {
 }
 
 export function perform(ctx) {
-  const { living, players, assignment, prep, rng, bond, verse } = ctx;
+  const { living, players, assignment, prep, rng, bond, verse, maxi } = ctx;
   const performances = {};
   const events = [];
   const teamOf = n => assignment.teams.find(t => t.includes(n)) || [];
@@ -256,7 +262,7 @@ export function perform(ctx) {
 
   return {
     performances, runwayOverride: null, events,
-    teamJudged: assignment.teams.length > 1,
+    teamJudged: assignment.teams.length > 1 && maxi?.format !== 'teams-individual',
     bestTeam,
     scenes: [{ step: 'maxi-pre', kind: 'group-number', data: { teams: assignment.teams, means, bestTeam } }],
   };

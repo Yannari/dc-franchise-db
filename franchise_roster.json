@@ -5409,7 +5409,6 @@
       "name": "Gigi Cherie",
       "slug": "gigi-cherie",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "underdog",
       "stats": {
         "physical": 4,
@@ -5422,14 +5421,23 @@
         "intuition": 8,
         "temperament": 9
       },
+      "sexuality": "gay",
+      "voice": "Cool, poetic, and deliberately restrained. Gigi speaks as though she is narrating an obscure French art film. She uses dramatic pauses, dry observations, and elegant metaphors before landing an unexpectedly silly punchline.",
       "profileSources": {},
-      "voice": "Cool, poetic, and deliberately restrained. Gigi speaks as though she is narrating an obscure French art film. She uses dramatic pauses, dry observations, and elegant metaphors before landing an unexpectedly silly punchline."
+      "age": 26,
+      "birthdate": "2001-01-23",
+      "ethnicity": "White",
+      "nationality": "Canadian",
+      "hometown": "Montréal, Québec",
+      "occupation": "Performance artist and costume designer",
+      "descriptor": "The Silent Fashion Fantasy",
+      "backstory": "igi performed experimental mime shows in tiny Montréal theatres while designing costumes for dancers, circus artists, and independent productions. Her signature black-and-white face began as a way to make her expressions visible from the back row. Over time, she transformed it into a polished drag identity combining silent comedy, physical theatre, and editorial fashion. She enters the competition hoping to prove that a queen can command attention without being the loudest person in the room.",
+      "personality": "Gigi is observant, cerebral, and intensely creative. Her composure can initially read as aloofness, but beneath it is a mischievous performer who loves absurd humor and visual gags. She studies the other queens carefully and rarely speaks without purpose. Gigi is patient during creative work but stubborn when asked to simplify her ideas. She excels in design, runway, acting, and unconventional comedy challenges. Singing is her clearest weakness, while challenges requiring loud spontaneity can leave her overshadowed. Once she finds the right visual concept, however, she becomes nearly impossible to ignore."
     },
     {
       "name": "Ginger Hollywood",
       "slug": "ginger-hollywood",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "showmancer",
       "stats": {
         "physical": 6,
@@ -5442,14 +5450,23 @@
         "intuition": 7,
         "temperament": 4
       },
+      "sexuality": "gay",
       "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 42,
+      "birthdate": "1984-06-27",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Los Angeles, California",
+      "occupation": "rag producer, nightclub headliner, and house mother",
+      "descriptor": "The Hollywood Headliner",
+      "backstory": "Ginger spent nearly two decades building a reputation as one of Los Angeles’ most dependable drag entertainers. She began as a backup dancer in small cabaret productions before developing a glamorous solo act inspired by movie premieres, television variety shows, and classic showgirls. After becoming an established headliner, she helped found the House of Hollywood and became its co-mother, teaching younger performers how to command a stage, negotiate their bookings, and treat drag like a career. She enters the show with nothing left to prove locally but everything to gain nationally.",
+      "personality": "Ginger is charismatic, composed, protective, and completely aware of her own star power. She naturally assumes a leadership role and treats the workroom like an extension of her drag house, encouraging struggling queens while expecting them to remain professional. She is generous with advice but can become controlling when others reject it. Ginger excels at runway, lip syncs, acting, hosting, and performance challenges because she understands how to hold an audience’s attention. Her experience occasionally makes her resistant to unfamiliar trends, while construction challenges expose her reliance on professional designers. Beneath the polish is a fiercely competitive matriarch who believes the crown belongs to the queen who can make every challenge feel like her own show."
     },
     {
       "name": "Marge Stache",
       "slug": "marge-stache",
       "gender": "m",
-      "sexuality": "queer",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 4,
@@ -5462,13 +5479,22 @@
         "intuition": 7,
         "temperament": 4
       },
-      "profileSources": {}
+      "sexuality": "queer",
+      "profileSources": {},
+      "age": 38,
+      "birthdate": "1988-03-23",
+      "ethnicity": "Greek American",
+      "nationality": "American",
+      "hometown": "Chicago, Illinois",
+      "occupation": "Improv teacher and dinner-theatre host",
+      "descriptor": "The Mustachioed Matriarch",
+      "backstory": "Marge spent years performing character comedy in improv theatres, queer cabarets, and interactive murder-mystery dinners. Their bearded drag persona began as a one-night parody of a judgmental neighborhood mother and unexpectedly became the audience favorite. Marge eventually turned the character into a full-time act built around improvised monologues, audience participation, and deliberately old-fashioned glamour. They enter Drag Race to prove that facial hair and femininity can share the same spotlight.",
+      "personality": "Marge is perceptive, talkative, nurturing, and almost incapable of minding their own business. They quickly become the workroom confidant, collecting information while pretending merely to offer snacks and advice. Their humor and acting ability make them dangerous in character challenges, roasts, and improvisation. However, Marge struggles with choreography, becomes impatient during construction challenges, and can lose their temper when younger queens dismiss them as dated. Beneath the nosiness is a loyal performer who genuinely wants others to succeed—just preferably after Marge does."
     },
     {
       "name": "Minnie Skurr",
       "slug": "minnie-skurr",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "goat",
       "stats": {
         "physical": 7,
@@ -5481,8 +5507,18 @@
         "intuition": 4,
         "temperament": 7
       },
+      "sexuality": "gay",
       "voice": "Minnie speaks quickly in a youthful mix of English and Spanish, sounding like an enthusiastic dance-team captain who is always ready with gossip, encouragement, or a playful boast. She stretches words when excited, calls people “babe” and “mami,” and sometimes talks before thinking: “Mami, if the beat drops, so do I,” “That look is giving substitute teacher on laundry day,” and, when nervous, “I’m totally calm, babe—my leg is just shaking because it wants to dance.”",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 22,
+      "birthdate": "2004-08-11",
+      "ethnicity": "Cuban American",
+      "nationality": "American",
+      "hometown": "Miami, Florida",
+      "occupation": "Dance instructor and college student",
+      "descriptor": "The Pocket-Sized Powerhouse",
+      "backstory": "Minnie began dancing as a child and spent her teenage years competing in jazz, hip-hop, and cheer-dance competitions. She discovered drag through queer nightclub performances and started sneaking into open-stage nights shortly after turning eighteen. Unable to afford elaborate costumes, she developed an inexpensive preppy aesthetic using altered school uniforms, dancewear, and accessories from local malls. After only three years in drag, she enters the competition eager to prove that being young and polished does not make her disposable.",
+      "personality": "Minnie is energetic, ambitious, friendly, and visibly inexperienced. She learns choreography almost immediately and performs with fearless physicality, but she struggles when a challenge requires subtle acting, improvisation, or original jokes. Her youthful confidence can sound cocky, especially when she dismisses older styles of drag as outdated. Minnie wants everyone to like her and becomes emotional when criticized, yet she recovers quickly once the music begins. She is an obvious performance threat with enough raw potential to grow, but her limited experience could cause her to unravel outside her comfort zone."
     }
   ]
 }

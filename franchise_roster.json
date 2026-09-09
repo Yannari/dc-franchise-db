@@ -5539,7 +5539,20 @@
       "occupation": "rag producer, nightclub headliner, and house mother",
       "descriptor": "The Hollywood Headliner",
       "backstory": "Ginger spent nearly two decades building a reputation as one of Los Angeles’ most dependable drag entertainers. She began as a backup dancer in small cabaret productions before developing a glamorous solo act inspired by movie premieres, television variety shows, and classic showgirls. After becoming an established headliner, she helped found the House of Hollywood and became its co-mother, teaching younger performers how to command a stage, negotiate their bookings, and treat drag like a career. She enters the show with nothing left to prove locally but everything to gain nationally.",
-      "personality": "Ginger is charismatic, composed, protective, and completely aware of her own star power. She naturally assumes a leadership role and treats the workroom like an extension of her drag house, encouraging struggling queens while expecting them to remain professional. She is generous with advice but can become controlling when others reject it. Ginger excels at runway, lip syncs, acting, hosting, and performance challenges because she understands how to hold an audience’s attention. Her experience occasionally makes her resistant to unfamiliar trends, while construction challenges expose her reliance on professional designers. Beneath the polish is a fiercely competitive matriarch who believes the crown belongs to the queen who can make every challenge feel like her own show."
+      "personality": "Ginger is charismatic, composed, protective, and completely aware of her own star power. She naturally assumes a leadership role and treats the workroom like an extension of her drag house, encouraging struggling queens while expecting them to remain professional. She is generous with advice but can become controlling when others reject it. Ginger excels at runway, lip syncs, acting, hosting, and performance challenges because she understands how to hold an audience’s attention. Her experience occasionally makes her resistant to unfamiliar trends, while construction challenges expose her reliance on professional designers. Beneath the polish is a fiercely competitive matriarch who believes the crown belongs to the queen who can make every challenge feel like her own show.",
+      "drag": {
+        "acting": 8,
+        "comedy": 2,
+        "dance": 5,
+        "design": 5,
+        "runway": 5,
+        "lipsync": 5,
+        "singing": 5,
+        "style": "",
+        "traits": [],
+        "voice": "",
+        "family": []
+      }
     },
     {
       "name": "Marge Stache",

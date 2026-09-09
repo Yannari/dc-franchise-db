@@ -5542,15 +5542,19 @@
       "personality": "Ginger is charismatic, composed, protective, and completely aware of her own star power. She naturally assumes a leadership role and treats the workroom like an extension of her drag house, encouraging struggling queens while expecting them to remain professional. She is generous with advice but can become controlling when others reject it. Ginger excels at runway, lip syncs, acting, hosting, and performance challenges because she understands how to hold an audience’s attention. Her experience occasionally makes her resistant to unfamiliar trends, while construction challenges expose her reliance on professional designers. Beneath the polish is a fiercely competitive matriarch who believes the crown belongs to the queen who can make every challenge feel like her own show.",
       "drag": {
         "acting": 8,
-        "comedy": 2,
+        "comedy": 1,
         "dance": 5,
-        "design": 5,
-        "runway": 5,
+        "design": 6,
+        "runway": 8,
         "lipsync": 5,
-        "singing": 5,
+        "singing": 6,
         "style": "",
-        "traits": [],
-        "voice": "",
+        "traits": [
+          "big-wigs",
+          "pageant-polished",
+          "glamazon"
+        ],
+        "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”",
         "family": []
       }
     },

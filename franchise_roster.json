@@ -5524,7 +5524,6 @@
       "name": "Paige Turner",
       "slug": "paige-turner",
       "gender": "nb",
-      "sexuality": "straight",
       "archetype": "mastermind",
       "stats": {
         "physical": 4,
@@ -5537,14 +5536,23 @@
         "intuition": 8,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": "ige speaks in a measured, educated tone, delivering every insult like a helpful correction from behind the circulation desk. She loves literary references, pauses before punchlines, and calls misbehaving queens “young lady” regardless of their age: “Please lower your voice; your outfit is already making enough noise,” “I would read her, but that book was remaindered years ago,” and, when underestimated, “Darling, I’ve been in this scene so long that your drag mother still owed late fees.”",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 44,
+      "birthdate": "1982-05-27",
+      "ethnicity": "Latina",
+      "nationality": "American",
+      "hometown": "Philadelphia, Pennsylvania",
+      "occupation": "Nightclub host and veteran drag entertainer",
+      "descriptor": "The Queen of the Reading",
+      "backstory": "Paige began performing in neighborhood bars more than twenty years before entering the competition. After working daytime shifts in a used bookstore, she created her shady librarian persona by combining her love of literature with the cutting humor she developed while hosting rough late-night crowds. She became a respected fixture of the local scene, known for introducing new performers, producing comedy showcases, and remembering every queen who ever behaved badly backstage. Although younger contestants consider her old-school, Paige sees the competition as her chance to turn decades of local respect into national recognition.",
+      "personality": "aige is intelligent, observant, articulate, and relentlessly shady. She can identify another queen’s insecurity within minutes and knows exactly how to turn it into a punchline. Her experience makes her calm during acting, comedy, hosting, and branding challenges, but it also makes her resistant to advice from less-established competitors. Paige is not especially athletic and struggles with fast choreography, modern vocal tracks, and challenges requiring youthful energy. She can be supportive when she respects someone’s work ethic, but foolish behavior receives an immediate verbal citation. Beneath the librarian character is a seasoned competitor who understands people, politics, and how to control a room."
     },
     {
       "name": "Quin",
       "slug": "quin",
       "gender": "nb",
-      "sexuality": "queer",
       "archetype": "wildcard",
       "stats": {
         "physical": 5,
@@ -5557,14 +5565,23 @@
         "intuition": 7,
         "temperament": 6
       },
+      "sexuality": "queer",
       "voice": "Quin speaks in a cool, slightly detached London accent, mixing fashion jargon, art-school language, and online slang as though every conversation were an interview at a gallery opening. They sound effortlessly confident until they must explain one of their concepts in detail: “The silhouette represents digital loneliness—but, like, make it gorgeous,” “That outfit isn’t ugly; it’s simply hostile to the human eye,” and, when criticized, “You don’t have to understand my drag, babe. The museum provides an audio guide.”",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 25,
+      "birthdate": "2001-07-06",
+      "ethnicity": "Black",
+      "nationality": "British",
+      "hometown": "London, England",
+      "occupation": "Art-school graduate, model, and aspiring actor",
+      "descriptor": "The Walking Exhibition",
+      "backstory": "Quin studied contemporary visual art while taking modeling jobs, appearing in student films, and working the doors of underground London clubs. Frustrated by being treated as a mannequin rather than a creative artist, they began making conceptual drag looks from installation materials, discarded garments, and unusual objects. Their striking photographs attracted attention online, but most of their performing experience still comes from short nightclub numbers and experimental showcases. Quin enters Drag Race hoping to turn a strong visual identity into a serious acting and modeling career.",
+      "personality": "Quin is fashionable, ambitious, socially connected, and occasionally pretentious. They can discuss visual concepts with complete confidence but become evasive when asked about practical details. Their modeling experience makes them magnetic on the runway, while their willingness to experiment gives them an advantage in unconventional design challenges. However, they are not naturally funny, cannot sing, and sometimes mistake emotional distance for acting subtlety. Quin enjoys being surrounded by interesting people but may abandon an alliance if it stops benefiting their image. They possess genuine creative vision, though the competition will test whether there is a versatile performer behind the photographs."
     },
     {
       "name": "Riot",
       "slug": "riot",
       "gender": "nb",
-      "sexuality": "queer",
       "archetype": "hothead",
       "stats": {
         "physical": 6,
@@ -5577,13 +5594,22 @@
         "intuition": 7,
         "temperament": 4
       },
-      "profileSources": {}
+      "sexuality": "queer",
+      "profileSources": {},
+      "age": 39,
+      "birthdate": "1988-01-30",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Detroit, Michigan",
+      "occupation": "LGBTQ+ community organizer and tattoo artist",
+      "descriptor": "The Radical Rookie",
+      "backstory": "iot spent years organizing queer-rights demonstrations, producing benefit concerts, creating political zines, and raising money for LGBTQ+ youth housing and healthcare. They had performed spoken-word pieces and hosted underground events but never considered themselves a drag queen. After appearing in drag at a community fundraiser, Riot discovered that performance could carry their message further than a speech alone. They began developing a full drag character only two years before joining the show. Riot enters the competition to understand what being a drag queen means to them and to place the causes they have fought for under a national spotlight.",
+      "personality": "Riot is principled, courageous, stubborn, and deeply protective of marginalized people. Their years of organizing make them mentally resilient and comfortable confronting authority, but they can turn ordinary disagreements into moral debates. Riot performs lip syncs with genuine anger and emotional conviction, while their DIY background helps in unconventional design challenges. However, they lack polish, formal dance training, vocal ability, and experience with mainstream drag expectations. They may criticize challenges they consider shallow, irritating queens who believe Riot takes the competition too seriously. Beneath their hardened exterior is a newcomer sincerely searching for their place in drag."
     },
     {
       "name": "Sharon Needles",
       "slug": "sharon-needles",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "villain",
       "stats": {
         "physical": 3,
@@ -5596,8 +5622,18 @@
         "intuition": 8,
         "temperament": 4
       },
+      "sexuality": "gay",
       "voice": "Sharon speaks in a smooth, amused tone that makes every conversation feel like a trap. She studies people’s insecurities, disguises insults as compliments, and rarely loses her smile while provoking someone: “Darling, I’m not inside your head—you simply left the door unlocked,” “She has star quality, assuming the star already burned out,” and, when showing her softer side, “I may be a nightmare, but even nightmares know when someone needs protecting.”",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 27,
+      "birthdate": "1999-06-14",
+      "ethnicity": "White American",
+      "nationality": "American",
+      "hometown": "Providence, Rhode Island",
+      "occupation": "Horror-show host and nightlife promoter",
+      "descriptor": "The Glamour Ghoul",
+      "backstory": "Sharon spent years producing underground horror revues, promoting alternative club nights, and carefully building a provocative online image. She learned early that controversy attracted attention and became skilled at creating feuds, rumors, and dramatic moments that kept her name circulating. Her willingness to transform from grotesque creature to glamorous star earned her a devoted local following. Sharon enters Drag Race determined to become famous at any cost and views every friendship, argument, and confession as a possible storyline.",
+      "personality": "Sharon is calculating, ambitious, catty, and extremely perceptive. She knows how to identify another queen’s insecurity and press on it until they lose focus. Fame is her priority, so she willingly plays the villain if it guarantees screen time. Her intelligence and nerve make her formidable in acting, comedy, branding, and conceptual runway challenges, but she is only average at dancing and singing. Sharon’s weakness is the conscience she pretends not to possess: when someone is genuinely hurting, her cruelty often gives way to unexpected loyalty and protection. She wants the audience to fear her, yet secretly hopes they recognize the heart beneath the horror."
     }
   ]
 }

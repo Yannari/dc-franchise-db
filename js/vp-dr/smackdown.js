@@ -475,7 +475,7 @@ export function rpBuildTournament(row) {
   const rounds = [...new Set(duels.map(d => d.round))].sort((a, b) => a - b);
   const roundName = r => r === 3 ? 'SUDDEN DEATH' : `ROUND ${r}`;
 
-  const bracket = rounds.map(rn => `<div class="sd-round">
+  const bracket = rounds.map(rn => `<div class="sd-round sd-r${rn}">
     <div class="sd-round-label">${roundName(rn)}</div>
     ${duels.filter(d => d.round === rn).map(d => {
     const gi = duels.indexOf(d);
@@ -651,29 +651,49 @@ export function rpBuildTournament(row) {
         </div>
       </div>`);
 
-      // Triple prose
-      const tripleScene = nextProse('tournament-sudden-death');
+      // Triple prose — R1 triples emit as tournament-duel, R3 as sudden-death
+      const tripleScene = nextProse(d.round === 1 ? 'tournament-duel' : 'tournament-sudden-death');
       if (tripleScene?.text) step(proseCard(tripleScene));
 
       // Triple result
-      const tripleScores = names.map(n => ({ n, adj: d.adjusted?.[n] ?? 0, won: d.winner === n, lost: d.loser === n }));
+      const isElimRound = d.round >= 3;
+      const tripleScores = names.map(n => {
+        const adj = d.adjusted?.[n] ?? 0;
+        const won = d.winner === n;
+        const lost = d.loser === n;
+        const mid = !won && !lost;
+        return { n, adj, won, lost, mid };
+      });
       for (const ts of tripleScores) {
         sideState.lipsyncCount[ts.n] = (sideState.lipsyncCount[ts.n] || 0) + 1;
-        if (ts.lost) { sideState.losses[ts.n] = (sideState.losses[ts.n] || 0) + 1; sideState.status[ts.n] = 'eliminated'; }
-        else if (ts.won) sideState.wins[ts.n] = (sideState.wins[ts.n] || 0) + 1;
+        if (ts.lost) {
+          sideState.losses[ts.n] = (sideState.losses[ts.n] || 0) + 1;
+          sideState.status[ts.n] = isElimRound ? 'eliminated' : 'danger';
+        } else if (ts.mid) {
+          sideState.losses[ts.n] = (sideState.losses[ts.n] || 0) + 1;
+          sideState.status[ts.n] = isElimRound ? 'danger' : 'danger';
+        } else if (ts.won) {
+          sideState.wins[ts.n] = (sideState.wins[ts.n] || 0) + 1;
+          sideState.status[ts.n] = d.round === 1 ? 'safe' : sideState.status[ts.n];
+        }
       }
       sideState.songsUsed.push(d.song);
+
+      const stampFor = ts => {
+        if (isElimRound) return ts.lost ? 'ELIMINATED' : 'STAYS';
+        return ts.won ? 'WINS' : 'LOSES';
+      };
 
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-result triple on" id="sd-tm-res-${di}">
           ${tripleScores.map(ts => {
     const pct = Math.round((ts.adj / maxAdj) * 100);
-    const cls = ts.lost ? 'lose' : 'win';
+    const cls = ts.lost ? 'lose' : ts.won ? 'win' : 'lose';
     return `<div class="tm-result-side ${cls}">
-              <div class="tm-result-stamp">${ts.lost ? 'ELIMINATED' : 'STAYS'}</div>
+              <div class="tm-result-stamp">${stampFor(ts)}</div>
               ${_portrait(ts.n, ep, { size: 48 })}
               <div class="tm-result-name">${esc(ts.n)}</div>
-              <div class="tm-bar"><div class="tm-bar-fill ${ts.lost ? 'dead' : 'gold'} race" style="--tm-bar-pct:${pct}%"></div></div>
+              <div class="tm-bar"><div class="tm-bar-fill ${ts.lost ? 'dead' : ts.won ? 'gold' : 'mid'} race" style="--tm-bar-pct:${pct}%"></div></div>
               <div class="tm-result-score">${ts.adj.toFixed(1)}</div>
               ${d.fatigue?.[ts.n] != null && d.fatigue[ts.n] < 1 ? fatigueBar(d.fatigue[ts.n]) : ''}
             </div>`;

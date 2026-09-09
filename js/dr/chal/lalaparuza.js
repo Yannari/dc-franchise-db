@@ -148,19 +148,27 @@ export function prepare(ctx) {
  */
 function firstRound(order, picks) {
   const taken = new Set();
-  const pairs = [];
+  const groups = [];
   for (const n of order) {
     if (taken.has(n)) continue;
     const want = picks[n]?.choice;
     if (want && want !== n && order.includes(want) && !taken.has(want)) {
       taken.add(n); taken.add(want);
-      pairs.push([n, want, true]);
+      groups.push([n, want, true]);
     }
   }
   const rest = order.filter(n => !taken.has(n));
-  for (let i = 0; i + 1 < rest.length; i += 2) pairs.push([rest[i], rest[i + 1], false]);
-  const bye = rest.length % 2 ? rest[rest.length - 1] : null;
-  return { pairs, bye };
+  if (rest.length % 2 && rest.length >= 3) {
+    for (let i = 0; i < rest.length - 3; i += 2) groups.push([rest[i], rest[i + 1], false]);
+    groups.push([rest[rest.length - 3], rest[rest.length - 2], rest[rest.length - 1], false]);
+  } else if (rest.length === 1) {
+    // Only 1 unpaired queen — attach to last picked pair to make a triple
+    const last = groups[groups.length - 1];
+    groups[groups.length - 1] = [last[0], last[1], rest[0], last[2]];
+  } else {
+    for (let i = 0; i + 1 < rest.length; i += 2) groups.push([rest[i], rest[i + 1], false]);
+  }
+  return { groups };
 }
 
 export function perform(ctx) {
@@ -210,12 +218,45 @@ export function perform(ctx) {
   const r1 = firstRound(assignment.order || living, assignment.picks || {});
   const r1Winners = [];
   const r1Losers = [];
-  for (const [a, b, chosen] of r1.pairs) {
-    const { winner, loser } = duel(a, b, 1, 'Round 1', chosen);
-    r1Winners.push(winner);
-    r1Losers.push(loser);
+  for (const group of r1.groups) {
+    if (group.length === 4) {
+      // 3-way lip sync — odd queen out joins a group instead of getting a bye
+      const [a, b, c, chosen] = group;
+      const song = SONGS[Math.floor(rng() * SONGS.length)];
+      const entries = [a, b, c].map(n => {
+        const fat = fatigueFactor(lipsyncCount[n] || 0);
+        const sc = lipsyncScore({ player: players[n], song, lipsyncRecord: state.lipsyncRecord?.[n] || [], rng });
+        const adj = sc.score * fat + (prep[n] || 0) + hostLean(n, 1);
+        lipsyncCount[n] = (lipsyncCount[n] || 0) + 1;
+        return { name: n, raw: sc.score, fatigue: fat, adjusted: Math.round(adj * 100) / 100 };
+      });
+      entries.sort((x, y) => y.adjusted - x.adjusted);
+      const winner = entries[0].name;
+      const loser = entries[entries.length - 1].name;
+      const middle = entries[1].name;
+      r1Winners.push(winner);
+      r1Losers.push(middle);
+      r1Losers.push(loser);
+      const strategy = chosen && assignment.strategies?.[a] || null;
+      duels.push({
+        round: 1, roundLabel: 'Round 1',
+        triple: true,
+        contestants: entries.map(e => e.name),
+        song: song.title, artist: song.artist,
+        scores: Object.fromEntries(entries.map(e => [e.name, e.raw])),
+        fatigue: Object.fromEntries(entries.map(e => [e.name, e.fatigue])),
+        adjusted: Object.fromEntries(entries.map(e => [e.name, e.adjusted])),
+        winner, loser,
+        chosen: !!chosen, strategy,
+        a: winner, b: loser,
+      });
+    } else {
+      const [a, b, chosen] = group;
+      const { winner, loser } = duel(a, b, 1, 'Round 1', chosen);
+      r1Winners.push(winner);
+      r1Losers.push(loser);
+    }
   }
-  if (r1.bye) r1Winners.push(r1.bye);
 
   // ── ROUND 2: losers face losers ──
   const r2Losers = [];
@@ -308,7 +349,9 @@ export function perform(ctx) {
       parts: { prep: prep[n] || 0 },
       detail: {
         lipsyncs: totalSyncs,
-        losses: duels.filter(d => d.loser === n).length,
+        losses: duels.filter(d => d.triple
+          ? d.contestants?.includes(n) && d.winner !== n
+          : d.loser === n).length,
         roundOut: r1Winners.includes(n) ? 1
           : r2Safe.includes(n) ? 2
             : 3,

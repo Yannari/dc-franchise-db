@@ -5634,6 +5634,26 @@
       "descriptor": "The Glamour Ghoul",
       "backstory": "Sharon spent years producing underground horror revues, promoting alternative club nights, and carefully building a provocative online image. She learned early that controversy attracted attention and became skilled at creating feuds, rumors, and dramatic moments that kept her name circulating. Her willingness to transform from grotesque creature to glamorous star earned her a devoted local following. Sharon enters Drag Race determined to become famous at any cost and views every friendship, argument, and confession as a possible storyline.",
       "personality": "Sharon is calculating, ambitious, catty, and extremely perceptive. She knows how to identify another queen’s insecurity and press on it until they lose focus. Fame is her priority, so she willingly plays the villain if it guarantees screen time. Her intelligence and nerve make her formidable in acting, comedy, branding, and conceptual runway challenges, but she is only average at dancing and singing. Sharon’s weakness is the conscience she pretends not to possess: when someone is genuinely hurting, her cruelty often gives way to unexpected loyalty and protection. She wants the audience to fear her, yet secretly hopes they recognize the heart beneath the horror."
+    },
+    {
+      "name": "Taystee",
+      "slug": "taystee",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "floater",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 3,
+        "social": 8,
+        "strategic": 3,
+        "loyalty": 5,
+        "boldness": 6,
+        "intuition": 4,
+        "temperament": 7
+      },
+      "voice": "aystee speaks in a relaxed, self-satisfied tone, giving the impression that looking beautiful is a full-time responsibility. She is not especially talkative and often responds to criticism with a glance, a shrug, or a reminder that she still looks good: “I didn’t come here to be funny—I came here to be photographed,” “If relying on my body is wrong, blame the body for being reliable,” and, before a lip sync, “I know the words, I know my angles, and that is honestly enough.”",
+      "profileSources": {}
     }
   ]
 }

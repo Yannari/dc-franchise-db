@@ -13,6 +13,7 @@ import { RETURNEE_BEATS } from './data/returnee-beats.js';
 import { SPLIT_BEATS } from './data/split-beats.js';
 import { runReunion } from './reunion.js';
 import { smackdownScenes } from './smackdown.js';
+import { alumniPool } from '../alumni.js';
 import { runDragWeek } from './week.js';
 import { assignStorylines, recordBeat, arcSummary, popSnapshot } from './storylines.js';
 import { MAXI_TYPES, TENTPOLES, maxiById } from './data/challenges.js';
@@ -62,8 +63,100 @@ export function episodesFor(castSize, finaleType = 'top4') {
  *   3. a challenge that needs more queens than will still be there is not
  *      booked at all.
  */
-export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.random, premiere = 'standard' }) {
+/* ── WHO IS FAMOUS ENOUGH TO JUDGE ──
+   This universe has no celebrities outside its own reality shows, so a guest
+   judge is somebody the audience already watched win something. The franchise
+   states that directly: `tier` on the player record is the ranking board's own
+   grade, S+ / S / A / B / C / D, and re-deriving "notable" out of wins and
+   placements when the ledger already says it would be a second opinion. */
+const FAMOUS_TIERS = new Set(['S+', 'S', 'A']);
+
+// Same rule js/dr/week.js uses, and deliberately a copy of one line rather
+// than a new import between two files that do not otherwise depend on
+// each other.
+const _slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.random,
+  premiere = 'standard', cast = [] }) {
   const rotating = JUDGES.filter(j => !j.permanent).map(j => j.id);
+
+  /* ── THE GUEST JUDGE, WHICH HAD NEVER ONCE APPEARED ──
+     `guest` was `pin.guest || null` and NOTHING EVER PINNED ONE. There is no
+     field for it in the episode designer and no roll anywhere, so the value
+     was null in every episode of every season ever played — while
+     `guestTaste()` derived a full taste profile from an alumnus's stats,
+     `panelFor` accepted a guest seat, the exporter carried `dr.guest`, and
+     stage-beats.js held four written lines for `guest` and four more for
+     `guest-credited`. Written, wired, and reachable only from an author pin
+     nobody writes: this project's signature bug class, and it read on screen
+     as "guest: none".
+
+     Drawn once per season and dealt across the episodes, so a season has a
+     rotation of faces rather than the same person every week. Deterministic
+     off the season rng, so a replay is the same season.
+
+     NO DATABASE, NO GUESTS. `alumniPool` returns [] when nothing has loaded
+     the player record — which is every headless tool and most tests — and an
+     empty pool leaves `guest: null`, exactly as before. That is the honest
+     fallback: a franchise with no history has nobody famous in it yet. */
+  const castNames = (cast || []).map(p => p && p.name).filter(Boolean);
+  /* THE WHOLE FRANCHISE, NOT THIS SHOW'S OWN ALUMNI. Scoped to drag-race the
+     famous pool is FOUR people and a season cycles the same two faces; across
+     the franchise it is forty-three. That is also the truer reading of the
+     rule this file opens with — the universe has no celebrities outside its
+     reality shows, and it does not say they have to be drag queens. */
+  const famous = alumniPool({ exclude: castNames })
+    .filter(a => a && FAMOUS_TIERS.has(a.tier));
+
+  /* HER ARCHETYPE AND HER STATS, WHICH THE POOL DOES NOT CARRY.
+     `guestTaste` reads `player.archetype` for ARCH_BIAS and `player.stats`
+     for the four taste weights and her warmth — hand it a bare pool entry and
+     every guest is the same neutral seat with no style bias at all, which is
+     a guest judge in name only. The roster row has both. Read off the global
+     for the same reason `alumniDatabase()` does: this file is a leaf and must
+     not import the cast builder. */
+  const _roster = (typeof globalThis !== 'undefined' && globalThis.FRANCHISE_ROSTER) || [];
+  const rosterOf = name => _roster.find(r => r && r.name === name) || null;
+
+  /* AND WHERE WE KNOW HER FROM, derived from the ledger rather than invented.
+     week.js used to say a credit could only be authored, because "there is no
+     deriving 'the winner of the ninth season' from a roster row". There is
+     now: the appearance record states the season and the placement, so the
+     host can say it and be right. He still says nothing when the record does
+     not know. */
+  const creditFor = a => {
+    if (!a) return '';
+    /* THE SEASON THE PLACEMENT HAPPENED IN, not the most recent one. Pairing
+       `winner` (best placement ever) with `seasonName` (last appearance) put
+       two different alumni on screen as "the winner of Total Drama 13",
+       neither of whom won it. `bestSeasonName` is the season the record
+       belongs to; with no placement to name, the host says where she is from
+       and claims nothing. */
+    const where = a.bestSeasonName || a.seasonName;
+    if (!where) return '';
+    if (a.winner) return `the winner of ${where}`;
+    if (a.finalist) return `a finalist on ${where}`;
+    return a.seasonName ? `from ${a.seasonName}` : '';
+  };
+
+  const guestBag = famous.slice();
+  const drawGuest = () => {
+    if (!guestBag.length) {
+      if (!famous.length) return null;
+      guestBag.push(...famous);          // a long season may go round twice
+    }
+    const a = guestBag.splice(Math.floor(rng() * guestBag.length), 1)[0];
+    if (!a) return null;
+    const r = rosterOf(a.name);
+    return {
+      name: a.name,
+      slug: (r && r.slug) || _slugOf(a.name),
+      archetype: (r && r.archetype) || null,
+      stats: (r && r.stats) || null,
+      credit: creditFor(a),
+      tier: a.tier,
+    };
+  };
   const byEp = Object.fromEntries(
     pinned.filter(p => p && p.episode != null).map(p => [Number(p.episode), p]));
 
@@ -141,7 +234,10 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       // meaning "no mini this week", and undefined means "roll one".
       miniId: 'miniId' in pin ? pin.miniId : pick(rng, MINI_TYPES).id,
       rotatingId: pin.rotatingId || rotating[(e - 1) % rotating.length],
-      guest: pin.guest || null,
+      /* An author's pin always wins; otherwise the show books somebody.
+         Not every week — the panel is a fixed four often enough that a guest
+         should feel like an occasion rather than a chair that is always full. */
+      guest: pin.guest || (rng() < 0.7 ? drawGuest() : null),
       songTitle: pin.songTitle || pick(rng, SONGS).title,
       // A category per week, and never the same one twice in a season: the
       // runway is the one thing a viewer sees every single episode, so a
@@ -927,7 +1023,7 @@ export function playDragSeason({
       splitHalf += 1;
       const sch = buildSchedule({
         episodes: 1, castSize: group.length, pinned: pin.maxiId ? [{ ...pin, episode: 1 }] : [],
-        rng, premiere: pin.maxiId ? 'standard' : 'talent-show',
+        rng, premiere: pin.maxiId ? 'standard' : 'talent-show', cast,
       })[0];
       // The week only ever sees this half of the room. Nobody goes home, so
       // the full cast is restored afterwards rather than reconciled — the
@@ -999,6 +1095,8 @@ export function playDragSeason({
       .map(x => (splitAte ? { ...x, episode: Number(x.episode) - splitAte } : x)),
     rng,
     premiere: premiere === 'split' ? 'standard' : premiere,
+    // So a queen cannot be flown in to judge the season she is competing in.
+    cast,
   });
 
   /* AND THE BOTTOM-THREE NIGHT, booked onto whichever middle episode the

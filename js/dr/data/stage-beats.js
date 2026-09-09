@@ -185,6 +185,23 @@ export const STAGE_BEATS = [
         '"He taught your favourite queen\'s favourite dance — {j}." {j} nods. The nod is on the beat of something only he can hear. The queens backstage know that the choreography judge is in the chair tonight, which means the performance challenge just got a second scoring rubric that none of them rehearsed for.',
         '"And {j}!" The host says it warmly and {j} raises a hand from the panel with the composure of a man who has spent decades in rehearsal rooms and treats the main stage the way he treats an eight-count — with attention to what is about to happen rather than what already has.',
       ]),
+      /* ── AND THE FIVE THE HOST ACTUALLY USES ──
+         The two tiers below are the fallbacks. A guest is a PERSON the
+         audience has already watched for a whole season, and introducing a
+         villain and a hero in the same four sentences wastes the one thing a
+         guest brings that a permanent judge cannot: history the viewer
+         already has opinions about.
+
+         Grouped the way js/dr/data/runway-voices.js already groups the fifteen
+         archetypes, so this is the show's existing five-way split and not a
+         sixth taxonomy. {j} is her name and {k} is her credit — a ready-made
+         phrase like "the winner of Total Drama 13", derived from the ledger
+         and NEVER invented. Every line here can assume {k} is present. */
+      tier('guest-predator', 'villain, mastermind, schemer. The room knows what she did and she has not apologised for it. The applause has an edge.', []),
+      tier('guest-sunshine', 'hero, loyal-soldier, social-butterfly, showmancer. Loved, and the welcome is uncomplicated.', []),
+      tier('guest-firecracker', 'hothead, chaos-agent, wildcard. Unpredictable, and the panel is visibly braced.', []),
+      tier('guest-professional', 'challenge-beast, perceptive-player. She won things. The respect is for the record.', []),
+      tier('guest-scrapper', 'underdog, goat, floater. She was not supposed to get as far as she did, and everybody remembers it.', []),
       tier('guest', 'A guest judge from the franchise with no credit to hand — '
         + 'so the line may name {j} and claim nothing else about her. This is '
         + 'the fallback tier and it has to read correctly for a stranger.', [

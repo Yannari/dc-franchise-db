@@ -252,7 +252,27 @@ export function renderStageBeats({
   const introBeat = beatById('panel-intro');
   for (const seat of panelSeats) {
     if (!seat || seat.id === 'rupaul') continue;
-    const tierId = seat.guest ? (seat.credit ? 'guest-credited' : 'guest') : seat.id;
+    /* ── A GUEST IS INTRODUCED AS A PERSON ──
+       This was `credit ? 'guest-credited' : 'guest'`, so every guest arrived
+       in the same four sentences — a villain, a hero and a goat all "waves
+       from the guest seat". Her archetype is on the seat now, grouped the way
+       the runway voices and the sashay words already group it, so the host
+       introduces somebody the audience has opinions about.
+       FALLING BACK RATHER THAN SKIPPING: an unwritten archetype pool must not
+       silently drop the introduction, which is what `continue` did to any tier
+       that did not exist. Credited first because the credit is the thing worth
+       saying if nothing else is written yet. */
+    let tierId = seat.id;
+    if (seat.guest) {
+      const group = seat.archetype ? swaggerGroupFor(seat.archetype) : null;
+      const wanted = [
+        group && `guest-${group}`,
+        seat.credit ? 'guest-credited' : null,
+        'guest',
+      ].filter(Boolean);
+      tierId = wanted.find(id => introBeat.tiers.some(x => x.id === id && x.lines.length))
+        || wanted[wanted.length - 1];
+    }
     if (!introBeat.tiers.some(t => t.id === tierId)) continue;
     emit(introBeat, tierId, [], { judgeId: seat.id, guest: !!seat.guest },
       { j: seat.name || seat.id, k: seat.credit || '' });

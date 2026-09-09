@@ -5344,13 +5344,13 @@
       "occupation": "Nightclub Emcee and Drag Performer",
       "descriptor": "The Crafty Club-Kid Comedienne",
       "backstory": "Autumnatic is a beloved staple of the underground New York drag scene, known for shutting down the club with her booming voice and high-energy performances. She came up in the scene idolizing old-school club kids, aiming for structural, avant-garde silhouettes. However, her grand concepts rarely translate to the finished garment, earning her a reputation for having a brilliant mind but a terrible eye for fashion. Despite looking like she got dressed in the dark at a construction site, her undeniable charisma, quick wit, and fierce lipsync skills keep her fully booked and highly respected.",
-      "personality": "Loud, endlessly charismatic, and completely delusional about her fashion sense. She will confidently strut down the runway in a geometrically questionable, hot-glued piece of upholstery and defend it to the judges as \"high-concept art.\" She is a natural leader in the Werk Room, cracking jokes, giving hilarious commentary on the other queens' drama, and refusing to ever take herself too seriously."
+      "personality": "Loud, endlessly charismatic, and completely delusional about her fashion sense. She will confidently strut down the runway in a geometrically questionable, hot-glued piece of upholstery and defend it to the judges as \"high-concept art.\" She is a natural leader in the Werk Room, cracking jokes, giving hilarious commentary on the other queens' drama, and refusing to ever take herself too seriously.",
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Loud, clever, unpredictable.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Baby, they picked me because I walk into a room and the room starts paying rent to me. I’m funny, I’m nosy, I’m a little dangerous, and I have just enough bad taste to keep the cameras fed.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"The hardest part is going to be living with people who don’t know how to read a room, clean a bathroom, or season a chicken. I can handle pressure, but if somebody leaves wet hair in the sink, I may become a headline.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"My strategy is to be everybody’s good time until it’s time to be somebody’s bad news. I’m going to laugh with you, flirt with you, braid your hair emotionally, and quietly figure out which brick makes the whole wall fall down.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m warm, I’m funny, and I will make the house feel alive. What I want to hide is how fast I’m clocking everybody’s weak spots, because if they know I’m taking notes, suddenly I’m the villain with a clipboard.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A compact mirror, because I need to check my face and also see who’s whispering behind me.\\n- A good robe, because even my breakdowns need a silhouette.\\n- Hot sauce, because bland food makes people confess slower.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"I love performing, hosting, dancing until my knees send a formal complaint, people-watching in Brooklyn bars, and turning one tiny piece of gossip into a full Broadway production. I also like sketching big fashion ideas that unfortunately become crimes against fabric.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Ooh, I love drama when it has flavor, timing, and a point. I do not love stupid drama, where everybody is screaming and nobody is being interesting—that’s just community theater with bad lighting.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"I’m gay, single, and not made of stone, so I’m not saying no. But if romance starts messing with my game, baby, Cupid can pack his little arrows and go home.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… if they’re going to stare, give them blocking, lighting, and a second act.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"I hope to get the money, the memories, and a little proof that being loud, Black, queer, messy, strategic, and fabulous is not too much—it’s exactly enough. And if I leave with a few new fans and no one stealing my robe, that’s a blessing.\"}]"
     },
     {
       "name": "Cheryl Hole",
       "slug": "cheryl-hole",
       "gender": "f",
-      "sexuality": "gay",
       "archetype": "hothead",
       "stats": {
         "physical": 4,
@@ -5363,14 +5363,23 @@
         "intuition": 6,
         "temperament": 2
       },
+      "sexuality": "gay",
       "voice": "sharp, fast-paced British accent loaded with cheeky colloquialisms and a loud, infectious cackle. She loves poking fun at her own mediocre runways before anyone else can—for example: \"Right, girls, I know this dress looks like it was put together with a glue stick and a dream, but at least I'm having a lovely time! Who wants a gin and tonic?\"",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 26,
+      "birthdate": "2000-03-15",
+      "ethnicity": "White",
+      "nationality": "British",
+      "hometown": "Essex, England",
+      "occupation": "Promotional Model and Makeup Enthusiast",
+      "descriptor": "The Essex Party Girl",
+      "backstory": "Hailing from the lively club scene of Essex, Cheryl is a self-proclaimed Essex girl through and through who lives for a good night out, bottomless brunches, and pop culture deep-dives. While she might not be the most polished seamstress or high-fashion conceptualist in the workroom, she makes up for it with an infectious, self-deprecating humor and a fierce determination to survive every lip sync for her life thrown her way. She treats every setback like a minor speed bump on the way to the party.",
+      "personality": "Cheeky, delightfully messy, and unapologetically loud. She is the queen of laughing at her own failures and leaning into the joke before anyone else can make it. She loves stirring the pot just enough to keep things interesting, but her bubbly warmth and lack of genuine malice make her impossible to truly stay mad at."
     },
     {
       "name": "Cupcakke",
       "slug": "cupcakke",
       "gender": "f",
-      "sexuality": "gay",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 2,
@@ -5383,8 +5392,18 @@
         "intuition": 7,
         "temperament": 8
       },
+      "sexuality": "gay",
       "voice": "Loud, warm, theatrical, and shamelessly corny. She speaks quickly, laughs at her own jokes, uses food metaphors constantly, and becomes surprisingly sharp when another queen underestimates her.",
-      "profileSources": {}
+      "profileSources": {},
+      "age": 39,
+      "birthdate": "1987-04-12",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "San Antonio, Texas",
+      "occupation": "Cabaret singer, comedy hostess, and brunch performer",
+      "descriptor": "The Cabaret Cupcake",
+      "backstory": "Cupcakke worked the cabaret and drag-brunch circuit, performing comic show tunes between hosting bingo nights and birthday parties. She built her costumes from thrift-store dresses, rhinestones, and repurposed bakery decorations. Although audiences immediately loved her voice and humor, local queens often dismissed her as a novelty act. She enters the competition determined to prove that camp can be polished, glamorous, and worthy of the crown.",
+      "personality": "Cupcakke is affectionate, theatrical, and naturally entertaining. She loves making a room laugh and rarely takes herself seriously, but she takes performing very seriously. Her confidence makes her difficult to embarrass, while her quick wit allows her to recover from mistakes in front of an audience. She is generous with quieter queens and loyal to genuine friends, though she can become defensive when her appearance or intelligence is mocked. Design challenges and choreography expose her limitations, but strong vocals, comic instincts, and commanding stage presence make her dangerous whenever she has a microphone."
     }
   ]
 }

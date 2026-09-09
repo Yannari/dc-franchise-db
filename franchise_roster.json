@@ -5449,7 +5449,20 @@
       "occupation": "Performance artist and costume designer",
       "descriptor": "The Silent Fashion Fantasy",
       "backstory": "igi performed experimental mime shows in tiny Montréal theatres while designing costumes for dancers, circus artists, and independent productions. Her signature black-and-white face began as a way to make her expressions visible from the back row. Over time, she transformed it into a polished drag identity combining silent comedy, physical theatre, and editorial fashion. She enters the competition hoping to prove that a queen can command attention without being the loudest person in the room.",
-      "personality": "Gigi is observant, cerebral, and intensely creative. Her composure can initially read as aloofness, but beneath it is a mischievous performer who loves absurd humor and visual gags. She studies the other queens carefully and rarely speaks without purpose. Gigi is patient during creative work but stubborn when asked to simplify her ideas. She excels in design, runway, acting, and unconventional comedy challenges. Singing is her clearest weakness, while challenges requiring loud spontaneity can leave her overshadowed. Once she finds the right visual concept, however, she becomes nearly impossible to ignore."
+      "personality": "Gigi is observant, cerebral, and intensely creative. Her composure can initially read as aloofness, but beneath it is a mischievous performer who loves absurd humor and visual gags. She studies the other queens carefully and rarely speaks without purpose. Gigi is patient during creative work but stubborn when asked to simplify her ideas. She excels in design, runway, acting, and unconventional comedy challenges. Singing is her clearest weakness, while challenges requiring loud spontaneity can leave her overshadowed. Once she finds the right visual concept, however, she becomes nearly impossible to ignore.",
+      "drag": {
+        "acting": 8,
+        "comedy": 5,
+        "dance": 3,
+        "design": 7,
+        "runway": 6,
+        "lipsync": 4,
+        "singing": 5,
+        "style": "",
+        "traits": [],
+        "voice": "",
+        "family": []
+      }
     },
     {
       "name": "Ginger Hollywood",

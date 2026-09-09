@@ -655,6 +655,12 @@ The existing ones that will already catch you:
   house's own words, and the arc reaches its back half
 - `tests/bb-showmance-rate.test.js` — the couple ceiling scales with the cast,
   counts only what formed in the house, and the archetype matters
+- `tests/dr-rebook.test.js` — an author's pin reaches the episode it names on a
+  season already in progress, the episodes already watched replay byte-for-byte,
+  the re-run button returns a different night on every press, and a season that
+  cannot freeze its past refuses to re-decide its future. Carries a control arm
+  (the same pin with the re-book removed, which must NOT get the challenge) and
+  a source-order assertion, for the reasons in §11.5 J
 
 **The vocabulary guard, added 2026-08-12** — the one this section used to say
 was missing:
@@ -836,7 +842,7 @@ Two of the same shape, and both returned a confident wrong answer:
 
 ### J. Guards that pass against the bug
 
-Three ways a test has lied in this repo, all worth checking for in a new one:
+Five ways a test has lied in this repo, all worth checking for in a new one:
 
 1. **Asserting on presence in a whole page.** A replay test checked that the
    alliance's name and members appeared somewhere in the HTML — every houseguest
@@ -849,6 +855,21 @@ Three ways a test has lied in this repo, all worth checking for in a new one:
 3. **Not verifying the guard fails.** Every fix in this session was checked by
    reverting the code and watching the test fail. 25 of 25, 6 of 12, 15 of 15 —
    the "before" number is the evidence the test works.
+4. **Rolling state back in a way the real caller does not.** A re-run guard
+   rolled the season back by truncating `gs.episodeHistory` in place — which
+   leaves the very counter it was checking sitting on `gs`. `replayEpisode`
+   does not do that: it replaces `gs` with a DEEP CLONE of the checkpoint and
+   rolls the counter back with everything else. The test passed; the button
+   returned the same night on every press. **Roll back the way the caller rolls
+   back**, clone and all, or you are testing a state transition that never
+   happens.
+5. **Modelling the caller instead of reading it.** Once a guard models a
+   sequence rather than invoking it, the sequence can change underneath and the
+   guard stays green. In §11.5 N the ORDER of two lines was the entire bug and
+   it lived in `js/run-ui.js`, which nothing the model could reach. Pair the
+   behavioural test with one that reads the source and asserts the call sites
+   are still in that order — ugly, and the only thing that would have caught
+   it.
 
 ### K. Committed is not deployed, and an absent field is not a missing column
 
@@ -916,6 +937,79 @@ colour: a file that fails to collect contributes zero passing tests and it is
 easy to read the failure as environmental and move on. That is what happened
 here for however long the shebang had been there.
 
+### M. The author's choice, accepted and dropped
+
+A control writes its value somewhere nothing will ever read again, and the
+screen has no way to say so — from its side the write succeeded.
+
+The drag timeline's six dropdowns store onto `seasonConfig.drSchedule`. A drag
+season plays in ONE call: the first press of Simulate Episode runs the whole
+thing and queues every finished night, and later presses only shift rows off.
+So a challenge pinned after episode one aired was saved correctly, painted
+itself pink, and arrived at a season that had been decided minutes earlier.
+Reported as *"lipsync lala is getting forced to me when my episode clearly
+picked the ball in the dropdown"* — and the report is about the dropdown,
+because the dropdown is the only part the viewer can see.
+
+**The queue is the symptom; the dice are the cause.** Give a season ONE rng
+stream and every decision depends on how many numbers the decisions before it
+happened to draw — so re-deciding anything re-decides everything, and "apply
+this change to the rest of the season" cannot be implemented safely. That is
+why it never was. Three things make it possible:
+
+1. **One stream per unit of work**, salted off the seed and avalanched —
+   `streamFor(seed, salt)` in `js/dr/rng.js`. Never `rngFor(seed + n)`: that
+   LCG's first draw is a linear function of its seed, which is the same defect
+   that put the same tentpole last in forty consecutive seasons.
+2. **The engine returns what it actually ran**, per unit — `playDragSeason`'s
+   `schedule`, kept on `gs._drSchedule`. The parts already watched are handed
+   back as pins and replay byte-for-byte, so re-deciding the future cannot
+   rewrite the past.
+3. **Anything that cannot freeze its past refuses to re-decide its future.** A
+   season saved before the running order was recorded says so and re-airs,
+   rather than replaying a different season under a history that already went
+   out — the "episodes that never happened" corruption in a new hat.
+
+Ask of any new show: **can the author change episode seven on the night episode
+four goes out?** If the engine plays a whole season in one call — Big Brother,
+the castle and drag all do — the answer is no by default, and nobody finds out
+until somebody uses the control.
+
+Two latent bugs surfaced the moment the guest draw stopped repeating itself,
+which is the §11.5 lesson in miniature: one stream had been drawing the same
+handful of alumni every season, so `ARCH_BIAS` could carry `floater: {}` and
+`underdog: { underdogFriendly: 0 }` — not even a runway style — with two of
+fifteen archetypes judging with no taste at all; and `spare()` built its extra
+week without passing `cast`, the argument that excludes the competing queens
+from the guest pool, so a week added after a double shantay could fly in a
+queen to judge her own season. **Splitting a stream is a coverage change.**
+Expect it to fail guards that had never met their failing case.
+
+### N. A replay that is a re-air, and the rollback that eats what you write
+
+Two of them, stacked.
+
+1. **The checkpoint carries the answer.** `replayEpisode` restores
+   `gsCheckpoints[N]` and re-simulates. For a show whose whole season is queued,
+   that checkpoint carries the QUEUE — with episode N still at its head — so
+   shifting one row off hands back the identical night. Drag's ↺ re-aired for
+   its whole life, with a comment defending it on the grounds that re-deciding
+   from episode three would rewrite the ending. True while one stream ran the
+   season; false the moment the dice were split, because 1..N-1 then reproduce
+   exactly and only N onward diverges — which is what the button's own
+   confirmation ("Episodes N–M will be replaced with new results") had always
+   promised. **A re-run that returns the same night is not a re-run**, and
+   `js/tr-run.js` already worked to that rule.
+2. **The rollback re-saves the checkpoint, then you write to it.**
+   `replayEpisode` restores `gs` from the checkpoint and THEN RE-SAVES that
+   checkpoint from the restored state. Anything written to `gs` after that line
+   lands where the next press rolls back over. The re-run counter was bumped
+   after it, so every press restored 0, bumped to 1, and produced the night the
+   press before had produced: three presses, one distinct episode. Bumping
+   first bakes the count into the checkpoint, which is what makes it survive.
+   The measurement is the whole diagnosis — press it three times and count the
+   distinct nights.
+
 ### What a third show inherits from this work
 
 Wire these up rather than rebuilding them:
@@ -929,6 +1023,9 @@ Wire these up rather than rebuilding them:
 | Departures | `week.allianceExits` | quit, thrown out, and the concealed one that stays on the list |
 | Dissolution reporting | `week.allianceDissolved`, `week.allianceDepartures` | nothing leaves the panel without a sentence |
 | Life-layer carry | `brokenPairs` in `life-hook.js` | a break-up the audience watched ends the relationship in the log |
+| Independent seeded streams | `streamFor(seed, salt)` in `js/dr/rng.js` | one unit of work's dice never move when another's change — the precondition for editing a season already in progress (§11.5 M) |
+| The frozen prefix | `playDragSeason`'s `schedule` → `gs._drSchedule` → `_frozenPins()` | re-decide the future without rewriting the past, and refuse when the past cannot be reproduced |
+| A re-run that is a re-run | `gs._drReroll = { from, nonce }`, applied only to units at or after `from` | ↺ gives a different night every press while everything before it is untouched (§11.5 N) |
 
 ---
 

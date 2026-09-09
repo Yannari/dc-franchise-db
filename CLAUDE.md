@@ -29,8 +29,10 @@ feature, not only when adding a show.** It is the catalogue of bug classes found
 by playing seasons and reading the output — a system that runs and reaches no
 screen, a screen showing live state on a replayed episode, a speech that knows
 what the character does not, an average that hides the one event it should
-show, a constant calibrated for a different season length, and three ways a
-test has passed against the bug it was written for. Each entry carries the
+show, a constant calibrated for a different season length, an author's pin
+accepted by a season already decided, a replay button that re-airs instead of
+re-running, and five ways a test has passed against the bug it was written
+for. Each entry carries the
 measurement that found it.
 
 ## Architecture

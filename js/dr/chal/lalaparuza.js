@@ -229,14 +229,47 @@ export function perform(ctx) {
   if (r2Alive.length % 2) r2Losers.push(r2Alive[r2Alive.length - 1]);
 
   // ── ROUND 3 (SUDDEN DEATH): final elimination ──
+  // When 3+ queens are left, run a TRIPLE lip sync — everybody performs
+  // the same song and the lowest scorer goes home. This avoids the ugly
+  // case where one queen has to lip sync twice in a row while the others
+  // watch, which is not how the real show does it.
   let eliminated = null;
   const r3Alive = [...r2Losers].sort(() => rng() - 0.5);
-  while (r3Alive.length > 1) {
-    const a = r3Alive.shift();
-    const b = r3Alive.shift();
-    const { winner, loser } = duel(a, b, 3, 'Sudden Death', false);
-    r3Alive.push(winner);
-    eliminated = loser;
+  if (r3Alive.length >= 3) {
+    const song = SONGS[Math.floor(rng() * SONGS.length)];
+    const entries = r3Alive.map(n => {
+      const fat = fatigueFactor(lipsyncCount[n] || 0);
+      const sc = lipsyncScore({ player: players[n], song, lipsyncRecord: state.lipsyncRecord?.[n] || [], rng });
+      const adj = sc.score * fat + (prep[n] || 0) + hostLean(n, 3);
+      lipsyncCount[n] = (lipsyncCount[n] || 0) + 1;
+      return { name: n, raw: sc.score, fatigue: fat, adjusted: Math.round(adj * 100) / 100 };
+    });
+    entries.sort((a, b) => a.adjusted - b.adjusted);
+    eliminated = entries[0].name;
+    const survivors = entries.slice(1).map(e => e.name);
+    duels.push({
+      round: 3, roundLabel: 'Sudden Death',
+      triple: true,
+      contestants: entries.map(e => e.name),
+      song: song.title, artist: song.artist,
+      scores: Object.fromEntries(entries.map(e => [e.name, e.raw])),
+      fatigue: Object.fromEntries(entries.map(e => [e.name, e.fatigue])),
+      adjusted: Object.fromEntries(entries.map(e => [e.name, e.adjusted])),
+      winner: survivors[survivors.length - 1],
+      loser: eliminated,
+      chosen: false, strategy: null,
+      a: survivors[survivors.length - 1], b: eliminated,
+    });
+    while (r3Alive.length) r3Alive.pop();
+    for (const s of survivors) r3Alive.push(s);
+  } else {
+    while (r3Alive.length > 1) {
+      const a = r3Alive.shift();
+      const b = r3Alive.shift();
+      const { winner, loser } = duel(a, b, 3, 'Sudden Death', false);
+      r3Alive.push(winner);
+      eliminated = loser;
+    }
   }
   const lastSurvivor = r3Alive[0] || null;
 

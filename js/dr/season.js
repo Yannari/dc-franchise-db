@@ -28,7 +28,7 @@ import { judgeViews, panelRanking, hostBend } from './judging.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 
 /** How many queens are left standing when the finale begins. */
-export const FINALE_SIZE = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
+export const FINALE_SIZE = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4, 'perform-then-lipsync-3': 3 };
 
 // What episode one IS, when it is not simply the first ordinary week.
 const PREMIERE_MAXI = {
@@ -549,7 +549,7 @@ export function runFinale(state, cfg, ctx) {
     const f = duel(state, s1.winner, finalists[2], ctx, song(), fctx);
     rounds.push(s1, f);
     placements = [f.winner, f.loser, s1.loser, ...finalists.slice(3)];
-  } else if (type === 'perform-then-lipsync' && finalists.length >= 2) {
+  } else if ((type === 'perform-then-lipsync' || type === 'perform-then-lipsync-3') && finalists.length >= 2) {
     // A final performance ranks them, the host picks two, and those two lip
     // sync. This is the one finale where the panel speaks at all.
     // The SAME showcase everybody performed, not a second one: running it

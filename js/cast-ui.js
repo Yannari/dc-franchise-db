@@ -547,6 +547,16 @@ export function syncCastToRoster() {
     if (ri !== -1) {
       FRANCHISE_ROSTER[ri] = { ...FRANCHISE_ROSTER[ri], archetype: p.archetype, stats: { ...p.stats }, gender: p.gender };
       if (p.sexuality) FRANCHISE_ROSTER[ri].sexuality = p.sexuality;
+      /* AND HER CRAFT, WHICH THIS DROPPED. The seven drag stats are edited on
+         this form like the nine above them, and the sync wrote back the nine
+         and not the seven — so a queen given a craft line in the cast builder
+         had it erased from the roster the moment somebody pressed sync, and
+         the push branch below created her without one at all.
+         `getDragCraft()` returns undefined for an untouched row of fives, and
+         undefined must LEAVE THE EXISTING BLOCK ALONE rather than overwrite a
+         considered craft line with nothing — a cast built on a non-drag season
+         has no craft to contribute and must not delete what the Studio wrote. */
+      if (p.drag) FRANCHISE_ROSTER[ri].drag = { ...p.drag };
       // NOT isReturnee. Returning is a fact about an APPEARANCE, not about a
       // person: Jules being a returnee in season 12 does not make Jules a
       // returnee in season 15. Persisting it here wrote a season's casting
@@ -556,7 +566,10 @@ export function syncCastToRoster() {
       delete FRANCHISE_ROSTER[ri].isReturnee;
       updated++;
     } else {
-      FRANCHISE_ROSTER.push({ name: p.name, slug: baseAvatarSlug(p), gender: p.gender, archetype: p.archetype, stats: { ...p.stats } });
+      FRANCHISE_ROSTER.push({ name: p.name, slug: baseAvatarSlug(p), gender: p.gender,
+        archetype: p.archetype, stats: { ...p.stats },
+        // Only when she has one — see the note above.
+        ...(p.drag ? { drag: { ...p.drag } } : {}) });
       updated++;
     }
   });
@@ -1257,6 +1270,7 @@ export function saveConfig() {
        playDragSeason has always read config.drReunion — but nothing ever
        wrote that key, so the episode existed only inside tests. */
     drReunion:       g('cfg-dr-reunion')?.checked || false,
+    drSmackdown:     g('cfg-dr-smackdown')?.checked || false,
     drDoubleCrown:   g('cfg-dr-double-crown')?.checked || false,
     /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
        carrying every pinned decision about a week — a challenge, a guest, a
@@ -1425,6 +1439,7 @@ export function renderConfig() {
   chk('cfg-dr-double-sashay', seasonConfig.drDoubleSashay || false);
   chk('cfg-dr-immunity', seasonConfig.drImmunity || false);
   chk('cfg-dr-triple', seasonConfig.drTripleLipsync || false);
+  chk('cfg-dr-smackdown', seasonConfig.drSmackdown || false);
   chk('cfg-dr-reunion', seasonConfig.drReunion || false);
   chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   chk('cfg-ri',        seasonConfig.ri);

@@ -2256,7 +2256,7 @@ export function buildEpisodeMap() {
   const _drFmt = (typeof seasonFormat === 'function'
     ? seasonFormat(seasonConfig) : seasonConfig.format) === 'drag-race';
   if (_drFmt) {
-    const size = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 };
+    const size = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4, 'perform-then-lipsync-3': 3 };
     const finale = size[seasonConfig.drFinale] || 4;
     const booked = (seasonConfig.twistSchedule || []).filter(Boolean);
     const at = id => new Set(booked.filter(t => t.type === id || t.id === id)

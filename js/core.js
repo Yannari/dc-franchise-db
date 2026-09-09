@@ -1698,7 +1698,7 @@ export function defaultConfig() {
     // ALLOWANCES rather than frequencies: the lip sync earns them or they do
     // not happen, and the box only decides whether the engine may call one.
     drPremiere: 'standard', drFinale: 'top4',
-    drDoubleShantay: true, drDoubleSashay: false, drImmunity: false, drTripleLipsync: false,
+    drDoubleShantay: true, drDoubleSashay: false, drSmackdown: false, drImmunity: false, drTripleLipsync: false,
     // The per-episode timeline: maxi, mini, rotating judge, guest, song, twist.
     drSchedule: [],
     // Per-judge taste overrides from the setup screen's tabs, keyed by judge id.

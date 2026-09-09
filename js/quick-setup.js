@@ -70,7 +70,7 @@ export function blueprintFor(config = {}, castSize = 0) {
       why: castOk ? undefined : `Cast 8 to 16 ${w.players}`,
     });
     segs.push({ label: 'one werk room', ok: true });
-    const fin = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4 }[config.drFinale || 'top4'] || 4;
+    const fin = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4, 'perform-then-lipsync-3': 3 }[config.drFinale || 'top4'] || 4;
     const finOk = N > fin;
     segs.push({
       label: `finale at top ${fin}`,

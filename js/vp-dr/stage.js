@@ -22,6 +22,7 @@
 import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls, _seedRail } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
+import { STAGE_BEATS } from '../dr/data/stage-beats.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -306,6 +307,34 @@ export const STAGE_CSS = `
 .dr-act{margin:20px 0 10px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;
   color:#C9A6BC;border-bottom:1px solid rgba(255,255,255,.14);padding-bottom:6px}
 @media(prefers-reduced-motion:reduce){.dr-shake{animation:none}}
+
+/* ══ VISUAL-NOVEL MAIN STAGE ══ dialogue boxes with speaker portraits ══ */
+.dr-vn-ms{position:relative;margin:14px 0;padding:16px 20px 16px 110px;min-height:96px;
+  border-left:3px solid var(--dr-role,#FFC83D);border-radius:3px;
+  background:linear-gradient(90deg,var(--dr-role-bg,rgba(255,200,61,.08)),transparent 48%),
+    var(--dr-panel,rgba(10,2,7,.8));
+  box-shadow:0 0 24px -10px var(--dr-role-glow,rgba(255,200,61,.35));
+  opacity:0;animation:drVnIn .55s ease-out forwards;
+  animation-delay:calc(var(--dr-stagger,0) * .12s)}
+.dr-vn-ms .dr-bust{position:absolute;left:12px;top:50%;transform:translateY(-50%)}
+.dr-vn-ms .dr-por,.dr-vn-ms .dr-initials{border:2px solid var(--dr-role,#FFC83D);
+  box-shadow:0 0 18px -4px var(--dr-role-glow,rgba(255,200,61,.45))}
+.dr-vn-ms-plate{display:inline-block;padding:3px 14px 3px 10px;margin-bottom:8px;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+  color:#1a0a02;background:var(--dr-role,#FFC83D);
+  clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.dr-vn-ms p{margin:0;color:#f4e3ed;font-size:15px;line-height:1.65;text-wrap:pretty;
+  font-family:Didot,'Bodoni MT',Georgia,serif}
+.dr-vn-ms-host{--dr-role:#FFC83D;--dr-role-bg:rgba(255,200,61,.08);
+  --dr-role-glow:rgba(255,200,61,.40)}
+.dr-vn-ms-judge{--dr-role:#FF3D9A;--dr-role-bg:rgba(255,61,154,.08);
+  --dr-role-glow:rgba(255,61,154,.40)}
+.dr-vn-ms-queen{--dr-role:#7B2FF7;--dr-role-bg:rgba(123,47,247,.08);
+  --dr-role-glow:rgba(123,47,247,.40)}
+.dr-vn-ms-narrator{--dr-role:#b892a8;--dr-role-bg:rgba(184,146,168,.06);
+  --dr-role-glow:rgba(184,146,168,.20);padding-left:20px}
+@keyframes drVnIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.dr-vn-ms{animation:none;opacity:1}}
 `;
 
 /** The panel takes its seats — the host in drag, because this is the stage. */
@@ -355,10 +384,42 @@ export function rpBuildMainStage(row) {
         ${_portrait(n, ep, { size: 40 })}<i>${esc(n)}</i></span>`).join('')}</div>
     </div>` : ''}`;
 
-  const steps = scenes.map((sc, i) => `<div class="dr-step" id="dr-step-mainstage-${i}">
-    <div class="dr-panel dr-a-score" style="padding:14px 16px 14px 20px">
-      <p style="margin:0;color:#f4e3ed;line-height:1.6;text-wrap:pretty">${esc(sc.text)}</p>
-    </div></div>`).join('');
+  const _gPor = (id, opts = {}) => {
+    if (guest && String(id || '').startsWith('guest:'))
+      return _portrait(guest.name, ep, { slug: guest.slug, size: opts.size || 72 });
+    return _judgePortrait(id, opts);
+  };
+  const _beatSpeaker = beatId => STAGE_BEATS.find(b => b.id === beatId)?.speaker || 'narrator';
+
+  const steps = scenes.map((sc, i) => {
+    const speaker = _beatSpeaker(sc.data?.beat);
+    const roleCls = `dr-vn-ms-${speaker}`;
+    let portrait = '';
+    let plate = '';
+    if (speaker === 'host') {
+      portrait = _judgePortrait('rupaul', { stage: true, size: 72 });
+      plate = 'RuPaul';
+    } else if (speaker === 'judge') {
+      const jid = sc.data?.judge;
+      if (jid) {
+        portrait = _gPor(jid, { stage: true, size: 72 });
+        plate = guest && String(jid).startsWith('guest:') ? guest.name : judgeName(jid);
+      }
+    } else if (speaker === 'queen') {
+      const q = (sc.data?.players || [])[0];
+      if (q) {
+        portrait = _portrait(q, ep, { size: 72 });
+        plate = q;
+      }
+    }
+    const hasPortrait = speaker !== 'narrator' && portrait;
+    return `<div class="dr-step dr-vn-ms ${roleCls}" id="dr-step-mainstage-${i}"
+      style="--dr-stagger:${i}">
+      ${hasPortrait ? portrait : ''}
+      ${plate ? `<span class="dr-vn-ms-plate">${esc(plate)}</span>` : ''}
+      <p>${esc(sc.text)}</p>
+    </div>`;
+  }).join('');
 
   /* THE MAIN STAGE ITSELF. The one screen that is named after the room it
      happens in was the only one on this night not drawing it: a proscenium
@@ -467,6 +528,12 @@ export function rpBuildCritiques(row) {
   const lines = row?.dr?.critiques || [];
   if (!lines.length) return '';
   const reactions = row?.dr?.reactions || {};
+  const guestObj = row?.dr?.guest;
+  const _jpor = (id, opts = {}) => {
+    if (guestObj && String(id || '').startsWith('guest:'))
+      return _portrait(guestObj.name, ep, { slug: guestObj.slug, size: opts.size || 52 });
+    return _judgePortrait(id, opts);
+  };
   const split = row?.dr?.panel?.split;
   const ids = row?.dr?.judges || [];
 
@@ -540,9 +607,10 @@ export function rpBuildCritiques(row) {
     ${ids.map(id => {
     const j = JUDGES.find(x => x.id === id) || {};
     return `<div class="dr-seat-j" id="dr-seat-${esc(id)}" data-judge="${esc(id)}">
-        ${_judgePortrait(id, { stage: true, size: 54 })}
-        <b class="dr-disp">${esc(judgeName(id))}</b>
+        ${_jpor(id, { stage: true, size: 54 })}
+        <b class="dr-disp">${esc(j.name || (guestObj && String(id).startsWith('guest:') ? guestObj.name : id))}</b>
         ${j.softSpot ? `<i>${esc(j.softSpot)}</i>` : ''}
+        ${guestObj && String(id).startsWith('guest:') ? '<span class="dr-taste dr-t-guest">guest judge</span>' : ''}
       </div>`;
   }).join('')}
     <div class="dr-bench-desk"></div>
@@ -568,7 +636,7 @@ export function rpBuildCritiques(row) {
           <span class="dr-plate dr-disp">${esc(c.judgeName || judgeName(c.judge))}</span>
           <span class="dr-tonetag dr-disp">${esc(c.tone)}</span>
         </div>
-        ${_judgePortrait(c.judge, { stage: true, size: 118 })}
+        ${_jpor(c.judge, { stage: true, size: 118 })}
         <q>${esc(c.text || c.line || '')}</q>
         ${c.note ? `<p>${esc(c.note)}</p>` : ''}
         ${(c.reasons || []).length
@@ -577,7 +645,7 @@ export function rpBuildCritiques(row) {
       + (quiet.length ? `<div class="dr-quiet-panel">
         <span class="dr-quiet-k dr-disp">Also on the panel</span>
         ${quiet.map(c => `<span class="dr-quiet-j dr-tone-${esc(c.tone)}">
-          ${_judgePortrait(c.judge, { size: 30 })}
+          ${_jpor(c.judge, { size: 30 })}
           <b>${esc(c.judgeName || judgeName(c.judge))}</b>
           <i class="dr-disp">${esc(c.tone)}</i></span>`).join('')}
       </div>` : '');
@@ -618,7 +686,7 @@ export function rpBuildCritiques(row) {
     return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + i}">
       <div class="dr-panel ${isHost ? 'dr-a-score' : 'dr-a-room'} dr-delib">
         ${isHost ? _judgePortrait('rupaul', { stage: true, size: 44 })
-    : jid ? _judgePortrait(jid, { size: 44 }) : ''}
+    : jid ? _jpor(jid, { size: 44 }) : ''}
         <div>
           <span class="dr-sub">${isHost ? 'the host decides'
     : arg ? `${esc(sc.data?.judge || '')} · ${esc(sc.data?.taste || '')}`

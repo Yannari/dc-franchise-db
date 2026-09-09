@@ -418,7 +418,7 @@ const TITLE = 'Queen of She Done Already Done Had Herses';
  * who went home fourth can leave the season with something.
  */
 export function runSmackdown(state, cfg, ctx) {
-  const { players } = ctx;
+  const { players, bond } = ctx;
   // ITS OWN STREAM, and this is not tidiness. Drawing from the season's rng
   // would consume draws before the finale and change who gets crowned — a
   // measured fact, not a worry: with a shared stream, turning the Smackdown on
@@ -439,32 +439,66 @@ export function runSmackdown(state, cfg, ctx) {
   let round = 1;
   let guard = 0;
 
+  // Strategy: same logic as the LaLaPaRuZa — bold queens target rivals or
+  // front-runners, nice queens pick the weakest lip syncer.
+  const NICE_SET = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+  const VILLAIN_SET = new Set(['villain', 'mastermind', 'schemer']);
+  const dragOf = p => p?.drag || {};
+  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+  const ppe = n => {
+    const r = state.record?.[n] || [];
+    return r.length ? r.reduce((s, x) => s + (_ppeW[x] ?? 0), 0) / r.length : 3;
+  };
+
+  const pickOpponent = (chooser, pool) => {
+    const p = players[chooser];
+    const bold = (Number(p?.stats?.boldness) || 5) / 10;
+    const arch = p?.archetype;
+    if (!NICE_SET.has(arch) && rng() < bold * 0.5) {
+      const rival = pool.reduce((w, n) => ((bond(chooser, n) || 0) < (bond(chooser, w) || 0) ? n : w), pool[0]);
+      if ((bond(chooser, rival) || 0) <= -3) return { choice: rival, strategy: 'rival' };
+      if (VILLAIN_SET.has(arch)) {
+        const sorted = [...pool].sort((a, b) => ppe(b) - ppe(a));
+        return { choice: sorted[0], strategy: 'frontrunner' };
+      }
+    }
+    const sorted = [...pool].sort((a, b) => (dragOf(players[a]).lipsync || 5) - (dragOf(players[b]).lipsync || 5));
+    return { choice: sorted[0], strategy: 'safe' };
+  };
+
   while (alive.length > 1 && guard++ < 20) {
     const next = [];
-    for (let i = 0; i + 1 < alive.length; i += 2) {
-      const a = alive[i];
-      const b = alive[i + 1];
+    const roundPool = [...alive].sort(() => rng() - 0.5);
+    const used = new Set();
+    for (let i = 0; i < roundPool.length; i++) {
+      const chooser = roundPool[i];
+      if (used.has(chooser)) continue;
+      used.add(chooser);
+      const available = roundPool.filter(n => !used.has(n));
+      if (!available.length) { next.push(chooser); break; }
+      const { choice: opponent, strategy } = pickOpponent(chooser, available);
+      used.add(opponent);
       const song = SONGS[Math.floor(rng() * SONGS.length)];
-      const sa = lipsyncScore({ player: players[a], song, lipsyncRecord: state.lipsyncRecord?.[a] || [], rng });
-      const sb = lipsyncScore({ player: players[b], song, lipsyncRecord: state.lipsyncRecord?.[b] || [], rng });
-      const adjA = sa.score * fatigue(a);
-      const adjB = sb.score * fatigue(b);
+      const sa = lipsyncScore({ player: players[chooser], song, lipsyncRecord: state.lipsyncRecord?.[chooser] || [], rng });
+      const sb = lipsyncScore({ player: players[opponent], song, lipsyncRecord: state.lipsyncRecord?.[opponent] || [], rng });
+      const adjA = sa.score * fatigue(chooser);
+      const adjB = sb.score * fatigue(opponent);
       const call = lipsyncCall({
-        a: { name: a, score: adjA }, b: { name: b, score: adjB },
+        a: { name: chooser, score: adjA }, b: { name: opponent, score: adjB },
       });
       wins[call.winner]++;
-      lipsyncCount[a] = (lipsyncCount[a] || 0) + 1;
-      lipsyncCount[b] = (lipsyncCount[b] || 0) + 1;
+      lipsyncCount[chooser] = (lipsyncCount[chooser] || 0) + 1;
+      lipsyncCount[opponent] = (lipsyncCount[opponent] || 0) + 1;
       duels.push({
-        round, a, b, song: song.title, artist: song.artist,
-        scores: { [a]: sa.score, [b]: sb.score },
-        fatigue: { [a]: fatigue(a), [b]: fatigue(b) },
-        adjusted: { [a]: Math.round(adjA * 100) / 100, [b]: Math.round(adjB * 100) / 100 },
+        round, a: chooser, b: opponent, chosen: true, strategy,
+        song: song.title, artist: song.artist,
+        scores: { [chooser]: sa.score, [opponent]: sb.score },
+        fatigue: { [chooser]: fatigue(chooser), [opponent]: fatigue(opponent) },
+        adjusted: { [chooser]: Math.round(adjA * 100) / 100, [opponent]: Math.round(adjB * 100) / 100 },
         winner: call.winner, loser: call.loser,
       });
       next.push(call.winner);
     }
-    if (alive.length % 2) next.push(alive[alive.length - 1]);
     alive = next;
     round++;
   }

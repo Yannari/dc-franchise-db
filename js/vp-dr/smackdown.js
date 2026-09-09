@@ -487,69 +487,365 @@ export function rpBuildSmackdown(row) {
   const sd = row?.dr?.smackdown;
   if (!sd?.duels?.length) return '';
   const ep = row;
-  const scenes = (row.dr.scenes || []).filter(s => s.kind === 'smackdown-duel');
-  const open = (row.dr.scenes || []).find(s => s.kind === 'smackdown-open');
-  const crown = (row.dr.scenes || []).find(s => s.kind === 'smackdown-crown');
+  const duels = sd.duels;
+  const field = sd.field || [];
 
-  const rounds = [...new Set(sd.duels.map(d => d.round))].sort((a, b) => a - b);
-  const nameOf = n => (n === rounds.length ? 'FINAL'
-    : n === rounds.length - 1 ? 'SEMI-FINALS' : `ROUND ${n}`);
+  // ── BRACKET BOARD (always visible, fills in on reveal) ──
+  const rounds = [...new Set(duels.map(d => d.round))].sort((a, b) => a - b);
+  const roundName = r => (r === rounds.length ? 'FINAL'
+    : r === rounds.length - 1 ? 'SEMI-FINALS' : `ROUND ${r}`);
 
-  const idxOf = new Map(sd.duels.map((d, i) => [d, i]));
+  const bracket = rounds.map(rn => `<div class="sd-round sd-r${Math.min(rn, 3)}">
+    <div class="sd-round-label">${roundName(rn)}</div>
+    ${duels.filter(d => d.round === rn).map(d => {
+    const gi = duels.indexOf(d);
+    return `<div class="sd-match" id="sd-sm-${gi}">
+      <div class="sd-song">&ldquo;${esc(d.song)}&rdquo;</div>
+      ${side(d.a, ep, d.adjusted?.[d.a] ?? d.scores?.[d.a], d.winner === d.a, d.fatigue?.[d.a])}
+      ${side(d.b, ep, d.adjusted?.[d.b] ?? d.scores?.[d.b], d.winner === d.b, d.fatigue?.[d.b])}
+    </div>`;
+  }).join('')}
+  </div>`).join('');
 
-  const bracket = rounds.map(rn => `<div class="sd-round">
-      <div class="sd-round-label">${nameOf(rn)}</div>
-      ${sd.duels.filter(d => d.round === rn).map(d => `
-        <div class="sd-match" id="sd-match-${idxOf.get(d)}">
-          <div class="sd-song">&ldquo;${esc(d.song)}&rdquo;</div>
-          ${side(d.a, ep, d.adjusted?.[d.a] ?? d.scores?.[d.a], d.winner === d.a, d.fatigue?.[d.a])}
-          ${side(d.b, ep, d.adjusted?.[d.b] ?? d.scores?.[d.b], d.winner === d.b, d.fatigue?.[d.b])}
-        </div>`).join('')}
-    </div>`).join('')
-    + `<div class="sd-round"><div class="sd-round-label">CHAMPION</div>
-        <div class="sd-champ" id="sd-champ">
-          ${_portrait(sd.winner, ep, { size: 84, station: true })}
-          <div class="sd-name dr-disp">${esc(sd.winner || '—')}</div>
-          <div class="sd-belt">${esc(sd.title || '')}</div>
-        </div></div>`;
-
-  const lead = `<div class="sd-hero">
-      <div class="sd-title dr-disp">The Lip Sync Smackdown</div>
-      <h2 class="dr-disp">${sd.field.length} queens, one bracket</h2>
-      <p>Everybody here already went home. Nobody goes home again.</p>
+  const champPlinth = sd.winner ? `<div class="sd-round">
+    <div class="sd-round-label">CHAMPION</div>
+    <div class="sd-champ" id="sd-sm-champ">
+      ${_portrait(sd.winner, ep, { size: 84, station: true })}
+      <div class="sd-name dr-disp">${esc(sd.winner || '—')}</div>
+      <div class="sd-belt">${esc(sd.title || '')}</div>
     </div>
-    <div class="sd-bracket">${bracket}</div>`;
+  </div>` : '';
 
-  const cards = [open, ...scenes, crown].filter(s => s?.text).map((sc, i) => {
-    const who = (sc.data?.players || []).slice(0, 2);
-    return `<div class="dr-step" id="dr-step-smackdown-${i}">
-      <div class="dr-panel dr-a-lip dr-scene">
-        ${who.length ? `<span class="dr-who">${who.map(n =>
+  const boardHtml = `<div class="sd-bracket" id="sd-sm-board">${bracket}${champPlinth}</div>`;
+
+  // ── SONG POOL ──
+  const usedSongs = new Set(duels.map(d => d.song));
+  const poolSize = Math.max(8, field.length + 2);
+  const poolSongs = SONGS.filter(s => usedSongs.has(s.title))
+    .concat(SONGS.filter(s => !usedSongs.has(s.title)).slice(0, poolSize))
+    .slice(0, poolSize);
+
+  // ── BUILD THE STEP SEQUENCE ──
+  const steps = [];
+  const sidebarPanels = [];
+  let stepIdx = 0;
+
+  const sideState = {
+    lipsyncCount: Object.fromEntries(field.map(n => [n, 0])),
+    wins: Object.fromEntries(field.map(n => [n, 0])),
+    losses: Object.fromEntries(field.map(n => [n, 0])),
+    songsUsed: [],
+    currentRound: 0,
+    status: Object.fromEntries(field.map(n => [n, 'waiting'])),
+  };
+
+  const buildSidebar = () => {
+    const sorted = [...field].sort((a, b) =>
+      (sideState.wins[b] || 0) - (sideState.wins[a] || 0)
+      || (sideState.losses[a] || 0) - (sideState.losses[b] || 0));
+    const statusIcon = s =>
+      s === 'advanced' ? '<span style="color:var(--sd-safe)">&#x2713;</span>'
+        : s === 'champion' ? '<span style="color:var(--sd-gold)">&#x1F451;</span>'
+          : s === 'out' ? '<span style="color:var(--sd-dead)">&#x2717;</span>'
+            : '<span style="color:#8a6a7e">&middot;</span>';
+    const fatBar = n => {
+      const count = sideState.lipsyncCount[n] || 0;
+      if (!count) return '';
+      const pct = Math.round((count >= 5 ? 0.52 : [1.0, 0.88, 0.78, 0.65, 0.52][count]) * 100);
+      const cls = pct >= 85 ? 'sd-fat-ok' : pct >= 70 ? 'sd-fat-mid' : 'sd-fat-low';
+      return `<div class="sd-fat" style="width:32px;margin-left:auto"><div class="sd-fat-fill ${cls}" style="width:${pct}%"></div></div>`;
+    };
+    return `<h4 class="dr-disp" style="margin:0 0 8px">The Bracket</h4>
+      <div style="font-size:9px;letter-spacing:.12em;color:var(--sd-gold);margin-bottom:6px">${
+  roundName(sideState.currentRound || 1)}</div>
+      ${sorted.map(n => `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;
+        ${sideState.status[n] === 'out' ? 'opacity:.35;' : ''}">
+        ${statusIcon(sideState.status[n])}
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+          color:${sideState.status[n] === 'advanced' || sideState.status[n] === 'champion' ? 'var(--sd-safe)' : sideState.status[n] === 'out' ? 'var(--sd-dead)' : '#f4e3ed'}">${esc(n)}</span>
+        <span style="color:#8a6a7e;font-size:9px;font-variant-numeric:tabular-nums">${sideState.wins[n] || 0}W ${sideState.losses[n] || 0}L</span>
+        ${fatBar(n)}
+      </div>`).join('')}
+      ${sideState.songsUsed.length ? `<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">
+        <div style="font-size:8px;letter-spacing:.12em;color:#8a6a7e;margin-bottom:4px">SONGS USED</div>
+        ${sideState.songsUsed.map(s => `<div style="font-size:10px;color:#b892a8;padding:1px 0">&ldquo;${esc(s)}&rdquo;</div>`).join('')}
+      </div>` : ''}`;
+  };
+
+  const step = (html) => {
+    steps.push(`<div class="dr-step" id="dr-step-smackdown-${stepIdx}">${html}</div>`);
+    sidebarPanels.push(buildSidebar());
+    stepIdx++;
+  };
+
+  // Prose scene helper
+  const proseScenes = (row.dr.scenes || []).filter(s => s.text && /^smackdown-/.test(s.kind || ''));
+  const proseByKind = {};
+  for (const s of proseScenes) {
+    if (!proseByKind[s.kind]) proseByKind[s.kind] = [];
+    proseByKind[s.kind].push(s);
+  }
+  const nextProse = kind => (proseByKind[kind] || []).shift();
+
+  const proseCard = (scene) => {
+    if (!scene?.text) return '';
+    const who = (scene.data?.players || []).slice(0, 2);
+    return `<div class="dr-panel dr-a-lip dr-scene">
+      ${who.length ? `<span class="dr-who">${who.map(n =>
     _portrait(n, ep, { size: 46 })).join('')}</span>` : ''}
-        <div class="dr-scene-body">${esc(sc.text)}</div>
-      </div></div>`;
-  }).join('');
+      <div class="dr-scene-body">${esc(scene.text)}</div>
+    </div>`;
+  };
 
-  const total = [open, ...scenes, crown].filter(s => s?.text).length;
+  // ── OPENING ──
+  const openScene = nextProse('smackdown-open');
+  step(`<div class="dr-panel dr-a-lip">
+    <div class="sd-hero">
+      <div class="sd-title dr-disp">The Lip Sync Smackdown</div>
+      <h2 class="dr-disp">${field.length} queens, one bracket</h2>
+      <p>Everybody here already went home. Nobody goes home again &mdash; only glory.</p>
+    </div>
+    ${openScene ? `<div class="dr-scene"><div class="dr-scene-body">${esc(openScene.text)}</div></div>` : ''}
+  </div>`);
+
+  // ── PER-ROUND ──
+  let currentRound = 0;
+  const roundBallsUsed = new Set();
+  let roundPool = [];
+  const roundColor = r => r >= 3 ? 'var(--sd-r3)' : r === 2 ? 'var(--sd-r2)' : 'var(--sd-r1)';
+  const maxAdj = duels.reduce((mx, d) =>
+    Math.max(mx, d.adjusted?.[d.a] ?? 0, d.adjusted?.[d.b] ?? 0), 1);
+
+  for (let di = 0; di < duels.length; di++) {
+    const d = duels[di];
+    const isFinal = d.round === rounds[rounds.length - 1];
+
+    // ── ROUND BANNER on new round ──
+    if (d.round !== currentRound) {
+      currentRound = d.round;
+      sideState.currentRound = d.round;
+      roundBallsUsed.clear();
+      const roundDuels = duels.filter(x => x.round === d.round);
+      const poolSet = new Set();
+      for (const rd of roundDuels) { poolSet.add(rd.a); poolSet.add(rd.b); }
+      roundPool = [...poolSet];
+
+      const rScene = d.round === 1 ? null : nextProse('smackdown-duel');
+
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-banner${isFinal ? ' danger' : ''}">
+          <div class="tm-banner-round">${roundName(d.round)}</div>
+          <div class="tm-banner-line">${
+  isFinal ? 'One song for the crown.'
+    : d.round === 1 ? 'Everybody lip syncs. Winners advance.'
+      : 'The winners face each other.'}</div>
+        </div>
+        ${rScene ? `<div class="dr-scene" style="margin-top:10px"><div class="dr-scene-body">${esc(rScene.text)}</div></div>` : ''}
+      </div>`);
+    }
+
+    // ── 1. BALL DRAW — slot machine picks who chooses ──
+    const rCol = roundColor(d.round);
+    const chooser = d.a;
+    const available = roundPool.filter(n => !roundBallsUsed.has(n));
+    const reelNames = [];
+    for (let c = 0; c < 3; c++) {
+      const shuffled = [...available].sort(() => 0.5 - Math.random());
+      for (const n of shuffled) reelNames.push(n);
+    }
+    reelNames.push(chooser);
+    const spinEnd = -(reelNames.length - 1) * 52;
+
+    step(`<div class="dr-panel dr-a-lip">
+      <div class="tm-draw">
+        <div class="tm-draw-label" style="color:${rCol}">BALL DRAW</div>
+        <div class="tm-reel">
+          <div class="tm-reel-track" style="--tm-spin-end:${spinEnd}px">
+            ${reelNames.map((n, i) =>
+    `<div class="tm-reel-name${i === reelNames.length - 1 ? ' target' : ''}">${esc(n)}</div>`
+  ).join('')}
+          </div>
+        </div>
+        <div class="tm-balls">${roundPool.map(n =>
+    `<div class="tm-ball${n === chooser ? ' picked' : roundBallsUsed.has(n) ? ' spent' : ' waiting'}">${esc(n.substring(0, 3))}</div>`
+  ).join('')}</div>
+        <div class="tm-picked-name">${esc(chooser)}</div>
+        <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">GETS TO CHOOSE</div>
+      </div>
+    </div>`);
+
+    // ── 2. OPPONENT PICK ──
+    const stratLabel = d.strategy === 'rival' ? 'TARGETING A RIVAL'
+      : d.strategy === 'frontrunner' ? 'TARGETING THE FRONT-RUNNER'
+        : 'PLAYING SAFE';
+    const stratCls = d.strategy || 'safe';
+    step(`<div class="dr-panel dr-a-lip">
+      <div class="tm-pick">
+        <div class="tm-pick-label" style="color:${rCol}">OPPONENT PICK</div>
+        <div class="tm-pick-chooser"><b>${esc(chooser)}</b> chooses&hellip;</div>
+        <div class="tm-pick-target">
+          ${_portrait(chooser, ep, { size: 56 })}
+          <div class="tm-pick-arrow">&#x279C;</div>
+          <div class="tm-pick-reveal">
+            ${_portrait(d.b, ep, { size: 56 })}
+            <div class="tm-pick-name">${esc(d.b)}</div>
+          </div>
+        </div>
+        <div class="tm-strategy ${stratCls}">${stratLabel}</div>
+        ${d.strategy === 'rival' ? `<div class="tm-pick-reason">${esc(chooser)} has a grudge.</div>`
+    : d.strategy === 'frontrunner' ? `<div class="tm-pick-reason">${esc(d.b)} has the strongest track record.</div>`
+      : `<div class="tm-pick-reason">${esc(d.b)} is the weakest lip syncer available.</div>`}
+      </div>
+    </div>`);
+
+    // ── 3. SONG PICK — opponent picks the song ──
+    const chosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
+    step(`<div class="dr-panel dr-a-lip">
+      <div class="tm-song-pick">
+        <div class="tm-song-pick-label" style="color:${rCol}">SONG PICK</div>
+        <div class="tm-song-pick-who"><b>${esc(d.b)}</b> picks the lip sync song</div>
+        <div class="tm-song-pool">${poolSongs.map(s =>
+    `<div class="tm-song-chip${s.title === d.song ? ' chosen' : ''}">${esc(s.title)}</div>`
+  ).join('')}</div>
+        <div class="tm-song-chosen">
+          <div class="tm-song-title">&ldquo;${esc(d.song)}&rdquo;</div>
+          <div class="tm-song-artist">${esc(chosenSong.artist)}</div>
+          <div class="tm-song-tags">
+            ${chosenSong.tempo ? `<div class="tm-song-tag">${esc(chosenSong.tempo)}</div>` : ''}
+            ${chosenSong.mood ? `<div class="tm-song-tag">${esc(chosenSong.mood)}</div>` : ''}
+            ${chosenSong.genre ? `<div class="tm-song-tag">${esc(chosenSong.genre)}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`);
+
+    roundBallsUsed.add(chooser);
+    roundBallsUsed.add(d.b);
+
+    // ── VERSUS CARD ──
+    const fatA = d.fatigue?.[d.a];
+    const fatB = d.fatigue?.[d.b];
+
+    step(`<div class="dr-panel dr-a-lip">
+      <div class="tm-vs on">
+        <div class="tm-vs-flash"></div>
+        <div class="tm-vs-divider"></div>
+        <div class="tm-vs-left">
+          ${_portrait(d.a, ep, { size: 68 })}
+          <div class="tm-vs-name">${esc(d.a)}</div>
+          ${fatA != null && fatA < 1 ? fatHud(fatA) : '<div class="tm-vs-sub">FRESH</div>'}
+        </div>
+        <div class="tm-vs-center">
+          <div class="tm-vs-tag">VS</div>
+          <div class="tm-vs-song">&ldquo;${esc(d.song)}&rdquo;</div>
+          <div style="font-size:8px;color:#8a6a7e;margin-top:2px">${esc(d.artist || '')}</div>
+        </div>
+        <div class="tm-vs-right">
+          ${_portrait(d.b, ep, { size: 68 })}
+          <div class="tm-vs-name">${esc(d.b)}</div>
+          ${fatB != null && fatB < 1 ? fatHud(fatB) : '<div class="tm-vs-sub">FRESH</div>'}
+        </div>
+      </div>
+    </div>`);
+
+    // ── LIP SYNC PROSE ──
+    const duelScene = nextProse('smackdown-duel');
+    if (duelScene?.text) step(proseCard(duelScene));
+
+    // ── RESULT CARD ──
+    sideState.lipsyncCount[d.a] = (sideState.lipsyncCount[d.a] || 0) + 1;
+    sideState.lipsyncCount[d.b] = (sideState.lipsyncCount[d.b] || 0) + 1;
+    sideState.wins[d.winner] = (sideState.wins[d.winner] || 0) + 1;
+    sideState.losses[d.loser] = (sideState.losses[d.loser] || 0) + 1;
+    sideState.songsUsed.push(d.song);
+    sideState.status[d.winner] = isFinal ? 'champion' : 'advanced';
+    sideState.status[d.loser] = 'out';
+
+    const scoreA = d.adjusted?.[d.a] ?? 0;
+    const scoreB = d.adjusted?.[d.b] ?? 0;
+    const pctA = Math.round((scoreA / maxAdj) * 100);
+    const pctB = Math.round((scoreB / maxAdj) * 100);
+    const winA = d.winner === d.a;
+    const winB = d.winner === d.b;
+    const winStamp = isFinal ? 'CHAMPION' : 'ADVANCES';
+
+    step(`<div class="dr-panel dr-a-lip">
+      <div class="tm-result on" id="sd-sm-res-${di}">
+        <div class="tm-result-side ${winA ? 'win' : 'lose'}">
+          <div class="tm-result-stamp">${winA ? winStamp : 'OUT'}</div>
+          ${_portrait(d.a, ep, { size: 56 })}
+          <div class="tm-result-name">${esc(d.a)}</div>
+          <div class="tm-bar"><div class="tm-bar-fill ${winA ? 'gold' : 'dead'} race" style="--tm-bar-pct:${pctA}%"></div></div>
+          <div class="tm-result-score">${scoreA.toFixed(1)}</div>
+          ${fatA != null && fatA < 1 ? fatigueBar(fatA) : ''}
+        </div>
+        <div class="tm-result-side ${winB ? 'win' : 'lose'}">
+          <div class="tm-result-stamp">${winB ? winStamp : 'OUT'}</div>
+          ${_portrait(d.b, ep, { size: 56 })}
+          <div class="tm-result-name">${esc(d.b)}</div>
+          <div class="tm-bar"><div class="tm-bar-fill ${winB ? 'gold' : 'dead'} race" style="--tm-bar-pct:${pctB}%"></div></div>
+          <div class="tm-result-score">${scoreB.toFixed(1)}</div>
+          ${fatB != null && fatB < 1 ? fatigueBar(fatB) : ''}
+        </div>
+      </div>
+    </div>`);
+  }
+
+  // ── CROWNING ──
+  if (sd.winner) {
+    const crownScene = nextProse('smackdown-crown');
+    step(`<div class="dr-panel dr-a-lip">
+      <div class="tm-exit" style="border-color:var(--sd-gold)">
+        <div class="tm-exit-label" style="color:var(--sd-gold)">LIP SYNC CHAMPION</div>
+        ${_portrait(sd.winner, ep, { size: 84, station: true })}
+        <div class="tm-exit-name">${esc(sd.winner)}</div>
+        <div class="tm-exit-sub">${esc(sd.title || 'Lip Sync Assassin of the Season')}</div>
+      </div>
+      ${crownScene ? `<div class="dr-scene" style="margin-top:14px"><div class="dr-scene-body">${esc(crownScene.text)}</div></div>` : ''}
+    </div>`);
+  }
+
+  // ── REVEAL HOOK + ANIMATION TRIGGER ──
+  const total = steps.length;
+  const suffix = 'smackdown';
 
   if (typeof window !== 'undefined') {
-    const nDuels = sd.duels.length;
-    const off = open?.text ? 1 : 0;
     window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra.smackdown = (idx) => {
-      for (let d = 0; d < nDuels; d++) {
-        const box = document.getElementById(`sd-match-${d}`);
-        if (box) box.classList.toggle('on', idx >= d + off);
+    window._drSidebar = window._drSidebar || {};
+    window._drSidebar[suffix] = sidebarPanels;
+
+    window._drRevealExtra[suffix] = (idx) => {
+      for (let d = 0; d < duels.length; d++) {
+        const resEl = document.getElementById(`sd-sm-res-${d}`);
+        const matchEl = document.getElementById(`sd-sm-${d}`);
+        if (!matchEl) continue;
+        const resStep = resEl?.closest('.dr-step');
+        const resVisible = resStep && resStep.classList.contains('dr-vis');
+        matchEl.classList.toggle('on', !!resVisible);
       }
-      const plinth = document.getElementById('sd-champ');
+      const plinth = document.getElementById('sd-sm-champ');
       if (plinth) plinth.classList.toggle('on', idx >= total - 1);
+
+      const newest = document.getElementById(`dr-step-${suffix}-${idx}`);
+      if (newest && !newest.classList.contains('tm-anim')) {
+        requestAnimationFrame(() => newest.classList.add('tm-anim'));
+      }
     };
   }
-  return `<style>${SMACKDOWN_CSS}</style>${_shell(lead + cards + _controls('smackdown', total), ep, {
-    phase: 'lipsync',
-    title: 'The Lip Sync Smackdown',
-    subtitle: 'the queens who already went home, settling it',
-  })}`;
+
+  const hero = `<div class="sd-hero">
+    <div class="sd-title dr-disp">The Lip Sync Smackdown</div>
+    <h2 class="dr-disp">${field.length} queens, one bracket</h2>
+    <p>Everybody here already went home. Nobody goes home again &mdash; only glory.</p>
+  </div>`;
+
+  return `<style>${SMACKDOWN_CSS}${TOURNAMENT_CSS}</style>${_shell(
+    hero + boardHtml + steps.join('') + _controls(suffix, total, ep.num), ep, {
+      phase: 'lipsync',
+      title: 'The Lip Sync Smackdown',
+      subtitle: 'the queens who already went home, settling it',
+      sidebar: _seedRail(suffix, '<h4 class="dr-disp">The Bracket</h4>'),
+    })}`;
 }
 
 // ── LALAPARUZA TOURNAMENT ───────────────────────────────────────────
@@ -564,16 +860,17 @@ export function rpBuildSmackdown(row) {
 //     5. LIP SYNC      — prose
 //     6. RESULT        — score bars race, winner/loser stamps slam
 //
-//   R2/R3 duels (random):
-//     1. MATCHUP DRAW  — ball machine draws who faces whom
-//     2. SONG PICK     — random song draw from the pool
-//     3. VERSUS        — full VS card with fatigue
-//     4. LIP SYNC      — prose
-//     5. RESULT        — score bars race, winner/loser stamps slam
+//   R2/R3 duels (non-chosen):
+//     1. BALL DRAW     — slot machine picks who chooses
+//     2. OPPONENT PICK — drawn queen names her opponent
+//     3. SONG PICK     — opponent picks the lip sync song
+//     4. VERSUS        — full VS card with fatigue
+//     5. LIP SYNC      — prose
+//     6. RESULT        — score bars race, winner/loser stamps slam
 //
 //   Triple lip sync (R1 odd group or R3 sudden death):
-//     1. MATCHUP DRAW  — ball machine shows the 3 queens drawn
-//     2. SONG PICK     — random song draw
+//     1. BALL DRAW     — slot machine shows the queens drawn
+//     2. SONG PICK     — host picks the song
 //     3. VERSUS        — 3-way card
 //     4. LIP SYNC      — prose
 //     5. RESULT        — 3-way result, lowest scorer eliminated
@@ -769,7 +1066,7 @@ export function rpBuildTournament(row) {
       const names = d.contestants || [d.a, d.b];
       const rCol = roundColor(d.round);
 
-      // Triple matchup draw
+      // Triple ball draw
       const tripleReel = [];
       for (let c = 0; c < 3; c++) {
         const shuffled = [...roundPool].sort(() => 0.5 - Math.random());
@@ -780,7 +1077,7 @@ export function rpBuildTournament(row) {
 
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-draw">
-          <div class="tm-draw-label" style="color:${rCol}">MATCHUP DRAW</div>
+          <div class="tm-draw-label" style="color:${rCol}">BALL DRAW</div>
           <div class="tm-reel">
             <div class="tm-reel-track" style="--tm-spin-end:${tripleSpinEnd}px">
               ${tripleReel.map((n, i) =>
@@ -800,8 +1097,8 @@ export function rpBuildTournament(row) {
       const tripleChosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-song-pick">
-          <div class="tm-song-pick-label" style="color:${rCol}">SONG DRAW</div>
-          <div class="tm-song-pick-who">The song is drawn at random</div>
+          <div class="tm-song-pick-label" style="color:${rCol}">SONG PICK</div>
+          <div class="tm-song-pick-who">The host picks the song</div>
           <div class="tm-song-pool">${poolSongs.map(s =>
     `<div class="tm-song-chip${s.title === d.song ? ' chosen' : ''}">${esc(s.title)}</div>`
   ).join('')}</div>
@@ -968,20 +1265,21 @@ export function rpBuildTournament(row) {
       roundBallsUsed.add(chooser);
       roundBallsUsed.add(d.b);
     } else if (!d.chosen) {
-      // ── MATCHUP DRAW for non-chosen duels (R1 random pairs, R2, R3) ──
+      // ── BALL DRAW + OPPONENT PICK for non-chosen duels (R1 random, R2, R3) ──
       const rCol = roundColor(d.round);
+      const chooser = d.a;
       const available = roundPool.filter(n => !roundBallsUsed.has(n));
       const reelA = [];
       for (let c = 0; c < 3; c++) {
         const shuffled = [...available].sort(() => 0.5 - Math.random());
         for (const n of shuffled) reelA.push(n);
       }
-      reelA.push(d.a);
+      reelA.push(chooser);
       const spinEndA = -(reelA.length - 1) * 52;
 
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-draw">
-          <div class="tm-draw-label" style="color:${rCol}">MATCHUP DRAW</div>
+          <div class="tm-draw-label" style="color:${rCol}">BALL DRAW</div>
           <div class="tm-reel">
             <div class="tm-reel-track" style="--tm-spin-end:${spinEndA}px">
               ${reelA.map((n, i) =>
@@ -990,19 +1288,43 @@ export function rpBuildTournament(row) {
             </div>
           </div>
           <div class="tm-balls">${roundPool.map(n =>
-    `<div class="tm-ball${n === d.a || n === d.b ? ' picked' : roundBallsUsed.has(n) ? ' spent' : ' waiting'}">${esc(n.substring(0, 3))}</div>`
+    `<div class="tm-ball${n === chooser ? ' picked' : roundBallsUsed.has(n) ? ' spent' : ' waiting'}">${esc(n.substring(0, 3))}</div>`
   ).join('')}</div>
-          <div class="tm-picked-name">${esc(d.a)} vs ${esc(d.b)}</div>
-          <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">DRAWN AT RANDOM</div>
+          <div class="tm-picked-name">${esc(chooser)}</div>
+          <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">GETS TO CHOOSE</div>
         </div>
       </div>`);
 
-      // R2/R3 song draw
+      // Opponent pick
+      const ncStratLabel = d.strategy === 'rival' ? 'TARGETING A RIVAL'
+        : d.strategy === 'frontrunner' ? 'TARGETING THE FRONT-RUNNER'
+          : 'PLAYING SAFE';
+      const ncStratCls = d.strategy || 'safe';
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-pick">
+          <div class="tm-pick-label" style="color:${rCol}">OPPONENT PICK</div>
+          <div class="tm-pick-chooser"><b>${esc(chooser)}</b> chooses&hellip;</div>
+          <div class="tm-pick-target">
+            ${_portrait(chooser, ep, { size: 56 })}
+            <div class="tm-pick-arrow">&#x279C;</div>
+            <div class="tm-pick-reveal">
+              ${_portrait(d.b, ep, { size: 56 })}
+              <div class="tm-pick-name">${esc(d.b)}</div>
+            </div>
+          </div>
+          <div class="tm-strategy ${ncStratCls}">${ncStratLabel}</div>
+          ${d.strategy === 'rival' ? `<div class="tm-pick-reason">${esc(chooser)} has a grudge.</div>`
+    : d.strategy === 'frontrunner' ? `<div class="tm-pick-reason">${esc(d.b)} has the strongest track record.</div>`
+      : `<div class="tm-pick-reason">${esc(d.b)} is the weakest lip syncer available.</div>`}
+        </div>
+      </div>`);
+
+      // Song pick — opponent picks
       const rndChosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
       step(`<div class="dr-panel dr-a-lip">
         <div class="tm-song-pick">
-          <div class="tm-song-pick-label" style="color:${rCol}">SONG DRAW</div>
-          <div class="tm-song-pick-who">The song is drawn at random</div>
+          <div class="tm-song-pick-label" style="color:${rCol}">SONG PICK</div>
+          <div class="tm-song-pick-who"><b>${esc(d.b)}</b> picks the lip sync song</div>
           <div class="tm-song-pool">${poolSongs.map(s =>
     `<div class="tm-song-chip${s.title === d.song ? ' chosen' : ''}">${esc(s.title)}</div>`
   ).join('')}</div>
@@ -1018,7 +1340,7 @@ export function rpBuildTournament(row) {
         </div>
       </div>`);
 
-      roundBallsUsed.add(d.a);
+      roundBallsUsed.add(chooser);
       roundBallsUsed.add(d.b);
     }
 

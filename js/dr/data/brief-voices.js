@@ -196,9 +196,9 @@ export const BRIEF_FAMILIES = [
     + 'set with a director who will tell the panel how she was.',
     tier('brief', 'A video, parts she does not get to choose, and a day in front of a camera.', [
       'This week is {c} — a music video for the whole cast. The host hands out the parts. A director runs the set. The panel watches the playback, and the director tells them how the day went.',
-      'For {c}, the cast shoots a video together. Parts are assigned by the host — lead down to ensemble — and a director who is NOT on the panel runs the day. What he tells the judges afterwards is part of the score.',
+      'For {c}, the cast shoots a video together. Parts are assigned by the host — lead down to ensemble — and the director runs the set. She is on the panel, and what she saw on that set is what the judges hear about.',
       '{c} is a shoot day. The host casts it, the director runs it, and the tape is what the panel judges. \"The camera does not lie,\" the host says. \"And neither does the director.\"',
-      'The host announces {c}: one video, one day on set, and a call sheet she did not write. The parts are handed out, not chosen. The director is watching. The panel will hear his notes.',
+      'The host announces {c}: one video, one day on set, and a call sheet she did not write. The parts are handed out, not chosen. The director is watching. The panel will hear her notes.',
     ]),
     [
       tier('delighted', 'She is a camera queen and somebody is finally pointing one at her.', [

@@ -309,22 +309,22 @@ export const MAXI_EVENTS = [
   }),
   e({
     id: 'director-loved-her', from: 'music-video', cast: 'solo',
-    note: 'She made the day. The director says so, and he says it to the panel.',
+    note: 'She made the day. The director says so, and she says it to the panel.',
     lines: [
-      '{a} made the day easy. The director says so — not in a polite, diplomatic, \"everyone was great\" way, but specifically about {a}. She took direction. She found the camera. She gave him takes he could use on the first try while other queens needed four. And the director tells the panel all of it.',
-      'The director pulls the host aside before judging. He has one name: {a}. She was the queen who understood what he needed, gave it to him without being asked twice, and made the shoot day shorter because she was that prepared. That note goes to the panel. The panel hears it.',
-      '{a} is the queen the director remembers. Not because she had the biggest part — because she used the part she had. Every setup, every take, every note he gave her landed the first time. When the panel asks the director who stood out, {a} is the answer before the question is finished.',
-      'The director loved {a}. He says it on camera, he says it to the panel, and the footage backs him up. She found the lens, she took direction, and she gave the edit more usable material than any other queen on the call sheet. A director\'s word carries weight on a video challenge. His word is {a}.',
+      '{a} made the day easy. The director says so — not in a polite, diplomatic, \"everyone was great\" way, but specifically about {a}. She took direction. She found the camera. She gave the director takes she could use on the first try while other queens needed four. And the director tells the panel all of it.',
+      'The director pulls the host aside before judging. She has one name: {a}. The queen who understood what she needed, gave it to her without being asked twice, and made the shoot day shorter because she was that prepared. That note goes to the panel. The panel hears it.',
+      '{a} is the queen the director remembers. Not because she had the biggest part — because she used the part she had. Every setup, every take, every note the director gave her landed the first time. When the panel asks who stood out, {a} is the answer before the question is finished.',
+      'The director loved {a}. She says it on camera, she says it to the panel, and the footage backs her up. {a} found the lens, took direction, and gave the edit more usable material than any other queen on the call sheet. The director\'s word carries weight on a video challenge. Her word is {a}.',
     ],
   }),
   e({
     id: 'director-wrote-her-off', from: 'music-video', cast: 'solo',
     note: 'She cost the day — and possibly argued about it. The panel will hear that too.',
     lines: [
-      '{a} cost the day. Not a little — a lot. More takes than anyone. Notes she did not take. A director who started patient and ended quiet, and the quiet is what the panel hears about. The director does not say {a} was bad. He says she was difficult. On a video challenge, that word carries the same weight.',
+      '{a} cost the day. Not a little — a lot. More takes than anyone. Notes she did not take. The director started patient and ended quiet, and the quiet is what the panel hears about. The director does not say {a} was bad. She says {a} was difficult. On a video challenge, that word carries the same weight.',
       'The director gave {a} the same note three times. {a} did not take it. The fourth time the director stopped giving the note and started shooting around her — covering her part with wider angles, using less of her footage, building the edit so the video works without the queen who was supposed to make it work.',
       '{a} argued with the director. On set. In front of the crew. The director gave a note about scale — smaller, closer, less — and {a} gave it back bigger. By the third take the director was done talking and the footage shows a queen who is performing for a room that stopped watching.',
-      'The director wrote {a} off before lunch. She cost the morning setup with retakes, she could not find the camera, and when the director told her to adjust she adjusted in the wrong direction. The panel hears the director\'s notes. The notes are not about acting. They are about the day she cost.',
+      'The director wrote {a} off before lunch. {a} cost the morning setup with retakes, she could not find the camera, and when the director told her to adjust she adjusted in the wrong direction. The panel hears the director\'s notes. The notes are not about acting. They are about the day {a} cost.',
     ],
   }),
   e({

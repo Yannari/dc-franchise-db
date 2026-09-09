@@ -51,7 +51,7 @@ export /* THE TRACK AND WHAT IT SOUNDS LIKE. The girl group's theme reached the 
    everything else this build has turned up. Drawn on the brief, where the
    queens are actually told what they are making. */
 function _trackLine(row) {
-  const d = _sceneData(row, 'group-parts');
+  const d = _sceneData(row, 'group-parts') || row?.dr?.assignment?.theme;
   if (!d?.track) return '';
   /* NO "X vs Y" LINE ANY MORE. The team board under this now names both
      groups and lists who is in them, and printing the same two names again
@@ -1083,6 +1083,144 @@ const PREP_SHOP_CSS = `
 .dr-prep-room .dr-step{position:relative;z-index:1}
 `;
 
+/* ══════════════════════════════════════════════════════════════════════
+   CAPTAIN PICKS — girl group, choreography, any captains-format draft
+   ══════════════════════════════════════════════════════════════════════
+   Captains alternate picking queens. Each pick is a card. The sidebar
+   builds two (or three) team columns that fill in as the viewer clicks
+   through the picks. The full team table is the last step — never
+   spoiled upfront.
+
+   The pick sequence is reconstructed from the final teams: each team's
+   members after the captain are in the order they were picked. Interleave
+   them to get the draft order: captain 0's first, captain 1's first,
+   captain 0's second, … with the last unpicked queen going to whichever
+   team is still short.
+*/
+const CAPTAIN_CSS = `
+.dr-cap-grid{display:grid;grid-template-columns:1fr 280px;gap:16px;min-height:320px}
+@media(max-width:700px){.dr-cap-grid{grid-template-columns:1fr;}.dr-cap-side{order:-1}}
+.dr-cap-side{position:sticky;top:12px;align-self:start}
+.dr-cap-col{margin:0 0 14px;padding:10px 12px;border-radius:10px;
+  background:rgba(16,6,26,.86);border:1px solid rgba(124,58,237,.35)}
+.dr-cap-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  color:#E9D5FF}
+.dr-cap-col .dr-cap-member{display:flex;align-items:center;gap:8px;padding:4px 0;
+  font-size:13px;color:#f4e3ed}
+.dr-cap-col .dr-cap-member.dr-cap-captain{color:#FFE9A8;font-weight:600}
+.dr-cap-col .dr-cap-member.dr-cap-hidden{opacity:0.15}
+.dr-cap-final{margin-top:12px}
+.dr-cap-final .dr-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.dr-cap-final .dr-team{padding:12px;border-radius:10px;
+  background:linear-gradient(180deg,rgba(124,58,237,.16),rgba(30,10,50,.5));
+  border:1px solid rgba(196,181,253,.22)}
+.dr-cap-final .dr-team h4{margin:0 0 8px;font-size:14px;letter-spacing:.1em;
+  text-transform:uppercase;color:#E9D5FF}
+.dr-cap-final .dr-member{display:flex;align-items:center;gap:8px;padding:3px 0;
+  font-size:13px;color:#f4e3ed}
+.dr-cap-final .dr-member .dr-role{margin-left:auto;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:#c4b5fd;opacity:.75}
+`;
+
+function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
+  const teams = a.teams || [];
+  const teamNames = a.teamNames || teamPickData.teamNames || [];
+  const captains = teamPickData.captains || teams.map(t => t[0]);
+
+  /* Reconstruct the interleaved pick sequence from the final teams.
+     Each team's members (after the captain) are in pick order. */
+  const pickLists = teams.map(t => t.slice(1));
+  const maxLen = Math.max(...pickLists.map(l => l.length));
+  const pickSequence = [];
+  for (let round = 0; round < maxLen; round++) {
+    for (let ti = 0; ti < teams.length; ti++) {
+      if (round < pickLists[ti].length) {
+        pickSequence.push({ captain: captains[ti], picked: pickLists[ti][round], team: ti });
+      }
+    }
+  }
+
+  const totalSteps = pickSequence.length + scenes.length + 1;
+
+  /* ── SIDEBAR PANELS ──
+     One panel per reveal step, each showing the teams filled in to that
+     point. The existing _drSidebar system swaps the active panel on every
+     reveal click. Captains are always shown; picks appear as they are
+     revealed. The final step shows everybody. */
+  const sidebarForRevealed = (n) => {
+    const shown = new Set(captains);
+    for (let i = 0; i < Math.min(n, pickSequence.length); i++) shown.add(pickSequence[i].picked);
+    return teams.map((team, ti) => {
+      const label = teamNames[ti] || `Team ${ti + 1}`;
+      const count = team.filter(q => shown.has(q)).length;
+      return `<div class="dr-cap-col"><h4>${esc(label)} &middot; ${count}</h4>${
+        team.map(q => {
+          const isCap = q === captains[ti];
+          const vis = shown.has(q);
+          return `<div class="dr-cap-member${isCap ? ' dr-cap-captain' : ''}${
+            !vis ? ' dr-cap-hidden' : ''}">${
+            vis ? `${_portrait(q, ep, { size: 26 })}${esc(q)}` : '&bull;&bull;&bull;'
+          }</div>`;
+        }).join('')}</div>`;
+    }).join('');
+  };
+
+  const panels = [];
+  for (let s = 0; s < totalSteps; s++) panels.push(sidebarForRevealed(s));
+
+  const pickCards = pickSequence.map((pk, i) => {
+    const teamLabel = esc(teamNames[pk.team] || `Team ${pk.team + 1}`);
+    return `<div class="dr-step" id="dr-step-choice-${i}">
+      <div class="dr-panel dr-a-bond dr-card dr-k-solo">
+        ${_portrait(pk.picked, ep, { size: 54, station: true })}
+        <div>
+          <h3 class="dr-disp">${esc(pk.picked)}
+            <span class="dr-took-tag">&rarr; ${teamLabel}</span></h3>
+          <p>${esc(pk.captain)} picks ${esc(pk.picked)}.</p>
+        </div>
+      </div></div>`;
+  });
+
+  const sceneCards = scenes.map((sc, i) => {
+    const who = (sc.data?.players || [])[0];
+    return `<div class="dr-step" id="dr-step-choice-${pickSequence.length + i}">
+      <div class="dr-panel dr-a-bond dr-card dr-k-${who ? 'solo' : 'confess'}">
+        ${who ? _portrait(who, ep, { size: 54, station: true }) : ''}
+        <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
+          <p>${esc(sc.text)}</p></div>
+      </div></div>`;
+  });
+
+  const finalStep = `<div class="dr-step dr-cap-final" id="dr-step-choice-${pickSequence.length + scenes.length}">
+    <div class="dr-teams">${teams.map((team, ti) => {
+    const label = teamNames[ti] || `Team ${ti + 1}`;
+    return `<div class="dr-team">
+        <h4 class="dr-disp">${esc(label)}</h4>
+        ${team.map(n => `<div class="dr-member">
+          ${_portrait(n, ep, { size: 30 })}
+          ${esc(n)}
+          ${n === captains[ti] ? '<span class="dr-role">captain</span>' : ''}
+          <span class="dr-role">${esc(a.roles?.[n] || '')}</span>
+        </div>`).join('')}
+      </div>`;
+  }).join('')}</div></div>`;
+
+  const sidebarScript = `<script>
+    window._drSidebar = window._drSidebar || {};
+    window._drSidebar['choice'] = ${JSON.stringify(panels)};
+  </script>`;
+
+  const steps = [...pickCards, ...sceneCards, finalStep].join('');
+
+  return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}${CAPTAIN_CSS}</style>${sidebarScript}${_shell(
+    `<div class="dr-brief-room dr-draft">${briefSet('draft')}${steps}</div>`, ep, {
+      phase: 'werk',
+      title: 'Captain Picks',
+      subtitle: 'the room gets divided',
+      sidebar: panels[0] || '',
+    })}${_controls('choice', totalSteps, ep.num)}`;
+}
+
 /**
  * The draft — or the line-up, when nothing was actually contested.
  *
@@ -1109,6 +1247,17 @@ export function rpBuildChoice(row) {
   const a = row?.dr?.assignment || {};
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'choice' && s.text);
   const picks = Object.entries(a.picks || {});
+
+  /* ── CAPTAIN PICKS (girl group, choreography) ───────────────────────
+     No formal role draft — captains pick team members. The draft screen
+     shows each pick as a card (with dump-event narration when it fires),
+     a live sidebar tracking both teams, and the full team table at the
+     end as the final reveal. */
+  const teamPickData = _sceneData(row, 'team-pick');
+  if (teamPickData && (a.teams || []).length > 1) {
+    return _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData);
+  }
+
   if (!picks.length && !scenes.length) return '';
 
   const contested = a.contested !== false && picks.some(([, p]) => p?.lostTo);

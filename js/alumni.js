@@ -84,15 +84,37 @@ export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) 
     const lastSeason = scoped.length
       ? Math.max(...scoped.map(d => Number(d.season) || 0))
       : (seasons.length ? Math.max(...seasons) : null);
+    /* WHICH SEASON THE BEST PLACEMENT HAPPENED IN, which is NOT the last one.
+       `seasonName` below names the most recent appearance and `winner` is the
+       best placement across all of them, so pairing the two produces "the
+       winner of Total Drama 13" for somebody who won season 7 and came fifth
+       in 13. Read off a played season: two different alumni introduced as the
+       winner of the same season, neither of whom won it.
+       A credit is a claim about the past and has to name the right one. */
+    const bestDetail = scoped.length
+      ? scoped.reduce((a, b) => ((Number(b.placement) || 99) < (Number(a.placement) || 99) ? b : a))
+      : null;
     all.push({
       name: p.name,
       native,
       shows,
       seasonName: lastSeason ? `${_showName(native && format ? format : shows[0])} ${lastSeason}` : null,
+      /* The season the record above actually happened in, named for its own
+         show — a person can win on one show and place on another. */
+      bestSeasonName: bestDetail && bestDetail.season
+        ? `${_showName(bestDetail.format || (native && format ? format : shows[0]))} ${bestDetail.season}`
+        : null,
       winner: best === 1,
       finalist: Number.isFinite(best) && best <= 3,
       chalWins: scoped.reduce((n, d) => n + (Number(d.challengeWins) || 0), 0),
       seasons,
+      /* THE FRANCHISE'S OWN FAME GRADE, carried through rather than re-derived.
+         `tier` is S+ / S / A / B / C / D on the player record, and a caller
+         that wants "somebody the audience would recognise" — a Drag Race guest
+         judge, say — should not be re-inventing that ranking out of wins and
+         placements when the ledger already states it. Absent on a player the
+         board has never scored, and an absent tier is not famous. */
+      tier: p.tier || null,
     });
   }
   if (!format) return all;

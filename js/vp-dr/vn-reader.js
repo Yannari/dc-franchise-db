@@ -149,27 +149,42 @@ export function resetVnStep(suffix, idx) {
 // ══════════════════════════════════════════════════════════════════════
 
 export const VN_CSS = `
-/* ── VN MODE: one card at a time, full stage ── */
+/* ── VN MODE: one card at a time, centred dialogue box ── */
+
+/* The stage: a flex column that centres the focused card vertically.
+   Hide the station board so the card owns the full viewport. */
+.dr-vn-on .dr-room{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:60vh;position:relative}
+.dr-vn-on .dr-stations{display:none}
+.dr-vn-on .dr-shop{display:none}
+
 .dr-vn-on .dr-step.dr-vn-hide{display:none}
 
 .dr-vn-on .dr-step.dr-vn-prev{
-  opacity:.15;transform:translateY(-30px) scale(.94);
-  filter:blur(3px);pointer-events:none;
-  position:absolute;top:0;left:0;right:0;z-index:0;
+  opacity:0;pointer-events:none;position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);
+  filter:blur(4px);z-index:0;width:100%;max-width:680px;
   transition:all .5s cubic-bezier(.4,0,.2,1)}
 
 .dr-vn-on .dr-step.dr-vn-focus{
-  opacity:1;transform:none;z-index:2;position:relative;
+  opacity:1;z-index:2;position:relative;width:100%;max-width:680px;
+  margin:0 auto;
   transition:all .45s cubic-bezier(.16,1,.3,1)}
 
-/* THE FOCUSED CARD GOES BIG */
+/* THE FOCUSED CARD: override grid → block, portrait absolute left */
 .dr-vn-on .dr-step.dr-vn-focus>.dr-panel,
 .dr-vn-on .dr-step.dr-vn-focus>.dr-card{
-  min-height:200px;padding:24px 28px 24px 140px;position:relative}
+  display:block!important;grid-template-columns:none!important;
+  min-height:180px;padding:28px 32px 28px 148px;position:relative;
+  border-radius:14px;overflow:visible;
+  background:linear-gradient(135deg,rgba(30,12,38,.92),rgba(18,6,28,.96))!important;
+  border:1px solid rgba(123,47,247,.25);
+  box-shadow:0 0 60px -20px rgba(123,47,247,.2),0 24px 48px -24px rgba(0,0,0,.7)}
 
+/* Portrait: pulled out of grid flow, pinned left-centre */
 .dr-vn-on .dr-step.dr-vn-focus .dr-bust,
 .dr-vn-on .dr-step.dr-vn-focus .dr-mirror{
-  position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:2}
+  position:absolute!important;left:20px;top:50%;transform:translateY(-50%);z-index:2}
 .dr-vn-on .dr-step.dr-vn-focus .dr-por,
 .dr-vn-on .dr-step.dr-vn-focus .dr-initials{
   width:96px!important;height:96px!important;font-size:34px!important;
@@ -206,11 +221,15 @@ export const VN_CSS = `
   animation:drVnGlow 4s linear infinite;opacity:.5;pointer-events:none;z-index:1}
 @keyframes drVnGlow{to{--dr-vn-angle:360deg}}
 
-/* Larger text in VN mode */
-.dr-vn-on .dr-step.dr-vn-focus p{
-  font-size:18px;line-height:1.7;color:#f4e3ed;text-wrap:pretty}
+/* Name + text inside the card */
 .dr-vn-on .dr-step.dr-vn-focus h3{
-  font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+  font-size:14px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dr-role,#d4b8ff);margin:0 0 10px}
+.dr-vn-on .dr-step.dr-vn-focus p{
+  font-size:17px;line-height:1.75;color:#f4e3ed;text-wrap:pretty;
+  max-width:56ch;margin:0}
+.dr-vn-on .dr-step.dr-vn-focus .dr-note{
+  display:block;font-size:11px;opacity:.5;margin-bottom:6px}
 
 /* Typewriter cursor */
 .dr-vn-typing::after{content:'▍';animation:drVnBlink .7s step-end infinite;
@@ -231,26 +250,29 @@ export const VN_CSS = `
   border-color:#7B2FF7!important;color:#d4b8ff!important;
   box-shadow:0 0 14px -4px rgba(123,47,247,.4)}
 
-/* PAIR cards in VN: override two-column pair layout to stack */
+/* PAIR cards in VN: two portraits stacked on the left */
 .dr-vn-on .dr-step.dr-vn-focus .dr-pairtop{
-  flex-direction:column;gap:6px;margin-bottom:10px}
+  display:block!important;grid-template-columns:none!important}
 .dr-vn-on .dr-step.dr-vn-focus .dr-two{
-  position:absolute;left:16px;top:50%;transform:translateY(-50%);
-  display:flex;flex-direction:column;gap:6px}
+  position:absolute!important;left:20px;top:50%;transform:translateY(-50%);
+  display:flex!important;flex-direction:column;gap:8px}
 .dr-vn-on .dr-step.dr-vn-focus .dr-two .dr-por,
 .dr-vn-on .dr-step.dr-vn-focus .dr-two .dr-initials{
-  width:58px!important;height:58px!important;font-size:20px!important}
+  width:56px!important;height:56px!important;font-size:20px!important}
 .dr-vn-on .dr-step.dr-vn-focus .dr-two .dr-bust::after{inset:-4px}
 
 /* Walkthrough cards in VN: make them breathe */
 .dr-vn-on .dr-step.dr-vn-focus .dr-walkcard{
-  padding-left:24px;min-height:auto}
+  padding-left:28px!important;min-height:auto}
 .dr-vn-on .dr-step.dr-vn-focus .dr-walkcard .dr-bust{
-  position:relative;left:auto;top:auto;transform:none}
+  position:relative!important;left:auto;top:auto;transform:none}
 
 /* Untucked band headers in VN */
 .dr-vn-on .dr-step.dr-vn-focus .dr-band{
   text-align:center;padding:8px 0;margin-bottom:12px}
+
+/* Bond chips — tuck them under the text */
+.dr-vn-on .dr-step.dr-vn-focus .dr-bond-row{margin-top:12px}
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
@@ -265,12 +287,15 @@ export const VN_CSS = `
 
 /* Mobile */
 @media(max-width:600px){
+  .dr-vn-on .dr-step.dr-vn-focus{max-width:100%}
   .dr-vn-on .dr-step.dr-vn-focus>.dr-panel,
   .dr-vn-on .dr-step.dr-vn-focus>.dr-card{
-    padding:20px 18px 20px 110px;min-height:180px}
+    padding:20px 18px 20px 100px!important;min-height:160px;border-radius:10px}
+  .dr-vn-on .dr-step.dr-vn-focus .dr-bust,
+  .dr-vn-on .dr-step.dr-vn-focus .dr-mirror{left:12px}
   .dr-vn-on .dr-step.dr-vn-focus .dr-por,
   .dr-vn-on .dr-step.dr-vn-focus .dr-initials{
-    width:72px!important;height:72px!important;font-size:26px!important}
-  .dr-vn-on .dr-step.dr-vn-focus p{font-size:16px}
+    width:68px!important;height:68px!important;font-size:24px!important}
+  .dr-vn-on .dr-step.dr-vn-focus p{font-size:15px}
 }
 `;

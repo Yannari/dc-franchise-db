@@ -936,6 +936,12 @@ export const STAGE_BEATS = [
         "They all fought. All but one of them stay. The one who does not is the one who knew, halfway through the song, that the stage was slipping away from her — and the knowing did not help, because knowing and fixing are not the same thing at the speed of a lip sync.",
         "\"Shantay, you stay.\" Twice. And then the silence that follows the second one is the silence where the third queen understands that the third call is not coming. She nods. She hugs the two who stayed. She walks to the back to say her goodbyes and the walk is steady, which is the most she can give the room right now.",
       ]),
+      tier('double-out', 'Three fought. One stays. Two sashay.', [
+        "Three queens lip synced and only one of them is staying. The host says \"shantay, you stay\" once and only once, and the name it lands on exhales hard enough for the whole room to hear it. The other two stand there and the standing is the particular stillness of two queens who both understand the same sentence at the same time. \"Sashay away.\" It takes both of them and the room folds in on itself.",
+        "The host lets the song end and lets the silence after it go on for exactly as long as it needs to. Then one name. One \"shantay.\" One queen who gets to stay. The other two receive no such word and the absence of it is the verdict: two queens are going home tonight and both of them knew it was possible and neither of them believed it would be them.",
+        "\"Shantay, you stay.\" One queen. The relief on her face is enormous and immediate and she presses both hands over her mouth. The other two are still standing on that stage and the host turns to them and the turning is slower than it needs to be. \"I am sorry, my dears. Both of you — sashay away.\" Two queens leave tonight and the room is smaller for it.",
+        "One name is called and that name gets to breathe. The other two names are not called and the not-calling is louder than the calling was. Two queens are leaving tonight because the show said two were leaving and the show does what it says. They hug each other first and then they hug the queen who stayed and then they walk.",
+      ]),
     ],
   },
 

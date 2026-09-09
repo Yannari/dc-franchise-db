@@ -677,7 +677,8 @@ export function renderStageBeats({
        cover. Skipping the whole beat took those out of the show along with
        the ordinary one, and a no-elimination night went by without the host
        ever saying nobody was going home. */
-    const ordinary = (lipsync.call || 'shantay') === 'shantay';
+    const ordinary = (lipsync.call || 'shantay') === 'shantay'
+      || lipsync.call === 'double-out';
     const named = ordinary && (beatById('lipsync-shantay').tiers[0].lines.length
       || beatById('lipsync-sashay').tiers[0].lines.length);
 

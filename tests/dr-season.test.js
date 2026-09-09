@@ -426,7 +426,7 @@ describe('a night nobody leaves makes the season longer', () => {
     expect(out.rows.length, 'the season did not shorten').toBe(base.rows.length - 1);
     const week = out.rows.find(r => r.num === 5);
     expect(week.exits.length, 'only one queen went home').toBe(2);
-    expect(week.dr.lipsync.call).toBe('double-elimination');
+    expect(week.dr.lipsync.call).toBe('double-out');
     expect(out.state.living.length).toBe(4);
   });
 
@@ -508,8 +508,8 @@ describe('the format is announced', () => {
     const week = rows.find(r => r.num === 5);
     expect(week.exits.length).toBe(2);
     expect(noteOn(week)?.data?.tier, 'it was never announced').toBe('double-elimination');
-    const call = (week.dr.scenes || []).find(s => s.kind === 'stage:lipsync-call');
-    expect(call.data.tier, 'the call said one queen stays').toBe('double-elimination');
+    const sashays = (week.dr.scenes || []).filter(s => s.kind === 'stage:lipsync-sashay');
+    expect(sashays.length, 'two queens should get their own sashay').toBe(2);
   });
 });
 

@@ -702,7 +702,7 @@ export function runDragWeek(state, cfg, ctx) {
       scores: Object.fromEntries(scored.map(x => [x.n, x.r.score])),
       beats: Object.fromEntries(scored.map(x => [x.n, x.r.beats])),
       stunts: Object.fromEntries(scored.map(x => [x.n, x.r.stunt])),
-      call: out.length > 1 ? 'double-elimination' : 'triple',
+      call: out.length > 1 ? 'double-out' : 'triple',
       winner: scored[0].n, loser: goingHome, losers: [...out],
       gap: Math.round((scored[0].r.score - scored[scored.length - 1].r.score) * 100) / 100,
       triple: true,

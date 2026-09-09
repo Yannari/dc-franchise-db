@@ -5559,6 +5559,25 @@
       },
       "voice": "Quin speaks in a cool, slightly detached London accent, mixing fashion jargon, art-school language, and online slang as though every conversation were an interview at a gallery opening. They sound effortlessly confident until they must explain one of their concepts in detail: “The silhouette represents digital loneliness—but, like, make it gorgeous,” “That outfit isn’t ugly; it’s simply hostile to the human eye,” and, when criticized, “You don’t have to understand my drag, babe. The museum provides an audio guide.”",
       "profileSources": {}
+    },
+    {
+      "name": "Riot",
+      "slug": "riot",
+      "gender": "nb",
+      "sexuality": "queer",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 5,
+        "social": 4,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "profileSources": {}
     }
   ]
 }

@@ -5654,6 +5654,25 @@
       },
       "voice": "aystee speaks in a relaxed, self-satisfied tone, giving the impression that looking beautiful is a full-time responsibility. She is not especially talkative and often responds to criticism with a glance, a shrug, or a reminder that she still looks good: “I didn’t come here to be funny—I came here to be photographed,” “If relying on my body is wrong, blame the body for being reliable,” and, before a lip sync, “I know the words, I know my angles, and that is honestly enough.”",
       "profileSources": {}
+    },
+    {
+      "name": "Velvet Vixen",
+      "slug": "velvet-vixen",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 4,
+        "social": 5,
+        "strategic": 3,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 5,
+        "temperament": 4
+      },
+      "profileSources": {}
     }
   ]
 }

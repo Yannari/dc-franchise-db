@@ -88,6 +88,23 @@ export const CONFIDENCE_CAP = 0.4;
      6.5 / 0.6    2.56%, 20%             5.01%, 36%
      6.5 / 0.9    3.12%, 24%             6.75%, 45%
 
+   HELD AT 0.6 FOR NOW, NOT 0.9, AND THE REASON IS A BUG RATHER THAN A
+   PREFERENCE. 7.0/0.9 lands closest to the show (4.13%, 31% of seasons) and
+   it turns two latent defects red, both of which the old unreachable bar had
+   been hiding:
+
+     1. tests/dr-chart.test.js — the published document and the live rows
+        disagree about one cell on a season containing three double shantays.
+        Two readers of the same night, one source each.
+     2. a season played with consecutive double shantays produced an episode
+        with `lipsync = NONE`, `exits = 1` and a named bottom two: a queen
+        eliminated without a lip sync happening at all.
+
+   Neither is caused by this constant; both are REACHED by it. 7.0/0.6 is
+   still fifteen times the old rate and leaves the suite green, so it ships
+   while those are open. Move to 0.9 once they are fixed — the measurement
+   below is the target, not this line.
+
    CLOSE widened rather than GREAT lowered again, and the choice matters. What
    defines the call on the real show is that BOTH were outstanding and the
    host cannot separate them; dropping GREAT to 6.5 would make "outstanding"
@@ -102,7 +119,7 @@ export const CONFIDENCE_CAP = 0.4;
 
    AWFUL is untouched — the double sashay is off unless a season asks. */
 const GREAT = 7.0;
-const CLOSE = 0.9;
+const CLOSE = 0.6;
 const AWFUL = 3.5;
 
 /**

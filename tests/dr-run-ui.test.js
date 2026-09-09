@@ -181,6 +181,40 @@ describe('the season timeline', () => {
     }],
   ];
 
+  /* ── AND ONCE IT HAS PLAYED, IT REPORTS RATHER THAN PREDICTS ──
+     The test below turns the length modifiers OFF, because a projection drawn
+     before the season cannot know a call the panel makes on the night. This
+     one turns them back ON and asks the other question: after the season has
+     run, does the timeline show what actually happened?
+
+     It did not. `buildEpisodeMap` counted one elimination a week from the cast
+     size and the BOOKED twists, so a double shantay — nobody goes home, the
+     season runs a week longer — left the timeline exactly one episode short
+     for the rest of the run. Reported from a played season, not found by a
+     test, which is this project's usual order.
+
+     The castle solved this first: once a night exists it carries `exits`, the
+     people it really removed, so the map reads the rows and projects only the
+     weeks still to come. */
+  it('AFTER THE SEASON, THE TIMELINE IS THE SEASON - double shantay included', async () => {
+    const { buildEpisodeMap } = await import('../js/run-ui.js');
+    const { simulateDragEpisode } = await import('../js/dr-run.js');
+    let seen = 0;
+    for (let attempt = 0; attempt < 25 && seen < 3; attempt++) {
+      const core = await harness(13, { drDoubleShantay: true });
+      let guard = 0;
+      while (simulateDragEpisode() && guard++ < 40) { /* play it out */ }
+      const played = core.gs.episodeHistory.length;
+      const doubles = core.gs.episodeHistory
+        .filter(r => r.dr?.lipsync?.call === 'double-shantay').length;
+      // Every season is checked; the counter only tracks how many of them
+      // exercised the call this is really about.
+      expect(buildEpisodeMap().length,
+        `${doubles} double shantay(s): the timeline is not the season`).toBe(played);
+      if (doubles) seen++;
+    }
+  }, 900000);
+
   it('predicts exactly the season the engine plays', async () => {
     const { buildEpisodeMap } = await import('../js/run-ui.js');
     const { simulateDragEpisode } = await import('../js/dr-run.js');

@@ -108,7 +108,17 @@ describe('every authored maxi event can happen', () => {
             : PARTNER_COHORTS[(s / 2) % PARTNER_COHORTS.length];
         }
         let rows;
-        try { rows = play(s, pin); } catch { continue; }
+        /* ── SPREAD SEEDS, NOT CONSECUTIVE ONES ──
+           This ran seasons 0..11 and js/dr/rng.js warns about exactly that by
+           name: the LCG's first draw is a linear function of its seed, so
+           small consecutive seeds sample one corner of the distribution
+           rather than the distribution. It bit here — the roast's
+           `stole-a-bit` was reported unreachable over twelve seasons after an
+           unrelated change to how the schedule draws, while the same event
+           measured at 41.7% across sixty spread seeds (60 roasts, 25 fires).
+           The mechanic was never broken; the sample was.
+           `i * 7919 + 13` is the spread rng.js prescribes. */
+        try { rows = play(s * 7919 + 13, pin); } catch { continue; }
         const row = rows.find(x => x.dr?.challenge?.id === t.id);
         if (!row) continue;
         /* THE ENGINE'S OWN LIST, NOT ONLY THE RENDERED SCENES. An event whose

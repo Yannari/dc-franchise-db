@@ -65,6 +65,49 @@ const names = (text, all) => all.filter(n =>
 describe('no screen prints its own answer above the fold', () => {
   const everyone = cast.map(c => c.name);
 
+  /* ── THE RAIL WAS THE ANSWER, ON EVERY SCREEN OF THE NIGHT ──
+     `row.dr.living` is the roster at the END of the week, so the "In the
+     room" rail listed the SURVIVORS — on the cold open, the morning, the
+     werk room, elimination day, all of them hours before anybody is sent
+     home. The name that was not on the list was the queen going home, and it
+     was there from the moment the episode opened.
+
+     It hid for as long as the rail and the cards agreed on the count, and
+     stopped hiding the day a screen drew a card per queen next to it: twelve
+     queens recorded a verse in the booth and eleven names sat beside them.
+     Reported as "Axel isn't in the booth sidebar, spoiling she's the one
+     going home".
+
+     Written as the viewer's question — is tonight's eliminated queen still in
+     the room on the screens that happen before she leaves — rather than as a
+     count, because a count would pass on a double elimination and on a week
+     that sends nobody home. */
+  it('never leaves the queen going home out of the room before she goes', () => {
+    const BEFORE = ['dr-cold-open', 'dr-werk-morning', 'dr-mini', 'dr-announce',
+      'dr-choice', 'dr-prep', 'dr-booth', 'dr-set', 'dr-elim-day', 'dr-maxi',
+      'dr-maxi-stage', 'dr-runway'];
+    let checked = 0;
+    for (const row of rows) {
+      const leaving = (row.exits || []).map(x => x.name);
+      if (!leaving.length) continue;
+      for (const scr of dragScreens(row)) {
+        if (!BEFORE.includes(scr.id)) continue;
+        const host = document.createElement('div');
+        host.innerHTML = scr.html;
+        host.querySelectorAll('style').forEach(el => el.remove());
+        const text = host.textContent.replace(/\s+/g, ' ');
+        // Only screens that actually draw a roster rail have anything to say.
+        if (!/In the room ·|Still here ·|Getting ready/.test(text)) continue;
+        checked += 1;
+        const missing = leaving.filter(n => !names(text, [n]).length);
+        expect(missing,
+          `episode ${row.num} ${scr.id}: the room is already missing ${missing.join(', ')}`)
+          .toEqual([]);
+      }
+    }
+    expect(checked, 'no roster rail was rendered — nothing was tested').toBeGreaterThan(0);
+  });
+
   it('the mini does not name its winner before the beats', () => {
     let checked = 0;
     for (const row of rows) {

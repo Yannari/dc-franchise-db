@@ -423,8 +423,16 @@ const EXTRA_CSS = `
  * have already been up are ticked. The rail now tells you where you are in
  * the running order, which is the one thing you cannot see from the cards.
  */
-function railFor(row, scenes, ep) {
-  const living = row?.dr?.living || [];
+function railFor(row, scenes, ep, sec = null) {
+  /* THE ROOM AS IT WAS DURING THIS SECTION. `row.dr.living` is the roster at
+     the END of the week, so on every screen that happens before the sashay it
+     lists the survivors — which is the answer to the night, printed beside the
+     cards. See the longer note on `roomAt` in js/vp-dr/werk.js.
+     The exit and the finale screens come AFTER somebody has gone, so those are
+     the two that genuinely want the closing roster. */
+  const after = !!sec && (sec.id === 'dr-exit' || sec.id.startsWith('dr-finale'));
+  const living = after || !row?.houseAtStart?.length
+    ? (row?.dr?.living || []) : row.houseAtStart;
   if (!living.length) return [];
   const upBy = [];
   const seen = new Set();
@@ -432,11 +440,27 @@ function railFor(row, scenes, ep) {
     for (const n of (sc?.data?.players || [])) seen.add(n);
     upBy.push(new Set(seen));
   }
+  /* ── WHAT THE TICK SAYS ──
+     It said "up" for everybody who had already appeared, and on a running
+     order that is exactly right: the roast and the verse order are lists of
+     who has gone. On a screen where every queen does the same thing and the
+     interesting part is HOW it went, "up" reads as a verdict — reported as
+     "how is everyone up when some had bad takes".
+     So a scene may carry `data.railTag`: two or three words about what
+     happened to her in it. The tick falls back to "up" where none is given,
+     which keeps the running-order screens as they were. It is never ahead of
+     the reveal, because it is only ever read off scenes already shown. */
+  const tagOf = new Map();
+  for (const sc of scenes) {
+    const tag = sc?.data?.railTag;
+    if (!tag) continue;
+    for (const n of (sc?.data?.players || [])) tagOf.set(n, tag);
+  }
   const panelAt = done => `<h4 class="dr-disp">In the room · ${living.length}</h4>${
     living.map(n => `<div class="dr-slot${done.has(n) ? '' : ' dr-waiting'}">
       ${_portrait(n, ep, { size: 38 })}
       <div><div class="dr-nm">${esc(n)}</div></div>
-      <span class="dr-up">${done.has(n) ? 'up' : ''}</span></div>`).join('')}`;
+      <span class="dr-up">${done.has(n) ? esc(tagOf.get(n) || 'up') : ''}</span></div>`).join('')}`;
   return scenes.map((_, i) => panelAt(upBy[i] || new Set()));
 }
 
@@ -447,9 +471,9 @@ function buildSection(sec, row) {
   const steps = scenes.map((sc, i) => step(sc, i, sec.suffix, ep, sec.accent)).join('');
   if (typeof window !== 'undefined') {
     if (!window._drSidebar) window._drSidebar = {};
-    window._drSidebar[sec.suffix] = railFor(row, scenes, ep);
+    window._drSidebar[sec.suffix] = railFor(row, scenes, ep, sec);
   }
-  const rail = railFor(row, scenes, ep)[0] || '';
+  const rail = railFor(row, scenes, ep, sec)[0] || '';
   /* THE SEVEN SCREENS NOBODY BUILT A ROOM FOR. Everything without its own
      builder falls here — the reunion and five sections of the finale night —
      and they were drawn on the same gradient as a Tuesday in the werk room.

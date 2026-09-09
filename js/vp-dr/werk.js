@@ -402,12 +402,28 @@ export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {})
 }
 
 /** Everybody still here, for a rail. */
-const livingOf = row => row?.dr?.living || [];
+/* ── THE ROOM AS IT WAS, NOT AS IT ENDED ──
+   `row.dr.living` is `state.living` at the END of the week, so it is the room
+   with tonight's eliminated queen already removed. Every werk-room rail read
+   it, which means the cold open, the morning and elimination day — all three
+   of them hours before anybody is sent home — listed the survivors and
+   silently told you who was going.
+
+   It went unnoticed for as long as the rail and the cards agreed on the count.
+   It stopped being invisible the moment a screen drew a card per queen beside
+   it: twelve queens recorded a verse in the booth and eleven names sat next to
+   them, and the missing one went home that night.
+
+   `row.houseAtStart` is the room the week began with — it is written by
+   js/dr/week.js and includes a returning queen, because the return is resolved
+   before the week runs. */
+const roomAt = row => (row?.houseAtStart?.length ? row.houseAtStart : (row?.dr?.living || []));
 
 function railWho(row, ep, title) {
-  const rows = livingOf(row).map(n => `<div class="dr-slot">${_portrait(n, ep, { size: 34 })}
+  const room = roomAt(row);
+  const rows = room.map(n => `<div class="dr-slot">${_portrait(n, ep, { size: 34 })}
       <div><div class="dr-nm">${esc(n)}</div></div><span></span></div>`).join('');
-  return `<h4 class="dr-disp">${esc(title)} · ${livingOf(row).length}</h4>${rows}`;
+  return `<h4 class="dr-disp">${esc(title)} · ${room.length}</h4>${rows}`;
 }
 
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
@@ -451,7 +467,7 @@ function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '
      queens looks like what it is, and by the last click you can see who the
      episode forgot. That is the same fact the aftermath's screen-time
      numbers carry, drawn where somebody watching will notice it. */
-  const room = livingOf(row);
+  const room = roomAt(row);
   const board = room.length ? `<div class="dr-stations" id="dr-stations-${suffix}">
       <div class="dr-st-rail"></div>
       ${room.map(n => `<div class="dr-station" data-queen="${esc(n)}">
@@ -529,7 +545,7 @@ export function rpBuildColdOpen(row) {
           <span class="dr-lip">${esc(msg?.text || 'The mirror still has her handwriting on it.')}</span>
           <span class="dr-kiss dr-disp">&times;</span>
         </div>
-        <div class="dr-shelf">${livingOf(row).map(() => '<span class="dr-statuette"></span>').join('')}${
+        <div class="dr-shelf">${roomAt(row).map(() => '<span class="dr-statuette"></span>').join('')}${
   gone.map(() => '<span class="dr-statuette dr-gone"></span>').join('')}</div>
       </div>
     </div></div>` : '';
@@ -567,7 +583,7 @@ export function rpBuildWerkElimDay(row) {
   // Ready when she has a scene on this screen; the rest are still at it.
   const named = new Set(scenes.flatMap(s => s?.data?.players || []));
   const rail = `<h4 class="dr-disp">Getting ready</h4>${
-    livingOf(row).map(n => `<div class="dr-check ${named.has(n) ? 'dr-ready' : ''}">
+    roomAt(row).map(n => `<div class="dr-check ${named.has(n) ? 'dr-ready' : ''}">
       <i></i>${_portrait(n, ep, { size: 26 })} ${esc(n)}</div>`).join('')}`;
 
   return screen(row, {

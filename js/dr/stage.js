@@ -1217,6 +1217,10 @@ export function renderChallengeBeats({
     const boothBeat = beatById('booth-session');
     for (const ses of boothScene.data?.sessions || []) {
       emit(boothBeat, ses.tier, [ses.name], {
+        /* Two words for the rail, so the sidebar says how her session went
+           rather than that she has been in the room. See `railFor`. */
+        railTag: { 'got-it-on-tape': 'nailed it', 'clean-session': 'clean',
+          'many-takes': 'long session', 'could-not-get-it': 'lost it' }[ses.tier],
         lift: ses.lift, booth: ses.booth, written: ses.written,
         // The screen opens on these cards, so the night's track travels with
         // them rather than with the marker scene back in the werk room.
@@ -1233,6 +1237,8 @@ export function renderChallengeBeats({
         : note.impression >= 0.45 ? 'made-the-day'
           : note.impression <= -0.3 ? 'slow' : 'easy';
       emit(dayBeat, tierId, [note.name], {
+        railTag: { 'made-the-day': 'made the day', easy: 'easy day',
+          slow: 'slow', argued: 'argued' }[tierId],
         role: note.role, took: note.took, argued: note.argued,
         concept: studio.data?.concept || null,
       });

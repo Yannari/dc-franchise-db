@@ -270,6 +270,11 @@ export function runDragWeek(state, cfg, ctx) {
   const panelSeats = panel.map(j => ({
     id: j.id, name: j.name || j.id, guest: !!j.guest,
     credit: j.guest ? guestCredit : '',
+    /* AND WHO SHE IS, so the introduction can be about a person rather than a
+       chair. `guestTaste` already reads her archetype for ARCH_BIAS; the beat
+       that introduces her could not see it, so every guest arrived in the same
+       four sentences whether she was a villain or a hero. */
+    archetype: j.guest ? ((cfg.guest && cfg.guest.archetype) || null) : null,
     // Her taste, because the deliberation argues from the dimension two
     // judges are furthest apart on and cannot find that without the numbers.
     taste: j.taste,

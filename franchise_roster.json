@@ -5851,7 +5851,24 @@
       "occupation": "aspiring fashion model",
       "descriptor": "The Body on the Runway",
       "backstory": "Taystee dreamed of becoming a professional model but repeatedly struggled to get signed by agencies.  Drag gave her control over the entire image: she could be the stylist, model, and final product. She developed a reputation for serving beautiful photos and competent nightclub performances, though she rarely experimented outside her preferred silhouette. Taystee enters the competition because she wants a larger platform, prettier clothes, and proof that she belongs in front of a camera.",
-      "personality": "Taystee is vain, calm, image-conscious, and uncomplicated about her ambitions. She does not want to revolutionize drag or become a comedy legend—she simply wants to feel beautiful and be admired. Her sewing ability and natural modeling instincts make her dangerous in design and runway challenges, while her lip-syncing is competent enough to survive against an average opponent. Acting, comedy, and singing quickly expose her lack of range. Taystee often coasts socially and avoids unnecessary drama, but criticism of her body or appearance strikes directly at her confidence. Her greatest obstacle is learning that beauty can carry her into the competition, but it may not carry her through it."
+      "personality": "Taystee is vain, calm, image-conscious, and uncomplicated about her ambitions. She does not want to revolutionize drag or become a comedy legend—she simply wants to feel beautiful and be admired. Her sewing ability and natural modeling instincts make her dangerous in design and runway challenges, while her lip-syncing is competent enough to survive against an average opponent. Acting, comedy, and singing quickly expose her lack of range. Taystee often coasts socially and avoids unnecessary drama, but criticism of her body or appearance strikes directly at her confidence. Her greatest obstacle is learning that beauty can carry her into the competition, but it may not carry her through it.",
+      "drag": {
+        "acting": 3,
+        "comedy": 3,
+        "dance": 6,
+        "design": 4,
+        "runway": 10,
+        "lipsync": 6,
+        "singing": 3,
+        "style": "fashion",
+        "traits": [
+          "body",
+          "face",
+          "look-queen"
+        ],
+        "voice": "aystee speaks in a relaxed, self-satisfied tone, giving the impression that looking beautiful is a full-time responsibility. She is not especially talkative and often responds to criticism with a glance, a shrug, or a reminder that she still looks good: “I didn’t come here to be funny—I came here to be photographed,” “If relying on my body is wrong, blame the body for being reliable,” and, before a lip sync, “I know the words, I know my angles, and that is honestly enough.”",
+        "family": []
+      }
     },
     {
       "name": "Velvet Vixen",

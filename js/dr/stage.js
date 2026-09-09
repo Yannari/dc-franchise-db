@@ -28,6 +28,7 @@ import { miniLinesFor, miniNamesOther } from './data/mini-voices.js';
 import { tempoLinesFor, hookLinesFor } from './data/lipsync-voices.js';
 import {
   pickKindFor, pickLinesFor, walkthroughLinesFor,
+  helpLinesFor, sabotageLinesFor, shunnedLinesFor,
 } from './data/maxi-voices.js';
 import { characterById } from './data/snatch-characters.js';
 import {
@@ -1256,16 +1257,20 @@ export function renderMaxiEventScenes(events, {
        So it takes the family's own note pool when one is written, keyed the
        same way the performance is. Everything else in this renderer is a
        one-or-two-fire event and keeps the shared pool. */
-    const wt = ev.type === 'walkthrough' ? walkthroughLinesFor(family) : null;
+    const familyLines = ev.type === 'walkthrough' ? walkthroughLinesFor(family)
+      : ev.type === 'help' ? helpLinesFor(family)
+        : ev.type === 'sabotage' ? sabotageLinesFor(family)
+          : ev.type === 'shunned' ? shunnedLinesFor(family)
+            : null;
     scenes.push({
       step: at,
       kind: `maxi:${ev.type}`,
       data: {
         event: ev.type, players: who, note: spec.note, from: spec.from,
-        ...(wt ? { family, voiced: true } : {}),
+        ...(familyLines ? { family, voiced: true } : {}),
       },
-      text: wt
-        ? fill(pick(wt, rng, used, `walkthrough/${family}`), { a: who[0], b: who[1] })
+      text: familyLines
+        ? fill(pick(familyLines, rng, used, `${ev.type}/${family}`), { a: who[0], b: who[1] })
         : fill(pick(spec.lines, rng, used, ev.type), { a: who[0], b: who[1] }),
     });
   }

@@ -525,6 +525,105 @@ export function pickKindFor(challengeId) {
   return 'partner';
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// POOL 3 — THE HELP. One queen strong at tonight's craft coaches another.
+// ══════════════════════════════════════════════════════════════════════
+
+export const HELP_VOICES = [
+  walk('talent-show', 'She watches the act fall apart in rehearsal and walks over.', [
+    "{a} watches {b} run the act for the third time and the third time is no better than the first. She does not say anything — she walks over and sits down and says \"show me the ending\" and {b} shows her the ending and {a} says \"that is not an ending, that is where you stop\" and spends the next forty minutes building {b} a closer.",
+    "{b}'s act has no shape and {a} can see it from across the room. She puts her own rehearsal on hold and crosses the floor and the note she gives is the note the host would have given: the talent is there, the performance around it is not, and here is how to fix it before tonight.",
+    "{a} is good at this kind of performance and {b} is drowning in it. {a} watches {b} rehearse the same bit three times without landing it and decides that watching is not something she is willing to do for a fourth. She walks over and coaches {b} through the timing until the bit works, and the coaching costs her an hour of her own prep.",
+    "She has her own act to rehearse and she puts it down. {a} sits with {b} and runs the act with her, calling out the moments that land and the moments that die, and the running-through is the thing that turns {b}'s set from a list of ideas into a performance. It costs {a} time she does not have.",
+  ]),
+  walk('snatch-game', 'She helps another queen find the character before the taping.', [
+    "{a} watches {b} struggle with the voice and the struggle is visible from three chairs away. She leans over and says \"you are doing her face but not her voice\" and spends twenty minutes feeding {b} references and punchlines until {b}'s impression has enough material to survive six questions.",
+    "{b}'s character has no depth past the catchphrase and {a} knows it. She pulls {b} aside and runs a mock round — throwing questions the way the host throws them — and every answer {b} gives that dies, {a} rebuilds with her until it lives.",
+    "{a} can see that {b} has chosen a character she cannot sustain. She does not say that. She sits down and helps {b} find four backup answers and two physical bits, and the finding takes most of the prep time {a} was going to spend on her own material.",
+    "She has her own character to prepare and she puts it aside. {a} coaches {b} through the voice, the references, the improvised answers — the things a character needs to survive the back half of {c} when the prepared material runs out. It costs {a} forty minutes she did not have.",
+  ]),
+  walk('girl-group', 'She helps another queen learn the verse.', [
+    "{a} watches {b} fumble the lyrics for the fourth time and walks over. She runs {b}'s verse with her, line by line, until {b} can sing it without looking at the paper — and the coaching costs {a} time she was going to spend polishing her own section.",
+    "{b}'s eight-count is a mess and {a} can see it from across the room. She puts her own choreography on hold and teaches {b} the steps, counting them out until {b}'s body knows the rhythm her brain already lost.",
+    "{a} pulls {b} aside and they run the full number together, and the running is the thing that locks {b}'s verse into the song instead of sitting next to it. It costs {a} an hour she needed for her own delivery.",
+    "She has her own lyrics to learn and she puts them down. {a} coaches {b} through the melody, the attitude, the entrance into the chorus — the parts that need to match the group — and the matching takes longer than either of them expected.",
+  ]),
+  walk('design', 'She watches the construction fail and walks over with her own tools.', [
+    "{a} looks at {b}'s construction and sees the problem before {b} does. She does not ask — she walks over with her scissors and her iron and spends forty minutes rebuilding {b}'s garment from the inside while {b} watches and learns and does not quite know how to say thank you.",
+    "{b}'s garment is coming apart at the seams, literally, and {a} is good enough at construction to see it and generous enough to fix it. She crosses the room and sits at {b}'s station and puts her own work on hold and the help is specific: this seam, this dart, this hem.",
+    "{a} watches {b} fight with the fabric and decides the fighting is not something she is willing to watch any longer. She walks over and shows {b} the technique — the real one, the one {a} has been using for years — and the showing costs her an hour of her own prep time.",
+    "She has her own look to finish and she puts it down and walks to {b}'s station. {a} is strong at tonight's craft and {b} is drowning in it and {a} rebuilds the construction while {b} hands her pins, and the rebuild costs {a} time she does not have.",
+  ]),
+  walk('generic', 'She is strong at tonight\'s craft and spends her own time on someone who is not.', [
+    "{a} watches {b} struggle with the challenge and does not wait to be asked. She crosses the room and sits down and spends forty minutes of her own prep time coaching {b} through the part that is not working — and the help is specific and practical and costs {a} time she does not have, and she gives it anyway.",
+    "{a} is good at this. {b} is not. {a} can see it from across the room and could keep working on her own preparation and let the challenge sort it out, and instead she walks over and quietly coaches {b} through the thing that is falling apart.",
+    "She has her own work to do and she puts it down and goes to {b}. {a} is strong at tonight's craft and {b} is drowning in it and {a} decides that {b} drowning is not something she is willing to watch. The note is direct and useful.",
+    "{a} spends more time on {b}'s preparation than on her own. The maths does not work and {a} knows the maths does not work and she does it anyway because {b} is going to be on that stage tonight and {a} is not going to be the queen who watched her go out there unprepared.",
+  ]),
+];
+
+// ══════════════════════════════════════════════════════════════════════
+// POOL 4 — THE SABOTAGE. One queen quietly makes another worse.
+// ══════════════════════════════════════════════════════════════════════
+
+export const SABOTAGE_VOICES = [
+  walk('talent-show', 'She gives a note about the act. The note is deliberately wrong.', [
+    "{a} tells {b} the ending does not land and {b} should change it, and the suggestion {a} offers is worse than what {b} had. {a} knows this. The new ending will die on stage and {a} will be watching from the wings when it does.",
+    "\"I think the energy is too big,\" {a} says, and {b} pulls back, and the pulling-back kills the one thing the act had going for it. {a} watches {b} rehearse the smaller version and nods like it is working. It is not working. {a} chose this note because it would not work.",
+    "{a} offers to watch {b}'s act and give feedback. The feedback is specific and confident and wrong — she tells {b} to cut the strongest bit and lean into the weakest, and {b} listens because {a} sounds like she knows. {a} does know. That is the point.",
+    "It is subtle. {a} suggests a different song for {b}'s act, one that does not match the talent at all, and the suggestion sounds reasonable enough that {b} makes the change with four hours left. The change will cost {b} the performance and {a} walks back to her own rehearsal with the focus of somebody who has just done something she is not going to discuss.",
+  ]),
+  walk('snatch-game', 'She gives bad character advice disguised as help.', [
+    "{a} tells {b} the impression needs to be bigger, and {b} goes bigger, and the bigger version is a cartoon of a character that was already thin. {a} watches {b} rehearse the new voice and encourages her. The encouragement is the sabotage.",
+    "\"I do not think that character works for you,\" {a} says, and the doubt is planted at exactly the right time — late enough that {b} cannot fully commit to a new character, early enough that {b} will not fully commit to the old one either.",
+    "{a} feeds {b} a reference for the character that sounds right and is wrong — a catchphrase the real person never said, a mannerism from somebody else — and {b} takes it because {a} delivers it with the confidence of somebody who has done her research.",
+    "{a} suggests {b} lean into the physical comedy and away from the voice, and {b} does, and the leaning is the thing that will leave {b} with nothing to say when the host asks a question that requires an answer instead of a gesture.",
+  ]),
+  walk('design', 'She gives a construction note that will fall apart on the runway.', [
+    "{a} offers {b} a suggestion and the suggestion is wrong. Not obviously wrong — wrong in the way that will only become visible under the stage lights, when the proportions read differently and the hem sits where it should not — and {a} offers it with the warmth of somebody who is helping.",
+    "{a} tells {b} the colour is wrong and {b} should change it, and {b} changes it, and the new colour is worse. {a} knows it is worse. {a} chose it because it is worse.",
+    "\"I think you should take that in,\" {a} says, and {b} takes it in, and the taking-in ruins the silhouette in a way that will not be obvious until {b} is standing in front of the panel. {a} watches {b} make the alteration and nods encouragingly. The nod is the worst part.",
+    "It is subtle. {a} adjusts something on {b}'s mannequin while {b} is across the room, and the adjustment is small enough that {b} will not notice until the runway. The room does not see it. The cameras might.",
+  ]),
+  walk('generic', 'She gives a note. The note is deliberately wrong.', [
+    "{a} offers {b} a suggestion and the suggestion is wrong. Not obviously wrong — wrong in the way that will only become visible on that stage, when the pressure is on and the choice unravels — and {a} offers it with the warmth of somebody who is helping and the precision of somebody who is not.",
+    "It is subtle. {a} gives {b} a note that sounds right and is wrong, and {b} follows it, and the following will not show its cost until {b} is in front of the panel. {a} goes back to her own work with the focus of somebody who has just done something she is not going to talk about.",
+    "{a} tells {b} the approach is off and {b} should change it, and {b} changes it, and the new direction is worse. {a} knows it is worse. {a} chose it because it is worse. The exchange looks like mentorship and functions like sabotage.",
+    "{a} gives {b} a confident, specific, wrong note. {b} follows it because {a} sounds like she knows, and the following will not show its cost until {b} is in front of the panel. {a} watches {b} make the change and nods encouragingly. The nod is the worst part.",
+  ]),
+];
+
+// ══════════════════════════════════════════════════════════════════════
+// POOL 5 — THE SHUNNED. Nobody helps her. An event, not an absence.
+// ══════════════════════════════════════════════════════════════════════
+
+export const SHUNNED_VOICES = [
+  walk('talent-show', 'The room is running acts for each other. Nobody runs one for her.', [
+    "The room is rehearsing in pairs — one queen watches, gives a note, trades places. Nobody asks {a} to watch. Nobody offers to watch hers. She runs the act alone, in a corner, and the running-alone changes the energy of it in a way the panel will see without knowing why.",
+    "{a} asks if anyone wants to run their act together and the room gives her the specific silence of people who heard the question and decided the answer. She rehearses alone. The solo rehearsal is louder than it needs to be, or quieter, and neither is right.",
+    "Three queens are giving each other notes on their acts. {a} is not part of the circle. She could ask — the circle is not closed — but the not-being-invited is its own answer and {a} reads it and rehearses on her own.",
+    "The room has paired off for feedback and {a} is the one left without a partner. The being-left is not cruelty — it is arithmetic, one queen short of an even number — but the arithmetic always seems to land on her.",
+  ]),
+  walk('snatch-game', 'The room is running characters for each other. Nobody runs one for her.', [
+    "Queens are testing voices on each other, throwing questions back and forth, workshopping punchlines. Nobody throws a question at {a}. She sits at her station with her reference photos and rehearses the voice to nobody, which is a different kind of rehearsal than rehearsing to a room that is listening.",
+    "{a} asks if anyone wants to run a mock round and the room goes quiet in the particular way that means everybody heard and nobody wants to. She prepares alone. The alone-preparation means she will not know if the character works until the cameras are rolling.",
+    "The werk room is full of queens helping each other find material. References are being traded, impressions tested, weak answers rebuilt. None of this traffic flows toward {a}, and the not-flowing changes the way she prepares.",
+    "Three queens are workshopping their characters together — feeding each other setups, testing reactions, building the chemistry the taping will need. {a} watches from her station and does not ask to join because the asking would confirm the thing the watching already told her.",
+  ]),
+  walk('design', 'The room is lending tools and checking hems. Nobody checks hers.', [
+    "The room is helping each other. Queens are crossing to other stations, offering advice, lending tools, checking hems. Nobody crosses to {a}'s station. Nobody offers. Nobody checks. The absence changes the way she works — faster, quieter, and facing the mirror instead of the room.",
+    "{a} asks for help and the room gives her the specific silence of people who heard the question and chose not to answer it. She figures it out on her own, and the figuring-out takes twice as long as it would have with one person's help.",
+    "Three queens walk past {a}'s station while she is struggling with the construction and all three of them keep walking. She does not ask again.",
+    "The room has decided, without discussing it, that {a} is on her own tonight. Help flows in every direction except toward her station.",
+  ]),
+  walk('generic', 'The room is helping each other and nobody is helping her.', [
+    "The room is helping each other. Queens are crossing the floor, giving notes, offering a hand. Nobody crosses to {a}. Nobody offers. Nobody checks. The absence is loud enough that {a} can hear it, and the hearing changes the way she works — faster, quieter, and facing the mirror instead of the room.",
+    "{a} asks for help and the room gives her the specific silence of people who heard the question and chose not to answer it. It is not cruelty — it is calculation, a whole room deciding independently that helping {a} is not in their interest tonight.",
+    "Three queens walk past {a} while she is struggling and all three of them keep walking. She does not ask again. She works it out on her own, and the working-out takes twice as long as it would have taken with one person's help, and the room knows this and the room is fine with it.",
+    "The room has decided, without discussing it, that {a} is on her own tonight. The decision is visible in the traffic pattern — help flows in every direction except toward her — and {a} is aware of the pattern and the awareness settles into her preparation like a weight.",
+  ]),
+];
+
 /** Her lines for this kind of pick, or null — the usual fallback contract. */
 export function pickLinesFor(kindId, tierId) {
   const k = PICK_VOICES.find(x => x.kind === kindId);
@@ -536,6 +635,24 @@ export function pickLinesFor(kindId, tierId) {
 export function walkthroughLinesFor(family) {
   const w = WALKTHROUGH_VOICES.find(x => x.family === family)
     || WALKTHROUGH_VOICES.find(x => x.family === 'generic');
+  return w && w.lines.length ? w.lines : null;
+}
+
+export function helpLinesFor(family) {
+  const w = HELP_VOICES.find(x => x.family === family)
+    || HELP_VOICES.find(x => x.family === 'generic');
+  return w && w.lines.length ? w.lines : null;
+}
+
+export function sabotageLinesFor(family) {
+  const w = SABOTAGE_VOICES.find(x => x.family === family)
+    || SABOTAGE_VOICES.find(x => x.family === 'generic');
+  return w && w.lines.length ? w.lines : null;
+}
+
+export function shunnedLinesFor(family) {
+  const w = SHUNNED_VOICES.find(x => x.family === family)
+    || SHUNNED_VOICES.find(x => x.family === 'generic');
   return w && w.lines.length ? w.lines : null;
 }
 

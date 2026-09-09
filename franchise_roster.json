@@ -5367,8 +5367,7 @@
           "crafty",
           "narrator"
         ],
-        "voice": "A loud, theatrical baritone that punctuates messy questions with a room-filling laugh. She is a highly strategic, social narrator on Drag Race who stirs the pot for good television but keeps her shade playful rather than malicious—for example: \"Ooh, she is pressed like a panini today! [cackles] Look, I love my sister, but if she wants to wear that crunchy wig, I’m not gonna stop her. That's just one less hurdle between me and the crown, baby!\"",
-        "family": []
+        "voice": "A loud, theatrical baritone that punctuates messy questions with a room-filling laugh. She is a highly strategic, social narrator on Drag Race who stirs the pot for good television but keeps her shade playful rather than malicious—for example: \"Ooh, she is pressed like a panini today! [cackles] Look, I love my sister, but if she wants to wear that crunchy wig, I’m not gonna stop her. That's just one less hurdle between me and the crown, baby!\""
       },
       "age": 36,
       "birthdate": "1990-10-31",
@@ -5413,9 +5412,7 @@
           "wit",
           "shade-queen",
           "splits-and-dips"
-        ],
-        "voice": "",
-        "family": []
+        ]
       },
       "age": 26,
       "birthdate": "2000-03-15",
@@ -5459,9 +5456,7 @@
           "live-vocalist",
           "wit",
           "camp-queen"
-        ],
-        "voice": "",
-        "family": []
+        ]
       },
       "age": 39,
       "birthdate": "1987-04-12",
@@ -5505,9 +5500,7 @@
           "high-concept",
           "look-queen",
           "crafty"
-        ],
-        "voice": "",
-        "family": []
+        ]
       },
       "age": 26,
       "birthdate": "2001-01-23",
@@ -5538,15 +5531,6 @@
       "sexuality": "gay",
       "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”",
       "profileSources": {},
-      "age": 42,
-      "birthdate": "1984-06-27",
-      "ethnicity": "White",
-      "nationality": "American",
-      "hometown": "Los Angeles, California",
-      "occupation": "rag producer, nightclub headliner, and house mother",
-      "descriptor": "The Hollywood Headliner",
-      "backstory": "Ginger spent nearly two decades building a reputation as one of Los Angeles’ most dependable drag entertainers. She began as a backup dancer in small cabaret productions before developing a glamorous solo act inspired by movie premieres, television variety shows, and classic showgirls. After becoming an established headliner, she helped found the House of Hollywood and became its co-mother, teaching younger performers how to command a stage, negotiate their bookings, and treat drag like a career. She enters the show with nothing left to prove locally but everything to gain nationally.",
-      "personality": "Ginger is charismatic, composed, protective, and completely aware of her own star power. She naturally assumes a leadership role and treats the workroom like an extension of her drag house, encouraging struggling queens while expecting them to remain professional. She is generous with advice but can become controlling when others reject it. Ginger excels at runway, lip syncs, acting, hosting, and performance challenges because she understands how to hold an audience’s attention. Her experience occasionally makes her resistant to unfamiliar trends, while construction challenges expose her reliance on professional designers. Beneath the polish is a fiercely competitive matriarch who believes the crown belongs to the queen who can make every challenge feel like her own show.",
       "drag": {
         "acting": 8,
         "comedy": 1,
@@ -5555,15 +5539,22 @@
         "runway": 8,
         "lipsync": 5,
         "singing": 6,
-        "style": "",
         "traits": [
           "big-wigs",
           "pageant-polished",
           "glamazon"
         ],
-        "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”",
-        "family": []
-      }
+        "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”"
+      },
+      "age": 42,
+      "birthdate": "1984-06-27",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Los Angeles, California",
+      "occupation": "rag producer, nightclub headliner, and house mother",
+      "descriptor": "The Hollywood Headliner",
+      "backstory": "Ginger spent nearly two decades building a reputation as one of Los Angeles’ most dependable drag entertainers. She began as a backup dancer in small cabaret productions before developing a glamorous solo act inspired by movie premieres, television variety shows, and classic showgirls. After becoming an established headliner, she helped found the House of Hollywood and became its co-mother, teaching younger performers how to command a stage, negotiate their bookings, and treat drag like a career. She enters the show with nothing left to prove locally but everything to gain nationally.",
+      "personality": "Ginger is charismatic, composed, protective, and completely aware of her own star power. She naturally assumes a leadership role and treats the workroom like an extension of her drag house, encouraging struggling queens while expecting them to remain professional. She is generous with advice but can become controlling when others reject it. Ginger excels at runway, lip syncs, acting, hosting, and performance challenges because she understands how to hold an audience’s attention. Her experience occasionally makes her resistant to unfamiliar trends, while construction challenges expose her reliance on professional designers. Beneath the polish is a fiercely competitive matriarch who believes the crown belongs to the queen who can make every challenge feel like her own show."
     },
     {
       "name": "Marge Stache",
@@ -5670,15 +5661,6 @@
       "sexuality": "queer",
       "voice": "Quin speaks in a cool, slightly detached London accent, mixing fashion jargon, art-school language, and online slang as though every conversation were an interview at a gallery opening. They sound effortlessly confident until they must explain one of their concepts in detail: “The silhouette represents digital loneliness—but, like, make it gorgeous,” “That outfit isn’t ugly; it’s simply hostile to the human eye,” and, when criticized, “You don’t have to understand my drag, babe. The museum provides an audio guide.”",
       "profileSources": {},
-      "age": 25,
-      "birthdate": "2001-07-06",
-      "ethnicity": "Black",
-      "nationality": "British",
-      "hometown": "London, England",
-      "occupation": "Art-school graduate, model, and aspiring actor",
-      "descriptor": "The Walking Exhibition",
-      "backstory": "Quin studied contemporary visual art while taking modeling jobs, appearing in student films, and working the doors of underground London clubs. Frustrated by being treated as a mannequin rather than a creative artist, they began making conceptual drag looks from installation materials, discarded garments, and unusual objects. Their striking photographs attracted attention online, but most of their performing experience still comes from short nightclub numbers and experimental showcases. Quin enters Drag Race hoping to turn a strong visual identity into a serious acting and modeling career.",
-      "personality": "Quin is fashionable, ambitious, socially connected, and occasionally pretentious. They can discuss visual concepts with complete confidence but become evasive when asked about practical details. Their modeling experience makes them magnetic on the runway, while their willingness to experiment gives them an advantage in unconventional design challenges. However, they are not naturally funny, cannot sing, and sometimes mistake emotional distance for acting subtlety. Quin enjoys being surrounded by interesting people but may abandon an alliance if it stops benefiting their image. They possess genuine creative vision, though the competition will test whether there is a versatile performer behind the photographs.",
       "drag": {
         "acting": 9,
         "comedy": 5,
@@ -5687,11 +5669,17 @@
         "runway": 5,
         "lipsync": 5,
         "singing": 5,
-        "style": "",
-        "traits": [],
-        "voice": "",
-        "family": []
-      }
+        "traits": []
+      },
+      "age": 25,
+      "birthdate": "2001-07-06",
+      "ethnicity": "Black",
+      "nationality": "British",
+      "hometown": "London, England",
+      "occupation": "Art-school graduate, model, and aspiring actor",
+      "descriptor": "The Walking Exhibition",
+      "backstory": "Quin studied contemporary visual art while taking modeling jobs, appearing in student films, and working the doors of underground London clubs. Frustrated by being treated as a mannequin rather than a creative artist, they began making conceptual drag looks from installation materials, discarded garments, and unusual objects. Their striking photographs attracted attention online, but most of their performing experience still comes from short nightclub numbers and experimental showcases. Quin enters Drag Race hoping to turn a strong visual identity into a serious acting and modeling career.",
+      "personality": "Quin is fashionable, ambitious, socially connected, and occasionally pretentious. They can discuss visual concepts with complete confidence but become evasive when asked about practical details. Their modeling experience makes them magnetic on the runway, while their willingness to experiment gives them an advantage in unconventional design challenges. However, they are not naturally funny, cannot sing, and sometimes mistake emotional distance for acting subtlety. Quin enjoys being surrounded by interesting people but may abandon an alliance if it stops benefiting their image. They possess genuine creative vision, though the competition will test whether there is a versatile performer behind the photographs."
     },
     {
       "name": "Riot",

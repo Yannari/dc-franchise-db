@@ -23,7 +23,7 @@
 // vanish off the end of the show without a word. `tests/dr-vp-registry`
 // asserts that EVERY scene reaches a screen, which is the only version of
 // this that stays true as the engine grows new scene kinds.
-import { _shell, _portrait, _icon } from './style.js';
+import { _shell, _portrait, _icon, _judgePortrait } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
@@ -346,9 +346,20 @@ export function sceneSections(row) {
 /** One scene, as a revealable step. */
 function step(sc, i, suffix, ep, accent) {
   const players = sc?.data?.players || [];
+  /* ── AND WHOEVER WAS RUNNING THE ROOM ──
+     The booth and the shoot are two people in a room and only one of them was
+     ever drawn, so the notes on those cards came from somebody the screen did
+     not show and did not name. Her bust sits beside the queen's, smaller, with
+     her name under it — she is not the subject of the scene, she is the reason
+     it happened. Falls back to her initials, which is what `_judgePortrait`
+     gives any judge whose picture is not drawn yet. */
+  const mentor = sc?.data?.mentor;
+  const mentorBust = mentor
+    ? `<span class="dr-mentor" title="${esc(mentor.name)}">${
+      _judgePortrait(mentor.id, { size: 34 })}<small>${esc(mentor.name)}</small></span>` : '';
   const who = players.length
     ? `<span class="dr-who">${players.slice(0, 2).map(n =>
-      _portrait(n, ep, { size: 46, station: true })).join('')}</span>` : '';
+      _portrait(n, ep, { size: 46, station: true })).join('')}${mentorBust}</span>` : mentorBust;
   /* NO TIER CHIP. `open`, `shaky`, `strong`, `blowout` are the names of
      prose POOLS — an author's filing labels — and they were being printed
      on the card in front of the line they selected, which both leaked the
@@ -406,6 +417,14 @@ const EXTRA_CSS = `
 .dr-places li{counter-increment:pl;display:flex;align-items:center;gap:9px;padding:5px 0}
 .dr-places li::before{content:counter(pl);font-variant-numeric:tabular-nums;
   color:#C9A6BC;min-width:20px}
+
+/* Whoever ran the room, beside the queen and smaller than her: she is the
+   reason the scene happened, not its subject. */
+.dr-mentor{display:inline-flex;flex-direction:column;align-items:center;gap:2px;
+  margin-left:6px;opacity:.9}
+.dr-mentor small{font-size:8.5px;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--muted,#8b949e);max-width:62px;text-align:center;line-height:1.1}
+.dr-mentor .dr-bust{filter:saturate(.85)}
 `;
 
 /**

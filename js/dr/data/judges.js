@@ -40,6 +40,34 @@
 // and a judge is not a player. A guest judge is, and js/dr/judges.js leaves
 // their portrait null for exactly that reason.
 
+/* ── WHO RUNS THE ROOM WHEN THE PANEL IS NOT SITTING ──
+   A few challenges are worked away from the main stage with one of these
+   people in charge of the day: Michelle directs the video shoot and runs the
+   recording booth, and Jamal takes a room that has to learn choreography. It
+   was written as "the director" and "the vocal producer", unnamed and
+   faceless, which is a stranger the audience has never met giving notes that
+   change a result.
+
+   AND SHE IS ON THE PANEL, which is the part that makes this more than a
+   label. "I was on that set and she was difficult" is a thing this show says
+   out loud, and it means the impression from the day is not hearsay reaching
+   the judges — it is one judge's own eyes. js/dr/judging.js weighs it that
+   way: full for the person who was there, halved for the seats who only heard
+   about it. */
+export const MENTORS = {
+  'music-video': 'michelle',
+  rumix: 'michelle',
+  'girl-group': 'jamal',
+  choreography: 'jamal',
+  rusical: 'jamal',
+};
+
+/** Who ran the room on this challenge, or null when the host did it alone. */
+export function mentorFor(maxiId) {
+  const id = MENTORS[maxiId];
+  return id ? (JUDGES.find(j => j.id === id) || null) : null;
+}
+
 export const JUDGES = [
   {
     id: 'rupaul', name: 'RuPaul', permanent: true,

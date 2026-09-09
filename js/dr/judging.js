@@ -77,7 +77,13 @@ export function judgeViews(panel, entries, memory = {}, rng = Math.random) {
            not a second verdict on it. Defaults to 0, so every challenge that
            has no such figure is untouched — see js/dr/chal/music-video.js,
            which is the only writer of it today. */
+        /* FULL FOR THE ONE WHO WAS THERE, HALF FOR THE REST. The day is run
+           by a member of the panel — Michelle directs the shoot and runs the
+           booth — so this is not a report reaching the judges, it is one
+           judge's own eyes and three colleagues taking her word for it. A flat
+           term treated all four as if they had been on the set. */
         + (e.impression || 0)
+          * (e.impressionFrom && j.id !== e.impressionFrom ? 0.5 : 1)
         + noise(rng, 1.0);
       return { name: e.name, view: Math.round(view * 100) / 100 };
     });

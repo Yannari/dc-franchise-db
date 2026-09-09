@@ -30,6 +30,7 @@ import { miniById } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
 import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
+import { mentorFor } from './data/judges.js';
 import { runwayScore, blendScore, noise, polishFor, PANEL_FORM } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { rateBoard, ballotSelfishness } from './rate.js';
@@ -139,6 +140,7 @@ export function runDragWeek(state, cfg, ctx) {
       : ['cold-open', 'werk-morning', 'prep', 'werk-elim-day'],
     living, players: ctx.players, state, storylines: state.storylines || [],
     rng,
+    blend: maxi.blend,
     ctx: {
       bond: ctx.bond,
       phase: state._drPhase ?? 0,
@@ -324,6 +326,9 @@ export function runDragWeek(state, cfg, ctx) {
     /* What the director told them about the day, on the challenges that have
        one. Undefined everywhere else, and `judgeViews` reads it as zero. */
     impression: performances[n].impression || 0,
+    // Which seat formed it, so `judgeViews` can weigh her own eyes above
+    // hearsay. Null on every challenge with nobody running the room.
+    impressionFrom: mentorFor(maxi.id)?.id || null,
   }));
   const views = judgeViews(panel, entries, state.memory, rng);
   /* ── RATE-A-QUEEN ──

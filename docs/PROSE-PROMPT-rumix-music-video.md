@@ -254,6 +254,51 @@ she is put in.
 Both reach the beats on their scene data. Lines that reach for them will read as
 being about that night; lines that do not will read as being about the format.
 
+### H. REWRITE THE THREE PREP POOLS — she has a name now, and she talks
+
+**This supersedes what is already written in `booth-session`, `studio-day` and
+`call-sheet`.** Those pools were filled while the person running the room was
+an anonymous "the director" and "the vocal producer", referred to throughout as
+**he**. Both of those are now wrong.
+
+**The person running the room is Michelle Visage.** She is a permanent judge on
+this show — `js/dr/data/judges.js`, with an authored voice: *"Direct and
+technical. Hard on construction and a hidden waist, soft on a live vocal, and
+never softens a note to be liked."* She directs the video shoot and she runs
+the recording booth. `js/dr/data/judges.js` `MENTORS` is the map; Jamal Sims
+takes a room that has to learn choreography.
+
+Three things follow, and all three are required:
+
+1. **`{m}` is her name.** It is filled at render time exactly like `{a}`.
+   Never type "Michelle" into a pool — use `{m}`, so a season that swaps the
+   mentor still reads correctly.
+2. **She is "she".** Every "he" in those three pools is a bug now.
+3. **SHE IS ON THE PANEL.** That is the point of her being a judge rather than
+   a hired stranger: she is not sending a report to the judges, she is a judge
+   who was in the room, and the critique later can be *"I was on that set."*
+   The engine already models this — her own view of the queen carries the full
+   weight of the day and the other three seats get half.
+
+**And these pools want DIALOGUE, not reported speech.** This is the note that
+prompted the rewrite: every line currently narrates what she thought instead of
+letting her say it. Compare:
+
+> ✗ The director's note was about scale: play it smaller for the lens.
+> ✓ "Smaller," {m} says, without looking up from the monitor. "The lens is
+>   eighteen inches from your face and you are playing to a balcony."
+
+Aim for **at least half the lines in each tier carrying a spoken line of hers**,
+and write it in her voice — direct, technical, specific about the craft, never
+softened to be liked. She is not cruel; she is exact. Give her the actual note:
+what she wants smaller, which bar was flat, where the mark is.
+
+The queen may answer. `argued` in `studio-day` is a two-hander by definition —
+somebody was asked for something and said no, out loud, in front of a crew —
+and it should read like an exchange rather than a summary of one.
+
+**Same three pools, same tier counts as sections F. 52 lines, rewritten.**
+
 ---
 
 ## 4. How to know it worked

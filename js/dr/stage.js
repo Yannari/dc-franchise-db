@@ -21,6 +21,7 @@
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
+import { mentorFor } from './data/judges.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
 import { performanceFor, familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
@@ -973,6 +974,9 @@ export function renderChallengeBeats({
   const scenes = [];
   const usedLines = new Set();
   const beatById = id => CHALLENGE_BEATS.find(b => b.id === id);
+  // Who is running the room tonight, if anybody. Resolved once: it is a
+  // property of the challenge, not of the queen.
+  const mentor = mentorFor(maxi.id);
 
   const emit = (beat, tierId, who, extra = {}, step = null) => {
     if (!beat) return;
@@ -982,9 +986,24 @@ export function renderChallengeBeats({
     scenes.push({
       step: step || beat.step,
       kind: `chal:${beat.id}`,
-      data: { beat: beat.id, tier: t.id, players: who, note: t.note, ...extra },
+      data: {
+        beat: beat.id, tier: t.id, players: who, note: t.note,
+        /* Only where she is actually in the scene. Every beat in this renderer
+           can quote her, but the card only draws her on the ones that are
+           ABOUT her — the booth and the shoot — or the screen grows a portrait
+           of Michelle beside a queen picking a slot. */
+        ...(mentor && (beat.id === 'booth-session' || beat.id === 'studio-day')
+          ? { mentor: { id: mentor.id, name: mentor.name } } : {}),
+        ...extra,
+      },
       text: fill(pick(t.lines, rng, usedLines, `${beat.id}/${t.id}`),
-        { a: who[0], c: maxi.name }),
+        /* `{m}` IS WHOEVER RAN THE ROOM. The booth and the shoot were written
+           around "the director" and "the vocal producer" — an unnamed stranger
+           handing out notes that move a result. Michelle runs both and Jamal
+           takes a choreography room; see MENTORS in js/dr/data/judges.js.
+           `{b}` is here for the same reason it is everywhere else: a beat about
+           two queens could not name the second one from this emitter. */
+        { a: who[0], b: who[1], c: maxi.name, m: mentor?.name || '' }),
     });
   };
 

@@ -2991,6 +2991,25 @@
           "file": "zoey-returnee.png"
         }
       ]
+    },
+    "gigi-cherie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "gigi-cherie.png"
+        },
+        {
+          "id": "look-1",
+          "show": "drag-race",
+          "label": "Returnee",
+          "file": "gigi-cherie-dr-look-1.png"
+        }
+      ]
     }
   }
 }

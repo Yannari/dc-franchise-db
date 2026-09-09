@@ -499,6 +499,14 @@ export function rpBuildSmackdown(row) {
     <div class="sd-round-label">${roundName(rn)}</div>
     ${duels.filter(d => d.round === rn).map(d => {
     const gi = duels.indexOf(d);
+    if (d.triple) {
+      const names = d.contestants || [d.a, d.b];
+      return `<div class="sd-match" id="sd-sm-${gi}">
+        <div class="sd-song">&ldquo;${esc(d.song)}&rdquo;</div>
+        ${names.map(n => side(n, ep,
+    d.adjusted?.[n] ?? d.scores?.[n], d.winner === n, d.fatigue?.[n])).join('')}
+      </div>`;
+    }
     return `<div class="sd-match" id="sd-sm-${gi}">
       <div class="sd-song">&ldquo;${esc(d.song)}&rdquo;</div>
       ${side(d.a, ep, d.adjusted?.[d.a] ?? d.scores?.[d.a], d.winner === d.a, d.fatigue?.[d.a])}
@@ -644,8 +652,125 @@ export function rpBuildSmackdown(row) {
       </div>`);
     }
 
-    // ── 1. BALL DRAW — slot machine picks who chooses ──
     const rCol = roundColor(d.round);
+
+    // ── TRIPLE LIP SYNC ──
+    if (d.triple) {
+      const names = d.contestants || [d.a, d.b];
+
+      // Triple ball draw
+      const tripleReel = [];
+      for (let c = 0; c < 3; c++) {
+        const shuffled = [...roundPool].sort(() => 0.5 - Math.random());
+        for (const n of shuffled) tripleReel.push(n);
+      }
+      tripleReel.push(names[0]);
+      const tripleSpinEnd = -(tripleReel.length - 1) * 52;
+
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-draw">
+          <div class="tm-draw-label" style="color:${rCol}">BALL DRAW</div>
+          <div class="tm-reel">
+            <div class="tm-reel-track" style="--tm-spin-end:${tripleSpinEnd}px">
+              ${tripleReel.map((n, i) =>
+    `<div class="tm-reel-name${i === tripleReel.length - 1 ? ' target' : ''}">${esc(n)}</div>`
+  ).join('')}
+            </div>
+          </div>
+          <div class="tm-balls">${roundPool.map(n =>
+    `<div class="tm-ball${names.includes(n) ? ' picked' : roundBallsUsed.has(n) ? ' spent' : ' waiting'}">${esc(n.substring(0, 3))}</div>`
+  ).join('')}</div>
+          <div class="tm-picked-name">${names.map(n => esc(n)).join(' • ')}</div>
+          <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">${names.length}-WAY LIP SYNC</div>
+        </div>
+      </div>`);
+
+      // Triple song pick
+      const tripleChosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-song-pick">
+          <div class="tm-song-pick-label" style="color:${rCol}">SONG PICK</div>
+          <div class="tm-song-pick-who">The host picks the song</div>
+          <div class="tm-song-pool">${poolSongs.map(s =>
+    `<div class="tm-song-chip${s.title === d.song ? ' chosen' : ''}">${esc(s.title)}</div>`
+  ).join('')}</div>
+          <div class="tm-song-chosen">
+            <div class="tm-song-title">&ldquo;${esc(d.song)}&rdquo;</div>
+            <div class="tm-song-artist">${esc(tripleChosenSong.artist)}</div>
+            <div class="tm-song-tags">
+              ${tripleChosenSong.tempo ? `<div class="tm-song-tag">${esc(tripleChosenSong.tempo)}</div>` : ''}
+              ${tripleChosenSong.mood ? `<div class="tm-song-tag">${esc(tripleChosenSong.mood)}</div>` : ''}
+              ${tripleChosenSong.genre ? `<div class="tm-song-tag">${esc(tripleChosenSong.genre)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`);
+
+      for (const n of names) roundBallsUsed.add(n);
+
+      // Triple VS card
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-vs triple on">
+          <div class="tm-triple-song">&ldquo;${esc(d.song)}&rdquo; &mdash; ${esc(d.artist || '')}</div>
+          ${names.map((n, ni) => `<div class="tm-vs-${ni === 0 ? 'left' : ni === 1 ? 'center' : 'right'}"
+            style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:36px 12px 16px">
+            ${_portrait(n, ep, { size: 58 })}
+            <div class="tm-vs-name">${esc(n)}</div>
+            ${d.fatigue?.[n] != null && d.fatigue[n] < 1 ? fatHud(d.fatigue[n]) : '<div class="tm-vs-sub">FRESH</div>'}
+          </div>`).join('')}
+        </div>
+      </div>`);
+
+      // Triple prose
+      const tripleScene = nextProse('smackdown-duel');
+      if (tripleScene?.text) step(proseCard(tripleScene));
+
+      // Triple result
+      const tripleScores = names.map(n => {
+        const adj = d.adjusted?.[n] ?? 0;
+        const won = d.winner === n;
+        const lost = d.loser === n;
+        return { n, adj, won, lost, mid: !won && !lost };
+      });
+      for (const ts of tripleScores) {
+        sideState.lipsyncCount[ts.n] = (sideState.lipsyncCount[ts.n] || 0) + 1;
+        if (ts.won) {
+          sideState.wins[ts.n] = (sideState.wins[ts.n] || 0) + 1;
+          sideState.status[ts.n] = isFinal ? 'champion' : 'advanced';
+        } else {
+          sideState.losses[ts.n] = (sideState.losses[ts.n] || 0) + 1;
+          sideState.status[ts.n] = 'out';
+        }
+      }
+      sideState.songsUsed.push(d.song);
+
+      const stampForSm = ts => {
+        if (isFinal) return ts.won ? 'CHAMPION' : 'OUT';
+        return ts.won ? 'ADVANCES' : 'OUT';
+      };
+
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-result triple on" id="sd-sm-res-${di}">
+          ${tripleScores.map(ts => {
+    const pct = Math.round((ts.adj / maxAdj) * 100);
+    const cls = ts.won ? 'win' : 'lose';
+    return `<div class="tm-result-side ${cls}">
+              <div class="tm-result-stamp">${stampForSm(ts)}</div>
+              ${_portrait(ts.n, ep, { size: 48 })}
+              <div class="tm-result-name">${esc(ts.n)}</div>
+              <div class="tm-bar"><div class="tm-bar-fill ${ts.won ? 'gold' : 'dead'} race" style="--tm-bar-pct:${pct}%"></div></div>
+              <div class="tm-result-score">${ts.adj.toFixed(1)}</div>
+              ${d.fatigue?.[ts.n] != null && d.fatigue[ts.n] < 1 ? fatigueBar(d.fatigue[ts.n]) : ''}
+            </div>`;
+  }).join('')}
+        </div>
+      </div>`);
+      continue;
+    }
+
+    // ── STANDARD DUEL (2 queens) ──
+
+    // ── 1. BALL DRAW — slot machine picks who chooses ──
     const chooser = d.a;
     const available = roundPool.filter(n => !roundBallsUsed.has(n));
     const reelNames = [];

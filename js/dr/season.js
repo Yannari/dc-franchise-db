@@ -470,12 +470,44 @@ export function runSmackdown(state, cfg, ctx) {
     const next = [];
     const roundPool = [...alive].sort(() => rng() - 0.5);
     const used = new Set();
+    const isOdd = roundPool.length % 2 === 1 && roundPool.length >= 3;
     for (let i = 0; i < roundPool.length; i++) {
       const chooser = roundPool[i];
       if (used.has(chooser)) continue;
       used.add(chooser);
       const available = roundPool.filter(n => !used.has(n));
       if (!available.length) { next.push(chooser); break; }
+
+      // When odd count, the last 3 unpaired queens do a triple lip sync
+      if (isOdd && available.length === 2) {
+        const names = [chooser, ...available];
+        for (const n of available) used.add(n);
+        const song = SONGS[Math.floor(rng() * SONGS.length)];
+        const entries = names.map(n => {
+          const fat = fatigue(n);
+          const sc = lipsyncScore({ player: players[n], song, lipsyncRecord: state.lipsyncRecord?.[n] || [], rng });
+          const adj = sc.score * fat;
+          lipsyncCount[n] = (lipsyncCount[n] || 0) + 1;
+          return { name: n, raw: sc.score, fatigue: fat, adjusted: Math.round(adj * 100) / 100 };
+        });
+        entries.sort((x, y) => y.adjusted - x.adjusted);
+        const winner = entries[0].name;
+        wins[winner]++;
+        duels.push({
+          round, triple: true,
+          contestants: entries.map(e => e.name),
+          a: entries[0].name, b: entries[entries.length - 1].name,
+          chosen: true, strategy: null,
+          song: song.title, artist: song.artist,
+          scores: Object.fromEntries(entries.map(e => [e.name, e.raw])),
+          fatigue: Object.fromEntries(entries.map(e => [e.name, e.fatigue])),
+          adjusted: Object.fromEntries(entries.map(e => [e.name, e.adjusted])),
+          winner, loser: entries[entries.length - 1].name,
+        });
+        next.push(winner);
+        break;
+      }
+
       const { choice: opponent, strategy } = pickOpponent(chooser, available);
       used.add(opponent);
       const song = SONGS[Math.floor(rng() * SONGS.length)];

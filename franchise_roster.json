@@ -5582,7 +5582,25 @@
       "occupation": "Improv teacher and dinner-theatre host",
       "descriptor": "The Mustachioed Matriarch",
       "backstory": "Marge spent years performing character comedy in improv theatres, queer cabarets, and interactive murder-mystery dinners. Their bearded drag persona began as a one-night parody of a judgmental neighborhood mother and unexpectedly became the audience favorite. Marge eventually turned the character into a full-time act built around improvised monologues, audience participation, and deliberately old-fashioned glamour. They enter Drag Race to prove that facial hair and femininity can share the same spotlight.",
-      "personality": "Marge is perceptive, talkative, nurturing, and almost incapable of minding their own business. They quickly become the workroom confidant, collecting information while pretending merely to offer snacks and advice. Their humor and acting ability make them dangerous in character challenges, roasts, and improvisation. However, Marge struggles with choreography, becomes impatient during construction challenges, and can lose their temper when younger queens dismiss them as dated. Beneath the nosiness is a loyal performer who genuinely wants others to succeed—just preferably after Marge does."
+      "personality": "Marge is perceptive, talkative, nurturing, and almost incapable of minding their own business. They quickly become the workroom confidant, collecting information while pretending merely to offer snacks and advice. Their humor and acting ability make them dangerous in character challenges, roasts, and improvisation. However, Marge struggles with choreography, becomes impatient during construction challenges, and can lose their temper when younger queens dismiss them as dated. Beneath the nosiness is a loyal performer who genuinely wants others to succeed—just preferably after Marge does.",
+      "voice": "Marge speaks like an affectionate but intrusive aunt who knows everybody’s business and has already formed an opinion about it. Their warm, theatrical delivery can turn from motherly advice to devastating shade without changing volume: “Sweetheart, I’m not gossiping—I’m providing the community with important updates,” “That hemline is rising faster than her chances are falling,” and, when challenged, “Don’t mistake my casserole energy for weakness, dear. That dish is served hot.”",
+      "drag": {
+        "acting": 7,
+        "comedy": 8,
+        "dance": 3,
+        "design": 6,
+        "runway": 5,
+        "lipsync": 7,
+        "singing": 6,
+        "style": "comedy",
+        "traits": [
+          "bearded",
+          "wit",
+          "camp-queen"
+        ],
+        "voice": "Marge speaks like an affectionate but intrusive aunt who knows everybody’s business and has already formed an opinion about it. Their warm, theatrical delivery can turn from motherly advice to devastating shade without changing volume: “Sweetheart, I’m not gossiping—I’m providing the community with important updates,” “That hemline is rising faster than her chances are falling,” and, when challenged, “Don’t mistake my casserole energy for weakness, dear. That dish is served hot.”",
+        "family": []
+      }
     },
     {
       "name": "Minnie Skurr",

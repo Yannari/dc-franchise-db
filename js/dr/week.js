@@ -274,7 +274,7 @@ export function runDragWeek(state, cfg, ctx) {
     // judges are furthest apart on and cannot find that without the numbers.
     taste: j.taste,
   }));
-  say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
+  if (!M.tournamentExit) say('main-stage', 'main-stage', { judges: panel.map(j => j.id) });
 
   const category = cfg.runwayCategory || `${maxi.name} eleganza`;
   // The styles this category flatters, from the category itself. A prompt
@@ -302,7 +302,7 @@ export function runDragWeek(state, cfg, ctx) {
       walks: scored.map(x => x.score),
     };
   }
-  say('runway', 'runway', { category });
+  if (!M.tournamentExit) say('runway', 'runway', { category });
 
   // 12. The panel sees, and the host decides.
   const entries = living.map(n => ({
@@ -567,10 +567,12 @@ export function runDragWeek(state, cfg, ctx) {
      lip sync, no exit on any Rate-a-Queen night. */
   const critiques = cfg.rateAQueen ? [] : critiqueLines({ panel, views, call, entries, rng });
 
-  say('critiques', 'critiques', {
-    call, split, tripled, critiques, twist: cfg.critiqueTwist || null,
-    ...(cfg.rateAQueen ? { rateAQueen: true } : {}),
-  });
+  if (!M.tournamentExit) {
+    say('critiques', 'critiques', {
+      call, split, tripled, critiques, twist: cfg.critiqueTwist || null,
+      ...(cfg.rateAQueen ? { rateAQueen: true } : {}),
+    });
+  }
 
   // How each critiqued queen took it. `expected` is HER read of the room —
   // never the panel's ranking, which she has not heard yet.
@@ -609,8 +611,10 @@ export function runDragWeek(state, cfg, ctx) {
     for (const sc of twist.scenes) scenes.push(sc);
   }
 
-  say('untucked', 'untucked', { safe: call.safe });
-  say('results', 'results', { call });
+  if (!M.tournamentExit) {
+    say('untucked', 'untucked', { safe: call.safe });
+    say('results', 'results', { call });
+  }
 
   // 15. The lip sync.
   const song = (cfg.songTitle && songById(cfg.songTitle)) || pick(rng, SONGS);
@@ -843,12 +847,14 @@ export function runDragWeek(state, cfg, ctx) {
        BTM2 and the viewing party's showed BTM, off the same night. Nothing
        failed, because both paths were internally consistent; it was visible
        only by rendering the live chart and noticing BTM2 appeared nowhere. */
-    const r = exits.includes(n) ? 'ELIM'
-      : call.win.includes(n) ? 'WIN'
-        : call.high.includes(n) ? 'HIGH'
-          : call.bottom.includes(n) ? 'BTM2'
-            : call.atRisk.includes(n) ? 'BTM'
-              : call.low.includes(n) ? 'LOW' : 'SAFE';
+    const r = M.tournamentExit
+      ? (performances[n]?.detail?.place || 'SAFE')
+      : exits.includes(n) ? 'ELIM'
+        : call.win.includes(n) ? 'WIN'
+          : call.high.includes(n) ? 'HIGH'
+            : call.bottom.includes(n) ? 'BTM2'
+              : call.atRisk.includes(n) ? 'BTM'
+                : call.low.includes(n) ? 'LOW' : 'SAFE';
     state.record[n].push(r);
   }
   state.living = living.filter(n => !exits.includes(n));

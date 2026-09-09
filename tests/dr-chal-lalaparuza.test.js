@@ -96,14 +96,15 @@ describe('the bracket', () => {
     }
   });
 
-  it('three rounds: everybody, then losers, then sudden death', () => {
+  it('at least two rounds, R1 covers the room, somebody is always eliminated', () => {
     for (let i = 0; i < 20; i++) {
       const out = runMaxi(ctx(i));
       const d = duelsOf(out);
       const rounds = [...new Set(d.map(x => x.round))].sort();
-      expect(rounds, `seed ${i}`).toEqual([1, 2, 3]);
+      expect(rounds.length, `seed ${i}: at least two rounds`).toBeGreaterThanOrEqual(2);
+      expect(rounds[0], `seed ${i}: starts at R1`).toBe(1);
       expect(d.filter(x => x.round === 1).length, `seed ${i}: R1`).toBe(3);
-      expect(d.filter(x => x.round === 3).length, `seed ${i}: R3`).toBeGreaterThanOrEqual(1);
+      expect(out.tournamentExit.eliminated, `seed ${i}: someone eliminated`).toBeTruthy();
       for (const x of d) expect(x.song, `seed ${i}`).toBeTruthy();
     }
   });

@@ -362,13 +362,19 @@ function duel(state, a, b, ctx, song, finale = null) {
     const clamp = (v, m) => Math.max(-m, Math.min(m, v));
     for (const n of [a, b]) {
       /* THE RESUME TERM HAS TO OUT-PULL THE ASSASSIN. `lipsyncScore` pays a
-         confidence bonus of up to +1.2 for past lip sync wins, and a queen
-         only banks those by being in the bottom — so the two terms point in
-         opposite directions and at ±1.4 they simply cancelled. Measured over
-         400 seasons per format, the best resume was winning a top two 46% of
-         the time against a 50% chance line: still anti-correlated after the
-         first attempt. The lip sync assassin is a real and wanted archetype,
-         so the answer is to out-weigh her rather than delete her. */
+         confidence bonus for past lip sync wins, and a queen only banks it by
+         being in the bottom — so the two terms point in opposite directions
+         and at ±1.4 they simply cancelled. Measured over 400 seasons per
+         format, the best resume was winning a top two 46% of the time against
+         a 50% chance line: still anti-correlated after the first attempt. The
+         lip sync assassin is a real and wanted archetype, so the answer is to
+         out-weigh her rather than delete her.
+         THAT BONUS IS NOW +0.4 AND NO LONGER ACCUMULATES (it was +0.4 per win
+         to a cap of +1.2, which let a queen survive five lip syncs in a row —
+         see the note in js/dr/lipsync.js). These constants were measured
+         against the old, larger version, so they are if anything now more than
+         enough; they are left as they are because the audit's targets still
+         read correctly, not because nobody looked. */
       // THE SAME TWO CONSTANTS THE CUT USES. They were written out here and
       // the cut had none at all; now both read the season through one rule,
       // so tuning one cannot silently leave the other behind.
@@ -688,6 +694,8 @@ export function runFinale(state, cfg, ctx) {
           // cannot know it, because the vote reads a ledger this row closes.
           congeniality: null,
           rng,
+          players: ctx.players,
+          record: state.record,
         }),
         { step: 'exit', kind: 'crowning', data: { placements }, text: '' },
       ],

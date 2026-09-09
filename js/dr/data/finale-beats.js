@@ -211,6 +211,68 @@ export const FINALE_BEATS = [
     ])],
   },
 
+  // ══ THE INTERVIEW DIALOGUE ════════════════════════════════════════════
+  // Michelle asks, the queen answers — real dialogue, tiered by archetype.
+  // Substitutions: {a} name, {wins} win count, {bottoms} BTM2 count,
+  // {best}/{worst} top/bottom drag craft, {arc} archetype, {style} drag style,
+  // {record} compact record string.
+  {
+    id: 'finale-interview-ask', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'michelle',
+    note: 'Michelle asks the finalist her question. Tiered by archetype category.',
+    tiers: [
+      tier('fighter', 'Question for a fighter queen.', []),
+      tier('schemer', 'Question for a strategic queen.', []),
+      tier('heart', 'Question for a heart queen.', []),
+      tier('wild', 'Question for a wild-card queen.', []),
+    ],
+  },
+  {
+    id: 'finale-interview-answer', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'queen',
+    note: 'The queen answers Michelle. Her voice, her story.',
+    tiers: [
+      tier('fighter', 'Fighter answers.', []),
+      tier('schemer', 'Schemer answers.', []),
+      tier('heart', 'Heart answers.', []),
+      tier('wild', 'Wild-card answers.', []),
+    ],
+  },
+  {
+    id: 'finale-interview-follow', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'michelle',
+    note: 'Michelle follows up — pushes deeper.',
+    tiers: [
+      tier('fighter', 'Follow-up for a fighter.', []),
+      tier('schemer', 'Follow-up for a schemer.', []),
+      tier('heart', 'Follow-up for a heart.', []),
+      tier('wild', 'Follow-up for a wild-card.', []),
+    ],
+  },
+  {
+    id: 'finale-interview-close', step: 'finale-interview', scope: 'per-finalist',
+    speaker: 'queen',
+    note: 'The queen closes. Her last word before the showcase.',
+    tiers: [
+      tier('fighter', 'Fighter closing.', []),
+      tier('schemer', 'Schemer closing.', []),
+      tier('heart', 'Heart closing.', []),
+      tier('wild', 'Wild-card closing.', []),
+    ],
+  },
+
+  // ══ THE CUT — SUSPENSE AND LAST WORDS ════════════════════════════════
+  {
+    id: 'finale-cut-suspense', step: 'finale-cut', scope: 'once', speaker: 'host',
+    note: 'The host deliberates. Building suspense before naming the two who go on.',
+    tiers: [tier('suspense', 'The room holds its breath.', [])],
+  },
+  {
+    id: 'finale-cut-lastwords', step: 'finale-cut', scope: 'per-cut', speaker: 'queen',
+    note: 'The cut queen speaks — her last words as a competitor.',
+    tiers: [tier('cut', 'Her last words.', [])],
+  },
+
   // ══ THE SHOWCASE ═════════════════════════════════════════════════════
   {
     id: 'finale-showcase-open', step: 'finale-showcase', scope: 'once', speaker: 'host',

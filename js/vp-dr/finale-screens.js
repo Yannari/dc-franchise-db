@@ -167,6 +167,7 @@ export const INTERVIEW_CSS = `
   background:radial-gradient(360px 280px at 50% 40%,rgba(255,233,168,.1),transparent 70%),
     linear-gradient(180deg,#12030A,#0a0205)}
 
+/* ── THE OLD SINGLE-LINE CARD ── kept as fallback ── */
 .iv-card{position:relative;padding:24px 22px;margin-bottom:16px;
   display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:start;
   border:1px solid rgba(255,233,168,.2);
@@ -185,6 +186,46 @@ export const INTERVIEW_CSS = `
 .iv-body p{margin:0;color:#f4e3ed;font-size:15px;line-height:1.65;text-wrap:pretty;
   border-left:3px solid rgba(255,233,168,.3);padding-left:16px}
 
+/* ── DIALOGUE CARD — Michelle asks, queen answers ── */
+.iv-dlg{position:relative;padding:20px 22px;margin-bottom:14px;
+  display:grid;gap:16px;align-items:start;
+  border:1px solid rgba(255,233,168,.18);
+  background:linear-gradient(135deg,rgba(255,233,168,.05),transparent 50%),
+    rgba(10,2,5,.92)}
+
+/* Michelle's line: portrait left, text right */
+.iv-dlg.iv-michelle{grid-template-columns:auto 1fr;
+  border-left:4px solid rgba(255,233,168,.5);
+  background:linear-gradient(90deg,rgba(255,233,168,.1),transparent 40%),
+    rgba(10,2,5,.92)}
+.iv-dlg.iv-michelle .iv-speaker{text-align:center;min-width:60px}
+.iv-dlg.iv-michelle .iv-speaker .dr-por{border:2px solid rgba(255,233,168,.5);
+  box-shadow:0 0 24px rgba(255,233,168,.4)}
+.iv-dlg.iv-michelle .iv-speaker-label{display:block;margin-top:5px;font-size:8px;
+  letter-spacing:.22em;text-transform:uppercase;color:rgba(255,233,168,.7)}
+
+/* Queen's line: text left, portrait right */
+.iv-dlg.iv-queen{grid-template-columns:1fr auto;
+  border-right:4px solid rgba(255,123,200,.5);border-left:0;
+  background:linear-gradient(270deg,rgba(255,61,154,.1),transparent 40%),
+    rgba(10,2,5,.92)}
+.iv-dlg.iv-queen .iv-speaker{text-align:center;min-width:60px}
+.iv-dlg.iv-queen .iv-speaker .dr-por{border:2px solid rgba(255,123,200,.5);
+  box-shadow:0 0 24px rgba(255,61,154,.4)}
+.iv-dlg.iv-queen .iv-speaker-label{display:block;margin-top:5px;font-size:8px;
+  letter-spacing:.22em;text-transform:uppercase;color:rgba(255,123,200,.7)}
+
+.iv-dlg .iv-text{padding:4px 0}
+.iv-dlg .iv-text p{margin:0;color:#f4e3ed;font-size:15px;line-height:1.65;text-wrap:pretty}
+.iv-dlg.iv-michelle .iv-text p{border-left:3px solid rgba(255,233,168,.3);padding-left:14px}
+.iv-dlg.iv-queen .iv-text p{border-right:3px solid rgba(255,123,200,.3);padding-right:14px;
+  text-align:right}
+
+/* ── QUEEN HEADER — separates each finalist's interview ── */
+.iv-header{text-align:center;padding:20px 16px 12px;
+  border-top:1px solid rgba(255,233,168,.2);margin-top:8px}
+.iv-header b{display:block;margin-top:8px;font-size:20px;color:#fff6fb}
+
 /* ── SPOTLIGHT — the room follows the queen ── */
 .iv-spot{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(300px 260px at var(--spot-x,50%) 40%,
@@ -193,45 +234,110 @@ export const INTERVIEW_CSS = `
 
 /* ── ENTRANCE ── */
 .dr-step.dr-vis .iv-card{animation:ivIn .5s cubic-bezier(.2,1,.3,1) both}
+.dr-step.dr-vis .iv-dlg{animation:ivIn .5s cubic-bezier(.2,1,.3,1) both}
+.dr-step.dr-vis .iv-dlg.iv-queen{animation:ivInR .5s cubic-bezier(.2,1,.3,1) both}
 @keyframes ivIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes ivInR{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 
+@media(max-width:760px){.iv-dlg.iv-queen .iv-text p{text-align:left}}
 @media(prefers-reduced-motion:reduce){
   .iv-spot{transition:none}
-  .dr-step.dr-vis .iv-card{animation:none}
+  .dr-step.dr-vis .iv-card,.dr-step.dr-vis .iv-dlg{animation:none}
 }
 `;
 
 export function rpBuildInterview(row) {
   const ep = epOf(row);
+  const INTERVIEW_KINDS = new Set([
+    'finale:finale-interview',
+    'finale:finale-interview-ask', 'finale:finale-interview-answer',
+    'finale:finale-interview-follow', 'finale:finale-interview-close',
+  ]);
   const scenes = (row?.dr?.scenes || []).filter(s =>
-    s.kind === 'finale:finale-interview' && s.text);
+    INTERVIEW_KINDS.has(s.kind) && s.text);
   if (!scenes.length) return '';
 
   const finalists = row?.dr?.finale?.placements || row?.dr?.living || [];
+  const isDialogue = scenes.some(s => s.kind !== 'finale:finale-interview');
+
   let n = 0;
-  const steps = scenes.map((sc, i) => {
-    const who = (sc.data?.players || [])[0] || '';
-    return `<div class="dr-step" id="dr-step-fininterview-${n++}">
-      <div class="iv-card" data-queen="${esc(who)}">
-        <div class="iv-host">
-          <span class="iv-host-label">The Host</span>
-          ${_judgePortrait('rupaul', { stage: true, size: 56 })}
-        </div>
-        <div class="iv-body"><p>${esc(sc.text)}</p></div>
-        <div class="iv-guest">
-          ${_portrait(who, ep, { size: 72, station: true })}
-          <span class="iv-guest-name dr-disp">${esc(who)}</span>
-        </div>
-      </div></div>`;
-  }).join('');
+  let steps = '';
+  let lastQueen = '';
+
+  if (isDialogue) {
+    for (const sc of scenes) {
+      const who = (sc.data?.players || [])[0] || '';
+      const beat = sc.data?.beat || '';
+      const isMichelle = /interview-ask|interview-follow/.test(beat);
+      const isQueen = /interview-answer|interview-close/.test(beat);
+
+      if (who && who !== lastQueen) {
+        steps += `<div class="dr-step" id="dr-step-fininterview-${n++}">
+          <div class="iv-header">
+            ${_portrait(who, ep, { size: 72, station: true })}
+            <b class="dr-disp">${esc(who)}</b>
+          </div></div>`;
+        lastQueen = who;
+      }
+
+      if (isMichelle) {
+        steps += `<div class="dr-step" id="dr-step-fininterview-${n++}">
+          <div class="iv-dlg iv-michelle" data-queen="${esc(who)}">
+            <div class="iv-speaker">
+              ${_judgePortrait('michelle', { stage: true, size: 52 })}
+              <span class="iv-speaker-label">Michelle</span>
+            </div>
+            <div class="iv-text"><p>${esc(sc.text)}</p></div>
+          </div></div>`;
+      } else if (isQueen) {
+        steps += `<div class="dr-step" id="dr-step-fininterview-${n++}">
+          <div class="iv-dlg iv-queen" data-queen="${esc(who)}">
+            <div class="iv-text"><p>${esc(sc.text)}</p></div>
+            <div class="iv-speaker">
+              ${_portrait(who, ep, { size: 52, station: true })}
+              <span class="iv-speaker-label">${esc(who)}</span>
+            </div>
+          </div></div>`;
+      } else {
+        steps += `<div class="dr-step" id="dr-step-fininterview-${n++}">
+          <div class="iv-card" data-queen="${esc(who)}">
+            <div class="iv-host">
+              <span class="iv-host-label">Michelle</span>
+              ${_judgePortrait('michelle', { stage: true, size: 56 })}
+            </div>
+            <div class="iv-body"><p>${esc(sc.text)}</p></div>
+            <div class="iv-guest">
+              ${_portrait(who, ep, { size: 72, station: true })}
+              <span class="iv-guest-name dr-disp">${esc(who)}</span>
+            </div>
+          </div></div>`;
+      }
+    }
+  } else {
+    for (const sc of scenes) {
+      const who = (sc.data?.players || [])[0] || '';
+      steps += `<div class="dr-step" id="dr-step-fininterview-${n++}">
+        <div class="iv-card" data-queen="${esc(who)}">
+          <div class="iv-host">
+            <span class="iv-host-label">Michelle</span>
+            ${_judgePortrait('michelle', { stage: true, size: 56 })}
+          </div>
+          <div class="iv-body"><p>${esc(sc.text)}</p></div>
+          <div class="iv-guest">
+            ${_portrait(who, ep, { size: 72, station: true })}
+            <span class="iv-guest-name dr-disp">${esc(who)}</span>
+          </div>
+        </div></div>`;
+    }
+  }
 
   if (typeof window !== 'undefined') {
     window._drRevealExtra = window._drRevealExtra || {};
     window._drRevealExtra.fininterview = (idx) => {
       const step = document.getElementById(`dr-step-fininterview-${idx}`);
-      const card = step?.querySelector('.iv-card');
+      const card = step?.querySelector('.iv-dlg, .iv-card');
       if (!card) return;
-      const total = scenes.length;
+      const total = n;
       const pct = total > 1 ? 30 + (idx / (total - 1)) * 40 : 50;
       const stage = document.querySelector('.iv-stage');
       if (stage) stage.style.setProperty('--spot-x', `${pct}%`);
@@ -310,20 +416,43 @@ export const CUT_CSS = `
 .dr-step.dr-vis .ct-react{animation:crTell .45s ease-out both}
 @keyframes crTell{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
 
+/* ── SUSPENSE — the host deliberates ── */
+.ct-suspense{border-color:rgba(255,233,168,.3);
+  background:linear-gradient(180deg,rgba(255,233,168,.06),transparent)}
+.ct-suspense q{color:rgba(255,233,168,.85);font-size:18px}
+
+/* ── LAST WORDS — the cut queen speaks ── */
+.ct-lastwords{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  padding:16px 20px;margin-top:-4px;
+  border-left:3px solid rgba(127,68,96,.5);
+  background:linear-gradient(90deg,rgba(127,68,96,.12),transparent 40%),rgba(0,0,0,.3)}
+.ct-lastwords .dr-por{border:2px solid rgba(127,68,96,.5);
+  filter:brightness(.75) saturate(.7);box-shadow:0 0 18px rgba(127,68,96,.3)}
+.ct-lw-label{display:block;font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+  color:rgba(127,68,96,.8);margin-bottom:4px}
+.ct-lw-body p{margin:0;color:#c9a6bc;line-height:1.6;font-style:italic;text-wrap:pretty}
+.dr-step.dr-vis .ct-lastwords{animation:crTell .45s ease-out both}
+
 @media(max-width:760px){.ct-stage{position:static}.ct-plate{width:100px}}
 @media(prefers-reduced-motion:reduce){
   .ct-plate,.ct-plate::before,.ct-plate .dr-por{transition:none}
-  .dr-step.dr-vis .ct-said,.dr-step.dr-vis .ct-react{animation:none}
+  .dr-step.dr-vis .ct-said,.dr-step.dr-vis .ct-react,.dr-step.dr-vis .ct-lastwords{animation:none}
 }
 `;
 
 export function rpBuildCut(row) {
   const ep = epOf(row);
-  const cutScene = (row?.dr?.scenes || []).find(s =>
-    s.kind === 'finale:finale-cut' && s.text);
-  const reactions = (row?.dr?.scenes || []).filter(s =>
-    s.kind === 'finale:finale-cut-reaction' && s.text);
-  if (!cutScene && !reactions.length) return '';
+  const CUT_KINDS = new Set([
+    'finale:finale-cut', 'finale:finale-cut-reaction',
+    'finale:finale-cut-suspense', 'finale:finale-cut-lastwords',
+  ]);
+  const allCut = (row?.dr?.scenes || []).filter(s => CUT_KINDS.has(s.kind) && s.text);
+  if (!allCut.length) return '';
+
+  const cutScene = allCut.find(s => s.kind === 'finale:finale-cut');
+  const suspense = allCut.filter(s => s.kind === 'finale:finale-cut-suspense');
+  const reactions = allCut.filter(s => s.kind === 'finale:finale-cut-reaction');
+  const lastwords = allCut.filter(s => s.kind === 'finale:finale-cut-lastwords');
 
   const finalists = row?.dr?.finale?.placements || row?.dr?.living || [];
   const cutQueens = cutScene?.data?.cut || [];
@@ -340,6 +469,17 @@ export function rpBuildCut(row) {
   let n = 0;
   const steps = [];
 
+  for (const sc of suspense) {
+    steps.push(`<div class="dr-step" id="dr-step-fincut-${n++}"
+      data-cut="" data-safe="">
+      <div class="ct-said ct-suspense">
+        <div style="display:flex;justify-content:center;margin-bottom:12px">
+          ${_judgePortrait('rupaul', { stage: true, size: 48 })}
+        </div>
+        <q>${esc(sc.text)}</q>
+      </div></div>`);
+  }
+
   if (cutScene) {
     steps.push(`<div class="dr-step" id="dr-step-fincut-${n++}"
       data-cut="" data-safe="">
@@ -352,16 +492,33 @@ export function rpBuildCut(row) {
   }
 
   const cutSoFar = [];
+  const lastwordsMap = {};
+  for (const sc of lastwords) {
+    const who = (sc.data?.players || [])[0] || '';
+    if (who) lastwordsMap[who] = sc.text;
+  }
+
   for (const sc of reactions) {
     const who = (sc.data?.players || [])[0] || '';
     cutSoFar.push(who);
+    const isFinal = cutSoFar.length >= cutQueens.length;
     steps.push(`<div class="dr-step" id="dr-step-fincut-${n++}"
-      data-cut="${esc(cutSoFar.join(','))}" data-safe="${esc(
-        cutSoFar.length >= cutQueens.length ? safe.join(',') : '')}">
+      data-cut="${esc(cutSoFar.join(','))}" data-safe="${esc(isFinal ? safe.join(',') : '')}">
       <div class="ct-react">
         ${_portrait(who, ep, { size: 56, station: true })}
         <p>${esc(sc.text)}</p>
       </div></div>`);
+    if (lastwordsMap[who]) {
+      steps.push(`<div class="dr-step" id="dr-step-fincut-${n++}"
+        data-cut="${esc(cutSoFar.join(','))}" data-safe="${esc(isFinal ? safe.join(',') : '')}">
+        <div class="ct-lastwords">
+          ${_portrait(who, ep, { size: 48, station: true })}
+          <div class="ct-lw-body">
+            <span class="ct-lw-label dr-disp">Last Words</span>
+            <p>${esc(lastwordsMap[who])}</p>
+          </div>
+        </div></div>`);
+    }
   }
 
   if (typeof window !== 'undefined') {
@@ -509,7 +666,35 @@ export function rpBuildCrownLipSync(row) {
   if (!scenes.length) return '';
 
   const finalists = row?.dr?.finale?.placements || row?.dr?.living || [];
-  const rounds = (row?.dr?.finale?.rounds || []);
+
+  const duels = scenes.filter(s => s.data?.duel).map(s => s.data.duel);
+  const firstDuel = duels[0];
+  const a = firstDuel?.a || '';
+  const b = firstDuel?.b || '';
+  const scoreA = Number(firstDuel?.scores?.[a]) || 0;
+  const scoreB = Number(firstDuel?.scores?.[b]) || 0;
+  const maxScore = Math.max(scoreA, scoreB, 1);
+
+  const vs = firstDuel ? `<div class="cls-vs" id="cls-vs">
+    <div class="cls-fighter" id="cls-f-a">
+      ${_portrait(a, ep, { size: 120, station: true })}
+      <b class="dr-disp">${esc(a)}</b>
+      <div class="cls-energy"><i id="cls-en-a" style="width:0%"></i></div>
+      <span class="cls-final dr-num" id="cls-fin-a"></span>
+    </div>
+    <div style="text-align:center">
+      ${firstDuel.song ? `<div class="cls-duel-song">${esc(firstDuel.song)}${
+        firstDuel.artist ? `<span class="dr-song-artist" style="display:block;font-size:13px;color:#C9A6BC;font-style:normal">${esc(firstDuel.artist)}</span>` : ''
+      }</div>` : ''}
+      <div class="cls-bolt dr-disp">VS</div>
+    </div>
+    <div class="cls-fighter cls-r" id="cls-f-b">
+      ${_portrait(b, ep, { size: 120, station: true })}
+      <b class="dr-disp">${esc(b)}</b>
+      <div class="cls-energy"><i id="cls-en-b" style="width:0%"></i></div>
+      <span class="cls-final dr-num" id="cls-fin-b"></span>
+    </div>
+  </div>` : '';
 
   let n = 0;
   const steps = [];
@@ -521,32 +706,82 @@ export function rpBuildCrownLipSync(row) {
           <div class="cls-host-icon">
             ${_judgePortrait('rupaul', { stage: true, size: 48 })}
           </div>
-          <span class="cls-host-label">The host</span>
+          <span class="cls-host-label">RuPaul</span>
           <q>${esc(sc.text)}</q>
         </div></div>`);
     } else if (sc.data?.duel) {
       const d = sc.data.duel;
-      const aWon = d.winner === d.a;
-      const bWon = d.winner === d.b;
       steps.push(`<div class="dr-step" id="dr-step-fincrownls-${n++}"
         data-duel-a="${esc(d.a)}" data-duel-b="${esc(d.b)}"
-        data-duel-winner="${esc(d.winner || '')}">
+        data-score-a="${scoreA}" data-score-b="${scoreB}"
+        data-winner="${esc(d.winner || '')}">
         <div class="cls-duel">
-          <div class="cls-duel-name${aWon ? ' cls-won' : bWon ? ' cls-lost' : ''}">
+          <div class="cls-duel-name" id="cls-d-a">
             ${_portrait(d.a, ep, { size: 80, station: true })}
             <b class="dr-disp">${esc(d.a)}</b>
           </div>
           <div class="cls-duel-mid">
             ${d.song ? `<div class="cls-duel-song">${esc(d.song)}</div>` : ''}
             <div class="cls-duel-vs dr-disp">VS</div>
-            ${d.winner ? `<span class="cls-duel-winner dr-disp">${esc(d.winner)} takes it</span>` : ''}
+            <span class="cls-duel-winner dr-disp" id="cls-verdict" hidden></span>
           </div>
-          <div class="cls-duel-name${bWon ? ' cls-won' : aWon ? ' cls-lost' : ''}">
+          <div class="cls-duel-name" id="cls-d-b">
             ${_portrait(d.b, ep, { size: 80, station: true })}
             <b class="dr-disp">${esc(d.b)}</b>
           </div>
         </div></div>`);
     }
+  }
+
+  const totalSteps = n;
+  const duelIdx = steps.findIndex(s => /data-duel-a/.test(s));
+
+  if (typeof window !== 'undefined') {
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.fincrownls = (idx) => {
+      const floor = document.querySelector('.cls-floor');
+      const step = document.getElementById(`dr-step-fincrownls-${idx}`);
+
+      const isDuel = step?.dataset?.winner !== undefined;
+      const done = isDuel;
+      const pct = totalSteps > 1 ? (idx / (totalSteps - 1)) : 0;
+
+      const enA = document.getElementById('cls-en-a');
+      const enB = document.getElementById('cls-en-b');
+      const finA = document.getElementById('cls-fin-a');
+      const finB = document.getElementById('cls-fin-b');
+      const fA = document.getElementById('cls-f-a');
+      const fB = document.getElementById('cls-f-b');
+      const verdict = document.getElementById('cls-verdict');
+      const dA = document.getElementById('cls-d-a');
+      const dB = document.getElementById('cls-d-b');
+
+      if (enA && enB) {
+        const fill = done ? 1 : Math.min(1, pct * 1.3);
+        enA.style.width = (fill * (scoreA / maxScore) * 100) + '%';
+        enB.style.width = (fill * (scoreB / maxScore) * 100) + '%';
+      }
+
+      if (done) {
+        const w = step.dataset.winner;
+        if (finA) finA.textContent = scoreA.toFixed(1);
+        if (finB) finB.textContent = scoreB.toFixed(1);
+        if (fA && w) fA.style.opacity = w === a ? '1' : '.35';
+        if (fB && w) fB.style.opacity = w === b ? '1' : '.35';
+        if (fA && w && w !== a) fA.style.filter = 'grayscale(.6) brightness(.5)';
+        if (fB && w && w !== b) fB.style.filter = 'grayscale(.6) brightness(.5)';
+        if (dA) { dA.classList.toggle('cls-won', w === a); dA.classList.toggle('cls-lost', w !== a); }
+        if (dB) { dB.classList.toggle('cls-won', w === b); dB.classList.toggle('cls-lost', w !== b); }
+        if (verdict && w) { verdict.hidden = false; verdict.textContent = w + ' takes the crown'; }
+      }
+
+      if (floor) {
+        floor.classList.remove('cls-focus-a', 'cls-focus-b');
+        if (done) {
+          floor.classList.add(step.dataset.winner === a ? 'cls-focus-a' : 'cls-focus-b');
+        }
+      }
+    };
   }
 
   const rail = `<h4 class="dr-disp">For The Crown</h4>${
@@ -556,10 +791,11 @@ export function rpBuildCrownLipSync(row) {
 
   return `<style>${CROWN_LS_CSS}</style>${_shell(
     `<div class="cls-wrap" style="position:relative">
-      <div class="cls-floor" aria-hidden="true">
+      <div class="cls-floor" id="cls-floor" aria-hidden="true">
         <i class="cls-spot-a"></i><i class="cls-spot-b"></i>
         <i class="cls-thud"></i><i class="cls-haze"></i>
       </div>
+      ${vs}
       ${steps.join('')}
     </div>`, ep, {
       phase: 'lipsync', title: 'Lip Sync For The Crown',

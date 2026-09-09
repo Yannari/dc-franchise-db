@@ -339,6 +339,16 @@ export const MAXI_EVENTS = [
   }),
 
   e({
+    id: 'picked-it-up', from: 'rehearsal', cast: 'solo',
+    note: 'She has the whole number after one run, and spends the afternoon helping.',
+    lines: [],
+  }),
+  e({
+    id: 'cannot-count', from: 'rehearsal', cast: 'solo',
+    note: 'The room moves on and she is still mouthing numbers. Everybody saw.',
+    lines: [],
+  }),
+  e({
     id: 'workshopped', from: 'rumix', cast: 'pair',
     note: '{a} sat down and helped {b} write her verse. It shows on the tape.',
     lines: [],

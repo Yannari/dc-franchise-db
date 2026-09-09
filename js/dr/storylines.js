@@ -392,7 +392,20 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
       // being deleted, because the fade is the interesting part.
       if (s.alive && !s.flipped && living.includes(a) && hasFallen(a)) {
         s.flipped = 'overtaken';
-        beat(s, 'overtaken', { by: living.filter(n => winsOf(n) === topWins)[0] || null });
+        /* THE COUNTS AT THE MOMENT, not at the end of the season. The rule is
+           about the margin WHEN the label moves, and the only way to check it
+           afterwards was to compare final win totals — which is a different
+           statement, and a false one: a resolved arc stops accruing beats but
+           she keeps competing, so a queen overtaken in week six with two wins
+           to the new leader's three can finish on four and make a correct
+           handover look like a broken one. It did: `expected 2 to be greater
+           than or equal to 4`, on a season where nothing was wrong.
+           Written on the beat, so the guard can ask the question the rule
+           actually answers. */
+        beat(s, 'overtaken', {
+          by: living.filter(n => winsOf(n) === topWins)[0] || null,
+          byWins: topWins, wins: winsOf(a),
+        });
       }
     }
     if (s.arc === 'underdog') {

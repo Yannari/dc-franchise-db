@@ -42,7 +42,7 @@
 // NO TEAMS. One cast, one video — see the note at the end of rumix.js about
 // the WINNING TEAM tag that a single-team challenge used to hand everybody.
 import { pickOrder } from '../assign.js';
-import { prepareRoom, walkthrough } from '../prep.js';
+import { prepareRoom, walkthrough, rehearseNumber } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor, blendScore, ROLE_RANGES } from '../perform.js';
 import { canScheme, canHelp, evt } from '../rules.js';
@@ -185,6 +185,14 @@ export function prepare(ctx) {
   const w = walkthrough({ ...ctx, prep: r.prep });
   const events = [...r.events, ...w.events];
 
+  /* THE CHOREOGRAPHY IS LEARNED BEFORE THE CAMERA ROLLS, which is the order
+     it happens in and the order it matters in: a queen who has not got the
+     number by the time they start shooting spends the whole day being the
+     reason they go again. It feeds the shoot rather than sitting beside it —
+     see how `able` reads it below. */
+  const reh = rehearseNumber({ living, players, rng });
+  events.push(...reh.events);
+
   const impression = {};
   const notes = [];
 
@@ -203,7 +211,11 @@ export function prepare(ctx) {
        temperament 3 has a harder day than one with 7 and is not doomed to a
        bad one, which is the difference between a trait and a sentence. */
     const read = (num(p, 'intuition') - 5) * 0.09;
-    const able = (d.acting * 0.5 + d.dance * 0.5 - 5) * 0.10;
+    /* A QUEEN WHO ALREADY HAS THE NUMBER IS EASY TO DIRECT. The rehearsal is
+       not a second opinion on her dancing — it is why the director's day with
+       her goes the way it does, which is the only honest way for one prep
+       beat to feed another. */
+    const able = (d.acting * 0.5 + d.dance * 0.5 - 5) * 0.10 + (reh.choreo[n] || 0) * 0.25;
     const steady = (num(p, 'temperament') - 5) * 0.10;
     const charm = (num(p, 'social') - 5) * 0.05;
     /* A BIG PART IS A LONGER DAY. The lead is in every set-up and every
@@ -253,8 +265,8 @@ export function prepare(ctx) {
   }
 
   return {
-    prep: w.prep, events, impression, notes,
-    scenes: [...r.scenes, {
+    prep: w.prep, events, impression, notes, choreo: reh.choreo,
+    scenes: [...r.scenes, ...reh.scenes, {
       step: 'prep', kind: 'studio-day',
       data: {
         notes, best: best?.name || null, worst: worst?.name || null,
@@ -265,7 +277,7 @@ export function prepare(ctx) {
 }
 
 export function perform(ctx) {
-  const { living, players, assignment, prep, rng, impression, bond = () => 0 } = ctx;
+  const { living, players, assignment, prep, rng, impression, choreo, bond = () => 0 } = ctx;
   const performances = {};
   const events = [];
 
@@ -281,7 +293,8 @@ export function perform(ctx) {
        read is what the PANEL is told, not what the footage shows, and adding
        it twice would let one afternoon score her twice over. */
     const base = d.dance * 0.4 + d.acting * 0.3 + d.singing * 0.2 + d.runway * 0.1;
-    const perf = (base - 5) * range + 5 + (prep[n] || 0) + noise(rng, 2.2 * range);
+    const perf = (base - 5) * range + 5 + (prep[n] || 0)
+      + (choreo?.[n] || 0) + noise(rng, 2.2 * range);
 
     /* HOW MANY TIMES THEY WENT AGAIN. Not a score — a fact about her day that
        the screen can print and the critiques can refer to. Low craft and a bad
@@ -311,7 +324,7 @@ export function perform(ctx) {
          the judging entry and js/dr/judging.js adds it beside `form`; every
          other challenge leaves it undefined and the term is zero. */
       impression: impression?.[n] || 0,
-      parts: { prep: prep[n] || 0, impression: impression?.[n] || 0 },
+      parts: { prep: prep[n] || 0, impression: impression?.[n] || 0, choreo: choreo?.[n] || 0 },
       detail: {
         part: role,
         takes,

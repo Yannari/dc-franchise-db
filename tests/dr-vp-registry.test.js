@@ -33,8 +33,8 @@ describe('the registry', () => {
      the challenge on those nights, one deciding what the panel hears and the
      other feeding a term into the judging. The count is asserted rather than
      ranged so that adding a screen is a decision somebody made on purpose. */
-  const COUNT = 34;
-  it('is the thirty-four screens, in the running order', () => {
+  const COUNT = 35;
+  it('is the thirty-five screens, in the running order', () => {
     expect(DRAG_SCREENS.length).toBe(COUNT);
     const ids = DRAG_SCREENS.map(s => s.id);
     expect(ids[0]).toBe('dr-arrivals');
@@ -42,6 +42,7 @@ describe('the registry', () => {
     expect(ids).toContain('dr-rel');
     expect(ids).toContain('dr-booth');
     expect(ids).toContain('dr-set');
+    expect(ids).toContain('dr-rehearsal');
     expect(new Set(ids).size).toBe(COUNT);
     expect(new Set(DRAG_SCREENS.map(s => s.suffix)).size, 'two screens share a suffix')
       .toBe(COUNT);

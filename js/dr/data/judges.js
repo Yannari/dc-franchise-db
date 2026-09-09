@@ -62,10 +62,27 @@ export const MENTORS = {
   rusical: 'jamal',
 };
 
+/* AND SOME ROOMS HAVE A DIFFERENT PERSON IN THEM ON THE SAME NIGHT. Michelle
+   runs the booth and directs the shoot; the choreography is Jamal's, on every
+   challenge that has any. Keyed by BEAT, because "who runs this room" is a
+   property of the room and not of the challenge — a Rumix has both of them in
+   it on the same afternoon. */
+export const MENTOR_BY_BEAT = {
+  'booth-session': 'michelle',
+  'studio-day': 'michelle',
+  rehearsal: 'jamal',
+};
+
 /** Who ran the room on this challenge, or null when the host did it alone. */
 export function mentorFor(maxiId) {
   const id = MENTORS[maxiId];
   return id ? (JUDGES.find(j => j.id === id) || null) : null;
+}
+
+/** Who is in the room for THIS beat, falling back to the challenge's own. */
+export function mentorForBeat(beatId, maxiId) {
+  const id = MENTOR_BY_BEAT[beatId];
+  return id ? (JUDGES.find(j => j.id === id) || null) : mentorFor(maxiId);
 }
 
 export const JUDGES = [

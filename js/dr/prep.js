@@ -148,3 +148,70 @@ export function walkthrough({ living, players, maxi, prep, rng }) {
   void noise;
   return { notes, prep, events };
 }
+
+/**
+ * The choreographer takes the room.
+ *
+ * ── THE HALF OF THE NIGHT THAT WAS NOT SIMULATED ──
+ *
+ * A Rumix is performed live with choreography and a music video is danced,
+ * and neither module had a rehearsal in it: the number simply existed on the
+ * night, learned by nobody. So the thing a viewer watches for on those
+ * afternoons — who picks it up in one pass, who is still counting under her
+ * breath at the end of the day — happened nowhere, and the day could not help
+ * or hurt her the way the booth can.
+ *
+ * It is deliberately NOT another craft roll. Dance is the floor, and what
+ * separates two queens who dance equally well is whether they can take a
+ * count off somebody in one pass (`intuition`) and whether they can keep
+ * taking it at hour six (`temperament`). That is what a rehearsal room
+ * actually sorts.
+ *
+ * Bounded, and small beside the challenge itself: a good afternoon should
+ * move a close night and never decide one. Same shape as the booth's lift,
+ * for the same reason — see js/dr/chal/rumix.js.
+ */
+export function rehearseNumber({ living, players, rng, cap = 1.1 }) {
+  const notes = [];
+  const events = [];
+  const choreo = {};
+
+  for (const n of living) {
+    const d = dragOf(players[n]);
+    const s = players[n]?.stats || {};
+    const num = k => (Number.isFinite(Number(s[k])) ? Number(s[k]) : 5);
+    const pickUp = (d.dance - 5) * 0.13
+      + (num('intuition') - 5) * 0.10
+      + (num('temperament') - 5) * 0.07
+      + noise(rng, 0.5);
+    const delta = Math.round(Math.max(-cap, Math.min(cap, pickUp)) * 100) / 100;
+    choreo[n] = delta;
+    notes.push({
+      name: n, delta,
+      tier: delta >= cap * 0.55 ? 'first-pass'
+        : delta >= 0 ? 'got-there'
+          : delta > -cap * 0.55 ? 'behind-the-count' : 'still-counting',
+    });
+  }
+
+  /* THE TWO THE ROOM TALKS ABOUT. Ranked and sliced rather than thresholded,
+     so there is exactly one of each however the afternoon fell — the same fix
+     `featured` above needed, for the same reason. */
+  const ranked = [...notes].sort((a, b) => b.delta - a.delta || a.name.localeCompare(b.name));
+  const best = ranked[0];
+  const worst = ranked[ranked.length - 1];
+  if (best && best.delta >= 0.5) {
+    events.push(evt('picked-it-up', {
+      players: [best.name], pop: { [best.name]: 2 },
+      state: { rehearsalStandout: best.name }, data: { delta: best.delta },
+    }));
+  }
+  if (worst && worst.delta <= -0.5 && worst.name !== best?.name) {
+    events.push(evt('cannot-count', {
+      players: [worst.name], pop: { [worst.name]: -2 }, data: { delta: worst.delta },
+    }));
+  }
+
+  return { choreo, notes, events,
+    scenes: [{ step: 'prep', kind: 'rehearsal', data: { notes } }] };
+}

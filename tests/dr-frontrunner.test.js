@@ -81,20 +81,27 @@ describe('the front-runner follows the record', () => {
 
   it('only moves on a real margin, never on one good week', () => {
     /* THE RULE. A single win must not hand the season's spine to somebody who
-       has had one good night — so at the moment of every handover the new
-       leader is at least two clear wins ahead. Checked at the END, which is a
-       weaker statement than at the moment itself, but the direction is what
-       matters: a handover to somebody who finished behind on wins would be
-       the rule not firing at all. */
+       has had one good night, so at the moment of every handover the new
+       leader is ahead on wins.
+
+       AT THE MOMENT, which this used to be unable to ask. It compared FINAL
+       win totals, and a resolved arc stops accruing beats while the queen
+       keeps competing — so a correct handover in week six could be made to
+       look broken by two wins she picked up in weeks nine and ten. It read
+       `expected 2 to be greater than or equal to 4` on a season where nothing
+       had gone wrong. The beat carries both counts as they stood now. */
+    let checked = 0;
     for (const run of RUNS) {
       for (const a of liveArcs(run)) {
         const over = (a.beats || []).find(b => b.kind === 'overtaken');
         if (!over) continue;
+        checked += 1;
         expect(over.by, 'an overtaking with nobody doing it').toBeTruthy();
-        expect(winsOf(run.state, over.by))
-          .toBeGreaterThanOrEqual(winsOf(run.state, a.players[0]));
+        expect(over.byWins, `${over.by} took the label with fewer wins than ${a.players[0]}`)
+          .toBeGreaterThanOrEqual(over.wins);
       }
     }
+    expect(checked, 'no handover happened — nothing was tested').toBeGreaterThan(0);
   });
 
   it('keeps the faded favourite as a story rather than deleting her', () => {

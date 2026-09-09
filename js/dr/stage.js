@@ -21,7 +21,7 @@
 import { STAGE_BEATS } from './data/stage-beats.js';
 import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from './data/untucked-events.js';
 import { CHALLENGE_BEATS } from './data/challenge-beats.js';
-import { mentorFor } from './data/judges.js';
+import { mentorForBeat } from './data/judges.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
 import { performanceFor, familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
@@ -974,9 +974,14 @@ export function renderChallengeBeats({
   const scenes = [];
   const usedLines = new Set();
   const beatById = id => CHALLENGE_BEATS.find(b => b.id === id);
-  // Who is running the room tonight, if anybody. Resolved once: it is a
-  // property of the challenge, not of the queen.
-  const mentor = mentorFor(maxi.id);
+  /* The beats that are ABOUT the person running the room. Every beat here can
+     quote her through `{m}`; only these three draw her face, or the screen
+     grows a portrait of Michelle beside a queen picking a verse slot. */
+  const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal']);
+  /* Who is running THIS room. A Rumix has two of them on one afternoon —
+     Michelle in the booth, Jamal on the number — so it is resolved per beat
+     rather than per challenge. */
+  const mentorOf = beatId => mentorForBeat(beatId, maxi.id);
 
   const emit = (beat, tierId, who, extra = {}, step = null) => {
     if (!beat) return;
@@ -992,8 +997,8 @@ export function renderChallengeBeats({
            can quote her, but the card only draws her on the ones that are
            ABOUT her — the booth and the shoot — or the screen grows a portrait
            of Michelle beside a queen picking a slot. */
-        ...(mentor && (beat.id === 'booth-session' || beat.id === 'studio-day')
-          ? { mentor: { id: mentor.id, name: mentor.name } } : {}),
+        ...(MENTORED.has(beat.id) && mentorOf(beat.id)
+          ? { mentor: { id: mentorOf(beat.id).id, name: mentorOf(beat.id).name } } : {}),
         ...extra,
       },
       text: fill(pick(t.lines, rng, usedLines, `${beat.id}/${t.id}`),
@@ -1003,7 +1008,7 @@ export function renderChallengeBeats({
            takes a choreography room; see MENTORS in js/dr/data/judges.js.
            `{b}` is here for the same reason it is everywhere else: a beat about
            two queens could not name the second one from this emitter. */
-        { a: who[0], b: who[1], c: maxi.name, m: mentor?.name || '' }),
+        { a: who[0], b: who[1], c: maxi.name, m: mentorOf(beat.id)?.name || '' }),
     });
   };
 
@@ -1244,6 +1249,22 @@ export function renderChallengeBeats({
         // The screen opens on these cards, so the night's track travels with
         // them rather than with the marker scene back in the werk room.
         track: boothScene.data?.track || null,
+      });
+    }
+  }
+
+  /* ── THE AFTERNOON ON THE NUMBER, ONE CARD PER QUEEN ──
+     Between the booth and the shoot in the running order, which is the order
+     it happens in on both challenges: she records, she learns it, she
+     performs it — or she learns it, then they shoot it. */
+  const rehScene = moduleScenes.find(s => s.kind === 'rehearsal');
+  if (rehScene) {
+    const rehBeat = beatById('rehearsal');
+    for (const note of rehScene.data?.notes || []) {
+      emit(rehBeat, note.tier, [note.name], {
+        railTag: { 'first-pass': 'first pass', 'got-there': 'got there',
+          'behind-the-count': 'behind', 'still-counting': 'still counting' }[note.tier],
+        delta: note.delta,
       });
     }
   }

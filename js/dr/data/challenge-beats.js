@@ -214,6 +214,23 @@ export const CHALLENGE_BEATS = [
     ],
   },
   {
+    /* ── THE REHEARSAL ROOM ──
+       A Rumix is performed live with choreography and a music video is danced,
+       and neither had a rehearsal in either the engine or the episode: the
+       number simply existed on the night, learned by nobody. This is the
+       afternoon, one card per queen, run by the choreographer rather than by
+       the panel — see MENTORS in js/dr/data/judges.js. */
+    id: 'rehearsal', step: 'prep', scope: 'per-queen', speaker: 'narrator',
+    note: 'The choreographer teaches the number. Who has it by the end of the day.',
+    tierBy: 'choreo',
+    tiers: [
+      tier('first-pass', 'She has it after one run and spends the rest of the day helping.'),
+      tier('got-there', 'It takes the afternoon and by the end of it she has the number.'),
+      tier('behind-the-count', 'She is a half-count late all day and she knows it.'),
+      tier('still-counting', 'The room moves on without her. She is mouthing numbers.'),
+    ],
+  },
+  {
     /* ── THE BOOTH ──
        `booth` decides what the panel actually hears and it was a number with
        no screen: only the two extreme outcomes narrated, so ten queens in a

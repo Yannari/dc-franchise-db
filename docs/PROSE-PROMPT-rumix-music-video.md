@@ -299,6 +299,40 @@ and it should read like an exchange rather than a summary of one.
 
 **Same three pools, same tier counts as sections F. 52 lines, rewritten.**
 
+### I. `rehearsal` — the afternoon on the number, run by Jamal
+
+**Both challenges share this one.** A Rumix is performed live with
+choreography and a music video is danced, and neither had a rehearsal in the
+engine or on screen: the number simply existed on the night, learned by
+nobody. It has its own screen now, **Rehearsal**, between the booth and the
+shoot.
+
+`{m}` here is **Jamal Sims**, not Michelle — the choreographer takes any room
+that has to learn a number, and `MENTOR_BY_BEAT` in `js/dr/data/judges.js` is
+what says so. His authored voice: *"A choreographer watching feet and
+counting. Kind about effort, exact about timing, and he can tell who learned
+it this morning."* Same dialogue rule as section H: at least half the lines
+should have him actually saying something, and what he says is a count, a
+correction, or a name.
+
+Four tiers, **4 lines each**:
+
+| tier | what it is |
+|---|---|
+| `first-pass` | She has it after one run and spends the rest of the day helping. |
+| `got-there` | It takes the afternoon and by the end of it she has the number. |
+| `behind-the-count` | She is a half-count late all day and she knows it. |
+| `still-counting` | The room moves on without her. She is mouthing numbers. |
+
+All four fire — measured across 25 seasons: got-there 101, behind-the-count 71,
+first-pass 53, still-counting 27.
+
+Two events go with it, **4 lines each**: `picked-it-up` (she has the whole
+number after one run and spends the afternoon helping) and `cannot-count` (the
+room moves on and she is still mouthing numbers, and everybody saw).
+
+**24 lines.**
+
 ---
 
 ## 4. How to know it worked

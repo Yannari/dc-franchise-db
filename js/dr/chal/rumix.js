@@ -36,7 +36,7 @@
 // `bestTeam` of a single team — so every queen on the screen wore a WINNING
 // TEAM tag on a challenge that has no teams to win.
 import { pickOrder, contestFor } from '../assign.js';
-import { prepareRoom, walkthrough } from '../prep.js';
+import { prepareRoom, walkthrough, rehearseNumber } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor } from '../perform.js';
 import { canScheme, canHelp, evt } from '../rules.js';
@@ -114,24 +114,35 @@ const num = (p, k) => {
 /**
  * Which verse she wants, best first.
  *
- * A bold queen wants to close, then to open — the two that swing. A nervous
- * one wants the middle of the track, where she is neither the first thing the
- * panel hears nor the last. Same instinct as the roast slot and the Rusical
- * lead, deliberately: it is one queen's relationship with the spotlight, and
- * three different models of it would be three different queens.
+ * ── WHY THIS IS A POSITION AND NOT A RANKING ──
+ *
+ * The first version sorted slots by a rule with two outcomes: bold queens
+ * wanted the closer then the opener, everybody else wanted the middle. Twelve
+ * queens, two shortlists — so the first queen to pick took verse twelve and
+ * ELEVEN OF TWELVE were recorded as having lost their pick, to the same queen,
+ * on the same slot. The screen said "11 of 12 lost a pick" and printed "not
+ * the position she wanted" eleven times. A draft where nobody gets what they
+ * want is not a draft; it is a queue with hurt feelings.
+ *
+ * So she has an ideal PLACE on the track and ranks the slots by distance from
+ * it. Boldness pushes it late — the closer is the swing and she wants it —
+ * comedy pushes it later still, because a joke lands better once the room has
+ * warmed up and dies stone cold in verse one. The jitter is not decoration:
+ * two queens with the same stats are still two people, and without it the
+ * twelve ideals collapse back into three or four and the same pile-up happens
+ * at lower volume.
  */
-function versePreference(slots, boldness) {
-  const last = slots.length - 1;
-  const mid = last / 2;
-  const bold = boldness >= 6;
-  return [...slots].sort((a, b) => {
-    const rank = name => {
-      const i = slotNo(name) - 1;
-      if (bold) return i === last ? 0 : i === 0 ? 1 : 2 + Math.abs(i - mid);
-      return Math.abs(i - mid);
-    };
-    return rank(a) - rank(b);
-  });
+function versePreference(slots, player, rng) {
+  const last = Math.max(1, slots.length - 1);
+  const d = dragOf(player);
+  const bold = num(player, 'boldness');
+  let ideal = last * 0.45                       // the middle-ish, by default
+    + ((bold - 5) / 5) * last * 0.30            // nerve pulls her towards the end
+    + ((d.comedy - 5) / 5) * last * 0.15        // so does having jokes to land
+    + (rng() - 0.5) * last * 0.30;              // and she is a person
+  ideal = Math.max(0, Math.min(last, ideal));
+  return [...slots].sort((a, b) =>
+    Math.abs((slotNo(a) - 1) - ideal) - Math.abs((slotNo(b) - 1) - ideal));
 }
 
 export function assign(ctx) {
@@ -143,7 +154,7 @@ export function assign(ctx) {
   const track = pickRumixTrack(rng, cfg?.rumixTrackId);
   const slots = order.map((_, i) => `verse-${i + 1}`);
   const choices = Object.fromEntries(order.map(n =>
-    [n, versePreference(slots, num(players[n], 'boldness'))]));
+    [n, versePreference(slots, players[n], rng)]));
   /* NO PREPARATION PENALTY, for the roast's reason: it is the same verse
      whichever slot it lands in, and the slot difficulty already prices the
      position. Charging her twice would make losing the contest the whole
@@ -337,9 +348,15 @@ export function prepare(ctx) {
     break;
   }
 
+  /* AND THE NUMBER ITSELF. She recorded the verse this morning; this
+     afternoon a choreographer teaches her what to do with her body while it
+     plays. It is the second half of a Rumix and it was not simulated at all. */
+  const reh = rehearseNumber({ living, players, rng });
+  events.push(...reh.events);
+
   return {
-    prep: w.prep, events, bars, hooks, booth, sessions,
-    scenes: [...r.scenes, {
+    prep: w.prep, events, bars, hooks, booth, sessions, choreo: reh.choreo,
+    scenes: [...r.scenes, ...reh.scenes, {
       step: 'prep', kind: 'writing-booth',
       data: { bars, hooks, booth, sessions, track: assignment?.track || null },
     }],
@@ -347,7 +364,7 @@ export function prepare(ctx) {
 }
 
 export function perform(ctx) {
-  const { living, players, assignment, prep, rng, bars, hooks, booth } = ctx;
+  const { living, players, assignment, prep, rng, bars, hooks, booth, choreo } = ctx;
   const performances = {};
   const events = [];
   const order = [...living].sort((a, b) =>
@@ -372,6 +389,8 @@ export function perform(ctx) {
     const live = d.dance * 0.55 + d.lipsync * 0.45
       + (num(players[n], 'boldness') - 5) * 0.25 + noise(rng, 2.0);
     const perf = ((recorded * 0.62 + live * 0.38) - 5) * range + 5
+      // What the afternoon in the rehearsal room bought her, or cost her.
+      + (choreo?.[n] || 0)
       - (assignment.picks[n]?.penalty || 0) + noise(rng, 1.1 * range);
 
     if (myBars.every(b => b < FILLER)) {
@@ -400,6 +419,7 @@ export function perform(ctx) {
         prep: prep[n] || 0,
         booth: Math.round(recorded * 100) / 100,
         live: Math.round(live * 100) / 100,
+        choreo: choreo?.[n] || 0,
       },
       detail: {
         slot: i + 1, slotKind: kind, bars: myBars,

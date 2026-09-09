@@ -57,7 +57,9 @@ describe('the event pool', () => {
       'cast-forward', 'director-loved-her', 'director-wrote-her-off',
       'lost-in-the-background',
       // and the social layer both of them shipped without
-      'workshopped', 'read-her-verse', 'upstaged-her', 'covered-for-her'];
+      'workshopped', 'read-her-verse', 'upstaged-her', 'covered-for-her',
+      // the rehearsal room, which both of them share
+      'picked-it-up', 'cannot-count'];
     const missing = FIRED.filter(id => !MAXI_EVENT_IDS.includes(id));
     expect(missing, `these fire in the engine and have no prose: ${missing.join(', ')}`).toEqual([]);
   });

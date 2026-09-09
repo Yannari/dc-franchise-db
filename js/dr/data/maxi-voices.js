@@ -286,7 +286,7 @@ export const PICK_VOICES = [
       tier('picked-last', 'Picked last. {d} is barely a position.', [
         'Last pick. {a} takes {d}. The smallest slot in the number. The shortest verse. She has the least to work with and the most to prove.',
       ]),
-    ),
+    )),
   kind('partner',
     'A PERSON, not a thing. {d} is another queen — the one she has to make '
     + 'over, or the one she has to face. Everything about her week now depends '

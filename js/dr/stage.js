@@ -49,7 +49,28 @@ import { familyFacts } from './family.js';
 const RUNWAY_TIERS = [
   [0.15, 'stunning'], [0.40, 'strong'], [0.75, 'fine'], [0.92, 'weak'], [1.01, 'disaster'],
 ];
-const LIPSYNC_TIERS = [[0.25, 'legendary'], [0.60, 'strong'], [0.85, 'trying'], [1.01, 'lost']];
+/* ── HOW WELL SHE DID, NOT WHERE SHE CAME ──
+   These used to be read with `fractionalRank`, and a head-to-head has exactly
+   two queens: the ranks are 0 and 1, every time, so the winner was ALWAYS
+   'legendary' and the loser was ALWAYS 'lost' whatever the scores said. A gap
+   of 0.05 was narrated identically to a gap of six. Read off a played season,
+   two queens 0.4 apart:
+
+     "Caleb paces it perfectly... the arc of the song itself."
+     "The song goes somewhere and Axel does not go with it."
+
+   And the two middle pools could never fire on an ordinary night at all —
+   'strong' and 'trying' were reachable only in a three-way.
+
+   Absolute now, cut against the real distribution of `lipsyncScore` (p10 2.7,
+   median 4.9, p90 7.2 on a flat-craft cast): most nights are two queens doing
+   fine, one night in twelve is somebody genuinely detonating, and a queen who
+   is beaten by a better performance is no longer described as having fallen
+   apart. THE HOOK STAYS RELATIVE — see its own note below: a key change has
+   one owner and there is no middle at it. */
+const LIPSYNC_TIERS = [[7.5, 'legendary'], [5.5, 'strong'], [3.5, 'trying'], [-99, 'lost']];
+const tierByScore = (v, table) =>
+  (table.find(([cut]) => (Number(v) || 0) >= cut) || table[table.length - 1])[1];
 const PERF_TIERS = [
   [0.12, 'extraordinary'], [0.38, 'strong'], [0.72, 'competent'],
   [0.90, 'struggling'], [1.01, 'collapse'],
@@ -588,7 +609,7 @@ export function renderStageBeats({
     const lsBeat = beatById('lipsync-beat');
     const stuntBeat = beatById('lipsync-stunt');
     for (const n of lipsync.queens || []) {
-      const tierId = tierAt(fractionalRank(n, lipsync.scores || {}), LIPSYNC_TIERS);
+      const tierId = tierByScore((lipsync.scores || {})[n], LIPSYNC_TIERS);
       const tempoLines = tempoLinesFor(lipsync.tempo, tierId);
       if (tempoLines) {
         const t = lsBeat.tiers.find(x => x.id === tierId) || lsBeat.tiers[0];
@@ -610,7 +631,10 @@ export function renderStageBeats({
          nothing has ever narrated. Whoever is top of this lip sync took it
          and everybody else did not — there is no middle at a key change. */
       if (lipsync.hook) {
-        const took = tierId === 'legendary' || tierId === 'strong';
+        /* THE HOOK HAS ONE OWNER. `tierId` is absolute now, so two queens
+           can both be 'strong' — and both "taking" the same key change is a
+           thing that cannot happen. Whoever actually topped the song took it. */
+        const took = fractionalRank(n, lipsync.scores || {}) === 0;
         const hookLines = hookLinesFor(lipsync.hook, took ? 'nailed' : 'missed');
         if (hookLines) {
           /* NO BEAT IN stage-beats.js FOR THIS ONE, deliberately. Its prose

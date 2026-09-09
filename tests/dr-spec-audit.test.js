@@ -147,18 +147,33 @@ describe('a hundred drag seasons', () => {
 
   // ── 4. the finale is the size it says ──
   it('4 · every finale is the size the format asks for', () => {
-    let doubles = 0; let paid = 0; let wrong = 0;
+    let doubles = 0; let wrong = 0;
     for (const o of SEASONS) {
       doubles += o.rows.filter(r => r.dr.lipsync?.call === 'double-shantay').length;
-      paid += o.rows.filter(r => r.dr.lipsync?.paidBack).length;
       if (o.state.living.length !== 4) wrong++;
     }
     console.log('\n4 · THE DEBT');
     line('double shantays', doubles);
-    line('repaid by a double elimination', paid);
     line('oversized finales', wrong);
     expect(wrong, 'a season reached the finale oversized').toBe(0);
-    expect(paid, 'a double shantay was never repaid').toBe(doubles);
+    /* THIS ASSERTED A DELETED DESIGN, AND PASSED BECAUSE OF A BUG.
+       It read `expect(paid).toBe(doubles)`, where `paid` counted rows with
+       `lipsync.paidBack` — a field NOTHING IN js/ WRITES. So `paid` was always
+       zero and the assertion could only hold while `doubles` was zero too. It
+       was: GREAT sat at 8.5, above the top decile of the score distribution,
+       so a double shantay was not rare but IMPOSSIBLE. The guard was green
+       because the mechanic was unreachable, and it went red the day the bar
+       dropped to 7.5 and the call could finally happen.
+       The repayment was removed on purpose — js/dr/week.js: "NOTHING IS
+       OWED... a double elimination is a thing an author schedules, not a
+       correction the engine applies behind them." A constant living only in a
+       test is usually a deleted design, not a missing feature.
+       The finale size above is the real invariant. What this adds is that the
+       call must be REACHABLE, because zero across a hundred seasons is how the
+       old assertion stayed green for as long as it did. */
+    expect(doubles, 'no double shantay in a hundred seasons - the bar is above '
+      + 'what lipsyncScore can produce, so the call cannot happen at all')
+      .toBeGreaterThan(0);
   });
 
   // ── 5. every screen a season claims is a screen with something on it ──

@@ -56,9 +56,32 @@ const GENRE_FIT = 0.4;
    to keep being in the bottom. */
 export const CONFIDENCE_CAP = 0.4;
 
-// The bars the doubles have to clear. High enough that neither is a coin flip:
-// measured over a season these should be rare events, not a weekly outcome.
-const GREAT = 8.5;
+/* The bars the doubles have to clear. High enough that neither is a coin flip:
+   measured over a season these should be rare events, not a weekly outcome.
+
+   GREAT WAS 8.5, WHICH MEANT NEVER. Measured across 2,679 head-to-heads on a
+   flat-craft cast: not one double shantay, because the score distribution runs
+   p10 2.7 / median 4.9 / p90 7.2 and 8.5 sits above the top decile — needing
+   BOTH queens there, and within 0.6 of each other, put the event outside the
+   range the engine can produce. It was not rare, it was unreachable, which is
+   a different thing and worth saying out loud: a rule nobody can trigger reads
+   in the code exactly like a rule that is merely strict.
+
+   At 7.5 both queens have to be top-decile and level, which is the thing the
+   call is supposed to mean. Measured over 300 seasons per population:
+
+     threshold   flat cast   authored cast
+     8.5         0.00%       0.19%
+     8.0         0.04%       0.48%
+     7.5         0.45%       1.42%     <- here
+     7.0         1.16%       2.87%
+
+   About one season in twenty-five on a flat cast and one in eight on a
+   crafted one. CLOSE stays at 0.6: "level" is what makes it a dead heat
+   rather than a good night, and widening it is how the exception becomes a
+   format. AWFUL is untouched — the double sashay is off unless a season asks
+   for it. */
+const GREAT = 7.5;
 const CLOSE = 0.6;
 const AWFUL = 3.5;
 

@@ -248,49 +248,94 @@ export const MAXI_EVENTS = [
   e({
     id: 'booth-rescue', from: 'rumix', cast: 'solo',
     note: 'The verse on paper was worse than the verse on tape. The session saved it.',
-    lines: [],
+    lines: [
+      '{a} walks into the booth with a verse that does not work on paper. Bars that scan when she mumbles them at the mirror but fall apart when she tries to record them at tempo. The vocal coach stops her twice. They rewrite the second bar together. They punch in the new line. When {a} walks out, the verse on the tape is better than the verse she wrote — and the tape is what the panel hears.',
+      'The bars are shaky. {a} knows it. The vocal coach knows it within four seconds. They do not start over — they fix. One bar rewritten in the booth, one delivery smoothed by repetition, and by the fourth take {a} has a verse the panel can work with. The page was worse. The tape is what counts.',
+      'The booth session saves {a}. She walks in with a verse she is not sure about and a vocal coach who can hear what is wrong faster than {a} can explain it. Two rewrites. Three takes. The version on the tape is the version the panel will judge, and the version on the tape is better than the version she carried in.',
+      '{a} sits down in the booth and the coach plays back her first take. It is not good. They both hear it. But the coach has thirty minutes and {a} has a verse that is close enough to fix, and by the time the session ends the recording sounds like a queen who knew what she was doing. The page said otherwise.',
+    ],
   }),
   e({
     id: 'booth-lost-it', from: 'rumix', cast: 'solo',
     note: 'She wrote something real and could not get it on tape. The panel hears the tape.',
-    lines: [],
+    lines: [
+      '{a} had a verse. A real one — bars that hit, a punchline that landed when she said it to herself in the werk room. Then the booth happened. The vocal coach played the track, {a} opened her mouth, and the verse that lived in her head did not make it to the microphone. What the panel hears tonight is the version the booth captured. Not the version she wrote.',
+      'The verse on paper was good. {a} reads it back and it scans, it hits, it has a line the cast would have remembered. But the booth is not the page. The recording session turns the good verse into a shaky one — missed timing, uncertain delivery, a punchline that needed confidence and got nerves instead. The tape is what the panel judges.',
+      '{a} wrote something real and the booth ate it. The vocal coach tried. {a} tried. Four takes and every one was worse than the verse she whispered at the mirror an hour ago. The panel will hear the fourth take. The fourth take does not sound like a queen who can write.',
+      'Something happened between the page and the microphone. {a}\'s verse was real — tight bars, a clear flow, a punchline worth remembering. The booth recording has none of that. The track was too fast, the headphones were too loud, and {a} panicked on every take. The panel hears the panic. They do not hear the verse.',
+    ],
   }),
   e({
     id: 'lifted-a-bar', from: 'rumix', cast: 'pair',
     note: '{a} took a line off {b}, who was writing at the next station.',
-    lines: [],
+    lines: [
+      '{a} is writing at her station and {b} is writing at the next one. {b} says a line out loud — testing it, not performing it — and {a} hears it. An hour later {a}\'s verse has a bar in it that sounds familiar. {b} notices during the rehearsal. She does not say anything. She does not have to. The room heard both verses.',
+      '{b} was working through her bars out loud. {a} was listening. Not obviously — just writing, head down, pen moving. But {a}\'s verse has a turn of phrase in it that {b} said first, and {b} hears it when they run the track together. \"Girl,\" {b} says. {a} does not look up.',
+      '{a} took a bar off {b}. Not the whole line — a rhythm, a setup, the scaffolding of a punchline that {b} said out loud while they were both writing. {b} notices it during the run-through. The room notices {b} noticing it. Nobody says the word \"stole\" but nobody needs to.',
+      'The werk room is small. {b} was writing out loud. {a} was writing quietly. When they both run their verses for the group, {b} hears her own cadence coming out of {a}\'s mouth — not the same words, but the same skeleton. {b} looks at {a}. {a} looks at the floor. The room goes quiet.',
+    ],
   }),
   e({
     id: 'no-verse', from: 'rumix', cast: 'solo',
     note: 'Four bars of filler. There is no verse, and a solo stage cannot hide that.',
-    lines: [],
+    lines: [
+      '{a} has four bars and none of them say anything. Not a punchline. Not a reveal. Not a single line the cast will remember five minutes after the track ends. The verse is filler — words arranged to rhyme that do not add up to a verse, and on a solo stage there is nothing else to look at.',
+      'There is no verse. {a} has four bars of rhyming words that scan on the beat and say absolutely nothing. A girl group can hide a weak verse behind choreography and a strong partner. A solo stage puts the verse in a spotlight and the spotlight is honest.',
+      '{a} wrote filler and performed it like filler. The bars rhyme. They scan. They take up the right amount of time on the track. None of them hit. A verse needs one line the room remembers, and {a}\'s verse has zero.',
+      'Four bars. Four chances to write something that lands. {a} used all four on setup and never arrived at a punchline. The verse sounds like the part of a song you skip to get to the part of the song that matters, except the part that matters never comes.',
+    ],
   }),
   e({
     id: 'quotable-bar', from: 'rumix', cast: 'solo',
     note: 'One line better than everything around it, and she landed it live. The cast will quote it.',
-    lines: [],
+    lines: [
+      '{a} has a bar. One bar, in a four-bar verse, that is better than anything else on the track. She wrote it, she recorded it, and when she hit it live the cast backstage reacted. They will be quoting that line tomorrow. The verse around it is fine. The bar is the reason the verse exists.',
+      'One line. {a} wrote one line that stopped the room. The verse is good — competent, clean, delivered well — but the third bar has a turn in it that nobody saw coming and everybody heard. That bar is the verse. Everything else is the frame around it.',
+      '{a} lands a bar that the cast is already repeating backstage. One line. Written today, recorded today, performed tonight, and it hit harder than anything else on the track. The host heard it. The panel heard it. The room behind the monitor heard it. That is a quotable bar.',
+      'The verse is solid. But the second bar — the second bar is the one. {a} wrote a line that snaps, she delivered it with the timing of somebody who knew it was her best bar, and the cast is going to quote it for the rest of the season. One line can carry a verse. This line carries the track.',
+    ],
   }),
 
   // ══ THE SHOOT ════════════════════════════════════════════════════════
   e({
     id: 'cast-forward', from: 'music-video', cast: 'solo',
     note: 'The host hands a big part to a queen who has been safe for weeks. She did not ask for it.',
-    lines: [],
+    lines: [
+      '{a} has been safe for weeks. Not bad, not great, not memorable. Then the host reads the cast list and {a}\'s name is next to a part that matters — a real part, a part with screen time, a part somebody else expected to get. {a} did not ask for it. The host handed it to her and the room adjusted.',
+      'The host casts {a} in the lead. Not the ensemble. Not the background. The part that has the most screen time and the most risk, handed to a queen who has been invisible for three weeks. {a}\'s face says she was not expecting it. The room\'s face says they were not expecting it either.',
+      '{a} gets a part she did not earn on track record. The host pushes her forward — a bigger role than her placement history suggests, a vote of confidence from the one person in the room whose vote is the only one that counts. Whether {a} can carry it is the question the episode answers.',
+      'The host hands {a} the part. Not the safe part. Not the background part. The part that requires a performance, a camera presence, and a queen who can carry a video. {a} has been safe for weeks. This is the week the host bets on her. The room notices.',
+    ],
   }),
   e({
     id: 'director-loved-her', from: 'music-video', cast: 'solo',
     note: 'She made the day. The director says so, and he says it to the panel.',
-    lines: [],
+    lines: [
+      '{a} made the day easy. The director says so — not in a polite, diplomatic, \"everyone was great\" way, but specifically about {a}. She took direction. She found the camera. She gave him takes he could use on the first try while other queens needed four. And the director tells the panel all of it.',
+      'The director pulls the host aside before judging. He has one name: {a}. She was the queen who understood what he needed, gave it to him without being asked twice, and made the shoot day shorter because she was that prepared. That note goes to the panel. The panel hears it.',
+      '{a} is the queen the director remembers. Not because she had the biggest part — because she used the part she had. Every setup, every take, every note he gave her landed the first time. When the panel asks the director who stood out, {a} is the answer before the question is finished.',
+      'The director loved {a}. He says it on camera, he says it to the panel, and the footage backs him up. She found the lens, she took direction, and she gave the edit more usable material than any other queen on the call sheet. A director\'s word carries weight on a video challenge. His word is {a}.',
+    ],
   }),
   e({
     id: 'director-wrote-her-off', from: 'music-video', cast: 'solo',
     note: 'She cost the day — and possibly argued about it. The panel will hear that too.',
-    lines: [],
+    lines: [
+      '{a} cost the day. Not a little — a lot. More takes than anyone. Notes she did not take. A director who started patient and ended quiet, and the quiet is what the panel hears about. The director does not say {a} was bad. He says she was difficult. On a video challenge, that word carries the same weight.',
+      'The director gave {a} the same note three times. {a} did not take it. The fourth time the director stopped giving the note and started shooting around her — covering her part with wider angles, using less of her footage, building the edit so the video works without the queen who was supposed to make it work.',
+      '{a} argued with the director. On set. In front of the crew. The director gave a note about scale — smaller, closer, less — and {a} gave it back bigger. By the third take the director was done talking and the footage shows a queen who is performing for a room that stopped watching.',
+      'The director wrote {a} off before lunch. She cost the morning setup with retakes, she could not find the camera, and when the director told her to adjust she adjusted in the wrong direction. The panel hears the director\'s notes. The notes are not about acting. They are about the day she cost.',
+    ],
   }),
   e({
     id: 'lost-in-the-background', from: 'music-video', cast: 'solo',
     note: 'A small part and she never found the camera. There is nothing of her in the edit.',
-    lines: [],
+    lines: [
+      '{a} had a small part and made it smaller. A background role in a video is not a death sentence — queens have stood out from the ensemble before. {a} did not stand out. She did not find the camera. She did not give the editor anything to cut to. There is footage of her. There is nothing of her in the footage.',
+      'The edit has almost nothing of {a}. Not because they cut her — because there was nothing to cut to. She was in the background, the background is where she stayed, and the camera could not find her because she was not giving it a reason to look.',
+      '{a} disappeared into the video. A small part, an ensemble position, and a queen who never once found the lens. The other background queens gave the editor moments — a reaction, a look, a beat the camera caught. {a} gave the editor nothing. The final cut proves it.',
+      'The other ensemble queens gave the editor reactions — a look, a beat, something between takes that the camera caught. {a} gave him static. She held her mark, she hit her cue, and she was technically present for every setup. But a music video is not a group photo. Being in the frame is not the same as being in the video.',
+    ],
   }),
 
   // ══ THE BRACKET ══════════════════════════════════════════════════════

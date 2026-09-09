@@ -165,20 +165,60 @@ export const BRIEF_FAMILIES = [
   fam('rumix', true,
     'A track, and a verse each to write and record. Writing is the challenge; '
     + 'the booth decides what survives it, and she performs it live.',
-    tier('brief', 'A verse to write, a booth to record it in, and a live stage tonight.'),
+    tier('brief', 'A verse to write, a booth to record it in, and a live stage tonight.', [
+      'This week is {c} — every queen writes her own verse to one track, records it in the booth, and performs it live on the main stage tonight. No teams. No partners. The verse is the challenge.',
+      'For {c}, every queen writes four bars, records them with a vocal coach, and then performs the whole thing live. The track is shared. The verse is hers. The booth is the test and the stage is the proof.',
+      '{c} asks for a verse. Written today. Recorded today. Performed tonight. The host explains the order — write, booth, stage — and the room does the maths on how many hours that leaves for four bars.',
+      'The host announces {c}: a verse challenge. Write the bars. Record them. Stand on the stage alone and perform them live to the track. \"You are all solo this week,\" she says. \"There is nobody to hide behind.\"',
+    ]),
     [
-      tier('delighted', 'She writes, and a verse is the one thing here she can do alone.'),
-      tier('braced', 'She can write or she can sing, and this asks for both in one day.'),
-      tier('dreading', 'She has never written a bar in her life and it is going on tape.'),
+      tier('delighted', 'She writes, and a verse is the one thing here she can do alone.', [
+        '{a} writes. She has always written. A verse challenge is the week she packed for — bars come naturally, the booth is a formality, and the stage is where she gets to prove it. She is already scribbling.',
+        'The brief lands and {a} is grinning. She writes bars the way other queens sew gowns — fast, confident, and with a style the room recognises. This is her week and she knows it before the host finishes talking.',
+        '{a} hears verse challenge and exhales. This is the one. No teams to carry her, no teams to drag her. Just her words, her voice, her stage. \"Finally,\" she mouths.',
+        'A verse is the one thing {a} can do alone, and alone is how she does her best work. She has four bars in her head before the host has finished the brief. The booth will be a formality.',
+      ]),
+      tier('braced', 'She can write or she can sing, and this asks for both in one day.', [
+        '{a} can write. She cannot sing, exactly, but she can sell a verse if the verse is strong enough. The brief is manageable. The booth is the part she is worried about.',
+        'The verse she can handle. The booth is the question mark. {a} has written bars before — not professionally, not under pressure — and a vocal coach watching her record them is a different thing from writing them alone at a mirror.',
+        '{a} nods through the brief. She can do this. She has enough rhythm to scan four bars and enough nerve to stand on a stage alone. Whether the booth turns that into a verse the panel wants to hear is the question she cannot answer yet.',
+        'A verse challenge. {a} can write, and she can perform, and the recording session in between is the part where either of those skills might fail to translate. \"I just need the bars to be good,\" she tells herself. The bars have to be good.',
+      ]),
+      tier('dreading', 'She has never written a bar in her life and it is going on tape.', [
+        '{a} has never written a verse. Not a bar. Not a hook. Not a line. She is a queen who performs other people\'s words and today the words have to come from her and they have to come by tonight.',
+        'The brief drops and {a} goes quiet. She cannot write lyrics. She has never been able to. The booth is going to record whatever she manages to put on paper and the panel is going to hear the recording and the recording is going to be honest.',
+        '{a} picks up a pen and puts it down. The pen is the problem. The verse is the problem. She is a performer, not a writer, and a solo verse challenge is the week that makes that distinction into a verdict.',
+        'A verse. Written today. Recorded today. Performed tonight. {a} is staring at a blank page and the page is going to be on tape in six hours. \"Girl,\" she says to nobody. That is all she says.',
+      ]),
     ]),
   fam('music-video', true,
     'One video for the whole cast, parts handed out by the host, and a day on '
     + 'set with a director who will tell the panel how she was.',
-    tier('brief', 'A video, parts she does not get to choose, and a day in front of a camera.'),
+    tier('brief', 'A video, parts she does not get to choose, and a day in front of a camera.', [
+      'This week is {c} — a music video for the whole cast. The host hands out the parts. A director runs the set. The panel watches the playback, and the director tells them how the day went.',
+      'For {c}, the cast shoots a video together. Parts are assigned by the host — lead down to ensemble — and a director who is NOT on the panel runs the day. What he tells the judges afterwards is part of the score.',
+      '{c} is a shoot day. The host casts it, the director runs it, and the tape is what the panel judges. \"The camera does not lie,\" the host says. \"And neither does the director.\"',
+      'The host announces {c}: one video, one day on set, and a call sheet she did not write. The parts are handed out, not chosen. The director is watching. The panel will hear his notes.',
+    ]),
     [
-      tier('delighted', 'She is a camera queen and somebody is finally pointing one at her.'),
-      tier('braced', 'She can act or she can dance, and the part she is given decides which.'),
-      tier('dreading', 'She is sized for a stage and a lens will make that obvious.'),
+      tier('delighted', 'She is a camera queen and somebody is finally pointing one at her.', [
+        '{a} is a camera queen. She has always been a camera queen. A video shoot is the week she has been waiting for — a lens instead of a panel, a director instead of an audience, and finally somebody is going to see what she looks like on tape.',
+        'The brief lands and {a} lights up. A camera. A director. A set. This is the week that plays to everything she knows how to do — she has been shooting content since before the show, and a professional set is the upgrade she has been wanting.',
+        '{a} hears music video and her posture changes. She knows how to find a lens. She knows what her face does on camera. \"This is MY week,\" she says. She is not wrong.',
+        'A shoot day. {a} has been waiting for a camera week since episode one. Stage queens project. Camera queens calibrate. {a} calibrates, and a director is about to see the difference.',
+      ]),
+      tier('braced', 'She can act or she can dance, and the part she is given decides which.', [
+        '{a} can do this. Probably. It depends on the part. She can act, she can move, but a camera is not a stage and the adjustment is the thing she is not sure about. \"What is my part?\" That is the question.',
+        'The brief is manageable if the part is right. {a} can perform — on a stage, for an audience. For a lens, with a director calling the shot? She will find out today.',
+        '{a} nods. A video. She can work with that. She is not a camera queen but she is not afraid of one. The part she gets will decide whether this is a good week or a long day.',
+        'A music video. {a} has done photoshoots. She has done acting challenges. A video is both at once, plus a director she has never met. \"I can do this,\" she says. The \"can\" is doing a lot of work.',
+      ]),
+      tier('dreading', 'She is sized for a stage and a lens will make that obvious.', [
+        '{a} performs for the back row. She always has. A camera two feet from her face is the opposite of everything she knows how to do, and a director telling her to be smaller is going to sound like a director telling her to be worse.',
+        'The brief drops and {a} is calculating how to survive a day she is not built for. She is a stage queen. She fills rooms. A lens does not need to be filled — it needs to be found, and finding it is a skill she does not have.',
+        '{a} has never been good on camera. She knows this. Every queen who has seen her content knows this. A whole challenge built around a lens is the week she was hoping would not arrive.',
+        'A video shoot. {a} looks at the queens around her — the ones who do content every day, the ones who know their angles — and knows she is starting this week behind them. \"I just need a part I can act,\" she says. She might not get one.',
+      ]),
     ]),
   fam('rusical', false,
     'A staged musical number with a live vocal and a live band. The most '

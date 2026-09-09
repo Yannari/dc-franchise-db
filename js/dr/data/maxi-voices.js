@@ -351,8 +351,26 @@ export const PICK_VOICES = [
 const walk = (family, note, lines = []) => ({ family, note, lines: lines.slice() });
 
 export const WALKTHROUGH_VOICES = [
-  walk('rumix', 'The bars she has written, and whether she can actually say them.'),
-  walk('music-video', 'Her part, and whether she knows how big to play it for a lens.'),
+  walk('rumix', 'The bars she has written, and whether she can actually say them.', [
+    'The host stops at {a}\'s station and reads her verse off the page. Four bars. The host says them back. {a} hears her own lyrics in someone else\'s voice and the verse either sounds like something or it does not.',
+    'The host asks {a} to run the verse. Right here. No track. No booth. Just the bars out loud. {a} delivers them and the host either nods or gives her the face — the face that says \"you need to rewrite before you record.\"',
+    '{a} walks the host through what she has written. The host listens, pauses, reads a bar back. \"Does that scan?\" The question is not rhetorical. {a} tries saying it on rhythm and the answer is in the stumble or the lack of one.',
+    'The host pulls up a chair and {a} reads her verse. The host gives her one note — maybe the punchline lands, maybe the rhyme scheme is fighting the beat — and {a} has until the booth session to decide what to do with it.',
+    '{a} shows the host her bars. The host is listening for the same thing the panel will listen for tonight: can she hear this verse in a room full of verses and remember whose it was. The note she gives {a} answers that question.',
+    'The host stops by {a}\'s station. The verse. Read it. {a} reads and the host watches her mouth — is she performing or is she reading. One of those is ready for a booth. The other needs another hour.',
+    'The host asks {a} to spit the verse without looking at the paper. {a} gets through two bars before pausing. The pause is the note. The host tells her what she already knows: the verse needs to live in her mouth, not on the page.',
+    '{a} runs her verse and the host interrupts halfway. Not to stop her — to redirect. The note is specific: this bar scans, this one does not, and the punchline needs to hit harder or it will disappear inside the track.',
+  ]),
+  walk('music-video', 'Her part, and whether she knows how big to play it for a lens.', [
+    'The host stops at {a} and asks about the part. {a} explains her approach and the host gives her the note — play it bigger, play it smaller, find the camera. The note is always about the camera.',
+    'The host watches {a} rehearse her section. The note is about scale. A stage queen is playing too big for a lens. A shy queen is not playing big enough. The host tells {a} which one she is today.',
+    '{a} walks the host through her concept for the part. The host listens, watches her mark the choreography, and gives her one note that is either \"trust the camera\" or \"you are hiding from the camera.\"',
+    'The host pulls {a} aside. The part she was given — does she understand it. {a} explains what she is going to do. The host either likes the read or steers her away from it. The direction is quick and specific.',
+    'The host asks {a} to show her what the character looks like on camera. Not on a stage. Not for a crowd. For a lens two feet away. {a} adjusts or she does not, and the host\'s note says which.',
+    '{a} runs her scene for the host. The host gives her the note: \"The director is watching you closer than the panel ever does. What he sees is what the judges hear about.\" The note is about precision.',
+    'The host stops at {a}\'s station and asks to see the performance. {a} shows her. The host reads {a}\'s face on an imaginary monitor and tells her what the camera will pick up that a live audience would miss.',
+    'The host checks in with {a}. She asks one question — do you know your part — and {a}\'s answer tells the host everything. A queen who knows her part says what the character does. A queen who does not says what the costume looks like.',
+  ]),
   walk('snatch-game', 'The character, and whether she has six answers for it.', [
     'The host stops at {a}\'s station and asks about the character. {a} drops into the voice mid-answer, testing it on the one person in the room whose reaction matters. The host either laughs or she does not — and the laugh or the silence tells {a} everything she needs to know.',
     'The host sits down across from {a}. The question is the question: who is she doing, and does she have the jokes. {a} runs through a line in character. The host\'s face either opens or tightens. The tightening is the warning.',

@@ -5896,7 +5896,25 @@
       "occupation": "Dance instructor and nightclub performer",
       "descriptor": "The Desi Dance Dynamo",
       "backstory": "Velvet grew up training in jazz, contemporary dance, hip-hop, Bollywood, and bhangra. She originally planned to become a professional backup dancer but became frustrated with auditions that treated her as interchangeable. After performing in drag for a queer South Asian dance night, she discovered that Velvet allowed her to be both the choreographer and the star. She quickly built a reputation for explosive nightclub numbers, although most of her costumes were commissioned or assembled at the last minute. She enters Drag Race certain that her movement will separate her from the cast.",
-      "personality": "Velvet is energetic, talkative, competitive, and emotionally transparent. She learns choreography immediately and performs every lip sync as though it were a stadium finale. Her confidence becomes impatience when teammates cannot match her pace, and she frequently interrupts people without realizing it. Velvet is not naturally strategic, struggles to sew, and tends to overpower acting scenes instead of listening to her partners. Criticism makes her defensive, but her emotions pass quickly and she rarely holds a grudge for long. Behind the chaos is a passionate performer who genuinely wants everyone to experience the same joy she feels when the music begins."
+      "personality": "Velvet is energetic, talkative, competitive, and emotionally transparent. She learns choreography immediately and performs every lip sync as though it were a stadium finale. Her confidence becomes impatience when teammates cannot match her pace, and she frequently interrupts people without realizing it. Velvet is not naturally strategic, struggles to sew, and tends to overpower acting scenes instead of listening to her partners. Criticism makes her defensive, but her emotions pass quickly and she rarely holds a grudge for long. Behind the chaos is a passionate performer who genuinely wants everyone to experience the same joy she feels when the music begins.",
+      "voice": "Velvet speaks rapidly, loudly, and with almost no filter, often starting a second thought before finishing the first. She is excitable, competitive, and completely convinced that every problem can be solved through choreography: “Give me eight counts and a little floor space—I’ll handle the rest,” “I wasn’t doing too much; everybody else was doing too little,” and, when angry, “Don’t tell me to calm down, babe. Tell the music to stop challenging me.”",
+      "drag": {
+        "acting": 4,
+        "comedy": 2,
+        "dance": 10,
+        "design": 4,
+        "runway": 6,
+        "lipsync": 7,
+        "singing": 5,
+        "style": "",
+        "traits": [
+          "choreographer",
+          "stunt-queen",
+          "splits-and-dips"
+        ],
+        "voice": "Velvet speaks rapidly, loudly, and with almost no filter, often starting a second thought before finishing the first. She is excitable, competitive, and completely convinced that every problem can be solved through choreography: “Give me eight counts and a little floor space—I’ll handle the rest,” “I wasn’t doing too much; everybody else was doing too little,” and, when angry, “Don’t tell me to calm down, babe. Tell the music to stop challenging me.”",
+        "family": []
+      }
     }
   ]
 }

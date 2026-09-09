@@ -5500,7 +5500,9 @@
           "high-concept",
           "look-queen",
           "crafty"
-        ]
+        ],
+        "voice": "",
+        "family": []
       },
       "age": 26,
       "birthdate": "2001-01-23",

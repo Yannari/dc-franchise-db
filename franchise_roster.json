@@ -5665,15 +5665,6 @@
       "sexuality": "gay",
       "voice": "Paige speaks in a measured, educated tone, delivering every insult like a helpful correction from behind the circulation desk. She loves literary references, pauses before punchlines, and calls misbehaving queens “young lady” regardless of their age: “Please lower your voice; your outfit is already making enough noise,” “I would read her, but that book was remaindered years ago,” and, when underestimated, “Darling, I’ve been in this scene so long that your drag mother still owed late fees.”",
       "profileSources": {},
-      "age": 44,
-      "birthdate": "1982-05-27",
-      "ethnicity": "Latina",
-      "nationality": "American",
-      "hometown": "Philadelphia, Pennsylvania",
-      "occupation": "Nightclub host and veteran drag entertainer",
-      "descriptor": "The Queen of the Reading",
-      "backstory": "Paige began performing in neighborhood bars more than twenty years before entering the competition. After working daytime shifts in a used bookstore, she created her shady librarian persona by combining her love of literature with the cutting humor she developed while hosting rough late-night crowds. She became a respected fixture of the local scene, known for introducing new performers, producing comedy showcases, and remembering every queen who ever behaved badly backstage. Although younger contestants consider her old-school, Paige sees the competition as her chance to turn decades of local respect into national recognition.",
-      "personality": "aige is intelligent, observant, articulate, and relentlessly shady. She can identify another queen’s insecurity within minutes and knows exactly how to turn it into a punchline. Her experience makes her calm during acting, comedy, hosting, and branding challenges, but it also makes her resistant to advice from less-established competitors. Paige is not especially athletic and struggles with fast choreography, modern vocal tracks, and challenges requiring youthful energy. She can be supportive when she respects someone’s work ethic, but foolish behavior receives an immediate verbal citation. Beneath the librarian character is a seasoned competitor who understands people, politics, and how to control a room.",
       "drag": {
         "acting": 7,
         "comedy": 9,
@@ -5682,15 +5673,22 @@
         "runway": 5,
         "lipsync": 6,
         "singing": 5,
-        "style": "",
         "traits": [
           "wit",
           "shade-queen",
           "narrator"
         ],
-        "voice": "Paige speaks in a measured, educated tone, delivering every insult like a helpful correction from behind the circulation desk. She loves literary references, pauses before punchlines, and calls misbehaving queens “young lady” regardless of their age: “Please lower your voice; your outfit is already making enough noise,” “I would read her, but that book was remaindered years ago,” and, when underestimated, “Darling, I’ve been in this scene so long that your drag mother still owed late fees.”",
-        "family": []
-      }
+        "voice": "Paige speaks in a measured, educated tone, delivering every insult like a helpful correction from behind the circulation desk. She loves literary references, pauses before punchlines, and calls misbehaving queens “young lady” regardless of their age: “Please lower your voice; your outfit is already making enough noise,” “I would read her, but that book was remaindered years ago,” and, when underestimated, “Darling, I’ve been in this scene so long that your drag mother still owed late fees.”"
+      },
+      "age": 44,
+      "birthdate": "1982-05-27",
+      "ethnicity": "Latina",
+      "nationality": "American",
+      "hometown": "Philadelphia, Pennsylvania",
+      "occupation": "Nightclub host and veteran drag entertainer",
+      "descriptor": "The Queen of the Reading",
+      "backstory": "Paige began performing in neighborhood bars more than twenty years before entering the competition. After working daytime shifts in a used bookstore, she created her shady librarian persona by combining her love of literature with the cutting humor she developed while hosting rough late-night crowds. She became a respected fixture of the local scene, known for introducing new performers, producing comedy showcases, and remembering every queen who ever behaved badly backstage. Although younger contestants consider her old-school, Paige sees the competition as her chance to turn decades of local respect into national recognition.",
+      "personality": "Paige is intelligent, observant, articulate, and relentlessly shady. She can identify another queen’s insecurity within minutes and knows exactly how to turn it into a punchline. Her experience makes her calm during acting, comedy, hosting, and branding challenges, but it also makes her resistant to advice from less-established competitors. Paige is not especially athletic and struggles with fast choreography, modern vocal tracks, and challenges requiring youthful energy. She can be supportive when she respects someone’s work ethic, but foolish behavior receives an immediate verbal citation. Beneath the librarian character is a seasoned competitor who understands people, politics, and how to control a room."
     },
     {
       "name": "Quin",

@@ -1204,15 +1204,38 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
   const panels = [];
   for (let s = 0; s < totalSteps; s++) panels.push(sidebarForRevealed(s));
 
+  const _CAP_PICK_LINES = [
+    (a, b) => `${a} calls ${b}. Quick. No drama. ${b} sits down with the team and does not look back at the queens still standing.`,
+    (a, b) => `"${b}." ${a} says the name and ${b} is already walking. She knew. Everybody knew. That pick was decided before the draft started.`,
+    (a, b) => `${a} looks at who is left. Looks at her team. "${b}." Filling a hole — the team needed a voice and ${b} has one.`,
+    (a, b) => `${b} hears her name and mouths "thank god" to nobody. She joins ${a}'s side. The queens still in the middle go quiet.`,
+    (a, b) => `A pause. ${a} is thinking. The room holds still. "${b}." ${b} walks over. The pause told everybody it was close between her and someone else.`,
+    (a, b) => `${a} picks ${b} and the other captain's face changes. That was the queen she wanted next. ${b} does not see it. ${b} is already sitting down.`,
+    (a, b) => `${b} gets the call. Stands up, walks to ${a}'s team, sits down between two queens she has never worked with. This is her group now.`,
+    (a, b) => `${a} takes ${b}. ${b} nods once. Professional. She is not going to perform gratitude for being picked fourth. She is going to perform on stage.`,
+    (a, b) => `Fewer queens left. The maths is getting obvious. ${a} picks ${b} and ${b} accepts it with the face of someone who knows she was not first but is glad she was not last.`,
+    (a, b) => `"${b}, come here." ${a} does not deliberate. ${b} crosses the room and the other team watches a gap open in their options.`,
+  ];
+  const _CAP_LAST_LINES = [
+    (a, b) => `${b} is the last one standing. Nobody had to say her name. ${a} waves her over. ${b} walks to the team that is left. She sits down. She gets to work.`,
+    (a, b) => `${b} is what is left. ${a} gestures her over. ${b} joins the team she did not choose and the team that did not choose her. She will make them remember she was here.`,
+  ];
+
+  let _capIdx = 0;
   const pickCards = pickSequence.map((pk, i) => {
     const teamLabel = esc(teamNames[pk.team] || `Team ${pk.team + 1}`);
+    const a = esc(pk.captain), b = esc(pk.picked);
+    const isLast = i === pickSequence.length - 1;
+    const line = isLast
+      ? _CAP_LAST_LINES[i % _CAP_LAST_LINES.length](a, b)
+      : _CAP_PICK_LINES[_capIdx++ % _CAP_PICK_LINES.length](a, b);
     return `<div class="dr-step" id="dr-step-choice-${i}">
       <div class="dr-panel dr-a-bond dr-card dr-k-solo">
         ${_portrait(pk.picked, ep, { size: 54, station: true })}
         <div>
           <h3 class="dr-disp">${esc(pk.picked)}
             <span class="dr-took-tag">&rarr; ${teamLabel}</span></h3>
-          <p>${esc(pk.captain)} picks ${esc(pk.picked)}.</p>
+          <p>${line}</p>
         </div>
       </div></div>`;
   });

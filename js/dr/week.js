@@ -647,7 +647,6 @@ export function runDragWeek(state, cfg, ctx) {
         gap: Math.abs((finalDuel.adjusted[finalDuel.a] || 0) - (finalDuel.adjusted[finalDuel.b] || 0)),
         tournament: true,
       };
-      say('lipsync', 'lipsync', { lipsync });
     }
   }
 
@@ -891,7 +890,7 @@ export function runDragWeek(state, cfg, ctx) {
   // call, the lip sync beats need the scores. Rendering them where they are
   // *shown* rather than where they are *known* would mean threading half the
   // night's results backwards through the function.
-  try {
+  if (!M.tournamentExit) try {
     const onStage = [...(call.win || []), ...(call.high || []),
       ...(call.low || []), ...(call.bottom || [])];
     const stageScenes = renderStageBeats({

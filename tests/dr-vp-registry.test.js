@@ -100,7 +100,7 @@ describe('the registry', () => {
   });
 
   it('every ordinary episode reaches the stage and the lip sync', () => {
-    for (const row of rows.filter(r => !r.dr.finale)) {
+    for (const row of rows.filter(r => !r.dr.finale && !r.dr.tournament)) {
       const ids = dragScreens(row).map(s => s.id);
       for (const want of ['dr-main-stage', 'dr-critiques', 'dr-lipsync']) {
         expect(ids, `episode ${row.num} has no ${want}`).toContain(want);

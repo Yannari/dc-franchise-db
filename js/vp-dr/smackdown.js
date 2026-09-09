@@ -565,14 +565,18 @@ export function rpBuildSmackdown(row) {
 //     6. RESULT        — score bars race, winner/loser stamps slam
 //
 //   R2/R3 duels (random):
-//     1. VERSUS        — RuPaul pairs them, song assigned
-//     2. LIP SYNC      — prose
-//     3. RESULT        — score bars race, winner/loser stamps slam
+//     1. MATCHUP DRAW  — ball machine draws who faces whom
+//     2. SONG PICK     — random song draw from the pool
+//     3. VERSUS        — full VS card with fatigue
+//     4. LIP SYNC      — prose
+//     5. RESULT        — score bars race, winner/loser stamps slam
 //
-//   Triple lip sync (3+ queens in sudden death):
-//     1. VERSUS        — 3-way card
-//     2. LIP SYNC      — prose
-//     3. RESULT        — 3-way result, lowest scorer eliminated
+//   Triple lip sync (R1 odd group or R3 sudden death):
+//     1. MATCHUP DRAW  — ball machine shows the 3 queens drawn
+//     2. SONG PICK     — random song draw
+//     3. VERSUS        — 3-way card
+//     4. LIP SYNC      — prose
+//     5. RESULT        — 3-way result, lowest scorer eliminated
 //
 //   Plus: round banners, the elimination card.
 //   The bracket board fills in as results land.
@@ -715,6 +719,10 @@ export function rpBuildTournament(row) {
   // ── PER-ROUND ──
   let currentRound = 0;
   const ballsUsed = new Set();
+  const roundBallsUsed = new Set();
+  let roundPool = [];
+  const roundColor = r => r >= 3 ? 'var(--sd-r3)' : r === 2 ? 'var(--sd-r2)' : 'var(--sd-r1)';
+  const roundLabel = r => r >= 3 ? 'SUDDEN DEATH' : r === 2 ? 'ROUND 2' : 'ROUND 1';
   const maxAdj = duels.reduce((mx, d) => {
     const vals = d.triple && d.contestants
       ? d.contestants.map(n => d.adjusted?.[n] ?? 0)
@@ -729,6 +737,14 @@ export function rpBuildTournament(row) {
     if (d.round !== currentRound) {
       currentRound = d.round;
       sideState.currentRound = d.round;
+      roundBallsUsed.clear();
+      const roundDuels = duels.filter(x => x.round === d.round);
+      const poolSet = new Set();
+      for (const rd of roundDuels) {
+        if (rd.triple && rd.contestants) rd.contestants.forEach(n => poolSet.add(n));
+        else { poolSet.add(rd.a); poolSet.add(rd.b); }
+      }
+      roundPool = [...poolSet];
       const isDanger = d.round >= 3;
       const rScene = d.round === 1 ? null
         : d.round === 2 ? nextProse('tournament-r1-split')
@@ -751,6 +767,57 @@ export function rpBuildTournament(row) {
     // ── TRIPLE LIP SYNC ──
     if (d.triple) {
       const names = d.contestants || [d.a, d.b];
+      const rCol = roundColor(d.round);
+
+      // Triple matchup draw
+      const tripleReel = [];
+      for (let c = 0; c < 3; c++) {
+        const shuffled = [...roundPool].sort(() => 0.5 - Math.random());
+        for (const n of shuffled) tripleReel.push(n);
+      }
+      tripleReel.push(names[0]);
+      const tripleSpinEnd = -(tripleReel.length - 1) * 52;
+
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-draw">
+          <div class="tm-draw-label" style="color:${rCol}">MATCHUP DRAW</div>
+          <div class="tm-reel">
+            <div class="tm-reel-track" style="--tm-spin-end:${tripleSpinEnd}px">
+              ${tripleReel.map((n, i) =>
+    `<div class="tm-reel-name${i === tripleReel.length - 1 ? ' target' : ''}">${esc(n)}</div>`
+  ).join('')}
+            </div>
+          </div>
+          <div class="tm-balls">${roundPool.map(n =>
+    `<div class="tm-ball${names.includes(n) ? ' picked' : roundBallsUsed.has(n) ? ' spent' : ' waiting'}">${esc(n.substring(0, 3))}</div>`
+  ).join('')}</div>
+          <div class="tm-picked-name">${names.map(n => esc(n)).join(' • ')}</div>
+          <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">${names.length}-WAY LIP SYNC</div>
+        </div>
+      </div>`);
+
+      // Triple song pick
+      const tripleChosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-song-pick">
+          <div class="tm-song-pick-label" style="color:${rCol}">SONG DRAW</div>
+          <div class="tm-song-pick-who">The song is drawn at random</div>
+          <div class="tm-song-pool">${poolSongs.map(s =>
+    `<div class="tm-song-chip${s.title === d.song ? ' chosen' : ''}">${esc(s.title)}</div>`
+  ).join('')}</div>
+          <div class="tm-song-chosen">
+            <div class="tm-song-title">&ldquo;${esc(d.song)}&rdquo;</div>
+            <div class="tm-song-artist">${esc(tripleChosenSong.artist)}</div>
+            <div class="tm-song-tags">
+              ${tripleChosenSong.tempo ? `<div class="tm-song-tag">${esc(tripleChosenSong.tempo)}</div>` : ''}
+              ${tripleChosenSong.mood ? `<div class="tm-song-tag">${esc(tripleChosenSong.mood)}</div>` : ''}
+              ${tripleChosenSong.genre ? `<div class="tm-song-tag">${esc(tripleChosenSong.genre)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`);
+
+      for (const n of names) roundBallsUsed.add(n);
 
       // Triple VS card
       step(`<div class="dr-panel dr-a-lip">
@@ -898,6 +965,61 @@ export function rpBuildTournament(row) {
 
       ballsUsed.add(chooser);
       ballsUsed.add(d.b);
+      roundBallsUsed.add(chooser);
+      roundBallsUsed.add(d.b);
+    } else if (!d.chosen) {
+      // ── MATCHUP DRAW for non-chosen duels (R1 random pairs, R2, R3) ──
+      const rCol = roundColor(d.round);
+      const available = roundPool.filter(n => !roundBallsUsed.has(n));
+      const reelA = [];
+      for (let c = 0; c < 3; c++) {
+        const shuffled = [...available].sort(() => 0.5 - Math.random());
+        for (const n of shuffled) reelA.push(n);
+      }
+      reelA.push(d.a);
+      const spinEndA = -(reelA.length - 1) * 52;
+
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-draw">
+          <div class="tm-draw-label" style="color:${rCol}">MATCHUP DRAW</div>
+          <div class="tm-reel">
+            <div class="tm-reel-track" style="--tm-spin-end:${spinEndA}px">
+              ${reelA.map((n, i) =>
+    `<div class="tm-reel-name${i === reelA.length - 1 ? ' target' : ''}">${esc(n)}</div>`
+  ).join('')}
+            </div>
+          </div>
+          <div class="tm-balls">${roundPool.map(n =>
+    `<div class="tm-ball${n === d.a || n === d.b ? ' picked' : roundBallsUsed.has(n) ? ' spent' : ' waiting'}">${esc(n.substring(0, 3))}</div>`
+  ).join('')}</div>
+          <div class="tm-picked-name">${esc(d.a)} vs ${esc(d.b)}</div>
+          <div style="font-size:10px;color:#b892a8;letter-spacing:.14em;margin-top:4px">DRAWN AT RANDOM</div>
+        </div>
+      </div>`);
+
+      // R2/R3 song draw
+      const rndChosenSong = poolSongs.find(s => s.title === d.song) || { title: d.song, artist: d.artist || '', tempo: '', mood: '', genre: '' };
+      step(`<div class="dr-panel dr-a-lip">
+        <div class="tm-song-pick">
+          <div class="tm-song-pick-label" style="color:${rCol}">SONG DRAW</div>
+          <div class="tm-song-pick-who">The song is drawn at random</div>
+          <div class="tm-song-pool">${poolSongs.map(s =>
+    `<div class="tm-song-chip${s.title === d.song ? ' chosen' : ''}">${esc(s.title)}</div>`
+  ).join('')}</div>
+          <div class="tm-song-chosen">
+            <div class="tm-song-title">&ldquo;${esc(d.song)}&rdquo;</div>
+            <div class="tm-song-artist">${esc(rndChosenSong.artist)}</div>
+            <div class="tm-song-tags">
+              ${rndChosenSong.tempo ? `<div class="tm-song-tag">${esc(rndChosenSong.tempo)}</div>` : ''}
+              ${rndChosenSong.mood ? `<div class="tm-song-tag">${esc(rndChosenSong.mood)}</div>` : ''}
+              ${rndChosenSong.genre ? `<div class="tm-song-tag">${esc(rndChosenSong.genre)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`);
+
+      roundBallsUsed.add(d.a);
+      roundBallsUsed.add(d.b);
     }
 
     // ── 4. VERSUS CARD ──

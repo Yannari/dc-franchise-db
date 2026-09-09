@@ -75,8 +75,9 @@ export const GROUP_THEMES = [
  * Names come out of the theme's own list so a group is never called something
  * its track would not produce, and no two teams share one.
  */
-export function pickGroupTheme(rng, teamCount = 1) {
-  const theme = GROUP_THEMES[Math.floor(rng() * GROUP_THEMES.length)];
+export function pickGroupTheme(rng, teamCount = 1, pinnedId) {
+  const theme = (pinnedId && GROUP_THEMES.find(t => t.id === pinnedId))
+    || GROUP_THEMES[Math.floor(rng() * GROUP_THEMES.length)];
   const pool = [...theme.names];
   const names = [];
   for (let i = 0; i < teamCount; i++) {
@@ -155,7 +156,10 @@ export function assign(ctx) {
     events.push(...split.events);
   }
 
-  const theme = pickGroupTheme(rng, teams.length);
+  const pinnedId = ctx.cfg?.ggThemeId;
+  const theme = pinnedId
+    ? pickGroupTheme(rng, teams.length, pinnedId)
+    : pickGroupTheme(rng, teams.length);
   const teamNames = teams.map((_, i) => theme.names[i]);
 
   const roles = {};

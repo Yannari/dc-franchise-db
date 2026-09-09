@@ -31,6 +31,7 @@ import { MAXI_TYPES as DR_MAXI_TYPES } from './dr/data/challenges.js';
 import { MINI_TYPES as DR_MINI_TYPES } from './dr/data/minis.js';
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
+import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
 import { roundExits, exitVerbs, SHOWS, showWords } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
@@ -3115,6 +3116,9 @@ export function _setDRPick(ep, key, value) {
          the same `in` check `miniId` two lines down has always used. */
       entry.guest = null;
     } else delete entry.guest;
+  } else if (key === 'maxiId' && value !== 'girl-group') {
+    delete entry.ggThemeId;
+    if (value) entry.maxiId = value; else delete entry.maxiId;
   } else if (key === 'miniId' && value === 'none') {
     // Null is a real answer meaning "no mini this week"; undefined means
     // "roll one". The schedule builder distinguishes them with `in`.
@@ -3200,6 +3204,13 @@ function _drPickers(ep) {
         : 'This night has aired. Change anything here and press the ↺ on this episode to run it again — the episodes before it are untouched, the ones after are replaced.'
     }">${noRebook ? 'AIRED · CANNOT BE RE-RUN' : 'AIRED · PRESS ↺ TO APPLY'}</div>`;
 
+  const ggThemeSel = e.maxiId === 'girl-group'
+    ? sel('ggThemeId',
+      [['', '— theme: random —'], ...DR_GG_THEMES.map(t => [t.id, `${t.track} · ${t.id}`])],
+      e.ggThemeId || '',
+      'The girl group sound — bubblegum, disco, punk, etc.')
+    : '';
+
   return banner + sel('maxiId',
     [['', '— maxi: schedule decides —'],
       ...tent.map(m => [m.id, '★ ' + m.name]),
@@ -3208,6 +3219,7 @@ function _drPickers(ep) {
     'Which maxi challenge runs this week. ★ marks a tentpole: one of the six '
     + 'the schedule books once a season by itself. Pinning one here moves it '
     + 'to this week instead.')
+    + ggThemeSel
     + sel('miniId',
       [['', '— mini: random —'], ['none', 'No mini challenge'], ...minis.map(m => [m.id, m.name])],
       e.miniId === null ? 'none' : (e.miniId || ''), 'The mini challenge, and what winning it buys')

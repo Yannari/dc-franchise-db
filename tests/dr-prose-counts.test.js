@@ -16,7 +16,13 @@
 // this is the test.
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
+// Anchored to this file, not the process CWD: run from a git worktree a bare
+// relative path opens the MAIN checkout and reports on code the branch has
+// already changed. See docs/ADDING-A-SHOW.md 11.5 L.
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = 'js/dr/data';
 
 /* NARROW ON PURPOSE, and the narrowing is the whole design of this guard.
@@ -59,4 +65,60 @@ describe('no prose pool counts the room', () => {
       expect(hits, `${f} counts the room: ${hits.join(' | ')}`).toEqual([]);
     });
   }
+});
+
+describe('EVERY PLACEHOLDER A POOL USES IS ONE THE WRITER FILLS', () => {
+  /* A finalist's biggest moment of the season went to screen reading:
+
+       "You have {bottoms} bottoms and each time you came back harder."
+       "{wins} wins. {bottoms} times in the bottom. Still here."
+
+     `fill()` in js/dr/finale.js substituted {a}, {b} and {c} and dropped every
+     other key on the floor. The values were never missing — `emit` had been
+     handing all seven to it, computed correctly, in `subs`; the substituter
+     simply did not know the tokens existed. Nothing errored, and the pools'
+     own header documents the seven, which is how it read as finished work.
+
+     So this asserts the two halves against each other: every token any pool
+     writes must be one the substituter can resolve. It is a source guard
+     because the alternative is playing a season and hoping the tier that uses
+     {record} comes up. */
+  const FINALE = join(ROOT, 'js/dr/data/finale-beats.js');
+  const FILLER = join(ROOT, 'js/dr/finale.js');
+
+  it('the finale pools use no token finale.js cannot fill', () => {
+    const pools = readFileSync(FINALE, 'utf8');
+    const filler = readFileSync(FILLER, 'utf8');
+    const used = new Set([...pools.matchAll(/\{([a-zA-Z]+)\}/g)].map(m => m[1]));
+    expect(used.size, 'the pools stopped using placeholders at all').toBeGreaterThan(3);
+
+    /* What the writer can resolve: the keys it always defines, plus every key
+       it builds into `subs`. Read off the source rather than hardcoded, so
+       adding a token to `subs` is enough to license it. */
+    const always = new Set(['a', 'b', 'c']);
+    const subsBlock = filler.match(/return \{ tier, subs: \{([\s\S]*?)\} \};/);
+    expect(subsBlock, 'the interview subs block moved or was renamed').toBeTruthy();
+    /* Both property forms. `{ wins: String(wins), best, worst }` mixes
+       key:value with SHORTHAND, and reading only `key:` missed `best` and
+       `worst` — the guard then reported two correctly-filled tokens as
+       unfillable, which is a guard lying in the safe direction but lying. */
+    for (const part of subsBlock[1].split(',')) {
+      const m = part.trim().match(/^([a-zA-Z_$][\w$]*)\s*(?::|$)/);
+      if (m) always.add(m[1]);
+    }
+
+    const unfillable = [...used].filter(k => !always.has(k)).sort();
+    expect(unfillable, 'these appear in the prose and nothing substitutes them — '
+      + 'they reach the screen as literal {braces}').toEqual([]);
+  });
+
+  it('fill() substitutes generically rather than a hardcoded three', () => {
+    const filler = readFileSync(FILLER, 'utf8');
+    const fn = filler.match(/const fill = [\s\S]*?\n\};/);
+    expect(fn, 'fill() moved or was renamed').toBeTruthy();
+    // A per-token .replace() chain is the shape that caused this: it silently
+    // ignores everything it was not told about.
+    expect(fn[0], 'fill() is back to naming its tokens one at a time')
+      .toMatch(/\[a-zA-Z\]\+|\[a-z\]\+/);
+  });
 });

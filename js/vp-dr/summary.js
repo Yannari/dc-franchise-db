@@ -284,6 +284,14 @@ export function generateDragSummaryText(row) {
       // The chart is a grid; a stripped table is a wall of unreadable words,
       // and the season page draws the real one.
       if (sc.id === 'dr-chart') continue;
+      /* THE SHOWROOM IS INTERACTIVE, so stripping its HTML transcribes ONE
+         queen. It renders `buildForQueen(first, ...)` and swaps every other
+         queen in on a click, which means twelve of thirteen exist only as
+         JavaScript and a reader of the transcript meets the room through
+         whoever happened to be first in the list. Written out in full below
+         instead — the same allies, rivals and drag family the screen draws,
+         for everybody. */
+      if (sc.id === 'dr-rel') { _textShowroom(dr, ln); continue; }
       ln(sc.label.toUpperCase());
       ln('-'.repeat(sc.label.length));
       /* ONE BEAT, ONE PARAGRAPH. The screens already mark each revealable
@@ -402,6 +410,70 @@ export function generateDragSummaryText(row) {
   ln('');
   ln(`  ${(dr.living || []).length} ${w.players} left: ${(dr.living || []).join(', ')}`);
   return L.join('\n');
+}
+
+/**
+ * The Showroom, for every queen rather than the one the screen opens on.
+ *
+ * `js/vp-dr/relationships.js` draws a tab per queen and fills the panel from a
+ * click handler, so the rendered HTML only ever contains the first. The room's
+ * shape — who is close to whom, who cannot stand whom, who is somebody's drag
+ * daughter — is the thing this show's werk room runs on, and a transcript that
+ * cannot tell you any of it is missing the half that explains the votes.
+ *
+ * Bonds are symmetric, so each pair is stated from both sides deliberately:
+ * this is read one queen at a time, and making the reader hold a table in
+ * their head to answer "who likes her" is how you get a section nobody reads.
+ */
+function _textShowroom(dr, ln) {
+  const living = dr.living || [];
+  const bonds = dr.bonds || [];
+  const families = dr.families || [];
+  if (!living.length) return;
+
+  ln('THE SHOWROOM');
+  ln('-'.repeat('THE SHOWROOM'.length));
+
+  // Family first: a drag mother is a fact about the pair, not a temperature.
+  const famOf = {};
+  for (const f of families) {
+    for (const m of (f.members || [])) {
+      const role = (f.roles && f.roles[m]) || 'family';
+      const kin = (f.members || []).filter(x => x !== m);
+      if (kin.length) (famOf[m] ||= []).push(`${role} to ${kin.join(', ')}`);
+    }
+  }
+
+  let said = 0;
+  for (const n of living) {
+    const pairs = [];
+    for (const [a, b, v] of bonds) {
+      if (!v) continue;
+      const other = a === n ? b : (b === n ? a : null);
+      if (!other || !living.includes(other)) continue;
+      pairs.push({ other, v });
+    }
+    const allies = pairs.filter(p => p.v > 0).sort((x, y) => y.v - x.v);
+    const rivals = pairs.filter(p => p.v < 0).sort((x, y) => x.v - y.v);
+    const fam = famOf[n] || [];
+    if (!allies.length && !rivals.length && !fam.length) continue;
+
+    said++;
+    ln('');
+    ln(`  ${n}`);
+    if (allies.length) {
+      ln(`    close to: ${allies.map(p => `${p.other} (+${p.v})`).join(', ')}`);
+    }
+    if (rivals.length) {
+      ln(`    at odds with: ${rivals.map(p => `${p.other} (${p.v})`).join(', ')}`);
+    }
+    for (const line of fam) ln(`    ${line}`);
+  }
+
+  // A room where nobody has met anybody is a real state — the premiere — and
+  // saying so is better than an empty heading.
+  if (!said) ln('  Nobody has formed an opinion of anybody yet.');
+  ln('');
 }
 
 // ══════════════════════════════════════════════════════════════════════

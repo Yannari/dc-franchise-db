@@ -349,7 +349,18 @@ function _extractPlayerPlacements() {
       ep.firstEliminated, ep.tiedDestiniesCollateral,
       ep.emissaryEliminated, ep.hpTiebreakerEliminated, _juryBoot,
       ...(ep.multiTribalElims || []), // double/multi-tribal boots (ep.eliminated only holds the last)
-      ep.firemakingResult?.loser   // fire-making duel loser (else falls to 'Unknown' — the Jacques bug)
+      ep.firemakingResult?.loser,  // fire-making duel loser (else falls to 'Unknown' — the Jacques bug)
+      /* ── AND `exits`, WHICH IS THE ONLY ONE THE NEWER SHOWS WRITE ──
+         Every name above it is a Total Drama field. A drag night records who
+         left on `row.exits` — {name, verb} — and so does the castle, because
+         both were written after this list and neither has a Rescue Island or
+         a fire-making duel to report.
+         So this walker saw no eliminations at all on a drag season: the live
+         sync published TWELVE queens all marked "in" on an episode where four
+         were left, and the site drew a full cast with nobody sent home.
+         Read generically, so a fourth show that writes `exits` is already
+         handled rather than being a fourth entry on this list. */
+      ...((ep.exits || []).map(x => (x && x.name) || x)),
     ].filter(Boolean);
 
     for (const name of elimNames) {
@@ -4252,7 +4263,12 @@ export function extractLiveSeasonSnapshot() {
   // one show's vocabulary printed over the other.
   const format = seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null);
   const isBB = format === 'big-brother';
+  const isDrag = format === 'drag-race';
   const bbStats = (gs.bb && gs.bb.stats) || {};
+  /* The running record, taken off the LAST episode because it accumulates —
+     every queen's row is the whole season to date, which is what a standings
+     table wants. */
+  const dragRecord = (isDrag && history[history.length - 1]?.dr?.record) || {};
 
   const players = names.map(name => {
     const exitEp = permanentExit[name];
@@ -4272,6 +4288,38 @@ export function extractLiveSeasonSnapshot() {
       // profile default over the season most likely to be using custom art.
       ..._portraitOf(name),
     };
+    /* ── AND THE THIRD SHOW, WHICH FELL INTO TOTAL DRAMA'S BRANCH ──
+       This was a two-way split — Big Brother, or else Total Drama — and a
+       drag season is neither. `_extractChallengeData` counts
+       `ep.immunityWinner`, `ep.rewardChalData` and `ep.chalMemberScores`,
+       every one of them a word this show does not use: a maxi win is on
+       `dr.call.win` and a lip sync on `dr.lipsync.winner`. So a synced drag
+       season published every queen with `challengeWins: 0` and the site drew
+       a standings table where nobody had ever won anything.
+
+       Exactly the failure the note above describes for Big Brother, one show
+       later. Read off the accumulated record, which is the same source the
+       track record chart uses, so the site and the chart cannot disagree. */
+    if (isDrag) {
+      const rec = (dragRecord[name] || []);
+      const count = r => rec.filter(x => x === r).length;
+      const maxiWins = count('WIN');
+      const lipsyncWins = history.reduce((n, ep) =>
+        n + ((ep.dr && ep.dr.lipsync && ep.dr.lipsync.winner === name) ? 1 : 0), 0);
+      return {
+        ...base,
+        // `challengeWins` keeps the meaning it has everywhere else in this
+        // app: maxi wins alone. A lip sync is its own number and additional,
+        // exactly as the arena is for the house — see mergeDragSeason.
+        challengeWins: maxiWins,
+        comps: { maxi: maxiWins, lipsync: lipsyncWins },
+        maxiWins,
+        lipsyncWins,
+        highs: count('HIGH'),
+        lows: count('LOW'),
+        bottoms: count('BTM2') + count('BTM'),
+      };
+    }
     if (!isBB) {
       return {
         ...base,

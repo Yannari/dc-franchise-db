@@ -126,12 +126,15 @@ export function perform(ctx) {
   for (const n of living) {
     const d = dragOf(players[n]);
     const looks = theme.categories.map(c => {
-      // The sewn look is scored on what she can MAKE and on how the making
-      // actually went; the two pulled looks on how she wears them.
-      const craft = c.sewn ? d.design : d.runway;
-      const fit = c.styles.includes(d.style) ? 1.5 : 0;
-      const built = c.sewn ? ((buildQuality?.[n] ?? 5) - 5) * 0.5 : 0;
-      const s = craft * 0.8 + fit + built + (prep[n] || 0) + noise(rng, 1.8);
+      // The pulled looks are RUNWAY looks — she brought them and she is
+      // wearing them, so how she presents on a runway matters most.
+      // The sewn look is a DESIGN challenge — she built it, so the craft
+      // of making it matters most, with buildQuality carrying the prep.
+      const craft = c.sewn ? d.design * 0.9 + d.runway * 0.1
+        : d.runway * 0.7 + d.design * 0.15 + (Number(players[n]?.stats?.boldness) || 5) * 0.05;
+      const fit = c.styles[0] === d.style ? 1.2 : 0;
+      const built = c.sewn ? ((buildQuality?.[n] ?? 5) - 5) * 0.6 : 0;
+      const s = craft + fit + built + (prep[n] || 0) + noise(rng, 1.8);
       return { label: c.label, sewn: !!c.sewn, score: Math.round(s * 100) / 100, fit: fit > 0 };
     });
 

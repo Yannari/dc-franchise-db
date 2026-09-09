@@ -838,6 +838,17 @@ const BALL_CSS = `
 .ball-cat-bar{position:absolute;bottom:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,transparent,rgba(100,160,255,.6) 15%,#FFD23F 50%,
     rgba(100,160,255,.6) 85%,transparent)}
+/* SEWN CATEGORY BANNER — she is building this one, golden border */
+.ball-cat.ball-cat-sewn{
+  border-color:rgba(255,210,63,.5);
+  box-shadow:0 0 60px rgba(255,210,63,.2),0 0 120px rgba(255,210,63,.06),
+    inset 0 1px 0 rgba(255,220,100,.15);
+  background:
+    radial-gradient(ellipse 120% 100% at 50% 0%,rgba(255,210,63,.12),transparent 70%),
+    linear-gradient(145deg,rgba(30,24,10,.92),rgba(14,10,4,.96))}
+.ball-cat.ball-cat-sewn .ball-cat-bar{
+  background:linear-gradient(90deg,transparent,#FFD23F 15%,#FFD23F 85%,transparent)}
+.ball-cat.ball-cat-sewn small{color:#FFD23F}
 
 /* ── QUEEN WALK CARD — she hits the runway ── */
 .ball-walk{position:relative;z-index:1;max-width:1000px;margin:0 auto 16px;
@@ -852,6 +863,19 @@ const BALL_CSS = `
 .ball-walk::after{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;
   border-radius:12px 0 0 12px;
   background:linear-gradient(180deg,rgba(100,160,255,.8),#FFD23F,rgba(100,160,255,.5))}
+/* THE SEWN LOOK — golden glow, the one she built this morning */
+.ball-walk.ball-sewn{
+  background:
+    linear-gradient(160deg,rgba(255,210,63,.1),rgba(8,10,30,.9) 50%),
+    linear-gradient(0deg,rgba(255,210,63,.04),transparent 40%);
+  border-color:rgba(255,210,63,.3);
+  box-shadow:0 6px 30px rgba(0,0,20,.5),0 0 40px rgba(255,210,63,.1),
+    0 0 1px rgba(255,210,63,.4)}
+.ball-walk.ball-sewn::after{
+  background:linear-gradient(180deg,#FFD23F,rgba(255,180,50,.6),#FFD23F)}
+.ball-walk.ball-sewn .dr-por,.ball-walk.ball-sewn .dr-initials{
+  border-color:rgba(255,210,63,.5);
+  box-shadow:0 0 20px rgba(255,210,63,.35),0 0 40px rgba(255,210,63,.15)}
 .ball-walk .dr-por,.ball-walk .dr-initials{border-radius:50%;
   border:2px solid rgba(180,200,255,.4);
   box-shadow:0 0 20px rgba(80,130,255,.35),0 0 40px rgba(80,130,255,.15)}
@@ -1029,7 +1053,7 @@ function rpBuildBall(row) {
     if (s.lookIdx !== lastLookIdx) {
       const meta = lookMeta[s.lookIdx] || {};
       html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
-        <div class="ball-cat">
+        <div class="ball-cat${meta.sewn ? ' ball-cat-sewn' : ''}">
           <span class="ball-cat-num">look ${s.lookIdx + 1} of ${numLooks}</span>
           <h3>${esc(lookCategories[s.lookIdx] || `Look ${s.lookIdx + 1}`)}</h3>
           <small>${meta.sewn ? '✂ constructed on the day' : 'brought from home'}</small>
@@ -1052,7 +1076,7 @@ function rpBuildBall(row) {
     if (lines) proseShown.add(s.name);
 
     html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
-      <div class="ball-walk">
+      <div class="ball-walk${s.look.sewn ? ' ball-sewn' : ''}">
         ${_portrait(s.name, ep, { size: 60, station: true })}
         <div><h4 class="dr-disp">${esc(s.name)}${
       s.look.fit ? '<span class="dr-tag dr-t-good">in her element</span>' : ''}${

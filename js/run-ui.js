@@ -3118,6 +3118,7 @@ export function _setDRPick(ep, key, value) {
     } else delete entry.guest;
   } else if (key === 'maxiId' && value !== 'girl-group') {
     delete entry.ggThemeId;
+    delete entry.ggFormat;
     if (value) entry.maxiId = value; else delete entry.maxiId;
   } else if (key === 'miniId' && value === 'none') {
     // Null is a real answer meaning "no mini this week"; undefined means
@@ -3204,12 +3205,20 @@ function _drPickers(ep) {
         : 'This night has aired. Change anything here and press the ↺ on this episode to run it again — the episodes before it are untouched, the ones after are replaced.'
     }">${noRebook ? 'AIRED · CANNOT BE RE-RUN' : 'AIRED · PRESS ↺ TO APPLY'}</div>`;
 
-  const ggThemeSel = e.maxiId === 'girl-group'
-    ? sel('ggThemeId',
-      [['', '— theme: random —'], ...DR_GG_THEMES.map(t => [t.id, `${t.track} · ${t.id}`])],
+  const ggSubs = e.maxiId !== 'girl-group' ? '' :
+    sel('ggFormat',
+      [['', '— format: random —'],
+        ['teams-2', '2 teams · team-judged'],
+        ['teams-3', '3 teams · team-judged'],
+        ['ind-2', '2 teams · individual'],
+        ['ind-3', '3 teams · individual'],
+        ['cast', '1 group · individual']],
+      e.ggFormat || '',
+      'How many teams and whether the panel judges by team or individually')
+    + sel('ggThemeId',
+      [['', '— sound: random —'], ...DR_GG_THEMES.map(t => [t.id, `${t.track} · ${t.id}`])],
       e.ggThemeId || '',
-      'The girl group sound — bubblegum, disco, punk, etc.')
-    : '';
+      'The girl group sound — bubblegum, disco, punk, etc.');
 
   return banner + sel('maxiId',
     [['', '— maxi: schedule decides —'],
@@ -3219,7 +3228,7 @@ function _drPickers(ep) {
     'Which maxi challenge runs this week. ★ marks a tentpole: one of the six '
     + 'the schedule books once a season by itself. Pinning one here moves it '
     + 'to this week instead.')
-    + ggThemeSel
+    + ggSubs
     + sel('miniId',
       [['', '— mini: random —'], ['none', 'No mini challenge'], ...minis.map(m => [m.id, m.name])],
       e.miniId === null ? 'none' : (e.miniId || ''), 'The mini challenge, and what winning it buys')

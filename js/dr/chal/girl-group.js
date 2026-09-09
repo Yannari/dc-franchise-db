@@ -129,8 +129,12 @@ export function assign(ctx) {
   const events = [];
   let teams;
 
-  const threeTeams = order.length >= 10 && maxi.format !== 'cast' && rng() < 0.5;
-  const teamCount = maxi.format === 'cast' ? 1 : threeTeams ? 3 : 2;
+  const ggFmt = ctx.cfg?.ggFormat;
+  const teamCount = ggFmt === 'cast' ? 1
+    : ggFmt === 'teams-3' || ggFmt === 'ind-3' ? 3
+    : ggFmt === 'teams-2' || ggFmt === 'ind-2' ? 2
+    : maxi.format === 'cast' ? 1
+    : (order.length >= 10 && maxi.format !== 'cast' && rng() < 0.5) ? 3 : 2;
 
   if (teamCount === 1) {
     teams = [[...order]];
@@ -238,7 +242,7 @@ export function prepare(ctx) {
 }
 
 export function perform(ctx) {
-  const { living, players, assignment, prep, rng, bond, verse, maxi } = ctx;
+  const { living, players, assignment, prep, rng, bond, verse, maxi, cfg } = ctx;
   const performances = {};
   const events = [];
   const teamOf = n => assignment.teams.find(t => t.includes(n)) || [];
@@ -321,7 +325,8 @@ export function perform(ctx) {
 
   return {
     performances, runwayOverride: null, events,
-    teamJudged: assignment.teams.length > 1 && maxi?.format !== 'teams-individual',
+    teamJudged: assignment.teams.length > 1
+      && (cfg?.ggFormat ? !cfg.ggFormat.startsWith('ind') : maxi?.format !== 'teams-individual'),
     bestTeam,
     scenes: [{ step: 'maxi-pre', kind: 'group-number', data: { teams: assignment.teams, means, bestTeam } }],
   };

@@ -14,6 +14,9 @@
 // neither: the pin must take effect on the week it names, AND the weeks already
 // watched must come back byte-identical. A re-book that quietly re-runs episode
 // two is the "episodes that never happened" corruption in a new hat.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import * as core from '../js/core.js';
 import { playDragSeason } from '../js/dr/season.js';
@@ -175,27 +178,74 @@ describe('js/dr-run.js', () => {
     expect(rest[3].dr.challenge.id).not.toBe('ball');
   });
 
+  /* ── PRESSING ↺ GOES THROUGH A CHECKPOINT, AND THE TEST HAS TO TOO ──
+     The first version of this test rolled the season back by truncating
+     `episodeHistory` in place, which left `gs._drReroll` sitting there — so it
+     passed against the bug it was written for. `replayEpisode` does not do
+     that: it replaces `gs` with a deep clone of the checkpoint, which rolls the
+     re-run counter back with everything else, and THEN re-saves that checkpoint
+     from the restored state. Anything the re-run writes after that line is
+     written somewhere the next press rolls over. Modelled exactly here. */
+  const pressReplay = (cp, epNum) => {
+    core.setGs(JSON.parse(JSON.stringify(cp)));      // gs = checkpoint
+    const ok = dr.rerunDragEpisode(epNum);           // must come BEFORE the re-save
+    const resaved = JSON.parse(JSON.stringify(core.gs));
+    return { ok, cp: resaved, row: dr.simulateDragEpisode() };
+  };
+
   it('a re-run drops the queue and names the night it starts from', () => {
     dr.simulateDragEpisode();
     dr.simulateDragEpisode();
-    dr.simulateDragEpisode();
-
-    // What `replayEpisode` does first: roll the season back to before episode 3.
-    core.gs.episodeHistory = core.gs.episodeHistory.slice(0, 2);
+    let cp3 = JSON.parse(JSON.stringify(core.gs));   // the checkpoint for episode 3
+    const original = dr.simulateDragEpisode();
+    expect(original.num).toBe(3);
 
     core.seasonConfig.drSchedule = [{ episode: 3, maxiId: 'girl-group' }];
-    expect(dr.rerunDragEpisode(3)).toBe(true);
-    expect(core.gs._drReroll).toEqual({ from: 3, nonce: 1 });
-    expect(core.gs._drQueue).toBeUndefined();
+    const first = pressReplay(cp3, 3);
+    expect(first.ok).toBe(true);
+    expect(first.cp._drReroll).toEqual({ from: 3, nonce: 1 });
+    expect(first.row.num).toBe(3);
+    expect(first.row.dr.challenge.id).toBe('girl-group');
+  });
 
-    const again = dr.simulateDragEpisode();
-    expect(again.num).toBe(3);
-    expect(again.dr.challenge.id).toBe('girl-group');
-    // Pressing it a second time is a second night, not the same one.
-    core.gs.episodeHistory = core.gs.episodeHistory.slice(0, 2);
-    expect(dr.rerunDragEpisode(3)).toBe(true);
-    expect(core.gs._drReroll.nonce).toBe(2);
-    expect(sig(dr.simulateDragEpisode())).not.toBe(sig(again));
+  it('gives a different night on every press, not the same one forever', () => {
+    dr.simulateDragEpisode();
+    dr.simulateDragEpisode();
+    let cp3 = JSON.parse(JSON.stringify(core.gs));
+
+    const seen = new Set([sig(dr.simulateDragEpisode())]);
+    for (const expected of [1, 2, 3]) {
+      const press = pressReplay(cp3, 3);
+      expect(press.cp._drReroll.nonce, `press ${expected}`).toBe(expected);
+      seen.add(sig(press.row));
+      cp3 = press.cp;                                // what the next press restores
+    }
+    expect(seen.size, 'a press came back as a night already seen').toBe(4);
+  });
+
+  it('the episodes before a re-run are untouched by it', () => {
+    const aired = [dr.simulateDragEpisode(), dr.simulateDragEpisode()].map(sig);
+    const cp3 = JSON.parse(JSON.stringify(core.gs));
+    dr.simulateDragEpisode();
+    const press = pressReplay(cp3, 3);
+    expect(press.row.num).toBe(3);
+    expect(core.gs.episodeHistory.slice(0, 2).map(sig)).toEqual(aired);
+  });
+
+  /* THE TEST ABOVE MODELS `replayEpisode`'s SEQUENCE; THIS ONE CHECKS IT IS
+     STILL THAT SEQUENCE. Modelling a caller is how a guard ends up green while
+     the caller it stands for is wrong — the ordering is the entire bug, and it
+     lives in run-ui.js rather than in anything the model can reach. */
+  it('run-ui bumps the re-run counter before it re-saves the checkpoint', () => {
+    const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..',
+      'js', 'run-ui.js'), 'utf8');
+    const body = src.slice(src.indexOf('export function replayEpisode'));
+    const bump = body.indexOf('rerunDragEpisode(epNum)');
+    const save = body.indexOf('_saveEpisodeCheckpoint()');
+    expect(bump, 'replayEpisode no longer calls rerunDragEpisode').toBeGreaterThan(-1);
+    expect(save, 'replayEpisode no longer re-saves the checkpoint').toBeGreaterThan(-1);
+    expect(bump, 'the counter is bumped after the re-save, so it rolls back')
+      .toBeLessThan(save);
   });
 
   it('refuses to re-run a season whose running order was never recorded', () => {

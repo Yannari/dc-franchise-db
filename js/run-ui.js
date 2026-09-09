@@ -1683,15 +1683,24 @@ export function replayEpisode(epNum) {
     // Re-run this episode — the format decides the engine, exactly as
     // simulateNext does. The replay path only knew Total Drama's two engines,
     // so a house had checkpoints it could never spend.
-    if (isBigBrotherSeason() || isTraitorsSeason() || isDragSeason()) _saveEpisodeCheckpoint();
     /* ── A DRAG RE-RUN IS A RE-RUN NOW ──
        It used to be a re-air. The checkpoint carries `_drQueue` with this very
        night still at its head, so restoring it and shifting one row off handed
        back the identical episode — and a challenge pinned onto an aired week
        had nowhere to take effect. `rerunDragEpisode` drops the queue and turns
        the dice from this episode on; the weeks before it are frozen and replay
-       exactly. A season too old to freeze refuses, and re-airs as before. */
+       exactly. A season too old to freeze refuses, and re-airs as before.
+
+       BEFORE THE CHECKPOINT IS RE-SAVED, and that order is the whole of it.
+       The re-run counter lives on `gs`, and the line below overwrites this
+       episode's checkpoint with the state just restored FROM it — so bumping
+       afterwards wrote the new count somewhere the next press would roll back
+       over. Every press restored count 0, bumped to 1, and produced the same
+       night as the press before: reported as "it doesn't re-run an already
+       re-run episode a second time". Bumping first bakes the count into the
+       checkpoint, which is what makes it survive the next rollback. */
     if (isDragSeason()) rerunDragEpisode(epNum);
+    if (isBigBrotherSeason() || isTraitorsSeason() || isDragSeason()) _saveEpisodeCheckpoint();
     ep = isDragSeason()
       ? simulateDragEpisode()
       : isTraitorsSeason()

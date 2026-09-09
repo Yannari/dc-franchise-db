@@ -5667,7 +5667,20 @@
       "occupation": "Art-school graduate, model, and aspiring actor",
       "descriptor": "The Walking Exhibition",
       "backstory": "Quin studied contemporary visual art while taking modeling jobs, appearing in student films, and working the doors of underground London clubs. Frustrated by being treated as a mannequin rather than a creative artist, they began making conceptual drag looks from installation materials, discarded garments, and unusual objects. Their striking photographs attracted attention online, but most of their performing experience still comes from short nightclub numbers and experimental showcases. Quin enters Drag Race hoping to turn a strong visual identity into a serious acting and modeling career.",
-      "personality": "Quin is fashionable, ambitious, socially connected, and occasionally pretentious. They can discuss visual concepts with complete confidence but become evasive when asked about practical details. Their modeling experience makes them magnetic on the runway, while their willingness to experiment gives them an advantage in unconventional design challenges. However, they are not naturally funny, cannot sing, and sometimes mistake emotional distance for acting subtlety. Quin enjoys being surrounded by interesting people but may abandon an alliance if it stops benefiting their image. They possess genuine creative vision, though the competition will test whether there is a versatile performer behind the photographs."
+      "personality": "Quin is fashionable, ambitious, socially connected, and occasionally pretentious. They can discuss visual concepts with complete confidence but become evasive when asked about practical details. Their modeling experience makes them magnetic on the runway, while their willingness to experiment gives them an advantage in unconventional design challenges. However, they are not naturally funny, cannot sing, and sometimes mistake emotional distance for acting subtlety. Quin enjoys being surrounded by interesting people but may abandon an alliance if it stops benefiting their image. They possess genuine creative vision, though the competition will test whether there is a versatile performer behind the photographs.",
+      "drag": {
+        "acting": 9,
+        "comedy": 5,
+        "dance": 5,
+        "design": 5,
+        "runway": 5,
+        "lipsync": 5,
+        "singing": 5,
+        "style": "",
+        "traits": [],
+        "voice": "",
+        "family": []
+      }
     },
     {
       "name": "Riot",

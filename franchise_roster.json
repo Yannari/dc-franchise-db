@@ -5365,6 +5365,26 @@
       },
       "voice": "sharp, fast-paced British accent loaded with cheeky colloquialisms and a loud, infectious cackle. She loves poking fun at her own mediocre runways before anyone else can—for example: \"Right, girls, I know this dress looks like it was put together with a glue stick and a dream, but at least I'm having a lovely time! Who wants a gin and tonic?\"",
       "profileSources": {}
+    },
+    {
+      "name": "Cupcakke",
+      "slug": "cupcakke",
+      "gender": "f",
+      "sexuality": "gay",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 2,
+        "endurance": 4,
+        "mental": 6,
+        "social": 9,
+        "strategic": 2,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "voice": "Loud, warm, theatrical, and shamelessly corny. She speaks quickly, laughs at her own jokes, uses food metaphors constantly, and becomes surprisingly sharp when another queen underestimates her.",
+      "profileSources": {}
     }
   ]
 }

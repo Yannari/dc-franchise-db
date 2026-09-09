@@ -55,7 +55,9 @@ describe('the event pool', () => {
       // added when the Rumix and the music video stopped being the girl group
       'booth-rescue', 'booth-lost-it', 'lifted-a-bar', 'no-verse', 'quotable-bar',
       'cast-forward', 'director-loved-her', 'director-wrote-her-off',
-      'lost-in-the-background'];
+      'lost-in-the-background',
+      // and the social layer both of them shipped without
+      'workshopped', 'read-her-verse', 'upstaged-her', 'covered-for-her'];
     const missing = FIRED.filter(id => !MAXI_EVENT_IDS.includes(id));
     expect(missing, `these fire in the engine and have no prose: ${missing.join(', ')}`).toEqual([]);
   });

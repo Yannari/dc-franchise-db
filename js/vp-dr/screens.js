@@ -76,6 +76,8 @@ const ICON_PATHS = {
   couch: 'M4 12V9a2 2 0 012-2h12a2 2 0 012 2v3M3 12h18v6H3zM6 18v2M18 18v2',
   stamp: 'M8 3h8v6l2 4H6l2-4zM5 17h14v3H5z',
   mic: 'M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3zM7 11a5 5 0 0010 0M12 16v5M9 21h6',
+  // A shoulder-mount film camera: body, lens barrel and the two reels on top.
+  camera: 'M3 9h11v8H3zM14 12l6-3v9l-6-3M6 9V7a1.6 1.6 0 113.2 0v2M10.4 9V7a1.6 1.6 0 113.2 0v2',
   door: 'M5 3h11v18H5zM13 12h1.5M16 8l4 4-4 4',
   grid: 'M3 5h18v14H3zM3 10h18M3 15h18M9 5v14M15 5v14',
   crown: 'M3 18l-1-11 6 5 4-8 4 8 6-5-1 11zM3 18h18v3H3z',
@@ -148,6 +150,29 @@ const SECTIONS = [
       'makeover-build', 'no-rehearsal', 'choreographer-pick'],
     opensStep: ['prep'],
     badge: null, title: 'The Work Room', subtitle: 'building it' },
+  /* ── THE BOOTH AND THE SET GET THEIR OWN SCREENS ──
+     Both were cards inside The Work Room, which is where a queen sews. The
+     Rumix's hour in front of a vocal producer and the music video's day in
+     front of a director are the CHALLENGE on those two nights — the booth
+     decides what the panel actually hears, and the director's read is a term
+     in the judging — so filing them under "building it" buried the thing the
+     episode is about.
+
+     THEY OPEN ON THE BEAT, NOT ON THE MODULE'S MARKER. `writing-booth` and
+     `studio-day` are emitted by the challenge module before the host's
+     walkthrough runs, so a section opening on them would swallow ten
+     walkthrough cards that belong to the werk room. The per-queen cards are
+     pushed last within the prep step, so opening on those keeps each screen to
+     its own contents — and nothing re-opens The Work Room afterwards, because
+     a step opener only fires while scenes of that step are still arriving. */
+  { id: 'dr-booth', icon: icon('mic'), label: 'The Booth', suffix: 'booth', phase: 'werk', accent: 'dr-a-score',
+    opens: ['chal:booth-session'],
+    badge: { text: 'BOOTH', color: '#22d3ee' },
+    title: 'The Booth', subtitle: 'what actually gets on tape' },
+  { id: 'dr-set', icon: icon('camera'), label: 'On Set', suffix: 'set', phase: 'werk', accent: 'dr-a-score',
+    opens: ['chal:studio-day'],
+    badge: { text: 'SHOOT', color: '#f59e0b' },
+    title: 'On Set', subtitle: 'the day the director will report back on' },
   /* OPENS ON THE STEP, NOT ON A LIST OF KINDS. This named seven scene kinds
      — improv-take, snatch-taping, group-number, roast-set, ball-walks,
      makeover-reveal, singing-performance — and there are nineteen

@@ -338,6 +338,27 @@ export const MAXI_EVENTS = [
     ],
   }),
 
+  e({
+    id: 'workshopped', from: 'rumix', cast: 'pair',
+    note: '{a} sat down and helped {b} write her verse. It shows on the tape.',
+    lines: [],
+  }),
+  e({
+    id: 'read-her-verse', from: 'rumix', cast: 'pair',
+    note: '{a} heard {b} rehearsing and told the room it was terrible. {b} still has to perform it.',
+    lines: [],
+  }),
+  e({
+    id: 'upstaged-her', from: 'music-video', cast: 'pair',
+    note: '{a} stepped into {b}\'s shot and it worked. {b} watched it back on the monitor.',
+    lines: [],
+  }),
+  e({
+    id: 'covered-for-her', from: 'music-video', cast: 'pair',
+    note: '{a} quietly told {b} where the mark was between set-ups, and saved her a take.',
+    lines: [],
+  }),
+
   // ══ THE BRACKET ══════════════════════════════════════════════════════
   e({
     id: 'assassin', from: 'lalaparuza', cast: 'solo',

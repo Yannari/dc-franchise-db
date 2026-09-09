@@ -27,15 +27,24 @@ const { rows } = playDragSeason({
 beforeEach(() => { window._tvState = {}; window._drSidebar = {}; });
 
 describe('the registry', () => {
-  it('is the thirty-two screens, in the running order', () => {
-    expect(DRAG_SCREENS.length).toBe(32);
+  /* THIRTY-FOUR SINCE THE BOOTH AND THE SET GOT THEIR OWN. The Rumix's hour
+     with a vocal producer and the music video's day with a director were cards
+     inside The Work Room, which is where a queen sews — and both of them ARE
+     the challenge on those nights, one deciding what the panel hears and the
+     other feeding a term into the judging. The count is asserted rather than
+     ranged so that adding a screen is a decision somebody made on purpose. */
+  const COUNT = 34;
+  it('is the thirty-four screens, in the running order', () => {
+    expect(DRAG_SCREENS.length).toBe(COUNT);
     const ids = DRAG_SCREENS.map(s => s.id);
     expect(ids[0]).toBe('dr-arrivals');
     expect(ids).toContain('dr-chart');
     expect(ids).toContain('dr-rel');
-    expect(new Set(ids).size).toBe(32);
+    expect(ids).toContain('dr-booth');
+    expect(ids).toContain('dr-set');
+    expect(new Set(ids).size).toBe(COUNT);
     expect(new Set(DRAG_SCREENS.map(s => s.suffix)).size, 'two screens share a suffix')
-      .toBe(32);
+      .toBe(COUNT);
     for (const s of DRAG_SCREENS) {
       expect(typeof s.when, s.id).toBe('function');
       expect(typeof s.build, s.id).toBe('function');

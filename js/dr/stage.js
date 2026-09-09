@@ -961,6 +961,14 @@ export function renderChallengeBeats({
   // It has always existed and this renderer never asked for it.
   miniDetail = {},
   assignment = {}, performances = {}, rng = Math.random,
+  /* ── WHAT THE CHALLENGE MODULE ALREADY EMITTED ──
+     This function builds its OWN `scenes` array and never saw the module's,
+     so two beats written to read back off `writing-booth` and `studio-day`
+     searched an array those scenes are not in and could never fire. Written
+     and unreachable, in code written the same afternoon as the section of
+     docs/ADDING-A-SHOW.md about it.
+     Passed in rather than recomputed, so what is drawn is what happened. */
+  moduleScenes = [],
 }) {
   const scenes = [];
   const usedLines = new Set();
@@ -1201,7 +1209,23 @@ export function renderChallengeBeats({
      director mechanic was invisible and the challenge read no differently
      from the one it was split out of. Read back off that scene rather than
      recomputed, so what is drawn is what actually happened. */
-  const studio = scenes.find(s => s.kind === 'studio-day');
+  /* ── AN HOUR IN THE BOOTH, ONE CARD PER QUEEN ──
+     Read back off the scene the Rumix module already emits, with the tier it
+     already decided, for the same reason the shoot day below is. */
+  const boothScene = moduleScenes.find(s => s.kind === 'writing-booth');
+  if (boothScene) {
+    const boothBeat = beatById('booth-session');
+    for (const ses of boothScene.data?.sessions || []) {
+      emit(boothBeat, ses.tier, [ses.name], {
+        lift: ses.lift, booth: ses.booth, written: ses.written,
+        // The screen opens on these cards, so the night's track travels with
+        // them rather than with the marker scene back in the werk room.
+        track: boothScene.data?.track || null,
+      });
+    }
+  }
+
+  const studio = moduleScenes.find(s => s.kind === 'studio-day');
   if (studio) {
     const dayBeat = beatById('studio-day');
     for (const note of studio.data?.notes || []) {
@@ -1210,6 +1234,7 @@ export function renderChallengeBeats({
           : note.impression <= -0.3 ? 'slow' : 'easy';
       emit(dayBeat, tierId, [note.name], {
         role: note.role, took: note.took, argued: note.argued,
+        concept: studio.data?.concept || null,
       });
     }
   }

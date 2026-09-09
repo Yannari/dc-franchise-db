@@ -39,7 +39,7 @@ import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor } from '../perform.js';
-import { canScheme, evt } from '../rules.js';
+import { canScheme, canHelp, evt } from '../rules.js';
 
 /* A multiplier on the SPREAD, never a ceiling — the same shape the roast's
    slots use. The closer can win the night or lose it; the middle mostly does
@@ -52,6 +52,56 @@ const BARS = 4;
 
 /** A bar this low is filler — the count is what the panel refers to. */
 const FILLER = 4;
+
+/* ── THE TRACK, AND WHAT IT ASKS OF A VERSE ──
+   Every Rumix ran on a nameless song. The girl group has had `GROUP_THEMES`
+   since it was written — a named track, a described sound, group names that
+   fall out of it — and this had nothing, so the challenge that is ABOUT
+   writing to a specific piece of music never said what the music was. Twelve
+   nights across a franchise, all of them "the track".
+
+   `asks` is the part that earns its place: a verse over a ballad is a
+   different job from a verse over a club record, and it is what the brief,
+   the booth and the critique all need to be able to refer to. It is a fact
+   about the song rather than a description of it. */
+export const RUMIX_TRACKS = [
+  { id: 'stomp', title: 'Werk The Floor',
+    sound: 'a four-on-the-floor stomper with a chorus that never lets up',
+    asks: 'a verse that can be shouted and still land every word' },
+  { id: 'ballad', title: 'One More Look',
+    sound: 'a slow-burn ballad that leaves acres of space between the lines',
+    asks: 'a verse with somewhere real to go, because the space will expose filler' },
+  { id: 'club', title: 'After Hours',
+    sound: 'a late-night club record built on one relentless bassline',
+    asks: 'a verse that rides the beat rather than fighting it for attention' },
+  { id: 'disco', title: 'Mirrorball',
+    sound: 'strings, hi-hats and a key change nobody asked for',
+    asks: 'a verse glamorous enough to sit beside the strings without shrinking' },
+  { id: 'trap', title: 'Cash & Contour',
+    sound: 'a sparse trap beat with half the bar left empty on purpose',
+    asks: 'a verse with a flow, because there is nowhere to hide in the gaps' },
+  { id: 'rock', title: 'Heavy Rotation',
+    sound: 'arena rock, guitars loud enough to bury a bad line',
+    asks: 'a verse delivered with a chest voice and no apology' },
+  { id: 'pop', title: 'Sugar High',
+    sound: 'bubblegum pop engineered to lodge in the skull by the second chorus',
+    asks: 'a verse as sticky as the hook it has to sit next to' },
+  { id: 'house', title: 'Feel It',
+    sound: 'a piano-led anthem with a drop the verse has to set up',
+    asks: 'a verse that builds, because the drop will punish a flat one' },
+  { id: 'rnb', title: 'Slow Burn',
+    sound: 'slinky late-night R&B written for runs',
+    asks: 'a verse that can be sung rather than spoken, which is a trap' },
+  { id: 'camp', title: 'Tuck & Roll',
+    sound: 'novelty camp played far too fast, more shouted than sung',
+    asks: 'a verse that is funny on the page and still scans at that tempo' },
+];
+
+/** One track for the night. Pinnable, so an author can book the song. */
+export function pickRumixTrack(rng, pinnedId) {
+  return (pinnedId && RUMIX_TRACKS.find(t => t.id === pinnedId))
+    || RUMIX_TRACKS[Math.floor(rng() * RUMIX_TRACKS.length)];
+}
 
 const slotKind = (i, n) => (i === 0 ? 'first' : i === n - 1 ? 'last' : 'middle');
 const slotNo = name => Number(String(name || 'verse-99').split('-')[1]) || 99;
@@ -85,8 +135,12 @@ function versePreference(slots, boldness) {
 }
 
 export function assign(ctx) {
-  const { living, players, rng, miniWinner, mini, bond } = ctx;
+  const { living, players, rng, miniWinner, mini, bond, cfg } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
+  // `runMaxi` spreads whatever `assign` invents onto the assignment, so the
+  // track reaches `prepare`, `perform` and every screen without this file
+  // teaching the engine what a track is.
+  const track = pickRumixTrack(rng, cfg?.rumixTrackId);
   const slots = order.map((_, i) => `verse-${i + 1}`);
   const choices = Object.fromEntries(order.map(n =>
     [n, versePreference(slots, num(players[n], 'boldness'))]));
@@ -100,13 +154,13 @@ export function assign(ctx) {
 
   return {
     roles: Object.fromEntries(order.map(n => [n, 'standard'])),
-    teams: [], order, picks, events,
-    scenes: [{ step: 'choice', kind: 'verse-order', data: { picks } }],
+    teams: [], order, picks, track, events,
+    scenes: [{ step: 'choice', kind: 'verse-order', data: { picks, track } }],
   };
 }
 
 export function prepare(ctx) {
-  const { living, players, rng, assignment } = ctx;
+  const { living, players, rng, assignment, bond = () => 0 } = ctx;
   const r = prepareRoom(ctx);
   const w = walkthrough({ ...ctx, prep: r.prep });
   const events = [...r.events, ...w.events];
@@ -114,6 +168,9 @@ export function prepare(ctx) {
   const bars = {};
   const hooks = {};
   const booth = {};
+  // One queen per side per night: a room where everybody helps everybody, or
+  // everybody reads everybody, is a cartoon. Same rule js/dr/prep.js keeps.
+  const helpedWith = new Set();
 
   for (const n of living) {
     const d = dragOf(players[n]);
@@ -210,10 +267,82 @@ export function prepare(ctx) {
     break;
   }
 
+  /* ── WHAT HAPPENED IN THE BOOTH, PER QUEEN ──
+     `booth` was a number and the only thing that reached a screen was the two
+     extremes, so ten of twelve queens recorded a vocal that the episode never
+     mentioned. The tier is decided HERE rather than in the renderer, for the
+     same reason every other result is: the engine says what happened and the
+     prose says it in words. */
+  const sessions = living.map(n => {
+    const written = (bars[n] || []).reduce((a, b) => a + b, 0) / BARS;
+    const lift = (booth[n] ?? written) - written;
+    return {
+      name: n,
+      written: Math.round(written * 100) / 100,
+      booth: booth[n],
+      lift: Math.round(lift * 100) / 100,
+      tier: lift >= 1.4 ? 'got-it-on-tape'
+        : lift <= -1.4 ? 'could-not-get-it'
+          : lift >= 0 ? 'clean-session' : 'many-takes',
+    };
+  });
+
+  /* ── THE WRITING ROOM IS A SOCIAL ROOM, AND THIS ONE HAD ALMOST NOTHING ──
+     The girl group this was split out of moves bonds all night — the
+     spotlight hog costs her whole team, somebody is visibly carried, a
+     captain dumps a rival. Both replacements shipped with one bond-moving
+     event between them, and the season noticed before any human did:
+     `relationship:fallen-out` stopped firing across twenty seasons, because
+     two of nineteen challenges had quietly stopped souring anybody.
+     A challenge that cannot change how the room feels is a stat check with
+     scenery, which is the rule CLAUDE.md states and this broke.
+
+     WORKSHOPPED — a queen who can write sits down with one who cannot. Real
+     help: it moves her bars, not just the bond. Nice archetypes do this and
+     so does anybody else; `canHelp` is the shared predicate and it is
+     permissive on purpose. */
+  for (const n of living) {
+    if (helpedWith.has(n) || !canHelp(players[n])) continue;
+    const d = dragOf(players[n]);
+    if (d.comedy < 7) continue;
+    const friend = living.find(o => o !== n && !helpedWith.has(o)
+      && dragOf(players[o]).comedy <= 4 && bond(n, o) >= 3);
+    if (!friend) continue;
+    helpedWith.add(n); helpedWith.add(friend);
+    bars[friend] = bars[friend].map(b => Math.round((b + 0.6) * 100) / 100);
+    booth[friend] = Math.round((booth[friend] + 0.4) * 100) / 100;
+    events.push(evt('workshopped', {
+      players: [n, friend], bond: [[n, friend, 1.5]], pop: { [n]: 2 },
+      data: { helper: n, helped: friend },
+    }));
+    break;
+  }
+
+  /* AND READ — she hears a rival's verse through a wall and tells the room it
+     is terrible. The damage is to the WRITER's nerve rather than to her
+     writing, so it lands on the booth and not on the bars: she wrote what she
+     wrote, and then she had to go and perform it knowing what was said. */
+  for (const n of living) {
+    if (!canScheme(players[n])) continue;
+    const mark = living
+      .filter(o => o !== n && !helpedWith.has(o) && bond(n, o) <= -2)
+      .sort((x, y) => bond(n, x) - bond(n, y))[0];
+    if (!mark) continue;
+    if (rng() > 0.45) continue;
+    booth[mark] = Math.round((booth[mark] - 0.7) * 100) / 100;
+    events.push(evt('read-her-verse', {
+      players: [n, mark], bond: [[n, mark, -2.5]], pop: { [n]: -2 },
+      data: { reader: n, mark },
+    }));
+    break;
+  }
+
   return {
-    prep: w.prep, events, bars, hooks, booth,
-    scenes: [...r.scenes,
-      { step: 'prep', kind: 'writing-booth', data: { bars, hooks, booth } }],
+    prep: w.prep, events, bars, hooks, booth, sessions,
+    scenes: [...r.scenes, {
+      step: 'prep', kind: 'writing-booth',
+      data: { bars, hooks, booth, sessions, track: assignment?.track || null },
+    }],
   };
 }
 
@@ -285,6 +414,7 @@ export function perform(ctx) {
   return {
     performances, runwayOverride: null, events,
     // Main stage: she does this live, after the runway, not on tape before it.
-    scenes: [{ step: 'maxi-main', kind: 'verse-order-run', data: { order } }],
+    scenes: [{ step: 'maxi-main', kind: 'verse-order-run',
+      data: { order, track: assignment?.track || null } }],
   };
 }

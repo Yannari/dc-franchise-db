@@ -972,6 +972,9 @@ export function runDragWeek(state, cfg, ctx) {
       // narration needs to name her — it reached the row and stopped there.
       miniDetail: mini?.detail || {},
       assignment: M.assignment || {}, performances: perfWithPlayers, rng,
+      // The module's own scenes, so a beat can read back what the challenge
+      // recorded rather than recomputing it. See the note on the parameter.
+      moduleScenes: M.scenes || [],
     })) scenes.push(sc);
 
     /* ...AND NOW THE MINI'S OWN EVENTS, UNDER THE CARDS THEY BELONG TO —

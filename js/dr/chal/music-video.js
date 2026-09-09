@@ -45,7 +45,7 @@ import { pickOrder } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor, blendScore, ROLE_RANGES } from '../perform.js';
-import { evt } from '../rules.js';
+import { canScheme, canHelp, evt } from '../rules.js';
 
 /** What the host is casting, biggest part first. */
 const PART_LADDER = ['lead', 'featured', 'featured', 'standard', 'standard',
@@ -53,6 +53,45 @@ const PART_LADDER = ['lead', 'featured', 'featured', 'standard', 'standard',
 
 /** How far the director's read can move the panel, in either direction. */
 export const IMPRESSION_CAP = 1.2;
+
+/* ── WHAT THE VIDEO ACTUALLY IS ──
+   It had no concept, no set and no wardrobe, so every music video in every
+   season was "the video" — the same nameless shoot with different names
+   attached. The girl group has named its track and its sound since it was
+   written; this had nothing to name.
+
+   `setting` is what the crew built and `look` is what she is put in, and both
+   are load-bearing rather than decorative: the director's notes, the call
+   sheet and the critiques all need something specific to be about, and "you
+   were flat in the video" is the sentence you get when there is nothing. */
+export const VIDEO_CONCEPTS = [
+  { id: 'heist', title: 'Take It All', setting: 'a vault set with a laser grid and a getaway car on a turntable',
+    look: 'black catsuits and mirrored visors' },
+  { id: 'diner', title: 'Table For One', setting: 'a chrome late-night diner with rain on every window',
+    look: 'waitress uniforms cut into something they were never meant to be' },
+  { id: 'space', title: 'Orbit', setting: 'a white void set with a slow-rotating rig and no horizon',
+    look: 'foil and antennae, and nothing that reads as human' },
+  { id: 'noir', title: 'Smoke', setting: 'a rain-slicked alley on a soundstage, lit through a venetian blind',
+    look: 'trench coats over almost nothing, and a lot of red lipstick' },
+  { id: 'prom', title: 'Last Dance', setting: 'a school gym drowning in crepe paper and a mirrorball',
+    look: 'ruined prom dresses and corsages nobody survived' },
+  { id: 'infomercial', title: 'Buy Now', setting: 'a shopping-channel set with a spinning product plinth',
+    look: 'pastel skirt suits and an unrelenting smile' },
+  { id: 'jungle', title: 'Wild Thing', setting: 'a plastic jungle with a mist rig and a fan nobody can hear over',
+    look: 'leaf, vine and about six inches of body glitter' },
+  { id: 'pageant', title: 'Crown Me', setting: 'a pageant stage with a runway, a sash rail and a live band riser',
+    look: 'full gown, full hair, and heels that were not built for choreography' },
+  { id: 'motel', title: 'Vacancy', setting: 'a motel forecourt with a neon sign and one working ice machine',
+    look: 'slips, curlers and sunglasses at midnight' },
+  { id: 'boardroom', title: 'The Merger', setting: 'a glass boardroom forty floors up with a table long enough to dance on',
+    look: 'power suits and a briefcase that opens for the key change' },
+];
+
+/** One concept for the shoot. Pinnable, so an author can book the video. */
+export function pickVideoConcept(rng, pinnedId) {
+  return (pinnedId && VIDEO_CONCEPTS.find(c => c.id === pinnedId))
+    || VIDEO_CONCEPTS[Math.floor(rng() * VIDEO_CONCEPTS.length)];
+}
 
 const num = (p, k) => {
   const v = Number(p?.stats?.[k]);
@@ -69,9 +108,12 @@ const num = (p, k) => {
  * story in a hand-out the queens cannot influence.
  */
 export function assign(ctx) {
-  const { living, players, maxi, rng, miniWinner, mini, state } = ctx;
+  const { living, players, maxi, rng, miniWinner, mini, state, cfg } = ctx;
   const order = pickOrder({ living, miniWinner, mini, rng });
   const events = [];
+  // Spread onto the assignment by `runMaxi`, so prep, the shoot and every
+  // screen can say what they were making.
+  const concept = pickVideoConcept(rng, cfg?.videoConceptId);
 
   const fit = Object.fromEntries(order.map(n =>
     [n, blendScore(dragOf(players[n]), maxi.blend) + noise(rng, 1.6)]));
@@ -125,8 +167,9 @@ export function assign(ctx) {
      — over a hand-out she had no say in. Exactly the bug the split was for,
      one screen earlier. */
   return {
-    roles, teams: [], order: ranked, picks, contested: false, events,
-    scenes: [{ step: 'choice', kind: 'call-sheet', data: { order: ranked, roles } }],
+    roles, teams: [], order: ranked, picks, contested: false, concept, events,
+    scenes: [{ step: 'choice', kind: 'call-sheet',
+      data: { order: ranked, roles, concept } }],
   };
 }
 
@@ -213,13 +256,16 @@ export function prepare(ctx) {
     prep: w.prep, events, impression, notes,
     scenes: [...r.scenes, {
       step: 'prep', kind: 'studio-day',
-      data: { notes, best: best?.name || null, worst: worst?.name || null },
+      data: {
+        notes, best: best?.name || null, worst: worst?.name || null,
+        concept: assignment?.concept || null,
+      },
     }],
   };
 }
 
 export function perform(ctx) {
-  const { living, players, assignment, prep, rng, impression } = ctx;
+  const { living, players, assignment, prep, rng, impression, bond = () => 0 } = ctx;
   const performances = {};
   const events = [];
 
@@ -275,9 +321,54 @@ export function perform(ctx) {
     };
   }
 
+  /* ── TWO QUEENS IN ONE FRAME ──
+     The same gap the Rumix had, and the more obvious one: a music video puts
+     queens in shared set-ups all day and nothing here moved a bond. The girl
+     group's `spotlight-hog` is the ancestor of the first of these and the
+     shoot is where it actually belongs — on a stage everybody can be seen, on
+     camera there is one frame and somebody can take it.
+
+     UPSTAGED. She steps into somebody else's shot and the somebody else has to
+     watch it back on the monitor. It works, which is why she does it. */
+  const seen = new Set();
+  const byRole = [...living].sort((a, b) =>
+    (ROLE_RANGES[assignment.roles[b]] ?? 1) - (ROLE_RANGES[assignment.roles[a]] ?? 1));
+  for (const n of byRole) {
+    if (seen.has(n) || !canScheme(players[n])) continue;
+    const mark = byRole.find(o => o !== n && !seen.has(o)
+      && (ROLE_RANGES[assignment.roles[o]] ?? 1) >= (ROLE_RANGES[assignment.roles[n]] ?? 1));
+    if (!mark) continue;
+    if (rng() > (num(players[n], 'boldness')) / 14) continue;
+    seen.add(n); seen.add(mark);
+    performances[n].perf = Math.round((performances[n].perf + 0.6) * 100) / 100;
+    performances[mark].perf = Math.round((performances[mark].perf - 0.6) * 100) / 100;
+    events.push(evt('upstaged-her', {
+      players: [n, mark], bond: [[n, mark, -2.5]], pop: { [n]: -2 },
+      data: { role: assignment.roles[n], markRole: assignment.roles[mark] },
+    }));
+    break;
+  }
+
+  /* COVERED FOR HER. Between set-ups, somebody quietly tells her where the
+     mark is. It saves a take and the room sees who did it. */
+  for (const n of living) {
+    if (seen.has(n) || !canHelp(players[n])) continue;
+    const friend = living.find(o => o !== n && !seen.has(o)
+      && performances[o].perf < performances[n].perf - 2 && bond(n, o) >= 2);
+    if (!friend) continue;
+    seen.add(n); seen.add(friend);
+    performances[friend].perf = Math.round((performances[friend].perf + 0.5) * 100) / 100;
+    events.push(evt('covered-for-her', {
+      players: [n, friend], bond: [[n, friend, 1.5]], pop: { [n]: 2 },
+      data: { helper: n, helped: friend },
+    }));
+    break;
+  }
+
   return {
     performances, runwayOverride: null, events,
     // Taped, and played back to the panel on the night — before the runway.
-    scenes: [{ step: 'maxi-pre', kind: 'video-playback', data: {} }],
+    scenes: [{ step: 'maxi-pre', kind: 'video-playback',
+      data: { concept: assignment?.concept || null } }],
   };
 }

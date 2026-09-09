@@ -225,7 +225,34 @@ playing what, and the room hears its own casting. Very different energy from
 `solo` — this is one production with a call sheet, not thirteen queens each
 doing their own thing.
 
-**36 lines in this section.**
+**`id: 'booth-session'`** — per queen, on **The Booth** screen. Her hour with
+the vocal producer. This is the one that decides what the panel hears, and
+until now nine queens in a twelve-queen room recorded a vocal the episode never
+mentioned. Four tiers, **4 lines each**:
+
+| tier | what it is |
+|---|---|
+| `got-it-on-tape` | The take is better than the verse. He found something in her. |
+| `clean-session` | In, done, out. No drama and no rescue needed. |
+| `many-takes` | They get there, and everybody knows how long it took. |
+| `could-not-get-it` | She wrote it and she cannot sing it. The tape is what the panel hears. |
+
+The producer is unnamed, like the director — a role, not a person.
+
+**52 lines in this section.**
+
+### G. The track and the concept are already written
+
+You do not need to write these, but the prose should USE them. Every Rumix now
+draws a named track from `RUMIX_TRACKS` in `js/dr/chal/rumix.js` — it carries a
+`title`, a `sound` and, most usefully, an `asks`: what that particular song
+demands of a verse. A ballad leaves space that exposes filler; a trap beat has
+gaps with nowhere to hide. Every music video draws from `VIDEO_CONCEPTS` in
+`js/dr/chal/music-video.js` — a `title`, a `setting` the crew built and a `look`
+she is put in.
+
+Both reach the beats on their scene data. Lines that reach for them will read as
+being about that night; lines that do not will read as being about the format.
 
 ---
 

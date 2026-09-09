@@ -209,6 +209,24 @@ export const CHALLENGE_BEATS = [
     ],
   },
   {
+    /* ── THE BOOTH ──
+       `booth` decides what the panel actually hears and it was a number with
+       no screen: only the two extreme outcomes narrated, so ten queens in a
+       twelve-queen room recorded a vocal the episode never mentioned. One card
+       each, like the shoot day and the host's walkthrough, and the tier is
+       decided in js/dr/chal/rumix.js rather than here — the engine says what
+       happened and this says it in words. */
+    id: 'booth-session', step: 'prep', scope: 'per-queen', speaker: 'narrator',
+    note: 'Her hour in the booth with the vocal producer, and what came out of it.',
+    tierBy: 'booth',
+    tiers: [
+      tier('got-it-on-tape', 'The take is better than the verse. He found something in her.'),
+      tier('clean-session', 'In, done, out. No drama and no rescue needed.'),
+      tier('many-takes', 'They get it eventually, and everybody knows how long it took.'),
+      tier('could-not-get-it', 'She wrote it and she cannot sing it. The tape is what the panel hears.'),
+    ],
+  },
+  {
     /* ── THE CALL SHEET ──
        The pick-reaction beat below cannot serve this: every one of its tiers
        is about what she CHOSE and how far down her own list it was, and on

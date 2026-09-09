@@ -408,6 +408,9 @@ export function runDragWeek(state, cfg, ctx) {
   const call = callWeek(bend, {
     castSize: living.length, immune,
     bottomNamed: cfg.bottomNamed || (cfg.bottomThree ? 3 : 2),
+    teamJudged: M.teamJudged,
+    teams: assignment.teams,
+    bestTeam: M.bestTeam,
   });
 
   /* ── DOUBLE WIN ─────────────────────────────────────────────────────

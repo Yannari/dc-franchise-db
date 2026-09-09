@@ -7,11 +7,10 @@
 // which is Plan 3's business — the mechanic is identical, and three copies of
 // it would be three places for the spotlight hog to drift out of sync.
 //
-// The team result is a NUDGE, not a verdict: +0.8 to the winning team and
-// -0.4 to the losing one. A standout on the losing team must still be able to
-// out-score a passenger on the winning one, because that is a thing that
-// happens on this show every season and a flat team score would make it
-// impossible.
+// The team result drives TEAM-JUDGED placement: the winning team is safe as a
+// block (best = WIN, rest = HIGH) and only the losing team provides BTM2/LOW.
+// Individual scores still carry a nudge (+0.8 / -0.4) so the host bend and
+// within-team ranking reflect how much the team carried or cost each queen.
 import { pickOrder, draftRoles, captainSplit } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
@@ -257,6 +256,8 @@ export function perform(ctx) {
 
   return {
     performances, runwayOverride: null, events,
+    teamJudged: assignment.teams.length > 1,
+    bestTeam,
     scenes: [{ step: 'maxi-pre', kind: 'group-number', data: { teams: assignment.teams, means, bestTeam } }],
   };
 }

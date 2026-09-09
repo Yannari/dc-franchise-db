@@ -118,6 +118,8 @@ export function runMaxi(ctx) {
     performances: f.performances,
     runwayOverride: f.runwayOverride || null,
     tournamentExit: f.tournamentExit || null,
+    teamJudged: f.teamJudged || false,
+    bestTeam: f.bestTeam ?? null,
     scenes,
     events,
   };

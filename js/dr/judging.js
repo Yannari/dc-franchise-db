@@ -255,7 +255,44 @@ export function callWeek(finalRanking, {
   // pair who lip sync. A format that announces a bottom THREE and then saves
   // one of them passes 3, which is what `atRisk` is for.
   bottomNamed = 2,
+  // Team-judged challenges (girl group, rusical): the winning team is safe as
+  // a block — its best queen takes WIN, the rest HIGH — and only the losing
+  // team provides the bottom.  `teams` is the array of name-arrays from the
+  // challenge module, `bestTeam` is the index of the winning one.
+  teamJudged = false, teams = null, bestTeam = null,
 } = {}) {
+  /* ── TEAM-JUDGED PATH ──────────────────────────────────────────────
+     Winning team: ranked among themselves — best = WIN, rest = HIGH.
+     Losing team:  ranked among themselves — worst 2 = BTM2, next = LOW,
+                   rest = SAFE.  Immunity still applies inside the losing
+                   team.  The host bend already ran on the full ranking, so
+                   finalRank is authoritative; we just partition it. */
+  if (teamJudged && teams && bestTeam != null && teams.length > 1) {
+    const winTeam = new Set(teams[bestTeam] || []);
+    const byRank = [...finalRanking].sort((a, b) => a.finalRank - b.finalRank);
+    const winners = byRank.filter(r => winTeam.has(r.name));
+    const losers  = byRank.filter(r => !winTeam.has(r.name));
+
+    const win  = winners.length ? [winners[0].name] : [];
+    const high = winners.slice(1).map(r => r.name);
+
+    const loserNames = losers.map(r => r.name);
+    const loserEligible = loserNames.filter(nm => !immune.includes(nm));
+    const down = Math.max(2, bottomNamed);
+    const bottomBlock = loserEligible.slice(-down);
+    const bottom = bottomBlock.slice(-2);
+    const atRisk = bottomBlock.slice(0, -2);
+    const lowCount = 1;
+    const low = down < loserEligible.length
+      ? loserEligible.slice(Math.max(0, loserEligible.length - down - lowCount),
+        loserEligible.length - down)
+      : [];
+    const spoken = new Set([...bottomBlock, ...low]);
+    const safe = loserNames.filter(nm => !spoken.has(nm));
+
+    return { win, high, safe, low, atRisk, bottom, teamJudged: true };
+  }
+
   const n = castSize || finalRanking.length;
   // How many are called up. It drops to ONE at four or fewer, and that is not
   // cosmetic: with three queens left, calling two of them forward leaves a

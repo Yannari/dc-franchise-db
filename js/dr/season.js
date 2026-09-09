@@ -325,6 +325,8 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          carried even when it is empty: an absent `returneeName` means the
          show picks, which is a real choice and not a missing one. */
       ...(pin.returnee ? { returnee: true, returneeName: pin.returneeName || null } : {}),
+      ...(pin.ggFormat ? { ggFormat: pin.ggFormat } : {}),
+      ...(pin.ggThemeId ? { ggThemeId: pin.ggThemeId } : {}),
     });
   }
 

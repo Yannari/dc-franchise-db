@@ -1133,27 +1133,67 @@ const PREP_SHOP_CSS = `
    captain 0's second, … with the last unpicked queen going to whichever
    team is still short.
 */
+const TEAM_NEON = [
+  { bg: 'rgba(0,255,170,.12)', border: 'rgba(0,255,170,.55)', glow: '0 0 18px rgba(0,255,170,.35)', text: '#00FFAA', dim: 'rgba(0,255,170,.25)' },
+  { bg: 'rgba(255,61,200,.12)', border: 'rgba(255,61,200,.55)', glow: '0 0 18px rgba(255,61,200,.35)', text: '#FF3DC8', dim: 'rgba(255,61,200,.25)' },
+  { bg: 'rgba(61,180,255,.12)', border: 'rgba(61,180,255,.55)', glow: '0 0 18px rgba(61,180,255,.35)', text: '#3DB4FF', dim: 'rgba(61,180,255,.25)' },
+];
 const CAPTAIN_CSS = `
-.dr-cap-grid{display:grid;grid-template-columns:1fr 280px;gap:16px;min-height:320px}
-@media(max-width:700px){.dr-cap-grid{grid-template-columns:1fr;}.dr-cap-side{order:-1}}
-.dr-cap-side{position:sticky;top:12px;align-self:start}
-.dr-cap-col{margin:0 0 14px;padding:10px 12px;border-radius:10px;
-  background:rgba(16,6,26,.86);border:1px solid rgba(124,58,237,.35)}
-.dr-cap-col h4{margin:0 0 8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
-  color:#E9D5FF}
-.dr-cap-col .dr-cap-member{display:flex;align-items:center;gap:8px;padding:4px 0;
-  font-size:13px;color:#f4e3ed}
+/* ── PICK CARDS ── */
+.dr-pick-card{position:relative;display:grid;grid-template-columns:auto 1fr;gap:16px;
+  align-items:center;padding:14px 18px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(16,6,26,.92),rgba(30,12,50,.85));
+  border:1px solid rgba(124,58,237,.3);overflow:hidden;
+  transition:border-color .3s,box-shadow .3s}
+.dr-pick-card::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,var(--tc,rgba(124,58,237,.18)) 0%,transparent 60%);
+  opacity:.45;pointer-events:none}
+.dr-pick-num{position:absolute;top:0;right:0;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',ui-monospace,monospace;font-size:11px;font-weight:700;
+  color:var(--tt,#E9D5FF);
+  background:linear-gradient(135deg,var(--tc,rgba(124,58,237,.35)),rgba(16,6,26,.9));
+  border-bottom-left-radius:10px;border-left:1px solid var(--tb,rgba(124,58,237,.35));
+  border-bottom:1px solid var(--tb,rgba(124,58,237,.35))}
+.dr-pick-card .dr-por,.dr-pick-card .dr-initials{border-radius:50%;
+  box-shadow:0 0 14px var(--tc,rgba(124,58,237,.4));border:2px solid var(--tb,rgba(124,58,237,.5))}
+.dr-pick-body{min-width:0}
+.dr-pick-body h3{margin:0 0 3px;font-size:16px;letter-spacing:.06em;color:#fff}
+.dr-pick-body p{margin:0;max-width:58ch;line-height:1.6;color:#e4d3ee;font-size:13.5px}
+/* Team tag in header */
+.dr-took-tag{display:inline-block;margin-left:9px;padding:2px 10px;border-radius:20px;
+  font-family:'Space Mono',ui-monospace,monospace;font-size:9px;letter-spacing:.08em;
+  color:var(--tt,#E9D5FF);background:var(--tc,rgba(124,58,237,.28));
+  border:1px solid var(--tb,rgba(124,58,237,.4));text-transform:uppercase;vertical-align:middle}
+/* The last pick — she didn't get chosen, she got what was left */
+.dr-pick-last{border-style:dashed;opacity:.88}
+.dr-pick-last .dr-pick-num{font-style:italic}
+
+/* ── SIDEBAR TEAM COLUMNS ── */
+.dr-cap-col{margin:0 0 12px;padding:10px 12px;border-radius:10px;
+  background:rgba(16,6,26,.88);border:1px solid var(--tb,rgba(124,58,237,.35));
+  box-shadow:var(--tg,none)}
+.dr-cap-col h4{margin:0 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--tt,#E9D5FF);text-shadow:0 0 8px var(--tc,rgba(124,58,237,.4))}
+.dr-cap-col .dr-cap-member{display:flex;align-items:center;gap:8px;padding:5px 0;
+  font-size:13px;color:#f4e3ed;border-bottom:1px solid rgba(255,255,255,.04);transition:opacity .3s}
+.dr-cap-col .dr-cap-member:last-child{border-bottom:0}
 .dr-cap-col .dr-cap-member.dr-cap-captain{color:#FFE9A8;font-weight:600}
-.dr-cap-col .dr-cap-member.dr-cap-hidden{opacity:0.15}
-.dr-cap-final{margin-top:12px}
-.dr-cap-final .dr-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.dr-cap-final .dr-team{padding:12px;border-radius:10px;
-  background:linear-gradient(180deg,rgba(124,58,237,.16),rgba(30,10,50,.5));
-  border:1px solid rgba(196,181,253,.22)}
-.dr-cap-final .dr-team h4{margin:0 0 8px;font-size:14px;letter-spacing:.1em;
-  text-transform:uppercase;color:#E9D5FF}
-.dr-cap-final .dr-member{display:flex;align-items:center;gap:8px;padding:3px 0;
-  font-size:13px;color:#f4e3ed}
+.dr-cap-col .dr-cap-member.dr-cap-captain::after{content:"★";margin-left:auto;font-size:10px;color:#FFE9A8}
+.dr-cap-col .dr-cap-member.dr-cap-hidden{opacity:0.12;font-size:11px;letter-spacing:.12em;color:#7c5ca0}
+
+/* ── FINAL TEAM TABLE ── */
+.dr-cap-final{margin-top:16px}
+.dr-cap-final .dr-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.dr-cap-final .dr-team{padding:14px;border-radius:12px;
+  background:linear-gradient(180deg,rgba(124,58,237,.14),rgba(30,10,50,.55));
+  border:1px solid var(--tb,rgba(196,181,253,.22));box-shadow:var(--tg,none)}
+.dr-cap-final .dr-team h4{margin:0 0 10px;font-size:14px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tt,#E9D5FF);
+  text-shadow:0 0 10px var(--tc,rgba(124,58,237,.5))}
+.dr-cap-final .dr-member{display:flex;align-items:center;gap:8px;padding:4px 0;
+  font-size:13px;color:#f4e3ed;border-bottom:1px solid rgba(255,255,255,.04)}
+.dr-cap-final .dr-member:last-child{border-bottom:0}
 .dr-cap-final .dr-member .dr-role{margin-left:auto;font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:#c4b5fd;opacity:.75}
 `;
@@ -1183,19 +1223,21 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
      point. The existing _drSidebar system swaps the active panel on every
      reveal click. Captains are always shown; picks appear as they are
      revealed. The final step shows everybody. */
+  const tc = (ti) => TEAM_NEON[ti % TEAM_NEON.length];
   const sidebarForRevealed = (n) => {
     const shown = new Set(captains);
     for (let i = 0; i < Math.min(n, pickSequence.length); i++) shown.add(pickSequence[i].picked);
     return teams.map((team, ti) => {
+      const c = tc(ti);
       const label = teamNames[ti] || `Team ${ti + 1}`;
       const count = team.filter(q => shown.has(q)).length;
-      return `<div class="dr-cap-col"><h4>${esc(label)} &middot; ${count}</h4>${
+      return `<div class="dr-cap-col" style="--tc:${c.bg};--tb:${c.border};--tg:${c.glow};--tt:${c.text}"><h4>${esc(label)} &middot; ${count}</h4>${
         team.map(q => {
           const isCap = q === captains[ti];
           const vis = shown.has(q);
           return `<div class="dr-cap-member${isCap ? ' dr-cap-captain' : ''}${
             !vis ? ' dr-cap-hidden' : ''}">${
-            vis ? `${_portrait(q, ep, { size: 26 })}${esc(q)}` : '&bull;&bull;&bull;'
+            vis ? `${_portrait(q, ep, { size: 26 })}${esc(q)}` : '&middot;&middot;&middot;'
           }</div>`;
         }).join('')}</div>`;
     }).join('');
@@ -1223,6 +1265,7 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
 
   let _capIdx = 0;
   const pickCards = pickSequence.map((pk, i) => {
+    const c = tc(pk.team);
     const teamLabel = esc(teamNames[pk.team] || `Team ${pk.team + 1}`);
     const a = esc(pk.captain), b = esc(pk.picked);
     const isLast = i === pickSequence.length - 1;
@@ -1230,9 +1273,10 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
       ? _CAP_LAST_LINES[i % _CAP_LAST_LINES.length](a, b)
       : _CAP_PICK_LINES[_capIdx++ % _CAP_PICK_LINES.length](a, b);
     return `<div class="dr-step" id="dr-step-choice-${i}">
-      <div class="dr-panel dr-a-bond dr-card dr-k-solo">
-        ${_portrait(pk.picked, ep, { size: 54, station: true })}
-        <div>
+      <div class="dr-pick-card${isLast ? ' dr-pick-last' : ''}" style="--tc:${c.bg};--tb:${c.border};--tg:${c.glow};--tt:${c.text}">
+        <span class="dr-pick-num">${i + 1}</span>
+        ${_portrait(pk.picked, ep, { size: 58, station: true })}
+        <div class="dr-pick-body">
           <h3 class="dr-disp">${esc(pk.picked)}
             <span class="dr-took-tag">&rarr; ${teamLabel}</span></h3>
           <p>${line}</p>
@@ -1252,8 +1296,9 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
 
   const finalStep = `<div class="dr-step dr-cap-final" id="dr-step-choice-${pickSequence.length + scenes.length}">
     <div class="dr-teams">${teams.map((team, ti) => {
+    const c = tc(ti);
     const label = teamNames[ti] || `Team ${ti + 1}`;
-    return `<div class="dr-team">
+    return `<div class="dr-team" style="--tc:${c.bg};--tb:${c.border};--tg:${c.glow};--tt:${c.text}">
         <h4 class="dr-disp">${esc(label)}</h4>
         ${team.map(n => `<div class="dr-member">
           ${_portrait(n, ep, { size: 30 })}
@@ -1264,14 +1309,14 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
       </div>`;
   }).join('')}</div></div>`;
 
-  const sidebarScript = `<script>
+  if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    window._drSidebar['choice'] = ${JSON.stringify(panels)};
-  </script>`;
+    window._drSidebar['choice'] = panels;
+  }
 
   const steps = [...pickCards, ...sceneCards, finalStep].join('');
 
-  return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}${CAPTAIN_CSS}</style>${sidebarScript}${_shell(
+  return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}${CAPTAIN_CSS}</style>${_shell(
     `<div class="dr-brief-room dr-draft">${briefSet('draft')}${steps}</div>`, ep, {
       phase: 'werk',
       title: 'Captain Picks',

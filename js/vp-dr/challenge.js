@@ -1405,6 +1405,21 @@ export function rpBuildPrep(row) {
   /* ── CHOREOGRAPHER PICK ──
      The girl group's prep starts with each team choosing a choreographer.
      Rendered as one card per team at the top of the prep screen. */
+  const _CHOREO_LINES = [
+    a => `${a} is already counting eights in her head. She has not heard the track yet. She does not need to.`,
+    a => `${a} steps up. "I got this." The team lets her have it because nobody else was volunteering.`,
+    a => `${a} takes the choreography. She has been moving her whole life. This is the week that pays off.`,
+    a => `"I will choreograph." ${a} says it before anybody asks. The team exhales. One fewer thing to fight about.`,
+    a => `${a} gets the choreography and her face says she knows what that means. Every missed count is on her now.`,
+    a => `The team looks at each other. ${a} raises her hand. The last time she choreographed anything was a number in a bar at one in the morning. This is not that.`,
+    a => `${a} takes it. Quiet confidence. She is not performing the role — she is just the queen in the room who moves the best and everybody knows it.`,
+    a => `"Okay, I will do it." ${a} did not fight for it. She did not need to. The team pointed at her and she nodded.`,
+    a => `${a} has the choreography and the team is watching her the way a team watches the person who just became responsible for all of them.`,
+    a => `${a} volunteers and immediately starts spacing the room. "Stand here. No, HERE." She was a choreographer before anybody asked.`,
+    a => `The team gives it to ${a}. She takes it the way she takes everything — with a plan already half-built and a look that says do not argue with the plan.`,
+    a => `${a} is choreographing. The room clears for her. She walks the formation once, alone, lips moving, counting something nobody else can hear.`,
+  ];
+  let _choreoIdx = 0;
   const choreoData = _sceneData(row, 'choreographer-pick');
   if (choreoData?.choreographers) {
     const ca = row?.dr?.assignment || {};
@@ -1412,8 +1427,7 @@ export function rpBuildPrep(row) {
     for (const [choreo] of Object.entries(choreoData.choreographers)) {
       const ti = (ca.teams || []).findIndex(t => t.includes(choreo));
       const label = ctNames[ti] || `Team ${ti + 1}`;
-      const choreoEvt = (row?.dr?.scenes || []).find(s =>
-        s.kind === 'maxi:choreographer' && s.data?.players?.[0] === choreo);
+      const line = _CHOREO_LINES[_choreoIdx++ % _CHOREO_LINES.length](esc(choreo));
       const idx = groups.length;
       groups.push({ walk: false, items: [], custom:
         `<div class="dr-step" id="dr-step-prep-${idx}">
@@ -1422,8 +1436,7 @@ export function rpBuildPrep(row) {
             <div>
               <h3 class="dr-disp">${esc(choreo)}
                 <span class="dr-took-tag">choreographer &middot; ${esc(label)}</span></h3>
-              <p>${choreoEvt?.text ? esc(choreoEvt.text)
-          : `${esc(choreo)} takes charge of the choreography for ${esc(label)}.`}</p>
+              <p>${line}</p>
             </div>
           </div></div>` });
     }

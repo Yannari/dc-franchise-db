@@ -311,7 +311,11 @@ export const STAGE_CSS = `
 /** The panel takes its seats — the host in drag, because this is the stage. */
 export function rpBuildMainStage(row) {
   const ep = epOf(row);
-  const ids = row?.dr?.judges || [];
+  /* THE PERMANENT SEATS ONLY. `dr.judges` is every id on the panel and that
+     now includes the guest — who is drawn in her own card below, with her
+     real portrait and her credit, rather than as a sixth identical bust. */
+  const allIds = row?.dr?.judges || [];
+  const ids = allIds.filter(id => !String(id || '').startsWith('guest:'));
   if (!ids.length) return '';
   const guest = row?.dr?.guest;
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'main-stage' && s.text);

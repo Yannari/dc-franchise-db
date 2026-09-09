@@ -1026,8 +1026,22 @@ export function runDragWeek(state, cfg, ctx) {
       judges: panel.map(j => j.id),
       // `credit` was read by the main stage screen and written by nothing, so
       // a guest judge's card always rendered without one.
+      /* WHO SHE IS TRAVELS WITH HER. This carried name, slug and credit, so
+         the ENGINE knew her archetype — `guestTaste` reads it for ARCH_BIAS —
+         and every reader downstream of the row did not: the screens, the
+         export and any guard could see a guest judge and not what kind of
+         person she was. `stats` deliberately stays off: it is the biggest
+         field on a roster row, the taste derived from it is already on
+         `panelSeats`, and a season document is not the place to copy a
+         character sheet per episode. */
       guest: cfg.guest
-        ? { name: cfg.guest.name, slug: cfg.guest.slug || slugOf(cfg.guest.name), credit: guestCredit }
+        ? {
+          name: cfg.guest.name,
+          slug: cfg.guest.slug || slugOf(cfg.guest.name),
+          credit: guestCredit,
+          archetype: cfg.guest.archetype || null,
+          tier: cfg.guest.tier || null,
+        }
         : null,
       assignment,
       performances,

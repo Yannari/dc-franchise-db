@@ -357,8 +357,25 @@ export function _portrait(name, ep, { slug = '', size = 48, station = false, cls
  * werk room, in drag on the main stage. A screen says which room it is and
  * gets the right one — `portraitStage` where it exists, `portrait` otherwise.
  */
-export function _judgePortrait(judgeId, { stage = false, size = 52 } = {}) {
+export function _judgePortrait(judgeId, { stage = false, size = 52, name = '' } = {}) {
   const j = JUDGES.find(x => x.id === judgeId);
+  /* ── A GUEST IS NOT IN `JUDGES`, AND THAT IS NOT AN ERROR ──
+     The throw below is deliberate and stays: every permanent seat is spelled
+     out in a template somewhere and a typo should be loud. A GUEST JUDGE is
+     the one seat whose id is invented at run time — `guest:<slug>`, built by
+     `guestTaste` from a roster row — so she can never be in that list, and
+     the first season that actually had a guest took the whole visual player
+     down with `no such judge "guest:zoey"`.
+     Her real portrait comes from the avatar registry, which needs an episode
+     this function is not given; the screens that HAVE one draw her face
+     themselves. This is the fallback for the ones that do not: her initials,
+     which is what an unphotographed judge gets anyway. */
+  if (!j && String(judgeId || '').startsWith('guest:')) {
+    const who = name || String(judgeId).slice('guest:'.length).replace(/-/g, ' ');
+    const box = `width:${size}px;height:${size}px`;
+    return `<span class="dr-bust"><span class="dr-initials" style="${box};font-size:${Math.round(size / 2.8)}px"
+      title="${esc(who)}">${esc(initialsOf(who))}</span></span>`;
+  }
   if (!j) throw new Error(`_judgePortrait: no such judge "${judgeId}"`);
   const src = (stage && j.portraitStage) || j.portrait;
   const box = `width:${size}px;height:${size}px`;

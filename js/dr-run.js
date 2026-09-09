@@ -103,9 +103,12 @@ function _config() {
        passed it, so the whole Lalaparuza reunion -- engine, challenge module
        and all -- could not be switched on from a played season. There was no
        control for it either, so nothing pointed at the gap. */
-    // Booked from the catalogue like everything else, with the old flag still
-    // honoured so a season saved before the twist existed still plays.
-    drSmackdown: _twistBooked('dr-smackdown') || !!seasonConfig.drSmackdown,
+    /* A MAIN STAGE OPTION, not a catalogue booking. It spent a while as a
+       twist on the reasoning that a reunion happening on one episode is a
+       twist; it is not, because no author chooses which episode — it always
+       sits directly before the crowning. `_twistBooked('dr-smackdown')` is
+       still read so a season saved while it WAS a twist still plays. */
+    drSmackdown: !!seasonConfig.drSmackdown || _twistBooked('dr-smackdown'),
     drSchedule: _twistsToSchedule(),
     drJudgeWeights: seasonConfig.drJudgeWeights || {},
   };

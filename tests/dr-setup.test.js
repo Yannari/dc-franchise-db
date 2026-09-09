@@ -230,7 +230,13 @@ describe('the twists are in the catalogue', () => {
     const ids = mine.map(t => t.id);
     expect(ids).toContain('dr-no-elimination');
     expect(ids).toContain('dr-double-elimination');
-    expect(ids).toContain('dr-smackdown');
+    /* NOT the smackdown. It spent a while in here on the reasoning that a
+       reunion happening on one episode is a twist — and it is not, because no
+       author picks the episode: it always sits directly before the crowning.
+       That is a season SHAPE, so it went back to a MAIN STAGE OPTION beside
+       the premiere and the finale. `cfg-dr-smackdown` / `drSmackdown`. */
+    expect(ids, 'the smackdown is a config option, not a per-episode twist')
+      .not.toContain('dr-smackdown');
     // Scoped: a drag season is never offered another show's twist.
     for (const t of mine) expect(t.format, `${t.id} is not scoped`).toBe('drag-race');
     for (const other of ['traitors', 'big-brother', 'total-drama']) {
@@ -250,15 +256,23 @@ describe('the twists are in the catalogue', () => {
     }
   });
 
-  it('the old controls are gone, and so is their scoping', () => {
+  it('the per-episode controls are gone, and so is their scoping', () => {
+    /* These two ARE twists — an author picks the week a free one or a double
+       lands on — so they belong in the designer and their old checkboxes had
+       to go. The smackdown is not on this list any more: it went the other
+       way, out of the catalogue and back to a main stage option, because
+       nobody chooses its episode. */
     const html = readFileSync('simulator.html', 'utf8');
-    for (const id of ['cfg-dr-noelim', 'cfg-dr-double-elim', 'cfg-dr-smackdown']) {
+    for (const id of ['cfg-dr-noelim', 'cfg-dr-double-elim']) {
       expect(html, `${id} is still in the page`).not.toContain(id);
     }
     const qs = readFileSync('js/quick-setup.js', 'utf8');
-    for (const id of ['cfg-dr-noelim', 'cfg-dr-double-elim', 'cfg-dr-smackdown']) {
+    for (const id of ['cfg-dr-noelim', 'cfg-dr-double-elim']) {
       expect(qs, `${id} is scoped but does not exist`).not.toContain(id);
     }
+    // And the one that came back is a real control, scoped to this show only.
+    expect(html, 'the smackdown has no control').toContain('cfg-dr-smackdown');
+    expect(qs, 'the smackdown control draws on every show').toContain('cfg-dr-smackdown');
   });
 });
 
@@ -279,16 +293,18 @@ describe('the smackdown', () => {
     }
   });
 
-  it('is booked from the twist catalogue, not a checkbox', () => {
-    /* It had a checkbox in MAIN STAGE OPTIONS, which is where a FORMAT choice
-       belongs. A reunion that happens on one episode is a twist, and every
-       other show books its twists through the designer. */
+  it('is a main stage option, and an old catalogue booking still plays', () => {
+    /* It moved to the catalogue once, on the reasoning that a reunion
+       happening on one episode is a twist and every other show books its
+       twists through the designer. It moved back: no author picks the
+       episode, because it always sits directly before the crowning. That is
+       a season shape, which is what MAIN STAGE OPTIONS is for.
+       Both readers stay, config first — a season saved during the catalogue
+       spell still has the booking on its schedule and must still play. */
     const run = readFileSync('js/dr-run.js', 'utf8');
-    expect(run, 'the catalogue booking is not read')
+    expect(run, 'the config option is not read').toMatch(/seasonConfig\.drSmackdown/);
+    expect(run, 'a season saved while it was a twist no longer plays')
       .toMatch(/_twistBooked\('dr-smackdown'\)/);
-    // The old config key stays honoured so a season saved before the twist
-    // existed still plays.
-    expect(run).toMatch(/seasonConfig\.drSmackdown/);
   });
 
   it('adds an episode before the finale and crowns nobody new', async () => {

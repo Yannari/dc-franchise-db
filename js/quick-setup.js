@@ -1192,6 +1192,7 @@ const CONFIG_SCOPE = {
     'cfg-dr-double-shantay': ['drag-race'],
     'cfg-dr-double-sashay':  ['drag-race'],
     'cfg-dr-immunity':       ['drag-race'],
+    'cfg-dr-smackdown':      ['drag-race'],
     'cfg-dr-triple':         ['drag-race'],
     'cfg-dr-reunion':        ['drag-race'],
     'cfg-dr-double-crown':   ['drag-race'],

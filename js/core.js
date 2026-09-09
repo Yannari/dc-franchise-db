@@ -964,9 +964,14 @@ export const TWIST_CATALOG = [
     category:'elim', phase:'any', engineType:'dr-double-elimination', episodeField:'doubleElimination',
     desc:'A wider bottom and two queens gone. The panel calls THREE or FOUR to the bottom rather than two — four while the room can fill it, three once it cannot — and they lip sync together on the main stage; the two weakest performances both sashay away. It is not a double sashay, which is the host looking at one head-to-head lip sync and keeping neither. The season runs one episode SHORTER, so booking one of these against a No Elimination week cancels both out.',
     incompatible:['dr-no-elimination'] },
-  { id:'dr-smackdown', emoji:'\u{1F5E1}️', name:'LaLaPaRUza Smackdown', format:'drag-race',
-    category:'returns', phase:'post-merge', engineType:'dr-smackdown', seasonWide:true,
-    desc:'A reunion with a scoreboard. Every queen already sent home this season comes back one episode before the crowning and lip syncs the others out in rounds until one is left standing, and she takes a title of her own. Nobody re-enters the competition and no placement changes — this is the season’s eliminated cast getting the stage back for a night. Booked once per season rather than against an episode: it always sits directly before the finale.' },
+  /* NO `dr-smackdown` HERE, AND IT IS NOT AN OVERSIGHT. It was moved into the
+     catalogue on the reasoning that "a reunion that happens on one episode is
+     a twist, and every other show books its twists through the designer" —
+     and then moved back, because it is not a per-episode booking at all. It
+     is a season SHAPE: it always sits directly before the crowning, it takes
+     no episode slot an author could choose, and it changes what the season IS
+     rather than what one week does. That is a MAIN STAGE OPTION, beside the
+     premiere and the finale, and it is `seasonConfig.drSmackdown`. */
   /* THE ONE THAT PUTS SOMEBODY BACK IN. The smackdown gives the eliminated
      cast a night; this gives one of them the competition back. dataFields
      carries the booking's own choice through to the engine — every other

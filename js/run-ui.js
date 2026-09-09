@@ -2338,8 +2338,10 @@ export function buildEpisodeMap() {
        includes her, and the week then takes somebody as normal: net zero on
        the night, one more week overall. */
     const back = at('dr-returnee');
-    const smackdown = booked.some(t => t.type === 'dr-smackdown' || t.id === 'dr-smackdown')
-      || !!seasonConfig.drSmackdown;
+    // Config first: it is a main stage option again. A booking from the spell
+    // it spent in the catalogue still counts, so an old season still draws.
+    const smackdown = !!seasonConfig.drSmackdown
+      || booked.some(t => t.type === 'dr-smackdown' || t.id === 'dr-smackdown');
 
     /* ── ONCE PLAYED, READ THE REAL NIGHT, NOT A GUESS ──────────────────
        Same gap the castle had, and the same fix. The projection below counts

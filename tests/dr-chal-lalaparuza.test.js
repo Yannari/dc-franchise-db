@@ -140,15 +140,17 @@ describe('the bracket', () => {
     }
   });
 
-  it('the assassin event fires for high win counts in big casts', () => {
+  it('no queen accumulates 2+ wins now that R3 is a single event', () => {
+    // Triple lip sync means R3 is one duel (or one triple). Each queen
+    // fights at most once per round, so the maximum individual wins is 1.
     const big = Object.fromEntries(
       ['Ada','Bee','Cleo','Dot','Eve','Fay','Gem','Hua','Ivy','Joy','Kay','Lea','Mia','Nia']
         .map(n => [n, mk(n)]));
-    let a = null;
-    for (let i = 0; i < 100 && !a; i++) a = runMaxi(ctx(i, big)).events.find(e => e.type === 'assassin');
-    expect(a, 'nobody in a hundred 14-queen brackets ever won two').toBeTruthy();
-    expect(a.pop[a.players[0]]).toBeGreaterThan(0);
-    expect(a.state.assassin).toBe(a.players[0]);
+    for (let i = 0; i < 50; i++) {
+      const out = runMaxi(ctx(i, big));
+      const a = out.events.find(e => e.type === 'assassin');
+      expect(a, `seed ${i}: assassin should not fire`).toBeFalsy();
+    }
   });
 
   it('a great lip syncer wins R1 far more often than a bad one', () => {

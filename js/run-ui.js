@@ -3081,6 +3081,13 @@ export function _setDRPick(ep, key, value) {
     if (p) {
       entry.guest = { name: p.name, slug: p.slug, archetype: p.archetype,
         stats: { ...(p.stats || {}) }, voice: p.voice || '' };
+    } else if (value === 'none') {
+      /* THREE ANSWERS, NOT TWO. Since the scheduler started booking a guest
+         when none was pinned, an unset dropdown stopped meaning "no guest" and
+         started meaning "you pick" — which left no way to say the panel is
+         four seats tonight. Null is that answer and undefined is "roll one",
+         the same `in` check `miniId` two lines down has always used. */
+      entry.guest = null;
     } else delete entry.guest;
   } else if (key === 'miniId' && value === 'none') {
     // Null is a real answer meaning "no mini this week"; undefined means
@@ -3146,9 +3153,12 @@ function _drPickers(ep) {
          alumni, on about seven weeks in ten. Leaving the label reading "none"
          described a season that no longer happens and made a working feature
          look broken: the designer said none and the episode had a guest. */
-      [['', '— the show books one —'], ...pool.filter(p => !castNames.has(p.name)).map(p => [p.slug, p.name])],
-      (e.guest && e.guest.slug) || '',
-      'Pin a guest judge for this week, or leave it and the show books a famous alumnus')
+      [['', '— the show books one —'], ['none', '— no guest judge —'],
+        ...pool.filter(p => !castNames.has(p.name)).map(p => [p.slug, p.name])],
+      // Three states: a slug pins her, 'none' says four seats tonight, and
+      // '' leaves it to the scheduler. `e.guest === null` is the explicit no.
+      e.guest === null ? 'none' : ((e.guest && e.guest.slug) || ''),
+      'Pin a guest judge, choose no guest, or leave it and the show books a famous alumnus')
     + sel('songTitle',
       [['', '— song: roll —'], ...songs.map(x => [x.title, `${x.title} — ${x.artist}`])],
       e.songTitle || '', 'The lip sync song');

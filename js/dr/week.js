@@ -530,11 +530,24 @@ export function runDragWeek(state, cfg, ctx) {
   if (cfg.doubleElimination && living.length >= 6) {
     const want = living.length >= 9 ? 4 : 3;
     while (call.bottom.length < want) {
-      const from = call.atRisk.length ? call.atRisk : call.low;
+      /* ── AND SAFE, WHEN THERE IS NOWHERE ELSE LEFT ──
+         This pulled from `atRisk` or `low` and gave up when both were empty,
+         which meant a booked double elimination could quietly take ONE queen:
+         the bottom never widened past two, the head-to-head resolved as an
+         ordinary shantay, and the season ran a week longer than the author
+         asked for. Rare — it needs a night the panel had no low call on at
+         all — and silent, because nothing reports a twist that half happened.
+         An author who books a double elimination is owed two. The last of
+         `safe` is the queen the room ranked worst among those not already
+         named, which is who the panel would have reached for next. */
+      const from = call.atRisk.length ? call.atRisk
+        : call.low.length ? call.low
+          : call.safe;
       if (!from.length) break;
       const pulled = from[from.length - 1];
       call.atRisk = call.atRisk.filter(n => n !== pulled);
       call.low = call.low.filter(n => n !== pulled);
+      call.safe = (call.safe || []).filter(n => n !== pulled);
       call.bottom = [pulled, ...call.bottom];
       widened++;
     }

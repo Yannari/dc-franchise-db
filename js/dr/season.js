@@ -234,10 +234,14 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       // meaning "no mini this week", and undefined means "roll one".
       miniId: 'miniId' in pin ? pin.miniId : pick(rng, MINI_TYPES).id,
       rotatingId: pin.rotatingId || rotating[(e - 1) % rotating.length],
-      /* An author's pin always wins; otherwise the show books somebody.
-         Not every week — the panel is a fixed four often enough that a guest
-         should feel like an occasion rather than a chair that is always full. */
-      guest: pin.guest || (rng() < 0.7 ? drawGuest() : null),
+      /* THREE ANSWERS, and `in` is what tells them apart — the same check
+         `miniId` above uses, and for the same reason. A pinned guest wins.
+         An explicit null is an author saying the panel is four seats tonight
+         and must not be overruled by a roll. Undefined means nobody chose, so
+         the show books one — not every week, because the panel is a fixed
+         four often enough that a guest should feel like an occasion rather
+         than a chair that is always full. */
+      guest: 'guest' in pin ? pin.guest : (rng() < 0.7 ? drawGuest() : null),
       songTitle: pin.songTitle || pick(rng, SONGS).title,
       // A category per week, and never the same one twice in a season: the
       // runway is the one thing a viewer sees every single episode, so a

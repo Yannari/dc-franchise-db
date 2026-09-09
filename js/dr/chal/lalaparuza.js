@@ -226,7 +226,7 @@ export function perform(ctx) {
     r2Safe.push(winner);
     r2Losers.push(loser);
   }
-  if (r2Alive.length % 2) r2Losers.push(r2Alive[r2Alive.length - 1]);
+  if (r2Alive.length % 2) r2Safe.push(r2Alive[r2Alive.length - 1]);
 
   // ── ROUND 3 (SUDDEN DEATH): final elimination ──
   // When 3+ queens are left, run a TRIPLE lip sync — everybody performs
@@ -262,6 +262,8 @@ export function perform(ctx) {
     });
     while (r3Alive.length) r3Alive.pop();
     for (const s of survivors) r3Alive.push(s);
+  } else if (r3Alive.length === 1) {
+    eliminated = r3Alive.shift();
   } else {
     while (r3Alive.length > 1) {
       const a = r3Alive.shift();

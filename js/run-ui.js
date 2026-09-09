@@ -3138,8 +3138,15 @@ function _drPickers(ep) {
       [['', '— judge: rotate —'], ...judges.map(j => [j.id, j.name])],
       e.rotatingId || '', 'The third seat on the panel')
     + sel('guest',
-      [['', '— guest: none —'], ...pool.filter(p => !castNames.has(p.name)).map(p => [p.slug, p.name])],
-      (e.guest && e.guest.slug) || '', 'A guest judge, from the franchise roster')
+      /* THE EMPTY OPTION CHANGED MEANING, so the label had to. It used to be
+         literally true — nothing rolled a guest, so no pin meant no guest and
+         "none" was the outcome. The scheduler books one now, from the famous
+         alumni, on about seven weeks in ten. Leaving the label reading "none"
+         described a season that no longer happens and made a working feature
+         look broken: the designer said none and the episode had a guest. */
+      [['', '— the show books one —'], ...pool.filter(p => !castNames.has(p.name)).map(p => [p.slug, p.name])],
+      (e.guest && e.guest.slug) || '',
+      'Pin a guest judge for this week, or leave it and the show books a famous alumnus')
     + sel('songTitle',
       [['', '— song: roll —'], ...songs.map(x => [x.title, `${x.title} — ${x.artist}`])],
       e.songTitle || '', 'The lip sync song');

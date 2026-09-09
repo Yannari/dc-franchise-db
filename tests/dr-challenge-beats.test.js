@@ -71,7 +71,14 @@ describe('the schema', () => {
   });
 
   it('never uses {b}, because nothing here is a pair beat', () => {
-    const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal']);
+    /* `call-sheet` IS ON THIS LIST AND DOES NOT DRAW HER FACE, which is not a
+       contradiction. `mentorForBeat` falls back to the CHALLENGE's mentor when
+       a beat names none, and the call sheet only ever fires on the music video
+       — where the mentor is Michelle — so `{m}` resolves there. The line that
+       found this is about her: "the camera will not find her, {m} will not
+       build a setup around her". She is spoken about rather than present, so
+       js/dr/stage.js draws no portrait on that card. */
+    const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal', 'call-sheet']);
     for (const b of CHALLENGE_BEATS) {
       for (const t of b.tiers) {
         for (const l of t.lines) {

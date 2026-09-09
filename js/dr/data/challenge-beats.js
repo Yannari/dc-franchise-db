@@ -251,7 +251,7 @@ export const CHALLENGE_BEATS = [
       tier('clean-session', 'In, done, out. No drama and no rescue needed.', [
         "{a} walks in, puts on the headphones, and records. Three takes. {m} listens, plays back the third, and says \"That is it.\" {a} is out of the booth in ten minutes. No crisis. No rescue. The queens waiting outside do not even look up.",
         "\"You know this verse,\" {m} says after take one. She records two more anyway — because that is what a session is — and {a} is done. Clean. Professional. The tape sounds exactly like the verse she wrote, and {m} does not need to fix what was never broken.",
-        "A quick session. {m} plays the track, {a} delivers the bars, and {m} gives one note: \"Breathe after the second line, not before it.\" {a} adjusts. Done. {m} moves on to the next queen. Some sessions are a rescue mission. This one was paperwork.",
+        "A quick session. {m} plays the track, {a} delivers the bars, and {m} gives one note: \"Breathe after the second line, not before it.\" {a} adjusts. Done. {m} moves on to the next queen. Some sessions are a rescue job. This one was paperwork.",
         "{m} nods after take two and pulls off her headphones. \"We are good.\" {a} looks surprised — she expected more takes. {m} did not need them. The verse was learned, the delivery was clean, and the tape captured what {a} brought. No drama. No story. Just a queen who came prepared.",
       ]),
       tier('many-takes', 'They get it eventually, and everybody knows how long it took.', [

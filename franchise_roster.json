@@ -5424,6 +5424,26 @@
       },
       "profileSources": {},
       "voice": "Cool, poetic, and deliberately restrained. Gigi speaks as though she is narrating an obscure French art film. She uses dramatic pauses, dry observations, and elegant metaphors before landing an unexpectedly silly punchline."
+    },
+    {
+      "name": "Ginger Hollywood",
+      "slug": "ginger-hollywood",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 4,
+        "social": 9,
+        "strategic": 7,
+        "loyalty": 4,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”",
+      "profileSources": {}
     }
   ]
 }

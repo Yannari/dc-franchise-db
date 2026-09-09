@@ -5316,13 +5316,14 @@
         "runway": 6,
         "lipsync": 6,
         "singing": 7,
-        "style": "glamour",
+        "style": "pageant",
         "traits": [
           "big-wigs",
           "hometown-pageant",
           "live-vocalist"
         ],
-        "voice": "Aggressively polite and rehearsed. She speaks like she is constantly delivering a Miss America Q&A answer, keeping her tone uplifting, diplomatic, and sprinkling in \"thank you so much!\" at every opportunity, even during critiques."
+        "voice": "Aggressively polite and rehearsed. She speaks like she is constantly delivering a Miss America Q&A answer, keeping her tone uplifting, diplomatic, and sprinkling in \"thank you so much!\" at every opportunity, even during critiques.",
+        "family": []
       },
       "age": 29,
       "birthdate": "1997-05-12",

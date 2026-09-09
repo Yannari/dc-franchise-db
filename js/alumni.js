@@ -21,6 +21,7 @@
 // played a season" in a franchise with no record of anybody having played one.
 // Falling back to the roster is what produced the bug.
 import { SHOWS, DEFAULT_FORMAT } from './shows.js';
+import { computeFame } from './fame.js';
 
 let _db = null;
 
@@ -60,6 +61,37 @@ export function alumniDatabase() {
  * @param minNative how many of this show's own alumni make a pool worth having
  * @returns [{name, seasonName, native, shows, winner, finalist, chalWins}]
  */
+/* ── HOW FAMOUS SOMEBODY IS, WHICH IS NOT HOW WELL THEY PLAYED ──
+   js/fame.js is the franchise's own answer: 0-5 stars, derived from what a
+   person did on screen, decaying while they are off it and locking at five.
+   Its header says it "has no side effects — which is what lets the site use it
+   now and the simulator use it later"; this is later.
+   A ranking TIER is a different question. It grades how well somebody played,
+   which is why a quiet winner outranks a memorable disaster — useful for a
+   leaderboard and wrong for "would the audience recognise her".
+   Fame needs three databases and this module already holds one, so the other
+   two are handed in once and the result is memoised: `computeFame` walks every
+   player's whole timeline and a guest draw must not pay for that per episode. */
+let _fameCtx = null;
+let _fameMap = null;
+
+export function setFameContext({ rankings = null, seasons = null } = {}) {
+  _fameCtx = { rankings, seasons };
+  _fameMap = null;
+}
+
+function fameStarsOf(id) {
+  if (!_fameCtx) return null;          // nobody handed us the databases
+  if (!_fameMap) {
+    try {
+      _fameMap = computeFame({ players: { players: alumniDatabase() || [] },
+        rankings: _fameCtx.rankings, seasons: _fameCtx.seasons });
+    } catch { _fameMap = new Map(); }
+  }
+  const hit = _fameMap.get(id);
+  return hit ? hit.stars : 0;
+}
+
 export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) {
   const db = alumniDatabase();
   if (!db) return [];
@@ -115,6 +147,9 @@ export function alumniPool({ exclude = [], format = null, minNative = 6 } = {}) 
          placements when the ledger already states it. Absent on a player the
          board has never scored, and an absent tier is not famous. */
       tier: p.tier || null,
+      /* Null when nobody has called `setFameContext` — "we cannot say" rather
+         than "not famous", so a caller can tell the two apart. */
+      fameStars: fameStarsOf(p.id),
     });
   }
   if (!format) return all;

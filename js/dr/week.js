@@ -1053,7 +1053,7 @@ export function runDragWeek(state, cfg, ctx) {
           slug: cfg.guest.slug || slugOf(cfg.guest.name),
           credit: guestCredit,
           archetype: cfg.guest.archetype || null,
-          tier: cfg.guest.tier || null,
+          fameStars: cfg.guest.fameStars ?? null,
         }
         : null,
       assignment,

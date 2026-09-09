@@ -15,7 +15,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { setAlumniDatabase } from '../js/alumni.js';
+import { setAlumniDatabase, setFameContext } from '../js/alumni.js';
 import { playDragSeason } from '../js/dr/season.js';
 import { guestTaste } from '../js/dr/judges.js';
 import { dragScreens } from '../js/vp-dr/screens.js';
@@ -26,6 +26,17 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = rel => JSON.parse(readFileSync(join(ROOT, rel), 'utf8'));
 
 setAlumniDatabase(read('players_database.json'));
+/* Fame needs the seasons index and the ranking boards as well as the record.
+   Without them `alumniPool` reports `fameStars: null` — "we cannot say" — and
+   the guest pool is empty, which is the honest answer for a franchise with no
+   history and the wrong one for a guard about guests. */
+setFameContext({
+  seasons: read('seasons_database.json'),
+  rankings: {
+    'total-drama': read('rankings_database.json'),
+    'big-brother': read('rankings_bb.json'),
+  },
+});
 const rosterDoc = read('franchise_roster.json');
 const ROSTER = Array.isArray(rosterDoc) ? rosterDoc : (rosterDoc.players || []);
 globalThis.FRANCHISE_ROSTER = ROSTER;
@@ -70,8 +81,11 @@ describe('the guest judge', () => {
     for (const r of withGuest) {
       expect(castNames.has(r.dr.guest.name), `${r.dr.guest.name} is judging her own season`)
         .toBe(false);
-      expect(['S+', 'S', 'A'], `${r.dr.guest.name} is not famous enough to judge`)
-        .toContain(r.dr.guest.tier);
+      /* Fame, not a ranking tier: a tier grades how WELL she played, which is
+         right for a leaderboard and wrong for "would anybody recognise her".
+         1.5 is `Cult Following`, the first rating whose name says an audience. */
+      expect(Number(r.dr.guest.fameStars),
+        `${r.dr.guest.name} is not famous enough to judge`).toBeGreaterThanOrEqual(1.5);
     }
   });
 

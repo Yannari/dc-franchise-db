@@ -65,11 +65,21 @@ export function episodesFor(castSize, finaleType = 'top4') {
  */
 /* ── WHO IS FAMOUS ENOUGH TO JUDGE ──
    This universe has no celebrities outside its own reality shows, so a guest
-   judge is somebody the audience already watched win something. The franchise
-   states that directly: `tier` on the player record is the ranking board's own
-   grade, S+ / S / A / B / C / D, and re-deriving "notable" out of wins and
-   placements when the ledger already says it would be a second opinion. */
-const FAMOUS_TIERS = new Set(['S+', 'S', 'A']);
+   judge is somebody the audience already watched.
+
+   FAME, NOT A RANKING TIER. The first version used `tier` — S+/S/A off the
+   ranking board — and that is the wrong question. A tier grades how WELL
+   somebody played, so a quiet winner outranks a memorable disaster; it is
+   right for a leaderboard and wrong for "would anybody recognise her". The
+   franchise has an actual fame stat, js/fame.js: 0-5 stars, derived from what
+   a person did on screen, decaying while they are off it and locking at five.
+
+   1.5 is `Cult Following`, the first rating whose own name says an audience
+   exists. Measured on the current ledger: Icon and above is one person,
+   Household Name and above is eight — too thin for a ten-episode season to
+   draw from without repeating a face every other week — and Cult Following is
+   thirty-seven, which is a rotation. Raise it as the franchise grows. */
+const FAMOUS_STARS = 1.5;
 
 // Same rule js/dr/week.js uses, and deliberately a copy of one line rather
 // than a new import between two files that do not otherwise depend on
@@ -106,7 +116,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
      rule this file opens with — the universe has no celebrities outside its
      reality shows, and it does not say they have to be drag queens. */
   const famous = alumniPool({ exclude: castNames })
-    .filter(a => a && FAMOUS_TIERS.has(a.tier));
+    .filter(a => a && Number(a.fameStars) >= FAMOUS_STARS);
 
   /* HER ARCHETYPE AND HER STATS, WHICH THE POOL DOES NOT CARRY.
      `guestTaste` reads `player.archetype` for ARCH_BIAS and `player.stats`
@@ -154,7 +164,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       archetype: (r && r.archetype) || null,
       stats: (r && r.stats) || null,
       credit: creditFor(a),
-      tier: a.tier,
+      fameStars: a.fameStars,
     };
   };
   const byEp = Object.fromEntries(

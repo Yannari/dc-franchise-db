@@ -1084,10 +1084,24 @@ window.addEventListener('DOMContentLoaded', () => {
   // The record of who has actually played, for anything that needs to know —
   // the Mystery Competitor's door, above all. Silent on failure: an empty pool
   // means the twist does not fire, which is the honest answer.
-  fetch('players_database.json')
-    .then(r => r.json())
-    .then(data => { try { setAlumniDatabase(data); } catch { /* no record, no cameos */ } })
-    .catch(() => {});
+  /* THE RECORD, AND THE TWO FILES FAME NEEDS TO READ IT.
+     js/fame.js derives a 0-5 star rating from a player's whole timeline and
+     needs the seasons index and the ranking boards to do it — and the Drag
+     Race guest judge is drawn from whoever is famous enough to be recognised.
+     Without this the pool has no fame to filter on and the panel is four
+     seats every week. All three are optional: any of them missing means no
+     guests, which is the honest answer for a franchise with no history. */
+  Promise.all([
+    fetch('players_database.json').then(r => r.json()).catch(() => null),
+    fetch('seasons_database.json').then(r => r.json()).catch(() => null),
+    fetch('rankings_database.json').then(r => r.json()).catch(() => null),
+    fetch('rankings_bb.json').then(r => r.json()).catch(() => null),
+  ]).then(([players, seasons, rkTd, rkBb]) => {
+    try { if (players) setAlumniDatabase(players); } catch { /* no record, no cameos */ }
+    try {
+      setFameContext({ seasons, rankings: { 'total-drama': rkTd, 'big-brother': rkBb } });
+    } catch { /* no fame, no guests */ }
+  }).catch(() => {});
   fetch('franchise_roster.json')
     .then(r => r.json())
     .then(data => {

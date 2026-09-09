@@ -34,6 +34,7 @@
 // does not know, so a typo is a crash rather than an invisible blank.
 import { avatarUrl } from '../avatar-registry.js';
 import { JUDGES } from '../dr/data/judges.js';
+import { VN_CSS, isVnMode } from './vn-reader.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -449,9 +450,9 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
      860px quick, 980px deep. This shell emitted only `.dr-phase-*`, so a drag
      screen took none of it and ran wider than every other show. Every Big
      Brother signature screen emits it; so does vp-screens.js. */
-  return `<style>${DR_CSS}</style>
+  return `<style>${DR_CSS}${VN_CSS}</style>
   <div class="rp-page dr-phase-${phase}">${atmo}
-    <div class="dr-wrap">
+    <div class="dr-wrap${isVnMode() ? ' dr-vn-on' : ''}">
       ${hud ? _hud(ep) : ''}
       <!--dr-chrome--><div class="dr-sec">${_bulbs()}
         <h2 class="dr-disp">${esc(title)}</h2>

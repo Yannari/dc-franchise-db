@@ -22,6 +22,10 @@
 // episode number leaks from the episode you just watched into the one you
 // are replaying.
 
+import { applyVnMode, skipTypewriter, resetVnStep, vnSupported, isVnMode, vnToggleBtn, toggleVnMode } from './vn-reader.js';
+
+export const drToggleVn = toggleVnMode;
+
 /** The reveal state for one screen of one episode. `idx` is the last step shown. */
 export function _state(ep, suffix) {
   if (!window._tvState) window._tvState = {};
@@ -39,9 +43,11 @@ export function _state(ep, suffix) {
  */
 export function _controls(suffix, total, epNum) {
   const s = String(suffix);
+  const vnBtn = vnSupported(s) ? vnToggleBtn() : '';
   // Wrapped as chrome: the transcript strips these markers, and a reader does
   // not want "Reveal all / Next / 0 of 4" between every section.
   return `<!--dr-chrome--><div class="dr-controls" id="dr-controls-${s}">
+    ${vnBtn}
     <button type="button" class="dr-btn dr-ghost" onclick="drRevealAll('${s}', ${total}, ${epNum})">Reveal all</button>
     <button type="button" class="dr-btn" onclick="drRevealNext('${s}', ${total}, ${epNum})">Next &rsaquo;</button>
     <span class="dr-counter" id="dr-counter-${s}">0 / ${total}</span>
@@ -108,11 +114,16 @@ export function _updateSidebar(suffix, epNum) {
 
 /** One more step. */
 export function drRevealNext(suffix, total, epNum) {
+  if (isVnMode() && vnSupported(suffix)) {
+    if (skipTypewriter()) return;
+  }
   const st = _state({ num: epNum }, suffix);
   if (st.idx >= total - 1) return;
+  if (isVnMode() && vnSupported(suffix) && st.idx >= 0) resetVnStep(suffix, st.idx);
   st.idx += 1;
   _reapplyVisibility(suffix, st.idx, total);
   _updateSidebar(suffix, epNum);
+  applyVnMode(suffix, st.idx, total);
 }
 
 /** All of it, for a viewer who does not want to click through. */
@@ -121,6 +132,7 @@ export function drRevealAll(suffix, total, epNum) {
   st.idx = total - 1;
   _reapplyVisibility(suffix, st.idx, total);
   _updateSidebar(suffix, epNum);
+  applyVnMode(suffix, st.idx, total);
 }
 
 /**
@@ -135,6 +147,7 @@ export function _restore(suffix, total, epNum) {
   if (idx < 0) return;
   _reapplyVisibility(suffix, idx, total);
   _updateSidebar(suffix, epNum);
+  applyVnMode(suffix, idx, total);
 }
 
 /**

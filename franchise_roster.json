@@ -5444,6 +5444,25 @@
       },
       "voice": "Ginger speaks with the warm authority of a veteran awards-show host: polished, affectionate, and confidently dramatic, with every line sounding ready for television. She calls younger queens “darling” and “baby,” offers advice without being asked, and delivers shade like a professional review: “Darling, star quality cannot be purchased—but judging by that dress, neither could fabric,” “I don’t chase the spotlight, baby; it knows where I live,” and, when challenged, “You may be the moment, but I am the whole motion picture.”",
       "profileSources": {}
+    },
+    {
+      "name": "Marge Stache",
+      "slug": "marge-stache",
+      "gender": "m",
+      "sexuality": "queer",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 4,
+        "endurance": 6,
+        "mental": 6,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 7,
+        "boldness": 5,
+        "intuition": 7,
+        "temperament": 4
+      },
+      "profileSources": {}
     }
   ]
 }

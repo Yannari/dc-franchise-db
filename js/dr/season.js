@@ -1064,8 +1064,24 @@ export function playDragSeason({
 
   /* THIS WEEK'S OWN DICE. Every week used to draw from the season's single
      stream, so week six's numbers depended on how many week five happened to
-     spend -- which is why changing one week changed all of them. */
-  const weekCtx = n => ({ ...ctx, rng: streamFor(seed, 5000 + n) });
+     spend -- which is why changing one week changed all of them.
+
+     AND WHAT A RE-RUN TURNS. `drReroll` is `{ from, nonce }`: the re-run button
+     bumps the nonce and names the episode it was pressed on, and only the weeks
+     from there are salted with it. Everything before reproduces exactly, which
+     is what makes "re-running episode five never touches episode four" true by
+     construction rather than by hoping the numbers line up. Without a nonce a
+     drag re-run came back byte-identical -- and a re-run that returns the same
+     night is not a re-run, which is the rule js/tr-run.js already works to.
+
+     TWO SALTS PER WEEK, not one. `weekCtx` and the week's own extras (the
+     returnee draw, her walk-back scenes) used to derive the SAME stream from
+     the same salt, so two generators walked the same sequence side by side and
+     the returnee pick moved in lockstep with the first thing the week rolled. */
+  const rr = config.drReroll || null;
+  const wSalt = (base, n) => base + n
+    + (rr && n >= Number(rr.from) ? 1000000 * (Number(rr.nonce) || 0) : 0);
+  const weekCtx = n => ({ ...ctx, rng: streamFor(seed, wSalt(5000, n)) });
 
   // A SPLIT PREMIERE runs the cast in two halves with nobody going home, so
   // the season proper starts at episode three with everybody still in.
@@ -1216,7 +1232,7 @@ export function playDragSeason({
        back in — were reading a counter one step behind the episode they were
        about to run. */
     const epNum = num++;
-    const wRng = streamFor(seed, 5000 + epNum);
+    const wRng = streamFor(seed, wSalt(6000, epNum));
     const wCtx = weekCtx(epNum);
     // A porkchop premiere is a runway with no challenge that still sends
     // somebody home, and the host says so before it starts.

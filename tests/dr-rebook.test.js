@@ -88,6 +88,40 @@ describe('re-booking a season already in progress', () => {
   });
 });
 
+describe('re-running one night', () => {
+  const play = (pins, reroll) => playDragSeason({
+    cast: CAST, seed: 4711,
+    config: { drSchedule: pins, drFinale: 'top4', drReroll: reroll || null },
+  });
+
+  it('turns the dice from the episode it was pressed on, and nowhere before it', () => {
+    /* The whole promise of the button, and the reason it can be allowed to
+       exist at all: "Episodes N–M will be replaced with new results" has to
+       mean episodes 1..N-1 are NOT. */
+    const first = play([]);
+    const frozen = first.schedule.filter(r => r.episode <= 3);
+    const again = play(frozen, { from: 4, nonce: 1 });
+
+    for (let i = 0; i < 3; i++) {
+      expect(sig(again.rows[i]), `episode ${i + 1}`).toBe(sig(first.rows[i]));
+    }
+    expect(sig(again.rows[3])).not.toBe(sig(first.rows[3]));
+  });
+
+  it('gives a different night every time it is pressed', () => {
+    // A re-run that came back identical would not be a re-run.
+    const base = play([]);
+    const frozen = base.schedule.filter(r => r.episode <= 3);
+    const seen = new Set([sig(base.rows[3])]);
+    for (const nonce of [1, 2, 3]) seen.add(sig(play(frozen, { from: 4, nonce }).rows[3]));
+    expect(seen.size).toBe(4);
+  });
+
+  it('leaves a season with no reroll exactly where it was', () => {
+    expect(sig(play([]).rows[3])).toBe(sig(play([], null).rows[3]));
+  });
+});
+
 describe('js/dr-run.js', () => {
   let dr;
 
@@ -139,6 +173,37 @@ describe('js/dr-run.js', () => {
     for (let i = 0; i < 4; i++) rest.push(dr.simulateDragEpisode());
     expect(rest[3].num).toBe(5);
     expect(rest[3].dr.challenge.id).not.toBe('ball');
+  });
+
+  it('a re-run drops the queue and names the night it starts from', () => {
+    dr.simulateDragEpisode();
+    dr.simulateDragEpisode();
+    dr.simulateDragEpisode();
+
+    // What `replayEpisode` does first: roll the season back to before episode 3.
+    core.gs.episodeHistory = core.gs.episodeHistory.slice(0, 2);
+
+    core.seasonConfig.drSchedule = [{ episode: 3, maxiId: 'girl-group' }];
+    expect(dr.rerunDragEpisode(3)).toBe(true);
+    expect(core.gs._drReroll).toEqual({ from: 3, nonce: 1 });
+    expect(core.gs._drQueue).toBeUndefined();
+
+    const again = dr.simulateDragEpisode();
+    expect(again.num).toBe(3);
+    expect(again.dr.challenge.id).toBe('girl-group');
+    // Pressing it a second time is a second night, not the same one.
+    core.gs.episodeHistory = core.gs.episodeHistory.slice(0, 2);
+    expect(dr.rerunDragEpisode(3)).toBe(true);
+    expect(core.gs._drReroll.nonce).toBe(2);
+    expect(sig(dr.simulateDragEpisode())).not.toBe(sig(again));
+  });
+
+  it('refuses to re-run a season whose running order was never recorded', () => {
+    dr.simulateDragEpisode();
+    delete core.gs._drSchedule;
+    expect(dr.rerunDragEpisode(1)).toBe(false);
+    // And it did not half-do it: the queue is still there to re-air from.
+    expect(Array.isArray(core.gs._drQueue)).toBe(true);
   });
 
   it('refuses to re-book a season whose running order was never recorded', () => {

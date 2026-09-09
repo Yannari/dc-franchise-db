@@ -22,7 +22,7 @@ import { coachCanPlay } from './advantages.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
-  dragEpisodesAired, dragScheduleRecorded } from './dr-run.js';
+  dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
 // Imported rather than read off `window`: these are static catalogues, and a
 // `typeof X !== 'undefined'` read would silently draw an empty dropdown if the
@@ -1684,12 +1684,14 @@ export function replayEpisode(epNum) {
     // simulateNext does. The replay path only knew Total Drama's two engines,
     // so a house had checkpoints it could never spend.
     if (isBigBrotherSeason() || isTraitorsSeason() || isDragSeason()) _saveEpisodeCheckpoint();
-    // The castle re-airs rather than re-plays: the checkpoint carries the
-    // queue AND the seed, so shifting the next row off it hands back the same
-    // night. That is the correct behaviour and not a limitation — the season
-    // was decided in one call and re-deciding it from episode 3 would rewrite
-    // the ending, which is the thing the endgame's placement already warns
-    // about.
+    /* ── A DRAG RE-RUN IS A RE-RUN NOW ──
+       It used to be a re-air. The checkpoint carries `_drQueue` with this very
+       night still at its head, so restoring it and shifting one row off handed
+       back the identical episode — and a challenge pinned onto an aired week
+       had nowhere to take effect. `rerunDragEpisode` drops the queue and turns
+       the dice from this episode on; the weeks before it are frozen and replay
+       exactly. A season too old to freeze refuses, and re-airs as before. */
+    if (isDragSeason()) rerunDragEpisode(epNum);
     ep = isDragSeason()
       ? simulateDragEpisode()
       : isTraitorsSeason()
@@ -3125,7 +3127,11 @@ export function _setDRPick(ep, key, value) {
      nothing on this screen to suggest otherwise.
      Dropping the queue is all that is needed — the next press rebuilds the
      season with the weeks already watched frozen in place. */
-  invalidateDragQueue();
+  /* An AIRED week is not re-booked from here — it is re-booked by the ↺ on
+     that episode, which rolls the season back to before it first. Dropping the
+     queue for one would re-book the weeks after it for a change that has not
+     happened yet. */
+  if (Number(ep) > dragEpisodesAired()) invalidateDragQueue();
   renderTimeline();
 }
 
@@ -3135,16 +3141,23 @@ function _drPickers(ep) {
      than accept the click and drop it. Everything ahead of the season is live:
      change episode seven's challenge on the night episode four goes out and
      episode seven runs it. */
+  /* AN AIRED WEEK IS FIXED FOR THE FORWARD RUN, NOT FOR GOOD. The pickers stay
+     live on it: what you choose is stored, and the ↺ on that episode re-runs
+     the night with it. Disabling them was the first version of this and it
+     answered the wrong question — "why can I not change this" rather than
+     "when does what I chose happen". */
   const aired = Number(ep) <= dragEpisodesAired();
   const noRebook = aired && !dragScheduleRecorded();
   const sel = (key, opts, cur, title) => {
     const pinned = cur !== '' && cur != null;
-    let h = `<select ${aired ? 'disabled ' : ''}onchange="event.stopPropagation();_setDRPick(${ep},'${key}',this.value)" onclick="event.stopPropagation()" title="${
-      aired ? 'This episode has already aired — what it was booked with is fixed. Weeks that have not aired yet can still be changed.' : title
+    let h = `<select ${noRebook ? 'disabled ' : ''}onchange="event.stopPropagation();_setDRPick(${ep},'${key}',this.value)" onclick="event.stopPropagation()" title="${
+      noRebook ? 'This season was played before the running order was recorded, so it cannot be re-run with a different booking.'
+        : aired ? `${title} — this episode has already aired, so press \u21ba on it to run it with what you choose here.`
+          : title
     }" style="font-size:10px;background:#1e1e2e;color:${
-      aired ? '#6b7280' : pinned ? '#f9a8d4' : '#8b949e'};border:1px solid rgba(255,45,149,${
-      aired ? '0.10' : pinned ? '0.45' : '0.18'});border-radius:3px;padding:1px 2px;margin:2px 2px 0 0;flex:1 1 46%;min-width:0;max-width:100%;${
-      aired ? 'cursor:not-allowed;opacity:.6' : ''}">`;
+      pinned ? '#f9a8d4' : '#8b949e'};border:1px solid rgba(255,45,149,${
+      pinned ? '0.45' : '0.18'});border-radius:3px;padding:1px 2px;margin:2px 2px 0 0;flex:1 1 46%;min-width:0;max-width:100%;${
+      noRebook ? 'cursor:not-allowed;opacity:.5' : aired ? 'opacity:.8' : ''}">`;
     for (const [v, label] of opts) {
       h += `<option value="${v}"${String(v) === String(cur) ? ' selected' : ''}>${label}</option>`;
     }
@@ -3172,10 +3185,11 @@ function _drPickers(ep) {
      before the schedule was recorded cannot freeze its aired weeks, so nothing
      on it can be re-booked and the note says which of the two this is. */
   const banner = !aired ? ''
-    : `<div style="flex:1 1 100%;font-size:9px;letter-spacing:.6px;color:#6b7280;margin:2px 0 0" title="${
-      noRebook ? 'This season was played before the running order was recorded, so it cannot be re-booked at all.'
-        : 'Already aired. Change a week further down the timeline and it will run what you pick.'
-    }">${noRebook ? 'AIRED · SEASON NOT RE-BOOKABLE' : 'AIRED · BOOKING FIXED'}</div>`;
+    : `<div style="flex:1 1 100%;font-size:9px;letter-spacing:.6px;color:${
+      noRebook ? '#6b7280' : '#f9a8d4'};margin:2px 0 0" title="${
+      noRebook ? 'This season was played before the running order was recorded, so it cannot be re-run with a different booking.'
+        : 'This night has aired. Change anything here and press the ↺ on this episode to run it again — the episodes before it are untouched, the ones after are replaced.'
+    }">${noRebook ? 'AIRED · CANNOT BE RE-RUN' : 'AIRED · PRESS ↺ TO APPLY'}</div>`;
 
   return banner + sel('maxiId',
     [['', '— maxi: schedule decides —'],

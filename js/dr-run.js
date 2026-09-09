@@ -158,6 +158,46 @@ export function dragEpisodesAired() {
   return (gs?.episodeHistory || []).length;
 }
 
+/**
+ * Re-run one night: a different episode N, with everything before it untouched.
+ *
+ * ── WHAT THIS BUTTON USED TO DO ──
+ * Nothing. `replayEpisode` restored the checkpoint — which carries `_drQueue`
+ * with episode N still at its head — and shifted that same row straight back
+ * off it, so a drag re-run RE-AIRED the night instead of re-running it. It was
+ * defended in a comment on the grounds that "the season was decided in one call
+ * and re-deciding it from episode 3 would rewrite the ending", and that was
+ * true when it was written: one rng stream ran the whole season, so re-deciding
+ * anything re-decided everything.
+ *
+ * It is not true any more. Every week draws from its own dice and the weeks
+ * already watched are frozen, so a re-run reproduces episodes 1..N-1 exactly
+ * and diverges from N — which is precisely what the button's own confirmation
+ * has always promised ("Episodes N–M will be replaced with new results").
+ *
+ * It is also the answer to the obvious complaint about locking an aired week on
+ * the timeline: an aired week is fixed for the FORWARD run, and this is how you
+ * go back and change it. Pin the Ball onto episode three, press ↺ on episode
+ * three, and episode three is a ball.
+ *
+ * Call it with the season already rolled back to before episode N — which is
+ * what `replayEpisode` does before it asks for the night.
+ */
+export function rerunDragEpisode(epNum) {
+  if (!gs) return false;
+  /* A SEASON THAT CANNOT FREEZE ITS PAST MUST NOT RE-BOOK ITS FUTURE. Played
+     before `_drSchedule` existed, a rebuild would replay a different season
+     under a history that has already aired. Re-airing is the honest fallback
+     and is exactly what this button did for every drag season until now. */
+  if (!dragScheduleRecorded()) return false;
+  const n = Math.max(1, Number(epNum) || 1);
+  const prev = gs._drReroll && Number(gs._drReroll.from) === n
+    ? Number(gs._drReroll.nonce) || 0 : 0;
+  gs._drReroll = { from: n, nonce: prev + 1 };
+  delete gs._drQueue;
+  return true;
+}
+
 /** Whether a season-wide drag twist is booked at all. */
 function _twistBooked(id) {
   return (seasonConfig.twistSchedule || []).some(b => b && (b.type === id || b.id === id));
@@ -196,6 +236,10 @@ function _config() {
       return [...byEp.values()].sort((x, y) => x.episode - y.episode);
     })(),
     drJudgeWeights: seasonConfig.drJudgeWeights || {},
+    /* WHICH RE-RUN THIS IS. `{ from, nonce }`, bumped by `rerunDragEpisode` and
+       kept on `gs` so a reload reproduces THIS version of the season rather
+       than the one that first aired. Weeks before `from` ignore it entirely. */
+    drReroll: gs?._drReroll || null,
   };
 }
 

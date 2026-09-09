@@ -40,8 +40,8 @@ export const STAGE_CSS = `
 .dr-mh-arch{top:0;left:4%;right:4%;height:130px;
   border:2px solid rgba(255,200,61,.22);border-top:0;border-radius:0 0 60px 60px;
   box-shadow:0 14px 44px -22px rgba(255,200,61,.5)}
-.dr-mh-wash{top:0;left:50%;width:520px;height:64%;transform:translateX(-50%);
-  background:linear-gradient(180deg,rgba(255,233,168,.13),transparent 74%)}
+.dr-mh-wash{top:0;left:50%;width:100%;height:60%;transform:translateX(-50%);
+  background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(255,233,168,.10),transparent)}
 /* The lip of the runway, where it meets the seats. */
 .dr-mh-lip{left:0;right:0;bottom:0;height:16%;
   background:linear-gradient(180deg,transparent,rgba(255,200,61,.10));
@@ -177,7 +177,7 @@ export const STAGE_CSS = `
 .dr-panel.dr-u-cold{border-left:3px solid #FF294B;
   background:linear-gradient(90deg,rgba(255,41,75,.13),transparent 38%),var(--dr-panel)}
 /* ── THE PANEL, taking its seats ── */
-.dr-panelrow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;
+.dr-panelrow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;justify-content:center;
   padding:16px 18px;margin-bottom:14px;
   background:linear-gradient(180deg,rgba(255,61,154,.14),rgba(10,2,7,.6));
   border:1px solid rgba(255,61,154,.4)}

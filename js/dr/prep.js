@@ -213,5 +213,12 @@ export function rehearseNumber({ living, players, rng, cap = 1.1 }) {
   }
 
   return { choreo, notes, events,
-    scenes: [{ step: 'prep', kind: 'rehearsal', data: { notes } }] };
+    /* `choreo-call`, NOT `rehearsal`. js/dr/chal/acting.js has emitted a scene
+       called `rehearsal` since it was written — a director's notes on a
+       scripted scene, with a completely different `notes` shape — so naming
+       this one the same thing made the acting challenge render ten
+       choreography cards. Every one of them said Jamal had run "the number"
+       and the queen had the spacing, because the shapes disagree about `tier`
+       and `emit` falls back to the first one when it cannot find it. */
+    scenes: [{ step: 'prep', kind: 'choreo-call', data: { notes } }] };
 }

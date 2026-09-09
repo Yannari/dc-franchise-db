@@ -110,11 +110,16 @@ describe('acting', () => {
 describe('the director', () => {
   it('gives everybody a note, and taking it is a separate thing from hearing it', () => {
     const out = runMaxi(ctx('acting'));
-    // The rehearsal exists at all — improv is the one that has none.
-    const rehearsal = out.scenes.find(s => s.kind === 'rehearsal');
-    expect(rehearsal, 'no rehearsal happened').toBeTruthy();
-    expect(rehearsal.data.notes.length).toBe(NAMES.length);
-    for (const note of rehearsal.data.notes) {
+    /* THE TAPING EXISTS AT ALL — improv is the one that has none.
+       It was `rehearsal` until the word was given back to the room where a
+       number is taught: this is a scripted parody shot on a set, and two other
+       modules were already emitting `rehearsal` scenes with a different note
+       shape, which is how the acting challenge briefly rendered ten cards
+       about a queen nailing the spacing of a dance. */
+    const taping = out.scenes.find(s => s.kind === 'studio-taping');
+    expect(taping, 'no taping happened').toBeTruthy();
+    expect(taping.data.notes.length).toBe(NAMES.length);
+    for (const note of taping.data.notes) {
       expect(typeof note.good).toBe('boolean');
       expect(typeof note.took).toBe('boolean');
     }
@@ -150,7 +155,7 @@ describe('improv is not the acting challenge', () => {
   it('has NO rehearsal at all', () => {
     const out = runMaxi(ctx('improv'));
     expect(out.scenes.find(s => s.kind === 'no-rehearsal'), 'improv rehearsed').toBeTruthy();
-    expect(out.scenes.find(s => s.kind === 'rehearsal')).toBeUndefined();
+    expect(out.scenes.find(s => s.kind === 'studio-taping')).toBeUndefined();
   });
 
   it('gives every queen a named premise, cold', () => {

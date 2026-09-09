@@ -57,6 +57,17 @@
 export const MENTORS = {
   'music-video': 'michelle',
   rumix: 'michelle',
+  /* THE SCRIPTED SET AND THE ADVERT. Michelle directs both, which is what the
+     show does: she is behind the monitor on a taping, and a parody or a
+     thirty-second spot lives or dies on whether the performance is specific
+     enough for a camera. The wiki is explicit that the queens write and direct
+     the commercial themselves — she is the one giving notes, not the one
+     making it.
+     IMPROV AND THE ROAST ARE DELIBERATELY ABSENT. Improv is unscripted by
+     definition and the roast is written alone and delivered live, so neither
+     has a day anybody could form a view of. */
+  acting: 'michelle',
+  commercial: 'michelle',
   'girl-group': 'jamal',
   choreography: 'jamal',
   rusical: 'jamal',

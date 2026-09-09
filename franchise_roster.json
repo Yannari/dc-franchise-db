@@ -5545,7 +5545,7 @@
       "slug": "quin",
       "gender": "nb",
       "sexuality": "queer",
-      "archetype": "hero",
+      "archetype": "wildcard",
       "stats": {
         "physical": 5,
         "endurance": 4,

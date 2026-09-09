@@ -164,12 +164,42 @@ describe('the bracket', () => {
     expect(r1wins / 40).toBeGreaterThan(0.4);
   });
 
-  it('copes with an odd room by giving somebody a bye', () => {
+  it('copes with an odd room via a 3-way lip sync instead of a bye', () => {
     const five = Object.fromEntries(['Ada', 'Bee', 'Cleo', 'Dot', 'Eve'].map(n => [n, mk(n)]));
     const out = runMaxi(ctx(1, five));
     expect(Object.keys(out.performances).length).toBe(5);
     const te = out.tournamentExit;
     expect(te.r1Winners.length + te.r1Losers.length).toBe(5);
+    const r1Duels = te.duels.filter(d => d.round === 1);
+    const triple = r1Duels.find(d => d.triple);
+    expect(triple, 'one R1 duel should be a triple').toBeTruthy();
+    expect(triple.contestants.length).toBe(3);
+    // Everybody participated — no byes
+    const allR1 = new Set();
+    for (const d of r1Duels) {
+      if (d.triple) d.contestants.forEach(n => allR1.add(n));
+      else { allR1.add(d.a); allR1.add(d.b); }
+    }
+    expect(allR1.size).toBe(5);
+  });
+
+  it('11 queens all participate — no byes, one R1 triple', () => {
+    const eleven = Object.fromEntries(
+      ['Ada','Bee','Cleo','Dot','Eve','Fay','Gem','Hua','Ivy','Joy','Kay']
+        .map(n => [n, mk(n)]));
+    for (let i = 0; i < 10; i++) {
+      const out = runMaxi(ctx(i, eleven));
+      const te = out.tournamentExit;
+      const r1Duels = te.duels.filter(d => d.round === 1);
+      const allR1 = new Set();
+      for (const d of r1Duels) {
+        if (d.triple) d.contestants.forEach(n => allR1.add(n));
+        else { allR1.add(d.a); allR1.add(d.b); }
+      }
+      expect(allR1.size, `seed ${i}: all 11 queens in R1`).toBe(11);
+      expect(r1Duels.some(d => d.triple), `seed ${i}: one triple`).toBe(true);
+      expect(te.eliminated, `seed ${i}: someone eliminated`).toBeTruthy();
+    }
   });
 
   it('every event it fires survives the consequence check', () => {

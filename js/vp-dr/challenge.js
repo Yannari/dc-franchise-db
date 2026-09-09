@@ -1033,10 +1033,14 @@ function rpBuildBall(row) {
      The engine writes one block per queen about her whole ball ("three looks,
      one voice..."). That belongs on the sewn look — the climax, where the
      judges have seen the full trio. The earlier runway walks get short
-     per-look commentary generated from the score so they are never bare. */
+     per-look commentary generated from the score so they are never bare.
+     The filter is TIGHT: only `perform:ball` (the performance narration),
+     `maxi:wardrobe-malfunction` (the garment failing on the runway), and
+     `chal:performance-moment`. Werk room scenes like reads, shade, and
+     rivalry carry a `maxi:` prefix too and would leak in here otherwise. */
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
     && sc.step !== 'prep'
-    && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
+    && /^(perform:ball|maxi:wardrobe|chal:performance)/.test(sc.kind || ''));
   const proseByQueen = {};
   const usedScene = new Set();
   for (const name of running) {

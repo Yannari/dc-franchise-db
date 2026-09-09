@@ -199,7 +199,12 @@ export const CHALLENGE_BEATS = [
       /* THE HOST CASTS IT AND NOBODY PICKS ANYTHING. `solo` is the closest
          existing tier and it is still wrong — solo is thirteen queens each
          doing their own thing, this is one production with a call sheet. */
-      tier('cast', 'No draft at all. The host reads out who is playing what.'),
+      tier('cast', 'No draft at all. The host reads out who is playing what.', [
+        "No picks. No draft. The host reads the cast list. Every queen hears her part in the same sentence as everybody else — lead, featured, ensemble — and nobody chose any of it. The room takes it in silence because there is nothing to argue with. The call sheet is the call sheet.",
+        "The host announces who is playing what and the room listens. No volunteers, no trades, no captain making choices under pressure. She reads the list. One queen gets the lead and did not raise her hand for it. One queen gets the background and could not have stopped it.",
+        "\"Here is what you are doing this week.\" The host reads parts off a list. No negotiation. No draft. The room hears it at once and processes it at different speeds. The queen who got the lead is already thinking about camera blocking. The queen who got the ensemble is already thinking about how to be seen.",
+        "The host casts the video. Not a draft — a cast list. Roles assigned, not chosen. The room takes it quietly. The lead queen exhales because the pressure just arrived. The ensemble queen exhales because the anonymity just arrived. Both of them are right to be worried.",
+      ]),
       tier('solo', 'Everybody is on their own this week.', [
         "No teams. No partners. No captain, no draft, no safety net. Everybody is on her own this week. The room is relieved they cannot be dragged down and terrified they have nobody to hide behind.",
         "\"You are all on your own.\" The sentence changes the room. Some queens straighten up — solo means their talent is the only variable. Others go quiet. Solo means there is nobody to share the blame with. \"Just me and my sewing machine,\" someone says.",
@@ -220,10 +225,30 @@ export const CHALLENGE_BEATS = [
     note: 'Her hour in the booth with the vocal producer, and what came out of it.',
     tierBy: 'booth',
     tiers: [
-      tier('got-it-on-tape', 'The take is better than the verse. He found something in her.'),
-      tier('clean-session', 'In, done, out. No drama and no rescue needed.'),
-      tier('many-takes', 'They get it eventually, and everybody knows how long it took.'),
-      tier('could-not-get-it', 'She wrote it and she cannot sing it. The tape is what the panel hears.'),
+      tier('got-it-on-tape', 'The take is better than the verse. He found something in her.', [
+        "The verse on paper was fine. The verse on tape is better. The producer heard something in {a}'s delivery that she did not know was there — a tone, a rhythm, a way of landing the punchline — and he pulled it out in three takes. What the panel hears tonight is a recording that is more confident than the queen who made it.",
+        "{a} sits down in the booth and the producer plays the track. First take: shaky. Second take: closer. Third take: the producer nods and {a} knows that nod means the bar she was worried about just landed. The tape is better than the page. The tape is what the panel hears.",
+        "The booth session rescues her. {a} walked in with a verse that read well and did not sing well, and the producer spent thirty minutes finding the version of it that does both. What lands on the track is a verse {a} did not know she had in her until somebody who records voices for a living heard it.",
+        "The producer finds the verse inside {a}. Not the one she wrote — the one she can deliver. He adjusts her timing on the second bar, smooths a vowel on the third, and by take four the recording sounds like a queen who has been doing this. She has not. The booth made it sound like she has.",
+      ]),
+      tier('clean-session', 'In, done, out. No drama and no rescue needed.', [
+        "{a} walks into the booth, puts on the headphones, and records her verse. Three takes. The producer nods on the third. No drama. No rescue. No thirty-minute crisis that costs the queens behind her their warm-up time. In, done, out.",
+        "A clean session. {a} knows her verse, she can say it on rhythm, and the producer has nothing to fix. He records three takes, picks the best one, and {a} is out of the booth in twelve minutes. The queens waiting outside do not even look up.",
+        "The booth is uneventful. {a} goes in, delivers her bars, takes one note from the producer about a breath in the second line, and records the corrected version. Done. The tape sounds exactly like the verse she wrote, which is all a clean session needs to be.",
+        "{a}'s session is quick and professional. She knows the words. She can say them on the beat. The producer records her, plays it back once, and sends her out. Some queens need the booth to save them. {a} needed it to document what she already had.",
+      ]),
+      tier('many-takes', 'They get it eventually, and everybody knows how long it took.', [
+        "It takes nine takes. The producer is patient — he does this — but {a} can hear the patience shifting from encouraging to professional. The verse is there. The delivery keeps not being there. Take nine lands and the producer says \"that one\" and {a} leaves the booth knowing everybody heard how long she was in it.",
+        "{a}'s session runs long. The first three takes are shaky. The next three are overcorrecting. The producer stops her, resets, talks her through the timing, and by take eight they have something usable. Not great. Usable. The queens waiting outside have been waiting long enough to notice.",
+        "The booth takes longer than it should. {a} knows the verse but she cannot get it on tape — the headphones throw her off, the track is faster than she rehearsed, and the producer keeps resetting. They get there eventually. The eventually is the part {a} will remember.",
+        "Take after take. The producer stays calm. {a} stays less calm. The verse is real — she wrote something — but the recording session is turning a good verse into a nervous one, and every extra take makes the next one more nervous. They land on a take that works. It is not the take she wanted.",
+      ]),
+      tier('could-not-get-it', 'She wrote it and she cannot sing it. The tape is what the panel hears.', [
+        "{a} wrote a verse. A real one — bars that hit on paper. She cannot get them on tape. The producer tries everything: slower tempo, different breath marks, punching in one bar at a time. The recording they settle on is the best of twelve bad takes. The panel hears the best of twelve bad takes.",
+        "The booth breaks her. {a} can say her verse at a mirror. She cannot say it into a microphone with a track playing in her ears and a producer watching her mouth. Every take is worse than the one before. The tape they use is the first one, because the first one had the confidence the rest of them lost.",
+        "{a} cannot get her verse on tape. The bars scan when she reads them. They do not scan when she records them. The producer gives her note after note and {a} takes none of them because taking a note requires calm and calm left the booth four takes ago. What the panel hears tonight is the version without calm.",
+        "She wrote it. She cannot sing it. The distinction is the whole session. {a} has four bars that read well on paper and fall apart the moment she tries to deliver them at tempo into a microphone. The producer cannot rescue what is not there. The tape captures the gap between writing and performing, and the panel hears the gap.",
+      ]),
     ],
   },
   {
@@ -237,10 +262,30 @@ export const CHALLENGE_BEATS = [
     note: 'What the host cast her as. She had no say and everybody heard it at once.',
     tierBy: 'role',
     tiers: [
-      tier('lead', 'She was handed the whole video and did not ask for it.'),
-      tier('featured', 'A real part, and the pressure that comes with being named.'),
-      tier('standard', 'Something to do, and nothing that will carry her.'),
-      tier('ensemble', 'The back of the frame. She has to make herself findable.'),
+      tier('lead', 'She was handed the whole video and did not ask for it.', [
+        "{a} gets the lead. She did not ask for it. She did not campaign for it. The host read her name off the cast list and the room looked at her the way a room looks at somebody who just got handed a thing she cannot give back. The video belongs to {a} now. If it works, she carried it. If it does not, she sank it.",
+        "The host names {a} as the lead and the room recalibrates. The lead is the most screen time, the most pressure, and the most exposure if the video falls apart. {a} did not volunteer. She was cast. The difference between choosing the lead and being given it is the difference between confidence and obligation.",
+        "{a} is handed the whole video. Not a section. Not a verse. The part the camera follows, the part the edit is built around, the part the panel will judge the hardest because it had the most to work with. She did not raise her hand. The host raised it for her.",
+        "The lead goes to {a}. The room hears it and does the maths: she has been safe for weeks, the host just bet on her in front of everybody, and the part she was given is the one that can either make this a win week or a bottom week. There is no middle on a lead.",
+      ]),
+      tier('featured', 'A real part, and the pressure that comes with being named.', [
+        "{a} gets a featured part. Not the lead, not the background — a named role with screen time and a moment the camera has to find. It is enough to stand out on if she uses it. It is enough to flop on if she does not. The host read her name and the room heard it.",
+        "The host casts {a} in a featured role. A real part — scenes, close-ups, a section of the video that belongs to her. Not the pressure of the lead but not the anonymity of the ensemble. Enough rope to impress. Enough rope to hang.",
+        "{a} is given a featured part. She has material to work with — the kind of material that shows up in the edit, the kind the panel notices. Whether the panel notices it for the right reasons is on her. The part is enough. The part was always going to be enough.",
+        "A featured role for {a}. The host names her and moves on. The part has screen time, it has a moment, and it has exactly enough weight that flopping it would be her fault and nailing it would be her credit. That is what featured means.",
+      ]),
+      tier('standard', 'Something to do, and nothing that will carry her.', [
+        "{a} gets a standard part. Something to do on camera. Not the lead. Not the feature. A role that exists in the video and will not carry her to the top or sink her to the bottom unless she makes it do one of those things herself.",
+        "The host reads {a}'s part and it is fine. A standard role — present in the video, not the centre of it. She has scenes. She has camera time. None of it will distinguish her unless she finds something in it the host did not put there.",
+        "{a} is cast in the middle of the call sheet. Not the part with the pressure and not the part with the anonymity. Standard. She will be in the video. Whether she will be IN the video is a different question and the answer depends entirely on what she does with a role that asks for competence and rewards initiative.",
+        "A standard part. {a} hears it and nods. The role is what it is — enough to work with, not enough to coast on. Queens with standard parts survive the video by being better than the part. Queens with standard parts go home by being exactly as forgettable as the part allows.",
+      ]),
+      tier('ensemble', 'The back of the frame. She has to make herself findable.', [
+        "{a} gets the ensemble. The back of the frame. The part the camera finds last and the edit uses least. She is in the video the way furniture is in a room — present, functional, and invisible unless somebody decides to look. The entire challenge for {a} is making somebody decide to look.",
+        "The host casts {a} in the ensemble and moves on before the word has landed. Ensemble is the back of the video. The camera will not find her. The director will not build a setup around her. If she wants to exist in the final cut, she has to make herself findable.",
+        "{a} is given the ensemble. The polite word for the background. She has no featured moment, no close-up, no scene the edit is built around. She is in the video the same way every other background queen is in the video — unless she gives the camera a reason to come back to her.",
+        "Ensemble. {a} hears the word and knows what it means: she is starting this challenge behind everybody who got a name on the call sheet. The camera will not come to her. She has to go to the camera. Queens have stood out from the ensemble before. Queens have also disappeared into it.",
+      ]),
     ],
   },
   {
@@ -259,10 +304,30 @@ export const CHALLENGE_BEATS = [
     note: 'Her hours in front of the director, and what he will tell the panel.',
     tierBy: 'impression',
     tiers: [
-      tier('made-the-day', 'He starts building the video around her.'),
-      tier('easy', 'She takes the note, gives him the take, and he moves on.'),
-      tier('slow', 'They get there. Getting there takes most of the afternoon.'),
-      tier('argued', 'She was asked for something and told him no, in front of the crew.'),
+      tier('made-the-day', 'He starts building the video around her.', [
+        "The director starts building the video around {a}. She takes the first note, delivers the first take, and by the third setup he is adjusting the shot list to give her more screen time. He does not tell her this. He tells the panel. The panel hears that {a} made a director change his plan to put more of her in the edit.",
+        "{a} makes the day easy. The director gives her a note and she takes it the first time. He asks for something she did not rehearse and she delivers it. By lunch he is adding setups for her — not because the call sheet says so, but because the footage he is getting from {a} is better than the footage he planned for.",
+        "The director loves working with {a}. She finds the camera, she reads the note, she gives him takes he can use. By the afternoon he is building extra shots around her because the material is too good to leave on the floor. What he tells the panel is what he has been telling the crew all day: she is the one.",
+        "{a} is the queen the director remembers at the end of the day. Not because she had the biggest part — because she used the part she had so well that the edit expanded around her. She took direction. She found the lens. She gave him more than the call sheet asked for. The panel will hear all of it.",
+      ]),
+      tier('easy', 'She takes the note, gives him the take, and he moves on.', [
+        "{a} takes the note and gives the director what he asks for. No drama. No crisis. He sets up the shot, she hits her mark, he calls cut, and they move on. A clean day. The director will not single her out to the panel, but he will not flag her either. That is what easy looks like.",
+        "The director gives {a} a note and she takes it. First try. He moves to the next setup. {a}'s day on set is professional and uncomplicated — she does what the camera needs, she listens when the director talks, and she does not make the day longer than it has to be.",
+        "{a}'s session with the director is straightforward. He tells her what the shot needs. She adjusts. He gets his take in two or three attempts and moves on. Not the queen the director will rave about to the panel, but not the one he will warn them about either.",
+        "A clean day for {a}. The director sets up, {a} performs, the director moves on. She is not the queen making the day and she is not the queen costing the day. She is the queen doing the work — taking the note, finding the mark, giving the take.",
+      ]),
+      tier('slow', 'They get there. Getting there takes most of the afternoon.', [
+        "The director and {a} get there. It takes time. Every note requires two or three tries to land. The camera finds her eventually but not on the first setup, and the director's patience shifts from generous to professional somewhere around the sixth take. They finish. They did not finish quickly.",
+        "{a}'s day on set is long. The director gives her a note about scale — smaller for the lens — and {a} gives him a stage performance. They do it again. Smaller. Again. By the time the take lands, the crew has been watching the same setup for forty minutes and the director is behind schedule.",
+        "The director spends most of the afternoon on {a}. Not because the footage is good — because the footage keeps not being right. She takes the note eventually. The take eventually lands. But eventually is the word the director uses when the panel asks how her day went, and it is not a compliment.",
+        "{a} is slow. Not bad — slow. The director gives notes and she processes them at a pace that costs the day its margin. By the time her footage is usable, the setups behind her are rushed. The director does not blame her to the panel. He describes the day. The description is enough.",
+      ]),
+      tier('argued', 'She was asked for something and told him no, in front of the crew.', [
+        "{a} argues with the director. On set. In front of the crew. He asks her to play it smaller and she tells him no — her version is better. The director stops arguing before she does. He shoots around her. What the panel hears is not that she was bad. It is that she was difficult, and on a video challenge the director's word is evidence.",
+        "The director gives {a} a note and {a} gives it back. She does not want to play it that way. She tells him so. The crew watches a queen argue with a director in front of a camera, and the camera is still running. What the panel hears about {a}'s day is the argument, not the performance.",
+        "{a} was asked for something and said no. Not politely, not quietly — in front of the crew, on a set, while the camera was rolling. The director's note was about scale: play it smaller for the lens. {a}'s answer was to play it bigger. The director stopped giving the note and started building the edit without her.",
+        "The director and {a} disagree. The disagreement happens on camera, in front of the crew, on a set where the director is the authority and {a} is the talent. She tells him his note is wrong. He tells the panel she was the hardest part of the day. Both of them mean it.",
+      ]),
     ],
   },
   {

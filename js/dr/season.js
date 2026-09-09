@@ -21,7 +21,7 @@ import { MINI_TYPES } from './data/minis.js';
 import { JUDGES } from './data/judges.js';
 import { SONGS } from './data/songs.js';
 import { RUNWAY_CATEGORIES } from './data/runways.js';
-import { rngFor } from './rng.js';
+import { rngFor, streamFor } from './rng.js';
 import { assignDragFamilies } from './family.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
@@ -87,7 +87,24 @@ const FAMOUS_STARS = 1.5;
 const _slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
 export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.random,
-  premiere = 'standard', cast = [] }) {
+  premiere = 'standard', cast = [], seed = null }) {
+  /* -- ONE STREAM PER EPISODE, NOT ONE WALKING THE WHOLE SEASON --
+     This used to draw everything -- the tentpole shuffle, then every week's
+     filler challenge, mini, judge, guest and song, in episode order -- off a
+     single generator handed in by the caller. That made each decision depend on
+     how many numbers the decisions BEFORE it happened to take, so pinning the
+     Ball onto episode five changed episode two's challenge, episode six's guest
+     judge, and the season's entire play stream downstream of it. A pin
+     therefore could not be applied to a season already in progress: the re-book
+     silently rewrote weeks that had already aired.
+
+     Given a `seed`, the schedule takes its own dice and every episode takes its
+     own, so a change to one week moves that week and nothing else. With no seed
+     it falls back to the shared `rng` and behaves exactly as it always did --
+     which is what every headless caller and every test passes. */
+  const own = seed != null;
+  const sRng = own ? streamFor(seed, 7) : rng;
+  const epRng = (e, salt = 1000) => (own ? streamFor(seed, salt + e) : rng);
   const rotating = JUDGES.filter(j => !j.permanent).map(j => j.id);
 
   /* ── THE GUEST JUDGE, WHICH HAD NEVER ONCE APPEARED ──
@@ -157,10 +174,10 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
      rather than a fixture. Never zero — a favourite can come back, she just
      has to win the draw against fresher faces. */
   const guestWeight = a => 1 / (1 + (Number(a.timesJudged) || 0));
-  const pickWeighted = bag => {
+  const pickWeighted = (bag, r) => {
     const total = bag.reduce((t, a) => t + guestWeight(a), 0);
-    if (!total) return Math.floor(rng() * bag.length);
-    let roll = rng() * total;
+    if (!total) return Math.floor(r() * bag.length);
+    let roll = r() * total;
     for (let i = 0; i < bag.length; i++) {
       roll -= guestWeight(bag[i]);
       if (roll <= 0) return i;
@@ -169,12 +186,12 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   };
 
   const guestBag = famous.slice();
-  const drawGuest = () => {
+  const drawGuest = dice => {
     if (!guestBag.length) {
       if (!famous.length) return null;
       guestBag.push(...famous);          // a long season may go round twice
     }
-    const a = guestBag.splice(pickWeighted(guestBag), 1)[0];
+    const a = guestBag.splice(pickWeighted(guestBag, dice), 1)[0];
     if (!a) return null;
     const r = rosterOf(a.name);
     return {
@@ -218,9 +235,10 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
      tentpole last in all forty seasons, which is the bug it was added to
      fix. Four draws in, the stream is mixed. */
   const tentpolesLeft = TENTPOLES.filter(t => !used.has(t));
-  rng(); rng(); rng(); rng();
+  // `streamFor` burns its own four; the shared-rng fallback still has to.
+  if (!own) { rng(); rng(); rng(); rng(); }
   for (let i = tentpolesLeft.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
+    const j = Math.floor(sRng() * (i + 1));
     [tentpolesLeft[i], tentpolesLeft[j]] = [tentpolesLeft[j], tentpolesLeft[i]];
   }
   const slots = [];
@@ -228,7 +246,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   const tentpoleAt = {};
   for (const t of tentpolesLeft) {
     if (!slots.length) break;
-    const i = Math.floor(rng() * slots.length);
+    const i = Math.floor(sRng() * slots.length);
     tentpoleAt[slots.splice(i, 1)[0]] = t;
   }
 
@@ -237,6 +255,9 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   for (let e = 1; e <= episodes; e++) {
     const pin = byEp[e] || {};
     const alive = castSize - (e - 1);
+    // This week's own dice. Every draw below comes off it, so what episode five
+    // rolls does not depend on what episode four decided.
+    const er = epRng(e);
 
     let maxiId = pin.maxiId
       || (e === 1 && PREMIERE_MAXI[premiere])
@@ -249,7 +270,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       const repeatable = MAXI_TYPES.filter(m => !m.tentpole && fits(m) && m.chalStyle !== prevStyle);
       const anything = MAXI_TYPES.filter(fits);
       const pool = fresh.length ? fresh : repeatable.length ? repeatable : anything.length ? anything : MAXI_TYPES;
-      maxiId = pick(rng, pool).id;
+      maxiId = pick(er, pool).id;
     }
 
     used.add(maxiId);
@@ -261,7 +282,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       maxiId,
       // `miniId` is deliberately checked with `in`: null is a real choice
       // meaning "no mini this week", and undefined means "roll one".
-      miniId: 'miniId' in pin ? pin.miniId : pick(rng, MINI_TYPES).id,
+      miniId: 'miniId' in pin ? pin.miniId : pick(er, MINI_TYPES).id,
       rotatingId: pin.rotatingId || rotating[(e - 1) % rotating.length],
       /* THREE ANSWERS, and `in` is what tells them apart — the same check
          `miniId` above uses, and for the same reason. A pinned guest wins.
@@ -270,8 +291,8 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          the show books one — not every week, because the panel is a fixed
          four often enough that a guest should feel like an occasion rather
          than a chair that is always full. */
-      guest: 'guest' in pin ? pin.guest : (rng() < 0.7 ? drawGuest() : null),
-      songTitle: pin.songTitle || pick(rng, SONGS).title,
+      guest: 'guest' in pin ? pin.guest : (er() < 0.7 ? drawGuest(er) : null),
+      songTitle: pin.songTitle || pick(er, SONGS).title,
       // A category per week, and never the same one twice in a season: the
       // runway is the one thing a viewer sees every single episode, so a
       // repeat is more noticeable here than anywhere else.
@@ -287,7 +308,7 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          pool of it, which is also when the show would use it. */
       makeoverPool: pin.makeoverPool
         || (maxiId === 'makeover'
-          ? pick(rng, e >= 5 ? PARTNER_COHORTS
+          ? pick(er, e >= 5 ? PARTNER_COHORTS
             : PARTNER_COHORTS.filter(c => c !== 'eliminated'))
           : null),
       /* AND THE WEEK'S OWN SHAPE. Every field above is a piece of CONTENT the
@@ -344,7 +365,10 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
   for (const e of out) {
     if (e.runwayCategory) continue;
     if (!catPool.length) catPool.push(...RUNWAY_CATEGORIES.map(c => c.label));
-    e.runwayCategory = catPool.splice(Math.floor(rng() * catPool.length), 1)[0];
+    // A second salt: this pass runs after the loop above and must not re-spend
+    // the numbers that episode already drew.
+    e.runwayCategory = catPool.splice(
+      Math.floor(epRng(e.episode, 4000)() * catPool.length), 1)[0];
   }
 
   return out;
@@ -1030,7 +1054,18 @@ export function playDragSeason({
   const finaleType = config.drFinale || 'top4';
   const premiere = config.drPremiere || 'standard';
   const rows = [];
+  /* WHAT EACH EPISODE WAS ACTUALLY BOOKED WITH, in play order and keyed by the
+     number that aired. A season in progress is re-booked by handing these back
+     as pins for the weeks already watched, so those weeks replay bit-for-bit
+     and only the unaired ones change. Without it a re-book replays a DIFFERENT
+     season and the queue's rosters stop matching the history on screen. */
+  const played = [];
   let num = 1;
+
+  /* THIS WEEK'S OWN DICE. Every week used to draw from the season's single
+     stream, so week six's numbers depended on how many week five happened to
+     spend -- which is why changing one week changed all of them. */
+  const weekCtx = n => ({ ...ctx, rng: streamFor(seed, 5000 + n) });
 
   // A SPLIT PREMIERE runs the cast in two halves with nobody going home, so
   // the season proper starts at episode three with everybody still in.
@@ -1056,7 +1091,8 @@ export function playDragSeason({
       splitHalf += 1;
       const sch = buildSchedule({
         episodes: 1, castSize: group.length, pinned: pin.maxiId ? [{ ...pin, episode: 1 }] : [],
-        rng, premiere: pin.maxiId ? 'standard' : 'talent-show', cast,
+        rng, seed: (seed >>> 0) + 811 * splitHalf,
+        premiere: pin.maxiId ? 'standard' : 'talent-show', cast,
       })[0];
       // The week only ever sees this half of the room. Nobody goes home, so
       // the full cast is restored afterwards rather than reconciled — the
@@ -1065,9 +1101,11 @@ export function playDragSeason({
       // `formatNote: 'split'` and not the generic no-elimination note: the
       // room is half a cast AND nobody goes home, and the half-cast is the
       // part a viewer cannot work out on their own.
-      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, num++, {
+      const splitNum = num++;
+      played.push({ ...sch, episode: splitNum });
+      rows.push(beat(state, runDragWeek(state, weekCfg(sch, config, splitNum, {
         noElimination: true, formatNote: 'split',
-      }), ctx), cast));
+      }), weekCtx(splitNum)), cast));
       /* WHO WAS IN WHICH HALF, so the rejoin can know who is a stranger to
          whom. Without it every queen in the room looks the same to the scene
          that is about them not knowing each other. */
@@ -1123,6 +1161,7 @@ export function playDragSeason({
   const schedule = buildSchedule({
     episodes: weeks,
     castSize: cast.length,
+    seed,
     pinned: (config.drSchedule || []).filter(Boolean)
       .filter(x => Number(x.episode) > splitAte)
       .map(x => (splitAte ? { ...x, episode: Number(x.episode) - splitAte } : x)),
@@ -1156,17 +1195,32 @@ export function playDragSeason({
      decided on the night, so no amount of counting up front predicts it —
      when the booked weeks are used and the room is still too big, the season
      books another. Capped so a bug cannot spin here forever. */
+  let guard = 0;
+  /* `cast` IS NOT OPTIONAL HERE. It is what `buildSchedule` excludes from the
+     guest pool, and this call omitted it — so an extra week booked after a
+     double shantay could fly in a queen who was still competing that night to
+     judge her own season. The scheduled weeks always passed it; only the spare
+     did not, which is why it took a season with an extra week to show. */
   const spare = () => buildSchedule({
     episodes: 1, castSize: cast.length, pinned: [], rng, premiere: 'standard',
+    seed: (seed >>> 0) + 700003 + guard, cast,
   })[0];
-  let guard = 0;
   for (const sch of [...schedule, ...Array.from({ length: 8 }, () => null)]) {
     if (state.living.length <= finaleSize) break;
     if (!sch && ++guard > 8) break;
     const week = sch || spare();
+    /* THE NIGHT'S NUMBER AND THE NIGHT'S DICE, both taken before anything on
+       it is decided. `num` used to be incremented in the middle of building
+       the week's config, which meant the two decisions made BEFORE that line —
+       whether this is the porkchop premiere, and which eliminated queen walks
+       back in — were reading a counter one step behind the episode they were
+       about to run. */
+    const epNum = num++;
+    const wRng = streamFor(seed, 5000 + epNum);
+    const wCtx = weekCtx(epNum);
     // A porkchop premiere is a runway with no challenge that still sends
     // somebody home, and the host says so before it starts.
-    const porkchopNight = premiere === 'porkchop' && num === 1;
+    const porkchopNight = premiere === 'porkchop' && epNum === 1;
     /* THE LAST-WEEK RESTRICTION IS GONE WITH THE DEBT. It existed because a
        double shantay on the final elimination week could not be repaid, and
        the season walked into a top four with five queens in it. Nothing is
@@ -1213,7 +1267,7 @@ export function playDragSeason({
       };
       const pickWeighted = () => {
         const total = gone.reduce((t, n) => t + weightOf(n), 0);
-        let roll = rng() * total;
+        let roll = wRng() * total;
         return gone.find(n => (roll -= weightOf(n)) <= 0) || gone[gone.length - 1];
       };
       const who = exact || pickWeighted();
@@ -1224,13 +1278,14 @@ export function playDragSeason({
         returned = {
           name: who, asked: wanted || null, honoured: !!exact,
           // How long she has been gone, in episodes — the walk-back reads it.
-          gap: Math.max(0, num - 1 - wentOut),
+          gap: Math.max(0, epNum - 1 - wentOut),
         };
-        state.returns = [...(state.returns || []), { ...returned, episode: num }];
+        state.returns = [...(state.returns || []), { ...returned, episode: epNum }];
       }
     }
 
-    const weekRow = beat(state, runDragWeek(state, weekCfg(week, config, num++, {
+    played.push({ ...week, episode: epNum });
+    const weekRow = beat(state, runDragWeek(state, weekCfg(week, config, epNum, {
       totalEpisodes,
       // She competes on her return night and cannot go home on it.
       ...(returned ? { returnedQueen: returned.name } : {}),
@@ -1252,7 +1307,7 @@ export function playDragSeason({
       ...(week.doubleElimination && !scheduledNoElim
         ? { doubleElimination: true, formatNote: 'double-elimination' } : {}),
       finaleSize,
-    }), ctx), cast);
+    }), wCtx), cast);
     /* THE RETURN GOES ON THE FRONT OF THE NIGHT. Written after the week is
        built rather than inside runDragWeek, so the week engine does not have
        to learn about a twist that only changes who is in the room — and the
@@ -1261,7 +1316,7 @@ export function playDragSeason({
     if (returned) {
       weekRow.dr.returned = returned;
       weekRow.dr.scenes = [
-        ...returnScenes(returned, { living: state.living, rng }),
+        ...returnScenes(returned, { living: state.living, rng: wRng }),
         ...(weekRow.dr.scenes || []),
       ];
     }
@@ -1277,7 +1332,7 @@ export function playDragSeason({
        queens who spent a week together do, and a first read that goes well
        is worth something for the rest of the season. */
     if (rejoinDue && state.splitHalves?.length === 2) {
-      const scenes = rejoinScenes(state, ctx);
+      const scenes = rejoinScenes(state, wCtx);
       if (scenes.length) {
         weekRow.dr.scenes = [...scenes, ...(weekRow.dr.scenes || [])];
         weekRow.dr.rejoin = { halves: state.splitHalves.map(h => [...h]) };
@@ -1355,7 +1410,7 @@ export function playDragSeason({
   rows.push(beat(state, finale, cast));
 
   return {
-    rows, state, winner: state.winner, runnerUp: state.runnerUp,
+    rows, state, schedule: played, winner: state.winner, runnerUp: state.runnerUp,
     congeniality: state.congeniality || null,
     finale: finale.dr.finale, smackdownWinner: state.smackdownWinner || null,
     winners: state.winners || [state.winner], doubleCrown: !!state.doubleCrown,

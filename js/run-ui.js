@@ -21,7 +21,8 @@ import { coachCanPlay } from './advantages.js';
 // where a missing global fails silently at the moment somebody presses Play.
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
-import { isDragSeason, simulateDragEpisode } from './dr-run.js';
+import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
+  dragEpisodesAired, dragScheduleRecorded } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
 // Imported rather than read off `window`: these are static catalogues, and a
 // `typeof X !== 'undefined'` read would silently draw an empty dropdown if the
@@ -3115,15 +3116,35 @@ export function _setDRPick(ep, key, value) {
     seasonConfig.drSchedule = seasonConfig.drSchedule.filter(c => c !== entry);
   }
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  /* ── AND RE-BOOK THE WEEKS THAT HAVE NOT AIRED YET ──
+     A drag season decides its WHOLE running order on the first press of
+     Simulate Episode and queues the finished nights, so until this line was
+     here a pin made after episode one changed nothing: the dropdown went pink,
+     the config saved, and the week it named had been booked minutes earlier.
+     Reported as "I picked the Ball and it ran the LaLaPaRUza", and there was
+     nothing on this screen to suggest otherwise.
+     Dropping the queue is all that is needed — the next press rebuilds the
+     season with the weeks already watched frozen in place. */
+  invalidateDragQueue();
   renderTimeline();
 }
 
 function _drPickers(ep) {
   const e = _drEntry(ep) || {};
+  /* AN AIRED WEEK CANNOT BE RE-BOOKED, and the screen has to say so rather
+     than accept the click and drop it. Everything ahead of the season is live:
+     change episode seven's challenge on the night episode four goes out and
+     episode seven runs it. */
+  const aired = Number(ep) <= dragEpisodesAired();
+  const noRebook = aired && !dragScheduleRecorded();
   const sel = (key, opts, cur, title) => {
     const pinned = cur !== '' && cur != null;
-    let h = `<select onchange="event.stopPropagation();_setDRPick(${ep},'${key}',this.value)" onclick="event.stopPropagation()" title="${title}" style="font-size:10px;background:#1e1e2e;color:${
-      pinned ? '#f9a8d4' : '#8b949e'};border:1px solid rgba(255,45,149,${pinned ? '0.45' : '0.18'});border-radius:3px;padding:1px 2px;margin:2px 2px 0 0;flex:1 1 46%;min-width:0;max-width:100%">`;
+    let h = `<select ${aired ? 'disabled ' : ''}onchange="event.stopPropagation();_setDRPick(${ep},'${key}',this.value)" onclick="event.stopPropagation()" title="${
+      aired ? 'This episode has already aired — what it was booked with is fixed. Weeks that have not aired yet can still be changed.' : title
+    }" style="font-size:10px;background:#1e1e2e;color:${
+      aired ? '#6b7280' : pinned ? '#f9a8d4' : '#8b949e'};border:1px solid rgba(255,45,149,${
+      aired ? '0.10' : pinned ? '0.45' : '0.18'});border-radius:3px;padding:1px 2px;margin:2px 2px 0 0;flex:1 1 46%;min-width:0;max-width:100%;${
+      aired ? 'cursor:not-allowed;opacity:.6' : ''}">`;
     for (const [v, label] of opts) {
       h += `<option value="${v}"${String(v) === String(cur) ? ' selected' : ''}>${label}</option>`;
     }
@@ -3146,7 +3167,17 @@ function _drPickers(ep) {
      star. The other thirteen fill whatever slots are left. Pinning one here
      takes it out of the automatic booking, so it runs on the week you chose
      instead of a week the schedule picked. */
-  return sel('maxiId',
+  /* The banner is not decoration: without it a greyed row reads as broken
+     rather than as history. `noRebook` is the older-save case — a season played
+     before the schedule was recorded cannot freeze its aired weeks, so nothing
+     on it can be re-booked and the note says which of the two this is. */
+  const banner = !aired ? ''
+    : `<div style="flex:1 1 100%;font-size:9px;letter-spacing:.6px;color:#6b7280;margin:2px 0 0" title="${
+      noRebook ? 'This season was played before the running order was recorded, so it cannot be re-booked at all.'
+        : 'Already aired. Change a week further down the timeline and it will run what you pick.'
+    }">${noRebook ? 'AIRED · SEASON NOT RE-BOOKABLE' : 'AIRED · BOOKING FIXED'}</div>`;
+
+  return banner + sel('maxiId',
     [['', '— maxi: schedule decides —'],
       ...tent.map(m => [m.id, '★ ' + m.name]),
       ...rest.map(m => [m.id, m.name])],

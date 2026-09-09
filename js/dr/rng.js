@@ -49,3 +49,37 @@ export function rngFor(seed = 1) {
     return state / 4294967296;
   };
 }
+
+/**
+ * An INDEPENDENT stream off the same season seed.
+ *
+ * The season used to walk one generator from its first decision to its last,
+ * which made every decision depend on how many numbers the decisions before it
+ * happened to draw. That is what made a drag season un-editable: pinning the
+ * Ball onto episode five changed how many draws `buildSchedule` took, and the
+ * whole season downstream of it came out different -- so a pin could not be
+ * applied to a season already in progress without silently rewriting weeks the
+ * viewer had already watched.
+ *
+ * `streamFor(seed, salt)` gives the schedule its own dice and every episode its
+ * own dice, so a change to one week moves that week and nothing else.
+ *
+ * THE SALT IS AVALANCHED, NOT ADDED. rngFor's first draw is a linear function
+ * of its seed (see above), so `rngFor(seed + episode)` would hand consecutive
+ * episodes nearly the same opening number -- the same defect that put the same
+ * tentpole last in forty consecutive seasons. Seed and salt are mixed through
+ * two multiply-xorshift rounds and four draws are burned on top, which is what
+ * the note above asks of anything deciding from a fresh stream.
+ */
+export function streamFor(seed = 1, salt = 0) {
+  const s = typeof salt === 'string'
+    ? [...salt].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7)
+    : (Number(salt) || 0) >>> 0;
+  let h = (Math.imul(seed >>> 0, 2654435761) ^ Math.imul(s + 0x9e37, 40503)) >>> 0;
+  h = (h ^ (h >>> 15)) >>> 0; h = Math.imul(h, 2246822519) >>> 0;
+  h = (h ^ (h >>> 13)) >>> 0; h = Math.imul(h, 3266489917) >>> 0;
+  h = (h ^ (h >>> 16)) >>> 0;
+  const r = rngFor(h);
+  r(); r(); r(); r();
+  return r;
+}

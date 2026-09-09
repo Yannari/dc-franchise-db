@@ -14,6 +14,24 @@
 // stacks it onto the history, which is the "episodes that never happened"
 // corruption the castle hit.
 //
+// ── AND THE QUEUE IS NOT THE LAST WORD ──
+// Because the whole season is decided on the first press, a challenge pinned on
+// the timeline AFTER episode one had already aired changed nothing at all: the
+// dropdown went pink, the config was saved, and the week it named had been
+// booked minutes earlier. Reported as "I picked the Ball and it ran the
+// LaLaPaRUza" — and the timeline had no way to say so, because from its side
+// the pin was stored correctly.
+//
+// `invalidateDragQueue` drops the unaired half of the season so the next press
+// re-books it against the config as it now stands. That is only safe because of
+// two things, and it is wrong without either:
+//
+//   * js/dr/rng.js `streamFor` — the schedule and every week draw from their
+//     own dice, so a change to week five does not shift week two's numbers;
+//   * `_frozenPins` below — the weeks already watched are handed back as pins,
+//     so the re-book replays them exactly rather than inventing a second
+//     version of an episode the viewer has already seen.
+//
 // IMPORTING THIS MODULE IS THE WIRING. It sets `window._drRunnable`, which
 // `formatIsRunnable()` reads to decide whether the show can be started at all.
 // Drop the import from js/main.js and the show silently un-ships with every
@@ -85,6 +103,61 @@ function _twistsToSchedule() {
   return [...byEp.values()].sort((x, y) => x.episode - y.episode);
 }
 
+/**
+ * The weeks already watched, in the engine's own schedule shape.
+ *
+ * `playDragSeason` returns the row it actually ran each night — challenge,
+ * mini, judge, guest, song, runway category and every twist flag — and it is
+ * kept on `gs._drSchedule`. Handed back as pins, those weeks come out of a
+ * re-book byte-identical, so re-booking the FUTURE cannot rewrite the past.
+ *
+ * An older save has no `_drSchedule`, which is why the re-book is refused
+ * rather than attempted below: a rebuild with nothing frozen would replay a
+ * different season under a history that has already aired.
+ */
+function _frozenPins() {
+  const aired = (gs.episodeHistory || []).length;
+  if (!aired) return [];
+  return (Array.isArray(gs._drSchedule) ? gs._drSchedule : [])
+    .filter(r => r && Number(r.episode) <= aired);
+}
+
+/**
+ * Whether this season recorded what each night was booked with.
+ *
+ * A season played before `_drSchedule` existed did not, so its aired weeks
+ * cannot be frozen and nothing on it can be re-booked — the timeline says which
+ * of the two an aired week is rather than greying it identically in both cases.
+ */
+export function dragScheduleRecorded() {
+  if (!gs) return true;
+  const aired = (gs.episodeHistory || []).length;
+  return !aired || _frozenPins().length >= aired;
+}
+
+/** Can the unaired weeks be re-booked from the timeline as it now stands? */
+export function dragQueueEditable() {
+  return !!gs && Array.isArray(gs._drQueue) && dragScheduleRecorded();
+}
+
+/**
+ * Throw away the unaired weeks so the next episode re-books them.
+ *
+ * Called from the timeline whenever a pin changes. Nothing is simulated here —
+ * the season is rebuilt on the next press of Simulate Episode, which is also
+ * the path a reload already takes.
+ */
+export function invalidateDragQueue() {
+  if (!dragQueueEditable()) return false;
+  delete gs._drQueue;
+  return true;
+}
+
+/** How many drag episodes have already aired — the timeline locks those. */
+export function dragEpisodesAired() {
+  return (gs?.episodeHistory || []).length;
+}
+
 /** Whether a season-wide drag twist is booked at all. */
 function _twistBooked(id) {
   return (seasonConfig.twistSchedule || []).some(b => b && (b.type === id || b.id === id));
@@ -109,7 +182,19 @@ function _config() {
        sits directly before the crowning. `_twistBooked('dr-smackdown')` is
        still read so a season saved while it WAS a twist still plays. */
     drSmackdown: !!seasonConfig.drSmackdown || _twistBooked('dr-smackdown'),
-    drSchedule: _twistsToSchedule(),
+    /* THE AUTHOR'S BOOKING, WITH THE WEEKS ALREADY WATCHED NAILED DOWN OVER
+       THE TOP OF IT. A frozen row is the complete week the engine ran, so it
+       replaces the author's partial pin for that episode outright rather than
+       merging into it — a pin the designer adds to episode two after episode
+       two has aired must not change episode two. */
+    drSchedule: (() => {
+      const booked = _twistsToSchedule();
+      const frozen = _frozenPins();
+      if (!frozen.length) return booked;
+      const byEp = new Map(booked.map(r => [Number(r.episode), r]));
+      for (const r of frozen) byEp.set(Number(r.episode), { ...r });
+      return [...byEp.values()].sort((x, y) => x.episode - y.episode);
+    })(),
     drJudgeWeights: seasonConfig.drJudgeWeights || {},
   };
 }
@@ -148,11 +233,20 @@ function _playWholeSeason() {
   });
 
   gs._drQueue = out.rows;
+  // What every night was actually booked with, so a later re-book can freeze
+  // the weeks that have already gone out. See `_frozenPins`.
+  gs._drSchedule = out.schedule || [];
   // A mirror for the screens, not a second source of truth: every episode
   // screen reads its own row. `star` is here because the aftermath reads it
   // once at the end, never during.
   gs.dr = {
-    star: out.state.star, castOrder: out.state.castOrder, episodes: [],
+    star: out.state.star, castOrder: out.state.castOrder,
+    /* THE EPISODES ALREADY AIRED STAY ON THE MIRROR. This was `[]`, which was
+       right on a fresh season and wrong on every rebuild: a reload — and now a
+       re-book — emptied the mirror while `gs.episodeHistory` still held the
+       nights, so anything reading `gs.dr.episodes` saw a season that started at
+       whichever episode was played next. */
+    episodes: (gs.episodeHistory || []).filter(r => r && r.dr),
     // The sash. `stats-export.js` reads `gs.dr.congeniality` when it builds
     // the season document, and until this line was here it read undefined on
     // every played season — the award was computed, stored on the finale row,
@@ -168,9 +262,11 @@ export function simulateDragEpisode() {
   if (!gs) return null;
 
   if (!Array.isArray(gs._drQueue)) {
-    // The queue was lost — a reload, or an older save. Rebuild the SAME season
-    // from the seed and drop the episodes that already aired, rather than
-    // replaying from episode one on top of them.
+    /* No queue: a reload, an older save, or a pin changed on the timeline and
+       `invalidateDragQueue` threw the unaired weeks away. All three rebuild the
+       season from the seed and drop the episodes that already aired, rather
+       than replaying from episode one on top of them — and the aired weeks come
+       back identical because `_config` freezes them (see `_frozenPins`). */
     const aired = (gs.episodeHistory || []).length;
     if (!_playWholeSeason()) return null;
     if (aired > 0 && Array.isArray(gs._drQueue)) gs._drQueue = gs._drQueue.slice(aired);

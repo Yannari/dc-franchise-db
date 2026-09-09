@@ -37,8 +37,19 @@ const ARCH_BIAS = {
   'loyal-soldier': { pageant: 0.2, glamour: 0.1 },
   wildcard: { camp: 0.3, art: 0.2 },
   'chaos-agent': { 'club-kid': 0.3, camp: 0.2, pageant: -0.2 },
-  floater: {},
-  underdog: { underdogFriendly: 0 },
+  /* THE TWO SEATS THAT HAD NO OPINION. `floater` was an empty object and
+     `underdog` held `underdogFriendly: 0` — not a runway style (see
+     DRAG_STYLES in js/dr/queen.js) and zero besides, so both archetypes sat on
+     the panel contributing nothing but their stats. Thirteen of fifteen had a
+     taste and these two did not, and no test caught it because the guest draw
+     had never once landed on either: the schedule walked one rng stream, so
+     the same handful of alumni came up season after season. Giving every
+     episode its own dice drew a floater on the first try and the guard failed
+     immediately.
+     A floater is not tasteless, she is SAFE — she likes what a room likes.
+     An underdog rewards the queen who built it herself and took the swing. */
+  floater: { glamour: 0.15, pageant: 0.1 },
+  underdog: { art: 0.2, 'club-kid': 0.15, pageant: -0.1 },
   hero: { pageant: 0.2, glamour: 0.2 },
   goat: { comedy: 0.2 },
   'perceptive-player': { art: 0.2, fashion: 0.1 },

@@ -57,17 +57,17 @@ const warm = (i, a = 'Ada', b = 'Bex') => ({
 // at the mercy of the rate.
 const always = { chance: 1, max: 99 };
 
-describe('the pools ship unwritten, and that is not a failure', () => {
-  it('reports the whole backlog', () => {
-    expect(unwrittenConfessionalTiers().sort()).toEqual([...CONFESSIONAL_IDS].sort());
+describe('every pool is written', () => {
+  it('reports no backlog', () => {
+    expect(unwrittenConfessionalTiers()).toEqual([]);
   });
 
-  it('emits nothing at all while they are empty', () => {
+  it('emits cards now that the pools are filled', () => {
     const rows = confessionalsFor({
       scenes: [cold(1), cold(2), cold(3)], room: ROOM, players: PLAYERS,
       rng: rngFor(1), ...always,
     });
-    expect(rows, 'an unwritten pool produced a card').toEqual([]);
+    expect(rows.length, 'filled pools should produce cards').toBeGreaterThan(0);
   });
 });
 

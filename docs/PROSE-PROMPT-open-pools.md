@@ -1,4 +1,4 @@
-# Writing prompt — the four pools still empty
+# Writing prompt — the pools still empty
 
 Hand this whole file to the writing model. It is self-contained: everything
 needed to understand the assignment is here, though the repo is needed to make
@@ -9,16 +9,21 @@ entirely written. **Everything below was measured, not remembered** — the
 codebase reports its own backlog, and this is that report:
 
 ```
-unwrittenChallengeTiers   6   the-division/two-casts, the-division/pairs,
-                              studio-taping/{made-the-scene, takes-direction,
-                              many-resets, argued-with-him}
+unwrittenChallengeTiers   4   the-division/paired,
+                              paired-off/{dumped-on, looked-after, next-name}
 unwrittenCritiqueVoices   4   delivery:blunt/{praise,fault}, delivery:kind/{praise,fault}
-unwrittenMaxiEvents       4   workshopped, read-her-verse, upstaged-her, covered-for-her
-unwrittenMaxiVoices       4   pick:group-slots/{got-it, settled, left-over, picked-last}
+unwrittenMaxiEvents       2   handed-the-hardest, paired-them-well
+unwrittenMaxiVoices       0   — written
 ```
 
-**18 slots, about 90 lines.** Run the same report when you are done and it
-should print nothing.
+The first three lines are §7, all of them the makeover, all of them new. The
+`studio-taping`, `pick:group-slots` and rumix pools this file was originally
+written for have since been filled and their sections below are kept only
+because the house rules and the method still apply.
+
+**10 slots, about 50 lines.** Run the same report when you are done and only
+`unwrittenCritiqueVoices` — §6, which is somebody's design decision — should
+still print.
 
 ---
 
@@ -235,3 +240,78 @@ to every critique every week, stops being a note.
 The clause is about the DELIVERY and never the fault: the reason line before it
 has already said what was wrong. Ask before writing these — if they were left
 empty deliberately, adding them changes how every critique in the show reads.
+
+---
+
+## 7. The makeover, where nobody picked and nobody was cast
+
+**This is the live one.** The other sections are history; these six pools are
+empty right now and a makeover episode is quietly poorer for it.
+
+**What changed, and why these exist.** The makeover used to run a draft:
+everybody ranked the partners, the picks were handed out in order. It was wrong
+twice over — mechanically, because every queen ranked them off the same number
+and so wanted the same man and lost him ("not her first choice" on seven cards
+in a row is a queue, not a draft), and about the show, because there is no
+scramble for a makeover partner. **The mini winner is handed the whole room and
+pairs everybody**, which is a far better mechanic: it gives one queen real power
+over everybody's week, and what she does with it is the story. She keeps the
+best for herself. She can hand her rival the hardest man in the room, in front
+of everybody, smiling.
+
+That created a third state the screen had no words for — *paired by another
+queen*, which is neither choosing nor being cast by the host — and until these
+pools exist it borrows the music video's call sheet, which is how "the role
+exists in the video" came to print over a challenge about a wig.
+
+### 7a. `the-division/paired` — `js/dr/data/challenge-beats.js`
+
+**1 slot, 4 lines.** Fires ONCE, before anybody is paired. Placeholders: **none
+at all** — this beat is `scope: 'once'` and has no queen attached. Writing `{a}`
+here prints the literal `{a}` on screen; that exact bug has already shipped once
+on this beat family.
+
+Read the `draft` and `captains` tiers directly above it in the file — same job,
+same register. The content: the host says who won the mini and that she is
+pairing the room. Then the room does the arithmetic. Everybody is now waiting to
+find out what one person thinks of them, out loud, and there is nothing they can
+do about it. This is not a draft — nobody is counting slots, and nobody gets a
+turn.
+
+### 7b. `paired-off` — `js/dr/data/challenge-beats.js`
+
+**3 slots, 4 lines each.** Fires once **per queen**, after the division, as she
+finds out who she is working with. Placeholders: **`{a}`** the queen being
+paired, **`{b}`** the queen doing the pairing. Nothing else.
+
+The tiers are what was *meant* by it. The engine already decided which one —
+never write a line that argues with its tier.
+
+- **`dumped-on`** — `{b}` gave `{a}` the hardest partner in the room and the
+  room understood it immediately. One a night, so it should read as an event.
+  `{a}`'s reaction is the interesting half: this is a challenge she now has to
+  win from behind, and saying so out loud makes her sound like she is making
+  excuses before she starts.
+- **`looked-after`** — `{b}` deliberately gave `{a}` somebody she can work with.
+  Careful: this is generosity, not a gift-wrapped win. The partner still has to
+  be turned into a queen and the room noticing the kindness has its own cost —
+  a visible alliance on a night the panel is watching everybody.
+- **`next-name`** — no message in it. `{a}` was simply next. Most of the room is
+  this tier, so these four lines carry the volume and must not be
+  interchangeable. Write the *specific* small thing: sizing him up, the first
+  handshake, the exact moment she realises what she has been given.
+
+### 7c. `handed-the-hardest` and `paired-them-well` — `js/dr/data/maxi-events.js`
+
+**2 slots, 4 lines each.** These are the werk room *events* behind the two
+pointed tiers, and they are a different camera: 7b is `{a}` finding out, this is
+the room watching `{b}` do it. Placeholders: **`{a}` is the queen doing the
+pairing, `{b}` the one receiving it** — the opposite way round from 7b, so check
+yourself twice.
+
+Both already carry consequences in the engine (bond and popularity move on
+`{a}`), so the prose must earn them: `handed-the-hardest` costs `{a}` standing
+because the room saw it and did not like it, and `paired-them-well` buys her
+some. Write what makes that true — the pause before the name, who looks at whom,
+what is said in the smallest possible voice afterwards. Do not have `{b}`
+retaliate: the engine has not decided that.

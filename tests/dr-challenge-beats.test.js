@@ -84,6 +84,16 @@ describe('the schema', () => {
       for (const t of b.tiers) {
         for (const l of t.lines) {
           expect(l, `${b.id}/${t.id} uses {b}`).not.toMatch(/\{b\}/);
+          /* A `once` BEAT FIRES WITH AN EMPTY PLAYER LIST, so `{a}` fills to
+             nothing and leaves a hole rather than a visible placeholder — the
+             solo division card printed `"Good," says. She means it.` for as
+             long as anybody had been playing solo challenges. Invisible to the
+             placeholder guard, which looks for `{x}` surviving, because this
+             one is replaced correctly with the empty string. */
+          if (b.scope === 'once') {
+            expect(l, `${b.id}/${t.id} is a once beat and has no {a} to name`)
+              .not.toMatch(/\{a\}/);
+          }
           if (b.speaker !== 'host') {
             expect(l, `${b.id}/${t.id} has no host but uses {c}`).not.toMatch(/\{c\}/);
           }

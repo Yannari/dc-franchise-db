@@ -1189,7 +1189,21 @@ export function renderChallengeBeats({
       : castNotChosen ? 'cast'
         : (assignment.contested !== false && Object.keys(assignment.picks || {}).length)
           ? 'draft' : 'solo');
-  emit(beatById('the-division'), kind, []);
+  /* ── AND WHERE IT IS SAID ──
+     Normally on the draft screen, which is what the choice step is. But three
+     challenges hand out NOTHING — the ball, the photoshoot, the runway
+     challenge — so on those nights the draft screen was a heading, a click and
+     one sentence saying there is nothing to draft. Reported as "remove the
+     draft screen when unnecessary".
+     Dropping the scene would be worse than the screen: it is a real line about
+     a real fact, and tests/dr-vp-sweep.test.js is right to refuse a scene that
+     is written and then filed nowhere. So it moves UP to the brief, which is
+     where "you are all on your own this week" belongs anyway — the host says
+     it as part of announcing the challenge. */
+  const handsOutNothing = !Object.keys(assignment.picks || {}).length
+    && (assignment.teams || []).length < 2;
+  emit(beatById('the-division'), kind, [], {},
+    handsOutNothing ? 'maxi-announce' : null);
   /* ── AND WHAT SHE ACTUALLY GOT ──
      Eleven of these fired on one Snatch Game and between them they said "the
      pick", "it", "this one" and "what is available" — on a night where the

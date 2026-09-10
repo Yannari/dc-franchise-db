@@ -1824,6 +1824,19 @@ export function rpBuildChoice(row) {
     return _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData);
   }
 
+  /* ── A SCREEN FOR ONE PARAGRAPH IS NOT A SCREEN ──
+     The ball, the photoshoot and the runway challenge hand out nothing, so
+     this screen was a heading, a click and one sentence saying there is
+     nothing to draft. js/dr/stage.js now says that sentence on the BRIEF
+     instead — moving it rather than dropping it, because a written scene that
+     is filed nowhere is what tests/dr-vp-sweep.test.js exists to refuse — and
+     the choice step on those nights is simply empty, so this returns early on
+     the line below without needing a rule of its own.
+     Kept as a belt: a challenge that emits a choice scene and hands nothing
+     out still has no board to draw. */
+  const hasTeams = (a.teams || []).length > 1;
+  const onlyDivision = scenes.length && scenes.every(s => s.kind === 'chal:the-division');
+  if (!picks.length && !hasTeams && onlyDivision) return '';
   if (!picks.length && !scenes.length) return '';
 
   const contested = a.contested !== false && picks.some(([, p]) => p?.lostTo);

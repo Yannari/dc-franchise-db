@@ -232,7 +232,11 @@ export const CHALLENGE_BEATS = [
         "No teams. No partners. No captain, no draft, no safety net. Everybody is on her own this week. The room is relieved they cannot be dragged down and terrified they have nobody to hide behind.",
         "\"You are all on your own.\" The sentence changes the room. Some queens straighten up — solo means their talent is the only variable. Others go quiet. Solo means there is nobody to share the blame with. \"Just me and my sewing machine,\" someone says.",
         "Solo week. The relief is immediate. Everybody is glad they do not have to depend on somebody else. Everybody is also aware that depending on somebody else was a place to put the blame. This week the blame lives at home.",
-        "Nobody is paired. Nobody is grouped. Solo means the best version of yourself wins and the worst version goes. No buffer. No partner. No excuse. \"Good,\" {a} says. She means it. Probably.",
+        /* NO {a} HERE. `the-division` is `scope: 'once'` and fires with an empty
+         player list, so `{a}` filled to nothing and the card printed
+         "\"Good,\" says. She means it." — a quote with the speaker cut out of
+         it. The schema test below now refuses `{a}` on a once-scope beat. */
+      "Nobody is paired. Nobody is grouped. Solo means the best version of yourself wins and the worst version goes. No buffer. No partner. No excuse. Somewhere in the room somebody says \"good\" out loud and means it. Probably.",
       ]),
     ],
   },

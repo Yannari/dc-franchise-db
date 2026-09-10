@@ -268,12 +268,21 @@ function _playWholeSeason() {
     ? JSON.parse(JSON.stringify(gs.bondLean)) : null;
   const savedPerceived = isRebuild && gs.perceivedBonds
     ? JSON.parse(JSON.stringify(gs.perceivedBonds)) : null;
+  const savedEpisode = isRebuild ? gs.episode : null;
 
   if (isRebuild && gs._drInitBonds) {
     gs.bonds = JSON.parse(JSON.stringify(gs._drInitBonds));
     gs.bondLean = JSON.parse(JSON.stringify(gs._drInitLean || {}));
     gs.perceivedBonds = {};
     gs.popularity = {};
+    /* AND THE WEEK NUMBER, which is bond state too. js/bonds.js reads
+       `gs.episode` in four places -- the drift term is `Math.max(bb weeks,
+       gs.episode)`, and a perceived bond is stamped `createdEp: gs.episode + 1`
+       -- so a rebuild pressed on episode ten computed every bond as though ten
+       weeks had already worn on it. The first play ran the whole season with
+       `gs.episode` at 0, because nothing inside playDragSeason advances it;
+       only airing a row does. Zero here is what the first play saw. */
+    gs.episode = 0;
   }
 
   // Perceived bonds, not real ones: what a queen believes about the room is
@@ -310,6 +319,8 @@ function _playWholeSeason() {
     if (savedPop) gs.popularity = savedPop;
     if (savedLean) gs.bondLean = savedLean;
     if (savedPerceived) gs.perceivedBonds = savedPerceived;
+    // The live week comes back with the rest of the checkpoint's state.
+    if (savedEpisode != null) gs.episode = savedEpisode;
   }
 
   gs._drQueue = out.rows;
@@ -364,6 +375,26 @@ export function simulateDragEpisode() {
   // roster, and a queen who is not on it is billed nothing.
   gs.activePlayers = [...(row.dr?.living || [])];
   gs.episode = row.num;
+  /* A QUEEN WHO WALKED BACK ON COMES OFF THE ELIMINATED LIST. This only ever
+     appended, so a returnee was in `activePlayers` and in `gs.eliminated` on
+     the same night, and on it twice once she went out again. Big Brother has
+     cleared its returnee since the battle-back shipped (js/bb/battle-back.js,
+     js/bb/week.js); this show never learned to.
+
+     Drag Race's own placements read `exits[]` rather than this list -- see the
+     note at the top of js/dr/export.js -- so the show itself never tripped on
+     it. The franchise layer is where it bites: js/aftermath.js unions
+     gs.eliminated into the eliminated set, and met a queen still competing.
+
+     THE FILTER RUNS BEFORE THE APPEND. Today nothing depends on it: a returnee
+     is immune on her return night (js/dr/week.js gives her the pass), so she
+     cannot be in `exits` on the night she is in `returned`. Written this way
+     round so that lifting the immunity is a rule change and not a corruption --
+     filtering after the append would erase the exit it had just written. */
+  if (row.dr?.returned?.name) {
+    const back = row.dr.returned.name;
+    gs.eliminated = (gs.eliminated || []).filter(n => n !== back);
+  }
   gs.eliminated = [...(gs.eliminated || []), ...row.exits.map(x => x.name)];
 
   /* THE AUDIENCE PULSE, which this show was not calling at all. The edit layer

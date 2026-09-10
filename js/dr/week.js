@@ -298,7 +298,29 @@ export function runDragWeek(state, cfg, ctx) {
   // or one she brought. Read from the walks rather than from the challenge,
   // because a module may replace the runway without changing the challenge.
   const runwayKind = walks.length > 1 ? 'ball' : (walks[0] && walks[0].sewn ? 'sewn' : 'call');
+  /* ── AND ON A DESIGN NIGHT THERE IS NO SECOND WALK ────────────────
+     A Ball, a Design challenge and a Runway challenge all deliver a LOOK: the
+     thing she presents on the main stage is the thing the challenge set her to
+     make. Rolling `runwayScore` on top of the challenge scored that one look
+     twice -- the design blend already carries `runway` craft -- and the second
+     roll could disagree with the first, so a queen could win the challenge and
+     be marked down on the walk that WAS the challenge.
+     The challenge result is the walk here. The runway object keeps its shape
+     because the panel and the chart read `runway[n].score`; what goes away is
+     the independent dice, the host's separate category call, and the Runway
+     section on the screen (`dr-runway` opens on the marker below). */
+  /* NOT GUARDED ON `M.runwayOverride`, and the first version was: js/dr/chal/
+     ball.js and js/dr/chal/design.js both set one, to describe the very walk
+     being folded in here, so the guard switched the feature off for precisely
+     the three challenges it was written for. The flag is authored per
+     challenge; that is the whole decision. */
+  const runwayIsChallenge = !!maxi.runwayIsChallenge;
   for (const n of living) {
+    if (runwayIsChallenge) {
+      const perf = performances[n] ? performances[n].perf : 0;
+      runway[n] = { score: perf, fit: null, walks: [perf], isChallenge: true };
+      continue;
+    }
     const scored = walks.map(w => runwayScore({
       player: P(n), category: w.category, sewn: !!w.sewn,
       categoryStyles: w.sewn ? [] : (w.categoryStyles || []), rng,
@@ -309,7 +331,7 @@ export function runDragWeek(state, cfg, ctx) {
       walks: scored.map(x => x.score),
     };
   }
-  if (!M.tournamentExit) say('runway', 'runway', { category });
+  if (!M.tournamentExit && !runwayIsChallenge) say('runway', 'runway', { category });
 
   // 12. The panel sees, and the host decides.
   const entries = living.map(n => ({
@@ -995,6 +1017,8 @@ export function runDragWeek(state, cfg, ctx) {
          somebody on the panel to have said it. */
       category,
       runwayKind,
+      // No separate walk beats on a night whose challenge IS the walk.
+      runwayIsChallenge,
       panelSeats,
       players,
       // The panel's own disagreement and the host's overrule, so the

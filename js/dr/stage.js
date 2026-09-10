@@ -178,6 +178,12 @@ export function renderStageBeats({
      roster records, because a queen narrating her own walk needs her drag
      style and her archetype and the runway result carries neither. */
   category = '', runwayKind = 'call', panelSeats = [], players = {},
+  /* THE WALK IS THE CHALLENGE ON A DESIGN NIGHT, so it is not walked again.
+     The challenge beats have already shown the look; a second run of the walk
+     beats narrates the same garment twice, in the register of a themed
+     category call it never had. See `runwayIsChallenge` in
+     js/dr/data/challenges.js. */
+  runwayIsChallenge = false,
   /* WHAT THE SONG IS FOR, and whether the panel is even speaking tonight.
      The same two queens on the same stage means something completely
      different on a night nobody can lose. */
@@ -356,6 +362,7 @@ export function renderStageBeats({
   const walkBeat = beatById('walk');
   const fitBeat = beatById('walk-fit');
   for (const n of walking) {
+    if (runwayIsChallenge) break;
     if (!runway[n]) continue;
     const r = runway[n];
     const tierId = tierAt(fractionalRank(n, runwayScores), RUNWAY_TIERS);

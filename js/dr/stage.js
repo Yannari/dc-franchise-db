@@ -1274,6 +1274,7 @@ export function renderChallengeBeats({
       data: {
         beat: 'pick-reaction', tier: tierId, players: [n], note: t.note,
         choice: p.choice, pickKind: kindId, voiced: true,
+        lostTo: p.lostTo || null,
       },
       text: fill(pick(lines, rng, usedLines, `pick/${kindId}/${tierId}`),
         { a: n, c: maxi.name, d: choiceLabel(p.choice) }),

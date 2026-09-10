@@ -488,6 +488,18 @@ export function recordBeat(storylines, { episode, row, state, cast = null }) {
       if (s.arc !== 'frontrunner' || !s.alive || s.flipped !== 'overtaken') continue;
       const n = s.players[0];
       if (!living.includes(n) || !isAhead(n)) continue;
+      /* ── THE REVIVAL IS CAPPED TOO ──
+         `room` below subtracts `already` from FRONT_CAP, so nothing NEW can
+         breach the cap — but this loop adds to `already` after it is counted
+         and had no limit of its own. Three live arcs plus a queen retaking
+         hers is four, which is the one number this whole block exists to
+         prevent, and the arithmetic below cannot undo it: `room` simply goes
+         negative and opens nobody.
+         Caught as "ep 8 follows 4 front-runners" after an unrelated change
+         moved the season draw. She stays flipped when the room is full — her
+         arc is still there and still true, and it revives the week somebody
+         else's ends. */
+      if (already.size >= FRONT_CAP) break;
       s.flipped = null;
       beat(s, 'retook', {});
       already.add(n);

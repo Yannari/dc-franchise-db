@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it } from 'vitest';
 import { PARTNER_POOLS } from '../js/dr/chal/makeover.js';
+import { GUEST_POOLS } from '../js/dr/data/partners.js';
 import { runMaxi, applyEvents } from '../js/dr/maxi.js';
 import { maxiById } from '../js/dr/data/challenges.js';
 import { rngFor } from '../js/dr/rng.js';
@@ -28,12 +29,36 @@ function ctx(seed = 1, players = Object.fromEntries(NAMES.map(n => [n, mk(n)])),
 
 describe('the partner pools', () => {
   it('has a pit crew and a family pool, each graded by how well they take to it', () => {
+    /* THE AUTHORED COHORTS MOVED TO js/dr/data/partners.js when they got
+       faces. `loved-ones` stayed behind because it is relationships rather
+       than people — "her aunt" has no portrait and should not have one. */
+    const pools = { ...GUEST_POOLS, 'loved-ones': PARTNER_POOLS['loved-ones'] };
     for (const key of ['superfans', 'veterans', 'seniors', 'athletes', 'pit-crew', 'loved-ones']) {
-      expect(PARTNER_POOLS[key].length, key).toBeGreaterThanOrEqual(12);
-      expect(new Set(PARTNER_POOLS[key].map(p => p.name)).size, key).toBe(PARTNER_POOLS[key].length);
-      for (const p of PARTNER_POOLS[key]) {
+      expect(pools[key].length, key).toBeGreaterThanOrEqual(12);
+      expect(new Set(pools[key].map(p => p.name)).size, key).toBe(pools[key].length);
+      for (const p of pools[key]) {
         expect(p.ease, `${key}/${p.name}`).toBeGreaterThanOrEqual(1);
         expect(p.ease, `${key}/${p.name}`).toBeLessThanOrEqual(10);
+      }
+    }
+
+    /* AND NO TWO COHORTS ARE THE SAME PEOPLE, which is the whole reason this
+       data moved. `superfans` and `pit-crew` shared all twelve names for as
+       long as they both existed, so booking one got you the other at a
+       different difficulty and nothing in the suite noticed. */
+    const keys = Object.keys(GUEST_POOLS);
+    for (let i = 0; i < keys.length; i++) {
+      for (let j = i + 1; j < keys.length; j++) {
+        const a = new Set(GUEST_POOLS[keys[i]].map(p => p.name));
+        const shared = GUEST_POOLS[keys[j]].filter(p => a.has(p.name)).map(p => p.name);
+        expect(shared, `${keys[i]} and ${keys[j]} share people`).toEqual([]);
+      }
+    }
+
+    // Every authored guest has a face, and it is not in the players' directory.
+    for (const [key, pool] of Object.entries(GUEST_POOLS)) {
+      for (const p of pool) {
+        expect(p.portrait, `${key}/${p.name} has no portrait`).toMatch(/^assets\/guests\//);
       }
     }
     // The returnee pool is built at run time from whoever has gone home.

@@ -30,36 +30,22 @@ import { noise, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
 import { alumniPool } from '../../alumni.js';
 import { SHOWS, DRAG_FORMAT } from '../../shows.js';
+import { drawPartners, GUEST_POOLS } from '../data/partners.js';
 
 const crew = (name, ease) => ({ id: name.toLowerCase().replace(/\W+/g, '-'), name, ease });
 
 // `ease` is how well a partner takes to it: a dancer walks, a shy one has to
 // be carried through every step of it.
+/* ── THE AUTHORED COHORTS MOVED OUT ──
+   They were six arrays of invented first names in this file, two of which were
+   the same twelve people — see the header of js/dr/data/partners.js. They have
+   faces now and they live with the rest of the show's authored data, which is
+   also where the next person will look for them. */
+export { PIT_CREW, GUEST_POOLS } from '../data/partners.js';
+
 export const PARTNER_POOLS = {
-  // The most-booked version: fans of the show, thrilled to be there.
-  superfans: [crew('Marco', 9), crew('Devon', 8), crew('Rafa', 9), crew('Ty', 7),
-    crew('Bruno', 8), crew('Kai', 9), crew('Sol', 7), crew('Ivo', 8),
-    crew('Nate', 9), crew('Quin', 7), crew('Ash', 8), crew('Rome', 8)],
-  // Service veterans. Game, disciplined, starting from zero.
-  veterans: [crew('Sergeant Hale', 5), crew('Corporal Diaz', 6), crew('Captain Boone', 4),
-    crew('Private Okafor', 7), crew('Major Reyes', 4), crew('Lieutenant Frost', 5),
-    crew('Sergeant Vance', 6), crew('Corporal Mbeki', 7), crew('Officer Lange', 5),
-    crew('Airman Cole', 6), crew('Gunner Petrov', 4), crew('Ensign Marsh', 6)],
-  // Older guests, who have usually seen more than the queen painting them.
-  seniors: [crew('Dot', 6), crew('Winifred', 5), crew('Harold', 4), crew('Estelle', 7),
-    crew('Mabel', 6), crew('Cyril', 3), crew('Norma', 7), crew('Reg', 4),
-    crew('Joyce', 6), crew('Albert', 3), crew('Pearl', 8), crew('Stan', 5)],
-  // Athletes: physically fearless and completely lost in a heel.
-  athletes: [crew('Ash Kovac', 6), crew('Bex Toure', 7), crew('Cam Whitlock', 5),
-    crew('Dani Ferraro', 8), crew('Emeka Bright', 6), crew('Frankie Sol', 7),
-    crew('Gio Vance', 5), crew('Hana Belov', 8), crew('Iggy Marsh', 6),
-    crew('Jules Okonkwo', 7), crew('Kit Rasmussen', 5), crew('Lex Amari', 6)],
-  // The show's own crew, when the season books that version.
-  'pit-crew': [crew('Marco', 8), crew('Devon', 6), crew('Rafa', 9), crew('Ty', 5),
-    crew('Bruno', 7), crew('Kai', 8), crew('Sol', 4), crew('Ivo', 6),
-    crew('Nate', 9), crew('Quin', 5), crew('Ash', 7), crew('Rome', 6)],
-  // The one cohort that is not shared: her own person, so nothing is drafted
-  // and two queens can both bring a sister.
+  // The one cohort that is not a roster of people: her own person, so nothing
+  // is drafted and two queens can both bring a sister.
   'loved-ones': [crew('her mother', 4), crew('her brother', 6), crew('her sister', 8),
     crew('her father', 3), crew('her cousin', 7), crew('her best friend', 9),
     crew('her aunt', 5), crew('her nephew', 6), crew('her uncle', 3),
@@ -71,29 +57,24 @@ export const PARTNER_POOLS = {
 };
 
 /* ── THE CROSSOVER MAKEOVER ──
-   The seven cohorts above are invented people: superfans, service veterans,
-   somebody's aunt. They are the show's own premise and they stay. This is the
-   eighth, and it is the one that could only exist in a franchise — the guests
-   walking through the door are people who actually played one of the other
-   shows, and the audience has watched them lose something.
+   The cohorts above are invented people with faces: superfans, service
+   veterans, the pit crew. They are the show's own premise and they stay. This
+   is the one that could only exist in a franchise — the guests walking through
+   the door are people who actually played one of the other shows, and the
+   audience has watched them lose something.
 
-   THE SHOW IS NOT A LIST. `js/shows.js` is the only place that knows what
-   shows exist, and docs/ADDING-A-SHOW.md §9 is emphatic that a second copy is
-   how a fourth show ends up wearing the first one's name. So the eligible
-   shows are DERIVED: every registered format that is not this one and that has
-   enough people on the ledger to fill a room. A show with nobody in it yet is
-   simply never offered, and the day it has a cast it starts appearing without
-   anybody editing this file.
+   THE SHOW IS NOT A LIST. js/shows.js is the only place that knows what shows
+   exist, and docs/ADDING-A-SHOW.md §9 is emphatic that a second copy is how a
+   fourth show ends up wearing the first one's name. So the eligible shows are
+   DERIVED: every registered format that is not this one and that has enough
+   people on the ledger to fill a room. A show with nobody in it yet is never
+   offered, and the day it has a cast it starts appearing without anybody
+   editing this file.
 
    DRAG RACE IS EXCLUDED, and not for a technical reason: a makeover is turning
    somebody who does not do drag into a drag sister, and another queen has no
-   transformation in her. The exclusion is `DRAG_FORMAT`, read from the
-   registry, so it is still not a hardcoded slug.
-
-   HOW EASY THEY ARE, from what the franchise already knows about them. A bold,
-   social player throws herself into it; somebody guarded has to be talked
-   through every step. Proportional, never a threshold — the same rule the rest
-   of the engine keeps. */
+   transformation in her. The exclusion reads `DRAG_FORMAT` from the registry,
+   so it is still not a hardcoded slug. */
 const ALUMNI_FLOOR = 8;
 
 /** Which registered shows could supply a room of partners right now. */
@@ -101,13 +82,12 @@ export function makeoverShows(exclude = []) {
   const barred = new Set(exclude);
   return Object.keys(SHOWS)
     .filter(f => f !== DRAG_FORMAT)
-    /* NATIVE ONLY. `alumniPool` widens to the whole franchise when a format
-       has fewer than `minNative` people in it — right for a guest judge, where
-       the question is "would anybody recognise her", and wrong here, where the
-       whole point is that these people played THAT show. Unfiltered it
-       reported 170 available for the castle, which has never had a cast: the
-       fallback had handed back the entire franchise wearing the castle's
-       name. */
+    /* NATIVE ONLY. `alumniPool` widens to the whole franchise when a format has
+       fewer than `minNative` people in it — right for a guest judge, where the
+       question is "would anybody recognise her", and wrong here, where the whole
+       point is that these people played THAT show. Unfiltered it reported 170
+       available for the castle, which has never had a cast: the fallback had
+       handed back the entire franchise wearing the castle's name. */
     .map(f => ({ format: f,
       people: alumniPool({ format: f, exclude: [...barred] }).filter(a => a?.native) }))
     .filter(x => x.people.length >= ALUMNI_FLOOR);
@@ -133,19 +113,18 @@ export function alumniPartners({ cast = [], rng = Math.random, format = null } =
   return chosen.people.map(a => {
     const st = (rowOf(a.name) || {}).stats || {};
     const num = k => (Number.isFinite(Number(st[k])) ? Number(st[k]) : 5);
-    /* Willingness rather than talent: nobody here has done drag before, so
-       what decides how the day goes is whether she will let somebody put her
-       in a corset and laugh about it. */
+    /* Willingness rather than talent: nobody here has done drag before, so what
+       decides how the day goes is whether she will let somebody put her in a
+       corset and laugh about it. Proportional, never a threshold. */
     const ease = Math.max(1, Math.min(10, Math.round(
-      3 + (num('boldness') - 5) * 0.45 + (num('social') - 5) * 0.35
-        + (num('temperament') - 5) * 0.2 + 4)));
+      7 + (num('boldness') - 5) * 0.45 + (num('social') - 5) * 0.35
+        + (num('temperament') - 5) * 0.2)));
     return {
       id: `alum-${(a.slug || a.name).toLowerCase().replace(/\W+/g, '-')}`,
       name: a.name,
       ease,
       fromShow: chosen.format,
-      /* The show she is from, said the registry's way. A screen that wants to
-         print "from Total Drama" asks SHOWS rather than owning the words. */
+      // Said the registry's way, so a screen never owns the show's name.
       fromShowName: SHOWS[chosen.format]?.name || chosen.format,
     };
   });
@@ -169,6 +148,12 @@ function poolFor(cfg, state, players, ctx) {
       rng: ctx?.rng, format: cfg?.makeoverShow || null,
     });
   }
+  /* THE FOUR AUTHORED COHORTS PLUS THE CREW, drawn rather than handed back in
+     written order — see `drawPartners`. `loved-ones` is not here because it is
+     relationships rather than people and every queen gets her own. */
+  if (GUEST_POOLS[cfg?.makeoverPool]) {
+    return drawPartners(cfg.makeoverPool, ctx?.rng);
+  }
   if (cfg?.makeoverPool === 'eliminated') {
     return (state?.out || []).map(n => ({
       id: n.toLowerCase(), name: n,
@@ -176,16 +161,33 @@ function poolFor(cfg, state, players, ctx) {
       isQueen: true,
     }));
   }
-  return PARTNER_POOLS[cfg?.makeoverPool] || PARTNER_POOLS.superfans;
+  /* THE FALLBACK IS DRAWN TOO. It used to be `PARTNER_POOLS.superfans`, a
+     fixed array that no longer lives in this file — an unbooked cohort would
+     have fallen back to `undefined` and paired every queen with nobody. */
+  return PARTNER_POOLS[cfg?.makeoverPool] || drawPartners('superfans', ctx?.rng);
 }
 
 export function assign(ctx) {
   const { living, players, rng, miniWinner, mini, cfg, state, bond } = ctx;
   const poolKey = cfg?.makeoverPool || 'superfans';
   let pool = poolFor(cfg, state, players, ctx);
-  // A returnee pool can be empty in an early week. Fall back rather than
-  // pairing everybody with nobody.
-  if (!pool.length) pool = PARTNER_POOLS.superfans;
+  /* ── A SHORT ROOM IS THE COMMON CASE, NOT AN EMPTY ONE ──
+     This only caught a pool with NOTHING in it, and the pool that needed it is
+     never quite empty: `eliminated` holds however many queens have gone home,
+     which on episode four is three of them. Nine queens, three partners, and
+     six cards reading "with a stranger" — which is what the fallback existed
+     to prevent and did not, because three is not zero.
+     The season scheduler keeps `eliminated` out of the draw before episode
+     five for this reason, but an author can pin it anywhere, and a control
+     that produces six strangers when used early is a trap rather than a
+     choice. Topped up from the superfans, which is what a production would
+     do. */
+  if (pool.length < living.length) {
+    const short = living.length - pool.length;
+    const taken = new Set(pool.map(p => p.id));
+    pool = [...pool, ...drawPartners('superfans', rng, short + 4)
+      .filter(p => !taken.has(p.id)).slice(0, short)];
+  }
 
   const order = pickOrder({ living, miniWinner, mini, rng });
   const events = [];
@@ -238,7 +240,7 @@ export function assign(ctx) {
 
 export function prepare(ctx) {
   const { living, players, assignment, rng } = ctx;
-  const pool = assignment.pool || PARTNER_POOLS.superfans;
+  const pool = assignment.pool || drawPartners('superfans', rng);
   const r = prepareRoom(ctx);
   const w = walkthrough({ ...ctx, prep: r.prep });
   const events = [...r.events, ...w.events];
@@ -256,6 +258,15 @@ export function prepare(ctx) {
       own: Math.round(own * 100) / 100,
       partner: Math.round(theirs * 100) / 100,
       partnerName: partner.name,
+      /* HIS FACE, WHICH THE SCREEN HAD NO WAY TO ASK FOR. The partners are
+         authored people with portraits now (js/dr/data/partners.js), and a
+         makeover card that names him without showing him is the one card in
+         the show where the second person is the whole point. Null for a loved
+         one and for an eliminated queen — a queen already has a portrait the
+         registry resolves, and "her aunt" is a relationship rather than a
+         face. */
+      partnerPortrait: partner.portrait || null,
+      partnerNote: partner.note || null,
       ease: partner.ease,
     };
     if (own - theirs > 3) {
@@ -290,6 +301,8 @@ export function perform(ctx) {
       parts: { prep: prep[n] || 0 },
       detail: {
         partner: L.partnerName,
+        partnerPortrait: L.partnerPortrait || null,
+        partnerNote: L.partnerNote || null,
         resemblance: Math.round(resemblance * 100) / 100,
         ownLook: L.own, partnerLook: L.partner,
       },

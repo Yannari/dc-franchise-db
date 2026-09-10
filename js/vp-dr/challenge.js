@@ -622,6 +622,14 @@ const CHAL_CSS = `
 /* The roast's room temperature, moving down the running order. */
 .dr-temp{height:6px;background:rgba(255,255,255,.12);margin-top:8px;overflow:hidden}
 .dr-temp i{display:block;height:100%;background:linear-gradient(90deg,#00E5FF,#FFC83D,#FF294B)}
+
+/* The makeover's second face. Small, beside the name, and never competing with
+   the queen's own portrait at the top of the card. */
+.dr-mk-with{display:flex;align-items:center;gap:8px}
+.dr-mk-face{width:34px;height:34px;border-radius:8px;object-fit:cover;flex:0 0 auto;
+  border:1px solid rgba(255,255,255,.22);box-shadow:0 6px 14px -8px rgba(0,0,0,.9)}
+.dr-mk-note{display:block;font-size:10px;line-height:1.35;color:var(--muted,#8b949e);
+  max-width:56ch;margin-top:2px}
 `;
 
 /* ── the pieces ─────────────────────────────────────────────────── */
@@ -664,7 +672,16 @@ function detailFor(id, perf) {
         ${d.roomTemp !== undefined ? `<div class="dr-temp"><i style="width:${
     Math.max(0, Math.min(100, 50 + Number(d.roomTemp) * 12))}%"></i></div>` : ''}`;
     case 'makeover':
-      return `<div class="dr-sub">with <b>${esc(d.partner || '—')}</b></div>
+      /* THE OTHER HALF OF THE PAIR, drawn rather than named. A makeover card
+         is about two people and only one of them was ever on it. The portrait
+         lives in `assets/guests/` — deliberately not with the players, see the
+         header of js/dr/data/partners.js — and is absent for a loved one or an
+         eliminated queen, where the card falls back to the name alone. */
+      return `<div class="dr-sub dr-mk-with">${d.partnerPortrait
+    ? `<img class="dr-mk-face" src="${esc(d.partnerPortrait)}" alt=""
+        loading="lazy" onerror="this.style.display='none'">` : ''}
+        <span>with <b>${esc(d.partner || '—')}</b>${d.partnerNote
+    ? `<small class="dr-mk-note">${esc(d.partnerNote)}</small>` : ''}</span></div>
         ${marks([d.resemblance, d.ownLook, d.partnerLook], ['likeness', 'her look', 'theirs'])}`;
     case 'improv':
       return `<div class="dr-sub">${esc(d.premise || '')}${
@@ -1038,9 +1055,17 @@ function rpBuildBall(row) {
      `maxi:wardrobe-malfunction` (the garment failing on the runway), and
      `chal:performance-moment`. Werk room scenes like reads, shade, and
      rivalry carry a `maxi:` prefix too and would leak in here otherwise. */
+  /* `maxi:showstopper` BELONGS HERE TOO, and was the one ball event this
+     allowlist did not name. The ball fires exactly two — a garment failing on
+     the runway and a look that stops the room — and only the failure had a
+     screen, so the best thing that can happen at a ball was written, fired,
+     and drawn nowhere. It surfaced when an unrelated change shifted the
+     season draw and `showstopper` started landing in the sweep's seasons:
+     "written scenes that no screen draws: maxi:showstopper". An allowlist is
+     only ever as complete as the day somebody wrote it. */
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
     && sc.step !== 'prep'
-    && /^(perform:ball|maxi:wardrobe|chal:performance)/.test(sc.kind || ''));
+    && /^(perform:ball|maxi:wardrobe|maxi:showstopper|chal:performance)/.test(sc.kind || ''));
   const proseByQueen = {};
   const usedScene = new Set();
   for (const name of running) {

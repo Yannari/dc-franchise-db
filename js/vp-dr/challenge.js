@@ -1293,7 +1293,7 @@ export function rpBuildMini(row) {
     const who = (sc.data?.players || [])[0];
     const at = who ? aimOf(who) : null;
     return `<div class="dr-step" id="dr-step-mini-${i}">
-      <div class="dr-panel dr-a-score dr-minirow">
+      <div class="dr-panel dr-a-score dr-card dr-minirow">
         <div class="dr-aim">
           ${who ? _portrait(who, ep, { size: 46 }) : '<span></span>'}
           ${at ? `<span class="dr-aim-arrow ${landed(who) ? 'dr-hit' : ''}"></span>
@@ -1302,6 +1302,7 @@ export function rpBuildMini(row) {
         <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
           ${at ? `<span class="dr-aim-k">reads ${esc(at)}${
     landed(who) ? ' — and it lands' : ''}</span>` : ''}
+          ${_note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : ''}
           <p>${esc(sc.text)}</p></div>
       </div></div>`;
   }).join('');
@@ -1323,7 +1324,13 @@ export function rpBuildMini(row) {
        <span style="color:#C9A6BC">Worth ${prize}.</span>${
   m.winner && i >= total - 1 ? `<br><br>Won by <b>${esc(m.winner)}</b>` : ''}</p>`);
   }
-  return `<style>${CHAL_CSS}</style>${_shell(
+  /* ── WERK_CSS IS WHAT STYLES A CARD ──
+     `.dr-card` lives there — the gradient, the hairline along the top edge and
+     the shadow that lifts it off the set — and this screen was the only one
+     building rows without it, which is the whole of why the mini read as
+     older than everything around it. `.dr-minirow` keeps the aim arrow's
+     layout; the card is the surface it sits on. */
+  return `<style>${CHAL_CSS}${WERK_CSS}</style>${_shell(
     `<div class="dr-brief-room">${briefSet('mini')}${lead}${steps}${winStep}</div>`, ep, {
       phase: 'werk', title: 'The Mini Challenge', subtitle: esc(m.name),
     sidebar: `<h4 class="dr-disp">The mini</h4><p style="font-size:13px">${esc(m.name)}<br>
@@ -1889,6 +1896,7 @@ export function rpBuildChoice(row) {
         ${who ? _portrait(who, ep, { size: 54, station: true }) : ''}
         <div>${who ? `<h3 class="dr-disp">${esc(who)}${
     took ? `<span class="dr-took-tag">${esc(took)}</span>` : ''}</h3>` : ''}
+          ${_note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : ''}
           <p>${esc(sc.text)}</p></div>
       </div></div>`;
   }).join('');

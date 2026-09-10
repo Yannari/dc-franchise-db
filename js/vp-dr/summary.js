@@ -16,6 +16,7 @@
 // What it shows is the one thing worth watching while the engine is being
 // built: the panel's ranking beside the host's final one, so a bend is visible
 // as a moving row.
+import { transcriptHeaderLines } from '../transcript-header.js';
 import { _note, _portrait } from './style.js';
 import { showWords } from '../shows.js';
 import { dragScreensRevealed } from './screens.js';
@@ -277,6 +278,26 @@ export function generateDragSummaryText(row) {
   ln(`DRAG RACE — EPISODE ${dr.ep ?? row.num}`);
   ln('='.repeat(46));
   ln('');
+
+  /* ── THE BLOCK THE CONTROL ROOM READS ─────────────────────────────
+     current-season.html learns the cast, the roster and the eliminations from
+     `=== HEADER ===` blocks and from nothing else. This show emitted none of
+     them, so a synced drag season arrived with no queens attached to it.
+     The roster comes off the ROW, not off `gs`: a transcript is written for
+     one episode and a re-read row is not the live state. */
+  for (const line of transcriptHeaderLines(row, {
+    format: 'drag-race',
+    title: dr.challenge?.name || '',
+    active: [...(dr.living || [])],
+    /* WHO HAS GONE, AS OF TONIGHT. There is no `out` list on the row -- the
+       season keeps one but does not ship it -- so it comes from the two
+       fields that ARE here: everybody the record knows, minus everybody still
+       standing. Derived per-episode, which is what a transcript wants: a
+       replayed episode 4 must list episode 4's departures, not the season's. */
+    eliminated: Object.keys(dr.record || {})
+      .filter(n => !(dr.living || []).includes(n)),
+    phase: dr.finale ? 'finale' : 'competition',
+  })) ln(line);
 
   const screens = dragScreensRevealed(row);
   if (screens.length) {

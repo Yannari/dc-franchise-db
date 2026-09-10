@@ -1504,7 +1504,14 @@ Owen: This is going to be amazing!"
       // Big Brother has no tribes — its active roster is === STILL IN THE
       // HOUSE ===, a flat list with no # headers, which the same loop reads
       // correctly because it only skips headers rather than requiring them.
-      const tribesBlock = parseBlock(text, /^===\s*(?:TRIBES|STILL IN THE HOUSE)\b/i);
+      //
+      // AND SO DO THE OTHER TWO, in their own words: the castle says STILL IN
+      // THE CASTLE and the werk room STILL IN THE COMPETITION, because
+      // printing "the house" over either is the vocabulary bug this codebase
+      // keeps catching. Matching `STILL IN` rather than four literal headers
+      // means the fifth show is readable here the day it ships -- see
+      // rosterHeaderFor in js/transcript-header.js, which builds them.
+      const tribesBlock = parseBlock(text, /^===\s*(?:TRIBES|STILL IN(?:\s|\b))/i);
       if (tribesBlock.length) {
         tribesBlock.forEach(l => {
           if (/^#\s*/.test(l)) return; // header

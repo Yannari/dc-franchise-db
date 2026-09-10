@@ -1,4 +1,5 @@
 // js/text-backlog.js - Text backlog generators for non-challenge episode sections
+import { transcriptHeaderLines } from './transcript-header.js';
 import { gs, seasonConfig, players, plainText } from './core.js';
 import { juryLines } from './bb/jury.js';
 import { DEMOS, DEMO_LABELS, tierFor, seasonScore, demoNote } from './ratings.js';
@@ -3668,6 +3669,28 @@ export function generateTraitorsSummaryText(ep, observer = 'audience') {
   ln(`THE TRAITORS — EPISODE ${night}`);
   ln('═'.repeat(46));
   ln(`Observer: ${observer === 'audience' ? 'audience — the whole truth of the night' : String(observer).replace(/^player:/, '') + ' — only what they were in the room for'}`);
+
+  /* ── THE BLOCK THE CONTROL ROOM READS ─────────────────────────────
+     current-season.html learns the cast, the roster and the departures from
+     `=== HEADER ===` blocks and from nothing else. This show emitted none of
+     them, so a synced castle arrived with nobody attached to it.
+
+     WHO IS A TRAITOR IS NOT IN HERE, and must never be: this header is
+     written the same way for both observers, and the whole design of this
+     show is that two readers are told different things. Names, and who is
+     still standing. Nothing about anybody's role. */
+  for (const line of transcriptHeaderLines({ num: night }, {
+    format: 'traitors',
+    active: [...(ep.tr?.living || [])],
+    // Everyone the round started with who is not still standing. The row does
+    // not carry a cumulative departures list, so it is derived the same way
+    // the drag transcript derives its own.
+    eliminated: [...(ep.tr?.cast || (players || []).map(p => p?.name))]
+      .filter(Boolean)
+      .filter(n => !(ep.tr?.living || []).includes(n)),
+    cast: ep.tr?.cast || null,
+    phase: 'castle',
+  })) ln(line);
 
   const screens = traitorsScreensRevealed(ep, observer);
   for (const scr of screens) {

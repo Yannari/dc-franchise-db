@@ -745,25 +745,25 @@
       "title": "Drag Race 1",
       "subtitle": "",
       "castSize": 14,
-      "episodeCount": 1,
+      "episodeCount": 2,
       "winner": {
-        "name": "Velvet Vixen",
-        "playerSlug": "velvet-vixen",
+        "name": "Riot",
+        "playerSlug": "riot",
         "vote": "",
-        "runnerUp": "Taystee",
+        "runnerUp": "Velvet Vixen",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
       },
       "awards": {
         "fanFavorite": {
-          "name": "Autumnatic",
-          "playerSlug": "autumnatic"
+          "name": "Cupcakke",
+          "playerSlug": "cupcakke"
         },
         "bestStrategic": null,
         "mostChallengeWins": {
-          "name": "Velvet Vixen",
-          "playerSlug": "velvet-vixen",
+          "name": "Quin",
+          "playerSlug": "quin",
           "detail": "1 maxi challenge"
         }
       },

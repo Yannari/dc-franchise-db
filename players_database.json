@@ -14978,7 +14978,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "taystee",
@@ -15036,7 +15038,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "sharon-needles",
@@ -15094,7 +15098,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "riot",
@@ -15152,7 +15158,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "quin",
@@ -15210,7 +15218,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "paige-turner",
@@ -15268,7 +15278,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "minnie-skurr",
@@ -15311,8 +15323,8 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 1,
-      "totalLipsyncWins": 1,
+      "totalMaxiWins": 2,
+      "totalLipsyncWins": 2,
       "totalBottoms": 0,
       "avgPlacement": 7,
       "byShow": {
@@ -15326,7 +15338,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "marge-stache",
@@ -15384,7 +15398,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "ginger-hollywood",
@@ -15442,7 +15458,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "gigi-cherie",
@@ -15500,7 +15518,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "cupcakke",
@@ -15558,7 +15578,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "cheryl-hole",
@@ -15616,7 +15638,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "autumnatic",
@@ -15674,7 +15698,9 @@
           "totalCongeniality": 1
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     },
     {
       "id": "anita-crown-davenport",
@@ -15732,7 +15758,9 @@
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": ""
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
     }
   ]
 }

@@ -527,8 +527,22 @@ export const STAGE_BEATS = [
        Empty emits no scene at all (see `emit` in js/dr/stage.js), so until
        it is filled these two are called on the screen with their stamp and
        named as a pair by `call-stakes`, and nothing wrong is said. */
-    tier('win', 'The top two of the week. She is about to sing for it.', []),
-    tier('legacy', 'The top two. The winner of the song holds the power.', [])],
+    tier('win', 'The top two of the week. She is about to sing for it.', [
+      "\"{a}.\" The host lets the name sit. \"Your sisters put you in the top two tonight.\" {a} rolls her shoulders back — not nerves, a fighter loosening up. The room chose her and the room is watching.",
+      "\"The queens have spoken, {a}, and they put you at the top.\" The host grins because he can — nobody is going home and the grin costs nothing. {a} grins back and the grin is competitive.",
+      "\"{a}, top two tonight.\" A beat. \"Not because the panel put you there — the queens did, and they had every reason not to.\" {a} nods once, sharp. She earned this from the people she is competing against.",
+      "\"Your peers said you were one of the best tonight, {a}.\" {a}'s jaw tightens. That came from the queens, not the panel, and she knows what that means.",
+      "\"{a}.\" The host looks at her the way he looks at a queen he is about to enjoy watching. \"Top two. The room put you here.\" {a} adjusts her stance. Small, deliberate — she already knows what she is going to do with it.",
+      "\"The queens ranked you in the top two, {a}.\" The host delivers it clean. The room said what it said. {a} takes a breath and the breath is anticipation, not relief.",
+    ]),
+    tier('legacy', 'The top two. The winner of the song holds the power.', [
+      "\"{a}.\" The host holds her name a beat longer than usual. \"You are in the top two tonight.\" He does not smile. {a} stands still — she knows the song decides who goes home, and the decision is hers if she wins it.",
+      "\"{a}, you are in the top two, and you know what that means.\" The room behind {a} goes quiet. {a} keeps her eyes forward.",
+      "The host calls {a}'s name and the bottom queens behind her shift. They already knew, but hearing it confirmed changes the air. {a} stands where the safe queens stand and feels nothing like safe.",
+      "\"{a}.\" A pause. \"You are one of two queens who will lip sync tonight, and the winner will hold the power.\" {a} takes a breath and holds it.",
+      "\"You are in the top two tonight, {a}.\" The host lets it land. {a} presses her lips together. Behind her, a queen just heard that sentence and understood her fate is about to belong to somebody else.",
+      "\"{a}, top two.\" The host says it simply because the night is already heavy enough. {a} receives it standing straight and still — holding everything in place until the music starts.",
+    ])],
   },
   {
     id: 'result-low', step: 'results', scope: 'per-queen', speaker: 'host',

@@ -1029,6 +1029,30 @@ export function runDragWeek(state, cfg, ctx) {
     scenes.push({
       step: 'main-stage', kind: 'stage:error', data: { error: String(err && err.message) }, text: '',
     });
+  } else if (exits.length) try {
+    /* ── A TOURNAMENT NIGHT STILL SAYS GOODBYE ────────────────────────
+       The branch above is skipped whole on a bracket night, which is right
+       for the critiques and the lip sync -- a Lalaparuza has neither -- and
+       wrong for the ritual at the bottom of it. The queen the bracket sent
+       home left with no farewell, no mirror message and no closing line, so
+       the Sashay Away screen drew her portrait and her stamp over nothing.
+       Its subtitle says "the mirror message" and there was never one to show.
+
+       Measured on the audit's twelve seasons: two elimination nights out of
+       roughly two hundred, both of them tournaments, which is why reading a
+       season found it and no test did.
+
+       The lip sync beats stay behind deliberately, `sashay-words` among them
+       -- those are a queen answering the host after a song, and on this night
+       there was no song. What she gets here is the ritual every exit gets. */
+    for (const sc of renderStageBeats({
+      exitOnly: true, exits: exits.slice(), players, rng,
+      firstOfSeason: exits.length > 0 && (state.out || []).length === exits.length,
+    })) scenes.push(sc);
+  } catch (err) {
+    scenes.push({
+      step: 'exit', kind: 'stage:error', data: { error: String(err && err.message) }, text: '',
+    });
   }
 
   const stepIndex = st => {

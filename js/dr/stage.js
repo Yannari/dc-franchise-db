@@ -182,6 +182,14 @@ export function renderStageBeats({
      The same two queens on the same stage means something completely
      different on a night nobody can lose. */
   stakes = 'life', rateAQueen = false,
+  /* THE EXIT RITUAL ON ITS OWN. A tournament night runs its elimination in
+     the bracket rather than on the stage, so week.js skips this whole
+     renderer -- and took the ritual at the bottom of it out of the show
+     along with the critiques and the lip sync it was right to skip. The
+     ritual is format-agnostic: a queen who goes home gets a farewell and a
+     mirror message whether a song sent her home or a duel did. Set this and
+     nothing before the ritual is emitted. */
+  exitOnly = false,
   /* THE DELIBERATION'S OWN MATERIAL, all of it already computed and none of
      it previously offered to a renderer. `views` is each judge's private
      ranking, `ranking` carries the per-queen spread between them, and `bend`
@@ -246,6 +254,26 @@ export function renderStageBeats({
       : (call.bottom || []).includes(n) ? 'BTM2'
         : (call.atRisk || []).includes(n) ? 'BTM'
           : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
+
+  // ── the exit, which is a ritual and always happens ──
+  //
+  // A closure rather than a run of statements at the bottom, because
+  // `exitOnly` has to reach it without the stage in between. It still runs
+  // last on an ordinary night: the beats carry `step: 'exit'` and week.js
+  // sorts the night by step, so where this is CALLED does not decide where
+  // it is SHOWN.
+  const exitRitual = () => {
+    for (const x of exits) {
+      // The porkchop belongs to the first queen out of a SEASON, not the first
+      // of a night — one per season, which is the whole joke.
+      if (firstOfSeason) emit(beatById('porkchop'), 'porkchop', [x]);
+      emit(beatById('farewell'), 'goodbye', [x]);
+      emit(beatById('mirror-message'), 'message', [x]);
+    }
+    if (exits.length) emit(beatById('closing'), 'close', []);
+    return scenes;
+  };
+  if (exitOnly) return exitRitual();
 
   // ── the stage opens ──
   emit(beatById('entrance'), 'open', []);
@@ -776,17 +804,7 @@ export function renderStageBeats({
     }
   }
 
-  // ── the exit, which is a ritual and always happens ──
-  for (const x of exits) {
-    // The porkchop belongs to the first queen out of a SEASON, not the first
-    // of a night — one per season, which is the whole joke.
-    if (firstOfSeason) emit(beatById('porkchop'), 'porkchop', [x]);
-    emit(beatById('farewell'), 'goodbye', [x]);
-    emit(beatById('mirror-message'), 'message', [x]);
-  }
-  if (exits.length) emit(beatById('closing'), 'close', []);
-
-  return scenes;
+  return exitRitual();
 }
 
 /**

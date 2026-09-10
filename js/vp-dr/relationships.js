@@ -265,7 +265,29 @@ export function rpBuildRelationships(row) {
     v !== 0 && living.includes(a) && living.includes(b));
   if (!nonZero.length && !families.length) return '';
 
-  const first = living[0];
+  /* ── THE SCREEN OPENS ON SOMEBODY WITH SOMETHING TO SAY ──
+     This was `living[0]`, which is cast order and knows nothing about who has
+     a relationship. On a night where seven pairs of queens had a bond, the
+     Showroom could open on the one queen with none of them and greet the
+     viewer with "No connections yet — it's early." over a room full of
+     connections. Measured across twelve audit seasons: three episodes opened
+     blank with content one tab away.
+
+     Ranked by what her panel would actually draw -- a bond she is in, or a
+     family tie -- and ties fall back to cast order so the choice is stable
+     across a rebuild. `reduce` rather than a sort because only the top one is
+     wanted and cast order has to survive a tie. */
+  const shownFor = n => {
+    let k = 0;
+    for (const [a, b, v] of bonds) {
+      if (v !== 0 && (a === n || b === n)
+        && living.includes(a) && living.includes(b)) k++;
+    }
+    for (const f of families) if (f.members?.includes(n)) k++;
+    return k;
+  };
+  const first = living.reduce((best, n) =>
+    (shownFor(n) > shownFor(best) ? n : best), living[0]);
 
   const tabs = `<!--dr-chrome--><div class="rel-tabs" id="rel-tabs">${living.map((n, i) =>
     `<button type="button" class="rel-tab${i === 0 ? ' on' : ''}" data-q="${esc(n)}"

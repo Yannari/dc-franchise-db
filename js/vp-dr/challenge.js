@@ -2299,7 +2299,9 @@ const SG_CSS = `
 .sg-meter-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
   min-width:36px;text-align:right}
 .sg-meter-label.sg-ml-l{color:rgba(255,41,75,.7)}
+.sg-meter-label.sg-ml-l::after{content:"bomb"}
 .sg-meter-label.sg-ml-r{color:rgba(59,224,138,.7);text-align:left}
+.sg-meter-label.sg-ml-r::after{content:"kill"}
 .sg-meter-track{flex:1;height:10px;border-radius:5px;position:relative;overflow:hidden;
   background:linear-gradient(90deg,rgba(255,41,75,.12),rgba(255,200,61,.08) 50%,rgba(59,224,138,.12))}
 .sg-meter-fill{position:absolute;top:0;left:0;height:100%;border-radius:5px;
@@ -2377,26 +2379,32 @@ const SG_CSS = `
 
 const SG_CONFESSIONALS = {
   kill: [
-    '{a} as {c} just ate that whole round and left nothing for the table.',
+    '{a} as {c} just ate that round and left nothing for the table.',
     'I think {a} might actually BE {c} at this point.',
     '{a} just had a moment. {c} would be proud.',
     'That was the answer of the night. {a} is in another league.',
+    '{c} could not have said it better. {a} is winning this.',
+    'The panel is GONE. {a} just took that whole round.',
   ],
   laugh: [
-    '{a} is finding {c}. Not the funniest answer but it worked.',
-    'I see what {a} is doing with {c}. It is landing.',
+    '{a} is finding {c}. That one landed.',
+    'I see what {a} is doing with {c}. It is working.',
     '{a} as {c} is giving the panel something to work with.',
+    'Not the funniest answer, but {a} sold it. The character is there.',
   ],
   silence: [
     '{a} as {c}... I mean... yeah.',
     'The silence after {a} answered was... a choice.',
-    '{a} is losing {c}. The impression is slipping away from her.',
+    '{a} is losing {c}. The impression is slipping.',
+    '{c} just left the building and {a} is still sitting there.',
   ],
   bomb: [
-    '{a} as {c} just died on that panel and nobody is calling the ambulance.',
+    '{a} as {c} just died on that panel.',
     'If {c} saw what {a} just did, she would sue.',
     '{a} is giving us nothing. {c} has left the building.',
-    'That was painful. {a} is sinking and she knows it.',
+    'That was painful. {a} knows it too.',
+    'The host is already looking at the next queen. {a} is cooked.',
+    'That silence after {a} answered? That is the sound of the bottom two.',
   ],
 };
 
@@ -2423,6 +2431,16 @@ const SG_ANSWERS = {
     'A glass of champagne and a grudge.',
     'My third husband. He does not know yet.',
     'Whatever it is, I am charging double.',
+    'Security! ...no, actually, let them watch.',
+    'Two words: plausible deniability.',
+    'I already trademarked that, so technically you owe me money.',
+    'My lawyer said I cannot answer that. My lawyer is wrong.',
+    'Botox and a dream, darling.',
+    'I would tell you, but then I would have to style you.',
+    'The IRS. And they did NOT see it coming.',
+    'Baby, I do not have problems. I have plot twists.',
+    'Five hundred dollars in quarters and a very strong purse.',
+    'A restraining order and a key to the same front door.',
   ],
   laugh: [
     'Something expensive, probably.',
@@ -2431,6 +2449,18 @@ const SG_ANSWERS = {
     'That depends on who is asking and who is paying.',
     'Oh, I have STORIES, but not for basic cable.',
     'Ask my accountant. She cries.',
+    'Listen, I am not saying yes, but I am not NOT saying yes.',
+    'Whatever my ex is doing, but better.',
+    'A wig and a prayer.',
+    'That is above my pay grade. And my pay grade is very high.',
+    'My memoir covers that in chapter twelve. Pre-order now.',
+    'Is that a trick question? Because I love tricks.',
+    'My mother warned me about this exact situation.',
+    'Well, not LEGALLY...',
+    'Honestly? A nap. But make it fashion.',
+    'Three martinis and a PowerPoint presentation.',
+    'My therapist says I should not answer that.',
+    'That is between me and God, and God is not talking.',
   ],
   silence: [
     '...yes.',
@@ -2439,6 +2469,18 @@ const SG_ANSWERS = {
     'Um. Something... fabulous?',
     'I wrote something down but I cannot read my own handwriting.',
     'What she said.',
+    'Can you repeat the question? ...slower?',
+    '*looks at card* I had something for this.',
+    'Oh! I know this one. Wait. No I do not.',
+    'Is this a test? It feels like a test.',
+    'Something something... glamour?',
+    'I am going to say... shoes? Final answer.',
+    '*nervous laugh* Define "blank."',
+    'My answer is... pending.',
+    '*taps card* Come on, brain.',
+    'That is... a word. That I know. Probably.',
+    '*looks to the queen next to her* Help.',
+    '*stares ahead* I think my character just died.',
   ],
   bomb: [
     '...',
@@ -2447,18 +2489,30 @@ const SG_ANSWERS = {
     '*stares into the camera*',
     '*long pause* ...bananas?',
     '*opens mouth, closes it, opens it again*',
+    '*dead silence*',
+    '*looks down at blank card*',
+    '*whispers* I forgot who I am.',
+    '*just shakes head slowly*',
+    '*starts to speak, stops, starts again, stops*',
+    '*taps microphone* Is this thing on? ...I wish it was not.',
+    '*visibly panicking*',
+    '*turns card over as if the answer is on the back*',
+    '*mouth opens but nothing comes out*',
+    '*looks at host like a deer in headlights*',
+    '*silence so long the host moves on*',
+    '*tries to laugh it off, does not succeed*',
   ],
 };
 
 function _sgMeter(score, reaction) {
   const pct = Math.max(5, Math.min(100, Math.round((score / 12) * 100)));
-  return `<div class="sg-meter">
-    <span class="sg-meter-label sg-ml-l">bomb</span>
+  return `<div class="sg-meter" aria-label="Score: ${Math.round(score)} out of 12">
+    <span class="sg-meter-label sg-ml-l" aria-hidden="true"></span>
     <div class="sg-meter-track">
       <div class="sg-meter-fill sg-mf-${reaction}" style="--fill:${pct}%;width:${pct}%"></div>
       <div class="sg-meter-pip" style="left:${pct}%"></div>
     </div>
-    <span class="sg-meter-label sg-ml-r">kill</span>
+    <span class="sg-meter-label sg-ml-r" aria-hidden="true"></span>
   </div>`;
 }
 
@@ -2522,6 +2576,7 @@ function rpBuildSnatchGame(row) {
   for (const n of running) {
     if ((perfs[n]?.detail?.flops || 0) >= 3) dyingQueens.add(n);
   }
+  const usedAnswers = new Set();
 
   for (const rd of rounds) {
     const featured = rd.featured || [];
@@ -2543,7 +2598,10 @@ function rpBuildSnatchGame(row) {
       ? hostBeats.find(h => h.round === rd.round && h.name === f.name) : null;
 
     const answerPool = SG_ANSWERS[f.reaction] || SG_ANSWERS.silence;
-    const answer = answerPool[Math.floor(rng() * answerPool.length)];
+    const fresh = answerPool.filter(a => !usedAnswers.has(a));
+    const pick = fresh.length ? fresh : answerPool;
+    const answer = pick[Math.floor(rng() * pick.length)];
+    usedAnswers.add(answer);
     const prose = sceneFor(f.name);
 
     const hostLine = hbThis

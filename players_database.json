@@ -14931,7 +14931,7 @@
       "totalSeasons": 1,
       "bestPlacement": 1,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 1,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
@@ -14946,14 +14946,14 @@
           "avatarFile": "",
           "placement": 1,
           "status": "Sashayed away",
-          "challengeWins": 0,
+          "challengeWins": 1,
           "popularity": 0,
           "dr": {
-            "wins": 0,
+            "wins": 1,
             "highs": 0,
             "lows": 0,
             "bottoms": 0,
-            "lipsyncWins": 0,
+            "lipsyncWins": 1,
             "congeniality": 0
           },
           "notes": [],
@@ -14963,18 +14963,18 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
+      "totalMaxiWins": 1,
+      "totalLipsyncWins": 1,
       "totalBottoms": 0,
       "avgPlacement": 1,
       "byShow": {
         "drag-race": {
           "seasons": 1,
-          "totalMaxiWins": 0,
+          "totalMaxiWins": 1,
           "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
-          "totalLipsyncWins": 0,
+          "totalLipsyncWins": 1,
           "totalCongeniality": 0
         }
       },
@@ -15182,7 +15182,7 @@
           "popularity": 0,
           "dr": {
             "wins": 0,
-            "highs": 1,
+            "highs": 0,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
@@ -15203,7 +15203,7 @@
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
-          "totalHighs": 1,
+          "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
@@ -15279,7 +15279,7 @@
       "totalSeasons": 1,
       "bestPlacement": 7,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
@@ -15294,14 +15294,14 @@
           "avatarFile": "",
           "placement": 7,
           "status": "Sashayed away",
-          "challengeWins": 1,
+          "challengeWins": 0,
           "popularity": 0,
           "dr": {
-            "wins": 1,
+            "wins": 0,
             "highs": 0,
             "lows": 0,
             "bottoms": 0,
-            "lipsyncWins": 1,
+            "lipsyncWins": 0,
             "congeniality": 0
           },
           "notes": [],
@@ -15311,18 +15311,18 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 1,
-      "totalLipsyncWins": 1,
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
       "totalBottoms": 0,
       "avgPlacement": 7,
       "byShow": {
         "drag-race": {
           "seasons": 1,
-          "totalMaxiWins": 1,
+          "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
-          "totalLipsyncWins": 1,
+          "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
       },
@@ -15588,7 +15588,7 @@
           "popularity": 0,
           "dr": {
             "wins": 0,
-            "highs": 0,
+            "highs": 1,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
@@ -15609,7 +15609,7 @@
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
-          "totalHighs": 0,
+          "totalHighs": 1,
           "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,

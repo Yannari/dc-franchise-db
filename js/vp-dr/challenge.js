@@ -1573,6 +1573,14 @@ const DRAFT_CSS = `
   color:#E9D5FF;background:rgba(124,58,237,.28);border:1px solid rgba(196,181,253,.3);
   text-transform:none;vertical-align:middle}
 @media(max-width:620px){.dr-seats{grid-template-columns:1fr}}
+
+/* Two or more queens in one draft scene card. The primary portrait stays full
+   size; the secondary faces stack behind it, smaller and offset, so the reader
+   sees everybody involved at a glance. */
+.dr-draft-pair{position:relative;display:inline-flex;align-items:flex-end}
+.dr-draft-pair .dr-por:not(:first-child),.dr-draft-pair .dr-initials:not(:first-child){
+  margin-left:-14px;border:2px solid rgba(124,58,237,.5);
+  box-shadow:0 0 8px rgba(124,58,237,.35);opacity:.88}
 `;
 
 const PREP_SHOP_CSS = `
@@ -1785,10 +1793,19 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
   });
 
   const sceneCards = scenes.map((sc, i) => {
-    const who = (sc.data?.players || [])[0];
+    const allPlayers = sc.data?.players || [];
+    const who = allPlayers[0];
+    const others = allPlayers.slice(1);
+    const hasPair = who && others.length > 0;
+    const busts = who
+      ? `<span class="${hasPair ? 'dr-draft-pair' : ''}">${
+        _portrait(who, ep, { size: hasPair ? 48 : 54, station: true })}${
+        others.slice(0, 2).map(n =>
+          _portrait(n, ep, { size: 36 })).join('')}</span>`
+      : '';
     return `<div class="dr-step" id="dr-step-choice-${pickSequence.length + i}">
       <div class="dr-panel dr-a-bond dr-card dr-k-${who ? 'solo' : 'confess'}">
-        ${who ? _portrait(who, ep, { size: 54, station: true }) : ''}
+        ${busts}
         <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
           <p>${esc(sc.text)}</p></div>
       </div></div>`;
@@ -1932,12 +1949,24 @@ export function rpBuildChoice(row) {
     : '';
 
   const steps = scenes.map((sc, i) => {
-    const who = (sc.data?.players || [])[0];
+    const allPlayers = sc.data?.players || [];
+    const who = allPlayers[0];
     const p = who ? a.picks?.[who] : null;
     const took = p ? _choiceLabel(p) : '';
+    const others = new Set(allPlayers.slice(1));
+    if (sc.data?.lostTo) others.add(sc.data.lostTo);
+    if (p?.lostTo && !others.has(p.lostTo)) others.add(p.lostTo);
+    if (p?.assignedBy && !others.has(p.assignedBy)) others.add(p.assignedBy);
+    const hasPair = who && others.size > 0;
+    const busts = who
+      ? `<span class="${hasPair ? 'dr-draft-pair' : ''}">${
+        _portrait(who, ep, { size: hasPair ? 48 : 54, station: true })}${
+        [...others].slice(0, 2).map(n =>
+          _portrait(n, ep, { size: 36 })).join('')}</span>`
+      : '';
     return `<div class="dr-step" id="dr-step-choice-${i}">
       <div class="dr-panel dr-a-bond dr-card dr-k-${who ? 'solo' : 'confess'}">
-        ${who ? _portrait(who, ep, { size: 54, station: true }) : ''}
+        ${busts}
         <div>${who ? `<h3 class="dr-disp">${esc(who)}${
     took ? `<span class="dr-took-tag">${esc(took)}</span>` : ''}</h3>` : ''}
           ${_note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : ''}

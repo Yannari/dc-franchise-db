@@ -714,93 +714,66 @@ export function applyPreAlliances() {
   return { applied: applied.length, started: refused.length > 0, dropped, deferred: applied.map(a => a.name) };
 }
 
-export function initGameState() {
-  if (!players.length) return false;
+const _KIN_DEFAULT = {
+  exes:          { bond: -1.0, warm: 2.6, cold: -1.4 },
+  'ex-friends':  { bond: -1.4, warm: 1.6, cold: -1.8 },
+  estranged:     { bond: -2.6, warm: 1.2, cold: -2.2 },
+  rivals:        { bond: -3.0, warm: -1.0, cold: -2.0 },
+  married:       { bond: 6.5, warm: 2.0, cold: 1.4 },
+  engaged:       { bond: 6.0, warm: 2.2, cold: 1.4 },
+  partners:      { bond: 5.5, warm: 2.0, cold: 1.2 },
+  dating:        { bond: 4.5, warm: 2.2, cold: 1.0 },
+  twins:         { bond: 7.0, warm: 1.6, cold: 1.2 },
+  siblings:      { bond: 5.0, warm: 1.4, cold: 0.8 },
+  'step-siblings': { bond: 3.5, warm: 1.2, cold: 0.4 },
+  'parent-child':  { bond: 6.0, warm: 1.8, cold: 1.0 },
+  grandparent:   { bond: 5.5, warm: 1.6, cold: 1.0 },
+  'aunt-uncle':  { bond: 4.0, warm: 1.2, cold: 0.6 },
+  cousins:       { bond: 3.5, warm: 1.0, cold: 0.5 },
+  'in-laws':     { bond: 2.5, warm: 1.0, cold: 0.0 },
+  'best-friends':      { bond: 6.0, warm: 1.6, cold: 1.2 },
+  'childhood-friends': { bond: 5.0, warm: 1.4, cold: 1.0 },
+  'old-friends': { bond: 4.0, warm: 1.2, cold: 0.8 },
+  roommates:     { bond: 3.0, warm: 1.0, cold: 0.4 },
+  colleagues:    { bond: 2.0, warm: 0.6, cold: 0.2 },
+  teammates:     { bond: 2.5, warm: 0.8, cold: 0.4 },
+};
+function _pairDice(a, b) {
+  const key = [a, b].sort().join('|');
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return (h % 1000) / 1000;
+}
 
-  // Fire-making / Koh-Lanta force F4 finale
-  if (seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta') seasonConfig.finaleSize = Math.max(seasonConfig.finaleSize || 3, 4);
-
+export function buildInitialBonds() {
   const bonds = {};
-  // Pre-game relationship bonds
-  relationships.forEach(r => { bonds[bKey(r.a,r.b)] = r.bond; });
-  // ── and how each of them privately feels about it ──
-  //
-  // The bond is the relationship; the lean is one person's own position on it.
-  // Authored on the relationship as `leanA` / `leanB` so a season can open with
-  // somebody still in love with an ex who is completely finished with them —
-  // which the single shared number could never say.
   const bondLean = {};
+  relationships.forEach(r => { bonds[bKey(r.a, r.b)] = r.bond; });
   relationships.forEach(r => {
     if (Number(r.leanA)) bondLean[`${r.a}→${r.b}`] = Number(r.leanA);
     if (Number(r.leanB)) bondLean[`${r.b}→${r.a}`] = Number(r.leanB);
   });
-
-  // ── A KINSHIP THAT NOBODY PRICED STILL MEANS SOMETHING ──
-  //
-  // Only authored numbers were read, so marking two people as exes and leaving
-  // the sliders alone produced a pair sitting at exactly zero, symmetrically,
-  // for the whole season — arithmetically identical to two strangers.
-  //
-  // That is why exes only ever produced one event. The three ex beats divide
-  // the space between them: one for a pair still warm on both sides, one for a
-  // pair pulling in different directions, one for a pair who are finished. A
-  // pair at 0/0 with no gap can only ever be the third, and the third deals
-  // them -1.1 when it fires, which keeps them there. Measured over five
-  // seasons with two ex pairs: cold war, and nothing else, ever.
-  //
-  // So a kinship with nothing authored gets a starting position that matches
-  // what the label says. The asymmetry is the important half — two people who
-  // broke up are almost never equally over it, and asymmetry is the whole
-  // input to the unrequited read.
-  //
-  // Derived from the pair's own names, not rolled, so a replayed season opens
-  // exactly as it did the first time. Never overrides an authored value.
-  const KIN_DEFAULT = {
-    // tense history: cool, and lopsided
-    exes:          { bond: -1.0, warm: 2.6, cold: -1.4 },
-    'ex-friends':  { bond: -1.4, warm: 1.6, cold: -1.8 },
-    estranged:     { bond: -2.6, warm: 1.2, cold: -2.2 },
-    rivals:        { bond: -3.0, warm: -1.0, cold: -2.0 },
-    // together, and mostly mutual
-    married:       { bond: 6.5, warm: 2.0, cold: 1.4 },
-    engaged:       { bond: 6.0, warm: 2.2, cold: 1.4 },
-    partners:      { bond: 5.5, warm: 2.0, cold: 1.2 },
-    dating:        { bond: 4.5, warm: 2.2, cold: 1.0 },
-    // family and friendship: warm, and rarely perfectly even
-    twins:         { bond: 7.0, warm: 1.6, cold: 1.2 },
-    siblings:      { bond: 5.0, warm: 1.4, cold: 0.8 },
-    'step-siblings': { bond: 3.5, warm: 1.2, cold: 0.4 },
-    'parent-child':  { bond: 6.0, warm: 1.8, cold: 1.0 },
-    grandparent:   { bond: 5.5, warm: 1.6, cold: 1.0 },
-    'aunt-uncle':  { bond: 4.0, warm: 1.2, cold: 0.6 },
-    cousins:       { bond: 3.5, warm: 1.0, cold: 0.5 },
-    'in-laws':     { bond: 2.5, warm: 1.0, cold: 0.0 },
-    'best-friends':      { bond: 6.0, warm: 1.6, cold: 1.2 },
-    'childhood-friends': { bond: 5.0, warm: 1.4, cold: 1.0 },
-    'old-friends': { bond: 4.0, warm: 1.2, cold: 0.8 },
-    roommates:     { bond: 3.0, warm: 1.0, cold: 0.4 },
-    colleagues:    { bond: 2.0, warm: 0.6, cold: 0.2 },
-    teammates:     { bond: 2.5, warm: 0.8, cold: 0.4 },
-  };
-  /** Stable 0..1 from a pair of names, so the same cast opens the same way. */
-  const _pairDice = (a, b) => {
-    const key = [a, b].sort().join('|');
-    let h = 0;
-    for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
-    return (h % 1000) / 1000;
-  };
   relationships.forEach(r => {
-    const def = KIN_DEFAULT[r.kin];
+    const def = _KIN_DEFAULT[r.kin];
     if (!def) return;
     const k = bKey(r.a, r.b);
     if (!Number.isFinite(Number(r.bond))) bonds[k] = def.bond;
-    // Which of the two is further into it. Fixed by the pair, not by a roll.
     const aIsWarmer = _pairDice(r.a, r.b) < 0.5;
     const keyA = `${r.a}→${r.b}`;
     const keyB = `${r.b}→${r.a}`;
     if (!Number(r.leanA)) bondLean[keyA] = aIsWarmer ? def.warm : def.cold;
     if (!Number(r.leanB)) bondLean[keyB] = aIsWarmer ? def.cold : def.warm;
   });
+  return { bonds, bondLean };
+}
+
+export function initGameState() {
+  if (!players.length) return false;
+
+  // Fire-making / Koh-Lanta force F4 finale
+  if (seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta') seasonConfig.finaleSize = Math.max(seasonConfig.finaleSize || 3, 4);
+
+  const { bonds, bondLean } = buildInitialBonds();
   // ── COACHES — mode resolution ──
   //
   // `seasonConfig.coaches` is the season-long system this twist actually is

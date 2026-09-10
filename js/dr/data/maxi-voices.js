@@ -348,6 +348,47 @@ export const PICK_VOICES = [
         '{a} picks last and gets {d}. {d} is paired with {a} by the only force more impersonal than a draft — nobody else is available. {c} does not wait for queens to feel ready.',
       ]),
     ),
+  kind('premises',
+    'AN IMPROV PREMISE handed to her cold. {d} is a character she has never '
+    + 'rehearsed and a scene she has never seen — the entire challenge is about '
+    + 'whether she can find something inside a concept with no script, no lines '
+    + 'and no time to prepare. The prose must never reference a script, written '
+    + 'lines, or material on a page: improv has none of those.', P(
+      'She drew {d}. The premise is in her wheelhouse and she knows it.', [
+        '{a} draws {d} and the room can see the idea land. No script. No written lines. Just a premise and a queen who already knows where the first joke lives inside it.',
+        '{d} goes to {a} and she grins. The premise sits in the exact place her comedy sits — the rhythm of {d} is the rhythm she does best, and the room can see the match from across the floor.',
+        '{a} takes {d}. A premise she can see the scene inside of before the lights come up. No lines to learn because there are no lines. No material to prepare because the material is whatever she invents on the spot. She likes those odds.',
+        '{a} draws {d} and sits back. The premise is hers the moment she hears it. Not because it is easy — because it is the kind of difficult she is built for.',
+        'The premise is {d}. {a} takes it and does not need to think about it. She is already running the first thirty seconds of the scene in her head. No script. No rehearsal. Just nerve and a concept she can ride.',
+        '{a} hears {d} and the relief is instant. A premise wide enough to play in and specific enough to find the joke. She does not write anything down because there is nothing to write down. Improv starts when the lights go on.',
+      ]),
+      tier('settled', '{d} is not the premise she would have chosen, but she can find a scene inside it.', [
+        '{a} draws {d}. Not the premise she was hoping for. She turns it over — where is the joke, where is the character, where is the thirty-second scene that saves her. She can see one. It is not obvious. It will have to do.',
+        '{d} goes to {a} and she pauses. The premise is workable. Not the one she would have picked off a menu but one she can build a character out of if her nerve holds.',
+        '{a} takes {d} and sits with it. The scene is in there somewhere. Not on the surface — not the kind of premise where the first idea is the funniest — but in there. She has until the lights come up to find it.',
+        'The premise is {d}. {a} reads it twice. Not hard. Not impossible. Somewhere in between, where the scene depends entirely on what she brings to it and there is no script to fall back on.',
+        '{a} draws {d} and exhales. Not the gift premise. Not the trap premise. The kind of premise that will be exactly as good as the queen playing it. She has no lines to learn because there are no lines. She has an idea to find.',
+        '{d}. {a} takes it. She can work with this. The premise has an angle if she tilts it right, and tilting a premise right on stage with no rehearsal is either the thing she is best at or the thing that will cost her.',
+        '{a} gets {d}. The premise needs more from her than the obvious first idea. She is already past the obvious one and looking for the second, which is where the improv either finds its legs or does not.',
+        '{a} draws {d} and the premise is a question she has to answer in real time. Not the funniest concept on the table. Not the worst. The kind where the scene lives or dies on whether she commits.',
+      ]),
+      tier('left-over', '{d} is the premise the room was glad to dodge.', [
+        '{a} is left with {d}. The premise the room looked at and looked away from. The joke is not obvious. The character is not obvious. She has to build a scene out of something nobody else wanted to touch.',
+        '{d} goes to {a} because nobody else took it. A premise with a narrow door — the scene is in there but the scene is hard to find, and she has no rehearsal time to look for it.',
+        '{a} draws {d}. The room watches her read it. The premise is the kind that sounds funnier in a writers\' room than it will be under a spotlight with no script and no second take.',
+        'The premise is {d}. {a} takes it because it is what she drew. A hard concept. A narrow concept. The kind of premise where a queen either invents something brilliant or stands on stage with nothing.',
+        '{a} gets {d} — the premise the other queens were relieved not to draw. No script. No lines. No obvious first joke. She is going to have to find something inside {d} that nobody in the room can see yet.',
+        '{d}. {a} reads it and the pause is the tell. A premise where the joke is buried, and she has however long the walk to the stage takes to dig it out.',
+      ]),
+      tier('picked-last', 'Last pick. {d} is the premise nobody wanted.', [
+        'Last pick. {a} draws {d}. The premise nobody reached for. The concept that sat on the table while every other queen chose around it. She is going to walk into a scene with no script and the hardest prompt in the room.',
+        '{a} picks last and gets {d}. A premise designed to be difficult and made more difficult by the fact that every easier premise is already taken. No lines. No rehearsal. Just {d} and her nerve.',
+        'Last draw. {a} takes {d}. The premise the room avoided — the one where the joke is not inside the concept, it has to be invented from nothing while the lights are on her.',
+        '{a} draws last and gets {d}. Not a gift. Not a scene that plays itself. {d} is the kind of premise that asks a queen to be funny about something that is not inherently funny, in front of judges, with no preparation.',
+        '{d} is the last premise on the table and {a} is the last queen standing. Every other queen chose something easier. She takes {d} and walks to her station with the specific posture of somebody who has decided not to panic.',
+        '{a} is last and {d} is what is left. A premise that needs invention, not delivery — and invention with no script and no rehearsal is the hardest thing improv asks for.',
+      ]),
+    ),
 ];
 
 // ══════════════════════════════════════════════════════════════════════
@@ -583,6 +624,7 @@ const GROUP_CHALLENGES = new Set(['girl-group', 'rumix', 'music-video']);
 export function pickKindFor(challengeId) {
   const c = MAXI_TYPES.find(x => x.id === challengeId);
   if (!c || c.assignment === 'none') return null;
+  if (challengeId === 'improv') return 'premises';
   if (c.roles === 'characters') return 'characters';
   if (c.roles === 'parts') return 'parts';
   if (GROUP_CHALLENGES.has(c.id)) return 'group-slots';

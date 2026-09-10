@@ -1058,7 +1058,7 @@ function rpBuildBall(row) {
     for (const name of running) {
       const d = perfs[name]?.detail || {};
       const look = (d.looks || [])[li] || { label: `Look ${li + 1}`, score: 5, sewn: false };
-      const jScores = _derivePaddleScores(look.score, judgeIds.length, name, li);
+      const jScores = _paddlesFor(row, name, look, d.looks || [], judgeIds, li);
       steps.push({ name, look, lookIdx: li, jScores });
     }
   }
@@ -1264,6 +1264,83 @@ function rpBuildBall(row) {
     })}${_controls(sfx, totalSteps, ep.num)}`;
 }
 
+/**
+ * The paddles a queen actually got, from the judges who actually scored her.
+ *
+ * THE SCOREBOARD WAS NOT THE SCORE. `_derivePaddleScores` below invented the
+ * paddles from her look score plus a hash of her name, and nothing downstream
+ * read them -- while the week was decided by `judgeViews`, which weighs her
+ * performance alongside risk, polish, the seat's own style bias, what it
+ * remembers and the night's form. The two could disagree completely: reported
+ * from a played Ball, a queen sat top of the placement list on a scoreboard
+ * total of 40 while the queen on 73 placed third, and the 40 won the night.
+ * A viewer watched a number climb for eight minutes and then watched it not
+ * matter.
+ *
+ * So the paddles come from `panel.views` -- each judge's own number for that
+ * queen, which is what a paddle IS. Scaled to the 0-10 a paddle can show,
+ * against the spread of this episode's own views so the board uses its range.
+ * The per-look variation is the look's deviation from her own three, so a
+ * better look still scores better and her total still lands where the panel
+ * put her.
+ *
+ * Falls back to the old derivation for a row with no views on it -- an older
+ * save, or a week run by a test.
+ */
+function _paddlesFor(row, name, look, looks, judgeIds, lookIdx) {
+  const views = row?.dr?.panel?.views;
+  if (!views) return _derivePaddleScores(look.score, judgeIds.length, name, lookIdx);
+
+  /* ── THE PADDLE IS THAT JUDGE'S PLACING, NOT HER RAW NUMBER ──────
+     Scaling the raw `view` got the board and the panel agreeing 86% of the
+     time and no further, because they are different aggregations: the panel
+     ranks on the MEAN RANK across judges, and a total of raw scores is a
+     different election. Building each paddle from that judge's own rank of
+     her makes the column at the end sum to exactly what the panel decided,
+     and it is the truer object anyway -- a paddle is a placing held up, not a
+     spreadsheet cell. A split panel still shows its split, because a judge
+     who put her last holds up a low number whatever the others think. */
+  const field = (views[Object.keys(views)[0]] || []).length || 1;
+
+  // How this look compares with her other two: the reason a paddle moves
+  // between categories at all.
+  const mine = looks.map(l => l.score);
+  const mean = mine.length ? mine.reduce((a, b) => a + b, 0) / mine.length : look.score;
+  const dev = Math.max(-2, Math.min(2, (look.score - mean) * 0.6));
+
+  /* ── THE TOTAL IS FIXED FIRST, THEN SPREAD OVER THE LOOKS ────────
+     Rounding each look independently let a close pair swap once the three
+     were added up, so the board still disagreed with the panel on about one
+     ball in six. Her total for a judge is decided from that judge's view and
+     the per-look numbers are made to sum to it: the looks still differ from
+     each other, and the column at the end is the panel's own order. */
+  const n = Math.max(1, looks.length || 1);
+  return judgeIds.map(id => {
+    const row2 = (views[id] || []).find(r => r.name === name);
+    if (!row2) return _derivePaddleScores(look.score, 1, name, lookIdx)[0];
+    const scaled = field > 1
+      ? 10 - ((row2.rank - 1) / (field - 1)) * 8                // 10 best .. 2 worst
+      : 6;
+    const target = Math.round(scaled * n);                     // her total
+    // Deal the total out, biased by how each look compared with her others.
+    const devs = looks.map(l => Math.max(-2, Math.min(2, (l.score - mean) * 0.6)));
+    const want = devs.map(dv => scaled + dv);
+    const got = want.map(v => Math.max(0, Math.min(10, Math.round(v))));
+    // Push the rounding error onto the looks that can absorb it, so the sum
+    // is exact without any single paddle leaving 0..10.
+    let drift = target - got.reduce((a, b) => a + b, 0);
+    for (let pass = 0; pass < 3 && drift !== 0; pass++) {
+      for (let i = 0; i < got.length && drift !== 0; i++) {
+        const step = drift > 0 ? 1 : -1;
+        const next = got[i] + step;
+        if (next >= 0 && next <= 10) { got[i] = next; drift -= step; }
+      }
+    }
+    return got[lookIdx] ?? got[0];
+  });
+}
+
+/** The old derivation, kept for rows that carry no panel views. */
 function _derivePaddleScores(lookScore, numJudges, name, lookIdx) {
   const n = numJudges || 3;
   const base = Math.max(0, Math.min(10, lookScore));

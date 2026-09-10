@@ -1126,6 +1126,14 @@ export function runDragWeek(state, cfg, ctx) {
       storylineNeed,
       record: JSON.parse(JSON.stringify(state.record)),
       living: [...state.living],
+      /* ── AND THE ROOM AS IT WAS AT THE TOP OF THE NIGHT ──
+         `living` above is the roster at the END of the week, which is the
+         right thing for a chart and the wrong thing for a screen: every VP
+         reader that printed a count printed it with tonight's eliminated
+         queen already gone. `row.houseAtStart` has always carried this, but
+         the VP layer is handed `ep.dr` and never the row, so it could not
+         reach it — see `_hud` in js/vp-dr/style.js. */
+      roomAtStart: [...living],
       scenes,
     },
   };

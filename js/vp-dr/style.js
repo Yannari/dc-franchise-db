@@ -411,7 +411,16 @@ export function _hud(ep) {
       const k = i + 1 < now ? 'dr-p-done' : i + 1 === now ? 'dr-p-now' : '';
       return `<i class="${k}"></i>`;
     }).join('')}</div>` : '';
-  const left = (dr.living || []).length;
+  /* ── THE ROOM AS IT WAS TONIGHT, NOT AS IT ENDED ──
+     `dr.living` is the roster at the END of the week, so this printed the
+     count with tonight's eliminated queen already taken out — on the cold
+     open, the werk room, the maxi, every screen of the night. It is the same
+     leak the "In the room" rail had, in the one place that is on EVERY
+     screen: a viewer who counts the portraits beside it and gets one more
+     than the number has been told the answer.
+     `houseAtStart` is written by js/dr/week.js and is the room the episode
+     began with, including a returning queen. */
+  const left = (dr.roomAtStart || dr.living || []).length;
   return `<!--dr-chrome--><div class="dr-hud">
     <div><span class="dr-hud-k">EPISODE</span>
       <div class="dr-hud-v dr-disp dr-num">${String(now).padStart(2, '0')}</div>${pips}</div>

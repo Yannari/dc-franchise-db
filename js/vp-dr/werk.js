@@ -339,7 +339,13 @@ function consequences(row, sc) {
    consequence badges, beside an Elimination Day card with lit mirrors, both
    faces of a pair and its effects. Two builders for one object is how they
    drifted apart in the first place. */
-export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {}) {
+/* `aside` IS WHOEVER ELSE WAS IN THE ROOM. The werk room has only queens in
+   it, so this card was built for queens alone — but the booth, the rehearsal
+   studio and the soundstage all have one more person, and she is the reason
+   the scene happened. Rendered by the caller and dropped in beside the head,
+   because what belongs there is a property of the SCREEN rather than of the
+   scene: a portrait of Michelle on a werk-room card would be a stranger. */
+export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room', aside = '' } = {}) {
   const players = sc?.data?.players || [];
   const confess = /confess|shade-tree|talking/.test(sc.kind || '');
   const busts = players.length
@@ -389,8 +395,8 @@ export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room' } = {})
   void opens;
 
   const inner = kind === 'pair'
-    ? `<div class="dr-pairtop">${busts}<div>${head}${note}</div></div>${body}`
-    : `${busts}<div>${head}${note}${body}</div>`;
+    ? `<div class="dr-pairtop">${busts}<div>${head}${note}</div>${aside}</div>${body}`
+    : `${busts}<div>${head}${note}${body}</div>${aside}`;
 
   return `<div class="dr-step" id="dr-step-${suffix}-${i}">
     <div class="dr-panel ${accent} dr-card dr-k-${kind}${pairCls}">

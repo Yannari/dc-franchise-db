@@ -28,7 +28,8 @@ import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
 import { rpBuildRelationships } from './relationships.js';
-import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay } from './werk.js';
+import { rpBuildColdOpen, rpBuildWerkMorning, rpBuildWerkElimDay,
+  sceneCard, WERK_CSS } from './werk.js';
 import { rpBuildArrivals } from './arrivals.js';
 import { rpBuildMini, rpBuildMaxiAnnounce, rpBuildChoice, rpBuildPrep, rpBuildMaxi } from './challenge.js';
 import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } from './stage.js';
@@ -484,8 +485,123 @@ function railFor(row, scenes, ep, sec = null) {
       ${_portrait(n, ep, { size: 38 })}
       <div><div class="dr-nm">${esc(n)}</div></div>
       <span class="dr-up">${done.has(n) ? esc(tagOf.get(n) || 'up') : ''}</span></div>`).join('')}`;
-  return scenes.map((_, i) => panelAt(upBy[i] || new Set()));
+  /* ── INDEX 0 IS "NOTHING REVEALED YET" ──
+     The array used to be 1:1 with the steps, so its first entry was the room
+     AFTER the first scene — and `buildSection` renders that entry at rest,
+     before anybody has clicked. With a bare tick that was a small lie; with a
+     tag on it, it printed the first queen's outcome on a page nobody had
+     opened yet. Screenshotted and caught: "LOST IT" beside a name at 0 / 10.
+     The at-rest panel goes in front and the caller reveals from index 1, so
+     `_updateSidebar` still gets a list that is 1:1 with the steps. */
+  return [panelAt(new Set()), ...scenes.map((_, i) => panelAt(upBy[i] || new Set()))];
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE THREE ROOMS THE FALLBACK RENDERER WAS DRAWING AS A LIST
+   ══════════════════════════════════════════════════════════════════════
+
+   The Booth, Rehearsal and On Set are the newest screens in the show and they
+   were the plainest, because everything without its own builder falls through
+   to `buildSection` — a portrait, a paragraph, a border, repeated. The werk
+   room next door has a mirror wall and a bench of stations and a sign, and
+   these three are also rooms: a vocal booth, a dance studio, a soundstage.
+
+   So they borrow the prep screen's treatment — `sceneCard` from werk.js for
+   the cards, which knows the four shots a scene can be, plus a set behind
+   them. What they do NOT borrow is the werk room's furniture: drawing a
+   sewing bench behind a recording session would be the same mistake as
+   printing the girl group's words over a music video.
+
+   SVG, not CSS boxes. A microphone, a camera and a barre are objects, and
+   CLAUDE.md is explicit that objects are drawn rather than assembled out of
+   divs. They are set low in opacity and sit behind the column: a room the
+   cards are in, not a picture competing with them. */
+const ROOM_CSS = `
+.dr-room{position:relative;isolation:isolate}
+.dr-room-art{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 46%,transparent 92%);
+  mask-image:linear-gradient(180deg,#000 0,#000 46%,transparent 92%)}
+/* Set BEHIND the column and well down in contrast. Screenshotted at .30 and
+   full width it was the loudest thing on the page — a diagram with cards in
+   front of it rather than a room they are standing in. */
+.dr-room-art svg{position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+  width:min(1060px,124%);height:auto;opacity:.26}
+.dr-room > .dr-step{position:relative;z-index:1}
+.dr-room .dr-card{position:relative}
+.dr-room .dr-mentor{position:absolute;top:12px;right:14px;margin:0}
+.dr-room .dr-mentor small{max-width:74px}
+.dr-room-glow{position:absolute;inset:0;z-index:0;pointer-events:none}
+`;
+
+/* One drawing per room, in the accent of the screen it sits behind. Muted and
+   line-led on purpose — this is a set, and a set is not the subject. */
+const ROOM_ART = {
+  // A vocal booth seen through the control-room glass: the pane, a suspended
+  // mic with its pop shield and shock mount, and a desk of faders in front.
+  'dr-booth': `<svg viewBox="0 0 1180 360" fill="none" stroke="#22d3ee" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="330" y="26" width="520" height="238" rx="10" opacity=".55"/>
+    <rect x="352" y="46" width="476" height="198" rx="6" opacity=".28"/>
+    <path d="M590 46v72" opacity=".5"/>
+    <ellipse cx="590" cy="150" rx="21" ry="33" opacity=".9"/>
+    <path d="M569 150h42M575 128h30M575 172h30" opacity=".45"/>
+    <path d="M628 118v64" opacity=".7"/>
+    <path d="M628 150c0-22-17-40-38-40" opacity=".7"/>
+    <path d="M300 288h580" opacity=".6"/>
+    <path d="M330 300v42" opacity=".38"/><circle cx="330" cy="330" r="5" opacity=".6"/>
+    <path d="M370 300v42" opacity=".38"/><circle cx="370" cy="338" r="5" opacity=".6"/>
+    <path d="M410 300v42" opacity=".38"/><circle cx="410" cy="306" r="5" opacity=".6"/>
+    <path d="M450 300v42" opacity=".38"/><circle cx="450" cy="314" r="5" opacity=".6"/>
+    <path d="M490 300v42" opacity=".38"/><circle cx="490" cy="322" r="5" opacity=".6"/>
+    <path d="M530 300v42" opacity=".38"/><circle cx="530" cy="330" r="5" opacity=".6"/>
+    <path d="M570 300v42" opacity=".38"/><circle cx="570" cy="338" r="5" opacity=".6"/>
+    <path d="M610 300v42" opacity=".38"/><circle cx="610" cy="306" r="5" opacity=".6"/>
+    <path d="M650 300v42" opacity=".38"/><circle cx="650" cy="314" r="5" opacity=".6"/>
+    <path d="M690 300v42" opacity=".38"/><circle cx="690" cy="322" r="5" opacity=".6"/>
+    <path d="M730 300v42" opacity=".38"/><circle cx="730" cy="330" r="5" opacity=".6"/>
+    <path d="M770 300v42" opacity=".38"/><circle cx="770" cy="338" r="5" opacity=".6"/>
+    <path d="M810 300v42" opacity=".38"/><circle cx="810" cy="306" r="5" opacity=".6"/>
+    <path d="M850 300v42" opacity=".38"/><circle cx="850" cy="314" r="5" opacity=".6"/>
+    <path d="M120 264h150M910 264h150" opacity=".25"/>
+  </svg>`,
+  // A dance studio: the mirror wall with its seams, a barre along it, and
+  // spike tape on the floor where the formation lands.
+  'dr-rehearsal': `<svg viewBox="0 0 1180 360" fill="none" stroke="#a78bfa" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="90" y="22" width="1000" height="216" rx="6" opacity=".5"/>
+    <path d="M290 22v216" opacity=".3"/>
+    <path d="M490 22v216" opacity=".3"/>
+    <path d="M690 22v216" opacity=".3"/>
+    <path d="M890 22v216" opacity=".3"/>
+    <path d="M110 200h960" opacity=".75"/>
+    <path d="M150 200v38" opacity=".55"/>
+    <path d="M420 200v38" opacity=".55"/>
+    <path d="M760 200v38" opacity=".55"/>
+    <path d="M1030 200v38" opacity=".55"/>
+    <path d="M250 292h46M273 280v24" opacity=".4"/>
+    <path d="M430 292h46M453 280v24" opacity=".4"/>
+    <path d="M610 292h46M633 280v24" opacity=".4"/>
+    <path d="M790 292h46M813 280v24" opacity=".4"/>
+    <path d="M90 264h1000" opacity=".2"/>
+  </svg>`,
+  // A soundstage: a flat, a key light on its stand with barn doors, a camera
+  // on a dolly, and the director's monitor turned away from us.
+  'dr-set': `<svg viewBox="0 0 1180 360" fill="none" stroke="#f59e0b" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M250 250V54h430v196" opacity=".5"/>
+    <path d="M680 250V88h190v162" opacity=".35"/>
+    <path d="M150 118l64-30v92l-64-30z" opacity=".8"/>
+    <path d="M214 76v116M150 96l-22-10M150 140l-22 10" opacity=".55"/>
+    <path d="M182 192v58M154 250h56" opacity=".7"/>
+    <rect x="905" y="120" width="118" height="74" rx="8" opacity=".8"/>
+    <circle cx="964" cy="157" r="20" opacity=".6"/>
+    <path d="M1023 138l40-20v78l-40-20z" opacity=".7"/>
+    <path d="M948 194v34M900 250h128M924 228h80l-14 22h-52z" opacity=".6"/>
+    <rect x="716" y="196" width="96" height="58" rx="6" opacity=".6"/>
+    <path d="M764 254v26M736 280h56" opacity=".45"/>
+    <path d="M90 250h1000" opacity=".3"/>
+  </svg>`,
+};
 
 function buildSection(sec, row) {
   const ep = { num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} };
@@ -494,7 +610,7 @@ function buildSection(sec, row) {
   const steps = scenes.map((sc, i) => step(sc, i, sec.suffix, ep, sec.accent)).join('');
   if (typeof window !== 'undefined') {
     if (!window._drSidebar) window._drSidebar = {};
-    window._drSidebar[sec.suffix] = railFor(row, scenes, ep, sec);
+    window._drSidebar[sec.suffix] = railFor(row, scenes, ep, sec).slice(1);
   }
   const rail = railFor(row, scenes, ep, sec)[0] || '';
   /* THE SEVEN SCREENS NOBODY BUILT A ROOM FOR. Everything without its own
@@ -508,6 +624,33 @@ function buildSection(sec, row) {
     : sec.id === 'dr-reunion' ? 'sofa' : '';
   const room = set ? `<div class="dr-hall dr-hall-${set}" aria-hidden="true">
       <i class="dr-hall-key"></i><i class="dr-hall-floor"></i></div>` : '';
+
+  /* ── A ROOM, FOR THE THREE SCREENS THAT ARE ONE ──
+     The booth, the rehearsal studio and the soundstage get the prep screen's
+     treatment instead of the fallback's: `sceneCard` knows the four shots a
+     scene can be — one queen, a pair with the bond drawn between them, a
+     confessional — and the plain renderer above draws all four identically.
+     Everything else on this path keeps the plain cards, which is right: a
+     section with no room of its own should not be given somebody else's. */
+  const art = ROOM_ART[sec.id];
+  if (art) {
+    const cards = scenes.map((sc, i) => {
+      /* HER FACE ON THE CARD SHE IS IN. `step()` drew this and `sceneCard`
+         does not, because the werk room it was written for has only queens in
+         it — so moving these three screens onto the better card silently
+         dropped the one portrait the screens exist to show. */
+      const m = sc?.data?.mentor;
+      const bust = m
+        ? `<span class="dr-mentor" title="${esc(m.name)}">${
+          _judgePortrait(m.id, { size: 34 })}<small>${esc(m.name)}</small></span>` : '';
+      return sceneCard(sc, i, sec.suffix, ep, row, { accent: sec.accent, aside: bust });
+    }).join('');
+    return `<style>${EXTRA_CSS}${WERK_CSS}${ROOM_CSS}</style>${_shell(
+      `<div class="dr-room"><div class="dr-room-art">${art}</div>${cards}</div>`, ep, {
+        phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
+      })}${_controls(sec.suffix, scenes.length, ep.num)}`;
+  }
+
   return `<style>${EXTRA_CSS}</style>${_shell(
     `<div class="dr-hallwrap">${room}${steps}</div>`, ep, {
       phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,

@@ -23,7 +23,7 @@
 //      a host's name. Every line the host speaks and the face that goes with
 //      it resolve
 //      from `_host()`, which reads `seasonConfig.host` against
-//      HOSTS_BY_FORMAT['traitors'] (js/quick-setup.js). Hardcoding a host name
+//      HOSTS_BY_FORMAT['traitors'] (js/shows.js). Hardcoding a host name
 //      into copy is this project's central bug class.
 //   3. NO EMOJI. Every icon is a hand-drawn inline SVG.
 //
@@ -54,7 +54,7 @@
 import { seasonConfig, players } from '../core.js';
 import { pronouns, playerAvatarUrl } from '../players.js';
 import { exitVerbs } from '../shows.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../shows.js';
 import { CONCLAVE_CSS } from './style.js';
 import { _noiseTile, _filterBank, _buildFar, _buildMid, _buildFore,
   _buildHeroScene, _doorway } from './scenery.js';

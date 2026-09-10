@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defaultConfig, seasonConfig } from '../js/core.js';
 import { BB_HOST_STYLES, generateBBEvictionInterview } from '../js/bb-aftermath.js';
+import { HOSTS_BY_FORMAT } from '../js/shows.js';
 import { seedGame } from './helpers/setup.js';
 
 function weekFor(evictee = 'Vera') {
@@ -72,6 +73,49 @@ describe('Big Brother eviction interview personalities', () => {
     const interview = generateBBEvictionInterview({ eliminated: 'Vera' }, weekFor(), () => 0.3);
     expect(interview.hostStyle).toBe('balanced');
     expect(interview.hostProfile).toBe(BB_HOST_STYLES.balanced);
+  });
+
+  // ── THE HOST'S OWN TEMPERAMENT ──────────────────────────────────────
+  //
+  // A style used to be one season-wide value, so casting somebody changed the
+  // name over the questions and not the questions. `style` on the registry
+  // entry (HOSTS_BY_FORMAT, js/shows.js) is the host's default and
+  // `bbHostStyle: 'auto'` is what asks for it.
+  const ask = () => generateBBEvictionInterview({ eliminated: 'Vera' }, weekFor(), () => 0.3);
+
+  it("on 'auto', a host asks in their own register", () => {
+    const valeria = HOSTS_BY_FORMAT['big-brother'].find(h => h.value === 'Valeria');
+    expect(valeria.style, 'Valeria is cast incisive').toBe('incisive');
+    seasonConfig.host = 'Valeria';
+    seasonConfig.bbHostStyle = 'auto';
+    expect(ask().hostStyle).toBe('incisive');
+  });
+
+  it("on 'auto', a host with no temperament of their own is balanced", () => {
+    const don = HOSTS_BY_FORMAT['big-brother'].find(h => h.value === 'Don');
+    expect(don.style, 'Don is deliberately uncast').toBeUndefined();
+    seasonConfig.host = 'Don';
+    seasonConfig.bbHostStyle = 'auto';
+    expect(ask().hostStyle).toBe('balanced');
+    // And so is a host the registry has never heard of.
+    seasonConfig.host = 'Mara';
+    expect(ask().hostStyle).toBe('balanced');
+  });
+
+  it('an explicit season style still overrides the host', () => {
+    seasonConfig.host = 'Valeria';
+    for (const style of ['balanced', 'warm', 'playful']) {
+      seasonConfig.bbHostStyle = style;
+      expect(ask().hostStyle, `${style} did not override an incisive host`).toBe(style);
+    }
+  });
+
+  it("a season saved before 'auto' existed keeps the voice it was played with", () => {
+    // Every pre-existing season stored 'balanced' literally, which is still an
+    // explicit value. Nothing retroactively becomes incisive.
+    seasonConfig.host = 'Valeria';
+    seasonConfig.bbHostStyle = 'balanced';
+    expect(ask().hostStyle).toBe('balanced');
   });
 
   it('changes the substance of answers for opposite stats within one archetype', () => {

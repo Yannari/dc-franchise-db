@@ -49,7 +49,7 @@
 // an unentitled observer's card never receives the name at all. See the note
 // on `_relicCard`.
 import { seasonConfig, players } from '../core.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';

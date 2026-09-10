@@ -1367,7 +1367,7 @@ export function saveConfig() {
     // House options. Read only by the Big Brother engine; harmless defaults on
     // a Total Drama season, which never looks at them.
     bbEvictionInterview: g('cfg-bb-interview')?.value || 'enabled',
-    bbHostStyle: g('cfg-bb-host-style')?.value || 'balanced',
+    bbHostStyle: g('cfg-bb-host-style')?.value || 'auto',
     bbHaveNots:  g('cfg-bb-havenots')?.value || 'twist',
     bbSafetyMode: g('cfg-bb-safety')?.value || 'off',
     // Which stats this season's competitions should ask for. See BB_COMP_MIXES.
@@ -1557,7 +1557,7 @@ export function renderConfig() {
   const _themeGroup = g('theme-group');
   if (_themeGroup) _themeGroup.style.display = seasonConfig.format === 'big-brother' ? '' : 'none';
   set('cfg-bb-interview', seasonConfig.bbEvictionInterview || 'enabled');
-  set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'balanced');
+  set('cfg-bb-host-style', seasonConfig.bbHostStyle || 'auto');
   set('cfg-bb-havenots', seasonConfig.bbHaveNots || 'twist');
   set('cfg-bb-safety', seasonConfig.bbSafetyMode || 'off');
   { const w = document.getElementById('cfg-social-writer');

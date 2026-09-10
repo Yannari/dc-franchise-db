@@ -62,7 +62,7 @@
 //   the relics are the only line in it that depends on who is reading.
 import { seasonConfig, players } from '../core.js';
 import { exitVerbs, roundExits } from '../shows.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { _noiseTile, _fieldRng } from './scenery.js';
 import { _portrait, _icon } from './conclave.js';

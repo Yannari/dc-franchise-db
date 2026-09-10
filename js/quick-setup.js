@@ -20,7 +20,7 @@
 
 import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
-import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords } from './shows.js';
+import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT } from './shows.js';
 import { houseStructure } from './bb-run.js';
 import { SEASON_OBJECTIVES } from './franchise-meta.js';
 
@@ -970,70 +970,6 @@ export function qsOnFormatChange() {
   window.renderTwistCatalog?.();
   window.renderFormatToggle?.();
 }
-
-// The Season Basics host is the single host control. Its choices belong to the
-// selected show, just like venues do: Big Brother should not silently inherit
-// Chris, and Total Drama should not silently inherit Don after switching back.
-export const HOSTS_BY_FORMAT = {
-  'total-drama': [
-    { value: 'Chris', label: 'Chris McLean' },
-    { value: 'Chef', label: 'Chef Hatchet' },
-    { value: 'Jeff', label: 'Jeff Probst' },
-  ],
-  'big-brother': [
-    // Valeria is the house's default voice, moved here from the castle: Julie
-    // Chen's studio authority with Blaineley's arch self-regard, which is a
-    // live-eviction register rather than a candlelit one. Her portrait is
-    // assets/avatars/valeria.png and it travelled with her — nothing about a
-    // host is keyed to the show they used to present.
-    //
-    // Her editorial temperament is NOT stored here. `seasonConfig.bbHostStyle`
-    // (balanced | warm | incisive | playful, BB_HOST_STYLES in js/bb-aftermath.js)
-    // is the personality control, it belongs to the SEASON and not to the name,
-    // and it is untouched by this list: a host is who speaks, a style is how.
-    //
-    // Don stays in the dropdown but is no longer the default — he is being held
-    // for a racing format, and a name in a list costs nothing while a default
-    // that quietly overrides the season's own choice costs a whole season.
-    { value: 'Valeria', label: 'Valeria Sandoval' },
-    { value: 'Don', label: 'Don McGurrin' },
-    { value: 'Julie Chen Moonves', label: 'Julie Chen Moonves' },
-    { value: 'Arisa Cox', label: 'Arisa Cox' },
-  ],
-  'traitors': [
-    // Alan Cumming is the default host and the show's voice: theatrical,
-    // delighted by the cruelty, and never once fooled. The portrait is
-    // assets/avatars/alan-cumming.png, resolved the same way a player's is, so
-    // a screen never hardcodes a host name -- swapping the host must swap every
-    // line the host speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
-    //
-    // AND EVERY LINE A TRAITORS HOST SPEAKS IS GENDER-NEUTRAL. This list holds
-    // one woman and two men, they are swapped at runtime by renderHostOptions(),
-    // and nothing generating host prose may assume which one is on. The
-    // phrasing of this comment is where the assumption started -- it said
-    // "every line she speaks" -- and eleven feminine staging lines were written
-    // against it in js/tr/headless.js while js/vp-tr/selection.js was already
-    // narrating the same host as "he" one screen later. Neutrality is a RULE
-    // and not an interim: a guard cannot go stale when a fourth host is added,
-    // whereas per-host pronoun metadata has to be maintained. Enforced over
-    // every file that writes host prose by tests/tr-vp.test.js.
-    //
-    // Valeria used to head this list and now hosts the house; a season saved
-    // with `host: 'Valeria'` is repaired by renderHostOptions(), which drops a
-    // value the current show does not offer back to the first entry.
-    { value: 'Alan Cumming', label: 'Alan Cumming' },
-    { value: 'Alistair', label: 'Alistair Crane' },
-    { value: 'Claudia',  label: 'Claudia Winterbourne' },
-  ],
-  // One host, and unlike the castle's three this one is not a variable: the
-  // host of this show is also a permanent judge and the person who decides who
-  // goes home, so swapping the name would swap the panel too. The portrait
-  // pair is assets/avatars/rupaul.png (werk room) and rupaul-drag.png (main
-  // stage) — see js/dr/data/judges.js, which owns both.
-  'drag-race': [
-    { value: 'RuPaul', label: 'RuPaul' },
-  ],
-};
 
 export function hostOptionsForFormat(fmt) {
   return HOSTS_BY_FORMAT[seasonFormat(fmt)] || HOSTS_BY_FORMAT['total-drama'];

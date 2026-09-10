@@ -43,7 +43,7 @@
 // predate this requirement and show no faces; the rosters and the card faces
 // are the one place this builder deliberately adds to them.
 import { players, seasonConfig } from '../core.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../shows.js';
 import { _portrait } from './conclave.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 

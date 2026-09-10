@@ -23,7 +23,10 @@ describe('format-scoped setup screen', () => {
     const bb = hostOptionsForFormat('big-brother');
     expect(td[0]).toEqual({ value: 'Chris', label: 'Chris McLean' });
     // Valeria heads the house list; Don is still offered, just not the default.
-    expect(bb[0]).toEqual({ value: 'Valeria', label: 'Valeria Sandoval' });
+    expect(bb[0]).toMatchObject({ value: 'Valeria', label: 'Valeria Sandoval' });
+    // Her temperament rides on the entry: 'auto' resolves through it, so a
+    // host who loses this field silently reverts to everybody's voice.
+    expect(bb[0].style).toBe('incisive');
     expect(bb.map(h => h.value)).toContain('Don');
     expect(td.map(h => h.value)).not.toContain('Don');
     expect(bb.map(h => h.value)).not.toContain('Chris');

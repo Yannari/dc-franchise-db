@@ -66,7 +66,7 @@ import { buildVPScreens } from '../js/vp-screens.js';
 import { TRAITORS_SCREENS, screenNarration } from '../js/vp-tr/screens.js';
 import { TR_NAV_H, TR_NAV_TOP, TR_STICKY_TOP } from '../js/vp-tr/style.js';
 import { generateSummaryText, generateTraitorsSummaryText, _vpTextLines } from '../js/text-backlog.js';
-import { HOSTS_BY_FORMAT } from '../js/quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../js/shows.js';
 import roster from '../franchise_roster.json';
 import { forbiddenFor, foreignWordsIn } from './helpers/show-vocabulary.js';
 

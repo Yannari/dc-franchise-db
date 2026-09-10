@@ -22,7 +22,7 @@
 // of it is SVG filters, which nothing else in this repo uses.
 
 import { seasonConfig } from '../core.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../shows.js';
 
 // ── WHICH HOST, AND THE ANSWER IS THE SAME ON EVERY SCREEN ────────────
 //

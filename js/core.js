@@ -1712,7 +1712,11 @@ export function defaultConfig() {
     fanVoteFrequency: 'disabled',
     aftermayhemReturn: 'disabled',
     host: 'Chris',
-    bbHostStyle: 'balanced',
+    // 'auto' = whatever this host's own temperament is (HOSTS_BY_FORMAT in
+    // js/shows.js, resolved by hostStyle() in js/bb-aftermath.js). The four
+    // explicit values override it. Seasons saved before this existed hold
+    // 'balanced' literally and therefore keep the voice they were played with.
+    bbHostStyle: 'auto',
     // ── THE CASTLE ────────────────────────────────────────────────
     // js/quick-setup.js's readiness check has asked for `traitorCount`
     // since the registry entry was written and it was never in this

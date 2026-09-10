@@ -15,6 +15,11 @@
 // flip was visible, and who the evictee had already decided to blame.
 
 import { gs, seasonConfig, players } from './core.js';
+// shows.js and not quick-setup.js, deliberately: quick-setup imports bb-run,
+// which imports this file, so reaching for the host list where it used to live
+// would have closed a three-file cycle. The registry is a leaf and the list is
+// per-show vocabulary, which is what that file is for.
+import { HOSTS_BY_FORMAT } from './shows.js';
 import { evictionSeatsAJuror, jurorOrdinalFor } from './bb/jury.js';
 import { pronouns, pStats } from './players.js';
 import {
@@ -36,9 +41,29 @@ export const BB_HOST_STYLES = {
   playful:  { label: 'Playful', warmth: 2, pressure: 2, humour: 4 },
 };
 
+/**
+ * WHICH TEMPERAMENT IS ASKING, AND THE HOST GETS THE FIRST WORD.
+ *
+ * This used to read one season setting and hand every host the same voice, so
+ * casting somebody changed the name over the questions and nothing else. A
+ * temperament belongs to the person: the host's own `style`
+ * (HOSTS_BY_FORMAT in js/shows.js) is the default, and the season overrides it
+ * only when it says something.
+ *
+ * 'auto' is that "says nothing", and it is what a new season stores. The four
+ * explicit values still win outright, so a season may cast an incisive host
+ * and ask them to be warm for a night — the host supplies a default, never a
+ * lock. Anything unrecognised, and any host with no style of their own, is
+ * balanced, which is exactly what every season written before this field
+ * already holds: 'balanced' was the old default and is still an explicit
+ * value, so no existing season's voice moves.
+ */
 function hostStyle() {
-  const key = seasonConfig.bbHostStyle || 'balanced';
-  return BB_HOST_STYLES[key] ? key : 'balanced';
+  const chosen = seasonConfig.bbHostStyle;
+  if (BB_HOST_STYLES[chosen]) return chosen;
+  const list = HOSTS_BY_FORMAT['big-brother'] || [];
+  const mine = list.find(h => h.value === seasonConfig.host)?.style;
+  return BB_HOST_STYLES[mine] ? mine : 'balanced';
 }
 
 function hostQuestion(style, kind, v, rng) {
@@ -443,7 +468,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   // Big Brother's host is Valeria, not Chris. seasonConfig.host is the Total
   // Drama setting and defaults to Chris, so inheriting it put the wrong person
   // in the interview chair; the house gets its own knob and its own default.
-  // The default follows HOSTS_BY_FORMAT['big-brother'][0] in js/quick-setup.js.
+  // The default follows HOSTS_BY_FORMAT['big-brother'][0] in js/shows.js.
   const host = seasonConfig.host || 'Valeria';
   const style = hostStyle();
   const voice = evicteeVoice(evictee);

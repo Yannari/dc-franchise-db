@@ -63,7 +63,7 @@
 import { seasonConfig, players } from '../core.js';
 import { pronouns } from '../players.js';
 import { exitVerbs, roundExits } from '../shows.js';
-import { HOSTS_BY_FORMAT } from '../quick-setup.js';
+import { HOSTS_BY_FORMAT } from '../shows.js';
 import { PORTRAIT_CSS, TR_NAV_TOP } from './style.js';
 import { portraitWall, PORTRAIT_WALL_CSS, WALL_MURDERED, WALL_BANISHED } from './portrait-wall.js';
 import { _noiseTile, _fieldRng } from './scenery.js';

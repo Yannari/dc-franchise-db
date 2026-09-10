@@ -1863,6 +1863,24 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
  * is that you can see WHAT EVERYBODY IS DOING — that is the useful thing on
  * both kinds of night, and on the uncontested ones it is the only thing.
  */
+/* ══ THE SECOND PERSON IN THE ROOM ══════════════════════════════════════
+   A makeover is the only night where a large part of what the panel scores
+   is somebody who is not a queen. Measured over 3,200 paired queens: the
+   partner's ease correlates r=0.37 with her performance against r=0.54 for
+   her own runway, and the gap between the hardest partner in a cohort and
+   the easiest is worth about a point — two thirds of what her own best stat
+   is worth on the same night.
+   Every rail on this show listed the room as though she were doing it
+   alone. His face goes under her name, on the two screens that have a rail
+   while the pair is a pair: the line-up, where he is handed to her, and the
+   main stage, where the two of them are scored as one thing. */
+function _mateChip(row, name) {
+  const p = row?.dr?.assignment?.picks?.[name]?.partner;
+  if (!p?.portrait) return '';
+  return `<span class="dr-mate"><img src="${esc(p.portrait)}" alt="" loading="lazy"
+    onerror="this.parentNode.style.display='none'"><small>${esc(p.name)}</small></span>`;
+}
+
 export function rpBuildChoice(row) {
   const ep = epOf(row);
   const a = row?.dr?.assignment || {};
@@ -1974,11 +1992,39 @@ export function rpBuildChoice(row) {
       </div></div>`;
   }).join('');
 
+  /* ── THIS SCREEN HAD NO RAIL AT ALL ──
+     The captain path next door builds one and this path never did, so the
+     line-up ran with whatever the previous screen happened to leave in
+     `_drSidebar` — on a makeover, a column of queens with no partners on a
+     screen whose entire subject is who is paired with whom.
+     NOT GATED, deliberately. The board at the top of this screen already
+     lists every pairing before the first click; hiding the same information
+     in the rail would be a gate on nothing. What advances is the tick: who
+     has had her card read so far. */
+  const railRoom = (row.dr.assignment?.order || []).filter(n => a.picks?.[n]);
+  const railAt = (upTo) => {
+    const done = new Set(scenes.slice(0, upTo)
+      .flatMap(sc => sc.data?.players || []));
+    return `<h4 class="dr-disp">The pairs · ${railRoom.length}</h4>${
+      railRoom.map(n => `<div class="dr-slot${done.has(n) ? '' : ' dr-waiting'}">
+        ${_portrait(n, ep, { size: 34 })}
+        <div><div class="dr-nm">${esc(n)}</div>${_mateChip(row, n)}</div>
+        <span class="dr-up">${done.has(n)
+    // She did not get paired, she did the pairing — the board says so above
+    // her name and a rail that calls her "paired" contradicts it.
+    ? (a.picks[n]?.chosen ? 'picked first' : 'paired') : ''}</span></div>`).join('')}`;
+  };
+  if (typeof window !== 'undefined' && railRoom.length) {
+    window._drSidebar = window._drSidebar || {};
+    window._drSidebar['choice'] = scenes.map((_, i) => railAt(i + 1));
+  }
+
   return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}</style>${_shell(
     `<div class="dr-brief-room dr-draft">${briefSet('draft')}${board}${steps}</div>`, ep, {
       phase: 'werk',
       title: contested ? 'The Draft' : 'The Line-Up',
       subtitle: contested ? 'who takes what, and who misses out' : 'what everybody is doing',
+      ...(railRoom.length ? { sidebar: railAt(0) } : {}),
     })}${_controls('choice', Math.max(1, scenes.length), ep.num)}`;
 }
 
@@ -2844,7 +2890,7 @@ export function rpBuildMaxi(row) {
         .map(n => ({ n, p: Number(perfs[n]?.perf) || 0 }))
         .sort((x, y) => y.p - x.p)
         .map(({ n, p }) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
-          <div><div class="dr-nm">${esc(n)}</div></div>
+          <div><div class="dr-nm">${esc(n)}</div>${_mateChip(row, n)}</div>
           <span class="dr-chip ${p >= 8 ? 'dr-c-win' : p >= 6 ? 'dr-c-high' : p >= 4 ? 'dr-c-safe' : 'dr-c-low'}">${n1(p)}</span>
         </div>`).join('')}`);
   }

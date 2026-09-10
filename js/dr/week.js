@@ -469,19 +469,39 @@ export function runDragWeek(state, cfg, ctx) {
      somebody home.
      `legacy` therefore shares topTwoSing; what it does not share is the empty
      exit list. */
+  /* ── AND THE ROOM'S BOTTOM TWO ARE STILL CALLED ──
+     The room ranked everybody, and a call that reads out one end of that
+     ranking and silently drops the other is not the twist's result, it is
+     half of it. The two the room put last are named, made to stand there,
+     and then told they are not singing — which is `atRisk`/BTM, the call
+     this show already has a word and a written pool for: "named in the
+     bottom, and saved BEFORE the song".
+     They are named on a Rate-a-Queen no-elimination night and NOT on a
+     legacy night, where the winner of the song is about to choose somebody
+     out of that same bottom and naming them first would announce the pool
+     she picks from before she has picked. */
   const legacy = !!(cfg.legacy && bend.length >= 4);
   const topTwoSing = legacy || !!(cfg.rateAQueen && cfg.noElimination && bend.length >= 2);
+  /* The call as the host made it, frozen before the song can change it.
+     Null on every ordinary night, where the call never moves and the one
+     object is the whole truth. See the note where it is filled. */
+  let callAtCall = null;
   if (topTwoSing) {
     const top2 = bend.slice(0, 2).map(r => r.name);
     call.singers = top2;
     call.bottom = [];
-    call.atRisk = [];
-    // Nobody is safe-with-a-note on a night the room ranked for a prize, and
-    // the win is not awarded until the song is over.
+    /* THE TOP TWO ARE THE CALL, AND NEITHER OF THEM HAS WON ANYTHING YET.
+       They used to be in no group at all — `win` and `high` were emptied and
+       the two of them appeared nowhere on the call — so the screen drew a
+       night whose top two were invisible until the song produced one. They
+       are HIGH here, both of them, which is true at this moment and stays
+       true for the one who loses the song. */
     call.win = [];
-    call.high = bend.slice(2, 4).map(r => r.name).filter(n => !top2.includes(n));
+    call.high = top2;
     call.low = [];
-    call.safe = bend.slice(2).map(r => r.name).filter(n => !call.high.includes(n));
+    const named = legacy ? [] : bend.slice(-2).map(r => r.name).filter(n => !top2.includes(n));
+    call.atRisk = named;
+    call.safe = bend.slice(2).map(r => r.name).filter(n => !named.includes(n));
   }
 
   /* ── HOW THE HOST RUNS THE CALL TONIGHT ──
@@ -808,8 +828,29 @@ export function runDragWeek(state, cfg, ctx) {
     /* AND ON A TOP-TWO NIGHT THE SONG AWARDS THE WEEK. The record is written
        further down from `call.win`, so the winner has to be moved into it
        before that happens — otherwise the night the room ranked for a prize
-       goes on the chart as a week nobody won. */
+       goes on the chart as a week nobody won.
+
+       ── AND THIS IS WHERE IT USED TO SPOIL ITSELF ──
+       `call` is one object and the call screen holds it by reference, so
+       this line reached BACKWARDS: the Call screen — drawn before the song,
+       and the whole point of which is that nobody knows yet — printed
+       "WIN" over the queen who was about to win the lip sync three screens
+       later. The host announced the winner and then the winner was decided.
+       It also deleted two queens: `call.safe` had already been computed
+       against the old `high`, so overwriting `high` here left the queens the
+       room ranked third and fourth in no group at all and they vanished off
+       the call entirely.
+       `callAtCall` is the call AS THE HOST MADE IT — the moment, frozen —
+       and it is what the Call screen draws. `call` goes on being the night's
+       final truth, which is what the chart and the record want. Two states
+       because there genuinely are two: at the call the top two are both
+       HIGH, and only the song separates them. */
     if (topTwoSing && lc.winner) {
+      callAtCall = {
+        ...call,
+        win: [...call.win], high: [...call.high], low: [...call.low],
+        atRisk: [...call.atRisk], bottom: [...call.bottom], safe: [...call.safe],
+      };
       call.win = [lc.winner];
       call.high = [a, b].filter(n => n !== lc.winner);
       state.lastWinner = lc.winner;
@@ -923,7 +964,13 @@ export function runDragWeek(state, cfg, ctx) {
     const onStage = [...(call.win || []), ...(call.high || []),
       ...(call.low || []), ...(call.bottom || [])];
     const stageScenes = renderStageBeats({
-      walking: living, onStage, runway, call, reactions, lipsync,
+      walking: living, onStage, runway, reactions, lipsync,
+      /* THE CALL THE HOST MADE, WHICH ON A TOP-TWO NIGHT IS NOT THE ONE
+         `call` NOW HOLDS. These beats are the host speaking at the call,
+         before the song — so they get the frozen moment for the same
+         reason the screen does, and for the same bug: `result-win` was
+         being spoken over the queen who had not won yet. */
+      call: callAtCall || call,
       exits: exits.slice(), split, rng, critiques,
       /* THE PORKCHOP GATE. `state.out` already carries tonight's exits by the
          time beats render, so the season's first elimination is exactly the
@@ -1108,6 +1155,10 @@ export function runDragWeek(state, cfg, ctx) {
         ? { ballots: rated.ballots, board: rated.ranking, reasons: rated.reasons }
         : null,
       call,
+      /* WHAT THE HOST SAID, BEFORE THE SONG ANSWERED IT. Only a top-two
+         night has one; every other week the call is made once and never
+         moves, so `call` is the answer and this is null. */
+      ...(callAtCall ? { callAtCall } : {}),
       reactions,
       lipsync,
       ...(M.tournamentExit ? { tournament: M.tournamentExit } : {}),

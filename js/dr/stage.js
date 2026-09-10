@@ -615,7 +615,21 @@ export function renderStageBeats({
   const shape = resultOrder(callOrder);
   const BY_GROUP = {
     WIN: ['result-win', 'win', call.win || []],
-    HIGH: ['result-high', 'high', call.high || []],
+    /* ── HIGH IS NOT THE SAME CALL ON A NIGHT THE TOP TWO SING ──
+       Every line in the `high` tier tells her she did not win — "Not the
+       winner", "you did not win tonight", "somebody else was the best" —
+       which is true on an ordinary week and a LIE on a for-the-win night,
+       where the two queens being called are about to lip sync for exactly
+       that and neither of them has lost anything yet. It was said to both
+       of them, before the song, in the host's own voice.
+       So the beat is tiered on `stakes`, the same question `call-stakes` and
+       `lipsync-intro` already ask. 'life' is the ordinary week and keeps the
+       written pool; 'win' and 'legacy' are the top-two nights. Until those
+       two pools are written the beat emits nothing for these queens rather
+       than saying the wrong thing — they are still on the call, in the line
+       with a stamp, and `call-stakes` names the pair and says what the song
+       is for. */
+    HIGH: ['result-high', stakes === 'life' ? 'high' : stakes, call.high || []],
     LOW: ['result-low', 'low', call.low || []],
     BTM: ['result-btm', 'btm', call.atRisk || []],
     BTM2: ['result-bottom', 'bottom', call.bottom || []],
@@ -632,7 +646,19 @@ export function renderStageBeats({
     if (g === holdAt && filled.length > 1) {
       emit(beatById('results-hold'), 'hold', [], { before: g, order: shape.id });
     }
-    for (const n of who) emit(beatById(beatId), tierId === 'win' && who.length > 1 ? 'double-win' : tierId, [n], { order: shape.id, ...(tierId === 'win' && who.length > 1 ? { doubleWin: true } : {}) });
+    /* A SHARED WIN IS ITS OWN TIER, AND ONLY ON THE WIN GROUP. This asked
+       `tierId === 'win'`, which was safe while 'win' belonged to no other
+       group — and stopped being safe the moment HIGH started using the
+       stakes as its tier id on a for-the-win night. Two queens in HIGH then
+       resolved to 'double-win', a tier `result-high` does not have, and the
+       emitter's `|| tiers[0]` fallback handed them the ordinary pool: both
+       top-two queens told "not the winner" before the song. The question is
+       about the WIN group, so it is asked about the WIN group. */
+    const doubleWin = g === 'WIN' && who.length > 1;
+    for (const n of who) {
+      emit(beatById(beatId), doubleWin ? 'double-win' : tierId, [n],
+        { order: shape.id, ...(doubleWin ? { doubleWin: true } : {}) });
+    }
   }
 
   /* AND WHAT THE SONG IS FOR, said last, after the names. Two queens standing

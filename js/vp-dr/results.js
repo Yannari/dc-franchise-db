@@ -373,7 +373,16 @@ const CHIP = {
  */
 export function rpBuildResults(row) {
   const ep = epOf(row);
-  const call = row?.dr?.call;
+  /* ── THE CALL AS IT WAS MADE, NOT AS THE SONG LEFT IT ──
+     On a top-two night the lip sync awards the week, and `dr.call` is the
+     FINAL shape — the winner in `win`, which is what the chart and the
+     record want and exactly what this screen must not have. It is drawn
+     before the song. Reading the final call printed "WIN" over the queen
+     who was about to win the lip sync three screens later: the host
+     announced the winner and then the winner was decided.
+     `dr.callAtCall` is the frozen moment and only a top-two night has one;
+     every ordinary week makes its call once and never moves it. */
+  const call = row?.dr?.callAtCall || row?.dr?.call;
   if (!call) return '';
   const bend = new Map((row.dr.bend || []).map(b => [b.name, b]));
   /* THE SAFE QUEENS ARE DISMISSED AS A GROUP AND GO FIRST. That is the

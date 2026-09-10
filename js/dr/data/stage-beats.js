@@ -504,8 +504,10 @@ export const STAGE_BEATS = [
      result-bottom above for the voice. */
   {
     id: 'result-high', step: 'results', scope: 'per-queen', speaker: 'host',
-    note: 'She was among the top and did not win. {a} is the queen.',
-    tierBy: 'always',
+    note: 'She was among the top and did not win. {a} is the queen. On a '
+      + 'night the top two lip sync for the win she has not lost anything '
+      + 'yet — see the top2 tier.',
+    tierBy: 'stakes',
     tiers: [tier('high', 'Top of the week, and not the winner of it.', [
       "\"You were in the top tonight, {a}.\" The host says it simply, because simple is what it is: she was good. Not the best — somebody else was the best — but good, and good on this stage is a thing the panel does not say lightly. She nods. The nod holds a season\'s worth of work and a night\'s worth of almost.",
       "\"{a}, you did not win tonight.\" A pause. \"But you came close, and I want you to know that close is not a consolation. It is a position.\" She takes that standing straight. The host moves on. Close was real and close was earned and close is going to keep her up tonight.",
@@ -513,7 +515,20 @@ export const STAGE_BEATS = [
       "\"{a}, you were one of the best out there tonight.\" The host lets that settle. \"Not the winner — but one of the best, and that is a sentence I do not say to fill time.\" She takes a breath and the breath is the closest thing to a visible reaction she allows herself. High is not a win. High is the view of a win from one step below it.",
       "\"You were in the top tonight, {a}, and you earned it.\" The host does not elaborate. He does not need to — the look, the walk, the critiques all said it, and the placement is the summary. She smiles. The smile is smaller than the one she would have had for a win, but it is real, and the panel can see that.",
       "The host turns to {a} and his face is warm. \"High tonight. You should be proud of what you showed the panel.\" She is proud. She is also thinking about the margin between where she is and where the winner is, and the margin is the thing she will carry into next week.",
-    ])],
+    ]),
+    /* ── UNWRITTEN, DELIBERATELY. See docs/PROSE-PROMPT-dr-top-two-call.md ──
+       The two queens the room put at the top of a Rate-a-Queen night, called
+       one at a time and told they are about to lip sync FOR THE WIN. The
+       `high` tier above cannot serve them: every line in it says she did not
+       win, and on this night nobody has won yet — one of these two is about
+       to. Saying "not the winner" to the queen who is ninety seconds from
+       winning is the narration knowing something false, which is the thing
+       this show's prose is not allowed to do.
+       Empty emits no scene at all (see `emit` in js/dr/stage.js), so until
+       it is filled these two are called on the screen with their stamp and
+       named as a pair by `call-stakes`, and nothing wrong is said. */
+    tier('win', 'The top two of the week. She is about to sing for it.', []),
+    tier('legacy', 'The top two. The winner of the song holds the power.', [])],
   },
   {
     id: 'result-low', step: 'results', scope: 'per-queen', speaker: 'host',

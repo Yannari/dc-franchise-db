@@ -677,6 +677,62 @@ describe('WHO SINGS, AND WHAT FOR', () => {
     expect(e.dr.call.win).toEqual([e.dr.lipsync.winner]);
   });
 
+  /* ── THE CALL DID NOT KNOW WHO WON, AND SAID SO ANYWAY ──
+     `call` is one object and the Call screen holds it by reference, so the
+     line that awards the week after the song reached BACKWARDS into a screen
+     drawn before it: the host announced "WIN" over the queen who was about
+     to win the lip sync three screens later, and then the lip sync decided
+     it. `callAtCall` is the frozen moment; `call` is the night's final
+     truth. Both must be true at once, which is what these assert. */
+  it('the call does not know who wins the song, because it happens first', () => {
+    const e = ep2(play([{ episode: 2, rateAQueen: true, noElimination: true }]));
+    const atCall = e.dr.callAtCall;
+    expect(atCall, 'a top-two night froze no call').toBeTruthy();
+    expect(atCall.win, 'the call announced a winner before the song').toEqual([]);
+    // Both singers are HIGH at the call: true then, and still true after for
+    // the one who loses.
+    expect([...atCall.high].sort()).toEqual([...e.dr.lipsync.queens].sort());
+    // And the host never says the winning line before the song.
+    const order = e.dr.scenes.map(x => x.kind || '');
+    const winCall = order.indexOf('stage:result-win');
+    const song = order.indexOf('stage:lipsync-intro');
+    expect(song, 'the song never started').toBeGreaterThan(-1);
+    if (winCall >= 0) expect(winCall, 'the winner was named before the song').toBeGreaterThan(song);
+    // The chart still gets its winner from the live call.
+    expect(e.dr.call.win).toEqual([e.dr.lipsync.winner]);
+  });
+
+  it("names the room's bottom two and tells them they are not singing", () => {
+    const e = ep2(play([{ episode: 2, rateAQueen: true, noElimination: true }]));
+    const board = e.dr.rateAQueen.board.map(r => r.name);
+    const atCall = e.dr.callAtCall;
+    // The two the ROOM put last, named as BTM — the call this show already
+    // has a word for: named in the bottom, and saved BEFORE the song.
+    expect([...atCall.atRisk].sort()).toEqual([...board.slice(-2)].sort());
+    expect(atCall.bottom, 'somebody was sent to sing on a night nobody sings to stay').toEqual([]);
+    // And the host actually says it to each of them.
+    const btm = e.dr.scenes.filter(x => x.kind === 'stage:result-btm');
+    expect(btm.length, 'the bottom two were called silently').toBe(2);
+    for (const sc of btm) expect(sc.text.length).toBeGreaterThan(80);
+  });
+
+  it('leaves nobody off the call it just made', () => {
+    /* `call.safe` was computed against the OLD `high`, so overwriting `high`
+       after the song left the queens the room ranked third and fourth in no
+       group at all — eleven queens on the stage, nine accounted for. */
+    const e = ep2(play([{ episode: 2, rateAQueen: true, noElimination: true }]));
+    const atCall = e.dr.callAtCall;
+    const placed = [...atCall.win, ...atCall.high, ...atCall.low,
+      ...atCall.atRisk, ...atCall.bottom, ...atCall.safe];
+    expect(new Set(placed).size, 'a queen is in two call groups').toBe(placed.length);
+    expect([...placed].sort()).toEqual([...e.dr.roomAtStart].sort());
+  });
+
+  it('an ordinary week freezes nothing, because its call never moves', () => {
+    const e = ep2(play([{ episode: 2, rateAQueen: true }]));
+    expect(e.dr.callAtCall).toBeUndefined();
+  });
+
   it('a Legacy night lets the winner of the song eliminate, and only her choice goes', () => {
     const e = ep2(play([{ episode: 2, legacy: true }]));
     expect(e.dr.lipsync.call).toBe('legacy');

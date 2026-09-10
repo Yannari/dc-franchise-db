@@ -361,22 +361,42 @@ export const MAXI_EVENTS = [
   e({
     id: 'workshopped', from: 'rumix', cast: 'pair',
     note: '{a} sat down and helped {b} write her verse. It shows on the tape.',
-    lines: [],
+    lines: [
+      '{a} sits down next to {b} in the werk room and they rewrite the second bar together. By the time they are done the verse scans, the punchline lands, and {b} knows it was not hers alone. The tape will know it too.',
+      '{b} is stuck on a rhyme scheme that is not working and {a} leans over, crosses out a line, and writes a new one in the margin. {b} reads it back. It is better. {a} shrugs like it was nothing and goes back to her own verse.',
+      '{a} hears {b} reading her verse out loud and stops what she is doing. "That third bar is dead. Flip the order." {b} flips it. The verse unlocks. {a} helped and everybody in the room saw her help.',
+      '{a} spends an hour on {b}\'s verse that she could have spent on her own. They rework the breath marks, tighten the closer, and by the end of the session {b} has a verse she can actually land at tempo. What the panel hears is the version {a} helped build.',
+    ],
   }),
   e({
     id: 'read-her-verse', from: 'rumix', cast: 'pair',
     note: '{a} heard {b} rehearsing and told the room it was terrible. {b} still has to perform it.',
-    lines: [],
+    lines: [
+      '{a} hears {b} rehearsing through the wall and turns to the room. "That verse is not going to work." She says it loud enough that nobody has to ask what she means. {b} is still in the next room practising the verse she is about to perform.',
+      '"Have you heard what {b} wrote?" {a} says it to the mirror and three queens hear her. She is not whispering. The verse is weak and {a} wants the room to know she knows it before the panel does. {b} is still rehearsing it.',
+      '{a} catches a piece of {b}\'s rehearsal and her face says everything. "Girl. That is not going to land." The room registers it. {b} does not hear the comment. She hears the verse she wrote and thinks it is ready.',
+      '{b} is running her verse in the next room and {a} listens for exactly long enough to form an opinion. "She is going to bomb," {a} tells the queen next to her. {b} walks in thirty seconds later and nobody repeats what was said.',
+    ],
   }),
   e({
     id: 'upstaged-her', from: 'music-video', cast: 'pair',
     note: '{a} stepped into {b}\'s shot and it worked. {b} watched it back on the monitor.',
-    lines: [],
+    lines: [
+      '{a} steps into the frame during {b}\'s setup and the camera follows her instead. The director keeps rolling. {b} watches the playback on the monitor and sees herself in the background of her own shot.',
+      'The setup belongs to {b} but {a} finds the lens first. She does not apologise — she barely seems to notice. {b} watches the take back on the monitor and the person the camera loves in that frame is not her.',
+      '{a} walks through {b}\'s shot and the energy shifts. The director calls it a good take. {b} looks at the monitor and sees a frame where she is standing exactly where she was told to stand and {a} is the one the camera found.',
+      '{b} had the setup. {a} had the instinct. The take plays back on the monitor and the composition belongs to {a} — she found the light, she found the angle, and she found them in somebody else\'s shot. {b} saw every second of it.',
+    ],
   }),
   e({
     id: 'covered-for-her', from: 'music-video', cast: 'pair',
     note: '{a} quietly told {b} where the mark was between set-ups, and saved her a take.',
-    lines: [],
+    lines: [
+      '{a} leans over between setups and tells {b} where her mark is. Quietly. No scene. {b} hits the mark on the next take and the director moves on without knowing {b} was lost thirty seconds ago.',
+      '"You are a foot to the left." {a} says it to {b} under her breath while the crew is resetting. {b} shifts. The next take lands. Nobody on set noticed the save except the two of them.',
+      '{a} sees {b} missing her mark and says nothing on camera. Between takes she walks over, points at the tape on the floor, and {b} nods. The next setup is clean. The director never had to give the note.',
+      '{b} is about to blow a take and {a} catches it — a hand on the shoulder between setups, a quiet word, a correction that saves the shot. {b} nails the next one. {a} goes back to her own mark and says nothing about it.',
+    ],
   }),
 
   // ══ THE BRACKET ══════════════════════════════════════════════════════

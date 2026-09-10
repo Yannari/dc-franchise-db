@@ -210,8 +210,18 @@ export const CHALLENGE_BEATS = [
          Unwritten on purpose: `emit` skips a tier with no lines, so until
          these are written the screen says nothing about the split, which is
          better than saying something false about it. */
-      tier('two-casts', 'The room is cut in two, and the parts are fought over inside each half.'),
-      tier('pairs', 'Two by two, and a product each.'),
+      tier('two-casts', 'The room is cut in two, and the parts are fought over inside each half.', [
+        "Two casts. The host splits the room down the middle and both halves are doing the same script — the same six parts, the same words, judged against each other. Somewhere in the room two queens just realised they are playing the same character and only one of them can win the comparison.",
+        "The room is cut in half. Both groups get the same script, the same characters, the same challenge — and the panel is going to watch them back to back. The queens who got the stronger cast know it. The queens who did not are already doing the maths.",
+        "\"Same script. Two casts.\" The host says it and the room does the thing where everybody looks at the queen next to them and tries to figure out who they are about to be judged against. The comparison is the whole point and nobody in the room has forgotten it.",
+        "Two halves, one script. The host explains it and every queen in the room understands what this means: whoever is playing her part on the other side is the person she needs to be better than. Not different. Better. The audience is going to see both.",
+      ]),
+      tier('pairs', 'Two by two, and a product each.', [
+        "Pairs. The room is split two by two and each pair is handed a product with a trap in it — something that does not sell itself, something that needs a queen who can find the angle. The trap is the point. The commercial is how they get out of it.",
+        "\"You will be working in pairs.\" The room reshuffles. Two queens per commercial, one product each, and the product is the challenge: something ridiculous enough that selling it straight is not an option. Every pair is doing the same job — write it, shoot it, sell it — and the pair that sells it best survives.",
+        "Two by two, and each pair gets a product. The host hands them out and the reactions land in real time — one pair laughs, one pair stares, one pair is already whispering about the angle. The product is the brief. The thirty seconds they build around it is the test.",
+        "Pairs and products. The host reads them out and the room splits. Each duo gets something to sell — something designed to be hard to sell — and thirty seconds to do it in. The commercial is theirs to write, theirs to direct, and theirs to answer for on the panel.",
+      ]),
       tier('cast', 'No draft at all. The host reads out who is playing what.', [
         "No picks. No draft. The host reads the cast list. Every queen hears her part in the same sentence as everybody else — lead, featured, ensemble — and nobody chose any of it. The room takes it in silence because there is nothing to argue with. The call sheet is the call sheet.",
         "The host announces who is playing what and the room listens. No volunteers, no trades, no captain making choices under pressure. She reads the list. One queen gets the lead and did not raise her hand for it. One queen gets the background and could not have stopped it.",
@@ -244,10 +254,30 @@ export const CHALLENGE_BEATS = [
     note: 'Her hours on the set in front of {m}, and what the day did to what she thinks of her.',
     tierBy: 'impression',
     tiers: [
-      tier('made-the-scene', 'She gave him something better than what was written.'),
-      tier('takes-direction', 'A note, a take, and on to the next setup.'),
-      tier('many-resets', 'They go again, and again, and the room feels the afternoon.'),
-      tier('argued-with-him', 'She was asked for something and said no, in front of the crew.'),
+      tier('made-the-scene', 'She gave him something better than what was written.', [
+        '{a} does something on take two that was not in the script. {m} watches it back on the monitor, says nothing for three seconds, and then: "Again. Do that again." She does it again. Better. {m} keeps it.',
+        '"That was not what I wrote for you," {m} says after the take. She is not angry — she is recalculating. {a} brought something the page did not have and {m} is already figuring out how to build the rest of the scene around it.',
+        '{m} calls cut and pulls off her headset. "Where did THAT come from?" {a} shrugs. The take was better than the material and everybody on set heard it happen. {m} tells the crew to reset — she wants it from a second angle now.',
+        'Take one is the script. Take two is {a} doing something with a line that the writer never imagined. "Keep going," {m} says, and she does not say it to queens who are doing fine. She says it to queens who are making the day.',
+      ]),
+      tier('takes-direction', 'A note, a take, and on to the next setup.', [
+        '{m} gives a note. {a} takes the note. First try. "Good," {m} says, already looking at the next setup on the monitor. No drama. No extended session. The kind of afternoon that does not generate a story for the panel.',
+        '"Faster on the turn. Find the lens before you finish the line." {a} adjusts. {m} watches the take back, nods, and calls for the next setup. A clean session — the work of a queen who listened.',
+        '{a} walks onto the mark, hears the note, and delivers. {m} calls cut after take two. They move on. The crew barely registers it — a queen who takes direction is a queen who does not cost the day its margin.',
+        '"That works." {m} says it after the second take and {a} is done. Not the queen making the highlights and not the queen making the blooper reel. She did the work. {m} moved on.',
+      ]),
+      tier('many-resets', 'They go again, and again, and the room feels the afternoon.', [
+        '"Again." {m} resets. Take five. {a} stumbles on the same beat. "You are thinking about the next line while you are still inside this one," {m} says. "Stay in the moment." Take six. Take seven. They get there on take nine and the crew has been watching.',
+        '{m} gives {a} the same note four times in different words. {a} takes none of them. "Stop," {m} says after take six. "You are performing nerves, not the scene. Breathe." {a} breathes. Take seven is the one they keep. It took too long.',
+        'Take after take. {m} stays patient. {a} stays less patient with herself. "One more," {m} says. She has said it five times. The queens waiting for their slot can hear every reset through the wall.',
+        '"Smaller," {m} says. {a} gives her the same performance. "Smaller," {m} says again. They do this six times. {m} does not raise her voice — she never does — but somewhere around take five it shifts from warm to professional, and {a} can hear the difference.',
+      ]),
+      tier('argued-with-him', 'She was asked for something and said no, in front of the crew.', [
+        '"I think my version is better," {a} says. On set. To {m}. In front of the crew. {m} looks at her. "Do it my way." {a} does not do it her way. {m} does not argue twice — she adjusts the shot and builds around the queen who would not give her what she asked for.',
+        '"I need this from you," {m} says, and {a} says no. Out loud. On a set where everybody heard it. {m} finishes the day. She will tell the panel {a} was the hardest part of it, and she will not need to raise her voice to make the point.',
+        '{m} gives a note about scale. {a} gives it back. "I know what I am doing," {a} says, and the set goes quiet the way a set goes quiet when a queen has just told the person behind the monitor that she is wrong. {m} does not repeat herself. She moves the camera.',
+        '"Find the lens." "I AM finding the lens," {a} says. She is not. {m} knows it. The crew knows it. {m} gives the note one more time, {a} refuses it one more time, and they move on. What {m} tells the panel is the moving-on, not the note.',
+      ]),
     ],
   },
   {

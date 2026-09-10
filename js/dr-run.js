@@ -37,6 +37,7 @@
 // Drop the import from js/main.js and the show silently un-ships with every
 // test still green.
 import { gs, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { buildInitialBonds } from './savestate.js';
 import { DRAG_FORMAT } from './shows.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
@@ -248,21 +249,33 @@ function _playWholeSeason() {
   if (cast.length < 4) return false;
 
   /* A REBUILD replays every episode from scratch, and the callbacks write into
-     gs.bonds and gs.popularity as it goes — so a rebuild after three aired
-     episodes applies those episodes' bond and popularity changes A SECOND TIME
-     on top of the checkpoint's state. That is the "two timelines merging" bug:
-     the re-run produces a different ep 4, but eps 1-3 have been double-counted
-     in the bond and popularity ledgers, so eps 5+ are computed against a state
-     that belongs to neither timeline.
-     The fix: when aired episodes exist, snapshot the live state before the
-     rebuild and restore it after. The queue rows are self-contained — each
-     carries its own `living`, performances and scores — so the rebuild's
-     side-effects on live state are not needed. */
+     gs.bonds and gs.popularity as it goes. The bond(a,b) READER callback calls
+     getPerceivedBond, which reads the LIVE gs.bonds/bondLean/perceivedBonds —
+     so if those contain the checkpoint's accumulated state, ep 1 of the rebuild
+     reads ep 3's bonds and produces a different elimination order.
+
+     The fix: reset all relationship state to its INITIAL authored values before
+     the rebuild, so the bond reader returns the same values it did during the
+     original first play. The addBond/popDelta callbacks evolve them naturally
+     episode-by-episode, matching the original sequence. After the rebuild,
+     restore the checkpoint's state for the live game. */
   const isRebuild = (gs.episodeHistory || []).length > 0;
   const savedBonds = isRebuild && gs.bonds
     ? JSON.parse(JSON.stringify(gs.bonds)) : null;
   const savedPop = isRebuild && gs.popularity
     ? JSON.parse(JSON.stringify(gs.popularity)) : null;
+  const savedLean = isRebuild && gs.bondLean
+    ? JSON.parse(JSON.stringify(gs.bondLean)) : null;
+  const savedPerceived = isRebuild && gs.perceivedBonds
+    ? JSON.parse(JSON.stringify(gs.perceivedBonds)) : null;
+
+  if (isRebuild) {
+    const init = buildInitialBonds();
+    gs.bonds = init.bonds;
+    gs.bondLean = init.bondLean;
+    gs.perceivedBonds = {};
+    gs.popularity = {};
+  }
 
   // Perceived bonds, not real ones: what a queen believes about the room is
   // what shapes how she works with it. Wrapped because a season can be started
@@ -296,6 +309,8 @@ function _playWholeSeason() {
   if (isRebuild) {
     if (savedBonds) gs.bonds = savedBonds;
     if (savedPop) gs.popularity = savedPop;
+    if (savedLean) gs.bondLean = savedLean;
+    if (savedPerceived) gs.perceivedBonds = savedPerceived;
   }
 
   gs._drQueue = out.rows;

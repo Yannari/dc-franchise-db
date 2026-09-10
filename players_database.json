@@ -1114,14 +1114,7 @@
       "totalBottoms": 2,
       "latestAvatarFile": "",
       "totalHohWins": 0,
-      "totalVetoWins": 0,
-      "judged": [
-        {
-          "format": "drag-race",
-          "season": 1,
-          "episodes": 1
-        }
-      ]
+      "totalVetoWins": 0
     },
     {
       "id": "cody",
@@ -8924,14 +8917,7 @@
         }
       },
       "totalHohWins": 0,
-      "totalVetoWins": 0,
-      "judged": [
-        {
-          "format": "drag-race",
-          "season": 1,
-          "episodes": 1
-        }
-      ]
+      "totalVetoWins": 0
     },
     {
       "id": "mk",
@@ -14937,8 +14923,8 @@
       "totalVetoWins": 0
     },
     {
-      "id": "ginger-hollywood",
-      "name": "Ginger Hollywood",
+      "id": "velvet-vixen",
+      "name": "Velvet Vixen",
       "seasons": [
         1
       ],
@@ -14966,7 +14952,7 @@
             "wins": 0,
             "highs": 0,
             "lows": 0,
-            "bottoms": 1,
+            "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
           },
@@ -14979,7 +14965,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 1,
+      "totalBottoms": 0,
       "avgPlacement": 1,
       "byShow": {
         "drag-race": {
@@ -14987,7 +14973,7 @@
           "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
-          "totalBottoms": 1,
+          "totalBottoms": 0,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
@@ -14995,8 +14981,8 @@
       "latestAvatarFile": ""
     },
     {
-      "id": "riot",
-      "name": "Riot",
+      "id": "taystee",
+      "name": "Taystee",
       "seasons": [
         1
       ],
@@ -15024,7 +15010,7 @@
             "wins": 0,
             "highs": 0,
             "lows": 0,
-            "bottoms": 1,
+            "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
           },
@@ -15037,7 +15023,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 1,
+      "totalBottoms": 0,
       "avgPlacement": 2,
       "byShow": {
         "drag-race": {
@@ -15045,7 +15031,7 @@
           "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
-          "totalBottoms": 1,
+          "totalBottoms": 0,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
@@ -15053,8 +15039,8 @@
       "latestAvatarFile": ""
     },
     {
-      "id": "velvet-vixen",
-      "name": "Velvet Vixen",
+      "id": "sharon-needles",
+      "name": "Sharon Needles",
       "seasons": [
         1
       ],
@@ -15111,8 +15097,8 @@
       "latestAvatarFile": ""
     },
     {
-      "id": "taystee",
-      "name": "Taystee",
+      "id": "riot",
+      "name": "Riot",
       "seasons": [
         1
       ],
@@ -15169,8 +15155,8 @@
       "latestAvatarFile": ""
     },
     {
-      "id": "sharon-needles",
-      "name": "Sharon Needles",
+      "id": "quin",
+      "name": "Quin",
       "seasons": [
         1
       ],
@@ -15196,7 +15182,7 @@
           "popularity": 0,
           "dr": {
             "wins": 0,
-            "highs": 0,
+            "highs": 1,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
@@ -15217,65 +15203,7 @@
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": ""
-    },
-    {
-      "id": "quin",
-      "name": "Quin",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 6,
-      "wins": 0,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 6,
-          "status": "Sashayed away",
-          "challengeWins": 1,
-          "popularity": 0,
-          "dr": {
-            "wins": 1,
-            "highs": 2,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 1,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
-      "avgPlacement": 6,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 1,
-          "totalHighs": 2,
+          "totalHighs": 1,
           "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
@@ -15291,7 +15219,7 @@
         1
       ],
       "totalSeasons": 1,
-      "bestPlacement": 7,
+      "bestPlacement": 6,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -15306,13 +15234,13 @@
           "season": 1,
           "avatarId": null,
           "avatarFile": "",
-          "placement": 7,
+          "placement": 6,
           "status": "Sashayed away",
           "challengeWins": 0,
           "popularity": 0,
           "dr": {
             "wins": 0,
-            "highs": 1,
+            "highs": 0,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
@@ -15328,12 +15256,12 @@
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
       "totalBottoms": 0,
-      "avgPlacement": 7,
+      "avgPlacement": 6,
       "byShow": {
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
-          "totalHighs": 1,
+          "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
@@ -15345,6 +15273,64 @@
     {
       "id": "minnie-skurr",
       "name": "Minnie Skurr",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 7,
+          "status": "Sashayed away",
+          "challengeWins": 1,
+          "popularity": 0,
+          "dr": {
+            "wins": 1,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 1,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 1,
+      "totalLipsyncWins": 1,
+      "totalBottoms": 0,
+      "avgPlacement": 7,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 1,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 1,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "marge-stache",
+      "name": "Marge Stache",
       "seasons": [
         1
       ],
@@ -15401,8 +15387,8 @@
       "latestAvatarFile": ""
     },
     {
-      "id": "marge-stache",
-      "name": "Marge Stache",
+      "id": "ginger-hollywood",
+      "name": "Ginger Hollywood",
       "seasons": [
         1
       ],
@@ -15429,7 +15415,7 @@
           "dr": {
             "wins": 0,
             "highs": 0,
-            "lows": 1,
+            "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
@@ -15450,7 +15436,7 @@
           "seasons": 1,
           "totalMaxiWins": 0,
           "totalHighs": 0,
-          "totalLows": 1,
+          "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
@@ -15467,7 +15453,7 @@
       "totalSeasons": 1,
       "bestPlacement": 10,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
@@ -15482,11 +15468,11 @@
           "avatarFile": "",
           "placement": 10,
           "status": "Sashayed away",
-          "challengeWins": 1,
+          "challengeWins": 0,
           "popularity": 0,
           "dr": {
-            "wins": 1,
-            "highs": 1,
+            "wins": 0,
+            "highs": 0,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
@@ -15499,15 +15485,15 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 1,
+      "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
       "totalBottoms": 0,
       "avgPlacement": 10,
       "byShow": {
         "drag-race": {
           "seasons": 1,
-          "totalMaxiWins": 1,
-          "totalHighs": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
@@ -15525,7 +15511,7 @@
       "totalSeasons": 1,
       "bestPlacement": 11,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
@@ -15539,16 +15525,16 @@
           "avatarId": null,
           "avatarFile": "",
           "placement": 11,
-          "status": "Miss Congeniality",
-          "challengeWins": 1,
+          "status": "Sashayed away",
+          "challengeWins": 0,
           "popularity": 0,
           "dr": {
-            "wins": 1,
+            "wins": 0,
             "highs": 0,
             "lows": 0,
-            "bottoms": 1,
-            "lipsyncWins": 2,
-            "congeniality": 1
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
           },
           "notes": [],
           "gameplayStyle": "",
@@ -15557,19 +15543,19 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 1,
-      "totalLipsyncWins": 2,
-      "totalBottoms": 1,
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
       "avgPlacement": 11,
       "byShow": {
         "drag-race": {
           "seasons": 1,
-          "totalMaxiWins": 1,
+          "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 2,
-          "totalCongeniality": 1
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
         }
       },
       "latestAvatarFile": ""
@@ -15603,7 +15589,7 @@
           "dr": {
             "wins": 0,
             "highs": 0,
-            "lows": 1,
+            "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
@@ -15624,7 +15610,7 @@
           "seasons": 1,
           "totalMaxiWins": 0,
           "totalHighs": 0,
-          "totalLows": 1,
+          "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
@@ -15655,16 +15641,16 @@
           "avatarId": null,
           "avatarFile": "",
           "placement": 13,
-          "status": "Sashayed away",
+          "status": "Miss Congeniality",
           "challengeWins": 0,
           "popularity": 0,
           "dr": {
             "wins": 0,
-            "highs": 1,
+            "highs": 0,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
-            "congeniality": 0
+            "congeniality": 1
           },
           "notes": [],
           "gameplayStyle": "",
@@ -15681,11 +15667,11 @@
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
-          "totalHighs": 1,
+          "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
-          "totalCongeniality": 0
+          "totalCongeniality": 1
         }
       },
       "latestAvatarFile": ""
@@ -15720,8 +15706,8 @@
             "wins": 0,
             "highs": 0,
             "lows": 0,
-            "bottoms": 1,
-            "lipsyncWins": 1,
+            "bottoms": 0,
+            "lipsyncWins": 0,
             "congeniality": 0
           },
           "notes": [],
@@ -15732,8 +15718,8 @@
         }
       ],
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 1,
-      "totalBottoms": 1,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
       "avgPlacement": 14,
       "byShow": {
         "drag-race": {
@@ -15741,8 +15727,8 @@
           "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 1,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
       },

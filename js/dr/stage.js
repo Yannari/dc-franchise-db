@@ -1431,7 +1431,23 @@ export function renderMaxiEventScenes(events, {
        dramatic moment the hand-out has, and it was being stamped with the
        maxi's step and drawn on the performance screen, half an episode after
        the argument. The draft screen is where the fight is. */
-    const at = spec.from === 'prep' ? 'prep' : spec.from === 'assign' ? 'choice' : step;
+    /* ── A MAP, BECAUSE A TERNARY ONLY KNEW TWO ──
+       This handled `prep` and `assign` and sent everything else to the maxi's
+       own step, which is right for the twenty families named after a
+       challenge and wrong for the two that are not:
+
+         `mini`      five events — a read landing, a read missing, a punch
+                     pulled — all of which happen during the MINI and were
+                     being stamped as maxi scenes;
+         `rehearsal` the choreography room, which happens during prep.
+
+       Read on a real makeover episode, the maxi cards opened with "she swings
+       for MK and misses… going for somebody and landing is art", which is a
+       READING CHALLENGE, over a card scoring a wig. Reported as "no
+       correlation at all", and correct — the words and the numbers on those
+       cards were about different halves of the night. */
+    const AT = { prep: 'prep', rehearsal: 'prep', assign: 'choice', mini: 'mini' };
+    const at = AT[spec.from] || step;
     /* THE WALKTHROUGH IS THE WORST-REPEATING BEAT IN THE SHOW, and it is
        arithmetic: four variants, fired once per queen, ten times on a
        thirteen-queen night. The draw exhausts and falls back to any line, so

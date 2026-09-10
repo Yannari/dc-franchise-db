@@ -1468,7 +1468,20 @@ export function renderMaxiEventScenes(events, {
        correlation at all", and correct — the words and the numbers on those
        cards were about different halves of the night. */
     const AT = { prep: 'prep', rehearsal: 'prep', assign: 'choice', mini: 'mini' };
-    const at = AT[spec.from] || step;
+    /* ── AND `from` CANNOT ANSWER IT FOR A CHALLENGE'S OWN EVENTS ──
+       `from` does two jobs: it names the screen for the three generic
+       families above, and it names the CHALLENGE THAT OWNS the event for the
+       twenty named after one — which is also how tests/dr-event-reach.test.js
+       groups them. For those twenty the map has nothing to say and the maxi's
+       step is the honest default, because a challenge's own events mostly do
+       happen on the main stage.
+       Mostly. The makeover's do not: the mini winner hands the room out on
+       the LINE-UP and a partner who will not put the heels on is a morning in
+       the werk room, and all four were being stamped `maxi-main` — the same
+       defect the map above was written for, one layer further in. An event
+       may now name its own screen, and the ones that do are the ones that
+       happen somewhere other than where they are scored. */
+    const at = spec.at || AT[spec.from] || step;
     /* THE WALKTHROUGH IS THE WORST-REPEATING BEAT IN THE SHOW, and it is
        arithmetic: four variants, fired once per queen, ten times on a
        thirteen-queen night. The draw exhausts and falls back to any line, so

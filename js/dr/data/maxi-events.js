@@ -251,7 +251,9 @@ export const MAXI_EVENTS = [
        day now, weighted by that grade, and how much of it {a} saves is her
        social — so this is the scene where she either talks him round or does
        not. Never her fault and the room knows it: no popularity moves. */
-    id: 'partner-fought-it', from: 'makeover', cast: 'solo',
+    // The werk room mid-build, not the runway: she is losing the morning
+    // to him, and the runway is where the panel sees what it cost.
+    id: 'partner-fought-it', from: 'makeover', at: 'prep', cast: 'solo',
     note: 'Her partner will not go along with it — the heels, the corset, the '
       + 'face, something. {a} spends the morning on that instead of the look.',
     lines: [
@@ -264,7 +266,7 @@ export const MAXI_EVENTS = [
   e({
     /* THE OTHER END OF THE SAME ROLL, and the reason this is not simply a
        punishment: a partner can also be better than his grade said. */
-    id: 'partner-took-to-it', from: 'makeover', cast: 'solo',
+    id: 'partner-took-to-it', from: 'makeover', at: 'prep', cast: 'solo',
     note: 'Her partner turns out to love it, and {a} gets a day she was not '
       + 'counting on.',
     lines: [
@@ -275,7 +277,9 @@ export const MAXI_EVENTS = [
     ],
   }),
   e({
-    id: 'handed-the-hardest', from: 'makeover', cast: 'pair',
+    // The line-up, where the room is handed out and everybody watches her
+    // do it — half an episode before the looks it decides.
+    id: 'handed-the-hardest', from: 'makeover', at: 'choice', cast: 'pair',
     note: '{a} won the mini and gave {b} the hardest partner in the room, in front of everybody.',
     lines: [
       "{a} says {b}'s name and then the name of the hardest man in the room, back to back, without blinking. The pause after is everybody deciding what they just watched.",
@@ -285,7 +289,7 @@ export const MAXI_EVENTS = [
     ],
   }),
   e({
-    id: 'paired-them-well', from: 'makeover', cast: 'pair',
+    id: 'paired-them-well', from: 'makeover', at: 'choice', cast: 'pair',
     note: '{a} had the room to hand out and gave {b} somebody she can actually work with.',
     lines: [
       "{a} pairs {b} with somebody workable and the room notices the generosity. {b} mouths a thank-you. {a} nods. The room files it.",

@@ -745,12 +745,12 @@
       "title": "Drag Race 1",
       "subtitle": "",
       "castSize": 14,
-      "episodeCount": 2,
+      "episodeCount": 3,
       "winner": {
-        "name": "Riot",
-        "playerSlug": "riot",
+        "name": "Ginger Hollywood",
+        "playerSlug": "ginger-hollywood",
         "vote": "",
-        "runnerUp": "Velvet Vixen",
+        "runnerUp": "Riot",
         "keyStats": "",
         "strategy": "",
         "legacy": ""

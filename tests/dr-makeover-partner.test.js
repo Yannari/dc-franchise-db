@@ -14,6 +14,8 @@
 import { describe, expect, it } from 'vitest';
 import { PARTNER_COHORTS, cohortDifficulty, cohortLabel } from '../js/dr/chal/makeover.js';
 import { GUEST_POOLS } from '../js/dr/data/partners.js';
+import { MAXI_EVENTS } from '../js/dr/data/maxi-events.js';
+import { renderMaxiEventScenes } from '../js/dr/stage.js';
 import { runMaxi } from '../js/dr/maxi.js';
 import { maxiById } from '../js/dr/data/challenges.js';
 import { rngFor } from '../js/dr/rng.js';
@@ -194,5 +196,46 @@ describe('the partner can fight it', () => {
           .toBe(false);
       }
     }
+  });
+});
+
+describe('and it happens where it happens', () => {
+  /* `from` does two jobs — it names the screen for the three generic families
+     and the CHALLENGE THAT OWNS the event for the twenty named after one — so
+     for a makeover event it can only answer the second, and the maxi's step
+     was the default. All four of the makeover's events were therefore stamped
+     `maxi-main`: the mini winner handing the room out, drawn half an episode
+     after she did it, and a partner refusing the heels drawn on the card for
+     the runway he refused them before.
+     `at` is the answer, and this is measured by rendering rather than by
+     reading the field back. */
+  const at = id => {
+    const spec = MAXI_EVENTS.find(e => e.id === id);
+    const had = spec.lines.slice();
+    // An event with no prose emits no scene, so it is given one for the ask.
+    spec.lines = ['{a} did a thing.'];
+    const [sc] = renderMaxiEventScenes([{ type: id, players: ['Ada', 'Bee'] }],
+      { step: 'maxi-main', rng: () => 0.5, family: 'makeover' });
+    spec.lines = had;
+    return sc?.step;
+  };
+
+  it('puts the morning in the werk room', () => {
+    expect(at('partner-fought-it')).toBe('prep');
+    expect(at('partner-took-to-it')).toBe('prep');
+  });
+
+  it('puts the pairing on the line-up, where the room watched her do it', () => {
+    expect(at('handed-the-hardest')).toBe('choice');
+    expect(at('paired-them-well')).toBe('choice');
+  });
+
+  it('leaves the finished pair on the main stage', () => {
+    // This one IS a verdict on the two looks, so the runway is right for it.
+    expect(at('dressed-herself-better')).toBe('maxi-main');
+  });
+
+  it('has not broken the three families that route off `from`', () => {
+    expect(at('walkthrough')).toBe('prep');
   });
 });

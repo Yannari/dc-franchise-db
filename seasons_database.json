@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 14,
-    "totalPlayers": 170,
+    "totalPlayers": 184,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -744,27 +744,27 @@
       "seasonId": "dr-1",
       "title": "Drag Race 1",
       "subtitle": "",
-      "castSize": 13,
-      "episodeCount": 10,
+      "castSize": 14,
+      "episodeCount": 1,
       "winner": {
-        "name": "Duncan",
-        "playerSlug": "duncan",
+        "name": "Velvet Vixen",
+        "playerSlug": "velvet-vixen",
         "vote": "",
-        "runnerUp": "Karol",
+        "runnerUp": "Taystee",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
       },
       "awards": {
         "fanFavorite": {
-          "name": "Sanders",
-          "playerSlug": "sanders"
+          "name": "Autumnatic",
+          "playerSlug": "autumnatic"
         },
         "bestStrategic": null,
         "mostChallengeWins": {
-          "name": "Duncan",
-          "playerSlug": "duncan",
-          "detail": "7 maxi challenges"
+          "name": "Minnie Skurr",
+          "playerSlug": "minnie-skurr",
+          "detail": "1 maxi challenge"
         }
       },
       "theme": "",

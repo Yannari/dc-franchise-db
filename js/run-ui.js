@@ -29,6 +29,7 @@ import { dragBadges } from './dr/badges.js';
 // module load order ever changed.
 import { MAXI_TYPES as DR_MAXI_TYPES } from './dr/data/challenges.js';
 import { MINI_TYPES as DR_MINI_TYPES } from './dr/data/minis.js';
+import { PARTNER_COHORTS, makeoverShows } from './dr/chal/makeover.js';
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
@@ -3149,6 +3150,17 @@ export function _setDRPick(ep, key, value) {
   renderTimeline();
 }
 
+/* The shows a crossover makeover could draw from, as dropdown rows. Wrapped
+   because it reads the alumni ledger, which a page can open before the
+   database has loaded — an empty list then means "any show", which is what the
+   engine does anyway. */
+function _makeoverShowOptions() {
+  try {
+    return makeoverShows([]).map(s => [s.format,
+      `${SHOWS[s.format]?.name || s.format} · ${s.people.length}`]);
+  } catch { return []; }
+}
+
 function _drPickers(ep) {
   const e = _drEntry(ep) || {};
   /* AN AIRED WEEK CANNOT BE RE-BOOKED, and the screen has to say so rather
@@ -3250,7 +3262,34 @@ function _drPickers(ep) {
       'Pin a guest judge, choose no guest, or leave it and the show books a famous alumnus')
     + sel('songTitle',
       [['', '— song: roll —'], ...songs.map(x => [x.title, `${x.title} — ${x.artist}`])],
-      e.songTitle || '', 'The lip sync song');
+      e.songTitle || '', 'The lip sync song')
+    /* ── THE MAKEOVER'S TWO, AND ONLY ON A MAKEOVER ──
+       Six dropdowns is already a lot for one episode card, and a cohort picker
+       on a Snatch Game is a control that cannot do anything. They appear when
+       the week is pinned to the makeover and not otherwise.
+
+       THE SHOW LIST IS DERIVED, NEVER TYPED. `makeoverShows()` asks the
+       registry which formats exist and the ledger which of them has enough
+       people to fill a room — so a show with no cast yet is not offered, and
+       the day it has one it appears here without anybody editing this file.
+       That is the rule docs/ADDING-A-SHOW.md §9 states over the whole tree:
+       nothing outside js/shows.js holds a list of shows. */
+    + (e.maxiId === 'makeover'
+      ? sel('makeoverPool',
+        [['', '— partners: the show picks —'],
+          ...PARTNER_COHORTS.map(c => [c, c.replace(/-/g, ' ')])],
+        e.makeoverPool || '',
+        'Who the queens are making over. "alumni" is the crossover: real '
+        + 'players from another show in the franchise.')
+        + (e.makeoverPool === 'alumni'
+          ? sel('makeoverShow',
+            [['', '— crossover: any show —'],
+              ..._makeoverShowOptions()],
+            e.makeoverShow || '',
+            'Which show the crossover partners come from. Only shows with '
+            + 'enough players on the ledger are listed.')
+          : '')
+      : '');
 }
 
 function _bbCompPicker(ep, slot, label) {

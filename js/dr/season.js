@@ -306,6 +306,12 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
          not fire: measured at nought across twenty-five seasons.
          The eliminated cohort waits until enough queens are out to make a
          pool of it, which is also when the show would use it. */
+      /* AND WHICH SHOW THE CROSSOVER DRAWS FROM, when the author booked one.
+         Null means the season picks, the same three-answer shape `guest` and
+         `miniId` use — and a field the schedule does not carry is a control
+         that silently does nothing, which is how `makeoverPool` itself spent
+         its first life. */
+      makeoverShow: pin.makeoverShow || null,
       makeoverPool: pin.makeoverPool
         || (maxiId === 'makeover'
           ? pick(er, e >= 5 ? PARTNER_COHORTS
@@ -448,6 +454,9 @@ function weekCfg(sch, config, num, extra = {}) {
     songTitle: sch.songTitle,
     runwayCategory: sch.runwayCategory,
     makeoverPool: sch.makeoverPool || null,
+    // Which show the crossover partners come from. js/dr/chal/makeover.js
+    // reads it; without this line the picker was decoration.
+    makeoverShow: sch.makeoverShow || null,
     judgeWeights: config.drJudgeWeights || {},
     immunity: !!config.drImmunity,
     // The arcs need to know how far through the season they are: what the

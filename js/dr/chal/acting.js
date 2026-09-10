@@ -50,12 +50,15 @@ export function assign(ctx) {
   if (maxi.id === 'improv') {
     const picks = {};
     const taken = new Set();
-    for (const n of order) {
+    for (let i = 0; i < order.length; i++) {
+      const n = order[i];
       let prem = pickOne(PREMISES, rng);
       let guard = 0;
       while (taken.has(prem.id) && guard++ < 20) prem = pickOne(PREMISES, rng);
       taken.add(prem.id);
-      picks[n] = { name: n, choice: prem.id, premise: prem.name, penalty: 0, lostTo: null };
+      const depth = i < Math.ceil(order.length / 3) ? 0
+        : i < Math.ceil(order.length * 2 / 3) ? 1 : 2;
+      picks[n] = { name: n, choice: prem.id, premise: prem.name, penalty: 0, lostTo: null, depth };
     }
     return {
       roles: Object.fromEntries(order.map(n => [n, 'standard'])),

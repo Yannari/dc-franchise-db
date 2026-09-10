@@ -972,7 +972,7 @@ export const WERK_EVENTS = [
       && f.bond >= 3 && f.episode >= 2,
     effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
     lines: [
-      "{a} and {b} have been at the same end of the werkroom for four days running. Tonight {a} stays late and {b} does not ask why. Neither of them is calling it anything yet.",
+      "{a} and {b} have been ending up next to each other in the werkroom every day this week. Neither of them is moving her station. Neither of them is saying anything about it.",
       "{a} and {b} keep finding excuses. A zip that needs doing up. A second opinion on a hemline that was fine. Everyone else worked it out a week before they did. Everyone else is being very kind about not saying so.",
       "\"You are in my light,\" {b} says, not moving. {a} does not move either. It goes on slightly too long to be nothing. Then somebody drops a glue gun and the moment goes wherever those go.",
       "Neither has said anything. {a} has started doing her face at the station next to {b}, which is further from the good mirror. {b} has noticed and has not mentioned it. That is roughly where they are.",

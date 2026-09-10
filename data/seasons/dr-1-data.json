@@ -19,11 +19,11 @@
       "placement": 1,
       "status": "Sashayed away",
       "dr": {
-        "wins": 0,
+        "wins": 1,
         "highs": 0,
         "lows": 0,
         "bottoms": 0,
-        "lipsyncWins": 0,
+        "lipsyncWins": 1,
         "congeniality": 0
       }
     },
@@ -76,7 +76,7 @@
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
-        "highs": 1,
+        "highs": 0,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -103,11 +103,11 @@
       "placement": 7,
       "status": "Sashayed away",
       "dr": {
-        "wins": 1,
+        "wins": 0,
         "highs": 0,
         "lows": 0,
         "bottoms": 0,
-        "lipsyncWins": 1,
+        "lipsyncWins": 0,
         "congeniality": 0
       }
     },
@@ -174,7 +174,7 @@
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
-        "highs": 0,
+        "highs": 1,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -228,114 +228,114 @@
           "carson"
         ],
         "guest": null,
-        "runwayCategory": "Denim and Diamonds",
+        "runwayCategory": "Something Borrowed",
         "song": {
-          "title": "Fancy",
-          "artist": "Reba McEntire"
+          "title": "I Will Survive",
+          "artist": "Gloria Gaynor"
         },
         "placements": [
           {
             "name": "Velvet Vixen",
             "playerSlug": "velvet-vixen",
-            "result": "SAFE",
-            "panelRank": 3,
-            "finalRank": 3,
-            "storyline": "Family Story"
-          },
-          {
-            "name": "Taystee",
-            "playerSlug": "taystee",
-            "result": "SAFE",
-            "panelRank": 6,
-            "finalRank": 6,
-            "storyline": "Fashion Queen"
-          },
-          {
-            "name": "Sharon Needles",
-            "playerSlug": "sharon-needles",
-            "result": "SAFE",
-            "panelRank": 13,
-            "finalRank": 13,
-            "storyline": "Villain"
-          },
-          {
-            "name": "Riot",
-            "playerSlug": "riot",
-            "result": "SAFE",
-            "panelRank": 14,
-            "finalRank": 14,
-            "storyline": null
-          },
-          {
-            "name": "Quin",
-            "playerSlug": "quin",
-            "result": "HIGH",
-            "panelRank": 1,
-            "finalRank": 1,
-            "storyline": "Professional"
-          },
-          {
-            "name": "Paige Turner",
-            "playerSlug": "paige-turner",
-            "result": "SAFE",
-            "panelRank": 10,
-            "finalRank": 10,
-            "storyline": "Comedy Queen"
-          },
-          {
-            "name": "Minnie Skurr",
-            "playerSlug": "minnie-skurr",
             "result": "WIN",
             "panelRank": 2,
             "finalRank": 2,
             "storyline": "Underdog"
           },
           {
+            "name": "Taystee",
+            "playerSlug": "taystee",
+            "result": "SAFE",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": "Fashion Queen"
+          },
+          {
+            "name": "Sharon Needles",
+            "playerSlug": "sharon-needles",
+            "result": "SAFE",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": "Villain"
+          },
+          {
+            "name": "Riot",
+            "playerSlug": "riot",
+            "result": "SAFE",
+            "panelRank": 13,
+            "finalRank": 13,
+            "storyline": null
+          },
+          {
+            "name": "Quin",
+            "playerSlug": "quin",
+            "result": "SAFE",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "Professional"
+          },
+          {
+            "name": "Paige Turner",
+            "playerSlug": "paige-turner",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Minnie Skurr",
+            "playerSlug": "minnie-skurr",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": null
+          },
+          {
             "name": "Marge Stache",
             "playerSlug": "marge-stache",
             "result": "SAFE",
-            "panelRank": 7,
-            "finalRank": 7,
+            "panelRank": 9,
+            "finalRank": 9,
             "storyline": null
           },
           {
             "name": "Ginger Hollywood",
             "playerSlug": "ginger-hollywood",
             "result": "SAFE",
-            "panelRank": 11,
-            "finalRank": 11,
+            "panelRank": 14,
+            "finalRank": 14,
             "storyline": "Look Queen"
           },
           {
             "name": "Gigi Cherie",
             "playerSlug": "gigi-cherie",
             "result": "SAFE",
-            "panelRank": 9,
-            "finalRank": 9,
+            "panelRank": 12,
+            "finalRank": 12,
             "storyline": "Alternative Queen"
           },
           {
             "name": "Cupcakke",
             "playerSlug": "cupcakke",
             "result": "SAFE",
-            "panelRank": 12,
-            "finalRank": 12,
+            "panelRank": 4,
+            "finalRank": 4,
             "storyline": null
           },
           {
             "name": "Cheryl Hole",
             "playerSlug": "cheryl-hole",
-            "result": "SAFE",
-            "panelRank": 5,
-            "finalRank": 5,
+            "result": "HIGH",
+            "panelRank": 1,
+            "finalRank": 1,
             "storyline": null
           },
           {
             "name": "Autumnatic",
             "playerSlug": "autumnatic",
             "result": "SAFE",
-            "panelRank": 4,
-            "finalRank": 4,
+            "panelRank": 7,
+            "finalRank": 7,
             "storyline": "Comedy Queen"
           },
           {
@@ -349,13 +349,13 @@
         ],
         "lipsync": {
           "queens": [
-            "Quin",
-            "Minnie Skurr"
+            "Cheryl Hole",
+            "Velvet Vixen"
           ],
-          "winner": "Minnie Skurr",
+          "winner": "Velvet Vixen",
           "loser": null,
           "call": "for-the-win",
-          "song": "Fancy"
+          "song": "I Will Survive"
         },
         "exits": [],
         "eliminated": null,

@@ -745,25 +745,25 @@
       "title": "Drag Race 1",
       "subtitle": "",
       "castSize": 14,
-      "episodeCount": 3,
+      "episodeCount": 1,
       "winner": {
-        "name": "Ginger Hollywood",
-        "playerSlug": "ginger-hollywood",
+        "name": "Velvet Vixen",
+        "playerSlug": "velvet-vixen",
         "vote": "",
-        "runnerUp": "Riot",
+        "runnerUp": "Taystee",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
       },
       "awards": {
         "fanFavorite": {
-          "name": "Cupcakke",
-          "playerSlug": "cupcakke"
+          "name": "Autumnatic",
+          "playerSlug": "autumnatic"
         },
         "bestStrategic": null,
         "mostChallengeWins": {
-          "name": "Quin",
-          "playerSlug": "quin",
+          "name": "Minnie Skurr",
+          "playerSlug": "minnie-skurr",
           "detail": "1 maxi challenge"
         }
       },

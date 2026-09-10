@@ -205,6 +205,16 @@ export const DR_CSS = `
 .dr-slot{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;
   padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.07)}
 .dr-slot:last-child{border-bottom:none}
+/* HIS FACE UNDER HERS, tied to it by the short rule the way the pair is
+   tied together for the night. Small on purpose: he is what she is working
+   with, not who the rail is about. */
+.dr-mate{display:inline-flex;align-items:center;gap:5px;margin-top:3px}
+.dr-mate::before{content:'';width:9px;height:1px;flex:none;
+  background:rgba(255,255,255,.28)}
+.dr-mate img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;
+  border:1px solid rgba(255,200,61,.4)}
+.dr-mate small{font-size:8.5px;letter-spacing:.5px;text-transform:uppercase;
+  color:#C9A6BC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dr-meter{height:4px;background:rgba(255,255,255,.13);margin-top:3px;overflow:hidden}
 .dr-meter i{display:block;height:100%;background:linear-gradient(90deg,var(--dr-cyan),var(--dr-pink))}
 .dr-chip{font-size:9px;letter-spacing:.08em;padding:3px 7px;font-weight:700}

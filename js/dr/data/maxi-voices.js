@@ -348,6 +348,47 @@ export const PICK_VOICES = [
         '{a} picks last and gets {d}. {d} is paired with {a} by the only force more impersonal than a draft — nobody else is available. {c} does not wait for queens to feel ready.',
       ]),
     ),
+  kind('products',
+    'A PRODUCT she has to sell in thirty seconds. {d} is the thing on the '
+    + 'table — absurd, unsellable, and paired with a trap angle everybody '
+    + 'reaches for. The prose is about whether she can find the joke in the '
+    + 'product and whether her partner can keep up. Never reference a script '
+    + 'or written lines: a commercial is pitched and shot, not read.', P(
+      'She got {d}. The product with the joke already inside it.', [
+        '{a} gets {d} and sees the angle immediately. The product is absurd and absurd is where she lives. She is pitching before her partner has finished reading the brief.',
+        '{d} lands in {a}\'s lap and she grins. A product that sells itself if you commit to the bit. She is already writing the tagline in her head.',
+        '{a} draws {d}. The product everybody in the room wanted — the one where the joke writes itself and the thirty seconds feel like enough. She takes it to her station and starts blocking the spot.',
+        '{a} gets {d} and the concept is there before the brief is finished. A product she can see the ad for. A product she can sell. The partner beside her watches {a} light up and starts taking notes.',
+        '{d} goes to {a}. The product with the comedy in its bones. She does not need to find the funny — she needs to not waste it. The thirty seconds start feeling generous.',
+        '{a} takes {d} and the product is a gift. Not easy — nothing in {c} is easy — but a product where the concept and the comedy are the same thing.',
+      ]),
+      tier('settled', '{d} is not the dream product, but the ad is in there somewhere.', [
+        '{a} gets {d}. Not the product she would have chosen off a shelf, but a product. Thirty seconds. A camera. A partner. She starts looking for the angle that is not the obvious one.',
+        '{d} goes to {a} and she reads the brief twice. The joke is not on the surface. It is going to take some digging and the digging is going to have to happen fast.',
+        '{a} takes {d}. A product with a trap in it — the obvious angle is the one every pair reaches for, and the one that never wins. She is looking for the second idea.',
+        '{d}. {a} reads it. Thinks. The product is sellable but the ad is not obvious. Finding the concept that makes thirty seconds feel like a story is the challenge inside the challenge.',
+        '{a} draws {d} and the product is workable. The angle is there if she tilts it right. Her partner is watching her think. The pitch meeting starts in the silence.',
+        'Not the dream product. {a} takes {d} and starts looking for the concept that makes it funny rather than weird. The line between those two things is where the ad lives.',
+        '{a} gets {d}. A product that needs more work than the ones claimed first. The thirty seconds are going to require a concept she has not found yet.',
+        '{a} takes {d} and starts workshopping out loud. The product is a puzzle. The ad is the answer to the puzzle. She and her partner have an afternoon to solve it.',
+      ]),
+      tier('left-over', '{d} is the product nobody wanted to sell.', [
+        '{a} is left with {d}. The product that sat on the table while better concepts were claimed around it. Hard to sell. Harder to make funny. She starts looking for the angle anyway.',
+        '{d} goes to {a} because nobody else reached for it. A product where the comedy is buried and the thirty seconds are going to feel very long if she does not find it.',
+        '{a} gets {d} by elimination. The brief is thin. The product is tough. The angle that would make it work is the angle nobody in the room has found yet.',
+        '{a} takes {d} — the product the room avoided. Not because it is unsellable but because selling it requires finding something nobody else could see. The ad starts from nothing.',
+        '{d}. {a} reads the brief and the product is exactly as hard as the queens who skipped it suspected. Thirty seconds to sell something nobody wants to buy.',
+        '{a} draws {d}. The product left behind. The concept nobody wanted because the joke is not inside the product — it has to be invented from scratch.',
+      ]),
+      tier('picked-last', 'Last pair. {d} is the product nobody could sell.', [
+        'Last pair. {a} gets {d}. The product the room left on the table. Thirty seconds to sell something designed to be unsellable, with a partner who got here the same way she did.',
+        '{a} draws last and gets {d}. A product whose ad has to be invented from nothing — the concept is not in the brief, not in the product, and not in the angle everybody else already tried.',
+        '{d} is the last product on the table and {a} is the last queen picking. A thirty-second spot for a product nobody wanted to touch. She and her partner look at each other.',
+        'Last pick. {a} takes {d}. The product designed to trap a pair — the obvious angle is the wrong angle and the right angle is the one nobody can find in an afternoon.',
+        '{a} gets {d} last. The product the room avoided. The concept that has to be built from the ground up. Thirty seconds to make something work that nobody else wanted to try.',
+        '{a} and her partner get {d}. Last pair, last product, last chance to find a concept inside something the room decided was not worth picking.',
+      ]),
+    ),
   kind('premises',
     'AN IMPROV PREMISE handed to her cold. {d} is a character she has never '
     + 'rehearsed and a scene she has never seen — the entire challenge is about '
@@ -625,6 +666,7 @@ export function pickKindFor(challengeId) {
   const c = MAXI_TYPES.find(x => x.id === challengeId);
   if (!c || c.assignment === 'none') return null;
   if (challengeId === 'improv') return 'premises';
+  if (challengeId === 'commercial') return 'products';
   if (c.roles === 'characters') return 'characters';
   if (c.roles === 'parts') return 'parts';
   if (GROUP_CHALLENGES.has(c.id)) return 'group-slots';

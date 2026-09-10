@@ -74,13 +74,16 @@ export function assign(ctx) {
     for (let i = 0; i < order.length; i += 2) teams.push(order.slice(i, i + 2));
     const picks = {};
     const used = new Set();
-    for (const t of teams) {
+    for (let ti = 0; ti < teams.length; ti++) {
+      const t = teams[ti];
       let prod = pickOne(PRODUCTS, rng);
       let guard = 0;
       while (used.has(prod.id) && guard++ < 20) prod = pickOne(PRODUCTS, rng);
       used.add(prod.id);
+      const depth = ti < Math.ceil(teams.length / 3) ? 0
+        : ti < Math.ceil(teams.length * 2 / 3) ? 1 : 2;
       for (const n of t) {
-        picks[n] = { name: n, choice: prod.id, product: prod.name, angle: prod.angle, penalty: 0, lostTo: null };
+        picks[n] = { name: n, choice: prod.id, product: prod.name, angle: prod.angle, penalty: 0, lostTo: null, depth };
       }
     }
     return {

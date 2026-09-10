@@ -981,19 +981,34 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Jeff', label: 'Jeff Probst' },
   ],
   'big-brother': [
+    // Valeria is the house's default voice, moved here from the castle: Julie
+    // Chen's studio authority with Blaineley's arch self-regard, which is a
+    // live-eviction register rather than a candlelit one. Her portrait is
+    // assets/avatars/valeria.png and it travelled with her — nothing about a
+    // host is keyed to the show they used to present.
+    //
+    // Her editorial temperament is NOT stored here. `seasonConfig.bbHostStyle`
+    // (balanced | warm | incisive | playful, BB_HOST_STYLES in js/bb-aftermath.js)
+    // is the personality control, it belongs to the SEASON and not to the name,
+    // and it is untouched by this list: a host is who speaks, a style is how.
+    //
+    // Don stays in the dropdown but is no longer the default — he is being held
+    // for a racing format, and a name in a list costs nothing while a default
+    // that quietly overrides the season's own choice costs a whole season.
+    { value: 'Valeria', label: 'Valeria Sandoval' },
     { value: 'Don', label: 'Don McGurrin' },
     { value: 'Julie Chen Moonves', label: 'Julie Chen Moonves' },
     { value: 'Arisa Cox', label: 'Arisa Cox' },
   ],
   'traitors': [
-    // Valeria is the default host and the show's voice: Julie Chen's studio
-    // authority with Blaineley's arch self-regard. The portrait is
-    // assets/avatars/valeria.png, resolved the same way a player's is, so a
-    // screen never hardcodes a host name -- swapping the host must swap every
+    // Alan Cummings is the default host and the show's voice: theatrical,
+    // delighted by the cruelty, and never once fooled. The portrait is
+    // assets/avatars/alan-cummings.png, resolved the same way a player's is, so
+    // a screen never hardcodes a host name -- swapping the host must swap every
     // line the host speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
     //
     // AND EVERY LINE A TRAITORS HOST SPEAKS IS GENDER-NEUTRAL. This list holds
-    // two women and a man, they are swapped at runtime by renderHostOptions(),
+    // one woman and two men, they are swapped at runtime by renderHostOptions(),
     // and nothing generating host prose may assume which one is on. The
     // phrasing of this comment is where the assumption started -- it said
     // "every line she speaks" -- and eleven feminine staging lines were written
@@ -1002,7 +1017,11 @@ export const HOSTS_BY_FORMAT = {
     // and not an interim: a guard cannot go stale when a fourth host is added,
     // whereas per-host pronoun metadata has to be maintained. Enforced over
     // every file that writes host prose by tests/tr-vp.test.js.
-    { value: 'Valeria',  label: 'Valeria Sandoval' },
+    //
+    // Valeria used to head this list and now hosts the house; a season saved
+    // with `host: 'Valeria'` is repaired by renderHostOptions(), which drops a
+    // value the current show does not offer back to the first entry.
+    { value: 'Alan Cummings', label: 'Alan Cummings' },
     { value: 'Alistair', label: 'Alistair Crane' },
     { value: 'Claudia',  label: 'Claudia Winterbourne' },
   ],

@@ -1113,11 +1113,11 @@ body{
    changes with it. No narration string in this file contains a host's name.
    =========================================================================== */
 var HOSTS = [
-  { id:'Valeria',  name:'Valeria Sandoval',     short:'Valeria',  slug:'valeria'  },
+  { id:'Alan Cummings', name:'Alan Cummings',   short:'Alan',     slug:'alan-cummings' },
   { id:'Alistair', name:'Alistair Crane',       short:'Alistair', slug:'alistair' },
   { id:'Claudia',  name:'Claudia Winterbourne', short:'Claudia',  slug:'claudia'  }
 ];
-var HOST_ID = 'Valeria';   /* the registry default */
+var HOST_ID = 'Alan Cummings';   /* the registry default */
 function HOST(){
   for (var i = 0; i < HOSTS.length; i++) if (HOSTS[i].id === HOST_ID) return HOSTS[i];
   return HOSTS[0];
@@ -1130,7 +1130,7 @@ function HOST(){
    filename: every slug below was confirmed against assets/avatars/.
      present  — bowie.png, chef-hatchet.png, amy.png, brick.png,
                 bridgette.png, chase.png
-     ABSENT   — valeria.png (the user is supplying it; it renders as "VS"
+     PRESENT  — alan-cummings.png (falls back to initials if it is missing
                 until then, which is exactly what the fallback is for)
    =========================================================================== */
 var CAST = {

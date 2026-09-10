@@ -1509,7 +1509,7 @@ export function renderConfig() {
   set('cfg-format', seasonFormat(seasonConfig));
   updateFormatNote();
   window.renderHostOptions?.();
-  set('cfg-host', seasonConfig.host || (seasonFormat(seasonConfig) === 'big-brother' ? 'Don' : 'Chris'));
+  set('cfg-host', seasonConfig.host || (seasonFormat(seasonConfig) === 'big-brother' ? 'Valeria' : 'Chris'));
   // The venue list belongs to the show, so it is rebuilt before the value is
   // written back — otherwise a house season is handed a camp.
   window.renderSettingOptions?.();

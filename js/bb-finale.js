@@ -170,7 +170,7 @@ function finalThreeInterview(base, { cut, finalHoh, kept, betrayal, honoured }, 
   const vetos = Number(stats.vetoWins) || 0;
   const blocks = Number(stats.timesOnTheBlock ?? stats.timesNominated) || 0;
   const wouldTake = bondToHoh >= bondToKept ? finalHoh : kept;
-  const host = base.host || seasonConfig.host || 'Don';
+  const host = base.host || seasonConfig.host || 'Valeria';
 
   const cutAnswer = betrayal
     ? finalePick(rng, [

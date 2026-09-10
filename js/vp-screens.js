@@ -23643,9 +23643,9 @@ export function rpBuildBBEviction(ep) {
   const stateKey = `bb_evict_${ep.num}${ep?._seg ? `_s${ep._seg}` : ''}`;
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  // Don, unless the season says otherwise. NOT seasonConfig.host — that is
-  // Total Drama's knob and its default is the wrong show.
-  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Don';
+  // Valeria, unless the season says otherwise. NOT seasonConfig.host's Total
+  // Drama default, which is the wrong show. Follows quick-setup's BB list head.
+  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Valeria';
 
   const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
   const vvar = (list, ...salt) => {
@@ -28517,7 +28517,7 @@ export function rpBuildBBFinalCut(ep) {
   const hoh = act.finalHoh;
   const p = pronouns(hoh);
   const pv = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
-  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Don';
+  const host = (typeof seasonConfig !== 'undefined' && seasonConfig.host) || 'Valeria';
   // The two the decision is between, in the order they were sitting — never
   // kept-then-cut, which would answer the question in the seating.
   const pair = [act.kept, act.cut].filter(Boolean).sort();

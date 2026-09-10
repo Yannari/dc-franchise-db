@@ -440,10 +440,11 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   const house = (week.houseAtStart || []).filter(Boolean);
   const read = readOfTheRoom(evictee, week, house);
   const p = pronouns(evictee);
-  // Big Brother's host is Don, not Chris. seasonConfig.host is the Total
-  // Drama setting and defaults to Chris, so inheriting it put the wrong man in
-  // the interview chair; the house gets its own knob and its own default.
-  const host = seasonConfig.host || 'Don';
+  // Big Brother's host is Valeria, not Chris. seasonConfig.host is the Total
+  // Drama setting and defaults to Chris, so inheriting it put the wrong person
+  // in the interview chair; the house gets its own knob and its own default.
+  // The default follows HOSTS_BY_FORMAT['big-brother'][0] in js/quick-setup.js.
+  const host = seasonConfig.host || 'Valeria';
   const style = hostStyle();
   const voice = evicteeVoice(evictee);
   const stats = pStats(evictee);

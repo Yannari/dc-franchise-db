@@ -22,7 +22,9 @@ describe('format-scoped setup screen', () => {
     const td = hostOptionsForFormat('total-drama');
     const bb = hostOptionsForFormat('big-brother');
     expect(td[0]).toEqual({ value: 'Chris', label: 'Chris McLean' });
-    expect(bb[0]).toEqual({ value: 'Don', label: 'Don McGurrin' });
+    // Valeria heads the house list; Don is still offered, just not the default.
+    expect(bb[0]).toEqual({ value: 'Valeria', label: 'Valeria Sandoval' });
+    expect(bb.map(h => h.value)).toContain('Don');
     expect(td.map(h => h.value)).not.toContain('Don');
     expect(bb.map(h => h.value)).not.toContain('Chris');
   });
@@ -225,7 +227,10 @@ describe('the castle shows only its own controls', () => {
   it('offers the castle its own host, and not the other shows\' hosts', () => {
     const tr = hostOptionsForFormat('traitors');
     expect(tr.length).toBeGreaterThan(0);
+    expect(tr[0]).toEqual({ value: 'Alan Cummings', label: 'Alan Cummings' });
     expect(tr.map(h => h.value)).not.toContain('Chris');
     expect(tr.map(h => h.value)).not.toContain('Don');
+    // Valeria presents the house now, and a host belongs to one show at a time.
+    expect(tr.map(h => h.value)).not.toContain('Valeria');
   });
 });

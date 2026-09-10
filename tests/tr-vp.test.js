@@ -436,7 +436,7 @@ describe('no narration names a host', () => {
         for (const other of hosts) {
           if (other.value === h.value) continue;
           // Every part of the other hosts' names, not only the full label. A
-          // line reading "Valeria here." does not contain "Valeria Sandoval",
+          // line reading "Claudia here." does not contain "Claudia Winterbourne",
           // so a label-only check passes a hardcoded first name -- which is
           // the exact shape this bug takes when somebody writes one line of
           // copy in the host's voice.

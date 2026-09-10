@@ -3,9 +3,17 @@
 Hand this whole file to the writing model. It is self-contained; the repo is
 needed to make the edit, not to understand the assignment.
 
-**7 tiers, 6 lines each, ~42 lines.** The engine is built, wired and tested.
-Every pool is empty, and an empty pool emits no card at all — so until these
-are written the feature is silent, and the moment they are written it runs.
+**7 tiers. Six lines each are already written. THIS ROUND IS THE SECOND SIX:
+another 6 per tier, 42 more lines, taking each pool to 12.**
+
+Read the existing six in `js/dr/data/confessional-lines.js` before you start.
+They set the voice; do not restate them. If a beat you are about to write is
+already in the pool, that slot is spent - find the one nobody has done yet.
+
+Why depth matters more than the first batch did: a pool of six repeats
+visibly across a thirteen-episode season, and one queen can only ever give one
+confessional a night, so the same six lines carry every queen in the cast. Six
+more roughly halves how often a viewer sees a line twice.
 
 ---
 
@@ -49,8 +57,8 @@ Enforced by `tests/dr-confessional.test.js` and the drag prose guards.
    scene. She has no idea how the week ends, who is going home, what the
    judges think, or what was said in a room she was not in. In `watched-*`
    she saw it from across the room — she may have missed the words.
-4. **Six variants per tier, each a genuinely different beat**, not one
-   sentence reworded. Prose, over 80 characters, and a queen's speaking voice
+4. **Each variant a genuinely different beat**, not one sentence reworded --
+   and different from the six already in the pool, which you have read. Prose, over 80 characters, and a queen's speaking voice
    rather than narration about her.
 5. **No real people, no real-world references.** This show's vocabulary only.
 6. **Never quote a stat by number.**
@@ -128,7 +136,42 @@ will be wrong half the time. What settles which it is, is the tier.
 
 ---
 
-## 3. When you are done
+---
+
+## 3. WHO IS SAYING IT CHANGES WHAT IT COSTS HER
+
+New since the first six were written, and it should change how you write the
+cold tiers.
+
+A confessional used to move the audience by a flat amount fixed by the tier:
+every shady read cost her one point, every generous one gained her one,
+whoever she was. That is now decided by the QUEEN GIVING IT (`editSwing` in
+`js/dr/confessional.js`):
+
+| who gives a shady confessional | what the audience does |
+|---|---|
+| a villain with high comedy | **likes her more** |
+| a villain with low comedy | mildly against her |
+| a hero with low comedy | **hardest against her** - out of character and not funny |
+
+**A read that lands is a gift to the audience. A read that does not is
+meanness with a camera on it.** The same line will be delivered by both, so
+the cold tiers need lines whose comedy is in the CONSTRUCTION - the timing,
+the turn, the thing she decides not to say - rather than lines that are only
+nasty. A line that is purely cruel gives a funny queen nothing to be funny
+with, and the engine will pay her as though she had been.
+
+The same split matters for how you think about a villain: being unpleasant
+costs her the room's affection and NOT her standing as television. She is the
+most watchable person on the cast either way. Write her knowing she keeps the
+audience's attention whatever she does with their goodwill.
+
+**Still do not name the consequence** (rule 7). She never says "this will play
+badly". She just says the thing.
+
+---
+
+## 4. When you are done
 
 ```
 npx vitest run tests/dr-confessional.test.js tests/dr-werk-events.test.js

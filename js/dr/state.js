@@ -36,6 +36,20 @@ export function initDragState({ cast, seed = 1, rng = Math.random }) {
        the favourite for thirteen weeks no matter how the room reacted to her,
        and any mechanic built on `star` had no brake at all. */
     starBase,
+    /* ── HOW WATCHABLE SHE HAS BEEN, WHICH IS NOT HOW LIKED ──────────
+       `popularity` answers "does the audience love her". This answers "would
+       you turn it off if she left", and they are different questions about
+       the same queen: a villain scores badly on the first and enormously on
+       the second, which is why villains keep getting cast.
+       They were one number, and since star drift reads it, the engine was
+       PUNISHING a queen for being good television -- a shady confessional
+       moved popularity down (js/dr/data/confessional-lines.js calls it
+       "better television and worse for her"), which lowered her star, which
+       lost her the host's benefit of the doubt. Backwards.
+       Star drifts on this one now. Fan votes and the aftermath keep reading
+       popularity, because being adored and being watchable pay out in
+       different currencies. */
+    tv: Object.fromEntries(names.map(n => [n, 0])),
     castOrder: [...names],
     living: [...names],
     out: [],
@@ -125,7 +139,10 @@ export function initDragState({ cast, seed = 1, rng = Math.random }) {
 export function refreshStar(state) {
   if (!state || !state.starBase) return state && state.star;
   const living = (state.living || []).filter(n => state.starBase[n] != null);
-  const pops = living.map(n => (state.popularity || {})[n] || 0);
+  // WATCHABILITY, NOT AFFECTION. See `tv` above. Falls back to popularity for
+  // a season saved before the two were separated.
+  const src = state.tv && Object.keys(state.tv).length ? state.tv : (state.popularity || {});
+  const pops = living.map(n => src[n] || 0);
   const mean = pops.length ? pops.reduce((a, b) => a + b, 0) / pops.length : 0;
   const varc = pops.length
     ? pops.reduce((t, v) => t + (v - mean) ** 2, 0) / pops.length : 0;
@@ -140,7 +157,7 @@ export function refreshStar(state) {
   for (const n of Object.keys(state.starBase)) {
     const base = state.starBase[n];
     if (!living.includes(n)) { next[n] = base; continue; }
-    const z = Math.max(-1, Math.min(1, (((state.popularity || {})[n] || 0) - mean) / sd));
+    const z = Math.max(-1, Math.min(1, ((src[n] || 0) - mean) / sd));
     // 1.2 is a touch over one standard deviation of star itself (the middle
     // eighty percent of queens sit inside 4.4-6.5), so the audience can change
     // who the favourite is without erasing what she was cast as.

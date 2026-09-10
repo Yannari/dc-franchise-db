@@ -194,25 +194,35 @@ describe('a confessional, once there is one to give', () => {
     expect(new Set(seen).size, 'the same queen talked twice').toBe(seen.length);
   });
 
-  it('never puts the shady read in a nice queen\'s mouth', () => {
-    /* The franchise rule, unchanged: nice archetypes never scheme, and drag's
-       version of scheming is the read. Being hurt is not scheming, so
-       `taken-cold` is not gated — only the two tiers that ARE shade. */
-    const nice = { Ada: queen('Ada', { archetype: 'hero' }),
-      Bex: queen('Bex', { archetype: 'loyal-soldier' }),
-      Cleo: queen('Cleo', { archetype: 'goat' }),
-      Dot: queen('Dot', { archetype: 'underdog' }) };
-    for (let seed = 1; seed <= 60; seed++) {
-      const rows = confessionalsFor({
-        scenes: [cold(1), cold(2), cold(3)], room: ROOM, players: nice,
-        rng: rngFor(seed), ...always,
-      });
-      for (const r of rows) {
-        expect(['did-cold', 'watched-cold'],
-          `${r.scene.players[0]} (nice) spoke the ${r.scene.tier} tier`)
-          .not.toContain(r.scene.tier);
+  it('lets a nice queen be shady, and rarely', () => {
+    /* THIS USED TO BE "never", and `mayBeShady` is still a hard door: the
+       franchise rule says nice archetypes do not scheme, and drag's scheming
+       is the read. A CONFESSIONAL IS NOT A SCHEME. It moves her edit and
+       never a bond -- nobody in the room hears it and nothing happens to
+       anybody -- so gating a private opinion behind the sabotage rule left a
+       kind queen incapable of ever being unimpressed on camera, which is a
+       missing personality rather than a nice one.
+       It is a probability now (edgeFor). The assertion is the SHAPE: rare for
+       the gentle, common for the sharp, and neither impossible. */
+    const roll = (arch, seeds = 200) => {
+      const players = { Ada: queen('Ada', { archetype: arch }) };
+      let shady = 0; let total = 0;
+      for (let seed = 1; seed <= seeds; seed++) {
+        const rows = confessionalsFor({
+          scenes: [cold(1), cold(2), cold(3)], room: ROOM, players,
+          rng: rngFor(seed), ...always,
+        });
+        for (const r of rows) {
+          total++;
+          if (r.scene.tier === 'did-cold' || r.scene.tier === 'watched-cold') shady++;
+        }
       }
-    }
+      return total ? shady / total : 0;
+    };
+    const hero = roll('hero');
+    const villain = roll('villain');
+    expect(villain, 'a villain should reach for the read').toBeGreaterThan(0.5);
+    expect(hero, 'a hero should reach for it rarely, not never').toBeLessThan(villain);
   });
 
   it('only lets somebody who was there speak about it', () => {

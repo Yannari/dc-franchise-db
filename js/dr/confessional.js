@@ -36,10 +36,56 @@ import { CONFESSIONAL_TIERS, confessionalTier } from './data/confessional-lines.
 /* THE TWO TIERS THAT ARE SHADE. `taken-cold` is not one of them — she is the
    one it was done to, and saying so is a feeling rather than a move. */
 const SHADE = new Set(['did-cold', 'watched-cold']);
+/* Every tier whose sign is negative. `taken-cold` is cold without being shade
+   -- it was done TO her -- so it is rolled by neither branch. */
+const COLD = new Set(['did-cold', 'watched-cold', 'taken-cold']);
 
 const NEVER = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer',
   'underdog', 'goat']);
 const ALWAYS = new Set(['villain', 'mastermind', 'schemer']);
+
+/**
+ * How sharp she is, as a number rather than a door.
+ *
+ * `mayBeShady` below is the franchise scheming rule and it is a HARD GATE:
+ * a hero could not give a cold confessional at all, ever, on any night, about
+ * anybody. That rule is right for scheming and sabotage -- moves that cost
+ * another queen something -- and wrong here. A confessional moves her EDIT
+ * and never a bond (see the header of the lines file): nobody in the room
+ * hears it and nothing happens to anyone. Locking a private opinion behind
+ * the sabotage rule made a kind queen incapable of ever being unimpressed on
+ * camera, which is not a personality, it is a missing one.
+ *
+ * So: a probability. A nice queen CAN say the sharp thing and rarely does; a
+ * villain is nice less often than a schemer or a hothead is, without either
+ * being incapable of it.
+ *
+ * WHAT MOVES IT:
+ *   - the archetype, as a starting lean rather than a verdict
+ *   - `strategic` up and `loyalty` down, the same two stats the franchise
+ *     rule reads, but weighing on the number instead of opening a door
+ *   - and WHO IT IS ABOUT. The sharpest queen alive is generous about her
+ *     closest ally, and the gentlest one has somebody she cannot help
+ *     herself about. That is the term that makes this a read of the room
+ *     rather than a read of the cast sheet.
+ */
+const EDGE = {
+  villain: 0.86, schemer: 0.78, hothead: 0.74, 'chaos-agent': 0.7,
+  mastermind: 0.68, wildcard: 0.52, 'perceptive-player': 0.48,
+  floater: 0.44, 'challenge-beast': 0.42, showmancer: 0.36,
+  underdog: 0.32, 'social-butterfly': 0.3, 'loyal-soldier': 0.24,
+  goat: 0.22, hero: 0.18,
+};
+export function edgeFor(player, bondWithTarget = 0) {
+  const num = (v, d = 5) => (Number.isFinite(Number(v)) ? Number(v) : d);
+  const base = EDGE[player?.archetype || ''] ?? 0.45;
+  const lean = (num(player?.stats?.strategic) - num(player?.stats?.loyalty)) / 10;
+  // A bond runs -10..+10. Warmth pulls her generous, friction pulls her sharp.
+  const feeling = -Math.max(-10, Math.min(10, Number(bondWithTarget) || 0)) / 10;
+  const v = base + lean * 0.18 + feeling * 0.28;
+  // Never certain and never impossible: the point of the whole change.
+  return Math.max(0.04, Math.min(0.95, v));
+}
 
 /** May this queen say the shady version out loud? The franchise rule. */
 export function mayBeShady(player) {
@@ -49,6 +95,43 @@ export function mayBeShady(player) {
   const s = Number(player?.stats?.strategic);
   const l = Number(player?.stats?.loyalty);
   return (Number.isFinite(s) ? s : 5) >= 6 && (Number.isFinite(l) ? l : 5) <= 4;
+}
+
+/**
+ * What a confessional does to how the room feels about her.
+ *
+ * This was the tier's `sign` and nothing else: every shady read cost her one
+ * point and every generous one gained her one, whoever she was. So a villain
+ * with the comic timing to make a whole audience howl at a read paid exactly
+ * what a humourless queen paid for being nasty — and on this show those are
+ * opposite outcomes. One becomes the reason people watch; the other becomes
+ * the one everybody is tired of by episode six.
+ *
+ * SHADE IS PAID FOR IN COMEDY. A read that lands is a gift to the audience; a
+ * read that does not is just meanness with a camera on it. Her `comedy` is
+ * most of the answer and her archetype is the rest -- a villain is EXPECTED
+ * to be sharp and gets more rope for it, a hero doing the same thing reads as
+ * out of character.
+ *
+ * A generous confessional stays generous. Being funny while kind is worth a
+ * little more, not less.
+ *
+ * NOTE WHAT THIS DOES NOT TOUCH: `tv` in js/dr/state.js. The mean queen is
+ * still the most watchable person in the room and keeps the star that comes
+ * with it -- she is simply not liked. That split is the whole reason the two
+ * ledgers exist.
+ */
+const SHARP = new Set(['villain', 'schemer', 'hothead', 'chaos-agent', 'mastermind']);
+export function editSwing(player, tier) {
+  const base = Number(tier?.sign) || 0;
+  const comedy = Number(player?.drag?.comedy);
+  const funny = (Number.isFinite(comedy) ? comedy : 5) / 10;
+  if (base >= 0) return Math.round((base + funny * 0.5) * 100) / 100;
+  /* Shade. `charm` runs 0..1: at the top the room is delighted and it swings
+     positive, at the bottom it is what the tier always said it was. */
+  const licence = SHARP.has(player?.archetype || '') ? 0.2 : 0;
+  const charm = Math.max(0, Math.min(1, funny * 0.8 + licence));
+  return Math.round((base + charm * 2) * 100) / 100;
 }
 
 /**
@@ -179,7 +262,20 @@ export function confessionalsFor({
       if (spoken.has(c.name)) return false;
       const t = confessionalTier(c.tier);
       if (!t || !t.lines.length) return false;   // unwritten emits nothing
-      if (SHADE.has(c.tier) && !mayBeShady(P(c.name))) return false;
+      /* SHADE IS ROLLED, NOT PERMITTED. See edgeFor. `c.about` is who the
+         line is about, so a queen is measured against the queen she would be
+         talking about rather than against the room in general. */
+      if (SHADE.has(c.tier)) {
+        const target = typeof c.about === 'string' ? c.about : null;
+        if (rng() >= edgeFor(P(c.name), target ? bond(c.name, target) : 0)) return false;
+      } else if (COLD.has(c.tier) === false && c.tier !== 'alone') {
+        /* AND SO IS WARMTH. A villain is not incapable of a generous read,
+           she just gives fewer of them than a hero does -- which is the same
+           statement from the other end and was not modelled at all. */
+        const target = typeof c.about === 'string' ? c.about : null;
+        const edge = edgeFor(P(c.name), target ? bond(c.name, target) : 0);
+        if (rng() < (edge - 0.5) * 0.6) return false;
+      }
       return rng() < talksToCamera(P(c.name));
     });
     if (!eligible.length) continue;
@@ -212,7 +308,8 @@ export function confessionalsFor({
         tier: cand.tier,
         reactsTo: sc.id || null,
         note: t.note,
-        effects: { pop: { a: t.sign } },
+        // What it costs her depends on WHO GAVE IT. See editSwing.
+        effects: { pop: { a: editSwing(P(cand.name), t) } },
         text: String(line)
           .replace(/\{a\}/g, cand.name)
           .replace(/\{b\}/g, about || ''),

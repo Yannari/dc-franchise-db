@@ -1047,7 +1047,16 @@ export function playDragSeason({
   // Bonds move during a maxi: somebody helps, somebody sabotages, a captain
   // dumps a rival. A headless season with no relationship layer passes nothing
   // and those writes go nowhere, which is correct rather than a gap.
-  const ctx = { rng, players, bond, addBond: addBond || (() => {}), popDelta: writePop };
+  /* THE OTHER LEDGER. Screen presence, always positive: you cannot be less
+     watchable than not being on television. See `tv` in js/dr/state.js. */
+  const writeTv = (n, d) => {
+    if (!state.tv) state.tv = {};
+    state.tv[n] = (state.tv[n] || 0) + Math.max(0, d);
+  };
+  const ctx = {
+    rng, players, bond, addBond: addBond || (() => {}),
+    popDelta: writePop, tvDelta: writeTv,
+  };
 
   /* ── WHO WAS ALREADY RELATED ──
      Cast before the arcs, because a family is a fact about the room that the

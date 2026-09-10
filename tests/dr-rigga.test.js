@@ -27,13 +27,17 @@ const cast = (n, seed) => {
 };
 const season = s => playDragSeason({ cast: cast(12, 400 + s), seed: s, config: { drFinale: 'top4' } });
 
-// Seed 5 fires on episode 5: Q7 takes the win the panel gave Q3.
-const FIRING_SEED = 5;
+/* A seed that fires. It is a FIXTURE, not a fact about the mechanic: adding
+   the watchability ledger moved every season, so seed 5 stopped firing and
+   these tests went red for the right reason. The message on the first
+   assertion says how to replace it. Firing seeds at the time of writing:
+   16, 32, 47, 48, 52, 61, 71, 76, 78, 81 -- about 13% of seasons. */
+const FIRING_SEED = 16;
 
 describe('a host overrule the room can see', () => {
   it('gives the win to the favourite over the queen the panel put first', () => {
     const row = season(FIRING_SEED).rows.find(r => r.dr?.rigga);
-    expect(row, 'seed 5 no longer fires — pick a new one from the audit').toBeTruthy();
+    expect(row, `seed ${FIRING_SEED} no longer fires — run the audit and pick another`).toBeTruthy();
     const g = row.dr.rigga;
     // The two halves that make it a robbery rather than a close call.
     expect(row.dr.panel.ranking[0].name).toBe(g.over);

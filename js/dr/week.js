@@ -55,6 +55,18 @@ export const SCENE_STEPS = [
   'critiques', 'untucked', 'results', 'lipsync', 'exit',
 ];
 
+/* HOW MUCH TELEVISION EACH ARCHETYPE IS, which is a different question from
+   how good she is or how much the room likes her. The villain is the most
+   watchable person on any cast -- that is what the villain is FOR -- and the
+   floater is the one an edit struggles to find a shot of. Mirrors the same
+   ordering `talksToCamera` uses in js/dr/confessional.js: shade, drama and
+   comedy are what a cutaway exists for. */
+const DRAMA_TV = {
+  villain: 1.2, schemer: 1.05, hothead: 1, 'chaos-agent': 1, mastermind: 0.85,
+  showmancer: 0.75, 'social-butterfly': 0.75, wildcard: 0.75, underdog: 0.7,
+  hero: 0.6, 'perceptive-player': 0.55, 'challenge-beast': 0.5,
+  'loyal-soldier': 0.45, floater: 0.3, goat: 0.3,
+};
 const slugOf = n => String(n || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
 
@@ -120,10 +132,18 @@ export function runDragWeek(state, cfg, ctx) {
   // are the ones that are about the room rather than about the work.
   // Declared before the room is drawn because the mini writes into it too.
   const werkEvents = [];
+  /* AND FROM BEING IN THE ROOM AT ALL. A queen the werk room keeps cutting to
+     is on television more than one it does not, whatever the scene was about.
+     Small per scene, because it is the accumulation that reads as a presence
+     and any single cutaway is nothing. */
+  const _tvScene = players_ => {
+    for (const n of players_ || []) if (n) ctx.tvDelta?.(n, 0.4);
+  };
   /** Apply an {bond, pop, state} event. The one place these three land. */
   const applyEventLike = e => {
     for (const [a, b, d] of e.bond || []) ctx.addBond(a, b, d);
     for (const [n, d] of Object.entries(e.pop || {})) ctx.popDelta(n, d);
+    for (const [n, d] of Object.entries(e.tv || {})) ctx.tvDelta?.(n, d);
     for (const [k, v] of Object.entries(e.state || {})) (state.flags ||= {})[k] = v;
   };
   /* THE PREMIERE'S FIRST IMPRESSIONS ARE REAL. They are applied here rather
@@ -188,6 +208,13 @@ export function runDragWeek(state, cfg, ctx) {
     };
     if (sc.slot === 'werk-elim-day') elimDayScenes.push(scene);
     else scenes.push(scene);
+    /* Being cut to is being on television, whatever the scene was about —
+       EXCEPT a confessional. WHETHER one happens depends on whether anybody
+       has written that tier yet, so paying `tv` for one would let the prose
+       pool decide who the host leans on, and therefore who wins. A
+       confessional still moves her POPULARITY, which is a record of how the
+       audience feels and decides nothing on the stage. */
+    if (!sc.confessional) _tvScene(sc.players);
     werkEvents.push({
       type: `werk:${sc.id}`, players: sc.players,
       bond: sc.effects.bond && sc.players[1]
@@ -1053,6 +1080,27 @@ export function runDragWeek(state, cfg, ctx) {
               : call.atRisk.includes(n) ? 'BTM'
                 : call.low.includes(n) ? 'LOW' : 'SAFE';
     state.record[n].push(r);
+    /* ── AND WHAT THE NIGHT WAS WORTH AS TELEVISION ──────────────────
+       Screen presence, not affection. The story of an episode is the top and
+       the bottom of it: a queen in the lip sync is the most watched person in
+       the room whether or not anybody is rooting for her, and a queen who was
+       safe was barely in the episode. That is the shape of the edit, and it is
+       why "safe all season" is the one result nobody remembers.
+       Credited from the RESULT so it exists on every season, including one
+       whose confessional pools are still empty -- see js/dr/state.js. */
+    ctx.tvDelta?.(n, ({
+      WIN: 3, BTM2: 3, ELIM: 3, BTM: 2, HIGH: 1.5, LOW: 1.5, SAFE: 0.25,
+    })[r] ?? 0.25);
+    /* ── AND WHAT SHE IS, WHICH IS WHY SHE WAS CAST ──────────────────
+       A villain is good television on a week she does nothing, and a
+       producer knows it walking in. Credited from the archetype rather than
+       from her confessionals, because WHETHER a confessional happens depends
+       on whether anybody has written that tier yet -- routing watchability
+       through prose would let the size of the pool decide who the host leans
+       on. What she is does not change when somebody types.
+       Small, every week, so it accumulates into a presence rather than
+       deciding a night. */
+    ctx.tvDelta?.(n, DRAMA_TV[P(n)?.archetype] ?? 0.5);
   }
   state.living = living.filter(n => !exits.includes(n));
   state.out.push(...exits);

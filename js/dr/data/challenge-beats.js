@@ -210,6 +210,10 @@ export const CHALLENGE_BEATS = [
          Unwritten on purpose: `emit` skips a tier with no lines, so until
          these are written the screen says nothing about the split, which is
          better than saying something false about it. */
+      /* THE MAKEOVER, WHICH IS NOT A DRAFT AND WAS BEING CALLED ONE. Its room
+         is handed out by whoever won the mini, so "a pick order, and everybody
+         can count" printed over a night where nobody counted anything. */
+      tier('paired', 'One queen won the mini, and she is handing the whole room out.'),
       tier('two-casts', 'The room is cut in two, and the parts are fought over inside each half.', [
         "Two casts. Same script. The host splits the room and both halves are doing the same six parts, judged against each other. Two queens just realised they are playing the same character.",
         "The room is cut in half. Same script, same characters, back to back on the panel. The queens who got the stronger cast know it already.",
@@ -357,6 +361,23 @@ export const CHALLENGE_BEATS = [
         "\"I need you to breathe,\" {m} says. {a} cannot breathe. The booth is too small and the headphones are too loud and the verse that sounded right in the werk room sounds wrong in her own ears. {m} tries everything — slower tempo, punched-in bars, a read-through without the track. The recording they keep is the best of nothing good.",
         "{a} wrote a real verse and she cannot get it on tape. {m} hears the problem — the rhythm is fighting the beat — and gives the note three different ways. {a} takes none of them. \"The panel hears THIS version,\" {m} says quietly, playing back the take they are going to use. The take is not what {a} wrote. It is what the booth captured.",
       ]),
+    ],
+  },
+  {
+    /* ── SOMEBODY ELSE DECIDED WHO SHE IS WORKING WITH ──
+       The makeover's room is handed out by whoever won the mini, so most of
+       the cast neither picked nor was cast by the host. That is a third thing
+       and the screen had no words for it, so it borrowed the music video's
+       call sheet — which is how "the role exists in the video" came to be
+       printed over a challenge about a wig.
+       `{b}` is the queen who did the pairing. */
+    id: 'paired-off', step: 'choice', scope: 'per-queen', speaker: 'narrator',
+    note: 'Who {b} paired her with, and what the room thinks it meant.',
+    tierBy: 'pairing',
+    tiers: [
+      tier('dumped-on', 'She was handed the hardest man in the room, and everybody saw it.'),
+      tier('looked-after', 'She was given somebody she can work with, deliberately.'),
+      tier('next-name', 'No message in it. She was the next name on the list.'),
     ],
   },
   {

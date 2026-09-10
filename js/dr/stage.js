@@ -1223,9 +1223,29 @@ export function renderChallengeBeats({
   for (const n of living) {
     const p = assignment.picks?.[n];
     if (!p) continue;
-    if (p.chosen === false) {
+    /* ── TWO WAYS NOT TO CHOOSE, AND THEY ARE DIFFERENT NIGHTS ──
+       `chosen: false` meant "the host cast her" for as long as only the music
+       video set it. Then the makeover started handing its room out — the mini
+       winner pairs everybody — and every queen on a makeover began drawing the
+       music video's CALL SHEET: "the host reads Bowie's part, standard" over a
+       night about a wig, and "the role exists in the video" over a challenge
+       with no video in it.
+       `assignedBy` is what tells them apart: paired by another QUEEN gets the
+       pairing beat, cast by the HOST gets a call sheet. */
+    if (p.chosen === false && !p.assignedBy) {
       emit(castBeat, assignment.roles?.[n] || 'standard', [n],
         { role: assignment.roles?.[n] || 'standard' });
+      continue;
+    }
+    if (p.assignedBy) {
+      /* WHAT WAS MEANT BY IT, decided in js/dr/chal/makeover.js and carried on
+         the pick. The renderer does not re-derive it: the module already knows
+         whether it dumped on her, looked after her or reached the next name,
+         and a second opinion here would be a screen disagreeing with the
+         engine about what just happened. */
+      emit(beatById('paired-off'), p.pairing || 'next-name', [n, p.assignedBy], {
+        partner: p.choice, by: p.assignedBy,
+      });
       continue;
     }
     /* HOW FAR SHE FELL, NOT WHAT IT COST HER. This read `p.penalty > 0`, and

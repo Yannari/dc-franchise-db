@@ -1025,6 +1025,12 @@ export function initGameState() {
     format: seasonFormat(seasonConfig),
   });
 
+  // Snapshot for drag-race rebuilds: the bond state as initGameState built it,
+  // before any episode plays. _playWholeSeason restores from this so a rebuilt
+  // season's eps 1-N read the same bonds as the original first play.
+  gs._drInitBonds = JSON.parse(JSON.stringify(gs.bonds));
+  gs._drInitLean = JSON.parse(JSON.stringify(gs.bondLean));
+
   // ── COACHES — the production entry point ──
   //
   // Nothing else calls addCoach(). Without this, `isCoachNow()` picking out a

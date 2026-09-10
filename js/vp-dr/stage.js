@@ -705,14 +705,28 @@ export function rpBuildCritiques(row) {
      queens critiqued so far, and it is the PANEL's order, never the host's. */
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    const rankOf = n => (byQueen.get(n) || []).reduce((m, c) => Math.min(m, c.rank ?? 99), 99);
+    /* ── IT NEVER ORDERS THEM. THAT IS THE HOST'S LINE TO SAY ────────
+       This ranked the queens from the first critique onward, and the queen in
+       its top slot goes on to win the week 94% of the time (99% within the
+       top two) -- so the number 1 sat beside her face while three queens were
+       still waiting to be critiqued, and the rail announced the result
+       several steps before the call did.
+       It was `_tvState`-gated and never showed an un-critiqued queen, which
+       is the guard CLAUDE.md asks for. It spoiled anyway, because the leak
+       was not the future: it was the ORDER of the present.
+       An intermediate version held the ranking back until the last critique.
+       That still put the answer on screen before the host opened his mouth,
+       which is the whole thing the viewer is here for. So there is no
+       ranking on this rail at any step. It is who has been critiqued, in the
+       order they were called, and nothing else. The panel's order exists on
+       the row for the screens that come after the call. */
     window._drSidebar.critiques = queens.map((_, i) => `<h4 class="dr-disp">The panel, so far</h4>${
-      queens.slice(0, i + 1).sort((a, b) => rankOf(a) - rankOf(b))
+      queens.slice(0, i + 1)
         .map(n => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
           <div><div class="dr-nm">${esc(n)}</div></div>
-          <span class="dr-chip dr-c-safe">${rankOf(n) === 99 ? '—' : rankOf(n)}</span></div>`).join('')}
+          <span class="dr-chip dr-c-safe">&middot;</span></div>`).join('')}
       <p style="margin:10px 0 0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#C9A6BC">
-        The panel's order. The host has not decided yet.</p>`);
+        Critiqued so far. Nobody has been placed yet.</p>`);
   }
 
   /* WHO IS TALKING, LIVE. Each step carries the judges who speak on it, and

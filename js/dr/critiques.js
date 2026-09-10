@@ -52,8 +52,24 @@ const TERM_NAMES = {
  * this judge cares about.
  */
 export function critiqueLines({ panel, views, call, entries, rng = Math.random }) {
+  /* ── THE ORDER THEY ARE CRITIQUED IN IS NOT THE ORDER THEY PLACED ──
+     This was `[...win, ...high, ...low, ...atRisk, ...bottom]`, which is the
+     result itself: the winner spoke first and the bottom spoke last, every
+     week. The critiques screen lists them in the order they are called, so
+     the FIRST queen on that screen was the queen who wins the week 100% of
+     the time -- measured 240 of 240 -- and the last one was going home.
+     The whole night was legible before the host said a word, and no amount
+     of hiding the rail's numbers could fix it, because the leak was the
+     sequence and not the labels.
+     Shuffled off the week's own rng, so it is stable across a replay and
+     tells you nothing. The panel still knows what it thinks; the room simply
+     is not called in rank order, which is also how the real show does it. */
   const onStage = [...(call.win || []), ...(call.high || []),
     ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])];
+  for (let i = onStage.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [onStage[i], onStage[j]] = [onStage[j], onStage[i]];
+  }
   const byName = Object.fromEntries((entries || []).map(e => [e.name, e]));
   const out = [];
 

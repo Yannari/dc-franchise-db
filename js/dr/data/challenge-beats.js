@@ -43,7 +43,7 @@ export const CHALLENGE_BEATS = [
       tier('arrival', 'She has news and is going to take her time with it.', [
         "The door goes and it is her. Out of drag, in a suit that costs more than anybody's entire wardrobe. The whole room stops mid-sentence. She lets the silence run a second longer than it needs to. She always does. Then: \"Ladies.\"",
         "Nobody hears her come in. They just gradually notice, one at a time, that she is standing by the door watching them work. By the time the last queen clocks it the room has gone from a workshop to an audience. \"Did you miss me?\"",
-        "\"Hello, hello, hello.\" Thirteen voices come back at once, ragged and delighted. Somebody at the back is already clapping for no reason. She waits for it to die down. They know she is about to change the shape of their week.",
+        "\"Hello, hello, hello.\" Every voice in the room comes back at once, ragged and delighted. Somebody at the back is already clapping for no reason. She waits for it to die down. They know she is about to change the shape of their week.",
         "She comes in the way she always comes in — like the room was already hers and she has just been elsewhere for a while. Every queen straightens up without deciding to. \"I have news.\" Whatever anybody was arguing about ninety seconds ago is over.",
       ]),
     ],

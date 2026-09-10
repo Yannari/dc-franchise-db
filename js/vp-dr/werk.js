@@ -347,7 +347,15 @@ function consequences(row, sc) {
    scene: a portrait of Michelle on a werk-room card would be a stranger. */
 export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room', aside = '' } = {}) {
   const players = sc?.data?.players || [];
-  const confess = /confess|shade-tree|talking/.test(sc.kind || '');
+  /* ── A CONFESSIONAL IS A PROPERTY, NOT A SPELLING ──
+     This substring-matched the event id against /confess|shade-tree|talking/,
+     which is not a question about the scene. Of 107 werk events exactly three
+     matched — all three in `prep`, and two of them `cast: 'pair'`, so two
+     queens talking TO EACH OTHER were drawn inside a frame that means one
+     queen talking to a lens, and every genuine piece to camera whose id
+     happened to be spelled some other way got the ordinary card.
+     js/dr/confessional.js sets the flag now, on scenes it authored. */
+  const confess = !!(sc?.data?.confessional);
   const busts = players.length
     ? `<span class="${players.length > 1 ? 'dr-two' : ''}">${
       players.slice(0, 2).map(n => station(n, ep, { size: players.length > 1 ? 50 : 62 })).join('')

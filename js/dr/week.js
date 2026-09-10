@@ -173,7 +173,17 @@ export function runDragWeek(state, cfg, ctx) {
        measuring how much text came out, not by any assertion. */
     const scene = {
       step: sc.slot, kind: `werk:${sc.id}`,
-      data: { players: sc.players, note: sc.note, eligible: sc.eligible },
+      data: {
+        players: sc.players, note: sc.note, eligible: sc.eligible,
+        /* THE FLAG THE CARD READS. Only a confessional carries it, so the
+           renderer asks the scene rather than guessing from its name. `about`
+           is who she is talking about and is NOT in `players`: she is alone
+           in the shot and a second name there grows a second portrait. */
+        ...(sc.confessional
+          ? { confessional: true, about: sc.about || null, tier: sc.tier || null,
+            reactsTo: sc.reactsTo || null }
+          : {}),
+      },
       text: sc.text || '',
     };
     if (sc.slot === 'werk-elim-day') elimDayScenes.push(scene);

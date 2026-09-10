@@ -30,6 +30,8 @@ import { familyFacts } from './family.js';
    why the life resolver uses it too — a drag season running headless can ask
    the same question every other show asks. */
 import { romanticallyCompatible } from '../attraction.js';
+import { confessionalsFor } from './confessional.js';
+import { streamFor } from './rng.js';
 
 /** How much an arc match is worth. Multiplicative on the base weight. */
 const ARC_BONUS = 2.5;
@@ -407,7 +409,53 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
   // stored form and the Set is rebuilt from it — the same repair the rest of
   // the project does with `prepGsForSave`.
   state._drWerkUsedList = [...used];
-  return scenes;
+
+  /* ── AND THEN SOMEBODY TELLS THE CAMERA WHAT THAT ACTUALLY WAS ──
+     Confessionals are appended once the room's scenes exist, because a
+     confessional reacts to one and cannot be drawn alongside them. Per
+     SLOT, so the cap is a cap on a screen rather than on an episode: two
+     cutaways in the werk room and two more on elimination day is a show,
+     and four in one column is a different programme.
+     `spoken` crosses the slots deliberately — one confessional per queen per
+     episode, or the edit grows a favourite. See js/dr/confessional.js. */
+  /* ── AND IT DRAWS ITS OWN DICE, WHICH IS NOT FUSSINESS ──
+     Taking numbers off the week's generator was measured and it is a
+     regression: the confessional pass ran before the mini, the maxi and the
+     judging, so every draw it took shifted every decision after it, and the
+     season stopped producing events it used to. `roasted-the-panel` went
+     from firing to unreachable over the reach suite's seasons — a written
+     event that no longer happens, caused by an unrelated feature spending
+     random numbers upstream of it.
+     The stream is derived from what the slot already contains rather than
+     from a seed threaded down here: same room, same scenes, same
+     confessionals, and zero draws taken from the week. */
+  const spoken = new Set();
+  const bySlot = new Map();
+  for (const sc of scenes) {
+    const k = sc.slot || '';
+    if (!bySlot.has(k)) bySlot.set(k, []);
+    bySlot.get(k).push(sc);
+  }
+  const episode = Number(ctx?.episode) || 0;
+  let out = scenes;
+  for (const [k, list] of bySlot) {
+    const rows = confessionalsFor({
+      scenes: list, room: living, players, spoken, slot: k,
+      rng: streamFor(episode + 1, `confessional|${k}|${list.map(x => x.id).join(',')}`),
+    });
+    if (!rows.length) continue;
+    // Splice against the FULL list, not the slot's, so the confessional lands
+    // immediately after the scene it is about wherever that scene sits.
+    const after = new Map(rows.map(r => [list[r.index], r.scene]));
+    const next = [];
+    for (const sc of out) {
+      next.push(sc);
+      const c = after.get(sc);
+      if (c) next.push(c);
+    }
+    out = next;
+  }
+  return out;
 }
 
 /** Facts about how well the pool is holding up, for the audit. */

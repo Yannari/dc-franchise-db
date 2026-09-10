@@ -442,5 +442,67 @@
     }
   ],
   "finale": null,
-  "congeniality": "Autumnatic"
+  "congeniality": "Autumnatic",
+  "gameHistory": [
+    {
+      "n": 1,
+      "word": "Episode",
+      "title": "Stand-Up Challenge",
+      "prose": "The maxi challenge was Stand-Up Challenge, the runway category was Hometown Pride, and Aiden won the mini challenge. Duncan won the maxi challenge, Cameron and Karol were high, Gerry and Nessa were low, the bottom was Kai and Diego, Brody and Diego lip synced to \"I Will Always Love You\", and Diego was sashayed away."
+    },
+    {
+      "n": 2,
+      "word": "Episode",
+      "title": "Girl Group Challenge",
+      "prose": "The maxi challenge was Girl Group Challenge, the runway category was Curtain Up, and Brody won the mini challenge. Sanders won the maxi challenge, Duncan and Karol were high, Cameron and Justin were low, the bottom was Ivy and Kai, Ivy and Gyselle lip synced to \"Free Your Mind\", and Ivy was sashayed away."
+    },
+    {
+      "n": 3,
+      "word": "Episode",
+      "title": "The Rusical",
+      "prose": "The maxi challenge was The Rusical, the runway category was Creatures of the Deep, and Justin won the mini challenge. Gyselle won the maxi challenge, Duncan was high, Sanders was low, the bottom was Aiden and Nessa, Nessa and Kai lip synced to \"Good Luck, Babe!\", and Nessa was sashayed away."
+    },
+    {
+      "n": 4,
+      "word": "Episode",
+      "title": "Makeover Challenge",
+      "prose": "The maxi challenge was Makeover Challenge, the runway category was Showgirl, and Karol won the mini challenge. Duncan won the maxi challenge, Cameron was high, Karol was low, the bottom was Gyselle and Brody, Brody and Kai lip synced to \"Dancing on My Own\", and Brody was sashayed away."
+    },
+    {
+      "n": 5,
+      "word": "Episode",
+      "title": "Snatch Game",
+      "prose": "The maxi challenge was Snatch Game, the runway category was Club Kid Couture, and Gerry won the mini challenge. Duncan won the maxi challenge, Sanders was high, Cameron was low, the bottom was Justin and Gyselle, Justin and Kai lip synced to \"Cuff It\", and Justin was sashayed away."
+    },
+    {
+      "n": 6,
+      "word": "Episode",
+      "title": "The Ball",
+      "prose": "The maxi challenge was The Ball, the runway category was Feathers and Fringe, and Karol won the mini challenge. Duncan won the maxi challenge, Aiden was high, Karol was low, the bottom was Gyselle, Gyselle and Kai lip synced to \"Emotions\", and Gyselle was sashayed away."
+    },
+    {
+      "n": 7,
+      "word": "Episode",
+      "title": "The Roast",
+      "prose": "The maxi challenge was The Roast, the runway category was Best Drag, and Duncan won the mini challenge. Duncan won the maxi challenge, Cameron was high, Sanders was low, the bottom was Gerry, Gerry and Kai lip synced to \"MacArthur Park\", and Gerry was sashayed away."
+    },
+    {
+      "n": 8,
+      "word": "Episode",
+      "title": "Singing Challenge",
+      "prose": "The maxi challenge was Singing Challenge, the runway category was The Colour Wheel, and Duncan won the mini challenge. Duncan won the maxi challenge, Sanders was high, Karol was low, the bottom was Aiden, Aiden and Kai lip synced to \"Piece of My Heart\", and Aiden was sashayed away."
+    },
+    {
+      "n": 9,
+      "word": "Episode",
+      "title": "Rumix Challenge",
+      "prose": "The maxi challenge was Rumix Challenge, the runway category was Something Borrowed, and Sanders won the mini challenge. Duncan won the maxi challenge, Sanders was high, Karol was low, the bottom was Cameron, Cameron and Kai lip synced to \"All That Jazz\", and Cameron was sashayed away."
+    },
+    {
+      "n": 10,
+      "word": "Episode",
+      "title": "The Finale",
+      "prose": "The maxi challenge was The Finale. Sanders, Duncan, Karol, and Kai reached the finale, and Duncan was crowned."
+    }
+  ]
 }

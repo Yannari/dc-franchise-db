@@ -1010,6 +1010,72 @@ Two of them, stacked.
    The measurement is the whole diagnosis — press it three times and count the
    distinct nights.
 
+### O. A re-run that rebuilds the season reads state from the future
+
+N is a re-run that hands back the SAME night. This is the opposite failure and
+it is quieter: the re-run hands back a DIFFERENT past. Episodes the viewer has
+already watched come back with different results, and nothing announces it.
+
+A show whose season is decided in one call — drag books its whole running order
+on the first press — cannot re-run one episode. It re-runs the SEASON and then
+throws away the weeks that already aired. So the rebuild replays episodes 1..N-1
+from the top, and **every piece of live state it touches is state from after
+those episodes happened**. Two directions, both wrong:
+
+1. **What the rebuild READS.** `gs.episode` was left at the aired episode while
+   the rebuild replayed from week one. `js/bonds.js` reads it in six places,
+   four of them unconditionally — the drift term is
+   `Math.max(bb weeks, gs.episode)` and a perceived bond is stamped
+   `createdEp: gs.episode + 1`; the other two fall back to it only when no `ep`
+   is passed — so a rebuild pressed on episode ten
+   computed every bond as though ten weeks had already worn on it. The first
+   play ran the whole season with `gs.episode` at 0, because nothing inside the
+   season loop advances it; only airing a row does. **The rebuild has to see
+   what the first play saw**, which here means zero, not "the current week".
+2. **What the rebuild WRITES.** It calls `addBond` and `popDelta` for the whole
+   season again, on top of values those same calls already produced. Bonds
+   double-counted and popularity drifted. The fix is a snapshot of the AUTHORED
+   initial state taken at `initGameState` in `js/savestate.js`
+   (`gs._drInitBonds`, `gs._drInitLean`)
+   — not a recompute, which is a second implementation of the seeding and will
+   disagree with it — restored before the rebuild and swapped back for the
+   checkpoint's live state after.
+
+The general rule, and it is worth stating as a rule because the list of fields
+is not: **a rebuild is a replay. Every live field it reads must be reset to
+what the first play saw, and every live field it writes must be put back.** Ask
+of each one which of the two it is. `gs.episode` was neither obviously bond
+state nor obviously season state, which is exactly why it was missed.
+
+**The measurement.** Play nine episodes. Press ↺ on ten. Compare episodes one
+to nine against what they were, INCLUDING the fields nobody thinks to print —
+who returned, who was in the room, what the bonds were. A signature that stops
+at "who went home" passes while the season underneath it has changed.
+`tests/dr-returnee-rerun.test.js` is that comparison; `sig()` in
+`tests/dr-rebook.test.js` is the version that missed it, because it never
+looked at `dr.returned`.
+
+**And a related trap, on the same button.** Freezing an aired week freezes what
+it was BOOKED with, not what it PRODUCED. The drag schedule records that a week
+brought somebody back and, if an author asked for one by name, who they asked
+for — it does not record who actually walked back on, because the season picks
+her with the week's own dice. So the freeze re-derives her. She is stable only
+as long as the dice and the eliminated list are, and if that ever stops being
+true an aired episode is rewritten by a re-run of a later one. Anything a week
+DECIDES that an author did not pin is in this position; check for it before
+assuming the freeze is a replay.
+
+**A third one, cheaper to find and easier to leave in.** State that says who is
+gone must be corrected when somebody comes back. `gs.eliminated` was only ever
+appended to, so a returning queen was in `gs.activePlayers` and `gs.eliminated`
+at the same time, and on the list twice once she went out again. Big Brother
+clears it on the way back in; drag never learned to, and drag's own placements
+read `exits[]` so the show itself never tripped. The franchise layer does —
+`js/aftermath.js` unions that list into the eliminated set and met a queen who
+was still competing. **A returning-player mechanic is a state-cleanup task in
+every module that keeps its own "who is out" list**, not just in the one that
+sends her back.
+
 ### What a third show inherits from this work
 
 Wire these up rather than rebuilding them:
@@ -1026,6 +1092,7 @@ Wire these up rather than rebuilding them:
 | Independent seeded streams | `streamFor(seed, salt)` in `js/dr/rng.js` | one unit of work's dice never move when another's change — the precondition for editing a season already in progress (§11.5 M) |
 | The frozen prefix | `playDragSeason`'s `schedule` → `gs._drSchedule` → `_frozenPins()` | re-decide the future without rewriting the past, and refuse when the past cannot be reproduced |
 | A re-run that is a re-run | `gs._drReroll = { from, nonce }`, applied only to units at or after `from` | ↺ gives a different night every press while everything before it is untouched (§11.5 N) |
+| A rebuild that starts where the first play started | `gs._drInitBonds` / `gs._drInitLean`, snapshotted in `initGameState` and restored before a rebuild | the replayed weeks are computed from the state the first play saw, not from the state the season has reached (§11.5 O) |
 
 ---
 

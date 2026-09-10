@@ -3,20 +3,34 @@
   "format": "drag-race",
   "seasonId": "dr-1",
   "castSize": 14,
-  "episodeCount": 2,
+  "episodeCount": 3,
   "winner": {
-    "name": "Riot",
-    "playerSlug": "riot",
+    "name": "Ginger Hollywood",
+    "playerSlug": "ginger-hollywood",
     "vote": ""
   },
   "winners": [
-    "Riot"
+    "Ginger Hollywood"
   ],
   "placements": [
     {
+      "name": "Ginger Hollywood",
+      "playerSlug": "ginger-hollywood",
+      "placement": 1,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
       "name": "Riot",
       "playerSlug": "riot",
-      "placement": 1,
+      "placement": 2,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -30,7 +44,7 @@
     {
       "name": "Velvet Vixen",
       "playerSlug": "velvet-vixen",
-      "placement": 2,
+      "placement": 3,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -44,7 +58,7 @@
     {
       "name": "Taystee",
       "playerSlug": "taystee",
-      "placement": 3,
+      "placement": 4,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -58,7 +72,7 @@
     {
       "name": "Sharon Needles",
       "playerSlug": "sharon-needles",
-      "placement": 4,
+      "placement": 5,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -72,11 +86,11 @@
     {
       "name": "Quin",
       "playerSlug": "quin",
-      "placement": 5,
+      "placement": 6,
       "status": "Sashayed away",
       "dr": {
         "wins": 1,
-        "highs": 1,
+        "highs": 2,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -86,7 +100,7 @@
     {
       "name": "Paige Turner",
       "playerSlug": "paige-turner",
-      "placement": 6,
+      "placement": 7,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -100,7 +114,7 @@
     {
       "name": "Minnie Skurr",
       "playerSlug": "minnie-skurr",
-      "placement": 7,
+      "placement": 8,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -114,7 +128,7 @@
     {
       "name": "Marge Stache",
       "playerSlug": "marge-stache",
-      "placement": 8,
+      "placement": 9,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -126,26 +140,12 @@
       }
     },
     {
-      "name": "Ginger Hollywood",
-      "playerSlug": "ginger-hollywood",
-      "placement": 9,
-      "status": "Sashayed away",
-      "dr": {
-        "wins": 0,
-        "highs": 0,
-        "lows": 0,
-        "bottoms": 0,
-        "lipsyncWins": 0,
-        "congeniality": 0
-      }
-    },
-    {
       "name": "Gigi Cherie",
       "playerSlug": "gigi-cherie",
       "placement": 10,
       "status": "Sashayed away",
       "dr": {
-        "wins": 0,
+        "wins": 1,
         "highs": 1,
         "lows": 0,
         "bottoms": 0,
@@ -176,7 +176,7 @@
       "dr": {
         "wins": 0,
         "highs": 0,
-        "lows": 0,
+        "lows": 1,
         "bottoms": 0,
         "lipsyncWins": 0,
         "congeniality": 0
@@ -189,7 +189,7 @@
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
-        "highs": 0,
+        "highs": 1,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -205,8 +205,8 @@
         "wins": 0,
         "highs": 0,
         "lows": 0,
-        "bottoms": 0,
-        "lipsyncWins": 0,
+        "bottoms": 1,
+        "lipsyncWins": 1,
         "congeniality": 0
       }
     }
@@ -513,6 +513,169 @@
           {
             "name": "Riot",
             "playerSlug": "riot",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 3,
+        "challenge": {
+          "id": "acting",
+          "name": "Acting Challenge",
+          "format": "teams",
+          "stage": "pre"
+        },
+        "mini": {
+          "id": "quick-drag",
+          "name": "Quick Drag",
+          "winner": "Quin"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ross",
+          "guest:cameron"
+        ],
+        "guest": {
+          "name": "Cameron",
+          "playerSlug": "cameron"
+        },
+        "runwayCategory": "Club Kid Couture",
+        "song": {
+          "title": "New Attitude",
+          "artist": "Patti LaBelle"
+        },
+        "placements": [
+          {
+            "name": "Velvet Vixen",
+            "playerSlug": "velvet-vixen",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "Family Story"
+          },
+          {
+            "name": "Taystee",
+            "playerSlug": "taystee",
+            "result": "SAFE",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "Underdog"
+          },
+          {
+            "name": "Sharon Needles",
+            "playerSlug": "sharon-needles",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "Villain"
+          },
+          {
+            "name": "Riot",
+            "playerSlug": "riot",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Quin",
+            "playerSlug": "quin",
+            "result": "HIGH",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": "Professional"
+          },
+          {
+            "name": "Paige Turner",
+            "playerSlug": "paige-turner",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Minnie Skurr",
+            "playerSlug": "minnie-skurr",
+            "result": "SAFE",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": null
+          },
+          {
+            "name": "Marge Stache",
+            "playerSlug": "marge-stache",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": null
+          },
+          {
+            "name": "Ginger Hollywood",
+            "playerSlug": "ginger-hollywood",
+            "result": "ELIM",
+            "panelRank": 13,
+            "finalRank": 13,
+            "storyline": "Look Queen"
+          },
+          {
+            "name": "Gigi Cherie",
+            "playerSlug": "gigi-cherie",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "Alternative Queen"
+          },
+          {
+            "name": "Cupcakke",
+            "playerSlug": "cupcakke",
+            "result": "SAFE",
+            "panelRank": 9,
+            "finalRank": 9,
+            "storyline": "Front-runner"
+          },
+          {
+            "name": "Cheryl Hole",
+            "playerSlug": "cheryl-hole",
+            "result": "LOW",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": null
+          },
+          {
+            "name": "Autumnatic",
+            "playerSlug": "autumnatic",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Anita Crown Davenport",
+            "playerSlug": "anita-crown-davenport",
+            "result": "BTM2",
+            "panelRank": 12,
+            "finalRank": 12,
+            "storyline": "Pageant Queen"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Anita Crown Davenport",
+            "Ginger Hollywood"
+          ],
+          "winner": "Anita Crown Davenport",
+          "loser": "Ginger Hollywood",
+          "call": "shantay",
+          "song": "New Attitude"
+        },
+        "exits": [
+          {
+            "name": "Ginger Hollywood",
+            "playerSlug": "ginger-hollywood",
             "verb": "sashayed away",
             "channel": "lipsync"
           }

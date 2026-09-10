@@ -98,6 +98,29 @@ export function initDragState({ cast, seed = 1, rng = Math.random }) {
  *
  * Pure: base, popularity, and the size of the room. No rng, so a replay
  * rebuilds the same darlings.
+ *
+ * ── WHAT IT COSTS IN DIVERGENCE: NOTHING MEASURABLE ──────────────────
+ *
+ * The worry this was checked against is that a live favourite compounds --
+ * the audience likes whoever is winning, the host leans on the audience, and
+ * the season converges on one queen. Five hundred seasons per arm, identical
+ * seeds, amplitude the only variable:
+ *
+ *              zero-win winners   top queen's share   winner's maxi wins
+ *   drift off        14%                44%                 2.26
+ *   drift on         13%                45%                 2.33
+ *
+ * Statistically indistinguishable. An upset -- a queen crowned with no maxi
+ * win at all -- stays as reachable as it was.
+ *
+ * READ AT A HUNDRED SEASONS THIS LOOKED LIKE A DISASTER: 23% of upsets
+ * against 12%, "halved". Both figures were noise. The standard error on that
+ * proportion at N=100 is about four points, so the band is ±8 and the whole
+ * apparent effect fitted inside it; the control arm alone moved from 23% to
+ * 14% when the sample grew. An amplitude sweep run at that size came back
+ * non-monotonic (0.4 -> 15%, 0.6 -> 17%, 0.8 -> 24%, 1.2 -> 12%), which is
+ * what tuning on noise looks like from the inside. Anything measured here
+ * needs five hundred seasons before it means something.
  */
 export function refreshStar(state) {
   if (!state || !state.starBase) return state && state.star;

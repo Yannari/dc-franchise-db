@@ -213,7 +213,12 @@ export const CHALLENGE_BEATS = [
       /* THE MAKEOVER, WHICH IS NOT A DRAFT AND WAS BEING CALLED ONE. Its room
          is handed out by whoever won the mini, so "a pick order, and everybody
          can count" printed over a night where nobody counted anything. */
-      tier('paired', 'One queen won the mini, and she is handing the whole room out.'),
+      tier('paired', 'One queen won the mini, and she is handing the whole room out.', [
+        "One queen won the mini and that queen is now holding the whole room in her hands. She picks the partners. Every queen in the room just lost control of her week and every one of them is staring at the same person.",
+        "The mini winner pairs the room. No draft, no counting slots, no strategy — one queen decides who works with whom, out loud, in front of everybody. The room does the math on who she likes and who she does not.",
+        "\"You won the mini. You are pairing the room.\" The winner stands up. Every other queen sits very still. This is not a draft. There is no turn. There is one person with the power and twelve people waiting to find out what she thinks of them.",
+        "Pairs, chosen by the mini winner. She has the whole room to hand out and the whole room knows it. Some queens are smiling at her. Some queens are avoiding eye contact. Neither strategy is going to change what she already decided.",
+      ]),
       tier('two-casts', 'The room is cut in two, and the parts are fought over inside each half.', [
         "Two casts. Same script. The host splits the room and both halves are doing the same six parts, judged against each other. Two queens just realised they are playing the same character.",
         "The room is cut in half. Same script, same characters, back to back on the panel. The queens who got the stronger cast know it already.",
@@ -375,9 +380,24 @@ export const CHALLENGE_BEATS = [
     note: 'Who {b} paired her with, and what the room thinks it meant.',
     tierBy: 'pairing',
     tiers: [
-      tier('dumped-on', 'She was handed the hardest man in the room, and everybody saw it.'),
-      tier('looked-after', 'She was given somebody she can work with, deliberately.'),
-      tier('next-name', 'No message in it. She was the next name on the list.'),
+      tier('dumped-on', 'She was handed the hardest man in the room, and everybody saw it.', [
+        "{b} says {a}'s name and the room goes quiet. That is the hardest partner on the board and everybody knows it. {a} smiles because there is nothing else to do.",
+        "The hardest man in the room, handed to {a}, by {b}, with a smile. {a} takes it. She does not have a choice, and the not having a choice is the point.",
+        "{b} pairs {a} with the one nobody wanted. The room watches. {a} nods and walks over to meet him and the walk is longer than it should be.",
+        "{a} gets the name and her face does the thing where it tries to stay neutral and does not quite manage it. {b} has already moved on to the next queen. The room noticed.",
+      ]),
+      tier('looked-after', 'She was given somebody she can work with, deliberately.', [
+        "{b} gives {a} somebody she can actually work with. It is generous and the room reads it immediately — that is a favour, out loud, in front of the whole cast.",
+        "{a} gets paired and the relief is visible. {b} gave her someone workable and everybody in the room just clocked the alliance. Whether or not there is one.",
+        "{b} hands {a} a partner she can build with. It is kind. It is also visible, and visible kindness in this room becomes a talking point on the panel.",
+        "A good partner for {a}, chosen deliberately by {b}. {a} exhales. The room takes a note.",
+      ]),
+      tier('next-name', 'No message in it. She was the next name on the list.', [
+        "{b} says {a}'s name. No pause, no drama, just the next queen on the list. {a} walks over to meet her partner and sizes him up on the way.",
+        "{a} gets paired. She shakes his hand, looks at his shoulders, and starts thinking about proportions. There is work to do and the sooner she starts the better.",
+        "Next name: {a}. She meets her partner. First handshake, first look, first assessment of what she is working with. He is nervous. She is already planning the wig.",
+        "{b} calls {a} and moves on. {a} meets her partner, takes one look at him, and starts making a list in her head. The list is long. The afternoon is not.",
+      ]),
     ],
   },
   {

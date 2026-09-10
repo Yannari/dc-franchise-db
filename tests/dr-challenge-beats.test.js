@@ -80,10 +80,11 @@ describe('the schema', () => {
        js/dr/stage.js draws no portrait on that card. */
     const MENTORED = new Set(['booth-session', 'studio-day', 'rehearsal', 'call-sheet',
       'studio-taping']);
+    const PAIR_BEATS = new Set(['paired-off']);
     for (const b of CHALLENGE_BEATS) {
       for (const t of b.tiers) {
         for (const l of t.lines) {
-          expect(l, `${b.id}/${t.id} uses {b}`).not.toMatch(/\{b\}/);
+          if (!PAIR_BEATS.has(b.id)) expect(l, `${b.id}/${t.id} uses {b}`).not.toMatch(/\{b\}/);
           /* A `once` BEAT FIRES WITH AN EMPTY PLAYER LIST, so `{a}` fills to
              nothing and leaves a hole rather than a visible placeholder — the
              solo division card printed `"Good," says. She means it.` for as
@@ -106,7 +107,9 @@ describe('the schema', () => {
           }
           const bad = MENTORED.has(b.id)
             ? l.match(/\{(?!a\}|c\}|m\})[^}]*\}/)
-            : l.match(/\{(?!a\}|c\})[^}]*\}/);
+            : PAIR_BEATS.has(b.id)
+              ? l.match(/\{(?!a\}|b\}|c\})[^}]*\}/)
+              : l.match(/\{(?!a\}|c\})[^}]*\}/);
           expect(bad, `${b.id}/${t.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
         }
       }

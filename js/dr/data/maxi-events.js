@@ -247,12 +247,22 @@ export const MAXI_EVENTS = [
   e({
     id: 'handed-the-hardest', from: 'makeover', cast: 'pair',
     note: '{a} won the mini and gave {b} the hardest partner in the room, in front of everybody.',
-    lines: [],
+    lines: [
+      "{a} says {b}'s name and then the name of the hardest man in the room, back to back, without blinking. The pause after is everybody deciding what they just watched.",
+      "The room goes quiet when {a} pairs {b} with the one nobody wanted. {a} keeps her face still. {b} keeps hers still. Somebody in the back does not.",
+      "{a} hands {b} the worst partner on the board and does it with a smile. The room clocks it. {a}'s standing just cost her something.",
+      "{a} gives {b} the hardest partner and the kindest explanation. The explanation is not landing. The room saw what it saw.",
+    ],
   }),
   e({
     id: 'paired-them-well', from: 'makeover', cast: 'pair',
     note: '{a} had the room to hand out and gave {b} somebody she can actually work with.',
-    lines: [],
+    lines: [
+      "{a} pairs {b} with somebody workable and the room notices the generosity. {b} mouths a thank-you. {a} nods. The room files it.",
+      "{a} gives {b} a good partner and the giving is deliberate. The room sees one queen looking out for another and the panel will have opinions about it.",
+      "A fair pairing from {a}. She gives {b} someone she can build with and moves on without making a speech about it. The room respects it quietly.",
+      "{a} hands {b} a partner and the match is clearly thought through. {b} looks relieved. {a} earned something in this room just now.",
+    ],
   }),
 
   // ══ THE VERSE ════════════════════════════════════════════════════════

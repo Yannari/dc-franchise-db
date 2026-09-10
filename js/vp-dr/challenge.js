@@ -2506,8 +2506,18 @@ export function rpBuildMaxi(row) {
      looking at a half-built garment was drawn on the card for the
      performance given afterwards: the wrong screen, and the wrong moment in
      the night, because the note is given so the runway can answer it. */
+  /* ── AND ON THE STEP, POSITIVELY ──
+     This said `step !== 'prep'`, which is a denylist of one: a `maxi:` kind
+     that happens at any OTHER moment of the night still landed here. The
+     draft's contest scenes carry step `choice` and kind `maxi:contest`, so
+     "she reaches for the same part and MK gets there first" was drawn on the
+     card for a makeover, above the score for a wig.
+     The maxi happens on `maxi-pre` or `maxi-main` and nowhere else, so that
+     is what this asks for. A kind that arrives on a third step is a scene
+     that belongs to a third screen. */
+  const MAXI_STEPS = new Set(['maxi-pre', 'maxi-main']);
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
-    && sc.step !== 'prep'
+    && MAXI_STEPS.has(sc.step)
     && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
   const usedScene = new Set();
   const linesFor = name => maxiScenes.filter(sc => {

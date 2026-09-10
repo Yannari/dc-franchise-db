@@ -28,6 +28,8 @@ import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor } from '../perform.js';
 import { evt } from '../rules.js';
+import { alumniPool } from '../../alumni.js';
+import { SHOWS, DRAG_FORMAT } from '../../shows.js';
 
 const crew = (name, ease) => ({ id: name.toLowerCase().replace(/\W+/g, '-'), name, ease });
 
@@ -64,17 +66,109 @@ export const PARTNER_POOLS = {
     crew('her twin', 9), crew('her neighbour', 5), crew('her drag mother', 10)],
   // Built at run time from the queens already sent home.
   eliminated: null,
+  // And from the franchise itself — see `alumniPartners` below.
+  alumni: null,
 };
+
+/* ── THE CROSSOVER MAKEOVER ──
+   The seven cohorts above are invented people: superfans, service veterans,
+   somebody's aunt. They are the show's own premise and they stay. This is the
+   eighth, and it is the one that could only exist in a franchise — the guests
+   walking through the door are people who actually played one of the other
+   shows, and the audience has watched them lose something.
+
+   THE SHOW IS NOT A LIST. `js/shows.js` is the only place that knows what
+   shows exist, and docs/ADDING-A-SHOW.md §9 is emphatic that a second copy is
+   how a fourth show ends up wearing the first one's name. So the eligible
+   shows are DERIVED: every registered format that is not this one and that has
+   enough people on the ledger to fill a room. A show with nobody in it yet is
+   simply never offered, and the day it has a cast it starts appearing without
+   anybody editing this file.
+
+   DRAG RACE IS EXCLUDED, and not for a technical reason: a makeover is turning
+   somebody who does not do drag into a drag sister, and another queen has no
+   transformation in her. The exclusion is `DRAG_FORMAT`, read from the
+   registry, so it is still not a hardcoded slug.
+
+   HOW EASY THEY ARE, from what the franchise already knows about them. A bold,
+   social player throws herself into it; somebody guarded has to be talked
+   through every step. Proportional, never a threshold — the same rule the rest
+   of the engine keeps. */
+const ALUMNI_FLOOR = 8;
+
+/** Which registered shows could supply a room of partners right now. */
+export function makeoverShows(exclude = []) {
+  const barred = new Set(exclude);
+  return Object.keys(SHOWS)
+    .filter(f => f !== DRAG_FORMAT)
+    /* NATIVE ONLY. `alumniPool` widens to the whole franchise when a format
+       has fewer than `minNative` people in it — right for a guest judge, where
+       the question is "would anybody recognise her", and wrong here, where the
+       whole point is that these people played THAT show. Unfiltered it
+       reported 170 available for the castle, which has never had a cast: the
+       fallback had handed back the entire franchise wearing the castle's
+       name. */
+    .map(f => ({ format: f,
+      people: alumniPool({ format: f, exclude: [...barred] }).filter(a => a?.native) }))
+    .filter(x => x.people.length >= ALUMNI_FLOOR);
+}
+
+/**
+ * A room of partners drawn from one of the other shows.
+ *
+ * Returns `[]` when the franchise cannot fill one — no database loaded, or no
+ * show with enough people — and the caller falls back to the invented cohorts,
+ * which is the honest answer rather than a half-empty crossover.
+ */
+export function alumniPartners({ cast = [], rng = Math.random, format = null } = {}) {
+  const castNames = cast.map(p => (p && p.name) || p).filter(Boolean);
+  const shows = makeoverShows(castNames);
+  if (!shows.length) return [];
+  const chosen = (format && shows.find(s => s.format === format))
+    || shows[Math.floor(rng() * shows.length)];
+
+  const roster = (typeof globalThis !== 'undefined' && globalThis.FRANCHISE_ROSTER) || [];
+  const rowOf = n => roster.find(r => r && r.name === n) || null;
+
+  return chosen.people.map(a => {
+    const st = (rowOf(a.name) || {}).stats || {};
+    const num = k => (Number.isFinite(Number(st[k])) ? Number(st[k]) : 5);
+    /* Willingness rather than talent: nobody here has done drag before, so
+       what decides how the day goes is whether she will let somebody put her
+       in a corset and laugh about it. */
+    const ease = Math.max(1, Math.min(10, Math.round(
+      3 + (num('boldness') - 5) * 0.45 + (num('social') - 5) * 0.35
+        + (num('temperament') - 5) * 0.2 + 4)));
+    return {
+      id: `alum-${(a.slug || a.name).toLowerCase().replace(/\W+/g, '-')}`,
+      name: a.name,
+      ease,
+      fromShow: chosen.format,
+      /* The show she is from, said the registry's way. A screen that wants to
+         print "from Total Drama" asks SHOWS rather than owning the words. */
+      fromShowName: SHOWS[chosen.format]?.name || chosen.format,
+    };
+  });
+}
 
 /** Which cohorts a season can book. */
 export const PARTNER_COHORTS = ['superfans', 'veterans', 'seniors', 'athletes',
-  'pit-crew', 'loved-ones', 'eliminated'];
+  'pit-crew', 'loved-ones', 'eliminated', 'alumni'];
 
 /** Everybody competes for a shared guest; loved ones are already hers. */
 const CONTESTED = new Set(['superfans', 'veterans', 'seniors', 'athletes',
-  'pit-crew', 'eliminated']);
+  'pit-crew', 'eliminated', 'alumni']);
 
-function poolFor(cfg, state, players) {
+function poolFor(cfg, state, players, ctx) {
+  if (cfg?.makeoverPool === 'alumni') {
+    /* Falls through to the invented cohorts when the franchise cannot fill a
+       room — an early-life franchise, or a headless tool with no database
+       loaded, both of which are ordinary rather than an error. */
+    return alumniPartners({
+      cast: Object.values(players || {}),
+      rng: ctx?.rng, format: cfg?.makeoverShow || null,
+    });
+  }
   if (cfg?.makeoverPool === 'eliminated') {
     return (state?.out || []).map(n => ({
       id: n.toLowerCase(), name: n,
@@ -88,7 +182,7 @@ function poolFor(cfg, state, players) {
 export function assign(ctx) {
   const { living, players, rng, miniWinner, mini, cfg, state, bond } = ctx;
   const poolKey = cfg?.makeoverPool || 'superfans';
-  let pool = poolFor(cfg, state, players);
+  let pool = poolFor(cfg, state, players, ctx);
   // A returnee pool can be empty in an early week. Fall back rather than
   // pairing everybody with nobody.
   if (!pool.length) pool = PARTNER_POOLS.superfans;

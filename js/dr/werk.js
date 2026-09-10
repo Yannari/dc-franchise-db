@@ -441,6 +441,11 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
   for (const [k, list] of bySlot) {
     const rows = confessionalsFor({
       scenes: list, room: living, players, spoken, slot: k,
+      /* WHO HAS SOMETHING RIDING ON IT. Without this a witness was drawn
+         flat out of the room, so the queen with no relationship to either
+         of them spoke as often as the one whose closest ally had just been
+         read. See `candidatesFor`. */
+      bond: ctx?.bond || (() => 0),
       rng: streamFor(episode + 1, `confessional|${k}|${list.map(x => x.id).join(',')}`),
     });
     if (!rows.length) continue;

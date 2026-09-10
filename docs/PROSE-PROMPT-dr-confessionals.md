@@ -117,6 +117,15 @@ it, you are writing to it.
 Keep the tiers audibly apart. If a line would work in three of them, it is
 doing the work of none.
 
+**Who you are writing for, in the `watched-*` tiers.** The engine does not
+pick a witness at random — it weights her by how strong a bond she has with
+either queen in the scene, and `{b}` is whichever of the two she actually has
+feelings about. So the speaker is nearly always somebody with a stake, and
+`{b}` is the one she has it in. Write them as though she does. The engine
+reads the SIZE of the bond and not its sign, though, so `{b}` may be her
+closest ally or the queen she cannot stand — a line that assumes affection
+will be wrong half the time. What settles which it is, is the tier.
+
 ---
 
 ## 3. When you are done

@@ -83,32 +83,71 @@ export function heatOf(scene) {
   return null;
 }
 
+/* BEING IN THE SCENE IS ITSELF A STAKE. A witness with a real tie to one of
+   them can outbid a participant, and often should — the queen whose closest
+   ally just got read has more to say than the one who did the reading. But
+   she starts from behind, because most confessionals on this show come from
+   the people it happened to. */
+const IN_SCENE = 3;
+
 /**
  * Everybody who could speak about this scene, with the tier each of them
- * would be speaking from.
+ * would be speaking from and how much they have riding on it.
  *
  * `players[0]` is the actor everywhere in the werk room — `applyWerkScene`
  * reads it as the `a` of both the bond and the pop map — so she is the one
  * who DID it and `players[1]` is the one it was done to.
+ *
+ * ── STAKE IS WHY A PARTICULAR QUEEN IS THE ONE TALKING ──
+ *
+ * A witness used to be drawn flat out of the room, so a queen with no
+ * relationship to either of them was exactly as likely to speak as the one
+ * with everything to say about it — and which of the two she talked about was
+ * a coin flip. Both are backwards. `bond` decides both now: how loudly she
+ * wants the camera, and which of them she wants it about.
+ *
+ * The magnitude and not the sign, deliberately. A queen who cannot stand
+ * somebody is as motivated as one who loves her; which of those it is belongs
+ * to the tier, and the tier is already chosen by what the scene did.
  */
-export function candidatesFor(scene, room) {
+export function candidatesFor(scene, room, bond = () => 0) {
   const who = scene?.players || [];
   const heat = heatOf(scene);
+  const tie = (x, y) => Math.abs(Number(bond(x, y)) || 0);
   if (!who.length || !heat) return [];
-  if (who.length === 1) return [{ name: who[0], tier: 'alone', about: null }];
+  if (who.length === 1) {
+    return [{ name: who[0], tier: 'alone', about: null, stake: IN_SCENE }];
+  }
   const [a, b] = who;
+  const between = tie(a, b);
   const out = [
-    { name: a, tier: `did-${heat}`, about: b },
-    { name: b, tier: `taken-${heat}`, about: a },
+    { name: a, tier: `did-${heat}`, about: b, stake: IN_SCENE + between },
+    { name: b, tier: `taken-${heat}`, about: a, stake: IN_SCENE + between },
   ];
   for (const n of room) {
     if (n === a || n === b) continue;
-    out.push({ name: n, tier: `watched-${heat}`, about: rng => (rng() < 0.5 ? a : b) });
+    const da = tie(n, a);
+    const db = tie(n, b);
+    out.push({
+      name: n,
+      tier: `watched-${heat}`,
+      // Whichever of them she actually has feelings about; a coin flip only
+      // when she has no more reason to name one than the other.
+      about: rng => (da === db ? (rng() < 0.5 ? a : b) : (da > db ? a : b)),
+      stake: Math.max(da, db),
+    });
   }
   return out;
 }
 
 const pickFrom = (rng, list) => list[Math.floor(rng() * list.length)];
+
+/** Weighted by stake, so the queen with something at issue usually gets it. */
+function pickByStake(rng, list) {
+  const total = list.reduce((t, c) => t + 1 + (c.stake || 0), 0);
+  let roll = rng() * total;
+  return list.find(c => (roll -= 1 + (c.stake || 0)) <= 0) || list[list.length - 1];
+}
 
 /**
  * The confessionals a slot earned, as werk-room scenes ready to be applied.
@@ -122,7 +161,7 @@ const pickFrom = (rng, list) => list[Math.floor(rng() * list.length)];
  * a favourite rather than a room with eleven people in it.
  */
 export function confessionalsFor({
-  scenes = [], room = [], players = {}, rng = Math.random,
+  scenes = [], room = [], players = {}, rng = Math.random, bond = () => 0,
   spoken = new Set(), max = 2, chance = 0.25, slot = null,
 } = {}) {
   const out = [];
@@ -136,7 +175,7 @@ export function confessionalsFor({
     if (lastWasOne) { lastWasOne = false; continue; }
     if (rng() >= chance) continue;
 
-    const eligible = candidatesFor(sc, room).filter(c => {
+    const eligible = candidatesFor(sc, room, bond).filter(c => {
       if (spoken.has(c.name)) return false;
       const t = confessionalTier(c.tier);
       if (!t || !t.lines.length) return false;   // unwritten emits nothing
@@ -145,7 +184,7 @@ export function confessionalsFor({
     });
     if (!eligible.length) continue;
 
-    const cand = pickFrom(rng, eligible);
+    const cand = pickByStake(rng, eligible);
     const t = confessionalTier(cand.tier);
     const about = typeof cand.about === 'function' ? cand.about(rng) : cand.about;
     /* ── A LINE THAT NAMES SOMEBODY WHO IS NOT THERE IS NOT USABLE ──

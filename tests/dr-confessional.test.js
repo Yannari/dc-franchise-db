@@ -258,7 +258,35 @@ describe('the parts it is built from', () => {
 
   it('a solo scene has only her to talk about it', () => {
     const c = candidatesFor({ id: 's', players: ['Ada'], effects: { pop: { a: -1 } } }, ROOM);
-    expect(c).toEqual([{ name: 'Ada', tier: 'alone', about: null }]);
+    expect(c).toMatchObject([{ name: 'Ada', tier: 'alone', about: null }]);
+    expect(c.length).toBe(1);
+  });
+
+  it('gives the queen with something riding on it the loudest claim', () => {
+    /* A witness used to be drawn flat out of the room: the queen with no
+       relationship to either of them spoke as often as the one whose closest
+       ally had just been read. */
+    const bond = (x, y) => ((x === 'Cleo' || y === 'Cleo')
+      && (x === 'Ada' || y === 'Ada') ? 9 : 0);
+    const c = candidatesFor(cold(1, 'Ada', 'Bex'), ROOM, bond);
+    const stake = Object.fromEntries(c.map(x => [x.name, x.stake]));
+    expect(stake.Cleo, 'the invested witness has no more claim than a stranger')
+      .toBeGreaterThan(stake.Dot);
+  });
+
+  it('has her talk about the one she actually has feelings about', () => {
+    /* Which of the two a witness named used to be a coin flip. */
+    const bond = (x, y) => (([x, y].includes('Cleo') && [x, y].includes('Bex')) ? 8 : 0);
+    const c = candidatesFor(cold(1, 'Ada', 'Bex'), ROOM, bond);
+    const cleo = c.find(x => x.name === 'Cleo');
+    expect(cleo.about(() => 0.99)).toBe('Bex');
+    expect(cleo.about(() => 0.01), 'the tie-break overrode a real tie').toBe('Bex');
+  });
+
+  it('still flips a coin when she has no reason to prefer either', () => {
+    const c = candidatesFor(cold(1, 'Ada', 'Bex'), ROOM);   // no bonds at all
+    const cleo = c.find(x => x.name === 'Cleo');
+    expect(new Set([cleo.about(() => 0.1), cleo.about(() => 0.9)]).size).toBe(2);
   });
 
   it('applies the franchise eligibility rule and no other', () => {

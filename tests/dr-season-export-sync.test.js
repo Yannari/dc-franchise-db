@@ -187,10 +187,13 @@ describe('the two exports keep their own names', () => {
 
   it('wires the mid-season buttons to the download, not to the publish', () => {
     const html = read('simulator.html');
-    expect(html).toContain('onclick="exportSeasonJson()');
+    // The handler is guarded now — a page running cached older JS says so
+    // instead of doing nothing — so this asserts the CALL, not the whole
+    // attribute, and that it is not the publish pipeline.
+    expect(html).toContain('exportSeasonJson()');
     // "Export Season" in the sidebar is the publish pipeline and stays that way.
     expect(html).toContain('>Export Season</button>');
-    expect(read('js/run-ui.js')).toContain('onclick="exportSeasonJson()"');
+    expect(read('js/run-ui.js')).toContain('exportSeasonJson()');
   });
 
   it('leaves the publish pipeline calls alone', () => {

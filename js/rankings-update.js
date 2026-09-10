@@ -1702,10 +1702,7 @@ async function applyUpdates() {
            'The site rebuilds in about a minute.';
   } else {
     const blob = new Blob([JSON.stringify(rankingsDB, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = boardName; a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(boardName, blob);
     note = '\u26a0\ufe0f Could not publish (' + published.error + ') \u2014 the file was downloaded instead. ' +
            'Replace ' + boardName + ' in the repo with it and commit.';
   }

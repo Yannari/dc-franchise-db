@@ -1867,6 +1867,33 @@ export function repairGsSets(g) {
  * has always taken; this is them named once so a fifth caller cannot get them
  * wrong again.
  */
+/**
+ * Hand the viewer a file.
+ *
+ * THE ANCHOR HAS TO BE IN THE DOCUMENT. Eight download sites built a detached
+ * `<a>` and called `.click()` on it. Chrome runs that; FIREFOX IGNORES IT
+ * ENTIRELY — no download, no error, nothing in the console. Reported as "mid
+ * season export still does nothing at least visible", and it was every export
+ * in the app on that browser, not one: cast, roster, presets, season,
+ * franchise, rankings. Two sites (js/stats-export.js, js/ratings-backfill.js)
+ * already appended, so the lesson had been learned once and not written down.
+ *
+ * AND THE URL IS REVOKED ON THE NEXT TICK, not on the line after the click.
+ * Revoking synchronously can cancel the download it was created for, which is
+ * the same class of bug one step further along.
+ */
+export function downloadFile(filename, blobOrUrl) {
+  const made = typeof blobOrUrl !== 'string';
+  const url = made ? URL.createObjectURL(blobOrUrl) : blobOrUrl;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  if (made) setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export function snapshotGs(g = gs) {
   if (!g) return g;
   prepGsForSave(g);

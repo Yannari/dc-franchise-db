@@ -3,7 +3,7 @@
 // timeline, details flyouts, import dropzone, and franchise-pulse footer.
 // All DOM code for the ledger lives HERE (franchise-meta.js stays DOM-free).
 // ══════════════════════════════════════════════════════════════════════
-import { players } from './core.js';
+import { players, downloadFile } from './core.js';
 import {
   activeFranchise, activeSeasons, listFranchises, createFranchise, renameFranchise,
   deleteFranchise, setActiveFranchise, setSeasonIncluded, backfillFromSeasonsDb,
@@ -1031,9 +1031,7 @@ export function frExportFranchise() {
   if (!data.exportedSeasons) { alert('This franchise has no recorded seasons to export.'); return; }
   const fname = `franchise-${String(data.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export'}.json`;
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = fname; a.click();
-  URL.revokeObjectURL(a.href);
+  downloadFile(fname, blob);
 }
 export function frWipeActive() {
   const cur = franchiseLedger.franchises[franchiseLedger.active];

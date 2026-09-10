@@ -6,7 +6,7 @@ import { DEFAULT_ROSTER } from './roster-data.js';
 import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
-import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG } from './core.js';
+import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile } from './core.js';
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS } from './shows.js';
@@ -466,7 +466,7 @@ export function loadS9Preset() {
 }
 export function exportCast() {
   const blob = new Blob([JSON.stringify(players,null,2)],{type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='simulator-cast.json'; a.click();
+  downloadFile('simulator-cast.json', blob);
 }
 export function importCast(event) {
   const file = event.target.files[0]; if(!file) return;
@@ -522,7 +522,7 @@ export function applyFranchiseMetaMidSeason() {
 // ── Franchise Roster Management ──
 export function exportRoster() {
   const blob = new Blob([JSON.stringify({ players: FRANCHISE_ROSTER }, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'franchise_roster.json'; a.click();
+  downloadFile('franchise_roster.json', blob);
 }
 export function importRoster(event) {
   const file = event.target.files[0]; if (!file) return;
@@ -610,7 +610,7 @@ export function exportPreset() {
   const data = _buildPresetData();
   const name = (seasonConfig.name || 'preset').replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-').toLowerCase();
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `preset-${name}.json`; a.click();
+  downloadFile(`preset-${name}.json`, blob);
 }
 export function importPreset(event) {
   const file = event.target.files[0]; if (!file) return;
@@ -791,7 +791,7 @@ export function exportSeasonJson() {
   const name = (seasonConfig.name || 'season').replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-').toLowerCase();
   const ep = gs.episode || 0;
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `season-${name}-ep${ep}.json`; a.click();
+  downloadFile(`season-${name}-ep${ep}.json`, blob);
 }
 export function importSeason(event) {
   const file = event.target.files[0]; if (!file) return;

@@ -3123,10 +3123,10 @@ function _loadCastIntoSeason(cast) {
 // ═══════════════════════════════════════════════════════════════════════
 function _dl(name, text) {
   const b = new Blob([text], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click();
+  downloadFile(name, b);
   setTimeout(() => URL.revokeObjectURL(a.href), 1500);
 }
-function _dlDataUri(name, uri) { const a = document.createElement('a'); a.href = uri; a.download = name; a.click(); }
+function _dlDataUri(name, uri) { downloadFile(name, uri); }
 
 async function _exportRepo() {
   // 1) franchise_roster.json — full current pool

@@ -254,9 +254,11 @@ export function assign(ctx) {
     for (const n of rest) {
       if (!bag.length) break;
       let partner;
+      let meant = 'next-name';
       if (assigner && !pointed && canScheme(players[assigner]) && bond(assigner, n) <= -3) {
         partner = hardest();
         pointed = true;
+        meant = 'dumped-on';
         events.push(evt('handed-the-hardest', {
           players: [assigner, n], bond: [[assigner, n, -2]], pop: { [assigner]: -2 },
           data: { partner: partner.name, ease: partner.ease },
@@ -264,6 +266,7 @@ export function assign(ctx) {
       } else if (assigner && bond(assigner, n) >= 4 && !generous) {
         partner = easiest();
         generous = true;
+        meant = 'looked-after';
         events.push(evt('paired-them-well', {
           players: [assigner, n], bond: [[assigner, n, 1]], pop: { [assigner]: 1 },
           data: { partner: partner.name },
@@ -271,7 +274,7 @@ export function assign(ctx) {
       } else {
         partner = bag.splice(Math.floor(rng() * bag.length), 1)[0];
       }
-      picks[n] = { name: n, choice: partner.name, partner,
+      picks[n] = { name: n, choice: partner.name, partner, pairing: meant,
         assignedBy: assigner, chosen: false, penalty: 0, lostTo: null };
     }
   } else {
@@ -298,6 +301,9 @@ export function assign(ctx) {
 
   return {
     roles: Object.fromEntries(order.map(n => [n, 'standard'])),
+    // Not a draft and not a call sheet — see the `paired` tier on
+    // `the-division`. Only when somebody actually handed the room out.
+    ...(Object.values(picks).some(p => p?.assignedBy) ? { division: 'paired' } : {}),
     teams: [], order, picks, events, pool, poolKey,
     scenes: [{ step: 'choice', kind: 'makeover-pairs', data: { pool: poolKey, picks } }],
   };

@@ -5,7 +5,7 @@
 // Plays start to finish from a seed, which is what makes a season re-airable:
 // js/dr-run.js calls this once, queues the rows, and hands one to the screen
 // per press. Nothing here touches `gs` or the DOM.
-import { initDragState } from './state.js';
+import { initDragState, refreshStar } from './state.js';
 import { runAudienceVote } from '../audience.js';
 import { renderFinaleBeats, insertCongenialityScene } from './finale.js';
 import { PARTNER_COHORTS } from './chal/makeover.js';
@@ -1312,6 +1312,12 @@ export function playDragSeason({
     }
 
     played.push({ ...week, episode: epNum });
+    /* THE AUDIENCE'S VIEW COMING IN, not the one it will hold by the end of
+       tonight. Refreshed BEFORE the week runs, from everything aired so far,
+       so the host's lean this week is what the room thought walking in — and
+       so `hostBend` inside runDragWeek reads a value the week itself has not
+       yet moved. See refreshStar in js/dr/state.js. */
+    refreshStar(state);
     const weekRow = beat(state, runDragWeek(state, weekCfg(week, config, epNum, {
       totalEpisodes,
       // She competes on her return night and cannot go home on it.

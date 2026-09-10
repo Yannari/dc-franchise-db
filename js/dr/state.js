@@ -20,10 +20,22 @@ export function initDragState({ cast, seed = 1, rng = Math.random }) {
   // about this season fixed before the first challenge, which is also what
   // makes it replayable: the same seed rebuilds the same cast of darlings.
   const star = {};
-  for (const p of cast) star[p.name] = Math.round(starPower(p, rng) * 100) / 100;
+  const starBase = {};
+  for (const p of cast) {
+    const v = Math.round(starPower(p, rng) * 100) / 100;
+    starBase[p.name] = v;
+    star[p.name] = v;
+  }
 
   return {
     seed,
+    /* WHO SHE IS ON PAPER, kept apart from who the season has made of her.
+       `starBase` is the roll above and never moves; `star` is what the host
+       actually leans on and drifts with the audience -- see refreshStar. The
+       two were one field, which meant a queen who won the casting draw stayed
+       the favourite for thirteen weeks no matter how the room reacted to her,
+       and any mechanic built on `star` had no brake at all. */
+    starBase,
     castOrder: [...names],
     living: [...names],
     out: [],
@@ -60,4 +72,58 @@ export function initDragState({ cast, seed = 1, rng = Math.random }) {
     runnerUp: null,
     congeniality: null,
   };
+}
+
+/**
+ * What the room has made of her, on top of what she was cast as.
+ *
+ * Star power was rolled once and never moved again, so the favourite was
+ * decided before the first challenge and stayed the favourite for the whole
+ * season however the audience actually reacted. `hostBend` leans on it, which
+ * meant the host's benefit of the doubt was a casting fact rather than a
+ * season one — and anything built on top of it (a Rigga Morris, a redemption
+ * arc, a queen the room turns on) had no brake, because nothing could ever
+ * change who the darling was.
+ *
+ * RELATIVE TO THE ROOM, NOT RAW, and that is the whole of it. Popularity runs
+ * about -13 to +68 across a season against star's 3 to 8, so an absolute term
+ * would swamp the casting profile — and worse, it would lift everyone at once
+ * late in the season and cancel out, which is the exact defect documented on
+ * `relStar` in js/dr/judging.js. A z-score against the LIVING room says the
+ * true thing instead: what matters is being more watchable than the queens
+ * still standing next to you, and that changes as the cast shrinks.
+ *
+ * IT RAMPS, because an audience has no opinion in week one. Four episodes to
+ * full weight, so the premiere still belongs to casting.
+ *
+ * Pure: base, popularity, and the size of the room. No rng, so a replay
+ * rebuilds the same darlings.
+ */
+export function refreshStar(state) {
+  if (!state || !state.starBase) return state && state.star;
+  const living = (state.living || []).filter(n => state.starBase[n] != null);
+  const pops = living.map(n => (state.popularity || {})[n] || 0);
+  const mean = pops.length ? pops.reduce((a, b) => a + b, 0) / pops.length : 0;
+  const varc = pops.length
+    ? pops.reduce((t, v) => t + (v - mean) ** 2, 0) / pops.length : 0;
+  const sd = Math.sqrt(varc) || 1;
+  // Four episodes to full weight. `record` is the only per-queen history the
+  // state carries, and every living queen has one entry per aired night.
+  const aired = living.length
+    ? Math.max(...living.map(n => (state.record?.[n] || []).length)) : 0;
+  const ramp = Math.max(0, Math.min(1, aired / 4));
+
+  const next = { ...state.star };
+  for (const n of Object.keys(state.starBase)) {
+    const base = state.starBase[n];
+    if (!living.includes(n)) { next[n] = base; continue; }
+    const z = Math.max(-1, Math.min(1, (((state.popularity || {})[n] || 0) - mean) / sd));
+    // 1.2 is a touch over one standard deviation of star itself (the middle
+    // eighty percent of queens sit inside 4.4-6.5), so the audience can change
+    // who the favourite is without erasing what she was cast as.
+    const v = base + z * 1.2 * ramp;
+    next[n] = Math.round(Math.max(0, Math.min(10, v)) * 100) / 100;
+  }
+  state.star = next;
+  return next;
 }

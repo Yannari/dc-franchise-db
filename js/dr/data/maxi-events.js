@@ -244,6 +244,17 @@ export const MAXI_EVENTS = [
     ],
   }),
 
+  e({
+    id: 'handed-the-hardest', from: 'makeover', cast: 'pair',
+    note: '{a} won the mini and gave {b} the hardest partner in the room, in front of everybody.',
+    lines: [],
+  }),
+  e({
+    id: 'paired-them-well', from: 'makeover', cast: 'pair',
+    note: '{a} had the room to hand out and gave {b} somebody she can actually work with.',
+    lines: [],
+  }),
+
   // ══ THE VERSE ════════════════════════════════════════════════════════
   e({
     id: 'booth-rescue', from: 'rumix', cast: 'solo',

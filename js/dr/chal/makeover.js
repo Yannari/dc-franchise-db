@@ -27,7 +27,7 @@ import { pickOrder, contestFor } from '../assign.js';
 import { prepareRoom, walkthrough } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, riskFor } from '../perform.js';
-import { evt } from '../rules.js';
+import { canScheme, evt } from '../rules.js';
 import { alumniPool } from '../../alumni.js';
 import { SHOWS, DRAG_FORMAT } from '../../shows.js';
 import { drawPartners, GUEST_POOLS } from '../data/partners.js';
@@ -193,22 +193,87 @@ export function assign(ctx) {
   const events = [];
   let picks;
 
+  /* ── SOMEBODY PAIRS THE ROOM. NOBODY FIGHTS OVER IT. ──
+     This ran a CONTEST: every queen ranked the partners and the draft handed
+     them out in pick order. Two things were wrong with it, one mechanical and
+     one about the show.
+
+     THE MECHANICAL ONE. A queen's ranking was `ease + bond * 0.5 + rng()`, and
+     `ease` spans one to ten while the jitter spans one — so every queen in the
+     room ranked the partners in almost exactly the same order, wanted the same
+     man, and lost him. The board read "7 of 8 lost a pick" and seven cards in
+     a row said "not her first choice", which is not a draft, it is a queue.
+     It is the same defect the Rumix verse order had and it is worth naming:
+     a preference built out of a shared number is not a preference.
+
+     AND THE ONE ABOUT THE SHOW. There is no scramble for a makeover partner.
+     Somebody hands them out — the mini winner, as her prize — and that is a
+     better mechanic than the contest ever was, because it gives one queen real
+     power over everybody's week and makes what she does with it the story.
+     She can keep the best for herself. She can hand her rival the hardest man
+     in the room, in front of everybody, and be smiling while she does it.
+
+     WITH NO MINI WINNER the room simply draws. Not a contest: nobody chose,
+     so nobody lost, and no card should say she missed out on anything. */
   if (CONTESTED.has(poolKey) && pool.length) {
-    const choices = Object.fromEntries(order.map(n => {
-      // A returning queen she is close to is worth reaching for, above and
-      // beyond how well the partner takes to drag.
-      const scored = pool.map(p => ({
-        p, s: p.ease + (p.isQueen ? bond(n, p.name) * 0.5 : 0) + rng(),
-      }));
-      return [n, scored.sort((a, b) => b.s - a.s).map(x => x.p.name)];
-    }));
-    const contest = contestFor({
-      order, choices, players, rng, bond,
-      // No preparation penalty here — she meets him this morning either way; his ease already scores it.
-      penaltyScale: 0,
-    });
-    picks = contest.picks;
-    events.push(...contest.events);
+    const bag = [...pool];
+    /** Take the partner this test picks out, or the first one left. */
+    const take = (fn) => {
+      const i = bag.findIndex(fn);
+      return bag.splice(i < 0 ? 0 : i, 1)[0];
+    };
+    const easiest = () => take(p => p.ease === Math.max(...bag.map(x => x.ease)));
+    const hardest = () => take(p => p.ease === Math.min(...bag.map(x => x.ease)));
+    const assigner = miniWinner && living.includes(miniWinner) ? miniWinner : null;
+    picks = {};
+
+    /* HER OWN FIRST, and she does not pretend otherwise. The best partner in
+       the room by how well he takes to it — that is what winning the mini
+       bought her. */
+    if (assigner) {
+      const mine = easiest();
+      picks[assigner] = { name: assigner, choice: mine.name, partner: mine,
+        assignedBy: null, chosen: true, penalty: 0, lostTo: null };
+    }
+
+    /* THEN EVERYBODY ELSE. A queen the archetype rules let scheme gives her
+       worst enemy the hardest man left and keeps the room watching; a queen
+       who cannot scheme pairs people as well as she can, which is its own kind
+       of power and reads as one. Neutral hands are neutral: she works down the
+       room and does not think about it much.
+       ONE POINTED PAIRING A NIGHT. A queen who dumps on everybody is a
+       cartoon — the same rule the werk room and the roast both keep. */
+    const rest = order.filter(n => n !== assigner);
+    /* ONE OF EACH A NIGHT. `pointed` used to gate the generous pairing too, so
+       a warm assigner handed out perfect partners until she happened to have
+       an enemy — two and three of them a season, which turns a favour into a
+       policy. They are separate flags: one pointed pairing and one kindness,
+       and everybody else is just the next name on the list. */
+    let pointed = false;
+    let generous = false;
+    for (const n of rest) {
+      if (!bag.length) break;
+      let partner;
+      if (assigner && !pointed && canScheme(players[assigner]) && bond(assigner, n) <= -3) {
+        partner = hardest();
+        pointed = true;
+        events.push(evt('handed-the-hardest', {
+          players: [assigner, n], bond: [[assigner, n, -2]], pop: { [assigner]: -2 },
+          data: { partner: partner.name, ease: partner.ease },
+        }));
+      } else if (assigner && bond(assigner, n) >= 4 && !generous) {
+        partner = easiest();
+        generous = true;
+        events.push(evt('paired-them-well', {
+          players: [assigner, n], bond: [[assigner, n, 1]], pop: { [assigner]: 1 },
+          data: { partner: partner.name },
+        }));
+      } else {
+        partner = bag.splice(Math.floor(rng() * bag.length), 1)[0];
+      }
+      picks[n] = { name: n, choice: partner.name, partner,
+        assignedBy: assigner, chosen: false, penalty: 0, lostTo: null };
+    }
   } else {
     // Nobody competes for their own family. Each queen draws one, and the same
     // relationship can turn up twice, because it can.

@@ -630,6 +630,12 @@ const CHAL_CSS = `
   border:1px solid rgba(255,255,255,.22);box-shadow:0 6px 14px -8px rgba(0,0,0,.9)}
 .dr-mk-note{display:block;font-size:10px;line-height:1.35;color:var(--muted,#8b949e);
   max-width:56ch;margin-top:2px}
+
+/* The guest's face on the draft board, inline with what she took. */
+.dr-seat-face{width:22px;height:22px;border-radius:5px;object-fit:cover;
+  vertical-align:-6px;margin-right:6px;border:1px solid rgba(255,255,255,.2)}
+.dr-seat-by{display:block;font-size:9.5px;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--muted,#8b949e);font-style:normal;text-decoration:none;margin-top:2px}
 `;
 
 /* ── the pieces ─────────────────────────────────────────────────── */
@@ -1872,6 +1878,9 @@ export function rpBuildChoice(row) {
   if (!picks.length && !scenes.length) return '';
 
   const contested = a.contested !== false && picks.some(([, p]) => p?.lostTo);
+  // The queen who handed the room out, when somebody did — she is on every
+  // other pick as `assignedBy`, and on her own as the one who chose.
+  const paired = (picks.find(([, p]) => p?.assignedBy) || [])[1]?.assignedBy || null;
   const order = (a.order || []).filter(n => a.picks?.[n]);
 
   /* WHO ELSE IS DOING IT. On a night with no draft two queens can land on the
@@ -1893,7 +1902,11 @@ export function rpBuildChoice(row) {
       ${_portrait(who, ep, { size: 44 })}
       <div class="dr-seat-b">
         <b class="dr-disp">${esc(who)}</b>
-        <span class="dr-seat-took">${took ? esc(took) : 'no pick'}</span>
+        <span class="dr-seat-took">${p?.partner?.portrait
+    ? `<img class="dr-seat-face" src="${esc(p.partner.portrait)}" alt="" loading="lazy"
+        onerror="this.style.display='none'">` : ''}${took ? esc(took) : 'no pick'}</span>
+        ${p?.assignedBy ? `<u class="dr-seat-by">paired by ${esc(p.assignedBy)}</u>` : ''}
+        ${p?.chosen && p?.partner ? '<u class="dr-seat-by">won the mini · picked first</u>' : ''}
         ${p?.lostTo ? `<u>lost hers to ${esc(p.lostTo)}</u>` : ''}
         ${shared.length ? `<s>also ${esc(shared.join(', '))}</s>` : ''}
       </div></div>`;
@@ -1906,7 +1919,13 @@ export function rpBuildChoice(row) {
           <b class="dr-disp">${contested ? 'The board' : 'The line-up'}</b>
           <span>${contested
     ? `${picks.filter(([, p]) => p?.lostTo).length} of ${picks.length} lost a pick`
-    : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`}</span>
+    : paired
+      /* A PAIRED ROOM IS NOT A DRAFT AND ITS BOARD SHOULD NOT COUNT LOSSES.
+         "7 of 8 lost a pick" was the headline on a makeover for as long as
+         the partners were contested; the room is handed out by the mini
+         winner now, so the number worth printing is who did the handing. */
+      ? `paired by ${esc(paired)}`
+      : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`}</span>
         </div>
         <div class="dr-seats">${seated.map(([who, p], i) => seat(who, p, i)).join('')}</div>
       </div>`
@@ -2157,80 +2176,174 @@ const ambientFor = id => `<div class="dr-set dr-set-${id}">${skinFor(id).props}<
    confessional reads. The format is the show, not a summary of it. */
 
 const SG_CSS = `
-.sg{position:relative;padding:20px 14px 28px;border-radius:6px;overflow:hidden;
-  background:linear-gradient(180deg,#04121c 0%,#081828 40%,#04121c 100%)}
-.sg::before{content:"";position:absolute;inset:0;opacity:.3;pointer-events:none;
+/* ═══════════════════════════════════════════════════
+   THE SET — a game show stage, alive with light
+   ═══════════════════════════════════════════════════ */
+@keyframes sg-spot{0%,100%{opacity:.45}50%{opacity:.7}}
+@keyframes sg-scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes sg-pulse{0%,100%{box-shadow:0 0 8px rgba(255,210,63,.3)}50%{box-shadow:0 0 22px rgba(255,210,63,.6)}}
+@keyframes sg-glow{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes sg-kill-flash{0%{background:rgba(59,224,138,.25)}100%{background:transparent}}
+@keyframes sg-bomb-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+@keyframes sg-meter-fill{0%{width:0}100%{width:var(--fill)}}
+
+.sg{position:relative;padding:24px 14px 32px;border-radius:8px;overflow:hidden;
+  background:linear-gradient(180deg,#020a14 0%,#061224 30%,#0a1a30 60%,#020a14 100%)}
+/* TRIPLE-LAYER STAGE LIGHT — two coloured spots + a centre wash, all breathing */
+.sg::before{content:"";position:absolute;inset:0;pointer-events:none;
+  animation:sg-spot 4s ease-in-out infinite;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 20%,rgba(56,189,248,.35),transparent 70%),
-    radial-gradient(ellipse 60% 40% at 30% 80%,rgba(255,210,63,.15),transparent),
-    radial-gradient(ellipse 60% 40% at 70% 80%,rgba(255,210,63,.15),transparent)}
+    radial-gradient(ellipse 45% 55% at 25% 15%,rgba(255,210,63,.28),transparent 65%),
+    radial-gradient(ellipse 45% 55% at 75% 15%,rgba(56,189,248,.28),transparent 65%),
+    radial-gradient(ellipse 90% 40% at 50% 0%,rgba(255,255,255,.06),transparent 60%)}
+/* SCANLINES — the taping monitor look */
+.sg::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.06;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(255,255,255,.5) 2px 3px);
+  animation:sg-scan 8s linear infinite}
 
-.sg-desk{display:flex;gap:10px;align-items:center;justify-content:center;
-  padding:14px 16px;margin:0 auto 6px;max-width:520px;
-  border-bottom:2px solid rgba(255,210,63,.3);position:relative}
-.sg-desk::after{content:"";position:absolute;bottom:-2px;left:10%;right:10%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(56,189,248,.5),transparent)}
+/* ── THE PODIUM ROW — glowing desk edge ── */
+.sg-podium{position:absolute;bottom:0;left:0;right:0;height:42%;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,210,63,.1) 0 58px,transparent 58px 100px);
+  border-top:2px solid rgba(255,210,63,.35);
+  box-shadow:0 -12px 40px rgba(255,210,63,.08)}
+.sg-podium::after{content:"";position:absolute;top:-1px;left:5%;right:5%;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(56,189,248,.6),rgba(255,210,63,.6),transparent);
+  animation:sg-glow 3s ease-in-out infinite}
 
-.sg-host{display:flex;flex-direction:column;align-items:center;gap:4px}
-.sg-host-name{font-size:11px;font-weight:700;color:#FFD23F;letter-spacing:.5px;text-transform:uppercase}
-.sg-guest{display:flex;flex-direction:column;align-items:center;gap:3px}
-.sg-guest-name{font-size:10px;color:rgba(244,239,228,.7)}
+/* ── HOST DESK — the centre panel ── */
+.sg-desk{display:flex;gap:14px;align-items:center;justify-content:center;
+  padding:18px 20px;margin:0 auto 10px;max-width:560px;position:relative;z-index:1;
+  background:linear-gradient(180deg,rgba(255,210,63,.06),transparent 70%);
+  border:1px solid rgba(255,210,63,.15);border-radius:10px;
+  animation:sg-pulse 5s ease-in-out infinite}
+.sg-desk::before{content:"SNATCH GAME";position:absolute;top:-10px;left:50%;
+  transform:translateX(-50%);font-size:9px;font-weight:800;letter-spacing:2.5px;
+  color:#FFD23F;background:#020a14;padding:2px 12px;border:1px solid rgba(255,210,63,.3);
+  border-radius:3px;text-transform:uppercase}
 
-.sg-round{margin:18px 0 6px;position:relative}
-.sg-round-hdr{display:flex;align-items:center;gap:10px;padding:8px 14px;
-  background:linear-gradient(90deg,rgba(255,210,63,.12),transparent 80%);
-  border-left:3px solid #FFD23F;border-radius:0 6px 6px 0;margin-bottom:10px}
-.sg-round-num{font-size:11px;font-weight:700;color:#FFD23F;text-transform:uppercase;white-space:nowrap}
-.sg-round-q{font-size:13px;font-style:italic;color:rgba(244,239,228,.85);flex:1}
+.sg-host{display:flex;flex-direction:column;align-items:center;gap:5px}
+.sg-host-name{font-size:12px;font-weight:800;color:#FFD23F;letter-spacing:1px;text-transform:uppercase;
+  text-shadow:0 0 8px rgba(255,210,63,.4)}
+.sg-guest{display:flex;flex-direction:column;align-items:center;gap:4px}
+.sg-guest-name{font-size:10px;color:rgba(244,239,228,.7);font-weight:600}
+.sg-divider{width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(255,210,63,.3),transparent)}
 
-.sg-answer{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;margin:4px 0;
-  border-radius:6px;position:relative;
-  background:linear-gradient(135deg,rgba(255,255,255,.04),transparent)}
-.sg-answer+.sg-answer{margin-top:6px}
-.sg-answer-body{flex:1;min-width:0}
-.sg-answer-char{font-size:11px;font-weight:600;color:#38bdf8;margin-bottom:2px}
-.sg-answer-text{font-size:12.5px;color:rgba(244,239,228,.9);line-height:1.4}
-.sg-answer-host{font-size:11.5px;color:#FFD23F;margin-top:3px;font-style:italic}
+/* ── QUESTION CARD — the fill-in-the-blank reveal ── */
+.sg-round{margin:20px 0 8px;position:relative}
+.sg-round-hdr{position:relative;padding:12px 18px;margin-bottom:14px;
+  background:linear-gradient(135deg,rgba(255,210,63,.1),rgba(56,189,248,.05) 80%);
+  border:1px solid rgba(255,210,63,.2);border-radius:8px;overflow:hidden}
+.sg-round-hdr::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;
+  background:linear-gradient(180deg,#FFD23F,#38bdf8)}
+.sg-round-hdr::after{content:"";position:absolute;top:0;right:0;bottom:0;width:30%;
+  background:linear-gradient(90deg,transparent,rgba(255,210,63,.04));pointer-events:none}
+.sg-round-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.sg-round-num{font-size:10px;font-weight:800;color:#020a14;letter-spacing:1px;
+  text-transform:uppercase;background:#FFD23F;padding:2px 8px;border-radius:3px}
+.sg-round-q{font-size:14px;font-weight:600;color:rgba(244,239,228,.95);font-style:italic;
+  line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.3)}
 
-.sg-rx{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;
-  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
-.sg-rx-kill{background:rgba(59,224,138,.18);color:#3BE08A}
-.sg-rx-laugh{background:rgba(56,189,248,.15);color:#38bdf8}
-.sg-rx-silence{background:rgba(255,200,61,.12);color:#FFC83D}
-.sg-rx-bomb{background:rgba(255,41,75,.15);color:#FF294B}
+/* ── ANSWER CARD — the podium reveal, not a paragraph ── */
+.sg-answer{position:relative;margin:8px 0;padding:12px 14px;border-radius:8px;overflow:hidden;
+  background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.08);transition:border-color .3s}
+.sg-answer.sg-a-kill{border-color:rgba(59,224,138,.35);animation:sg-kill-flash .6s ease-out}
+.sg-answer.sg-a-bomb{border-color:rgba(255,41,75,.35);animation:sg-bomb-shake .4s ease-out}
+.sg-answer.sg-a-laugh{border-color:rgba(56,189,248,.2)}
 
-.sg-rx-kill::before{content:"\\25B2";margin-right:2px}
-.sg-rx-laugh::before{content:"\\25CF";margin-right:2px;font-size:7px}
-.sg-rx-silence::before{content:"\\2014"}
-.sg-rx-bomb::before{content:"\\25BC";margin-right:2px}
+.sg-answer-row{display:flex;gap:10px;align-items:center}
+.sg-answer-id{flex:1;min-width:0}
+.sg-answer-name{font-size:13px;font-weight:700;color:rgba(244,239,228,.95)}
+.sg-answer-as{font-size:11px;font-weight:600;color:#38bdf8;display:block;margin-top:1px}
 
-.sg-confessional{margin:6px 14px;padding:8px 12px;border-left:2px solid rgba(255,210,63,.25);
-  font-size:11.5px;color:rgba(244,239,228,.65);font-style:italic;
-  background:linear-gradient(90deg,rgba(255,210,63,.04),transparent 60%)}
+/* THE ANSWER — what she actually said, short and in character */
+.sg-answer-quote{margin:8px 0 6px;padding:8px 12px;position:relative;
+  font-size:13px;color:rgba(244,239,228,.92);line-height:1.4;font-style:italic;
+  background:linear-gradient(90deg,rgba(255,210,63,.04),transparent 60%);
+  border-left:3px solid rgba(255,210,63,.25);border-radius:0 4px 4px 0}
+.sg-answer-quote::before{content:"\\201C";position:absolute;top:-4px;left:4px;
+  font-size:24px;color:rgba(255,210,63,.3);font-style:normal;line-height:1}
 
-.sg-double{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:8px 0;
-  border-radius:6px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2)}
-.sg-double-label{font-size:11px;font-weight:700;color:#38bdf8;text-transform:uppercase}
-.sg-double-text{font-size:12px;color:rgba(244,239,228,.8)}
+/* ── THE LAUGH-O-METER ── */
+.sg-meter{display:flex;align-items:center;gap:8px;margin-top:6px}
+.sg-meter-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  min-width:36px;text-align:right}
+.sg-meter-label.sg-ml-l{color:rgba(255,41,75,.7)}
+.sg-meter-label.sg-ml-r{color:rgba(59,224,138,.7);text-align:left}
+.sg-meter-track{flex:1;height:10px;border-radius:5px;position:relative;overflow:hidden;
+  background:linear-gradient(90deg,rgba(255,41,75,.12),rgba(255,200,61,.08) 50%,rgba(59,224,138,.12))}
+.sg-meter-fill{position:absolute;top:0;left:0;height:100%;border-radius:5px;
+  animation:sg-meter-fill .8s ease-out forwards;width:0}
+.sg-meter-fill.sg-mf-kill{background:linear-gradient(90deg,#38bdf8,#3BE08A);
+  box-shadow:0 0 10px rgba(59,224,138,.4)}
+.sg-meter-fill.sg-mf-laugh{background:linear-gradient(90deg,#FFC83D,#38bdf8);
+  box-shadow:0 0 6px rgba(56,189,248,.3)}
+.sg-meter-fill.sg-mf-silence{background:linear-gradient(90deg,#FF8C42,#FFC83D)}
+.sg-meter-fill.sg-mf-bomb{background:linear-gradient(90deg,#FF294B,#FF6B35);
+  box-shadow:0 0 8px rgba(255,41,75,.3)}
+.sg-meter-pip{position:absolute;top:-2px;height:14px;width:3px;border-radius:2px;
+  background:#fff;box-shadow:0 0 6px rgba(255,255,255,.5);
+  transition:left .5s ease-out}
 
-.sg-dying{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:8px 0;
-  border-radius:6px;background:rgba(255,41,75,.08);border:1px solid rgba(255,41,75,.2)}
-.sg-dying-label{font-size:11px;font-weight:700;color:#FF294B;text-transform:uppercase}
-.sg-dying-text{font-size:12px;color:rgba(244,239,228,.8)}
+/* HOST ENGAGEMENT — a beat in the round */
+.sg-host-beat{margin:4px 0 2px;padding:6px 10px;font-size:11.5px;font-style:italic;
+  color:#FFD23F;border-radius:4px;
+  background:linear-gradient(90deg,rgba(255,210,63,.06),transparent 70%)}
+.sg-host-beat.sg-hb-fail{color:rgba(255,200,61,.55)}
 
-.sg-scoreboard{max-width:480px;margin:14px auto 0}
-.sg-sb-row{display:flex;align-items:center;gap:8px;padding:5px 10px;
-  border-bottom:1px solid rgba(255,255,255,.06)}
-.sg-sb-rank{width:20px;font-size:11px;font-weight:700;color:rgba(244,239,228,.5);text-align:center}
-.sg-sb-name{flex:1;font-size:12px;color:rgba(244,239,228,.9)}
-.sg-sb-char{font-size:10px;color:#38bdf8}
-.sg-sb-score{font-size:13px;font-weight:700;min-width:36px;text-align:right}
-.sg-sb-score.sg-hot{color:#3BE08A}
-.sg-sb-score.sg-cold{color:#FF294B}
+/* ── CONFESSIONAL — the talking-head cut ── */
+.sg-confessional{margin:8px 16px;padding:10px 14px;position:relative;
+  font-size:12px;color:rgba(244,239,228,.7);font-style:italic;line-height:1.4;
+  background:linear-gradient(135deg,rgba(255,210,63,.04),transparent 50%);
+  border:1px solid rgba(255,210,63,.1);border-radius:6px}
+.sg-confessional::before{content:"CONFESSIONAL";position:absolute;top:-7px;left:12px;
+  font-size:8px;font-weight:800;letter-spacing:1.5px;color:rgba(255,210,63,.5);
+  background:#020a14;padding:0 6px;font-style:normal}
+
+/* ── DOUBLE ACT / DYING — event callouts ── */
+.sg-double{display:flex;align-items:center;gap:10px;padding:12px 16px;margin:10px 0;
+  border-radius:8px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(56,189,248,.08),transparent 60%);
+  border:1px solid rgba(56,189,248,.2)}
+.sg-double::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:#38bdf8}
+.sg-double-badge{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  color:#020a14;background:#38bdf8;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.sg-double-text{font-size:12px;color:rgba(244,239,228,.85);flex:1}
+
+.sg-dying{display:flex;align-items:center;gap:10px;padding:12px 16px;margin:10px 0;
+  border-radius:8px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(255,41,75,.08),transparent 60%);
+  border:1px solid rgba(255,41,75,.2)}
+.sg-dying::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:#FF294B}
+.sg-dying-badge{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  color:#020a14;background:#FF294B;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.sg-dying-text{font-size:12px;color:rgba(244,239,228,.8);flex:1}
+
+/* ── SCOREBOARD — final tally ── */
+.sg-scoreboard{max-width:520px;margin:18px auto 0;padding:14px;position:relative;
+  background:linear-gradient(180deg,rgba(255,210,63,.04),transparent 40%);
+  border:1px solid rgba(255,210,63,.12);border-radius:8px}
+.sg-scoreboard::before{content:"FINAL STANDINGS";position:absolute;top:-8px;left:50%;
+  transform:translateX(-50%);font-size:9px;font-weight:800;letter-spacing:2px;
+  color:#FFD23F;background:#020a14;padding:2px 10px;border:1px solid rgba(255,210,63,.2);
+  border-radius:3px}
+.sg-sb-row{display:flex;align-items:center;gap:10px;padding:7px 10px;
+  border-bottom:1px solid rgba(255,255,255,.05);transition:background .2s}
+.sg-sb-row:first-child{background:rgba(59,224,138,.06);border-radius:4px 4px 0 0}
+.sg-sb-row:last-child{border-bottom:none}
+.sg-sb-rank{width:22px;font-size:12px;font-weight:800;text-align:center}
+.sg-sb-row:first-child .sg-sb-rank{color:#3BE08A}
+.sg-sb-row:nth-last-child(-n+2) .sg-sb-rank{color:#FF294B}
+.sg-sb-name{flex:1;font-size:12.5px;font-weight:600;color:rgba(244,239,228,.9)}
+.sg-sb-char{font-size:10px;color:#38bdf8;font-weight:400}
+.sg-sb-meter{width:80px;height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.sg-sb-meter i{display:block;height:100%;border-radius:4px;
+  background:linear-gradient(90deg,#FF294B,#FFC83D 40%,#38bdf8 70%,#3BE08A)}
+.sg-sb-score{font-size:14px;font-weight:800;min-width:38px;text-align:right}
+.sg-sb-score.sg-hot{color:#3BE08A;text-shadow:0 0 6px rgba(59,224,138,.3)}
+.sg-sb-score.sg-cold{color:#FF294B;text-shadow:0 0 6px rgba(255,41,75,.3)}
 .sg-sb-score.sg-mid{color:#FFC83D}
-.sg-sb-bar{width:60px;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
-.sg-sb-bar i{display:block;height:100%;border-radius:3px;
-  background:linear-gradient(90deg,#FFD23F,#38bdf8)}
 `;
 
 const SG_REACTION_LABEL = {

@@ -59,7 +59,9 @@ describe('the event pool', () => {
       // and the social layer both of them shipped without
       'workshopped', 'read-her-verse', 'upstaged-her', 'covered-for-her',
       // the rehearsal room, which both of them share
-      'picked-it-up', 'cannot-count'];
+      'picked-it-up', 'cannot-count',
+      // and the mini winner handing out the makeover partners
+      'handed-the-hardest', 'paired-them-well'];
     const missing = FIRED.filter(id => !MAXI_EVENT_IDS.includes(id));
     expect(missing, `these fire in the engine and have no prose: ${missing.join(', ')}`).toEqual([]);
   });

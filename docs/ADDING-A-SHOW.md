@@ -661,6 +661,10 @@ The existing ones that will already catch you:
   cannot freeze its past refuses to re-decide its future. Carries a control arm
   (the same pin with the re-book removed, which must NOT get the challenge) and
   a source-order assertion, for the reasons in §11.5 J
+- **Every ordered thing on a screen, against its chance line.** Take the first
+  item of any list, rail or call order and ask how often it is the outcome;
+  compare to `1 / n`. A drag critique order sat at 100% for the life of the
+  feature — see §11.5 P
 
 **The vocabulary guard, added 2026-08-12** — the one this section used to say
 was missing:
@@ -1075,6 +1079,48 @@ read `exits[]` so the show itself never tripped. The franchise layer does —
 was still competing. **A returning-player mechanic is a state-cleanup task in
 every module that keeps its own "who is out" list**, not just in the one that
 sends her back.
+
+### P. A spoiler that is not in the future, it is in the ORDER of the present
+
+Every screen guard in this document is about not showing what has not
+happened yet. `_tvState` gates a reveal so a sidebar cannot run ahead of the
+click; §11.5 B is a screen showing NOW instead of THEN. Both are about time.
+
+This one passes all of that and gives the whole night away anyway.
+
+The drag critiques screen lists the queens in the order the panel critiques
+them. That order came straight from the result:
+
+```js
+const onStage = [...(call.win || []), ...(call.high || []),
+  ...(call.low || []), ...(call.atRisk || []), ...(call.bottom || [])];
+```
+
+Winner first, bottom last, every week. So the first card on the screen was
+the queen who wins, and the last was the queen going home — **measured at 240
+of 240 episodes** — and the viewer knew both before the host had said a word.
+
+The sidebar beside it was correctly gated: it never showed an un-critiqued
+queen, exactly as the rule asks. It ranked the ones it had, and its top slot
+was the winner 94% of the time, 99% within the top two.
+
+**The first fix was the wrong one and it is the instructive part.** Hiding the
+rail's numbers until the last critique landed made the rail honest and the
+screen no less spoiled, because the leak was never the labels. Removing the
+ranking entirely still left the answer on screen, because the CRITIQUE ORDER
+itself was the answer. Only shuffling that order fixed it: first critiqued is
+now the winner 18% of the time against a 17% chance line.
+
+**The rule.** Anything ordered — a list, a rail, a sequence of cards, the
+order a room is called in — is carrying information whether or not anybody
+meant it to. Ask of every ordered thing on a screen: *if the viewer read only
+the order and none of the words, what would they know?* A gate on WHEN
+something appears does not answer that question, and this codebase's
+spoiler-free switch does not either.
+
+**The measurement.** Take the first item of the ordered thing and ask how
+often it is the outcome. Compare it to `1 / n`. Do the same for the last item.
+Two lines, and it would have caught this the day the screen shipped.
 
 ### What a third show inherits from this work
 

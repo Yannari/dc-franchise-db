@@ -253,12 +253,12 @@ function _playWholeSeason() {
      so if those contain the checkpoint's accumulated state, ep 1 of the rebuild
      reads ep 3's bonds and produces a different elimination order.
 
-     The fix: on the FIRST play, snapshot the bond state BEFORE the season runs
-     (this is the state initGameState built — authored bonds, KIN_DEFAULT,
-     tribe bonus, alliance boost, hero-villain rivalry, franchise meta, and
-     life carryover). On a rebuild, restore that snapshot so the bond reader
-     returns the same values it did during the original first play. After the
-     rebuild, restore the checkpoint's live state. */
+     The fix: initGameState saves the COMPLETE initial bond state as
+     gs._drInitBonds and gs._drInitLean (authored bonds, KIN_DEFAULT, tribe
+     bonus, alliance boost, hero-villain rivalry, franchise meta, and life
+     carryover). On a rebuild, restore that snapshot so the bond reader returns
+     the same values it did during the original first play. After the rebuild,
+     restore the checkpoint's live state. */
   const isRebuild = (gs.episodeHistory || []).length > 0;
   const savedBonds = isRebuild && gs.bonds
     ? JSON.parse(JSON.stringify(gs.bonds)) : null;
@@ -269,11 +269,8 @@ function _playWholeSeason() {
   const savedPerceived = isRebuild && gs.perceivedBonds
     ? JSON.parse(JSON.stringify(gs.perceivedBonds)) : null;
 
-  if (!isRebuild) {
-    gs._drInitBonds = JSON.parse(JSON.stringify(gs.bonds || {}));
-    gs._drInitLean = JSON.parse(JSON.stringify(gs.bondLean || {}));
-  } else {
-    gs.bonds = JSON.parse(JSON.stringify(gs._drInitBonds || {}));
+  if (isRebuild && gs._drInitBonds) {
+    gs.bonds = JSON.parse(JSON.stringify(gs._drInitBonds));
     gs.bondLean = JSON.parse(JSON.stringify(gs._drInitLean || {}));
     gs.perceivedBonds = {};
     gs.popularity = {};

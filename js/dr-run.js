@@ -36,7 +36,7 @@
 // `formatIsRunnable()` reads to decide whether the show can be started at all.
 // Drop the import from js/main.js and the show silently un-ships with every
 // test still green.
-import { gs, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
@@ -148,6 +148,9 @@ export function dragQueueEditable() {
  * the path a reload already takes.
  */
 export function invalidateDragQueue() {
+  // Same repair, same reason: a pin made on an old season did nothing at all,
+  // because `dragQueueEditable` asks whether the past can be frozen.
+  repairOldDragSeason();
   if (!dragQueueEditable()) return false;
   delete gs._drQueue;
   return true;
@@ -185,10 +188,16 @@ export function dragEpisodesAired() {
  */
 export function rerunDragEpisode(epNum) {
   if (!gs) return false;
+  // A season from before the freeze can usually be given one — see
+  // repairOldDragSeason. Tried here rather than at load so it costs nothing
+  // until somebody actually presses the button it unblocks.
+  repairOldDragSeason();
   /* A SEASON THAT CANNOT FREEZE ITS PAST MUST NOT RE-BOOK ITS FUTURE. Played
      before `_drSchedule` existed, a rebuild would replay a different season
      under a history that has already aired. Re-airing is the honest fallback
-     and is exactly what this button did for every drag season until now. */
+     and is exactly what this button did for every drag season until now.
+     Still reached when the repair cannot help: a season with no checkpoint 1,
+     or an episode with no challenge recorded on it. */
   if (!dragScheduleRecorded()) return false;
   const n = Math.max(1, Number(epNum) || 1);
   const prev = gs._drReroll && Number(gs._drReroll.from) === n
@@ -196,6 +205,93 @@ export function rerunDragEpisode(epNum) {
   gs._drReroll = { from: n, nonce: prev + 1 };
   delete gs._drQueue;
   return true;
+}
+
+/**
+ * Make a season played before the freeze existed freezable, in place.
+ *
+ * THE SEASON THIS IS FOR is one started between 09-06 and 09-10: it has
+ * checkpoints, because the drag path has saved one before every episode since
+ * `1bad7648`, and it has neither `_drSchedule` (`1c1ad969`, on main 09-09
+ * 13:34) nor `_drInitBonds` (`d5a39456`, on main 09-10 08:51). Without the
+ * first, `rerunDragEpisode` refuses and ↺ re-airs the identical night and a
+ * pinned challenge is furniture. Without the second, a rebuild replays the
+ * whole season on top of bonds those same calls already wrote.
+ *
+ * Restarting the season is the alternative, and it is not an acceptable one.
+ *
+ * NEITHER VALUE IS INVENTED, and that is what makes this safe to run
+ * unattended:
+ *   - The initial bonds come from checkpoint 1. `_saveEpisodeCheckpoint()`
+ *     runs BEFORE `simulateDragEpisode()`, so `cp_1` is the game state as it
+ *     stood before episode one — which is exactly what initGameState now
+ *     snapshots. It is the real thing, not a recomputation of the seeding.
+ *   - The schedule comes from the episodes themselves. Every aired row records
+ *     the challenge it ran and the twists it carried.
+ *
+ * Returns what it repaired, so a caller can say so rather than healing in
+ * silence.
+ */
+export function repairOldDragSeason() {
+  const done = { bonds: false, schedule: false };
+  if (!gs || !isDragSeason()) return done;
+  const history = Array.isArray(gs.episodeHistory) ? gs.episodeHistory : [];
+  if (!history.length) return done;
+
+  // ── the bond state the season actually started from ──
+  if (!gs._drInitBonds) {
+    const cp1 = gsCheckpoints && gsCheckpoints[1];
+    if (cp1 && cp1.bonds) {
+      gs._drInitBonds = JSON.parse(JSON.stringify(cp1.bonds));
+      gs._drInitLean = JSON.parse(JSON.stringify(cp1.bondLean || {}));
+      done.bonds = true;
+    }
+  }
+
+  // ── what each aired night was booked with ──
+  //
+  // Only the fields an episode RECORDS are pinned. The rest are redrawn from
+  // the season's own per-episode streams off `gs._drSeed`, which is stored and
+  // unchanged — that is the same mechanism the freeze relies on for a season
+  // that recorded its schedule properly.
+  /* ── AND IT IS ALL OR NOTHING ─────────────────────────────────────
+     A schedule without the initial bonds is the worse of the two halves. It
+     satisfies `dragScheduleRecorded()`, so the re-run goes ahead — and then
+     replays the whole season on top of bonds those same calls already wrote,
+     which is §11.5 O exactly. Better to leave the season refusing, which is
+     honest and costs only the button, than to unlock a rebuild that drifts.
+     A season that already had `_drInitBonds` and only wants a schedule is not
+     caught by this: it passes because the field is there. */
+  if (!gs._drInitBonds) return done;
+
+  if (!dragScheduleRecorded()) {
+    const rebuilt = [];
+    for (const row of history) {
+      const d = row && row.dr;
+      const maxiId = d && d.challenge && d.challenge.id;
+      // A row with no challenge on it cannot be pinned, and a partial schedule
+      // is worse than none: `dragScheduleRecorded` would still say no and the
+      // half-written array would be a second thing to explain later.
+      if (!maxiId) return done;
+      rebuilt.push({
+        episode: Number(row.num),
+        maxiId,
+        ...(d.critiqueTwist ? { critiqueTwist: d.critiqueTwist } : {}),
+        ...(d.rateAQueen ? { rateAQueen: true } : {}),
+        ...(d.legacy ? { legacy: true } : {}),
+        /* THE RETURN, AND THE QUEEN IT ACTUALLY SENT BACK. A schedule records
+           that a week brought somebody back and who the AUTHOR asked for, not
+           who walked back on — see §11.5 O. Pinning her by name here is the
+           stronger promise, and the right one: this week has already aired,
+           so the only correct answer is the one the viewer saw. */
+        ...(d.returned && d.returned.name
+          ? { returnee: true, returneeName: d.returned.name } : {}),
+      });
+    }
+    gs._drSchedule = rebuilt;
+    done.schedule = true;
+  }
+  return done;
 }
 
 /** Whether a season-wide drag twist is booked at all. */

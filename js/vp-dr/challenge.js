@@ -2346,13 +2346,6 @@ const SG_CSS = `
 .sg-sb-score.sg-mid{color:#FFC83D}
 `;
 
-const SG_REACTION_LABEL = {
-  kill: 'the panel is on the floor',
-  laugh: 'that lands',
-  silence: 'silence',
-  bomb: 'bombing',
-};
-
 const SG_CONFESSIONALS = {
   kill: [
     '{a} as {c} just ate that whole round and left nothing for the table.',
@@ -2380,23 +2373,72 @@ const SG_CONFESSIONALS = {
 
 const SG_HOST_LINES = {
   worked: [
-    'RuPaul leans in, feeds her a setup, and {a} as {c} takes it and runs.',
-    'RuPaul throws {a} a rope and she swings from it beautifully.',
-    'The host plays along and {a} matches him beat for beat.',
+    'RuPaul leans in, feeds her a setup, and she takes it and runs.',
+    'RuPaul throws her a rope and she swings from it.',
+    'The host plays along and she matches him beat for beat.',
   ],
   failed: [
-    'RuPaul tries to throw {a} a lifeline. She does not catch it.',
-    'The host gives {a} a setup and she stares at him. The panel waits.',
-    'RuPaul feeds {a} a line and {c} has nothing to say back.',
+    'RuPaul tries to throw her a lifeline. She does not catch it.',
+    'The host gives her a setup and she stares at him. The panel waits.',
+    'RuPaul feeds her a line and she has nothing to say back.',
   ],
 };
+
+const SG_ANSWERS = {
+  kill: [
+    'Honey, the answer is ALWAYS me.',
+    'Well, obviously, a sequinned restraining order.',
+    'I did, and the judge threw out the case because I looked that good.',
+    'Darling, I invented that. You are welcome.',
+    'The same thing I do every morning: terrify someone.',
+    'A glass of champagne and a grudge.',
+    'My third husband. He does not know yet.',
+    'Whatever it is, I am charging double.',
+  ],
+  laugh: [
+    'Something expensive, probably.',
+    'I mean... look at me. You already know.',
+    'My publicist told me not to say, so... a felony.',
+    'That depends on who is asking and who is paying.',
+    'Oh, I have STORIES, but not for basic cable.',
+    'Ask my accountant. She cries.',
+  ],
+  silence: [
+    '...yes.',
+    'I... hm. Pass?',
+    'That is a great question. Next question.',
+    'Um. Something... fabulous?',
+    'I wrote something down but I cannot read my own handwriting.',
+    'What she said.',
+  ],
+  bomb: [
+    '...',
+    '*blinks*',
+    'I... um... *nervous laugh*',
+    '*stares into the camera*',
+    '*long pause* ...bananas?',
+    '*opens mouth, closes it, opens it again*',
+  ],
+};
+
+function _sgMeter(score, reaction) {
+  const pct = Math.max(5, Math.min(100, Math.round((score / 12) * 100)));
+  return `<div class="sg-meter">
+    <span class="sg-meter-label sg-ml-l">bomb</span>
+    <div class="sg-meter-track">
+      <div class="sg-meter-fill sg-mf-${reaction}" style="--fill:${pct}%;width:${pct}%"></div>
+      <div class="sg-meter-pip" style="left:${pct}%"></div>
+    </div>
+    <span class="sg-meter-label sg-ml-r">kill</span>
+  </div>`;
+}
 
 function rpBuildSnatchGame(row) {
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
   const perfs = row?.dr?.performances || {};
-  const a = row?.dr?.assignment || {};
-  const order = (a.order || []).filter(n => perfs[n]);
+  const asgn = row?.dr?.assignment || {};
+  const order = (asgn.order || []).filter(n => perfs[n]);
   const running = order.length ? order : Object.keys(perfs);
   if (!ch || !running.length) return '';
 
@@ -2404,10 +2446,20 @@ function rpBuildSnatchGame(row) {
   const rounds = tapingData.rounds || [];
   const hostBeats = tapingData.hostBeats || [];
 
+  const MAXI_STEPS = new Set(['maxi-pre', 'maxi-main']);
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
-    && (sc.step === 'maxi-pre' || sc.step === 'maxi-main')
+    && MAXI_STEPS.has(sc.step)
     && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
   const usedScene = new Set();
+  const sceneFor = name => {
+    const sc = maxiScenes.find(s => {
+      if (usedScene.has(s)) return false;
+      if ((s.data?.players || [])[0] !== name) return false;
+      usedScene.add(s);
+      return true;
+    });
+    return sc?.text || '';
+  };
 
   const pickGuests = () => {
     const nonPerm = JUDGES.filter(j => !j.permanent && j.id !== 'rupaul');
@@ -2419,26 +2471,24 @@ function rpBuildSnatchGame(row) {
   const sfx = 'maxi';
   const steps = [];
   let stepIdx = 0;
+  const rng = _seedRng(ep.num || 0);
 
   steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
     <div class="sg-desk">
       <div class="sg-host">
-        ${_judgePortrait('rupaul', { stage: true, size: 56 })}
+        ${_judgePortrait('rupaul', { stage: true, size: 60 })}
         <span class="sg-host-name">RuPaul</span>
       </div>
+      <div class="sg-divider"></div>
       ${guests.map(g => `<div class="sg-guest">
-        ${_judgePortrait(g.id, { stage: true, size: 42, name: g.name })}
+        ${_judgePortrait(g.id, { stage: true, size: 46, name: g.name })}
         <span class="sg-guest-name">${esc(g.name)}</span>
-      </div>`).join('')}
+      </div>`).join('<div class="sg-divider"></div>')}
     </div>
-    <p class="sg-confessional">Welcome to Snatch Game, where our queens become the celebrities and the celebrities become the punchlines. Joining me on the panel: ${guests.map(g => g.name).join(' and ')}.</p>
+    <div class="sg-confessional">Welcome to Snatch Game, where our queens become the celebrities and the celebrities become the punchlines. Joining me on the panel: ${guests.map(g => g.name).join(' and ')}.</div>
   </div>`);
   stepIdx++;
 
-  const rng = _seedRng(ep.num || 0);
-
-  const doubleActs = (row.dr.scenes || []).filter(sc =>
-    sc.kind === 'maxi:double-act' || (sc.data?.type === 'double-act'));
   const dyingQueens = new Set();
   for (const n of running) {
     if ((perfs[n]?.detail?.flops || 0) >= 3) dyingQueens.add(n);
@@ -2451,34 +2501,38 @@ function rpBuildSnatchGame(row) {
     steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
       <div class="sg-round">
         <div class="sg-round-hdr">
-          <span class="sg-round-num">Round ${rd.round}</span>
+          <div class="sg-round-top">
+            <span class="sg-round-num">Round ${rd.round}</span>
+          </div>
           <span class="sg-round-q">${esc(rd.question || `Question ${rd.round}`)}</span>
         </div>
         ${featured.map(f => {
-    const rxCls = `sg-rx sg-rx-${f.reaction}`;
-    const rxLabel = SG_REACTION_LABEL[f.reaction] || '';
+    const cardCls = f.reaction === 'kill' ? ' sg-a-kill'
+      : f.reaction === 'bomb' ? ' sg-a-bomb'
+        : f.reaction === 'laugh' ? ' sg-a-laugh' : '';
     const hbThis = f.hostBeat
       ? hostBeats.find(h => h.round === rd.round && h.name === f.name) : null;
 
-    const sceneLine = maxiScenes.find(sc => {
-      if (usedScene.has(sc)) return false;
-      if ((sc.data?.players || [])[0] !== f.name) return false;
-      usedScene.add(sc);
-      return true;
-    });
+    const answerPool = SG_ANSWERS[f.reaction] || SG_ANSWERS.silence;
+    const answer = answerPool[Math.floor(rng() * answerPool.length)];
+    const prose = sceneFor(f.name);
 
     const hostLine = hbThis
-      ? _pickLine(hbThis.worked ? SG_HOST_LINES.worked : SG_HOST_LINES.failed, rng, f.name, f.character)
+      ? _pickLine(hbThis.worked ? SG_HOST_LINES.worked : SG_HOST_LINES.failed, rng)
       : '';
 
-    return `<div class="sg-answer">
-            ${_portrait(f.name, ep, { size: 44, station: true })}
-            <div class="sg-answer-body">
-              <div class="sg-answer-char">${esc(f.name)} as ${esc(f.character || '???')}</div>
-              ${sceneLine ? `<div class="sg-answer-text">${esc(sceneLine.text)}</div>` : ''}
-              <span class="${rxCls}">${esc(rxLabel)}</span>
-              ${hostLine ? `<div class="sg-answer-host">${esc(hostLine)}</div>` : ''}
+    return `<div class="sg-answer${cardCls}">
+            <div class="sg-answer-row">
+              ${_portrait(f.name, ep, { size: 48, station: true })}
+              <div class="sg-answer-id">
+                <span class="sg-answer-name">${esc(f.name)}</span>
+                <span class="sg-answer-as">as ${esc(f.character || '???')}</span>
+              </div>
             </div>
+            <div class="sg-answer-quote">${esc(answer)}</div>
+            ${_sgMeter(f.score, f.reaction)}
+            ${hostLine ? `<div class="sg-host-beat${hbThis && !hbThis.worked ? ' sg-hb-fail' : ''}">${esc(hostLine)}</div>` : ''}
+            ${prose ? `<p class="dr-perf-line" style="font-size:11px;margin:4px 0 0;color:rgba(244,239,228,.55)">${esc(prose)}</p>` : ''}
           </div>`;
   }).join('')}
       </div>
@@ -2504,14 +2558,12 @@ function rpBuildSnatchGame(row) {
     if (sc.kind !== 'maxi:double-act' && sc.data?.type !== 'double-act') continue;
     const pls = sc.data?.players || [];
     if (pls.length < 2) continue;
-    const chars = pls.map(n => characterById(a.picks?.[n]?.choice)?.name || '???');
+    const chars = pls.map(n => characterById(asgn.picks?.[n]?.choice)?.name || '???');
     steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
       <div class="sg-double">
-        ${pls.slice(0, 2).map(n => _portrait(n, ep, { size: 36 })).join('')}
-        <div>
-          <span class="sg-double-label">Double Act</span>
-          <span class="sg-double-text">${esc(pls[0])} as ${esc(chars[0])} and ${esc(pls[1])} as ${esc(chars[1])} build a bit together and the whole panel lifts.</span>
-        </div>
+        ${pls.slice(0, 2).map(n => _portrait(n, ep, { size: 38 })).join('')}
+        <span class="sg-double-badge">Double Act</span>
+        <span class="sg-double-text">${esc(pls[0])} as ${esc(chars[0])} and ${esc(pls[1])} as ${esc(chars[1])} build a bit together and the whole panel lifts.</span>
       </div>
     </div>`);
     stepIdx++;
@@ -2519,14 +2571,12 @@ function rpBuildSnatchGame(row) {
 
   for (const n of running) {
     if (!dyingQueens.has(n)) continue;
-    const c = characterById(a.picks?.[n]?.choice)?.name || '???';
+    const c = characterById(asgn.picks?.[n]?.choice)?.name || '???';
     steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
       <div class="sg-dying">
-        ${_portrait(n, ep, { size: 36 })}
-        <div>
-          <span class="sg-dying-label">Dying on the panel</span>
-          <span class="sg-dying-text">${esc(n)} as ${esc(c)} has flatlined. Three rounds of silence and the host has moved on.</span>
-        </div>
+        ${_portrait(n, ep, { size: 38 })}
+        <span class="sg-dying-badge">Dying on the Panel</span>
+        <span class="sg-dying-text">${esc(n)} as ${esc(c)} has flatlined. Three rounds of silence and the host has moved on.</span>
       </div>
     </div>`);
     stepIdx++;
@@ -2542,9 +2592,9 @@ function rpBuildSnatchGame(row) {
     const cls = r.p >= 8 ? 'sg-hot' : r.p <= 4 ? 'sg-cold' : 'sg-mid';
     return `<div class="sg-sb-row">
           <span class="sg-sb-rank">${i + 1}</span>
-          ${_portrait(r.n, ep, { size: 30 })}
+          ${_portrait(r.n, ep, { size: 32 })}
           <span class="sg-sb-name">${esc(r.n)} <span class="sg-sb-char">as ${esc(r.c)}</span></span>
-          <span class="sg-sb-bar"><i style="width:${Math.round((r.p / maxScore) * 100)}%"></i></span>
+          <span class="sg-sb-meter"><i style="width:${Math.round((r.p / maxScore) * 100)}%"></i></span>
           <span class="sg-sb-score ${cls}">${n1(r.p)}</span>
         </div>`;
   }).join('')}
@@ -2573,17 +2623,20 @@ function rpBuildSnatchGame(row) {
     window._drSidebar[sfx] = panels;
   }
 
-  const prose = maxiScenes.filter(sc => !usedScene.has(sc))
-    .map((sc, i) => `<div class="dr-step" id="dr-step-${sfx}-room-${i}">
+  const leftoverScenes = maxiScenes.filter(sc => !usedScene.has(sc))
+    .map((sc, i) => {
+      usedScene.add(sc);
+      return `<div class="dr-step" id="dr-step-${sfx}-room-${i}">
       <div class="dr-panel dr-a-room dr-scene">
         ${(sc.data?.players || []).length
     ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
       .map(n => _portrait(n, ep, { size: 42 })).join('')}</span>` : ''}
         <div class="dr-scene-body">${esc(sc.text)}</div>
-      </div></div>`).join('');
+      </div></div>`;
+    }).join('');
 
   return `<style>${CHAL_CSS}${SG_CSS}</style>${_shell(
-    `<div class="dr-fam dr-chal dr-chal-snatch-game sg">${ambientFor('snatch-game')}${steps.join('')}${prose}</div>`, ep, {
+    `<div class="dr-fam dr-chal dr-chal-snatch-game sg"><div class="sg-podium"></div>${steps.join('')}${leftoverScenes}</div>`, ep, {
       phase: 'stage', title: 'Snatch Game', subtitle: 'and the answer is',
       sidebar: _seedRail(sfx, '<h4 class="dr-disp">The Panel</h4>'),
     })}${_controls(sfx, stepIdx, ep.num)}`;

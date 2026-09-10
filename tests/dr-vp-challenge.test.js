@@ -110,7 +110,7 @@ describe('the maxi', () => {
     expect(html, 'has the game-show desk').toContain('sg-desk');
     expect(html, 'has round headers').toContain('sg-round-hdr');
     expect(html, 'has answer cards').toContain('sg-answer');
-    expect(html, 'has reaction tags').toMatch(/sg-rx-/);
+    expect(html, 'has the laugh-o-meter').toMatch(/sg-meter/);
     expect(html, 'has the scoreboard').toContain('sg-scoreboard');
   });
 

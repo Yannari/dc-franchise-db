@@ -195,7 +195,7 @@ describe('every mission honours the record contract', () => {
       const rec = mission.simulate(ctxFor(), rngFor(12));
       const speech = rec.ceremony.staging + '\n'
         + rec.ceremony.hostBeats.map(b => `${b.text || ''} ${b.action || ''}`).join('\n');
-      for (const name of ['Alan', 'Cummings', 'Alistair', 'Crane', 'Claudia', 'Winterbourne',
+      for (const name of ['Alan', 'Cumming', 'Alistair', 'Crane', 'Claudia', 'Winterbourne',
         'Valeria', 'Sandoval']) {
         expect(speech, `the briefing hardcodes the host name ${name}`).not.toContain(name);
       }

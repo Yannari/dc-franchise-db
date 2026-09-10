@@ -1001,9 +1001,9 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Arisa Cox', label: 'Arisa Cox' },
   ],
   'traitors': [
-    // Alan Cummings is the default host and the show's voice: theatrical,
+    // Alan Cumming is the default host and the show's voice: theatrical,
     // delighted by the cruelty, and never once fooled. The portrait is
-    // assets/avatars/alan-cummings.png, resolved the same way a player's is, so
+    // assets/avatars/alan-cumming.png, resolved the same way a player's is, so
     // a screen never hardcodes a host name -- swapping the host must swap every
     // line the host speaks. See ADDING-A-SHOW.md §14.10 for the bug class.
     //
@@ -1021,7 +1021,7 @@ export const HOSTS_BY_FORMAT = {
     // Valeria used to head this list and now hosts the house; a season saved
     // with `host: 'Valeria'` is repaired by renderHostOptions(), which drops a
     // value the current show does not offer back to the first entry.
-    { value: 'Alan Cummings', label: 'Alan Cummings' },
+    { value: 'Alan Cumming', label: 'Alan Cumming' },
     { value: 'Alistair', label: 'Alistair Crane' },
     { value: 'Claudia',  label: 'Claudia Winterbourne' },
   ],

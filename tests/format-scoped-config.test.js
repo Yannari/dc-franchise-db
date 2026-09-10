@@ -227,7 +227,7 @@ describe('the castle shows only its own controls', () => {
   it('offers the castle its own host, and not the other shows\' hosts', () => {
     const tr = hostOptionsForFormat('traitors');
     expect(tr.length).toBeGreaterThan(0);
-    expect(tr[0]).toEqual({ value: 'Alan Cummings', label: 'Alan Cummings' });
+    expect(tr[0]).toEqual({ value: 'Alan Cumming', label: 'Alan Cumming' });
     expect(tr.map(h => h.value)).not.toContain('Chris');
     expect(tr.map(h => h.value)).not.toContain('Don');
     // Valeria presents the house now, and a host belongs to one show at a time.

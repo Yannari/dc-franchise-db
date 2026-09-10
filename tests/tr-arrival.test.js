@@ -132,7 +132,7 @@ function mixedArrival() {
   const bg = snapshotTraitorsBackgrounds(
     MIXED.map(n => (n === 'Fiore' ? { name: n, backgroundType: 'celebrity' } : { name: n })),
     DB);
-  return { bg, rec: buildArrivalRecord(MIXED, bg, 'Alan Cummings') };
+  return { bg, rec: buildArrivalRecord(MIXED, bg, 'Alan Cumming') };
 }
 
 describe('an introduction quotes the record and invents nothing', () => {

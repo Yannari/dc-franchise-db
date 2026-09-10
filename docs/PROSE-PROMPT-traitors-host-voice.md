@@ -4,7 +4,7 @@ Hand this whole file to the writing model. It is self-contained; the repo is
 needed to make the edits, not to understand the assignment.
 
 **Nothing is broken.** The engine change that prompted this is already
-shipped: the castle's default host is now **Alan Cummings** (was Valeria
+shipped: the castle's default host is now **Alan Cumming** (was Valeria
 Sandoval, who moved to Big Brother). Because every host line in this show is
 written for "the host" and never for a person, the swap needed no prose at all
 — the existing pools play under the new name exactly as they did under the old
@@ -21,7 +21,7 @@ audience and never once fooled — without breaking the four rules below.
 Not style preferences. Each one is enforced by a test, and breaking it ships a
 bug that will be caught late and loudly.
 
-1. **NEVER type a host's name into a pool.** Not "Alan", not "Cummings", not
+1. **NEVER type a host's name into a pool.** Not "Alan", not "Cumming", not
    "Alistair", not "Claudia", not "Valeria". The host is resolved at render
    time from `HOSTS_BY_FORMAT.traitors` (`js/quick-setup.js`) and substituted
    into the literal phrase `the host` / `The host`. A line that names anybody

@@ -12,7 +12,8 @@ codebase reports its own backlog, and this is that report:
 unwrittenChallengeTiers   4   the-division/paired,
                               paired-off/{dumped-on, looked-after, next-name}
 unwrittenCritiqueVoices   4   delivery:blunt/{praise,fault}, delivery:kind/{praise,fault}
-unwrittenMaxiEvents       2   handed-the-hardest, paired-them-well
+unwrittenMaxiEvents       4   handed-the-hardest, paired-them-well,
+                              partner-fought-it, partner-took-to-it
 unwrittenMaxiVoices       0   — written
 ```
 
@@ -21,7 +22,7 @@ The first three lines are §7, all of them the makeover, all of them new. The
 written for have since been filled and their sections below are kept only
 because the house rules and the method still apply.
 
-**10 slots, about 50 lines.** Run the same report when you are done and only
+**12 slots, about 58 lines.** Run the same report when you are done and only
 `unwrittenCritiqueVoices` — §6, which is somebody's design decision — should
 still print.
 
@@ -315,3 +316,28 @@ because the room saw it and did not like it, and `paired-them-well` buys her
 some. Write what makes that true — the pause before the name, who looks at whom,
 what is said in the smallest possible voice afterwards. Do not have `{b}`
 retaliate: the engine has not decided that.
+
+### 7d. `partner-fought-it` and `partner-took-to-it` — `js/dr/data/maxi-events.js`
+
+**2 slots, 4 lines each.** Placeholder: **`{a}` only** — the queen. Her partner
+is not a player and has no `{b}`; refer to him as *her partner* and let the card
+beside the scene supply his name and face.
+
+**What these are.** His grade used to be a flat handicap: a partner graded three
+cost his queen the same fraction of a point every week, silently, with no day
+behind it. He can now have a morning. `partner-fought-it` is weighted by his
+grade and capped at two a night — he will not put the heels on, will not stop
+laughing, will not stand still, will not be touched. `partner-took-to-it` is the
+same roll from the other end: he turns out to love it.
+
+Two things the lines must respect, because the engine has already decided them:
+
+- **It is never her fault and the room knows it.** What the audience scores is
+  how she *took* him — she either talks him round in front of everybody or
+  spends the day losing that argument, and which one happened is decided by her
+  social before the prose runs. Write both outcomes across the four lines;
+  never write her as deserving it.
+- **It costs her the look, not the challenge.** The scene is a morning, not a
+  verdict. She still walks the runway. Do not write her as eliminated, safe,
+  winning, or bottom — that is three steps further down the chain and belongs
+  to the host.

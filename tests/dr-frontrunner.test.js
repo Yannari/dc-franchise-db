@@ -45,7 +45,18 @@ const season = (seed) => {
     addBond: (x, y, d) => { const k = key(x, y); b[k] = Math.max(-10, Math.min(10, (b[k] || 0) + d)); },
   });
 };
-const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
+/* ── SPREAD, NOT CONSECUTIVE ──
+   Twenty seasons seeded 1..20 are not twenty independent seasons. This
+   generator's first draw is linear in its seed, so a consecutive block agrees
+   with itself far more than two real seasons do — the trap documented in
+   §11.5 that once reported a live event as unreachable.
+   It was hiding things here too. The four rules below fire in 13 / 2 / 5 / 2
+   of twenty SPREAD seasons; on 1..20 two of them fire in none at all, so half
+   of an anti-vacuity guard was itself vacuous. `underdog:arrived` is the
+   thinnest at about 8% of seasons, and a knife-edge count over correlated
+   seeds is how a guard comes to fail for a reason that has nothing to do with
+   the code that touched it. */
+const SEEDS = Array.from({ length: 20 }, (_, i) => (i + 1) * 7919 + 13);
 const RUNS = SEEDS.map(season);
 const winsOf = (state, n) => (state.record[n] || []).filter(x => x === 'WIN').length;
 const frontArcs = run => run.rows[run.rows.length - 1].dr.storylines
@@ -148,7 +159,7 @@ describe('every arc is rechecked, not just the front-runner', () => {
     for (const a of allArcs) if (a.flipped) flips[`${a.arc}:${a.flipped}`] = (flips[`${a.arc}:${a.flipped}`] || 0) + 1;
     for (const rule of ['frontrunner:overtaken', 'underdog:arrived',
       'relationship:reconciled', 'relationship:fallen-out']) {
-      expect(flips[rule] || 0, `${rule} never fires in 20 seasons`).toBeGreaterThan(0);
+      expect(flips[rule] || 0, `${rule} never fires in ${SEEDS.length} seasons`).toBeGreaterThan(0);
     }
   });
 

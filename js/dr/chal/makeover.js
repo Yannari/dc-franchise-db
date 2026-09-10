@@ -130,6 +130,54 @@ export function alumniPartners({ cast = [], rng = Math.random, format = null } =
   });
 }
 
+/* ══ HOW HARD A COHORT IS, MEASURED RATHER THAN TYPED ═══════════════════
+   `ease` is how well a partner takes to being put in drag, and it is worth
+   about a point of performance across a cohort's range — two thirds of what
+   the queen's own runway is worth on the same night, measured over 3,200
+   paired queens. So which cohort a season books is a real difficulty dial,
+   and the picker offered eight names with nothing to choose between them.
+
+   The number that matters is the RANGE, not the average. Superfans run 7 to
+   9: booking them means no queen in the room can be handed somebody who
+   sinks her, whatever the average says. Seniors run 3 to 8 and somebody is
+   going to get the three.
+
+   DERIVED FROM THE POOL, so a guest added or re-graded tomorrow moves the
+   label without anybody remembering this function exists — the same rule the
+   crossover show list follows. The two run-time cohorts have no fixed
+   answer: `eliminated` is graded on the runway of whoever has gone home and
+   `alumni` on how bold the other show's players are, and both are unknown
+   until the season is played. */
+export function cohortDifficulty(key) {
+  const pool = key === 'loved-ones' ? PARTNER_POOLS['loved-ones'] : GUEST_POOLS[key];
+  if (!pool || !pool.length) return null;
+  const ease = pool.map(p => p.ease).filter(Number.isFinite);
+  if (!ease.length) return null;
+  const lo = Math.min(...ease);
+  const hi = Math.max(...ease);
+  const mean = ease.reduce((a, b) => a + b, 0) / ease.length;
+  /* THE WORD IS THE AVERAGE AND THE NUMBERS ARE THE WORST DRAW, and it took
+     printing them to see why it has to be that way round. Keyed on the worst
+     draw alone, `loved-ones` came out "brutal" — one person in it is graded 3
+     and another is graded 10, and calling the whole cohort brutal because of
+     its one bad day is the same mistake as an average that hides the event it
+     should show, upside down. The range beside it says who can still be
+     handed somebody impossible.
+     Thresholds are fine here: this is a label on a control, not a score. */
+  const word = mean >= 7.5 ? 'gentle' : mean >= 6 ? 'fair'
+    : mean >= 5 ? 'rough' : 'brutal';
+  return { lo, hi, mean: Math.round(mean * 10) / 10, word, n: pool.length };
+}
+
+/** The picker's label for a cohort: its name, how hard it is, and its range. */
+export function cohortLabel(key) {
+  const name = key.replace(/-/g, ' ');
+  const d = cohortDifficulty(key);
+  // Graded when the season runs, so there is no honest number to print.
+  if (!d) return `${name} · varies`;
+  return `${name} · ${d.word} (${d.lo}–${d.hi})`;
+}
+
 /** Which cohorts a season can book. */
 export const PARTNER_COHORTS = ['superfans', 'veterans', 'seniors', 'athletes',
   'pit-crew', 'loved-ones', 'eliminated', 'alumni'];
@@ -317,15 +365,80 @@ export function prepare(ctx) {
   const events = [...r.events, ...w.events];
   const looks = {};
 
+  /* ── HE COULD LOWER HER SCORE. HE COULD NOT RUIN HER DAY. ──
+     `ease` was a flat handicap and nothing else: a partner graded three cost
+     his queen the same fraction of a point every single time, quietly, with
+     no day behind it. Measured over 3,200 paired queens it is worth about a
+     point across a cohort's range, which is real — two thirds of what her own
+     runway is worth — but a point of arithmetic is not a partner who will not
+     put the heels on.
+     So the grade now buys a CHANCE as well as a constant. He can fight it on
+     the day, and he can turn out to be better than his grade, and both are
+     rolled against the same number from opposite ends. Proportional, never a
+     threshold: a nine can still have a bad morning and a three can still
+     surprise everybody, they are simply much less likely to.
+     TWO A NIGHT, AT MOST. The same rule the pointed pairing and the roast
+     keep — a room where half the partners are a disaster is not a harder
+     challenge, it is a different show. */
+  let trouble = 0;
+  const TROUBLE_CAP = 2;
+
   for (const n of living) {
     const d = dragOf(players[n]);
+    const st = players[n]?.stats || {};
+    const num = k => (Number.isFinite(Number(st[k])) ? Number(st[k]) : 5);
     const partner = pool.find(p => p.name === assignment.picks[n]?.choice)
       || { name: 'a stranger', ease: 5 };
+
+    /* WHAT HE DOES WITH THE DAY. A ten never fights it and a one nearly
+       always does; everybody in between is a coin weighted by his grade. */
+    const resist = Math.max(0, (10 - partner.ease) / 10) * 0.32;
+    const eager = Math.max(0, (partner.ease - 4) / 10) * 0.20;
+    let fought = trouble < TROUBLE_CAP && rng() < resist;
+    const took = !fought && rng() < eager;
+    if (fought) trouble++;
+
+    /* AND WHAT SHE DOES ABOUT IT. Talking somebody round is the whole job on
+       this night, so her social carries the day — proportionally, and never
+       all of it. The best queen in the room still loses something to a man
+       who will not sit still. */
+    const won = fought ? Math.min(0.62, (num('social') / 10) * 0.62) : 0;
+    const swing = fought ? -(1.5 + rng() * 1.1) * (1 - won) : took ? 1.1 + rng() * 0.7 : 0;
+
     // Her own look is how she wears drag. Her partner's is how she MAKES it,
     // on a body that is not hers, helped or hindered by how willing he is.
     const own = d.runway * 0.8 + (w.prep[n] || 0) + noise(rng, 1.5);
-    const theirs = d.design * 0.5 + partner.ease * 0.3 + (w.prep[n] || 0) + noise(rng, 1.8);
+    const theirs = d.design * 0.5 + partner.ease * 0.3 + (w.prep[n] || 0)
+      + swing + noise(rng, 1.8);
+
+    if (fought) {
+      events.push(evt('partner-fought-it', {
+        players: [n],
+        /* THE AUDIENCE DOES NOT SCORE THE PARTNER, IT SCORES HOW SHE TOOK HIM.
+           Nobody is blamed for the man they were handed — what the room reads
+           is the morning after it: a queen who talks him round in front of
+           everybody wins something the panel never sees, and a queen who
+           spends the day losing that argument is watched losing it. Which of
+           the two happened is already decided above, by her social, so this
+           reports it rather than re-rolling it. */
+        pop: { [n]: won > 0.4 ? 1 : -1 },
+        data: { partner: partner.name, ease: partner.ease,
+          cost: Math.round(-swing * 100) / 100, talkedRound: won > 0.4 },
+      }));
+    } else if (took) {
+      events.push(evt('partner-took-to-it', {
+        players: [n], pop: { [n]: 1 },
+        data: { partner: partner.name, ease: partner.ease,
+          gain: Math.round(swing * 100) / 100 },
+      }));
+    }
+
     looks[n] = {
+      // WHAT HAPPENED TO HER, carried to the screen rather than re-derived
+      // there. A card that guessed from the numbers would sometimes disagree
+      // with the event, and the engine is the one that knows.
+      fought, took,
+      cost: Math.round(Math.abs(swing) * 100) / 100,
       own: Math.round(own * 100) / 100,
       partner: Math.round(theirs * 100) / 100,
       partnerName: partner.name,
@@ -340,7 +453,16 @@ export function prepare(ctx) {
       partnerNote: partner.note || null,
       ease: partner.ease,
     };
-    if (own - theirs > 3) {
+    /* ── AND NOT WHEN HE IS THE REASON ──
+       This asks whether her own look is far ahead of her partner's, and it
+       reads that gap as selfishness: "she put her best work on herself and
+       her second-best work on her partner". True, until a partner could fight
+       her. Caught by printing an episode — seed 21, Queen1 — where the card
+       said "he fought it − 1.5" and then accused her of the gap he had just
+       made, and cost her two popularity for it.
+       The morning already has an explanation. A screen does not get to offer
+       a second one that contradicts it. */
+    if (own - theirs > 3 && !fought) {
       events.push(evt('dressed-herself-better', {
         players: [n], pop: { [n]: -2 },
         data: { own: looks[n].own, partner: looks[n].partner },
@@ -374,6 +496,10 @@ export function perform(ctx) {
         partner: L.partnerName,
         partnerPortrait: L.partnerPortrait || null,
         partnerNote: L.partnerNote || null,
+        // How his day went, so the card can say so without prose. An empty
+        // pool renders no scene, and this must be visible before one exists.
+        partnerFought: !!L.fought, partnerTook: !!L.took,
+        partnerCost: L.cost || 0,
         resemblance: Math.round(resemblance * 100) / 100,
         ownLook: L.own, partnerLook: L.partner,
       },

@@ -348,6 +348,47 @@ export const PICK_VOICES = [
         '{a} picks last and gets {d}. {d} is paired with {a} by the only force more impersonal than a draft — nobody else is available. {c} does not wait for queens to feel ready.',
       ]),
     ),
+  kind('opponents',
+    'A QUEEN SHE CHOSE TO FACE. {d} is not a partner — {d} is the queen '
+    + 'standing on the other side of the stage. She picked {d} because she '
+    + 'thinks she can beat her, because she has a grudge, or because {d} is '
+    + 'the weakest lip syncer in the room. The prose is about the call-out '
+    + 'and what it says about both of them.', P(
+      'She called out {d}. The queen she wanted and the queen she got.', [
+        '{a} calls {d}. The room hears it. {d} hears it. {a} picked the queen she wanted to face and the picking is a statement — she thinks she can take {d} and she wants {d} to know it.',
+        '{a} points at {d}. No hesitation. She has been watching {d} lip sync all season and she has decided she can beat her. {d} steps forward. The song has not started and the challenge is already happening.',
+        '{a} names {d} and the room shifts. That is the opponent she wanted. The choice says everything about how {a} sees herself in this bracket — confident enough to pick the match she wants rather than the match she needs.',
+        'First pick. {a} calls out {d}. The call-out is calm and the calm is deliberate. She chose {d} because she has a plan for {d}, and the plan starts with making {d} think about what just happened.',
+        '{a} takes {d}. The pick she came in with. She has been watching {d} perform and she has done the arithmetic and the arithmetic says she wins this one.',
+        '{a} calls {d} and means it. Not the safest pick. Not the weakest queen in the room. The queen she wants standing across from her when the song starts.',
+      ]),
+      tier('settled', '{d} was not who she came for, but {d} is beatable.', [
+        '{a} calls {d}. Not her first choice — somebody else took the opponent she wanted. But {d} is beatable. {a} can see the win from here, even if the road changed.',
+        '{d} is not the queen {a} planned to face. She adjusts. {d} is still somebody she can take in a lip sync, and the bracket does not care about her original plan.',
+        '{a} settles on {d}. The opponent she wanted is already taken. {d} is the next best match — a queen she can out-perform if she brings the right energy.',
+        'Not the call-out she planned. {a} names {d} and the naming is pragmatic. {d} is available. {d} is beatable. The bracket moves fast and {a} is moving with it.',
+        '{a} picks {d}. A recalculation — somebody else took the match she wanted, so she reads the room and picks the next queen she thinks she can beat.',
+        '{d} was not the plan. {a} calls her anyway. A lip sync is a lip sync and {a} has done enough of them to know she can take {d} if she commits.',
+        '{a} calls {d} after her first choice was taken. The adjustment is quick. {d} is a winnable fight and {a} does not have time to mourn the fight she lost.',
+        '{a} settles on {d}. Not the dream match-up. But {a} has watched {d} perform and she has seen enough to believe she wins this.',
+      ]),
+      tier('left-over', 'She is left with {d}, and {d} is not somebody she wanted to face.', [
+        '{a} is left with {d}. Not the opponent she planned for. Not the match-up she wanted. {d} is the queen still standing when every other option was taken.',
+        'The bracket leaves {a} with {d}. She did not choose this fight — the draft chose it for her. {d} is not the weakest lip syncer in the room. {a} knows that.',
+        '{a} gets {d} by elimination. The opponent she wanted is gone. The backup is gone. {d} is what is left, and {d} is not the easy win {a} was looking for.',
+        '{d} is the opponent {a} did not want. She takes the match because the bracket gives her no alternative. The fight she is walking into is harder than the one she planned.',
+        '{a} is paired with {d} and the pairing is not kind. Every easier opponent was claimed. {d} is the queen left standing and {d} can lip sync.',
+        'The draft leaves {a} facing {d}. Not a favourable match. Not the fight she came in wanting. The bracket does not care what she wanted.',
+      ]),
+      tier('picked-last', 'Last pick. {d} is the opponent nobody else would take.', [
+        'Last pick. {a} calls {d} because {d} is the only queen left. The bracket made this match. Neither of them chose it.',
+        '{a} picks last and gets {d}. The opponent the room avoided. The queen nobody wanted to face, for reasons {a} is about to discover on stage.',
+        'Last call. {a} and {d}. A match assembled from the bottom of the bracket by two queens who ran out of choices at the same time.',
+        '{a} picks last. {d} is who is left. The match the bracket built — not a rivalry, not a strategy, just two queens the draft put together because nobody else was available.',
+        'Last pick and {d} is the opponent standing. {a} and {d} face each other with the energy of two queens who arrived at this fight by elimination.',
+        '{a} is last and {d} is last. The bracket paired them. The lip sync will tell the room whether the bracket was kind or cruel.',
+      ]),
+    ),
   kind('products',
     'A PRODUCT she has to sell in thirty seconds. {d} is the thing on the '
     + 'table — absurd, unsellable, and paired with a trap angle everybody '
@@ -667,6 +708,7 @@ export function pickKindFor(challengeId) {
   if (!c || c.assignment === 'none') return null;
   if (challengeId === 'improv') return 'premises';
   if (challengeId === 'commercial') return 'products';
+  if (challengeId === 'lipsync-challenge') return 'opponents';
   if (c.roles === 'characters') return 'characters';
   if (c.roles === 'parts') return 'parts';
   if (GROUP_CHALLENGES.has(c.id)) return 'group-slots';

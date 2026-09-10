@@ -655,15 +655,43 @@ export const CRITIQUE_DELIVERY = [
     + 'not care whether the queen in front of her is about to cry. Law and '
     + 'Michelle live here. The clause is about the DELIVERY, not the fault — '
     + 'the reason line has already said what was wrong.',
-    'Praise from her, which almost never happens and everybody in the room knows it.',
-    'She says it flatly and does not soften it, and the flatness is the worst part.'),
+    'Praise from her, which almost never happens and everybody in the room knows it.', [
+      "— and {j} does not give that note lightly, so the room hears it twice: once for what was said and once for who said it.",
+      "— and praise from {j} is rare enough that the other judges look over, because {j} saying something kind out loud means she could not talk herself out of it.",
+      "— and everybody on that panel knows {j} does not hand out compliments to be polite, so the fact that she said it at all is the compliment.",
+      "— and {j} says it the way she says everything — flat, direct, no warmth in the delivery — but the words are kind, and from her that is the highest volume the praise comes in.",
+      "— and {j} is not smiling when she says it, because {j} does not smile when she praises. She just says it. The room knows what it costs her to mean it.",
+      "— and the fact that {j} found something worth saying out loud is the part {a} will remember, because {j} would rather say nothing than say something she does not mean.",
+    ],
+    'She says it flatly and does not soften it, and the flatness is the worst part.', [
+      "— and {j} delivers it without flinching, without softening, without the pause that would let {a} brace for it.",
+      "— and {j} does not wrap it in a joke or a qualifier. She says it the way you read a receipt: here is what happened, here is what it cost.",
+      "— and the delivery is the blade: {j} says it once, says it flat, and does not check whether {a} is okay, because checking would be softening and {j} does not soften.",
+      "— and {j} is not being cruel — she is being exact, which from this seat on the panel feels the same and is not.",
+      "— and the room goes quiet the way it goes quiet when {j} says something true without caring how it lands, because the landing is not her problem.",
+      "— and {j} says it like somebody reading a diagnosis. No malice. No gentleness. The note and nothing around it.",
+    ]),
   deliver('kind',
     'THE SOFT SEAT. She finds a way in, softens the landing, and means every '
     + 'word of the kind part. Ross lives here. Careful: kind is not weak — a '
     + 'gentle pan from somebody who clearly wanted her to do well can land '
     + 'harder than a blunt one.',
-    'Warm, and warm from her is not cheap: she is delighted rather than polite.',
-    'She finds the kindest possible way to say it, which does not make it hurt less.'),
+    'Warm, and warm from her is not cheap: she is delighted rather than polite.', [
+      "— and {j} means it, which is the thing about {j}: the warmth is never performance, so when it shows up the room trusts it.",
+      "— and {j} lights up saying it, and the warmth is genuine enough that the other judges nod along before they realise they are nodding.",
+      "— and the delight in {j}'s voice is not politeness — it is the sound of somebody who wanted {a} to do well and got what she wanted.",
+      "— and {j} says it with the energy of somebody who has been waiting all night to say something kind and finally has a reason.",
+      "— and when {j} praises, she praises with her whole face, and {a} can see that the note is not a courtesy — it is the judge who roots hardest actually being rewarded.",
+      "— and {j} is beaming, and a beam from the soft seat is not cheap — it is the judge who gives the most finding something worth giving it for.",
+    ],
+    'She finds the kindest possible way to say it, which does not make it hurt less.', [
+      "— and {j} finds the gentlest possible angle, which somehow makes the note land harder, because a pan from somebody who clearly wanted to say something nice is its own kind of devastating.",
+      "— and {j} softens the delivery without softening the note, so {a} hears every word through a voice that wishes it were saying something else.",
+      "— and the kindness in {j}'s voice is real, which is what makes it worse: she wanted {a} to do well, and she is telling her she did not, and the disappointment is louder than any blunt note could be.",
+      "— and {j} wraps the critique in as much warmth as the truth will hold, and {a} can hear the effort it is costing her to be kind about something that was not.",
+      "— and {j} is trying so hard to find something positive that the reaching is the critique — {a} can hear the judge who roots for everybody running out of things to root for.",
+      "— and {j} says it gently, and the gentleness is the sharpest thing about it, because a soft voice delivering a hard note leaves nowhere to hide.",
+    ]),
 ];
 
 // ══════════════════════════════════════════════════════════════════════

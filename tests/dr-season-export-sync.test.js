@@ -75,16 +75,34 @@ describe('a drag season exported for the Control Room', () => {
     globalThis.generateSummaryText = generateSummaryText;
   });
 
-  it('has no transcript on the row — the condition being worked around', () => {
-    /* THE CONTROL ARM. If drag-race ever starts writing summaryText at air
-       time, the export fix below becomes untestable by this file: it would
-       pass whether or not it ran. Then the checkpoint cost is back and this
-       test is where that gets noticed. */
+  it('writes the night in words the moment it airs', () => {
+    /* THE ORIGINAL REPORT, in the user's words: "no transcript/text-backlog
+       get printed after an episode" and the copy button "says nothing to
+       copy". Both are this field being absent -- _freshTranscript in
+       run-ui.js returns `epRecord?.summaryText || ''`, so a drag episode
+       had nothing to show and nothing to copy, and the Control Room's sync
+       read the same empty field.
+
+       Measured before the fix: 0 of 3 episodes had one. */
     for (let i = 0; i < 3; i++) dr.simulateDragEpisode();
     for (const row of core.gs.episodeHistory) {
-      expect(String(row.summaryText || '')).toBe('');
+      expect(String(row.summaryText || '').length,
+        `episode ${row.num} aired with no transcript`).toBeGreaterThan(1000);
     }
-    expect(importerKeeps({ gs: core.gs }).length).toBe(0);
+    expect(importerKeeps({ gs: core.gs }).length).toBe(3);
+  });
+
+  it('says what happened on that night, not a header and nothing else', () => {
+    /* A transcript that is only its own title bar would satisfy the length
+       check above and still print as an empty episode. This asks for the
+       parts of a drag night that cannot be faked by chrome. */
+    for (let i = 0; i < 2; i++) dr.simulateDragEpisode();
+    const text = core.gs.episodeHistory[1].summaryText;
+    expect(text).toContain('DRAG RACE — EPISODE 2');
+    for (const q of ['Q1', 'Q2']) expect(text).toContain(q);
+    const bodyLines = text.split(String.fromCharCode(10)).filter(l => l.trim());
+    expect(bodyLines.length, 'the transcript is a header with no body')
+      .toBeGreaterThan(40);
   });
 
   it('exports every simulated episode with a transcript the importer keeps', () => {
@@ -103,22 +121,24 @@ describe('a drag season exported for the Control Room', () => {
     for (let i = 0; i < 3; i++) dr.simulateDragEpisode();
     const before = JSON.stringify(core.gs).length;
     castUi._buildSeasonSaveData();
-    /* NOT byte-exact, and the reason matters. `_buildSeasonSaveData` has
-       always run gs through prepGsForSave/repairGsSets, and the repair half
-       creates any SET_FIELDS entry the state was missing -- about 440 bytes of
-       `"field":{}` on a fresh season, unrelated to this change. What must not
-       happen is growth on the order of a transcript, which is 50-80KB each. */
+    /* The export must not ADD to the live state -- it fills its own copy.
+       NOT byte-exact: `_buildSeasonSaveData` has always run gs through
+       prepGsForSave/repairGsSets, and the repair half creates any SET_FIELDS
+       entry the state was missing, about 440 bytes of `"field":{}` on a fresh
+       season and nothing to do with transcripts. What must not happen is
+       growth on the order of one, which is 40-80KB. */
     expect(JSON.stringify(core.gs).length - before).toBeLessThan(2000);
-    for (const row of core.gs.episodeHistory) {
-      expect(String(row.summaryText || '')).toBe('');
-    }
   });
 
   it('fills a season that was already played before the fix existed', () => {
     // The user's case: Drag Race season 1 is on disk with no transcripts, and
     // a write-on-air fix would never reach it. Deriving at export does.
     for (let i = 0; i < 3; i++) dr.simulateDragEpisode();
-    const stale = JSON.parse(JSON.stringify(core.gs));   // what is stored today
+    // A season on disk from before the air-time write: the rows are there and
+    // the transcripts are not. The export has to fill them anyway, because
+    // this is the only season the user actually has.
+    const stale = JSON.parse(JSON.stringify(core.gs));
+    for (const row of stale.episodeHistory) { delete row.summaryText; delete row.textV; }
     core.setGs(stale);
     globalThis.gs = core.gs;
     expect(importerKeeps({ gs: stale }).length).toBe(0);
@@ -178,5 +198,30 @@ describe('the two exports keep their own names', () => {
     // signature, and repointing them would have broken the publish flow.
     const runUi = read('js/run-ui.js');
     expect((runUi.match(/window\.exportSeason\(/g) || []).length).toBe(2);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// And a season played before any of this still gets its words back
+// ══════════════════════════════════════════════════════════════════════
+//
+// The air-time write above only reaches episodes aired after it. The season
+// the user actually has was played without it, so the transcript pane has to
+// fill one in when it finds none -- which is what run-ui.js's _freshTranscript
+// already did for the castle and for the house, and never did here.
+describe('the transcript pane on a season that stored none', () => {
+  it('regenerates for a drag row instead of showing nothing to copy', () => {
+    const src = read('js/run-ui.js');
+    const body = src.slice(src.indexOf('function _freshTranscript'));
+    const head = body.slice(0, body.indexOf('return epRecord'));
+    expect(head, '_freshTranscript no longer regenerates for drag rows')
+      .toContain('_isDragRow(epRecord)');
+    // The regenerate condition has to include "there is no text at all",
+    // not only "the writer version moved" — a stored-nothing season has no
+    // textV either, but a version-only check would still be true here, so
+    // this asserts the missing-text arm explicitly.
+    expect(head).toContain('!epRecord.summaryText');
+    expect(src).toContain("const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT");
+    expect(src).toContain('DRAG_FORMAT } from ');
   });
 });

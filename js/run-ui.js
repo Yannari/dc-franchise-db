@@ -33,7 +33,7 @@ import { PARTNER_COHORTS, cohortLabel, makeoverShows } from './dr/chal/makeover.
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
-import { roundExits, exitVerbs, SHOWS, showWords } from './shows.js';
+import { roundExits, exitVerbs, SHOWS, showWords, DRAG_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
 
@@ -118,8 +118,20 @@ function _freshTranscript(epRecord) {
     // derived from the record, so deriving it again is always safe — and for
     // one more: a castle transcript is a rendering of the screens, so it is
     // never older than the screens it retranscribes.
+    /* ── AND THE MAIN STAGE, WHICH STORED NOTHING EITHER ──────────────
+       Same shape as the castle, found the same way: the transcript pane was
+       blank on every drag episode. Nothing on the drag path wrote
+       `ep.summaryText`, and this regenerator was Big-Brother-and-castle-only,
+       so `generateDragSummaryText` -- which has existed for as long as the
+       show has and produces 40-80KB a night -- reached no screen at all. The
+       Control Room's sync reads the same field and therefore imported a drag
+       season as zero episodes.
+       Regenerating is safe for the same reason it is safe for the castle: the
+       text is derived from the record, so deriving it again cannot disagree
+       with the screens it retranscribes. It also self-heals a season played
+       before any of this, which is the only way one gets a transcript now. */
     const _regen = epRecord && typeof window.generateSummaryText === 'function'
-      && (_isCastleRow(epRecord)
+      && (_isCastleRow(epRecord) || _isDragRow(epRecord)
         ? !epRecord.summaryText || (epRecord.textV || 0) < (window.TEXT_BACKLOG_V || 1)
         : false);
     if (_regen) {
@@ -252,6 +264,7 @@ function _hubRailFace(name, cast = players) {
  * lines long — see tests/show-list-duplication.test.js.
  */
 const _isCastleRow = ep => !!ep && ep.format === 'traitors';
+const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT;
 // Same question for the main stage. A stored drag episode shares none of Total
 // Drama's eighty flags, so running them over it would be eighty reads of
 // fields that are not there; it gets its own card.

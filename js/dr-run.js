@@ -406,6 +406,25 @@ export function simulateDragEpisode() {
      to take the run down with it. */
   try { updateEditLayer(row); } catch { /* commentary, never the season */ }
 
+  /* ── THE NIGHT IN WORDS, WRITTEN ONCE, HERE ───────────────────────
+     Nothing on this path wrote `summaryText`, so the transcript pane was
+     blank on every drag episode -- "nothing to copy" -- and the Control
+     Room's sync, which keeps only episodes that have one, imported a drag
+     season as zero episodes and reported it as a missing-access problem.
+     `generateDragSummaryText` had existed the whole time and reached no
+     screen; this is the line that was missing, and it is the same line
+     bb-run.js has had since the house shipped.
+
+     Off `window` rather than imported, exactly as bb-run.js does it: this
+     module is loaded by the headless harness too, where the text layer is
+     not wired and a season must still play. */
+  try {
+    if (typeof window !== 'undefined' && window.generateSummaryText) {
+      row.summaryText = String(window.generateSummaryText(row) || '');
+      row.textV = window.TEXT_BACKLOG_V;
+    }
+  } catch { /* a night must never fail on its own retelling */ }
+
   if (row.dr?.finale) {
     gs.phase = 'complete';
     gs.drWinner = row.dr.finale.winner || null;

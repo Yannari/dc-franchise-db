@@ -2123,9 +2123,349 @@ export const SKIN_IDS = Object.keys(SKIN);
 /** The room, drawn in CSS. No images, no emoji. */
 const ambientFor = id => `<div class="dr-set dr-set-${id}">${skinFor(id).props}</div>`;
 
+/* ══════════════════════════════════════════════════════════════════
+   SNATCH GAME — a game show, not a card
+   ══════════════════════════════════════════════════════════════════
+   RuPaul hosts. Two panelists sit beside him. Six rounds, each with a
+   fill-in-the-blank question, 2-3 featured queens answering in character,
+   reactions (kill / laugh / silence / bomb), host engagements, and
+   confessional reads. The format is the show, not a summary of it. */
+
+const SG_CSS = `
+.sg{position:relative;padding:20px 14px 28px;border-radius:6px;overflow:hidden;
+  background:linear-gradient(180deg,#04121c 0%,#081828 40%,#04121c 100%)}
+.sg::before{content:"";position:absolute;inset:0;opacity:.3;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 20%,rgba(56,189,248,.35),transparent 70%),
+    radial-gradient(ellipse 60% 40% at 30% 80%,rgba(255,210,63,.15),transparent),
+    radial-gradient(ellipse 60% 40% at 70% 80%,rgba(255,210,63,.15),transparent)}
+
+.sg-desk{display:flex;gap:10px;align-items:center;justify-content:center;
+  padding:14px 16px;margin:0 auto 6px;max-width:520px;
+  border-bottom:2px solid rgba(255,210,63,.3);position:relative}
+.sg-desk::after{content:"";position:absolute;bottom:-2px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(56,189,248,.5),transparent)}
+
+.sg-host{display:flex;flex-direction:column;align-items:center;gap:4px}
+.sg-host-name{font-size:11px;font-weight:700;color:#FFD23F;letter-spacing:.5px;text-transform:uppercase}
+.sg-guest{display:flex;flex-direction:column;align-items:center;gap:3px}
+.sg-guest-name{font-size:10px;color:rgba(244,239,228,.7)}
+
+.sg-round{margin:18px 0 6px;position:relative}
+.sg-round-hdr{display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:linear-gradient(90deg,rgba(255,210,63,.12),transparent 80%);
+  border-left:3px solid #FFD23F;border-radius:0 6px 6px 0;margin-bottom:10px}
+.sg-round-num{font-size:11px;font-weight:700;color:#FFD23F;text-transform:uppercase;white-space:nowrap}
+.sg-round-q{font-size:13px;font-style:italic;color:rgba(244,239,228,.85);flex:1}
+
+.sg-answer{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;margin:4px 0;
+  border-radius:6px;position:relative;
+  background:linear-gradient(135deg,rgba(255,255,255,.04),transparent)}
+.sg-answer+.sg-answer{margin-top:6px}
+.sg-answer-body{flex:1;min-width:0}
+.sg-answer-char{font-size:11px;font-weight:600;color:#38bdf8;margin-bottom:2px}
+.sg-answer-text{font-size:12.5px;color:rgba(244,239,228,.9);line-height:1.4}
+.sg-answer-host{font-size:11.5px;color:#FFD23F;margin-top:3px;font-style:italic}
+
+.sg-rx{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+.sg-rx-kill{background:rgba(59,224,138,.18);color:#3BE08A}
+.sg-rx-laugh{background:rgba(56,189,248,.15);color:#38bdf8}
+.sg-rx-silence{background:rgba(255,200,61,.12);color:#FFC83D}
+.sg-rx-bomb{background:rgba(255,41,75,.15);color:#FF294B}
+
+.sg-rx-kill::before{content:"\\25B2";margin-right:2px}
+.sg-rx-laugh::before{content:"\\25CF";margin-right:2px;font-size:7px}
+.sg-rx-silence::before{content:"\\2014"}
+.sg-rx-bomb::before{content:"\\25BC";margin-right:2px}
+
+.sg-confessional{margin:6px 14px;padding:8px 12px;border-left:2px solid rgba(255,210,63,.25);
+  font-size:11.5px;color:rgba(244,239,228,.65);font-style:italic;
+  background:linear-gradient(90deg,rgba(255,210,63,.04),transparent 60%)}
+
+.sg-double{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:8px 0;
+  border-radius:6px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2)}
+.sg-double-label{font-size:11px;font-weight:700;color:#38bdf8;text-transform:uppercase}
+.sg-double-text{font-size:12px;color:rgba(244,239,228,.8)}
+
+.sg-dying{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:8px 0;
+  border-radius:6px;background:rgba(255,41,75,.08);border:1px solid rgba(255,41,75,.2)}
+.sg-dying-label{font-size:11px;font-weight:700;color:#FF294B;text-transform:uppercase}
+.sg-dying-text{font-size:12px;color:rgba(244,239,228,.8)}
+
+.sg-scoreboard{max-width:480px;margin:14px auto 0}
+.sg-sb-row{display:flex;align-items:center;gap:8px;padding:5px 10px;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+.sg-sb-rank{width:20px;font-size:11px;font-weight:700;color:rgba(244,239,228,.5);text-align:center}
+.sg-sb-name{flex:1;font-size:12px;color:rgba(244,239,228,.9)}
+.sg-sb-char{font-size:10px;color:#38bdf8}
+.sg-sb-score{font-size:13px;font-weight:700;min-width:36px;text-align:right}
+.sg-sb-score.sg-hot{color:#3BE08A}
+.sg-sb-score.sg-cold{color:#FF294B}
+.sg-sb-score.sg-mid{color:#FFC83D}
+.sg-sb-bar{width:60px;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.sg-sb-bar i{display:block;height:100%;border-radius:3px;
+  background:linear-gradient(90deg,#FFD23F,#38bdf8)}
+`;
+
+const SG_REACTION_LABEL = {
+  kill: 'the panel is on the floor',
+  laugh: 'that lands',
+  silence: 'silence',
+  bomb: 'bombing',
+};
+
+const SG_CONFESSIONALS = {
+  kill: [
+    '{a} as {c} just ate that whole round and left nothing for the table.',
+    'I think {a} might actually BE {c} at this point.',
+    '{a} just had a moment. {c} would be proud.',
+    'That was the answer of the night. {a} is in another league.',
+  ],
+  laugh: [
+    '{a} is finding {c}. Not the funniest answer but it worked.',
+    'I see what {a} is doing with {c}. It is landing.',
+    '{a} as {c} is giving the panel something to work with.',
+  ],
+  silence: [
+    '{a} as {c}... I mean... yeah.',
+    'The silence after {a} answered was... a choice.',
+    '{a} is losing {c}. The impression is slipping away from her.',
+  ],
+  bomb: [
+    '{a} as {c} just died on that panel and nobody is calling the ambulance.',
+    'If {c} saw what {a} just did, she would sue.',
+    '{a} is giving us nothing. {c} has left the building.',
+    'That was painful. {a} is sinking and she knows it.',
+  ],
+};
+
+const SG_HOST_LINES = {
+  worked: [
+    'RuPaul leans in, feeds her a setup, and {a} as {c} takes it and runs.',
+    'RuPaul throws {a} a rope and she swings from it beautifully.',
+    'The host plays along and {a} matches him beat for beat.',
+  ],
+  failed: [
+    'RuPaul tries to throw {a} a lifeline. She does not catch it.',
+    'The host gives {a} a setup and she stares at him. The panel waits.',
+    'RuPaul feeds {a} a line and {c} has nothing to say back.',
+  ],
+};
+
+function rpBuildSnatchGame(row) {
+  const ep = epOf(row);
+  const ch = row?.dr?.challenge;
+  const perfs = row?.dr?.performances || {};
+  const a = row?.dr?.assignment || {};
+  const order = (a.order || []).filter(n => perfs[n]);
+  const running = order.length ? order : Object.keys(perfs);
+  if (!ch || !running.length) return '';
+
+  const tapingData = _sceneData(ep, 'snatch-taping') || {};
+  const rounds = tapingData.rounds || [];
+  const hostBeats = tapingData.hostBeats || [];
+
+  const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
+    && (sc.step === 'maxi-pre' || sc.step === 'maxi-main')
+    && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
+  const usedScene = new Set();
+
+  const pickGuests = () => {
+    const nonPerm = JUDGES.filter(j => !j.permanent && j.id !== 'rupaul');
+    if (nonPerm.length >= 2) return nonPerm.slice(0, 2);
+    return JUDGES.filter(j => j.id !== 'rupaul').slice(0, 2);
+  };
+  const guests = pickGuests();
+
+  const sfx = 'maxi';
+  const steps = [];
+  let stepIdx = 0;
+
+  steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+    <div class="sg-desk">
+      <div class="sg-host">
+        ${_judgePortrait('rupaul', { stage: true, size: 56 })}
+        <span class="sg-host-name">RuPaul</span>
+      </div>
+      ${guests.map(g => `<div class="sg-guest">
+        ${_judgePortrait(g.id, { stage: true, size: 42, name: g.name })}
+        <span class="sg-guest-name">${esc(g.name)}</span>
+      </div>`).join('')}
+    </div>
+    <p class="sg-confessional">Welcome to Snatch Game, where our queens become the celebrities and the celebrities become the punchlines. Joining me on the panel: ${guests.map(g => g.name).join(' and ')}.</p>
+  </div>`);
+  stepIdx++;
+
+  const rng = _seedRng(ep.num || 0);
+
+  const doubleActs = (row.dr.scenes || []).filter(sc =>
+    sc.kind === 'maxi:double-act' || (sc.data?.type === 'double-act'));
+  const dyingQueens = new Set();
+  for (const n of running) {
+    if ((perfs[n]?.detail?.flops || 0) >= 3) dyingQueens.add(n);
+  }
+
+  for (const rd of rounds) {
+    const featured = rd.featured || [];
+    if (!featured.length) continue;
+
+    steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+      <div class="sg-round">
+        <div class="sg-round-hdr">
+          <span class="sg-round-num">Round ${rd.round}</span>
+          <span class="sg-round-q">${esc(rd.question || `Question ${rd.round}`)}</span>
+        </div>
+        ${featured.map(f => {
+    const rxCls = `sg-rx sg-rx-${f.reaction}`;
+    const rxLabel = SG_REACTION_LABEL[f.reaction] || '';
+    const hbThis = f.hostBeat
+      ? hostBeats.find(h => h.round === rd.round && h.name === f.name) : null;
+
+    const sceneLine = maxiScenes.find(sc => {
+      if (usedScene.has(sc)) return false;
+      if ((sc.data?.players || [])[0] !== f.name) return false;
+      usedScene.add(sc);
+      return true;
+    });
+
+    const hostLine = hbThis
+      ? _pickLine(hbThis.worked ? SG_HOST_LINES.worked : SG_HOST_LINES.failed, rng, f.name, f.character)
+      : '';
+
+    return `<div class="sg-answer">
+            ${_portrait(f.name, ep, { size: 44, station: true })}
+            <div class="sg-answer-body">
+              <div class="sg-answer-char">${esc(f.name)} as ${esc(f.character || '???')}</div>
+              ${sceneLine ? `<div class="sg-answer-text">${esc(sceneLine.text)}</div>` : ''}
+              <span class="${rxCls}">${esc(rxLabel)}</span>
+              ${hostLine ? `<div class="sg-answer-host">${esc(hostLine)}</div>` : ''}
+            </div>
+          </div>`;
+  }).join('')}
+      </div>
+    </div>`);
+    stepIdx++;
+
+    if (featured.some(f => f.reaction === 'kill' || f.reaction === 'bomb')) {
+      const notable = featured.find(f => f.reaction === 'kill' || f.reaction === 'bomb');
+      if (notable) {
+        const pool = SG_CONFESSIONALS[notable.reaction] || [];
+        const line = _pickLine(pool, rng, notable.name, notable.character);
+        if (line) {
+          steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+            <div class="sg-confessional">${esc(line)}</div>
+          </div>`);
+          stepIdx++;
+        }
+      }
+    }
+  }
+
+  for (const sc of (row.dr.scenes || [])) {
+    if (sc.kind !== 'maxi:double-act' && sc.data?.type !== 'double-act') continue;
+    const pls = sc.data?.players || [];
+    if (pls.length < 2) continue;
+    const chars = pls.map(n => characterById(a.picks?.[n]?.choice)?.name || '???');
+    steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+      <div class="sg-double">
+        ${pls.slice(0, 2).map(n => _portrait(n, ep, { size: 36 })).join('')}
+        <div>
+          <span class="sg-double-label">Double Act</span>
+          <span class="sg-double-text">${esc(pls[0])} as ${esc(chars[0])} and ${esc(pls[1])} as ${esc(chars[1])} build a bit together and the whole panel lifts.</span>
+        </div>
+      </div>
+    </div>`);
+    stepIdx++;
+  }
+
+  for (const n of running) {
+    if (!dyingQueens.has(n)) continue;
+    const c = characterById(a.picks?.[n]?.choice)?.name || '???';
+    steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+      <div class="sg-dying">
+        ${_portrait(n, ep, { size: 36 })}
+        <div>
+          <span class="sg-dying-label">Dying on the panel</span>
+          <span class="sg-dying-text">${esc(n)} as ${esc(c)} has flatlined. Three rounds of silence and the host has moved on.</span>
+        </div>
+      </div>
+    </div>`);
+    stepIdx++;
+  }
+
+  const ranked = [...running]
+    .map(n => ({ n, p: Number(perfs[n]?.perf) || 0, c: perfs[n]?.detail?.character || '???' }))
+    .sort((x, y) => y.p - x.p);
+  const maxScore = Math.max(1, ...ranked.map(r => r.p));
+  steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+    <div class="sg-scoreboard">
+      ${ranked.map((r, i) => {
+    const cls = r.p >= 8 ? 'sg-hot' : r.p <= 4 ? 'sg-cold' : 'sg-mid';
+    return `<div class="sg-sb-row">
+          <span class="sg-sb-rank">${i + 1}</span>
+          ${_portrait(r.n, ep, { size: 30 })}
+          <span class="sg-sb-name">${esc(r.n)} <span class="sg-sb-char">as ${esc(r.c)}</span></span>
+          <span class="sg-sb-bar"><i style="width:${Math.round((r.p / maxScore) * 100)}%"></i></span>
+          <span class="sg-sb-score ${cls}">${n1(r.p)}</span>
+        </div>`;
+  }).join('')}
+    </div>
+  </div>`);
+  stepIdx++;
+
+  if (typeof window !== 'undefined') {
+    window._drSidebar = window._drSidebar || {};
+    const panels = [];
+    for (let si = 0; si <= stepIdx; si++) {
+      const upTo = Math.min(si, rounds.length);
+      const shown = new Set();
+      for (let ri = 0; ri < upTo; ri++) {
+        for (const f of (rounds[ri]?.featured || [])) shown.add(f.name);
+      }
+      panels.push(`<h4 class="dr-disp">The Panel</h4>${
+        ranked.filter(r => shown.has(r.n) || si >= stepIdx - 1)
+          .map(r => `<div class="dr-slot">${_portrait(r.n, ep, { size: 30 })}
+            <div><div class="dr-nm">${esc(r.n)}</div>
+            <div style="font-size:10px;color:#38bdf8">${esc(r.c)}</div></div>
+            ${si >= stepIdx - 1
+    ? `<span class="dr-chip ${r.p >= 8 ? 'dr-c-win' : r.p >= 6 ? 'dr-c-high' : r.p >= 4 ? 'dr-c-safe' : 'dr-c-low'}">${n1(r.p)}</span>`
+    : ''}</div>`).join('')}`);
+    }
+    window._drSidebar[sfx] = panels;
+  }
+
+  const prose = maxiScenes.filter(sc => !usedScene.has(sc))
+    .map((sc, i) => `<div class="dr-step" id="dr-step-${sfx}-room-${i}">
+      <div class="dr-panel dr-a-room dr-scene">
+        ${(sc.data?.players || []).length
+    ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
+      .map(n => _portrait(n, ep, { size: 42 })).join('')}</span>` : ''}
+        <div class="dr-scene-body">${esc(sc.text)}</div>
+      </div></div>`).join('');
+
+  return `<style>${CHAL_CSS}${SG_CSS}</style>${_shell(
+    `<div class="dr-fam dr-chal dr-chal-snatch-game sg">${ambientFor('snatch-game')}${steps.join('')}${prose}</div>`, ep, {
+      phase: 'stage', title: 'Snatch Game', subtitle: 'and the answer is',
+      sidebar: _seedRail(sfx, '<h4 class="dr-disp">The Panel</h4>'),
+    })}${_controls(sfx, stepIdx, ep.num)}`;
+}
+
+function _seedRng(seed) {
+  let s = seed | 0;
+  return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+}
+
+function _pickLine(pool, rng, name, character) {
+  if (!pool || !pool.length) return '';
+  const idx = Math.floor(rng() * pool.length);
+  return pool[idx].replace(/\{a\}/g, name).replace(/\{c\}/g, character || '???');
+}
+
 export function rpBuildMaxi(row) {
   if (row?.dr?.tournament) return rpBuildTournament(row);
   if (row?.dr?.challenge?.id === 'ball') return rpBuildBall(row);
+  if (row?.dr?.challenge?.id === 'snatch-game') return rpBuildSnatchGame(row);
   const ep = epOf(row);
   const ch = row?.dr?.challenge;
   const perfs = row?.dr?.performances || {};

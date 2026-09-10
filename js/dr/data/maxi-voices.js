@@ -572,8 +572,8 @@ export const WALKTHROUGH_VOICES = [
     'The host walks {a}\'s ball. Three looks in ninety seconds but the note always lands on the same one — the look she is building. \"Where is this going?\" The gap between concept and construction is still visible.',
     '{a} lays out her three looks. The host looks at them in order. \"Do these tell a story?\" The note is about the arc — whether the three looks build, and whether the design look finishes the story or leaves it half-told.',
     'The host asks {a} about the concept. {a} explains the three looks. \"And you can finish this in time?\" The note is about the design look — the one still on the table, where ambition and time have to meet.',
-    '{a}\'s ball looks are laid out. The host goes \"what is the weakest one?\" {a} knows. The host knows. A ball is three looks and a queen is only as strong as her weakest one.',
-    'The host walks {a}\'s station. \"Is that a garment or is that fabric with intent?\" The note lands on construction — does {a} have the skills and the hours to close the gap.',
+    '{a}\'s ball looks are laid out. The host goes \"what is the weakest one?\" {a} points at it without hesitating. \"Then fix that one.\"',
+    'The host walks {a}\'s station. Picks up the garment and looks at the seams. \"Is this gonna hold together on that runway?\" {a} says yes. The host puts it down without answering.',
     'The host circles {a}\'s station once, studying the constructed garment from every angle. \"You are running out of time, baby.\" The feedback lands where it always lands at a ball — on whether the ambition can survive the hours remaining.',
   ]),
   walk('design', 'Construction, and whether the material is used or hidden.', [

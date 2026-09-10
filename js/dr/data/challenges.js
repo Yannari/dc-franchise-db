@@ -28,6 +28,13 @@ export const TENTPOLES = ['snatch-game', 'ball', 'girl-group', 'makeover', 'roas
 
 export const MAXI_TYPES = [
   {
+  /* `runwayIsChallenge` — THE WALK IS THE CHALLENGE, so there is no second
+     one. On a Ball, a Design challenge or a Runway challenge the thing she
+     presents on the main stage IS the thing she was set to make: judging it
+     again as a separate category scored the same look twice (the design blend
+     already carries `runway` craft), and drew a Runway section on the screen
+     narrating a walk the challenge had just narrated. Set it on any challenge
+     whose deliverable is the look itself. */
     id: 'acting', name: 'Acting Challenge', tentpole: false, stage: 'pre', format: 'teams',
     blend: { acting: 0.6, comedy: 0.3, runway: 0.1 },
     runway: 'themed', assignment: 'draft', roles: 'parts', chalStyle: 'comedy', minCast: 6,
@@ -40,7 +47,7 @@ export const MAXI_TYPES = [
   {
     id: 'ball', name: 'The Ball', tentpole: true, stage: 'main', format: 'solo',
     blend: { design: 0.45, runway: 0.45, dance: 0.1 },
-    runway: 'ball', assignment: 'none', roles: null, chalStyle: 'physical', minCast: 5,
+    runway: 'ball', runwayIsChallenge: true, assignment: 'none', roles: null, chalStyle: 'physical', minCast: 5,
     desc: 'Three categories are announced and every queen must present three looks on the main stage: two pulled and styled from what she brought with her, and one built from scratch in the werk room out of the fabric on the wall. She has a single working day to cut, sew and fit the third. A look that falls apart on the runway, a category answered with the wrong idea, or a sewn piece that reads as a bedsheet is what sinks her. The strongest trio across all three categories wins.',
   },
   {
@@ -58,7 +65,7 @@ export const MAXI_TYPES = [
   {
     id: 'design', name: 'Design Challenge', tentpole: false, stage: 'main', format: 'solo',
     blend: { design: 0.7, runway: 0.3 },
-    runway: 'design', assignment: 'none', roles: null, chalStyle: 'physical', minCast: 4,
+    runway: 'design', runwayIsChallenge: true, assignment: 'none', roles: null, chalStyle: 'physical', minCast: 4,
     desc: 'Each queen is handed a fixed pile of unconventional material in the werk room and has one day, one sewing machine and one glue gun to turn it into a runway look. She designs it, builds it, finishes it and then presents it on the main stage as her runway for the night. A garment still wet with glue, one that will not close, or one that hides the material instead of using it is what sends her to the bottom. The look the panel would put on a magazine cover wins.',
   },
   {
@@ -118,7 +125,7 @@ export const MAXI_TYPES = [
   {
     id: 'runway-challenge', name: 'Runway Challenge', tentpole: false, stage: 'main', format: 'solo',
     blend: { runway: 0.8, design: 0.2 },
-    runway: 'ball', assignment: 'none', roles: null, chalStyle: 'social', minCast: 4,
+    runway: 'ball', runwayIsChallenge: true, assignment: 'none', roles: null, chalStyle: 'social', minCast: 4,
     desc: 'No maxi challenge in the werk room at all: the queens present three looks each on the main stage across three categories announced that morning, with only a short window to style, alter and repair. Each walk is judged on its own before the three are weighed together. A category missed, a walk with no story behind it, or a look that simply repeats the one before is what fails here. The strongest trio of walks wins the night.',
   },
   {

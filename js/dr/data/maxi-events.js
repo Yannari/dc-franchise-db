@@ -885,7 +885,7 @@ export const MAXI_EVENTS = [
       "{a} has most of the words and not all of them. A phrase drops out in the second verse and her mouth keeps moving but the shape it makes is not the lyric — it is the approximation of the lyric, the noise you produce when the line leaves you and muscle memory has to cover for recall. She catches up at the chorus. Anybody watching her mouth knows she lost it.",
       "The words are there and then they are not and then they are back. {a} fumbles a line mid-number, covers it with a half-sung shape that is close enough to survive the wide shot and not close enough to survive the panel, and picks up the next phrase clean. It is survivable. It is also the thing a judge writes on the clipboard.",
       "{a} drops a phrase and catches it two bars later and the gap between the dropping and the catching is a queen mouthing air while a band plays the song she is supposed to know. She recovers. The recovery is real — she finishes the number clean — but the fumble is on camera and the camera does not forget things the way a live audience does.",
-      "She loses a line in the bridge and her face does the thing where it tightens and releases in the same beat — the tightening is the panic, the releasing is the decision to keep going. {a} mouths through the lost phrase, finds the next one, and finishes the number at full voice. The panel saw the gap. The gap is a note, not a verdict.",
+      "{a} loses a line in the bridge. Her mouth keeps moving but the words are gone. She catches the next phrase and finishes the number at full voice. The panel saw the gap.",
     ],
   }),
   e({

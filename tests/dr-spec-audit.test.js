@@ -187,7 +187,21 @@ describe('a hundred drag seasons', () => {
           const body = sc.html.replace(/<style[\s\S]*?<\/style>/g, '')
             .replace(/<!--dr-chrome-->[\s\S]*?<!--\/dr-chrome-->/g, '')
             .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-          if (body.length < 40) { empty++; console.log(`      EMPTY: ep${row.num} ${sc.id}`); }
+          /* ── A TABBED SCREEN IS NOT ITS OPEN PANEL ──────────────────
+             `dr-rel` renders ONE queen's panel and swaps the rest in on a
+             click, and its tabs are chrome, so this measured a twelve-tab
+             screen by the one card showing. A real panel can be one line --
+             "Allies · 1 Q7 close ally +6.5" is 29 characters -- while a
+             screen that genuinely opened on nothing says "No connections yet
+             — it's early.", which is 32. LENGTH CANNOT TELL THEM APART, and
+             it ranked them the wrong way round.
+             So the tabbed screen is asked the question in its own words. The
+             three real failures this check has caught on it all printed that
+             empty state; none of them were short. */
+          const blank = sc.id === 'dr-rel'
+            ? /^No connections yet/.test(body)
+            : body.length < 40;
+          if (blank) { empty++; console.log(`      EMPTY: ep${row.num} ${sc.id}`); }
         }
       }
     }

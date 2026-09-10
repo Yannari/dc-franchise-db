@@ -1151,16 +1151,34 @@ function rpBuildBall(row) {
 
   const ranking = row?.dr?.panel?.ranking || [];
 
+  /* ── THE NUMBER IN THIS LIST HAS TO BE THE ONE THE LIST IS ABOUT ──
+     This row printed `perf` -- the raw challenge score -- beside a position
+     taken from the panel's ranking, which is a different quantity arrived at
+     a different way (js/dr/judging.js weighs perf, runway, risk, polish, the
+     judge's style bias and what she remembers, then merges four opinions into
+     a mean rank, and the host may still move somebody two places). So the
+     column never sorted: a queen could sit fifth showing 8.5 above a second
+     place showing 7.2, and the screen looked broken because it was claiming a
+     relationship that did not exist.
+     The paddle total is the honest partner for it. It is the number the
+     scoreboard has been counting up all night in front of the viewer, so the
+     placement now reads as "the panel saw it differently, and here is the
+     score it differed from". */
+  const paddleTotals = {};
+  for (const st of steps) {
+    paddleTotals[st.name] = (paddleTotals[st.name] || 0)
+      + st.jScores.reduce((a, b) => a + b, 0);
+  }
+
   html.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
     <div class="ball-final"><h3>Panel placement</h3>${
     (ranking.length ? ranking : running.map((n, i) => ({ name: n, panelRank: i + 1 }))).map((r, i) => {
       const cls = i === 0 ? 'ball-f-win' : i >= ranking.length - 2 ? 'ball-f-btm' : '';
-      const p = perfs[r.name];
       return `<div class="ball-final-row ${cls}">
         <span class="ball-final-pos">${i + 1}</span>
         ${_portrait(r.name, ep, { size: 36 })}
         <span class="ball-final-nm dr-disp">${esc(r.name)}</span>
-        <span class="ball-final-sc">${n1(p?.perf)}</span></div>`;
+        <span class="ball-final-sc">${paddleTotals[r.name] ?? 0}</span></div>`;
     }).join('')}</div></div>`);
   stepIdx++;
   const totalSteps = stepIdx;

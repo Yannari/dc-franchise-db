@@ -43,7 +43,7 @@ export const CHALLENGE_BEATS = [
       tier('arrival', 'She has news and is going to take her time with it.', [
         "The door goes and it is her. Out of drag, in a suit that costs more than anybody's entire wardrobe. The whole room stops mid-sentence. She lets the silence run a second longer than it needs to. She always does. Then: \"Ladies.\"",
         "Nobody hears her come in. They just gradually notice, one at a time, that she is standing by the door watching them work. By the time the last queen clocks it the room has gone from a workshop to an audience. \"Did you miss me?\"",
-        "\"Hello, hello, hello.\" Thirteen voices come back at once, ragged and delighted. Somebody at the back is already clapping for no reason. She waits for it to die down. They know she is about to change the shape of their week.",
+        "\"Hello, hello, hello.\" Every voice in the room comes back at once, ragged and delighted. Somebody at the back is already clapping for no reason. She waits for it to die down. They know she is about to change the shape of their week.",
         "She comes in the way she always comes in — like the room was already hers and she has just been elsewhere for a while. Every queen straightens up without deciding to. \"I have news.\" Whatever anybody was arguing about ninety seconds ago is over.",
       ]),
     ],
@@ -384,7 +384,7 @@ export const CHALLENGE_BEATS = [
         "{b} says {a}'s name and the room goes quiet. That is the hardest partner on the board and everybody knows it. {a} smiles because there is nothing else to do.",
         "The hardest man in the room, handed to {a}, by {b}, with a smile. {a} takes it. She does not have a choice, and the not having a choice is the point.",
         "{b} pairs {a} with the one nobody wanted. The room watches. {a} nods and walks over to meet him and the walk is longer than it should be.",
-        "{a} gets the name and her face does the thing where it tries to stay neutral and does not quite manage it. {b} has already moved on to the next queen. The room noticed.",
+        "{a} gets the name and tries not to react. She does not quite pull it off. {b} has already moved on to the next queen.",
       ]),
       tier('looked-after', 'She was given somebody she can work with, deliberately.', [
         "{b} gives {a} somebody she can actually work with. It is generous and the room reads it immediately — that is a favour, out loud, in front of the whole cast.",

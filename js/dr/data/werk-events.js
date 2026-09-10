@@ -763,7 +763,7 @@ export const WERK_EVENTS = [
     when: f => true, effects: { pop: { a: -1 }, state: 'lostTime' },
     lines: [
       "The call comes and {a} is holding one shoe. The other shoe is somewhere. Wig on but the lace is not glued. Left earring in, right one on the floor. \"No no no no no\" — the sound of a queen who is running and knows she is running.",
-      "{a} hears \"places\" and her face does the thing. The garment is not steamed. Accessories not chosen. She grabs the first thing she can reach, clips the second, walks to the door with the confidence of a queen who is absolutely not ready.",
+      "{a} hears \"places\" and freezes. The garment is not steamed. Accessories not chosen. She grabs the first thing she can reach, clips the second, and walks to the door still adjusting her neckline.",
       "Everyone else is lined up. {a} is still at her station, still pinning, still making decisions that should have been made an hour ago. Finishes the last pin as the door opens, grabs her clutch, walks out still adjusting the neckline. Will adjust it all the way to the stage.",
       "\"I need five minutes.\" {a} does not have five minutes. She has ninety seconds and uses them like a person defusing something — fast, precise, no wasted movement. Wig on. Jewellery on. One last look she does not have time for. {a} walks to the stage wearing an outfit that was still being built ten seconds ago.",
     ],
@@ -972,7 +972,7 @@ export const WERK_EVENTS = [
       && f.bond >= 3 && f.episode >= 2,
     effects: { bond: 2, pop: { a: 1 }, state: 'romance' },
     lines: [
-      "Not a thing yet. Both of them know it is not nothing. {a} and {b} have been at the same end of the werkroom for four days running. Tonight {a} stays late for no reason she can name out loud and {b} does not ask why.",
+      "{a} and {b} have been ending up next to each other in the werkroom every day this week. Neither of them is moving her station. Neither of them is saying anything about it.",
       "{a} and {b} keep finding excuses. A zip that needs doing up. A second opinion on a hemline that was fine. Everyone else worked it out a week before they did. Everyone else is being very kind about not saying so.",
       "\"You are in my light,\" {b} says, not moving. {a} does not move either. It goes on slightly too long to be nothing. Then somebody drops a glue gun and the moment goes wherever those go.",
       "Neither has said anything. {a} has started doing her face at the station next to {b}, which is further from the good mirror. {b} has noticed and has not mentioned it. That is roughly where they are.",
@@ -1243,7 +1243,7 @@ export const WERK_EVENTS = [
     when: f => f.groupSize >= 3,
     effects: { bond: -1, pop: { a: -1 }, state: 'too-loud' },
     lines: [
-      "{a} has been giving a TED talk about herself for forty-five minutes. {b} stopped responding twenty minutes ago. {c} stopped ten before that. {a} is still going. She has not paused long enough for either of them to leave — holding two queens hostage with enthusiasm alone.",
+      "{a} has been giving a TED talk about herself for forty-five minutes. {b} stopped responding twenty minutes ago. {c} stopped ten before that. {a} is still going. She has not paused long enough for either of them to leave.",
       "\"And THEN — \" {a} launches into another story. {b} has fully glazed over. {c} is sewing without looking up. {a} does not notice she lost the room because {a} does not check for the room. Girl is performing to an audience of herself and the audience is delighted.",
       "{a} is talking and talking and talking. {b} is giving her the \"mmhmm\" that means nothing. {c} has put one headphone in — the polite version of two. {a} reads this as encouragement. Somebody is going to snap and it is going to be {c}.",
       "The room has a narrator and it is {a}. The story started with her wig and has now reached her childhood and shows no signs of landing. {b} catches {c}'s eye across the room — one look that says \"somebody has to say something\" and another that says \"it is not going to be me.\"",

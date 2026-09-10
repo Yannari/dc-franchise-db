@@ -308,7 +308,29 @@ export function runDragWeek(state, cfg, ctx) {
   // or one she brought. Read from the walks rather than from the challenge,
   // because a module may replace the runway without changing the challenge.
   const runwayKind = walks.length > 1 ? 'ball' : (walks[0] && walks[0].sewn ? 'sewn' : 'call');
+  /* ── AND ON A DESIGN NIGHT THERE IS NO SECOND WALK ────────────────
+     A Ball, a Design challenge and a Runway challenge all deliver a LOOK: the
+     thing she presents on the main stage is the thing the challenge set her to
+     make. Rolling `runwayScore` on top of the challenge scored that one look
+     twice -- the design blend already carries `runway` craft -- and the second
+     roll could disagree with the first, so a queen could win the challenge and
+     be marked down on the walk that WAS the challenge.
+     The challenge result is the walk here. The runway object keeps its shape
+     because the panel and the chart read `runway[n].score`; what goes away is
+     the independent dice, the host's separate category call, and the Runway
+     section on the screen (`dr-runway` opens on the marker below). */
+  /* NOT GUARDED ON `M.runwayOverride`, and the first version was: js/dr/chal/
+     ball.js and js/dr/chal/design.js both set one, to describe the very walk
+     being folded in here, so the guard switched the feature off for precisely
+     the three challenges it was written for. The flag is authored per
+     challenge; that is the whole decision. */
+  const runwayIsChallenge = !!maxi.runwayIsChallenge;
   for (const n of living) {
+    if (runwayIsChallenge) {
+      const perf = performances[n] ? performances[n].perf : 0;
+      runway[n] = { score: perf, fit: null, walks: [perf], isChallenge: true };
+      continue;
+    }
     const scored = walks.map(w => runwayScore({
       player: P(n), category: w.category, sewn: !!w.sewn,
       categoryStyles: w.sewn ? [] : (w.categoryStyles || []), rng,
@@ -319,7 +341,7 @@ export function runDragWeek(state, cfg, ctx) {
       walks: scored.map(x => x.score),
     };
   }
-  if (!M.tournamentExit) say('runway', 'runway', { category });
+  if (!M.tournamentExit && !runwayIsChallenge) say('runway', 'runway', { category });
 
   // 12. The panel sees, and the host decides.
   const entries = living.map(n => ({
@@ -327,6 +349,9 @@ export function runDragWeek(state, cfg, ctx) {
     style: dragOf(P(n)).style,
     perf: performances[n].perf,
     runway: runway[n].score,
+    // Tells the panel that `runway` above is the challenge score, not a second
+    // opinion of the night — see judgeViews.
+    runwayIsChallenge,
     risk: performances[n].risk,
     polish: polishFor(P(n), rng),
     // One draw per queen per episode, seen the same way by every seat.
@@ -360,6 +385,62 @@ export function runDragWeek(state, cfg, ctx) {
   const ranking = rated ? rated.ranking : panelRanking(views);
   const split = isSplitPanel(ranking);
 
+  /* ── THE NIGHT THE SHOW LOOKS RIGGED ──────────────────────────────
+     `trackPull` below pushes a repeat winner DOWN: the host lifts the queen
+     who needs a moment, and somebody who won last week does not need one.
+     That brake is what holds the top queen's share of maxi wins near where it
+     is, and it is right almost always.
+     Almost. There is a specific night the real show gets accused of rigging,
+     and it is not the host saving a favourite from the bottom -- it is the
+     favourite taking a win the room can see somebody else earned. All of
+     these have to be true at once, which is what makes it rare rather than a
+     thumb permanently on the scale:
+       - she is the season's invested favourite, by the room's own standard
+       - she has a record to protect: two wins or more
+       - the panel had her HIGH, not bottom. This is a lift, never a rescue
+       - the queen the panel actually put first is nobody the show is
+         invested in -- below-average star, no arc running. That is what
+         makes it read as robbery rather than a close call
+       - the audience has had time to form a view: past the halfway mark
+       - and it has not happened yet this season
+     When it fires the brake comes off and turns positive, still inside the
+     host's existing two-place allowance. No new power: the same lean he
+     always had, pointed the other way for one night.
+     THE COST IS THE POINT. The robbed queen is adopted by the audience and
+     the favourite is not forgiven for it -- see the popularity below. Star
+     power drifts with the audience now (js/dr/state.js), so a Rigga Morris
+     erodes the very standing that triggered it. That is the brake on the
+     brake coming off, and without live star this mechanic would simply fire
+     for the same queen every week. */
+  const riggaTarget = (() => {
+    if (state._riggaDone) return null;                    // once a season
+    const total = cfg.totalEpisodes || 12;
+    if (!(cfg.num > total / 2)) return null;              // past halfway
+    if (!ranking.length) return null;
+    const stars = living.map(n => (state.star || {})[n] || 0);
+    const mean = stars.reduce((a, b) => a + b, 0) / (stars.length || 1);
+    const fave = [...living].sort((a, b) =>
+      ((state.star || {})[b] || 0) - ((state.star || {})[a] || 0))[0];
+    if (!fave) return null;
+    if (((state.star || {})[fave] || 0) <= mean) return null;
+    if ((state.record[fave] || []).filter(r => r === 'WIN').length < 2) return null;
+    const her = ranking.findIndex(r => r.name === fave);
+    // Second or third on the board: close enough that two places reaches the
+    // top, far enough that the room can see it.
+    if (her < 1 || her > 2) return null;
+    const first = ranking[0] && ranking[0].name;
+    if (!first || first === fave) return null;
+    if (((state.star || {})[first] || 0) >= mean) return null;
+    /* NO ARC CHECK HERE, AND THERE WAS ONE. It required the panel's winner to
+       have no storyline running, which sounds like "nobody the show is
+       invested in" and is not: arcs are re-asked every week and nearly every
+       queen has one, so the gate cut the candidate weeks from 48 to 1 across
+       150 seasons and the mechanic fired 0% of the time over 500. Written,
+       run, and shown to nobody -- §11.5 A, built fresh.
+       Below-average star already says what that gate was reaching for. */
+    return { fave, over: first };
+  })();
+
   // How the season's shape pulls on tonight — the two non-craft terms in the
   // host's bend, both bounded.
   const trackPull = {};
@@ -383,7 +464,10 @@ export function runDragWeek(state, cfg, ctx) {
     const recentWins = rec.slice(-3).filter(r => r === 'WIN').length;
     trackPull[n] = Math.min(1, safeRun * 0.2)
       - Math.min(1, btms * 0.34)
-      - Math.min(1, recentWins * 0.5);
+      // The brake, off and reversed, for one queen on one night.
+      + (riggaTarget && riggaTarget.fave === n
+        ? Math.min(1, recentWins * 0.5)
+        : -Math.min(1, recentWins * 0.5));
   }
   // What the season's arcs want tonight. A room with no tracker (an older
   // save, a week run in isolation by a test) gets zeroes and behaves exactly
@@ -404,6 +488,40 @@ export function runDragWeek(state, cfg, ctx) {
   const bend = rated
     ? ranking.map((r, i) => ({ ...r, finalRank: i + 1, panelRank: r.panelRank }))
     : hostBend(ranking, { star: state.star, storylineNeed, trackPull, split });
+
+  /* ── AND IT ONLY HAPPENED IF THE BEND ACTUALLY TOOK THE WIN ───────
+     The conditions above make a Rigga Morris POSSIBLE; the host still has to
+     move her, and inside two places he often does not. Recorded from the
+     result rather than from the intent, so the season never claims a robbery
+     that did not occur -- and so the once-a-season cap is spent on a night
+     the viewer can actually see. */
+  let rigga = null;
+  if (riggaTarget && !rated) {
+    const won = bend.find(r => r.finalRank === 1);
+    const robbedRow = bend.find(r => r.name === riggaTarget.over);
+    if (won && won.name === riggaTarget.fave && robbedRow && robbedRow.panelRank === 1) {
+      rigga = { queen: riggaTarget.fave, over: riggaTarget.over, episode: cfg.num };
+      state._riggaDone = true;
+      /* THE AUDIENCE IS NOT NEUTRAL ABOUT IT. The robbed queen is adopted --
+         being visibly denied is the single best thing that can happen to a
+         queen's standing with a room -- and the favourite is not forgiven.
+         Popularity feeds star (js/dr/state.js), so this is also the feedback
+         that stops the mechanic pointing at the same queen forever. */
+      ctx.popDelta(riggaTarget.over, 5);
+      ctx.popDelta(riggaTarget.fave, -3);
+      /* AND IT IS SAID OUT LOUD. A bend nobody can see is just a number
+         moving; the accusation IS the event. In-universe words only -- the
+         fandom's name for this night is built on a real person's, which this
+         universe does not do (see the note on `robbed` in js/dr/arcs.js). */
+      say('main-stage', 'host-overrule', {
+        players: [riggaTarget.fave, riggaTarget.over],
+        winner: riggaTarget.fave, passed: riggaTarget.over,
+      });
+      scenes[scenes.length - 1].text = `The panel had ${riggaTarget.over} first. `
+        + `The host gives it to ${riggaTarget.fave}. Nobody in the room says anything, `
+        + `and that is what everyone notices.`;
+    }
+  }
 
   // Early-season immunity, when the season is playing that rule.
   const immune = cfg.immunity && state.lastWinner && cfg.num <= 5 ? [state.lastWinner] : [];
@@ -1005,6 +1123,8 @@ export function runDragWeek(state, cfg, ctx) {
          somebody on the panel to have said it. */
       category,
       runwayKind,
+      // No separate walk beats on a night whose challenge IS the walk.
+      runwayIsChallenge,
       panelSeats,
       players,
       // The panel's own disagreement and the host's overrule, so the
@@ -1155,6 +1275,8 @@ export function runDragWeek(state, cfg, ctx) {
       performances,
       runway,
       panel: { views, ranking, split },
+      // Null on every ordinary night, which is how a reader tells them apart.
+      rigga,
       callOrder,
       critiques,
       critiqueTwist: twist ? { kind: cfg.critiqueTwist, votes: twist.votes || null, tally: twist.tally || null, mean: twist.mean || null } : null,

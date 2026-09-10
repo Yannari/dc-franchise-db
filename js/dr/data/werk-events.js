@@ -763,7 +763,7 @@ export const WERK_EVENTS = [
     when: f => true, effects: { pop: { a: -1 }, state: 'lostTime' },
     lines: [
       "The call comes and {a} is holding one shoe. The other shoe is somewhere. Wig on but the lace is not glued. Left earring in, right one on the floor. \"No no no no no\" — the sound of a queen who is running and knows she is running.",
-      "{a} hears \"places\" and her face does the thing. The garment is not steamed. Accessories not chosen. She grabs the first thing she can reach, clips the second, walks to the door with the confidence of a queen who is absolutely not ready.",
+      "{a} hears \"places\" and freezes. The garment is not steamed. Accessories not chosen. She grabs the first thing she can reach, clips the second, and walks to the door still adjusting her neckline.",
       "Everyone else is lined up. {a} is still at her station, still pinning, still making decisions that should have been made an hour ago. Finishes the last pin as the door opens, grabs her clutch, walks out still adjusting the neckline. Will adjust it all the way to the stage.",
       "\"I need five minutes.\" {a} does not have five minutes. She has ninety seconds and uses them like a person defusing something — fast, precise, no wasted movement. Wig on. Jewellery on. One last look she does not have time for. {a} walks to the stage wearing an outfit that was still being built ten seconds ago.",
     ],

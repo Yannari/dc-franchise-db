@@ -375,6 +375,26 @@ export function simulateDragEpisode() {
   // roster, and a queen who is not on it is billed nothing.
   gs.activePlayers = [...(row.dr?.living || [])];
   gs.episode = row.num;
+  /* A QUEEN WHO WALKED BACK ON COMES OFF THE ELIMINATED LIST. This only ever
+     appended, so a returnee was in `activePlayers` and in `gs.eliminated` on
+     the same night, and on it twice once she went out again. Big Brother has
+     cleared its returnee since the battle-back shipped (js/bb/battle-back.js,
+     js/bb/week.js); this show never learned to.
+
+     Drag Race's own placements read `exits[]` rather than this list -- see the
+     note at the top of js/dr/export.js -- so the show itself never tripped on
+     it. The franchise layer is where it bites: js/aftermath.js unions
+     gs.eliminated into the eliminated set, and met a queen still competing.
+
+     THE FILTER RUNS BEFORE THE APPEND. Today nothing depends on it: a returnee
+     is immune on her return night (js/dr/week.js gives her the pass), so she
+     cannot be in `exits` on the night she is in `returned`. Written this way
+     round so that lifting the immunity is a rule change and not a corruption --
+     filtering after the append would erase the exit it had just written. */
+  if (row.dr?.returned?.name) {
+    const back = row.dr.returned.name;
+    gs.eliminated = (gs.eliminated || []).filter(n => n !== back);
+  }
   gs.eliminated = [...(gs.eliminated || []), ...row.exits.map(x => x.name)];
 
   /* THE AUDIENCE PULSE, which this show was not calling at all. The edit layer

@@ -339,6 +339,9 @@ export function runDragWeek(state, cfg, ctx) {
     style: dragOf(P(n)).style,
     perf: performances[n].perf,
     runway: runway[n].score,
+    // Tells the panel that `runway` above is the challenge score, not a second
+    // opinion of the night — see judgeViews.
+    runwayIsChallenge,
     risk: performances[n].risk,
     polish: polishFor(P(n), rng),
     // One draw per queen per episode, seen the same way by every seat.

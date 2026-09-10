@@ -13,6 +13,9 @@
 //
 // `runwayIsChallenge` in js/dr/data/challenges.js says which challenges
 // deliver a look. Set it on a new one and the second walk goes away with it.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { dragScreens } from '../js/vp-dr/screens.js';
@@ -90,5 +93,64 @@ describe('a challenge whose deliverable is the look', () => {
       const first = row.dr.living[0];
       expect(row.dr.runway[first].walks.length).toBe(1);
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The panel stays a second reading, and the screen stops contradicting it
+// ══════════════════════════════════════════════════════════════════════
+describe('what folding the runway did to the panel', () => {
+  it('does not let one number carry two weights', async () => {
+    /* With `runway === perf`, `t.challenge * perf + t.runway * perf` points
+       about 70% of a seat at a single number, and the panel stops being a
+       reading of the night — it becomes the challenge score restated, and the
+       middle step of CLAUDE.md's three-step rule disappears.
+       Measured at the seam so no season rng can drift between the two arms:
+       the same entries, judged twice, differing only in the fold. */
+    const { judgeViews, panelRanking } = await import('../js/dr/judging.js');
+    const { JUDGES } = await import('../js/dr/data/judges.js');
+    const { rngFor } = await import('../js/dr/rng.js');
+
+    const drift = fold => {
+      let moved = 0; let places = 0;
+      for (let s = 0; s < 60; s++) {
+        const rng = rngFor(900 + s);
+        const entries = Array.from({ length: 12 }, (_, i) => {
+          const perf = 1 + rng() * 9;
+          return { name: `Q${i + 1}`, style: 'camp', perf,
+            runway: perf, runwayIsChallenge: fold,
+            risk: rng(), polish: 1 + rng() * 9, form: (rng() - 0.5) * 2 };
+        });
+        const order = panelRanking(judgeViews(JUDGES.slice(0, 4), entries, {}, rng))
+          .map(r => r.name);
+        const byPerf = [...entries].sort((a, b) => b.perf - a.perf).map(e => e.name);
+        order.forEach((n, i) => { places++; if (byPerf.indexOf(n) !== i) moved++; });
+      }
+      return moved / places;
+    };
+    const echoed = drift(false);
+    const reweighted = drift(true);
+    // 71% -> 82% when this was written. The direction is the assertion; the
+    // exact figures move whenever a judge's taste is retuned.
+    expect(reweighted, `re-weighted ${reweighted} vs echoed ${echoed}`)
+      .toBeGreaterThan(echoed);
+  });
+
+  it('prints the score the placement list is actually about', () => {
+    /* The row showed `perf` beside a position taken from the panel ranking --
+       two different quantities -- so the column never sorted and a queen could
+       sit fifth on 8.5 above a second place on 7.2. */
+    const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..',
+      'js', 'vp-dr', 'challenge.js'), 'utf8');
+    /* Anchored on the heading, not on a class name: `ball-board` and
+       `ball-final` both appear in the CSS far earlier in the file, so slicing
+       between them ran backwards and matched nothing — the first version of
+       this test passed on an empty string. */
+    const at = src.indexOf('Panel placement');
+    expect(at, 'the placement list is gone').toBeGreaterThan(-1);
+    const block = src.slice(at, at + 1200);
+    expect(block).toContain('paddleTotals[r.name]');
+    expect(block, 'the placement list is printing perf again')
+      .not.toMatch(/ball-final-sc">\$\{n1\(p\?\.perf\)/);
   });
 });

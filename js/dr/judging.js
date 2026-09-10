@@ -28,10 +28,30 @@ export function judgeViews(panel, entries, memory = {}, rng = Math.random) {
     const mem = (memory && memory[j.id]) || {};
     const rows = entries.map(e => {
       const t = j.taste;
-      const view = t.challenge * e.perf
-        + t.runway * e.runway
-        + t.risk * (e.risk * 10)
-        + t.polish * (e.polish ?? 5)
+      /* ── ON A DESIGN NIGHT THE RUNWAY WEIGHT HAS NOWHERE OF ITS OWN TO GO ──
+         A Ball, a Design challenge and a Runway challenge deliver ONE look, so
+         `e.runway` is `e.perf` (see runwayIsChallenge in
+         js/dr/data/challenges.js). Left alone, `t.challenge * perf +
+         t.runway * perf` points 70% of a seat's weight at a single number and
+         the panel stops being a second reading of the night — it becomes the
+         challenge score with a rounding error, and the three-step rule in
+         CLAUDE.md (what she did, what the panel thought, what the host
+         decided) loses its middle step.
+         So the runway weight goes to the two things that ARE still separate
+         when the look is the challenge: whether she took a swing, and whether
+         it is finished. Split between them in the proportion this judge
+         already holds them, so a seat that never cared about risk does not
+         start caring now. Total weight per judge is unchanged. */
+      const fold = !!e.runwayIsChallenge;
+      const rp = (t.risk + t.polish) || 1;
+      const wChallenge = t.challenge;
+      const wRunway = fold ? 0 : t.runway;
+      const wRisk = t.risk + (fold ? t.runway * (t.risk / rp) : 0);
+      const wPolish = t.polish + (fold ? t.runway * (t.polish / rp) : 0);
+      const view = wChallenge * e.perf
+        + wRunway * e.runway
+        + wRisk * (e.risk * 10)
+        + wPolish * (e.polish ?? 5)
         + ((j.styleBias || {})[e.style] || 0)
         + (mem[e.name] || 0)
         /* ── THE NIGHT SHE HAD, WHICH THE WHOLE ROOM SEES THE SAME WAY ──

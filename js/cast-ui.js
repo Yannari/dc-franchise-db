@@ -700,7 +700,41 @@ export function _buildSeasonSaveData() {
     gs: JSON.parse(JSON.stringify(gs)), // deep clone
   };
   repairGsSets(gs);
+  _fillTranscriptsForExport(data.gs);
   return data;
+}
+
+/**
+ * Give every episode in an EXPORT a transcript, without keeping one in `gs`.
+ *
+ * current-season.html's importer drops any episode whose `summaryText` is
+ * empty, so a drag season -- the one format that never writes the field --
+ * arrived there as zero episodes and the page reported it as a missing-access
+ * problem. Both shapes of that message were wrong: nothing was inaccessible,
+ * and the file it offered instead had the same gap in it.
+ *
+ * DERIVED HERE RATHER THAN STORED ON THE ROW, which is the whole point. A
+ * transcript is 50-80KB an episode and `_saveEpisodeCheckpoint` deep-clones
+ * the entire `gs` -- episodeHistory included -- once per episode. Put the text
+ * on the row and every later checkpoint carries a copy of every earlier
+ * transcript: twelve episodes cost about 4.7MB of checkpoints for a season
+ * that otherwise runs under one. That is the Big Brother state-bloat shape
+ * exactly, and it is why this does NOT follow bb-run.js here.
+ *
+ * The text is a pure function of the record, so deriving it at the moment of
+ * export is always as correct as storing it would have been -- and it fills a
+ * season played before this existed, which a write-on-air fix could not.
+ */
+function _fillTranscriptsForExport(exportGs) {
+  const rows = exportGs?.episodeHistory;
+  if (!Array.isArray(rows) || typeof window === 'undefined'
+    || typeof window.generateSummaryText !== 'function') return;
+  for (const row of rows) {
+    if (!row || String(row.summaryText || '').trim()) continue;
+    // One episode that cannot be narrated must not cost the other eleven their
+    // export -- the save is the point, the transcript is a passenger.
+    try { row.summaryText = String(window.generateSummaryText(row) || ''); } catch { /* skip it */ }
+  }
 }
 export function _applySeasonSave(data) {
   if (!data?.gs || !data?.config) { alert('Invalid season save.'); return; }

@@ -2891,7 +2891,14 @@ Owen: This is going to be amazing!"
 
     async function _importSimulatorPayload(payload, sourceLabel) {
       const rows = _simulatedEpisodeRows(payload);
-      if (!rows.length) throw new Error('No simulated episodes with summaries were found. Simulate an episode first.');
+      if (!rows.length) {
+        const err = new Error('That save has no episode transcripts in it. '
+          + 'A season exported before the transcript fix carries none — re-export it '
+          + 'from the simulator (Export Season) and choose the new file. '
+          + 'If the season has not been simulated yet, simulate an episode first.');
+        err.contentGap = true;
+        throw err;
+      }
 
       // ── THE SHOW HAS TO MATCH, AND THIS ONE WRITES ──
       //
@@ -2983,6 +2990,20 @@ Owen: This is going to be amazing!"
         // offering the file picker for it would just import the wrong season
         // by a different route.
         if (error?.showMismatch) setStatus(error.message);
+        /* ── AND SO IS "THERE ARE NO EPISODES IN IT" ──────────────────
+           This branch used to swallow EVERY throw and report it as an access
+           problem. A drag season reached it by a completely different route --
+           its rows carried no `summaryText`, so the importer kept none of them
+           and threw "No simulated episodes with summaries were found" -- and
+           the page answered "Direct access is unavailable here", sending the
+           reader after a permission that was never the trouble and offering a
+           file that had the same gap in it.
+           `contentGap` marks the errors that are about what is IN the save. The
+           picker still opens for them -- a freshly exported file is exactly the
+           fix -- but the reader is told what was actually missing rather than
+           being pointed at a permission. Anything genuinely unreadable falls
+           through to the generic message below. */
+        else if (error?.contentGap) _requestSimulatorFile(error.message);
         else _requestSimulatorFile('Direct access is unavailable here. Choose the JSON made by Simulator → Export Season.');
       } finally {
         els.simulatorSync.disabled = false;

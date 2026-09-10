@@ -254,7 +254,12 @@ export const MAXI_EVENTS = [
     id: 'partner-fought-it', from: 'makeover', cast: 'solo',
     note: 'Her partner will not go along with it — the heels, the corset, the '
       + 'face, something. {a} spends the morning on that instead of the look.',
-    lines: [],
+    lines: [
+      "{a}'s partner will not put the heels on. Flat out refuses. She spends twenty minutes talking him into it and that is twenty minutes she did not spend on the look.",
+      "He will not sit still for the wig. {a} is patient, then firm, then begging, and the whole morning goes to getting him through something the other partners did in ten minutes.",
+      "{a}'s partner keeps laughing and pulling away every time she tries to do his face. She is losing time and she knows it. The look is suffering because the morning went to him instead of the garment.",
+      "Her partner fights every step. The corset, the lashes, the walk — all of it is a negotiation. {a} keeps her cool but by lunch the look is behind and the reason is not her skills, it is his morning.",
+    ],
   }),
   e({
     /* THE OTHER END OF THE SAME ROLL, and the reason this is not simply a
@@ -262,7 +267,12 @@ export const MAXI_EVENTS = [
     id: 'partner-took-to-it', from: 'makeover', cast: 'solo',
     note: 'Her partner turns out to love it, and {a} gets a day she was not '
       + 'counting on.',
-    lines: [],
+    lines: [
+      "{a}'s partner is into it. Like, actually into it. He is asking about the wig, he wants to try the walk, and {a} gets to spend the morning on the look instead of on him. She was not expecting this.",
+      "He takes to it immediately. {a} barely has to explain anything — he sits for the face, he stands for the fitting, he practices the walk on his own. She gets a full morning of actual work and she knows how lucky that is.",
+      "{a}'s partner loves it. The heels, the padding, the whole thing — he is laughing but he is also standing still and letting her work. The morning goes exactly how she needed it to go.",
+      "Her partner turns out to be the easiest one in the room. {a} has him in the wig and corset by mid-morning and spends the rest of the day on the details everyone else is rushing through.",
+    ],
   }),
   e({
     id: 'handed-the-hardest', from: 'makeover', cast: 'pair',

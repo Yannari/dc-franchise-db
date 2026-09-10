@@ -247,6 +247,23 @@ function _playWholeSeason() {
   const cast = (players || []).filter(p => p && p.name);
   if (cast.length < 4) return false;
 
+  /* A REBUILD replays every episode from scratch, and the callbacks write into
+     gs.bonds and gs.popularity as it goes — so a rebuild after three aired
+     episodes applies those episodes' bond and popularity changes A SECOND TIME
+     on top of the checkpoint's state. That is the "two timelines merging" bug:
+     the re-run produces a different ep 4, but eps 1-3 have been double-counted
+     in the bond and popularity ledgers, so eps 5+ are computed against a state
+     that belongs to neither timeline.
+     The fix: when aired episodes exist, snapshot the live state before the
+     rebuild and restore it after. The queue rows are self-contained — each
+     carries its own `living`, performances and scores — so the rebuild's
+     side-effects on live state are not needed. */
+  const isRebuild = (gs.episodeHistory || []).length > 0;
+  const savedBonds = isRebuild && gs.bonds
+    ? JSON.parse(JSON.stringify(gs.bonds)) : null;
+  const savedPop = isRebuild && gs.popularity
+    ? JSON.parse(JSON.stringify(gs.popularity)) : null;
+
   // Perceived bonds, not real ones: what a queen believes about the room is
   // what shapes how she works with it. Wrapped because a season can be started
   // before the relationship layer has anything in it.
@@ -275,6 +292,11 @@ function _playWholeSeason() {
       gs.popularity[n] = (gs.popularity[n] || 0) + d;
     },
   });
+
+  if (isRebuild) {
+    if (savedBonds) gs.bonds = savedBonds;
+    if (savedPop) gs.popularity = savedPop;
+  }
 
   gs._drQueue = out.rows;
   // What every night was actually booked with, so a later re-book can freeze

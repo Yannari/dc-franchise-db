@@ -101,9 +101,50 @@ describe('a hundred drag seasons', () => {
     }
     const mean = shares.reduce((a, b) => a + b, 0) / shares.length;
     const over = shares.filter(x => x > 0.5).length;
+    /* ── AND THE TWO NUMBERS THE SHARE IS MADE OF ────────────────────
+       A share is a fraction and this file spent its life reading only the
+       fraction, which hid that BOTH halves are off and in opposite
+       directions. Measured against 13 real seasons
+       (tools/dr-real-domination.py):
+
+         top queen's wins   sim 3.9   real 3.15   -> 24% too many
+         maxi per season    sim 8.5   real 11.4   -> 25% too few
+         share              sim 46%   real 28.5%
+
+       Neither is visible in the share and the share is the product of both.
+       An afternoon went into hunting the "domination problem" as though it
+       were one thing; half of it is season length, which is a format
+       decision, not a balance one.
+       AND THE HOST IS NOT THE LEVER. A career brake on `trackPull` moved the
+       top queen's win count from 3.92 to 3.85 at full strength -- `trackPull`
+       carries 0.2 of a bend that may move two places, so it cannot reach
+       this. Whatever produces 3.9 wins is the challenge scoring itself. */
     console.log('\n2 · DOMINATION');
-    line("top queen's share of maxi wins", `${(mean * 100).toFixed(0)}%`, 'real show: ~30%');
+    /* THE COMPARISON NUMBER, MEASURED. This label said "real show: ~30%" for
+       its whole life with no source anywhere, and it steered balance work --
+       including three experiments run against it in one afternoon. It is now
+       13 seasons read off the wiki by tools/dr-real-domination.py:
+       mean 28.5%, sd 5.3pp, range 22.2% to 40.0%.
+       THE SPREAD IS THE USEFUL HALF. One simulated season at 40% is ordinary;
+       it is the MEAN across seasons that has to land near 28.5%. And the top
+       queen takes three or four maxi wins almost regardless of season length
+       -- season 16 ran eighteen and hers still took four. */
+    line("top queen's share of maxi wins", `${(mean * 100).toFixed(0)}%`,
+      'real show: 28.5% mean, 22-40% range (13 seasons, tools/dr-real-domination.py)');
     line('seasons where one queen won >50%', pct(over, shares.length));
+    const topWins = [];
+    const perSeason = [];
+    for (const o of SEASONS) {
+      const w = {};
+      let t = 0;
+      for (const row of o.rows) {
+        for (const n of row.dr?.call?.win || []) { w[n] = (w[n] || 0) + 1; t++; }
+      }
+      if (t) { topWins.push(Math.max(...Object.values(w))); perSeason.push(t); }
+    }
+    const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+    line("top queen's maxi WINS", avg(topWins).toFixed(2), 'real: 3.15 (13 seasons)');
+    line('maxi challenges per season', avg(perSeason).toFixed(1), 'real: 11.4 — half the share gap is here');
     /* AN OPEN CALIBRATION, STATED RATHER THAN HIDDEN BEHIND A PASSING BAND.
        The top queen takes about half a season's maxi challenges; the real
        show's most dominant winners take three or four of twelve, so this runs

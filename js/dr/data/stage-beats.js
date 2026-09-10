@@ -538,7 +538,7 @@ export const STAGE_BEATS = [
     tier('legacy', 'The top two. The winner of the song holds the power.', [
       "\"{a}.\" The host holds her name a beat longer than usual. \"You are in the top two tonight.\" He does not smile. {a} stands still — she knows the song decides who goes home, and the decision is hers if she wins it.",
       "\"{a}, you are in the top two, and you know what that means.\" The room behind {a} goes quiet. {a} keeps her eyes forward.",
-      "The host calls {a}'s name and the bottom queens behind her shift. They already knew, but hearing it confirmed changes the air. {a} stands where the safe queens stand and feels nothing like safe.",
+      "The host calls {a}'s name and the bottom queens behind her shift. She already knew, but hearing it confirmed changes the air. {a} stands where the safe queens stand and feels nothing like safe.",
       "\"{a}.\" A pause. \"You are one of two queens who will lip sync tonight, and the winner will hold the power.\" {a} takes a breath and holds it.",
       "\"You are in the top two tonight, {a}.\" The host lets it land. {a} presses her lips together. Behind her, a queen just heard that sentence and understood her fate is about to belong to somebody else.",
       "\"{a}, top two.\" The host says it simply because the night is already heavy enough. {a} receives it standing straight and still — holding everything in place until the music starts.",

@@ -228,134 +228,134 @@
           "carson"
         ],
         "guest": null,
-        "runwayCategory": "Denim and Diamonds",
+        "runwayCategory": "Bodysuit Realness",
         "song": {
-          "title": "Fancy",
-          "artist": "Reba McEntire"
+          "title": "So Emotional",
+          "artist": "Whitney Houston"
         },
         "placements": [
           {
             "name": "Velvet Vixen",
             "playerSlug": "velvet-vixen",
             "result": "SAFE",
-            "panelRank": 3,
-            "finalRank": 3,
+            "panelRank": 9,
+            "finalRank": 9,
             "storyline": "Family Story"
           },
           {
             "name": "Taystee",
             "playerSlug": "taystee",
             "result": "SAFE",
-            "panelRank": 6,
-            "finalRank": 6,
+            "panelRank": 8,
+            "finalRank": 8,
             "storyline": "Fashion Queen"
           },
           {
             "name": "Sharon Needles",
             "playerSlug": "sharon-needles",
             "result": "SAFE",
-            "panelRank": 13,
-            "finalRank": 13,
+            "panelRank": 4,
+            "finalRank": 4,
             "storyline": "Villain"
           },
           {
             "name": "Riot",
             "playerSlug": "riot",
             "result": "SAFE",
-            "panelRank": 14,
-            "finalRank": 14,
+            "panelRank": 11,
+            "finalRank": 11,
             "storyline": null
           },
           {
             "name": "Quin",
             "playerSlug": "quin",
             "result": "HIGH",
-            "panelRank": 1,
-            "finalRank": 1,
+            "panelRank": 2,
+            "finalRank": 2,
             "storyline": "Professional"
           },
           {
             "name": "Paige Turner",
             "playerSlug": "paige-turner",
             "result": "SAFE",
-            "panelRank": 10,
-            "finalRank": 10,
+            "panelRank": 3,
+            "finalRank": 3,
             "storyline": "Comedy Queen"
           },
           {
             "name": "Minnie Skurr",
             "playerSlug": "minnie-skurr",
             "result": "WIN",
-            "panelRank": 2,
-            "finalRank": 2,
-            "storyline": "Underdog"
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": null
           },
           {
             "name": "Marge Stache",
             "playerSlug": "marge-stache",
             "result": "SAFE",
-            "panelRank": 7,
-            "finalRank": 7,
+            "panelRank": 10,
+            "finalRank": 10,
             "storyline": null
           },
           {
             "name": "Ginger Hollywood",
             "playerSlug": "ginger-hollywood",
             "result": "SAFE",
-            "panelRank": 11,
-            "finalRank": 11,
+            "panelRank": 7,
+            "finalRank": 7,
             "storyline": "Look Queen"
           },
           {
             "name": "Gigi Cherie",
             "playerSlug": "gigi-cherie",
             "result": "SAFE",
-            "panelRank": 9,
-            "finalRank": 9,
-            "storyline": "Alternative Queen"
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "Underdog"
           },
           {
             "name": "Cupcakke",
             "playerSlug": "cupcakke",
             "result": "SAFE",
-            "panelRank": 12,
-            "finalRank": 12,
+            "panelRank": 13,
+            "finalRank": 13,
             "storyline": null
           },
           {
             "name": "Cheryl Hole",
             "playerSlug": "cheryl-hole",
             "result": "SAFE",
-            "panelRank": 5,
-            "finalRank": 5,
+            "panelRank": 14,
+            "finalRank": 14,
             "storyline": null
           },
           {
             "name": "Autumnatic",
             "playerSlug": "autumnatic",
             "result": "SAFE",
-            "panelRank": 4,
-            "finalRank": 4,
+            "panelRank": 5,
+            "finalRank": 5,
             "storyline": "Comedy Queen"
           },
           {
             "name": "Anita Crown Davenport",
             "playerSlug": "anita-crown-davenport",
             "result": "SAFE",
-            "panelRank": 8,
-            "finalRank": 8,
+            "panelRank": 12,
+            "finalRank": 12,
             "storyline": "Pageant Queen"
           }
         ],
         "lipsync": {
           "queens": [
-            "Quin",
-            "Minnie Skurr"
+            "Minnie Skurr",
+            "Quin"
           ],
           "winner": "Minnie Skurr",
           "loser": null,
           "call": "for-the-win",
-          "song": "Fancy"
+          "song": "So Emotional"
         },
         "exits": [],
         "eliminated": null,
@@ -447,8 +447,8 @@
     {
       "n": 1,
       "word": "Episode",
-      "title": "Stand-Up Challenge",
-      "prose": "For the Stand-Up Challenge, the runway category was Hometown Pride, Aiden won the mini challenge, and Duncan won the maxi challenge, with Cameron and Karol high. Gerry and Nessa were low, Kai and Diego were the bottom contestants, Brody and Diego lip synced to \"I Will Always Love You\", and Diego was sashayed away."
+      "title": "Talent Show Extravaganza",
+      "prose": "The maxi challenge was Talent Show Extravaganza, and the runway category was Denim and Diamonds. Minnie Skurr won the maxi challenge, Quin was high, and Quin and Minnie Skurr lip synced to \"Fancy.\""
     },
     {
       "n": 2,

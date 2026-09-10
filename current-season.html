@@ -2894,7 +2894,7 @@ Owen: This is going to be amazing!"
       if (!rows.length) {
         const err = new Error('That save has no episode transcripts in it. '
           + 'A season exported before the transcript fix carries none — re-export it '
-          + 'from the simulator (Export Season) and choose the new file. '
+          + 'from the simulator (Season → Export JSON) and choose the new file. '
           + 'If the season has not been simulated yet, simulate an episode first.');
         err.contentGap = true;
         throw err;
@@ -2974,7 +2974,7 @@ Owen: This is going to be amazing!"
     }
 
     function _requestSimulatorFile(message) {
-      setStatus(message || 'This page cannot access the simulator directly. Choose the JSON made by Simulator → Export Season.');
+      setStatus(message || 'This page cannot access the simulator directly. Choose the JSON made by Simulator → Season → Export JSON.');
       els.simulatorSeasonFile?.click();
     }
 
@@ -2983,7 +2983,7 @@ Owen: This is going to be amazing!"
       setStatus('Looking for simulated episodes on this site…');
       try {
         const state = await _readLocalSimulatorState();
-        if (!state) return _requestSimulatorFile('No simulator save exists on this origin. On yannari.github.io, choose the JSON made by Simulator → Export Season.');
+        if (!state) return _requestSimulatorFile('No simulator save exists on this origin. On yannari.github.io, choose the JSON made by Simulator → Season → Export JSON — that one works part-way through a season.');
         await _importSimulatorPayload(state, 'Direct simulator sync');
       } catch (error) {
         // A show mismatch is a real answer, not a missing-access problem, and
@@ -3004,7 +3004,7 @@ Owen: This is going to be amazing!"
            being pointed at a permission. Anything genuinely unreadable falls
            through to the generic message below. */
         else if (error?.contentGap) _requestSimulatorFile(error.message);
-        else _requestSimulatorFile('Direct access is unavailable here. Choose the JSON made by Simulator → Export Season.');
+        else _requestSimulatorFile('Direct access is unavailable here. Choose the JSON made by Simulator → Season → Export JSON — that one works part-way through a season.');
       } finally {
         els.simulatorSync.disabled = false;
       }

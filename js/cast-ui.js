@@ -768,8 +768,24 @@ export function _applySeasonSave(data) {
   }
 }
 
-// Export season as JSON file
-export function exportSeason() {
+/**
+ * Download the season as a JSON file, at whatever episode it has reached.
+ *
+ * NAMED `exportSeasonJson`, NOT `exportSeason`, AND THAT IS THE POINT.
+ * js/stats-export.js exports a function called `exportSeason` too -- the
+ * publish pipeline that writes a FINISHED season to the database -- and
+ * js/main.js puts every module's functions on `window` in list order with
+ * statsExportMod after castUiMod. This one was therefore overwritten and
+ * unreachable: the Season menu's "Export JSON" button, and the hub's "Export"
+ * beside "Save", both ran the publish flow instead. A season still airing had
+ * no way to produce a file at all, which is what the Control Room's sync asks
+ * for and what a cross-origin sync can only ever use -- IndexedDB does not
+ * cross from localhost to the published site.
+ *
+ * Two functions, two names, and a test that says so: see
+ * tests/dr-season-export-sync.test.js.
+ */
+export function exportSeasonJson() {
   if (!gs?.initialized) { alert('No season to export. Initialize first.'); return; }
   const data = _buildSeasonSaveData();
   const name = (seasonConfig.name || 'season').replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-').toLowerCase();

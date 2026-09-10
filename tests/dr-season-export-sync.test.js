@@ -25,6 +25,9 @@
 // _fillTranscriptsForExport in js/cast-ui.js: `_saveEpisodeCheckpoint`
 // deep-clones the whole gs once per episode, so a transcript on the row is
 // re-copied into every later checkpoint.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import * as core from '../js/core.js';
 import { generateSummaryText } from '../js/text-backlog.js';
@@ -120,5 +123,60 @@ describe('a drag season exported for the Control Room', () => {
     globalThis.gs = core.gs;
     expect(importerKeeps({ gs: stale }).length).toBe(0);
     expect(importerKeeps(castUi._buildSeasonSaveData()).length).toBe(3);
+  });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════
+// And the button that makes the file has to still exist
+// ══════════════════════════════════════════════════════════════════════
+//
+// The fix above is only reachable through a download button, and there wasn't
+// one. js/stats-export.js exports `exportSeason` -- the pipeline that publishes
+// a FINISHED season -- and js/cast-ui.js exported a different `exportSeason`
+// that downloads the JSON at whatever episode the season has reached. js/main.js
+// copies every module's functions onto `window` in list order and statsExportMod
+// comes after castUiMod, so the download one was overwritten and unreachable.
+//
+// Both the Season menu's "Export JSON" and the hub's "Export" beside "Save" ran
+// the publish flow. A season still airing could not produce a file at all --
+// which is the only thing a cross-origin sync can use, because IndexedDB does
+// not cross from localhost to the published site.
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const read = f => readFileSync(join(root, f), 'utf8');
+
+describe('the two exports keep their own names', () => {
+  it('does not let stats-export overwrite the JSON download on window', async () => {
+    const castUi = await import('../js/cast-ui.js');
+    const stats = await import('../js/stats-export.js');
+    const shared = Object.keys(castUi)
+      .filter(k => typeof castUi[k] === 'function'
+        && typeof stats[k] === 'function');
+    expect(shared,
+      'these names collide, and js/main.js puts stats-export on window last')
+      .toEqual([]);
+  });
+
+  it('keeps the download under the name the buttons call', async () => {
+    const castUi = await import('../js/cast-ui.js');
+    expect(typeof castUi.exportSeasonJson).toBe('function');
+    // The control arm for the collision test above: if this ever goes back to
+    // `exportSeason`, the shared-names check is what fails first.
+    expect(castUi.exportSeason).toBeUndefined();
+  });
+
+  it('wires the mid-season buttons to the download, not to the publish', () => {
+    const html = read('simulator.html');
+    expect(html).toContain('onclick="exportSeasonJson()');
+    // "Export Season" in the sidebar is the publish pipeline and stays that way.
+    expect(html).toContain('>Export Season</button>');
+    expect(read('js/run-ui.js')).toContain('onclick="exportSeasonJson()"');
+  });
+
+  it('leaves the publish pipeline calls alone', () => {
+    // run-ui passes a status callback to those two; that is stats-export's
+    // signature, and repointing them would have broken the publish flow.
+    const runUi = read('js/run-ui.js');
+    expect((runUi.match(/window\.exportSeason\(/g) || []).length).toBe(2);
   });
 });

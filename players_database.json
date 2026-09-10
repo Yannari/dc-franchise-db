@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 14,
-    "totalPlayers": 170,
+    "totalPlayers": 184,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -852,10 +852,9 @@
       "seasons": [
         6,
         7,
-        8,
-        1
+        8
       ],
-      "totalSeasons": 4,
+      "totalSeasons": 3,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -958,33 +957,11 @@
           ],
           "format": "total-drama",
           "seasonId": "td-8"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 10,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 2,
-            "lipsyncWins": 1,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "On Blood vs. Water (Season 6), Brody was the season’s endurance monster—paired with Geoff, he absorbed heat and still kept moving forward. He even survived an earlier trip through the swap/Redemption machinery, returning to the game with a target that never truly faded. By Episode 14, the merge needed a clean break from the ‘can’t kill him’ narrative and Brody was voted out 4–2. (Result: voted out Episode 14, 4–2; 7th.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nBrody’s Fan vs Favorites run ended early as soon as the tribe needed a clean, low-risk boot. He never found the numbers to lock a majority lane, and his name became the easiest one to write down without starting a war. In a near-unanimous 5–1 vote, Brody was sent home before the season’s swap chaos even began.\n\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\nEarly Hero casualty for misreading the power duo and firing at the reigning champ too soon.",
       "seasonsPlayed": 3,
-      "avgPlacement": 12.75,
+      "avgPlacement": 13.67,
       "byShow": {
         "total-drama": {
           "seasons": 3,
@@ -992,15 +969,6 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 2,
-          "totalLipsyncWins": 1,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 0,
@@ -1016,10 +984,9 @@
       "seasons": [
         4,
         3,
-        8,
-        1
+        8
       ],
-      "totalSeasons": 4,
+      "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 6,
@@ -1126,33 +1093,11 @@
           ],
           "format": "total-drama",
           "seasonId": "td-8"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 5,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 3,
-            "lows": 2,
-            "bottoms": 1,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Cameron operated as the season’s cerebral pivot—building structure early, keeping options open as tribes shifted, and saving power for the exact moment it would matter. Their signature move came with the clock at zero: in Episode 12, Cameron played the last-possible idol on themself, cancelled the only vote against them, and then voted out Anne Maria—breaking an unbreakable bond on purpose to lock in the finale. At Final Tribal, Cameron earned None and finished 3rd, but their vote became the swing factor in a historic 3–3–1 split before the cast tiebreaker crowned Emma.\n\nStrategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nIn Edge of Extinction (Season 4), Cameron played the classic “quiet glue” game—rarely the loudest voice, but constantly in the numbers. He began on Red → Yellow → Red → Campers and repeatedly re‑integrated after swaps, anchoring what became the core of the Red alliance. At Final 5, Scott’s endgame squeeze snapped shut and Cameron was cut 2–0 before he could argue his case at the end. Result: Cameron finished 5th.\n\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\n────────\n\nSEASON 8 — Heroes VS Villains VS Civilians\nHe came back to Total Drama having already been a finalist once, and everyone knew it — which is exactly why nobody could justify cutting him. Where Alejandro dominated with force, Cameron survived with friction: he was too useful to remove, too unthreatening to prioritise, and just connected enough to the right people at the right moments. He weathered a prolonged, open, personal feud with MacArthur that consumed four straight episodes and somehow emerged closer to the end than she did. He won zero challenges. Found zero idols. Made zero big moves. And yet every single Tribal Council, the vote landed somewhere else. At Final Tribal he faced a two-time winner with four immunities and a résumé that dwarfed his own — and still split the jury 4-4 by convincing Gerry, Jen, Sanders, and Sugar that quiet architecture deserved the same crown as physical dominance. The franchise's most improbable co-winner.",
       "seasonsPlayed": 3,
-      "avgPlacement": 3.5,
+      "avgPlacement": 3,
       "byShow": {
         "total-drama": {
           "seasons": 3,
@@ -1160,15 +1105,6 @@
           "totalImmunityWins": 2,
           "totalRewardWins": 5,
           "totalIdolsFound": 1
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 3,
-          "totalLows": 2,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "emoji": "🔬",
@@ -1889,10 +1825,10 @@
         2,
         1
       ],
-      "totalSeasons": 4,
+      "totalSeasons": 3,
       "bestPlacement": 1,
-      "wins": 2,
-      "totalChallengeWins": 9,
+      "wins": 1,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 1,
       "totalRewardWins": 1,
       "totalVotesAgainst": 17,
@@ -1902,8 +1838,7 @@
         "S2 Winner",
         "Unbreakable: Gwen",
         "Final 6",
-        "Major Meltdown",
-        "DR1 Winner"
+        "Major Meltdown"
       ],
       "seasonDetails": [
         {
@@ -1977,33 +1912,11 @@
           ],
           "format": "total-drama",
           "seasonId": "td-1"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 1,
-          "status": "Winner",
-          "challengeWins": 7,
-          "popularity": 0,
-          "dr": {
-            "wins": 7,
-            "highs": 2,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Killer Bass (Season 1), Duncan ran early days on intimidation and loyalty—an alpha approach that works until people get sick of living under it.  He found an idol, but it couldn’t stop the merge math from catching up. His exit was clean and decisive: a 5–3 vote where the majority chose long-term peace over short-term protection. It wasn’t a collapse; it was the moment the cast decided they’d rather risk the unknown than keep letting him set the temperature (Result: eliminated; 14th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nDuncan’s Season 2 championship run on the Screaming Gaffers was built on durability: survive the ugliest feuds, keep options open, and stay standing when plans collapse. He outlasted the idol-driven chaos and entered the finale with the clearest case for pressure management and endgame positioning. The jury agreed, crowning him in a 5–1–1 finish (Duncan wins Season 2).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nReturning for Edge of Extinction (Season 4), Duncan walked in with a winner’s target and spent the season scrapping for inches. He survived into the merge phase before becoming the consensus boot in a tense 3–2–1 split, exiting at Episode 12 as the endgame tightened. Even on the jury, he left his stamp by casting the lone Final Tribal vote for Scott. Result: Duncan placed 7th.",
       "seasonsPlayed": 3,
-      "avgPlacement": 5.75,
+      "avgPlacement": 7.33,
       "byShow": {
         "total-drama": {
           "seasons": 3,
@@ -2011,15 +1924,6 @@
           "totalImmunityWins": 1,
           "totalRewardWins": 1,
           "totalIdolsFound": 1
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 7,
-          "totalHighs": 2,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "emoji": "💀",
@@ -3800,8 +3704,8 @@
         2,
         1
       ],
-      "totalSeasons": 3,
-      "bestPlacement": 9,
+      "totalSeasons": 2,
+      "bestPlacement": 10,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -3854,35 +3758,13 @@
           ],
           "format": "total-drama",
           "seasonId": "td-1"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 9,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 1,
-            "bottoms": 1,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Killer Bass (Season 1), Justin walked in thinking charm was enough to coast.  He even found an early idol—then left with it still in his pocket. The problem was that Season 1 didn’t reward ‘liked’—it rewarded *locked-in numbers*, and he never secured them. As the first boot, he became the season’s opening statement: popularity is fragile, and if the tribe wants an easy night, the pretty target goes first (Result: first boot; 24th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nJustin played Season 2 on Killer Grips by hovering near power without becoming the headline — until the merge chaos rewrote everything. Ezekiel’s idol play nuked the original plan and left Justin as the first exposed piece when the board reset. With multiple votes voided and no shields left, the tribe took the clean shot and made him the first juror (Justin voted out, 4–0).",
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 14.33,
+      "avgPlacement": 17,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -3890,15 +3772,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 1,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "emoji": "🪞",
@@ -7698,10 +7571,9 @@
       "name": "Gerry",
       "seasons": [
         8,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -7781,32 +7653,10 @@
           "rivalries": [],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 7,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 1,
-            "bottoms": 1,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "A 70-year-old tennis legend who arrived as the tribe's biggest liability and left as its most dangerous weapon. Pre-merge, he turned a petty stepbrother feud with Chet into a calculated blood war — surviving two ties and a revote through sheer force of personality while Jen and Sanders used him as a battering ram. At the merge he found the idol and immediately became untouchable, pairing with Jen in the season's most unbreakable duo and controlling 75% of post-merge votes. But his masterpiece was psychological: episode by episode he dismantled Heather — four-time veteran, Super Idol holder, the franchise's greatest villain — through relentless provocation until she quit mid-game, surrendering the most powerful advantage ever seen without playing it. He didn't find her idol. He didn't outplay her strategically. He broke her. Fell at Final 4 when Sanders' immunity win removed his last shield, but his shadow hung over every vote that followed. (Result: Vote 3-1; 4th).\n\nSEASON 13 — Total Drama Doom Island\n────────\nGerry starts as the understated veteran nobody wants to overreact to. He rallies Civilians at key moments and quietly helps camp, but his game never gains enough active protection. When Scarlett becomes the obvious target, Gerry's name still sits there as the clean counterweight. The revote flips toward him, and his exit becomes the season's first real warning that comfort is not safety.",
-      "avgPlacement": 10.67,
+      "avgPlacement": 12.5,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -7814,15 +7664,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 1,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 0,
@@ -8064,13 +7905,12 @@
       "name": "Sanders",
       "seasons": [
         8,
-        10,
-        1
+        10
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 6,
+      "totalChallengeWins": 5,
       "totalImmunityWins": 2,
       "totalRewardWins": 3,
       "totalVotesAgainst": 6,
@@ -8157,32 +7997,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-10"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 3,
-          "status": "Miss Congeniality",
-          "challengeWins": 1,
-          "popularity": 0,
-          "dr": {
-            "wins": 1,
-            "highs": 3,
-            "lows": 2,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 1
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "She arrived as one of six Civilians — the season's sacrificial lambs, assembled to be picked off by legends. Her tribe was decimated in three straight tribals. Her closest ally MacArthur was on the other tribe. By the merge she had one idol, zero allies in the majority, and every reason to accept an honorable early jury exit. Instead she ran the post-merge. She built simultaneous Unbreakable bonds with Jen and MacArthur while quietly accumulating influence over Alejandro and Cameron. When the majority came for MacArthur with five votes, she negated every single one. When Jen — her closest ally, her strategic partner, her shield — became the biggest threat to her endgame, she won immunity, found a second idol, played it on her biggest rival, and watched Jen go home on the revote. She called it avenging MacArthur. It was also just brilliant. Won F4 immunity, dictated Gerry's exit, then lost the finale challenge by a thread to the man she'd saved twice. The most complete non-winner game in franchise history.\n\nSEASON 10 — Champions vs Contenders\n────────\nSanders enters as the golden hero trying to finish unfinished business, but her game is repeatedly caught between loyalty and self-preservation. She forms The Oath with Ryan, fractures it, wins Awake-A-Thon for her tribe, and reaches merge as one of the most feared challenge performers in the cast. Her first boot at merge sends her to Redemption Island, where she transforms from fallen hero into final boss. Duel after duel, she beats Zoey, Scott, Priya, Cody, and Carrie, carving a new season inside the season. When she returns with five straight wins, everyone knows she cannot be allowed near the final challenge. The endgame vote against her is almost a compliment: they remove her because if they do not, she may never lose again.",
-      "avgPlacement": 3.67,
+      "avgPlacement": 4,
       "byShow": {
         "total-drama": {
           "seasons": 2,
@@ -8190,15 +8008,6 @@
           "totalImmunityWins": 2,
           "totalRewardWins": 0,
           "totalIdolsFound": 2
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 1,
-          "totalHighs": 3,
-          "totalLows": 2,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 1
         }
       },
       "totalMaxiWins": 2,
@@ -11523,11 +11332,10 @@
       "id": "karol",
       "name": "Karol",
       "seasons": [
-        12,
-        1
+        12
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 2,
+      "totalSeasons": 1,
+      "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -11580,32 +11388,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-12"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 2,
-          "status": "Runner-up",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 2,
-            "lows": 4,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "Karol plays Generations with force: force in challenges, force in arguments, force in every room she enters. She is brilliant in bursts, deadly in competitions, and terrible at hiding contempt. Her rivalry web — James, Rosa-Maria, Lake, Ellie, Yul — turns her into both weapon and target. The pre-merge sees her stack a résumé, find and play an idol, and survive votes that should have ended her. But the merge is unforgiving to players everyone has already discussed. When the open vote arrives, Karol can feel the floor moving; no one listens until her torch is already gone.",
-      "avgPlacement": 6.5,
+      "avgPlacement": 11,
       "byShow": {
         "total-drama": {
           "seasons": 1,
@@ -11613,15 +11399,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 1
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 2,
-          "totalLows": 4,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 7,
@@ -11635,11 +11412,10 @@
       "id": "kai",
       "name": "Kai",
       "seasons": [
-        12,
-        1
+        12
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 4,
+      "totalSeasons": 1,
+      "bestPlacement": 15,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -11691,32 +11467,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-12"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 4,
-          "status": "Finalist",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 9,
-            "lipsyncWins": 7,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "Kai starts as the observer, the player hanging back while louder people cut each other. He builds strong bonds with Hunter, Chase, Ally, and Riya, but the alliances around him repeatedly implode. His loyalty to Yul and The Iron Four pulls him away from The Camp Takeover, and by the time he sees the truth about Yul, the damage is done. The abduction twist places him on Embers, where he is useful socially but exposed strategically. At Tribal, he trusts Aiden to hold the line against Jacques. Aiden writes Kai instead, and Kai leaves with the kind of betrayal that lingers.",
-      "avgPlacement": 9.5,
+      "avgPlacement": 15,
       "byShow": {
         "total-drama": {
           "seasons": 1,
@@ -11724,15 +11478,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 9,
-          "totalLipsyncWins": 7,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 0,
@@ -12013,10 +11758,9 @@
       "name": "Aiden",
       "seasons": [
         12,
-        13,
-        1
+        13
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -12113,28 +11857,6 @@
           ],
           "format": "total-drama",
           "seasonId": "td-13"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 6,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 1,
-            "lows": 0,
-            "bottoms": 2,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "Aiden arrives reading lies before most players have unpacked, and that instinct carries him deeper than almost anyone expects. He is a workhorse, a social fixer, and a quiet danger who keeps finding the pulse of camp before the vote lands. His bonds with Jen, Lake, Ally, and others give him protection, but they also make his game emotionally expensive. Late in the season, Aiden becomes the hub of The Movement, steals votes, redirects pressure, and survives by making himself necessary. But at final five, his enemies finally align with the fire-making gods against him. He loses the tiebreaker to James, and the jury gains its most dramatic witness.\n\nSEASON 13 — Total Drama Doom Island\n────────\nAiden spends the season constantly in motion, building plans before the rest of camp finishes breakfast. He finds and plays idols, survives a major merge scare, and becomes Wayne's central bond. Yet his game carries heat: Ally hates him, Caleb distrusts him, and his outbursts make people question the long-term risk. At final seven, even Wayne's loyalty cannot keep the revote from breaking against him.",
@@ -12146,15 +11868,6 @@
           "totalImmunityWins": 2,
           "totalRewardWins": 0,
           "totalIdolsFound": 2
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 1,
-          "totalLows": 0,
-          "totalBottoms": 2,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 3,
@@ -12848,11 +12561,10 @@
       "id": "diego",
       "name": "Diego",
       "seasons": [
-        14,
-        1
+        14
       ],
-      "totalSeasons": 2,
-      "bestPlacement": 13,
+      "totalSeasons": 1,
+      "bestPlacement": 16,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -12895,32 +12607,10 @@
           "rivalries": [],
           "format": "total-drama",
           "seasonId": "td-14"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 13,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 1,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "Diego enters looking for the experience, and for four episodes he plays with sincerity that stands out in a cast full of schemers. His bonds with Benji and Hannah, and his quiet loyalty to Jade, make him deeply trusted but strategically passive. Physically, he gives Red Team real strength, hauling shelter parts and winning his Bone Battle against Logan. But when Red Team fractures, Diego cannot bring himself to write Jade's name, and that mercy costs him. A 3-3 tie sends him into a puzzle tiebreaker against Tristan, and he loses. His exit is clean, painful, and remembered as one of the season's narrowest cuts.",
-      "avgPlacement": 14.5,
+      "avgPlacement": 16,
       "byShow": {
         "total-drama": {
           "seasons": 1,
@@ -12928,15 +12618,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 0,
@@ -13159,10 +12840,9 @@
       "id": "ivy",
       "name": "Ivy",
       "seasons": [
-        14,
-        1
+        14
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 1,
       "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -13212,32 +12892,10 @@
           ],
           "format": "total-drama",
           "seasonId": "td-14"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 12,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 1,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "story": "Ivy's game is built on care before calculation, and that makes her both loved and hunted. Early on, she becomes a social center in Red Team, forming deep ties with Jade, Zaid, Benji, Hannah, and Spencer. Her showmance-adjacent bonds become impossible to hide, and the game punishes her the first time at the pre-merge Red Team vote. She wins her way back at the Edge, proving that her social strength is matched by nerve under pressure. But the second act is harsher: she is too close to too many people, and her attempt to move on Logan leaks into a counterstrike. Anastasia's Vote Steal helps seal it, and Ivy leaves heartbroken more than angry.",
-      "avgPlacement": 10.5,
+      "avgPlacement": 9,
       "byShow": {
         "total-drama": {
           "seasons": 1,
@@ -13245,15 +12903,6 @@
           "totalImmunityWins": 0,
           "totalRewardWins": 0,
           "totalIdolsFound": 0
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 1,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
         }
       },
       "totalMaxiWins": 1,
@@ -14478,10 +14127,10 @@
       "seasons": [
         1
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 1,
       "bestPlacement": 7,
       "wins": 0,
-      "totalChallengeWins": 1,
+      "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 5,
@@ -14526,34 +14175,12 @@
           "seasonId": "bb-1",
           "showmance": "Hasan",
           "showmanceEnded": "broken"
-        },
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 8,
-          "status": "Sashayed away",
-          "challengeWins": 1,
-          "popularity": 0,
-          "dr": {
-            "wins": 1,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 4,
-            "lipsyncWins": 1,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
         }
       ],
       "totalBlockBusterWins": 4,
       "totalBlockBusterPlayed": 8,
       "bestBlockBusterStreak": 1,
-      "avgPlacement": 7.5,
+      "avgPlacement": 7,
       "byShow": {
         "big-brother": {
           "seasons": 1,
@@ -14562,15 +14189,6 @@
           "vetoWins": 0,
           "blockBusterWins": 2,
           "timesNominated": 3
-        },
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 1,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 4,
-          "totalLipsyncWins": 1,
-          "totalCongeniality": 0
         }
       },
       "emoji": "🪶",
@@ -15282,6 +14900,611 @@
     {
       "id": "nessa",
       "name": "Nessa",
+      "seasons": [],
+      "totalSeasons": 0,
+      "bestPlacement": null,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 1,
+      "totalBottoms": 9,
+      "avgPlacement": null,
+      "byShow": {},
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "velvet-vixen",
+      "name": "Velvet Vixen",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 1,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 1,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "taystee",
+      "name": "Taystee",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 2,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 2,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "sharon-needles",
+      "name": "Sharon Needles",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 3,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 3,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "riot",
+      "name": "Riot",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 4,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 4,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "quin",
+      "name": "Quin",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 5,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 1,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 5,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 1,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "paige-turner",
+      "name": "Paige Turner",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 6,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 6,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "minnie-skurr",
+      "name": "Minnie Skurr",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 7,
+          "status": "Sashayed away",
+          "challengeWins": 1,
+          "popularity": 0,
+          "dr": {
+            "wins": 1,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 1,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 1,
+      "totalLipsyncWins": 1,
+      "totalBottoms": 0,
+      "avgPlacement": 7,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 1,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 1,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "marge-stache",
+      "name": "Marge Stache",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 8,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 8,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "ginger-hollywood",
+      "name": "Ginger Hollywood",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 9,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 9,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "gigi-cherie",
+      "name": "Gigi Cherie",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 10,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 10,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "cupcakke",
+      "name": "Cupcakke",
       "seasons": [
         1
       ],
@@ -15308,8 +15531,8 @@
           "dr": {
             "wins": 0,
             "highs": 0,
-            "lows": 1,
-            "bottoms": 1,
+            "lows": 0,
+            "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
           },
@@ -15321,23 +15544,195 @@
         }
       ],
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 1,
-      "totalBottoms": 9,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
       "avgPlacement": 11,
       "byShow": {
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
           "totalHighs": 0,
-          "totalLows": 1,
-          "totalBottoms": 1,
+          "totalLows": 0,
+          "totalBottoms": 0,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
       },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "cheryl-hole",
+      "name": "Cheryl Hole",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 12,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 12,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "autumnatic",
+      "name": "Autumnatic",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 13,
+          "status": "Miss Congeniality",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 1
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 13,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 1
+        }
+      },
+      "latestAvatarFile": ""
+    },
+    {
+      "id": "anita-crown-davenport",
+      "name": "Anita Crown Davenport",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 14,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 14,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": ""
     }
   ]
 }

@@ -31,13 +31,41 @@ export function _openDB() {
   });
 }
 
+/* ── A FAILED WRITE IS NOT NOTHING ────────────────────────────────────
+   This swallowed every failure into a console warning nobody was watching.
+   A checkpoint is a full clone of `gs` — measured at 1.8MB on a drag season —
+   and there is one per episode, so an origin that runs out of quota stops
+   saving them and the season carries on looking perfectly fine. It surfaces
+   as the re-run button silently not being there, one session later, with no
+   way left to tell why: reported as "i dont have a rerun button for my old
+   season episode", diagnosed from a console dump showing zero checkpoints.
+   Still non-fatal — a season must never die on its own undo — but it is
+   recorded now, and `lastStorageFailure()` lets a caller say so out loud. */
+let _lastStorageFailure = null;
+
+/** The most recent storage write that did not land, or null. */
+export function lastStorageFailure() { return _lastStorageFailure; }
+
+/** Clear it once a caller has reported it. */
+export function clearStorageFailure() { _lastStorageFailure = null; }
+
 export function _idbPut(key, value) {
   return _openDB().then(db => new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).put(value, key);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
-  })).catch(e => console.warn('IndexedDB put failed:', e));
+  })).catch(e => {
+    _lastStorageFailure = {
+      key,
+      when: Date.now(),
+      // QuotaExceededError is the one that matters and the one that reads as
+      // gibberish if it reaches a user raw, so it is named here.
+      quota: /quota/i.test(String(e && (e.name || e.message))),
+      message: String((e && (e.message || e.name)) || e),
+    };
+    console.warn('IndexedDB put failed:', key, e);
+  });
 }
 
 export function _idbGet(key) {

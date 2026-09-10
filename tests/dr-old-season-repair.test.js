@@ -165,3 +165,88 @@ describe('a drag season from before the freeze', () => {
     expect(dr.rerunDragEpisode(2)).toBe(false);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// And the button is a property of the season, not of the browser session
+// ══════════════════════════════════════════════════════════════════════
+//
+// Reported as "i dont have a rerun button for my old season episode", on a
+// season whose console read: checkpoints [], episodes [1], seed 1141.
+//
+// `_canReplay` asked `!!gsCheckpoints[epNum]`, so the ↺ existed only for
+// episodes simulated in the CURRENT session — and permanently stopped
+// existing on an origin whose checkpoint writes had begun failing, silently,
+// at 1.8MB per episode. The castle never had this problem because it asks
+// whether the season can be reproduced, not whether this tab remembers it.
+describe('a drag re-run without any checkpoint at all', () => {
+  let dr;
+
+  const playNoCheckpoints = n => {
+    // Exactly the reported state: episodes aired, nothing written to
+    // gsCheckpoints, because every write failed.
+    for (let i = 0; i < n; i++) dr.simulateDragEpisode();
+  };
+
+  beforeEach(async () => {
+    core.setPlayers(CAST.map(p => ({ ...p })));
+    core.setSeasonConfig({
+      ...core.defaultConfig(), format: 'drag-race', seasonNumber: 1,
+      drFinale: 'top4', drSchedule: [], twistSchedule: [],
+    });
+    core.setGs({
+      episodeHistory: [], eliminated: [], popularity: {}, phase: 'stage', _drSeed: 4711,
+      bonds: { 'Q1||Q2': 2.5 }, bondLean: {},
+      _drInitBonds: { 'Q1||Q2': 2.5 }, _drInitLean: {},
+    });
+    for (const k of Object.keys(core.gsCheckpoints)) delete core.gsCheckpoints[k];
+    dr = await import('../js/dr-run.js');
+  });
+
+  it('offers the re-run with zero checkpoints saved', () => {
+    playNoCheckpoints(3);
+    expect(Object.keys(core.gsCheckpoints), 'the fixture is not modelling the report').toEqual([]);
+    expect(dr.dragCanRerun()).toBe(true);
+  });
+
+  it('rolls the season back to the night before, off the aired rows', () => {
+    playNoCheckpoints(4);
+    const keptLiving = [...core.gs.episodeHistory[1].dr.living];
+    expect(dr.rerunDragEpisode(3)).toBe(true);
+    // Episodes 1-2 stay; 3 onward are gone and will come off the new queue.
+    expect(core.gs.episodeHistory.map(e => e.num)).toEqual([1, 2]);
+    expect(core.gs.activePlayers).toEqual(keptLiving);
+    expect(core.gs.episode).toBe(2);
+    expect(core.gs._drQueue).toBeUndefined();
+  });
+
+  it('puts a returned queen back in the room, not on the eliminated list', () => {
+    /* `eliminated` is rebuilt from the roster minus who is standing, rather
+       than by subtracting exits — a returnee appears in `exits` on the night
+       she left, so subtracting would strand her outside a season she is still
+       competing in. */
+    playNoCheckpoints(4);
+    dr.rerunDragEpisode(3);
+    for (const n of core.gs.activePlayers) expect(core.gs.eliminated).not.toContain(n);
+    expect(core.gs.activePlayers.length + core.gs.eliminated.length).toBe(CAST.length);
+  });
+
+  it('refuses, and says why, when the past cannot be reproduced', () => {
+    playNoCheckpoints(3);
+    delete core.gs._drSeed;             // a season booked before seeds were stored
+    expect(dr.dragCanRerun()).toBe(false);
+    expect(dr.rerunDragEpisode(2)).toBe(false);
+  });
+
+  it('re-airs a different night each press', () => {
+    playNoCheckpoints(3);
+    dr.rerunDragEpisode(3);
+    expect(core.gs._drReroll).toEqual({ from: 3, nonce: 1 });
+    const first = dr.simulateDragEpisode();
+    expect(first.num).toBe(3);
+    dr.rerunDragEpisode(3);
+    expect(core.gs._drReroll.nonce).toBe(2);
+    const second = dr.simulateDragEpisode();
+    expect(second.num).toBe(3);
+    expect(JSON.stringify(second.exits)).not.toBe(JSON.stringify(first.exits));
+  });
+});

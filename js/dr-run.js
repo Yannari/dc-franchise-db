@@ -194,16 +194,20 @@ export function rerunDragEpisode(epNum) {
   repairOldDragSeason();
   /* A SEASON THAT CANNOT FREEZE ITS PAST MUST NOT RE-BOOK ITS FUTURE. Played
      before `_drSchedule` existed, a rebuild would replay a different season
-     under a history that has already aired. Re-airing is the honest fallback
-     and is exactly what this button did for every drag season until now.
+     under a history that has already aired. Refusing is the honest answer.
      Still reached when the repair cannot help: a season with no checkpoint 1,
      or an episode with no challenge recorded on it. */
-  if (!dragScheduleRecorded()) return false;
+  if (!dragScheduleRecorded() || !gs._drSeed) return false;
   const n = Math.max(1, Number(epNum) || 1);
   const prev = gs._drReroll && Number(gs._drReroll.from) === n
     ? Number(gs._drReroll.nonce) || 0 : 0;
   gs._drReroll = { from: n, nonce: prev + 1 };
-  delete gs._drQueue;
+  /* AND THE SEASON GOES BACK TO THE NIGHT BEFORE, HERE. It used to be the
+     caller's checkpoint that did this, which is why the button existed only
+     for episodes run in the same session. Done from the aired rows instead,
+     so a reload — or a browser that could not save a checkpoint at all —
+     takes nothing away. */
+  _rollbackDragTo(n);
   return true;
 }
 
@@ -292,6 +296,67 @@ export function repairOldDragSeason() {
     done.schedule = true;
   }
   return done;
+}
+
+/**
+ * Roll the season back to just before episode N, without a checkpoint.
+ *
+ * THE CASTLE HAS NEVER NEEDED ONE and this show should not either. A drag
+ * re-run restored `gsCheckpoints[N]`, so it worked only for episodes
+ * simulated in the current browser session and only while those 1.8MB clones
+ * kept being written. When an origin ran out of storage the writes failed
+ * silently, and one session later the re-run button was simply not there —
+ * measured on a real season: zero checkpoints, one aired episode, no warning
+ * anywhere.
+ *
+ * Everything a rollback needs is already on the rows that aired. The aired
+ * PREFIX is kept literally — the rows as they went out, not the replay's
+ * copy of them — which is what makes "a re-run of the future never touches
+ * the past" true by construction rather than by determinism. The same move
+ * `rerunTraitorsEpisode` makes, for the same reason.
+ */
+function _rollbackDragTo(epNum) {
+  const N = Math.max(1, Number(epNum) || 1);
+  const history = Array.isArray(gs.episodeHistory) ? gs.episodeHistory : [];
+  const kept = history.slice(0, N - 1);
+  gs.episodeHistory = kept;
+
+  // The room as the kept prefix left it. Episode N-1's own `living` is the
+  // answer; before episode one it is everybody.
+  const last = kept[kept.length - 1];
+  gs.activePlayers = last && last.dr && Array.isArray(last.dr.living)
+    ? [...last.dr.living]
+    : (players || []).map(p => p && p.name).filter(Boolean);
+
+  /* WHO IS OUT, REBUILT FROM THE KEPT ROWS rather than trimmed from the live
+     list. A returnee is on `exits` for the night she left and back in
+     `living` afterwards, so subtracting exits alone would leave her out of a
+     season she is still competing in. Deriving it from the roster instead
+     gets that right for free. */
+  const still = new Set(gs.activePlayers);
+  gs.eliminated = (players || [])
+    .map(p => p && p.name).filter(n => n && !still.has(n));
+
+  gs.episode = kept.length;
+  gs.phase = 'stage';
+  delete gs.drWinner;
+  delete gs.drRunnerUp;
+  delete gs._drQueue;
+}
+
+/**
+ * Can this season re-run episode N at all?
+ *
+ * Not "is there a checkpoint" — is the past REPRODUCIBLE. That needs the seed
+ * the season was booked from and a schedule that says what each aired night
+ * was booked with. A season with both can be re-run after any reload, on any
+ * episode, forever; one without either cannot be re-run faithfully at all and
+ * says so rather than offering a button that would rewrite what aired.
+ */
+export function dragCanRerun() {
+  if (!gs || !isDragSeason() || !gs._drSeed) return false;
+  repairOldDragSeason();
+  return dragScheduleRecorded();
 }
 
 /** Whether a season-wide drag twist is booked at all. */

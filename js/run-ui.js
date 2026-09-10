@@ -22,7 +22,7 @@ import { coachCanPlay } from './advantages.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
   lastTraitorsRerunRefusal } from './tr-run.js';
 import { isDragSeason, simulateDragEpisode, invalidateDragQueue,
-  dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode } from './dr-run.js';
+  dragEpisodesAired, dragScheduleRecorded, rerunDragEpisode, dragCanRerun } from './dr-run.js';
 import { dragBadges } from './dr/badges.js';
 // Imported rather than read off `window`: these are static catalogues, and a
 // `typeof X !== 'undefined'` read would silently draw an empty dropdown if the
@@ -1432,8 +1432,38 @@ export function _saveEpisodeCheckpoint() {
     gsCheckpoints[cpNum] = snapshotGs();
     repairGsSets(gsCheckpoints[cpNum]);
     _idbPut('cp_' + cpNum, JSON.parse(JSON.stringify(gsCheckpoints[cpNum])));
-  } catch { /* a week must never fail on its own undo button */ }
+  } catch (e) {
+    /* A WEEK MUST NEVER FAIL ON ITS OWN UNDO BUTTON -- but it must not fail
+       silently either. This was a bare `catch {}`, so a checkpoint that could
+       not even be cloned vanished without trace. The write itself is async and
+       records its own failures; see lastStorageFailure() in js/savestate.js. */
+    console.warn('checkpoint ' + cpNum + ' could not be taken:', e);
+  }
+  /* AND THE ONE THAT ALREADY FAILED, SAID OUT LOUD, ONCE.
+     A checkpoint is a full clone of `gs` -- 1.8MB on a drag season -- and
+     there is one per episode. An origin that runs out of quota stops saving
+     them and NOTHING CHANGES ON SCREEN, until the re-run button is missing a
+     session later with nothing left to explain it. That is how a real season
+     reached zero checkpoints without anybody being told.
+     Once per session, not per episode: a full disk does not become news
+     again on the next press. Reached off `window` because js/main.js is what
+     wires the modules together -- see the module pattern in CLAUDE.md. */
+  const _failed = typeof window !== 'undefined' && window.lastStorageFailure
+    ? window.lastStorageFailure() : null;
+  if (_failed && !_storageFailureTold) {
+    _storageFailureTold = true;
+    try { window.clearStorageFailure?.(); } catch { /* reporting, not state */ }
+    setTimeout(() => alert(
+      'This browser could not save an undo point for the episode'
+      + (_failed.quota ? ', because the site is out of storage space' : '')
+      + '.\n\nThe season itself is fine and will keep playing, but the '
+      + 'Re-run button needs those undo points and will not appear for '
+      + 'episodes saved from now on.\n\nSeason → Export JSON keeps a '
+      + 'copy safe.'), 0);
+  }
 }
+/** Said once a session: a full disk is not news again on the next press. */
+let _storageFailureTold = false;
 export const _saveBBCheckpoint = _saveEpisodeCheckpoint;
 
 export function simulateNext() {
@@ -1659,6 +1689,13 @@ export function simulateMultipleEpisodes(count) {
  */
 function _canReplay(epNum) {
   if (isTraitorsSeason()) return !!(gs && gs._trSeed);
+  /* THE MAIN STAGE ASKS THE SAME QUESTION THE CASTLE DOES. It used to ask
+     "is there a checkpoint", which made the button a property of THIS BROWSER
+     SESSION rather than of the season: it vanished on reload, and vanished
+     permanently on an origin whose 1.8MB-per-episode checkpoint writes had
+     started failing. The real question is whether the aired nights can be
+     reproduced — seed plus recorded schedule — and dragCanRerun answers it. */
+  if (isDragSeason()) return dragCanRerun();
   return !!gsCheckpoints[epNum];
 }
 
@@ -1667,8 +1704,21 @@ export function replayEpisode(epNum) {
   // so it works after a reload too, and every earlier episode reproduces
   // exactly while this night onward is a genuinely different season.
   if (isTraitorsSeason()) { _replayTraitorsEpisode(epNum); return; }
+  /* THE MAIN STAGE, WHICH NO LONGER NEEDS ONE EITHER. `rerunDragEpisode`
+     rolls the season back off the rows that aired, so a drag re-run survives
+     a reload and a browser that never managed to write a checkpoint. The
+     checkpoint is still USED when there is one — it is a better rollback
+     than a reconstruction — but it is no longer the price of the button. */
   const checkpoint = gsCheckpoints[epNum];
-  if (!checkpoint) { alert(`No checkpoint saved for Episode ${epNum}. Only episodes run in this session can be replayed.`); return; }
+  if (!checkpoint && !(isDragSeason() && dragCanRerun())) {
+    alert(isDragSeason()
+      ? `Episode ${epNum} cannot be re-run: this season has no stored running `
+        + `order, so the episodes that already aired could not be reproduced. `
+        + `A re-run would replace them with a different season rather than `
+        + `change one night of this one.`
+      : `No checkpoint saved for Episode ${epNum}. Only episodes run in this session can be replayed.`);
+    return;
+  }
   const laterEps = gs.episodeHistory.filter(e => e.num > epNum);
   const warnMsg = laterEps.length
     ? `Re-run Episode ${epNum}?\n\nEpisodes ${epNum}–${epNum + laterEps.length} will be replaced with new results.`
@@ -1693,8 +1743,13 @@ export function replayEpisode(epNum) {
   let ep = null;
   let failure = null;
   try {
-    gs = JSON.parse(JSON.stringify(checkpoint));
-    repairGsSets(gs);
+    // A checkpoint is the better rollback when one exists. Without it the
+    // drag path rolls itself back inside `rerunDragEpisode`, off the rows
+    // that aired.
+    if (checkpoint) {
+      gs = JSON.parse(JSON.stringify(checkpoint));
+      repairGsSets(gs);
+    }
     // Re-run this episode — the format decides the engine, exactly as
     // simulateNext does. The replay path only knew Total Drama's two engines,
     // so a house had checkpoints it could never spend.

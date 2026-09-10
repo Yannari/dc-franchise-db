@@ -35,8 +35,22 @@ export const POLISH_FORM = 1.4;
 /* How differently a queen can land from one week to the next, in the panel's
    eyes — the shared half of it. Tuned by measurement, not taste: see
    tools/dr-domination.mjs. Too small and the board is a ranking of stats; too
-   large and craft stops mattering and every week is a coin toss. */
-export const PANEL_FORM = 1.5;
+   large and craft stops mattering and every week is a coin toss.
+
+   RETUNED 1.5 -> 2.5 when the benchmark it is tuned against was finally
+   measured. "Real show: ~30%" had been an unattributed string in the audit;
+   tools/dr-real-domination.py reads 13 seasons off the wiki and gets 30.8%,
+   with the top queen taking 3.15 maxi challenges of 10.4. Pure chance -- hand
+   every maxi to a random queen still in the room -- gives 2.7, so the real
+   show's most dominant queen is barely better than luck, and a simulator
+   whose top queen took 4.5 was not slightly hot.
+
+   At 2.5 she takes 3.4 (cast 12) and 3.96 (cast 14). More does not help: 3.5
+   measured 3.94 at cast 14, and neither the host's star lean (0.4 -> 0.0
+   moved it 0.02) nor a career brake on trackPull (3.92 -> 3.85) reaches it at
+   all. What is left is the craft spread inside the fourteen challenge
+   modules, which is a real piece of work rather than a constant. */
+export const PANEL_FORM = 2.5;
 
 /** THE noise helper for js/dr/. Symmetric, bounded, seeded. */
 export function noise(rng, amt = 2.5) {

@@ -20,10 +20,19 @@
 # do not parse; they are skipped rather than guessed at.
 #
 # Measured 2026-09-10, 13 seasons:
-#   mean 28.5%   sd 5.3pp   range 22.2% (S16) - 40.0% (S12)
+#   mean 30.8%   sd 4.7pp   range 23.1% (S14) - 40.0% (S12)
+#   top queen takes 3.15 of the 10.4 maxi challenges an average season runs
+#
+# THE UNIT IS THE EPISODE, NOT THE NAME, and the first version got that wrong.
+# A team challenge can crown four queens at once - season 16 did - and
+# counting those as four separate wins inflates the denominator and
+# understates every share. It reported season 16 as 18 maxi challenges for a
+# 16-episode season with a split premiere and a Lalaparuza reunion, which is
+# what gave the error away.
 # The top queen wins THREE OR FOUR maxi challenges almost regardless of how
-# many the season runs - season 16 ran 18 and its winner still took 4 - which
-# is a sharper statement than the percentage and probably the real rule.
+# many the season runs - a sharper statement than the percentage, and
+# probably the real rule. The simulator scales instead: its top queen takes
+# 4.5 at a cast of 14 and 5.2 at 16, where the real show stays at 3 or 4.
 import json, io, re, urllib.parse, subprocess, sys, collections
 
 def wikitext(title):
@@ -63,10 +72,10 @@ def winners(txt):
         raw = re.sub(r'<[^>]+>', '', raw).strip(' .')
         if not raw or raw.lower().startswith('none'):
             continue
-        for nm in re.split(r'\s*(?:&|,| and )\s*', raw):
-            nm = nm.strip()
-            if nm and len(nm) < 40:
-                out.append(nm)
+        night = [nm.strip() for nm in re.split(r'\s*(?:&|,| and )\s*', raw)
+                 if nm.strip() and len(nm.strip()) < 40]
+        if night:
+            out.append(night)
     return out
 
 rows = []
@@ -74,13 +83,18 @@ for s in range(1, 17):
     t = wikitext("RuPaul's Drag Race (Season %d)" % s)
     if not t:
         print('season %-2d  PAGE NOT FOUND' % s); continue
-    w = winners(t)
-    if not w:
+    nights = winners(t)
+    if not nights:
         print('season %-2d  no winners parsed' % s); continue
-    c = collections.Counter(w)
+    c = collections.Counter()
+    for night in nights:
+        for nm in set(night):
+            c[nm] += 1
     top, topn = c.most_common(1)[0]
-    rows.append((s, len(w), topn, topn/len(w), top))
-    print('season %-2d  maxi wins %2d  top queen %2d  share %5.1f%%  (%s)' % (s, len(w), topn, topn/len(w)*100, top))
+    n = len(nights)
+    rows.append((s, n, topn, topn/n, top))
+    print('season %-2d  maxi episodes %2d  top queen %2d  share %5.1f%%  (%s)'
+          % (s, n, topn, topn/n*100, top))
 
 if rows:
     shares = [r[3] for r in rows]

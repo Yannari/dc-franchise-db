@@ -27,17 +27,28 @@ const cast = (n, seed) => {
 };
 const season = s => playDragSeason({ cast: cast(12, 400 + s), seed: s, config: { drFinale: 'top4' } });
 
-/* A seed that fires. It is a FIXTURE, not a fact about the mechanic: adding
-   the watchability ledger moved every season, so seed 5 stopped firing and
-   these tests went red for the right reason. The message on the first
-   assertion says how to replace it. Firing seeds at the time of writing:
-   16, 32, 47, 48, 52, 61, 71, 76, 78, 81 -- about 13% of seasons. */
-const FIRING_SEED = 16;
+/* THE SEED IS FOUND, NOT WRITTEN DOWN. It was a constant, and every balance
+   change moved every season and turned these tests red for a reason that had
+   nothing to do with the mechanic -- three times in one afternoon. A fixture
+   that has to be re-derived after each retune is a maintenance tax on the
+   wrong file.
+   Searched once and cached for the run. If NOTHING in the range fires that is
+   a real failure and the first test says so. */
+let _firing = null;
+const firingSeed = () => {
+  if (_firing !== null) return _firing;
+  for (let s = 0; s < 200; s++) {
+    if (season(s).rows.some(r => r.dr?.rigga)) { _firing = s; return s; }
+  }
+  _firing = -1;
+  return -1;
+};
 
 describe('a host overrule the room can see', () => {
   it('gives the win to the favourite over the queen the panel put first', () => {
-    const row = season(FIRING_SEED).rows.find(r => r.dr?.rigga);
-    expect(row, `seed ${FIRING_SEED} no longer fires — run the audit and pick another`).toBeTruthy();
+    const row = season(firingSeed()).rows.find(r => r.dr?.rigga);
+    expect(firingSeed(), 'no seed in 200 fires the overrule at all').toBeGreaterThan(-1);
+    expect(row).toBeTruthy();
     const g = row.dr.rigga;
     // The two halves that make it a robbery rather than a close call.
     expect(row.dr.panel.ranking[0].name).toBe(g.over);
@@ -49,7 +60,7 @@ describe('a host overrule the room can see', () => {
     /* A bend nobody can see is a number moving; the accusation IS the event.
        And the fandom's name for this night is built on a real person's, which
        this universe does not do — see the note on `robbed` in js/dr/arcs.js. */
-    const row = season(FIRING_SEED).rows.find(r => r.dr?.rigga);
+    const row = season(firingSeed()).rows.find(r => r.dr?.rigga);
     const sc = (row.dr.scenes || []).find(x => x.kind === 'host-overrule');
     expect(sc, 'the overrule reached no screen').toBeTruthy();
     expect(sc.text.length).toBeGreaterThan(40);
@@ -61,7 +72,7 @@ describe('a host overrule the room can see', () => {
   it('costs her, and pays the queen she passed', () => {
     // Popularity feeds star (js/dr/state.js), so this is the feedback that
     // stops the mechanic pointing at the same queen for the rest of the run.
-    const rows = season(FIRING_SEED).rows;
+    const rows = season(firingSeed()).rows;
     const i = rows.findIndex(r => r.dr?.rigga);
     const g = rows[i].dr.rigga;
     const before = rows[i - 1].dr.popularity;
@@ -88,7 +99,7 @@ describe('a host overrule the room can see', () => {
   });
 
   it('is null on an ordinary night — the control arm', () => {
-    const rows = season(FIRING_SEED).rows;
+    const rows = season(firingSeed()).rows;
     const ordinary = rows.filter(r => r.dr && !r.dr.rigga);
     expect(ordinary.length).toBeGreaterThan(5);
     for (const r of ordinary) expect(r.dr.rigga ?? null).toBe(null);

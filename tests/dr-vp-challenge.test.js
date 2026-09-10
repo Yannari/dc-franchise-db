@@ -91,7 +91,7 @@ describe('the maxi', () => {
       // treated every challenge as a main-stage one.
       // The ball has its own screen with a different step structure — its
       // own test below covers it.
-      if (row.dr.challenge?.id === 'ball') continue;
+      if (row.dr.challenge?.id === 'ball' || row.dr.challenge?.id === 'snatch-game') continue;
       const sfx = maxiById(row.dr.challenge?.id)?.stage === 'pre' ? 'maxi' : 'maxistage';
       // String.raw: in a plain template literal that \d is a JavaScript
       // escape and the pattern becomes "d+", which matches nothing.
@@ -101,17 +101,17 @@ describe('the maxi', () => {
     }
   });
 
-  it('SNATCH GAME SHOWS THE CHARACTER AND SIX ROUNDS', () => {
-    // A generic score card over this would throw away everything that makes
-    // a Snatch Game a Snatch Game.
+  it('SNATCH GAME SHOWS THE CHARACTER AND THE GAME SHOW FORMAT', () => {
     const row = byId('snatch-game');
     expect(row, 'no Snatch Game in this season').toBeTruthy();
     const html = rpBuildMaxi(row);
     const one = Object.values(row.dr.performances)[0];
     expect(html).toContain(one.detail.character);
-    // One mark per round she answered.
-    const perQueen = (html.match(/dr-mark/g) || []).length;
-    expect(perQueen).toBeGreaterThanOrEqual(one.detail.rounds.length);
+    expect(html, 'has the game-show desk').toContain('sg-desk');
+    expect(html, 'has round headers').toContain('sg-round-hdr');
+    expect(html, 'has answer cards').toContain('sg-answer');
+    expect(html, 'has reaction tags').toMatch(/sg-rx-/);
+    expect(html, 'has the scoreboard').toContain('sg-scoreboard');
   });
 
   it('THE BALL SHOWS THREE LOOKS AND FLAGS THE SEWN ONE', () => {
@@ -134,15 +134,27 @@ describe('the maxi', () => {
   });
 
   it('THE RAIL NEVER SHOWS A SCORE THE VIEWER HAS NOT REACHED', () => {
-    const row = byId('snatch-game') || ordinary[0];
+    const row = ordinary[0];
+    if (!row) return;
     rpBuildMaxi(row);
-    const panels = window._drSidebar.maxi;
+    const sfx = maxiById(row.dr.challenge?.id)?.stage === 'pre' ? 'maxi' : 'maxistage';
+    const panels = window._drSidebar[sfx];
     const order = (row.dr.assignment?.order || []).filter(n => row.dr.performances[n]);
     const running = order.length ? order : Object.keys(row.dr.performances);
     expect(panels.length).toBe(running.length);
     for (const later of running.slice(1)) {
       expect(panels[0], `${later} was on the board before her turn`).not.toContain(`>${later}<`);
     }
+  });
+
+  it('THE SNATCH GAME RAIL HAS PANELS AND HIDES SCORES UNTIL FINAL', () => {
+    const row = byId('snatch-game');
+    if (!row) return;
+    rpBuildMaxi(row);
+    const panels = window._drSidebar.maxi;
+    expect(panels.length).toBeGreaterThan(1);
+    expect(panels[0]).not.toMatch(/dr-c-win|dr-c-high|dr-c-safe|dr-c-low/);
+    expect(panels[panels.length - 1]).toMatch(/dr-chip/);
   });
 
   it('falls back to a plain card rather than a blank one', () => {

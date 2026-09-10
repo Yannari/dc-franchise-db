@@ -23,6 +23,33 @@ const ROUNDS = 6;
 const FLOP = 3;
 const KILL = 8.5;
 
+const QUESTIONS = [
+  'RuPaul is so old, ___',
+  'My drag mother always told me, "Girl, ___"',
+  'I knew I was a star when ___',
+  'The judges would gag if I showed up to the reunion in ___',
+  'My ex-boyfriend is so dumb, he thinks a tuck is ___',
+  'The worst thing about being famous is ___',
+  'I keep ___ in my wig at all times',
+  'The last time I was at a pool party, ___',
+  'Girl, my plastic surgeon is so good, he ___',
+  "I'd never tell RuPaul this, but ___",
+  'My drag is so expensive, I had to ___ just to pay for it',
+  'At my last gig, the crowd was so dead, ___',
+  'When I look in the mirror, I see ___ staring back at me',
+  'The secret to a good lip sync is ___',
+  'I once went on a date so bad, he ___',
+  'My catchphrase is "___"',
+  'You know you are a real drag queen when ___',
+  'I would never be caught dead wearing ___',
+  'If I could read any queen in this room, I would say ___',
+  'The thing the cameras do not show you is ___',
+  "I'd sell my best wig for ___",
+  "If I weren't doing drag, I'd be ___",
+  'The biggest scandal at the pageant was ___',
+  'My celebrity crush is ___ because ___',
+];
+
 // ── THE HOST, WHO WAS NOT IN THIS AT ALL ──────────────────────────────
 //
 // Snatch Game was six rounds scored in isolation: every queen answered into a
@@ -205,6 +232,7 @@ export function perform(ctx) {
 
   const perRound = {};
   for (const n of living) perRound[n] = [];
+  const questionPool = [...QUESTIONS];
 
   // Whom the host has already worked with, so one queen does not get the
   // whole taping.
@@ -315,7 +343,30 @@ export function perform(ctx) {
         }));
     }
 
-    rounds.push({ round: r + 1, answers: beat });
+    /* ── PICK THE QUESTION AND THE FEATURED QUEENS ──
+       The VP needs to show 2-3 queens answering each round, not all of them.
+       Feature the queen the host engaged, plus the best and worst scorers
+       that round — the ones who made television. */
+    const qIdx = Math.floor(rng() * questionPool.length);
+    const question = questionPool.splice(qIdx, 1)[0] || QUESTIONS[r % QUESTIONS.length];
+    const byScore = [...beat].sort((x, y) => y.score - x.score);
+    const hostTarget = hostBeats.find(h => h.round === r + 1)?.name || null;
+    const featured = [];
+    const seen = new Set();
+    const addFeatured = n => {
+      if (!n || seen.has(n)) return;
+      seen.add(n);
+      const s = beat.find(x => x.name === n)?.score || 0;
+      const reaction = s >= KILL ? 'kill' : s >= 6 ? 'laugh' : s >= FLOP ? 'silence' : 'bomb';
+      featured.push({ name: n, score: s, reaction,
+        character: charOf(n)?.name || null, hostBeat: n === hostTarget });
+    };
+    if (hostTarget) addFeatured(hostTarget);
+    addFeatured(byScore[0]?.name);
+    addFeatured(byScore[byScore.length - 1]?.name);
+    if (featured.length < 3 && byScore.length > 2) addFeatured(byScore[1]?.name);
+
+    rounds.push({ round: r + 1, question, answers: beat, featured });
   }
 
   // Two queens sitting next to each other who like each other build a bit

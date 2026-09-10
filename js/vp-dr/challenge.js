@@ -686,7 +686,18 @@ function detailFor(id, perf) {
       return `<div class="dr-sub dr-mk-with">${d.partnerPortrait
     ? `<img class="dr-mk-face" src="${esc(d.partnerPortrait)}" alt=""
         loading="lazy" onerror="this.style.display='none'">` : ''}
-        <span>with <b>${esc(d.partner || '—')}</b>${d.partnerNote
+        <span>with <b>${esc(d.partner || '—')}</b>${
+    /* AND WHAT HE DID WITH THE DAY. He is worth about a point of performance
+       and he can now spend it on the morning rather than on a constant, so
+       the card has to say which — a score a point down with nothing on the
+       screen explaining it is the average that hides its own event.
+       Read off the engine's flag, never re-derived from the numbers: a card
+       that guessed would eventually disagree with the scene beside it. */
+    d.partnerFought ? `<span class="dr-tag dr-t-warn">he fought it${
+      d.partnerCost ? ` · −${n1(d.partnerCost)}` : ''}</span>`
+      : d.partnerTook ? `<span class="dr-tag dr-t-good">he took to it${
+        d.partnerCost ? ` · +${n1(d.partnerCost)}` : ''}</span>` : ''
+}${d.partnerNote
     ? `<small class="dr-mk-note">${esc(d.partnerNote)}</small>` : ''}</span></div>
         ${marks([d.resemblance, d.ownLook, d.partnerLook], ['likeness', 'her look', 'theirs'])}`;
     case 'improv':

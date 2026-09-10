@@ -245,6 +245,26 @@ export const MAXI_EVENTS = [
   }),
 
   e({
+    /* ── HIS MORNING, WHICH USED TO BE A CONSTANT ──
+       A partner's grade is worth about a point of performance, and until now
+       he spent it silently and identically every week. He can fight it on the
+       day now, weighted by that grade, and how much of it {a} saves is her
+       social — so this is the scene where she either talks him round or does
+       not. Never her fault and the room knows it: no popularity moves. */
+    id: 'partner-fought-it', from: 'makeover', cast: 'solo',
+    note: 'Her partner will not go along with it — the heels, the corset, the '
+      + 'face, something. {a} spends the morning on that instead of the look.',
+    lines: [],
+  }),
+  e({
+    /* THE OTHER END OF THE SAME ROLL, and the reason this is not simply a
+       punishment: a partner can also be better than his grade said. */
+    id: 'partner-took-to-it', from: 'makeover', cast: 'solo',
+    note: 'Her partner turns out to love it, and {a} gets a day she was not '
+      + 'counting on.',
+    lines: [],
+  }),
+  e({
     id: 'handed-the-hardest', from: 'makeover', cast: 'pair',
     note: '{a} won the mini and gave {b} the hardest partner in the room, in front of everybody.',
     lines: [

@@ -29,7 +29,7 @@ import { dragBadges } from './dr/badges.js';
 // module load order ever changed.
 import { MAXI_TYPES as DR_MAXI_TYPES } from './dr/data/challenges.js';
 import { MINI_TYPES as DR_MINI_TYPES } from './dr/data/minis.js';
-import { PARTNER_COHORTS, makeoverShows } from './dr/chal/makeover.js';
+import { PARTNER_COHORTS, cohortLabel, makeoverShows } from './dr/chal/makeover.js';
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
@@ -3277,9 +3277,17 @@ function _drPickers(ep) {
     + (e.maxiId === 'makeover'
       ? sel('makeoverPool',
         [['', '— partners: the show picks —'],
-          ...PARTNER_COHORTS.map(c => [c, c.replace(/-/g, ' ')])],
+          /* HOW HARD EACH ONE IS, beside its name. The partner is worth
+             about a point of performance across a cohort's range, so this
+             control was a difficulty dial with no numbers on it: superfans
+             are 7 to 9 and cannot sink anybody, seniors are 3 to 8 and
+             somebody is getting the three. Derived from the pool — see
+             `cohortDifficulty`. */
+          ...PARTNER_COHORTS.map(c => [c, cohortLabel(c)])],
         e.makeoverPool || '',
-        'Who the queens are making over. "alumni" is the crossover: real '
+        'Who the queens are making over. The range is how well the hardest '
+        + 'and easiest partner in that group take to drag, and it is worth '
+        + 'about a point of performance. "alumni" is the crossover: real '
         + 'players from another show in the franchise.')
         + (e.makeoverPool === 'alumni'
           ? sel('makeoverShow',

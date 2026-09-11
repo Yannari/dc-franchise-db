@@ -248,6 +248,11 @@ export const HOST_CALL = [
       'The host listens to the panel argue and when the arguing is over the board stays where it is, and the staying is a choice — the host could have moved a name and chose not to, and choosing not to is as deliberate as choosing to.',
       'The panel finishes and the host lets the board stand, and the standing is the call — not a default, not an absence of opinion, but a decision that the panel got it right tonight, or close enough to right that the host will not intervene.',
       'The host heard the arguments from both sides and the board does not change, which the judges read as agreement and which the host reads as something closer to patience — the board is close enough tonight, and the host saves the corrections for nights when it is not.',
+      'The judges watch the host for a sign and the sign they get is a shrug so small it barely moves her shoulders — the shrug of a woman who was ready to fight for a different order and decided it was not worth the argument tonight.',
+      'The panel finishes arguing and the host leaves the board alone. \"I agree,\" she says, and the agreement is brief and final.',
+      'One judge opens her mouth to make one more argument and the host raises a finger — just one — and the judge stops. The finger says the deliberation is over and the order stands.',
+      'The board stays where the panel put it. The host does not explain why — she does not need to. The panel made a case and the case held.',
+      'The host surveys the board and lets it stand. \"Bring back my girls,\" she says, and the board she hands back is the board she was given.',
     ]),
 ];
 

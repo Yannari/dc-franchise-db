@@ -59,9 +59,13 @@
     /* The episode list, laid out the way a season article lays it out:
        a heading per night and a definition list of the night's facts. */
     .sr-eps { display:flex; flex-direction:column; gap:18px; }
-    .sr-ep { border-left:3px solid var(--sc); padding:2px 0 2px 14px; }
-    .sr-ep h3 { margin:0 0 8px; font-size:15px; }
-    .sr-epfacts { display:grid; grid-template-columns:auto 1fr; gap:3px 14px; margin:0; }
+    /* NOT .sr-ep -- the voting-history row already owns that name further down
+       this file, and being later it won: display:flex + align-items:center
+       turned every heading and fact list into centred flex siblings, so each
+       block started at a different left edge. */
+    .sr-epblk { border-left:3px solid var(--sc); padding:2px 0 2px 14px; }
+    .sr-epblk h3 { margin:0 0 8px; font-size:15px; }
+    .sr-epfacts { display:grid; grid-template-columns:118px 1fr; gap:3px 14px; margin:0; }
     .sr-epfacts dt { font-weight:700; font-size:12px; color:var(--sc);
       text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
     .sr-epfacts dd { margin:0; font-size:13.5px; line-height:1.6; }

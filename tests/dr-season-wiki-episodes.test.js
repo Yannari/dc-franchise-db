@@ -86,9 +86,25 @@ describe('the episode list', () => {
     const { doc: d } = doc(1);
     const blocks = html(1).split('<article').slice(1);
     d.dr.episodes.forEach((e, i) => {
-      const gone = (e.exits || []).length;
-      if (gone) return;
+      if ((e.exits || []).length) return;
+      // the finale sends nobody home either, but it crowns somebody
+      if ((e.placements || []).some(p => p.result === 'WINNER')) return;
       expect(text(blocks[i])).toContain('nobody went home');
     });
+  });
+
+  it('crowns somebody on the finale', () => {
+    /* The finale carries no song, no maxi winner and no exits, so every row
+       the other nights use came back empty: the one episode people look the
+       season up FOR rendered as a title and "nobody went home". The crown is
+       in the placements as WINNER / FINALIST. */
+    const { doc: d } = doc(1);
+    const fin = d.dr.episodes[d.dr.episodes.length - 1];
+    const champ = (fin.placements || []).find(p => p.result === 'WINNER');
+    expect(champ, 'season did not crown anyone').toBeTruthy();
+    const t = text(html(1).split('<article').slice(1).pop());
+    expect(t).toContain('Crowned');
+    expect(t).toContain(champ.name);
+    expect(t).toContain('Runners-up');
   });
 });

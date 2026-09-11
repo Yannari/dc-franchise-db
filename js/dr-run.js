@@ -236,9 +236,63 @@ export function rerunDragEpisode(epNum) {
  * Returns what it repaired, so a caller can say so rather than healing in
  * silence.
  */
+/**
+ * Fill the placeholders left in episodes that already aired.
+ *
+ * A scene's words are written once, when the episode is simulated, and stored
+ * on the row. So the four sites that handed a `note` through without
+ * substituting it -- and the mini lines drawn with a {b} and nobody to be it
+ * -- are baked into every season played before that was fixed, and re-reading
+ * the episode re-reads the hole: "while Autumnatic and {c} agree about her in
+ * the third person".
+ *
+ * NOTHING IS RE-DRAWN AND NO POOL IS CONSULTED. The stored scene still knows
+ * who was in it, and {a}..{d} are its players in order -- that is the whole
+ * mapping, and it is the same one the renderer used. So the repair is a
+ * substitution on text already chosen: the episode keeps the sentence it
+ * aired, it just gets the names it was meant to have.
+ *
+ * A token with nobody to fill it is left alone rather than blanked. A visible
+ * {c} is a bug somebody can see and report; an empty gap reads as a typo and
+ * hides, which is the harder half of this to find and not something to
+ * manufacture on purpose.
+ */
+export function repairDragPlaceholders(history) {
+  const rows = Array.isArray(history) ? history
+    : (gs && Array.isArray(gs.episodeHistory) ? gs.episodeHistory : []);
+  let fixed = 0;
+  for (const row of rows) {
+    for (const sc of (row && row.dr && row.dr.scenes) || []) {
+      const who = (sc.data && sc.data.players) || sc.players || [];
+      if (!who.length) continue;
+      const fill = v => {
+        if (typeof v !== 'string' || v.indexOf('{') === -1) return v;
+        return v.replace(/\{([abcd])\}/g, (m, k) => {
+          const n = who['abcd'.indexOf(k)];
+          return n || m;            // no queen for it: leave the token visible
+        });
+      };
+      const was = [sc.text, sc.note, sc.data && sc.data.note];
+      sc.text = fill(sc.text);
+      if (sc.note) sc.note = fill(sc.note);
+      if (sc.data && sc.data.note) sc.data.note = fill(sc.data.note);
+      if (was[0] !== sc.text || was[1] !== sc.note
+        || was[2] !== (sc.data && sc.data.note)) fixed++;
+    }
+  }
+  return fixed;
+}
+
 export function repairOldDragSeason() {
   const done = { bonds: false, schedule: false };
   if (!gs || !isDragSeason()) return done;
+  /* Cheap, idempotent, and it fixes what a viewer can see. Saved only on the
+     pass that actually changes something -- this runs on every render of the
+     episode list, and a write per repaint would be a real cost for a repair
+     that is finished after the first one. */
+  try {
+    if (repairDragPlaceholders() > 0) window.saveGameState?.();
+  } catch { /* words, never the season */ }
   const history = Array.isArray(gs.episodeHistory) ? gs.episodeHistory : [];
   if (!history.length) return done;
 

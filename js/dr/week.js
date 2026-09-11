@@ -270,7 +270,8 @@ export function runDragWeek(state, cfg, ctx) {
          queen could read another queen to the floor, lose half a bond point
          over it and gain two popularity, and the episode said nothing.
          Written, consequential, and drawn by nobody. */
-      miniEventScenes = renderMaxiEventScenes(res.events, { step: 'mini', rng });
+      miniEventScenes = renderMaxiEventScenes(res.events,
+        { step: 'mini', rng, maxiName: mini?.name || maxi.name });
     }
   }
 
@@ -1225,6 +1226,7 @@ export function runDragWeek(state, cfg, ctx) {
     // The challenge's own events, narrated. The modules produce these and
     // narrate none of them, so without this they reach the row as bare types.
     for (const sc of renderMaxiEventScenes(maxiEvents, {
+      maxiName: maxi.name,
       step: maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main', rng,
       // So the host's walkthrough note can be about this week's actual work.
       family: familyForChallenge(maxi.id).family,

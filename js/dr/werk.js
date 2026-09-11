@@ -154,6 +154,15 @@ function factsFor({ a, b, players, state, storylines, ctx, rest = [] }) {
  * reason the stage does it: an event that fires twice in a night would
  * otherwise be able to print the identical sentence twice.
  */
+/** Put the names in. One place, so a field cannot be added and forgotten. */
+function fillNames(text, facts) {
+  return String(text == null ? '' : text)
+    .replace(/\{a\}/g, facts.nameA || '')
+    .replace(/\{b\}/g, facts.nameB || '')
+    .replace(/\{c\}/g, facts.nameC || '')
+    .replace(/\{d\}/g, facts.nameD || '');
+}
+
 function render(event, facts, rng, used = null) {
   if (!event.lines || !event.lines.length) return null;
   const fresh = used
@@ -161,11 +170,7 @@ function render(event, facts, rng, used = null) {
   const pool = fresh.length ? fresh : event.lines;
   const line = pool[Math.floor(rng() * pool.length)];
   if (used) used.add(event.id + '\u0000' + line);
-  return line
-    .replace(/\{a\}/g, facts.nameA)
-    .replace(/\{b\}/g, facts.nameB || '')
-    .replace(/\{c\}/g, facts.nameC || '')
-    .replace(/\{d\}/g, facts.nameD || '');
+  return fillNames(line, facts);
 }
 
 /**
@@ -271,7 +276,13 @@ export function drawWerkScene({
     players: [picked.facts.nameA, picked.facts.nameB, picked.facts.nameC,
       picked.facts.nameD].filter(Boolean),
     text: render(picked.ev, picked.facts, rng, usedLines),
-    note: picked.ev.note,
+    /* THE NOTE TAKES NAMES TOO, and did not. It was handed through raw while
+       the line beside it was filled, so a badge on the werk screen read
+       "...she helps Quin and {c} and loses two hours of her own day" -- the
+       placeholder, on screen, in the show. Reported from a played episode.
+       Both go through `fillNames` now; adding a field and forgetting to
+       substitute it is no longer possible in two places. */
+    note: fillNames(picked.ev.note, picked.facts),
     effects: picked.ev.effects,
     // How much choice there actually was. This is the number that decides
     // whether a season repeats itself, and it is worth carrying rather than

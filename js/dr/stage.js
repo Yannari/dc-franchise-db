@@ -968,7 +968,15 @@ export function runUntucked({
         kind: `untucked:${chosen.ev.id}`,
         data: {
           event: chosen.ev.id, phase, players: who,
-          note: chosen.ev.note, eligible: candidates.length,
+          /* THE NOTE TAKES NAMES TOO. It was handed through raw while the
+             line beside it was filled, so a badge could read "...and {c} has
+             put one headphone in" -- the placeholder, on screen. Same four
+             names the line gets, from the same facts. */
+          note: fill(chosen.ev.note, {
+            a: chosen.facts.nameA, b: chosen.facts.nameB,
+            c: chosen.facts.nameC, d: chosen.facts.nameD,
+          }),
+          eligible: candidates.length,
         },
         text: fill(pick(chosen.ev.lines, rng, usedLines, chosen.ev.id),
           /* {c} AND {d} ARE THE COUCH HERE, not the category and the pick.
@@ -1150,8 +1158,23 @@ export function renderChallengeBeats({
   if (mini) {
     const mEmit = (beatId, tierId, who, extra = {}) => {
       const beat = beatById(beatId);
-      const lines = miniLinesFor(mini.id, tierId);
-      if (!lines) { emit(beat, tierId, who, { ...extra, mini: mini.id, voiced: false }); return; }
+      const all = miniLinesFor(mini.id, tierId);
+      /* ── A LINE THAT NAMES A SECOND QUEEN NEEDS A SECOND QUEEN ───────
+         Not every mini has a target: `otherFor` returns null for the ones
+         where she performs alone, and `who` is then one name long. A line
+         written with {b} in it was still drawn, and {b} filled as the empty
+         string -- "What Q12 gives  is a wig that sits on 's head". Not a
+         visible placeholder, a HOLE, which reads as a typo and is harder to
+         spot than the {c} that started this.
+         Filtered rather than blanked, which is what js/dr/confessional.js
+         already does for the same reason: a line written for a pair should
+         cost that line on a solo night, not the sentence. */
+      const lines = who[1] ? all
+        : (all || []).filter(l => !/\{b\}/.test(String(l)));
+      if (!lines || !lines.length) {
+        emit(beat, tierId, who, { ...extra, mini: mini.id, voiced: false });
+        return;
+      }
       const t = beat.tiers.find(x => x.id === tierId) || beat.tiers[0];
       scenes.push({
         step: beat.step,
@@ -1160,7 +1183,8 @@ export function renderChallengeBeats({
         // the prefix to tell the two nights apart.
         kind: `chal:${beatId}`,
         data: {
-          beat: beatId, tier: tierId, players: who, note: t.note,
+          beat: beatId, tier: tierId, players: who,
+          note: fill(t.note, { a: who[0], b: who[1], c: mini.name }),
           mini: mini.id, voiced: true, ...extra,
         },
         text: fill(pick(lines, rng, usedLines, `mini/${mini.id}/${tierId}`),
@@ -1453,7 +1477,8 @@ export function renderChallengeBeats({
       kind: `perform:${family.family}`,
       data: {
         family: family.family, tier: tierId, players: [n],
-        note: tier.note, perf: performances[n].perf,
+        // Filled, like the line beside it. One queen in this scene, so {a}.
+        note: fill(tier.note, { a: n }), perf: performances[n].perf,
       },
       text: fill(pick(words.lines, rng, usedLines, `${family.family}/${tierId}`), { a: n }),
     });
@@ -1480,6 +1505,12 @@ export function renderMaxiEventScenes(events, {
   // its language. Defaults to the fallback family rather than throwing, so a
   // caller that has not been updated still renders.
   family = 'generic',
+  /* WHAT THE CHALLENGE IS CALLED. `{c}` in this pool is the challenge, not a
+     third queen -- "watched queens crash at {c} enough times" -- and nothing
+     passed it, so it filled as the empty string and the host's line read
+     "crash at  enough times". A hole rather than a placeholder, which is the
+     harder half of the same bug to notice. */
+  maxiName = '',
 } = {}) {
   const scenes = [];
   const used = new Set();
@@ -1566,12 +1597,20 @@ export function renderMaxiEventScenes(events, {
       step: at,
       kind: `maxi:${ev.type}`,
       data: {
-        event: ev.type, players: who, note: spec.note, from: spec.from,
+        event: ev.type, players: who,
+        /* Filled, for the reason in the untucked block above. `{c}` is the
+           CHALLENGE in this pool rather than a third queen -- the two pools
+           spell the same token differently, which is worth knowing before
+           adding a line to either. */
+        note: fill(spec.note, { a: who[0], b: who[1], c: maxiName }),
+        from: spec.from,
         ...(familyLines ? { family, voiced: true } : {}),
       },
       text: familyLines
-        ? fill(pick(familyLines, rng, used, `${ev.type}/${family}`), { a: who[0], b: who[1] })
-        : fill(pick(spec.lines, rng, used, ev.type), { a: who[0], b: who[1] }),
+        ? fill(pick(familyLines, rng, used, `${ev.type}/${family}`),
+          { a: who[0], b: who[1], c: maxiName })
+        : fill(pick(spec.lines, rng, used, ev.type),
+          { a: who[0], b: who[1], c: maxiName }),
     });
   }
   return scenes;

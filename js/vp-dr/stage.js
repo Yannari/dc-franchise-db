@@ -197,6 +197,13 @@ export const STAGE_CSS = `
   line-height:1.6;max-width:74ch;text-wrap:pretty}
 .dr-walk-fit{grid-column:1/-1;margin:7px 0 0;color:#C9A6BC;font-size:13.5px;
   line-height:1.55;max-width:74ch;text-wrap:pretty}
+/* A confessional, in the mirror, about the walk just shown. Set apart from
+   the walk's own narration by the pink rule the werk room's confessionals
+   use, so a reader can tell a queen talking to camera from the voiceover. */
+.dr-walk-confess{grid-column:1/-1;margin:9px 0 0;padding-left:13px;
+  border-left:2px solid rgba(255,123,200,.55);color:#FFC9E6;font-size:14px;
+  font-family:'Playfair Display',Georgia,serif;font-style:italic;
+  line-height:1.6;max-width:74ch;text-wrap:pretty}
 .dr-walk{display:grid;grid-template-columns:auto 1fr auto;gap:15px;align-items:center;
   padding:14px 16px 14px 20px}
 .dr-walk h3{margin:0;font-size:18px}
@@ -473,6 +480,25 @@ export function rpBuildRunway(row) {
   const lineFor = (kind, name) => (row.dr.scenes || []).find(sc =>
     sc.kind === kind && (sc.data?.players || [])[0] === name)?.text || '';
 
+  /* ── AND THE CONFESSIONALS, WHICH NO SCREEN HAS EVER DRAWN ──
+     js/dr/confessional.js stages a confessional off the runway — the
+     `runway-mine-*` and `runway-hers-*` tiers — and this screen looked up two
+     kinds BY NAME (`stage:walk`, `stage:walk-fit`), so every one of them was
+     written, filed on the row, and shown to nobody. The draft and the lip
+     sync take whatever lands on their step, which is why those two families
+     were visible and this one was not.
+
+     WHOSE CARD IT GOES ON: her own, for anything about her own walk. A
+     confessional ABOUT somebody else goes on the card of the queen it is
+     about, not the speaker's — "it looked better in the werkroom" said of
+     another queen belongs after that queen has walked, and the speaker's card
+     may come first on a screen revealed one walk at a time. The speaker is
+     named in the prose either way. */
+  const confessFor = name => (row.dr.scenes || []).filter(sc => sc.text
+    && sc.step === 'runway' && /^confess:/.test(sc.kind || '')
+    && ((sc.data?.about || (sc.data?.players || [])[0]) === name))
+    .map(sc => `<p class="dr-walk-confess">${esc(sc.text)}</p>`).join('');
+
   const steps = walkers.map((name, i) => {
     const w = rw[name] || {};
     const score = Number(w.score) || 0;
@@ -495,6 +521,7 @@ export function rpBuildRunway(row) {
         <span class="dr-runscore dr-disp">${n1(score)}</span>
         ${walk ? `<p class="dr-walk-line">${esc(walk)}</p>` : ''}
         ${fit ? `<p class="dr-walk-fit">${esc(fit)}</p>` : ''}
+        ${confessFor(name)}
       </div></div>`;
   }).join('');
 

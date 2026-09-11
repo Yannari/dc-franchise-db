@@ -472,15 +472,24 @@ export function rpBuildResults(row) {
     ? n => teamNames[(a.teams || []).findIndex(t => (t || []).includes(n))] || ''
     : () => '';
 
+  /* ── AND THE PAUSE WAS INVISIBLE ──
+     `holdCard(-1)` gave the host's beat before the last call the id
+     `dr-step-results--1`, and `_reapplyVisibility` walks i from 0 — so the
+     one card on this screen that is pure suspense was rendered at opacity
+     zero and never revealed. It needs a real place in the sequence, which
+     means every row after it shifts by one and the controls have to be told.
+     */
   let holdDrawn = !hold;
-  const steps = named.map(([result, name], i) => {
+  let at = 0;
+  const steps = named.map(([result, name]) => {
     const b = bend.get(name);
     const moved = b && b.panelRank !== b.finalRank;
     const meta = GRID_RESULTS[result] || {};
     const said = lineFor(result, name);
     // The seam: the first row of the block the host paused before.
     let before = '';
-    if (!holdDrawn && holdBefore === result) { before = holdCard(-1); holdDrawn = true; }
+    if (!holdDrawn && holdBefore === result) { before = holdCard(at++); holdDrawn = true; }
+    const i = at++;
     return `${before}<div class="dr-step" id="dr-step-results-${i}">
       <div class="dr-panel dr-a-score dr-callrow${
   result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
@@ -561,7 +570,10 @@ export function rpBuildResults(row) {
      It goes last because it IS the handoff: the call ends, the stakes are
      named, and the next screen is two queens on the mark. */
   const stakes = (row.dr.scenes || []).find(x => x.kind === 'stage:call-stakes' && x.text);
-  const stakesCard = stakes ? `<div class="dr-step" id="dr-step-results-${named.length}">
+  /* `at` is where the rows actually finished, which is one past `named.length`
+     on a night the host paused. Using the name count put this card on top of
+     the last call. */
+  const stakesCard = stakes ? `<div class="dr-step" id="dr-step-results-${at}">
       <div class="dr-panel dr-a-room dr-hold dr-stakes">
         ${_judgePortrait('rupaul', { stage: true, size: 40 })}
         <p>${esc(stakes.text)}</p>
@@ -570,7 +582,7 @@ export function rpBuildResults(row) {
   return `<style>${RESULTS_CSS}</style>${_shell(stand + steps + stakesCard, ep, {
     phase: 'stage', title: 'The Call', subtitle: 'who the panel kept back',
     sidebar: _seedRail('results', '<h4 class="dr-disp">The call</h4>'),
-  })}${_controls('results', named.length + (stakes ? 1 : 0), ep.num)}`;
+  })}${_controls('results', at + (stakes ? 1 : 0), ep.num)}`;
 }
 
 /** The lip sync, built as a fight. */

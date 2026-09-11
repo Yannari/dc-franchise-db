@@ -2553,6 +2553,9 @@ const SG_CSS = `
   transition:left .5s ease-out}
 
 /* HOST ENGAGEMENT — a beat in the round */
+.sg-confess{margin:6px 0 0;padding-left:11px;border-left:2px solid rgba(255,123,200,.55);
+  font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:12.5px;
+  line-height:1.55;color:#FFC9E6}
 .sg-host-beat{margin:4px 0 2px;padding:6px 10px;font-size:11.5px;font-style:italic;
   color:#FFD23F;border-radius:4px;
   background:linear-gradient(90deg,rgba(255,210,63,.06),transparent 70%)}
@@ -2779,6 +2782,25 @@ function rpBuildSnatchGame(row) {
     return sc?.text || '';
   };
 
+  /* ── THE STAGED CONFESSIONAL, WHICH THIS SCREEN ALSO NEVER DREW ──
+     The Snatch Game has its own builder and its own SG_CONFESSIONALS pool, so
+     it looked like it was covered. It was not: js/dr/confessional.js stages a
+     confessional off the challenge — the `maxipre-*` tiers — and that is a
+     different thing written in a different place, filed on the row, and shown
+     to nobody. It was the last family left after the generic maxi and the
+     runway were fixed.
+     Attached to the card of the queen it is ABOUT, like everywhere else, so a
+     line about somebody else's answer lands after that answer. */
+  const usedConfess = new Set();
+  const confessFor = name => {
+    const sc = (row.dr.scenes || []).find(x => x.text
+      && MAXI_STEPS.has(x.step) && /^confess:/.test(x.kind || '')
+      && !usedConfess.has(x)
+      && ((x.data?.about || (x.data?.players || [])[0]) === name));
+    if (sc) usedConfess.add(sc);
+    return sc?.text || '';
+  };
+
   const pickGuests = () => {
     const nonPerm = JUDGES.filter(j => !j.permanent && j.id !== 'rupaul');
     if (nonPerm.length >= 2) return nonPerm.slice(0, 2);
@@ -2838,6 +2860,7 @@ function rpBuildSnatchGame(row) {
     const answer = pick[Math.floor(rng() * pick.length)];
     usedAnswers.add(answer);
     const prose = sceneFor(f.name);
+    const confess = confessFor(f.name);
 
     const hostLine = hbThis
       ? _pickLine(hbThis.worked ? SG_HOST_LINES.worked : SG_HOST_LINES.failed, rng)
@@ -2855,6 +2878,7 @@ function rpBuildSnatchGame(row) {
             ${_sgMeter(f.score, f.reaction)}
             ${hostLine ? `<div class="sg-host-beat${hbThis && !hbThis.worked ? ' sg-hb-fail' : ''}">${esc(hostLine)}</div>` : ''}
             ${prose ? `<p class="dr-perf-line" style="font-size:11px;margin:4px 0 0;color:rgba(244,239,228,.55)">${esc(prose)}</p>` : ''}
+            ${confess ? `<p class="sg-confess">${esc(confess)}</p>` : ''}
           </div>`;
   }).join('')}
       </div>
@@ -2874,6 +2898,28 @@ function rpBuildSnatchGame(row) {
         }
       }
     }
+  }
+
+  /* ── AND ANY CONFESSIONAL WHOSE QUEEN NEVER GOT A CARD ──
+     `confessFor` hangs the line on the answer card of the queen it is about,
+     which works only if she was FEATURED in a round — a queen the taping
+     never cut to has no card to hang anything on, and hers went back to being
+     written and unseen. Three of four test seasons still dropped one here
+     after the card path was fixed.
+     So whatever is left over gets its own step, which is what it is: her, in
+     the mirror, about a challenge the edit did not show her in. */
+  for (const sc of (row.dr.scenes || [])) {
+    if (!sc.text || !MAXI_STEPS.has(sc.step) || !/^confess:/.test(sc.kind || '')) continue;
+    if (usedConfess.has(sc)) continue;
+    usedConfess.add(sc);
+    const who = (sc.data?.players || [])[0];
+    steps.push(`<div class="dr-step" id="dr-step-${sfx}-${stepIdx}">
+      <div class="dr-panel dr-a-bond dr-card dr-k-confess dr-confess">
+        ${who ? `<span class="dr-mirror">${_portrait(who, ep, { size: 78, station: true })}</span>` : ''}
+        <div><p>${esc(sc.text)}</p></div>
+      </div>
+    </div>`);
+    stepIdx++;
   }
 
   for (const sc of (row.dr.scenes || [])) {
@@ -2945,10 +2991,16 @@ function rpBuildSnatchGame(row) {
     window._drSidebar[sfx] = panels;
   }
 
+  /* NUMBERED INTO THE SEQUENCE, not `-room-<i>`. `_reapplyVisibility` only
+     ever adds `dr-vis` to `dr-step-<sfx>-<i>` for i below the control's
+     total, so a step with any other id shape stays at `.dr-step{opacity:0}`
+     forever. These were rendered into the page and never seen — the same bug
+     the generic maxi screen had, in the builder next door. */
   const leftoverScenes = maxiScenes.filter(sc => !usedScene.has(sc))
-    .map((sc, i) => {
+    .map(sc => {
       usedScene.add(sc);
-      return `<div class="dr-step" id="dr-step-${sfx}-room-${i}">
+      const at = stepIdx++;
+      return `<div class="dr-step" id="dr-step-${sfx}-${at}">
       <div class="dr-panel dr-a-room dr-scene">
         ${(sc.data?.players || []).length
     ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
@@ -3039,14 +3091,33 @@ export function rpBuildMaxi(row) {
      is what this asks for. A kind that arrives on a third step is a scene
      that belongs to a third screen. */
   const MAXI_STEPS = new Set(['maxi-pre', 'maxi-main']);
+  /* ── AND THE CONFESSIONALS, WHICH NO SCREEN HAS EVER DRAWN ──
+     js/dr/confessional.js stages a confessional off the challenge — the
+     `maxipre-mine-*` and `maxipre-hers-*` tiers — and this filter asked for
+     `perform:`, `maxi:` and `chal:performance` only, so every one of them was
+     written, filed on the row, and shown to nobody. Same for the runway
+     family on the runway screen. The draft and the lip sync take whatever
+     lands on their step, which is why those two families were visible and
+     these were not.
+     tests/dr-vp-sweep.test.js has been red on exactly this for as long as it
+     has existed. */
   const maxiScenes = (row.dr.scenes || []).filter(sc => sc.text
     && MAXI_STEPS.has(sc.step)
-    && /^(perform:|maxi:|chal:performance)/.test(sc.kind || ''));
+    && /^(perform:|maxi:|chal:performance|confess:)/.test(sc.kind || ''));
   const usedScene = new Set();
+  /* ── WHOSE CARD IT GOES ON ──
+     Her own, for anything she did. But a confessional ABOUT somebody else
+     goes on the card of the queen it is about, not the speaker's: "Queen8
+     found something in that challenge the rest of us did not" belongs after
+     Queen8's performance, and putting it on the speaker's card would print it
+     before the reader has seen the thing being talked about — on a screen
+     revealed one queen at a time. The speaker is named in the prose either
+     way. */
+  const subjectOf = sc => (/^confess:/.test(sc.kind || '') && sc.data?.about)
+    || (sc.data?.players || [])[0];
   const linesFor = name => maxiScenes.filter(sc => {
     if (usedScene.has(sc)) return false;
-    const players = sc.data?.players || [];
-    if (players[0] !== name) return false;
+    if (subjectOf(sc) !== name) return false;
     usedScene.add(sc);
     return true;
   });
@@ -3069,9 +3140,17 @@ export function rpBuildMaxi(row) {
       : card;
   }).join('');
 
-  // Whatever was about the room rather than one queen, after the cards.
+  /* ── AND THESE WERE DRAWN AT OPACITY ZERO ──
+     Whatever was about the room rather than one queen, after the cards. They
+     carried `dr-step-<sfx>-room-<i>` ids, and `_reapplyVisibility` only ever
+     adds `dr-vis` to `dr-step-<sfx>-<i>` for i below the control's total — so
+     nothing ever matched them, `.dr-step{opacity:0}` stood, and every one of
+     these was rendered into the page and never seen. The sweep could not
+     catch it either: the text IS in the HTML.
+     They are numbered into the same sequence as the cards now, and the
+     controls are told the real total. */
   const room = maxiScenes.filter(sc => !usedScene.has(sc))
-    .map((sc, i) => `<div class="dr-step" id="dr-step-${sfx}-room-${i}">
+    .map((sc, i) => `<div class="dr-step" id="dr-step-${sfx}-${running.length + i}">
       <div class="dr-panel dr-a-room dr-scene">
         ${(sc.data?.players || []).length
     ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
@@ -3082,16 +3161,26 @@ export function rpBuildMaxi(row) {
   /* THE RUNNING ORDER, GATED. The rail shows the queens up to the step the
      viewer has reached and nobody after — a panel carrying a score she has
      not been shown is the spoiler this screen exists to avoid. */
+  /* The room scenes are steps now, so the screen is longer than the cast. */
+  const roomCount = maxiScenes.filter(sc => !usedScene.has(sc)).length;
+  const total = running.length + roomCount;
+
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
-    window._drSidebar[sfx] = running.map((_, i) => `<h4 class="dr-disp">So far</h4>${
+    const panel = i => `<h4 class="dr-disp">So far</h4>${
       running.slice(0, i + 1)
         .map(n => ({ n, p: Number(perfs[n]?.perf) || 0 }))
         .sort((x, y) => y.p - x.p)
         .map(({ n, p }) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
           <div><div class="dr-nm">${esc(n)}</div>${_mateChip(row, n)}</div>
           <span class="dr-chip ${p >= 8 ? 'dr-c-win' : p >= 6 ? 'dr-c-high' : p >= 4 ? 'dr-c-safe' : 'dr-c-low'}">${n1(p)}</span>
-        </div>`).join('')}`);
+        </div>`).join('')}`;
+    /* ONE PANEL PER STEP, and the steps now outnumber the queens. `_updateSidebar`
+       indexes this array by step, so a screen with more steps than entries
+       leaves the rail frozen on the last queen for the rest of it. The room
+       scenes come after every card, so they all show the finished board. */
+    window._drSidebar[sfx] = Array.from({ length: total },
+      (_, i) => panel(Math.min(i, running.length - 1)));
   }
 
   const skin = skinFor(ch.id);
@@ -3099,5 +3188,5 @@ export function rpBuildMaxi(row) {
     `<div class="dr-fam dr-chal dr-chal-${ch.id}">${ambientFor(ch.id)}${teams}${steps}${room}</div>`, ep, {
       phase: 'stage', title: ch.name, subtitle: skin.sub,
       sidebar: _seedRail(sfx, '<h4 class="dr-disp">So far</h4>'),
-    })}${_controls(sfx, running.length, ep.num)}`;
+    })}${_controls(sfx, total, ep.num)}`;
 }

@@ -156,16 +156,43 @@ export const UNTUCKED_EVENTS = [
       "{b} explains her reasoning. It is calm. It is specific. That is the worst part — {a} wanted it to be malicious because malicious is easy to dismiss. Instead it is a thoughtful answer and the answer was {a}'s name.",
     ],
   }),
+  /* ── WEIGHING IN AND BACKING UP ARE OPPOSITE SCENES ──
+     These were one event with one `effects` block, and its four lines did not
+     agree about what had happened. One of them has {b} turning ON {a}; the
+     other three have {a} taking {b}'s SIDE against a queen at the far end of
+     the couch — "{b} looks relieved to have backup", "{b} goes thank you".
+     The single bond effect was -1.5 for all four, so three nights in four the
+     badge said the pair had fallen out on a card describing one of them
+     defending the other. Riot got -1.5 with Sharon Needles for having Sharon's
+     back.
+     A pool whose lines disagree about the outcome cannot share one effect. */
   ev({
-    id: 'the-room-takes-sides', phase: 'middle', cast: 'pair', weight: 2,
-    note: 'A third queen weighs in on somebody else\'s argument and now it is her argument too.',
+    id: 'the-room-takes-sides', phase: 'middle', cast: 'pair', weight: 1,
+    note: 'A third queen weighs in on somebody else\'s argument and both of them turn on her.',
     arcs: ['narrator'], when: f => f.bond <= 2 && f.tension,
     effects: { bond: -1.5, pop: { a: -1 } },
     lines: [
       "{a} has been watching the argument for three minutes and decides she has an opinion. Delivers it to both of them at once. {b} turns on her. Now it is {a}'s fight too and she was not prepared for that.",
+      "{a} offers a take nobody asked for. {b} turns round slowly. \"I am sorry \u2014 are you in this?\" {a} opens her mouth. Closes it. The answer is yes now, whatever she says next.",
+      "\"If I can be honest\u2014\" and {a} is already wrong, because the two of them stop arguing with each other to look at her instead. Nothing unites a room like an outsider with an opinion. {a} finishes the sentence into a silence she is going to remember.",
+      "{a} tries to referee. Says something even-handed about both of them having a point. {b} takes it as a verdict and does not like the verdict. \"Do not do that. Do not do the calm voice.\" The calm voice was the only thing {a} had.",
+    ],
+  }),
+  ev({
+    id: 'takes-her-side', phase: 'middle', cast: 'pair', weight: 2,
+    note: 'She jumps into somebody else\'s argument on her side, and picks up the enemy that comes with it.',
+    arcs: ['narrator'], when: f => f.bond <= 2 && f.tension,
+    /* SHE GAINED AN ALLY AND IT COST HER. The bond is with the queen she stood
+       up for — that is the whole event. The audience mark stays negative
+       because leaping into a fight that was not yours reads as mess however
+       loyal the motive, and the queen on the other end is not in the pair, so
+       there is nobody else to take a bond off. */
+    effects: { bond: 1.5, pop: { a: -1 } },
+    lines: [
       "\"Can I say something?\" {a} does not wait for permission. Takes {b}'s side, loudly. The queen on the other end goes \"nobody asked you\" with enough venom that {a} flinches. She is in it now. She chose to be in it.",
       "{a} weighs in from the couch. What was a fight between two is now a fight with an audience that is also a participant. {b} goes \"thank you.\" The other queen goes \"stay out of it.\" {a} does not stay out of it.",
       "It is not {a}'s argument. It becomes {a}'s argument the moment she goes \"well actually\" from the other end of the couch. {b} looks relieved to have backup. The other queen looks furious to be outnumbered. {a} has taken a side and now she has to live on it.",
+      "\"She is right, though.\" {a} says it to the room rather than to either of them, which is the loudest way to say it. {b} does not thank her out loud. The look does that. Somewhere behind {a} a queen decides something about her that is going to last the rest of the season.",
     ],
   }),
   ev({

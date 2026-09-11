@@ -844,7 +844,14 @@
           "totalIdolsFound": 1
         }
       },
-      "tier": "B"
+      "tier": "B",
+      "judged": [
+        {
+          "format": "drag-race",
+          "season": 1,
+          "episodes": 1
+        }
+      ]
     },
     {
       "id": "brody",
@@ -1114,7 +1121,14 @@
       "totalBottoms": 2,
       "latestAvatarFile": "",
       "totalHohWins": 0,
-      "totalVetoWins": 0
+      "totalVetoWins": 0,
+      "judged": [
+        {
+          "format": "drag-race",
+          "season": 1,
+          "episodes": 1
+        }
+      ]
     },
     {
       "id": "cody",
@@ -9992,7 +10006,14 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🦉"
+      "emoji": "🦉",
+      "judged": [
+        {
+          "format": "drag-race",
+          "season": 1,
+          "episodes": 1
+        }
+      ]
     },
     {
       "id": "grett",
@@ -14929,7 +14950,7 @@
         1
       ],
       "totalSeasons": 1,
-      "bestPlacement": 1,
+      "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -14944,14 +14965,14 @@
           "season": 1,
           "avatarId": null,
           "avatarFile": "",
-          "placement": 1,
+          "placement": 4,
           "status": "Sashayed away",
           "challengeWins": 0,
           "popularity": 0,
           "dr": {
             "wins": 0,
             "highs": 0,
-            "lows": 0,
+            "lows": 1,
             "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
@@ -14966,13 +14987,13 @@
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
       "totalBottoms": 0,
-      "avgPlacement": 1,
+      "avgPlacement": 4,
       "byShow": {
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
           "totalHighs": 0,
-          "totalLows": 0,
+          "totalLows": 1,
           "totalBottoms": 0,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
@@ -15012,6 +15033,66 @@
             "wins": 0,
             "highs": 0,
             "lows": 0,
+            "bottoms": 1,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 1,
+      "avgPlacement": 2,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 1,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "sharon-needles",
+      "name": "Sharon Needles",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 5,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
             "congeniality": 0
@@ -15026,7 +15107,7 @@
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
       "totalBottoms": 0,
-      "avgPlacement": 2,
+      "avgPlacement": 5,
       "byShow": {
         "drag-race": {
           "seasons": 1,
@@ -15043,8 +15124,248 @@
       "totalVetoWins": 0
     },
     {
-      "id": "sharon-needles",
-      "name": "Sharon Needles",
+      "id": "riot",
+      "name": "Riot",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 6,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 1,
+            "lows": 1,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 6,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 1,
+          "totalLows": 1,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "quin",
+      "name": "Quin",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 7,
+          "status": "Sashayed away",
+          "challengeWins": 1,
+          "popularity": 0,
+          "dr": {
+            "wins": 1,
+            "highs": 3,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 1,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 7,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 1,
+          "totalHighs": 3,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "paige-turner",
+      "name": "Paige Turner",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 8,
+          "status": "Sashayed away",
+          "challengeWins": 1,
+          "popularity": 0,
+          "dr": {
+            "wins": 1,
+            "highs": 1,
+            "lows": 0,
+            "bottoms": 0,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 1,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 0,
+      "avgPlacement": 8,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 1,
+          "totalHighs": 1,
+          "totalLows": 0,
+          "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "minnie-skurr",
+      "name": "Minnie Skurr",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 9,
+          "status": "Sashayed away",
+          "challengeWins": 1,
+          "popularity": 0,
+          "dr": {
+            "wins": 1,
+            "highs": 0,
+            "lows": 0,
+            "bottoms": 1,
+            "lipsyncWins": 2,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 5,
+      "totalLipsyncWins": 6,
+      "totalBottoms": 1,
+      "avgPlacement": 9,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 1,
+          "totalHighs": 0,
+          "totalLows": 0,
+          "totalBottoms": 1,
+          "totalLipsyncWins": 2,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "marge-stache",
+      "name": "Marge Stache",
       "seasons": [
         1
       ],
@@ -15072,7 +15393,7 @@
             "wins": 0,
             "highs": 0,
             "lows": 0,
-            "bottoms": 0,
+            "bottoms": 1,
             "lipsyncWins": 0,
             "congeniality": 0
           },
@@ -15085,7 +15406,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 0,
+      "totalBottoms": 1,
       "avgPlacement": 3,
       "byShow": {
         "drag-race": {
@@ -15093,307 +15414,7 @@
           "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
-    },
-    {
-      "id": "riot",
-      "name": "Riot",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 4,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 4,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
-      "avgPlacement": 4,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
-    },
-    {
-      "id": "quin",
-      "name": "Quin",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 5,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 5,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 1,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
-      "avgPlacement": 5,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 1,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
-    },
-    {
-      "id": "paige-turner",
-      "name": "Paige Turner",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 6,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 6,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
-      "avgPlacement": 6,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
-    },
-    {
-      "id": "minnie-skurr",
-      "name": "Minnie Skurr",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 7,
-      "wins": 0,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 7,
-          "status": "Sashayed away",
-          "challengeWins": 1,
-          "popularity": 0,
-          "dr": {
-            "wins": 1,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 1,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 4,
-      "totalLipsyncWins": 4,
-      "totalBottoms": 0,
-      "avgPlacement": 7,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 1,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 1,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
-    },
-    {
-      "id": "marge-stache",
-      "name": "Marge Stache",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 8,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 8,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
-      "avgPlacement": 8,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 0,
+          "totalBottoms": 1,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
@@ -15409,69 +15430,9 @@
         1
       ],
       "totalSeasons": 1,
-      "bestPlacement": 9,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 1,
-          "avatarId": null,
-          "avatarFile": "",
-          "placement": 9,
-          "status": "Sashayed away",
-          "challengeWins": 0,
-          "popularity": 0,
-          "dr": {
-            "wins": 0,
-            "highs": 0,
-            "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
-            "congeniality": 0
-          },
-          "notes": [],
-          "gameplayStyle": "",
-          "keyMoments": [],
-          "format": "drag-race",
-          "seasonId": "dr-1"
-        }
-      ],
-      "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
-      "avgPlacement": 9,
-      "byShow": {
-        "drag-race": {
-          "seasons": 1,
-          "totalMaxiWins": 0,
-          "totalHighs": 0,
-          "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
-          "totalCongeniality": 0
-        }
-      },
-      "latestAvatarFile": "",
-      "totalHohWins": 0,
-      "totalVetoWins": 0
-    },
-    {
-      "id": "gigi-cherie",
-      "name": "Gigi Cherie",
-      "seasons": [
-        1
-      ],
-      "totalSeasons": 1,
       "bestPlacement": 10,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 1,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
@@ -15486,10 +15447,10 @@
           "avatarFile": "",
           "placement": 10,
           "status": "Sashayed away",
-          "challengeWins": 0,
+          "challengeWins": 1,
           "popularity": 0,
           "dr": {
-            "wins": 0,
+            "wins": 1,
             "highs": 0,
             "lows": 0,
             "bottoms": 0,
@@ -15503,14 +15464,14 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 0,
+      "totalMaxiWins": 1,
       "totalLipsyncWins": 0,
       "totalBottoms": 0,
       "avgPlacement": 10,
       "byShow": {
         "drag-race": {
           "seasons": 1,
-          "totalMaxiWins": 0,
+          "totalMaxiWins": 1,
           "totalHighs": 0,
           "totalLows": 0,
           "totalBottoms": 0,
@@ -15523,8 +15484,8 @@
       "totalVetoWins": 0
     },
     {
-      "id": "cupcakke",
-      "name": "Cupcakke",
+      "id": "gigi-cherie",
+      "name": "Gigi Cherie",
       "seasons": [
         1
       ],
@@ -15583,8 +15544,8 @@
       "totalVetoWins": 0
     },
     {
-      "id": "cheryl-hole",
-      "name": "Cheryl Hole",
+      "id": "cupcakke",
+      "name": "Cupcakke",
       "seasons": [
         1
       ],
@@ -15610,7 +15571,7 @@
           "popularity": 0,
           "dr": {
             "wins": 0,
-            "highs": 0,
+            "highs": 2,
             "lows": 0,
             "bottoms": 0,
             "lipsyncWins": 0,
@@ -15631,9 +15592,69 @@
         "drag-race": {
           "seasons": 1,
           "totalMaxiWins": 0,
-          "totalHighs": 0,
+          "totalHighs": 2,
           "totalLows": 0,
           "totalBottoms": 0,
+          "totalLipsyncWins": 0,
+          "totalCongeniality": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "cheryl-hole",
+      "name": "Cheryl Hole",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 1,
+          "status": "Sashayed away",
+          "challengeWins": 0,
+          "popularity": 0,
+          "dr": {
+            "wins": 0,
+            "highs": 0,
+            "lows": 1,
+            "bottoms": 1,
+            "lipsyncWins": 0,
+            "congeniality": 0
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "drag-race",
+          "seasonId": "dr-1"
+        }
+      ],
+      "totalMaxiWins": 0,
+      "totalLipsyncWins": 0,
+      "totalBottoms": 1,
+      "avgPlacement": 1,
+      "byShow": {
+        "drag-race": {
+          "seasons": 1,
+          "totalMaxiWins": 0,
+          "totalHighs": 0,
+          "totalLows": 1,
+          "totalBottoms": 1,
           "totalLipsyncWins": 0,
           "totalCongeniality": 0
         }
@@ -15732,8 +15753,8 @@
             "wins": 0,
             "highs": 0,
             "lows": 0,
-            "bottoms": 0,
-            "lipsyncWins": 0,
+            "bottoms": 2,
+            "lipsyncWins": 2,
             "congeniality": 0
           },
           "notes": [],
@@ -15744,8 +15765,8 @@
         }
       ],
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 0,
-      "totalBottoms": 0,
+      "totalLipsyncWins": 2,
+      "totalBottoms": 2,
       "avgPlacement": 14,
       "byShow": {
         "drag-race": {
@@ -15753,8 +15774,8 @@
           "totalMaxiWins": 0,
           "totalHighs": 0,
           "totalLows": 0,
-          "totalBottoms": 0,
-          "totalLipsyncWins": 0,
+          "totalBottoms": 2,
+          "totalLipsyncWins": 2,
           "totalCongeniality": 0
         }
       },

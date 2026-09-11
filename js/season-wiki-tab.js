@@ -19,6 +19,87 @@ import {
 import { buildTrackRecordGrid, RESULT_LABELS } from './dr/grid.js';
 import { avatarUrl } from './avatar-registry.js';
 
+
+/* ── THE EPISODE LIST, THE WAY A DRAG SEASON'S ARTICLE IS BUILT ──────────
+   Read off four real season pages before it was written. Their skeleton is
+   Contestants, an earnings table, the track record chart, and then the part
+   that is actually the article: one block per episode, in a fixed order --
+   the maxi challenge, the runway theme, the guest judge, the winner, the
+   bottom two, the lip sync song, who went home. Everything else on those
+   pages is navigation.
+
+   Our season document already carries every one of those fields; nothing on
+   this show needed exporting differently, only drawing.
+
+   AND THE FLAVOUR IS THE THING A REAL WIKI CANNOT PRINT. A fandom article
+   records the result. This one has the panel's own ranking AND the host's
+   final order sitting side by side on every placement, so it can say what
+   the room thought before he overruled it -- which is the argument those
+   pages are full of and can never settle. Same for the storyline a queen was
+   on that week: the edit is a fact here rather than an inference.
+
+   Written from the document rather than the live rows, so it draws the same
+   for a season loaded out of the repo as for one just played. */
+export function _dragEpisodeBlocks(doc, esc, avatar) {
+  const eps = (doc && doc.dr && doc.dr.episodes) || [];
+  if (!eps.length) return '';
+  const nameOf = p => (p && (p.name || p)) || '';
+  const list = eps.map(e => {
+    const pl = e.placements || [];
+    const winners = pl.filter(p => p.result === 'WIN').map(p => p.name);
+    /* BOTH OF THEM. Filtering on BTM2 alone returns the SURVIVOR only: the
+       queen who lost the song carries ELIM by then, so "Bottom two" printed
+       one name. The lip sync knows the pair exactly; the filter is the
+       fallback for a night that had no song. */
+    const bottom = (e.lipsync && e.lipsync.queens && e.lipsync.queens.length)
+      ? [...e.lipsync.queens]
+      : [...pl.filter(p => p.result === 'BTM2').map(p => p.name),
+        ...(e.exits || []).map(x => x.name)];
+    const gone = (e.exits || []).map(x => x.name);
+    const bits = [];
+    const row = (k, v) => { if (v) bits.push(`<dt>${k}</dt><dd>${v}</dd>`); };
+
+    row('Maxi challenge', e.challenge ? esc(e.challenge.name) : '');
+    row('Runway', e.runwayCategory ? esc(e.runwayCategory) : '');
+    row('Mini challenge', e.mini
+      ? esc(e.mini.name) + (e.mini.winner ? ` &mdash; won by ${esc(e.mini.winner)}` : '') : '');
+    row('Guest judge', e.guest ? esc(nameOf(e.guest)) : '');
+    row('Winner', winners.length ? winners.map(n => avatar(n) + esc(n)).join(' &amp; ') : '');
+    row('Bottom two', bottom.length ? bottom.map(n => esc(n)).join(' and ') : '');
+    row('Lip sync', e.song && e.song.title
+      ? `&ldquo;${esc(e.song.title)}&rdquo;${e.song.artist ? ` by ${esc(e.song.artist)}` : ''}${
+        e.lipsync && e.lipsync.winner ? ` &mdash; ${esc(e.lipsync.winner)} stayed` : ''}` : '');
+    row('Eliminated', gone.length
+      ? gone.map(n => esc(n)).join(' and ')
+      : (e.eliminated ? esc(nameOf(e.eliminated)) : '<em>nobody went home</em>'));
+
+    /* ── WHAT THE PANEL THOUGHT, WHEN THE HOST DISAGREED ──
+       `panelRank` is the board before he touched it and `finalRank` is the
+       order he announced. Printed only when they differ at the top, because
+       "the host agreed with the panel" is not a fact worth a line. */
+    const bent = pl.filter(p => p.panelRank && p.finalRank && p.panelRank !== p.finalRank);
+    const panelTop = pl.find(p => p.panelRank === 1);
+    const flavour = [];
+    if (panelTop && winners.length && !winners.includes(panelTop.name)) {
+      flavour.push(`The panel had <b>${esc(panelTop.name)}</b> first. The host gave it to <b>${
+        esc(winners[0])}</b>.`);
+    } else if (bent.length) {
+      flavour.push(`The host moved ${bent.length} ${bent.length === 1 ? 'queen' : 'queens'} from where the panel put them.`);
+    }
+    const arcs = [...new Set(pl.map(p => p.storyline).filter(Boolean))];
+    if (arcs.length) {
+      flavour.push(`Storylines running: ${arcs.slice(0, 4).map(a => esc(a)).join(', ')}.`);
+    }
+
+    return `<article class="sr-ep">
+      <h3>Episode ${esc(e.episode)}${e.challenge ? `: &ldquo;${esc(e.challenge.name)}&rdquo;` : ''}</h3>
+      <dl class="sr-epfacts">${bits.join('')}</dl>
+      ${flavour.length ? `<p class="sr-epnote">${flavour.join(' ')}</p>` : ''}
+    </article>`;
+  }).join('');
+  return `<div class="sr-eps">${list}</div>`;
+}
+
 export function buildWikiTab(s, { face = null } = {}) {
   const shows = { DEFAULT_FORMAT, showWords, showName, exitVerbs, roundExits, publicBallots,
     roundShape, seasonRounds };
@@ -1024,6 +1105,18 @@ export function buildWikiTab(s, { face = null } = {}) {
           !hasBallots && weeks.length && shape !== 'placements' ? `<p class="sr-thin">A vote-by-vote history needs the
           ballots, which this season was exported before the record carried. Re-export it and
           the grid of who voted for whom appears here.</p>` : ''}
+        ${/* ── THE EPISODES, WHICH IS WHERE A DRAG ARTICLE ACTUALLY LIVES ──
+              Four real season pages were read before this was written: under
+              the chart, every one of them carries a block per episode, and
+              that is the part people come to those pages for. Ours had the
+              chart and stopped. Drag only -- a camp and a house have their
+              own shapes above and this would be a third vocabulary over
+              them. */
+          shape === 'placements'
+            ? sec('Episodes', _dragEpisodeBlocks(s, esc,
+              n => `<img class="sr-epface" src="${esc(srFace(null, null, n))}" alt="">`),
+            `${(s.dr && s.dr.episodes || []).length} nights`)
+            : ''}
         ${sec('Game history', gameHistory)}
         ${sec('Trivia', trivia.length
           ? `<ul class="wk-list">${trivia.map(t => `<li>${t}</li>`).join('')}</ul>` : '')}

@@ -709,7 +709,19 @@ const _sections = SECTIONS.map(sec => ({
        screens now, and that clause drew "Sashay Away: the mirror message" over
        a night on which nobody sashays and there is no mirror message. */
     when: row => (sceneSections(row).get(sec.id) || []).length > 0,
-    build: row => (BUILDERS[sec.id] ? BUILDERS[sec.id](row) : buildSection(sec, row)),
+    /* ── A CUSTOM BUILDER IS HANDED ITS SECTION ──
+       `buildSection` reads `sceneSections` and a custom builder used to be
+       handed only the row, so each one re-derived its own contents by step.
+       That is fine while a step belongs to one screen and wrong the moment it
+       does not: the booth, the rehearsal room and the set are all
+       `step: 'prep'` with screens of their own, so `rpBuildPrep`'s
+       `filter(s => s.step === 'prep')` swept up every one of them and an
+       afternoon of takes with the director rendered on the Work Room screen
+       AND on On Set. The walk above already answers "which scenes are mine";
+       nothing downstream of it should be answering it a second time. */
+    build: row => (BUILDERS[sec.id]
+      ? BUILDERS[sec.id](row, sceneSections(row).get(sec.id) || [])
+      : buildSection(sec, row)),
     revealAllName: 'drRevealAll',
   }));
 

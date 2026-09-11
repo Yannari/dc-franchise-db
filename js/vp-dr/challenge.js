@@ -2135,9 +2135,18 @@ export function rpBuildChoice(row) {
 }
 
 /** Prep: the room at work, and the host's walkthrough. */
-export function rpBuildPrep(row) {
+export function rpBuildPrep(row, mine = null) {
   const ep = epOf(row);
-  const scenes = (row.dr.scenes || []).filter(s => s.step === 'prep' && s.text);
+  /* ── ONLY THE SCENES THIS SCREEN OWNS ──
+     `mine` is the section, handed in by js/vp-dr/screens.js, and it is the
+     answer. Filtering the whole episode by `step === 'prep'` was not: the
+     booth, the rehearsal room and the set all carry that step and all have
+     screens of their own, so ten cards of an afternoon taking notes from the
+     director rendered here AND on On Set — the same prose twice, once under
+     a heading about sewing.
+     The step filter stays for the fallback path and is harmless over a
+     section that is already this screen's. */
+  const scenes = (mine || row.dr.scenes || []).filter(s => s.step === 'prep' && s.text);
   const hasChoreo = !!_sceneData(row, 'choreographer-pick')?.choreographers;
   if (!scenes.length && !hasChoreo) return '';
 

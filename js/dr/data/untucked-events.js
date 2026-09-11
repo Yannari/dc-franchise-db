@@ -895,6 +895,31 @@ export const UNTUCKED_EVENTS = [
     ],
   }),
 
+  /* ── MOVED FROM THE WERK ROOM, WHERE NOBODY DRINKS ──
+     This was `slot: 'werk-elim-day'` and it was the only event in a hundred
+     and seven that put a glass in somebody's hand in the work room. Measured
+     the other way: twenty-eight of the sixty-five events in THIS file involve
+     a drink. The lounge is where the drinking happens and the werk room is
+     where the sewing does, so three queens pouring something read as Untucked
+     to anybody watching — which is how it was reported.
+     `late` because that is what the beat is: the end of the night, before
+     they are called back, when the room already knows one of them is not
+     coming back to it. Everybody is in this room — `runUntucked` is handed
+     the whole living roster — so "one of us is going" is still true of the
+     three of them and still unsaid, which is the whole event. */
+  ev({
+    id: 'last-drink-together', phase: 'late', cast: 'group', weight: 1.2,
+    note: '{a}, {b} and {c} have a drink in a room that is about to be one '
+      + 'smaller and all three of them are being careful not to say so.',
+    when: f => f.groupSize >= 3,
+    effects: { bond: 1, pop: { a: 1 }, state: 'last-drink' },
+    lines: [
+      "{a} pours three glasses. {b} takes hers. {c} takes hers. They stand in a circle that is going to be one person smaller by tomorrow and all three of them are being careful not to say that.",
+      "\"One more drink before — \" {a} does not finish the sentence. {b} and {c} raise their glasses. The toast is vague and cheerful because the honest one would be too heavy. Somebody is leaving and all three know it.",
+      "The three of them sit on the couch. {a} poured something. Nobody is drinking fast because fast means it is over. {b} tells a joke. {c} laughs too hard at it. {a} watches both of them like she is memorising the room.",
+      "{a} and {b} and {c} share a drink. They clink glasses and somebody goes \"to us\" and the \"us\" has a shelf life and everyone knows it. Nobody says that part out loud.",
+    ],
+  }),
 ];
 
 export const UNTUCKED_IDS = UNTUCKED_EVENTS.map(e => e.id);

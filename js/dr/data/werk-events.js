@@ -1345,19 +1345,6 @@ export const WERK_EVENTS = [
       "{a} tells {b} she wants them both at the end. {b} goes \"obviously\" like it was already decided. The promise is real today. Whether it survives the season is the question neither of them is asking out loud.",
     ],
   }),
-  ev({
-    id: 'last-drink-together', slot: 'werk-elim-day', cast: 'group', weight: 1.2,
-    note: '{a}, {b} and {c} have a drink in a room that is about to be one '
-      + 'smaller and all three of them are being careful not to say so.',
-    when: f => f.groupSize >= 3,
-    effects: { bond: 1, pop: { a: 1 }, state: 'last-drink' },
-    lines: [
-      "{a} pours three glasses. {b} takes hers. {c} takes hers. They stand in a circle that is going to be one person smaller by tomorrow and all three of them are being careful not to say that.",
-      "\"One more drink before — \" {a} does not finish the sentence. {b} and {c} raise their glasses. The toast is vague and cheerful because the honest one would be too heavy. Somebody is leaving and all three know it.",
-      "The three of them sit on the couch. {a} poured something. Nobody is drinking fast because fast means it is over. {b} tells a joke. {c} laughs too hard at it. {a} watches both of them like she is memorising the room.",
-      "{a} and {b} and {c} share a drink. They clink glasses and somebody goes \"to us\" and the \"us\" has a shelf life and everyone knows it. Nobody says that part out loud.",
-    ],
-  }),
 
   // ── the cold open ──
   ev({

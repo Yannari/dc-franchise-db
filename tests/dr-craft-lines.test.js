@@ -84,6 +84,26 @@ describe('a line that assumes a craft says so', () => {
     }
   });
 
+  it('the werk room is where the sewing is, not where the drinking is', () => {
+    /* Reported from a played episode: three queens passing round a drink, in
+       the WORK ROOM, on elimination day. `last-drink-together` was the only
+       event of a hundred and seven that put a glass in somebody's hand there
+       — against twenty-eight of the sixty-five in the Untucked pool, which is
+       the lounge and is where the show does its drinking. It has moved.
+
+       This is not a ban on the word. Coffee in the morning is the work room,
+       and a queen reading a lipstick message is allowed to be holding
+       something. It is a ban on the SHARED ROUND, which is a lounge scene
+       wherever it is filed. */
+    const ROUND = /\b(pours? (?:three|two|a round)|three glasses|clink|clinks|raise (?:their|her) glass|a toast|toasts? (?:to|the))\b/i;
+    const loose = [];
+    for (const e of WERK_EVENTS) {
+      const prose = [e.note || '', ...(e.lines || []).map(textOf)].join(' ');
+      if (ROUND.test(prose)) loose.push(`${e.id} [${e.slot}] ${prose.match(ROUND)[0]}`);
+    }
+    expect(loose, 'a shared round in the work room').toEqual([]);
+  });
+
   it('every tagged line names a craft the engine knows', () => {
     const CRAFTS = new Set(['acting', 'comedy', 'dance', 'design', 'runway', 'lipsync', 'singing']);
     const all = [...WERK_EVENTS.flatMap(e => e.lines || []),

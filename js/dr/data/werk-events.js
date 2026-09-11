@@ -935,7 +935,7 @@ export const WERK_EVENTS = [
     lines: [
       "{a} and {b} have both stood in that bottom and neither has to explain what the walk back feels like. They end up at the same station at the same hour for the third morning running. Neither planned it. Both needed it.",
       "\"You too?\" That is the whole conversation. {a} and {b} have both survived a lip sync and there is a version of friendship that only exists between people who have done the same frightening thing. This is it.",
-      "The queens who have never been in the bottom talk about it like weather. {a} and {b}, who have both been down there, talk about it like a place. The walk, the wait, the moment the music starts. It bonds them more than any challenge has.",
+      "The other queens ask what a lip sync is like. {a} and {b} do not have to ask — they have both been down there. They compare notes: the walk, the wait, the moment the music starts. It is a conversation nobody else in the room can join.",
       "There is a quiet at the far end of the room where {a} and {b} have started sitting. Not a strategic alliance. Not a friendship exactly. Two people who have both been told to fight for their lives, keeping each other company.",
     ],
   }),

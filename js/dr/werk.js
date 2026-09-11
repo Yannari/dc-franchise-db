@@ -163,14 +163,43 @@ function fillNames(text, facts) {
     .replace(/\{d\}/g, facts.nameD || '');
 }
 
-function render(event, facts, rng, used = null) {
-  if (!event.lines || !event.lines.length) return null;
+/* ── A LINE MAY ASSUME A CRAFT. THE EVENT USUALLY DOES NOT ──
+   `ev.needs` gates a whole EVENT to a challenge that uses that craft, and it
+   is the right tool when the event only makes sense there. It is the wrong
+   tool for what actually went wrong, which was one LINE in four:
+
+     "{a} is in the room before anybody else. Garment already on the form,
+      tools already out. She sews for twenty straight minutes..."
+
+   — on an acting week, where there is nothing to sew. Twenty events carry a
+   line like that and NOT ONE of them is a sewing event: every single one is
+   one or two lines out of four, the rest of the pool being about the room.
+   So gating the event would have deleted a good scene from every non-design
+   week in order to fix one sentence inside it.
+
+   A line is therefore either a plain string, which assumes nothing, or
+   `{ needs, line }`. Both shapes work everywhere and the plain string stays
+   the default, so this costs the other four hundred lines nothing. */
+const lineText = l => (typeof l === 'string' ? l : (l && l.line) || '');
+const lineNeeds = l => (typeof l === 'string' ? null : (l && l.needs) || null);
+
+/** The lines of this event that tonight's challenge can actually carry. */
+export function usableLines(event, blend = null) {
+  return (event.lines || []).filter(l => {
+    const need = lineNeeds(l);
+    return !need || !blend || !!blend[need];
+  });
+}
+
+function render(event, facts, rng, used = null, blend = null) {
+  const lines = usableLines(event, blend);
+  if (!lines.length) return null;
   const fresh = used
-    ? event.lines.filter(l => !used.has(event.id + '\u0000' + l)) : event.lines;
-  const pool = fresh.length ? fresh : event.lines;
+    ? lines.filter(l => !used.has(event.id + '\u0000' + lineText(l))) : lines;
+  const pool = fresh.length ? fresh : lines;
   const line = pool[Math.floor(rng() * pool.length)];
-  if (used) used.add(event.id + '\u0000' + line);
-  return fillNames(line, facts);
+  if (used) used.add(event.id + '\u0000' + lineText(line));
+  return fillNames(lineText(line), facts);
 }
 
 /**
@@ -211,6 +240,11 @@ export function drawWerkScene({
   for (const ev of WERK_EVENTS) {
     if (ev.slot !== slot) continue;
     if (ev.needs && blend && !blend[ev.needs]) continue;
+    /* AND AN EVENT WITH NOTHING SAYABLE TONIGHT IS NOT A CANDIDATE.
+       Without this, an event whose every line is craft-tagged would be
+       picked and then render nothing, and the caller would file a card
+       with no words on it -- the blank-plate bug, one layer down. */
+    if (!usableLines(ev, blend).length) continue;
 
     // A pair event needs somebody to be with. Rather than testing every pair
     // in the room, which would make one well-connected queen dominate, each
@@ -275,7 +309,7 @@ export function drawWerkScene({
     slot,
     players: [picked.facts.nameA, picked.facts.nameB, picked.facts.nameC,
       picked.facts.nameD].filter(Boolean),
-    text: render(picked.ev, picked.facts, rng, usedLines),
+    text: render(picked.ev, picked.facts, rng, usedLines, blend),
     /* THE NOTE TAKES NAMES TOO, and did not. It was handed through raw while
        the line beside it was filled, so a badge on the werk screen read
        "...she helps Quin and {c} and loses two hours of her own day" -- the
@@ -451,7 +485,7 @@ export function runWerkRoom({ slots, living, players, state, storylines, rng, ct
   let out = scenes;
   for (const [k, list] of bySlot) {
     const rows = confessionalsFor({
-      scenes: list, room: living, players, spoken, slot: k,
+      scenes: list, room: living, players, spoken, slot: k, blend,
       /* WHO HAS SOMETHING RIDING ON IT. Without this a witness was drawn
          flat out of the room, so the queen with no relationship to either
          of them spoke as often as the one whose closest ally had just been

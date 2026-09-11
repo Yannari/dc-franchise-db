@@ -11,6 +11,15 @@ import { rngFor } from '../js/dr/rng.js';
 import { WERK_EVENTS, WERK_IDS, SLOTS, unwrittenWerkEvents } from '../js/dr/data/werk-events.js';
 import { showWords } from '../js/shows.js';
 
+/* ── A LINE IS A STRING OR A CRAFT-TAGGED OBJECT ──
+   `{ needs: 'design', line: '...' }` lets one line in a pool declare the
+   craft it assumes, so a sewing sentence stops appearing on an acting week
+   without gating the whole event away from every non-design night. See
+   js/dr/werk.js. Every guard below reads the TEXT, whichever shape it is
+   in — they are rules about the prose, not about the container. */
+const textOf = l => (typeof l === 'string' ? l : (l && l.line) || '');
+const linesOf = e => (e.lines || []).map(textOf);
+
 /**
  * Are two lines the same beat reworded?
  *
@@ -90,7 +99,7 @@ describe('the schema', () => {
 });
 
 describe('the lines', () => {
-  const written = WERK_EVENTS.filter(e => e.lines.length);
+  const written = WERK_EVENTS.filter(e => linesOf(e).length);
 
   it('there are exemplars to write against', () => {
     expect(written.length, 'nothing is written at all').toBeGreaterThanOrEqual(4);
@@ -98,12 +107,12 @@ describe('the lines', () => {
 
   it('a written event has at least four genuinely different variants', () => {
     for (const e of written) {
-      expect(e.lines.length, `${e.id} has ${e.lines.length} variants`).toBeGreaterThanOrEqual(4);
-      expect(new Set(e.lines).size, `${e.id} repeats a line verbatim`).toBe(e.lines.length);
+      expect(linesOf(e).length, `${e.id} has ${linesOf(e).length} variants`).toBeGreaterThanOrEqual(4);
+      expect(new Set(linesOf(e)).size, `${e.id} repeats a line verbatim`).toBe(linesOf(e).length);
       // Four rewordings of one sentence is not four variants.
-      for (let i = 0; i < e.lines.length; i++) {
-        for (let k = i + 1; k < e.lines.length; k++) {
-          expect(tooSimilar(e.lines[i], e.lines[k]),
+      for (let i = 0; i < linesOf(e).length; i++) {
+        for (let k = i + 1; k < linesOf(e).length; k++) {
+          expect(tooSimilar(linesOf(e)[i], linesOf(e)[k]),
             `${e.id}: variants ${i + 1} and ${k + 1} are the same beat reworded`).toBe(false);
         }
       }
@@ -112,7 +121,7 @@ describe('the lines', () => {
 
   it('uses {a} and {b} correctly, and never a name', () => {
     for (const e of written) {
-      for (const l of e.lines) {
+      for (const l of linesOf(e)) {
         expect(l, `${e.id} never names its subject`).toMatch(/\{a\}/);
         if (e.cast === 'solo') {
           // The Traitors failure exactly: a {b} in a solo pool makes the line
@@ -137,7 +146,7 @@ describe('the lines', () => {
     // vocabulary printed over another's.
     const FOREIGN = /\b(houseguest|houseguests|castaway|castaways|tribe|tribal council|eviction|evicted|nominee|nominated|veto|head of household|traitor|faithful|banish\w*|murder\w*|the circle)\b/i;
     for (const e of written) {
-      for (const l of e.lines) {
+      for (const l of linesOf(e)) {
         const hit = l.match(FOREIGN);
         expect(hit, `${e.id} says "${hit?.[0]}", which belongs to another show`).toBeNull();
       }
@@ -149,7 +158,7 @@ describe('the lines', () => {
     expect(w.player).toBe('queen');
     // If a line names the contest at all it has to call it the right thing.
     for (const e of written) {
-      for (const l of e.lines) {
+      for (const l of linesOf(e)) {
         expect(l, `${e.id} calls it a competition`).not.toMatch(/\bcompetition\b/i);
       }
     }
@@ -158,7 +167,7 @@ describe('the lines', () => {
   it('never quotes a stat by name', () => {
     const NUMBERS = /\b(design|runway|lipsync|acting|comedy|singing|dance) (is|of|at) \d/i;
     for (const e of written) {
-      for (const l of e.lines) {
+      for (const l of linesOf(e)) {
         expect(l.match(NUMBERS), `${e.id} quotes a stat`).toBeNull();
       }
     }
@@ -166,7 +175,7 @@ describe('the lines', () => {
 
   it('writes prose, not a caption', () => {
     for (const e of written) {
-      for (const l of e.lines) {
+      for (const l of linesOf(e)) {
         expect(l.length, `${e.id} has a one-liner where a scene should be`).toBeGreaterThan(80);
       }
     }
@@ -256,7 +265,7 @@ describe('what the record does to the room', () => {
     // And any event whose prose talks about lip syncing must not gate on the
     // call that means she did not.
     for (const e of WERK_EVENTS) {
-      const prose = `${e.note || ''} ${(e.lines || []).join(' ')}`.toLowerCase();
+      const prose = `${e.note || ''} ${linesOf(e).join(' ')}`.toLowerCase();
       if (!/survived the lip sync|won her lip sync/.test(prose)) continue;
       expect(String(e.when), `${e.id} says lip sync but gates on BTM`)
         .not.toMatch(/===\s*'BTM'/);

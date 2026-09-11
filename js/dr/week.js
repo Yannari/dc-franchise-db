@@ -1341,6 +1341,8 @@ export function runDragWeek(state, cfg, ctx) {
         effects: sc.effects || untuckedEffects(sc), data: sc.data,
       })),
       room: living, players, spoken: confessSpoken, slot: step, step,
+      // So a confessional never mentions a garment on an acting week.
+      blend: maxi.blend || null,
       bond: ctx.bond, max: step === 'untucked' ? 2 : 1, chance: 0.3,
       rng: streamFor((cfg.num || 0) + 1, `confessional|${step}`),
     });

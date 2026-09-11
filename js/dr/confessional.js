@@ -302,6 +302,23 @@ export function stagedCandidatesFor(scene, room, bond, surface, median) {
   ];
 }
 
+/* ── A LINE MAY ASSUME A CRAFT, AND MOST OF THESE DO NOT ──
+   Ten of a hundred and eighty confessional lines mention a garment, a
+   needle or fabric, and on an acting week there is nothing to sew. Same
+   shape as js/dr/werk.js: a line is a plain string, which assumes nothing,
+   or `{ needs, line }`, which is only drawn when the night's challenge
+   actually uses that craft. `blend` is the maxi's craft mix; with no blend
+   passed, nothing is filtered and the behaviour is what it was. */
+const lineText = l => (typeof l === 'string' ? l : (l && l.line) || '');
+const lineNeeds = l => (typeof l === 'string' ? null : (l && l.needs) || null);
+
+export function usableConfessionalLines(tier, blend = null) {
+  return (tier?.lines || []).filter(l => {
+    const need = lineNeeds(l);
+    return !need || !blend || !!blend[need];
+  });
+}
+
 const pickFrom = (rng, list) => list[Math.floor(rng() * list.length)];
 
 /** Weighted by stake, so the queen with something at issue usually gets it. */
@@ -324,7 +341,7 @@ function pickByStake(rng, list) {
  */
 export function confessionalsFor({
   scenes = [], room = [], players = {}, rng = Math.random, bond = () => 0,
-  spoken = new Set(), max = 2, chance = 0.25, slot = null, step = null,
+  spoken = new Set(), max = 2, chance = 0.25, slot = null, step = null, blend = null,
 } = {}) {
   const out = [];
   const P = n => players[n] || {};
@@ -349,7 +366,9 @@ export function confessionalsFor({
     const eligible = pool.filter(c => {
       if (spoken.has(c.name)) return false;
       const t = confessionalTier(c.tier);
-      if (!t || !t.lines.length) return false;   // unwritten emits nothing
+      // Unwritten emits nothing — and so does a tier whose every line
+      // assumes a craft tonight's challenge does not use.
+      if (!t || !usableConfessionalLines(t, blend).length) return false;
       /* SHADE IS ROLLED, NOT PERMITTED. See edgeFor. `c.about` is who the
          line is about, so a queen is measured against the queen she would be
          talking about rather than against the room in general. */
@@ -377,9 +396,11 @@ export function confessionalsFor({
        about ." — a sentence with a hole in it, on the screen, in her voice.
        Filtered rather than thrown: a writer putting {b} in the wrong pool
        should cost that line and not the episode. */
-    const usable = about ? t.lines : t.lines.filter(l => !/\{b\}/.test(String(l)));
+    const craftOk = usableConfessionalLines(t, blend);
+    const usable = about ? craftOk
+      : craftOk.filter(l => !/\{b\}/.test(lineText(l)));
     if (!usable.length) continue;
-    const line = pickFrom(rng, usable);
+    const line = lineText(pickFrom(rng, usable));
 
     out.push({
       index: i,

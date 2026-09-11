@@ -130,11 +130,21 @@ export function runDragWeek(state, cfg, ctx) {
   // 1–2. The room after the last exit, and the morning after that.
   const last = state.episodes[state.episodes.length - 1] || null;
   const gone = last ? last.exits.map(x => x.name) : [];
-  /* NO COLD OPEN ON THE PREMIERE. The cold open is the morning AFTER an
-     elimination — its whole pool is the empty station, the lipstick message
-     on the mirror, the room going back over last night — and on episode one
-     nobody has left, nobody has slept, and the queens are still walking
-     through the door. The entrances are the opening. */
+  /* ── THE COLD OPEN IS THE SAME NIGHT, NOT THE NEXT MORNING ──
+     The queens walk back into the werk room MINUTES after the elimination,
+     still in drag, and the station of whoever just left is still warm. That
+     is the moment this slot is: the empty chair, the lipstick on the mirror,
+     the room going over what just happened on that stage.
+     It is not the morning. `werk-morning` is the morning — it is on screen
+     under the subtitle "morning", one card later — and the two were written
+     to the same premise, so a season played the same time of day twice and
+     the cold open's own pool said "morning", "coffee" and "by lunch" over a
+     room that had not been to bed. The four events that were genuinely
+     about a working day rather than about a departure now live in
+     `werk-morning` where they belong.
+     NO COLD OPEN ON THE PREMIERE either way: on episode one nobody has
+     left, there is no empty station and no message on the mirror. The
+     entrances are the opening. */
   if (!isPremiere) say('cold-open', 'cold-open', { gone });
   say('werk-morning', 'werk-morning', { living: [...living] });
 

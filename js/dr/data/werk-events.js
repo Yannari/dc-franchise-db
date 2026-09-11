@@ -208,7 +208,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'nickname', slot: 'cold-open', cast: 'pair', weight: 1,
+    id: 'nickname', slot: 'werk-morning', cast: 'pair', weight: 1,
     note: '{a} gives {b} a nickname and it sticks for the rest of the season.',
     arcs: ['narrator'], when: f => d(f.a).comedy >= 5,
     effects: { bond: 1, pop: { a: 1, b: 1 } },
@@ -618,7 +618,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'settling-in', slot: 'cold-open', cast: 'solo', weight: 1,
+    id: 'settling-in', slot: 'werk-morning', cast: 'solo', weight: 1,
     note: 'Early season. She is still working out who everybody is.',
     when: f => f.phase < 0.45, effects: { pop: { a: 1 } },
     lines: [
@@ -658,7 +658,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'coffee-and-silence', slot: 'cold-open', cast: 'pair', weight: 2,
+    id: 'coffee-and-silence', slot: 'werk-morning', cast: 'pair', weight: 2,
     note: 'Two queens who are not really awake yet, being companionable about it.',
     when: f => true, effects: { bond: 0.5 },
     lines: [
@@ -680,7 +680,7 @@ export const WERK_EVENTS = [
     ],
   }),
   ev({
-    id: 'still-in-last-nights-face', slot: 'cold-open', cast: 'solo', weight: 1,
+    id: 'still-in-last-nights-face', slot: 'werk-morning', cast: 'solo', weight: 1,
     note: 'She never took the makeup off and the room can tell what kind of night she had.',
     when: f => true, effects: { pop: { a: 1 } },
     lines: [

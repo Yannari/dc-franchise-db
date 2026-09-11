@@ -192,3 +192,68 @@ export function franchiseNow() { return _now; }
 export function ageNow(birthdate) {
   return _now ? ageAt(birthdate, _now) : null;
 }
+
+// ── PER-EPISODE AIRDATES ──────────────────────────────────────────────
+//
+// The season's window is year + slot, and that was the right granularity for
+// everything this file was built for: ages, ordering, "the first player to".
+// A wiki article wants something this file deliberately does not store —
+// "March 24, 2027" under an episode heading.
+//
+// So it is DERIVED, never stored. A weekly run from the slot's month, one
+// episode a week, on the night that show airs. That keeps the rule at the top
+// of this file intact: there is still exactly one source of time, and no
+// second clock to drift out of step with it. Change the season's slot and
+// every episode date moves with it, because there is nothing else to update.
+//
+// It does mean the DAY is a convention rather than a fact. That is the honest
+// trade for a column a reference page is expected to have, and it is a
+// convention applied identically to every season, so two seasons in the same
+// slot cannot disagree about when a Friday was.
+
+/** What night each show goes out on. 0 = Sunday. */
+const SHOW_NIGHT = {
+  'drag-race': 5, // Friday
+  'big-brother': 3, // Wednesday
+  traitors: 4, // Thursday
+  'total-drama': 1, // Monday
+};
+
+/**
+ * The premiere date for a season, as a UTC Date, or null if it has no window.
+ *
+ * The first <night> falling on or after the slot's month begins.
+ */
+export function premiereDate(season, format) {
+  if (airKey(season) == null) return null;
+  const month = SLOT_MONTH[String(season.airSlot).toLowerCase()];
+  const want = SHOW_NIGHT[format] ?? 5;
+  const d = new Date(Date.UTC(Number(season.airYear), month - 1, 1));
+  d.setUTCDate(d.getUTCDate() + ((want - d.getUTCDay() + 7) % 7));
+  return d;
+}
+
+/**
+ * `count` weekly airdates from the premiere, as UTC Dates.
+ *
+ * Empty when the season has no window — a caller prints nothing rather than
+ * a date it invented whole.
+ */
+export function episodeAirDates(season, count, format) {
+  const first = premiereDate(season, format);
+  if (!first || !(count > 0)) return [];
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(first.getTime());
+    d.setUTCDate(d.getUTCDate() + i * 7);
+    return d;
+  });
+}
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+/** "March 24, 2027". Empty string for a null date, never "Invalid Date". */
+export function airDateLabel(d) {
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return '';
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}

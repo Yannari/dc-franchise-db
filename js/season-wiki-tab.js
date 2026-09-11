@@ -18,6 +18,7 @@ import {
 } from './shows.js';
 import { buildTrackRecordGrid, RESULT_LABELS } from './dr/grid.js';
 import { avatarUrl } from './avatar-registry.js';
+import { episodeAirDates, airDateLabel, airLabel } from './franchise-calendar.js';
 
 
 /* ── THE EPISODE LIST, THE WAY A DRAG SEASON'S ARTICLE IS BUILT ──────────
@@ -45,7 +46,7 @@ const DR_JUDGE_NAMES = {
   ross: 'Ross Mathews', law: 'Law Roach', ts: 'TS Madison', jamal: 'Jamal Sims',
 };
 
-export function _dragEpisodeBlocks(doc, esc, avatar) {
+export function _dragEpisodeBlocks(doc, esc, avatar, dates = []) {
   const eps = (doc && doc.dr && doc.dr.episodes) || [];
   if (!eps.length) return '';
   const nameOf = p => (p && (p.name || p)) || '';
@@ -58,7 +59,7 @@ export function _dragEpisodeBlocks(doc, esc, avatar) {
      it as we walk forward and let a block say "her third win". */
   const wins = {}; const btm = {};
 
-  const list = eps.map(e => {
+  const list = eps.map((e, i) => {
     const pl = e.placements || [];
     const winners = pl.filter(p => p.result === 'WIN').map(p => p.name);
     const crown = pl.filter(p => p.result === 'WINNER').map(p => p.name);
@@ -148,26 +149,31 @@ export function _dragEpisodeBlocks(doc, esc, avatar) {
     return `<article class="sr-epblk" id="${epId(e)}">
       <h3>Episode ${esc(e.episode)}${e.challenge ? `: &ldquo;${esc(e.challenge.name)}&rdquo;` : ''}<a
         class="sr-epanchor" href="#${epId(e)}" aria-label="Link to this episode">#</a></h3>
+      ${dates[i] ? `<p class="sr-epdate">Airdate: ${esc(dates[i])}</p>` : ''}
       <dl class="sr-epfacts">${bits.join('')}</dl>
       ${flavour.length ? `<p class="sr-epnote">${flavour.join(' ')}</p>` : ''}
     </article>`;
   }).join('');
 
   /* The index the real article opens its Episodes section with: series
-     number, episode number, title. Ours has no airdates -- a simulated
-     season was never broadcast -- so that column is left out rather than
-     filled with something invented. */
+     number, episode number, title, airdate. The dates are derived from the
+     season's slot in franchise-calendar.js rather than stored, and the column
+     is dropped entirely for a season nobody has placed on the calendar --
+     blank is honest, a made-up date is not. */
   const index = `<div class="sr-scroll"><table class="sr-epindex">
-    <thead><tr><th>Series #</th><th>Episode #</th><th>Title</th></tr></thead>
-    <tbody>${eps.map(e => `<tr><td>${esc((doc.seasonNumber || 1) * 100 + Number(e.episode))}</td>`
+    <thead><tr><th>Series #</th><th>Episode #</th><th>Title</th>${
+      dates.length ? '<th>Airdate</th>' : ''}</tr></thead>
+    <tbody>${eps.map((e, i) => `<tr><td>${esc((doc.seasonNumber || 1) * 100 + Number(e.episode))}</td>`
       + `<td>${esc(e.episode)}</td>`
       + `<td><a href="#${epId(e)}">${e.challenge ? esc(e.challenge.name)
-        : `Episode ${esc(e.episode)}`}</a></td></tr>`).join('')}</tbody></table></div>`;
+        : `Episode ${esc(e.episode)}`}</a></td>`
+      + (dates.length ? `<td>${esc(dates[i] || '')}</td>` : '')
+      + `</tr>`).join('')}</tbody></table></div>`;
 
   return `<div class="sr-eps">${index}${list}</div>`;
 }
 
-export function buildWikiTab(s, { face = null } = {}) {
+export function buildWikiTab(s, { face = null, seasonRow = null } = {}) {
   const shows = { DEFAULT_FORMAT, showWords, showName, exitVerbs, roundExits, publicBallots,
     roundShape, seasonRounds };
   /* The page's own portrait resolver, which knows about `avatarFile`
@@ -405,6 +411,10 @@ export function buildWikiTab(s, { face = null } = {}) {
       const facts = [
         // The registry's word for the people on this show. A two-way ternary
         // here counted a castle in contestants.
+        /* WHEN. The window lives on the season's row in seasons_database.json
+           and nowhere else (see franchise-calendar.js), so it is handed in
+           rather than read off the document -- which does not carry it. */
+        airLabel(seasonRow || s) ? ['Aired', airLabel(seasonRow || s)] : null,
         ['Cast', `${s.castSize || cast.length} ${W.players}`],
         ['Episodes', s.episodeCount || weeks.length || '—'],
         /* DISTINCT week numbers, not records. A double eviction is one night
@@ -1181,7 +1191,9 @@ export function buildWikiTab(s, { face = null } = {}) {
               them. */
           shape === 'placements'
             ? sec('Episodes', _dragEpisodeBlocks(s, esc,
-              n => `<img class="sr-epface" src="${esc(srFace(null, null, n))}" alt="">`),
+              n => `<img class="sr-epface" src="${esc(srFace(null, null, n))}" alt="">`,
+              episodeAirDates(seasonRow || s, (s.dr && s.dr.episodes || []).length, fmt)
+                .map(airDateLabel)),
             `${(s.dr && s.dr.episodes || []).length} nights`)
             : ''}
         ${sec('Game history', gameHistory)}

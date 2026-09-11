@@ -493,10 +493,10 @@ export const MAXI_EVENTS = [
     id: 'help', from: 'prep', cast: 'pair',
     note: '{a} is strong at tonight\'s craft and spends her own time on {b}, who is not.',
     lines: [
-      "{a} looks over at {b}'s station and sees the problem before {b} does. She does not say \"do you need help\" because that question has a wrong answer on this show. She says \"let me show you something\" and crosses the room and spends forty minutes of her own prep time fixing something {b} did not know was broken.",
-      "{a} is good at this. {b} is not. {a} can see {b} struggling from three stations away and could keep working on her own piece and let the challenge sort it out, and instead she walks over and quietly rebuilds {b}'s construction from the inside while {b} watches and learns and does not quite know how to say thank you.",
-      "She has her own work to finish and she puts it down and walks to {b}'s station. {a} is strong at tonight's craft and {b} is drowning in it and {a} decides that {b} drowning is not something she is willing to watch. The help is specific and practical and costs {a} time she does not have, and she gives it anyway.",
-      "{a} spends an hour on {b}'s piece and forty minutes on her own. The maths does not work and {a} knows the maths does not work and she does it anyway because {b} is going to be on that stage tonight and {a} is not going to be the queen who watched her go out there with something unfinished.",
+      "{a} sees the problem at {b}'s station before {b} does. She walks over, says \"let me show you something,\" and spends forty minutes of her own prep time fixing it.",
+      "{a} is good at this. {b} is not. {a} crosses the room and quietly rebuilds {b}'s construction from the inside while {b} watches and learns.",
+      "{a} puts her own work down and walks to {b}'s station. The help is specific and practical — pinning, re-cutting, re-draping — and it costs {a} prep time she does not have.",
+      "{a} spends an hour on {b}'s piece and forty minutes on her own. The maths does not work but {b} is going on that stage tonight and {a} is not letting her go out there unfinished.",
     ],
   }),
   e({

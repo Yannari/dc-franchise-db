@@ -62,6 +62,59 @@ describe('maxi catalogue', () => {
     }
   });
 
+  /* ── AND IT DESCRIBES THE CHALLENGE THE ENGINE PLAYS ──
+     `improv` was `format: 'pairs'` in this catalogue and has played SOLO in
+     every season ever generated — `assign` in js/dr/chal/acting.js returns
+     `teams: []` and `division: 'solo'`. The format field has been corrected;
+     the `desc` still opens "Queens are paired into scenes" and is prose, so
+     it is briefed rather than patched (docs/PROSE-PROMPT-dr-improv-desc.md).
+
+     This is the check that would have caught it, and it did not exist: the
+     number of ways a description can drift from the engine is large, but
+     SAYING THERE ARE PARTNERS WHEN THERE ARE NONE is both the most common
+     and the most visible, because the desc is drawn on the challenge screen
+     and is the only place the viewer is told what is happening.
+
+     `PENDING` is a deliberate, documented exception of exactly one and it is
+     meant to empty: when the improv desc is rewritten, delete the entry. A
+     new solo challenge that promises a partner goes red immediately, which
+     is the part that matters. */
+  const PENDING = new Set(['improv']);
+  it('a solo challenge does not promise a collaborator', () => {
+    /* A COLLABORATOR, NOT AN OPPONENT. The first version of this matched a
+       bare "pair" and caught `lipsync-challenge`, whose desc says "each pair
+       performs a song head to head" — that is a bracket, the queens are
+       adversaries, and she is still judged alone. Pairing somebody against
+       you is not the same fact as pairing somebody with you, and a guard that
+       cannot tell them apart is one somebody switches off. */
+    const PAIRED = /\b(partners?|teammates?|paired (?:into|with|up)|in teams|as a team)\b/i;
+    for (const m of MAXI_TYPES) {
+      if (m.format !== 'solo') continue;
+      if (PENDING.has(m.id)) continue;
+      expect(PAIRED.test(m.desc), `${m.id} is solo but its desc promises company`).toBe(false);
+    }
+    // And the exception list only ever shrinks.
+    expect(PENDING.size, 'a new exception was added instead of a fix')
+      .toBeLessThanOrEqual(1);
+  });
+
+  it('the guard above actually bites', () => {
+    /* THE FIRST VERSION OF THIS GUARD PASSED VACUOUSLY AND I NEARLY SHIPPED
+       IT. The regex was written through a script whose escaping turned `\b`
+       into a literal backspace byte, so it matched nothing at all and the
+       suite went green over the exact description it was written to catch.
+       That is the bug class this project keeps a list of, arriving inside the
+       test meant to prevent one.
+       So the guard is pointed at the known-bad string and must fail on it. */
+    const PAIRED = /\b(partners?|teammates?|paired (?:into|with|up)|in teams|as a team)\b/i;
+    const improv = MAXI_TYPES.find(m => m.id === 'improv');
+    expect(improv.format, 'improv stopped being solo').toBe('solo');
+    expect(PAIRED.test(improv.desc),
+      'the improv desc was fixed — remove it from PENDING above').toBe(true);
+    expect(PAIRED.test('she works alone with nothing prepared'),
+      'the guard fires on prose that promises nobody').toBe(false);
+  });
+
   it('the challenge styles spread, so the scheduler can avoid repeats', () => {
     const styles = new Set(MAXI_TYPES.map(m => m.chalStyle));
     expect(styles.size, 'too few styles for category-aware pacing').toBeGreaterThanOrEqual(3);

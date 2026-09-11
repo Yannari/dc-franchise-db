@@ -159,6 +159,64 @@ describe('a season with a returnee, a quiet premiere and an old re-roll', () => 
   });
 });
 
+/* ── WHEN THE PAST CANNOT BE REPRODUCED AT ALL ──
+   Three separate causes have made a rebuild replay a different season, and
+   every one of them was silent: the rebuilt past is discarded by the slice, so
+   the only evidence was the future contradicting a history nobody re-reads.
+   The reported save is the case — episodes one to four intact and correct, and
+   episode five from a season where two other queens had gone home.
+   Whatever the cause, overwriting somebody's season is never the right answer.
+*/
+describe('a season whose past the replay cannot reproduce', () => {
+  /* Three separate causes have made a rebuild replay a different season, and
+     every one of them was silent: the rebuilt past is discarded by the slice,
+     so the only evidence was the future contradicting a history nobody
+     re-reads. The reported save is the case — episodes one to four intact and
+     correct, and episode five from a season where two other queens had gone
+     home.
+
+     Forced here by editing the RECORD rather than the booking, which is the
+     shape the real failures take: the history says one thing and the replay
+     says another. Whatever the cause, overwriting somebody's season is never
+     the right answer. */
+  const derail = () => {
+    const row = gsRef.episodeHistory[2];
+    row.dr.living = row.dr.living.filter((_, i) => i !== 0);
+  };
+
+  it('refuses, and does not touch a single aired episode', () => {
+    fresh(1855);
+    play(4);
+    derail();
+    const kept = gsRef.episodeHistory.map(key);
+    const living = [...gsRef.activePlayers];
+    const gone = [...gsRef.eliminated];
+    delete gsRef._drQueue;
+
+    const r = simulateDragEpisode();
+    expect(r, 'it played an episode from a season that is not this one').toBeNull();
+    expect(gsRef.episodeHistory.map(key), 'the aired episodes were rewritten')
+      .toEqual(kept);
+    expect(gsRef.activePlayers).toEqual(living);
+    expect(gsRef.eliminated).toEqual(gone);
+    // And it says which night it could not reproduce, rather than failing mute.
+    expect(gsRef._drReplayDrift?.episode).toBe(3);
+  });
+
+  it('continues normally when the past does line up', () => {
+    // The check must not cost a healthy season anything.
+    fresh(1855);
+    const straight = play(5);
+    fresh(1855);
+    play(4);
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    expect(r).toBeTruthy();
+    expect(key(r)).toEqual(straight[4]);
+    expect(gsRef._drReplayDrift).toBeUndefined();
+  });
+});
+
 describe('and the two things that ARE meant to change it', () => {
   it('re-runs episode N differently, and leaves 1..N-1 alone', () => {
     const straight = play(6);

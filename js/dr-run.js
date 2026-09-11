@@ -197,6 +197,26 @@ export function invalidateDragQueue() {
   return true;
 }
 
+/**
+ * What makes a night that night, for comparing a replay against what aired.
+ *
+ * The challenge and the room, because those are what a viewer would notice
+ * changing and what everything downstream is derived from. Not the prose: two
+ * runs of the same week can word a scene differently without the season having
+ * moved, and a fingerprint that strict would refuse seasons that are fine.
+ */
+function _rowFingerprint(row) {
+  const d = row && row.dr;
+  if (!d) return '';
+  return `${row.num}|${(d.challenge && d.challenge.id) || ''}|`
+    + `${[...(d.living || [])].sort().join(',')}`;
+}
+
+/** The same, for the episodes already on the record. */
+function _airedFingerprint() {
+  return (gs.episodeHistory || []).map(_rowFingerprint);
+}
+
 /** How many drag episodes have already aired — the timeline locks those. */
 export function dragEpisodesAired() {
   return (gs?.episodeHistory || []).length;
@@ -620,8 +640,45 @@ export function simulateDragEpisode() {
        than replaying from episode one on top of them — and the aired weeks come
        back identical because `_config` freezes them (see `_frozenPins`). */
     const aired = (gs.episodeHistory || []).length;
+    /* ── AND THE PAST IS CHECKED, NOT ASSUMED ──
+       "The aired weeks come back identical" is a claim the sentence above has
+       made since it was written, and it has been wrong three times: once when
+       the schedule was only half frozen, once when a re-run's nonce was not
+       carried, and once when the bond snapshot was empty. Every time, the
+       rebuild replayed a DIFFERENT season, the queue was sliced by the number
+       of episodes that had aired, and the next press handed the viewer a night
+       from a season where somebody else went home. The queen eliminated in
+       episode four walked back into episode five.
+       Nothing checked. The failure is silent by construction: the rebuilt past
+       is thrown away by the slice, so the only evidence is the future
+       contradicting a history nobody re-reads.
+       So it is compared now. If the replay does not reproduce what aired, the
+       rebuild is refused outright and the save is left exactly as it was —
+       `gs.episodeHistory` is never touched by any of this, so a refusal costs
+       the viewer nothing but the press. A season that cannot be continued
+       faithfully says so, which is the one thing it has never done. */
+    const before = _airedFingerprint();
     if (!_playWholeSeason()) return null;
-    if (aired > 0 && Array.isArray(gs._drQueue)) gs._drQueue = gs._drQueue.slice(aired);
+    if (aired > 0 && Array.isArray(gs._drQueue)) {
+      const replayed = gs._drQueue.slice(0, aired).map(_rowFingerprint);
+      const drift = before.findIndex((f, i) => f !== replayed[i]);
+      if (drift !== -1) {
+        gs._drReplayDrift = {
+          episode: drift + 1, was: before[drift], now: replayed[drift] || null,
+        };
+        delete gs._drQueue;
+        if (typeof console !== 'undefined') {
+          console.warn('[drag-race] refusing to continue: rebuilding this season '
+            + `did not reproduce episode ${drift + 1}.`
+            + `\n  aired:   ${before[drift]}`
+            + `\n  replay:  ${replayed[drift] || '(nothing)'}`
+            + '\n  Your episodes are untouched. See gs._drReplayDrift.');
+        }
+        return null;
+      }
+      delete gs._drReplayDrift;
+      gs._drQueue = gs._drQueue.slice(aired);
+    }
   }
 
   const row = (gs._drQueue || []).shift();

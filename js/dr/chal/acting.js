@@ -16,8 +16,10 @@
 //
 //   acting      named parts, a rehearsal that can be fixed, and a take where
 //               specific things go wrong. Prep matters most here.
-//   commercial  pairs, thirty seconds, and a product with a trap in it. The
-//               pair either finds an angle or plays the obvious one.
+//   commercial  thirty seconds and a product with a trap in it. Pairs by
+//               default, or every queen selling her own when the week is
+//               booked solo. Either way she either finds an angle or plays
+//               the obvious one, and that is scored per queen.
 //   improv      NO PREPARATION AT ALL. She gets a premise cold, on stage, and
 //               nerve carries it where craft would carry the other two.
 import { pickOrder, contestFor, draftRoles } from '../assign.js';
@@ -70,8 +72,21 @@ export function assign(ctx) {
 
   // ── COMMERCIAL: pairs, and a product each ──
   if (maxi.id === 'commercial') {
+    /* ── PAIRS, OR EVERY QUEEN SELLING HER OWN ──
+       `comFormat` on the episode's timeline entry. Unset is PAIRS, which is
+       what this challenge has always played and what it stays: unlike the
+       acting week there was never a roll here to preserve, so an unset
+       dropdown changes nothing about any season already generated.
+       Solo is supported the whole way down rather than bolted on: the score
+       is per queen already (`teamJudged` is false and nothing here sets it),
+       both of the commercial's own events are `cast: 'solo'`, and
+       `the-division` has a written `solo` tier — the one improv uses. There
+       are ten products, so a solo week on a big room will hand two queens the
+       same one once the uniqueness guard gives up, which is a fair fight
+       rather than a fault. */
+    const size = (ctx.cfg && ctx.cfg.comFormat) === 'solo' ? 1 : 2;
     const teams = [];
-    for (let i = 0; i < order.length; i += 2) teams.push(order.slice(i, i + 2));
+    for (let i = 0; i < order.length; i += size) teams.push(order.slice(i, i + size));
     const picks = {};
     const used = new Set();
     for (let ti = 0; ti < teams.length; ti++) {
@@ -88,8 +103,12 @@ export function assign(ctx) {
     }
     return {
       roles: Object.fromEntries(order.map(n => [n, 'standard'])),
-      teams, order, picks, events: [], form: 'commercial',
-      division: 'pairs',
+      /* NO TEAMS ON A SOLO WEEK, the same answer improv gives. She has a
+         product and nobody to make it with, and a list of one-queen "teams"
+         would read downstream as a collaboration that is not happening. */
+      teams: size === 1 ? [] : teams,
+      order, picks, events: [], form: 'commercial',
+      division: size === 1 ? 'solo' : 'pairs',
       scenes: [{ step: 'choice', kind: 'commercial-products', data: { teams, picks } }],
     };
   }

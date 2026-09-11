@@ -335,6 +335,8 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       ...(pin.ggThemeId ? { ggThemeId: pin.ggThemeId } : {}),
       // One cast or two on the scripted acting week. See js/dr/chal/acting.js.
       ...(pin.actFormat ? { actFormat: pin.actFormat } : {}),
+      // Pairs or every queen alone on the commercial. js/dr/chal/acting.js.
+      ...(pin.comFormat ? { comFormat: pin.comFormat } : {}),
     });
   }
 
@@ -477,6 +479,7 @@ function weekCfg(sch, config, num, extra = {}) {
     ggFormat: sch.ggFormat || null,
     ggThemeId: sch.ggThemeId || null,
     actFormat: sch.actFormat || null,
+    comFormat: sch.comFormat || null,
     judgeWeights: config.drJudgeWeights || {},
     immunity: !!config.drImmunity,
     // The arcs need to know how far through the season they are: what the

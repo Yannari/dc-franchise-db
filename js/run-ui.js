@@ -3191,6 +3191,7 @@ export function _setDRPick(ep, key, value) {
        girl-group sound booked on an acting week. */
     if (value !== 'girl-group') { delete entry.ggThemeId; delete entry.ggFormat; }
     if (value !== 'acting') delete entry.actFormat;
+    if (value !== 'commercial') delete entry.comFormat;
     if (value) entry.maxiId = value; else delete entry.maxiId;
   } else if (key === 'miniId' && value === 'none') {
     // Null is a real answer meaning "no mini this week"; undefined means
@@ -3304,6 +3305,18 @@ function _drPickers(ep) {
       e.actFormat || '',
       'Whether the room stages one production or splits into two casts of the same script');
 
+  /* The commercial is acting-adjacent and splits the same way, so it gets the
+     same control — pairs, or every queen selling her own product. Unset is
+     pairs here rather than a roll, because pairs is what it has always
+     played and an unset dropdown must not rewrite a season. */
+  const comSubs = e.maxiId !== 'commercial' ? '' :
+    sel('comFormat',
+      [['', '— casting: pairs —'],
+        ['pairs', 'pairs · two queens, one product'],
+        ['solo', 'solo · every queen sells her own']],
+      e.comFormat || '',
+      'Whether the room sells in pairs or every queen takes a product alone');
+
   const ggSubs = e.maxiId !== 'girl-group' ? '' :
     sel('ggFormat',
       [['', '— format: random —'],
@@ -3328,6 +3341,7 @@ function _drPickers(ep) {
     + 'the schedule books once a season by itself. Pinning one here moves it '
     + 'to this week instead.')
     + actSubs
+    + comSubs
     + ggSubs
     + sel('miniId',
       [['', '— mini: random —'], ['none', 'No mini challenge'], ...minis.map(m => [m.id, m.name])],

@@ -57,13 +57,15 @@ describe('a shape pin survives the schedule', () => {
       episodes: 10,
       castSize: 12,
       pinned: [{ episode: 2, maxiId: 'acting', actFormat: 'one-cast' },
-        { episode: 3, maxiId: 'girl-group', ggFormat: 'cast', ggThemeId: 'disco' }],
+        { episode: 3, maxiId: 'girl-group', ggFormat: 'cast', ggThemeId: 'disco' },
+        { episode: 4, maxiId: 'commercial', comFormat: 'solo' }],
       rng: rngFor(3),
     });
     const byEp = Object.fromEntries(sch.map(w => [w.episode, w]));
     expect(byEp[2].actFormat).toBe('one-cast');
     expect(byEp[3].ggFormat).toBe('cast');
     expect(byEp[3].ggThemeId).toBe('disco');
+    expect(byEp[4].comFormat).toBe('solo');
   });
 });
 
@@ -80,6 +82,34 @@ describe('and changes the night', () => {
     const two = shapes('acting', { actFormat: 'two-casts' });
     expect(Object.keys(one), 'booked one cast, got something else').toEqual(['1']);
     expect(Object.keys(two), 'booked two casts, got something else').toEqual(['2']);
+  });
+
+  it('the commercial sells in pairs or alone, as booked', () => {
+    /* Solo is supported the whole way down rather than bolted on: the score
+       was already per queen, both of the commercial's events are `cast:
+       'solo'`, and `the-division` has a written `solo` tier. Asserted on the
+       DIVISION rather than on the team count, because a solo week returns no
+       teams at all — a list of one-queen "teams" would read downstream as a
+       collaboration that is not happening. */
+    const divisionOf = pin => {
+      const seen = new Set();
+      for (let s = 1; s <= 10; s++) {
+        const season = playDragSeason({
+          cast: cast(12, s * 7919 + 13), seed: s * 31 + 5,
+          config: { drSchedule: [{ episode: 3, maxiId: 'commercial', ...pin }] },
+          bond: () => 0, addBond: () => {}, popDelta: () => {},
+        });
+        const row = season.rows.find(r => r.dr?.challenge?.id === 'commercial');
+        if (row) seen.add(row.dr.assignment?.division);
+      }
+      return [...seen];
+    };
+    expect(divisionOf({ comFormat: 'solo' })).toEqual(['solo']);
+    expect(divisionOf({ comFormat: 'pairs' })).toEqual(['pairs']);
+    /* AND UNSET IS PAIRS, not a roll. Unlike the acting week there was never
+       a roll here to preserve, so an unset dropdown must leave every season
+       already generated exactly as it was. */
+    expect(divisionOf({}), 'an unset commercial started rolling').toEqual(['pairs']);
   });
 
   it('leaves both to the roll when nothing is pinned', () => {

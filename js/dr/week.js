@@ -34,6 +34,9 @@ import { mentorFor } from './data/judges.js';
 import { runwayScore, blendScore, noise, polishFor, PANEL_FORM } from './perform.js';
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { rateBoard, ballotSelfishness } from './rate.js';
+import { confessionalsFor } from './confessional.js';
+import { streamFor } from './rng.js';
+import { UNTUCKED_EVENTS } from './data/untucked-events.js';
 import { storylineNeed as storylineNeedFor, arcSummary, popSnapshot } from './storylines.js';
 import { runWerkRoom, applyWerkScene } from './werk.js';
 import { runMini, applyMiniEvents } from './mini.js';
@@ -89,6 +92,17 @@ export function reactionFor({ expected, received, temperament = 5, boldness = 5,
   if (heat < -3) return 'joy';
   if (heat < -1) return 'relief';
   return rng() < 0.4 ? 'idgaf' : (gap > 0 ? 'sadness' : 'relief');
+}
+
+
+/* An untucked scene stores its event id rather than its consequences, and
+   `heatOf` needs the consequences to know which way the scene went. One
+   lookup, kept beside the only caller. */
+function untuckedEffects(sc) {
+  const id = sc?.data?.event;
+  if (!id) return {};
+  const ev = UNTUCKED_EVENTS.find(e => e.id === id);
+  return ev?.effects || {};
 }
 
 export function runDragWeek(state, cfg, ctx) {
@@ -1287,6 +1301,53 @@ export function runDragWeek(state, cfg, ctx) {
     return i === -1 ? SCENE_STEPS.length : i;
   };
   scenes.sort((a, b) => stepIndex(a.step) - stepIndex(b.step));
+
+  /* ── AND THE REST OF THE NIGHT GETS A CAMERA TOO ────────────────────
+     The werk room grew confessionals first and for a while had all of them:
+     measured over thirty seasons, four of the episode's twenty-four steps
+     carried three hundred and the other twenty carried none. The lounge, the
+     runway, the song and the draft are where this show's confessionals
+     actually live, and they had nothing.
+     Here rather than at each producer, and AFTER the sort, for two reasons:
+     one rule in one place for five surfaces, and a confessional has to land
+     immediately beneath the scene it answers — anything appended before the
+     sort is filed by step and loses its neighbour.
+     `maxi-main` is deliberately absent. The performance itself is the thing
+     being watched; cutting away from it to somebody's opinion of it is the
+     one place a confessional would interrupt rather than punctuate. */
+  const confessSpoken = new Set();
+  for (const step of ['untucked', 'choice', 'maxi-pre', 'runway', 'lipsync']) {
+    const list = scenes.filter(sc => sc.step === step);
+    if (list.length < 2) continue;
+    const rows = confessionalsFor({
+      // `data.players`, because by this point a scene is the episode's shape
+      // rather than the werk room's. `heatOf` and the surfaces both read
+      // `effects`/`data`, so the adapter is this one map and nothing else.
+      scenes: list.map(sc => ({
+        id: sc.kind, slot: step, players: sc.data?.players || [],
+        effects: sc.effects || untuckedEffects(sc), data: sc.data,
+      })),
+      room: living, players, spoken: confessSpoken, slot: step, step,
+      bond: ctx.bond, max: step === 'untucked' ? 2 : 1, chance: 0.3,
+      rng: streamFor((cfg.num || 0) + 1, `confessional|${step}`),
+    });
+    for (const r of rows.slice().reverse()) {
+      const c = r.scene;
+      for (const [, delta] of Object.entries(c.effects?.pop || {})) {
+        ctx.popDelta(c.players[0], delta);
+      }
+      const at = scenes.indexOf(list[r.index]);
+      if (at < 0) continue;
+      scenes.splice(at + 1, 0, {
+        step, kind: `confess:${c.id}`,
+        data: {
+          players: c.players, note: c.note, confessional: true,
+          about: c.about || null, tier: c.tier, reactsTo: c.reactsTo,
+        },
+        text: c.text || '',
+      });
+    }
+  }
 
   const row = {
     num: cfg.num,

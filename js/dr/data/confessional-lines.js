@@ -147,9 +147,50 @@ export const CONFESSIONAL_TIERS = [
     '"My garment is either the best thing I have made or the worst thing I have made and I genuinely cannot tell." {a} holds it up. "That should not be a mystery to the person who MADE it."',
     '"I walked in with a plan. A good plan. A GREAT plan." {a} pauses. "That plan died about an hour ago and now I am improvising."',
   ]),
+
+  /* ══ THE STAGED SURFACES ════════════════════════════════════════════
+     The room's scenes are two queens and a bond. These four are not: a
+     runway walk, a lip sync, a pick at the draft and a moment in the
+     challenge are all ONE queen and a RESULT, so stance and heat are the
+     wrong two questions and `did/taken/watched` has nothing to attach to.
+
+     The axis here is `mine` or `hers` by `landed` or `missed`. The outcome
+     is read from the scene's own number — `score` on a walk and a song,
+     `perf` in the challenge, whether she lost the pick at the draft —
+     against the median of that step, so it is the queen's standing on the
+     night rather than a threshold somebody guessed.
+
+     `{b}` EXISTS ONLY IN THE `hers` TIERS. A `mine` confessional is about
+     her own walk and has nobody else in it, exactly like `alone` above.
+
+     The surface supplies the vocabulary and that is why these are not one
+     shared pool of four: "I thought the look was going to read" and "I
+     watched her fight for her life" are not the same sentence with a noun
+     swapped. Sixteen tiers, and each of them says something the other
+     fifteen cannot.
+     ═══════════════════════════════════════════════════════════════════ */
+  tier('runway-mine-landed', 'It went well and it was hers: the look she walked.', +1, []),
+  tier('runway-mine-missed', 'It did not go well and it was hers: the look she walked.', -1, []),
+  tier('runway-hers-landed', 'It went well for somebody else: a look she watched somebody else walk.', +1, []),
+  tier('runway-hers-missed', 'It went badly for somebody else: a look she watched somebody else walk.', -1, []),
+  tier('lipsync-mine-landed', 'It went well and it was hers: the song she performed.', +1, []),
+  tier('lipsync-mine-missed', 'It did not go well and it was hers: the song she performed.', -1, []),
+  tier('lipsync-hers-landed', 'It went well for somebody else: a song she watched two of them fight over.', +1, []),
+  tier('lipsync-hers-missed', 'It went badly for somebody else: a song she watched two of them fight over.', -1, []),
+  tier('choice-mine-landed', 'It went well and it was hers: the slot or partner she got.', +1, []),
+  tier('choice-mine-missed', 'It did not go well and it was hers: the slot or partner she got.', -1, []),
+  tier('choice-hers-landed', 'It went well for somebody else: a pick she watched somebody else take.', +1, []),
+  tier('choice-hers-missed', 'It went badly for somebody else: a pick she watched somebody else take.', -1, []),
+  tier('maxipre-mine-landed', 'It went well and it was hers: the moment she had in the challenge.', +1, []),
+  tier('maxipre-mine-missed', 'It did not go well and it was hers: the moment she had in the challenge.', -1, []),
+  tier('maxipre-hers-landed', 'It went well for somebody else: a moment she watched somebody else have.', +1, []),
+  tier('maxipre-hers-missed', 'It went badly for somebody else: a moment she watched somebody else have.', -1, []),
 ];
 
 export const CONFESSIONAL_IDS = CONFESSIONAL_TIERS.map(t => t.id);
+
+/** The four surfaces whose scenes are one queen and a result, not a bond. */
+export const STAGED_SURFACES = ['runway', 'lipsync', 'choice', 'maxipre'];
 
 export function confessionalTier(id) {
   return CONFESSIONAL_TIERS.find(t => t.id === id) || null;

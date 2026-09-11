@@ -9,9 +9,11 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import {
   confessionalsFor, candidatesFor, heatOf, mayBeShady, talksToCamera,
+  stagedCandidatesFor, surfaceFor,
 } from '../js/dr/confessional.js';
 import {
   CONFESSIONAL_TIERS, CONFESSIONAL_IDS, unwrittenConfessionalTiers,
+  thinConfessionalTiers,
 } from '../js/dr/data/confessional-lines.js';
 import { rngFor } from '../js/dr/rng.js';
 import { playDragSeason } from '../js/dr/season.js';
@@ -58,8 +60,32 @@ const warm = (i, a = 'Ada', b = 'Bex') => ({
 const always = { chance: 1, max: 99 };
 
 describe('every pool is written', () => {
-  it('reports no backlog', () => {
-    expect(unwrittenConfessionalTiers()).toEqual([]);
+  it('reports the backlog exactly, rather than hiding or guessing at it', () => {
+    /* The seven room tiers are written. The sixteen staged ones are not, and
+       are not meant to be yet — see docs/PROSE-PROMPT-dr-confessionals.md.
+       Asserted as an exact list rather than as "empty" so that BOTH
+       directions fail loudly: a new tier nobody briefed shows up here, and a
+       tier somebody fills disappears from here and has to be removed by
+       hand, which is the moment to check it is actually finished. */
+    expect(unwrittenConfessionalTiers().sort()).toEqual([
+      'choice-hers-landed', 'choice-hers-missed',
+      'choice-mine-landed', 'choice-mine-missed',
+      'lipsync-hers-landed', 'lipsync-hers-missed',
+      'lipsync-mine-landed', 'lipsync-mine-missed',
+      'maxipre-hers-landed', 'maxipre-hers-missed',
+      'maxipre-mine-landed', 'maxipre-mine-missed',
+      'runway-hers-landed', 'runway-hers-missed',
+      'runway-mine-landed', 'runway-mine-missed',
+    ]);
+  });
+
+  it('has every room tier written, and none of them thin', () => {
+    const room = ['did-warm', 'did-cold', 'taken-warm', 'taken-cold',
+      'watched-warm', 'watched-cold', 'alone'];
+    for (const id of room) {
+      expect(unwrittenConfessionalTiers(), `${id} lost its pool`).not.toContain(id);
+    }
+    expect(thinConfessionalTiers()).toEqual([]);
   });
 
   it('emits cards now that the pools are filled', () => {
@@ -371,5 +397,80 @@ describe('writing the pools does not rewrite the season', () => {
     fillAll();
     expect(withThem, 'the confessional pass moved the season around it')
       .toBe(without);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGED SURFACES
+// ══════════════════════════════════════════════════════════════════════
+//
+// A runway walk, a lip sync, a draft pick and a moment in the challenge are
+// ONE queen and a RESULT — no pair, no bond delta — so `heatOf` returns null
+// for every one of them and the room model produced nothing. Measured over
+// thirty seasons before this: four of the episode's twenty-four steps carried
+// three hundred confessionals and the other twenty carried none.
+describe('a scene that is one queen and a result', () => {
+  const walk = (name, score) => ({
+    id: `w-${name}`, players: [name], data: { score },
+  });
+
+  it('knows which steps are staged, and that the performance is not', () => {
+    for (const step of ['runway', 'lipsync', 'choice', 'maxi-pre']) {
+      expect(surfaceFor(step), `${step} is not wired`).toBeTruthy();
+    }
+    /* maxi-main is deliberately absent: the performance is the thing being
+       watched, and cutting away from it would interrupt rather than
+       punctuate. */
+    expect(surfaceFor('maxi-main')).toBe(null);
+    expect(surfaceFor('critiques')).toBe(null);
+  });
+
+  it('splits the night on its own median rather than a guessed threshold', () => {
+    const surface = surfaceFor('runway');
+    const good = stagedCandidatesFor(walk('Ada', 9), ROOM, () => 0, surface, 5);
+    const bad = stagedCandidatesFor(walk('Ada', 2), ROOM, () => 0, surface, 5);
+    expect(good[0].tier).toBe('runway-mine-landed');
+    expect(bad[0].tier).toBe('runway-mine-missed');
+    expect(good.find(c => c.name === 'Bex').tier).toBe('runway-hers-landed');
+  });
+
+  it('gives the queen it happened to the same weight as the whole room', () => {
+    /* One insider against eleven watchers: a flat bonus left her speaking
+       about her own runway a fifth of the time, and `maxipre-mine-landed`
+       fired three times in twenty seasons — a pool nobody would ever see. */
+    const c = stagedCandidatesFor(walk('Ada', 9), ROOM, () => 0, surfaceFor('runway'), 5);
+    const mine = c[0];
+    const watchers = c.slice(1).reduce((t, x) => t + 1 + x.stake, 0);
+    expect(1 + mine.stake).toBeGreaterThanOrEqual(watchers * 0.9);
+  });
+
+  it('says nothing about a scene that carries no number at all', () => {
+    expect(stagedCandidatesFor({ id: 'x', players: ['Ada'], data: {} },
+      ROOM, () => 0, surfaceFor('runway'), 5)).toEqual([]);
+    // Two queens is not a staged scene; that is the room model's shape.
+    expect(stagedCandidatesFor({ id: 'x', players: ['Ada', 'Bex'], data: { score: 9 } },
+      ROOM, () => 0, surfaceFor('runway'), 5)).toEqual([]);
+  });
+
+  it('reads the draft off whether she lost the pick', () => {
+    const surface = surfaceFor('choice');
+    expect(surface.valueOf({ data: { lostTo: 'Bex' } })).toBe(0);
+    expect(surface.valueOf({ data: {} })).toBe(1);
+  });
+
+  it('emits on a staged step once the pools are written', () => {
+    const t = CONFESSIONAL_TIERS.filter(x => x.id.startsWith('runway-'));
+    const before = t.map(x => x.lines);
+    for (const x of t) x.lines = [1, 2, 3, 4].map(n => `[${x.id}#${n}] {a}${x.id.includes('hers') ? ' on {b}' : ''}.`);
+    try {
+      const rows = confessionalsFor({
+        scenes: [walk('Ada', 9), walk('Bex', 1), walk('Cleo', 5), walk('Dot', 7)],
+        room: ROOM, players: PLAYERS, rng: rngFor(4), step: 'runway', ...always,
+      });
+      expect(rows.length).toBeGreaterThan(0);
+      for (const r of rows) expect(r.scene.tier).toMatch(/^runway-(mine|hers)-(landed|missed)$/);
+    } finally {
+      t.forEach((x, i) => { x.lines = before[i]; });
+    }
   });
 });

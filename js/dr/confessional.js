@@ -35,10 +35,21 @@ import { CONFESSIONAL_TIERS, confessionalTier } from './data/confessional-lines.
 
 /* THE TWO TIERS THAT ARE SHADE. `taken-cold` is not one of them — she is the
    one it was done to, and saying so is a feeling rather than a move. */
-const SHADE = new Set(['did-cold', 'watched-cold']);
+/* ENJOYING SOMETHING THAT WENT BADLY FOR SOMEBODY ELSE. That is the whole
+   definition, and it is why the staged surfaces contribute exactly their
+   `hers-missed` tiers: watching her walk die, watching her lose the song,
+   watching her get the slot she did not want. `mine-missed` is the opposite
+   move on the same night -- she is being hard on herself, which nobody needs
+   a sharp edge to do. */
+const SHADE = new Set(['did-cold', 'watched-cold',
+  'runway-hers-missed', 'lipsync-hers-missed',
+  'choice-hers-missed', 'maxipre-hers-missed']);
 /* Every tier whose sign is negative. `taken-cold` is cold without being shade
-   -- it was done TO her -- so it is rolled by neither branch. */
-const COLD = new Set(['did-cold', 'watched-cold', 'taken-cold']);
+   -- it was done TO her -- so it is rolled by neither branch, and every
+   staged `mine-missed` is cold in the same way, about herself. */
+const COLD = new Set([...SHADE, 'taken-cold',
+  'runway-mine-missed', 'lipsync-mine-missed',
+  'choice-mine-missed', 'maxipre-mine-missed']);
 
 const NEVER = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer',
   'underdog', 'goat']);
@@ -223,6 +234,74 @@ export function candidatesFor(scene, room, bond = () => 0) {
   return out;
 }
 
+/* ══ THE STAGED SURFACES ══════════════════════════════════════════════
+   A runway walk, a lip sync, a pick at the draft and a moment in the
+   challenge are ONE queen and a RESULT. There is no pair and no bond
+   delta, so `did / taken / watched` by warm / cold has nothing to attach
+   to and `heatOf` returns null for all of them — which is exactly why
+   these four steps carried no confessional at all while the werk room
+   carried three hundred.
+
+   The axis is `mine` or `hers` by `landed` or `missed`, and the outcome
+   comes off the scene's own number rather than a threshold: `score` on a
+   walk and a song, `perf` in the challenge, and at the draft simply
+   whether she lost the pick. Compared against the MEDIAN of that step on
+   that night, so it reads as her standing among the others rather than as
+   an absolute somebody picked. */
+const SURFACES = {
+  runway: { id: 'runway', valueOf: sc => num(sc?.data?.score) },
+  lipsync: { id: 'lipsync', valueOf: sc => num(sc?.data?.score) },
+  'maxi-pre': { id: 'maxipre', valueOf: sc => num(sc?.data?.perf) },
+  // The draft has no score. Losing the pick IS the outcome.
+  choice: { id: 'choice', valueOf: sc => (sc?.data?.lostTo ? 0 : 1) },
+};
+
+export function surfaceFor(step) { return SURFACES[step] || null; }
+
+function num(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+
+function medianOf(values) {
+  const xs = values.filter(v => v !== null).sort((a, b) => a - b);
+  if (!xs.length) return null;
+  const mid = xs.length >> 1;
+  return xs.length % 2 ? xs[mid] : (xs[mid - 1] + xs[mid]) / 2;
+}
+
+/**
+ * Who could speak about a staged scene, and from which tier.
+ *
+ * `landed` is at or above the night's median for that step. A scene with no
+ * number at all yields nobody, rather than being guessed into a tier.
+ */
+export function stagedCandidatesFor(scene, room, bond, surface, median) {
+  const who = scene?.players || [];
+  if (who.length !== 1 || !surface || median === null) return [];
+  const v = surface.valueOf(scene);
+  if (v === null) return [];
+  const hers = who[0];
+  const outcome = v >= median ? 'landed' : 'missed';
+  const tie = (x, y) => Math.abs(Number(bond(x, y)) || 0);
+  const watchers = room.filter(n => n !== hers).map(n => ({
+    name: n, tier: `${surface.id}-hers-${outcome}`, about: hers, stake: tie(n, hers),
+  }));
+  /* ── IT IS HER WALK, SO IT IS USUALLY HER CONFESSIONAL ──
+     A staged scene has ONE queen in it and eleven watching, so a flat
+     `IN_SCENE` bonus left the subject speaking about her own runway a fifth
+     of the time and `maxipre-mine-landed` firing three times in twenty
+     seasons — a written pool nobody would ever see. The room model can
+     afford a flat bonus because a pair scene has two insiders against ten
+     outsiders; here it is one against eleven.
+     So the subject is weighted against the ROOM rather than against one
+     other queen: she carries what all the watchers carry between them, and
+     the split is even however big the cast is. */
+  const watchTotal = watchers.reduce((t, c) => t + 1 + c.stake, 0);
+  return [
+    { name: hers, tier: `${surface.id}-mine-${outcome}`, about: null,
+      stake: Math.max(IN_SCENE, watchTotal - 1) },
+    ...watchers,
+  ];
+}
+
 const pickFrom = (rng, list) => list[Math.floor(rng() * list.length)];
 
 /** Weighted by stake, so the queen with something at issue usually gets it. */
@@ -245,11 +324,17 @@ function pickByStake(rng, list) {
  */
 export function confessionalsFor({
   scenes = [], room = [], players = {}, rng = Math.random, bond = () => 0,
-  spoken = new Set(), max = 2, chance = 0.25, slot = null,
+  spoken = new Set(), max = 2, chance = 0.25, slot = null, step = null,
 } = {}) {
   const out = [];
   const P = n => players[n] || {};
   let lastWasOne = false;
+  /* A STAGED STEP IS A DIFFERENT QUESTION, ASKED ONCE FOR THE WHOLE STEP.
+     The median is the night's, so it is computed over the list rather than
+     per scene — a walk is good or bad relative to the walks beside it. */
+  const surface = surfaceFor(step);
+  const median = surface
+    ? medianOf(scenes.map(sc => surface.valueOf(sc))) : null;
 
   for (const [i, sc] of scenes.entries()) {
     if (out.length >= max) break;
@@ -258,7 +343,10 @@ export function confessionalsFor({
     if (lastWasOne) { lastWasOne = false; continue; }
     if (rng() >= chance) continue;
 
-    const eligible = candidatesFor(sc, room, bond).filter(c => {
+    const pool = surface
+      ? stagedCandidatesFor(sc, room, bond, surface, median)
+      : candidatesFor(sc, room, bond);
+    const eligible = pool.filter(c => {
       if (spoken.has(c.name)) return false;
       const t = confessionalTier(c.tier);
       if (!t || !t.lines.length) return false;   // unwritten emits nothing

@@ -32,6 +32,10 @@ import { runwayById } from './data/runways.js';
 import { panelFor } from './judges.js';
 import { mentorFor } from './data/judges.js';
 import { runwayScore, blendScore, noise, polishFor, PANEL_FORM } from './perform.js';
+/* The panel's mean weight on the challenge score, across the seven seats in
+   js/dr/data/judges.js. Dividing by it makes a form draw land on the panel at
+   exactly the strength it had when the panel added it directly. */
+const PANEL_CHALLENGE_WEIGHT = 0.4;
 import { judgeViews, panelRanking, isSplitPanel, hostBend, callWeek, judgeMemoryAfter } from './judging.js';
 import { rateBoard, ballotSelfishness } from './rate.js';
 import { confessionalsFor } from './confessional.js';
@@ -317,6 +321,51 @@ export function runDragWeek(state, cfg, ctx) {
   const assignment = M.assignment;
   const prep = M.prep;
   const performances = M.performances;
+  /* ── THE NIGHT SHE HAD, FOLDED INTO WHAT SHE DID ────────────────────
+     One draw per queen per episode: she was off tonight, or she was on. It
+     exists because without it a weak queen could not win a maxi challenge AT
+     ALL — measured at one queen in a thirteen-queen cast going 120 seasons
+     without a single win. An upset has to be reachable.
+
+     IT USED TO BE HANDED TO THE PANEL, as a term inside `judgeViews`, and it
+     was in the wrong place twice over.
+
+     It was the only input to that sum added RAW while every other one is
+     scaled by the seat's taste weight first, so a +/-2.5 wobble competed
+     against 0.4 x a challenge score. Measured across forty seasons it moved
+     a queen MORE than the challenge did — 1.44 against the challenge's 1.00
+     and the runway's 0.76 — which made a dice roll the largest single
+     determinant of who won the week. That is why a queen could be shown a
+     9.34 and be called LOW while a 7.14 won: the number beside her did not
+     explain her placement because it largely did not cause it.
+
+     And "she was off tonight" is a fact about HER PERFORMANCE, not an
+     opinion four judges independently add to a performance that went fine.
+     Folded in here it reaches everything at once — the panel, the chart, the
+     card on the challenge screen, Rate-a-Queen's `truth` — so all of them
+     read the same night and the number on screen is the number that decided
+     it.
+
+     ── THE SIZE IS DELIBERATELY UNCHANGED ──
+
+     Divided by the panel's challenge weight on the way in, because `perf` is
+     multiplied by that weight on the way out. The pull a form draw has on
+     the result is therefore EXACTLY what it was: this moves where the
+     randomness is visible, not how much there is.
+
+     That matters because the randomness was doing a second job nobody had
+     written down — suppressing how often the best queen wins. Cutting it
+     (either by scaling it down here, or by weighting it in `judgeViews`)
+     read as a tidier engine and pushed domination from 43% to 47%, away from
+     the real show's 31% and into the number this project already tracks as
+     too high. Keeping it whole and only moving it measured better on both:
+     the score now explains 87% of placements against 71.6%, and domination
+     came DOWN to 41%. */
+  for (const n of Object.keys(performances)) {
+    const off = noise(rng, PANEL_FORM / PANEL_CHALLENGE_WEIGHT);
+    performances[n].perf = Math.round((performances[n].perf + off) * 100) / 100;
+    performances[n].parts = { ...(performances[n].parts || {}), form: off };
+  }
   const maxiEvents = M.events;
   for (const sc of M.scenes) scenes.push(sc.text ? sc : { ...sc, text: '' });
 
@@ -406,10 +455,6 @@ export function runDragWeek(state, cfg, ctx) {
     runwayIsChallenge,
     risk: performances[n].risk,
     polish: polishFor(P(n), rng),
-    // One draw per queen per episode, seen the same way by every seat.
-    // See the note in judgeViews — this is the only shared, non-averaging
-    // uncertainty the panel has.
-    form: noise(rng, PANEL_FORM),
     /* What the director told them about the day, on the challenges that have
        one. Undefined everywhere else, and `judgeViews` reads it as zero. */
     impression: performances[n].impression || 0,

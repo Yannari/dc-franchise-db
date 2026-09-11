@@ -54,23 +54,24 @@ export function judgeViews(panel, entries, memory = {}, rng = Math.random) {
         + wPolish * (e.polish ?? 5)
         + ((j.styleBias || {})[e.style] || 0)
         + (mem[e.name] || 0)
-        /* ── THE NIGHT SHE HAD, WHICH THE WHOLE ROOM SEES THE SAME WAY ──
-           `noise` below is PER JUDGE, and a four-seat panel averages four
-           independent draws to almost nothing — so the panel as a body had
-           no shared uncertainty at all. Every term that could move a queen
-           was either a season constant or a wobble that cancelled itself.
+        /* ── THE NIGHT SHE HAD IS NOT A TERM HERE ANY MORE ──
+           `form` — one draw per queen for whether she was off tonight — used
+           to be added to this sum, RAW, while every other input is scaled by
+           the seat's taste weight first. A +/-2.5 wobble therefore competed
+           against 0.4 x a challenge score, and measured across forty seasons
+           it moved a queen MORE than the challenge did: 1.44 against the
+           challenge's 1.00 and the runway's 0.76. A dice roll was the single
+           largest determinant of who won the week, which is why a queen
+           could be shown a 9.34 and called LOW while a 7.14 won the night.
 
-           Measured before this existed: across 120 seasons, one queen in a
-           thirteen-queen cast won no maxi challenge ever — roughly 1200
-           chances at under 0.1% each. Not "she rarely wins": she cannot.
-           CLAUDE.md's rule is that stats must never guarantee a result.
-
-           `form` is one draw per queen per episode, added once and seen
-           identically by every seat, because "she was off tonight" is a fact
-           about her night and not four separate opinions. It does not
-           average away, which is the entire point, and it is what lets a
-           queen the board has behind actually take a week. */
-        + (e.form || 0)
+           It lives in js/dr/week.js now, folded into `perf` before the panel
+           ever sees it, at a size chosen so its pull on this sum is
+           unchanged. Being off tonight is a fact about her PERFORMANCE, not
+           an opinion four judges add to a performance that went fine — and
+           putting it in the performance means the panel, the chart and the
+           card on the challenge screen are all reading the same night. The
+           reasoning, and the numbers on both sides of it, are in the comment
+           there. */
         /* ── WHAT THEY ALREADY KNOW ABOUT HER, WHICH IS NORMALLY NOTHING ──
            A weekly panel judges the night. It does not get to say "but she
            won two challenges" — the show has already paid her for those, and

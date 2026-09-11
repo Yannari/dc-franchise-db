@@ -1170,9 +1170,17 @@ export function playDragSeason({
     if (addBond) for (const [a, b, d] of fam.bonds) addBond(a, b, d);
   }
 
-  // Cast the season's arcs from the room as it stands before anybody performs.
-  // A resumed season is past that: its arcs have been running for weeks.
-  if (!resumeAt) state.storylines = assignStorylines({ cast, state, bond, rng });
+  /* Cast the season's arcs from the room as it stands before anybody performs.
+     A resumed season is past that: its arcs have been running for weeks and
+     come back with the state.
+     UNLESS IT HAS NONE, which is a season rebuilt from a record that never
+     stored them — see `_stateFromHistory` in js/dr-run.js. Then they are cast
+     now, from the room as it currently is. Fresh arcs mid-season are a visible
+     change and the honest one: the alternative is a season with no storylines
+     in it for the rest of its run. */
+  if (!resumeAt || !Array.isArray(state.storylines) || !state.storylines.length) {
+    state.storylines = assignStorylines({ cast, state, bond, rng });
+  }
 
   const finaleType = config.drFinale || 'top4';
   const premiere = config.drPremiere || 'standard';

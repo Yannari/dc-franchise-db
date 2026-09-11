@@ -43,6 +43,9 @@ import { playDragSeason } from './dr/season.js';
 // For rebuilding a resumable room out of a season played before one was
 // kept -- see `_stateFromHistory`.
 import { initDragState } from './dr/state.js';
+// The one function that writes judge memory, so a reconstruction replays it
+// rather than approximating it.
+import { judgeMemoryAfter } from './dr/judging.js';
 import { rngFor } from './dr/rng.js';
 import { dragRelationsFrom } from './dr/family.js';
 import { updateEditLayer } from './edit-layer.js';
@@ -761,18 +764,42 @@ function _airDragRow(row) {
  * called every week, and what the lip syncs did. Everything the chart is drawn
  * from survives exactly.
  *
- * ── AND WHAT IS HONESTLY LOST ──
+ * ── THE TWO HIDDEN LEDGERS ARE REBUILT, NOT WRITTEN OFF ──
  *
- * Two hidden accumulators have no home in the record and start again from
- * nothing: `memory`, which is what each judge privately thinks of each queen,
- * and `tv`, the screen-time ledger star power drifts on. Neither is drawn
- * anywhere, both rebuild within a couple of episodes, and the alternative is
- * inventing numbers and calling them history.
+ * `memory` (what each judge privately thinks of each queen) and `tv` (the
+ * screen-time ledger star power drifts on) are the only accumulators with no
+ * column of their own, and the first version of this gave up on them. It did
+ * not have to: both are pure functions of things the record DOES keep.
  *
- * `starBase` is not lost: it is a pure roll off the season's own seed, so
- * re-initialising reproduces the same cast of darlings exactly.
+ *   memory  `judgeMemoryAfter(memory, panel, call)` and nothing else — the
+ *           panel is on `row.dr.judges`, the call is on `row.dr.call`. Walking
+ *           the aired weeks reproduces it exactly, decay and all.
+ *   tv      three terms, all recorded: the result (WIN 3, BTM2 3, ELIM 3,
+ *           BTM 2, HIGH/LOW 1.5, SAFE 0.25), the archetype every week she is
+ *           in the room, and 0.4 for each non-confessional scene she appears
+ *           in. The table below is DRAMA_TV in js/dr/week.js.
+ *
+ * `starBase` is a pure roll off the season's own seed, so re-initialising
+ * reproduces the same cast of darlings exactly.
+ *
+ * What genuinely cannot come back is anything a module hung on the state and
+ * never wrote to a row. There is no way to know what those are from here, so
+ * they start at the value `initDragState` gives them — which is what a fresh
+ * season starts from, not a made-up number.
  */
-function _stateFromHistory() {
+/* Kept beside the reconstruction rather than imported: these are a copy of
+   values in js/dr/week.js, and a copy that drifts is worse than no copy, so
+   tests/dr-continue-after-reload.test.js reads both and fails if they part. */
+const _TV_FOR_RESULT = {
+  WIN: 3, BTM2: 3, ELIM: 3, BTM: 2, HIGH: 1.5, LOW: 1.5, SAFE: 0.25,
+};
+const _TV_FOR_ARCHETYPE = {
+  villain: 1.2, schemer: 1.05, hothead: 1, 'chaos-agent': 1, mastermind: 0.85,
+  showmancer: 0.75, 'social-butterfly': 0.75, wildcard: 0.75, underdog: 0.7,
+  hero: 0.6, 'perceptive-player': 0.55, 'challenge-beast': 0.5,
+  'loyal-soldier': 0.45, floater: 0.3, goat: 0.3,
+};
+export function _stateFromHistory() {
   const cast = (players || []).filter(p => p && p.name);
   const rows = (gs.episodeHistory || []).filter(r => r && r.dr);
   if (!cast.length || !rows.length) return null;
@@ -780,33 +807,79 @@ function _stateFromHistory() {
   if (!Array.isArray(last.dr.living) || !last.dr.living.length) return null;
 
   const state = initDragState({ cast, seed: _seed(), rng: rngFor(_seed()) });
+
+  /* ── MOST OF IT IS ON THE LAST ROW ALREADY ──
+     The first version of this rebuilt the record by walking `row.dr.placements`
+     — a field a live row DOES NOT HAVE. It is written by the exporter, so the
+     loop matched nothing, every queen came back with an empty record, and the
+     whole thing reported itself fine because an empty record compares equal to
+     an empty record.
+     The live row keeps its own ledgers, and the last one keeps them
+     cumulatively: the track record, the arcs, the audience. Copied, not
+     re-derived. */
+  const clone = v => JSON.parse(JSON.stringify(v));
   state.living = [...last.dr.living];
-  // Everyone the record does not have standing at the end of the last week.
   const standing = new Set(state.living);
   state.out = cast.map(p => p.name).filter(n => !standing.has(n));
+  if (last.dr.record) state.record = clone(last.dr.record);
+  /* NOT THE STORYLINES. `row.dr.storylines` is a SUMMARY written for the
+     screens — `beats` on it is a COUNT, where an arc carries an array — so
+     assigning it would put a number where `recordBeat` does `[...s.beats]` and
+     take the next episode down with a type error. Two arcs are missing from it
+     as well: it is 23 entries against the state's 25.
+     Left empty on purpose, which `playDragSeason` reads as "cast them": a
+     rebuilt season gets fresh arcs from the room as it now stands. They are
+     not the arcs that were running, and there is no way to get those back from
+     what was written down. */
+  /* POPULARITY OFF THE ROW, NOT OFF `gs`. The live ledger has the whole booked
+     season in it — every week was simulated in one call — so it reads 38 for a
+     queen the season had at 16 by episode four. The row's copy is the right
+     number ROUNDED to a decimal place, which is a difference of hundredths
+     against a difference of doubles. */
+  if (last.dr.popularity) state.popularity = clone(last.dr.popularity);
+  if (last.dr.families) state.dragFamilies = clone(last.dr.families);
 
+  /* ── AND THE REST IS WALKED FORWARD ──
+     `memory` is a pure function of the panel and the call, both of which every
+     row keeps, so replaying `judgeMemoryAfter` over them reproduces it exactly
+     — decay included. Verified against a real season: identical.
+     `tv` gets its two recorded terms, the call and the archetype. What it
+     cannot get is `_tvScene`, which pays 0.4 to everybody in a werk room
+     scene: the row keeps the scenes it drew, not which of them the ledger was
+     charged for. The totals come out low. It matters less than it reads —
+     `refreshStar` z-scores this against the living room and ramps it over four
+     episodes, so the spread does the work rather than the size — but it is not
+     exact and nothing here pretends it is. */
+  const TV_FOR_CALL = {
+    win: 3, bottom: 3, atRisk: 2, high: 1.5, low: 1.5, safe: 0.25,
+  };
   for (const row of rows) {
-    for (const p of row.dr.placements || []) {
-      if (!p || !p.name || !state.record[p.name]) continue;
-      state.record[p.name].push(p.result);
-    }
+    const call = row.dr.call;
+    const panel = (row.dr.judges || [])
+      .map(id => (typeof id === 'string' ? { id } : id)).filter(j => j && j.id);
+    if (panel.length && call) state.memory = judgeMemoryAfter(state.memory, panel, call);
+
     const ls = row.dr.lipsync;
     if (ls && Array.isArray(ls.queens)) {
       for (const n of ls.queens) {
-        if (!state.lipsyncRecord[n]) continue;
-        state.lipsyncRecord[n].push(ls.winner === n ? 'W' : 'L');
+        if (state.lipsyncRecord[n]) state.lipsyncRecord[n].push(ls.winner === n ? 'W' : 'L');
       }
     }
-    const win = (row.dr.placements || []).find(p => p && p.result === 'WIN');
-    if (win) state.lastWinner = win.name;
+    if (call) {
+      state.lastWinner = (call.win || [])[0] || state.lastWinner;
+      for (const [group, worth] of Object.entries(TV_FOR_CALL)) {
+        for (const n of call[group] || []) {
+          if (state.tv[n] === undefined) continue;
+          state.tv[n] += worth;
+          const arch = (cast.find(c => c.name === n) || {}).archetype;
+          state.tv[n] += _TV_FOR_ARCHETYPE[arch] ?? 0.5;
+        }
+      }
+    }
     if (row.dr.returned && row.dr.returned.name) {
       state.returns = [...(state.returns || []),
         { ...row.dr.returned, episode: Number(row.num) }];
     }
-  }
-  // The live ledger is the real one and has been all along.
-  for (const n of Object.keys(state.popularity)) {
-    state.popularity[n] = Number((gs.popularity || {})[n]) || 0;
   }
   return state;
 }

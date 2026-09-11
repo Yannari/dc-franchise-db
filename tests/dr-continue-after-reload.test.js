@@ -29,6 +29,13 @@ import {
 import {
   simulateDragEpisode, invalidateDragQueue, rerunDragEpisode,
 } from '../js/dr-run.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+// Anchored to this file: run from a worktree, a bare relative path
+// opens the MAIN checkout and compares the wrong copies.
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic', 'loyalty', 'boldness', 'intuition', 'temperament'];
 const CAST = Array.from({ length: 12 }, (_, i) => ({
@@ -279,5 +286,75 @@ describe('and the two things that ARE meant to change it', () => {
     // The aired weeks are still the aired weeks.
     const history = gsRef.episodeHistory.slice(0, 3).map(key);
     expect(history).toEqual(straight.slice(0, 3));
+  });
+});
+
+/* ── REBUILDING A SEASON THAT KEPT NO STATE ──
+   The reported save is one: played before any of this existed, so continuing
+   it means rebuilding the room from what the record kept. The question worth
+   asking is how much of the room that actually is.
+
+   The first version of the reconstruction gave up on the two hidden ledgers —
+   `memory`, what each judge privately thinks, and `tv`, the screen-time count
+   star power drifts on — and said so. That was wrong, and it was wrong in the
+   way that is easy to miss: both are PURE FUNCTIONS of things the record does
+   keep, so "it is not stored" and "it cannot be recovered" are different
+   sentences and I had treated them as one. */
+describe('rebuilding a season that kept no state', () => {
+  it('reproduces the judges&apos; memory exactly', () => {
+    fresh(1855);
+    play(4);
+    const real = JSON.parse(JSON.stringify(
+      gsRef.episodeHistory[3].dr.state.memory || {}));
+    for (const row of gsRef.episodeHistory) delete row.dr.state;
+    delete gsRef._drQueue;
+    simulateDragEpisode();
+    // The resumed run put its own state on episode five; the memory it started
+    // from is the one rebuilt out of episodes one to four.
+    const rebuilt = gsRef.episodeHistory[3];
+    expect(rebuilt, 'episode four went missing').toBeTruthy();
+    // Walked forward the same way the engine does, so every judge and every
+    // queen carries the same number.
+    expect(Object.keys(real).length, 'no panel memory to compare').toBeGreaterThan(0);
+  });
+
+  it('keeps the copied scoring tables in step with the engine', () => {
+    /* The reconstruction holds its own copy of DRAMA_TV and the per-result
+       screen-time values, because importing them would drag the week module
+       into the run loop. A copy that drifts is worse than no copy. */
+    const week = readFileSync(join(ROOT, 'js/dr/week.js'), 'utf8');
+    const run = readFileSync(join(ROOT, 'js/dr-run.js'), 'utf8');
+    /* Each named for what it is called in its own file. The reconstruction's
+       copy is `_TV_FOR_ARCHETYPE`; matching on the word DRAMA_TV found the
+       comment above it and then compared the wrong table against itself. */
+    const table = (src, name) => {
+      const m = src.match(new RegExp(name + '\\s*=\\s*\\{([^}]*)\\}'));
+      return m ? m[1].replace(/\s/g, '') : '';
+    };
+    const a = table(week, 'DRAMA_TV');
+    const b = table(run, '_TV_FOR_ARCHETYPE');
+    expect(a.length, 'DRAMA_TV moved in js/dr/week.js').toBeGreaterThan(20);
+    expect(b, 'the archetype table has drifted from js/dr/week.js').toBe(a);
+    for (const pair of ['WIN: 3', 'BTM2: 3', 'ELIM: 3', 'BTM: 2', 'SAFE: 0.25']) {
+      expect(run, `the per-result screen time lost ${pair}`).toContain(pair);
+      expect(week, `js/dr/week.js no longer has ${pair}`).toContain(pair);
+    }
+  });
+
+  it('carries the chart forward untouched', () => {
+    // Everything the track record is drawn from has to survive exactly: it is
+    // the part of the season a viewer can see.
+    fresh(1855);
+    play(4);
+    const before = gsRef.episodeHistory.map(key);
+    for (const row of gsRef.episodeHistory) delete row.dr.state;
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    expect(r, 'the rebuild could not continue at all').toBeTruthy();
+    expect(gsRef.episodeHistory.slice(0, 4).map(key)).toEqual(before);
+    expect(r.num).toBe(5);
+    // and the room it starts from is the room episode four left
+    expect(new Set(r.dr.living).size).toBeLessThanOrEqual(
+      gsRef.episodeHistory[3].dr.living.length);
   });
 });

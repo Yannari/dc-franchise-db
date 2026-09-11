@@ -104,22 +104,53 @@ function _twistsToSchedule() {
 }
 
 /**
- * The weeks already watched, in the engine's own schedule shape.
+ * The season as it was booked, in the engine's own schedule shape.
  *
  * `playDragSeason` returns the row it actually ran each night — challenge,
- * mini, judge, guest, song, runway category and every twist flag — and it is
- * kept on `gs._drSchedule`. Handed back as pins, those weeks come out of a
- * re-book byte-identical, so re-booking the FUTURE cannot rewrite the past.
+ * mini, judge, guest, song, runway category and every twist flag — for EVERY
+ * episode, and the whole thing is kept on `gs._drSchedule`. Handed back as
+ * pins, those weeks come out of a re-book byte-identical.
+ *
+ * ── WHY THE WHOLE SEASON AND NOT JUST THE AIRED PART ──
+ *
+ * This used to filter to `episode <= aired`, freezing what had been watched
+ * and letting the rest be drawn again. That is right for a re-book and wrong
+ * for a RELOAD, and a reload is the same code path — so continuing a saved
+ * season re-drew every unaired week.
+ *
+ * And re-drawing them does not reproduce them. The draw avoids repeating a
+ * challenge, so nailing the first three weeks down changes what the rest can
+ * pick: measured on a fixed seed, a season that ran Snatch Game on four and
+ * the Rusical on five came back with the two swapped. A different week four
+ * is a different maxi, a different winner and a different queen going home —
+ * which is what "the last eliminated was not eliminated" looks like from the
+ * outside.
+ *
+ * So the stored booking is authoritative for the whole season, and the two
+ * callers that genuinely want the future re-drawn — a pin changed on the
+ * timeline, and a re-run of episode N — say so by TRUNCATING it. See
+ * `_truncateSchedule`.
  *
  * An older save has no `_drSchedule`, which is why the re-book is refused
  * rather than attempted below: a rebuild with nothing frozen would replay a
  * different season under a history that has already aired.
  */
 function _frozenPins() {
-  const aired = (gs.episodeHistory || []).length;
-  if (!aired) return [];
-  return (Array.isArray(gs._drSchedule) ? gs._drSchedule : [])
-    .filter(r => r && Number(r.episode) <= aired);
+  return (Array.isArray(gs._drSchedule) ? gs._drSchedule : []).filter(Boolean);
+}
+
+/**
+ * Let the weeks after `keep` be booked again.
+ *
+ * The stored schedule is what makes a reload reproduce the season, so the only
+ * way to get a DIFFERENT future is to forget the part of it you want redrawn.
+ * Both callers are deliberate acts by the author: changing a pin, or pressing
+ * the re-run button on episode N.
+ */
+function _truncateSchedule(keep) {
+  if (!Array.isArray(gs?._drSchedule)) return;
+  const n = Math.max(0, Number(keep) || 0);
+  gs._drSchedule = gs._drSchedule.filter(r => r && Number(r.episode) <= n);
 }
 
 /**
@@ -132,7 +163,13 @@ function _frozenPins() {
 export function dragScheduleRecorded() {
   if (!gs) return true;
   const aired = (gs.episodeHistory || []).length;
-  return !aired || _frozenPins().length >= aired;
+  if (!aired) return true;
+  // Every aired week, specifically — `_frozenPins` now carries the unaired
+  // ones too, so a plain length check would pass a season that recorded the
+  // future and not the past.
+  const have = new Set(_frozenPins().map(r => Number(r.episode)));
+  for (let i = 1; i <= aired; i++) if (!have.has(i)) return false;
+  return true;
 }
 
 /** Can the unaired weeks be re-booked from the timeline as it now stands? */
@@ -153,6 +190,10 @@ export function invalidateDragQueue() {
   repairOldDragSeason();
   if (!dragQueueEditable()) return false;
   delete gs._drQueue;
+  /* AND FORGET THE BOOKING FOR THE WEEKS NOBODY HAS SEEN. The stored schedule
+     outranks an author's pin — that is what keeps an aired week fixed — so
+     leaving the future in it would make this button do nothing at all. */
+  _truncateSchedule((gs.episodeHistory || []).length);
   return true;
 }
 
@@ -396,6 +437,11 @@ function _rollbackDragTo(epNum) {
   delete gs.drWinner;
   delete gs.drRunnerUp;
   delete gs._drQueue;
+  /* THE POINT OF THE BUTTON. The stored booking reproduces the season, so
+     without this the re-run would faithfully reproduce the night it was
+     pressed to change — which is what it did before the schedule was stored
+     at all, and the bug that button exists to fix. */
+  _truncateSchedule(kept.length);
 }
 
 /**

@@ -3,26 +3,26 @@
   "format": "drag-race",
   "seasonId": "dr-1",
   "castSize": 14,
-  "episodeCount": 1,
+  "episodeCount": 4,
   "winner": {
-    "name": "Velvet Vixen",
-    "playerSlug": "velvet-vixen",
+    "name": "Cheryl Hole",
+    "playerSlug": "cheryl-hole",
     "vote": ""
   },
   "winners": [
-    "Velvet Vixen"
+    "Cheryl Hole"
   ],
   "placements": [
     {
-      "name": "Velvet Vixen",
-      "playerSlug": "velvet-vixen",
+      "name": "Cheryl Hole",
+      "playerSlug": "cheryl-hole",
       "placement": 1,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
         "highs": 0,
-        "lows": 0,
-        "bottoms": 0,
+        "lows": 1,
+        "bottoms": 1,
         "lipsyncWins": 0,
         "congeniality": 0
       }
@@ -36,6 +36,34 @@
         "wins": 0,
         "highs": 0,
         "lows": 0,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Marge Stache",
+      "playerSlug": "marge-stache",
+      "placement": 3,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 0,
+        "bottoms": 1,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      }
+    },
+    {
+      "name": "Velvet Vixen",
+      "playerSlug": "velvet-vixen",
+      "placement": 4,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 0,
+        "lows": 1,
         "bottoms": 0,
         "lipsyncWins": 0,
         "congeniality": 0
@@ -44,7 +72,7 @@
     {
       "name": "Sharon Needles",
       "playerSlug": "sharon-needles",
-      "placement": 3,
+      "placement": 5,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -58,12 +86,12 @@
     {
       "name": "Riot",
       "playerSlug": "riot",
-      "placement": 4,
+      "placement": 6,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
-        "highs": 0,
-        "lows": 0,
+        "highs": 1,
+        "lows": 1,
         "bottoms": 0,
         "lipsyncWins": 0,
         "congeniality": 0
@@ -72,11 +100,11 @@
     {
       "name": "Quin",
       "playerSlug": "quin",
-      "placement": 5,
+      "placement": 7,
       "status": "Sashayed away",
       "dr": {
-        "wins": 0,
-        "highs": 1,
+        "wins": 1,
+        "highs": 3,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -86,11 +114,11 @@
     {
       "name": "Paige Turner",
       "playerSlug": "paige-turner",
-      "placement": 6,
+      "placement": 8,
       "status": "Sashayed away",
       "dr": {
-        "wins": 0,
-        "highs": 0,
+        "wins": 1,
+        "highs": 1,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -100,38 +128,24 @@
     {
       "name": "Minnie Skurr",
       "playerSlug": "minnie-skurr",
-      "placement": 7,
+      "placement": 9,
       "status": "Sashayed away",
       "dr": {
         "wins": 1,
         "highs": 0,
         "lows": 0,
-        "bottoms": 0,
-        "lipsyncWins": 1,
-        "congeniality": 0
-      }
-    },
-    {
-      "name": "Marge Stache",
-      "playerSlug": "marge-stache",
-      "placement": 8,
-      "status": "Sashayed away",
-      "dr": {
-        "wins": 0,
-        "highs": 0,
-        "lows": 0,
-        "bottoms": 0,
-        "lipsyncWins": 0,
+        "bottoms": 1,
+        "lipsyncWins": 2,
         "congeniality": 0
       }
     },
     {
       "name": "Ginger Hollywood",
       "playerSlug": "ginger-hollywood",
-      "placement": 9,
+      "placement": 10,
       "status": "Sashayed away",
       "dr": {
-        "wins": 0,
+        "wins": 1,
         "highs": 0,
         "lows": 0,
         "bottoms": 0,
@@ -142,7 +156,7 @@
     {
       "name": "Gigi Cherie",
       "playerSlug": "gigi-cherie",
-      "placement": 10,
+      "placement": 11,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -156,25 +170,11 @@
     {
       "name": "Cupcakke",
       "playerSlug": "cupcakke",
-      "placement": 11,
-      "status": "Sashayed away",
-      "dr": {
-        "wins": 0,
-        "highs": 0,
-        "lows": 0,
-        "bottoms": 0,
-        "lipsyncWins": 0,
-        "congeniality": 0
-      }
-    },
-    {
-      "name": "Cheryl Hole",
-      "playerSlug": "cheryl-hole",
       "placement": 12,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
-        "highs": 0,
+        "highs": 2,
         "lows": 0,
         "bottoms": 0,
         "lipsyncWins": 0,
@@ -205,8 +205,8 @@
         "wins": 0,
         "highs": 0,
         "lows": 0,
-        "bottoms": 0,
-        "lipsyncWins": 0,
+        "bottoms": 2,
+        "lipsyncWins": 2,
         "congeniality": 0
       }
     }
@@ -360,6 +360,491 @@
         "exits": [],
         "eliminated": null,
         "twists": []
+      },
+      {
+        "episode": 2,
+        "challenge": {
+          "id": "ball",
+          "name": "The Ball",
+          "format": "solo",
+          "stage": "main"
+        },
+        "mini": null,
+        "judges": [
+          "rupaul",
+          "michelle",
+          "law",
+          "guest:miriam"
+        ],
+        "guest": {
+          "name": "Miriam",
+          "playerSlug": "miriam"
+        },
+        "runwayCategory": "Two Looks in One",
+        "song": {
+          "title": "Holding Out for a Hero",
+          "artist": "Bonnie Tyler"
+        },
+        "placements": [
+          {
+            "name": "Velvet Vixen",
+            "playerSlug": "velvet-vixen",
+            "result": "SAFE",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": "Family Story"
+          },
+          {
+            "name": "Taystee",
+            "playerSlug": "taystee",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 5,
+            "storyline": "Fashion Queen"
+          },
+          {
+            "name": "Sharon Needles",
+            "playerSlug": "sharon-needles",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "Villain"
+          },
+          {
+            "name": "Riot",
+            "playerSlug": "riot",
+            "result": "LOW",
+            "panelRank": 12,
+            "finalRank": 12,
+            "storyline": null
+          },
+          {
+            "name": "Quin",
+            "playerSlug": "quin",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "Professional"
+          },
+          {
+            "name": "Paige Turner",
+            "playerSlug": "paige-turner",
+            "result": "SAFE",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Minnie Skurr",
+            "playerSlug": "minnie-skurr",
+            "result": "SAFE",
+            "panelRank": 9,
+            "finalRank": 9,
+            "storyline": "Front-runner"
+          },
+          {
+            "name": "Marge Stache",
+            "playerSlug": "marge-stache",
+            "result": "ELIM",
+            "panelRank": 14,
+            "finalRank": 14,
+            "storyline": null
+          },
+          {
+            "name": "Ginger Hollywood",
+            "playerSlug": "ginger-hollywood",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "Look Queen"
+          },
+          {
+            "name": "Gigi Cherie",
+            "playerSlug": "gigi-cherie",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "Underdog"
+          },
+          {
+            "name": "Cupcakke",
+            "playerSlug": "cupcakke",
+            "result": "HIGH",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": null
+          },
+          {
+            "name": "Cheryl Hole",
+            "playerSlug": "cheryl-hole",
+            "result": "SAFE",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": null
+          },
+          {
+            "name": "Autumnatic",
+            "playerSlug": "autumnatic",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 4,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Anita Crown Davenport",
+            "playerSlug": "anita-crown-davenport",
+            "result": "BTM2",
+            "panelRank": 13,
+            "finalRank": 13,
+            "storyline": "Pageant Queen"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Anita Crown Davenport",
+            "Marge Stache"
+          ],
+          "winner": "Anita Crown Davenport",
+          "loser": "Marge Stache",
+          "call": "shantay",
+          "song": "Holding Out for a Hero"
+        },
+        "exits": [
+          {
+            "name": "Marge Stache",
+            "playerSlug": "marge-stache",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 3,
+        "challenge": {
+          "id": "acting",
+          "name": "Acting Challenge",
+          "format": "teams",
+          "stage": "pre"
+        },
+        "mini": {
+          "id": "quick-drag",
+          "name": "Quick Drag",
+          "winner": "Quin"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ross",
+          "guest:bridgette"
+        ],
+        "guest": {
+          "name": "Bridgette",
+          "playerSlug": "bridgette"
+        },
+        "runwayCategory": "Something Borrowed",
+        "song": {
+          "title": "9 to 5",
+          "artist": "Dolly Parton"
+        },
+        "placements": [
+          {
+            "name": "Velvet Vixen",
+            "playerSlug": "velvet-vixen",
+            "result": "SAFE",
+            "panelRank": 8,
+            "finalRank": 9,
+            "storyline": "Family Story"
+          },
+          {
+            "name": "Taystee",
+            "playerSlug": "taystee",
+            "result": "ELIM",
+            "panelRank": 13,
+            "finalRank": 13,
+            "storyline": "Fashion Queen"
+          },
+          {
+            "name": "Sharon Needles",
+            "playerSlug": "sharon-needles",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "Villain"
+          },
+          {
+            "name": "Riot",
+            "playerSlug": "riot",
+            "result": "SAFE",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": null
+          },
+          {
+            "name": "Quin",
+            "playerSlug": "quin",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "Professional"
+          },
+          {
+            "name": "Paige Turner",
+            "playerSlug": "paige-turner",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Minnie Skurr",
+            "playerSlug": "minnie-skurr",
+            "result": "BTM2",
+            "panelRank": 12,
+            "finalRank": 12,
+            "storyline": "Front-runner"
+          },
+          {
+            "name": "Marge Stache",
+            "playerSlug": "marge-stache",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Ginger Hollywood",
+            "playerSlug": "ginger-hollywood",
+            "result": "SAFE",
+            "panelRank": 9,
+            "finalRank": 8,
+            "storyline": "Look Queen"
+          },
+          {
+            "name": "Gigi Cherie",
+            "playerSlug": "gigi-cherie",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "Underdog"
+          },
+          {
+            "name": "Cupcakke",
+            "playerSlug": "cupcakke",
+            "result": "HIGH",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": null
+          },
+          {
+            "name": "Cheryl Hole",
+            "playerSlug": "cheryl-hole",
+            "result": "LOW",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": null
+          },
+          {
+            "name": "Autumnatic",
+            "playerSlug": "autumnatic",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Anita Crown Davenport",
+            "playerSlug": "anita-crown-davenport",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "Pageant Queen"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Minnie Skurr",
+            "Taystee"
+          ],
+          "winner": "Minnie Skurr",
+          "loser": "Taystee",
+          "call": "shantay",
+          "song": "9 to 5"
+        },
+        "exits": [
+          {
+            "name": "Taystee",
+            "playerSlug": "taystee",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
+      },
+      {
+        "episode": 4,
+        "challenge": {
+          "id": "commercial",
+          "name": "Commercial Challenge",
+          "format": "pairs",
+          "stage": "pre"
+        },
+        "mini": {
+          "id": "puppets",
+          "name": "Puppet Parody",
+          "winner": "Sharon Needles"
+        },
+        "judges": [
+          "rupaul",
+          "michelle",
+          "ts",
+          "guest:cameron"
+        ],
+        "guest": {
+          "name": "Cameron",
+          "playerSlug": "cameron"
+        },
+        "runwayCategory": "Creatures of the Deep",
+        "song": {
+          "title": "Believe",
+          "artist": "Cher"
+        },
+        "placements": [
+          {
+            "name": "Velvet Vixen",
+            "playerSlug": "velvet-vixen",
+            "result": "LOW",
+            "panelRank": 11,
+            "finalRank": 11,
+            "storyline": "Family Story"
+          },
+          {
+            "name": "Taystee",
+            "playerSlug": "taystee",
+            "result": "SAFE",
+            "panelRank": 9,
+            "finalRank": 9,
+            "storyline": "Fashion Queen"
+          },
+          {
+            "name": "Sharon Needles",
+            "playerSlug": "sharon-needles",
+            "result": "SAFE",
+            "panelRank": 8,
+            "finalRank": 8,
+            "storyline": "Villain"
+          },
+          {
+            "name": "Riot",
+            "playerSlug": "riot",
+            "result": "HIGH",
+            "panelRank": 3,
+            "finalRank": 3,
+            "storyline": null
+          },
+          {
+            "name": "Quin",
+            "playerSlug": "quin",
+            "result": "WIN",
+            "panelRank": 1,
+            "finalRank": 1,
+            "storyline": "Professional"
+          },
+          {
+            "name": "Paige Turner",
+            "playerSlug": "paige-turner",
+            "result": "HIGH",
+            "panelRank": 2,
+            "finalRank": 2,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Minnie Skurr",
+            "playerSlug": "minnie-skurr",
+            "result": "SAFE",
+            "panelRank": 7,
+            "finalRank": 7,
+            "storyline": "Front-runner"
+          },
+          {
+            "name": "Marge Stache",
+            "playerSlug": "marge-stache",
+            "result": "OUT",
+            "panelRank": null,
+            "finalRank": null,
+            "storyline": null
+          },
+          {
+            "name": "Ginger Hollywood",
+            "playerSlug": "ginger-hollywood",
+            "result": "SAFE",
+            "panelRank": 10,
+            "finalRank": 10,
+            "storyline": "Look Queen"
+          },
+          {
+            "name": "Gigi Cherie",
+            "playerSlug": "gigi-cherie",
+            "result": "SAFE",
+            "panelRank": 6,
+            "finalRank": 6,
+            "storyline": "Underdog"
+          },
+          {
+            "name": "Cupcakke",
+            "playerSlug": "cupcakke",
+            "result": "SAFE",
+            "panelRank": 4,
+            "finalRank": 4,
+            "storyline": "Fan Favorite"
+          },
+          {
+            "name": "Cheryl Hole",
+            "playerSlug": "cheryl-hole",
+            "result": "ELIM",
+            "panelRank": 13,
+            "finalRank": 13,
+            "storyline": null
+          },
+          {
+            "name": "Autumnatic",
+            "playerSlug": "autumnatic",
+            "result": "SAFE",
+            "panelRank": 5,
+            "finalRank": 5,
+            "storyline": "Comedy Queen"
+          },
+          {
+            "name": "Anita Crown Davenport",
+            "playerSlug": "anita-crown-davenport",
+            "result": "BTM2",
+            "panelRank": 12,
+            "finalRank": 12,
+            "storyline": "Pageant Queen"
+          }
+        ],
+        "lipsync": {
+          "queens": [
+            "Anita Crown Davenport",
+            "Cheryl Hole"
+          ],
+          "winner": "Anita Crown Davenport",
+          "loser": "Cheryl Hole",
+          "call": "shantay",
+          "song": "Believe"
+        },
+        "exits": [
+          {
+            "name": "Cheryl Hole",
+            "playerSlug": "cheryl-hole",
+            "verb": "sashayed away",
+            "channel": "lipsync"
+          }
+        ],
+        "eliminated": null,
+        "twists": []
       }
     ],
     "families": []
@@ -380,7 +865,8 @@
     {
       "episode": 5,
       "maxiId": "girl-group",
-      "rotatingId": "jamal"
+      "rotatingId": "jamal",
+      "ggFormat": "ind-3"
     },
     {
       "episode": 3,
@@ -448,25 +934,25 @@
       "n": 1,
       "word": "Episode",
       "title": "Talent Show Extravaganza",
-      "prose": "The maxi challenge was Talent Show Extravaganza, and the runway category was Bodysuit Realness. Minnie Skurr won the maxi challenge, Quin placed high, and Minnie Skurr and Quin lip synced to \"So Emotional.\""
+      "prose": "The season opened with the Talent Show Extravaganza maxi challenge and a Bodysuit Realness runway. Minnie Skurr won the maxi challenge, Quin placed high, and Minnie Skurr and Quin lip synced to \"So Emotional.\""
     },
     {
       "n": 2,
       "word": "Episode",
-      "title": "Girl Group Challenge",
-      "prose": "For the Girl Group Challenge, the runway category was Curtain Up, Brody won the mini challenge, and Sanders won the maxi challenge, with Duncan and Karol high. Cameron and Justin were low, Ivy and Kai were the bottom contestants, Ivy and Gyselle lip synced to \"Free Your Mind\", and Ivy was sashayed away."
+      "title": "The Ball",
+      "prose": "The queens competed in The Ball, with Two Looks in One as the runway category. Ginger Hollywood won the maxi challenge, Quin and Cupcakke placed high, Riot was low, Marge Stache was in the bottom, and Anita Crown Davenport and Marge Stache lip synced to \"Holding Out for a Hero\" before Marge Stache was sashayed away."
     },
     {
       "n": 3,
       "word": "Episode",
-      "title": "The Rusical",
-      "prose": "For The Rusical, the runway category was Creatures of the Deep, Justin won the mini challenge, and Gyselle won the maxi challenge, with Duncan high. Sanders was low, Aiden and Nessa were the bottom contestants, Nessa and Kai lip synced to \"Good Luck, Babe!\", and Nessa was sashayed away."
+      "title": "Acting Challenge",
+      "prose": "Quin won the mini challenge before the queens took on the Acting Challenge, with Something Borrowed as the runway category. Paige Turner won the maxi challenge, Quin and Cupcakke placed high, Cheryl Hole was low, Taystee was in the bottom, and Minnie Skurr and Taystee lip synced to \"9 to 5\" before Taystee was sashayed away."
     },
     {
       "n": 4,
       "word": "Episode",
-      "title": "Makeover Challenge",
-      "prose": "For the Makeover Challenge, the runway category was Showgirl, Karol won the mini challenge, and Duncan won the maxi challenge, with Cameron high. Karol was low, Gyselle and Brody were the bottom contestants, Brody and Kai lip synced to \"Dancing on My Own\", and Brody was sashayed away."
+      "title": "Commercial Challenge",
+      "prose": "Sharon Needles won the mini challenge before the queens competed in the Commercial Challenge, with Creatures of the Deep as the runway category. Quin won the maxi challenge, Riot and Paige Turner placed high, Velvet Vixen was low, Cheryl Hole was in the bottom, and Anita Crown Davenport and Cheryl Hole lip synced to \"Believe\" before Cheryl Hole was sashayed away."
     },
     {
       "n": 5,

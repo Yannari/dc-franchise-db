@@ -88,7 +88,7 @@ export const MAXI_TYPES = [
     id: 'improv', name: 'Improv Challenge', tentpole: false, stage: 'pre', format: 'solo',
     blend: { acting: 0.5, comedy: 0.5 },
     runway: 'themed', assignment: 'draft', roles: 'parts', chalStyle: 'comedy', minCast: 4,
-    desc: 'Queens are paired into scenes with a premise and a character each but no script at all, and play them out in front of the host and a comedy coach who feed in twists partway through. Each scene runs until the host calls it, and every pair gets the same number of twists thrown at them. Blocking a partner, reaching for the same joke twice, or freezing the moment the twist lands is what dies out there. The queen who keeps the scene alive and gets the biggest laugh wins.',
+    desc: 'Each queen walks out alone, is handed a character she has never seen — a psychic who is always slightly wrong, a tour guide of a building she has never entered — and plays the scene cold with nothing prepared and nobody to lean on. There is no rehearsal. She commits or she does not, and commitment matters more here than craft: a fearless queen who throws herself in beats a polished one who hesitates. Freezing on the mark — going blank, pulling back, waiting for a better idea — is what dies out there. The queen who stays in character the longest and gets the biggest laugh wins.',
   },
   {
     id: 'lipsync-challenge', name: 'Lip Sync LaLaPaRUza', tentpole: false, stage: 'main', format: 'solo',

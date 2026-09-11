@@ -79,7 +79,7 @@ describe('maxi catalogue', () => {
      meant to empty: when the improv desc is rewritten, delete the entry. A
      new solo challenge that promises a partner goes red immediately, which
      is the part that matters. */
-  const PENDING = new Set(['improv']);
+  const PENDING = new Set([]);
   it('a solo challenge does not promise a collaborator', () => {
     /* A COLLABORATOR, NOT AN OPPONENT. The first version of this matched a
        bare "pair" and caught `lipsync-challenge`, whose desc says "each pair
@@ -99,20 +99,15 @@ describe('maxi catalogue', () => {
   });
 
   it('the guard above actually bites', () => {
-    /* THE FIRST VERSION OF THIS GUARD PASSED VACUOUSLY AND I NEARLY SHIPPED
-       IT. The regex was written through a script whose escaping turned `\b`
-       into a literal backspace byte, so it matched nothing at all and the
-       suite went green over the exact description it was written to catch.
-       That is the bug class this project keeps a list of, arriving inside the
-       test meant to prevent one.
-       So the guard is pointed at the known-bad string and must fail on it. */
     const PAIRED = /\b(partners?|teammates?|paired (?:into|with|up)|in teams|as a team)\b/i;
+    expect(PAIRED.test('Queens are paired into scenes with a partner'),
+      'the regex must catch collaborator language').toBe(true);
+    expect(PAIRED.test('she works alone with nothing prepared'),
+      'the regex must not fire on solo prose').toBe(false);
     const improv = MAXI_TYPES.find(m => m.id === 'improv');
     expect(improv.format, 'improv stopped being solo').toBe('solo');
     expect(PAIRED.test(improv.desc),
-      'the improv desc was fixed — remove it from PENDING above').toBe(true);
-    expect(PAIRED.test('she works alone with nothing prepared'),
-      'the guard fires on prose that promises nobody').toBe(false);
+      'improv desc still promises a collaborator').toBe(false);
   });
 
   it('the challenge styles spread, so the scheduler can avoid repeats', () => {

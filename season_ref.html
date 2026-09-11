@@ -73,6 +73,23 @@
       margin-right:6px; object-fit:cover; }
     /* The part a fandom page cannot carry: what the panel thought before the
        host spoke, and which storylines the edit was running. */
+    /* The group shot, full width at the top of the article — where every real
+       season page carries it. NOT the hero wash: that is a 20%-opacity
+       background behind the title and this is the photograph itself. */
+    /* Only shown where a write backend can actually be reached -- on a plain
+       GitHub Pages visit with no token there is nothing behind it. */
+    .sr-castbtn { position:absolute; top:12px; right:12px; z-index:2; cursor:pointer;
+      padding:6px 12px; border-radius:8px; font-size:11px; font-weight:700;
+      letter-spacing:.04em; text-transform:uppercase;
+      background:rgba(0,0,0,.55); color:#fff; border:1px solid rgba(255,255,255,.28);
+      backdrop-filter:blur(4px); }
+    .sr-castbtn:hover { background:rgba(0,0,0,.75); }
+    .sr-castbtn[disabled] { opacity:.6; cursor:progress; }
+    .wk-castphoto { margin:0 0 20px; }
+    .wk-castphoto img { display:block; width:100%; height:auto; border-radius:12px;
+      border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); }
+    .wk-castphoto figcaption { margin-top:7px; font-size:12px; font-style:italic;
+      color:var(--muted); text-align:center; }
     .sr-epdate { margin:0 0 8px; font-size:12.5px; font-style:italic; color:var(--muted); }
     .sr-epindex { border-collapse:collapse; width:100%; margin:0 0 18px; font-size:13px; }
     .sr-epindex th, .sr-epindex td { border:1px solid var(--line,rgba(0,0,0,.12));
@@ -659,8 +676,16 @@ function buildRecords(season){
     const isDefaultShow = !ref.format || ref.format === shows.DEFAULT_FORMAT;
     const showPrefix = isDefaultShow ? 'S' : shows.seasonId(ref.format, sn).split('-')[0].toUpperCase();
     const seasonLabel = isDefaultShow ? `Season ${sn}` : `${shows.showName(ref.format)} ${sn}`;
-    document.title = showPrefix + sn + ' — ' + s.title;
-    document.getElementById('footer-sub').textContent=s.title+' • '+s.castSize+' players';
+    /* WHAT THIS SEASON IS CALLED, from whichever source has it.
+       The drag export writes no `title` at all -- the field simply is not in
+       buildDragSeasonDocument -- so this page rendered the literal word
+       "undefined" as its headline, in the browser tab, and in the footer, on
+       every Drag Race season. The name is on the season's row in
+       seasons_database.json, which this page has already fetched. */
+    const seasonTitle = s.title || (window.__seasonRow && window.__seasonRow.title)
+      || seasonLabel;
+    document.title = showPrefix + sn + ' — ' + seasonTitle;
+    document.getElementById('footer-sub').textContent=seasonTitle+' • '+s.castSize+' players';
 
     // [AI_FILL] IS A PLACEHOLDER, NOT A VALUE.
     //
@@ -715,11 +740,13 @@ function buildRecords(season){
     // Hero
     const heroHTML=`<div class="sr-hero">
       <div class="sr-hero-photo" id="sr-hero-photo"></div>
+      <button class="sr-castbtn" id="sr-cast-btn" hidden>Cast photo</button>
+      <input type="file" id="sr-cast-file" accept="image/*" hidden>
       <div class="sr-hero-overlay"></div>
       <div class="sr-hero-body">
         <div class="sr-hero-snum">${_emoji(s.emoji)} &nbsp; ${seasonLabel} <span style="opacity:.4">•</span> <span style="opacity:.6">${s.status||'Complete'}</span>${
           _aired(s) ? ` <span style="opacity:.4">•</span> <span style="opacity:.6">${_aired(s)}</span>` : ''}</div>
-        <h1 class="sr-hero-title">${s.title}</h1>
+        <h1 class="sr-hero-title">${seasonTitle}</h1>
         <p class="sr-hero-sub">${s.subtitle||''}</p>
         <div class="sr-hero-pills">
           ${_won.length?`<span class="sr-pill accent">🏆 ${_won.map(w=>w.name).join(" &amp; ")}</span>`:''}
@@ -970,13 +997,104 @@ function buildRecords(season){
     // Post-render: cast photo
     const photoEl=document.getElementById('sr-hero-photo');
     const probe=new Image();
-    /* Namespaced for every show but Total Drama, which keeps the filenames its
-       fourteen images already use. Without this a Big Brother season loaded
-       Total Drama's cast photograph for the same number. The probe means a show
-       with no photo yet simply keeps its plain hero. */
-    const castArt = isDefaultShow ? `s${sn}-cast.png` : `${shows.seasonId(ref.format, sn)}-cast.png`;
-    probe.onload=()=>{if(photoEl){photoEl.style.backgroundImage=`url('assets/cast/${castArt}')`;setTimeout(()=>{photoEl.style.opacity='.2';},50);}};
-    probe.src=`assets/cast/${castArt}`;
+    /* THE ROW SAYS WHERE IT IS. `castPhotoPath` is on every season in
+       seasons_database.json and nothing read it — both this page and
+       seasons.html rebuilt the filename from format+number instead, which
+       hard-codes the extension. A .webp cast photo was therefore invisible to
+       a page holding a field that named it exactly.
+       The computed name stays as the fallback: fifteen rows point at files
+       that do not exist yet, and a season whose photo is simply dropped in
+       under the old naming still finds it.
+       Namespaced for every show but Total Drama, which keeps the filenames its
+       fourteen images already use — without that a Big Brother season loaded
+       Total Drama's cast photograph for the same number. */
+    const castPath = (window.__seasonRow && window.__seasonRow.castPhotoPath)
+      || s.castPhotoPath
+      || `assets/cast/${isDefaultShow ? `s${sn}-cast.png` : `${shows.seasonId(ref.format, sn)}-cast.png`}`;
+    probe.onload=()=>{if(photoEl){photoEl.style.backgroundImage=`url('${castPath}')`;setTimeout(()=>{photoEl.style.opacity='.2';},50);}};
+    probe.src=castPath;
+
+    /* ── ADDING A CAST PHOTO ──
+       The picture is committed to the repo and the season's row is pointed at
+       it, in one call -- see `/api/season-cast-photo` in worker/worker-studio.js
+       and serve.py. Not R2: the gallery route explains its own reasoning for
+       being there (592 MB that had to leave git) and one photograph per season
+       is the avatars' case, not the gallery's.
+
+       Resized here rather than server-side. A 1536px png off a generator is
+       about 2 MB and the same image at 1400px webp is 250 KB, which is the
+       difference between a repo that stays small and one that does not. */
+    (function wireCastPhoto() {
+      const btn = document.getElementById('sr-cast-btn');
+      const file = document.getElementById('sr-cast-file');
+      if (!btn || !file) return;
+      const local = ['localhost', '127.0.0.1', '0.0.0.0', ''].includes(location.hostname);
+      const tok = (() => { try { return localStorage.getItem('studio_api_token') || ''; } catch { return ''; } })();
+      const base = (() => {
+        try {
+          const o = localStorage.getItem('studio_api_base');
+          if (o) return o.replace(/\/+$/, '');
+        } catch { /* private mode */ }
+        return local ? '' : 'https://dc-studio.yannari19.workers.dev';
+      })();
+      // No backend, no button. A reader should not be offered an upload that
+      // can only fail.
+      if (!local && !tok) return;
+      btn.hidden = false;
+
+      btn.onclick = () => file.click();
+      file.onchange = async () => {
+        const f = file.files && file.files[0];
+        file.value = '';
+        if (!f) return;
+        btn.disabled = true;
+        btn.textContent = 'Resizing…';
+        try {
+          const dataUri = await (async () => {
+            const img = await new Promise((res, rej) => {
+              const i = new Image();
+              i.onload = () => res(i);
+              i.onerror = () => rej(new Error('that file is not an image'));
+              i.src = URL.createObjectURL(f);
+            });
+            const w = Math.min(1400, img.naturalWidth || 1400);
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = Math.round((img.naturalHeight / img.naturalWidth) * w);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(img.src);
+            return c.toDataURL('image/webp', 0.88);
+          })();
+
+          btn.textContent = 'Uploading…';
+          const seasonId = shows.seasonId(ref.format, sn);
+          const r = await fetch(base + '/api/season-cast-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json',
+              ...(tok ? { Authorization: 'Bearer ' + tok } : {}) },
+            body: JSON.stringify({ seasonId, dataUri }),
+          });
+          const out = await r.json().catch(() => ({}));
+          if (!r.ok || !out.ok) throw new Error(out.error || ('HTTP ' + r.status));
+
+          // Straight onto the page, rather than asking for a reload to see
+          // whether it worked.
+          const bust = out.path + '?t=' + Date.now();
+          if (photoEl) { photoEl.style.backgroundImage = `url('${bust}')`; photoEl.style.opacity = '.2'; }
+          const fig = document.querySelector('.wk-castphoto img');
+          if (fig) fig.src = bust;
+          btn.textContent = out.replaced ? 'Replaced' : 'Added';
+          if (!out.knownSeason) {
+            btn.textContent = 'Saved (season not in the index)';
+          }
+          setTimeout(() => { btn.textContent = 'Cast photo'; btn.disabled = false; }, 2600);
+        } catch (e) {
+          btn.textContent = 'Failed';
+          btn.title = String(e && e.message || e);
+          setTimeout(() => { btn.textContent = 'Cast photo'; btn.disabled = false; }, 3200);
+        }
+      };
+    }());
 
     // Finalist bars
     setTimeout(()=>{document.querySelectorAll('.sr-finalist-bar[data-pct]').forEach(el=>{el.style.width=el.dataset.pct+'%';});},120);

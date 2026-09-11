@@ -1151,7 +1151,8 @@ export function buildWikiTab(s, { face = null, seasonRow = null } = {}) {
          was already imported and already used correctly forty lines up. */
       const showLabel = shows.showName(fmt);
       const infobox = `<aside class="wk-infobox">
-        <div class="wk-ib-title">${esc(s.title || (roundWord + ' season'))}</div>
+        <div class="wk-ib-title">${esc(s.title || (seasonRow && seasonRow.title)
+    || (roundWord + ' season'))}</div>
         <div class="wk-ib-show">${showLabel}</div>
         <table class="wk-ib-table">
           ${facts.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}
@@ -1208,8 +1209,24 @@ export function buildWikiTab(s, { face = null, seasonRow = null } = {}) {
             `<li><a href="#${id}">${esc(t)}</a></li>`).join('')}</ol></nav>`
         : '';
 
+      /* ── THE CAST PHOTO ──
+         Every real season article opens with the group shot, above the
+         contestant cards and above everything else. This article had no
+         picture on it at all.
+         `castPhotoPath` has been on every row of seasons_database.json all
+         along and no reader ever used it — both renderers rebuilt the
+         filename from format and number instead. It is handed in with the
+         air window, from the same row, for the same reason: one home, and a
+         season document that does not have to be re-exported to gain a
+         picture. No path, no figure — never a broken frame. */
+      const castPhoto = (seasonRow && seasonRow.castPhotoPath) || s.castPhotoPath || '';
+      const hero = castPhoto ? `<figure class="wk-castphoto">
+        <img src="${esc(castPhoto)}" alt="The cast of ${esc(s.title || (seasonRow && seasonRow.title) || showLabel)}"
+          loading="lazy" onerror="this.closest('figure').remove()">
+      </figure>` : '';
+
       return `<article class="wk-article">
         ${infobox}
-        <div class="wk-main">${contents}${body}</div>
+        <div class="wk-main">${hero}${contents}${body}</div>
       </article>`;
 }

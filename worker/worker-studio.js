@@ -52,6 +52,9 @@
 //                              old manual "move the downloads into the repo" step.
 //
 // Avatar files (require the token; both are git commits):
+//   POST /api/season-cast-photo {seasonId, dataUri}
+//                              -> assets/cast/<seasonId>-cast.<ext>
+//                              + castPhotoPath on that row of seasons_database.json
 //   POST /api/avatar           {slug, dataUri}  -> add/replace assets/avatars/<slug>.png
 //   POST /api/avatar/delete    {slug, force?}   -> remove it (refuses if a character uses it)
 //
@@ -454,6 +457,14 @@ export default {
         return json(await publishSeason(env, body), 200, cors);
       }
       // ── standalone avatar add / delete (token-guarded) ────────────────────
+      if (request.method === 'POST' && url.pathname === '/api/season-cast-photo') {
+        const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+        if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
+          return json({ ok: false, error: 'unauthorized' }, 401, cors);
+        }
+        return json(await seasonCastPhotoSave(env, await request.json()), 200, cors);
+      }
+
       if (request.method === 'POST' && url.pathname.startsWith('/api/avatar')) {
         const auth = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
         if (env.STUDIO_TOKEN && auth !== env.STUDIO_TOKEN) {
@@ -2050,6 +2061,69 @@ async function seasonRatingsSave(env, payload = {}) {
     rated: matched.sort(),
     unmatched: unmatched.sort(),
   };
+}
+
+const CAST_DIR = 'assets/cast';
+const SEASON_ID_RE = /^[a-z0-9][a-z0-9-]{0,30}$/;
+
+/**
+ * Put a cast photo on a season, and point the season's row at it.
+ *
+ * ONE CALL, TWO WRITES, because they are one fact. `castPhotoPath` has been on
+ * every row in seasons_database.json since the field was added and nothing
+ * ever read it -- both renderers rebuilt the filename from format and number
+ * instead, so the field could be right and the page still show nothing. A
+ * route that uploaded the file and left the row alone would rebuild exactly
+ * that gap.
+ *
+ * Committed to the repo rather than put in R2, on the same reasoning the
+ * gallery route sets out for itself: gallery art is 592 MB and had to leave
+ * git, avatars are small and few and belong in it. One photograph per season
+ * is small and few. It also means the picture needs no token to look at and
+ * is versioned with the site.
+ */
+async function seasonCastPhotoSave(env, payload = {}) {
+  const seasonId = String(payload.seasonId || '').trim().toLowerCase();
+  if (!SEASON_ID_RE.test(seasonId)) {
+    throw new ValidationError('seasonId must be lowercase letters, digits and dashes (e.g. dr-1)');
+  }
+  const dataUri = String(payload.dataUri || '');
+  if (!dataUri.startsWith('data:image/') || !dataUri.includes(',')) {
+    throw new ValidationError('dataUri must be a data:image/... payload');
+  }
+  const mime = dataUri.slice('data:'.length, dataUri.indexOf(';'));
+  const ext = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' }[mime];
+  if (!ext) throw new ValidationError(`unsupported image type ${mime}`);
+  const b64 = dataUri.slice(dataUri.indexOf(',') + 1);
+  // A 1400px webp of a cast shot is about 250 KB. The cap is generous enough
+  // for a png and small enough that nothing the size of the gallery gets in.
+  if (b64.length * 0.75 > 4 * 1024 * 1024) {
+    throw new ValidationError('cast photo is over 4 MB -- resize it first');
+  }
+
+  const path = `${CAST_DIR}/${seasonId}-cast.${ext}`;
+  const existing = await getFile(env, path);
+  await putFile(env, path, b64,
+    `studio: ${existing ? 'replace' : 'add'} cast photo ${seasonId}`, existing && existing.sha);
+
+  /* MERGED, never rewritten -- the same rule seasonRatingsSave states above.
+     Only this row's castPhotoPath is touched. */
+  const file = await getFile(env, SEASONS_DB);
+  if (!file) throw new ValidationError('seasons_database.json not found');
+  const doc = decodeJson(file.content);
+  if (!Array.isArray(doc.seasons)) throw new ValidationError('seasons_database.json has no seasons list');
+  // A bare integer is Total Drama, permanently, so a legacy row with no
+  // seasonId matches td-N.
+  const row = doc.seasons.find(r => (r.seasonId || `td-${r.seasonNumber}`) === seasonId);
+  let rowUpdated = false;
+  if (row && row.castPhotoPath !== path) {
+    row.castPhotoPath = path;
+    await putFile(env, SEASONS_DB, encodeJson(doc),
+      `studio: cast photo path for ${seasonId}`, file.sha);
+    rowUpdated = true;
+  }
+
+  return { ok: true, seasonId, path, replaced: !!existing, rowUpdated, knownSeason: !!row };
 }
 
 const PORTRAIT_CATALOG = `${AVATAR_DIR}/portrait-catalog.json`;

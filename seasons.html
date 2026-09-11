@@ -459,10 +459,19 @@ function showLabel(fmt, num) {
   return isDefault ? `Season ${num}` : `${shows[fmt]?.name || fmt} ${num}`;
 }
 
-function castArt(fmt, num) {
+/* THE ROW SAYS WHERE IT IS. `castPhotoPath` is on every season in
+   seasons_database.json and nothing has ever read it — this rebuilt the
+   filename from format and number instead, which hard-codes the extension, so
+   a .webp cast photo was invisible to a page holding a field naming it
+   exactly. The computed name stays as the fallback: most rows point at files
+   that do not exist yet, and a photo dropped in under the old naming still
+   gets found. Returns a full path now, not a bare filename. */
+function castArt(season, fmt, num) {
+  if (season && season.castPhotoPath) return season.castPhotoPath;
   const shows = window.showSwitcher?.SHOWS || {};
   const isDefault = !fmt || fmt === (window.showSwitcher?.DEFAULT_FORMAT || 'total-drama');
-  return isDefault ? `s${num}-cast.png` : `${shows[fmt]?.prefix || fmt}-${num}-cast.png`;
+  return `assets/cast/${isDefault ? `s${num}-cast.png`
+    : `${shows[fmt]?.prefix || fmt}-${num}-cast.png`}`;
 }
 
 let allSeasons = [];
@@ -525,7 +534,7 @@ function renderSeasons(seasons) {
    data-title="${title.toLowerCase()} season ${season.seasonNumber} ${winnerName.toLowerCase()} ${(subtitle||'').toLowerCase()}">
 
   <img class="scard-photo"
-       src="assets/cast/${castArt(fmt, season.seasonNumber)}"
+       src="${castArt(season, fmt, season.seasonNumber)}"
        alt="${showLabel(fmt, season.seasonNumber)} cast"
        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
   <div class="scard-photo-fallback" style="display:none">${emoji}</div>

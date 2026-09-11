@@ -161,6 +161,70 @@ def write_season_ratings(payload):
             'rated': sorted(matched), 'unmatched': sorted(unmatched)}
 
 
+def write_season_cast_photo(payload):
+    """Put a cast photo on a season, and point the season's row at it.
+
+    ONE CALL, TWO WRITES, because they are one fact. `castPhotoPath` has been
+    on every row in seasons_database.json since the field was added and nothing
+    ever read it -- both renderers rebuilt the filename from format and number
+    instead, so the field could be right and the page still show nothing. An
+    endpoint that saved the file and left the row alone would rebuild exactly
+    that gap.
+
+    MERGED, never rewritten: only this row's castPhotoPath is touched.
+    """
+    season_id = str(payload.get('seasonId') or '').strip().lower()
+    if not re.match(r'^[a-z0-9][a-z0-9-]{0,30}$', season_id):
+        raise ValueError('seasonId must be lowercase letters, digits and dashes (e.g. dr-1)')
+    data_uri = str(payload.get('dataUri') or '')
+    if not data_uri.startswith('data:image/') or ',' not in data_uri:
+        raise ValueError('dataUri must be a data:image/... payload')
+    mime = data_uri[len('data:'):data_uri.index(';')]
+    ext = {'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg'}.get(mime)
+    if not ext:
+        raise ValueError('unsupported image type %s' % mime)
+    raw = base64.b64decode(data_uri[data_uri.index(',') + 1:])
+    if len(raw) > 4 * 1024 * 1024:
+        raise ValueError('cast photo is over 4 MB -- resize it first')
+
+    rel = 'assets/cast/%s-cast.%s' % (season_id, ext)
+    dest = os.path.join(ROOT, 'assets', 'cast')
+    os.makedirs(dest, exist_ok=True)
+    full = os.path.join(dest, '%s-cast.%s' % (season_id, ext))
+    replaced = os.path.exists(full)
+    with open(full, 'wb') as fh:
+        fh.write(raw)
+
+    path = os.path.join(ROOT, 'seasons_database.json')
+    if not os.path.exists(path):
+        raise ValueError('seasons_database.json not found')
+    with open(path, 'r', encoding='utf-8') as fh:
+        doc = json.load(fh)
+    seasons = doc.get('seasons')
+    if not isinstance(seasons, list):
+        raise ValueError('seasons_database.json has no seasons list')
+    row_updated = False
+    known = False
+    for row in seasons:
+        # A bare integer is Total Drama, permanently, so a legacy row with no
+        # seasonId matches td-N.
+        rid = row.get('seasonId') or ('td-%s' % row.get('seasonNumber'))
+        if rid != season_id:
+            continue
+        known = True
+        if row.get('castPhotoPath') != rel:
+            row['castPhotoPath'] = rel
+            row_updated = True
+        break
+    if row_updated:
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(json.dumps(doc, ensure_ascii=False, indent=2) + chr(10))
+
+    wrote = [rel] + (['seasons_database.json'] if row_updated else [])
+    return {'ok': True, 'seasonId': season_id, 'path': rel, 'wrote': wrote,
+            'replaced': replaced, 'rowUpdated': row_updated, 'knownSeason': known}
+
+
 def write_character(payload):
     """Upsert roster entry, voice profile, and avatar PNG. Returns a summary dict."""
     result = {'ok': True, 'wrote': []}
@@ -476,7 +540,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
-        if self.path not in ('/api/character', '/api/life-events', '/api/season-ratings'):
+        if self.path not in ('/api/character', '/api/life-events', '/api/season-ratings',
+                             '/api/season-cast-photo'):
             return self._send_json({'ok': False, 'error': 'unknown endpoint'}, 404)
         try:
             length = int(self.headers.get('Content-Length', 0))
@@ -485,6 +550,8 @@ class StudioHandler(http.server.SimpleHTTPRequestHandler):
                 return self._send_json(write_life_events(payload))
             if self.path == '/api/season-ratings':
                 return self._send_json(write_season_ratings(payload))
+            if self.path == '/api/season-cast-photo':
+                return self._send_json(write_season_cast_photo(payload))
             return self._send_json(write_character(payload))
         except ValueError as e:
             return self._send_json({'ok': False, 'error': str(e)}, 400)

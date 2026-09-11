@@ -89,9 +89,24 @@ describe('the maxi', () => {
       // From the CATALOGUE, which is where the stage lives — the row's own
       // challenge object does not carry it, so reading it there silently
       // treated every challenge as a main-stage one.
-      // The ball has its own screen with a different step structure — its
-      // own test below covers it.
-      if (row.dr.challenge?.id === 'ball' || row.dr.challenge?.id === 'snatch-game') continue;
+      /* Three challenges draw their own screen with their own step structure,
+         each covered by its own case: the Ball's looks, the Snatch Game's
+         characters, and the LaLaPaRUza's bracket (`dr-step-tournament-N`).
+
+         THE LALAPARUZA WAS NOT IN THIS LIST BECAUSE THIS SEED HAD NEVER DRAWN
+         ONE. It is not a pinned tentpole like the other three, so it sat in
+         the random tail of the schedule — and an unrelated change elsewhere
+         that drew one fewer random number moved it onto episode 11 and this
+         assertion failed on a screen that was working perfectly. The same
+         trap the drSchedule block above this was written for. */
+      const ownScreen = ['ball', 'snatch-game', 'lipsync-challenge'];
+      if (ownScreen.includes(row.dr.challenge?.id)) {
+        // Not a free pass: it still has to have drawn something per queen.
+        expect(html.match(/id="dr-step-[a-z-]+-\d+"/g) || [],
+          `episode ${row.num} (${row.dr.challenge?.id}) drew no steps at all`)
+          .not.toHaveLength(0);
+        continue;
+      }
       const sfx = maxiById(row.dr.challenge?.id)?.stage === 'pre' ? 'maxi' : 'maxistage';
       // String.raw: in a plain template literal that \d is a JavaScript
       // escape and the pattern becomes "d+", which matches nothing.

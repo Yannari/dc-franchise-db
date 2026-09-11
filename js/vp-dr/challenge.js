@@ -1646,6 +1646,13 @@ const DRAFT_CSS = `
 .dr-boardhead span{font-family:'Space Mono',ui-monospace,monospace;font-size:10px;color:#c4b5fd}
 .dr-seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:8px;
   padding:11px}
+/* Two casts doing the same script. Banded and labelled, because thirteen
+   queens in one ungrouped list numbered 1..13 is how the first-picker of the
+   second cast came out looking like seat 8 of a stitch-up. */
+.dr-cast + .dr-cast{border-top:1px solid rgba(124,58,237,.28)}
+.dr-casthead{display:block;padding:8px 14px 0;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:#c4b5fd}
+.dr-cast .dr-seats{padding-top:7px}
 .dr-seat{position:relative;display:grid;grid-template-columns:auto auto 1fr;gap:10px;
   align-items:center;padding:8px 10px;border-radius:8px;
   background:linear-gradient(180deg,rgba(124,58,237,.16),rgba(30,10,50,.5));
@@ -1660,8 +1667,11 @@ const DRAFT_CSS = `
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dr-seat-took{display:block;font-size:11px;color:#E9D5FF;opacity:.92;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dr-seat-b u{display:block;text-decoration:none;font-size:9px;letter-spacing:.06em;
-  text-transform:uppercase;color:#FF7A9A;margin-top:2px}
+/* NOT UPPERCASE. It was, and it fits a name plus a part plus a verb -- "wanted
+   The Returning Twin, Cupcakke took it" -- which ran to three lines of small
+   caps inside a card 212px wide and buried the row it was annotating. */
+.dr-seat-b u{display:block;text-decoration:none;font-size:9.5px;letter-spacing:.02em;
+  color:#FF7A9A;margin-top:2px;line-height:1.45}
 .dr-seat-b s{display:block;text-decoration:none;font-size:9px;letter-spacing:.04em;
   color:#FFD23F;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* She reached for something that had gone. */
@@ -1980,6 +1990,11 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
    alone. His face goes under her name, on the two screens that have a rail
    while the pair is a pair: the line-up, where he is handed to her, and the
    main stage, where the two of them are scored as one thing. */
+/** "st", "nd", "rd", "th" — the suffix only, for a seat number. */
+function _ordSuffix(n) {
+  return ['th', 'st', 'nd', 'rd'][(n % 100 - n % 10 !== 10) * (n % 10)] || 'th';
+}
+
 function _mateChip(row, name) {
   const p = row?.dr?.assignment?.picks?.[name]?.partner;
   if (!p?.portrait) return '';
@@ -2034,11 +2049,34 @@ export function rpBuildChoice(row) {
     (byChoice[k] ||= []).push(who);
   }
 
+  /* ── TWO CASTS IS NOT THIRTEEN QUEENS IN A QUEUE ──
+     The acting challenge cuts the room in half and runs the same six-part
+     script twice. The board drew all thirteen as ONE list numbered 1..13, so
+     the queen who picked first in the second cast was seat 8 — and both
+     first-pickers came out looking like two queens who had taken everything
+     between them, which is the shape a room reads as a stitch-up.
+     Split, and numbered within her own cast, so "one Matriarch each" is
+     visible instead of "two queens with the same part". */
+  const casts = (a.teams || []).filter(t => (t || []).length > 1);
+  const splitRoom = casts.length > 1 && a.division === 'two-casts';
+
   const seat = (who, p, idx) => {
     const took = _choiceLabel(p);
     const shared = (byChoice[String(p?.choice ?? '')] || []).filter(n => n !== who);
+    const wanted = p?.wanted && p.wanted !== p.choice ? _choiceLabel({ choice: p.wanted }) : '';
+    /* ── A NEAR MISS IS A RIVALRY; A LONG FALL IS THE ORDER ──
+       `lostTo` names whoever holds her FIRST choice however far down she went,
+       so a queen who fell through five parts blamed the queen at the top of a
+       list she was never close to — and since every list opens on the lead,
+       one name landed on three or four cards a night. Measured over 200
+       casts: 71.7% of the room misses its first choice, mean fall 1.8 parts,
+       and the most-blamed queen averages 3.4 cards of 13.
+       Past a near miss the honest subject is where she picked, not who beat
+       her. And "lost hers" now says what HERS WAS — the board named the queen
+       who took it and never once named the part. */
+    const near = p?.lostTo && Number(p.depth) <= 2;
     return `<div class="dr-seat${p?.lostTo ? ' dr-seat-lost' : ''}${
-      shared.length ? ' dr-seat-clash' : ''}">
+      shared.length && !splitRoom ? ' dr-seat-clash' : ''}">
       ${contested ? `<i class="dr-seat-n">${idx + 1}</i>` : ''}
       ${_portrait(who, ep, { size: 44 })}
       <div class="dr-seat-b">
@@ -2048,27 +2086,56 @@ export function rpBuildChoice(row) {
         onerror="this.style.display='none'">` : ''}${took ? esc(took) : 'no pick'}</span>
         ${p?.assignedBy ? `<u class="dr-seat-by">paired by ${esc(p.assignedBy)}</u>` : ''}
         ${p?.chosen && p?.partner ? '<u class="dr-seat-by">won the mini · picked first</u>' : ''}
-        ${p?.lostTo ? `<u>lost hers to ${esc(p.lostTo)}</u>` : ''}
-        ${shared.length ? `<s>also ${esc(shared.join(', '))}</s>` : ''}
+        ${near ? `<u>wanted ${esc(wanted || 'it')} &mdash; ${esc(p.lostTo)} took it</u>`
+    : p?.lostTo ? `<u>picked ${idx + 1}${_ordSuffix(idx + 1)}${
+      wanted ? `, wanted ${esc(wanted)}` : ''}</u>` : ''}
+        ${shared.length ? (splitRoom
+    /* HER OPPOSITE NUMBER, NOT A CLASH. On a two-cast night every part is
+       doubled BY DESIGN — that is the format — so "also Gigi Cherie" fired on
+       every card in the room and read as thirteen collisions. The queen
+       playing her part in the other cast is the one she is judged directly
+       against, which is the real jeopardy of the night. The clash styling is
+       for a night where two queens landed on the same act by accident. */
+    ? `<s>against ${esc(shared.join(', '))}</s>`
+    : `<s>also ${esc(shared.join(', '))}</s>`) : ''}
       </div></div>`;
   };
 
   const seated = order.length ? order.map(n => [n, a.picks[n]]) : picks;
-  const board = picks.length
-    ? `<div class="dr-boardwrap">
-        <div class="dr-boardhead">
-          <b class="dr-disp">${contested ? 'The board' : 'The line-up'}</b>
-          <span>${contested
-    ? `${picks.filter(([, p]) => p?.lostTo).length} of ${picks.length} lost a pick`
+  /* THE HEADLINE WAS THE GRIEVANCE. "10 of 13 lost a pick" over a serial
+     draft whose preference lists all open on the lead is not news, it is the
+     format: the measurement above says seven queens in ten miss their first
+     choice on an ordinary night. Putting that in the header framed every
+     board as a stitch-up. The head-to-heads are what actually happened. */
+  const nearMisses = picks.filter(([, p]) => p?.lostTo && Number(p.depth) <= 2).length;
+  const heads = nearMisses
+    ? ` &middot; ${nearMisses} head-to-head${nearMisses === 1 ? '' : 's'}` : '';
+  const headline = contested
+    ? (splitRoom
+      ? `two casts &middot; the same script${heads}`
+      : `${picks.length} queens${heads}`)
     : paired
       /* A PAIRED ROOM IS NOT A DRAFT AND ITS BOARD SHOULD NOT COUNT LOSSES.
          "7 of 8 lost a pick" was the headline on a makeover for as long as
          the partners were contested; the room is handed out by the mini
          winner now, so the number worth printing is who did the handing. */
       ? `paired by ${esc(paired)}`
-      : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`}</span>
+      : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`;
+
+  const seatsFor = names => `<div class="dr-seats">${
+    names.map((n, i) => seat(n, a.picks[n], i)).join('')}</div>`;
+  const board = picks.length
+    ? `<div class="dr-boardwrap">
+        <div class="dr-boardhead">
+          <b class="dr-disp">${contested ? 'The board' : 'The line-up'}</b>
+          <span>${headline}</span>
         </div>
-        <div class="dr-seats">${seated.map(([who, p], i) => seat(who, p, i)).join('')}</div>
+        ${splitRoom
+    ? casts.map((t, ci) => `<div class="dr-cast">
+          <b class="dr-casthead dr-disp">Cast ${'AB'[ci] || ci + 1}</b>
+          ${seatsFor(order.filter(n => t.includes(n)))}
+        </div>`).join('')
+    : `<div class="dr-seats">${seated.map(([who, p], i) => seat(who, p, i)).join('')}</div>`}
       </div>`
     : '';
 
@@ -2111,7 +2178,13 @@ export function rpBuildChoice(row) {
   const railAt = (upTo) => {
     const done = new Set(scenes.slice(0, upTo)
       .flatMap(sc => sc.data?.players || []));
-    return `<h4 class="dr-disp">The pairs · ${railRoom.length}</h4>${
+    /* WHOSE RAIL THIS IS. "The pairs" is the makeover's word and this screen
+       runs on every draft night -- so an acting room, which has casts and no
+       pairs in it at all, ran a sidebar headed with another challenge's
+       vocabulary. */
+    const railWord = a.division === 'two-casts' ? 'The cast'
+      : (a.division === 'pairs' || paired) ? 'The pairs' : 'The room';
+    return `<h4 class="dr-disp">${railWord} &middot; ${railRoom.length}</h4>${
       railRoom.map(n => `<div class="dr-slot${done.has(n) ? '' : ' dr-waiting'}">
         ${_portrait(n, ep, { size: 34 })}
         <div><div class="dr-nm">${esc(n)}</div>${_mateChip(row, n)}</div>

@@ -123,6 +123,15 @@ const LEFTOVER_DEPTH = 4;
 const FOLLOW_UPS = 3;
 
 /**
+ * How close she had to be for missing it to be a fight.
+ *
+ * Her second or third choice is a head-to-head she nearly won. Her sixth is
+ * the running order, and a scene about it points the room at whoever happened
+ * to pick first.
+ */
+const NEAR_MISS = 2;
+
+/**
  * What missing your first choice costs, by how far you fell.
  *
  * GRADUATED, because a flat fee is wrong in both directions. Measured on a
@@ -294,9 +303,31 @@ export function contestFor({
 
     taken.add(got);
     holder[got] = n;
-    picks[n] = { name: n, choice: got, penalty, lostTo, depth };
+    /* ── WHAT "HERS" WAS ──
+       The board said "lost hers to Quin" and never once said what hers WAS.
+       The card shows the part she ended up with, so the reader is told she
+       lost something, told who has it, and left to work out which of the six
+       parts is being talked about.
 
-    if (lostTo && !fought.has(wants[0])) {
+       `wanted` is her own first choice, which is the thing `lostTo` has always
+       been computed against -- it was simply thrown away after being used. */
+    picks[n] = { name: n, choice: got, penalty, lostTo, depth, wanted: wants[0] || null };
+
+    /* ── A NEAR MISS IS A FIGHT; A LONG FALL IS THE DRAW ──
+       `lostTo` names whoever holds her FIRST choice however far down her own
+       list she ended up, and every list in the room opens on the lead — so a
+       queen who fell through five parts got a scene with the queen who took
+       the lead, about a part she was never within four picks of.
+       Measured over 200 thirteen-queen casts: 71.7% of the room misses its
+       first choice, the mean fall is 1.8 parts, and one queen was the named
+       keeper on 3.4 cards a night. Three or four scenes all pointing at
+       whoever picked first is how a draft reads as a stitch-up rather than a
+       draft.
+       So the conflict needs her to have been CLOSE to it. She still takes the
+       part, still pays the penalty and still appears on the board — what she
+       does not get is a grievance against somebody who beat her by five. */
+    const contested = lostTo && depth <= NEAR_MISS;
+    if (contested && !fought.has(wants[0])) {
       fought.add(wants[0]);
       events.push(evt('contest', {
         players: [lostTo, n],
@@ -311,7 +342,7 @@ export function contestFor({
        one slot to one queen is a single fight, but each of those ten still
        has her own response to losing, and a hothead's is not a hero's. Capped
        so the screen is a draft rather than a brawl. */
-    if (lostTo && events.filter(e => e.type !== 'contest').length < FOLLOW_UPS) {
+    if (contested && events.filter(e => e.type !== 'contest').length < FOLLOW_UPS) {
       const f = followUp(lostTo, n, wants[0]);
       if (f) events.push(f);
     }

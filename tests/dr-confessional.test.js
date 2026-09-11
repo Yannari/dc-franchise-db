@@ -67,16 +67,7 @@ describe('every pool is written', () => {
        directions fail loudly: a new tier nobody briefed shows up here, and a
        tier somebody fills disappears from here and has to be removed by
        hand, which is the moment to check it is actually finished. */
-    expect(unwrittenConfessionalTiers().sort()).toEqual([
-      'choice-hers-landed', 'choice-hers-missed',
-      'choice-mine-landed', 'choice-mine-missed',
-      'lipsync-hers-landed', 'lipsync-hers-missed',
-      'lipsync-mine-landed', 'lipsync-mine-missed',
-      'maxipre-hers-landed', 'maxipre-hers-missed',
-      'maxipre-mine-landed', 'maxipre-mine-missed',
-      'runway-hers-landed', 'runway-hers-missed',
-      'runway-mine-landed', 'runway-mine-missed',
-    ]);
+    expect(unwrittenConfessionalTiers().sort()).toEqual([]);
   });
 
   it('has every room tier written, and none of them thin', () => {

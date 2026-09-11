@@ -40,13 +40,28 @@ import { avatarUrl } from './avatar-registry.js';
 
    Written from the document rather than the live rows, so it draws the same
    for a season loaded out of the repo as for one just played. */
+const DR_JUDGE_NAMES = {
+  rupaul: 'RuPaul', michelle: 'Michelle Visage', carson: 'Carson Kressley',
+  ross: 'Ross Mathews', law: 'Law Roach', ts: 'TS Madison', jamal: 'Jamal Sims',
+};
+
 export function _dragEpisodeBlocks(doc, esc, avatar) {
   const eps = (doc && doc.dr && doc.dr.episodes) || [];
   if (!eps.length) return '';
   const nameOf = p => (p && (p.name || p)) || '';
+  const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 - n % 10 !== 10) * (n % 10) ] || 'th');
+
+  /* Running tallies. The per-queen `storyline` is a season-long label, not
+     weekly news -- printing it under every episode repeated the same four
+     words nine times. What DOES change week to week is the chart, so count
+     it as we walk forward and let a block say "her third win". */
+  const wins = {}; const btm = {};
+
   const list = eps.map(e => {
     const pl = e.placements || [];
     const winners = pl.filter(p => p.result === 'WIN').map(p => p.name);
+    const crown = pl.filter(p => p.result === 'WINNER').map(p => p.name);
+    const finalists = pl.filter(p => p.result === 'FINALIST').map(p => p.name);
     /* BOTH OF THEM. Filtering on BTM2 alone returns the SURVIVOR only: the
        queen who lost the song carries ELIM by then, so "Bottom two" printed
        one name. The lip sync knows the pair exactly; the filter is the
@@ -59,39 +74,71 @@ export function _dragEpisodeBlocks(doc, esc, avatar) {
     const bits = [];
     const row = (k, v) => { if (v) bits.push(`<dt>${k}</dt><dd>${v}</dd>`); };
 
+    winners.forEach(n => { wins[n] = (wins[n] || 0) + 1; });
+    bottom.forEach(n => { btm[n] = (btm[n] || 0) + 1; });
+
     row('Maxi challenge', e.challenge ? esc(e.challenge.name) : '');
     row('Runway', e.runwayCategory ? esc(e.runwayCategory) : '');
     row('Mini challenge', e.mini
       ? esc(e.mini.name) + (e.mini.winner ? ` &mdash; won by ${esc(e.mini.winner)}` : '') : '');
+    /* The real articles carry a guest judge. Ours rotates the permanent panel
+       instead, and only sometimes seats a guest -- so print whichever the
+       episode actually has rather than an empty row where a name should be. */
     row('Guest judge', e.guest ? esc(nameOf(e.guest)) : '');
+    row('Panel', (e.judges || []).length
+      ? (e.judges).map(j => esc(DR_JUDGE_NAMES[j] || j)).join(', ') : '');
     row('Winner', winners.length ? winners.map(n => avatar(n) + esc(n)).join(' &amp; ') : '');
     row('Bottom two', bottom.length ? bottom.map(n => esc(n)).join(' and ') : '');
     row('Lip sync', e.song && e.song.title
       ? `&ldquo;${esc(e.song.title)}&rdquo;${e.song.artist ? ` by ${esc(e.song.artist)}` : ''}${
         e.lipsync && e.lipsync.winner ? ` &mdash; ${esc(e.lipsync.winner)} stayed` : ''}` : '');
-    row('Eliminated', gone.length
-      ? gone.map(n => esc(n)).join(' and ')
-      : (e.eliminated ? esc(nameOf(e.eliminated)) : '<em>nobody went home</em>'));
+
+    /* ── THE FINALE ──
+       It carries no song, no maxi winner and no exits, so every row above
+       came back empty and the one episode people look up rendered as a title
+       and "nobody went home". The crown lives in the placements as WINNER /
+       FINALIST. */
+    if (crown.length) {
+      row('Crowned', crown.map(n => avatar(n) + esc(n)).join(' &amp; '));
+      row('Runners-up', finalists.map(n => esc(n)).join(', '));
+    } else {
+      row('Eliminated', gone.length
+        ? gone.map(n => esc(n)).join(' and ')
+        : (e.eliminated ? esc(nameOf(e.eliminated)) : '<em>nobody went home</em>'));
+    }
 
     /* ── WHAT THE PANEL THOUGHT, WHEN THE HOST DISAGREED ──
        `panelRank` is the board before he touched it and `finalRank` is the
-       order he announced. Printed only when they differ at the top, because
-       "the host agreed with the panel" is not a fact worth a line. */
-    const bent = pl.filter(p => p.panelRank && p.finalRank && p.panelRank !== p.finalRank);
+       order he announced. Printed only when they differ, because "the host
+       agreed with the panel" is not a fact worth a line -- and NAMED, because
+       "the host moved 2 queens" tells the reader nothing they can look up. */
+    const bent = pl.filter(p => p.panelRank && p.finalRank && p.panelRank !== p.finalRank)
+      .sort((a, b) => Math.abs(b.panelRank - b.finalRank) - Math.abs(a.panelRank - a.finalRank));
     const panelTop = pl.find(p => p.panelRank === 1);
     const flavour = [];
     if (panelTop && winners.length && !winners.includes(panelTop.name)) {
       flavour.push(`The panel had <b>${esc(panelTop.name)}</b> first. The host gave it to <b>${
         esc(winners[0])}</b>.`);
     } else if (bent.length) {
-      flavour.push(`The host moved ${bent.length} ${bent.length === 1 ? 'queen' : 'queens'} from where the panel put them.`);
+      const b = bent[0];
+      flavour.push(`The host moved <b>${esc(b.name)}</b> from ${ord(b.panelRank)} to ${
+        ord(b.finalRank)}${bent.length > 1 ? `, and ${bent.length - 1} other${
+          bent.length > 2 ? 's' : ''} with her` : ''}.`);
     }
-    const arcs = [...new Set(pl.map(p => p.storyline).filter(Boolean))];
-    if (arcs.length) {
-      flavour.push(`Storylines running: ${arcs.slice(0, 4).map(a => esc(a)).join(', ')}.`);
+    if (winners.length === 1 && wins[winners[0]] > 1) {
+      flavour.push(`${esc(winners[0])}&rsquo;s ${ord(wins[winners[0]])} win of the season.`);
+    }
+    const survivor = e.lipsync && e.lipsync.winner;
+    if (survivor && btm[survivor] > 1) {
+      flavour.push(`${esc(survivor)} has now lip synced ${btm[survivor]} times.`);
+    }
+    if (crown.length && wins[crown[0]]) {
+      const w = crown[0];
+      flavour.push(`${esc(w)} takes the crown with ${wins[w]} maxi challenge ${
+        wins[w] === 1 ? 'win' : 'wins'}.`);
     }
 
-    return `<article class="sr-ep">
+    return `<article class="sr-epblk">
       <h3>Episode ${esc(e.episode)}${e.challenge ? `: &ldquo;${esc(e.challenge.name)}&rdquo;` : ''}</h3>
       <dl class="sr-epfacts">${bits.join('')}</dl>
       ${flavour.length ? `<p class="sr-epnote">${flavour.join(' ')}</p>` : ''}

@@ -307,14 +307,37 @@ export function callWeek(finalRanking, {
                    rest = SAFE.  Immunity still applies inside the losing
                    team.  The host bend already ran on the full ranking, so
                    finalRank is authoritative; we just partition it. */
+  /* HOW MANY ARE CALLED UP, decided once for both paths. It used to live
+     below the team branch, so a team night never saw it — see the cap on the
+     winning team a few lines down. */
+  const upFor = size => (size >= 12 ? 3 : size >= 5 ? 2 : 1);
+
   if (teamJudged && teams && bestTeam != null && teams.length > 1) {
     const winTeam = new Set(teams[bestTeam] || []);
     const byRank = [...finalRanking].sort((a, b) => a.finalRank - b.finalRank);
     const winners = byRank.filter(r => winTeam.has(r.name));
     const losers  = byRank.filter(r => !winTeam.has(r.name));
 
-    const win  = winners.length ? [winners[0].name] : [];
-    const high = winners.slice(1).map(r => r.name);
+    /* ── THE WHOLE WINNING TEAM USED TO BE CALLED UP ──
+       `high` was `winners.slice(1)` — every queen on the winning team bar the
+       one taking WIN. On a twelve-queen night in two teams of six that is nine
+       queens critiqued and three safe, where an ordinary week at the same cast
+       size critiques six and sends six off. Three teams of four gave seven and
+       five. The comment on the ordinary path says what the night is supposed
+       to be in as many words: "Six queens are critiqued on an ordinary night."
+
+       The winning team is not a reason to critique more people. It decides WHO
+       is at the top, not how many the stage has room for — and a queen on the
+       winning team who is not one of them is safe, which is what the show does
+       with her.
+       Same `up` as an ordinary week, so a team night and a solo night dismiss
+       the same number of queens. */
+    const up = upFor(castSize || finalRanking.length);
+    const called = winners.slice(0, Math.max(1, up));
+    const win  = called.length ? [called[0].name] : [];
+    const high = called.slice(1).map(r => r.name);
+    // The rest of the winning team: safe, and told so with everybody else.
+    const winSafe = winners.slice(called.length).map(r => r.name);
 
     const loserNames = losers.map(r => r.name);
     const loserEligible = loserNames.filter(nm => !immune.includes(nm));
@@ -328,7 +351,7 @@ export function callWeek(finalRanking, {
         loserEligible.length - down)
       : [];
     const spoken = new Set([...bottomBlock, ...low]);
-    const safe = loserNames.filter(nm => !spoken.has(nm));
+    const safe = [...winSafe, ...loserNames.filter(nm => !spoken.has(nm))];
 
     return { win, high, safe, low, atRisk, bottom, teamJudged: true };
   }
@@ -339,7 +362,7 @@ export function callWeek(finalRanking, {
   // single queen to be the bottom, no lip sync is possible and the season
   // cannot reach a final two. One win and two lip syncing is also what the
   // format actually does that late.
-  const up = n >= 12 ? 3 : n >= 5 ? 2 : 1;
+  const up = upFor(n);
   /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom
      forward and sends everybody else off before a word is said, and the block
      it calls is the pair who lip sync. This returned three, which put a third

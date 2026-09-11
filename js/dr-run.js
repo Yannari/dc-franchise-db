@@ -831,8 +831,9 @@ export function _stateFromHistory() {
      Every row keeps its `call` whatever else it has, and the call is what the
      record is made of. So it is rebuilt from the calls, and `last.dr.record`
      is the fallback rather than the source. */
+  // `atRisk` is LOW on the chart, not a seventh result -- see js/dr/week.js.
   const RESULT_OF_CALL = {
-    win: 'WIN', high: 'HIGH', safe: 'SAFE', low: 'LOW', atRisk: 'BTM',
+    win: 'WIN', high: 'HIGH', safe: 'SAFE', low: 'LOW', atRisk: 'LOW',
   };
   const calls = rows.filter(r => r.dr && r.dr.call);
   if (calls.length) {

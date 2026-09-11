@@ -57,8 +57,17 @@ export const GRID_RESULTS = {
      result worth seeing. Real progress tables leave it white for exactly
      this reason: the colours are supposed to be the exceptions. */
   SAFE: { label: 'SAFE', short: 'SAFE', title: 'Safe', color: '#f8f6f1', ink: '#3d3730' },
-  LOW: { label: 'LOW', short: 'LOW', title: 'Safe, but the panel had a note', color: '#fb923c', ink: '#2b1400' },
-  BTM: { label: 'BTM', short: 'BTM', title: 'Named in the bottom, and saved', color: '#fca5a5', ink: '#2b0000' },
+  /* IN THE BOTTOM AND NOT UP FOR ELIMINATION, which is the fandom chart's own
+     wording for its lightpink cell. The engine used to call this "safe, but
+     the panel had a note" and keep a SEVENTH result, BTM, for the queen named
+     in the bottom and saved -- checked against the season 16 wikitext, that
+     is what LOW already means: `{{LOW}}` eleven times, a bare `{{BTM}}` once,
+     and no BTM line in the legend at all. */
+  LOW: { label: 'LOW', short: 'LOW', title: 'In the bottom, but not up for elimination', color: '#fb923c', ink: '#2b1400' },
+  /* NOT PRODUCED ANY MORE. Kept so a season played while the engine emitted
+     it still draws its chart rather than showing blank cells; nothing writes
+     it now. */
+  BTM: { label: 'BTM', short: 'BTM', title: 'In the bottom, and saved (retired result)', color: '#fca5a5', ink: '#2b0000' },
   BTM2: { label: 'BTM2', short: 'BTM2', title: 'The bottom two — lip synced, and survived', color: '#f87171', ink: '#2b0000' },
   ELIM: { label: 'ELIM', short: 'ELIM', title: null, color: '#7f1d1d', ink: '#fecaca' },
   OUT: { label: '', short: '', title: 'Already gone', color: 'transparent', ink: 'transparent' },

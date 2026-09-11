@@ -268,7 +268,8 @@ export function renderStageBeats({
   const callOf = n => (call.win || []).includes(n) ? 'WIN'
     : (call.high || []).includes(n) ? 'HIGH'
       : (call.bottom || []).includes(n) ? 'BTM2'
-        : (call.atRisk || []).includes(n) ? 'BTM'
+        // Named in the bottom and saved is LOW on the chart -- see js/dr/week.js.
+        : (call.atRisk || []).includes(n) ? 'LOW'
           : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
 
   // ── the exit, which is a ritual and always happens ──

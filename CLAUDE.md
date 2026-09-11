@@ -201,11 +201,22 @@ no say in who leaves. The panel ranks; the host decides alone. Any sentence,
 prompt or reader that implies otherwise is a bug — a model or a module carrying
 the other two formats will supply a vote unasked.
 
-### The two bottom calls are different nights
-`BTM2` lip synced and survived. `BTM` was named in the bottom and saved
-**before** the song. `LOW` was safe but critiqued. Collapsing BTM2 into BTM
-writes a lip sync that never happened; it has shipped twice and been caught
-twice.
+### The chart has six results and BTM is not one of them
+`WIN` · `HIGH` · `SAFE` · `LOW` · `BTM2` · `ELIM`.
+
+`BTM2` lip synced and survived. `LOW` is **in the bottom and not up for
+elimination** — which covers both the queen just above the bottom two and the
+queen named in a bottom THREE and saved on the stage. Collapsing BTM2 into LOW
+writes a lip sync that never happened; that has shipped twice and been caught
+twice, and it is still the thing to avoid.
+
+This file used to claim a seventh result, `BTM`, for the named-and-saved queen.
+Checked against the season 16 wikitext: `{{LOW}}` eleven times,
+`{{BTM|tomato|2}}` ten (that is BTM2), and a bare `{{BTM}}` exactly once — with
+no BTM line in the legend at all. Its lightpink entry reads "The contestant was
+in the bottom, but was not up for elimination", which is the sentence this repo
+had been using to define BTM. The call still NAMES three on a bottom-three
+night and still saves one; the chart has one word for her.
 
 ### Valid drag craft stats
 `acting`, `comedy`, `dance`, `design`, `runway`, `lipsync`, `singing` — on

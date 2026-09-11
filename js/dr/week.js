@@ -1155,7 +1155,24 @@ export function runDragWeek(state, cfg, ctx) {
         : call.win.includes(n) ? 'WIN'
           : call.high.includes(n) ? 'HIGH'
             : call.bottom.includes(n) ? 'BTM2'
-              : call.atRisk.includes(n) ? 'BTM'
+              /* ── A QUEEN NAMED IN THE BOTTOM AND SAVED IS `LOW` ──
+       This produced `BTM`, a seventh result, on the reasoning that being
+       named in the bottom and being one of the two who lip sync are
+       different facts. They are -- but the chart the fandom keeps has one
+       word for the first of them and that word is LOW.
+
+       Checked against the season 16 wikitext rather than argued: `{{LOW}}`
+       is used eleven times, `{{BTM|tomato|2}}` ten times (that is BTM2), and
+       a bare `{{BTM}}` exactly ONCE in the whole season. The legend block
+       has no entry for BTM at all -- its lightpink line reads "The
+       contestant was in the bottom, but was not up for elimination", which
+       is the sentence this engine was using to define BTM.
+
+       So the set is WIN / HIGH / SAFE / LOW / BTM2 / ELIM. The call still
+       NAMES three on a bottom-three night and still saves one on the stage,
+       because that is what happens; it is the chart that has one word for
+       it. */
+              : call.atRisk.includes(n) ? 'LOW'
                 : call.low.includes(n) ? 'LOW' : 'SAFE';
     state.record[n].push(r);
     /* ── AND WHAT THE NIGHT WAS WORTH AS TELEVISION ──────────────────

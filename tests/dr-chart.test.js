@@ -102,12 +102,40 @@ describe('the grid builder', () => {
     }
   });
 
-  it('BOTH BOTTOMS REACH A REAL CHART', () => {
-    // A legend entry no season can produce is the dead-code class this split
-    // was made to end. If either vanishes, `callWeek` has regressed.
+  it('THE BOTTOM REACHES A REAL CHART', () => {
+    // A legend entry no season can produce is the dead-code class this was
+    // written to end. If BTM2 vanishes, `callWeek` has regressed.
     const drawn = new Set(gridRows(doc).flatMap(r => r.cells).map(c => c.result));
     expect(drawn.has('BTM2'), 'nobody lip synced and survived').toBe(true);
-    expect(drawn.has('BTM'), 'nobody was named in the bottom and saved').toBe(true);
+  });
+
+  it('never draws a BTM, because the chart does not have one', () => {
+    /* This used to assert the opposite: that both BTM and BTM2 reach a chart,
+       on the reading that "named in the bottom and saved" and "lip synced and
+       survived" are different facts needing different cells. They are
+       different facts. The chart has one word for the first of them and that
+       word is LOW.
+
+       Checked against the season 16 wikitext rather than reasoned about:
+
+         {{LOW}}            11
+         {{BTM|tomato|2}}   10     <- this is BTM2
+         {{BTM}}             1
+
+       and the legend block lists no BTM at all. Its lightpink line reads "The
+       contestant was in the bottom, but was not up for elimination" -- which
+       is the sentence the engine had been using to define BTM.
+
+       So the set is WIN / HIGH / SAFE / LOW / BTM2 / ELIM. The CALL still
+       names three queens on a bottom-three night and still saves one of them
+       on the stage; it is only the chart that has one word for her. */
+    const drawn = new Set(gridRows(doc).flatMap(r => r.cells).map(c => c.result));
+    expect(drawn.has('BTM'), 'a bottom-three night produced a seventh result')
+      .toBe(false);
+    for (const r of drawn) {
+      expect(['WIN', 'HIGH', 'SAFE', 'LOW', 'BTM2', 'ELIM', 'OUT', 'WINNER', 'FINALIST'],
+        `${r} is not a result the fandom chart has`).toContain(r);
+    }
   });
 });
 

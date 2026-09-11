@@ -25,17 +25,40 @@ single most important fact about the show and the one a writer or a reader
 carrying the other two formats will get wrong — the AI prompt, the beat sheet
 and the ratings reader each say it out loud for that reason.
 
-### The two bottom calls are different nights
+### The chart's six results
 
 | record | what happened |
 |---|---|
-| `BTM2` | She lip synced and survived. |
-| `BTM` | She was named in the bottom and saved **before** the song. |
-| `LOW` | Safe, but critiqued. |
+| `WIN` | She won the maxi challenge. |
+| `HIGH` | In the top, did not win. |
+| `SAFE` | Neither top nor bottom. |
+| `LOW` | **In the bottom, and not up for elimination.** |
+| `BTM2` | In the bottom, lip synced, and survived. |
+| `ELIM` | In the bottom, lip synced, and went home. |
 
-Verified against season 16's wikitext, where `{{BTM|tomato|2}}` appears ten
-times and a plain `{{BTM}}` once. Collapsing them writes a lip sync that never
-happened — which has already been shipped twice here and caught twice.
+`LOW` covers both the queen just above the bottom two and the queen named in a
+bottom THREE and saved on the stage. The call still names three and saves one —
+that is a real format and the engine still runs it — but the chart has one word
+for her.
+
+**There is no `BTM`.** This table used to carry one, on the reading that
+"named in the bottom and saved" needed its own cell, and cited season 16's
+wikitext as the verification. The counts were right and the conclusion was
+wrong:
+
+```
+{{LOW}}            11
+{{BTM|tomato|2}}   10     <- BTM2
+{{BTM}}             1
+```
+
+One use in a whole season, against eleven LOWs, and the legend block lists no
+BTM: its lightpink line is "The contestant was in the bottom, but was not up
+for elimination". `GRID_RESULTS` still knows how to DRAW a `BTM` so a season
+played while the engine emitted one still charts; nothing writes it.
+
+Collapsing BTM2 into LOW writes a lip sync that never happened — which has
+already been shipped twice here and caught twice.
 
 ### The finale
 

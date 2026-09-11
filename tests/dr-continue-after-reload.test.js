@@ -358,3 +358,51 @@ describe('rebuilding a season that kept no state', () => {
       gsRef.episodeHistory[3].dr.living.length);
   });
 });
+
+/* ── THE CHART HAS TO SURVIVE THE REBUILD ──
+   Reported as "the track record isn't filled any more in episode 5", with
+   episode 4 still fine. The chart is drawn from the LAST row's cumulative
+   record, so an episode whose record holds only itself draws one column and
+   the season looks erased — while every earlier episode still looks right,
+   because their rows are untouched.
+   That is what a rebuild reading a field live rows do not have produces: it
+   found nothing, every queen came back with an empty record, and the next
+   episode wrote a one-entry record over the top of a four-week season. */
+describe('the track record after a rebuild', () => {
+  it('covers every episode that has aired', () => {
+    fresh(1855);
+    play(4);
+    for (const row of gsRef.episodeHistory) delete row.dr.state;
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    expect(r, 'could not continue').toBeTruthy();
+    const rec = r.dr.record || {};
+    expect(Object.keys(rec).length, 'the new episode carries no record at all')
+      .toBeGreaterThan(0);
+    // A queen who has been there all five weeks has five calls against her.
+    const survivor = (r.dr.living || [])[0];
+    expect(rec[survivor], `${survivor} has no track record`).toBeTruthy();
+    expect(rec[survivor].length,
+      `${survivor} survived five episodes with ${rec[survivor].length} results`)
+      .toBe(5);
+  });
+
+  it('rebuilds it from the calls when the rows kept no record', () => {
+    /* The belt: `dr.record` is not guaranteed on an old row, but `dr.call` is
+       what the record is MADE of and every row keeps one. Derived from the
+       calls the result is exact — checked queen by queen against the real
+       state on a played season. */
+    fresh(1855);
+    play(4);
+    const real = JSON.parse(JSON.stringify(gsRef.episodeHistory[3].dr.state.record));
+    for (const row of gsRef.episodeHistory) { delete row.dr.state; delete row.dr.record; }
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    expect(r).toBeTruthy();
+    // every queen's history up to episode four is reproduced
+    for (const [name, results] of Object.entries(real)) {
+      expect((r.dr.record || {})[name]?.slice(0, results.length),
+        `${name}'s track record was not rebuilt`).toEqual(results);
+    }
+  });
+});

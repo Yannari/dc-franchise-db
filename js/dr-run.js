@@ -821,7 +821,42 @@ export function _stateFromHistory() {
   state.living = [...last.dr.living];
   const standing = new Set(state.living);
   state.out = cast.map(p => p.name).filter(n => !standing.has(n));
-  if (last.dr.record) state.record = clone(last.dr.record);
+  /* ── THE TRACK RECORD IS WALKED, NOT COPIED ──
+     It was copied off `last.dr.record`, which is right when it is there and
+     silently ruinous when it is not: the chart is built from the LAST row's
+     cumulative record, so a rebuilt episode five whose record held only
+     episode five drew a chart one column wide. Measured: the chart went from
+     43,505 characters to 34,908, which is the season's first four weeks
+     disappearing off it.
+     Every row keeps its `call` whatever else it has, and the call is what the
+     record is made of. So it is rebuilt from the calls, and `last.dr.record`
+     is the fallback rather than the source. */
+  const RESULT_OF_CALL = {
+    win: 'WIN', high: 'HIGH', safe: 'SAFE', low: 'LOW', atRisk: 'BTM',
+  };
+  const calls = rows.filter(r => r.dr && r.dr.call);
+  if (calls.length) {
+    for (const n of Object.keys(state.record)) state.record[n] = [];
+    for (const row of calls) {
+      const call = row.dr.call;
+      for (const [group, result] of Object.entries(RESULT_OF_CALL)) {
+        for (const n of call[group] || []) {
+          if (state.record[n]) state.record[n].push(result);
+        }
+      }
+      /* THE BOTTOM IS TWO DIFFERENT RESULTS. She lip synced and stayed
+         (BTM2) or she lip synced and went home (ELIM), and the chart draws
+         them differently -- the lip sync says which. */
+      const ls = row.dr.lipsync || {};
+      for (const n of call.bottom || []) {
+        if (!state.record[n]) continue;
+        state.record[n].push(ls.loser === n || (ls.winner && ls.winner !== n
+          && (ls.queens || []).includes(n)) ? 'ELIM' : 'BTM2');
+      }
+    }
+  } else if (last.dr.record) {
+    state.record = clone(last.dr.record);
+  }
   /* NOT THE STORYLINES. `row.dr.storylines` is a SUMMARY written for the
      screens — `beats` on it is a COUNT, where an arc carries an array — so
      assigning it would put a number where `recordBeat` does `[...s.beats]` and

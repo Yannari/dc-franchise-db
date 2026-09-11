@@ -258,17 +258,17 @@ export const MINI_VOICES = [
     + 'their own station.',
     [
       tier('announce', 'A full look, start to finish, on a clock nobody thinks is fair.', [
-        'The host announces {c} and reads the clock out loud, and the clock is a number that makes half the room laugh and the other half stop laughing, because a full face and a full look in that time is not a challenge — it is a controlled panic.',
+        'The host announces {c} and reads the clock out loud. Half the room laughs. The other half does not, because a full face and a full look in that time means skipping steps they have never skipped.',
         '{c} — a full look, head to toe, face painted and outfit assembled, on a timer that was designed to be too short. The queens look at the clock, look at their stations, and start doing triage on which parts of their face they are willing to skip.',
-        'The host sets the clock for {c} and the room goes quiet the way a room goes quiet when everybody has just been told to do something impossible and is trying to figure out which corners to cut first.',
-        '"It\'s {c}!" The clock starts and every queen in the room is suddenly moving at a speed nobody has seen from them before, because a full drag look in this time means no blending, no second passes, no fixing mistakes — just speed and instinct.',
+        'The host sets the clock for {c} and the room goes quiet. Every queen is staring at the timer and doing the same math: what can she cut and still look finished.',
+        '"It\'s {c}!" The clock starts and every queen in the room is suddenly moving faster than anyone has seen them move. No blending, no second passes, no fixing mistakes — just speed and instinct.',
       ]),
       tier('nailed', 'Finished, painted and standing there before the clock stops.', [
-        '{a} is done. The clock is still running and she is standing at her station with a full face, a full look, and the posture of somebody who has clearly done this exact exercise before, possibly in a bathroom with a broken lock and a gig in twenty minutes.',
-        'The timer has not stopped and {a} is already standing back from the mirror, arms crossed, painted and styled and looking at the other queens the way somebody looks at people who are still working on something she has already finished.',
-        '{a} puts the brush down with time to spare and turns around, and the face is done — not rushed, not half-blended, done. The queens on either side of her are still contouring. She is standing there with a completed look and a calm expression, which is the most insulting part.',
-        'Finished. {a} is standing in a complete look while the clock is still counting and the queens around her are still painting, and the gap between done and not done is visible to everybody in the room, especially the queens who are not done.',
-        'The clock stops and {a} has been ready for a full fifteen seconds, standing at her station with a look that does not appear to have been built in a panic, which is the hardest thing to achieve in {c} — not the speed, but the appearance that speed was not required.',
+        '{a} is done. The clock is still running and she is standing at her station with a full face and a full look. She has clearly done this before — probably in a bathroom with a broken lock and a gig in twenty minutes.',
+        'The timer has not stopped and {a} is already standing back from the mirror, arms crossed, painted and styled. She watches the other queens still working and does not hide the fact that she is watching.',
+        '{a} puts the brush down with time to spare and turns around. The face is done — not rushed, not half-blended, done. The queens on either side of her are still contouring.',
+        'Finished. {a} is standing in a complete look while the clock is still counting and the queens around her are still painting. The gap is visible to everybody, especially the queens on the wrong side of it.',
+        'The clock stops and {a} has been ready for a full fifteen seconds. Her look does not appear to have been built in a panic, which in {c} is harder than the speed itself.',
         '{a} steps back from the mirror and the look is finished — wig, face, outfit, all of it — and the room makes a noise because the clock still has time on it, which should not be possible and yet there she is.',
       ]),
       tier('decent', 'She gets there. Something is unfinished and she is standing in front of it.', [

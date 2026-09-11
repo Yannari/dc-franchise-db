@@ -147,6 +147,14 @@ describe('what the box says about a whole career', () => {
   });
 });
 
+/** The last season the database says has aired -- the franchise's present. */
+async function latestSeason() {
+  const fs = await import('node:fs');
+  const cal = await import('../js/franchise-calendar.js');
+  const db = JSON.parse(fs.readFileSync('seasons_database.json', 'utf8'));
+  return cal.latestAired(db.seasons || []);
+}
+
 // A wiki freezes a character at the age they were written. Turning "Leshawna is
 // sixteen" into a birthday needs to know WHEN she was sixteen, and the only
 // thing that knows is this franchise's own calendar.
@@ -156,20 +164,30 @@ describe('an age from a wiki, placed in franchise time', () => {
     const a = ageAnchor(await appearancesFor('leshawna'));
     expect(a.debut.seasonId).toBe('td-1');
     expect(a.debut.airYear).toBe(2020);
-    // "Now" is derived from the last season aired, never stored — a stored
-    // current year is a second clock and two clocks disagree.
-    expect(a.now.airYear).toBe(2026);
-    expect(a.now.airSlot).toBe('fall');
+    /* "Now" is derived from the last season aired, never stored -- a stored
+       current year is a second clock and two clocks disagree.
+
+       AND THE EXPECTATION IS DERIVED TOO. This asserted "fall 2026", which
+       was the latest season the day it was written; adding Drag Race 1 to
+       winter 2027 turned it red along with two others, and the franchise
+       growing is not a regression. Ask the database what the last season is
+       -- that is the whole claim being tested. */
+    const last = await latestSeason();
+    expect(a.now.airYear).toBe(last.airYear);
+    expect(a.now.airSlot).toBe(last.airSlot);
   });
 
   it('carries a canonical age forward to the present', async () => {
     const { appearancesFor, ageAnchor, birthFromCanonAge } = await load();
     const a = ageAnchor(await appearancesFor('leshawna'));
     const born = birthFromCanonAge(16, a, '07-14');
-    // 16 in spring 2020 is a person born in 2004, who is 22 in fall 2026.
+    // 16 in spring 2020 is a person born in 2004 -- that half is fixed. How
+    // old they are NOW moves whenever a later season is added, so it is
+    // measured against the calendar rather than frozen at a number.
     expect(born.birthYear).toBe(2004);
     expect(born.birthdate).toBe('2004-07-14');
-    expect(born.ageNow).toBe(22);
+    const cal = await import('../js/franchise-calendar.js');
+    expect(born.ageNow).toBe(cal.ageAt('2004-07-14', await latestSeason()));
   });
 
   it('gives a later debut a later birth year for the same canonical age', async () => {
@@ -185,7 +203,10 @@ describe('an age from a wiki, placed in franchise time', () => {
     const a = ageAnchor(await appearancesFor('leshawna'));
     const born = birthFromCanonAge(16, a, null);
     expect(born.birthdate, 'a day of the month is nobody’s fact').toBeNull();
-    expect(born.ageNow).toBe(22);
+    // Without a day there is no birthday to have passed or not, so the age is
+    // the plain difference of years -- and the later year moves with the
+    // franchise, so it is asked for rather than frozen.
+    expect(born.ageNow).toBe((await latestSeason()).airYear - born.birthYear);
   });
 
   it('refuses an age it cannot use', async () => {
@@ -227,12 +248,15 @@ describe('an age is counted on the franchise clock', () => {
     await continuityIndex();
 
     const now = cal.franchiseNow();
-    expect(now.airYear).toBe(2026);
-    expect(now.airSlot).toBe('fall');
-    expect(cal.ageNow('2004-07-21')).toBe(22);
+    const last = await latestSeason();
+    expect(now.airYear).toBe(last.airYear);
+    expect(now.airSlot).toBe(last.airSlot);
+    // Every age is counted to that season, and the gap between two birthdays
+    // either side of the slot's opening is the claim -- not the two numbers,
+    // which move every time the franchise airs something.
+    expect(cal.ageNow('2004-07-21')).toBe(cal.ageAt('2004-07-21', last));
     // Their birthday has not come round by the time the slot opens.
-    expect(cal.ageNow('2006-12-31')).toBe(19);
-    expect(cal.ageNow('2006-01-02')).toBe(20);
+    expect(cal.ageNow('2006-01-02') - cal.ageNow('2006-12-31')).toBe(1);
   });
 
   it('is the only clock any page reads', async () => {

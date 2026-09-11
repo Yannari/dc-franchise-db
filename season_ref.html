@@ -73,6 +73,7 @@
       margin-right:6px; object-fit:cover; }
     /* The part a fandom page cannot carry: what the panel thought before the
        host spoke, and which storylines the edit was running. */
+    .sr-epdate { margin:0 0 8px; font-size:12.5px; font-style:italic; color:var(--muted); }
     .sr-epindex { border-collapse:collapse; width:100%; margin:0 0 18px; font-size:13px; }
     .sr-epindex th, .sr-epindex td { border:1px solid var(--line,rgba(0,0,0,.12));
       padding:5px 10px; text-align:left; }
@@ -888,7 +889,7 @@ function buildRecords(season){
     /* The article builder lives in js/season-wiki-tab.js now — see its header.
        It is handed through the same window bridge as the registry, because
        this page script is a classic script and cannot import. */
-    const wikiHTML = window.buildWikiTab ? window.buildWikiTab(s, { face: srFace }) : '';
+    const wikiHTML = window.buildWikiTab ? window.buildWikiTab(s, { face: srFace, seasonRow: window.__seasonRow }) : '';
 
     document.getElementById('season-content').innerHTML=`
       ${heroHTML}

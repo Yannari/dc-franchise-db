@@ -105,11 +105,25 @@ export function assign(ctx) {
      `order.length >= 8` alone, so a big room could only ever get the first
      kind. `scriptFor` only offers an ensemble that has a part for everybody,
      so nobody is ever cast as "Extra 7". */
-  const script = scriptFor(order.length, rng);
+  /* ── AND THE AUTHOR MAY PIN THE SHAPE ──
+     `actFormat` on the episode's timeline entry: 'one-cast' for the ensemble
+     and 'two-casts' for the scene that runs twice. Unset is the roll, which
+     is what every season played before this and still plays now.
+     It pins the SCRIPT as well as the split, because the two are the same
+     decision — asking for two casts and then drawing an ensemble would cast
+     twelve queens in a six-part play. And a forced split needs a room to
+     split: below six it falls back rather than staging a two-hander against
+     a two-hander. */
+  const want = ctx.cfg && ctx.cfg.actFormat;
+  const canSplit = order.length >= 6;
+  const script = scriptFor(order.length, rng,
+    want === 'one-cast' ? 'ensemble' : (want === 'two-casts' && canSplit) ? 'split' : null);
   const half = Math.ceil(order.length / 2);
-  const teams = script.ensemble || order.length < 8
-    ? [[...order]]
-    : [order.slice(0, half), order.slice(half)];
+  const teams = want === 'one-cast' ? [[...order]]
+    : (want === 'two-casts' && canSplit) ? [order.slice(0, half), order.slice(half)]
+      : script.ensemble || order.length < 8
+        ? [[...order]]
+        : [order.slice(0, half), order.slice(half)];
   const picks = {};
   const roles = {};
   const events = [];

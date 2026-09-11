@@ -169,8 +169,28 @@ export const ENSEMBLE_SCRIPTS = [
  * the whole pool, which is also when they read best — six queens, one script,
  * everybody with something to do.
  */
-export function scriptFor(roomSize, rng) {
+/**
+ * A script for tonight, and optionally for a SHAPE the author asked for.
+ *
+ * `want` is the timeline's `actFormat` pin, translated: 'ensemble' for one
+ * production with a part for everybody, 'split' for the six-hander that runs
+ * twice with the room cut in half. Null is the ordinary roll.
+ *
+ * The shape follows the script rather than the room, so pinning the shape has
+ * to pin the script — asking for two casts and then drawing an ensemble would
+ * cast twelve people in a six-part play and pad the rest. Where the ask cannot
+ * be met (no ensemble is big enough for the room) the roll stands, because a
+ * booking that silently produces a worse night is worse than one that does not
+ * take.
+ */
+export function scriptFor(roomSize, rng, want = null) {
   const ensembles = ENSEMBLE_SCRIPTS.filter(s => s.parts.length >= roomSize);
+  if (want === 'ensemble' && ensembles.length) {
+    return ensembles[Math.floor(rng() * ensembles.length)];
+  }
+  if (want === 'split' && SCRIPTS.length) {
+    return SCRIPTS[Math.floor(rng() * SCRIPTS.length)];
+  }
   // Half and half while both are available. Neither shape should become the
   // acting challenge; the point is that a season can have one of each.
   const pool = ensembles.length && rng() < 0.5 ? ensembles : SCRIPTS;

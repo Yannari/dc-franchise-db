@@ -75,7 +75,17 @@ export const MAXI_TYPES = [
     desc: 'The queens form girl groups, each writes her own verse of an original track, records it in a booth with a vocal coach, and then the whole group learns a choreography from a professional before filming the music video. Verses are written in the werk room that morning. A verse with no hook in it, a queen who cannot find the beat, or a group that lets one member swallow the camera is what loses. The tightest video wins, and its strongest member takes the win.',
   },
   {
-    id: 'improv', name: 'Improv Challenge', tentpole: false, stage: 'pre', format: 'pairs',
+    /* SOLO, AND IT ALWAYS WAS. This said `pairs` and the engine has never
+       once paired anybody: `assign` in js/dr/chal/acting.js gives every queen
+       her own premise, returns `teams: []` and sets `division: 'solo'`, on
+       thirty seasons out of thirty. Nothing read the field to decide the
+       shape -- acting.js branches on `maxi.id` -- so the only consumers were
+       the ones that DESCRIBE the night, and they described it wrongly: the
+       challenge screen prints `ch.format` straight onto the card, so a solo
+       week was captioned "pairs".
+       `desc` below still says the queens are paired and is prose, so it is
+       briefed rather than patched here. */
+    id: 'improv', name: 'Improv Challenge', tentpole: false, stage: 'pre', format: 'solo',
     blend: { acting: 0.5, comedy: 0.5 },
     runway: 'themed', assignment: 'draft', roles: 'parts', chalStyle: 'comedy', minCast: 4,
     desc: 'Queens are paired into scenes with a premise and a character each but no script at all, and play them out in front of the host and a comedy coach who feed in twists partway through. Each scene runs until the host calls it, and every pair gets the same number of twists thrown at them. Blocking a partner, reaching for the same joke twice, or freezing the moment the twist lands is what dies out there. The queen who keeps the scene alive and gets the biggest laugh wins.',

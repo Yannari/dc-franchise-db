@@ -333,6 +333,8 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       ...(pin.returnee ? { returnee: true, returneeName: pin.returneeName || null } : {}),
       ...(pin.ggFormat ? { ggFormat: pin.ggFormat } : {}),
       ...(pin.ggThemeId ? { ggThemeId: pin.ggThemeId } : {}),
+      // One cast or two on the scripted acting week. See js/dr/chal/acting.js.
+      ...(pin.actFormat ? { actFormat: pin.actFormat } : {}),
     });
   }
 
@@ -457,6 +459,24 @@ function weekCfg(sch, config, num, extra = {}) {
     // Which show the crossover partners come from. js/dr/chal/makeover.js
     // reads it; without this line the picker was decoration.
     makeoverShow: sch.makeoverShow || null,
+    /* ── THE SHAPE PINS, WHICH REACHED NOTHING ──
+       `weekCfg` copies the schedule entry FIELD BY FIELD, so a pin the
+       schedule carries and this function does not name is a control that
+       silently does nothing — which the comment on `makeoverShow` two lines
+       up says in as many words, about itself, having been that bug once.
+       It happened again and went unnoticed because the dropdown existed:
+       `ggFormat` and `ggThemeId` are written by run-ui.js, survive
+       buildSchedule, and stopped here. Measured over twenty seasons with the
+       girl group pinned — unset, `cast`, and `teams-3` all produced the same
+       12/8 split of two teams to three. Three settings, one outcome, and a
+       picker on screen the whole time.
+       Named here rather than in each caller's `extra` because both the split
+       premiere and the season proper build their weeks through this one
+       function, and a pin added to one list and not the other is the same
+       bug with a smaller blast radius. */
+    ggFormat: sch.ggFormat || null,
+    ggThemeId: sch.ggThemeId || null,
+    actFormat: sch.actFormat || null,
     judgeWeights: config.drJudgeWeights || {},
     immunity: !!config.drImmunity,
     // The arcs need to know how far through the season they are: what the

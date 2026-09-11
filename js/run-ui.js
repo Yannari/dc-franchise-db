@@ -3185,9 +3185,12 @@ export function _setDRPick(ep, key, value) {
          the same `in` check `miniId` two lines down has always used. */
       entry.guest = null;
     } else delete entry.guest;
-  } else if (key === 'maxiId' && value !== 'girl-group') {
-    delete entry.ggThemeId;
-    delete entry.ggFormat;
+  } else if (key === 'maxiId') {
+    /* A SUB-CHOICE BELONGS TO ITS CHALLENGE. Changing the maxi drops the
+       pins that only mean anything under the old one, or a season keeps a
+       girl-group sound booked on an acting week. */
+    if (value !== 'girl-group') { delete entry.ggThemeId; delete entry.ggFormat; }
+    if (value !== 'acting') delete entry.actFormat;
     if (value) entry.maxiId = value; else delete entry.maxiId;
   } else if (key === 'miniId' && value === 'none') {
     // Null is a real answer meaning "no mini this week"; undefined means
@@ -3285,6 +3288,22 @@ function _drPickers(ep) {
         : 'This night has aired. Change anything here and press the ↺ on this episode to run it again — the episodes before it are untouched, the ones after are replaced.'
     }">${noRebook ? 'AIRED · CANNOT BE RE-RUN' : 'AIRED · PRESS ↺ TO APPLY'}</div>`;
 
+  /* ── AND THE ACTING WEEK'S SHAPE ──
+     The show plays this two ways and the engine rolled between them with no
+     way to ask: one production with a part for everybody, or the six-hander
+     that runs twice with the room cut in half and the two casts judged
+     against each other. Same mechanism as the girl group's, one challenge
+     along. `improv` and `commercial` get no control because neither has a
+     second shape — improv is solo by construction and the commercial is
+     pairs. */
+  const actSubs = e.maxiId !== 'acting' ? '' :
+    sel('actFormat',
+      [['', '— casting: random —'],
+        ['one-cast', 'one cast · a part for everybody'],
+        ['two-casts', 'two casts · same script, judged head to head']],
+      e.actFormat || '',
+      'Whether the room stages one production or splits into two casts of the same script');
+
   const ggSubs = e.maxiId !== 'girl-group' ? '' :
     sel('ggFormat',
       [['', '— format: random —'],
@@ -3308,6 +3327,7 @@ function _drPickers(ep) {
     'Which maxi challenge runs this week. ★ marks a tentpole: one of the six '
     + 'the schedule books once a season by itself. Pinning one here moves it '
     + 'to this week instead.')
+    + actSubs
     + ggSubs
     + sel('miniId',
       [['', '— mini: random —'], ['none', 'No mini challenge'], ...minis.map(m => [m.id, m.name])],

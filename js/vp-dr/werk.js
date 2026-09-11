@@ -295,8 +295,8 @@ export const WERK_CSS = `
 }
 `;
 
-const ARROW_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5m0 0l-6 6m6-6l6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
-const ARROW_DOWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15m0 0l6-6m-6 6l-6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+export const ARROW_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5m0 0l-6 6m6-6l6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+export const ARROW_DOWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15m0 0l6-6m-6 6l-6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 
 /** A queen at her station: portrait in a bulb frame that lights as she lands. */
 function station(name, ep, { size = 62, dark = false } = {}) {

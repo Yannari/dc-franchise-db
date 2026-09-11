@@ -20,6 +20,8 @@
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
 import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
+// Borrowed for the untucked consequence row — same fact, same badge.
+import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
 import { _controls, _seedRail } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
 import { STAGE_BEATS } from '../dr/data/stage-beats.js';
@@ -785,12 +787,38 @@ export function rpBuildUntucked(row) {
     /* THE HEADER LIVES INSIDE THE STEP, so it arrives with the first card of
        its band rather than sitting there before anything is revealed
        announcing that a third act exists. */
+    /* ── WHAT IT DID, ON THE CARD ─────────────────────────────────────
+       Untucked moves bonds and popularity -- `applyUntuckedScene` applies
+       them and THROWS on an event that changes nothing, so every scene here
+       has a consequence by construction. The card read `effects.bond` only to
+       tint itself warm or cold and never showed the numbers, so the one room
+       in the show that exists to change relationships was the one room whose
+       screen did not say it had. Reported as "i see no badge yet on their
+       card so idk".
+       The same row the werk room draws, from the same shapes, because it is
+       the same kind of fact about the same night. */
+    const bits = [];
+    const bd = Number(sc.effects?.bond) || 0;
+    if (bd && players[1]) {
+      bits.push(`<span class="dr-arrow ${bd > 0 ? 'dr-up' : 'dr-down'}">${
+  bd > 0 ? ARROW_UP : ARROW_DOWN} ${esc(players[0])} &amp; ${esc(players[1])} ${
+  bd > 0 ? '+' : ''}${esc(bd)}</span>`);
+    }
+    for (const [who, dv] of Object.entries(sc.effects?.pop || {})) {
+      const nm = who === 'a' ? players[0] : players[1];
+      if (!nm || !dv) continue;
+      bits.push(`<span class="dr-arrow ${dv > 0 ? 'dr-up' : 'dr-down'}">${
+  dv > 0 ? ARROW_UP : ARROW_DOWN} ${esc(nm)} &middot; audience ${
+  dv > 0 ? '+' : ''}${esc(dv)}</span>`);
+    }
+    const row = bits.length ? `<div class="dr-bond-row">${bits.join('')}</div>` : '';
+
     return `<div class="dr-step" id="dr-step-untucked-${i}">${head}
       <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud ? ' dr-shake' : ''}${heat} dr-utk">
         <span class="dr-utk-who">${players.slice(0, 2)
     .map(n => _portrait(n, ep, { size: 46 })).join('')}</span>
         <div>${players.length ? `<b class="dr-disp">${esc(players.join(' & '))}</b>` : ''}
-          <p>${esc(sc.text)}</p></div>
+          <p>${esc(sc.text)}</p>${row}</div>
       </div></div>`;
   }).join('');
   /* ── THE LOUNGE ──
@@ -822,7 +850,9 @@ export function rpBuildUntucked(row) {
     });
   }
 
-  return `<style>${STAGE_CSS}${ROOM_RAIL_CSS}</style>${_shell(lounge + steps, ep, {
+  // WERK_CSS carries .dr-bond-row/.dr-arrow/.dr-up/.dr-down. Borrowed rather
+  // than restated, which is what the prep screen already does with it.
+  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}</style>${_shell(lounge + steps, ep, {
     phase: 'untucked', title: 'Untucked', subtitle: 'Illusions Lounge',
     /* THE TEMPERATURE GAUGE WAS A PICTURE OF NOTHING — a needle pinned at
        fifty per cent with the word "holding" under it, on every episode of

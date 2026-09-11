@@ -1416,6 +1416,42 @@ export function renderChallengeBeats({
   /* ── AN HOUR IN THE BOOTH, ONE CARD PER QUEEN ──
      Read back off the scene the Rumix module already emits, with the tier it
      already decided, for the same reason the shoot day below is. */
+  /* ── AND THE GIRL GROUP RECORDS TOO, WHICH NO SCREEN EVER SAID ──
+     js/dr/chal/girl-group.js has emitted `recording-booth` since it was
+     written, carrying every queen's verse score and whether the booth went
+     well, and NOTHING HAS EVER READ IT — the kind is listed in
+     js/vp-dr/screens.js as a section marker and that is all. So a girl group
+     night went werk room, choreographer, straight to the performance: the
+     queens wrote and recorded verses off-screen and the prep step had one
+     card on it.
+     The same bug the Rumix's `studio-day` had, in the module next door. It
+     reuses `booth-session` rather than growing a beat of its own: it is the
+     same hour with the same vocal producer, and the beat's prose is about a
+     verse on a page, which is what a girl group records.
+     TIERED OFF WHAT THE MODULE DECIDED, not recomputed — `booth[n]` is the
+     module's own verdict on whether she could sing it, and `verse[n]` is the
+     writing. Good at both is a take better than the page; bad at both is a
+     queen who never got it. */
+  const recScene = moduleScenes.find(s => s.kind === 'recording-booth');
+  if (recScene && !moduleScenes.some(s => s.kind === 'writing-booth')) {
+    const recBeat = beatById('booth-session');
+    const verses = recScene.data?.verse || {};
+    const booths = recScene.data?.booth || {};
+    for (const n of living) {
+      if (verses[n] == null) continue;
+      const sang = Number(booths[n]) > 0;
+      const wrote = Number(verses[n]) >= 6;
+      const tier = sang
+        ? (wrote ? 'got-it-on-tape' : 'clean-session')
+        : (wrote ? 'many-takes' : 'could-not-get-it');
+      emit(recBeat, tier, [n], {
+        railTag: { 'got-it-on-tape': 'nailed it', 'clean-session': 'clean',
+          'many-takes': 'long session', 'could-not-get-it': 'lost it' }[tier],
+        verse: verses[n], booth: booths[n],
+      });
+    }
+  }
+
   const boothScene = moduleScenes.find(s => s.kind === 'writing-booth');
   if (boothScene) {
     const boothBeat = beatById('booth-session');

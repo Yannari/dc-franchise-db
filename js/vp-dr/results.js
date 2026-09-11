@@ -50,6 +50,8 @@ export const RESULTS_CSS = `
    text. The verdict already has a colour in GRID_RESULTS; the row now wears
    it — rail, wash and border — and the shape of the week is legible before
    a word is read. */
+.dr-callteam{display:inline-block;margin-left:9px;font-family:'Space Mono',ui-monospace,monospace;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#C9A6BC;vertical-align:middle}
 .dr-callrow{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;
   padding:13px 16px 13px 20px}
 /* .dr-panel FIRST: the shell's accent class sets the same left border, and a
@@ -455,6 +457,21 @@ export function rpBuildResults(row) {
         <p>${esc(hold.text)}</p>
       </div></div>`;
 
+  /* ── WHICH TEAM SHE WAS ON ──
+     A team night's winning team used to be announced on the maxi screen, in
+     gold, above the performances — the result printed before the thing that
+     produced it. It belongs here, where the host announces everything else,
+     and it does not need a card of its own: the team goes beside every name,
+     so the WIN row reads as "the winning team is Candy Coated, and the winner
+     is Autumnatic" at the moment that row is revealed.
+     Her team is not a spoiler. WHICH team won is, and that is only legible
+     once the calls are on the screen. */
+  const a = row?.dr?.assignment || {};
+  const teamNames = a.teamNames || [];
+  const teamOf = (a.teams || []).length > 1
+    ? n => teamNames[(a.teams || []).findIndex(t => (t || []).includes(n))] || ''
+    : () => '';
+
   let holdDrawn = !hold;
   const steps = named.map(([result, name], i) => {
     const b = bend.get(name);
@@ -468,7 +485,8 @@ export function rpBuildResults(row) {
       <div class="dr-panel dr-a-score dr-callrow${
   result === 'SAFE' ? ' dr-quiet' : ''}" style="--v:${meta.color || '#7a3a5e'}">
         ${_portrait(name, ep, { size: 52, station: true })}
-        <div><h3 class="dr-disp">${esc(name)}</h3>
+        <div><h3 class="dr-disp">${esc(name)}${teamOf(name)
+    ? `<span class="dr-callteam">${esc(teamOf(name))}</span>` : ''}</h3>
           ${b ? `<span style="font-size:11px;color:#C9A6BC">panel ${b.panelRank} → ${b.finalRank}</span>` : ''}
           ${said ? `<p class="dr-said">${esc(said)}</p>` : ''}
         </div>

@@ -615,7 +615,6 @@ const CHAL_CSS = `
 .dr-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .dr-team{padding:12px 14px;border:1px solid rgba(255,255,255,.16)}
 .dr-team h4{margin:0 0 8px;font-size:12px;letter-spacing:.2em;color:#FFC83D}
-.dr-team.dr-won{border-color:rgba(255,200,61,.7);background:rgba(255,200,61,.07)}
 .dr-member{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}
 .dr-role{margin-left:auto;font-size:9px;letter-spacing:.12em;color:#C9A6BC;text-transform:uppercase}
 
@@ -741,9 +740,11 @@ function detailFor(id, perf) {
       const vals = [d.verse, onATeam ? d.teamMean : undefined];
       const labs = ['her verse', 'the team'];
       const keep = vals.map((v, i) => [v, labs[i]]).filter(([v]) => Number.isFinite(Number(v)));
+      /* NOT "winning team". Same spoiler as the board above, one card lower:
+         the first member of the better team to be revealed gave the result
+         away, on the screen whose whole job is the performances. */
       return `<div class="dr-sub">${perf.role ? `${esc(perf.role)}` : ''}${
-        onATeam ? `${perf.role ? ' · ' : ''}${
-          d.teamWon ? '<span class="dr-tag dr-t-good">winning team</span>' : 'team'}` : ''}</div>
+        onATeam ? `${perf.role ? ' · ' : ''}team` : ''}</div>
         ${marks(keep.map(x => x[0]), keep.map(x => x[1]))}`;
     }
 
@@ -2993,12 +2994,22 @@ export function rpBuildMaxi(row) {
      names the night's sound and each group falls out of it. Falls back to the
      number for any challenge that genuinely has unnamed teams. */
   const teamNames = a.teamNames || _sceneData(ep, 'group-parts')?.teamNames || [];
+  /* ── THE BOARD IS THE LINE-UP, NOT THE RESULT ──
+     This drew the winning team with a gold border and "— took it" beside its
+     name, at the TOP of the maxi screen, before a single performance had been
+     revealed. The reader was told who won the challenge and then invited to
+     click through thirteen cards finding out how.
+     The three-step rule in docs/drag-race.md is the same point from the other
+     end: what she did, then what the panel thought, then what the host
+     decided. A screen showing the performances cannot know the third one.
+     The winning team is announced on the call, where the host announces it —
+     every row there carries her team now, so "the winning team is Candy
+     Coated" reads off the WIN row at the moment it is revealed. */
   const teams = (a.teams || []).length > 1 ? `<div class="dr-teams">${
     a.teams.map((team, ti) => {
-      const won = team.some(n => perfs[n]?.detail?.teamWon);
       const label = teamNames[ti] || `Team ${ti + 1}`;
-      return `<div class="dr-team ${won ? 'dr-won' : ''}">
-        <h4 class="dr-disp">${esc(label)}${won ? ' — took it' : ''}</h4>
+      return `<div class="dr-team">
+        <h4 class="dr-disp">${esc(label)}</h4>
         ${team.map(n => `<div class="dr-member">${_portrait(n, ep, { size: 30 })}
           ${esc(n)}<span class="dr-role">${esc(perfs[n]?.role || '')}</span></div>`).join('')}
       </div>`;

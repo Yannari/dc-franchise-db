@@ -108,6 +108,57 @@ describe('continuing a saved season', () => {
   });
 });
 
+/* ── A REAL SEASON'S SHAPE ──
+   Reported from a played season, and richer than the synthetic one above: a
+   premiere that eliminates nobody, a booked RETURNEE on episode four, and a
+   `_drReroll` left on the save from re-running episode two five times. Every
+   one of those is a thing the rebuild has to carry.
+
+   On the old code this season's episode four came back as a Rusical — it was
+   booked as a commercial — and the returnee never walked back on. */
+describe('a season with a returnee, a quiet premiere and an old re-roll', () => {
+  const SCHED = [
+    { episode: 1, maxiId: 'talent-show', rotatingId: 'carson', rateAQueen: true, noElimination: true },
+    { episode: 2, maxiId: 'ball', rotatingId: 'law' },
+    { episode: 3, maxiId: 'acting', miniId: 'quick-drag', rotatingId: 'ross' },
+    { episode: 4, maxiId: 'commercial', miniId: 'puppets', rotatingId: 'ts', returnee: true, returneeName: null },
+    { episode: 5, maxiId: 'girl-group', miniId: 'quiz', rotatingId: 'jamal', bottomThree: true },
+    { episode: 6, maxiId: 'design', rotatingId: 'law' },
+  ];
+  const stage = () => {
+    fresh(1855);
+    gsRef._drReroll = { from: 2, nonce: 5 };
+    gsRef._drSchedule = SCHED.map(r => ({ ...r }));
+  };
+
+  it('keeps the booked challenge and the booked returnee', () => {
+    stage();
+    const straight = play(5);
+    stage();
+    play(4);
+    delete gsRef._drQueue;
+    const got = [...gsRef.episodeHistory.slice(0, 4).map(key), ...play(1)];
+    expect(got).toEqual(straight);
+    // the fourth night is the one that was booked, and somebody came back
+    expect(gsRef.episodeHistory[3].dr.challenge.id).toBe('commercial');
+    expect(gsRef.episodeHistory[3].dr.living.length)
+      .toBeGreaterThanOrEqual(gsRef.episodeHistory[2].dr.living.length);
+  });
+
+  it('gives the same answer however many times it is asked', () => {
+    // Their save had no queue and no checkpoints, so EVERY press rebuilds.
+    const seen = new Set();
+    for (let pass = 0; pass < 3; pass++) {
+      stage();
+      play(4);
+      delete gsRef._drQueue;
+      const r = simulateDragEpisode();
+      seen.add(key(gsRef.episodeHistory[3]) + ' || ' + key(r));
+    }
+    expect(seen.size, 'pressing Simulate twice gave two different seasons').toBe(1);
+  });
+});
+
 describe('and the two things that ARE meant to change it', () => {
   it('re-runs episode N differently, and leaves 1..N-1 alone', () => {
     const straight = play(6);

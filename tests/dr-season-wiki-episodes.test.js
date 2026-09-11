@@ -93,6 +93,20 @@ describe('the episode list', () => {
     });
   });
 
+  it('anchors every episode, and indexes them', () => {
+    /* A wiki heading is a link you can send somebody. The Contents box did
+       this at section level and stopped there, so there was no way to point
+       at one night. */
+    const { doc: d } = doc(1);
+    const h = html(1);
+    for (const e of d.dr.episodes) {
+      expect(h, `episode ${e.episode} has no anchor`).toContain(`id="wk-ep-${e.episode}"`);
+      expect(h, `episode ${e.episode} is not in the index`).toContain(`href="#wk-ep-${e.episode}"`);
+    }
+    // the index sits above the blocks, not after them
+    expect(h.indexOf('sr-epindex')).toBeLessThan(h.indexOf('sr-epblk'));
+  });
+
   it('crowns somebody on the finale', () => {
     /* The finale carries no song, no maxi winner and no exits, so every row
        the other nights use came back empty: the one episode people look the

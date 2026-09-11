@@ -49,6 +49,7 @@ export function _dragEpisodeBlocks(doc, esc, avatar) {
   const eps = (doc && doc.dr && doc.dr.episodes) || [];
   if (!eps.length) return '';
   const nameOf = p => (p && (p.name || p)) || '';
+  const epId = e => `wk-ep-${e.episode}`;
   const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 - n % 10 !== 10) * (n % 10) ] || 'th');
 
   /* Running tallies. The per-queen `storyline` is a season-long label, not
@@ -138,13 +139,32 @@ export function _dragEpisodeBlocks(doc, esc, avatar) {
         wins[w] === 1 ? 'win' : 'wins'}.`);
     }
 
-    return `<article class="sr-epblk">
-      <h3>Episode ${esc(e.episode)}${e.challenge ? `: &ldquo;${esc(e.challenge.name)}&rdquo;` : ''}</h3>
+    /* ── ANCHORED ──
+       Every heading on a real wiki is a link you can send somebody. The
+       section-level Contents box already does this for Twists / Queens /
+       Episodes; inside Episodes it stopped, so there was no way to point at
+       one night. Each block gets an id, the index above links into them, and
+       the heading links to itself the way a wiki's section marker does. */
+    return `<article class="sr-epblk" id="${epId(e)}">
+      <h3>Episode ${esc(e.episode)}${e.challenge ? `: &ldquo;${esc(e.challenge.name)}&rdquo;` : ''}<a
+        class="sr-epanchor" href="#${epId(e)}" aria-label="Link to this episode">#</a></h3>
       <dl class="sr-epfacts">${bits.join('')}</dl>
       ${flavour.length ? `<p class="sr-epnote">${flavour.join(' ')}</p>` : ''}
     </article>`;
   }).join('');
-  return `<div class="sr-eps">${list}</div>`;
+
+  /* The index the real article opens its Episodes section with: series
+     number, episode number, title. Ours has no airdates -- a simulated
+     season was never broadcast -- so that column is left out rather than
+     filled with something invented. */
+  const index = `<div class="sr-scroll"><table class="sr-epindex">
+    <thead><tr><th>Series #</th><th>Episode #</th><th>Title</th></tr></thead>
+    <tbody>${eps.map(e => `<tr><td>${esc((doc.seasonNumber || 1) * 100 + Number(e.episode))}</td>`
+      + `<td>${esc(e.episode)}</td>`
+      + `<td><a href="#${epId(e)}">${e.challenge ? esc(e.challenge.name)
+        : `Episode ${esc(e.episode)}`}</a></td></tr>`).join('')}</tbody></table></div>`;
+
+  return `<div class="sr-eps">${index}${list}</div>`;
 }
 
 export function buildWikiTab(s, { face = null } = {}) {

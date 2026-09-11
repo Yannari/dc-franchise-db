@@ -73,6 +73,23 @@
       margin-right:6px; object-fit:cover; }
     /* The part a fandom page cannot carry: what the panel thought before the
        host spoke, and which storylines the edit was running. */
+    .sr-epindex { border-collapse:collapse; width:100%; margin:0 0 18px; font-size:13px; }
+    .sr-epindex th, .sr-epindex td { border:1px solid var(--line,rgba(0,0,0,.12));
+      padding:5px 10px; text-align:left; }
+    .sr-epindex th { font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+      color:var(--sc); font-weight:700; }
+    .sr-epindex th:first-child, .sr-epindex th:nth-child(2),
+    .sr-epindex td:first-child, .sr-epindex td:nth-child(2) { width:1%; white-space:nowrap;
+      text-align:center; }
+    .sr-epindex td:first-child, .sr-epindex td:nth-child(2) { color:var(--muted); }
+    .sr-epindex a { color:inherit; text-decoration:none; border-bottom:1px solid currentColor; }
+    /* The heading's own link, the way a wiki marks a section you can point
+       at: invisible until the block is hovered, so nine of them do not sit
+       in the margin shouting. */
+    .sr-epanchor { margin-left:8px; font-size:12px; color:var(--sc); opacity:0;
+      text-decoration:none; transition:opacity .12s; }
+    .sr-epblk:hover .sr-epanchor, .sr-epanchor:focus { opacity:.75; }
+    .sr-epblk:target { background:rgba(255,92,122,.06); }
     .sr-epnote { margin:8px 0 0; font-size:12.5px; line-height:1.6;
       color:var(--muted); font-style:italic; }
     @media (max-width:640px) {

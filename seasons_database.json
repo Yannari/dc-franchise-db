@@ -745,10 +745,10 @@
       "title": "Drag Race 1",
       "subtitle": "",
       "castSize": 14,
-      "episodeCount": 1,
+      "episodeCount": 4,
       "winner": {
-        "name": "Velvet Vixen",
-        "playerSlug": "velvet-vixen",
+        "name": "Cheryl Hole",
+        "playerSlug": "cheryl-hole",
         "vote": "",
         "runnerUp": "Taystee",
         "keyStats": "",
@@ -762,14 +762,14 @@
         },
         "bestStrategic": null,
         "mostChallengeWins": {
-          "name": "Minnie Skurr",
-          "playerSlug": "minnie-skurr",
+          "name": "Quin",
+          "playerSlug": "quin",
           "detail": "1 maxi challenge"
         }
       },
       "theme": "",
       "status": "Complete",
-      "castPhotoPath": "assets/cast/dr-1-cast.webp",
+      "castPhotoPath": "assets/cast/dr-1-cast.png",
       "emoji": "",
       "airYear": 2027,
       "airSlot": "winter"

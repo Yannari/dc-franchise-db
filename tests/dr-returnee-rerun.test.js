@@ -74,15 +74,29 @@ describe('a return re-derived under a re-run', () => {
   });
 
   it('leaves every aired night byte-identical, the return among them', () => {
+    /* FROZEN THROUGH SIX, RE-RUN FROM SEVEN, and the episode matters.
+       This froze nine and re-ran ten, which is at or past the end of a
+       twelve-queen season: three queens left, almost no outcomes available,
+       and the same night legitimately comes back. Measured across eight
+       seeds and three presses each: a re-run at episode four or six returns
+       a different night 24 times out of 24, at episode eight 23 of 24, and
+       at episode ten only 3 of 6 -- not because the button broke but because
+       there is nothing left for it to decide.
+       The control arm below needs a point where divergence is actually
+       available, or it fails for a reason that is about the calendar rather
+       than the code. The returnee is on episode four, so the frozen prefix
+       still covers the thing this file is about. */
+    const FROZEN = 6;
     const first = play([]);
-    const frozen = first.schedule.filter(r => r.episode <= 9);
-    const again = play(frozen, { from: 10, nonce: 1 });
+    const frozen = first.schedule.filter(r => r.episode <= FROZEN);
+    const again = play(frozen, { from: FROZEN + 1, nonce: 1 });
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < FROZEN; i++) {
       expect(sig(again.rows[i]), `episode ${i + 1}`).toBe(sig(first.rows[i]));
     }
     // And the re-run did re-run something, or the check above proves nothing.
-    expect(sig(again.rows[9])).not.toBe(sig(first.rows[9]));
+    expect(sig(again.rows[FROZEN]), 'the re-run returned the same night')
+      .not.toBe(sig(first.rows[FROZEN]));
   });
 
   it('holds across repeated presses, not just the first', () => {

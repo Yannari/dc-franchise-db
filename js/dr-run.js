@@ -40,6 +40,10 @@ import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, 
 import { DRAG_FORMAT } from './shows.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
+// For rebuilding a resumable room out of a season played before one was
+// kept -- see `_stateFromHistory`.
+import { initDragState } from './dr/state.js';
+import { rngFor } from './dr/rng.js';
 import { dragRelationsFrom } from './dr/family.js';
 import { updateEditLayer } from './edit-layer.js';
 
@@ -524,7 +528,7 @@ function _config() {
   };
 }
 
-function _playWholeSeason() {
+function _playWholeSeason(resume = null) {
   const cast = (players || []).filter(p => p && p.name);
   if (cast.length < 4) return false;
 
@@ -540,7 +544,33 @@ function _playWholeSeason() {
      carryover). On a rebuild, restore that snapshot so the bond reader returns
      the same values it did during the original first play. After the rebuild,
      restore the checkpoint's live state. */
-  const isRebuild = (gs.episodeHistory || []).length > 0;
+  /* A RESUME IS NOT A REBUILD. The bond reset below exists so a REPLAY of
+     episodes one to N reads the bonds episode one read; a resumed season is
+     not replaying anything, and handing it the season's opening bonds would
+     throw away every relationship the aired weeks built.
+     It gets the ledgers back to the END of the last aired week instead —
+     `gs.bonds` carries the whole booked season's writes, because the season
+     was booked in one call, so resuming against it as-is would let week five
+     read relationships its own future wrote. */
+  const isRebuild = !resume && (gs.episodeHistory || []).length > 0;
+  const resumeEpisode = resume ? gs.episode : null;
+  if (resume && resume.state && resume.state.live) {
+    const live = resume.state.live;
+    gs.bonds = JSON.parse(JSON.stringify(live.bonds || {}));
+    gs.bondLean = JSON.parse(JSON.stringify(live.bondLean || {}));
+    gs.perceivedBonds = JSON.parse(JSON.stringify(live.perceivedBonds || {}));
+    gs.popularity = JSON.parse(JSON.stringify(live.popularity || {}));
+    /* AND THE WEEK NUMBER, WHICH IS BOND STATE. js/bonds.js reads `gs.episode`
+       in four places -- the drift term is `Math.max(bb weeks, gs.episode)` and
+       a perceived bond is stamped `createdEp: gs.episode + 1`. The original
+       booking ran the whole season with it at ZERO, because nothing inside
+       playDragSeason advances it; only airing a row does. A resume pressed on
+       episode four ran with it at three and computed every bond as though
+       three weeks had worn on it, which is the same trap the rebuild path
+       documents above -- and it was enough on its own to make the resumed week
+       a different week. */
+    gs.episode = 0;
+  }
   const savedBonds = isRebuild && gs.bonds
     ? JSON.parse(JSON.stringify(gs.bonds)) : null;
   const savedPop = isRebuild && gs.popularity
@@ -577,6 +607,15 @@ function _playWholeSeason() {
     cast,
     seed: _seed(),
     config: _config(),
+    // Where the season actually stands, when the save has it — see
+    // `snapshotDragState`. Given one, the aired weeks are not replayed at all.
+    resume,
+    /* The live relationship layer, copied at the end of every week so a resume
+       can put it back. See `ledgersNow` in js/dr/season.js. */
+    ledgersNow: () => JSON.parse(JSON.stringify({
+      bonds: gs.bonds || {}, bondLean: gs.bondLean || {},
+      perceivedBonds: gs.perceivedBonds || {}, popularity: gs.popularity || {},
+    })),
     /* THE AUTHORED HOUSES. The Relationships tab has always had two axes --
        how they feel, and how they know each other -- and the feeling half
        reached a drag season through initGameState's bond seeding from the
@@ -603,8 +642,13 @@ function _playWholeSeason() {
     // The live week comes back with the rest of the checkpoint's state.
     if (savedEpisode != null) gs.episode = savedEpisode;
   }
+  // And a resumed season gets its own week number back the same way.
+  if (resume && resumeEpisode != null) gs.episode = resumeEpisode;
 
+  /* On a resume `out.rows` already starts at the episode being picked up, so
+     there is nothing to slice off the front. */
   gs._drQueue = out.rows;
+  gs._drResumed = !!resume;
   // What every night was actually booked with, so a later re-book can freeze
   // the weeks that have already gone out. See `_frozenPins`.
   gs._drSchedule = out.schedule || [];
@@ -629,64 +673,13 @@ function _playWholeSeason() {
   return true;
 }
 
-/** One episode onto the history. Returns the row, or null when the season is over. */
-export function simulateDragEpisode() {
-  if (!gs) return null;
-
-  if (!Array.isArray(gs._drQueue)) {
-    /* No queue: a reload, an older save, or a pin changed on the timeline and
-       `invalidateDragQueue` threw the unaired weeks away. All three rebuild the
-       season from the seed and drop the episodes that already aired, rather
-       than replaying from episode one on top of them — and the aired weeks come
-       back identical because `_config` freezes them (see `_frozenPins`). */
-    const aired = (gs.episodeHistory || []).length;
-    /* ── AND THE PAST IS CHECKED, NOT ASSUMED ──
-       "The aired weeks come back identical" is a claim the sentence above has
-       made since it was written, and it has been wrong three times: once when
-       the schedule was only half frozen, once when a re-run's nonce was not
-       carried, and once when the bond snapshot was empty. Every time, the
-       rebuild replayed a DIFFERENT season, the queue was sliced by the number
-       of episodes that had aired, and the next press handed the viewer a night
-       from a season where somebody else went home. The queen eliminated in
-       episode four walked back into episode five.
-       Nothing checked. The failure is silent by construction: the rebuilt past
-       is thrown away by the slice, so the only evidence is the future
-       contradicting a history nobody re-reads.
-       So it is compared now. If the replay does not reproduce what aired, the
-       rebuild is refused outright and the save is left exactly as it was —
-       `gs.episodeHistory` is never touched by any of this, so a refusal costs
-       the viewer nothing but the press. A season that cannot be continued
-       faithfully says so, which is the one thing it has never done. */
-    const before = _airedFingerprint();
-    if (!_playWholeSeason()) return null;
-    if (aired > 0 && Array.isArray(gs._drQueue)) {
-      const replayed = gs._drQueue.slice(0, aired).map(_rowFingerprint);
-      const drift = before.findIndex((f, i) => f !== replayed[i]);
-      if (drift !== -1) {
-        gs._drReplayDrift = {
-          episode: drift + 1, was: before[drift], now: replayed[drift] || null,
-        };
-        delete gs._drQueue;
-        if (typeof console !== 'undefined') {
-          console.warn('[drag-race] refusing to continue: rebuilding this season '
-            + `did not reproduce episode ${drift + 1}.`
-            + `\n  aired:   ${before[drift]}`
-            + `\n  replay:  ${replayed[drift] || '(nothing)'}`
-            + '\n  Your episodes are untouched. See gs._drReplayDrift.');
-        }
-        return null;
-      }
-      delete gs._drReplayDrift;
-      gs._drQueue = gs._drQueue.slice(aired);
-    }
-  }
-
-  const row = (gs._drQueue || []).shift();
-  if (!row) {
-    gs.phase = 'complete';
-    return null;
-  }
-
+/**
+ * Put a booked row on the record, and everything that follows from that.
+ *
+ * Split out of `simulateDragEpisode` so the resume path and the rebuild path
+ * air an episode the same way rather than each growing their own copy of it.
+ */
+function _airDragRow(row) {
   (gs.episodeHistory ||= []).push(row);
   if (gs.dr) (gs.dr.episodes ||= []).push(row);
   // Set BEFORE the edit layer runs: it bills screen time against the active
@@ -750,7 +743,171 @@ export function simulateDragEpisode() {
   } else {
     gs.phase = gs._drQueue.length ? 'stage' : 'complete';
   }
-  return row;
+  return row;}
+
+/**
+ * A resumable state for a season that was played before one was kept.
+ *
+ * ── WHY THIS IS NOT CHEATING ──
+ *
+ * A season with no carried state has exactly two options: replay its past to
+ * get at the next week, or rebuild the room from what the past RECORDED. The
+ * replay is the thing that has rewritten three people's seasons, and for a
+ * save whose original booking is gone it cannot be right by luck either — the
+ * dice that produced those weeks are not recoverable.
+ *
+ * So it is rebuilt from the record, which is the one thing that is certainly
+ * true: who is still standing, who went home and when, what each queen was
+ * called every week, and what the lip syncs did. Everything the chart is drawn
+ * from survives exactly.
+ *
+ * ── AND WHAT IS HONESTLY LOST ──
+ *
+ * Two hidden accumulators have no home in the record and start again from
+ * nothing: `memory`, which is what each judge privately thinks of each queen,
+ * and `tv`, the screen-time ledger star power drifts on. Neither is drawn
+ * anywhere, both rebuild within a couple of episodes, and the alternative is
+ * inventing numbers and calling them history.
+ *
+ * `starBase` is not lost: it is a pure roll off the season's own seed, so
+ * re-initialising reproduces the same cast of darlings exactly.
+ */
+function _stateFromHistory() {
+  const cast = (players || []).filter(p => p && p.name);
+  const rows = (gs.episodeHistory || []).filter(r => r && r.dr);
+  if (!cast.length || !rows.length) return null;
+  const last = rows[rows.length - 1];
+  if (!Array.isArray(last.dr.living) || !last.dr.living.length) return null;
+
+  const state = initDragState({ cast, seed: _seed(), rng: rngFor(_seed()) });
+  state.living = [...last.dr.living];
+  // Everyone the record does not have standing at the end of the last week.
+  const standing = new Set(state.living);
+  state.out = cast.map(p => p.name).filter(n => !standing.has(n));
+
+  for (const row of rows) {
+    for (const p of row.dr.placements || []) {
+      if (!p || !p.name || !state.record[p.name]) continue;
+      state.record[p.name].push(p.result);
+    }
+    const ls = row.dr.lipsync;
+    if (ls && Array.isArray(ls.queens)) {
+      for (const n of ls.queens) {
+        if (!state.lipsyncRecord[n]) continue;
+        state.lipsyncRecord[n].push(ls.winner === n ? 'W' : 'L');
+      }
+    }
+    const win = (row.dr.placements || []).find(p => p && p.result === 'WIN');
+    if (win) state.lastWinner = win.name;
+    if (row.dr.returned && row.dr.returned.name) {
+      state.returns = [...(state.returns || []),
+        { ...row.dr.returned, episode: Number(row.num) }];
+    }
+  }
+  // The live ledger is the real one and has been all along.
+  for (const n of Object.keys(state.popularity)) {
+    state.popularity[n] = Number((gs.popularity || {})[n]) || 0;
+  }
+  return state;
+}
+
+/** One episode onto the history. Returns the row, or null when the season is over. */
+export function simulateDragEpisode() {
+  if (!gs) return null;
+
+  if (!Array.isArray(gs._drQueue)) {
+    /* No queue: a reload, an older save, or a pin changed on the timeline and
+       `invalidateDragQueue` threw the unaired weeks away. All three rebuild the
+       season from the seed and drop the episodes that already aired, rather
+       than replaying from episode one on top of them — and the aired weeks come
+       back identical because `_config` freezes them (see `_frozenPins`). */
+    const aired = (gs.episodeHistory || []).length;
+    /* ── RESUME, RATHER THAN RE-DERIVE ──
+       The season's state as the last aired week left it, carried on that week's
+       own row. With it there is nothing to replay: week five draws from
+       `streamFor(seed, salt(5))` whatever happened before it, so the only thing
+       the replay was ever for is this object.
+
+       READ OFF THE RECORD, not a field beside it. A second copy of where the
+       season stands is a second thing to keep in step, and the row rolls back
+       with the history for free — press the re-run button on episode four and
+       the last kept row is episode three, carrying exactly the state episode
+       four should start from.
+
+       IT IS RIGHT FOR THE OTHER TWO CALLERS TOO, which is why neither is
+       excluded. A pin changed on the timeline re-derives the schedule and the
+       unaired weeks are booked again around the carried state. A re-run bumps
+       the nonce, so week N draws different dice from the same room — a
+       different episode N with one to N-1 untouched, which is the whole
+       promise of the button, and now true because the past is not re-run at
+       all rather than because a replay happened to reproduce it. */
+    const lastAired = aired > 0 ? (gs.episodeHistory || [])[aired - 1] : null;
+    const carried = lastAired && lastAired.dr && lastAired.dr.state;
+    /* AND A SEASON PLAYED BEFORE ANY OF THIS gets one built from its own
+       record rather than being made to replay a past it cannot reproduce.
+       See `_stateFromHistory`. */
+    const resume = aired > 0 && lastAired && Number(lastAired.num) === aired
+      ? {
+        state: carried || _stateFromHistory(),
+        num: aired + 1,
+        // The aired rows in full, which the snapshot deliberately omits.
+        episodes: (gs.episodeHistory || []).filter(x => x && x.dr),
+      }
+      : null;
+    if (resume && !resume.state) resume.num = 0;
+    if (resume && resume.num) {
+      if (!_playWholeSeason(resume)) return null;
+      const row = (gs._drQueue || []).shift();
+      if (!row) { gs.phase = 'complete'; return null; }
+      return _airDragRow(row);
+    }
+    /* ── AND THE PAST IS CHECKED, NOT ASSUMED ──
+       "The aired weeks come back identical" is a claim the sentence above has
+       made since it was written, and it has been wrong three times: once when
+       the schedule was only half frozen, once when a re-run's nonce was not
+       carried, and once when the bond snapshot was empty. Every time, the
+       rebuild replayed a DIFFERENT season, the queue was sliced by the number
+       of episodes that had aired, and the next press handed the viewer a night
+       from a season where somebody else went home. The queen eliminated in
+       episode four walked back into episode five.
+       Nothing checked. The failure is silent by construction: the rebuilt past
+       is thrown away by the slice, so the only evidence is the future
+       contradicting a history nobody re-reads.
+       So it is compared now. If the replay does not reproduce what aired, the
+       rebuild is refused outright and the save is left exactly as it was —
+       `gs.episodeHistory` is never touched by any of this, so a refusal costs
+       the viewer nothing but the press. A season that cannot be continued
+       faithfully says so, which is the one thing it has never done. */
+    const before = _airedFingerprint();
+    if (!_playWholeSeason()) return null;
+    if (aired > 0 && Array.isArray(gs._drQueue)) {
+      const replayed = gs._drQueue.slice(0, aired).map(_rowFingerprint);
+      const drift = before.findIndex((f, i) => f !== replayed[i]);
+      if (drift !== -1) {
+        gs._drReplayDrift = {
+          episode: drift + 1, was: before[drift], now: replayed[drift] || null,
+        };
+        delete gs._drQueue;
+        if (typeof console !== 'undefined') {
+          console.warn('[drag-race] refusing to continue: rebuilding this season '
+            + `did not reproduce episode ${drift + 1}.`
+            + `\n  aired:   ${before[drift]}`
+            + `\n  replay:  ${replayed[drift] || '(nothing)'}`
+            + '\n  Your episodes are untouched. See gs._drReplayDrift.');
+        }
+        return null;
+      }
+      delete gs._drReplayDrift;
+      gs._drQueue = gs._drQueue.slice(aired);
+    }
+  }
+
+  const row = (gs._drQueue || []).shift();
+  if (!row) {
+    gs.phase = 'complete';
+    return null;
+  }
+  return _airDragRow(row);
 }
 
 export function dragEpisodesLeft() {

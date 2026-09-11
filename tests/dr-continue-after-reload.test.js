@@ -179,12 +179,22 @@ describe('a season whose past the replay cannot reproduce', () => {
      shape the real failures take: the history says one thing and the replay
      says another. Whatever the cause, overwriting somebody's season is never
      the right answer. */
+  /* STRIPPED OF ITS CARRIED STATE FIRST, which is what a season played before
+     the resume existed looks like — the reported save is exactly that. Such a
+     season has no choice but the replay, and the replay is the thing that
+     needs watching. A season that CAN resume never re-derives its past and so
+     can never contradict it. */
   const derail = () => {
+    for (const row of gsRef.episodeHistory) delete row.dr.state;
     const row = gsRef.episodeHistory[2];
     row.dr.living = row.dr.living.filter((_, i) => i !== 0);
   };
 
-  it('refuses, and does not touch a single aired episode', () => {
+  it('never rewrites an aired episode, whatever it has to do', () => {
+    /* The guarantee, stated as itself and independent of which path is taken.
+       A season stripped of its carried state and given a record the engine
+       cannot reproduce either RESUMES from what the record says or refuses —
+       both are fine. What is never fine is the aired episodes changing. */
     fresh(1855);
     play(4);
     derail();
@@ -194,12 +204,37 @@ describe('a season whose past the replay cannot reproduce', () => {
     delete gsRef._drQueue;
 
     const r = simulateDragEpisode();
-    expect(r, 'it played an episode from a season that is not this one').toBeNull();
-    expect(gsRef.episodeHistory.map(key), 'the aired episodes were rewritten')
+    expect(gsRef.episodeHistory.slice(0, 4).map(key), 'an aired episode changed')
       .toEqual(kept);
-    expect(gsRef.activePlayers).toEqual(living);
-    expect(gsRef.eliminated).toEqual(gone);
-    // And it says which night it could not reproduce, rather than failing mute.
+    /* `activePlayers` and `eliminated` are NOT checked against their old
+       values: if an episode does air, somebody goes home and both are supposed
+       to move. What must hold is that they still describe the record. */
+    if (r) {
+      expect(r.num).toBe(5);
+      expect(gsRef.activePlayers).toEqual(r.dr.living);
+    } else {
+      expect(gsRef.activePlayers).toEqual(living);
+      expect(gsRef.eliminated).toEqual(gone);
+    }
+  });
+
+  it('refuses outright when it cannot even rebuild the room', () => {
+    /* The last-resort path: no carried state AND a record too damaged to
+       reconstruct from, so the only option left is the replay — and the replay
+       is checked against what aired. */
+    fresh(1855);
+    play(4);
+    for (const row of gsRef.episodeHistory) delete row.dr.state;
+    // A last row with no room in it: nothing to carry forward.
+    gsRef.episodeHistory[3].dr.living = [];
+    gsRef.episodeHistory[2].dr.living = gsRef.episodeHistory[2].dr.living.slice(1);
+    // The baseline is the record AS IT NOW STANDS — the damage above is the
+    // premise, not the thing being detected.
+    const kept = gsRef.episodeHistory.map(key);
+    delete gsRef._drQueue;
+
+    expect(simulateDragEpisode()).toBeNull();
+    expect(gsRef.episodeHistory.map(key)).toEqual(kept);
     expect(gsRef._drReplayDrift?.episode).toBe(3);
   });
 

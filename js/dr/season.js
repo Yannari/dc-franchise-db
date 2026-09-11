@@ -441,6 +441,51 @@ function returnScenes(returned, { living, rng = Math.random }) {
   return scenes;
 }
 
+/**
+ * The season's state, as of the end of a week, in a form a save can hold.
+ *
+ * ── WHY THIS EXISTS ──
+ *
+ * Continuing a saved season used to re-simulate the ENTIRE past to get at the
+ * next week, then throw the replay away and keep what came after. That is
+ * correct only while the replay reproduces the season exactly, and it has
+ * failed to three times — a half-frozen schedule, an uncarried re-run nonce,
+ * an empty bond snapshot. Each time the viewer was handed a night from a
+ * different season and their eliminated queen walked back on.
+ *
+ * A week's dice come from `streamFor(seed, wSalt(6000, epNum))` — the seed and
+ * the episode number and nothing else. So week five's numbers are week five's
+ * numbers whether or not weeks one to four were just re-run. The only thing
+ * replaying the past was ever FOR is this object. Carry it and the replay is
+ * not needed at all.
+ *
+ * Everything here is plain data. `memory` and `tv` are the two accumulators
+ * with no other home — lose them and the panel forgets what it thought and the
+ * edit forgets who has had screen time.
+ */
+export function snapshotDragState(state) {
+  if (!state) return null;
+  /* THE WHOLE THING, not a list of fields. The first version enumerated what
+     it thought mattered -- living, out, record, star, memory and a dozen more
+     -- and a resumed week still came out different from the week it was
+     replacing, because the state grows during a run: modules hang their own
+     keys on it (families, returns, split halves, the arcs' own bookkeeping)
+     and any one of them left behind is a resumed season quietly starting from
+     a slightly different room.
+     It is plain data by construction -- `initDragState` returns an object
+     literal of primitives, arrays and maps, and nothing on the run path puts a
+     function or a cycle on it -- so a deep clone is both correct and the only
+     version that cannot fall behind the engine. */
+  /* EXCEPT `episodes`, WHICH IS THE ROWS THEMSELVES. Every week pushes its own
+     row onto it, and every row now carries one of these — so cloning it put a
+     state inside a row inside a state inside a row, and a thirteen-week season
+     stringified itself into `RangeError: Invalid string length`.
+     It is not lost: the caller has those rows already, in full, on the record.
+     `resume.episodes` hands them back. */
+  const { episodes, ...rest } = state;
+  return { v: 1, ...JSON.parse(JSON.stringify(rest)) };
+}
+
 function beat(state, row, cast) {
   state.storylines = recordBeat(state.storylines || [], {
     episode: row.num, row, state, cast,
@@ -1056,9 +1101,37 @@ export function playDragSeason({
      still gets derived families; passing them is how a user's own house
      survives into the room. */
   relations = [],
+  /* ── THE CALLER'S OWN LEDGERS, AS OF NOW ──
+     A played season writes bonds and popularity into `gs` through the
+     callbacks as it goes, and it books every week in ONE call — so by the time
+     anybody resumes, `gs.bonds` carries all thirteen weeks of writes. A week
+     five resumed against that reads relationships from its own future.
+     So the week's snapshot takes a copy of the caller's ledgers as that week
+     ended, and the caller restores them before resuming. Absent on a headless
+     season, which has no ledgers to keep. */
+  ledgersNow = null,
+  /* ── PICK THE SEASON UP WHERE IT WAS LEFT ──
+     `{ state, num }` from `snapshotDragState`: the room as some earlier week
+     left it, and the episode to run next. Given one, the weeks before it are
+     NOT replayed — they are already on the record, and re-deriving them is
+     what has rewritten three people's seasons.
+     Every week draws from `streamFor(seed, wSalt(6000, epNum))`, so week five
+     gets week five's dice whether or not one to four were just re-run. The
+     schedule is still computed in full, because it is a pure function of the
+     seed and the booking, and then the weeks already aired are skipped. */
+  resume = null,
 }) {
   const rng = rngFor(seed);
-  const state = initDragState({ cast, seed, rng });
+  const resumeAt = resume && Number(resume.num) > 1 ? Number(resume.num) : 0;
+  const state = resumeAt
+    ? { ...initDragState({ cast, seed, rng }), ...JSON.parse(JSON.stringify(resume.state || {})) }
+    : initDragState({ cast, seed, rng });
+  /* The weeks that have already aired, as the caller still holds them. The
+     snapshot leaves these out on purpose — see `snapshotDragState` — and the
+     engine needs them: `week.js` asks whether this is the premiere by their
+     count, and the reunion reads them outright. Without this a resumed week
+     five would be a premiere. */
+  if (resumeAt) state.episodes = [...(resume.episodes || [])];
   const players = Object.fromEntries(cast.map(p => [p.name, p]));
 
   // The ledger, written into state so a headless season and a played one carry
@@ -1087,12 +1160,19 @@ export function playDragSeason({
      The bonds are applied through the caller's own `addBond`, so a headless
      season with no relationship layer gets the families and none of the
      points, which is correct — there is nowhere to put them. */
-  const fam = assignDragFamilies({ cast, rng, relations });
-  state.dragFamilies = fam.families;
-  if (addBond) for (const [a, b, d] of fam.bonds) addBond(a, b, d);
+  /* DRAWN ONCE. On a resume the houses are already in the carried state, and
+     re-casting them would both redraw them and spend numbers out of the
+     season's rng that the schedule below is expecting — the bonds would be
+     paid a second time into a relationship layer that already has them. */
+  const fam = resumeAt ? null : assignDragFamilies({ cast, rng, relations });
+  if (fam) {
+    state.dragFamilies = fam.families;
+    if (addBond) for (const [a, b, d] of fam.bonds) addBond(a, b, d);
+  }
 
   // Cast the season's arcs from the room as it stands before anybody performs.
-  state.storylines = assignStorylines({ cast, state, bond, rng });
+  // A resumed season is past that: its arcs have been running for weeks.
+  if (!resumeAt) state.storylines = assignStorylines({ cast, state, bond, rng });
 
   const finaleType = config.drFinale || 'top4';
   const premiere = config.drPremiere || 'standard';
@@ -1129,7 +1209,7 @@ export function playDragSeason({
   // A SPLIT PREMIERE runs the cast in two halves with nobody going home, so
   // the season proper starts at episode three with everybody still in.
   let rejoinDue = false;
-  if (premiere === 'split' && cast.length >= 10) {
+  if (!resumeAt && premiere === 'split' && cast.length >= 10) {
     const order = [...state.castOrder].sort(() => rng() - 0.5);
     const half = Math.ceil(order.length / 2);
     const wholeCast = [...state.living];
@@ -1264,6 +1344,14 @@ export function playDragSeason({
     episodes: 1, castSize: cast.length, pinned: [], rng, premiere: 'standard',
     seed: (seed >>> 0) + 700003 + guard, cast,
   })[0];
+  /* THE WEEKS ALREADY AIRED ARE NOT RUN AGAIN. `schedule` is a pure function
+     of the seed and the booking, so it is the same list either way — the
+     resumed season simply starts partway down it, with `num` already at the
+     episode it is picking up. */
+  if (resumeAt) {
+    num = resumeAt;
+    schedule.splice(0, Math.max(0, resumeAt - 1));
+  }
   for (const sch of [...schedule, ...Array.from({ length: 8 }, () => null)]) {
     if (state.living.length <= finaleSize) break;
     if (!sch && ++guard > 8) break;
@@ -1404,6 +1492,16 @@ export function playDragSeason({
       }
       rejoinDue = false;
     }
+    /* WHERE THE SEASON STOOD WHEN THIS WEEK ENDED. Carried on the row so
+       airing it hands the save a state to resume from — see
+       `snapshotDragState`. js/dr-run.js moves it off the row as the episode
+       airs, so exactly one of these is ever persisted. */
+    weekRow.dr.state = {
+      ...snapshotDragState(state),
+      // what the caller's own bond/popularity layer looked like as this week
+      // ended, so a resume starts from the room rather than from the finale
+      live: ledgersNow ? ledgersNow() : null,
+    };
     rows.push(weekRow);
     // No debt is taken on: the loop simply keeps going until the room is
     // finale-sized, so a free week is an extra week.

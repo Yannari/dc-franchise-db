@@ -119,10 +119,12 @@ describe('the mood beat on a played season', () => {
   });
   const clear = () => beat().tiers.forEach(t => { t.lines = []; });
 
-  it('emits nothing while the pools are empty, which is today', () => {
-    const found = play(3).rows.flatMap(r => r.dr.scenes)
-      .filter(sc => sc.kind === 'stage:sashay-mood');
-    expect(found, 'an unwritten pool reached the screen').toEqual([]);
+  it('emits a mood beat for every exit now that pools are written', () => {
+    const rows = play(3).rows;
+    const exits = rows.filter(r => r.exits.length > 0).length;
+    const moods = rows.flatMap(r => r.dr.scenes)
+      .filter(sc => sc.kind === 'stage:sashay-mood').length;
+    expect(moods, 'every exit should get a mood beat').toBe(exits);
   });
 
   it('reaches every exit once the pools are written, and before she speaks', () => {

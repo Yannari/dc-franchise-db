@@ -775,8 +775,8 @@ export const WERK_EVENTS = [
     lines: [
       "{a} is at her station before the room wakes up, turning a thought over. A plan for today — not flashy, just clear — rehearsing it in her head before she says it to anyone. Coffee getting cold. She does not notice. Already inside the challenge.",
       "The brief is on the table and {a} has read it three times. Nobody else is reading it three times. Chin on fist, looking at something that is not on the wall. \"What are you thinking?\" \"I am still thinking.\" That is the end of the conversation.",
-      "{a} is quiet this morning and the quiet is not worried — it is planning. Sketches something on the back of a page, crosses it out, sketches it again. She has not spoken to anyone yet. She will, when the shape is right.",
-      "Everyone else is chatting. {a} is not. Working something out behind her eyes, the way you work out a problem you need to get right before you can afford to get it wrong in front of people. She will share the plan when it is a plan. Right now it is a direction.",
+      "{a} is quiet this morning and the quiet is not worried — it is planning. Sketches something on the back of a page, crosses it out, sketches it again. She has not spoken to anyone yet but she will once she has something worth saying.",
+      "Everyone else is chatting. {a} is not. She is working something out — mouthing words, counting on her fingers, staring at the brief like it owes her money. She will talk to the room when she has a plan. Right now she has a hunch.",
     ],
   }),
   ev({

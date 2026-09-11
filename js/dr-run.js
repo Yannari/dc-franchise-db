@@ -821,42 +821,66 @@ export function _stateFromHistory() {
   state.living = [...last.dr.living];
   const standing = new Set(state.living);
   state.out = cast.map(p => p.name).filter(n => !standing.has(n));
-  /* ── THE TRACK RECORD IS WALKED, NOT COPIED ──
-     It was copied off `last.dr.record`, which is right when it is there and
-     silently ruinous when it is not: the chart is built from the LAST row's
-     cumulative record, so a rebuilt episode five whose record held only
-     episode five drew a chart one column wide. Measured: the chart went from
-     43,505 characters to 34,908, which is the season's first four weeks
-     disappearing off it.
-     Every row keeps its `call` whatever else it has, and the call is what the
-     record is made of. So it is rebuilt from the calls, and `last.dr.record`
-     is the fallback rather than the source. */
-  // `atRisk` is LOW on the chart, not a seventh result -- see js/dr/week.js.
+  /* ── THE TRACK RECORD: THE STORED ONE FIRST, THE CALLS AS A FALLBACK ──
+     The last row keeps the whole season's record cumulatively, and when it is
+     there it is ground truth — it is what the season actually wrote, not a
+     re-derivation of it. Use it.
+
+     I had these the other way round for one commit, on the reasoning that
+     `dr.record` is not guaranteed on an older row while `dr.call` always is.
+     That is true and it is not a reason to prefer the derivation: it made
+     correct stored data depend on re-reading a call shape I had not checked,
+     and the call has more groups than the six a result comes from. Two queens
+     on a top-two-sings premiere sit in `call.singers` and in none of
+     win/high/safe/low/atRisk/bottom, so the walk gave them no cell for that
+     episode and every later result slid one column left. */
   const RESULT_OF_CALL = {
-    win: 'WIN', high: 'HIGH', safe: 'SAFE', low: 'LOW', atRisk: 'LOW',
+    win: 'WIN', high: 'HIGH', safe: 'SAFE', low: 'LOW',
+    // `atRisk` is LOW on the chart, not a seventh result -- see js/dr/week.js.
+    atRisk: 'LOW',
   };
-  const calls = rows.filter(r => r.dr && r.dr.call);
-  if (calls.length) {
+  const recordCovers = r => r && Object.keys(r).length
+    && cast.every(p => Array.isArray(r[p.name]));
+  if (recordCovers(last.dr.record)) {
+    state.record = clone(last.dr.record);
+  } else {
     for (const n of Object.keys(state.record)) state.record[n] = [];
-    for (const row of calls) {
+    for (const row of rows) {
       const call = row.dr.call;
+      if (!call) continue;
+      const placed = new Set();
       for (const [group, result] of Object.entries(RESULT_OF_CALL)) {
         for (const n of call[group] || []) {
-          if (state.record[n]) state.record[n].push(result);
+          if (!state.record[n]) continue;
+          state.record[n].push(result);
+          placed.add(n);
         }
       }
-      /* THE BOTTOM IS TWO DIFFERENT RESULTS. She lip synced and stayed
-         (BTM2) or she lip synced and went home (ELIM), and the chart draws
-         them differently -- the lip sync says which. */
+      /* THE BOTTOM IS TWO DIFFERENT RESULTS. She lip synced and stayed (BTM2)
+         or she lip synced and went home (ELIM), and the lip sync says which. */
       const ls = row.dr.lipsync || {};
       for (const n of call.bottom || []) {
         if (!state.record[n]) continue;
-        state.record[n].push(ls.loser === n || (ls.winner && ls.winner !== n
-          && (ls.queens || []).includes(n)) ? 'ELIM' : 'BTM2');
+        state.record[n].push(ls.loser === n
+          || (ls.winner && ls.winner !== n && (ls.queens || []).includes(n))
+          ? 'ELIM' : 'BTM2');
+        placed.add(n);
+      }
+      /* ── AND EVERYBODY ELSE IN THE ROOM IS SAFE ──
+         js/dr/week.js ends its result ternary with `: 'SAFE'`, so a queen the
+         call does not mention is safe — which is not a rare case: a
+         top-two-sings premiere puts two queens in `call.singers` and in no
+         result group at all. Without this they lose the episode entirely and
+         the rest of their row shifts into the gap.
+         The room is the one the row recorded, so a queen who was not there
+         that week is not given a cell she never had. */
+      const room = Array.isArray(row.dr.roomAtStart) && row.dr.roomAtStart.length
+        ? row.dr.roomAtStart
+        : [...new Set([...(row.dr.living || []), ...placed])];
+      for (const n of room) {
+        if (state.record[n] && !placed.has(n)) state.record[n].push('SAFE');
       }
     }
-  } else if (last.dr.record) {
-    state.record = clone(last.dr.record);
   }
   /* NOT THE STORYLINES. `row.dr.storylines` is a SUMMARY written for the
      screens — `beats` on it is a COUNT, where an arc carries an array — so

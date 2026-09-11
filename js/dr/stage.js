@@ -49,6 +49,11 @@ import { familyFacts } from './family.js';
 import { exitMoodFor } from './exit-mood.js';
 
 /** Where the cuts fall, as a fraction of the queens who walked. */
+/* How many "not her first choice" cards a draft is allowed. The rest of the
+   room still gets the part, the penalty and the board row -- what is capped is
+   the narration, because eleven shrugs in a row is not a screen. */
+const SETTLED_CARDS = 3;
+
 const RUNWAY_TIERS = [
   [0.15, 'stunning'], [0.40, 'strong'], [0.75, 'fine'], [0.92, 'weak'], [1.01, 'disaster'],
 ];
@@ -1311,6 +1316,37 @@ export function renderChallengeBeats({
      the host assigned to her. The call sheet is its own beat — what she was
      cast as, which she found out at the same moment everybody else did. */
   const castBeat = beatById('call-sheet');
+  /* ── NOT EVERY QUEEN NEEDS A CARD ABOUT BEING FINE ──
+     A serial draft whose preference lists all open on the lead leaves seven
+     queens in ten below their first choice — measured at 71.7% over 200
+     casts, mean fall 1.8 parts — and every one of them got a `settled` card.
+     Thirteen cards on one acting night, eleven of them "Not her first choice.
+     She is making it work." So a screen whose subject is who got what read as
+     a room where nobody was happy with anything.
+     Getting your first choice, taking the leavings and being picked last are
+     all events. Landing on your second is a shrug — `penaltyFor` in
+     js/dr/assign.js says so in those words and charges it almost nothing — so
+     the shrugs are capped the way the draft's own follow-ups already are, and
+     the ones kept are the deepest falls, which are the ones with something to
+     say. */
+  const settled = [];
+  const pushPickCard = (n, p, tierId, lines) => {
+    const t = pickBeat.tiers.find(x => x.id === tierId) || pickBeat.tiers[0];
+    scenes.push({
+      step: pickBeat.step,
+      kind: 'chal:pick-reaction',
+      data: {
+        beat: 'pick-reaction', tier: tierId, players: [n], note: t.note,
+        choice: p.choice, pickKind: kindId, voiced: true,
+        lostTo: p.lostTo || null,
+        /* WHAT SHE WANTED, so the card can name it. The board said "lost hers
+           to Quin" and never once said what hers was. */
+        wanted: p.wanted && p.wanted !== p.choice ? p.wanted : null,
+      },
+      text: fill(pick(lines, rng, usedLines, `pick/${kindId}/${tierId}`),
+        { a: n, c: maxi.name, d: choiceLabel(p.choice) }),
+    });
+  };
   for (const n of living) {
     const p = assignment.picks?.[n];
     if (!p) continue;
@@ -1356,20 +1392,19 @@ export function renderChallengeBeats({
       : order.indexOf(n) === order.length - 1 && order.length > 1 ? 'picked-last'
         : depth > 0 || p.lostTo ? 'settled'
           : 'got-it';
+    if (tierId === 'settled') { settled.push({ n, p, depth }); continue; }
     const lines = kindId ? pickLinesFor(kindId, tierId) : null;
     if (!lines) { emit(pickBeat, tierId, [n], { choice: p.choice, voiced: false }); continue; }
-    const t = pickBeat.tiers.find(x => x.id === tierId) || pickBeat.tiers[0];
-    scenes.push({
-      step: pickBeat.step,
-      kind: 'chal:pick-reaction',
-      data: {
-        beat: 'pick-reaction', tier: tierId, players: [n], note: t.note,
-        choice: p.choice, pickKind: kindId, voiced: true,
-        lostTo: p.lostTo || null,
-      },
-      text: fill(pick(lines, rng, usedLines, `pick/${kindId}/${tierId}`),
-        { a: n, c: maxi.name, d: choiceLabel(p.choice) }),
-    });
+    pushPickCard(n, p, tierId, lines);
+  }
+
+  /* Deepest falls first: a queen who went through five parts has a reaction
+     worth reading, and the one who landed on her second does not. */
+  settled.sort((x, y) => y.depth - x.depth);
+  for (const { n, p } of settled.slice(0, SETTLED_CARDS)) {
+    const lines = kindId ? pickLinesFor(kindId, 'settled') : null;
+    if (!lines) { emit(pickBeat, 'settled', [n], { choice: p.choice, voiced: false }); continue; }
+    pushPickCard(n, p, 'settled', lines);
   }
 
   /* ── THE DAY ON SET, ONE CARD PER QUEEN ──

@@ -329,12 +329,15 @@ export function generateDragSummaryText(row) {
            curly quote shipped the entity into the transcript verbatim — the
            smackdown's song titles and the runway's "Tonight's category is"
            each found it separately. */
-        .replace(/&(times|minus|rsaquo|lsaquo|nbsp|lt|gt|quot|apos|rsquo|lsquo|ldquo|rdquo|mdash|ndash|hellip|deg|amp);/g,
+        .replace(/&(times|minus|rsaquo|lsaquo|nbsp|lt|gt|quot|apos|rsquo|lsquo|ldquo|rdquo|mdash|ndash|middot|hellip|deg|amp);/g,
           (_m, n) => ({
             times: 'x', minus: '-', rsaquo: '>', lsaquo: '<', nbsp: ' ',
             lt: '<', gt: '>', quot: '"', apos: "'", rsquo: '’',
             lsquo: '‘', ldquo: '“', rdquo: '”',
             mdash: '—', ndash: '–', hellip: '…', deg: '°',
+            // Fifteen of these reached the transcript. Every screen that separates
+            // two facts on one line reaches for it and the decoder had never heard of it.
+            middot: '·',
             amp: '&',
           }[n]))
         .replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(Number(d)))

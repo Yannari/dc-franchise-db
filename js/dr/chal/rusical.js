@@ -12,7 +12,7 @@
 // syncing to the recording — the biggest single risk a queen can take in a
 // maxi challenge, taken by choice, and the panel remembers who took it.
 import { pickOrder, contestFor } from '../assign.js';
-import { prepareRoom, walkthrough } from '../prep.js';
+import { prepareRoom, walkthrough, rehearseNumber } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, ROLE_RANGES } from '../perform.js';
 import { evt } from '../rules.js';
@@ -120,9 +120,21 @@ export function prepare(ctx) {
     }));
   }
 
+  /* ── THE NUMBER IS REHEARSED, LIKE THE VIDEO AND THE RUMIX ──
+     `dance` is 0.25 of this challenge and every part in every show declares
+     what it `needs`, so the choreography is half the night — and the day it
+     is learned did not exist. The room went from being cast to performing.
+     Not another dance roll: `rehearseNumber` reads intuition for taking a
+     count in one pass and temperament for still taking it at hour six, which
+     is what separates two queens who dance the same. */
+  const reh = rehearseNumber({ living, players, rng });
+  events.push(...reh.events);
+  for (const n of living) w.prep[n] = (w.prep[n] || 0) + reh.choreo[n];
+
   return {
-    prep: w.prep, events, live,
-    scenes: [...r.scenes, { step: 'prep', kind: 'vocal-choice', data: { live } }],
+    prep: w.prep, events, live, choreo: reh.choreo,
+    scenes: [...r.scenes, ...reh.scenes,
+      { step: 'prep', kind: 'vocal-choice', data: { live } }],
   };
 }
 

@@ -58,7 +58,15 @@ export const SCENE_STEPS = [
   // The premiere only, and first: the door opens before anything else does.
   'arrivals',
   'cold-open', 'werk-morning', 'mini', 'maxi-announce', 'choice', 'prep',
-  'maxi-pre', 'werk-elim-day', 'main-stage', 'runway', 'maxi-main',
+  /* THE NUMBER COMES BEFORE THE WALK. `maxi-main` sat after `runway` here,
+     so a rusical read as: the panel sits, the queens walk the category, and
+     THEN they perform the show. The screens were already right — they follow
+     the SECTIONS registry in js/vp-dr/screens.js, which has had the Maxi
+     ahead of the Runway since the two sections were split — but this array
+     is the order `row.dr.scenes` is sorted into, and js/dr/writer.js hands
+     those scenes to the episode writer verbatim, in this order. The brief
+     described the runway before the performance it was reacting to. */
+  'maxi-pre', 'werk-elim-day', 'main-stage', 'maxi-main', 'runway',
   'critiques', 'untucked', 'results', 'lipsync', 'exit',
 ];
 

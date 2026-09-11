@@ -69,7 +69,14 @@ export const MAXI_TYPES = [
     desc: 'Each queen is handed a fixed pile of unconventional material in the werk room and has one day, one sewing machine and one glue gun to turn it into a runway look. She designs it, builds it, finishes it and then presents it on the main stage as her runway for the night. A garment still wet with glue, one that will not close, or one that hides the material instead of using it is what sends her to the bottom. The look the panel would put on a magazine cover wins.',
   },
   {
-    id: 'girl-group', name: 'Girl Group Challenge', tentpole: true, stage: 'pre', format: 'teams',
+    /* LIVE, LIKE EVERY OTHER NUMBER. `stage: 'pre'` means filmed during the
+       week — the Snatch Game taping, an acting scene, a commercial, a
+       photoshoot — and it put the girl group number on the Maxi screen BEFORE
+       elimination day and before the panel had sat down. Every other live
+       number is `main`: the rusical, the Rumix, choreography, the talent show.
+       The queens sing and dance this one in front of the judges, on the night,
+       as the show. */
+    id: 'girl-group', name: 'Girl Group Challenge', tentpole: true, stage: 'main', format: 'teams',
     blend: { singing: 0.35, dance: 0.35, comedy: 0.15, runway: 0.15 },
     runway: 'themed', assignment: 'captains', roles: 'slots', chalStyle: 'physical', minCast: 6,
     desc: 'The queens form girl groups, each writes her own verse of an original track, records it in a booth with a vocal coach, and then the whole group learns a choreography from a professional before filming the music video. Verses are written in the werk room that morning. A verse with no hook in it, a queen who cannot find the beat, or a group that lets one member swallow the camera is what loses. The tightest video wins, and its strongest member takes the win.',

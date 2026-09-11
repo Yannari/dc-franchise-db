@@ -12,7 +12,7 @@
 // Individual scores still carry a nudge (+0.8 / -0.4) so the host bend and
 // within-team ranking reflect how much the team carried or cost each queen.
 import { pickOrder, captainSplit } from '../assign.js';
-import { prepareRoom, walkthrough } from '../prep.js';
+import { prepareRoom, walkthrough, rehearseNumber } from '../prep.js';
 import { dragOf } from '../queen.js';
 import { noise, ROLE_RANGES, riskFor } from '../perform.js';
 import { canScheme, evt } from '../rules.js';
@@ -208,6 +208,22 @@ export function prepare(ctx) {
     }));
   }
 
+  /* ── AND THEN THEY ACTUALLY LEARN IT ──
+     `dance` is 0.35 of this challenge's blend, tied with singing as the
+     heaviest craft in it, and the afternoon where dance is LEARNED did not
+     exist: the room picked a choreographer and the number then simply
+     happened. Only the music video and the Rumix rehearsed, and the note on
+     `rehearseNumber` in js/dr/prep.js was written about exactly this gap.
+
+     It is deliberately not another dance roll. Dance is the floor; what
+     separates two queens who dance equally well is whether they can take a
+     count off somebody in one pass (`intuition`) and whether they are still
+     taking it at hour six (`temperament`). Without it those two queens were
+     identical and the stat that should have told them apart never came up. */
+  const reh = rehearseNumber({ living, players, rng });
+  events.push(...reh.events);
+  for (const n of living) w.prep[n] = (w.prep[n] || 0) + reh.choreo[n];
+
   for (const n of living) {
     const d = dragOf(players[n]);
     const s = players[n]?.stats || {};
@@ -231,9 +247,10 @@ export function prepare(ctx) {
   }
 
   return {
-    prep: w.prep, events, verse, choreographers,
+    prep: w.prep, events, verse, choreographers, choreo: reh.choreo,
     scenes: [
       ...r.scenes,
+      ...reh.scenes,
       { step: 'prep', kind: 'choreographer-pick',
         data: { choreographers, teams: assignment?.teams || [living] } },
       { step: 'prep', kind: 'recording-booth', data: { verse, booth } },
@@ -328,6 +345,16 @@ export function perform(ctx) {
     teamJudged: assignment.teams.length > 1
       && (cfg?.ggFormat ? !cfg.ggFormat.startsWith('ind') : maxi?.format !== 'teams-individual'),
     bestTeam,
-    scenes: [{ step: 'maxi-pre', kind: 'group-number', data: { teams: assignment.teams, means, bestTeam } }],
+    /* THE STEP THE CHALLENGE SAYS, not a hardcoded one. This read
+       `maxi-pre` while every other module asks `maxi.stage`, and when the
+       girl group moved to being performed live the number card stayed
+       behind on the taped screen — so the episode drew "The Maxi" twice,
+       once before elimination day holding this card and once on the night
+       holding the performance. */
+    scenes: [{
+      step: maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main',
+      kind: 'group-number',
+      data: { teams: assignment.teams, means, bestTeam },
+    }],
   };
 }

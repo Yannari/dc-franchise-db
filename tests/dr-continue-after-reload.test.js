@@ -406,3 +406,79 @@ describe('the track record after a rebuild', () => {
     }
   });
 });
+
+/* ── A QUEEN THE CALL DOES NOT MENTION ──
+   Reported as "2 people still have their track record empty", and the dump
+   showed the shape exactly: two queens with four results where everybody else
+   had five, both still competing.
+
+     ep1 talent-show | room: 14 | win:1 high:1 safe:10
+                     | IN THE ROOM BUT IN NO GROUP: [Sharon Needles, Paige Turner]
+
+   A top-two-sings premiere puts those two in `call.singers`, which is not a
+   result group. js/dr/week.js ends its ternary with `: 'SAFE'`, so the season
+   itself recorded them SAFE — the rebuild walked the six result groups, gave
+   them nothing for that episode, and every later result slid one column left
+   into the gap. */
+describe('a queen the call never names', () => {
+  const singersOnEpisodeOne = () => {
+    const c = gsRef.episodeHistory[0].dr.call;
+    const two = (c.safe || []).slice(0, 2);
+    c.safe = (c.safe || []).slice(2);
+    c.singers = two;          // where a top-two-sings premiere puts them
+    return two;
+  };
+
+  it('is safe, not absent', () => {
+    fresh(1855);
+    play(4);
+    const real = JSON.parse(JSON.stringify(gsRef.episodeHistory[3].dr.state.record));
+    const sang = singersOnEpisodeOne();
+    expect(sang.length, 'no safe queens to move into the sing-off').toBe(2);
+    // the worst case: nothing stored, so it has to come from the calls
+    for (const row of gsRef.episodeHistory) { delete row.dr.state; delete row.dr.record; }
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    expect(r, 'could not continue').toBeTruthy();
+    for (const n of sang) {
+      expect(r.dr.record[n].slice(0, real[n].length),
+        `${n} sang in the premiere and lost the episode off her record`)
+        .toEqual(real[n]);
+    }
+  });
+
+  it('leaves every row the same length as the season', () => {
+    /* The symptom as the viewer meets it: one queen's row is shorter than her
+       neighbour's, so the chart reads as a hole rather than as a mistake. */
+    fresh(1855);
+    play(4);
+    singersOnEpisodeOne();
+    for (const row of gsRef.episodeHistory) { delete row.dr.state; delete row.dr.record; }
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    const rec = r.dr.record || {};
+    const standing = r.dr.living || [];
+    for (const n of standing) {
+      expect(rec[n]?.length, `${n} is still competing with a short record`)
+        .toBe(r.num);
+    }
+  });
+
+  it('prefers the record the season actually wrote', () => {
+    /* And the derivation is the FALLBACK. When the rows kept a record it is
+       ground truth and re-deriving it is a chance to be wrong -- which is
+       exactly how the above shipped. */
+    fresh(1855);
+    play(4);
+    const real = JSON.parse(JSON.stringify(gsRef.episodeHistory[3].dr.record));
+    // a call that would derive nonsense, left in place to prove it is unused
+    gsRef.episodeHistory[0].dr.call = { win: [], high: [], safe: [], low: [], atRisk: [], bottom: [] };
+    for (const row of gsRef.episodeHistory) delete row.dr.state;
+    delete gsRef._drQueue;
+    const r = simulateDragEpisode();
+    for (const [n, v] of Object.entries(real)) {
+      expect(r.dr.record[n].slice(0, v.length), `${n}'s stored record was ignored`)
+        .toEqual(v);
+    }
+  });
+});

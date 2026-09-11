@@ -46,6 +46,7 @@ import {
 } from './data/runway-voices.js';
 import { canScheme } from './rules.js';
 import { familyFacts } from './family.js';
+import { exitMoodFor } from './exit-mood.js';
 
 /** Where the cuts fall, as a fraction of the queens who walked. */
 const RUNWAY_TIERS = [
@@ -188,6 +189,10 @@ export function renderStageBeats({
      The same two queens on the same stage means something completely
      different on a night nobody can lose. */
   stakes = 'life', rateAQueen = false,
+  /* HER RESULTS BEFORE TONIGHT, for the exit mood — whether she had ever
+     been in the bottom, and whether she had ever placed. Defaults to an
+     empty map so a caller that has not been updated still renders. */
+  record = {},
   /* THE EXIT RITUAL ON ITS OWN. A tournament night runs its elimination in
      the bracket rather than on the stage, so week.js skips this whole
      renderer -- and took the ritual at the bottom of it out of the show
@@ -832,6 +837,17 @@ export function renderStageBeats({
        `named` is deliberately not required: a queen goes home on an unnamed
        call too, and she gets her last words either way. */
     for (const n of gone) {
+      /* HOW SHE IS TAKING IT, THEN WHAT SHE SAYS ABOUT IT. Two beats and
+         that order: the room reads her face before she opens her mouth, so
+         a firecracker can be visibly devastated and still go out loud. The
+         mood beat is unwritten today and emits nothing, which leaves the
+         night exactly as it was. See js/dr/exit-mood.js. */
+      emit(beatById('sashay-mood'), exitMoodFor({
+        record: record[n] || [],
+        reaction: reactions[n] || null,
+        gap: lipsync && lipsync.loser === n ? lipsync.gap : null,
+        player: players[n],
+      }), [n]);
       emit(beatById('sashay-words'),
         swaggerGroupFor(players[n] && players[n].archetype), [n]);
     }

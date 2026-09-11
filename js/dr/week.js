@@ -1162,6 +1162,9 @@ export function runDragWeek(state, cfg, ctx) {
          reason the screen does, and for the same bug: `result-win` was
          being spoken over the queen who had not won yet. */
       call: callAtCall || call,
+      // For the exit mood: whether she had ever been in the bottom before
+      // tonight, and whether she had ever placed. See js/dr/exit-mood.js.
+      record: state.record,
       exits: exits.slice(), split, rng, critiques,
       /* THE PORKCHOP GATE. `state.out` already carries tonight's exits by the
          time beats render, so the season's first elimination is exactly the

@@ -1195,6 +1195,41 @@ export const STAGE_BEATS = [
   // Tiered by SWAGGER GROUP, the same five attitudes js/dr/data/runway-
   // voices.js already sorts queens into, so a queen's exit line sounds like
   // the queen who has been narrating her own runway walks all season.
+  /* ── HOW SHE IS TAKING IT ────────────────────────────────────────────
+     Every queen used to leave gracious. Not a writing choice -- a missing
+     axis: the four beats of an elimination are `tierBy: 'always'` except
+     `sashay-words`, which keys on SWAGGER, her runway persona. Five
+     personalities and one emotion.
+     The engine already knew better and threw it away. `reactions[n]` is
+     computed every week and read in exactly one place, the critique
+     reaction. Measured on a played season: a queen whose reaction at the
+     call was `crash-out` left saying "That maths is mine and nobody can
+     take it," composed and walking tall.
+     This is the beat BESIDE her parting shot, not instead of it -- the room
+     watching her take it, in the narrator's voice, before she speaks in her
+     own. So a firecracker can be devastated and still go out loud, which is
+     something neither beat could say alone.
+     Tiered on js/dr/exit-mood.js, which reads her record, the margin of the
+     song and her temperament as well as the reaction -- the reaction is her
+     mood at the CALL, and going home is a second blow.
+     FOR THE WRITER: `{a}` is her and there is no `{b}`. Narrator, not
+     speech -- what the room sees. She has NOT spoken yet; do not put words
+     in her mouth here. See docs/PROSE-PROMPT-dr-exit-moods.md. */
+  {
+    id: 'sashay-mood', step: 'lipsync', scope: 'per-queen', speaker: 'narrator',
+    variants: 6,
+    note: 'How she is taking it, before she says anything. {a} is her.',
+    tierBy: 'mood',
+    tiers: [
+      tier('bitter', 'She is angry, and it is at people rather than at the result.', []),
+      tier('gutted', 'She does not hold it together.', []),
+      tier('robbed', 'It was close and she believes she won it.', []),
+      tier('blindsided', 'She had never been in the bottom before tonight.', []),
+      tier('relieved', 'It is over and she is all right about that.', []),
+      tier('resigned', 'She has been down here before and saw it coming.', []),
+      tier('composed', 'She takes it cleanly, and the composure is the story.', []),
+    ],
+  },
   {
     id: 'sashay-words', step: 'lipsync', scope: 'per-queen', speaker: 'queen',
     variants: 6,

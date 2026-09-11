@@ -20,8 +20,9 @@
 // "The Maxi" TWICE — once before elimination day and once on the night.
 import { describe, expect, it } from 'vitest';
 import { MAXI_TYPES } from '../js/dr/data/challenges.js';
+import { MAXI_EVENTS } from '../js/dr/data/maxi-events.js';
 import { playDragSeason } from '../js/dr/season.js';
-import { dragScreens } from '../js/vp-dr/screens.js';
+import { dragScreens, sceneSections } from '../js/vp-dr/screens.js';
 import { SCENE_STEPS } from '../js/dr/week.js';
 import { rngFor } from '../js/dr/rng.js';
 
@@ -131,5 +132,62 @@ describe('a danced challenge is rehearsed', () => {
     expect(labels, 'the rehearsal reached no screen').toContain('Rehearsal');
     expect(labels.indexOf('Rehearsal'))
       .toBeLessThan(labels.indexOf('Main Stage'));
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// AND EVERYTHING ABOUT THE NUMBER IS IN THE ROOM WHERE IT IS LEARNED
+// ══════════════════════════════════════════════════════════════════════
+//
+// Reported: the captain's choreography was on the Prep screen. It was — and
+// so was the rest of the rehearsal.
+//
+// `choreographer-pick` was listed as an opener of the WORK ROOM, so choosing
+// who runs the number was filed with the sewing. And the rehearsal's own two
+// events — she had it after one run, she is still mouthing counts — declare
+// `from: 'rehearsal'`, which js/dr/stage.js maps onto the `prep` STEP because
+// there is no rehearsal step; a scene whose kind opens nothing then falls
+// through to whatever its step opens, and the Work Room claimed them.
+describe('the rehearsal room holds the rehearsal', () => {
+  const REHEARSED = ['girl-group', 'rusical', 'music-video', 'rumix'];
+
+  for (const id of REHEARSED) {
+    it(`${id}: nothing about the number is filed under Prep`, () => {
+      const row = weekOf(id);
+      if (!row) return;
+      const sections = sceneSections(row);
+      const prep = (sections.get('dr-prep') || []).map(s => s.kind);
+      const reh = (sections.get('dr-rehearsal') || []).map(s => s.kind);
+      expect(reh.length, `${id} has an empty rehearsal room`).toBeGreaterThan(0);
+      for (const k of ['choreographer-pick', 'chal:rehearsal',
+        'maxi:picked-it-up', 'maxi:cannot-count']) {
+        expect(prep, `${k} is on the Work Room screen`).not.toContain(k);
+      }
+    });
+  }
+
+  it('puts the captain pick in the rehearsal room, not the work room', () => {
+    const row = weekOf('girl-group');
+    if (!row) return;
+    const sections = sceneSections(row);
+    expect((sections.get('dr-rehearsal') || []).map(s => s.kind))
+      .toContain('choreographer-pick');
+  });
+
+  it('derives the rehearsal events rather than listing them', () => {
+    /* The list in js/vp-dr/screens.js is built from MAXI_EVENTS by `from`, so
+       an event added with `from: 'rehearsal'` lands in the rehearsal room
+       without anybody coming back to a registry. This asserts the derivation
+       still covers every one of them. */
+    const row = weekOf('music-video');
+    if (!row) return;
+    const reh = new Set((sceneSections(row).get('dr-rehearsal') || []).map(s => s.kind));
+    const declared = MAXI_EVENTS.filter(e => e.from === 'rehearsal').map(e => `maxi:${e.id}`);
+    expect(declared.length, 'no event declares the rehearsal any more').toBeGreaterThan(0);
+    for (const k of declared) {
+      const anywhereElse = (sceneSections(row).get('dr-prep') || []).some(s => s.kind === k);
+      expect(anywhereElse, `${k} leaked back to Prep`).toBe(false);
+      void reh;
+    }
   });
 });

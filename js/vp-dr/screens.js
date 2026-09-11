@@ -36,6 +36,22 @@ import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } fr
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
+import { MAXI_EVENTS } from '../dr/data/maxi-events.js';
+
+/* ── THE REHEARSAL ROOM'S OWN EVENTS, DERIVED ──
+   An event declares the room it happens in with `from`, and the two that say
+   `rehearsal` — she had the number after one run, she is still mouthing
+   counts — were rendering on the WORK ROOM screen beside the sewing. The
+   router in js/dr/stage.js maps `from: 'rehearsal'` onto the `prep` STEP,
+   which is right (there is no rehearsal step) and which then let the Work
+   Room claim them, because a scene whose kind opens nothing falls through to
+   whatever its step opens.
+   Listed from the data rather than typed, so an event added with
+   `from: 'rehearsal'` lands in the rehearsal room without anybody
+   remembering to come back here. */
+const REHEARSAL_EVENT_KINDS = MAXI_EVENTS
+  .filter(e => e.from === 'rehearsal')
+  .map(e => `maxi:${e.id}`);
 import { rpBuildShowcase, rpBuildInterview, rpBuildCut, rpBuildCrownLipSync } from './finale-screens.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -147,8 +163,13 @@ const SECTIONS = [
     opensStep: ['choice'],
     badge: { text: 'PICKS', color: '#7B2FF7' }, title: 'The Draft', subtitle: 'who takes what' },
   { id: 'dr-prep', icon: icon('scissors'), label: 'Prep', suffix: 'prep', phase: 'werk', accent: 'dr-a-room',
+    /* `choreographer-pick` is NOT here. Choosing who runs the number is the
+       first thing that happens in the rehearsal room, not a thing that
+       happens at a sewing station — and listing it as a Prep opener meant it
+       dragged itself, and the scenes after it, back onto the Work Room
+       screen. It opens the Rehearsal section instead. */
     opens: ['prep-room', 'writing-room', 'band-rehearsal', 'recording-booth', 'ball-build',
-      'makeover-build', 'no-rehearsal', 'choreographer-pick'],
+      'makeover-build', 'no-rehearsal'],
     opensStep: ['prep'],
     badge: null, title: 'The Work Room', subtitle: 'building it' },
   /* ── THE BOOTH AND THE SET GET THEIR OWN SCREENS ──
@@ -171,7 +192,11 @@ const SECTIONS = [
     badge: { text: 'BOOTH', color: '#22d3ee' },
     title: 'The Booth', subtitle: 'what actually gets on tape' },
   { id: 'dr-rehearsal', icon: icon('runway'), label: 'Rehearsal', suffix: 'rehearsal', phase: 'werk', accent: 'dr-a-score',
-    opens: ['chal:rehearsal'],
+    /* `choreographer-pick` opens this room as well as the beats do: on a
+       girl group the captain is chosen and then the room learns the number
+       from her, which is one scene and its consequence. It used to open the
+       Work Room, so the pick was filed with the sewing. */
+    opens: ['chal:rehearsal', 'choreographer-pick', ...REHEARSAL_EVENT_KINDS],
     badge: { text: 'REHEARSAL', color: '#a78bfa' },
     title: 'Rehearsal', subtitle: 'the number, and who has it by the end of the day' },
   { id: 'dr-set', icon: icon('camera'), label: 'On Set', suffix: 'set', phase: 'werk', accent: 'dr-a-score',

@@ -154,6 +154,33 @@ export function timelineFor(doc, name) {
     if (beats.length) out.push(`ep${r.episode}: ${beats.join(', ')}`);
   }
 
+  /* ── AND A SHOW WITH NEITHER OF THOSE STILL HAS ITS EPISODES ──
+     The two loops above read `doc.weeks` (the house) and `doc.votingHistory`
+     (the camp). A drag season has neither — it keeps its record on `dr` and
+     its round-by-round in `gameHistory` — so every queen's timeline came out
+     EMPTY, and the character fill had nothing to write from but a placement.
+     The writer said so, accurately: "With no dialogue recorded in her thread,
+     her season was documented primarily through its outcome."
+
+     `gameHistory` is the season written a round at a time, by the round fill,
+     and it names who won, who was high, who lip synced and who went home. It
+     is the same record the other two loops build, already in sentences.
+
+     ONLY WHEN THE OTHERS FOUND NOTHING. On a camp or a house this would repeat
+     the ballots above in prose, and a timeline that says everything twice is
+     worse than one that says it once. */
+  if (!out.length) {
+    for (const r of (doc.gameHistory || [])) {
+      const prose = String(r?.prose || '');
+      if (!prose || !prose.includes(name)) continue;
+      /* HER SENTENCES, NOT THE WHOLE EPISODE. A round's prose is about
+         everybody in it, and fourteen queens each carrying all sixteen rounds
+         is the same season sent fourteen times. */
+      const mine = prose.split(/(?<=\.)\s+/).filter(x => x.includes(name));
+      if (mine.length) out.push(`ep${r.n}: ${mine.join(' ')}`);
+    }
+  }
+
   // A long season would otherwise spend most of the request on one person's
   // ballots. The ends carry the arc: how they started, and how it finished.
   if (out.length > 14) return [...out.slice(0, 7), '…', ...out.slice(-7)];
@@ -188,7 +215,25 @@ export function attachRecords(doc, threads, format) {
   // MEMBERS, and the season's turning points. Both exist in the export — the
   // membership is derivable by cross-referencing who else names the alliance,
   // and the turning points are `keyMoments`, eight per player, sitting unread.
-  const house = format === 'big-brother';
+  /* ── WHAT THIS SHOW COUNTS, ASKED OF THE REGISTRY ──────────────────
+     This was `const house = format === 'big-brother'` and a two-way branch:
+     the house's competitions, or Total Drama's. Which makes every other show
+     Total Drama — and Total Drama's fields do not exist on a drag placement,
+     where the numbers live on `row.dr` as maxi wins, lip syncs and bottoms.
+
+     So the writer was handed "placed 1; winner" for a queen who won five maxi
+     challenges, and said so: "The available record preserved no named
+     alliances, competition counts, or final vote total for her run." Every
+     word of that was true about the request. Fourteen articles came out
+     documented "primarily through its outcome".
+
+     `articleStats.comps` is the list each show already declares for exactly
+     this — its competition columns, in its own words, with the path to read
+     each one. A fifth show needs no edit here, which is the whole point of the
+     registry and the reason CLAUDE.md opens with this bug class. */
+  const statPaths = SHOWS[format]?.articleStats?.comps || [];
+  const readPath = (obj, path) => String(path).split('.')
+    .reduce((o, k) => (o == null ? o : o[k]), obj);
 
   // Who else named this alliance. The export stores alliances per player as
   // names, so the roster is the set of players who list the same one — which is
@@ -206,19 +251,13 @@ export function attachRecords(doc, threads, format) {
   for (const t of threads) {
     const row = doc.placements.find(p => p.name === t.name);
     if (!row) continue;
-    const bb = row.bb || {};
     const bits = [`placed ${row.placement}`];
     if (row.status) bits.push(String(row.status).toLowerCase());
-    if (house) {
-      if (bb.hohWins) bits.push(`${bb.hohWins} HOH wins`);
-      if (bb.vetoWins) bits.push(`${bb.vetoWins} veto wins`);
-      if (bb.blockBusterWins) bits.push(`${bb.blockBusterWins} Block Buster wins`);
-      if (bb.timesNominated) bits.push(`nominated ${bb.timesNominated}x`);
-      if (bb.timesSaved) bits.push(`saved by the veto ${bb.timesSaved}x`);
-    } else {
-      if (row.challengeWins) bits.push(`${row.challengeWins} challenge wins`);
-      if (row.immunityWins) bits.push(`${row.immunityWins} individual immunities`);
-      if (row.idolsFound) bits.push(`${row.idolsFound} idols found`);
+    // Only what actually happened: a zero is not a fact worth a clause, and a
+    // list of them is how a paragraph ends up about what somebody did not do.
+    for (const [path, label] of statPaths) {
+      const n = Number(readPath(row, path)) || 0;
+      if (n) bits.push(`${n} ${String(label).toLowerCase()}`);
     }
     if (row.votesReceived) bits.push(`${row.votesReceived} votes against`);
     if (row.juryVotes) bits.push(`${row.juryVotes} jury votes`);

@@ -1008,6 +1008,13 @@ export function runUntucked({
           arcsA: arcsOf(a),
           arcsB: b ? arcsOf(b) : [],
         };
+        /* AN EVENT WITH NOTHING WRITTEN FOR IT IS NOT A CANDIDATE.
+           `pick` on an empty pool returns nothing, so such an event could be
+           chosen, produce a scene with no words, and still consume one of the
+           segment's slots -- a blank card crowding out a written one. Skipping
+           it here is what lets a pool ship EMPTY and simply not happen until
+           somebody writes it. */
+        if (!(ev.lines || []).length) continue;
         let ok = false;
         try { ok = !!ev.when(facts); } catch { ok = false; }
         if (!ok) continue;

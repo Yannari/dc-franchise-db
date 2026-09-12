@@ -129,18 +129,48 @@ describe('the fallout backstage', () => {
   const eventsOn = row => (row.dr.scenes || [])
     .map(sc => sc.data?.event).filter(Boolean);
 
-  it('reaches the room on most nights it is booked', () => {
-    // Measured: 9 of 25 before the votes spread and the partner hook existed,
-    // and none of those were the confrontation. 23 of 25 after.
+  /* ── ARMS ITSELF WHEN THE PROSE LANDS ──
+     The five pools ship EMPTY on purpose — see
+     docs/PROSE-PROMPT-dr-who-should-go-fallout.md — and an event with no
+     lines is skipped before it can be chosen, so none of them can fire today.
+     Asserting a firing rate now would only assert that nobody has written
+     them yet.
+     So the wiring is checked unconditionally, and the rate check turns itself
+     on the moment any of the five has lines in it. Nothing has to be
+     remembered or re-enabled by hand. */
+  const written = FALLOUT.filter(id =>
+    (UNTUCKED_EVENTS.find(e => e.id === id)?.lines || []).length);
+
+  it('has the facts these events need, written or not', () => {
+    // The twist ran and the room has something to be angry about.
+    expect(twistRows.length).toBeGreaterThan(20);
+    for (const row of twistRows) {
+      const { votes, tally } = row.dr.critiqueTwist;
+      expect(Object.keys(votes).length).toBeGreaterThan(3);
+      expect(Object.keys(tally).length).toBeGreaterThan(0);
+    }
+    // And the events exist, gated, with their partner hooks intact.
+    for (const id of FALLOUT) {
+      const ev = UNTUCKED_EVENTS.find(e => e.id === id);
+      expect(ev, `${id} is gone`).toBeTruthy();
+      expect(typeof ev.when, `${id} has no gate`).toBe('function');
+      expect(Object.keys(ev.effects || {}).length,
+        `${id} has no consequence`).toBeGreaterThan(0);
+    }
+  });
+
+  it.runIf(written.length)('reaches the room on most nights it is booked', () => {
+    // Measured with the prose in place: 9 of 25 before the votes spread and
+    // the partner hook existed, and none of those were the confrontation;
+    // 23 of 25 after.
     const withFallout = twistRows
       .filter(r => eventsOn(r).some(e => FALLOUT.includes(e))).length;
-    expect(twistRows.length).toBeGreaterThan(20);
     expect(withFallout / twistRows.length,
       'the segment ignores the thing the audience just watched')
       .toBeGreaterThan(0.6);
   });
 
-  it('puts the confrontation with somebody who actually named her', () => {
+  it.runIf(written.length)('puts the confrontation with somebody who actually named her', () => {
     /* The partner hook, which is the half that makes these possible: a
        two-hander about a particular person cannot wait for the draw to land
        on her in a room of twelve. */

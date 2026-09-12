@@ -561,8 +561,20 @@ function lead(dossier, show, root, L) {
   // it: correct, and never quite prose. The wiki fill writes this one from the
   // episodes and the record together, in the register of the reference pages,
   // and it wins whenever it exists.
-  const written = (seasons.find(s => s.placement === 1) || seasons[seasons.length - 1] || {}).lead
-    || seasons.slice().reverse().find(s => s.lead)?.lead || '';
+  /* ── AND IT IS NOT BORROWED FOR THE LEAD ANY MORE ──
+     This took one season's written paragraph and printed it at the top
+     INSTEAD of the assembled career one, which was right while nothing else
+     drew it. The Summary of each season section draws its own now, so
+     borrowing here does one of two bad things: prints the same paragraph
+     twice on a one-season page, or — once the section suppressed the
+     duplicate — leaves that section saying "No narrative has been written for
+     this season yet" about a paragraph sitting at the top of the same page.
+     That is what was reported.
+     A lead is about the CAREER and a season paragraph is about one season, so
+     each now sits where it is about. The measured career paragraph below is
+     the lead again, and nothing else changes for Total Drama or Big Brother:
+     neither writes `lead` at all, so `written` was always empty for them. */
+  const written = '';
 
   let game = '';
   if (written) {
@@ -1019,8 +1031,24 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
       L.season(s2, show.format));
 
     // 2.1 Summary — the season's narrative, and the moments that made it.
+    /* ── THE PARAGRAPH THE OTHER FILL WROTE ──
+       Two fills write a season's prose into different fields. The narrative
+       fill produces `story` and runs on the Total Drama and Big Brother export
+       paths; the character fill produces `lead` and runs on the per-show path,
+       which is what Drag Race exports through. So a drag season came out with
+       a written paragraph per queen and this section, which only knew `story`,
+       said "No narrative has been written for this season yet" on all fourteen
+       of them while the paragraph sat in the season document.
+       They are the same job — the worker's own schema calls `lead` "the
+       article's OPENING PARAGRAPH about this season".
+       EXCEPT THE ONE THE LEAD ALREADY BORROWED. `lead()` prints one season's
+       paragraph at the top of the article, so on a one-season page that is
+       this one and drawing it here as well would print it twice. A returnee
+       with three written seasons keeps the other two, which until now were
+       written and drawn nowhere. */
+    const own = s2.story || s2.lead || '';
     const summary = [];
-    if (s2.story) summary.push(`<p>${L.text(s2.story)}</p>`);
+    if (own) summary.push(`<p>${L.text(own)}</p>`);
     if (s2.keyMoments?.length) {
       summary.push(`<ul class="wk-list">${s2.keyMoments.map(x => `<li>${L.text(x)}</li>`).join('')}</ul>`);
     }

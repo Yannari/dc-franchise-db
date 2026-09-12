@@ -709,13 +709,30 @@ describe('the game paragraph', () => {
     expect(p).not.toMatch(/close final vote/);
   });
 
-  it('prefers the written lead once the fill has run', () => {
-    const doc = { ...DOC, placements: [{ ...DOC.placements[0],
-      lead: 'During her time on the show, Jade read the carnival better than anybody in it.' }] };
-    const p = para(out(JADE, doc));
-    expect(p).toMatch(/read the carnival better than anybody/);
-    // And the assembled one is gone rather than printed underneath it.
-    expect(p).not.toMatch(/winning three challenges/);
+  /* ── THE WRITTEN PARAGRAPH IS ABOUT A SEASON, SO IT SITS IN THAT SEASON ──
+     This used to assert the opposite: a written `lead` replaced the assembled
+     career paragraph at the top of the article. That was right while nothing
+     else drew it, and it is what put a reported bug on the page — the Summary
+     of each season section reads `lead` now (it is the field the character
+     fill writes, where the narrative fill writes `story`), so borrowing it for
+     the lead as well either printed the same paragraph twice or left the
+     section saying "No narrative has been written for this season yet" about a
+     paragraph sitting at the top of the same page.
+     A lead is about the CAREER. A season paragraph is about one season. Each
+     now sits where it is about, and nothing changes for the two shows that
+     write `story` instead. */
+  it('leaves the written paragraph to the season it is about', () => {
+    const written = 'During her time on the show, Jade read the carnival better than anybody in it.';
+    const doc = { ...DOC, placements: [{ ...DOC.placements[0], lead: written }] };
+    const article = out(JADE, doc);
+    // The lead keeps the assembled career paragraph…
+    expect(para(article)).toMatch(/winning three challenges/);
+    expect(para(article), 'the lead borrowed a season paragraph again')
+      .not.toMatch(/read the carnival better than anybody/);
+    // …and the paragraph is on the page, in the season it describes.
+    expect(article).toContain(written);
+    expect(article, 'the section still claims nothing was written')
+      .not.toMatch(/No narrative has been written/);
   });
 
   it('uses the pronoun the roster gives, and they/them when it gives none', () => {

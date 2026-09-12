@@ -280,6 +280,8 @@ export function runDragWeek(state, cfg, ctx) {
       // resolving that privately threw away the only part worth filming.
       const res = runMini({
         living, mini: m, players: ctx.players, rng, bond: ctx.bond, star: state.star,
+        // What each queen's record is, so a read can be ABOUT something.
+        record: state.record,
       });
       miniScores = res.scores;
       miniWinner = res.winner;

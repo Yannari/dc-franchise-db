@@ -25,7 +25,8 @@ import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { dragScreens } from '../js/vp-dr/screens.js';
 import { CHALLENGE_BEATS } from '../js/dr/data/challenge-beats.js';
-import { MINI_TIER_IDS, MINI_PASS_ID, MINI_VOICES } from '../js/dr/data/mini-voices.js';
+import { MINI_TIER_IDS, MINI_PASS_ID, MINI_VOICES, miniLinesFor,
+  lineAngle } from '../js/dr/data/mini-voices.js';
 import { rngFor } from '../js/dr/rng.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -149,6 +150,77 @@ describe('the library is a reading challenge', () => {
         expect(at, 'she read herself').not.toBe(who);
         expect(room, 'she read somebody who is not in the room').toContain(at);
       }
+    }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// A READ IS ABOUT SOMETHING
+// ══════════════════════════════════════════════════════════════════════
+//
+// "I want the prose to actually be dialogue — an actual read, like the show."
+// The show's reads are specific: the joke IS that it is about that queen. A
+// line written with {b} in it has to be true of whoever {b} turns out to be,
+// so every read here was general — and a general read is the one thing a
+// library cannot survive.
+//
+// `angle` is what the read is about, chosen from what is true of the target
+// tonight, and checked against her before any line is offered.
+describe('the read is about something true', () => {
+  it('gives every read an angle, and never one that is false of her', () => {
+    for (let s = 1; s <= 12; s++) {
+      const row = library(s);
+      if (!row) continue;
+      const detail = row.dr.mini?.detail || {};
+      for (const [who, d] of Object.entries(detail)) {
+        if (!d.target) continue;
+        expect(d.angle, `${who}'s read is about nothing`).toBeTruthy();
+        const a = d.about || {};
+        /* The claim each angle makes, asserted against the record it was
+           chosen from. A line tagged `never-won` must never be offered to a
+           queen who has won. */
+        if (d.angle === 'never-won') {
+          expect(a.wins, 'never-won said to a winner').toBe(0);
+          expect(a.highs, 'never-won said to a queen who placed').toBe(0);
+        }
+        if (d.angle === 'the-frontrunner') expect(a.wins).toBeGreaterThanOrEqual(2);
+        if (d.angle === 'been-in-the-bottom') expect(a.bottoms).toBeGreaterThanOrEqual(2);
+        if (d.angle === 'brand-new') expect(a.weeks).toBeLessThanOrEqual(1);
+        if (d.angle.startsWith('weak-')) {
+          expect(`weak-${a.worst}`, 'the weak craft named is not her worst').toBe(d.angle);
+        }
+      }
+    }
+  });
+
+  it('names WHICH craft, because those are different jokes', () => {
+    /* One `weak-craft` tier would have handed the writer a single pool for
+       six reads — "you cannot sew" and "you cannot dance" are not the same
+       joke and must not share lines. */
+    const seen = new Set();
+    for (let s = 1; s <= 25; s++) {
+      const row = library(s);
+      if (!row) continue;
+      for (const d of Object.values(row.dr.mini?.detail || {})) {
+        if (d.angle) seen.add(d.angle);
+      }
+    }
+    const weak = [...seen].filter(a => a.startsWith('weak-'));
+    expect(weak.length, 'the craft angle never splits by craft').toBeGreaterThan(2);
+    expect(seen.size, 'the reads are all about the same thing').toBeGreaterThan(5);
+  });
+
+  it('prefers a fitting line and falls back to the general pool', () => {
+    /* Until the angled lines are written every read draws from the untagged
+       floor, which is why this change is safe to land before the prose. */
+    const general = miniLinesFor('reading', 'nailed', 'never-won');
+    expect(general, 'the nailed pool went empty').toBeTruthy();
+    expect(general.length).toBeGreaterThan(0);
+    // Nothing is tagged yet, so what comes back is the untagged floor.
+    for (const l of general) {
+      const a = lineAngle(l);
+      expect(a === null || a === 'never-won',
+        'a line for another angle leaked into this read').toBe(true);
     }
   });
 });

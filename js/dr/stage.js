@@ -25,7 +25,7 @@ import { mentorForBeat } from './data/judges.js';
 import { MAXI_EVENTS } from './data/maxi-events.js';
 import { performanceFor, familyForChallenge } from './data/maxi-performance.js';
 import { briefLinesFor, reactionLinesFor } from './data/brief-voices.js';
-import { miniLinesFor, miniNamesOther } from './data/mini-voices.js';
+import { miniLinesFor, miniNamesOther, lineOf } from './data/mini-voices.js';
 import { tempoLinesFor, hookLinesFor } from './data/lipsync-voices.js';
 import {
   pickKindFor, pickLinesFor, walkthroughLinesFor,
@@ -1180,7 +1180,10 @@ export function renderChallengeBeats({
   if (mini) {
     const mEmit = (beatId, tierId, who, extra = {}) => {
       const beat = beatById(beatId);
-      const all = miniLinesFor(mini.id, tierId);
+      // What this read is ABOUT, so a specific line can be offered when the
+      // fact it needs is true of the queen being read. See miniLinesFor.
+      const angle = (who[0] && miniDetail[who[0]]?.angle) || null;
+      const all = miniLinesFor(mini.id, tierId, angle);
       /* ── A LINE THAT NAMES A SECOND QUEEN NEEDS A SECOND QUEEN ───────
          Not every mini has a target: `otherFor` returns null for the ones
          where she performs alone, and `who` is then one name long. A line
@@ -1207,9 +1210,9 @@ export function renderChallengeBeats({
         data: {
           beat: beatId, tier: tierId, players: who,
           note: fill(t.note, { a: who[0], b: who[1], c: mini.name }),
-          mini: mini.id, voiced: true, ...extra,
+          mini: mini.id, voiced: true, angle, ...extra,
         },
-        text: fill(pick(lines, rng, usedLines, `mini/${mini.id}/${tierId}`),
+        text: fill(lineOf(pick(lines, rng, usedLines, `mini/${mini.id}/${tierId}`)),
           { a: who[0], b: who[1], c: mini.name }),
       });
     };

@@ -58,6 +58,82 @@ function targetFor(n, living, players, bond, star, rng) {
   return (weights.find(x => (roll -= x.w) <= 0) || weights[0]).o;
 }
 
+/* ── WHAT THE READ IS ABOUT ────────────────────────────────────────────
+   A real read is specific. "You remind me of my favourite films — your
+   fashion is one of them and your smile is the other" only works because it
+   is about THAT queen; the same sentence about anybody else is noise. Our
+   pool could not be specific, because a line written with `{b}` in it has to
+   be true of whoever `{b}` turns out to be — so every read was general, and
+   a general read is the one thing a library cannot survive.
+
+   `angle` fixes that by choosing the read's SUBJECT from what is actually
+   true of the target tonight, and letting the pool hold a set of lines per
+   subject. Every one of them is checked against her before it is offered,
+   so "you have never won anything" is only ever said to a queen who has not.
+
+   Ordered most specific first: a queen who has never placed and also dresses
+   in one silhouette gets read for the record, because the record is the
+   sharper fact. `generic` is the floor and is what the pool already held.
+
+   NOT a difficulty setting and not a score. Which angle she takes does not
+   change how well the read goes — that is her comedy, her boldness and the
+   bond, all decided above. It changes what the joke is ABOUT. */
+const READ_ANGLES = [
+  // Her record, which is the material the real show reaches for first.
+  { id: 'the-frontrunner', when: r => r.wins >= 2 },
+  { id: 'been-in-the-bottom', when: r => r.bottoms >= 2 },
+  { id: 'never-won', when: r => r.weeks >= 3 && !r.wins && !r.highs },
+  { id: 'always-safe', when: r => r.weeks >= 4 && r.safes >= r.weeks - 1 },
+  // Then what the room can see her fail at.
+  { id: 'weak-craft', when: (r, d) => d.worst !== null, as: d => `weak-${d.worst}` },
+  // Early on there is no record to read, and that IS the read.
+  { id: 'brand-new', when: r => r.weeks <= 1 },
+  { id: 'generic', when: () => true },
+];
+/* `one-note-look` was here and came out: it fired on any queen with an
+   authored `drag.style`, which is not a fault and not a fact — it is a field
+   being set. Measured at 73% of every read, which is what a badly-chosen
+   angle looks like: one joke, told about everybody, which is the exact
+   failure this whole mechanism exists to fix. A read about how she dresses
+   needs "the same silhouette every week", and nothing here knows that yet. */
+
+/** Her record so far, as the four counts a read can be built on. */
+function recordOf(name, record = {}) {
+  const past = record[name] || [];
+  return {
+    weeks: past.length,
+    wins: past.filter(x => x === 'WIN').length,
+    highs: past.filter(x => x === 'HIGH').length,
+    safes: past.filter(x => x === 'SAFE').length,
+    bottoms: past.filter(x => x === 'BTM2' || x === 'LOW').length,
+  };
+}
+
+/** The craft she is visibly worst at, or null when nothing stands out. */
+function weakestCraft(player) {
+  const d = dragOf(player) || {};
+  const CRAFTS = ['design', 'dance', 'singing', 'comedy', 'acting', 'runway'];
+  const vals = CRAFTS.map(k => ({ k, v: Number(d[k]) })).filter(x => Number.isFinite(x.v));
+  if (vals.length < 2) return null;
+  vals.sort((a, b) => a.v - b.v);
+  // Only when it is genuinely a weakness and genuinely her worst.
+  return (vals[0].v <= 4 && vals[1].v - vals[0].v >= 1) ? vals[0].k : null;
+}
+
+/** Which of her facts this read is about. */
+export function readAngleFor(target, players, record) {
+  const r = recordOf(target, record);
+  const d = {
+    style: dragOf(players[target])?.style || null,
+    worst: weakestCraft(players[target]),
+  };
+  const hit = READ_ANGLES.find(a => a.when(r, d));
+  /* `weak-craft` names WHICH craft. "You cannot sew" and "you cannot dance"
+     are different jokes, and an angle that cannot tell them apart would hand
+     the writer one tier for six reads. */
+  return { angle: hit.as ? hit.as(d) : hit.id, about: { ...r, ...d } };
+}
+
 /**
  * One mini, end to end.
  *
@@ -68,7 +144,8 @@ function targetFor(n, living, players, bond, star, rng) {
 /** Under this and she has nothing to say, which is its own result. */
 const PASSES = 2.2;
 
-export function runMini({ living, mini, players, rng, bond = () => 0, star = {} }) {
+export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
+  record = {} }) {
   const scores = {};
   const events = [];
   const detail = {};
@@ -116,6 +193,10 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {} 
         const b = bond(n, target);
         s += b >= 4 ? -0.6 : b <= -4 ? 0.8 : 0;
         detail[n].pulled = b >= 4;
+        // And WHAT the read is about, chosen from what is true of her.
+        const a = readAngleFor(target, players, record);
+        detail[n].angle = a.angle;
+        detail[n].about = a.about;
       }
     } else if (interaction === 'pairs') {
       const pair = pairs.find(p => p.includes(n));

@@ -500,10 +500,37 @@ export function miniVoice(id) {
  * used, because two specific lines beat four generic ones — the guard is what
  * insists on the full count before it ships.
  */
-export function miniLinesFor(id, tierId) {
+/* ── A LINE MAY BE ABOUT SOMETHING ─────────────────────────────────────
+   A real read is specific: "you are always telling yourself how talented you
+   are — you are also a pathological liar" only lands because it is about
+   THAT queen. A line written with `{b}` in it has to be true of whoever `{b}`
+   turns out to be, so every read here was general, and a general read is the
+   one thing a library cannot survive.
+
+   `angle` is what the read is ABOUT, chosen by js/dr/mini.js from what is
+   actually true of the target tonight — she has never won, she has been in
+   the bottom twice, she cannot sew, nobody knows her yet. A line tagged with
+   one is only ever drawn when that fact holds, so a read about a queen who
+   has never placed is never said to the queen who won last week.
+
+   The shape is the one js/dr/werk.js and js/dr/confessional.js already use
+   for craft: a plain string assumes nothing and is always available, and
+   `{ angle, line }` is offered only when it fits. Untagged lines therefore
+   keep working exactly as they did, which is what makes this safe to fill
+   one tier at a time. */
+export const lineAngle = l => (typeof l === 'string' ? null : (l && l.angle) || null);
+export const lineOf = l => (typeof l === 'string' ? l : (l && l.line) || '');
+
+export function miniLinesFor(id, tierId, angle = null) {
   const m = miniVoice(id);
   const t = m && m.tiers.find(x => x.id === tierId);
-  return t && t.lines.length ? t.lines : null;
+  if (!t || !t.lines.length) return null;
+  /* Tagged lines first when one fits: a specific read is the better card
+     every time, and the untagged pool is the floor rather than the default. */
+  const fitting = t.lines.filter(l => lineAngle(l) && lineAngle(l) === angle);
+  if (fitting.length) return fitting;
+  const general = t.lines.filter(l => !lineAngle(l));
+  return general.length ? general : t.lines;
 }
 
 /** Whether this mini's prose is allowed to name a second queen. */

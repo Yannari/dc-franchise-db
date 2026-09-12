@@ -21,7 +21,7 @@ import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   MINI_VOICES, MINI_TIER_IDS, MINI_VARIANTS,
-  miniVoice, miniLinesFor, miniNamesOther,
+  miniVoice, miniLinesFor, miniNamesOther, lineOf,
   unwrittenMiniVoices, miniVoiceTierCount,
 } from '../js/dr/data/mini-voices.js';
 import {
@@ -49,8 +49,9 @@ import {
 } from '../js/dr/data/deliberation-voices.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
 
+const _text = v => (typeof v === 'object' && v && v.line) ? v.line : String(v);
 function tooSimilar(x, y) {
-  const words = t => new Set(String(t).toLowerCase().match(/[a-z']+/g) || []);
+  const words = t => new Set(_text(t).toLowerCase().match(/[a-z']+/g) || []);
   const a = words(x);
   const b = words(y);
   if (!a.size || !b.size) return false;
@@ -135,24 +136,20 @@ describe('the lines', () => {
   it('names the other queen only where there is one', () => {
     for (const { key, t, m } of miniWritten) {
       for (const l of t.lines) {
+        const text = lineOf(l);
         if (m.cast === 'solo') {
-          expect(l, `mini:${key}/${t.id} is a solo mini but names a second queen`)
+          expect(text, `mini:${key}/${t.id} is a solo mini but names a second queen`)
             .not.toMatch(/\{b\}/);
         }
-        const bad = l.match(/\{(?!a\}|b\}|c\})[^}]*\}/);
+        const bad = text.match(/\{(?!a\}|b\}|c\})[^}]*\}/);
         expect(bad, `mini:${key}/${t.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
       }
     }
-    /* AND A TARGETING MINI HAS TO ACTUALLY USE IT. Recording who she read and
-       then never saying it is the exact gap these files close, so a written
-       pool for a `targets` or `pairs` mini that never reaches for {b} has
-       been written as though it were a solo. The announce tier is exempt: it
-       is addressed to the room before anybody has been picked. */
     for (const m of MINI_VOICES) {
       if (m.cast === 'solo') continue;
       const body = m.tiers.filter(t => t.id !== 'announce' && t.lines.length);
       if (!body.length) continue;
-      const uses = body.some(t => t.lines.some(l => /\{b\}/.test(l)));
+      const uses = body.some(t => t.lines.some(l => /\{b\}/.test(lineOf(l))));
       expect(uses, `mini:${m.id} is a ${m.cast} mini and never names the other queen`)
         .toBe(true);
     }
@@ -161,7 +158,7 @@ describe('the lines', () => {
   it('keeps the song title out of everything but the lip sync', () => {
     for (const { key, t } of miniWritten) {
       for (const l of t.lines) {
-        expect(l, `mini:${key}/${t.id} names a song`).not.toMatch(/\{s\}/);
+        expect(lineOf(l), `mini:${key}/${t.id} names a song`).not.toMatch(/\{s\}/);
       }
     }
     for (const { pool, key, t } of lsWritten) {
@@ -201,10 +198,11 @@ describe('the lines', () => {
   it('speaks this show and no other, and writes prose', () => {
     for (const { pool, key, t } of [...miniWritten, ...lsWritten]) {
       for (const l of t.lines) {
-        const bad = foreignWordsIn(l, 'drag-race');
+        const text = lineOf(l);
+        const bad = foreignWordsIn(text, 'drag-race');
         expect(bad, `${pool}:${key}/${t.id} says "${bad[0]}", which belongs to another show`)
           .toEqual([]);
-        expect(l.length, `${pool}:${key}/${t.id} has a one-liner`).toBeGreaterThan(60);
+        expect(text.length, `${pool}:${key}/${t.id} has a one-liner`).toBeGreaterThan(60);
       }
     }
   });

@@ -6908,77 +6908,77 @@
       "kind": "laid-off",
       "afterSeason": "dr-1",
       "seq": 1,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alejandro",
       "kind": "quit-job",
       "afterSeason": "dr-1",
       "seq": 2,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "amy",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 3,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "anne-maria",
       "kind": "career-change",
       "afterSeason": "dr-1",
       "seq": 4,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "beardo",
       "kind": "promoted",
       "afterSeason": "dr-1",
       "seq": 5,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "beth",
       "kind": "learned",
       "afterSeason": "dr-1",
       "seq": 6,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "blaineley",
       "kind": "laid-off",
       "afterSeason": "dr-1",
       "seq": 7,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brick",
       "kind": "cooking",
       "afterSeason": "dr-1",
       "seq": 8,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bridgette",
       "kind": "new-language",
       "afterSeason": "dr-1",
       "seq": 9,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bridgette",
       "kind": "laid-off",
       "afterSeason": "dr-1",
       "seq": 10,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brody",
       "kind": "dating",
       "afterSeason": "dr-1",
       "seq": 11,
-      "status": "proposed",
+      "status": "approved",
       "whom": "mary"
     },
     {
@@ -6986,161 +6986,161 @@
       "kind": "career-change",
       "afterSeason": "dr-1",
       "seq": 12,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brody",
       "kind": "cameo",
       "afterSeason": "dr-1",
       "seq": 13,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cameron",
       "kind": "cooking",
       "afterSeason": "dr-1",
       "seq": 14,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cameron",
       "kind": "pet",
       "afterSeason": "dr-1",
       "seq": 15,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cody",
       "kind": "moved",
       "afterSeason": "dr-1",
       "seq": 16,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "courtney",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 17,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "crimson",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 18,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dave",
       "kind": "new-job",
       "afterSeason": "dr-1",
       "seq": 19,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dawn",
       "kind": "award",
       "afterSeason": "dr-1",
       "seq": 20,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dj",
       "kind": "marathon",
       "afterSeason": "dr-1",
       "seq": 21,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "duncan",
       "kind": "rewatch-podcast",
       "afterSeason": "dr-1",
       "seq": 22,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dwayne",
       "kind": "year-off",
       "afterSeason": "dr-1",
       "seq": 23,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "emma",
       "kind": "enrolled",
       "afterSeason": "dr-1",
       "seq": 24,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "emma",
       "kind": "year-off",
       "afterSeason": "dr-1",
       "seq": 25,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "emma",
       "kind": "learned",
       "afterSeason": "dr-1",
       "seq": 26,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ennui",
       "kind": "new-job",
       "afterSeason": "dr-1",
       "seq": 27,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "eva",
       "kind": "new-language",
       "afterSeason": "dr-1",
       "seq": 28,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gwen",
       "kind": "cooking",
       "afterSeason": "dr-1",
       "seq": 29,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "heather",
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 30,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "heather",
       "kind": "hosted-comp",
       "afterSeason": "dr-1",
       "seq": 31,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "izzy",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 32,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jasmine",
       "kind": "charity",
       "afterSeason": "dr-1",
       "seq": 33,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jay",
       "kind": "went-public",
       "afterSeason": "dr-1",
       "seq": 34,
-      "status": "proposed",
+      "status": "approved",
       "whom": "kitty"
     },
     {
@@ -7148,21 +7148,21 @@
       "kind": "surgery",
       "afterSeason": "dr-1",
       "seq": 35,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jo",
       "kind": "pet",
       "afterSeason": "dr-1",
       "seq": 36,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jo",
       "kind": "watch-party",
       "afterSeason": "dr-1",
       "seq": 37,
-      "status": "proposed",
+      "status": "approved",
       "whom": "alejandro"
     },
     {
@@ -7170,7 +7170,7 @@
       "kind": "quietly-ended",
       "afterSeason": "dr-1",
       "seq": 38,
-      "status": "proposed",
+      "status": "approved",
       "whom": "mickey"
     },
     {
@@ -7178,35 +7178,35 @@
       "kind": "moved-abroad",
       "afterSeason": "dr-1",
       "seq": 39,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "justin",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 40,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "katie",
       "kind": "pet",
       "afterSeason": "dr-1",
       "seq": 41,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "katie",
       "kind": "big-purchase",
       "afterSeason": "dr-1",
       "seq": 42,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "kelly",
       "kind": "broke-up",
       "afterSeason": "dr-1",
       "seq": 43,
-      "status": "proposed",
+      "status": "approved",
       "whom": "ryan"
     },
     {
@@ -7214,7 +7214,7 @@
       "kind": "broke-up",
       "afterSeason": "dr-1",
       "seq": 44,
-      "status": "proposed",
+      "status": "approved",
       "whom": "tammy"
     },
     {
@@ -7222,63 +7222,63 @@
       "kind": "enrolled",
       "afterSeason": "dr-1",
       "seq": 45,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "leshawna",
       "kind": "moved-city",
       "afterSeason": "dr-1",
       "seq": 46,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lightning",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 47,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lindsay",
       "kind": "came-into-money",
       "afterSeason": "dr-1",
       "seq": 48,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mary",
       "kind": "tattoo",
       "afterSeason": "dr-1",
       "seq": 49,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mary",
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 50,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "max",
       "kind": "award",
       "afterSeason": "dr-1",
       "seq": 51,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mickey",
       "kind": "award",
       "afterSeason": "dr-1",
       "seq": 52,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "owen",
       "kind": "dating",
       "afterSeason": "dr-1",
       "seq": 53,
-      "status": "proposed",
+      "status": "approved",
       "whom": "leshawna"
     },
     {
@@ -7286,91 +7286,91 @@
       "kind": "volunteering",
       "afterSeason": "dr-1",
       "seq": 54,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ryan",
       "kind": "marathon",
       "afterSeason": "dr-1",
       "seq": 55,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "samey",
       "kind": "new-language",
       "afterSeason": "dr-1",
       "seq": 56,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "samey",
       "kind": "charges-dropped",
       "afterSeason": "dr-1",
       "seq": 57,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "shawn",
       "kind": "volunteering",
       "afterSeason": "dr-1",
       "seq": 58,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "shawn",
       "kind": "learned",
       "afterSeason": "dr-1",
       "seq": 59,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sierra",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 60,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sky",
       "kind": "enrolled",
       "afterSeason": "dr-1",
       "seq": 61,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "staci",
       "kind": "new-job",
       "afterSeason": "dr-1",
       "seq": 62,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "stephanie",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 63,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sugar",
       "kind": "graduated",
       "afterSeason": "dr-1",
       "seq": 64,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tyler",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 65,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "carrie",
       "kind": "road-trip",
       "afterSeason": "dr-1",
       "seq": 66,
-      "status": "proposed",
+      "status": "approved",
       "whom": "cody"
     },
     {
@@ -7378,91 +7378,91 @@
       "kind": "graduated",
       "afterSeason": "dr-1",
       "seq": 67,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "laurie",
       "kind": "moved-city",
       "afterSeason": "dr-1",
       "seq": 68,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "macarthur",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 69,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "macarthur",
       "kind": "learned",
       "afterSeason": "dr-1",
       "seq": 70,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "pete",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 71,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "spud",
       "kind": "award",
       "afterSeason": "dr-1",
       "seq": 72,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tom",
       "kind": "graduated",
       "afterSeason": "dr-1",
       "seq": 73,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tom",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 74,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tom",
       "kind": "mentored",
       "afterSeason": "dr-1",
       "seq": 75,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "chet",
       "kind": "laid-off",
       "afterSeason": "dr-1",
       "seq": 76,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gerry",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 77,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jen",
       "kind": "career-change",
       "afterSeason": "dr-1",
       "seq": 78,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "miles",
       "kind": "road-trip",
       "afterSeason": "dr-1",
       "seq": 79,
-      "status": "proposed",
+      "status": "approved",
       "whom": "gerry"
     },
     {
@@ -7470,42 +7470,42 @@
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 80,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sanders",
       "kind": "year-off",
       "afterSeason": "dr-1",
       "seq": 81,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "axel",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 82,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bowie",
       "kind": "interview",
       "afterSeason": "dr-1",
       "seq": 83,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "bowie",
       "kind": "big-purchase",
       "afterSeason": "dr-1",
       "seq": 84,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "brightly",
       "kind": "dating",
       "afterSeason": "dr-1",
       "seq": 85,
-      "status": "proposed",
+      "status": "approved",
       "whom": "emmah"
     },
     {
@@ -7513,7 +7513,7 @@
       "kind": "broke-up",
       "afterSeason": "dr-1",
       "seq": 86,
-      "status": "proposed",
+      "status": "approved",
       "whom": "millie"
     },
     {
@@ -7521,14 +7521,14 @@
       "kind": "moved-abroad",
       "afterSeason": "dr-1",
       "seq": 87,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "chase",
       "kind": "went-public",
       "afterSeason": "dr-1",
       "seq": 88,
-      "status": "proposed",
+      "status": "approved",
       "whom": "nichelle"
     },
     {
@@ -7536,49 +7536,49 @@
       "kind": "hobby",
       "afterSeason": "dr-1",
       "seq": 89,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "damien",
       "kind": "pet",
       "afterSeason": "dr-1",
       "seq": 90,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "damien",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 91,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "emmah",
       "kind": "bought-home",
       "afterSeason": "dr-1",
       "seq": 92,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hicks",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 93,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "julia",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 94,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "mk",
       "kind": "road-trip",
       "afterSeason": "dr-1",
       "seq": 95,
-      "status": "proposed",
+      "status": "approved",
       "whom": "emmah"
     },
     {
@@ -7586,329 +7586,329 @@
       "kind": "learned",
       "afterSeason": "dr-1",
       "seq": 96,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "priya",
       "kind": "moved",
       "afterSeason": "dr-1",
       "seq": 97,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ripper",
       "kind": "new-language",
       "afterSeason": "dr-1",
       "seq": 98,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "scary-girl",
       "kind": "graduated",
       "afterSeason": "dr-1",
       "seq": 99,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "scary-girl",
       "kind": "career-change",
       "afterSeason": "dr-1",
       "seq": 100,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "wayne",
       "kind": "hobby",
       "afterSeason": "dr-1",
       "seq": 101,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "thom",
       "kind": "quit-job",
       "afterSeason": "dr-1",
       "seq": 102,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jake",
       "kind": "year-off",
       "afterSeason": "dr-1",
       "seq": 103,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jake",
       "kind": "business-folded",
       "afterSeason": "dr-1",
       "seq": 104,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "grett",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 105,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "drew",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 106,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "sterling",
       "kind": "graduated",
       "afterSeason": "dr-1",
       "seq": 107,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "eureka",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 108,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "seraphine",
       "kind": "pet",
       "afterSeason": "dr-1",
       "seq": 109,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "alec",
       "kind": "old-car",
       "afterSeason": "dr-1",
       "seq": 110,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "fiore",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 111,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ellie",
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 112,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "nick",
       "kind": "pet",
       "afterSeason": "dr-1",
       "seq": 113,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "james",
       "kind": "cooking",
       "afterSeason": "dr-1",
       "seq": 114,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "james",
       "kind": "interview",
       "afterSeason": "dr-1",
       "seq": 115,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "james",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 116,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "karol",
       "kind": "moved-city",
       "afterSeason": "dr-1",
       "seq": 117,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "kai",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 118,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "riya",
       "kind": "promoted",
       "afterSeason": "dr-1",
       "seq": 119,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "connor",
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 120,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hunter",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 121,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "yul",
       "kind": "marathon",
       "afterSeason": "dr-1",
       "seq": 122,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lake",
       "kind": "laid-off",
       "afterSeason": "dr-1",
       "seq": 123,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "tess",
       "kind": "bought-home",
       "afterSeason": "dr-1",
       "seq": 124,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ally",
       "kind": "side-hustle",
       "afterSeason": "dr-1",
       "seq": 125,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ally",
       "kind": "cooking",
       "afterSeason": "dr-1",
       "seq": 126,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jade",
       "kind": "side-hustle",
       "afterSeason": "dr-1",
       "seq": 127,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "diego",
       "kind": "side-hustle",
       "afterSeason": "dr-1",
       "seq": 128,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "diego",
       "kind": "award",
       "afterSeason": "dr-1",
       "seq": 129,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "benji",
       "kind": "laid-off",
       "afterSeason": "dr-1",
       "seq": 130,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ivy",
       "kind": "enrolled",
       "afterSeason": "dr-1",
       "seq": 131,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ivy",
       "kind": "marathon",
       "afterSeason": "dr-1",
       "seq": 132,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "ivy",
       "kind": "bereavement",
       "afterSeason": "dr-1",
       "seq": 133,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hannah",
       "kind": "graduated",
       "afterSeason": "dr-1",
       "seq": 134,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "hannah",
       "kind": "side-hustle",
       "afterSeason": "dr-1",
       "seq": 135,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "lynda",
       "kind": "quit-job",
       "afterSeason": "dr-1",
       "seq": 136,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "isabel",
       "kind": "burnout",
       "afterSeason": "dr-1",
       "seq": 137,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "marissa",
       "kind": "year-off",
       "afterSeason": "dr-1",
       "seq": 138,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "anastasia",
       "kind": "marathon",
       "afterSeason": "dr-1",
       "seq": 139,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "logan",
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 140,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "richard",
       "kind": "new-job",
       "afterSeason": "dr-1",
       "seq": 141,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "misha",
       "kind": "went-public",
       "afterSeason": "dr-1",
       "seq": 142,
-      "status": "proposed",
+      "status": "approved",
       "whom": "jules"
     },
     {
@@ -7916,49 +7916,49 @@
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 143,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "misha",
       "kind": "production-fallout",
       "afterSeason": "dr-1",
       "seq": 144,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jules",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 145,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "joel",
       "kind": "started-business",
       "afterSeason": "dr-1",
       "seq": 146,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "jane",
       "kind": "reunion",
       "afterSeason": "dr-1",
       "seq": 147,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gyselle",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 148,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "natasha",
       "kind": "broke-up",
       "afterSeason": "dr-1",
       "seq": 149,
-      "status": "proposed",
+      "status": "approved",
       "whom": "zella"
     },
     {
@@ -7966,70 +7966,70 @@
       "kind": "bought-home",
       "afterSeason": "dr-1",
       "seq": 150,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "dylon",
       "kind": "travelling",
       "afterSeason": "dr-1",
       "seq": 151,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "zella",
       "kind": "enrolled",
       "afterSeason": "dr-1",
       "seq": 152,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "zella",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 153,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "zella",
       "kind": "career-change",
       "afterSeason": "dr-1",
       "seq": 154,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "harriett",
       "kind": "promoted",
       "afterSeason": "dr-1",
       "seq": 155,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "amberly",
       "kind": "moved-city",
       "afterSeason": "dr-1",
       "seq": 156,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "amberly",
       "kind": "new-job",
       "afterSeason": "dr-1",
       "seq": 157,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "stella",
       "kind": "haircut",
       "afterSeason": "dr-1",
       "seq": 158,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "velvet-vixen",
       "kind": "dating",
       "afterSeason": "dr-1",
       "seq": 159,
-      "status": "proposed",
+      "status": "approved",
       "whom": "anita-crown-davenport"
     },
     {
@@ -8037,42 +8037,42 @@
       "kind": "new-language",
       "afterSeason": "dr-1",
       "seq": 160,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "taystee",
       "kind": "tattoo",
       "afterSeason": "dr-1",
       "seq": 161,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "riot",
       "kind": "learned",
       "afterSeason": "dr-1",
       "seq": 162,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "quin",
       "kind": "side-hustle",
       "afterSeason": "dr-1",
       "seq": 163,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "quin",
       "kind": "therapy",
       "afterSeason": "dr-1",
       "seq": 164,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "gigi-cherie",
       "kind": "dating",
       "afterSeason": "dr-1",
       "seq": 165,
-      "status": "proposed",
+      "status": "approved",
       "whom": "autumnatic"
     },
     {
@@ -8080,28 +8080,28 @@
       "kind": "new-language",
       "afterSeason": "dr-1",
       "seq": 166,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cheryl-hole",
       "kind": "garden",
       "afterSeason": "dr-1",
       "seq": 167,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "cheryl-hole",
       "kind": "scandal",
       "afterSeason": "dr-1",
       "seq": 168,
-      "status": "proposed"
+      "status": "approved"
     },
     {
       "player": "anita-crown-davenport",
       "kind": "award",
       "afterSeason": "dr-1",
       "seq": 169,
-      "status": "proposed"
+      "status": "approved"
     }
   ]
 }

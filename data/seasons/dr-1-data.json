@@ -233,9 +233,30 @@
       ]
     },
     {
+      "name": "Taystee",
+      "playerSlug": "taystee",
+      "placement": 11,
+      "status": "Sashayed away",
+      "dr": {
+        "wins": 0,
+        "highs": 1,
+        "lows": 0,
+        "bottoms": 2,
+        "lipsyncWins": 0,
+        "congeniality": 0
+      },
+      "lead": "During her time on the show, Taystee placed thirteenth, earned one high placement, and landed in the bottom twice. Her thread included an early lip sync against Minnie Skurr to \"9 to 5\" and a later high placement during Autumnatic's Girl Group Challenge win. She returned to danger in Quin's later maxi challenge win, again lip syncing with Minnie Skurr. Taystee was sashayed away after the \"Gypsy Woman\" lip sync.",
+      "personality": "Taystee's available material gave no direct sense of her voice, because she had no recorded confessionals or house dialogue. Her thread is unusually fragmented, with the record showing both a brief rebound and repeated lip sync danger, so her personality cannot be separated from the mechanics of those appearances.",
+      "trivia": [
+        "Taystee lip synced against Minnie Skurr to both \"9 to 5\" and \"Gypsy Woman.\"",
+        "Her high placement came in the Girl Group Challenge episode.",
+        "No confessionals or house dialogue were recorded for her thread."
+      ]
+    },
+    {
       "name": "Riot",
       "playerSlug": "riot",
-      "placement": 11,
+      "placement": 12,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -256,7 +277,7 @@
     {
       "name": "Cheryl Hole",
       "playerSlug": "cheryl-hole",
-      "placement": 12,
+      "placement": 13,
       "status": "Sashayed away",
       "dr": {
         "wins": 0,
@@ -271,27 +292,6 @@
       "trivia": [
         "Cheryl Hole's elimination lip sync was against Anita Crown Davenport to \"Believe.\"",
         "Her two recorded competitive episodes were the Acting Challenge and Commercial Challenge episodes.",
-        "No confessionals or house dialogue were recorded for her thread."
-      ]
-    },
-    {
-      "name": "Taystee",
-      "playerSlug": "taystee",
-      "placement": 13,
-      "status": "Sashayed away",
-      "dr": {
-        "wins": 0,
-        "highs": 1,
-        "lows": 0,
-        "bottoms": 2,
-        "lipsyncWins": 0,
-        "congeniality": 0
-      },
-      "lead": "During her time on the show, Taystee placed thirteenth, earned one high placement, and landed in the bottom twice. Her thread included an early lip sync against Minnie Skurr to \"9 to 5\" and a later high placement during Autumnatic's Girl Group Challenge win. She returned to danger in Quin's later maxi challenge win, again lip syncing with Minnie Skurr. Taystee was sashayed away after the \"Gypsy Woman\" lip sync.",
-      "personality": "Taystee's available material gave no direct sense of her voice, because she had no recorded confessionals or house dialogue. Her thread is unusually fragmented, with the record showing both a brief rebound and repeated lip sync danger, so her personality cannot be separated from the mechanics of those appearances.",
-      "trivia": [
-        "Taystee lip synced against Minnie Skurr to both \"9 to 5\" and \"Gypsy Woman.\"",
-        "Her high placement came in the Girl Group Challenge episode.",
         "No confessionals or house dialogue were recorded for her thread."
       ]
     },

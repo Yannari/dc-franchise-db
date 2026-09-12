@@ -1457,7 +1457,22 @@ export function rpBuildMini(row) {
      HER, and it landed") was in the data and nowhere on the page.
      Three of the seven minis are `targets` and one is `pairs`; a solo mini
      has no target and simply does not draw the arrow. */
-  const aimOf = n => (m.detail?.[n]?.target) || null;
+  /* ── AND IT IS THIS READ'S TARGET, NOT HER FIRST ONE ──
+     `m.detail[queen].target` is the queen's PRIMARY read, and a turn is
+     several: she puts the glasses on and takes two or three of them apart.
+     Keyed by the reader, every card in her turn was captioned with the first
+     name she said — so a queen who read three people was labelled "reads X"
+     three times while the paragraph underneath named X, then Y, then Z.
+     Reported as "it still says Gigi Cherie when she's reading Quin", and
+     measured at 8 mislabelled cards out of 18 on one seed.
+     The scene has carried its own `target` since the turn was split into one
+     card per read. Read it from there. The detail map stays as the fallback
+     for a row saved before that field existed, and for the win card, which
+     is her primary read by construction (see `otherFor` in js/dr/stage.js). */
+  const aimOf = (sc) => {
+    const d = sc.data || {};
+    return d.target || (m.detail?.[(d.players || [])[0]]?.target) || null;
+  };
 
   /* ── WHAT THE ARROW SAYS, AND IT USED TO SAY THE OPPOSITE ──
      This was `!!m.detail[n].pulled`, and `pulled` is set when the bond is
@@ -1523,7 +1538,7 @@ export function rpBuildMini(row) {
       return spillStep(sc, i);
     }
     const who = (sc.data?.players || [])[0];
-    const at = who && READS.has(sc.kind) ? aimOf(who) : null;
+    const at = who && READS.has(sc.kind) ? aimOf(sc) : null;
     return `<div class="dr-step" id="dr-step-mini-${i}">
       <div class="dr-panel dr-a-score dr-card dr-minirow">
         <div class="dr-aim">

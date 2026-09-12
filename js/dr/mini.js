@@ -398,12 +398,42 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
       const count = d.passed ? 1 : frac <= 0.30 ? 3 : frac <= 0.70 ? 2 : 1;
       const taken = new Set([n]);
       const reads = [];
+      /* ── AND SHE DOES NOT DO THE SAME JOKE THREE TIMES ──
+         The angle is a property of the TARGET — her weakest craft, her
+         record — so a queen whose three draws all happened to be the worst
+         sewers in the room got `weak-craft:design` three times, and the pool
+         is keyed by angle: three cards in one turn reading "I have seen
+         better sewing on a pillow from a hotel room", with only the name
+         changed. Measured on a real season, once per turn of three.
+         A pool with one line for that angle is the reason it repeats, and
+         widening pools is not the fix — a comic doing the same premise about
+         three people in a row is bad on its own. So a later read prefers a
+         target the turn has not already made this joke about, and falls back
+         to the drawn one when the room offers nothing else. The first read is
+         never re-chosen: that is the one she prepared. */
+      const angles = new Set();
       for (let k = 0; k < count; k++) {
-        const target = k === 0 ? d.target
-          : targetFor(n, living.filter(o => !taken.has(o)), players, bond, star, rng);
+        let target;
+        let a;
+        if (k === 0) {
+          target = d.target;
+        } else {
+          const open = living.filter(o => !taken.has(o));
+          target = targetFor(n, open, players, bond, star, rng);
+          if (target && angles.has(readAngleFor(target, players, record).angle)) {
+            /* Drawn the same premise again. Look for one the turn has not
+               used, in the order the room offers them, and keep the draw if
+               there is none — every remaining queen can be weak at the same
+               thing. */
+            const fresh = open.find(o => o !== target
+              && !angles.has(readAngleFor(o, players, record).angle));
+            if (fresh) target = fresh;
+          }
+        }
         if (!target) break;
         taken.add(target);
-        const a = readAngleFor(target, players, record);
+        a = readAngleFor(target, players, record);
+        angles.add(a.angle);
         reads.push({ target, angle: a.angle, about: a.about, swing: k * 0.12 });
       }
       d.reads = reads;

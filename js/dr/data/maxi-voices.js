@@ -604,6 +604,11 @@ export const WALKTHROUGH_VOICES = [
     'The host asks for the verse. The verse comes out. The note is about what it sounds like to an audience that has not heard it before — is the story clear, is the melody carried, does it sound rehearsed or memorised.',
     'The host watches {a} perform her Rusical section. The walkthrough becomes a coaching session — a note on the key, a note on the acting inside the singing, a note on whether {a}\'s piece connects to the pieces around it.',
   ]),
+  /* THE STAND-UP, WHICH IS NOT THE ROAST. Empty on purpose: an unwritten
+     family falls back to the generic walkthrough, which asks about the work
+     without claiming she is roasting anybody. See
+     docs/PROSE-PROMPT-dr-stand-up.md. */
+  walk('stand-up', 'Five minutes of her own material, read aloud, with nobody to aim it at.', []),
   walk('roast', 'Her material — read aloud, in the room, before anybody laughs.', [
     'The host asks {a} to read her material. Out loud. In the werk room, where the jokes have to work without a spotlight and without an audience. The silence between the punchlines is the note.',
     '{a} reads her roast set to the host. The host listens without laughing — not cruelty, just hearing the material the way a panel will hear it. Stripped of delivery. Testing whether the jokes stand on their own.',

@@ -418,42 +418,64 @@ export const UNTUCKED_EVENTS = [
     id: 'named-me-to-my-face', phase: 'arrival', cast: 'pair', weight: 6,
     note: 'She said the name on stage. Backstage the name is sitting right there.',
     arcs: ['narrator', 'villain'], when: f => f.bNamedA,
-    // The queens who said her name, so the scene is with one of them.
     partners: (a, h) => h.namersOf(a),
     effects: { bond: -2, pop: { a: 1 } },
-    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
+    lines: [
+      "{a} sits down across from {b} and does not say anything for a long time. {b} starts talking first. \"I had to pick somebody.\" {a} nods. \"You picked me.\" That is the whole conversation and it lasts twenty minutes.",
+      "\"So.\" {a} looks at {b} over the rim of a glass she is not drinking from. \"You said my name.\" {b} opens her mouth. {a} holds up one finger. \"I am not asking why. I heard why. I am telling you I heard it.\"",
+      "{b} reaches for {a}'s arm the second they are backstage. {a} moves it. Not dramatically — just out of reach — and {b} sees her do it. The rest of the room sees {b} see her do it.",
+      "{a} walks in, sits on the opposite end of the couch from {b}, and crosses her legs. {b} says \"can we talk about it.\" {a} says \"we are talking about it\" and does not turn her head.",
+    ],
   }),
   ev({
     id: 'named-by-a-friend', phase: 'arrival', cast: 'pair', weight: 7,
     note: 'The queen she trusted said her name, and that is a different injury.',
     arcs: ['hero', 'narrator'], when: f => f.namedByFriend,
-    // A namer she actually liked. Being named by a rival is a different event.
     partners: (a, h) => h.namersOf(a).filter(n => h.bond(a, n) >= 3),
     effects: { bond: -3, pop: { a: 2, b: -2 } },
-    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
+    lines: [
+      "{a} does not shout. She sits next to {b} — the same spot they have shared all season — and says \"I thought you would not do that.\" {b} says \"I know.\" Neither of them moves and neither of them speaks again for a while.",
+      "{b} tries to explain it on the couch. The logic, the critiques, why it had to be somebody. {a} listens to all of it. \"You are right,\" she says. \"It did have to be somebody.\" The way she says somebody makes it clear she means anybody but me.",
+      "The room watches {a} and {b} sit down and knows what is coming. {a} does not make it a scene. She asks one question — \"did you mean it\" — and {b} says yes and {a} nods once and looks at the floor. The nod costs her more than shouting would have.",
+      "{b} says \"I am sorry\" before {a} has even sat down. {a} looks at her for a long time. \"You are not sorry you said it. You are sorry I was there when you said it.\" {b} does not argue because {b} cannot argue.",
+    ],
   }),
   ev({
     id: 'the-pile-on', phase: 'middle', cast: 'solo', weight: 6,
     note: 'Three or more queens named the same woman, and she has to sit in that room.',
     arcs: ['underdog', 'narrator'], when: f => f.pileOnA,
     effects: { pop: { a: 3 }, state: 'rattled' },
-    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
+    lines: [
+      "{a} counts them. Sits on the couch and counts the queens who said her name, out loud, on her fingers. Three. She puts her hand down and stares at the wall and does not cry but does not talk to anybody either.",
+      "The room is careful around {a}. Three names on the board and all of them were hers. She picks up a drink, puts it back down, picks it up again. \"Did I do something?\" she says to nobody in particular. Nobody answers in particular.",
+      "{a} sits in the corner and the queens who named her do not sit near her, which tells her everything about how they feel about having done it. She watches them not sit near her and the watching is worse than the naming was.",
+      "\"Three of you.\" {a} says it quietly, to the room, while looking at the floor. \"Three.\" The room is silent. One queen starts to explain and {a} holds up a hand and the explaining stops.",
+    ],
   }),
   ev({
     id: 'named-herself-backstage', phase: 'arrival', cast: 'solo', weight: 6,
     note: 'She said her own name on that stage and the room does not know what to do with her.',
     arcs: ['hero', 'underdog'], when: f => f.namedHerself,
     effects: { pop: { a: 4 }, state: 'low' },
-    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
+    lines: [
+      "{a} sits down and the room gets quiet in a way it has not been quiet all season. She said her own name out there. Somebody puts a hand on her shoulder and she lets them leave it there, which is the closest she gets to asking for help.",
+      "Nobody asks {a} why she did it. They all heard her say her own name and they all know why. One queen brings her water. Another sits next to her without speaking. The room rearranges itself around her like she is injured.",
+      "{a} comes backstage and sits alone at the end of the couch. Two queens look at each other, deciding who goes over. The one who does puts a drink in front of her and says nothing. {a} picks it up. \"I meant it,\" she says. \"I know,\" the queen says.",
+      "The room watches {a} walk in and every queen in it recalculates who they are sitting next to and why. She said her own name. She meant it. The silence that follows her to the couch is the loudest thing backstage has produced all night.",
+    ],
   }),
   ev({
     id: 'defends-the-name', phase: 'middle', cast: 'pair', weight: 5,
     note: 'She named her and she is not apologising for it, out loud, to her face.',
     arcs: ['villain', 'narrator'], when: f => f.aNamedB && f.canScheme,
-    // The queen SHE named — the reverse direction, so `a` is the one defending.
     partners: (a, h) => Object.keys(h.namedBy).filter(t => h.namersOf(t).includes(a)),
     effects: { bond: -2, pop: { a: -2, b: 1 } },
-    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
+    lines: [
+      "\"I said your name and I would say it again.\" {a} delivers it across the couch to {b}'s face and does not blink. {b} stares back. The room holds still. Nobody expected {a} to double down and {a} has doubled down.",
+      "{b} asks {a} why she said her name. {a} tells her. Lists the reasons, one at a time, on the couch, while {b} sits there and hears each one. The room watches a queen get reviewed to her face by somebody who is not a judge.",
+      "\"Do not ask me to apologise for that.\" {a} says it before {b} has finished the sentence. \"I said what I saw. If you want somebody who lies to you there are plenty of options on this couch.\" The couch does not enjoy being included.",
+      "{a} leans forward on the couch and looks {b} in the eye. \"You know why I said your name. You have known since the critiques.\" {b} opens her mouth to argue and closes it because {a} is right and being right is the worst part.",
+    ],
   }),
   ev({
     id: 'who-should-go', phase: 'middle', cast: 'pair', weight: 2,

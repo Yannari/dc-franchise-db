@@ -1358,6 +1358,11 @@ export function runDragWeek(state, cfg, ctx) {
       step: maxi.stage === 'pre' ? 'maxi-pre' : 'maxi-main', rng,
       // So the host's walkthrough note can be about this week's actual work.
       family: familyForChallenge(maxi.id).family,
+      /* And so it can say his NAME. A makeover walkthrough is the host looking
+         at two people, and the second one was "her partner" in every line. */
+      partners: Object.fromEntries(Object.entries(assignment.picks || {})
+        .filter(([, p]) => p && p.paired && p.choice)
+        .map(([n, p]) => [n, p.choice])),
     })) scenes.push(sc);
 
     /* ── WHAT HAPPENED ON THAT STAGE FOLLOWS THEM BACKSTAGE ──

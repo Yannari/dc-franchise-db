@@ -2131,6 +2131,14 @@ export function rpBuildChoice(row) {
   // The queen who handed the room out, when somebody did — she is on every
   // other pick as `assignedBy`, and on her own as the one who chose.
   const paired = (picks.find(([, p]) => p?.assignedBy) || [])[1]?.assignedBy || null;
+  /* ── A PAIRED ROOM WITH NOBODY TO CREDIT IS STILL A PAIRED ROOM ──
+     `paired` above is the queen who did it, and she does not always exist: an
+     episode that books no mini has nobody to hand the room out, so the picks
+     carry `paired` and no `assignedBy`. The header read that as an ordinary
+     line-up and printed "6 different acts across 6 queens" over six queens
+     and six men. `pairedRoom` is the question the header actually wants to
+     ask, which is whether anybody was drafted at all. */
+  const pairedRoom = !!paired || picks.some(([, p]) => p?.paired);
   const order = (a.order || []).filter(n => a.picks?.[n]);
 
   /* WHO ELSE IS DOING IT. On a night with no draft two queens can land on the
@@ -2214,14 +2222,17 @@ export function rpBuildChoice(row) {
          the partners were contested; the room is handed out by the mini
          winner now, so the number worth printing is who did the handing. */
       ? `paired by ${esc(paired)}`
-      : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`;
+      : pairedRoom
+        // Nobody handed it out. Still not a draft, and still not "acts".
+        ? `${picks.length} pair${picks.length === 1 ? '' : 's'}`
+        : `${Object.keys(byChoice).length} different acts across ${picks.length} queens`;
 
   const seatsFor = names => `<div class="dr-seats">${
     names.map((n, i) => seat(n, a.picks[n], i)).join('')}</div>`;
   const board = picks.length
     ? `<div class="dr-boardwrap">
         <div class="dr-boardhead">
-          <b class="dr-disp">${contested ? 'The board' : 'The line-up'}</b>
+          <b class="dr-disp">${contested ? 'The board' : pairedRoom ? 'The pairings' : 'The line-up'}</b>
           <span>${headline}</span>
         </div>
         ${splitRoom
@@ -2295,8 +2306,9 @@ export function rpBuildChoice(row) {
   return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}</style>${_shell(
     `<div class="dr-brief-room dr-draft">${briefSet('draft')}${board}${steps}</div>`, ep, {
       phase: 'werk',
-      title: contested ? 'The Draft' : 'The Line-Up',
-      subtitle: contested ? 'who takes what, and who misses out' : 'what everybody is doing',
+      title: contested ? 'The Draft' : pairedRoom ? 'The Pairings' : 'The Line-Up',
+      subtitle: contested ? 'who takes what, and who misses out'
+        : pairedRoom ? 'who is working with who' : 'what everybody is doing',
       ...(railRoom.length ? { sidebar: railAt(0) } : {}),
     })}${_controls('choice', Math.max(1, scenes.length), ep.num)}`;
 }

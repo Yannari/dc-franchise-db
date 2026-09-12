@@ -280,8 +280,13 @@ export function assign(ctx) {
        bought her. */
     if (assigner) {
       const mine = easiest();
+      /* `paired: true` is the flag the SCREEN reads, and it is on every pick
+         this challenge makes. See the block below `rest` for why it is not
+         `assignedBy`. Her own is `kept-the-best`: she did not draft him, she
+         took him, which is a different card from getting your first choice. */
       picks[assigner] = { name: assigner, choice: mine.name, partner: mine,
-        assignedBy: null, chosen: true, penalty: 0, lostTo: null };
+        assignedBy: null, chosen: true, paired: true, pairing: 'kept-the-best',
+        penalty: 0, lostTo: null };
     }
 
     /* THEN EVERYBODY ELSE. A queen the archetype rules let scheme gives her
@@ -322,15 +327,36 @@ export function assign(ctx) {
       } else {
         partner = bag.splice(Math.floor(rng() * bag.length), 1)[0];
       }
-      picks[n] = { name: n, choice: partner.name, partner, pairing: meant,
-        assignedBy: assigner, chosen: false, penalty: 0, lostTo: null };
+      /* ── A MAKEOVER PICK SAYS SO ON ITS FACE ──
+         The renderer used to tell a makeover from a music video by asking
+         whether `assignedBy` was set: paired by a QUEEN got the pairing beat,
+         cast by the HOST got the call sheet. Which works right up until there
+         is NO mini winner — an episode with no mini booked, which the season
+         is free to do — and then `assigner` is null, every pick reads
+         `{ chosen: false, assignedBy: null }`, and the whole room draws the
+         music video's call sheet over a night about a wig. Reported on an
+         episode eleven makeover: six queens, six call sheets, "the role
+         exists in the video" printed six times.
+         So the flag is about what this challenge IS rather than about who
+         happened to do the handing out. `assignedBy` still answers "who", and
+         it is allowed to be nobody. */
+      picks[n] = { name: n, choice: partner.name, partner,
+        pairing: assigner ? meant : 'drawn',
+        assignedBy: assigner, chosen: false, paired: true,
+        penalty: 0, lostTo: null };
     }
   } else {
     // Nobody competes for their own family. Each queen draws one, and the same
     // relationship can turn up twice, because it can.
     picks = Object.fromEntries(order.map(n => {
       const p = pool[Math.floor(rng() * pool.length)];
-      return [n, { name: n, choice: p.name, penalty: 0, lostTo: null }];
+      /* Paired, like the rest of this file — nobody drafted anybody. Without
+         the flag these fell through to the DRAFT cards instead, and "she
+         grabs the one everybody knew had the material" is not a sentence
+         about a queen's own sister. */
+      return [n, { name: n, choice: p.name, partner: p, paired: true,
+        pairing: 'own-family', assignedBy: null, chosen: false,
+        penalty: 0, lostTo: null }];
     }));
   }
 
@@ -349,9 +375,16 @@ export function assign(ctx) {
 
   return {
     roles: Object.fromEntries(order.map(n => [n, 'standard'])),
-    // Not a draft and not a call sheet — see the `paired` tier on
-    // `the-division`. Only when somebody actually handed the room out.
-    ...(Object.values(picks).some(p => p?.assignedBy) ? { division: 'paired' } : {}),
+    /* Not a draft and not a call sheet — see the `paired` tier on
+       `the-division`. This was set ONLY when somebody handed the room out,
+       and the fallback for everything else is `draft`: an episode with no
+       mini therefore opened its makeover with "the pick order is announced
+       and the room becomes a maths class" over a night where nobody picked
+       or counted anything. A makeover is never a draft, so it always answers
+       this, and the answer says which kind of makeover it was. */
+    division: Object.values(picks).some(p => p?.assignedBy) ? 'paired'
+      : Object.values(picks).some(p => p?.pairing === 'own-family') ? 'own-family'
+        : 'drawn',
     teams: [], order, picks, events, pool, poolKey,
     scenes: [{ step: 'choice', kind: 'makeover-pairs', data: { pool: poolKey, picks } }],
   };

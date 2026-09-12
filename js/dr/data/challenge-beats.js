@@ -268,6 +268,23 @@ export const CHALLENGE_BEATS = [
         "\"You won the mini. You are pairing the room.\" The winner stands up. Every other queen sits very still. This is not a draft. There is no turn. There is one person with the power and twelve people waiting to find out what she thinks of them.",
         "Pairs, chosen by the mini winner. She has the whole room to hand out and the whole room knows it. Some queens are smiling at her. Some queens are avoiding eye contact. Neither strategy is going to change what she already decided.",
       ]),
+      /* AND THE SAME NIGHT WITH NOBODY TO DO THE PAIRING. An episode that
+         books no mini has no winner to hand the room out, and the makeover
+         fell through to `draft` — a pick order, on a night with no picking. */
+      tier('drawn', 'No mini winner, so no favours. The names come out of a bag.', [
+        "Nobody won the right to pair this room, so the room draws. Names in a bag, one hand at a time, and whatever comes out is who she is spending the day with. No strategy, no grudge, no favour — which is either a relief or a disappointment depending on who you asked to be paired with.",
+        "No pairing prize this week. The host holds out the bag and the room lines up. Every queen gets exactly as much control over her afternoon as the person next to her, which is none.",
+        "The names go in a bag and the bag decides. The room watches each draw and does the same arithmetic every time: is that better or worse than what is left. By the last hand there is no arithmetic left to do.",
+        "\"Reach in.\" No draft, no captain, no winner handing out favours. One by one the queens pull a name and meet the person on it, and the meeting is the whole ceremony.",
+      ]),
+      /* AND THE WEEK NOBODY IS A STRANGER. The loved-ones makeover hands
+         every queen her own person and there is nothing to hand out at all. */
+      tier('own-family', 'Nobody is paired with anybody. They are already paired.', [
+        "There is nothing to hand out. The doors open and the room stops being a competition for about ninety seconds, because the person walking through them belongs to somebody standing here.",
+        "No draft, no bag, no mini winner. Every queen gets hers, and the only thing the host has to do is stand back and let the room fall apart for a minute.",
+        "The host does not read an order. She opens a door. What happens next is not a challenge yet — it becomes one again when somebody remembers there is a runway tonight.",
+        "Nobody is assigned anybody. They walk in and they are already family, which makes the job easier and the stakes considerably worse.",
+      ]),
       tier('two-casts', 'The room is cut in two, and the parts are fought over inside each half.', [
         "Two casts. Same script. The host splits the room and both halves are doing the same six parts, judged against each other. Two queens just realised they are playing the same character.",
         "The room is cut in half. Same script, same characters, back to back on the panel. The queens who got the stronger cast know it already.",
@@ -428,28 +445,52 @@ export const CHALLENGE_BEATS = [
        and the screen had no words for it, so it borrowed the music video's
        call sheet — which is how "the role exists in the video" came to be
        printed over a challenge about a wig.
-       `{b}` is the queen who did the pairing. */
+       `{b}` is the queen who did the pairing and `{d}` is the partner's NAME.
+       Four of the eight lines here used to say "her partner" over a man the
+       pick has been carrying a name for since the module was written, and the
+       prep room said it six more times — a whole makeover in which the
+       person being made over is never once addressed.
+       NOT EVERY TIER HAS A `{b}`. `drawn` and `own-family` are the weeks
+       nobody handed anything out, so their lines must not reach for one. */
     id: 'paired-off', step: 'choice', scope: 'per-queen', speaker: 'narrator',
     note: 'Who {b} paired her with, and what the room thinks it meant.',
     tierBy: 'pairing',
     tiers: [
       tier('dumped-on', 'She was handed the hardest man in the room, and everybody saw it.', [
         "{b} says {a}'s name and the room goes quiet. That is the hardest partner on the board and everybody knows it. {a} smiles because there is nothing else to do.",
-        "The hardest man in the room, handed to {a}, by {b}, with a smile. {a} takes it. She does not have a choice, and the not having a choice is the point.",
-        "{b} pairs {a} with the one nobody wanted. The room watches. {a} nods and walks over to meet him and the walk is longer than it should be.",
+        "{d} is the hardest partner in the room, and {b} hands {d} to {a} with a smile. {a} takes it. She does not have a choice, and the not having a choice is the point.",
+        "{b} pairs {a} with the one nobody wanted. The room watches. {a} nods and walks over to meet {d} and the walk is longer than it should be.",
         "{a} gets the name and tries not to react. She does not quite pull it off. {b} has already moved on to the next queen.",
       ]),
       tier('looked-after', 'She was given somebody she can work with, deliberately.', [
-        "{b} gives {a} somebody she can actually work with. It is generous and the room reads it immediately — that is a favour, out loud, in front of the whole cast.",
+        "{b} gives {a} {d}, who is somebody she can actually work with. It is generous and the room reads it immediately — that is a favour, out loud, in front of the whole cast.",
         "{a} gets paired and the relief is visible. {b} gave her someone workable and everybody in the room just clocked the alliance. Whether or not there is one.",
-        "{b} hands {a} a partner she can build with. It is kind. It is also visible, and visible kindness in this room becomes a talking point on the panel.",
-        "A good partner for {a}, chosen deliberately by {b}. {a} exhales. The room takes a note.",
+        "{b} hands {a} {d}, who she can build with. It is kind. It is also visible, and visible kindness in this room becomes a talking point on the panel.",
+        "{d} for {a}, chosen deliberately by {b} out of everybody she could have handed her. {a} exhales. The room takes a note, and the note is not about the wig.",
+      ]),
+      tier('kept-the-best', 'She won the mini, and the first thing she did was keep the best for herself.', [
+        "{a} won the mini and the mini bought her this: first pick of the room. She takes {d}. Nobody is surprised and nobody says anything, because everybody in here would have done the same.",
+        "\"I am keeping {d}.\" {a} does not dress it up and does not apologise for it. She won, the win bought her the room, and the best in it is hers before anybody else gets a name.",
+        "{a} takes {d} for herself first, out loud, in front of everybody. It is not a betrayal — it is the prize. The room watches anyway, because now they know what is left.",
+        "First name {a} calls is her own. {d} walks over to her station and the rest of the room does the arithmetic on what is still on the board.",
+      ]),
+      tier('drawn', 'Nobody handed anything out. She reached into the bag and took what came out.', [
+        "Nobody won the right to pair this room, so the room draws. {a} reaches in, pulls a name, and gets {d}. No strategy in it, no favour, no grudge — a hand in a bag and a stranger she has ninety minutes to turn into family.",
+        "{a} draws {d}. They look at each other and start from nothing at the same moment. That is the whole ceremony.",
+        "The names come out of a bag. {a} gets {d} and walks them back to her station already talking, because the talking is the work and the clock has started.",
+        "{a}'s hand comes out of the bag with {d} on the paper. She takes one look and starts making a list. The list is long. The afternoon is not.",
+      ]),
+      tier('own-family', 'She did not draw a stranger. She got hers.', [
+        "{a} sees {d} and the challenge stops being a challenge for about fifteen seconds. Then it starts again, because {d} still has to walk a runway tonight and has never walked anything.",
+        "{a} has known {d} her whole life. She gets the face she already knows by heart and the terrifying job of putting it on a stage.",
+        "The doors open and there is {d}. {a} does not move for a second. Then she does, and the two of them hold on longer than the cameras need.",
+        "{a} gets {d}. Not a stranger, not a draw, not a favour from anybody — hers. The paint will be the easy part.",
       ]),
       tier('next-name', 'No message in it. She was the next name on the list.', [
-        "{b} says {a}'s name. No pause, no drama, just the next queen on the list. {a} walks over to meet her partner and sizes him up on the way.",
-        "{a} gets paired. She shakes his hand, looks at his shoulders, and starts thinking about proportions. There is work to do and the sooner she starts the better.",
-        "Next name: {a}. She meets her partner. First handshake, first look, first assessment of what she is working with. He is nervous. She is already planning the wig.",
-        "{b} calls {a} and moves on. {a} meets her partner, takes one look at him, and starts making a list in her head. The list is long. The afternoon is not.",
+        "{b} says {a}'s name. No pause, no drama, just the next queen on the list. {a} walks over to meet {d} and sizes {d} up on the way.",
+        "{a} gets {d}. She shakes hands, looks at the shoulders, and starts thinking about proportions. There is work to do and the sooner she starts the better.",
+        "Next name: {a}. She meets {d}. First handshake, first look, first assessment of what she is working with. {d} is nervous. She is already planning the wig.",
+        "{b} calls {a} and moves on. {a} meets {d}, takes one look, and starts making a list in her head. The list is long. The afternoon is not.",
       ]),
     ],
   },

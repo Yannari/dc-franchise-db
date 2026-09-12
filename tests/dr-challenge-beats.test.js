@@ -107,8 +107,12 @@ describe('the schema', () => {
           }
           const bad = MENTORED.has(b.id)
             ? l.match(/\{(?!a\}|c\}|m\})[^}]*\}/)
+            /* AND `{d}`, WHICH ON A PAIRING IS THE PERSON SHE IS PAIRED
+               WITH. Four of this beat's lines used to say "her partner" over
+               somebody the pick has carried a name for since the makeover was
+               written, so the token is the fix rather than a stray. */
             : PAIR_BEATS.has(b.id)
-              ? l.match(/\{(?!a\}|b\}|c\})[^}]*\}/)
+              ? l.match(/\{(?!a\}|b\}|c\}|d\})[^}]*\}/)
               : l.match(/\{(?!a\}|c\})[^}]*\}/);
           expect(bad, `${b.id}/${t.id} uses unknown placeholder ${bad?.[0]}`).toBeNull();
         }

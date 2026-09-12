@@ -252,8 +252,19 @@ const SURFACES = {
   runway: { id: 'runway', valueOf: sc => num(sc?.data?.score) },
   lipsync: { id: 'lipsync', valueOf: sc => num(sc?.data?.score) },
   'maxi-pre': { id: 'maxipre', valueOf: sc => num(sc?.data?.perf) },
-  // The draft has no score. Losing the pick IS the outcome.
-  choice: { id: 'choice', valueOf: sc => (sc?.data?.lostTo ? 0 : 1) },
+  /* The draft has no score. Losing the pick IS the outcome.
+     EXCEPT WHERE THERE WAS NO PICK. A makeover hands the room out — or draws
+     it out of a bag — and no queen chose anything, so `lostTo` is null for
+     everybody and every one of them read as having got exactly what she
+     wanted: "I got what I wanted. That does not happen in here," over a
+     partner she pulled out of a bag thirty seconds ago. `null` is the
+     honest answer and this file already knows what to do with it: a scene
+     with no number yields nobody. */
+  choice: {
+    id: 'choice',
+    valueOf: sc => (sc?.data?.beat === 'paired-off' ? null
+      : sc?.data?.lostTo ? 0 : 1),
+  },
 };
 
 export function surfaceFor(step) { return SURFACES[step] || null; }

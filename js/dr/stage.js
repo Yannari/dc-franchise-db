@@ -1149,7 +1149,13 @@ export function renderChallengeBeats({
            takes a choreography room; see MENTORS in js/dr/data/judges.js.
            `{b}` is here for the same reason it is everywhere else: a beat about
            two queens could not name the second one from this emitter. */
-        { a: who[0], b: who[1], c: maxi.name, m: mentorOf(beat.id)?.name || '' }),
+        /* `{d}` IS WHOEVER OR WHATEVER SHE ENDED UP WITH. The pairing beat is
+           about a PERSON and could not say his name from here, so four of its
+           lines said "her partner" over a man the pick has carried a name for
+           since the module was written. Read off `extra` so it stays one
+           field: whatever the beat put on the card is what the line says. */
+        { a: who[0], b: who[1], c: maxi.name, m: mentorOf(beat.id)?.name || '',
+          d: extra.partner || extra.choice || '' }),
     });
   };
 
@@ -1505,6 +1511,28 @@ export function renderChallengeBeats({
        with no video in it.
        `assignedBy` is what tells them apart: paired by another QUEEN gets the
        pairing beat, cast by the HOST gets a call sheet. */
+    /* ── WHAT THE CHALLENGE IS, NOT WHO HAPPENED TO DO THE HANDING OUT ──
+       This asked `p.assignedBy` first, which made the whole thing depend on
+       there BEING a mini winner. An episode that books no mini leaves
+       `assigner` null in js/dr/chal/makeover.js, every pick reads
+       `{ chosen: false, assignedBy: null }`, and the makeover fell straight
+       through to the call sheet below — six queens on an episode eleven
+       makeover each told "the role exists in the video" over a night with no
+       video in it. Exactly the bug the comment below was written for, one
+       null away from coming back.
+       `paired` is set by the makeover on every pick it makes, whoever did the
+       pairing and whether anybody did. It goes first. */
+    if (p.paired) {
+      /* WHAT WAS MEANT BY IT, decided in js/dr/chal/makeover.js and carried on
+         the pick. The renderer does not re-derive it: the module already knows
+         whether it dumped on her, looked after her, kept the best for itself
+         or simply drew a name, and a second opinion here would be a screen
+         disagreeing with the engine about what just happened. */
+      emit(beatById('paired-off'), p.pairing || 'next-name',
+        p.assignedBy ? [n, p.assignedBy] : [n],
+        { partner: p.choice, by: p.assignedBy || null });
+      continue;
+    }
     if (p.chosen === false && !p.assignedBy) {
       emit(castBeat, assignment.roles?.[n] || 'standard', [n],
         { role: assignment.roles?.[n] || 'standard' });
@@ -1744,6 +1772,14 @@ export function renderMaxiEventScenes(events, {
      "crash at  enough times". A hole rather than a placeholder, which is the
      harder half of the same bug to notice. */
   maxiName = '',
+  /* ── WHO SHE IS IN THE ROOM WITH ──
+     `{name: partner}`. On a makeover the prep room is not one queen at a
+     station, it is two people and a deadline, and this renderer could not
+     name the second one: every walkthrough line said "her partner" over a man
+     the assignment has been carrying a name for since the module was written.
+     Six of them in one prep room, none of them addressed.
+     Empty on every other challenge, where `{d}` simply does not appear. */
+  partners = {},
 } = {}) {
   const scenes = [];
   const used = new Set();
@@ -1835,15 +1871,15 @@ export function renderMaxiEventScenes(events, {
            CHALLENGE in this pool rather than a third queen -- the two pools
            spell the same token differently, which is worth knowing before
            adding a line to either. */
-        note: fill(spec.note, { a: who[0], b: who[1], c: maxiName }),
+        note: fill(spec.note, { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' }),
         from: spec.from,
         ...(familyLines ? { family, voiced: true } : {}),
       },
       text: familyLines
         ? fill(pick(familyLines, rng, used, `${ev.type}/${family}`),
-          { a: who[0], b: who[1], c: maxiName })
+          { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' })
         : fill(pick(spec.lines, rng, used, ev.type),
-          { a: who[0], b: who[1], c: maxiName }),
+          { a: who[0], b: who[1], c: maxiName, d: partners[who[0]] || '' }),
     });
   }
   return scenes;

@@ -151,6 +151,30 @@ export const STAGE_CSS = `
 .dr-step{scroll-margin-top:210px}
 
 /* ── THE DISMISSAL ── the safe queens, sent to Untucked ── */
+/* ── WHO SHOULD GO HOME ──
+   The board the room gives back. Most-named first, with the queens who named
+   her under her own name, because who said it is the whole event -- a name
+   with three votes behind it and a name with one are different nights. */
+.dr-wsg{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  padding:14px 16px}
+.dr-wsg-q{margin:6px 0 12px;font-family:'Playfair Display',Georgia,serif;
+  font-size:17px;font-style:italic;color:#FFD7EE;line-height:1.4}
+.dr-wsg-board{display:flex;flex-direction:column;gap:6px}
+.dr-wsg-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:11px;
+  align-items:center;padding:7px 11px;border-radius:8px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+/* The name the room landed on. */
+.dr-wsg-top{background:linear-gradient(90deg,rgba(255,41,75,.16),rgba(255,41,75,.04));
+  border-color:rgba(255,41,75,.42)}
+.dr-wsg-who{min-width:0}
+.dr-wsg-who b{display:block;font-size:13.5px;color:#fff;letter-spacing:.02em}
+.dr-wsg-who span{display:block;font-size:11px;color:#C9A6BC;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* The most sympathetic thing anybody does all night, and it is not a strategy. */
+.dr-wsg-self{font-size:9.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#FFD23F;white-space:nowrap}
+.dr-wsg-n{font-family:'Space Mono',ui-monospace,monospace;font-size:15px;
+  font-weight:700;color:#fff;min-width:20px;text-align:right}
 .dr-delib{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
   padding:14px 16px 14px 20px}
 .dr-delib p{margin:4px 0 0;color:#f4e3ed;line-height:1.6;text-wrap:pretty}
@@ -705,6 +729,59 @@ export function rpBuildCritiques(row) {
      they all go to Untucked and the panel says what it actually thinks with
      the stage empty. The arguments name the judge on each side and the queen
      they are fighting over; the host's call is last, because she is. */
+  /* ── "WHO SHOULD GO HOME?" ──
+     The host asks the room to name somebody, on the stage, out loud, in front
+     of the queen they name.
+
+     IT RAN AND REACHED NO SCREEN. js/dr/critiques.js has computed the whole
+     thing since it was written -- who each queen names, why (a schemer names
+     the biggest threat, everybody else names whoever they like least, a loyal
+     queen standing in the bottom names herself), the bond each answer costs
+     and the tally it adds up to -- and puts it on the row as
+     `dr.critiqueTwist`. Its scene carries `text: ''`, so the sweep that
+     catches written-and-undrawn scenes never saw it either: there were no
+     words to go missing.
+     The twist is bookable from the catalogue, the engine is complete, and
+     until now pressing it changed nothing anybody could see.
+
+     Drawn here because here is when it happens: after the critiques, before
+     the panel deliberates. */
+  const wsg = row?.dr?.critiqueTwist?.kind === 'who-should-go'
+    ? row.dr.critiqueTwist : null;
+  const wsgVotes = wsg && wsg.votes ? Object.entries(wsg.votes) : [];
+  const wsgCards = wsgVotes.length ? (() => {
+    const tally = wsg.tally || {};
+    /* Most named first -- that is the answer the room gave, and it is the
+       thing the host reacts to. Ties keep the order the queens were called
+       in, so a rebuild draws the same board. */
+    const named = [...new Set(wsgVotes.map(([, t]) => t))]
+      .sort((a, b) => (tally[b] || 0) - (tally[a] || 0));
+    const most = named[0];
+    const board = named.map(n => {
+      const by = wsgVotes.filter(([, t]) => t === n).map(([who]) => who);
+      const self = by.includes(n);
+      return `<div class="dr-wsg-row${n === most ? ' dr-wsg-top' : ''}">
+        ${_portrait(n, ep, { size: 38 })}
+        <div class="dr-wsg-who">
+          <b>${esc(n)}</b>
+          <span>${by.map(w => esc(w)).join(', ')}</span>
+        </div>
+        ${self ? '<span class="dr-wsg-self">named herself</span>' : ''}
+        <span class="dr-wsg-n">${tally[n] || 0}</span>
+      </div>`;
+    }).join('');
+    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff}">
+      <div class="dr-panel dr-a-room dr-wsg">
+        ${_judgePortrait('rupaul', { stage: true, size: 44 })}
+        <div>
+          <span class="dr-sub">the host asks the room</span>
+          <p class="dr-wsg-q">&ldquo;Who should go home tonight, and why?&rdquo;</p>
+          <div class="dr-wsg-board">${board}</div>
+        </div>
+      </div></div>`;
+  })() : '';
+  const wsgOff = wsgCards ? 1 : 0;
+
   const delib = (row.dr.scenes || []).filter(sc =>
     /^stage:deliberation/.test(sc.kind || '') && sc.text);
   const delibCards = delib.map((sc, i) => {
@@ -712,7 +789,7 @@ export function rpBuildCritiques(row) {
     const arg = sc.kind === 'stage:deliberation-argument';
     const who = (sc.data?.players || [])[0];
     const jid = (row?.dr?.judges || []).find(id => judgeName(id) === sc.data?.judge);
-    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + i}">
+    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + wsgOff + i}">
       <div class="dr-panel ${isHost ? 'dr-a-score' : 'dr-a-room'} dr-delib">
         ${isHost ? _judgePortrait('rupaul', { stage: true, size: 44 })
     : jid ? _jpor(jid, { size: 44 }) : ''}
@@ -772,11 +849,11 @@ export function rpBuildCritiques(row) {
     };
   }
 
-  return `<style>${STAGE_CSS}</style>${_shell(bench + steps + delibCards, ep, {
+  return `<style>${STAGE_CSS}</style>${_shell(bench + steps + wsgCards + delibCards, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),
-  })}${_controls('critiques', queens.length + dOff + delib.length, ep.num)}`;
+  })}${_controls('critiques', queens.length + dOff + wsgOff + delib.length, ep.num)}`;
 }
 
 /** Untucked: a room, not a stage — and it can get loud. */

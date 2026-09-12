@@ -155,6 +155,13 @@ export const STAGE_CSS = `
    The board the room gives back. Most-named first, with the queens who named
    her under her own name, because who said it is the whole event -- a name
    with three votes behind it and a name with one are different nights. */
+/* One queen's answer: who she said, and what she said it about. */
+.dr-wsgq{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+  padding:12px 16px}
+.dr-wsgq-name{margin:4px 0 2px;font-family:'Playfair Display',Georgia,serif;
+  font-size:19px;color:#fff;line-height:1.2}
+.dr-wsgq-why{margin:0;font-size:13px;color:#C9A6BC;font-style:italic}
+.dr-wsg-who i{display:block;font-size:10.5px;font-style:italic;color:#9E86A8;margin-top:2px}
 .dr-wsg{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
   padding:14px 16px}
 .dr-wsg-q{margin:6px 0 12px;font-family:'Playfair Display',Georgia,serif;
@@ -748,7 +755,50 @@ export function rpBuildCritiques(row) {
      the panel deliberates. */
   const wsg = row?.dr?.critiqueTwist?.kind === 'who-should-go'
     ? row.dr.critiqueTwist : null;
-  const wsgVotes = wsg && wsg.votes ? Object.entries(wsg.votes) : [];
+  /* `[voter, { target, reason }]`. The reason is the half the screen was
+     missing: a board of names with no why on it is a scoreboard, and the
+     question the host asked was "and why". */
+  const wsgVotes = wsg && wsg.votes
+    ? Object.entries(wsg.votes).map(([voter, v]) => [voter, v?.target, v?.reason])
+      .filter(([, t]) => t)
+    : [];
+  /* WHAT SHE SAID IT ABOUT. The real answers come from a small vocabulary --
+     129 of them read off the fandom's own Contestant/Choice/Reason table, see
+     tools/dr-real-who-should-go.py -- and "her performance in the challenge"
+     is the commonest thing anybody says. */
+  const WSG_REASON = {
+    challenge: 'her performance in the challenge',
+    runway: 'her runway look',
+    season: 'her track record',
+    critiques: 'what the judges just said',
+    leader: 'her role as team leader',
+    threat: 'she is my biggest competition',
+    immunity: 'she has immunity anyway',
+    herself: 'she named herself',
+  };
+
+  /* ── ONE ANSWER AT A TIME, THEN THE BOARD ──
+     This was a finished tally on a single card: every name, every count,
+     revealed at once. That is the RESULT of the question, and the question is
+     the suspense -- who she is about to say, and what she says about them.
+     Reported as "where is the drama, the speech, the suspense".
+     So the room answers in order, one click each, and the board only goes up
+     at the end. Every queen who was in the critiques answers; the safe ones
+     left the stage before the host asked. */
+  const wsgAnswers = wsgVotes.length ? wsgVotes.map(([voter, target, reason], i) => {
+    const self = voter === target;
+    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + i}">
+      <div class="dr-panel dr-a-room dr-wsgq">
+        ${_portrait(voter, ep, { size: 44 })}
+        <div>
+          <span class="dr-sub">${esc(voter)} answers</span>
+          <p class="dr-wsgq-name">${self ? 'Herself.' : `${esc(target)}.`}</p>
+          <p class="dr-wsgq-why">${esc(WSG_REASON[reason] || 'she did not say')}</p>
+        </div>
+        ${self ? '<span class="dr-wsg-self">named herself</span>' : ''}
+      </div></div>`;
+  }).join('') : '';
+
   const wsgCards = wsgVotes.length ? (() => {
     const tally = wsg.tally || {};
     /* Most named first -- that is the answer the room gave, and it is the
@@ -758,29 +808,37 @@ export function rpBuildCritiques(row) {
       .sort((a, b) => (tally[b] || 0) - (tally[a] || 0));
     const most = named[0];
     const board = named.map(n => {
-      const by = wsgVotes.filter(([, t]) => t === n).map(([who]) => who);
+      const rows = wsgVotes.filter(([, t]) => t === n);
+      const by = rows.map(([who]) => who);
       const self = by.includes(n);
+      /* The reason most often given about HER, so the board says what the room
+         actually held against her rather than only how many held it. */
+      const why = {};
+      for (const [, , r] of rows) why[r] = (why[r] || 0) + 1;
+      const top = Object.entries(why).sort((a, b) => b[1] - a[1])[0];
       return `<div class="dr-wsg-row${n === most ? ' dr-wsg-top' : ''}">
         ${_portrait(n, ep, { size: 38 })}
         <div class="dr-wsg-who">
           <b>${esc(n)}</b>
           <span>${by.map(w => esc(w)).join(', ')}</span>
+          ${top ? `<i>${esc(WSG_REASON[top[0]] || '')}</i>` : ''}
         </div>
         ${self ? '<span class="dr-wsg-self">named herself</span>' : ''}
         <span class="dr-wsg-n">${tally[n] || 0}</span>
       </div>`;
     }).join('');
-    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff}">
+    return `<div class="dr-step" id="dr-step-critiques-${queens.length + dOff + wsgVotes.length}">
       <div class="dr-panel dr-a-room dr-wsg">
         ${_judgePortrait('rupaul', { stage: true, size: 44 })}
         <div>
-          <span class="dr-sub">the host asks the room</span>
+          <span class="dr-sub">the room has answered</span>
           <p class="dr-wsg-q">&ldquo;Who should go home tonight, and why?&rdquo;</p>
           <div class="dr-wsg-board">${board}</div>
         </div>
       </div></div>`;
   })() : '';
-  const wsgOff = wsgCards ? 1 : 0;
+  // Every answer is a step, and the board is one more.
+  const wsgOff = wsgCards ? wsgVotes.length + 1 : 0;
 
   const delib = (row.dr.scenes || []).filter(sc =>
     /^stage:deliberation/.test(sc.kind || '') && sc.text);
@@ -849,7 +907,7 @@ export function rpBuildCritiques(row) {
     };
   }
 
-  return `<style>${STAGE_CSS}</style>${_shell(bench + steps + wsgCards + delibCards, ep, {
+  return `<style>${STAGE_CSS}</style>${_shell(bench + steps + wsgAnswers + wsgCards + delibCards, ep, {
     phase: 'stage', title: 'The Critiques',
     subtitle: split ? 'the panel is split tonight' : 'the panel speaks',
     sidebar: _seedRail('critiques', '<h4 class="dr-disp">The panel, so far</h4>'),

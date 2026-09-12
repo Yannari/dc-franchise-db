@@ -234,66 +234,124 @@ export function runReactions({ reactions = {}, state = {}, rng = Math.random }) 
  * her popularity if she names somebody she is close to, because the room can
  * tell.
  */
-export function whoShouldGoHome({ living, players, bond, state = {}, rng = Math.random }) {
+/**
+ * "Who should go home tonight, and why?"
+ *
+ * ── MEASURED, NOT INVENTED ────────────────────────────────────────────
+ *
+ * The fandom keeps a Contestant / Choice / Reason table for every time this
+ * has been asked on the US show. 129 real answers, read with
+ * tools/dr-real-who-should-go.py. The reasons queens actually give:
+ *
+ *   Her performance in the challenge        11     the single commonest
+ *   Her runway look                          8
+ *   Her performance throughout the season    6     (+ "her track record" 3)
+ *   The critiques given by the judges        5
+ *   Her role as team leader                  3     team weeks only
+ *   She was her biggest competition          3     (~21% of all answers are
+ *                                                   threat-shaped once the
+ *                                                   phrasings are grouped)
+ *   She had immunity that episode            2     the protest vote
+ *   Named herself                            4     3% of all answers
+ *
+ * The first version of this had exactly two reasons — a schemer named the
+ * biggest threat, everybody else named the lowest bond — so the frontrunner
+ * was named constantly and nobody ever said why. Reported as "two chose the
+ * clear frontrunner, and where are the reasonings".
+ *
+ * Naming the frontrunner is real and it is about a fifth of answers. Being
+ * the ONLY answer was the bug. And a queen naming herself is rare -- 3%, not
+ * whenever she is loyal and in trouble.
+ *
+ * The reason is drawn first and the NAME FOLLOWS FROM IT, which is the way
+ * round a person actually thinks: you decide what you are judging on and then
+ * you look at who is worst at it.
+ */
+export function whoShouldGoHome({
+  living, players, bond, state = {}, rng = Math.random,
+  // Tonight, so an answer can be about tonight: how each queen scored in the
+  // challenge, how her runway went, and where the panel put her.
+  perf = {}, runway = {}, ranking = [], teams = null, captains = {},
+  immune = [],
+}) {
   const votes = {};
   const events = [];
   const record = n => state.record?.[n] || [];
   const wins = n => record(n).filter(r => r === 'WIN' || r === 'HIGH').length;
+  const bads = n => record(n).filter(r => r === 'BTM2' || r === 'LOW' || r === 'BTM').length;
+  const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+
+  /* Shares taken from the counts above. `leader` is only reachable on a team
+     week and `immunity` only when somebody actually has it, so both fall
+     through to the rest of the table when they cannot apply. */
+  const REASON_TABLE = [
+    ['challenge', 28], ['threat', 20], ['runway', 18],
+    ['season', 16], ['critiques', 12], ['leader', 4], ['immunity', 2],
+  ];
+
+  // Worst first, by whatever the reason is judging on.
+  const worstBy = (pool, score) => pool.slice()
+    .sort((a, b) => score(a) - score(b))[0] || null;
 
   for (const n of living) {
     const others = living.filter(o => o !== n);
     if (!others.length) continue;
 
-    // A queen loyal enough, standing in the bottom, names herself. It is the
-    // most sympathetic thing anybody does all night and it is not a strategy.
-    const inTrouble = (record(n)[record(n).length - 1] || '') === 'BTM';
-    if (stat(players[n], 'loyalty') >= 8 && inTrouble) {
-      votes[n] = n;
-      events.push(evt('named-herself', {
-        players: [n], pop: { [n]: 3 }, data: {},
-      }));
+    /* ── SHE NAMES HERSELF ──
+       Four times in 129. It is the most sympathetic thing anybody does on
+       that stage and it is not a strategy -- and it is RARE, which is what
+       makes it land. */
+    const inTrouble = ['BTM2', 'BTM', 'LOW'].includes(record(n)[record(n).length - 1] || '');
+    if (stat(players[n], 'loyalty') >= 8 && inTrouble && rng() < 0.25) {
+      votes[n] = { target: n, reason: 'herself' };
+      events.push(evt('named-herself', { players: [n], pop: { [n]: 3 }, data: {} }));
       continue;
     }
 
-    const scheming = stat(players[n], 'strategic') >= 7 && stat(players[n], 'loyalty') <= 4;
-    /* ── SHE PICKS FROM THE FEW, NOT THE ONE ──
-       This took `sort(...)[0]`: the single worst bond, or the single biggest
-       threat. Early in a season almost every bond is zero, so the sort is a
-       tie the whole way down, it is stable, and every queen in the room
-       returned the SAME first element. Measured over 25 seasons: nine of
-       twelve queens naming one woman, every single time.
+    // What she is judging on tonight.
+    const usable = REASON_TABLE.filter(([r]) => {
+      if (r === 'leader') return !!teams && Object.keys(captains).length > 0;
+      if (r === 'immunity') return others.some(o => immune.includes(o));
+      return true;
+    });
+    const total = usable.reduce((t, [, w]) => t + w, 0);
+    let roll = rng() * total;
+    const reason = (usable.find(([, w]) => (roll -= w) <= 0) || usable[0])[0];
 
-       That is not a room with opinions in it, it is a formula -- and it made
-       the backstage fallout impossible to write against, because there was
-       only ever one target and therefore never a friend who named you or two
-       queens to disagree about it.
+    /* ── AND THE NAME FOLLOWS FROM THE REASON ──
+       Not the other way round. Each of these looks at the room through one
+       lens and names whoever is worst through it, so the answer and the
+       reason are the same thought rather than a label stuck on afterwards. */
+    const rank = new Map(ranking.map((r, i) => [r.name ?? r, i]));
+    const pick = {
+      challenge: () => worstBy(others, o => num(perf[o]?.perf ?? perf[o])),
+      runway: () => worstBy(others, o => num(runway[o]?.score ?? runway[o])),
+      season: () => worstBy(others, o => wins(o) - bads(o)),
+      critiques: () => worstBy(others, o => -(rank.get(o) ?? 0)),
+      // The one that is about her own game rather than the other queen's work.
+      threat: () => others.slice().sort((a, b) => wins(b) - wins(a))[0],
+      leader: () => others.find(o => captains[o]) || null,
+      immunity: () => others.find(o => immune.includes(o)) || null,
+    }[reason];
 
-       So she shortlists the three she likes least (or the three biggest
-       threats) and picks among them, weighted, so the queen she likes least
-       is still the likeliest. The room lands on two or three names with one
-       of them out in front, which is what the segment is about. */
-    const shortlist = scheming
-      ? others.slice().sort((a, b) => wins(b) - wins(a)).slice(0, 3)
-      : others.slice().sort((a, b) => bond(n, a) - bond(n, b)).slice(0, 3);
-    const weights = shortlist.map((_, i) => [3, 2, 1][i] || 1);
-    const totalW = weights.reduce((t, w) => t + w, 0);
-    let roll = rng() * totalW;
-    const target = shortlist.find((_, i) => (roll -= weights[i]) <= 0)
-      || shortlist[shortlist.length - 1];
+    // A lens that cannot see anybody tonight falls back to the season, which
+    // every queen always has.
+    const target = (pick && pick()) || worstBy(others, o => wins(o) - bads(o));
+    if (!target) continue;
 
-    votes[n] = target;
+    votes[n] = { target, reason };
     const closeness = bond(n, target);
     events.push(evt('named-her', {
       players: [n, target],
       bond: [[n, target, -1.5]],
       // Naming a friend is the one that costs the namer.
       pop: closeness >= 3 ? { [n]: -1 } : { [target]: -1 },
-      data: { strategic: scheming, closeness },
+      data: { reason, strategic: reason === 'threat', closeness },
     }));
   }
 
   const tally = {};
-  for (const t of Object.values(votes)) tally[t] = (tally[t] || 0) + 1;
+  for (const v of Object.values(votes)) tally[v.target] = (tally[v.target] || 0) + 1;
 
   return {
     votes,

@@ -59,8 +59,8 @@ describe('who should go home', () => {
        a name with one are different nights. */
     const html = body(row);
     const { votes, tally } = row.dr.critiqueTwist;
-    for (const [voter, target] of Object.entries(votes)) {
-      expect(html, `${target} was named and is not on the board`).toContain(target);
+    for (const [voter, v] of Object.entries(votes)) {
+      expect(html, `${v.target} was named and is not on the board`).toContain(v.target);
       expect(html, `${voter} named somebody and is not credited`).toContain(voter);
     }
     // and the count beside each name is the real one
@@ -147,6 +147,11 @@ describe('the fallout backstage', () => {
     for (const row of twistRows) {
       const { votes, tally } = row.dr.critiqueTwist;
       expect(Object.keys(votes).length).toBeGreaterThan(3);
+      // and every one of them says WHY
+      for (const v of Object.values(votes)) {
+        expect(v.target, 'an answer with no name in it').toBeTruthy();
+        expect(v.reason, `${v.target} was named for no stated reason`).toBeTruthy();
+      }
       expect(Object.keys(tally).length).toBeGreaterThan(0);
     }
     // And the events exist, gated, with their partner hooks intact.
@@ -179,7 +184,8 @@ describe('the fallout backstage', () => {
       for (const sc of row.dr.scenes || []) {
         if (sc.data?.event !== 'named-me-to-my-face') continue;
         const [a, b] = sc.data.players;
-        expect(votes[b], `${b} is confronting ${a} without having named her`).toBe(a);
+        expect(votes[b]?.target,
+          `${b} is confronting ${a} without having named her`).toBe(a);
       }
     }
   });
@@ -222,6 +228,79 @@ describe('the fallout backstage', () => {
    guard in the booking UI is per-EPISODE (you cannot book the same twist twice
    on the same night) — but nothing asserted it, so nothing stopped a later
    change from quietly making it one. */
+/* ── AND WHY, WHICH IS HALF THE QUESTION ──
+   "Two chose the clear frontrunner, and where are the reasonings."
+
+   Both fair. The engine had exactly two answers in it — a schemer named the
+   biggest threat, everybody else named the lowest bond — so the frontrunner
+   came up constantly and nobody ever said why.
+
+   The fandom keeps a Contestant / Choice / Reason table for every time this
+   has been asked on the US show. 129 real answers, counted by
+   tools/dr-real-who-should-go.py:
+
+     her performance in the challenge   the commonest single reason
+     her runway look
+     her track record / the season
+     the critiques the judges just gave
+     she is my biggest competition      ~21% -- real, and not the only one
+     she named herself                  3%
+
+   Naming the frontrunner was never wrong. Being the ONLY thing anybody could
+   think was. */
+describe('the reasons queens give', () => {
+  const many = Array.from({ length: 20 }, (_, s) => playDragSeason({
+    cast: cast(13, 600 + s), seed: s,
+    config: { drSchedule: [{ episode: 4, critiqueTwist: 'who-should-go' }] },
+  }).rows.find(r => r.dr?.critiqueTwist?.kind === 'who-should-go')).filter(Boolean);
+  const all = many.flatMap(r => Object.entries(r.dr.critiqueTwist.votes));
+  const share = kind => all.filter(([, v]) => v.reason === kind).length / all.length;
+
+  it('gives more than one kind of answer', () => {
+    const kinds = new Set(all.map(([, v]) => v.reason));
+    expect(kinds.size, 'the whole room is thinking the same way')
+      .toBeGreaterThan(3);
+  });
+
+  it('names the front-runner about as often as the real show does', () => {
+    // ~21% of real answers are threat-shaped. It was effectively the default.
+    expect(share('threat')).toBeGreaterThan(0.1);
+    expect(share('threat'), 'still everybody naming the winner').toBeLessThan(0.35);
+  });
+
+  it('is usually about the work, not the standings', () => {
+    // challenge + runway + critiques + season: the majority, as on the show.
+    const work = share('challenge') + share('runway') + share('critiques') + share('season');
+    expect(work).toBeGreaterThan(0.6);
+  });
+
+  it('keeps naming yourself rare', () => {
+    // 4 of 129 on the real show. It used to fire whenever a loyal queen was
+    // in trouble, which is most weeks for somebody.
+    const self = all.filter(([voter, v]) => v.target === voter).length / all.length;
+    expect(self, 'half the room is falling on its sword').toBeLessThan(0.12);
+  });
+
+  it('answers before it shows the board', () => {
+    /* The suspense is the question, not the result. This was one finished
+       tally revealed in a single click. */
+    const html = rpBuildCritiques(many[0]).replace(/<style[\s\S]*?<\/style>/g, '');
+    const answers = (html.match(/dr-wsgq-name/g) || []).length;
+    expect(answers, 'nobody answers out loud').toBe(
+      Object.keys(many[0].dr.critiqueTwist.votes).length);
+    expect(html.indexOf('dr-wsgq-name'),
+      'the board goes up before the room has answered')
+      .toBeLessThan(html.indexOf('dr-wsg-board'));
+  });
+
+  it('says what each answer was about, on the card and on the board', () => {
+    const html = rpBuildCritiques(many[0]).replace(/<style[\s\S]*?<\/style>/g, '');
+    expect((html.match(/dr-wsgq-why/g) || []).length,
+      'an answer with no reason under it').toBeGreaterThan(0);
+    expect(html).toMatch(/her performance in the challenge|her runway look|her track record|what the judges just said|biggest competition/);
+  });
+});
+
 describe('booked on more than one episode', () => {
   const many = playDragSeason({
     cast: cast(13, 6), seed: 3,

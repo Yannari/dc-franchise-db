@@ -318,6 +318,15 @@ export const CRITIQUE_CHALLENGE = [
       "{j} looks at {a} and says the vocal was not there and the acting could not save it, because a Rusical needs both and {a} brought neither, and the empty bars where the lyrics should have been were louder than anything she sang.",
       "\"You had a part with real lyrics and you did not learn them,\" {j} says, and the flatness in the delivery is its own verdict — {a} was given a number and gave it back unfinished.",
     ])),
+  /* THE STAND-UP. What the panel is actually judging is different from the
+     roast: not whether she went in hard enough on a target, but whether she
+     had anything to say and could hold five minutes on her own. Empty pools
+     fall back to the generic critique. See docs/PROSE-PROMPT-dr-stand-up.md. */
+  chal('stand-up',
+    'Her own material, five minutes, no target. Whether she had something to '
+    + 'say and whether she could hold a room on her own for that long.',
+    tier('praise', 'She wrote five minutes about herself and the room stayed with her.', []),
+    tier('fault', 'She had jokes and nothing to say, and five minutes is a long time.', [])),
   chal('roast',
     'Her own material, her own timing, a live room. Whether the jokes were '
     + 'hers and whether they landed.',

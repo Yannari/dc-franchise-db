@@ -3218,7 +3218,15 @@ export function _setDRPick(ep, key, value) {
      that episode, which rolls the season back to before it first. Dropping the
      queue for one would re-book the weeks after it for a change that has not
      happened yet. */
-  if (Number(ep) > dragEpisodesAired()) invalidateDragQueue();
+  /* AND SAY SO WHEN IT WILL NOT TAKE. The return value was dropped on the
+     floor: a season the engine refuses to re-book saved the pin, coloured the
+     dropdown and changed nothing, with no way to tell that from a pin that
+     worked. */
+  if (Number(ep) > dragEpisodesAired() && !invalidateDragQueue()) {
+    console.warn('[drag-race] episode ' + ep + ': the pin was saved but this '
+      + 'season cannot be re-booked, so the weeks still to come will run what '
+      + 'they were already booked with.');
+  }
   renderTimeline();
 }
 
@@ -3245,11 +3253,23 @@ function _drPickers(ep) {
      answered the wrong question — "why can I not change this" rather than
      "when does what I chose happen". */
   const aired = Number(ep) <= dragEpisodesAired();
-  const noRebook = aired && !dragScheduleRecorded();
+  /* ── A SEASON THAT CANNOT BE RE-BOOKED CANNOT BE RE-BOOKED ANYWHERE ──
+     This was `aired && !dragScheduleRecorded()`, so the warning only showed
+     on weeks that had already gone out — and the refusal it is warning about
+     is season-wide. `invalidateDragQueue` asks `dragScheduleRecorded()` about
+     the whole season and returns false for all of it, so on an UNAIRED week
+     the picker looked perfectly live, stored what you chose, went pink, and
+     the engine ignored it: the stored booking for that episode out-ranked the
+     pin through `_frozenPins` and the same challenge ran every time.
+     Reported as "I changed episode 13 to Stand-Up and the result is always
+     Talent Show", with nothing on the screen to suggest why. */
+  const noRebook = dragEpisodesAired() > 0 && !dragScheduleRecorded();
   const sel = (key, opts, cur, title) => {
     const pinned = cur !== '' && cur != null;
     let h = `<select ${noRebook ? 'disabled ' : ''}onchange="event.stopPropagation();_setDRPick(${ep},'${key}',this.value)" onclick="event.stopPropagation()" title="${
-      noRebook ? 'This season was played before the running order was recorded, so it cannot be re-run with a different booking.'
+      noRebook ? (aired
+        ? 'This season was played before the running order was recorded, so it cannot be re-run with a different booking.'
+        : 'This season did not record its running order, so a pin made here cannot be applied to the weeks still to come.')
         : aired ? `${title} — this episode has already aired, so press \u21ba on it to run it with what you choose here.`
           : title
     }" style="font-size:10px;background:#1e1e2e;color:${
@@ -3285,7 +3305,9 @@ function _drPickers(ep) {
   const banner = !aired ? ''
     : `<div style="flex:1 1 100%;font-size:9px;letter-spacing:.6px;color:${
       noRebook ? '#6b7280' : '#f9a8d4'};margin:2px 0 0" title="${
-      noRebook ? 'This season was played before the running order was recorded, so it cannot be re-run with a different booking.'
+      noRebook ? (aired
+        ? 'This season was played before the running order was recorded, so it cannot be re-run with a different booking.'
+        : 'This season did not record its running order, so a pin made here cannot be applied to the weeks still to come.')
         : 'This night has aired. Change anything here and press the ↺ on this episode to run it again — the episodes before it are untouched, the ones after are replaced.'
     }">${noRebook ? 'AIRED · CANNOT BE RE-RUN' : 'AIRED · PRESS ↺ TO APPLY'}</div>`;
 

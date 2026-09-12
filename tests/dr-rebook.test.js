@@ -248,19 +248,52 @@ describe('js/dr-run.js', () => {
       .toBeLessThan(save);
   });
 
-  it('refuses to re-run a season whose running order was never recorded', () => {
+  /* ── A MISSING RUNNING ORDER IS REBUILT, NOT REFUSED ──
+     These two used to assert the opposite: a season with no `_drSchedule` was
+     refused outright, by both buttons. That was right while continuing a
+     season meant REPLAYING it — a replay needs to know what every aired week
+     was booked with or it produces a different season under a history that
+     has already gone out.
+     Continuing RESUMES now. It picks the season up from the state the last
+     aired week carried and replays nothing, so the running order can be
+     rebuilt from the rows themselves (`repairOldDragSeason`) and the season
+     carries on from where it stood.
+     The refusal was not free. `_drSchedule` goes missing on every ordinary
+     save: `playDragSeason` returns the weeks it PLAYED, a resume plays only
+     the weeks from the resume point on, and that array was assigned over the
+     record wholesale — so one reload was enough to lose every aired week.
+     From then on the season said it could not be re-booked, `invalidateDragQueue`
+     truncated nothing, and the booking that survived out-ranked the author's
+     pin for ever. Reported as "I changed episode 13 to Stand-Up and the result
+     is always Talent Show". See tests/dr-pin-survives-resume.test.js. */
+  it('rebuilds a missing running order and re-runs anyway', () => {
     dr.simulateDragEpisode();
     delete core.gs._drSchedule;
-    expect(dr.rerunDragEpisode(1)).toBe(false);
-    // And it did not half-do it: the queue is still there to re-air from.
-    expect(Array.isArray(core.gs._drQueue)).toBe(true);
+    expect(dr.dragScheduleRecorded(), 'the record is there after all').toBe(false);
+    expect(dr.rerunDragEpisode(1), 'a season that can resume was refused').toBe(true);
+    // And the record it rebuilt is the season that actually aired.
+    expect(dr.dragScheduleRecorded()).toBe(true);
   });
 
-  it('refuses to re-book a season whose running order was never recorded', () => {
+  it('rebuilds a missing running order and re-books anyway', () => {
     dr.simulateDragEpisode();
-    delete core.gs._drSchedule;          // an older save
+    delete core.gs._drSchedule;          // what one reload leaves behind
     expect(dr.dragScheduleRecorded()).toBe(false);
+    expect(dr.invalidateDragQueue(), 'the pin was silently dropped').toBe(true);
+    expect(dr.dragScheduleRecorded()).toBe(true);
+  });
+
+  it('still refuses a season that cannot be picked up at all', () => {
+    /* The guard is not vacuous. A last row with nobody standing on it is a
+       season neither `dr.state` nor `_stateFromHistory` can resume from, and
+       that one is still refused rather than rebuilt on a guess. */
+    dr.simulateDragEpisode();
+    delete core.gs._drSchedule;
+    delete core.gs._drInitBonds;
+    const last = core.gs.episodeHistory[core.gs.episodeHistory.length - 1];
+    delete last.dr.state;
+    last.dr.living = [];
     expect(dr.invalidateDragQueue()).toBe(false);
-    expect(Array.isArray(core.gs._drQueue)).toBe(true);
+    expect(dr.dragScheduleRecorded()).toBe(false);
   });
 });

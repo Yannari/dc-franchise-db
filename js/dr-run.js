@@ -403,7 +403,19 @@ export function repairOldDragSeason() {
      honest and costs only the button, than to unlock a rebuild that drifts.
      A season that already had `_drInitBonds` and only wants a schedule is not
      caught by this: it passes because the field is there. */
-  if (!gs._drInitBonds) return done;
+  /* ── AND ONLY WHERE A REPLAY IS STILL WHAT HAPPENS ──
+     True when this was written: continuing a season meant replaying it from
+     episode one, so a schedule without the opening bonds unlocked a rebuild
+     that drifted. It is not true any more. `simulateDragEpisode` RESUMES —
+     it picks the season up from the state the last aired week carried and
+     replays nothing — and that path never reads `_drInitBonds` at all (see
+     the `isRebuild` branch in `_playWholeSeason`, which is `!resume`).
+     So on a season that can be resumed this guard was refusing to repair a
+     schedule for the sake of a replay that is not going to happen, and the
+     refusal is what made every pin a no-op on saves older than the snapshot.
+     A season that genuinely cannot resume still needs the bonds, and still
+     refuses here. */
+  if (!gs._drInitBonds && !_canResume()) return done;
 
   if (!dragScheduleRecorded()) {
     const rebuilt = [];
@@ -433,6 +445,24 @@ export function repairOldDragSeason() {
     done.schedule = true;
   }
   return done;
+}
+
+/**
+ * Whether the season can be picked up without replaying it.
+ *
+ * The same question `simulateDragEpisode` asks before taking the resume path,
+ * asked in one place so the two cannot drift apart: the last row on the record
+ * has to BE the last episode, and it has to carry the state the next week
+ * starts from — or `_stateFromHistory` has to be able to build one.
+ */
+function _canResume() {
+  const history = Array.isArray(gs?.episodeHistory) ? gs.episodeHistory : [];
+  const aired = history.length;
+  if (!aired) return true;
+  const last = history[aired - 1];
+  if (!last || Number(last.num) !== aired || !last.dr) return false;
+  if (last.dr.state) return true;
+  try { return !!_stateFromHistory(); } catch { return false; }
 }
 
 /**
@@ -667,9 +697,32 @@ function _playWholeSeason(resume = null) {
      there is nothing to slice off the front. */
   gs._drQueue = out.rows;
   gs._drResumed = !!resume;
-  // What every night was actually booked with, so a later re-book can freeze
-  // the weeks that have already gone out. See `_frozenPins`.
-  gs._drSchedule = out.schedule || [];
+  /* ── WHAT EVERY NIGHT WAS BOOKED WITH, INCLUDING THE ONES THIS CALL DID
+        NOT RUN ──
+     `= out.schedule` outright, and `out.schedule` is what `playDragSeason`
+     PLAYED. On a resume that is only the weeks from the resume point on — the
+     aired ones are spliced off the front before the loop — so continuing a
+     season after a reload DELETED the booking for every episode already
+     watched.
+     Which is silent and permanent. `dragScheduleRecorded()` asks whether
+     every aired week is in here, so from the first resume onwards it answered
+     no; `dragQueueEditable()` therefore said the season could not be
+     re-booked; `invalidateDragQueue()` returned false without truncating; and
+     the unaired weeks that SURVIVED in here went on out-ranking the author's
+     pin through `_frozenPins`. The dropdown saved, went pink, and the season
+     ran the same challenge for ever. Reported as "I changed episode 13 to
+     Stand-Up and the result is always Talent Show".
+     Merged, newest wins. What this call played replaces what was booked for
+     those episodes, and the weeks it never touched keep what they had —
+     which is what both truncating callers rely on to mean anything. */
+  gs._drSchedule = (() => {
+    const byEp = new Map((Array.isArray(gs._drSchedule) ? gs._drSchedule : [])
+      .filter(Boolean).map(r => [Number(r.episode), r]));
+    for (const r of (out.schedule || [])) {
+      if (r && Number.isFinite(Number(r.episode))) byEp.set(Number(r.episode), r);
+    }
+    return [...byEp.values()].sort((a, b) => Number(a.episode) - Number(b.episode));
+  })();
   // A mirror for the screens, not a second source of truth: every episode
   // screen reads its own row. `star` is here because the aftermath reads it
   // once at the end, never during.

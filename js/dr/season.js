@@ -203,8 +203,22 @@ export function buildSchedule({ episodes, castSize, pinned = [], rng = Math.rand
       fameStars: a.fameStars,
     };
   };
+  /* ── A PIN THIS SCHEDULE CANNOT PLACE IS NOT A PIN ──
+     The filter used to be `episode != null` and nothing else, so a pin on an
+     episode past the end of the booked run — which is every pin on a season
+     that has outrun its schedule; see `spare` below — was kept, added to
+     `used`, and then never reached by the `1..episodes` loop underneath.
+     It therefore did the one thing a dropped pin must not do: it took its
+     challenge out of the pool without ever placing it, so pinning Stand-Up on
+     episode thirteen of a ten-week booking silently re-drew episode five,
+     moved a tentpole, and changed who went home in week six. The author got a
+     different season and not the week she asked for.
+     Out of range is out of range. `spare` picks these up if the season
+     actually runs that long. */
   const byEp = Object.fromEntries(
-    pinned.filter(p => p && p.episode != null).map(p => [Number(p.episode), p]));
+    pinned.filter(p => p && p.episode != null)
+      .filter(p => Number(p.episode) >= 1 && Number(p.episode) <= episodes)
+      .map(p => [Number(p.episode), p]));
 
   const used = new Set();
   for (const p of Object.values(byEp)) if (p.maxiId) used.add(p.maxiId);
@@ -1348,10 +1362,30 @@ export function playDragSeason({
      double shantay could fly in a queen who was still competing that night to
      judge her own season. The scheduled weeks always passed it; only the spare
      did not, which is why it took a season with an extra week to show. */
-  const spare = () => buildSchedule({
-    episodes: 1, castSize: cast.length, pinned: [], rng, premiere: 'standard',
-    seed: (seed >>> 0) + 700003 + guard, cast,
-  })[0];
+  /* ── AND THE AUTHOR STILL BOOKS IT ──
+     `pinned: []`. An overrun week was drawn from `seed + 700003 + guard` and
+     from nothing else, so every pin on it was discarded — and because that
+     seed is fixed, the week came back with the SAME challenge however many
+     times the author changed the dropdown. Reported as "I changed episode 13
+     to Stand-Up and the result is always Talent Show": episode thirteen was a
+     spare, and a spare had never once read the schedule.
+     It is an ordinary week of the season as far as the author is concerned,
+     so it takes the ordinary booking. `config.drSchedule` rather than the
+     built `schedule` because the built one stops at `weeks`, and the pin is
+     renumbered to one because that is this mini-schedule's only episode. */
+  const spare = (epNum) => {
+    const pin = (config.drSchedule || [])
+      .find(x => x && Number(x.episode) === Number(epNum));
+    return buildSchedule({
+      episodes: 1,
+      castSize: cast.length,
+      pinned: pin ? [{ ...pin, episode: 1 }] : [],
+      rng,
+      premiere: 'standard',
+      seed: (seed >>> 0) + 700003 + guard,
+      cast,
+    })[0];
+  };
   /* THE WEEKS ALREADY AIRED ARE NOT RUN AGAIN. `schedule` is a pure function
      of the seed and the booking, so it is the same list either way — the
      resumed season simply starts partway down it, with `num` already at the
@@ -1363,7 +1397,9 @@ export function playDragSeason({
   for (const sch of [...schedule, ...Array.from({ length: 8 }, () => null)]) {
     if (state.living.length <= finaleSize) break;
     if (!sch && ++guard > 8) break;
-    const week = sch || spare();
+    // `num` is the episode this week is about to become, so a spare can look
+    // up what the author booked for it.
+    const week = sch || spare(num);
     /* THE NIGHT'S NUMBER AND THE NIGHT'S DICE, both taken before anything on
        it is decided. `num` used to be incremented in the middle of building
        the week's config, which meant the two decisions made BEFORE that line —

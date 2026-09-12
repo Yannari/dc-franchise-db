@@ -837,6 +837,10 @@ async function generateWikiFill(body, env) {
   };
 
   const NL = String.fromCharCode(10);
+  /* Whether ANYBODY spoke. A season whose episodes were never put through the
+     episode writer has no transcript, which is a fact about the season and not
+     about its cast — see the two rules below that turn on it. */
+  const noScript = !threads.some(t => (t.confessionals?.length || t.lines?.length));
   const threadText = threads.map(t => {
     const bits = [`### ${t.name}`];
     // THE RECORD, above their dialogue.
@@ -855,9 +859,19 @@ async function generateWikiFill(body, env) {
     // and where the two disagree this is the one that happened.
     if (t.timeline?.length) bits.push('TIMELINE:', ...t.timeline.map(x => `  ${x}`));
     if (t.confessionals?.length) bits.push('CONFESSIONALS:', ...t.confessionals.map(c => `  (ep${c.ep}) "${c.text}"`));
-    if (t.lines?.length) bits.push('IN THE HOUSE:', ...t.lines.map(c => `  (ep${c.ep}) "${c.text}"`));
+    if (t.lines?.length) bits.push('SAID TO THE OTHERS:', ...t.lines.map(c => `  (ep${c.ep}) "${c.text}"`));
     if (t.mentions?.length) bits.push('SEEN DOING:', ...t.mentions.map(c => `  (ep${c.ep}) ${c.text}`));
-    if (!t.confessionals?.length && !t.lines?.length) bits.push('(no dialogue recorded — they barely spoke on camera)');
+    /* ── "BARELY SPOKE ON CAMERA" IS A CLAIM, AND ON A SEASON WITH NO
+           TRANSCRIPT IT IS A FALSE ONE ──
+       This line is right for somebody quiet in a season that was written
+       down, and wrong for everybody when the season was not: it told the
+       writer fourteen times that fourteen queens were barely on camera, and
+       got fourteen paragraphs about the edit rather than about the people. */
+    if (!t.confessionals?.length && !t.lines?.length) {
+      bits.push(noScript
+        ? '(this season has no transcript at all \u2014 nobody\'s dialogue was recorded)'
+        : '(no dialogue recorded \u2014 they barely spoke on camera)');
+    }
     return bits.join(NL);
   }).join(NL + NL);
 
@@ -866,7 +880,7 @@ You are writing the Personality, Quotes and Trivia sections of a fandom wiki
 article for every ${W.player} of ${show}${seasonTitle ? ` — ${seasonTitle}` : ''}${season ? ` (Season ${season})` : ''}.
 
 You are given each person's thread through the season: their confessionals
-(spoken alone to camera), their lines in the house, and stage directions that
+(spoken alone to camera), what they said to the others, and stage directions that
 name them. This is ALL the evidence. Do not use anything you think you know
 about these characters from anywhere else.
 
@@ -874,7 +888,7 @@ RULES
 0. THE RECORD IS NOT NEGOTIABLE. Every number and result in the lead must
    match that player's RECORD and MOMENTS lines exactly. MOMENTS are the
    season's turning points for that person — the alliance that broke, the idol
-   played, the eviction survived — and are what the middle of the paragraph is
+   played, the exit survived — and are what the middle of the paragraph is
    built from. TIMELINE is the engine's own round-by-round record and outranks
    MOMENTS wherever they disagree. Name the people in their alliance; the
    RECORD lists them — how many competitions, what
@@ -888,10 +902,36 @@ RULES
    say how they are quiet differently.
 3. PERSONALITY IS NOT RESULTS. Never write "finished third" or "won two
    competitions" — the article already has a stats table. Write what they were
-   like to be in a house with.
+   like to be in the room with.
+
+   AND THE ROOM IS THIS SHOW'S ROOM. A house, a camp, a castle and a werk room
+   are four different places and only one of them is ${show}. The words above
+   are the ones to use; "house dialogue" on a drag article is the same defect
+   as "evicted" over a camp, and it got there from a label in this prompt.
 4. EVIDENCE OVER FLATTERY. Somebody with four lines gets two sentences that
    admit how little they were on camera. Do not promote a background player
-   into a main character because the section looks thin.
+   into a main character because the section looks thin.${noScript ? `
+4b. THIS SEASON HAS NO TRANSCRIPT, AND THIS RULE REPLACES RULE 4. Not a quiet
+   cast — no screenplay was ever written for it, so the same is true of
+   everybody and saying it is not an observation about anyone. Rule 4's "admit
+   how little they were on camera" is about somebody who had four lines while
+   others had forty; nobody here had any, so there is nothing to admit. NEVER mention the transcript, the edit, the
+   footage, the camera, screen time, confessionals, the available material, or
+   what any of them does or does not show. Do not use the words "thread",
+   "material", "edit" or "record" about this person at all: those are words for
+   how this request was assembled, and a reader of the article does not know
+   any of it exists. Three real sentences this prompt has produced, none of
+   which belong on a page about a person:
+     "the transcript gave her no dialogue to show how she earned that"
+     "someone the edit returned to when the season needed survival stakes"
+     "her thread is unusually fragmented"
+   Write the personality from what you DO have: the record, the moments, the
+   timeline, and the relationships named in them \u2014 a showmance, a
+   congeniality award, a run of wins, an early exit. "She won three challenges
+   in four weeks" supports a description of somebody who competed hard.
+   If a person genuinely cannot be described from that, write one short
+   sentence about how they played and stop. A short honest sentence is the
+   floor; a paragraph about missing evidence is not.` : ''}
 5. Use EXACTLY these names: ${cast.join(', ')}
 
 Return ONLY valid JSON matching the schema, with one entry per ${W.player}.

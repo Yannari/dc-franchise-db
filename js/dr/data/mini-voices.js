@@ -134,13 +134,31 @@ const MINI_TIER_ORDER = ['announce', 'nailed', 'decent', 'flat', 'win'];
    library with nothing to say; she cannot "pass" a dance-off — she dances
    badly, which is what `flat` is. Adding the tier to every mini gave four
    solo pools a tier with no note and nothing to write in it. */
+/* ── TWO MINIS HAVE NO ATTEMPT TO TIER ──
+   `nailed / decent / flat` is a queen doing a thing and being scored on it,
+   and Spill the T and Guess Who are not that. The host asks the ROOM a
+   question and the room answers: nobody performs, so there is nothing to rank
+   and the three attempt tiers have no meaning. That is why both shipped with
+   no voice at all while every other mini got one, and why the coverage guard
+   had been red on `guess-who` since the mini was built.
+   What they do have is a per-round outcome the engine already decides — how
+   much the answer STINGS on a vote, and whether anybody knew on a guess — so
+   the tiers are those, and the lines hung on them are what the room SAYS
+   about it. See docs/PROSE-PROMPT-dr-round-minis.md. */
+const ROUND_TIER_ORDER = {
+  vote: ['announce', 'brutal', 'pointed', 'harmless', 'win'],
+  guess: ['announce', 'nobody', 'some', 'win'],
+};
+export const ROUND_CASTS = new Set(Object.keys(ROUND_TIER_ORDER));
+
 const mini = (id, name, cast, note, ...rest) => ({
   id,
   name,
   cast,
   note,
   tiers: tiersFrom(
-    cast === 'targets' ? [...MINI_TIER_ORDER, 'passed'] : MINI_TIER_ORDER,
+    ROUND_TIER_ORDER[cast]
+      || (cast === 'targets' ? [...MINI_TIER_ORDER, 'passed'] : MINI_TIER_ORDER),
     rest.flat(),
   ),
 });
@@ -493,6 +511,38 @@ export const MINI_VOICES = [
         '{a} won {c} and the win is the win of a queen who listened to the rules, heard that wrong answers are scored, and decided to be the wrongest and the funniest person in the room for the next fifteen minutes, and succeeded.',
       ]),
     ]),
+  /* ── SPILL THE T ──
+     The host asks a superlative about the room and everybody votes; the
+     queens who vote WITH THE MAJORITY take the round. The question itself is
+     DATA — written once in js/dr/data/spill.js and asked verbatim — so what
+     is missing is not a description of the round, it is the ROOM. */
+  mini('spill-the-t', 'Spill the T', 'vote',
+    'NOBODY PERFORMS. The host reads a question about the room, every queen '
+    + 'writes a name, and the names go up on a board. So the line is never a '
+    + 'narration of that — it is what somebody SAYS while it happens, in '
+    + 'quotation marks. The named queen answering back, the room going up, '
+    + 'one queen defending her vote out loud. `{a}` is the queen the room '
+    + 'named. A line like "the room reacts to the result" is the thing this '
+    + 'pool exists to replace.',
+    tier('announce', 'The host reads the question out. Her line, not a description of it.', []),
+    tier('brutal', 'The room piled on one queen and she has to answer it to their faces.', []),
+    tier('pointed', 'A clear answer with a bit of blood in it. She takes it or she does not.', []),
+    tier('harmless', 'The room split, or the answer was fond. Nobody is wounded.', []),
+    tier('win', 'She read the room better than anybody. What she says about that.', [])),
+  /* ── GUESS WHO ──
+     The mirror of the vote: something belongs to one of them and the room
+     works out whose, so there IS a right answer and the tally can be a room
+     agreeing on the wrong one. The reveal is the moment. */
+  mini('guess-who', 'Guess Who', 'guess',
+    'SOMETHING OF HERS GOES UP WITH NO NAME ON IT and the room guesses. The '
+    + 'line is spoken, not narrated: the room calling out names, the owner '
+    + 'claiming it, somebody being wrong out loud and having to own that. '
+    + '`{a}` is the queen it belonged to. The two tiers are the only thing '
+    + 'that matters on the night — whether anybody knew her well enough.',
+    tier('announce', 'The host puts it up and asks whose it is. Her line.', []),
+    tier('nobody', 'Not one of them knew. She has been in this room for weeks. Her line about that.', []),
+    tier('some', 'Some of them knew her. What she says, and what the ones who guessed say.', []),
+    tier('win', 'She knew the room best. What she says about that.', [])),
   mini('wig-swap', 'Wig Swap', 'pairs',
     'She styles {b}\'s wig and then has to WEAR the one {b} did for her. Two '
     + 'jobs, and the second one is out of her hands entirely — she is judged '

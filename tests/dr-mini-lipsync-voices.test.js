@@ -20,7 +20,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  MINI_VOICES, MINI_TIER_IDS, MINI_VARIANTS,
+  MINI_VOICES, MINI_TIER_IDS, ROUND_CASTS, MINI_VARIANTS,
   miniVoice, miniLinesFor, miniNamesOther, lineOf,
   unwrittenMiniVoices, miniVoiceTierCount,
 } from '../js/dr/data/mini-voices.js';
@@ -80,7 +80,21 @@ describe('the mini schema', () => {
       expect(v.cast, `"${m.id}" is ${m.interaction} in minis.js and ${v.cast} here`)
         .toBe(m.interaction);
       expect(v.name, `"${m.id}" is named differently in the two files`).toBe(m.name);
-      expect(v.tiers.map(t => t.id).slice(1, 4), `${m.id} attempt tiers`).toEqual(MINI_TIER_IDS);
+      /* ── TWO MINIS HAVE NO ATTEMPT TO TIER ──
+         `nailed / decent / flat` ranks a queen doing a thing. Spill the T and
+         Guess Who ask the ROOM a question and nobody performs, so there is
+         nothing to rank — which is why both had no voice at all and this
+         guard had been red on `guess-who` since that mini was built. They
+         tier on the per-round outcome the engine already decides instead. */
+      if (ROUND_CASTS.has(v.cast)) {
+        expect(v.tiers.map(t => t.id)[0], `${m.id} does not open on the host`)
+          .toBe('announce');
+        expect(v.tiers.map(t => t.id).slice(-1)[0], `${m.id} has no win tier`)
+          .toBe('win');
+        expect(v.tiers.length, `${m.id} has no round tiers`).toBeGreaterThan(3);
+      } else {
+        expect(v.tiers.map(t => t.id).slice(1, 4), `${m.id} attempt tiers`).toEqual(MINI_TIER_IDS);
+      }
       expect(v.note, `${m.id} has no note for the writer`).toBeTruthy();
       for (const t of v.tiers) expect(t.note, `${m.id}/${t.id} has no note`).toBeTruthy();
     }

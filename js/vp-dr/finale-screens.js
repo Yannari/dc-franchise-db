@@ -683,9 +683,18 @@ export const CROWN_LS_CSS = `
 
 export function rpBuildCrownLipSync(row) {
   const ep = epOf(row);
+  /* ── AND WHAT ACTUALLY HAPPENED IN THE LIP SYNC ──
+     The duel drew two portraits, two energy bars and a verdict, and said
+     nothing about either performance: `finale-duel` shipped `text: ''` and
+     nothing else on this screen was about the song. Reported as "there's no
+     prose for the lipsync for the crown so we don't know what's happening".
+     js/dr/finale.js narrates it off the SONG now, the way every ordinary lip
+     sync in the show is narrated — one card per queen from the tempo pool,
+     then the moment the record is decided at from the hook pool. */
   const LS_KINDS = new Set([
     'finale:finale-crown-lipsync', 'finale-duel',
     'finale:finale-preduel', 'finale:finale-interview',
+    'finale:duel-beat', 'finale:duel-hook',
   ]);
   const scenes = (row?.dr?.scenes || []).filter(s =>
     LS_KINDS.has(s.kind) && (s.text || s.data?.duel));
@@ -733,6 +742,20 @@ export function rpBuildCrownLipSync(row) {
           <div class="cls-pd-queen">
             ${_portrait(who, ep, { size: 52, station: true })}
             <span class="cls-pd-name dr-disp">${esc(who)}</span>
+          </div>
+        </div></div>`);
+    } else if ((sc.kind === 'finale:duel-beat' || sc.kind === 'finale:duel-hook')
+      && sc.text) {
+      const who = (sc.data?.players || [])[0] || '';
+      const isHook = sc.kind === 'finale:duel-hook';
+      steps.push(`<div class="dr-step" id="dr-step-fincrownls-${n++}">
+        <div class="cls-duelbeat${isHook ? ' cls-duelhook' : ''}">
+          ${_portrait(who, ep, { size: 54, station: true })}
+          <div>
+            <span class="cls-db-who dr-disp">${esc(who)}</span>
+            ${isHook ? `<span class="cls-db-k">${
+  sc.data?.tier === 'nailed' ? 'takes the moment' : 'loses the moment'}</span>` : ''}
+            <p>${esc(sc.text)}</p>
           </div>
         </div></div>`);
     } else if (sc.data?.duel) {

@@ -104,3 +104,85 @@ describe('who should go home', () => {
     expect(body(plain)).not.toMatch(/dr-wsg-board/);
   });
 });
+
+/* ── AND WHAT IT DOES BACKSTAGE ──
+   "I want it to create drama in untucked right after — queens that feel piled
+   on, treachery, anger."
+
+   It did none of that. `runUntucked` has taken a `namedOnStage` list since it
+   was written and js/dr/week.js passed `[]` — hardcoded — so `f.namedOnStage`,
+   the fact whose own comment calls it "the most reliable fight the segment
+   has", had never once been true. */
+import { UNTUCKED_EVENTS, UNTUCKED_PHASES } from '../js/dr/data/untucked-events.js';
+
+const FALLOUT = ['named-me-to-my-face', 'named-by-a-friend', 'the-pile-on',
+  'named-herself-backstage', 'defends-the-name'];
+
+describe('the fallout backstage', () => {
+  const seasons = Array.from({ length: 25 }, (_, s) => playDragSeason({
+    cast: cast(12, 700 + s), seed: s,
+    config: { drSchedule: [{ episode: 3, critiqueTwist: 'who-should-go' }] },
+  }));
+  const twistRows = seasons
+    .map(o => o.rows.find(r => r.dr?.critiqueTwist?.kind === 'who-should-go'))
+    .filter(Boolean);
+  const eventsOn = row => (row.dr.scenes || [])
+    .map(sc => sc.data?.event).filter(Boolean);
+
+  it('reaches the room on most nights it is booked', () => {
+    // Measured: 9 of 25 before the votes spread and the partner hook existed,
+    // and none of those were the confrontation. 23 of 25 after.
+    const withFallout = twistRows
+      .filter(r => eventsOn(r).some(e => FALLOUT.includes(e))).length;
+    expect(twistRows.length).toBeGreaterThan(20);
+    expect(withFallout / twistRows.length,
+      'the segment ignores the thing the audience just watched')
+      .toBeGreaterThan(0.6);
+  });
+
+  it('puts the confrontation with somebody who actually named her', () => {
+    /* The partner hook, which is the half that makes these possible: a
+       two-hander about a particular person cannot wait for the draw to land
+       on her in a room of twelve. */
+    for (const row of twistRows) {
+      const { votes } = row.dr.critiqueTwist;
+      for (const sc of row.dr.scenes || []) {
+        if (sc.data?.event !== 'named-me-to-my-face') continue;
+        const [a, b] = sc.data.players;
+        expect(votes[b], `${b} is confronting ${a} without having named her`).toBe(a);
+      }
+    }
+  });
+
+  it('spreads the vote instead of landing everybody on one queen', () => {
+    /* `sort(...)[0]` took the single worst bond, and early in a season every
+       bond is zero — so the sort was a tie all the way down, it is stable, and
+       every queen returned the same first element. Nine of twelve naming one
+       woman, every season. */
+    const spread = twistRows.map(r => Object.keys(r.dr.critiqueTwist.tally).length);
+    const mean = spread.reduce((a, b) => a + b, 0) / spread.length;
+    expect(mean, 'the whole room still names the same queen').toBeGreaterThan(2);
+  });
+
+  it('leaves no placeholder in anything it says', () => {
+    /* `{q}` was written into the prose as a literal and reached the screen as
+       "{q}You said my name.{q}". {a}..{d} are filled at render time; nothing
+       else is. */
+    for (const ev of UNTUCKED_EVENTS) {
+      for (const line of ev.lines || []) {
+        const tokens = line.match(/\{[a-z]+\}/g) || [];
+        for (const t of tokens) {
+          expect(['{a}', '{b}', '{c}', '{d}'], `${ev.id}: stray ${t}`).toContain(t);
+        }
+      }
+    }
+  });
+
+  it('books every event into a phase that runs', () => {
+    // 'early' is not a phase. Three of these were written into it and could
+    // never fire at all.
+    for (const ev of UNTUCKED_EVENTS) {
+      expect(UNTUCKED_PHASES, `${ev.id} is in phase "${ev.phase}"`).toContain(ev.phase);
+    }
+  });
+});

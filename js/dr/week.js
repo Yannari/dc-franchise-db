@@ -1336,9 +1336,32 @@ export function runDragWeek(state, cfg, ctx) {
       family: familyForChallenge(maxi.id).family,
     })) scenes.push(sc);
 
+    /* ── WHAT HAPPENED ON THAT STAGE FOLLOWS THEM BACKSTAGE ──
+       `namedOnStage` was passed as `[]`. Hardcoded, since the day the fact was
+       written -- so `f.namedOnStage`, the fact its own comment calls "the most
+       reliable fight the segment has", has never once been true.
+
+       It is the who-should-go twist that fills it: every queen answers, out
+       loud, in front of the queen she names. `namedBy` carries the answers
+       themselves, so Untucked can be about WHO said it rather than only that
+       somebody did -- a friend naming you and a rival naming you are not the
+       same night, and three queens naming the same woman is a different one
+       again. */
+    const wsgVotes = (twist && cfg.critiqueTwist === 'who-should-go' && twist.votes)
+      ? twist.votes : null;
+    const namedBy = {};
+    if (wsgVotes) {
+      for (const [voter, target] of Object.entries(wsgVotes)) {
+        if (!target || voter === target) continue;
+        (namedBy[target] ||= []).push(voter);
+      }
+    }
     const untuckedScenes = runUntucked({
       living, players: ctx.players, state, storylines: state.storylines || [],
-      call, namedOnStage: [], rng, ctx: { bond: ctx.bond, episode: cfg.num },
+      call, namedOnStage: Object.keys(namedBy), namedBy,
+      selfNamed: wsgVotes
+        ? Object.entries(wsgVotes).filter(([v, t]) => v === t).map(([v]) => v) : [],
+      rng, ctx: { bond: ctx.bond, episode: cfg.num },
     });
     for (const sc of untuckedScenes) {
       applyUntuckedScene(sc, ctx);

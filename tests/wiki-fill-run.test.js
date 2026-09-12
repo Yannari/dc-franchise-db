@@ -148,3 +148,62 @@ describe('a player timeline', () => {
     expect(t[t.length - 1]).toMatch(/^wk30:/);
   });
 });
+
+/* ══ A TRANSCRIPT IS ENRICHMENT, NOT A PREREQUISITE ══════════════════════
+   "Why I export and fill narrative" — and every queen's article still said
+   "No narrative has been written for this season yet."
+
+   The two fills had different rules about transcripts, and only one of them
+   said so. `runGameHistoryFill` writes from the season DOCUMENT and treats
+   saved episodes as extra, so it wrote all sixteen rounds. `runCharacterFill`
+   returned `{ ok: false }` the moment `listEpisodes` came back empty — and a
+   drag season has no transcripts unless somebody has put its episodes through
+   the AI episode writer, which is a different tool on a different page.
+
+   `runBothFills` runs the character half FIRST, so the refusal scrolled past
+   and the commit that followed said "(0 players, 16 rounds)". Measured on the
+   published database: total-drama 262/262 season entries with narrative,
+   big-brother 17/17, drag-race 0/14.
+
+   There is plenty to write from without a transcript. `sliceCastThreads`
+   returns a thread per player either way, and `attachRecords` fills the
+   record, the key moments and the timeline entirely off the document. */
+describe('the character fill without transcripts', () => {
+  // Relative, like the two reads above it — vitest runs from the repo root.
+  const src = readFileSync('js/wiki-fill-run.js', 'utf8');
+  const body = (name) => {
+    const at = src.indexOf(`export async function ${name}`);
+    expect(at, `${name} is gone`).toBeGreaterThan(-1);
+    const next = src.indexOf('\nexport ', at + 10);
+    return src.slice(at, next === -1 ? src.length : next);
+  };
+
+  it('does not refuse a season that has none', () => {
+    const fn = body('runCharacterFill');
+    expect(fn).toMatch(/listEpisodes/);
+    expect(fn, 'an empty episode list still ends the fill')
+      .not.toMatch(/if\s*\(\s*!episodes\.length\s*\)\s*\{[\s\S]{0,120}?return\s*\{\s*ok:\s*false/);
+  });
+
+  it('refuses a season with no cast, which is a real gap', () => {
+    // The guard that replaced it has to guard something: a document with no
+    // placements cannot be written about and re-exporting is the fix.
+    expect(body('runCharacterFill')).toMatch(/!cast\.length[\s\S]{0,160}ok:\s*false/);
+  });
+
+  it('keeps the round fill treating transcripts the same way', () => {
+    // The two are meant to agree now. If a guard is ever added here, the one
+    // above should come back with it.
+    const fn = body('runGameHistoryFill');
+    expect(fn).toMatch(/listEpisodes/);
+    expect(fn, 'the round fill started refusing seasons with no transcripts')
+      .not.toMatch(/if\s*\(\s*!episodes\.length\s*\)\s*\{[\s\S]{0,120}?return\s*\{\s*ok:\s*false/);
+  });
+
+  it('still says which of the two runs it is doing', () => {
+    /* "No transcripts" has to read as a fact about the season rather than as
+       something going wrong, or the next person reads a thin paragraph and
+       assumes the fill failed again. */
+    expect(body('runCharacterFill')).toMatch(/No transcripts saved/);
+  });
+});

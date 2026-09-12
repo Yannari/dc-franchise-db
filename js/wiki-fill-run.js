@@ -274,12 +274,27 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
     return { ok: false, reason: `no season document at data/seasons/${file} — export the season first` };
   }
   const cast = doc.placements.map(p => p.name).filter(Boolean);
+  if (!cast.length) {
+    return { ok: false, reason: `${file} has no cast on it — re-export the season` };
+  }
 
   onStatus('Reading episode transcripts…');
+  /* ── A TRANSCRIPT IS ENRICHMENT, NOT A PREREQUISITE ──
+     This refused outright on a season with no saved transcripts, and the round
+     fill beside it does not: `runGameHistoryFill` writes from the season
+     DOCUMENT and treats episodes as extra. So a season whose episodes were
+     never put through the AI episode writer got all of its rounds written and
+     not one player, and `runBothFills` runs this one first — so the failure
+     scrolled past and the commit that followed said "(0 players, 16 rounds)".
+     Reported on the first drag season, where the whole cast had no narrative
+     at all while the round-by-round read fine.
+     There is plenty to write from without a transcript. `sliceCastThreads`
+     returns a thread per queen either way, and `attachRecords` fills the
+     record, the key moments and the timeline entirely off `doc` — a placement,
+     a status, a run of wins and bottoms, and what happened week by week. That
+     is a thinner paragraph than one with confessionals in it and it is a
+     paragraph, which is what the page is missing. */
   const episodes = await listEpisodes(season, format);
-  if (!episodes.length) {
-    return { ok: false, reason: 'no episode transcripts are saved for this season' };
-  }
 
   const base = writerUrl();
   onStatus('Checking the worker…');
@@ -294,7 +309,11 @@ export async function runCharacterFill({ season, format, root = '', onStatus = (
   attachRecords(doc, threads, format);
 
   const spoken = threads.filter(t => t.totals.confessionals + t.totals.lines > 0).length;
-  onStatus(`${episodes.length} episodes · ${cast.length} in the cast · ${spoken} speak on camera. Asking the writer…`);
+  // And say which of the two this is, so "nobody speaks" reads as a fact about
+  // the season rather than as something that went wrong.
+  onStatus(episodes.length
+    ? `${episodes.length} episodes · ${cast.length} in the cast · ${spoken} speak on camera. Asking the writer…`
+    : `No transcripts saved · writing ${cast.length} from the season record alone. Asking the writer…`);
 
   const res = await fetch(base, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

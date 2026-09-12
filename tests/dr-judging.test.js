@@ -134,13 +134,22 @@ describe('callWeek', () => {
       win: ['A'], high: ['B', 'C'], safe: ['D', 'E', 'F', 'G', 'H', 'I'],
       low: ['J'], atRisk: [], bottom: ['K', 'L'],
     });
-    const ten = callWeek(fr(10), { castSize: 10 });
-    expect(ten.win).toEqual(['A']);
-    expect(ten.high).toEqual(['B']);
-    expect(ten.bottom).toEqual(['I', 'J']);
-    const six = callWeek(fr(6), { castSize: 6 });
-    expect(six.high).toEqual(['B']);
-    expect(six.bottom).toEqual(['E', 'F']);
+    /* AND IT STAYS SIX AS THE ROOM SHRINKS, which is what the real show does.
+       tools/dr-real-critique-size.py counts the non-safe queens per night
+       across seasons 9-16: the mean sits between 5.4 and 6.6 for every room
+       from thirteen down to six, and only falls at five. It used to step down
+       to two-called-up at eleven, so one elimination changed the shape of the
+       night with nothing about the challenge changing. */
+    for (const n of [11, 10, 9, 8, 7, 6]) {
+      const c = callWeek(fr(n), { castSize: n });
+      expect(c.win.length + c.high.length, `${n} queens: called up`).toBe(3);
+      expect(c.win.length + c.high.length + c.low.length + c.bottom.length,
+        `${n} queens: critiqued`).toBe(6);
+    }
+    // Five and four are the two the real show does drop for: 4.7 and 3.8.
+    expect(callWeek(fr(5), { castSize: 5 }).high).toEqual(['B']);
+    const four = callWeek(fr(4), { castSize: 4 });
+    expect(four.win.length + four.high.length).toBe(1);
   });
 
   it('THE ANNOUNCED BOTTOM IS BIGGER THAN THE LIP SYNC, above nine', () => {

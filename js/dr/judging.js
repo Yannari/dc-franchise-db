@@ -310,7 +310,25 @@ export function callWeek(finalRanking, {
   /* HOW MANY ARE CALLED UP, decided once for both paths. It used to live
      below the team branch, so a team night never saw it — see the cap on the
      winning team a few lines down. */
-  const upFor = size => (size >= 12 ? 3 : size >= 5 ? 2 : 1);
+  /* ── MEASURED AGAINST THE REAL SHOW, NOT GUESSED ──
+     tools/dr-real-critique-size.py reads the progress tables of seasons 9-16
+     and counts, per night, how many queens were NOT safe against how many
+     were left. 87 nights:
+
+       room   13    12    11    10     9     8     7     6     5     4
+       mean  5.9   5.8   6.2   5.6   5.9   6.6   6.3   5.4   4.7   3.8
+
+     It is FLAT at about six from thirteen queens down to six, and only falls
+     at five. The real show does not shrink the top of the stage as the cast
+     shrinks -- it keeps calling three up and three down until there is nobody
+     left to dismiss.
+
+     This used to step at twelve (`size >= 12 ? 3 : ...`), so a single
+     elimination taking a room from twelve to eleven turned a six-critique
+     night into a five-critique one with nothing about the challenge changed.
+     Holding three until six puts every room from 6 to 14 at six critiqued,
+     inside the measured range for every one of those sizes. */
+  const upFor = size => (size >= 6 ? 3 : size >= 5 ? 2 : 1);
 
   if (teamJudged && teams && bestTeam != null && teams.length > 1) {
     const winTeam = new Set(teams[bestTeam] || []);

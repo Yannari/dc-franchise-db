@@ -627,6 +627,35 @@ export const MAXI_EVENTS = [
   }),
 
   // ══ THE MINI ═════════════════════════════════════════════════════════
+  /* ── SPILL THE T ──
+     A vote mini, so nobody performs: the host asks the room a question about
+     itself, everybody answers, and the answers are read out. The question and
+     the count are drawn from data (js/dr/stage.js), and these three are what
+     it does to the people in the room.
+     THE POOLS ARE EMPTY ON PURPOSE — an event with no prose emits no scene,
+     so the mechanical cost lands today and the sentence about it lands when
+     it is written. See docs/PROSE-PROMPT-dr-spill.md. */
+  e({
+    id: 'named-by-the-room', from: 'mini', cast: 'solo',
+    note: '{a} has just been named by most of the room on a question that '
+      + 'stings, out loud, before she has done anything this week. Write her '
+      + 'taking it — or failing to. Do not name a second queen: the accusers '
+      + 'are the room.',
+    lines: [],
+  }),
+  e({
+    id: 'named-her-to-her-face', from: 'mini', cast: 'pair',
+    note: '{a} and {b} are close, and {a} still said her name. {b} heard '
+      + 'her say it. This is the one that costs something.',
+    lines: [],
+  }),
+  e({
+    id: 'nobody-said-her-name', from: 'mini', cast: 'solo',
+    note: 'Four questions about this room and {a} did not come up once — not '
+      + 'as a threat, not as a target, not as anything. The quietest bad news '
+      + 'in the episode.',
+    lines: [],
+  }),
   e({
     id: 'read-landed', from: 'mini', cast: 'pair',
     note: '{a} read {b} and it was genuinely brutal and genuinely funny.',

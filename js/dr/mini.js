@@ -23,6 +23,7 @@
 import { dragOf } from './queen.js';
 import { blendScore, noise } from './perform.js';
 import { evt } from './rules.js';
+import { SPILL_QUESTIONS, spillRounds } from './data/spill.js';
 
 /** A read that lands. Below this it did not. */
 const LANDED = 6.5;
@@ -56,6 +57,63 @@ function targetFor(n, living, players, bond, star, rng) {
   const total = weights.reduce((t, x) => t + x.w, 0);
   let roll = rng() * total;
   return (weights.find(x => (roll -= x.w) <= 0) || weights[0]).o;
+}
+
+/* ── SPILL THE T ──────────────────────────────────────────────────────
+   The host asks a superlative about the room and everybody votes. The
+   queens who vote WITH THE MAJORITY take the round, which is the real
+   show's rule and the reason this mini is not like any other one here: it
+   scores whether you know what everybody else thinks, not whether you are
+   good at something.
+
+   Her vote is a READ, built from what she can actually see — a record, a
+   room, a bond — with `intuition` deciding how much noise sits on top. So a
+   queen who misreads the room misreads it for a reason, and a perceptive
+   queen is genuinely better at this without ever being certain.
+
+   And then it is read out, which is the whole point. A queen finds out in
+   front of everybody, before she has done anything that week, that six of
+   her sisters think she is the next one going. `sting` prices that per
+   question: being voted the most sensible with the prize money costs
+   nothing at all. */
+function runSpill({ living, players, rng, bond, record }) {
+  const rounds = [];
+  const matches = Object.fromEntries(living.map(n => [n, 0]));
+  const pool = [...SPILL_QUESTIONS].sort(() => rng() - 0.5)
+    .slice(0, spillRounds(living.length));
+
+  for (const q of pool) {
+    const votes = {};
+    for (const voter of living) {
+      const others = living.filter(o => o !== voter);
+      if (!others.length) continue;
+      /* How sharp her read is. A queen with no intuition is close to
+         guessing; one with all of it still does not KNOW, because the room
+         is other people. */
+      const blur = 2.6 - (Number(players[voter]?.stats?.intuition) || 5) * 0.18;
+      const ctx = { record, players, bond, living, voter };
+      const seen = others.map(o => ({
+        o, v: q.reads(o, ctx) + noise(rng, blur),
+      })).sort((a, b) => b.v - a.v);
+      votes[voter] = seen[0].o;
+    }
+
+    const tally = {};
+    for (const target of Object.values(votes)) tally[target] = (tally[target] || 0) + 1;
+    /* The name the room landed on. Ties break by the name so a replay of the
+       same seed reads out the same answer. */
+    const named = Object.entries(tally)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+    if (!named) continue;
+    for (const [voter, target] of Object.entries(votes)) {
+      if (target === named[0]) matches[voter] += 1;
+    }
+    rounds.push({
+      question: q.id, prompt: q.prompt, sting: q.sting,
+      votes, tally, named: named[0], count: named[1],
+    });
+  }
+  return { rounds, matches };
 }
 
 /* ── WHAT THE READ IS ABOUT ────────────────────────────────────────────
@@ -164,6 +222,11 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
   const turnOrder = interaction === 'targets'
     ? [...living].sort(() => rng() - 0.5) : [...living];
 
+  /* The vote runs before anybody is scored, because on this mini the vote IS
+     the score: she is not performing, she is guessing what the room thinks. */
+  const spill = interaction === 'vote'
+    ? runSpill({ living, players, rng, bond, record }) : null;
+
   if (interaction === 'pairs') {
     // Split the room. An odd queen out works alone, which is its own result.
     const order = [...living].sort(() => rng() - 0.5);
@@ -175,7 +238,17 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
     const d = dragOf(players[n]);
     let s = blendScore(d, mini.blend) + noise(rng, 3);
 
-    if (interaction === 'targets') {
+    if (interaction === 'vote') {
+      /* HOW OFTEN SHE MATCHED THE ROOM, and almost nothing else. A craft
+         score would be answering a question this mini does not ask — there
+         is no performance here, only a read. The small blend term is kept as
+         a tiebreak so two queens on the same number are not settled by name
+         alone. */
+      const hit = spill?.matches?.[n] || 0;
+      const of = Math.max(1, spill?.rounds?.length || 1);
+      s = (hit / of) * 10 + s * 0.06;
+      detail[n] = { matched: hit, of, rounds: spill?.rounds?.length || 0 };
+    } else if (interaction === 'targets') {
       const target = targetFor(n, living, players, bond, star, rng);
       const at = turnOrder.indexOf(n);
       detail[n] = {
@@ -261,6 +334,68 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
   }
 
   // ── what the interaction did to the room ──
+  /* ── AND THE ANSWERS ARE READ OUT ──────────────────────────────────
+     Which is the entire reason this mini exists. A vote nobody hears is a
+     survey; a vote read back to the room in front of the queen it names is
+     the drama. `sting` prices the question — being voted the most sensible
+     with the prize money costs her nothing, being voted the next one going
+     costs her the afternoon.
+
+     TWO THINGS HAPPEN, and they are different. The room's verdict lands on
+     HER: a queen told before she has done anything that six sisters expect
+     her to go home carries that into the challenge. And the vote lands
+     between HER AND THE QUEENS WHO CAST IT, because she watched them do it.
+     A read in the library is a joke; this is on the record.
+
+     Only a stinging question moves anything. A compliment read out is a
+     nice moment and nice moments are not consequences. */
+  if (interaction === 'vote' && spill) {
+    for (const r of spill.rounds) {
+      if (r.sting < 0.5) continue;
+      const share = r.count / Math.max(1, living.length - 1);
+      const accusers = Object.keys(r.votes)
+        .filter(v => r.votes[v] === r.named && v !== r.named);
+      /* EVERY QUEEN WHO SAID IT PAYS FOR IT, on one event rather than one
+         each. She watched every hand go up, so the bond cost is per accuser
+         — it scales with the sting and NOT with the count, because being one
+         of six does not make it less personal to the one who cast it — but
+         six cards saying the same thing about the same round is the beat
+         printed six times, which is how a segment stops being drama and
+         starts being a list. */
+      events.push(evt('named-by-the-room', {
+        players: [r.named, ...accusers],
+        pop: { [r.named]: -Math.round(r.sting * (1 + share * 2)) },
+        bond: accusers.map(v => [v, r.named, -Math.round(r.sting * 2 * 10) / 10]),
+        data: { question: r.question, prompt: r.prompt, count: r.count, share },
+      }));
+      /* AND THE ONE IT ACTUALLY COSTS SOMETHING. The room naming her is the
+         room; a queen she is close to naming her is a different event and
+         the only one worth its own card. Nothing fires when the closest
+         accuser is not actually close — a stranger saying it is already
+         covered above. */
+      const friend = accusers
+        .map(v => ({ v, b: bond(v, r.named) }))
+        .sort((a, b) => b.b - a.b || a.v.localeCompare(b.v))[0];
+      if (friend && friend.b >= 3) {
+        events.push(evt('named-her-to-her-face', {
+          players: [friend.v, r.named],
+          bond: [[friend.v, r.named, -Math.round(r.sting * 2 * 10) / 10]],
+          data: { question: r.question, prompt: r.prompt, was: friend.b },
+        }));
+      }
+    }
+    /* AND A QUEEN NOBODY NAMED ALL GAME. Four questions about the room and
+       her name did not come up once, which is its own verdict and the
+       quietest bad news in the episode. */
+    const everNamed = new Set(spill.rounds.flatMap(r => Object.values(r.votes)));
+    for (const n of living) {
+      if (everNamed.has(n) || spill.rounds.length < 3) continue;
+      events.push(evt('nobody-said-her-name', {
+        players: [n], pop: { [n]: -1 }, data: { rounds: spill.rounds.length },
+      }));
+    }
+  }
+
   if (interaction === 'targets') {
     for (const n of living) {
       const target = detail[n]?.target;
@@ -319,6 +454,8 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
     pairs,
     events,
     interaction,
+    // The rounds, so the screen can read the vote back the way the room heard it.
+    spill: spill ? spill.rounds : null,
   };
 }
 

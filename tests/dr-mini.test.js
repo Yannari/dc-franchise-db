@@ -25,7 +25,11 @@ const run = (id, over = {}) => runMini({
 describe('the catalogue', () => {
   it('every mini declares what kind of thing it is', () => {
     for (const m of MINI_TYPES) {
-      expect(['solo', 'targets', 'pairs'], `${m.id} has interaction "${m.interaction}"`)
+      /* `vote` is the fourth: the room answers a question about itself and
+         nobody performs. It is scored on matching the majority rather than on
+         a craft roll, which is why js/dr/stage.js renders it on its own
+         branch — see js/dr/data/spill.js. */
+      expect(['solo', 'targets', 'pairs', 'vote'], `${m.id} has interaction "${m.interaction}"`)
         .toContain(m.interaction);
       expect(['pick-order', 'captain', 'first-pick', 'prize'], m.id).toContain(m.buys);
       expect(m.blend, m.id).toBeTruthy();

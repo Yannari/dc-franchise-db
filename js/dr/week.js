@@ -290,6 +290,11 @@ export function runDragWeek(state, cfg, ctx) {
         interaction: res.interaction, detail: res.detail,
         // Who reads when. The turn is the format for a targeting mini.
         turnOrder: res.turnOrder || null,
+        /* THE ROUNDS OF A VOTE MINI ARE THE MINI. A `vote` mini has no
+           per-queen performance to narrate — what happens is the host asking
+           the room a question and the answer being read out — so the rounds
+           carry the whole segment and the screen has nothing without them. */
+        rounds: res.spill || null,
       };
       applyMiniEvents(res.events, ctx);
       for (const e of res.events) {
@@ -1306,6 +1311,7 @@ export function runDragWeek(state, cfg, ctx) {
       // The mini engine's own record of who each queen went after, which the
       // narration needs to name her — it reached the row and stopped there.
       miniDetail: mini?.detail || {},
+      miniRounds: mini?.rounds || null,
       assignment: M.assignment || {}, performances: perfWithPlayers, rng,
       // The module's own scenes, so a beat can read back what the challenge
       // recorded rather than recomputing it. See the note on the parameter.

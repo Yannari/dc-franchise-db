@@ -42,6 +42,24 @@ export const MINI_TYPES = [
   { id: 'quiz', interaction: 'targets', name: 'Herstory Quiz', buys: 'prize',
     blend: { comedy: 0.3, acting: 0.3, runway: 0.4 },
     desc: 'A quiz about the queens themselves, scored on how funny the wrong answers are.' },
+  /* ── THE ONE THAT IS NOT A PERFORMANCE ──
+     Every other mini here asks whether she is good at something. This one
+     asks whether she knows what the room thinks — the host puts a
+     superlative to the room, everybody votes, and the queens who vote WITH
+     THE MAJORITY take the round. That is the real show's rule and it makes
+     `intuition` the stat that wins it, which nothing else on this list does.
+     The `blend` is nominal and used only as a tiebreak; the score is how
+     often she matched. See js/dr/mini.js and js/dr/data/spill.js. */
+  { id: 'spill-the-t', interaction: 'vote', name: 'Spill the T', buys: 'pick-order',
+    blend: { comedy: 0.5, acting: 0.5 },
+    desc: 'The host puts a question about the room to the room — who is the '
+      + 'biggest threat, who cracks first, who is the next one going home — and '
+      + 'every queen votes for somebody other than herself. The answers are read '
+      + 'out with the names attached, so a queen finds out what her sisters think '
+      + 'of her before she has done anything that week. Guessing what YOU think '
+      + 'is not the game: the round goes to whoever voted with the majority, so a '
+      + 'queen who knows the room beats a queen who is merely right. Most rounds '
+      + 'matched wins.' },
   { id: 'wig-swap', interaction: 'pairs', name: 'Wig Swap', buys: 'first-pick',
     blend: { design: 0.6, runway: 0.4 },
     desc: 'Every queen styles somebody else’s wig and then has to wear the one done for her.' },

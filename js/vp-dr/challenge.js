@@ -537,6 +537,33 @@ const CHAL_CSS = `
   .dr-step.dr-vis .dr-aim-arrow,.dr-step.dr-vis .dr-aim-arrow.dr-hit + .dr-bust{animation:none}
 }
 
+/* THE ROOM ANSWERS A QUESTION ABOUT ITSELF. A vote mini has no performance
+   to draw, so the card IS the question and the count: the question set big
+   like a card held up, then every queen who got a vote with the size of her
+   bar, and the queen the room actually named pulled out in front.
+   NO BACKTICKS: this comment is inside a template literal. */
+.dr-spill{padding:18px 20px}
+.dr-spill .dr-q{margin:0;font-size:21px;line-height:1.25;color:#fff;max-width:30ch}
+.dr-spill .dr-sting{display:inline-block;margin:0 0 8px;font-size:10px;
+  letter-spacing:.16em;text-transform:uppercase;color:#C9A6BC}
+.dr-spill .dr-sting.dr-hot{color:#FF3D9A}
+.dr-tally{display:grid;gap:6px;margin:16px 0 0}
+.dr-tal{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.dr-tal-n{font-size:12px;color:#C9A6BC;white-space:nowrap}
+.dr-tal-b{height:10px;background:rgba(255,255,255,.13);position:relative}
+.dr-tal-b i{position:absolute;inset:0 auto 0 0;background:rgba(255,255,255,.4);
+  transform-origin:left}
+.dr-tal.dr-named .dr-tal-n{color:#fff;font-size:13px}
+.dr-tal.dr-named .dr-tal-b i{background:#FF3D9A;box-shadow:0 0 12px rgba(255,61,154,.6)}
+.dr-tal-c{font-size:12px;color:#f4e3ed;font-variant-numeric:tabular-nums}
+.dr-step.dr-vis .dr-tal-b i{animation:drTal .55s cubic-bezier(.2,1,.3,1) both .12s}
+@keyframes drTal{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.dr-spill-said{display:flex;align-items:center;gap:12px;margin:16px 0 0;
+  padding:12px 14px;border-left:3px solid #FF3D9A;background:rgba(255,61,154,.09)}
+.dr-spill-said b{color:#fff}
+.dr-spill-said span{color:#C9A6BC;font-size:13px}
+@media(prefers-reduced-motion:reduce){.dr-step.dr-vis .dr-tal-b i{animation:none}}
+
 .dr-miniwin{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;
   padding:16px 20px;border-left:4px solid #FFC83D;
   background:linear-gradient(90deg,rgba(255,200,61,.16),transparent 55%),var(--dr-panel)}
@@ -1453,7 +1480,38 @@ export function rpBuildMini(row) {
      Only the attempt and the win are a read. */
   const READS = new Set(['chal:mini-attempt', 'chal:mini-win']);
 
+  /* ── A VOTE ROUND, WHICH IS NOT A READ ──
+     The other minis draw a queen and a paragraph. A vote round draws the
+     question the host asked and what the room said back, because that IS the
+     mini — see the branch in js/dr/stage.js. Everything here comes off
+     `sc.data`; nothing is recomputed, so the bar chart and the sentence under
+     it cannot disagree with the engine. */
+  const spillStep = (sc, i) => {
+    const d = sc.data || {};
+    const rows = Object.entries(d.tally || {})
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const top = Math.max(1, ...rows.map(r => r[1]));
+    return `<div class="dr-step" id="dr-step-mini-${i}">
+      <div class="dr-panel dr-a-score dr-card dr-spill">
+        <span class="dr-sting ${d.sting >= 0.7 ? 'dr-hot' : ''}">${
+  d.sting >= 0.7 ? 'This one costs somebody' : 'The room answers'}</span>
+        <h3 class="dr-q dr-disp">${esc(sc.text)}</h3>
+        <div class="dr-tally">${rows.map(([n, v]) => `<div class="dr-tal ${
+  n === d.named ? 'dr-named' : ''}">
+            <span class="dr-tal-n">${esc(n)}</span>
+            <span class="dr-tal-b"><i style="transform:scaleX(${(v / top).toFixed(3)})"></i></span>
+            <span class="dr-tal-c">${v}</span>
+          </div>`).join('')}</div>
+        ${d.named ? `<div class="dr-spill-said">
+          ${_portrait(d.named, ep, { size: 44 })}
+          <div><b>${esc(d.named)}</b><br>
+            <span>${d.count} of ${d.of} said her name.</span></div>
+        </div>` : ''}
+      </div></div>`;
+  };
+
   const steps = scenes.map((sc, i) => {
+    if (sc.kind === 'chal:mini-vote') return spillStep(sc, i);
     const who = (sc.data?.players || [])[0];
     const at = who && READS.has(sc.kind) ? aimOf(who) : null;
     return `<div class="dr-step" id="dr-step-mini-${i}">

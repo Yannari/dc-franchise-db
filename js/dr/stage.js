@@ -1099,6 +1099,9 @@ export function renderChallengeBeats({
   // `{ partner }` on a `pairs` one, straight off the mini engine's own record.
   // It has always existed and this renderer never asked for it.
   miniDetail = {},
+  // The rounds of a `vote` mini: one question, everybody's answer, and who
+  // the room named. See the branch below and js/dr/data/spill.js.
+  miniRounds = null,
   assignment = {}, performances = {}, rng = Math.random,
   /* ── WHAT THE CHALLENGE MODULE ALREADY EMITTED ──
      This function builds its OWN `scenes` array and never saw the module's,
@@ -1277,6 +1280,45 @@ export function renderChallengeBeats({
       ? (miniDetail[n]?.target || miniDetail[n]?.partner || null) : null);
 
     mEmit('mini-announce', 'announce', [], { name: mini.name, buys: mini.buys });
+    /* ── A VOTE MINI IS NOT A PERFORMANCE ───────────────────────────
+       Every other mini is a queen doing a thing and being scored on it, and
+       the loop below renders exactly that: her turn, her attempt, her tier.
+       Spill the T is a room answering a question about itself. Nobody
+       performs, so there is no attempt to tier and no turn to call — what
+       happens is the question, the count, and a queen finding out that six
+       of her sisters think she is next.
+       THE QUESTION IS DATA, NOT PROSE. It is written once in
+       js/dr/data/spill.js and asked verbatim, so this card is voiced by
+       construction and renders on a night with no pool written for it. The
+       REACTION is prose and is a beat of its own — empty today, which under
+       the contract above means it simply does not draw. */
+    const stingTier = v => (v >= 0.7 ? 'brutal' : v >= 0.3 ? 'pointed' : 'harmless');
+    const isVote = mini.interaction === 'vote' && Array.isArray(miniRounds)
+      && miniRounds.length > 0;
+    if (isVote) {
+      for (const r of miniRounds) {
+        const of = Object.keys(r.votes || {}).length;
+        scenes.push({
+          step: 'mini',
+          kind: 'chal:mini-vote',
+          data: {
+            beat: 'mini-vote', tier: stingTier(r.sting), players: [r.named],
+            note: 'The host asks the room, every queen answers, and the answers '
+              + 'are read out in front of the queen they are about.',
+            mini: mini.id, voiced: true,
+            question: r.question, prompt: r.prompt, sting: r.sting,
+            named: r.named, count: r.count, of, tally: r.tally, votes: r.votes,
+          },
+          text: `"${r.prompt}"`,
+        });
+        mEmit('mini-named', stingTier(r.sting), [r.named], {
+          question: r.question, prompt: r.prompt, sting: r.sting,
+          count: r.count, of,
+        });
+      }
+      if (miniWinner) mEmit('mini-win', 'win', [miniWinner], { buys: mini.buys });
+    }
+
     /* EVERY QUEEN WHO COMPETED GETS HER CARD. A cap was tried here and it
        was the wrong answer to the right complaint: the mini did outrun the
        maxi, but the fix for that is the maxi being bigger, not the room
@@ -1291,8 +1333,9 @@ export function renderChallengeBeats({
        This rendered as thirteen simultaneous attempts in `living` order, so
        the running order — first up, and the last one everybody has been
        waiting for — reached the screen as nothing at all. */
-    const order = miniNamesOther(mini.id) && Array.isArray(mini.turnOrder)
-      ? mini.turnOrder.filter(n => living.includes(n)) : living;
+    const order = isVote ? []
+      : miniNamesOther(mini.id) && Array.isArray(mini.turnOrder)
+        ? mini.turnOrder.filter(n => living.includes(n)) : living;
 
     for (const n of order) {
       if (miniScores[n] === undefined) continue;
@@ -1324,7 +1367,7 @@ export function renderChallengeBeats({
             readIndex: k, reads: reads.length });
       }
     }
-    if (miniWinner) {
+    if (miniWinner && !isVote) {
       const other = otherFor(miniWinner);
       mEmit('mini-win', 'win', other ? [miniWinner, other] : [miniWinner], { buys: mini.buys });
     }

@@ -185,6 +185,32 @@ export const CHALLENGE_BEATS = [
     tier('passed', 'She stands up, opens her mouth and has nothing.', []),
     ],
   },
+  /* ── SHE JUST FOUND OUT WHAT THE ROOM THINKS OF HER ──
+     A vote mini (js/dr/data/spill.js) asks the room a question and reads the
+     answers out. The question and the count are DATA — js/dr/stage.js draws
+     that card itself and it renders on every night — and this beat is the
+     other half: what the queen the room named does with her face.
+     Tiered on the question's `sting`, because being voted the next one going
+     home and being voted most likely to spend the money sensibly are not the
+     same afternoon.
+     THE POOLS ARE EMPTY ON PURPOSE. An unwritten tier emits no scene, so
+     today the segment is the question and the count and nothing else — which
+     is a smaller card, not a broken one. See docs/PROSE-PROMPT-dr-spill.md. */
+  {
+    id: 'mini-named', step: 'mini', scope: 'per-queen', speaker: 'narrator',
+    note: 'The room has just named {a}, out loud, in front of her. What she '
+      + 'does with that. {a} is the queen named; do not write a second name.',
+    tierBy: 'sting',
+    tiers: [
+      tier('brutal', 'The room named her as the next to go, the shadiest, or '
+        + 'the one about to crack. It is early in the week and she has not '
+        + 'done anything yet.', []),
+      tier('pointed', 'Not cruel, but not nothing — invisible, or a threat. '
+        + 'She has to decide in front of everybody whether to take it well.', []),
+      tier('harmless', 'A compliment, or close enough to one. The room laughs '
+        + 'and it costs her nothing.', []),
+    ],
+  },
   {
     id: 'mini-win', step: 'mini', scope: 'per-queen', speaker: 'host',
     note: 'The mini winner is named and told what she has won.',

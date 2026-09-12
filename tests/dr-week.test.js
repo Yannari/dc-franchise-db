@@ -111,11 +111,19 @@ describe('runDragWeek', () => {
     expect(steps).not.toContain('maxi-main');
   });
 
-  it('a main-stage maxi runs after the runway, a pre one before', () => {
+  /* ── AND IT RUNS BEFORE THE WALK, NOT AFTER IT ──
+     This asserted `maxi-main` AFTER `runway`, which is not the night: the
+     queens perform the number and then walk the category they were told about
+     on day one, and the panel critiques both together. With the order the
+     other way the episode writer was handed the walk before the performance
+     it reacts to. SCENE_STEPS is the running order and was corrected when the
+     girl group moved onto the main stage; see tests/dr-stage-placement.js. */
+  it('a main-stage maxi plays on the night, before the walk; a pre one earlier', () => {
     const c = cast();
     const st = initDragState({ cast: c, seed: 5, rng: rngFor(5) });
     const steps = runDragWeek(st, cfg({ maxiId: 'roast' }), ctxFor(c)).dr.scenes.map(s => s.step);
-    expect(steps.indexOf('maxi-main')).toBeGreaterThan(steps.indexOf('runway'));
+    expect(steps.indexOf('maxi-main')).toBeGreaterThan(-1);
+    expect(steps.indexOf('maxi-main')).toBeLessThan(steps.indexOf('runway'));
     expect(steps).not.toContain('maxi-pre');
   });
 

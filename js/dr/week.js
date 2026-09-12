@@ -893,7 +893,15 @@ export function runDragWeek(state, cfg, ctx) {
   // The two twists, when the episode books one.
   let twist = null;
   if (cfg.critiqueTwist === 'who-should-go') {
-    twist = whoShouldGoHome({ living, players: ctx.players, bond: ctx.bond, state, rng });
+    /* THE NIGHT ITSELF, so an answer can be about tonight. The commonest real
+       reason is "her performance in the challenge" and the second is "her
+       runway look" -- neither is answerable from the season record alone. */
+    twist = whoShouldGoHome({
+      living, players: ctx.players, bond: ctx.bond, state, rng,
+      perf: performances, runway, ranking: bend, immune,
+      teams: M.teamJudged ? assignment.teams : null,
+      captains: assignment.captains || {},
+    });
   } else if (cfg.critiqueTwist === 'rate-a-queen') {
     twist = rateAQueen({ living, players: ctx.players, bond: ctx.bond, state, rng });
   }
@@ -1357,7 +1365,9 @@ export function runDragWeek(state, cfg, ctx) {
       ? twist.votes : null;
     const namedBy = {};
     if (wsgVotes) {
-      for (const [voter, target] of Object.entries(wsgVotes)) {
+      // A vote is `{ target, reason }` now -- the reason is half the answer.
+      for (const [voter, v] of Object.entries(wsgVotes)) {
+        const target = v && v.target;
         if (!target || voter === target) continue;
         (namedBy[target] ||= []).push(voter);
       }
@@ -1366,7 +1376,8 @@ export function runDragWeek(state, cfg, ctx) {
       living, players: ctx.players, state, storylines: state.storylines || [],
       call, namedOnStage: Object.keys(namedBy), namedBy,
       selfNamed: wsgVotes
-        ? Object.entries(wsgVotes).filter(([v, t]) => v === t).map(([v]) => v) : [],
+        ? Object.entries(wsgVotes).filter(([v, x]) => x && x.target === v).map(([v]) => v)
+        : [],
       rng, ctx: { bond: ctx.bond, episode: cfg.num },
     });
     for (const sc of untuckedScenes) {

@@ -93,27 +93,66 @@ describe('who should go home', () => {
   const bonds = { 'Ada|Bee': 8, 'Ada|Dot': -8 };
   const bond = (a, b) => bonds[[a, b].sort().join('|')] || 0;
 
-  it('everybody names somebody', () => {
+  /* ── A VOTE IS A NAME AND A REASON ──
+     These three used to assert the old design: a schemer named the biggest
+     threat, everybody else named the lowest bond, and a loyal queen in the
+     bottom always named herself. That was two reasons and a certainty.
+
+     The real show gives a small vocabulary of reasons -- 129 answers counted
+     off the fandom's own Contestant/Choice/Reason table by
+     tools/dr-real-who-should-go.py -- of which "her performance in the
+     challenge" is the commonest, "she is my biggest competition" is about a
+     fifth, and naming yourself is 3%. The reason is drawn first and the name
+     follows from it. */
+  it('everybody names somebody, and says what it is about', () => {
     const { votes } = whoShouldGoHome({ living: NAMES, players, bond, state: {}, rng: rngFor(1) });
     expect(Object.keys(votes).length).toBe(4);
-    for (const t of Object.values(votes)) expect(NAMES).toContain(t);
-    expect(votes.Ada, 'she should name the one she likes least').toBe('Dot');
+    for (const v of Object.values(votes)) {
+      expect(NAMES, 'named somebody who is not in the room').toContain(v.target);
+      expect(v.reason, `${v.target} was named for no stated reason`).toBeTruthy();
+    }
   });
 
-  it('a loyal queen in the bottom names herself', () => {
+  it('names the biggest threat when that is the reason', () => {
+    // Bee has the record. When a queen answers on competition, it is Bee --
+    // and it is one reason among several rather than a schemer's rule.
+    const state = { record: { Bee: ['WIN', 'WIN', 'HIGH'], Dot: [], Ada: [], Cleo: [] } };
+    let sawThreat = false;
+    for (let seed = 1; seed < 60; seed++) {
+      const out = whoShouldGoHome({ living: NAMES, players, bond, state, rng: rngFor(seed) });
+      for (const [voter, v] of Object.entries(out.votes)) {
+        if (v.reason !== 'threat') continue;
+        // Bee cannot name herself, so when SHE answers on competition she
+        // names the best of the rest. Everybody else names Bee.
+        if (voter === 'Bee') continue;
+        sawThreat = true;
+        expect(v.target, 'answered on competition and did not name the front-runner')
+          .toBe('Bee');
+      }
+    }
+    expect(sawThreat, 'nobody ever answers on competition').toBe(true);
+  });
+
+  it('lets a loyal queen name herself, and keeps it rare', () => {
+    /* 4 of 129 on the real show. It used to fire every time a loyal queen was
+       in the bottom, which is most weeks for somebody. */
     const p = { ...players, Cleo: mk('Cleo', { loyalty: 10 }) };
     const state = { record: { Cleo: ['SAFE', 'BTM'] } };
-    const out = whoShouldGoHome({ living: NAMES, players: p, bond, state, rng: rngFor(1) });
-    expect(out.votes.Cleo).toBe('Cleo');
-    expect(out.events.find(e => e.type === 'named-herself').pop.Cleo).toBeGreaterThan(0);
-  });
-
-  it('a schemer names the biggest threat instead of her enemy', () => {
-    const p = { ...players, Ada: mk('Ada', { strategic: 9, loyalty: 2 }) };
-    const state = { record: { Bee: ['WIN', 'WIN', 'HIGH'], Dot: [] } };
-    const out = whoShouldGoHome({ living: NAMES, players: p, bond, state, rng: rngFor(1) });
-    // Bee is her closest friend AND the biggest threat. The schemer says Bee.
-    expect(out.votes.Ada).toBe('Bee');
+    let herself = 0;
+    const runs = 80;
+    for (let seed = 1; seed <= runs; seed++) {
+      const out = whoShouldGoHome({ living: NAMES, players: p, bond, state, rng: rngFor(seed) });
+      if (out.votes.Cleo?.target === 'Cleo') {
+        herself++;
+        expect(out.votes.Cleo.reason).toBe('herself');
+        expect(out.events.find(e => e.type === 'named-herself').pop.Cleo)
+          .toBeGreaterThan(0);
+      }
+    }
+    expect(herself, 'a loyal queen in the bottom never names herself')
+      .toBeGreaterThan(0);
+    expect(herself / runs, 'she falls on her sword every single week')
+      .toBeLessThan(0.5);
   });
 
   it('naming a friend costs the namer; every naming costs a bond', () => {

@@ -421,12 +421,7 @@ export const UNTUCKED_EVENTS = [
     // The queens who said her name, so the scene is with one of them.
     partners: (a, h) => h.namersOf(a),
     effects: { bond: -2, pop: { a: 1 } },
-    lines: [
-      "{a} gets through the door and does not sit down. \"You said my name.\" {b} starts to explain the reasoning and {a} cuts it off: \"I did not ask why. I asked if you said it.\" {b} says yes. The room has gone completely quiet and none of them are pretending otherwise.",
-      "{b} tries to get to {a} first, which is the right instinct and about four seconds too late. {a} is already turning round. \"In front of everyone,\" {a} says. \"You could have said anything and you said me.\" {b} has an answer ready. {a} does not want it.",
-      "Nobody mentions it for about a minute and a half. Then {a} puts her drink down. \"So are we going to talk about it or are we all going to sit here.\" {b} says \"talk about what\" and the room makes a noise, because everybody knows what.",
-      "{a} is calm about it, which is worse. She asks {b} to say it again — here, backstage, without the judges watching. {b} says it again. {a} nods slowly and says \"okay\" and that okay is going to sit between them for the rest of the season.",
-    ],
+    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
   }),
   ev({
     id: 'named-by-a-friend', phase: 'arrival', cast: 'pair', weight: 7,
@@ -435,36 +430,21 @@ export const UNTUCKED_EVENTS = [
     // A namer she actually liked. Being named by a rival is a different event.
     partners: (a, h) => h.namersOf(a).filter(n => h.bond(a, n) >= 3),
     effects: { bond: -3, pop: { a: 2, b: -2 } },
-    lines: [
-      "{a} does not shout. That is the thing the room notices. \"Out of everybody on that stage,\" she says to {b}, \"you are the one who said my name.\" {b} starts \"it was not personal\" and {a} says \"it was my name\" and that ends it.",
-      "{b} reaches for {a}'s arm the second they are backstage. {a} moves it. Not dramatically — just out of reach — and {b} sees her do it. \"I had to pick somebody,\" {b} says. \"You had eleven other options,\" {a} says.",
-      "They have been sitting together since day one. They are not sitting together now. {a} takes the far end of the couch and answers {b} in three words at a time, and the whole room is watching a friendship do arithmetic in real time.",
-      "\"I want to understand it,\" {a} says, and she means it, which is what makes it unbearable to watch. {b} explains. It is a reasonable explanation. {a} listens to all of it and then says \"I would never have said yours\" and {b} has nothing for that.",
-    ],
+    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
   }),
   ev({
     id: 'the-pile-on', phase: 'middle', cast: 'solo', weight: 6,
     note: 'Three or more queens named the same woman, and she has to sit in that room.',
     arcs: ['underdog', 'narrator'], when: f => f.pileOnA,
     effects: { pop: { a: 3 }, state: 'rattled' },
-    lines: [
-      "{a} counts it up out loud. \"One. Two. Three.\" She is not crying and she is not shouting; she is doing the arithmetic in front of the people who made it. \"Three of you. Okay.\" Nobody in the room has a defence that survives being said at this volume.",
-      "The thing about being named by several queens is that there is no single person to be angry at. {a} looks around the room trying to land it somewhere and it will not land. She ends up saying \"fine\" to nobody in particular and that is somehow the loudest thing said all night.",
-      "{a} says she is fine. Says it twice. The second one is for herself. Somebody says her name gently and she holds up a hand — not rude, just done — and sits with it. The room lets her. It is the only kind thing that happens for ten minutes.",
-      "\"I knew one of you would say it,\" {a} goes. \"I did not think it would be a queue.\" It gets a laugh and the laugh has nothing behind it. She spends the rest of the segment watching who laughs hardest.",
-    ],
+    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
   }),
   ev({
     id: 'named-herself-backstage', phase: 'arrival', cast: 'solo', weight: 6,
     note: 'She said her own name on that stage and the room does not know what to do with her.',
     arcs: ['hero', 'underdog'], when: f => f.namedHerself,
     effects: { pop: { a: 4 }, state: 'low' },
-    lines: [
-      "Somebody asks {a} why she said her own name. {a} says \"because it was true\" and the room objects all at once, loudly, over each other. She lets them. When it dies down she says it again, quieter, and nobody argues the second time.",
-      "{a} said her own name on that stage and backstage three queens tell her not to do that again. \"Do not hand it to them,\" one says. {a} shrugs. \"I would rather say it than have somebody else get to.\"",
-      "The room treats {a} carefully for about five minutes, which she hates more than being named. \"I am not made of glass,\" she says. Somebody says \"we know\" in a voice that means we do not know.",
-      "\"You cannot say your own name.\" — \"I just did.\" {a} says it flatly and goes to fix her face, and the queens left on the couch look at each other and nobody has anything smart to say about it.",
-    ],
+    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
   }),
   ev({
     id: 'defends-the-name', phase: 'middle', cast: 'pair', weight: 5,
@@ -473,12 +453,7 @@ export const UNTUCKED_EVENTS = [
     // The queen SHE named — the reverse direction, so `a` is the one defending.
     partners: (a, h) => Object.keys(h.namedBy).filter(t => h.namersOf(t).includes(a)),
     effects: { bond: -2, pop: { a: -2, b: 1 } },
-    lines: [
-      "{a} does not do the \"I had to pick somebody\" routine. \"I said your name because I meant your name,\" she tells {b}, in front of the room, without a wobble in it. {b} says \"at least you are honest\" and it is not a compliment.",
-      "Somebody tries to smooth it over on {a}'s behalf and {a} stops them. \"No, do not do that. I said it. I will say it again.\" She says it again. {b} watches her say it and files every second of it.",
-      "\"Would you like me to lie?\" {a} asks {b}, and the room goes \"oooh\" in that register that means somebody has gone too far and everybody is delighted. {b} does not go \"oooh\". {b} is doing something else with her face entirely.",
-      "{a} explains her reasoning to {b} like she is walking her through a spreadsheet. Every point is fair. All of it is accurate. It is also being delivered to somebody who has just been told in public that she should leave, and {a} does not appear to have noticed that part.",
-    ],
+    lines: [],   // EMPTY ON PURPOSE -- see docs/PROSE-PROMPT-dr-who-should-go-fallout.md
   }),
   ev({
     id: 'who-should-go', phase: 'middle', cast: 'pair', weight: 2,

@@ -15030,7 +15030,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 2,
+      "totalBottoms": 4,
       "avgPlacement": 7,
       "byShow": {
         "drag-race": {
@@ -15090,7 +15090,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 4,
+      "totalBottoms": 6,
       "avgPlacement": 13,
       "byShow": {
         "drag-race": {
@@ -15148,9 +15148,9 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 1,
+      "totalMaxiWins": 2,
       "totalLipsyncWins": 0,
-      "totalBottoms": 1,
+      "totalBottoms": 2,
       "avgPlacement": 9,
       "byShow": {
         "drag-race": {
@@ -15210,7 +15210,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 1,
+      "totalBottoms": 2,
       "avgPlacement": 11,
       "byShow": {
         "drag-race": {
@@ -15270,8 +15270,8 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 7,
-      "totalLipsyncWins": 1,
+      "totalMaxiWins": 12,
+      "totalLipsyncWins": 2,
       "totalBottoms": 0,
       "avgPlacement": 1,
       "byShow": {
@@ -15330,9 +15330,9 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 3,
-      "totalLipsyncWins": 1,
-      "totalBottoms": 1,
+      "totalMaxiWins": 4,
+      "totalLipsyncWins": 2,
+      "totalBottoms": 2,
       "avgPlacement": 2,
       "byShow": {
         "drag-race": {
@@ -15390,9 +15390,9 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 7,
-      "totalLipsyncWins": 12,
-      "totalBottoms": 6,
+      "totalMaxiWins": 8,
+      "totalLipsyncWins": 16,
+      "totalBottoms": 10,
       "avgPlacement": 10,
       "byShow": {
         "drag-race": {
@@ -15452,7 +15452,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 3,
+      "totalBottoms": 4,
       "avgPlacement": 14,
       "byShow": {
         "drag-race": {
@@ -15510,9 +15510,9 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 5,
-      "totalLipsyncWins": 1,
-      "totalBottoms": 3,
+      "totalMaxiWins": 8,
+      "totalLipsyncWins": 2,
+      "totalBottoms": 6,
       "avgPlacement": 5,
       "byShow": {
         "drag-race": {
@@ -15574,7 +15574,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 1,
+      "totalBottoms": 2,
       "avgPlacement": 4,
       "byShow": {
         "drag-race": {
@@ -15633,8 +15633,8 @@
         }
       ],
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 1,
-      "totalBottoms": 2,
+      "totalLipsyncWins": 2,
+      "totalBottoms": 4,
       "avgPlacement": 8,
       "byShow": {
         "drag-race": {
@@ -15694,7 +15694,7 @@
       ],
       "totalMaxiWins": 0,
       "totalLipsyncWins": 0,
-      "totalBottoms": 3,
+      "totalBottoms": 4,
       "avgPlacement": 12,
       "byShow": {
         "drag-race": {
@@ -15754,9 +15754,9 @@
           "seasonId": "dr-1"
         }
       ],
-      "totalMaxiWins": 3,
-      "totalLipsyncWins": 3,
-      "totalBottoms": 3,
+      "totalMaxiWins": 6,
+      "totalLipsyncWins": 6,
+      "totalBottoms": 6,
       "avgPlacement": 3,
       "byShow": {
         "drag-race": {
@@ -15817,8 +15817,8 @@
         }
       ],
       "totalMaxiWins": 0,
-      "totalLipsyncWins": 7,
-      "totalBottoms": 9,
+      "totalLipsyncWins": 10,
+      "totalBottoms": 14,
       "avgPlacement": 6,
       "byShow": {
         "drag-race": {

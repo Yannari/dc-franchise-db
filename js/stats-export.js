@@ -3099,6 +3099,16 @@ async function _fillWikiAfterExport(onStatus) {
   const format = seasonFormat(seasonConfig) || DEFAULT_FORMAT;
   const out = await runBothFills({ season, format, onStatus: t => _status(`Wiki: ${t}`) });
 
+  /* ── AND A FILL THAT DID NOT WRITE SAYS SO WHERE IT CAN BE READ LATER ──
+     The two fills run in sequence and each one narrates itself into the same
+     status line, so the CHARACTER fill's outcome is overwritten by the round
+     fill starting — and the round fill takes a minute or more, by which time
+     nobody is watching. The combined line below arrives after both, and the
+     one thing it is most needed for is the case where the first half failed.
+     Reported as a fill that showed "asking the writer…", then the round fill's
+     status, and left no trace of what became of the fourteen players.
+     The console keeps it. Nothing here changes what the fill DOES; it changes
+     whether the next person can find out why it did nothing. */
   const bits = [];
   for (const r of [out.characters, out.gameHistory]) {
     if (!r) continue;
@@ -3108,7 +3118,17 @@ async function _fillWikiAfterExport(onStatus) {
       ? `${r.filled} of ${r.cast} in the cast`
       : `${r.filled} of ${r.rounds} rounds`);
   }
-  _status(`Wiki fill: ${bits.join(' · ')}`);
+  const line = `Wiki fill: ${bits.join(' · ')}`;
+  _status(line);
+  if (typeof console !== 'undefined') {
+    const failed = [out.characters, out.gameHistory]
+      .filter(r => r && (!r.ok || r.sent?.failed));
+    if (failed.length) {
+      console.warn(`[wiki-fill] ${line}`, { characters: out.characters, gameHistory: out.gameHistory });
+    } else {
+      console.log(`[wiki-fill] ${line}`);
+    }
+  }
   return out;
 }
 

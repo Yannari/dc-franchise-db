@@ -33,6 +33,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const WORKER_DIR = 'worker';
 const files = readdirSync(WORKER_DIR).filter(f => f.endsWith('.js'));
@@ -130,4 +131,36 @@ describe('every strict worker schema', () => {
     expect(at, 'the wiki_fill mode is gone').toBeGreaterThan(-1);
     expect(src).toMatch(/required:\s*\["name",\s*"lead",\s*"personality",\s*"quotes",\s*"trivia"\]/);
   });
+});
+
+/* ══ AND THE FILE HAS TO PARSE AT ALL ════════════════════════════════════
+   The schema fix above could not be deployed, because `wrangler deploy`
+   refused to build the worker:
+
+     ✘ [ERROR] Unterminated string literal
+         worker-season-live.js:305:42
+
+   A single-quoted JS string cannot span a newline, and `.join('\n')` had been
+   written with a REAL newline inside the quotes. Bisecting the file's history
+   put it at c959e28e — so the season worker had been unbuildable ever since,
+   and the only reason anything was running at all is that this one gets
+   hand-deployed through the Cloudflare dashboard, which is the exact habit its
+   own wrangler config was added to end.
+
+   Nothing caught it. The workers are not imported by the site, so no test
+   loaded them and no bundler ever saw them. A parse is the cheapest possible
+   check and it is the one that was missing. */
+describe('every worker file parses', () => {
+  for (const f of files) {
+    it(`${f} is valid JavaScript`, () => {
+      /* `node --check`, which is the same parse wrangler's bundler does and
+         the one that actually refused the deploy. The repo is `"type":
+         "module"`, so these parse as ESM and their top-level `import` and
+         `export default` are fine. */
+      const r = spawnSync(process.execPath, ['--check', join(WORKER_DIR, f)],
+        { encoding: 'utf8' });
+      expect(r.status, `${f} does not parse:
+${r.stderr}`).toBe(0);
+    });
+  }
 });

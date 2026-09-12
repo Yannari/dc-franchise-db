@@ -302,9 +302,7 @@ async function generateSeasonDataExtraction(body, env) {
       + villainBoard.board.slice(0, 6).map((v, i) =>
         `${i + 1}. ${v.name} — ${v.score} points
 ${(v.evidence || [])
-          .map(e => `     · ${e}`).join('
-')}`).join('
-')
+          .map(e => `     · ${e}`).join('\n')}`).join('\n')
       + `
 
 RULES FOR THE VILLAIN AWARDS:

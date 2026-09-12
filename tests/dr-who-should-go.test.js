@@ -216,3 +216,49 @@ describe('the fallout backstage', () => {
     }
   });
 });
+
+/* ── AND IT IS NOT A ONCE-A-SEASON TWIST ──
+   "Just don't restrict me to one episode per season." It never was — the only
+   guard in the booking UI is per-EPISODE (you cannot book the same twist twice
+   on the same night) — but nothing asserted it, so nothing stopped a later
+   change from quietly making it one. */
+describe('booked on more than one episode', () => {
+  const many = playDragSeason({
+    cast: cast(13, 6), seed: 3,
+    config: {
+      drSchedule: [
+        { episode: 2, critiqueTwist: 'who-should-go' },
+        { episode: 4, critiqueTwist: 'who-should-go' },
+        { episode: 6, critiqueTwist: 'who-should-go' },
+      ],
+    },
+  });
+
+  it('runs on every week that books it', () => {
+    const weeks = many.rows.filter(r => r.dr?.critiqueTwist?.kind === 'who-should-go');
+    expect(weeks.map(r => r.num)).toEqual([2, 4, 6]);
+    for (const r of weeks) {
+      expect(Object.keys(r.dr.critiqueTwist.votes || {}).length,
+        `episode ${r.num} booked the twist and nobody answered`).toBeGreaterThan(3);
+    }
+  });
+
+  it('asks a smaller room each time, and gets a different answer', () => {
+    /* The room shrinks between them, so the same twist three weeks apart is
+       three different nights rather than the same one replayed. */
+    const weeks = many.rows.filter(r => r.dr?.critiqueTwist?.kind === 'who-should-go');
+    const sizes = weeks.map(r => Object.keys(r.dr.critiqueTwist.votes).length);
+    expect(sizes[0]).toBeGreaterThan(sizes[sizes.length - 1]);
+    const tallies = weeks.map(r => JSON.stringify(r.dr.critiqueTwist.tally));
+    expect(new Set(tallies).size, 'every week returned the same board').toBe(weeks.length);
+  });
+
+  it('draws a board on each of those critique screens', () => {
+    for (const r of many.rows) {
+      if (r.dr?.critiqueTwist?.kind !== 'who-should-go') continue;
+      const html = rpBuildCritiques(r).replace(/<style[\s\S]*?<\/style>/g, '');
+      expect(html, `episode ${r.num} ran the twist and drew nothing`)
+        .toMatch(/dr-wsg-board/);
+    }
+  });
+});

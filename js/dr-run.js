@@ -179,9 +179,22 @@ export function dragScheduleRecorded() {
   return true;
 }
 
-/** Can the unaired weeks be re-booked from the timeline as it now stands? */
+/**
+ * Can the unaired weeks be re-booked from the timeline as it now stands?
+ *
+ * NOT "is there a queue". It used to ask that, and a MISSING queue is the
+ * commonest state there is -- every reload leaves one -- so a pin made on a
+ * reloaded season took `invalidateDragQueue` down the `return false` branch,
+ * the stored booking was never truncated, and the booking then outranked the
+ * pin. Reported as "I changed the mini challenge in the timeline before
+ * simulating and the mini challenge didn't change."
+ *
+ * What actually matters is whether the PAST can be frozen. With no queue the
+ * next press rebuilds the season anyway, which is exactly when a pin should
+ * take.
+ */
 export function dragQueueEditable() {
-  return !!gs && Array.isArray(gs._drQueue) && dragScheduleRecorded();
+  return !!gs && dragScheduleRecorded();
 }
 
 /**
@@ -196,6 +209,8 @@ export function invalidateDragQueue() {
   // because `dragQueueEditable` asks whether the past can be frozen.
   repairOldDragSeason();
   if (!dragQueueEditable()) return false;
+  // There may be no queue to drop -- a reload has already lost it -- and the
+  // truncation below is the part that matters either way.
   delete gs._drQueue;
   /* AND FORGET THE BOOKING FOR THE WEEKS NOBODY HAS SEEN. The stored schedule
      outranks an author's pin — that is what keeps an aired week fixed — so

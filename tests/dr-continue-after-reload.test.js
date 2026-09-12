@@ -482,3 +482,55 @@ describe('a queen the call never names', () => {
     }
   });
 });
+
+/* ── A PIN MADE ON A RELOADED SEASON ──
+   "I changed the mini challenge in the season timeline before simulating and
+   the mini challenge didn't change."
+
+   `dragQueueEditable` asked whether `gs._drQueue` was an array. A missing
+   queue is the commonest state there is — every reload leaves one — so
+   `invalidateDragQueue` returned false without truncating the stored booking,
+   and the booking outranks an author's pin. Which is correct for an AIRED
+   week and exactly wrong for one nobody has seen. */
+describe('changing the timeline on a season with no queue', () => {
+  it('takes the pin', () => {
+    fresh(1855);
+    play(3);
+    delete gsRef._drQueue;               // what a reload leaves behind
+    seasonConfig.drSchedule = [{ episode: 4, maxiId: 'ball', miniId: 'reading' }];
+    expect(invalidateDragQueue(), 'the timeline refused the edit').toBe(true);
+    const r = simulateDragEpisode();
+    expect(r.num).toBe(4);
+    expect(r.dr.challenge.id, 'the pinned challenge was ignored').toBe('ball');
+    expect(r.dr.mini?.id, 'the pinned mini was ignored').toBe('reading');
+  });
+
+  it('rebuilds a missing booking from the aired rows rather than refusing', () => {
+    /* `repairOldDragSeason` runs first and reconstructs `_drSchedule` from the
+       episodes themselves -- every aired row records the challenge it ran --
+       so a season that never stored one can still be re-booked. The check that
+       stayed is whether the past is reproducible AT ALL, and the repair is
+       what usually makes it so. */
+    fresh(1855);
+    play(3);
+    delete gsRef._drQueue;
+    delete gsRef._drSchedule;
+    expect(invalidateDragQueue(), 'the repair did not run').toBe(true);
+    expect((gsRef._drSchedule || []).length,
+      'the aired weeks were not recovered').toBeGreaterThan(0);
+  });
+
+  it('leaves an aired week alone', () => {
+    fresh(1855);
+    const straight = play(4);
+    fresh(1855);
+    play(3);
+    delete gsRef._drQueue;
+    // A pin on episode two, which has already gone out.
+    seasonConfig.drSchedule = [{ episode: 2, maxiId: 'ball' }];
+    invalidateDragQueue();
+    simulateDragEpisode();
+    expect(gsRef.episodeHistory.slice(0, 3).map(key),
+      'a pin rewrote an episode that had already aired').toEqual(straight.slice(0, 3));
+  });
+});

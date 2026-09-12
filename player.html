@@ -200,6 +200,20 @@
 <script type="module">
   import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
   window.__SHOWS = { SHOWS, DEFAULT_FORMAT };
+  /* ── AND THE ONE FUNCTION THE CLASSIC SCRIPT BELOW BORROWS ──
+     `ageNow` lives in js/franchise-calendar.js, which is an ES MODULE, and
+     the bio block below is in a classic script where a module export simply
+     does not exist. It was called bare: `const a = ageNow(rp.birthdate)`.
+     That threw `ReferenceError: ageNow is not defined` INSIDE the profile
+     render, which is wrapped in a `.catch` that shows the "Player Not Found"
+     panel — so a player whose page had been built correctly, whose name was
+     already in the tab title, was reported to the viewer as not existing.
+     It only fires when the roster entry HAS a birthdate, which is why it
+     surfaced on the drag queens: they were authored with one and most of the
+     older cast were not. Nothing about the show, and every player with a
+     birthdate was hitting it. */
+  import { ageNow } from './js/franchise-calendar.js';
+  window.ageNow = ageNow;
 </script>
 
 <script>
@@ -729,7 +743,10 @@ async function renderDebutProfile(id) {
   if (rp && rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {
     // The FRANCHISE's present, not the real one. Time here advances because a
     // season aired, not because a clock ran.
-    const a = ageNow(rp.birthdate);
+    /* Through `window`, and guarded: a classic script can run before the
+       module tag above has resolved, and an age is worth losing to keep the
+       page. */
+    const a = typeof window.ageNow === 'function' ? window.ageNow(rp.birthdate) : null;
     if (a != null) age = a;
   }
   if (age == null && rp && Number(rp.age) > 0) age = Math.round(Number(rp.age));
@@ -1734,7 +1751,10 @@ function renderPlayerProfile(fullPlayer) {
     let age = null;
     if (rp.birthdate && /^\d{4}-\d{2}-\d{2}$/.test(rp.birthdate)) {
       // The FRANCHISE's present, not the real one — same reason as above.
-      const a = ageNow(rp.birthdate);
+      /* Through `window`, and guarded: a classic script can run before the
+       module tag above has resolved, and an age is worth losing to keep the
+       page. */
+    const a = typeof window.ageNow === 'function' ? window.ageNow(rp.birthdate) : null;
       if (a != null) age = a;
     }
     if (age == null && Number(rp.age) > 0) age = Math.round(Number(rp.age));

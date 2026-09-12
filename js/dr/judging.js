@@ -349,7 +349,17 @@ export function callWeek(finalRanking, {
     }
     return table[table.length - 1][0];
   };
-  const UP_TABLE = [[1, 5], [2, 23], [3, 45], [4, 18], [5, 5], [6, 4]];
+  /* ── THE TOTAL IS DRAWN, THEN SPLIT ──
+     The first version of this drew the top and the LOW independently from
+     their own distributions. Each was right on its own and the PAIR was not:
+     independent tails compound, so a big top and a big low landed together
+     more often than they ever do, and an eleven-queen room could put nine on
+     the stage and dismiss two.
+
+     The night's size is one decision. Drawn from the real total and then
+     split into a top and a low, so the shape of a night can vary without the
+     size of it drifting past what the show does. */
+  const SPOKEN_TABLE = [[3, 3], [4, 13], [5, 23], [6, 34], [7, 16], [8, 7], [9, 2], [10, 1]];
   const LOW_TABLE = [[0, 25], [1, 54], [2, 16], [3, 5]];
 
   /* ── MEASURED AGAINST THE REAL SHOW, NOT GUESSED ──
@@ -393,8 +403,13 @@ export function callWeek(finalRanking, {
        Same `up` as an ordinary week, so a team night and a solo night dismiss
        the same number of queens. */
     const room = castSize || finalRanking.length;
-    const up = Math.max(1, Math.min(
-      drawFrom(UP_TABLE) ?? upFor(room), room - Math.max(2, bottomNamed) - 1));
+    const down0 = Math.max(2, bottomNamed);
+    const drawn = drawFrom(SPOKEN_TABLE);
+    const spokenFor = drawn === null ? upFor(room) + 1 + down0
+      : Math.max(down0 + 2, Math.min(drawn, room >= 9 ? room - 1 : room));
+    const lowWanted = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
+      spokenFor - down0 - 1));
+    const up = Math.max(1, spokenFor - down0 - lowWanted);
     const called = winners.slice(0, Math.max(1, up));
     const win  = called.length ? [called[0].name] : [];
     const high = called.slice(1).map(r => r.name);
@@ -407,8 +422,7 @@ export function callWeek(finalRanking, {
     const bottomBlock = loserEligible.slice(-down);
     const bottom = bottomBlock.slice(-2);
     const atRisk = bottomBlock.slice(0, -2);
-    const lowCount = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
-      loserEligible.length - down));
+    const lowCount = Math.max(0, Math.min(lowWanted, loserEligible.length - down));
     const low = down < loserEligible.length
       ? loserEligible.slice(Math.max(0, loserEligible.length - down - lowCount),
         loserEligible.length - down)
@@ -429,7 +443,22 @@ export function callWeek(finalRanking, {
      the stage always fits: at least one queen at the top, and never so many
      that the bottom has nobody left to be in it. */
   const down0 = Math.max(2, bottomNamed);
-  const up = Math.max(1, Math.min(drawFrom(UP_TABLE) ?? upFor(n), n - down0 - 1));
+  /* ── HOW MANY ARE KEPT BACK TONIGHT ──
+     The drawn total, less the queens the FORMAT puts in danger, is what is
+     left to share between the top and the LOW.
+     Floor of two at the top so there is a win and somebody beside her; and
+     the real show left at least one queen to dismiss in every room of nine or
+     more, so this does too — a night that keeps everybody back is not a
+     critique, it is a group photo. */
+  const spokenFor = (() => {
+    const drawn = drawFrom(SPOKEN_TABLE);
+    if (drawn === null) return upFor(n) + 1 + down0;   // the mean night
+    const roof = n >= 9 ? n - 1 : n;
+    return Math.max(down0 + 2, Math.min(drawn, roof));
+  })();
+  const lowWanted = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
+    spokenFor - down0 - 1));
+  const up = Math.max(1, spokenFor - down0 - lowWanted);
   /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom
      forward and sends everybody else off before a word is said, and the block
      it calls is the pair who lip sync. This returned three, which put a third
@@ -474,8 +503,7 @@ export function callWeek(finalRanking, {
      the top, three at the bottom — which is one win, two high, one low and
      the two who lip sync. Two lows made it seven and diluted a stage whose
      whole tension is that being on it means something. */
-  const lowCount = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
-    eligible.length - down));
+  const lowCount = Math.max(0, Math.min(lowWanted, eligible.length - down));
   const low = down < eligible.length
     ? eligible.slice(Math.max(0, eligible.length - down - lowCount), eligible.length - down)
     : [];

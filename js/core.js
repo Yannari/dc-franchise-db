@@ -958,7 +958,7 @@ export const TWIST_CATALOG = [
   // a double eviction is booked.
   { id:'dr-no-elimination', emoji:'\u{1F6AB}', name:'No Elimination', format:'drag-race',
     category:'elim', phase:'any', engineType:'dr-no-elimination', episodeField:'noElimination',
-    desc:'The host tells the room before the challenge that nobody is going home. The week is judged and ranked exactly as normal, the bottom two still lip sync, and both of them walk back into the workroom. It is not a double shantay — that is the host deciding in the moment that two performances were too good to lose. This is production announcing beforehand that the door stays shut, and the season runs ONE EPISODE LONGER for it: fourteen queens go back to fourteen.',
+    desc:'The host tells the room before the challenge that nobody is going home, and the song changes with it: the TOP two lip sync FOR THE WIN instead of the bottom two singing for their lives, because there is no life to sing for. The winner of that song takes the week. The two the room put last are still named and made to stand there, and then told they are not singing. It is not a double shantay — that is the host deciding in the moment that two performances were too good to lose. This is production announcing beforehand that the door stays shut, and the season runs ONE EPISODE LONGER for it: fourteen queens go back to fourteen.',
     incompatible:['dr-double-elimination'] },
   { id:'dr-double-elimination', emoji:'⏩', name:'Double Elimination', format:'drag-race',
     category:'elim', phase:'any', engineType:'dr-double-elimination', episodeField:'doubleElimination',

@@ -472,13 +472,76 @@ describe('the format is announced', () => {
     expect(noteOn(rows[2])).toBeUndefined();
   });
 
+  /* ── AND IT IS A SONG FOR THE WIN NOW, NOT ONE FOR A LIFE ──
+     This used to look for `stage:lipsync-call` on tier `no-elimination`, and
+     both halves of that have moved. A night nobody can go home puts the TOP
+     two on the song — the show's own chart names the two songs separately,
+     "in the top, but did not win the Lip Sync for the Win" against "in the
+     bottom and won the Lip Sync for Your Life" — and once the winner has a
+     name, the verdict is drawn by the named sequence rather than the generic
+     call card.
+     Asserted on the INTENT, which never changed: the queens on that stage
+     cannot lose the competition, and no card may say otherwise. */
+  /* ── AND EVERY NIGHT NOBODY CAN LOSE, NOT ONLY A RATE-A-QUEEN ONE ──
+     The staging was gated on `rateAQueen && noElimination`, which was the
+     twist it arrived with rather than a reason — so a plain No Elimination
+     week ran the BOTTOM two through a lip sync for their life that neither of
+     them could lose, and the loser walked back into the werk room. The format
+     has no word for that and the show does not do it. */
+  it('sings for the WIN on any night nobody can go home', () => {
+    for (const at of [3, 5, 6]) {
+      const { rows } = playDragSeason({
+        cast: cast(12), seed: 4, config: { drSchedule: [{ episode: at, noElimination: true }] },
+      });
+      const week = rows.find(r => r.num === at);
+      const ls = week.dr.lipsync;
+      expect(ls, `episode ${at} had no lip sync at all`).toBeTruthy();
+      expect(ls.call, `episode ${at} sang for a life nobody could lose`).toBe('for-the-win');
+      expect(week.exits.length).toBe(0);
+      // The two on the song are the two the room put top, and the winner of
+      // the song takes the week.
+      const call = week.dr.call || {};
+      expect(call.bottom || []).toEqual([]);
+      expect(call.win || []).toContain(ls.winner);
+      for (const n of ls.queens) {
+        expect([...(call.win || []), ...(call.high || [])],
+          `${n} sang for the win from outside the top`).toContain(n);
+      }
+      /* AND THE ROOM'S BOTTOM TWO ARE STILL CALLED. A call that reads out one
+         end of the ranking and silently drops the other is half a result. */
+      expect((call.atRisk || []).length,
+        `episode ${at} never named the bottom`).toBe(2);
+      for (const n of call.atRisk || []) {
+        expect(ls.queens, 'a named queen was made to sing anyway').not.toContain(n);
+      }
+    }
+  });
+
   it('never says somebody went home on a night nobody did', () => {
     const { rows } = playDragSeason({ cast: cast(12), seed: 4, config: { drPremiere: 'split' } });
-    const call = (rows[0].dr.scenes || []).find(s => s.kind === 'stage:lipsync-call');
-    expect(call, 'no lip sync call at all').toBeTruthy();
-    // The `shantay` tier is the one that says one stays and one goes.
-    expect(call.data.tier).toBe('no-elimination');
-    expect(call.text).not.toMatch(/sashay away|somebody goes|going home tonight/i);
+    const scenes = (rows[0].dr.scenes || []).filter(s => /^stage:lipsync/.test(s.kind));
+    expect(scenes.length, 'the lip sync reached no card at all').toBeGreaterThan(0);
+    expect(rows[0].dr.lipsync.call, 'a night nobody leaves sang for a life').toBe('for-the-win');
+    /* The two on the song are the two the room put TOP, and neither is in the
+       bottom — the queen who loses this one has still had a good week. */
+    const call = rows[0].dr.call || {};
+    expect(call.bottom || [], 'somebody was in the bottom on a for-the-win night').toEqual([]);
+    /* One of the two is WIN and the other is HIGH, and which is which is
+       decided by the song: they are both HIGH when the host calls them and
+       the winner is moved up afterwards. Neither is ever anywhere else. */
+    const top = new Set([...(call.win || []), ...(call.high || [])]);
+    for (const n of rows[0].dr.lipsync.queens || []) {
+      expect(top.has(n), `${n} sang for the win and was not in the top`).toBe(true);
+    }
+    expect(call.win || [], 'the song produced no winner')
+      .toContain(rows[0].dr.lipsync.winner);
+    // And the winner of the song is named somewhere on that screen.
+    expect(scenes.map(s => s.text).join(' '))
+      .toContain(rows[0].dr.lipsync.winner);
+    for (const sc of scenes) {
+      expect(sc.text, `"${sc.kind}" sent somebody home on a night nobody left`)
+        .not.toMatch(/sashay away|somebody goes|going home tonight/i);
+    }
   });
 
   /* A SCHEDULED NON-ELIMINATION WEEK, which is not a double shantay: that is

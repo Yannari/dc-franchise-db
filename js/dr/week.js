@@ -726,7 +726,17 @@ export function runDragWeek(state, cfg, ctx) {
      out of that same bottom and naming them first would announce the pool
      she picks from before she has picked. */
   const legacy = !!(cfg.legacy && bend.length >= 4);
-  const topTwoSing = legacy || !!(cfg.rateAQueen && cfg.noElimination && bend.length >= 2);
+  /* ── ANY NIGHT NOBODY GOES HOME, NOT ONLY A RATE-A-QUEEN ONE ──
+     This was gated on `cfg.rateAQueen && cfg.noElimination`, which was the
+     twist the staging arrived with rather than a reason. On every other
+     non-elimination week the BOTTOM two sang — a lip sync for your life that
+     nobody can lose, with the loser walking back into the werk room, which is
+     the one shape the format has no word for.
+     The show's own chart says the two songs are different things. The season
+     16 legend carries both: "in the top, but did not win the Lip Sync for the
+     Win" and "in the bottom and won the Lip Sync for Your Life". When there is
+     no life to sing for, the song is for the win. */
+  const topTwoSing = legacy || !!(cfg.noElimination && bend.length >= 2);
   /* The call as the host made it, frozen before the song can change it.
      Null on every ordinary night, where the call never moves and the one
      object is the whole truth. See the note where it is filled. */

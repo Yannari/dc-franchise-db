@@ -1425,21 +1425,41 @@ export function rpBuildMini(row) {
      Three of the seven minis are `targets` and one is `pairs`; a solo mini
      has no target and simply does not draw the arrow. */
   const aimOf = n => (m.detail?.[n]?.target) || null;
-  const landed = n => !!m.detail?.[n]?.pulled;
+
+  /* ── WHAT THE ARROW SAYS, AND IT USED TO SAY THE OPPOSITE ──
+     This was `!!m.detail[n].pulled`, and `pulled` is set when the bond is
+     high: she LIKES her target and softened the read. So "— and it lands"
+     printed exactly when the punch had been pulled, and it printed over
+     prose saying the read died — "there is no joke in it and the room hears
+     that there is no joke in it — and it lands".
+     The scene already knows how it went. `data.tier` is the answer the
+     engine reached and the prose was drawn from, so the label agrees with
+     the paragraph under it by construction. */
+  const verdict = (sc) => ({
+    nailed: ' — and it lands',
+    passed: ' — and nothing comes out',
+  }[sc.data?.tier] || '');
+
+  /* ── AND THE HOST CALLING HER UP IS NOT A READ ──
+     The aim was drawn for EVERY card, so the turn announcement — "Next
+     up... Quin!" — was captioned "Quin reads Ginger Hollywood" as well, and
+     every queen appeared to say two things to the same person: one card
+     with the label and no read in it, one card with the label and the read.
+     Only the attempt and the win are a read. */
+  const READS = new Set(['chal:mini-attempt', 'chal:mini-win']);
 
   const steps = scenes.map((sc, i) => {
     const who = (sc.data?.players || [])[0];
-    const at = who ? aimOf(who) : null;
+    const at = who && READS.has(sc.kind) ? aimOf(who) : null;
     return `<div class="dr-step" id="dr-step-mini-${i}">
       <div class="dr-panel dr-a-score dr-card dr-minirow">
         <div class="dr-aim">
           ${who ? _portrait(who, ep, { size: 46 }) : '<span></span>'}
-          ${at ? `<span class="dr-aim-arrow ${landed(who) ? 'dr-hit' : ''}"></span>
+          ${at ? `<span class="dr-aim-arrow ${sc.data?.tier === 'nailed' ? 'dr-hit' : ''}"></span>
             ${_portrait(at, ep, { size: 34, cls: 'dr-aim-target' })}` : ''}
         </div>
         <div>${who ? `<h3 class="dr-disp">${esc(who)}</h3>` : ''}
-          ${at ? `<span class="dr-aim-k">reads ${esc(at)}${
-    landed(who) ? ' — and it lands' : ''}</span>` : ''}
+          ${at ? `<span class="dr-aim-k">reads ${esc(at)}${verdict(sc)}</span>` : ''}
           ${_note(sc) ? `<span class="dr-note">${esc(_note(sc))}</span>` : ''}
           <p>${esc(sc.text)}</p></div>
       </div></div>`;

@@ -171,6 +171,18 @@ export const CHALLENGE_BEATS = [
         "{a} steps up and the energy in the room shifts from anticipation to encouragement. That shift tells you everything. She gets through it. She does not get a laugh. She gets silence.",
         "It falls flat. {a} knows it falls flat. She composes herself in three seconds and goes, \"That happened.\" The room laughs at that — a mercy laugh. But a mercy laugh is still a laugh and she takes it.",
       ]),
+    /* ── SHE PASSED, AND THE CARD USED TO CONGRATULATE HER FOR IT ──
+       js/dr/stage.js emits `passed` for a queen who stands up and has
+       nothing, and this beat had no such tier — so `emit`'s
+       `tiers.find(id) || tiers[0]` handed her NAILED, and the note over
+       "she had one prepared and it has gone, and passes" read "She is very
+       good at this and everybody enjoys it."
+       The `lines` stay empty on purpose: every mini that can be passed
+       carries its own voiced pool (js/dr/data/mini-voices.js) and mEmit
+       takes the TEXT from there and only the NOTE from here. An unvoiced
+       mini emits nothing rather than the wrong thing, which is the contract
+       the rest of this file already keeps. */
+    tier('passed', 'She stands up, opens her mouth and has nothing.', []),
     ],
   },
   {

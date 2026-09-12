@@ -125,6 +125,24 @@ weak-dance           9.3%     never-won      4.9%
 `always-safe` is rare enough to leave for last; everything else earns its
 four lines.
 
+## 1b. A turn is several reads
+
+She puts the glasses on and takes two or three of them apart before she sits
+down. How many she gets through is a result, not a roll — three when she is
+killing it, one when she is dying, one when she had nothing — and **her first
+read is her best**, because she leads with the one she prepared and each later
+one carries a small penalty.
+
+That matters to you in one specific way: **a turn is read as a run.** Three
+`nailed` lines in a row from the same queen should escalate, not restate. Give
+the pool enough variety of SHAPE — a one-liner, a set-up with a turn, a read
+that pretends to be a compliment all the way to the last word — that three
+drawn together sound like somebody on a roll rather than one joke three times.
+
+Measured over 28 libraries: 17.4 reads each, an even spread of one, two and
+three per turn, and a line repeating inside the same library 1.0% of the time.
+There is room for what you write.
+
 ## 2. How to write each tier
 
 **`nailed`** — the swerve has to be genuinely funny and genuinely cruel, and

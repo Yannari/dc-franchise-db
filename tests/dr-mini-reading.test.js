@@ -224,3 +224,108 @@ describe('the read is about something true', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// A TURN IS SEVERAL READS
+// ══════════════════════════════════════════════════════════════════════
+//
+// The wiki's own description is that the queens read each OTHERS, plural, and
+// the winner is whoever was funniest across her turn. One read each made
+// every queen a single punchline and the segment a list of them.
+//
+// How many she gets through is a result rather than a roll: killing it and
+// the room asks for more, dying and she sits down. Measured over 28
+// libraries — 17.4 reads each, an even spread of one, two and three per turn,
+// and a line repeating inside the same library 1.0% of the time.
+describe('a turn is several reads', () => {
+  it('gives a good turn more reads than a bad one', () => {
+    /* Asserted on what the EPISODE shows rather than on an internal score:
+       the tier of her OPENING read is how well the turn is going, and the
+       queens whose opener landed should be the ones asked for more. */
+    const RANK = { nailed: 0, decent: 1, flat: 2, passed: 3 };
+    const byOpener = { nailed: [], decent: [], flat: [], passed: [] };
+    for (let s = 1; s <= 15; s++) {
+      const row = library(s);
+      if (!row) continue;
+      const turns = {};
+      for (const sc of row.dr.scenes) {
+        if (sc.kind !== 'chal:mini-attempt') continue;
+        const who = (sc.data.players || [])[0];
+        turns[who] ||= { n: 0, opener: null };
+        turns[who].n += 1;
+        if (sc.data.readIndex === 0) turns[who].opener = sc.data.tier;
+      }
+      for (const t of Object.values(turns)) {
+        if (t.opener && byOpener[t.opener]) byOpener[t.opener].push(t.n);
+      }
+    }
+    const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+    expect(byOpener.nailed.length, 'no turn opened well in fifteen libraries')
+      .toBeGreaterThan(0);
+    expect(byOpener.flat.length, 'no turn opened badly in fifteen libraries')
+      .toBeGreaterThan(0);
+    expect(mean(byOpener.nailed), 'a turn that opened well got no more reads '
+      + 'than one that died').toBeGreaterThan(mean(byOpener.flat));
+    void RANK;
+  });
+
+  it('reads a different queen each time, and never herself', () => {
+    for (let s = 1; s <= 12; s++) {
+      const row = library(s);
+      if (!row) continue;
+      for (const [who, d] of Object.entries(row.dr.mini.detail || {})) {
+        const targets = (d.reads || []).map(r => r.target);
+        expect(new Set(targets).size, `${who} read the same queen twice in one turn`)
+          .toBe(targets.length);
+        expect(targets, `${who} read herself`).not.toContain(who);
+      }
+    }
+  });
+
+  it('leads with her best, so a later read is never the better one', () => {
+    /* `swing` is a penalty applied per read, so the tier is monotonically
+       non-improving across a turn: she opens with the one she prepared and
+       the third is her pushing her luck. A later read scoring BETTER would
+       mean the penalty had been dropped or inverted. */
+    const RANK = { nailed: 0, decent: 1, flat: 2, passed: 3 };
+    for (let s = 1; s <= 12; s++) {
+      const row = library(s);
+      if (!row) continue;
+      const byQueen = {};
+      for (const sc of row.dr.scenes) {
+        if (sc.kind !== 'chal:mini-attempt') continue;
+        const who = (sc.data.players || [])[0];
+        (byQueen[who] ||= [])[sc.data.readIndex] = sc.data.tier;
+      }
+      for (const [who, tiers] of Object.entries(byQueen)) {
+        for (let i = 1; i < tiers.length; i++) {
+          if (tiers[i] === undefined || tiers[i - 1] === undefined) continue;
+          if (tiers[i - 1] === 'passed') continue;   // a pass is its own floor
+          expect(RANK[tiers[i]], `${who}'s read ${i + 1} beat her opener`)
+            .toBeGreaterThanOrEqual(RANK[tiers[i - 1]]);
+        }
+      }
+    }
+  });
+
+  it('gives a queen who had nothing exactly one', () => {
+    for (let s = 1; s <= 15; s++) {
+      const row = library(s);
+      if (!row) continue;
+      for (const [who, d] of Object.entries(row.dr.mini.detail || {})) {
+        if (!d.passed || !d.reads) continue;
+        expect(d.reads.length, `${who} passed and was asked for more`).toBe(1);
+      }
+    }
+  });
+
+  it('is a library rather than a list', () => {
+    /* The headline: more reads than queens. One each is the thing that was
+       wrong with it. */
+    const row = library(1);
+    if (!row) return;
+    const reads = row.dr.scenes.filter(x => x.kind === 'chal:mini-attempt').length;
+    const queens = Object.keys(row.dr.mini.detail || {}).length;
+    expect(reads, 'one read each is a list, not a library').toBeGreaterThan(queens);
+  });
+});

@@ -1182,7 +1182,12 @@ export function renderChallengeBeats({
       const beat = beatById(beatId);
       // What this read is ABOUT, so a specific line can be offered when the
       // fact it needs is true of the queen being read. See miniLinesFor.
-      const angle = (who[0] && miniDetail[who[0]]?.angle) || null;
+      // The angle of THIS read. `extra.target` names which one it is, so a
+      // turn of three reads asks three different questions of the pool.
+      const angle = extra.angle
+        || (who[1] && (miniDetail[who[0]]?.reads || [])
+          .find(r => r.target === who[1])?.angle)
+        || (who[0] && miniDetail[who[0]]?.angle) || null;
       const all = miniLinesFor(mini.id, tierId, angle);
       /* ── A LINE THAT NAMES A SECOND QUEEN NEEDS A SECOND QUEEN ───────
          Not every mini has a target: `otherFor` returns null for the ones
@@ -1247,12 +1252,28 @@ export function renderChallengeBeats({
       if (d.position) {
         mEmit('mini-turn', d.position, [n], { turn: d.turn, position: d.position });
       }
-      // She stood up and had nothing, which is its own result and was
-      // unreachable while the floor of the pool was "a read that missed".
-      const tierId = d.passed
-        ? 'passed' : tierAt(fractionalRank(n, miniScores), MINI_TIERS);
-      mEmit('mini-attempt', tierId, other ? [n, other] : [n],
-        { target: other, passed: !!d.passed, position: d.position || null });
+      /* ── HER TURN, WHICH IS SEVERAL READS ──
+         One card per read rather than one per queen: she puts the glasses
+         on, takes two or three of them apart and sits down. How many she
+         gets through is decided in js/dr/mini.js from how the turn is going
+         — three when she is killing it, one when she is dying — and each
+         later read carries a small penalty, because she led with the one
+         she prepared and the third is her pushing her luck.
+         `swing` is applied HERE so there is still exactly one place that
+         turns a rank into a tier. A queen who passed has one read and it is
+         the pass; the penalty cannot make her worse than that. */
+      const base = fractionalRank(n, miniScores);
+      const reads = (d.reads && d.reads.length)
+        ? d.reads : [{ target: other, angle: d.angle, swing: 0 }];
+      for (const [k, r] of reads.entries()) {
+        const tierId = d.passed && k === 0
+          ? 'passed'
+          : tierAt(Math.min(1, base + (r.swing || 0)), MINI_TIERS);
+        mEmit('mini-attempt', tierId, r.target ? [n, r.target] : [n],
+          { target: r.target || null, passed: !!d.passed && k === 0,
+            position: k === 0 ? (d.position || null) : null,
+            readIndex: k, reads: reads.length });
+      }
     }
     if (miniWinner) {
       const other = otherFor(miniWinner);

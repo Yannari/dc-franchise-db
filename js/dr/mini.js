@@ -220,6 +220,46 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
     }
   }
 
+  /* ── A TURN IS SEVERAL READS, WHICH IS THE FORMAT ──────────────────
+     The library is not one joke each. She puts the glasses on, takes the
+     room apart, and sits down — the wiki's own description is that the
+     queens "read each other", plural, and the winner is whoever was
+     funniest across her turn. One read each made every queen a single
+     punchline and made the segment a list.
+
+     HOW MANY she gets through is a result, not a roll. A queen who is
+     killing it is asked for more and keeps going; a queen who is dying does
+     one and sits down; a queen who has nothing does not get a second. That
+     is the shape the real segment has and it costs nothing to model,
+     because the ranking already knows who is which.
+
+     And her FIRST read is her best. She leads with the one she prepared, so
+     each later read carries a small penalty — pushing her luck is what the
+     third one is. The penalty is applied where the tier is decided
+     (js/dr/stage.js) rather than here, so there is still one place that
+     turns a rank into a tier. */
+  if (interaction === 'targets') {
+    const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+    const size = Math.max(1, ranked.length - 1);
+    for (const [i, n] of ranked.entries()) {
+      const d = detail[n];
+      if (!d || !d.target) continue;
+      const frac = i / size;
+      const count = d.passed ? 1 : frac <= 0.30 ? 3 : frac <= 0.70 ? 2 : 1;
+      const taken = new Set([n]);
+      const reads = [];
+      for (let k = 0; k < count; k++) {
+        const target = k === 0 ? d.target
+          : targetFor(n, living.filter(o => !taken.has(o)), players, bond, star, rng);
+        if (!target) break;
+        taken.add(target);
+        const a = readAngleFor(target, players, record);
+        reads.push({ target, angle: a.angle, about: a.about, swing: k * 0.12 });
+      }
+      d.reads = reads;
+    }
+  }
+
   // ── what the interaction did to the room ──
   if (interaction === 'targets') {
     for (const n of living) {

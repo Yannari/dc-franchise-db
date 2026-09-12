@@ -652,6 +652,11 @@ export function runDragWeek(state, cfg, ctx) {
     teamJudged: M.teamJudged,
     teams: assignment.teams,
     bestTeam: M.bestTeam,
+    /* HOW BIG THE STAGE IS TONIGHT. The week's own stream, so the size of the
+       top and the number marked LOW are drawn from the real show's spread
+       rather than fixed at its mean -- and drawn reproducibly, because this
+       stream is a function of the seed and the episode number. */
+    rng,
   });
 
   /* ── DOUBLE WIN ─────────────────────────────────────────────────────

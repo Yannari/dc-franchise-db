@@ -106,3 +106,79 @@ describe('the stage has the same room on a team night', () => {
     expect(c.high).toEqual([]);
   });
 });
+
+/* ── THE NIGHT HAS A SAY IN HOW BIG THE STAGE IS ──
+   The counts this file pins are MEANS. The real show does not hit its mean
+   every week — measured over 87 nights by tools/dr-real-critique-size.py:
+
+     queens called up   1: 5%   2: 23%   3: 45%   4: 18%   5+: 8%
+     marked LOW         0: 25%  1: 54%   2: 16%   3: 5%
+
+   Three up and one low is the ordinary night and it is not even half of them.
+   A simulator that produces the mean every single week reads as a formula,
+   which is the thing this answers. */
+describe('how big the stage is tonight', () => {
+  /* WARMED, because an LCG seeded with 1, 2, 3... returns nearly the same
+     first number for each of them -- which made 400 "different" nights draw
+     two distinct shapes between them and looked like the engine ignoring the
+     stream. */
+  const seeded = seed => {
+    let s = (seed * 2654435761) >>> 0;
+    const next = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    for (let i = 0; i < 6; i++) next();
+    return next;
+  };
+  const shapes = n => {
+    const out = [];
+    for (let i = 0; i < 400; i++) {
+      const c = callWeek(rank(roomOf(n)), { castSize: n, rng: seeded(i + 1) });
+      out.push({ up: c.win.length + c.high.length, low: c.low.length,
+        spoken: spoken(c) });
+    }
+    return out;
+  };
+
+  it('does not call the same number up every week', () => {
+    const ups = new Set(shapes(12).map(s => s.up));
+    expect(ups.size, 'every night calls up exactly the same number')
+      .toBeGreaterThan(2);
+  });
+
+  it('centres where the real show centres', () => {
+    const s = shapes(12);
+    const mean = k => s.reduce((t, x) => t + x[k], 0) / s.length;
+    // real: 3.0 up, 1.0 low, and a 5.9 mean critiqued
+    expect(mean('up')).toBeGreaterThan(2.4);
+    expect(mean('up')).toBeLessThan(3.6);
+    expect(mean('low')).toBeGreaterThan(0.7);
+    expect(mean('low')).toBeLessThan(1.5);
+    expect(mean('spoken')).toBeGreaterThan(5);
+    expect(mean('spoken')).toBeLessThan(7);
+  });
+
+  it('always leaves a stage that fits the room', () => {
+    /* The clamp, which is the half that can go wrong quietly: a drawn top of
+       six in a room of seven would leave nobody to be in the bottom. */
+    for (const n of [12, 8, 6, 5, 4]) {
+      for (const s of shapes(n)) {
+        expect(s.up, `${n} queens: nobody called up`).toBeGreaterThanOrEqual(1);
+        expect(s.spoken, `${n} queens: more on stage than in the room`)
+          .toBeLessThanOrEqual(n);
+      }
+    }
+  });
+
+  it('gives the same night the same stage twice', () => {
+    // A drawn shape still has to replay: same stream, same stage.
+    const a = callWeek(rank(roomOf(12)), { castSize: 12, rng: seeded(99) });
+    const b = callWeek(rank(roomOf(12)), { castSize: 12, rng: seeded(99) });
+    expect(a).toEqual(b);
+  });
+
+  it('is the mean night when nobody hands it a stream', () => {
+    // Every headless caller and every other test in this repo wants that.
+    const c = callWeek(rank(roomOf(12)), { castSize: 12 });
+    expect(c.win.length + c.high.length).toBe(3);
+    expect(c.low.length).toBe(1);
+  });
+});

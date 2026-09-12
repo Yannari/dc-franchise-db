@@ -300,6 +300,10 @@ export function callWeek(finalRanking, {
   // team provides the bottom.  `teams` is the array of name-arrays from the
   // challenge module, `bestTeam` is the index of the winning one.
   teamJudged = false, teams = null, bestTeam = null,
+  /* The week's own stream. Given one, the size of the stage is drawn from the
+     real show's distribution rather than fixed at its mean -- see
+     `drawFrom` below. Absent, every night is the mean night. */
+  rng = null,
 } = {}) {
   /* ── TEAM-JUDGED PATH ──────────────────────────────────────────────
      Winning team: ranked among themselves — best = WIN, rest = HIGH.
@@ -310,6 +314,44 @@ export function callWeek(finalRanking, {
   /* HOW MANY ARE CALLED UP, decided once for both paths. It used to live
      below the team branch, so a team night never saw it — see the cap on the
      winning team a few lines down. */
+  /* ── AND HOW BIG THE STAGE IS TONIGHT ──
+     The counts above are means. The real show does not hit its mean every
+     week -- measured over the same 87 nights, by
+     tools/dr-real-critique-size.py:
+
+       queens called up   1: 5%   2: 23%   3: 45%   4: 18%   5+: 8%
+       marked LOW         0: 25%  1: 54%   2: 16%   3: 5%
+
+     Three up and one low is the ordinary night and it is not even half of
+     them. A night where the panel had four people it wanted to talk to, or
+     none it wanted to warn, is normal -- and a simulator that produces the
+     mean every single week reads as a formula, which is the complaint this
+     answers.
+
+     THE BOTTOM IS NOT ROLLED. How many queens are in danger is a format
+     decision the season already books -- an ordinary week, a bottom three, a
+     double, a week where nobody goes home -- and rolling it here would take
+     that decision away from the schedule and make a re-run unreproducible.
+     Only the top and the LOW vary, which is where the real show's variation
+     actually lives.
+
+     Drawn from the week's own stream, so the same seed and the same episode
+     produce the same stage however many times the season is rebuilt. A caller
+     that passes no rng gets the mean night every time, which is what every
+     test and every headless season wants. */
+  const drawFrom = table => {
+    if (!rng) return null;
+    const total = table.reduce((t, [, w]) => t + w, 0);
+    let roll = rng() * total;
+    for (const [value, weight] of table) {
+      roll -= weight;
+      if (roll <= 0) return value;
+    }
+    return table[table.length - 1][0];
+  };
+  const UP_TABLE = [[1, 5], [2, 23], [3, 45], [4, 18], [5, 5], [6, 4]];
+  const LOW_TABLE = [[0, 25], [1, 54], [2, 16], [3, 5]];
+
   /* ── MEASURED AGAINST THE REAL SHOW, NOT GUESSED ──
      tools/dr-real-critique-size.py reads the progress tables of seasons 9-16
      and counts, per night, how many queens were NOT safe against how many
@@ -350,7 +392,9 @@ export function callWeek(finalRanking, {
        with her.
        Same `up` as an ordinary week, so a team night and a solo night dismiss
        the same number of queens. */
-    const up = upFor(castSize || finalRanking.length);
+    const room = castSize || finalRanking.length;
+    const up = Math.max(1, Math.min(
+      drawFrom(UP_TABLE) ?? upFor(room), room - Math.max(2, bottomNamed) - 1));
     const called = winners.slice(0, Math.max(1, up));
     const win  = called.length ? [called[0].name] : [];
     const high = called.slice(1).map(r => r.name);
@@ -363,7 +407,8 @@ export function callWeek(finalRanking, {
     const bottomBlock = loserEligible.slice(-down);
     const bottom = bottomBlock.slice(-2);
     const atRisk = bottomBlock.slice(0, -2);
-    const lowCount = 1;
+    const lowCount = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
+      loserEligible.length - down));
     const low = down < loserEligible.length
       ? loserEligible.slice(Math.max(0, loserEligible.length - down - lowCount),
         loserEligible.length - down)
@@ -380,7 +425,11 @@ export function callWeek(finalRanking, {
   // single queen to be the bottom, no lip sync is possible and the season
   // cannot reach a final two. One win and two lip syncing is also what the
   // format actually does that late.
-  const up = upFor(n);
+  /* Drawn when the caller gave a stream, the mean otherwise -- and clamped so
+     the stage always fits: at least one queen at the top, and never so many
+     that the bottom has nobody left to be in it. */
+  const down0 = Math.max(2, bottomNamed);
+  const up = Math.max(1, Math.min(drawFrom(UP_TABLE) ?? upFor(n), n - down0 - 1));
   /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom
      forward and sends everybody else off before a word is said, and the block
      it calls is the pair who lip sync. This returned three, which put a third
@@ -425,7 +474,8 @@ export function callWeek(finalRanking, {
      the top, three at the bottom — which is one win, two high, one low and
      the two who lip sync. Two lows made it seven and diluted a stage whose
      whole tension is that being on it means something. */
-  const lowCount = 1;
+  const lowCount = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
+    eligible.length - down));
   const low = down < eligible.length
     ? eligible.slice(Math.max(0, eligible.length - down - lowCount), eligible.length - down)
     : [];

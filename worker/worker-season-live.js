@@ -773,6 +773,12 @@ async function generateWikiFill(body, env) {
     });
   }
   const cast = threads.map(t => t.name);
+  /* Whether ANYBODY spoke. A season whose episodes were never put through the
+     episode writer has no screenplay, which is a fact about the season and not
+     about its cast — and three separate places used to tell the model
+     otherwise, including the schema field below, which is attached to the
+     answer and outranks anything in the instructions. */
+  const noScript = !threads.some(t => (t.confessionals?.length || t.lines?.length));
   const W = showWords(format, words);
   const show = W.show;
 
@@ -793,7 +799,9 @@ async function generateWikiFill(body, env) {
             },
             personality: {
               type: "string",
-              description: "2-4 sentences on what this person was LIKE with the others, written from their own words and what they were seen doing. Not their results — a placement is not a personality. How they talk, who they attach to, what they do when cornered, and whether any of that changed as the season went on. Specific to the evidence: if they were barely on camera, say that instead of inventing an interior life."
+              description: noScript
+                ? "2-4 sentences on what this person was LIKE, built from how they played: what they were good at, when they were in trouble, who they were close to, how their season turned. Not their results restated — a placement is not a personality — but the shape those results describe. Never mention transcripts, dialogue, confessionals, the edit, the camera, screen time or evidence: this season has no screenplay, that is true of everybody, and a reader does not know any of it exists. If there is genuinely nothing to say, one short sentence about how they played and stop."
+                : "2-4 sentences on what this person was LIKE with the others, written from their own words and what they were seen doing. Not their results — a placement is not a personality. How they talk, who they attach to, what they do when cornered, and whether any of that changed as the season went on. Specific to the evidence: if they were barely on camera, say that instead of inventing an interior life."
             },
             quotes: {
               type: "array",
@@ -837,10 +845,6 @@ async function generateWikiFill(body, env) {
   };
 
   const NL = String.fromCharCode(10);
-  /* Whether ANYBODY spoke. A season whose episodes were never put through the
-     episode writer has no transcript, which is a fact about the season and not
-     about its cast — see the two rules below that turn on it. */
-  const noScript = !threads.some(t => (t.confessionals?.length || t.lines?.length));
   const threadText = threads.map(t => {
     const bits = [`### ${t.name}`];
     // THE RECORD, above their dialogue.
@@ -867,10 +871,12 @@ async function generateWikiFill(body, env) {
        down, and wrong for everybody when the season was not: it told the
        writer fourteen times that fourteen queens were barely on camera, and
        got fourteen paragraphs about the edit rather than about the people. */
-    if (!t.confessionals?.length && !t.lines?.length) {
-      bits.push(noScript
-        ? '(this season has no transcript at all \u2014 nobody\'s dialogue was recorded)'
-        : '(no dialogue recorded \u2014 they barely spoke on camera)');
+    /* Only where it distinguishes her. With no screenplay at all this said the
+       same thing under all fourteen names, and a fact repeated once per queen
+       reads as the most important thing about each of them — which is how
+       fourteen paragraphs came to be about the absence of a transcript. */
+    if (!noScript && !t.confessionals?.length && !t.lines?.length) {
+      bits.push('(no dialogue recorded \u2014 they barely spoke on camera)');
     }
     return bits.join(NL);
   }).join(NL + NL);
@@ -879,9 +885,12 @@ async function generateWikiFill(body, env) {
 You are writing the Personality, Quotes and Trivia sections of a fandom wiki
 article for every ${W.player} of ${show}${seasonTitle ? ` — ${seasonTitle}` : ''}${season ? ` (Season ${season})` : ''}.
 
-You are given each person's thread through the season: their confessionals
+${noScript ? `You are given each person's RECORD and the season's round-by-round
+TIMELINE. No screenplay was written for this season, so there is no dialogue for
+anybody — that is a fact about the season, not about any of these people, and it
+must never appear in what you write. Work from what they did.` : `You are given each person's thread through the season: their confessionals
 (spoken alone to camera), what they said to the others, and stage directions that
-name them. This is ALL the evidence. Do not use anything you think you know
+name them.`} This is ALL the evidence. Do not use anything you think you know
 about these characters from anywhere else.
 
 RULES

@@ -255,10 +255,15 @@ export function resolveGapWith(ctx, season, log) {
  * completely different things.
  */
 export async function resolveAfterSeason({ seasonId = null, seasonNumber = null, format = null } = {}) {
+  /* ── NO-STORE, BECAUSE THIS RUNS SECONDS AFTER PUBLISHING THESE FILES ──
+     The export hook calls this the moment the export finishes, and the export
+     has just rewritten all three of these. A cached copy is the PREVIOUS
+     franchise — see the cast guard below for what that costs. */
+  const nocache = { cache: 'no-store' };
   const [sdb, pdb, roster, log] = await Promise.all([
-    fetch('seasons_database.json').then(r => r.json()).catch(() => ({ seasons: [] })),
-    fetch('players_database.json').then(r => r.json()).catch(() => ({ players: [] })),
-    fetch('franchise_roster.json').then(r => r.json()).catch(() => ({ players: [] })),
+    fetch('seasons_database.json', nocache).then(r => r.json()).catch(() => ({ seasons: [] })),
+    fetch('players_database.json', nocache).then(r => r.json()).catch(() => ({ players: [] })),
+    fetch('franchise_roster.json', nocache).then(r => r.json()).catch(() => ({ players: [] })),
     loadLifeLog(),
   ]);
 
@@ -280,6 +285,33 @@ export async function resolveAfterSeason({ seasonId = null, seasonNumber = null,
   }
 
   const ctx = lifeContext(pdb, sdb, roster);
+
+  /* ── AND THE DATABASE HAS TO KNOW WHO WAS IN IT ──
+     This is the race the whole hook sits in. It runs immediately after the
+     export publishes, and `players_database.json` above is fetched over HTTP
+     from a site that has not rebuilt yet — so on the first season of a new
+     show the answer comes back WITHOUT that show's cast in it.
+
+     The resolver then did exactly what it was asked: it rolled an off-season
+     for everybody it could see, which was everybody except the people whose
+     season it was. Measured on the first drag season: 161 events proposed
+     after `dr-1`, not one of them about a queen, while re-running the same
+     resolver against the landed database proposes eleven.
+
+     And it was permanent, because the `already` guard above counts events
+     rather than asking whether they are the right ones — so the gap was closed
+     for good by the one run that could not see the cast.
+
+     Refusing is the only safe answer. Nothing is lost: life.html's sweep
+     proposes the gap again whenever it is opened, by which time the publish
+     has landed. */
+  if (!(ctx.castBySeason.get(season.seasonId) || []).length) {
+    return { ok: false,
+      season,
+      reason: 'the published player database does not list this season\'s cast yet — '
+        + 'the off-season will resolve on the Life page once the publish lands' };
+  }
+
   const fresh = resolveGapWith(ctx, season, log);
   if (!fresh.length) return { ok: true, season, added: 0, reason: 'a quiet off-season — nothing happened to anybody' };
 

@@ -745,12 +745,12 @@
       "title": "Drag Race 1",
       "subtitle": "",
       "castSize": 14,
-      "episodeCount": 4,
+      "episodeCount": 16,
       "winner": {
-        "name": "Cheryl Hole",
-        "playerSlug": "cheryl-hole",
+        "name": "Quin",
+        "playerSlug": "quin",
         "vote": "",
-        "runnerUp": "Taystee",
+        "runnerUp": "Paige Turner",
         "keyStats": "",
         "strategy": "",
         "legacy": ""
@@ -764,7 +764,7 @@
         "mostChallengeWins": {
           "name": "Quin",
           "playerSlug": "quin",
-          "detail": "1 maxi challenge"
+          "detail": "5 maxi challenges"
         }
       },
       "theme": "",

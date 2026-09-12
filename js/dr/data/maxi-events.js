@@ -666,14 +666,24 @@ export const MAXI_EVENTS = [
       + 'guessed it was hers.'
       + 'She has been living with these women for weeks. Write '
       + 'the moment the answer is read out, not a summary of how she feels.',
-    lines: [],
+    lines: [
+      "The answer goes up and every head in the room turns to {a} at the same time. She watches it happen — eight women realising they have been living with her for weeks and not one of them got it right. She laughs first, which is the only move she has.",
+      "{a} is already smiling before the name is read, because she knew. She could see the board from her seat and there was not a single vote on her. The host says it and the room groans and {a} just shrugs, arms open, like what did you think.",
+      "Nobody. Not one. The host reads {a}'s name and the room goes quiet for a second because they are doing the maths — she sits next to half of them and none of them saw it. {a} presses her lips together and nods once, slowly, at nobody in particular.",
+      "The reveal lands and {a} watches the room react without her. Eight queens looking at each other, mouthing \"really?\" and checking the board again. {a} stays in her chair and lets them finish. She does not need to say anything; the board said it.",
+    ],
   }),
   e({
     id: 'the-room-knew-her-instantly', from: 'mini', cast: 'solo',
     note: 'Almost everybody got it right the second it went up. {a} is '
       + 'identifiable by one object, which is the whole job — and it is worth '
       + 'noticing that being this legible is not free either.',
-    lines: [],
+    lines: [
+      "It goes up and every pen in the room writes the same name inside three seconds. {a} does not even have to look at the board — she can tell from the speed. Half the room is already grinning at her before the answers are revealed.",
+      "The host barely finishes the reveal before somebody shouts it. {a} covers her face and laughs because of course they knew, every single one of them, immediately. She is that girl and right now that is a compliment and a ceiling at the same time.",
+      "{a} watches the board fill and it is her name, over and over, in every handwriting in the room. She raises both hands like she is accepting an award. The room cheers. The one queen who got it wrong looks genuinely embarrassed.",
+      "They all knew. {a} sees the answers go up and there is not a wrong guess on the board. She takes a bow because what else do you do — but there is a beat afterwards where she is quiet, and it is the quiet of a woman who just learned that nobody in this room would ever be surprised by her.",
+    ],
   }),
   e({
     id: 'her-own-girl-missed-it', from: 'mini', cast: 'pair',
@@ -681,7 +691,12 @@ export const MAXI_EVENTS = [
       + 'hers. '
       + 'Nobody did anything wrong, which is exactly why it lands. Write the '
       + 'two of them afterwards rather than the guess itself.',
-    lines: [],
+    lines: [
+      "{a} stares at the board when the answer comes up because she wrote somebody else's name and the right answer was {b}. {b} is two seats away, already looking at her. Neither of them says anything for a second. Then {a} mouths \"I am so sorry\" and {b} waves it off, but she waves it off a little too fast.",
+      "The reveal goes up and {a} sees {b}'s name where she wrote another queen's. {b} catches her eye across the room and laughs — \"Girl, we sit next to each other\" — and {a} laughs too, but she is doing the thing where the laugh does not quite reach the rest of her face. They move on. It takes about a minute longer than it should.",
+      "{b} finds {a} at the mirrors afterwards. \"You really did not know?\" she says, and she is smiling but the question is real. {a} shakes her head. \"I swear I thought it was hers.\" {b} nods and squeezes her arm and goes back to her station, and they are fine, and it is still sitting there.",
+      "{a} got every other answer right and missed {b}. The host reads it out and {a} drops her head back and groans because she knows how it looks. {b} leans over from her seat: \"It is fine, I promise.\" And she means it — {b} lets it go right there, no second pass, no bringing it up at the mirrors. That is how {a} knows it stung.",
+    ],
   }),
   e({
     id: 'read-landed', from: 'mini', cast: 'pair',

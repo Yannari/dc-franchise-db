@@ -873,6 +873,10 @@ export function renderStageBeats({
 export function runUntucked({
   living = [], players = {}, state = {}, storylines = [], call = {},
   namedOnStage = [], rng = Math.random, ctx = {}, perPhase = null,
+  /* WHO NAMED WHOM, from the who-should-go twist: `{ target: [voters] }`.
+     Untucked is where that costs something, and it costs differently
+     depending on who said it. */
+  namedBy = {}, selfNamed = [],
 }) {
   /* HOW MANY SCENES A PHASE GETS, and three was three regardless of whether
      there were twelve queens on the couch or four. Untucked is the one room
@@ -894,6 +898,11 @@ export function runUntucked({
         : (call.atRisk || []).includes(n) ? 'BTM'
           : (call.low || []).includes(n) ? 'LOW' : 'SAFE';
   const named = new Set(namedOnStage);
+  const selfNames = new Set(selfNamed);
+  /* Who put her name out there, and how many did. Three queens naming the same
+     woman is a pile-on and reads as one; one queen naming her is a grudge. */
+  const namersOf = n => namedBy[n] || [];
+  const namedByCount = n => namersOf(n).length;
   const arcsOf = n => storylines.filter(s => s.alive && s.players.includes(n)).map(s => s.arc);
   const bondOf = (a, b) => { try { return ctx.bond ? ctx.bond(a, b) : 0; } catch { return 0; } };
 
@@ -914,7 +923,27 @@ export function runUntucked({
         const a = subject(living);
         const others = living.filter(n => n !== a);
         const pairing = ev.cast === 'pair' || ev.cast === 'group';
-        const b = pairing ? (others.length ? subject(others) : null) : null;
+        /* ── AN EVENT MAY SAY WHO IT NEEDS ──
+           The partner used to be drawn before the event was tested, so a
+           two-hander ABOUT A PARTICULAR PERSON — the queen who named you on
+           that stage — could only fire if the draw happened to land on her.
+           In a room of twelve it almost never did: the fallout from the
+           who-should-go twist fired in nine seasons out of twenty-five, and
+           the confrontations in none of them.
+           `partners(a, facts)` returns who would make the scene true. Nothing
+           is forced: the pick is still coverage-weighted inside that set, and
+           an event whose partner is not in the room is skipped rather than
+           given somebody who does not fit it. */
+        let pool = others;
+        if (pairing && typeof ev.partners === 'function') {
+          let want = null;
+          try { want = ev.partners(a, { namersOf, namedBy, bond: bondOf }); }
+          catch { want = null; }
+          const usable = (want || []).filter(n => others.includes(n));
+          if (!usable.length) continue;
+          pool = usable;
+        }
+        const b = pairing ? (pool.length ? subject(pool) : null) : null;
         if (pairing && !b) continue;
 
         /* ── AND THE REST OF THE COUCH ──
@@ -959,6 +988,19 @@ export function runUntucked({
           bInBottom: b ? bottom.has(b) : false,
           bothInBottom: bottom.has(a) && !!b && bottom.has(b),
           namedOnStage: named.has(a) || (!!b && named.has(b)),
+          /* ── AND THE SHAPE OF IT ──
+             `aNamedB` is the confrontation: she said it, and now they are
+             eight feet apart on a couch. `namedByFriend` is the one that
+             actually hurts -- being named by somebody you had a bond with.
+             `pileOn` is three or more pointing the same way. */
+          aNamedB: !!b && namersOf(b).includes(a),
+          bNamedA: !!b && namersOf(a).includes(b),
+          namedByFriend: !!b && namersOf(a).includes(b) && bondOf(a, b) >= 3,
+          namedAFriend: !!b && namersOf(b).includes(a) && bondOf(a, b) >= 3,
+          pileOnA: namedByCount(a) >= 3,
+          pileOnB: !!b && namedByCount(b) >= 3,
+          namersA: namedByCount(a),
+          namedHerself: selfNames.has(a),
           tension: b ? bondOf(a, b) <= -2 : false,
           winsA: (state.record?.[a] || []).filter(r => r === 'WIN').length,
           phase: state._drPhase ?? 0,

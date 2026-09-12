@@ -251,11 +251,41 @@ export const PICK_VOICES = [
     + 'has not warmed up, last is a room that has already laughed itself out '
     + 'and heard everybody else do the obvious jokes. The middle is safest '
     + 'and the most forgettable.', P(
-      'She got the spot on the bill she wanted, and on a comedy night that is most of the battle.', [],
-      tier('settled', 'Not the slot she wanted. She has to build the set around where she is.', []),
-      tier('left-over', 'She is going on where nobody wanted to go on.', []),
-      tier('picked-last', 'Last to choose, so she is taking whatever the room is by then.', []),
-    )),
+      'She got the spot on the bill she wanted, and on a comedy night that is most of the battle.', [
+        '{a} picks {d} immediately. \"I know where I want to be.\" On a comedy night, when you go on is half the set — she wants the room at a specific temperature and she just locked it in.',
+        'First pick, no hesitation. {a} takes {d} and walks back to her station. A queen who knows comedy knows what order does to an audience, and she just chose the order she wanted.',
+        '{a} grabs {d} before anybody else moves. \"That is my spot.\" She has done stand-up before. She knows where on the bill her material works and she picked it.',
+        'The spot she wanted. {a} takes {d} and starts rewriting her set around the position — the opening is different when the room is cold versus warm and she just chose which room she gets.',
+        '{a} claims {d}. Strategic pick. She knows whether she wants to open a cold room or close a warm one, and she chose the one her material is built for. The rest of the bill works around her.',
+        '\"Give me {d}.\" {a} takes it first. A comedy night is about order — whether the audience has warmed up, whether they have heard the obvious jokes already — and she just chose where she sits in that order.',
+      ]),
+      tier('settled', 'Not the slot she wanted. She has to build the set around where she is.', [
+        '{a} takes {d}. Not the spot she came for. \"I can make it work,\" she says, and she means it, but the set she wrote was built for a different room temperature and now she has to adjust.',
+        'Not her first choice. {a} settles on {d} and starts thinking about her opening differently — the room she is inheriting is not the room she prepared for. She will rewrite the first bit before tonight.',
+        '{a} picks {d} and sits with it. The spot she wanted is gone. \"It is fine,\" she tells the queen next to her. \"I will just go harder on the first bit.\" She is already editing in her head.',
+        'The position {a} wanted went to somebody else. She takes {d} and shrugs. \"I have done worse.\" The shrug is real — the position is workable, it is just not the one that lets her material land the way she wrote it.',
+        '{a} takes {d}. Second choice. She starts rethinking her set order because the room she gets at {d} is not the room she wrote her opener for. A comedy set that ignores its position dies in the first thirty seconds.',
+        '\"Fine. {d}.\" {a} takes it and goes back to the mirror. Not the position she wanted, not the end of the world. She has material. She has to rearrange it. That is the job tonight.',
+        'Second choice. {a} takes {d} and goes back to her notes. The room she is walking into is a different temperature than the room she prepared for, and the first thirty seconds of her set need to account for that.',
+        '{a} wanted to go on earlier and she is going on later. She takes {d}. \"I wrote the set for a different spot,\" she says to the mirror. \"I will figure it out.\" She starts rethinking the opening.',
+      ]),
+      tier('left-over', 'She is going on where nobody wanted to go on.', [
+        '{a} is left with {d}. The slot the room avoided. \"Nobody wanted that one for a reason,\" somebody whispers, and {a} heard it. She takes it anyway because the alternative is standing here negotiating with nothing to negotiate with.',
+        'The draft leaves {a} with {d}. A cold room, or a tired one — either way, the position the rest of the queens saw and picked around. {a} takes it and does not complain, which is its own kind of statement.',
+        '{a} gets {d} because {d} is what is left. The good spots are gone. She is going on where nobody wanted to go on, and on a comedy night that means the room she inherits is the room nobody else wanted to inherit.',
+        '\"I guess that is me.\" {a} takes {d}. The slot nobody chose. On a stand-up night, going on in the wrong spot means the audience is either not ready to laugh or already done laughing, and she is about to find out which.',
+        '{a} ends up with {d}. Not picked — left over. She takes it without a word and goes back to her notes, but the position is a problem and she knows it. The room she is walking into was shaped by everybody who went before her.',
+        'What remains is {d}. {a} takes the position and starts rewriting her opening in her head because the set she prepared does not account for a room this cold or this tired. \"It is what it is,\" she says. It is.',
+      ]),
+      tier('picked-last', 'Last to choose, so she is taking whatever the room is by then.', [
+        '{a} picks last. {d} is the only position left and she takes it. \"I did not even get to choose,\" she says to the mirror. On a comedy night, going on where you are told is not the same thing as going on where you want to.',
+        'Last to pick. {a} takes {d} because {d} is all there is. She did not choose the position. The position chose her. \"At least I know what the room is going to be,\" she says. She does not sound comforted.',
+        '{a} is last and {d} is last and there is nothing to discuss. She takes it. By the time she goes on, the audience has heard every queen before her do their version of the obvious jokes and the obvious jokes are used up. Whatever she has left better be original.',
+        'The bill fills around her and {a} watches from the last seat. {d} is hers by default. \"Well,\" she says, \"at least nobody can say I got an easy spot.\" She starts looking at her set with the specific panic of a queen who just found out her room is going to be a problem.',
+        '{a} picks last. {d}. She takes it and immediately starts crossing out the first bit of her set because that bit was written for a room she is not getting. Last to choose on a comedy night is a disadvantage disguised as a non-event.',
+        '\"Okay. {d}. Let us go.\" {a} takes the remaining spot. She does not have the luxury of building her set around her position because the position was not hers to choose. The set she wrote is the set she has. The room will be what the room is.',
+      ]),
+    ),
   kind('slots',
     'A POSITION IN A GROUP NUMBER — a verse, an eight-count, a place in the '
     + 'running order. {d} is not a character, it is real estate: where in the '
@@ -583,6 +613,16 @@ export const WALKTHROUGH_VOICES = [
     '{a} reads her jokes. The host\'s note is about the arc — not whether the jokes are funny but whether the set has a shape. Whether it builds. Whether the closer earns the walk-off.',
     'The host pulls {a} aside and listens to the material. Clinical — timing, callbacks, whether {a} is roasting or just reading insults. Whether the difference between those two things is visible in the writing.',
     '{a} walks the host through her roast set. The host gives a note {a} can either use or ignore. Both are valid. Both will be visible on stage — the used note as a fix, the ignored note as a gap.',
+  ]),
+  walk('stand-up', 'Her five minutes — read out loud in the werk room, where there is no audience to save her.', [
+    'The host stops at {a}\'s station. "Read me the set." {a} reads it. Five minutes of her own material, out loud, in a room with no audience and no spotlight. The host listens the way the panel will listen — not laughing, just measuring.',
+    '{a} reads her set to the host. In the werk room, where the jokes have to stand on their own. No crowd energy. No room temperature to ride. Just material. The host gives a note about whether {a} has five minutes or two minutes repeated.',
+    '"Talk me through the set." The host sits with {a} and listens to the five minutes. The note is about structure — whether the bits build, whether the closer lands harder than the opener, whether {a} is telling jokes or telling the truth about herself.',
+    'The host asks to hear the material. {a} reads it. The host does not laugh, which is the point — the werk room strips the delivery and tests whether the writing works. The note is about whether {a} has anything to say or just things to say.',
+    '{a} runs the set for the host. Five minutes about her own life. The host listens and then says the thing {a} does not want to hear: "Is this about you or about a version of you?" The note lands. {a} goes back to rewrite.',
+    '"Let me hear your opener." {a} reads the first bit and the host stops her. "That is a joke. Where is the story?" The host pushes {a} toward the set that is underneath the set — the personal material that a stand-up lives or dies on.',
+    'The host walks {a} through the running order. "You are going on after her. What does that mean for your opening?" The note is about position — the room {a} inherits is not the room she wrote for, and the host wants to hear how she adjusts.',
+    '{a} reads the closer. The host nods. "That works. Now read me the three minutes before it." {a} reads them and the host\'s face says what the host eventually says out loud: the closer is ready, the middle is not.',
   ]),
   walk('makeover', 'The two of them side by side, and whether they read as family.', [
     'The host looks at {a} and {d} side by side. One question: do they look like they belong together? The note is about the gap — the mug, the hair, the styling — and whether {a} can close it before the runway.',

@@ -337,6 +337,25 @@ export const CRITIQUE_CHALLENGE = [
       "{j} looks at {a} and says a roast queen needs to read the room, and {a} read it wrong from the first joke and never adjusted, and the dead air between the punchlines told the whole story.",
       "\"I wanted to laugh,\" {j} says. \"I was rooting for you. But the jokes were thin and the delivery was thinner and {p} was sitting right there in every silence.\"",
     ])),
+  chal('stand-up',
+    'Five minutes of her own material about her own life. Whether the jokes were '
+    + 'hers, whether she had anything to say, and whether the room laughed.',
+    tier('praise', 'She told the truth about herself for five minutes and the room never stopped laughing.', [
+      "{j} tells {a} she did the one thing a stand-up has to do: she stood up there with her own material about her own life and made the room laugh. \"That was YOUR five minutes,\" {j} says. \"Nobody else could have done that set.\"",
+      "\"You were FUNNY,\" {j} says. \"Not clever. Not charming. Funny. The room was laughing because the material was real and the delivery was real and {o} was in every single bit.\"",
+      "{j} says {a} brought herself to that stage — not a character, not a catchphrase, herself — and the room responded because honesty with timing is the hardest thing to do in five minutes and {a} did it.",
+      "The critique is about the material: {j} tells {a} she wrote jokes that came from a real place and landed in a real room, and {o} was in the writing, not the performance, which is how you know a set was good.",
+      "{j} points at {a} and says the set had a shape — it built, it peaked, it closed — and {o} held it together from the first bit to the last. \"You had five minutes and you used all five.\"",
+      "\"That set was personal and it was funny and that is the whole job,\" {j} tells {a}. \"You talked about your life and we laughed and {o} was in every pause.\"",
+    ]),
+    tier('fault', 'The material was thin or borrowed or safe, and five minutes felt longer than five minutes.', [
+      "{j} tells {a} the set did not land and {p} was part of the reason — \"You had five minutes to talk about yourself and you talked about nothing. I did not learn a single thing about you up there.\"",
+      "\"Where were YOU?\" {j} asks. \"You stood on that stage for five minutes and told jokes that anybody in this room could have told. I needed your life, your story. I got filler, and {p} was sitting right in the middle of it.\"",
+      "{j} says {a} wrote a safe set and safe is death on a stand-up night — the material had no risk, no truth, no personal cost, and {p} was visible in every bit that played it safe.",
+      "The critique is about the silence: {j} tells {a} the room went quiet and stayed quiet because the material was not there. \"Five minutes is a long time when nobody is laughing, and {p} made it longer.\"",
+      "{j} looks at {a} and says a stand-up queen has to have something to say, and {a} did not, and the five minutes felt like ten. \"You were telling jokes. You were not telling the truth. And {p} was in every gap.\"",
+      "\"I wanted to laugh,\" {j} says. \"But the material was thin and the delivery was nervous and {p} was the thing I kept coming back to instead of the comedy.\"",
+    ])),
   chal('makeover',
     'THE RESEMBLANCE. Whether the two of them read as family — the paint, the '
     + 'proportions, the walk she taught her — and whether she made her partner '

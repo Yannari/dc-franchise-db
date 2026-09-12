@@ -130,10 +130,30 @@ export function dragPlacements(rows, cast = null) {
   const finale = last.dr?.finale || null;
   const w = showWords(DRAG_FORMAT);
 
-  // When she left, so the board can be ordered from the bottom up.
+  /* ── WHEN SHE LEFT FOR GOOD ──
+     Ordered from the bottom up, so this decides the whole board below the
+     finale. It kept the FIRST exit (`if (leftAt[x.name] === undefined)`),
+     which is right for everybody who left once and wrong for the one queen a
+     season brings back: a returnee was ranked where she left the first time,
+     under queens who went home after her.
+
+     Measured on the first drag season, where Taystee went out on episode
+     three, came back on five and left again on six:
+
+       exits   ep2 Marge Stache · ep3 Taystee · ep4 Cheryl Hole
+               ep5 Riot · ep6 Taystee
+       board   11 Riot · 12 Cheryl Hole · 13 Taystee
+       true    11 Taystee · 12 Riot · 13 Cheryl Hole
+
+     Reported as "Taystee returned ep6 so places higher than Cheryl Hole and
+     Riot, but the placement doesn't say that". The same bug the house had —
+     see project notes on the returnee whose career ended at her first
+     eviction — and the last exit is the only one that places anybody.
+
+     `rows` is in episode order, so the last write wins. */
   const leftAt = {};
   rows.forEach((row, i) => {
-    for (const x of row.exits || []) if (leftAt[x.name] === undefined) leftAt[x.name] = i;
+    for (const x of row.exits || []) leftAt[x.name] = i;
   });
 
   const finalists = finale?.placements || [];
@@ -149,7 +169,11 @@ export function dragPlacements(rows, cast = null) {
     else if (finale && finalists[1] === name) status = 'Runner-up';
     else if (finalists.includes(name)) status = 'Finalist';
     else {
-      const exit = rows.flatMap(r => r.exits || []).find(x => x.name === name);
+      /* HER LAST EXIT, not her first: a queen eliminated, brought back and
+         then disqualified is not "sashayed away", and `find` returns the
+         earlier one. Same rule as `leftAt` above. */
+      const exits = rows.flatMap(r => r.exits || []).filter(x => x.name === name);
+      const exit = exits[exits.length - 1];
       const verb = exit?.verb || w.exit;
       status = verb.charAt(0).toUpperCase() + verb.slice(1);
     }

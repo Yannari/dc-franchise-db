@@ -29,6 +29,7 @@ import { dragBadges } from './dr/badges.js';
 // module load order ever changed.
 import { MAXI_TYPES as DR_MAXI_TYPES } from './dr/data/challenges.js';
 import { MINI_TYPES as DR_MINI_TYPES } from './dr/data/minis.js';
+import { RUNWAY_CATEGORIES as DR_RUNWAYS } from './dr/data/runways.js';
 import { PARTNER_COHORTS, cohortLabel, makeoverShows } from './dr/chal/makeover.js';
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
@@ -3387,6 +3388,24 @@ function _drPickers(ep) {
     + sel('songTitle',
       [['', '— song: roll —'], ...songs.map(x => [x.title, `${x.title} — ${x.artist}`])],
       e.songTitle || '', 'The lip sync song')
+    /* ── THE CATEGORY, WHICH THE ENGINE READ AND NOBODY COULD SET ──
+       `cfg.runwayCategory` has been read by the week since the categories
+       existed and written only by the scheduler, so the one part of the night
+       that is pure authorship — the prompt — was the one part the author
+       could not touch. The list is derived, never typed: a category added to
+       js/dr/data/runways.js appears here on its own.
+       The suffix is what the prompt ASKS, because that is the whole reason to
+       pick one deliberately — a design night and a dance night are different
+       weeks for different queens, and picking blind from forty names is
+       picking at random with extra steps. */
+    + sel('runwayCategory',
+      [['', '— runway: the show picks —'],
+        ...DR_RUNWAYS.map(c => [c.label,
+          `${c.label}${c.asks ? ` · ${c.asks}` : (c.styles || []).length ? '' : ' · neutral'}`])],
+      e.runwayCategory || '',
+      'The runway category. The suffix is the craft it tests — a prompt that '
+      + 'asks for design helps the queen who sews and costs the one who cannot. '
+      + '"neutral" asks everybody the same question.')
     /* ── THE MAKEOVER'S TWO, AND ONLY ON A MAKEOVER ──
        Six dropdowns is already a lot for one episode card, and a cohort picker
        on a Snatch Game is a control that cannot do anything. They appear when

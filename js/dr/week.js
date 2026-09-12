@@ -415,6 +415,10 @@ export function runDragWeek(state, cfg, ctx) {
   // is the look she BUILT, which is judged on the building rather than on
   // whether the theme suited her.
   const categoryStyles = cfg.categoryStyles || runwayById(category)?.styles || [];
+  /* AND WHAT ELSE THE PROMPT ASKS. A category may test one craft outright and
+     pay a small bonus on a trait — see js/dr/data/runways.js. Read from the
+     same entry as the styles, so a category cannot arrive half-applied. */
+  const categoryEntry = runwayById(category);
   // A module may replace the runway entirely: a Ball is three walks, a
   // makeover walks a pair. Anything that does not gets the one themed walk.
   const walks = M.runwayOverride?.walks
@@ -450,6 +454,15 @@ export function runDragWeek(state, cfg, ctx) {
     const scored = walks.map(w => runwayScore({
       player: P(n), category: w.category, sewn: !!w.sewn,
       categoryStyles: w.sewn ? [] : (w.categoryStyles || []), rng,
+      /* A SEWN WALK IS ALREADY BEING JUDGED ON THE BUILDING, so the prompt's
+         own questions are dropped there for the same reason its styles are:
+         the look she made is scored on `design` outright and asking again
+         would count the same fact twice. A Ball's own walks carry their own
+         entries and are looked up per walk. */
+      ...(w.sewn ? {} : (() => {
+        const e = w.category === category ? categoryEntry : runwayById(w.category);
+        return { asks: e?.asks || null, rewards: e?.rewards || [] };
+      })()),
     }));
     runway[n] = {
       score: Math.round(scored.reduce((t, x) => t + x.score, 0) / scored.length * 100) / 100,

@@ -15,7 +15,7 @@
 // scores, and the show goes back to being "highest stat wins". A source guard
 // in tests/dr-perform.test.js asserts this file never reaches for a judge, a
 // taste, a panel, a star rating or a bend.
-import { dragOf, DRAG_STYLES } from './queen.js';
+import { dragOf, DRAG_STYLES, DRAG_STATS } from './queen.js';
 
 /* How much a queen's runway varies from week to week.
    NAMED BECAUSE IT WAS SWEPT, and left where it was because it is not the
@@ -256,19 +256,59 @@ function fitFor(style, categoryStyles = []) {
   return categoryStyles.includes(style) ? 1 : 0;
 }
 
-/**
- * One walk down the runway.
- *
- * `sewn` moves the craft from `runway` to `design`, because a look she BUILT
- * is judged on the building. That is why a design week's runway is the thing
- * she made and a Ball has three walks with only one of them sewn.
- */
+/* ── WHAT ELSE A PROMPT CAN ASK FOR ───────────────────────────────────
+   The fit above reads her STYLE and nothing else, so every category was the
+   same question asked in different words: does this prompt suit the kind of
+   queen she is. Half the prompts on the real show ask something more specific
+   than that — a reveal is a sewing problem, a showgirl number is a dancing
+   one, a bodysuit is a body — and none of that could reach the score.
+
+   `asks` names one craft the category genuinely tests. It is signed and
+   centred on five, so a category that asks for design HELPS the queen who
+   sews and COSTS the one who cannot, which is the whole reason a season of
+   varied prompts should feel different from a season of neutral ones.
+
+   `rewards` names traits it pays out on. Small, and deliberately so: traits
+   are authored-only, so making them worth much would quietly hand every
+   season to the hand-built queens over the generated ones.
+
+   THE BUDGET IS UNCHANGED. `fit` used to be worth 1.5 points on its own —
+   measured, and set there because at 2.5 the prompt the season happened to
+   draw mattered as much as whether she can walk at all, and the best queen's
+   crown rate fell from 22% to 12.5%. That 1.5 is now SPLIT: 0.9 of style fit
+   and 0.6 of craft ask. A wheelhouse night is still an edge and still never
+   a verdict. */
+/* SPLIT, NOT ADDED. The first version of this kept fit at its full 1.5 and
+   put the ask on top, which is a combined swing of 2.88 — nearly double the
+   budget, and the thing the budget exists to prevent. Fit carries 0.9 and the
+   ask carries at most 0.54 either side of the middle, so the two together are
+   1.44: the same edge, asking two questions instead of one. */
+const FIT_W = 0.9;
+const ASK_W = 0.33;
+const TRAIT_W = 0.35;
+
+function askFor(d, asks) {
+  if (!asks || !DRAG_STATS.includes(asks)) return 0;
+  return ((d[asks] - 5) / 5) * ASK_W;
+}
+
+function traitFor(d, rewards = []) {
+  if (!rewards.length || !(d.traits || []).length) return 0;
+  return d.traits.some(t => rewards.includes(t)) ? TRAIT_W : 0;
+}
+
 export function runwayScore({
   player, category = '', sewn = false, categoryStyles = [], rng = Math.random,
+  // What this prompt tests beyond the kind of queen she is: one craft, and
+  // any traits it pays out on. Both optional — a category that declares
+  // neither is exactly as neutral as it was before they existed.
+  asks = null, rewards = [],
 }) {
   const d = dragOf(player);
   const craft = sewn ? d.design : d.runway;
   const fit = fitFor(d.style, categoryStyles);
+  const ask = askFor(d, asks);
+  const bonus = traitFor(d, rewards);
   // The third term is presence: having a point of view at all. Every real
   // style scores it equally — it is not a ranking of styles, it is the
   // difference between a queen with an identity and one without.
@@ -283,10 +323,16 @@ export function runwayScore({
   // queen's crown rate fell from 22% to 12.5% when real categories landed.
   // At 0.15 a wheelhouse category is worth 1.5, comfortably less than the
   // craft gap: an edge, not a verdict.
-  const score = craft * 0.7 + (fit * 10) * 0.15 + presence * 0.15 + noise(rng, RUNWAY_FORM);
+  const score = craft * 0.7 + fit * FIT_W + ask + bonus
+    + presence * 0.15 + noise(rng, RUNWAY_FORM);
   return {
     score: Math.round(score * 100) / 100,
     fit,
-    parts: { craft, fit, presence, category, sewn },
+    /* WHAT THE PROMPT WAS WORTH TO HER, so the narration can say which part
+       of it she was answering — the kind of queen she is, or the thing it
+       actually asked her to do. */
+    ask: Math.round(ask * 100) / 100,
+    bonus,
+    parts: { craft, fit, ask, bonus, presence, category, sewn, asks },
   };
 }

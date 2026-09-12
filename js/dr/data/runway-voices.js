@@ -933,6 +933,36 @@ export const THEME_BY_CATEGORY = {
   'Bring Back My Girls': 'personal',
   'Best Drag': 'personal',
   'Category Is: You': 'personal',
+  /* ── AND THE ONES THAT CAME WITH THE EXPANSION ──
+     A family is a VOICE, not a subject: the eight pools are written around
+     what a queen says about a prompt of that shape, with `{c}` carrying the
+     actual category. So a new category needs a family and not a new pool, and
+     the guard in tests/dr-runway-voices.test.js is what makes that true —
+     without it a category ships, falls through `themeFamilyFor` to `open`,
+     and the whole expansion narrates in the same generic voice. */
+  'Anything But Fabric': 'structure',
+  'Off the Bolt': 'structure',
+  'Reduce, Reuse, Realness': 'structure',
+  'Book Ballroom': 'structure',
+  'Mother Nature': 'structure',
+  'The Future Is Now': 'structure',
+  'Painted Illusion': 'structure',
+  'Now You See Her': 'spectacle',
+  'Sickening in Sequins': 'spectacle',
+  'Live and Let Diva': 'spectacle',
+  'Wig Wig Wiggity Wig': 'spectacle',
+  'Stairs and Stunts': 'spectacle',
+  'Feather Flight': 'spectacle',
+  'Legs for Days': 'nightlife',
+  'Padding Optional': 'nightlife',
+  'Beard Is Here': 'nightlife',
+  'Curves and Swerves': 'pageant',
+  'Silver Screen Siren': 'pageant',
+  'Face in a Book': 'pageant',
+  'Villain Era': 'haunted',
+  'Monster Mash': 'haunted',
+  'Comedy Queen Couture': 'cartoon',
+  'Graduation Day': 'personal',
 };
 
 export function themeFamilyFor(category) {

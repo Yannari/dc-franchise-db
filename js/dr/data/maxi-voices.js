@@ -228,6 +228,34 @@ export const PICK_VOICES = [
         '{a} picks last and gets {d}. Barely a part. A walk-on with dialogue that fits on one side of a cue card, in a script where other queens have pages.',
       ]),
     ),
+  /* ── A PLACE IN A RUNNING ORDER IS NOT A VERSE ──
+     The roast and the stand-up both declare `roles: 'slots'`, so both drew
+     the pool below — which describes a position in a GROUP NUMBER and says so
+     in its own note. A queen picking her spot on a comedy bill was told she
+     had taken "the verse with the most bars", "the position with the most
+     real estate, the best placement in the number", and sent off "counting
+     her bars". There is no number, no verse and no bars on a stand-up night;
+     there is one microphone and an order of service.
+     And the difference is the mechanic. js/dr/chal/roast.js scores a slot by
+     `SLOT_DIFFICULTY` and a room temperature that every set before yours has
+     already moved: going first is a cold room that has not decided to laugh
+     yet, going last is a room that is tired and has heard four queens do the
+     same three jokes about the host. A verse has none of that.
+     EMPTY ON PURPOSE. `pickLinesFor` returns null for an unwritten pool and
+     the renderer falls back to the generic `pick-reaction` beat, which says
+     she got what she wanted without claiming it was a bar of music. Bland and
+     true beats vivid and wrong. See docs/PROSE-PROMPT-dr-stand-up.md. */
+  kind('running-order',
+    'A PLACE ON THE BILL — the roast and the stand-up. {d} is when she goes '
+    + 'on, and when she goes on is most of the result: first is a room that '
+    + 'has not warmed up, last is a room that has already laughed itself out '
+    + 'and heard everybody else do the obvious jokes. The middle is safest '
+    + 'and the most forgettable.', P(
+      'She got the spot on the bill she wanted, and on a comedy night that is most of the battle.', [],
+      tier('settled', 'Not the slot she wanted. She has to build the set around where she is.', []),
+      tier('left-over', 'She is going on where nobody wanted to go on.', []),
+      tier('picked-last', 'Last to choose, so she is taking whatever the room is by then.', []),
+    )),
   kind('slots',
     'A POSITION IN A GROUP NUMBER — a verse, an eight-count, a place in the '
     + 'running order. {d} is not a character, it is real estate: where in the '
@@ -712,7 +740,13 @@ export function pickKindFor(challengeId) {
   if (c.roles === 'characters') return 'characters';
   if (c.roles === 'parts') return 'parts';
   if (GROUP_CHALLENGES.has(c.id)) return 'group-slots';
-  if (c.roles === 'slots') return 'slots';
+  /* A COMEDY BILL RATHER THAN A BAR OF MUSIC. `roles: 'slots'` is declared by
+     the girl group AND by the roast and the stand-up, and the `slots` pool is
+     written entirely about a verse in a number — see the note on
+     `running-order` above for what that printed over a comedy night. */
+  if (c.roles === 'slots') {
+    return (c.id === 'roast' || c.id === 'stand-up') ? 'running-order' : 'slots';
+  }
   return 'partner';
 }
 

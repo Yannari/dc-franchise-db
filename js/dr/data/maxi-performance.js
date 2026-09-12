@@ -229,8 +229,37 @@ export const MAXI_PERFORMANCE = [
       ],
     }),
   },
+  /* ── THE STAND-UP IS NOT THE ROAST AND WAS BEING NARRATED AS ONE ──
+     `serves: ['roast', 'stand-up']`, so every line below printed over a
+     stand-up night: "a polite smile during a ROAST", "a good ROAST from {a}",
+     "the worst place a queen can be on ROAST night". Reported off a played
+     episode 13 — the screen was correctly headed "Stand-Up Challenge, five
+     minutes, no net" and then narrated five queens roasting.
+
+     They are different nights and the difference is the whole job. A roast has
+     a TARGET: the queens go after a guest, the panel and each other, and the
+     person being roasted is sitting in the room hearing it. A stand-up has
+     nobody to aim at — it is five minutes of her own material about her own
+     life, and the thing being judged is whether she is funny when there is no
+     victim to hide behind. See docs/PROSE-PROMPT-dr-stand-up.md.
+
+     The pool below is EMPTY on purpose, which is this repo's way of saying a
+     voice is not written yet: `renderPerformance` falls back to the generic
+     tier of the same name, so the screen reads as a performance rather than
+     as somebody else's challenge. Bland and true beats vivid and wrong. */
   {
-    family: 'roast', serves: ['roast', 'stand-up'],
+    family: 'stand-up', serves: ['stand-up'],
+    label: 'five minutes of her own material, and nobody in the room to aim it at',
+    tiers: tiers({
+      extraordinary: ['Her own life, five minutes, and the room never stops laughing.'],
+      strong: ['Real jokes about herself, and they land.'],
+      competent: ['She gets through five minutes and some of it works.'],
+      struggling: ['The material is thin and there is no target to hide behind.'],
+      collapse: ['Five minutes is a very long time in silence.'],
+    }),
+  },
+  {
+    family: 'roast', serves: ['roast'],
     label: 'her set — a microphone, a room, and material she wrote herself',
     tiers: tiers({
       extraordinary: ['Every bit lands and she owns the room by the second one.',

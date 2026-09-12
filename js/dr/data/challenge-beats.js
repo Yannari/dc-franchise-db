@@ -596,11 +596,18 @@ export const CHALLENGE_BEATS = [
         "{a} takes the leftover and the leftover becomes her challenge inside the challenge. Make this work. Make it work when everybody can see it was last on the shelf. The queens who picked before her look away.",
         "The last pick goes to {a} and she takes it with a smile that costs her something. \"Watch me,\" she says. Not loud. Not to anybody in particular. But she says it.",
       ]),
+      /* ── LAST TO PICK IS NOT THE SAME AS BEING PICKED FOR A TEAM ──
+         This is the beat every draft falls back to when its own pool is
+         unwritten, and most drafts on this show are SOLO — the roast, the
+         stand-up, the Snatch Game, the ball. Two of these four sent her off
+         to "her team" and a third sat her with "the queens already seated",
+         over a night where nobody is on a team and there is nothing to sit
+         at. Being last to choose is the thing they all have in common. */
       tier('picked-last', 'The room chose, and it chose her last.', [
-        "{a} is the last queen standing. The room chose, and it chose her last. She walks to her team like somebody arriving at a party where the seating chart was decided without her. She smiles. The smile is a shield.",
-        "Picked last. {a} walks to where she is told. The queens already seated look at her with the kindness of people who feel guilty. {a} does not need their kindness. She needs a maxi that lets her prove the draft wrong.",
+        "{a} is the last queen standing. The room chose, and it chose her last. She takes what is left like somebody arriving at a party where the seating chart was decided without her. She smiles. The smile is a shield.",
+        "Picked last. {a} takes the one thing nobody else wanted. The queens who chose before her look over with the kindness of people who feel guilty. {a} does not need their kindness. She needs a maxi that lets her prove the draft wrong.",
         "The room chose and {a} was the last name called. The silence between second-to-last and last is the silence where everybody decides how to feel about it. {a} decides to feel nothing. Or at least to show nothing.",
-        "{a} is picked last. She joins her team. She does not make a speech about it. She starts working with the focus of somebody who has something to prove and a specific group of people to prove it to. \"I will remember this,\" she says. Quietly.",
+        "{a} is picked last. She takes what is left and does not make a speech about it. She starts working with the focus of somebody who has something to prove and a specific group of people to prove it to. \"I will remember this,\" she says. Quietly.",
       ]),
     ],
   },

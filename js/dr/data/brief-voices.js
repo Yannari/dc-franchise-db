@@ -252,6 +252,26 @@ export const BRIEF_FAMILIES = [
         'A staged musical with choreography would have been hard enough, but the live vocal turns it into the week {a} has been dreading since the cast list was announced.',
       ]),
     ]),
+  /* ── THE STAND-UP, WHICH USED TO BE THE ROAST ──
+     One voice served both until a played episode 13 narrated five queens
+     roasting under a screen headed "Stand-Up Challenge". The difference is
+     the target: a roast has one — a guest, the panel, each other, sitting in
+     the room hearing it — and a stand-up has nobody to aim at at all. Five
+     minutes of her own material, and the thing being judged is whether she is
+     funny with no victim to hide behind.
+     EMPTY POOLS, NOTES WRITTEN. `briefLinesFor` returns null for an unwritten
+     family and the renderer falls back to the neutral `the-brief` beat, so
+     the screen says the challenge's name and not somebody else's challenge.
+     docs/PROSE-PROMPT-dr-stand-up.md is the brief for filling them. */
+  fam('stand-up', true,
+    'Five minutes of her own material to a live audience, about her own life. '
+    + 'No target, no scene partner, no character to hide behind — the one '
+    + 'challenge where being funny ABOUT somebody is not an option.',
+    tier('brief', 'A stand-up set: her own jokes, five minutes, and nobody to aim them at.', []),
+    REACT(
+      'A comic who has been waiting for five minutes and a microphone.',
+      'She is funny in a room. Five minutes alone on a stage is a different skill and she knows it.',
+      'She is funny AT people. Take the target away and she does not know what she is.')),
   fam('roast', true,
     'Stand-up, on a stage, to a live audience, about people sitting in front '
     + 'of her. Her own material, her own timing, nowhere to hide.',

@@ -192,11 +192,16 @@ export const MAXI_EVENTS = [
     ],
   }),
   e({
+    /* FIRES ON THE STAND-UP TOO — both run js/dr/chal/roast.js. One of these
+       four lines opened "Every queen roasts each other", which is true of a
+       roast and false of a stand-up, where there is no target at all. The
+       other three were already about turning on the panel, which a comic can
+       do on either night. */
     id: 'roasted-the-panel', from: 'roast', cast: 'solo',
     note: 'She turned on the judges themselves and had the material to get away with it.',
     lines: [
       "{a} turns to the panel and goes in. One judge gasps. Another one screams. By the third joke they have given up pretending to be above it and the whole room is gone.",
-      "Every queen roasts each other. {a} roasts the judges. The material is sharp, specific, and way too real, and the panel is laughing too hard to be mad about it.",
+      "Everybody else played it safe. {a} goes after the judges. The material is sharp, specific, and way too real, and the panel is laughing too hard to be mad about it.",
       "{a} looks right at the panel and starts firing. Risky, personal, and genuinely funny. One of them is wiping their eye by the end. Backstage, every queen realizes they played it too safe.",
       "\"And finally\" — {a} turns to face the judges and the room gets quiet for a second. Then the joke hits and the quiet turns into the loudest moment of the night. She went there and got away with it.",
     ],

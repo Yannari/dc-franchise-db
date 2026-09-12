@@ -194,8 +194,13 @@ const CHAL_CSS = `
 .dr-chal-snatch-game{--c1:#FFD23F;--c2:#38bdf8}
 .dr-set-snatch-game{background:radial-gradient(120% 70% at 50% 0%,rgba(56,189,248,.4),transparent 62%),
   linear-gradient(180deg,#04121c,#02060c)}
+/* THE PODIUM STRIPES SIT BEHIND THE WHOLE SCREEN, not just behind the desk,
+   so at .16 they were a repeating pattern under every line of dialogue on the
+   night. Halved, and the deck they stand on is darkened, so the set still
+   reads as a game show stage and stops competing with the words. */
 .dr-podia{inset:auto 0 0 0;height:36%;
-  background:repeating-linear-gradient(90deg,rgba(255,210,63,.16) 0 62px,transparent 62px 104px);
+  background:linear-gradient(180deg,rgba(2,6,12,.45),rgba(2,6,12,.75)),
+    repeating-linear-gradient(90deg,rgba(255,210,63,.08) 0 62px,transparent 62px 104px);
   border-top:2px solid rgba(255,210,63,.35)}
 .dr-qcard{top:12%;left:50%;width:190px;height:70px;transform:translateX(-50%) rotate(-3deg);
   background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
@@ -2529,9 +2534,17 @@ const SG_CSS = `
   line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.3)}
 
 /* ── ANSWER CARD — the podium reveal, not a paragraph ── */
+/* ── AN OPAQUE CARD, NOT A TINT ──
+   This was "rgba(255,255,255,.06)" over a background that runs from #04121c to
+   #02060c, with the podium's yellow stripes repeating behind it — so the card
+   was a six-percent wash over near-black with a pattern showing through, and
+   the answers were barely legible. Reported as "I can barely see anything".
+   Opaque now, and lighter than the set it sits on, so a card reads as a card
+   and the stripes stop at its edge. */
 .sg-answer{position:relative;margin:8px 0;padding:12px 14px;border-radius:8px;overflow:hidden;
-  background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
-  border:1px solid rgba(255,255,255,.08);transition:border-color .3s}
+  background:linear-gradient(145deg,#12293a,#0b1c29);
+  border:1px solid rgba(148,193,219,.22);
+  box-shadow:0 6px 18px -12px rgba(0,0,0,.9);transition:border-color .3s}
 .sg-answer.sg-a-kill{border-color:rgba(59,224,138,.35);animation:sg-kill-flash .6s ease-out}
 .sg-answer.sg-a-bomb{border-color:rgba(255,41,75,.35);animation:sg-bomb-shake .4s ease-out}
 .sg-answer.sg-a-laugh{border-color:rgba(56,189,248,.2)}
@@ -2539,13 +2552,17 @@ const SG_CSS = `
 .sg-answer-row{display:flex;gap:10px;align-items:center}
 .sg-answer-id{flex:1;min-width:0}
 .sg-answer-name{font-size:13px;font-weight:700;color:rgba(244,239,228,.95)}
-.sg-answer-as{font-size:11px;font-weight:600;color:#38bdf8;display:block;margin-top:1px}
+/* WHO SHE IS PLAYING, which is the whole challenge. #38bdf8 on this set is
+   legible but thin; lifted so it reads at a glance beside her own name. */
+.sg-answer-as{font-size:11.5px;font-weight:700;color:#7dd3fc;display:block;margin-top:1px}
 
 /* THE ANSWER — what she actually said, short and in character */
-.sg-answer-quote{margin:8px 0 6px;padding:8px 12px;position:relative;
-  font-size:13px;color:rgba(244,239,228,.92);line-height:1.4;font-style:italic;
-  background:linear-gradient(90deg,rgba(255,210,63,.04),transparent 60%);
-  border-left:3px solid rgba(255,210,63,.25);border-radius:0 4px 4px 0}
+/* The line everybody is here to read: full white, a size up, and a rule with
+   enough colour in it to find. */
+.sg-answer-quote{margin:8px 0 6px;padding:8px 12px 8px 14px;position:relative;
+  font-size:14.5px;color:#FFF7EC;line-height:1.5;font-style:italic;
+  background:linear-gradient(90deg,rgba(255,210,63,.10),transparent 70%);
+  border-left:3px solid rgba(255,210,63,.7);border-radius:0 4px 4px 0}
 .sg-answer-quote::before{content:"\\201C";position:absolute;top:-4px;left:4px;
   font-size:24px;color:rgba(255,210,63,.3);font-style:normal;line-height:1}
 
@@ -2579,7 +2596,9 @@ const SG_CSS = `
 .sg-host-beat{margin:4px 0 2px;padding:6px 10px;font-size:11.5px;font-style:italic;
   color:#FFD23F;border-radius:4px;
   background:linear-gradient(90deg,rgba(255,210,63,.06),transparent 70%)}
-.sg-host-beat.sg-hb-fail{color:rgba(255,200,61,.55)}
+/* A failed lifeline is still a sentence somebody has to read. It was at 55%
+   of a colour that is already dark on this set. */
+.sg-host-beat.sg-hb-fail{color:rgba(255,214,112,.85)}
 
 /* ── CONFESSIONAL — the talking-head cut ── */
 .sg-confessional{margin:8px 16px;padding:10px 14px;position:relative;
@@ -2897,7 +2916,7 @@ function rpBuildSnatchGame(row) {
             <div class="sg-answer-quote">${esc(answer)}</div>
             ${_sgMeter(f.score, f.reaction)}
             ${hostLine ? `<div class="sg-host-beat${hbThis && !hbThis.worked ? ' sg-hb-fail' : ''}">${esc(hostLine)}</div>` : ''}
-            ${prose ? `<p class="dr-perf-line" style="font-size:11px;margin:4px 0 0;color:rgba(244,239,228,.55)">${esc(prose)}</p>` : ''}
+            ${prose ? `<p class="dr-perf-line" style="font-size:12px;margin:5px 0 0;color:rgba(244,239,228,.78);line-height:1.45">${esc(prose)}</p>` : ''}
             ${confess ? `<p class="sg-confess">${esc(confess)}</p>` : ''}
           </div>`;
   }).join('')}

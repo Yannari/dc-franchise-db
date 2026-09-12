@@ -291,11 +291,23 @@ export const WERK_EVENTS = [
     note: '{a} runs {b} lines or steps until {b} has it.',
     arcs: ['hero'], when: f => f.bond >= 1,
     effects: { bond: 1.5, pop: { a: 1 } },
+    /* ── EVERY LINE HERE IS A PERFORMANCE, SO EVERY LINE IS TAGGED ──
+       "Lines or steps" is the note, and a design week has neither. All four
+       were untagged and the choreo one was drawn over a Design Challenge:
+       one queen walking another through the steps of a number nobody is
+       performing.
+       Tagged per LINE rather than gated with a single `needs`, because the
+       event is good on every performance night and each night wants a
+       different sentence — the steps on a dance week, the line reading on an
+       acting week, the lyrics on a singing week. With all four tagged it
+       simply has nothing to say on a design night, and `drawWerkScene` will
+       not pick an event with nothing to say — the same outcome a whole-event
+       gate gives, while keeping it alive on the three nights it belongs to. */
     lines: [
-      "{a} runs the choreo with {b} four times. First three are bad. Fourth time something clicks — {b} hits the step and {a} screams like she won something. \"Again.\" {b} does it again. This time she does not need to be told where her arms go.",
-      "\"Say the line like you mean it.\" {b} says the line. \"No — like you MEAN it.\" {b} says it again. {a} shakes her head, does the line herself. The difference between how it sounds when {a} does it and when {b} does it is the whole lesson. Third try, {b} gets closer.",
-      "{a} catches {b} mouthing the lyrics wrong. Instead of laughing she pulls her aside and walks through it line by line, slow, until {b} has it. Twenty minutes {a} should be spending on her own performance. She spends them anyway.",
-      "They are in the corner going through the blocking and {a} is patient in a way she is not patient about anything else. Adjusts {b}'s stance, moves her shoulders back. \"There.\" Makes her hold it until it feels natural. Fifth run, {b} looks like a different queen. {a} says nothing about it — which is the compliment.",
+      { needs: 'dance', line: "{a} runs the choreo with {b} four times. First three are bad. Fourth time something clicks — {b} hits the step and {a} screams like she won something. \"Again.\" {b} does it again. This time she does not need to be told where her arms go." },
+      { needs: 'acting', line: "\"Say the line like you mean it.\" {b} says the line. \"No — like you MEAN it.\" {b} says it again. {a} shakes her head, does the line herself. The difference between how it sounds when {a} does it and when {b} does it is the whole lesson. Third try, {b} gets closer." },
+      { needs: 'singing', line: "{a} catches {b} mouthing the lyrics wrong. Instead of laughing she pulls her aside and walks through it line by line, slow, until {b} has it. Twenty minutes {a} should be spending on her own performance. She spends them anyway." },
+      { needs: 'acting', line: "They are in the corner going through the blocking and {a} is patient in a way she is not patient about anything else. Adjusts {b}'s stance, moves her shoulders back. \"There.\" Makes her hold it until it feels natural. Fifth run, {b} looks like a different queen. {a} says nothing about it — which is the compliment." },
     ],
   }),
   ev({

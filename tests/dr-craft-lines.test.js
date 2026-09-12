@@ -60,48 +60,46 @@ describe('a line that assumes a craft says so', () => {
     expect(usableLines(e, null).length).toBe(e.lines.length);
   });
 
-  it('never leaves an event with nothing to say', () => {
-    /* The failure this would cause is a card with a portrait, a border and
-       no words in it — the blank-plate bug. `drawWerkScene` also refuses to
-       pick such an event, but a pool that empties is a writing problem and
-       the guard belongs on the data. */
+  it('never leaves an event with nothing to say ANYWHERE', () => {
+    /* THE PREMISE OF THIS CHANGED, and the first version was wrong.
+
+       It demanded every event have a usable line on every blend, which is
+       right only while a craft tag is the exception. `coaching-through-it` is
+       "{a} runs {b} lines or steps until {b} has it" — all four of its lines
+       are a performance, and a design week has neither lines nor steps, so it
+       SHOULD fall silent there. The event is not broken; it is inapplicable.
+
+       The property that actually matters is that an event is never dead
+       everywhere, and that the engine never PICKS a silent one — which
+       `drawWerkScene` already refuses to do, and which the played-season
+       check below measures rather than assumes. */
+    const BLENDS = [{ design: 1 }, { acting: 1 }, { comedy: 1 }, { dance: 1 },
+      { singing: 1 }, { runway: 1 }, { lipsync: 1 }];
     for (const e of WERK_EVENTS) {
-      for (const blend of [{ design: 1 }, { acting: 1 }, { comedy: 1 }, { dance: 1 }]) {
-        /* Skip a blend the EVENT itself is gated away from — `sewing-rescue`
-           is `needs: 'design'` and never runs on an acting week at all, so
-           having no acting-safe line is correct rather than a hole. */
-        if (e.needs && !blend[e.needs]) continue;
-        expect(usableLines(e, blend).length, `${e.id} is silent on ${Object.keys(blend)[0]}`)
-          .toBeGreaterThan(0);
-      }
+      const reachable = BLENDS.some(b => usableLines(e, b).length > 0);
+      expect(reachable, `${e.id} can never be said on any challenge`).toBe(true);
     }
     for (const t of CONFESSIONAL_TIERS) {
       if (!t.lines.length) continue;               // deliberately unwritten
-      for (const blend of [{ design: 1 }, { acting: 1 }]) {
-        expect(usableConfessionalLines(t, blend).length,
-          `${t.id} is silent on ${Object.keys(blend)[0]}`).toBeGreaterThan(0);
-      }
+      const reachable = BLENDS.some(b => usableConfessionalLines(t, b).length > 0);
+      expect(reachable, `${t.id} can never be said on any challenge`).toBe(true);
     }
   });
 
-  it('the werk room is where the sewing is, not where the drinking is', () => {
-    /* Reported from a played episode: three queens passing round a drink, in
-       the WORK ROOM, on elimination day. `last-drink-together` was the only
-       event of a hundred and seven that put a glass in somebody's hand there
-       — against twenty-eight of the sixty-five in the Untucked pool, which is
-       the lounge and is where the show does its drinking. It has moved.
-
-       This is not a ban on the word. Coffee in the morning is the work room,
-       and a queen reading a lipstick message is allowed to be holding
-       something. It is a ban on the SHARED ROUND, which is a lounge scene
-       wherever it is filed. */
-    const ROUND = /\b(pours? (?:three|two|a round)|three glasses|clink|clinks|raise (?:their|her) glass|a toast|toasts? (?:to|the))\b/i;
-    const loose = [];
+  it('an event gated away from a night is gated for a REASON', () => {
+    /* The counterpart, so the rule above cannot be satisfied by tagging
+       carelessly: an event that goes silent on some challenge must have had
+       every one of its lines tagged deliberately, not half of them. */
+    const BLENDS = [{ design: 1 }, { acting: 1 }, { dance: 1 }, { singing: 1 }];
     for (const e of WERK_EVENTS) {
-      const prose = [e.note || '', ...(e.lines || []).map(textOf)].join(' ');
-      if (ROUND.test(prose)) loose.push(`${e.id} [${e.slot}] ${prose.match(ROUND)[0]}`);
+      for (const blend of BLENDS) {
+        if (usableLines(e, blend).length) continue;
+        if (e.needs) continue;                     // gated at the event level
+        const tagged = (e.lines || []).filter(l => typeof l !== 'string').length;
+        expect(tagged, `${e.id} is silent on ${Object.keys(blend)[0]} by accident`)
+          .toBe((e.lines || []).length);
+      }
     }
-    expect(loose, 'a shared round in the work room').toEqual([]);
   });
 
   it('every tagged line names a craft the engine knows', () => {

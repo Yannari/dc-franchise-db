@@ -28,8 +28,10 @@ describe('the catalogue', () => {
       /* `vote` is the fourth: the room answers a question about itself and
          nobody performs. It is scored on matching the majority rather than on
          a craft roll, which is why js/dr/stage.js renders it on its own
-         branch — see js/dr/data/spill.js. */
-      expect(['solo', 'targets', 'pairs', 'vote'], `${m.id} has interaction "${m.interaction}"`)
+         branch — see js/dr/data/spill.js. `guess` is its mirror: the room
+         works out whose thing it is, and there IS a right answer. */
+      expect(['solo', 'targets', 'pairs', 'vote', 'guess'],
+        `${m.id} has interaction "${m.interaction}"`)
         .toContain(m.interaction);
       expect(['pick-order', 'captain', 'first-pick', 'prize'], m.id).toContain(m.buys);
       expect(m.blend, m.id).toBeTruthy();

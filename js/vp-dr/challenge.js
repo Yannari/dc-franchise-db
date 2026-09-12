@@ -561,6 +561,7 @@ const CHAL_CSS = `
 .dr-spill-said{display:flex;align-items:center;gap:12px;margin:16px 0 0;
   padding:12px 14px;border-left:3px solid #FF3D9A;background:rgba(255,61,154,.09)}
 .dr-spill-said b{color:#fff}
+.dr-spill-said.dr-cold{border-left-color:#6B7A8F;background:rgba(107,122,143,.12)}
 .dr-spill-said span{color:#C9A6BC;font-size:13px}
 @media(prefers-reduced-motion:reduce){.dr-step.dr-vis .dr-tal-b i{animation:none}}
 
@@ -1493,8 +1494,9 @@ export function rpBuildMini(row) {
     const top = Math.max(1, ...rows.map(r => r[1]));
     return `<div class="dr-step" id="dr-step-mini-${i}">
       <div class="dr-panel dr-a-score dr-card dr-spill">
-        <span class="dr-sting ${d.sting >= 0.7 ? 'dr-hot' : ''}">${
-  d.sting >= 0.7 ? 'This one costs somebody' : 'The room answers'}</span>
+        <span class="dr-sting ${d.sting >= 0.7 || d.count === 0 ? 'dr-hot' : ''}">${
+  d.owner ? (d.intimate ? 'You only know this one if you know her' : 'Whose is it')
+    : d.sting >= 0.7 ? 'This one costs somebody' : 'The room answers'}</span>
         <h3 class="dr-q dr-disp">${esc(sc.text)}</h3>
         <div class="dr-tally">${rows.map(([n, v]) => `<div class="dr-tal ${
   n === d.named ? 'dr-named' : ''}">
@@ -1507,11 +1509,19 @@ export function rpBuildMini(row) {
           <div><b>${esc(d.named)}</b><br>
             <span>${d.count} of ${d.of} said her name.</span></div>
         </div>` : ''}
+        ${d.owner ? `<div class="dr-spill-said ${d.count ? '' : 'dr-cold'}">
+          ${_portrait(d.owner, ep, { size: 44 })}
+          <div><b>It was ${esc(d.owner)}'s.</b><br>
+            <span>${d.count === 0 ? `Not one of ${d.of} knew.`
+    : `${d.count} of ${d.of} knew.`}</span></div>
+        </div>` : ''}
       </div></div>`;
   };
 
   const steps = scenes.map((sc, i) => {
-    if (sc.kind === 'chal:mini-vote') return spillStep(sc, i);
+    if (sc.kind === 'chal:mini-vote' || sc.kind === 'chal:mini-guess') {
+      return spillStep(sc, i);
+    }
     const who = (sc.data?.players || [])[0];
     const at = who && READS.has(sc.kind) ? aimOf(who) : null;
     return `<div class="dr-step" id="dr-step-mini-${i}">

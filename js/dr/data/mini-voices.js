@@ -443,7 +443,7 @@ export const MINI_VOICES = [
         '{a} won {c} and the eight counts she danced are the eight counts the room will be referencing in confessionals tomorrow, because what {a} did on that floor was not a mini challenge performance — it was a moment.',
       ]),
     ]),
-  mini('quiz', 'Herstory Quiz', 'targets',
+  mini('quiz', 'Wrong Answers Only', 'targets',
     'A quiz about the queens themselves, scored on how funny the WRONG answers '
     + 'are. The questions are about {b}, and getting it right is worth less '
     + 'than getting it wrong beautifully.',

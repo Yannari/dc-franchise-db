@@ -24,6 +24,7 @@ import { dragOf } from './queen.js';
 import { blendScore, noise } from './perform.js';
 import { evt } from './rules.js';
 import { SPILL_QUESTIONS, spillRounds } from './data/spill.js';
+import { GUESS_ITEMS, guessRounds } from './data/guess.js';
 
 /** A read that lands. Below this it did not. */
 const LANDED = 6.5;
@@ -114,6 +115,71 @@ function runSpill({ living, players, rng, bond, record }) {
     });
   }
   return { rounds, matches };
+}
+
+/* ── GUESS WHO ────────────────────────────────────────────────────────
+   Something belongs to one of them — a wig, a scent, a baby photo — and the
+   room has to work out whose. It looks like the vote above and it is the
+   opposite of it: there IS a right answer here, so agreeing with everybody
+   else wins nothing. Eight queens confidently wrong together is a result the
+   consensus game cannot produce and this one produces constantly.
+
+   What a queen has to go on is real and is only three things: how well she
+   knows the owner (the BOND — this is the only mini on the list that pays a
+   queen for the room she has built), how loud the owner is on that
+   particular axis (the item's TELL), and how much noise her intuition leaves
+   on top. An `intimate` item — a perfume, a padding, a station an hour
+   before the runway — is knowable ONLY from living with somebody, so the
+   bond carries nearly all of it and the craft carries almost none.
+
+   Which means the queen nobody can place is the queen nobody talks to, and
+   the episode gets to say that without anybody having to say it. */
+function runGuess({ living, players, rng, bond }) {
+  const rounds = [];
+  const right = Object.fromEntries(living.map(n => [n, 0]));
+  const asked = Object.fromEntries(living.map(n => [n, 0]));
+  const items = [...GUESS_ITEMS].sort(() => rng() - 0.5);
+  /* A DIFFERENT QUEEN EVERY ROUND. Four items all belonging to the same
+     woman is one queen's segment and three queens with nothing to do; it
+     also makes the second round guessable from the first. */
+  const owners = [...living].sort(() => rng() - 0.5)
+    .slice(0, Math.min(guessRounds(living.length), living.length));
+
+  for (const [k, owner] of owners.entries()) {
+    const item = items[k % items.length];
+    const votes = {};
+    for (const voter of living) {
+      if (voter === owner) continue;          // she knows her own bag
+      const others = living.filter(o => o !== voter);
+      if (!others.length) continue;
+      const blur = 2.1 - (Number(players[voter]?.stats?.intuition) || 5) * 0.15;
+      /* WHAT SHE HAS ON EACH CANDIDATE: how well she knows her, and whether
+         she looks like the answer. The bond counts double on an intimate
+         item, which is the whole difference between recognising a perfume
+         and recognising a wig — and on the perfume there is no axis at all,
+         so knowing her is the only thing in the sum. */
+      const weight = item.intimate ? 2 : 1;
+      const at = item.axis ? item.axis(players[owner]) : null;
+      const near = o => (at === null ? 0
+        : Math.max(0, 3.4 - Math.abs(item.axis(players[o]) - at) * 0.85));
+      const seen = others.map(o => ({
+        o, v: bond(voter, o) * weight + near(o) + noise(rng, blur),
+      })).sort((a, b) => b.v - a.v);
+      votes[voter] = seen[0].o;
+      asked[voter] += 1;
+      if (seen[0].o === owner) right[voter] += 1;
+    }
+
+    const tally = {};
+    for (const guess of Object.values(votes)) tally[guess] = (tally[guess] || 0) + 1;
+    const knew = Object.keys(votes).filter(v => votes[v] === owner);
+    rounds.push({
+      item: item.id, prompt: item.prompt, intimate: !!item.intimate,
+      craft: item.craft || null,
+      owner, votes, tally, knew, count: knew.length, of: Object.keys(votes).length,
+    });
+  }
+  return { rounds, right, asked };
 }
 
 /* ── WHAT THE READ IS ABOUT ────────────────────────────────────────────
@@ -226,6 +292,8 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
      the score: she is not performing, she is guessing what the room thinks. */
   const spill = interaction === 'vote'
     ? runSpill({ living, players, rng, bond, record }) : null;
+  const guess = interaction === 'guess'
+    ? runGuess({ living, players, rng, bond }) : null;
 
   if (interaction === 'pairs') {
     // Split the room. An odd queen out works alone, which is its own result.
@@ -248,6 +316,15 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
       const of = Math.max(1, spill?.rounds?.length || 1);
       s = (hit / of) * 10 + s * 0.06;
       detail[n] = { matched: hit, of, rounds: spill?.rounds?.length || 0 };
+    } else if (interaction === 'guess') {
+      /* HOW MANY SHE GOT RIGHT, over how many she was asked — the owner does
+         not guess on her own item, so the denominators differ by one and a
+         raw count would quietly punish whoever came up least often. The
+         blend stays a tiebreak, as above. */
+      const hit = guess?.right?.[n] || 0;
+      const of = Math.max(1, guess?.asked?.[n] || 1);
+      s = (hit / of) * 10 + s * 0.06;
+      detail[n] = { right: hit, of, rounds: guess?.rounds?.length || 0 };
     } else if (interaction === 'targets') {
       const target = targetFor(n, living, players, bond, star, rng);
       const at = turnOrder.indexOf(n);
@@ -396,6 +473,52 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
     }
   }
 
+  /* ── AND BEING KNOWN, OR NOT, IS THE RESULT ──────────────────────────
+     Guess Who scores the guessers and the interesting number belongs to the
+     queen whose thing it was. Nobody got it: she has been in that room for
+     weeks and not one of them could pick her out. Everybody got it: her
+     brand is loud enough to be identified by a shoe.
+
+     And the one that costs something — a queen she is genuinely close to,
+     guessing somebody else. That is not an insult and nobody meant it,
+     which is why it lands. */
+  if (interaction === 'guess' && guess) {
+    for (const r of guess.rounds) {
+      if (!r.of) continue;
+      const share = r.count / r.of;
+      if (r.count === 0) {
+        events.push(evt('nobody-knew-it-was-hers', {
+          players: [r.owner], pop: { [r.owner]: -1 },
+          data: { item: r.item, prompt: r.prompt, of: r.of },
+        }));
+      } else if (share >= 0.45) {
+        /* NEARLY HALF, not all of them. At 0.6 this fired on 3% of rounds
+           measured over forty seasons — written prose nobody would ever see,
+           which is the same defect as an event with no screen. At 0.45 it is
+           14%, and half a room of twelve picking her out of a line-up is
+           genuinely the thing the event is about. */
+        events.push(evt('the-room-knew-her-instantly', {
+          players: [r.owner], pop: { [r.owner]: 1 },
+          data: { item: r.item, prompt: r.prompt, count: r.count, of: r.of, share },
+        }));
+      }
+      /* The closest queen who got it wrong, and only if she was actually
+         close. One card per round: eight wrong guesses is a tally, not a
+         scene. */
+      const missed = Object.keys(r.votes)
+        .filter(v => r.votes[v] !== r.owner)
+        .map(v => ({ v, b: bond(v, r.owner) }))
+        .sort((a, b) => b.b - a.b || a.v.localeCompare(b.v))[0];
+      if (missed && missed.b >= 4) {
+        events.push(evt('her-own-girl-missed-it', {
+          players: [missed.v, r.owner],
+          bond: [[missed.v, r.owner, -0.8]],
+          data: { item: r.item, prompt: r.prompt, said: r.votes[missed.v], was: missed.b },
+        }));
+      }
+    }
+  }
+
   if (interaction === 'targets') {
     for (const n of living) {
       const target = detail[n]?.target;
@@ -456,6 +579,8 @@ export function runMini({ living, mini, players, rng, bond = () => 0, star = {},
     interaction,
     // The rounds, so the screen can read the vote back the way the room heard it.
     spill: spill ? spill.rounds : null,
+    // The same, for the game with an answer in it.
+    guess: guess ? guess.rounds : null,
   };
 }
 

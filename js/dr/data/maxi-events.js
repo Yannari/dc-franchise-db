@@ -656,6 +656,33 @@ export const MAXI_EVENTS = [
       + 'in the episode.',
     lines: [],
   }),
+  /* ── GUESS WHO ──
+     The other side of the same coin. Spill the T costs the queen the room
+     NAMED; this one costs the queen the room could not place. Pools empty on
+     purpose; see docs/PROSE-PROMPT-dr-guess-who.md. */
+  e({
+    id: 'nobody-knew-it-was-hers', from: 'mini', cast: 'solo',
+    note: 'Something belonging to {a} went up and not one queen in the room '
+      + 'guessed it was hers.'
+      + 'She has been living with these women for weeks. Write '
+      + 'the moment the answer is read out, not a summary of how she feels.',
+    lines: [],
+  }),
+  e({
+    id: 'the-room-knew-her-instantly', from: 'mini', cast: 'solo',
+    note: 'Almost everybody got it right the second it went up. {a} is '
+      + 'identifiable by one object, which is the whole job — and it is worth '
+      + 'noticing that being this legible is not free either.',
+    lines: [],
+  }),
+  e({
+    id: 'her-own-girl-missed-it', from: 'mini', cast: 'pair',
+    note: '{a} and {b} are close and {a} still could not tell the thing was '
+      + 'hers. '
+      + 'Nobody did anything wrong, which is exactly why it lands. Write the '
+      + 'two of them afterwards rather than the guess itself.',
+    lines: [],
+  }),
   e({
     id: 'read-landed', from: 'mini', cast: 'pair',
     note: '{a} read {b} and it was genuinely brutal and genuinely funny.',

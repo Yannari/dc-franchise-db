@@ -1293,8 +1293,37 @@ export function renderChallengeBeats({
        REACTION is prose and is a beat of its own — empty today, which under
        the contract above means it simply does not draw. */
     const stingTier = v => (v >= 0.7 ? 'brutal' : v >= 0.3 ? 'pointed' : 'harmless');
-    const isVote = mini.interaction === 'vote' && Array.isArray(miniRounds)
-      && miniRounds.length > 0;
+    /* ── AND THE SAME IS TRUE OF THE GAME WITH AN ANSWER IN IT ──
+       Guess Who is the mirror of the vote: something belongs to one of them
+       and the room works out whose, so there IS a right answer and the tally
+       can be a room agreeing on the wrong one. Same shape on screen — a
+       question, the answers, the count — and one more line, which is the
+       reveal. The owner's reaction to it is the three events in
+       js/dr/data/maxi-events.js and not a beat here. */
+    const isRounds = (mini.interaction === 'vote' || mini.interaction === 'guess')
+      && Array.isArray(miniRounds) && miniRounds.length > 0;
+    const isVote = isRounds && mini.interaction === 'vote';
+    if (mini.interaction === 'guess' && isRounds) {
+      for (const r of miniRounds) {
+        scenes.push({
+          step: 'mini',
+          kind: 'chal:mini-guess',
+          data: {
+            beat: 'mini-guess', tier: r.count === 0 ? 'nobody' : 'some',
+            players: [r.owner],
+            note: 'Something of hers goes up with no name on it. The room '
+              + 'writes down whose they think it is, and then she finds out '
+              + 'how many of them knew.',
+            mini: mini.id, voiced: true,
+            item: r.item, prompt: r.prompt, intimate: !!r.intimate,
+            craft: r.craft || null, owner: r.owner, knew: r.knew,
+            count: r.count, of: r.of, tally: r.tally, votes: r.votes,
+          },
+          text: `"${r.prompt}"`,
+        });
+      }
+      if (miniWinner) mEmit('mini-win', 'win', [miniWinner], { buys: mini.buys });
+    }
     if (isVote) {
       for (const r of miniRounds) {
         const of = Object.keys(r.votes || {}).length;
@@ -1333,7 +1362,7 @@ export function renderChallengeBeats({
        This rendered as thirteen simultaneous attempts in `living` order, so
        the running order — first up, and the last one everybody has been
        waiting for — reached the screen as nothing at all. */
-    const order = isVote ? []
+    const order = isRounds ? []
       : miniNamesOther(mini.id) && Array.isArray(mini.turnOrder)
         ? mini.turnOrder.filter(n => living.includes(n)) : living;
 
@@ -1367,7 +1396,7 @@ export function renderChallengeBeats({
             readIndex: k, reads: reads.length });
       }
     }
-    if (miniWinner && !isVote) {
+    if (miniWinner && !isRounds) {
       const other = otherFor(miniWinner);
       mEmit('mini-win', 'win', other ? [miniWinner, other] : [miniWinner], { buys: mini.buys });
     }

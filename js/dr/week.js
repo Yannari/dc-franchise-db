@@ -294,7 +294,7 @@ export function runDragWeek(state, cfg, ctx) {
            per-queen performance to narrate — what happens is the host asking
            the room a question and the answer being read out — so the rounds
            carry the whole segment and the screen has nothing without them. */
-        rounds: res.spill || null,
+        rounds: res.spill || res.guess || null,
       };
       applyMiniEvents(res.events, ctx);
       for (const e of res.events) {

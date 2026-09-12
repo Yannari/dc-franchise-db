@@ -73,15 +73,27 @@ describe('the stage has the same room on a team night', () => {
     }
   });
 
-  it('shrinks with the room, like an ordinary week', () => {
-    // At six left the show calls two up, not three — and a team night has to
-    // agree, or the last weeks critique everybody and dismiss nobody.
-    const room = roomOf(6);
-    const c = callWeek(rank(room), {
-      castSize: 6, teamJudged: true, teams: [room.slice(0, 3), room.slice(3)], bestTeam: 0,
-    });
-    expect(c.win.length + c.high.length).toBe(2);
-    expect(c.safe.length).toBe(callWeek(rank(room), { castSize: 6 }).safe.length);
+  it('shrinks with the room exactly as an ordinary week does', () => {
+    /* Whatever the rule is, a team night has to obey the same one — that is
+       the whole point of this file. The rule itself is measured against the
+       real show in tools/dr-real-critique-size.py and asserted in
+       tests/dr-judging.test.js; here it only has to MATCH. */
+    /* Six and up. Below that a team night cannot have the same shape as a
+       solo one and it is not a bug: split five queens and the losing team is
+       two, so both of them lip sync and there is no room left for a LOW. The
+       show does not run a team challenge at five either. */
+    for (const n of [10, 8, 7, 6]) {
+      const room = roomOf(n);
+      const half = Math.ceil(n / 2);
+      const team = callWeek(rank(room), {
+        castSize: n, teamJudged: true,
+        teams: [room.slice(0, half), room.slice(half)], bestTeam: 0,
+      });
+      const solo = callWeek(rank(room), { castSize: n });
+      expect(team.win.length + team.high.length, `${n} queens: called up`)
+        .toBe(solo.win.length + solo.high.length);
+      expect(team.safe.length, `${n} queens: dismissed`).toBe(solo.safe.length);
+    }
   });
 
   it('never leaves the winning team without a winner', () => {

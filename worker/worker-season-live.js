@@ -816,7 +816,22 @@ async function generateWikiFill(body, env) {
               items: { type: "string" }
             }
           },
-          required: ["name", "personality", "quotes", "trivia"]
+          /* ── EVERY PROPERTY, BECAUSE STRICT MEANS STRICT ──
+             `lead` was added to `properties` and never added here, and the
+             schema is sent with `strict: true`. OpenAI refuses that outright:
+
+               Invalid schema for response_format 'wiki_fill': 'required' is
+               required to be supplied and to be an array including every key
+               in properties. Missing 'lead'.
+
+             So EVERY wiki-fill call 400d, for every show, and the fill turned
+             that into `players: []` and reported "the worker returned no
+             players". Which reads as the writer having nothing to say rather
+             than as a request that never reached a model. Found by posting the
+             fill's own payload at the deployed worker and reading the error.
+             A field a model may omit belongs in the schema as a nullable type,
+             never as a missing `required` entry. */
+          required: ["name", "lead", "personality", "quotes", "trivia"]
         }
       }
     },
@@ -1219,7 +1234,8 @@ async function generateAnalytics(summaryText, season, episode, env) {
             tendencies: { type: "array", items: { type: "string" } },
             icon: { type: "string" }
           },
-          required: ["name", "playerSlug", "archetype", "gameplayStyle", "x", "y", "icon"]
+          // STRICT MEANS EVERY PROPERTY — see the wiki_fill note above.
+          required: ["name", "playerSlug", "archetype", "gameplayStyle", "x", "y", "icon", "tendencies"]
         }
       },
       resumes: {
@@ -1246,7 +1262,8 @@ async function generateAnalytics(summaryText, season, episode, env) {
                   target: { type: "string" },
                   votes: { type: "number", minimum: 0 }
                 },
-                required: ["episode", "description"]
+                // STRICT MEANS EVERY PROPERTY — see the wiki_fill note above.
+                required: ["episode", "description", "target", "votes"]
               }
             }
           },
@@ -1299,7 +1316,8 @@ async function generateAnalytics(summaryText, season, episode, env) {
                 quote: { type: "string" },
                 members: { type: "array", items: { type: "string" } }
               },
-              required: ["name", "target", "motivation", "members"]
+              // STRICT MEANS EVERY PROPERTY — see the wiki_fill note above.
+              required: ["name", "target", "motivation", "members", "spearheader", "quote"]
             }
           },
           votes: {
@@ -1334,7 +1352,8 @@ async function generateAnalytics(summaryText, season, episode, env) {
                 intensity: { type: "number", minimum: 1, maximum: 5 },
                 average: { type: "string" }
               },
-              required: ["rating", "visibility", "intensity"]
+              // STRICT MEANS EVERY PROPERTY — see the wiki_fill note above.
+              required: ["rating", "visibility", "intensity", "average", "tone"]
             }
           },
           contenders: {

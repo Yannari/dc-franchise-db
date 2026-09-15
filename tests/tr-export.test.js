@@ -16,7 +16,7 @@
 // moves people between them, and a test that re-derives who was a Traitor is
 // measuring its own arithmetic against the engine's.
 import { describe, expect, it } from 'vitest';
-import { setPlayers } from '../js/core.js';
+import { gs, setGs, setPlayers } from '../js/core.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { SHOWS, DEFAULT_FORMAT, seasonId, formatPrefix, exitVerbs, showWords } from '../js/shows.js';
 import { roundLedger } from '../js/wiki-fill.js';
@@ -188,7 +188,12 @@ describe('two exit verbs, and each departure gets its own', () => {
         for (const x of row.exits) {
           expect([BANISH, MURDER]).toContain(x.verb);
           if (x.verb === BANISH) {
-            expect(x.name, `seed ${SEEDS[i]} ep ${row.episode}`).toBe(row.eliminated);
+            // The finale episode airs the handover table AND every endgame
+            // table, so it carries several banishments; `eliminated` is the
+            // handover table's, and the endgame's are marked as such.
+            if (!x.endgame) {
+              expect(x.name, `seed ${SEEDS[i]} ep ${row.episode}`).toBe(row.eliminated);
+            }
             expect(x.channel).toBe('banishment');
             banished++;
           } else {
@@ -375,8 +380,19 @@ describe('the export dispatches on the registry, not on one other show', () => {
     expect(seasonExporterFor('the-mole')).toBe(seasonExporterFor(DEFAULT_FORMAT));
   });
 
-  it('refuses by name rather than exporting a castle as a camp', async () => {
-    await expect(exportTraitorsSeason()).rejects.toThrow(/no live export path/);
+  it('refuses a tab with no castle in it, and a history holding another show', async () => {
+    // The refusal by name is gone now the export exists. What it protected is
+    // still refused: an empty season, and rows from another show published
+    // under a tr- id.
+    const prior = gs;
+    try {
+      setGs({ episodeHistory: [] });
+      await expect(exportTraitorsSeason()).rejects.toThrow(/season to export/);
+      setGs({ episodeHistory: [{ num: 1, format: DEFAULT_FORMAT }, { num: 2, format: TRAITORS_FORMAT, tr: {} }] });
+      await expect(exportTraitorsSeason()).rejects.toThrow(new RegExp(`tagged "${DEFAULT_FORMAT}"`));
+    } finally {
+      setGs(prior);
+    }
   });
 
   it('reads the Traitors round array, not whichever one is the default', () => {

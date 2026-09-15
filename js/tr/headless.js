@@ -3179,6 +3179,9 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
   // exit (spec §8 — unless the author turned reveals on, and then the endgame
   // record carries it and the screen reads it there).
   const _rows = gs.episodeHistory || [];
+  // The number of the row that carries the endgame, handed back so the export
+  // files every finale table under the episode that aired them.
+  let finaleEpisode = null;
   if (_rows.length) {
     // ── WHERE THE ENDGAME LIVES ─────────────────────────────────────────
     //
@@ -3205,6 +3208,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // Nothing in js/vp-tr/ gates a screen on this, but the export and the
     // Day Book read it to know which episode ended the season.
     _finaleRow.tr.finale = true;
+    finaleEpisode = Number(_finaleRow.num);
     const [_banishVerb] = exitVerbs(TRAITORS_FORMAT);
     for (const r of endgame.rounds || []) {
       if (r.banished) {
@@ -3274,6 +3278,7 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // private meeting the season held, copied out of `gs` with everything
     // else for the reason `rounds` and `missions` are.
     endgame,
+    finaleEp: finaleEpisode,
     // WHO WON IS NOW DECIDED BY THE ENDGAME AND NOT BY THE LOOP EXITING. It is
     // the same question answered at the same moment it is really answered:
     // any Traitor left standing when the room stops banishing takes all of the

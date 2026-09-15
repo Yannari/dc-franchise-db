@@ -34,7 +34,8 @@ import { gs as gsRef, setGs, setPlayers, players, seasonConfig, relationships,
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { isTraitorsSeason, simulateTraitorsEpisode, traitorsEpisodesLeft,
-  rerunTraitorsEpisode } from '../js/tr-run.js';
+  rerunTraitorsEpisode, traitorsSeasonRecord, lastTraitorsRerunRefusal } from '../js/tr-run.js';
+import { buildTraitorsSeasonDocument } from '../js/tr/export.js';
 import { getEpisodeEliminations, renderEpisodeHistory, renderEpisodeView } from '../js/run-ui.js';
 import { exitVerbs } from '../js/shows.js';
 import { TRAITORS_SCREENS } from '../js/vp-tr/screens.js';
@@ -116,6 +117,52 @@ afterAll(() => {
     else delete globalThis[k];
   }
   delete globalThis.gs;
+});
+
+// ── GUARD: A FINISHED CASTLE BECOMES A SEASON DOCUMENT ────────────────
+//
+// The run tab keeps the aired rows and drops the season result the document is
+// built from, so the export replays the season. A replay is only worth
+// publishing if it IS the season that aired, and each arm below checks one way
+// it might not be.
+describe('a finished castle can be exported', () => {
+  it('replays the aired season, and the document is that season', () => {
+    const aired = airWholeSeason(SEEDS[1]);
+    const history = gsRef.episodeHistory;
+    const trBefore = gsRef.tr;
+    const doc = buildTraitorsSeasonDocument(traitorsSeasonRecord(), { seasonNumber: 1 });
+    expect(doc.episodeCount).toBe(aired.length);
+    expect(doc.placements.length).toBe(ROSTER.length);
+    const takers = aired[aired.length - 1].tr.endgame.takers;
+    expect(doc.winners.map(w => w.name).sort()).toEqual([...takers].sort());
+    // and the replay left the tab's season where it was
+    expect(gsRef.episodeHistory).toBe(history);
+    expect(gsRef.tr).toBe(trBefore);
+    expect(traitorsEpisodesLeft()).toBe(0);
+    expect(gsRef.phase).toBe('complete');
+  });
+
+  it('refuses a season that has not finished airing', () => {
+    castle({}, SEEDS[0]);
+    simulateTraitorsEpisode();
+    simulateTraitorsEpisode();
+    expect(() => traitorsSeasonRecord()).toThrow(/not finished airing/);
+  });
+
+  it('refuses when the replay is not what aired', () => {
+    airWholeSeason(SEEDS[0]);
+    // Stands in for an engine change since the season was played.
+    gsRef.episodeHistory[2].exits = [{ name: 'Nobody', verb: 'banished' }];
+    expect(() => traitorsSeasonRecord()).toThrow(/does not reproduce what aired.*episode 3/);
+  });
+
+  it('replays a re-run season off its re-run chain, not the original', () => {
+    airWholeSeason(SEEDS[2]);
+    expect(rerunTraitorsEpisode(4), String(lastTraitorsRerunRefusal())).toBe(true);
+    for (let i = 0; i < 60 && simulateTraitorsEpisode(); i++);
+    expect(gsRef.phase).toBe('complete');
+    expect(() => traitorsSeasonRecord()).not.toThrow();
+  });
 });
 
 // ── GUARD 1: THE SHOW CAN BE STARTED AT ALL ───────────────────────────

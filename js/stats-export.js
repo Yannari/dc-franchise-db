@@ -7,7 +7,7 @@ import { pStats } from './players.js';
 import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument } from './dr/export.js';
-import { DRAG_FORMAT } from './shows.js';
+import { DRAG_FORMAT, TRAITORS_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -3212,22 +3212,257 @@ export function seasonExporterFor(format) {
 }
 
 /**
- * The Traitors, and a REFUSAL rather than a wrong export.
+ * The Traitors.
  *
- * There is no live run loop for this show yet — a season is played headless by
- * `playTraitorsSeason` and turned into a document by `buildTraitorsSeasonDocument`
- * in js/tr/export.js — so the simulator has nothing to export from. Before this
- * registration existed, asking for it exported a CAMP: the dispatch fell through
- * to the default show, ran the Total Drama pipeline over a castle, and published
- * it. Refusing by name is the same choice `POST /api/publish-season` makes about
- * an unregistered format, and for the same reason: being told nothing is
- * recoverable, being told the wrong show is not.
+ * This was a refusal while the only way to play a castle was headless. It is
+ * registered either way, because falling through to the default show runs the
+ * Total Drama pipeline over a castle and publishes it without an error.
+ *
+ * The run tab keeps the aired ROWS and not the season result the document is
+ * built from, so `traitorsSeasonRecord` replays the season off its seed and
+ * refuses unless the replay is the season that aired. The rest is the Drag Race
+ * shape: this show's rows only, a season that exists, both database merges, and
+ * the files downloaded when publishing is off.
  */
-export async function exportTraitorsSeason() {
-  throw new Error(
-    `${SHOWS.traitors.name} has no live export path yet — a season is played headless `
-    + '(playTraitorsSeason) and turned into a document by buildTraitorsSeasonDocument() '
-    + `in js/tr/export.js. Refusing rather than exporting it as ${SHOWS[DEFAULT_FORMAT].name}.`);
+export async function exportTraitorsSeason(onStatus) {
+  const _status = onStatus || (() => {});
+
+  const rows = (gs.episodeHistory || []).filter(r => r && r.tr);
+  if (!rows.length) {
+    throw new Error(
+      `No ${SHOWS[TRAITORS_FORMAT].name} season to export: gs.episodeHistory has no `
+      + 'episodes with a `tr` block. Play a season first.');
+  }
+  const foreign = (gs.episodeHistory || []).filter(r => r && r.format && r.format !== TRAITORS_FORMAT);
+  if (foreign.length) {
+    throw new Error(
+      `This season's history contains ${foreign.length} episode(s) tagged `
+      + `"${foreign[0].format}" — refusing to publish them under a ${TRAITORS_FORMAT} id.`);
+  }
+
+  const seasonNum = _getSeasonNumber();
+  if (!seasonNum) return;
+
+  // Loaded here rather than at the top: the engine is only needed by the one
+  // page that plays a castle, and every other page imports this file.
+  _status('Replaying the season to build its record...');
+  const [{ traitorsSeasonRecord }, { buildTraitorsSeasonDocument }] = await Promise.all([
+    import('./tr-run.js'), import('./tr/export.js'),
+  ]);
+  const doc = buildTraitorsSeasonDocument(traitorsSeasonRecord(), {
+    seasonNumber: seasonNum,
+    twists: (seasonConfig.twistSchedule || []).filter(t => t && t.type),
+  });
+  _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
+
+  _status('Merging databases...');
+  let playersDb = null; let seasonsDb = null;
+  try {
+    const [playersResp, seasonsResp] = await Promise.all([
+      fetch('players_database.json').catch(() => null),
+      fetch('seasons_database.json').catch(() => null),
+    ]);
+    const playersExisting = playersResp?.ok ? await playersResp.json() : { franchise: {}, players: [] };
+    const seasonsExisting = seasonsResp?.ok ? await seasonsResp.json() : { franchise: {}, seasons: [] };
+    playersDb = mergeTraitorsSeason(playersExisting, doc);
+    seasonsDb = mergeTraitorsSeasonsDatabase(seasonsExisting, doc);
+    if (seasonsDb && playersDb?.players) {
+      seasonsDb.franchise = seasonsDb.franchise || {};
+      seasonsDb.franchise.totalPlayers = playersDb.players.length;
+    }
+  } catch (err) {
+    throw new Error(`Could not merge the databases: ${err.message || err}`);
+  }
+
+  const published = await _publishSeasonToSite({
+    seasonNumber: seasonNum,
+    format: TRAITORS_FORMAT,
+    season: doc,
+    players: playersDb,
+    seasons: seasonsDb,
+  }, onStatus);
+  if (published) { _status('Done.'); return published; }
+
+  _status('Downloading files...');
+  _downloadJSON(doc, `${seasonId(TRAITORS_FORMAT, seasonNum)}-data.json`);
+  if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
+  if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
+  _status('Done.');
+  return doc;
+}
+
+/**
+ * A Traitors season into players_database.json.
+ *
+ * CO-WINNERS ARE ORDINARY HERE. Every taker is `placement: 1`, `status:
+ * 'Winner'`, and each one gets the win and the `TR1 Winner` badge; there is no
+ * main winner to pick out of a split.
+ *
+ * `challengeWins` is missions won — team wins, as a Total Drama tribe win is.
+ * `votesReceived` is table ballots only; the conclave's never count against
+ * anybody's career. No jury votes: the show has no jury, and a zero written for
+ * one would sit on a career beside a camp's real total.
+ */
+export function mergeTraitorsSeason(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== TRAITORS_FORMAT) {
+    throw new Error(`mergeTraitorsSeason expects a ${TRAITORS_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Traitors season document has no seasonNumber');
+
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.players) db.players = [];
+  _stripSeasonFromAll(db, seasonNum, TRAITORS_FORMAT);
+
+  const backgrounds = seasonDoc.backgrounds && typeof seasonDoc.backgrounds === 'object'
+    ? seasonDoc.backgrounds : {};
+
+  for (const entry of seasonDoc.placements || []) {
+    const name = entry.name;
+    if (!name) continue;
+    const slug = entry.playerSlug || _slug(name);
+    const tr = entry.tr || {};
+
+    let player = db.players.find(x => x.id === slug || x.name === name);
+    if (!player) {
+      player = {
+        id: slug, name, seasons: [], totalSeasons: 0, bestPlacement: null,
+        wins: 0, totalChallengeWins: 0, totalImmunityWins: 0, totalRewardWins: 0,
+        totalVotesAgainst: 0, totalIdolsFound: 0, totalJuryVotes: 0,
+        tier: '', badges: [], seasonDetails: [],
+      };
+      db.players.push(player);
+    }
+    if (!player.seasonDetails) player.seasonDetails = [];
+    if (!player.seasons) player.seasons = [];
+    _stripSeasonFromPlayer(player, seasonNum, TRAITORS_FORMAT);
+
+    const missions = tr.missionsWon || 0;
+    const votes = entry.votesReceived || 0;
+    if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
+    if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
+    player.totalChallengeWins = (player.totalChallengeWins || 0) + missions;
+    player.totalVotesAgainst = (player.totalVotesAgainst || 0) + votes;
+
+    player.seasonDetails.push(_tagSeasonDetail({
+      season: seasonNum,
+      placement: entry.placement,
+      status: entry.status,
+      exit: entry.exit || null,
+      exitEpisode: entry.exitEpisode ?? null,
+      challengeWins: missions,
+      votesReceived: votes,
+      backgroundType: backgrounds[name]?.type || null,
+      tr: { ...tr },
+      notes: _clean(entry.notes) ? [entry.notes] : [],
+      gameplayStyle: _clean(entry.gameplayStyle),
+      keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments
+        : (_clean(entry.keyMoments) ? [entry.keyMoments] : []),
+    }, TRAITORS_FORMAT));
+
+    const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
+    player.avgPlacement = places.length
+      ? Math.round(places.reduce((t, v) => t + v, 0) / places.length * 100) / 100
+      : null;
+    player.bestPlacement = places.length ? Math.min(...places) : null;
+
+    _rebuildByShow(player);
+
+    if (entry.status === 'Winner') {
+      player.badges = player.badges || [];
+      const badge = _winnerBadge(seasonNum, TRAITORS_FORMAT);
+      if (!player.badges.includes(badge)) player.badges.push(badge);
+    }
+  }
+
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  db.franchise.totalPlayers = db.players.length;
+  return db;
+}
+
+/**
+ * A Traitors season into seasons_database.json.
+ *
+ * `winners[]` carries every taker, and it is what `seasonWinners` in
+ * js/records.js reads first. `winner` is filled only when one player took the
+ * pot and is NULL on a split, which is what the Plan 7 readers were fixed to
+ * expect (docs/superpowers/plans/2026-08-27-traitors-07-export.md, "Carried"):
+ * a block naming one taker, or an empty one, regresses four pages at once.
+ */
+export function mergeTraitorsSeasonsDatabase(existing, seasonDoc) {
+  if (!seasonDoc || seasonDoc.format !== TRAITORS_FORMAT) {
+    throw new Error(`mergeTraitorsSeasonsDatabase expects a ${TRAITORS_FORMAT} season document`);
+  }
+  const seasonNum = seasonDoc.seasonNumber;
+  if (!seasonNum) throw new Error('Traitors season document has no seasonNumber');
+
+  const db = JSON.parse(JSON.stringify(existing || {}));
+  if (!db.seasons) db.seasons = [];
+  const airWindow = _airWindowFor(db, TRAITORS_FORMAT, seasonNum);
+  const priorRatings = (db.seasons.find(x =>
+    x.seasonNumber === seasonNum && x.format === TRAITORS_FORMAT) || {}).ratings || null;
+
+  db.seasons = db.seasons.filter(x =>
+    !(x.seasonNumber === seasonNum && x.format === TRAITORS_FORMAT));
+
+  const words = SHOWS[TRAITORS_FORMAT].words;
+  const awards = seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {};
+  const named = a => (a?.name ? { name: a.name, playerSlug: a.playerSlug || _slug(a.name) } : null);
+  const topMissions = (seasonDoc.placements || [])
+    .map(x => ({ name: x.name, wins: x.tr?.missionsWon || 0 }))
+    .filter(x => x.wins > 0)
+    .sort((a, b) => b.wins - a.wins)[0] || null;
+  const winners = (seasonDoc.winners || []).filter(w => w && w.name)
+    .map(w => ({ name: w.name, playerSlug: w.playerSlug || _slug(w.name), share: w.share ?? null }));
+  const solo = winners.length === 1 ? winners[0] : null;
+
+  db.seasons.push({
+    ratings: seasonDoc?.ratings || priorRatings || undefined,
+    seasonNumber: seasonNum,
+    format: TRAITORS_FORMAT,
+    seasonId: seasonId(TRAITORS_FORMAT, seasonNum),
+    title: _clean(seasonDoc.title, `${SHOWS[TRAITORS_FORMAT].name} ${seasonNum}`),
+    subtitle: _clean(seasonDoc.subtitle),
+    castSize: seasonDoc.castSize,
+    episodeCount: seasonDoc.episodeCount,
+    // No `jurySize`: the show has no jury, and a zero claims one sat.
+    winner: solo
+      ? {
+        name: solo.name,
+        playerSlug: solo.playerSlug,
+        // Nobody voted for the winner; the endgame line is on `endgameLine`.
+        vote: '',
+        runnerUp: seasonDoc.winner?.runnerUp || null,
+        keyStats: _clean(seasonDoc.winner?.keyStats),
+        strategy: _clean(seasonDoc.winner?.strategy),
+        legacy: _clean(seasonDoc.winner?.legacy),
+      }
+      : null,
+    winners,
+    endgameWinner: seasonDoc.endgameWinner || null,
+    pot: seasonDoc.pot ?? null,
+    awards: {
+      // The format has no audience award; this is only ever an authored one.
+      fanFavorite: named(awards.fanFavorite),
+      bestStrategic: named(awards.bestStrategic),
+      mostChallengeWins: topMissions
+        ? {
+          name: topMissions.name, playerSlug: _slug(topMissions.name),
+          detail: `${topMissions.wins} ${topMissions.wins === 1 ? words.comp : words.compWon}`,
+        }
+        : null,
+    },
+    theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
+    status: 'Complete',
+    castPhotoPath: `assets/cast/${seasonId(TRAITORS_FORMAT, seasonNum)}-cast.png`,
+    emoji: _clean(seasonDoc.emoji),
+    ...airWindow,
+  });
+
+  db.franchise = db.franchise || {};
+  db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
+  return db;
 }
 
 // Registered here rather than declared in the registry, so js/shows.js stays a

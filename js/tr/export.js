@@ -149,11 +149,19 @@ export function traitorsVotingHistory(season = {}) {
   const mandated = new Map();
   const endgameByEp = new Map();
   for (const r of season.rounds || []) if (!mandated.has(r.ep)) mandated.set(r.ep, r);
+  // THE FINALE'S TABLES ARE ONE EPISODE. The engine numbers each endgame table
+  // on its own counter (`runEndgame` is started past the last mandated round),
+  // but every one of them airs on the single finale row. Filed under their own
+  // numbers they became episodes that never aired: a nine-episode season
+  // exported as eleven. `finaleEp` is that row's number; a result from before
+  // it existed keeps the old numbering.
+  const finaleEp = season.finaleEp ?? null;
   for (const r of (season.endgame?.rounds || [])) {
-    if (!endgameByEp.has(r.ep)) endgameByEp.set(r.ep, []);
-    endgameByEp.get(r.ep).push(r);
+    const ep = finaleEp ?? r.ep;
+    if (!endgameByEp.has(ep)) endgameByEp.set(ep, []);
+    endgameByEp.get(ep).push(r);
     // An endgame that ran on an episode of its own still needs a row.
-    if (!mandated.has(r.ep)) mandated.set(r.ep, r);
+    if (!mandated.has(ep)) mandated.set(ep, r);
   }
   // Night one lives only on the log — there is no round record for a night
   // with no table — so the log is what decides which episodes exist at all.
@@ -176,8 +184,9 @@ export function traitorsVotingHistory(season = {}) {
     // banishment already reported above is not repeated here.
     const endgameExits = (endgameByEp.get(ep) || [])
       .filter(r => r !== round && r.banished)
-      .map(r => _exit(r.banished, banishVerb, 'banishment'))
-      .filter(Boolean);
+      // Marked as the engine marks them on the aired finale row, so a reader
+      // can tell the handover table's banishment from the endgame's.
+      .map(r => ({ ..._exit(r.banished, banishVerb, 'banishment'), endgame: true }));
     const exits = [
       _exit(banished, banishVerb, 'banishment'),
       ...endgameExits,
@@ -265,6 +274,15 @@ export function traitorsPlacements(season = {}, history = traitorsVotingHistory(
       exit: d.verb, exitEpisode: d.episode,
       tr: stats(d.name),
     });
+  }
+  // Ballots cast against them at the table, carried ON THE PLACEMENT so the
+  // players-database merge reads the document rather than counting the
+  // history a second time. The conclave's are left out: nobody at the table
+  // voted for a murder, and a career's "votes against" is the room's number.
+  const privateChannels = SHOWS[TRAITORS_FORMAT].privateBallotChannels || [];
+  for (const p of out) {
+    p.votesReceived = history.reduce((n, row) =>
+      n + row.votes.filter(v => v.target === p.name && !privateChannels.includes(v.channel)).length, 0);
   }
   return out.sort((a, b) => a.placement - b.placement);
 }
@@ -400,11 +418,8 @@ export function traitorsSeasonDetails(season = {}, seasonNumber = 1) {
     playerSlug: p.playerSlug,
     placement: p.placement,
     status: p.status,
-    // The number of ballots cast against them across the season, both channels
-    // — being wanted dead by the turret is a fact about a game as much as
-    // being voted for at the table is.
-    votesReceived: history.reduce((n, row) =>
-      n + row.votes.filter(v => v.target === p.name && v.channel !== 'murder').length, 0),
+    // Table ballots only; see `traitorsPlacements`, which counts them once.
+    votesReceived: p.votesReceived,
     // ALUMNI / CELEBRITY / CIVILIAN, from the snapshot the season took at
     // setup — never re-resolved here. This layer is read on replay, long after
     // the database it was resolved from has been edited, and re-deriving it

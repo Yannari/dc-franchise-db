@@ -53,6 +53,11 @@ const _refuse = why => { _lastRefusal = why; return false; };
 /** The reason the last re-run was refused, or null if the last one worked. */
 export function lastTraitorsRerunRefusal() { return _lastRefusal; }
 
+// The result of the last `_playWholeSeason`, for `traitorsSeasonRecord` alone.
+// That function clears it on the way out, so a whole season's result — the
+// nights not yet aired included — never rides along on anything.
+let _lastSeasonResult = null;
+
 /**
  * The seed this season plays on.
  *
@@ -259,6 +264,7 @@ function _playWholeSeason(rerollFromEp = null, rerollSeed = null, rerolls = null
   } finally {
     _setBespokeMissionsEnabled(_bespokeWas);
   }
+  _lastSeasonResult = result;
   // `gs` is now the engine's. Take what it wrote and give the UI's back.
   const inner = gs;
   const rows = inner.episodeHistory || [];
@@ -439,6 +445,73 @@ export function rerunTraitorsEpisode(epNum) {
   gs.phase = gs._trQueue.length ? 'castle' : 'complete';
   gs.trWinner = null;
   return true;
+}
+
+/**
+ * The finished season as `playTraitorsSeason` returned it — the object
+ * `buildTraitorsSeasonDocument` reads — for a castle that has aired its finale.
+ *
+ * The run loop keeps the ROWS and drops the result: the log, the endgame and
+ * the rounds it was built from are never on `gs`. So the export replays the
+ * season off the same seed and re-run chain the queue came from, and trusts
+ * the replay only if it IS the season that aired: the same episodes, the same
+ * people leaving by the same door, the same takers at the end. An engine
+ * change since airing would otherwise publish a season nobody watched.
+ *
+ * Leaves `gs` exactly as it found it. Throws with the reason when it cannot.
+ */
+export function traitorsSeasonRecord() {
+  if (!gs) throw new Error('There is no season loaded.');
+  const aired = gs.episodeHistory || [];
+  if (!aired.length) throw new Error('No episodes of this castle have aired yet.');
+  const left = Array.isArray(gs._trQueue) ? gs._trQueue.length : 0;
+  if (left || gs.phase !== 'complete') {
+    throw new Error('This season has not finished airing'
+      + (left ? ` (${left} episode${left === 1 ? '' : 's'} still to come)` : '')
+      + '. Export it after the finale.');
+  }
+  if (!gs._trSeed) {
+    throw new Error('This season has no stored seed, so it cannot be replayed into a season document.');
+  }
+
+  const kept = { tr: gs.tr, queue: gs._trQueue, survivors: gs._trSurvivors,
+    winner: gs._trWinner, pot: gs._trPot };
+  _lastSeasonResult = null;
+  let played = false;
+  let replayed = [];
+  let result = null;
+  try {
+    played = _playWholeSeason(gs._trRerollFromEp || null,
+      gs._trRerollSeed == null ? null : gs._trRerollSeed, gs._trRerolls || null);
+    replayed = gs._trQueue || [];
+    result = _lastSeasonResult;
+  } finally {
+    gs.tr = kept.tr;
+    gs._trQueue = kept.queue;
+    gs._trSurvivors = kept.survivors;
+    gs._trWinner = kept.winner;
+    gs._trPot = kept.pot;
+    _lastSeasonResult = null;
+  }
+  if (!played || !result) {
+    throw new Error(`The season could not be replayed: ${_lastRefusal || 'the engine returned nothing'}.`);
+  }
+
+  const signature = rows => rows.map(r => [
+    Number(r.num),
+    ...(r.exits || []).map(x => `${x.name}:${x.verb}`),
+    ...(r.tr?.endgame?.takers || []).map(n => `took:${n}`),
+  ].join('|'));
+  const was = signature(aired);
+  const now = signature(replayed);
+  const at = was.findIndex((s, i) => s !== now[i]);
+  if (at >= 0 || was.length !== now.length) {
+    const ep = at >= 0 ? at + 1 : Math.min(was.length, now.length) + 1;
+    throw new Error(`Replaying this season does not reproduce what aired (the first difference is `
+      + `episode ${ep}), most likely because the engine changed after it was played. `
+      + 'Refusing to publish a season that is not the one on screen.');
+  }
+  return result;
 }
 
 /** How many nights of this season have not aired yet. */

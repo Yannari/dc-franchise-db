@@ -494,6 +494,24 @@ export function buildTraitorsSeasonDocument(season = {}, { seasonNumber = 1, twi
     // SNAPSHOT, published verbatim: an alumnus's appearances are the ones that
     // were on the record the night the season was cast, not the ones on it now.
     backgrounds: season.backgrounds || {},
+    // ── WHAT THE AUDIENCE KNEW, NIGHT BY NIGHT ────────────────────────
+    //
+    // The viewer is shown the turret on night one, so a finished season's
+    // fandom (js/social/packs/traitors.js) talks about who wore the cloak
+    // when, which missions and relics fell on which night. Roles are eras —
+    // recruitment moves people between them — so the flips are published as
+    // flips, never flattened to a season-level role.
+    roleHistory: (season.roleHistory || []).map(f => ({
+      name: f.name, from: f.from || null, to: f.to, ep: f.ep, via: f.via || null })),
+    missions: (season.missions || []).map(m => ({
+      ep: m.ep, name: m.name || null, bestTeam: m.bestTeam || null,
+      teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])] })),
+      earned: m.earned ?? null, potAfter: m.potAfter ?? null })),
+    shields: (season.shields || []).map(s => ({
+      ep: s.ep, holder: s.holder, outcome: s.outcome || null, playedEp: s.playedEp ?? null })),
+    daggers: (season.daggers || []).map(d => ({
+      ep: d.ep, holder: d.holder, outcome: d.outcome || null, playedEp: d.playedEp ?? null,
+      target: d.target ?? null })),
   };
 }
 

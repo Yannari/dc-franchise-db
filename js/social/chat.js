@@ -18,6 +18,7 @@
 import { eventLabel, words } from './adapter.js';
 import { pickRotating } from './freshness.js';
 import { TRAIT_TAKES, assignTraits } from './voices.js';
+import { packFor } from './packs/index.js';
 
 /** Deterministic rng — the same night must not say different things on reload. */
 function seeded(seed) {
@@ -689,6 +690,10 @@ export function buildChatMessages(events, speakers, {
   if (!events?.length || !speakers?.length) return [];
   const rng = seeded(seed);
   const w = words(format);
+  // A show with its own pack is spoken about in its own takes. The shared
+  // character, lens and trait pools are written about votes and nominations,
+  // so on a packed show they give way wherever the pack has something to say.
+  const pack = packFor(format);
   const out = [];
   let n = 0;
   // One memory per pool, so a busy night does not recycle a line while a quiet
@@ -725,8 +730,9 @@ export function buildChatMessages(events, speakers, {
       const subject = ev.subject ? titleCase(ev.subject) : '';
       const lens = lensOf.get(host.slug) || 'social';
       const trait = traitOf.get(host.slug);
-      const characterPool = CHARACTER_TAKES[host.slug]?.[ev.kind] || [];
-      const lensPool = LENS_TAKES[lens]?.[ev.kind] || [];
+      const packGeneral = pack?.chatTakes?.[ev.kind] || null;
+      const characterPool = packGeneral ? [] : (CHARACTER_TAKES[host.slug]?.[ev.kind] || []);
+      const lensPool = packGeneral ? [] : (LENS_TAKES[lens]?.[ev.kind] || []);
       // Lean on your own angle as far as its words can carry you, and no
       // further. A flat 58% had eight hosts pulling from five sentences most of
       // the time; dividing by how many people share the lens is the term that
@@ -747,7 +753,9 @@ export function buildChatMessages(events, speakers, {
       //
       // Below the character pool, above the lens, because a lens is a read on
       // the game and a voice is a person.
-      const traitPool = (trait && TRAIT_TAKES[trait]?.[ev.kind]) || [];
+      const traitPool = (trait && (pack
+        ? pack.hostTakes?.[trait]?.[ev.kind]
+        : TRAIT_TAKES[trait]?.[ev.kind])) || [];
       // Same term the lens needed, for the same reason: a four-line pool leaned
       // on by three hosts every week repeats, whatever it is called. Measured —
       // a flat 62% took the room from 72% distinct DOWN to 67%, reproducing the
@@ -759,7 +767,7 @@ export function buildChatMessages(events, speakers, {
       const pool = useCharacter ? characterPool
         : useTrait ? traitPool
           : useLens ? lensPool
-            : (TAKES[ev.kind] || GENERIC_TAKES);
+            : (packGeneral || TAKES[ev.kind] || GENERIC_TAKES);
       const poolKey = `${ev.kind}:${useCharacter ? host.slug
         : useTrait ? trait : useLens ? lens : 'general'}`;
       if (!usedByKind.has(poolKey)) usedByKind.set(poolKey, new Set());
@@ -785,7 +793,10 @@ export function buildChatMessages(events, speakers, {
 
       // Records should sharpen an occasional opinion, not introduce every post
       // like an alumni panelist reading their own biography.
-      const creds = credential(host, w);
+      // A credential is the host's record on the shows it was written for —
+      // "sat on a jury", "survived plenty of votes" — and on a packed show
+      // that is another show's vocabulary tacked onto a castle take.
+      const creds = pack ? [] : credential(host, w);
       if (!useCharacter && !useTrait && creds.length && rng() < 0.14) {
         line = withCredential(line, pickFresh(creds, rng, usedCreds, episode, host.slug), rng);
       }

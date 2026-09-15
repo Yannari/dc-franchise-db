@@ -10,6 +10,8 @@
 // uses. voice-profiles.json keys the same people by display name (`Anne Maria`);
 // anything needing that must map, never assume.
 
+import { packFor } from './packs/index.js';
+
 /** The kinds of fan. Every one of these must be represented in PERSONAS. */
 export const ARCHETYPES = ['stan', 'hater', 'analyst', 'livefeeder', 'casual', 'chaos', 'shipper'];
 
@@ -111,13 +113,13 @@ export const PERSONAS = [
     feelings: { scott: { affection: -0.6, gameRespect: 0.7 } },
   },
   {
-    handle: '@notthatdeep', name: 'dee', since: 12, archetype: 'casual',
+    handle: '@notthatdeep', name: 'dee', since: 12, archetype: 'casual', franchise: true,
     voice: { caps: 0.1, emoji: 0.8, length: 'short', punctuation: 'normal' },
     platforms: ['timeline'], volatility: 0.8,
     feelings: {},
   },
   {
-    handle: '@ruinedmylife', name: 'kai', since: 3, archetype: 'hater',
+    handle: '@ruinedmylife', name: 'kai', since: 3, archetype: 'hater', franchise: true,
     voice: { caps: 0.7, emoji: 0.2, length: 'short', punctuation: 'heavy' },
     platforms: ['timeline'], volatility: 0.4,
     feelings: { alejandro: { affection: -0.95, gameRespect: 0.2 },
@@ -131,19 +133,19 @@ export const PERSONAS = [
                 duncan: { affection: 0.7, gameRespect: 0.1 } },
   },
   {
-    handle: '@burnitdown', name: 'pip', since: 6, archetype: 'chaos',
+    handle: '@burnitdown', name: 'pip', since: 6, archetype: 'chaos', franchise: true,
     voice: { caps: 0.6, emoji: 0.5, length: 'short', punctuation: 'heavy' },
     platforms: ['timeline'], volatility: 0.95,
     feelings: {},
   },
   {
-    handle: '@quietgamer', name: 'noor', since: 2, archetype: 'analyst',
+    handle: '@quietgamer', name: 'noor', since: 2, archetype: 'analyst', franchise: true,
     voice: { caps: 0.0, emoji: 0.1, length: 'long', punctuation: 'normal' },
     platforms: ['chat'], volatility: 0.15,
     feelings: { courtney: { affection: 0.3, gameRespect: 0.8 } },
   },
   {
-    handle: '@justiceforher', name: 'tam', since: 8, archetype: 'stan',
+    handle: '@justiceforher', name: 'tam', since: 8, archetype: 'stan', franchise: true,
     voice: { caps: 0.55, emoji: 0.4, length: 'medium', punctuation: 'heavy' },
     platforms: ['timeline'], volatility: 0.75,
     feelings: { courtney: { affection: 0.85, gameRespect: 0.1 } },
@@ -161,7 +163,7 @@ export const PERSONAS = [
     feelings: {},
   },
   {
-    handle: '@theeditlies', name: 'wren', since: 3, archetype: 'hater',
+    handle: '@theeditlies', name: 'wren', since: 3, archetype: 'hater', franchise: true,
     voice: { caps: 0.45, emoji: 0.15, length: 'medium', punctuation: 'heavy' },
     platforms: ['timeline', 'chat'], volatility: 0.35,
     feelings: { beth: { affection: -0.55, gameRespect: -0.7 },
@@ -189,7 +191,7 @@ export const PERSONAS = [
                 harold: { affection: 0.6, gameRespect: 0.15 } },
   },
   {
-    handle: '@aftershowreceipts', name: 'mina', since: 6, archetype: 'livefeeder',
+    handle: '@aftershowreceipts', name: 'mina', since: 6, archetype: 'livefeeder', franchise: true,
     voice: { caps: 0.12, emoji: 0.12, length: 'long', punctuation: 'normal' },
     platforms: ['timeline', 'chat'], volatility: 0.38,
     feelings: { scott: { affection: -0.75, gameRespect: 0.8 },
@@ -203,7 +205,7 @@ export const PERSONAS = [
                 ripper: { affection: -0.8, gameRespect: -0.45 } },
   },
   {
-    handle: '@snacksandshade', name: 'liv', since: 10, archetype: 'casual',
+    handle: '@snacksandshade', name: 'liv', since: 10, archetype: 'casual', franchise: true,
     voice: { caps: 0.22, emoji: 0.55, length: 'short', punctuation: 'normal' },
     platforms: ['timeline', 'chat'], volatility: 0.68,
     feelings: { zee: { affection: 0.85, gameRespect: -0.35 },
@@ -217,7 +219,7 @@ export const PERSONAS = [
                 blaineley: { affection: -0.85, gameRespect: 0.1 } },
   },
   {
-    handle: '@showmancemedic', name: 'andie', since: 7, archetype: 'shipper',
+    handle: '@showmancemedic', name: 'andie', since: 7, archetype: 'shipper', franchise: true,
     voice: { caps: 0.1, emoji: 0.48, length: 'medium', punctuation: 'normal' },
     platforms: ['chat'], volatility: 0.42,
     feelings: { carrie: { affection: 0.8, gameRespect: 0.2 },
@@ -226,6 +228,21 @@ export const PERSONAS = [
 ];
 
 /** One regular, by handle. Null rather than undefined, so a miss is obvious. */
+/**
+ * Who posts about a show.
+ *
+ * A show with its own pack is watched by the FRANCHISE regulars — the accounts
+ * marked `franchise: true`, whose handles and tastes are not one show's — plus
+ * the pack's own. `@vetokween` posting about a castle is the voice of one show
+ * printed over another, one level up from a noun. Every other show gets the
+ * whole cast, exactly as before.
+ */
+export function personasFor(format) {
+  const pack = packFor(format);
+  if (!pack) return PERSONAS;
+  return [...PERSONAS.filter(p => p.franchise), ...(pack.personas || [])];
+}
+
 export function personaByHandle(handle) {
   return PERSONAS.find(p => p.handle === handle) || null;
 }

@@ -1460,10 +1460,20 @@ on a Total Drama or Big Brother page. Both directions now run.
 
 Two more vocabulary sources worth knowing: `worker/worker-episode-live.js` falls
 back to Total Drama's tone examples for an unknown show, directly under its own
-instruction *"Do not import words from another format"*; and
-**`js/social/phrasings.js` is not vocabulary-adapted at all** — 6.4% of a
-season's posts carry another show's noun, it is invisible to the guard, and it
-needs its own pass.
+instruction *"Do not import words from another format"*.
+
+**The social feed was the largest instance, and it was not a vocabulary
+problem.** 6.4% of a Traitors season's posts carried another show's noun, but a
+noun swap would not have fixed the rest: the topics themselves were about votes,
+blindsides and jury verdicts. A show now brings a **social pack**
+(`js/social/packs/<show>.js`, listed in `packs/index.js`): its own event reader
+for both a played row and a published document, its topics and lines, its
+regular fans and its alumni-host takes. It keeps only the shared topics tagged
+`layer: 'fandom'` in `js/social/topics.js`, which are held neutral for every
+show by `tests/social-packs.test.js`. A show with no pack gets the vote-show
+library unchanged. The Traitors has a pack; **Drag Race does not yet** — its
+reader is still `drEvents` feeding the vote-show topics. Adding a pack is the
+fix for any show whose fandom argues about something other than a vote.
 
 ### 14.11 `\b` inside a template literal is U+0008
 

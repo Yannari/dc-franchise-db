@@ -19,6 +19,7 @@ import { seasonWinners } from '../records.js';
 import { buildEpisodeFeed } from './feed.js';
 import { seasonDataFile } from './adapter.js';
 import { feedSeed } from './live.js';
+import { packFor } from './packs/index.js';
 import { roundExits, publicBallots, roundShape, seasonRounds, SHOWS } from '../shows.js';
 
 /**
@@ -219,12 +220,16 @@ export function eventsForEpisode(doc, format, season, episode) {
   if (!found) return [];
 
   const meta = { format, season, episode: found.episode };
-  const events = extractEvents(found.record, meta);
+  // A packed show reads its own night, with the season-level facts off the
+  // document; the same reader the played path uses, so the two agree.
+  const pack = packFor(format);
+  const events = extractEvents(found.record, meta, pack?.context?.(doc) || null);
   /* THE SHAPE CHECK GOES AT THE TOP, NOT INSIDE A BRANCH. This is where the
      Traitors bug lived: the archive iterated ballots without asking whether
      this show's ballots are the audience's to see. A placement round has no
-     ballot at all, so tribalEvents has nothing to read and must not be asked. */
-  if (format !== 'big-brother' && roundShape(format) !== 'placements') {
+     ballot at all, so tribalEvents has nothing to read and must not be asked.
+     A packed show's reader already read its table. */
+  if (!pack && format !== 'big-brother' && roundShape(format) !== 'placements') {
     events.push(...tribalEvents(found.record, meta));
   }
   // The document's own account of the night, which nothing had ever read.

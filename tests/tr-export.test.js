@@ -401,15 +401,21 @@ describe('the export dispatches on the registry, not on one other show', () => {
     // Traitors season read `gs.episodeHistory` — empty — and the audience had
     // no reaction to a single episode of it. Which array is a fact about the
     // show, so the registry holds it.
+    //
+    // AND NOW THE AIRED ROWS, NOT THE ROUNDS. The social pack for this show
+    // (js/social/packs/traitors.js) reads `gs.episodeHistory`: the rounds are
+    // the whole season `playTraitorsSeason` played in one call, so reading them
+    // let the audience react to nights that had not aired, and night one --
+    // which holds no Round Table -- had no reaction at all.
     const gsLike = {
-      episodeHistory: [],
+      episodeHistory: [{ num: 1, tr: { ep: 1 } }, { num: 2, tr: { ep: 2 } }],
       bb: { weeks: [{ num: 9 }] },
-      tr: { rounds: [{ ep: 1 }, { ep: 2 }, { ep: 3 }] },
+      tr: { rounds: [{ ep: 2 }, { ep: 3 }, { ep: 4 }] },
     };
-    expect(episodeRecords(gsLike, TRAITORS_FORMAT).map(r => r.episode)).toEqual([1, 2, 3]);
+    expect(episodeRecords(gsLike, TRAITORS_FORMAT).map(r => r.episode)).toEqual([1, 2]);
     // ...and the other two shows still read their own.
     expect(episodeRecords(gsLike, 'big-brother').map(r => r.episode)).toEqual([9]);
-    expect(episodeRecords(gsLike, DEFAULT_FORMAT)).toEqual([]);
+    expect(episodeRecords({ ...gsLike, episodeHistory: [] }, DEFAULT_FORMAT)).toEqual([]);
   });
 });
 
@@ -713,10 +719,11 @@ describe('what the audience is shown of a night', () => {
       const spoken = new Set((row.votes || [])
         .filter(v => v.channel !== 'murder').map(v => key(v.target)).filter(Boolean));
       for (const e of eventsForEpisode(doc, TRAITORS_FORMAT, 1, ep.episode)) {
-        // An `eviction` for the murdered is correct — the audience watched
-        // them go. A `nomination` is the room accusing somebody, and only the
-        // room can do that.
-        if (e.kind !== 'nomination') continue;
+        // A murder event for the murdered is correct — the audience watched
+        // them go. An `accused` is the room accusing somebody, and only the
+        // room can do that. (It was a shared `nomination` until the castle got
+        // its own social pack; the rule it has to keep did not change.)
+        if (e.kind !== 'accused') continue;
         publicEvents++;
         const named = key(e.subject);
         expect(spoken.has(named) || !secret.has(named),

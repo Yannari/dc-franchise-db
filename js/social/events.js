@@ -21,6 +21,7 @@ import { EVENT_KINDS } from './topics.js';
 import { classifyEventTone } from '../tone.js';
 import { withReceipts } from './receipts.js';
 import { roundExits, publicBallots, roundShape } from '../shows.js';
+import { packFor } from './packs/index.js';
 
 /** A nominal episode runtime, in ms. Posts are stamped across it. */
 export const EPISODE_MS = 42 * 60 * 1000;
@@ -75,6 +76,20 @@ const slug = name => String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+
  */
 export function socialEvent(kind, meta) {
   return event(kind, meta);
+}
+
+/**
+ * The event stamp a pack is handed. Same slugging and timing as every other
+ * event; a pack's own kinds say where in the episode they land.
+ */
+function packEventMaker(pack, meta) {
+  return (kind, { subject = null, actor = null, receipt = null, jitter = 0 } = {}) => {
+    const e = event(kind, { ...meta, subject, actor, jitter });
+    const at = pack.kinds?.[kind]?.at;
+    if (at != null) e.at = Math.round(EPISODE_MS * (at + jitter));
+    if (receipt) e.receipt = String(receipt).replace(/\.$/, '');
+    return e;
+  };
 }
 
 function event(kind, { subject, actor, season, episode, format, jitter = 0 }) {
@@ -541,7 +556,7 @@ function campEvents(ep, meta) {
  * and the topics that trigger on `episode-aired` (thirst, edit critique,
  * favourite declarations) are exactly the ones that do not need a big moment.
  */
-export function extractEvents(ep, { format, season, episode } = {}) {
+export function extractEvents(ep, { format, season, episode } = {}, context = null) {
   if (!ep) return [];
   const meta = {
     format: format || ep.format || 'total-drama',
@@ -551,6 +566,25 @@ export function extractEvents(ep, { format, season, episode } = {}) {
 
   const out = [event('episode-aired', meta)];
   const isFinale = !!(ep.isFinale || ep.finale);
+
+  /* ── A SHOW WITH ITS OWN GAME LAYER READS ITS OWN NIGHT ──────────────
+     See js/social/packs/. The pack's reader replaces the show readers AND the
+     advantage and ballot readers below, because each of those reads a vote
+     show's mechanics: an idol, a blindside computed off who the boot voted
+     for. `context` carries the season-level facts a row does not, built by
+     the caller from whichever source it has. */
+  const pack = packFor(meta.format);
+  if (pack) {
+    out.push(...pack.events(ep, meta, {
+      make: packEventMaker(pack, meta),
+      ctx: context || pack.context(null),
+    }));
+    out.push(...campEvents(ep, meta));
+    if (isFinale && !out.some(e => e.kind === 'finale')) out.push(event('finale', meta));
+    return out
+      .filter(e => EVENT_KINDS.includes(e.kind) || !!pack.kinds?.[e.kind])
+      .sort((a, b) => a.at - b.at);
+  }
   // A Big Brother finale is not a week — no Head of Household, no nominees, no
   // eviction vote — so running the weekly reader over it produces nothing and
   // then a nameless `finale`. It has its own shape and its own reader.

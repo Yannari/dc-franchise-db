@@ -10,6 +10,7 @@
 //
 // Pure: no DOM, no data files, no gs.
 import { DEFAULT_FORMAT, seasonId } from '../shows.js';
+import { packFor } from './packs/index.js';
 
 /** The default vocabulary. An unknown format renders in these words rather than crashing. */
 const GENERIC = {
@@ -258,6 +259,9 @@ const _cap = s => String(s || '').replace(/^./, c => c.toUpperCase());
  * the single place the neutral name becomes the shown one.
  */
 export function eventLabel(kind, format) {
+  // A pack's own kinds carry their own label; nothing else here knows them.
+  const packed = packFor(format)?.kinds?.[kind]?.label;
+  if (packed) return packed;
   const w = words(format);
   const map = {
     'episode-aired': `${w.Episode} aired`,

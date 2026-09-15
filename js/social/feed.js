@@ -12,7 +12,8 @@
 // Pure: no DOM, no network, no gs. The caller supplies popularity and an rng, so
 // a season's feed is reproducible from a seed.
 import { samplePosts } from './sampler.js';
-import { PERSONAS } from './personas.js';
+import { personasFor } from './personas.js';
+import { packFor } from './packs/index.js';
 import { assignCrowd } from './crowd.js';
 import { EPISODE_MS } from './events.js';
 
@@ -173,7 +174,7 @@ export function buildEpisodeFeed(events, {
   let ordinal = 0;
 
   for (const ev of events) {
-    const volume = VOLUME[ev.kind] ?? 1;
+    const volume = packFor(ev.format)?.kinds?.[ev.kind]?.volume ?? VOLUME[ev.kind] ?? 1;
     for (const stream of ['timeline', 'chat']) {
       const count = Math.max(1, Math.round(BASE[stream] * volume * scale));
       let made;
@@ -242,6 +243,6 @@ export function buildEpisodeFeed(events, {
   // function is written not to do. Seeding the assignment separately puts the
   // authors back where they belong: on the seed alone.
   return useCrowd
-    ? assignCrowd(posts, { rng: seeded(seed + 0x5f3759df), personas: PERSONAS, currentSeason: season })
+    ? assignCrowd(posts, { rng: seeded(seed + 0x5f3759df), personas: personasFor(events[0]?.format), currentSeason: season })
     : posts;
 }

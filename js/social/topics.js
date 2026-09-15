@@ -12,6 +12,8 @@
 // never fire, and reads as breadth in this file while appearing nowhere on
 // screen.
 
+import { packFor } from './packs/index.js';
+
 /** The events project 2 will hand us. A topic may only trigger on these. */
 export const EVENT_KINDS = [
   'blindside', 'eviction', 'comp-win', 'nomination', 'veto-used',
@@ -30,6 +32,11 @@ export const EVENT_KINDS = [
  *             project 2 must supply it
  *   weight    0..1, relative likelihood before persona feelings are applied
  *   shapes    the post forms this topic can take
+ *   layer     'fandom' when it is true of any show (the edit, a crush, a
+ *             pile-on). Untagged topics are the GAME layer of the shows this
+ *             library was written for; a show with its own pack
+ *             (js/social/packs/) keeps the fandom topics and brings its own
+ *             game topics instead.
  */
 export const TOPICS = [
   // ── gameplay ────────────────────────────────────────────────────────────
@@ -78,7 +85,7 @@ export const TOPICS = [
   //
   // `bare` stops the decoration pipeline gluing "hold on." to the front of a
   // scream, which is the one thing that would kill it.
-  { id: 'scream', stream: 'timeline', weight: 1.4, bare: true,
+  { id: 'scream', stream: 'timeline', weight: 1.4, bare: true, layer: 'fandom',
     triggers: ['blindside', 'eviction', 'nomination', 'finale', 'comp-win',
       'showmance-broken', 'ganging-up', 'betrayal'],
     reads: ['popularity'],
@@ -130,28 +137,28 @@ export const TOPICS = [
     reads: ['juryVotes', 'jury'],
     shapes: ['hot-take', 'stat-drop', 'quote-dunk'] },
 
-  { id: 'production-critique', stream: 'timeline', weight: 0.5,
+  { id: 'production-critique', stream: 'timeline', weight: 0.5, layer: 'fandom',
     triggers: ['twist', 'episode-aired'],
     reads: ['twists'],
     shapes: ['complaint', 'conspiracy'] },
 
   // ── social ──────────────────────────────────────────────────────────────
-  { id: 'harassment-defence', stream: 'both', weight: 0.9,
+  { id: 'harassment-defence', stream: 'both', weight: 0.9, layer: 'fandom',
     triggers: ['ganging-up', 'argument'],
     reads: ['campEvents', 'socialManipulation', 'bonds'],
     shapes: ['defence', 'call-out', 'pile-on-against-the-house'] },
 
-  { id: 'edit-critique', stream: 'timeline', weight: 0.6,
+  { id: 'edit-critique', stream: 'timeline', weight: 0.6, layer: 'fandom',
     triggers: ['episode-aired', 'argument'],
     reads: ['screenTime', 'popularity'],
     shapes: ['call-out', 'complaint'] },
 
-  { id: 'kindness-noticed', stream: 'both', weight: 0.5,
+  { id: 'kindness-noticed', stream: 'both', weight: 0.5, layer: 'fandom',
     triggers: ['kindness'],
     reads: ['campEvents', 'bonds'],
     shapes: ['appreciation', 'soft-take'] },
 
-  { id: 'personality-clash', stream: 'timeline', weight: 0.5,
+  { id: 'personality-clash', stream: 'timeline', weight: 0.5, layer: 'fandom',
     triggers: ['argument'],
     reads: ['campEvents', 'bonds'],
     shapes: ['hot-take', 'dunk'] },
@@ -169,33 +176,33 @@ export const TOPICS = [
   // Cruelty has its own topic so it can be tested as a class rather than
   // leaking accidentally into every supportive pool. Personal, never bigoted:
   // ego, presentation, competence, personality and gameplay are fair targets.
-  { id: 'personal-roast', stream: 'timeline', weight: 0.55,
+  { id: 'personal-roast', stream: 'timeline', weight: 0.55, layer: 'fandom',
     triggers: ['episode-aired', 'argument', 'comp-win', 'nomination', 'eviction'],
     reads: ['roster', 'popularity', 'campEvents'],
     shapes: ['dunk', 'hot-take'] },
 
   // ── romantic ────────────────────────────────────────────────────────────
-  { id: 'shipping', stream: 'timeline', weight: 0.7,
+  { id: 'shipping', stream: 'timeline', weight: 0.7, layer: 'fandom',
     triggers: ['romantic-spark', 'episode-aired'],
     reads: ['romanticSparks', 'bonds'],
     shapes: ['ship', 'gushing'] },
 
-  { id: 'thirst', stream: 'timeline', weight: 0.6,
+  { id: 'thirst', stream: 'timeline', weight: 0.6, layer: 'fandom',
     triggers: ['episode-aired', 'comp-win'],
     reads: ['roster'],
     shapes: ['thirst', 'gushing'] },
 
-  { id: 'showmance-hate', stream: 'timeline', weight: 0.6,
+  { id: 'showmance-hate', stream: 'timeline', weight: 0.6, layer: 'fandom',
     triggers: ['showmance-formed'],
     reads: ['showmances'],
     shapes: ['complaint', 'dunk'] },
 
-  { id: 'showmance-concern', stream: 'both', weight: 0.6,
+  { id: 'showmance-concern', stream: 'both', weight: 0.6, layer: 'fandom',
     triggers: ['showmance-formed', 'argument'],
     reads: ['showmances', 'bonds', 'campEvents'],
     shapes: ['concern', 'call-out'] },
 
-  { id: 'breakup-reaction', stream: 'timeline', weight: 0.5,
+  { id: 'breakup-reaction', stream: 'timeline', weight: 0.5, layer: 'fandom',
     triggers: ['showmance-broken'],
     reads: ['showmances'],
     shapes: ['live-reaction', 'gloating', 'sympathy'] },
@@ -211,25 +218,27 @@ export const TOPICS = [
     reads: ['popularity', 'votes'],
     shapes: ['conflicted', 'grudging-respect'] },
 
-  { id: 'favourite-declaration', stream: 'timeline', weight: 0.5,
+  { id: 'favourite-declaration', stream: 'timeline', weight: 0.5, layer: 'fandom',
     triggers: ['episode-aired', 'comp-win', 'kindness'],
     reads: ['popularity'],
     shapes: ['gushing', 'stan-post'] },
 
   // ── meta ────────────────────────────────────────────────────────────────
-  { id: 'pile-on', stream: 'timeline', weight: 0.8,
+  { id: 'pile-on', stream: 'timeline', weight: 0.8, layer: 'fandom',
     triggers: ['blindside', 'betrayal', 'argument', 'eviction'],
     reads: ['popularity'],
     shapes: ['dunk', 'ratio-bait', 'pile-on-reply'] },
 
-  { id: 'fandom-infighting', stream: 'timeline', weight: 0.4,
+  { id: 'fandom-infighting', stream: 'timeline', weight: 0.4, layer: 'fandom',
     triggers: ['episode-aired', 'eviction'],
     reads: ['popularity'],
     shapes: ['quote-dunk', 'subtweet'] },
 ];
 
 /** The topics that could fire for this event, on this stream. */
-export function topicsFor(eventKind, stream) {
-  return TOPICS.filter(t =>
+export function topicsFor(eventKind, stream, format = null) {
+  const pack = packFor(format);
+  const pool = pack ? [...TOPICS.filter(t => t.layer === 'fandom'), ...(pack.topics || [])] : TOPICS;
+  return pool.filter(t =>
     t.triggers.includes(eventKind) && (t.stream === stream || t.stream === 'both'));
 }

@@ -18,6 +18,7 @@ import { buildEpisodeFeed } from './feed.js';
 import { addEpisodePosts, hasEpisode, keepOnlyEpisodes, storeOf, postsForEpisode } from './store.js';
 import { rewriteEpisode } from './writer.js';
 import { seasonRounds } from '../shows.js';
+import { packFor } from './packs/index.js';
 
 /**
  * Every episode of the loaded season, in the shape extractEvents reads.
@@ -35,6 +36,11 @@ import { seasonRounds } from '../shows.js';
  * reaction to anything.
  */
 export function episodeRecords(gs, format) {
+  // A show with its own pack says which records are its aired episodes. The
+  // Traitors' registry rounds are the whole season the engine played in one
+  // call, unaired nights included, and hold nothing for night one.
+  const pack = packFor(format);
+  if (pack?.records) return pack.records(gs);
   const list = seasonRounds(gs, format);
   const out = list
     .map((record, i) => ({ record, episode: Number(record?.num ?? record?.week ?? i + 1) }))
@@ -114,7 +120,8 @@ export function ensureFeeds(gs, {
     if (only != null && Number(only) !== episode) continue;
     if (!rebuild && hasEpisode(gs, episode)) continue;
 
-    const events = extractEvents(record, { format, season, episode });
+    const events = extractEvents(record, { format, season, episode },
+      packFor(format)?.context?.(gs) || null);
     if (!events.length) continue;
 
     const posts = buildEpisodeFeed(events, {
@@ -175,7 +182,8 @@ export async function ensureFeedsWritten(gs, opts = {}) {
   for (const episode of result.built) {
     const rec = episodeRecords(gs, format).find(r => r.episode === episode);
     if (!rec) continue;
-    const events = extractEvents(rec.record, { format, season, episode });
+    const events = extractEvents(rec.record, { format, season, episode },
+      packFor(format)?.context?.(gs) || null);
     const posts = postsForEpisode(gs, episode);
     if (!posts.length) continue;
     try {

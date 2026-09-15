@@ -38,8 +38,9 @@
 // the premise of this library is that a person can sit and read the output.
 
 import { rotate, frontIndex } from './freshness.js';
-import { PERSONAS, feelingsToward } from './personas.js';
+import { PERSONAS, feelingsToward, personasFor } from './personas.js';
 import { topicsFor } from './topics.js';
+import { packFor } from './packs/index.js';
 import { platformOf } from './platforms.js';
 import {
   PHRASINGS, DECORATIONS, SHAPE_STANCE, TOPIC_AIM, ARCHETYPE_PULL,
@@ -98,7 +99,10 @@ export function subjectLabel(event) {
 
 /** The event kinds a topic may match for this event. */
 function kindsFor(event) {
-  const set = new Set([event.kind, ...(IMPLIED_KINDS[event.kind] || []), 'episode-aired']);
+  // A pack's own kinds say which shared kinds they also are, so a banishment on
+  // a packed show still reaches the fandom topics that listen for a departure.
+  const packed = packFor(event?.format)?.kinds?.[event.kind]?.implies || [];
+  const set = new Set([event.kind, ...(IMPLIED_KINDS[event.kind] || []), ...packed, 'episode-aired']);
   return [...set].filter(Boolean);
 }
 
@@ -194,8 +198,12 @@ function defaultCrowd(slug) {
 }
 
 /** The slug a topic is aimed at, or null when it is aimed at production. */
+function aimOf(topic, event) {
+  return packFor(event?.format)?.topicAim?.[topic.id] || TOPIC_AIM[topic.id] || null;
+}
+
 function targetOf(topic, event) {
-  const aim = TOPIC_AIM[topic.id] || { target: 'subject' };
+  const aim = aimOf(topic, event) || { target: 'subject' };
   if (aim.target === 'none') return null;
   if (aim.target === 'actor') return event.actor || event.subject || null;
   return event.subject || event.actor || null;
@@ -212,11 +220,12 @@ function targetOf(topic, event) {
 function topicWeight(persona, topic, event, platform) {
   const slug = targetOf(topic, event);
   const f = slug ? feelingsToward(persona, slug) : { affection: 0, gameRespect: 0 };
-  const aim = TOPIC_AIM[topic.id] || { stance: 0 };
+  const aim = aimOf(topic, event) || { stance: 0 };
   let w = topic.weight;
 
   w *= Math.max(0.05, 1 + aim.stance * f.affection * 1.5);
-  w *= (ARCHETYPE_PULL[persona.archetype] || {})[topic.id] ?? 1;
+  const packPull = packFor(event?.format)?.archetypePull?.[persona.archetype] || {};
+  w *= packPull[topic.id] ?? (ARCHETYPE_PULL[persona.archetype] || {})[topic.id] ?? 1;
 
   if (topic.id === 'love-them-hate-their-game') {
     w *= 0.4 + 4 * _pos(f.affection) * _pos(-f.gameRespect);
@@ -248,7 +257,8 @@ function weightedPick(rng, items, weightOf) {
  * can now only be a typo.
  */
 function poolFor(topicId, shape, stream, event) {
-  const byShape = PHRASINGS[topicId] || {};
+  // A pack's topics are written in the pack; the shared fandom topics are not.
+  const byShape = packFor(event?.format)?.phrasings?.[topicId] || PHRASINGS[topicId] || {};
   const byStream = byShape[shape] || {};
   const pool = byStream[stream] || byStream.timeline || [];
   // `subject` is asked of `subjectLabel`, not of the field, so a co-winner
@@ -429,7 +439,7 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
   const candidates = [];
   const seen = new Set();
   for (const kind of kinds) {
-    for (const t of topicsFor(kind, platform.id)) {
+    for (const t of topicsFor(kind, platform.id, event?.format)) {
       if (seen.has(t.id)) continue;
       seen.add(t.id);
       if (shapesFor(t, platform.id, event).length) candidates.push(t);
@@ -437,7 +447,7 @@ export function samplePosts(event, { count = 20, stream = 'timeline', rng = Math
   }
   if (!candidates.length) return [];
 
-  const voices = PERSONAS.filter(p => (p.platforms || []).includes(platform.id));
+  const voices = personasFor(event?.format).filter(p => (p.platforms || []).includes(platform.id));
   if (!voices.length) return [];
 
   const posts = [];

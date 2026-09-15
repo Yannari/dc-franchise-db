@@ -881,6 +881,21 @@ Owen: This is going to be amazing!"
   // from a PREFIX map reads as the default one, which is a real season.
   function _csShows() { return (window.__SHOWS && window.__SHOWS.prefixes) || {}; }
 
+  // EVERY WINNER A SEASON RECORD NAMES. A Traitors season can end in a split:
+  // `winners[]` holds all the takers and `winner` is null, so every unguarded
+  // read of the winner block's name on this page threw on it. Reads js/records.js
+  // `seasonWinners`, which the module block at the foot publishes; before that
+  // loads, only a lone `winner` block can be read.
+  function _csWinners(seasonData) {
+    if (typeof window !== 'undefined' && typeof window.__seasonWinners === 'function') {
+      return window.__seasonWinners(seasonData);
+    }
+    const w = seasonData && seasonData.winner;
+    return w && w.name
+      ? [{ name: w.name, playerSlug: w.playerSlug || '', vote: w.vote || '', runnerUp: w.runnerUp || null, keyStats: w.keyStats || '' }]
+      : [];
+  }
+
   /**
    * The show the page is currently looking at.
    *
@@ -6258,7 +6273,14 @@ setTimeout(function() {
 
   function buildSeasonDataFromAI(inputData, aiData) {
     const { metadata, finale } = inputData;
-    
+
+    // Several first places is a split: every one of them goes on `winners[]`
+    // and no `winner` block picks one of them out.
+    const firsts = (aiData.finalists || []).filter(f => f.placement === 1);
+    const winners = (firsts.length ? firsts : (aiData.winner?.name ? [aiData.winner] : []))
+      .map(w => ({ name: w.name, playerSlug: slugify(w.name) }));
+    const sole = winners.length === 1 ? (aiData.winner?.name ? aiData.winner : winners[0]) : null;
+
     // Use AI-extracted data to build complete season file
     const seasonData = {
       seasonNumber: metadata.seasonNumber,
@@ -6268,15 +6290,16 @@ setTimeout(function() {
       episodeCount: metadata.episodeCount,
       jurySize: aiData.jury.length,
       
-      winner: {
-        name: aiData.winner.name,
-        playerSlug: slugify(aiData.winner.name),
+      winner: sole ? {
+        name: sole.name,
+        playerSlug: slugify(sole.name),
         vote: finale.finalVote,
-        runnerUp: aiData.finalists.filter(f => f.placement > 1).map(f => f.name).join(' & '),
-        keyStats: aiData.winner.keyStats,
-        strategy: aiData.winner.strategy,
-        legacy: aiData.winner.legacy
-      },
+        runnerUp: (aiData.finalists || []).filter(f => f.placement > 1).map(f => f.name).join(' & '),
+        keyStats: sole.keyStats,
+        strategy: sole.strategy,
+        legacy: sole.legacy
+      } : null,
+      winners,
       
       finalists: aiData.finalists.map(f => ({
         name: f.name,
@@ -6637,7 +6660,9 @@ setTimeout(function() {
       subtitle: seasonData.subtitle,
       castSize: seasonData.castSize,
       episodeCount: seasonData.episodeCount,
-      winner: seasonData.winner,
+      winner: seasonData.winner || null,
+      // Every taker of a split; js/records.js reads this before `winner`.
+      ...(Array.isArray(seasonData.winners) && seasonData.winners.length ? { winners: seasonData.winners } : {}),
       awards: shortAwards,
       theme: seasonData.theme,
       status: seasonData.status,
@@ -6788,28 +6813,32 @@ setTimeout(function() {
     franchiseDB.trends.finaleVoteMargins = franchiseDB.trends.finaleVoteMargins.filter(s => s.season !== sn);
     franchiseDB.trends.majorTwists       = franchiseDB.trends.majorTwists.filter(s => s.season !== sn);
     
-    // ── Add champion ──────────────────────────────────────────────────────────
-    // Calculate winner's votes against from placements
-    const winnerPlacement = seasonData.placements?.find(p => p.placement === 1);
-    const winnerVotesAgainst = winnerPlacement?.votesReceived || 0;
-    
-    franchiseDB.champions.push({
-      season: sn,
-      winner: seasonData.winner.name,
-      playerSlug: seasonData.winner.playerSlug,
-      strategy: seasonData.winner.strategy || 'TBD',
-      finalVote: seasonData.winner.vote,
-      runnerUp: seasonData.winner.runnerUp,
-      keyStats: seasonData.winner.keyStats || '',
-      legacy: seasonData.winner.legacy || '',
-      votesAgainst: winnerVotesAgainst
-    });
-    
+    // ── Add champions — one row per winner ───────────────────────────────────
+    // A split season has several and no `winner` block; the block's prose
+    // (strategy, legacy) belongs only to the player it names.
+    const winners = _csWinners(seasonData);
+    const winnerNames = winners.map(w => w.name).join(' & ');
+    for (const w of winners) {
+      const mine = seasonData.winner?.name === w.name ? seasonData.winner : {};
+      franchiseDB.champions.push({
+        season: sn,
+        winner: w.name,
+        playerSlug: w.playerSlug,
+        strategy: mine.strategy || 'TBD',
+        finalVote: w.vote || '',
+        runnerUp: w.runnerUp || '',
+        keyStats: w.keyStats || '',
+        legacy: mine.legacy || '',
+        votesAgainst: seasonData.placements?.find(p => p.name === w.name)?.votesReceived || 0,
+        coWinners: winners.length
+      });
+    }
+
     // ── Add trends ────────────────────────────────────────────────────────────
     franchiseDB.trends.winningStrategies.push({
       season: sn,
-      strategy: seasonData.winner.strategy || 'TBD',
-      winner: seasonData.winner.name
+      strategy: seasonData.winner?.strategy || 'TBD',
+      winner: winnerNames
     });
     franchiseDB.trends.castComposition.push({
       season: sn,
@@ -6818,8 +6847,8 @@ setTimeout(function() {
     });
     franchiseDB.trends.finaleVoteMargins.push({
       season: sn,
-      vote: seasonData.winner.vote,
-      winner: seasonData.winner.name,
+      vote: seasonData.winner?.vote || '',
+      winner: winnerNames,
       finalists: seasonData.finalists?.map(f => f.name) || []
     });
     franchiseDB.trends.majorTwists.push({
@@ -7027,7 +7056,7 @@ setTimeout(function() {
 
     // ── evolution — add new season entry ─────────────────────────────────────
     const sn = seasonData.seasonNumber;
-    const winner = seasonData.winner?.name || 'Unknown';
+    const winner = _csWinners(seasonData).map(w => w.name).join(' & ') || 'Unknown';
     const theme  = seasonData.theme || seasonData.title || '';
     // Build a summary sentence from season data
     const castSize   = seasonData.castSize || '?';
@@ -7219,7 +7248,9 @@ setTimeout(function() {
         idolsFound: idolsFound,
         strategicRank: strategicRank,
         juryVotes: juryVotes,
-        finalVote: placement.placement === 1 ? seasonData.winner.vote : "",
+        // Each winner's own vote: a co-winner is never handed another's tally.
+        finalVote: placement.placement === 1
+          ? (_csWinners(seasonData).find(w => w.name === name)?.vote || '') : "",
         advantages: [],
         notes: [placement.notes],
         // Add AI-generated narrative data
@@ -7554,7 +7585,15 @@ setTimeout(function() {
   // ========================================
   
   function generateVotingAnalyticsHTML(seasonData) {
-    const { seasonNumber, castSize, episodeCount, winner, votingHistory, finalTribalCouncil, finalists } = seasonData;
+    const { seasonNumber, castSize, episodeCount } = seasonData;
+    const votingHistory = seasonData.votingHistory || [];
+    // A show with no jury has no final tribal and may have no finalists list.
+    const finalists = seasonData.finalists || [];
+    const juryBallots = seasonData.finalTribalCouncil?.votes || [];
+    const winners = _csWinners(seasonData);
+    const winnerLine = winners.length > 1
+      ? `Winners: ${winners.map(w => w.name).join(' & ')}`
+      : `Winner: ${winners[0]?.name || 'Unknown'}${winners[0]?.vote ? ` (${winners[0].vote} jury vote)` : ''}`;
     
     // Generate episode headers
     let episodeHeaders = '';
@@ -7596,7 +7635,7 @@ setTimeout(function() {
       } else {
         // This player is a juror
         finalists.forEach(f => {
-          const juryVote = finalTribalCouncil.votes.find(v => v.juror === player.name);
+          const juryVote = juryBallots.find(v => v.juror === player.name);
           const didVoteForThisFinalist = juryVote && juryVote.votedFor === f.name;
           voteColumns += `<td>${didVoteForThisFinalist ? f.name : '—'}</td>`;
         });
@@ -7618,7 +7657,7 @@ setTimeout(function() {
   <h2 style="text-align:center; margin: 20px 0;">📊 Season ${seasonNumber} Voting Chart</h2>
   
   <div class="callout">
-    ${castSize} players • ${episodeCount} episodes + finale • Winner: ${winner.name} (${winner.vote} jury vote)
+    ${castSize} players • ${episodeCount} episodes + finale • ${winnerLine}
   </div>
   
   <div class="scroll-hint">
@@ -8520,6 +8559,10 @@ Would you like to:
   <script type="module">
     import { SHOWS, DEFAULT_FORMAT, showName } from './js/shows.js';
     import { currentShow, ALL } from './js/show-switcher.js';
+    // Who won a season, for the page script's `_csWinners`. One resolver for
+    // every page: a split season names several winners and no `winner` block.
+    import { seasonWinners } from './js/records.js';
+    window.__seasonWinners = seasonWinners;
     const resolve = () => {
       const s = currentShow();
       return (s && s !== ALL && SHOWS[s]) ? s : null;

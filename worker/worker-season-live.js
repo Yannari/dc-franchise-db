@@ -387,6 +387,8 @@ async function generateNarrativeFill(body, env) {
   // right up until the house shipped.
   const format = body.format || template?.format || 'total-drama';
   const isBB = format === 'big-brother';
+  // A show with its own brief (NARRATIVE_BRIEFS, below) is written from it.
+  const brief = NARRATIVE_BRIEFS[format] || null;
 
   if (!template || !episodes) {
     return new Response(JSON.stringify({ error: "Missing template or episodes" }), {
@@ -545,9 +547,11 @@ async function generateNarrativeFill(body, env) {
     castSize: template.castSize,
     [isBB ? 'weekCount' : 'episodeCount']: template.episodeCount,
     winner: template.winner?.name,
-    finalists: template.finalists?.map(f =>
-      `${f.name} (${f.votes ?? juryVoteOf(f.name)} jury votes)`),
-    placements: template.placements?.map(p => isBB
+    ...(brief ? brief.summaryExtras(template) : {
+      finalists: template.finalists?.map(f =>
+        `${f.name} (${f.votes ?? juryVoteOf(f.name)} jury votes)`),
+    }),
+    placements: template.placements?.map(p => brief ? brief.placementLine(p) : isBB
       ? `#${p.placement} ${p.name} (${p.status}) — ${p.bb?.hohWins || 0} HOH wins, `
         + `${p.bb?.vetoWins || 0} veto wins, nominated ${p.bb?.timesNominated || 0}x, `
         + `saved off the block ${p.bb?.timesSaved || 0}x, ${p.votesReceived || 0} eviction votes against, `
@@ -556,7 +560,9 @@ async function generateNarrativeFill(body, env) {
     )
   }, null, 2);
 
-  const instructions = isBB ? `
+  const instructions = brief
+    ? brief.instructions({ templateSummary, canonicalCast, recordBlock, episodeSummaries })
+    : isBB ? `
 You are writing narrative content for a Big Brother season. All STATS are already
 filled in — you only write NARRATIVE fields.
 
@@ -747,6 +753,128 @@ Return ONLY valid JSON matching the schema.
  * one of its players is called, what a round is called, and what leaving is
  * called. Nothing else in either prompt is show-specific.
  */
+/**
+ * A show written from its own narrative-fill brief rather than the Total Drama
+ * one it would otherwise fall through to. Looked up by format, not compared
+ * against it, so a fourth show adds an entry and no branch.
+ *
+ * The Traitors needs one because every word of the default is wrong for it:
+ * tribes, immunity, jury votes, and a placement line reading `p.phase` and
+ * `p.immunityWins`, neither of which a castle placement carries.
+ */
+const NARRATIVE_BRIEFS = {
+  'traitors': {
+    placementLine(p) {
+      const tr = p.tr || {};
+      const role = (tr.roundsAsTraitor || tr.timesRecruited)
+        ? `Traitor for ${tr.roundsAsTraitor || 0} round(s)${tr.timesRecruited ? ', recruited' : ''}`
+        : 'Faithful';
+      return `#${p.placement} ${p.name} (${p.status}${p.exitEpisode ? `, episode ${p.exitEpisode}` : ''}) — `
+        + `${role}, ${tr.missionsWon || 0} missions won, ${tr.shieldsWon || 0} Shields, `
+        + `${tr.daggersWon || 0} Daggers, ${tr.reads || 0} correct banishment votes, `
+        + `${p.votesReceived || 0} Round Table votes against`;
+    },
+    summaryExtras(t) {
+      return {
+        winners: (t.winners || []).map(w => w.name),
+        endgame: t.endgameLine || '',
+        pot: t.pot ?? null,
+      };
+    },
+    instructions({ templateSummary, canonicalCast, recordBlock, episodeSummaries }) {
+      return `
+You are writing narrative content for a season of The Traitors. All STATS are
+already filled in — you only write NARRATIVE fields.
+
+THIS IS NOT TOTAL DRAMA OR BIG BROTHER. There are no tribes, no immunity, no
+challenges that keep anybody safe, no nominations, no eviction, no Head of
+Household, no veto, no tribal council, NO JURY and NO FINAL VOTE. Do not mention
+any of them. How the game works:
+- Players live in a castle. At the start a few are secretly made Traitors; the
+  rest are Faithful. Traitors can recruit more during the season (an offer, or
+  an ultimatum when one Traitor is left: accept, or be murdered on the spot).
+- Every night the Traitors meet in secret and murder one Faithful.
+- Missions earn money for one shared prize pot. They never grant immunity.
+  A mission can also win a Shield, which blocks the next murder only and never
+  protects anyone from banishment. A Dagger doubles its holder's vote at a
+  banishment.
+- At every Round Table everyone votes, out loud, to banish one player, and the
+  banished player reveals whether they were a Faithful or a Traitor.
+- The endgame: after the last Round Table the survivors keep voting on whether to
+  banish again or end the game, and nobody banished in the endgame reveals their
+  role. When it ends, if only Faithfuls remain they split the pot; if any Traitor
+  remains, the Traitors take all of it. Several co-winners is a normal ending.
+- Two ways out: banished (by the Round Table) and murdered (by the Traitors).
+
+SEASON DATA (pre-computed, DO NOT change these numbers):
+${templateSummary}
+
+YOU ARE AN ANALYST, NOT A NARRATOR. Break the season down the way a strategy
+podcast does after it airs. A Faithful's game is reading the room: who they
+suspected, whether they were right, and whether they could get the table to act
+on it. A Traitor's game is surviving the Round Table while the murders happen:
+who they murdered, who they let the table banish, and whether they sacrificed a
+fellow Traitor. The record below says who was a Traitor and for how long; the
+season is over, so say it plainly.
+
+THE RECORD OUTRANKS THE EPISODES. Where the transcript and the record disagree,
+the record is what happened.
+
+For each player write:
+- notes: 1 sentence summary
+- strategicRank: 1-10, ranking the GAME rather than the finish. A Faithful who
+  kept reading Traitors correctly and was murdered for it can outrank a
+  finalist who was carried.
+- story: 4-8 sentences, told through the decisions — the reads, the votes, the
+  missions, the moment their game stopped working.
+- gameplayStyle: 3-6 evocative words (NOT generic like "Strategic player")
+- keyMoments: 3-8 specific moments with episode numbers
+- gameArchetype: pick the closest. comp-beast is a mission and Shield player.
+  alliance-hub is the person the table's votes run through. social-manipulator
+  steers banishments without being suspected. floater votes with the room and
+  is rarely wrong about which way it is going. under-the-radar is never
+  suspected and never leads. goat is kept because nobody fears them.
+  early-casualty went before a game existed.
+- resume: what their game genuinely achieved, using only things they did. If it
+  achieved nothing, say so instead of inventing something.
+- demise: what ENDED them, and by whom. For the murdered, why the Traitors chose
+  them that night. For the banished, why the table settled on them and whether
+  the table was right. For a player who took a share of the pot, the last real
+  threat to them and how it passed.
+- demiseKind: outplayed, collateral (not the point, just available),
+  never-had-a-path, comp-dependent (safe only while a Shield covered them),
+  exposed (their game became visible and they could not survive being seen), or
+  won-the-game (every player who took a share of the pot, and only them).
+- optimalLine: what they should have done judged on what they could know AT THE
+  TIME, never on who turned out to be a Traitor. If the correct play was the one
+  they made and it still failed, say so — some games are lost by other people
+  playing well. Hindsight makes this field worthless.
+- ceiling: won-it (took a share of the pot), could-have-won,
+  best-realistic-finish, or overperformed.
+
+Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/
+legacy) — about the player who took the pot, or, when several split it, about
+the takers together — and all awards.
+
+The award names are shared with the franchise's other shows, so read them in
+castle terms: "compBeast" is missions and Shields; "advantageKing" is whoever
+used Shields and Daggers best; "bestPhysical" is mission performance;
+"mostClutch" is surviving a Round Table the room had turned against you;
+"ftcGame" is whoever played the endgame best; "mostRobbedFinalist" is a player
+who reached the final table and took nothing; "biggestBetrayal" is a Traitor
+turning on a fellow Traitor, or a player turning on a close ally.
+
+IMPORTANT: Use EXACTLY these player names — do not modify, abbreviate, or add suffixes.
+Cast: ${canonicalCast.join(', ')}
+${recordBlock}
+${episodeSummaries}
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+    },
+  },
+};
+
 const SHOW_WORDS = {
   'big-brother': { show: 'Big Brother', player: 'houseguest', round: 'Week', exit: 'evicted' },
   'total-drama': { show: 'Total Drama', player: 'contestant', round: 'Episode', exit: 'voted out' },

@@ -2668,7 +2668,8 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
  * Returns the filled document, or the template untouched when there is nothing
  * for the worker to read.
  */
-async function _fillNarratives(template, episodes, workerUrl, onStatus) {
+async function _fillNarratives(template, episodes, workerUrl, onStatus,
+  { gameRecord: recordOverride = null } = {}) {
   // Silence here reads exactly like success: the season comes back with every
   // narrative field still saying [AI_FILL] and nothing anywhere says the worker
   // was never called. Say so.
@@ -2689,7 +2690,8 @@ async function _fillNarratives(template, episodes, workerUrl, onStatus) {
   //
   // Computed here rather than asked for, so the numbers in the verdict are the
   // numbers in the game.
-  let gameRecord = null;
+  // A show whose record is not weeks hands its own in.
+  let gameRecord = recordOverride;
   try {
     const weeks = (gs?.bb?.weeks || []).filter(Boolean);
     if (weeks.length) {
@@ -2732,7 +2734,9 @@ async function _fillNarratives(template, episodes, workerUrl, onStatus) {
   if (aiResult.subtitle && aiResult.subtitle !== '[AI_FILL]') filled.subtitle = aiResult.subtitle;
   if (aiResult.seasonNarrative) filled.seasonNarrative = aiResult.seasonNarrative;
 
-  if (aiResult.winner) {
+  // A split season has no winner block to write into; the takers' analysis is
+  // on their placements.
+  if (aiResult.winner && filled.winner) {
     if (aiResult.winner.keyStats) filled.winner.keyStats = aiResult.winner.keyStats;
     if (aiResult.winner.strategy) filled.winner.strategy = aiResult.winner.strategy;
     if (aiResult.winner.legacy) filled.winner.legacy = aiResult.winner.legacy;
@@ -3212,6 +3216,83 @@ export function seasonExporterFor(format) {
 }
 
 /**
+ * What the writer is told happened, measured off the document rather than read
+ * out of the prose: who left each episode and by which door, who was wearing
+ * the cloak and for how long, and the numbers the ranking board uses. The
+ * transcript is how the season felt; this is what it was.
+ *
+ * A banishment names the player's role only where the table was shown it. The
+ * endgame reveals nothing, so its exits carry no role here either.
+ */
+export function traitorsRecordLines(doc) {
+  const out = [];
+  const takers = (doc.winners || []).map(w => w.name);
+  out.push(`Ending: ${_clean(doc.endgameLine, 'not recorded')}`);
+  out.push(`Took the pot (${doc.pot ?? '?'}): ${takers.join(', ') || 'nobody'}`
+    + (doc.endgameWinner ? ` (the ${doc.endgameWinner} side)` : ''));
+  for (const row of doc.votingHistory || []) {
+    const exits = (row.exits || []).map(x => {
+      const shown = x.channel === 'banishment' && !x.endgame && x.name === row.eliminated
+        && row.banishedWasTraitor != null;
+      return `${x.name} ${x.verb}${shown ? (row.banishedWasTraitor ? ' (a Traitor)' : ' (a Faithful)') : ''}`
+        + (x.endgame ? ' at the final table' : '');
+    });
+    out.push(`Episode ${row.episode}: ${exits.join('; ') || 'nobody left'}`
+      + (row.murderBlocked ? '; a Shield blocked the murder' : ''));
+  }
+  for (const p of doc.placements || []) {
+    const tr = p.tr || {};
+    const role = (tr.roundsAsTraitor || tr.timesRecruited)
+      ? `a Traitor for ${tr.roundsAsTraitor || 0} round(s)${tr.timesRecruited ? `, recruited ${tr.timesRecruited}x` : ''}`
+      : 'Faithful';
+    out.push(`#${p.placement} ${p.name} — ${p.status}${p.exitEpisode ? ` in episode ${p.exitEpisode}` : ''}; `
+      + `${role}; missions won ${tr.missionsWon || 0}; Shields ${tr.shieldsWon || 0}; `
+      + `Daggers ${tr.daggersWon || 0} (played ${tr.daggersPlayed || 0}); `
+      + `correct banishment votes ${tr.reads || 0}; table votes against ${p.votesReceived || 0}; `
+      + `murder ballots naming them ${tr.wanted || 0}`);
+  }
+  return out.join('\n');
+}
+
+/**
+ * The Traitors' narrative fill: title, subtitle, season narrative, each
+ * player's analysis and the awards, written by the Season Builder worker from
+ * every episode's transcript and the measured record above.
+ *
+ * Never fails the export. No worker URL, a transcript that cannot be rebuilt,
+ * or a worker error each publish the season unfilled and say so — which is how
+ * every Traitors export went out before this existed.
+ */
+async function _fillTraitorsNarratives(doc, rows, onStatus) {
+  const _status = onStatus || (() => {});
+  const workerUrl = _resolveWorkerUrl();
+  if (!workerUrl) {
+    _status('No Season Builder worker URL — publishing without narratives.');
+    return doc;
+  }
+  let episodes;
+  try {
+    // The audience transcript: the season is over, and the analysis is of the
+    // whole truth, the cloaks included.
+    const { generateTraitorsSummaryText } = await import('./text-backlog.js');
+    episodes = rows.map(r => ({ episode: Number(r.num), summary: generateTraitorsSummaryText(r, 'audience') }));
+  } catch (err) {
+    console.warn('[narrative-fill] could not rebuild the castle transcript:', err);
+    _status('Could not rebuild the transcript — publishing without narratives.');
+    return doc;
+  }
+  _status('Calling AI Worker...');
+  try {
+    return await _fillNarratives(doc, episodes, workerUrl, _status,
+      { gameRecord: traitorsRecordLines(doc) });
+  } catch (err) {
+    console.warn('Narrative fill failed, publishing the raw season:', err);
+    _status('AI fill failed — publishing without narratives.');
+    return doc;
+  }
+}
+
+/**
  * The Traitors.
  *
  * This was a refusal while the only way to play a castle was headless. It is
@@ -3249,11 +3330,12 @@ export async function exportTraitorsSeason(onStatus) {
   const [{ traitorsSeasonRecord }, { buildTraitorsSeasonDocument }] = await Promise.all([
     import('./tr-run.js'), import('./tr/export.js'),
   ]);
-  const doc = buildTraitorsSeasonDocument(traitorsSeasonRecord(), {
+  let doc = buildTraitorsSeasonDocument(traitorsSeasonRecord(), {
     seasonNumber: seasonNum,
     twists: (seasonConfig.twistSchedule || []).filter(t => t && t.type),
   });
   _status(`Built ${doc.seasonId}: ${doc.castSize} players, ${doc.episodeCount} episodes.`);
+  doc = await _fillTraitorsNarratives(doc, rows, _status);
 
   _status('Merging databases...');
   let playersDb = null; let seasonsDb = null;

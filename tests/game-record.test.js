@@ -232,17 +232,17 @@ describe('the record reaches the writers', () => {
 
   it('judges on what was knowable, not on the finish', () => {
     // The single instruction that separates analysis from hindsight, and it
-    // has to be in BOTH prompt branches — the Big Brother one and the Total
-    // Drama one — because a verdict written from the finishing order is not a
-    // verdict, it is a summary with opinions attached.
+    // has to be in EVERY prompt branch — Big Brother, Total Drama, and the
+    // Traitors brief in NARRATIVE_BRIEFS — because a verdict written from the
+    // finishing order is not a verdict, it is a summary with opinions attached.
     // Whitespace-normalised: these are prose in a template literal and wrap
     // wherever the line ran out, so matching the raw text tests the line
     // breaks rather than the instruction.
     const season = read('worker/worker-season-live.js').replace(/\s+/g, ' ');
-    expect((season.match(/could know/g) || []).length).toBe(2);
+    expect((season.match(/could know/g) || []).length).toBe(3);
     expect(season).toMatch(/hindsight/i);
     // And the permission that stops it manufacturing a mistake to blame.
-    expect((season.match(/lost by other people playing well/g) || []).length).toBe(2);
+    expect((season.match(/lost by other people playing well/g) || []).length).toBe(3);
   });
 });
 

@@ -15,7 +15,8 @@ import { setPlayers } from '../js/core.js';
 import { SHOWS, DEFAULT_FORMAT } from '../js/shows.js';
 import { playTraitorsSeason } from '../js/tr/headless.js';
 import { TRAITORS_FORMAT, buildTraitorsSeasonDocument } from '../js/tr/export.js';
-import { mergeTraitorsSeason, mergeTraitorsSeasonsDatabase } from '../js/stats-export.js';
+import { readFileSync } from 'node:fs';
+import { mergeTraitorsSeason, mergeTraitorsSeasonsDatabase, traitorsRecordLines } from '../js/stats-export.js';
 import { championsIn } from '../js/records.js';
 import roster from '../franchise_roster.json';
 
@@ -181,5 +182,39 @@ describe('seasons_database.json', () => {
     const db = mergeTraitorsSeasonsDatabase(before, solo);
     expect(db.seasons.find(x => x.format === 'drag-race').title).toBe('Runway');
     expect(db.seasons.filter(x => x.format === TRAITORS_FORMAT).length).toBe(1);
+  });
+});
+
+describe('the narrative fill', () => {
+  it('hands the writer one line per episode and per player, off the document', () => {
+    for (const doc of [split, solo]) {
+      const text = traitorsRecordLines(doc);
+      for (const row of doc.votingHistory) expect(text).toContain(`Episode ${row.episode}:`);
+      for (const p of doc.placements) expect(text).toContain(`#${p.placement} ${p.name} —`);
+      for (const w of doc.winners) expect(text).toMatch(new RegExp(`Took the pot[^\\n]*${w.name}`));
+    }
+  });
+
+  it('never tells the writer a role the endgame did not reveal', () => {
+    let tagged = 0;
+    for (const doc of [split, solo]) {
+      for (const line of traitorsRecordLines(doc).split('\n')) {
+        if (/at the final table/.test(line)) {
+          for (const exit of line.split('; ').filter(s => /at the final table/.test(s))) {
+            expect(exit, 'an endgame banishment carried a role').not.toMatch(/\(a (Traitor|Faithful)\)/);
+          }
+        }
+        if (/\(a (Traitor|Faithful)\)/.test(line)) tagged++;
+      }
+    }
+    expect(tagged, 'no Round Table banishment carried its reveal — the check is vacuous').toBeGreaterThan(0);
+  });
+
+  it('the season worker writes a castle from its own brief, not Total Drama\'s', () => {
+    const worker = readFileSync('worker/worker-season-live.js', 'utf8');
+    expect(worker).toMatch(/NARRATIVE_BRIEFS\s*=\s*\{\s*'traitors'\s*:/);
+    expect(worker).toMatch(/const brief = NARRATIVE_BRIEFS\[format\]/);
+    expect(worker).toMatch(/brief\s*\?\s*brief\.instructions\(/);
+    expect(worker).toMatch(/brief \? brief\.placementLine\(p\)/);
   });
 });

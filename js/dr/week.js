@@ -951,9 +951,9 @@ export function runDragWeek(state, cfg, ctx) {
         call.safe = (call.safe || []).filter(n => n !== pulled);
         call.atRisk = [pulled, ...call.atRisk];
       }
-      // Two winners and a bottom four is already six: nobody else stays on.
+      // Two winners and a bottom four is already six: at most one more stays on.
       while (call.win.length + call.high.length + call.low.length
-        + call.atRisk.length + call.bottom.length > 6 && (call.high.length || call.low.length)) {
+        + call.atRisk.length + call.bottom.length > 7 && (call.high.length || call.low.length)) {
         const out = call.low.length ? call.low.pop() : call.high.pop();
         call.safe = [...(call.safe || []), out];
       }

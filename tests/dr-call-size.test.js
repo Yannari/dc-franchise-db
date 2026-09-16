@@ -3,10 +3,10 @@
 // ══════════════════════════════════════════════════════════════════════
 //
 // The stage used to be drawn from the real show's whole spread (3 to 10) and
-// read as noise week to week. Six is the real show's mode and five the next,
-// so those are the only sizes a room of six or more may see — on double
-// eliminations, double wins, team nights and save nights too — and nobody
-// may stand in two groups at once.
+// read as noise week to week. Six is the night; five and seven are rare. A
+// room of six or more sees nothing else — on double eliminations, double
+// wins, team nights and save nights too — and nobody stands in two groups.
+// A named bottom three IS the lows: no extra LOW, and a high beside the win.
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
@@ -23,7 +23,7 @@ const cast = (n, seed) => {
 };
 
 describe('the call', () => {
-  it('names five or six queens, and each queen once', () => {
+  it('names six queens most nights, five or seven rarely, and each queen once', () => {
     for (const drSave of ['none', 'beaver', 'tank']) {
       for (let s = 1; s <= 10; s++) {
         const bonds = {}; const key = (a, b) => [a, b].sort().join('|');
@@ -41,7 +41,11 @@ describe('the call', () => {
           const room = r.dr.roomAtStart.length;
           const where = `${drSave} s${s} ep${r.num}`;
           expect(new Set([...on, ...c.safe]).size, `${where}: a queen in two groups`).toBe(on.length + c.safe.length);
-          if (room >= 6) expect([5, 6], where).toContain(on.length);
+          if (room >= 6) expect([5, 6, 7], where).toContain(on.length);
+          if (c.pendingSave) {
+            expect(c.low, `${where}: an extra LOW on a save night`).toEqual([]);
+            expect(c.high.length, `${where}: no high on a save night`).toBeGreaterThanOrEqual(1);
+          }
           else expect(on.length, where).toBeLessThanOrEqual(room);
           expect(c.win.length, where).toBeGreaterThanOrEqual(1);
         }

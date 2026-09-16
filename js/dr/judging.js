@@ -368,7 +368,9 @@ export function callWeek(finalRanking, {
      small for five still keeps everybody it has — see `roof` below.
      A LOW is at most one: six is one win, two high, one low and the bottom
      two, which is the ordinary night the comment further down describes. */
-  const SPOKEN_TABLE = [[5, 25], [6, 75]];
+  /* Six is the night. Five and seven happen, rarely: the stage stops at a
+     top six most weeks. */
+  const SPOKEN_TABLE = [[5, 12], [6, 76], [7, 12]];
   const LOW_TABLE = [[0, 20], [1, 80]];
 
   /* ── MEASURED AGAINST THE REAL SHOW, NOT GUESSED ──
@@ -417,7 +419,9 @@ export function callWeek(finalRanking, {
     const spokenFor = drawn === null ? upFor(room) + 1 + down0
       : Math.max(down0 + 2, Math.min(drawn, room >= 9 ? room - 1 : room));
     // A win and a high on any room of five or more; below that, a win.
-    const lowWanted = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
+    /* A NAMED BOTTOM THREE IS THE LOWS. Nobody else is kept back as LOW on
+       that night: it is a win, two highs and the three named. */
+    const lowWanted = down0 >= 3 ? 0 : Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
       spokenFor - down0 - (room >= 5 ? 2 : 1)));
     const up = Math.max(1, spokenFor - down0 - lowWanted);
     const called = winners.slice(0, Math.max(1, up));
@@ -482,7 +486,8 @@ export function callWeek(finalRanking, {
     return Math.max(down0 + 2, Math.min(drawn, roof));
   })();
   // A win and a high on any room of five or more; below that, a win.
-  const lowWanted = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
+  // A named bottom three is the lows: see the note on the team branch.
+  const lowWanted = down0 >= 3 ? 0 : Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
     spokenFor - down0 - (n >= 5 ? 2 : 1)));
   const up = Math.max(1, spokenFor - down0 - lowWanted);
   /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom

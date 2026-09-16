@@ -208,9 +208,9 @@ double shantay, double sashay, early-win immunity, triple lip sync on a tie.
 
 ### The size of the call
 
-The panel calls **five or six** queens on every night with six or more in
-the room (six 75%, five 25% — six is the norm), always a
-win and at least one high, at most one LOW. Rooms of five or fewer keep what
+The panel calls **six** queens most nights (76%), five or seven rarely (12% each), on any night with six or more in
+the room, always a
+win and at least one high, at most one LOW — and on a named bottom-three night no LOW at all, because the three named ARE the lows. Rooms of five or fewer keep what
 they have. Double eliminations and bottom threes name their wider bottom
 inside that count; a double win promotes a queen already called HIGH.
 Guarded by `tests/dr-call-size.test.js`. On a Beaver or Baguette night the

@@ -412,7 +412,8 @@ export function rpBuildResults(row) {
   /* A BEAVER OR BAGUETTE NIGHT names its bottom before anybody is saved, so
      nobody on this screen is BTM2 yet: they are stamped LOW, and the host's
      words stay the "up for elimination" ones, because that is what she said. */
-  const pending = !!call.pendingSave;
+  // `dr.save.hold` too, so an episode played before the flag existed reads right.
+  const pending = !!(call.pendingSave || row?.dr?.save?.hold);
   const shown = r => (pending && r === 'BTM2' ? 'LOW' : r);
 
   /* WHAT THE HOST ACTUALLY SAID. The row carries a written line for every
@@ -574,7 +575,10 @@ export function rpBuildResults(row) {
      caught it, which is the only check that would have.
      It goes last because it IS the handoff: the call ends, the stakes are
      named, and the next screen is two queens on the mark. */
-  const stakes = (row.dr.scenes || []).find(x => x.kind === 'stage:call-stakes' && x.text);
+  /* Not on a save night: "two queens stand before me" would name the singers
+     before the holder has chosen. Older episodes still carry the line. */
+  const stakes = row?.dr?.save?.hold ? null
+    : (row.dr.scenes || []).find(x => x.kind === 'stage:call-stakes' && x.text);
   /* `at` is where the rows actually finished, which is one past `named.length`
      on a night the host paused. Using the name count put this card on top of
      the last call. */

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buried Alive — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-buried-alive.html — visual target for the fifth bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  The franchise's trademark mission (UK S1, Canada S1, France S2, Greece S1,
+  Portugal S1 — thetraitors.fandom.com/wiki/Buried_Alive). Three teams; two
+  from each are nailed into coffins and lowered into the churchyard, and the
+  rest dig open CLUE graves to work out which plot their own people are in,
+  inside forty-five minutes.
+
+  IT SHARES NOTHING WITH THE FOUR BEFORE IT. Not the causeway's slate and
+  tide, the orrery's ink and brass, the counting room's paper, or the burnt
+  wing's charcoal and ember. This is WET LOAM AND SODIUM LAMPLIGHT: a
+  churchyard at dusk, moss-green headstones, rain on the lens.
+
+  THE ORGANISING PRIMITIVE IS A SECTION THROUGH THE GROUND. The sidebar is
+  the churchyard cut open: nine plots under the turf, six of them holding a
+  coffin. A coffin is DARK until its team finds the right plot, then its lid
+  outline lights and the soil above it drains away as they dig. A wrong plot
+  (another team's coffin) gets a red spoil heap beside it. The clock is a lych-gate bell
+  that swings on every minute that is spent.
+
+  THE SHIELD IS INSIDE THE COFFINS. Each lid has a sealed riddle nailed to
+  its underside. A buried player who solves theirs by lamplight — and who,
+  when their team's spades hit the lid, says "not yet" instead of "get me
+  out" — takes the Shield. Staying down costs their team minutes, and the
+  minutes are the money. The sidebar's Shield box stays SEALED until the
+  reveal that says somebody chose to stay, because the people above ground
+  do not know it is happening.
+
+  Cards do not fade in — they are UNEARTHED: they rise out of a strip of
+  soil and shake the dirt off.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ba-night:#0d1210; --ba-loam:#2a211a; --ba-loam2:#3a2d22; --ba-clay:#6b4f36;
+  --ba-moss:#4f6b4a; --ba-moss-hi:#8fae7e; --ba-slate:#5d6a6e; --ba-stone:#b9bdb4;
+  --ba-bone:#ece6d6; --ba-lamp:#e8d27a; --ba-lamp-lo:#8c7a34; --ba-wrong:#b0543c;
+  --ba-shield:#e9c65b; --ba-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ba-night); color:var(--ba-stone);
+  font-family:'Crimson Pro',Georgia,serif; font-size:18px; line-height:1.55;
+  overflow-x:hidden;
+}
+button{font:inherit}
+
+.ba-navstub{
+  position:fixed; inset:0 0 auto 0; height:var(--ba-nav); z-index:60;
+  background:#070a09; border-bottom:1px solid #000; display:flex; align-items:center; gap:16px;
+  padding:0 16px; font:13px/1 'Share Tech Mono',monospace; letter-spacing:.18em; text-transform:uppercase;
+  color:#5f6b64; overflow:hidden; white-space:nowrap;
+}
+.ba-navstub b{color:var(--ba-lamp)}
+
+/* ── ATMOSPHERE: dusk sky, a line of yews, rain ───────────────────── */
+.ba-sky{
+  position:fixed; left:0; right:0; top:var(--ba-nav); bottom:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(40% 30% at 78% 12%, rgba(232,210,122,.16) 0%, transparent 70%),
+    linear-gradient(180deg,#17201d 0%,#0f1513 45%,#0a0e0c 100%);
+}
+.ba-yews{position:fixed; left:0; right:0; bottom:0; height:38vh; z-index:0; pointer-events:none; opacity:.55}
+.ba-rain{
+  position:fixed; left:0; right:0; top:var(--ba-nav); bottom:0; z-index:1; pointer-events:none; opacity:.18;
+  background-image:repeating-linear-gradient(104deg, transparent 0 22px, rgba(185,189,180,.55) 22px 23px, transparent 23px 60px);
+  background-size:220px 220px;
+  animation:ba-rain 1.1s linear infinite;
+}
+@keyframes ba-rain{from{background-position:0 0}to{background-position:-40px 220px}}
+
+.ba-shell{position:relative; z-index:2; max-width:1120px; margin:0 auto; padding:calc(var(--ba-nav) + 26px) 16px 132px}
+
+/* ── HERO: a headstone ────────────────────────────────────────────── */
+.ba-hero{
+  position:relative; padding:34px 26px 26px; overflow:hidden;
+  background:linear-gradient(170deg,#3b4441 0%,#262d2b 60%,#1b201f 100%);
+  border-radius:120px 120px 6px 6px / 70px 70px 6px 6px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.08), inset 0 -30px 60px rgba(0,0,0,.35), 0 18px 40px rgba(0,0,0,.55);
+  text-align:center;
+}
+.ba-hero::before{ /* lichen */
+  content:''; position:absolute; inset:0; pointer-events:none; opacity:.35;
+  background:
+    radial-gradient(18px 12px at 12% 22%, var(--ba-moss) 0 60%, transparent 62%),
+    radial-gradient(26px 16px at 88% 70%, var(--ba-moss) 0 60%, transparent 62%),
+    radial-gradient(12px 9px at 70% 18%, var(--ba-moss-hi) 0 60%, transparent 62%),
+    radial-gradient(30px 14px at 20% 88%, var(--ba-moss) 0 60%, transparent 62%);
+}
+.ba-kicker{font:12px/1 'Share Tech Mono',monospace; letter-spacing:.34em; text-transform:uppercase; color:var(--ba-lamp)}
+.ba-title{
+  font-family:'Grenze Gotisch',serif; font-weight:900; color:var(--ba-bone);
+  font-size:clamp(46px,9vw,96px); line-height:.9; margin:.12em 0 .1em;
+  text-shadow:0 2px 0 #11151400, 0 -1px 0 rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.08);
+}
+.ba-title span{color:var(--ba-lamp)}
+.ba-sub{color:#a6aca2; max-width:58ch; margin:0 auto; font-style:italic}
+.ba-meta{display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:18px}
+.ba-chip{
+  font:11.5px/1 'Share Tech Mono',monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--ba-stone);
+  border:1px solid #56605b; padding:6px 11px; background:rgba(0,0,0,.28); border-radius:3px;
+}
+.ba-chip.shield{border-color:var(--ba-shield); color:var(--ba-shield)}
+
+.ba-grid{display:grid; grid-template-columns:minmax(0,1fr) 318px; gap:22px; margin-top:24px; align-items:start}
+@media(max-width:920px){.ba-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── BRIEFING: a lych-gate notice ─────────────────────────────────── */
+.ba-brief{background:rgba(11,15,13,.86); border:1px solid #29322e; border-top:4px solid var(--ba-moss); padding:22px 20px 18px}
+.ba-brief h2,.ba-phase-name{font-family:'Grenze Gotisch',serif; font-weight:700; color:var(--ba-bone)}
+.ba-brief h2{font-size:32px; margin:0 0 4px}
+.ba-staging{font-style:italic; color:#88918a; border-bottom:1px dashed #2f3935; padding-bottom:12px; margin:0 0 14px}
+.ba-beat{display:flex; gap:12px; margin:0 0 10px}
+.ba-beat p{margin:0}
+.ba-beat::before{flex:0 0 22px; font:12px/1.9 'Share Tech Mono',monospace; color:#5d6a63}
+.ba-beat.do::before{content:'~'}
+.ba-beat.say::before{content:'\201C'; font:700 30px/1 'Grenze Gotisch',serif; color:var(--ba-lamp-lo)}
+.ba-beat.do p{color:#8c958e; font-style:italic}
+.ba-beat.say p{color:var(--ba-bone)}
+.ba-beat.shield p{color:var(--ba-shield)}
+.ba-rules{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; padding-top:12px; border-top:1px dashed #2f3935}
+.ba-rule{font:11px/1 'Share Tech Mono',monospace; letter-spacing:.08em; color:#8d968f; border:1px solid #33403a; padding:5px 8px; border-radius:2px}
+.ba-rule b{color:var(--ba-moss-hi); font-weight:400; margin-right:4px; text-transform:uppercase}
+.ba-rule.shield b{color:var(--ba-shield)}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.ba-phase{margin-top:26px}
+.ba-phase-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-bottom:1px solid #2d3632; padding-bottom:6px}
+.ba-phase-n{font:13px/1 'Share Tech Mono',monospace; color:var(--ba-lamp); border:1px solid var(--ba-lamp-lo); padding:4px 7px; border-radius:2px}
+.ba-phase-name{font-size:34px; line-height:1}
+.ba-phase-stats{margin-left:auto; display:flex; gap:6px}
+.ba-stat{font:11px/1 'Share Tech Mono',monospace; font-style:normal; text-transform:uppercase; letter-spacing:.12em; color:#9aa39c; background:#1a211e; padding:5px 8px; border-radius:2px}
+.ba-setting{font-style:italic; color:#7f8982; margin:8px 0 12px}
+
+/* ── CARDS: unearthed ─────────────────────────────────────────────── */
+.ba-card{
+  position:relative; margin:0 0 12px; padding:14px 16px 13px 64px;
+  background:linear-gradient(180deg,rgba(33,40,37,.95),rgba(20,25,23,.95));
+  border:1px solid #2c3531; border-radius:3px;
+  opacity:0; transform:translateY(22px); clip-path:inset(100% 0 0 0);
+  transition:opacity .35s ease, transform .55s cubic-bezier(.2,.9,.25,1.15), clip-path .55s ease;
+}
+.ba-card.on{opacity:1; transform:none; clip-path:inset(0 0 0 0)}
+.ba-card::after{ /* the soil shaken off */
+  content:''; position:absolute; left:0; right:0; bottom:-2px; height:8px; pointer-events:none;
+  background:radial-gradient(3px 2px at 10% 50%, var(--ba-clay), transparent),radial-gradient(2px 2px at 34% 30%, var(--ba-clay), transparent),
+    radial-gradient(3px 2px at 58% 70%, var(--ba-clay), transparent),radial-gradient(2px 2px at 81% 40%, var(--ba-clay), transparent);
+  opacity:0;
+}
+.ba-card.on::after{animation:ba-shake .9s ease-out 1}
+@keyframes ba-shake{0%{opacity:1;transform:translateY(-6px)}100%{opacity:0;transform:translateY(14px)}}
+.ba-card.good{border-left:3px solid var(--ba-moss-hi)}
+.ba-card.bad{border-left:3px solid var(--ba-wrong)}
+.ba-card.social{border-left:3px solid var(--ba-lamp)}
+.ba-card.relic{border:1px solid var(--ba-shield); box-shadow:0 0 22px rgba(233,198,91,.14)}
+.ba-ico{position:absolute; left:14px; top:14px; width:36px; height:36px}
+.ba-ico svg{width:100%; height:100%; display:block}
+.ba-card .tag{float:right; font:11px/1 'Share Tech Mono',monospace; letter-spacing:.14em; text-transform:uppercase; color:#8d968f; margin:3px 0 0 10px}
+.ba-card.good .tag{color:var(--ba-moss-hi)} .ba-card.bad .tag{color:var(--ba-wrong)} .ba-card.relic .tag{color:var(--ba-shield)}
+.ba-card .who{font:600 15px/1.2 'Crimson Pro',serif; letter-spacing:.06em; text-transform:uppercase; color:var(--ba-bone)}
+.ba-card .who i{font-style:normal; color:#7f8982; font-weight:400}
+.ba-card .txt{margin-top:4px}
+.ba-conf{margin-top:10px; padding:9px 12px; background:rgba(0,0,0,.28); border-left:2px solid var(--ba-lamp-lo); font-style:italic; color:#cfd2c8}
+.ba-conf small{display:block; font:11px/1.4 'Share Tech Mono',monospace; font-style:normal; letter-spacing:.14em; text-transform:uppercase; color:var(--ba-lamp)}
+.ba-fx{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px}
+.ba-fx span{font:11px/1 'Share Tech Mono',monospace; color:#9aa39c; border:1px dashed #3b4742; padding:4px 7px; border-radius:2px}
+
+.ba-summary{margin-top:24px; padding:18px 20px; border:1px solid #2d3632; background:rgba(11,15,13,.86); transition:opacity .4s}
+.ba-summary small{display:block; font:11px/1.4 'Share Tech Mono',monospace; letter-spacing:.2em; text-transform:uppercase; color:var(--ba-lamp); margin-bottom:4px}
+
+/* ── SIDEBAR: the section through the ground ──────────────────────── */
+.ba-side{position:sticky; top:calc(var(--ba-nav) + 14px)}
+.ba-panel{background:rgba(9,12,11,.92); border:1px solid #29322e; padding:14px}
+.ba-panel h3{font:700 26px/1 'Grenze Gotisch',serif; color:var(--ba-bone); margin:0 0 10px}
+.ba-clock{display:flex; align-items:center; gap:12px; margin-bottom:12px}
+.ba-bell{width:46px; height:46px; transform-origin:50% 8%}
+.ba-bell.ring{animation:ba-ring .9s ease-in-out}
+@keyframes ba-ring{0%,100%{transform:rotate(0)}25%{transform:rotate(16deg)}60%{transform:rotate(-12deg)}85%{transform:rotate(5deg)}}
+.ba-time{font:30px/1 'Share Tech Mono',monospace; color:var(--ba-lamp)}
+.ba-time small{display:block; font-size:11px; letter-spacing:.18em; color:#6f7a73; text-transform:uppercase; margin-top:4px}
+.ba-ground{width:100%; display:block; border-radius:2px}
+.ba-plot .soil{transition:transform .8s ease, opacity .8s ease}
+.ba-plot.dug .soil{transform:translateY(-14px); opacity:.25}
+.ba-plot .lid{stroke:#1b1510; transition:stroke .5s, filter .5s}
+.ba-plot.found .lid{stroke:var(--ba-lamp); filter:drop-shadow(0 0 4px rgba(232,210,122,.8))}
+.ba-plot.up .coffin{transform:translateY(-30px); transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
+.ba-plot.wrong .spoil{opacity:1}
+.ba-plot .spoil{opacity:0; transition:opacity .5s}
+.ba-plot .lamp{opacity:0; transition:opacity .6s}
+.ba-plot.lit .lamp{opacity:1}
+.ba-legend{display:flex; justify-content:space-between; font:10.5px/1 'Share Tech Mono',monospace; letter-spacing:.1em; color:#66716a; text-transform:uppercase; margin:6px 0 12px}
+.ba-rows{border-top:1px dashed #2f3935; padding-top:10px}
+.ba-row{display:flex; justify-content:space-between; align-items:center; font-size:15.5px; padding:3px 0}
+.ba-row b{font:13px/1 'Share Tech Mono',monospace; color:var(--ba-bone); font-weight:400}
+.ba-row .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px}
+.ba-shieldbox{margin-top:12px; padding:11px 12px; border:1px dashed #4b554f; transition:all .5s}
+.ba-shieldbox .lbl{font:11px/1 'Share Tech Mono',monospace; letter-spacing:.2em; text-transform:uppercase; color:#6f7a73}
+.ba-shieldbox .val{margin-top:5px; color:#8d968f; font-style:italic}
+.ba-shieldbox .cost{margin-top:4px; font:12px/1.35 'Share Tech Mono',monospace; color:#8d968f}
+.ba-shieldbox.on{border:1px solid var(--ba-shield); box-shadow:0 0 18px rgba(233,198,91,.16)}
+.ba-shieldbox.on .lbl,.ba-shieldbox.on .val{color:var(--ba-shield); font-style:normal}
+.ba-pot{margin-top:12px; border-top:1px solid #2d3632; padding-top:10px}
+.ba-pot .r{display:flex; justify-content:space-between; font-size:15px; color:#8d968f}
+.ba-pot .r b{font:13px/1.6 'Share Tech Mono',monospace; color:var(--ba-stone); font-weight:400}
+.ba-pot .big{font:32px/1.1 'Share Tech Mono',monospace; color:var(--ba-lamp); text-align:right; margin-top:4px}
+
+/* ── CONTROLS ─────────────────────────────────────────────────────── */
+.ba-controls{
+  position:fixed; left:0; right:0; bottom:0; z-index:50; display:flex; justify-content:center; align-items:center; gap:14px;
+  padding:12px 16px; background:linear-gradient(0deg,#070a09 60%,rgba(7,10,9,0)); flex-wrap:wrap;
+}
+.ba-btn{
+  font:600 16px/1 'Crimson Pro',serif; letter-spacing:.12em; text-transform:uppercase; cursor:pointer;
+  padding:12px 22px; color:#11150f; background:var(--ba-lamp); border:0; border-radius:2px;
+  box-shadow:0 0 18px rgba(232,210,122,.25);
+}
+.ba-btn:disabled{opacity:.4; cursor:default}
+.ba-btn.ghost{background:transparent; color:var(--ba-stone); border:1px solid #4b554f; box-shadow:none}
+.ba-btn:focus-visible{outline:2px solid var(--ba-bone); outline-offset:2px}
+.ba-counter{font:13px/1 'Share Tech Mono',monospace; color:#7f8982; letter-spacing:.1em}
+
+@media (prefers-reduced-motion: reduce){
+  .ba-rain,.ba-bell.ring,.ba-card.on::after{animation:none}
+  .ba-card{transition:opacity .2s; transform:none; clip-path:none}
+  .ba-plot .soil,.ba-plot.up .coffin{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="ba-navstub"><b>The Traitors</b><span>Episode 6 · Afternoon</span><span>Buried Alive</span></div>
+<div class="ba-sky"></div>
+<svg class="ba-yews" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 300 V210 C40 160 70 140 90 90 C110 140 130 170 150 205 C170 150 200 120 220 60 C245 130 270 170 300 215 C320 180 345 160 360 120 C380 170 400 190 430 230 L430 300 Z" fill="#070a09"/>
+  <path d="M760 300 V220 C790 180 810 150 830 100 C850 150 880 180 905 210 C930 160 950 130 975 70 C1000 140 1030 180 1060 220 C1085 185 1110 160 1130 115 C1150 170 1175 200 1200 225 V300 Z" fill="#070a09"/>
+  <g fill="#0b100e">
+    <path d="M470 300 V246 a22 22 0 0 1 44 0 V300 Z"/><path d="M540 300 V252 h30 v48 Z"/>
+    <path d="M600 300 V236 h8 v-16 h8 v16 h8 v64 Z"/><path d="M660 300 V250 a18 18 0 0 1 36 0 V300 Z"/>
+  </g>
+</svg>
+<div class="ba-rain"></div>
+
+<!-- icon sprites -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-spade" viewBox="0 0 36 36"><path d="M17 3h2v17h-2z" fill="#b9bdb4"/><path d="M11 20h14l-2 10c-1 3-9 3-10 0z" fill="#8c958e" stroke="#ece6d6" stroke-width=".8"/><rect x="14" y="1" width="8" height="3" rx="1.5" fill="#6b4f36"/></symbol>
+    <symbol id="i-clue" viewBox="0 0 36 36"><rect x="7" y="6" width="22" height="26" rx="2" fill="#ece6d6"/><path d="M11 12h14M11 16h14M11 20h9" stroke="#3a2d22" stroke-width="1.4"/><circle cx="24" cy="26" r="4" fill="#b0543c"/></symbol>
+    <symbol id="i-wrong" viewBox="0 0 36 36"><path d="M4 30c4-10 9-14 14-14s10 4 14 14z" fill="#6b4f36"/><path d="M13 9l10 10M23 9L13 19" stroke="#b0543c" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-coffin" viewBox="0 0 36 36"><path d="M12 3h12l5 8-3 22H10L7 11z" fill="#3a2d22" stroke="#ece6d6" stroke-width="1"/><path d="M18 9v12M14 13h8" stroke="#e8d27a" stroke-width="1.4"/></symbol>
+    <symbol id="i-rope" viewBox="0 0 36 36"><path d="M8 4c6 6-6 10 0 16s-6 10 0 14M28 4c-6 6 6 10 0 16s6 10 0 14" fill="none" stroke="#b69770" stroke-width="2.2"/><rect x="6" y="28" width="24" height="6" rx="1" fill="#3a2d22"/></symbol>
+    <symbol id="i-lamp" viewBox="0 0 36 36"><path d="M13 8h10l2 4H11z" fill="#5d6a6e"/><rect x="12" y="12" width="12" height="16" rx="2" fill="rgba(232,210,122,.25)" stroke="#5d6a6e" stroke-width="1.4"/><path d="M18 15c2 3 3 5 3 7a3 3 0 0 1-6 0c0-2 1-4 3-7z" fill="#e8d27a"/><rect x="11" y="28" width="14" height="3" fill="#5d6a6e"/></symbol>
+    <symbol id="i-seal" viewBox="0 0 36 36"><circle cx="18" cy="18" r="12" fill="#e9c65b"/><circle cx="18" cy="18" r="8.5" fill="none" stroke="#8c7a34" stroke-width="1.4"/><path d="M18 11l2 5h5l-4 3 2 5-5-3-5 3 2-5-4-3h5z" fill="#8c7a34"/></symbol>
+  </defs>
+</svg>
+
+<div class="ba-shell">
+  <header class="ba-hero">
+    <div class="ba-kicker">Mission · Episode Six</div>
+    <h1 class="ba-title">Buried <span>Alive</span></h1>
+    <p class="ba-sub">Six of you go into the ground. The rest have forty-five minutes, nine plots and a spade each
+      to work out which three are theirs.</p>
+    <div class="ba-meta">
+      <span class="ba-chip">Three teams · Yew · Rook · Lych</span>
+      <span class="ba-chip">45 minutes</span>
+      <span class="ba-chip">£2,500 a person out before the bell</span>
+      <span class="ba-chip shield">One Shield, sealed inside a coffin</span>
+    </div>
+  </header>
+
+  <div class="ba-grid">
+    <main>
+
+      <section class="ba-brief">
+        <h2>The Briefing</h2>
+        <p class="ba-staging">A churchyard at dusk. Nine freshly turned plots behind the lych gate, six coffins on
+          trestles beside them, a pile of spades, and a bell hanging in the gate.</p>
+
+        <div class="ba-beat do"><p>The host waits at the lych gate with one hand on the bell rope while the players file in past six open coffins.</p></div>
+        <div class="ba-beat say"><p>Three teams. Two of each team are going into these coffins, and the coffins are going into the ground.</p></div>
+        <div class="ba-beat say"><p>There are nine plots behind me and only six of them have anybody in. Three of the others hold a clue, and the clue tells you which plot your own people are under. Dig a clue plot first. Dig the wrong plot and you have spent the time it took to dig it.</p></div>
+        <div class="ba-beat do"><p>The host lifts a spade off the pile and plants it in the turf.</p></div>
+        <div class="ba-beat say"><p>When your spade hits a lid, knock twice. If the person inside knocks back, get the ropes on and bring them up. You lift together, or you drop them, and a dropped coffin goes back to the bottom of the hole.</p></div>
+        <div class="ba-beat do"><p>The host turns one of the empty lids over. A sealed envelope is nailed to the underside.</p></div>
+        <div class="ba-beat say shield"><p>Every lid has one of these. Inside is a riddle, and a lamp to read it by. Whoever solves theirs first has won a Shield.</p></div>
+        <div class="ba-beat say shield"><p>Here is the catch. When your team knocks, you can knock back, or you can tell them "not yet." Every minute you stay down is a minute your team is not digging for somebody else.</p></div>
+        <div class="ba-beat say"><p>Every one of you standing on the grass when this bell rings is two and a half thousand pounds in the pot. Anybody still underground earns nothing. Forty-five minutes. Dig.</p></div>
+        <div class="ba-beat do"><p>The host rings the bell once.</p></div>
+
+        <div class="ba-rules">
+          <span class="ba-rule"><b>task</b> beat 2</span>
+          <span class="ba-rule"><b>clues</b> beat 3</span>
+          <span class="ba-rule"><b>failure</b> beat 3</span>
+          <span class="ba-rule"><b>lift</b> beat 5</span>
+          <span class="ba-rule shield"><b>shield</b> beat 7</span>
+          <span class="ba-rule shield"><b>cost</b> beat 8</span>
+          <span class="ba-rule"><b>reward</b> beat 9</span>
+          <span class="ba-rule"><b>finish</b> beat 9</span>
+        </div>
+      </section>
+
+      <section class="ba-phase" data-phase="clues">
+        <div class="ba-phase-head">
+          <span class="ba-phase-n">I</span>
+          <span class="ba-phase-name">The Clue Plots</span>
+          <span class="ba-phase-stats"><i class="ba-stat">physical</i><i class="ba-stat">mental</i></span>
+        </div>
+        <p class="ba-setting">Nine mounds of wet earth, three teams with spades, and no way to tell a clue plot from a grave by looking.</p>
+
+        <article class="ba-card good" id="ba-step-0">
+          <span class="ba-ico"><svg><use href="#i-clue"/></svg></span><span class="tag">Clue</span>
+          <div class="who">Brick <i>· Yew</i></div>
+          <div class="txt">Brick dug the plot nearest the gate because it was the only one with no flowers on it, and he was right: a tin box, and in it a rubbing of the yew tree's name plate.</div>
+        </article>
+
+        <article class="ba-card bad" id="ba-step-1">
+          <span class="ba-ico"><svg><use href="#i-wrong"/></svg></span><span class="tag">Wrong plot</span>
+          <div class="who">Julia <i>· Rook</i></div>
+          <div class="txt">Julia called plot eight before anybody had read the ground. Rook dug four feet of clay down to a lid with the wrong colour on it: Lych's. Eight minutes gone, and half of Lych's digging done for them.</div>
+          <div class="ba-fx"><span>record · called the wrong plot</span><span>clock −8:00 · Rook</span></div>
+        </article>
+
+        <article class="ba-card good" id="ba-step-2">
+          <span class="ba-ico"><svg><use href="#i-clue"/></svg></span><span class="tag">Read it</span>
+          <div class="who">Ellie <i>· Lych</i></div>
+          <div class="txt">Ellie read Lych's clue twice, said "under the one that faces east," and walked straight to it.</div>
+        </article>
+
+        <article class="ba-card social bad" id="ba-step-3">
+          <span class="ba-ico"><svg><use href="#i-wrong"/></svg></span><span class="tag">Suspicious</span>
+          <div class="who">Bowie &amp; Julia <i>· Rook</i></div>
+          <div class="txt">Bowie had the clue in his hand saying plot two while Julia was still insisting on eight. He did not say anything until the hole was dug.</div>
+          <div class="ba-conf"><small>Bowie · confessional</small>It said "where the rook sits." There's a rook on the headstone at two. There's no rook on eight, and eight wasn't even ours. I'm not accusing her. I'm just telling you where the rook was.</div>
+          <div class="ba-fx"><span>claim · Bowie → Julia</span><span>suspicion +0.24</span><span>bond Bowie ↔ Julia −0.5</span></div>
+        </article>
+      </section>
+
+      <section class="ba-phase" data-phase="coffins">
+        <div class="ba-phase-head">
+          <span class="ba-phase-n">II</span>
+          <span class="ba-phase-name">Under the Lids</span>
+          <span class="ba-phase-stats"><i class="ba-stat">endurance</i><i class="ba-stat">temperament</i></span>
+        </div>
+        <p class="ba-setting">Six coffins four feet down, a lamp in each, the sound of spades somewhere above, and an envelope nailed to the underside of every lid.</p>
+
+        <article class="ba-card plain" id="ba-step-4">
+          <span class="ba-ico"><svg><use href="#i-coffin"/></svg></span><span class="tag">Steady</span>
+          <div class="who">Manu <i>· Lych</i></div>
+          <div class="txt">Manu lay still, counted his breathing, and did not touch the envelope. He wanted out more than he wanted anything in it.</div>
+        </article>
+
+        <article class="ba-card bad" id="ba-step-5">
+          <span class="ba-ico"><svg><use href="#i-coffin"/></svg></span><span class="tag">Panicked</span>
+          <div class="who">Gabby <i>· Rook</i></div>
+          <div class="txt">Gabby hammered on the lid ten minutes in, before anybody from Rook was anywhere near her plot. Nobody could hear her yet.</div>
+          <div class="ba-conf"><small>Gabby · confessional</small>You think you'll be fine because it's television. Then the lid goes on and the television part stops.</div>
+          <div class="ba-fx"><span>crowd · Gabby frightened ×0.8</span></div>
+        </article>
+
+        <article class="ba-card relic" id="ba-step-6">
+          <span class="ba-ico"><svg><use href="#i-lamp"/></svg></span><span class="tag">Not yet</span>
+          <div class="who">Fiore <i>· Yew</i></div>
+          <div class="txt">Fiore had her riddle open by lamplight before Yew found her plot. When the spades knocked, she knocked once, not twice, and shouted "five more minutes" through the wood.</div>
+          <div class="ba-conf"><small>Fiore · confessional</small>They were right above me, I could hear Brick swearing. And I had the answer on the tip of my tongue. So yes, I made them wait.</div>
+          <div class="ba-fx"><span>record · asked for more time</span><span>clock −6:00 · Yew</span></div>
+        </article>
+
+        <article class="ba-card relic" id="ba-step-7">
+          <span class="ba-ico"><svg><use href="#i-seal"/></svg></span><span class="tag">Shield</span>
+          <div class="who">Fiore <i>· Yew</i></div>
+          <div class="txt">"A key that opens nothing and is still worth keeping." Fiore wrote <em>a promise</em> on the back of the card and slid it through the gap. It was right.</div>
+          <div class="ba-fx"><span>shield · Fiore</span><span>seen by · Brick, Priya</span><span>crowd · Fiore bold ×0.9</span></div>
+        </article>
+      </section>
+
+      <section class="ba-phase" data-phase="lift">
+        <div class="ba-phase-head">
+          <span class="ba-phase-n">III</span>
+          <span class="ba-phase-name">The Lift</span>
+          <span class="ba-phase-stats"><i class="ba-stat">physical</i><i class="ba-stat">loyalty</i></span>
+        </div>
+        <p class="ba-setting">Two ropes under each coffin, four people per rope, and a lip of wet clay that gives way if anybody lets go early.</p>
+
+        <article class="ba-card good" id="ba-step-8">
+          <span class="ba-ico"><svg><use href="#i-rope"/></svg></span><span class="tag">Clean lift</span>
+          <div class="who">Ellie &amp; Alec <i>· Lych</i></div>
+          <div class="txt">Lych brought Manu up level the whole way, with Ellie counting every pull out loud. First team with both out.</div>
+        </article>
+
+        <article class="ba-card social" id="ba-step-9">
+          <span class="ba-ico"><svg><use href="#i-rope"/></svg></span><span class="tag">Heroic</span>
+          <div class="who">Priya &amp; Brick <i>· Yew</i></div>
+          <div class="txt">The clay went under Brick's side and Priya took the whole rope on her own for three seconds, which was enough.</div>
+          <div class="ba-conf"><small>Priya · confessional</small>I heard it go and I just didn't let go. That's it. That's the whole story.</div>
+          <div class="ba-fx"><span>bond Priya ↔ Brick +0.8</span><span>crowd · Priya heroic ×1.1</span></div>
+        </article>
+
+        <article class="ba-card bad" id="ba-step-10">
+          <span class="ba-ico"><svg><use href="#i-rope"/></svg></span><span class="tag">Dropped</span>
+          <div class="who">Julia <i>· Rook</i></div>
+          <div class="txt">Rook got Gabby's coffin halfway before Julia's end slipped. It went back down. They got her out with ninety seconds left and never reached their second plot.</div>
+          <div class="ba-fx"><span>record · dropped the rope</span><span>bond Gabby ↔ Julia −0.6</span></div>
+        </article>
+
+        <article class="ba-card social bad" id="ba-step-11">
+          <span class="ba-ico"><svg><use href="#i-coffin"/></svg></span><span class="tag">Suspicious</span>
+          <div class="who">Brick &amp; Fiore <i>· Yew</i></div>
+          <div class="txt">Brick came up the bank asking why Fiore had needed "five more minutes" in a box. Fiore said she had cramp. Priya said nothing, which Brick noticed.</div>
+          <div class="ba-conf"><small>Brick · confessional</small>Nobody asks to stay in a coffin. Either she's mad or there was something down there worth staying for, and I don't think she's mad.</div>
+          <div class="ba-fx"><span>claim · Brick → Fiore</span><span>suspicion +0.22</span><span>bond Brick ↔ Fiore −0.4</span></div>
+        </article>
+      </section>
+
+      <div class="ba-summary" id="ba-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        Five of the six were standing on the grass when the bell went. Rook's second coffin was still four feet
+        down, and one player came up out of the ground with more than she went in with.
+      </div>
+    </main>
+
+    <aside class="ba-side" aria-label="The churchyard">
+      <div class="ba-panel">
+        <h3>The Churchyard</h3>
+        <div class="ba-clock">
+          <svg class="ba-bell" id="ba-bell" viewBox="0 0 46 46" aria-hidden="true">
+            <path d="M23 4v5" stroke="#b9bdb4" stroke-width="2"/>
+            <path d="M12 32c0-12 4-21 11-21s11 9 11 21l3 4H9z" fill="#8c7a34" stroke="#e8d27a" stroke-width="1"/>
+            <circle cx="23" cy="39" r="3" fill="#e8d27a"/>
+          </svg>
+          <div class="ba-time" id="ba-time">45:00<small>left on the bell</small></div>
+        </div>
+
+        <svg class="ba-ground" id="ba-ground" viewBox="0 0 300 200" role="img" aria-label="Section through the churchyard: nine plots">
+          <defs>
+            <linearGradient id="g-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#1c1510"/></linearGradient>
+          </defs>
+          <rect x="0" y="0" width="300" height="34" fill="#141b18"/>
+          <rect x="0" y="34" width="300" height="166" fill="url(#g-soil)"/>
+          <path d="M0 34h300" stroke="#4f6b4a" stroke-width="4"/>
+          <g id="ba-plots"></g>
+        </svg>
+        <div class="ba-legend"><span>turf</span><span>nine plots · six coffins</span><span>4 ft</span></div>
+
+        <div class="ba-rows">
+          <div class="ba-row"><span><i class="sw" style="background:#8fae7e"></i>Yew</span><b id="ba-r-yew">0 of 2 up</b></div>
+          <div class="ba-row"><span><i class="sw" style="background:#b0543c"></i>Rook</span><b id="ba-r-rook">0 of 2 up</b></div>
+          <div class="ba-row"><span><i class="sw" style="background:#e8d27a"></i>Lych</span><b id="ba-r-lych">0 of 2 up</b></div>
+          <div class="ba-row"><span>Wrong plots dug</span><b id="ba-r-wrong">0</b></div>
+        </div>
+
+        <div class="ba-shieldbox" id="ba-shieldbox">
+          <div class="lbl">The Envelopes</div>
+          <div class="val" id="ba-shieldval">six sealed, nobody above ground knows</div>
+          <div class="cost" id="ba-shieldcost"></div>
+        </div>
+
+        <div class="ba-pot">
+          <div class="r"><span>Fund before</span><b>£41,200</b></div>
+          <div class="r"><span>Out before the bell</span><b id="ba-pot-n">—</b></div>
+          <div class="r"><span>Earned today</span><b id="ba-pot-e">—</b></div>
+          <div class="big" id="ba-pot-a">£41,200</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="ba-controls">
+  <button class="ba-btn" id="ba-next">Next</button>
+  <span class="ba-counter" id="ba-counter" aria-live="polite">0 of 12 revealed</span>
+  <button class="ba-btn ghost" id="ba-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 12, idx = -1;
+
+  /* Nine plots across the section. team: y r l for a coffin, c for a clue, x empty. */
+  var PLOTS = [
+    {k:'c', x:18},  {k:'r', x:50}, {k:'y', x:82},
+    {k:'c', x:114}, {k:'l', x:146}, {k:'r', x:178},
+    {k:'y', x:210}, {k:'l', x:242}, {k:'c', x:274}
+  ];
+  var TEAM_COL = {y:'#8fae7e', r:'#b0543c', l:'#e8d27a'};
+
+  /* After n reveals, each plot's state: '' untouched, dug, wrong, found, lit, up. */
+  var STATE = [
+    ['','','','','','','','',''],
+    ['dug','','','','','','','',''],
+    ['dug','','','','','','','dug wrong',''],
+    ['dug','','','dug','','','','dug wrong',''],
+    ['dug','','','dug','','','','dug wrong','dug'],
+    ['dug','','','dug','found','','','dug wrong','dug'],
+    ['dug','found','','dug','found','','','dug wrong','dug'],
+    ['dug','found','found','dug','found','','found lit','dug wrong','dug'],
+    ['dug','found','found','dug','found','','found lit','dug wrong','dug'],
+    ['dug','found','found','dug','up','','found lit','up','dug'],
+    ['dug','found','up','dug','up','','up','up','dug'],
+    ['dug','up','up','dug','up','','up','up','dug'],
+    ['dug','up','up','dug','up','','up','up','dug']
+  ];
+  var TIME = ['45:00','39:10','34:40','29:55','26:30','22:05','19:20','13:45','11:00','08:15','04:50','01:30','00:00'];
+  /* [yew, rook, lych, wrong] */
+  var ROWS = [
+    [0,0,0,0],[0,0,0,0],[0,0,0,1],[0,0,0,1],[0,0,0,1],[0,0,0,1],[0,0,0,1],[0,0,0,1],
+    [0,0,0,1],[0,0,2,1],[2,0,2,1],[2,1,2,1],[2,1,2,1]
+  ];
+  var SHIELD_AT = 6;   /* the reveal where Fiore is seen asking for more time */
+  var WON_AT = 7;
+
+  function el(id){ return document.getElementById(id); }
+  function money(n){ return '£' + n.toLocaleString('en-GB'); }
+
+  function drawPlots(){
+    var g = el('ba-plots'), out = '';
+    PLOTS.forEach(function(p, i){
+      out += '<g class="ba-plot" id="ba-plot-' + i + '" transform="translate(' + p.x + ',0)">'
+        + '<path class="soil" d="M-13 34 q13 -12 26 0 z" fill="#4a3a2c"/>'
+        + '<path class="spoil" d="M-14 32 q7 -16 14 -10 q7 -8 14 10 z" fill="#6b4f36"/>';
+      if (p.k === 'c') {
+        out += '<rect x="-6" y="120" width="12" height="9" rx="1" fill="#5d6a6e" stroke="#b9bdb4" stroke-width=".6"/>';
+      } else if (p.k !== 'x') {
+        out += '<g class="coffin"><path class="lid" d="M-6 104 h12 l4 10 -3 46 h-14 l-3 -46 z" fill="#2a211a" stroke-width="1.6"/>'
+          + '<circle class="lamp" cx="0" cy="130" r="5" fill="#e8d27a" opacity="0"/>'
+          + '<rect x="-2" y="162" width="4" height="4" fill="' + TEAM_COL[p.k] + '"/></g>';
+      }
+      out += '</g>';
+    });
+    g.innerHTML = out;
+  }
+
+  function paint(){
+    var n = idx + 1;
+    for (var i = 0; i < TOTAL; i++) {
+      var c = el('ba-step-' + i);
+      if (c) c.classList.toggle('on', i <= idx);
+    }
+    el('ba-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    el('ba-next').disabled = idx >= TOTAL - 1;
+    el('ba-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+
+    STATE[n].forEach(function(s, i){
+      var p = el('ba-plot-' + i);
+      p.setAttribute('class', 'ba-plot ' + s);
+    });
+    el('ba-time').firstChild.nodeValue = TIME[n];
+    var bell = el('ba-bell');
+    bell.classList.remove('ring'); void bell.getBoundingClientRect(); if (idx >= 0) bell.classList.add('ring');
+
+    var r = ROWS[n];
+    el('ba-r-yew').textContent = r[0] + ' of 2 up';
+    el('ba-r-rook').textContent = r[1] + ' of 2 up';
+    el('ba-r-lych').textContent = r[2] + ' of 2 up';
+    el('ba-r-wrong').textContent = r[3];
+
+    /* THE ENVELOPES STAY SEALED UNTIL SOMEBODY IS SEEN STAYING DOWN. The
+       sidebar may never know a thing the page has not revealed. */
+    var seen = idx >= SHIELD_AT, won = idx >= WON_AT;
+    el('ba-shieldbox').classList.toggle('on', won);
+    el('ba-shieldval').textContent = won ? 'Fiore · solved the riddle in plot seven'
+      : seen ? 'somebody in Yew asked for more time' : 'six sealed, nobody above ground knows';
+    el('ba-shieldcost').textContent = won ? 'cost Yew six minutes · seen by 2 of 17' : '';
+
+    var up = r[0] + r[1] + r[2];
+    el('ba-pot-n').textContent = idx < 0 ? '—' : up + ' of 6';
+    el('ba-pot-e').textContent = idx < 0 ? '—' : money(up * 2500);
+    el('ba-pot-a').textContent = money(41200 + (idx < 0 ? 0 : up * 2500));
+  }
+
+  el('ba-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; paint();
+    var c = el('ba-step-' + idx);
+    if (c) c.scrollIntoView({behavior: 'smooth', block: 'center'});
+  });
+  el('ba-all').addEventListener('click', function(){ idx = TOTAL - 1; paint(); });
+  drawPlots();
+  paint();
+})();
+</script>
+</body>
+</html>

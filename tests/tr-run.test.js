@@ -219,8 +219,14 @@ describe('a castle season plays from the run loop and ends', () => {
     for (const aired of airEverySeason()) {
       const last = aired[aired.length - 1];
       expect(last.tr.endgame, 'the season aired without its ending').toBeTruthy();
-      expect(last.tr.endgame.asks.length, 'an endgame with no question in it')
-        .toBeGreaterThan(0);
+      // A table of two is not asked (d031baa4: two hands cannot make a
+      // majority), so an endgame with no question is only allowed to a room of
+      // two. Nobody leaves an unasked endgame, so the last row's room is the
+      // room the endgame opened on.
+      if (!last.tr.endgame.asks.length) {
+        expect(last.tr.living.length, 'an endgame with no question in it, over a room of '
+          + last.tr.living.length).toBeLessThanOrEqual(2);
+      }
       // and on the LAST row only, or "the endgame is on a row" is satisfied by
       // any row and the placement is not being checked at all.
       const carriers = aired.filter(r => r.tr.endgame);

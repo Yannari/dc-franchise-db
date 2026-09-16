@@ -157,14 +157,18 @@ export function _portrait(slug, name, size, opts) {
   return '<span class="cv-av' + (o.lit ? ' cv-lit' : '') + '"'
     + ' style="width:' + s + 'px;height:' + s + 'px"'
     + (o.lit && o.tone ? ' data-lit="' + o.tone + '"' : '') + '>'
-    + '<span class="cv-av-ini" style="font-size:' + Math.max(9, Math.round(s * 0.34)) + 'px">'
+    // HIDDEN UNTIL THE PICTURE FAILS. Left visible, the letters showed through
+    // or over the face on every screen whose own stylesheet stacked them
+    // differently (the web drew them on top). Inline, so no screen's CSS can
+    // bring them back while the picture is there.
+    + '<span class="cv-av-ini" style="font-size:' + Math.max(9, Math.round(s * 0.34)) + 'px;visibility:hidden">'
     + _esc(_initials(name)) + '</span>'
     // A cast member gets the portrait THIS season chose for them — the castle
     // is several of them in different clothes. Anybody else (the host) is not
     // in the cast, has no appearance and no catalog entry, so the slug they
     // were handed is the whole answer and must be used verbatim: deriving one
     // from their display name renames them.
-    + '<img src="' + _esc(playerAvatarUrl(players.find(x => x.name === name) || { slug })) + '" alt="" onerror="this.remove()">'
+    + '<img src="' + _esc(playerAvatarUrl(players.find(x => x.name === name) || { slug })) + '" alt="" onerror="this.previousElementSibling.style.visibility=&quot;visible&quot;;this.remove()">'
     + '</span>';
 }
 

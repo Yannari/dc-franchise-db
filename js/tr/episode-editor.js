@@ -595,7 +595,10 @@ export function buildEpisodeEdit(eligibleScenes, ctx = {}, rng = null) { // esli
     const touched = beats.length > 0;
     if (arc && arc.closedHere) {
       settlePromise(p.id, 'resolved', `paid off on day ${ep}: ${arc.payoff}`);
-      p.resolutionSceneId = beats[beats.length - 1]?.sceneId || null;
+      // The scene that closed it, not the last in the arc: the edit reorders a
+      // night, so the closing beat is not always the last one listed.
+      const closer = beats.find(b => b.closedNow) || beats[beats.length - 1];
+      p.resolutionSceneId = closer?.sceneId || null;
       p.lastEp = ep;
       continue;
     }

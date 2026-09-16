@@ -2697,7 +2697,7 @@ function _topicConsequence(s, subs, key, used, cfg, tone) {
   return { text: say, say, mark: null, tone };
 }
 
-/** A plain closing sentence sourced from the scene's visible receipts. */
+/** A plain closing sentence sourced from the scene's visible impacts. */
 function _receiptConsequence(s, subs, tone, key, used) {
   const chips = Array.isArray(s.chips) ? s.chips : [];
   const lines = [];
@@ -4332,10 +4332,12 @@ function _view(ep, observer, segment = null) {
     if (!isAudience && watcher !== s.readDoubter) { s.readKind = null; }
   }
 
-  const _receipts = (ep.tr && Array.isArray(ep.tr.receipts)) ? ep.tr.receipts : [];
+  // `impacts` is the viewer-safe projection js/tr/headless.js writes; the
+  // full ledger it comes from is the Debug screen's alone.
+  const _impacts = (ep.tr && Array.isArray(ep.tr.impacts)) ? ep.tr.impacts : [];
   const _epNum = c.ep != null ? c.ep : (ep.tr && ep.tr.ep) || ep.num || 0;
   for (const s of scenes) {
-    s.chips = _chipsFor(_receipts, _epNum + ':' + s.window + ':' + s.eventId,
+    s.chips = _chipsFor(_impacts, _epNum + ':' + s.window + ':' + s.eventId,
       s.layer, isAudience, watcher);
     if (s.layer !== 'heard') {
       // The real thing wins: if the scene wrote a belief/doubt receipt, that
@@ -4877,9 +4879,9 @@ function _beatCard(s, beat, key) {
 // private suspicion, never the audience-only popularity meta, and nothing at
 // all on a scene they merely overheard. This is the same contract the prose
 // layer already keeps, applied to the receipts.
-function _chipsFor(receipts, sceneId, layer, isAudience, watcher) {
+function _chipsFor(impacts, sceneId, layer, isAudience, watcher) {
   if (layer === 'heard') return [];               // overheard: no private impact
-  const mine = receipts.filter(r => r && r.applied && r.sceneId === sceneId);
+  const mine = impacts.filter(r => r && r.sceneId === sceneId);
   const out = [];
   const seen = new Map();                          // dedup by type|a|b, summing dir
   const add = (type, a, b, dir) => {

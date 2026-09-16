@@ -356,9 +356,29 @@ export const SAVE_CSS = `
 /* STICKY ONLY WHERE IT FITS. On a short window a 440px stage pinned to the
    top covered every card under it, so it only sticks on a tall one, and a
    revealed card is then scrolled to sit below it. */
-@media (min-height: 1000px){
-  .svx{position:sticky;top:6px}
-  .svx-cards .dr-step{scroll-margin-top:560px}
+/* ALWAYS PINNED; SMALLER ON A SHORTER WINDOW. The stage is the moment, so it
+   stays in view while the cards run under it — on a window under 1000px tall
+   it shrinks so the card just revealed still has room below it. */
+.svx{position:sticky;top:6px}
+.svx-cards .dr-step{scroll-margin-top:560px}
+@media (max-height: 999px){
+  .svx:not(.svx-compact):not(.svx-static){min-height:0;padding:10px 16px 8px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-title{font-size:clamp(20px,3vw,30px)}
+  .svx:not(.svx-compact):not(.svx-static) .svx-center{height:215px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-face{width:74px;height:74px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-beam{height:210px;width:120px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-plinth{width:90px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-token{width:62px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-reveal{padding:6px 18px 8px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-reveal b{font-size:26px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-bar{zoom:.72}
+  .svx:not(.svx-compact):not(.svx-static) .svx-ticket{width:220px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-tank{width:min(300px,100%)}
+  .svx:not(.svx-compact):not(.svx-static) .svx-halo{width:96px!important;height:96px!important}
+  .svx:not(.svx-compact):not(.svx-static) .svx-caption{min-height:0;font-size:14px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-confess q{font-size:15px}
+  .svx:not(.svx-compact):not(.svx-static) .svx-confess .svx-cface{flex-basis:84px;width:84px;height:84px}
+  .svx-cards .dr-step{scroll-margin-top:380px}
 }
 .svx-card{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}

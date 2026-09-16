@@ -371,6 +371,7 @@ export const TR_MISSION_CATALOG = [
   { id:'long-account',     name:'The Long Account',     kind:'bespoke' },
   { id:'ash-vault',        name:'The Ash Vault',        kind:'bespoke' },
   { id:'buried-alive',     name:'Buried Alive',         kind:'bespoke' },
+  { id:'beacon-lighting',  name:'Beacon Lighting',      kind:'bespoke' },
 ];
 
 export const TWIST_CATALOG = [

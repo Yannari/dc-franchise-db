@@ -40,6 +40,7 @@ import { nightjarOrrery } from './nightjar-orrery.js';
 import { longAccount } from './long-account.js';
 import { ashVault } from './ash-vault.js';
 import { buriedAlive } from './buried-alive.js';
+import { beaconLighting } from './beacon-lighting.js';
 
 /**
  * The catalogue, in the order they were written.
@@ -58,6 +59,7 @@ export const TRAITORS_MISSIONS = Object.freeze([
   longAccount,
   ashVault,
   buriedAlive,
+  beaconLighting,
 ]);
 
 /** Every bespoke mission id, for tests and for anything enumerating the catalogue. */

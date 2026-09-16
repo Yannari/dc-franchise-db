@@ -63,23 +63,29 @@ export const SAVE_CSS = `
 /* THE CAMPAIGN IN UNTUCKED IS A STRIP, not a stage: the lounge's own cards
    are the story, and the strip only has to say who is talking and where
    everybody stands. */
-.svx.svx-compact{min-height:0;padding:10px 16px 8px;border-radius:16px}
-.svx.svx-compact .svx-title{font-size:clamp(18px,2.4vw,24px)}
-.svx.svx-compact .svx-kicker{font-size:9px}
-.svx.svx-compact .svx-center{height:auto;padding:26px 0 4px}
+.svx.svx-compact{min-height:0;padding:8px 12px 6px;border-radius:14px}
+.svx.svx-compact .svx-head{align-items:center}
+.svx.svx-compact .svx-kicker{display:none}
+.svx.svx-compact .svx-title{font-size:15px;letter-spacing:.04em}
+.svx.svx-compact .svx-center{height:auto;padding:14px 0 0}
 .svx.svx-compact .svx-lounge{display:none}
-.svx.svx-compact .svx-row{padding-bottom:0;gap:10px;flex-wrap:wrap}
-.svx.svx-compact .svx-row .svx-pod{padding:6px 8px}
-.svx.svx-compact .svx-row .svx-face{width:56px;height:56px}
-.svx.svx-compact .svx-pod b{font-size:11px}
-.svx.svx-compact .svx-meter{width:64px}
-.svx.svx-compact .svx-role{font-size:8px;letter-spacing:.12em}
-.svx.svx-compact .svx-bubble{top:-24px;font-size:9.5px;padding:3px 8px}
-.svx.svx-compact .svx-caption{min-height:0;font-size:14px}
+.svx.svx-compact .svx-row{padding-bottom:0;gap:6px;flex-wrap:wrap}
+.svx.svx-compact .svx-row .svx-pod{padding:3px 6px;gap:3px;border-radius:10px}
+.svx.svx-compact .svx-row .svx-pod.talk{transform:translateY(-4px) scale(1.04)}
+.svx.svx-compact .svx-row .svx-face{width:38px;height:38px}
+.svx.svx-compact .svx-row .svx-pod.talk .svx-face,.svx.svx-compact .svx-row .svx-pod.power .svx-face{box-shadow:0 0 0 2px #b07aff,0 0 14px rgba(176,122,255,.6)}
+.svx.svx-compact .svx-row .svx-pod.power .svx-face{box-shadow:0 0 0 2px #ffd66b,0 0 12px rgba(255,214,107,.5)}
+.svx.svx-compact .svx-row .svx-pod.about .svx-face{box-shadow:0 0 0 2px #ff294b,0 0 12px rgba(255,41,75,.5)}
+.svx.svx-compact .svx-pod b{font-size:9.5px;letter-spacing:.06em}
+.svx.svx-compact .svx-meter{width:42px;height:5px}
+.svx.svx-compact .svx-role{font-size:7px;letter-spacing:.1em}
+.svx.svx-compact .svx-bubble{top:-15px;font-size:8px;padding:2px 6px;letter-spacing:.08em}
+.svx.svx-compact .svx-caption{min-height:0;font-size:12.5px;line-height:1.35;margin-top:4px}
+.svx.svx-compact .svx-caption small{display:inline;margin-right:6px;font-size:9px}
 .svx.svx-compact .svx-tray{display:none}
 @media (min-height: 760px){
   .svx.svx-compact{position:sticky;top:6px}
-  .dr-phase-untucked .dr-step{scroll-margin-top:300px}
+  .dr-phase-untucked .dr-step{scroll-margin-top:190px}
 }
 
 .svx-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}

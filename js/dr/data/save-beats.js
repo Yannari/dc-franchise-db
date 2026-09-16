@@ -33,15 +33,12 @@ export const SAVE_BEATS = {
     'The dunk tank is drained and wheeled off. From tonight, losing the lip sync means going home.',
     'Michelle climbs out of the tank for the last time. No more levers. The next queen to lose a lip sync is gone.',
   ],
+  /* {g} is last week's eliminated queen, back for one minute with the baguette. */
   handoff: {
     gave: [
-      '{w} walks the baguette over to {h} and puts it in her hands.',
-      '{w} does not keep it. She gives the baguette to {h}.',
-      '{w} picks {h}. The baguette changes hands, and so does the power.',
-    ],
-    kept: [
-      '{w} keeps the baguette. She wants to make this call herself.',
-      '{w} looks around the room and holds on to it. "I will decide."',
+      '{g} walks back onto the main stage holding the Golden Baguette. She gives it to {h}.',
+      'The doors open and it is {g}, one week gone, carrying the baguette. She puts it in the hands of {h}.',
+      '{g} is back just long enough to choose. The baguette goes to {h}.',
     ],
   },
   saveHold: {
@@ -66,6 +63,7 @@ export const SAVE_BEATS = {
     '{c} and {d} were not chosen. They lip sync for their lives.',
     'That leaves {c} and {d} on the stage, and neither of them is looking at {h}.',
   ],
+  /* The tank's retirement is a mini challenge in the real show (S17 ep 10). */
   /* The host stops her before the goodbye. Its own beat, so the screen can
      hold on the bar (or the levers) for one click before anything opens. */
   ask: {

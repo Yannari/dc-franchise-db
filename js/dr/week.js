@@ -178,10 +178,14 @@ export function runDragWeek(state, cfg, ctx) {
     scenes.push({ step, kind: `save:${kind}`, data: { save: saves.kind, ...data }, text });
   if (saveMeta) {
     if (saves.kind === 'chocolate') {
-      /* A BAR FOR EVERY QUEEN IN THE ROOM WHO HAS NEVER HAD ONE. A split
-         premiere hands them out over two nights; a returning queen opened
-         hers on the way out and does not get another. */
-      const fresh = living.filter(n => !saves.handed.includes(n) && !saves.opened.includes(n));
+      /* THE BARS ARRIVE WITH THE WHOLE CAST. Season 14's split premiere ran
+         without them and its two losers came back; June Jambalaya, out on the
+         first night with everybody in the room, was the first to open one. So
+         a split season gets its bars at the rejoin, not on either half. A
+         queen who walks back in later opened hers on the way out. */
+      const wholeRoom = living.length + (state.out || []).length >= (state.castOrder || []).length;
+      const fresh = wholeRoom
+        ? living.filter(n => !saves.handed.includes(n) && !saves.opened.includes(n)) : [];
       if (fresh.length) {
         saves.handed.push(...fresh);
         saveScene('save-intro', 'handout', { players: fresh.slice(0, 2), handedTo: fresh },
@@ -708,9 +712,12 @@ export function runDragWeek(state, cfg, ctx) {
   /* A HOLDER SAVE NEEDS A BOTTOM THREE AND A WINNER, so it is decided before
      the call rather than after it. Not on a night whose shape already says
      something else about who sings. */
+  /* THE BAGUETTE'S GIVER is whoever went home last week (France S4). A week
+     that sent nobody home leaves nobody to hand it over, so no baguette. */
+  const giver = saves?.kind === 'baguette' ? (gone.find(n => !living.includes(n)) || null) : null;
   const holderLive = saveMeta?.mode === 'holder' && !M.tournamentExit
     && saveLiveTonight(saves, {
-      living: living.length, epNum: cfg.num,
+      living: living.length, finaleSize: cfg.finaleSize || 4, giver,
       blocked: !!(cfg.noElimination || cfg.legacy || cfg.doubleElimination),
     });
   const call = callWeek(bend, {
@@ -905,10 +912,22 @@ export function runDragWeek(state, cfg, ctx) {
      about — the save has not happened yet when they are said. */
   let holderRes = null;
   if (holderLive && call.win.length && !topTwoSing) {
+    /* A DOUBLE WIN IS TWO BEAVERS (Canada S6 ep 3), so the bottom grows to
+       four — the worst queen still standing outside it joins — and each
+       winner saves one. The baguette stays one gift whatever the top did. */
+    if (saves.kind === 'beaver' && call.win.length >= 2 && living.length >= 7) {
+      const from = call.low.length ? call.low : call.safe;
+      const pulled = from[from.length - 1];
+      if (pulled) {
+        call.low = call.low.filter(n => n !== pulled);
+        call.safe = (call.safe || []).filter(n => n !== pulled);
+        call.atRisk = [...call.atRisk, pulled];
+      }
+    }
     const named = [...call.atRisk, ...call.bottom];
     holderRes = holderSave({
-      saves, winner: call.win[0], pool: named, living,
-      state, players, bond: ctx.bond, rng: saveRng,
+      saves, winners: saves.kind === 'beaver' ? [...call.win] : [], giver,
+      pool: named, living, state, players, bond: ctx.bond, rng: saveRng,
     });
   }
   if (holderRes) {
@@ -917,24 +936,26 @@ export function runDragWeek(state, cfg, ctx) {
       win: [...call.win], high: [...call.high], low: [...call.low],
       atRisk: [], bottom: [...holderRes.pool], safe: [...call.safe],
     };
-    call.atRisk = [holderRes.saved];
+    call.atRisk = [...holderRes.savedAll];
     call.bottom = [...holderRes.singers];
-    saves.uses.push({ ep: cfg.num, holder: holderRes.holder, saved: holderRes.saved });
+    saves.uses.push({ ep: cfg.num, giver, picks: holderRes.picks });
     const fx = holderEffects(holderRes, ctx.bond);
     applyEventLike(fx);
     werkEvents.push({ type: `save:${saves.kind}`, players: [holderRes.holder, holderRes.saved], ...fx, data: {} });
     const [c, d] = holderRes.singers;
-    const vars = { w: holderRes.winner, h: holderRes.holder, s: holderRes.saved, c, d };
     if (saves.kind === 'baguette') {
-      saveScene('save-hold', 'handoff', { players: [holderRes.winner, holderRes.holder].filter((x, i, a) => a.indexOf(x) === i), kept: holderRes.kept },
-        saveLine(SAVE_BEATS.handoff[holderRes.kept ? 'kept' : 'gave'], vars));
+      saveScene('save-hold', 'handoff', { players: [giver, holderRes.holder], giver },
+        saveLine(SAVE_BEATS.handoff.gave, { g: giver, h: holderRes.holder }));
     }
-    saveScene('save-hold', 'saved', {
-      players: [holderRes.holder, holderRes.saved].filter((x, i, a) => a.indexOf(x) === i),
-      holder: holderRes.holder, saved: holderRes.saved, pool: holderRes.pool, why: holderRes.why,
-    }, saveLine(SAVE_BEATS.saveHold[holderRes.selfSave ? 'self' : holderRes.why], vars));
+    for (const pk of holderRes.picks) {
+      const vars = { h: pk.holder, s: pk.saved, c, d };
+      saveScene('save-hold', 'saved', {
+        players: pk.selfSave ? [pk.holder] : [pk.holder, pk.saved],
+        holder: pk.holder, saved: pk.saved, pool: holderRes.pool, why: pk.why,
+      }, saveLine(SAVE_BEATS.saveHold[pk.selfSave ? 'self' : pk.why], vars));
+    }
     saveScene('save-hold', 'left', { players: holderRes.singers },
-      saveLine(SAVE_BEATS.saveLeft, vars));
+      saveLine(SAVE_BEATS.saveLeft, { c, d, h: holderRes.picks.map(x => x.holder).join(' and ') }));
   }
 
   if (cfg.tripleOnTie && !holderRes && pool.length && call.bottom.length === 2 && living.length > 4) {
@@ -1709,7 +1730,7 @@ export function runDragWeek(state, cfg, ctx) {
       save: saveMeta ? {
         kind: saves.kind, mode: saveMeta.mode, name: saveMeta.name,
         hold: holderRes, tries: luckTries,
-        saved: holderRes ? [holderRes.saved] : luckTries.filter(t => t.saved).map(t => t.queen),
+        saved: holderRes ? [...holderRes.savedAll] : luckTries.filter(t => t.saved).map(t => t.queen),
         levers: saves.kind === 'tank' ? { total: saves.levers, left: [...saves.left], retired: saves.retired } : null,
       } : null,
       savesState: saves ? JSON.parse(JSON.stringify(saves)) : null,

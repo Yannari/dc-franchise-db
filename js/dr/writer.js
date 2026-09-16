@@ -139,7 +139,9 @@ export function buildDragBeatSheet(row, { players = {} } = {}) {
        the reason a queen who lost the song is still in the room. */
     const sv = dr.save;
     if (sv && sv.hold) {
-      push(`${sv.name.toUpperCase()}: ${sv.hold.holder} held it${sv.hold.kind === 'baguette' && !sv.hold.kept ? ` (given to her by ${sv.hold.winner})` : ''} and saved ${sv.hold.saved} from the bottom three before the lip sync. ${sv.hold.singers.join(' and ')} had to lip sync.`);
+      const who = (sv.hold.picks || [{ holder: sv.hold.holder, saved: sv.hold.saved }])
+        .map(x => `${x.holder} saved ${x.saved}`).join('; ');
+      push(`${sv.name.toUpperCase()}: ${sv.hold.giver ? `${sv.hold.giver}, eliminated last week, handed it to ${sv.hold.holder}. ` : ''}${who}, out of the named bottom, before the lip sync. ${sv.hold.singers.join(' and ')} had to lip sync.`);
     }
     for (const t of (sv && sv.tries) || []) {
       push(t.kind === 'chocolate'

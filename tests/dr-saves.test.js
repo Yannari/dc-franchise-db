@@ -69,6 +69,15 @@ describe('the golden chocolate bar', () => {
     expect(found, 'the golden bar never turned up in twelve seasons').toBeGreaterThan(0);
   });
 
+  it('waits for the whole cast: a split premiere gets its bars at the rejoin', () => {
+    const res = season(3, { drSave: 'chocolate', drPremiere: 'split' });
+    const first = res.rows.find(r => r.dr.scenes.some(x => x.kind === 'save:handout'));
+    expect(first).toBeTruthy();
+    const handed = first.dr.scenes.find(x => x.kind === 'save:handout').data.handedTo;
+    expect(handed.length).toBe(13);
+    for (const r of res.rows.filter(x => x.num < first.num)) expect(r.dr.save?.tries || []).toEqual([]);
+  });
+
   it('hands every queen in the room a bar on her first night', () => {
     const res = season(2, { drSave: 'chocolate' });
     const first = res.rows[0].dr.scenes.find(x => x.kind === 'save:handout');
@@ -110,31 +119,63 @@ describe('the dunk tank', () => {
 
 describe('the holder saves', () => {
   for (const kind of ['beaver', 'baguette']) {
-    it(`${kind}: one of three is saved before the song, and the other two sing`, () => {
+    it(`${kind}: saves come out of the named bottom before the song, on the wiki's weeks`, () => {
       let nights = 0;
       for (const s of SEEDS.slice(0, 6)) {
-        for (const r of weekly(season(s, { drSave: kind }))) {
+        const rows = weekly(season(s, { drSave: kind }));
+        rows.forEach((r, i) => {
           const h = r.dr.save?.hold;
-          if (!h) continue;
+          if (!h) return;
           nights++;
-          expect(r.num).toBeGreaterThanOrEqual(2);
-          expect(h.pool).toHaveLength(3);
-          expect(h.winner).toBe(r.dr.call.win[0]);
-          expect(h.pool).toContain(h.saved);
-          expect(r.dr.call.atRisk).toEqual([h.saved]);
+          const prev = rows[i - 1];
+          // Never the semi-final: the room is bigger than the finale plus one.
+          expect(r.dr.roomAtStart.length).toBeGreaterThan(5);
+          expect([3, 4]).toContain(h.pool.length);
+          for (const x of h.savedAll) expect(h.pool).toContain(x);
+          expect([...r.dr.call.atRisk].sort()).toEqual([...h.savedAll].sort());
           expect([...r.dr.call.bottom].sort()).toEqual([...h.singers].sort());
+          expect(h.singers).toHaveLength(2);
           expect(r.dr.lipsync.queens.slice().sort()).toEqual([...h.singers].sort());
-          expect(r.dr.record[h.saved].at(-1)).toBe('LOW');
-          // The call screen is drawn before the save: all three in the bottom.
+          for (const x of h.savedAll) expect(r.dr.record[x].at(-1)).toBe('LOW');
+          // The call screen is drawn before the save: everybody named is in the bottom.
           expect([...r.dr.callAtCall.bottom].sort()).toEqual([...h.pool].sort());
-          if (kind === 'beaver') expect(h.holder).toBe(h.winner);
+          if (kind === 'beaver') {
+            // Canada: the maxi winner holds it; a double win is two saves out of four.
+            for (const pk of h.picks) expect(r.dr.call.win).toContain(pk.holder);
+            expect(h.picks).toHaveLength(h.pool.length - 2);
+          } else {
+            // France S4: last week's eliminated queen hands it over.
+            expect(prev, 'a baguette on the first night').toBeTruthy();
+            expect(prev.exits.map(x => x.name)).toContain(h.giver);
+            expect(r.dr.roomAtStart).not.toContain(h.giver);
+            expect(r.dr.roomAtStart).toContain(h.holder);
+            expect(h.picks).toHaveLength(1);
+            expect(r.dr.scenes.some(x => x.kind === 'save:handoff' && x.text.includes(h.giver))).toBe(true);
+          }
           if (h.selfSave) expect(h.pool).toContain(h.holder);
-          expect(r.dr.scenes.filter(x => x.step === 'save-hold' && x.text).length).toBeGreaterThanOrEqual(2);
+        });
+        // No baguette after a week nobody went home.
+        if (kind === 'baguette') {
+          rows.forEach((r, i) => {
+            if (i && !rows[i - 1].exits.length) expect(r.dr.save?.hold ?? null).toBeNull();
+          });
         }
       }
       expect(nights).toBeGreaterThan(20);
     });
   }
+
+  it('beaver: a double win is two beavers and a bottom four', () => {
+    const state = { record: {} };
+    const players = { W1: { archetype: 'hero' }, W2: { archetype: 'hero' } };
+    const res = holderSave({
+      saves: { kind: 'beaver' }, winners: ['W1', 'W2'], pool: ['A', 'B', 'C', 'D'],
+      living: ['W1', 'W2', 'A', 'B', 'C', 'D', 'E'], state, players, bond: () => 0, rng: rngFor(7),
+    });
+    expect(res.picks.map(p => p.holder)).toEqual(['W1', 'W2']);
+    expect(new Set(res.savedAll).size).toBe(2);
+    expect(res.singers).toHaveLength(2);
+  });
 
   it('a nice archetype never saves for strategy', () => {
     const state = { record: {} };
@@ -144,14 +185,14 @@ describe('the holder saves', () => {
     };
     for (let i = 0; i < 40; i++) {
       const res = holderSave({
-        saves: { kind: 'beaver' }, winner: 'H', pool: ['A', 'B', 'C'], living: ['H', 'A', 'B', 'C', 'D'],
+        saves: { kind: 'beaver' }, winners: ['H'], pool: ['A', 'B', 'C'], living: ['H', 'A', 'B', 'C', 'D'],
         state, players, bond: () => 0, rng: rngFor(i * 7919 + 13),
       });
       expect(res.why).not.toBe('strategy');
     }
   });
 
-  it('moves bonds: the saved queen warms to the holder, the two singers cool', () => {
+  it('moves bonds: the saved queen warms to the holder, the singers cool, the giver is remembered', () => {
     const res = season(3, { drSave: 'beaver' });
     const r = weekly(res).find(x => x.dr.save?.hold);
     const ev = r.dr.events.find(e => e.type === 'save:beaver');
@@ -161,6 +202,10 @@ describe('the holder saves', () => {
       expect(ev.bond.some(([a, b, d]) => a === h.holder && b === q && d < 0)).toBe(true);
     }
     expect(Object.keys(res.bonds).length).toBeGreaterThan(0);
+    const bg = weekly(season(3, { drSave: 'baguette' })).find(x => x.dr.save?.hold);
+    const bh = bg.dr.save.hold;
+    const bev = bg.dr.events.find(e => e.type === 'save:baguette');
+    expect(bev.bond.some(([a, b, d]) => a === bh.giver && b === bh.holder && d > 0)).toBe(true);
   });
 });
 

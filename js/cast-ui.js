@@ -1324,7 +1324,7 @@ export function saveConfig() {
     drDoubleCrown:   g('cfg-dr-double-crown')?.checked || false,
     // The season's save — js/dr/saves.js.
     drSave:          g('cfg-dr-save')?.value || 'none',
-    drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 4,
+    drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 6,
     drTankRetire:    parseInt(g('cfg-dr-tank-retire')?.value) || 8,
     /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
        carrying every pinned decision about a week — a challenge, a guest, a
@@ -1497,7 +1497,7 @@ export function renderConfig() {
   chk('cfg-dr-reunion', seasonConfig.drReunion || false);
   chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
   set('cfg-dr-save', seasonConfig.drSave || 'none');
-  set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 4);
+  set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 6);
   set('cfg-dr-tank-retire', seasonConfig.drTankRetire || 8);
   drSaveOptionsUI();
   chk('cfg-ri',        seasonConfig.ri);

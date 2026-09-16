@@ -467,7 +467,8 @@ export function applyStage(suffix, idx) {
       }
     }
     if (c.kept !== undefined) {
-      for (const pod of el.querySelectorAll('.svx-pod')) pod.classList.toggle('kept', pod.dataset.q === c.kept);
+      const keep = [].concat(c.kept || []);
+      for (const pod of el.querySelectorAll('.svx-pod')) pod.classList.toggle('kept', keep.includes(pod.dataset.q));
     }
   };
   const finish = () => {
@@ -486,7 +487,7 @@ export function applyStage(suffix, idx) {
     content({
       portrait: st.portrait, caption: st.leadCaption, holder: st.holder,
       levers: st.levers ? { ...st.levers, missed: false } : null,
-      kept: st.kept !== undefined ? null : undefined,
+      kept: st.kept !== undefined ? (st.leadKept || null) : undefined,
     });
     el.dataset.result = st.result || '';
     el.classList.toggle('svx-open', false);
@@ -633,57 +634,73 @@ export function rpBuildSaveHold(row, scenes = []) {
   const kind = hold.kind;
   const meta = SAVE_KINDS[kind] || {};
   const uid = `h${ep.num}`;
+  const picks = hold.picks || [{ holder: hold.holder, saved: hold.saved }];
   const token = kind === 'beaver' ? beaverSvg(uid) : baguetteSvg(uid);
   const pods = hold.pool.map((n, i) => `<div class="svx-pod" data-q="${esc(n)}" style="--i:${i}">
       <i class="svx-beam"></i><span class="svx-tag"><span class="k">saved</span><span class="l">lip sync</span></span>
       <div class="svx-face">${face(n, ep, 112)}</div><b>${esc(n)}</b><i class="svx-plinth"></i></div>`).join('');
-  const holderChip = n => `<span class="svx-mini">${_portrait(n, ep, { size: 34 })}</span>
-    <span>${kind === 'baguette' ? 'Baguette' : 'Beaver'} held by <em>${esc(n)}</em></span>`;
+  const chip = (n, label) => `<span class="svx-mini">${_portrait(n, ep, { size: 34 })}</span>
+    <span>${esc(label)} <em>${esc(n)}</em></span>`;
+  const noun = kind === 'baguette' ? 'Baguette' : 'Beaver';
+  // Before anything is handed over, the chip says where the power comes from.
+  const opening = kind === 'baguette'
+    ? chip(hold.giver, 'Baguette from')
+    : chip(hold.winners?.length > 1 ? hold.winners.join(' & ') : hold.winner, `${noun}${hold.winners?.length > 1 ? 's' : ''} held by`);
   const center = `<div class="svx-token">${token}</div><div class="svx-trio">${pods}</div>`;
-  const extra = `<div class="svx-holder" data-f="holder">${holderChip(hold.winner)}</div>`;
+  const extra = `<div class="svx-holder" data-f="holder">${opening}</div>`;
+  const named = `The bottom ${hold.pool.length === 4 ? 'four' : 'three'}`;
 
-  const idle = { phase: 'idle', kept: null, caption: cap('The bottom three', hold.pool.join(' · ')),
-    holder: holderChip(hold.winner) };
+  const idle = { phase: 'idle', kept: null, caption: cap(named, hold.pool.join(' · ')), holder: opening };
+  const kept = [];
+  let pickAt = 0;
   const steps = list.map(sc => {
     if (sc.kind === 'save:handoff') {
-      return { phase: 'handoff', kept: null, caption: cap('The hand-off', sc.text), holder: holderChip(hold.holder) };
+      return { phase: 'handoff', kept: null, caption: cap('The hand-off', sc.text),
+        holder: chip(hold.holder, `${noun} held by`) };
     }
     if (sc.kind === 'save:saved') {
-      return { lead: 'deciding', leadMs: 1800, leadCaption: cap(`${hold.holder} decides`, '…'),
-        phase: 'saved', kept: hold.saved, chosen: true,
-        caption: cap(`${hold.holder} decides`, sc.text), holder: holderChip(hold.holder) };
+      const pk = picks[pickAt++] || picks[0];
+      const before = [...kept];
+      kept.push(pk.saved);
+      return { lead: 'deciding', leadMs: 1800, leadCaption: cap(`${pk.holder} decides`, '…'),
+        phase: 'saved', kept: [...kept], leadKept: before, chosen: true,
+        caption: cap(`${pk.holder} decides`, sc.text), holder: chip(pk.holder, `${noun} held by`) };
     }
-    return { phase: 'left', kept: hold.saved, chosen: true,
-      caption: cap('Lip sync for your life', sc.text), holder: holderChip(hold.holder) };
+    return { phase: 'left', kept: [...kept], chosen: true,
+      caption: cap('Lip sync for your life', sc.text), holder: chip(picks[picks.length - 1].holder, `${noun} held by`) };
   });
   register('savehold', { idle, steps });
 
-  const stage = stageShell('savehold', kind, { title: 'One of three is saved', center, extra, caption: idle.caption });
+  const stage = stageShell('savehold', kind, {
+    title: `${hold.pool.length === 4 ? 'Two of four' : 'One of three'} saved`, center, extra, caption: idle.caption,
+  });
   const tagOf = sc => (sc.kind === 'save:handoff' ? 'The hand-off'
-    : sc.kind === 'save:saved' ? `${hold.holder} decides` : 'Lip sync for your life');
+    : sc.kind === 'save:saved' ? `${sc.data?.holder || hold.holder} decides` : 'Lip sync for your life');
   const cards = list.map((sc, i) => card('savehold', i, sc, ep, tagOf(sc), meta.color));
 
-  const railAt = saved => `<h4 class="dr-disp">${esc(meta.short)}</h4>
-    <div class="sv-rail-row">Winner <b>${esc(hold.winner)}</b></div>
-    ${kind === 'baguette' ? `<div class="sv-rail-row">Held by <b>${esc(hold.holder)}</b></div>` : ''}
-    <h4 class="dr-disp">The bottom three</h4>
+  const head = handed => `<h4 class="dr-disp">${esc(meta.short)}</h4>
+    ${kind === 'baguette'
+    ? `<div class="sv-rail-row">From <b>${esc(hold.giver)}</b>, out last week</div>
+       <div class="sv-rail-row">Held by <b>${esc(handed ? hold.holder : '…')}</b></div>`
+    : `<div class="sv-rail-row">Winner${(hold.winners || []).length > 1 ? 's' : ''} <b>${esc((hold.winners || [hold.winner]).join(' & '))}</b></div>`}
+    <h4 class="dr-disp">${esc(named)}</h4>`;
+  const railAt = (handed, savedSoFar, done) => `${head(handed)}
     ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)} ${
-      saved ? (n === hold.saved ? '<b>SAVED</b>' : 'lip syncs') : ''}</div>`).join('')}`;
+      savedSoFar.includes(n) ? '<b>SAVED</b>' : done ? 'lip syncs' : ''}</div>`).join('')}`;
   // The rail names her one step late, so it cannot answer the sweep.
-  let decided = false;
+  let handed = false;
+  const shown = [];
   const perStep = list.map(sc => {
-    const row_ = railAt(decided);
-    if (sc.kind === 'save:saved') decided = true;
-    return row_;
+    if (sc.kind === 'save:handoff') handed = true;
+    const out = railAt(handed, [...shown], sc.kind === 'save:left');
+    if (sc.kind === 'save:saved') shown.push(picks[shown.length]?.saved);
+    return out;
   });
   publishRail('savehold', perStep);
-  const rest = `<h4 class="dr-disp">${esc(meta.short)}</h4>
-    <div class="sv-rail-row">Winner <b>${esc(hold.winner)}</b></div>
-    <h4 class="dr-disp">The bottom three</h4>
-    ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)}</div>`).join('')}`;
   return page(row, 'savehold', {
-    phase: 'stage', title: meta.name, subtitle: 'one of the bottom three is saved',
-    stage, cards, rail: rest, count: list.length,
+    phase: 'stage', title: meta.name,
+    subtitle: kind === 'baguette' ? 'the queen who went home chooses who holds it' : 'the winner saves one',
+    stage, cards, rail: railAt(false, [], false), count: list.length,
   });
 }
 

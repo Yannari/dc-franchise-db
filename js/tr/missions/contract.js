@@ -69,6 +69,7 @@
 
 import { gs, players } from '../../core.js';
 import { pStats, pronouns } from '../../players.js';
+import { shieldSource } from '../armoury.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // THE POT ARITHMETIC — one copy, shared with js/tr/missions.js
@@ -164,6 +165,17 @@ export function missionQuality(perfA, perfB) {
   const best = Math.max(perfA, perfB);
   const worst = Math.min(perfA, perfB);
   return clamp01((BEST_WEIGHT * best + (1 - BEST_WEIGHT) * worst - DIFFICULTY) / (1 - DIFFICULTY));
+}
+
+/**
+ * The same blend over any number of teams: the best and the worst of them.
+ * Identical to `missionQuality(a, b)` for two, so a two-team mission may call
+ * either and the pot band cannot tell.
+ */
+export function missionQualityOf(perfs) {
+  const list = (perfs || []).filter(v => typeof v === 'number' && isFinite(v));
+  if (!list.length) return 0;
+  return missionQuality(Math.max(...list), Math.min(...list));
 }
 
 /**
@@ -591,7 +603,11 @@ export function validateMissionRecord(rec, ctx) {
     if (typeof ph.name !== 'string' || !ph.name) bad(`phase ${ph.id} has no name`);
     if (!Array.isArray(ph.stats) || !ph.stats.length) bad(`phase ${ph.id} names no stats`);
     if (!Array.isArray(ph.beats) || !ph.beats.length) bad(`phase ${ph.id} has no beats`);
-    if (!Array.isArray(ph.teams) || ph.teams.length !== 2) bad(`phase ${ph.id} has no two teams`);
+    // TWO TO FOUR. Buried Alive runs three teams, as the show does; one team
+    // is not a mission with a winner and five is not a castle that exists.
+    if (!Array.isArray(ph.teams) || ph.teams.length < 2 || ph.teams.length > 4) {
+      bad(`phase ${ph.id} does not score two to four teams`);
+    }
   }
 
   const living = [...(ctx?.living || [])].sort();
@@ -723,6 +739,25 @@ export function createMissionCtx({ ep, living, alignmentOf = () => null, shields
  * crate is not the same act as being the best in the room at your own, and the
  * castle reads them differently at the table.
  */
+/**
+ * Whether THIS afternoon's mission may hand out a Shield.
+ *
+ * A mission Shield is the season's default source (setup: Shields = 'mission').
+ * Under 'armoury' the Shield comes from the boxes after the afternoon and under
+ * 'off' there are none, so a mission with a Shield step runs WITHOUT it rather
+ * than dropping out of the pool. A timeline-ticked Shield episode offers one
+ * whatever the default, unless Shields are off. `ctx.shieldsEnabled` is the
+ * test switch the equivalence arm holds out.
+ */
+export function missionShieldOffered(ctx) {
+  if (ctx?.shieldsEnabled === false) return false;
+  const src = shieldSource();
+  if (src === 'off') return false;
+  if (src === 'mission') return true;
+  const ep = ctx?.ep;
+  return !!(gs?.tr?.shieldEpisodes && ep != null && gs.tr.shieldEpisodes[ep]);
+}
+
 export const MISSION_BEHAVIOURS = Object.freeze([
   'heroic', 'selfish', 'suspicious', 'cowardly', 'impressive',
 ]);

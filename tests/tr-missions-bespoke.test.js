@@ -35,7 +35,7 @@ const ROSTER = roster.players.slice(0, 18);
 const CAST = ROSTER.map(p => p.name);
 
 const SOURCES = ['contract', 'index', 'drowned-causeway', 'nightjar-orrery',
-  'long-account', 'ash-vault'];
+  'long-account', 'ash-vault', 'buried-alive'];
 // `fileURLToPath` rather than handing a URL object straight to readFileSync:
 // under vitest's transform the relative-URL form resolved against the drive
 // root and every source arm below failed with ENOENT on `C:\js\...`.
@@ -106,8 +106,10 @@ describe('upsets happen, because every check is noisy', () => {
       const wins = {};
       for (const r of rs) wins[r.bestTeam] = (wins[r.bestTeam] || 0) + 1;
       expect(Object.keys(wins).sort()).toEqual([...mission.teams].sort());
+      // 60% of a fair share: 0.3 of the wins with two teams, 0.2 with three.
+      const floor = 0.6 / mission.teams.length;
       for (const t of mission.teams) {
-        expect(wins[t] / rs.length, `${t} won ${wins[t]} of 200`).toBeGreaterThan(0.3);
+        expect(wins[t] / rs.length, `${t} won ${wins[t]} of 200`).toBeGreaterThan(floor);
       }
     });
 
@@ -146,7 +148,8 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
   // orrery's is the vernier, the vault's is the jack, the account's is the
   // screen. All four are named here so a mission that quietly loses its
   // dilemma is a red test rather than a silent simplification.
-  const DILEMMA = ['drowned-causeway', 'nightjar-orrery', 'long-account', 'ash-vault'];
+  const DILEMMA = ['drowned-causeway', 'nightjar-orrery', 'long-account', 'ash-vault',
+    'buried-alive'];
 
   it('every mission declares a dilemma, and it reads alignment through ctx and nowhere else', () => {
     for (const id of DILEMMA) {
@@ -187,6 +190,11 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
       const b = r.phases[0].beats;
       return b.length ? b.filter(x => x.kind === 'good').length / b.length : 0;
     },
+    // The plot call, one per team: the share of teams that dug the right plot.
+    'buried-alive': r => {
+      const w = Object.values(r.tally.wrong || {});
+      return w.length ? 1 - w.reduce((a, b) => a + b, 0) / w.length : 0;
+    },
   };
 
   for (const mission of TRAITORS_MISSIONS) {
@@ -214,7 +222,9 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
       // when conflicted, orrery ring always out, vault jack never seated,
       // account `held = false` — every one turns its own mission red here.
       const FLOOR = { 'drowned-causeway': 0.70, 'nightjar-orrery': 0.50,
-        'long-account': 0.32, 'ash-vault': 0.38 };
+        'long-account': 0.32, 'ash-vault': 0.38,
+        // plot calls right: 0.708 conflicted (0.853 clean), measured 2026-09-16
+        'buried-alive': 0.62 };
       const all = runs(mission, 120, { traitors: CAST, from: 2000 });
       const rate = all.reduce((a, r) => a + DILEMMA_RATE[mission.id](r), 0) / all.length;
       expect(rate, `an all-conflicted castle got through the dilemma at a rate of `
@@ -723,7 +733,8 @@ describe('the footprint on a season is the pot and the record', () => {
     // sanctioned channel — the same idiom `_setShieldMissionEnabled` uses in
     // tests/tr-missions.test.js, and the hold-out gets its own arm below
     // rather than being a hole.
-    const money = TRAITORS_MISSIONS.filter(m => m.id !== 'ash-vault');
+    // Buried Alive holds a Shield in its coffins for the same reason.
+    const money = TRAITORS_MISSIONS.filter(m => !['ash-vault', 'buried-alive'].includes(m.id));
     for (const mission of money) {
       world();
       const before = { shields: JSON.stringify(gs.tr.shields || []),

@@ -21,7 +21,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { gs, setGs, setPlayers } from '../js/core.js';
+import { gs, setGs, setPlayers, TR_MISSION_CATALOG } from '../js/core.js';
+import { MISSION_IDS } from '../js/tr/missions.js';
 import { initTraitorsState } from '../js/tr/state.js';
 import { rngFor } from '../js/tr/headless.js';
 import {
@@ -58,15 +59,27 @@ beforeEach(() => { _setBespokeMissionsEnabled(true); });
 // ══════════════════════════════════════════════════════════════════════
 
 describe('the catalogue', () => {
-  it('holds four missions with distinct ids, names and team names', () => {
-    expect(TRAITORS_MISSIONS).toHaveLength(4);
-    expect(new Set(BESPOKE_MISSION_IDS).size).toBe(4);
-    expect(new Set(TRAITORS_MISSIONS.map(m => m.name)).size).toBe(4);
+  it('holds its missions with distinct ids, names and team names', () => {
+    // Four from Task 8, then the wiki's missions one by one (Task 11).
+    const n = TRAITORS_MISSIONS.length;
+    expect(n).toBeGreaterThanOrEqual(5);
+    expect(new Set(BESPOKE_MISSION_IDS).size).toBe(n);
+    expect(new Set(TRAITORS_MISSIONS.map(m => m.name)).size).toBe(n);
     const teamNames = TRAITORS_MISSIONS.flatMap(m => m.teams);
     expect(new Set(teamNames).size, 'two missions share a team name, which makes a '
       + 'season log ambiguous about which afternoon a team belonged to').toBe(teamNames.length);
     for (const id of BESPOKE_MISSION_IDS) expect(bespokeMission(id).id).toBe(id);
     expect(bespokeMission('nothing-of-the-sort')).toBeNull();
+  });
+
+  it('the timeline dropdown offers exactly the missions the engine can run', () => {
+    // js/core.js keeps its own list (it may import nothing), so a new mission
+    // that is not added there can never be pinned from the timeline.
+    const listed = TR_MISSION_CATALOG.map(m => m.id).sort();
+    expect(listed).toEqual([...MISSION_IDS, ...BESPOKE_MISSION_IDS].sort());
+    for (const m of TR_MISSION_CATALOG) {
+      expect(m.kind, m.id).toBe(BESPOKE_MISSION_IDS.includes(m.id) ? 'bespoke' : 'generic');
+    }
   });
 
   it('is gated off by default, because a mission with no VP screen may not reach a season', () => {
@@ -147,7 +160,7 @@ describe('every mission honours the record contract', () => {
       expect(d.split(/[.!?]/).filter(s => s.trim().length > 20).length,
         'a desc is at least two real sentences').toBeGreaterThanOrEqual(2);
       expect(d, 'the set-up never says what is physically there')
-        .toMatch(/room|table|wing|chapel|causeway|observatory|orrery|book|box|vault|walkway/i);
+        .toMatch(/room|table|wing|chapel|causeway|observatory|orrery|book|box|vault|walkway|churchyard|graves?|plots?/i);
       expect(d, 'the mechanic never says what the players do')
         .toMatch(/each team|players?|one at a time|by hand|carr(y|ies)|crawls?|sets?|argues?/i);
       expect(d, 'nothing is ever said to go wrong')

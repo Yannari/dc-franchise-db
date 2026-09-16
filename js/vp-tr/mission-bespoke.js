@@ -149,7 +149,8 @@ function _view(ep) {
       text: s.text, isSocial: true, behaviour: s.behaviour || null,
       conf: s.confessional ? { speaker: s.confessional.speaker, text: s.confessional.text } : null,
       fx: _fxLabels(s.effects || []),
-      relic: (s.effects || []).some(e => e.kind === 'record' && e.field === 'leftTheRelay')
+      relic: (s.effects || []).some(e => e.kind === 'record'
+          && (e.field === 'leftTheRelay' || e.field === 'askedForMoreTime'))
         || (s.effects || []).some(e => e.kind === 'shield'),
     }));
     return {
@@ -162,9 +163,15 @@ function _view(ep) {
     epNum, id: m.id, name: m.name || 'The Mission',
     staging: cer.staging || '', hostBeats: cer.hostBeats || [], rulePoints: cer.rulePoints || [],
     phases,
-    teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])], perf: t.perf })),
+    teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])], perf: t.perf,
+      buried: Array.isArray(t.buried) ? [...t.buried] : [] })),
     bestTeam: m.bestTeam || null, tier: m.tier || 'solid', summary: m.summary || '',
-    tally: m.tally || {}, shield: m.shield || null,
+    // THE ROW CARRIES THE SHIELD AS `relic` (js/tr/headless.js
+    // `_missionRecord`); `m.shield` exists only on a live record. Reading only
+    // `shield` left the Ash Vault's flue box saying nobody had gone up it after
+    // the reveal that showed somebody had.
+    tally: m.tally || {},
+    shield: m.shield || (m.relic && m.relic.kind === 'shield' ? m.relic : null),
     potBefore: typeof m.potBefore === 'number' ? m.potBefore : Math.max(0, (m.potAfter || 0) - (m.earned || 0)),
     earned: Number(m.earned || 0), potAfter: Number(m.potAfter || 0),
   };
@@ -248,8 +255,7 @@ function _briefing(v, th) {
     const cls = b.kind === 'say' ? 'say' : 'do';
     const raw = b.kind === 'say' ? b.text : (b.action || b.text || '');
     const text = _nameHost(raw, host);
-    const shield = (th.id === 'ash-vault' && b.kind === 'say'
-      && /\bShield\b|kitchen flue|body short/.test(raw)) ? ' shield' : '';
+    const shield = (th.shieldBeat && b.kind === 'say' && th.shieldBeat.test(raw)) ? ' shield' : '';
     return '<div class="' + p + '-beat ' + cls + shield + '"><p>' + _esc(text) + '</p></div>';
   }).join('');
   const rules = v.rulePoints.map(r =>
@@ -390,7 +396,14 @@ export function rpBuildBespokeMission(ep, observer = 'audience') {
     + '<button class="' + p + '-btn ghost" onclick="' + call('trMissionRevealAll') + '">' + th.allLabel + '</button>'
     + '</div>';
 
-  const first = '<style>' + th.css + PORTRAIT_CSS + '</style>'
+  // AN @import COUNTS ONLY AT THE TOP OF A STYLESHEET. Every theme's font
+  // import sat after COMMON_CSS and was silently dropped, so no bespoke
+  // mission ever drew in its own face. Hoisted here for all of them.
+  // (The URLs themselves contain semicolons — `wght@500;700` — so the match
+  // runs to the closing parenthesis, not the first `;`.)
+  const IMPORT = /@import\s+url\([^)]*\)\s*;/g;
+  const imports = (th.css.match(IMPORT) || []).join('');
+  const first = '<style>' + imports + th.css.replace(IMPORT, '') + PORTRAIT_CSS + '</style>'
     + '<div class="' + p + '-root ' + p + '-scope" style="' + th.rootVars + '">'
     + '<div class="' + p + '-shell" id="mb-shell-' + v.epNum + '">'
     + '<div class="' + p + '-scenery" aria-hidden="true">' + th.atmosphere() + '</div>'

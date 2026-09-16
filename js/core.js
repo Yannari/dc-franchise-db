@@ -355,7 +355,7 @@ export const TWIST_CATEGORY_LABEL = Object.fromEntries(
 
 // The castle's afternoon missions, for the timeline's per-episode mission
 // dropdown (js/run-ui.js). ids must match js/tr/missions.js (the seven generic
-// ARCHETYPES) and js/tr/missions/ (the four bespoke) — a mismatch just means a
+// ARCHETYPES) and js/tr/missions/ (the bespoke catalogue) — a mismatch just means a
 // pinned id the engine never matches, so it falls back to a random afternoon.
 // A castle plays one mission a day; the dropdown pins which one.
 export const TR_MISSION_CATALOG = [
@@ -370,6 +370,7 @@ export const TR_MISSION_CATALOG = [
   { id:'nightjar-orrery',  name:'The Nightjar Orrery',  kind:'bespoke' },
   { id:'long-account',     name:'The Long Account',     kind:'bespoke' },
   { id:'ash-vault',        name:'The Ash Vault',        kind:'bespoke' },
+  { id:'buried-alive',     name:'Buried Alive',         kind:'bespoke' },
 ];
 
 export const TWIST_CATALOG = [

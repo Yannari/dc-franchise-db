@@ -17,9 +17,10 @@
 // Two busts facing off, energy bars, beat by beat. Not a scene list with
 // two names in it: the reveal is a fight and the screen is built like one.
 // The loser's portrait greys out under a stamp at the end.
+import { lipsyncStage, lipsyncCardDecor, LS_CSS } from './lipsync-stage.js';
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
 import { resultOrder } from '../dr/data/results-order.js';
-import { _controls, _seedRail } from './reveal.js';
+import { _controls, _seedRail, _state } from './reveal.js';
 import { GRID_RESULTS } from '../dr/grid.js';
 import { showWords } from '../shows.js';
 
@@ -608,49 +609,10 @@ export function rpBuildLipSync(row) {
   const goesHome = ls.call === 'double-shantay' || (ls.saveTries || []).length
     ? null : ls.loser;
   const beats = (row.dr.scenes || []).filter(s => s.step === 'lipsync' && s.text);
-  const scoreOf = nm => Number(ls.scores?.[nm] ?? ls[nm]?.score) || 0;
 
-  /* ══ THE SCOREBOARD ══
-     THE RESULT WAS ON THE SCREEN BEFORE THE SONG STARTED. Both energy bars
-     were drawn from the FINAL scores at build time, so at 0 / 6 — before a
-     single beat had been read — the longer bar told you who was staying.
-     The one screen in the format that is pure suspense had none.
-
-     It is a fight now and it is scored as one. The engine has always kept
-     `lipsync.beats[queen]` — four named rounds, verse, chorus, hook and
-     ending, with a delta for EACH queen in each — and no screen has ever
-     drawn a single one of them. So: four round pips that light as the song
-     runs, two bars that fill from nothing, and a tug-of-war between them
-     that swings to whoever is winning the exchange.
-     The final scores and the winner appear on the last card and nowhere
-     before it. */
-  const roundsOf = nm => (ls.beats?.[nm] || []).map(x => Number(x.delta) || 0);
-  const rA = roundsOf(a); const rB = roundsOf(b);
-  const ROUNDS = ['verse', 'chorus', 'hook', 'ending'];
-  const nR = Math.max(rA.length, rB.length, 0);
-
-  const vs = `<div class="dr-song dr-fash">${esc(ls.song || '')}${
-    ls.artist ? `<span class="dr-song-artist">${esc(ls.artist)}</span>` : ''}</div>
-    <div class="dr-vs" id="dr-vs">
-      <div class="dr-stunt-burst" id="dr-stunt-burst"></div>
-      <div class="dr-fighter">${_portrait(a, ep, { size: 140 })}
-        <b class="dr-disp">${esc(a)}</b>
-        <div class="dr-energy dr-energy-a"><i id="dr-en-a" style="width:0%"></i></div>
-        <span class="dr-final dr-num" id="dr-fin-a"></span>
-      </div>
-      <div class="dr-mid">
-        <div class="dr-bolt dr-disp">VS</div>
-        ${nR ? `<div class="dr-rounds" id="dr-rounds">${
-    ROUNDS.slice(0, nR).map(r => `<i data-r="${r}"><b>${r}</b></i>`).join('')}</div>` : ''}
-        <div class="dr-tug"><i id="dr-tug"></i></div>
-      </div>
-      ${b ? `<div class="dr-fighter dr-r">${_portrait(b, ep, { size: 140 })}
-        <b class="dr-disp">${esc(b)}</b>
-        <div class="dr-energy dr-energy-b"><i id="dr-en-b" style="width:0%"></i></div>
-        <span class="dr-final dr-num" id="dr-fin-b"></span>
-      </div>` : '<div></div>'}
-    </div>`;
-
+  /* ══ THE SCOREBOARD ══ lives on the concert stage now — see
+     js/vp-dr/lipsync-stage.js, which builds it from `lipsync.beats` and never
+     shows a final score before the call. */
   /* WHOSE BEAT IS THIS. The duel is two queens and the beats below it were
      eight identical paragraphs — you could not see, without reading, that
      the fight went one way and then the other. Each beat now carries the
@@ -701,125 +663,36 @@ export function rpBuildLipSync(row) {
       </div></div>`;
     }
 
+    const decor = lipsyncCardDecor(sc);
     return `<div class="dr-step" id="dr-step-lipsync-${i}">
-    <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}">
+    <div class="dr-panel dr-a-lip dr-beat${who ? (right ? ' dr-beat-b' : ' dr-beat-a') : ''}${decor.cls}">
       ${/^stage:(lipsync-intro|lipsync-suspense|lipsync-shantay|lipsync-sashay|lipsync-call|lipsync-win-name|lipsync-win-runnerup|lipsync-legacy-choice)$/
     .test(sc.kind || '')
     ? `<span class="dr-hostsay">${_judgePortrait('rupaul', { stage: true, size: 42 })}
         ${who ? _portrait(who, ep, { size: 42 }) : ''}</span>`
-    : who ? _portrait(who, ep, { size: 42 }) : ''}
-      <p>${esc(sc.text)}</p></div></div>`;
+    : who || sc.kind?.startsWith('confess:') ? _portrait(who || (sc.data?.players || [])[0], ep, { size: 42 }) : ''}
+      <div>${decor.tag}<p>${esc(sc.text)}</p></div></div></div>`;
   }).join('');
 
-  /* THE FLOOR THEY FIGHT ON. Two hard spots on a black stage, and a low
-     throb from the speakers under everything. The VS panel already had its
-     own stripes; the room around it was the same purple as the werk room. */
-  const floor = `<div class="dr-lsfloor" id="dr-lsfloor" aria-hidden="true">
-      <i class="dr-ls-a"></i><i class="dr-ls-b"></i><i class="dr-ls-thud"></i>
-      <i class="dr-ls-haze"></i>
-    </div>`;
-  /* ── THE SONG RUNS AS YOU READ ──
-     The card count and the round count are different numbers — there are
-     four rounds and however many beats the night produced — so the song
-     advances WITH THE REVEAL rather than one card per round. That is the
-     honest mapping: the reader is moving through the performance, and by
-     the last beat card all four rounds have played.
-     The call card is excluded from that: by then the song is over, and it
-     is the step that finally shows the scores. */
-  const callAt = beats.findIndex(sc => /lipsync-call|lipsync-shantay|lipsync-sashay/
+  // The verdict: the host's call, her names, or — on a night the song is a
+  // prize — the winner's name.
+  const callAt = beats.findIndex(sc => /lipsync-call|lipsync-shantay|lipsync-sashay|lipsync-win-name/
     .test(sc.kind || ''));
-  const lastBeat = (callAt >= 0 ? callAt : beats.length) - 1;
 
-  /* THE HOOK RUNS WHENEVER THERE IS A DUEL, not only when there is round
-     data. It was gated on `nR` — the number of scored rounds — which tied
-     two unrelated things together: whether the scoreboard can animate, and
-     whether the queen who LOST is shown to have lost. A night whose engine
-     wrote no per-round deltas therefore ended with both queens still lit
-     and nothing marking the sashay at all. The rounds and the tug check
-     `nR` for themselves; the verdict does not need it. */
-  const stepSides = beats.map(sc => sideOf(sc));
-  const stuntA = ls[a]?.stunt || 'none';
-  const stuntB = ls[b]?.stunt || 'none';
-
+  /* ── THE CONCERT STAGE ── js/vp-dr/lipsync-stage.js. It owns the whole
+     top of this screen now: the song, the parts, the spotlights, the meters,
+     the big moment, the stunts, the confessional cut and the verdict. */
+  const stage = lipsyncStage(row, beats, { ep, goesHome, callAt });
   if (typeof window !== 'undefined') {
-    const sum = (arr, k) => arr.slice(0, k).reduce((t, v) => t + v, 0);
     window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra.lipsync = (idx) => {
-      const done = callAt >= 0 && idx >= callAt;
-      const k = done ? nR
-        : Math.max(0, Math.min(nR, Math.round(((idx + 1) / Math.max(1, lastBeat + 1)) * nR)));
-
-      for (const el of document.querySelectorAll('#dr-rounds i')) {
-        if (!nR) break;
-        const at = [...el.parentNode.children].indexOf(el);
-        el.classList.toggle('on', at < k);
-        el.classList.toggle('now', at === k - 1 && !done);
-      }
-
-      const sa = sum(rA, k); const sb = sum(rB, k);
-      const span = 1.3;
-      const pctA = Math.max(4, Math.min(100, 50 + (sa / span) * 50));
-      const pctB = Math.max(4, Math.min(100, 50 + (sb / span) * 50));
-      const enA = document.getElementById('dr-en-a');
-      const enB = document.getElementById('dr-en-b');
-      const tug = document.getElementById('dr-tug');
-      if (enA) enA.style.width = `${done ? Math.max(6, Math.min(100, scoreOf(a) * 10)) : pctA}%`;
-      if (enB) enB.style.width = `${done ? Math.max(6, Math.min(100, scoreOf(b) * 10)) : pctB}%`;
-      if (tug) tug.style.left = `${Math.max(6, Math.min(94, 50 + (sa - sb) * 34))}%`;
-
-      const fa = document.getElementById('dr-fin-a');
-      const fb = document.getElementById('dr-fin-b');
-      if (fa) fa.textContent = done ? scoreOf(a).toFixed(1) : '';
-      if (fb) fb.textContent = done ? scoreOf(b).toFixed(1) : '';
-
-      /* ── SPOTLIGHT TRACKING ── the stage follows the performer ── */
-      const floor = document.getElementById('dr-lsfloor');
-      const box = document.getElementById('dr-vs');
-      const side = idx < stepSides.length ? stepSides[idx] : null;
-      if (floor) {
-        floor.classList.remove('dr-focus-a', 'dr-focus-b', 'dr-exit-a', 'dr-exit-b');
-        if (done && goesHome) {
-          floor.classList.add(goesHome === a ? 'dr-exit-a' : 'dr-exit-b');
-        } else if (side === a) {
-          floor.classList.add('dr-focus-a');
-        } else if (side === b) {
-          floor.classList.add('dr-focus-b');
-        }
-      }
-      if (box) {
-        box.classList.remove('dr-focus-a', 'dr-focus-b');
-        if (!done && side === a) box.classList.add('dr-focus-a');
-        if (!done && side === b) box.classList.add('dr-focus-b');
-      }
-
-      /* ── STUNT FLASH ── photographer burst when a stunt lands ── */
-      const burst = document.getElementById('dr-stunt-burst');
-      if (burst) {
-        burst.classList.remove('dr-flash');
-        const sc = idx < beats.length ? beats[idx] : null;
-        const isStunt = sc && /stunt|split|reveal|death.?drop|cartwheel|jump/i
-          .test(sc.text || '');
-        const side2 = stepSides[idx];
-        const landed = (side2 === a && stuntA === 'landed')
-          || (side2 === b && stuntB === 'landed');
-        if (isStunt && landed) {
-          void burst.offsetWidth;
-          burst.classList.add('dr-flash');
-          setTimeout(() => burst.classList.remove('dr-flash'), 350);
-        }
-      }
-
-      const goes = goesHome;
-      if (box) {
-        box.classList.toggle('dr-decided', !!(done && goes));
-        box.classList.toggle('dr-won-a', !!(done && goes && goes === b));
-        box.classList.toggle('dr-won-b', !!(done && goes && goes === a));
-      }
-    };
+    window._drRevealExtra.lipsync = idx => stage.apply(idx);
+    setTimeout(() => {
+      try { const { idx } = _state(ep, 'lipsync'); if (idx >= 0) stage.apply(idx); } catch { /* decoration */ }
+    }, 0);
   }
 
-  return `<style>${RESULTS_CSS}</style>${_shell(
-    `<div class="dr-lsroom">${floor}${vs}${steps}</div>`, ep, {
+  return `<style>${RESULTS_CSS}${LS_CSS}</style>${_shell(
+    `<div class="dr-lsroom">${stage.html}<div class="lsx-cards">${steps}</div></div>`, ep, {
       phase: 'lipsync', title: 'Lip Sync For Your Life',
       subtitle: ls.call === 'double-shantay' ? 'both of them stay' : 'two queens, one song',
     })}${_controls('lipsync', Math.max(1, beats.length), ep.num)}`;

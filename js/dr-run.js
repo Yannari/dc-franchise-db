@@ -549,6 +549,11 @@ function _config() {
     drTankRetire: seasonConfig.drTankRetire,
     drGoldenBars: seasonConfig.drGoldenBars,
     drTankLive: seasonConfig.drTankLive,
+    /* THE REUNION AND THE DOUBLE CROWN, which had checkboxes and reached
+       nothing: js/dr/season.js reads both and this list never passed them, so
+       a played season never had a reunion and never crowned two. */
+    drReunion: !!seasonConfig.drReunion,
+    drDoubleCrown: !!seasonConfig.drDoubleCrown,
     /* THE SMACKDOWN, WHICH WAS UNREACHABLE. js/dr/season.js has read
        `config.drSmackdown` since it was written and this function never
        passed it, so the whole Lalaparuza reunion -- engine, challenge module

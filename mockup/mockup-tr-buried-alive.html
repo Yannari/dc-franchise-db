@@ -179,6 +179,27 @@ button{font:inherit}
 .ba-summary{margin-top:24px; padding:18px 20px; border:1px solid #2d3632; background:rgba(11,15,13,.86); transition:opacity .4s}
 .ba-summary small{display:block; font:11px/1.4 'Share Tech Mono',monospace; letter-spacing:.2em; text-transform:uppercase; color:var(--ba-lamp); margin-bottom:4px}
 
+.ba-av{width:36px; height:36px; border-radius:50%; object-fit:cover; object-position:50% 20%; background:#1a211e;
+  border:2px solid #3c4a43; box-shadow:0 2px 6px rgba(0,0,0,.5); display:inline-block; vertical-align:middle}
+.ba-faces{display:inline-flex; margin-right:9px; vertical-align:middle}
+.ba-faces .ba-av+.ba-av{margin-left:-10px}
+.ba-card .who{display:flex; align-items:center}
+.ba-card.good .ba-av{border-color:var(--ba-moss-hi)} .ba-card.bad .ba-av{border-color:var(--ba-wrong)}
+.ba-card.social .ba-av{border-color:var(--ba-lamp)} .ba-card.relic .ba-av{border-color:var(--ba-shield)}
+.ba-team{padding:7px 0; border-bottom:1px dashed #232b27}
+.ba-team-head{display:flex; justify-content:space-between; align-items:center; font-size:15.5px}
+.ba-team-head b{font:13px/1 'Share Tech Mono',monospace; color:var(--ba-bone); font-weight:400}
+.ba-team-faces{display:flex; align-items:center; gap:4px; margin-top:6px}
+.ba-team-faces .ba-av{width:28px; height:28px; border-width:1.5px}
+.ba-team-faces .sep{width:1px; height:22px; background:#3b4742; margin:0 4px}
+.ba-team-faces .under{filter:grayscale(1) brightness(.45); border-style:dashed; transition:filter .6s}
+.ba-team-faces .under.out{filter:none; border-style:solid; border-color:var(--ba-lamp)}
+.ba-team-faces .under.left{border-color:var(--ba-wrong)}
+.ba-plot .face{opacity:0; transition:opacity .6s}
+.ba-plot.found .face,.ba-plot.up .face{opacity:1}
+.ba-shieldbox .holder{display:flex; align-items:center; gap:10px; margin-top:6px}
+.ba-shieldbox .holder .ba-av{width:42px; height:42px; border-color:var(--ba-shield); box-shadow:0 0 12px rgba(233,198,91,.45)}
+
 /* ── SIDEBAR: the section through the ground ──────────────────────── */
 .ba-side{position:sticky; top:calc(var(--ba-nav) + 14px)}
 .ba-panel{background:rgba(9,12,11,.92); border:1px solid #29322e; padding:14px}
@@ -319,26 +340,26 @@ button{font:inherit}
 
         <article class="ba-card good" id="ba-step-0">
           <span class="ba-ico"><svg><use href="#i-clue"/></svg></span><span class="tag">Clue</span>
-          <div class="who">Brick <i>· Yew</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/brick.png" alt=""></span>Brick <i>· Yew</i></div>
           <div class="txt">Brick dug the plot nearest the gate because it was the only one with no flowers on it, and he was right: a tin box, and in it a rubbing of the yew tree's name plate.</div>
         </article>
 
         <article class="ba-card bad" id="ba-step-1">
           <span class="ba-ico"><svg><use href="#i-wrong"/></svg></span><span class="tag">Wrong plot</span>
-          <div class="who">Julia <i>· Rook</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/julia.png" alt=""></span>Julia <i>· Rook</i></div>
           <div class="txt">Julia called plot eight before anybody had read the ground. Rook dug four feet of clay down to a lid with the wrong colour on it: Lych's. Eight minutes gone, and half of Lych's digging done for them.</div>
           <div class="ba-fx"><span>record · called the wrong plot</span><span>clock −8:00 · Rook</span></div>
         </article>
 
         <article class="ba-card good" id="ba-step-2">
           <span class="ba-ico"><svg><use href="#i-clue"/></svg></span><span class="tag">Read it</span>
-          <div class="who">Ellie <i>· Lych</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/ellie.png" alt=""></span>Ellie <i>· Lych</i></div>
           <div class="txt">Ellie read Lych's clue twice, said "under the one that faces east," and walked straight to it.</div>
         </article>
 
         <article class="ba-card social bad" id="ba-step-3">
           <span class="ba-ico"><svg><use href="#i-wrong"/></svg></span><span class="tag">Suspicious</span>
-          <div class="who">Bowie &amp; Julia <i>· Rook</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/bowie.png" alt=""><img class="ba-av" src="../assets/avatars/julia.png" alt=""></span>Bowie &amp; Julia <i>· Rook</i></div>
           <div class="txt">Bowie had the clue in his hand saying plot two while Julia was still insisting on eight. He did not say anything until the hole was dug.</div>
           <div class="ba-conf"><small>Bowie · confessional</small>It said "where the rook sits." There's a rook on the headstone at two. There's no rook on eight, and eight wasn't even ours. I'm not accusing her. I'm just telling you where the rook was.</div>
           <div class="ba-fx"><span>claim · Bowie → Julia</span><span>suspicion +0.24</span><span>bond Bowie ↔ Julia −0.5</span></div>
@@ -355,13 +376,13 @@ button{font:inherit}
 
         <article class="ba-card plain" id="ba-step-4">
           <span class="ba-ico"><svg><use href="#i-coffin"/></svg></span><span class="tag">Steady</span>
-          <div class="who">Manu <i>· Lych</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/manu.png" alt=""></span>Manu <i>· Lych</i></div>
           <div class="txt">Manu lay still, counted his breathing, and did not touch the envelope. He wanted out more than he wanted anything in it.</div>
         </article>
 
         <article class="ba-card bad" id="ba-step-5">
           <span class="ba-ico"><svg><use href="#i-coffin"/></svg></span><span class="tag">Panicked</span>
-          <div class="who">Gabby <i>· Rook</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/gabby.png" alt=""></span>Gabby <i>· Rook</i></div>
           <div class="txt">Gabby hammered on the lid ten minutes in, before anybody from Rook was anywhere near her plot. Nobody could hear her yet.</div>
           <div class="ba-conf"><small>Gabby · confessional</small>You think you'll be fine because it's television. Then the lid goes on and the television part stops.</div>
           <div class="ba-fx"><span>crowd · Gabby frightened ×0.8</span></div>
@@ -369,7 +390,7 @@ button{font:inherit}
 
         <article class="ba-card relic" id="ba-step-6">
           <span class="ba-ico"><svg><use href="#i-lamp"/></svg></span><span class="tag">Not yet</span>
-          <div class="who">Fiore <i>· Yew</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/fiore.png" alt=""></span>Fiore <i>· Yew</i></div>
           <div class="txt">Fiore had her riddle open by lamplight before Yew found her plot. When the spades knocked, she knocked once, not twice, and shouted "five more minutes" through the wood.</div>
           <div class="ba-conf"><small>Fiore · confessional</small>They were right above me, I could hear Brick swearing. And I had the answer on the tip of my tongue. So yes, I made them wait.</div>
           <div class="ba-fx"><span>record · asked for more time</span><span>clock −6:00 · Yew</span></div>
@@ -377,7 +398,7 @@ button{font:inherit}
 
         <article class="ba-card relic" id="ba-step-7">
           <span class="ba-ico"><svg><use href="#i-seal"/></svg></span><span class="tag">Shield</span>
-          <div class="who">Fiore <i>· Yew</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/fiore.png" alt=""></span>Fiore <i>· Yew</i></div>
           <div class="txt">"A key that opens nothing and is still worth keeping." Fiore wrote <em>a promise</em> on the back of the card and slid it through the gap. It was right.</div>
           <div class="ba-fx"><span>shield · Fiore</span><span>seen by · Brick, Priya</span><span>crowd · Fiore bold ×0.9</span></div>
         </article>
@@ -393,13 +414,13 @@ button{font:inherit}
 
         <article class="ba-card good" id="ba-step-8">
           <span class="ba-ico"><svg><use href="#i-rope"/></svg></span><span class="tag">Clean lift</span>
-          <div class="who">Ellie &amp; Alec <i>· Lych</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/ellie.png" alt=""><img class="ba-av" src="../assets/avatars/alec.png" alt=""></span>Ellie &amp; Alec <i>· Lych</i></div>
           <div class="txt">Lych brought Manu up level the whole way, with Ellie counting every pull out loud. First team with both out.</div>
         </article>
 
         <article class="ba-card social" id="ba-step-9">
           <span class="ba-ico"><svg><use href="#i-rope"/></svg></span><span class="tag">Heroic</span>
-          <div class="who">Priya &amp; Brick <i>· Yew</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/priya.png" alt=""><img class="ba-av" src="../assets/avatars/brick.png" alt=""></span>Priya &amp; Brick <i>· Yew</i></div>
           <div class="txt">The clay went under Brick's side and Priya took the whole rope on her own for three seconds, which was enough.</div>
           <div class="ba-conf"><small>Priya · confessional</small>I heard it go and I just didn't let go. That's it. That's the whole story.</div>
           <div class="ba-fx"><span>bond Priya ↔ Brick +0.8</span><span>crowd · Priya heroic ×1.1</span></div>
@@ -407,14 +428,14 @@ button{font:inherit}
 
         <article class="ba-card bad" id="ba-step-10">
           <span class="ba-ico"><svg><use href="#i-rope"/></svg></span><span class="tag">Dropped</span>
-          <div class="who">Julia <i>· Rook</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/julia.png" alt=""></span>Julia <i>· Rook</i></div>
           <div class="txt">Rook got Gabby's coffin halfway before Julia's end slipped. It went back down. They got her out with ninety seconds left and never reached their second plot.</div>
           <div class="ba-fx"><span>record · dropped the rope</span><span>bond Gabby ↔ Julia −0.6</span></div>
         </article>
 
         <article class="ba-card social bad" id="ba-step-11">
           <span class="ba-ico"><svg><use href="#i-coffin"/></svg></span><span class="tag">Suspicious</span>
-          <div class="who">Brick &amp; Fiore <i>· Yew</i></div>
+          <div class="who"><span class="ba-faces"><img class="ba-av" src="../assets/avatars/brick.png" alt=""><img class="ba-av" src="../assets/avatars/fiore.png" alt=""></span>Brick &amp; Fiore <i>· Yew</i></div>
           <div class="txt">Brick came up the bank asking why Fiore had needed "five more minutes" in a box. Fiore said she had cramp. Priya said nothing, which Brick noticed.</div>
           <div class="ba-conf"><small>Brick · confessional</small>Nobody asks to stay in a coffin. Either she's mad or there was something down there worth staying for, and I don't think she's mad.</div>
           <div class="ba-fx"><span>claim · Brick → Fiore</span><span>suspicion +0.22</span><span>bond Brick ↔ Fiore −0.4</span></div>
@@ -452,15 +473,25 @@ button{font:inherit}
         <div class="ba-legend"><span>turf</span><span>nine plots · six coffins</span><span>4 ft</span></div>
 
         <div class="ba-rows">
-          <div class="ba-row"><span><i class="sw" style="background:#8fae7e"></i>Yew</span><b id="ba-r-yew">0 of 2 up</b></div>
-          <div class="ba-row"><span><i class="sw" style="background:#b0543c"></i>Rook</span><b id="ba-r-rook">0 of 2 up</b></div>
-          <div class="ba-row"><span><i class="sw" style="background:#e8d27a"></i>Lych</span><b id="ba-r-lych">0 of 2 up</b></div>
+          <div class="ba-team">
+            <div class="ba-team-head"><span><i class="sw" style="background:#8fae7e"></i>Yew</span><b id="ba-r-yew">0 of 2 up</b></div>
+            <div class="ba-team-faces"><img class="ba-av" src="../assets/avatars/brick.png" alt=""><img class="ba-av" src="../assets/avatars/priya.png" alt=""><img class="ba-av" src="../assets/avatars/cody.png" alt=""><span class="sep"></span><img class="ba-av under" id="ba-u-dawn" title="Dawn · buried" src="../assets/avatars/dawn.png" alt=""><img class="ba-av under" id="ba-u-fiore" title="Fiore · buried" src="../assets/avatars/fiore.png" alt=""></div>
+          </div>
+          <div class="ba-team">
+            <div class="ba-team-head"><span><i class="sw" style="background:#b0543c"></i>Rook</span><b id="ba-r-rook">0 of 2 up</b></div>
+            <div class="ba-team-faces"><img class="ba-av" src="../assets/avatars/julia.png" alt=""><img class="ba-av" src="../assets/avatars/bowie.png" alt=""><img class="ba-av" src="../assets/avatars/courtney.png" alt=""><span class="sep"></span><img class="ba-av under" id="ba-u-gabby" title="Gabby · buried" src="../assets/avatars/gabby.png" alt=""><img class="ba-av under" id="ba-u-duncan" title="Duncan · buried" src="../assets/avatars/duncan.png" alt=""></div>
+          </div>
+          <div class="ba-team">
+            <div class="ba-team-head"><span><i class="sw" style="background:#e8d27a"></i>Lych</span><b id="ba-r-lych">0 of 2 up</b></div>
+            <div class="ba-team-faces"><img class="ba-av" src="../assets/avatars/ellie.png" alt=""><img class="ba-av" src="../assets/avatars/alec.png" alt=""><img class="ba-av" src="../assets/avatars/beth.png" alt=""><span class="sep"></span><img class="ba-av under" id="ba-u-manu" title="Manu · buried" src="../assets/avatars/manu.png" alt=""><img class="ba-av under" id="ba-u-cameron" title="Cameron · buried" src="../assets/avatars/cameron.png" alt=""></div>
+          </div>
           <div class="ba-row"><span>Wrong plots dug</span><b id="ba-r-wrong">0</b></div>
         </div>
 
         <div class="ba-shieldbox" id="ba-shieldbox">
           <div class="lbl">The Envelopes</div>
           <div class="val" id="ba-shieldval">six sealed, nobody above ground knows</div>
+          <div class="holder" id="ba-holder" hidden><img class="ba-av" src="../assets/avatars/fiore.png" alt=""><span>Fiore holds it until the next murder</span></div>
           <div class="cost" id="ba-shieldcost"></div>
         </div>
 
@@ -487,9 +518,9 @@ button{font:inherit}
 
   /* Nine plots across the section. team: y r l for a coffin, c for a clue, x empty. */
   var PLOTS = [
-    {k:'c', x:18},  {k:'r', x:50}, {k:'y', x:82},
-    {k:'c', x:114}, {k:'l', x:146}, {k:'r', x:178},
-    {k:'y', x:210}, {k:'l', x:242}, {k:'c', x:274}
+    {k:'c', x:18},  {k:'r', x:50, who:'gabby'}, {k:'y', x:82, who:'dawn'},
+    {k:'c', x:114}, {k:'l', x:146, who:'manu'}, {k:'r', x:178, who:'duncan'},
+    {k:'y', x:210, who:'fiore'}, {k:'l', x:242, who:'cameron'}, {k:'c', x:274}
   ];
   var TEAM_COL = {y:'#8fae7e', r:'#b0543c', l:'#e8d27a'};
 
@@ -531,7 +562,9 @@ button{font:inherit}
         out += '<rect x="-6" y="120" width="12" height="9" rx="1" fill="#5d6a6e" stroke="#b9bdb4" stroke-width=".6"/>';
       } else if (p.k !== 'x') {
         out += '<g class="coffin"><path class="lid" d="M-6 104 h12 l4 10 -3 46 h-14 l-3 -46 z" fill="#2a211a" stroke-width="1.6"/>'
-          + '<circle class="lamp" cx="0" cy="130" r="5" fill="#e8d27a" opacity="0"/>'
+          + '<clipPath id="fc-' + i + '"><circle cx="0" cy="124" r="7"/></clipPath>'
+          + '<image class="face" href="../assets/avatars/' + p.who + '.png" x="-7" y="117" width="14" height="14" clip-path="url(#fc-' + i + ')" preserveAspectRatio="xMidYMin slice"/>'
+          + '<circle class="lamp" cx="0" cy="140" r="4" fill="#e8d27a" opacity="0"/>'
           + '<rect x="-2" y="162" width="4" height="4" fill="' + TEAM_COL[p.k] + '"/></g>';
       }
       out += '</g>';
@@ -570,6 +603,15 @@ button{font:inherit}
     el('ba-shieldval').textContent = won ? 'Fiore · solved the riddle in plot seven'
       : seen ? 'somebody in Yew asked for more time' : 'six sealed, nobody above ground knows';
     el('ba-shieldcost').textContent = won ? 'cost Yew six minutes · seen by 2 of 17' : '';
+
+    /* A buried face lights when its coffin is out; Duncan never comes up. */
+    var OUT = {dawn:10, fiore:10, gabby:11, manu:9, cameron:9};
+    ['dawn','fiore','gabby','duncan','manu','cameron'].forEach(function(k){
+      var f = el('ba-u-' + k);
+      f.classList.toggle('out', OUT[k] != null && n >= OUT[k]);
+      f.classList.toggle('left', k === 'duncan' && n >= TOTAL);
+    });
+    el('ba-holder').hidden = !won;
 
     var up = r[0] + r[1] + r[2];
     el('ba-pot-n').textContent = idx < 0 ? '—' : up + ' of 6';

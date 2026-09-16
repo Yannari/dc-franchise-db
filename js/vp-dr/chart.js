@@ -21,6 +21,7 @@
 // viewer has not been shown. Hiding them with CSS would put the whole season
 // one "view source" away, which for THIS screen is the entire result.
 import { _shell } from './style.js';
+import { DRAG_FORMAT } from '../shows.js';
 import { _state } from './reveal.js';
 import { buildTrackRecordGrid, gridRows, TRACK_RECORD_CSS } from '../dr/grid.js';
 
@@ -39,7 +40,7 @@ function upTo(row) {
  */
 function sourceFor(row) {
   const cap = upTo(row);
-  const mine = r => r && (r.dr || r.format === 'drag-race')
+  const mine = r => r && (r.dr || r.format === DRAG_FORMAT)
     && (Number(r.num ?? r.dr?.ep) || 0) <= cap;
 
   // An explicit season wins — that is how a test or a preview pins one.

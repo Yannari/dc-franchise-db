@@ -53,6 +53,9 @@ const SLUGS = Object.keys(SHOWS);
 // fixtures are allowed — required, even — to name several shows at once.
 const SKIP_DIRS = new Set([
   'node_modules', '.git', '.claude', '.superpowers', '.github',
+  // Git worktrees: whole checkouts of OTHER branches. Their files are that
+  // branch's source, not this tree's — scanning them counts every file twice.
+  '.worktrees',
   'tests', 'docs', 'coverage', 'test-results', 'playwright-report',
   'data', 'assets', 'dist',
 ]);
@@ -117,8 +120,8 @@ const PER_SHOW_DATA = {
 // before anything below counts, which is why that row is gone.
 const TERNARY_BACKLOG = {
   'compare.html':                 1,
-  'js/cast-ui.js':                3,
-  'js/run-ui.js':                 2,
+  'js/cast-ui.js':                2,
+  'js/run-ui.js':                 0,
   'js/social/events.js':          1,
   'js/wiki-view.js':              4,
   'player.html':                  1,
@@ -145,7 +148,7 @@ const COMPARISON_BACKLOG = {
   'js/bb-run.js':                 2,
   'js/bb/themes.js':              1,
   'js/cast-room.js':              1,
-  'js/cast-ui.js':                3,
+  'js/cast-ui.js':                2,
   // 2 -> 0, paid off by the fourth show. `formatIsRunnable` was a ladder of
   // `fmt === '<show>'` returns, one rung per show, so registering Drag Race
   // meant adding a fourth rung — a show list with return statements in it.
@@ -202,7 +205,7 @@ const COMPARISON_BACKLOG = {
   // hub reads that; the exit line reads `roundExits(row, format)` too, which
   // it had been calling for the castle alone while every other show fell
   // through to "left the game".
-  'js/run-ui.js':                 15,
+  'js/run-ui.js':                 7,
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,
@@ -233,7 +236,7 @@ const COMPARISON_BACKLOG = {
   // deliberately, in the commit that spends it, which is what a ratchet is for.
   'js/vp-screens.js':             7,
   'js/vp-ui.js':                  1,
-  'js/wiki-fill-run.js':          1,
+  'js/wiki-fill-run.js':          0,
   'js/wiki-view.js':              7,
   'player.html':                  4,
   'rankings.html':                1,
@@ -389,8 +392,11 @@ describe('js/shows.js is the only show list', () => {
     const all = [];
     const sweep = (dir) => {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (['node_modules', '.git', 'coverage', 'dist', 'assets',
+        // .worktrees and .claude/worktrees hold checkouts of other branches;
+        // their control characters belong to those branches' own sweeps.
+        if (['node_modules', '.git', '.worktrees', 'coverage', 'dist', 'assets',
           'test-results', 'playwright-report'].includes(entry.name)) continue;
+        if (entry.name === 'worktrees' && path.basename(dir) === '.claude') continue;
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) sweep(full);
         else if (/\.(js|mjs|html)$/.test(entry.name)) all.push(full);

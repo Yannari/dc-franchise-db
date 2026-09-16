@@ -39,6 +39,9 @@ import { rpBuildCrowning } from './crowning.js';
 import { rpBuildSaveIntro, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
 import { MAXI_EVENTS } from '../dr/data/maxi-events.js';
 
+// The finale's section ids share this stem (a section id, not a season id).
+const FINALE_SECTION = 'dr-finale';
+
 /* ── THE REHEARSAL ROOM'S OWN EVENTS, DERIVED ──
    An event declares the room it happens in with `from`, and the two that say
    `rehearsal` — she had the number after one run, she is still mouthing
@@ -494,7 +497,7 @@ function railFor(row, scenes, ep, sec = null) {
      cards. See the longer note on `roomAt` in js/vp-dr/werk.js.
      The exit and the finale screens come AFTER somebody has gone, so those are
      the two that genuinely want the closing roster. */
-  const after = !!sec && (sec.id === 'dr-exit' || sec.id.startsWith('dr-finale'));
+  const after = !!sec && (sec.id === 'dr-exit' || sec.id.startsWith(FINALE_SECTION));
   const living = after || !row?.houseAtStart?.length
     ? (row?.dr?.living || []) : row.houseAtStart;
   if (!living.length) return [];
@@ -660,7 +663,7 @@ function buildSection(sec, row) {
      stage, gold and lit from above, and the reunion's sofa under a hot
      television key light. Chosen from the section id, so a section added
      later gets one without anybody remembering to. */
-  const set = sec.id.startsWith('dr-finale') ? 'gala'
+  const set = sec.id.startsWith(FINALE_SECTION) ? 'gala'
     : sec.id === 'dr-reunion' ? 'sofa' : '';
   const room = set ? `<div class="dr-hall dr-hall-${set}" aria-hidden="true">
       <i class="dr-hall-key"></i><i class="dr-hall-floor"></i></div>` : '';

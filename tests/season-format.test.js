@@ -11,6 +11,7 @@ import { simulateBBSeason } from '../js/bb/week.js';
 import { extractBigBrotherSeasonTemplate, mergeBigBrotherSeason,
   mergeBigBrotherSeasonsDatabase } from '../js/stats-export.js';
 import { seedGame } from './helpers/setup.js';
+import { SHOWS } from '../js/shows.js';
 
 const CAST = [
   ['A', 'mastermind'], ['B', 'social-butterfly'], ['C', 'challenge-beast'], ['D', 'schemer'],
@@ -42,18 +43,20 @@ describe('show formats', () => {
   // stays Total Drama, which is what it checks now that the house has three.
   it('files an unmarked twist under Total Drama and never shares one between shows', () => {
     expect(TWIST_CATALOG.filter(t => !t.format).every(t => twistFormat(t) === 'total-drama')).toBe(true);
-    const td = twistsForFormat('total-drama');
-    const bb = twistsForFormat('big-brother');
-    const tr = twistsForFormat('traitors');
-    // Every entry is filed under exactly one of the three shows — the sum is a
-    // partition, not a sample.
-    expect(td.length + bb.length + tr.length).toBe(TWIST_CATALOG.length);
-    const bbIds = new Set(bb.map(t => t.id));
-    const trIds = new Set(tr.map(t => t.id));
-    expect(td.some(t => bbIds.has(t.id) || trIds.has(t.id))).toBe(false);
-    expect(bb.some(t => trIds.has(t.id))).toBe(false);
-    expect(bb.length).toBeGreaterThan(0);
-    expect(tr.length).toBeGreaterThan(0);
+    // Every entry is filed under exactly one registered show — the sum is a
+    // partition, not a sample. Summed over the REGISTRY: a three-show sum went
+    // red the day Drag Race filed twists of its own.
+    const byShow = Object.keys(SHOWS).map(f => twistsForFormat(f));
+    expect(byShow.reduce((n, list) => n + list.length, 0)).toBe(TWIST_CATALOG.length);
+    const seen = new Set();
+    for (const list of byShow) {
+      for (const t of list) {
+        expect(seen.has(t.id), `${t.id} is filed under two shows`).toBe(false);
+        seen.add(t.id);
+      }
+    }
+    expect(twistsForFormat('big-brother').length).toBeGreaterThan(0);
+    expect(twistsForFormat('traitors').length).toBeGreaterThan(0);
   });
 });
 

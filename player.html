@@ -198,8 +198,8 @@
      array of every show that exists — and not one of them errored on a show it
      had not been told about. -->
 <script type="module">
-  import { SHOWS, DEFAULT_FORMAT } from './js/shows.js';
-  window.__SHOWS = { SHOWS, DEFAULT_FORMAT };
+  import { SHOWS, DEFAULT_FORMAT, DRAG_FORMAT } from './js/shows.js';
+  window.__SHOWS = { SHOWS, DEFAULT_FORMAT, DRAG_FORMAT };
   /* ── AND THE ONE FUNCTION THE CLASSIC SCRIPT BELOW BORROWS ──
      `ageNow` lives in js/franchise-calendar.js, which is an ES MODULE, and
      the bio block below is in a classic script where a module export simply
@@ -1007,7 +1007,7 @@ function _renderWiki(player) {
 
      The article above already draws HER house. This is the lookup: any queen
      in the franchise, and the tree redrawn from where she stands. */
-  if (format === 'drag-race') _renderGenealogy(host);
+  if (format === window.__SHOWS?.DRAG_FORMAT) _renderGenealogy(host);
 }
 
 async function _renderGenealogy(host) {

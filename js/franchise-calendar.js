@@ -29,6 +29,8 @@
 // thing to keep in step, and this project has been bitten by that often enough
 // to have a document about it.
 
+import { SHOWS } from './shows.js';
+
 /** The four slots, in the order they occur within a year. */
 export const SLOTS = ['winter', 'spring', 'summer', 'fall'];
 
@@ -211,13 +213,6 @@ export function ageNow(birthdate) {
 // convention applied identically to every season, so two seasons in the same
 // slot cannot disagree about when a Friday was.
 
-/** What night each show goes out on. 0 = Sunday. */
-const SHOW_NIGHT = {
-  'drag-race': 5, // Friday
-  'big-brother': 3, // Wednesday
-  traitors: 4, // Thursday
-  'total-drama': 1, // Monday
-};
 
 /**
  * The premiere date for a season, as a UTC Date, or null if it has no window.
@@ -227,7 +222,8 @@ const SHOW_NIGHT = {
 export function premiereDate(season, format) {
   if (airKey(season) == null) return null;
   const month = SLOT_MONTH[String(season.airSlot).toLowerCase()];
-  const want = SHOW_NIGHT[format] ?? 5;
+  // What night the show goes out on is the registry's (SHOWS[format].airNight).
+  const want = SHOWS[format]?.airNight ?? 5;
   const d = new Date(Date.UTC(Number(season.airYear), month - 1, 1));
   d.setUTCDate(d.getUTCDate() + ((want - d.getUTCDay() + 7) % 7));
   return d;

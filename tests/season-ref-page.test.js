@@ -15,10 +15,10 @@
 //     whose entire job is to be about one particular season
 //
 // None of it errors. All of it is prose. The only way to find it is to RUN the
-// page and READ what it draws, which is what this does: the wiki-tab statement
-// is extracted by its anchor and executed against real documents from all
-// three shows. The anchor doubles as a staleness guard — if the block is
-// renamed or moved, this fails rather than silently testing nothing.
+// page and READ what it draws, which is what this does: the wiki-tab builder
+// (now js/season-wiki-tab.js, called by the page) runs against real documents from all
+// three shows. The page call doubles as a staleness guard — if the page stops
+// using that builder, this fails rather than silently testing nothing.
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { join } from 'node:path';
@@ -27,23 +27,28 @@ import { playTraitorsSeason } from '../js/tr/headless.js';
 import { buildTraitorsSeasonDocument, TRAITORS_FORMAT } from '../js/tr/export.js';
 import { DEFAULT_FORMAT, showWords, exitVerbs, roundExits, publicBallots,
   showName, seasonId, parseSeasonRef } from '../js/shows.js';
+import { buildWikiTab } from '../js/season-wiki-tab.js';
 import roster from '../franchise_roster.json';
 
 const ROSTER = roster.players.slice(0, 20);
 const PAGE = join(process.cwd(), 'season_ref.html');
-const ANCHOR = 'const wikiHTML = (() => {';
+// The wiki tab was lifted out of the page into js/season-wiki-tab.js (it had
+// been an 858-line IIFE nobody could call). The page now only calls it, so the
+// staleness guard checks THAT call: if the page stops drawing its wiki tab with
+// this builder, this test is reading a function the page no longer uses.
+const ANCHOR = 'const wikiHTML = window.buildWikiTab ? window.buildWikiTab(s,';
+const IMPORT = "import { buildWikiTab } from './js/season-wiki-tab.js';";
 
-/** The page's own wiki-tab statement, extracted and made callable. */
+/** The page's own wiki-tab builder, confirmed to be the one the page calls. */
 function wikiTab() {
-  const src = fs.readFileSync(PAGE, 'utf8').split('\n');
-  const start = src.findIndex(l => l.includes(ANCHOR));
-  expect(start, `season_ref.html no longer builds its wiki tab as "${ANCHOR}"`)
-    .toBeGreaterThan(-1);
-  const end = src.findIndex((l, i) => i > start && l.trim() === '})();');
-  expect(end, 'the wiki-tab block is not closed the way this reader expects')
-    .toBeGreaterThan(start);
-  // eslint-disable-next-line no-new-func
-  return new Function('s', 'shows', src.slice(start + 1, end).join('\n'));
+  const src = fs.readFileSync(PAGE, 'utf8');
+  expect(src.includes(ANCHOR), `season_ref.html no longer builds its wiki tab as "${ANCHOR}"`)
+    .toBe(true);
+  expect(src.includes(IMPORT), 'season_ref.html no longer imports its wiki tab from js/season-wiki-tab.js')
+    .toBe(true);
+  // `shows` is kept in the signature for the callers below; the module now
+  // imports the registry itself.
+  return (s, _shows) => buildWikiTab(s);
 }
 
 // The page reaches js/shows.js through `window.shows`; this is that handle.
@@ -196,8 +201,13 @@ describe('the winner card of every published season', () => {
     const end = src.findIndex((l, i) => i > start && l.trim() === '</div>`;');
     expect(end).toBeGreaterThan(start);
     // eslint-disable-next-line no-new-func
-    return new Function('s', '_won', 'w', 'finalistsHTML',
+    const build = new Function('s', '_won', 'w', 'finalistsHTML', 'srFace',
       `${src.slice(start, end + 1).join('\n')} return winnerHTML;`);
+    // The block calls `srFace`, the page-scope portrait resolver (it reads a
+    // row index the page builds at load). This card only needs a src string
+    // from it — the layout, not the portrait, is what is under test.
+    const face = (row, slug) => `assets/avatars/${slug || (row && row.playerSlug) || 'unknown'}.png`;
+    return (s, won, w, finalistsHTML) => build(s, won, w, finalistsHTML, face);
   };
 
   /** The page's own resolution rule, so this reads what the page would draw. */

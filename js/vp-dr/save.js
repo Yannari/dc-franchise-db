@@ -1,187 +1,565 @@
 // ══════════════════════════════════════════════════════════════════════
-// vp-dr/save.js — the season's save, on the stage
+// vp-dr/save.js — the season's save, staged
 // ══════════════════════════════════════════════════════════════════════
 //
 // Three screens for the four saves in js/dr/saves.js:
-//   save-intro  the twist explained, the bars handed out, the tank retired
-//   save-hold   the winner (or the baguette's holder) saves one of three
+//   save-intro  the twist explained (or the tank drained)
+//   save-hold   the winner — or the baguette's holder — saves one of three
 //   save-luck   the lip sync loser opens her bar or pulls a lever
 //
-// Each save is drawn as the object it is — a chocolate bar that unwraps, a
-// dunk tank with its levers, a golden beaver, a baguette — in SVG. The
-// outcome of every card is in its markup and only animates in when that card
-// is revealed (`.dr-vis`), and the rail beside it is rebuilt per step from
-// what has been revealed so far: bars still sealed, levers still in play,
-// who has been saved.
+// ── ONE STAGE, DRIVEN BY THE REVEAL ───────────────────────────────────
+// Each screen is a full-width stage above its cards. The cards are the words;
+// the stage is the moment. Every reveal step carries a STATE for the stage
+// (`window._svx[suffix].steps[idx]`) and `_drRevealExtra` applies it by
+// flipping data attributes — no rebuild, so transitions and keyframes play.
+//
+// A result lands in two beats: the ASK (the bar trembles, the levers wait)
+// and the REVEAL. A reveal passes through its suspense phase first — the
+// wrapper tearing, the lever going down, the spotlights sweeping — and lands
+// on the answer a second later, unless the viewer jumped (Reveal all), which
+// lands straight on it.
+//
+// Objects are SVG. Confetti, rays and spotlights are plain geometry and are
+// CSS. Under prefers-reduced-motion nothing moves and the end states show.
 import { _shell, _portrait } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _state } from './reveal.js';
 import { SAVE_KINDS } from '../dr/saves.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
 const epOf = row => ({ num: row?.num ?? row?.dr?.ep ?? 0, format: 'drag-race', dr: row?.dr || {} });
 
+// A fixed spread for particles, so every rebuild draws the same burst.
+const spread = (n, seed = 7) => {
+  let s = seed;
+  const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  return Array.from({ length: n }, () => ({ a: r(), b: r(), c: r(), d: r() }));
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// CSS
+// ══════════════════════════════════════════════════════════════════════
 export const SAVE_CSS = `
-.sv-stage{position:relative;display:grid;gap:14px}
-.sv-card{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:16px;align-items:center;padding:14px 16px}
-@media (max-width:560px){.sv-card{grid-template-columns:1fr}}
-.sv-art svg{width:100%;height:auto;display:block}
-.sv-line{margin:0;font-size:15.5px}
-.sv-who{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.sv-rule{margin:8px 0 0;color:var(--dr-dim);font-size:13px;line-height:1.55}
-.sv-tag{display:inline-block;margin-bottom:6px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--sv-c,var(--dr-gold))}
+@property --svx-spin{syntax:'<angle>';inherits:false;initial-value:0deg}
+.svx{position:sticky;top:6px;z-index:5;isolation:isolate;overflow:hidden;border-radius:22px;margin:0 0 18px;
+  min-height:440px;padding:18px 22px 16px;color:#fff;
+  background:radial-gradient(120% 90% at 50% 110%,#2a0d22 0,#12040e 55%,#07020a 100%);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.07)}
+.svx-bg,.svx-bg i{position:absolute;inset:0;pointer-events:none}
+.svx-bg{z-index:0;transition:filter 1s}
+.svx-spot{background:radial-gradient(38% 62% at 50% 46%,rgba(255,236,200,.30),rgba(255,120,190,.08) 55%,transparent 72%);
+  transition:opacity .8s ease,transform .8s ease;transform-origin:50% 46%}
+.svx-cone{background:conic-gradient(from 180deg at 50% -8%,transparent 160deg,rgba(255,240,220,.14) 172deg,rgba(255,240,220,.22) 180deg,rgba(255,240,220,.14) 188deg,transparent 200deg);
+  mix-blend-mode:screen;transition:opacity .8s}
+.svx-rays{opacity:0;background:repeating-conic-gradient(from var(--svx-spin) at 50% 50%,rgba(255,214,90,.34) 0 7deg,transparent 7deg 20deg);
+  -webkit-mask:radial-gradient(circle at 50% 50%,#000 0,#000 16%,transparent 62%);
+  mask:radial-gradient(circle at 50% 50%,#000 0,#000 16%,transparent 62%);transition:opacity .6s}
+.svx-flash{opacity:0;background:radial-gradient(circle at 50% 46%,#fff,rgba(255,236,160,.8) 25%,transparent 70%)}
+.svx-vig{box-shadow:inset 0 0 120px 40px rgba(0,0,0,.85);opacity:.6;transition:opacity .6s}
+.svx-grain{opacity:.06;background-image:repeating-radial-gradient(circle at 17% 32%,#fff 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+.svx > *:not(.svx-bg){position:relative;z-index:1}
+.svx-bg{position:absolute!important}
+.svx.svx-static{position:relative;top:auto}
 
-/* The bar: the wrapper slides off when the card is revealed. */
-.sv-wrap{transition:transform 1.1s cubic-bezier(.6,0,.2,1) .35s}
-.dr-step.dr-vis .sv-wrap{transform:translateY(118px)}
-.sv-inside{opacity:0;transition:opacity .5s ease .9s}
-.dr-step.dr-vis .sv-inside{opacity:1}
-.sv-gold{filter:drop-shadow(0 0 10px rgba(255,200,61,.9))}
+.svx-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.svx-kicker{display:block;font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:#ffb3dc}
+.svx-title{display:block;font:400 clamp(28px,4.4vw,48px)/1 'Anton','Oswald','Impact',sans-serif;letter-spacing:.01em;text-transform:uppercase;
+  background:linear-gradient(180deg,#fff 20%,#ffc7e5 60%,#ff5fae);-webkit-background-clip:text;background-clip:text;color:transparent}
+.svx-count{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#d9c1cf;align-self:center;
+  padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.06);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1)}
+.svx-count b{font:800 20px/1 ui-monospace,'SF Mono',Menlo,monospace;color:#ffd66b;margin-right:6px;display:inline-block}
+.svx-count b.svx-tick{animation:svx-tick .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes svx-tick{0%{transform:scale(1.9);color:#fff}100%{transform:scale(1)}}
 
-/* The tank: the chosen lever tips, and on a hit the seat drops. */
-.sv-lever{transition:transform .5s ease .4s;transform-box:fill-box;transform-origin:50% 100%}
-.dr-step.dr-vis .sv-lever.sv-pulled{transform:rotate(-32deg)}
-.sv-seat{transition:transform .5s cubic-bezier(.5,0,.8,.4) 1s}
-.dr-step.dr-vis .sv-seat.sv-drop{transform:translateY(58px)}
-.sv-splash{opacity:0;transition:opacity .3s ease 1.3s}
-.dr-step.dr-vis .sv-splash{opacity:1}
+.svx-center{height:340px;display:grid;place-items:center;perspective:900px}
+.svx-center > *{grid-area:1/1}
+.svx-caption{min-height:50px;text-align:center;font-size:17px;line-height:1.45;max-width:660px;margin:0 auto;
+  color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+.svx-caption small{display:block;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:#ffb3dc;margin-bottom:3px}
 
-/* A holder night: the queen who is kept lights up. */
-.sv-pool{display:flex;gap:10px;flex-wrap:wrap}
-.sv-q{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;
-  padding:6px;border-radius:10px;border:2px solid transparent;transition:border-color .5s ease .5s,box-shadow .5s ease .5s}
-.dr-step.dr-vis .sv-q.sv-kept{border-color:#ffed00;box-shadow:0 0 16px rgba(255,237,0,.55)}
-.sv-q.sv-sing{opacity:.8}
+/* the queen, glowing behind whatever she is holding */
+.svx-halo{width:170px;height:170px;border-radius:50%;overflow:hidden;opacity:0;transform:translate(-210px,-10px) scale(.9);
+  box-shadow:0 0 0 3px rgba(255,255,255,.14),0 0 60px 10px rgba(255,61,154,.35);transition:opacity .6s,transform .8s cubic-bezier(.2,.8,.2,1),filter .8s,box-shadow .6s}
+.svx-halo > *,.svx-halo img{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%;margin:0!important}
+@media (max-width:640px){.svx-halo{transform:translate(0,-120px) scale(.5)!important}}
+
+/* ── THE BAR ─────────────────────────────────────────────────────────── */
+.svx-bar{position:relative;width:250px;height:176px;transform-style:preserve-3d;
+  transform:rotateX(14deg) rotateY(-18deg);animation:svx-float 5s ease-in-out infinite;
+  filter:drop-shadow(0 26px 30px rgba(0,0,0,.7));transition:opacity .8s}
+@keyframes svx-float{50%{transform:rotateX(8deg) rotateY(-8deg) translateY(-10px)}}
+.svx-bar > *{position:absolute;inset:0}
+.svx-bar svg{width:100%;height:100%;display:block;overflow:visible}
+.svx-inner{opacity:0;transition:opacity .35s}
+.svx-wrap{transition:transform .95s cubic-bezier(.55,-0.2,.3,1),opacity .6s ease .35s}
+.svx-foil{background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 45%,rgba(160,230,255,.35) 50%,rgba(255,170,230,.35) 55%,transparent 70%);
+  background-size:260% 100%;mix-blend-mode:screen;border-radius:12px;animation:svx-sheen 3.4s linear infinite;pointer-events:none;transition:opacity .3s}
+@keyframes svx-sheen{from{background-position:130% 0}to{background-position:-130% 0}}
+
+.svx[data-phase=hold] .svx-halo,.svx[data-phase=tear] .svx-halo,.svx[data-phase=pull] .svx-halo{opacity:1;transform:translate(-210px,-10px) scale(1)}
+.svx[data-phase=hold] .svx-bar{animation:svx-tremble .11s linear infinite}
+@keyframes svx-tremble{0%{transform:rotateX(12deg) rotateY(-14deg) translate(0,0)}25%{transform:rotateX(12deg) rotateY(-14deg) translate(-2px,1px) rotateZ(-.8deg)}
+  50%{transform:rotateX(12deg) rotateY(-14deg) translate(2px,-1px)}75%{transform:rotateX(12deg) rotateY(-14deg) translate(-1px,-2px) rotateZ(.8deg)}}
+.svx[data-phase=hold] .svx-vig{opacity:1;animation:svx-heart 1.05s ease-in-out infinite}
+@keyframes svx-heart{0%,100%{box-shadow:inset 0 0 120px 40px rgba(0,0,0,.85)}14%{box-shadow:inset 0 0 170px 80px rgba(70,0,24,.95)}28%{box-shadow:inset 0 0 120px 40px rgba(0,0,0,.85)}42%{box-shadow:inset 0 0 150px 60px rgba(70,0,24,.9)}}
+.svx[data-phase=hold] .svx-spot{transform:scale(.78)}
+
+.svx[data-phase=tear] .svx-bar{animation:svx-yank .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes svx-yank{40%{transform:rotateX(4deg) rotateY(0) scale(1.1)}}
+.svx[data-phase=tear] .svx-wrap-l,.svx.svx-open .svx-wrap-l{transform:translate3d(-200px,-130px,140px) rotateZ(-48deg) rotateY(70deg);opacity:0}
+.svx[data-phase=tear] .svx-wrap-r,.svx.svx-open .svx-wrap-r{transform:translate3d(210px,-100px,160px) rotateZ(52deg) rotateY(-80deg);opacity:0}
+.svx[data-phase=tear] .svx-foil,.svx.svx-open .svx-foil{opacity:0}
+.svx[data-phase=tear] .svx-flash{background:radial-gradient(circle at 50% 46%,rgba(255,255,255,.5),transparent 45%);animation:svx-flash .5s ease-out}
+
+/* GOLD */
+.svx.svx-open[data-result=gold] .svx-inner-gold,.svx.svx-open[data-result=plain] .svx-inner-plain{opacity:1}
+.svx[data-phase=gold] .svx-rays{opacity:1;animation:svx-spin 9s linear infinite}
+@keyframes svx-spin{to{--svx-spin:360deg}}
+.svx[data-phase=gold] .svx-flash{animation:svx-flash 1.2s ease-out}
+@keyframes svx-flash{0%{opacity:0}8%{opacity:1}100%{opacity:0}}
+.svx[data-phase=gold] .svx-bar{animation:svx-rise 1.2s cubic-bezier(.2,1.4,.4,1) forwards;filter:drop-shadow(0 0 40px rgba(255,200,60,.9))}
+@keyframes svx-rise{0%{transform:rotateX(14deg) rotateY(-18deg) scale(1)}60%{transform:rotateX(0) rotateY(0) scale(1.14) translateY(-66px)}100%{transform:rotateX(0) rotateY(0) scale(1) translateY(-58px)}}
+.svx[data-phase=gold] .svx-halo{opacity:1;transform:translate(-230px,-20px) scale(1.06);box-shadow:0 0 0 4px #ffd66b,0 0 80px 24px rgba(255,200,60,.65)}
+.svx[data-phase=gold] .svx-title{background:linear-gradient(180deg,#fff 10%,#ffe9a3 45%,#e6a91a);-webkit-background-clip:text;background-clip:text}
+.svx-confetti,.svx-crumbs,.svx-drops{width:0;height:0;overflow:visible;position:relative}
+.svx-confetti i{position:absolute;left:0;top:0;width:var(--w);height:var(--h);border-radius:2px;opacity:0;background:var(--c)}
+.svx[data-phase=gold] .svx-confetti i{animation:svx-burst var(--t) cubic-bezier(.1,.7,.3,1) var(--dl) forwards}
+@keyframes svx-burst{0%{opacity:1;transform:translate(0,0) rotate(0)}70%{opacity:1}
+  100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+
+/* PLAIN */
+.svx[data-phase=plain] .svx-bg,.svx[data-phase=bye] .svx-bg,.svx[data-phase=miss] .svx-bg{filter:grayscale(1) brightness(.65)}
+.svx[data-phase=plain] .svx-spot,.svx[data-phase=bye] .svx-spot,.svx[data-phase=miss] .svx-spot{transform:scale(.45);opacity:.6}
+.svx[data-phase=plain] .svx-cone,.svx[data-phase=bye] .svx-cone{opacity:.25}
+.svx[data-phase=plain] .svx-bar{animation:svx-thud .7s cubic-bezier(.5,0,.8,.4) forwards}
+@keyframes svx-thud{0%{transform:rotateX(14deg) rotateY(-18deg)}70%{transform:rotateX(55deg) translateY(40px)}85%{transform:rotateX(48deg) translateY(32px)}100%{transform:rotateX(55deg) translateY(40px)}}
+.svx[data-phase=plain] .svx-halo,.svx[data-phase=bye] .svx-halo,.svx[data-phase=miss] .svx-halo{opacity:.85;filter:grayscale(1);transform:translate(-210px,-10px) scale(.95)}
+.svx-stamp{opacity:0;padding:8px 18px;border:4px solid #ff4d6d;border-radius:8px;color:#ff4d6d;white-space:nowrap;
+  font:400 32px/1 'Anton','Impact',sans-serif;letter-spacing:.08em;transform:rotate(-11deg) scale(3);background:rgba(20,0,6,.6)}
+.svx[data-phase=plain] .svx-stamp{animation:svx-slam .45s cubic-bezier(.5,0,.3,1.4) .45s forwards}
+.svx[data-phase=miss] .svx-stamp{animation:svx-slam .45s cubic-bezier(.5,0,.3,1.4) .5s forwards}
+.svx[data-phase=bye] .svx-stamp{opacity:.45;transform:rotate(-11deg) scale(1)}
+@keyframes svx-slam{0%{opacity:0;transform:rotate(-11deg) scale(3)}100%{opacity:1;transform:rotate(-11deg) scale(1)}}
+.svx-crumbs i{position:absolute;left:var(--x0);top:10px;width:var(--w);height:var(--w);border-radius:40% 55% 45% 60%;background:#6b3a20;opacity:0}
+.svx[data-phase=plain] .svx-crumbs i{animation:svx-fall var(--t) cubic-bezier(.4,0,1,1) var(--dl) forwards}
+@keyframes svx-fall{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--x),170px) rotate(200deg)}}
+.svx[data-phase=bye] .svx-bar{opacity:.3;transform:rotateX(55deg) translateY(40px);animation:none}
+.svx[data-phase=bye] .svx-halo{transform:translate(-210px,50px) scale(.75);opacity:0}
+
+/* the golden ticket */
+.svx-ticket{opacity:0;width:300px;transform:translateY(60px) rotateX(80deg) scale(.6);transition:opacity .6s .5s,transform .9s cubic-bezier(.2,1.5,.4,1) .5s}
+.svx-ticket svg{width:100%;display:block;filter:drop-shadow(0 12px 30px rgba(255,190,40,.6))}
+.svx[data-phase=gold] .svx-ticket{opacity:1;transform:translateY(118px) rotateX(0) scale(.92)}
+
+/* the tray of bars still in the room */
+.svx-tray{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:6px;min-height:14px}
+.svx-tray i{width:22px;height:14px;border-radius:3px;background:linear-gradient(135deg,#ff7cc2,#b8237a);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);transition:all .5s}
+.svx-tray i.gone{background:#2a1623;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transform:scale(.8)}
+.svx-tray i.gold{background:linear-gradient(135deg,#fff1a8,#d99a14);box-shadow:0 0 12px rgba(255,200,60,.9)}
+
+/* ── THE TANK ────────────────────────────────────────────────────────── */
+.svx-tank{width:min(430px,100%);transition:filter .8s}
+.svx-tank svg{width:100%;display:block;overflow:visible}
+.svx-water{animation:svx-wave 3.2s ease-in-out infinite}
+@keyframes svx-wave{50%{transform:translateX(-24px)}}
+.svx-water2{animation:svx-wave 2.4s ease-in-out infinite reverse;opacity:.6}
+.svx-caustic{animation:svx-caus 6s linear infinite;opacity:.25}
+@keyframes svx-caus{to{transform:translateX(-120px)}}
+.svx-judge{transition:transform .55s cubic-bezier(.6,0,.9,.5)}
+.svx-arm{transition:transform .45s cubic-bezier(.3,1.6,.5,1);transform-box:fill-box;transform-origin:50% 100%}
+.svx-knob{transition:fill .3s}
+.svx-lv{transition:opacity .5s}
+.svx-lv.gone{opacity:.13}
+.svx-xmark{opacity:0;transition:opacity .3s .9s}
+.svx-lv.x .svx-xmark{opacity:1}
+.svx[data-phase=hold] .svx-lv:not(.gone) .svx-knob{animation:svx-scan 1.6s ease-in-out infinite;animation-delay:calc(var(--i) * .22s)}
+@keyframes svx-scan{0%,100%{fill:#7b2ff7}40%{fill:#ffd66b}}
+.svx-lv.chosen .svx-knob{fill:#ff294b}
+.svx[data-phase=pull] .svx-lv.chosen .svx-arm,.svx[data-phase=hit] .svx-lv.chosen .svx-arm,
+.svx[data-phase=miss] .svx-lv.chosen .svx-arm,.svx[data-phase=bye] .svx-lv.chosen .svx-arm{transform:rotate(-42deg)}
+.svx[data-phase=pull] .svx-tank{animation:svx-rumble .09s linear infinite}
+@keyframes svx-rumble{50%{transform:translate(1px,-1px)}}
+.svx[data-phase=pull] .svx-vig{opacity:1;animation:svx-heart .8s ease-in-out infinite}
+.svx[data-phase=hit] .svx-judge{transform:translateY(125px)}
+.svx[data-phase=hit] .svx-flash{background:radial-gradient(circle at 50% 40%,#e0f7ff,rgba(120,210,255,.7) 25%,transparent 70%);animation:svx-flash 1.1s ease-out .45s}
+.svx[data-phase=hit] .svx-surge{animation:svx-surge 1.2s ease-out .45s}
+@keyframes svx-surge{30%{transform:translateY(-30px)}}
+.svx-drops i{position:absolute;left:0;top:-70px;width:var(--w);height:calc(var(--w) * 1.35);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  background:radial-gradient(circle at 35% 30%,#fff,#7dd3fc 60%,#0284c7);opacity:0}
+.svx[data-phase=hit] .svx-drops i{animation:svx-burst var(--t) cubic-bezier(.1,.7,.3,1) calc(var(--dl) + .5s) forwards}
+.svx[data-phase=hit] .svx-halo{opacity:1;box-shadow:0 0 0 4px #7dd3fc,0 0 80px 24px rgba(56,189,248,.6)}
+.svx-splash{opacity:0;font:400 72px/1 'Anton','Impact',sans-serif;letter-spacing:.04em;color:#e0f7ff;
+  text-shadow:0 0 30px #38bdf8,0 6px 0 #0369a1;transform:scale(.3) rotate(-6deg)}
+.svx[data-phase=hit] .svx-splash{animation:svx-pop .7s cubic-bezier(.3,1.7,.5,1) .6s forwards}
+@keyframes svx-pop{to{opacity:1;transform:translateY(-80px) scale(1) rotate(-6deg)}}
+.svx[data-kind=tank] .svx-halo{width:130px;height:130px;transform:translate(-250px,-40px) scale(.9)}
+.svx[data-kind=tank][data-phase=hold] .svx-halo,.svx[data-kind=tank][data-phase=pull] .svx-halo,
+.svx[data-kind=tank][data-phase=hit] .svx-halo,.svx[data-kind=tank][data-phase=miss] .svx-halo{transform:translate(-250px,-40px)}
+.svx[data-kind=tank][data-phase=bye] .svx-halo{transform:translate(-250px,10px) scale(.7);opacity:0}
+.svx[data-phase=miss] .svx-tank,.svx[data-phase=bye] .svx-tank{filter:grayscale(.8) brightness(.8)}
+.svx[data-phase=drained] .svx-waterg{transform:translateY(150px);transition:transform 2.6s cubic-bezier(.5,0,.5,1)}
+
+/* ── THE HOLDER ──────────────────────────────────────────────────────── */
+.svx-trio{display:flex;gap:clamp(12px,4vw,50px);align-items:flex-end;justify-content:center;width:100%;align-self:end;padding-bottom:6px}
+.svx-pod{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:transform .7s cubic-bezier(.2,1.4,.4,1),filter .6s,opacity .6s}
+.svx-face{width:112px;height:112px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px rgba(255,255,255,.15),0 20px 40px -10px #000;transition:box-shadow .6s}
+.svx-face > *,.svx-face img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.svx-pod b{font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.svx-beam{position:absolute;bottom:22px;left:50%;width:180px;height:330px;transform:translateX(-50%);
+  background:linear-gradient(0deg,rgba(255,230,200,.22),transparent 90%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);
+  opacity:.4;transition:opacity .6s,background .6s;z-index:-1}
+.svx-plinth{width:130px;height:16px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.22),transparent)}
+.svx[data-phase=deciding] .svx-beam{animation:svx-sweep 1.2s ease-in-out infinite;animation-delay:calc(var(--i) * .4s)}
+@keyframes svx-sweep{0%,100%{opacity:.08}30%{opacity:1;background:linear-gradient(0deg,rgba(255,240,200,.5),transparent 90%)}}
+.svx[data-phase=deciding] .svx-pod{animation:svx-breathe 1.2s ease-in-out infinite;animation-delay:calc(var(--i) * .4s)}
+@keyframes svx-breathe{30%{transform:translateY(-6px)}}
+.svx.svx-chosen .svx-pod.kept{transform:translateY(-34px) scale(1.14)}
+.svx.svx-chosen .svx-pod.kept .svx-face{box-shadow:0 0 0 4px #ffed00,0 0 70px 18px rgba(255,220,60,.6)}
+.svx.svx-chosen .svx-pod.kept .svx-beam{opacity:1;background:linear-gradient(0deg,rgba(255,230,90,.6),transparent 90%)}
+.svx.svx-chosen .svx-pod:not(.kept){filter:saturate(.6);transform:scale(.94)}
+.svx.svx-chosen .svx-pod:not(.kept) .svx-beam{opacity:.8;background:linear-gradient(0deg,rgba(255,41,75,.5),transparent 90%)}
+.svx[data-phase=saved] .svx-rays{opacity:.55;animation:svx-spin 12s linear infinite}
+.svx[data-phase=saved] .svx-flash{animation:svx-flash 1s ease-out}
+.svx-tag{opacity:0;font-size:10px;letter-spacing:.24em;text-transform:uppercase;padding:3px 10px;border-radius:99px;transition:opacity .4s .4s;min-height:18px}
+.svx-tag span{display:none}
+.svx.svx-chosen .svx-pod.kept .svx-tag{opacity:1;background:#ffed00;color:#1a1400}
+.svx.svx-chosen .svx-pod.kept .svx-tag .k{display:inline}
+.svx[data-phase=left] .svx-pod:not(.kept) .svx-tag{opacity:1;background:#ff294b;color:#fff}
+.svx[data-phase=left] .svx-pod:not(.kept) .svx-tag .l{display:inline}
+.svx[data-phase=left] .svx-pod.kept{opacity:.35;transform:translateY(-10px) scale(.85)}
+.svx[data-phase=left] .svx-pod:not(.kept){filter:none;transform:scale(1.04)}
+.svx-token{align-self:start;width:96px;margin-top:-6px;filter:drop-shadow(0 0 22px rgba(255,200,60,.7));animation:svx-bob 3s ease-in-out infinite}
+@keyframes svx-bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+.svx-token svg{width:100%;display:block}
+.svx[data-phase=handoff] .svx-token{animation:svx-toss 1.1s cubic-bezier(.3,1.3,.4,1)}
+@keyframes svx-toss{0%{transform:translateX(-160px) rotate(-30deg)}60%{transform:translateX(20px) translateY(-30px) rotate(20deg)}100%{transform:none}}
+.svx-holder{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;align-self:center;
+  border-radius:99px;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);font-size:12px}
+.svx-mini{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 34px}
+.svx-mini > *,.svx-mini img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.svx-holder em{font-style:normal;color:#ffd66b;font-weight:700}
+.svx[data-phase=handoff] .svx-holder{animation:svx-glow 1.2s ease}
+@keyframes svx-glow{30%{box-shadow:0 0 0 3px #ffd66b,0 0 40px rgba(255,200,60,.6)}}
+
+/* ── INTRO ───────────────────────────────────────────────────────────── */
+.svx-hero{width:240px;animation:svx-bob 4s ease-in-out infinite;filter:drop-shadow(0 20px 40px rgba(0,0,0,.7)) drop-shadow(0 0 30px rgba(255,200,60,.35))}
+.svx-hero svg{width:100%;display:block;overflow:visible}
+.svx-rules{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:4px 0 6px}
+.svx-rules span{font-size:12.5px;line-height:1.4;max-width:230px;padding:10px 12px;border-radius:14px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);
+  opacity:.2;transform:translateY(10px);transition:opacity .6s,transform .6s}
+.svx[data-phase=rules] .svx-rules span{opacity:1;transform:none}
+.svx[data-phase=rules] .svx-rules span:nth-child(2){transition-delay:.15s}
+.svx[data-phase=rules] .svx-rules span:nth-child(3){transition-delay:.3s}
+.svx[data-phase=rules] .svx-rules span:nth-child(4){transition-delay:.45s}
+.svx[data-phase=rules] .svx-rays{opacity:.35;animation:svx-spin 14s linear infinite}
+
+/* the word cards under the stage */
+.svx-cards{display:grid;gap:10px}
+/* The stage is sticky: a revealed card is scrolled to sit BELOW it, not behind it. */
+.svx-cards .dr-step{scroll-margin-top:560px}
+.svx-card{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}
+.svx-cp{flex:0 0 44px;width:44px;height:44px;border-radius:50%;overflow:hidden}
+.svx-cp > *,.svx-cp img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.svx-card small{display:block;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--svc,#ffb3dc);margin-bottom:2px}
+.svx-card p{margin:0;font-size:15px;line-height:1.5}
 .sv-rail-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
-.sv-rail-row b{color:var(--dr-gold)}
+.sv-rail-row b{color:var(--dr-gold,#FFC83D)}
 .sv-levers{display:flex;gap:6px;margin:6px 0}
-.sv-levers i{width:14px;height:26px;border-radius:4px;background:var(--dr-cyan)}
+.sv-levers i{width:14px;height:26px;border-radius:4px;background:var(--dr-cyan,#00E5FF)}
 .sv-levers i.sv-gone{background:#3a2233;opacity:.5}
+
+@media (prefers-reduced-motion: reduce){
+  .svx,.svx *{animation:none!important;transition:none!important}
+  .svx[data-phase=gold] .svx-ticket{opacity:1;transform:translateY(118px) scale(.92)}
+  .svx[data-phase=plain] .svx-stamp,.svx[data-phase=miss] .svx-stamp{opacity:1;transform:rotate(-11deg)}
+  .svx[data-phase=hit] .svx-splash{opacity:1;transform:translateY(-80px) rotate(-6deg)}
+}
 `;
 
-// ── THE OBJECTS ─────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// THE OBJECTS
+// ══════════════════════════════════════════════════════════════════════
 
-function barSvg({ golden = false, sealed = false, uid = '' } = {}) {
-  const inside = golden ? 'url(#svg-gold-' + uid + ')' : '#5a2f1b';
-  const squares = [];
+const GOLD = id => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#fff6c8"/><stop offset=".35" stop-color="#ffd24d"/>
+  <stop offset=".65" stop-color="#d99a14"/><stop offset="1" stop-color="#8a5a06"/></linearGradient>`;
+
+function barInner(gold) {
+  const sq = [];
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 4; c++) {
-      squares.push(`<rect x="${26 + c * 38}" y="${34 + r * 30}" width="32" height="24" rx="3"
-        fill="${inside}" stroke="${golden ? '#fff3b0' : '#3b1d10'}" stroke-width="1.5"/>`);
+      sq.push(`<rect x="${14 + c * 57}" y="${16 + r * 50}" width="51" height="44" rx="6"
+        fill="${gold ? 'url(#svx-g-bar)' : '#5b2e18'}" stroke="${gold ? '#fff3b0' : '#2f160a'}" stroke-width="2"/>
+        <path d="M${20 + c * 57} ${21 + r * 50}h39" stroke="${gold ? '#fffbe0' : '#7a4428'}" stroke-width="3" stroke-linecap="round" opacity=".7"/>`);
     }
   }
-  return `<svg viewBox="0 0 200 160" aria-hidden="true">
-    <defs><linearGradient id="svg-gold-${uid}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff1a8"/><stop offset=".5" stop-color="#e7b23a"/><stop offset="1" stop-color="#a5741a"/>
-    </linearGradient></defs>
-    <rect x="16" y="26" width="168" height="108" rx="8" fill="#2a130b"/>
-    <g class="sv-inside${golden ? ' sv-gold' : ''}">${squares.join('')}</g>
-    <g class="${sealed ? '' : 'sv-wrap'}">
-      <rect x="12" y="20" width="176" height="120" rx="10" fill="#ff3d9a"/>
-      <path d="M12 20h176v18H12z" fill="#c9a6bc" opacity=".55"/>
-      <path d="M12 122h176v18H12z" fill="#c9a6bc" opacity=".55"/>
-      <circle cx="100" cy="80" r="26" fill="#fff0f7"/>
-      <path d="M86 90c4-18 24-18 28 0M92 74a3 3 0 106 0M102 74a3 3 0 106 0" stroke="#ff3d9a" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <text x="100" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#fff0f7" letter-spacing="2">CHOCOLATE</text>
-    </g>
+  return `<svg viewBox="0 0 250 176" aria-hidden="true"><defs>${gold ? GOLD('svx-g-bar') : ''}</defs>
+    <rect x="4" y="6" width="242" height="166" rx="12" fill="${gold ? '#9a6a0e' : '#2a130b'}"/>${sq.join('')}</svg>`;
+}
+
+// The wrapper is two halves so it can tear down the middle.
+function wrapHalf(side, uid) {
+  const clip = side === 'l' ? 'M0 0H128L118 30L132 60L116 92L130 124L120 152L128 176H0Z'
+    : 'M128 0H250V176H128L120 152L130 124L116 92L132 60L118 30Z';
+  const id = `svx-${uid}-${side}`;
+  return `<svg viewBox="0 0 250 176" aria-hidden="true"><defs>
+      <linearGradient id="${id}-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ff8cc9"/><stop offset=".5" stop-color="#ff2f8e"/><stop offset="1" stop-color="#9a0f56"/></linearGradient>
+      <clipPath id="${id}-c"><path d="${clip}"/></clipPath></defs>
+    <g clip-path="url(#${id}-c)">
+      <rect x="0" y="0" width="250" height="176" rx="14" fill="url(#${id}-g)"/>
+      <path d="M0 0h250v26H0zM0 150h250v26H0z" fill="#f1dcff" opacity=".6"/>
+      <path d="M0 26h250M0 150h250" stroke="#fff" stroke-width="1.5" opacity=".5"/>
+      <circle cx="125" cy="86" r="38" fill="#fff0f7"/>
+      <path d="M106 94c8 16 30 16 38 0M112 80a4 4 0 108 0M130 80a4 4 0 108 0M114 62l11-14 11 14" stroke="#ff2f8e" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="125" y="143" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="15" fill="#fff" letter-spacing="4">CHOCOLATE</text>
+      <text x="125" y="18" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="10" fill="#7a1048" letter-spacing="3">ONE OF THEM IS GOLDEN</text>
+    </g></svg>`;
+}
+
+function ticketSvg() {
+  return `<svg viewBox="0 0 300 120" aria-hidden="true"><defs>${GOLD('svx-g-tk')}</defs>
+    <path d="M10 10h280v34a16 16 0 000 32v34H10V76a16 16 0 000-32z" fill="url(#svx-g-tk)" stroke="#fff3b0" stroke-width="2"/>
+    <path d="M24 22h252v76H24z" fill="none" stroke="#8a5a06" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="150" y="60" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="32" fill="#4a2e00" letter-spacing="3">GOLDEN TICKET</text>
+    <text x="150" y="88" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="14" fill="#6b4500" letter-spacing="5">SHANTAY, YOU STAY</text>
   </svg>`;
 }
 
-function tankSvg({ levers = [], all = 4, pulled = null, hit = false, drained = false } = {}) {
-  const w = 200;
-  const gap = Math.min(34, 150 / Math.max(1, all));
-  const x0 = w / 2 - ((all - 1) * gap) / 2;
-  const leverGlyphs = Array.from({ length: all }, (_, i) => {
-    const n = i + 1;
-    const live = levers.includes(n);
-    const x = x0 + i * gap;
-    const on = n === pulled;
-    return `<g opacity="${live ? 1 : 0.25}">
-      <g class="sv-lever${on ? ' sv-pulled' : ''}">
-        <rect x="${x - 2}" y="150" width="4" height="22" fill="${on ? '#ffc83d' : '#c9a6bc'}"/>
-        <circle cx="${x}" cy="148" r="6" fill="${on ? '#ff294b' : '#7b2ff7'}"/>
-      </g>
-      <text x="${x}" y="190" text-anchor="middle" font-size="10" fill="#fff0f7">${n}</text>
-    </g>`;
-  }).join('');
-  return `<svg viewBox="0 0 200 196" aria-hidden="true">
-    <rect x="30" y="40" width="140" height="96" rx="6" fill="rgba(56,189,248,.12)" stroke="#38bdf8" stroke-width="3"/>
-    ${drained ? '' : `<path d="M33 78q12-8 24 0t24 0t24 0t24 0t24 0t10-3V133H33z" fill="rgba(56,189,248,.45)"/>`}
-    <path d="M40 40V16h120v24" stroke="#c9a6bc" stroke-width="3" fill="none"/>
-    <g class="sv-seat${hit ? ' sv-drop' : ''}">
-      <rect x="78" y="48" width="44" height="6" rx="2" fill="#ffc83d"/>
-      <circle cx="100" cy="30" r="9" fill="#fff0f7"/>
-      <path d="M88 48c0-10 5-14 12-14s12 4 12 14z" fill="#ff7bc8"/>
-    </g>
-    ${hit ? `<g class="sv-splash" stroke="#bae6fd" stroke-width="3" stroke-linecap="round" fill="none">
-      <path d="M70 70l-14-18M80 64l-6-22M120 64l6-22M130 70l14-18M100 60v-24"/></g>` : ''}
-    <rect x="${x0 - 14}" y="170" width="${(all - 1) * gap + 28}" height="8" rx="3" fill="#32172a"/>
-    ${leverGlyphs}
-  </svg>`;
-}
-
-function beaverSvg() {
-  return `<svg viewBox="0 0 200 160" aria-hidden="true">
-    <defs><linearGradient id="svg-beaver" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff1a8"/><stop offset=".55" stop-color="#e0b43c"/><stop offset="1" stop-color="#8f6212"/>
-    </linearGradient></defs>
-    <ellipse cx="150" cy="118" rx="40" ry="16" transform="rotate(-18 150 118)" fill="#a5741a"/>
+function beaverSvg(uid) {
+  const g = `svx-g-bv-${uid}`;
+  return `<svg viewBox="0 0 200 160" aria-hidden="true"><defs>${GOLD(g)}</defs>
+    <ellipse cx="150" cy="118" rx="40" ry="16" transform="rotate(-18 150 118)" fill="#b07d12"/>
     <path d="M122 110l52-16M126 120l52-16M132 102l18 28M150 96l18 28" stroke="#6b4a0e" stroke-width="2"/>
-    <ellipse cx="96" cy="100" rx="50" ry="40" fill="url(#svg-beaver)"/>
-    <circle cx="64" cy="64" r="30" fill="url(#svg-beaver)"/>
-    <circle cx="46" cy="40" r="8" fill="#c8962e"/><circle cx="80" cy="38" r="8" fill="#c8962e"/>
+    <ellipse cx="96" cy="100" rx="50" ry="40" fill="url(#${g})"/>
+    <circle cx="64" cy="64" r="30" fill="url(#${g})"/>
+    <circle cx="46" cy="40" r="8" fill="#d9a441"/><circle cx="80" cy="38" r="8" fill="#d9a441"/>
     <circle cx="54" cy="60" r="4" fill="#241a00"/><circle cx="74" cy="60" r="4" fill="#241a00"/>
     <ellipse cx="64" cy="72" rx="7" ry="5" fill="#5a3b08"/>
-    <rect x="58" y="78" width="12" height="11" rx="2" fill="#fff8dc" stroke="#8f6212"/>
-    <path d="M64 78v11" stroke="#8f6212"/>
+    <rect x="58" y="78" width="12" height="11" rx="2" fill="#fff8dc" stroke="#8f6212"/><path d="M64 78v11" stroke="#8f6212"/>
     <path d="M70 130q-8 12 4 12M110 134q-4 10 8 10" stroke="#8f6212" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M110 76q24 4 34 22" stroke="#fffbe0" stroke-width="4" fill="none" opacity=".45" stroke-linecap="round"/>
   </svg>`;
 }
 
-function baguetteSvg() {
-  return `<svg viewBox="0 0 200 160" aria-hidden="true">
-    <defs><linearGradient id="svg-bag" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffe9a8"/><stop offset=".5" stop-color="#d9a441"/><stop offset="1" stop-color="#8a5a12"/>
-    </linearGradient></defs>
-    <path d="M20 120C40 70 150 20 184 34c12 6 4 24-10 34C130 100 50 150 26 140c-8-4-9-12-6-20z"
-      fill="url(#svg-bag)" stroke="#8a5a12" stroke-width="2"/>
-    <path d="M52 112l22-26M82 96l22-28M112 78l22-28M142 60l18-22" stroke="#fff3c4" stroke-width="5" stroke-linecap="round"/>
+function baguetteSvg(uid) {
+  const g = `svx-g-bg-${uid}`;
+  return `<svg viewBox="0 0 200 160" aria-hidden="true"><defs>${GOLD(g)}</defs>
+    <path d="M20 120C40 70 150 20 184 34c12 6 4 24-10 34C130 100 50 150 26 140c-8-4-9-12-6-20z" fill="url(#${g})" stroke="#8a5a12" stroke-width="2"/>
+    <path d="M52 112l22-26M82 96l22-28M112 78l22-28M142 60l18-22" stroke="#fff3c4" stroke-width="6" stroke-linecap="round"/>
     <path d="M30 128c30-6 90-50 140-86" stroke="#fff8dc" stroke-width="2" opacity=".5" fill="none"/>
-    <path d="M160 18l6 10M176 16l-2 12M186 26l-10 6" stroke="#ffe066" stroke-width="3" stroke-linecap="round"/>
+    <path d="M160 14l6 12M180 12l-3 13M192 26l-12 6" stroke="#ffe066" stroke-width="3" stroke-linecap="round"/>
   </svg>`;
 }
 
-function artFor(kind, opts = {}) {
-  if (kind === 'chocolate') return barSvg(opts);
-  if (kind === 'tank') return tankSvg(opts);
-  if (kind === 'beaver') return beaverSvg();
-  return baguetteSvg();
+function tankSvg({ total = 4, uid = 't' } = {}) {
+  const gap = Math.min(64, 360 / Math.max(1, total));
+  const x0 = 280 - ((total - 1) * gap) / 2;
+  const levers = Array.from({ length: total }, (_, i) => {
+    const x = x0 + i * gap;
+    return `<g class="svx-lv" data-lever="${i + 1}" style="--i:${i}">
+      <g class="svx-arm"><rect x="${x - 4}" y="300" width="8" height="46" rx="3" fill="#e2d4ea"/>
+        <circle class="svx-knob" cx="${x}" cy="298" r="13" fill="#7b2ff7" stroke="#fff" stroke-width="2"/></g>
+      <rect x="${x - 18}" y="344" width="36" height="12" rx="4" fill="#3a2233"/>
+      <text x="${x}" y="380" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="16" fill="#fff">${i + 1}</text>
+      <path class="svx-xmark" d="M${x - 14} 284l28 28M${x + 14} 284l-28 28" stroke="#ff294b" stroke-width="5" stroke-linecap="round"/>
+    </g>`;
+  }).join('');
+  return `<svg viewBox="0 0 560 392" aria-hidden="true">
+    <defs><linearGradient id="svx-w-${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7dd3fc" stop-opacity=".85"/><stop offset="1" stop-color="#0c4a6e" stop-opacity=".95"/></linearGradient>
+      <clipPath id="svx-c-${uid}"><path d="M130 30H430V246a14 14 0 01-14 14H144a14 14 0 01-14-14Z"/></clipPath></defs>
+    <path d="M150 70V24h260v46" stroke="#c9a6bc" stroke-width="5" fill="none"/>
+    <path d="M150 24h260" stroke="#ff3d9a" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>
+    <g clip-path="url(#svx-c-${uid})">
+      <rect x="130" y="70" width="300" height="190" fill="rgba(56,189,248,.08)"/>
+      <g class="svx-waterg"><g class="svx-surge">
+        <path class="svx-water" d="M100 132q25-14 50 0t50 0t50 0t50 0t50 0t50 0t50 0V270H100z" fill="url(#svx-w-${uid})"/>
+        <path class="svx-water2" d="M100 142q25-10 50 0t50 0t50 0t50 0t50 0t50 0t50 0V270H100z" fill="#38bdf8"/>
+        <g class="svx-caustic" stroke="#e0f7ff" stroke-width="2" fill="none">
+          <path d="M140 190q20-10 40 0t40 0M260 220q20-10 40 0t40 0M380 180q20-10 40 0t40 0M200 240q20-10 40 0M500 200q20-10 40 0"/></g>
+      </g></g>
+      <g class="svx-judge">
+        <rect x="236" y="104" width="88" height="10" rx="4" fill="#ffd66b"/>
+        <circle cx="280" cy="62" r="16" fill="#ffe4f1"/>
+        <path d="M262 104c0-22 8-30 18-30s18 8 18 30z" fill="#ff7bc8"/>
+        <path d="M264 58q16-24 32 0" stroke="#fff" stroke-width="5" fill="none"/>
+      </g>
+    </g>
+    <rect x="130" y="70" width="300" height="190" rx="14" fill="none" stroke="#7dd3fc" stroke-width="5"/>
+    <path d="M146 84v160" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/>
+    <text x="280" y="16" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="14" fill="#ffb3dc" letter-spacing="5">BADONKA DUNK TANK</text>
+    <rect x="${x0 - 36}" y="352" width="${(total - 1) * gap + 72}" height="8" rx="4" fill="#2a1623"/>
+    ${levers}
+  </svg>`;
 }
 
-// ── THE SCREENS ─────────────────────────────────────────────────────────
+function confetti(n = 48) {
+  const cols = ['#ffd24d', '#fff1a8', '#ff5fae', '#ffffff', '#e6a91a', '#ffb3dc'];
+  return spread(n, 11).map((p, i) => {
+    const ang = p.a * Math.PI * 2;
+    const dist = 150 + p.b * 260;
+    return `<i style="--x:${Math.round(Math.cos(ang) * dist)}px;--y:${Math.round(Math.sin(ang) * dist * 0.75 + 60)}px;`
+      + `--r:${Math.round(p.c * 900 - 450)}deg;--t:${(1.3 + p.d * 1.1).toFixed(2)}s;--dl:${(0.05 + p.c * 0.25).toFixed(2)}s;`
+      + `--w:${6 + Math.round(p.d * 8)}px;--h:${4 + Math.round(p.a * 10)}px;--c:${cols[i % cols.length]}"></i>`;
+  }).join('');
+}
+function crumbs(n = 16) {
+  return spread(n, 23).map(p => `<i style="--x0:${Math.round(p.a * 200 - 100)}px;--x:${Math.round(p.b * 60 - 30)}px;`
+    + `--t:${(0.8 + p.c * 0.7).toFixed(2)}s;--dl:${(0.3 + p.d * 0.4).toFixed(2)}s;--w:${4 + Math.round(p.c * 6)}px"></i>`).join('');
+}
+function drops(n = 36) {
+  return spread(n, 5).map(p => {
+    const ang = -Math.PI * (0.08 + p.a * 0.84);
+    const dist = 120 + p.b * 240;
+    return `<i style="--x:${Math.round(Math.cos(ang) * dist)}px;--y:${Math.round(Math.sin(ang) * dist + 60)}px;--r:0deg;`
+      + `--t:${(0.9 + p.c * 0.8).toFixed(2)}s;--dl:${(p.d * 0.2).toFixed(2)}s;--w:${6 + Math.round(p.c * 9)}px"></i>`;
+  }).join('');
+}
 
-function stepHtml(suffix, i, kind, art, body) {
-  const color = SAVE_KINDS[kind]?.color || '#FFC83D';
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE ENGINE
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * Apply step `idx`'s state to a stage. The NEXT step plays its suspense
+ * phase first; a jump (or a repaint) lands on the answer.
+ */
+export function applyStage(suffix, idx) {
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById(`svx-${suffix}`);
+  const states = (window._svx || {})[suffix];
+  if (!el || !states) return;
+  const T = (window._svxT ||= {});
+  const P = (window._svxP ||= {});
+  clearTimeout(T[suffix]);
+  const prev = P[suffix] ?? -1;
+  P[suffix] = idx;
+  const st = idx < 0 ? states.idle : states.steps[Math.min(idx, states.steps.length - 1)];
+  if (!st) return;
+
+  const set = (k, v) => {
+    const f = el.querySelector(`[data-f="${k}"]`);
+    if (f && v != null && f.innerHTML !== v) f.innerHTML = v;
+  };
+  const content = c => {
+    set('halo', c.portrait);
+    set('caption', c.caption);
+    set('tray', c.tray);
+    set('holder', c.holder);
+    if (c.count != null) {
+      const n = el.querySelector('[data-f="count"]');
+      if (n && n.textContent !== String(c.count)) {
+        n.textContent = String(c.count);
+        n.classList.remove('svx-tick'); void n.offsetWidth; n.classList.add('svx-tick');
+      }
+    }
+    if (c.levers) {
+      for (const lv of el.querySelectorAll('.svx-lv')) {
+        const k = Number(lv.dataset.lever);
+        lv.classList.toggle('gone', !c.levers.live.includes(k));
+        lv.classList.toggle('chosen', k === c.levers.chosen);
+        lv.classList.toggle('x', k === c.levers.chosen && !!c.levers.missed);
+      }
+    }
+    if (c.kept !== undefined) {
+      for (const pod of el.querySelectorAll('.svx-pod')) pod.classList.toggle('kept', pod.dataset.q === c.kept);
+    }
+  };
+  const finish = () => {
+    content(st);
+    el.dataset.result = st.result || '';
+    el.classList.toggle('svx-open', !!st.open);
+    el.classList.toggle('svx-chosen', !!st.chosen);
+    el.dataset.phase = st.phase;
+  };
+
+  if (st.lead && idx === prev + 1) {
+    /* THE SUSPENSE SECOND. Nothing that knows the answer is on the page yet:
+       the caption is the step's label, the lever carries no cross, nobody is
+       kept, and the counter and tray still show the room as it was. The
+       rail is held back by the step table itself (see the builders). */
+    content({
+      portrait: st.portrait, caption: st.leadCaption, holder: st.holder,
+      levers: st.levers ? { ...st.levers, missed: false } : null,
+      kept: st.kept !== undefined ? null : undefined,
+    });
+    el.dataset.result = st.result || '';
+    el.classList.toggle('svx-open', false);
+    el.classList.toggle('svx-chosen', false);
+    el.dataset.phase = 'idle';
+    void el.offsetWidth;   // restart the lead phase even if it is showing
+    el.dataset.phase = st.lead;
+    T[suffix] = setTimeout(finish, st.leadMs || 1000);
+  } else {
+    finish();
+  }
+}
+
+function register(suffix, states) {
+  if (typeof window === 'undefined') return;
+  window._svx = window._svx || {};
+  window._svx[suffix] = states;
+  window._drRevealExtra = window._drRevealExtra || {};
+  window._drRevealExtra[suffix] = idx => applyStage(suffix, idx);
+  // A rebuilt screen shows where the viewer left it, with no replay.
+  window._svxP = window._svxP || {};
+  window._svxP[suffix] = -99;
+}
+
+function stageShell(suffix, kind, {
+  title, count = '', countLabel = '', center, caption = '', tray = '', extra = '', below = '',
+}) {
+  return `<!--dr-chrome--><div class="svx${suffix === 'saveintro' ? ' svx-static' : ''}" id="svx-${suffix}" data-kind="${kind}" data-phase="idle">
+    <div class="svx-bg"><i class="svx-cone"></i><i class="svx-spot"></i><i class="svx-rays"></i><i class="svx-flash"></i><i class="svx-vig"></i></div>
+    <div class="svx-head"><div><span class="svx-kicker">${esc(SAVE_KINDS[kind]?.name || 'The save')}</span>
+      <b class="svx-title">${esc(title)}</b></div>
+      ${extra}${countLabel ? `<span class="svx-count"><b data-f="count">${esc(count)}</b>${esc(countLabel)}</span>` : ''}</div>
+    <div class="svx-center">${center}</div>
+    <div class="svx-caption" data-f="caption">${caption}</div>
+    ${below}
+    <div class="svx-tray" data-f="tray">${tray}</div>
+  </div><!--/dr-chrome-->`;
+}
+
+function card(suffix, i, sc, ep, tag, color) {
+  const who = (sc.data?.players || [])[0];
   return `<div class="dr-step" id="dr-step-${suffix}-${i}">
-    <div class="dr-panel dr-a-room sv-card" style="--sv-c:${color}">
-      <!--dr-chrome--><div class="sv-art">${art}</div><!--/dr-chrome-->
-      <div>${body}</div>
+    <div class="svx-card" style="--svc:${color}">
+      ${who ? `<!--dr-chrome--><span class="svx-cp">${_portrait(who, ep, { size: 44 })}</span><!--/dr-chrome-->` : ''}
+      <div><small>${esc(tag)}</small><p>${esc(sc.text)}</p></div>
     </div></div>`;
 }
 
-function publish(suffix, perStep) {
+function page(row, suffix, { phase, title, subtitle, stage, cards, rail, count }) {
+  const ep = epOf(row);
+  const html = `<style>${SAVE_CSS}</style>${_shell(`${stage}<div class="svx-cards">${cards.join('')}</div>`, ep, {
+    phase, title, subtitle, sidebar: rail,
+  })}${_controls(suffix, count, ep.num)}`;
+  // Once the DOM exists, put the stage where the viewer left it.
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    setTimeout(() => {
+      try {
+        const { idx } = _state(ep, suffix);
+        if (idx >= 0) applyStage(suffix, idx);
+      } catch { /* a decoration, not the reveal */ }
+    }, 0);
+  }
+  return html;
+}
+
+function publishRail(suffix, perStep) {
   if (typeof window === 'undefined') return;
   window._drSidebar = window._drSidebar || {};
   window._drSidebar[suffix] = perStep;
 }
 
-function page(row, suffix, { phase, title, subtitle, steps, rail }) {
-  const ep = epOf(row);
-  return `<style>${SAVE_CSS}</style>${_shell(`<div class="sv-stage">${steps.join('')}</div>`, ep, {
-    phase, title, subtitle, sidebar: rail,
-  })}${_controls(suffix, steps.length, ep.num)}`;
-}
+const face = (n, ep, size = 170) => (n ? _portrait(n, ep, { size }) : '');
+const cap = (label, text) => `<small>${esc(label)}</small>${esc(text)}`;
 
 /** What the save looked like BEFORE tonight, from the snapshot after it. */
 function savesBefore(row) {
@@ -197,34 +575,55 @@ function savesBefore(row) {
   return s;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// SAVE-INTRO
+// ══════════════════════════════════════════════════════════════════════
+
 export function rpBuildSaveIntro(row, scenes = []) {
   const ep = epOf(row);
   const list = scenes.filter(sc => /^save:/.test(sc.kind) && sc.text);
   if (!list.length) return '';
   const kind = row?.dr?.save?.kind || list[0].data?.save;
   const meta = SAVE_KINDS[kind] || {};
-  const steps = list.map((sc, i) => {
-    const retire = sc.kind === 'save:retire';
-    const handed = sc.data?.handedTo || [];
-    const art = kind === 'tank'
-      ? tankSvg({ levers: retire ? [] : Array.from({ length: sc.data?.levers || 4 }, (_, k) => k + 1),
-        all: sc.data?.levers || row?.dr?.save?.levers?.total || 4, drained: retire })
-      : artFor(kind, { sealed: true, uid: `i${ep.num}-${i}` });
-    const who = handed.length
-      ? `<div class="sv-who">${handed.slice(0, 16).map(n => _portrait(n, ep, { size: 30 })).join('')}</div>` : '';
-    const rule = sc.kind === 'save:retire' ? ''
-      : `<p class="sv-rule">${esc(meta.desc || '')}</p>`;
-    return stepHtml('saveintro', i, kind,
-      art, `<span class="sv-tag">${esc(retire ? 'Retired' : meta.name || 'The Save')}</span>${who}
-        <p class="sv-line">${esc(sc.text)}</p>${rule}`);
+  const retire = list.some(sc => sc.kind === 'save:retire');
+  const total = row?.dr?.save?.levers?.total || list[0].data?.levers || 4;
+  const uid = `i${ep.num}`;
+  const hero = kind === 'tank'
+    ? `<div class="svx-tank">${tankSvg({ total, uid })}</div>`
+    : kind === 'chocolate'
+      ? `<div class="svx-bar"><div class="svx-wrap">${wrapHalf('l', uid)}</div><div class="svx-wrap">${wrapHalf('r', uid)}</div><div class="svx-foil"></div></div>`
+      : `<div class="svx-hero">${kind === 'beaver' ? beaverSvg(uid) : baguetteSvg(uid)}</div>`;
+  const rules = retire ? '' : String(meta.desc || '').split(/(?<=\.)\s+/).filter(Boolean).slice(0, 4)
+    .map(t => `<span>${esc(t)}</span>`).join('');
+  const handed = list.find(sc => sc.data?.handedTo)?.data?.handedTo || [];
+  const tray = kind === 'chocolate' ? handed.map(() => '<i></i>').join('') : '';
+  const allLevers = Array.from({ length: total }, (_, k) => k + 1);
+  const idle = { phase: 'idle', caption: '', tray, levers: kind === 'tank' ? { live: allLevers } : null };
+  const steps = list.map(sc => ({
+    phase: sc.kind === 'save:retire' ? 'drained' : 'rules',
+    caption: cap(sc.kind === 'save:retire' ? 'Retired' : 'How it works', sc.text),
+    tray, levers: idle.levers,
+  }));
+  register('saveintro', { idle, steps });
+  const stage = stageShell('saveintro', kind, {
+    title: retire ? 'The tank is drained' : 'A new twist', center: hero, tray,
+    countLabel: kind === 'chocolate' ? ' bars handed out' : kind === 'tank' ? ' levers' : '',
+    count: kind === 'chocolate' ? handed.length : kind === 'tank' ? total : '',
+    below: rules ? `<div class="svx-rules">${rules}</div>` : '',
   });
+  const cards = list.map((sc, i) => card('saveintro', i, sc, ep, retire ? 'Retired' : meta.short, meta.color));
   const rail = `<h4 class="dr-disp">${esc(meta.short || 'The save')}</h4>
-    <div class="sv-rail-row">${esc(meta.mode === 'holder' ? 'Held by the maxi winner, weekly' : 'Used by a lip sync loser')}</div>`;
-  publish('saveintro', list.map(() => rail));
+    <div class="sv-rail-row">${esc(meta.mode === 'holder' ? 'Held by the maxi winner, every week' : 'Used by a queen who lost the lip sync')}</div>`;
+  publishRail('saveintro', list.map(() => rail));
   return page(row, 'saveintro', {
-    phase: 'werk', title: meta.name || 'The Save', subtitle: 'how it works', steps, rail,
+    phase: 'werk', title: meta.name || 'The Save', subtitle: retire ? 'no more levers' : 'how it works',
+    stage, cards, rail, count: list.length,
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SAVE-HOLD
+// ══════════════════════════════════════════════════════════════════════
 
 export function rpBuildSaveHold(row, scenes = []) {
   const ep = epOf(row);
@@ -233,40 +632,64 @@ export function rpBuildSaveHold(row, scenes = []) {
   if (!hold || !list.length) return '';
   const kind = hold.kind;
   const meta = SAVE_KINDS[kind] || {};
-  let savedShown = false;
-  const perStep = [];
-  const railAt = shown => `<h4 class="dr-disp">${esc(meta.short)}</h4>
+  const uid = `h${ep.num}`;
+  const token = kind === 'beaver' ? beaverSvg(uid) : baguetteSvg(uid);
+  const pods = hold.pool.map((n, i) => `<div class="svx-pod" data-q="${esc(n)}" style="--i:${i}">
+      <i class="svx-beam"></i><span class="svx-tag"><span class="k">saved</span><span class="l">lip sync</span></span>
+      <div class="svx-face">${face(n, ep, 112)}</div><b>${esc(n)}</b><i class="svx-plinth"></i></div>`).join('');
+  const holderChip = n => `<span class="svx-mini">${_portrait(n, ep, { size: 34 })}</span>
+    <span>${kind === 'baguette' ? 'Baguette' : 'Beaver'} held by <em>${esc(n)}</em></span>`;
+  const center = `<div class="svx-token">${token}</div><div class="svx-trio">${pods}</div>`;
+  const extra = `<div class="svx-holder" data-f="holder">${holderChip(hold.winner)}</div>`;
+
+  const idle = { phase: 'idle', kept: null, caption: cap('The bottom three', hold.pool.join(' · ')),
+    holder: holderChip(hold.winner) };
+  const steps = list.map(sc => {
+    if (sc.kind === 'save:handoff') {
+      return { phase: 'handoff', kept: null, caption: cap('The hand-off', sc.text), holder: holderChip(hold.holder) };
+    }
+    if (sc.kind === 'save:saved') {
+      return { lead: 'deciding', leadMs: 1800, leadCaption: cap(`${hold.holder} decides`, '…'),
+        phase: 'saved', kept: hold.saved, chosen: true,
+        caption: cap(`${hold.holder} decides`, sc.text), holder: holderChip(hold.holder) };
+    }
+    return { phase: 'left', kept: hold.saved, chosen: true,
+      caption: cap('Lip sync for your life', sc.text), holder: holderChip(hold.holder) };
+  });
+  register('savehold', { idle, steps });
+
+  const stage = stageShell('savehold', kind, { title: 'One of three is saved', center, extra, caption: idle.caption });
+  const tagOf = sc => (sc.kind === 'save:handoff' ? 'The hand-off'
+    : sc.kind === 'save:saved' ? `${hold.holder} decides` : 'Lip sync for your life');
+  const cards = list.map((sc, i) => card('savehold', i, sc, ep, tagOf(sc), meta.color));
+
+  const railAt = saved => `<h4 class="dr-disp">${esc(meta.short)}</h4>
     <div class="sv-rail-row">Winner <b>${esc(hold.winner)}</b></div>
-    ${kind === 'baguette' ? `<div class="sv-rail-row">Held by <b>${esc(shown.holder ? hold.holder : '…')}</b></div>` : ''}
+    ${kind === 'baguette' ? `<div class="sv-rail-row">Held by <b>${esc(hold.holder)}</b></div>` : ''}
     <h4 class="dr-disp">The bottom three</h4>
     ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)} ${
-      shown.saved ? (n === hold.saved ? '<b>SAVED</b>' : 'lip syncs') : ''}</div>`).join('')}`;
-  const steps = list.map((sc, i) => {
-    let body = '';
-    if (sc.kind === 'save:handoff') {
-      body = `<span class="sv-tag">The hand-off</span>
-        <div class="sv-who">${[hold.winner, hold.holder].filter((x, k, a) => a.indexOf(x) === k)
-    .map(n => _portrait(n, ep, { size: 54 })).join('')}</div>`;
-      body = `<!--dr-chrome-->${body}<!--/dr-chrome-->`;
-    } else {
-      const pool = hold.pool.map(n => {
-        const cls = sc.kind === 'save:saved' ? (n === hold.saved ? ' sv-kept' : '')
-          : (n === hold.saved ? '' : ' sv-sing');
-        return `<div class="sv-q${cls}">${_portrait(n, ep, { size: 54 })}<span>${esc(n)}</span></div>`;
-      }).join('');
-      body = `<span class="sv-tag">${sc.kind === 'save:saved' ? `${esc(hold.holder)} decides` : 'Lip sync for your life'}</span>
-        <!--dr-chrome--><div class="sv-pool">${pool}</div><!--/dr-chrome-->`;
-    }
-    if (sc.kind === 'save:saved') savedShown = true;
-    perStep.push(railAt({ holder: true, saved: savedShown }));
-    return stepHtml('savehold', i, kind, artFor(kind), `${body}<p class="sv-line">${esc(sc.text)}</p>`);
+      saved ? (n === hold.saved ? '<b>SAVED</b>' : 'lip syncs') : ''}</div>`).join('')}`;
+  // The rail names her one step late, so it cannot answer the sweep.
+  let decided = false;
+  const perStep = list.map(sc => {
+    const row_ = railAt(decided);
+    if (sc.kind === 'save:saved') decided = true;
+    return row_;
   });
-  const rest = railAt({ holder: false, saved: false });
-  publish('savehold', perStep);
+  publishRail('savehold', perStep);
+  const rest = `<h4 class="dr-disp">${esc(meta.short)}</h4>
+    <div class="sv-rail-row">Winner <b>${esc(hold.winner)}</b></div>
+    <h4 class="dr-disp">The bottom three</h4>
+    ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)}</div>`).join('')}`;
   return page(row, 'savehold', {
-    phase: 'stage', title: meta.name, subtitle: 'one of the bottom three is saved', steps, rail: rest,
+    phase: 'stage', title: meta.name, subtitle: 'one of the bottom three is saved',
+    stage, cards, rail: rest, count: list.length,
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// SAVE-LUCK
+// ══════════════════════════════════════════════════════════════════════
 
 export function rpBuildSaveLuck(row, scenes = []) {
   const ep = epOf(row);
@@ -278,50 +701,119 @@ export function rpBuildSaveLuck(row, scenes = []) {
   const meta = SAVE_KINDS[kind] || {};
   const before = savesBefore(row) || {};
   const total = sv.levers?.total || before.levers || 4;
-  let tryIdx = 0;
-  let sealed = kind === 'chocolate'
-    ? (before.handed || []).filter(n => !(before.opened || []).includes(n)).length : 0;
-  let found = false;
-  const perStep = [];
-  const railFor = ({ left, sealedN, done }) => kind === 'tank'
-    ? `<h4 class="dr-disp">${esc(meta.short)}</h4>
-      <div class="sv-rail-row">Levers in play</div>
-      <div class="sv-levers">${Array.from({ length: total }, (_, k) =>
-    `<i class="${left.includes(k + 1) ? '' : 'sv-gone'}"></i>`).join('')}</div>
-      <div class="sv-rail-row">Dunks so far <b>${done}</b></div>`
-    : `<h4 class="dr-disp">${esc(meta.short)}</h4>
-      <div class="sv-rail-row">Bars still sealed <b>${sealedN}</b></div>
-      <div class="sv-rail-row">${done ? '<b>The golden bar has been found</b>' : 'The golden bar is still out there'}</div>`;
-  let left = tries[0]?.levers ? [...tries[0].levers] : [];
+  const uid = `l${ep.num}`;
+  const tryOf = n => tries.find(t => t.queen === n) || null;
+  const goldQueen = tries.find(t => t.saved)?.queen || null;
+
+  // ── the running state, step by step ──
+  const handed = before.handed || [];
+  const opened = new Set(before.opened || []);
+  let goldFound = false;
+  const sealed = () => handed.filter(n => !opened.has(n)).length;
+  const trayNow = () => handed.map(n => `<i class="${goldFound && n === goldQueen ? 'gold'
+    : opened.has(n) ? 'gone' : ''}"></i>`).join('');
+  let live = tries[0]?.levers ? [...tries[0].levers] : Array.from({ length: total }, (_, k) => k + 1);
   let dunks = Math.max(0, (before.dunks || 0) - tries.filter(t => t.saved).length);
-  const rest = railFor({ left, sealedN: sealed, done: kind === 'tank' ? dunks : false });
-  const steps = list.map((sc, i) => {
-    let art = '';
-    if (sc.kind === 'save:open' || sc.kind === 'save:pull') {
-      const t = tries[tryIdx++] || {};
-      if (kind === 'chocolate') {
-        sealed = Math.max(0, sealed - 1);
-        if (t.saved) found = true;
-        art = barSvg({ golden: !!t.saved, uid: `l${ep.num}-${i}` });
-      } else {
-        left = (t.levers || []).filter(n => t.saved || n !== t.lever);
-        if (t.saved) { dunks += 1; left = Array.from({ length: total }, (_, k) => k + 1); }
-        art = tankSvg({ levers: t.levers || [], all: total, pulled: t.lever, hit: !!t.saved });
-      }
+  const railNow = () => (kind === 'tank'
+    ? `<h4 class="dr-disp">${esc(meta.short)}</h4>
+      <div class="sv-rail-row">Levers in play <b>${live.length}</b></div>
+      <div class="sv-levers">${Array.from({ length: total }, (_, k) => `<i class="${live.includes(k + 1) ? '' : 'sv-gone'}"></i>`).join('')}</div>
+      <div class="sv-rail-row">Dunks so far <b>${dunks}</b></div>`
+    : `<h4 class="dr-disp">${esc(meta.short)}</h4>
+      <div class="sv-rail-row">Bars still sealed <b>${sealed()}</b></div>
+      <div class="sv-rail-row">${goldFound ? '<b>The golden bar has been found</b>' : 'The golden bar is still out there'}</div>`);
+  const restRail = railNow();
+
+  const idle = kind === 'tank'
+    ? { phase: 'idle', caption: '', portrait: '', levers: { live: [...live] }, count: live.length }
+    : { phase: 'idle', caption: '', portrait: '', tray: trayNow(), count: sealed() };
+  const steps = [];
+  const railRows = [];
+  let railLate = null;
+  let last = null;
+  for (const sc of list) {
+    const q = (sc.data?.players || [])[0];
+    const t = tryOf(q);
+    if (sc.kind === 'save:ask') {
+      last = { q, t };
+      steps.push(kind === 'tank'
+        ? { phase: 'hold', portrait: face(q, ep), caption: cap('Last chance', sc.text), levers: { live: [...live] }, count: live.length }
+        : { phase: 'hold', portrait: face(q, ep), caption: cap('Last chance', sc.text), tray: trayNow(), count: sealed() });
+    } else if (sc.kind === 'save:open') {
+      opened.add(q);
+      railLate = railNow();
+      if (t?.saved) goldFound = true;
+      steps.push({
+        lead: 'tear', leadMs: 1000, leadCaption: cap('The bar', '…'), open: true, result: t?.saved ? 'gold' : 'plain',
+        phase: t?.saved ? 'gold' : 'plain', portrait: face(q, ep),
+        caption: cap(t?.saved ? 'Golden!' : 'The bar', sc.text), tray: trayNow(), count: sealed(),
+      });
+    } else if (sc.kind === 'save:pull') {
+      const chosen = t?.lever;
+      const was = [...live];
+      railLate = railNow();
+      if (t?.saved) { dunks += 1; live = Array.from({ length: total }, (_, k) => k + 1); } else live = live.filter(x => x !== chosen);
+      steps.push({
+        lead: 'pull', leadMs: 1200, leadCaption: cap('The lever', `Lever ${chosen}…`), phase: t?.saved ? 'hit' : 'miss', portrait: face(q, ep),
+        caption: cap(t?.saved ? 'Splash!' : 'The lever', sc.text),
+        levers: { live: was, chosen, missed: !t?.saved }, count: live.length,
+      });
+    } else if (sc.kind === 'save:aftermath') {
+      steps.push(kind === 'tank'
+        ? { phase: 'hit', portrait: face(q, ep), caption: cap('Nobody goes home', sc.text),
+          levers: { live: [...live] }, count: live.length }
+        : { phase: 'gold', open: true, result: 'gold', portrait: face(q, ep),
+          caption: cap('Nobody goes home', sc.text), tray: trayNow(), count: sealed() });
     } else {
-      art = `<div class="sv-who">${(sc.data?.players || []).slice(0, 2)
-        .map(n => _portrait(n, ep, { size: 64 })).join('')}</div>`;
+      // Her goodbye, after the bar or the lever.
+      const who = last?.q || q;
+      steps.push(kind === 'tank'
+        ? { phase: 'bye', portrait: face(who, ep), caption: cap('Sashay away', sc.text),
+          levers: { live: [...live, last?.t?.lever].filter(Boolean), chosen: last?.t?.lever, missed: true }, count: live.length }
+        : { phase: 'bye', open: true, result: 'plain', portrait: face(who, ep), caption: cap('Sashay away', sc.text),
+          tray: trayNow(), count: sealed() });
     }
-    perStep.push(railFor({ left, sealedN: sealed, done: kind === 'tank' ? dunks : found }));
-    const tag = sc.kind === 'save:open' ? 'The bar'
-      : sc.kind === 'save:pull' ? 'The levers'
-        : /sashay/.test(sc.kind) ? 'Sashay away' : meta.short;
-    return stepHtml('saveluck', i, kind, art,
-      `<span class="sv-tag">${esc(tag)}</span><p class="sv-line">${esc(sc.text)}</p>`);
+    railRows.push(railLate ?? railNow());
+    railLate = null;
+  }
+  register('saveluck', { idle, steps });
+
+  const center = kind === 'tank'
+    ? `<div class="svx-tank">${tankSvg({ total, uid })}</div>
+       <div class="svx-halo" data-f="halo"></div>
+       <div class="svx-drops">${drops()}</div>
+       <div class="svx-splash">SPLASH!</div>
+       <div class="svx-stamp">DRY</div>`
+    : `<div class="svx-halo" data-f="halo"></div>
+       <div class="svx-bar">
+         <div class="svx-inner svx-inner-plain">${barInner(false)}</div>
+         <div class="svx-inner svx-inner-gold">${barInner(true)}</div>
+         <div class="svx-wrap svx-wrap-l">${wrapHalf('l', uid)}</div>
+         <div class="svx-wrap svx-wrap-r">${wrapHalf('r', uid)}</div>
+         <div class="svx-foil"></div>
+       </div>
+       <div class="svx-ticket">${ticketSvg()}</div>
+       <div class="svx-confetti">${confetti()}</div>
+       <div class="svx-crumbs">${crumbs()}</div>
+       <div class="svx-stamp">JUST CHOCOLATE</div>`;
+  let stage = stageShell('saveluck', kind, {
+    title: kind === 'tank' ? 'Pick a lever' : 'Open your bar', center,
+    tray: idle.tray || '', count: idle.count,
+    countLabel: kind === 'tank' ? ' levers in play' : ' bars still sealed',
   });
-  publish('saveluck', perStep);
+  // Levers already pulled before tonight are gone in the markup itself.
+  if (kind === 'tank') {
+    stage = stage.replace(/<g class="svx-lv" data-lever="(\d+)"/g, (m, n) =>
+      (live.length && !idle.levers.live.includes(Number(n)) ? `<g class="svx-lv gone" data-lever="${n}"` : m));
+  }
+
+  const tagOf = sc => ({ 'save:ask': 'Last chance', 'save:open': 'The bar', 'save:pull': 'The lever',
+    'save:aftermath': 'Nobody goes home' }[sc.kind] || 'Sashay away');
+  const cards = list.map((sc, i) => card('saveluck', i, sc, ep, tagOf(sc), meta.color));
+  publishRail('saveluck', railRows);
   return page(row, 'saveluck', {
-    phase: 'lipsync', title: meta.name,
-    subtitle: kind === 'tank' ? 'pick a lever' : 'open your bar', steps, rail: rest,
+    phase: 'lipsync', title: 'Last Chance',
+    subtitle: kind === 'tank' ? 'the levers' : 'the chocolate bar',
+    stage, cards, rail: restRail, count: list.length,
   });
 }

@@ -66,6 +66,20 @@ export const SAVE_BEATS = {
     '{c} and {d} were not chosen. They lip sync for their lives.',
     'That leaves {c} and {d} on the stage, and neither of them is looking at {h}.',
   ],
+  /* The host stops her before the goodbye. Its own beat, so the screen can
+     hold on the bar (or the levers) for one click before anything opens. */
+  ask: {
+    chocolate: [
+      '"{a}, before you sashay away... open your chocolate bar."',
+      'Ru holds up a hand. "Not yet, {a}. You still have your bar. Open it."',
+      '"{a}. The moment of truth. Unwrap your chocolate bar."',
+    ],
+    tank: [
+      '"{a}, you lost the lip sync. But the tank is still full. Pick a lever."',
+      'Ru points at the tank. "{a}, choose your lever. Choose wisely."',
+      '"Before you go, {a}... Michelle is waiting. Pick a lever."',
+    ],
+  },
   open: {
     plain: [
       '{a} unwraps her bar. Chocolate. Just chocolate.',

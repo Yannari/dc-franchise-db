@@ -1293,6 +1293,8 @@ export function runDragWeek(state, cfg, ctx) {
     werkEvents.push({ type: `save:${saves.kind}`, players: luckTries.map(t => t.queen), ...fx, data: {} });
     for (const t of luckTries) {
       const vars = { a: t.queen, l: t.lever, n: (t.levers || []).length, w: lipsync.winner };
+      saveScene('save-luck', 'ask', { players: [t.queen] },
+        saveLine(SAVE_BEATS.ask[t.kind], vars));
       if (t.kind === 'chocolate') {
         saveScene('save-luck', 'open', { players: [t.queen], golden: t.saved },
           saveLine(SAVE_BEATS.open[t.saved ? 'golden' : 'plain'], vars));

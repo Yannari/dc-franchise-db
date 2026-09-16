@@ -706,7 +706,7 @@ function _missionRecord(m) {
     // for whichever afternoon happened to run last.
     task: m.task || null,
     teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])],
-      perf: t.perf })),
+      perf: t.perf, ...(Array.isArray(t.buried) ? { buried: [...t.buried] } : {}) })),
     quality: m.quality, tier: m.tier, bestTeam: m.bestTeam,
     gross: m.gross, earned: m.earned, potAfter: m.potAfter,
     sideObjectives: (m.sideObjectives || []).map(o => ({ ...o })),
@@ -735,6 +735,9 @@ function _missionRecord(m) {
       searcher: r.searcher, found: !!r.found, cost: r.cost || 0,
       holder: r.holder || null, witnesses: [...(r.witnesses || [])],
       visibility: r.visibility || null, lines: [...(r.lines || [])],
+      // Minutes a buried player kept their team waiting (Buried Alive).
+      ...(typeof r.delay === 'number' ? { delay: r.delay } : {}),
+      ...(typeof r.offered === 'boolean' ? { offered: r.offered } : {}),
     } : null,
   };
 }

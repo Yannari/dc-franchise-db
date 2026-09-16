@@ -16,6 +16,8 @@
 // chips(v), phaseNum(roman, ph), cardClass(c), cardTag(c, ph), icon(c, ph),
 // [renderCard], sidebar(v, n, states), sideStates(v, total),
 // paintSide(prefix, states, n), and the four control words.
+import { BURIED } from './mission-theme-buried-alive.js';
+
 const NAV = '46px';
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -661,6 +663,7 @@ const VAULT_TAGS = {
 };
 const VAULT = {
   id: 'ash-vault', prefix: 'av',
+  shieldBeat: /\bShield\b|kitchen flue|body short/,
   rootVars: '',
   nextLabel: 'Next', allLabel: 'Reveal all', revealedWord: 'revealed', sheetBrief: false,
   title: v => '<h1 class="av-title">The Ash <span>Vault</span></h1>',
@@ -886,4 +889,4 @@ const VAULT = {
 `,
 };
 
-export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT];
+export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED];

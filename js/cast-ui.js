@@ -1326,6 +1326,8 @@ export function saveConfig() {
     drSave:          g('cfg-dr-save')?.value || 'none',
     drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 6,
     drTankRetire:    parseInt(g('cfg-dr-tank-retire')?.value) || 8,
+    drTankLive:      parseInt(g('cfg-dr-tank-live')?.value) || 1,
+    drGoldenBars:    parseInt(g('cfg-dr-golden-bars')?.value) || 1,
     /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
        carrying every pinned decision about a week — a challenge, a guest, a
        runway category — and the box on screen only owns one of them. Reading
@@ -1499,6 +1501,8 @@ export function renderConfig() {
   set('cfg-dr-save', seasonConfig.drSave || 'none');
   set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 6);
   set('cfg-dr-tank-retire', seasonConfig.drTankRetire || 8);
+  set('cfg-dr-tank-live', seasonConfig.drTankLive || 1);
+  set('cfg-dr-golden-bars', seasonConfig.drGoldenBars || 1);
   drSaveOptionsUI();
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
@@ -2339,4 +2343,6 @@ export function drSaveOptionsUI() {
   const sel = document.getElementById('cfg-dr-save');
   const box = document.getElementById('cfg-dr-tank-opts');
   if (box) box.style.display = sel?.value === 'tank' ? 'flex' : 'none';
+  const bars = document.getElementById('cfg-dr-choc-opts');
+  if (bars) bars.style.display = sel?.value === 'chocolate' ? 'flex' : 'none';
 }

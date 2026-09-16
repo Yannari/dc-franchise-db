@@ -18,15 +18,16 @@ export const SAVE_BEATS = {
     ],
     tank: [
       'There is a dunk tank on the main stage, with {n} levers in front of it and Michelle in the seat. Lose the lip sync and you pull one. The right lever sends Michelle into the water and sends you back to the werk room.',
-      '"Meet the Badonka Dunk Tank." {n} levers, one of them live. Lose your lip sync, pick a lever, and hope the judge gets wet.',
+      '"Meet the Badonka Dunk Tank." {n} levers, and somewhere in that row, the one that dunks her. Lose your lip sync, pick a lever, and hope the judge gets wet.',
     ],
     beaver: [
       'New rule this season: three queens will be named in the bottom every week, and the winner of the maxi challenge holds the Golden Beaver. She saves one of them before the song.',
-      'Ru holds up a golden beaver. "Starting next week, the challenge winner uses this to save one of the bottom three. The other two lip sync."',
+      'Ru holds up a golden beaver. "Every week, the challenge winner uses this to save one of the bottom three. The other two lip sync."',
+      'Panic in the werk room: the maxi winner will get to save one of the bottom three, every single week. Everybody suddenly needs new best friends.',
     ],
     baguette: [
-      'The Golden Baguette: every week the maxi winner gets it, and can keep it or give it to any queen in the room. Whoever holds it saves one of the bottom three.',
-      'Ru introduces the Golden Baguette. The winner decides who holds it. The holder decides who is saved. Two decisions, two chances to make an enemy.',
+      'The Golden Baguette: every week, the queen who went home the week before comes back with it and hands it to anyone still in the race. Whoever holds it saves one of the bottom three.',
+      'Ru introduces the Golden Baguette. The last queen out decides who holds it, and the holder decides who is saved. Two decisions, two chances to make an enemy.',
     ],
   },
   retire: [
@@ -57,6 +58,16 @@ export const SAVE_BEATS = {
     strategy: [
       '{h} saves {s}, and leaves the stronger queens to fight it out.',
       '{h} saves {s}. It is a choice about who she would rather face later.',
+    ],
+  },
+  saveHoldExtra: {
+    plea: [
+      '{h} saves {s}. Whatever {s} said backstage, it worked.',
+      '{h} saves {s}, and {s} mouths "thank you" before the words are finished.',
+    ],
+    debt: [
+      '{h} saves {s}. She owed her, and she knows it.',
+      '{h} saves {s}, the queen who once did the same for her.',
     ],
   },
   saveLeft: [
@@ -106,6 +117,87 @@ export const SAVE_BEATS = {
       'Nobody sashays tonight. {w} won the song and gets no satisfaction from it.',
     ],
   },
+
+  /* ── THE CAMPAIGN ── {a} is the queen making the move, {b} the queen with
+     the power (or, on a baguette night, the one the room expects to get it),
+     {c} a third queen. */
+  campaign: {
+    open: {
+      beaver: [
+        'Backstage, the bottom three have one job: get to {b} before she walks back out there.',
+        'Untucked goes quiet for about four seconds. Then everybody turns toward {b}.',
+      ],
+      baguette: [
+        'Nobody knows who the baguette is going to. Everybody has a guess, and the guess is {b}.',
+        'The bottom three spend Untucked being very, very nice to {b}, just in case.',
+      ],
+    },
+    'honest-plea': [
+      '{a} sits next to {b}. "I know I was bad tonight. I am asking anyway. Please."',
+      '{a} does not dress it up. "I want to stay, and you are the only one who can do that."',
+      '{a} takes {b} aside and tells her exactly why she deserves another week.',
+    ],
+    promise: [
+      '{a} leans in. "Save me tonight and I will save you the second I get the chance."',
+      '{a} offers {b} a deal: her vote of confidence now, a favour later. {b} does not say no.',
+      '"You save me, I owe you. You know I pay my debts," {a} tells {b}.',
+    ],
+    'debt-called': [
+      '{a} does not have to say much. "I saved you, {b}. Remember?"',
+      '{a} reminds {b} who pulled her out of the bottom last time.',
+      '"I was there for you," {a} says. {b} looks at the floor.',
+    ],
+    'cold-shoulder': [
+      '{a} refuses to beg. "If {b} wants to send me to the lip sync, let her. I will win it."',
+      '{a} sits on the far side of the lounge and does not look at {b} once.',
+    ],
+    breakdown: [
+      '{a} starts crying before she has finished her first sentence to {b}.',
+      '{a} tries to make her case to {b} and her voice gives out halfway through.',
+    ],
+    'throw-under': [
+      '{a} tells {b} that {c} has been coasting for weeks. {c} hears every word.',
+      '"Save whoever you want, just not {c}," {a} says, loudly enough for {c}.',
+      '{a} pulls {b} aside and walks her through every mistake {c} made tonight.',
+    ],
+    backfired: [
+      '{b} is not impressed. "You do not get saved by tearing her down, {a}."',
+      '{b} goes quiet, and it is not a good quiet for {a}.',
+    ],
+    vouch: [
+      '{a} is safe tonight, and spends Untucked telling {b} why {c} deserves it.',
+      '"If you save anybody, save {c}," {a} tells {b}. "She has my back every single day."',
+    ],
+    torn: [
+      '{a} has two friends in the bottom, {b} and {c}. She tells the room she feels sick.',
+      '{a} looks from {b} to {c} and says she wishes this were somebody else\'s call.',
+    ],
+  },
+
+  /* ── WHAT THE SAVE SETTLES ── */
+  repaid: [
+    '{h} saved {s}, the queen who once saved her. The debt is paid.',
+    '"You were there for me," {h} says to {s}. Now they are even.',
+  ],
+  promiseKept: [
+    '{h} made {s} a promise, and she kept it.',
+    '{h} said she would save {s} if it ever came to this. She does.',
+  ],
+  promiseBroken: [
+    '{h} promised {s} a save. Tonight she had the chance, and she did not take it.',
+    '{s} looks at {h} and waits. {h} does not say her name.',
+  ],
+  grudge: [
+    '{h} has not forgotten that {s} left her in the bottom. {s} is not saved.',
+    '{h} remembers who passed her over. It shows.',
+  ],
+  /* Next week's cold open, after a promise was broken on the stage. {a} is the
+     queen let down, {b} the one who broke it. */
+  fallout: [
+    '{a} walks into the werk room and goes straight for {b}. "You promised me."',
+    'The room watches {a} confront {b} about last night. {b} does not have a good answer.',
+    '{a} tells anyone who will listen that {b} is a liar. {b} is standing right there.',
+  ],
 };
 
 /** Fill the placeholders. Unknown keys are left as they are, so a test can find them. */

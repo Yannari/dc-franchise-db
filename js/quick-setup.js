@@ -1156,6 +1156,9 @@ const CONFIG_SCOPE = {
     'cfg-dr-tank-opts':      ['drag-race'],
     'cfg-dr-tank-levers':    ['drag-race'],
     'cfg-dr-tank-retire':    ['drag-race'],
+    'cfg-dr-tank-live':      ['drag-race'],
+    'cfg-dr-choc-opts':      ['drag-race'],
+    'cfg-dr-golden-bars':    ['drag-race'],
     // COUNCIL SIZE IS NOT A CASTLE CONTROL. The `cfg-jury` slider is shared —
     // the house reads a jury size off it and Total Drama a panel — but the
     // castle ends on the fire round, not a jury vote, so nothing in js/tr/ ever

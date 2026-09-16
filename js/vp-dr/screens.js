@@ -36,7 +36,7 @@ import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } fr
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
-import { rpBuildSaveIntro, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
+import { rpBuildSaveIntro, rpBuildSaveCampaign, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
 import { MAXI_EVENTS } from '../dr/data/maxi-events.js';
 
 // The finale's section ids share this stem (a section id, not a season id).
@@ -276,6 +276,9 @@ const SECTIONS = [
   { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
     opens: ['results'],
     opensStep: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
+  { id: 'dr-save-campaign', icon: icon('couch'), label: 'The Campaign', suffix: 'savecampaign', phase: 'untucked',
+    accent: 'dr-a-bond', opens: [], opensStep: ['save-campaign'],
+    badge: { text: 'CAMPAIGN', color: '#b07aff' }, title: 'Untucked: The Campaign', subtitle: 'working the room' },
   { id: 'dr-save-hold', icon: icon('ticket'), label: 'The Save', suffix: 'savehold', phase: 'stage',
     accent: 'dr-a-room', opens: [], opensStep: ['save-hold'],
     badge: { text: 'SAVED', color: '#ffed00' }, title: 'The Save', subtitle: 'one of three is saved' },
@@ -721,6 +724,7 @@ const BUILDERS = {
   'dr-results': rpBuildResults,
   'dr-lipsync': rpBuildLipSync,
   'dr-save-intro': rpBuildSaveIntro,
+  'dr-save-campaign': rpBuildSaveCampaign,
   'dr-save-hold': rpBuildSaveHold,
   'dr-save-luck': rpBuildSaveLuck,
   'dr-exit': rpBuildExit,

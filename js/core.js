@@ -1704,7 +1704,7 @@ export function defaultConfig() {
     // not happen, and the box only decides whether the engine may call one.
     drPremiere: 'standard', drFinale: 'top4',
     drDoubleShantay: true, drDoubleSashay: false, drSmackdown: false, drImmunity: false, drTripleLipsync: false,
-    drSave: 'none', drTankLevers: 6, drTankRetire: 8,
+    drSave: 'none', drTankLevers: 6, drTankRetire: 8, drTankLive: 1, drGoldenBars: 1,
     // The per-episode timeline: maxi, mini, rotating judge, guest, song, twist.
     drSchedule: [],
     // Per-judge taste overrides from the setup screen's tabs, keyed by judge id.

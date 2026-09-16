@@ -218,6 +218,26 @@ Checked against the fandom wikitext, not remembered.
 | **Golden Beaver** `beaver` | Canada S4-S6, CvtW S2 (used on ep 1); two winners = two saves (S6 ep 3) | the maxi winner(s) | every elimination week, never the semi-final; a bottom three, or a bottom four on a double win |
 | **Golden Baguette** `baguette` | France S4 eps 2-6: last week's eliminated queen hands it over | the queen she hands it to | every week after an elimination, never the semi-final; no elimination last week = no baguette |
 
+Settings: `drGoldenBars` (1-3 golden bars), `drTankLevers` (5-10),
+`drTankLive` (1-3 live levers; always one pull per queen), `drTankRetire`.
+
+**The campaign and its memory (Beaver and Baguette).** Between the call and
+the save there is an Untucked segment (step `save-campaign`, screen "Untucked:
+The Campaign"). Each bottom queen makes one move on the queen with the power
+(the Beaver's winner, or the Baguette's likely recipient): an honest plea, a
+promise, calling in a debt, a cold shoulder, a breakdown, or throwing another
+bottom queen under the bus; a safe friend may vouch, and a holder with two
+friends down there is torn. Nice archetypes never promise or throw anyone
+under the bus. Every move changes bonds or popularity and adds a PLEA weight
+the decision reads. What the save leaves behind lives on `state.saves`:
+`debts` (a saved queen repays her holder when she can, weighted by loyalty),
+`grudges` (a queen passed over is less likely to save that holder, weighted by
+temper), `promises` (void if the deal was not taken; kept or broken the next
+time the promiser holds power) and `fallout` (a broken promise is a
+cold-open fight the following week). Wiki basis: Denim's "I'm gonna need to
+make a lot of new best friends", Nearah Nuff's "It's time to kiss some ass",
+Kiki Coe and Melinda Verga saving each other (eps 4 and 5).
+
 Rules that bite:
 - **Still no vote.** Canada's All Stars 1 ran the beaver as a room vote; that
   version is deliberately not built.

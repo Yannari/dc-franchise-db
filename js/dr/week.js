@@ -52,7 +52,8 @@ import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
 import { familyForChallenge } from './data/maxi-performance.js';
 import { chooseResultOrder } from './data/results-order.js';
-import { saveKind, saveLiveTonight, holderSave, holderEffects, luckSave, luckEffects } from './saves.js';
+import { saveKind, saveLiveTonight, holderSave, holderEffects, luckSave, luckEffects,
+  campaignTargets, runCampaign, settleMemory, takeFallout } from './saves.js';
 import { SAVE_BEATS, fillSave, pickSave } from './data/save-beats.js';
 import { rngFor } from './rng.js';
 
@@ -74,7 +75,7 @@ export const SCENE_STEPS = [
      those scenes to the episode writer verbatim, in this order. The brief
      described the runway before the performance it was reacting to. */
   'maxi-pre', 'werk-elim-day', 'main-stage', 'maxi-main', 'runway',
-  'critiques', 'untucked', 'results', 'save-hold', 'lipsync', 'save-luck', 'exit',
+  'critiques', 'untucked', 'results', 'save-campaign', 'save-hold', 'lipsync', 'save-luck', 'exit',
 ];
 
 /* HOW MUCH TELEVISION EACH ARCHETYPE IS, which is a different question from
@@ -173,10 +174,25 @@ export function runDragWeek(state, cfg, ctx) {
   const saves = state.saves || null;
   const saveMeta = saves ? saveKind(saves.kind) : null;
   const saveRng = saveMeta ? rngFor(Math.floor(rng() * 4294967296)) : null;
-  const saveLine = (list, vars) => fillSave(pickSave(list, saveRng), vars);
+  // Without replacement within a night, so two pleas never read the same.
+  const usedSaveLines = new Set();
+  const saveLine = (list, vars) => {
+    const fresh = (list || []).filter(l => !usedSaveLines.has(l));
+    const line = pickSave(fresh.length ? fresh : list, saveRng);
+    usedSaveLines.add(line);
+    return fillSave(line, vars);
+  };
+  // Applied once `applyEventLike` exists, a few lines down.
+  const falloutFx = [];
   const saveScene = (step, kind, data, text) =>
     scenes.push({ step, kind: `save:${kind}`, data: { save: saves.kind, ...data }, text });
   if (saveMeta) {
+    /* A PROMISE BROKEN ON LAST WEEK'S STAGE is this morning's fight. */
+    for (const f of takeFallout(saves, living)) {
+      falloutFx.push({ bond: [[f.a, f.b, -1]], pop: { [f.b]: -0.3 }, tv: { [f.a]: 0.5, [f.b]: 0.5 } });
+      saveScene('cold-open', 'fallout', { players: [f.a, f.b] },
+        saveLine(SAVE_BEATS.fallout, { a: f.a, b: f.b }));
+    }
     if (saves.kind === 'chocolate') {
       /* THE BARS ARRIVE WITH THE WHOLE CAST. Season 14's split premiere ran
          without them and its two losers came back; June Jambalaya, out on the
@@ -230,6 +246,7 @@ export function runDragWeek(state, cfg, ctx) {
      the same function — one place, one rule, and nothing about arrivals is
      special except when it happens. */
   for (const sc of arrivals) if (sc.bond || sc.pop) applyEventLike(sc);
+  for (const fx of falloutFx) applyEventLike(fx);
 
   const werkScenes = runWerkRoom({
     // The cold-open slot goes with its marker: its events are written for a
@@ -925,10 +942,40 @@ export function runDragWeek(state, cfg, ctx) {
       }
     }
     const named = [...call.atRisk, ...call.bottom];
+    const winners = saves.kind === 'beaver' ? [...call.win] : [];
+    /* ── THE CAMPAIGN ── between the call and the save, the bottom works the
+       queen with the power. Every move is applied here, and what it did to
+       her thinking travels into the decision as `pleas`. */
+    const targets = campaignTargets({ saves, winners, giver, pool: named, living, bond: ctx.bond });
+    const camp = runCampaign({
+      saves, targets, pool: named, living, players, bond: ctx.bond, rng: saveRng, ep: cfg.num,
+    });
+    if (camp.events.length) {
+      saveScene('save-campaign', 'campaign-open', { players: targets.slice(0, 2), pool: named },
+        saveLine(SAVE_BEATS.campaign.open[saves.kind], { b: targets[0] }));
+    }
+    for (const ev of camp.events) {
+      applyEventLike(ev);
+      werkEvents.push({ type: `campaign:${ev.id}`, players: [ev.a, ev.b, ev.c].filter(Boolean),
+        bond: ev.bond, pop: ev.pop, state: {}, data: {} });
+      const vars = { a: ev.a, b: ev.b, c: ev.c };
+      saveScene('save-campaign', `campaign:${ev.id}`, {
+        players: [ev.a, ev.b].filter(Boolean), about: ev.c || null, target: ev.b, move: ev.id,
+      }, saveLine(SAVE_BEATS.campaign[ev.id], vars));
+      if (ev.backfired) {
+        saveScene('save-campaign', 'campaign:backfired', { players: [ev.b, ev.a], target: ev.b, move: 'backfired' },
+          saveLine(SAVE_BEATS.campaign.backfired, vars));
+      }
+    }
     holderRes = holderSave({
-      saves, winners: saves.kind === 'beaver' ? [...call.win] : [], giver,
+      saves, winners, giver, pleas: camp.pleas,
       pool: named, living, state, players, bond: ctx.bond, rng: saveRng,
     });
+    if (holderRes) {
+      holderRes.campaign = camp.events.map(e => ({ id: e.id, a: e.a, b: e.b, c: e.c || null, backfired: !!e.backfired, plea: e.plea || [] }));
+      holderRes.pleas = camp.pleas;
+      holderRes.targets = targets;
+    }
   }
   if (holderRes) {
     callAtCall = {
@@ -939,7 +986,9 @@ export function runDragWeek(state, cfg, ctx) {
     call.atRisk = [...holderRes.savedAll];
     call.bottom = [...holderRes.singers];
     saves.uses.push({ ep: cfg.num, giver, picks: holderRes.picks });
-    const fx = holderEffects(holderRes, ctx.bond);
+    const memory = settleMemory(saves, holderRes, cfg.num);
+    holderRes.memory = memory;
+    const fx = holderEffects(holderRes, ctx.bond, memory);
     applyEventLike(fx);
     werkEvents.push({ type: `save:${saves.kind}`, players: [holderRes.holder, holderRes.saved], ...fx, data: {} });
     const [c, d] = holderRes.singers;
@@ -949,10 +998,26 @@ export function runDragWeek(state, cfg, ctx) {
     }
     for (const pk of holderRes.picks) {
       const vars = { h: pk.holder, s: pk.saved, c, d };
+      const tier = pk.selfSave ? SAVE_BEATS.saveHold.self
+        : SAVE_BEATS.saveHold[pk.why] || SAVE_BEATS.saveHoldExtra[pk.why] || SAVE_BEATS.saveHold.merit;
       saveScene('save-hold', 'saved', {
         players: pk.selfSave ? [pk.holder] : [pk.holder, pk.saved],
         holder: pk.holder, saved: pk.saved, pool: holderRes.pool, why: pk.why,
-      }, saveLine(SAVE_BEATS.saveHold[pk.selfSave ? 'self' : pk.why], vars));
+      }, saveLine(tier, vars));
+      // What that choice settled, said on the stage.
+      for (const r of memory.repaid.filter(x => x.holder === pk.holder)) {
+        saveScene('save-hold', 'repaid', { players: [r.holder, r.saved], holder: r.holder },
+          saveLine(SAVE_BEATS.repaid, { h: r.holder, s: r.saved }));
+      }
+      for (const pr of memory.promises.filter(x => x.from === pk.holder)) {
+        saveScene('save-hold', pr.kept ? 'promise-kept' : 'promise-broken',
+          { players: [pr.from, pr.to], holder: pr.from },
+          saveLine(pr.kept ? SAVE_BEATS.promiseKept : SAVE_BEATS.promiseBroken, { h: pr.from, s: pr.to }));
+      }
+      for (const q of pk.snubbed || []) {
+        saveScene('save-hold', 'grudge', { players: [pk.holder, q], holder: pk.holder },
+          saveLine(SAVE_BEATS.grudge, { h: pk.holder, s: q }));
+      }
     }
     saveScene('save-hold', 'left', { players: holderRes.singers },
       saveLine(SAVE_BEATS.saveLeft, { c, d, h: holderRes.picks.map(x => x.holder).join(' and ') }));

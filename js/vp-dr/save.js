@@ -243,6 +243,34 @@ export const SAVE_CSS = `
 .svx[data-phase=handoff] .svx-holder{animation:svx-glow 1.2s ease}
 @keyframes svx-glow{30%{box-shadow:0 0 0 3px #ffd66b,0 0 40px rgba(255,200,60,.6)}}
 
+/* ── THE CAMPAIGN (Untucked) ─────────────────────────────────────────── */
+.svx.svx-camp{background:radial-gradient(120% 90% at 50% 110%,#2b0f3f 0,#140623 55%,#08030f 100%)}
+.svx-lounge{align-self:end;width:min(640px,100%);opacity:.3;margin-bottom:-6px}
+.svx-lounge svg{width:100%;display:block}
+.svx-lounge-neon{filter:drop-shadow(0 0 8px #b07aff)}
+.svx.svx-camp .svx-spot{background:radial-gradient(40% 60% at 50% 40%,rgba(176,122,255,.24),transparent 70%)}
+.svx-row{display:flex;gap:clamp(10px,3vw,34px);justify-content:center;align-items:flex-end;width:100%;align-self:center;padding-bottom:30px}
+.svx-row .svx-pod{background:rgba(12,4,20,.55);border-radius:16px;padding:10px 10px 8px;backdrop-filter:blur(4px)}
+.svx-row .svx-pod{transition:transform .5s cubic-bezier(.2,1.4,.4,1),filter .5s,opacity .5s}
+.svx-row.svx-anytalk .svx-pod:not(.talk):not(.about):not(.power){filter:brightness(.55) saturate(.6)}
+.svx-row .svx-pod.talk{transform:translateY(-16px) scale(1.08)}
+.svx-row .svx-pod.talk .svx-face{box-shadow:0 0 0 4px #b07aff,0 0 50px 12px rgba(176,122,255,.55)}
+.svx-row .svx-pod.about .svx-face{box-shadow:0 0 0 4px #ff294b,0 0 40px 8px rgba(255,41,75,.45)}
+.svx-row .svx-face{width:96px;height:96px}
+.svx-meter{display:block;width:100px;height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;position:relative}
+.svx-meter i{position:absolute;top:0;bottom:0;left:50%;width:0;background:linear-gradient(90deg,#b07aff,#ffd66b);
+  transition:width .7s cubic-bezier(.2,1.2,.4,1),left .7s cubic-bezier(.2,1.2,.4,1)}
+.svx-meter i.neg{background:linear-gradient(90deg,#ff294b,#b0204a)}
+.svx-meter::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.4)}
+.svx-role{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#ffd66b}
+.svx-row .svx-pod.power .svx-face{box-shadow:0 0 0 4px #ffd66b,0 0 40px 10px rgba(255,214,107,.45)}
+.svx-bubble{position:absolute;top:-30px;left:50%;transform:translate(-50%,6px) scale(.8);opacity:0;white-space:nowrap;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:#b07aff;color:#12051f;
+  transition:opacity .3s,transform .4s cubic-bezier(.3,1.6,.5,1)}
+.svx-row .svx-pod.talk .svx-bubble{opacity:1;transform:translate(-50%,0) scale(1)}
+.svx-row .svx-pod.talk.x-throw .svx-bubble,.svx-row .svx-pod.talk.x-cold .svx-bubble{background:#ff294b;color:#fff}
+.svx[data-phase=campaign-open] .svx-row .svx-pod.power{animation:svx-bob 1.4s ease-in-out infinite}
+
 /* ── INTRO ───────────────────────────────────────────────────────────── */
 .svx-hero{width:240px;animation:svx-bob 4s ease-in-out infinite;filter:drop-shadow(0 20px 40px rgba(0,0,0,.7)) drop-shadow(0 0 30px rgba(255,200,60,.35))}
 .svx-hero svg{width:100%;display:block;overflow:visible}
@@ -466,6 +494,28 @@ export function applyStage(suffix, idx) {
         lv.classList.toggle('x', k === c.levers.chosen && !!c.levers.missed);
       }
     }
+    if (c.talk !== undefined) {
+      const row = el.querySelector('.svx-row');
+      if (row) row.classList.toggle('svx-anytalk', !!c.talk);
+      for (const pod of el.querySelectorAll('.svx-row .svx-pod')) {
+        const me = pod.dataset.q === c.talk;
+        pod.classList.toggle('talk', me);
+        pod.classList.toggle('about', !!c.about && pod.dataset.q === c.about);
+        pod.classList.remove('x-throw', 'x-cold');
+        if (me && c.tone) pod.classList.add(`x-${c.tone}`);
+        const bub = pod.querySelector('.svx-bubble');
+        if (bub && me) bub.textContent = c.bubble || '';
+      }
+    }
+    if (c.meters) {
+      for (const m of el.querySelectorAll('.svx-meter[data-q] i')) {
+        const v = Math.max(-2, Math.min(3, c.meters[m.parentNode.dataset.q] || 0));
+        const pct = (Math.abs(v) / 3) * 50;
+        m.classList.toggle('neg', v < 0);
+        m.style.width = `${pct}%`;
+        m.style.left = v < 0 ? `${50 - pct}%` : '50%';
+      }
+    }
     if (c.kept !== undefined) {
       const keep = [].concat(c.kept || []);
       for (const pod of el.querySelectorAll('.svx-pod')) pod.classList.toggle('kept', keep.includes(pod.dataset.q));
@@ -513,9 +563,9 @@ function register(suffix, states) {
 }
 
 function stageShell(suffix, kind, {
-  title, count = '', countLabel = '', center, caption = '', tray = '', extra = '', below = '',
+  title, count = '', countLabel = '', center, caption = '', tray = '', extra = '', below = '', cls = '',
 }) {
-  return `<!--dr-chrome--><div class="svx${suffix === 'saveintro' ? ' svx-static' : ''}" id="svx-${suffix}" data-kind="${kind}" data-phase="idle">
+  return `<!--dr-chrome--><div class="svx${suffix === 'saveintro' ? ' svx-static' : ''}${cls ? ` ${cls}` : ''}" id="svx-${suffix}" data-kind="${kind}" data-phase="idle">
     <div class="svx-bg"><i class="svx-cone"></i><i class="svx-spot"></i><i class="svx-rays"></i><i class="svx-flash"></i><i class="svx-vig"></i></div>
     <div class="svx-head"><div><span class="svx-kicker">${esc(SAVE_KINDS[kind]?.name || 'The save')}</span>
       <b class="svx-title">${esc(title)}</b></div>
@@ -618,6 +668,91 @@ export function rpBuildSaveIntro(row, scenes = []) {
   publishRail('saveintro', list.map(() => rail));
   return page(row, 'saveintro', {
     phase: 'werk', title: meta.name || 'The Save', subtitle: retire ? 'no more levers' : 'how it works',
+    stage, cards, rail, count: list.length,
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SAVE-CAMPAIGN (Untucked)
+// ══════════════════════════════════════════════════════════════════════
+
+function loungeSvg() {
+  return `<svg viewBox="0 0 640 120" aria-hidden="true">
+    <path class="svx-lounge-neon" d="M40 20h560" stroke="#b07aff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+    <rect x="60" y="54" width="520" height="46" rx="18" fill="#3a1d52"/>
+    <rect x="44" y="40" width="44" height="64" rx="16" fill="#4a2468"/>
+    <rect x="552" y="40" width="44" height="64" rx="16" fill="#4a2468"/>
+    <path d="M80 54h480" stroke="#6b3b94" stroke-width="3"/>
+    <rect x="270" y="100" width="100" height="10" rx="4" fill="#2a1240"/>
+    <circle cx="300" cy="92" r="7" fill="#ffd66b" opacity=".8"/><circle cx="334" cy="94" r="5" fill="#ff7bc8" opacity=".8"/>
+  </svg>`;
+}
+
+const BUBBLE = {
+  'honest-plea': 'pleading', promise: 'a deal', 'debt-called': 'you owe me', 'cold-shoulder': 'not begging',
+  breakdown: 'in tears', 'throw-under': 'not her', vouch: 'vouching', torn: 'torn', backfired: 'not impressed',
+};
+const TONE = { 'throw-under': 'throw', 'cold-shoulder': 'cold', backfired: 'cold' };
+const upper = t => (t ? t[0].toUpperCase() + t.slice(1) : t);
+
+export function rpBuildSaveCampaign(row, scenes = []) {
+  const ep = epOf(row);
+  const hold = row?.dr?.save?.hold;
+  const list = scenes.filter(sc => sc.text);
+  if (!hold || !list.length) return '';
+  const kind = hold.kind;
+  const meta = SAVE_KINDS[kind] || {};
+  const targets = hold.targets || [hold.holder];
+  const moves = hold.campaign || [];
+  // The room, as far as this segment is concerned: the power and the bottom.
+  const cast = [...new Set([...targets, ...hold.pool])];
+  const pods = cast.map((n, i) => {
+    const power = targets.includes(n);
+    return `<div class="svx-pod${power ? ' power' : ''}" data-q="${esc(n)}" style="--i:${i}">
+      <span class="svx-bubble"></span>
+      <div class="svx-face">${face(n, ep, 96)}</div><b>${esc(n)}</b>
+      ${power ? `<span class="svx-role">${kind === 'baguette' ? 'the favourite' : 'has the beaver'}</span>`
+    : `<span class="svx-meter" data-q="${esc(n)}"><i></i></span>`}
+    </div>`;
+  }).join('');
+  const center = `<div class="svx-lounge">${loungeSvg()}</div><div class="svx-row">${pods}</div>`;
+
+  // Each bottom queen's standing with the power, built one move at a time.
+  const meters = {};
+  const idle = { phase: 'idle', talk: null, meters: {}, caption: cap('Untucked', 'The bottom is named. Now it is a campaign.') };
+  let mi = 0;
+  const steps = list.map(sc => {
+    if (sc.kind === 'save:campaign-open') {
+      return { phase: 'campaign-open', talk: null, meters: { ...meters }, caption: cap('Untucked', sc.text) };
+    }
+    const id = sc.data?.move || sc.kind.replace('save:campaign:', '');
+    if (id !== 'backfired') {
+      const mv = moves[mi++] || {};
+      for (const [, q, d] of mv.plea || []) meters[q] = (meters[q] || 0) + d;
+    }
+    return {
+      phase: 'campaign', talk: (sc.data?.players || [])[0] || null, about: sc.data?.about || null,
+      tone: TONE[id] || null, bubble: BUBBLE[id] || '', meters: { ...meters },
+      caption: cap(upper(BUBBLE[id]) || 'Untucked', sc.text),
+    };
+  });
+  register('savecampaign', { idle, steps });
+  const stage = stageShell('savecampaign', kind, {
+    title: kind === 'baguette' ? 'Courting the favourite' : 'Working the room',
+    center, caption: idle.caption, cls: 'svx-camp',
+  });
+  const cards = list.map((sc, i) => card('savecampaign', i, sc, ep,
+    sc.kind === 'save:campaign-open' ? 'Untucked' : upper(BUBBLE[sc.data?.move]) || 'Untucked', '#b07aff'));
+  const rail = `<h4 class="dr-disp">${esc(meta.short)}</h4>
+    <div class="sv-rail-row">${kind === 'baguette'
+    ? `From <b>${esc(hold.giver)}</b>, out last week`
+    : `Holder${targets.length > 1 ? 's' : ''} <b>${esc(targets.join(' & '))}</b>`}</div>
+    <h4 class="dr-disp">The bottom</h4>
+    ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)}</div>`).join('')}`;
+  publishRail('savecampaign', list.map(() => rail));
+  return page(row, 'savecampaign', {
+    phase: 'untucked', title: 'Untucked: The Campaign',
+    subtitle: kind === 'baguette' ? 'nobody knows who gets the baguette' : 'everybody wants the beaver',
     stage, cards, rail, count: list.length,
   });
 }

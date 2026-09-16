@@ -547,6 +547,8 @@ function _config() {
     drSave: seasonConfig.drSave || 'none',
     drTankLevers: seasonConfig.drTankLevers,
     drTankRetire: seasonConfig.drTankRetire,
+    drGoldenBars: seasonConfig.drGoldenBars,
+    drTankLive: seasonConfig.drTankLive,
     /* THE SMACKDOWN, WHICH WAS UNREACHABLE. js/dr/season.js has read
        `config.drSmackdown` since it was written and this function never
        passed it, so the whole Lalaparuza reunion -- engine, challenge module

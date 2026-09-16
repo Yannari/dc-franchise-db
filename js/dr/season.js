@@ -1206,6 +1206,7 @@ export function playDragSeason({
     state.saves = saveId ? initSaves({
       kind: saveId, cast: [...state.castOrder], rng: streamFor(seed, 'season-save'),
       levers: config.drTankLevers, retireAt: config.drTankRetire,
+      goldens: config.drGoldenBars, live: config.drTankLive,
     }) : null;
   }
 

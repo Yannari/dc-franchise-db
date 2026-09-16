@@ -361,6 +361,25 @@ export const SAVE_CSS = `
    it shrinks so the card just revealed still has room below it. */
 .svx{position:sticky;top:6px}
 .svx-cards .dr-step{scroll-margin-top:560px}
+.svx-card{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}
+.svx-cp{flex:0 0 44px;width:44px;height:44px;border-radius:50%;overflow:hidden}
+.svx-cp > *,.svx-cp img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.svx-card small{display:block;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--svc,#ffb3dc);margin-bottom:2px}
+.svx-card p{margin:0;font-size:15px;line-height:1.5}
+.sv-rail-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
+.sv-rail-row b{color:var(--dr-gold,#FFC83D)}
+.sv-levers{display:flex;gap:6px;margin:6px 0}
+.sv-levers i{width:14px;height:26px;border-radius:4px;background:var(--dr-cyan,#00E5FF)}
+.sv-levers i.sv-gone{background:#3a2233;opacity:.5}
+
+@media (prefers-reduced-motion: reduce){
+  .svx,.svx *{animation:none!important;transition:none!important}
+  .svx[data-phase=gold] .svx-ticket{opacity:1;transform:translateY(118px) scale(.92)}
+  .svx[data-phase=plain] .svx-stamp,.svx[data-phase=miss] .svx-stamp{opacity:1;transform:rotate(-11deg)}
+  .svx[data-phase=hit] .svx-splash{opacity:1;transform:translateY(-80px) rotate(-6deg)}
+}
+/* Last, so it wins over the base sizes above. */
 @media (max-height: 999px){
   .svx:not(.svx-compact):not(.svx-static){min-height:0;padding:10px 16px 8px}
   .svx:not(.svx-compact):not(.svx-static) .svx-title{font-size:clamp(20px,3vw,30px)}
@@ -379,24 +398,6 @@ export const SAVE_CSS = `
   .svx:not(.svx-compact):not(.svx-static) .svx-confess q{font-size:15px}
   .svx:not(.svx-compact):not(.svx-static) .svx-confess .svx-cface{flex-basis:84px;width:84px;height:84px}
   .svx-cards .dr-step{scroll-margin-top:380px}
-}
-.svx-card{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:14px;
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}
-.svx-cp{flex:0 0 44px;width:44px;height:44px;border-radius:50%;overflow:hidden}
-.svx-cp > *,.svx-cp img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
-.svx-card small{display:block;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--svc,#ffb3dc);margin-bottom:2px}
-.svx-card p{margin:0;font-size:15px;line-height:1.5}
-.sv-rail-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px}
-.sv-rail-row b{color:var(--dr-gold,#FFC83D)}
-.sv-levers{display:flex;gap:6px;margin:6px 0}
-.sv-levers i{width:14px;height:26px;border-radius:4px;background:var(--dr-cyan,#00E5FF)}
-.sv-levers i.sv-gone{background:#3a2233;opacity:.5}
-
-@media (prefers-reduced-motion: reduce){
-  .svx,.svx *{animation:none!important;transition:none!important}
-  .svx[data-phase=gold] .svx-ticket{opacity:1;transform:translateY(118px) scale(.92)}
-  .svx[data-phase=plain] .svx-stamp,.svx[data-phase=miss] .svx-stamp{opacity:1;transform:rotate(-11deg)}
-  .svx[data-phase=hit] .svx-splash{opacity:1;transform:translateY(-80px) rotate(-6deg)}
 }
 `;
 

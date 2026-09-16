@@ -48,7 +48,10 @@ export const LS_CSS = `
 .lsx{position:relative;isolation:isolate;overflow:hidden;border-radius:22px;margin:0 0 18px;padding:14px 18px 16px;
   background:radial-gradient(120% 90% at 50% 115%,#3a0716 0,#14030a 55%,#070105 100%);
   box-shadow:0 30px 80px -30px #000,inset 0 0 0 1px rgba(255,255,255,.07);color:#fff}
-@media (min-height: 1000px){ .lsx{position:sticky;top:6px;z-index:5} .lsx-cards .dr-step{scroll-margin-top:540px} }
+/* Always pinned; smaller on a shorter window, so the card just revealed
+   still has room below it. */
+.lsx{position:sticky;top:6px;z-index:5}
+.lsx-cards .dr-step{scroll-margin-top:540px}
 .lsx-bg,.lsx-bg i{position:absolute;inset:0;pointer-events:none}
 .lsx-bg{z-index:0;transition:filter .7s}
 .lsx > *:not(.lsx-bg){position:relative;z-index:1}
@@ -181,6 +184,29 @@ export const LS_CSS = `
 @media (prefers-reduced-motion: reduce){
   .lsx,.lsx *{animation:none!important;transition:none!important}
   .lsx-q[class*=st-] .lsx-stamp{opacity:1;transform:translate(-50%,-50%) rotate(-10deg)}
+}
+/* Last, so it wins over the base sizes above. */
+@media (max-height: 999px){
+  .lsx{padding:8px 14px 10px}
+  .lsx-now{padding:5px 10px;gap:10px}
+  .lsx-song b{font-size:16px}
+  .lsx-song small{font-size:9.5px}
+  .lsx-eq{height:20px}
+  .lsx-parts{margin-top:6px}
+  .lsx-parts span{padding:3px 8px;font-size:9px}
+  .lsx-stage{min-height:0}
+  .lsx-q{padding-top:14px;gap:5px}
+  .lsx-face{width:78px;height:78px}
+  .lsx-cone{width:150px;height:200px;top:-14px}
+  .lsx-q b{font-size:15px}
+  .lsx-stamp{font-size:20px;padding:4px 10px;border-width:3px}
+  .lsx-tug{margin-top:8px;height:8px}
+  .lsx-tug i{width:16px;height:16px;margin:-8px 0 0 -8px}
+  .lsx-banner b{font-size:clamp(26px,4.5vw,40px)}
+  .lsx-conf{padding:12px;gap:12px}
+  .lsx-conf .lsx-cframe{flex-basis:86px;width:86px;height:86px}
+  .lsx-conf q{font-size:14px}
+  .lsx-cards .dr-step{scroll-margin-top:360px}
 }
 `;
 

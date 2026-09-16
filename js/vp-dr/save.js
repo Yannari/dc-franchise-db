@@ -41,7 +41,7 @@ const spread = (n, seed = 7) => {
 // ══════════════════════════════════════════════════════════════════════
 export const SAVE_CSS = `
 @property --svx-spin{syntax:'<angle>';inherits:false;initial-value:0deg}
-.svx{position:sticky;top:6px;z-index:5;isolation:isolate;overflow:hidden;border-radius:22px;margin:0 0 18px;
+.svx{position:relative;z-index:5;isolation:isolate;overflow:hidden;border-radius:22px;margin:0 0 18px;
   min-height:440px;padding:18px 22px 16px;color:#fff;
   background:radial-gradient(120% 90% at 50% 110%,#2a0d22 0,#12040e 55%,#07020a 100%);
   box-shadow:0 30px 80px -30px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.07)}
@@ -59,7 +59,28 @@ export const SAVE_CSS = `
 .svx-grain{opacity:.06;background-image:repeating-radial-gradient(circle at 17% 32%,#fff 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
 .svx > *:not(.svx-bg){position:relative;z-index:1}
 .svx-bg{position:absolute!important}
-.svx.svx-static{position:relative;top:auto}
+.svx.svx-static{position:relative!important;top:auto}
+/* THE CAMPAIGN IN UNTUCKED IS A STRIP, not a stage: the lounge's own cards
+   are the story, and the strip only has to say who is talking and where
+   everybody stands. */
+.svx.svx-compact{min-height:0;padding:10px 16px 8px;border-radius:16px}
+.svx.svx-compact .svx-title{font-size:clamp(18px,2.4vw,24px)}
+.svx.svx-compact .svx-kicker{font-size:9px}
+.svx.svx-compact .svx-center{height:auto;padding:26px 0 4px}
+.svx.svx-compact .svx-lounge{display:none}
+.svx.svx-compact .svx-row{padding-bottom:0;gap:10px;flex-wrap:wrap}
+.svx.svx-compact .svx-row .svx-pod{padding:6px 8px}
+.svx.svx-compact .svx-row .svx-face{width:56px;height:56px}
+.svx.svx-compact .svx-pod b{font-size:11px}
+.svx.svx-compact .svx-meter{width:64px}
+.svx.svx-compact .svx-role{font-size:8px;letter-spacing:.12em}
+.svx.svx-compact .svx-bubble{top:-24px;font-size:9.5px;padding:3px 8px}
+.svx.svx-compact .svx-caption{min-height:0;font-size:14px}
+.svx.svx-compact .svx-tray{display:none}
+@media (min-height: 760px){
+  .svx.svx-compact{position:sticky;top:6px}
+  .dr-phase-untucked .dr-step{scroll-margin-top:300px}
+}
 
 .svx-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .svx-kicker{display:block;font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:#ffb3dc}
@@ -326,7 +347,13 @@ export const SAVE_CSS = `
 /* the word cards under the stage */
 .svx-cards{display:grid;gap:10px}
 /* The stage is sticky: a revealed card is scrolled to sit BELOW it, not behind it. */
-.svx-cards .dr-step{scroll-margin-top:560px}
+/* STICKY ONLY WHERE IT FITS. On a short window a 440px stage pinned to the
+   top covered every card under it, so it only sticks on a tall one, and a
+   revealed card is then scrolled to sit below it. */
+@media (min-height: 1000px){
+  .svx{position:sticky;top:6px}
+  .svx-cards .dr-step{scroll-margin-top:560px}
+}
 .svx-card{display:flex;gap:14px;align-items:flex-start;padding:12px 16px;border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09)}
 .svx-cp{flex:0 0 44px;width:44px;height:44px;border-radius:50%;overflow:hidden}
@@ -799,7 +826,7 @@ export function campaignStage(row, scenes = []) {
   }
   return `<style>${SAVE_CSS}</style>` + stageShell('untucked', kind, {
     title: kind === 'baguette' ? 'Courting the favourite' : 'Working the room',
-    center, caption: idle.caption, cls: 'svx-camp',
+    center, caption: idle.caption, cls: 'svx-camp svx-compact',
   });
 }
 

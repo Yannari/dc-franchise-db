@@ -53,13 +53,15 @@ describe('drag-race registry entry', () => {
     expect(socialWords('drag-race').eliminated).toBe('sashayed away');
     /* THIS ASSERTED `null` AND WAS RIGHT UNTIL SOMETHING EMITTED THE KIND.
        Written when nothing did, on the reasoning that this show has no
-       nomination. It has no BALLOT — but `drEvents` emits the `nomination`
-       kind for the bottom two, because that is the same fact a nomination is:
-       a room told in public who is in trouble and might survive it.
-       And a null here does not disappear. `eventLabel` falls through to
+       nomination. A reader then borrowed the `nomination` kind for the bottom
+       two, and a null here does not disappear: `eventLabel` falls through to
        `map[kind] || kind.replace(...)`, so the timeline was headed
        "Nomination" over a runway — the house's word, reached by way of the
-       field that exists to prevent exactly that. */
+       field that exists to prevent exactly that.
+       This show has its own social pack now (js/social/packs/drag-race.js) and
+       emits `bottom-two`, labelled by the pack. The field stays because the
+       fallback is still one missed label away from printing another show's
+       word, on any kind the pack does not own. */
     expect(socialWords('drag-race').nominationLabel).toBe('In the bottom');
     // And it is not a borrowed one.
     for (const other of ['total-drama', 'big-brother', 'traitors']) {

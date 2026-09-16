@@ -123,15 +123,28 @@ describe('the audience feed reads a night with no ballot in it', () => {
       expect(ep, `no ${label} night to test`).toBeTruthy();
       const kinds = new Set(extractEvents(ep, { format: 'drag-race', season: 1, episode: 3 })
         .map(e => e.kind));
-      for (const want of ['comp-win', 'nomination', 'domination', 'eviction']) {
+      // THIS SHOW'S OWN KINDS. They were `comp-win`, `nomination`,
+      // `domination` and `eviction` — a vote show's vocabulary borrowed for a
+      // runway, because inventing kinds meant teaching every shared topic a
+      // new trigger. The pack (js/social/packs/drag-race.js) owns both halves
+      // now, so the night is read as what it is.
+      for (const want of ['maxi-win', 'bottom-two', 'lipsync-win', 'sashay']) {
         expect(kinds, `${label}: no ${want}`).toContain(want);
+      }
+      for (const never of ['nomination', 'domination']) {
+        expect(kinds, `${label}: a runway produced a ${never}`).not.toContain(never);
       }
     }
   });
 
-  it('a played season reaches the live feed through the registry path', () => {
-    const recs = episodeRecords({ dr: { episodes: season.rows } }, 'drag-race');
+  it('a played season reaches the live feed through the AIRED episode rows', () => {
+    // It read `gs.dr.episodes` — the registry's rounds path — until this show
+    // got a pack. A pack names its own records, and for both shows that have
+    // one those are the aired rows in `gs.episodeHistory`: the engine's own
+    // arrays can hold nights that have not been shown yet.
+    const recs = episodeRecords({ episodeHistory: season.rows }, 'drag-race');
     expect(recs.length).toBe(season.rows.length);
+    expect(episodeRecords({ dr: { episodes: season.rows } }, 'drag-race')).toEqual([]);
   });
 
   it('stillIn knows who is gone WITHOUT a ballot to read it from', () => {

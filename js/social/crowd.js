@@ -134,7 +134,16 @@ function followersOfOneOff(handle) {
  * stan's post is not suddenly attributed to somebody who reads as an analyst.
  */
 export function oneOffAccount(rng, archetype = 'lurker', format = DEFAULT_FORMAT) {
-  const pick = arr => arr[Math.floor(rng() * arr.length)];
+  /* ── A HANDLE HAS NO SPACES IN IT ──────────────────────────────────
+     The middle of a handle comes off the show's own `fanWords`, and a show is
+     entitled to declare one that is two words: Drag Race says "werk room",
+     "main stage" and "lip sync". Pasted in raw those produced `@main
+     stagetruther` and `@offlinewerk room` — handles nobody could type, on a
+     third of one season's posts. Squeezed here rather than in the registry,
+     because "lip sync" is the right thing for a show to call it and
+     "@lipsynctruther" is the right thing for an account to be called. */
+  const squeeze = w => String(w).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const pick = arr => squeeze(arr[Math.floor(rng() * arr.length)]);
   const BODY = bodyFor(format);
   const shape = rng();
   let handle;

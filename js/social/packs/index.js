@@ -18,8 +18,9 @@
 // so adding a show is one import and one array entry here and nothing else in
 // the feed branches on which show it is.
 import traitorsPack from './traitors.js';
+import dragRacePack from './drag-race.js';
 
-const PACKS = [traitorsPack];
+const PACKS = [traitorsPack, dragRacePack];
 
 /** The pack for a format, or null when the shared library serves it. */
 export function packFor(format) {

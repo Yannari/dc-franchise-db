@@ -21,6 +21,7 @@ import { PHRASINGS } from '../js/social/phrasings.js';
 import { SLOT_NAMES } from '../js/social/sampler.js';
 import { TRAIT_TAKES } from '../js/social/voices.js';
 import { ARCHETYPES, PERSONAS, personasFor } from '../js/social/personas.js';
+import { oneOffAccount } from '../js/social/crowd.js';
 import { words, eventLabel } from '../js/social/adapter.js';
 import { SHOWS, DEFAULT_FORMAT } from '../js/shows.js';
 import { foreignWordsIn } from './helpers/show-vocabulary.js';
@@ -169,6 +170,27 @@ describe.each(PACKS.map(p => [p.format, p]))('the %s pack', (format, pack) => {
         }
       }
     }
+  });
+});
+
+describe('an account invented for one night', () => {
+  it('is typable, on every show, however the registry spells its nouns', () => {
+    // The middle of a one-off handle comes off the show's own `fanWords`, and a
+    // show may declare one that is two words: Drag Race says "werk room",
+    // "main stage", "lip sync". Pasted in raw they produced `@main stagetruther`
+    // and `@offlinewerk room` — found by reading one episode's feed, not by any
+    // assertion, because a handle with a space in it is still a string.
+    let rolled = 0;
+    for (const format of Object.keys(SHOWS)) {
+      let seed = 12345;
+      const rng = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+      for (let i = 0; i < 400; i++) {
+        const { handle } = oneOffAccount(rng, 'lurker', format);
+        expect(handle, `${format} invented an untypable handle`).toMatch(/^@[a-z0-9]+$/);
+        rolled++;
+      }
+    }
+    expect(rolled).toBe(400 * Object.keys(SHOWS).length);
   });
 });
 

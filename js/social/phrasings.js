@@ -871,7 +871,7 @@ export const PHRASINGS = {
       timeline: [
         '{subject} has the confidence of a mastermind and the résumé of a coat rack',
         'that smug little victory walk for finishing fourth in a two person job',
-        '{subject} outfit is fighting harder than {subject} did all episode',
+        "{subject}'s outfit is fighting harder than {subject} did all episode",
         'all that posing and the camera still found a more interesting wall',
         '{subject} hair has survived more adversity than {subject} game',
         'a face made for reaction shots and not one correct reaction all season',
@@ -909,7 +909,7 @@ export const PHRASINGS = {
         '{subject} and {actor} or i riot',
         'put them in the same scene again, cowards',
         'they have looked at each other twice and i have already picked a name for it',
-        'i am not saying anything, i am just saying watch the two of them at the fire',
+        'i am not saying anything, i am just saying watch the two of them in the background',
         '{subject} and {actor} have more chemistry in one glance than the actual showmance',
       ],
     },

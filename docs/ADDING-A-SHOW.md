@@ -1471,9 +1471,17 @@ for both a played row and a published document, its topics and lines, its
 regular fans and its alumni-host takes. It keeps only the shared topics tagged
 `layer: 'fandom'` in `js/social/topics.js`, which are held neutral for every
 show by `tests/social-packs.test.js`. A show with no pack gets the vote-show
-library unchanged. The Traitors has a pack; **Drag Race does not yet** — its
-reader is still `drEvents` feeding the vote-show topics. Adding a pack is the
-fix for any show whose fandom argues about something other than a vote.
+library unchanged — that library is Total Drama's and Big Brother's game layer,
+and both keep it.
+
+The Traitors and Drag Race both have packs. Each declares `kinds`
+(label/volume/when-in-the-episode/which shared kinds it implies), `records(gs)`
+(the AIRED episodes — an engine's own round array can hold nights that have not
+been shown), `context(source)` (season-level facts off `gs` or off a published
+document, so the played and published paths describe the same night),
+`events(record, meta, { make, ctx })`, its topics, phrasings, aims, regulars and
+host takes. Adding one is the fix for any show whose fandom argues about
+something other than a vote; nothing branches on a slug to do it.
 
 ### 14.11 `\b` inside a template literal is U+0008
 

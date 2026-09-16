@@ -1851,9 +1851,11 @@ const SENTHOME_WRONG = [
 
 // THE HEADLINE THE WHOLE SEASON WAS FOR. Chosen off the record's own word.
 const VERDICT = {
-  traitors: { solo: 'The Traitor Wins', many: 'The Traitors Win',
+  traitors: { solo: 'The Traitor Wins', many: 'The Traitors Win', unmask: true,
+    heading: 'The Castle Was Betrayed',
     kicker: 'The pact was never broken. The castle handed it the box.' },
-  faithfuls: { solo: 'The Faithful Wins', many: 'The Faithful Win',
+  faithfuls: { solo: 'The Faithful Wins', many: 'The Faithful Win', unmask: false,
+    heading: 'The Castle Held',
     kicker: 'Not one cloak left in the room. They found every last one.' },
 };
 
@@ -2501,7 +2503,7 @@ function _buildBeats(v) {
   // A Traitor win is a Traitor UNMASK — the winners wear the pact colour and
   // the robbed Faithful get a reaction, grounded in their having reached the
   // end without ever writing the winning name.
-  const robbedHtml = (side === 'traitors' && v.losers.length)
+  const robbedHtml = (vv.unmask && v.losers.length)
     ? (() => {
       const who = v.losers[_hash(key + '|robbed-who') % v.losers.length];
       const pr = _pron(who);
@@ -2513,8 +2515,7 @@ function _buildBeats(v) {
     })() : '';
   push('money', _card('money', 'The Strongbox', 'read',
     '<div class="lt-verdict" data-side="' + side + '">'
-    + '<div class="lt-verdict-k">' + (side === 'traitors'
-      ? 'The Castle Was Betrayed' : 'The Castle Held') + '</div>'
+    + '<div class="lt-verdict-k">' + vv.heading + '</div>'
     + '<h2 class="lt-verdict-h">' + (solo ? vv.solo : vv.many) + '</h2>'
     + '<div class="lt-verdict-s">' + _esc(vv.kicker) + '</div></div>'
     + '<div class="lt-pot"><span class="lt-pot-n">' + _money(v.pot) + '</span>'

@@ -30,7 +30,7 @@ import { airLabel, ageAt, airKey } from './franchise-calendar.js';
 import { joinOrigin } from './bio.js';
 
 import { RESULT_LABELS } from './dr/grid.js';
-import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs }
+import { SHOWS, DEFAULT_FORMAT, seasonId, showName, showShort, showIcon, showAccent, showWords, exitVerbs, DRAG_FORMAT }
   from './shows.js';
 
 // `short` is the tab label — "TD14", "BB1". These came out of a copy of the
@@ -966,7 +966,7 @@ export function renderArticle(dossier, format, { root = '.', allShows = [] } = {
   //
   // Only on this show. A drag family is not a Total Drama fact and the article
   // is scoped to one show.
-  if (format === 'drag-race' && dossier.dragFamily) {
+  if (format === DRAG_FORMAT && dossier.dragFamily) {
     const g = dossier.dragFamily;
     const rows = g.nodes.map(n => {
       const label = n.slug

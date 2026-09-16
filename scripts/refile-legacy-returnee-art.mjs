@@ -17,6 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SHOWS, formatPrefix } from '../js/shows.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CATALOG = path.join(ROOT, 'assets/avatars/portrait-catalog.json');
@@ -30,7 +31,8 @@ const byId = new Map((db.players || []).map(p => [p.id, p]));
 // The id says which show it belongs to, so it moves with the portrait. Nothing
 // has recorded one yet (checked), but an alias is kept anyway: a cast sitting
 // in somebody's browser may still be holding the old one.
-const ID_FOR = { 'total-drama': 'td-returnee', 'big-brother': 'bb-returnee', traitors: 'tr-returnee' };
+const ID_FOR = Object.fromEntries(
+  Object.keys(SHOWS).map(show => [show, `${formatPrefix(show)}-returnee`]));
 
 const moved = [];
 const kept = [];

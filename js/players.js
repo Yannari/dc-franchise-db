@@ -6,6 +6,7 @@ import {
 } from './avatar-registry.js';
 import { romanticallyCompatible } from './attraction.js';
 import { pronounsOf } from './pronouns-of.js';
+import { DRAG_FORMAT } from './shows.js';
 import { DEFAULT_ROSTER } from './roster-data.js';
 // threatScore and isAllianceBottom read bonds, and read them as a BARE
 // identifier — which worked only because main.js hangs every export on window
@@ -64,7 +65,7 @@ export function romanticCompat(a, b) {
 export function pronouns(nameOrPlayer) {
   const p = typeof nameOrPlayer === 'string' ? players.find(x => x.name === nameOrPlayer) : nameOrPlayer;
   // In drag, every queen is she/her on the main stage.
-  try { if (seasonFormat(seasonConfig) === 'drag-race') return pronounsOf('f'); } catch {}
+  try { if (seasonFormat(seasonConfig) === DRAG_FORMAT) return pronounsOf('f'); } catch {}
   return pronounsOf(p?.gender || 'nb');
 }
 

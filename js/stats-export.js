@@ -4600,7 +4600,7 @@ export function extractLiveSeasonSnapshot() {
   // one show's vocabulary printed over the other.
   const format = seasonFormat(typeof seasonConfig !== 'undefined' ? seasonConfig : null);
   const isBB = format === 'big-brother';
-  const isDrag = format === 'drag-race';
+  const isDrag = format === DRAG_FORMAT;
   const bbStats = (gs.bb && gs.bb.stats) || {};
   /* The running record, taken off the LAST episode because it accumulates —
      every queen's row is the whole season to date, which is what a standings

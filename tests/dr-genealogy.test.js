@@ -166,7 +166,7 @@ describe('where the browser is mounted', () => {
     expect(player).toContain('genealogy-tab.js');
     expect(player).toContain('fam-tree');
     // Only on the show it belongs to.
-    expect(player).toMatch(/format === 'drag-race'\)\s*_renderGenealogy/);
+    expect(player).toMatch(/format === window\.__SHOWS\?\.DRAG_FORMAT\)\s*_renderGenealogy/);
 
     const franchise = read('franchise.html');
     expect(franchise, 'the franchise page is for seasons').not.toContain('genealogy-tab');

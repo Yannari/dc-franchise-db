@@ -24,14 +24,14 @@
 // the parser in current-season.html matches that shape rather than a list of
 // literal names.
 import { gs, seasonConfig, players } from './core.js';
-import { showWords, showName } from './shows.js';
+import { SHOWS, showWords, showName } from './shows.js';
 
 /** The roster header this show uses, in its own vocabulary. */
 export function rosterHeaderFor(format) {
   const w = showWords(format);
   // 'queens' -> STILL IN THE COMPETITION reads wrong; the word is the PLACE
   // the show keeps them, and only Total Drama's is a group of people.
-  const place = { 'big-brother': 'HOUSE', traitors: 'CASTLE', 'drag-race': 'COMPETITION' }[format];
+  const place = SHOWS[format]?.rosterPlace;
   return place ? `STILL IN THE ${place}` : `STILL IN (${String(w.players || 'players').toUpperCase()})`;
 }
 

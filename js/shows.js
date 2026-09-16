@@ -16,6 +16,12 @@ export const SHOWS = {
     prefix: 'td', name: 'Total Drama', short: 'TD', emoji: '🎬', accent: '#7d4cff',
     // Always runnable: this is the engine every other show was grown from.
     runnableFlag: true,
+    // The night this show goes out on (0 = Sunday); js/franchise-calendar.js
+    // dates every episode from it.
+    airNight: 1,
+    // Where the roster header says the cast is still: STILL IN THE <place>.
+    // A camp has none -- its header names the people instead.
+    rosterPlace: null,
     // The season is decided by a body of eliminated players. Not universal:
     // a castle's last table is a decision by the people still sitting at it,
     // so a "Jury votes" column over one is a heading about a body that never
@@ -108,6 +114,8 @@ export const SHOWS = {
     prefix: 'bb', name: 'Big Brother', short: 'BB', emoji: '📹', accent: '#38bdf8',
     // Set at the bottom of js/bb-run.js. Read by formatIsRunnable().
     runnableFlag: '_bbRunnable',
+    airNight: 3,
+    rosterPlace: 'HOUSE',
     hasJury: true,
     roundsPath: 'bb.weeks',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
@@ -176,6 +184,8 @@ export const SHOWS = {
     venue: { label: 'The Castle', icon: '🗡️' },
     // Set at the bottom of js/tr-run.js. Read by formatIsRunnable().
     runnableFlag: '_trRunnable',
+    airNight: 4,
+    rosterPlace: 'CASTLE',
     roundsPath: 'tr.rounds',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
        Declared, because the alternative is every screen asking which array
@@ -282,6 +292,8 @@ export const SHOWS = {
     // Set at the bottom of js/dr-run.js. Absent until that file exists, which
     // is deliberate: the setup screen must refuse a show with no engine.
     runnableFlag: '_drRunnable',
+    airNight: 5,
+    rosterPlace: 'COMPETITION',
     roundsPath: 'dr.episodes',
     /* WHAT SHAPE THIS SHOW'S ROUNDS ARE IN -- see roundShape() below.
        Declared, because the alternative is every screen asking which array

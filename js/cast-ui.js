@@ -9,7 +9,7 @@ import { audio } from './audio.js';
 import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile } from './core.js';
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
-import { SHOWS } from './shows.js';
+import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
 // The drag family is derived from the same rows the tab already saves.
 import { dragRelationsFrom, familiesFromRelations, familyTree, relationsFromRoster } from './dr/family.js';
 import { activeSeasons, franchiseHistorySummary,
@@ -1559,7 +1559,9 @@ export function renderConfig() {
   set('cfg-format', seasonFormat(seasonConfig));
   updateFormatNote();
   window.renderHostOptions?.();
-  set('cfg-host', seasonConfig.host || (seasonFormat(seasonConfig) === 'big-brother' ? 'Valeria' : 'Chris'));
+  // The show's first listed host is its default -- a castle opened on Chris.
+  const _hosts = HOSTS_BY_FORMAT[seasonFormat(seasonConfig)] || HOSTS_BY_FORMAT[DEFAULT_FORMAT];
+  set('cfg-host', seasonConfig.host || _hosts[0].value);
   // The venue list belongs to the show, so it is rebuilt before the value is
   // written back — otherwise a house season is handed a camp.
   window.renderSettingOptions?.();
@@ -1722,7 +1724,7 @@ export function buildKinshipSelect() {
      A term with no axis -- exes, best friends, married, worked together --
      is true of anybody and shown everywhere. */
   const show = seasonConfig.format || 'total-drama';
-  const axis = show === 'drag-race' ? 'drag' : 'blood';
+  const axis = show === DRAG_FORMAT ? 'drag' : 'blood';
   for (const [key, def] of Object.entries(REL_KINSHIP)) {
     if (def.axis && def.axis !== axis) continue;
     const opt = `<option value="${key}">${def.label}</option>`;
@@ -1895,7 +1897,7 @@ export function importDragFamilies({ announce = false } = {}) {
 function renderDragFamilies() {
   const box = document.getElementById('rel-families');
   if (!box) return;
-  const drag = (seasonConfig.format || 'total-drama') === 'drag-race';
+  const drag = (seasonConfig.format || DEFAULT_FORMAT) === DRAG_FORMAT;
   box.style.display = drag ? '' : 'none';
   const btn = document.getElementById('rel-import-fams');
   if (btn) btn.style.display = drag ? '' : 'none';

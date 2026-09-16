@@ -34,8 +34,9 @@ import { PARTNER_COHORTS, cohortLabel, makeoverShows } from './dr/chal/makeover.
 import { JUDGES as DR_JUDGES } from './dr/data/judges.js';
 import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
-import { roundExits, exitVerbs, SHOWS, showWords, DRAG_FORMAT } from './shows.js';
+import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT } from './shows.js';
 import { seasonFormat } from './core.js';
+import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
 
 /**
@@ -264,12 +265,12 @@ function _hubRailFace(name, cast = players) {
  * row IS. Three copies of `ep.format === 'traitors'` is a show list three
  * lines long — see tests/show-list-duplication.test.js.
  */
-const _isCastleRow = ep => !!ep && ep.format === 'traitors';
+const _isCastleRow = ep => !!ep && ep.format === TRAITORS_FORMAT;
 const _isDragRow = ep => !!ep && ep.format === DRAG_FORMAT;
 // Same question for the main stage. A stored drag episode shares none of Total
 // Drama's eighty flags, so running them over it would be eighty reads of
 // fields that are not there; it gets its own card.
-const _isStageRow = ep => !!ep && ep.format === 'drag-race';
+const _isStageRow = ep => !!ep && ep.format === DRAG_FORMAT;
 
 /* And the SEASON-level question, the counterpart of `isTraitorsSeason()`. Asked
    by the live timeline refresh, which is allowed to redraw only for a show
@@ -279,7 +280,7 @@ const _isStageRow = ep => !!ep && ep.format === 'drag-race';
 function _isDragSeason() {
   try {
     return (typeof seasonFormat === 'function'
-      ? seasonFormat(seasonConfig) : seasonConfig && seasonConfig.format) === 'drag-race';
+      ? seasonFormat(seasonConfig) : seasonConfig && seasonConfig.format) === DRAG_FORMAT;
   } catch { return false; }
 }
 
@@ -360,7 +361,7 @@ export function buildHubAftermath(ep) {
   const votesNegated = (ep.idolPlays || []).reduce((sum, play) => sum + Math.max(0, Number(play.votesNegated || 0)), 0);
   const decidingVoters = [...new Set((ep.votingLog || []).filter(vote => eliminated.includes(vote.voted) && !vote.sitdSacrificed).map(vote => vote.voter))];
   let why = eliminatedLabel ? `${eliminatedLabel} received the highest valid total after the ballots were resolved.` : 'The episode ended without a standard elimination vote.';
-  if (seasonFormat(ep) === 'drag-race') {
+  if (seasonFormat(ep) === DRAG_FORMAT) {
     // No vote to explain: the panel ranked the week and the host decided.
     const exits = roundExits(ep, 'drag-race');
     why = ep.dr && ep.dr.finale
@@ -368,7 +369,7 @@ export function buildHubAftermath(ep) {
       : exits.length
         ? exits.map(x => `${x.name} ${x.verb} after the lip sync.`).join(' ')
         : 'Nobody was sent home tonight.';
-  } else if (seasonFormat(ep) === 'traitors') {
+  } else if (seasonFormat(ep) === TRAITORS_FORMAT) {
     const exits = roundExits(ep, 'traitors');
     why = exits.length
       ? exits.map(x => `${x.name} was ${x.verb}.`).join(' ')
@@ -483,7 +484,7 @@ export function buildSeasonHubModel(state = gs, config = seasonConfig, cast = pl
   const groups = !initialized ? []
     /* ONE VENUE, FROM THE FIRST DAY TO THE LAST. No tribes, no merge, and
        therefore never "Merged Cast" — which is what it said. Keyed on the
-       registry declaring a fixed venue rather than on `format === 'traitors'`,
+       registry declaring a fixed venue rather than on `format === TRAITORS_FORMAT`,
        so the werk room gets the same treatment the castle does and a fifth
        show with one room needs nothing here. */
     : _showVenue
@@ -1111,12 +1112,13 @@ window.addEventListener('DOMContentLoaded', () => {
   Promise.all([
     fetch('players_database.json').then(r => r.json()).catch(() => null),
     fetch('seasons_database.json').then(r => r.json()).catch(() => null),
-    fetch('rankings_database.json').then(r => r.json()).catch(() => null),
-    fetch('rankings_bb.json').then(r => r.json()).catch(() => null),
-  ]).then(([players, seasons, rkTd, rkBb]) => {
+    // Every show's board, stamped with its format: fame reads an ARRAY of
+    // boards, and a {show: board} map here was read as one board with no rows.
+    loadRankingBoards().catch(() => []),
+  ]).then(([players, seasons, boards]) => {
     try { if (players) setAlumniDatabase(players); } catch { /* no record, no cameos */ }
     try {
-      setFameContext({ seasons, rankings: { 'total-drama': rkTd, 'big-brother': rkBb } });
+      setFameContext({ seasons, rankings: boards });
     } catch { /* no fame, no guests */ }
   }).catch(() => {});
   fetch('franchise_roster.json')
@@ -2417,7 +2419,7 @@ export function buildEpisodeMap() {
      One elimination per week, plus a week for each free one, minus a week for
      each double, plus the smackdown if it is booked, plus the crowning. */
   const _drFmt = (typeof seasonFormat === 'function'
-    ? seasonFormat(seasonConfig) : seasonConfig.format) === 'drag-race';
+    ? seasonFormat(seasonConfig) : seasonConfig.format) === DRAG_FORMAT;
   if (_drFmt) {
     const size = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4, 'perform-then-lipsync-3': 3 };
     const finale = size[seasonConfig.drFinale] || 4;
@@ -2453,7 +2455,7 @@ export function buildEpisodeMap() {
        actually did — `exits` is who it really removed — so the timeline
        reports that and projects only the weeks still to come. */
     const _drRows = (gs && gs.episodeHistory || [])
-      .filter(r => r && r.num != null && (r.dr || r.format === 'drag-race'))
+      .filter(r => r && r.num != null && (r.dr || r.format === DRAG_FORMAT))
       .sort((a, b) => a.num - b.num);
 
     const eps = [];
@@ -2578,7 +2580,7 @@ export function buildEpisodeMap() {
   // every "N left" wrong from episode two down — which is what the scheduler
   // was showing. The season ends when the room is down to the endgame.
   const _fmt = (typeof seasonFormat === 'function' ? seasonFormat(seasonConfig) : seasonConfig.format);
-  if (_fmt === 'traitors') {
+  if (_fmt === TRAITORS_FORMAT) {
     // ── ONCE PLAYED, READ THE REAL NIGHT, NOT A GUESS ───────────────────
     //
     // A castle is decided in one call and its rows are queued, so after the
@@ -2590,7 +2592,7 @@ export function buildEpisodeMap() {
     // timeline reports what happened; the projection is only for the setup
     // screen, before a single night has been decided.
     const _trRows = [...(gs && gs.episodeHistory || []), ...(gs && gs._trQueue || [])]
-      .filter(r => r && r.num != null && r.format === 'traitors')
+      .filter(r => r && r.num != null && r.format === TRAITORS_FORMAT)
       .sort((a, b) => a.num - b.num);
     if (_trRows.length) {
       const trEps = [];
@@ -5541,15 +5543,15 @@ export async function rebuildSeasonSocial() {
     // yielded nothing worth posting about.
     if (!builtCount) {
       const found = Number(res?.found) || 0;
-      const fmt = res?.format === 'big-brother' ? 'Big Brother' : 'Total Drama';
+      const fmtKey = res?.format || DEFAULT_FORMAT;
+      const fmt = showName(fmtKey);
+      const where = SHOWS[fmtKey]?.roundsPath || 'episodeHistory';
       say(found
         ? `Rebuilt nothing: ${found} episode${found === 1 ? '' : 's'} were read as ${fmt} `
           + `and none of them carried an event worth writing about. If this is the wrong `
           + `show, the season's format is what decides it.`
         : `Rebuilt nothing: no episodes found for ${fmt}. `
-          + (res?.format === 'big-brother'
-            ? 'The house keeps its weeks in gs.bb.weeks — an empty one means the season has no simulated weeks in this save.'
-            : 'The season has no episode history in this save.'));
+          + `This show keeps its rounds in gs.${where}; an empty one means the season has nothing simulated in this save.`);
       saveGameState();
       return;
     }

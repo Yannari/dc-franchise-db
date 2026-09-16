@@ -315,9 +315,19 @@ export function awardShield(holder, teams, ep, rng) {
 let _reads = true;
 export function _setShieldReadsEnabled(on) { _reads = on !== false; }
 
-/** The Shield live tonight, or null. At most one is ever live. */
+/** The first Shield live tonight, or null. See `liveShields` for all of them. */
 export function liveShield(ep) {
-  return (gs.tr?.shields || []).find(s => s.ep === ep && s.outcome === 'pending') || null;
+  return liveShields(ep)[0] || null;
+}
+
+/**
+ * EVERY Shield live tonight. Usually zero or one; Beacon Lighting hands out up
+ * to three in an afternoon, and each is its own ledger record with its own
+ * witnesses. With one Shield every reader below behaves exactly as it did when
+ * only one could exist.
+ */
+export function liveShields(ep) {
+  return (gs.tr?.shields || []).filter(s => s.ep === ep && s.outcome === 'pending');
 }
 
 /**
@@ -343,9 +353,14 @@ export function liveShield(ep) {
  * rng draws whether a Shield exists or not.
  */
 export function shieldSeenBy(traitor, ep) {
-  const s = liveShield(ep);
-  if (!s || s.holder === traitor) return null;
-  return s.witnesses.includes(traitor) ? s.holder : null;
+  return shieldsSeenBy(traitor, ep)[0] || null;
+}
+
+/** Every holder of a live Shield this Traitor watched being won. */
+export function shieldsSeenBy(traitor, ep) {
+  return liveShields(ep)
+    .filter(s => s.holder !== traitor && s.witnesses.includes(traitor))
+    .map(s => s.holder);
 }
 
 /**
@@ -366,8 +381,12 @@ export function shieldSeenBy(traitor, ep) {
  */
 export function shieldEvidence(ep, rng = Math.random, night = null) {
   if (!_reads) return [];
-  const s = liveShield(ep);
-  if (!s) return [];
+  const out = [];
+  for (const s of liveShields(ep)) out.push(..._oneShieldEvidence(s, ep, rng, night));
+  return out;
+}
+
+function _oneShieldEvidence(s, ep, rng, night) {
   const living = gs.activePlayers || [];
   const formed = [];
   // Set on EVERY resolved Shield, including the ones nobody drew anything
@@ -485,14 +504,14 @@ export function shieldEvidence(ep, rng = Math.random, night = null) {
  */
 export function expireShields(ep) {
   if (!gs?.tr) return null;
-  const s = liveShield(ep);
-  if (s) {
+  const live = liveShields(ep);
+  for (const s of live) {
     s.outcome = (gs.tr.blockedMurders || []).some(b => b.ep === ep && b.target === s.holder)
       ? 'blocked' : 'expired';
   }
   if (gs.tr.shieldedThisRound instanceof Set) gs.tr.shieldedThisRound.clear();
   else gs.tr.shieldedThisRound = new Set();
-  return s;
+  return live[0] || null;
 }
 
 // ══════════════════════════════════════════════════════════════════════

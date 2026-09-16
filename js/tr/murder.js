@@ -15,7 +15,7 @@ import { pStats } from '../players.js';
 import { getBond } from '../bonds.js';
 import { livingTraitors, livingFaithfuls } from './roles.js';
 import { murderPreferenceFor, influenceOf } from './state.js';
-import { shieldSeenBy, daggerSeenBy } from './powers.js';
+import { shieldsSeenBy, daggerSeenBy } from './powers.js';
 import { armouryHesitation } from './armoury.js';
 import { pickVariant, buildDeathList, dinnerNeighbours, chapelPlea, dungeonCompanion,
   dungeonVoice, chooseSacrifice, variantLine, PLAIN_SIGHT_METHODS } from './murder-variants.js';
@@ -132,7 +132,8 @@ export function formPreference(traitor, ep, rng = Math.random) {
   const read = ((st.strategic || 5) * 0.6 + (st.intuition || 5) * 0.4) / 10;
   // Read once for the whole scoring loop: it is a property of THIS Traitor's
   // night, not of the candidate.
-  const knownShield = shieldSeenBy(traitor, ep);
+  // Every Shield holder this Traitor watched win one tonight (usually 0 or 1).
+  const knownShields = shieldsSeenBy(traitor, ep);
   // And the same question about the other power: a name this Traitor watched
   // walk back up the stair with a Dagger in their hand, or null. Per Traitor,
   // never per pact — see shieldSeenBy.
@@ -213,7 +214,7 @@ export function formPreference(traitor, ep, rng = Math.random) {
     // badly-reading Traitor cannot scale away. It draws the chosen friend up the
     // list hard enough to usually win the argument in this Traitor's own head.
     if (isSacrifice) score += SACRIFICE_PULL;
-    if (name === knownShield) score -= KNOWN_SHIELD_PENALTY;
+    if (knownShields.includes(name)) score -= KNOWN_SHIELD_PENALTY;
     // THE ARMOURY GROUP, AND THE HESITATION IT BUYS. When the Shield came out
     // of the Armoury the pact does not know WHO has it — only who walked in,
     // which the whole castle watched. So every entrant carries the chance of

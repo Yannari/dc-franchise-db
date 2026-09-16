@@ -1347,6 +1347,19 @@ function _castleRecord(ep, fired) {
       readKind,
       readDoubter: readKind ? _doubter : null,
       window: f.event.window,
+      /* ── WHAT THE EVENT SAID THIS MOMENT WAS ──────────────────────────
+         Every castle event declares its own colour on the branch it took —
+         `{ name, colour }`, the table in js/tr/crowd.js — because the event
+         is the only thing that knows whether somebody was kind, cruel or
+         caught. That declaration was applied to the ledgers and then dropped,
+         so a scene on the row carried no tone at all and the audience feed
+         had no way to tell a defence from a pile-on. Carried here rather than
+         re-derived from the prose: a second classifier over the same moment
+         is a second taxonomy, which is exactly what js/tone.js's own header
+         warns against. Name and colour only — the ledgers keep the rest. */
+      crowd: (Array.isArray(c?.crowd) ? c.crowd : [c?.crowd])
+        .filter(d => d && d.name && d.colour)
+        .map(d => ({ name: d.name, colour: d.colour })),
       family: f.event.family || t.kind,
       eventId: f.event.id,
       branch: (c && c.branch) || null,

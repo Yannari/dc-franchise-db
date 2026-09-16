@@ -125,6 +125,34 @@ describe('the castle reaches the feed as a castle', () => {
     expect(found).toBeGreaterThan(2);
   });
 
+  it('the castle\'s own day reaches the fandom topics, not just the format', () => {
+    /* The pack read the table, the night and the money, and nothing else — so
+       every shared FANDOM topic (kindness noticed, the personality clash, the
+       harassment defence) had one trigger available to it all season:
+       `episode-aired`. The castle fires a dozen scenes a night and every one
+       of them declares its own tone; they were being dropped on the way onto
+       the row. */
+    const kinds = new Set();
+    const topics = new Set();
+    for (const { state } of SEASONS) {
+      for (const rec of episodeRecords(state, F)) {
+        const events = liveEvents(state, rec);
+        for (const e of events) kinds.add(e.kind);
+        for (const p of buildEpisodeFeed(events, { seed: feedSeed(1, rec.episode) })) {
+          topics.add(p.topic);
+        }
+      }
+    }
+    for (const k of ['kindness', 'argument']) {
+      expect(kinds.has(k), `no "${k}" came off four seasons of castle scenes`).toBe(true);
+    }
+    // And the topics that could not fire before now do.
+    const reachable = ['kindness-noticed', 'personality-clash', 'harassment-defence']
+      .filter(t => topics.has(t));
+    expect(reachable.length, `none of the day's topics fired: ${[...topics].join(', ')}`)
+      .toBeGreaterThan(0);
+  });
+
   it('every post, host line and comment speaks the castle, and no shared game topic is drawn', () => {
     const fandom = new Set(TOPICS.filter(t => t.layer === 'fandom').map(t => t.id));
     const mine = new Set(pack.topics.map(t => t.id));

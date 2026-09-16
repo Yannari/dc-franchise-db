@@ -45,6 +45,48 @@ const KINDS = {
   'murder-blocked':     { label: 'Shield held', volume: 1.6, at: 0.94 },
 };
 
+/* ── THE SHARED KINDS THIS SHOW ALSO EMITS ───────────────────────────
+   The castle's day (see `events`) produces `kindness`, `argument` and
+   `ganging-up` — the shared library's kinds, which therefore carry the shared
+   library's ROOM TAKES: "a camp that never argues is a camp where somebody is
+   being managed", said about a castle, fourteen times in four seasons.
+   `chat.js` steps aside from the character, lens and general pools for any
+   kind the pack speaks to, so speaking to these three is what keeps the other
+   shows' words out of the alumni room on a night that is all day and no
+   format. */
+const DAY_TAKES = {
+  kindness: [
+    ({ s }) => `${s} did something decent today, and in here that is worth noticing out loud.`,
+    ({ s }) => `Kindness in that castle is never only kindness. It is also a vote you might get later.`,
+    () => `Somebody was gentle with somebody else today, and half that room clocked it as strategy.`,
+    ({ s }) => `I would take ${s} at face value. Not everybody in there is playing every minute.`,
+    () => `The small kindnesses are what people remember at the final table, for better and worse.`,
+    () => `You need one person in there who is not working an angle. Today they had one.`,
+    ({ s }) => `That will read as sincere to the room, and it probably was. Both can be true.`,
+    () => `Being liked is protection in this game, and the ones who are liked honestly last longest.`,
+  ],
+  argument: [
+    ({ s }) => `${s} lost patience today, and everybody in that room wrote it down.`,
+    () => `An argument in there is never about the thing it is about.`,
+    ({ s }) => `Snapping does not make ${s} a Traitor. It does make ${s} memorable at the wrong moment.`,
+    () => `Tempers go at this stage. Too many people, not enough sleep, nobody telling the truth.`,
+    () => `Honestly? Good. A castle where nobody argues is a castle where somebody is running the room.`,
+    ({ s }) => `The room will read that as guilt. It is usually exhaustion.`,
+    () => `The ones who keep their voice down are the ones I would be watching.`,
+    ({ s }) => `That is the kind of flare-up that gets a name said at the table two days later.`,
+  ],
+  'ganging-up': [
+    ({ s }) => `The room turned on ${s} today, and it did not need much to get going.`,
+    () => `A pile-on tells you nothing about who is lying and everything about who is frightened.`,
+    ({ s }) => `Once a room decides, defending yourself sounds like confessing. ${s} is finding that out.`,
+    () => `Watch who started it and then went quiet. That is the one worth your attention.`,
+    ({ s }) => `I have been the name everybody agreed on. You do not sleep much after that.`,
+    () => `A castle that hunts as a pack is a castle doing the Traitors' work for them.`,
+    () => `Nobody in that group is thinking. They are all just relieved it is not them.`,
+    ({ s }) => `If ${s} survives tonight, that is the moment the season turns for somebody.`,
+  ],
+};
+
 /** What each topic is about, and when it fires. Words in traitors-words.js. */
 const TOPICS = [
   { id: 'murder-reaction', stream: 'both', weight: 1.1,
@@ -281,6 +323,43 @@ function events(record, meta, { make, ctx = context(null) } = {}) {
         : 'the Traitors struck and a Shield held' }));
   }
 
+  /* ── THE DAY THE CASTLE SPENT, as the audience read it ───────────────
+     Everything above is the format: the table, the night, the money. This is
+     the rest of the show — a defence, a pile-on, somebody caught sweating —
+     and it reaches the shared FANDOM topics (kindness noticed, the
+     personality clash, the harassment defence) which otherwise had nothing to
+     fire on but `episode-aired`.
+     The tone is the event's OWN declaration, carried on the scene by
+     `_castleRecord`; nothing here reads the prose. `masterful` is deliberately
+     unmapped — a Traitor being good at being a Traitor is this show's own
+     subject and `traitor-rating` already has it — and so is `wronged`, which
+     is paid at a banishment rather than in a scene.
+     CAPPED, because a castle night fires a dozen scenes and the feed would
+     spend the episode on them: the loudest few, one per person. */
+  const TONE_KIND = {
+    kind: 'kindness', selfless: 'kindness', heroic: 'kindness',
+    cruel: 'ganging-up',
+    selfish: 'argument', exposed: 'argument', cowardly: 'argument',
+  };
+  const seen = new Set();
+  let scenesUsed = 0;
+  for (const scene of record.tr?.castle?.scenes || []) {
+    if (scenesUsed >= 4) break;
+    for (const decl of scene.crowd || []) {
+      const kind = TONE_KIND[decl.colour];
+      if (!kind || seen.has(decl.name)) continue;
+      seen.add(decl.name);
+      scenesUsed++;
+      // The other person in the scene, where there was one: a defence and a
+      // pile-on are both about a pair, and a phrasing that can name both is
+      // the half of the library worth reading.
+      const other = [scene.speaker, scene.respondent, ...(scene.actors || [])]
+        .find(n => n && n !== decl.name) || null;
+      out.push(make(kind, { subject: decl.name, actor: other, jitter: jitter() }));
+      break;
+    }
+  }
+
   // ── the end ──
   const endgame = record.tr?.endgame;
   if (record.tr?.finale || endgame) {
@@ -306,5 +385,8 @@ export default {
   archetypePull: ARCHETYPE_PULL,
   personas: PERSONAS,
   hostTakes: HOST_TAKES,
-  chatTakes: CHAT_TAKES,
+  // The format's own moments, plus the three shared kinds the castle's day
+  // emits — see DAY_TAKES. Without those three the room reaches past the pack
+  // for them and speaks another show.
+  chatTakes: { ...CHAT_TAKES, ...DAY_TAKES },
 };

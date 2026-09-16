@@ -164,4 +164,33 @@ describe('persistence', () => {
     expect(gsRef.episodeHistory.slice(0, 3).map(e => e.dr.call.win[0]).join(','),
       'the rebuild produced a different season').toBe(winners);
   });
+
+  /* THE SAVE AND THE CHECKBOXES, THROUGH THE PLAYED PATH. Every other save
+     test calls playDragSeason directly; this is the route the page takes. */
+  it('a Beaver season played from the page campaigns in Untucked, after the call', () => {
+    stage({ drSave: 'beaver' });
+    let hold = null;
+    for (let i = 0; i < 20 && !hold; i++) {
+      const row = simulateDragEpisode();
+      if (!row) break;
+      if (row.dr.save?.hold) hold = row;
+    }
+    expect(hold, 'no beaver night in a played season').toBeTruthy();
+    const steps = hold.dr.scenes.map(x => x.step);
+    expect(steps.indexOf('results')).toBeLessThan(steps.indexOf('untucked'));
+    const camp = hold.dr.scenes.filter(x => x.data?.campaign);
+    expect(camp.length).toBeGreaterThan(3);
+    for (const x of camp) expect(x.step).toBe('untucked');
+  });
+
+  it('the Reunion checkbox gives a played season its reunion', () => {
+    stage({ drReunion: true });
+    const rows = [];
+    for (let i = 0; i < 25; i++) {
+      const row = simulateDragEpisode();
+      if (!row) break;
+      rows.push(row);
+    }
+    expect(rows.some(r => r.dr?.reunion), 'no reunion episode').toBe(true);
+  });
 });

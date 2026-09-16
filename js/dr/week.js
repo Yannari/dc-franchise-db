@@ -52,12 +52,19 @@ import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
 import { familyForChallenge } from './data/maxi-performance.js';
 import { chooseResultOrder } from './data/results-order.js';
+import { saveKind, saveLiveTonight, holderSave, holderEffects, luckSave, luckEffects } from './saves.js';
+import { SAVE_BEATS, fillSave, pickSave } from './data/save-beats.js';
+import { rngFor } from './rng.js';
 
 /** The running order. A scene's `step` is always one of these. */
 export const SCENE_STEPS = [
   // The premiere only, and first: the door opens before anything else does.
   'arrivals',
-  'cold-open', 'werk-morning', 'mini', 'maxi-announce', 'choice', 'prep',
+  /* `save-intro` is the season's save being explained, handed out or retired
+     (js/dr/saves.js). `save-hold` is a winner saving one of the bottom three,
+     between the call and the song; `save-luck` is a lip sync loser trying her
+     luck, between the song and the goodbye. */
+  'cold-open', 'werk-morning', 'save-intro', 'mini', 'maxi-announce', 'choice', 'prep',
   /* THE NUMBER COMES BEFORE THE WALK. `maxi-main` sat after `runway` here,
      so a rusical read as: the panel sits, the queens walk the category, and
      THEN they perform the show. The screens were already right — they follow
@@ -67,7 +74,7 @@ export const SCENE_STEPS = [
      those scenes to the episode writer verbatim, in this order. The brief
      described the runway before the performance it was reacting to. */
   'maxi-pre', 'werk-elim-day', 'main-stage', 'maxi-main', 'runway',
-  'critiques', 'untucked', 'results', 'lipsync', 'exit',
+  'critiques', 'untucked', 'results', 'save-hold', 'lipsync', 'save-luck', 'exit',
 ];
 
 /* HOW MUCH TELEVISION EACH ARCHETYPE IS, which is a different question from
@@ -159,6 +166,38 @@ export function runDragWeek(state, cfg, ctx) {
      entrances are the opening. */
   if (!isPremiere) say('cold-open', 'cold-open', { gone });
   say('werk-morning', 'werk-morning', { living: [...living] });
+
+  /* ── THE SEASON'S SAVE, IF IT HAS ONE ── js/dr/saves.js
+     Its own dice, split off the week's with ONE draw and only on a season
+     that plays a save, so every other season replays exactly as before. */
+  const saves = state.saves || null;
+  const saveMeta = saves ? saveKind(saves.kind) : null;
+  const saveRng = saveMeta ? rngFor(Math.floor(rng() * 4294967296)) : null;
+  const saveLine = (list, vars) => fillSave(pickSave(list, saveRng), vars);
+  const saveScene = (step, kind, data, text) =>
+    scenes.push({ step, kind: `save:${kind}`, data: { save: saves.kind, ...data }, text });
+  if (saveMeta) {
+    if (saves.kind === 'chocolate') {
+      /* A BAR FOR EVERY QUEEN IN THE ROOM WHO HAS NEVER HAD ONE. A split
+         premiere hands them out over two nights; a returning queen opened
+         hers on the way out and does not get another. */
+      const fresh = living.filter(n => !saves.handed.includes(n) && !saves.opened.includes(n));
+      if (fresh.length) {
+        saves.handed.push(...fresh);
+        saveScene('save-intro', 'handout', { players: fresh.slice(0, 2), handedTo: fresh },
+          saveLine(SAVE_BEATS.intro.chocolate, {}));
+      }
+    } else if (saves.kind === 'tank' && !saves.retired && living.length <= saves.retireAt
+      && saves.introduced) {
+      saves.retired = true;
+      saveScene('save-intro', 'retire', { dunks: saves.dunks },
+        saveLine(SAVE_BEATS.retire, {}));
+    } else if (!saves.introduced) {
+      saves.introduced = true;
+      saveScene('save-intro', 'intro', { levers: saves.levers || null },
+        saveLine(SAVE_BEATS.intro[saves.kind], { n: saves.levers }));
+    }
+  }
 
   // ── THE ROOM ──────────────────────────────────────────────────────
   //
@@ -666,9 +705,17 @@ export function runDragWeek(state, cfg, ctx) {
      and saves one of them on the stage, which is what `atRisk`/BTM is and the
      only thing that makes that call reachable at all. Left to the schedule
      rather than rolled here, so a season can be replayed. */
+  /* A HOLDER SAVE NEEDS A BOTTOM THREE AND A WINNER, so it is decided before
+     the call rather than after it. Not on a night whose shape already says
+     something else about who sings. */
+  const holderLive = saveMeta?.mode === 'holder' && !M.tournamentExit
+    && saveLiveTonight(saves, {
+      living: living.length, epNum: cfg.num,
+      blocked: !!(cfg.noElimination || cfg.legacy || cfg.doubleElimination),
+    });
   const call = callWeek(bend, {
     castSize: living.length, immune,
-    bottomNamed: cfg.bottomNamed || (cfg.bottomThree ? 3 : 2),
+    bottomNamed: holderLive ? 3 : (cfg.bottomNamed || (cfg.bottomThree ? 3 : 2)),
     teamJudged: M.teamJudged,
     teams: assignment.teams,
     bestTeam: M.bestTeam,
@@ -851,7 +898,46 @@ export function runDragWeek(state, cfg, ctx) {
       widened++;
     }
   }
-  if (cfg.tripleOnTie && pool.length && call.bottom.length === 2 && living.length > 4) {
+  /* ── THE HOLDER SPENDS IT ──
+     The host named three; the winner (or whoever she handed the baguette to)
+     saves one of them, and the other two sing. `callAtCall` keeps all three
+     in the bottom, because that is what the call screen and the critiques are
+     about — the save has not happened yet when they are said. */
+  let holderRes = null;
+  if (holderLive && call.win.length && !topTwoSing) {
+    const named = [...call.atRisk, ...call.bottom];
+    holderRes = holderSave({
+      saves, winner: call.win[0], pool: named, living,
+      state, players, bond: ctx.bond, rng: saveRng,
+    });
+  }
+  if (holderRes) {
+    callAtCall = {
+      ...call,
+      win: [...call.win], high: [...call.high], low: [...call.low],
+      atRisk: [], bottom: [...holderRes.pool], safe: [...call.safe],
+    };
+    call.atRisk = [holderRes.saved];
+    call.bottom = [...holderRes.singers];
+    saves.uses.push({ ep: cfg.num, holder: holderRes.holder, saved: holderRes.saved });
+    const fx = holderEffects(holderRes, ctx.bond);
+    applyEventLike(fx);
+    werkEvents.push({ type: `save:${saves.kind}`, players: [holderRes.holder, holderRes.saved], ...fx, data: {} });
+    const [c, d] = holderRes.singers;
+    const vars = { w: holderRes.winner, h: holderRes.holder, s: holderRes.saved, c, d };
+    if (saves.kind === 'baguette') {
+      saveScene('save-hold', 'handoff', { players: [holderRes.winner, holderRes.holder].filter((x, i, a) => a.indexOf(x) === i), kept: holderRes.kept },
+        saveLine(SAVE_BEATS.handoff[holderRes.kept ? 'kept' : 'gave'], vars));
+    }
+    saveScene('save-hold', 'saved', {
+      players: [holderRes.holder, holderRes.saved].filter((x, i, a) => a.indexOf(x) === i),
+      holder: holderRes.holder, saved: holderRes.saved, pool: holderRes.pool, why: holderRes.why,
+    }, saveLine(SAVE_BEATS.saveHold[holderRes.selfSave ? 'self' : holderRes.why], vars));
+    saveScene('save-hold', 'left', { players: holderRes.singers },
+      saveLine(SAVE_BEATS.saveLeft, vars));
+  }
+
+  if (cfg.tripleOnTie && !holderRes && pool.length && call.bottom.length === 2 && living.length > 4) {
     const viewOf = n => (ranking.find(r => r.name === n) || {}).meanRank ?? 0;
     const lowest = pool[pool.length - 1];
     const highestBottom = call.bottom[0];
@@ -882,11 +968,11 @@ export function runDragWeek(state, cfg, ctx) {
      scene, which is the right call for a played season and meant this cost
      the viewer THREE SCREENS with nothing anywhere saying why: no results, no
      lip sync, no exit on any Rate-a-Queen night. */
-  const critiques = cfg.rateAQueen ? [] : critiqueLines({ panel, views, call, entries, rng });
+  const critiques = cfg.rateAQueen ? [] : critiqueLines({ panel, views, call: callAtCall || call, entries, rng });
 
   if (!M.tournamentExit) {
     say('critiques', 'critiques', {
-      call, split, tripled, critiques, twist: cfg.critiqueTwist || null,
+      call: callAtCall || call, split, tripled, critiques, twist: cfg.critiqueTwist || null,
       ...(cfg.rateAQueen ? { rateAQueen: true } : {}),
     });
   }
@@ -1183,6 +1269,45 @@ export function runDragWeek(state, cfg, ctx) {
     say('lipsync', 'lipsync', { lipsync });
   }
 
+  /* ── A LUCK SAVE, AFTER THE HOST HAS SPOKEN ──
+     Only a queen the SONG sent home tries her luck: not one a legacy winner
+     chose, not one a bracket took. She stays on the stage with her bar or at
+     the levers, and if it comes good she is taken off the exit list — so the
+     record below writes her BTM2, which is what she was: in the bottom, lip
+     synced, still here. `lipsync.saved` is how every reader of `loser` tells
+     "lost the song" from "went home". */
+  let luckTries = [];
+  const legacyExit = lipsync?.legacy ? lipsync.eliminated : null;
+  const songLosers = exits.filter(n => n !== legacyExit);
+  if (saveMeta?.mode === 'luck' && lipsync && !M.tournamentExit && songLosers.length
+    && saveLiveTonight(saves, { living: living.length, epNum: cfg.num })) {
+    luckTries = luckSave({ saves, losers: songLosers, rng: saveRng });
+    const saved = luckTries.filter(t => t.saved).map(t => t.queen);
+    if (saved.length) {
+      for (const n of saved) exits.splice(exits.indexOf(n), 1);
+      lipsync.saved = saved;
+    }
+    lipsync.saveTries = luckTries;
+    const fx = luckEffects(luckTries, lipsync.winner);
+    applyEventLike(fx);
+    werkEvents.push({ type: `save:${saves.kind}`, players: luckTries.map(t => t.queen), ...fx, data: {} });
+    for (const t of luckTries) {
+      const vars = { a: t.queen, l: t.lever, n: (t.levers || []).length, w: lipsync.winner };
+      if (t.kind === 'chocolate') {
+        saveScene('save-luck', 'open', { players: [t.queen], golden: t.saved },
+          saveLine(SAVE_BEATS.open[t.saved ? 'golden' : 'plain'], vars));
+      } else {
+        saveScene('save-luck', 'pull', {
+          players: [t.queen], lever: t.lever, levers: t.levers, hit: t.saved,
+        }, saveLine(SAVE_BEATS.pull[t.saved ? 'hit' : 'miss'], vars));
+      }
+      if (t.saved && lipsync.winner && lipsync.winner !== t.queen) {
+        saveScene('save-luck', 'aftermath', { players: [t.queen, lipsync.winner] },
+          saveLine(SAVE_BEATS.aftermath.savedLuck, vars));
+      }
+    }
+  }
+
   // The record, and who is left.
   for (const n of living) {
     /* THE SAME NINE LABELS THE EXPORTER WRITES. This stored `BTM` for the
@@ -1327,7 +1452,18 @@ export function runDragWeek(state, cfg, ctx) {
       callOrder,
       challengeFamily: familyForChallenge(maxi.id).family,
     });
-    for (const sc of stageScenes) scenes.push(sc);
+    /* A QUEEN WHO TRIED HER LUCK AND MISSED says goodbye AFTER the bar or
+       the lever, not before it. Her sashay beats move to the save step; the
+       sort below keeps them under the attempt, which was pushed first. */
+    const unlucky = new Set(luckTries.filter(t => !t.saved).map(t => t.queen));
+    for (const sc of stageScenes) {
+      if (unlucky.size && sc.step === 'lipsync'
+        && /^stage:(lipsync-sashay|sashay-mood|sashay-words)$/.test(sc.kind)
+        && (sc.data?.players || []).some(n => unlucky.has(n))) {
+        sc.step = 'save-luck';
+      }
+      scenes.push(sc);
+    }
 
     // Untucked happens DURING the deliberation, so it is drawn from the call
     // and from who named whom on the stage — not from anything that comes
@@ -1402,7 +1538,7 @@ export function runDragWeek(state, cfg, ctx) {
     }
     const untuckedScenes = runUntucked({
       living, players: ctx.players, state, storylines: state.storylines || [],
-      call, namedOnStage: Object.keys(namedBy), namedBy,
+      call: callAtCall || call, namedOnStage: Object.keys(namedBy), namedBy,
       selfNamed: wsgVotes
         ? Object.entries(wsgVotes).filter(([v, x]) => x && x.target === v).map(([v]) => v)
         : [],
@@ -1564,6 +1700,17 @@ export function runDragWeek(state, cfg, ctx) {
       ...(callAtCall ? { callAtCall } : {}),
       reactions,
       lipsync,
+      /* THE SEASON'S SAVE, AS IT PLAYED TONIGHT. Null on a season without
+         one. `saved` is who it kept — the chart's yellow border reads it.
+         `savesState` is the whole save after tonight, for a season rebuilt
+         from its rows (js/dr-run.js `_stateFromHistory`). */
+      save: saveMeta ? {
+        kind: saves.kind, mode: saveMeta.mode, name: saveMeta.name,
+        hold: holderRes, tries: luckTries,
+        saved: holderRes ? [holderRes.saved] : luckTries.filter(t => t.saved).map(t => t.queen),
+        levers: saves.kind === 'tank' ? { total: saves.levers, left: [...saves.left], retired: saves.retired } : null,
+      } : null,
+      savesState: saves ? JSON.parse(JSON.stringify(saves)) : null,
       ...(M.tournamentExit ? { tournament: M.tournamentExit } : {}),
       events: [...maxiEvents, ...werkEvents],
       werk: werkScenes.map(s2 => ({ id: s2.id, slot: s2.slot, players: s2.players, eligible: s2.eligible })),

@@ -594,7 +594,10 @@ export function rpBuildLipSync(row) {
   /* WHO IS ACTUALLY GOING. `ls.loser` is the engine's word for it, and a
      double shantay has no loser at all — on that night nobody's light goes
      out, which is the whole point of the call. */
-  const goesHome = ls.call === 'double-shantay' ? null : ls.loser;
+  /* AND A QUEEN WHO STILL HAS A BAR TO OPEN OR A LEVER TO PULL is not gone
+     yet — the save screen after this one decides (js/dr/saves.js). */
+  const goesHome = ls.call === 'double-shantay' || (ls.saveTries || []).length
+    ? null : ls.loser;
   const beats = (row.dr.scenes || []).filter(s => s.step === 'lipsync' && s.text);
   const scoreOf = nm => Number(ls.scores?.[nm] ?? ls[nm]?.score) || 0;
 

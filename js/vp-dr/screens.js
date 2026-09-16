@@ -36,6 +36,7 @@ import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } fr
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
+import { rpBuildSaveIntro, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
 import { MAXI_EVENTS } from '../dr/data/maxi-events.js';
 
 /* ── THE REHEARSAL ROOM'S OWN EVENTS, DERIVED ──
@@ -100,6 +101,8 @@ const ICON_PATHS = {
   crown: 'M3 18l-1-11 6 5 4-8 4 8 6-5-1 11zM3 18h18v3H3z',
   bracket: 'M4 5h5v6h5V5h5M4 19h5v-6M14 19h5v-6M9 11h5',
   sofa: 'M3 11a2 2 0 014 0v5H3zM17 11a2 2 0 014 0v5h-4zM7 9a2 2 0 012-2h6a2 2 0 012 2v7H7z',
+  // A golden ticket, for the season's save.
+  ticket: 'M3 7h18v4a2 2 0 000 4v4H3v-4a2 2 0 000-4zM14 7v12',
   heart: 'M12 21C7 17 3 13.5 3 9.5 3 7 5 5 7.5 5c1.5 0 3 .8 4.5 2.5C13.5 5.8 15 5 16.5 5 19 5 21 7 21 9.5 21 13.5 17 17 12 21z',
 };
 
@@ -138,6 +141,12 @@ const SECTIONS = [
   { id: 'dr-werk-morning', icon: icon('room'), label: 'The Werk Room', suffix: 'morning', phase: 'werk', accent: 'dr-a-room',
     opens: ['werk-morning'],
     opensStep: ['werk-morning'], badge: null, title: 'The Werk Room', subtitle: 'morning' },
+  /* ── THE SEASON'S SAVE ── js/dr/saves.js. Three moments, three screens:
+     the twist explained (or the tank retired), a winner saving one of the
+     bottom three before the song, and a loser trying her luck after it. */
+  { id: 'dr-save-intro', icon: icon('ticket'), label: 'The Save', suffix: 'saveintro', phase: 'werk',
+    accent: 'dr-a-room', opens: [], opensStep: ['save-intro'],
+    badge: { text: 'TWIST', color: '#ffed00' }, title: 'The Save', subtitle: 'how it works' },
   { id: 'dr-mini', icon: icon('clock'), label: 'Mini', suffix: 'mini', phase: 'werk', accent: 'dr-a-score',
     opens: ['mini'],
     opensStep: ['mini'], badge: { text: 'MINI', color: '#00E5FF' },
@@ -264,10 +273,16 @@ const SECTIONS = [
   { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
     opens: ['results'],
     opensStep: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
+  { id: 'dr-save-hold', icon: icon('ticket'), label: 'The Save', suffix: 'savehold', phase: 'stage',
+    accent: 'dr-a-room', opens: [], opensStep: ['save-hold'],
+    badge: { text: 'SAVED', color: '#ffed00' }, title: 'The Save', subtitle: 'one of three is saved' },
   { id: 'dr-lipsync', icon: icon('mic'), label: 'Lip Sync', suffix: 'lipsync', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['lipsync'],
     opensStep: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
     title: 'Lip Sync For Your Life', subtitle: 'two queens, one song' },
+  { id: 'dr-save-luck', icon: icon('ticket'), label: 'Last Chance', suffix: 'saveluck', phase: 'lipsync',
+    accent: 'dr-a-lip', opens: [], opensStep: ['save-luck'],
+    badge: { text: 'LUCK', color: '#ffed00' }, title: 'Last Chance', subtitle: 'the bar or the levers' },
   { id: 'dr-exit', icon: icon('door'), label: 'Sashay', suffix: 'exit', phase: 'lipsync', accent: 'dr-a-lip',
     opens: ['exit'],
     opensStep: ['exit'], badge: null,
@@ -702,6 +717,9 @@ const BUILDERS = {
   'dr-untucked': rpBuildUntucked,
   'dr-results': rpBuildResults,
   'dr-lipsync': rpBuildLipSync,
+  'dr-save-intro': rpBuildSaveIntro,
+  'dr-save-hold': rpBuildSaveHold,
+  'dr-save-luck': rpBuildSaveLuck,
   'dr-exit': rpBuildExit,
   /* THE CROWNING HAS ITS OWN SCREEN NOW. It used to share rpBuildExit with
      a weekly sashay, which is why the payoff of a whole season arrived as a

@@ -206,7 +206,44 @@ premiere shape (standard / talent show / design / runway / girl groups /
 split / porkchop), finale shape (top 4 / top 3 / top 2 / perform-then-lip-sync),
 double shantay, double sashay, early-win immunity, triple lip sync on a tie.
 
+### The season's save (`js/dr/saves.js`)
+
+One dropdown on the setup screen, `seasonConfig.drSave`, one save per season.
+Checked against the fandom wikitext, not remembered.
+
+| Save | Source | Who decides | When |
+|---|---|---|---|
+| **Golden Chocolate Bar** `chocolate` | US S14 (Bosco, ep 12) | luck | a queen the lip sync sends home opens her bar; one is golden, saves once |
+| **Badonka Dunk Tank** `tank` | US S17 (Hormona Lisa, Arrietty) | luck | the loser pulls a lever; a miss removes it, a dunk refills the tank. `drTankLevers` (4), retires at `drTankRetire` queens (8) |
+| **Golden Beaver** `beaver` | Canada S4–S6, CvtW S2 | the maxi winner | every week from ep 2 with 5+ queens: a bottom three, she saves one before the song |
+| **Golden Baguette** `baguette` | France S4 | whoever the winner hands it to (herself included) | as the beaver, plus the hand-off |
+
+Rules that bite:
+- **Still no vote.** Canada's All Stars 1 ran the beaver as a room vote; that
+  version is deliberately not built.
+- **A save is a marker, not a result.** A luck save leaves her `BTM2` (she lip
+  synced and stayed); a holder save leaves her `LOW` (named in the bottom and
+  not up for elimination). `row.dr.save.saved` carries who, and the chart draws
+  the fandom's `#ffed00` border from it. Export: `placements[].saved`.
+- **`lipsync.loser` is who lost the SONG.** `lipsync.saved` is who stayed
+  anyway. Every reader that took `loser` to mean "went home" was fixed
+  (results screen, writer brief, `_stateFromHistory`).
+- A holder night freezes `callAtCall` with all three in the bottom — the
+  call, the critiques and Untucked happen before the save.
+- Its own dice (`saveRng`, one draw off the week's stream, only on a save
+  season), so a season with no save replays exactly as before.
+- Three screens (`js/vp-dr/save.js`) on three steps: `save-intro`,
+  `save-hold` (between the call and the song), `save-luck` (between the song
+  and the exit). A queen who tried her luck and missed says goodbye on the
+  luck screen, after the bar.
+- Measured over 30 seasons of 13: chocolate saves 0.77 a season, the tank 2.6
+  (S17 had 2), the baguette's holder saves herself 44% (France: 2 of 5).
+- Lines: `js/dr/data/save-beats.js`.
+
 ### TODO
+
+Four saves shipped outside this list: the chocolate bar, the dunk tank, the
+Golden Beaver and the Golden Baguette (above).
 
 Ordered by what the engine can already carry. Nothing below exists — checked
 for `badge`, `power`, `advantage`, `assassin`, `legacy`, `block`, `wildcard`,

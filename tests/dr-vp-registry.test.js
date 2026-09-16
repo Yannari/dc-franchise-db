@@ -33,8 +33,9 @@ describe('the registry', () => {
      the challenge on those nights, one deciding what the panel hears and the
      other feeding a term into the judging. The count is asserted rather than
      ranged so that adding a screen is a decision somebody made on purpose. */
-  const COUNT = 35;
-  it('is the thirty-five screens, in the running order', () => {
+  /* 38: the season's save added three (intro, hold, luck) — js/vp-dr/save.js. */
+  const COUNT = 38;
+  it('is the thirty-eight screens, in the running order', () => {
     expect(DRAG_SCREENS.length).toBe(COUNT);
     const ids = DRAG_SCREENS.map(s => s.id);
     expect(ids[0]).toBe('dr-arrivals');
@@ -43,6 +44,9 @@ describe('the registry', () => {
     expect(ids).toContain('dr-booth');
     expect(ids).toContain('dr-set');
     expect(ids).toContain('dr-rehearsal');
+    // The save's two stage screens sit either side of the song.
+    expect(ids.indexOf('dr-save-hold')).toBe(ids.indexOf('dr-results') + 1);
+    expect(ids.indexOf('dr-save-luck')).toBe(ids.indexOf('dr-lipsync') + 1);
     expect(new Set(ids).size).toBe(COUNT);
     expect(new Set(DRAG_SCREENS.map(s => s.suffix)).size, 'two screens share a suffix')
       .toBe(COUNT);

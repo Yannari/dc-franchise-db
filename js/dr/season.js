@@ -23,6 +23,7 @@ import { SONGS } from './data/songs.js';
 import { RUNWAY_CATEGORIES } from './data/runways.js';
 import { rngFor, streamFor } from './rng.js';
 import { assignDragFamilies } from './family.js';
+import { initSaves } from './saves.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
 import { judgeViews, panelRanking, hostBend } from './judging.js';
@@ -1194,6 +1195,18 @@ export function playDragSeason({
      in it for the rest of its run. */
   if (!resumeAt || !Array.isArray(state.storylines) || !state.storylines.length) {
     state.storylines = assignStorylines({ cast, state, bond, rng });
+  }
+
+  /* THE SEASON'S SAVE (js/dr/saves.js), drawn from its own stream so the
+     golden bar does not move when anything else about the season does. A
+     resumed season keeps the one it had — the tank remembers its levers —
+     unless the author has since picked a different save. */
+  const saveId = config.drSave && config.drSave !== 'none' ? config.drSave : null;
+  if ((state.saves?.kind || null) !== saveId) {
+    state.saves = saveId ? initSaves({
+      kind: saveId, cast: [...state.castOrder], rng: streamFor(seed, 'season-save'),
+      levers: config.drTankLevers, retireAt: config.drTankRetire,
+    }) : null;
   }
 
   const finaleType = config.drFinale || 'top4';

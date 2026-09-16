@@ -1,0 +1,216 @@
+// ══════════════════════════════════════════════════════════════════════
+// tests/dr-saves.test.js — the chocolate bar, the dunk tank, the beaver
+// and the baguette (js/dr/saves.js)
+// ══════════════════════════════════════════════════════════════════════
+import { describe, expect, it } from 'vitest';
+import { playDragSeason } from '../js/dr/season.js';
+import { rngFor } from '../js/dr/rng.js';
+import { initSaves, luckSave, holderSave, SAVE_KINDS } from '../js/dr/saves.js';
+import { dragScreens, sceneSections } from '../js/vp-dr/screens.js';
+
+const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
+  'loyalty', 'boldness', 'intuition', 'temperament'];
+const ARCH = ['villain', 'hero', 'floater', 'wildcard', 'goat', 'schemer', 'mastermind', 'underdog'];
+
+function cast(n, seed) {
+  const rng = rngFor(seed * 7919 + 13); const r = () => 1 + Math.floor(rng() * 10);
+  return Array.from({ length: n }, (_, i) => ({
+    name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+    archetype: ARCH[i % ARCH.length], age: 22 + i,
+    stats: Object.fromEntries(STATS.map(k => [k, r()])),
+    drag: { acting: r(), comedy: r(), dance: r(), design: r(), runway: r(), lipsync: r(), singing: r() },
+  }));
+}
+
+// A REAL bond store: without one every bond-gated decision reads zero.
+function season(seed, config = {}) {
+  const bonds = {}; const key = (a, b) => [a, b].sort().join('|');
+  const res = playDragSeason({
+    cast: cast(13, seed), seed: seed * 101 + 7, config,
+    bond: (a, b) => bonds[key(a, b)] || 0,
+    addBond: (a, b, d) => { const k = key(a, b); bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d)); },
+    popDelta: () => {},
+  });
+  return { ...res, bonds };
+}
+
+const weekly = res => res.rows.filter(r => r.dr && !r.dr.finale);
+const SEEDS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+describe('a season with no save', () => {
+  it('carries nothing, and "none" is the same season as unset', () => {
+    const a = season(4);
+    const b = season(4, { drSave: 'none' });
+    expect(a.rows.every(r => r.dr.save == null && r.dr.savesState == null)).toBe(true);
+    expect(JSON.stringify(b.rows.map(r => r.dr.record)))
+      .toBe(JSON.stringify(a.rows.map(r => r.dr.record)));
+  });
+});
+
+describe('the golden chocolate bar', () => {
+  it('saves at most once a season, and the saved queen is BTM2 and still there', () => {
+    let found = 0;
+    for (const s of SEEDS) {
+      const res = season(s, { drSave: 'chocolate' });
+      const saves = weekly(res).flatMap(r => r.dr.save?.saved || []);
+      expect(saves.length, `seed ${s}`).toBeLessThanOrEqual(1);
+      found += saves.length;
+      const opened = weekly(res).flatMap(r => (r.dr.save?.tries || []).map(t => t.queen));
+      expect(new Set(opened).size, 'a bar was opened twice').toBe(opened.length);
+      for (const r of weekly(res)) {
+        for (const n of r.dr.save?.saved || []) {
+          expect(r.exits.map(x => x.name)).not.toContain(n);
+          expect(r.dr.record[n].at(-1)).toBe('BTM2');
+          expect(r.dr.living).toContain(n);
+          expect(r.dr.lipsync.saved).toContain(n);
+        }
+      }
+    }
+    expect(found, 'the golden bar never turned up in twelve seasons').toBeGreaterThan(0);
+  });
+
+  it('hands every queen in the room a bar on her first night', () => {
+    const res = season(2, { drSave: 'chocolate' });
+    const first = res.rows[0].dr.scenes.find(x => x.kind === 'save:handout');
+    expect(first?.text).toBeTruthy();
+    expect(first.data.handedTo).toEqual(res.rows[0].dr.roomAtStart);
+  });
+});
+
+describe('the dunk tank', () => {
+  it('removes a missed lever, refills on a dunk, and stops once retired', () => {
+    let dunks = 0;
+    for (const s of SEEDS) {
+      const res = season(s, { drSave: 'tank', drTankLevers: 4, drTankRetire: 8 });
+      let inPlay = [1, 2, 3, 4];
+      let retiredAt = null;
+      for (const r of weekly(res)) {
+        if (r.dr.scenes.some(x => x.kind === 'save:retire')) retiredAt = r.num;
+        for (const t of r.dr.save?.tries || []) {
+          expect(retiredAt, 'a lever was pulled after the tank retired').toBeNull();
+          expect(t.levers).toEqual(inPlay);
+          expect(inPlay).toContain(t.lever);
+          if (t.saved) { dunks++; inPlay = [1, 2, 3, 4]; } else inPlay = inPlay.filter(x => x !== t.lever);
+        }
+        if (retiredAt === r.num) expect(r.dr.roomAtStart.length).toBeLessThanOrEqual(8);
+      }
+    }
+    expect(dunks, 'nobody was ever dunked').toBeGreaterThan(0);
+  });
+
+  it('keeps the queen a dunk saved and sends nobody else home for her', () => {
+    for (const s of SEEDS) {
+      for (const r of weekly(season(s, { drSave: 'tank' }))) {
+        const tries = r.dr.save?.tries || [];
+        if (tries.length === 1 && tries[0].saved) expect(r.exits).toEqual([]);
+      }
+    }
+  });
+});
+
+describe('the holder saves', () => {
+  for (const kind of ['beaver', 'baguette']) {
+    it(`${kind}: one of three is saved before the song, and the other two sing`, () => {
+      let nights = 0;
+      for (const s of SEEDS.slice(0, 6)) {
+        for (const r of weekly(season(s, { drSave: kind }))) {
+          const h = r.dr.save?.hold;
+          if (!h) continue;
+          nights++;
+          expect(r.num).toBeGreaterThanOrEqual(2);
+          expect(h.pool).toHaveLength(3);
+          expect(h.winner).toBe(r.dr.call.win[0]);
+          expect(h.pool).toContain(h.saved);
+          expect(r.dr.call.atRisk).toEqual([h.saved]);
+          expect([...r.dr.call.bottom].sort()).toEqual([...h.singers].sort());
+          expect(r.dr.lipsync.queens.slice().sort()).toEqual([...h.singers].sort());
+          expect(r.dr.record[h.saved].at(-1)).toBe('LOW');
+          // The call screen is drawn before the save: all three in the bottom.
+          expect([...r.dr.callAtCall.bottom].sort()).toEqual([...h.pool].sort());
+          if (kind === 'beaver') expect(h.holder).toBe(h.winner);
+          if (h.selfSave) expect(h.pool).toContain(h.holder);
+          expect(r.dr.scenes.filter(x => x.step === 'save-hold' && x.text).length).toBeGreaterThanOrEqual(2);
+        }
+      }
+      expect(nights).toBeGreaterThan(20);
+    });
+  }
+
+  it('a nice archetype never saves for strategy', () => {
+    const state = { record: {} };
+    const players = {
+      H: { archetype: 'hero', stats: { strategic: 10, loyalty: 1 } },
+      A: { drag: { lipsync: 9 } }, B: { drag: { lipsync: 2 } }, C: { drag: { lipsync: 5 } },
+    };
+    for (let i = 0; i < 40; i++) {
+      const res = holderSave({
+        saves: { kind: 'beaver' }, winner: 'H', pool: ['A', 'B', 'C'], living: ['H', 'A', 'B', 'C', 'D'],
+        state, players, bond: () => 0, rng: rngFor(i * 7919 + 13),
+      });
+      expect(res.why).not.toBe('strategy');
+    }
+  });
+
+  it('moves bonds: the saved queen warms to the holder, the two singers cool', () => {
+    const res = season(3, { drSave: 'beaver' });
+    const r = weekly(res).find(x => x.dr.save?.hold);
+    const ev = r.dr.events.find(e => e.type === 'save:beaver');
+    const h = r.dr.save.hold;
+    expect(ev.bond.some(([a, b, d]) => a === h.holder && b === h.saved && d > 0)).toBe(true);
+    for (const q of h.singers) {
+      expect(ev.bond.some(([a, b, d]) => a === h.holder && b === q && d < 0)).toBe(true);
+    }
+    expect(Object.keys(res.bonds).length).toBeGreaterThan(0);
+  });
+});
+
+describe('the engine pieces', () => {
+  it('a tank with one lever left always dunks', () => {
+    const saves = initSaves({ kind: 'tank', rng: rngFor(5), levers: 3 });
+    saves.left = [saves.dunk];
+    const [t] = luckSave({ saves, losers: ['Q'], rng: rngFor(9) });
+    expect(t.saved).toBe(true);
+    expect(saves.left).toHaveLength(3);
+  });
+
+  it('every kind explains itself in at least two sentences', () => {
+    for (const [id, k] of Object.entries(SAVE_KINDS)) {
+      expect(k.desc.length, id).toBeGreaterThan(200);
+      expect(k.desc.split('. ').length, id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('replays: the same seed plays the same saves', () => {
+    for (const kind of Object.keys(SAVE_KINDS)) {
+      const a = season(6, { drSave: kind }).rows.map(r => r.dr.save);
+      const b = season(6, { drSave: kind }).rows.map(r => r.dr.save);
+      expect(JSON.stringify(b), kind).toBe(JSON.stringify(a));
+    }
+  });
+});
+
+describe('the viewing party', () => {
+  it('draws every save scene on a save screen, in the running order', () => {
+    for (const kind of Object.keys(SAVE_KINDS)) {
+      for (const r of weekly(season(2, { drSave: kind }))) {
+        const secs = sceneSections(r);
+        const html = dragScreens(r).map(s => s.html).join('\n');
+        for (const sc of r.dr.scenes.filter(x => /^save-/.test(x.step) && x.text)) {
+          const home = [...secs].find(([, list]) => list.includes(sc))?.[0];
+          expect(home, `${kind} ep ${r.num} ${sc.kind}`).toMatch(/^dr-save-/);
+          const slice = sc.text.slice(0, 30).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          expect(html, `${kind} ep ${r.num}: "${sc.text.slice(0, 40)}" is not drawn`).toContain(slice);
+        }
+        const ids = dragScreens(r).map(s => s.id);
+        if (ids.includes('dr-save-hold')) {
+          expect(ids.indexOf('dr-save-hold')).toBeGreaterThan(ids.indexOf('dr-results'));
+          expect(ids.indexOf('dr-save-hold')).toBeLessThan(ids.indexOf('dr-lipsync'));
+        }
+        if (ids.includes('dr-save-luck')) {
+          expect(ids.indexOf('dr-save-luck')).toBeGreaterThan(ids.indexOf('dr-lipsync'));
+        }
+      }
+    }
+  });
+});

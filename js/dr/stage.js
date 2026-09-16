@@ -770,8 +770,13 @@ export function renderStageBeats({
        THE OLD BEAT IS THE FALLBACK, not a duplicate. It fires only while the
        named ones are unwritten, so the screen never loses its verdict and
        never prints both versions of it. */
-    const gone = new Set(lipsync.losers || (lipsync.loser ? [lipsync.loser] : []));
-    const stayed = (lipsync.queens || []).filter(n => !gone.has(n));
+    /* A QUEEN A LUCK SAVE KEPT (js/dr/saves.js) lost the song and is neither
+       told to stay nor to sashay here: the host sends her to her bar or to
+       the levers, and the save screen says the rest. */
+    const luckSaved = new Set(lipsync.saved || []);
+    const gone = new Set((lipsync.losers || (lipsync.loser ? [lipsync.loser] : []))
+      .filter(n => !luckSaved.has(n)));
+    const stayed = (lipsync.queens || []).filter(n => !gone.has(n) && !luckSaved.has(n));
     /* ONLY THE ORDINARY CALL IS REPLACED. `lipsync-call` has tiers for the
        nights that are not "one stays and one goes" — a double shantay, a
        double elimination, a triple, a scheduled no-elimination — and each of

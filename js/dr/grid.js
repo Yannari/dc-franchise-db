@@ -29,6 +29,7 @@
 // A row that stops when she goes home cannot be drawn: the columns after it
 // have nothing to sit above, and the chart loses the alignment that is its
 // entire reason for existing. A queen already gone is `OUT`: blank, present.
+import { SAVE_KINDS } from './saves.js';
 import { seasonRounds, showWords, DRAG_FORMAT } from '../shows.js';
 import { avatarUrl } from '../avatar-registry.js';
 
@@ -170,6 +171,7 @@ function fromDocument(doc, format) {
         storyline: cell.storyline || null,
         lipsync: e.lipsync?.song || null,
         exitVerb: exit?.verb || null,
+        saved: cell.saved || null,
       };
     }),
   }));
@@ -279,6 +281,8 @@ function fromRows(rows, format) {
           storyline: arc?.variantName || arc?.arc || null,
           lipsync: r?.dr?.lipsync?.song || null,
           exitVerb: exit?.verb || null,
+          // Kept by the season's save that week (js/dr/saves.js).
+          saved: (r?.dr?.save?.saved || []).includes(n) ? r.dr.save.kind : null,
         };
       }),
     };
@@ -380,12 +384,15 @@ export function buildTrackRecordGrid(source, {
       const notes = [
         c.mini ? 'Mini Chall. Winner' : '',
         c.role === 'lead' ? 'Team Captain' : '',
+        c.saved ? (SAVE_KINDS[c.saved]?.chartNote || 'Saved') : '',
       ].filter(Boolean);
       const body = esc(meta.label)
         + (c.result !== 'OUT' && notes.length
           ? `<i class="dr-tr-note">${notes.map(esc).join('<br>')}</i>` : '');
       return `<td class="dr-tr-cell" data-result="${esc(c.result)}" data-episode="${c.episode}"`
-        + ` style="background:${meta.color};color:${meta.ink}"`
+        + ` style="background:${meta.color};color:${meta.ink}${
+          /* The fandom chart's own mark for a queen a save kept: #ffed00. */
+          c.saved && c.result !== 'OUT' ? ';box-shadow:inset 0 0 0 3px #ffed00' : ''}"`
         + (label ? ` title="${esc(label)}"` : '')
         + (tip ? ` data-tip="${esc(tip)}"` : '')
         + `>${body}</td>`;

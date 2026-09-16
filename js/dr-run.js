@@ -544,6 +544,9 @@ function _config() {
     drDoubleSashay: seasonConfig.drDoubleSashay,
     drImmunity: seasonConfig.drImmunity,
     drTripleLipsync: seasonConfig.drTripleLipsync,
+    drSave: seasonConfig.drSave || 'none',
+    drTankLevers: seasonConfig.drTankLevers,
+    drTankRetire: seasonConfig.drTankRetire,
     /* THE SMACKDOWN, WHICH WAS UNREACHABLE. js/dr/season.js has read
        `config.drSmackdown` since it was written and this function never
        passed it, so the whole Lalaparuza reunion -- engine, challenge module
@@ -929,8 +932,10 @@ export function _stateFromHistory() {
       const ls = row.dr.lipsync || {};
       for (const n of call.bottom || []) {
         if (!state.record[n]) continue;
-        state.record[n].push(ls.loser === n
-          || (ls.winner && ls.winner !== n && (ls.queens || []).includes(n))
+        // A queen a luck save kept lost the song and stayed: BTM2.
+        const kept = (ls.saved || []).includes(n);
+        state.record[n].push(!kept && (ls.loser === n
+          || (ls.winner && ls.winner !== n && (ls.queens || []).includes(n)))
           ? 'ELIM' : 'BTM2');
         placed.add(n);
       }
@@ -966,6 +971,10 @@ export function _stateFromHistory() {
      against a difference of doubles. */
   if (last.dr.popularity) state.popularity = clone(last.dr.popularity);
   if (last.dr.families) state.dragFamilies = clone(last.dr.families);
+  /* THE SEASON'S SAVE AS THE LAST AIRED NIGHT LEFT IT — the bars opened,
+     the levers still in play (js/dr/saves.js). A season with no save wrote
+     null, and gets nothing. */
+  if (last.dr.savesState) state.saves = clone(last.dr.savesState);
 
   /* ── AND THE REST IS WALKED FORWARD ──
      `memory` is a pure function of the panel and the call, both of which every

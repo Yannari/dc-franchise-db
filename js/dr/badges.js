@@ -39,6 +39,16 @@ export const DR_BADGES = [
     when: r => (r?.dr?.bend || []).some(b => b.finalRank - b.panelRank >= 2),
   },
   {
+    // The season's save kept somebody (js/dr/saves.js). The chart's own yellow.
+    id: 'saved', text: 'Saved', color: '#ffed00',
+    when: r => (r?.dr?.save?.saved || []).length > 0,
+  },
+  {
+    // A luck save was tried and missed: the bar was plain, the lever was dry.
+    id: 'no-luck', text: 'No luck', color: '#a78bfa',
+    when: r => (r?.dr?.save?.tries || []).some(t => !t.saved),
+  },
+  {
     id: 'finale', text: 'Finale', color: '#ff2d95',
     when: r => !!r?.dr?.finale,
   },

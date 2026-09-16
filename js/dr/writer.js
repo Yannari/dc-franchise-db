@@ -132,7 +132,19 @@ export function buildDragBeatSheet(row, { players = {} } = {}) {
     if (ls.call === 'double-shantay') {
       push('BOTH STAYED. The host sent nobody home tonight.');
     } else if (ls.winner) {
-      push(`${ls.winner} stayed. ${ls.loser ? `${ls.loser} did not.` : ''}`);
+      const kept = new Set(ls.saved || []);
+      push(`${ls.winner} stayed. ${ls.loser && !kept.has(ls.loser) ? `${ls.loser} did not.` : ''}`);
+    }
+    /* A SEASON SAVE (js/dr/saves.js). Said plainly, or the writer invents
+       the reason a queen who lost the song is still in the room. */
+    const sv = dr.save;
+    if (sv && sv.hold) {
+      push(`${sv.name.toUpperCase()}: ${sv.hold.holder} held it${sv.hold.kind === 'baguette' && !sv.hold.kept ? ` (given to her by ${sv.hold.winner})` : ''} and saved ${sv.hold.saved} from the bottom three before the lip sync. ${sv.hold.singers.join(' and ')} had to lip sync.`);
+    }
+    for (const t of (sv && sv.tries) || []) {
+      push(t.kind === 'chocolate'
+        ? `${t.queen} lost the lip sync and opened her chocolate bar: ${t.saved ? 'GOLDEN, so she stays' : 'not golden'}.`
+        : `${t.queen} lost the lip sync and pulled lever ${t.lever} of ${t.levers.length} on the dunk tank: ${t.saved ? 'the judge went in the water, so she stays' : 'a miss'}.`);
     }
   }
 

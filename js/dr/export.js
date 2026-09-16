@@ -102,16 +102,27 @@ export function dragEpisodes(rows) {
         panelRank: bendBy[name]?.panelRank ?? null,
         finalRank: bendBy[name]?.finalRank ?? null,
         storyline: arcBy[name] || null,
+        // Kept by the season's save this week (js/dr/saves.js); null otherwise.
+        saved: (dr.save?.saved || []).includes(name) ? dr.save.kind : null,
       })),
       lipsync: dr.lipsync
         ? {
           queens: [...(dr.lipsync.queens || [])],
           winner: dr.lipsync.winner || null,
           loser: dr.lipsync.loser || null,
+          // Lost the song and stayed anyway, on a luck save.
+          saved: [...(dr.lipsync.saved || [])],
           call: dr.lipsync.call || null,
           song: dr.lipsync.song || null,
         }
         : null,
+      /* THE SEASON'S SAVE THIS WEEK, when there is one and it was used. */
+      save: dr.save && (dr.save.hold || (dr.save.tries || []).length) ? {
+        kind: dr.save.kind,
+        saved: [...(dr.save.saved || [])],
+        holder: dr.save.hold?.holder || null,
+        tried: (dr.save.tries || []).map(t => t.queen),
+      } : null,
       exits: (row.exits || []).map(x => ({
         name: x.name, playerSlug: slugOf(x.name),
         verb: x.verb || showWords(DRAG_FORMAT).exit,

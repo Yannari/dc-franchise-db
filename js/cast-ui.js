@@ -1322,6 +1322,10 @@ export function saveConfig() {
     drReunion:       g('cfg-dr-reunion')?.checked || false,
     drSmackdown:     g('cfg-dr-smackdown')?.checked || false,
     drDoubleCrown:   g('cfg-dr-double-crown')?.checked || false,
+    // The season's save — js/dr/saves.js.
+    drSave:          g('cfg-dr-save')?.value || 'none',
+    drTankLevers:    parseInt(g('cfg-dr-tank-levers')?.value) || 4,
+    drTankRetire:    parseInt(g('cfg-dr-tank-retire')?.value) || 8,
     /* THE SCHEDULE, MERGED RATHER THAN REPLACED. `drSchedule` is one array
        carrying every pinned decision about a week — a challenge, a guest, a
        runway category — and the box on screen only owns one of them. Reading
@@ -1492,6 +1496,10 @@ export function renderConfig() {
   chk('cfg-dr-smackdown', seasonConfig.drSmackdown || false);
   chk('cfg-dr-reunion', seasonConfig.drReunion || false);
   chk('cfg-dr-double-crown', seasonConfig.drDoubleCrown || false);
+  set('cfg-dr-save', seasonConfig.drSave || 'none');
+  set('cfg-dr-tank-levers', seasonConfig.drTankLevers || 4);
+  set('cfg-dr-tank-retire', seasonConfig.drTankRetire || 8);
+  drSaveOptionsUI();
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
   set('cfg-ri-format', seasonConfig.riFormat || 'redemption');
@@ -2322,4 +2330,11 @@ export function updateShieldUI() {
   const src = document.getElementById('cfg-tr-shield-source')?.value || 'mission';
   const box = document.getElementById('tr-armoury-opts');
   if (box) box.style.display = src === 'armoury' ? '' : 'none';
+}
+
+/** The tank's two numbers only mean something when the tank is the save. */
+export function drSaveOptionsUI() {
+  const sel = document.getElementById('cfg-dr-save');
+  const box = document.getElementById('cfg-dr-tank-opts');
+  if (box) box.style.display = sel?.value === 'tank' ? 'flex' : 'none';
 }

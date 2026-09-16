@@ -19,6 +19,7 @@
 // view rather than from the call, so a MIXED plate beside a PRAISE plate is
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
+import { campaignStage } from './save.js';
 import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
 // Borrowed for the untucked consequence row — same fact, same badge.
 import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
@@ -915,10 +916,19 @@ export function rpBuildCritiques(row) {
 }
 
 /** Untucked: a room, not a stage — and it can get loud. */
+/* A campaign card: the purple of the save, and a label saying what the move was. */
+const CAMPAIGN_CARD_CSS = `
+.dr-utk-camp{border-color:rgba(176,122,255,.55)!important;background:linear-gradient(180deg,rgba(60,22,96,.55),rgba(30,10,48,.55))!important}
+`;
+
 export function rpBuildUntucked(row) {
   const ep = epOf(row);
   const scenes = (row.dr.scenes || []).filter(s => s.step === 'untucked' && s.text);
   if (!scenes.length) return '';
+  /* THE CAMPAIGN, when there is a save on the table: a stage above the
+     lounge where the queen talking lights up and each bottom queen's
+     standing with the power moves as the room works on her. */
+  const campaign = campaignStage(row, scenes);
   /* THE ROOM HAS AN ARC AND THE SCREEN NOW SHOWS IT. Untucked runs
      arrival → middle → late — off the stage still in the look, the long
      wait where the fights happen, then being called back — and every event
@@ -975,8 +985,9 @@ export function rpBuildUntucked(row) {
     }
     const row = bits.length ? `<div class="dr-bond-row">${bits.join('')}</div>` : '';
 
+    const camp = sc.data?.campaign ? ' dr-utk-camp' : '';
     return `<div class="dr-step" id="dr-step-untucked-${i}">${head}
-      <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud ? ' dr-shake' : ''}${heat} dr-utk">
+      <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud || /shouting|clap-back/.test(sc.kind || '') ? ' dr-shake' : ''}${heat}${camp} dr-utk">
         <span class="dr-utk-who">${players.slice(0, 2)
     .map(n => _portrait(n, ep, { size: 46 })).join('')}</span>
         <div>${players.length ? `<b class="dr-disp">${esc(players.join(' & '))}</b>` : ''}
@@ -1014,8 +1025,8 @@ export function rpBuildUntucked(row) {
 
   // WERK_CSS carries .dr-bond-row/.dr-arrow/.dr-up/.dr-down. Borrowed rather
   // than restated, which is what the prep screen already does with it.
-  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}</style>${_shell(lounge + steps, ep, {
-    phase: 'untucked', title: 'Untucked', subtitle: 'Illusions Lounge',
+  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}${campaign ? CAMPAIGN_CARD_CSS : ''}</style>${_shell((campaign || '') + lounge + steps, ep, {
+    phase: 'untucked', title: 'Untucked', subtitle: campaign ? 'the campaign' : 'Illusions Lounge',
     /* THE TEMPERATURE GAUGE WAS A PICTURE OF NOTHING — a needle pinned at
        fifty per cent with the word "holding" under it, on every episode of
        every season, because no relationship state had ever reached a screen.

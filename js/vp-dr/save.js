@@ -271,6 +271,45 @@ export const SAVE_CSS = `
 .svx-row .svx-pod.talk.x-throw .svx-bubble,.svx-row .svx-pod.talk.x-cold .svx-bubble{background:#ff294b;color:#fff}
 .svx[data-phase=campaign-open] .svx-row .svx-pod.power{animation:svx-bob 1.4s ease-in-out infinite}
 
+/* ── THE CEREMONY ────────────────────────────────────────────────────── */
+.svx-trio.svx-anytalk .svx-pod:not(.talk){filter:brightness(.55) saturate(.6)}
+.svx-trio .svx-pod.talk{transform:translateY(-12px) scale(1.06)}
+.svx-trio .svx-pod.talk .svx-face{box-shadow:0 0 0 4px #fff,0 0 50px 12px rgba(255,255,255,.35)}
+.svx-trio .svx-pod.talk.x-hurt .svx-face,.svx-trio .svx-pod.talk.x-bitter .svx-face,
+.svx-trio .svx-pod.talk.x-hopeBroken .svx-face{box-shadow:0 0 0 4px #ff294b,0 0 50px 12px rgba(255,41,75,.45)}
+.svx-trio .svx-pod.talk.x-saved .svx-face{box-shadow:0 0 0 4px #ffed00,0 0 60px 16px rgba(255,220,60,.6)}
+.svx-trio .svx-pod .svx-bubble{top:-4px}
+.svx-trio .svx-pod.talk .svx-bubble{opacity:1;transform:translate(-50%,0) scale(1)}
+.svx-trio .svx-pod.talk.x-saved .svx-bubble{background:#ffed00;color:#1a1400}
+.svx-trio .svx-pod.talk.x-hurt .svx-bubble,.svx-trio .svx-pod.talk.x-bitter .svx-bubble,
+.svx-trio .svx-pod.talk.x-hopeBroken .svx-bubble{background:#ff294b;color:#fff}
+.svx[data-phase=invoke] .svx-token{animation:svx-invoke 1.2s ease-in-out infinite}
+@keyframes svx-invoke{50%{transform:scale(1.18);filter:drop-shadow(0 0 40px rgba(255,220,60,1))}}
+.svx[data-phase=invoke] .svx-rays{opacity:.5;animation:svx-spin 10s linear infinite}
+.svx[data-phase=deciding] .svx-vig{opacity:1;animation:svx-heart 1s ease-in-out infinite}
+.svx-reveal{align-self:start;justify-self:center;z-index:4;margin-top:4px;padding:10px 26px 12px;border-radius:14px;text-align:center;
+  background:linear-gradient(135deg,#fff6c8,#ffd24d 45%,#d99a14);color:#2a1a00;box-shadow:0 18px 50px -10px rgba(255,190,40,.8);
+  opacity:0;transform:perspective(600px) rotateX(90deg) scale(.7);transition:opacity .3s,transform .3s}
+.svx-reveal small{display:block;font-size:10px;letter-spacing:.3em;text-transform:uppercase;opacity:.75}
+.svx-reveal b{display:block;font:400 clamp(28px,4vw,44px)/1.05 'Anton','Impact',sans-serif;letter-spacing:.03em;text-transform:uppercase}
+.svx[data-phase=saved] .svx-reveal{animation:svx-flipin .9s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes svx-flipin{0%{opacity:0;transform:perspective(600px) rotateX(90deg) scale(.7)}
+  60%{opacity:1;transform:perspective(600px) rotateX(-12deg) scale(1.12)}100%{opacity:1;transform:perspective(600px) rotateX(0) scale(1)}}
+.svx[data-phase=saved] .svx-flash{animation:svx-flash 1s ease-out}
+.svx > .svx-confess{position:absolute!important}
+.svx-confess{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;gap:18px;padding:30px;
+  background:radial-gradient(80% 80% at 50% 50%,rgba(10,4,16,.92),rgba(10,4,16,.98));opacity:0;pointer-events:none;transition:opacity .45s}
+.svx[data-phase=confess] .svx-confess{opacity:1}
+.svx[data-phase=confess] .svx-caption{opacity:0}
+.svx-confess .svx-cface{flex:0 0 120px;width:120px;height:120px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px #b07aff,0 0 50px rgba(176,122,255,.5)}
+.svx-confess .svx-cface > *,.svx-confess .svx-cface img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.svx-confess q{display:block;max-width:440px;font-size:19px;line-height:1.45;font-style:italic;quotes:none}
+.svx-confess small{display:block;margin-top:8px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#cbb3ff}
+.svx-cards .svx-card.svx-card-reveal{border-color:#ffed00;background:linear-gradient(135deg,rgba(255,237,0,.18),rgba(255,255,255,.03))}
+.dr-step.dr-vis .svx-card.svx-card-reveal{animation:svx-cardpop .8s cubic-bezier(.2,1.5,.4,1)}
+@keyframes svx-cardpop{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:none}}
+.svx-cards .svx-card.svx-card-confess{border-color:rgba(176,122,255,.5);font-style:italic}
+
 /* ── INTRO ───────────────────────────────────────────────────────────── */
 .svx-hero{width:240px;animation:svx-bob 4s ease-in-out infinite;filter:drop-shadow(0 20px 40px rgba(0,0,0,.7)) drop-shadow(0 0 30px rgba(255,200,60,.35))}
 .svx-hero svg{width:100%;display:block;overflow:visible}
@@ -479,6 +518,8 @@ export function applyStage(suffix, idx) {
     set('caption', c.caption);
     set('tray', c.tray);
     set('holder', c.holder);
+    set('reveal', c.reveal);
+    set('confess', c.confess);
     if (c.count != null) {
       const n = el.querySelector('[data-f="count"]');
       if (n && n.textContent !== String(c.count)) {
@@ -495,13 +536,12 @@ export function applyStage(suffix, idx) {
       }
     }
     if (c.talk !== undefined) {
-      const row = el.querySelector('.svx-row');
-      if (row) row.classList.toggle('svx-anytalk', !!c.talk);
-      for (const pod of el.querySelectorAll('.svx-row .svx-pod')) {
+      for (const box of el.querySelectorAll('.svx-row, .svx-trio')) box.classList.toggle('svx-anytalk', !!c.talk);
+      for (const pod of el.querySelectorAll('.svx-row .svx-pod, .svx-trio .svx-pod')) {
         const me = pod.dataset.q === c.talk;
         pod.classList.toggle('talk', me);
         pod.classList.toggle('about', !!c.about && pod.dataset.q === c.about);
-        pod.classList.remove('x-throw', 'x-cold');
+        pod.classList.remove('x-throw', 'x-cold', 'x-saved', 'x-hurt', 'x-bitter', 'x-hopeBroken', 'x-stoic');
         if (me && c.tone) pod.classList.add(`x-${c.tone}`);
         const bub = pod.querySelector('.svx-bubble');
         if (bub && me) bub.textContent = c.bubble || '';
@@ -535,7 +575,7 @@ export function applyStage(suffix, idx) {
        kept, and the counter and tray still show the room as it was. The
        rail is held back by the step table itself (see the builders). */
     content({
-      portrait: st.portrait, caption: st.leadCaption, holder: st.holder,
+      portrait: st.portrait, caption: st.leadCaption, holder: st.holder, talk: st.talk !== undefined ? null : undefined,
       levers: st.levers ? { ...st.levers, missed: false } : null,
       kept: st.kept !== undefined ? (st.leadKept || null) : undefined,
     });
@@ -691,20 +731,33 @@ function loungeSvg() {
 const BUBBLE = {
   'honest-plea': 'pleading', promise: 'a deal', 'debt-called': 'you owe me', 'cold-shoulder': 'not begging',
   breakdown: 'in tears', 'throw-under': 'not her', vouch: 'vouching', torn: 'torn', backfired: 'not impressed',
+  'pitch-friend': 'we are friends', 'pitch-no-threat': 'no threat', 'pitch-deserve': 'I did better',
+  'pitch-record': 'my record', 'pitch-lipsync-mercy': 'I cannot win that song', 'pitch-noble': 'give me the song',
+  'rebut-threat': 'she is a threat', 'rebut-deserve': 'you were not better', 'expose-deal': 'she is making deals',
+  'rebut-record': 'that is why not', 'rebut-friend': 'fake friend', counter: 'I did more', 'clap-back': 'say it to my face',
+  'shouting-match': 'shouting', stir: 'stirring', 'stir-caught': 'caught', 'holder-stall': 'undecided',
+  'holder-hope': "don't worry", 'holder-snap': 'enough', 'holder-question': 'why you?',
 };
-const TONE = { 'throw-under': 'throw', 'cold-shoulder': 'cold', backfired: 'cold' };
+const TONE = {
+  'throw-under': 'throw', 'cold-shoulder': 'cold', backfired: 'cold', 'rebut-threat': 'throw', 'rebut-deserve': 'throw',
+  'expose-deal': 'throw', 'rebut-record': 'throw', 'rebut-friend': 'throw', counter: 'throw', 'clap-back': 'throw',
+  'shouting-match': 'throw', stir: 'throw', 'holder-snap': 'cold',
+};
 const upper = t => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
-export function rpBuildSaveCampaign(row, scenes = []) {
+/**
+ * The campaign's stage, for the top of the Untucked screen. `scenes` are the
+ * screen's own steps, so every Untucked beat has a stage state: a campaign
+ * move lights the queen making it, anything else leaves the board as it was.
+ * Returns '' on a night with no save to campaign for.
+ */
+export function campaignStage(row, scenes = []) {
   const ep = epOf(row);
   const hold = row?.dr?.save?.hold;
-  const list = scenes.filter(sc => sc.text);
-  if (!hold || !list.length) return '';
+  if (!hold || !scenes.some(sc => sc.data?.campaign)) return '';
   const kind = hold.kind;
-  const meta = SAVE_KINDS[kind] || {};
   const targets = hold.targets || [hold.holder];
   const moves = hold.campaign || [];
-  // The room, as far as this segment is concerned: the power and the bottom.
   const cast = [...new Set([...targets, ...hold.pool])];
   const pods = cast.map((n, i) => {
     const power = targets.includes(n);
@@ -716,44 +769,37 @@ export function rpBuildSaveCampaign(row, scenes = []) {
     </div>`;
   }).join('');
   const center = `<div class="svx-lounge">${loungeSvg()}</div><div class="svx-row">${pods}</div>`;
-
-  // Each bottom queen's standing with the power, built one move at a time.
   const meters = {};
   const idle = { phase: 'idle', talk: null, meters: {}, caption: cap('Untucked', 'The bottom is named. Now it is a campaign.') };
   let mi = 0;
-  const steps = list.map(sc => {
+  let last = idle;
+  const steps = scenes.map(sc => {
+    if (!sc.data?.campaign) return { ...last, caption: undefined, talk: null };
     if (sc.kind === 'save:campaign-open') {
-      return { phase: 'campaign-open', talk: null, meters: { ...meters }, caption: cap('Untucked', sc.text) };
+      last = { phase: 'campaign-open', talk: null, meters: { ...meters }, caption: cap('Untucked', sc.text) };
+      return last;
     }
     const id = sc.data?.move || sc.kind.replace('save:campaign:', '');
     if (id !== 'backfired') {
       const mv = moves[mi++] || {};
       for (const [, q, d] of mv.plea || []) meters[q] = (meters[q] || 0) + d;
     }
-    return {
+    last = {
       phase: 'campaign', talk: (sc.data?.players || [])[0] || null, about: sc.data?.about || null,
       tone: TONE[id] || null, bubble: BUBBLE[id] || '', meters: { ...meters },
       caption: cap(upper(BUBBLE[id]) || 'Untucked', sc.text),
     };
+    return last;
   });
-  register('savecampaign', { idle, steps });
-  const stage = stageShell('savecampaign', kind, {
+  register('untucked', { idle, steps });
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    setTimeout(() => {
+      try { const { idx } = _state(ep, 'untucked'); if (idx >= 0) applyStage('untucked', idx); } catch { /* decoration */ }
+    }, 0);
+  }
+  return `<style>${SAVE_CSS}</style>` + stageShell('untucked', kind, {
     title: kind === 'baguette' ? 'Courting the favourite' : 'Working the room',
     center, caption: idle.caption, cls: 'svx-camp',
-  });
-  const cards = list.map((sc, i) => card('savecampaign', i, sc, ep,
-    sc.kind === 'save:campaign-open' ? 'Untucked' : upper(BUBBLE[sc.data?.move]) || 'Untucked', '#b07aff'));
-  const rail = `<h4 class="dr-disp">${esc(meta.short)}</h4>
-    <div class="sv-rail-row">${kind === 'baguette'
-    ? `From <b>${esc(hold.giver)}</b>, out last week`
-    : `Holder${targets.length > 1 ? 's' : ''} <b>${esc(targets.join(' & '))}</b>`}</div>
-    <h4 class="dr-disp">The bottom</h4>
-    ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)}</div>`).join('')}`;
-  publishRail('savecampaign', list.map(() => rail));
-  return page(row, 'savecampaign', {
-    phase: 'untucked', title: 'Untucked: The Campaign',
-    subtitle: kind === 'baguette' ? 'nobody knows who gets the baguette' : 'everybody wants the beaver',
-    stage, cards, rail, count: list.length,
   });
 }
 
@@ -772,46 +818,85 @@ export function rpBuildSaveHold(row, scenes = []) {
   const picks = hold.picks || [{ holder: hold.holder, saved: hold.saved }];
   const token = kind === 'beaver' ? beaverSvg(uid) : baguetteSvg(uid);
   const pods = hold.pool.map((n, i) => `<div class="svx-pod" data-q="${esc(n)}" style="--i:${i}">
-      <i class="svx-beam"></i><span class="svx-tag"><span class="k">saved</span><span class="l">lip sync</span></span>
+      <i class="svx-beam"></i><span class="svx-bubble"></span>
+      <span class="svx-tag"><span class="k">saved</span><span class="l">lip sync</span></span>
       <div class="svx-face">${face(n, ep, 112)}</div><b>${esc(n)}</b><i class="svx-plinth"></i></div>`).join('');
   const chip = (n, label) => `<span class="svx-mini">${_portrait(n, ep, { size: 34 })}</span>
     <span>${esc(label)} <em>${esc(n)}</em></span>`;
   const noun = kind === 'baguette' ? 'Baguette' : 'Beaver';
-  // Before anything is handed over, the chip says where the power comes from.
   const opening = kind === 'baguette'
     ? chip(hold.giver, 'Baguette from')
     : chip(hold.winners?.length > 1 ? hold.winners.join(' & ') : hold.winner, `${noun}${hold.winners?.length > 1 ? 's' : ''} held by`);
-  const center = `<div class="svx-token">${token}</div><div class="svx-trio">${pods}</div>`;
+  const center = `<div class="svx-token">${token}</div>
+    <div class="svx-reveal" data-f="reveal"></div>
+    <div class="svx-trio">${pods}</div>`;
   const extra = `<div class="svx-holder" data-f="holder">${opening}</div>`;
+  const confessBox = `<div class="svx-confess" data-f="confess"></div>`;
   const named = `The bottom ${hold.pool.length === 4 ? 'four' : 'three'}`;
+  const MOOD = { saved: 'saved', hurt: 'hurt', bitter: 'of course', hopeBroken: 'you promised', stoic: 'ready to fight' };
 
-  const idle = { phase: 'idle', kept: null, caption: cap(named, hold.pool.join(' · ')), holder: opening };
+  const idle = { phase: 'idle', kept: null, talk: null, caption: cap(named, hold.pool.join(' · ')), holder: opening, reveal: '', confess: '' };
   const kept = [];
+  let holderNow = opening;
   let pickAt = 0;
+  let base = { kept: [], chosen: false };
   const steps = list.map(sc => {
-    if (sc.kind === 'save:handoff') {
-      return { phase: 'handoff', kept: null, caption: cap('The hand-off', sc.text),
-        holder: chip(hold.holder, `${noun} held by`) };
+    const who = sc.data?.who || (sc.data?.players || [])[0];
+    const common = { holder: holderNow, confess: '', talk: null };
+    switch (sc.kind) {
+      case 'save:handoff':
+        holderNow = chip(hold.holder, `${noun} held by`);
+        return { ...common, holder: holderNow, phase: 'handoff', kept: null, caption: cap('The hand-off', sc.text) };
+      case 'save:invoke': {
+        const h = sc.data?.holder;
+        holderNow = chip(h, `${noun} held by`);
+        return { ...common, holder: holderNow, phase: 'invoke', kept: [...kept], chosen: kept.length > 0, reveal: '', caption: cap('The host', sc.text) };
+      }
+      case 'save:speech':
+        return { ...common, phase: 'speech', talk: sc.data?.to, bubble: 'listening', kept: [...kept], chosen: kept.length > 0,
+          caption: cap(`${sc.data?.holder} speaks`, sc.text) };
+      case 'save:suspense':
+        return { ...common, phase: 'deciding', kept: [...kept], chosen: kept.length > 0, caption: cap('The wait', sc.text) };
+      case 'save:saved': {
+        const pk = picks[pickAt++] || picks[0];
+        const beforeKept = [...kept];
+        kept.push(pk.saved);
+        base = { kept: [...kept], chosen: true };
+        return {
+          ...common, lead: 'deciding', leadMs: 1600, leadCaption: cap(`${pk.holder} decides`, '…'), leadKept: beforeKept,
+          phase: 'saved', ...base, reveal: `<small>${esc(noun)} saves</small><b>${esc(pk.saved)}</b>`,
+          caption: cap(`${pk.holder} decides`, sc.text),
+        };
+      }
+      case 'save:host-react':
+      case 'save:reaction':
+        return { ...common, phase: 'saved', ...base, reveal: `<small>${esc(noun)} saves</small><b>${esc(kept[kept.length - 1] || '')}</b>`,
+          talk: sc.kind === 'save:reaction' ? who : (sc.data?.saved || who),
+          tone: sc.data?.mood || 'saved', bubble: MOOD[sc.data?.mood] || 'safe',
+          caption: cap(sc.kind === 'save:reaction' ? 'Reaction' : 'The host', sc.text) };
+      case 'save:confessional':
+        return { ...common, phase: 'confess', ...base,
+          confess: `<span class="svx-cface">${face(who, ep, 120)}</span><div><q>${esc(sc.text)}</q><small>Confessional · ${esc(who)}</small></div>`,
+          caption: cap(`Confessional · ${who}`, sc.text) };
+      case 'save:left':
+        return { ...common, phase: 'left', ...base, reveal: '', caption: cap('Lip sync for your life', sc.text) };
+      default:   // repaid, promise-kept/broken, grudge
+        return { ...common, phase: 'saved', ...base, talk: (sc.data?.players || [])[1] || null, tone: 'saved', bubble: '',
+          caption: cap('What it settled', sc.text) };
     }
-    if (sc.kind === 'save:saved') {
-      const pk = picks[pickAt++] || picks[0];
-      const before = [...kept];
-      kept.push(pk.saved);
-      return { lead: 'deciding', leadMs: 1800, leadCaption: cap(`${pk.holder} decides`, '…'),
-        phase: 'saved', kept: [...kept], leadKept: before, chosen: true,
-        caption: cap(`${pk.holder} decides`, sc.text), holder: chip(pk.holder, `${noun} held by`) };
-    }
-    return { phase: 'left', kept: [...kept], chosen: true,
-      caption: cap('Lip sync for your life', sc.text), holder: chip(picks[picks.length - 1].holder, `${noun} held by`) };
   });
   register('savehold', { idle, steps });
 
   const stage = stageShell('savehold', kind, {
     title: `${hold.pool.length === 4 ? 'Two of four' : 'One of three'} saved`, center, extra, caption: idle.caption,
-  });
-  const tagOf = sc => (sc.kind === 'save:handoff' ? 'The hand-off'
-    : sc.kind === 'save:saved' ? `${sc.data?.holder || hold.holder} decides` : 'Lip sync for your life');
-  const cards = list.map((sc, i) => card('savehold', i, sc, ep, tagOf(sc), meta.color));
+  }).replace('<div class="svx-caption"', `${confessBox}<div class="svx-caption"`);
+  const tagOf = sc => ({
+    'save:handoff': 'The hand-off', 'save:invoke': 'The host', 'save:speech': `${sc.data?.holder || ''} speaks`,
+    'save:suspense': 'The wait', 'save:saved': `${sc.data?.holder || hold.holder} decides`, 'save:host-react': 'The host',
+    'save:reaction': 'Reaction', 'save:confessional': `Confessional · ${sc.data?.who || ''}`, 'save:left': 'Lip sync for your life',
+  }[sc.kind] || 'What it settled');
+  const cards = list.map((sc, i) => card('savehold', i, sc, ep, tagOf(sc), meta.color)
+    .replace('class="svx-card"', `class="svx-card${sc.kind === 'save:saved' ? ' svx-card-reveal' : sc.kind === 'save:confessional' ? ' svx-card-confess' : ''}"`));
 
   const head = handed => `<h4 class="dr-disp">${esc(meta.short)}</h4>
     ${kind === 'baguette'
@@ -822,7 +907,7 @@ export function rpBuildSaveHold(row, scenes = []) {
   const railAt = (handed, savedSoFar, done) => `${head(handed)}
     ${hold.pool.map(n => `<div class="sv-rail-row">${_portrait(n, ep, { size: 26 })} ${esc(n)} ${
       savedSoFar.includes(n) ? '<b>SAVED</b>' : done ? 'lip syncs' : ''}</div>`).join('')}`;
-  // The rail names her one step late, so it cannot answer the sweep.
+  // The rail names her one step late, so it cannot answer the wait.
   let handed = false;
   const shown = [];
   const perStep = list.map(sc => {

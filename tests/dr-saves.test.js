@@ -226,7 +226,7 @@ describe('the campaign and what it leaves behind', () => {
         saves, targets: ['W'], pool: ['V', 'H', 'N'], living: ['W', 'V', 'H', 'N', 'S'],
         players, bond, rng: rngFor(i * 7919 + 13), ep: 3,
       });
-      const own = events.filter(e => ['V', 'H', 'N'].includes(e.a) && e.b === 'W');
+      const own = events.filter(e => e.round === 1 && ['V', 'H', 'N'].includes(e.a) && e.b === 'W');
       expect(own).toHaveLength(3);
       for (const e of own.filter(x => x.a !== 'V')) {
         expect(['promise', 'throw-under']).not.toContain(e.id);
@@ -286,8 +286,29 @@ describe('the campaign and what it leaves behind', () => {
     for (const s of SEEDS) {
       for (const r of weekly(season(s, { drSave: 'beaver' }))) {
         if (r.dr.save?.hold) {
-          const camp = r.dr.scenes.filter(x => x.step === 'save-campaign');
+          const camp = r.dr.scenes.filter(x => x.data?.campaign);
           if (camp.length) campaigns++;
+          // In Untucked, which on these nights comes after the call.
+          for (const x of camp) expect(x.step).toBe('untucked');
+          const steps = r.dr.scenes.map(x => x.step);
+          expect(steps.indexOf('results')).toBeLessThan(steps.indexOf('untucked'));
+          expect(steps.lastIndexOf('untucked')).toBeLessThan(steps.indexOf('save-hold'));
+          // A conversation, not three speeches: pitches, replies and her answer.
+          const rounds = new Set(r.dr.save.hold.campaign.map(e => e.round));
+          expect(rounds.has(1) && rounds.has(3)).toBe(true);
+          expect(camp.length).toBeGreaterThanOrEqual(5);
+          // The ceremony, in its order.
+          const kinds = r.dr.scenes.filter(x => x.step === 'save-hold').map(x => x.kind);
+          for (const k of ['save:invoke', 'save:speech', 'save:suspense', 'save:saved', 'save:host-react', 'save:reaction', 'save:confessional', 'save:left']) {
+            expect(kinds, `${k} missing`).toContain(k);
+          }
+          expect(kinds.indexOf('save:suspense')).toBeLessThan(kinds.indexOf('save:saved'));
+          expect(kinds.indexOf('save:saved')).toBeLessThan(kinds.indexOf('save:reaction'));
+          // The call must not say who sings before the save does.
+          expect(r.dr.scenes.some(x => x.kind === 'stage:call-stakes')).toBe(false);
+          // And the screens follow: the call before Untucked.
+          const ids = dragScreens(r).map(x => x.id);
+          expect(ids.indexOf('dr-results')).toBeLessThan(ids.indexOf('dr-untucked'));
           expect(r.dr.save.hold.campaign.length).toBeGreaterThan(0);
           repaid += r.dr.scenes.filter(x => x.kind === 'save:repaid').length;
         }

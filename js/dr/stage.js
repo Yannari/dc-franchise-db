@@ -194,6 +194,9 @@ export function renderStageBeats({
      The same two queens on the same stage means something completely
      different on a night nobody can lose. */
   stakes = 'life', rateAQueen = false,
+  /* A beaver or baguette save is still to come: the call names the bottom
+     three and must not say which two will sing. */
+  pendingSave = false,
   /* HER RESULTS BEFORE TONIGHT, for the exit mood — whether she had ever
      been in the bottom, and whether she had ever placed. Defaults to an
      empty map so a caller that has not been updated still renders. */
@@ -682,7 +685,7 @@ export function renderStageBeats({
   /* AND WHAT THE SONG IS FOR, said last, after the names. Two queens standing
      on a stage about to lip sync is the same picture whether they are
      fighting to survive or fighting to win, and the call never said which. */
-  if (lipsync && (lipsync.queens || []).length >= 2) {
+  if (lipsync && (lipsync.queens || []).length >= 2 && !pendingSave) {
     const [ls1, ls2] = lipsync.queens;
     emit(beatById('call-stakes'), stakes, [ls1, ls2], { stakes });
   }

@@ -368,7 +368,7 @@ export function callWeek(finalRanking, {
      small for five still keeps everybody it has — see `roof` below.
      A LOW is at most one: six is one win, two high, one low and the bottom
      two, which is the ordinary night the comment further down describes. */
-  const SPOKEN_TABLE = [[5, 40], [6, 60]];
+  const SPOKEN_TABLE = [[5, 25], [6, 75]];
   const LOW_TABLE = [[0, 20], [1, 80]];
 
   /* ── MEASURED AGAINST THE REAL SHOW, NOT GUESSED ──
@@ -438,7 +438,22 @@ export function callWeek(finalRanking, {
         loserEligible.length - down)
       : [];
     const spoken = new Set([...bottomBlock, ...low]);
-    const safe = [...winSafe, ...loserNames.filter(nm => !spoken.has(nm))];
+    let safe = [...winSafe, ...loserNames.filter(nm => !spoken.has(nm))];
+    /* A SMALL LOSING TEAM CANNOT FILL THE BOTTOM IT WAS ASKED FOR, and the
+       stage shrank to four with it. The call is five or six on any room of
+       six or more, so the difference comes back up from the winning team as
+       highs, then from the losing team as lows. */
+    const floor = room >= 6 ? 5 : 0;
+    const onStage = () => win.length + high.length + low.length + bottomBlock.length;
+    while (onStage() < floor && winSafe.some(nm => safe.includes(nm))) {
+      const nm = winSafe.find(x => safe.includes(x));
+      high.push(nm); safe = safe.filter(x => x !== nm);
+    }
+    while (onStage() < floor && safe.length) {
+      const nm = [...safe].reverse().find(x => !winTeam.has(x) && !immune.includes(x)) || null;
+      if (!nm) break;
+      low.unshift(nm); safe = safe.filter(x => x !== nm);
+    }
 
     return { win, high, safe, low, atRisk, bottom, teamJudged: true };
   }

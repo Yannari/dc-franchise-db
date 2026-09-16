@@ -36,7 +36,7 @@ import { rpBuildMainStage, rpBuildRunway, rpBuildCritiques, rpBuildUntucked } fr
 import { rpBuildResults, rpBuildLipSync, rpBuildExit, rpBuildFinaleOpen } from './results.js';
 import { rpBuildSmackdown } from './smackdown.js';
 import { rpBuildCrowning } from './crowning.js';
-import { rpBuildSaveIntro, rpBuildSaveCampaign, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
+import { rpBuildSaveIntro, rpBuildSaveHold, rpBuildSaveLuck } from './save.js';
 import { MAXI_EVENTS } from '../dr/data/maxi-events.js';
 
 // The finale's section ids share this stem (a section id, not a season id).
@@ -276,9 +276,6 @@ const SECTIONS = [
   { id: 'dr-results', icon: icon('stamp'), label: 'The Call', suffix: 'results', phase: 'stage', accent: 'dr-a-score',
     opens: ['results'],
     opensStep: ['results'], badge: null, title: 'The Call', subtitle: 'who is safe' },
-  { id: 'dr-save-campaign', icon: icon('couch'), label: 'The Campaign', suffix: 'savecampaign', phase: 'untucked',
-    accent: 'dr-a-bond', opens: [], opensStep: ['save-campaign'],
-    badge: { text: 'CAMPAIGN', color: '#b07aff' }, title: 'Untucked: The Campaign', subtitle: 'working the room' },
   { id: 'dr-save-hold', icon: icon('ticket'), label: 'The Save', suffix: 'savehold', phase: 'stage',
     accent: 'dr-a-room', opens: [], opensStep: ['save-hold'],
     badge: { text: 'SAVED', color: '#ffed00' }, title: 'The Save', subtitle: 'one of three is saved' },
@@ -724,7 +721,6 @@ const BUILDERS = {
   'dr-results': rpBuildResults,
   'dr-lipsync': rpBuildLipSync,
   'dr-save-intro': rpBuildSaveIntro,
-  'dr-save-campaign': rpBuildSaveCampaign,
   'dr-save-hold': rpBuildSaveHold,
   'dr-save-luck': rpBuildSaveLuck,
   'dr-exit': rpBuildExit,
@@ -818,8 +814,22 @@ export const DRAG_SCREENS = [
 ];
 
 /** The screens this episode actually has, built in order. */
+/* ON A BEAVER OR BAGUETTE NIGHT THE CALL COMES BEFORE UNTUCKED — the room
+   walks into the lounge knowing who is in the bottom, and campaigns there.
+   The scenes are already in that order (js/dr/week.js); this puts the
+   screens in it too. */
+function screensFor(row) {
+  if (!row?.dr?.save?.hold) return DRAG_SCREENS;
+  const list = DRAG_SCREENS.filter(s => s.id !== 'dr-results');
+  const at = list.findIndex(s => s.id === 'dr-untucked');
+  const results = DRAG_SCREENS.find(s => s.id === 'dr-results');
+  if (at < 0 || !results) return DRAG_SCREENS;
+  list.splice(at, 0, results);
+  return list;
+}
+
 export function dragScreens(row) {
-  return DRAG_SCREENS
+  return screensFor(row)
     .filter(s => s.when(row))
     /* `icon` TRAVELS WITH THE SCREEN. This is the second mapper in this file
        to rebuild a screen into a smaller shape and drop the field on the way
@@ -841,7 +851,7 @@ export function dragScreens(row) {
  */
 export function dragScreensRevealed(row) {
   const shadow = { ...row, num: -Math.abs(row?.num ?? row?.dr?.ep ?? 1) };
-  const out = DRAG_SCREENS.filter(s => s.when(shadow)).map(s => {
+  const out = screensFor(shadow).filter(s => s.when(shadow)).map(s => {
     const html = s.build(shadow);
     if (!html) return null;
     const total = (sceneSections(shadow).get(s.id) || []).length;

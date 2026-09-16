@@ -188,98 +188,263 @@ export function campaignTargets({ saves, winners = [], giver = null, pool, livin
 }
 
 /**
- * The campaign: one move per queen in the bottom, and up to two from the room.
+ * The campaign, in three rounds, while the room waits in Untucked.
  *
- * Returns `{ events, pleas }`. Each event is `{ id, a, b, c?, bond:[[x,y,d]],
- * pop:{}, note }` and the caller applies it; `pleas[holder][queen]` is the
- * weight the holder's decision reads. Nothing here decides the save.
+ *   1. THE PITCH. Each bottom queen makes her case to the queen with the
+ *      power, with a REASON drawn from where she actually stands: she is a
+ *      friend, she is no threat, she did better than the other two tonight,
+ *      she has the track record, she would never survive that song, she will
+ *      win the lip sync so save somebody else, a deal, a debt. How much a
+ *      reason moves the holder depends on who the holder is: "I'm no threat"
+ *      works on a strategist, "I deserved it more" on a fair-minded queen.
+ *   2. THE PUSHBACK. The other bottom queens do not let a pitch stand: they
+ *      rebut it, expose a deal, trash a rival, or have it out with each
+ *      other. Every exchange costs bonds.
+ *   3. THE ANSWER. The holder is not a wall: she stalls, gives somebody hope
+ *      (which is remembered if she does not follow through), snaps at a queen
+ *      pushing too hard, or asks the question that matters.
+ * The room adds a friend vouching, a safe queen stirring the pot, and the
+ * holder torn between friends.
+ *
+ * Returns `{ events, pleas }`. Each event is `{ id, round, a, b, c?, n?,
+ * bond:[[x,y,d]], pop:{}, plea:[[h,q,d]] }` and the caller applies it;
+ * `pleas[holder][queen]` is what the holder's decision reads. Nothing here
+ * decides the save.
  */
-export function runCampaign({ saves, targets, pool, living, players, bond, rng, ep }) {
+export function runCampaign({ saves, targets, pool, living, players, bond, rng, ep, state = {} }) {
   const events = [];
   const pleas = {};
   if (!targets.length) return { events, pleas };
-  let cur = null;   // the event being built, so its own plea moves ride on it
+  let cur = null;
   const plea = (h, q, d) => {
     (pleas[h] ||= {})[q] = (pleas[h][q] || 0) + d;
     if (cur) (cur.plea ||= []).push([h, q, d]);
   };
   const B = (x, y) => Number(bond(x, y)) || 0;
   const appOf = n => ballotSelfishness(players[n]);
+  const lip = n => num(players[n]?.drag?.lipsync);
+  const wins = n => (state.record?.[n] || []).filter(r => r === 'WIN').length;
+  const threat = n => threatOf(n, state, players);
+  const push = ev => { events.push(ev); return ev; };
+  const holderFor = p => [...targets].filter(t => t !== p).sort((x, y) => B(p, y) - B(p, x))[0];
 
+  // ── ROUND 1: THE PITCH ────────────────────────────────────────────
+  const pitched = [];
   for (const p of pool) {
     const P = players[p];
-    // She works the holder she likes best, or the only one there is.
-    const h = [...targets].filter(t => t !== p).sort((x, y) => B(p, y) - B(p, x))[0];
+    const h = holderFor(p);
     if (!h) continue;
+    const others = pool.filter(q => q !== p);
     const b = B(p, h);
+    const app = appOf(h);
     const owed = (saves.debts || []).some(d => !d.paid && d.debtor === h && d.creditor === p);
-    const rivals = pool.filter(c => c !== p && B(p, c) <= 0);
+    const leastThreat = others.every(q => threat(p) <= threat(q));
+    const bestTonight = pool.indexOf(p) === 0;
+    const worstLip = others.every(q => lip(p) <= lip(q));
+    const bestLip = others.every(q => lip(p) >= lip(q));
     const opts = [
-      { id: 'debt-called', w: owed ? 6 : 0 },
-      { id: 'promise', w: canScheme(P) ? 2 + appOf(p) * 2 : 0 },
-      { id: 'honest-plea', w: canScheme(P) ? 0.8 : 2.5 },
-      { id: 'cold-shoulder', w: b <= -2 && stat(P, 'boldness') >= 6 ? 2.5 : 0 },
-      { id: 'breakdown', w: stat(P, 'temperament') <= 3 ? 1.2 : 0.15 },
-      { id: 'throw-under', w: canScheme(P) && rivals.length ? 1.6 : 0 },
+      { id: 'debt-called', w: owed ? 8 : 0 },
+      { id: 'promise', w: canScheme(P) ? 1.6 + appOf(p) * 2 : 0 },
+      { id: 'pitch-friend', w: b >= 2 ? 1 + b * 0.4 : 0 },
+      { id: 'pitch-no-threat', w: leastThreat ? 1.4 : 0 },
+      { id: 'pitch-deserve', w: bestTonight ? 1.6 : 0 },
+      { id: 'pitch-record', w: wins(p) >= 1 ? 1.2 + wins(p) * 0.3 : 0 },
+      { id: 'pitch-lipsync-mercy', w: worstLip ? 1.3 : 0 },
+      { id: 'pitch-noble', w: bestLip && stat(P, 'boldness') >= 6 && !canScheme(P) ? 1.1 : 0 },
+      { id: 'cold-shoulder', w: b <= -2 && stat(P, 'boldness') >= 6 ? 2 : 0 },
+      { id: 'breakdown', w: stat(P, 'temperament') <= 3 ? 1 : 0.1 },
+      { id: 'honest-plea', w: 0.6 },
     ];
     const o = weighted(rng, opts);
-    if (!o) continue;
-    const hNice = appOf(h) < 0.15;
-    const ev = { id: o.id, a: p, b: h, bond: [], pop: {} };
+    const ev = { id: o.id, round: 1, a: p, b: h, bond: [], pop: {} };
     cur = ev;
-    if (o.id === 'debt-called') {
-      plea(h, p, 0.4);
-      ev.bond.push([p, h, 0.2]);
-    } else if (o.id === 'promise') {
-      plea(h, p, 1.0);
-      ev.bond.push([p, h, 0.5]);
-      (saves.promises ||= []).push({ from: p, to: h, ep, open: true });
-    } else if (o.id === 'honest-plea') {
-      plea(h, p, 0.6 + Math.max(0, b) * 0.08);
-      ev.bond.push([p, h, 0.3]);
-    } else if (o.id === 'cold-shoulder') {
-      plea(h, p, -0.4);
-      ev.bond.push([p, h, -0.5]);
-      ev.pop[p] = 0.5;
-    } else if (o.id === 'breakdown') {
-      plea(h, p, hNice ? 0.5 : -0.2);
-      ev.pop[p] = 0.3;
-    } else if (o.id === 'throw-under') {
-      const c = pick(rng, rivals);
-      ev.c = c;
-      plea(h, c, -0.8);
-      ev.bond.push([p, c, -2]);
-      // A kind holder hears it for what it is.
-      if (hNice) { plea(h, p, -0.5); ev.pop[p] = -0.5; ev.backfired = true; } else ev.pop[p] = -0.3;
+    switch (o.id) {
+      case 'debt-called': plea(h, p, 0.4); ev.bond.push([p, h, 0.2]); break;
+      case 'promise':
+        plea(h, p, 0.6 + app * 0.8); ev.bond.push([p, h, 0.5]);
+        (saves.promises ||= []).push({ from: p, to: h, ep, open: true });
+        break;
+      case 'pitch-friend': plea(h, p, 0.4 + b * 0.12); ev.bond.push([p, h, 0.4]); break;
+      case 'pitch-no-threat': plea(h, p, 0.3 + app * 1.4); ev.pop[p] = -0.1; break;
+      case 'pitch-deserve': ev.c = pool[pool.length - 1]; plea(h, p, 0.4 + (1 - app) * 1.0); ev.bond.push([p, ev.c, -0.6]); break;
+      case 'pitch-record':
+        ev.n = wins(p);
+        // A record is a reason to save her and a reason not to.
+        plea(h, p, 0.3 + (1 - app) * 0.7 - app * 0.8); ev.pop[p] = 0.2;
+        break;
+      case 'pitch-lipsync-mercy': plea(h, p, 0.3 + (1 - app) * 0.7); ev.pop[p] = 0.2; break;
+      case 'pitch-noble':
+        // She asks for the song. Good television, and it costs her the save.
+        plea(h, p, -0.5); ev.pop[p] = 0.8; ev.bond.push([p, h, 0.4]);
+        for (const q of others) ev.bond.push([p, q, 0.3]);
+        break;
+      case 'cold-shoulder': plea(h, p, -0.4); ev.bond.push([p, h, -0.5]); ev.pop[p] = 0.5; break;
+      case 'breakdown': plea(h, p, app < 0.15 ? 0.5 : -0.2); ev.pop[p] = 0.3; break;
+      default: plea(h, p, 0.5 + Math.max(0, b) * 0.08); ev.bond.push([p, h, 0.3]);
     }
-    events.push(ev);
+    pitched.push(push(ev));
   }
 
-  // The room: a friend vouches, and a holder with two friends down there is torn.
+  // ── ROUND 2: THE PUSHBACK ─────────────────────────────────────────
+  // Nobody lets a pitch stand. Each exchange hangs off the pitch it answers,
+  // and the queen answered can fire straight back.
+  const replies = [];
+  for (const ev of pitched) {
+    const p = ev.a; const h = ev.b;
+    for (const r of pool.filter(q => q !== p)) {
+      const R = players[r];
+      const cool = B(r, p) <= 2 || canScheme(R);
+      if (!cool) continue;
+      const opts = [];
+      if (ev.id === 'pitch-no-threat' && wins(p) >= 1) opts.push('rebut-threat');
+      if (ev.id === 'pitch-deserve') opts.push('rebut-deserve');
+      if (ev.id === 'promise' && stat(R, 'intuition') >= 5) opts.push('expose-deal');
+      if (ev.id === 'pitch-record') opts.push('rebut-record');
+      if (ev.id === 'pitch-friend' && (canScheme(R) || B(r, p) <= 0)) opts.push('rebut-friend');
+      if (!['cold-shoulder', 'breakdown', 'pitch-noble'].includes(ev.id)) opts.push('counter');
+      for (const id of opts) {
+        const w = (id === 'counter' ? 0.8 : 1.6) + Math.max(0, -B(r, p)) * 0.3;
+        replies.push({ id, r, p, h, w, after: ev });
+      }
+    }
+  }
+  // Two queens who cannot stand each other, in the same bottom.
+  for (let i = 0; i < pool.length; i++) {
+    for (let j = i + 1; j < pool.length; j++) {
+      if (B(pool[i], pool[j]) <= -3) {
+        const after = pitched.find(e => e.a === pool[j]) || pitched[0];
+        replies.push({ id: 'shouting-match', r: pool[i], p: pool[j], h: holderFor(pool[i]) || targets[0], w: 2.5, after });
+      }
+    }
+  }
+  const schemers = pool.filter(q => canScheme(players[q]));
+  if (schemers.length) {
+    const r = pick(rng, schemers);
+    const victims = pool.filter(q => q !== r && B(r, q) <= 1);
+    if (victims.length) {
+      const v = pick(rng, victims);
+      replies.push({ id: 'throw-under', r, p: v, h: holderFor(r) || targets[0], w: 1.5,
+        after: pitched.find(e => e.a === r) || pitched[0] });
+    }
+  }
+  const threads = new Map(pitched.map(e => [e, []]));
+  const wantPush = Math.min(replies.length, 2 + (rng() < 0.5 ? 1 : 0));
+  const usedPair = new Set();
+  for (let k = 0; k < wantPush; k++) {
+    const o = weighted(rng, replies.filter(x => !usedPair.has(`${x.r}|${x.p}`)));
+    if (!o) break;
+    usedPair.add(`${o.r}|${o.p}`);
+    replies.splice(replies.indexOf(o), 1);
+    const hNice = appOf(o.h) < 0.15;
+    const ev = { id: o.id, round: 2, a: o.r, b: o.h, c: o.p, bond: [], pop: {} };
+    cur = ev;
+    switch (o.id) {
+      case 'rebut-threat': plea(o.h, o.p, -0.2 - appOf(o.h) * 0.8); ev.bond.push([o.r, o.p, -1.5]); break;
+      case 'rebut-deserve': plea(o.h, o.p, -0.3); plea(o.h, o.r, 0.2); ev.bond.push([o.r, o.p, -1.2]); break;
+      case 'expose-deal':
+        plea(o.h, o.p, hNice ? -0.8 : -0.2); ev.bond.push([o.r, o.p, -2]); ev.pop[o.p] = -0.3;
+        break;
+      case 'rebut-record': plea(o.h, o.p, -0.4 * appOf(o.h) - 0.1); ev.bond.push([o.r, o.p, -1]); break;
+      case 'rebut-friend': plea(o.h, o.p, -0.3); ev.bond.push([o.r, o.p, -1.2]); ev.bond.push([o.r, o.h, -0.3]); break;
+      case 'counter': plea(o.h, o.r, 0.25); plea(o.h, o.p, -0.2); ev.bond.push([o.r, o.p, -0.8]); break;
+      case 'shouting-match':
+        plea(o.h, o.p, -0.2); plea(o.h, o.r, -0.2);
+        ev.bond.push([o.r, o.p, -2]); ev.pop[o.r] = 0.2; ev.pop[o.p] = 0.2;
+        break;
+      default:   // throw-under
+        plea(o.h, o.p, -0.7); ev.bond.push([o.r, o.p, -2]);
+        if (hNice) { plea(o.h, o.r, -0.5); ev.pop[o.r] = -0.5; ev.backfired = true; } else ev.pop[o.r] = -0.3;
+    }
+    threads.get(o.after)?.push(ev);
+    // And she fires back, if she is the kind who does.
+    const P = players[o.p];
+    if (o.id !== 'shouting-match' && (stat(P, 'boldness') >= 6 || stat(P, 'temperament') <= 4) && rng() < 0.7) {
+      const good = stat(P, 'social') >= 6;
+      const back = { id: 'clap-back', round: 2, a: o.p, b: o.h, c: o.r, bond: [[o.p, o.r, -1]], pop: { [o.p]: 0.2, [o.r]: 0.1 } };
+      cur = back;
+      plea(o.h, o.p, good ? 0.2 : -0.15);
+      threads.get(o.after)?.push(back);
+    }
+  }
+  // The conversation, in order: each pitch followed by what it started.
+  events.length = 0;
+  for (const ev of pitched) events.push(ev, ...(threads.get(ev) || []));
+
+  // ── ROUND 3: THE ANSWER ───────────────────────────────────────────
+  for (const h of targets) {
+    const H = players[h];
+    const standing = pool.map(q => ({ q, v: (pleas[h] || {})[q] || 0 })).sort((x, y) => y.v - x.v);
+    const pushy = events.find(e => e.b === h && ['promise', 'throw-under', 'expose-deal'].includes(e.id));
+    const friend = pool.filter(q => B(h, q) >= 3).sort((x, y) => B(h, y) - B(h, x))[0];
+    const opts = [
+      { id: 'holder-stall', w: 1.2 },
+      { id: 'holder-hope', w: friend ? 1.4 : 0 },
+      { id: 'holder-snap', w: pushy && stat(H, 'temperament') <= 5 ? 1.6 : 0 },
+      { id: 'holder-question', w: standing.length >= 2 ? 1.2 : 0 },
+    ];
+    const o = weighted(rng, opts);
+    const ev = { id: o.id, round: 3, a: h, bond: [], pop: {} };
+    cur = ev;
+    if (o.id === 'holder-stall') {
+      ev.b = standing[0]?.q;
+      for (const q of pool) ev.bond.push([h, q, -0.15]);
+    } else if (o.id === 'holder-hope') {
+      ev.b = friend;
+      plea(h, friend, 0.4);
+      ev.bond.push([h, friend, 0.5]);
+      (saves.hopes ||= []).push({ from: h, to: friend, ep });
+    } else if (o.id === 'holder-snap') {
+      ev.b = pushy.id === 'promise' ? pushy.a : pushy.a;
+      plea(h, ev.b, -0.4);
+      ev.bond.push([h, ev.b, -1]);
+      ev.pop[h] = 0.2;
+    } else {
+      // "Why should it be you?" — the two leading, and the better talker wins it.
+      const [x, y] = standing;
+      ev.b = x.q; ev.c = y.q;
+      const talker = num(players[x.q]?.stats?.social) >= num(players[y.q]?.stats?.social) ? x.q : y.q;
+      ev.winner = talker;
+      ev.w = talker;
+      plea(h, talker, 0.35);
+      ev.pop[talker] = 0.2;
+    }
+    push(ev);
+  }
+
+  // ── THE ROOM ─────────────────────────────────────────────────────
   const safe = living.filter(v => !pool.includes(v) && !targets.includes(v));
   const vouchers = [];
-  for (const v of safe) {
-    for (const q of pool) if (B(v, q) >= 4) vouchers.push({ v, q });
-  }
+  for (const v of safe) for (const q of pool) if (B(v, q) >= 4) vouchers.push({ v, q });
   if (vouchers.length) {
     const { v, q } = pick(rng, vouchers);
     const h = targets.find(t => t !== q) || targets[0];
-    cur = { id: 'vouch', a: v, b: h, c: q, bond: [[v, h, 0.2], [v, q, 0.5]], pop: { [v]: 0.2 } };
+    cur = push({ id: 'vouch', round: 2, a: v, b: h, c: q, bond: [[v, h, 0.2], [v, q, 0.5]], pop: { [v]: 0.2 } });
     plea(h, q, 0.5);
-    events.push(cur);
+  }
+  const stirrers = safe.filter(v => VILLAINS.has(players[v]?.archetype));
+  if (stirrers.length && rng() < 0.6) {
+    const v = pick(rng, stirrers);
+    const q = pick(rng, pool);
+    const h = holderFor(q) || targets[0];
+    const caught = stat(players[h], 'intuition') >= 7;
+    cur = push({ id: caught ? 'stir-caught' : 'stir', round: 2, a: v, b: h, c: q,
+      bond: caught ? [[h, v, -1.5]] : [[q, h, -1]], pop: { [v]: caught ? -0.5 : 0.2 } });
+    if (!caught) plea(h, q, -0.4);
   }
   for (const h of targets) {
     const friends = pool.filter(q => B(h, q) >= 4);
     if (friends.length >= 2) {
       cur = null;
-      events.push({
-        id: 'torn', a: h, b: friends[0], c: friends[1],
-        bond: friends.map(f => [h, f, 0.2]), pop: { [h]: 0.3 },
-      });
+      push({ id: 'torn', round: 3, a: h, b: friends[0], c: friends[1],
+        bond: friends.map(f => [h, f, 0.2]), pop: { [h]: 0.3 } });
       break;
     }
   }
-  return { events, pleas };
+  cur = null;
+  // In the order the room lived it: the threads, the room, then her answer.
+  const rank = e => (e.round === 3 ? 2 : ['vouch', 'stir', 'stir-caught'].includes(e.id) ? 1 : 0);
+  const ordered = events.map((e, i) => ({ e, i })).sort((x, y) => rank(x.e) - rank(y.e) || x.i - y.i).map(x => x.e);
+  return { events: ordered, pleas };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -390,8 +555,16 @@ export function holderSave({ saves, winners = [], giver = null, pool, living, st
  * promise this power changing hands has settled.
  */
 export function settleMemory(saves, res, ep) {
-  const out = { repaid: [], promises: [] };
+  const out = { repaid: [], promises: [], hopes: [] };
   saves.debts ||= []; saves.grudges ||= []; saves.promises ||= []; saves.fallout ||= [];
+  // "Don't worry about it," she said in Untucked — and then did not save her.
+  for (const hp of saves.hopes || []) {
+    if (hp.ep !== ep || hp.settled) continue;
+    hp.settled = true;
+    if (res.singers.includes(hp.to) && res.picks.some(x => x.holder === hp.from)) {
+      out.hopes.push({ from: hp.from, to: hp.to });
+    }
+  }
   // Tonight's deals only stand if the deal was taken: "save me" and she did.
   for (const pr of saves.promises) {
     if (pr.open && pr.ep === ep && !res.picks.some(x => x.holder === pr.to && x.saved === pr.from)) {
@@ -446,6 +619,8 @@ export function holderEffects(res, bond, memory = { repaid: [], promises: [] }) 
   }
   // A debt paid back is a friendship made public.
   for (const r of memory.repaid) { out.bond.push([r.holder, r.saved, 1]); add(out.pop, r.holder, 0.4); }
+  // Hope given and taken away is its own wound.
+  for (const hp of memory.hopes || []) { out.bond.push([hp.from, hp.to, -1.5]); add(out.pop, hp.from, -0.3); }
   // A promise kept or broken is the loudest thing on the stage.
   for (const pr of memory.promises) {
     if (pr.kept) { out.bond.push([pr.from, pr.to, 1]); add(out.pop, pr.from, 0.3); }

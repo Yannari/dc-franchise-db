@@ -63,7 +63,7 @@ export const SAVE_BEATS = {
   saveHoldExtra: {
     plea: [
       '{h} saves {s}. Whatever {s} said backstage, it worked.',
-      '{h} saves {s}, and {s} mouths "thank you" before the words are finished.',
+      '{h} saves {s}. The campaign worked.',
     ],
     debt: [
       '{h} saves {s}. She owed her, and she knows it.',
@@ -118,34 +118,60 @@ export const SAVE_BEATS = {
     ],
   },
 
-  /* ── THE CAMPAIGN ── {a} is the queen making the move, {b} the queen with
-     the power (or, on a baguette night, the one the room expects to get it),
-     {c} a third queen. */
+  /* ── THE CAMPAIGN ── in Untucked, after the call. {a} is the queen making
+     the move, {b} the queen it is aimed at (the power, or on a baguette night
+     the queen the room expects to get it), {c} a third queen, {n} a count. */
   campaign: {
     open: {
       beaver: [
-        'Backstage, the bottom three have one job: get to {b} before she walks back out there.',
+        'The bottom three walk into Untucked and nobody sits down. Everybody is looking for {b}.',
         'Untucked goes quiet for about four seconds. Then everybody turns toward {b}.',
+        '"Are there going to be alliances?" somebody asks as the door closes. Nobody answers. Everybody looks at {b}.',
       ],
       baguette: [
         'Nobody knows who the baguette is going to. Everybody has a guess, and the guess is {b}.',
         'The bottom three spend Untucked being very, very nice to {b}, just in case.',
       ],
     },
+    // Round 1: the pitch, each with its reason.
     'honest-plea': [
       '{a} sits next to {b}. "I know I was bad tonight. I am asking anyway. Please."',
-      '{a} does not dress it up. "I want to stay, and you are the only one who can do that."',
-      '{a} takes {b} aside and tells her exactly why she deserves another week.',
+      '{a} does not dress it up. "I want to stay, and you are the only one who can make that happen."',
+    ],
+    'pitch-friend': [
+      '{a} takes {b} by both hands. "We have had each other since day one. I need you now."',
+      '"You know me," {a} tells {b}. "You know I would do it for you. Do it for me."',
+      '{a} reminds {b} of every night they spent getting ready side by side. "That has to count for something."',
+    ],
+    'pitch-no-threat': [
+      '{a} is honest about it. "Look at my record. I am not the one you need to worry about. They are."',
+      '"Save me and you keep the easiest queen in the room," {a} tells {b}. "Think about it."',
+      '{a} makes the strategic case: she is the one {b} can beat later. {b} does the maths.',
+    ],
+    'pitch-deserve': [
+      '"I was the best of the three tonight, and the judges said so," {a} tells {b}. "{c} was not even close."',
+      '{a} walks {b} through the critiques. "I was nearly safe. {c} was the bottom of the bottom."',
+    ],
+    'pitch-record': [
+      '"I have {n} on my record," {a} says. "One bad night should not send me to the lip sync."',
+      '{a} points at her record. "I have won this competition before. Save the queen who can win it again."',
+    ],
+    'pitch-lipsync-mercy': [
+      '{a} is blunt. "Those two can lip sync. I cannot. If you send me out there, I am gone."',
+      '"Be honest, {b}. Which of us survives that song? Not me," {a} says.',
+    ],
+    'pitch-noble': [
+      '{a} surprises everybody. "Don\'t save me. Save one of them. I will win the lip sync."',
+      '"I am not going to beg," {a} tells {b}. "Give me the song. I want it."',
     ],
     promise: [
       '{a} leans in. "Save me tonight and I will save you the second I get the chance."',
-      '{a} offers {b} a deal: her vote of confidence now, a favour later. {b} does not say no.',
+      '{a} offers {b} a deal: a save now, a save later. {b} does not say no.',
       '"You save me, I owe you. You know I pay my debts," {a} tells {b}.',
     ],
     'debt-called': [
       '{a} does not have to say much. "I saved you, {b}. Remember?"',
       '{a} reminds {b} who pulled her out of the bottom last time.',
-      '"I was there for you," {a} says. {b} looks at the floor.',
     ],
     'cold-shoulder': [
       '{a} refuses to beg. "If {b} wants to send me to the lip sync, let her. I will win it."',
@@ -155,10 +181,34 @@ export const SAVE_BEATS = {
       '{a} starts crying before she has finished her first sentence to {b}.',
       '{a} tries to make her case to {b} and her voice gives out halfway through.',
     ],
+    // Round 2: the pushback.
+    'rebut-threat': [
+      '"No threat? She has {n} on her record," {a} says, loud enough for {b}. {c} glares at her.',
+      '{a} cuts in. "Do not let {c} tell you she is harmless. Look at her record."',
+    ],
+    'rebut-deserve': [
+      '"You were not better than me tonight, {c}," {a} snaps. "Stop saying it."',
+      '{a} will not let it go. "The judges hated your look too, {c}. Do not rewrite the critiques."',
+    ],
+    'expose-deal': [
+      '{a} tells {b} that {c} is making deals. "Ask her what she promised you. Then ask her what she promised me."',
+      '"She is offering saves she will never give," {a} says about {c}. {c} goes red.',
+    ],
+    'rebut-record': [
+      '"Her record is exactly why you should not save her," {a} tells {b} about {c}.',
+      '{a} leans over. "You save {c}, you are saving the queen who beats you in the finale."',
+    ],
+    'rebut-friend': [
+      '"Friends? {c} has been friends with everyone this week," {a} tells {b}.',
+      '{a} rolls her eyes at {c}. "Do not fall for the best-friend act, {b}."',
+    ],
+    'shouting-match': [
+      '{a} and {c} are on their feet. It takes two queens to get them to sit back down.',
+      'It starts with {a} saying one thing about {c} and ends with both of them shouting. {b} watches all of it.',
+    ],
     'throw-under': [
       '{a} tells {b} that {c} has been coasting for weeks. {c} hears every word.',
-      '"Save whoever you want, just not {c}," {a} says, loudly enough for {c}.',
-      '{a} pulls {b} aside and walks her through every mistake {c} made tonight.',
+      '"Save whoever you want, just not {c}," {a} says, loudly enough for {c} to hear.',
     ],
     backfired: [
       '{b} is not impressed. "You do not get saved by tearing her down, {a}."',
@@ -168,10 +218,136 @@ export const SAVE_BEATS = {
       '{a} is safe tonight, and spends Untucked telling {b} why {c} deserves it.',
       '"If you save anybody, save {c}," {a} tells {b}. "She has my back every single day."',
     ],
+    stir: [
+      '{a} whispers to {b} that {c} called her a fluke this morning. It is not clear that it is true.',
+      '{a} makes sure {b} hears what {c} "said" about her last week.',
+    ],
+    'stir-caught': [
+      '{a} tries to turn {b} against {c}. {b} sees straight through it. "Nice try."',
+      '{b} cuts {a} off mid-story. "I know what you are doing, and it is not working."',
+    ],
+    // Round 3: the holder answers.
+    'holder-stall': [
+      '{a} holds up her hands. "I have not decided. Please stop asking me."',
+      '"I need to think," {a} says, and walks to the bar so nobody can follow her.',
+    ],
+    'holder-hope': [
+      '{a} squeezes {b}\'s hand. "Don\'t worry about it." {b} starts to breathe again.',
+      '"You are going to be fine," {a} tells {b} quietly. Everybody else pretends not to hear.',
+    ],
+    'holder-snap': [
+      '{a} has had enough. "{b}, stop. You are making this harder, not easier."',
+      '"Pushing me is not going to work," {a} tells {b}, and turns her back on her.',
+    ],
+    'holder-question': [
+      '{a} asks {b} and {c} the only question that matters: "Why should it be you?" {w} has the better answer, and everybody hears it.',
+      '"Give me one reason," {a} says to {b} and {c}. The room goes quiet. {w} gives her three.',
+    ],
+    counter: [
+      '"With respect, I did more tonight than you did," {a} tells {c}, and turns straight back to {b}.',
+      '{a} does not let {c} finish. "My look was finished. Yours was not. Save the queen who showed up."',
+      '"Everybody has a sad story, {c}," {a} says. "I have a better runway."',
+    ],
+    'clap-back': [
+      '{a} does not let it slide. "Say that to my face, {c}." {c} does.',
+      '"Funny, coming from you," {a} fires back at {c}. Somebody gasps.',
+      '{a} turns around slowly. "{c}, you were in the bottom too. Sit down."',
+    ],
     torn: [
       '{a} has two friends in the bottom, {b} and {c}. She tells the room she feels sick.',
       '{a} looks from {b} to {c} and says she wishes this were somebody else\'s call.',
     ],
+  },
+
+  /* ── THE CEREMONY ── on the stage, after Untucked. {h} holds the power,
+     {x} the queen she is speaking to, {s} the queen saved. The beaver lines
+     are the host's own, as the wiki quotes them. */
+  ceremony: {
+    invoke: {
+      beaver: [
+        '"{h}, you\'ve earned the power of the Golden Beaver." A pause. "Heavy is the hand who holds the Beaver. Who do you want to save from the chomping block?"',
+        '"Heavy is the hand who holds the Beaver," the host says. "{h}, you\'ve earned its power. Who do you want to save from the chomping block?"',
+      ],
+      baguette: [
+        '"{h}, the Golden Baguette is in your hands," the host says. "One of these three queens leaves this stage safe tonight. Who will it be?"',
+        'The host turns to {h}. "The baguette chose you. Now you choose."',
+      ],
+    },
+    speech: {
+      friend: [
+        '"{x}, you know how much I love you. That is what makes this so hard."',
+        '"{x}. You have been my person in this competition."',
+      ],
+      rival: [
+        '"{x}, we have not always seen eye to eye, and I am not going to pretend we have."',
+        '"{x}, you and I both know how we feel about each other."',
+      ],
+      threat: [
+        '"{x}, you are one of the strongest queens here. You know what that means tonight."',
+        '"{x}, you do not need me. You have proven that all season."',
+      ],
+      pleaded: [
+        '"{x}, what you said to me back there stayed with me."',
+        '"{x}, I heard you. I really did."',
+      ],
+      neutral: [
+        '"{x}, tonight was not your night, and you know that."',
+        '"{x}, I watched you on that stage and I know you have more."',
+      ],
+      self: [
+        '"And then there is me," {h} says. "Standing in the bottom with the power in my hand."',
+      ],
+    },
+    suspense: [
+      '{h} takes a breath. "The queen I am saving tonight is..."',
+      'The stage goes silent. {h} looks down the line one more time.',
+      '"I have made my decision," {h} says, and then makes everybody wait for it.',
+    ],
+    hostReact: [
+      '"Well I\'ll be damned! {s}, you are out of the woods this week."',
+      '"{s}, you are out of the woods this week."',
+    ],
+    reaction: {
+      saved: [
+        '{s} lets out a breath she has been holding since the call and mouths "thank you" to {h}.',
+        '{s} crosses the stage and throws her arms around {h}.',
+        '{s} covers her face with both hands. She is safe.',
+      ],
+      savedSelf: [
+        '{s} steps out of the line and does not look back at the other two.',
+      ],
+      hurt: [
+        '{x} stares at {h}. She thought they were friends.',
+        '{x} nods, but her jaw is tight. She did not expect this from {h}.',
+      ],
+      bitter: [
+        '{x} laughs once, without smiling. "Of course."',
+        '{x} rolls her eyes. She saw this coming a mile away.',
+      ],
+      hopeBroken: [
+        '{x} turns to {h}. "You told me not to worry."',
+        '"Don\'t worry about it," {x} repeats under her breath, looking straight at {h}.',
+      ],
+      stoic: [
+        '{x} squares her shoulders. Fine. She will lip sync.',
+        '{x} looks straight ahead and says nothing at all.',
+      ],
+    },
+    confessional: {
+      holder: {
+        friend: ['"I was always going to save my girl. Anyone who says they would not is lying."'],
+        merit: ['"I saved the queen who least deserved to be in the bottom. That is the only fair call."'],
+        strategy: ['"This is a competition. I kept the one I can beat and sent the other two to fight each other."'],
+        plea: ['"What {s} said back there got to me. I hope I do not regret it."'],
+        debt: ['"{s} saved me once. I pay my debts. That is who I am."'],
+        self: ['"I was not going home holding my own lifeline. Obviously I saved myself."'],
+      },
+      snubbed: [
+        '"{h} made her choice. I will remember it when it is my turn."',
+        '"Fine. I am about to show {h} exactly what she did not save."',
+        '"I will not forget this. Not tonight, not next week."',
+      ],
+    },
   },
 
   /* ── WHAT THE SAVE SETTLES ── */

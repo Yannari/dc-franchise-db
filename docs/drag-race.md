@@ -209,7 +209,7 @@ double shantay, double sashay, early-win immunity, triple lip sync on a tie.
 ### The size of the call
 
 The panel calls **five or six** queens on every night with six or more in
-the room (six 60%, five 40% — the real show's mode and runner-up), always a
+the room (six 75%, five 25% — six is the norm), always a
 win and at least one high, at most one LOW. Rooms of five or fewer keep what
 they have. Double eliminations and bottom threes name their wider bottom
 inside that count; a double win promotes a queen already called HIGH.
@@ -231,22 +231,43 @@ Checked against the fandom wikitext, not remembered.
 Settings: `drGoldenBars` (1-3 golden bars), `drTankLevers` (5-10),
 `drTankLive` (1-3 live levers; always one pull per queen), `drTankRetire`.
 
-**The campaign and its memory (Beaver and Baguette).** Between the call and
-the save there is an Untucked segment (step `save-campaign`, screen "Untucked:
-The Campaign"). Each bottom queen makes one move on the queen with the power
-(the Beaver's winner, or the Baguette's likely recipient): an honest plea, a
-promise, calling in a debt, a cold shoulder, a breakdown, or throwing another
-bottom queen under the bus; a safe friend may vouch, and a holder with two
-friends down there is torn. Nice archetypes never promise or throw anyone
-under the bus. Every move changes bonds or popularity and adds a PLEA weight
-the decision reads. What the save leaves behind lives on `state.saves`:
-`debts` (a saved queen repays her holder when she can, weighted by loyalty),
-`grudges` (a queen passed over is less likely to save that holder, weighted by
-temper), `promises` (void if the deal was not taken; kept or broken the next
-time the promiser holds power) and `fallout` (a broken promise is a
-cold-open fight the following week). Wiki basis: Denim's "I'm gonna need to
-make a lot of new best friends", Nearah Nuff's "It's time to kiss some ass",
-Kiki Coe and Melinda Verga saving each other (eps 4 and 5).
+**The night's order on a Beaver or Baguette week** (wiki: the bottom is known
+before Untucked): critiques → **the call** (the named bottom three stamped
+LOW; the call does not say who sings) → **Untucked with the campaign** →
+**the save ceremony** → the lip sync. `week.js` sorts `results` ahead of
+`untucked` on these nights and `dragScreens` moves the call screen with it.
+
+**The campaign** (`runCampaign`, inside Untucked, stage on top of the lounge):
+1. *Pitch*: each bottom queen makes her case with a reason from where she
+   stands: friend, no threat, did better tonight, track record, cannot win
+   the song, "give me the song", a deal, a debt called in. A reason's weight
+   depends on the holder: "no threat" works on a strategist, "I deserved it"
+   on a fair-minded queen.
+2. *Pushback*: 2-3 exchanges hanging off the pitches: rebuttals, a counter
+   pitch, an exposed deal, a shouting match, a throw under the bus, and the
+   queen answered firing back (clap-back).
+3. *Answer*: the holder stalls, gives false hope (remembered), snaps, or asks
+   "why you?" (the better talker gains).
+Plus a friend vouching, a safe villain stirring the pot (caught by a sharp
+holder), and a holder torn between friends. Nice archetypes never make deals
+or throw anyone under the bus. Every move moves bonds or popularity and a plea
+weight the decision reads.
+
+**The ceremony** (`save-hold`): the host invokes the power in the wiki's
+words ("You've earned the power of the Golden Beaver" / "Heavy is the hand
+who holds the Beaver. Who do you want to save from the chomping block?"),
+the holder speaks to each of the three (friend / rival / threat / pleaded /
+neutral), a wait, the name on a flip-in card, the host ("Well I'll be damned!
+... You are out of the woods this week."), reactions (saved, hurt, bitter,
+"you told me not to worry", stoic), confessionals (the holder's reason and
+the sorest of the two), then the lip sync.
+
+**Memory** on `state.saves`: `debts`, `grudges`, `promises` (void unless the
+deal was taken; kept or broken the next time the promiser holds power;
+broken = a cold-open fight next week via `fallout`) and `hopes` (false hope
+costs bond). Wiki basis: Denim's "I'm gonna need to make a lot of new best
+friends", Nearah Nuff's "It's time to kiss some ass", Melinda Verga's "Are
+there going to be alliances?", Kiki Coe and Melinda Verga saving each other.
 
 Rules that bite:
 - **Still no vote.** Canada's All Stars 1 ran the beaver as a room vote; that

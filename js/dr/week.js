@@ -184,6 +184,8 @@ export function runDragWeek(state, cfg, ctx) {
   };
   // Applied once `applyEventLike` exists, a few lines down.
   const falloutFx = [];
+  // Untucked's campaign, spliced in after the night is sorted.
+  const campaignScenes = [];
   const saveScene = (step, kind, data, text) =>
     scenes.push({ step, kind: `save:${kind}`, data: { save: saves.kind, ...data }, text });
   if (saveMeta) {
@@ -963,22 +965,49 @@ export function runDragWeek(state, cfg, ctx) {
        her thinking travels into the decision as `pleas`. */
     const targets = campaignTargets({ saves, winners, giver, pool: named, living, bond: ctx.bond });
     const camp = runCampaign({
-      saves, targets, pool: named, living, players, bond: ctx.bond, rng: saveRng, ep: cfg.num,
+      saves, targets, pool: named, living, players, bond: ctx.bond, rng: saveRng, ep: cfg.num, state,
     });
+    /* IN UNTUCKED, NOT ON A SCREEN OF ITS OWN. On these nights the call
+       comes first and the room walks into the lounge knowing who is in the
+       bottom, so the campaign is what Untucked is about. The scenes are held
+       here and spliced in after the room's arrival beats, once the night is
+       sorted. */
+    const winsLabel = q => {
+      const w = (state.record?.[q] || []).filter(r => r === 'WIN').length;
+      return w === 1 ? 'a win' : `${w} wins`;
+    };
+    const camScene = (kind, data, text, ev) => {
+      const pair = ev && (ev.bond || []).find(([x]) => x === ev.a) || (ev?.bond || [])[0];
+      campaignScenes.push({
+        step: 'untucked', kind: `save:${kind}`,
+        data: { save: saves.kind, campaign: true, phase: kind === 'campaign-open' ? 'arrival' : 'middle', ...data },
+        // The card's bond chip and audience chips, in the shape Untucked draws.
+        effects: ev ? {
+          bond: pair ? pair[2] : 0,
+          pop: Object.fromEntries(Object.entries(ev.pop || {})
+            .map(([n, v]) => [n === (data.players || [])[0] ? 'a' : n === (data.players || [])[1] ? 'b' : null, v])
+            .filter(([k]) => k)),
+        } : {},
+        text,
+      });
+    };
     if (camp.events.length) {
-      saveScene('save-campaign', 'campaign-open', { players: targets.slice(0, 2), pool: named },
+      camScene('campaign-open', { players: targets.slice(0, 2), pool: named },
         saveLine(SAVE_BEATS.campaign.open[saves.kind], { b: targets[0] }));
     }
     for (const ev of camp.events) {
       applyEventLike(ev);
       werkEvents.push({ type: `campaign:${ev.id}`, players: [ev.a, ev.b, ev.c].filter(Boolean),
         bond: ev.bond, pop: ev.pop, state: {}, data: {} });
-      const vars = { a: ev.a, b: ev.b, c: ev.c };
-      saveScene('save-campaign', `campaign:${ev.id}`, {
-        players: [ev.a, ev.b].filter(Boolean), about: ev.c || null, target: ev.b, move: ev.id,
-      }, saveLine(SAVE_BEATS.campaign[ev.id], vars));
+      const vars = { a: ev.a, b: ev.b, c: ev.c, w: ev.w, n: ev.c ? winsLabel(ev.c) : winsLabel(ev.a) };
+      // A bond chip belongs to the two queens the line is about.
+      const shown = ['rebut-threat', 'rebut-deserve', 'expose-deal', 'rebut-record', 'rebut-friend',
+        'shouting-match', 'throw-under', 'counter', 'clap-back'].includes(ev.id) ? [ev.a, ev.c] : [ev.a, ev.b];
+      camScene(`campaign:${ev.id}`, {
+        players: shown.filter(Boolean), about: ev.c || null, target: ev.b, move: ev.id, round: ev.round,
+      }, saveLine(SAVE_BEATS.campaign[ev.id], vars), ev);
       if (ev.backfired) {
-        saveScene('save-campaign', 'campaign:backfired', { players: [ev.b, ev.a], target: ev.b, move: 'backfired' },
+        camScene('campaign:backfired', { players: [ev.b, ev.a], target: ev.b, move: 'backfired', round: ev.round },
           saveLine(SAVE_BEATS.campaign.backfired, vars));
       }
     }
@@ -987,7 +1016,7 @@ export function runDragWeek(state, cfg, ctx) {
       pool: named, living, state, players, bond: ctx.bond, rng: saveRng,
     });
     if (holderRes) {
-      holderRes.campaign = camp.events.map(e => ({ id: e.id, a: e.a, b: e.b, c: e.c || null, backfired: !!e.backfired, plea: e.plea || [] }));
+      holderRes.campaign = camp.events.map(e => ({ id: e.id, round: e.round, a: e.a, b: e.b, c: e.c || null, backfired: !!e.backfired, plea: e.plea || [] }));
       holderRes.pleas = camp.pleas;
       holderRes.targets = targets;
     }
@@ -1007,36 +1036,90 @@ export function runDragWeek(state, cfg, ctx) {
     saves.uses.push({ ep: cfg.num, giver, picks: holderRes.picks });
     const memory = settleMemory(saves, holderRes, cfg.num);
     holderRes.memory = memory;
+    /* WHAT SHE FELT BEFORE SHE CHOSE, for the speech and the reactions —
+       read before the save's own bond changes land. */
+    const before = {};
+    for (const pk of holderRes.picks) for (const q of holderRes.pool) before[`${pk.holder}|${q}`] = Number(ctx.bond(pk.holder, q)) || 0;
     const fx = holderEffects(holderRes, ctx.bond, memory);
     applyEventLike(fx);
     werkEvents.push({ type: `save:${saves.kind}`, players: [holderRes.holder, holderRes.saved], ...fx, data: {} });
     const [c, d] = holderRes.singers;
+    const C = SAVE_BEATS.ceremony;
+    const winsOf = q => (state.record?.[q] || []).filter(r => r === 'WIN').length;
     if (saves.kind === 'baguette') {
       saveScene('save-hold', 'handoff', { players: [giver, holderRes.holder], giver },
         saveLine(SAVE_BEATS.handoff.gave, { g: giver, h: holderRes.holder }));
     }
+    const brokenHope = new Set((memory.hopes || []).map(x => `${x.from}|${x.to}`));
+    let remaining = [...holderRes.pool];
     for (const pk of holderRes.picks) {
-      const vars = { h: pk.holder, s: pk.saved, c, d };
+      const h = pk.holder;
+      // 1. The host hands her the power, in the host's own words.
+      saveScene('save-hold', 'invoke', { players: [h], holder: h },
+        saveLine(C.invoke[saves.kind], { h }));
+      // 2. She speaks to each of them.
+      for (const x of remaining) {
+        const b0 = before[`${h}|${x}`] || 0;
+        const pleaded = ((holderRes.pleas || {})[h] || {})[x] || 0;
+        const tone = x === h ? 'self'
+          : pleaded >= 0.8 ? 'pleaded'
+            : b0 >= 3 ? 'friend'
+              : b0 <= -2 ? 'rival'
+                : winsOf(x) >= 2 ? 'threat' : 'neutral';
+        saveScene('save-hold', 'speech', { players: [h, x].filter((q, i, arr) => arr.indexOf(q) === i), holder: h, to: x, tone },
+          saveLine(C.speech[tone], { h, x }));
+      }
+      // 3. The wait.
+      saveScene('save-hold', 'suspense', { players: [h], holder: h }, saveLine(C.suspense, { h }));
+      // 4. The name.
+      const vars = { h, s: pk.saved, c, d };
       const tier = pk.selfSave ? SAVE_BEATS.saveHold.self
         : SAVE_BEATS.saveHold[pk.why] || SAVE_BEATS.saveHoldExtra[pk.why] || SAVE_BEATS.saveHold.merit;
       saveScene('save-hold', 'saved', {
-        players: pk.selfSave ? [pk.holder] : [pk.holder, pk.saved],
-        holder: pk.holder, saved: pk.saved, pool: holderRes.pool, why: pk.why,
+        players: pk.selfSave ? [h] : [h, pk.saved],
+        holder: h, saved: pk.saved, pool: holderRes.pool, why: pk.why,
       }, saveLine(tier, vars));
+      // 5. The host, and the saved queen.
+      saveScene('save-hold', 'host-react', { players: [pk.saved], saved: pk.saved },
+        saveLine(C.hostReact, { s: pk.saved }));
+      saveScene('save-hold', 'reaction', { players: [pk.saved], who: pk.saved, mood: 'saved', holder: h },
+        saveLine(pk.selfSave ? C.reaction.savedSelf : C.reaction.saved, { s: pk.saved, h }));
       // What that choice settled, said on the stage.
-      for (const r of memory.repaid.filter(x => x.holder === pk.holder)) {
+      for (const r of memory.repaid.filter(x => x.holder === h)) {
         saveScene('save-hold', 'repaid', { players: [r.holder, r.saved], holder: r.holder },
           saveLine(SAVE_BEATS.repaid, { h: r.holder, s: r.saved }));
       }
-      for (const pr of memory.promises.filter(x => x.from === pk.holder)) {
+      for (const pr of memory.promises.filter(x => x.from === h)) {
         saveScene('save-hold', pr.kept ? 'promise-kept' : 'promise-broken',
           { players: [pr.from, pr.to], holder: pr.from },
           saveLine(pr.kept ? SAVE_BEATS.promiseKept : SAVE_BEATS.promiseBroken, { h: pr.from, s: pr.to }));
       }
       for (const q of pk.snubbed || []) {
-        saveScene('save-hold', 'grudge', { players: [pk.holder, q], holder: pk.holder },
-          saveLine(SAVE_BEATS.grudge, { h: pk.holder, s: q }));
+        saveScene('save-hold', 'grudge', { players: [h, q], holder: h },
+          saveLine(SAVE_BEATS.grudge, { h, s: q }));
       }
+      remaining = remaining.filter(q => q !== pk.saved);
+    }
+    // 6. The two left standing take it in.
+    const lastHolder = holderRes.picks[holderRes.picks.length - 1].holder;
+    for (const x of holderRes.singers) {
+      const h = holderRes.picks.find(pk => brokenHope.has(`${pk.holder}|${x}`))?.holder || lastHolder;
+      const b0 = before[`${h}|${x}`] || 0;
+      const mood = brokenHope.has(`${h}|${x}`) ? 'hopeBroken'
+        : b0 >= 3 ? 'hurt' : b0 <= -1 ? 'bitter' : 'stoic';
+      saveScene('save-hold', 'reaction', { players: [x], who: x, mood, holder: h },
+        saveLine(C.reaction[mood], { x, h }));
+    }
+    // 7. The confessionals: why she did it, and the queen who will not forget.
+    for (const pk of holderRes.picks) {
+      const why = pk.selfSave ? 'self' : pk.why;
+      saveScene('save-hold', 'confessional', { players: [pk.holder], who: pk.holder, confessional: true, holder: pk.holder },
+        saveLine(C.confessional.holder[why] || C.confessional.holder.merit, { h: pk.holder, s: pk.saved }));
+    }
+    const sorest = [...holderRes.singers].sort((x, y) => (before[`${lastHolder}|${y}`] || 0) - (before[`${lastHolder}|${x}`] || 0))[0];
+    if (sorest) {
+      saveScene('save-hold', 'confessional', { players: [sorest], who: sorest, confessional: true, holder: lastHolder },
+        saveLine(C.confessional.snubbed, { h: lastHolder }));
     }
     saveScene('save-hold', 'left', { players: holderRes.singers },
       saveLine(SAVE_BEATS.saveLeft, { c, d, h: holderRes.picks.map(x => x.holder).join(' and ') }));
@@ -1556,6 +1639,8 @@ export function runDragWeek(state, cfg, ctx) {
          call never said which. */
       stakes: legacy ? 'legacy' : (topTwoSing ? 'win' : 'life'),
       rateAQueen: !!cfg.rateAQueen,
+      // A save is still to come: the call must not name who lip syncs.
+      pendingSave: !!holderRes,
       callOrder,
       challengeFamily: familyForChallenge(maxi.id).family,
     });
@@ -1697,11 +1782,29 @@ export function runDragWeek(state, cfg, ctx) {
     });
   }
 
+  /* ON A BEAVER OR BAGUETTE NIGHT THE CALL COMES FIRST. The bottom three
+     are named on the stage, and THEN the room goes to Untucked to work the
+     queen with the power; the save follows. */
+  const order = holderRes
+    ? SCENE_STEPS.filter(x => x !== 'results').flatMap(x => (x === 'untucked' ? ['results', 'untucked'] : [x]))
+    : SCENE_STEPS;
   const stepIndex = st => {
-    const i = SCENE_STEPS.indexOf(st);
-    return i === -1 ? SCENE_STEPS.length : i;
+    const i = order.indexOf(st);
+    return i === -1 ? order.length : i;
   };
   scenes.sort((a, b) => stepIndex(a.step) - stepIndex(b.step));
+  if (campaignScenes.length) {
+    let at = -1;
+    for (let i = 0; i < scenes.length; i++) {
+      if (scenes[i].step !== 'untucked') continue;
+      if (at < 0 || scenes[i].data?.phase === 'arrival' || scenes[i].kind === 'untucked') at = i;
+    }
+    if (at < 0) {
+      at = scenes.findIndex(x => stepIndex(x.step) > stepIndex('untucked')) - 1;
+      if (at < -1) at = scenes.length - 1;
+    }
+    scenes.splice(at + 1, 0, ...campaignScenes);
+  }
 
   /* ── AND THE REST OF THE NIGHT GETS A CAMERA TOO ────────────────────
      The werk room grew confessionals first and for a while had all of them:

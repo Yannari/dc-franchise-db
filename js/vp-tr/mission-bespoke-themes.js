@@ -50,7 +50,7 @@ const CAUSEWAY = {
   title: v => '<h1 class="dc-title">The Drowned <em>Causeway</em></h1>',
   sub: v => 'A tidal sandbar, a ruined chapel on it, and about seventy minutes before the sea closes the road behind the teams.',
   chips: v => [{ text: 'Three phases' }, { text: v.teams.map(t => t.name).join(' v ') },
-    { text: '£2,000 a box' }, { text: 'No shield' }],
+    { text: '£2,000 a box' }, { text: 'A Shield in the flooded font', shield: true }],
   phaseNum: (roman) => '<span class="dc-phase-n">' + roman + '</span>',
   cardClass: c => c.relic ? 'social' : (c.isSocial ? 'social' : c.tone),
   cardTag: (c) => c.isSocial ? _cap(c.behaviour || 'moment') : (CAUSEWAY_TAGS[c.kind] || _cap(c.kind)),
@@ -85,8 +85,7 @@ const CAUSEWAY = {
       + '<div class="row"><span>Boxes on the roof</span><b id="dc-pot-boxes">' + (s.shown ? s.boxes : '&mdash;') + '</b></div>'
       + '<div class="row"><span>Earned today</span><b id="dc-pot-earned">' + (s.shown ? _gbp(s.earned) : '&mdash;') + '</b></div>'
       + '<div class="big" id="dc-pot-after">' + _gbp(s.potAfter) + '</div></div>'
-      + '<div class="dc-shieldnote"><b style="color:#9db0b8">Shield.</b> Nothing on this sandbar grants one. '
-      + 'The only relic in the season is in the burnt wing.</div></div>';
+      + '</div>';
   },
   sideStates(v, total) {
     const pr = phaseProg(v);
@@ -270,7 +269,7 @@ const ORRERY = {
   title: v => '<h1 class="no-title">The Nightjar <span>Orrery</span></h1>',
   sub: v => 'Forty years of one astronomer\'s undated night-book, a brass machine the size of a room, and a strongroom under the floor that only opens on the right night.',
   chips: v => [{ text: 'Three phases' }, { text: v.teams.map(t => t.name).join(' v ') },
-    { text: '£3,000 a compartment' }, { text: 'No shield' }],
+    { text: '£3,000 a compartment' }, { text: 'A Shield behind the ninth ring', shield: true }],
   phaseNum: (roman) => '<span class="no-phase-n"><b>' + roman + '</b></span>',
   cardClass: c => {
     if (c.isSocial) return 'social';
@@ -303,8 +302,7 @@ const ORRERY = {
       + '<div class="r"><span>Compartments open</span><b id="no-pot-c">' + (s.shown ? s.compartments : '&mdash;') + '</b></div>'
       + '<div class="r"><span>Earned today</span><b id="no-pot-e">' + (s.shown ? _gbp(s.earned) : '&mdash;') + '</b></div>'
       + '<div class="big" id="no-pot-a">' + _gbp(s.potAfter) + '</div></div>'
-      + '<div class="no-shieldnote"><b style="color:#93a1c8">Shield.</b> Nothing in this dome grants one. '
-      + 'There is money under the floor and nothing else.</div></div>';
+      + '</div>';
   },
   sideStates(v, total) {
     const pr = phaseProg(v);
@@ -490,7 +488,7 @@ const ACCOUNT = {
   title: v => '<h1 class="la-title">The Long <em>Account</em></h1>',
   sub: v => 'A dead man\'s debts, an agent with a locked box, and one word each to write where nobody can see you write it.',
   chips: v => [{ text: 'Three phases' }, { text: v.teams.map(t => t.name).join(' v ') },
-    { text: 'A hold pays four times a take' }, { text: 'No shield' }],
+    { text: 'A hold pays four times a take' }, { text: 'A Shield in the side room', shield: true }],
   phaseNum: (roman) => '<span class="la-phase-n">Phase ' + roman + '</span>',
   cardClass: c => (c.isSocial ? 'social ' : '') + (c.tone === 'bad' ? 'struck' : ''),
   cardTag: (c, ph) => c.isSocial
@@ -516,7 +514,7 @@ const ACCOUNT = {
       + '<div class="r"><span>Fund before</span><b>' + _gbp(v.potBefore) + '</b></div>'
       + '<div class="r"><span>Earned today</span><b id="la-tot-e">' + (s.shown ? _gbp(s.earned) : '&mdash;') + '</b></div>'
       + '<div class="big" id="la-tot-a">' + _gbp(s.potAfter) + '</div></div>'
-      + '<div class="la-shieldnote"><b>Shield.</b> There is no relic in a counting room. Everything here is money.</div></div>';
+      + '</div>';
   },
   sideStates(v, total) {
     const pr = phaseProg(v);
@@ -662,7 +660,7 @@ const VAULT_TAGS = {
   strong: 'Strong', sharp: 'Sharp', stop: 'Stopped', dull: 'Steady',
 };
 const VAULT = {
-  id: 'ash-vault', prefix: 'av',
+  id: 'ash-vault', prefix: 'av', ownShield: true,
   shieldBeat: /\bShield\b|kitchen flue|body short/,
   rootVars: '',
   nextLabel: 'Next', allLabel: 'Reveal all', revealedWord: 'revealed', sheetBrief: false,

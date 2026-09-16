@@ -70,6 +70,7 @@
 import { gs, players } from '../../core.js';
 import { pStats, pronouns } from '../../players.js';
 import { shieldSource } from '../armoury.js';
+import { awardShield } from '../powers.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // THE POT ARITHMETIC — one copy, shared with js/tr/missions.js
@@ -756,6 +757,90 @@ export function missionShieldOffered(ctx) {
   if (src === 'mission') return true;
   const ep = ctx?.ep;
   return !!(gs?.tr?.shieldEpisodes && ep != null && gs.tr.shieldEpisodes[ep]);
+}
+
+/**
+ * THE SHIELD HUNT, shared by the missions that bolt one onto their afternoon.
+ *
+ * Not a scoring loop and not a skin: the mission supplies WHERE the Shield is
+ * and what it costs to go for it (its own prose, its own odds, its own
+ * `phase`), and this does the part that must be identical everywhere — the
+ * gate, one searcher drawn from the whole room, one draw for whether they find
+ * it, the award (js/tr/powers.js owns who saw it), and a scene whose record
+ * field lets the screen light the Shield box on the right reveal.
+ *
+ * THE COST IS A PENALTY ON THE SEARCHER'S TEAM, applied by the caller to that
+ * team's perf before the pot is paid, and priced afterwards as the gross the
+ * castle lost (`shieldCostOf`). Found or not, the time was spent.
+ *
+ * `spec`: { id, phase, field, penalty, weight(n), chance(n), found[], missed[],
+ *   voice: { found: bank, missed: bank } }   (banks as in `confessionalVoice`)
+ * Always takes exactly two draws when offered, so a mission's stream does not
+ * depend on who was picked.
+ */
+export function runShieldHunt(ctx, rng, teams, spec) {
+  const offered = missionShieldOffered(ctx);
+  const none = { offered, searcher: null, found: false, team: null, penalty: 0,
+    scenes: [], block: { offered, searcher: null, found: false, cost: 0, holder: null,
+      witnesses: [], visibility: null, lines: [] } };
+  if (!offered) return none;
+  const room = teams.flatMap(t => t.members);
+  const searcher = weightedPick(rng, room, spec.weight);
+  const found = rng() < clamp01(spec.chance(searcher));
+  if (!searcher) return none;
+  const team = teams.find(t => t.members.includes(searcher));
+  const slots = pronounSlots(searcher);
+  const won = found ? awardShield(searcher, teams, ctx.ep, rng) : null;
+  const scene = missionScene({
+    id: `${spec.id}-shield-hunt`,
+    eventId: found ? `${spec.id}-shield-found` : `${spec.id}-shield-missed`,
+    phase: spec.phase,
+    participants: [searcher],
+    behaviour: found ? 'impressive' : 'selfish',
+    text: render(freshPick(rng, found ? spec.found : spec.missed), slots)
+      + (won && won.witnesses.length
+        ? ` ${andList(won.witnesses.slice(0, 3))} saw it happen.` : ''),
+    effects: [
+      { kind: 'record', player: searcher, field: spec.field, value: true,
+        source: `${searcher} left ${team ? team.name : 'the team'} to go for the Shield` },
+      ...(won ? [{ kind: 'shield', player: searcher,
+        source: `${searcher} came back from the search with a Shield` }] : []),
+      { kind: 'crowd', name: searcher, colour: found ? 'masterful' : 'selfish', mult: 0.7,
+        source: `${searcher} went for the Shield while ${team ? team.name : 'the team'} worked on` },
+    ],
+    confessional: spec.voice ? { purpose: 'hidden-intent', speaker: searcher,
+      text: confessionalVoice(searcher, found ? spec.voice.found : spec.voice.missed) } : null,
+  });
+  return {
+    offered, searcher, found: !!won, team: team ? team.name : null, penalty: spec.penalty,
+    scenes: [scene],
+    block: { offered, searcher, found: !!won, cost: 0,
+      holder: won ? won.holder : null, witnesses: won ? [...won.witnesses] : [],
+      visibility: won ? won.visibility : null, lines: won ? [won.seenLine] : [] },
+  };
+}
+
+/**
+ * Put a mission's Shield lines into its briefing, just before the host's last
+ * beat ("Go."), and move every rule point at or after that beat along with it.
+ * `beats` is a list of hostSay/hostDo results; `shieldAt` and `costAt` index
+ * into it. A day with no Shield on offer gets the briefing unchanged.
+ */
+export function addShieldBeats(ceremony, offered, beats, { shieldAt, costAt }) {
+  if (!offered || !beats || !beats.length) return ceremony;
+  const at = ceremony.hostBeats.length - 1;
+  const hostBeats = [...ceremony.hostBeats.slice(0, at), ...beats, ...ceremony.hostBeats.slice(at)];
+  const rulePoints = ceremony.rulePoints.map(r => (r.explainedByBeat >= at
+    ? { ...r, explainedByBeat: r.explainedByBeat + beats.length } : r));
+  rulePoints.push({ id: 'shield', explainedByBeat: at + shieldAt },
+    { id: 'cost', explainedByBeat: at + costAt });
+  return { ...ceremony, hostBeats, rulePoints, revealBeats: hostBeats.length };
+}
+
+/** What a hunt cost, in pot money: the gross with and without the penalty. */
+export function shieldCostOf(qualityAsPlayed, qualityWithout) {
+  const grossOf = q => Math.round(MISSION_MAX * (q < PASS_MARK ? 0 : q));
+  return Math.max(0, grossOf(qualityWithout) - grossOf(qualityAsPlayed));
 }
 
 export const MISSION_BEHAVIOURS = Object.freeze([

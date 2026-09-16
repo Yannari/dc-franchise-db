@@ -29,12 +29,14 @@
 // record cannot tell them apart — it stores the misread and the graduation, and
 // never why. The shift is to a probability that a steady hand still beats.
 //
-// NO SHIELD, NO RELIC, NO POWER. See the header of drowned-causeway.js.
+// A SHIELD on the ninth ring (see SHIELD below and the header of
+// drowned-causeway.js).
 
 import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisy, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
+  runShieldHunt, shieldCostOf, missionShieldOffered, addShieldBeats,
 } from './contract.js';
 
 const TEAMS = ['Meridian', 'Antares'];
@@ -591,6 +593,43 @@ const SUMMARY = {
 
 // ══════════════════════════════════════════════════════════════════════
 
+// ── THE SHIELD: THE NINTH RING ──────────────────────────────────────
+// The orrery has one ring nobody is assigned to: the nightjar's. Set it to the
+// mark in the margin of the night-book and a drawer under the plinth opens,
+// with a Shield in it. A setter who goes for it leaves their own ring
+// unattended, and the team's gearing is a ring short while they do.
+const SHIELD = {
+  id: 'orrery', phase: 'gearing', field: 'setTheHiddenRing', penalty: 0.05,
+  weight: n => 0.3 + 0.9 * (statOf(n, 'intuition') / 10) * (1 - 0.5 * (statOf(n, 'loyalty') / 10)),
+  chance: n => 0.14 + 0.03 * statOf(n, 'mental') + 0.012 * statOf(n, 'intuition'),
+  found: [
+    '{who} left {their} own ring half-set, turned the nightjar ring to the mark in the margin, and the drawer under the plinth slid open.',
+    '{who} had worked out what the note in the margin meant, and while {their} team waited on {their} ring, {they} used it. The drawer opened.',
+    "The unassigned ring clicked into place under {who}'s hand and a Shield came out of the plinth.",
+  ],
+  missed: [
+    '{who} abandoned {their} ring to try the nightjar ring, got the mark wrong, and came back to a team that had set the rest without {them}.',
+    '{who} spent the gearing on the ring nobody was assigned to, and the drawer stayed shut.',
+  ],
+  voice: {
+    found: {
+      villainous: "The note was in the margin for anyone to read. I read it. They were busy being good at rings.",
+      nice: "I know my ring cost us. I'll make it up. I just couldn't leave that drawer shut.",
+      neutral: "Nobody else looked at the margin. I did. That's all there is to it.",
+    },
+    missed: {
+      villainous: "Wrong mark. It happens. What matters is nobody saw what I was trying.",
+      nice: "I left my ring for a drawer that didn't open. I owe my team for that.",
+      neutral: "One graduation out. Story of this whole building.",
+    },
+  },
+};
+const SHIELD_BRIEF = [
+  hostDo('The host rests a hand on the outermost ring, the one with no name chalked beside it.'),
+  hostSay('This ring belongs to no team. It is the nightjar. Set it to the right mark and a drawer in the plinth opens, and in the drawer is a Shield for whoever set it.'),
+  hostSay('Whoever leaves their own ring to try it leaves their team a ring short until they come back.'),
+];
+
 export const nightjarOrrery = {
   id: 'nightjar-orrery',
   name: 'The Nightjar Orrery',
@@ -619,7 +658,8 @@ export const nightjarOrrery = {
     + 'graduation out still turns and still feels right, and it silently spoils every ring '
     + 'inside it; a transit called early or late leaves the floor shut with no second '
     + 'attempt. Every compartment opened under the floor is three thousand into the shared '
-    + 'pot, and a team that never opens one earns nothing at all.',
+    + 'pot, and a team that never opens one earns nothing at all.'
+    + ' A ninth ring belongs to no team, and any player who leaves their own ring to set it to the mark in the night-book\'s margin opens a drawer holding a Shield, while their team works a ring short.',
 
   eligibility(ctx) {
     return Array.isArray(ctx?.living) && ctx.living.length >= 4;
@@ -629,7 +669,8 @@ export const nightjarOrrery = {
     const living = [...ctx.living];
     const rings = ringsFor(living.length);
     const teams = splitTeams(living, rng, TEAMS);
-    const ceremony = _ceremony(rings);
+    const ceremony = addShieldBeats(_ceremony(rings), missionShieldOffered(ctx), SHIELD_BRIEF,
+      { shieldAt: 1, costAt: 2 });
 
     const ledger = _ledger(ctx, rng, teams);
     const ledgerScore = Object.fromEntries(ledger.phase.teams.map(t => [t.name, t.score]));
@@ -643,7 +684,12 @@ export const nightjarOrrery = {
       const parts = phases.map(p => p.teams.find(x => x.name === tname).score);
       return clamp01(parts.reduce((a, b) => a + b, 0) / parts.length + (rng() - 0.5) * PHASE_SWING);
     };
-    const scored = teams.map(t => ({ name: t.name, members: [...t.members], perf: perfOf(t.name) }));
+    const base = teams.map(t => ({ name: t.name, members: [...t.members], perf: perfOf(t.name) }));
+    // THE SHIELD HUNT, after the phases so their stream is untouched. Its cost
+    // lands on the searcher's team before the pot is paid.
+    const hunt = runShieldHunt(ctx, rng, teams, SHIELD);
+    const scored = base.map(t => (t.name === hunt.team
+      ? { ...t, perf: clamp01(t.perf - hunt.penalty) } : t));
 
     const playerScores = {};
     for (const n of living) {
@@ -652,6 +698,7 @@ export const nightjarOrrery = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
+    hunt.block.cost = shieldCostOf(quality, missionQuality(base[0].perf, base[1].perf));
     // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
     // has taken a bonus since it was written and no bespoke mission ever
     // passed one, so a solo task was worth nothing here even when the field
@@ -670,9 +717,10 @@ export const nightjarOrrery = {
       bestTeam: scored[0].perf >= scored[1].perf ? scored[0].name : scored[1].name,
       potBefore: pay.potBefore, gross: pay.gross, potEarned: pay.potEarned,
       potAfter: pay.potAfter, earned: pay.potEarned,
-      shields: [],
+      shields: hunt.found ? [hunt.block] : [],
+      shield: hunt.block,
       sideObjectives,
-      scenes: [...ledger.scenes, ...gearing.scenes, ...transit.scenes],
+      scenes: [...ledger.scenes, ...gearing.scenes, ...transit.scenes, ...hunt.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       tally: { rings, ringsTrue: { ...gearing.teamRings }, opened: { ...transit.opened } },
     };

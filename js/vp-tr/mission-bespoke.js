@@ -103,6 +103,10 @@ const TR = 'traitors';
 // a scene already tells in full (the freeze, the miscount) is SUPPRESSED in
 // favour of the richer scene — the same collapse the mockups make.
 
+/** The record fields a Shield search writes, one per mission. */
+const SHIELD_FIELDS = new Set(['leftTheRelay', 'askedForMoreTime', 'wentForTheFont',
+  'setTheHiddenRing', 'tookTheAgentsOffer']);
+
 const GOOD = new Set(['strong', 'cross', 'right', 'sharp', 'true', 'on', 'good', 'win']);
 const BAD = new Set(['weak', 'freeze', 'wrong', 'lost', 'out', 'bad', 'lose', 'stop', 'dull']);
 
@@ -149,8 +153,7 @@ function _view(ep) {
       text: s.text, isSocial: true, behaviour: s.behaviour || null,
       conf: s.confessional ? { speaker: s.confessional.speaker, text: s.confessional.text } : null,
       fx: _fxLabels(s.effects || []),
-      relic: (s.effects || []).some(e => e.kind === 'record'
-          && (e.field === 'leftTheRelay' || e.field === 'askedForMoreTime'))
+      relic: (s.effects || []).some(e => e.kind === 'record' && SHIELD_FIELDS.has(e.field))
         || (s.effects || []).some(e => e.kind === 'shield'),
     }));
     return {
@@ -288,7 +291,8 @@ function _defaultCard(v, c, id, th) {
   const fx = (c.fx && c.fx.length)
     ? '<div class="' + p + '-fx">' + c.fx.map(f =>
         '<span' + (f.note ? ' class="mb-fx-note"' : '') + '>' + f.html + '</span>').join('') + '</div>' : '';
-  return '<article class="' + p + '-card ' + th.cardClass(c) + '" id="' + id + '">'
+  const relic = (c.relic && !th.ownShield) ? ' mb-relic' : '';
+  return '<article class="' + p + '-card ' + th.cardClass(c) + relic + '" id="' + id + '">'
     + th.icon(c, c._ph) + '<span class="' + p + '-tag">' + _esc(th.cardTag(c, c._ph)) + '</span>'
     + '<div class="' + p + '-who mb-wholine">' + _who(c) + '</div>'
     + '<div class="' + p + '-txt">' + _esc(c.text) + '</div>'
@@ -321,6 +325,51 @@ function _phaseSection(v, ph, th, startIdx) {
 // ══════════════════════════════════════════════════════════════════════
 
 const THEME = {};   // filled at the bottom
+
+// ── THE SHARED SHIELD BOX ─────────────────────────────────────────────
+// For the themes that do not draw their own (the causeway, the orrery, the
+// counting room). Sealed until the card that shows somebody going for it.
+function _shieldStates(v, total) {
+  let relicAt = -1, i = 0;
+  for (const p of v.phases) for (const c of p.cards) { if (c.relic && relicAt < 0) relicAt = i; i++; }
+  const sh = v.shield || null;
+  const out = [];
+  for (let n = 0; n <= total; n++) {
+    const seen = !!sh && sh.searcher && relicAt >= 0 && n > relicAt;
+    const offered = !sh || sh.offered !== false;
+    out.push({
+      lit: seen && !!sh.found,
+      seen,
+      val: !offered ? 'not on offer today'
+        : !seen ? 'still where the host left it'
+          : sh.found ? sh.holder + ' has it' : sh.searcher + ' went for it and came back empty',
+      cost: seen ? ('cost the team ' + _money(sh.cost || 0).replace('&pound;', '£')
+        + (sh.found ? ' · seen by ' + (sh.witnesses || []).length : '')) : '',
+      holder: seen && sh.found ? sh.holder : null,
+    });
+  }
+  return out;
+}
+function _shieldBox(v, s) {
+  const e = v.epNum;
+  return '<div class="mb-shield' + (s && s.lit ? ' on' : '') + '" id="mb-shield-' + e + '">'
+    + '<div class="mb-shield-l">The Shield</div>'
+    + '<div class="mb-shield-h" id="mb-shield-h-' + e + '"' + (s && s.holder ? '' : ' hidden') + '>'
+    + (v.shield && v.shield.holder ? _av(v.shield.holder, 40) : '') + '</div>'
+    + '<div class="mb-shield-v" id="mb-shield-v-' + e + '">' + _esc(s ? s.val : '') + '</div>'
+    + '<div class="mb-shield-c" id="mb-shield-c-' + e + '">' + _esc(s ? s.cost : '') + '</div></div>';
+}
+function _paintShield(e, s) {
+  if (!s) return;
+  const box = document.getElementById('mb-shield-' + e);
+  if (box) box.classList.toggle('on', s.lit);
+  const h = document.getElementById('mb-shield-h-' + e);
+  if (h) h.hidden = !s.holder;
+  const v = document.getElementById('mb-shield-v-' + e);
+  if (v) v.textContent = s.val;
+  const c = document.getElementById('mb-shield-c-' + e);
+  if (c) c.textContent = s.cost;
+}
 
 /** True when this record is a bespoke afternoon this file can draw. */
 export function isBespokeMissionRec(m) { return !!(m && m.id && THEME[m.id]); }
@@ -357,7 +406,8 @@ export function rpBuildBespokeMission(ep, observer = 'audience') {
   const states = th.sideStates(v, total);
   if (typeof window !== 'undefined') {
     window.__trBespoke = window.__trBespoke || {};
-    window.__trBespoke[v.epNum] = { prefix: p, missionId: v.id, total, states };
+    window.__trBespoke[v.epNum] = { prefix: p, missionId: v.id, total, states,
+      shieldStates: th.ownShield ? null : _shieldStates(v, total), epNum: v.epNum };
     if (window.__trMission) delete window.__trMission[v.epNum]; // this ep is bespoke, not archetype
   }
 
@@ -384,7 +434,9 @@ export function rpBuildBespokeMission(ep, observer = 'audience') {
     + (st.idx >= total - 1 ? '' : ' style="opacity:.3"') + '>'
     + '<small>The afternoon &middot; ' + _esc(v.tier) + '</small>' + _esc(v.summary) + '</div>'
     + '</main>'
-    + '<aside class="' + p + '-side">' + th.sidebar(v, st.idx + 1, states) + '</aside>'
+    + '<aside class="' + p + '-side">' + th.sidebar(v, st.idx + 1, states)
+    + (th.ownShield ? '' : _shieldBox(v, _shieldStates(v, total)[st.idx + 1]))
+    + '</aside>'
     + '</div></div>';
 
   const controls = '<div class="' + p + '-controls">'
@@ -404,7 +456,9 @@ export function rpBuildBespokeMission(ep, observer = 'audience') {
   const IMPORT = /@import\s+url\([^)]*\)\s*;/g;
   const imports = (th.css.match(IMPORT) || []).join('');
   const first = '<style>' + imports + th.css.replace(IMPORT, '') + PORTRAIT_CSS + '</style>'
-    + '<div class="' + p + '-root ' + p + '-scope" style="' + th.rootVars + '">'
+    // `mb-scope` is what COMMON_CSS keys the first-paint `data-on` rule to.
+    // Without it a re-drawn screen showed every revealed card at opacity 0.
+    + '<div class="' + p + '-root ' + p + '-scope mb-scope" style="' + th.rootVars + '">'
     + '<div class="' + p + '-shell" id="mb-shell-' + v.epNum + '">'
     + '<div class="' + p + '-scenery" aria-hidden="true">' + th.atmosphere() + '</div>'
     + body + '</div>' + controls + '</div>';
@@ -446,6 +500,7 @@ function _reapply(epNum, idx, total, prefix) {
   if (summary) summary.style.opacity = idx >= total - 1 ? '1' : '.3';
   if (store) {
     try { THEME[store.missionId].paintSide(store.prefix, store.states, idx + 1); } catch { /* keep going */ }
+    if (store.shieldStates) _paintShield(epNum, store.shieldStates[Math.min(idx + 1, total)]);
   }
   if (scroller) scroller.scrollTop = top;
 }
@@ -473,7 +528,10 @@ if (typeof window !== 'undefined') {
   window.__trBespokeMount = function (epNum) {
     const store = window.__trBespoke && window.__trBespoke[epNum];
     const st = _bespokeState['be-' + epNum];
-    if (store && st) { try { THEME[store.missionId].paintSide(store.prefix, store.states, st.idx + 1); } catch { /* */ } }
+    if (store && st) {
+      try { THEME[store.missionId].paintSide(store.prefix, store.states, st.idx + 1); } catch { /* */ }
+      if (store.shieldStates) _paintShield(epNum, store.shieldStates[st.idx + 1]);
+    }
   };
 }
 
@@ -518,6 +576,17 @@ const COMMON_CSS = `
    they must NOT read as one of the bordered, uppercase, numeric chips beside
    them. Stripped of border, caps and letter-spacing, set in italic lower-case
    prose — an authored aside, unmistakably not an applied consequence. */
+.mb-shield{margin-top:12px;padding:12px 14px;border:1px dashed rgba(233,198,91,.35);background:rgba(0,0,0,.35);
+  text-align:center;transition:all .5s;font-family:inherit}
+.mb-shield-l{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;opacity:.7}
+.mb-shield-v{margin-top:5px;font-size:15px;opacity:.75}
+.mb-shield-c{margin-top:5px;font-size:11.5px;letter-spacing:.05em;opacity:.6}
+.mb-shield-h{display:flex;justify-content:center;margin-top:8px}
+.mb-shield-h[hidden]{display:none}
+.mb-shield-h .cv-av{width:44px;height:44px;box-shadow:0 0 14px rgba(233,198,91,.5)}
+.mb-shield.on{border:1px solid #e9c65b;box-shadow:0 0 20px rgba(233,198,91,.18)}
+.mb-shield.on .mb-shield-l,.mb-shield.on .mb-shield-v{color:#e9c65b;opacity:1}
+.mb-relic{outline:1px solid rgba(233,198,91,.75);box-shadow:0 0 22px rgba(233,198,91,.16) !important}
 .mb-fx-note{border:none !important;text-transform:none !important;letter-spacing:normal !important;
   font-style:italic;opacity:.6;padding:2px 0 !important}
 `;

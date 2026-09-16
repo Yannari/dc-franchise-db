@@ -2628,6 +2628,11 @@ function _recordEpisode(ep, { banished = null, night = null, mission = null,
       // windows, the table or the night, and a parameter would have to be
       // threaded through all of them to catch the same set this filter does.
       receipts: receiptsTonight,
+      // WHAT A SCENE MOVED, FOR THE VIEWER. The castle day draws impact chips
+      // from this, not from the ledger above: only the applied movements, with
+      // the coordinates and the direction, and none of the causes. The screen
+      // still gates each one by observer.
+      impacts: sceneImpacts(receiptsTonight),
     },
   });
   // NOW, and only now, the buffer may let them go. See `trimRecordedReceipts`.
@@ -3298,4 +3303,18 @@ export function playTraitorsSeason({ cast, traitorCount = 3, seed = 1, maxRounds
     // money, and only a castle with nobody in a cloak splits it.
     winner: endgame.winner,
   };
+}
+
+/** The applied movements from tonight's ledger, stripped to what a chip draws. */
+function sceneImpacts(list) {
+  const out = [];
+  for (const r of list || []) {
+    if (!r || !r.applied || !r.sceneId) continue;
+    if (!['bond', 'belief', 'doubt', 'crowd'].includes(r.kind)) continue;
+    out.push({ sceneId: r.sceneId, kind: r.kind,
+      players: r.players ? [...r.players] : null,
+      observer: r.observer ?? null, subject: r.subject ?? null,
+      delta: r.delta ?? null });
+  }
+  return out;
 }

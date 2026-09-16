@@ -889,10 +889,14 @@ describe('nothing learns an alignment above `deduced`', () => {
     // power is rare BY CONSTRUCTION -- which is precisely the shape of guard
     // that went green through a live mutation in Task 4. This says the sample
     // actually contains the case the bound is about.
+    // Measured 83 in 100 seasons (2026-09-16); an endgame that opens on two
+    // (SEER_MIN_ROOM is 3) never offers it. Twelve seasons at that rate land
+    // anywhere from 8 to 12, so the floor was a coin toss at "more than 8"; six
+    // or more fails only if the power has really thinned.
     expect(seasonsWithSeer,
-      'no Seer read happened in any of twelve seasons: the one `observed` writer this guard '
-      + 'now sanctions was never observed, so its half of the closed set is unexercised')
-      .toBeGreaterThan(8);
+      'the Seer read in too few of twelve seasons: the one `observed` writer this guard '
+      + 'now sanctions was barely observed, so its half of the closed set is under-exercised')
+      .toBeGreaterThan(5);
 
     for (const c of alignment) {
       if (c.sourceType === 'observed') continue;

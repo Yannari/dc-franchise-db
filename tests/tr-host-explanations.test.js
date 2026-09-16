@@ -110,6 +110,13 @@ function season(seed, cfg) {
 // it, so one run does.
 const RUNS = [];
 for (let seed = 1; seed <= 24; seed++) RUNS.push(season(seed));
+// A FIXED SEED LIST DOES NOT STAY "CHOSEN". Any change that draws one more
+// random number moves every outcome, and at one blocked murder in twenty (5 in
+// 100 seeds, measured 2026-09-16) twenty-four seeds miss it about 28% of the
+// time. So the sweep keeps playing until it holds one, and the cap keeps a real
+// loss of the branch failing below.
+const _blocked = run => run.episodes.some(ep => ep.tr && ep.tr.dawn && ep.tr.dawn.blocked);
+for (let seed = 25; seed <= 150 && !RUNS.some(_blocked); seed++) RUNS.push(season(seed));
 RUNS.push(season(8, { trShieldSource: 'armoury', trArmourySize: 4 }));
 
 /** Everything the audience sees this episode, as one searchable string. */

@@ -1008,7 +1008,7 @@ function _view(ep, observer) {
 // ones. Saying it plainly costs nothing and keeps the other three honest.
 const WHY_LABEL = {
   heat: 'They were closing in',
-  credibility: 'The room believes them',
+  credibility: 'A trusted voice',
   bond: 'They were already close',
   influence: 'The room follows them',
   'no-strong-reason': 'No strong reason',

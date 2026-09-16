@@ -390,7 +390,10 @@ describe('what the board leans on is not how long somebody lasted', () => {
      export -- exactly the correction the social-column test already carries
      one arm up. */
   it('does not pay a column that reverses sign at the final table', () => {
-    expect(endPlace.length, 'no finalists in the sample at all').toBeGreaterThan(400);
+    // ~3.3 per season (398 in 120, measured 2026-09-16); the old floor of 400
+    // sat on the measurement itself. The floor is for a sample too thin to
+    // split, not for the rate.
+    expect(endPlace.length, 'too few finalists in the sample to split on').toBeGreaterThan(300);
     expect(lowPlace.length, 'nobody left before the final table').toBeGreaterThan(1500);
     // Roughly a quarter of a cast reaches it. If that stops being true the
     // split is describing a different population and wants re-measuring.

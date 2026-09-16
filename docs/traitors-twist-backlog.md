@@ -82,3 +82,18 @@ Shield, Dagger, Seer.
 - `tests/tr-murder.test.js` is on the slow list (`vitest.slow.js`), so the
   default config skips it; run it with
   `npx vitest run --config vitest.sim.config.js tests/tr-murder.test.js`.
+
+## Missions first (chosen 2026-09-16)
+
+Eight more bespoke missions, from the wiki's mission pages, to reach the
+plan's 12 (Task 11 of `docs/superpowers/plans/2026-08-31-traitors-full-experience.md`).
+Each gets a mockup in `mockup/` for approval before its screen is built.
+
+1. Buried Alive
+2. Beacon Lighting
+3. Wicker Beasts
+4. The Traitors' Chess
+5. Church Match
+6. Traitors' Monument
+7. The Funeral (needs a slow-poison Murder in Plain Sight the night before)
+8. Bonus mission: Roulette / Dinner Party

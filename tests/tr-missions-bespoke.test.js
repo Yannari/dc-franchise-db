@@ -49,8 +49,8 @@ function world(cast = CAST) {
   gs.tr.potCeiling = POT_CEILING;
 }
 
-function ctxFor(cast = CAST, ep = 3, traitors = []) {
-  return createMissionCtx({ ep, living: [...cast],
+function ctxFor(cast = CAST, ep = 3, traitors = [], shieldsEnabled = true) {
+  return createMissionCtx({ ep, living: [...cast], shieldsEnabled,
     alignmentOf: (n) => (traitors.includes(n) ? 'traitor' : 'faithful') });
 }
 
@@ -733,14 +733,17 @@ describe('the footprint on a season is the pot and the record', () => {
     // sanctioned channel — the same idiom `_setShieldMissionEnabled` uses in
     // tests/tr-missions.test.js, and the hold-out gets its own arm below
     // rather than being a hole.
-    // Buried Alive holds a Shield in its coffins for the same reason.
-    const money = TRAITORS_MISSIONS.filter(m => !['ash-vault', 'buried-alive'].includes(m.id));
-    for (const mission of money) {
+    // EVERY BESPOKE MISSION CAN GRANT A SHIELD NOW, so the arm holds that one
+    // sanctioned channel out with the switch rather than by leaving missions
+    // out; the arm below proves the switch is holding something out.
+    for (const mission of TRAITORS_MISSIONS) {
+      // The Ash Vault's crawl IS the hunt, so it stands down instead.
+      if (mission.eligibility(ctxFor(CAST, 3, [], false)) === false) continue;
       world();
       const before = { shields: JSON.stringify(gs.tr.shields || []),
         daggers: JSON.stringify(gs.tr.daggers || []),
         rounds: JSON.stringify(gs.tr.rounds || []) };
-      for (let i = 0; i < 25; i++) mission.simulate(ctxFor(), rngFor(i + 13000));
+      for (let i = 0; i < 25; i++) mission.simulate(ctxFor(CAST, 3, [], false), rngFor(i + 13000));
       expect(JSON.stringify(gs.tr.shields || []), `${mission.id} granted a power`)
         .toBe(before.shields);
       expect(JSON.stringify(gs.tr.daggers || [])).toBe(before.daggers);
@@ -750,14 +753,15 @@ describe('the footprint on a season is the pot and the record', () => {
     }
   });
 
-  it('and the hold-out is holding something out: the Ash Vault does grant a power', () => {
+  it('and the switch is holding something out: every mission grants a Shield with it on', () => {
     // Without this arm the test above is a hole rather than a narrowing.
-    world();
-    const vault = bespokeMission('ash-vault');
-    for (let i = 0; i < 25; i++) vault.simulate(ctxFor(), rngFor(i + 13000));
-    expect((gs.tr.shields || []).length,
-      'the Ash Vault granted no Shield in 25 afternoons, so holding it out of the arm '
-      + 'above proves nothing').toBeGreaterThan(0);
+    for (const mission of TRAITORS_MISSIONS) {
+      world();
+      for (let i = 0; i < 25; i++) mission.simulate(ctxFor(), rngFor(i + 13000));
+      expect((gs.tr.shields || []).length,
+        `${mission.id} granted no Shield in 25 afternoons, so switching Shields off in the `
+        + 'arm above proves nothing').toBeGreaterThan(0);
+    }
   });
 });
 

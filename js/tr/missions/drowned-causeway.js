@@ -32,16 +32,16 @@
 // hand-over — which is where this mission's false accusations come from and
 // why the record carries the fumble and never the reason for it.
 //
-// NO SHIELD. The relic is in js/tr/missions/ash-vault.js and nowhere else: one
-// bespoke mission grants a power, for the same reason exactly one archetype
-// does. Four missions each handing out an afternoon's immunity would make the
-// Shield the ordinary state of the castle rather than the thing that has to be
-// paid for out of the pot.
+// A SHIELD, SINCE 2026-09-16 (user decision: every bespoke mission carries
+// one, as the show has run them since UK/US series 2). It is paid for: see
+// SHIELD below. The only thing that keeps it from being the weather is that a
+// search is a gamble and its cost lands on the searcher's own team.
 
 import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
+  runShieldHunt, shieldCostOf, missionShieldOffered, addShieldBeats,
 } from './contract.js';
 
 /** The two teams. Named for what is on the sandbar rather than for a colour. */
@@ -645,6 +645,43 @@ const SUMMARY = {
 
 // ══════════════════════════════════════════════════════════════════════
 
+// ── THE SHIELD: THE CHAPEL FONT ─────────────────────────────────────
+// A Shield sits in the stone font inside the chapel, below the waterline. To
+// reach it a player leaves the carry, wades in through the flooded door and
+// feels for it in the dark water, and the box they were carrying stays on the
+// sand. Found or not, their team is a box short.
+const SHIELD = {
+  id: 'causeway', phase: 'ledge', field: 'wentForTheFont', penalty: 0.05,
+  weight: n => 0.3 + 0.9 * (statOf(n, 'boldness') / 10) * (1 - 0.5 * (statOf(n, 'loyalty') / 10)),
+  chance: n => 0.16 + 0.025 * statOf(n, 'physical') + 0.015 * statOf(n, 'intuition'),
+  found: [
+    '{who} put {their} box down on the sand, waded in through the chapel door up to the chest, and came back out with a hand closed round something that was not stone.',
+    '{who} left the carry for the flooded chapel and felt along the bottom of the font until {they} found it.',
+    'While the others carried, {who} was inside the chapel in water to the waist, and came out holding the Shield.',
+  ],
+  missed: [
+    '{who} left a box on the sand to wade into the chapel, felt round the font until the water was at {their} shoulders, and came out with nothing.',
+    '{who} went for the font, lost it in the dark water, and got back to the ledge a box short and soaked.',
+  ],
+  voice: {
+    found: {
+      villainous: "One box, two thousand pounds, and it isn't even my money. The thing in the font keeps me alive. Easy sum.",
+      nice: "I felt awful putting that box down. But I'm no use to anybody if I'm murdered on Tuesday.",
+      neutral: "The water was freezing and I nearly didn't find it. I'd do it again tomorrow.",
+    },
+    missed: {
+      villainous: "Nothing in the font and everybody watched me leave the box. Fine. Now I find a better story than being cold.",
+      nice: "I left a box on the sand for nothing. I'll have to own that tonight.",
+      neutral: "I gambled and lost. That's the whole report.",
+    },
+  },
+};
+const SHIELD_BRIEF = [
+  hostDo('The host points at the chapel door, where the water is already over the step.'),
+  hostSay('Inside that chapel, in the stone font, is a Shield. The water is in there before you are. Any one of you may go in for it, and whoever finds it keeps it.'),
+  hostSay('To go in you put your box down, and a box on the sand when the road closes earns nothing. Your team carries one short whether you find it or not.'),
+];
+
 export const drownedCauseway = {
   id: 'drowned-causeway',
   name: 'The Drowned Causeway',
@@ -674,7 +711,8 @@ export const drownedCauseway = {
     + 'is gone for good, a box dropped on the sand costs the time it takes to go back for it, '
     + 'and a peal rung on the wrong count opens the wrong hatch and drops a box that was '
     + 'already safe straight back down. Every strongbox still on the roof when the causeway '
-    + 'closes is two thousand into the shared pot; everything on the sand is worth nothing.',
+    + 'closes is two thousand into the shared pot; everything on the sand is worth nothing.'
+    + ' A Shield lies in the flooded font inside the chapel for any player who leaves their box on the sand to wade in for it, and their team finishes a box short whether they find it or not.',
 
   /**
    * Four living players and a sea. Nothing else gates it — the boxes scale
@@ -689,7 +727,8 @@ export const drownedCauseway = {
     const living = [...ctx.living];
     const boxes = boxesFor(living.length);
     const teams = splitTeams(living, rng, TEAMS);
-    const ceremony = _ceremony(boxes);
+    const ceremony = addShieldBeats(_ceremony(boxes), missionShieldOffered(ctx), SHIELD_BRIEF,
+      { shieldAt: 1, costAt: 2 });
 
     const wade = _wade(ctx, rng, teams);
     const ledge = _ledge(ctx, rng, teams, boxes);
@@ -707,7 +746,12 @@ export const drownedCauseway = {
       return clamp01(parts.reduce((a, b) => a + b, 0) / parts.length
         + (rng() - 0.5) * PHASE_SWING);
     };
-    const scored = teams.map(t => ({ name: t.name, members: [...t.members], perf: perfOf(t.name) }));
+    const base = teams.map(t => ({ name: t.name, members: [...t.members], perf: perfOf(t.name) }));
+    // THE SHIELD HUNT, after the phases so their stream is untouched. Its cost
+    // lands on the searcher's team before the pot is paid.
+    const hunt = runShieldHunt(ctx, rng, teams, SHIELD);
+    const scored = base.map(t => (t.name === hunt.team
+      ? { ...t, perf: clamp01(t.perf - hunt.penalty) } : t));
 
     const playerScores = {};
     for (const n of living) {
@@ -716,6 +760,7 @@ export const drownedCauseway = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
+    hunt.block.cost = shieldCostOf(quality, missionQuality(base[0].perf, base[1].perf));
     // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
     // has taken a bonus since it was written and no bespoke mission ever
     // passed one, so a solo task was worth nothing here even when the field
@@ -735,9 +780,10 @@ export const drownedCauseway = {
       bestTeam: scored[0].perf >= scored[1].perf ? scored[0].name : scored[1].name,
       potBefore: pay.potBefore, gross: pay.gross, potEarned: pay.potEarned,
       potAfter: pay.potAfter, earned: pay.potEarned,
-      shields: [],
+      shields: hunt.found ? [hunt.block] : [],
+      shield: hunt.block,
       sideObjectives,
-      scenes: [...wade.scenes, ...ledge.scenes, ...bell.scenes],
+      scenes: [...wade.scenes, ...ledge.scenes, ...bell.scenes, ...hunt.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       // The afternoon's own countable fact, for anything downstream that wants
       // to say what happened without re-deriving it from three phase records.

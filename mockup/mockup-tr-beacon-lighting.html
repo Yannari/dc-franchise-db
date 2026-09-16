@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beacon Lighting — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-beacon-lighting.html — visual target for the sixth bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  From the wiki (thetraitors.fandom.com/wiki/Beacon_Lighting — UK S2, US S2).
+  Everyone starts tied to a pole in a loch. Free yourself, then choose: go for
+  one of THREE Shields (two out in the loch, one on land), help untie
+  somebody, or start the beacon — a shield-shaped frame on a raft, built from
+  pieces whose plan is hidden in bottles along the shore. The beacon can only
+  be lit once every player is out of the water. Forty minutes.
+
+  IT SHARES NOTHING WITH THE FIVE BEFORE IT. Not slate and tide, not ink and
+  brass, not paper, not charcoal, not wet loam. This is PEAT-BLACK WATER,
+  HEATHER AND FIRE: a loch at night seen from above, torchlight on black
+  water, a Celtic display face.
+
+  THE ORGANISING PRIMITIVE IS THE LOCH FROM ABOVE. Poles in the water with a
+  face tied to each (ropes drawn, then cut), a shoreline of bottles that
+  uncork as they are read, three Shield markers (two in the water, one on the
+  bank) that go dark when somebody takes one, and the beacon frame on the
+  raft, whose eight pieces fill as they are placed. The frame catches fire
+  only on the last reveal — and only if every face has left the water.
+
+  THREE SHIELDS, THREE PRICES. A player who swims for a Shield is not
+  untying anybody and not carrying pieces, and while they are still in the
+  loch the beacon cannot be lit.
+
+  Cards SURFACE: they rise from under a dark water line with a ripple.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Overpass+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bl-peat:#070d10; --bl-loch:#0c1a20; --bl-loch2:#12262e; --bl-reed:#3b4a3a;
+  --bl-heather:#8f6fb3; --bl-heather-lo:#4d3a66; --bl-bone:#f1eadb; --bl-mist:#aab7bc;
+  --bl-flame:#ffb347; --bl-flame-hi:#ffe08a; --bl-ember:#ff5a1f; --bl-rope:#c9a877;
+  --bl-shield:#f2cc5b; --bl-bad:#d0654c; --bl-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bl-peat);color:var(--bl-mist);font-family:'Alegreya Sans',sans-serif;font-size:18px;line-height:1.5;overflow-x:hidden}
+button{font:inherit}
+.bl-navstub{position:fixed;inset:0 0 auto 0;height:var(--bl-nav);z-index:60;background:#04080a;border-bottom:1px solid #000;
+  display:flex;align-items:center;gap:16px;padding:0 16px;font:12px/1 'Overpass Mono',monospace;letter-spacing:.16em;
+  text-transform:uppercase;color:#5a6a70;white-space:nowrap;overflow:hidden}
+.bl-navstub b{color:var(--bl-flame)}
+
+/* ── ATMOSPHERE: black water, a far glow, drifting sparks ────────── */
+.bl-water{position:fixed;left:0;right:0;top:var(--bl-nav);bottom:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60% 40% at 50% 100%,rgba(255,138,51,.18) 0%,transparent 70%),
+    repeating-linear-gradient(178deg,rgba(170,183,188,.035) 0 2px,transparent 2px 26px),
+    linear-gradient(180deg,#0a151a 0%,#070d10 70%)}
+.bl-hills{position:fixed;left:0;right:0;top:var(--bl-nav);height:30vh;z-index:0;pointer-events:none;opacity:.8}
+.bl-sparks{position:fixed;left:0;right:0;top:var(--bl-nav);bottom:0;z-index:1;pointer-events:none;opacity:.7;
+  background-image:radial-gradient(1.6px 1.6px at 20% 90%,var(--bl-flame),transparent),radial-gradient(1.2px 1.2px at 46% 80%,var(--bl-flame-hi),transparent),
+    radial-gradient(1.8px 1.8px at 70% 95%,var(--bl-ember),transparent),radial-gradient(1.2px 1.2px at 85% 85%,var(--bl-flame),transparent);
+  background-size:500px 500px;animation:bl-rise 14s linear infinite}
+@keyframes bl-rise{from{background-position:0 0}to{background-position:40px -500px}}
+
+.bl-shell{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:calc(var(--bl-nav) + 26px) 16px 132px}
+
+/* ── HERO: a standing stone with a knot border ───────────────────── */
+.bl-hero{position:relative;padding:32px 26px 24px;text-align:center;overflow:hidden;
+  background:linear-gradient(180deg,rgba(18,38,46,.92),rgba(7,13,16,.95));
+  border:1px solid #1d3540;border-radius:4px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.bl-hero::before{content:'';position:absolute;inset:8px;border:2px solid transparent;pointer-events:none;
+  border-image:repeating-linear-gradient(45deg,var(--bl-heather-lo) 0 6px,transparent 6px 12px) 8}
+.bl-hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:5px;
+  background:linear-gradient(90deg,transparent,var(--bl-ember),var(--bl-flame-hi),var(--bl-ember),transparent);animation:bl-flick 2.6s ease-in-out infinite}
+@keyframes bl-flick{0%,100%{opacity:.6}40%{opacity:1}70%{opacity:.8}}
+.bl-kicker{font:12px/1 'Overpass Mono',monospace;letter-spacing:.34em;text-transform:uppercase;color:var(--bl-heather)}
+.bl-title{font-family:'Uncial Antiqua',serif;font-weight:400;color:var(--bl-bone);font-size:clamp(40px,8vw,86px);line-height:1;margin:.16em 0 .08em;
+  text-shadow:0 0 30px rgba(255,138,51,.25)}
+.bl-title span{color:var(--bl-flame);text-shadow:0 0 22px rgba(255,138,51,.7)}
+.bl-sub{color:#93a4aa;max-width:58ch;margin:0 auto;font-style:italic}
+.bl-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+.bl-chip{font:11px/1 'Overpass Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--bl-mist);
+  border:1px solid #28424c;padding:6px 11px;background:rgba(0,0,0,.35);border-radius:20px}
+.bl-chip.shield{border-color:var(--bl-shield);color:var(--bl-shield)}
+.bl-roster{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin-top:18px}
+.bl-rteam small{display:block;font:11px/1 'Overpass Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--bl-heather);margin-bottom:7px}
+
+.bl-av{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#12262e;
+  border:2px solid #28424c;box-shadow:0 2px 8px rgba(0,0,0,.6);display:inline-block;vertical-align:middle}
+.bl-faces{display:inline-flex}
+.bl-faces .bl-av+.bl-av{margin-left:-9px}
+
+.bl-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px;align-items:start}
+@media(max-width:940px){.bl-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── BRIEFING ─────────────────────────────────────────────────────── */
+.bl-brief{background:rgba(7,13,16,.88);border:1px solid #1d3540;border-left:4px solid var(--bl-heather);padding:20px 20px 16px}
+.bl-brief h2,.bl-phase-name{font-family:'Uncial Antiqua',serif;font-weight:400;color:var(--bl-bone)}
+.bl-brief h2{font-size:30px;margin:0 0 4px}
+.bl-host{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.bl-host .bl-av{width:46px;height:46px;border-color:var(--bl-heather)}
+.bl-host small{display:block;font:11px/1.4 'Overpass Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6f8288}
+.bl-staging{font-style:italic;color:#7f9095;border-bottom:1px solid #1d3540;padding-bottom:12px;margin:8px 0 14px}
+.bl-beat{margin:0 0 11px}
+.bl-beat p{margin:0}
+.bl-beat.do p{font:14px/1.5 'Overpass Mono',monospace;color:#6f8288}
+.bl-beat.say p{color:var(--bl-bone);padding-left:14px;border-left:2px solid var(--bl-heather-lo)}
+.bl-beat.shield p{border-left-color:var(--bl-shield);color:#fbe7b2}
+.bl-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.bl-rule{font:10.5px/1 'Overpass Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#7f9095;border:1px solid #28424c;padding:5px 8px;border-radius:12px}
+.bl-rule b{color:var(--bl-flame);font-weight:600;margin-right:4px}
+.bl-rule.shield b{color:var(--bl-shield)}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.bl-phase{margin-top:28px}
+.bl-phase-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #1d3540}
+.bl-phase-n{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;border:2px solid var(--bl-heather);
+  font:600 14px/1 'Overpass Mono',monospace;color:var(--bl-bone);background:rgba(143,111,179,.15)}
+.bl-phase-name{font-size:32px;line-height:1}
+.bl-phase-stats{margin-left:auto;display:flex;gap:6px}
+.bl-stat{font:10.5px/1 'Overpass Mono',monospace;font-style:normal;text-transform:uppercase;letter-spacing:.12em;color:#93a4aa;background:#0f2027;padding:5px 9px;border-radius:12px}
+.bl-setting{font-style:italic;color:#7f9095;margin:8px 0 12px}
+
+/* ── CARDS: surfacing ─────────────────────────────────────────────── */
+.bl-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 64px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(18,38,46,.9),rgba(10,20,25,.94));border:1px solid #1d3540;border-radius:6px;
+  opacity:0;transform:translateY(26px);transition:opacity .45s ease,transform .6s cubic-bezier(.2,.9,.25,1.1)}
+.bl-card.on{opacity:1;transform:none}
+.bl-card::after{content:'';position:absolute;left:-10%;right:-10%;top:0;height:3px;pointer-events:none;opacity:0;
+  background:radial-gradient(50% 100% at 50% 0,rgba(170,183,188,.5),transparent)}
+.bl-card.on::after{animation:bl-ripple 1.1s ease-out 1}
+@keyframes bl-ripple{0%{opacity:1;transform:scaleX(.2)}100%{opacity:0;transform:scaleX(1.2)}}
+.bl-card.good{border-left:3px solid #7fb3a0}
+.bl-card.bad{border-left:3px solid var(--bl-bad)}
+.bl-card.social{border-left:3px solid var(--bl-heather)}
+.bl-card.relic{border:1px solid var(--bl-shield);box-shadow:0 0 24px rgba(242,204,91,.15)}
+.bl-card.fire{border:1px solid var(--bl-flame);box-shadow:0 0 34px rgba(255,138,51,.25);background:linear-gradient(180deg,rgba(70,30,10,.85),rgba(20,12,8,.95))}
+.bl-ico{position:absolute;left:14px;top:14px;width:36px;height:36px}
+.bl-ico svg{width:100%;height:100%;display:block}
+.bl-tag{float:right;font:10.5px/1 'Overpass Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#7f9095;margin:4px 0 0 10px}
+.bl-card.good .bl-tag{color:#7fb3a0}.bl-card.bad .bl-tag{color:var(--bl-bad)}.bl-card.relic .bl-tag{color:var(--bl-shield)}.bl-card.fire .bl-tag{color:var(--bl-flame)}
+.bl-who{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.04em;color:var(--bl-bone)}
+.bl-who i{font-style:normal;font-weight:400;color:#7f9095}
+.bl-card.good .bl-av{border-color:#7fb3a0}.bl-card.bad .bl-av{border-color:var(--bl-bad)}.bl-card.relic .bl-av{border-color:var(--bl-shield)}
+.bl-txt{margin-top:6px}
+.bl-conf{margin-top:10px;padding:9px 12px;background:rgba(0,0,0,.3);border-left:2px solid var(--bl-heather);font-style:italic;color:#d6dcdc;border-radius:0 4px 4px 0}
+.bl-conf small{display:block;font:10.5px/1.4 'Overpass Mono',monospace;font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--bl-heather)}
+.bl-fx{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.bl-fx span{font:10.5px/1 'Overpass Mono',monospace;color:#93a4aa;border:1px solid #28424c;padding:4px 8px;border-radius:12px}
+.bl-summary{margin-top:24px;padding:18px 20px;border:1px solid #1d3540;background:rgba(7,13,16,.9);border-radius:6px;transition:opacity .4s}
+.bl-summary small{display:block;font:10.5px/1.4 'Overpass Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--bl-flame);margin-bottom:4px}
+
+/* ── SIDEBAR: the loch from above ─────────────────────────────────── */
+.bl-side{position:sticky;top:calc(var(--bl-nav) + 14px)}
+.bl-panel{background:rgba(5,10,12,.94);border:1px solid #1d3540;border-radius:6px;padding:14px}
+.bl-panel h3{font:400 26px/1 'Uncial Antiqua',serif;color:var(--bl-bone);margin:0 0 10px}
+.bl-clock{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bl-fuse{flex:1;height:8px;border-radius:4px;background:#1a2a30;overflow:hidden;position:relative}
+.bl-fuse i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--bl-rope),var(--bl-ember));transition:width .7s ease}
+.bl-time{font:26px/1 'Overpass Mono',monospace;color:var(--bl-flame);min-width:78px;text-align:right}
+.bl-map{width:100%;display:block;border-radius:4px}
+.bl-pole .rope{transition:opacity .6s}
+.bl-pole.free .rope{opacity:0}
+.bl-pole .ring{transition:stroke .5s}
+.bl-pole.free .ring{stroke:#7fb3a0}
+.bl-pole.out .face{opacity:.35}
+.bl-pole.out .ring{stroke:#3b4a4e}
+.bl-bottle{transition:fill .5s}
+.bl-bottle.read{fill:var(--bl-flame)}
+.bl-sh .gem{transition:opacity .6s}
+.bl-sh.taken .gem{opacity:.15}
+.bl-sh .face{opacity:0;transition:opacity .6s}
+.bl-sh.taken .face{opacity:1}
+.bl-piece{fill:#1a2a30;stroke:#3b5560;stroke-width:1;transition:fill .6s}
+.bl-piece.set{fill:#6d4d2c;stroke:var(--bl-rope)}
+.bl-beacon .flames{opacity:0;transition:opacity .8s}
+.bl-beacon.lit .flames{opacity:1}
+.bl-beacon.lit .bl-piece.set{fill:var(--bl-ember)}
+.bl-flame{animation:bl-lick 1.2s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes bl-lick{from{transform:scaleY(.85) skewX(-4deg)}to{transform:scaleY(1.1) skewX(4deg)}}
+.bl-legend{display:flex;justify-content:space-between;font:10px/1 'Overpass Mono',monospace;letter-spacing:.1em;color:#5a6a70;text-transform:uppercase;margin:6px 0 10px}
+.bl-teams{border-top:1px solid #1d3540;padding-top:6px}
+.bl-team{padding:7px 0;border-bottom:1px dashed #16282e}
+.bl-team-head{display:flex;justify-content:space-between;align-items:center}
+.bl-team-head b{font:12.5px/1 'Overpass Mono',monospace;color:var(--bl-bone);font-weight:400}
+.bl-team-head .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+.bl-team-faces{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.bl-team-faces .bl-av{width:28px;height:28px;border-width:1.5px}
+.bl-team-faces .tied{filter:grayscale(.8) brightness(.55);border-style:dashed}
+.bl-team-faces .wet{border-color:#4f8fa6}
+.bl-team-faces .dry{border-color:#7fb3a0}
+.bl-shields{margin-top:12px;padding:11px 12px;border:1px dashed #6b5b2a;border-radius:6px}
+.bl-shields .lbl{font:10.5px/1 'Overpass Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a7a4a}
+.bl-shields-row{display:flex;gap:10px;margin-top:8px}
+.bl-shslot{flex:1;text-align:center;padding:8px 4px;border-radius:6px;background:rgba(0,0,0,.35);border:1px solid #2a2a20;transition:all .5s}
+.bl-shslot svg{width:26px;height:26px;display:block;margin:0 auto}
+.bl-shslot small{display:block;font:10px/1.3 'Overpass Mono',monospace;color:#7f9095;margin-top:4px}
+.bl-shslot .bl-av{width:30px;height:30px;border-color:var(--bl-shield);display:none;margin:0 auto}
+.bl-shslot.on{border-color:var(--bl-shield);box-shadow:0 0 14px rgba(242,204,91,.25)}
+.bl-shslot.on svg{display:none}
+.bl-shslot.on .bl-av{display:block}
+.bl-shslot.on small{color:var(--bl-shield)}
+.bl-pot{margin-top:12px;border-top:1px solid #1d3540;padding-top:10px}
+.bl-pot .r{display:flex;justify-content:space-between;font-size:15px;color:#7f9095}
+.bl-pot .r b{font:13px/1.6 'Overpass Mono',monospace;color:var(--bl-mist);font-weight:400}
+.bl-pot .big{font:30px/1.1 'Overpass Mono',monospace;color:var(--bl-flame);text-align:right;margin-top:4px}
+
+.bl-controls{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 16px;background:linear-gradient(0deg,#04080a 60%,rgba(4,8,10,0))}
+.bl-btn{font:700 15px/1 'Alegreya Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;padding:12px 24px;border-radius:24px;
+  color:#1a0d05;background:linear-gradient(180deg,var(--bl-flame-hi),var(--bl-flame));border:0;box-shadow:0 0 20px rgba(255,138,51,.35)}
+.bl-btn:disabled{opacity:.4;cursor:default}
+.bl-btn.ghost{background:transparent;color:var(--bl-mist);border:1px solid #28424c;box-shadow:none}
+.bl-btn:focus-visible{outline:2px solid var(--bl-bone);outline-offset:2px}
+.bl-counter{font:12px/1 'Overpass Mono',monospace;color:#7f9095;letter-spacing:.1em}
+@media (prefers-reduced-motion: reduce){
+  .bl-sparks,.bl-hero::after,.bl-flame,.bl-card.on::after{animation:none}
+  .bl-card{transition:opacity .2s;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="bl-navstub"><b>The Traitors</b><span>Episode 5 · Afternoon</span><span>Beacon Lighting</span></div>
+<div class="bl-water"></div>
+<svg class="bl-hills" viewBox="0 0 1200 240" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 0 H1200 V120 C1100 150 1040 90 960 120 C880 150 820 60 720 100 C620 140 560 70 470 110 C380 150 300 80 200 120 C120 150 60 110 0 130 Z" fill="#050a0c"/>
+  <path d="M0 0 H1200 V70 C1080 100 980 40 860 80 C760 110 680 30 560 70 C460 100 360 40 240 80 C150 110 70 60 0 90 Z" fill="#0a151a" opacity=".8"/>
+</svg>
+<div class="bl-sparks"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-rope" viewBox="0 0 36 36"><rect x="16" y="2" width="4" height="32" rx="2" fill="#3b5560"/><path d="M8 12c6-4 14-4 20 0M8 18c6-4 14-4 20 0M8 24c6-4 14-4 20 0" fill="none" stroke="#c9a877" stroke-width="2.2"/></symbol>
+    <symbol id="i-cut" viewBox="0 0 36 36"><rect x="16" y="2" width="4" height="32" rx="2" fill="#3b5560"/><path d="M6 14c4-3 8-3 10-2M20 12c3-1 7-1 10 2" fill="none" stroke="#c9a877" stroke-width="2.2"/><path d="M9 26l6-6M15 26l-6-6" stroke="#7fb3a0" stroke-width="2"/></symbol>
+    <symbol id="i-bottle" viewBox="0 0 36 36"><path d="M15 3h6v6l3 5v17a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V14l3-5z" fill="#2e5a4a" stroke="#aab7bc" stroke-width=".8"/><rect x="14" y="17" width="8" height="9" fill="#f1eadb"/><path d="M15 20h6M15 23h4" stroke="#4d3a66" stroke-width="1"/></symbol>
+    <symbol id="i-piece" viewBox="0 0 36 36"><path d="M6 6h24v12c0 8-6 12-12 14C12 30 6 26 6 18z" fill="#6d4d2c" stroke="#c9a877" stroke-width="1.2"/><path d="M18 6v26M6 16h24" stroke="#c9a877" stroke-width="1" stroke-dasharray="2 2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 36 36"><path d="M18 3l12 4v9c0 8-5 14-12 17C11 30 6 24 6 16V7z" fill="#f2cc5b" stroke="#8a6b1a" stroke-width="1.2"/><path d="M18 9v18M11 16h14" stroke="#8a6b1a" stroke-width="1.4"/></symbol>
+    <symbol id="i-swim" viewBox="0 0 36 36"><path d="M2 24c4-3 8 3 12 0s8 3 12 0 8 3 10 1" fill="none" stroke="#4f8fa6" stroke-width="2"/><circle cx="20" cy="15" r="4" fill="#f1eadb"/><path d="M8 20l10-4 8 2" stroke="#f1eadb" stroke-width="2.2" fill="none"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 36 36"><path d="M18 3c6 7 10 11 10 18a10 10 0 0 1-20 0c0-5 3-8 5-11 1 4 3 5 4 5-1-5-1-8 1-12z" fill="#ff5a1f"/><path d="M18 16c3 3 5 5 5 8a5 5 0 0 1-10 0c0-3 2-5 5-8z" fill="#ffe08a"/></symbol>
+  </defs>
+</svg>
+
+<div class="bl-shell">
+  <header class="bl-hero">
+    <div class="bl-kicker">Mission · Episode Five</div>
+    <h1 class="bl-title">Beacon <span>Lighting</span></h1>
+    <p class="bl-sub">Every one of you starts tied to a pole in the loch. Forty minutes to get free, build the
+      beacon from the plans in the bottles, get out of the water, and set it on fire.</p>
+    <div class="bl-meta">
+      <span class="bl-chip">Heather · Bracken</span>
+      <span class="bl-chip">40 minutes</span>
+      <span class="bl-chip">£15,000 if it burns</span>
+      <span class="bl-chip shield">Three Shields · two in the water, one on land</span>
+    </div>
+    <div class="bl-roster">
+      <div class="bl-rteam"><small>Heather</small><span class="bl-faces">
+        <img class="bl-av" src="../assets/avatars/brick.png" alt=""><img class="bl-av" src="../assets/avatars/priya.png" alt=""><img class="bl-av" src="../assets/avatars/fiore.png" alt=""><img class="bl-av" src="../assets/avatars/cody.png" alt=""><img class="bl-av" src="../assets/avatars/dawn.png" alt=""><img class="bl-av" src="../assets/avatars/alec.png" alt="">
+      </span></div>
+      <div class="bl-rteam"><small>Bracken</small><span class="bl-faces">
+        <img class="bl-av" src="../assets/avatars/julia.png" alt=""><img class="bl-av" src="../assets/avatars/bowie.png" alt=""><img class="bl-av" src="../assets/avatars/gabby.png" alt=""><img class="bl-av" src="../assets/avatars/ellie.png" alt=""><img class="bl-av" src="../assets/avatars/manu.png" alt=""><img class="bl-av" src="../assets/avatars/courtney.png" alt="">
+      </span></div>
+    </div>
+  </header>
+
+  <div class="bl-grid">
+    <main>
+      <section class="bl-brief">
+        <div class="bl-host"><img class="bl-av" src="../assets/avatars/alan-cumming.png" alt=""><div><h2>The Briefing</h2><small>Alan Cumming · your host</small></div></div>
+        <p class="bl-staging">A loch at dusk. Twelve wooden poles standing in the shallows, a raft moored in the
+          middle with an empty iron frame on it, and a line of bottles along the shingle.</p>
+
+        <div class="bl-beat do"><p>Alan Cumming stands on the shingle with a lit torch, and the players are waist-deep in the loch, each one tied to a pole.</p></div>
+        <div class="bl-beat say"><p>You are tied on, and you will have to get yourselves off. Nobody on the bank will help you.</p></div>
+        <div class="bl-beat say"><p>Out on that raft is a frame. The pieces that fill it are in the water around you, and the plan for how they go together is in the bottles along this shore. Put every piece in the right place.</p></div>
+        <div class="bl-beat do"><p>Alan Cumming lowers the torch toward the water and stops.</p></div>
+        <div class="bl-beat say"><p>The beacon will not light while there is anybody in the loch. Every one of you has to be on dry land before I put this to it.</p></div>
+        <div class="bl-beat say shield"><p>There are three Shields. Two are out in the water. One is somewhere on this shore.</p></div>
+        <div class="bl-beat say shield"><p>Whoever goes for one is not untying anybody, not carrying pieces, and, if it is in the water, not out of it.</p></div>
+        <div class="bl-beat say"><p>If the beacon burns inside forty minutes, fifteen thousand goes into the pot. If it does not, nothing does. Start.</p></div>
+
+        <div class="bl-rules">
+          <span class="bl-rule"><b>task</b> beat 3</span>
+          <span class="bl-rule"><b>failure</b> beat 5</span>
+          <span class="bl-rule shield"><b>shield</b> beat 6</span>
+          <span class="bl-rule shield"><b>cost</b> beat 7</span>
+          <span class="bl-rule"><b>reward</b> beat 8</span>
+          <span class="bl-rule"><b>finish</b> beat 8</span>
+        </div>
+      </section>
+
+      <section class="bl-phase">
+        <div class="bl-phase-head"><span class="bl-phase-n">I</span><span class="bl-phase-name">The Poles</span>
+          <span class="bl-phase-stats"><i class="bl-stat">physical</i><i class="bl-stat">temperament</i></span></div>
+        <p class="bl-setting">Cold water to the waist, wet rope, and knots tied by somebody who meant them.</p>
+
+        <article class="bl-card good" id="bl-step-0">
+          <span class="bl-ico"><svg><use href="#i-cut"/></svg></span><span class="bl-tag">Free first</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/ellie.png" alt=""></span>Ellie <i>· Bracken</i></div>
+          <div class="bl-txt">Ellie stopped pulling, found the end of the knot, and was off her pole in four minutes.</div>
+        </article>
+
+        <article class="bl-card bad" id="bl-step-1">
+          <span class="bl-ico"><svg><use href="#i-rope"/></svg></span><span class="bl-tag">Stuck</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/cody.png" alt=""></span>Cody <i>· Heather</i></div>
+          <div class="bl-txt">Cody pulled the knot tighter every time he tried to loosen it, and was still tied on at the quarter-hour.</div>
+        </article>
+
+        <article class="bl-card social" id="bl-step-2">
+          <span class="bl-ico"><svg><use href="#i-cut"/></svg></span><span class="bl-tag">Heroic</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/priya.png" alt=""><img class="bl-av" src="../assets/avatars/cody.png" alt=""></span>Priya &amp; Cody <i>· Heather</i></div>
+          <div class="bl-txt">Priya waded over to Cody before she went anywhere else and had him loose in two minutes.</div>
+          <div class="bl-conf"><small>Cody · confessional</small>She could've gone straight for a Shield. She came to me. I'm not going to forget that.</div>
+          <div class="bl-fx"><span>bond Priya ↔ Cody +0.7</span><span>crowd · Priya selfless ×0.8</span></div>
+        </article>
+
+        <article class="bl-card relic" id="bl-step-3">
+          <span class="bl-ico"><svg><use href="#i-swim"/></svg></span><span class="bl-tag">Swam for it</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/bowie.png" alt=""></span>Bowie <i>· Bracken</i></div>
+          <div class="bl-txt">Bowie was free early and swam straight out past the raft, toward the buoy on the far side. He came back with a Shield in his teeth.</div>
+          <div class="bl-conf"><small>Bowie · confessional</small>Everybody else was untying people. Somebody's got to be alive on Friday to do it again.</div>
+          <div class="bl-fx"><span>shield · Bowie (water)</span><span>seen by · Julia, Manu</span><span>clock −4:00 · Bracken</span></div>
+        </article>
+      </section>
+
+      <section class="bl-phase">
+        <div class="bl-phase-head"><span class="bl-phase-n">II</span><span class="bl-phase-name">The Bottles</span>
+          <span class="bl-phase-stats"><i class="bl-stat">mental</i><i class="bl-stat">intuition</i></span></div>
+        <p class="bl-setting">A line of green bottles on the shingle, each with a scrap of the plan inside, and pieces floating out in the loch.</p>
+
+        <article class="bl-card good" id="bl-step-4">
+          <span class="bl-ico"><svg><use href="#i-bottle"/></svg></span><span class="bl-tag">Read it</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/dawn.png" alt=""></span>Dawn <i>· Heather</i></div>
+          <div class="bl-txt">Dawn laid the scraps out on the stones in order and saw that the frame was a shield before anyone else did.</div>
+        </article>
+
+        <article class="bl-card relic" id="bl-step-5">
+          <span class="bl-ico"><svg><use href="#i-shield"/></svg></span><span class="bl-tag">On land</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/fiore.png" alt=""></span>Fiore <i>· Heather</i></div>
+          <div class="bl-txt">Fiore opened a bottle that had no scrap in it, only a key, and walked it up to the boathouse. The land Shield was hers.</div>
+          <div class="bl-fx"><span>shield · Fiore (land)</span><span>seen by · nobody</span><span>clock −3:00 · Heather</span></div>
+        </article>
+
+        <article class="bl-card bad" id="bl-step-6">
+          <span class="bl-ico"><svg><use href="#i-piece"/></svg></span><span class="bl-tag">Wrong way</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/julia.png" alt=""></span>Julia <i>· Bracken</i></div>
+          <div class="bl-txt">Julia carried two pieces out to the raft and set both of them upside down.</div>
+          <div class="bl-fx"><span>record · set pieces wrong</span><span>clock −3:00 · Bracken</span></div>
+        </article>
+
+        <article class="bl-card social bad" id="bl-step-7">
+          <span class="bl-ico"><svg><use href="#i-piece"/></svg></span><span class="bl-tag">Suspicious</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/ellie.png" alt=""><img class="bl-av" src="../assets/avatars/julia.png" alt=""></span>Ellie &amp; Julia <i>· Bracken</i></div>
+          <div class="bl-txt">Ellie had the plan in her hand and turned both of Julia's pieces back round without a word. Then she said a word.</div>
+          <div class="bl-conf"><small>Ellie · confessional</small>The plan had an arrow on it. A big one. She was looking right at it.</div>
+          <div class="bl-fx"><span>claim · Ellie → Julia</span><span>suspicion +0.26</span><span>bond Ellie ↔ Julia −0.5</span></div>
+        </article>
+      </section>
+
+      <section class="bl-phase">
+        <div class="bl-phase-head"><span class="bl-phase-n">III</span><span class="bl-phase-name">The Beacon</span>
+          <span class="bl-phase-stats"><i class="bl-stat">strategic</i><i class="bl-stat">loyalty</i></span></div>
+        <p class="bl-setting">A full frame on the raft, a torch on the shore, and a headcount that has to reach everybody before it is used.</p>
+
+        <article class="bl-card good" id="bl-step-8">
+          <span class="bl-ico"><svg><use href="#i-piece"/></svg></span><span class="bl-tag">Last piece</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/manu.png" alt=""></span>Manu <i>· Bracken</i></div>
+          <div class="bl-txt">Manu swam the last piece out, set it, and shouted the count to the shore.</div>
+        </article>
+
+        <article class="bl-card relic" id="bl-step-9">
+          <span class="bl-ico"><svg><use href="#i-swim"/></svg></span><span class="bl-tag">Still in</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/alec.png" alt=""></span>Alec <i>· Heather</i></div>
+          <div class="bl-txt">The frame was full and the torch was lit, and Alec was still out at the second buoy looking for the other water Shield. He found it. It took him three more minutes to swim back.</div>
+          <div class="bl-fx"><span>shield · Alec (water)</span><span>seen by · everybody on the bank</span><span>clock −3:00 · both teams</span></div>
+        </article>
+
+        <article class="bl-card social bad" id="bl-step-10">
+          <span class="bl-ico"><svg><use href="#i-swim"/></svg></span><span class="bl-tag">Suspicious</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/brick.png" alt=""><img class="bl-av" src="../assets/avatars/alec.png" alt=""></span>Brick &amp; Alec <i>· Heather</i></div>
+          <div class="bl-txt">Brick stood on the shingle counting heads out loud while Alec swam in, and did not stop counting when Alec reached him.</div>
+          <div class="bl-conf"><small>Brick · confessional</small>Twelve people on a beach and one of them in the water, with the whole pot on it. I just want to know what was worth that.</div>
+          <div class="bl-fx"><span>claim · Brick → Alec</span><span>suspicion +0.22</span><span>bond Brick ↔ Alec −0.4</span></div>
+        </article>
+
+        <article class="bl-card fire" id="bl-step-11">
+          <span class="bl-ico"><svg><use href="#i-fire"/></svg></span><span class="bl-tag">Lit</span>
+          <div class="bl-who"><span class="bl-faces"><img class="bl-av" src="../assets/avatars/alan-cumming.png" alt=""></span>Alan Cumming</div>
+          <div class="bl-txt">Everyone out. Alan Cumming put the torch to the rope, and the beacon went up with thirty-one seconds on the clock.</div>
+          <div class="bl-fx"><span>pot +£15,000</span></div>
+        </article>
+      </section>
+
+      <div class="bl-summary" id="bl-summary" style="opacity:.25">
+        <small>The afternoon · triumph</small>
+        It burned, with half a minute to spare, and three people walked off the shingle with more than the rest of them.
+      </div>
+    </main>
+
+    <aside class="bl-side" aria-label="The loch">
+      <div class="bl-panel">
+        <h3>The Loch</h3>
+        <div class="bl-clock"><div class="bl-fuse"><i id="bl-fuse" style="width:100%"></i></div><div class="bl-time" id="bl-time">40:00</div></div>
+        <svg class="bl-map" viewBox="0 0 300 250" role="img" aria-label="The loch from above">
+          <defs>
+            <radialGradient id="bl-lochg" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#12262e"/><stop offset="1" stop-color="#081116"/></radialGradient>
+            <clipPath id="cf"><circle cx="0" cy="0" r="9"/></clipPath>
+          </defs>
+          <rect width="300" height="250" fill="url(#bl-lochg)"/>
+          <path d="M0 196 C60 186 110 204 160 194 C210 184 250 200 300 190 V250 H0 Z" fill="#2a2a22"/>
+          <path d="M0 196 C60 186 110 204 160 194 C210 184 250 200 300 190" fill="none" stroke="#5a5a44" stroke-width="2"/>
+          <g id="bl-bottles"></g>
+          <g id="bl-poles"></g>
+          <g class="bl-beacon" id="bl-beacon" transform="translate(150,70)">
+            <rect x="-40" y="-8" width="80" height="62" rx="4" fill="#3a2a1a" stroke="#6d4d2c"/>
+            <g id="bl-pieces"></g>
+            <g class="flames">
+              <path class="bl-flame" d="M-38 46c-4-26 4-40 10-62 8 22 14 36 8 62z" fill="#ff5a1f"/>
+              <path class="bl-flame" d="M-20 46c-6-34 6-54 14-84 10 30 16 52 8 84z" fill="#ffb347"/>
+              <path class="bl-flame" d="M-4 46c-6-38 6-62 16-96 10 34 16 60 6 96z" fill="#ff5a1f"/>
+              <path class="bl-flame" d="M0 46c-4-26 4-42 10-64 7 24 11 40 4 64z" fill="#ffe08a"/>
+              <path class="bl-flame" d="M16 46c-4-30 4-48 12-74 8 26 12 46 4 74z" fill="#ffb347"/>
+              <path class="bl-flame" d="M28 46c-2-20 4-32 8-50 6 18 8 30 2 50z" fill="#ff5a1f"/>
+            </g>
+          </g>
+          <g id="bl-shields-map"></g>
+        </svg>
+        <div class="bl-legend"><span>loch</span><span>raft · beacon</span><span>shore</span></div>
+
+        <div class="bl-teams">
+          <div class="bl-team"><div class="bl-team-head"><span><i class="sw" style="background:#8f6fb3"></i>Heather</span><b id="bl-r-0">6 tied</b></div><div class="bl-team-faces" id="bl-f-0"></div></div>
+          <div class="bl-team"><div class="bl-team-head"><span><i class="sw" style="background:#c9a877"></i>Bracken</span><b id="bl-r-1">6 tied</b></div><div class="bl-team-faces" id="bl-f-1"></div></div>
+        </div>
+
+        <div class="bl-shields">
+          <div class="lbl">The Shields</div>
+          <div class="bl-shields-row">
+            <div class="bl-shslot" id="bl-s-0"><svg><use href="#i-shield"/></svg><img class="bl-av" src="../assets/avatars/bowie.png" alt=""><small>in the water</small></div>
+            <div class="bl-shslot" id="bl-s-1"><svg><use href="#i-shield"/></svg><img class="bl-av" src="../assets/avatars/fiore.png" alt=""><small>on land</small></div>
+            <div class="bl-shslot" id="bl-s-2"><svg><use href="#i-shield"/></svg><img class="bl-av" src="../assets/avatars/alec.png" alt=""><small>in the water</small></div>
+          </div>
+        </div>
+
+        <div class="bl-pot">
+          <div class="r"><span>Fund before</span><b>£33,400</b></div>
+          <div class="r"><span>Pieces set</span><b id="bl-pot-p">0 of 8</b></div>
+          <div class="r"><span>Earned today</span><b id="bl-pot-e">—</b></div>
+          <div class="big" id="bl-pot-a">£33,400</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="bl-controls">
+  <button class="bl-btn" id="bl-next">Next</button>
+  <span class="bl-counter" id="bl-counter" aria-live="polite">0 of 12 revealed</span>
+  <button class="bl-btn ghost" id="bl-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 12, idx = -1;
+  var TEAMS = [
+    ['brick','priya','fiore','cody','dawn','alec'],
+    ['julia','bowie','gabby','ellie','manu','courtney']
+  ];
+  /* pole positions: team 0 on the left bank of water, team 1 on the right */
+  var POLES = [];
+  TEAMS.forEach(function(t, ti){
+    t.forEach(function(n, i){
+      POLES.push({ who: n, team: ti, x: ti === 0 ? 24 + (i % 3) * 30 : 216 + (i % 3) * 30, y: 118 + Math.floor(i / 3) * 34 });
+    });
+  });
+  /* after n reveals: who is free, who is out of the water */
+  var FREE = [[],['ellie'],['ellie'],['ellie','priya','cody','brick','bowie','julia','dawn'],
+    ['ellie','priya','cody','brick','bowie','julia','dawn','manu','gabby','fiore'],
+    ['ellie','priya','cody','brick','bowie','julia','dawn','manu','gabby','fiore','alec','courtney']];
+  var FREE_AT = [0,1,1,3,3,4,4,4,5,5,5,5,5];
+  var OUT_AT = [[],[],[],[],['dawn'],['dawn','fiore'],['dawn','fiore'],['dawn','fiore','julia'],
+    ['dawn','fiore','julia','manu','ellie','brick','priya','cody','gabby','courtney'],
+    ['dawn','fiore','julia','manu','ellie','brick','priya','cody','gabby','courtney','bowie'],
+    ['dawn','fiore','julia','manu','ellie','brick','priya','cody','gabby','courtney','bowie','alec'],
+    ['dawn','fiore','julia','manu','ellie','brick','priya','cody','gabby','courtney','bowie','alec'],
+    ['dawn','fiore','julia','manu','ellie','brick','priya','cody','gabby','courtney','bowie','alec']];
+  var BOTTLES = [0,0,0,0,2,3,4,5,6,6,6,6,6];
+  var PIECES = [0,0,0,0,0,1,3,4,8,8,8,8,8];
+  var SHIELD_AT = [3, 5, 9];      /* reveal steps that take each Shield */
+  var TIME = ['40:00','36:10','33:00','29:40','25:20','22:05','19:30','16:10','09:45','04:10','01:05','00:31','00:31'];
+  var LEFT = [100,90,82,74,63,55,48,40,24,10,3,1,1];
+
+  function el(id){ return document.getElementById(id); }
+  function av(n, cls){ return '<img class="bl-av' + (cls ? ' ' + cls : '') + '" src="../assets/avatars/' + n + '.png" alt="' + n + '">'; }
+
+  function drawStatic(){
+    var poles = '', bottles = '', pieces = '', shields = '';
+    POLES.forEach(function(p, i){
+      poles += '<g class="bl-pole" id="bl-p-' + i + '" transform="translate(' + p.x + ',' + p.y + ')">'
+        + '<circle class="ring" r="11" fill="#0c1a20" stroke="#c9a877" stroke-width="2"/>'
+        + '<image class="face" href="../assets/avatars/' + p.who + '.png" x="-9" y="-9" width="18" height="18" clip-path="url(#cf)" preserveAspectRatio="xMidYMin slice"/>'
+        + '<path class="rope" d="M-11 -3 L11 3 M-11 3 L11 -3" stroke="#c9a877" stroke-width="1.6"/></g>';
+    });
+    for (var b = 0; b < 6; b++) {
+      bottles += '<rect class="bl-bottle" id="bl-b-' + b + '" x="' + (40 + b * 42) + '" y="212" width="7" height="16" rx="2" fill="#2e5a4a"/>';
+    }
+    var shape = [[-30,0,20,16],[-10,0,20,16],[10,0,20,16],[-30,16,20,16],[-10,16,20,16],[10,16,20,16],[-20,32,20,14],[0,32,20,14]];
+    shape.forEach(function(s, i){
+      pieces += '<rect class="bl-piece" id="bl-pc-' + i + '" x="' + s[0] + '" y="' + s[1] + '" width="' + s[2] + '" height="' + s[3] + '" rx="2"/>';
+    });
+    [[70,42],[150,226],[252,62]].forEach(function(s, i){
+      var who = ['bowie','fiore','alec'][i];
+      shields += '<g class="bl-sh" id="bl-sm-' + i + '" transform="translate(' + s[0] + ',' + s[1] + ')">'
+        + '<path class="gem" d="M0 -10l8 3v6c0 5-3 9-8 11-5-2-8-6-8-11v-6z" fill="#f2cc5b" stroke="#8a6b1a"/>'
+        + '<image class="face" href="../assets/avatars/' + who + '.png" x="-8" y="-8" width="16" height="16" clip-path="url(#cf)"/></g>';
+    });
+    el('bl-poles').innerHTML = poles;
+    el('bl-bottles').innerHTML = bottles;
+    el('bl-pieces').innerHTML = pieces;
+    el('bl-shields-map').innerHTML = shields;
+  }
+
+  function paint(){
+    var n = idx + 1;
+    for (var i = 0; i < TOTAL; i++) { var c = el('bl-step-' + i); if (c) c.classList.toggle('on', i <= idx); }
+    el('bl-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    el('bl-next').disabled = idx >= TOTAL - 1;
+    el('bl-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+
+    var free = FREE[FREE_AT[n]], out = OUT_AT[n];
+    POLES.forEach(function(p, i){
+      el('bl-p-' + i).setAttribute('class', 'bl-pole' + (free.indexOf(p.who) >= 0 ? ' free' : '') + (out.indexOf(p.who) >= 0 ? ' out' : ''));
+    });
+    TEAMS.forEach(function(t, ti){
+      var tied = t.filter(function(x){ return free.indexOf(x) < 0; }).length;
+      var dry = t.filter(function(x){ return out.indexOf(x) >= 0; }).length;
+      el('bl-r-' + ti).textContent = tied ? tied + ' tied' : dry + ' of 6 ashore';
+      el('bl-f-' + ti).innerHTML = t.map(function(x){
+        return av(x, free.indexOf(x) < 0 ? 'tied' : out.indexOf(x) >= 0 ? 'dry' : 'wet');
+      }).join('');
+    });
+    for (var b = 0; b < 6; b++) el('bl-b-' + b).setAttribute('class', 'bl-bottle' + (b < BOTTLES[n] ? ' read' : ''));
+    for (var k = 0; k < 8; k++) el('bl-pc-' + k).setAttribute('class', 'bl-piece' + (k < PIECES[n] ? ' set' : ''));
+    el('bl-beacon').setAttribute('class', 'bl-beacon' + (n >= 12 ? ' lit' : ''));
+    SHIELD_AT.forEach(function(at, s){
+      var taken = n > at;
+      el('bl-s-' + s).classList.toggle('on', taken);
+      el('bl-sm-' + s).setAttribute('class', 'bl-sh' + (taken ? ' taken' : ''));
+    });
+    el('bl-time').textContent = TIME[n];
+    el('bl-fuse').style.width = LEFT[n] + '%';
+    el('bl-pot-p').textContent = PIECES[n] + ' of 8';
+    el('bl-pot-e').textContent = n >= 12 ? '£15,000' : '—';
+    el('bl-pot-a').textContent = n >= 12 ? '£48,400' : '£33,400';
+  }
+
+  el('bl-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; paint();
+    var c = el('bl-step-' + idx); if (c) c.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  el('bl-all').addEventListener('click', function(){ idx = TOTAL - 1; paint(); });
+  drawStatic();
+  paint();
+})();
+</script>
+</body>
+</html>

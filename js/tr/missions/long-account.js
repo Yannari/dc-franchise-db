@@ -40,6 +40,7 @@ import {
   briefingText, clamp01, confessionalVoice, freshPick, hostDo, hostSay, PHASE_SWING,
   missionQuality, missionScene, noisyPair, payPot, placementsFrom,
   pronounSlots, render, splitTeams, statOf, validateMissionRecord, weightedPick, runSideObjectives,
+  runShieldHunt, shieldCostOf, missionShieldOffered, addShieldBeats,
 } from './contract.js';
 
 const TEAMS = ['Ink', 'Wax'];
@@ -612,6 +613,44 @@ const SUMMARY = {
 
 // ══════════════════════════════════════════════════════════════════════
 
+// ── THE SHIELD: THE AGENT'S SIDE ROOM ────────────────────────────────
+// The agent keeps a side room, and during the settlement any creditor may go
+// in and ask for the other thing he is holding: a Shield, in place of their
+// share. It is not always there to be had. Whoever goes in has left their
+// team's table for the length of the conversation, and the team settles a
+// voice short.
+const SHIELD = {
+  id: 'account', phase: 'settlement', field: 'tookTheAgentsOffer', penalty: 0.05,
+  weight: n => 0.3 + 0.9 * (statOf(n, 'social') / 10) * (1 - 0.5 * (statOf(n, 'loyalty') / 10)),
+  chance: n => 0.16 + 0.03 * statOf(n, 'strategic') + 0.012 * statOf(n, 'boldness'),
+  found: [
+    "{who} slipped into the agent's side room during the settlement and came out with a sealed envelope instead of a share.",
+    '{who} asked the agent, quietly, what else was in the strongbox, and walked out holding a Shield.',
+    'While {their} team argued the last claim, {who} was in the side room trading a share for a Shield.',
+  ],
+  missed: [
+    '{who} went into the side room to ask for the Shield and was told, politely, that it was not on offer today. {Their} team settled without {them}.',
+    "{who} left the table for the agent's side room and came back empty-handed to a settlement already under way.",
+  ],
+  voice: {
+    found: {
+      villainous: "They were all haggling over pennies. I bought the only thing in that room worth having.",
+      nice: "Nobody's counting on my money as much as they're counting on me still being around next week. That's what I keep telling myself.",
+      neutral: "A share of a pot I might never see, or a week I definitely get. Not a hard choice.",
+    },
+    missed: {
+      villainous: "He said no. Nobody knows I asked. That's the part I care about.",
+      nice: "I left my team mid-settlement for nothing. That's on me.",
+      neutral: "Worth asking. Didn't work. Moving on.",
+    },
+  },
+};
+const SHIELD_BRIEF = [
+  hostDo("The host nods toward a narrow door behind the agent's chair."),
+  hostSay('The agent has a side room. During the settlement any of you may go in and ask him for a Shield instead of your share, and if he still has it, it is yours.'),
+  hostSay('While you are in there, your team settles without you, and your share is not in the room.'),
+];
+
 export const longAccount = {
   id: 'long-account',
   name: 'The Long Account',
@@ -638,7 +677,8 @@ export const longAccount = {
     + 'and a hold pays four times a take but only if more than half the team holds with it — '
     + 'if too many take, everyone who held is paid nothing while the takers keep theirs. '
     + 'Every claim settled goes into the shared pot, and the screens are collected face down '
-    + 'so no player is ever told who held and who did not.',
+    + 'so no player is ever told who held and who did not.'
+    + ' During the settlement any player may leave the table for the agent\'s side room and ask for a Shield in place of their share, and their team settles a voice short while they are gone.',
 
   eligibility(ctx) {
     return Array.isArray(ctx?.living) && ctx.living.length >= 4;
@@ -648,7 +688,8 @@ export const longAccount = {
     const living = [...ctx.living];
     const debts = debtsFor(living.length);
     const teams = splitTeams(living, rng, TEAMS);
-    const ceremony = _ceremony(debts);
+    const ceremony = addShieldBeats(_ceremony(debts), missionShieldOffered(ctx), SHIELD_BRIEF,
+      { shieldAt: 1, costAt: 2 });
 
     const survey = _survey(ctx, rng, teams, debts);
     const room = _room(ctx, rng, teams, survey.claims);
@@ -659,7 +700,12 @@ export const longAccount = {
       const parts = phases.map(p => p.teams.find(x => x.name === tname).score);
       return clamp01(parts.reduce((a, b) => a + b, 0) / parts.length + (rng() - 0.5) * PHASE_SWING);
     };
-    const scored = teams.map(t => ({ name: t.name, members: [...t.members], perf: perfOf(t.name) }));
+    const base = teams.map(t => ({ name: t.name, members: [...t.members], perf: perfOf(t.name) }));
+    // THE SHIELD HUNT, after the phases so their stream is untouched. Its cost
+    // lands on the searcher's team before the pot is paid.
+    const hunt = runShieldHunt(ctx, rng, teams, SHIELD);
+    const scored = base.map(t => (t.name === hunt.team
+      ? { ...t, perf: clamp01(t.perf - hunt.penalty) } : t));
 
     const playerScores = {};
     for (const n of living) {
@@ -668,6 +714,7 @@ export const longAccount = {
     }
 
     const quality = missionQuality(scored[0].perf, scored[1].perf);
+    hunt.block.cost = shieldCostOf(quality, missionQuality(base[0].perf, base[1].perf));
     // THE SOLO TASKS, through the shared runner, and PAID FOR: `payPot`
     // has taken a bonus since it was written and no bespoke mission ever
     // passed one, so a solo task was worth nothing here even when the field
@@ -686,9 +733,10 @@ export const longAccount = {
       bestTeam: scored[0].perf >= scored[1].perf ? scored[0].name : scored[1].name,
       potBefore: pay.potBefore, gross: pay.gross, potEarned: pay.potEarned,
       potAfter: pay.potAfter, earned: pay.potEarned,
-      shields: [],
+      shields: hunt.found ? [hunt.block] : [],
+      shield: hunt.block,
       sideObjectives,
-      scenes: [...survey.scenes, ...room.scenes, ...settlement.scenes],
+      scenes: [...survey.scenes, ...room.scenes, ...settlement.scenes, ...hunt.scenes],
       summary: freshPick(rng, SUMMARY[pay.tier]),
       tally: { debts, claims: { ...survey.claims }, settled: { ...room.settled },
         settlement: { ...settlement.outcome } },

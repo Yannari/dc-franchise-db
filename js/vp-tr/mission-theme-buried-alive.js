@@ -53,7 +53,7 @@ const TAGS = {
 };
 
 export const BURIED = {
-  id: 'buried-alive', prefix: 'ba',
+  id: 'buried-alive', prefix: 'ba', ownShield: true,
   shieldBeat: /\bShield\b|not yet/,
   rootVars: '',
   nextLabel: 'Next', allLabel: 'Reveal all', revealedWord: 'revealed', sheetBrief: false,

@@ -54,7 +54,7 @@ import { familyForChallenge } from './data/maxi-performance.js';
 import { chooseResultOrder } from './data/results-order.js';
 import { saveKind, saveLiveTonight, holderSave, holderEffects, luckSave, luckEffects,
   campaignTargets, runCampaign, settleMemory, takeFallout } from './saves.js';
-import { SAVE_BEATS, fillSave, pickSave } from './data/save-beats.js';
+import { SAVE_BEATS, fillSave, pickSave, linesFor } from './data/save-beats.js';
 import { rngFor } from './rng.js';
 
 /** The running order. A scene's `step` is always one of these. */
@@ -176,11 +176,17 @@ export function runDragWeek(state, cfg, ctx) {
   const saveRng = saveMeta ? rngFor(Math.floor(rng() * 4294967296)) : null;
   // Without replacement within a night, so two pleas never read the same.
   const usedSaveLines = new Set();
+  /* THE WEEK THE LINES ARE ABOUT: its challenge, its family, its runway.
+     A campaign line can say "your number" or "your joke" only if the week
+     had one — see `linesFor` in js/dr/data/save-beats.js. */
+  const saveFam = familyForChallenge(maxi.id).family;
+  const saveCtx = { k: maxi.name, r: cfg.runwayCategory || `${maxi.name} eleganza` };
   const saveLine = (list, vars) => {
-    const fresh = (list || []).filter(l => !usedSaveLines.has(l));
-    const line = pickSave(fresh.length ? fresh : list, saveRng);
+    const usable = linesFor(list, saveFam);
+    const fresh = usable.filter(l => !usedSaveLines.has(l));
+    const line = pickSave(fresh.length ? fresh : usable, saveRng, saveFam);
     usedSaveLines.add(line);
-    return fillSave(line, vars);
+    return fillSave(line, { ...saveCtx, ...vars });
   };
   // Applied once `applyEventLike` exists, a few lines down.
   const falloutFx = [];

@@ -4,10 +4,22 @@
 //
 // Placeholders: {a} the queen the line is about, {h} the holder, {w} the
 // maxi winner, {s} the saved queen, {c} {d} the two left to sing, {l} the
-// lever, {n} how many levers were in play. Never a name typed in.
+// lever, {n} how many levers were in play, {k} the week's maxi challenge, {r}
+// the runway category. Never a name typed in.
+//
+// A LINE THAT ASSUMES A KIND OF CHALLENGE SAYS SO: `{ fam: [...], line }`,
+// with the families from js/dr/data/maxi-performance.js. "My look was
+// finished" is a sewing week's sentence and nothing else's; on a comedy
+// week it is an error. A plain string assumes nothing but that there was a
+// runway, which there always is.
 //
 // Say what happened and move on. These lines sit on the most tense two
 // minutes of the night; they are not the place for a metaphor.
+
+const SEWING = ['design', 'ball', 'makeover'];
+const COMEDY = ['snatch-game', 'improv', 'stand-up', 'roast'];
+const ACTING = ['acting', 'commercial'];
+const STAGE = ['girl-group', 'rusical', 'choreography', 'talent-show', 'rumix', 'music-video', 'singing'];
 
 export const SAVE_BEATS = {
   intro: {
@@ -244,9 +256,15 @@ export const SAVE_BEATS = {
       '"Give me one reason," {a} says to {b} and {c}. The room goes quiet. {w} gives her three.',
     ],
     counter: [
-      '"With respect, I did more tonight than you did," {a} tells {c}, and turns straight back to {b}.',
-      '{a} does not let {c} finish. "My look was finished. Yours was not. Save the queen who showed up."',
-      '"Everybody has a sad story, {c}," {a} says. "I have a better runway."',
+      '"With respect, I did more in {k} than you did," {a} tells {c}, and turns straight back to {b}.',
+      '"Everybody has a sad story, {c}," {a} says. "I had the better runway, and {r} was not an easy category."',
+      { fam: SEWING, line: '{a} does not let {c} finish. "My look was finished. Yours was not. Save the queen who showed up."' },
+      { fam: SEWING, line: '"You glued half of that dress, {c}," {a} says. "I built mine."' },
+      { fam: COMEDY, line: '"At least I got laughs in {k}," {a} tells {c}. "You got silence."' },
+      { fam: COMEDY, line: '{a} cuts {c} off. "You had one joke tonight. I had a set."' },
+      { fam: ACTING, line: '"I knew my lines, {c}," {a} says. "You were reading yours off your face."' },
+      { fam: STAGE, line: '"I hit every mark in {k}," {a} tells {c}. "You were a count behind all night."' },
+      { fam: STAGE, line: '{a} does not let {c} finish. "I carried my part of {k}. You hid in the back row."' },
     ],
     'clap-back': [
       '{a} does not let it slide. "Say that to my face, {c}." {c} does.',
@@ -378,11 +396,20 @@ export const SAVE_BEATS = {
 
 /** Fill the placeholders. Unknown keys are left as they are, so a test can find them. */
 export function fillSave(line, vars = {}) {
-  return String(line || '').replace(/\{([a-z])\}/g, (m, k) =>
+  return String(saveLineText(line)).replace(/\{([a-z])\}/g, (m, k) =>
     (vars[k] != null ? String(vars[k]) : m));
 }
 
-export function pickSave(list, rng) {
-  if (!Array.isArray(list) || !list.length) return '';
-  return list[Math.floor(rng() * list.length)];
+/** The text of a line, whichever shape it was written in. */
+export const saveLineText = l => (typeof l === 'string' ? l : (l && l.line) || '');
+
+/** The lines this week's challenge can carry: plain ones, and ones for its family. */
+export function linesFor(list, fam = null) {
+  return (Array.isArray(list) ? list : []).filter(l => typeof l === 'string' || !l?.fam || (fam && l.fam.includes(fam)));
+}
+
+export function pickSave(list, rng, fam = null) {
+  const usable = linesFor(list, fam);
+  if (!usable.length) return '';
+  return usable[Math.floor(rng() * usable.length)];
 }

@@ -7,6 +7,8 @@ import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
 import { initSaves, luckSave, holderSave, runCampaign, settleMemory, takeFallout, SAVE_KINDS } from '../js/dr/saves.js';
 import { dragScreens, sceneSections } from '../js/vp-dr/screens.js';
+import { SAVE_BEATS, linesFor } from '../js/dr/data/save-beats.js';
+import { familyForChallenge } from '../js/dr/data/maxi-performance.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -320,6 +322,38 @@ describe('the campaign and what it leaves behind', () => {
     expect(campaigns).toBeGreaterThan(40);
     expect(repaid, 'no debt was ever repaid in twelve seasons').toBeGreaterThan(0);
     expect(settled, 'no promise was ever kept or broken in twelve seasons').toBeGreaterThan(0);
+  });
+});
+
+describe('the lines know the week', () => {
+  // Every line written for a kind of challenge, and a fragment of it with no placeholder.
+  const tagged = [];
+  const walk = v => {
+    if (Array.isArray(v)) for (const l of v) { if (l && typeof l === 'object' && l.fam) tagged.push(l); else walk(l); }
+    else if (v && typeof v === 'object') for (const x of Object.values(v)) walk(x);
+  };
+  walk(SAVE_BEATS);
+  const fragment = l => l.line.split(/\{[a-z]\}/).map(x => x.trim()).sort((a, b) => b.length - a.length)[0];
+
+  it('a sewing line only on a sewing week, a joke only on a comedy week', () => {
+    expect(tagged.length).toBeGreaterThan(4);
+    expect(linesFor([{ fam: ['design'], line: 'x' }, 'y'], 'stand-up')).toEqual(['y']);
+    let checked = 0;
+    for (const kind of ['beaver', 'baguette']) {
+      for (const sd of SEEDS.slice(0, 8)) {
+        for (const r of weekly(season(sd, { drSave: kind }))) {
+          const fam = familyForChallenge(r.dr.challenge.id).family;
+          for (const sc of r.dr.scenes.filter(x => /^save:/.test(x.kind))) {
+            for (const l of tagged) {
+              if (!sc.text.includes(fragment(l))) continue;
+              checked++;
+              expect(l.fam, `"${fragment(l)}" on a ${fam} week (${r.dr.challenge.id})`).toContain(fam);
+            }
+          }
+        }
+      }
+    }
+    expect(checked, 'no tagged line was ever drawn, so nothing was tested').toBeGreaterThan(0);
   });
 });
 

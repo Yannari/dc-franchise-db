@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
-import { initSaves, luckSave, holderSave, runCampaign, settleMemory, SAVE_KINDS } from '../js/dr/saves.js';
+import { initSaves, luckSave, holderSave, runCampaign, settleMemory, takeFallout, SAVE_KINDS } from '../js/dr/saves.js';
 import { dragScreens, sceneSections } from '../js/vp-dr/screens.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -269,6 +269,9 @@ describe('the campaign and what it leaves behind', () => {
     const out = settleMemory(saves, wk5, 5);
     expect(out.promises).toEqual([expect.objectContaining({ from: 'N', to: 'W', kept: false })]);
     expect(saves.fallout).toEqual([expect.objectContaining({ a: 'W', b: 'N' })]);
+    // Next week's cold open takes it, once, and only while both are still there.
+    expect(takeFallout(saves, ['W', 'N', 'S'])).toEqual([expect.objectContaining({ a: 'W', b: 'N' })]);
+    expect(takeFallout(saves, ['W', 'N', 'S'])).toEqual([]);
   });
 
   it('a deal nobody took is void', () => {
@@ -278,8 +281,8 @@ describe('the campaign and what it leaves behind', () => {
     expect(saves.promises[0]).toMatchObject({ open: false, void: true });
   });
 
-  it('the season carries it: campaign scenes, and a fallout cold open when a promise breaks', () => {
-    let campaigns = 0; let fallout = 0; let repaid = 0;
+  it('the season carries it: campaign scenes, repaid debts and settled promises', () => {
+    let campaigns = 0; let settled = 0; let repaid = 0;
     for (const s of SEEDS) {
       for (const r of weekly(season(s, { drSave: 'beaver' }))) {
         if (r.dr.save?.hold) {
@@ -288,12 +291,14 @@ describe('the campaign and what it leaves behind', () => {
           expect(r.dr.save.hold.campaign.length).toBeGreaterThan(0);
           repaid += r.dr.scenes.filter(x => x.kind === 'save:repaid').length;
         }
-        fallout += r.dr.scenes.filter(x => x.kind === 'save:fallout' && x.step === 'cold-open').length;
+        settled += r.dr.scenes.filter(x => /^save:promise-(kept|broken)$/.test(x.kind)).length;
+        // A fallout scene only ever opens a week.
+        for (const x of r.dr.scenes.filter(y => y.kind === 'save:fallout')) expect(x.step).toBe('cold-open');
       }
     }
     expect(campaigns).toBeGreaterThan(40);
     expect(repaid, 'no debt was ever repaid in twelve seasons').toBeGreaterThan(0);
-    expect(fallout, 'no broken promise ever reached a cold open').toBeGreaterThan(0);
+    expect(settled, 'no promise was ever kept or broken in twelve seasons').toBeGreaterThan(0);
   });
 });
 

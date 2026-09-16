@@ -206,6 +206,16 @@ premiere shape (standard / talent show / design / runway / girl groups /
 split / porkchop), finale shape (top 4 / top 3 / top 2 / perform-then-lip-sync),
 double shantay, double sashay, early-win immunity, triple lip sync on a tie.
 
+### The size of the call
+
+The panel calls **five or six** queens on every night with six or more in
+the room (six 60%, five 40% — the real show's mode and runner-up), always a
+win and at least one high, at most one LOW. Rooms of five or fewer keep what
+they have. Double eliminations and bottom threes name their wider bottom
+inside that count; a double win promotes a queen already called HIGH.
+Guarded by `tests/dr-call-size.test.js`. On a Beaver or Baguette night the
+named bottom is stamped LOW at the call; BTM2 lands after the save.
+
 ### The season's save (`js/dr/saves.js`)
 
 One dropdown on the setup screen, `seasonConfig.drSave`, one save per season.

@@ -359,8 +359,17 @@ export function callWeek(finalRanking, {
      The night's size is one decision. Drawn from the real total and then
      split into a top and a low, so the shape of a night can vary without the
      size of it drifting past what the show does. */
-  const SPOKEN_TABLE = [[3, 3], [4, 13], [5, 23], [6, 34], [7, 16], [8, 7], [9, 2], [10, 1]];
-  const LOW_TABLE = [[0, 25], [1, 54], [2, 16], [3, 5]];
+  /* ── FIVE OR SIX, AND NOTHING ELSE ──
+     This drew from the real show's whole spread (3 to 10 queens), which is
+     faithful on average and reads as noise week to week: a user watching a
+     season saw the stage swing from four to eight for no reason the episode
+     gave. The two sizes the show actually lives on are six (34% of nights,
+     the mode) and five (23%), so those are the only two drawn. A room too
+     small for five still keeps everybody it has — see `roof` below.
+     A LOW is at most one: six is one win, two high, one low and the bottom
+     two, which is the ordinary night the comment further down describes. */
+  const SPOKEN_TABLE = [[5, 40], [6, 60]];
+  const LOW_TABLE = [[0, 20], [1, 80]];
 
   /* ── MEASURED AGAINST THE REAL SHOW, NOT GUESSED ──
      tools/dr-real-critique-size.py reads the progress tables of seasons 9-16
@@ -407,8 +416,9 @@ export function callWeek(finalRanking, {
     const drawn = drawFrom(SPOKEN_TABLE);
     const spokenFor = drawn === null ? upFor(room) + 1 + down0
       : Math.max(down0 + 2, Math.min(drawn, room >= 9 ? room - 1 : room));
+    // A win and a high on any room of five or more; below that, a win.
     const lowWanted = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
-      spokenFor - down0 - 1));
+      spokenFor - down0 - (room >= 5 ? 2 : 1)));
     const up = Math.max(1, spokenFor - down0 - lowWanted);
     const called = winners.slice(0, Math.max(1, up));
     const win  = called.length ? [called[0].name] : [];
@@ -456,8 +466,9 @@ export function callWeek(finalRanking, {
     const roof = n >= 9 ? n - 1 : n;
     return Math.max(down0 + 2, Math.min(drawn, roof));
   })();
+  // A win and a high on any room of five or more; below that, a win.
   const lowWanted = Math.max(0, Math.min(drawFrom(LOW_TABLE) ?? 1,
-    spokenFor - down0 - 1));
+    spokenFor - down0 - (n >= 5 ? 2 : 1)));
   const up = Math.max(1, spokenFor - down0 - lowWanted);
   /* TWO IN THE BOTTOM BLOCK, NOT THREE. The show calls a top and a bottom
      forward and sends everybody else off before a word is said, and the block

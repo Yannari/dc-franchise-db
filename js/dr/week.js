@@ -739,7 +739,12 @@ export function runDragWeek(state, cfg, ctx) {
     });
   const call = callWeek(bend, {
     castSize: living.length, immune,
-    bottomNamed: holderLive ? 3 : (cfg.bottomNamed || (cfg.bottomThree ? 3 : 2)),
+    /* The wider bottom is named here, inside the five or six the panel calls,
+       rather than pulled in afterwards from the safe queens — which grew the
+       stage to seven or eight on a double elimination. */
+    bottomNamed: holderLive ? 3
+      : cfg.doubleElimination && living.length >= 6 ? (living.length >= 9 ? 4 : 3)
+        : (cfg.bottomNamed || (cfg.bottomThree ? 3 : 2)),
     teamJudged: M.teamJudged,
     teams: assignment.teams,
     bestTeam: M.bestTeam,
@@ -768,7 +773,11 @@ export function runDragWeek(state, cfg, ctx) {
     if (sorted.length >= 2) {
       const gap = sorted[1].meanRank - sorted[0].meanRank;
       const second = sorted[1].name;
+      /* SHE MUST ALREADY BE ON THE STAGE. On a team night the panel's second
+         favourite can be a safe queen on the winning team, and promoting her
+         put one queen in WIN and SAFE at once and a seventh on the stage. */
       if (gap < 0.01 && !immune.includes(second) && !immune.includes(sorted[0].name)
+        && call.win[0] === sorted[0].name && call.high.includes(second)
         && rng() < 0.50) {
         call.win = [sorted[0].name, second];
         call.high = call.high.filter(n => n !== second);
@@ -938,7 +947,13 @@ export function runDragWeek(state, cfg, ctx) {
       if (pulled) {
         call.low = call.low.filter(n => n !== pulled);
         call.safe = (call.safe || []).filter(n => n !== pulled);
-        call.atRisk = [...call.atRisk, pulled];
+        call.atRisk = [pulled, ...call.atRisk];
+      }
+      // Two winners and a bottom four is already six: nobody else stays on.
+      while (call.win.length + call.high.length + call.low.length
+        + call.atRisk.length + call.bottom.length > 6 && (call.high.length || call.low.length)) {
+        const out = call.low.length ? call.low.pop() : call.high.pop();
+        call.safe = [...(call.safe || []), out];
       }
     }
     const named = [...call.atRisk, ...call.bottom];
@@ -978,10 +993,14 @@ export function runDragWeek(state, cfg, ctx) {
     }
   }
   if (holderRes) {
+    /* All of them are named, none of them is BTM2 yet: the bottom two is
+       only known after the choice. `pendingSave` makes the call screen stamp
+       them LOW until then. */
     callAtCall = {
       ...call,
       win: [...call.win], high: [...call.high], low: [...call.low],
       atRisk: [], bottom: [...holderRes.pool], safe: [...call.safe],
+      pendingSave: saves.kind,
     };
     call.atRisk = [...holderRes.savedAll];
     call.bottom = [...holderRes.singers];

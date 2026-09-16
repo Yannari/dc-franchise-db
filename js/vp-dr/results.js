@@ -409,6 +409,11 @@ export function rpBuildResults(row) {
   const groups = shape.groups.map(g => [g, byGroup[g] || []]);
   const named = groups.flatMap(([r, list]) => list.map(n => [r, n]));
   if (!named.length && !safe.length) return '';
+  /* A BEAVER OR BAGUETTE NIGHT names its bottom before anybody is saved, so
+     nobody on this screen is BTM2 yet: they are stamped LOW, and the host's
+     words stay the "up for elimination" ones, because that is what she said. */
+  const pending = !!call.pendingSave;
+  const shown = r => (pending && r === 'BTM2' ? 'LOW' : r);
 
   /* WHAT THE HOST ACTUALLY SAID. The row carries a written line for every
      call — `stage:result-win`, `-safe`, `-bottom` — and this screen drew a
@@ -484,7 +489,7 @@ export function rpBuildResults(row) {
   const steps = named.map(([result, name]) => {
     const b = bend.get(name);
     const moved = b && b.panelRank !== b.finalRank;
-    const meta = GRID_RESULTS[result] || {};
+    const meta = GRID_RESULTS[shown(result)] || {};
     const said = lineFor(result, name);
     // The seam: the first row of the block the host paused before.
     let before = '';
@@ -500,7 +505,7 @@ export function rpBuildResults(row) {
           ${said ? `<p class="dr-said">${esc(said)}</p>` : ''}
         </div>
         ${moved ? '<span class="dr-moved dr-disp">the host moved her</span>' : '<span></span>'}
-        <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || result)}</span>
+        <span class="dr-stamp dr-disp" style="color:${meta.color || '#fff'}">${esc(meta.label || shown(result))}</span>
       </div></div>`;
   }).join('');
 
@@ -515,7 +520,7 @@ export function rpBuildResults(row) {
         <span class="dr-chip dr-c-safe">SAFE</span></div>` : '')}${
       named.slice(0, k).map(([r, n]) => `<div class="dr-slot">${_portrait(n, ep, { size: 32 })}
         <div><div class="dr-nm">${esc(n)}</div></div>
-        <span class="dr-chip ${CHIP[r] || 'dr-c-safe'}">${esc(GRID_RESULTS[r]?.label || r)}</span>
+        <span class="dr-chip ${CHIP[shown(r)] || 'dr-c-safe'}">${esc(GRID_RESULTS[shown(r)]?.label || shown(r))}</span>
       </div>`).join('')}`;
     window._drSidebar.results = named.map((_, i) => panelFor(i + 1));
   }
@@ -546,7 +551,7 @@ export function rpBuildResults(row) {
     window._drRevealExtra.results = (idx) => {
       const upto = named.slice(0, idx + 1);
       const map = new Map(upto);
-      const byName = new Map(upto.map(([r, n]) => [n, r]));
+      const byName = new Map(upto.map(([r, n]) => [n, shown(r)]));
       for (const el of document.querySelectorAll('.dr-standing')) {
         const n = el.getAttribute('data-queen');
         const r = byName.get(n);

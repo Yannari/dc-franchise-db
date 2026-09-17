@@ -38,6 +38,7 @@
 // test still green.
 import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
+import { activeSeasons, seasonKeyParts } from './franchise-meta.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
 // For rebuilding a resumable room out of a season played before one was
@@ -536,10 +537,44 @@ function _twistBooked(id) {
   return (seasonConfig.twistSchedule || []).some(b => b && (b.type === id || b.id === id));
 }
 
+/**
+ * The drag seasons this franchise has already played, for All Stars.
+ *
+ * A returning queen's record should be the one she actually made, and the
+ * franchise ledger is the only place holding it SYNCHRONOUSLY — the season
+ * documents themselves live behind an async fetch and `_config()` is called
+ * in the middle of starting a season. A queen the ledger has never heard of
+ * gets a past written for her instead (js/dr/past.js), which is how this works
+ * at all with thirteen alumni in the whole franchise.
+ */
+function _pastDragSeasons() {
+  try {
+    const out = [];
+    for (const [key, rec] of Object.entries(activeSeasons() || {})) {
+      const { format, num } = seasonKeyParts(key, rec);
+      if (format !== DRAG_FORMAT) continue;
+      const placements = Object.entries(rec?.players || {})
+        .map(([name, p]) => ({ name, place: Number(p?.placement) || 0, wins: Number(p?.chalWins) || 0 }))
+        .filter(p => p.place > 0)
+        .sort((a, b) => a.place - b.place);
+      if (placements.length) out.push({ season: num, placements });
+    }
+    // Newest first: a queen who has played twice arrives as what she is NOW.
+    return out.sort((a, b) => b.season - a.season);
+  } catch { return []; }
+}
+
 function _config() {
   return {
     drPremiere: seasonConfig.drPremiere,
     drFinale: seasonConfig.drFinale,
+    /* ALL STARS. The mode and, separately, which of its rules runs — plus the
+       stored seasons a returning queen's real record is read out of. Passed
+       here or the dropdown is decoration, which is what tests/dr-config-reach
+       exists to catch and did catch, on this key, the day it was added. */
+    drAllStars: !!seasonConfig.drAllStars,
+    drAllStarsRule: seasonConfig.drAllStarsRule || 'legacy',
+    drPastSeasons: _pastDragSeasons(),
     drDoubleShantay: seasonConfig.drDoubleShantay,
     drDoubleSashay: seasonConfig.drDoubleSashay,
     drImmunity: seasonConfig.drImmunity,

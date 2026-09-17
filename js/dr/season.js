@@ -24,6 +24,7 @@ import { RUNWAY_CATEGORIES } from './data/runways.js';
 import { rngFor, streamFor } from './rng.js';
 import { assignDragFamilies } from './family.js';
 import { initSaves } from './saves.js';
+import { castPasts, derivedCraft, craftIsFlat } from './past.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
 import { judgeViews, panelRanking, hostBend } from './judging.js';
@@ -1148,6 +1149,33 @@ export function playDragSeason({
      five would be a premiere. */
   if (resumeAt) state.episodes = [...(resume.episodes || [])];
   const players = Object.fromEntries(cast.map(p => [p.name, p]));
+
+  /* ── ALL STARS: THE CAST ARRIVES HAVING ALREADY DONE SOMETHING ──────
+     Both halves are computed ONCE and frozen onto the state. A past
+     re-derived per screen is a past that disagrees with itself between the
+     chart, the article and the room; craft re-derived per week would change
+     who is good at what halfway through a season.
+
+     The craft fill is not a nicety. `dragOf` normalises a missing craft stat
+     to 5, so an unauthored roster queen plays with seven flat fives on the
+     exact seven numbers that decide this show — measured: 0 of 194 roster
+     players have ever carried a craft block. AUTHORED ALWAYS WINS; this only
+     ever fills in for a queen nobody wrote. */
+  if (config.drAllStars) {
+    const rule = config.drAllStarsRule === 'save' ? 'save' : 'legacy';
+    const pasts = castPasts({ cast, seasons: config.drPastSeasons || [], seed });
+    const craft = {};
+    for (const p of cast) {
+      if (craftIsFlat(p)) {
+        craft[p.name] = derivedCraft(p);
+        p.drag = { ...(p.drag || {}), ...craft[p.name] };
+      } else {
+        craft[p.name] = Object.fromEntries(
+          Object.entries(p.drag || {}).filter(([, v]) => typeof v === 'number'));
+      }
+    }
+    state.allStars = { rule, pasts, craft };
+  }
 
   // The ledger, written into state so a headless season and a played one carry
   // the same numbers. A caller may pass its own to write gs.popularity too.

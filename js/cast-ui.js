@@ -1311,6 +1311,11 @@ export function saveConfig() {
     // forward from the live config rather than reset to empty on every save.
     drPremiere:  g('cfg-dr-premiere')?.value || 'standard',
     drFinale:    g('cfg-dr-finale')?.value || 'top4',
+    /* One control, two keys: the dropdown reads "off" or a rule name, and the
+       engine wants a flag and a rule. Kept as two because the rule has to
+       survive the mode being turned off and on again. */
+    drAllStars:     (g('cfg-dr-all-stars')?.value || 'off') !== 'off',
+    drAllStarsRule: (g('cfg-dr-all-stars')?.value || 'off') === 'save' ? 'save' : 'legacy',
     drDoubleShantay: g('cfg-dr-double-shantay') ? g('cfg-dr-double-shantay').checked : true,
     drDoubleSashay:  g('cfg-dr-double-sashay')?.checked || false,
     drImmunity:      g('cfg-dr-immunity')?.checked || false,
@@ -1489,6 +1494,8 @@ export function renderConfig() {
   try { if (typeof window.renderDragJudges === 'function') window.renderDragJudges(); } catch (e) { /* optional chrome */ }
   set('cfg-dr-premiere', seasonConfig.drPremiere || 'standard');
   set('cfg-dr-finale', seasonConfig.drFinale || 'top4');
+  set('cfg-dr-all-stars', seasonConfig.drAllStars
+    ? (seasonConfig.drAllStarsRule === 'save' ? 'save' : 'legacy') : 'off');
   // Defaults ON, so the read has to be an explicit !== false rather than a
   // truthiness test: an unset value here means "allowed", not "off".
   if (g('cfg-dr-double-shantay')) g('cfg-dr-double-shantay').checked = seasonConfig.drDoubleShantay !== false;

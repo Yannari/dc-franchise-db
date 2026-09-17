@@ -832,6 +832,15 @@
               <div class="hint hint-tight">Where the season stops, and how the crown is decided once it gets there.</div>
             </div>
             <div class="form-group">
+              <label class="form-label">All Stars</label>
+              <select id="cfg-dr-all-stars" onchange="saveConfig()" class="form-input">
+                <option value="off">Off &mdash; the panel ranks, the host decides</option>
+                <option value="legacy">All Stars: Lip Sync for Your Legacy</option>
+                <option value="save">All Stars: the save (Beaver / Baguette)</option>
+              </select>
+              <div class="hint hint-tight">A returning cast who arrive with a past &mdash; an original season, a rank, and something to prove. On <b>Legacy</b> the top two lip sync and the winner of the song chooses who goes home. On <b>the save</b> the top queen saves one of the bottom three and the song decides the rest.</div>
+            </div>
+            <div class="form-group">
               <label style="display:flex;gap:8px;align-items:flex-start">
                 <input type="checkbox" id="cfg-dr-smackdown" style="width:14px;height:14px;margin-top:3px" onchange="saveConfig()">
                 <span>LaLaPaRUza Smackdown<div class="hint hint-tight">One episode before the finale: every eliminated queen comes back and lip syncs the others out in rounds for a title of her own. Adds one episode.</div></span>

@@ -1713,6 +1713,14 @@ export function defaultConfig() {
     // ALLOWANCES rather than frequencies: the lip sync earns them or they do
     // not happen, and the box only decides whether the engine may call one.
     drPremiere: 'standard', drFinale: 'top4',
+    /* ── ALL STARS: A MODE, AND SEPARATELY A RULE ──
+       "All Stars" names five different games (see the era table in
+       docs/superpowers/specs/2026-09-08-drag-race-all-stars-design.md), so the
+       rule is its own key. Folding it into the flag would mean rebuilding the
+       shape to reach any of the others. `legacy` is era B: the top two sing
+       and the winner eliminates. `save` is the Beaver/Baguette, which already
+       exists — the mode only makes it reachable from here. */
+    drAllStars: false, drAllStarsRule: 'legacy',
     drDoubleShantay: true, drDoubleSashay: false, drSmackdown: false, drImmunity: false, drTripleLipsync: false,
     drSave: 'none', drTankLevers: 6, drTankRetire: 8, drTankLive: 1, drGoldenBars: 1,
     // The per-episode timeline: maxi, mini, rotating judge, guest, song, twist.

@@ -53,6 +53,13 @@ export const GRID_RESULTS = {
   FINALIST: { label: 'FINAL', short: 'FIN', title: 'Made the finale', color: '#c4b5fd', ink: '#1a1a1a' },
   WIN: { label: 'WIN', short: 'WIN', title: 'Won the maxi challenge', color: '#38bdf8', ink: '#08283b' },
   HIGH: { label: 'HIGH', short: 'HIGH', title: 'Among the top queens', color: '#7dd3fc', ink: '#08283b' },
+  /* ── THE TOP TWO, AND THE ONE WHO LOST THE SONG ──
+     All Stars only. She won the week with the panel, sang for the power and
+     did not get it — which is neither a WIN nor an ordinary HIGH, and the
+     chart the fandom keeps gives it its own colour (deepskyblue, "in the Top
+     2, but did not win the Lip Sync for your Legacy"). Recording her as HIGH
+     lost the fact that she was one of the two on that stage. */
+  TOP2: { label: 'TOP2', short: 'TOP2', title: 'The top two — lost the Lip Sync for Your Legacy', color: '#38a9f5', ink: '#04202f' },
   /* SAFE IS THE EMPTY CELL, and it was the heaviest thing on the chart. Half
      a season is SAFE, so a dark slate fill put a wall of grey behind every
      result worth seeing. Real progress tables leave it white for exactly
@@ -93,7 +100,7 @@ export const GRID_RESULTS = {
  * them in the right order.
  */
 const ORDER_OF = {
-  WINNER: 0, WIN: 1, FINALIST: 2, HIGH: 3, SAFE: 4, LOW: 5, BTM: 6, BTM3: 6.5, BTM2: 7, ELIM: 8, OUT: 9,
+  WINNER: 0, WIN: 1, FINALIST: 2, TOP2: 2.5, HIGH: 3, SAFE: 4, LOW: 5, BTM: 6, BTM3: 6.5, BTM2: 7, ELIM: 8, OUT: 9,
 };
 
 /**
@@ -114,7 +121,9 @@ const ORDER_OF = {
  * there. That is what makes the number comparable across a cast.
  */
 export const PPE_POINTS = {
-  WINNER: 5, WIN: 5, FINALIST: 4, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1, ELIM: 0,
+  /* TOP2 sits between them on purpose: she beat everybody but one and then
+     lost a song, which is worth more than a HIGH and less than the win. */
+  WINNER: 5, WIN: 5, FINALIST: 4, TOP2: 4.5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1, ELIM: 0,
 };
 
 /* ── WHAT A CELL MEANS DEPENDS ON THE SEASON IT IS IN ─────────────────
@@ -129,6 +138,7 @@ export const PPE_POINTS = {
    available. The mitigation is not a convention, it is this function — a
    static map is how the two meanings would silently merge again. */
 const ALL_STARS_TITLES = {
+  TOP2: 'The top two — lost the Lip Sync for Your Legacy',
   BTM2: 'The bottom two — named for elimination, and not chosen',
   BTM3: 'The bottom three — named for elimination, and not chosen',
   ELIM: 'Named for elimination, and chosen by the winner of the song',

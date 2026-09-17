@@ -35,8 +35,10 @@ describe('the grid builder', () => {
        and the winner of the song picks out of it, so two queens survive a
        night none of them sang on. `resultMeta` is how one token means two
        things without the two meanings merging. */
+    /* TOP2 joined them for All Stars: she made the top two and lost the song,
+       which the real chart gives its own colour and which HIGH cannot say. */
     expect(Object.keys(GRID_RESULTS).sort()).toEqual(
-      ['BTM', 'BTM2', 'BTM3', 'ELIM', 'FINALIST', 'HIGH', 'LOW', 'OUT', 'SAFE', 'WIN', 'WINNER'].sort());
+      ['BTM', 'BTM2', 'BTM3', 'ELIM', 'FINALIST', 'HIGH', 'LOW', 'OUT', 'SAFE', 'TOP2', 'WIN', 'WINNER'].sort());
     for (const [k, v] of Object.entries(GRID_RESULTS)) {
       expect(v.color, k).toBeTruthy();
       expect(v.short.length, k).toBeLessThanOrEqual(4);

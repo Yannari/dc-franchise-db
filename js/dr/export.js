@@ -47,6 +47,10 @@ function resultFor(row, name) {
   if (!(dr.living || []).includes(name)) return 'OUT';
   const c = dr.call || {};
   if ((c.win || []).includes(name)) return 'WIN';
+  /* The top two on an All Stars night: the one who won the song is WIN above,
+     and the other is TOP2 -- her own cell on the real chart, worth more than
+     a HIGH and less than the win. */
+  if ((c.singers || []).some(x => (c.high || []).includes(x)) && (c.singers || []).includes(name)) return 'TOP2';
   if ((c.high || []).includes(name)) return 'HIGH';
   /* BTM2 is the bottom TWO -- she lip synced and survived. A queen the panel
      NAMED in the bottom and then saved on the stage is LOW, which is what the

@@ -933,6 +933,15 @@ export function runDragWeek(state, cfg, ctx) {
     call.win = [];
     call.high = top2;
     call.low = [];
+    /* ── AND THE REST OF THE CALL, WHICH ALL STARS ALSO MAKES ──
+       This emptied `low` and named nobody but the top two and the bottom, so
+       a legacy night called four or five queens and had no LOW at all. The
+       seasons call SIX: the top two, a queen in the top who is not one of
+       them, a queen in the bottom who is NOT up for elimination, and the two
+       who are. AS2's legend carries every one of those cells separately.
+       `high` holds the whole top group and `singers` says which two of them
+       sing — the split the chart needs after the song, without moving the top
+       two out of the group every existing reader looks for them in. */
     /* ── ON A LEGACY NIGHT THE BOTTOM IS NAMED, AND IT IS `bottom` ──
        This named NOBODY on a legacy night, on the reasoning that announcing
        the pool would spoil the choice the winner is about to make out of it.
@@ -951,10 +960,24 @@ export function runDragWeek(state, cfg, ctx) {
        elimination — `atRisk` is the show's named-but-safe group, which is not
        what these queens are. Nobody among them sings: `call.singers` is the
        top two, and every reader of the song takes it from there. */
-    const wide = legacy ? (living.length >= 8 ? 3 : 2) : 2;
-    const named = bend.slice(-wide).map(r => r.name).filter(n => !top2.includes(n));
-    if (legacy) { call.bottom = named; call.atRisk = []; } else { call.atRisk = named; }
-    call.safe = bend.slice(2).map(r => r.name).filter(n => !named.includes(n));
+    const rest = bend.slice(2).map(r => r.name).filter(n => !top2.includes(n));
+    if (legacy) {
+      /* Two up for elimination — the pool the lipstick chooses from — one LOW
+         above them, and one more queen in the top. Each only when the room is
+         big enough to fill it: a final five does not have six to call. */
+      const upFor = rest.slice(-2);
+      const low = rest.length > 2 ? [rest[rest.length - 3]] : [];
+      const high = rest.length > 3 ? [rest[0]] : [];
+      call.bottom = upFor;
+      call.atRisk = [];
+      call.low = low;
+      call.high = [...top2, ...high];
+      call.safe = rest.filter(n => !upFor.includes(n) && !low.includes(n) && !high.includes(n));
+    } else {
+      const named = bend.slice(-2).map(r => r.name).filter(n => !top2.includes(n));
+      call.atRisk = named;
+      call.safe = rest.filter(n => !named.includes(n));
+    }
   }
 
   /* ── HOW THE HOST RUNS THE CALL TONIGHT ──
@@ -1576,7 +1599,10 @@ export function runDragWeek(state, cfg, ctx) {
         atRisk: [...call.atRisk], bottom: [...call.bottom], safe: [...call.safe],
       };
       call.win = [lc.winner];
-      call.high = [a, b].filter(n => n !== lc.winner);
+      /* The queen the panel called HIGH is still HIGH — she was in the top
+         and she never sang. Only the two singers move. */
+      call.high = [...call.high.filter(n => !call.singers.includes(n)),
+        ...[a, b].filter(n => n !== lc.winner)];
       state.lastWinner = lc.winner;
     }
 
@@ -1763,7 +1789,11 @@ export function runDragWeek(state, cfg, ctx) {
       ? (performances[n]?.detail?.place || 'SAFE')
       : exits.includes(n) ? 'ELIM'
         : call.win.includes(n) ? 'WIN'
-          : call.high.includes(n) ? 'HIGH'
+          /* SHE SANG FOR THE POWER AND LOST IT. Checked before HIGH because
+             she is in the top group too, and "in the top two" is the more
+             specific fact -- the one the chart has its own cell for. */
+          : ((call.singers || []).includes(n) && legacy) ? 'TOP2'
+            : call.high.includes(n) ? 'HIGH'
             /* ── THE BOTTOM, AND WHETHER SHE SANG IN IT ──
                On an ordinary night the bottom IS the lip sync, so BTM2 says
                she sang and survived. On a legacy night NOBODY in the bottom

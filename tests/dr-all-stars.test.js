@@ -401,3 +401,51 @@ describe('the lipstick is not spoiled', () => {
     expect(checked).toBeGreaterThan(5);
   });
 });
+
+describe('the call on a legacy night is the format\'s own', () => {
+  it('names six: the top two, a high, a low, and two up for elimination', () => {
+    const res = season(120, { drAllStars: true });
+    let wide = 0;
+    for (const r of weekly(res)) {
+      if (!r.dr.lipsync?.legacy) continue;
+      const c = r.dr.callAtCall || r.dr.call;
+      if ((r.dr.living?.length ?? 0) < 8) continue;
+      const named = new Set([...(c.win || []), ...(c.high || []), ...(c.low || []), ...(c.bottom || [])]);
+      expect(named.size).toBe(6);
+      expect(c.singers).toHaveLength(2);
+      expect(c.bottom).toHaveLength(2);
+      expect(c.low).toHaveLength(1);
+      wide++;
+    }
+    // A ten-queen season only has a few weeks with eight still in the room.
+    expect(wide).toBeGreaterThan(1);
+  });
+
+  it('records the queen who sang and lost as TOP2, not HIGH', () => {
+    const res = season(120, { drAllStars: true });
+    let checked = 0;
+    for (const r of weekly(res)) {
+      const lip = r.dr.lipsync;
+      if (!lip?.legacy || !lip.winner) continue;
+      const loser = (r.dr.call.singers || []).find(n => n !== lip.winner);
+      if (!loser) continue;
+      expect((r.dr.record?.[loser] || []).slice(-1)[0]).toBe('TOP2');
+      expect((r.dr.record?.[lip.winner] || []).slice(-1)[0]).toBe('WIN');
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(3);
+  });
+
+  it('and the queen the panel called LOW is never the one who goes', () => {
+    const res = season(120, { drAllStars: true });
+    for (const r of weekly(res)) {
+      const lip = r.dr.lipsync;
+      if (!lip?.legacy || !lip.eliminated) continue;
+      expect(r.dr.call.low || []).not.toContain(lip.eliminated);
+      expect(r.dr.call.bottom).toContain(lip.eliminated);
+      for (const q of (r.dr.call.low || [])) {
+        expect((r.dr.record?.[q] || []).slice(-1)[0]).toBe('LOW');
+      }
+    }
+  });
+});

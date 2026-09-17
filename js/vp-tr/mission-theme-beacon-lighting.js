@@ -14,6 +14,7 @@
 // on the last reveal and only if the record says it burned.
 import { players } from '../core.js';
 import { playerAvatarUrl } from '../players.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -56,6 +57,200 @@ const SHAPE = [[-30, 0, 20, 16], [-10, 0, 20, 16], [10, 0, 20, 16], [-30, 16, 20
 const SLOT_POS = { 'water-a': [70, 42], land: [150, 226], 'water-b': [252, 62] };
 const SLOT_WORD = { water: 'in the water', land: 'on land' };
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the loch, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Ropes come off, bottles light, pieces go onto the raft, people wade ashore
+// and the beacon catches — each on the card that says so, suspense first.
+const SK = {
+  lit: c => /went up/.test(c.text || ''),
+  dark: c => /clock ran out/.test(c.text || ''),
+};
+function _blKind(c, ph) {
+  if (SK.lit(c)) return 'lit';
+  if (SK.dark(c)) return 'dark';
+  if (c.relic) return 'shield';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'poles') return c.tone === 'bad' ? 'stuck' : 'free';
+  if (ph.id === 'bottles') return c.tone === 'bad' ? 'wrongway' : 'bottle';
+  return c.tone === 'bad' ? 'lastin' : 'piece';
+}
+
+const BL_CAP = { poles: ['Part one', 'The Poles'], bottles: ['Part two', 'The Bottles'],
+  beacon: ['Part three', 'The Beacon'] };
+
+/** Where everybody stands: at the pole, in the water, or up the shingle. */
+function _blLayout(v) {
+  const everyone = v.teams.flatMap(t => t.members);
+  const n = everyone.length;
+  // Ringed round the pole: two columns in a small castle, three in a full one.
+  const cols = n > 12 ? 3 : 2;
+  const rows = Math.ceil(n / cols);
+  const gapY = Math.min(30, 150 / Math.max(1, rows));
+  const top = 236 - ((rows - 1) * gapY) / 2;
+  const pole = everyone.map((nm, i) => {
+    const col = i % cols, row = Math.floor(i / cols);
+    const dx = cols === 2 ? (col ? 52 : -52) : [-74, 0, 74][col];
+    return { n: nm, x: 452 + dx, y: top + row * gapY };
+  });
+  const perRow = 7;
+  const shore = everyone.map((nm, i) => ({ x: 58 + (i % perRow) * 38, y: 300 + Math.floor(i / perRow) * 30 }));
+  return { everyone, pole, shore };
+}
+
+function _blScene(v, s) {
+  const e = v.epNum;
+  const L = s.L;
+  const bottles = Array.from({ length: 6 }, (_, i) =>
+    '<g class="ms-bl-bottle' + (i < s.bottles ? ' read' : '') + '" data-b="' + i + '" transform="translate(' + (74 + i * 44) + ',252)">'
+    + '<path d="M-7 -20h14v8l4 7v20a3 3 0 0 1-3 3h-16a3 3 0 0 1-3-3v-20l4-7z" fill="#12312a" stroke="#aab7bc" stroke-width="1"/>'
+    + '<rect class="paper" x="-6" y="-2" width="12" height="13" fill="#4a4437"/></g>').join('');
+  // the frame: eight pieces up the shield-shaped beacon on the raft
+  const pieces = Array.from({ length: 8 }, (_, i) => {
+    const row = Math.floor(i / 2), col = i % 2;
+    const w = 48 - row * 6;
+    const x = 806 + (col ? 4 : -w - 4);
+    const y = 236 - row * 26;
+    return '<rect class="ms-bl-piece' + (i < s.pieces ? ' set' : '') + '" data-p="' + i + '" x="' + x + '" y="' + y
+      + '" width="' + w + '" height="20" rx="3"/>';
+  }).join('');
+  const figures = L.everyone.map((nm, i) => {
+    const st = s.pole[nm] || '';
+    const at = /out/.test(st) ? L.shore[i] : L.pole[i];
+    return '<g class="ms-bl-fig ' + (/out/.test(st) ? 'out' : st ? 'free' : 'tied') + '" data-n="' + _esc(nm)
+      + '" transform="translate(' + at.x.toFixed(0) + ',' + at.y.toFixed(0) + ')">'
+      + '<path class="rope" d="M0 0 L' + (452 - at.x).toFixed(0) + ' ' + (250 - at.y).toFixed(0) + '" stroke="#c9a877" stroke-width="2"/>'
+      + '<circle r="14" fill="#0a151a" stroke="#3b5560" stroke-width="2"/>'
+      + '<image href="' + _esc(_url(nm)) + '" x="-13" y="-13" width="26" height="26" clip-path="url(#ms-bl-c-' + e + ')"/></g>';
+  }).join('');
+  return '<rect width="1080" height="360" fill="url(#ms-bl-sky-' + e + ')"/>'
+    + '<circle cx="890" cy="54" r="26" fill="rgba(241,234,219,.22)"/><circle cx="890" cy="54" r="13" fill="rgba(241,234,219,.6)"/>'
+    + '<path d="M0 150 C160 120 260 168 400 140 C540 112 660 158 800 132 C900 114 1000 150 1080 128 V360 H0Z" fill="#081218"/>'
+    + '<g class="ms-bl-water"><path d="M0 178 q60 -10 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(170,183,188,.16)" stroke-width="2"/>'
+    + '<path d="M0 214 q60 -10 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0" fill="none" stroke="rgba(170,183,188,.12)" stroke-width="2"/></g>'
+    + '<path d="M0 276 C120 262 180 300 300 288 L300 360 H0Z" fill="#101a1c"/>'
+    + bottles
+    + '<rect x="446" y="150" width="12" height="150" rx="4" fill="#3b5560"/>'
+    + figures
+    + '<g class="ms-bl-raft"><path d="M726 254h160l-14 22H740z" fill="#22303a" stroke="#3b5560" stroke-width="2"/>'
+    + '<g class="ms-bl-frame">' + pieces + '</g>'
+    + '<g class="ms-bl-fire' + (s.lit ? ' lit' : '') + '" transform="translate(806,150)">'
+    + '<path class="f1" d="M0 84c26-26 34-44 30-66-10 12-16 14-20 12 6-18 2-34-14-46-2 18-10 26-20 34-14 12-20 26-20 40 0 14 10 26 24 32z" fill="#ff5a1f"/>'
+    + '<path class="f2" d="M0 84c16-18 20-30 18-44-6 8-10 10-14 8 4-12 0-22-10-30-2 12-6 18-14 24-8 8-12 16-12 26 0 10 8 16 18 20z" fill="#ffb347"/>'
+    + '<path class="f3" d="M0 84c8-10 10-18 9-26-3 5-5 6-7 5 2-7 0-13-5-17-1 7-3 10-7 14-4 4-6 9-6 14 0 6 4 10 9 12z" fill="#ffe08a"/></g></g>'
+    + '<g class="ms-bl-torch" transform="translate(986,268)"><rect x="-3" y="0" width="6" height="40" fill="#5b4326"/>'
+    + '<path d="M0 -18c8 10 10 16 10 22a10 10 0 0 1-20 0c0-6 2-12 10-22z" fill="#ffb347"/></g>'
+    + '<g class="ms-bl-glint"><circle r="10" fill="rgba(242,204,91,.9)"/></g>';
+}
+
+function _blStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<clipPath id="ms-bl-c-' + e + '"><circle r="13"/></clipPath>'
+    + '<linearGradient id="ms-bl-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#0b1b24"/><stop offset=".55" stop-color="#0a151a"/><stop offset="1" stop-color="#060c0f"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _blScene(v, s),
+    cap: [s.time + ' left', (BL_CAP[s.capPhase] || BL_CAP.poles)[1]],
+    pot: v.potBefore + (s.done && v.tally.lit ? v.earned : 0),
+    vars: '--ms-mono:\'Overpass Mono\',monospace;--ms-accent:#f2cc5b;--ms-ink:#f1eadb',
+    label: 'The loch, staged' });
+}
+
+/** Draw a state with no motion. */
+function _blSettle(st, v, s) {
+  st.scene('a');
+  st.phase(s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-bl-fig').forEach(g => {
+    const nm = g.getAttribute('data-n');
+    const i = s.L.everyone.indexOf(nm);
+    const state = s.pole[nm] || '';
+    const at = /out/.test(state) ? s.L.shore[i] : s.L.pole[i];
+    g.setAttribute('class', 'ms-bl-fig ' + (/out/.test(state) ? 'out' : state ? 'free' : 'tied')
+      + (s.watch.includes(nm) ? ' watched' : ''));
+    g.setAttribute('transform', 'translate(' + at.x.toFixed(0) + ',' + at.y.toFixed(0) + ')');
+    const r = g.querySelector('.rope');
+    if (r) r.setAttribute('d', 'M0 0 L' + (452 - at.x).toFixed(0) + ' ' + (250 - at.y).toFixed(0));
+  });
+  st.qa('.ms-bl-bottle').forEach((b, i) => b.setAttribute('class', 'ms-bl-bottle' + (i < s.bottles ? ' read' : '')));
+  st.qa('.ms-bl-piece').forEach((p, i) => p.setAttribute('class', 'ms-bl-piece' + (i < s.pieces ? ' set' : '')));
+  const fire = st.q('.ms-bl-fire'); if (fire) fire.setAttribute('class', 'ms-bl-fire' + (s.lit ? ' lit' : ''));
+  const glint = st.q('.ms-bl-glint'); if (glint) glint.setAttribute('class', 'ms-bl-glint');
+  st.cap(s.time + ' left', (BL_CAP[s.capPhase] || BL_CAP.poles)[1]);
+  st.pot(v.potBefore + (s.done && v.tally.lit ? v.earned : 0), false);
+  st.clearStamp();
+}
+
+const BL_SLOT_AT = { 'water-a': [360, 210], 'water-b': [560, 240], land: [160, 300] };
+
+/** Play the step that lands on `s`, from `prev`. */
+function _blPlay(st, v, prev, s) {
+  _blSettle(st, v, prev);
+  const e = s.ev;
+  if (!e) { _blSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  st.cap(prev.time + ' left', (BL_CAP[s.capPhase] || BL_CAP.poles)[1]);
+  if (e.k === 'free' || e.k === 'lastin' || e.k === 'piece' || e.k === 'bottle') {
+    st.phase('hold');
+    land(() => {
+      _blSettle(st, v, s);
+      st.phase('rest');
+      const who = e.who[0];
+      const i = s.L.everyone.indexOf(who);
+      if (e.k === 'free' && i >= 0) st.burst(12, (s.L.pole[i].x / 10.8), (s.L.pole[i].y / 3.6), 90, 'rgba(170,200,210,.9)');
+      if (e.k === 'bottle') st.burst(10, 20, 70, 80, 'rgba(241,234,219,.9)');
+      if (e.k === 'piece') st.burst(12, 74, 62, 90, 'rgba(242,204,91,.9)');
+      if (e.k === 'lastin') st.stamp('LAST ONE OUT', 'cool');
+    }, 1100);
+  } else if (e.k === 'stuck' || e.k === 'wrongway') {
+    st.phase('hold');
+    land(() => {
+      _blSettle(st, v, s);
+      st.phase('bad');
+      st.stamp(e.k === 'stuck' ? 'STILL TIED' : 'WRONG WAY ROUND', 'bad');
+    }, 1300);
+  } else if (e.k === 'scene') {
+    _blSettle(st, v, s);
+    st.phase('watch');
+  } else if (e.k === 'shield') {
+    st.phase('hold');
+    const slot = /land|boathouse|shingle/.test(e.text || '') ? 'land'
+      : s.shieldsTaken > 1 ? 'water-b' : 'water-a';
+    const at = BL_SLOT_AT[slot];
+    land(() => {
+      const g = st.q('.ms-bl-glint');
+      if (g) { g.setAttribute('transform', 'translate(' + at[0] + ',' + at[1] + ')'); g.setAttribute('class', 'ms-bl-glint on'); }
+      land(() => {
+        _blSettle(st, v, s);
+        if (e.found) {
+          st.phase('win'); st.flash((at[0] / 10.8) + '%', (at[1] / 3.6) + '%');
+          st.burst(18, at[0] / 10.8, at[1] / 3.6, 140, 'rgba(242,204,91,.95)');
+          st.stamp('A SHIELD', 'gold');
+        } else {
+          st.phase('rest'); st.stamp('NOTHING IN IT', 'bad');
+        }
+      }, 1400);
+    }, 900);
+  } else if (e.k === 'lit') {
+    st.phase('hold');
+    land(() => {
+      _blSettle(st, v, s);
+      st.phase('win');
+      st.flash('74%', '50%', 'rgba(255,138,51,.85)');
+      st.burst(26, 74, 48, 220, 'rgba(255,90,31,.95)');
+      st.fall(20, '#ffb347');
+      st.stamp('THE BEACON IS LIT', 'gold');
+      land(() => st.pot(v.potBefore + v.earned, true), 1300);
+    }, 2000);
+  } else if (e.k === 'dark') {
+    st.phase('hold');
+    land(() => { _blSettle(st, v, s); st.phase('bad'); st.stamp('THE CLOCK RAN OUT', 'bad'); }, 2000);
+  } else {
+    _blSettle(st, v, s);
+  }
+}
+
 export const BEACON = {
   id: 'beacon-lighting', prefix: 'bl', ownShield: true,
   shieldBeat: /\bShields?\b|not out of it/,
@@ -86,6 +281,8 @@ export const BEACON = {
     else if (ph.id === 'bottles') ic = c.tone === 'good' ? 'bottle' : 'piece';
     return '<span class="bl-ico"><svg viewBox="0 0 36 36" aria-hidden="true">' + ICONS[ic] + '</svg></span>';
   },
+
+  stage: (v, states, n) => _blStage(v, states, n),
 
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
@@ -151,6 +348,10 @@ export const BEACON = {
 
   sideStates(v, total) {
     const pr = _prog(v);
+    const evs = stageEvents(v, _blKind).map((e, i, all) => ({ ...e,
+      // a Shield card says whether it was found in its own words
+      found: /pull(s|ed)? out a Shield|comes? up with|a Shield/i.test(e.text || '') && !/nothing|empty|only/i.test(e.text || '') }));
+    const L = _blLayout(v);
     const clock = v.tally.clock || 40;
     const used = Math.min(clock, v.tally.minutesUsed || clock);
     const relics = _relicSteps(v);
@@ -185,16 +386,28 @@ export const BEACON = {
         return tied ? tied + ' tied' : dry + ' of ' + t.members.length + ' ashore';
       });
       const left = Math.round(clock - used * Math.min(1, n / Math.max(1, total)));
+      const ev = evs[n - 1] || null;
       out.push({ pole, taken, pieces, bottles: Math.round(6 * c2), rows, done,
         lit: done && !!v.tally.lit,
         time: String(Math.max(0, left)).padStart(2, '0') + ':00',
-        fuse: Math.max(1, Math.round(100 * left / clock)) });
+        fuse: Math.max(1, Math.round(100 * left / clock)),
+        // the stage's own reading of the same step
+        L, ev, capPhase: ev ? ev.phase : 'poles',
+        watch: ev && ev.k === 'scene' ? ev.who : [],
+        shieldsTaken: taken.filter(Boolean).length,
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally } });
     }
     return out;
   },
 
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
+    const st = stageFor(s.v.epNum);
+    if (st) {
+      st.clear();
+      if (mode === 'next' && n > 0 && !reducedMotion()) _blPlay(st, s.v, states[n - 1], s);
+      else _blSettle(st, s.v, s);
+    }
     document.querySelectorAll('.bl-pole').forEach(g => {
       g.setAttribute('class', 'bl-pole ' + (s.pole[g.getAttribute('data-who')] || ''));
     });
@@ -349,8 +562,36 @@ export const BEACON = {
 .bl-btn[disabled]{opacity:.4;cursor:default}
 .bl-btn.ghost{background:transparent;color:var(--bl-mist);border:1px solid #28424c;box-shadow:none}
 .bl-counter{font:12px/1 'Overpass Mono',monospace;color:#7f9095;letter-spacing:.1em}
+
+/* ── THE STAGE: the loch ─────────────────────────────────────────────── */
+.ms-bl-fig{transition:transform 1.1s cubic-bezier(.3,1.2,.4,1);filter:none}
+.ms-bl-fig .rope{opacity:.85;transition:opacity .6s}
+.ms-bl-fig.free .rope,.ms-bl-fig.out .rope{opacity:0}
+.ms-bl-fig.tied circle{animation:ms-bl-strain 1.3s ease-in-out infinite}
+@keyframes ms-bl-strain{50%{stroke:#c9a877;r:15}}
+.ms-bl-fig.out image{filter:none}
+.ms-bl-fig.tied image,.ms-bl-fig.free image{filter:saturate(.7) brightness(.85)}
+.ms[data-phase=watch] .ms-bl-fig:not(.watched){filter:brightness(.3)}
+.ms-bl-fig.watched{filter:drop-shadow(0 0 10px rgba(242,204,91,.9))}
+.ms-bl-water path{animation:ms-bl-wave 7s ease-in-out infinite alternate}
+@keyframes ms-bl-wave{to{transform:translateX(-120px)}}
+.ms-bl-bottle .paper{transition:fill .6s,filter .6s}
+.ms-bl-bottle.read .paper{fill:#f1eadb;filter:drop-shadow(0 0 7px rgba(241,234,219,.9))}
+.ms-bl-piece{fill:#12222a;stroke:#3b5560;stroke-width:2;transition:fill .7s,stroke .7s}
+.ms-bl-piece.set{fill:#5b4326;stroke:#c9a877}
+.ms-bl-fire{opacity:0;transition:opacity .9s;transform-box:fill-box;transform-origin:50% 100%}
+.ms-bl-fire.lit{opacity:1}
+.ms-bl-fire.lit .f1{animation:ms-bl-flick .45s ease-in-out infinite alternate}
+.ms-bl-fire.lit .f2{animation:ms-bl-flick .33s ease-in-out infinite alternate-reverse}
+.ms-bl-fire.lit .f3{animation:ms-bl-flick .27s ease-in-out infinite alternate}
+@keyframes ms-bl-flick{to{transform:scale(1.08,.94) translateX(2px)}}
+.ms-bl-torch path{transform-box:fill-box;transform-origin:50% 100%;animation:ms-bl-flick .5s ease-in-out infinite alternate}
+.ms-bl-glint{opacity:0;transition:opacity .5s}
+.ms-bl-glint.on{opacity:1;animation:ms-bl-glint 1s ease-in-out infinite}
+@keyframes ms-bl-glint{50%{opacity:.25}}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(60,0,0,.8)}
 @media(prefers-reduced-motion:reduce){.bl-root *,.bl-root *::before,.bl-root *::after{animation:none !important;transition:none !important}.bl-card{opacity:1;transform:none}.bl-sparks{display:none}}
-`,
+` + STAGE_CSS,
 };
 
 export default BEACON;

@@ -80,7 +80,7 @@ const STYLE_WORDS = {
  * so the registry files them like any other and the transcript retranscribes
  * them without knowing they are special.
  */
-export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star = {} } = {}) {
+export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star = {}, pasts = {} } = {}) {
   if (!cast.length) return [];
   const draw = drawer(rng);
   const out = [{ step: 'arrivals', kind: 'arrivals', data: { cast: [...cast] }, text: '' }];
@@ -190,6 +190,26 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
         step: 'arrivals', kind: 'arrival:intro',
         data: { players: [name], years: vars.years, city: vars.city, job: vars.job },
         text: fill(intro, vars),
+      });
+    }
+    /* ── WHAT THE ROOM ALREADY KNOWS ABOUT HER ──────────────────────
+       All Stars' premiere is not an introduction: nobody is meeting anybody,
+       and the room knows exactly who won what. So her entrance carries her
+       RECORD rather than a first impression of her.
+       Skipped entirely when there is no past, so an ordinary season's
+       premiere is unchanged beat for beat -- `pasts` is empty unless the
+       season is All Stars (js/dr/past.js). */
+    const past = pasts[name];
+    if (past) {
+      const ord = n => (n === 1 ? 'won it' : n === 2 ? 'came second'
+        : `went out ${n}${n === 3 ? 'rd' : 'th'} of ${past.of}`);
+      const wins = past.wins === 1 ? 'one maxi win'
+        : past.wins > 1 ? `${past.wins} maxi wins` : 'no wins at all';
+      const biz = past.business.charAt(0).toUpperCase() + past.business.slice(1);
+      out.push({
+        step: 'arrivals', kind: 'arrival:resume',
+        data: { players: [name], past },
+        text: `Season ${past.season}: she ${ord(past.rank)}, with ${wins}. ${biz}.`,
       });
     }
     const back = draw(usable(ARRIVAL_BACKSTORY[d.style]), `back:${d.style}:`);

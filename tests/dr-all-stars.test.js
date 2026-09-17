@@ -171,3 +171,22 @@ describe('the campaign on a legacy night', () => {
     expect(spared / pleaded).toBeGreaterThan(0.4);
   });
 });
+
+describe('the arrivals, on All Stars', () => {
+  it('say what she already did', () => {
+    const res = season(31, { drAllStars: true });
+    const premiere = weekly(res)[0];
+    const resumes = (premiere.dr.scenes || []).filter(s => s.kind === 'arrival:resume');
+    expect(resumes.length).toBeGreaterThan(4);
+    for (const s of resumes) {
+      expect(s.text.length).toBeGreaterThan(10);
+      expect(s.text).not.toMatch(/\{/);
+      expect(s.text).toMatch(/^Season \d/);
+    }
+  });
+
+  it('do not, on an ordinary season', () => {
+    const premiere = weekly(season(31))[0];
+    expect((premiere.dr.scenes || []).filter(s => s.kind === 'arrival:resume')).toHaveLength(0);
+  });
+});

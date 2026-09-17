@@ -152,6 +152,8 @@ export function runDragWeek(state, cfg, ctx) {
   const isPremiere = !state.episodes.length;
   const arrivals = isPremiere ? arrivalScenes({
     cast: [...living], players: ctx.players || {}, rng, star: state.star || {},
+    // All Stars: every queen walks in with a record. Empty otherwise.
+    pasts: state.allStars?.pasts || {},
   }) : [];
   for (const sc of arrivals) scenes.push(sc);
 

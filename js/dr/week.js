@@ -49,6 +49,7 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
+import { dragAlliances, sameBloc } from './alliances.js';
 import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, legacyLine } from './data/legacy-beats.js';
 import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
@@ -249,6 +250,17 @@ export function runDragWeek(state, cfg, ctx) {
   // are the ones that are about the room rather than about the work.
   // Declared before the room is drawn because the mini writes into it too.
   const werkEvents = [];
+
+  /* ── THE CIRCLES IN THE ROOM TONIGHT ────────────────────────────────
+     Derived from the bonds as they stand this week (js/dr/alliances.js), so
+     an alliance that cooled is simply gone next week. It reaches two things:
+     the queen holding an exit finds a circle-mate harder to name, and the
+     sidebar can show the viewer who is actually aligned.
+     All Stars only for now — the mode is where the room has enough history
+     for a circle to mean something on day one. */
+  const alliances = state.allStars
+    ? dragAlliances({ living, bond: (x, y) => Number(ctx.bond?.(x, y)) || 0, players, ep: cfg.num })
+    : [];
 
   /* ── THE PAST, STILL IN THE ROOM ────────────────────────────────────
      One callback a week to a season these two already shared. The premiere
@@ -1600,6 +1612,8 @@ export function runDragWeek(state, cfg, ctx) {
           players: Object.fromEntries(living.map(n => [n, P(n)])),
           bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
           state, ledger: state.power, pleas: legacyPleas, panelOrder: pool, rng,
+          // Her own circle is harder to end. A bias, never a veto.
+          allies: pool.filter(q => sameBloc(alliances, lc.winner, q)),
         });
         const chosen = choice.target;
         if (chosen) {
@@ -2143,6 +2157,8 @@ export function runDragWeek(state, cfg, ctx) {
          every reader that would otherwise infer a lip sync from a bottom
          placement. Null on an ordinary season, so nothing changes there. */
       ...(cfg.legacy ? { allStars: { rule: 'legacy' } } : {}),
+      // The circles as they stood tonight, for the sidebar.
+      ...(alliances.length ? { alliances } : {}),
       /* ── THE CRAFT THIS CAST PLAYED WITH, ONCE PER SEASON ──
          On the premiere row only. The exporter writes it onto each queen's
          APPEARANCE so a later All Stars can cast her as what she was that

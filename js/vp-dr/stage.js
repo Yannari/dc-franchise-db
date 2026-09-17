@@ -20,7 +20,7 @@
 // a real disagreement and not decoration. The rail carries the panel's
 // running ranking, which is what the viewer is actually watching.
 import { campaignStage } from './save.js';
-import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
+import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, _allianceRail, ROOM_RAIL_CSS } from './style.js';
 // Borrowed for the untucked consequence row — same fact, same badge.
 import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
 import { _controls, _seedRail, _state } from './reveal.js';
@@ -1083,7 +1083,7 @@ export function rpBuildUntucked(row) {
        every season, because no relationship state had ever reached a screen.
        The rail under it is the real thing: who is close, who is at war, and
        which of them are family. */
-    sidebar: `<h4 class="dr-disp">The room</h4>
+    sidebar: _allianceRail(row) + `<h4 class="dr-disp">The room</h4>
       <div class="dr-temp"><i style="left:50%"></i></div>
       <div class="dr-temp-k"><span>apart</span><span>together</span></div>
       <p class="dr-temp-v dr-disp">holding</p>${_roomRail(row)}`,

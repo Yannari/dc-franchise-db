@@ -28,6 +28,7 @@
 import { gs, players } from '../core.js';
 import { getBond } from '../bonds.js';
 import { pStats } from '../players.js';
+import { blocsOf } from '../alliance-blocs.js';
 
 // ── WHO GRAVITATES INTO A BLOC ────────────────────────────────────────
 //
@@ -97,47 +98,13 @@ export function computeAlliances(ep) {
   const cache = gs.tr && gs.tr._allianceCache;
   if (cache && cache.key === cacheKey) return cache.blocs;
 
-  // Every eligible warm pair, strongest first.
-  const edges = [];
-  for (let i = 0; i < living.length; i++) {
-    for (let j = i + 1; j < living.length; j++) {
-      const a = living[i], b = living[j];
-      const bond = getBond(a, b);
-      if (bond < ALLY_BOND) continue;
-      const aff = allianceAffinity(a), affB = allianceAffinity(b);
-      if (aff < AFFINITY_FLOOR || affB < AFFINITY_FLOOR) continue;
-      const w = bond / 10 + (aff + affB) / 2 + _hash01(ep + '|' + a + '|' + b) * 0.05;
-      edges.push({ a, b, w });
-    }
-  }
-  edges.sort((e1, e2) => e2.w - e1.w || (e1.a + e1.b < e2.a + e2.b ? -1 : 1));
-
-  // Greedy union with a size cap. Each player carries a bloc id; joining merges
-  // only when the result stays within MAX_BLOC, so a circle stays a circle.
-  const blocOf = new Map();
-  const members = new Map(); // id -> [names]
-  let nextId = 0;
-  for (const { a, b } of edges) {
-    const ba = blocOf.get(a), bb = blocOf.get(b);
-    if (ba == null && bb == null) {
-      const id = nextId++; blocOf.set(a, id); blocOf.set(b, id); members.set(id, [a, b]);
-    } else if (ba != null && bb == null) {
-      if (members.get(ba).length < MAX_BLOC) { blocOf.set(b, ba); members.get(ba).push(b); }
-    } else if (ba == null && bb != null) {
-      if (members.get(bb).length < MAX_BLOC) { blocOf.set(a, bb); members.get(bb).push(a); }
-    } else if (ba !== bb) {
-      // Merge two blocs only if the union fits; otherwise leave them separate.
-      const A = members.get(ba), B = members.get(bb);
-      if (A.length + B.length <= MAX_BLOC) {
-        for (const n of B) blocOf.set(n, ba);
-        members.set(ba, A.concat(B)); members.delete(bb);
-      }
-    }
-  }
-  const blocs = [...members.values()]
-    .filter(m => m.length >= 2)
-    .map(m => ({ members: [...m] }))
-    .sort((x, y) => y.members.length - x.members.length);
+  /* THE BLOC RULE ITSELF LIVES IN js/alliance-blocs.js, shared with the werk
+     room (Drag Race All Stars). Extracted rather than copied: two copies of
+     one rule has bitten this repo at least four times and the failure is
+     always that one copy gets extended and the other silently stops guarding.
+     Behaviour-preserving — this suite is the guard for that. */
+  const blocs = blocsOf(living, getBond, allianceAffinity,
+    { round: ep, allyBond: ALLY_BOND, affinityFloor: AFFINITY_FLOOR, maxBloc: MAX_BLOC });
 
   if (gs.tr) gs.tr._allianceCache = { key: cacheKey, blocs };
   return blocs;

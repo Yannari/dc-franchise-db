@@ -72,7 +72,7 @@ function grudgeOf(winner, q, ledger) {
  */
 export function chooseElimination({
   winner, pool = [], players = {}, bond = () => 0, state = {},
-  ledger = {}, pleas = {}, panelOrder = [], rng = Math.random,
+  ledger = {}, pleas = {}, panelOrder = [], rng = Math.random, allies = [],
 } = {}) {
   const live = pool.filter(q => q && q !== winner);
   if (!live.length) return { target: null, why: null, reason: '' };
@@ -109,6 +109,11 @@ export function chooseElimination({
       + mind.fair * (panelLast * 0.6 + clamp(spared, 0, 3) * 0.25)
       // a friend is harder to end, whoever she is
       - clamp(b, -10, 10) / 10 * (0.5 + mind.fair)
+      /* AND HER OWN CIRCLE IS HARDER STILL. A bias, never a veto: a queen who
+         is genuinely the biggest threat in that bottom still goes home, which
+         is the betrayal the format runs on. The bloc bends it, the bloc does
+         not decide it — and it cannot coordinate, so nothing here is a vote. */
+      - (allies.includes(q) ? 0.45 : 0)
       // and what she said in Untucked is worth something
       - plea * 0.12
       // a nudge, so a room of similar queens is not deterministic

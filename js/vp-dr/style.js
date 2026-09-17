@@ -499,6 +499,14 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
    something to draw: a premiere where nobody has met produces no rail rather
    than a column of zeroes. */
 export const ROOM_RAIL_CSS = `
+.dr-alli .dr-alli-b{display:flex;align-items:center;gap:8px;padding:5px 8px;margin:4px 0;border-radius:8px;
+  background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);min-width:0}
+.dr-alli-dots{display:flex;gap:3px;flex:0 0 auto}
+.dr-alli-dots i{width:6px;height:6px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 6px rgba(125,211,252,.7)}
+.dr-alli-who{flex:1 1 auto;min-width:0;font-style:normal;font-size:11px;letter-spacing:.02em;
+  overflow-wrap:break-word;color:#e9e2ee}
+.dr-alli b{flex:0 0 auto;font:400 12px/1 'Anton','Impact',sans-serif;color:#7dd3fc}
+
 .dr-room-rail h4{margin:0 0 8px}
 .dr-rr-grp{margin:0 0 12px}
 .dr-rr-k{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
@@ -519,6 +527,43 @@ export const ROOM_RAIL_CSS = `
  * their own: "Ivy + Coco  +6  daughter" says the relationship and the fact in
  * one line, and a separate family box would repeat both.
  */
+/* ── THE CIRCLES, IN THE RAIL ─────────────────────────────────────────
+   Drag Race alliances are loose and mostly unspoken, so the viewer's problem
+   is not "what did they agree" but "who is actually aligned right now" — and
+   that is a picture, not a paragraph. Derived fresh each episode from the
+   bonds (js/dr/alliances.js), so a circle that cooled is simply not drawn.
+   Nothing here is a spoiler: these are relationships the screens have already
+   been showing all night. */
+export function _allianceRail(row) {
+  const blocs = row?.dr?.alliances || [];
+  /* THE ROOM AS IT STOOD AT THE START OF THE NIGHT, which is this show's own
+     convention for every screen (docs/ADDING-A-SHOW.md §6.5): the circles were
+     computed before anybody was sent home, and filtering them against the
+     post-elimination room drops the queen who was in one when the episode
+     began — including, on a small bloc, the whole circle. */
+  const living = new Set(row?.dr?.roomAtStart?.length ? row.dr.roomAtStart : (row?.dr?.living || []));
+  const live = blocs
+    .map(b => ({ members: b.members.filter(n => living.has(n)) }))
+    .filter(b => b.members.length >= 2);
+  if (!live.length) return '';
+  const bonds = row?.dr?.bonds || [];
+  const warmth = (m) => {
+    const inside = bonds.filter(([a, b]) => m.includes(a) && m.includes(b));
+    if (!inside.length) return 0;
+    return Math.round(inside.reduce((t, x) => t + x[2], 0) / inside.length * 10) / 10;
+  };
+  return `<div class="dr-room-rail dr-alli"><h4 class="dr-disp">Aligned</h4>
+    ${live.map(b => {
+    const w = warmth(b.members);
+    return `<div class="dr-alli-b">
+      <span class="dr-alli-dots">${b.members.map(() => '<i></i>').join('')}</span>
+      <i class="dr-alli-who">${b.members.map(n => esc(n)).join(' · ')}</i>
+      ${w ? `<b>${w > 0 ? '+' : ''}${w}</b>` : ''}
+    </div>`;
+  }).join('')}
+  </div>`;
+}
+
 export function _roomRail(row, { limit = 4 } = {}) {
   const bonds = row?.dr?.bonds || [];
   const families = row?.dr?.families || [];

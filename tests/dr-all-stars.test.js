@@ -282,3 +282,46 @@ describe('the room already knows each other', () => {
     expect((season(55).state.power?.grudges || []).length).toBe(0);
   });
 });
+
+describe('alliances', () => {
+  it('form in the room and reach the row', () => {
+    let withAny = 0, rows = 0;
+    for (let s = 60; s < 72; s++) {
+      for (const r of weekly(season(s, { drAllStars: true }))) {
+        rows++;
+        if ((r.dr.alliances || []).length) withAny++;
+      }
+    }
+    expect(rows).toBeGreaterThan(20);
+    // Not every week has a circle, but a season should not be empty of them.
+    expect(withAny).toBeGreaterThan(5);
+  });
+
+  it('are circles, not the whole cast', () => {
+    for (let s = 60; s < 66; s++) {
+      for (const r of weekly(season(s, { drAllStars: true }))) {
+        for (const b of r.dr.alliances || []) {
+          expect(b.members.length).toBeGreaterThanOrEqual(2);
+          expect(b.members.length).toBeLessThanOrEqual(3);
+          // The circles are the room at the START of the night, so a queen
+          // eliminated tonight is legitimately still in one.
+          const room = r.dr.roomAtStart?.length ? r.dr.roomAtStart : r.dr.living;
+          for (const n of b.members) expect(room).toContain(n);
+        }
+      }
+    }
+  });
+
+  it('never appear on an ordinary season', () => {
+    for (const r of weekly(season(60))) expect(r.dr.alliances).toBeUndefined();
+  });
+
+  it('show up in the sidebar', async () => {
+    const { _allianceRail } = await import('../js/vp-dr/style.js');
+    const row = weekly(season(61, { drAllStars: true })).find(r => (r.dr.alliances || []).length);
+    expect(row).toBeTruthy();
+    const html = _allianceRail(row);
+    expect(html).toContain('Aligned');
+    for (const n of row.dr.alliances[0].members) expect(html).toContain(n);
+  });
+});

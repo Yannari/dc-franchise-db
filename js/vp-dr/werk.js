@@ -36,7 +36,7 @@
 // click-to-reveal is what actually governs, and none of this is load-bearing.
 import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
 import { wireStage } from './finale-stage.js';
-import { _shell, _portrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
+import { _shell, _portrait, _icon, _note, _roomRail, _allianceRail, ROOM_RAIL_CSS } from './style.js';
 import { _controls, _state } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
@@ -518,7 +518,7 @@ function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '
   }
   return `<style>${WERK_CSS}${ROOM_RAIL_CSS}${ROOM_STAGE_CSS}</style>${_shell(
     `${board}<div class="dr-room rmx-cards">${shop(suffix)}${lead}${steps}</div>`, ep,
-    { phase, title, subtitle, sidebar: sidebar + _roomRail(row) },
+    { phase, title, subtitle, sidebar: sidebar + _allianceRail(row) + _roomRail(row) },
   )}${_controls(suffix, scenes.length, ep.num)}`;
 }
 

@@ -49,6 +49,7 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
+import { LEGACY_BEATS, legacyLine } from './data/legacy-beats.js';
 import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -77,7 +78,12 @@ export const SCENE_STEPS = [
      those scenes to the episode writer verbatim, in this order. The brief
      described the runway before the performance it was reacting to. */
   'maxi-pre', 'werk-elim-day', 'main-stage', 'maxi-main', 'runway',
-  'critiques', 'untucked', 'results', 'save-campaign', 'save-hold', 'lipsync', 'save-luck', 'exit',
+  /* `legacy-choice` is the All Stars ceremony: the winner of the song alone
+     with the lipsticks, the reveal, and the goodbye of a queen who never
+     performed. AFTER `lipsync`, because she wins the song before she spends
+     it, and before `exit`. */
+  'critiques', 'untucked', 'results', 'save-campaign', 'save-hold', 'lipsync',
+  'legacy-choice', 'save-luck', 'exit',
 ];
 
 /* HOW MUCH TELEVISION EACH ARCHETYPE IS, which is a different question from
@@ -1544,10 +1550,25 @@ export function runDragWeek(state, cfg, ctx) {
             ep: cfg.num, holder: lc.winner,
             picks: pool.filter(n => n !== chosen).map(n => ({ saved: n, eliminated: chosen })),
           });
-          say('lipsync', 'legacy-choice', {
+          /* THE MARKER FIRST, THEN ITS SCENES. `sceneSections` files a scene
+             by its position in the array, so a scene pushed before its own
+             marker lands in the previous section -- which left "Elimination
+             Day" empty on eight episodes of nine, once. */
+          say('legacy-choice', 'legacy-choice', {
             winner: lc.winner, eliminated: chosen, pool,
             why: choice.why, reason: choice.reason,
           });
+          const lv = { h: lc.winner, x: chosen, p: pool.join(', ') };
+          const ceremony = (kind, who, lines) => scenes.push({
+            step: 'legacy-choice', kind,
+            data: { players: who, holder: lc.winner, target: chosen, why: choice.why },
+            text: legacyLine(lines, lv, rng),
+          });
+          ceremony('legacy:deliberate', [lc.winner],
+            LEGACY_BEATS.deliberate[choice.why] || LEGACY_BEATS.deliberate.panel);
+          ceremony('legacy:reveal', [lc.winner, chosen], LEGACY_BEATS.reveal);
+          ceremony('legacy:room', [chosen], LEGACY_BEATS.roomAnswer);
+          ceremony('legacy:last-words', [chosen], LEGACY_BEATS.lastWords);
         }
       }
     }

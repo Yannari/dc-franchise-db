@@ -285,6 +285,15 @@ const SECTIONS = [
     opens: ['lipsync'],
     opensStep: ['lipsync'], badge: { text: 'LIP SYNC', color: '#FF294B' },
     title: 'Lip Sync For Your Life', subtitle: 'two queens, one song' },
+  /* ── THE LIPSTICK ── All Stars only, and between the song and the exit:
+     the queen who won the song goes backstage with two tubes, comes back, and
+     turns one around. Its own section rather than a phase of the lip sync
+     screen, because it has its own marker and `sceneSections` files scenes by
+     POSITION — sharing one would file the ceremony under the song. */
+  { id: 'dr-legacy', icon: icon('mic'), label: 'The Lipstick', suffix: 'legacy', phase: 'lipsync',
+    accent: 'dr-a-lip', opens: ['legacy-choice'], opensStep: ['legacy-choice'],
+    badge: { text: 'THE CHOICE', color: '#ff2b6d' },
+    title: 'The Lipstick', subtitle: 'the winner of the song decides' },
   { id: 'dr-save-luck', icon: icon('ticket'), label: 'Last Chance', suffix: 'saveluck', phase: 'lipsync',
     accent: 'dr-a-lip', opens: [], opensStep: ['save-luck'],
     badge: { text: 'LUCK', color: '#ffed00' }, title: 'Last Chance', subtitle: 'the bar or the levers' },

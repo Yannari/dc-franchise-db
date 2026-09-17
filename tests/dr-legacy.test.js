@@ -5,6 +5,25 @@ import { describe, expect, it } from 'vitest';
 import { powerMind, timesSpared, recordUse, initLedger } from '../js/dr/power.js';
 import { holderMind, timesSaved } from '../js/dr/saves.js';
 import { chooseElimination } from '../js/dr/legacy.js';
+import { playDragSeason } from '../js/dr/season.js';
+import { LEGACY_BEATS, legacyLine } from '../js/dr/data/legacy-beats.js';
+import { sceneSections } from '../js/vp-dr/screens.js';
+
+// A real All Stars season, for the scenes that only exist inside one.
+function allStarsSeason(seed) {
+  const bonds = {}; const key = (a, b) => [a, b].sort().join('|');
+  const cast = Array.from({ length: 10 }, (_, i) => ({
+    name: `Q${i + 1}`, slug: `q${i + 1}`, gender: 'm', sexuality: 'gay',
+    archetype: ['villain', 'hero', 'floater', 'wildcard'][i % 4], age: 25 + i,
+    stats: Object.fromEntries(STATS.map((k, j) => [k, ((i + j * 3) % 10) + 1])),
+  }));
+  return playDragSeason({
+    cast, seed, config: { drAllStars: true },
+    bond: (a, b) => bonds[key(a, b)] || 0,
+    addBond: (a, b, d) => { const k = key(a, b); bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d)); },
+    popDelta: () => {},
+  });
+}
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -142,5 +161,56 @@ describe('the legacy choice', () => {
     const noPlea = chooseElimination(args).target;
     const pleaded = chooseElimination({ ...args, pleas: { Villain: { [noPlea]: 6 } } }).target;
     expect(pleaded).not.toBe(noPlea);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The ceremony
+// ══════════════════════════════════════════════════════════════════════
+describe('the ceremony', () => {
+  it('has a line for every reason the decision can return', () => {
+    for (const why of ['threat', 'panel', 'grudge']) {
+      expect(LEGACY_BEATS.deliberate[why]?.length).toBeGreaterThan(0);
+    }
+    expect(LEGACY_BEATS.lastWords.length).toBeGreaterThan(0);
+  });
+
+  it('fills the names in', () => {
+    const line = legacyLine(LEGACY_BEATS.reveal, { h: 'Ripper', x: 'Brightly' }, () => 0);
+    expect(line).toContain('Brightly');
+    expect(line).not.toContain('{');
+  });
+
+  it('files its scenes in their own section, after their marker', () => {
+    const res = allStarsSeason(404);
+    const row = res.rows.filter(r => r.dr && !r.dr.finale)
+      .find(r => (r.dr.scenes || []).some(s => s.kind === 'legacy:reveal'));
+    expect(row).toBeTruthy();
+    const list = row.dr.scenes;
+    const iMarker = list.findIndex(s => s.step === 'legacy-choice');
+    const iReveal = list.findIndex(s => s.kind === 'legacy:reveal');
+    expect(iMarker).toBeGreaterThanOrEqual(0);
+    expect(iReveal).toBeGreaterThan(iMarker);
+    // `sceneSections` takes the ROW and returns a Map of section id -> scenes.
+    const sections = sceneSections(row);
+    const own = sections.get('dr-legacy') || [];
+    expect(own.some(x => x.kind === 'legacy:reveal')).toBe(true);
+    // The whole ceremony lands there, not just the marker.
+    expect(own.length).toBeGreaterThan(3);
+    // And nothing from the ceremony leaked into the song's section.
+    const song = sections.get('dr-lipsync') || [];
+    expect(song.some(x => String(x.kind || '').startsWith('legacy:'))).toBe(false);
+  });
+
+  it('gives the queen who never performed her own goodbye', () => {
+    const res = allStarsSeason(77);
+    const rows = res.rows.filter(r => r.dr?.lipsync?.legacy && r.dr.lipsync.eliminated);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      const words = (r.dr.scenes || []).filter(s => s.kind === 'legacy:last-words');
+      expect(words).toHaveLength(1);
+      expect(words[0].data.players).toContain(r.dr.lipsync.eliminated);
+      expect(words[0].text.length).toBeGreaterThan(10);
+    }
   });
 });

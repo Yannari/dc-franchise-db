@@ -46,8 +46,8 @@ const TUBE = `<svg class="lgx-tube" viewBox="0 0 34 92" aria-hidden="true">
 </svg>`;
 
 export const LEGACY_STAGE_CSS = `
-.lgx-counter{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;
-  contain:inline-size;min-width:0;max-width:100%}
+.lgx-counter{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:6px 0 10px;contain:inline-size;min-width:0;max-width:100%}
 .lgx-mirror{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;
   padding:10px 18px;border-radius:14px;min-width:0;
   background:linear-gradient(180deg,rgba(255,235,245,.08),rgba(0,0,0,.25));
@@ -64,16 +64,19 @@ export const LEGACY_STAGE_CSS = `
 .fsx.lit .lgx-bulbs i:nth-child(2n){opacity:.55}
 
 .lgx-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;
-  gap:clamp(10px,4vw,40px);padding:6px 0 4px;max-width:100%}
+  gap:clamp(14px,5vw,52px);padding:14px 0 10px;max-width:100%}
 .lgx-one{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;
   transition:transform .5s cubic-bezier(.2,1.3,.4,1),filter .4s,opacity .4s}
-.lgx-tube{width:clamp(30px,7vw,38px);height:auto;display:block;
+.lgx-tube{width:clamp(38px,9vw,54px);height:auto;display:block;
   filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));
   transform-origin:50% 100%;transition:transform .6s cubic-bezier(.2,1.3,.4,1),filter .4s}
-.lgx-name{font:600 11px/1.2 var(--font-body,system-ui),sans-serif;letter-spacing:.06em;text-transform:uppercase;
-  color:#f3d9e4;opacity:.75;max-width:11ch;text-align:center;overflow-wrap:anywhere}
-.lgx-card{display:block;margin-top:2px;min-height:15px;
-  font:400 13px/1 'Anton','Impact',sans-serif;letter-spacing:.06em;text-transform:uppercase;
+.lgx-name{font:600 11px/1.25 var(--font-body,system-ui),sans-serif;letter-spacing:.05em;text-transform:uppercase;
+  color:#f3d9e4;opacity:.8;max-width:14ch;text-align:center;
+  /* Whole words: overflow-wrap:anywhere broke Julia Sugarbaker into
+     SUGARBAK / ER. */
+  overflow-wrap:break-word;word-break:normal;hyphens:none}
+.lgx-card{display:block;margin-top:3px;min-height:16px;
+  font:400 14px/1 'Anton','Impact',sans-serif;letter-spacing:.07em;text-transform:uppercase;
   color:#ff9ebb;opacity:0;transition:opacity .45s}
 /* The counter is a shelf the tubes stand on, not a border under each. */
 .lgx-row::after{content:'';position:absolute;left:6%;right:6%;bottom:0;height:2px;
@@ -107,8 +110,8 @@ export const LEGACY_STAGE_CSS = `
 }
 @media (max-height: 999px){
   .lgx-mirror .fsx-face{width:58px;height:58px}
-  .lgx-tube{width:clamp(24px,6vw,30px)}
-  .lgx-row{gap:clamp(8px,3vw,24px)}
+  .lgx-tube{width:clamp(30px,7vw,40px)}
+  .lgx-row{gap:clamp(10px,4vw,30px);padding:8px 0 6px}
   .lgx-counter{gap:10px}
 }`;
 
@@ -181,7 +184,10 @@ export function lipstickStage(row, list, { ep, bottom = [], holder = null, uid =
          the deliberation it is the whole row that stirs, not one tube. */
       one.classList.toggle('held', !!st?.held);
       const card = one.querySelector('[data-card]');
-      card.textContent = isChosen ? nm : isSpared ? 'Stays' : '';
+      /* The card says what HAPPENED to her. It used to repeat her name, which
+         the plate under the tube and the banner both already carry -- the
+         chosen queen read "MK / MK". */
+      card.textContent = isChosen ? 'Sashays' : isSpared ? 'Stays' : '';
       // One-shot: the turn plays on arrival at the reveal, not on a repaint.
       if (fresh && isChosen && st.turn) {
         one.classList.remove('turn');

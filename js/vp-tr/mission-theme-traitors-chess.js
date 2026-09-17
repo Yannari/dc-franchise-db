@@ -12,6 +12,7 @@
 // true square (red) on the card that shows the statue moving.
 import { players } from '../core.js';
 import { playerAvatarUrl } from '../players.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -61,6 +62,146 @@ function _steps(v) {
   });
 }
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the board, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// A marble hall seen from above: the board with a face on every square, the
+// hooded statue at its head, and five pieces waiting at the side. A piece
+// walks to the square the room argued for; when the statue answers, the piece
+// falls gold if the room was right, and the true square lights red if it was
+// not. The Gambit's square is the one somebody stood on alone.
+function _tcKind(c, ph) {
+  if (c.relic) return 'gambit';
+  if (c.kind === 'right') return 'right';
+  if (c.kind === 'wrong') return 'wrong';
+  if ((c.text || '').startsWith('“')) return 'ask';
+  if (c.isSocial) return 'scene';
+  return 'argue';
+}
+const TC_CAP = { owl: ['Part one', 'The Owl'], pack: ['Part two', 'The Pack'],
+  crown: ['Part three', 'The Crown'] };
+
+function _tcLayout(v) {
+  const board = v.tally.board || [];
+  // Wide rather than deep: the stage is 360 tall and the board must fit in it.
+  const cols = Math.max(4, Math.min(9, Math.ceil(board.length / 3)));
+  const rows = Math.ceil(board.length / cols);
+  const size = Math.max(40, Math.min(70, Math.min(700 / cols, 250 / rows)));
+  const w = cols * size, h = rows * size;
+  const x0 = 540 - w / 2, y0 = 196 - h / 2;
+  return { board, cols, size, rows,
+    at: board.map((nm, i) => ({ n: nm, x: x0 + (i % cols) * size, y: y0 + Math.floor(i / cols) * size })) };
+}
+
+function _tcScene(v, s) {
+  const e = v.epNum;
+  const L = s.L;
+  const qs = v.tally.questions || [];
+  const squares = L.at.map((q, i) => {
+    const shade = ((Math.floor(i / L.cols) + i) % 2) ? 'dark' : 'light';
+    const cls = [s.truth.includes(q.n) ? 'truth' : '', s.gambitSq === q.n ? 'gambit' : ''].join(' ');
+    return '<g class="ms-tc-sq ' + shade + ' ' + cls + '" data-sq="' + _esc(q.n) + '" transform="translate(' + q.x.toFixed(0) + ',' + q.y.toFixed(0) + ')">'
+      + '<rect width="' + L.size + '" height="' + L.size + '"/>'
+      + '<image href="' + _esc(_url(q.n)) + '" x="' + (L.size / 2 - 20) + '" y="' + (L.size / 2 - 24) + '" width="40" height="40" clip-path="url(#ms-tc-c-' + e + ')"/>'
+      + '<text x="' + (L.size / 2) + '" y="' + (L.size - 7) + '" text-anchor="middle">' + _esc(q.n) + '</text></g>';
+  }).join('');
+  const pieces = qs.map((q, i) => {
+    const st = s.piece[q.piece];
+    const on = st && st.on;
+    const sq = on ? L.at.find(a => a.n === on) : null;
+    const x = sq ? sq.x + L.size / 2 : 92;
+    const y = sq ? sq.y + 8 : 120 + i * 48;
+    return '<g class="ms-tc-piece' + (st ? ' on' : '') + (st && st.fell ? ' fell' : '') + '" data-pc="' + q.piece
+      + '" transform="translate(' + x.toFixed(0) + ',' + y.toFixed(0) + ') scale(1.2)">'
+      + '<g transform="translate(-18,-18)">' + (PIECES[q.piece] || '') + '</g></g>';
+  }).join('');
+  return '<rect width="1080" height="360" fill="url(#ms-tc-hall-' + e + ')"/>'
+    + '<g opacity=".12" fill="#efe9dc"><rect x="0" y="0" width="1080" height="360" fill="url(#ms-tc-floor-' + e + ')"/></g>'
+    + '<g class="ms-tc-statue" transform="translate(540,14) scale(1.05)">'
+    + '<path d="M0 4c14 0 22 11 22 25v11l11 52H-33l11-52V29C-22 15-14 4 0 4z" fill="#2f4a40" stroke="#5f8a78" stroke-width="2"/>'
+    + '<path d="M0 12c10 0 15 8 15 18v8h-30v-8c0-10 5-18 15-18z" fill="#0b0b0d"/>'
+    + '<circle class="eye" cx="-6" cy="30" r="2" fill="#c0443a"/><circle class="eye" cx="6" cy="30" r="2" fill="#c0443a"/></g>'
+    + '<rect x="' + (540 - (L.cols * L.size) / 2 - 6) + '" y="' + (196 - (L.rows * L.size) / 2 - 6) + '" width="' + (L.cols * L.size + 12)
+    + '" height="' + (L.rows * L.size + 12) + '" fill="none" stroke="#7b6224" stroke-width="6"/>'
+    + squares + pieces
+    + '<g class="ms-tc-candles"><circle cx="72" cy="310" r="8" fill="#ffd66b"/><circle cx="1008" cy="310" r="8" fill="#ffd66b"/></g>';
+}
+
+function _tcStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<clipPath id="ms-tc-c-' + e + '"><circle cx="20" cy="20" r="20"/></clipPath>'
+    + '<linearGradient id="ms-tc-hall-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#141418"/><stop offset="1" stop-color="#0b0b0d"/></linearGradient>'
+    + '<pattern id="ms-tc-floor-' + e + '" width="120" height="120" patternUnits="userSpaceOnUse">'
+    + '<rect width="60" height="60" fill="#efe9dc" opacity=".5"/><rect x="60" y="60" width="60" height="60" fill="#efe9dc" opacity=".5"/></pattern>';
+  return stageShell({ epNum: e, defs, scene: _tcScene(v, s),
+    cap: [s.right + ' of 5 right', (TC_CAP[s.capPhase] || TC_CAP.owl)[1]],
+    pot: v.potBefore + (s.done ? v.earned : 0),
+    vars: '--ms-mono:\'Sometype Mono\',monospace;--ms-accent:#d8b25a;--ms-ink:#efe9dc',
+    label: 'The board, staged' });
+}
+
+function _tcSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  const L = s.L;
+  st.qa('.ms-tc-sq').forEach(g => {
+    const nm = g.getAttribute('data-sq');
+    const i = L.board.indexOf(nm);
+    const shade = ((Math.floor(i / L.cols) + i) % 2) ? 'dark' : 'light';
+    g.setAttribute('class', 'ms-tc-sq ' + shade + ' ' + (s.truth.includes(nm) ? 'truth ' : '') + (s.gambitSq === nm ? 'gambit' : ''));
+  });
+  st.qa('.ms-tc-piece').forEach((g, i) => {
+    const pc = g.getAttribute('data-pc');
+    const stp = s.piece[pc];
+    const sq = stp && stp.on ? L.at.find(a => a.n === stp.on) : null;
+    const x = sq ? sq.x + L.size / 2 : 92;
+    const y = sq ? sq.y + 8 : 120 + i * 48;
+    g.setAttribute('class', 'ms-tc-piece' + (stp ? ' on' : '') + (stp && stp.fell ? ' fell' : ''));
+    g.setAttribute('transform', 'translate(' + x.toFixed(0) + ',' + y.toFixed(0) + ') scale(1.2)');
+  });
+  st.cap(s.right + ' of 5 right', (TC_CAP[s.capPhase] || TC_CAP.owl)[1]);
+  st.pot(v.potBefore + (s.done ? v.earned : 0), false);
+  st.clearStamp();
+}
+
+function _tcPlay(st, v, prev, s) {
+  _tcSettle(st, v, prev);
+  const e = s.ev;
+  if (!e) { _tcSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'ask' || e.k === 'argue') {
+    st.phase('ask');
+    land(() => { _tcSettle(st, v, s); st.phase('rest'); }, 1300);
+  } else if (e.k === 'right') {
+    st.phase('hold');
+    land(() => {
+      _tcSettle(st, v, s); st.phase('win');
+      st.flash('50%', '52%'); st.burst(18, 50, 52, 150, 'rgba(216,178,90,.95)');
+      st.stamp('RIGHT', 'gold');
+    }, 1700);
+  } else if (e.k === 'wrong') {
+    st.phase('hold');
+    land(() => {
+      _tcSettle(st, v, s); st.phase('bad');
+      st.stamp('THE STATUE MOVED', 'bad');
+    }, 1700);
+  } else if (e.k === 'gambit') {
+    st.phase('hold');
+    land(() => {
+      _tcSettle(st, v, s);
+      if (s.won) { st.phase('win'); st.flash('50%', '52%'); st.burst(20, 50, 52, 160, 'rgba(240,207,98,.95)'); st.stamp('THE GAMBIT · A SHIELD', 'gold'); }
+      else { st.phase('bad'); st.stamp('THE GAMBIT · ALONE AND WRONG', 'bad'); }
+    }, 1800);
+  } else if (e.k === 'scene') {
+    _tcSettle(st, v, s); st.phase('watch');
+  } else {
+    _tcSettle(st, v, s);
+  }
+}
+
 export const CHESS = {
   id: 'traitors-chess', prefix: 'tc', ownShield: true,
   shieldBeat: /Once, and only once|Shield is yours/,
@@ -87,6 +228,8 @@ export const CHESS = {
       : c.behaviour === 'suspicious' ? 'eye' : 'debate';
     return '<span class="tc-ico"><svg viewBox="0 0 36 36" aria-hidden="true">' + ICONS[ic] + '</svg></span>';
   },
+
+  stage: (v, states, n) => _tcStage(v, states, n),
 
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
@@ -127,6 +270,8 @@ export const CHESS = {
   },
 
   sideStates(v, total) {
+    const evs = stageEvents(v, _tcKind);
+    const L = _tcLayout(v);
     const steps = _steps(v);
     const sh = v.shield || {};
     const out = [];
@@ -148,7 +293,13 @@ export const CHESS = {
       }
       const g = steps.find(q => q.gambit);
       const seen = g && g.placed >= 0 && n > g.placed;
-      out.push({ piece, slot, truth, right, gambitSq, done: n >= total,
+      const ev = evs[n - 1] || null;
+      out.push({
+        // the stage's own reading of the same step
+        L, ev, capPhase: ev ? ev.phase : 'owl',
+        watch: ev && ev.k === 'scene' ? ev.who : [],
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally, shield: v.shield },
+        piece, slot, truth, right, gambitSq, done: n >= total,
         won: !!(seen && sh.found),
         gambitVal: !g ? 'nobody stepped onto the board'
           : !seen ? 'nobody has stepped onto the board'
@@ -157,8 +308,14 @@ export const CHESS = {
     return out;
   },
 
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
+    const st = stageFor(s.v.epNum);
+    if (st) {
+      st.clear();
+      if (mode === 'next' && n > 0 && !reducedMotion()) _tcPlay(st, s.v, states[n - 1], s);
+      else _tcSettle(st, s.v, s);
+    }
     const panel = document.querySelector('.tc-panel'); if (!panel) return;
     panel.querySelectorAll('.tc-sq').forEach(sq => {
       const name = sq.getAttribute('data-name');
@@ -285,8 +442,29 @@ export const CHESS = {
 .tc-btn[disabled]{opacity:.4;cursor:default}
 .tc-btn.ghost{background:transparent;color:var(--tc-ivory);border:1px solid #3a3a40}
 .tc-counter{font:12px/1 'Sometype Mono',monospace;color:#7a766d;letter-spacing:.1em}
+
+/* ── THE STAGE: the board ────────────────────────────────────────────── */
+.ms-tc-sq rect{transition:box-shadow .6s}
+.ms-tc-sq.light rect{fill:#d8d1c1}
+.ms-tc-sq.dark rect{fill:#26262c}
+.ms-tc-sq text{font:9px 'Sometype Mono',monospace;fill:#8c887f}
+.ms-tc-sq.light text{fill:#3a3730}
+.ms-tc-sq.truth rect{stroke:#c0443a;stroke-width:4}
+.ms-tc-sq.gambit rect{stroke:#f0cf62;stroke-width:4}
+.ms-tc-piece{opacity:.45;transition:transform 1.1s cubic-bezier(.3,1.3,.5,1),opacity .6s,filter .6s}
+.ms-tc-piece.on{opacity:1;filter:drop-shadow(0 4px 4px rgba(0,0,0,.8))}
+.ms-tc-piece.fell{filter:sepia(1) saturate(5) brightness(1.1) drop-shadow(0 0 10px rgba(216,178,90,.9))}
+.ms-tc-statue{transition:transform .8s}
+.ms[data-phase=ask] .ms-tc-statue{animation:ms-tc-lean 1.2s ease-in-out infinite alternate}
+@keyframes ms-tc-lean{to{transform:translate(540px,20px) scale(1.08)}}
+.ms-tc-statue .eye{animation:ms-tc-eye 2.4s ease-in-out infinite}
+@keyframes ms-tc-eye{50%{opacity:.35}}
+.ms-tc-candles circle{animation:ms-tc-flick .5s ease-in-out infinite alternate}
+@keyframes ms-tc-flick{to{opacity:.6;r:9}}
+.ms[data-phase=watch] .ms-tc-sq{filter:brightness(.5)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(50,8,8,.85)}
 @media(prefers-reduced-motion:reduce){.tc-root *,.tc-root *::before,.tc-root *::after{animation:none !important;transition:none !important}.tc-card{opacity:1;transform:none}}
-`,
+` + STAGE_CSS,
 };
 
 export default CHESS;

@@ -212,6 +212,9 @@ export const WERK_CSS = `
 .dr-mirror.dr-dark::before{opacity:.14;box-shadow:none}
 
 .dr-two{position:relative;display:flex;gap:14px;align-items:center}
+/* Three or more queens: a cluster of smaller faces beside the words. */
+.dr-crowd{display:flex;flex-wrap:wrap;gap:4px;max-width:128px;align-content:flex-start}
+.dr-crowd .dr-mirror{padding:2px}
 .dr-pair .dr-two::before{content:"";position:absolute;left:50%;top:50%;
   width:14px;height:2px;transform:translate(-50%,-50%);
   background:rgba(255,255,255,.22);border-radius:2px}
@@ -358,9 +361,14 @@ export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room', aside 
      happened to be spelled some other way got the ordinary card.
      js/dr/confessional.js sets the flag now, on scenes it authored. */
   const confess = !!(sc?.data?.confessional);
+  /* EVERY QUEEN IN THE SCENE HAS HER FACE ON IT. This drew the first two,
+     so a scene with four queens at one station named four and showed two.
+     Two is still the pair shot; three or more is a crowd, smaller faces in a
+     cluster. */
+  const crowd = players.length > 2;
   const busts = players.length
-    ? `<span class="${players.length > 1 ? 'dr-two' : ''}">${
-      players.slice(0, 2).map(n => station(n, ep, { size: players.length > 1 ? 50 : 62 })).join('')
+    ? `<span class="${crowd ? 'dr-crowd' : players.length > 1 ? 'dr-two' : ''}">${
+      players.map(n => station(n, ep, { size: crowd ? 38 : players.length > 1 ? 50 : 62 })).join('')
     }</span>`
     : '';
   const first = String(players[0] || '');
@@ -377,7 +385,7 @@ export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room', aside 
      read a word. */
   const ev = eventFor(row, sc);
   const bondDelta = Number((ev?.bond || [])[0]?.[2]) || 0;
-  const pairCls = players.length > 1
+  const pairCls = players.length === 2
     ? ` dr-pair${bondDelta > 0 ? ' dr-warm' : bondDelta < 0 ? ' dr-cold' : ''}` : '';
 
   /* ── FOUR SHOTS, FOUR LAYOUTS ──
@@ -396,7 +404,7 @@ export function sceneCard(sc, i, suffix, ep, row, { accent = 'dr-a-room', aside 
        PAIR   two mirrors side by side, the queens facing each other across
               the tie, the prose full width beneath them.
        SOLO   one queen at her station, portrait left, prose right. */
-  const kind = confess ? 'confess' : players.length > 1 ? 'pair' : 'solo';
+  const kind = confess ? 'confess' : players.length === 2 ? 'pair' : players.length > 2 ? 'crowd' : 'solo';
 
   const head = players.length
     ? `<h3 class="dr-disp">${esc(players.join(' & '))}</h3>` : '';

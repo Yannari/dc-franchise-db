@@ -597,10 +597,10 @@ export function rpBuildSmackdown(row) {
 
   const proseCard = (scene) => {
     if (!scene?.text) return '';
-    const who = (scene.data?.players || []).slice(0, 2);
+    const who = scene.data?.players || [];
     return `<div class="dr-panel dr-a-lip dr-scene">
       ${who.length ? `<span class="dr-who">${who.map(n =>
-    _portrait(n, ep, { size: 46 })).join('')}</span>` : ''}
+    _portrait(n, ep, { size: who.length > 2 ? 34 : 46 })).join('')}</span>` : ''}
       <div class="dr-scene-body">${esc(scene.text)}</div>
     </div>`;
   };
@@ -1119,10 +1119,10 @@ export function rpBuildTournament(row) {
 
   const proseCard = (scene) => {
     if (!scene?.text) return '';
-    const who = (scene.data?.players || []).slice(0, 2);
+    const who = scene.data?.players || [];
     return `<div class="dr-panel dr-a-lip dr-scene">
       ${who.length ? `<span class="dr-who">${who.map(n =>
-    _portrait(n, ep, { size: 46 })).join('')}</span>` : ''}
+    _portrait(n, ep, { size: who.length > 2 ? 34 : 46 })).join('')}</span>` : ''}
       <div class="dr-scene-body">${esc(scene.text)}</div>
     </div>`;
   };

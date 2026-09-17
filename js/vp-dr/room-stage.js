@@ -56,6 +56,9 @@ export const ROOM_STAGE_CSS = `${FINALE_STAGE_CSS}
 .rmx-one{display:flex;flex-direction:column;align-items:center;gap:4px}
 .rmx-one .fsx-face{width:84px;height:84px;box-shadow:0 0 0 3px var(--fx),0 0 30px rgba(0,0,0,.6)}
 .rmx-one b{font:400 15px/1 'Anton','Impact',sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.rmx-group{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 12px;max-width:100%}
+.rmx-group .rmx-one .fsx-face{width:62px;height:62px}
+.rmx-group .rmx-one b{font-size:12px}
 .rmx-tie{display:flex;flex-direction:column;align-items:center;gap:4px;width:120px}
 .rmx-tie svg{width:120px;height:18px}
 .rmx-tie path{stroke-width:4;stroke-linecap:round;fill:none;stroke-dasharray:130;stroke-dashoffset:130;animation:rmx-draw .7s .2s forwards}
@@ -143,9 +146,14 @@ export function roomStage(row, scenes, { ep, room = [], gone = [], theme = 'werk
     const pops = Object.entries(s.pop || {}).filter(([, v]) => Number(v))
       .map(([n, v]) => `<span class="${v < 0 ? 'dn' : ''}">${esc(n)} ${v > 0 ? '+' : ''}${Number(v).toFixed(1)}</span>`).join('');
     const one = n => `<div class="rmx-one">${face(n, ep, 84)}<b>${esc(n)}</b></div>`;
-    st.focus = `<div class="rmx-duo">${who.length > 1
+    /* Two queens are a pair joined by the line; three or more are the whole
+       group in the middle of the room, with the change between the two the
+       scene moved written under them. */
+    st.focus = `<div class="rmx-duo">${who.length === 2
       ? `${one(who[0])}<div class="rmx-tie ${d > 0.15 ? 'warm' : d < -0.15 ? 'cold' : 'flat'}">${TIE}<b>${d ? `${d > 0 ? '+' : ''}${d.toFixed(1)}` : ''}</b></div>${one(who[1])}`
-      : who.length ? one(who[0]) : ''}</div>${pops ? `<div class="rmx-pop">${pops}</div>` : ''}`;
+      : who.length > 2 ? `<div class="rmx-group">${who.map(n => one(n)).join('')}</div>`
+        : who.length ? one(who[0]) : ''}</div>${who.length > 2 && d
+      ? `<div class="rmx-pop"><span class="${d < 0 ? 'dn' : ''}">${esc(who[0])} &amp; ${esc(who[1])} ${d > 0 ? '+' : ''}${d.toFixed(1)}</span></div>` : ''}${pops ? `<div class="rmx-pop">${pops}</div>` : ''}`;
     st.note = s.note || '';
     if (d <= -1.5) {
       st.mood = 'red'; st.shake = true;

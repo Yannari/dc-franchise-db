@@ -946,6 +946,8 @@ export function rpBuildCritiques(row) {
 
 /** Untucked: a room, not a stage — and it can get loud. */
 /* A campaign card: the purple of the save, and a label saying what the move was. */
+/* Every queen in an Untucked scene on its card: a crowd wraps. */
+const UTK_CROWD_CSS = `.dr-utk-who.dr-utk-crowd{display:flex;flex-wrap:wrap;gap:3px;max-width:112px}`;
 const CAMPAIGN_CARD_CSS = `
 .dr-utk-camp{border-color:rgba(176,122,255,.55)!important;background:linear-gradient(180deg,rgba(60,22,96,.55),rgba(30,10,48,.55))!important}
 `;
@@ -1017,8 +1019,8 @@ export function rpBuildUntucked(row) {
     const camp = sc.data?.campaign ? ' dr-utk-camp' : '';
     return `<div class="dr-step" id="dr-step-untucked-${i}">${head}
       <div class="dr-panel ${players.length > 1 ? 'dr-a-bond' : 'dr-a-room'}${loud || /shouting|clap-back/.test(sc.kind || '') ? ' dr-shake' : ''}${heat}${camp} dr-utk">
-        <span class="dr-utk-who">${players.slice(0, 2)
-    .map(n => _portrait(n, ep, { size: 46 })).join('')}</span>
+        <span class="dr-utk-who${players.length > 2 ? ' dr-utk-crowd' : ''}">${players
+    .map(n => _portrait(n, ep, { size: players.length > 2 ? 34 : 46 })).join('')}</span>
         <div>${players.length ? `<b class="dr-disp">${esc(players.join(' & '))}</b>` : ''}
           <p>${esc(sc.text)}</p>${row}</div>
       </div></div>`;
@@ -1074,7 +1076,7 @@ export function rpBuildUntucked(row) {
 
   // WERK_CSS carries .dr-bond-row/.dr-arrow/.dr-up/.dr-down. Borrowed rather
   // than restated, which is what the prep screen already does with it.
-  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}${campaign ? CAMPAIGN_CARD_CSS : ''}${loungeStage ? ROOM_STAGE_CSS : ''}</style>${_shell((campaign || '') + (loungeStage ? `${loungeStage.html}<div class="rmx-cards">${lounge}${steps}</div>` : lounge + steps), ep, {
+  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}${UTK_CROWD_CSS}${campaign ? CAMPAIGN_CARD_CSS : ''}${loungeStage ? ROOM_STAGE_CSS : ''}</style>${_shell((campaign || '') + (loungeStage ? `${loungeStage.html}<div class="rmx-cards">${lounge}${steps}</div>` : lounge + steps), ep, {
     phase: 'untucked', title: 'Untucked', subtitle: campaign ? 'the campaign' : 'Illusions Lounge',
     /* THE TEMPERATURE GAUGE WAS A PICTURE OF NOTHING — a needle pinned at
        fifty per cent with the word "holding" under it, on every episode of

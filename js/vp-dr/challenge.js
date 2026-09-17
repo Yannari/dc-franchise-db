@@ -2029,8 +2029,8 @@ function _rpBuildCaptainPicks(row, ep, a, scenes, teamPickData) {
     const busts = who
       ? `<span class="${hasPair ? 'dr-draft-pair' : ''}">${
         _portrait(who, ep, { size: hasPair ? 48 : 54, station: true })}${
-        others.slice(0, 2).map(n =>
-          _portrait(n, ep, { size: 36 })).join('')}</span>`
+        others.map(n =>
+          _portrait(n, ep, { size: others.length > 2 ? 28 : 36 })).join('')}</span>`
       : '';
     return `<div class="dr-step" id="dr-step-choice-${pickSequence.length + i}">
       <div class="dr-panel dr-a-bond dr-card dr-k-${who ? 'solo' : 'confess'}">
@@ -2276,8 +2276,8 @@ export function rpBuildChoice(row) {
     const busts = who
       ? `<span class="${hasPair ? 'dr-draft-pair' : ''}">${
         _portrait(who, ep, { size: hasPair ? 48 : 54, station: true })}${
-        [...others].slice(0, 2).map(n =>
-          _portrait(n, ep, { size: 36 })).join('')}</span>`
+        [...others].map(n =>
+          _portrait(n, ep, { size: others.size > 2 ? 28 : 36 })).join('')}</span>`
       : '';
     return `<div class="dr-step" id="dr-step-choice-${i}">
       <div class="dr-panel dr-a-bond dr-card dr-k-${who ? 'solo' : 'confess'}">
@@ -2478,7 +2478,7 @@ export function rpBuildPrep(row, mine = null) {
   const prepSt = prepRoom.length ? roomStage(row, groups.map(g => {
     if (g.custom) return { players: [], note: 'the choreographer' };
     if (g.walk) {
-      return { players: g.items.map(sc => (sc.data?.players || [])[0]).filter(Boolean).slice(0, 2), hostOn: true, note: 'the walkthrough' };
+      return { players: g.items.map(sc => (sc.data?.players || [])[0]).filter(Boolean), hostOn: true, note: 'the walkthrough' };
     }
     const sc = g.items[0];
     const ev = (row?.dr?.events || []).find(e => (e.type || e.kind) === sc.kind
@@ -3175,8 +3175,8 @@ function rpBuildSnatchGame(row) {
       return `<div class="dr-step" id="dr-step-${sfx}-${at}">
       <div class="dr-panel dr-a-room dr-scene">
         ${(sc.data?.players || []).length
-    ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
-      .map(n => _portrait(n, ep, { size: 42 })).join('')}</span>` : ''}
+    ? `<span class="dr-who">${(sc.data.players || [])
+      .map(n => _portrait(n, ep, { size: (sc.data.players || []).length > 2 ? 32 : 42 })).join('')}</span>` : ''}
         <div class="dr-scene-body">${esc(sc.text)}</div>
       </div></div>`;
     }).join('');
@@ -3325,8 +3325,8 @@ export function rpBuildMaxi(row) {
     .map((sc, i) => `<div class="dr-step" id="dr-step-${sfx}-${running.length + i}">
       <div class="dr-panel dr-a-room dr-scene">
         ${(sc.data?.players || []).length
-    ? `<span class="dr-who">${(sc.data.players || []).slice(0, 2)
-      .map(n => _portrait(n, ep, { size: 42 })).join('')}</span>` : ''}
+    ? `<span class="dr-who">${(sc.data.players || [])
+      .map(n => _portrait(n, ep, { size: (sc.data.players || []).length > 2 ? 32 : 42 })).join('')}</span>` : ''}
         <div class="dr-scene-body">${esc(sc.text)}</div>
       </div></div>`).join('');
 

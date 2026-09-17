@@ -408,8 +408,8 @@ function step(sc, i, suffix, ep, accent) {
     ? `<span class="dr-mentor" title="${esc(mentor.name)}">${
       _judgePortrait(mentor.id, { size: 34 })}<small>${esc(mentor.name)}</small></span>` : '';
   const who = players.length
-    ? `<span class="dr-who">${players.slice(0, 2).map(n =>
-      _portrait(n, ep, { size: 46, station: true })).join('')}${mentorBust}</span>` : mentorBust;
+    ? `<span class="dr-who">${players.map(n =>
+      _portrait(n, ep, { size: players.length > 2 ? 34 : 46, station: true })).join('')}${mentorBust}</span>` : mentorBust;
   /* NO TIER CHIP. `open`, `shaky`, `strong`, `blowout` are the names of
      prose POOLS — an author's filing labels — and they were being printed
      on the card in front of the line they selected, which both leaked the

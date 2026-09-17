@@ -24,21 +24,34 @@ import { powerMind, timesSpared } from './power.js';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
-/* How much of a problem she is, to the queen holding the lipstick. Her season
-   so far, and what she already did before she walked in — an All Stars room
-   knows which of them has a crown at home. Proportional, never a threshold. */
-const RECORD_WEIGHT = { WIN: 1, HIGH: 0.5, SAFE: 0, LOW: -0.25, BTM2: -0.4, BTM3: -0.4, ELIM: 0 };
+/* ── HOW MUCH OF A PROBLEM SHE IS, to the queen holding the lipstick ──
+   WHAT SHE CAN STILL DO, not how tonight went. This first read her recent
+   form, with LOW and BTM2 scoring negative — and measured over forty seasons
+   that made the whole mechanic collapse: the panel's last was taken 96.8% of
+   the time and a threat 3.2%, which is the flagship format with extra steps.
 
+   The reason is structural. She is only choosable if she is IN the bottom,
+   and the bottom is by definition the queens who just had a bad week, so a
+   form read scores everybody in the pool as harmless. But "she is dangerous"
+   in this format means exactly the opposite thing: a queen with a crown at
+   home and two wins this season, standing in the bottom on an off night, is
+   the most dangerous person the holder will ever get a clean shot at. That IS
+   the era's signature move.
+
+   So: her résumé and what she has already won, and nothing about the bad week
+   the panel has already punished her for. */
 function threatOf(q, { state }) {
   const rec = state?.record?.[q] || [];
-  const form = rec.reduce((s, r) => s + (RECORD_WEIGHT[r] ?? 0), 0) / Math.max(1, rec.length);
+  const played = Math.max(1, rec.length);
+  // What she has taken off the table already, this season.
+  const won = (rec.filter(r => r === 'WIN').length + rec.filter(r => r === 'HIGH').length * 0.5) / played;
   const past = state?.allStars?.pasts?.[q];
   /* A finalist last time is a finalist this time until she proves otherwise.
      Scaled by where she placed in the field she was in, so second of twelve
-     reads stronger than second of eight. A queen with no past at all sits
-     just under the middle rather than at zero: unknown is not harmless. */
+     reads stronger than second of eight. A queen with no past sits just under
+     the middle rather than at zero: unknown is not harmless. */
   const resume = past ? clamp(1 - (past.rank - 1) / Math.max(2, past.of - 1), 0, 1) : 0.35;
-  return clamp(form * 0.6 + resume * 0.4, -1, 1.2);
+  return clamp(resume * 0.5 + clamp(won * 2.2, 0, 1) * 0.5, 0, 1.2);
 }
 
 /** Does she have a reason to want this one gone, from before tonight? */
@@ -66,8 +79,20 @@ export function chooseElimination({
   const mind = powerMind(players[winner]);
   const order = panelOrder.length ? panelOrder : live;
   const mine = pleas[winner] || {};
+  /* ── BOTH READS ARE RANKS WITHIN THIS BOTTOM ──────────────────────
+     The panel term is an ordinal — the worst of three scores 1.0 — while a
+     raw threat read is a compressed 0.2..0.5, because the queens in a bottom
+     are rarely far apart. Measured, that mismatch let the panel's ordinal win
+     93% of the time whatever the holder's weights said, which is the flagship
+     format wearing this one's clothes.
+     So threat is ranked inside the pool too: the most dangerous queen STILL
+     STANDING THERE scores 1.0, whether she is a former winner or merely the
+     least bad of three. The holder is choosing between these queens, not
+     against an absolute. The raw number is kept for the label. */
+  const raw = Object.fromEntries(live.map(q => [q, threatOf(q, { state })]));
+  const byThreat = [...live].sort((a, b) => raw[a] - raw[b]);
   const scored = live.map(q => {
-    const threat = threatOf(q, { state });
+    const threat = (byThreat.indexOf(q) + 1) / byThreat.length;
     /* The panel's own last is the polite answer AND the honest one: the room
        already said she was the weakest of them tonight. */
     const at = order.indexOf(q);
@@ -88,7 +113,7 @@ export function chooseElimination({
       - plea * 0.12
       // a nudge, so a room of similar queens is not deterministic
       + (rng() - 0.5) * 0.25;
-    return { q, score, threat, panelLast };
+    return { q, score, threat, panelLast, raw: raw[q] };
   }).sort((a, b) => b.score - a.score);
   const top = scored[0];
   /* WHY, from whichever term actually dominated her score — not from her

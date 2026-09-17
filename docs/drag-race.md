@@ -34,6 +34,7 @@ and the ratings reader each say it out loud for that reason.
 | `SAFE` | Neither top nor bottom. |
 | `LOW` | **In the bottom, and not up for elimination.** |
 | `BTM2` | In the bottom, lip synced, and survived. |
+| `BTM3` | **All Stars only.** Named in a bottom of three, and not chosen. |
 | `ELIM` | In the bottom, lip synced, and went home. |
 
 `LOW` covers both the queen just above the bottom two and the queen named in a
@@ -59,6 +60,16 @@ played while the engine emitted one still charts; nothing writes it.
 
 Collapsing BTM2 into LOW writes a lip sync that never happened — which has
 already been shipped twice here and caught twice.
+
+**`BTM2` means two different weeks, and which one depends on the season's
+shape.** On a flagship season she lip synced and survived it. On All Stars'
+legacy rule NOBODY in the bottom sings — the winner of the top-two song picked
+somebody else — so it means "named for elimination, and not chosen", and a
+bottom of three records `BTM3`. That is one token carrying two meanings, which
+is the exact collapse this section exists to prevent; it is tolerable only
+because it cannot be ambiguous *within* a season. The mitigation is code, not
+convention: `resultMeta(result, { shape })` in `js/dr/grid.js` derives the
+cell's wording from the season, and `tests/dr-chart` asserts both legends.
 
 ### The finale
 
@@ -316,6 +327,61 @@ Rules that bite:
   baguette's holder saves herself 42% (France: 2 of 5), first baguette ep 2.
 - Lines: `js/dr/data/save-beats.js`.
 
+### All Stars (`drAllStars`)
+
+A season SHAPE, chosen on the setup screen beside the premiere and the finale,
+with its own rule dropdown (`drAllStarsRule`) because "All Stars" names five
+different games — the era table is in
+`docs/superpowers/specs/2026-09-08-drag-race-all-stars-design.md`, read off all
+ten seasons' wikitext.
+
+| rule | what runs |
+|---|---|
+| `legacy` (AS2–AS4) | the **top two** lip sync; the winner eliminates one of the bottom queens, revealed on a lipstick |
+| `save` (Canada) | the built Golden Beaver / Baguette, reachable from here |
+
+**The night**: mini → maxi → runway → critiques → **Untucked** → the call (top
+two named, and the bottom named) → the legacy lip sync → the ceremony → exit.
+
+**The cast arrives with a past** (`js/dr/past.js`). Her original season, rank,
+wins and unfinished business: read from a stored `dr-N` season when she really
+played one, invented deterministically and FROZEN onto the season when she has
+not — there are thirteen drag alumni in the franchise and all are from `dr-1`,
+so a real-history-only rule would mean All Stars could only re-run season one.
+An invented past never crowns her; only a stored season makes a former winner.
+Craft is derived the same way for a queen nobody authored, because `dragOf`
+turns a missing craft stat into 5 and thirteen queens on seven flat fives is
+not a cast. The exporter writes the craft she PLAYED with onto her appearance.
+
+**The bottom is named.** The host tells those queens they are up for
+elimination and they stand there while the top two sing — the surprise is
+which of them, not whether. (This was not true at first: the call named nobody
+on a legacy night, so the winner picked out of the whole room and a queen the
+panel had called safe could go home recorded `SAFE`.)
+
+**Who she sends home** (`chooseElimination`, `js/dr/legacy.js`): the three
+pulls from `powerMind` weigh her résumé and wins, where the panel ranked her,
+what she said in Untucked, and what these two already did to each other. Both
+reads are **ranks within that bottom**, because the panel's ordinal against a
+compressed threat score let the panel's last win 93% of the time whatever the
+holder wanted. Measured over 40 seasons: the panel's last 76.5%, the biggest
+threat 23.5%, which is about where the era sits. It returns its own REASON, so
+the ceremony cannot narrate a decision the chart did not record.
+
+**Still no vote.** One queen decides, alone. The campaign in Untucked reaches
+her as a plea weight and nothing else is counted — and it happens BEFORE the
+song, so the bottom works whoever the critiques favoured and a queen can spend
+her whole night on the wrong person.
+
+**The ledger** (`js/dr/power.js`) is shared with the season's save: one queen
+sparing another and one queen ending another are the same fact about the same
+relationship.
+
+**Screens**: the arrivals carry her record; the ceremony is its own section
+(`The Lipstick`), a counter with one tube per queen in the bottom and the
+chosen one turning around. Measurements: `npm run audit:dr-spec`, the "forty
+All Stars seasons" block.
+
 ### TODO
 
 Four saves shipped outside this list: the chocolate bar, the dunk tank, the
@@ -356,9 +422,10 @@ same feature twice by not looking.
 
 **Expensive — a format, not a twist**
 
-7. **All Stars season type.** Badges, the winner-decides rule, no lip sync for
-   survival. Really items 4–6 plus a different elimination model; it should be
-   a season SHAPE like the premiere and finale options, not a per-episode pin.
+7. ~~**All Stars season type.**~~ **PASS 1 SHIPPED** — see "All Stars" below.
+   The mode, the returning cast with a past, the legacy rule, the lipstick
+   ceremony and its screen. Pass 2 is the era's extras, locked to the mode:
+   Revenge of the Queens, the Jury of Queer Peers, and the double win.
 8. **Audience save / fan vote.** The edit layer already tracks popularity and
    screen time, so the input exists. The question is whether a viewer vote can
    overturn the panel, which is the same authority question as item 6.

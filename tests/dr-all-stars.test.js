@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
+import { buildDragSeasonDocument } from '../js/dr/export.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
   'loyalty', 'boldness', 'intuition', 'temperament'];
@@ -188,5 +189,24 @@ describe('the arrivals, on All Stars', () => {
   it('do not, on an ordinary season', () => {
     const premiere = weekly(season(31))[0];
     expect((premiere.dr.scenes || []).filter(s => s.kind === 'arrival:resume')).toHaveLength(0);
+  });
+});
+
+describe('what the season leaves behind', () => {
+  it('records the craft each queen actually played with', () => {
+    const res = season(41, { drAllStars: true });
+    const doc = buildDragSeasonDocument(res.rows, { seasonNumber: 2 });
+    const rows = doc.placements || [];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const p of rows) {
+      expect(p.dr?.craft, p.name).toBeTruthy();
+      // The derived block is never the flat default it exists to prevent.
+      expect(new Set(Object.values(p.dr.craft)).size).toBeGreaterThan(1);
+    }
+  });
+
+  it('records it on an ordinary season too', () => {
+    const doc = buildDragSeasonDocument(season(41).rows, { seasonNumber: 1 });
+    for (const p of doc.placements || []) expect(p.dr?.craft).toBeTruthy();
   });
 });

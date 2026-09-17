@@ -356,3 +356,110 @@ describe('a hundred drag seasons', () => {
     }
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+//  ALL STARS — the legacy rule (js/dr/legacy.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Forty seasons, because the questions here are about a decision made once a
+// week rather than about a whole season's shape. Printed beside what the real
+// era did, so a number that drifts is visible as drift rather than as a pass.
+describe('forty All Stars seasons', () => {
+  const RUNS = 40;
+  const all = [];
+
+  it('plays them', () => {
+    for (let s = 1; s <= RUNS; s++) all.push(season(9000 + s, { drAllStars: true }));
+    expect(all).toHaveLength(RUNS);
+  }, 300000);
+
+  it('A · the lipstick goes where the reasons say it goes', () => {
+    let choices = 0, panel = 0, threat = 0, grudge = 0;
+    const perHolder = {};
+    for (const o of all) {
+      for (const r of o.rows) {
+        const lip = r.dr?.lipsync;
+        if (!lip?.legacy || !lip.eliminated) continue;
+        choices++;
+        if (lip.why === 'panel') panel++;
+        if (lip.why === 'threat') threat++;
+        if (lip.why === 'grudge') grudge++;
+        perHolder[lip.chosenBy] = (perHolder[lip.chosenBy] || 0) + 1;
+      }
+    }
+    const pc = n => `${(n / Math.max(1, choices) * 100).toFixed(1)}%`;
+    line('legacy choices', choices, `over ${RUNS} seasons`);
+    line('· the panel\'s last', pc(panel), 'the polite answer; the era leans here');
+    line('· the biggest threat', pc(threat), 'AS2-AS4 read as roughly a third');
+    line('· an old grudge', pc(grudge), '');
+    const busiest = Object.values(perHolder).sort((a, b) => b - a)[0] || 0;
+    line('· the busiest holder', busiest, 'domination watch');
+    expect(choices).toBeGreaterThan(RUNS);
+    /* NEITHER TERM MAY OWN THE DECISION. A rule that always takes the panel's
+       last is the flagship format with extra steps, and one that always takes
+       the threat is a spreadsheet: the whole point of the era is that it
+       depends on who is holding it. */
+    expect(threat / choices).toBeGreaterThan(0.1);
+    expect(panel / choices).toBeGreaterThan(0.1);
+  }, 120000);
+
+  it('B · nobody in the bottom ever sings, and the chart says so', () => {
+    let bottoms = 0, sang = 0, spared = 0, wrongCell = 0;
+    for (const o of all) {
+      for (const r of o.rows) {
+        const lip = r.dr?.lipsync;
+        if (!lip?.legacy) continue;
+        const bottom = r.dr.call?.bottom || [];
+        const singers = lip.singers || [lip.a, lip.b].filter(Boolean);
+        const want = bottom.length >= 3 ? 'BTM3' : 'BTM2';
+        for (const q of bottom) {
+          bottoms++;
+          if (singers.includes(q)) sang++;
+          const cell = (r.dr.record?.[q] || []).slice(-1)[0];
+          if (q === lip.eliminated) continue;
+          spared++;
+          if (cell !== want) wrongCell++;
+        }
+      }
+    }
+    line('queens named in a bottom', bottoms, '');
+    line('· of those, spared', spared, '');
+    line('· any of them sang', sang, 'must be 0');
+    line('· wrong cell on the chart', wrongCell, 'must be 0');
+    expect(sang).toBe(0);
+    expect(wrongCell).toBe(0);
+  }, 120000);
+
+  it('C · she is told she is in danger before she is sent home', () => {
+    let exits = 0, unnamed = 0;
+    for (const o of all) {
+      for (const r of o.rows) {
+        const lip = r.dr?.lipsync;
+        if (!lip?.legacy || !lip.eliminated) continue;
+        exits++;
+        if (!(r.dr.call?.bottom || []).includes(lip.eliminated)) unnamed++;
+      }
+    }
+    line('legacy eliminations', exits, '');
+    line('· never named in the bottom', unnamed, 'must be 0');
+    expect(unnamed).toBe(0);
+  }, 120000);
+
+  it('D · the ceremony is narrated, every time', () => {
+    let exits = 0, silent = 0, noWords = 0;
+    for (const o of all) {
+      for (const r of o.rows) {
+        const lip = r.dr?.lipsync;
+        if (!lip?.legacy || !lip.eliminated) continue;
+        exits++;
+        const sc = r.dr.scenes || [];
+        if (!sc.some(x => x.kind === 'legacy:reveal' && x.text)) silent++;
+        if (!sc.some(x => x.kind === 'legacy:last-words' && x.text)) noWords++;
+      }
+    }
+    line('· with no reveal line', silent, 'must be 0');
+    line('· with no last words', noWords, 'must be 0');
+    expect(silent).toBe(0);
+    expect(noWords).toBe(0);
+  }, 120000);
+});

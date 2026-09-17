@@ -278,6 +278,30 @@ export function dragFamilies(rows) {
   }));
 }
 
+/* ── THE CRAFT SHE PLAYED WITH, RECOVERED FROM THE SEASON ────────────
+   Not only on the roster row. `dragOf` normalises a missing craft stat to 5,
+   so a roster queen nobody authored plays a whole season with seven flat
+   fives -- and All Stars casts from a queen's most recent APPEARANCE, so the
+   record has to say what she was THAT season rather than what her roster row
+   says today. An author may change her between seasons.
+
+   Written onto the premiere row by js/dr/week.js -- once per season, not once
+   per episode. Related hazard (project_publish_wipes_authored_fields):
+   franchise_roster.json is regenerated wholesale from D1 and has eaten
+   authored fields twice, so this lives on the appearance, where a publish
+   cannot reach it. */
+const CRAFT_KEYS = ['acting', 'comedy', 'dance', 'design', 'runway', 'lipsync', 'singing'];
+function craftOf(rows, name) {
+  for (const row of rows || []) {
+    const d = row?.dr?.craft?.[name];
+    if (!d) continue;
+    const out = {};
+    for (const k of CRAFT_KEYS) if (typeof d[k] === 'number') out[k] = d[k];
+    if (Object.keys(out).length) return out;
+  }
+  return null;
+}
+
 export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], congeniality = null } = {}) {
   const episodes = dragEpisodes(rows);
   const placements = dragPlacements(rows);
@@ -303,7 +327,7 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
          and invisible. */
       ...(dragShowmance(rows, p.name)
         ? { showmance: dragShowmance(rows, p.name), showmanceEnded: 'intact' } : {}),
-      dr: stats,
+      dr: { ...stats, ...(craftOf(rows, p.name) ? { craft: craftOf(rows, p.name) } : {}) },
     };
   });
 

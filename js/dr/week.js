@@ -24,7 +24,7 @@
 // placeholder sentence written here would be a sentence nobody ever came back
 // to replace.
 import { arrivalScenes } from './arrivals.js';
-import { dragOf } from './queen.js';
+import { dragOf, DRAG_STATS } from './queen.js';
 import { maxiById } from './data/challenges.js';
 import { miniById } from './data/minis.js';
 import { SONGS, songById } from './data/songs.js';
@@ -2073,6 +2073,19 @@ export function runDragWeek(state, cfg, ctx) {
          every reader that would otherwise infer a lip sync from a bottom
          placement. Null on an ordinary season, so nothing changes there. */
       ...(cfg.legacy ? { allStars: { rule: 'legacy' } } : {}),
+      /* ── THE CRAFT THIS CAST PLAYED WITH, ONCE PER SEASON ──
+         On the premiere row only. The exporter writes it onto each queen's
+         APPEARANCE so a later All Stars can cast her as what she was that
+         season rather than what her roster row says today -- and because an
+         unauthored queen's craft is derived at cast time (js/dr/past.js), the
+         derivation has to be recoverable afterwards or it is not a record.
+         One copy, not one per episode: a season's worth of duplicated cast
+         data with no reader is the state-bloat shape this project has already
+         paid for once. */
+      ...(isPremiere ? {
+        craft: Object.fromEntries(living.map(n => [n, dragOf(P(n))]).map(([n, d]) => [n,
+          Object.fromEntries(DRAG_STATS.map(k => [k, d[k]]))])),
+      } : {}),
       /* THE SEASON'S SAVE, AS IT PLAYED TONIGHT. Null on a season without
          one. `saved` is who it kept — the chart's yellow border reads it.
          `savesState` is the whole save after tonight, for a season rebuilt

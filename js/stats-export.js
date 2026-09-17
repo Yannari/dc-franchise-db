@@ -2505,6 +2505,11 @@ export function mergeDragSeason(existing, seasonDoc) {
         bottoms: dr.bottoms || 0,
         lipsyncWins: dr.lipsyncWins || 0,
         congeniality: dr.congeniality || 0,
+        /* WHAT SHE WAS THAT SEASON, not what her roster row says now. All
+           Stars casts a returning queen from her most recent appearance, and
+           an author may change her between seasons -- see `craftOf` in
+           js/dr/export.js for why the flat default block is a failed cast. */
+        ...(dr.craft ? { craft: dr.craft } : {}),
       },
       /* THE PAIR, CARRIED. `js/life-hook.js` reads `showmance` off an
          appearance to decide who walked out of a season together — it is the

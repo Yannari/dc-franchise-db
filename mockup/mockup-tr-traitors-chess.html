@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Traitors' Chess — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-traitors-chess.html — visual target for the eighth bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  From the wiki (thetraitors.fandom.com/wiki/Chess — UK S3 ep 10). A giant
+  chessboard: every player's name on a square, a hooded Traitor statue on the
+  far side. The night before, the Traitors answered five questions about the
+  players. The group moves a piece onto the name it thinks the Traitors chose;
+  the statue then moves. Right: it knocks the piece over. Wrong: it stands on
+  the name the Traitors actually wrote. Each right answer is worth £2,000.
+
+  THE DILEMMA IS THE TRAITORS'. They know every answer. Helping wins money;
+  helping too well is a tell.
+
+  THE SHIELD IS THE GAMBIT. Once, one player may step onto the board and take
+  a question away from the group to answer alone. Right: the money, and a
+  Shield. Wrong: that question's money is gone.
+
+  IT SHARES NOTHING WITH THE SEVEN BEFORE IT. This is MARBLE AND CANDLELIGHT:
+  ivory and obsidian squares, verdigris bronze, gilt edges, a carved display
+  face.
+
+  THE ORGANISING PRIMITIVE IS THE BOARD. The sidebar is the chessboard seen
+  from above, one face per square, the statue at the head of it, and the five
+  pieces (wolf, fox, owl, lamb, crown) landing on squares as the group moves
+  them. A right answer tips the piece over in gold; a wrong one leaves the
+  statue's shadow on the true square in red.
+
+  Cards are PLACED: they drop onto the page like a piece set down on marble.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Sometype+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tc-ob:#0b0b0d; --tc-ob2:#17171b; --tc-ivory:#efe9dc; --tc-vein:#cfc8b8; --tc-bronze:#5f8a78;
+  --tc-bronze-lo:#2f4a40; --tc-gilt:#d8b25a; --tc-gilt-lo:#7b6224; --tc-wrong:#c0443a; --tc-mist:#a7a39a;
+  --tc-shield:#f0cf62; --tc-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--tc-ob);color:var(--tc-mist);font-family:'EB Garamond',Georgia,serif;font-size:19px;line-height:1.5;overflow-x:hidden}
+button{font:inherit}
+.tc-navstub{position:fixed;inset:0 0 auto 0;height:var(--tc-nav);z-index:60;background:#060607;border-bottom:1px solid #000;
+  display:flex;align-items:center;gap:16px;padding:0 16px;font:12px/1 'Sometype Mono',monospace;letter-spacing:.16em;
+  text-transform:uppercase;color:#6b675f;white-space:nowrap;overflow:hidden}
+.tc-navstub b{color:var(--tc-gilt)}
+
+/* ── ATMOSPHERE: a checkered floor in perspective, candle glow ───── */
+.tc-hall{position:fixed;left:0;right:0;top:var(--tc-nav);bottom:0;z-index:0;pointer-events:none;
+  background:radial-gradient(50% 40% at 50% 0%,rgba(216,178,90,.12),transparent 70%),linear-gradient(180deg,#141418,#0b0b0d 60%)}
+.tc-floor{position:fixed;left:-20%;right:-20%;bottom:-10vh;height:55vh;z-index:0;pointer-events:none;opacity:.14;
+  background:conic-gradient(var(--tc-ivory) 25%,transparent 0 50%,var(--tc-ivory) 0 75%,transparent 0) 0 0/120px 120px;
+  transform:perspective(420px) rotateX(62deg);transform-origin:bottom}
+.tc-candles{position:fixed;left:0;right:0;top:var(--tc-nav);bottom:0;z-index:1;pointer-events:none;
+  background:radial-gradient(6px 10px at 8% 30%,rgba(255,214,120,.9),transparent),radial-gradient(40px 60px at 8% 30%,rgba(255,190,90,.12),transparent),
+    radial-gradient(6px 10px at 92% 34%,rgba(255,214,120,.9),transparent),radial-gradient(40px 60px at 92% 34%,rgba(255,190,90,.12),transparent);
+  animation:tc-flicker 3s ease-in-out infinite}
+@keyframes tc-flicker{0%,100%{opacity:.85}45%{opacity:1}60%{opacity:.7}}
+
+.tc-shell{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:calc(var(--tc-nav) + 26px) 16px 132px}
+
+/* ── HERO: a marble slab with a gilt edge ─────────────────────────── */
+.tc-hero{position:relative;padding:32px 26px 24px;text-align:center;overflow:hidden;border:1px solid var(--tc-gilt-lo);
+  background:
+    linear-gradient(115deg,transparent 40%,rgba(207,200,184,.08) 42%,transparent 46%),
+    linear-gradient(65deg,transparent 60%,rgba(207,200,184,.06) 61%,transparent 64%),
+    linear-gradient(180deg,#1f1f24,#0f0f12);
+  box-shadow:inset 0 0 0 6px #0b0b0d,inset 0 0 0 7px var(--tc-gilt-lo),0 20px 50px rgba(0,0,0,.6)}
+.tc-kicker{font:12px/1 'Sometype Mono',monospace;letter-spacing:.32em;text-transform:uppercase;color:var(--tc-bronze)}
+.tc-title{font-family:'Marcellus',serif;font-weight:400;color:var(--tc-ivory);font-size:clamp(40px,8vw,86px);line-height:1;margin:.14em 0 .1em;letter-spacing:.02em}
+.tc-title span{color:var(--tc-gilt)}
+.tc-sub{color:#9c978d;max-width:58ch;margin:0 auto;font-style:italic}
+.tc-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+.tc-chip{font:11px/1 'Sometype Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--tc-ivory);
+  border:1px solid #3a3a40;padding:6px 11px;background:rgba(0,0,0,.4)}
+.tc-chip.shield{border-color:var(--tc-shield);color:var(--tc-shield)}
+.tc-roster{display:flex;justify-content:center;margin-top:18px}
+.tc-av{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#1f1f24;
+  border:2px solid #3a3a40;box-shadow:0 2px 8px rgba(0,0,0,.6);display:inline-block;vertical-align:middle}
+.tc-faces{display:inline-flex}
+.tc-faces .tc-av+.tc-av{margin-left:-8px}
+
+.tc-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px;align-items:start}
+@media(max-width:940px){.tc-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── BRIEFING ─────────────────────────────────────────────────────── */
+.tc-brief{background:rgba(15,15,18,.92);border:1px solid #26262b;border-top:3px solid var(--tc-gilt);padding:20px 20px 16px}
+.tc-brief h2,.tc-phase-name{font-family:'Marcellus',serif;font-weight:400;color:var(--tc-ivory)}
+.tc-brief h2{font-size:30px;margin:0}
+.tc-host{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.tc-host .tc-av{width:46px;height:46px;border-color:var(--tc-gilt)}
+.tc-host small{display:block;font:11px/1.4 'Sometype Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#7a766d}
+.tc-staging{font-style:italic;color:#8c887f;border-bottom:1px solid #26262b;padding-bottom:12px;margin:8px 0 14px}
+.tc-beat{margin:0 0 11px}
+.tc-beat p{margin:0}
+.tc-beat.do p{font:14.5px/1.5 'Sometype Mono',monospace;color:#7a766d}
+.tc-beat.say p{color:var(--tc-ivory);padding-left:14px;border-left:1px solid var(--tc-gilt-lo)}
+.tc-beat.shield p{border-left:2px solid var(--tc-shield);color:#fbe9b6}
+.tc-questions{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 4px}
+@media(max-width:560px){.tc-questions{grid-template-columns:repeat(2,1fr)}}
+.tc-q{text-align:center;padding:10px 6px;border:1px solid #26262b;background:rgba(0,0,0,.35)}
+.tc-q svg{width:34px;height:34px;display:block;margin:0 auto 4px}
+.tc-q small{display:block;font:12.5px/1.3 'EB Garamond',serif;font-style:italic;color:#bdb8ad}
+.tc-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tc-rule{font:10.5px/1 'Sometype Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#8c887f;border:1px solid #2e2e34;padding:5px 8px}
+.tc-rule b{color:var(--tc-gilt);font-weight:600;margin-right:4px}
+.tc-rule.shield b{color:var(--tc-shield)}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.tc-phase{margin-top:28px}
+.tc-phase-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #26262b}
+.tc-phase-n{width:34px;height:34px;display:grid;place-items:center;font:600 14px/1 'Sometype Mono',monospace;color:#0b0b0d;
+  background:conic-gradient(var(--tc-ivory) 25%,#2a2a30 0 50%,var(--tc-ivory) 0 75%,#2a2a30 0) 0 0/17px 17px;border:1px solid var(--tc-gilt-lo)}
+.tc-phase-n b{background:var(--tc-gilt);padding:2px 5px}
+.tc-phase-name{font-size:32px;line-height:1}
+.tc-phase-stats{margin-left:auto;display:flex;gap:6px}
+.tc-stat{font:10.5px/1 'Sometype Mono',monospace;font-style:normal;text-transform:uppercase;letter-spacing:.12em;color:#bdb8ad;background:#1a1a1f;padding:5px 8px}
+.tc-setting{font-style:italic;color:#8c887f;margin:8px 0 12px}
+
+/* ── CARDS: placed on marble ──────────────────────────────────────── */
+.tc-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;
+  background:linear-gradient(120deg,transparent 45%,rgba(207,200,184,.04) 47%,transparent 50%),linear-gradient(180deg,#1b1b20,#121215);
+  border:1px solid #2a2a30;opacity:0;transform:translateY(-14px) scale(1.02);
+  transition:opacity .35s ease,transform .45s cubic-bezier(.3,1.4,.5,1)}
+.tc-card.on{opacity:1;transform:none}
+.tc-card.good{border-left:3px solid var(--tc-bronze)}
+.tc-card.bad{border-left:3px solid var(--tc-wrong)}
+.tc-card.social{border-left:3px solid #8a7fb0}
+.tc-card.right{border:1px solid var(--tc-gilt);box-shadow:0 0 18px rgba(216,178,90,.12)}
+.tc-card.wrongq{border:1px solid var(--tc-wrong)}
+.tc-card.relic{border:1px solid var(--tc-shield);box-shadow:0 0 24px rgba(240,207,98,.18)}
+.tc-ico{position:absolute;left:14px;top:14px;width:38px;height:38px}
+.tc-ico svg{width:100%;height:100%;display:block}
+.tc-tag{float:right;font:10.5px/1 'Sometype Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8c887f;margin:4px 0 0 10px}
+.tc-card.good .tc-tag,.tc-card.right .tc-tag{color:var(--tc-gilt)}.tc-card.bad .tc-tag,.tc-card.wrongq .tc-tag{color:#e0766c}.tc-card.relic .tc-tag{color:var(--tc-shield)}
+.tc-who{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--tc-ivory);letter-spacing:.02em}
+.tc-who i{font-style:normal;font-weight:400;color:#8c887f}
+.tc-card.right .tc-av,.tc-card.relic .tc-av{border-color:var(--tc-gilt)}.tc-card.wrongq .tc-av,.tc-card.bad .tc-av{border-color:var(--tc-wrong)}
+.tc-qline{font:13px/1.3 'Sometype Mono',monospace;color:var(--tc-gilt);margin-top:6px;letter-spacing:.04em}
+.tc-txt{margin-top:4px}
+.tc-conf{margin-top:10px;padding:9px 12px;background:rgba(0,0,0,.35);border-left:2px solid #8a7fb0;font-style:italic;color:#ddd8cc}
+.tc-conf small{display:block;font:10.5px/1.4 'Sometype Mono',monospace;font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:#a79cd0}
+.tc-fx{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tc-fx span{font:10.5px/1 'Sometype Mono',monospace;color:#bdb8ad;border:1px solid #2e2e34;padding:4px 7px}
+.tc-summary{margin-top:24px;padding:18px 20px;border:1px solid var(--tc-gilt-lo);background:rgba(15,15,18,.95);transition:opacity .4s}
+.tc-summary small{display:block;font:10.5px/1.4 'Sometype Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--tc-gilt);margin-bottom:4px}
+
+/* ── SIDEBAR: the board ───────────────────────────────────────────── */
+.tc-side{position:sticky;top:calc(var(--tc-nav) + 14px)}
+.tc-panel{background:rgba(10,10,12,.96);border:1px solid #26262b;padding:14px}
+.tc-panel h3{font:400 26px/1 'Marcellus',serif;color:var(--tc-ivory);margin:0 0 10px;text-align:center;letter-spacing:.06em}
+.tc-statue{display:block;width:70px;height:74px;margin:0 auto -6px;position:relative;z-index:2}
+.tc-board{display:grid;grid-template-columns:repeat(4,1fr);border:3px solid var(--tc-gilt-lo);box-shadow:0 0 0 1px #000,0 10px 30px rgba(0,0,0,.6)}
+.tc-sq{position:relative;aspect-ratio:1;display:grid;place-items:center;transition:box-shadow .5s}
+.tc-sq:nth-child(8n+1),.tc-sq:nth-child(8n+3),.tc-sq:nth-child(8n+6),.tc-sq:nth-child(8n+8){background:linear-gradient(135deg,#efe9dc,#d8d1c1)}
+.tc-sq:nth-child(8n+2),.tc-sq:nth-child(8n+4),.tc-sq:nth-child(8n+5),.tc-sq:nth-child(8n+7){background:linear-gradient(135deg,#26262c,#131316)}
+.tc-sq .tc-av{width:40px;height:40px}
+.tc-sq small{position:absolute;bottom:2px;left:0;right:0;text-align:center;font:9px/1 'Sometype Mono',monospace;letter-spacing:.04em;color:#8c887f;text-shadow:0 1px 0 #000}
+.tc-sq .piece{position:absolute;top:-8px;right:-8px;width:36px;height:36px;opacity:0;transform:translateY(-18px);transition:all .45s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 3px 3px rgba(0,0,0,.7))}
+.tc-sq .piece.on{opacity:1;transform:none}
+.tc-sq .piece.fell{transform:rotate(80deg) translate(4px,-4px);filter:sepia(1) saturate(5) brightness(1.1) drop-shadow(0 0 6px rgba(216,178,90,.9))}
+.tc-sq.truth{box-shadow:inset 0 0 0 3px var(--tc-wrong)}
+.tc-sq.truth::after{content:'';position:absolute;inset:18%;border-radius:50%;background:radial-gradient(rgba(192,68,58,.5),transparent 70%)}
+.tc-sq.gambit{box-shadow:inset 0 0 0 3px var(--tc-shield)}
+.tc-track{display:flex;justify-content:space-between;gap:6px;margin-top:14px}
+.tc-slot{flex:1;text-align:center;padding:6px 2px;border:1px solid #2a2a30;background:rgba(0,0,0,.35);transition:all .4s}
+.tc-slot svg{width:24px;height:24px;display:block;margin:0 auto}
+.tc-slot small{display:block;font:9.5px/1.2 'Sometype Mono',monospace;color:#6b675f;margin-top:3px;text-transform:uppercase}
+.tc-slot.right{border-color:var(--tc-gilt)}.tc-slot.right small{color:var(--tc-gilt)}
+.tc-slot.wrong{border-color:var(--tc-wrong)}.tc-slot.wrong small{color:#e0766c}
+.tc-gambit{margin-top:12px;padding:11px 12px;border:1px dashed #6b5b2a;text-align:center;transition:all .5s}
+.tc-gambit .lbl{font:10.5px/1 'Sometype Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a7a4a}
+.tc-gambit .val{margin-top:6px;font-style:italic;color:#8c887f}
+.tc-gambit .holder{display:none;margin:8px auto 0}
+.tc-gambit .holder .tc-av{width:44px;height:44px;border-color:var(--tc-shield);box-shadow:0 0 14px rgba(240,207,98,.45)}
+.tc-gambit.on{border:1px solid var(--tc-shield)}
+.tc-gambit.on .holder{display:block}
+.tc-gambit.on .lbl,.tc-gambit.on .val{color:var(--tc-shield);font-style:normal}
+.tc-pot{margin-top:12px;border-top:1px solid #26262b;padding-top:10px}
+.tc-pot .r{display:flex;justify-content:space-between;font-size:16px;color:#8c887f}
+.tc-pot .r b{font:13px/1.7 'Sometype Mono',monospace;color:var(--tc-ivory);font-weight:400}
+.tc-pot .big{font:30px/1.1 'Sometype Mono',monospace;color:var(--tc-gilt);text-align:right;margin-top:4px}
+
+.tc-controls{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 16px;background:linear-gradient(0deg,#060607 60%,rgba(6,6,7,0))}
+.tc-btn{font:600 16px/1 'EB Garamond',serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;padding:12px 26px;
+  color:#0b0b0d;background:linear-gradient(180deg,#f2dc98,var(--tc-gilt));border:1px solid var(--tc-gilt-lo)}
+.tc-btn:disabled{opacity:.4;cursor:default}
+.tc-btn.ghost{background:transparent;color:var(--tc-ivory);border:1px solid #3a3a40}
+.tc-btn:focus-visible{outline:2px solid var(--tc-ivory);outline-offset:2px}
+.tc-counter{font:12px/1 'Sometype Mono',monospace;color:#7a766d;letter-spacing:.1em}
+@media (prefers-reduced-motion: reduce){
+  .tc-candles{animation:none}
+  .tc-card{transition:opacity .2s;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="tc-navstub"><b>The Traitors</b><span>Episode 10 · Afternoon</span><span>The Traitors' Chess</span></div>
+<div class="tc-hall"></div><div class="tc-floor"></div><div class="tc-candles"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="p-wolf" viewBox="0 0 36 36"><path d="M8 32h20l-2-6H10z M10 26c0-6 2-10 4-12l-3-8 6 5 3-6 2 7 5-2-3 7c2 2 3 6 3 9z" fill="#5f8a78" stroke="#efe9dc" stroke-width="1"/><circle cx="16" cy="17" r="1.2" fill="#efe9dc"/></symbol>
+    <symbol id="p-fox" viewBox="0 0 36 36"><path d="M8 32h20l-2-6H10z M11 26c0-5 1-9 3-12L10 5l7 6h2l7-6-4 9c2 3 3 7 3 12z" fill="#b8733c" stroke="#efe9dc" stroke-width="1"/><path d="M15 20l3 3 3-3" stroke="#efe9dc" fill="none"/></symbol>
+    <symbol id="p-owl" viewBox="0 0 36 36"><path d="M8 32h20l-2-6H10z M11 26c-1-8 1-16 7-18 6 2 8 10 7 18z" fill="#7d7a70" stroke="#efe9dc" stroke-width="1"/><circle cx="15" cy="15" r="2.6" fill="#efe9dc"/><circle cx="21" cy="15" r="2.6" fill="#efe9dc"/><circle cx="15" cy="15" r="1" fill="#0b0b0d"/><circle cx="21" cy="15" r="1" fill="#0b0b0d"/></symbol>
+    <symbol id="p-lamb" viewBox="0 0 36 36"><path d="M8 32h20l-2-6H10z M10 26c-2-4 0-8 3-9-1-4 3-7 6-5 3-2 7 1 6 5 3 1 5 5 3 9z" fill="#efe9dc" stroke="#7d7a70" stroke-width="1"/><circle cx="16" cy="18" r="1" fill="#0b0b0d"/><circle cx="20" cy="18" r="1" fill="#0b0b0d"/></symbol>
+    <symbol id="p-crown" viewBox="0 0 36 36"><path d="M8 32h20l-2-6H10z M10 26l-2-14 6 6 4-10 4 10 6-6-2 14z" fill="#d8b25a" stroke="#efe9dc" stroke-width="1"/><circle cx="18" cy="8" r="1.8" fill="#efe9dc"/></symbol>
+    <symbol id="i-debate" viewBox="0 0 36 36"><path d="M4 8h18v12H12l-6 5v-5H4z" fill="#8a7fb0"/><path d="M14 16h18v12h-2v5l-6-5H14z" fill="#efe9dc" opacity=".85"/></symbol>
+    <symbol id="i-right" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#d8b25a" stroke-width="2"/><path d="M10 18l6 6 10-12" fill="none" stroke="#d8b25a" stroke-width="3"/></symbol>
+    <symbol id="i-wrong" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#c0443a" stroke-width="2"/><path d="M12 12l12 12M24 12L12 24" stroke="#c0443a" stroke-width="3"/></symbol>
+    <symbol id="i-gambit" viewBox="0 0 36 36"><path d="M18 3l12 4v9c0 8-5 14-12 17C11 30 6 24 6 16V7z" fill="#f0cf62" stroke="#7b6224" stroke-width="1.2"/><path d="M12 22h12l-1-3H13z M14 19c0-4 1-6 2-7l-1-4 3 2 3-2-1 4c1 1 2 3 2 7z" fill="#7b6224"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 36 36"><path d="M2 18c6-9 26-9 32 0-6 9-26 9-32 0z" fill="none" stroke="#8a7fb0" stroke-width="2"/><circle cx="18" cy="18" r="5" fill="#8a7fb0"/></symbol>
+  </defs>
+</svg>
+
+<div class="tc-shell">
+  <header class="tc-hero">
+    <div class="tc-kicker">Mission · Episode Ten</div>
+    <h1 class="tc-title">The Traitors' <span>Chess</span></h1>
+    <p class="tc-sub">Last night the Traitors answered five questions about every one of you. Today you guess
+      what they said, on a board with your names on it.</p>
+    <div class="tc-meta">
+      <span class="tc-chip">One team · twelve players</span>
+      <span class="tc-chip">Five questions</span>
+      <span class="tc-chip">£2,000 a right answer</span>
+      <span class="tc-chip shield">The Gambit · a Shield for one answer alone</span>
+    </div>
+    <div class="tc-roster"><span class="tc-faces">
+      <img class="tc-av" src="../assets/avatars/brick.png" alt=""><img class="tc-av" src="../assets/avatars/priya.png" alt=""><img class="tc-av" src="../assets/avatars/fiore.png" alt=""><img class="tc-av" src="../assets/avatars/cody.png" alt=""><img class="tc-av" src="../assets/avatars/dawn.png" alt=""><img class="tc-av" src="../assets/avatars/alec.png" alt=""><img class="tc-av" src="../assets/avatars/julia.png" alt=""><img class="tc-av" src="../assets/avatars/bowie.png" alt=""><img class="tc-av" src="../assets/avatars/gabby.png" alt=""><img class="tc-av" src="../assets/avatars/ellie.png" alt=""><img class="tc-av" src="../assets/avatars/manu.png" alt=""><img class="tc-av" src="../assets/avatars/courtney.png" alt="">
+    </span></div>
+  </header>
+
+  <div class="tc-grid">
+    <main>
+      <section class="tc-brief">
+        <div class="tc-host"><img class="tc-av" src="../assets/avatars/alan-cumming.png" alt=""><div><h2>The Briefing</h2><small>Alan Cumming · your host</small></div></div>
+        <p class="tc-staging">A long hall with a chessboard for a floor. Every square has a player's name on it, and at
+          the far end, on the black side, stands a hooded bronze figure.</p>
+
+        <div class="tc-beat do"><p>Alan Cumming walks the length of the board and stops beside the hooded statue.</p></div>
+        <div class="tc-beat say"><p>Last night, while you slept, the Traitors answered five questions about you.</p></div>
+        <div class="tc-beat say"><p>For each question you will choose one of these pieces and put it on the square of the person you think they named. You decide together, and one of you moves it.</p></div>
+        <div class="tc-beat do"><p>Alan Cumming rests a hand on the statue's shoulder.</p></div>
+        <div class="tc-beat say"><p>Then this moves. If you are right, it knocks your piece over. If you are wrong, it stands on the name the Traitors actually wrote. Every right answer is two thousand pounds.</p></div>
+        <div class="tc-beat say shield"><p>Once, and only once, one of you may step onto the board and take a question from the rest of you to answer alone.</p></div>
+        <div class="tc-beat say shield"><p>Answer it right and the money is yours to give the pot, and a Shield is yours to keep. Answer it wrong and that money is gone.</p></div>
+        <div class="tc-beat say"><p>The Traitors among you already know every answer. Watch who seems to. Begin.</p></div>
+
+        <div class="tc-questions">
+          <div class="tc-q"><svg><use href="#p-wolf"/></svg><small>Who leads the pack?</small></div>
+          <div class="tc-q"><svg><use href="#p-fox"/></svg><small>Who is the most cunning?</small></div>
+          <div class="tc-q"><svg><use href="#p-owl"/></svg><small>Who notices the most?</small></div>
+          <div class="tc-q"><svg><use href="#p-lamb"/></svg><small>Who would you never suspect?</small></div>
+          <div class="tc-q"><svg><use href="#p-crown"/></svg><small>Who will win?</small></div>
+        </div>
+
+        <div class="tc-rules">
+          <span class="tc-rule"><b>task</b> beat 3</span>
+          <span class="tc-rule"><b>failure</b> beat 5</span>
+          <span class="tc-rule"><b>reward</b> beat 5</span>
+          <span class="tc-rule shield"><b>shield</b> beat 6</span>
+          <span class="tc-rule shield"><b>cost</b> beat 7</span>
+          <span class="tc-rule"><b>finish</b> beat 8</span>
+        </div>
+      </section>
+
+      <section class="tc-phase">
+        <div class="tc-phase-head"><span class="tc-phase-n"><b>I</b></span><span class="tc-phase-name">The Pack</span>
+          <span class="tc-phase-stats"><i class="tc-stat">social</i><i class="tc-stat">intuition</i></span></div>
+        <p class="tc-setting">The wolf and the fox, and a room trying to think like the people who want it dead.</p>
+
+        <article class="tc-card good" id="tc-step-0">
+          <span class="tc-ico"><svg><use href="#i-debate"/></svg></span><span class="tc-tag">Made the case</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/ellie.png" alt=""></span>Ellie</div>
+          <div class="tc-qline">Who leads the pack?</div>
+          <div class="tc-txt">Ellie said the Traitors would name whoever talks first at every table, and there was only one person that was. The group put the wolf on Brick.</div>
+        </article>
+
+        <article class="tc-card right" id="tc-step-1">
+          <span class="tc-ico"><svg><use href="#i-right"/></svg></span><span class="tc-tag">Right · £2,000</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/brick.png" alt=""></span>Brick</div>
+          <div class="tc-txt">The statue turned, slid across the board, and knocked the wolf off Brick's square.</div>
+        </article>
+
+        <article class="tc-card social bad" id="tc-step-2">
+          <span class="tc-ico"><svg><use href="#i-eye"/></svg></span><span class="tc-tag">Suspicious</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/priya.png" alt=""><img class="tc-av" src="../assets/avatars/bowie.png" alt=""></span>Priya &amp; Bowie</div>
+          <div class="tc-qline">Who is the most cunning?</div>
+          <div class="tc-txt">Bowie said "Julia" before anybody else had spoken, and held to it through four other names. Priya watched him do it.</div>
+          <div class="tc-conf"><small>Priya · confessional</small>Nobody's that sure about what the Traitors think. Unless they were in the room.</div>
+          <div class="tc-fx"><span>claim · Priya → Bowie</span><span>suspicion +0.30</span></div>
+        </article>
+
+        <article class="tc-card right" id="tc-step-3">
+          <span class="tc-ico"><svg><use href="#i-right"/></svg></span><span class="tc-tag">Right · £2,000</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/julia.png" alt=""></span>Julia</div>
+          <div class="tc-txt">The fox went on Julia. The statue knocked it flat, and Bowie was the only person who did not look surprised.</div>
+        </article>
+      </section>
+
+      <section class="tc-phase">
+        <div class="tc-phase-head"><span class="tc-phase-n"><b>II</b></span><span class="tc-phase-name">The Owl and the Lamb</span>
+          <span class="tc-phase-stats"><i class="tc-stat">mental</i><i class="tc-stat">boldness</i></span></div>
+        <p class="tc-setting">Two harder questions, and one person deciding the group should not answer the second.</p>
+
+        <article class="tc-card bad" id="tc-step-4">
+          <span class="tc-ico"><svg><use href="#i-debate"/></svg></span><span class="tc-tag">Talked round</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/cody.png" alt=""></span>Cody</div>
+          <div class="tc-qline">Who notices the most?</div>
+          <div class="tc-txt">Cody argued for Dawn for five minutes and the group gave in to make him stop. The owl went on Dawn.</div>
+        </article>
+
+        <article class="tc-card wrongq" id="tc-step-5">
+          <span class="tc-ico"><svg><use href="#i-wrong"/></svg></span><span class="tc-tag">Wrong</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/fiore.png" alt=""></span>Fiore</div>
+          <div class="tc-txt">The statue passed Dawn's square and stood on Fiore's. The Traitors think Fiore sees the most. Fiore did not enjoy hearing it.</div>
+          <div class="tc-fx"><span>record · named as watchful</span></div>
+        </article>
+
+        <article class="tc-card relic" id="tc-step-6">
+          <span class="tc-ico"><svg><use href="#i-gambit"/></svg></span><span class="tc-tag">The Gambit</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/priya.png" alt=""></span>Priya</div>
+          <div class="tc-qline">Who would you never suspect?</div>
+          <div class="tc-txt">Priya stepped onto the board before anybody had started arguing, picked up the lamb, and put it on Gabby.</div>
+          <div class="tc-conf"><small>Priya · confessional</small>They'd never suspect the girl who cried at the first breakfast. I wouldn't either. That's the point.</div>
+        </article>
+
+        <article class="tc-card relic" id="tc-step-7">
+          <span class="tc-ico"><svg><use href="#i-right"/></svg></span><span class="tc-tag">Shield</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/gabby.png" alt=""><img class="tc-av" src="../assets/avatars/priya.png" alt=""></span>Gabby &amp; Priya</div>
+          <div class="tc-txt">The statue knocked the lamb off Gabby's square. Two thousand for the pot, and a Shield for Priya, handed over in front of everyone.</div>
+          <div class="tc-fx"><span>shield · Priya</span><span>seen by · everybody</span><span>crowd · Priya masterful ×0.8</span></div>
+        </article>
+      </section>
+
+      <section class="tc-phase">
+        <div class="tc-phase-head"><span class="tc-phase-n"><b>III</b></span><span class="tc-phase-name">The Crown</span>
+          <span class="tc-phase-stats"><i class="tc-stat">strategic</i><i class="tc-stat">temperament</i></span></div>
+        <p class="tc-setting">The last piece, and the question nobody wants to be seen answering well.</p>
+
+        <article class="tc-card good" id="tc-step-8">
+          <span class="tc-ico"><svg><use href="#i-debate"/></svg></span><span class="tc-tag">Split room</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/manu.png" alt=""></span>Manu</div>
+          <div class="tc-qline">Who will win?</div>
+          <div class="tc-txt">Manu said the Traitors would name whoever they least wanted to face at the end, and half the room agreed. The crown went on Alec.</div>
+        </article>
+
+        <article class="tc-card wrongq" id="tc-step-9">
+          <span class="tc-ico"><svg><use href="#i-wrong"/></svg></span><span class="tc-tag">Wrong</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/brick.png" alt=""></span>Brick</div>
+          <div class="tc-txt">The statue stood on Brick. The Traitors think Brick wins. Brick laughed longer than the joke deserved.</div>
+        </article>
+
+        <article class="tc-card social bad" id="tc-step-10">
+          <span class="tc-ico"><svg><use href="#i-eye"/></svg></span><span class="tc-tag">Suspicious</span>
+          <div class="tc-who"><span class="tc-faces"><img class="tc-av" src="../assets/avatars/ellie.png" alt=""><img class="tc-av" src="../assets/avatars/julia.png" alt=""></span>Ellie &amp; Julia</div>
+          <div class="tc-txt">Julia had said nothing all afternoon, and nothing on the crown either. Ellie noticed that the one person who never guessed was the one person who never got a guess wrong.</div>
+          <div class="tc-conf"><small>Ellie · confessional</small>If you know the answers, the safest thing to do is not play. She didn't play.</div>
+          <div class="tc-fx"><span>claim · Ellie → Julia</span><span>suspicion +0.22</span></div>
+        </article>
+      </section>
+
+      <div class="tc-summary" id="tc-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        Three of five. Six thousand for the pot, a Shield for the one person brave enough to play alone, and two
+        people now watching the ones who seemed to know too much, or too little.
+      </div>
+    </main>
+
+    <aside class="tc-side" aria-label="The board">
+      <div class="tc-panel">
+        <h3>The Board</h3>
+        <svg class="tc-statue" viewBox="0 0 70 74" aria-hidden="true">
+          <path d="M35 4c10 0 16 8 16 18v8l8 38H11l8-38v-8C19 12 25 4 35 4z" fill="#2f4a40" stroke="#5f8a78" stroke-width="1.5"/>
+          <path d="M35 10c7 0 11 6 11 13v6H24v-6c0-7 4-13 11-13z" fill="#0b0b0d"/>
+          <circle cx="31" cy="22" r="1.4" fill="#c0443a"/><circle cx="39" cy="22" r="1.4" fill="#c0443a"/>
+          <path d="M11 68h48v4H11z" fill="#7b6224"/>
+        </svg>
+        <div class="tc-board" id="tc-board"></div>
+        <div class="tc-track" id="tc-track"></div>
+        <div class="tc-gambit" id="tc-gambit">
+          <div class="lbl">The Gambit</div>
+          <div class="holder"><img class="tc-av" src="../assets/avatars/priya.png" alt=""></div>
+          <div class="val" id="tc-gambit-val">nobody has stepped onto the board</div>
+        </div>
+        <div class="tc-pot">
+          <div class="r"><span>Fund before</span><b>£62,300</b></div>
+          <div class="r"><span>Right answers</span><b id="tc-pot-r">0 of 5</b></div>
+          <div class="r"><span>Earned today</span><b id="tc-pot-e">—</b></div>
+          <div class="big" id="tc-pot-a">£62,300</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="tc-controls">
+  <button class="tc-btn" id="tc-next">Next</button>
+  <span class="tc-counter" id="tc-counter" aria-live="polite">0 of 11 revealed</span>
+  <button class="tc-btn ghost" id="tc-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 11, idx = -1;
+  var CAST = ['brick','priya','fiore','cody','dawn','alec','julia','bowie','gabby','ellie','manu','courtney'];
+  var NAMES = ['Brick','Priya','Fiore','Cody','Dawn','Alec','Julia','Bowie','Gabby','Ellie','Manu','Courtney'];
+  /* each question: piece, where the group put it, where the statue went, reveal steps */
+  var Q = [
+    { p:'wolf', guess:'brick', truth:'brick', placedAt:0, revealAt:1 },
+    { p:'fox', guess:'julia', truth:'julia', placedAt:2, revealAt:3 },
+    { p:'owl', guess:'dawn', truth:'fiore', placedAt:4, revealAt:5 },
+    { p:'lamb', guess:'gabby', truth:'gabby', placedAt:6, revealAt:7, gambit:true },
+    { p:'crown', guess:'alec', truth:'brick', placedAt:8, revealAt:9 }
+  ];
+  var LABEL = { wolf:'pack', fox:'cunning', owl:'watchful', lamb:'innocent', crown:'winner' };
+  function el(id){ return document.getElementById(id); }
+  function draw(){
+    el('tc-board').innerHTML = CAST.map(function(c, i){
+      return '<div class="tc-sq" id="tc-sq-' + c + '"><img class="tc-av" src="../assets/avatars/' + c + '.png" alt="">'
+        + '<small>' + NAMES[i] + '</small>'
+        + Q.map(function(q){ return '<svg class="piece" id="tc-pc-' + q.p + '-' + c + '"><use href="#p-' + q.p + '"/></svg>'; }).join('')
+        + '</div>';
+    }).join('');
+    el('tc-track').innerHTML = Q.map(function(q){
+      return '<div class="tc-slot" id="tc-slot-' + q.p + '"><svg><use href="#p-' + q.p + '"/></svg><small>' + LABEL[q.p] + '</small></div>';
+    }).join('');
+  }
+  function paint(){
+    var n = idx + 1, right = 0;
+    for (var i = 0; i < TOTAL; i++) { var c = el('tc-step-' + i); if (c) c.classList.toggle('on', i <= idx); }
+    el('tc-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    el('tc-next').disabled = idx >= TOTAL - 1;
+    el('tc-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+    document.querySelectorAll('.tc-sq').forEach(function(s){ s.classList.remove('truth','gambit'); });
+    document.querySelectorAll('.piece').forEach(function(p){ p.setAttribute('class','piece'); });
+    Q.forEach(function(q){
+      var slot = el('tc-slot-' + q.p); slot.className = 'tc-slot';
+      if (n > q.placedAt) {
+        el('tc-pc-' + q.p + '-' + q.guess).setAttribute('class', 'piece on');
+        if (q.gambit) el('tc-sq-' + q.guess).classList.add('gambit');
+      }
+      if (n > q.revealAt) {
+        var ok = q.guess === q.truth;
+        if (ok) { right++; el('tc-pc-' + q.p + '-' + q.guess).setAttribute('class', 'piece on fell'); slot.className = 'tc-slot right'; }
+        else { el('tc-sq-' + q.truth).classList.add('truth'); slot.className = 'tc-slot wrong'; }
+      }
+    });
+    var g = Q[3], taken = n > g.placedAt, won = n > g.revealAt;
+    el('tc-gambit').classList.toggle('on', won);
+    el('tc-gambit-val').textContent = won ? 'Priya · answered the lamb alone, and won'
+      : taken ? 'Priya has stepped onto the board' : 'nobody has stepped onto the board';
+    el('tc-pot-r').textContent = right + ' of 5';
+    el('tc-pot-e').textContent = n ? '£' + (right * 2000).toLocaleString('en-GB') : '—';
+    el('tc-pot-a').textContent = '£' + (62300 + right * 2000).toLocaleString('en-GB');
+  }
+  el('tc-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; paint();
+    var c = el('tc-step-' + idx); if (c) c.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  el('tc-all').addEventListener('click', function(){ idx = TOTAL - 1; paint(); });
+  draw(); paint();
+})();
+</script>
+</body>
+</html>

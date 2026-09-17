@@ -27,7 +27,7 @@ import {
   ARRIVAL_IMPRESSIONS,
   entranceAttitude, entranceLanding,
 } from './data/entrances.js';
-import { HISTORY_BEATS, ALLSTARS_OPENING, AS_ENTRANCES } from './data/legacy-beats.js';
+import { HISTORY_BEATS, ALLSTARS_OPENING, AS_ENTRANCES, AS_INTROS } from './data/legacy-beats.js';
 import { dragOf, starPower } from './queen.js';
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
@@ -201,7 +201,14 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
        screen is not allowed to make some up. */
     const usable = list => (list || []).filter(t => Object.entries(vars)
       .every(([k, v]) => v !== '' || !String(t).includes(`{${k}}`)));
-    const intro = draw(usable(ARRIVAL_INTROS[attitude]), `intro:${attitude}:`);
+    /* ── AND THE INTRODUCTION, WHICH HAS ALSO DONE THIS BEFORE ─────
+       Replacing the walk line alone left the paragraph under it saying "I
+       genuinely can't believe I'm standing here" — the entrance fixed, the
+       biography still a rookie's. Same pool switch, same key rule. */
+    const asIntro = pasts[name] ? (AS_INTROS[asKey(Number(stats.boldness) || 5)] || []) : [];
+    const intro = asIntro.length
+      ? draw(usable(asIntro), 'as-intro:')
+      : draw(usable(ARRIVAL_INTROS[attitude]), `intro:${attitude}:`);
     if (intro) {
       out.push({
         step: 'arrivals', kind: 'arrival:intro',

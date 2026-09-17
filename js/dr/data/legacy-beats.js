@@ -243,3 +243,35 @@ export const AS_ENTRANCES = {
     'Everybody here is good. That is the part nobody warns you about the second time.',
   ],
 };
+
+/* ── AND THE INTRODUCTION SHE GIVES ──────────────────────────────────
+   The flagship intro pool is a first-timer's too — "I genuinely can't believe
+   I'm standing here", "I'm gonna try very hard not to cry during this
+   introduction" — and a queen on her second season saying it is the same bug
+   as the entrance line, one paragraph later.
+   `{a}` her name, `{years}` how long she has been doing drag, `{city}` and
+   `{job}` her authored profile fields. A line naming a field she has not got
+   is dropped rather than filled with a guess, the same as the flagship pool:
+   see `usable` in js/dr/arrivals.js. */
+export const AS_INTROS = {
+  cocky: [
+    "I'm {a}. {years} years in drag, one season already served, and I am not here to make up the numbers.",
+    "{a}. You know the name. If you do not, you will by the third episode.",
+    "I'm {a}, I've been doing this {years} years, and I came back for the one thing I did not get.",
+  ],
+  warm: [
+    "I'm {a}, {years} years of drag, and I have wanted this second go so badly that it is faintly embarrassing.",
+    "{a}. {years} years. I loved every horrible minute of it the first time and here I am again.",
+    "I'm {a} and I have spent a long time thinking about what I would do differently. We are about to find out if any of it was true.",
+  ],
+  cool: [
+    "{a}. {years} years. I have done this before, so you will forgive me if I am not wide-eyed about it.",
+    "I'm {a}. I know how this room works now. That is the only thing that has changed.",
+    "I'm {a}, {years} years in, and I am here to finish something.",
+  ],
+  nervous: [
+    "I'm {a}, {years} years of drag, and knowing exactly what is coming has not helped as much as you would think.",
+    "{a}. I said yes immediately and I have been quietly terrified ever since.",
+    "I'm {a} and I have already done this once, which means I know precisely how much it is going to hurt.",
+  ],
+};

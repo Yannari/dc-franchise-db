@@ -553,6 +553,17 @@ function weekCfg(sch, config, num, extra = {}) {
     // The floor a paid-back double shantay must never breach: a week may not
     // empty the room below the size the finale needs.
     finaleSize: FINALE_SIZE[config.drFinale || 'top4'] || 4,
+    /* ── THE ALL STARS RULE IS A SEASON'S, NOT A WEEK'S ──
+       A pin still works (`week.legacy`, booked from the designer on an
+       ordinary season) and arrives through `extra` below, which is why this
+       sits ahead of the spread rather than after it. The mode simply says it
+       every week.
+       `week.js` needs no change for it: its gate is
+       `cfg.legacy && bend.length >= 4`, so once the room is too small to hold
+       both a top two and a bottom to eliminate from, the week falls back to an
+       ordinary bottom-two lip sync on its own. No endgame branch to write, and
+       none to forget. */
+    legacy: !!config.drAllStars && (config.drAllStarsRule || 'legacy') === 'legacy',
     ...extra,
   };
 }

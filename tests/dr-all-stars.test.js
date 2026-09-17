@@ -63,3 +63,29 @@ describe('the mode', () => {
     expect(season(4, { drAllStars: true, drAllStarsRule: 'save' }).state.allStars.rule).toBe('save');
   });
 });
+
+const weekly = res => res.rows.filter(r => r.dr && !r.dr.finale);
+
+describe('the legacy rule', () => {
+  it('runs on every week with a room big enough for it', () => {
+    const res = season(9, { drAllStars: true });
+    const wide = weekly(res).filter(r => r.dr.lipsync && (r.dr.living?.length ?? 0) >= 5);
+    expect(wide.length).toBeGreaterThan(3);
+    for (const r of wide) expect(r.dr.lipsync.legacy).toBe(true);
+  });
+
+  it('nobody in the bottom ever sings on a legacy night', () => {
+    const res = season(9, { drAllStars: true });
+    for (const r of weekly(res)) {
+      if (!r.dr.lipsync?.legacy) continue;
+      const singers = r.dr.lipsync.singers || [r.dr.lipsync.a, r.dr.lipsync.b].filter(Boolean);
+      for (const q of (r.dr.call?.bottom || [])) expect(singers).not.toContain(q);
+    }
+  });
+
+  it('falls back to an ordinary bottom-two song once the room is too small', () => {
+    const res = season(9, { drAllStars: true });
+    const small = weekly(res).filter(r => (r.dr.living?.length ?? 0) < 4 && r.dr.lipsync);
+    for (const r of small) expect(r.dr.lipsync.legacy).toBeFalsy();
+  });
+});

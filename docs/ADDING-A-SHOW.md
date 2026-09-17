@@ -342,6 +342,214 @@ the season into saves, exports and the wiki.
 
 ---
 
+## 6.5 Staging a screen: the pinned stage
+
+This is how every Drag Race viewing-party screen was rebuilt in 2026-09, after
+the verdict on the old ones was "visually boring, no suspense, no tension, no
+wow, no animated card". The owner's words on the result: "it's so good I want
+it everywhere". **Build a new show's screens this way from day one.** A column
+of text cards is a transcript, not a show.
+
+### The idea in one paragraph
+
+Above the cards sits a **stage**: a picture of the room the scene happens in,
+pinned to the top of the screen while the cards scroll underneath. Every reveal
+click **plays** on that stage. The spotlight swings to whoever the card is
+about. Faces light up or go dark, and meters fill. A banner slams in for the big
+moment, confetti bursts for a win and the stage shakes for a disaster. A
+confessional cuts away to one face talking to camera. The cards still carry
+every word, so the stage is the *show* and the cards are the *script*.
+
+### The architecture: one state per step
+
+Every stage is a function that takes the screen's own step list and returns
+`{ html, apply, states }`:
+
+```js
+export function thingStage(row, list, { ep, uid }) {
+  // 1. ONE STATE PER STEP, built once from the data, never from the DOM.
+  const states = list.map(s => ({
+    phase: 'song',                       // drives CSS: data-phase="..."
+    on: s.who,                           // who is lit
+    mood: s.good ? 'gold' : 'red',       // background wash
+    banner: s.big ? { text: 'Serving', sub: s.who } : null,
+    burst: s.big, stars: false, shake: !s.good,
+    quote: '',                           // html for a cut to camera
+  }));
+  // 2. THE MARKUP AT REST: everything the stage will ever show, unlit.
+  const html = shell({ id: `thx-${uid}`, title, sub, body, theme: 'stage' });
+  // 3. APPLY(idx): paint state idx onto the DOM. Idempotent, whole-state.
+  const apply = engine(`thx-${uid}`, states, (el, st, fresh) => { /* own objects */ });
+  return { html, apply, states };
+}
+```
+
+The screen builder makes the SAME step list it makes its cards from, so card
+`i` and state `i` are always the same moment. Then it wires the stage in:
+
+```js
+const stage = thingStage(row, list, { ep, uid: `t${ep.num}` });
+wireStage('suffix', stage, ep, _state);   // _drRevealExtra[suffix] + repaint after re-render
+return `<style>${KIT_CSS}</style>${_shell(`${stage.html}<div class="fsx-cards">${cards}</div>`, ep, {...})}
+  ${_controls('suffix', list.length, ep.num)}`;
+```
+
+Rules that make this robust:
+
+- **`apply(idx)` paints the WHOLE state every time.** It never patches the
+  newest change. That is what survives a tab switch, "Reveal all", and a
+  re-render (`wireStage` re-applies the saved `_state(ep, suffix).idx` after the
+  screen repaints).
+- **`fresh` is `idx === previous + 1`.** One-shot effects (burst, shake, stamp
+  slam, banner animation) play only on a fresh step, never when you jump.
+- **One step list feeds the cards, the rail and the stage.** The call screen's
+  rail used to count names while the cards counted names plus the host's pause,
+  so after the pause everything ran one step ahead.
+- **Wrap the stage in `<!--dr-chrome-->…<!--/dr-chrome-->`** so the text
+  transcript skips it; the cards already carry the words.
+
+### The kit (`js/vp-dr/finale-stage.js`)
+
+The frame is shared. Do not rebuild it per screen.
+
+| Piece | What it does |
+|---|---|
+| `shell({ id, title, sub, body, theme, hostChip })` | background layers (rays, haze, colour wash, vignette), title, **headline pill**, host chip, banner, confetti, stars and the cut-to-camera overlay |
+| `engine(id, states, paint)` | the shared `apply`: phase, mood, host glow, quote overlay, banner plus pill, burst/stars/shake on fresh steps, then your `paint` |
+| `face(name, ep, size)` | a round portrait that sizes to its box |
+| `quoteHtml({ name, label, text })` | a confessional or speech: tilted portrait frame and a quote card |
+| `confetti(n, seed)` | particles with a **seeded** spread, so a re-render draws the same burst |
+| themes | gold (default, the finale), `stage` (pink, main stage), `werk` (cyan grid, work rooms, out-of-drag host), `lounge` (purple, Untucked and the reunion) |
+
+The stages built on it:
+
+- `night-stage.js`: main stage, runway, critiques.
+- `room-stage.js`: werk room, Untucked, prep/booth/rehearsal/set, every generic section, the sashay.
+- `chal-stage.js`: mini, brief, draft, maxi.
+- The finale's own stages in the kit file itself.
+
+Older self-contained stages follow the same pattern: `call-stage.js`, `lipsync-stage.js` and `save.js`.
+
+### The visual vocabulary (what we reach for, and where it worked)
+
+Build the screen out of **what the moment IS**: a catwalk for a runway, a desk
+for a panel, a corridor for a goodbye.
+
+- **Spotlights.** Each queen gets a lit cone (`clip-path` trapezoid plus
+  gradient). The current one is fully lit, the others dim
+  (`filter: brightness(.5)`). A free spotlight **swings** to the called queen
+  (`left` transition), or **hunts** back and forth over the ones still waiting
+  during a pause (keyframed `translateX(±var(--hunt))`, width computed from the
+  waiting faces).
+- **Heartbeat pause.** `[data-phase=hold]` pulses the vignette in a
+  double-beat keyframe. Used for the host's pause, the envelope and the cut.
+- **3D floors.** A catwalk or corridor is a striped div with
+  `perspective` on the parent and `transform: rotateX(62deg)` on the floor.
+  Walking away is `translateY` plus `scale` down toward a lit door.
+- **Meters and tug-of-war.** A width set from a CSS var (`--w`) with a springy
+  transition. A tug-of-war is a knob whose `left` is the score difference,
+  clamped. At the verdict it follows the FINAL score, or it can point at the
+  loser.
+- **Stamps.** Big bordered words (`WINNER`, `SASHAY`, `CUT`, `4th`) that
+  **slam** in: start at `scale(2.6)`, opacity 0, rotated, then animate to
+  scale 1.
+- **Banners plus a headline pill.** The big banner plays for about 2.6s and
+  fades so it never covers the faces. The same words stay in a pill in the
+  stage header until the next click. (A banner that stays up hides the line; a
+  banner that vanishes is gone before it is read.)
+- **Particles.** Confetti rectangles and star shapes (`clip-path` star) with
+  per-particle `--x --y --r --t --dl` from the seeded spread. They animate
+  **only under the class that fires them** (`.burst`, `.flash`).
+- **Cut to camera.** `[data-phase=quote]` greys the stage
+  (`grayscale(1) brightness(.4)`) and brings in a tilted portrait frame with a
+  quote card.
+- **Relationship lines.** An SVG path between two faces that **draws itself**
+  (`stroke-dashoffset` from its length to 0). Green is warm, a jittering red
+  dash is cold, and the change is printed on it.
+- **SVG objects, never CSS art.** Crown, trophy, envelope (the flap flips open
+  with `scaleY(-1)`, the card slides up), sash, podium, chair, music note,
+  chocolate bar, dunk tank. CSS is for lights, bars and particles only.
+- **Theatre business.** Curtains that part (`translateX`), a marquee of
+  alternating bulbs (`steps(2)`), photographer pits that flash for a big look,
+  plinths that go dark from the bottom up, a crown that **drops** onto the
+  winner (translate from the centre to her), a card that **flips** in
+  (`rotateY(90deg)` to none), and faces that **flood** in with a staggered
+  `--dl`.
+- **Moods.** `data-mood="gold|red|cool"` swaps the colour wash: gold for a
+  win or a rave, red for a flop, a fight or a cut.
+
+### The rules (each one was a real bug)
+
+1. **Always sticky, compact on short windows, and the compact block goes LAST
+   in the CSS.** `position: sticky; top: 6px` always, then
+   `@media (max-height: 999px) { …smaller faces… }` at the very end of the
+   string. Put the media block before the base rules and the base rules win,
+   so it silently does nothing.
+2. **Reserve the room the stage takes.** The cards get
+   `scroll-margin-top` about the stage's height (smaller inside the compact
+   block), or the reveal scrolls the newest card under the stage.
+3. **A stage may never set the page width.** Every stage root gets
+   `contain: inline-size; min-width: 0; max-width: 100%`. One `nowrap` scene
+   note once widened the whole content column and pushed the cards and the rail
+   off the screen after a single click. Clamp long text with
+   `-webkit-line-clamp`, never with `nowrap`.
+4. **The overlay trap.** A rule like `.stage > *:not(.bg){position:relative}`
+   overrides your absolutely positioned overlays (banner, confetti,
+   confessional). Name them again with higher specificity:
+   `.stage > .banner{position:absolute}`.
+5. **Particles animate only when fired.** Confetti whose animation runs at
+   load, invisibly, has already landed when the name is read.
+6. **Cut long quotes at a word, with an ellipsis.** The full text is on the
+   card. `slice(0, n)` printed "she doe".
+7. **Reduced motion.** `@media (prefers-reduced-motion: reduce)` turns off
+   every animation and shows the end states: stamps visible, banners hidden,
+   bars at their widths.
+8. **Phones.** At 400px the stage must still fit: smaller faces, hidden
+   secondary labels, the headline pill on its own row. Check the page
+   `scrollWidth` is not wider than the window.
+
+### The spoiler rules (the stage is on screen before anything is clicked)
+
+- **At rest, nothing is lit, stamped, placed or scored.** Tests read the
+  stage markup the way a viewer opens it (`tests/dr-vp-spoilers.test.js`,
+  `tests/dr-finale-stages.test.js`).
+- **Lines are alphabetical** (or in the panel's order, which was already
+  shown), never in finishing order. The same goes for the rail.
+- **A line of faces on a screen whose result is a queen has no names in its
+  text** (the mini). The face's `title` carries the name.
+- **Scores and verdicts are written in when reached** (`data-v`, filled by
+  `apply`), not sitting in hidden markup.
+- **A bracket shows `? vs ?`** until that round starts. The final's pairing
+  would print the semi-final results.
+- **The room is the room at the START of the night** (`houseAtStart` /
+  `roomAtStart`), never `living`, which already lacks tonight's elimination.
+- **Separate names in the markup** (a space between stations). The
+  whole-word spoiler guard cannot find `Q12` in `Q11Q12Q4`.
+- **Engine data only.** The stage reads the scene's `data` (tier, score,
+  bond, round) and never decides anything the chart does not say.
+
+### How to check a stage
+
+Unit tests prove the step ids, the counts and the spoilers. They cannot tell
+you it looks good. For every stage:
+
+1. Write a throwaway preview page (`zz-*-preview.html`, deleted before the
+   commit) that plays a season and renders one screen, with
+   `window.step = k => drRevealNext(...)`.
+2. In Playwright, step to the interesting moments (the first card, a big
+   moment, a confessional, the verdict) and **look at the screenshots**. Almost
+   every fix in this section was found that way: an overlapping bubble, a
+   banner over the faces, a sash spilling out of its plinth, a crown sitting on
+   its own stamp.
+3. Check three sizes: 1100×900, about 946×720 (the compact block), and
+   400×800 (a phone). Check `document.documentElement.scrollWidth` does not grow
+   as you click.
+4. Put a stage guard test beside it: one stage, card ids 0…n-1, the controls
+   total equals the card count, every written line is drawn, and nothing is
+   marked at rest.
+
+---
+
 ## 7. The AI layer
 
 Three workers, and only one needs to know about your show:

@@ -1631,6 +1631,26 @@ export function runDragWeek(state, cfg, ctx) {
             ep: cfg.num, holder: lc.winner,
             picks: pool.filter(n => n !== chosen).map(n => ({ saved: n, eliminated: chosen })),
           });
+          /* ── AND SPENDING IT COSTS HER ──────────────────────────────
+             The lipstick is public. Every queen left in the room who was
+             close to the one whose name was on it holds it against the queen
+             who wrote it — which is what turns the choice into a running
+             account rather than a per-week roll, and what makes `grudge` a
+             live input while the season is still going. Without this the only
+             grudges in the game came from before the season started, and they
+             decided 0.3% of eliminations.
+             Her own bond with them pays for it too: this is the cost of the
+             power, and a holder who keeps spending it ends up alone. */
+          for (const q of living) {
+            if (q === chosen || q === lc.winner) continue;
+            const close = Number(ctx.bond?.(q, chosen)) || 0;
+            if (close < 4) continue;
+            if (!state.power.grudges.some(g => g.by === q && g.against === lc.winner)) {
+              state.power.grudges.push({ by: q, against: lc.winner, ep: cfg.num, over: chosen });
+            }
+            werkEvents.push({ type: 'legacy:fallout', players: [q, lc.winner],
+              bond: [[q, lc.winner, -2]], pop: {}, state: {}, data: {} });
+          }
           /* THE MARKER FIRST, THEN ITS SCENES. `sceneSections` files a scene
              by its position in the array, so a scene pushed before its own
              marker lands in the previous section -- which left "Elimination

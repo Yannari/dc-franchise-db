@@ -54,11 +54,18 @@ function threatOf(q, { state }) {
   return clamp(resume * 0.5 + clamp(won * 2.2, 0, 1) * 0.5, 0, 1.2);
 }
 
-/** Does she have a reason to want this one gone, from before tonight? */
+/* ── DOES SHE HAVE A REASON, FROM BEFORE TONIGHT? ─────────────────────
+   Either direction counts. "She sent me home last season" is a reason to end
+   her; "I sent her home last season" is a reason to finish the job before she
+   returns the favour — the same edge, read from either side.
+   Sized to COMPETE with the threat read (both peak at 1.6 in the score), not
+   to sit under it: at 0.8 a grudge could never be the loudest thing in the
+   decision, which is why forty seasons of measurement reported an old grudge
+   deciding 0.0% of eliminations even after the ledger started carrying them. */
 function grudgeOf(winner, q, ledger) {
   const owed = (ledger?.grudges || [])
     .filter(g => (g.by === q && g.against === winner) || (g.by === winner && g.against === q)).length;
-  return clamp(owed * 0.5, 0, 1.5);
+  return clamp(owed, 0, 2);
 }
 
 /**
@@ -102,7 +109,7 @@ export function chooseElimination({
     const spared = timesSpared(ledger, q);
     const score =
       // strategy: end the queen who can actually beat her
-      mind.strategy * (threat * 1.6 + grudgeOf(winner, q, ledger) * 0.8)
+      mind.strategy * (threat * 1.6 + grudgeOf(winner, q, ledger) * 1.6)
       // merit: the panel ranked her last, and that is the answer
       + mind.merit * panelLast * 1.4
       // fair: it is somebody's turn, and it is not her friend's
@@ -126,7 +133,7 @@ export function chooseElimination({
   const parts = [
     ['threat', mind.strategy * top.threat * 1.6],
     ['panel', mind.merit * top.panelLast * 1.4],
-    ['grudge', mind.strategy * grudgeOf(winner, top.q, ledger) * 0.8],
+    ['grudge', mind.strategy * grudgeOf(winner, top.q, ledger) * 1.6],
   ].sort((a, b) => b[1] - a[1]);
   const why = parts[0][1] > 0 ? parts[0][0] : 'panel';
   const REASON = {

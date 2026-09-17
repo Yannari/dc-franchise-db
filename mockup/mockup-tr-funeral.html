@@ -150,7 +150,7 @@ button{font:inherit}
 .fu-summary small{display:block;font:10.5px/1.4 'Spline Sans Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--fu-violet);margin-bottom:4px}
 
 /* ── SIDEBAR: the procession ─────────────────────────────────────── */
-.fu-side{position:sticky;top:calc(var(--fu-nav) + 14px)}
+.fu-side{position:relative}
 .fu-panel{background:rgba(10,9,11,.96);border:1px solid #2e2b34;padding:14px}
 .fu-panel h3{font:400 28px/1 'Italiana',serif;color:var(--fu-lily);margin:0 0 10px;text-align:center;letter-spacing:.06em}
 .fu-road{display:block;width:100%}
@@ -198,6 +198,125 @@ button{font:inherit}
 .fu-btn.ghost{background:transparent;color:var(--fu-lily);border:1px solid #3a3641}
 .fu-btn:focus-visible{outline:2px solid var(--fu-lily);outline-offset:2px}
 .fu-counter{font:12.5px/1 'Spline Sans Mono',monospace;color:#5f5b66;letter-spacing:.08em}
+
+/* ══ THE STAGE — one scene, driven by the reveal ═══════════════════════
+   Each step carries a state. A result lands in two beats: the ASK (spot
+   sweeps, heartbeat, a card turning over) and, a second later, the ANSWER
+   (a flash, a face flying, a stamp). Reveal all lands straight on answers. */
+@property --fu-spin{syntax:'<angle>';inherits:false;initial-value:0deg}
+.fx{position:sticky;top:calc(var(--fu-nav) + 8px);z-index:20;margin:22px 0 0;height:380px;border-radius:18px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 90% at 50% 120%,#231a2c 0,#110e15 55%,#060507 100%);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.95),inset 0 0 0 1px rgba(226,196,126,.18)}
+.fx svg.fx-scene{position:absolute;inset:0;width:100%;height:100%}
+.fx-layer{position:absolute;inset:0;pointer-events:none}
+.fx-vig{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.9);opacity:.7;transition:opacity .6s}
+.fx-grain{opacity:.07;background-image:repeating-radial-gradient(circle at 23% 31%,#fff 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+.fx-flash{opacity:0;background:radial-gradient(circle at var(--fx-fx,50%) var(--fx-fy,45%),#fff,rgba(244,241,232,.7) 22%,transparent 64%)}
+.fx-flash.violet{background:radial-gradient(circle at var(--fx-fx,50%) var(--fx-fy,45%),#f1e4ff,rgba(179,148,208,.8) 24%,transparent 66%)}
+.fx-flash.go{animation:fx-flash 1.2s ease-out}
+@keyframes fx-flash{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+.fx-rays{opacity:0;background:repeating-conic-gradient(from var(--fu-spin) at 50% 26%,rgba(239,203,95,.36) 0 6deg,transparent 6deg 18deg);
+  -webkit-mask:radial-gradient(circle at 50% 26%,#000 0,#000 12%,transparent 55%);mask:radial-gradient(circle at 50% 26%,#000 0,#000 12%,transparent 55%);transition:opacity .6s}
+.fx[data-phase=first] .fx-rays{opacity:1;animation:fx-spin 9s linear infinite}
+@keyframes fx-spin{to{--fu-spin:360deg}}
+.fx[data-phase=hold] .fx-vig,.fx[data-phase=ask] .fx-vig{opacity:1;animation:fx-heart 1s ease-in-out infinite}
+@keyframes fx-heart{0%,100%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.9)}14%{box-shadow:inset 0 0 190px 90px rgba(40,10,50,.96)}28%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.9)}42%{box-shadow:inset 0 0 170px 70px rgba(40,10,50,.92)}}
+.fx-cap{position:absolute;left:18px;top:14px;z-index:6;font:11px/1 'Spline Sans Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:var(--fu-brass-hi)}
+.fx-cap b{display:block;margin-top:6px;font:400 30px/1 'Italiana',serif;letter-spacing:.06em;color:var(--fu-lily);text-transform:none}
+
+.fx-proc,.fx-grave{transition:opacity .9s ease}
+.fx[data-scene=grave] .fx-proc{opacity:0}
+.fx[data-scene=proc] .fx-grave{opacity:0}
+.fx-par1{animation:fx-par 26s linear infinite}
+.fx-par2{animation:fx-par 14s linear infinite}
+@keyframes fx-par{from{transform:translateX(0)}to{transform:translateX(-540px)}}
+.fx-horse{animation:fx-trot .9s ease-in-out infinite}
+.fx-horse.b{animation-delay:-.45s}
+@keyframes fx-trot{50%{transform:translateY(-4px)}}
+.fx-wheel{transform-box:fill-box;transform-origin:50% 50%;animation:fx-roll 2.4s linear infinite}
+@keyframes fx-roll{to{transform:rotate(-360deg)}}
+.fx-plume{transform-box:fill-box;transform-origin:50% 100%;animation:fx-plume 1.8s ease-in-out infinite}
+@keyframes fx-plume{50%{transform:rotate(8deg)}}
+.fx-walk{animation:fx-walk 1.2s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes fx-walk{50%{transform:translateY(-5px)}}
+
+.fx-oval{transition:transform 1.1s cubic-bezier(.3,1.2,.4,1),opacity .6s,filter .6s}
+.fx-oval .rim{fill:none;stroke:var(--fu-brass);stroke-width:2.5}
+.fx-oval .q{font:700 16px 'Spline Sans Mono',monospace;fill:var(--fu-lily)}
+.fx[data-phase=ask] .fx-oval:not(.gone):not(.crack) .sway{animation:fx-sway 1.6s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes fx-sway{50%{transform:rotate(4deg)}}
+.fx-oval .sway{transform-box:view-box;transform-origin:0 -58px}
+.fx-oval.gone .q{opacity:0}
+.fx-oval.gone .rim{stroke:var(--fu-lily);filter:drop-shadow(0 0 6px #fff)}
+.fx-oval.gone image{filter:none !important}
+.fx-oval.crack .rim{stroke:var(--fu-blood)}
+.fx-oval.crack .sway{animation:fx-shake .12s linear 5}
+@keyframes fx-shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.fx-crackline{opacity:0;transition:opacity .3s .2s}
+.fx-oval.crack .fx-crackline{opacity:1}
+.fx-sweep{opacity:0}
+.fx[data-phase=ask] .fx-sweep{opacity:1;animation:fx-sweep 1.4s ease-in-out infinite alternate}
+@keyframes fx-sweep{from{transform:translateX(0)}to{transform:translateX(440px)}}
+.fx-card{opacity:0;transition:opacity .4s}
+.fx-card .flip{transform-box:fill-box;transform-origin:50% 50%}
+.fx[data-phase=ask] .fx-card,.fx[data-phase=safe] .fx-card,.fx[data-phase=miss] .fx-card{opacity:1}
+.fx[data-phase=ask] .fx-card .flip{animation:fx-flip .8s cubic-bezier(.3,1.4,.5,1)}
+@keyframes fx-flip{0%{transform:scaleX(0)}100%{transform:none}}
+.fx-window{fill:#26242b;transition:fill .6s}
+.fx-window.lit{fill:#3a3444;filter:drop-shadow(0 0 8px rgba(244,241,232,.7))}
+.fx-eye{opacity:0;transition:opacity .4s}
+.fx[data-phase=glance] .fx-eye{opacity:1}
+.fx[data-phase=glance] .fx-eye .lidd{animation:fx-blink 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes fx-blink{45%,55%{transform:scaleY(.1)}}
+.fx-walker{transition:filter .5s}
+.fx[data-phase=glance] .fx-walker:not(.watched){filter:brightness(.3)}
+.fx-walker.watched{filter:drop-shadow(0 0 12px rgba(179,148,208,1))}
+
+.fx-cone{opacity:0;transition:opacity .8s}
+.fx[data-scene=grave] .fx-cone{opacity:.9}
+.fx[data-phase=hold] .fx-cone{animation:fx-flick .3s steps(2) infinite}
+@keyframes fx-flick{50%{opacity:.5}}
+.fx-lid{transition:transform 1s cubic-bezier(.3,1.3,.5,1),opacity 1s}
+.fx-coffin.open .fx-lid{transform:translate(-60px,-90px) rotate(-38deg);opacity:0}
+.fx-inner{opacity:0;transition:opacity .6s .3s,transform .9s cubic-bezier(.2,1.4,.4,1) .3s}
+.fx-coffin.open .fx-inner{opacity:1;transform:translateY(-10px)}
+.fx-coffin.dead .fx-body{fill:#2c1f36;stroke:var(--fu-violet-hi)}
+.fx-coffin.alive .fx-body{fill:#2a2a24;stroke:var(--fu-lily)}
+.fx-ribbon{opacity:0;transition:opacity .6s .6s}
+.fx-coffin.dead .fx-ribbon{opacity:1}
+.fx-coffin .shk{transform-box:fill-box;transform-origin:50% 100%}
+.fx-coffin[data-shake="1"] .shk{animation:fx-rattle .12s linear infinite}
+@keyframes fx-rattle{50%{transform:translateY(-1px) rotate(.8deg)}}
+.fx-count{opacity:0;transition:opacity .3s}
+.fx-count.on{opacity:1}
+.fx-count .bb{transform-box:fill-box;transform-origin:50% 50%}
+.fx-count.bump .bb{animation:fx-bump .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes fx-bump{0%{transform:scale(1.9)}100%{transform:scale(1)}}
+.fx-lily{transition:transform 1.1s cubic-bezier(.35,.1,.3,1),opacity .4s;opacity:0}
+.fx-lily.fly{opacity:1}
+.fx-lily.first path{fill:#ffe9a3;filter:drop-shadow(0 0 6px rgba(239,203,95,1))}
+.fx-dust i,.fx-petal i{position:absolute;display:block;opacity:0}
+.fx-dust i{width:var(--w);height:var(--w);border-radius:50%;background:rgba(214,200,180,.85)}
+.fx-dust.go i{animation:fx-burst var(--t) cubic-bezier(.1,.7,.3,1) var(--dl) forwards}
+@keyframes fx-burst{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--x),var(--y))}}
+.fx-petal i{top:-20px;width:var(--w);height:calc(var(--w) * .6);border-radius:60% 40% 60% 40%;background:#f4f1e8}
+.fx-petal.go i{animation:fx-fall var(--t) linear var(--dl) forwards}
+@keyframes fx-fall{0%{opacity:0;transform:translate(0,0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate(var(--x),420px) rotate(540deg)}}
+.fx-shield{opacity:0;transition:opacity .5s}
+.fx-shield .rise{transform-box:fill-box;transform-origin:50% 50%;transform:translateY(60px) scale(.5);transition:transform 1s cubic-bezier(.2,1.5,.4,1)}
+.fx.has-shield .fx-shield{opacity:1}
+.fx.has-shield .fx-shield .rise{transform:none}
+.fx-stamp{position:absolute;z-index:7;left:50%;top:84%;padding:8px 18px;border:4px solid currentColor;border-radius:8px;white-space:nowrap;
+  font:400 28px/1 'Italiana',serif;letter-spacing:.12em;background:rgba(10,6,14,.86);opacity:0;transform:translate(-50%,-50%) rotate(-4deg) scale(3);pointer-events:none}
+.fx-stamp.go{animation:fx-slam .45s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes fx-slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-4deg) scale(3)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-4deg) scale(1)}}
+.fx-stamp.safe{color:var(--fu-lily)}.fx-stamp.wrong{color:#ff5f75}.fx-stamp.dead{color:var(--fu-violet-hi)}.fx-stamp.gold{color:var(--fu-shield)}
+.fx-pot{position:absolute;right:18px;top:14px;z-index:6;text-align:right;font:11px/1 'Spline Sans Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a8690}
+.fx-pot b{display:block;margin-top:6px;font:600 26px/1 'Spline Sans Mono',monospace;letter-spacing:0;color:var(--fu-brass-hi)}
+.fx-pot b.tick{animation:fx-tick .8s ease-out}
+@keyframes fx-tick{0%{transform:scale(1.5);color:#fff}100%{transform:scale(1)}}
+@media(max-width:700px){.fx{height:250px}.fx-cap b{font-size:22px}.fx-stamp{font-size:22px}}
+@media (prefers-reduced-motion: reduce){.fx *,.fx{animation:none !important;transition:none !important}}
 @media (prefers-reduced-motion: reduce){
   .fu-petals{animation:none}
   .fu-card{transition:none}
@@ -253,6 +372,82 @@ button{font:inherit}
       </span></div>
     </div>
   </header>
+
+  <section class="fx" id="fx" data-scene="proc" data-phase="idle" aria-label="The funeral, staged">
+    <svg class="fx-scene" viewBox="0 0 1080 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <clipPath id="fx-c20"><circle r="20"/></clipPath>
+        <clipPath id="fx-c26"><ellipse rx="24" ry="30"/></clipPath>
+        <clipPath id="fx-c16"><circle r="16"/></clipPath>
+        <linearGradient id="fx-road" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1c1a20"/><stop offset="1" stop-color="#0b0a0d"/></linearGradient>
+        <linearGradient id="fx-conel" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(244,241,232,.34)"/><stop offset="1" stop-color="rgba(244,241,232,0)"/></linearGradient>
+        <linearGradient id="fx-glass" x1="0" x2="1"><stop offset="0" stop-color="rgba(244,241,232,.12)"/><stop offset=".5" stop-color="rgba(244,241,232,.02)"/><stop offset="1" stop-color="rgba(244,241,232,.14)"/></linearGradient>
+      </defs>
+
+      <g class="fx-proc">
+        <circle cx="960" cy="60" r="46" fill="rgba(230,223,204,.10)"/><circle cx="960" cy="60" r="20" fill="rgba(230,223,204,.35)"/>
+        <g class="fx-par1" fill="#16141b"><g id="fx-yews1"></g></g>
+        <g class="fx-par2" fill="#0f0d12"><g id="fx-yews2"></g></g>
+        <rect x="0" y="292" width="1080" height="88" fill="url(#fx-road)"/>
+        <g class="fx-par2" stroke="#2a2730" stroke-width="2"><path id="fx-kerb" d=""/></g>
+        <g transform="translate(700,0)">
+          <g class="fx-horse"><path d="M232 238c10-18 30-22 44-14l12-14 6 6-6 14c4 10 2 22-6 28l2 34h-8l-4-26h-26l-4 26h-8l2-34c-6-4-10-12-4-20z" fill="#0a090c" stroke="#3a3641"/>
+            <path class="fx-plume" d="M288 204c-4-14 2-24 10-26-2 10 0 18-4 26z" fill="#6e4f86"/></g>
+          <g class="fx-horse b"><path d="M252 244c10-18 30-22 44-14l12-14 6 6-6 14c4 10 2 22-6 28l2 34h-8l-4-26h-26l-4 26h-8l2-34c-6-4-10-12-4-20z" fill="#0a090c" opacity=".7"/></g>
+          <path d="M60 198h150l12 18v62H48v-62z" fill="#0d0c10" stroke="#b08d4a" stroke-width="1.5"/>
+          <rect x="62" y="206" width="146" height="58" fill="url(#fx-glass)" stroke="#b08d4a"/>
+          <path d="M84 250h100l8-8H92z" fill="#1b1a1f" stroke="#b08d4a"/>
+          <g fill="#f4f1e8" opacity=".85"><circle cx="110" cy="240" r="4"/><circle cx="120" cy="238" r="4"/><circle cx="130" cy="240" r="4"/><circle cx="150" cy="239" r="4"/><circle cx="160" cy="238" r="4"/></g>
+          <path d="M70 190h130l-8-12H78z" fill="#6e4f86"/>
+          <path class="fx-plume" d="M78 178c-4-14 0-24 6-26 0 10 2 18-2 26z" fill="#0a090c"/>
+          <path class="fx-plume" d="M192 178c-4-14 0-24 6-26 0 10 2 18-2 26z" fill="#0a090c"/>
+          <g class="fx-wheel"><circle cx="80" cy="288" r="20" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M80 268v40M60 288h40M66 274l28 28M94 274l-28 28" stroke="#b08d4a" stroke-width="1.5"/></g>
+          <g class="fx-wheel"><circle cx="186" cy="288" r="20" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M186 268v40M166 288h40M172 274l28 28M200 274l-28 28" stroke="#b08d4a" stroke-width="1.5"/></g>
+        </g>
+        <g transform="translate(520,0)">
+          <path d="M20 214h140v64H20z" fill="#0d0c10" stroke="#b08d4a" stroke-width="1.5"/>
+          <rect class="fx-window" id="fx-win0" x="34" y="224" width="50" height="42" rx="4"/>
+          <rect class="fx-window" id="fx-win1" x="96" y="224" width="50" height="42" rx="4"/>
+          <path d="M26 214h128l-10-14H36z" fill="#1b1a1f" stroke="#b08d4a"/>
+          <g class="fx-wheel"><circle cx="46" cy="290" r="16" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M46 274v32M30 290h32" stroke="#b08d4a"/></g>
+          <g class="fx-wheel"><circle cx="134" cy="290" r="16" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M134 274v32M118 290h32" stroke="#b08d4a"/></g>
+        </g>
+        <g id="fx-walkers"></g>
+        <g id="fx-ovals"></g>
+        <g class="fx-sweep"><ellipse cx="160" cy="92" rx="60" ry="70" fill="rgba(244,241,232,.13)"/></g>
+        <g class="fx-card" transform="translate(816,112)">
+          <g class="flip">
+            <rect x="-120" y="-66" width="240" height="132" fill="#f4f1e8" stroke="#111014" stroke-width="6"/>
+            <rect x="-120" y="-66" width="240" height="24" fill="#111014"/>
+            <text x="0" y="-49" text-anchor="middle" font-family="Spline Sans Mono" font-size="11" fill="#e2c47e" letter-spacing="3" id="fx-card-h">THE FIRST CLUE</text>
+            <foreignObject x="-106" y="-36" width="212" height="96"><div xmlns="http://www.w3.org/1999/xhtml" id="fx-card-t" style="font:italic 16px/1.35 'Old Standard TT',serif;color:#231f28"></div></foreignObject>
+          </g>
+        </g>
+        <g class="fx-eye" transform="translate(330,196)"><g class="lidd"><path d="M-26 0c10-14 42-14 52 0-10 14-42 14-52 0z" fill="#111014" stroke="#b394d0" stroke-width="3"/><circle r="7" fill="#b394d0"/></g></g>
+      </g>
+
+      <g class="fx-grave">
+        <path d="M0 300 Q540 256 1080 300 V380 H0Z" fill="#0d0c10"/>
+        <g id="fx-cones"></g>
+        <g id="fx-coffins"></g>
+        <g id="fx-mourners"></g>
+        <g id="fx-lilies"></g>
+        <g class="fx-shield" transform="translate(540,86)"><g class="rise">
+          <path d="M0 -58l44 14v32c0 30-18 50-44 62-26-12-44-32-44-62v-32z" fill="#efcb5f" stroke="#7b6224" stroke-width="3"/>
+          <image href="../assets/avatars/trent.png" x="-24" y="-38" width="48" height="60" clip-path="url(#fx-c26)"/>
+        </g></g>
+      </g>
+    </svg>
+    <div class="fx-layer fx-rays"></div>
+    <div class="fx-layer fx-dust" id="fx-dust"></div>
+    <div class="fx-layer fx-petal" id="fx-petal"></div>
+    <div class="fx-layer fx-flash" id="fx-flash"></div>
+    <div class="fx-layer fx-vig"></div>
+    <div class="fx-layer fx-grain"></div>
+    <div class="fx-cap"><span id="fx-cap-k">Part one</span><b id="fx-cap-t">The Procession</b></div>
+    <div class="fx-pot">In the pot<b id="fx-pot">£33,700</b></div>
+    <div class="fx-stamp" id="fx-stamp"></div>
+  </section>
 
   <div class="fu-grid">
     <main>
@@ -470,6 +665,178 @@ button{font:inherit}
   });
   el('fu-coffins').innerHTML = c;
 
+
+  // ══ THE STAGE ═════════════════════════════════════════════════════════
+  var FX = el('fx');
+  var OVAL = ['noah','eva','katie','sadie','tyler'].map(function(n, i){ return { n: n, x: 110 + i * 100, y: 96 }; });
+  var WINS = { tyler: [579, 245], sadie: [641, 245] };
+  var COF = [['eva','alive'],['noah','dead'],['katie','alive'],['sadie','alive']];
+  var CX = [330, 470, 610, 750];
+  var MOURN = ['trent','gwen','geoff','izzy','lindsay','duncan'];
+  var MX = function(i){ return 300 + i * 96; };
+  var VOTE = { trent: 1, gwen: 1, geoff: 1, izzy: 1, lindsay: 0, duncan: 2 };
+  var y1 = '', y2 = '', kerb = '';
+  for (var k = 0; k < 20; k++) {
+    var x1 = k * 108; y1 += '<path d="M' + x1 + ' 300V150c-26-8-18-80 16-92 34 12 42 84 16 92V300z"/>';
+    var x2 = k * 60 + 20; y2 += '<path d="M' + x2 + ' 300V210c-16-6-10-50 10-58 20 8 26 52 10 58V300z"/>';
+    kerb += 'M' + (k * 54) + ' 300h30';
+  }
+  el('fx-yews1').innerHTML = y1; el('fx-yews2').innerHTML = y2; el('fx-kerb').setAttribute('d', kerb);
+  var wk = '';
+  WALK.forEach(function(n, i){
+    wk += '<g class="fx-walker" data-n="' + n + '" transform="translate(' + (80 + i * 66) + ',' + (268 + (i % 2) * 18) + ')">'
+      + '<g class="fx-walk" style="--dl:' + (i * -0.2) + 's"><path d="M-18 40c0-26 8-34 18-34s18 8 18 34z" fill="#0a090c"/>'
+      + '<circle r="21" fill="#1b1a1f" stroke="#3a3641" stroke-width="2"/><image href="' + av(n) + '" x="-20" y="-20" width="40" height="40" clip-path="url(#fx-c20)"/></g></g>';
+  });
+  el('fx-walkers').innerHTML = wk;
+  var ov = '';
+  OVAL.forEach(function(p, i){
+    ov += '<g class="fx-oval" id="fx-o-' + p.n + '" style="--dl:' + (i * -0.3) + 's" transform="translate(' + p.x + ',' + p.y + ')"><g class="sway">'
+      + '<path d="M0 -60v24" stroke="#b08d4a"/><ellipse rx="30" ry="36" fill="#111014"/>'
+      + '<image href="' + av(p.n) + '" x="-24" y="-30" width="48" height="60" clip-path="url(#fx-c26)" style="filter:grayscale(1) brightness(.7)"/>'
+      + '<ellipse class="rim" rx="30" ry="36"/><text class="q" x="16" y="32">?</text>'
+      + '<path class="fx-crackline" d="M-12 -30l8 16-10 10 14 12-6 24" stroke="#ff5f75" stroke-width="2.5" fill="none"/></g></g>';
+  });
+  el('fx-ovals').innerHTML = ov;
+  var cones = '', cofs = '', mourn = '', lil = '';
+  CX.forEach(function(x, i){
+    cones += '<path class="fx-cone" d="M' + (x - 14) + ' 0h28l60 300h-148z" fill="url(#fx-conel)"/>';
+    cofs += '<g class="fx-coffin" id="fx-cf-' + i + '" transform="translate(' + x + ',206)"><g class="shk">'
+      + '<path class="fx-body" d="M-26 -64h52l18 30-10 104h-68l-10-104z" fill="#1b1a1f" stroke="#b08d4a" stroke-width="2"/>'
+      + '<g class="fx-inner"><image href="' + av(COF[i][0]) + '" x="-24" y="-30" width="48" height="60" clip-path="url(#fx-c26)"/>'
+      + '<path class="fx-ribbon" d="M-28 -26l20 20M-22 -30l20 20" stroke="#111014" stroke-width="6"/></g>'
+      + '<g class="fx-lid"><path d="M-26 -64h52l18 30-10 104h-68l-10-104z" fill="#111014" stroke="#b08d4a" stroke-width="2"/>'
+      + '<path d="M0 -44v70M-18 -20h36" stroke="#b08d4a" stroke-width="3"/></g></g>'
+      + '<g class="fx-count" id="fx-n-' + i + '" transform="translate(0,-92)"><g class="bb"><circle r="16" fill="#f4f1e8"/>'
+      + '<text y="6" text-anchor="middle" font-family="Spline Sans Mono" font-size="16" font-weight="600" fill="#111014">0</text></g></g>'
+      + '</g>';
+  });
+  MOURN.forEach(function(n, i){
+    mourn += '<g transform="translate(' + MX(i) + ',352)"><circle r="17" fill="#1b1a1f" stroke="#3a3641" stroke-width="2"/>'
+      + '<image href="' + av(n) + '" x="-16" y="-16" width="32" height="32" clip-path="url(#fx-c16)"/></g>';
+    lil += '<g class="fx-lily" id="fx-l-' + n + '" transform="translate(' + MX(i) + ',330)"><path d="M0 0c-8-3-12-9-10-16 5 2 9 7 10 16z M0 0c8-3 12-9 10-16-5 2-9 7-10 16z M0 0c-3-7-3-13 0-18 3 5 3 11 0 18z" fill="#f4f1e8" stroke="#b7b3bd" stroke-width=".8"/></g>';
+  });
+  el('fx-cones').innerHTML = cones; el('fx-coffins').innerHTML = cofs; el('fx-mourners').innerHTML = mourn; el('fx-lilies').innerHTML = lil;
+
+  function spread(n, seed){ var s = seed, out = []; for (var i = 0; i < n; i++){ s = (s * 16807) % 2147483647; var a = s / 2147483647; s = (s * 16807) % 2147483647; out.push([a, s / 2147483647]); } return out; }
+  function restart(host){ host.classList.remove('go'); void host.offsetWidth; host.classList.add('go'); }
+  function burst(n, cx, cy, px){
+    var host = el('fx-dust');
+    host.innerHTML = spread(n, 11 + Math.round(cx)).map(function(r){
+      return '<i style="left:' + cx + '%;top:' + cy + '%;--w:' + (3 + r[0] * 6) + 'px;--x:' + ((r[0] - .5) * px) + 'px;--y:' + ((r[1] - .8) * px) + 'px;--t:' + (.8 + r[1]) + 's;--dl:' + (r[0] * .2) + 's"></i>';
+    }).join('');
+    restart(host);
+  }
+  function petals(){
+    var host = el('fx-petal');
+    host.innerHTML = spread(28, 5).map(function(r){
+      return '<i style="left:' + (r[0] * 100) + '%;--w:' + (6 + r[1] * 8) + 'px;--x:' + ((r[1] - .5) * 160) + 'px;--t:' + (3 + r[0] * 3) + 's;--dl:' + (r[1] * 2) + 's"></i>';
+    }).join('');
+    restart(host);
+  }
+  function flash(violet, fx, fy){
+    var f = el('fx-flash'); f.classList.toggle('violet', !!violet);
+    f.style.setProperty('--fx-fx', fx); f.style.setProperty('--fx-fy', fy);
+    restart(f);
+  }
+  function stamp(text, cls){ var s = el('fx-stamp'); s.textContent = text; s.className = 'fx-stamp ' + cls; void s.offsetWidth; s.classList.add('go'); }
+  function setPot(v, tick){ var b = el('fx-pot'); b.textContent = '£' + v.toLocaleString('en-GB'); if (tick) restart2(b); }
+  function restart2(b){ b.classList.remove('tick'); void b.offsetWidth; b.classList.add('tick'); }
+  function cap(k, t){ el('fx-cap-k').textContent = k; el('fx-cap-t').textContent = t; }
+  function home(n){ var p = OVAL.filter(function(q){ return q.n === n; })[0]; var g = el('fx-o-' + n); g.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ')'); g.setAttribute('class', 'fx-oval'); }
+  function toCarriage(n, i){ var g = el('fx-o-' + n), t = WINS[n]; g.setAttribute('transform', 'translate(' + t[0] + ',' + t[1] + ') scale(.5)'); g.setAttribute('class', 'fx-oval gone'); el('fx-win' + i).setAttribute('class', 'fx-window lit'); }
+  function flyLily(n, target, first){
+    var i = MOURN.indexOf(n), g = el('fx-l-' + n);
+    g.setAttribute('class', 'fx-lily fly' + (first ? ' first' : ''));
+    g.setAttribute('transform', 'translate(' + (CX[target] + (i % 3 - 1) * 14) + ',' + (150 + (i % 2) * 12) + ') rotate(' + (i % 2 ? 24 : -24) + ')');
+  }
+  function lilyHome(n){ var i = MOURN.indexOf(n), g = el('fx-l-' + n); g.setAttribute('class', 'fx-lily'); g.setAttribute('transform', 'translate(' + MX(i) + ',330)'); }
+  function count(i, v, bump){
+    var c = el('fx-n-' + i); c.setAttribute('class', 'fx-count' + (v ? ' on' : ''));
+    c.querySelector('text').textContent = v;
+    if (bump) { void c.getBoundingClientRect(); c.setAttribute('class', 'fx-count on bump'); }
+  }
+  function openCof(i, cls){ el('fx-cf-' + i).setAttribute('class', 'fx-coffin open ' + cls); }
+  function shake(i, on){ el('fx-cf-' + i).setAttribute('data-shake', on ? '1' : '0'); }
+  function clue(n){
+    el('fx-card-h').textContent = n === 2 ? 'THE SECOND CLUE' : 'THE FIRST CLUE';
+    el('fx-card-t').textContent = n === 2 ? 'The one who is safe has never once been named at the Round Table.'
+      : 'The one who is safe fell off the climbing wall on the first day and laughed about it.';
+  }
+
+  // THE END STATE after n steps, drawn without suspense.
+  function settle(n){
+    FX.classList.toggle('has-shield', n >= 4);
+    FX.dataset.scene = n >= 4 ? 'grave' : 'proc';
+    FX.dataset.phase = n === 1 ? 'safe' : n === 2 ? 'miss' : n === 3 ? 'glance' : 'rest';
+    ['noah','eva','katie','sadie','tyler'].forEach(home);
+    el('fx-win0').setAttribute('class', 'fx-window'); el('fx-win1').setAttribute('class', 'fx-window');
+    if (n >= 1) toCarriage('tyler', 0);
+    if (n >= 2) el('fx-o-sadie').setAttribute('class', 'fx-oval crack');
+    clue(n >= 2 ? 2 : 1);
+    document.querySelectorAll('.fx-walker').forEach(function(g){ g.classList.toggle('watched', n === 3 && /duncan|izzy/.test(g.getAttribute('data-n'))); });
+    MOURN.forEach(lilyHome);
+    [0,1,2,3].forEach(function(i){ el('fx-cf-' + i).setAttribute('class', 'fx-coffin'); shake(i, false); count(i, 0); });
+    if (n >= 4) { flyLily('trent', 1, true); count(1, 1); }
+    if (n >= 5) { MOURN.forEach(function(m){ flyLily(m, VOTE[m], m === 'trent'); }); count(0, 1); count(1, 4); count(2, 1); }
+    if (n >= 6) { openCof(0, 'alive'); openCof(2, 'alive'); openCof(3, 'alive'); }
+    if (n >= 7) { lilyHome('lindsay'); count(0, 0); }
+    if (n >= 8) openCof(1, 'dead');
+    setPot(n >= 8 ? 42100 : 33700, false);
+    if (n >= 6) cap('Part three', 'The Opening'); else if (n >= 4) cap('Part two', 'The Lilies'); else cap('Part one', 'The Procession');
+    el('fx-stamp').className = 'fx-stamp';
+  }
+  var timers = [];
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function stopAll(){ timers.forEach(clearTimeout); timers = []; }
+  // PLAY step s: the suspense, then the answer.
+  function play(s){
+    stopAll();
+    settle(s - 1);
+    if (s === 1 || s === 2) {
+      clue(s); FX.dataset.phase = 'ask';
+      later(function(){
+        if (s === 1) { FX.dataset.phase = 'safe'; toCarriage('tyler', 0); flash(false, '54%', '64%'); stamp('SAFE · TYLER', 'safe'); }
+        else { FX.dataset.phase = 'miss'; el('fx-o-sadie').setAttribute('class', 'fx-oval crack'); flash(true, '33%', '25%'); stamp('WRONG NAME', 'wrong'); }
+      }, 1700);
+    } else if (s === 3) {
+      FX.dataset.phase = 'glance';
+      document.querySelectorAll('.fx-walker').forEach(function(g){ g.classList.toggle('watched', /duncan|izzy/.test(g.getAttribute('data-n'))); });
+    } else if (s === 4) {
+      FX.dataset.scene = 'grave'; FX.dataset.phase = 'hold'; cap('Part two', 'The Lilies');
+      later(function(){
+        flyLily('trent', 1, true);
+        later(function(){ FX.dataset.phase = 'first'; count(1, 1, true); FX.classList.add('has-shield'); flash(false, '50%', '24%'); stamp('THE FIRST LILY', 'gold'); }, 1100);
+      }, 1300);
+    } else if (s === 5) {
+      FX.dataset.phase = 'lay';
+      var c = { 0: 0, 1: 1, 2: 0 };
+      ['gwen','lindsay','geoff','duncan','izzy'].forEach(function(m, k){
+        later(function(){ flyLily(m, VOTE[m], false); later(function(){ c[VOTE[m]]++; count(VOTE[m], c[VOTE[m]], true); }, 1050); }, k * 520);
+      });
+      later(function(){ stamp('FOUR OF SIX', 'safe'); }, 4000);
+    } else if (s === 6) {
+      FX.dataset.phase = 'hold'; cap('Part three', 'The Opening');
+      [0,2,3].forEach(function(i){ shake(i, true); });
+      later(function(){
+        FX.dataset.phase = 'open';
+        [0,2,3].forEach(function(i, k){ later(function(){ shake(i, false); openCof(i, 'alive'); burst(18, CX[i] / 10.8, 50, 170); }, k * 420); });
+        later(function(){ stamp('ALIVE', 'safe'); }, 1500);
+      }, 1600);
+    } else if (s === 7) {
+      FX.dataset.phase = 'return';
+      lilyHome('lindsay'); later(function(){ count(0, 0, false); }, 700);
+    } else if (s === 8) {
+      FX.dataset.phase = 'hold'; shake(1, true);
+      later(function(){
+        shake(1, false); FX.dataset.phase = 'dead'; openCof(1, 'dead');
+        flash(true, '43%', '52%'); burst(24, 43.5, 50, 220); stamp('MURDERED · NOAH', 'dead');
+        later(function(){ setPot(42100, true); }, 1400);
+      }, 2000);
+    } else if (s === 9) {
+      FX.dataset.phase = 'mourn'; petals();
+    }
+  }
   function paint(){
     var n = idx + 1;
     for (var i = 0; i < TOTAL; i++) { var s = el('fu-step-' + i); if (s) s.classList.toggle('on', i <= idx); }
@@ -515,11 +882,11 @@ button{font:inherit}
   }
   el('fu-next').addEventListener('click', function(){
     if (idx >= TOTAL - 1) return;
-    idx++; paint();
-    var s = el('fu-step-' + idx); if (s) s.scrollIntoView({behavior:'smooth', block:'center'});
+    idx++; paint(); play(idx + 1);
+    var s = el('fu-step-' + idx); if (s) s.scrollIntoView({behavior:'smooth', block:'end'});
   });
-  el('fu-all').addEventListener('click', function(){ idx = TOTAL - 1; paint(); });
-  paint();
+  el('fu-all').addEventListener('click', function(){ stopAll(); idx = TOTAL - 1; paint(); settle(TOTAL); });
+  paint(); settle(0);
 })();
 </script>
 </body>

@@ -1,7 +1,11 @@
 # All Stars — a Drag Race mode
 
-**Date:** 2026-09-08
-**Status:** design approved, no implementation plan yet
+**Date:** 2026-09-08 · **revised** 2026-09-17
+**Status:** design approved. Revised after reading the wikitext of all ten
+All Stars seasons (§2), which changed three things: the era table is now
+sourced rather than remembered, the spared bottom queen's chart record is
+settled (§4), and the era-B extras are specified as mode-locked twists (§7.5).
+Pass 1 is the spine; the extras are pass 2.
 **Roadmap:** supersedes item 7 of `docs/drag-race.md` ("All Stars season type"),
 which correctly called it "a format, not a twist" and "really items 4–6 plus a
 different elimination model; it should be a season SHAPE like the premiere and
@@ -51,14 +55,24 @@ rule runs is a separate choice inside it.**
     drAllStars:     true | false        the mode
     drAllStarsRule: 'legacy' | 'save'   which rule, extensible
 
-This split is load-bearing. "All Stars" names at least four different games:
+This split is load-bearing. "All Stars" names five different games. Read off
+the season pages' own result legends on 2026-09-17, not remembered:
 
-| era | rule |
-|---|---|
-| AS2–AS4 | top two lip sync for their legacy; the winner eliminates via lipstick |
-| AS5–AS6 | the challenge winner lip syncs an outside assassin; win and she eliminates |
-| AS7 / AS9 | no eliminations at all; queens bank stars and the top scorers reach the finale |
-| AS10–AS11 | bracket tournament, groups of six, points, merge to semi-finals |
+| era | seasons | rule |
+|---|---|---|
+| **A** teams | AS1 | queens compete in **pairs**; the pair is judged, lip syncs, and **both** go home together. Ran once, never repeated. |
+| **B** legacy | AS2–AS4 | the **top two** lip sync for their legacy; the winner takes $10,000 **and the power to eliminate one of the bottom queens**, revealed on a lipstick. Extras by season: AS2's Revenge of the Queens (the eliminated cast returns, one wins her way back), AS3's Jury of Queer Peers (the eliminated queens pick the finalists), AS4's double win ($5k each, both hold the power) and **two queens crowned**. |
+| **C** assassin | AS5, AS6, AS8 | the Top All Star lip syncs an **outside assassin** who never competes. She wins → she alone eliminates and takes the $10k; she loses → the tip **rolls over** and the remaining queens **vote** by majority, a tie handing the decision back to her. AS8 added the **Fame Games**: the eliminated queens keep competing for a separate prize decided by a fan vote. |
+| **D** stars | AS7, AS9 | **no eliminations at all**. The top two lip sync for a star/badge — a point — and the winner also **gives** one to a queen who was not in the top (AS7 let her **block** instead; AS9 gave immunity from being "cut off"). Points decide the finalists, then a Lip Sync for the Crown bracket, 4 → 2 → 1. The non-finalists ran their own tournament for $50,000. |
+| **E** tournament | AS10, AS11 | eighteen queens in **three groups of six**, each running its own three-episode bracket. Points: 3 for winning the legacy song, 2.5 for a tie, 2 for losing it, plus **MVQ points handed out by the bottom four**. At the end of a bracket the **lowest point total is cut with no lip sync at all**. Top three per group reach two semi-final episodes, then a three-round Smackdown for the Crown. Plus a **Wildcard**: a judge picks an eliminated queen to return. |
+
+Constant across every era, and therefore part of the mode rather than any one
+rule: a **talent/variety show premiere**, Snatch Game, each queen carrying an
+**original season and original rank**, and $100,000 rising to $200,000 from AS7.
+
+Era C's group vote is the one piece of All Stars that cannot be built as
+specified — see §1's law. If era C is ever built, the vote must become something
+else, and that is a decision for its own design, not a detail.
 
 Folding the rule into the mode flag would mean rebuilding the shape to get any
 of the others. **`legacy` is the rule built in this pass.** `save` is specified
@@ -81,6 +95,19 @@ Precedent for the shape itself is `drPremiere` / `drFinale` — defaulted in
   two lip sync for their lives. A different authority (mercy, not a scalp), and
   it reuses the ordinary lip sync wholesale rather than replacing it. That it
   slots in without touching the mode is the proof the seam is shaped right.
+
+  **This rule has since been built**, as the Golden Beaver and the Golden
+  Baguette (`js/dr/saves.js`, `seasonConfig.drSave`, documented in
+  `docs/drag-race.md`): the holder, the three named in the bottom, the campaign
+  in Untucked, `holderMind`'s strategy/merit/fair weights, the ceremony and the
+  memory of debts, grudges and promises. Canada's All Stars ran the Beaver, so
+  it belongs here as well as on a flagship season.
+
+  So `save` is not a new build at all — it is **`drSave` made reachable from
+  the All Stars dropdown**, and the two rules can also combine: on a bottom of
+  three a Beaver save can take one queen out of danger, leaving the legacy
+  winner a choice of two. The ordering rule already exists (`week.js` sorts
+  `results` ahead of `untucked` on a holder night) and holds unchanged.
 
 ### The endgame is already correct
 
@@ -161,20 +188,99 @@ returning nearly whole. That is what All Stars 1 actually was, so it is not
 wrong — but the designer must **say what the pool is** and let the author swap
 queens in the Studio, rather than silently shipping a rerun labelled All Stars.
 
+Revised 2026-09-17: the alumni are the *preferred* pool, not the only one. Any
+roster queen can be cast and gets an invented past (§4.5), so the setup screen
+should show which of the cast are real returnees and which are arriving with a
+written history — an author choosing between them should be able to see it.
+
 ### The vocabulary consequence
 
-CLAUDE.md already distinguishes the two bottom calls: `BTM2` lip synced and
-survived, `BTM` was named and saved before the song. **On `legacy`, `BTM2` can
-never happen** — nobody in the bottom ever sings, and the queen who leaves does
-so without performing at all.
+**On `legacy` nobody in the bottom ever sings.** The queen who leaves does so
+without performing at all, and the queens who survive did nothing to survive —
+they were simply not picked. Every reader that infers "she lip synced" from a
+bottom placement is wrong on this rule. This is the same bug class
+`docs/drag-race.md` exists for, and it is where the defects will be.
 
-Every reader that infers "she lip synced" from a bottom placement is wrong on
-this rule. This is the same bug class `docs/drag-race.md` exists for, and it is
-where the defects will be.
+#### What the spared queen's cell says — settled 2026-09-17
+
+This paragraph previously read "`BTM` was named and saved before the song",
+which was true of the docs when it was written and is not true of them now:
+`docs/drag-race.md` has since **removed `BTM`** from the chart, on the season 16
+wikitext (one bare `{{BTM}}` against eleven `{{LOW}}`, and no `BTM` line in the
+legend at all). `GRID_RESULTS` can still *draw* one; nothing writes it.
+
+The decision here is **not** to bring it back. The record is the **size of the
+bottom she was named in**:
+
+| bottom | record | means |
+|---|---|---|
+| two named, one goes | `BTM2` | named for elimination, not chosen |
+| three named, one goes | `BTM3` | named for elimination, not chosen |
+
+`BTM3` is new to `GRID_RESULTS` and scores as `BTM2` does. The real chart draws
+these cells exactly this way, so the shape is the show's own.
+
+**The risk, stated so it is not discovered later:** `BTM2` means two different
+things in two different season shapes — "lip synced and survived" on a flagship
+season, "named and spared" here. That is one token with two meanings, which is
+precisely the collapse this show's docs warn has already shipped twice. It is
+acceptable **only** because it cannot be ambiguous *within* a season: on
+`legacy` no bottom queen ever sings, so there is no other reading available.
+The mitigation is not a convention, it is code — **the cell's label and title
+are derived from the season's shape**, so an All Stars chart's legend reads "the
+bottom two — named for elimination, not chosen", and `js/dr/grid.js` takes the
+shape as an input rather than assuming the flagship. A test asserts both
+legends, because a static map is exactly how the two meanings would silently
+merge again.
 
 **`sent home by` is deliberately NOT a track-record field.** It matters to the
 relationship layer, not the record. The chart shows the exit; the ledger and the
 bonds carry who did it.
+
+---
+
+## 4.5 Slice 1b — the arrivals: a queen with a past
+
+Added 2026-09-17. The premiere is the part of All Stars that is *least* like a
+flagship season and the spec did not cover it: the first episode is about
+reputation, not introduction. Nobody is meeting anybody.
+
+A new pure module, `js/dr/past.js`, answers one question — **what did this queen
+already do?** — and returns her original season, her original rank, her maxi
+wins, how she went out, and one piece of unfinished business.
+
+**Real when it exists, invented when it does not.** If she competed in a stored
+`dr-N` season, the answer is read from it (`dragPlacements`, plus
+`js/franchise-meta.js` for who she has history with). If she never has, the show
+invents a past deterministically from her stats and the season seed, and
+**writes it onto the season**, so it never drifts between replays, screens or
+articles. Authored always wins over both.
+
+This is what makes the mode usable at all today: there are 13 drag alumni and
+they are all from `dr-1`, so a real-history-only rule would mean All Stars could
+only ever re-run season one.
+
+Then the premiere reads it:
+
+- entrances reference the past instead of a first impression;
+- the room's reaction scales with what she did before — a former winner walking
+  in is not the queen who went home first;
+- her prior record feeds the threat read the rest of the engine already uses,
+  which is also what the legacy decision reaches for (§6).
+
+### What invention does *not* fix
+
+An invented past does not give her a drag craft block. §3's finding stands
+unchanged: a roster queen nobody authored plays with **seven flat fives** on the
+exact seven stats that decide the show, and thirteen of those is not a cast, it
+is noise.
+
+So craft is **derived** at cast time the same way — deterministic, stored on the
+season, spread from her nine shared stats — and §3's guard changes from "must be
+authored" to **"must not be flat"**, which catches both the unauthored queen and
+a failed derivation. `drag.style` and `drag.voice` stay authored-only and are
+never inferred, exactly as CLAUDE.md requires: a derived *number* is a
+calibration, an invented *voice* is a character the franchise has never met.
 
 ---
 
@@ -237,6 +343,28 @@ actually decide. New mode-gated event families: pleading, promising,
 alliance-making, throwing another queen under the bus, calling in a debt from a
 past season.
 
+**Revised 2026-09-17: this is built, for the save.** `runCampaign`
+(`js/dr/saves.js:264`) already runs pitches, pushback and an answer, with a
+reason weighted by *who is listening* — "no threat" lands on a strategist, "I
+deserved it" on a fair-minded queen — plus a friend vouching, a villain
+stirring, false hope that is remembered, and every move paying into bonds or
+popularity. `holderMind` supplies the three weights and `settleMemory` the
+debts, grudges and promises.
+
+So the work is **not writing a campaign engine, it is unwelding the one that
+exists**: `runCampaign` takes `saves` and asks it `timesSaved`, so the ledger
+must come out into a neutral **power ledger** that both the save and the legacy
+choice write to. Then "she saved me twice" and "she sent my best friend home"
+live in one account, which is what §6's fallout paragraph needs and what makes
+Revenge of the Queens mean anything (§7).
+
+One thing genuinely changes: **the lobbying happens before anyone knows who
+will hold the power.** On the save the holder is the maxi winner, already known.
+On `legacy` the power belongs to whoever wins a song that has not happened yet,
+so the pitches go to whoever the critiques favoured — and a queen who spent her
+Untucked working the wrong person wasted it. `campaignTargets` takes the
+likely top rather than the known holder; that is the one new input.
+
 ### Alliances: extract, do not copy, and take the right donor
 
 Two systems exist and they are **not** interchangeable.
@@ -288,11 +416,44 @@ build the read at all.
 
 ---
 
-## 7. Slice 4 — the jury twist (independent)
+## 7. Pass 2 — the era-B extras, mode-locked
 
-The eliminated queens return to decide the finale rather than the host (AS3's
-rule). Built as a **bookable twist in `TWIST_CATALOG`, usable on ordinary
-seasons too**, not baked into the mode.
+Revised 2026-09-17. These are **twists, booked per episode from the designer,
+and offered only while All Stars mode is on** — they are era-B's own furniture,
+not things that should appear on a flagship season. (The earlier draft of this
+section proposed the jury as a twist "usable on ordinary seasons too"; that is
+reversed. A jury of eliminated queens deciding a flagship finale is a different
+show.)
+
+### The gate is one line, in one place
+
+`twistsForFormat` (`js/core.js:1626`) is the single chokepoint every consumer
+already goes through — the Episode Format Designer (`js/run-ui.js:4020`) and
+`dr-run.js`'s validation map (`js/dr-run.js:78`). A `requires: 'allStars'` field
+on a catalog entry, filtered there against the season config, **hides it from
+the designer and makes a stale booking drop out of a season whose mode was
+turned off**, with no list retyped anywhere. Anything less than this chokepoint
+is how this repo ends up with eight copies of one show list.
+
+### The three
+
+1. **Revenge of the Queens** (AS2 ep 5) — the eliminated cast returns and one
+   wins her way back in. `dr-returnee` already handles the bigger room and the
+   longer season; what is new is the night itself and that the returning queen
+   **remembers who sent her home**, which the power ledger (§6) already records.
+2. **Jury of Queer Peers** (AS3) — the eliminated queens' ballots decide the
+   finalists instead of the host. This *is* a ballot, and it does not break §1's
+   law: the law is that **the room** cannot vote anybody out. These queens are
+   already out, they end nobody, and they choose only who competes for the
+   crown. That distinction gets written into the code's comments, because a
+   reader who finds a ballot in `js/dr/` will otherwise assume it is the bug.
+3. **The double win** (AS4) — both of the top two win the legacy song, each
+   takes $5,000, and **both hold the power**. Needs a bottom wide enough to
+   spend two on, so it books against a bottom three or four and is incompatible
+   with a bottom two. The **double crown** at the finale needs no build:
+   `js/dr/season.js:953` already runs it (gated on two great final performances
+   within 0.6) and `js/dr/grid.js:201` already draws co-winners — it needs
+   reaching from the All Stars setup, which is the reunion's bug class exactly.
 
 Non-elimination weeks need no work: `dr-no-elimination` already exists and is
 already bookable.
@@ -333,6 +494,24 @@ from a passing suite going red.** So:
 
 ## 10. Open questions
 
-- Cast size for an All Stars season, given a 13-queen pool.
-- Whether the deliberation screen is its own VP section or a phase of the
-  existing lip sync screen.
+Resolved 2026-09-17:
+
+- ~~Cast size given a 13-queen pool~~ — no longer the binding constraint. §4.5
+  lets a queen with no drag history be cast with an invented past, so the pool
+  is the roster and the real seasons are a bonus. Cast size stays the ordinary
+  setup field; the real All Stars ran 8, 10, 12, 13 and 18.
+- ~~Whether the deliberation screen is its own VP section~~ — its own, per §5:
+  it has its own marker kind so its scenes file behind it, which is the
+  `sceneSections` scar.
+- The chart record for a spared bottom queen — settled in §4.
+
+Still open:
+
+- Whether a queen's **invented** past may include having *won* her original
+  season. A former winner changes the room's reaction and the threat read
+  sharply, and inventing one is a strong claim about a queen the franchise may
+  later actually play. Leaning: invented pasts cap at runner-up, and only a
+  real stored season can make a queen a former winner.
+- The prize wording: $200,000 is era-correct from AS7 and this is era B, whose
+  seasons paid $100,000. Probably an author-visible number rather than a
+  constant.

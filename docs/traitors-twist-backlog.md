@@ -95,5 +95,5 @@ Each gets a mockup in `mockup/` for approval before its screen is built.
 4. The Traitors' Chess
 5. Church Match
 6. Traitors' Monument
-7. The Funeral (needs a slow-poison Murder in Plain Sight the night before)
+7. ~~The Funeral~~ DONE, with the Hidden Murder night twist (murder variant `hidden`); The Funeral is a follow-up mission forced the day after one
 8. Bonus mission: Roulette / Dinner Party

@@ -41,6 +41,11 @@
 //                 all season. A name they had both been pushing is two
 //                 independent Faithful reads pointing at one person, and it
 //                 can only be assembled from two bodies.
+//   hidden        NOTHING AT BREAKFAST. The victim and two decoys are kept
+//                 away from the table, so the castle does not know who died
+//                 until The Funeral that afternoon (js/tr/missions/funeral.js).
+//                 The evidence is the funeral's: who was sure which coffin was
+//                 the right one, and how.
 //   name-your-own A TRAITOR DEATH THE ROOM MUST EXPLAIN. It emits nothing of
 //                 its own: the ordinary channel fires and is systematically
 //                 backwards, because the people who pushed the victim were
@@ -117,7 +122,18 @@ export const VARIANTS = [
   // 44.0 -> 57.0%, against 53.0% at t >= 3 on the same seeds.
   { id: 'name-your-own', weight: 5,
     needs: (l, t, f) => t >= 3 && l >= 5 },
+  // SEVEN, so that after the murder there are two decoys in coffins and at
+  // least four people left to walk behind them. And only when The Funeral can
+  // run the next afternoon: a hidden murder nobody ever reveals is not a twist.
+  { id: 'hidden', weight: 5,
+    needs: (l, t, f) => l >= 7 && f >= 3 && _funeralReady() },
 ];
+
+// WHETHER THE FUNERAL CAN RUN TOMORROW. js/tr/missions.js registers the probe
+// (missions on, the bespoke catalogue on, and The Funeral in it); this file
+// may not import the mission engine, which imports the murder engine.
+let _funeralReady = () => false;
+export function _setFuneralProbe(fn) { _funeralReady = typeof fn === 'function' ? fn : () => false; }
 
 export const VARIANT_IDS = VARIANTS.map(v => v.id);
 
@@ -372,6 +388,32 @@ export function dungeonVoice(ep, companion, victim) {
 }
 
 /**
+ * LAST NIGHT'S HIDDEN MURDER, or null: the round that just closed ran
+ * `hidden`, and somebody died on it. The Funeral and the morning both read it.
+ */
+export function hiddenMurderFor(ep) {
+  const rounds = gs.tr?.rounds || [];
+  const r = rounds[rounds.length - 1];
+  if (!r || r.ep !== ep - 1 || r.variant !== 'hidden' || !r.variantData) return null;
+  const victim = r.murdered || null;
+  if (!victim) return null;
+  return { victim, decoys: [...r.variantData.decoys], coffins: [...r.variantData.coffins] };
+}
+
+/**
+ * The two people kept away from breakfast with the victim. Hashed out of the
+ * sorted room, like the dinner guests, and a Traitor can be one of them: the
+ * pact knows which coffin is empty, and that is the funeral's whole dilemma.
+ */
+export function hiddenDecoys(ep, victim) {
+  const pool = (gs.activePlayers || []).filter(n => n !== victim).sort();
+  // FOUR in a big castle, so the procession has clues to work through before
+  // the coffins; TWO in a small one, which leaves at least four mourners.
+  const want = pool.length >= 10 ? 4 : 2;
+  return _hashOrder(pool, `hidden-decoys|${ep}|${victim}|${pool.join(',')}`).slice(0, want);
+}
+
+/**
  * Made to name one of their own. The pact's loudest voice signs it and the
  * quietest relationship pays for it: the fellow with the weakest bond to the
  * decider, broken by a stable per-pair impression.
@@ -475,6 +517,22 @@ export const VARIANT_LINES = {
     '{a} and {b}, in one night. The Traitors did not have to choose and it shows.',
     'The pact wanted two different people dead and was told it could have both.',
     'Two names, one night. Nobody in the room has to be argued out of anything.',
+  ],
+  // {a}, {b} and {c} are the three coffins in their funeral order, so no line
+  // says which of them is the body. The audience saw the conclave; the line is
+  // about the castle not knowing.
+  'hidden': [
+    'Three places are empty at breakfast: {a}, {b} and {c}. Only one of them is dead, and nobody at the table is told which.',
+    '{a}, {b} and {c} do not come down. Two of them are alive somewhere in the castle, and the room will not find out which two until the funeral.',
+    'The castle counts three empty chairs and one murder, and has to eat breakfast without knowing whose chair is whose.',
+    'Nobody is named this morning. {a}, {b} and {c} are simply not there, and the host will not say more until the afternoon.',
+  ],
+  // Five missing: the procession will clear some of them before the coffins.
+  'hidden-many': [
+    'Five places are empty at breakfast. One of the five is dead, and nobody at the table is told which.',
+    'The castle counts five empty chairs and one murder. Four of the missing are alive somewhere, waiting.',
+    'Nobody is named this morning. Five people are simply not there, and the host will say nothing until the funeral.',
+    'Five cups turned over at one breakfast, and only one of them means what it usually means.',
   ],
   // NO ERA CLAIM IN ANY OF THESE, and that is the second design this line went
   // through. The first draft said "{victim} was in the turret with {decider}
@@ -708,6 +766,8 @@ export function variantEvidence(ep, rng = Math.random) {
       }
     }
   }
+  // 'hidden' emits nothing at breakfast either: nobody has been told who died.
+  // Its evidence comes out of The Funeral that afternoon.
   // 'name-your-own' emits NOTHING here, and the absence is the design. See the
   // header: the ordinary channel fires over a Traitor's body and indicts the
   // people who were reading the room correctly. Adding a second channel would

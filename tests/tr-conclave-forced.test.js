@@ -49,7 +49,7 @@ import roster from '../franchise_roster.json';
 // always the weaker arrangement: these arms went vacuous the moment the
 // default changed, which is exactly what a state reached by luck does.
 const ALL_MURDER_TWISTS = ['on-trial', 'plain-sight', 'face-to-face',
-  'dungeon', 'double', 'name-your-own'];
+  'dungeon', 'double', 'name-your-own', 'hidden'];
 
 const ROSTER = roster.players.slice(0, 20);
 const CAST = ROSTER.map(p => p.name);

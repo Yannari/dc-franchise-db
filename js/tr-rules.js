@@ -270,6 +270,22 @@ export const TR_RULES = {
     occursIn: tr => tr.conclave?.variant === 'name-your-own',
   },
 
+  // PUBLIC, because three empty chairs are something the whole table counts.
+  // What the castle is not told is which of the three is dead.
+  'murder-hidden': {
+    id: 'murder-hidden',
+    trigger: 'The murder is not revealed at breakfast.',
+    explainedAt: 'first-occurrence',
+    observerVisibility: 'all',
+    reminder: 'Several people are missing this morning and only one of them was '
+      + 'murdered. The castle will not be told which until the funeral this afternoon.',
+    fullRules: 'On a hidden night the Traitors murder as usual, but the victim and '
+      + 'two others are kept away from breakfast. At the funeral that afternoon the '
+      + 'castle works out which of the three is dead, and earns money if the '
+      + 'majority gets it right.',
+    occursIn: tr => tr.conclave?.variant === 'hidden',
+  },
+
   'armoury-shield': {
     id: 'armoury-shield',
     trigger: 'The Armoury opens after a mission.',
@@ -332,6 +348,7 @@ const VARIANT_RULE = {
   dungeon: 'murder-dungeon',
   'plain-sight': 'murder-plain-sight',
   'name-your-own': 'murder-name-your-own',
+  hidden: 'murder-hidden',
 };
 
 /**

@@ -1160,6 +1160,12 @@ const DAY_DEATH = [
   'Once breakfast ends, the players return to the game and begin comparing suspicions.',
   'The morning closes with the victim confirmed and the surviving players still unsure whom to trust.',
 ];
+// A hidden murder's morning: nobody has been confirmed dead yet.
+const DAY_HIDDEN = [
+  'Breakfast ends with the empty chairs still unexplained, and a funeral to walk to.',
+  'Nobody finishes eating. Everyone is counting who might be in which coffin.',
+  'The morning closes on a guess the whole table is making in silence.',
+];
 const DAY_QUIET = [
   'Breakfast ends with everybody still in it, and the day starts on a morning that gave '
   + 'the room nothing to work with at all.',
@@ -1545,14 +1551,20 @@ function _view(ep, observer) {
   const isAudience = obs === 'audience';
   const watcher = obs.indexOf('player:') === 0 ? obs.slice('player:'.length) : null;
 
+  // A HIDDEN MURDER keeps two living decoys away from the table with the
+  // victim, and names none of the three. Public: anyone can count the chairs.
+  const hidden = dawn.hidden && Array.isArray(dawn.hidden.coffins) ? dawn.hidden : null;
   const gone = new Set((rec.goneBefore || []).map(g => g.name));
-  const room = (rec.cast || []).filter(n => !gone.has(n));
+  const room = (rec.cast || []).filter(n => !gone.has(n)
+    && !(hidden && hidden.decoys.includes(n)));
 
   // The doors last night used, in the show's own words. The vote is dropped:
   // it is not a discovery, it happened at the table with the room watching.
   const V = _verbs();
   const lastNight = roundExits({ exits: dawn.lastNight || [] }, TR);
-  const missing = lastNight.filter(x => x.verb === V.night);
+  const missing = hidden
+    ? hidden.coffins.map(n => ({ name: n, verb: 'not at breakfast' }))
+    : lastNight.filter(x => x.verb === V.night);
 
   return {
     // The record's own episode number, never the row's `num`: `num` is the
@@ -1578,6 +1590,7 @@ function _view(ep, observer) {
     missing,
     // AUDIENCE ONLY — see the note above.
     blocked: isAudience ? !!dawn.blocked : false,
+    hidden: hidden ? { decoys: [...hidden.decoys], coffins: [...hidden.coffins] } : null,
     // THE SHAPE OF THE NIGHT, and audience-only for the same reason `blocked`
     // is: the list, the chapel and the dungeon are things the castle is never
     // told. Four of the six variants had this sentence written and recorded
@@ -1604,7 +1617,7 @@ function _view(ep, observer) {
     // and last night's public ballots — never a raw alignment. Faithful-safe
     // on every layer, so it is not stripped. `null` on episode one and on any
     // morning with no record.
-    breakfast: (dawn.breakfast && missing.length) ? {
+    breakfast: (dawn.breakfast && missing.length && !hidden) ? {
       victims: [...(dawn.breakfast.victims || [])],
       pushed: dawn.breakfast.pushed || {},
       grief: (dawn.breakfast.grief || []).map(g => ({ ...g })),
@@ -1707,7 +1720,9 @@ function _buildBeats(v) {
   // ── the building, before anybody ────────────────────────────────────
   const overnight = v.arrival
     ? _pick(STILL_TEXT, key + '|still')
-    : 'Last night, the Traitors chose someone for murder. The players will learn the result at breakfast when everyone who can still arrive has reached the table.';
+    : v.hidden
+      ? 'Last night, the Traitors chose someone for murder. This morning the castle will not be told who.'
+      : 'Last night, the Traitors chose someone for murder. The players will learn the result at breakfast when everyone who can still arrive has reached the table.';
   push('still', _card(
     v.arrival ? 'Before Any Of Them' : 'What Happened Overnight',
     v.arrival ? 'First light' : 'Before breakfast', 'window',
@@ -1731,7 +1746,7 @@ function _buildBeats(v) {
   // is always held out of the groups, because the tension the format lives on
   // is the last places, and it needs a beat of its own to breathe.
   const hasGap = v.missing.length > 0;
-  const holdOut = hasGap && order.length >= 2;
+  const holdOut = hasGap && !v.hidden && order.length >= 2;
   const early = holdOut ? order.slice(0, -1) : order;
   const lastOne = holdOut ? order[order.length - 1] : null;
   const shape = _hash('co|shape|' + key) % 4;
@@ -1764,8 +1779,7 @@ function _buildBeats(v) {
         : gi === 0 ? _pickAway(DOWN_FIRST, key + '|first', leadSaid)
           : isLast ? _pickAway(DOWN_MORE, key + '|more|' + gi, leadSaid)
             : _pickAway(DOWN_MID, key + '|mid|' + gi, leadSaid))
-      : _names(g) + (g.length === 1 ? ' arrives' : ' arrive')
-        + ' together. ' + arrivedSoFar.length + ' of ' + v.room.length
+      : _names(g) + (g.length === 1 ? ' arrives. ' : ' arrive together. ') + arrivedSoFar.length + ' of ' + v.room.length
         + ' expected players are now at the table.';
     const chips = g.length > 1
       ? '<div class="co-arrivals">' + g.map(n => _faceChip(n, 26)).join('') + '</div>'
@@ -1800,7 +1814,23 @@ function _buildBeats(v) {
   null, { kind: 'count', down: [...arrivedSoFar] });
 
   // ── the gap, or the absence of one ──────────────────────────────────
-  if (hasGap) {
+  if (v.hidden) {
+    // ── THREE CUPS, AND NO NAME ───────────────────────────────────────
+    const n = v.hidden.coffins.length;
+    const word = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][n] || String(n);
+    const faces = v.hidden.coffins.map(n => '<div class="co-react-row">' + _av(n, 44)
+      + '<span class="co-react-tx"><b>' + _esc(n) + '</b> &middot; not at breakfast</span></div>').join('');
+    push('gap', _card(word + ' Cups Turned Over', 'Nobody is named', 'cupdown',
+      '<p>' + word + ' places stay empty: ' + _names(v.hidden.coffins) + '. The room counts them twice. '
+      + 'There was one murder last night, not ' + word.toLowerCase() + '.</p>'
+      + '<div class="co-react">' + faces + '</div>'
+      + '<div class="co-host-line">&ldquo;One of them is dead. The others are somewhere in this castle, '
+      + 'and you will not see them until this afternoon. We are going to a funeral.&rdquo;</div>'
+      + (v.variantRule ? '<p class="co-explain">' + _esc(v.variantRule) + '</p>' : '')
+      + ((v.variantLine && v.isAudience)
+        ? '<p class="co-shape"><span>You only &middot; audience</span>' + _esc(v.variantLine) + '</p>' : '')),
+    'gap', { kind: 'gap', down: [...v.room], gap: [...v.hidden.coffins] });
+  } else if (hasGap) {
     const bf = v.breakfast;
     const V = _verbs();
 
@@ -2036,7 +2066,8 @@ function _buildBeats(v) {
   // died. `missing` is the public fact — who is not at this table — and it is
   // the same for every observer, which is exactly what this card is allowed to
   // know.
-  const dayPool = v.arrival ? DAY_ARRIVAL : (v.missing.length ? DAY_DEATH : DAY_QUIET);
+  const dayPool = v.arrival ? DAY_ARRIVAL
+    : v.hidden ? DAY_HIDDEN : (v.missing.length ? DAY_DEATH : DAY_QUIET);
   // AND THE AFTERNOON, NAMED. Only when the record has one -- an episode
   // with no mission on it (or an older save) closes exactly as it did before.
   const tease = v.mission

@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Funeral — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-funeral.html — visual target for the eleventh bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  From the wiki (thetraitors.fandom.com/wiki/The_Funeral — UK S2 E7). The
+  murder was not revealed at breakfast. The castle walked slowly behind a
+  hearse to the murdered player's resting place; on the way the host gave
+  clues about who was safe, and whoever a clue described climbed into the
+  carriage and out of consideration. The last three stepped into coffins, and
+  the group voted on which of them had been murdered. A majority right earned
+  the money.
+
+  IT ONLY RUNS AFTER A HIDDEN MURDER (murder variant `hidden`): the victim and
+  four decoys are kept away from breakfast, and this afternoon is the reveal.
+
+  THE SHIELD IS THE FIRST LILY. Each mourner lays a lily on the coffin they
+  believe holds the dead. The first lily laid on the right coffin earns a
+  Shield. A Traitor always knows which coffin it is, has no use for a Shield,
+  and is the one person who could lay that lily first without thinking.
+
+  IT SHARES NOTHING WITH THE TEN BEFORE IT. This is JET, CREPE AND LILIES:
+  black lacquer, violet mourning ribbon, ivory lilies, brass fittings on a
+  glass hearse.
+
+  THE ORGANISING PRIMITIVE IS THE PROCESSION. The sidebar is the road seen from
+  above: the glass carriage at the front taking the cleared on board, the
+  mourners walking behind, and at the end of the road the coffins in a row,
+  each collecting lilies as the votes are laid, and opening one by one.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Spline+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fu-jet:#0c0b0d; --fu-crepe:#1b1a1f; --fu-crepe2:#26242b; --fu-lily:#f4f1e8; --fu-violet:#6e4f86; --fu-violet-hi:#b394d0;
+  --fu-brass:#b08d4a; --fu-brass-hi:#e2c47e; --fu-ash:#9c98a3; --fu-blood:#9b2d3c; --fu-shield:#efcb5f; --fu-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--fu-jet);color:var(--fu-ash);font-family:'Old Standard TT',Georgia,serif;font-size:18px;line-height:1.55;overflow-x:hidden}
+button{font:inherit}
+.fu-navstub{position:fixed;inset:0 0 auto 0;height:var(--fu-nav);z-index:60;background:#060507;border-bottom:1px solid #000;
+  display:flex;align-items:center;gap:16px;padding:0 16px;font:12.5px/1 'Spline Sans Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#5f5b66;white-space:nowrap;overflow:hidden}
+.fu-navstub b{color:var(--fu-lily)}
+
+/* ── ATMOSPHERE: an overcast avenue, falling petals ───────────────── */
+.fu-sky{position:fixed;left:0;right:0;top:var(--fu-nav);bottom:0;z-index:0;pointer-events:none;
+  background:radial-gradient(70% 40% at 50% 0%,rgba(156,152,163,.12),transparent 70%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 120px),
+    linear-gradient(180deg,#17161a,#0c0b0d 60%)}
+.fu-trees{position:fixed;left:0;right:0;top:var(--fu-nav);height:50vh;z-index:0;pointer-events:none;opacity:.35}
+.fu-petals{position:fixed;left:0;right:0;top:var(--fu-nav);bottom:0;z-index:1;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(3px 2px at 15% 20%,var(--fu-lily),transparent),radial-gradient(2px 3px at 55% 60%,var(--fu-lily),transparent),radial-gradient(3px 2px at 85% 35%,var(--fu-lily),transparent);
+  background-size:380px 380px;animation:fu-fall 40s linear infinite}
+@keyframes fu-fall{from{background-position:0 0}to{background-position:-80px 380px}}
+
+.fu-shell{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:calc(var(--fu-nav) + 26px) 16px 132px}
+
+/* ── HERO: an order of service ────────────────────────────────────── */
+.fu-hero{position:relative;padding:36px 26px 26px;text-align:center;
+  background:linear-gradient(180deg,#1f1d24,#121115);border:1px solid #2e2b34;
+  box-shadow:inset 0 0 0 8px #0c0b0d,inset 0 0 0 9px var(--fu-brass),0 20px 50px rgba(0,0,0,.6)}
+.fu-hero::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:26px;margin-left:-13px;background:linear-gradient(180deg,var(--fu-violet),#3e2b4d);opacity:.25}
+.fu-kicker{position:relative;font:12.5px/1 'Spline Sans Mono',monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--fu-brass-hi)}
+.fu-title{position:relative;font-family:'Italiana',serif;font-weight:400;color:var(--fu-lily);font-size:clamp(46px,9vw,100px);line-height:1;margin:.14em 0 .06em;letter-spacing:.06em}
+.fu-sub{position:relative;color:#b7b3bd;max-width:58ch;margin:0 auto;font-style:italic}
+.fu-meta{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+.fu-chip{font:11.5px/1 'Spline Sans Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--fu-lily);border:1px solid #3a3641;padding:6px 11px;background:rgba(0,0,0,.45)}
+.fu-chip.shield{border-color:var(--fu-shield);color:var(--fu-shield)}
+.fu-roster{position:relative;display:flex;justify-content:center;gap:34px;flex-wrap:wrap;margin-top:18px}
+.fu-rteam small{display:block;font:11.5px/1 'Spline Sans Mono',monospace;letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px}
+.fu-rteam.walk small{color:var(--fu-lily)}.fu-rteam.gone small{color:var(--fu-violet-hi)}
+.fu-rteam.gone .fu-av{filter:grayscale(1) brightness(.7)}
+
+.fu-av{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#26242b;
+  border:2px solid #3a3641;box-shadow:0 2px 8px rgba(0,0,0,.6);display:inline-block;vertical-align:middle}
+.fu-faces{display:inline-flex}
+.fu-faces .fu-av+.fu-av{margin-left:-8px}
+.fu-q{position:relative;display:inline-block}
+.fu-q::after{content:'?';position:absolute;right:-3px;bottom:-3px;width:15px;height:15px;border-radius:50%;background:var(--fu-violet);color:var(--fu-lily);
+  font:700 10px/15px 'Spline Sans Mono',monospace;text-align:center}
+
+.fu-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px;align-items:start}
+@media(max-width:940px){.fu-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── BRIEFING: a black-edged card ─────────────────────────────────── */
+.fu-brief{background:var(--fu-lily);color:#231f28;padding:22px 22px 16px;border:10px solid #111014;box-shadow:0 0 0 1px var(--fu-brass),0 10px 30px rgba(0,0,0,.5)}
+.fu-brief h2{font-family:'Italiana',serif;font-weight:400;font-size:32px;margin:0;color:#111014;letter-spacing:.04em}
+.fu-host{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.fu-host .fu-av{width:46px;height:46px;border-color:#111014}
+.fu-host small{display:block;font:11.5px/1.4 'Spline Sans Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6e6875}
+.fu-staging{font-style:italic;color:#4f4a56;border-bottom:1px solid #cfc9bd;padding-bottom:12px;margin:8px 0 14px}
+.fu-beat{margin:0 0 11px}
+.fu-beat p{margin:0}
+.fu-beat.do p{font:14px/1.5 'Spline Sans Mono',monospace;color:#6e6875}
+.fu-beat.say p{color:#1a171e}
+.fu-beat.shield p{color:#5c4300;border-left:3px solid #b8901f;padding-left:10px}
+.fu-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.fu-rule{font:10.5px/1 'Spline Sans Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4f4a56;border:1px solid #cfc9bd;padding:5px 8px}
+.fu-rule b{color:var(--fu-violet);margin-right:4px}
+.fu-rule.shield b{color:#8a6a10}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.fu-phase{margin-top:28px}
+.fu-phase-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #2e2b34}
+.fu-phase-n{width:38px;height:38px;display:grid;place-items:center;font:20px/1 'Italiana',serif;color:var(--fu-lily);
+  border:1px solid var(--fu-brass);transform:rotate(45deg)}
+.fu-phase-n b{transform:rotate(-45deg);font-weight:400}
+.fu-phase-name{font-family:'Italiana',serif;font-size:34px;line-height:1;color:var(--fu-lily);letter-spacing:.04em}
+.fu-phase-stats{margin-left:auto;display:flex;gap:6px}
+.fu-stat{font:10.5px/1 'Spline Sans Mono',monospace;font-style:normal;text-transform:uppercase;letter-spacing:.1em;color:#b7b3bd;background:#1f1d24;padding:5px 8px}
+.fu-setting{font-style:italic;color:#8a8690;margin:8px 0 12px}
+
+/* ── CARDS: laid down slowly ──────────────────────────────────────── */
+.fu-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;
+  background:linear-gradient(180deg,#1d1b21,#141317);border:1px solid #2e2b34;border-left:4px solid #3a3641;
+  opacity:0;transform:translateY(10px);transition:opacity 1.1s ease,transform 1.1s ease}
+.fu-card.on{opacity:1;transform:none}
+.fu-card.good{border-left-color:var(--fu-lily)}
+.fu-card.bad{border-left-color:var(--fu-blood)}
+.fu-card.social{border-left-color:var(--fu-violet)}
+.fu-card.relic{border:1px solid var(--fu-shield);box-shadow:0 0 24px rgba(239,203,95,.16)}
+.fu-card.open{border:1px solid var(--fu-lily);box-shadow:0 0 24px rgba(244,241,232,.08)}
+.fu-card.dead{border:1px solid var(--fu-violet);box-shadow:0 0 26px rgba(110,79,134,.3)}
+.fu-ico{position:absolute;left:14px;top:14px;width:38px;height:38px}
+.fu-ico svg{width:100%;height:100%;display:block}
+.fu-tag{float:right;font:10.5px/1 'Spline Sans Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#8a8690;margin:4px 0 0 10px}
+.fu-card.good .fu-tag,.fu-card.open .fu-tag{color:var(--fu-lily)}.fu-card.bad .fu-tag{color:#e07b86}.fu-card.relic .fu-tag{color:var(--fu-shield)}
+.fu-card.social .fu-tag,.fu-card.dead .fu-tag{color:var(--fu-violet-hi)}
+.fu-who{display:flex;align-items:center;gap:9px;font-weight:700;color:var(--fu-lily)}
+.fu-who i{font-style:normal;font-weight:400;color:#8a8690}
+.fu-card.relic .fu-av{border-color:var(--fu-shield)}.fu-card.dead .fu-av{border-color:var(--fu-violet)}
+.fu-txt{margin-top:6px}
+.fu-clue{margin-top:8px;padding:9px 12px;background:var(--fu-lily);color:#231f28;font-style:italic;border-left:4px solid var(--fu-violet)}
+.fu-clue small{display:block;font:10.5px/1.3 'Spline Sans Mono',monospace;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:#6e6875}
+.fu-conf{margin-top:10px;padding:9px 12px;background:rgba(0,0,0,.35);border-left:2px solid var(--fu-violet);font-style:italic;color:#e3e0e6}
+.fu-conf small{display:block;font:10.5px/1.4 'Spline Sans Mono',monospace;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:var(--fu-violet-hi)}
+.fu-fx{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.fu-fx span{font:10.5px/1 'Spline Sans Mono',monospace;color:#b7b3bd;border:1px solid #3a3641;padding:4px 7px}
+.fu-votes{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.fu-vote{display:flex;align-items:center;gap:6px;font:12px/1 'Spline Sans Mono',monospace;color:#b7b3bd}
+.fu-vote .fu-av{width:26px;height:26px}
+.fu-summary{margin-top:24px;padding:18px 20px;border:10px solid #111014;box-shadow:0 0 0 1px var(--fu-brass);background:var(--fu-lily);color:#231f28;transition:opacity .4s}
+.fu-summary small{display:block;font:10.5px/1.4 'Spline Sans Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--fu-violet);margin-bottom:4px}
+
+/* ── SIDEBAR: the procession ─────────────────────────────────────── */
+.fu-side{position:relative}
+.fu-panel{background:rgba(10,9,11,.96);border:1px solid #2e2b34;padding:14px}
+.fu-panel h3{font:400 28px/1 'Italiana',serif;color:var(--fu-lily);margin:0 0 10px;text-align:center;letter-spacing:.06em}
+.fu-road{display:block;width:100%}
+.fu-walker{transition:transform 1.2s ease,opacity .6s}
+.fu-rider{opacity:0;transition:opacity .8s}
+.fu-rider.on{opacity:1}
+.fu-coffin .box{fill:#1b1a1f;stroke:var(--fu-brass);stroke-width:1.2;transition:fill .8s}
+.fu-coffin .lid{transition:transform .9s ease;transform-origin:50% 0%;transform-box:fill-box}
+.fu-coffin.open .lid{transform:translate(16px,-22px) rotate(28deg);opacity:.35}
+.fu-coffin .face{opacity:0;transition:opacity .8s}
+.fu-coffin.open .face{opacity:1}
+.fu-coffin.open .cross{opacity:0}
+.fu-coffin.dead .box{fill:#2c1f36;stroke:var(--fu-violet-hi)}
+.fu-coffin.alive .box{fill:#2a2a24}
+.fu-coffin .lily{opacity:0;transition:opacity .5s}
+.fu-coffin .lily.on{opacity:1}
+.fu-coffin .lily.first{filter:drop-shadow(0 0 4px rgba(239,203,95,.9))}
+.fu-clues{margin-top:10px}
+.fu-cl{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #2e2b34;margin-bottom:5px;font:12px/1.3 'Spline Sans Mono',monospace;color:#6c6873;transition:all .5s}
+.fu-cl .fu-av{width:24px;height:24px;border-width:1.5px;opacity:.2}
+.fu-cl.solved{border-color:var(--fu-lily);color:var(--fu-lily)}
+.fu-cl.solved .fu-av{opacity:1}
+.fu-cl.missed{border-color:var(--fu-blood);color:#e07b86}
+.fu-tally{margin-top:10px;border-top:1px solid #2e2b34;padding-top:6px}
+.fu-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--fu-lily);font-size:16px}
+.fu-row b{font:12.5px/1 'Spline Sans Mono',monospace;font-weight:400}
+.fu-lilybox{margin-top:12px;padding:11px 12px;border:1px dashed #6b5b2a;text-align:center;transition:all .5s}
+.fu-lilybox .lbl{font:10.5px/1 'Spline Sans Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a7a4a}
+.fu-lilybox .val{margin-top:6px;font-style:italic;color:#8a8690}
+.fu-lilybox .holder{display:none;margin:8px auto 0}
+.fu-lilybox .holder .fu-av{width:44px;height:44px;border-color:var(--fu-shield);box-shadow:0 0 14px rgba(239,203,95,.45)}
+.fu-lilybox.on{border:1px solid var(--fu-shield)}
+.fu-lilybox.on .holder{display:block}
+.fu-lilybox.on .lbl,.fu-lilybox.on .val{color:var(--fu-shield);font-style:normal}
+.fu-pot{margin-top:12px;border-top:1px solid #2e2b34;padding-top:10px}
+.fu-pot .r{display:flex;justify-content:space-between;font-size:15px;color:#8a8690}
+.fu-pot .r b{font:12.5px/1.8 'Spline Sans Mono',monospace;color:var(--fu-lily);font-weight:400}
+.fu-pot .big{font:30px/1.1 'Spline Sans Mono',monospace;color:var(--fu-brass-hi);text-align:right;margin-top:4px}
+
+.fu-controls{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 16px;background:linear-gradient(0deg,#060507 60%,rgba(6,5,7,0))}
+.fu-btn{font:20px/1 'Italiana',serif;letter-spacing:.1em;cursor:pointer;padding:11px 28px;color:#111014;
+  background:linear-gradient(180deg,#fffdf6,var(--fu-lily));border:1px solid var(--fu-brass)}
+.fu-btn:disabled{opacity:.4;cursor:default}
+.fu-btn.ghost{background:transparent;color:var(--fu-lily);border:1px solid #3a3641}
+.fu-btn:focus-visible{outline:2px solid var(--fu-lily);outline-offset:2px}
+.fu-counter{font:12.5px/1 'Spline Sans Mono',monospace;color:#5f5b66;letter-spacing:.08em}
+
+/* ══ THE STAGE — one scene, driven by the reveal ═══════════════════════
+   Each step carries a state. A result lands in two beats: the ASK (spot
+   sweeps, heartbeat, a card turning over) and, a second later, the ANSWER
+   (a flash, a face flying, a stamp). Reveal all lands straight on answers. */
+@property --fu-spin{syntax:'<angle>';inherits:false;initial-value:0deg}
+.fx{position:sticky;top:calc(var(--fu-nav) + 8px);z-index:20;margin:22px 0 0;height:380px;border-radius:18px;overflow:hidden;isolation:isolate;
+  background:radial-gradient(120% 90% at 50% 120%,#231a2c 0,#110e15 55%,#060507 100%);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.95),inset 0 0 0 1px rgba(226,196,126,.18)}
+.fx svg.fx-scene{position:absolute;inset:0;width:100%;height:100%}
+.fx-layer{position:absolute;inset:0;pointer-events:none}
+.fx-vig{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.9);opacity:.7;transition:opacity .6s}
+.fx-grain{opacity:.07;background-image:repeating-radial-gradient(circle at 23% 31%,#fff 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+.fx-flash{opacity:0;background:radial-gradient(circle at var(--fx-fx,50%) var(--fx-fy,45%),#fff,rgba(244,241,232,.7) 22%,transparent 64%)}
+.fx-flash.violet{background:radial-gradient(circle at var(--fx-fx,50%) var(--fx-fy,45%),#f1e4ff,rgba(179,148,208,.8) 24%,transparent 66%)}
+.fx-flash.go{animation:fx-flash 1.2s ease-out}
+@keyframes fx-flash{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+.fx-rays{opacity:0;background:repeating-conic-gradient(from var(--fu-spin) at 50% 26%,rgba(239,203,95,.36) 0 6deg,transparent 6deg 18deg);
+  -webkit-mask:radial-gradient(circle at 50% 26%,#000 0,#000 12%,transparent 55%);mask:radial-gradient(circle at 50% 26%,#000 0,#000 12%,transparent 55%);transition:opacity .6s}
+.fx[data-phase=first] .fx-rays{opacity:1;animation:fx-spin 9s linear infinite}
+@keyframes fx-spin{to{--fu-spin:360deg}}
+.fx[data-phase=hold] .fx-vig,.fx[data-phase=ask] .fx-vig{opacity:1;animation:fx-heart 1s ease-in-out infinite}
+@keyframes fx-heart{0%,100%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.9)}14%{box-shadow:inset 0 0 190px 90px rgba(40,10,50,.96)}28%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.9)}42%{box-shadow:inset 0 0 170px 70px rgba(40,10,50,.92)}}
+.fx-cap{position:absolute;left:18px;top:14px;z-index:6;font:11px/1 'Spline Sans Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:var(--fu-brass-hi)}
+.fx-cap b{display:block;margin-top:6px;font:400 30px/1 'Italiana',serif;letter-spacing:.06em;color:var(--fu-lily);text-transform:none}
+
+.fx-proc,.fx-grave{transition:opacity .9s ease}
+.fx[data-scene=grave] .fx-proc{opacity:0}
+.fx[data-scene=proc] .fx-grave{opacity:0}
+.fx-par1{animation:fx-par 26s linear infinite}
+.fx-par2{animation:fx-par 14s linear infinite}
+@keyframes fx-par{from{transform:translateX(0)}to{transform:translateX(-540px)}}
+.fx-horse{animation:fx-trot .9s ease-in-out infinite}
+.fx-horse.b{animation-delay:-.45s}
+@keyframes fx-trot{50%{transform:translateY(-4px)}}
+.fx-wheel{transform-box:fill-box;transform-origin:50% 50%;animation:fx-roll 2.4s linear infinite}
+@keyframes fx-roll{to{transform:rotate(-360deg)}}
+.fx-plume{transform-box:fill-box;transform-origin:50% 100%;animation:fx-plume 1.8s ease-in-out infinite}
+@keyframes fx-plume{50%{transform:rotate(8deg)}}
+.fx-walk{animation:fx-walk 1.2s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes fx-walk{50%{transform:translateY(-5px)}}
+
+.fx-oval{transition:transform 1.1s cubic-bezier(.3,1.2,.4,1),opacity .6s,filter .6s}
+.fx-oval .rim{fill:none;stroke:var(--fu-brass);stroke-width:2.5}
+.fx-oval .q{font:700 16px 'Spline Sans Mono',monospace;fill:var(--fu-lily)}
+.fx[data-phase=ask] .fx-oval:not(.gone):not(.crack) .sway{animation:fx-sway 1.6s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes fx-sway{50%{transform:rotate(4deg)}}
+.fx-oval .sway{transform-box:view-box;transform-origin:0 -58px}
+.fx-oval.gone .q{opacity:0}
+.fx-oval.gone .rim{stroke:var(--fu-lily);filter:drop-shadow(0 0 6px #fff)}
+.fx-oval.gone image{filter:none !important}
+.fx-oval.crack .rim{stroke:var(--fu-blood)}
+.fx-oval.crack .sway{animation:fx-shake .12s linear 5}
+@keyframes fx-shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.fx-crackline{opacity:0;transition:opacity .3s .2s}
+.fx-oval.crack .fx-crackline{opacity:1}
+.fx-sweep{opacity:0}
+.fx[data-phase=ask] .fx-sweep{opacity:1;animation:fx-sweep 1.4s ease-in-out infinite alternate}
+@keyframes fx-sweep{from{transform:translateX(0)}to{transform:translateX(440px)}}
+.fx-card{opacity:0;transition:opacity .4s}
+.fx-card .flip{transform-box:fill-box;transform-origin:50% 50%}
+.fx[data-phase=ask] .fx-card,.fx[data-phase=safe] .fx-card,.fx[data-phase=miss] .fx-card{opacity:1}
+.fx[data-phase=ask] .fx-card .flip{animation:fx-flip .8s cubic-bezier(.3,1.4,.5,1)}
+@keyframes fx-flip{0%{transform:scaleX(0)}100%{transform:none}}
+.fx-window{fill:#26242b;transition:fill .6s}
+.fx-window.lit{fill:#3a3444;filter:drop-shadow(0 0 8px rgba(244,241,232,.7))}
+.fx-eye{opacity:0;transition:opacity .4s}
+.fx[data-phase=glance] .fx-eye{opacity:1}
+.fx[data-phase=glance] .fx-eye .lidd{animation:fx-blink 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes fx-blink{45%,55%{transform:scaleY(.1)}}
+.fx-walker{transition:filter .5s}
+.fx[data-phase=glance] .fx-walker:not(.watched){filter:brightness(.3)}
+.fx-walker.watched{filter:drop-shadow(0 0 12px rgba(179,148,208,1))}
+
+.fx-cone{opacity:0;transition:opacity .8s}
+.fx[data-scene=grave] .fx-cone{opacity:.9}
+.fx[data-phase=hold] .fx-cone{animation:fx-flick .3s steps(2) infinite}
+@keyframes fx-flick{50%{opacity:.5}}
+.fx-lid{transition:transform 1s cubic-bezier(.3,1.3,.5,1),opacity 1s}
+.fx-coffin.open .fx-lid{transform:translate(-60px,-90px) rotate(-38deg);opacity:0}
+.fx-inner{opacity:0;transition:opacity .6s .3s,transform .9s cubic-bezier(.2,1.4,.4,1) .3s}
+.fx-coffin.open .fx-inner{opacity:1;transform:translateY(-10px)}
+.fx-coffin.dead .fx-body{fill:#2c1f36;stroke:var(--fu-violet-hi)}
+.fx-coffin.alive .fx-body{fill:#2a2a24;stroke:var(--fu-lily)}
+.fx-ribbon{opacity:0;transition:opacity .6s .6s}
+.fx-coffin.dead .fx-ribbon{opacity:1}
+.fx-coffin .shk{transform-box:fill-box;transform-origin:50% 100%}
+.fx-coffin[data-shake="1"] .shk{animation:fx-rattle .12s linear infinite}
+@keyframes fx-rattle{50%{transform:translateY(-1px) rotate(.8deg)}}
+.fx-count{opacity:0;transition:opacity .3s}
+.fx-count.on{opacity:1}
+.fx-count .bb{transform-box:fill-box;transform-origin:50% 50%}
+.fx-count.bump .bb{animation:fx-bump .5s cubic-bezier(.3,1.8,.5,1)}
+@keyframes fx-bump{0%{transform:scale(1.9)}100%{transform:scale(1)}}
+.fx-lily{transition:transform 1.1s cubic-bezier(.35,.1,.3,1),opacity .4s;opacity:0}
+.fx-lily.fly{opacity:1}
+.fx-lily.first path{fill:#ffe9a3;filter:drop-shadow(0 0 6px rgba(239,203,95,1))}
+.fx-dust i,.fx-petal i{position:absolute;display:block;opacity:0}
+.fx-dust i{width:var(--w);height:var(--w);border-radius:50%;background:rgba(214,200,180,.85)}
+.fx-dust.go i{animation:fx-burst var(--t) cubic-bezier(.1,.7,.3,1) var(--dl) forwards}
+@keyframes fx-burst{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--x),var(--y))}}
+.fx-petal i{top:-20px;width:var(--w);height:calc(var(--w) * .6);border-radius:60% 40% 60% 40%;background:#f4f1e8}
+.fx-petal.go i{animation:fx-fall var(--t) linear var(--dl) forwards}
+@keyframes fx-fall{0%{opacity:0;transform:translate(0,0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate(var(--x),420px) rotate(540deg)}}
+.fx-shield{opacity:0;transition:opacity .5s}
+.fx-shield .rise{transform-box:fill-box;transform-origin:50% 50%;transform:translateY(60px) scale(.5);transition:transform 1s cubic-bezier(.2,1.5,.4,1)}
+.fx.has-shield .fx-shield{opacity:1}
+.fx.has-shield .fx-shield .rise{transform:none}
+.fx-stamp{position:absolute;z-index:7;left:50%;top:84%;padding:8px 18px;border:4px solid currentColor;border-radius:8px;white-space:nowrap;
+  font:400 28px/1 'Italiana',serif;letter-spacing:.12em;background:rgba(10,6,14,.86);opacity:0;transform:translate(-50%,-50%) rotate(-4deg) scale(3);pointer-events:none}
+.fx-stamp.go{animation:fx-slam .45s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes fx-slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-4deg) scale(3)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-4deg) scale(1)}}
+.fx-stamp.safe{color:var(--fu-lily)}.fx-stamp.wrong{color:#ff5f75}.fx-stamp.dead{color:var(--fu-violet-hi)}.fx-stamp.gold{color:var(--fu-shield)}
+.fx-pot{position:absolute;right:18px;top:14px;z-index:6;text-align:right;font:11px/1 'Spline Sans Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a8690}
+.fx-pot b{display:block;margin-top:6px;font:600 26px/1 'Spline Sans Mono',monospace;letter-spacing:0;color:var(--fu-brass-hi)}
+.fx-pot b.tick{animation:fx-tick .8s ease-out}
+@keyframes fx-tick{0%{transform:scale(1.5);color:#fff}100%{transform:scale(1)}}
+@media(max-width:700px){.fx{height:250px}.fx-cap b{font-size:22px}.fx-stamp{font-size:22px}}
+@media (prefers-reduced-motion: reduce){.fx *,.fx{animation:none !important;transition:none !important}}
+@media (prefers-reduced-motion: reduce){
+  .fu-petals{animation:none}
+  .fu-card{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="fu-navstub"><b>The Traitors</b><span>Episode 7 · Afternoon</span><span>The Funeral</span></div>
+<div class="fu-sky"></div>
+<svg class="fu-trees" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+  <g fill="#15141a">
+    <path d="M40 300 V120 C10 110 20 40 60 30 C100 40 110 110 80 120 V300Z"/>
+    <path d="M200 300 V140 C170 130 180 60 220 50 C260 60 270 130 240 140 V300Z"/>
+    <path d="M960 300 V140 C930 130 940 60 980 50 C1020 60 1030 130 1000 140 V300Z"/>
+    <path d="M1120 300 V120 C1090 110 1100 40 1140 30 C1180 40 1190 110 1160 120 V300Z"/>
+  </g>
+</svg>
+<div class="fu-petals"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-clue" viewBox="0 0 36 36"><rect x="6" y="5" width="24" height="27" fill="#f4f1e8" stroke="#6e4f86"/><path d="M6 5h24v5H6z" fill="#111014"/><path d="M11 16h14M11 21h14M11 26h9" stroke="#6e4f86" stroke-width="1.5"/></symbol>
+    <symbol id="i-carriage" viewBox="0 0 36 36"><path d="M5 12h26v14H5z" fill="#111014" stroke="#b08d4a"/><path d="M8 15h20v8H8z" fill="#3a3641" opacity=".7"/><circle cx="11" cy="29" r="4" fill="none" stroke="#b08d4a" stroke-width="1.5"/><circle cx="25" cy="29" r="4" fill="none" stroke="#b08d4a" stroke-width="1.5"/><path d="M14 8h8l2 4H12z" fill="#6e4f86"/></symbol>
+    <symbol id="i-wrong" viewBox="0 0 36 36"><rect x="6" y="5" width="24" height="27" fill="#f4f1e8" stroke="#6e4f86" opacity=".6"/><path d="M11 12l14 14M25 12L11 26" stroke="#9b2d3c" stroke-width="2.6"/></symbol>
+    <symbol id="i-lily" viewBox="0 0 36 36"><path d="M18 34V18" stroke="#5a7a4a" stroke-width="2"/><path d="M18 18c-8-2-12-8-10-14 4 2 8 6 10 14z M18 18c8-2 12-8 10-14-4 2-8 6-10 14z M18 18c-3-6-3-12 0-16 3 4 3 10 0 16z" fill="#f4f1e8" stroke="#b7b3bd" stroke-width=".8"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 36 36"><path d="M18 3l12 4v9c0 8-5 14-12 17C11 30 6 24 6 16V7z" fill="#efcb5f" stroke="#7b6224" stroke-width="1.2"/><path d="M18 26V14" stroke="#5a7a4a" stroke-width="1.6"/><path d="M18 14c-4-1-6-4-5-7 2 1 4 3 5 7z M18 14c4-1 6-4 5-7-2 1-4 3-5 7z" fill="#f4f1e8"/></symbol>
+    <symbol id="i-coffin" viewBox="0 0 36 36"><path d="M12 3h12l5 9-3 21H10L7 12z" fill="#1b1a1f" stroke="#b08d4a"/><path d="M18 9v12M14 13h8" stroke="#b08d4a" stroke-width="1.5"/></symbol>
+    <symbol id="i-open" viewBox="0 0 36 36"><path d="M12 8h12l5 9-3 16H10L7 17z" fill="#2a2a24" stroke="#f4f1e8"/><path d="M12 3h12l5 5" fill="none" stroke="#b08d4a" stroke-width="2"/><circle cx="18" cy="20" r="4" fill="#f4f1e8"/></symbol>
+    <symbol id="i-dead" viewBox="0 0 36 36"><path d="M12 8h12l5 9-3 16H10L7 17z" fill="#2c1f36" stroke="#b394d0"/><path d="M12 3h12l5 5" fill="none" stroke="#b08d4a" stroke-width="2"/><path d="M18 14v14M13 19h10" stroke="#b394d0" stroke-width="2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 36 36"><path d="M2 18c6-9 26-9 32 0-6 9-26 9-32 0z" fill="none" stroke="#6e4f86" stroke-width="2"/><circle cx="18" cy="18" r="5" fill="#6e4f86"/></symbol>
+  </defs>
+</svg>
+
+<div class="fu-shell">
+  <header class="fu-hero">
+    <div class="fu-kicker">Mission · Episode Seven</div>
+    <h1 class="fu-title">The Funeral</h1>
+    <p class="fu-sub">Nobody was told who died last night. Five chairs were empty at breakfast, one murder among them,
+      and this afternoon the castle walks behind a hearse to find out whose.</p>
+    <div class="fu-meta">
+      <span class="fu-chip">One procession</span>
+      <span class="fu-chip">Two clues · three coffins</span>
+      <span class="fu-chip">Money if the majority is right</span>
+      <span class="fu-chip shield">The first lily on the right coffin · a Shield</span>
+    </div>
+    <div class="fu-roster">
+      <div class="fu-rteam walk"><small>The mourners</small><span class="fu-faces">
+        <img class="fu-av" src="../assets/avatars/gwen.png" alt=""><img class="fu-av" src="../assets/avatars/trent.png" alt=""><img class="fu-av" src="../assets/avatars/lindsay.png" alt=""><img class="fu-av" src="../assets/avatars/izzy.png" alt=""><img class="fu-av" src="../assets/avatars/geoff.png" alt=""><img class="fu-av" src="../assets/avatars/duncan.png" alt="">
+      </span></div>
+      <div class="fu-rteam gone"><small>Not at breakfast</small><span class="fu-faces">
+        <span class="fu-q"><img class="fu-av" src="../assets/avatars/noah.png" alt=""></span><span class="fu-q"><img class="fu-av" src="../assets/avatars/eva.png" alt=""></span><span class="fu-q"><img class="fu-av" src="../assets/avatars/katie.png" alt=""></span><span class="fu-q"><img class="fu-av" src="../assets/avatars/sadie.png" alt=""></span><span class="fu-q"><img class="fu-av" src="../assets/avatars/tyler.png" alt=""></span>
+      </span></div>
+    </div>
+  </header>
+
+  <section class="fx" id="fx" data-scene="proc" data-phase="idle" aria-label="The funeral, staged">
+    <svg class="fx-scene" viewBox="0 0 1080 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <clipPath id="fx-c20"><circle r="20"/></clipPath>
+        <clipPath id="fx-c26"><ellipse rx="24" ry="30"/></clipPath>
+        <clipPath id="fx-c16"><circle r="16"/></clipPath>
+        <linearGradient id="fx-road" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1c1a20"/><stop offset="1" stop-color="#0b0a0d"/></linearGradient>
+        <linearGradient id="fx-conel" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(244,241,232,.34)"/><stop offset="1" stop-color="rgba(244,241,232,0)"/></linearGradient>
+        <linearGradient id="fx-glass" x1="0" x2="1"><stop offset="0" stop-color="rgba(244,241,232,.12)"/><stop offset=".5" stop-color="rgba(244,241,232,.02)"/><stop offset="1" stop-color="rgba(244,241,232,.14)"/></linearGradient>
+      </defs>
+
+      <g class="fx-proc">
+        <circle cx="960" cy="60" r="46" fill="rgba(230,223,204,.10)"/><circle cx="960" cy="60" r="20" fill="rgba(230,223,204,.35)"/>
+        <g class="fx-par1" fill="#16141b"><g id="fx-yews1"></g></g>
+        <g class="fx-par2" fill="#0f0d12"><g id="fx-yews2"></g></g>
+        <rect x="0" y="292" width="1080" height="88" fill="url(#fx-road)"/>
+        <g class="fx-par2" stroke="#2a2730" stroke-width="2"><path id="fx-kerb" d=""/></g>
+        <g transform="translate(700,0)">
+          <g class="fx-horse"><path d="M232 238c10-18 30-22 44-14l12-14 6 6-6 14c4 10 2 22-6 28l2 34h-8l-4-26h-26l-4 26h-8l2-34c-6-4-10-12-4-20z" fill="#0a090c" stroke="#3a3641"/>
+            <path class="fx-plume" d="M288 204c-4-14 2-24 10-26-2 10 0 18-4 26z" fill="#6e4f86"/></g>
+          <g class="fx-horse b"><path d="M252 244c10-18 30-22 44-14l12-14 6 6-6 14c4 10 2 22-6 28l2 34h-8l-4-26h-26l-4 26h-8l2-34c-6-4-10-12-4-20z" fill="#0a090c" opacity=".7"/></g>
+          <path d="M60 198h150l12 18v62H48v-62z" fill="#0d0c10" stroke="#b08d4a" stroke-width="1.5"/>
+          <rect x="62" y="206" width="146" height="58" fill="url(#fx-glass)" stroke="#b08d4a"/>
+          <path d="M84 250h100l8-8H92z" fill="#1b1a1f" stroke="#b08d4a"/>
+          <g fill="#f4f1e8" opacity=".85"><circle cx="110" cy="240" r="4"/><circle cx="120" cy="238" r="4"/><circle cx="130" cy="240" r="4"/><circle cx="150" cy="239" r="4"/><circle cx="160" cy="238" r="4"/></g>
+          <path d="M70 190h130l-8-12H78z" fill="#6e4f86"/>
+          <path class="fx-plume" d="M78 178c-4-14 0-24 6-26 0 10 2 18-2 26z" fill="#0a090c"/>
+          <path class="fx-plume" d="M192 178c-4-14 0-24 6-26 0 10 2 18-2 26z" fill="#0a090c"/>
+          <g class="fx-wheel"><circle cx="80" cy="288" r="20" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M80 268v40M60 288h40M66 274l28 28M94 274l-28 28" stroke="#b08d4a" stroke-width="1.5"/></g>
+          <g class="fx-wheel"><circle cx="186" cy="288" r="20" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M186 268v40M166 288h40M172 274l28 28M200 274l-28 28" stroke="#b08d4a" stroke-width="1.5"/></g>
+        </g>
+        <g transform="translate(520,0)">
+          <path d="M20 214h140v64H20z" fill="#0d0c10" stroke="#b08d4a" stroke-width="1.5"/>
+          <rect class="fx-window" id="fx-win0" x="34" y="224" width="50" height="42" rx="4"/>
+          <rect class="fx-window" id="fx-win1" x="96" y="224" width="50" height="42" rx="4"/>
+          <path d="M26 214h128l-10-14H36z" fill="#1b1a1f" stroke="#b08d4a"/>
+          <g class="fx-wheel"><circle cx="46" cy="290" r="16" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M46 274v32M30 290h32" stroke="#b08d4a"/></g>
+          <g class="fx-wheel"><circle cx="134" cy="290" r="16" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M134 274v32M118 290h32" stroke="#b08d4a"/></g>
+        </g>
+        <g id="fx-walkers"></g>
+        <g id="fx-ovals"></g>
+        <g class="fx-sweep"><ellipse cx="160" cy="92" rx="60" ry="70" fill="rgba(244,241,232,.13)"/></g>
+        <g class="fx-card" transform="translate(816,112)">
+          <g class="flip">
+            <rect x="-120" y="-66" width="240" height="132" fill="#f4f1e8" stroke="#111014" stroke-width="6"/>
+            <rect x="-120" y="-66" width="240" height="24" fill="#111014"/>
+            <text x="0" y="-49" text-anchor="middle" font-family="Spline Sans Mono" font-size="11" fill="#e2c47e" letter-spacing="3" id="fx-card-h">THE FIRST CLUE</text>
+            <foreignObject x="-106" y="-36" width="212" height="96"><div xmlns="http://www.w3.org/1999/xhtml" id="fx-card-t" style="font:italic 16px/1.35 'Old Standard TT',serif;color:#231f28"></div></foreignObject>
+          </g>
+        </g>
+        <g class="fx-eye" transform="translate(330,196)"><g class="lidd"><path d="M-26 0c10-14 42-14 52 0-10 14-42 14-52 0z" fill="#111014" stroke="#b394d0" stroke-width="3"/><circle r="7" fill="#b394d0"/></g></g>
+      </g>
+
+      <g class="fx-grave">
+        <path d="M0 300 Q540 256 1080 300 V380 H0Z" fill="#0d0c10"/>
+        <g id="fx-cones"></g>
+        <g id="fx-coffins"></g>
+        <g id="fx-mourners"></g>
+        <g id="fx-lilies"></g>
+        <g class="fx-shield" transform="translate(540,86)"><g class="rise">
+          <path d="M0 -58l44 14v32c0 30-18 50-44 62-26-12-44-32-44-62v-32z" fill="#efcb5f" stroke="#7b6224" stroke-width="3"/>
+          <image href="../assets/avatars/trent.png" x="-24" y="-38" width="48" height="60" clip-path="url(#fx-c26)"/>
+        </g></g>
+      </g>
+    </svg>
+    <div class="fx-layer fx-rays"></div>
+    <div class="fx-layer fx-dust" id="fx-dust"></div>
+    <div class="fx-layer fx-petal" id="fx-petal"></div>
+    <div class="fx-layer fx-flash" id="fx-flash"></div>
+    <div class="fx-layer fx-vig"></div>
+    <div class="fx-layer fx-grain"></div>
+    <div class="fx-cap"><span id="fx-cap-k">Part one</span><b id="fx-cap-t">The Procession</b></div>
+    <div class="fx-pot">In the pot<b id="fx-pot">£33,700</b></div>
+    <div class="fx-stamp" id="fx-stamp"></div>
+  </section>
+
+  <div class="fu-grid">
+    <main>
+      <section class="fu-brief">
+        <div class="fu-host"><img class="fu-av" src="../assets/avatars/alan-cumming.png" alt=""><div><h2>The Briefing</h2><small>Alan Cumming · your host</small></div></div>
+        <p class="fu-staging">A long avenue of yews. A glass hearse drawn by black horses, an empty carriage behind it, and at
+          the far end, beside an open grave, five coffins on trestles.</p>
+
+        <div class="fu-beat do"><p>Alan Cumming stands beside the hearse in a black coat.</p></div>
+        <div class="fu-beat say"><p>Five of your friends were not at breakfast. One of them was murdered last night. The other four are alive, and waiting.</p></div>
+        <div class="fu-beat say"><p>As we walk, I will read you clues. Each one describes somebody who is safe. Work out who, and they will join us in the carriage.</p></div>
+        <div class="fu-beat do"><p>Alan Cumming walks to the head of the procession.</p></div>
+        <div class="fu-beat say"><p>Get a clue wrong, and whoever it described stays in their coffin with the dead.</p></div>
+        <div class="fu-beat say"><p>At the grave, each of you will lay a lily on the coffin you believe holds the murdered. If most of you are right, the money is yours.</p></div>
+        <div class="fu-beat say shield"><p>The first lily laid on the right coffin earns a Shield.</p></div>
+        <div class="fu-beat say shield"><p>Lay it too quickly, and the others may wonder how you were so sure.</p></div>
+        <div class="fu-beat say"><p>Walk slowly. Begin.</p></div>
+
+        <div class="fu-rules">
+          <span class="fu-rule"><b>task</b> beat 3</span>
+          <span class="fu-rule"><b>failure</b> beat 5</span>
+          <span class="fu-rule"><b>reward</b> beat 6</span>
+          <span class="fu-rule shield"><b>shield</b> beat 7</span>
+          <span class="fu-rule shield"><b>cost</b> beat 8</span>
+          <span class="fu-rule"><b>finish</b> beat 9</span>
+        </div>
+      </section>
+
+      <section class="fu-phase">
+        <div class="fu-phase-head"><span class="fu-phase-n"><b>I</b></span><span class="fu-phase-name">The Procession</span>
+          <span class="fu-phase-stats"><i class="fu-stat">intuition</i><i class="fu-stat">mental</i></span></div>
+        <p class="fu-setting">A slow walk behind a glass hearse, and a clue at every hundred yards.</p>
+
+        <article class="fu-card good" id="fu-step-0">
+          <span class="fu-ico"><svg><use href="#i-carriage"/></svg></span><span class="fu-tag">Into the carriage</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/gwen.png" alt=""><img class="fu-av" src="../assets/avatars/tyler.png" alt=""></span>Gwen &amp; Tyler</div>
+          <div class="fu-clue"><small>The first clue</small>The one who is safe fell off the climbing wall on the first day and laughed about it.</div>
+          <div class="fu-txt">Gwen said "Tyler" before the host had finished. The carriage door opened, and Tyler climbed in, grinning.</div>
+        </article>
+
+        <article class="fu-card bad" id="fu-step-1">
+          <span class="fu-ico"><svg><use href="#i-wrong"/></svg></span><span class="fu-tag">Wrong name</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/lindsay.png" alt=""></span>Lindsay</div>
+          <div class="fu-clue"><small>The second clue</small>The one who is safe has never once been named at the Round Table.</div>
+          <div class="fu-txt">Lindsay was sure it meant Eva. It meant Sadie. The carriage stayed shut, and Sadie stays in a coffin.</div>
+        </article>
+
+        <article class="fu-card social" id="fu-step-2">
+          <span class="fu-ico"><svg><use href="#i-eye"/></svg></span><span class="fu-tag">Suspicious</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/izzy.png" alt=""><img class="fu-av" src="../assets/avatars/duncan.png" alt=""></span>Izzy &amp; Duncan</div>
+          <div class="fu-txt">Duncan said nothing for the whole walk. When Lindsay said Eva, he shook his head before anyone else could. Izzy saw it.</div>
+          <div class="fu-conf"><small>Izzy · confessional</small>He knew it wasn't Eva. How would you know it wasn't Eva?</div>
+          <div class="fu-fx"><span>claim · Izzy → Duncan</span><span>suspicion +0.2</span></div>
+        </article>
+      </section>
+
+      <section class="fu-phase">
+        <div class="fu-phase-head"><span class="fu-phase-n"><b>II</b></span><span class="fu-phase-name">The Lilies</span>
+          <span class="fu-phase-stats"><i class="fu-stat">strategic</i><i class="fu-stat">social</i></span></div>
+        <p class="fu-setting">Four closed coffins beside an open grave, and a lily in every hand.</p>
+
+        <article class="fu-card relic" id="fu-step-3">
+          <span class="fu-ico"><svg><use href="#i-shield"/></svg></span><span class="fu-tag">The first lily</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/trent.png" alt=""></span>Trent</div>
+          <div class="fu-txt">Trent walked straight to the second coffin and laid his lily on it. "Noah had been saying names out loud all week," he said. The host nodded, once.</div>
+          <div class="fu-conf"><small>Trent · confessional</small>If you were them, who would you want quiet? It wasn't hard.</div>
+          <div class="fu-fx"><span>shield · Trent</span><span>seen by · everybody</span></div>
+        </article>
+
+        <article class="fu-card plain" id="fu-step-4">
+          <span class="fu-ico"><svg><use href="#i-lily"/></svg></span><span class="fu-tag">The lilies</span>
+          <div class="fu-who">Six lilies</div>
+          <div class="fu-txt">Gwen, Geoff and Izzy followed Trent to Noah's coffin. Lindsay laid hers on Eva's. Duncan laid his on Katie's, and did not look at anybody.</div>
+          <div class="fu-votes">
+            <span class="fu-vote"><img class="fu-av" src="../assets/avatars/trent.png" alt="">→ Noah</span>
+            <span class="fu-vote"><img class="fu-av" src="../assets/avatars/gwen.png" alt="">→ Noah</span>
+            <span class="fu-vote"><img class="fu-av" src="../assets/avatars/geoff.png" alt="">→ Noah</span>
+            <span class="fu-vote"><img class="fu-av" src="../assets/avatars/izzy.png" alt="">→ Noah</span>
+            <span class="fu-vote"><img class="fu-av" src="../assets/avatars/lindsay.png" alt="">→ Eva</span>
+            <span class="fu-vote"><img class="fu-av" src="../assets/avatars/duncan.png" alt="">→ Katie</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="fu-phase">
+        <div class="fu-phase-head"><span class="fu-phase-n"><b>III</b></span><span class="fu-phase-name">The Opening</span>
+          <span class="fu-phase-stats"><i class="fu-stat">temperament</i><i class="fu-stat">loyalty</i></span></div>
+        <p class="fu-setting">The lids come off one at a time, and the living climb out.</p>
+
+        <article class="fu-card open" id="fu-step-5">
+          <span class="fu-ico"><svg><use href="#i-open"/></svg></span><span class="fu-tag">Alive</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/eva.png" alt=""><img class="fu-av" src="../assets/avatars/katie.png" alt=""><img class="fu-av" src="../assets/avatars/sadie.png" alt=""></span>Eva, Katie &amp; Sadie</div>
+          <div class="fu-txt">Eva sat up first and looked straight at the lily on her lid. Katie and Sadie climbed out holding hands.</div>
+        </article>
+
+        <article class="fu-card social" id="fu-step-6">
+          <span class="fu-ico"><svg><use href="#i-lily"/></svg></span><span class="fu-tag">Selfish</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/eva.png" alt=""><img class="fu-av" src="../assets/avatars/lindsay.png" alt=""></span>Eva &amp; Lindsay</div>
+          <div class="fu-txt">Eva picked Lindsay's lily off her coffin and handed it back to her without a word.</div>
+          <div class="fu-fx"><span>bond Eva ↔ Lindsay −0.4</span></div>
+        </article>
+
+        <article class="fu-card dead" id="fu-step-7">
+          <span class="fu-ico"><svg><use href="#i-dead"/></svg></span><span class="fu-tag">Murdered</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/noah.png" alt=""></span>Noah</div>
+          <div class="fu-txt">The last lid came off on Noah's portrait and a folded napkin from dinner. Four of six had laid their lilies on it. The money goes into the pot.</div>
+          <div class="fu-fx"><span>pot +£8,400</span></div>
+        </article>
+
+        <article class="fu-card social" id="fu-step-8">
+          <span class="fu-ico"><svg><use href="#i-lily"/></svg></span><span class="fu-tag">Heroic</span>
+          <div class="fu-who"><span class="fu-faces"><img class="fu-av" src="../assets/avatars/gwen.png" alt=""></span>Gwen</div>
+          <div class="fu-txt">Gwen stayed at the graveside after the others had walked back, and laid a second lily for Noah.</div>
+          <div class="fu-conf"><small>Gwen · confessional</small>He'd have hated the fuss. He'd have liked that somebody stayed.</div>
+          <div class="fu-fx"><span>crowd · Gwen kind ×0.5</span></div>
+        </article>
+      </section>
+
+      <div class="fu-summary" id="fu-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        A clue missed and a coffin too many, but four lilies of six found the right lid.
+      </div>
+    </main>
+
+    <aside class="fu-side" aria-label="The procession">
+      <div class="fu-panel">
+        <h3>The Procession</h3>
+        <svg class="fu-road" viewBox="0 0 300 330" role="img" aria-label="The procession from above">
+          <defs><clipPath id="fu-c"><circle r="9"/></clipPath><clipPath id="fu-cc"><circle r="7"/></clipPath></defs>
+          <rect width="300" height="330" fill="#0e0d10"/>
+          <path d="M120 0 V200 H180 V0Z" fill="#17161a"/>
+          <g fill="#15141a">
+            <circle cx="96" cy="30" r="12"/><circle cx="204" cy="30" r="12"/><circle cx="96" cy="90" r="12"/><circle cx="204" cy="90" r="12"/><circle cx="96" cy="150" r="12"/><circle cx="204" cy="150" r="12"/>
+          </g>
+          <!-- hearse -->
+          <g transform="translate(150,26)">
+            <rect x="-18" y="-14" width="36" height="28" fill="#111014" stroke="#b08d4a"/>
+            <rect x="-13" y="-10" width="26" height="20" fill="#26242b" opacity=".8"/>
+            <path d="M-10 -2h20v4h-20z" fill="#6e4f86"/>
+          </g>
+          <!-- carriage with riders -->
+          <g transform="translate(150,70)">
+            <rect x="-22" y="-12" width="44" height="24" fill="#111014" stroke="#b08d4a"/>
+            <g class="fu-rider" id="fu-rider-0" transform="translate(-9,0)"><image href="../assets/avatars/tyler.png" x="-9" y="-9" width="18" height="18" clip-path="url(#fu-c)"/></g>
+            <g class="fu-rider" id="fu-rider-1" transform="translate(9,0)"><image href="../assets/avatars/sadie.png" x="-9" y="-9" width="18" height="18" clip-path="url(#fu-c)"/></g>
+          </g>
+          <!-- mourners -->
+          <g id="fu-walkers"></g>
+          <!-- the grave and coffins -->
+          <rect x="30" y="214" width="240" height="4" fill="#2e2b34"/>
+          <rect x="120" y="300" width="60" height="22" fill="#060507" stroke="#2e2b34"/>
+          <g id="fu-coffins"></g>
+        </svg>
+
+        <div class="fu-clues">
+          <div class="fu-cl" id="fu-cl-0"><img class="fu-av" src="../assets/avatars/tyler.png" alt="">clue one · <span>unread</span></div>
+          <div class="fu-cl" id="fu-cl-1"><img class="fu-av" src="../assets/avatars/sadie.png" alt="">clue two · <span>unread</span></div>
+        </div>
+
+        <div class="fu-tally">
+          <div class="fu-row"><span>In the carriage</span><b id="fu-t-car">0</b></div>
+          <div class="fu-row"><span>Coffins at the grave</span><b id="fu-t-cof">5</b></div>
+          <div class="fu-row"><span>Lilies on the right coffin</span><b id="fu-t-lil">—</b></div>
+        </div>
+
+        <div class="fu-lilybox" id="fu-lilybox">
+          <div class="lbl">The First Lily</div>
+          <div class="holder"><img class="fu-av" src="../assets/avatars/trent.png" alt=""></div>
+          <div class="val" id="fu-lily-val">no lily has been laid</div>
+        </div>
+
+        <div class="fu-pot">
+          <div class="r"><span>Fund before</span><b>£33,700</b></div>
+          <div class="r"><span>Majority right</span><b id="fu-pot-m">—</b></div>
+          <div class="r"><span>Earned today</span><b id="fu-pot-e">—</b></div>
+          <div class="big" id="fu-pot-a">£33,700</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="fu-controls">
+  <button class="fu-btn" id="fu-next">Next</button>
+  <span class="fu-counter" id="fu-counter" aria-live="polite">0 of 9 revealed</span>
+  <button class="fu-btn ghost" id="fu-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 9, idx = -1;
+  var WALK = ['gwen','trent','lindsay','izzy','geoff','duncan'];
+  var COFF = [['eva','alive'],['noah','dead'],['katie','alive'],['sadie','alive'],['tyler','alive']];
+  var LILIES = { 1: ['trent','gwen','geoff','izzy'], 0: ['lindsay'], 2: ['duncan'] };
+  function el(id){ return document.getElementById(id); }
+  function av(n){ return '../assets/avatars/' + n + '.png'; }
+  var w = '';
+  WALK.forEach(function(n, i){
+    var x = 136 + (i % 2) * 28, y = 102 + Math.floor(i / 2) * 26;
+    w += '<g class="fu-walker" id="fu-w-' + i + '" transform="translate(' + x + ',' + y + ')"><circle r="10" fill="#26242b" stroke="#f4f1e8" stroke-width="1"/>'
+      + '<image href="' + av(n) + '" x="-9" y="-9" width="18" height="18" clip-path="url(#fu-c)"/></g>';
+  });
+  el('fu-walkers').innerHTML = w;
+  var c = '';
+  COFF.forEach(function(p, i){
+    var x = 44 + i * 53;
+    var lil = '';
+    for (var k = 0; k < 4; k++) lil += '<g class="lily" data-k="' + k + '" transform="translate(' + (-10 + k * 7) + ',-8)"><path d="M0 0c-3-1-4-3-3-5 2 1 3 2 3 5z M0 0c3-1 4-3 3-5-2 1-3 2-3 5z" fill="#f4f1e8"/></g>';
+    c += '<g class="fu-coffin" id="fu-c-' + i + '" transform="translate(' + x + ',256)">'
+      + '<path class="box" d="M-10 -26h20l8 14-5 38h-26l-5-38z"/>'
+      + '<g class="face" transform="translate(0,-4)"><image href="' + av(p[0]) + '" x="-7" y="-7" width="14" height="14" clip-path="url(#fu-cc)"/></g>'
+      + '<path class="lid" d="M-10 -26h20l8 14-5 38h-26l-5-38z" fill="#111014" stroke="#b08d4a" stroke-width="1"/>'
+      + '<path class="cross" d="M0 -18v14M-5 -13h10" stroke="#b08d4a" stroke-width="1.2"/>'
+      + lil + '</g>';
+  });
+  el('fu-coffins').innerHTML = c;
+
+
+  // ══ THE STAGE ═════════════════════════════════════════════════════════
+  var FX = el('fx');
+  var OVAL = ['noah','eva','katie','sadie','tyler'].map(function(n, i){ return { n: n, x: 110 + i * 100, y: 96 }; });
+  var WINS = { tyler: [579, 245], sadie: [641, 245] };
+  var COF = [['eva','alive'],['noah','dead'],['katie','alive'],['sadie','alive']];
+  var CX = [330, 470, 610, 750];
+  var MOURN = ['trent','gwen','geoff','izzy','lindsay','duncan'];
+  var MX = function(i){ return 300 + i * 96; };
+  var VOTE = { trent: 1, gwen: 1, geoff: 1, izzy: 1, lindsay: 0, duncan: 2 };
+  var y1 = '', y2 = '', kerb = '';
+  for (var k = 0; k < 20; k++) {
+    var x1 = k * 108; y1 += '<path d="M' + x1 + ' 300V150c-26-8-18-80 16-92 34 12 42 84 16 92V300z"/>';
+    var x2 = k * 60 + 20; y2 += '<path d="M' + x2 + ' 300V210c-16-6-10-50 10-58 20 8 26 52 10 58V300z"/>';
+    kerb += 'M' + (k * 54) + ' 300h30';
+  }
+  el('fx-yews1').innerHTML = y1; el('fx-yews2').innerHTML = y2; el('fx-kerb').setAttribute('d', kerb);
+  var wk = '';
+  WALK.forEach(function(n, i){
+    wk += '<g class="fx-walker" data-n="' + n + '" transform="translate(' + (80 + i * 66) + ',' + (268 + (i % 2) * 18) + ')">'
+      + '<g class="fx-walk" style="--dl:' + (i * -0.2) + 's"><path d="M-18 40c0-26 8-34 18-34s18 8 18 34z" fill="#0a090c"/>'
+      + '<circle r="21" fill="#1b1a1f" stroke="#3a3641" stroke-width="2"/><image href="' + av(n) + '" x="-20" y="-20" width="40" height="40" clip-path="url(#fx-c20)"/></g></g>';
+  });
+  el('fx-walkers').innerHTML = wk;
+  var ov = '';
+  OVAL.forEach(function(p, i){
+    ov += '<g class="fx-oval" id="fx-o-' + p.n + '" style="--dl:' + (i * -0.3) + 's" transform="translate(' + p.x + ',' + p.y + ')"><g class="sway">'
+      + '<path d="M0 -60v24" stroke="#b08d4a"/><ellipse rx="30" ry="36" fill="#111014"/>'
+      + '<image href="' + av(p.n) + '" x="-24" y="-30" width="48" height="60" clip-path="url(#fx-c26)" style="filter:grayscale(1) brightness(.7)"/>'
+      + '<ellipse class="rim" rx="30" ry="36"/><text class="q" x="16" y="32">?</text>'
+      + '<path class="fx-crackline" d="M-12 -30l8 16-10 10 14 12-6 24" stroke="#ff5f75" stroke-width="2.5" fill="none"/></g></g>';
+  });
+  el('fx-ovals').innerHTML = ov;
+  var cones = '', cofs = '', mourn = '', lil = '';
+  CX.forEach(function(x, i){
+    cones += '<path class="fx-cone" d="M' + (x - 14) + ' 0h28l60 300h-148z" fill="url(#fx-conel)"/>';
+    cofs += '<g class="fx-coffin" id="fx-cf-' + i + '" transform="translate(' + x + ',206)"><g class="shk">'
+      + '<path class="fx-body" d="M-26 -64h52l18 30-10 104h-68l-10-104z" fill="#1b1a1f" stroke="#b08d4a" stroke-width="2"/>'
+      + '<g class="fx-inner"><image href="' + av(COF[i][0]) + '" x="-24" y="-30" width="48" height="60" clip-path="url(#fx-c26)"/>'
+      + '<path class="fx-ribbon" d="M-28 -26l20 20M-22 -30l20 20" stroke="#111014" stroke-width="6"/></g>'
+      + '<g class="fx-lid"><path d="M-26 -64h52l18 30-10 104h-68l-10-104z" fill="#111014" stroke="#b08d4a" stroke-width="2"/>'
+      + '<path d="M0 -44v70M-18 -20h36" stroke="#b08d4a" stroke-width="3"/></g></g>'
+      + '<g class="fx-count" id="fx-n-' + i + '" transform="translate(0,-92)"><g class="bb"><circle r="16" fill="#f4f1e8"/>'
+      + '<text y="6" text-anchor="middle" font-family="Spline Sans Mono" font-size="16" font-weight="600" fill="#111014">0</text></g></g>'
+      + '</g>';
+  });
+  MOURN.forEach(function(n, i){
+    mourn += '<g transform="translate(' + MX(i) + ',352)"><circle r="17" fill="#1b1a1f" stroke="#3a3641" stroke-width="2"/>'
+      + '<image href="' + av(n) + '" x="-16" y="-16" width="32" height="32" clip-path="url(#fx-c16)"/></g>';
+    lil += '<g class="fx-lily" id="fx-l-' + n + '" transform="translate(' + MX(i) + ',330)"><path d="M0 0c-8-3-12-9-10-16 5 2 9 7 10 16z M0 0c8-3 12-9 10-16-5 2-9 7-10 16z M0 0c-3-7-3-13 0-18 3 5 3 11 0 18z" fill="#f4f1e8" stroke="#b7b3bd" stroke-width=".8"/></g>';
+  });
+  el('fx-cones').innerHTML = cones; el('fx-coffins').innerHTML = cofs; el('fx-mourners').innerHTML = mourn; el('fx-lilies').innerHTML = lil;
+
+  function spread(n, seed){ var s = seed, out = []; for (var i = 0; i < n; i++){ s = (s * 16807) % 2147483647; var a = s / 2147483647; s = (s * 16807) % 2147483647; out.push([a, s / 2147483647]); } return out; }
+  function restart(host){ host.classList.remove('go'); void host.offsetWidth; host.classList.add('go'); }
+  function burst(n, cx, cy, px){
+    var host = el('fx-dust');
+    host.innerHTML = spread(n, 11 + Math.round(cx)).map(function(r){
+      return '<i style="left:' + cx + '%;top:' + cy + '%;--w:' + (3 + r[0] * 6) + 'px;--x:' + ((r[0] - .5) * px) + 'px;--y:' + ((r[1] - .8) * px) + 'px;--t:' + (.8 + r[1]) + 's;--dl:' + (r[0] * .2) + 's"></i>';
+    }).join('');
+    restart(host);
+  }
+  function petals(){
+    var host = el('fx-petal');
+    host.innerHTML = spread(28, 5).map(function(r){
+      return '<i style="left:' + (r[0] * 100) + '%;--w:' + (6 + r[1] * 8) + 'px;--x:' + ((r[1] - .5) * 160) + 'px;--t:' + (3 + r[0] * 3) + 's;--dl:' + (r[1] * 2) + 's"></i>';
+    }).join('');
+    restart(host);
+  }
+  function flash(violet, fx, fy){
+    var f = el('fx-flash'); f.classList.toggle('violet', !!violet);
+    f.style.setProperty('--fx-fx', fx); f.style.setProperty('--fx-fy', fy);
+    restart(f);
+  }
+  function stamp(text, cls){ var s = el('fx-stamp'); s.textContent = text; s.className = 'fx-stamp ' + cls; void s.offsetWidth; s.classList.add('go'); }
+  function setPot(v, tick){ var b = el('fx-pot'); b.textContent = '£' + v.toLocaleString('en-GB'); if (tick) restart2(b); }
+  function restart2(b){ b.classList.remove('tick'); void b.offsetWidth; b.classList.add('tick'); }
+  function cap(k, t){ el('fx-cap-k').textContent = k; el('fx-cap-t').textContent = t; }
+  function home(n){ var p = OVAL.filter(function(q){ return q.n === n; })[0]; var g = el('fx-o-' + n); g.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ')'); g.setAttribute('class', 'fx-oval'); }
+  function toCarriage(n, i){ var g = el('fx-o-' + n), t = WINS[n]; g.setAttribute('transform', 'translate(' + t[0] + ',' + t[1] + ') scale(.5)'); g.setAttribute('class', 'fx-oval gone'); el('fx-win' + i).setAttribute('class', 'fx-window lit'); }
+  function flyLily(n, target, first){
+    var i = MOURN.indexOf(n), g = el('fx-l-' + n);
+    g.setAttribute('class', 'fx-lily fly' + (first ? ' first' : ''));
+    g.setAttribute('transform', 'translate(' + (CX[target] + (i % 3 - 1) * 14) + ',' + (150 + (i % 2) * 12) + ') rotate(' + (i % 2 ? 24 : -24) + ')');
+  }
+  function lilyHome(n){ var i = MOURN.indexOf(n), g = el('fx-l-' + n); g.setAttribute('class', 'fx-lily'); g.setAttribute('transform', 'translate(' + MX(i) + ',330)'); }
+  function count(i, v, bump){
+    var c = el('fx-n-' + i); c.setAttribute('class', 'fx-count' + (v ? ' on' : ''));
+    c.querySelector('text').textContent = v;
+    if (bump) { void c.getBoundingClientRect(); c.setAttribute('class', 'fx-count on bump'); }
+  }
+  function openCof(i, cls){ el('fx-cf-' + i).setAttribute('class', 'fx-coffin open ' + cls); }
+  function shake(i, on){ el('fx-cf-' + i).setAttribute('data-shake', on ? '1' : '0'); }
+  function clue(n){
+    el('fx-card-h').textContent = n === 2 ? 'THE SECOND CLUE' : 'THE FIRST CLUE';
+    el('fx-card-t').textContent = n === 2 ? 'The one who is safe has never once been named at the Round Table.'
+      : 'The one who is safe fell off the climbing wall on the first day and laughed about it.';
+  }
+
+  // THE END STATE after n steps, drawn without suspense.
+  function settle(n){
+    FX.classList.toggle('has-shield', n >= 4);
+    FX.dataset.scene = n >= 4 ? 'grave' : 'proc';
+    FX.dataset.phase = n === 1 ? 'safe' : n === 2 ? 'miss' : n === 3 ? 'glance' : 'rest';
+    ['noah','eva','katie','sadie','tyler'].forEach(home);
+    el('fx-win0').setAttribute('class', 'fx-window'); el('fx-win1').setAttribute('class', 'fx-window');
+    if (n >= 1) toCarriage('tyler', 0);
+    if (n >= 2) el('fx-o-sadie').setAttribute('class', 'fx-oval crack');
+    clue(n >= 2 ? 2 : 1);
+    document.querySelectorAll('.fx-walker').forEach(function(g){ g.classList.toggle('watched', n === 3 && /duncan|izzy/.test(g.getAttribute('data-n'))); });
+    MOURN.forEach(lilyHome);
+    [0,1,2,3].forEach(function(i){ el('fx-cf-' + i).setAttribute('class', 'fx-coffin'); shake(i, false); count(i, 0); });
+    if (n >= 4) { flyLily('trent', 1, true); count(1, 1); }
+    if (n >= 5) { MOURN.forEach(function(m){ flyLily(m, VOTE[m], m === 'trent'); }); count(0, 1); count(1, 4); count(2, 1); }
+    if (n >= 6) { openCof(0, 'alive'); openCof(2, 'alive'); openCof(3, 'alive'); }
+    if (n >= 7) { lilyHome('lindsay'); count(0, 0); }
+    if (n >= 8) openCof(1, 'dead');
+    setPot(n >= 8 ? 42100 : 33700, false);
+    if (n >= 6) cap('Part three', 'The Opening'); else if (n >= 4) cap('Part two', 'The Lilies'); else cap('Part one', 'The Procession');
+    el('fx-stamp').className = 'fx-stamp';
+  }
+  var timers = [];
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function stopAll(){ timers.forEach(clearTimeout); timers = []; }
+  // PLAY step s: the suspense, then the answer.
+  function play(s){
+    stopAll();
+    settle(s - 1);
+    if (s === 1 || s === 2) {
+      clue(s); FX.dataset.phase = 'ask';
+      later(function(){
+        if (s === 1) { FX.dataset.phase = 'safe'; toCarriage('tyler', 0); flash(false, '54%', '64%'); stamp('SAFE · TYLER', 'safe'); }
+        else { FX.dataset.phase = 'miss'; el('fx-o-sadie').setAttribute('class', 'fx-oval crack'); flash(true, '33%', '25%'); stamp('WRONG NAME', 'wrong'); }
+      }, 1700);
+    } else if (s === 3) {
+      FX.dataset.phase = 'glance';
+      document.querySelectorAll('.fx-walker').forEach(function(g){ g.classList.toggle('watched', /duncan|izzy/.test(g.getAttribute('data-n'))); });
+    } else if (s === 4) {
+      FX.dataset.scene = 'grave'; FX.dataset.phase = 'hold'; cap('Part two', 'The Lilies');
+      later(function(){
+        flyLily('trent', 1, true);
+        later(function(){ FX.dataset.phase = 'first'; count(1, 1, true); FX.classList.add('has-shield'); flash(false, '50%', '24%'); stamp('THE FIRST LILY', 'gold'); }, 1100);
+      }, 1300);
+    } else if (s === 5) {
+      FX.dataset.phase = 'lay';
+      var c = { 0: 0, 1: 1, 2: 0 };
+      ['gwen','lindsay','geoff','duncan','izzy'].forEach(function(m, k){
+        later(function(){ flyLily(m, VOTE[m], false); later(function(){ c[VOTE[m]]++; count(VOTE[m], c[VOTE[m]], true); }, 1050); }, k * 520);
+      });
+      later(function(){ stamp('FOUR OF SIX', 'safe'); }, 4000);
+    } else if (s === 6) {
+      FX.dataset.phase = 'hold'; cap('Part three', 'The Opening');
+      [0,2,3].forEach(function(i){ shake(i, true); });
+      later(function(){
+        FX.dataset.phase = 'open';
+        [0,2,3].forEach(function(i, k){ later(function(){ shake(i, false); openCof(i, 'alive'); burst(18, CX[i] / 10.8, 50, 170); }, k * 420); });
+        later(function(){ stamp('ALIVE', 'safe'); }, 1500);
+      }, 1600);
+    } else if (s === 7) {
+      FX.dataset.phase = 'return';
+      lilyHome('lindsay'); later(function(){ count(0, 0, false); }, 700);
+    } else if (s === 8) {
+      FX.dataset.phase = 'hold'; shake(1, true);
+      later(function(){
+        shake(1, false); FX.dataset.phase = 'dead'; openCof(1, 'dead');
+        flash(true, '43%', '52%'); burst(24, 43.5, 50, 220); stamp('MURDERED · NOAH', 'dead');
+        later(function(){ setPot(42100, true); }, 1400);
+      }, 2000);
+    } else if (s === 9) {
+      FX.dataset.phase = 'mourn'; petals();
+    }
+  }
+  function paint(){
+    var n = idx + 1;
+    for (var i = 0; i < TOTAL; i++) { var s = el('fu-step-' + i); if (s) s.classList.toggle('on', i <= idx); }
+    el('fu-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    el('fu-next').disabled = idx >= TOTAL - 1;
+    el('fu-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+    var rodeTyler = n > 0;
+    el('fu-rider-0').setAttribute('class', 'fu-rider' + (rodeTyler ? ' on' : ''));
+    el('fu-rider-1').setAttribute('class', 'fu-rider');
+    el('fu-cl-0').className = 'fu-cl' + (n > 0 ? ' solved' : '');
+    el('fu-cl-0').querySelector('span').textContent = n > 0 ? 'Tyler · safe' : 'unread';
+    el('fu-cl-1').className = 'fu-cl' + (n > 1 ? ' missed' : '');
+    el('fu-cl-1').querySelector('span').textContent = n > 1 ? 'missed · Sadie stays' : 'unread';
+    el('fu-t-car').textContent = rodeTyler ? '1' : '0';
+    el('fu-t-cof').textContent = rodeTyler ? '4' : '5';
+    // walkers move down to the grave once the lilies start
+    WALK.forEach(function(nm, i){
+      var atGrave = n > 3;
+      var x = atGrave ? 40 + i * 44 : 136 + (i % 2) * 28;
+      var y = atGrave ? 196 : 102 + Math.floor(i / 2) * 26;
+      el('fu-w-' + i).setAttribute('transform', 'translate(' + x + ',' + y + ')');
+    });
+    COFF.forEach(function(p, i){
+      var g = el('fu-c-' + i);
+      var gone = i === 4 && rodeTyler;
+      g.style.opacity = gone ? '.12' : '1';
+      var open = (p[1] === 'alive' && n > 5 && i !== 4) || (p[1] === 'dead' && n > 7);
+      g.setAttribute('class', 'fu-coffin' + (open ? ' open ' + p[1] : ''));
+      var count = n > 4 ? (LILIES[i] || []).length : (n > 3 && i === 1 ? 1 : 0);
+      g.querySelectorAll('.lily').forEach(function(l){
+        var k = +l.getAttribute('data-k');
+        l.setAttribute('class', 'lily' + (k < count ? ' on' : '') + (i === 1 && k === 0 && count ? ' first' : ''));
+      });
+    });
+    var won = n > 3;
+    el('fu-lilybox').classList.toggle('on', won);
+    el('fu-lily-val').textContent = won ? 'Trent · first on the right coffin' : 'no lily has been laid';
+    el('fu-t-lil').textContent = n > 4 ? '4 of 6' : n > 3 ? '1 so far' : '—';
+    var done = n > 7;
+    el('fu-pot-m').textContent = done ? 'yes · 4 of 6' : '—';
+    el('fu-pot-e').textContent = done ? '£8,400' : '—';
+    el('fu-pot-a').textContent = done ? '£42,100' : '£33,700';
+  }
+  el('fu-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; paint(); play(idx + 1);
+    var s = el('fu-step-' + idx); if (s) s.scrollIntoView({behavior:'smooth', block:'end'});
+  });
+  el('fu-all').addEventListener('click', function(){ stopAll(); idx = TOTAL - 1; paint(); settle(TOTAL); });
+  paint(); settle(0);
+})();
+</script>
+</body>
+</html>

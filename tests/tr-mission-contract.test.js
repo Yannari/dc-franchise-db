@@ -333,10 +333,12 @@ describe('every mission honours the record contract', () => {
 
       // THE BOUNDARY, where the cap can actually be seen to bite. Starting 100
       // short, a mission that grosses more banks exactly 100.
-      // A Traitors' Monument afternoon whose sword-drawer took the Shield
-      // banks nothing by design, so the boundary takes the next seed.
+      // Two afternoons bank nothing BY DESIGN: a Traitors' Monument whose
+      // sword-drawer took the Shield, and a Roulette night the wheel cleaned
+      // out. The boundary takes the next seed rather than pretending either
+      // is a pot bug.
       let m = null;
-      for (let seed = 77; !m || m.tally?.tookShield; seed++) {
+      for (let seed = 77; !m || m.tally?.tookShield || m.gross <= 100; seed++) {
         world();
         gs.tr.pot = POT_CEILING - 100;
         m = mission.simulate(ctxFor(), rngFor(seed));

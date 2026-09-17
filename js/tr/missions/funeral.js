@@ -178,21 +178,37 @@ export const funeral = {
     for (let k = 0; k < nClues && k < order.length; k++) {
       const about = order[k];
       const file = teams[k % teams.length];
-      const clue = _clueFor(about, decoys.filter(n => n !== about), mourners, rng, clues.map(c => c.text));
       const solver = weightedPick(rng, file.members, n => 0.4 + statOf(n, 'intuition') / 5);
+      // A clue never names the person answering it.
+      const clue = _clueFor(about, decoys.filter(n => n !== about), mourners.filter(n => n !== solver),
+        rng, clues.map(c => c.text));
       const v = noisyPair(rng, solver, 'intuition', 'mental', 3.0);
       const nudge = ctx.conflicted(solver) ? 0.08 : 0;
       const solved = rng() < clamp01(0.35 + 0.06 * v - nudge);
-      const wrongPool = decoys.filter(n => n !== about);
+      const still = hidden.coffins.filter(n => !clues.some(c => c.solved && c.about === n));
+      const wrongPool = decoys.filter(n => n !== about && still.includes(n));
       const guess = solved ? about : (wrongPool[Math.floor(rng() * wrongPool.length)] || about);
-      clues.push({ about, kind: clue.kind, text: clue.text, solved, by: solver, file: file.name, guess });
+      // THE WALK ARGUES FIRST. One or two of the file call out a name before
+      // the one who answers; their guesses are wrong, or they would have
+      // answered.
+      const voices = [];
+      const others = file.members.filter(n => n !== solver);
+      const nVoices = Math.min(others.length, 1 + Math.floor(rng() * 2));
+      const pool = still.filter(n => n !== about && n !== guess);
+      for (let j = 0; j < nVoices && pool.length; j++) {
+        const by = others.splice(Math.floor(rng() * others.length), 1)[0];
+        voices.push({ by, name: pool[Math.floor(rng() * pool.length)] });
+      }
+      clues.push({ about, kind: clue.kind, text: clue.text, solved, by: solver, file: file.name, guess, voices });
       contrib[solver] += solved ? 1.2 : -0.3;
       teamScore[file.name].procession += solved ? 1 : 0;
       beats.procession.push({
         team: file.name, player: solver, kind: solved ? 'good' : 'bad', score: v,
-        text: solved
-          ? `"${clue.text}" ${solver} said ${about}'s name before the host had finished. The carriage door opened.`
-          : `"${clue.text}" ${solver} was sure it meant ${guess}. It meant ${about}, who stays in a coffin.`,
+        text: `"${clue.text}" `
+          + voices.map((g, j) => (j === 0 ? `${g.by} thought it was ${g.name}. ` : `${g.by} said ${g.name}. `)).join('')
+          + (solved
+            ? `${solver} said ${about}, and the carriage door opened.`
+            : `${solver} was sure it meant ${guess}. It meant ${about}, who stays in a coffin.`),
       });
       // Somebody reacted too fast to a wrong guess, and somebody saw it.
       if (!solved && !glanced) {
@@ -326,6 +342,39 @@ export const funeral = {
         }
       }
     }
+
+    // Two mourners who chose different coffins, and said so.
+    const splitPairs = [];
+    for (const a of lilies) for (const b of lilies) {
+      if (a.by < b.by && a.on !== b.on) splitPairs.push([a, b]);
+    }
+    if (splitPairs.length && rng() < 0.75) {
+      splitPairs.sort((x, y) => getBond(x[0].by, x[1].by) - getBond(y[0].by, y[1].by));
+      const [a, b] = splitPairs[Math.floor(rng() * Math.min(3, splitPairs.length))];
+      scenes.push(missionScene({
+        id: 'funeral-argument', eventId: 'funeral-argued-at-the-grave', phase: 'lilies',
+        participants: [a.by, b.by],
+        text: `${a.by} and ${b.by} stood between two coffins and argued in whispers. ${a.by} was sure it was ${a.on}. ${b.by} would not move from ${b.on}.`,
+        effects: [{ kind: 'bond', players: [a.by, b.by], delta: -0.3, source: `${a.by} and ${b.by} argued over whose coffin it was` }],
+        confessional: { purpose: 'belief-change', speaker: a.by,
+          text: confessionalVoice(a.by, {
+            neutral: `${b.by} dug in. I don't know if that's stubborn or something worse.`,
+            villainous: `Let ${b.by} be wrong in public. It costs me nothing.`,
+            nice: `I hope I'm the one who's wrong. I really do.`,
+          }) },
+      }));
+    }
+    // Where the lilies went, counted aloud, before any lid moves.
+    const tallyText = coffins.map(n => `${tallyOn[n]} on ${n}`).join(', ');
+    // Not the line-up card's player: a one-person scene hides their card.
+    const teller = mourners.find(n => n !== counter && n !== first) || counter;
+    scenes.push(missionScene({
+      id: 'funeral-lilies-counted', eventId: 'funeral-lilies-counted', phase: 'lilies',
+      participants: [teller],
+      text: `The lilies went down one at a time. When the last was laid there were ${tallyText}, and nobody would say which lid they were most afraid of.`,
+      effects: [{ kind: 'record', player: teller, field: 'countedTheLilies', value: tallyText,
+        source: `the lilies were counted at the grave` }],
+    }));
 
     // ── PHASE III: THE OPENING ───────────────────────────────────────
     const alive = coffins.filter(n => n !== victim);

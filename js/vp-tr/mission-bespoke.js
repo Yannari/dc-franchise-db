@@ -116,7 +116,13 @@ function _view(ep) {
   const m = ep && ep.tr && ep.tr.mission;
   if (!m || !Array.isArray(m.phases) || m.phases.length < 3) return null;
   const cer = m.ceremony || {};
-  const epNum = m.ep != null ? m.ep : (ep.num || 0);
+  // THE REVEAL KEY IS THE ROW'S `num`, NOT THE RECORD'S DAY. The transcript
+  // (js/vp-tr/screens.js `traitorsScreensRevealed`) renumbers a copy of the row
+  // so it can reveal everything without touching the live screen; keying on
+  // `m.ep` sent that reveal-all to the live key, and every mission opened fully
+  // revealed with Next disabled. `day` is the record's own, for display.
+  const day = m.ep != null ? m.ep : (ep.num || 0);
+  const epNum = ep.num != null ? ep.num : day;
 
   const scenesByPhase = {};
   for (const s of (m.scenes || [])) {
@@ -163,7 +169,7 @@ function _view(ep) {
   });
 
   return {
-    epNum, id: m.id, name: m.name || 'The Mission',
+    epNum, day, id: m.id, name: m.name || 'The Mission',
     staging: cer.staging || '', hostBeats: cer.hostBeats || [], rulePoints: cer.rulePoints || [],
     phases,
     teams: (m.teams || []).map(t => ({ name: t.name, members: [...(t.members || [])], perf: t.perf,
@@ -418,7 +424,7 @@ export function rpBuildBespokeMission(ep, observer = 'audience') {
 
   const body = '<div class="' + p + '-body">'
     + '<header class="' + p + '-hero">'
-    + '<div class="' + p + '-kicker">Mission &middot; Day ' + v.epNum + '</div>'
+    + '<div class="' + p + '-kicker">Mission &middot; Day ' + v.day + '</div>'
     + th.title(v)
     + '<p class="' + p + '-sub">' + _esc(th.sub(v)) + '</p>'
     + '<div class="' + p + '-meta">' + th.chips(v).map(c =>

@@ -32,6 +32,8 @@ const K = {
   line: c => /lined up at the graveside/.test(c.text || ''),
   first: c => /laid a lily on it/.test(c.text || ''),
   sure: c => /without looking at the others/.test(c.text || ''),
+  argue: c => /argued in whispers/.test(c.text || ''),
+  counted: c => /The lilies went down one at a time/.test(c.text || ''),
   open: c => /lid came off, and/.test(c.text || ''),
   back: c => /handed it back/.test(c.text || ''),
   dead: c => /^The last lid came off/.test(c.text || ''),
@@ -82,7 +84,8 @@ function _layout(v) {
   const n = mourners.length;
   const mx = mourners.map((_, i) => (n <= 1 ? 540 : 180 + i * (720 / (n - 1))));
   const walkX = mourners.map((_, i) => (n <= 1 ? 250 : 50 + i * (420 / (n - 1))));
-  const ovals = missing.map((nm, i) => ({ n: nm, x: 540 - (missing.length - 1) * 50 - 250 + i * 100, y: 96 }));
+  const gapO = missing.length > 5 ? 92 : 100;
+  const ovals = missing.map((nm, i) => ({ n: nm, x: 120 + i * gapO, y: 108 }));
   const cleared = (t.clues || []).filter(c => c.solved).map(c => c.about);
   const wins = {};
   cleared.forEach((nm, i) => { wins[nm] = [579 + i * 62, 245]; });
@@ -109,10 +112,10 @@ export function funeralStates(v, total) {
       }
     }
     const firstSeen = seen.some(e => e.k === 'first');
-    // The lilies are all laid on the first-lily card, or on the line-up card
-    // when nobody's lily was right (there is no first-lily card then).
-    const allLaid = firstSeen || (!t.first && seen.some(e => e.k === 'line'));
-    const laid = allLaid ? (t.lilies || []).map(l => ({ ...l })) : [];
+    // The first lily goes down on its own card; the rest on the counting card.
+    const allLaid = seen.some(e => e.k === 'counted');
+    const laid = allLaid ? (t.lilies || []).map(l => ({ ...l }))
+      : firstSeen ? (t.lilies || []).filter(l => l.by === t.first).map(l => ({ ...l })) : [];
     const backSeen = seen.some(e => e.k === 'back');
     const opened = seen.filter(e => e.k === 'open').map(e => e.name);
     const deadSeen = seen.some(e => e.k === 'dead');
@@ -133,6 +136,7 @@ export function funeralStates(v, total) {
       riders, cracked, lilies, counts, opened, dead: deadSeen,
       shield: firstSeen && !!(v.shield && v.shield.holder),
       watched: last && (last.k === 'shake' || last.k === 'gate') ? last.who : [],
+      argue: last && last.k === 'argue' ? last.who : [],
       returned,
       petals: seen.some(e => e.k === 'grave'),
       paid: deadSeen,
@@ -177,7 +181,7 @@ function _stage(v, states, n) {
     + '<path d="M0 -44v70M-18 -20h36" stroke="#b08d4a" stroke-width="3"/></g></g>'
     + '<g class="fx-count" data-cc="' + _esc(nm) + '" transform="translate(0,-92)"><g class="bb"><circle r="16" fill="#f4f1e8"/>'
     + '<text y="6" text-anchor="middle" font-family="Spline Sans Mono" font-size="16" font-weight="600" fill="#111014">0</text></g></g></g>').join('');
-  const mourners = L.mourners.map((nm, i) => '<g transform="translate(' + L.mx[i].toFixed(1) + ',352)"><circle r="15" fill="#1b1a1f" stroke="#3a3641" stroke-width="2"/>'
+  const mourners = L.mourners.map((nm, i) => '<g class="fx-mface" data-m="' + _esc(nm) + '" transform="translate(' + L.mx[i].toFixed(1) + ',352)"><circle r="15" fill="#1b1a1f" stroke="#3a3641" stroke-width="2"/>'
     + '<image href="' + _esc(_url(nm)) + '" x="-14" y="-14" width="28" height="28" clip-path="url(#fx-c14-' + e + ')"/></g>').join('');
   const lilies = L.mourners.map((nm, i) => '<g class="fx-lily" data-l="' + _esc(nm) + '" transform="translate(' + L.mx[i].toFixed(1) + ',330)">'
     + '<path d="M0 0c-8-3-12-9-10-16 5 2 9 7 10 16z M0 0c8-3 12-9 10-16-5 2-9 7-10 16z M0 0c-3-7-3-13 0-18 3 5 3 11 0 18z" fill="#f4f1e8" stroke="#b7b3bd" stroke-width=".8"/></g>').join('');
@@ -213,7 +217,7 @@ function _stage(v, states, n) {
     + '<g class="fx-wheel"><circle cx="46" cy="290" r="16" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M46 274v32M30 290h32" stroke="#b08d4a"/></g>'
     + '<g class="fx-wheel"><circle cx="134" cy="290" r="16" fill="none" stroke="#b08d4a" stroke-width="3"/><path d="M134 274v32M118 290h32" stroke="#b08d4a"/></g></g>'
     + walkers + ovals
-    + '<g class="fx-sweep"><ellipse cx="' + (L.ovals[0] ? L.ovals[0].x : 160) + '" cy="96" rx="60" ry="70" fill="rgba(244,241,232,.13)"/></g>'
+    + '<g class="fx-sweep"><ellipse cx="' + (L.ovals[0] ? L.ovals[0].x : 160) + '" cy="108" rx="60" ry="70" fill="rgba(244,241,232,.13)"/></g>'
     + '<g class="fx-card" transform="translate(816,112)"><g class="flip">'
     + '<rect x="-120" y="-66" width="240" height="132" fill="#f4f1e8" stroke="#111014" stroke-width="6"/>'
     + '<rect x="-120" y="-66" width="240" height="24" fill="#111014"/>'
@@ -313,6 +317,10 @@ function _pctX(s, name) { const i = s.L.coffins.indexOf(name); return i < 0 ? 50
 function _settle(root, s, v) {
   root.dataset.scene = s.scene;
   root.dataset.phase = s.watched.length ? 'glance' : 'rest';
+  _qa(root, '.fx-bubble').forEach(b => b.remove());
+  _qa(root, '.fx-oval.named').forEach(o => o.classList.remove('named'));
+  _qa(root, '.fx-coffin .pick').forEach(p => p.remove());
+  _qa(root, '.fx-mface').forEach(m => m.classList.toggle('arguing', s.argue.includes(m.getAttribute('data-m'))));
   root.classList.toggle('has-shield', s.shield);
   for (const o of s.L.ovals) {
     const g = _q(root, '.fx-oval[data-o="' + _css(o.n) + '"]'); if (!g) continue;
@@ -338,12 +346,36 @@ function _settle(root, s, v) {
   const st = _q(root, '.fx-stamp'); if (st) st.className = 'fx-stamp';
 }
 
+/** A mourner calls out a name: a bubble over their head, the portrait lights. */
+function _say(root, by, name, last) {
+  const w = _q(root, '.fx-walker[data-n="' + _css(by) + '"]'); if (!w) return;
+  _qa(root, '.fx-bubble').forEach(b => b.classList.add('old'));
+  const NS = 'http://www.w3.org/2000/svg';
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('class', 'fx-bubble' + (last ? ' last' : ''));
+  const label = String(name);
+  const wdt = 16 + label.length * 8.4;
+  g.innerHTML = '<g class="pop"><rect x="' + (-wdt / 2) + '" y="-78" width="' + wdt + '" height="28" rx="14"/>'
+    + '<path d="M-6 -51 L0 -40 L6 -51Z"/><text x="0" y="-59" text-anchor="middle">' + _esc(label) + '?</text></g>';
+  w.appendChild(g);
+  _qa(root, '.fx-oval.named').forEach(o => o.classList.remove('named'));
+  const o = _q(root, '.fx-oval[data-o="' + _css(name) + '"]'); if (o) o.classList.add('named');
+}
+/** A pointer from a coffin's rim, in the arguing mourner's colour. */
+function _pick(root, coffin, i) {
+  const g = _q(root, '.fx-coffin[data-c="' + _css(coffin) + '"]'); if (!g) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('class', 'pick ' + (i ? 'b' : 'a'));
+  p.setAttribute('d', 'M-30 -68h60l20 34-11 108h-78l-11-108z');
+  g.appendChild(p);
+}
+
 /** Every lily not yet down flies to its coffin, one after another. */
 function _layAll(root, s, t, prev, later, skipFirst) {
   root.dataset.phase = 'lay';
   const counts = { ...prev.counts };
-  if (skipFirst && t.first) counts[t.victim] = (counts[t.victim] || 0) + 1;
-  (t.lilies || []).filter(l => !(skipFirst && l.by === t.first)).forEach((l, i) => {
+  (t.lilies || []).filter(l => !prev.lilies.some(p => p.by === l.by)).forEach((l, i) => {
     later(() => {
       _flyLily(root, s, l, false);
       later(() => { counts[l.on] = (counts[l.on] || 0) + 1; _count(root, l.on, counts[l.on], true); }, 1050);
@@ -360,7 +392,11 @@ function _play(root, prev, s, v, key) {
   if (e.k === 'clue' && e.clue) {
     _setClue(root, e.clue, e.n);
     root.dataset.phase = 'ask';
+    const voices = [...(e.clue.voices || []), { by: e.clue.by, name: e.clue.guess, last: true }];
+    voices.forEach((g, j) => later(() => _say(root, g.by, g.name, !!g.last), 1500 + j * 1300));
     later(() => {
+      _qa(root, '.fx-bubble').forEach(b => b.remove());
+      _qa(root, '.fx-oval.named').forEach(o => o.classList.remove('named'));
       if (e.clue.solved) {
         root.dataset.phase = 'safe'; _ride(root, s, e.clue.about); _flash(root, false, '56%', '64%');
         _stamp(root, 'SAFE · ' + e.clue.about.toUpperCase(), 'safe');
@@ -369,14 +405,25 @@ function _play(root, prev, s, v, key) {
         const g = _q(root, '.fx-oval[data-o="' + _css(e.clue.about) + '"]'); if (g) g.setAttribute('class', 'fx-oval crack');
         _flash(root, true, '30%', '25%'); _stamp(root, 'WRONG NAME', 'wrong');
       }
-    }, 1700);
+    }, 1500 + voices.length * 1300 + 700);
   } else if (e.k === 'shake' || e.k === 'gate') {
     _settle(root, s, v);
   } else if (e.k === 'line') {
     root.dataset.scene = 'grave'; root.dataset.phase = 'hold';
     const cap = _q(root, '.fx-cap-t'); if (cap) cap.textContent = 'The Lilies';
     const k2 = _q(root, '.fx-cap-k'); if (k2) k2.textContent = 'Part two';
-    if (!t.first) later(() => _layAll(root, s, t, prev, later, false), 1200);
+  } else if (e.k === 'argue') {
+    _settle(root, s, v);
+    root.dataset.phase = 'argue';
+    s.argue.forEach((m, i) => {
+      const l = (t.lilies || []).find(x => x.by === m);
+      if (l) later(() => _pick(root, l.on, i), 500 + i * 700);
+    });
+  } else if (e.k === 'counted') {
+    root.dataset.scene = 'grave';
+    _layAll(root, s, t, prev, later, !!t.first);
+    const n = (t.lilies || []).length;
+    later(() => _stamp(root, s.L.coffins.map(c => s.counts[c] || 0).join(' · '), 'safe'), n * 380 + 1500);
   } else if (e.k === 'first') {
     root.dataset.scene = 'grave'; root.dataset.phase = 'hold';
     later(() => {
@@ -385,7 +432,6 @@ function _play(root, prev, s, v, key) {
       later(() => {
         _count(root, t.victim, 1, true);
         if (s.shield) { root.dataset.phase = 'first'; root.classList.add('has-shield'); _flash(root, false, '50%', '24%'); _stamp(root, 'THE FIRST LILY', 'gold'); } else root.dataset.phase = 'rest';
-        later(() => _layAll(root, s, t, prev, later, true), 1800);
       }, 1100);
     }, 1300);
   } else if (e.k === 'sure') {
@@ -401,7 +447,7 @@ function _play(root, prev, s, v, key) {
       _shake(root, e.name, false); root.dataset.phase = 'open';
       _open(root, e.name, 'alive'); _burst(root, 18, _pctX(s, e.name), 50, 170);
       _stamp(root, 'ALIVE · ' + e.name.toUpperCase(), 'safe');
-    }, 1400);
+    }, 2200);
   } else if (e.k === 'back') {
     root.dataset.phase = 'rest';
     if (s.returned) {
@@ -422,7 +468,7 @@ function _play(root, prev, s, v, key) {
         const pot = _q(root, '.fx-potv');
         if (pot) { pot.textContent = _gbp(v.potBefore + v.earned); _restart(pot, 'tick'); }
       }, 1400);
-    }, 2000);
+    }, 3000);
   } else if (e.k === 'grave') {
     _settle(root, s, v);
     root.dataset.phase = 'mourn'; _petals(root);
@@ -535,7 +581,7 @@ export const FUNERAL = {
 
   css: `
 @import url('https://fonts.googleapis.com/css2?family=Italiana&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Spline+Sans+Mono:wght@400;600&display=swap');
-.fu-root{--fu-jet:#0c0b0d; --fu-crepe:#1b1a1f; --fu-crepe2:#26242b; --fu-lily:#f4f1e8; --fu-violet:#6e4f86; --fu-violet-hi:#b394d0; --fu-brass:#b08d4a; --fu-brass-hi:#e2c47e; --fu-ash:#9c98a3; --fu-blood:#9b2d3c; --fu-shield:#efcb5f; --fu-nav:46px; --cv-display:'Italiana',serif;background:var(--fu-jet);color:var(--fu-ash);font-family:'Old Standard TT',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+.fu-root{--fu-jet:#0c0b0d; --fu-crepe:#1b1a1f; --fu-crepe2:#26242b; --fu-lily:#f4f1e8; --fu-violet:#6e4f86; --fu-violet-hi:#b394d0; --fu-brass:#b08d4a; --fu-brass-hi:#e2c47e; --fu-ash:#9c98a3; --fu-blood:#9b2d3c; --fu-shield:#efcb5f; --fu-nav:46px; --cv-display:'Italiana',serif;background:var(--fu-jet);color:var(--fu-ash);font-family:'Old Standard TT',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 /* ── ATMOSPHERE: an overcast avenue, falling petals ───────────────── */
 .fu-sky{position:absolute;inset:0;
   background:radial-gradient(70% 40% at 50% 0%,rgba(156,152,163,.12),transparent 70%),
@@ -607,7 +653,7 @@ export const FUNERAL = {
 .fu-setting{font-style:italic;color:#8a8690;margin:8px 0 12px}
 
 /* ── CARDS: laid down slowly ──────────────────────────────────────── */
-.fu-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;
+.fu-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;scroll-margin-top:460px;
   background:linear-gradient(180deg,#1d1b21,#141317);border:1px solid #2e2b34;border-left:4px solid #3a3641;
   opacity:0;transform:translateY(10px);transition:opacity 1.1s ease,transform 1.1s ease}
 .fu-card.on{opacity:1;transform:none}
@@ -820,6 +866,22 @@ export const FUNERAL = {
 .fx-oval image.gray{filter:grayscale(1) brightness(.7)}
 .fx-oval.gone image.gray{filter:none}
 .fx-card-t{font:italic 16px/1.35 'Old Standard TT',serif;color:#231f28}
+.fx-bubble .pop{transform-box:fill-box;transform-origin:50% 100%;animation:fx-pop .45s cubic-bezier(.3,1.7,.5,1)}
+@keyframes fx-pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.fx-bubble rect{fill:#f4f1e8;stroke:#6e4f86;stroke-width:2}
+.fx-bubble path{fill:#f4f1e8}
+.fx-bubble text{font:600 15px 'Spline Sans Mono',monospace;fill:#231f28}
+.fx-bubble.old{opacity:.35}
+.fx-bubble.last rect{fill:#efcb5f;stroke:#7b6224}
+.fx-bubble.last path{fill:#efcb5f}
+.fx-oval.named .rim{stroke:#efcb5f;stroke-width:4;filter:drop-shadow(0 0 10px rgba(239,203,95,1))}
+.fx-oval.named image.gray{filter:grayscale(.3) brightness(1)}
+.fx-coffin .pick{fill:none;stroke-width:4;opacity:0;animation:fx-pickin .6s ease-out forwards}
+.fx-coffin .pick.a{stroke:#e2c47e}.fx-coffin .pick.b{stroke:#b394d0}
+@keyframes fx-pickin{from{opacity:0;transform:scale(1.2)}to{opacity:1;transform:none}}
+.fx-mface{transition:filter .4s}
+.fx[data-phase=argue] .fx-mface:not(.arguing){filter:brightness(.3)}
+.fx-mface.arguing{filter:drop-shadow(0 0 10px rgba(226,196,126,1))}
 @media(prefers-reduced-motion:reduce){.fu-root *,.fu-root *::before,.fu-root *::after{animation:none !important;transition:none !important}.fu-card{opacity:1;transform:none}}
 `,
 };

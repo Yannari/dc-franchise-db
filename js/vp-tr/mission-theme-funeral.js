@@ -535,7 +535,7 @@ export const FUNERAL = {
 
   css: `
 @import url('https://fonts.googleapis.com/css2?family=Italiana&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Spline+Sans+Mono:wght@400;600&display=swap');
-.fu-root{--fu-jet:#0c0b0d; --fu-crepe:#1b1a1f; --fu-crepe2:#26242b; --fu-lily:#f4f1e8; --fu-violet:#6e4f86; --fu-violet-hi:#b394d0; --fu-brass:#b08d4a; --fu-brass-hi:#e2c47e; --fu-ash:#9c98a3; --fu-blood:#9b2d3c; --fu-shield:#efcb5f; --fu-nav:46px; --cv-display:'Italiana',serif;background:var(--fu-jet);color:var(--fu-ash);font-family:'Old Standard TT',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+.fu-root{--fu-jet:#0c0b0d; --fu-crepe:#1b1a1f; --fu-crepe2:#26242b; --fu-lily:#f4f1e8; --fu-violet:#6e4f86; --fu-violet-hi:#b394d0; --fu-brass:#b08d4a; --fu-brass-hi:#e2c47e; --fu-ash:#9c98a3; --fu-blood:#9b2d3c; --fu-shield:#efcb5f; --fu-nav:46px; --cv-display:'Italiana',serif;background:var(--fu-jet);color:var(--fu-ash);font-family:'Old Standard TT',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 /* ── ATMOSPHERE: an overcast avenue, falling petals ───────────────── */
 .fu-sky{position:absolute;inset:0;
   background:radial-gradient(70% 40% at 50% 0%,rgba(156,152,163,.12),transparent 70%),
@@ -607,7 +607,7 @@ export const FUNERAL = {
 .fu-setting{font-style:italic;color:#8a8690;margin:8px 0 12px}
 
 /* ── CARDS: laid down slowly ──────────────────────────────────────── */
-.fu-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;
+.fu-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;scroll-margin-top:460px;
   background:linear-gradient(180deg,#1d1b21,#141317);border:1px solid #2e2b34;border-left:4px solid #3a3641;
   opacity:0;transform:translateY(10px);transition:opacity 1.1s ease,transform 1.1s ease}
 .fu-card.on{opacity:1;transform:none}

@@ -42,14 +42,53 @@ function hashOf(s) {
    One line, chosen from where she actually stands rather than at random: the
    queen who came second wants the crown, the queen who went out first wants
    to be seen at all. This is the sentence the entrance is built on. */
-function businessFor(rank, of, wins) {
+function businessFor(rank, of, wins, name = '') {
   const share = rank / Math.max(2, of);
-  if (rank === 1) return 'she has nothing to prove and everything to defend';
-  if (rank === 2) return 'she was one song away, and she has thought about it since';
-  if (wins >= 2) return 'she won more than anybody and still went home';
-  if (share <= 0.35) return 'she got close enough to taste it';
-  if (share >= 0.8) return 'she went home before the room knew who she was';
-  return 'she was good and it was not enough';
+  /* One line per SHAPE of season, and three ways to say each — four queens in
+     a row all reading "she was good and it was not enough" was the premiere
+     the first version produced. Which of the three is a stable function of
+     her name, so it does not move between a replay and a screen. */
+  const pick3 = list => list[Math.floor(hashOf(`${name}|biz`) * list.length) % list.length];
+  if (rank === 1) {
+    return pick3([
+      'she has nothing to prove and everything to defend',
+      'she already has one of these at home, which is its own kind of target',
+      'she is the only queen here who knows exactly what winning costs',
+    ]);
+  }
+  if (rank === 2) {
+    return pick3([
+      'she was one song away, and she has thought about it since',
+      'she has been the runner-up for long enough to hate the word',
+      'she lost it on the last night and has been rehearsing this one ever since',
+    ]);
+  }
+  if (wins >= 2) {
+    return pick3([
+      'she won more than anybody and still went home',
+      'she has more wins than the queen who beat her, which still does not sit right',
+      'she was the best in her season for a month and gone in a night',
+    ]);
+  }
+  if (share <= 0.35) {
+    return pick3([
+      'she got close enough to taste it',
+      'she made the end of her season and could not make the end of the sentence',
+      'she was two rounds off and nobody remembers who is two rounds off',
+    ]);
+  }
+  if (share >= 0.8) {
+    return pick3([
+      'she went home before the room knew who she was',
+      'she was gone early enough that her season is somebody else’s story',
+      'she never got to show them the half of it',
+    ]);
+  }
+  return pick3([
+    'she was good and it was not enough',
+    'she was fine, and fine is how you leave in the middle',
+    'she did nothing wrong and went home anyway, which is worse',
+  ]);
 }
 
 /** Her real record, from a stored season, or null. */
@@ -63,7 +102,7 @@ function realPast(name, seasons) {
       real: true, season: Number(s.season) || 0, rank, of: list.length,
       wins: Number(row.wins) || 0,
       exit: rank === 1 ? 'crowned' : rank <= 3 ? 'finalist' : 'eliminated',
-      business: businessFor(rank, list.length, Number(row.wins) || 0),
+      business: businessFor(rank, list.length, Number(row.wins) || 0, name),
     };
   }
   return null;
@@ -93,7 +132,7 @@ export function queenPast(player, { seasons = [], rng = null } = {}) {
   return {
     real: false, season: 1 + Math.floor(hashOf(`${name}|season`) * 9), rank, of, wins,
     exit: rank <= 3 ? 'finalist' : 'eliminated',
-    business: businessFor(rank, of, wins),
+    business: businessFor(rank, of, wins, name),
   };
 }
 

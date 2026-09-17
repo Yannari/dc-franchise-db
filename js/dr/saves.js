@@ -238,7 +238,13 @@ export function campaignTargets({ saves, winners = [], giver = null, pool, livin
  * `pleas[holder][queen]` is what the holder's decision reads. Nothing here
  * decides the save.
  */
-export function runCampaign({ saves, targets, pool, living, players, bond, rng, ep, state = {} }) {
+export function runCampaign({ saves, targets, pool, living, players, bond, rng, ep, state = {}, exclude = [] }) {
+  /* Moves whose PREMISE is the song. On an All Stars legacy night nobody in
+     the bottom sings — the top two do — so "those two can lip sync, I cannot"
+     and "don't save me, I'll win it" describe a mechanic that did not run.
+     Excluded by the caller rather than rewritten here, because the save's own
+     nights still want them. */
+  const skip = new Set(exclude);
   const events = [];
   const pleas = {};
   if (!targets.length) return { events, pleas };
@@ -289,7 +295,7 @@ export function runCampaign({ saves, targets, pool, living, players, bond, rng, 
       { id: 'breakdown', w: stat(P, 'temperament') <= 3 ? 1 : 0.1 },
       { id: 'honest-plea', w: 0.6 },
     ];
-    const o = weighted(rng, opts);
+    const o = weighted(rng, opts.filter(x => !skip.has(x.id))) || weighted(rng, opts);
     const ev = { id: o.id, round: 1, a: p, b: h, bond: [], pop: {} };
     cur = ev;
     switch (o.id) {

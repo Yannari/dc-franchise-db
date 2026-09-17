@@ -57,6 +57,58 @@ export const LEGACY_BEATS = {
   ],
 };
 
+/* ── THE CAMPAIGN, IN THIS ERA'S WORDS ───────────────────────────────
+   The save's campaign pools are reused for the legacy night's lobbying —
+   pitch, pushback, answer, all the same moves — but a handful of them are
+   written for a mechanic that does not run here. There is no save and no
+   song for the bottom: she is asking not to be SENT HOME, and "one bad night
+   shouldn't send me to the lip sync" describes a stage she will never stand
+   on.
+
+   Found by dumping a season and reading it, which is where every prose defect
+   on this show has come from. Keyed by the same ids, so anything without an
+   entry falls through to SAVE_BEATS unchanged.
+   `{a}` is the queen pitching, `{b}` the queen she is working, `{c}` a rival,
+   `{n}` her wins. */
+export const LEGACY_CAMPAIGN = {
+  'pitch-record': [
+    '"I have {n} on my record," {a} says. "One bad night should not end my season."',
+    '"Look at what I have done here," {a} says. "All of it, against one bad runway."',
+  ],
+  'pitch-no-threat': [
+    '"Keep me and you keep the easiest queen in the room," {a} tells {b}. "Think about it."',
+    '{a} makes the cold case. "I am not the one who beats you. You know which one is."',
+  ],
+  'pitch-friend': [
+    '"We came in together," {a} says to {b}. "Do not make tonight the night that stops mattering."',
+    '{a} does not make a case. She just stands next to {b} and lets the friendship do it.',
+  ],
+  'pitch-deserve': [
+    '"I was the best of those three tonight and everybody in this room knows it," {a} says.',
+    '"If you are keeping whoever did the best work," {a} says, "then this is not a hard one."',
+  ],
+  'pitch-my-turn': [
+    '"You have held this before," {a} says to {b}. "You have never once held it over me."',
+    '"Everybody in that bottom has had a break except me," {a} says.',
+  ],
+  promise: [
+    '{a} leans in. "Keep me tonight and I will hand you this exact moment back."',
+    '"You keep me," {a} says quietly to {b}, "and you have somebody in this room. That is worth more than the win."',
+  ],
+  'rebut-threat': [
+    '{c} leans over. "You keep {a}, you are keeping the queen who beats you in the finale."',
+    '"She is asking you to walk her to the crown," {c} says. "Politely."',
+  ],
+  'rebut-record': [
+    '"{a} has a record," {c} says. "That is the reason to end her, not the reason to keep her."',
+    '"Her résumé is the argument against her," {c} says. "Think about who you are sitting beside at the end."',
+  ],
+  'debt-called': [
+    '"I have carried you twice," {a} says to {b}. "I am asking once."',
+    '{a} does not raise her voice. "You owe me this, and you know exactly what for."',
+  ],
+};
+
 /** One line, names filled. */
 export function legacyLine(pool, vars = {}, rng = Math.random) {
   const list = Array.isArray(pool) ? pool : [];

@@ -49,7 +49,7 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
-import { LEGACY_BEATS, legacyLine } from './data/legacy-beats.js';
+import { LEGACY_BEATS, LEGACY_CAMPAIGN, legacyLine } from './data/legacy-beats.js';
 import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -1289,18 +1289,29 @@ export function runDragWeek(state, cfg, ctx) {
       const camp = runCampaign({
         saves: ledger, targets, pool: call.bottom, living, players,
         bond: ctx.bond, rng, ep: cfg.num, state,
+        /* Their premise is a song she will never sing: on this night the TOP
+           two perform and the bottom only waits. Found by dumping a season
+           and reading it -- "Don't save me, I'll win the lip sync" was being
+           said by a queen who was not going to be on that stage. */
+        exclude: ['pitch-lipsync-mercy', 'pitch-noble', 'cold-shoulder'],
       });
       for (const ev of camp.events) {
         applyEventLike(ev);
         werkEvents.push({ type: `legacy:${ev.id}`, players: [ev.a, ev.b, ev.c].filter(Boolean),
           bond: ev.bond, pop: ev.pop, state: {}, data: {} });
+        /* `winsLabel` rather than a number and the word: a queen with one win
+           was saying "I have 1 wins on my record". */
+        const wcount = (state.record?.[ev.c || ev.a] || []).filter(r => r === 'WIN').length;
         const vars = { a: ev.a, b: ev.b, c: ev.c, w: ev.w, y: ev.y,
-          n: (state.record?.[ev.c || ev.a] || []).filter(r => r === 'WIN').length + ' wins', t: '' };
+          n: wcount === 1 ? 'a win' : `${wcount} wins`, t: '' };
+        // This era's wording where it has its own; the save's pools otherwise.
+        const pool2 = LEGACY_CAMPAIGN[ev.id] || SAVE_BEATS.campaign[ev.id];
         campaignScenes.push({
           step: 'untucked', kind: 'legacy:pitch',
           data: { players: [ev.a, ev.b, ev.c].filter(Boolean), campaign: true, legacy: true,
             target: ev.b, move: ev.id, round: ev.round },
-          text: saveLine(SAVE_BEATS.campaign[ev.id], vars, rng),
+          text: LEGACY_CAMPAIGN[ev.id]
+            ? legacyLine(pool2, vars, rng) : saveLine(pool2, vars, rng),
         });
       }
       legacyPleas = camp.pleas;

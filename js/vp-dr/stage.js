@@ -25,6 +25,7 @@ import { _shell, _portrait, _judgePortrait, _icon, _note, _roomRail, ROOM_RAIL_C
 import { WERK_CSS, ARROW_UP, ARROW_DOWN } from './werk.js';
 import { _controls, _seedRail, _state } from './reveal.js';
 import { NIGHT_STAGE_CSS, mainStageStage, runwayStage, critiquesStage } from './night-stage.js';
+import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
 import { wireStage } from './finale-stage.js';
 import { JUDGES } from '../dr/data/judges.js';
 import { STAGE_BEATS } from '../dr/data/stage-beats.js';
@@ -1030,6 +1031,26 @@ export function rpBuildUntucked(row) {
   const lounge = `<div class="dr-lounge" aria-hidden="true">
       <i class="dr-lo-sign"></i><i class="dr-lo-couch"></i><i class="dr-lo-bar"></i>
     </div>`;
+  /* ── THE STAGE ── js/vp-dr/room-stage.js, lit for the lounge. Not on a
+     campaign night, which already has its own strip pinned at the top. */
+  const room = row?.dr?.roomAtStart || row?.houseAtStart || [];
+  const loungeStage = !campaign && room.length ? roomStage(row, scenes.map(sc => {
+    const pl = sc.data?.players || [];
+    const pop = {};
+    for (const [k, v] of Object.entries(sc.effects?.pop || {})) {
+      const nm = k === 'a' ? pl[0] : k === 'b' ? pl[1] : k;
+      if (nm) pop[nm] = v;
+    }
+    return {
+      players: pl, confess: !!sc.data?.confessional || String(sc.kind || '').startsWith('confess:'),
+      bond: Number(sc.effects?.bond) || 0, pop, note: _note(sc), text: sc.text, band: sc.data?.phase,
+      loud: /blow-up|walks-out|say-it-to-my-face|told-to-stop|shouting|clap-back/.test(sc.kind || ''),
+    };
+  }), {
+    ep, room, theme: 'lounge', title: 'Untucked', sub: 'the lounge', uid: `u${ep.num}`,
+    bands: { arrival: 'off the stage', middle: 'the long wait', late: 'called back' },
+  }) : null;
+  if (loungeStage) wireStage('untucked', loungeStage, ep, _state);
 
   /* THE ROOM'S TEMPERATURE, which the scenes are already deciding. Every
      Untucked beat carries a bond delta and the screen was spending it on a
@@ -1053,7 +1074,7 @@ export function rpBuildUntucked(row) {
 
   // WERK_CSS carries .dr-bond-row/.dr-arrow/.dr-up/.dr-down. Borrowed rather
   // than restated, which is what the prep screen already does with it.
-  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}${campaign ? CAMPAIGN_CARD_CSS : ''}</style>${_shell((campaign || '') + lounge + steps, ep, {
+  return `<style>${STAGE_CSS}${WERK_CSS}${ROOM_RAIL_CSS}${campaign ? CAMPAIGN_CARD_CSS : ''}${loungeStage ? ROOM_STAGE_CSS : ''}</style>${_shell((campaign || '') + (loungeStage ? `${loungeStage.html}<div class="rmx-cards">${lounge}${steps}</div>` : lounge + steps), ep, {
     phase: 'untucked', title: 'Untucked', subtitle: campaign ? 'the campaign' : 'Illusions Lounge',
     /* THE TEMPERATURE GAUGE WAS A PICTURE OF NOTHING — a needle pinned at
        fifty per cent with the word "holding" under it, on every episode of

@@ -19,6 +19,8 @@
 // The loser's portrait greys out under a stamp at the end.
 import { lipsyncStage, lipsyncCardDecor, LS_CSS } from './lipsync-stage.js';
 import { callStage, CALL_CSS } from './call-stage.js';
+import { exitStage, ROOM_STAGE_CSS } from './room-stage.js';
+import { wireStage } from './finale-stage.js';
 import { _shell, _portrait, _judgePortrait, _icon } from './style.js';
 import { resultOrder } from '../dr/data/results-order.js';
 import { _controls, _seedRail, _state } from './reveal.js';
@@ -778,6 +780,16 @@ export function rpBuildExit(row) {
   }
 
   const rest = scenes.filter(sc => sc !== msg);
+  /* ── THE STAGE ── js/vp-dr/room-stage.js: the corridor, the walk to the
+     door one card at a time, the door closing, the message on the mirror. */
+  const walkOut = !fin && exits.length && rest.length
+    ? exitStage(row, rest.map(sc => ({ kind: sc.kind })), {
+      ep, gone: exits.map(x => x.name).join(' & '), verb: exits[0].verb || w.exit, message: msg?.text || '', uid: `x${ep.num}`,
+    }) : null;
+  if (walkOut) {
+    lead = walkOut.html;
+    wireStage('exit', walkOut, ep, _state);
+  }
   let n = 0;
   const wrap = inner => `<div class="dr-step" id="dr-step-exit-${n++}">${inner}</div>`;
   const steps = rest.map(sc => wrap(
@@ -794,8 +806,9 @@ export function rpBuildExit(row) {
      which is the same builder for a very different night. */
   const corridor = fin ? '' : `<div class="dr-exitway" aria-hidden="true">
       <i class="dr-ex-door"></i><i class="dr-ex-dark"></i></div>`;
-  return `<style>${RESULTS_CSS}</style>${_shell(
-    `<div class="dr-exitroom">${corridor}${lead}${steps}${tail}</div>`, ep, {
+  return `<style>${RESULTS_CSS}${walkOut ? ROOM_STAGE_CSS : ''}</style>${_shell(
+    walkOut ? `${lead}<div class="dr-exitroom rmx-cards">${steps}${tail}</div>`
+      : `<div class="dr-exitroom">${corridor}${lead}${steps}${tail}</div>`, ep, {
       phase: 'lipsync',
       title: fin ? 'The Crowning' : 'Sashay Away',
       subtitle: fin ? 'the last queen standing' : 'the mirror message',

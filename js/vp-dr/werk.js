@@ -34,8 +34,10 @@
 // and `animation-timeline: view()` so cards also settle as they scroll into
 // frame. Every one of them degrades to the plain rule underneath: the
 // click-to-reveal is what actually governs, and none of this is load-bearing.
+import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
+import { wireStage } from './finale-stage.js';
 import { _shell, _portrait, _icon, _note, _roomRail, ROOM_RAIL_CSS } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _state } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -467,7 +469,7 @@ const shop = suffix => `<div class="dr-shop dr-shop-${SHOP_LIGHT[suffix] || 'day
     <i class="dr-shop-bench"></i>
   </div>`;
 
-function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '' }) {
+function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '', gone = [] }) {
   const ep = epOf(row);
   const steps = scenes.map((sc, i) => sceneCard(sc, i, suffix, ep, row)).join('');
 
@@ -482,32 +484,22 @@ function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '
      episode forgot. That is the same fact the aftermath's screen-time
      numbers carry, drawn where somebody watching will notice it. */
   const room = roomAt(row);
-  const board = room.length ? `<div class="dr-stations" id="dr-stations-${suffix}">
-      <div class="dr-st-rail"></div>
-      ${room.map(n => `<div class="dr-station" data-queen="${esc(n)}">
-        <i class="dr-st-bulbs"></i>
-        ${_portrait(n, ep, { size: 34 })}
-        <b>${esc(n)}</b>
-      </div>`).join('')}
-    </div>` : '';
-
-  /* Who the night has reached, per step, read off the step itself — the
-     same hook the crowning, the smackdown and the entrances use. */
-  if (typeof window !== 'undefined') {
-    const upTo = [];
-    const seen = new Set();
-    for (const sc of scenes) {
-      for (const n of (sc?.data?.players || [])) seen.add(n);
-      upTo.push([...seen]);
-    }
-    window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra[suffix] = (idx) => {
-      const lit = new Set(upTo[Math.max(0, Math.min(idx, upTo.length - 1))] || []);
-      for (const el of document.querySelectorAll(`#dr-stations-${suffix} .dr-station`)) {
-        el.classList.toggle('on', idx >= 0 && lit.has(el.getAttribute('data-queen')));
-      }
+  /* ── THE STAGE ── js/vp-dr/room-stage.js: the wall of stations, the
+     queens in the scene stepping into the middle with what it did to them,
+     the room's temperature, and the confessionals cut to camera. */
+  const stage = room.length ? roomStage(row, scenes.map(sc => {
+    const ev = eventFor(row, sc);
+    return {
+      players: sc?.data?.players || [],
+      confess: !!sc?.data?.confessional,
+      bond: Number((ev?.bond || [])[0]?.[2]) || 0,
+      pop: ev?.pop || {},
+      note: _note(sc),
+      text: sc.text,
     };
-  }
+  }), { ep, room, gone, theme: 'werk', title, sub: subtitle, uid: `${suffix}${ep.num}` }) : null;
+  if (stage) wireStage(suffix, stage, ep, _state);
+  const board = stage ? stage.html : '';
 
   if (typeof window !== 'undefined') {
     window._drSidebar = window._drSidebar || {};
@@ -516,8 +508,8 @@ function screen(row, { suffix, phase, title, subtitle, scenes, sidebar, lead = '
     // this screen has been quietly changing and no screen has ever drawn.
     window._drSidebar[suffix] = scenes.map(() => sidebar + _roomRail(row));
   }
-  return `<style>${WERK_CSS}${ROOM_RAIL_CSS}</style>${_shell(
-    `<div class="dr-room">${shop(suffix)}${board}${lead}${steps}</div>`, ep,
+  return `<style>${WERK_CSS}${ROOM_RAIL_CSS}${ROOM_STAGE_CSS}</style>${_shell(
+    `${board}<div class="dr-room rmx-cards">${shop(suffix)}${lead}${steps}</div>`, ep,
     { phase, title, subtitle, sidebar: sidebar + _roomRail(row) },
   )}${_controls(suffix, scenes.length, ep.num)}`;
 }
@@ -567,7 +559,7 @@ export function rpBuildColdOpen(row) {
   return screen(row, {
     suffix: 'coldopen', phase: 'werk', title: 'Cold Open',
     subtitle: 'the room, before anything',
-    scenes, lead,
+    scenes, lead, gone,
     sidebar: railWho(row, ep, 'Still here'),
   });
 }

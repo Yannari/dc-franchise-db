@@ -451,6 +451,20 @@ export function _hud(ep) {
  * typo, and defaulting it would draw the werk room over the main stage
  * without saying anything.
  */
+/* ── THE SEASON'S OWN LOOK ────────────────────────────────────────────
+   An All Stars season looked exactly like every other one: the only tells
+   were a resume beat in the premiere and the chart's wording, which is a
+   format the viewer has to INFER. A mode that never says its own name is the
+   same bug class as a theme announcing itself in another show's words.
+
+   A module flag rather than an argument threaded through forty call sites —
+   the same shape `isVnMode` already uses — set once per episode by
+   `dragScreens`, which is the one place that sees the row before the screens
+   are built. */
+let _allStarsMode = null;
+export function _setAllStars(mode) { _allStarsMode = mode || null; }
+export function _allStars() { return _allStarsMode; }
+
 export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '', hud = true } = {}) {
   if (!DR_PHASES.includes(phase)) {
     throw new Error(`_shell: unknown phase "${phase}" (have: ${DR_PHASES.join(', ')})`);
@@ -469,11 +483,12 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
      860px quick, 980px deep. This shell emitted only `.dr-phase-*`, so a drag
      screen took none of it and ran wider than every other show. Every Big
      Brother signature screen emits it; so does vp-screens.js. */
-  return `<style>${DR_CSS}${VN_CSS}</style>
-  <div class="rp-page dr-phase-${phase}">${atmo}
+  return `<style>${DR_CSS}${VN_CSS}${_allStarsMode ? AS_SKIN_CSS : ''}</style>
+  <div class="rp-page dr-phase-${phase}${_allStarsMode ? ' dr-as' : ''}">${atmo}
     <div class="dr-wrap${isVnMode() ? ' dr-vn-on' : ''}">
       ${hud ? _hud(ep) : ''}
       <!--dr-chrome--><div class="dr-sec">${_bulbs()}
+        ${_allStarsMode ? '<span class="dr-as-chip"><i></i>All Stars</span>' : ''}
         <h2 class="dr-disp">${esc(title)}</h2>
         ${subtitle ? `<p>${esc(subtitle)}</p>` : ''}</div><!--/dr-chrome-->
       ${body}
@@ -498,6 +513,23 @@ export function _shell(content, ep, { phase, title, subtitle = '', sidebar = '',
    Gated to the queens still in the room, and drawn only where there is
    something to draw: a premiere where nobody has met produces no rail rather
    than a column of zeroes. */
+/* The All Stars skin: gold where the flagship is pink, a star on the chip,
+   and a warmer bed behind the stage. Deliberately small — it should read as
+   the same show in a different season, not a different show. */
+export const AS_SKIN_CSS = `
+.dr-as{--dr-accent:#ffd66b}
+.dr-as .dr-sec{position:relative}
+.dr-as-chip{display:inline-flex;align-items:center;gap:6px;margin-bottom:6px;padding:3px 10px 3px 8px;
+  border-radius:999px;background:linear-gradient(90deg,rgba(255,214,107,.22),rgba(255,214,107,.06));
+  box-shadow:inset 0 0 0 1px rgba(255,214,107,.45);
+  font:400 11px/1 'Anton','Impact',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#ffe9b8}
+.dr-as-chip i{width:9px;height:9px;flex:0 0 auto;background:#ffd66b;
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.dr-as .dr-disp{text-shadow:0 0 18px rgba(255,214,107,.25)}
+.dr-as.dr-phase-stage .dr-haze{background:radial-gradient(60% 50% at 50% 0,rgba(255,214,107,.14),transparent 70%)}
+@media (prefers-reduced-motion: reduce){.dr-as-chip{transition:none}}
+`;
+
 export const ROOM_RAIL_CSS = `
 .dr-alli .dr-alli-b{display:flex;align-items:center;gap:8px;padding:5px 8px;margin:4px 0;border-radius:8px;
   background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);min-width:0}

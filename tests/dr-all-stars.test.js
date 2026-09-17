@@ -325,3 +325,31 @@ describe('alliances', () => {
     for (const n of row.dr.alliances[0].members) expect(html).toContain(n);
   });
 });
+
+describe('the season says its own name', () => {
+  it('the host welcomes them to All Stars, explains the rule and names the prize', () => {
+    const premiere = weekly(season(80, { drAllStars: true }))[0];
+    const kinds = (premiere.dr.scenes || []).map(s => s.kind);
+    for (const k of ['arrival:allstars-welcome', 'arrival:allstars-rule', 'arrival:allstars-prize']) {
+      expect(kinds).toContain(k);
+    }
+    const rule = (premiere.dr.scenes || []).find(s => s.kind === 'arrival:allstars-rule');
+    expect(rule.text.toLowerCase()).toMatch(/top two|top\b/);
+  });
+
+  it('says nothing of the kind on an ordinary season', () => {
+    const premiere = weekly(season(80))[0];
+    expect((premiere.dr.scenes || []).some(s => String(s.kind).startsWith('arrival:allstars'))).toBe(false);
+  });
+
+  it('and the screens wear the season, not the flagship', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(80, { drAllStars: true }))[1];
+    const html = dragScreens(row).map(s => s.html).join('');
+    expect(html).toContain('dr-as-chip');
+    expect(html).toContain('>All Stars<');
+    // ...and an ordinary season is untouched.
+    const plain = dragScreens(weekly(season(80))[1]).map(s => s.html).join('');
+    expect(plain).not.toContain('dr-as-chip');
+  });
+});

@@ -27,7 +27,7 @@ import {
   ARRIVAL_IMPRESSIONS,
   entranceAttitude, entranceLanding,
 } from './data/entrances.js';
-import { HISTORY_BEATS } from './data/legacy-beats.js';
+import { HISTORY_BEATS, ALLSTARS_OPENING, AS_ENTRANCES } from './data/legacy-beats.js';
 import { dragOf, starPower } from './queen.js';
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
@@ -81,7 +81,7 @@ const STYLE_WORDS = {
  * so the registry files them like any other and the transcript retranscribes
  * them without knowing they are special.
  */
-export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star = {}, pasts = {}, history = [] } = {}) {
+export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star = {}, pasts = {}, history = [], allStars = null } = {}) {
   if (!cast.length) return [];
   const draw = drawer(rng);
   const out = [{ step: 'arrivals', kind: 'arrivals', data: { cast: [...cast] }, text: '' }];
@@ -110,8 +110,24 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
 
     // 1. THE WALK — her line, and the room's answer.
     const attitude = entranceAttitude(stats, rng);
-    const pool = (ENTRANCE_LINES[d.style] || ENTRANCE_LINES.camp)[attitude] || [];
-    const line = draw(pool, `${d.style}:${attitude}:`);
+    /* ── AN ALL STARS ENTRANCE HAS DONE THIS BEFORE ────────────────
+       The flagship pools are a first-timer's — "I can't believe I'm standing
+       here", "I'm gonna try not to cry", which three queens said in one
+       All Stars premiere. Nobody here is new, so the WALK line comes from the
+       returnee pool instead; everything after it (the room's answer, the
+       intro, the backstory) is unchanged, because those are about who she is
+       rather than whether she has been here.
+       A threshold on boldness, which is allowed for choosing TEXT and would
+       not be for a result. */
+    const asKey = stat => (stat <= 3 ? 'nervous'
+      : { big: 'cocky', dry: 'cool', warm: 'warm' }[attitude] || 'warm');
+    const asPool = pasts[name] ? (AS_ENTRANCES[asKey(Number(stats.boldness) || 5)] || []) : [];
+    const pool = asPool.length ? asPool : ((ENTRANCE_LINES[d.style] || ENTRANCE_LINES.camp)[attitude] || []);
+    /* The draw key is what stops two queens saying the same thing, and it has
+       to match the POOL: keying the returnee lines by drag style let three
+       queens of three styles each deliver "I have done this once and somehow
+       that makes it worse" in one premiere. */
+    const line = draw(pool, asPool.length ? 'as-entrance:' : `${d.style}:${attitude}:`);
     if (line) {
       out.push({
         step: 'arrivals', kind: 'arrival:walk',
@@ -267,6 +283,31 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
       step: 'arrivals', kind: 'arrival:host', data: { players: [], mood },
       text: fill(host, { a: 'RuPaul', b: cast[0] || '' }),
     });
+  }
+
+  /* ── AND WHAT SEASON THIS IS ────────────────────────────────────────
+     Said out loud, once, at the top. Without it an All Stars season looked
+     exactly like an ordinary one from the inside: the only tells were a
+     resume beat per queen and the chart's wording, which is a format the
+     viewer has to infer. Three beats, because they are three different
+     announcements — who is in this room, what is different about the game,
+     and what it is worth. */
+  if (allStars) {
+    const vars2 = { n: cast.length, a: 'RuPaul' };
+    for (const [kind, pool] of [
+      ['allstars-welcome', ALLSTARS_OPENING.welcome],
+      [allStars === 'legacy' ? 'allstars-rule' : null, ALLSTARS_OPENING.rule],
+      ['allstars-prize', ALLSTARS_OPENING.prize],
+    ]) {
+      if (!kind) continue;
+      const line = draw(pool, `as:${kind}:`);
+      if (line) {
+        out.push({
+          step: 'arrivals', kind: `arrival:${kind}`,
+          data: { players: [], host: true }, text: fill(line, vars2),
+        });
+      }
+    }
   }
   return out;
 }

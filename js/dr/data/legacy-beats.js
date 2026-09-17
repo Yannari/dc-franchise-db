@@ -169,3 +169,62 @@ export const HISTORY_BEATS = {
     ],
   },
 };
+
+// ══════════════════════════════════════════════════════════════════════
+//  THE FORMAT, SAID OUT LOUD
+// ══════════════════════════════════════════════════════════════════════
+//
+// A mode that never announces itself is a mode the viewer has to infer from a
+// chart legend. The host says what season this is, what is different about it,
+// and what it is worth — once, at the top, the way the show does.
+// `{n}` is how many queens are in the room.
+export const ALLSTARS_OPENING = {
+  welcome: [
+    '"Welcome," the host says, "to All Stars." He lets the room make its noise. "Every one of you has done this before. Every one of you left something on the table."',
+    '"You have all walked through that door once already," the host says. "This time you know exactly what it costs."',
+    '"{n} queens," the host says. "Not one of you is new. That is the whole idea."',
+  ],
+  rule: [
+    '"The rules have changed, and you know they have. Each week the TOP two queens will lip sync for their legacy — and the winner of that song decides which of her sisters goes home."',
+    '"Nobody down there will be singing for her life. The two queens at the TOP will sing, and the winner holds somebody’s season in her hand."',
+    '"This season the power does not sit with me. It sits with whoever wins that song. Choose your friends accordingly."',
+  ],
+  prize: [
+    '"The winner takes a place in the Drag Race Hall of Fame, and a cash prize of one hundred thousand dollars."',
+    '"One of you leaves here in the Hall of Fame. The rest of you leave here having tried it twice."',
+  ],
+};
+
+/* ── AN ENTRANCE THAT HAS DONE THIS BEFORE ───────────────────────────
+   The flagship entrance pools are written for a queen walking into the werk
+   room for the first time — "I genuinely can't believe I'm standing here",
+   "I'm gonna try very hard not to cry" — and three queens in one All Stars
+   premiere said the crying one. Nobody here is new. These replace the WALK
+   line when the season is All Stars; the room's answer, the intro and the
+   backstory all still come from the ordinary pools, because those are about
+   who she is rather than whether she has been here.
+   Keyed by how she carries it, which is the same attitude read the flagship
+   entrance uses. */
+export const AS_ENTRANCES = {
+  cocky: [
+    'Did you miss me? Wrong question. Did you think you were done with me?',
+    'I have unfinished business and a better wig. In that order.',
+    'Second time lucky, girls. And I do not believe in luck.',
+    'They let me back in the building. That was their first mistake.',
+  ],
+  warm: [
+    'I have been waiting four years to walk through that door again and I am not going to pretend otherwise.',
+    'Same door. Different queen. Let us find out.',
+    'Hello again! I know exactly how this goes and I am still terrified, which is new.',
+  ],
+  cool: [
+    'I know what this room does to people. I am ready for it this time.',
+    'Nothing about this is a surprise to me any more. That is the advantage.',
+    'Last time I was polite. Take that as you like.',
+  ],
+  nervous: [
+    'I said yes before they finished the sentence and I have been panicking ever since.',
+    'I have done this once and somehow that makes it worse.',
+    'Everybody here is good. That is the part nobody warns you about the second time.',
+  ],
+};

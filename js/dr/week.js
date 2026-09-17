@@ -156,6 +156,7 @@ export function runDragWeek(state, cfg, ctx) {
     // All Stars: every queen walks in with a record. Empty otherwise.
     pasts: state.allStars?.pasts || {},
     history: state.allStars?.history || [],
+    allStars: state.allStars?.rule || null,
   }) : [];
   for (const sc of arrivals) scenes.push(sc);
 

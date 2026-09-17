@@ -75,6 +75,8 @@ function businessFor(rank, of, wins, name = '') {
       'she got close enough to taste it',
       'she made the end of her season and could not make the end of the sentence',
       'she was two rounds off and nobody remembers who is two rounds off',
+      'she was in the conversation right up until she was not',
+      'she has spent since then explaining how close it was to people who did not ask',
     ]);
   }
   if (share >= 0.8) {
@@ -88,6 +90,9 @@ function businessFor(rank, of, wins, name = '') {
     'she was good and it was not enough',
     'she was fine, and fine is how you leave in the middle',
     'she did nothing wrong and went home anyway, which is worse',
+    'she was never bad and never once the best, and the middle is where that ends',
+    'she left with no story attached to her, which is the thing she came back to fix',
+    'she watched it back and could not find the week she lost it',
   ]);
 }
 

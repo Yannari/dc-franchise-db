@@ -23,7 +23,7 @@
 // vanish off the end of the show without a word. `tests/dr-vp-registry`
 // asserts that EVERY scene reaches a screen, which is the only version of
 // this that stays true as the engine grows new scene kinds.
-import { _shell, _portrait, _icon, _judgePortrait, _note } from './style.js';
+import { _shell, _portrait, _icon, _judgePortrait, _note, _setAllStars } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
@@ -886,6 +886,9 @@ function screensFor(row) {
 }
 
 export function dragScreens(row) {
+  /* THE SEASON SAYS ITS OWN NAME. One call, here, because this is the only
+     place that sees the row before every screen is built. */
+  _setAllStars(row?.dr?.allStars?.rule || null);
   return screensFor(row)
     .filter(s => s.when(row))
     /* `icon` TRAVELS WITH THE SCREEN. This is the second mapper in this file

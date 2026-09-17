@@ -160,7 +160,7 @@ describe('every mission honours the record contract', () => {
       expect(d.split(/[.!?]/).filter(s => s.trim().length > 20).length,
         'a desc is at least two real sentences').toBeGreaterThanOrEqual(2);
       expect(d, 'the set-up never says what is physically there')
-        .toMatch(/room|table|wing|chapel|causeway|observatory|orrery|book|box|vault|walkway|churchyard|graves?|plots?|raft|loch/i);
+        .toMatch(/room|table|wing|chapel|causeway|observatory|orrery|book|box|vault|walkway|churchyard|graves?|plots?|raft|loch|field|river|debris|hall|board/i);
       expect(d, 'the mechanic never says what the players do')
         .toMatch(/each team|players?|one at a time|by hand|carr(y|ies)|crawls?|sets?|argues?/i);
       expect(d, 'nothing is ever said to go wrong')

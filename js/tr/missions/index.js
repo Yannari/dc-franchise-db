@@ -41,6 +41,8 @@ import { longAccount } from './long-account.js';
 import { ashVault } from './ash-vault.js';
 import { buriedAlive } from './buried-alive.js';
 import { beaconLighting } from './beacon-lighting.js';
+import { wickerBeasts } from './wicker-beasts.js';
+import { traitorsChess } from './traitors-chess.js';
 
 /**
  * The catalogue, in the order they were written.
@@ -60,6 +62,8 @@ export const TRAITORS_MISSIONS = Object.freeze([
   ashVault,
   buriedAlive,
   beaconLighting,
+  wickerBeasts,
+  traitorsChess,
 ]);
 
 /** Every bespoke mission id, for tests and for anything enumerating the catalogue. */

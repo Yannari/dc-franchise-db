@@ -122,11 +122,32 @@ export const NIGHT_STAGE_CSS = `${FINALE_STAGE_CSS}
 .crx-react{max-width:260px;padding:6px 10px;border-radius:12px;background:rgba(255,248,240,.95);color:#200814;font-size:12px;
   font-style:italic;text-align:center;opacity:0;transform:translateY(6px);transition:opacity .4s .8s,transform .4s .8s}
 .crx-q.cur .crx-react{opacity:1;transform:none}
-.crx-safe{display:none;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.crx-safe{display:none;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;padding:6px 0}
 .crx-safe.cur{display:flex}
-.crx-safe .fsx-face{width:54px;height:54px}
-.crx-safe span{animation:crx-leave 1.6s ease-in forwards;animation-delay:var(--dl)}
-@keyframes crx-leave{0%{transform:none;opacity:1}60%{transform:none;opacity:1}100%{transform:translateX(160px);opacity:0}}
+/* THE WRAPPER IS WHAT BROKE IT. Every other stage puts its face straight
+   into a flex container, which blockifies it and lets the width apply. These
+   faces sit inside a per-queen span (it carries the animation delay), so
+   the face element stayed INLINE -- width and height ignored, the portrait
+   drawn at its natural 512px, and four of them sliding off the stage.
+   Sized here and blockified at both levels. */
+.crx-safe > span{display:block;flex:0 0 auto}
+.crx-safe .fsx-face{display:block;width:54px;height:54px}
+/* ── THEY WALK OFF, THEY DO NOT VANISH ──────────────────────────────
+   This ended at opacity 0 and translateX(160px), held by the fill mode, so
+   1.6s after the step opened the card was EMPTY: four faces gone, the row
+   collapsed to 21px, and a banner reading "4 queens leave the stage" sitting
+   over nothing. Worse on the way back — the animation had already finished,
+   so returning to the step showed the empty version immediately.
+   A screen state has to stay legible after its animation. They drift off to
+   the side and settle there, dimmed: the movement still says "leaving", and
+   the reader can still see WHO was safe, which is the only information this
+   step carries. */
+.crx-safe span{animation:crx-leave 1.5s cubic-bezier(.3,0,.2,1) forwards;animation-delay:var(--dl)}
+@keyframes crx-leave{
+  0%{transform:none;opacity:1;filter:none}
+  55%{transform:none;opacity:1;filter:none}
+  100%{transform:translateX(26px);opacity:.62;filter:saturate(.7)}
+}
 .crx-safe.cur ~ .crx-sub,.crx-sub{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--fx)}
 .crx-wsg{display:none;align-items:center;gap:14px}
 .crx-wsg.cur{display:flex}

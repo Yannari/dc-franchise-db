@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Church Match — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-church-match.html — visual target for the ninth bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  From the wiki (thetraitors.fandom.com/wiki/Church_Match — UK, US, Australia
+  S2, Canada S1, Germany S1). Two teams go to a double confessional booth at
+  the back of a church. Through the grille the host gives each a page and a
+  paragraph in the Book of Traitors; the paragraph hides a riddle about an item
+  worn by one member of a masked congregation in the pews. Every item named
+  correctly earns money. The show sent the best team to the Armoury.
+
+  THE SHIELD IS THE KNEELING. The team that names the most items kneels at
+  the altar and chooses one of its own to receive a Shield. Whoever is chosen
+  is safe tonight; whoever is passed over remembers who chose.
+
+  IT SHARES NOTHING WITH THE EIGHT BEFORE IT. This is STAINED GLASS AND
+  CANDLE WAX: ruby and cobalt light on grey stone, black lace masks, an
+  inscriptional display face.
+
+  THE ORGANISING PRIMITIVE IS THE ROSE WINDOW. The sidebar is a rose window
+  of twelve panes, six per team (ruby for Candle on the right, cobalt for Bell on the left). A pane
+  lights when its item is named, and cracks when a runner names the wrong
+  mask. Beneath it, the double confessional with each team's reader behind a
+  grille, and the pew of masked figures whose items are found one by one.
+
+  Cards are LIT: they fade up through coloured glass light.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Anonymous+Pro:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cm-stone:#141518; --cm-stone2:#1e2025; --cm-grey:#9aa0a8; --cm-parch:#ece4d2; --cm-ruby:#b8263a; --cm-ruby-hi:#ff5c72;
+  --cm-cobalt:#2a4fb3; --cm-cobalt-hi:#6f96ff; --cm-emerald:#2f8a5d; --cm-wax:#f1e3b6; --cm-lead:#0a0a0c; --cm-shield:#f1cd5f;
+  --cm-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--cm-stone);color:var(--cm-grey);font-family:'Lora',Georgia,serif;font-size:18px;line-height:1.55;overflow-x:hidden}
+button{font:inherit}
+.cm-navstub{position:fixed;inset:0 0 auto 0;height:var(--cm-nav);z-index:60;background:#08080a;border-bottom:1px solid #000;
+  display:flex;align-items:center;gap:16px;padding:0 16px;font:13px/1 'Anonymous Pro',monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:#646a73;white-space:nowrap;overflow:hidden}
+.cm-navstub b{color:var(--cm-wax)}
+
+/* ── ATMOSPHERE: nave stone, coloured light falling across it ───── */
+.cm-nave{position:fixed;left:0;right:0;top:var(--cm-nav);bottom:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(115deg,transparent 30%,rgba(184,38,58,.10) 34%,transparent 42%),
+    linear-gradient(105deg,transparent 48%,rgba(42,79,179,.10) 52%,transparent 60%),
+    linear-gradient(95deg,transparent 64%,rgba(47,138,93,.08) 67%,transparent 74%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 88px),
+    linear-gradient(180deg,#1b1d22,#0f1013)}
+.cm-arches{position:fixed;left:0;right:0;top:var(--cm-nav);height:40vh;z-index:0;pointer-events:none;opacity:.6}
+.cm-motes{position:fixed;left:0;right:0;top:var(--cm-nav);bottom:0;z-index:1;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(1.4px 1.4px at 20% 30%,var(--cm-wax),transparent),radial-gradient(1.2px 1.2px at 60% 50%,var(--cm-wax),transparent),radial-gradient(1.6px 1.6px at 80% 20%,var(--cm-wax),transparent);
+  background-size:420px 420px;animation:cm-drift 30s linear infinite}
+@keyframes cm-drift{from{background-position:0 0}to{background-position:60px 420px}}
+
+.cm-shell{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:calc(var(--cm-nav) + 26px) 16px 132px}
+
+/* ── HERO: a lancet window shape ─────────────────────────────────── */
+.cm-hero{position:relative;padding:40px 26px 26px;text-align:center;overflow:hidden;
+  border-radius:50% 50% 6px 6px / 90px 90px 6px 6px;
+  background:
+    radial-gradient(60% 50% at 20% 10%,rgba(184,38,58,.28),transparent 70%),
+    radial-gradient(60% 50% at 80% 10%,rgba(42,79,179,.28),transparent 70%),
+    linear-gradient(180deg,#23252b,#121317);
+  border:3px solid #2c2f36;box-shadow:inset 0 0 0 2px #000,0 20px 50px rgba(0,0,0,.6)}
+.cm-kicker{font:13px/1 'Anonymous Pro',monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--cm-wax)}
+.cm-title{font-family:'Cinzel Decorative',serif;font-weight:700;color:var(--cm-parch);font-size:clamp(38px,7.6vw,82px);line-height:1.02;margin:.14em 0 .08em;
+  text-shadow:0 0 24px rgba(241,227,182,.18)}
+.cm-title span{color:var(--cm-wax)}
+.cm-sub{color:#a7acb4;max-width:58ch;margin:0 auto;font-style:italic}
+.cm-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+.cm-chip{font:12px/1 'Anonymous Pro',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--cm-parch);border:1px solid #3a3e46;padding:6px 11px;background:rgba(0,0,0,.4)}
+.cm-chip.shield{border-color:var(--cm-shield);color:var(--cm-shield)}
+.cm-roster{display:flex;justify-content:center;gap:34px;flex-wrap:wrap;margin-top:18px}
+.cm-rteam small{display:block;font:12px/1 'Anonymous Pro',monospace;letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px}
+.cm-rteam.candle small{color:var(--cm-ruby-hi)}.cm-rteam.bell small{color:var(--cm-cobalt-hi)}
+
+.cm-av{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#23252b;
+  border:2px solid #3a3e46;box-shadow:0 2px 8px rgba(0,0,0,.6);display:inline-block;vertical-align:middle}
+.cm-faces{display:inline-flex}
+.cm-faces .cm-av+.cm-av{margin-left:-8px}
+
+.cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px;align-items:start}
+@media(max-width:940px){.cm-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── BRIEFING: a page of the Book ────────────────────────────────── */
+.cm-brief{background:linear-gradient(180deg,#e8dfca,#d9ceb4);color:#2a2419;border:1px solid #6b5c3a;padding:22px 22px 16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.cm-brief h2{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:28px;margin:0;color:#3a0f16}
+.cm-host{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.cm-host .cm-av{width:46px;height:46px;border-color:#6b5c3a}
+.cm-host small{display:block;font:12px/1.4 'Anonymous Pro',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6b5c3a}
+.cm-staging{font-style:italic;color:#5a4e38;border-bottom:1px solid #b7a882;padding-bottom:12px;margin:8px 0 14px}
+.cm-beat{margin:0 0 11px}
+.cm-beat p{margin:0}
+.cm-beat.do p{font:15px/1.5 'Anonymous Pro',monospace;color:#6b5c3a}
+.cm-beat.say p{color:#231d13}
+.cm-beat.say p::first-letter{font-family:'Cinzel Decorative',serif;font-weight:700;color:var(--cm-ruby);font-size:1.4em}
+.cm-beat.shield p{color:#5c3f00;border-left:3px solid #b8901f;padding-left:10px}
+.cm-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.cm-rule{font:11px/1 'Anonymous Pro',monospace;letter-spacing:.08em;text-transform:uppercase;color:#5a4e38;border:1px solid #b7a882;padding:5px 8px}
+.cm-rule b{color:var(--cm-ruby);margin-right:4px}
+.cm-rule.shield b{color:#8a6a10}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.cm-phase{margin-top:28px}
+.cm-phase-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #2c2f36}
+.cm-phase-n{width:36px;height:44px;display:grid;place-items:center;font:700 15px/1 'Cinzel Decorative',serif;color:var(--cm-parch);
+  background:linear-gradient(180deg,var(--cm-ruby),var(--cm-cobalt));clip-path:polygon(50% 0,100% 22%,100% 100%,0 100%,0 22%);border:0}
+.cm-phase-name{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:30px;line-height:1;color:var(--cm-parch)}
+.cm-phase-stats{margin-left:auto;display:flex;gap:6px}
+.cm-stat{font:11px/1 'Anonymous Pro',monospace;font-style:normal;text-transform:uppercase;letter-spacing:.1em;color:#b3b8c0;background:#23252b;padding:5px 8px}
+.cm-setting{font-style:italic;color:#8a9098;margin:8px 0 12px}
+
+/* ── CARDS: lit through glass ─────────────────────────────────────── */
+.cm-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;overflow:hidden;
+  background:linear-gradient(180deg,#1f2126,#16171b);border:1px solid #2c2f36;opacity:0;
+  transition:opacity .6s ease}
+.cm-card::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.4s ease;
+  background:linear-gradient(110deg,rgba(184,38,58,.18),rgba(42,79,179,.14) 50%,rgba(47,138,93,.10))}
+.cm-card.on{opacity:1}
+.cm-card.on::before{opacity:.35}
+.cm-card.candle{border-left:4px solid var(--cm-ruby)}
+.cm-card.bell{border-left:4px solid var(--cm-cobalt)}
+.cm-card.bad{box-shadow:inset 0 0 0 1px rgba(208,80,80,.35)}
+.cm-card.relic{border:1px solid var(--cm-shield);box-shadow:0 0 24px rgba(241,205,95,.18)}
+.cm-card.win{border:1px solid var(--cm-wax);box-shadow:0 0 24px rgba(241,227,182,.12)}
+.cm-ico{position:absolute;left:14px;top:14px;width:38px;height:38px}
+.cm-ico svg{width:100%;height:100%;display:block}
+.cm-tag{position:relative;float:right;font:11px/1 'Anonymous Pro',monospace;letter-spacing:.12em;text-transform:uppercase;color:#8a9098;margin:4px 0 0 10px}
+.cm-card.good .cm-tag{color:#7fc49a}.cm-card.bad .cm-tag{color:#e07b7b}.cm-card.relic .cm-tag{color:var(--cm-shield)}.cm-card.win .cm-tag{color:var(--cm-wax)}
+.cm-who{position:relative;display:flex;align-items:center;gap:9px;font-weight:600;color:var(--cm-parch)}
+.cm-who i{font-style:normal;font-weight:400;color:#8a9098}
+.cm-card.candle .cm-av{border-color:var(--cm-ruby)}.cm-card.bell .cm-av{border-color:var(--cm-cobalt)}.cm-card.relic .cm-av{border-color:var(--cm-shield)}
+.cm-txt{position:relative;margin-top:6px}
+.cm-riddle{position:relative;margin-top:8px;padding:8px 12px;background:#e8dfca;color:#2a2419;font-style:italic;border-left:3px solid var(--cm-ruby)}
+.cm-riddle small{display:block;font:11px/1.3 'Anonymous Pro',monospace;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:#6b5c3a}
+.cm-conf{position:relative;margin-top:10px;padding:9px 12px;background:rgba(0,0,0,.35);border-left:2px solid var(--cm-emerald);font-style:italic;color:#dcdfe3}
+.cm-conf small{display:block;font:11px/1.4 'Anonymous Pro',monospace;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#7fc49a}
+.cm-fx{position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.cm-fx span{font:11px/1 'Anonymous Pro',monospace;color:#b3b8c0;border:1px solid #3a3e46;padding:4px 7px}
+.cm-summary{margin-top:24px;padding:18px 20px;border:1px solid #6b5c3a;background:linear-gradient(180deg,#e8dfca,#d9ceb4);color:#2a2419;transition:opacity .4s}
+.cm-summary small{display:block;font:11px/1.4 'Anonymous Pro',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--cm-ruby);margin-bottom:4px}
+
+/* ── SIDEBAR: the rose window ─────────────────────────────────────── */
+.cm-side{position:sticky;top:calc(var(--cm-nav) + 14px)}
+.cm-panel{background:rgba(12,12,15,.96);border:1px solid #2c2f36;padding:14px}
+.cm-panel h3{font:700 24px/1 'Cinzel Decorative',serif;color:var(--cm-parch);margin:0 0 10px;text-align:center}
+.cm-rose{display:block;width:100%;max-width:260px;margin:0 auto}
+.cm-pane{fill:#1a1c22;stroke:var(--cm-lead);stroke-width:2;transition:fill .7s ease,filter .7s ease}
+.cm-pane.lit.candle{fill:var(--cm-ruby);filter:drop-shadow(0 0 5px rgba(255,92,114,.8))}
+.cm-pane.lit.bell{fill:var(--cm-cobalt);filter:drop-shadow(0 0 5px rgba(111,150,255,.8))}
+.cm-pane.crack{fill:#2a1c1c}
+.cm-crackline{opacity:0;transition:opacity .5s}
+.cm-crackline.on{opacity:1}
+.cm-hub{transition:fill .7s}
+.cm-hub.on{fill:var(--cm-shield)}
+.cm-booth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.cm-cell{position:relative;padding:8px 6px 6px;text-align:center;background:linear-gradient(180deg,#2a1f18,#16100c);border:1px solid #4a3828;border-radius:40px 40px 2px 2px}
+.cm-cell .grille{position:absolute;left:18%;right:18%;top:10px;height:50px;border-radius:24px 24px 2px 2px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.45) 0 2px,transparent 2px 7px),repeating-linear-gradient(0deg,rgba(0,0,0,.45) 0 2px,transparent 2px 7px);pointer-events:none}
+.cm-cell .cm-av{width:40px;height:40px;margin-top:6px}
+.cm-cell small{display:block;font:11px/1.3 'Anonymous Pro',monospace;letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+.cm-cell.candle small{color:var(--cm-ruby-hi)}.cm-cell.bell small{color:var(--cm-cobalt-hi)}
+.cm-cell b{display:block;font:700 18px/1.2 'Anonymous Pro',monospace;color:var(--cm-parch)}
+.cm-pew{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:6px 0 4px}
+.cm-mask{position:relative;aspect-ratio:1;border-radius:50%;background:#0c0c0f;border:1px solid #2c2f36;display:grid;place-items:center;transition:all .5s}
+.cm-mask svg{width:80%;height:80%}
+.cm-mask.found{border-color:var(--cm-wax);box-shadow:0 0 8px rgba(241,227,182,.5)}
+.cm-mask.found svg path.item{fill:var(--cm-wax)}
+.cm-pewlbl{text-align:center;font:10.5px/1 'Anonymous Pro',monospace;letter-spacing:.14em;text-transform:uppercase;color:#646a73;margin-bottom:10px}
+.cm-teams{border-top:1px solid #2c2f36;padding-top:6px}
+.cm-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.cm-row b{font:14px/1 'Anonymous Pro',monospace;color:var(--cm-parch);font-weight:400}
+.cm-row .sw{display:inline-block;width:9px;height:9px;margin-right:7px}
+.cm-kneel{margin-top:12px;padding:11px 12px;border:1px dashed #6b5b2a;text-align:center;transition:all .5s}
+.cm-kneel .lbl{font:11px/1 'Anonymous Pro',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a7a4a}
+.cm-kneel .val{margin-top:6px;font-style:italic;color:#8a9098}
+.cm-kneel .holder{display:none;margin:8px auto 0}
+.cm-kneel .holder .cm-av{width:44px;height:44px;border-color:var(--cm-shield);box-shadow:0 0 14px rgba(241,205,95,.45)}
+.cm-kneel .votes{display:none;justify-content:center;gap:4px;margin-top:6px}
+.cm-kneel .votes .cm-av{width:24px;height:24px;border-width:1.5px}
+.cm-kneel.on{border:1px solid var(--cm-shield)}
+.cm-kneel.on .holder{display:block}
+.cm-kneel.on .votes{display:flex}
+.cm-kneel.on .lbl,.cm-kneel.on .val{color:var(--cm-shield);font-style:normal}
+.cm-pot{margin-top:12px;border-top:1px solid #2c2f36;padding-top:10px}
+.cm-pot .r{display:flex;justify-content:space-between;font-size:15px;color:#8a9098}
+.cm-pot .r b{font:14px/1.6 'Anonymous Pro',monospace;color:var(--cm-parch);font-weight:400}
+.cm-pot .big{font:30px/1.1 'Anonymous Pro',monospace;color:var(--cm-wax);text-align:right;margin-top:4px}
+
+.cm-controls{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 16px;background:linear-gradient(0deg,#08080a 60%,rgba(8,8,10,0))}
+.cm-btn{font:700 15px/1 'Cinzel Decorative',serif;letter-spacing:.08em;cursor:pointer;padding:12px 26px;color:#1a0d10;
+  background:linear-gradient(180deg,#f6ebc6,var(--cm-wax));border:1px solid #8a7a4a}
+.cm-btn:disabled{opacity:.4;cursor:default}
+.cm-btn.ghost{background:transparent;color:var(--cm-parch);border:1px solid #3a3e46}
+.cm-btn:focus-visible{outline:2px solid var(--cm-parch);outline-offset:2px}
+.cm-counter{font:13px/1 'Anonymous Pro',monospace;color:#646a73;letter-spacing:.08em}
+@media (prefers-reduced-motion: reduce){
+  .cm-motes{animation:none}
+  .cm-card,.cm-card::before{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="cm-navstub"><b>The Traitors</b><span>Episode 4 · Afternoon</span><span>Church Match</span></div>
+<div class="cm-nave"></div>
+<svg class="cm-arches" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+  <g fill="none" stroke="#2c2f36" stroke-width="10">
+    <path d="M40 300 V120 Q140 0 240 120 V300"/><path d="M280 300 V120 Q380 0 480 120 V300"/>
+    <path d="M720 300 V120 Q820 0 920 120 V300"/><path d="M960 300 V120 Q1060 0 1160 120 V300"/>
+  </g>
+</svg>
+<div class="cm-motes"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-book" viewBox="0 0 36 36"><path d="M4 8c5-2 10-2 14 1 4-3 9-3 14-1v20c-5-2-10-2-14 1-4-3-9-3-14-1z" fill="#e8dfca" stroke="#6b5c3a"/><path d="M18 9v20" stroke="#6b5c3a"/><path d="M7 13h8M7 17h8M21 13h8M21 17h6" stroke="#b8263a" stroke-width="1.2"/></symbol>
+    <symbol id="i-lost" viewBox="0 0 36 36"><path d="M4 8c5-2 10-2 14 1 4-3 9-3 14-1v20c-5-2-10-2-14 1-4-3-9-3-14-1z" fill="#e8dfca" stroke="#6b5c3a" opacity=".6"/><circle cx="24" cy="22" r="7" fill="none" stroke="#d05050" stroke-width="2"/><path d="M29 27l5 5" stroke="#d05050" stroke-width="2.4"/></symbol>
+    <symbol id="i-mask" viewBox="0 0 36 36"><path d="M4 14c4-4 10-4 14 0 4-4 10-4 14 0-1 8-6 11-9 9-2-1-3-3-5-3s-3 2-5 3c-3 2-8-1-9-9z" fill="#0a0a0c" stroke="#ece4d2" stroke-width="1"/><circle cx="11" cy="16" r="2.4" fill="#ece4d2"/><circle cx="25" cy="16" r="2.4" fill="#ece4d2"/><path d="M8 11c-2-3-1-6 1-8" stroke="#b8263a" stroke-width="1.6" fill="none"/></symbol>
+    <symbol id="i-found" viewBox="0 0 36 36"><path d="M4 14c4-4 10-4 14 0 4-4 10-4 14 0-1 8-6 11-9 9-2-1-3-3-5-3s-3 2-5 3c-3 2-8-1-9-9z" fill="#0a0a0c" stroke="#f1e3b6" stroke-width="1"/><path d="M15 26l3 6 3-6z" fill="#f1e3b6"/><circle cx="18" cy="25" r="2.4" fill="#f1e3b6"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 36 36"><path d="M12 30V14c0-2 3-2 3 0v6-10c0-2 3-2 3 0v10-12c0-2 3-2 3 0v12-9c0-2 3-2 3 0v13c0 5-3 8-8 8h-2c-3 0-5-2-6-4l-4-6c-1-2 1-3 3-2z" fill="#e8dfca" stroke="#6b5c3a"/><path d="M6 6l24 24" stroke="#d05050" stroke-width="2.6"/></symbol>
+    <symbol id="i-kneel" viewBox="0 0 36 36"><path d="M18 3l12 4v9c0 8-5 14-12 17C11 30 6 24 6 16V7z" fill="#f1cd5f" stroke="#7b6224" stroke-width="1.2"/><path d="M18 9v17M12 15h12" stroke="#7b6224" stroke-width="2"/></symbol>
+    <symbol id="i-candle" viewBox="0 0 36 36"><rect x="14" y="14" width="8" height="18" rx="1" fill="#f1e3b6"/><path d="M18 3c3 4 4 6 4 8a4 4 0 0 1-8 0c0-2 1-4 4-8z" fill="#ffb347"/><path d="M10 32h16" stroke="#6b5c3a" stroke-width="2"/></symbol>
+    <symbol id="i-rose" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="#1a1c22" stroke="#f1e3b6"/><path d="M18 3v30M3 18h30M7 7l22 22M29 7L7 29" stroke="#0a0a0c" stroke-width="2"/><circle cx="18" cy="18" r="5" fill="#b8263a"/><path d="M18 3a15 15 0 0 1 15 15H18z" fill="#2a4fb3" opacity=".8"/></symbol>
+  </defs>
+</svg>
+
+<div class="cm-shell">
+  <header class="cm-hero">
+    <div class="cm-kicker">Mission · Episode Four</div>
+    <h1 class="cm-title">Church <span>Match</span></h1>
+    <p class="cm-sub">A double confessional, a book of riddles you cannot see the congregation from, and a pew full of
+      masked strangers, each wearing the answer to one of them.</p>
+    <div class="cm-meta">
+      <span class="cm-chip">Candle v Bell</span>
+      <span class="cm-chip">Six riddles a team</span>
+      <span class="cm-chip">£2,000 an item named</span>
+      <span class="cm-chip shield">The best team kneels · one of them takes a Shield</span>
+    </div>
+    <div class="cm-roster">
+      <div class="cm-rteam candle"><small>Candle</small><span class="cm-faces">
+        <img class="cm-av" src="../assets/avatars/julia.png" alt=""><img class="cm-av" src="../assets/avatars/bowie.png" alt=""><img class="cm-av" src="../assets/avatars/ellie.png" alt=""><img class="cm-av" src="../assets/avatars/manu.png" alt=""><img class="cm-av" src="../assets/avatars/fiore.png" alt=""><img class="cm-av" src="../assets/avatars/alec.png" alt="">
+      </span></div>
+      <div class="cm-rteam bell"><small>Bell</small><span class="cm-faces">
+        <img class="cm-av" src="../assets/avatars/cody.png" alt=""><img class="cm-av" src="../assets/avatars/dawn.png" alt=""><img class="cm-av" src="../assets/avatars/priya.png" alt=""><img class="cm-av" src="../assets/avatars/brick.png" alt=""><img class="cm-av" src="../assets/avatars/gabby.png" alt=""><img class="cm-av" src="../assets/avatars/courtney.png" alt="">
+      </span></div>
+    </div>
+  </header>
+
+  <div class="cm-grid">
+    <main>
+      <section class="cm-brief">
+        <div class="cm-host"><img class="cm-av" src="../assets/avatars/alan-cumming.png" alt=""><div><h2>The Briefing</h2><small>Alan Cumming · your host</small></div></div>
+        <p class="cm-staging">A candlelit church. At the back, a double confessional with a grille on each side. In the
+          pews, twelve silent figures in black lace masks. On a lectern, the Book of Traitors.</p>
+
+        <div class="cm-beat do"><p>Alan Cumming sits down in the middle of the double confessional, between the two grilles.</p></div>
+        <div class="cm-beat say"><p>One of each team sits in here with me. Through this grille I will give you a page and a paragraph in the Book of Traitors.</p></div>
+        <div class="cm-beat say"><p>Somewhere in that paragraph is a riddle, and the riddle describes something one of those masked people is wearing. The rest of your team goes into the pews and finds it.</p></div>
+        <div class="cm-beat do"><p>Alan Cumming nods toward the silent congregation.</p></div>
+        <div class="cm-beat say"><p>You may look. You may not touch. Touch a mask, or name the wrong one, and that riddle is lost to you.</p></div>
+        <div class="cm-beat say"><p>Every item you name correctly is two thousand pounds for the pot.</p></div>
+        <div class="cm-beat say shield"><p>The team that names the most will kneel at the altar, and choose one of its own to receive a Shield.</p></div>
+        <div class="cm-beat say shield"><p>Only one of you. The rest of you will have to watch who your team chose.</p></div>
+        <div class="cm-beat say"><p>Six riddles each. The candles are lit. Begin.</p></div>
+
+        <div class="cm-rules">
+          <span class="cm-rule"><b>task</b> beat 3</span>
+          <span class="cm-rule"><b>failure</b> beat 5</span>
+          <span class="cm-rule"><b>reward</b> beat 6</span>
+          <span class="cm-rule shield"><b>shield</b> beat 7</span>
+          <span class="cm-rule shield"><b>cost</b> beat 8</span>
+          <span class="cm-rule"><b>finish</b> beat 9</span>
+        </div>
+      </section>
+
+      <section class="cm-phase">
+        <div class="cm-phase-head"><span class="cm-phase-n">I</span><span class="cm-phase-name">The Book</span>
+          <span class="cm-phase-stats"><i class="cm-stat">mental</i><i class="cm-stat">strategic</i></span></div>
+        <p class="cm-setting">Two readers behind two grilles, a page reference each, and a book older than the church.</p>
+
+        <article class="cm-card candle good" id="cm-step-0">
+          <span class="cm-ico"><svg><use href="#i-book"/></svg></span><span class="cm-tag">Found it</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/julia.png" alt=""></span>Julia <i>· Candle · reader</i></div>
+          <div class="cm-txt">Julia found page forty in ten seconds and read the riddle through the grille before Bell had found the chapter.</div>
+          <div class="cm-riddle"><small>Page 40 · paragraph 3</small>I open nothing, yet I am worn over the heart.</div>
+        </article>
+
+        <article class="cm-card bell bad" id="cm-step-1">
+          <span class="cm-ico"><svg><use href="#i-lost"/></svg></span><span class="cm-tag">Lost the page</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/cody.png" alt=""></span>Cody <i>· Bell · reader</i></div>
+          <div class="cm-txt">Cody read paragraph three of the wrong page, twice, and sent Bell into the pews looking for a lantern nobody was holding.</div>
+        </article>
+
+        <article class="cm-card bell good" id="cm-step-2">
+          <span class="cm-ico"><svg><use href="#i-book"/></svg></span><span class="cm-tag">Heroic</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/dawn.png" alt=""><img class="cm-av" src="../assets/avatars/cody.png" alt=""></span>Dawn &amp; Cody <i>· Bell</i></div>
+          <div class="cm-txt">Dawn came back from the pews, listened through the grille, and told Cody the page number he had in his head was the one before.</div>
+          <div class="cm-conf"><small>Cody · confessional</small>She didn't make a thing of it. She just fixed it and went back to the masks.</div>
+          <div class="cm-fx"><span>bond Dawn ↔ Cody +0.6</span><span>crowd · Dawn kind ×0.6</span></div>
+        </article>
+      </section>
+
+      <section class="cm-phase">
+        <div class="cm-phase-head"><span class="cm-phase-n">II</span><span class="cm-phase-name">The Congregation</span>
+          <span class="cm-phase-stats"><i class="cm-stat">intuition</i><i class="cm-stat">temperament</i></span></div>
+        <p class="cm-setting">Twelve silent figures in black lace, a rule against touching, and one guess per riddle.</p>
+
+        <article class="cm-card candle good" id="cm-step-3">
+          <span class="cm-ico"><svg><use href="#i-found"/></svg></span><span class="cm-tag">Two named</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/bowie.png" alt=""></span>Bowie <i>· Candle</i></div>
+          <div class="cm-txt">Bowie found the silver key brooch on the third figure, then the ring on a gloved hand two rows back.</div>
+        </article>
+
+        <article class="cm-card bell bad" id="cm-step-4">
+          <span class="cm-ico"><svg><use href="#i-hand"/></svg></span><span class="cm-tag">Touched</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/priya.png" alt=""></span>Priya <i>· Bell</i></div>
+          <div class="cm-txt">Priya lifted the edge of a veil to see a necklace. The figure turned its head, and Bell's riddle was gone.</div>
+        </article>
+
+        <article class="cm-card candle bad" id="cm-step-5">
+          <span class="cm-ico"><svg><use href="#i-mask"/></svg></span><span class="cm-tag">Suspicious</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/ellie.png" alt=""><img class="cm-av" src="../assets/avatars/manu.png" alt=""></span>Ellie &amp; Manu <i>· Candle</i></div>
+          <div class="cm-txt">Julia read "a feather that never flew" through the grille. Manu walked past the woman with the quill in her hat and named the man beside her. Ellie had been pointing at the quill.</div>
+          <div class="cm-conf"><small>Ellie · confessional</small>It was a feather. In her hat. I was pointing at it. He looked at it and walked past it.</div>
+          <div class="cm-fx"><span>claim · Ellie → Manu</span><span>suspicion +0.26</span><span>bond Ellie ↔ Manu −0.5</span></div>
+        </article>
+
+        <article class="cm-card bell good" id="cm-step-6">
+          <span class="cm-ico"><svg><use href="#i-found"/></svg></span><span class="cm-tag">Three in a row</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/brick.png" alt=""></span>Brick <i>· Bell</i></div>
+          <div class="cm-txt">Brick named the pocket watch, the rosary and the silver thimble without once turning round to ask.</div>
+        </article>
+      </section>
+
+      <section class="cm-phase">
+        <div class="cm-phase-head"><span class="cm-phase-n">III</span><span class="cm-phase-name">The Kneeling</span>
+          <span class="cm-phase-stats"><i class="cm-stat">social</i><i class="cm-stat">loyalty</i></span></div>
+        <p class="cm-setting">The altar, one kneeler, and a team deciding in front of everyone which of them gets to feel safe.</p>
+
+        <article class="cm-card win" id="cm-step-7">
+          <span class="cm-ico"><svg><use href="#i-candle"/></svg></span><span class="cm-tag">Candle · 4 of 6</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/julia.png" alt=""><img class="cm-av" src="../assets/avatars/bowie.png" alt=""></span>Candle</div>
+          <div class="cm-txt">Candle named four items to Bell's three. The host rang the sanctus bell and asked Candle to come forward.</div>
+          <div class="cm-fx"><span>pot +£14,000</span></div>
+        </article>
+
+        <article class="cm-card relic" id="cm-step-8">
+          <span class="cm-ico"><svg><use href="#i-kneel"/></svg></span><span class="cm-tag">The Kneeling</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/ellie.png" alt=""></span>Ellie <i>· Candle</i></div>
+          <div class="cm-txt">Candle knelt and wrote a name each. Four of the six wrote Ellie. The host placed the Shield in her hands at the altar.</div>
+          <div class="cm-conf"><small>Ellie · confessional</small>I didn't ask for it. I think they chose me because I'm the one who'd have said something if they'd chosen themselves.</div>
+          <div class="cm-fx"><span>shield · Ellie</span><span>votes · Bowie, Fiore, Alec, Ellie</span><span>seen by · everybody</span></div>
+        </article>
+
+        <article class="cm-card candle bad" id="cm-step-9">
+          <span class="cm-ico"><svg><use href="#i-kneel"/></svg></span><span class="cm-tag">Passed over</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/julia.png" alt=""><img class="cm-av" src="../assets/avatars/ellie.png" alt=""></span>Julia &amp; Ellie <i>· Candle</i></div>
+          <div class="cm-txt">Julia read four of the riddles herself and wrote her own name. Nobody else did. She clapped for Ellie a moment later than everybody else.</div>
+          <div class="cm-conf"><small>Julia · confessional</small>I did the reading. I found the pages. Fine. It's a Shield, not a medal.</div>
+          <div class="cm-fx"><span>bond Julia ↔ Ellie −0.5</span><span>crowd · Julia selfish ×0.4</span></div>
+        </article>
+
+        <article class="cm-card bell good" id="cm-step-10">
+          <span class="cm-ico"><svg><use href="#i-candle"/></svg></span><span class="cm-tag">Kind</span>
+          <div class="cm-who"><span class="cm-faces"><img class="cm-av" src="../assets/avatars/gabby.png" alt=""><img class="cm-av" src="../assets/avatars/priya.png" alt=""></span>Gabby &amp; Priya <i>· Bell</i></div>
+          <div class="cm-txt">Gabby sat down next to Priya in the back pew and told her the veil would have fooled anyone.</div>
+          <div class="cm-fx"><span>bond Gabby ↔ Priya +0.5</span></div>
+        </article>
+      </section>
+
+      <div class="cm-summary" id="cm-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        Seven items named, fourteen thousand for the pot, and a Shield placed in the hands of the person her team
+        trusted to hold it.
+      </div>
+    </main>
+
+    <aside class="cm-side" aria-label="The rose window">
+      <div class="cm-panel">
+        <h3>The Rose Window</h3>
+        <svg class="cm-rose" viewBox="-110 -110 220 220" role="img" aria-label="Rose window, twelve panes">
+          <circle r="104" fill="#0a0a0c"/>
+          <g id="cm-panes"></g>
+          <circle class="cm-hub" id="cm-hub" r="22" fill="#23252b" stroke="#0a0a0c" stroke-width="3"/>
+          <path d="M0 -14l10 4v6c0 7-5 11-10 13-5-2-10-6-10-13v-6z" fill="#0a0a0c" opacity=".7"/>
+          <circle r="104" fill="none" stroke="#3a3e46" stroke-width="4"/>
+        </svg>
+
+        <div class="cm-booth">
+          <div class="cm-cell candle"><i class="grille"></i><img class="cm-av" src="../assets/avatars/julia.png" alt=""><small>Candle · reader</small><b id="cm-b-0">0 of 6</b></div>
+          <div class="cm-cell bell"><i class="grille"></i><img class="cm-av" src="../assets/avatars/cody.png" alt=""><small>Bell · reader</small><b id="cm-b-1">0 of 6</b></div>
+        </div>
+
+        <div class="cm-pew" id="cm-pew"></div>
+        <div class="cm-pewlbl">the congregation</div>
+
+        <div class="cm-teams">
+          <div class="cm-row"><span><i class="sw" style="background:var(--cm-ruby)"></i>Candle</span><b id="cm-r-0">0 named · 0 lost</b></div>
+          <div class="cm-row"><span><i class="sw" style="background:var(--cm-cobalt)"></i>Bell</span><b id="cm-r-1">0 named · 0 lost</b></div>
+        </div>
+
+        <div class="cm-kneel" id="cm-kneel">
+          <div class="lbl">The Kneeling</div>
+          <div class="holder"><img class="cm-av" src="../assets/avatars/ellie.png" alt=""></div>
+          <div class="val" id="cm-kneel-val">no team has been called forward</div>
+          <div class="votes"><img class="cm-av" src="../assets/avatars/bowie.png" alt=""><img class="cm-av" src="../assets/avatars/fiore.png" alt=""><img class="cm-av" src="../assets/avatars/alec.png" alt=""><img class="cm-av" src="../assets/avatars/ellie.png" alt=""></div>
+        </div>
+
+        <div class="cm-pot">
+          <div class="r"><span>Fund before</span><b>£28,600</b></div>
+          <div class="r"><span>Items named</span><b id="cm-pot-n">0</b></div>
+          <div class="r"><span>Earned today</span><b id="cm-pot-e">—</b></div>
+          <div class="big" id="cm-pot-a">£28,600</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="cm-controls">
+  <button class="cm-btn" id="cm-next">Next</button>
+  <span class="cm-counter" id="cm-counter" aria-live="polite">0 of 11 revealed</span>
+  <button class="cm-btn ghost" id="cm-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 11, idx = -1;
+  /* after n reveals: [candle named, candle lost, bell named, bell lost] */
+  var SCORE = [[0,0,0,0],[1,0,0,0],[1,0,0,1],[1,0,1,1],[3,0,1,1],[3,0,1,2],[3,1,1,2],[3,1,3,2],[4,1,3,2],[4,1,3,2],[4,1,3,2],[4,1,3,2]];
+  var FOUND = [0,1,1,2,4,4,4,6,7,7,7,7];      /* masks lit in the pew */
+  var KNEEL_AT = 8, WIN_AT = 7;
+  function el(id){ return document.getElementById(id); }
+  function pane(i){
+    /* twelve wedges clockwise from the top; 0-5 candle (right half), 6-11 bell (left half) */
+    var a0 = (i * 30 - 90) * Math.PI / 180, a1 = ((i + 1) * 30 - 90) * Math.PI / 180;
+    var r0 = 26, r1 = 98;
+    var p = [[r0*Math.cos(a0), r0*Math.sin(a0)],[r1*Math.cos(a0), r1*Math.sin(a0)],[r1*Math.cos(a1), r1*Math.sin(a1)],[r0*Math.cos(a1), r0*Math.sin(a1)]];
+    var mid = (a0 + a1) / 2;
+    return '<path class="cm-pane" id="cm-p-' + i + '" d="M' + p[0].join(' ') + ' L' + p[1].join(' ') + ' A98 98 0 0 1 ' + p[2].join(' ') + ' L' + p[3].join(' ') + ' A26 26 0 0 0 ' + p[0].join(' ') + 'Z"/>'
+      + '<path class="cm-crackline" id="cm-k-' + i + '" d="M' + (45*Math.cos(mid)) + ' ' + (45*Math.sin(mid)) + ' l8 6 -6 8 9 7" stroke="#d05050" stroke-width="2" fill="none"/>'
+      + '<circle cx="' + (62*Math.cos(mid)) + '" cy="' + (62*Math.sin(mid)) + '" r="7" fill="none" stroke="#0a0a0c" stroke-width="2"/>';
+  }
+  function draw(){
+    var out = ''; for (var i = 0; i < 12; i++) out += pane(i);
+    el('cm-panes').innerHTML = out;
+    var pew = ''; for (var m = 0; m < 12; m++) pew += '<div class="cm-mask" id="cm-m-' + m + '"><svg viewBox="0 0 36 36"><path d="M4 14c4-4 10-4 14 0 4-4 10-4 14 0-1 8-6 11-9 9-2-1-3-3-5-3s-3 2-5 3c-3 2-8-1-9-9z" fill="#23252b"/><path class="item" d="M15 26l3 6 3-6z" fill="#3a3e46"/></svg></div>';
+    el('cm-pew').innerHTML = pew;
+  }
+  function paint(){
+    var n = idx + 1, s = SCORE[n];
+    for (var i = 0; i < TOTAL; i++) { var c = el('cm-step-' + i); if (c) c.classList.toggle('on', i <= idx); }
+    el('cm-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    el('cm-next').disabled = idx >= TOTAL - 1;
+    el('cm-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+    for (var t = 0; t < 2; t++) {
+      var named = s[t * 2], lost = s[t * 2 + 1];
+      for (var k = 0; k < 6; k++) {
+        var id = t === 0 ? 5 - k : 6 + k;
+        var cls = 'cm-pane' + (k < named ? ' lit ' + (t ? 'bell' : 'candle') : k < named + lost ? ' crack' : '');
+        el('cm-p-' + id).setAttribute('class', cls);
+        el('cm-k-' + id).setAttribute('class', 'cm-crackline' + (k >= named && k < named + lost ? ' on' : ''));
+      }
+      el('cm-b-' + t).textContent = (named + lost) + ' of 6';
+      el('cm-r-' + t).textContent = named + ' named · ' + lost + ' lost';
+    }
+    for (var m = 0; m < 12; m++) el('cm-m-' + m).classList.toggle('found', m < FOUND[n]);
+    var won = n > KNEEL_AT;
+    el('cm-hub').setAttribute('class', 'cm-hub' + (won ? ' on' : ''));
+    el('cm-kneel').classList.toggle('on', won);
+    el('cm-kneel-val').textContent = won ? 'Ellie · chosen by four of Candle' : n > WIN_AT ? 'Candle has been called forward' : 'no team has been called forward';
+    var total = s[0] + s[2];
+    el('cm-pot-n').textContent = total;
+    el('cm-pot-e').textContent = n ? '£' + (total * 2000).toLocaleString('en-GB') : '—';
+    el('cm-pot-a').textContent = '£' + (28600 + total * 2000).toLocaleString('en-GB');
+  }
+  el('cm-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; paint();
+    var c = el('cm-step-' + idx); if (c) c.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  el('cm-all').addEventListener('click', function(){ idx = TOTAL - 1; paint(); });
+  draw(); paint();
+})();
+</script>
+</body>
+</html>

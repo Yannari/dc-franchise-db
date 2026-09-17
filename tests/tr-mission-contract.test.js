@@ -160,7 +160,7 @@ describe('every mission honours the record contract', () => {
       expect(d.split(/[.!?]/).filter(s => s.trim().length > 20).length,
         'a desc is at least two real sentences').toBeGreaterThanOrEqual(2);
       expect(d, 'the set-up never says what is physically there')
-        .toMatch(/room|table|wing|chapel|causeway|observatory|orrery|book|box|vault|walkway|churchyard|graves?|plots?|raft|loch|field|river|debris|hall|board/i);
+        .toMatch(/room|table|wing|chapel|causeway|observatory|orrery|book|box|vault|walkway|churchyard|graves?|plots?|raft|loch|field|river|debris|hall|board|moor|monument|boulder/i);
       expect(d, 'the mechanic never says what the players do')
         .toMatch(/each team|players?|one at a time|by hand|carr(y|ies)|crawls?|sets?|argues?/i);
       expect(d, 'nothing is ever said to go wrong')
@@ -333,9 +333,14 @@ describe('every mission honours the record contract', () => {
 
       // THE BOUNDARY, where the cap can actually be seen to bite. Starting 100
       // short, a mission that grosses more banks exactly 100.
-      world();
-      gs.tr.pot = POT_CEILING - 100;
-      const m = mission.simulate(ctxFor(), rngFor(77));
+      // A Traitors' Monument afternoon whose sword-drawer took the Shield
+      // banks nothing by design, so the boundary takes the next seed.
+      let m = null;
+      for (let seed = 77; !m || m.tally?.tookShield; seed++) {
+        world();
+        gs.tr.pot = POT_CEILING - 100;
+        m = mission.simulate(ctxFor(), rngFor(seed));
+      }
       expect(m.gross, 'this cast could not out-earn 100 credits, so the cap was never '
         + 'exercised').toBeGreaterThan(100);
       expect(m.potEarned).toBe(100);

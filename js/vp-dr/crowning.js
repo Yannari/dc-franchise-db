@@ -47,7 +47,7 @@
 // placement order would print the result along the top of the screen in the
 // arrangement of the plinths themselves.
 import { _shell, _portrait, _icon, _judgePortrait } from './style.js';
-import { _controls } from './reveal.js';
+import { _controls, _state } from './reveal.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -149,8 +149,10 @@ export const CROWN_CSS = `
 /* Confetti, cheap and CSS-only: one strip per lamp, falling once. */
 .cr-conf{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:0}
 .cr-stage.flash .cr-conf{opacity:1}
-.cr-conf i{position:absolute;top:-14px;width:5px;height:12px;border-radius:1px;
-  animation:crFall 2.6s linear forwards}
+.cr-conf i{position:absolute;top:-14px;width:5px;height:12px;border-radius:1px}
+/* Only when it is lit: running at load, invisibly, meant it had already
+   landed by the time the name was read. */
+.cr-stage.flash .cr-conf i{animation:crFall 2.6s linear forwards}
 @keyframes crFall{to{transform:translateY(300px) rotate(540deg);opacity:0}}
 
 /* ══ THE CEREMONY ══ two registers: he says it, or it happens ══ */
@@ -260,8 +262,95 @@ export const CROWN_CSS = `
 .dr-step.dr-vis .cr-prance{animation:crPranceIn .6s cubic-bezier(.2,.9,.3,1) both}
 @keyframes crPranceIn{from{opacity:0;transform:scaleX(.88)}to{opacity:1;transform:none}}
 
+/* ══ THE CEREMONY ON THE STAGE ══ (the pieces the reveal plays) */
+.cr-stage{top:6px;border-radius:22px;overflow:hidden;isolation:isolate}
+.cr-stage > .cr-bgx,.cr-stage > .cr-hunt,.cr-stage > .cr-bannerx,.cr-stage > .cr-quote,.cr-stage > .cr-conf{position:absolute}
+.cr-bgx{inset:0;pointer-events:none;z-index:0}
+.cr-bgx i{position:absolute;inset:0}
+.cr-rays{opacity:.5;background:repeating-conic-gradient(from 180deg at 50% -12%,rgba(255,214,107,.07) 0 4deg,transparent 4deg 11deg)}
+.cr-washx{opacity:0;transition:opacity .6s,background .6s}
+.cr-stage[data-mood=gold] .cr-washx{opacity:1;background:radial-gradient(90% 70% at 50% 60%,rgba(255,214,107,.32),transparent 70%)}
+.cr-stage[data-mood=red] .cr-washx{opacity:1;background:radial-gradient(90% 70% at 50% 100%,rgba(255,30,60,.28),transparent 70%)}
+.cr-vigx{box-shadow:inset 0 0 130px 45px rgba(0,0,0,.8);opacity:.35;transition:opacity .6s}
+.cr-stage[data-phase=hold] .cr-vigx{opacity:1;animation:crHeart 1s ease-in-out infinite}
+@keyframes crHeart{0%,100%{box-shadow:inset 0 0 130px 45px rgba(0,0,0,.85)}15%{box-shadow:inset 0 0 200px 90px rgba(40,10,0,.95)}30%{box-shadow:inset 0 0 130px 45px rgba(0,0,0,.85)}45%{box-shadow:inset 0 0 180px 70px rgba(40,10,0,.9)}}
+.cr-stage > *:not(.cr-bgx):not(.cr-hunt):not(.cr-bannerx):not(.cr-quote):not(.cr-conf){position:relative;z-index:1}
+.cr-topx{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.cr-titlex{font:400 20px/1 'Anton','Impact',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#fff3cf}
+.cr-titlex small{display:block;margin-top:3px;font:600 10px/1 system-ui,sans-serif;letter-spacing:.24em;color:var(--cr-gold)}
+.cr-headx{flex:1 1 auto;display:flex;justify-content:center;min-width:0}
+.cr-headx span{padding:4px 14px;border-radius:99px;font:400 15px/1.1 'Anton','Impact',sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  color:#2a1a00;background:linear-gradient(90deg,#ffd66b,#fff1a8);box-shadow:0 0 18px rgba(255,214,107,.5);
+  opacity:0;transform:translateY(-6px);transition:opacity .4s .9s,transform .4s .9s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cr-headx span.on{opacity:1;transform:none}
+.cr-headx span.red{color:#fff;background:linear-gradient(90deg,#ff294b,#ff6b8a)}
+.cr-headx span small{font:600 10px/1 system-ui,sans-serif;letter-spacing:.16em;margin-left:8px;opacity:.85}
+.cr-podium{display:flex;align-items:center;gap:8px;padding:3px 10px 3px 3px;border-radius:99px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,214,107,.2);transition:box-shadow .4s,border-color .4s}
+.cr-podium.on{box-shadow:0 0 22px rgba(255,214,107,.5);border-color:var(--cr-gold)}
+.cr-hf{width:34px;height:34px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--cr-gold)}
+.cr-hf > *,.cr-hf img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.cr-env{width:44px;height:30px;opacity:0;transform:translateY(8px) rotate(-8deg) scale(.7);transition:opacity .4s,transform .5s cubic-bezier(.2,1.6,.4,1)}
+.cr-stage[data-env=held] .cr-env,.cr-stage[data-env=open] .cr-env{opacity:1;transform:none}
+.cr-stage[data-env=held] .cr-env{animation:crEnv .9s ease-in-out infinite}
+@keyframes crEnv{50%{transform:translateY(-3px) rotate(3deg)}}
+.cr-env .flap{transform-origin:22px 4px;transition:transform .6s}
+.cr-stage[data-env=open] .cr-env .flap{transform:scaleY(-1)}
+.cr-env .card{transition:transform .6s .3s}
+.cr-stage[data-env=open] .cr-env .card{transform:translateY(-12px)}
+.cr-stage[data-phase=hall] .cr-lamp{animation:crLampRun 1.6s ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes crLampRun{50%{background:#fff;box-shadow:0 8px 40px rgba(255,241,168,1)}}
+.cr-stage.arrive .cr-plate{animation:crArrive .8s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--dl)}
+@keyframes crArrive{from{opacity:0;transform:translateY(40px) scale(.8)}}
+.cr-hunt{top:0;bottom:0;left:50%;width:220px;margin-left:-110px;pointer-events:none;opacity:0;z-index:0;
+  background:radial-gradient(40% 30% at 50% 78%,rgba(255,255,255,.3),transparent 70%),linear-gradient(180deg,rgba(255,241,200,.28),rgba(255,255,255,.04) 70%,transparent);
+  clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);transition:left .7s cubic-bezier(.3,1.3,.5,1),opacity .4s}
+.cr-stage[data-phase=hold] .cr-hunt{opacity:1;animation:crHunt 1.8s ease-in-out infinite alternate}
+.cr-stage[data-env=held] .cr-hunt{animation-duration:.7s}
+.cr-stage[data-phase=crowned] .cr-hunt{opacity:1;animation:none}
+@keyframes crHunt{from{transform:translateX(calc(var(--hunt,100px) * -1))}to{transform:translateX(var(--hunt,100px))}}
+.cr-plate.stamped .cr-place{opacity:1;animation:crStamp .5s cubic-bezier(.5,0,.3,1.4)}
+@keyframes crStamp{0%{transform:scale(3) rotate(-12deg);opacity:0}100%{transform:none;opacity:1}}
+.cr-plate .cr-place.big{top:40%;right:50%;transform:translate(50%,-50%) rotate(-10deg);padding:4px 10px;border:3px solid #ff5a6e;border-radius:6px;
+  font:400 18px/1 'Anton','Impact',sans-serif;letter-spacing:.08em;color:#ff5a6e;background:rgba(10,2,5,.7)}
+.cr-plate.stamped .cr-place.big{animation:crStampC .5s cubic-bezier(.5,0,.3,1.4)}
+@keyframes crStampC{0%{transform:translate(50%,-50%) rotate(-10deg) scale(3);opacity:0}100%{transform:translate(50%,-50%) rotate(-10deg);opacity:1}}
+.cr-sashx{position:absolute;left:4px;top:34%;width:calc(100% - 8px);height:44px;pointer-events:none;opacity:0;transform:translateY(-30px);z-index:2;
+  transition:opacity .4s,transform .7s cubic-bezier(.2,1.5,.4,1)}
+.cr-plate.sashed .cr-sashx{opacity:1;transform:none}
+.cr-plate.regal .dr-por{animation:crGlint 1.4s ease-in-out infinite}
+@keyframes crGlint{50%{box-shadow:0 0 70px 10px rgba(255,241,168,.95)}}
+.cr-castx{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin-top:8px;min-height:0}
+.cr-castx span{width:26px;height:26px;border-radius:50%;overflow:hidden;opacity:0;transform:translateY(20px) scale(.4);box-shadow:0 0 0 2px rgba(255,214,107,.5)}
+.cr-castx span > *,.cr-castx span img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.cr-stage.flood .cr-castx span{animation:crFlood .6s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--dl)}
+@keyframes crFlood{to{opacity:1;transform:none}}
+.cr-bannerx{left:0;right:0;top:42%;text-align:center;pointer-events:none;opacity:0;z-index:5}
+.cr-bannerx b{display:inline-block;padding:6px 26px;font:400 clamp(30px,5.6vw,60px)/1 'Anton','Impact',sans-serif;letter-spacing:.05em;
+  text-transform:uppercase;color:#fff;text-shadow:0 0 30px #ffd66b,0 6px 0 #7a4a00;background:linear-gradient(90deg,transparent,rgba(255,214,107,.32),transparent)}
+.cr-bannerx small{display:block;margin-top:6px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--cr-gold)}
+.cr-bannerx.red b{color:#e3e3ec;text-shadow:0 0 22px #000,0 6px 0 #3a0010;background:linear-gradient(90deg,transparent,rgba(255,41,75,.3),transparent)}
+.cr-bannerx.show{animation:crBanner 2.6s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes crBanner{0%{opacity:0;transform:scale(.6)}15%{opacity:1;transform:scale(1.06)}25%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+.cr-stage.rain .cr-conf{opacity:1}
+.cr-stage.rain .cr-conf i{animation:crFall 2.6s linear infinite}
+.cr-stage.shake{animation:crShake .45s linear}
+@keyframes crShake{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.cr-stage[data-phase=quote] .cr-line,.cr-stage[data-phase=quote] .cr-truss,.cr-stage[data-phase=quote] .cr-bgx{filter:grayscale(1) brightness(.4)}
+.cr-quote{inset:0;z-index:7;display:flex;align-items:center;justify-content:center;gap:18px;padding:20px;opacity:0;pointer-events:none;transition:opacity .35s}
+.cr-stage[data-phase=quote] .cr-quote{opacity:1}
+.cr-qf{flex:0 0 130px;width:130px;height:130px;border-radius:18px;overflow:hidden;box-shadow:0 0 0 3px var(--cr-gold),0 20px 50px rgba(0,0,0,.8);transform:rotate(-3deg)}
+.cr-qf > *,.cr-qf img{width:100%!important;height:100%!important;object-fit:cover;margin:0!important}
+.cr-qb{max-width:480px;padding:14px 18px;border-radius:16px;background:rgba(24,14,2,.94);border:1px solid rgba(255,214,107,.45)}
+.cr-qb small{display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:99px;background:var(--cr-gold);color:#2a1a00;
+  font-size:10px;letter-spacing:.26em;text-transform:uppercase}
+.cr-qb q{display:block;font-size:17px;line-height:1.45;font-style:italic;quotes:none}
+@media(prefers-reduced-motion:reduce){
+  .cr-stage,.cr-stage *{animation:none!important}
+  .cr-bannerx.show{opacity:0}
+}
 @media(max-width:760px){
-  .cr-stage{position:static}
+  .cr-podium .cr-hl{display:none}.cr-headx{order:3;flex-basis:100%}
   .cr-plate{width:112px;padding:11px 8px 9px}
   .cr-name{font-size:15px}
   .cr-said q{font-size:18px}
@@ -272,6 +361,19 @@ export const CROWN_CSS = `
   .dr-step.dr-vis .cr-said,.dr-step.dr-vis .cr-told,.dr-step.dr-vis .cr-hold,
   .cr-stage.flash,.cr-winner::before,
   .dr-step.dr-vis .cr-winner,.dr-step.dr-vis .cr-prance{animation:none;transition:none}
+}
+/* Last, so it wins over the base sizes above: a shorter window. */
+@media (max-height: 999px){
+  .cr-stage{padding:8px 12px 10px}
+  .cr-truss{margin-bottom:18px;padding-bottom:6px}
+  .cr-plate{width:118px;padding:9px 8px 8px}
+  .cr-plate .dr-por{width:60px!important;height:60px!important}
+  .cr-name{font-size:14px;margin-top:5px}
+  .cr-rec{margin-top:5px}
+  .cr-crown{width:42px;top:-26px}
+  .cr-qf{flex-basis:80px;width:80px;height:80px}.cr-qb q{font-size:14px}
+  .cr-bannerx b{font-size:clamp(24px,4vw,40px)}
+  .cr-beat{scroll-margin-top:340px}
 }
 `;
 
@@ -289,6 +391,24 @@ const CROWN_SVG = `<svg class="cr-crown" viewBox="0 0 64 42" aria-hidden="true">
   <circle cx="52" cy="18" r="2.3" fill="#38bdf8" stroke="#7A4E00" stroke-width="1"/>
 </svg>`;
 
+/** Miss Congeniality's sash, across her plinth. */
+const SASH_SVG = `<svg class="cr-sashx" viewBox="0 0 150 60" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M8 6 L30 6 L142 48 L142 58 L120 58 L8 16 Z" fill="#ff3d9a" stroke="#7a0f3e" stroke-width="1.2"/>
+  <path d="M14 9 L136 52" stroke="#fff1a8" stroke-width="1.4" stroke-dasharray="3 3"/></svg>`;
+
+const ENVELOPE_SVG = `<svg class="cr-env" viewBox="0 0 44 30" aria-hidden="true">
+  <rect class="card" x="7" y="6" width="30" height="18" rx="1.5" fill="#fff8e6" stroke="#b58a2a"/>
+  <rect x="2" y="8" width="40" height="20" rx="2" fill="#d8a72f" stroke="#7a4e00"/>
+  <path class="flap" d="M2 9 L22 21 L42 9 L42 8 L2 8 Z" fill="#f1c24c" stroke="#7a4e00"/></svg>`;
+
+/** A long line cut at a word, with an ellipsis: the whole of it is on the card. */
+const clip = (t, n) => {
+  const str = String(t || '');
+  if (str.length <= n) return str;
+  const cut = str.slice(0, n);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(' '), n - 20)).trimEnd()}…`;
+};
+
 const CONFETTI_COLOURS = ['#FFC83D', '#FF3D9A', '#38bdf8', '#3BE08A', '#fff6fb'];
 const confetti = () => `<div class="cr-conf">${
   Array.from({ length: 34 }, (_, i) => {
@@ -304,6 +424,7 @@ function plinth(name, record, ep) {
     `<i style="background:${REC[r] || '#4b5563'}" title="${esc(r)}"></i>`).join('');
   return `<div class="cr-plate" id="cr-plate-${esc(name)}" data-queen="${esc(name)}">
     ${CROWN_SVG}
+    ${SASH_SVG}
     <span class="cr-place"></span>
     ${_portrait(name, ep, { size: 92, station: true })}
     <div class="cr-name dr-disp">${esc(name)}</div>
@@ -342,11 +463,22 @@ export function rpBuildCrowning(row) {
   // Alphabetical, deliberately — see the note at the top of the file.
   const line = [...placements].sort((a, b) => a.localeCompare(b));
 
-  const stage = `<div class="cr-stage" id="cr-stage">
+  const castAll = [...new Set([...((row.dr.scenes || []).find(x => x.data?.cast)?.data?.cast || []), ...line])];
+  const stage = `<!--dr-chrome--><div class="cr-stage" id="cr-stage" data-phase="idle" data-env="">
+    <div class="cr-bgx"><i class="cr-rays"></i><i class="cr-washx"></i><i class="cr-vigx"></i></div>
+    <i class="cr-hunt"></i>
     ${confetti()}
-    <div class="cr-truss">${line.map(() => '<i class="cr-lamp lit"></i>').join('')}</div>
-    <div class="cr-line">${line.map(n => plinth(n, record[n], ep)).join('')}</div>
-  </div>`;
+    <div class="cr-topx">
+      <div class="cr-titlex">The crowning<small>${esc(line.length)} finalists</small></div>
+      <div class="cr-headx"><span data-hd></span></div>
+      <div class="cr-podium" data-podium><span class="cr-hf">${_judgePortrait('rupaul', { stage: true, size: 34 })}</span>${ENVELOPE_SVG}<span class="cr-hl dr-up">The host</span></div>
+    </div>
+    <div class="cr-truss">${line.map((_, j) => `<i class="cr-lamp lit" style="--dl:${(j * 0.15).toFixed(2)}s"></i>`).join('')}</div>
+    <div class="cr-line">${line.map((n, j) => plinth(n, record[n], ep).replace('class="cr-plate"', `class="cr-plate" style="--dl:${(j * 0.18).toFixed(2)}s"`)).join('')}</div>
+    <div class="cr-castx">${castAll.map((n, j) => `<span style="--dl:${(j * 0.06).toFixed(2)}s">${_portrait(n, ep, { size: 26 })}</span>`).join('')}</div>
+    <div class="cr-bannerx"><b data-bn></b><small data-bs></small></div>
+    <div class="cr-quote" data-quote></div>
+  </div><!--/dr-chrome-->`;
 
   /* The scenes, in the order the engine wrote them. `crowning:` is the
      ceremony pool; the `finale:` ids are the five-line version it replaces,
@@ -463,47 +595,166 @@ export function rpBuildCrowning(row) {
      the note at the top of reveal.js for why the cheap version breaks on a
      tab switch. `placeOf` is looked up rather than counted, so a plinth
      always shows the placement the season actually recorded. */
-  if (typeof window !== 'undefined') {
-    const placeOf = {};
-    placements.forEach((n, idx) => { placeOf[n] = idx + 1; });
-    const ord = n => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
-    window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra.fincrown = (idx) => {
-      const step = document.getElementById(`dr-step-fincrown-${idx}`);
-      const attr = step?.getAttribute('data-stage') || 'out:|two:|crown:';
-      const part = k => (attr.split('|').find(x => x.startsWith(`${k}:`)) || '')
-        .slice(k.length + 1).split(',').filter(Boolean);
-      const gone = part('out'); const two = part('two'); const wins = part('crown');
+  /* ── ONE STATE PER STEP ──
+     What the room looks like after each beat, and what the beat itself plays:
+     a placement stamped, the envelope, the heartbeat between the last two,
+     the name, the crown, the speech to camera, the cast flooding the stage.
+     Built once, from the same scenes the cards are. */
+  const placeOf = {};
+  placements.forEach((q, idx) => { placeOf[q] = idx + 1; });
+  const ord = k => `${k}${k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th'}`;
+  const quote = (who, label, text) => `<span class="cr-qf">${_portrait(who, ep, { size: 130 })}</span>
+    <div class="cr-qb"><small>${esc(label)}</small><q>${esc(clip(text, 210))}</q></div>`;
+  const states = [];
+  {
+    const gone = [];
+    let wins = [];
+    let two = [];
+    let sash = null;
+    let runner = null;
+    let env = '';
+    let flooded = false;
+    let regal = false;
+    for (const sc of scenes) {
+      const beat = sc.data?.beat || String(sc.kind || '').split(':')[1] || '';
+      const who = (sc.data?.players || [])[0];
+      const st = { phase: 'cer', mood: '', banner: null, stamped: null, burst: false, shake: false, quote: '', hostOn: false, arrive: false, rain: false };
+      if (beat === 'crown-hall') st.phase = 'hall';
+      else if (beat === 'crown-summon') { st.arrive = true; st.hostOn = true; }
+      else if (beat === 'crown-address') st.hostOn = true;
+      else if (beat === 'crown-congeniality' || beat === 'finale-congeniality') {
+        st.banner = { text: 'Miss Congeniality', sub: who || '' };
+        st.mood = 'gold';
+        if (who && line.includes(who)) sash = who;
+        else if (who) { st.phase = 'quote'; st.quote = quote(who, 'Miss Congeniality', sc.text); }
+      } else if (beat === 'crown-place' && who) {
+        gone.push(who);
+        st.stamped = who;
+        st.banner = { text: `${ord(Number(sc.data?.place) || placeOf[who] || 0)} place`, sub: who, red: true };
+        st.mood = 'red';
+        st.shake = true;
+      } else if (beat === 'crown-final-two') {
+        two = (sc.data?.finalTwo || sc.data?.players || []).slice(0, 2);
+        st.phase = 'hold';
+        st.banner = { text: 'The final two', sub: two.join(' & ') };
+      } else if (beat === 'crown-envelope') {
+        env = 'held';
+        st.phase = 'hold';
+        st.hostOn = true;
+      } else if (NAME_BEATS.has(beat) && who) {
+        wins = alsoCrowned.length ? [...alsoCrowned] : [who];
+        env = 'open';
+        st.phase = 'crowned';
+        st.mood = 'gold';
+        st.burst = true;
+        st.banner = { text: 'Condragulations', sub: wins.join(' & ') };
+      } else if (beat === 'crown-runnerup' || beat === 'finale-runnerup') {
+        runner = who || runner;
+        st.stamped = runner;
+        st.phase = wins.length ? 'crowned' : 'cer';
+        st.banner = { text: 'Runner-up', sub: runner || '', red: true };
+      } else if (beat === 'crown-regalia') {
+        regal = true;
+        st.phase = 'crowned';
+        st.mood = 'gold';
+        st.burst = true;
+      } else if (beat === 'crown-speech' || beat === 'finale-speech') {
+        st.phase = 'quote';
+        st.quote = quote(who || wins[0], 'Her first words as the winner', sc.text);
+      } else if (beat === 'crown-cast') {
+        flooded = true;
+        st.phase = 'crowned';
+      } else if (beat === 'crown-prance' || beat === 'finale-prance') {
+        flooded = true;
+        st.phase = 'crowned';
+        st.rain = true;
+        st.banner = { text: 'Now prance', sub: 'the season is over' };
+      }
+      if (wins.length && st.phase === 'cer') st.phase = 'crowned';
+      Object.assign(st, {
+        gone: [...gone], wins: [...wins], two: wins.length ? [] : [...two], sash, runner: wins.length ? runner : null,
+        env, flooded, regal,
+      });
+      states.push(st);
+    }
+  }
+  const lastState = states[states.length - 1];
+  while (states.length < total) states.push({ ...lastState, banner: null, burst: false, shake: false, quote: '', phase: lastState.phase === 'quote' ? 'crowned' : lastState.phase });
 
+  if (typeof window !== 'undefined') {
+    let prev = -99;
+    let timer = null;
+    const apply = idx => {
+      const stageEl = document.getElementById('cr-stage');
+      if (!stageEl) return;
+      const st = idx < 0 ? null : states[Math.min(idx, states.length - 1)];
+      const fresh = idx === prev + 1;
+      prev = idx;
+      clearTimeout(timer);
+      stageEl.classList.remove('flash', 'shake', 'arrive', 'rain', 'flood');
+      const bn = stageEl.querySelector('.cr-bannerx');
+      bn.classList.remove('show', 'red');
+      const hd = stageEl.querySelector('[data-hd]');
+      hd.classList.remove('on', 'red');
+      stageEl.dataset.phase = st ? st.phase : 'idle';
+      stageEl.dataset.mood = st?.mood || '';
+      stageEl.dataset.env = st?.env || '';
+      stageEl.querySelector('[data-podium]')?.classList.toggle('on', !!st?.hostOn);
+      stageEl.querySelector('[data-quote]').innerHTML = st?.quote || '';
+      const gone = st?.gone || [];
+      const wins = st?.wins || [];
+      const two = st?.two || [];
       let lit = 0;
-      for (const el of document.querySelectorAll('.cr-plate')) {
-        const n = el.getAttribute('data-queen');
-        const isOut = gone.includes(n) || (wins.length && !wins.includes(n));
+      for (const el of stageEl.querySelectorAll('.cr-plate')) {
+        const q = el.getAttribute('data-queen');
+        const isOut = gone.includes(q) || (wins.length && !wins.includes(q));
         el.classList.toggle('out', !!isOut);
-        el.classList.toggle('finaltwo', two.includes(n));
-        el.classList.toggle('crowned', wins.includes(n));
+        el.classList.toggle('finaltwo', two.includes(q));
+        el.classList.toggle('crowned', wins.includes(q));
+        el.classList.toggle('sashed', !!st && st.sash === q);
+        el.classList.toggle('regal', !!st?.regal && wins.includes(q));
+        el.classList.toggle('stamped', !!st && fresh && st.stamped === q);
         if (!isOut) lit += 1;
         const tag = el.querySelector('.cr-place');
-        if (tag) tag.textContent = gone.includes(n) && placeOf[n] ? ord(placeOf[n]) : '';
+        const isRunner = !!st && st.runner === q;
+        tag.textContent = gone.includes(q) && placeOf[q] ? ord(placeOf[q]) : isRunner ? 'Runner-up' : '';
+        tag.classList.toggle('big', !!st && st.stamped === q && st.phase !== 'crowned');
       }
-      // The rig dims with the room.
-      const lamps = [...document.querySelectorAll('.cr-lamp')];
+      const lamps = [...stageEl.querySelectorAll('.cr-lamp')];
       lamps.forEach((l, j) => l.classList.toggle('lit', j < Math.max(1, lit)));
-
-      /* THE FLASH FIRES ONCE, on the beat that names her, and is removed
-         when the reader steps back — otherwise stepping backwards and
-         forwards again would replay the confetti on a beat that is not the
-         crowning. */
-      const stageEl = document.getElementById('cr-stage');
-      if (stageEl) {
-        const isNameBeat = step?.getAttribute('data-crownbeat') === '1';
-        if (isNameBeat && !stageEl.classList.contains('flash')) {
-          stageEl.classList.add('flash');
-        } else if (!wins.length) {
-          stageEl.classList.remove('flash');
-        }
+      if (!st) return;
+      // The spotlight: between the last two while they wait, on the winner after.
+      const target = wins.length ? wins : two;
+      const plates = [...stageEl.querySelectorAll('.cr-plate')].filter(p => target.includes(p.getAttribute('data-queen')));
+      if (plates.length) {
+        const box = stageEl.getBoundingClientRect();
+        const xs = plates.map(p => { const r = p.getBoundingClientRect(); return r.left + r.width / 2 - box.left; });
+        stageEl.querySelector('.cr-hunt').style.left = `${(Math.min(...xs) + Math.max(...xs)) / 2}px`;
+        stageEl.style.setProperty('--hunt', `${Math.max(10, (Math.max(...xs) - Math.min(...xs)) / 2)}px`);
+      }
+      if (st.flooded) stageEl.classList.add('flood');
+      if (st.rain) stageEl.classList.add('rain');
+      if (st.banner) {
+        stageEl.querySelector('[data-bn]').textContent = st.banner.text;
+        stageEl.querySelector('[data-bs]').textContent = st.banner.sub || '';
+        bn.classList.toggle('red', !!st.banner.red);
+        hd.innerHTML = `${esc(st.banner.text)}${st.banner.sub ? `<small>${esc(st.banner.sub)}</small>` : ''}`;
+        hd.classList.toggle('red', !!st.banner.red);
+        hd.classList.add('on');
+        if (fresh) { void stageEl.offsetWidth; bn.classList.add('show'); }
+      }
+      if (fresh) {
+        if (st.arrive) stageEl.classList.add('arrive');
+        if (st.burst) stageEl.classList.add('flash');
+        if (st.shake) stageEl.classList.add('shake');
+        timer = setTimeout(() => stageEl.classList.remove('flash', 'shake', 'arrive'), 2800);
       }
     };
+    window._drRevealExtra = window._drRevealExtra || {};
+    window._drRevealExtra.fincrown = idx => apply(idx);
+    setTimeout(() => {
+      try { const { idx } = _state(ep, 'fincrown'); if (idx >= 0) apply(idx); } catch { /* decoration */ }
+    }, 0);
   }
 
   /* THE RAIL: who is still standing, and it shrinks. Gated by step, so it

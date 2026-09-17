@@ -135,7 +135,7 @@ at two pairs a season on purpose: the show is about the work.
 | finale & reunion | `js/dr/finale.js`, `js/dr/reunion.js` |
 | export & ledger | `js/dr/export.js`, `js/dr/grid.js`, `js/stats-export.js` |
 | viewing party | `js/vp-dr/*.js` (26 screens; `screens.js` is the registry) |
-| pinned stages | `js/vp-dr/call-stage.js` (the call), `js/vp-dr/lipsync-stage.js`, `js/vp-dr/save.js`: each builds one state per reveal step and applies it through `_drRevealExtra[suffix]`; always sticky, compact under 1000px tall (that media block goes LAST in the CSS) |
+| pinned stages | `js/vp-dr/call-stage.js` (the call), `js/vp-dr/lipsync-stage.js`, `js/vp-dr/save.js`, `js/vp-dr/finale-stage.js` (crown lip sync incl. bracket, showcase, interview), and the crowning's own stage in `js/vp-dr/crowning.js`: each builds one state per reveal step and applies it through `_drRevealExtra[suffix]`; always sticky, compact under 1000px tall (that media block goes LAST in the CSS) |
 | confessionals | `js/dr/confessional.js`: staged surfaces are runway, lipsync, choice, maxi-pre and results (the call: WIN/HIGH land, the rest miss). A confessional's edit goes to `state.edit` and the caller's `popDelta`, never `state.popularity`, so the prose cannot steer arcs |
 | AI writer | `js/dr/writer.js`, `worker/worker-episode-live.js` |
 | aftermath | `js/dr/aftermath.js`, `js/edit-layer.js` |

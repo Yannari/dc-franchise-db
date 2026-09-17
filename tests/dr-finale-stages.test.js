@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { playDragSeason } from '../js/dr/season.js';
 import { rngFor } from '../js/dr/rng.js';
-import { rpBuildShowcase, rpBuildInterview, rpBuildCrownLipSync } from '../js/vp-dr/finale-screens.js';
+import { rpBuildShowcase, rpBuildInterview, rpBuildCrownLipSync, rpBuildCut } from '../js/vp-dr/finale-screens.js';
 import { rpBuildCrowning } from '../js/vp-dr/crowning.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -26,6 +26,7 @@ function finale(fmt, seed = 1) {
 const SCREENS = [
   ['finshowcase', rpBuildShowcase, /^finale:finale-showcase/],
   ['fininterview', rpBuildInterview, /^finale:finale-interview/],
+  ['fincut', rpBuildCut, /^finale:finale-cut/],
   ['fincrownls', rpBuildCrownLipSync, /^finale:(finale-crown-lipsync|finale-preduel|duel-beat|duel-hook)$/],
 ];
 const plain = html => html.replace(/<style[\s\S]*?<\/style>/g, '');
@@ -74,6 +75,18 @@ describe('the finale stages', () => {
         const rail = [...host.querySelectorAll('.dr-nm')].map(x => x.textContent.trim());
         expect(rail).toEqual([...rail].sort((a, b) => a.localeCompare(b)));
       }
+    }
+  });
+
+  it('the cut darkens nobody before a click', () => {
+    for (const fmt of ['perform-then-lipsync', 'perform-then-lipsync-3']) {
+      const host = document.createElement('div');
+      host.innerHTML = rpBuildCut(finale(fmt));
+      const qs = [...host.querySelectorAll('.ctx-q')];
+      expect(qs.length).toBeGreaterThan(2);
+      for (const q of qs) expect(q.className, fmt).toBe('ctx-q');
+      const names = qs.map(q => q.dataset.q);
+      expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
     }
   });
 

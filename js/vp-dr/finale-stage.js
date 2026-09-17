@@ -266,11 +266,45 @@ export const FINALE_STAGE_CSS = `
 .ivx-tab.done{opacity:.85}
 .ivx-tab.done::after{content:'✓';color:var(--fx);font-weight:700}
 
+/* ══ THE CUT ══ */
+.ctx-line{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:clamp(8px,2vw,22px);flex-wrap:wrap;
+  min-height:200px;margin-top:10px;padding-top:30px}
+.ctx-q{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;width:clamp(84px,13vw,130px);
+  transition:transform .6s cubic-bezier(.2,1.4,.4,1),filter .7s,opacity .7s}
+.ctx-q::before{content:'';position:absolute;top:-30px;left:50%;width:150px;height:220px;transform:translateX(-50%);z-index:-1;
+  background:linear-gradient(180deg,rgba(255,236,190,.3),transparent 80%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);
+  opacity:.45;transition:opacity .6s,background .6s}
+.ctx-q .fsx-face{width:clamp(70px,10vw,104px);height:clamp(70px,10vw,104px)}
+.ctx-q b{font:400 17px/1 'Anton','Impact',sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.ctx-tag{min-width:70px;padding:4px 8px;border-radius:6px;text-align:center;font:400 13px/1 'Anton','Impact',sans-serif;letter-spacing:.1em;
+  text-transform:uppercase;background:rgba(255,255,255,.06);color:transparent;transform:rotateX(90deg);transition:transform .45s cubic-bezier(.2,1.4,.4,1)}
+.ctx-q.out .ctx-tag{transform:none;background:#3a0a14;color:#ff8fa3}
+.ctx-q.safe .ctx-tag{transform:none;background:linear-gradient(90deg,#ffd66b,#fff1a8);color:#2a1a00}
+.ctx-q.out{filter:grayscale(1) brightness(.4);transform:translateY(12px) scale(.88)}
+.ctx-q.out::before{opacity:0}
+.ctx-q.now.out{animation:ctx-drop .7s ease-in}
+@keyframes ctx-drop{0%{filter:none;transform:none}30%{filter:brightness(1.8);transform:scale(1.05)}100%{filter:grayscale(1) brightness(.4);transform:translateY(12px) scale(.88)}}
+.ctx-q.safe{transform:translateY(-10px) scale(1.1)}
+.ctx-q.safe::before{opacity:1;background:linear-gradient(180deg,rgba(255,230,150,.6),transparent 80%)}
+.ctx-q.safe .fsx-face{box-shadow:0 0 0 4px var(--fx),0 0 50px 12px rgba(255,214,107,.55)}
+.fsx.any .ctx-q:not(.now):not(.out):not(.safe){filter:brightness(.6)}
+.ctx-q.now:not(.out) .fsx-face{box-shadow:0 0 0 4px #fff1a8,0 0 40px 8px rgba(255,241,168,.45)}
+.ctx-spot{position:absolute;top:0;bottom:0;left:50%;width:200px;margin-left:-100px;pointer-events:none;opacity:0;z-index:0;
+  background:radial-gradient(40% 30% at 50% 80%,rgba(255,255,255,.28),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.2),transparent 80%);
+  clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);transition:left .7s cubic-bezier(.3,1.3,.5,1),opacity .4s}
+.fsx[data-phase=hold] .ctx-spot{opacity:1;animation:ctx-hunt 1.6s ease-in-out infinite alternate}
+@keyframes ctx-hunt{from{transform:translateX(calc(var(--hunt,120px) * -1))}to{transform:translateX(var(--hunt,120px))}}
+.ctx-count{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.ctx-count i{width:12px;height:12px;border-radius:50%;background:#ffd66b;box-shadow:0 0 10px rgba(255,214,107,.7);transition:all .5s}
+.ctx-count i.off{background:rgba(255,255,255,.1);box-shadow:none}
+.ctx-count span{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#cdbfa8;margin-left:6px}
+
 @media (max-width:640px){
   .clx-q .fsx-face{width:78px;height:78px}.clx-q::before{width:130px}.clx-crown{width:48px}
   .clx-bracket{gap:4px;margin-top:4px}.clx-box{padding:2px 6px;font-size:10px}.clx-box em{display:none}
   .clx-parts{gap:3px}.clx-parts span{padding:2px 6px;font-size:8.5px;letter-spacing:.08em}
   .clx-duel{min-height:0}.clx-q{padding-top:10px}
+  .ctx-line{min-height:0;padding-top:14px}.ctx-q{width:72px}.ctx-q .fsx-face{width:58px;height:58px}.ctx-q b{font-size:12px}.ctx-q::before{width:90px;height:120px;top:-14px}
   .shx-perf .fsx-face{width:84px;height:84px}
   .ivx-set{grid-template-columns:1fr 1fr;}.ivx-mid{grid-column:1 / -1;order:3;padding-bottom:4px}
   .ivx-seat .fsx-face{width:70px;height:70px}
@@ -295,6 +329,7 @@ export const FINALE_STAGE_CSS = `
   .ivx-bubble{font-size:12px;padding:7px 10px}.ivx-mid{padding-bottom:14px}
   .fsx-qframe{flex-basis:80px;width:80px;height:80px}.fsx-qbody q{font-size:14px}
   .fsx-banner b{font-size:clamp(24px,4vw,40px)}
+  .ctx-line{min-height:0;padding-top:16px}.ctx-q .fsx-face{width:66px;height:66px}.ctx-q::before{height:150px;top:-16px}
   .fsx-cards .dr-step{scroll-margin-top:360px}
 }
 `;
@@ -707,4 +742,76 @@ export function finaleCard({ id, ep, who = null, host = null, tag = '', text = '
   const pic = host ? _judgePortrait(host, { stage: true, size: 44 }) : who ? _portrait(who, ep, { size: 48, station: true }) : '';
   return `<div class="dr-step" id="${id}"><div class="fsx-card ${host ? 'host' : 'q'} ${cls}">
     ${pic}<div>${tag ? `<span class="fsx-ctag">${esc(tag)}</span>` : ''}<p>${esc(text)}</p></div></div></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  THE CUT
+// ══════════════════════════════════════════════════════════════════════
+
+/**
+ * `list`: { t: 'suspense'|'cut', text } from the host, then per queen cut
+ * { t: 'react', who, text } and maybe { t: 'last', who, text }.
+ * `cut` is who the host cuts; `line` is the finalists, alphabetical.
+ */
+export function cutStage(row, list, { ep, line = [], cut = [], uid = 'x' } = {}) {
+  const gone = [];
+  const survivors = line.filter(q => !cut.includes(q));
+  const states = list.map(s => {
+    const st = { phase: 'cer', now: null, hostOn: false, banner: null, quote: '', shake: false, burst: false };
+    if (s.t === 'suspense') { st.phase = 'hold'; st.hostOn = true; }
+    else if (s.t === 'cut') {
+      st.phase = 'hold';
+      st.hostOn = true;
+      st.banner = { text: `Top ${survivors.length}`, sub: 'the host is about to cut', red: true };
+    } else if (s.t === 'react') {
+      if (!gone.includes(s.who)) gone.push(s.who);
+      st.now = s.who;
+      st.mood = 'red';
+      st.shake = true;
+      st.banner = { text: 'Cut', sub: s.who, red: true };
+    } else if (s.t === 'last') {
+      st.phase = 'quote';
+      st.quote = quoteHtml({ name: s.who, ep, label: `${s.who} · her last words`, text: s.text });
+    }
+    const allGone = cut.length && cut.every(q => gone.includes(q));
+    st.gone = [...gone];
+    st.safe = allGone ? [...survivors] : [];
+    // The last cut is also the moment the final two are known.
+    if (allGone && s.t === 'react' && gone[gone.length - 1] === s.who) {
+      st.banner = { text: `The final ${survivors.length === 2 ? 'two' : survivors.length}`, sub: survivors.join(' & ') };
+      st.mood = 'gold';
+      st.burst = true;
+    }
+    return st;
+  });
+  const plates = line.map(q => `<div class="ctx-q" data-q="${esc(q)}">${face(q, ep, 104)}<b>${esc(q)}</b>
+    <span class="ctx-tag" data-t></span></div>`).join('');
+  const body = `<i class="ctx-spot"></i><div class="ctx-line">${plates}</div>
+    <div class="ctx-count">${line.map(() => '<i></i>').join('')}<span data-left>${esc(line.length)} still standing</span></div>`;
+  const html = shell({ id: `ctx-${uid}`, title: 'The cut', sub: 'the field becomes two', body });
+  const apply = engine(`ctx-${uid}`, states, (el, st) => {
+    const gone = st?.gone || [];
+    const safe = st?.safe || [];
+    el.classList.toggle('any', !!st?.now);
+    for (const q of el.querySelectorAll('.ctx-q')) {
+      const nm = q.dataset.q;
+      q.classList.toggle('out', gone.includes(nm));
+      q.classList.toggle('safe', safe.includes(nm));
+      q.classList.toggle('now', !!st && st.now === nm);
+      q.querySelector('[data-t]').textContent = gone.includes(nm) ? 'Cut' : safe.includes(nm) ? 'For the crown' : '';
+    }
+    const left = line.length - gone.length;
+    el.querySelectorAll('.ctx-count i').forEach((d, i) => d.classList.toggle('off', i >= left));
+    el.querySelector('[data-left]').textContent = `${left} still standing`;
+    // The spotlight hunts along the queens not yet cut.
+    const standing = [...el.querySelectorAll('.ctx-q:not(.out)')];
+    if (standing.length) {
+      const body = el.querySelector('.ctx-line');
+      const xs = standing.map(q => q.offsetLeft + q.offsetWidth / 2);
+      const spot = el.querySelector('.ctx-spot');
+      spot.style.left = `${body.offsetLeft + (Math.min(...xs) + Math.max(...xs)) / 2}px`;
+      el.style.setProperty('--hunt', `${Math.max(20, (Math.max(...xs) - Math.min(...xs)) / 2)}px`);
+    }
+  });
+  return { html, apply, states };
 }

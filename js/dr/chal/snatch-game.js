@@ -111,7 +111,7 @@ function appetiteFor(player, record = [], slot = 0, field = 1) {
      roster: the same queen wants different things in week two and week six. */
   const wins = record.filter(r => r === 'WIN').length;
   const highs = record.filter(r => r === 'HIGH').length;
-  const trouble = record.filter(r => r === 'BTM' || r === 'BTM2' || r === 'LOW').length;
+  const trouble = record.filter(r => r === 'BTM' || r === 'BTM2' || r === 'BTM3' || r === 'LOW').length;
   const invisible = record.filter(r => r === 'SAFE').length;
 
   let a = (bold - 5) / 5;                    // nerve, -1 to 1

@@ -117,7 +117,7 @@ function assignRoles(team, players, rng) {
 function pickValue(cap, name, { bond, players, state, rng }) {
   const b = bond(cap, name);
   const d = dragOf(players[name]);
-  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1 };
   const rec = state?.record?.[name] || [];
   const ppe = rec.length ? rec.reduce((s, x) => s + (_ppeW[x] ?? 0), 0) / rec.length : 3;
   return b * 1.2 + ppe * 0.8 + (d.dance + d.singing) * 0.15 + noise(rng, 1.5);

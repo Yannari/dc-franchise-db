@@ -17,7 +17,7 @@ import { showWords, DRAG_FORMAT } from '../shows.js';
 /** Judging calls that read as a good night, a fine one, and a bad one. */
 const TOP = new Set(['WIN', 'WINNER']);
 const GOOD = new Set(['WIN', 'WINNER', 'HIGH']);
-const BAD = new Set(['BTM', 'BTM2', 'LOW']);
+const BAD = new Set(['BTM', 'BTM2', 'BTM3', 'LOW']);
 
 /**
  * Every cast name mentioned anywhere inside a scene.

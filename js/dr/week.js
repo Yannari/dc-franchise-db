@@ -855,8 +855,27 @@ export function runDragWeek(state, cfg, ctx) {
     call.win = [];
     call.high = top2;
     call.low = [];
-    const named = legacy ? [] : bend.slice(-2).map(r => r.name).filter(n => !top2.includes(n));
-    call.atRisk = named;
+    /* ── ON A LEGACY NIGHT THE BOTTOM IS NAMED, AND IT IS `bottom` ──
+       This named NOBODY on a legacy night, on the reasoning that announcing
+       the pool would spoil the choice the winner is about to make out of it.
+       Checked against the seasons the rule actually ran: they name it. The
+       host tells those queens they are up for elimination and they stand
+       there while the top two sing, and AS2's chart keeps a cell for exactly
+       that outcome — "was up for elimination, but wasn't eliminated by the
+       winner". The surprise is WHICH of them, not whether.
+       Naming nobody cost three real things: there was no bottom for the room
+       to campaign to, no cell for the queens who survived, and the queen who
+       went home went from SAFE to gone in one step. The pool being public is
+       the format; the NAME on the lipstick is the secret, and that is gated
+       on the screen (js/vp-dr/legacy-stage.js), which is where a spoiler
+       belongs.
+       They go in `bottom` rather than `atRisk` because they are up for
+       elimination — `atRisk` is the show's named-but-safe group, which is not
+       what these queens are. Nobody among them sings: `call.singers` is the
+       top two, and every reader of the song takes it from there. */
+    const wide = legacy ? (living.length >= 8 ? 3 : 2) : 2;
+    const named = bend.slice(-wide).map(r => r.name).filter(n => !top2.includes(n));
+    if (legacy) { call.bottom = named; call.atRisk = []; } else { call.atRisk = named; }
     call.safe = bend.slice(2).map(r => r.name).filter(n => !named.includes(n));
   }
 
@@ -1436,7 +1455,13 @@ export function runDragWeek(state, cfg, ctx) {
        answer and also the honest one. Reusing ballotSelfishness rather than a
        second rule, so a hero eliminates like a hero here too. */
     if (legacy) {
-      const pool = bend.slice(2).map(r => r.name).filter(n => n !== a && n !== b);
+      /* OUT OF THE BOTTOM THE HOST NAMED, not out of the whole room. This
+         read `bend.slice(2)` — everybody below the top two — so a queen the
+         panel had called safe could be sent home without ever being told she
+         was in danger, and the chart recorded her as SAFE the week she left.
+         The named bottom is `call.bottom` (see the call above), worst last. */
+      const pool = (call.bottom.length ? call.bottom : bend.slice(2).map(r => r.name))
+        .filter(n => n !== a && n !== b);
       if (pool.length) {
         const appetite = ballotSelfishness(P(lc.winner));
         const chosen = appetite >= 0.4 ? pool[0] : pool[pool.length - 1];
@@ -1535,7 +1560,15 @@ export function runDragWeek(state, cfg, ctx) {
       : exits.includes(n) ? 'ELIM'
         : call.win.includes(n) ? 'WIN'
           : call.high.includes(n) ? 'HIGH'
-            : call.bottom.includes(n) ? 'BTM2'
+            /* ── THE BOTTOM, AND WHETHER SHE SANG IN IT ──
+               On an ordinary night the bottom IS the lip sync, so BTM2 says
+               she sang and survived. On a legacy night NOBODY in the bottom
+               sings — the winner of the top-two song picked somebody else —
+               and the record is the size of the bottom she was named in.
+               js/dr/grid.js words the cell from the season's shape; this only
+               has to write the right one. */
+            : call.bottom.includes(n)
+              ? (legacy && call.bottom.length >= 3 ? 'BTM3' : 'BTM2')
               /* ── A QUEEN NAMED IN THE BOTTOM AND SAVED IS `LOW` ──
        This produced `BTM`, a seventh result, on the reasoning that being
        named in the bottom and being one of the two who lip sync are
@@ -1933,6 +1966,11 @@ export function runDragWeek(state, cfg, ctx) {
       ...(callAtCall ? { callAtCall } : {}),
       reactions,
       lipsync,
+      /* WHICH GAME THIS WEEK WAS. The chart's words depend on it — BTM2 means
+         two different weeks, see `resultMeta` in js/dr/grid.js — and so does
+         every reader that would otherwise infer a lip sync from a bottom
+         placement. Null on an ordinary season, so nothing changes there. */
+      ...(cfg.legacy ? { allStars: { rule: 'legacy' } } : {}),
       /* THE SEASON'S SAVE, AS IT PLAYED TONIGHT. Null on a season without
          one. `saved` is who it kept — the chart's yellow border reads it.
          `savesState` is the whole save after tonight, for a season rebuilt

@@ -51,7 +51,7 @@ const num = (v, d = 5) => (Number.isFinite(Number(v)) ? Number(v) : d);
  */
 export function exitMoodFor({ record = [], reaction = null, gap = null, player = null } = {}) {
   const past = (record || []).slice(0, -1);          // tonight is the last entry
-  const bottoms = past.filter(r => r === 'BTM' || r === 'BTM2').length;
+  const bottoms = past.filter(r => r === 'BTM' || r === 'BTM2' || r === 'BTM3').length;
   const strong = past.some(r => r === 'WIN' || r === 'HIGH');
   const temperament = num(player?.stats?.temperament);
   const loyalty = num(player?.stats?.loyalty);

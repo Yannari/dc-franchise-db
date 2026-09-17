@@ -64,7 +64,7 @@ function pickStrategy(name, others, { players, bond, rng, state }) {
   // Villains target front-runners — the queen with the best track record
   if (VILLAIN_SET.has(arch)) {
     const rec = state?.record || {};
-    const _w = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+    const _w = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1 };
     const ppe = n => {
       const r = rec[n] || [];
       return r.length ? r.reduce((s, x) => s + (_w[x] ?? 0), 0) / r.length : 3;
@@ -180,7 +180,7 @@ export function perform(ctx) {
   // PPE-based host lean, the same rule as the standard lip sync. In the
   // early rounds nobody goes home so track record barely matters; in
   // sudden death it decides who gets the chop.
-  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1 };
   const ROUND_LEAN = [0, 0.2, 0.35, 0.6];
   const hostLean = (n, round) => {
     const rec = state.record?.[n] || [];
@@ -395,7 +395,7 @@ export function perform(ctx) {
       rankOf: n => {
         const rec = state.record?.[n] || [];
         if (!rec.length) return 0;
-        const _w = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+        const _w = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1 };
         return rec.reduce((s, r) => s + (_w[r] ?? 0), 0) / rec.length;
       },
     }),

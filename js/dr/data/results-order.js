@@ -34,7 +34,7 @@
 // rest.
 
 /** The five calls, in the order they were emitted before any of this. */
-export const CALL_GROUPS = ['WIN', 'HIGH', 'LOW', 'BTM', 'BTM2'];
+export const CALL_GROUPS = ['WIN', 'HIGH', 'LOW', 'BTM', 'BTM2', 'BTM3'];
 
 /**
  * The ways a call can be run.

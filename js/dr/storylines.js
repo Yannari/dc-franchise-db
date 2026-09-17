@@ -293,7 +293,7 @@ export function storylineNeed(storylines, { living, episode, totalEpisodes, stat
    imports this file, so importing it back would be a cycle. It is used as a
    TIE-BREAK behind the win count and never as the decision, so the two
    drifting apart cannot change who the season says is in front. */
-const RANK_POINTS = { WIN: 4, HIGH: 2, SAFE: 0, LOW: -1, BTM: -2, BTM2: -2, ELIM: -3 };
+const RANK_POINTS = { WIN: 4, HIGH: 2, SAFE: 0, LOW: -1, BTM: -2, BTM2: -2, BTM3: -2, ELIM: -3 };
 function recordRank(record = []) {
   const rated = (record || []).filter(r => r in RANK_POINTS);
   if (!rated.length) return 0;

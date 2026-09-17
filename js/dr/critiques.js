@@ -278,7 +278,7 @@ export function whoShouldGoHome({
   const events = [];
   const record = n => state.record?.[n] || [];
   const wins = n => record(n).filter(r => r === 'WIN' || r === 'HIGH').length;
-  const bads = n => record(n).filter(r => r === 'BTM2' || r === 'LOW' || r === 'BTM').length;
+  const bads = n => record(n).filter(r => r === 'BTM2' || r === 'BTM3' || r === 'LOW' || r === 'BTM').length;
   const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
   /* Shares taken from the counts above. `leader` is only reachable on a team
@@ -301,7 +301,7 @@ export function whoShouldGoHome({
        Four times in 129. It is the most sympathetic thing anybody does on
        that stage and it is not a strategy -- and it is RARE, which is what
        makes it land. */
-    const inTrouble = ['BTM2', 'BTM', 'LOW'].includes(record(n)[record(n).length - 1] || '');
+    const inTrouble = ['BTM2', 'BTM3', 'BTM', 'LOW'].includes(record(n)[record(n).length - 1] || '');
     if (stat(players[n], 'loyalty') >= 8 && inTrouble && rng() < 0.25) {
       votes[n] = { target: n, reason: 'herself' };
       events.push(evt('named-herself', { players: [n], pop: { [n]: 3 }, data: {} }));

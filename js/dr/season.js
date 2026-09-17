@@ -574,7 +574,7 @@ function weekCfg(sch, config, num, extra = {}) {
    Divided by the length of the record so a queen who lasted longer is not
    credited for the lasting itself — she is already in the finale, which is
    the reward for that. This measures how well she was DOING, not how long. */
-const RECORD_POINTS = { WIN: 2, HIGH: 1, SAFE: 0, LOW: -0.5, BTM: -1, BTM2: -1.25 };
+const RECORD_POINTS = { WIN: 2, HIGH: 1, SAFE: 0, LOW: -0.5, BTM: -1, BTM2: -1.25, BTM3: -1.25 };
 
 /* HOW HARD THE SEASON PULLS AT A FINALE. Shared by the cut (the panel's
    view of the showcase) and the crown duel, so the two cannot drift apart.
@@ -703,7 +703,7 @@ export function runSmackdown(state, cfg, ctx) {
   const NICE_SET = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
   const VILLAIN_SET = new Set(['villain', 'mastermind', 'schemer']);
   const dragOf = p => p?.drag || {};
-  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1 };
+  const _ppeW = { WIN: 5, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1 };
   const ppe = n => {
     const r = state.record?.[n] || [];
     return r.length ? r.reduce((s, x) => s + (_ppeW[x] ?? 0), 0) / r.length : 3;

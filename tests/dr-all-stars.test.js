@@ -89,3 +89,29 @@ describe('the legacy rule', () => {
     for (const r of small) expect(r.dr.lipsync.legacy).toBeFalsy();
   });
 });
+
+describe('the chart on a legacy night', () => {
+  it('records the size of the bottom she was named in', () => {
+    const res = season(11, { drAllStars: true });
+    let checked = 0;
+    for (const r of weekly(res)) {
+      if (!r.dr.lipsync?.legacy) continue;
+      const bottom = r.dr.call?.bottom || [];
+      if (bottom.length < 2) continue;
+      const want = bottom.length >= 3 ? 'BTM3' : 'BTM2';
+      for (const q of bottom) {
+        const cell = (r.dr.record?.[q] || []).slice(-1)[0];
+        if (!cell) continue;
+        expect(['ELIM', want]).toContain(cell);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(4);
+  });
+
+  it('marks the row as All Stars so the chart can word itself', () => {
+    const res = season(11, { drAllStars: true });
+    for (const r of weekly(res)) expect(r.dr.allStars?.rule).toBe('legacy');
+    expect(weekly(season(11)).every(r => !r.dr.allStars)).toBe(true);
+  });
+});

@@ -55,7 +55,15 @@ function resultFor(row, name) {
      reads "in the bottom, but was not up for elimination".
      This exporter used to emit BTM for that queen, inventing a seventh result
      the chart has no colour for. */
-  if ((c.bottom || []).includes(name)) return 'BTM2';
+  /* And on an All Stars legacy night the bottom can be THREE, none of whom
+     sang: the winner of the top-two song picks one of them and the rest are
+     spared without ever performing. The size of the bottom is the record,
+     which is how the real chart draws it. `singers` being the TOP two is what
+     tells the two nights apart here. */
+  if ((c.bottom || []).includes(name)) {
+    return c.bottom.length >= 3 && (c.singers || []).some(s => !c.bottom.includes(s))
+      ? 'BTM3' : 'BTM2';
+  }
   if ((c.atRisk || []).includes(name)) return 'LOW';
   if ((c.low || []).includes(name)) return 'LOW';
   return 'SAFE';

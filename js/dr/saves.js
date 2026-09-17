@@ -200,8 +200,14 @@ function weighted(rng, opts) {
  * night — the queen the room expects the baguette to go to: the giver's
  * closest friend who is not herself in the bottom.
  */
-export function campaignTargets({ saves, winners = [], giver = null, pool, living, bond }) {
-  if (saves.kind === 'beaver') return winners.filter(Boolean);
+export function campaignTargets({ saves, winners = [], giver = null, pool, living, bond, likelyTop = [] }) {
+  /* ── AND ON A LEGACY NIGHT, NOBODY HOLDS IT YET ──
+     The power belongs to whoever wins a song that has not happened. So the
+     bottom works the queens the critiques favoured, which is what the real
+     seasons show: the lobbying is in Untucked, before the top two sing, and a
+     queen who spent it on the wrong person spent it for nothing. */
+  if (likelyTop.length) return likelyTop.filter(q => !pool.includes(q));
+  if (saves?.kind === 'beaver') return winners.filter(Boolean);
   if (!giver) return [];
   const likely = living.filter(q => !pool.includes(q))
     .sort((a, b) => (Number(bond(giver, b)) || 0) - (Number(bond(giver, a)) || 0))[0];

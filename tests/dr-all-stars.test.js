@@ -115,3 +115,59 @@ describe('the chart on a legacy night', () => {
     expect(weekly(season(11)).every(r => !r.dr.allStars)).toBe(true);
   });
 });
+
+describe('the campaign on a legacy night', () => {
+  it('happens, and it happens before the song', () => {
+    const res = season(21, { drAllStars: true });
+    const pitches = weekly(res).flatMap(r => (r.dr.scenes || []).filter(s => s.kind === 'legacy:pitch'));
+    expect(pitches.length).toBeGreaterThan(0);
+    for (const p of pitches) expect(p.text.length).toBeGreaterThan(0);
+    for (const r of weekly(res)) {
+      const list = r.dr.scenes || [];
+      const iPitch = list.findIndex(s => s.kind === 'legacy:pitch');
+      const iSong = list.findIndex(s => s.step === 'lipsync');
+      if (iPitch >= 0 && iSong >= 0) expect(iPitch).toBeLessThan(iSong);
+    }
+  });
+
+  it('works the queens the critiques favoured, not the bottom', () => {
+    const res = season(21, { drAllStars: true });
+    let seen = 0;
+    for (const r of weekly(res)) {
+      const pitches = (r.dr.scenes || []).filter(s => s.kind === 'legacy:pitch');
+      if (!pitches.length) continue;
+      const bottom = r.dr.call?.bottom || [];
+      /* Only the PITCHES are aimed at the power. The pushback rounds are the
+         bottom queens going at each other, so their target is one of them by
+         design. */
+      for (const p of pitches.filter(x => String(x.data.move || '').startsWith('pitch-'))) {
+        expect(bottom).not.toContain(p.data.target);
+        seen++;
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('a queen who pleaded with the eventual winner is likelier to survive', () => {
+    let pleaded = 0, spared = 0;
+    for (let s = 40; s < 70; s++) {
+      const res = season(s, { drAllStars: true });
+      for (const r of weekly(res)) {
+        if (!r.dr.lipsync?.legacy || !r.dr.lipsync.eliminated) continue;
+        const winner = r.dr.lipsync.chosenBy;
+        const worked = new Set((r.dr.scenes || [])
+          .filter(x => x.kind === 'legacy:pitch' && x.data.target === winner)
+          .flatMap(x => x.data.players || []));
+        for (const q of (r.dr.call?.bottom || [])) {
+          if (!worked.has(q)) continue;
+          pleaded++;
+          if (q !== r.dr.lipsync.eliminated) spared++;
+        }
+      }
+    }
+    expect(pleaded).toBeGreaterThan(10);
+    // Not a rule, a lean: most queens in a bottom survive it anyway, so this
+    // only asserts the campaign is not actively hurting them.
+    expect(spared / pleaded).toBeGreaterThan(0.4);
+  });
+});

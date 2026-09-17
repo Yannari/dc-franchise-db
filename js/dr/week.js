@@ -183,10 +183,13 @@ export function runDragWeek(state, cfg, ctx) {
      had one — see `linesFor` in js/dr/data/save-beats.js. */
   const saveFam = familyForChallenge(maxi.id).family;
   const saveCtx = { k: maxi.name, r: cfg.runwayCategory || `${maxi.name} eleganza` };
-  const saveLine = (list, vars) => {
+  /* `dice` because the legacy campaign (All Stars) draws these lines on a
+     season that may have no save at all, and `saveRng` only exists when one
+     was dealt — it was `undefined()` the first time the two met. */
+  const saveLine = (list, vars, dice = null) => {
     const usable = linesFor(list, saveFam);
     const fresh = usable.filter(l => !usedSaveLines.has(l));
-    const line = pickSave(fresh.length ? fresh : usable, saveRng, saveFam);
+    const line = pickSave(fresh.length ? fresh : usable, dice || saveRng, saveFam);
     usedSaveLines.add(line);
     return fillSave(line, { ...saveCtx, ...vars });
   };
@@ -1253,6 +1256,47 @@ export function runDragWeek(state, cfg, ctx) {
       werkEvents.push(e);
     }
     for (const sc of twist.scenes) scenes.push(sc);
+  }
+
+  /* ── THE CAMPAIGN, ON A NIGHT NOBODY HOLDS THE POWER YET ────────────
+     The same three rounds the save's campaign runs — pitch, pushback, answer
+     — but aimed at the queens the panel just praised, because the lipstick
+     will belong to whichever of them wins the song. That is how the seasons
+     played: the lobbying is in Untucked, BEFORE the top two sing, so a queen
+     who spent the night working the wrong person spent it for nothing.
+
+     Her pleas reach the decision as a weight (js/dr/legacy.js) and never as a
+     vote; nothing here can move a queen who does not end up holding it.
+
+     The week's own stream rather than `saveRng`, because a legacy season need
+     not have a save at all. Gated on `legacy`, so no other season's dice
+     move. */
+  if (legacy && call.bottom.length && !M.tournamentExit) {
+    const likelyTop = [...call.win, ...call.high].filter(Boolean).slice(0, 3);
+    const ledger = (state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] });
+    const targets = campaignTargets({
+      saves: ledger, pool: call.bottom, living, bond: ctx.bond, likelyTop,
+    });
+    if (targets.length) {
+      const camp = runCampaign({
+        saves: ledger, targets, pool: call.bottom, living, players,
+        bond: ctx.bond, rng, ep: cfg.num, state,
+      });
+      for (const ev of camp.events) {
+        applyEventLike(ev);
+        werkEvents.push({ type: `legacy:${ev.id}`, players: [ev.a, ev.b, ev.c].filter(Boolean),
+          bond: ev.bond, pop: ev.pop, state: {}, data: {} });
+        const vars = { a: ev.a, b: ev.b, c: ev.c, w: ev.w, y: ev.y,
+          n: (state.record?.[ev.c || ev.a] || []).filter(r => r === 'WIN').length + ' wins', t: '' };
+        campaignScenes.push({
+          step: 'untucked', kind: 'legacy:pitch',
+          data: { players: [ev.a, ev.b, ev.c].filter(Boolean), campaign: true, legacy: true,
+            target: ev.b, move: ev.id, round: ev.round },
+          text: saveLine(SAVE_BEATS.campaign[ev.id], vars, rng),
+        });
+      }
+      legacyPleas = camp.pleas;
+    }
   }
 
   if (!M.tournamentExit) {

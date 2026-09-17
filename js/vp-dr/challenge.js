@@ -1730,7 +1730,7 @@ function _choiceLabel(p) {
   const id = p?.choice || p?.pick || p?.part || '';
   if (!id) return '';
   return characterById(id)?.name
-    || String(id).replace(/-/g, ' ').replace(/[a-z]/g, c => c.toUpperCase());
+    || String(id).replace(/-/g, ' ').replace(/\b[a-z]/g, c => c.toUpperCase());
 }
 
 /* THE SAME ROOM AS werk.js DRAWS, for the one screen in this file that

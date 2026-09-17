@@ -409,7 +409,7 @@ export function hiddenDecoys(ep, victim) {
   const pool = (gs.activePlayers || []).filter(n => n !== victim).sort();
   // FOUR in a big castle, so the procession has clues to work through before
   // the coffins; TWO in a small one, which leaves at least four mourners.
-  const want = pool.length >= 10 ? 4 : 2;
+  const want = pool.length >= 12 ? 5 : pool.length >= 10 ? 4 : 2;
   return _hashOrder(pool, `hidden-decoys|${ep}|${victim}|${pool.join(',')}`).slice(0, want);
 }
 
@@ -529,10 +529,10 @@ export const VARIANT_LINES = {
   ],
   // Five missing: the procession will clear some of them before the coffins.
   'hidden-many': [
-    'Five places are empty at breakfast. One of the five is dead, and nobody at the table is told which.',
-    'The castle counts five empty chairs and one murder. Four of the missing are alive somewhere, waiting.',
-    'Nobody is named this morning. Five people are simply not there, and the host will say nothing until the funeral.',
-    'Five cups turned over at one breakfast, and only one of them means what it usually means.',
+    '{n} places are empty at breakfast. One of them is dead, and nobody at the table is told which.',
+    'The castle counts {n} empty chairs and one murder. The rest of the missing are alive somewhere, waiting.',
+    'Nobody is named this morning. {n} people are simply not there, and the host will say nothing until the funeral.',
+    '{n} cups turned over at one breakfast, and only one of them means what it usually means.',
   ],
   // NO ERA CLAIM IN ANY OF THESE, and that is the second design this line went
   // through. The first draft said "{victim} was in the turret with {decider}

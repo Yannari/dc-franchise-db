@@ -591,7 +591,8 @@ function _shapeNight(variant, ep, decision, target, tensionBefore) {
     const coffins = [target, ...decoys].sort((a, b) =>
       (_lineHash(`coffin|${ep}|${a}`) - _lineHash(`coffin|${ep}|${b}`)) || (a < b ? -1 : 1));
     const l = variantLine(coffins.length > 3 ? 'hidden-many' : 'hidden', ep,
-      { a: coffins[0], b: coffins[1], c: coffins[2], n: String(coffins.length) });
+      { a: coffins[0], b: coffins[1], c: coffins[2],
+        n: ['Three', 'Four', 'Five', 'Six', 'Seven'][coffins.length - 3] || String(coffins.length) });
     return { variant, data: { decoys, coffins }, line: l.text, lineKey: l.key };
   }
   if (variant === 'double') {

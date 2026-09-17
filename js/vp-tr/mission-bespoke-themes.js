@@ -23,6 +23,7 @@ import { CHESS } from './mission-theme-traitors-chess.js';
 import { CHURCH } from './mission-theme-church-match.js';
 import { MONUMENT } from './mission-theme-traitors-monument.js';
 import { FUNERAL } from './mission-theme-funeral.js';
+import { ROULETTE } from './mission-theme-roulette.js';
 import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const NAV = '46px';
@@ -1497,4 +1498,4 @@ const VAULT = {
 ` + STAGE_CSS,
 };
 
-export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON, WICKER, CHESS, CHURCH, MONUMENT, FUNERAL];
+export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON, WICKER, CHESS, CHURCH, MONUMENT, FUNERAL, ROULETTE];

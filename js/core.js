@@ -376,6 +376,7 @@ export const TR_MISSION_CATALOG = [
   { id:'traitors-chess',   name:"The Traitors' Chess",  kind:'bespoke' },
   { id:'church-match',     name:'Church Match',         kind:'bespoke' },
   { id:'traitors-monument', name:"Traitors' Monument",  kind:'bespoke' },
+  { id:'roulette',         name:'The Roulette',         kind:'bespoke' },
 ];
 
 export const TWIST_CATALOG = [

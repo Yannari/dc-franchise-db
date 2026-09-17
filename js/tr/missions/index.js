@@ -45,6 +45,7 @@ import { wickerBeasts } from './wicker-beasts.js';
 import { traitorsChess } from './traitors-chess.js';
 import { churchMatch } from './church-match.js';
 import { traitorsMonument } from './traitors-monument.js';
+import { roulette } from './roulette.js';
 
 /**
  * The catalogue, in the order they were written.
@@ -68,6 +69,7 @@ export const TRAITORS_MISSIONS = Object.freeze([
   traitorsChess,
   churchMatch,
   traitorsMonument,
+  roulette,
 ]);
 
 /** Every bespoke mission id, for tests and for anything enumerating the catalogue. */

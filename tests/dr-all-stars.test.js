@@ -210,3 +210,40 @@ describe('what the season leaves behind', () => {
     for (const p of doc.placements || []) expect(p.dr?.craft).toBeTruthy();
   });
 });
+
+describe('the night runs in the All Stars order', () => {
+  it('names the top two and the bottom BEFORE the room goes to Untucked', () => {
+    const res = season(21, { drAllStars: true });
+    let checked = 0;
+    for (const r of weekly(res)) {
+      if (!r.dr.lipsync?.legacy) continue;
+      const list = r.dr.scenes || [];
+      const iCall = list.findIndex(s => s.step === 'results');
+      const iUntucked = list.findIndex(s => s.step === 'untucked');
+      if (iCall < 0 || iUntucked < 0) continue;
+      expect(iCall).toBeLessThan(iUntucked);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(2);
+  });
+
+  it('so the bottom works the two queens who were actually named', () => {
+    const res = season(21, { drAllStars: true });
+    let seen = 0;
+    for (const r of weekly(res)) {
+      const pitches = (r.dr.scenes || []).filter(s => s.kind === 'legacy:pitch'
+        && String(s.data.move || '').startsWith('pitch-'));
+      if (!pitches.length) continue;
+      const named = [...(r.dr.callAtCall?.high || []), ...(r.dr.call?.high || []), ...(r.dr.call?.win || [])];
+      for (const p of pitches) { expect(named).toContain(p.data.target); seen++; }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('puts the call screen ahead of Untucked too', async () => {
+    const { dragScreens } = await import('../js/vp-dr/screens.js');
+    const row = weekly(season(21, { drAllStars: true })).find(r => r.dr.lipsync?.legacy);
+    const ids = dragScreens(row).map(s => s.id);
+    expect(ids.indexOf('dr-results')).toBeLessThan(ids.indexOf('dr-untucked'));
+  });
+});

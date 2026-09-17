@@ -1280,7 +1280,12 @@ export function runDragWeek(state, cfg, ctx) {
      not have a save at all. Gated on `legacy`, so no other season's dice
      move. */
   if (legacy && call.bottom.length && !M.tournamentExit) {
-    const likelyTop = [...call.win, ...call.high].filter(Boolean).slice(0, 3);
+    /* THE TWO THE HOST JUST NAMED. Not a guess from the critiques: on this
+       night the call comes first (see the scene order at the end of this
+       function), so the room knows exactly which two queens might be holding
+       the lipstick in twenty minutes. `call.high` is both of them at this
+       point — the song has not separated them yet. */
+    const likelyTop = [...call.high, ...call.win].filter(Boolean).slice(0, 2);
     const ledger = (state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] });
     const targets = campaignTargets({
       saves: ledger, pool: call.bottom, living, bond: ctx.bond, likelyTop,
@@ -1954,7 +1959,13 @@ export function runDragWeek(state, cfg, ctx) {
   /* ON A BEAVER OR BAGUETTE NIGHT THE CALL COMES FIRST. The bottom three
      are named on the stage, and THEN the room goes to Untucked to work the
      queen with the power; the save follows. */
-  const order = holderRes
+  /* ── AND ON AN ALL STARS LEGACY NIGHT, FOR THE SAME REASON ──
+     The host names the top two and the queens up for elimination, and THEN
+     the room goes to the lounge — which is the whole reason All Stars'
+     Untucked is what it is: the bottom is working two queens who might, in
+     twenty minutes, be holding the lipstick. Lobbying before the call would
+     be guessing from critiques. */
+  const order = (holderRes || legacy)
     ? SCENE_STEPS.filter(x => x !== 'results').flatMap(x => (x === 'untucked' ? ['results', 'untucked'] : [x]))
     : SCENE_STEPS;
   const stepIndex = st => {

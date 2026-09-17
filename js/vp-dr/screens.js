@@ -875,7 +875,8 @@ export const DRAG_SCREENS = [
    The scenes are already in that order (js/dr/week.js); this puts the
    screens in it too. */
 function screensFor(row) {
-  if (!row?.dr?.save?.hold) return DRAG_SCREENS;
+  // ...and on an All Stars legacy night, where the call also comes first.
+  if (!row?.dr?.save?.hold && !row?.dr?.lipsync?.legacy) return DRAG_SCREENS;
   const list = DRAG_SCREENS.filter(s => s.id !== 'dr-results');
   const at = list.findIndex(s => s.id === 'dr-untucked');
   const results = DRAG_SCREENS.find(s => s.id === 'dr-results');

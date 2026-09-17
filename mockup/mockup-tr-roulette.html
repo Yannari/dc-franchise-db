@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Roulette — bonus mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-roulette.html — visual target for the twelfth bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  From the wiki (thetraitors.fandom.com/wiki/Missions and /wiki/Dinner_Party):
+  "There is usually one Mission per elimination cycle, although sometimes a
+  Bonus Mission for more prize money is offered as well (the Roulette and
+  Dinner Party Missions are the most common of these)." The Dinner Party page
+  describes a lavish, boozy dinner held instead of a Round Table, used to spring
+  a twist on the room. Roulette has no page of its own — so this is the bonus
+  night built out of what the two have in common: money already won, put back
+  on the table for a chance at more.
+
+  THE MISSION. Three spins. Before each one the castle decides TOGETHER how
+  much of the pot to stake: every player raises a glass to stake or puts a hand
+  over it to hold, and the majority carries. A win pays the stake back double.
+  A loss takes it. The pot can end the night smaller than it started.
+
+  THE SHIELD IS THE GREEN POCKET. One pocket on the wheel pays no money at
+  all: whoever staked the most on that spin takes a Shield instead.
+
+  WHAT A TRAITOR CAN DO. Argue for the big stake, warmly, with the pot on the
+  table. A bold Faithful does exactly the same thing.
+
+  IT SHARES NOTHING WITH THE ELEVEN BEFORE IT. This is CANDLELIGHT, CRYSTAL
+  AND GREEN BAIZE: a long dinner table, a wheel brought in on a trolley, chips
+  the colour of the castle's money, and a room that has had a drink.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Petrona:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ro-night:#0d1412; --ro-baize:#12452f; --ro-baize2:#0c3222; --ro-brass:#c9a227; --ro-brass-hi:#f3d97a;
+  --ro-crystal:#dfeae6; --ro-wine:#7c1f2e; --ro-wine-hi:#c8465a; --ro-ash:#9aa8a2; --ro-shield:#f0cd5c; --ro-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ro-night);color:var(--ro-ash);font-family:'Petrona',Georgia,serif;font-size:18px;line-height:1.55;overflow-x:hidden}
+button{font:inherit}
+.ro-navstub{position:fixed;inset:0 0 auto 0;height:var(--ro-nav);z-index:60;background:#070b0a;border-bottom:1px solid #000;
+  display:flex;align-items:center;gap:16px;padding:0 16px;font:13px/1 'Share Tech Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#5f6f69;white-space:nowrap;overflow:hidden}
+.ro-navstub b{color:var(--ro-crystal)}
+
+/* ── ATMOSPHERE: candles and cigar smoke ─────────────────────────── */
+.ro-room{position:fixed;left:0;right:0;top:var(--ro-nav);bottom:0;z-index:0;pointer-events:none;
+  background:radial-gradient(60% 45% at 50% 40%,rgba(201,162,39,.13),transparent 70%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 90px),
+    linear-gradient(180deg,#16211d,#0d1412 65%)}
+.ro-smoke{position:fixed;left:-10%;right:-10%;top:var(--ro-nav);height:50vh;z-index:1;pointer-events:none;opacity:.3;
+  background:radial-gradient(40% 50% at 30% 40%,rgba(223,234,230,.18),transparent 70%),radial-gradient(40% 50% at 70% 60%,rgba(223,234,230,.12),transparent 70%);
+  animation:ro-drift 26s ease-in-out infinite alternate}
+@keyframes ro-drift{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+
+.ro-shell{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:calc(var(--ro-nav) + 26px) 16px 132px}
+
+/* ── HERO ────────────────────────────────────────────────────────── */
+.ro-hero{position:relative;padding:34px 26px 26px;text-align:center;border:1px solid #2a3a33;
+  background:radial-gradient(70% 60% at 50% 0%,rgba(201,162,39,.16),transparent 70%),linear-gradient(180deg,#16211d,#0d1412);
+  box-shadow:inset 0 0 0 6px #0d1412,inset 0 0 0 7px #2a3a33,0 20px 50px rgba(0,0,0,.6)}
+.ro-kicker{font:13px/1 'Share Tech Mono',monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--ro-brass-hi)}
+.ro-title{font-family:'Yeseva One',serif;color:var(--ro-crystal);font-size:clamp(40px,8vw,88px);line-height:1;margin:.12em 0 .06em}
+.ro-title span{color:var(--ro-brass)}
+.ro-sub{color:#b3c0ba;max-width:58ch;margin:0 auto;font-style:italic}
+.ro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+.ro-chip{font:12px/1 'Share Tech Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ro-crystal);border:1px solid #33463e;padding:6px 11px;background:rgba(0,0,0,.35)}
+.ro-chip.shield{border-color:var(--ro-shield);color:var(--ro-shield)}
+.ro-roster{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}
+.ro-av{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#16211d;border:2px solid #33463e;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+
+/* ── THE STAGE ───────────────────────────────────────────────────── */
+.rx{position:sticky;top:calc(var(--ro-nav) + 8px);z-index:20;margin:22px 0 0;height:380px;border-radius:18px;overflow:hidden;isolation:isolate;
+  transition:height .4s cubic-bezier(.3,1,.4,1);
+  background:radial-gradient(70% 60% at 50% 20%,#1b3a2c,#0a1712 70%);box-shadow:0 30px 80px -30px rgba(0,0,0,.95),inset 0 0 0 1px rgba(201,162,39,.22)}
+.rx.rx-min{height:56px}
+.rx.rx-min svg,.rx.rx-min .rx-layer,.rx.rx-min .rx-stamp{opacity:0}
+.rx.rx-min .rx-cap b{font-size:17px;display:inline;margin-left:10px}
+.rx.rx-min .rx-pot b{font-size:15px;display:inline;margin-left:8px}
+.rx svg.rx-scene{position:absolute;inset:0;width:100%;height:100%}
+.rx-layer{position:absolute;inset:0;pointer-events:none}
+.rx-vig{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.85);opacity:.65;transition:opacity .6s}
+.rx-grain{opacity:.06;background-image:repeating-radial-gradient(circle at 23% 31%,#fff 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+.rx-flash{opacity:0;background:radial-gradient(circle at var(--fx,50%) var(--fy,44%),#fff,rgba(243,217,122,.75) 22%,transparent 64%)}
+.rx-flash.go{animation:rx-flash 1.1s ease-out}
+@keyframes rx-flash{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+.rx[data-phase=spin] .rx-vig,.rx[data-phase=stake] .rx-vig{opacity:1;animation:rx-heart 1s ease-in-out infinite}
+@keyframes rx-heart{0%,100%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.85)}20%{box-shadow:inset 0 0 190px 90px rgba(0,0,0,.96)}}
+.rx-cap{position:absolute;left:18px;top:14px;z-index:6;font:11px/1 'Share Tech Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--ro-brass-hi)}
+.rx-cap b{display:block;margin-top:6px;font:400 30px/1 'Yeseva One',serif;color:var(--ro-crystal);text-transform:none;letter-spacing:.02em}
+.rx-pot{position:absolute;right:18px;top:14px;z-index:6;text-align:right;font:11px/1 'Share Tech Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#7d8c86}
+.rx-pot b{display:block;margin-top:6px;font:26px/1 'Share Tech Mono',monospace;color:var(--ro-brass-hi)}
+.rx-pot b.tick{animation:rx-tick .8s ease-out}
+.rx-pot b.down{animation:rx-down .8s ease-out;color:var(--ro-wine-hi)}
+@keyframes rx-tick{0%{transform:scale(1.5);color:#fff}100%{transform:scale(1)}}
+@keyframes rx-down{0%{transform:scale(1.4) translateY(-6px)}100%{transform:none}}
+.rx-stamp{position:absolute;z-index:7;left:50%;top:86%;padding:8px 18px;border:4px solid currentColor;border-radius:8px;white-space:nowrap;
+  font:400 26px/1 'Yeseva One',serif;letter-spacing:.1em;background:rgba(5,10,8,.86);opacity:0;transform:translate(-50%,-50%) rotate(-3deg) scale(3);pointer-events:none}
+.rx-stamp.go{animation:rx-slam .45s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes rx-slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-3deg) scale(3)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-3deg) scale(1)}}
+.rx-stamp.win{color:var(--ro-brass-hi)}.rx-stamp.lose{color:var(--ro-wine-hi)}.rx-stamp.gold{color:var(--ro-shield)}.rx-stamp.cool{color:var(--ro-crystal)}
+.rx-fold{position:absolute;right:18px;bottom:12px;z-index:8;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.45);
+  color:var(--ro-crystal);border-radius:20px;padding:5px 12px;font:10.5px/1 'Share Tech Mono',monospace;letter-spacing:.16em;text-transform:uppercase;opacity:.65}
+.rx-fold:hover{opacity:1}
+/* the wheel */
+.rx-wheel{transform-box:fill-box;transform-origin:50% 50%}
+.rx[data-phase=spin] .rx-wheel{animation:rx-spin 1.1s linear infinite}
+@keyframes rx-spin{to{transform:rotate(360deg)}}
+.rx-ball{transform-box:fill-box;transform-origin:196px 196px;opacity:0;transition:opacity .4s}
+.rx[data-phase=spin] .rx-ball,.rx[data-phase=win] .rx-ball,.rx[data-phase=lose] .rx-ball,.rx[data-phase=green] .rx-ball{opacity:1}
+.rx[data-phase=spin] .rx-ball{animation:rx-orbit .55s linear infinite}
+@keyframes rx-orbit{to{transform:rotate(-360deg)}}
+.rx-pocket{transition:fill .4s,filter .4s}
+.rx-pocket.hit{fill:var(--ro-brass-hi);filter:drop-shadow(0 0 10px rgba(243,217,122,.95))}
+.rx-pocket.green.hit{fill:#5be08a;filter:drop-shadow(0 0 12px rgba(91,224,138,.95))}
+.rx-chip .lift{transform-box:fill-box;transform-origin:50% 50%;transition:transform .9s cubic-bezier(.3,1.2,.4,1),opacity .5s}
+.rx-chip.staked .lift{transform:translateY(-84px)}
+.rx-chip.gone .lift{opacity:0;transform:translateY(-130px) scale(.6)}
+.rx-glass .lift{transition:transform .6s,opacity .5s;transform-box:fill-box;transform-origin:50% 100%}
+.rx-glass.raised .lift{transform:translateY(-18px) rotate(-8deg)}
+.rx-glass.covered .lift{opacity:.3}
+.rx-seat{transition:filter .5s}
+.rx[data-phase=watch] .rx-seat:not(.lit){filter:brightness(.35)}
+.rx-seat.lit{filter:drop-shadow(0 0 10px rgba(243,217,122,.9))}
+
+/* ── CARDS ───────────────────────────────────────────────────────── */
+.ro-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px;align-items:start}
+@media(max-width:940px){.ro-grid{grid-template-columns:minmax(0,1fr)}}
+.ro-brief{background:linear-gradient(180deg,#14251f,#0e1a16);border:1px solid #2a3a33;border-left:6px solid var(--ro-brass);padding:22px 22px 16px}
+.ro-brief h2{font-family:'Yeseva One',serif;font-size:30px;margin:0;color:var(--ro-crystal)}
+.ro-host{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.ro-host .ro-av{width:46px;height:46px;border-color:var(--ro-brass)}
+.ro-host small{display:block;font:12px/1.4 'Share Tech Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#7d8c86}
+.ro-staging{font-style:italic;color:#8b9a94;border-bottom:1px dashed #2a3a33;padding-bottom:12px;margin:8px 0 14px}
+.ro-beat{margin:0 0 11px}.ro-beat p{margin:0}
+.ro-beat.do p{font:14.5px/1.5 'Share Tech Mono',monospace;color:#7d8c86}
+.ro-beat.say p{color:var(--ro-crystal);padding-left:14px;border-left:2px solid #33463e}
+.ro-beat.shield p{border-left-color:var(--ro-shield);color:#f7e6b0}
+.ro-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.ro-rule{font:11px/1 'Share Tech Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#8b9a94;border:1px solid #2a3a33;padding:5px 8px}
+.ro-rule b{color:var(--ro-brass);margin-right:4px}
+.ro-phase{margin-top:28px}
+.ro-phase-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid #2a3a33}
+.ro-phase-n{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;font:17px/1 'Yeseva One',serif;color:#0d1412;background:var(--ro-brass)}
+.ro-phase-name{font-family:'Yeseva One',serif;font-size:30px;line-height:1;color:var(--ro-crystal)}
+.ro-phase-stats{margin-left:auto;display:flex;gap:6px}
+.ro-stat{font:11px/1 'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:#b3c0ba;background:#16211d;padding:5px 8px}
+.ro-setting{font-style:italic;color:#8b9a94;margin:8px 0 12px}
+.ro-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 66px;background:linear-gradient(180deg,#16211d,#101a16);border:1px solid #2a3a33;
+  opacity:0;transform:translateY(8px);transition:opacity .6s,transform .6s}
+.ro-card.on{opacity:1;transform:none}
+.ro-card.win{border-left:4px solid var(--ro-brass)}
+.ro-card.lose{border-left:4px solid var(--ro-wine)}
+.ro-card.social{border-left:4px solid #4d6f8a}
+.ro-card.relic{border:1px solid var(--ro-shield);box-shadow:0 0 24px rgba(240,205,92,.16)}
+.ro-ico{position:absolute;left:14px;top:14px;width:38px;height:38px}
+.ro-ico svg{width:100%;height:100%}
+.ro-tag{float:right;font:11px/1 'Share Tech Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#7d8c86;margin:4px 0 0 10px}
+.ro-card.win .ro-tag{color:var(--ro-brass-hi)}.ro-card.lose .ro-tag{color:var(--ro-wine-hi)}.ro-card.relic .ro-tag{color:var(--ro-shield)}
+.ro-who{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--ro-crystal)}
+.ro-who i{font-style:normal;font-weight:400;color:#7d8c86}
+.ro-txt{margin-top:6px}
+.ro-votes{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.ro-vote{display:flex;align-items:center;gap:5px;font:11px/1 'Share Tech Mono',monospace;color:#b3c0ba;border:1px solid #2a3a33;padding:4px 7px}
+.ro-vote .ro-av{width:20px;height:20px;border-width:1px}
+.ro-conf{margin-top:10px;padding:9px 12px;background:rgba(0,0,0,.35);border-left:2px solid #4d6f8a;font-style:italic;color:#dfeae6}
+.ro-conf small{display:block;font:11px/1.4 'Share Tech Mono',monospace;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#7fa7c4}
+.ro-fx{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.ro-fx span{font:11px/1 'Share Tech Mono',monospace;color:#b3c0ba;border:1px solid #2a3a33;padding:4px 7px}
+.ro-summary{margin-top:24px;padding:18px 20px;border:1px solid #2a3a33;border-left:6px solid var(--ro-brass);background:#101a16;transition:opacity .4s}
+.ro-summary small{display:block;font:11px/1.4 'Share Tech Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--ro-brass);margin-bottom:4px}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────── */
+.ro-side{position:relative}
+.ro-panel{background:rgba(8,14,12,.96);border:1px solid #2a3a33;padding:14px}
+.ro-panel h3{font:400 24px/1 'Yeseva One',serif;color:var(--ro-crystal);margin:0 0 10px;text-align:center}
+.ro-spins{margin-bottom:10px}
+.ro-spin{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid #2a3a33;margin-bottom:6px;font:12px/1.3 'Share Tech Mono',monospace;color:#6f7f79;transition:all .5s}
+.ro-spin b{margin-left:auto;font-weight:400}
+.ro-spin.won{border-color:var(--ro-brass);color:var(--ro-brass-hi)}
+.ro-spin.lost{border-color:var(--ro-wine);color:var(--ro-wine-hi)}
+.ro-spin.green{border-color:#5be08a;color:#5be08a}
+.ro-bar{height:10px;background:#16211d;border:1px solid #2a3a33;margin:10px 0 4px;position:relative}
+.ro-bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--ro-brass),var(--ro-brass-hi));transition:width .8s}
+.ro-barlab{display:flex;justify-content:space-between;font:10.5px/1 'Share Tech Mono',monospace;color:#6f7f79;text-transform:uppercase;letter-spacing:.12em}
+.ro-shieldbox{margin-top:12px;padding:11px 12px;border:1px dashed #6b5b2a;text-align:center;transition:all .5s}
+.ro-shieldbox .lbl{font:11px/1 'Share Tech Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a7a4a}
+.ro-shieldbox .val{margin-top:6px;font-style:italic;color:#8b9a94}
+.ro-shieldbox .holder{display:none;margin:8px auto 0}
+.ro-shieldbox .holder .ro-av{width:44px;height:44px;border-color:var(--ro-shield);box-shadow:0 0 14px rgba(240,205,92,.45)}
+.ro-shieldbox.on{border:1px solid var(--ro-shield)}
+.ro-shieldbox.on .holder{display:block}
+.ro-shieldbox.on .lbl,.ro-shieldbox.on .val{color:var(--ro-shield);font-style:normal}
+.ro-pot{margin-top:12px;border-top:1px solid #2a3a33;padding-top:10px}
+.ro-pot .r{display:flex;justify-content:space-between;font-size:15px;color:#8b9a94}
+.ro-pot .r b{font:13px/1.7 'Share Tech Mono',monospace;color:var(--ro-crystal);font-weight:400}
+.ro-pot .r b.up{color:var(--ro-brass-hi)}.ro-pot .r b.down{color:var(--ro-wine-hi)}
+.ro-pot .big{font:30px/1.1 'Share Tech Mono',monospace;color:var(--ro-brass-hi);text-align:right;margin-top:4px}
+
+.ro-controls{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 16px;background:linear-gradient(0deg,#070b0a 60%,rgba(7,11,10,0))}
+.ro-btn{font:18px/1 'Yeseva One',serif;cursor:pointer;padding:11px 26px;color:#0d1412;background:linear-gradient(180deg,var(--ro-brass-hi),var(--ro-brass));border:1px solid #6b5b2a}
+.ro-btn:disabled{opacity:.4;cursor:default}
+.ro-btn.ghost{background:transparent;color:var(--ro-crystal);border:1px solid #33463e}
+.ro-counter{font:13px/1 'Share Tech Mono',monospace;color:#5f6f69;letter-spacing:.08em}
+@media (prefers-reduced-motion: reduce){.rx *,.ro-smoke{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="ro-navstub"><b>The Traitors</b><span>Episode 6 · Evening</span><span>Bonus mission · The Roulette</span></div>
+<div class="ro-room"></div>
+<div class="ro-smoke"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-glass" viewBox="0 0 36 36"><path d="M10 5h16l-2 12a6 6 0 0 1-12 0z" fill="#7c1f2e" stroke="#dfeae6"/><path d="M18 17v10M12 31h12" stroke="#dfeae6" stroke-width="2"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 36 36"><circle cx="18" cy="18" r="13" fill="#12452f" stroke="#c9a227" stroke-width="3"/><path d="M18 5v6M18 25v6M5 18h6M25 18h6" stroke="#c9a227" stroke-width="3"/></symbol>
+  <symbol id="i-win" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#f3d97a" stroke-width="2"/><path d="M10 18l6 6 10-12" fill="none" stroke="#f3d97a" stroke-width="3"/></symbol>
+  <symbol id="i-lose" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#c8465a" stroke-width="2"/><path d="M12 12l12 12M24 12L12 24" stroke="#c8465a" stroke-width="3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 36 36"><path d="M18 3l12 4v9c0 8-5 14-12 17C11 30 6 24 6 16V7z" fill="#f0cd5c" stroke="#7b6224"/><circle cx="18" cy="17" r="5" fill="#12452f"/></symbol>
+  <symbol id="i-talk" viewBox="0 0 36 36"><path d="M4 8h18v12H12l-6 5v-5H4z" fill="#4d6f8a"/><path d="M14 16h18v12h-2v5l-6-5H14z" fill="#dfeae6" opacity=".85"/></symbol>
+</defs></svg>
+
+<div class="ro-shell">
+  <header class="ro-hero">
+    <div class="ro-kicker">Bonus mission · Episode Six</div>
+    <h1 class="ro-title">The <span>Roulette</span></h1>
+    <p class="ro-sub">Dinner, and a wheel brought in on a trolley. The money you have already won is the only money there is
+      to bet, and the room has to agree how much of it goes on the table.</p>
+    <div class="ro-meta">
+      <span class="ro-chip">Three spins</span>
+      <span class="ro-chip">The room stakes together</span>
+      <span class="ro-chip">A win pays double · a loss takes it</span>
+      <span class="ro-chip shield">The green pocket · a Shield instead of money</span>
+    </div>
+    <div class="ro-roster">
+      <img class="ro-av" src="../assets/avatars/gwen.png" alt=""><img class="ro-av" src="../assets/avatars/duncan.png" alt=""><img class="ro-av" src="../assets/avatars/heather.png" alt=""><img class="ro-av" src="../assets/avatars/trent.png" alt=""><img class="ro-av" src="../assets/avatars/izzy.png" alt=""><img class="ro-av" src="../assets/avatars/geoff.png" alt=""><img class="ro-av" src="../assets/avatars/lindsay.png" alt=""><img class="ro-av" src="../assets/avatars/noah.png" alt="">
+    </div>
+  </header>
+
+  <section class="rx" id="rx" data-phase="rest" aria-label="The dinner table, staged">
+    <svg class="rx-scene" viewBox="0 0 1080 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <clipPath id="rx-c"><circle r="20"/></clipPath>
+        <radialGradient id="rx-baize" cx=".5" cy=".4"><stop offset="0" stop-color="#17563a"/><stop offset="1" stop-color="#0b2e1f"/></radialGradient>
+      </defs>
+      <!-- table -->
+      <ellipse cx="500" cy="268" rx="470" ry="104" fill="url(#rx-baize)" stroke="#4a3a1c" stroke-width="6"/>
+      <ellipse cx="500" cy="268" rx="440" ry="88" fill="none" stroke="rgba(201,162,39,.25)" stroke-width="2"/>
+      <!-- candles -->
+      <g id="rx-candles"></g>
+      <!-- seats: faces round the far side -->
+      <g id="rx-seats"></g>
+      <!-- the stake: chips in front of the players -->
+      <g id="rx-chips"></g>
+      <!-- the wheel, on its trolley at the head of the table -->
+      <g transform="translate(582,-6) scale(.62)">
+        <ellipse cx="196" cy="196" rx="170" ry="52" fill="#0a1712" opacity=".7"/>
+        <g class="rx-wheel">
+          <circle cx="196" cy="196" r="150" fill="#1b120c" stroke="#c9a227" stroke-width="6"/>
+          <g id="rx-pockets"></g>
+          <circle cx="196" cy="196" r="52" fill="#12452f" stroke="#c9a227" stroke-width="4"/>
+          <path d="M196 148 L214 196 L196 244 L178 196Z" fill="#c9a227" opacity=".85"/>
+        </g>
+        <g class="rx-ball"><circle cx="196" cy="62" r="9" fill="#dfeae6"/></g>
+      </g>
+    </svg>
+    <div class="rx-layer rx-flash" id="rx-flash"></div>
+    <div class="rx-layer rx-vig"></div>
+    <div class="rx-layer rx-grain"></div>
+    <div class="rx-cap"><span id="rx-cap-k">Part one</span><b id="rx-cap-t">The Dinner</b></div>
+    <div class="rx-pot">In the pot<b id="rx-pot">£38,400</b></div>
+    <div class="rx-stamp" id="rx-stamp"></div>
+    <button type="button" class="rx-fold" id="rx-fold">▾ hide</button>
+  </section>
+
+  <div class="ro-grid">
+    <main>
+      <section class="ro-brief">
+        <div class="ro-host"><img class="ro-av" src="../assets/avatars/alan-cumming.png" alt=""><div><h2>The Briefing</h2><small>Alan Cumming · your host</small></div></div>
+        <p class="ro-staging">A long table laid for dinner in the great hall: crystal, candles, and eight places. Halfway through the
+          second course a wheel is pushed in on a trolley and set at the head of the table.</p>
+        <div class="ro-beat do"><p>Alan Cumming taps a glass with a knife until the room is quiet.</p></div>
+        <div class="ro-beat say"><p>You have won thirty-eight thousand pounds. Tonight you can win more of it, and you can lose what you have.</p></div>
+        <div class="ro-beat say"><p>Three spins. Before each one, you decide together how much of the pot goes on the table: raise your glass to stake, cover it to hold. The majority carries.</p></div>
+        <div class="ro-beat do"><p>Alan Cumming sets the ball in the rim and does not spin it yet.</p></div>
+        <div class="ro-beat say"><p>If the ball lands on the castle's colour, your stake comes back doubled. If it does not, it stays with me.</p></div>
+        <div class="ro-beat say shield"><p>One pocket is green. It pays no money at all — whoever staked the most that spin takes a Shield instead.</p></div>
+        <div class="ro-beat say shield"><p>And everyone will know who wanted the big bet.</p></div>
+        <div class="ro-beat say"><p>Eat first. Then we spin.</p></div>
+        <div class="ro-rules">
+          <span class="ro-rule"><b>task</b> beat 3</span><span class="ro-rule"><b>failure</b> beat 5</span>
+          <span class="ro-rule"><b>reward</b> beat 5</span><span class="ro-rule"><b>shield</b> beat 6</span>
+          <span class="ro-rule"><b>cost</b> beat 7</span><span class="ro-rule"><b>finish</b> beat 8</span>
+        </div>
+      </section>
+
+      <section class="ro-phase">
+        <div class="ro-phase-head"><span class="ro-phase-n">I</span><span class="ro-phase-name">The Dinner</span>
+          <span class="ro-phase-stats"><i class="ro-stat">social</i><i class="ro-stat">temperament</i></span></div>
+        <p class="ro-setting">Two courses, a lot of wine, and a wheel nobody can stop looking at.</p>
+
+        <article class="ro-card social" id="ro-step-0">
+          <span class="ro-ico"><svg><use href="#i-talk"/></svg></span><span class="ro-tag">Impressive</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/heather.png" alt=""></span>Heather</div>
+          <div class="ro-txt">Heather had the table laughing before the soup was cleared, and then said, lightly, that a castle that never bets never wins anything.</div>
+          <div class="ro-conf"><small>Heather · confessional</small>If they're going to lose it, I'd rather they lost it loudly and blamed the wheel.</div>
+          <div class="ro-fx"><span>crowd · Heather masterful ×0.5</span></div>
+        </article>
+
+        <article class="ro-card social" id="ro-step-1">
+          <span class="ro-ico"><svg><use href="#i-glass"/></svg></span><span class="ro-tag">Cowardly</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/noah.png" alt=""></span>Noah</div>
+          <div class="ro-txt">Noah put his hand over his glass before the wheel had even stopped being explained, and kept it there.</div>
+          <div class="ro-fx"><span>crowd · Noah cowardly ×0.3</span></div>
+        </article>
+      </section>
+
+      <section class="ro-phase">
+        <div class="ro-phase-head"><span class="ro-phase-n">II</span><span class="ro-phase-name">The Wheel</span>
+          <span class="ro-phase-stats"><i class="ro-stat">boldness</i><i class="ro-stat">strategic</i></span></div>
+        <p class="ro-setting">Three spins, and a show of glasses before each one.</p>
+
+        <article class="ro-card win" id="ro-step-2">
+          <span class="ro-ico"><svg><use href="#i-win"/></svg></span><span class="ro-tag">Spin one · won</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/gwen.png" alt=""></span>Five glasses up, three down <i>· £4,000 staked</i></div>
+          <div class="ro-txt">The room went small on the first spin. The ball came up on the castle's colour, and four thousand became eight.</div>
+          <div class="ro-votes">
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/heather.png" alt="">stake</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/duncan.png" alt="">stake</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/izzy.png" alt="">stake</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/geoff.png" alt="">stake</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/gwen.png" alt="">stake</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/noah.png" alt="">hold</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/trent.png" alt="">hold</span>
+            <span class="ro-vote"><img class="ro-av" src="../assets/avatars/lindsay.png" alt="">hold</span>
+          </div>
+          <div class="ro-fx"><span>pot +£4,000</span></div>
+        </article>
+
+        <article class="ro-card lose" id="ro-step-3">
+          <span class="ro-ico"><svg><use href="#i-lose"/></svg></span><span class="ro-tag">Spin two · lost</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/duncan.png" alt=""></span>Seven glasses up <i>· £12,000 staked</i></div>
+          <div class="ro-txt">Duncan wanted twelve on the table and made it sound like courage. The ball went into the pocket beside the castle's, and twelve thousand went with it.</div>
+          <div class="ro-conf"><small>Gwen · confessional</small>He argued for that like it was his money. It isn't. That's what I keep thinking about.</div>
+          <div class="ro-fx"><span>pot −£12,000</span><span>claim · Gwen → Duncan</span><span>suspicion +0.18</span></div>
+        </article>
+
+        <article class="ro-card relic" id="ro-step-4">
+          <span class="ro-ico"><svg><use href="#i-shield"/></svg></span><span class="ro-tag">The green pocket</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/izzy.png" alt=""></span>Izzy <i>· staked the most</i></div>
+          <div class="ro-txt">On the third spin the ball dropped into the green. No money moved at all. The host put a Shield on the table in front of Izzy, who had pushed the most chips out.</div>
+          <div class="ro-conf"><small>Izzy · confessional</small>I bet the most because I like the sound of the wheel. Now I'm safe and everybody thinks I'm a genius.</div>
+          <div class="ro-fx"><span>shield · Izzy</span><span>seen by · everybody</span></div>
+        </article>
+      </section>
+
+      <section class="ro-phase">
+        <div class="ro-phase-head"><span class="ro-phase-n">III</span><span class="ro-phase-name">The Reckoning</span>
+          <span class="ro-phase-stats"><i class="ro-stat">loyalty</i><i class="ro-stat">intuition</i></span></div>
+        <p class="ro-setting">The trolley wheeled out, the glasses refilled, and a table doing arithmetic it does not like.</p>
+
+        <article class="ro-card lose" id="ro-step-5">
+          <span class="ro-ico"><svg><use href="#i-chip"/></svg></span><span class="ro-tag">Suspicious</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/trent.png" alt=""><img class="ro-av" src="../assets/avatars/duncan.png" alt=""></span>Trent &amp; Duncan</div>
+          <div class="ro-txt">Trent worked out aloud that the castle was eight thousand down on the night, and asked, twice, whose idea the twelve had been.</div>
+          <div class="ro-fx"><span>suspicion +0.2</span><span>bond Trent ↔ Duncan −0.5</span></div>
+        </article>
+
+        <article class="ro-card social" id="ro-step-6">
+          <span class="ro-ico"><svg><use href="#i-glass"/></svg></span><span class="ro-tag">Heroic</span>
+          <div class="ro-who"><span><img class="ro-av" src="../assets/avatars/geoff.png" alt=""></span>Geoff</div>
+          <div class="ro-txt">Geoff said he had raised his glass every time and would do it again, and that nobody at the table should carry the second spin alone.</div>
+          <div class="ro-fx"><span>bond Geoff ↔ Duncan +0.5</span><span>crowd · Geoff kind ×0.5</span></div>
+        </article>
+      </section>
+
+      <div class="ro-summary" id="ro-summary" style="opacity:.25">
+        <small>The evening · scraped</small>
+        A won spin, a lost one and a green pocket: the castle went to bed eight thousand lighter and one Shield heavier.
+      </div>
+    </main>
+
+    <aside class="ro-side">
+      <div class="ro-panel">
+        <h3>The Table</h3>
+        <div class="ro-spins" id="ro-spins">
+          <div class="ro-spin" id="ro-sp-0"><svg width="14" height="14"><use href="#i-chip"/></svg>spin one<b>—</b></div>
+          <div class="ro-spin" id="ro-sp-1"><svg width="14" height="14"><use href="#i-chip"/></svg>spin two<b>—</b></div>
+          <div class="ro-spin" id="ro-sp-2"><svg width="14" height="14"><use href="#i-chip"/></svg>spin three<b>—</b></div>
+        </div>
+        <div class="ro-bar"><i id="ro-bar" style="width:100%"></i></div>
+        <div class="ro-barlab"><span>pot</span><span id="ro-barlab">38,400 of 38,400</span></div>
+        <div class="ro-shieldbox" id="ro-shieldbox">
+          <div class="lbl">The Green Pocket</div>
+          <div class="holder"><img class="ro-av" src="../assets/avatars/izzy.png" alt=""></div>
+          <div class="val" id="ro-shieldval">the ball has not found it</div>
+        </div>
+        <div class="ro-pot">
+          <div class="r"><span>Pot at dinner</span><b>£38,400</b></div>
+          <div class="r"><span>Staked tonight</span><b id="ro-staked">—</b></div>
+          <div class="r"><span>Won back</span><b id="ro-won" class="up">—</b></div>
+          <div class="big" id="ro-potnow">£38,400</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="ro-controls">
+  <button class="ro-btn" id="ro-next">Next</button>
+  <span class="ro-counter" id="ro-counter">0 of 7 revealed</span>
+  <button class="ro-btn ghost" id="ro-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 7, idx = -1, T = [];
+  var SEATS = ['gwen','duncan','heather','trent','izzy','geoff','lindsay','noah'];
+  var STAKE = [4000, 12000, 9000];
+  var RESULT = ['win', 'lose', 'green'];
+  var POT0 = 38400;
+  function el(id){ return document.getElementById(id); }
+  function av(n){ return '../assets/avatars/' + n + '.png'; }
+  function clear(){ T.forEach(clearTimeout); T = []; }
+  function later(fn, ms){ T.push(setTimeout(fn, ms)); }
+  // the wheel's pockets: alternating, one green
+  var pk = '';
+  for (var i = 0; i < 18; i++) {
+    var a0 = (i * 20 - 90) * Math.PI / 180, a1 = ((i + 1) * 20 - 90) * Math.PI / 180;
+    var r0 = 52, r1 = 150, f = function(x){ return x.toFixed(1); };
+    var p = [[196 + r0*Math.cos(a0), 196 + r0*Math.sin(a0)], [196 + r1*Math.cos(a0), 196 + r1*Math.sin(a0)],
+             [196 + r1*Math.cos(a1), 196 + r1*Math.sin(a1)], [196 + r0*Math.cos(a1), 196 + r0*Math.sin(a1)]];
+    var fill = i === 0 ? '#1e5c3a' : (i % 2 ? '#7c1f2e' : '#141b18');
+    pk += '<path class="rx-pocket' + (i === 0 ? ' green' : '') + '" data-pk="' + i + '" fill="' + fill + '" stroke="#c9a227" stroke-width="1.5" d="M' + p[0].map(f).join(' ')
+       + ' L' + p[1].map(f).join(' ') + ' A150 150 0 0 1 ' + p[2].map(f).join(' ') + ' L' + p[3].map(f).join(' ') + ' A52 52 0 0 0 ' + p[0].map(f).join(' ') + 'Z"/>';
+  }
+  el('rx-pockets').innerHTML = pk;
+  var seats = '', chips = '', candles = '';
+  SEATS.forEach(function(n, i){
+    var x = 96 + i * 104, y = 312;
+    seats += '<g class="rx-seat" data-s="' + n + '" transform="translate(' + x + ',' + y + ')">'
+      + '<circle r="22" fill="#0a1712" stroke="#33463e" stroke-width="2"/>'
+      + '<image href="' + av(n) + '" x="-20" y="-20" width="40" height="40" clip-path="url(#rx-c)"/>'
+      + '<g class="rx-glass" data-g="' + n + '" transform="translate(30,-4)"><g class="lift">'
+      + '<path d="M-6 -16h12l-1.5 9a4.5 4.5 0 0 1-9 0z" fill="#7c1f2e" stroke="#dfeae6" stroke-width="1.2"/>'
+      + '<path d="M0 -7v8M-4 2h8" stroke="#dfeae6" stroke-width="1.4"/></g></g></g>';
+    chips += '<g class="rx-chip" data-c="' + n + '" transform="translate(' + x + ',268)"><g class="lift">'
+      + '<ellipse rx="14" ry="6" fill="#12452f" stroke="#c9a227" stroke-width="2"/>'
+      + '<ellipse cy="-5" rx="14" ry="6" fill="#17563a" stroke="#c9a227" stroke-width="2"/></g></g>';
+  });
+  [150, 330, 510, 690].forEach(function(x){
+    candles += '<g transform="translate(' + x + ',236)"><rect x="-4" y="0" width="8" height="26" fill="#e8e2cf"/>'
+      + '<path d="M0 -14c5 7 6 10 6 13a6 6 0 0 1-12 0c0-3 1-6 6-13z" fill="#ffca6b"/></g>';
+  });
+  el('rx-seats').innerHTML = seats; el('rx-chips').innerHTML = chips; el('rx-candles').innerHTML = candles;
+
+  function stamp(t, c){ var s = el('rx-stamp'); s.textContent = t; s.className = 'rx-stamp ' + c; void s.offsetWidth; s.classList.add('go'); }
+  function flash(x, y){ var f = el('rx-flash'); f.style.setProperty('--fx', x); f.style.setProperty('--fy', y); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+  function pot(n){ return '£' + n.toLocaleString('en-GB'); }
+  function potAt(step){
+    var v = POT0;
+    if (step > 2) v += STAKE[0];
+    if (step > 3) v -= STAKE[1];
+    return v;
+  }
+  function settle(n){
+    var fx = el('rx'); fx.dataset.phase = 'rest';
+    document.querySelectorAll('.rx-pocket').forEach(function(p){ p.classList.remove('hit'); });
+    document.querySelectorAll('.rx-chip').forEach(function(c){ c.setAttribute('class', 'rx-chip'); });
+    document.querySelectorAll('.rx-glass').forEach(function(g){ g.setAttribute('class', 'rx-glass'); });
+    document.querySelectorAll('.rx-seat').forEach(function(s){ s.classList.remove('lit'); });
+    if (n > 4) document.querySelector('.rx-pocket.green').classList.add('hit');
+    el('rx-cap-k').textContent = n > 4 ? 'Part three' : n > 1 ? 'Part two' : 'Part one';
+    el('rx-cap-t').textContent = n > 4 ? 'The Reckoning' : n > 1 ? 'The Wheel' : 'The Dinner';
+    el('rx-pot').textContent = pot(potAt(n));
+    el('rx-pot').className = '';
+    el('rx-stamp').className = 'rx-stamp';
+    // sidebar
+    ['0','1','2'].forEach(function(k, i){
+      var e = el('ro-sp-' + i), seen = n > 2 + i;
+      e.className = 'ro-spin' + (seen ? (RESULT[i] === 'win' ? ' won' : RESULT[i] === 'lose' ? ' lost' : ' green') : '');
+      e.querySelector('b').textContent = seen
+        ? (RESULT[i] === 'win' ? '+' + pot(STAKE[i]) : RESULT[i] === 'lose' ? '−' + pot(STAKE[i]) : 'a Shield')
+        : (n > 1 + i ? 'staking…' : '—');
+    });
+    var now = potAt(n);
+    el('ro-bar').style.width = Math.round(100 * now / (POT0 + STAKE[0])) + '%';
+    el('ro-barlab').textContent = now.toLocaleString('en-GB') + ' of ' + POT0.toLocaleString('en-GB');
+    el('ro-staked').textContent = n > 2 ? pot(STAKE.slice(0, Math.min(3, n - 2)).reduce(function(a, b){ return a + b; }, 0)) : '—';
+    el('ro-won').textContent = n > 2 ? pot(STAKE[0] * 2) : '—';
+    el('ro-potnow').textContent = pot(now);
+    var green = n > 4;
+    el('ro-shieldbox').classList.toggle('on', green);
+    el('ro-shieldval').textContent = green ? 'Izzy · staked the most on the green' : 'the ball has not found it';
+    for (var i = 0; i < TOTAL; i++) { var c = el('ro-step-' + i); if (c) c.classList.toggle('on', i <= idx); }
+    el('ro-counter').textContent = (idx + 1) + ' of ' + TOTAL + ' revealed';
+    el('ro-next').disabled = idx >= TOTAL - 1;
+    el('ro-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+  }
+  function play(n){
+    clear(); settle(n - 1);
+    var fx = el('rx');
+    for (var i = 0; i < TOTAL; i++) { var c = el('ro-step-' + i); if (c) c.classList.toggle('on', i <= idx); }
+    el('ro-counter').textContent = (idx + 1) + ' of ' + TOTAL + ' revealed';
+    el('ro-next').disabled = idx >= TOTAL - 1;
+    if (n === 1 || n === 2) {                        // the dinner: a face lit
+      var who = n === 1 ? 'heather' : 'noah';
+      fx.dataset.phase = 'watch';
+      document.querySelector('.rx-seat[data-s="' + who + '"]').classList.add('lit');
+      document.querySelector('.rx-glass[data-g="' + who + '"]').setAttribute('class', 'rx-glass ' + (n === 1 ? 'raised' : 'covered'));
+    } else if (n >= 3 && n <= 5) {                   // a spin
+      var k = n - 3, res = RESULT[k];
+      fx.dataset.phase = 'stake';
+      SEATS.forEach(function(s, i){
+        var up = (k === 0 ? i < 5 : k === 1 ? i < 7 : i % 2 === 0);
+        later(function(){
+          document.querySelector('.rx-glass[data-g="' + s + '"]').setAttribute('class', 'rx-glass ' + (up ? 'raised' : 'covered'));
+          if (up) document.querySelector('.rx-chip[data-c="' + s + '"]').setAttribute('class', 'rx-chip staked');
+        }, 250 + i * 130);
+      });
+      later(function(){ fx.dataset.phase = 'spin'; }, 1500);
+      later(function(){
+        fx.dataset.phase = res === 'lose' ? 'lose' : res === 'green' ? 'green' : 'win';
+        var hit = res === 'green' ? 0 : res === 'win' ? 4 : 5;
+        document.querySelector('.rx-pocket[data-pk="' + hit + '"]').classList.add('hit');
+        flash('50%', '38%');
+        if (res === 'win') {
+          stamp('THE CASTLE’S COLOUR · ' + pot(STAKE[0] * 2), 'win');
+          el('rx-pot').textContent = pot(potAt(n)); el('rx-pot').className = 'tick';
+        } else if (res === 'lose') {
+          document.querySelectorAll('.rx-chip.staked').forEach(function(c){ c.setAttribute('class', 'rx-chip gone'); });
+          stamp('GONE · ' + pot(STAKE[1]), 'lose');
+          el('rx-pot').textContent = pot(potAt(n)); el('rx-pot').className = 'down';
+        } else {
+          stamp('THE GREEN POCKET · A SHIELD', 'gold');
+          document.querySelector('.rx-seat[data-s="izzy"]').classList.add('lit');
+        }
+        later(function(){ settle(n); }, 2200);
+      }, 4200);
+    } else {                                          // the reckoning
+      settle(n);
+      fx.dataset.phase = 'watch';
+      var who = n === 6 ? 'trent' : 'geoff';
+      document.querySelector('.rx-seat[data-s="' + who + '"]').classList.add('lit');
+      document.querySelector('.rx-seat[data-s="duncan"]').classList.add('lit');
+    }
+  }
+  el('ro-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; play(idx + 1);
+    var c = el('ro-step-' + idx); if (c) c.scrollIntoView({behavior:'smooth', block:'end'});
+  });
+  el('ro-all').addEventListener('click', function(){ clear(); idx = TOTAL - 1; settle(TOTAL); });
+  el('rx-fold').addEventListener('click', function(){
+    var m = el('rx').classList.toggle('rx-min');
+    this.innerHTML = m ? '▸ show' : '▾ hide';
+  });
+  settle(0);
+})();
+</script>
+</body>
+</html>

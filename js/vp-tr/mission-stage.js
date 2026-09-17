@@ -21,6 +21,7 @@
 export const STAGE_CSS = `
 @property --ms-spin{syntax:'<angle>';inherits:false;initial-value:0deg}
 .ms{position:sticky;top:54px;z-index:20;margin:22px 0 0;height:360px;border-radius:18px;overflow:hidden;isolation:isolate;
+  transition:height .4s cubic-bezier(.3,1,.4,1);
   background:#07070a;box-shadow:0 30px 80px -30px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.08)}
 .ms svg.ms-scene{position:absolute;inset:0;width:100%;height:100%}
 .ms-layer{position:absolute;inset:0;pointer-events:none}
@@ -35,6 +36,16 @@ export const STAGE_CSS = `
 @keyframes ms-spin{to{--ms-spin:360deg}}
 .ms[data-phase=hold] .ms-vig,.ms[data-phase=ask] .ms-vig{opacity:1;animation:ms-heart 1s ease-in-out infinite}
 @keyframes ms-heart{0%,100%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.85)}14%{box-shadow:inset 0 0 190px 90px rgba(0,0,0,.97)}28%{box-shadow:inset 0 0 140px 50px rgba(0,0,0,.85)}42%{box-shadow:inset 0 0 170px 70px rgba(0,0,0,.93)}}
+/* COLLAPSED: the caption and the pot stay, the scene folds away. */
+.ms.ms-min{height:56px}
+.ms.ms-min .ms-scene,.ms.ms-min .ms-layer,.ms.ms-min .ms-stamp{opacity:0;pointer-events:none}
+.ms.ms-min .ms-cap b{font-size:17px;display:inline;margin-left:10px}
+.ms.ms-min .ms-pot b{font-size:15px;display:inline;margin-left:8px}
+.ms-fold{position:absolute;right:18px;bottom:12px;z-index:8;cursor:pointer;border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.45);color:inherit;border-radius:20px;padding:5px 12px;font:10.5px/1 var(--ms-mono,monospace);
+  letter-spacing:.16em;text-transform:uppercase;opacity:.65;transition:opacity .3s}
+.ms-fold:hover{opacity:1}
+.ms.ms-min .ms-fold{bottom:14px}
 .ms-cap{position:absolute;left:18px;top:14px;z-index:6;font:11px/1 var(--ms-mono,monospace);letter-spacing:.24em;text-transform:uppercase;color:var(--ms-accent,#e2c47e)}
 .ms-cap b{display:block;margin-top:6px;font:400 30px/1 var(--cv-display,serif);letter-spacing:.04em;color:var(--ms-ink,#f4f1e8);text-transform:none}
 .ms-pot{position:absolute;right:18px;top:14px;z-index:6;text-align:right;font:11px/1 var(--ms-mono,monospace);letter-spacing:.2em;text-transform:uppercase;color:#8a8690}
@@ -65,9 +76,21 @@ const _gbp = n => '£' + Number(n || 0).toLocaleString('en-GB');
  * The stage's markup: the scene, the layers over it, the caption and the pot.
  * `scene` is the theme's own SVG innards; `defs` its own <defs>.
  */
+// The fold button carries its own behaviour: no global, no rebuild. The choice
+// is remembered per viewer, so a reader who wants the cards keeps them.
+const FOLD = "(function(b){var s=b.closest('.ms');var m=s.classList.toggle('ms-min');"
+  + "b.innerHTML=m?'&#9656; show':'&#9662; hide';"
+  + "try{localStorage.setItem('tr_stage_min',m?'1':'0')}catch(e){}})(this)";
+
+/** Whether the viewer last left the stage folded away. */
+export function stageFolded() {
+  try { return localStorage.getItem('tr_stage_min') === '1'; } catch { return false; }
+}
+
 export function stageShell({ epNum, scene, defs = '', cap = ['', ''], potLabel = 'In the pot',
   pot = 0, vars = '', viewBox = '0 0 1080 360', label = 'The mission, staged' }) {
-  return '<section class="ms" id="ms-' + epNum + '" data-scene="a" data-phase="rest"'
+  const min = stageFolded();
+  return '<section class="ms' + (min ? ' ms-min' : '') + '" id="ms-' + epNum + '" data-scene="a" data-phase="rest"'
     + (vars ? ' style="' + vars + '"' : '') + ' aria-label="' + _esc(label) + '">'
     + '<svg class="ms-scene" viewBox="' + viewBox + '" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
     + (defs ? '<defs>' + defs + '</defs>' : '') + scene + '</svg>'
@@ -75,7 +98,10 @@ export function stageShell({ epNum, scene, defs = '', cap = ['', ''], potLabel =
     + '<div class="ms-layer ms-flash"></div><div class="ms-layer ms-vig"></div><div class="ms-layer ms-grain"></div>'
     + '<div class="ms-cap"><span class="ms-cap-k">' + _esc(cap[0]) + '</span><b class="ms-cap-t">' + _esc(cap[1]) + '</b></div>'
     + '<div class="ms-pot">' + _esc(potLabel) + '<b class="ms-potv">' + _gbp(pot) + '</b></div>'
-    + '<div class="ms-stamp"></div></section>';
+    + '<div class="ms-stamp"></div>'
+    + '<button type="button" class="ms-fold" onclick="' + FOLD + '">'
+    + (min ? '&#9656; show' : '&#9662; hide') + '</button>'
+    + '</section>';
 }
 
 const TIMERS = {};

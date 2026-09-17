@@ -485,7 +485,7 @@ const CAUSEWAY = {
   --dc-sea:#2f6f6b;--dc-sea-lit:#49a49c;--dc-foam:#d7e6e2;--dc-brass:#c9a227;--dc-brass-dim:#8d711b;
   --dc-chalk:#e8eef1;--dc-ink:#0e1317;--dc-red:#a8332c;--cv-display:'Bodoni Moda',serif;
   background:var(--dc-slate);color:var(--dc-chalk);font-family:'Barlow Condensed','Oswald','Arial Narrow',sans-serif;
-  font-size:17px;line-height:1.5;padding-bottom:120px;position:relative;overflow:hidden}
+  font-size:17px;line-height:1.5;padding-bottom:120px;position:relative;overflow:clip}
 .dc-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .dc-sky{position:absolute;inset:0;background:radial-gradient(120% 70% at 50% -10%,#34424e 0%,#1b2229 55%,#10161b 100%)}
 .dc-sky::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
@@ -777,7 +777,7 @@ const ORRERY = {
 .no-root{--no-void:#080b18;--no-ink:#0e1428;--no-ink2:#161f3c;--no-brass:#d9a441;--no-brass-dim:#8a6a26;--no-brass-lit:#f4cd7c;
   --no-star:#eaf0ff;--no-cold:#4d6fb5;--no-page:#e8e2d2;--no-pageink:#2a2620;--no-red:#b1443c;--cv-display:'Cormorant Garamond',serif;
   background:var(--no-void);color:var(--no-star);font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
-  font-size:15.5px;line-height:1.6;padding-bottom:120px;position:relative;overflow:hidden}
+  font-size:15.5px;line-height:1.6;padding-bottom:120px;position:relative;overflow:clip}
 .no-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .no-sky{position:absolute;inset:0;background:radial-gradient(130% 90% at 50% 110%,#1c2a54 0%,#0e1428 45%,#060911 100%)}
 .no-stars{position:absolute;inset:0;background-image:radial-gradient(1.2px 1.2px at 12% 22%,var(--no-star),transparent),radial-gradient(1px 1px at 34% 61%,var(--no-star),transparent),radial-gradient(1.4px 1.4px at 58% 14%,var(--no-star),transparent),radial-gradient(1px 1px at 71% 44%,var(--no-star),transparent),radial-gradient(1.3px 1.3px at 86% 76%,var(--no-star),transparent),radial-gradient(1px 1px at 23% 84%,var(--no-star),transparent),radial-gradient(1.1px 1.1px at 46% 33%,var(--no-star),transparent),radial-gradient(1px 1px at 92% 28%,var(--no-star),transparent);opacity:.55;animation:no-twinkle 6s ease-in-out infinite alternate}
@@ -1048,7 +1048,7 @@ const ACCOUNT = {
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Inter:wght@400;500;600&display=swap');
 .la-root{--la-baize:#1f3a2e;--la-baize-2:#173025;--la-oxblood:#4a1c1c;--la-paper:#f2ead6;--la-paper-2:#e6dcc2;--la-ink:#2b2418;--la-ink-2:#5c503c;
   --la-rule:#c0392b;--la-blue:#2f4b7c;--la-lamp:#e8b563;--la-wax:#8e2b24;--la-gold:#b58a3c;--cv-display:'Libre Baskerville',serif;
-  background:var(--la-baize);color:var(--la-ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+  background:var(--la-baize);color:var(--la-ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 .la-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .la-room{position:absolute;inset:0;background:radial-gradient(90% 60% at 50% 0%,rgba(232,181,99,.16) 0%,transparent 60%),repeating-linear-gradient(46deg,rgba(0,0,0,.05) 0 3px,transparent 3px 6px),linear-gradient(180deg,var(--la-baize) 0%,var(--la-baize-2) 100%)}
 .la-dust{position:absolute;inset:0;opacity:.4;background-image:radial-gradient(1.5px 1.5px at 18% 30%,rgba(232,181,99,.7),transparent),radial-gradient(1.2px 1.2px at 44% 70%,rgba(232,181,99,.6),transparent),radial-gradient(1.6px 1.6px at 66% 22%,rgba(232,181,99,.5),transparent),radial-gradient(1.2px 1.2px at 82% 58%,rgba(232,181,99,.6),transparent);animation:la-drift 24s linear infinite alternate}
@@ -1322,7 +1322,7 @@ const VAULT = {
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
 .av-root{--av-char:#14100e;--av-char2:#1e1815;--av-soot:#2b2320;--av-smoke:#4a3f39;--av-ember:#e2601c;--av-ember-lo:#8a3a10;
   --av-ash:#cfc6bd;--av-bone:#efe8dd;--av-cold:#5f7b86;--av-shield:#f0c04a;--av-red:#c0392b;--cv-display:'Oswald',sans-serif;
-  background:var(--av-char);color:var(--av-ash);font-family:'Oswald','Arial Narrow',sans-serif;font-weight:300;font-size:16.5px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+  background:var(--av-char);color:var(--av-ash);font-family:'Oswald','Arial Narrow',sans-serif;font-weight:300;font-size:16.5px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 .av-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .av-room{position:absolute;inset:0;background:radial-gradient(75% 55% at 50% 108%,rgba(226,96,28,.22) 0%,transparent 62%),radial-gradient(120% 80% at 50% -10%,#2b2320 0%,#14100e 60%,#0b0908 100%)}
 .av-beams{position:absolute;inset:0;opacity:.22;background:repeating-linear-gradient(74deg,rgba(0,0,0,.9) 0 10px,transparent 10px 90px),repeating-linear-gradient(-68deg,rgba(0,0,0,.75) 0 7px,transparent 7px 130px)}
@@ -1330,7 +1330,7 @@ const VAULT = {
 @keyframes av-fall{from{background-position:0 -600px}to{background-position:-90px 600px}}
 .av-shell{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:26px 18px 40px}
 .av-body{position:relative;z-index:2}
-.av-hero{border:1px solid var(--av-soot);background:linear-gradient(160deg,rgba(43,35,32,.9),rgba(15,12,11,.92));padding:30px 26px 26px;position:relative;overflow:hidden}
+.av-hero{border:1px solid var(--av-soot);background:linear-gradient(160deg,rgba(43,35,32,.9),rgba(15,12,11,.92));padding:30px 26px 26px;position:relative;overflow:clip}
 .av-hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,transparent,var(--av-ember),var(--av-ember-lo),transparent);animation:av-glow 5.5s ease-in-out infinite}
 @keyframes av-glow{0%,100%{opacity:.55}50%{opacity:1}}
 .av-kicker{font-size:11.5px;letter-spacing:.4em;text-transform:uppercase;color:var(--av-ember)}

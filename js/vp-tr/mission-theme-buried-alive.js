@@ -406,7 +406,7 @@ export const BURIED = {
 .ba-root{--ba-moss:#4f6b4a;--ba-moss-hi:#8fae7e;--ba-clay:#6b4f36;--ba-stone:#b9bdb4;--ba-bone:#ece6d6;
   --ba-lamp:#e8d27a;--ba-lamp-lo:#8c7a34;--ba-wrong:#b0543c;--ba-shield:#e9c65b;--cv-display:'Grenze Gotisch',serif;
   background:#0d1210;color:var(--ba-stone);font-family:'Crimson Pro',Georgia,serif;font-size:18px;line-height:1.55;
-  padding-bottom:120px;position:relative;overflow:hidden}
+  padding-bottom:120px;position:relative;overflow:clip}
 .ba-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .ba-sky{position:absolute;inset:0;background:radial-gradient(40% 30% at 78% 12%,rgba(232,210,122,.16) 0%,transparent 70%),linear-gradient(180deg,#17201d 0%,#0f1513 45%,#0a0e0c 100%)}
 .ba-yews{position:absolute;left:0;right:0;bottom:0;height:38%;width:100%;opacity:.55}

@@ -393,7 +393,7 @@ export const CHURCH = {
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Anonymous+Pro:wght@400;700&display=swap');
 .cm-root{--cm-parch:#ece4d2;--cm-ruby:#b8263a;--cm-ruby-hi:#ff5c72;--cm-cobalt:#2a4fb3;--cm-cobalt-hi:#6f96ff;--cm-emerald:#2f8a5d;--cm-wax:#f1e3b6;--cm-lead:#0a0a0c;--cm-shield:#f1cd5f;
   --cv-display:'Cinzel Decorative',serif;
-  background:#141518;color:#9aa0a8;font-family:'Lora',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+  background:#141518;color:#9aa0a8;font-family:'Lora',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 .cm-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .cm-nave{position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(184,38,58,.10) 34%,transparent 42%),linear-gradient(105deg,transparent 48%,rgba(42,79,179,.10) 52%,transparent 60%),linear-gradient(95deg,transparent 64%,rgba(47,138,93,.08) 67%,transparent 74%),repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 44px),repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 88px),linear-gradient(180deg,#1b1d22,#0f1013)}
 .cm-arches{position:absolute;left:0;right:0;top:0;width:100%;height:40vh;opacity:.6}

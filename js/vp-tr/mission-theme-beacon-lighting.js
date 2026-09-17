@@ -441,7 +441,7 @@ export const BEACON = {
 @import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Overpass+Mono:wght@400;600&display=swap');
 .bl-root{--bl-heather:#8f6fb3;--bl-heather-lo:#4d3a66;--bl-bone:#f1eadb;--bl-mist:#aab7bc;--bl-flame:#ffb347;--bl-flame-hi:#ffe08a;
   --bl-ember:#ff5a1f;--bl-rope:#c9a877;--bl-shield:#f2cc5b;--bl-bad:#d0654c;--cv-display:'Uncial Antiqua',serif;
-  background:#070d10;color:var(--bl-mist);font-family:'Alegreya Sans',sans-serif;font-size:18px;line-height:1.5;padding-bottom:120px;position:relative;overflow:hidden}
+  background:#070d10;color:var(--bl-mist);font-family:'Alegreya Sans',sans-serif;font-size:18px;line-height:1.5;padding-bottom:120px;position:relative;overflow:clip}
 .bl-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .bl-water{position:absolute;inset:0;background:radial-gradient(60% 40% at 50% 100%,rgba(255,138,51,.18) 0%,transparent 70%),repeating-linear-gradient(178deg,rgba(170,183,188,.035) 0 2px,transparent 2px 26px),linear-gradient(180deg,#0a151a 0%,#070d10 70%)}
 .bl-hills{position:absolute;left:0;right:0;top:0;height:30%;width:100%;opacity:.8}

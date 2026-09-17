@@ -391,7 +391,7 @@ export const WICKER = {
 @import url('https://fonts.googleapis.com/css2?family=Almendra+Display&family=Spectral:ital,wght@0,400;0,600;1,400&family=Cutive+Mono&display=swap');
 .wb-root{--wb-straw:#e2b95a;--wb-straw-lo:#8f6e2c;--wb-woad:#3f6c9b;--wb-moss:#5d7a3d;--wb-cream:#f3ead2;--wb-ash:#b5ab97;
   --wb-ribbon:#c2362b;--wb-fire:#ff8a2a;--wb-shield:#f3cf5c;--cv-display:'Almendra Display',serif;
-  background:#16130e;color:var(--wb-ash);font-family:'Spectral',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+  background:#16130e;color:var(--wb-ash);font-family:'Spectral',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 .wb-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .wb-sky{position:absolute;inset:0;background:radial-gradient(70% 45% at 30% 0%,rgba(226,185,90,.10),transparent 70%),linear-gradient(180deg,#26221a 0%,#1a1711 50%,#110f0b 100%)}
 .wb-weave{position:absolute;inset:0;opacity:.07;background:repeating-linear-gradient(45deg,var(--wb-straw) 0 2px,transparent 2px 14px),repeating-linear-gradient(-45deg,var(--wb-straw) 0 2px,transparent 2px 14px)}

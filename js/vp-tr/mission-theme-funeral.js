@@ -151,8 +151,15 @@ export function funeralStates(v, total) {
 // ══════════════════════════════════════════════════════════════════════
 // THE STAGE — markup
 // ══════════════════════════════════════════════════════════════════════
+// The fold button carries its own behaviour: no global, no rebuild.
+const FU_FOLD = "(function(b){var s=b.closest('.fx');var m=s.classList.toggle('fx-min');"
+  + "b.innerHTML=m?'&#9656; show':'&#9662; hide';"
+  + "try{localStorage.setItem('tr_stage_min',m?'1':'0')}catch(e){}})(this)";
+function _folded() { try { return localStorage.getItem('tr_stage_min') === '1'; } catch { return false; } }
+
 function _stage(v, states, n) {
   const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const folded = _folded();
   const L = s.L;
   const e = v.epNum;
   const t = v.tally || {};
@@ -186,7 +193,7 @@ function _stage(v, states, n) {
   const lilies = L.mourners.map((nm, i) => '<g class="fx-lily" data-l="' + _esc(nm) + '" transform="translate(' + L.mx[i].toFixed(1) + ',330)">'
     + '<path d="M0 0c-8-3-12-9-10-16 5 2 9 7 10 16z M0 0c8-3 12-9 10-16-5 2-9 7-10 16z M0 0c-3-7-3-13 0-18 3 5 3 11 0 18z" fill="#f4f1e8" stroke="#b7b3bd" stroke-width=".8"/></g>').join('');
   const holder = v.shield && v.shield.holder;
-  return '<section class="fx" id="fx-' + e + '" data-scene="' + s.scene + '" data-phase="rest" aria-label="The funeral, staged">'
+  return '<section class="fx' + (folded ? ' fx-min' : '') + '" id="fx-' + e + '" data-scene="' + s.scene + '" data-phase="rest" aria-label="The funeral, staged">'
     + '<svg class="fx-scene" viewBox="0 0 1080 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs>'
     + '<clipPath id="fx-c18-' + e + '"><circle r="18"/></clipPath><clipPath id="fx-c14-' + e + '"><circle r="14"/></clipPath>'
     + '<clipPath id="fx-c26-' + e + '"><ellipse rx="24" ry="30"/></clipPath>'
@@ -236,6 +243,8 @@ function _stage(v, states, n) {
     + '<div class="fx-cap"><span class="fx-cap-k">' + _esc(s.cap[0]) + '</span><b class="fx-cap-t">' + _esc(s.cap[1]) + '</b></div>'
     + '<div class="fx-pot">In the pot<b class="fx-potv">' + _gbp(v.potBefore + (s.paid ? v.earned : 0)) + '</b></div>'
     + '<div class="fx-stamp"></div>'
+    + '<button type="button" class="fx-fold" onclick="' + FU_FOLD + '">'
+    + (folded ? '&#9656; show' : '&#9662; hide') + '</button>'
     + '</section>';
 }
 
@@ -866,6 +875,15 @@ export const FUNERAL = {
 .fx-oval image.gray{filter:grayscale(1) brightness(.7)}
 .fx-oval.gone image.gray{filter:none}
 .fx-card-t{font:italic 16px/1.35 'Old Standard TT',serif;color:#231f28}
+.fx{transition:height .4s cubic-bezier(.3,1,.4,1)}
+.fx.fx-min{height:56px}
+.fx.fx-min .fx-scene,.fx.fx-min .fx-layer,.fx.fx-min .fx-stamp{opacity:0;pointer-events:none}
+.fx.fx-min .fx-cap b{font-size:17px;display:inline;margin-left:10px}
+.fx.fx-min .fx-pot b{font-size:15px;display:inline;margin-left:8px}
+.fx-fold{position:absolute;right:18px;bottom:12px;z-index:8;cursor:pointer;border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.45);color:var(--fu-lily);border-radius:20px;padding:5px 12px;font:10.5px/1 'Spline Sans Mono',monospace;
+  letter-spacing:.16em;text-transform:uppercase;opacity:.65;transition:opacity .3s}
+.fx-fold:hover{opacity:1}
 .fx-bubble .pop{transform-box:fill-box;transform-origin:50% 100%;animation:fx-pop .45s cubic-bezier(.3,1.7,.5,1)}
 @keyframes fx-pop{0%{transform:scale(0)}100%{transform:scale(1)}}
 .fx-bubble rect{fill:#f4f1e8;stroke:#6e4f86;stroke-width:2}

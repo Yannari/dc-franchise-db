@@ -420,7 +420,7 @@ export const MONUMENT = {
 @import url('https://fonts.googleapis.com/css2?family=Metamorphous&family=Alegreya:ital,wght@0,400;0,600;1,400&family=Red+Hat+Mono:wght@400;600&display=swap');
 .tm-root{--tm-bone:#e6dfcc;--tm-moon:#a9b9c4;--tm-lichen:#8fae5a;--tm-glow:#b8f07a;--tm-rust:#a5482c;--tm-rust-hi:#e0714c;--tm-steel:#cfd8dc;--tm-shield:#f0cd5c;
   --cv-display:'Metamorphous',serif;
-  background:#121517;color:var(--tm-moon);font-family:'Alegreya',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:hidden}
+  background:#121517;color:var(--tm-moon);font-family:'Alegreya',Georgia,serif;font-size:18px;line-height:1.55;padding-bottom:120px;position:relative;overflow:clip}
 .tm-scenery{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 .tm-sky{position:absolute;inset:0;background:radial-gradient(160px 160px at 82% 12%,rgba(230,223,204,.20),transparent 70%),radial-gradient(40px 40px at 82% 12%,rgba(230,223,204,.55),transparent 70%),linear-gradient(180deg,#1a2126 0%,#141a1d 45%,#0f1213 100%)}
 .tm-stones{position:absolute;left:0;right:0;bottom:0;width:100%;height:34vh;opacity:.55}

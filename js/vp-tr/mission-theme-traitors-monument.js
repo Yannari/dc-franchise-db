@@ -12,6 +12,7 @@
 // opening, and the sword rises on the card that shows it drawn.
 import { players } from '../core.js';
 import { playerAvatarUrl } from '../players.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -68,6 +69,158 @@ const SYM = {
 };
 const FIG_POS = [[26, 172], [56, 198], [88, 216], [204, 216], [234, 198], [60, 122]];
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the moor, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The stone stands in the middle with its panels dark, six hooded figures
+// round it, and the sword in the boulder beyond. Panels light as they are
+// read, a figure drops its hood or turns its back on the card that answers
+// it, the door opens, and the sword comes out.
+function _tmKind(c, ph) {
+  if (c.relic) return 'bargain';
+  if (isOpen(c)) return 'opens';
+  if (isShut(c)) return 'shut';
+  if (isBargain(c)) return 'bargain';
+  if (isRoll(c)) return 'roll';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'cipher') return c.tone === 'bad' ? 'misread' : 'read';
+  if (ph.id === 'figures') return c.tone === 'bad' ? 'turned' : 'answered';
+  return 'pull';
+}
+const TM_CAP = { cipher: ['Part one', 'The Cipher'], figures: ['Part two', 'The Figures'],
+  sword: ['Part three', 'The Sword'] };
+// six hoods in an arc round the stone
+const TM_FIG = [[228, 244], [292, 296], [372, 330], [712, 330], [792, 296], [856, 244]];
+
+function _tmScene(v, s) {
+  const e = v.epNum;
+  const names = v.teams.map(x => x.name);
+  const figs = v.tally.figures || [];
+  let panels = '';
+  for (let t = 0; t < 2; t++) {
+    for (let k = 0; k < 3; k++) {
+      const x = t ? 552 : 464, y = 116 + k * 62;
+      panels += '<g class="ms-tm-panel ' + (s.panel[t][k] || '') + '" data-tp="' + t + '-' + k
+        + '" transform="translate(' + x + ',' + y + ')">'
+        + '<rect class="slab" width="64" height="52" rx="3"/>'
+        + '<g transform="translate(20,14) scale(1.8)">' + _glyph(3 + t * 5 + k * 3) + '</g></g>';
+    }
+  }
+  const hoods = figs.map((f, i) => '<g class="ms-tm-fig ' + (s.fig[i] || '') + '" data-tf="' + i
+    + '" transform="translate(' + TM_FIG[i][0] + ',' + TM_FIG[i][1] + ') scale(1.5)">'
+    + '<path class="robe" d="M0 -34 L8 -18 Q11 -10 10 -4 L15 16 H-15 L-10 -4 Q-11 -10 -8 -18 Z" stroke-width="1"/>'
+    + '<ellipse cx="0" cy="-15" rx="4.5" ry="6" fill="#0d0f10"/>'
+    + '<path d="M-3 -16h6v2.5h-6z" fill="#e6dfcc" opacity=".8"/>'
+    + '<g class="sym" transform="translate(0,4)">' + (SYM[f.sym] || '') + '</g>'
+    + '<path class="x" d="M-6 -4l12 12M6 -4l-12 12" stroke="#e0714c" stroke-width="2"/></g>').join('');
+  const fallen = (v.tally.fallen || []).map((nm, i) =>
+    '<g class="ms-tm-fallen' + (s.said ? ' said' : '') + '" transform="translate(' + (70 + i * 54) + ',312)">'
+    + '<circle r="21" fill="#15181a" stroke="#454d51" stroke-width="2"/>'
+    + '<image href="' + _esc(_url(nm)) + '" x="-19" y="-19" width="38" height="38" clip-path="url(#ms-tm-c-' + e + ')"/></g>').join('');
+  return '<rect width="1080" height="360" fill="url(#ms-tm-sky-' + e + ')"/>'
+    + '<circle cx="150" cy="60" r="34" fill="rgba(230,223,204,.12)"/><circle cx="150" cy="60" r="15" fill="rgba(230,223,204,.4)"/>'
+    + '<path d="M0 214 C140 196 240 224 380 210 C520 196 640 222 780 208 C900 196 1000 216 1080 204 V360 H0Z" fill="#141a18"/>'
+    + '<g fill="#101513"><path d="M96 300 V236 c-18-6-12-52 12-60 24 8 30 54 12 60 V300Z"/>'
+    + '<path d="M1000 300 V244 c-16-6-10-46 10-54 20 8 26 48 10 54 V300Z"/></g>'
+    + '<g class="ms-tm-stone"><path d="M440 320 L452 64 Q540 26 628 64 L640 320 Z" fill="url(#ms-tm-g-' + e + ')" stroke="#5d676d" stroke-width="2"/>'
+    + '<path d="M440 320 L452 64 Q462 58 474 53 L466 320Z" fill="rgba(143,174,90,.16)"/>'
+    + '<line x1="540" y1="52" x2="540" y2="320" stroke="#1d2123" stroke-width="2"/>'
+    + '<text x="492" y="96" text-anchor="middle" font-family="Red Hat Mono" font-size="11" fill="#a9b9c4" letter-spacing="2">' + _esc(String(names[0] || '').toUpperCase()) + '</text>'
+    + '<text x="590" y="96" text-anchor="middle" font-family="Red Hat Mono" font-size="11" fill="#8fae5a" letter-spacing="2">' + _esc(String(names[1] || '').toUpperCase()) + '</text>'
+    + panels
+    + '<path class="ms-tm-door' + (s.open ? ' open' : '') + '" d="M506 320 V270 a34 34 0 0 1 68 0 V320 Z" stroke="#5d676d" stroke-width="2"/></g>'
+    + hoods
+    + '<g transform="translate(900,250)"><path d="M-54 62c4-28 24-44 54-44s50 16 54 44z" fill="#3a4043" stroke="#5d676d" stroke-width="2"/>'
+    + '<g class="ms-tm-sword' + (s.drawn ? ' drawn' : '') + '"><path class="blade" d="M-3 -62h6v86h-6z" fill="#cfd8dc"/>'
+    + '<path d="M-16 -62h32v6h-32z" fill="#a5482c"/><path d="M-4 -78h8v18h-8z" fill="#5d2e22"/><circle cy="-82" r="6" fill="#a5482c"/></g></g>'
+    + fallen;
+}
+
+function _tmStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<clipPath id="ms-tm-c-' + e + '"><circle r="19"/></clipPath>'
+    + '<linearGradient id="ms-tm-g-' + e + '" x1="0" x2="1"><stop offset="0" stop-color="#454d51"/>'
+    + '<stop offset=".5" stop-color="#363d40"/><stop offset="1" stop-color="#262b2e"/></linearGradient>'
+    + '<linearGradient id="ms-tm-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#1a2126"/><stop offset=".6" stop-color="#141a1d"/><stop offset="1" stop-color="#0f1213"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _tmScene(v, s),
+    cap: [s.answered + ' of 6 answered', (TM_CAP[s.capPhase] || TM_CAP.cipher)[1]],
+    pot: v.potBefore + (s.done && !v.tally.tookShield ? v.earned : 0),
+    vars: '--ms-mono:\'Red Hat Mono\',monospace;--ms-accent:#b8f07a;--ms-ink:#e6dfcc',
+    label: 'The monument, staged' });
+}
+
+function _tmSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-tm-panel').forEach(g => {
+    const [t, k] = g.getAttribute('data-tp').split('-').map(Number);
+    g.setAttribute('class', 'ms-tm-panel ' + (s.panel[t][k] || ''));
+  });
+  st.qa('.ms-tm-fig').forEach(g => { g.setAttribute('class', 'ms-tm-fig ' + (s.fig[Number(g.getAttribute('data-tf'))] || '')); });
+  const door = st.q('.ms-tm-door'); if (door) door.setAttribute('class', 'ms-tm-door' + (s.open ? ' open' : ''));
+  const sw = st.q('.ms-tm-sword'); if (sw) sw.setAttribute('class', 'ms-tm-sword' + (s.drawn ? ' drawn' : ''));
+  st.qa('.ms-tm-fallen').forEach(g => g.setAttribute('class', 'ms-tm-fallen' + (s.said ? ' said' : '')));
+  st.cap(s.answered + ' of 6 answered', (TM_CAP[s.capPhase] || TM_CAP.cipher)[1]);
+  st.pot(v.potBefore + (s.done && !v.tally.tookShield ? v.earned : 0), false);
+  st.clearStamp();
+}
+
+function _tmPlay(st, v, prev, s) {
+  _tmSettle(st, v, prev);
+  const e = s.ev;
+  if (!e) { _tmSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'read' || e.k === 'answered') {
+    st.phase('hold');
+    land(() => {
+      _tmSettle(st, v, s);
+      st.burst(12, 50, 48, 110, 'rgba(184,240,122,.9)');
+    }, 1200);
+  } else if (e.k === 'misread' || e.k === 'turned') {
+    st.phase('hold');
+    land(() => {
+      _tmSettle(st, v, s); st.phase('bad');
+      st.stamp(e.k === 'misread' ? 'READ IT WRONG' : 'IT TURNS ITS BACK', 'bad');
+    }, 1400);
+  } else if (e.k === 'roll') {
+    st.phase('hold');
+    land(() => {
+      _tmSettle(st, v, s);
+      st.stamp('THE ROLL OF THE DEAD', 'cool');
+      st.burst(14, 20, 86, 120, 'rgba(184,240,122,.8)');
+    }, 1600);
+  } else if (e.k === 'opens') {
+    st.phase('hold');
+    land(() => {
+      _tmSettle(st, v, s); st.phase('win');
+      st.flash('50%', '80%'); st.burst(22, 50, 84, 180, 'rgba(184,240,122,.95)');
+      st.stamp('THE STONE OPENS', 'good');
+    }, 1800);
+  } else if (e.k === 'shut') {
+    st.phase('hold');
+    land(() => { _tmSettle(st, v, s); st.phase('bad'); st.stamp('IT STAYED SHUT', 'bad'); }, 1800);
+  } else if (e.k === 'pull') {
+    st.phase('hold');
+    land(() => { _tmSettle(st, v, s); st.stamp('IT DID NOT MOVE', 'cool'); }, 1400);
+  } else if (e.k === 'bargain') {
+    st.phase('hold');
+    land(() => {
+      _tmSettle(st, v, s); st.phase('win');
+      st.flash('83%', '52%'); st.burst(20, 83, 52, 150, 'rgba(207,216,220,.95)');
+      st.stamp(v.tally.tookShield ? 'THE SHIELD · THE MONEY STAYS' : 'DREW IT · LEFT THE SHIELD',
+        v.tally.tookShield ? 'gold' : 'good');
+      land(() => st.pot(v.potBefore + (v.tally.tookShield ? 0 : v.earned), true), 1400);
+    }, 2000);
+  } else if (e.k === 'scene') {
+    _tmSettle(st, v, s); st.phase('watch');
+  } else {
+    _tmSettle(st, v, s);
+  }
+}
+
 export const MONUMENT = {
   id: 'traitors-monument', prefix: 'tm', ownShield: true,
   shieldBeat: /Sacred Sword|if they take it/,
@@ -113,6 +266,8 @@ export const MONUMENT = {
     else if (ph.id === 'sword') ic = 'sword';
     return '<span class="tm-ico"><svg viewBox="0 0 36 36" aria-hidden="true">' + ICONS[ic] + '</svg></span>';
   },
+
+  stage: (v, states, n) => _tmStage(v, states, n),
 
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
@@ -181,6 +336,7 @@ export const MONUMENT = {
 
   sideStates(v, total) {
     const pr = _prog(v);
+    const evs = stageEvents(v, _tmKind);
     const t = v.tally.teams || {};
     const names = v.teams.map(x => x.name);
     const figs = v.tally.figures || [];
@@ -208,7 +364,12 @@ export const MONUMENT = {
       const drawn = drawAt >= 0 && n > drawAt;
       const drawCls = {};
       for (const p of pulls) drawCls[p] = drawn && p === drawer ? 'pulled' : open ? 'tried' : '';
+      const ev = evs[n - 1] || null;
       out.push({
+        // the stage's own reading of the same step
+        ev, capPhase: ev ? ev.phase : 'cipher',
+        watch: ev && ev.k === 'scene' ? ev.who : [],
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally },
         panel, fig, open, drawn, drawCls, done,
         said: rollIdx >= 0 && fig[rollIdx] === 'solved',
         answered: shown[0] + (shown[1] || 0),
@@ -220,8 +381,14 @@ export const MONUMENT = {
     return out;
   },
 
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
+    const st = stageFor(s.v.epNum);
+    if (st) {
+      st.clear();
+      if (mode === 'next' && n > 0 && !reducedMotion()) _tmPlay(st, s.v, states[n - 1], s);
+      else _tmSettle(st, s.v, s);
+    }
     const panel = document.querySelector('.tm-panel'); if (!panel) return;
     panel.querySelectorAll('.tm-panelg').forEach(g => {
       const [t, k] = g.getAttribute('data-panel').split('-').map(Number);
@@ -381,8 +548,35 @@ export const MONUMENT = {
 .tm-btn[disabled]{opacity:.4;cursor:default}
 .tm-btn.ghost{background:transparent;color:var(--tm-bone);border:1px solid #4a5256}
 .tm-counter{font:13px/1 'Red Hat Mono',monospace;color:#5d676d;letter-spacing:.08em}
+
+/* ── THE STAGE: the moor ─────────────────────────────────────────────── */
+.ms-tm-panel .slab{fill:#1d2123;stroke:#454d51;stroke-width:2;transition:fill .7s,stroke .7s}
+.ms-tm-panel .g{stroke:#566064;fill:none;transition:stroke .7s,filter .7s}
+.ms-tm-panel circle.g{fill:#566064}
+.ms-tm-panel.read .slab{fill:#1f2a1a;stroke:#8fae5a}
+.ms-tm-panel.read .g{stroke:#b8f07a;filter:drop-shadow(0 0 4px rgba(184,240,122,.9))}
+.ms-tm-panel.read circle.g{fill:#b8f07a}
+.ms-tm-panel.miss .slab{fill:#2a1a15;stroke:#a5482c}
+.ms-tm-panel.miss .g{stroke:#6d4a3c}
+.ms-tm-fig .robe{fill:#3a1f18;stroke:#5d2e22;transition:fill .7s}
+.ms-tm-fig .sym{fill:#555e62;stroke:#555e62;transition:fill .7s,filter .7s}
+.ms-tm-fig.solved .robe{fill:#a5482c}
+.ms-tm-fig.solved .sym{fill:#b8f07a;stroke:#b8f07a;filter:drop-shadow(0 0 6px rgba(184,240,122,.9))}
+.ms-tm-fig.failed{transform-box:fill-box}
+.ms-tm-fig.failed .sym{fill:#6d4a3c;stroke:#6d4a3c}
+.ms-tm-fig .x{opacity:0;transition:opacity .5s}
+.ms-tm-fig.failed .x{opacity:1}
+.ms-tm-door{fill:#15181a;transition:fill .9s,filter .9s}
+.ms-tm-door.open{fill:#2d3f1e;filter:drop-shadow(0 0 14px rgba(184,240,122,.7))}
+.ms-tm-sword{transition:transform 1.1s cubic-bezier(.3,1.4,.5,1)}
+.ms-tm-sword.drawn{transform:translateY(-48px)}
+.ms-tm-sword.drawn .blade{filter:drop-shadow(0 0 8px rgba(207,216,220,.95))}
+.ms-tm-fallen{opacity:.25;transition:opacity .7s}
+.ms-tm-fallen.said{opacity:1;filter:drop-shadow(0 0 6px rgba(184,240,122,.6))}
+.ms[data-phase=watch] .ms-tm-fig,.ms[data-phase=watch] .ms-tm-stone{filter:brightness(.45)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(50,14,8,.85)}
 @media(prefers-reduced-motion:reduce){.tm-root *,.tm-root *::before,.tm-root *::after{animation:none !important;transition:none !important}.tm-card{opacity:1;filter:none}}
-`,
+` + STAGE_CSS,
 };
 
 export default MONUMENT;

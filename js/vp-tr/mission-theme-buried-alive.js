@@ -18,6 +18,7 @@
 // staying down.
 import { players } from '../core.js';
 import { playerAvatarUrl } from '../players.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -52,6 +53,149 @@ const TAGS = {
   'lift:good': 'Clean lift', 'lift:steady': 'Up', 'lift:bad': 'Still down',
 };
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the churchyard, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Every plot is on the stage from the first card as bare earth. A clue plot
+// opens on the card that reads it, a wrong dig crosses itself out, a coffin
+// shows its face when the lid is found, and the face rises when the rope
+// brings them up.
+function _baKind(c, ph) {
+  if (c.relic) return 'seal';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'clues') return c.tone === 'bad' ? 'wrongdig' : 'clue';
+  if (ph.id === 'coffins') return c.tone === 'bad' ? 'deep' : 'lid';
+  return c.tone === 'bad' ? 'slip' : 'up';
+}
+const BA_CAP = { clues: ['Part one', 'The Clues'], coffins: ['Part two', 'The Coffins'],
+  lift: ['Part three', 'The Lift'] };
+
+function _baLayout(v) {
+  const plots = v.tally.plots || [];
+  const per = plots.length > 8 ? Math.ceil(plots.length / 2) : plots.length;
+  const rows = plots.length > 8 ? 2 : 1;
+  const gap = Math.min(150, 940 / Math.max(1, per));
+  return plots.map((p, i) => {
+    const row = Math.floor(i / per), col = i % per;
+    return { p, x: 80 + gap / 2 + col * gap, y: rows === 1 ? 236 : 186 + row * 116 };
+  });
+}
+
+function _baScene(v, s) {
+  const e = v.epNum;
+  const plots = s.L.map((q, i) => {
+    const cls = s.plot[i] || '';
+    const who = q.p.who;
+    return '<g class="ms-ba-plot ' + cls + '" data-p="' + i + '" transform="translate(' + q.x.toFixed(0) + ',' + q.y + ')">'
+      + '<rect class="earth" x="-44" y="-16" width="88" height="54" rx="4"/>'
+      + '<path class="stone" d="M-16 -46 h32 v30 h-32z M-16 -46 a16 16 0 0 1 32 0" />'
+      + '<g class="hole"><rect x="-40" y="-12" width="80" height="46" rx="3" fill="#0a0806"/></g>'
+      + (q.p.kind === 'clue'
+        ? '<g class="scroll"><rect x="-22" y="-6" width="44" height="30" rx="3" fill="#e8dcc0" stroke="#8a7240"/>'
+          + '<path d="M-14 2h28M-14 10h28M-14 18h18" stroke="#8a7240" stroke-width="2"/></g>'
+        : '<g class="body">' + (who
+          ? '<image href="' + _esc(_url(who)) + '" x="-19" y="-17" width="38" height="38" clip-path="url(#ms-ba-c-' + e + ')"/>'
+          : '') + '<circle class="ring" r="20" fill="none" stroke="#c8a24a" stroke-width="2"/></g>')
+      + '<path class="cross" d="M-20 -6 L20 28 M20 -6 L-20 28" stroke="#c2483c" stroke-width="5"/>'
+      + '<g class="lamp"><circle r="26" fill="rgba(242,204,91,.25)"/><circle r="10" fill="rgba(242,204,91,.9)"/></g>'
+      + '</g>';
+  }).join('');
+  return '<rect width="1080" height="360" fill="url(#ms-ba-sky-' + e + ')"/>'
+    + '<path d="M0 120 C120 96 220 130 340 112 C460 94 560 124 700 106 C820 90 960 120 1080 100 V360 H0Z" fill="#171412"/>'
+    + '<g class="ms-ba-church" transform="translate(880,26)"><path d="M0 94 V34 h56 V94Z" fill="#100e0d" stroke="#2a2420"/>'
+    + '<path d="M-2 34 L28 6 L58 34Z" fill="#100e0d" stroke="#2a2420"/><rect x="22" y="-18" width="10" height="26" fill="#2a2420"/>'
+    + '<rect x="20" y="58" width="16" height="36" rx="8" fill="#1c1714"/></g>'
+    + '<path d="M0 150 C160 140 300 162 480 150 C660 138 820 160 1080 146 V360 H0Z" fill="#1d1a16"/>'
+    + plots
+    + '<g class="ms-ba-lamp2" transform="translate(120,92)"><rect x="-2" y="0" width="4" height="52" fill="#3a3129"/>'
+    + '<path d="M0 -16 a12 12 0 0 1 12 12 v6 h-24 v-6 a12 12 0 0 1 12 -12z" fill="#2a2420" stroke="#c8a24a"/>'
+    + '<circle cy="-2" r="5" fill="#ffd98a"/></g>';
+}
+
+function _baStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<clipPath id="ms-ba-c-' + e + '"><circle r="19"/></clipPath>'
+    + '<linearGradient id="ms-ba-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#241c18"/><stop offset=".6" stop-color="#171310"/><stop offset="1" stop-color="#0d0b09"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _baScene(v, s),
+    cap: [s.time + ' left', (BA_CAP[s.capPhase] || BA_CAP.clues)[1]],
+    pot: s.potAfter,
+    vars: '--ms-mono:\'IBM Plex Mono\',monospace;--ms-accent:#c8a24a;--ms-ink:#efe6d2',
+    label: 'The churchyard, staged' });
+}
+
+function _baSettle(st, v, s) {
+  st.phase(s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-ba-plot').forEach(g => {
+    const i = Number(g.getAttribute('data-p'));
+    g.setAttribute('class', 'ms-ba-plot ' + (s.plot[i] || ''));
+  });
+  st.cap(s.time + ' left', (BA_CAP[s.capPhase] || BA_CAP.clues)[1]);
+  st.pot(s.potAfter, false);
+  st.clearStamp();
+}
+
+/** Where a plot sits, in stage percentages, for a burst or a flash. */
+function _baAt(s, i) {
+  const q = s.L[i] || { x: 540, y: 236 };
+  return [q.x / 10.8, q.y / 3.6];
+}
+function _baFind(s, prev) {
+  for (let i = 0; i < s.plot.length; i++) if ((s.plot[i] || '') !== (prev.plot[i] || '')) return i;
+  return -1;
+}
+
+function _baPlay(st, v, prev, s) {
+  _baSettle(st, v, prev);
+  const e = s.ev;
+  if (!e) { _baSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  const i = _baFind(s, prev);
+  const at = i >= 0 ? _baAt(s, i) : [50, 60];
+  if (e.k === 'clue') {
+    st.phase('hold');
+    land(() => { _baSettle(st, v, s); st.burst(14, at[0], at[1], 110, 'rgba(120,96,64,.9)'); }, 1100);
+  } else if (e.k === 'wrongdig') {
+    st.phase('hold');
+    land(() => {
+      _baSettle(st, v, s); st.phase('bad');
+      st.burst(14, at[0], at[1], 110, 'rgba(120,96,64,.9)');
+      st.stamp('NOTHING IN IT', 'bad');
+    }, 1300);
+  } else if (e.k === 'lid' || e.k === 'up') {
+    st.phase('hold');
+    land(() => {
+      _baSettle(st, v, s);
+      st.burst(16, at[0], at[1], 130, 'rgba(120,96,64,.9)');
+      if (e.k === 'up') st.stamp('UP · ' + String(e.who[0] || '').toUpperCase(), 'good');
+    }, e.k === 'up' ? 1600 : 1200);
+  } else if (e.k === 'deep' || e.k === 'slip') {
+    st.phase('hold');
+    land(() => {
+      _baSettle(st, v, s); st.phase('bad');
+      st.stamp(e.k === 'slip' ? 'THE ROPE SLIPPED' : 'DEEPER THAN THE REST', 'bad');
+    }, 1500);
+  } else if (e.k === 'seal') {
+    st.phase('hold');
+    land(() => {
+      _baSettle(st, v, s);
+      if (s.won) {
+        st.phase('win'); st.flash(at[0] + '%', at[1] + '%');
+        st.burst(20, at[0], at[1], 150, 'rgba(242,204,91,.95)');
+        st.stamp('A SHIELD UNDER THE LID', 'gold');
+      } else { st.phase('rest'); st.stamp('MORE TIME, PLEASE', 'bad'); }
+    }, 1500);
+  } else if (e.k === 'scene') {
+    _baSettle(st, v, s); st.phase('watch');
+  } else {
+    _baSettle(st, v, s);
+  }
+  if (s.done) land(() => st.pot(s.potAfter, true), 1800);
+}
+
 export const BURIED = {
   id: 'buried-alive', prefix: 'ba', ownShield: true,
   shieldBeat: /\bShield\b|not yet/,
@@ -84,6 +228,8 @@ export const BURIED = {
     else if (ph.id === 'lift') ic = c.behaviour === 'suspicious' && !/rope|slip|coffin went/i.test(c.text) ? 'coffin' : 'rope';
     return '<span class="ba-ico"><svg viewBox="0 0 36 36" aria-hidden="true">' + ICONS[ic] + '</svg></span>';
   },
+
+  stage: (v, states, n) => _baStage(v, states, n),
 
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
@@ -150,6 +296,8 @@ export const BURIED = {
 
   sideStates(v, total) {
     const pr = _prog(v);
+    const evs = stageEvents(v, _baKind);
+    const L = _baLayout(v);
     const plots = v.tally.plots || [];
     const clock = v.tally.clock || 45;
     const used = Math.max(0, ...Object.values(v.tally.minutes || {}), 0);
@@ -205,14 +353,25 @@ export const BURIED = {
           + (won ? ' · seen by ' + (sh.witnesses ? sh.witnesses.length : 0) : ''))
         : '';
       const earned = done ? v.earned : Math.round(v.earned * (up.length / Math.max(1, order.length)) * c3);
+      const ev = evs[n - 1] || null;
       out.push({ plot, rows, out: up, left, wrong, time, won, shieldVal, shieldCost,
-        upCount: up.length, coffins, earned, potAfter: v.potBefore + earned, shown: n > 0 });
+        upCount: up.length, coffins, earned, potAfter: v.potBefore + earned, shown: n > 0,
+        // the stage's own reading of the same step
+        L, ev, capPhase: ev ? ev.phase : 'clues', done,
+        watch: ev && ev.k === 'scene' ? ev.who : [],
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally } });
     }
     return out;
   },
 
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
+    const st = stageFor(s.v.epNum);
+    if (st) {
+      st.clear();
+      if (mode === 'next' && n > 0 && !reducedMotion()) _baPlay(st, s.v, states[n - 1], s);
+      else _baSettle(st, s.v, s);
+    }
     const $ = id => document.getElementById(id);
     s.plot.forEach((cls, i) => { const g = $('ba-plot-' + i); if (g) g.setAttribute('class', 'ba-plot ' + cls); });
     s.rows.forEach((r, i) => { const el = $('ba-r-' + i); if (el) el.textContent = r; });
@@ -375,8 +534,28 @@ export const BURIED = {
 .ba-btn[disabled]{opacity:.4;cursor:default}
 .ba-btn.ghost{background:transparent;color:var(--ba-stone);border:1px solid #4b554f;box-shadow:none}
 .ba-counter{font:13px/1 'Share Tech Mono',monospace;color:#7f8982;letter-spacing:.1em}
+
+/* ── THE STAGE: the churchyard ───────────────────────────────────────── */
+.ms-ba-plot .earth{fill:#2b241c;stroke:#3d342a;stroke-width:2;transition:opacity .6s}
+.ms-ba-plot .stone{fill:#241f1b;stroke:#4a4038;stroke-width:2}
+.ms-ba-plot .hole{opacity:0;transition:opacity .7s}
+.ms-ba-plot.dug .hole,.ms-ba-plot.found .hole,.ms-ba-plot.up .hole{opacity:1}
+.ms-ba-plot.dug .earth,.ms-ba-plot.found .earth,.ms-ba-plot.up .earth{opacity:.25}
+.ms-ba-plot .scroll,.ms-ba-plot .body{opacity:0;transform:translateY(14px);transition:opacity .7s,transform .9s cubic-bezier(.2,1.4,.4,1)}
+.ms-ba-plot.dug .scroll{opacity:1;transform:none}
+.ms-ba-plot.found .body{opacity:1;transform:none}
+.ms-ba-plot.up .body{opacity:1;transform:translateY(-42px)}
+.ms-ba-plot.up .ring{stroke:#8fd27a}
+.ms-ba-plot .cross{opacity:0;transition:opacity .5s}
+.ms-ba-plot.wrong .cross{opacity:1}
+.ms-ba-plot .lamp{opacity:0;transition:opacity .6s}
+.ms-ba-plot.lit .lamp{opacity:1;animation:ms-ba-lamp 1.6s ease-in-out infinite}
+@keyframes ms-ba-lamp{50%{opacity:.4}}
+.ms-ba-lamp2 circle{animation:ms-ba-lamp 2.4s ease-in-out infinite}
+.ms[data-phase=watch] .ms-ba-plot{filter:brightness(.45)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(50,10,10,.85)}
 @media(prefers-reduced-motion:reduce){.ba-root *,.ba-root *::before,.ba-root *::after{animation:none !important;transition:none !important}.ba-card{opacity:1;transform:none;clip-path:none}.ba-rain{display:none}}
-`,
+` + STAGE_CSS,
 };
 
 const ICONS = {

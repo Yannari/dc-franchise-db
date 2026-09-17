@@ -12,6 +12,7 @@
 // beast catches on the card that shows it catching.
 import { players } from '../core.js';
 import { playerAvatarUrl } from '../players.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -50,6 +51,170 @@ const ICONS = {
 };
 const isFire = c => /went up with|caught at last|still standing\. /.test(c.text);
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the field, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Rope comes out of the debris, the boats cross for the torch, the fuses grow
+// along the grass, and a beast catches. Each on the card that says so.
+function _wbKind(c, ph) {
+  if (isFire(c)) return /went up with/.test(c.text) ? 'fire1' : /caught at last/.test(c.text) ? 'fire2' : 'unlit';
+  if (c.relic) return 'hare';
+  if (c.isSocial) return 'scene';
+  if (ph.id === 'debris') return c.tone === 'bad' ? 'rotten' : 'rope';
+  if (ph.id === 'river') return c.tone === 'bad' ? 'circles' : 'row';
+  return c.tone === 'bad' ? 'loose' : 'knot';
+}
+const WB_CAP = { debris: ['Part one', 'The Debris'], river: ['Part two', 'The River'],
+  fuse: ['Part three', 'The Fuse'] };
+const WB_TEAM = ['#e2b95a', '#c2362b'];
+
+/** One beast, big enough to burn: a wicker body, horns, and three flames. */
+function _wbBeast(ti, s, e) {
+  const lit = s.lit[ti] ? ' lit' : '';
+  const first = s.lit[ti] && s.first && s.first.indexOf(ti === 0 ? 'Stag' : 'Boar') === 0 ? ' first' : '';
+  const at = ti === 0 ? 'translate(830,150) scale(1.5)' : 'translate(972,176) scale(1.3)';
+  const body = ti === 0
+    // a stag: deep chest, long legs, head up, antlers
+    ? '<path class="body" d="M-30 6 C-34 -10 -20 -18 -6 -18 L14 -18 C28 -18 34 -8 32 4 C30 16 18 22 4 22 L-14 22 C-24 22 -28 16 -30 6 Z"/>'
+      + '<path class="body" d="M26 -14 C34 -26 40 -34 42 -46 L50 -44 C48 -30 42 -20 36 -10 Z"/>'
+      + '<path class="horn" d="M44 -46 L38 -66 M44 -46 L54 -64 M40 -58 L30 -62 M50 -56 L60 -60 M38 -66 L32 -74 M54 -64 L60 -72"/>'
+      + '<path class="leg" d="M-18 22 L-20 60 M-4 22 L-6 60 M14 22 L16 60 M26 20 L28 60"/>'
+    // a boar: heavy shoulders, low head, tusks
+    : '<path class="body" d="M-34 10 C-36 -6 -22 -16 -6 -16 L10 -16 C26 -16 34 -6 32 8 C30 20 16 24 2 24 L-16 24 C-28 24 -32 20 -34 10 Z"/>'
+      + '<path class="body" d="M30 -6 C42 -8 52 0 52 8 C52 16 42 20 32 18 Z"/>'
+      + '<path class="horn" d="M50 12 C56 10 58 4 56 -2 M46 16 C52 16 55 12 55 8"/>'
+      + '<path class="leg" d="M-22 24 L-24 56 M-6 24 L-8 56 M10 24 L12 56 M24 22 L26 56"/>';
+  const fire = '<g class="fire" transform="translate(0,26)"><path class="f" d="M-22 34c-6-26 6-44 10-64 8 22 16 38 8 64z" fill="#ff8a2a"/>'
+    + '<path class="f" d="M-2 34c-6-32 8-54 12-78 10 26 16 48 6 78z" fill="#ffd66b"/>'
+    + '<path class="f" d="M16 34c-4-22 6-34 10-50 6 18 10 32 4 50z" fill="#ff8a2a"/></g>';
+  // The fire burns BEHIND the willow, so the beast is still a beast while it goes.
+  return '<g class="ms-wb-beast' + lit + first + '" data-t="' + ti + '" transform="' + at + '">' + fire + body + '</g>';
+}
+
+function _wbScene(v, s) {
+  const e = v.epNum;
+  const coils = [0, 1].map(ti => Array.from({ length: 6 }, (_, i) =>
+    '<ellipse class="ms-wb-coil' + (i < s.rope[ti] ? '' : ' off') + '" data-c="' + ti + '-' + i + '" cx="'
+    + (86 + i * 40) + '" cy="' + (250 + ti * 44) + '" rx="15" ry="9" fill="none" stroke="' + WB_TEAM[ti]
+    + '" stroke-width="4"/>').join('')).join('');
+  const boats = [0, 1].map(ti => {
+    const x = 696 - (s.boat[ti] - 100) * 1.8;
+    return '<g class="ms-wb-boat' + (s.boat[ti] === 150 ? ' doused' : '') + '" data-b="' + ti
+      + '" transform="translate(' + x.toFixed(0) + ',' + (250 + ti * 44) + ')">'
+      + '<path d="M-26 0 h52 l-8 14 h-36 z" fill="#1d1a13" stroke="' + WB_TEAM[ti] + '" stroke-width="2"/>'
+      + '<g class="torch"><rect x="-2" y="-26" width="4" height="26" fill="#6b4a22"/>'
+      + '<path d="M0 -40c7 9 9 14 9 19a9 9 0 0 1-18 0c0-5 2-10 9-19z" fill="#ff8a2a"/></g></g>';
+  }).join('');
+  const fuses = [0, 1].map(ti =>
+    '<path class="ms-wb-fuse" data-f="' + ti + '" d="M' + (360 + ti * 10) + ' ' + (280 + ti * 34)
+    + ' C 520 ' + (268 + ti * 30) + ', 700 ' + (250 + ti * 20) + ', ' + (ti ? 958 : 812) + ' ' + (ti ? 200 : 208)
+    + '" fill="none" stroke="' + WB_TEAM[ti] + '" stroke-width="3" pathLength="100"'
+    + ' style="stroke-dasharray:100;stroke-dashoffset:' + (100 - s.fuse[ti]) + '"/>').join('');
+  return '<rect width="1080" height="360" fill="url(#ms-wb-sky-' + e + ')"/>'
+    + '<path d="M0 214 C180 196 320 226 520 210 C700 196 860 220 1080 202 V360 H0Z" fill="#232a18"/>'
+    + '<path d="M0 232 C200 220 340 246 540 232 C740 218 880 240 1080 226 V360 H0Z" fill="#2a3a1c"/>'
+    + '<path d="M548 210 C566 260 566 310 556 360 H706 C694 310 694 258 712 210 Z" fill="#223e5c" opacity=".92"/>'
+    + '<g class="ms-wb-ripple"><path d="M556 258 q24 -8 48 0 t48 0 t48 0" fill="none" stroke="#3f6c9b" stroke-width="2"/>'
+    + '<path d="M552 310 q26 -8 52 0 t52 0 t52 0" fill="none" stroke="#3f6c9b" stroke-width="2"/></g>'
+    + '<path d="M40 300 L120 210 L196 268 L268 196 L346 300 Z" fill="#3a3122" stroke="#6b5b3a" stroke-width="2"/>'
+    + coils
+    + '<g class="ms-wb-hare' + (s.hare ? ' taken' : '') + '" transform="translate(196,248)">'
+    + '<path d="M-14 12c0-12 8-18 16-18 8 0 12 6 12 12 0 4-2 6-6 6z" fill="#8f6e2c" stroke="#e2b95a" stroke-width="1.6"/>'
+    + '<path d="M2 -6c-4-12-2-24 2-26 4 4 4 16 2 26 M10 -4c2-12 8-22 12-22 2 6-2 16-8 24" fill="#8f6e2c" stroke="#e2b95a" stroke-width="1.4"/>'
+    + '<circle class="glow" cx="-4" cy="6" r="7" fill="#f3cf5c"/></g>'
+    + fuses + boats
+    + '<g class="ms-wb-far"><rect x="742" y="286" width="6" height="34" fill="#6b4a22"/>'
+    + '<path d="M745 268c8 10 10 16 10 22a10 10 0 0 1-20 0c0-6 2-12 10-22z" fill="#ff8a2a"/></g>'
+    + _wbBeast(0, s, e) + _wbBeast(1, s, e);
+}
+
+function _wbStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<linearGradient id="ms-wb-sky-' + e + '" x1="0" x2="0" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="#2a1f12"/><stop offset=".6" stop-color="#1d1a13"/><stop offset="1" stop-color="#14110c"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _wbScene(v, s),
+    cap: [s.time + ' left', (WB_CAP[s.capPhase] || WB_CAP.debris)[1]],
+    pot: v.potBefore + (s.done ? v.earned : 0),
+    vars: '--ms-mono:\'Cutive Mono\',monospace;--ms-accent:#e2b95a;--ms-ink:#f3ead2',
+    label: 'The field, staged' });
+}
+
+function _wbSettle(st, v, s) {
+  st.phase(s.watch.length ? 'watch' : 'rest');
+  st.qa('.ms-wb-coil').forEach(c => {
+    const [ti, i] = c.getAttribute('data-c').split('-').map(Number);
+    c.setAttribute('class', 'ms-wb-coil' + (i < s.rope[ti] ? '' : ' off'));
+  });
+  st.qa('.ms-wb-boat').forEach(b => {
+    const ti = Number(b.getAttribute('data-b'));
+    b.setAttribute('class', 'ms-wb-boat' + (s.boat[ti] === 150 ? ' doused' : ''));
+    b.setAttribute('transform', 'translate(' + (696 - (s.boat[ti] - 100) * 1.8).toFixed(0) + ',' + (250 + ti * 44) + ')');
+  });
+  st.qa('.ms-wb-fuse').forEach(f => { f.style.strokeDashoffset = 100 - s.fuse[Number(f.getAttribute('data-f'))]; });
+  st.qa('.ms-wb-beast').forEach(g => {
+    const ti = Number(g.getAttribute('data-t'));
+    g.setAttribute('class', 'ms-wb-beast' + (s.lit[ti] ? ' lit' : '')
+      + (s.lit[ti] && s.first && s.first.indexOf(ti === 0 ? 'Stag' : 'Boar') === 0 ? ' first' : ''));
+  });
+  const hare = st.q('.ms-wb-hare'); if (hare) hare.setAttribute('class', 'ms-wb-hare' + (s.hare ? ' taken' : ''));
+  st.cap(s.time + ' left', (WB_CAP[s.capPhase] || WB_CAP.debris)[1]);
+  st.pot(v.potBefore + (s.done ? v.earned : 0), false);
+  st.clearStamp();
+}
+
+function _wbPlay(st, v, prev, s) {
+  _wbSettle(st, v, prev);
+  const e = s.ev;
+  if (!e) { _wbSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'rope' || e.k === 'row' || e.k === 'knot') {
+    st.phase('hold');
+    land(() => {
+      _wbSettle(st, v, s);
+      if (e.k === 'rope') st.burst(12, 18, 70, 90, 'rgba(226,185,90,.9)');
+      if (e.k === 'row') st.burst(10, 52, 74, 80, 'rgba(63,108,155,.9)');
+    }, 1000);
+  } else if (e.k === 'rotten' || e.k === 'circles' || e.k === 'loose') {
+    st.phase('hold');
+    land(() => {
+      _wbSettle(st, v, s);
+      st.phase('bad');
+      st.stamp(e.k === 'rotten' ? 'ROTTEN ROPE' : e.k === 'circles' ? 'ROUND IN CIRCLES' : 'THE KNOT HELD THE FLAME', 'bad');
+    }, 1200);
+  } else if (e.k === 'scene') {
+    _wbSettle(st, v, s); st.phase('watch');
+  } else if (e.k === 'hare') {
+    st.phase('hold');
+    land(() => {
+      _wbSettle(st, v, s);
+      if (e.found) {
+        st.phase('win'); st.flash('18%', '69%'); st.burst(18, 18, 69, 150, 'rgba(243,207,92,.95)');
+        st.stamp('A SHIELD IN THE HARE', 'gold');
+      } else { st.phase('rest'); st.stamp('ONLY STRAW', 'bad'); }
+    }, 1400);
+  } else if (e.k === 'fire1' || e.k === 'fire2') {
+    st.phase('hold');
+    land(() => {
+      _wbSettle(st, v, s);
+      st.phase('win');
+      const ti = /Stag/.test(e.text || '') ? 0 : 1;
+      st.flash(ti ? '89%' : '75%', '45%', 'rgba(255,138,42,.85)');
+      st.burst(24, ti ? 89 : 75, 45, 200, 'rgba(255,138,42,.95)');
+      st.fall(16, '#ff8a2a');
+      st.stamp(e.k === 'fire1' ? 'FIRST TO BURN' : 'SECOND · HALF THE MONEY', 'gold');
+      land(() => st.pot(v.potBefore + v.earned, true), 1300);
+    }, 1800);
+  } else if (e.k === 'unlit') {
+    st.phase('hold');
+    land(() => { _wbSettle(st, v, s); st.phase('bad'); st.stamp('STILL STANDING', 'bad'); }, 1600);
+  } else {
+    _wbSettle(st, v, s);
+  }
+}
+
 export const WICKER = {
   id: 'wicker-beasts', prefix: 'wb', ownShield: true,
   shieldBeat: /wicker hare|shorter for it/,
@@ -79,6 +244,8 @@ export const WICKER = {
     else if (ph.id === 'fuse') ic = 'knot';
     return '<span class="wb-ico"><svg viewBox="0 0 36 36" aria-hidden="true">' + ICONS[ic] + '</svg></span>';
   },
+
+  stage: (v, states, n) => _wbStage(v, states, n),
 
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
@@ -139,6 +306,8 @@ export const WICKER = {
 
   sideStates(v, total) {
     const pr = _prog(v);
+    const evs = stageEvents(v, _wbKind).map(e => ({ ...e,
+      found: /unpick|came back with|in the hare/i.test(e.text || '') && !/straw|nothing|empty/i.test(e.text || '') }));
     const names = v.teams.map(t => t.name);
     const clock = v.tally.clock || 30;
     const order = v.tally.order || [];
@@ -177,13 +346,23 @@ export const WICKER = {
         hareCost: hare ? 'cost ' + (sh.searcher ? 'a length of rope' : 'nothing') + (sh.holder ? ' · seen by ' + (sh.witnesses || []).length : '') : '',
         done,
         time: String(Math.max(0, Math.round(clock - clock * Math.min(1, n / Math.max(1, total)) * 0.9))).padStart(2, '0') + ':00',
+        // the stage's own reading of the same step
+        ev: evs[n - 1] || null, capPhase: evs[n - 1] ? evs[n - 1].phase : 'debris',
+        watch: evs[n - 1] && evs[n - 1].k === 'scene' ? evs[n - 1].who : [],
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally },
       });
     }
     return out;
   },
 
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
+    const st = stageFor(s.v.epNum);
+    if (st) {
+      st.clear();
+      if (mode === 'next' && n > 0 && !reducedMotion()) _wbPlay(st, s.v, states[n - 1], s);
+      else _wbSettle(st, s.v, s);
+    }
     const panel = document.querySelector('.wb-panel'); if (!panel) return;
     // The sidebar is small and entirely derived: rebuild its parts in place.
     const coils = panel.querySelectorAll('.wb-coil');
@@ -328,8 +507,32 @@ export const WICKER = {
 .wb-btn[disabled]{opacity:.4;cursor:default}
 .wb-btn.ghost{background:transparent;color:var(--wb-cream);border:1px solid var(--wb-straw-lo);box-shadow:none}
 .wb-counter{font:13px/1 'Cutive Mono',monospace;color:#8a806c;letter-spacing:.08em}
+
+/* ── THE STAGE: the field ────────────────────────────────────────────── */
+.ms-wb-coil{transition:opacity .6s,stroke .6s}
+.ms-wb-coil.off{opacity:.18}
+.ms-wb-boat{transition:transform 1.2s cubic-bezier(.3,.9,.4,1)}
+.ms-wb-boat .torch{transition:opacity .5s}
+.ms-wb-boat.doused .torch{opacity:.25}
+.ms-wb-boat .torch path{transform-box:fill-box;transform-origin:50% 100%;animation:ms-wb-flick .45s ease-in-out infinite alternate}
+@keyframes ms-wb-flick{to{transform:scale(1.1,.92)}}
+.ms-wb-ripple path{animation:ms-wb-wave 5s ease-in-out infinite alternate}
+@keyframes ms-wb-wave{to{transform:translateX(-26px)}}
+.ms-wb-fuse{transition:stroke-dashoffset 1.1s ease-out;filter:drop-shadow(0 0 3px rgba(255,138,42,.5))}
+.ms-wb-beast .body{fill:#3a3122;stroke:#e2b95a;stroke-width:2;transition:fill .8s}
+.ms-wb-beast .horn,.ms-wb-beast .leg{stroke:#e2b95a;stroke-width:2.4;fill:none;stroke-linecap:round}
+.ms-wb-beast .fire{opacity:0;transition:opacity .9s}
+.ms-wb-beast.lit .fire{opacity:1}
+.ms-wb-beast.lit .body{fill:#5a3a14}
+.ms-wb-beast.lit .f{transform-box:fill-box;transform-origin:50% 100%;animation:ms-wb-flick .4s ease-in-out infinite alternate}
+.ms-wb-beast.first .body{filter:drop-shadow(0 0 16px rgba(255,138,42,.7))}
+.ms-wb-hare .glow{opacity:0;transition:opacity .6s}
+.ms-wb-hare.taken .glow{opacity:.85;animation:ms-wb-glow 1.4s ease-in-out infinite}
+@keyframes ms-wb-glow{50%{opacity:.3}}
+.ms[data-phase=watch] .ms-wb-beast,.ms[data-phase=watch] .ms-wb-boat{filter:brightness(.4)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(60,10,0,.8)}
 @media(prefers-reduced-motion:reduce){.wb-root *,.wb-root *::before,.wb-root *::after{animation:none !important;transition:none !important}.wb-card{opacity:1;transform:none}}
-`,
+` + STAGE_CSS,
 };
 
 function _beast(ti, s, e) {

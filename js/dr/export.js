@@ -122,6 +122,16 @@ export function dragEpisodes(rows) {
           saved: [...(dr.lipsync.saved || [])],
           call: dr.lipsync.call || null,
           song: dr.lipsync.song || null,
+          /* ── WHO SENT HER HOME, ON AN ALL STARS NIGHT ──
+             On the legacy rule the queen who leaves does not lose a song:
+             the winner of the TOP two's song names her. Exported because a
+             later All Stars reads these documents to find out what really
+             happened between two queens who shared a season -- without it,
+             "she ended my season" is a fact the franchise held and could not
+             recover, and the only honest thing left to say about the pair
+             was that they were both there. */
+          ...(dr.lipsync.eliminated ? { eliminated: dr.lipsync.eliminated } : {}),
+          ...(dr.lipsync.chosenBy ? { chosenBy: dr.lipsync.chosenBy } : {}),
         }
         : null,
       /* THE SEASON'S SAVE THIS WEEK, when there is one and it was used. */

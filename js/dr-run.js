@@ -39,6 +39,8 @@
 import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
 import { activeSeasons, seasonKeyParts } from './franchise-meta.js';
+import { seasonsFromDocs } from './dr/history.js';
+import { seasonFilePath } from './dr/export.js';
 import { getPerceivedBond, addBond } from './bonds.js';
 import { playDragSeason } from './dr/season.js';
 // For rebuilding a resumable room out of a season played before one was
@@ -547,7 +549,46 @@ function _twistBooked(id) {
  * gets a past written for her instead (js/dr/past.js), which is how this works
  * at all with thirteen alumni in the whole franchise.
  */
+/* ── THE STORED SEASONS, FETCHED ONCE ────────────────────────────────
+   The published document is the only place that knows who beat whom in the
+   song that sent her home, and the only place that can count a drag season's
+   maxi wins — see js/dr/history.js. Fetching is async and `_config()` is not,
+   so the documents are loaded up front and cached, and a season started
+   before the fetch lands simply falls back to the ledger, which is less
+   detailed rather than less true.
+   Kicked off on import, so by the time anybody has finished casting it is
+   almost always there. */
+let _drDocs = null;
+let _drDocsLoading = null;
+
+export async function loadDragHistory() {
+  if (_drDocs) return _drDocs;
+  if (_drDocsLoading) return _drDocsLoading;
+  _drDocsLoading = (async () => {
+    const nums = [];
+    try {
+      for (const [key, rec] of Object.entries(activeSeasons() || {})) {
+        const { format, num } = seasonKeyParts(key, rec);
+        if (format === DRAG_FORMAT && num) nums.push(num);
+      }
+    } catch { /* no ledger yet */ }
+    const docs = [];
+    for (const n of nums) {
+      try {
+        const res = await fetch(seasonFilePath(n));
+        if (res.ok) docs.push(await res.json());
+      } catch { /* not published; the ledger still has her placement */ }
+    }
+    _drDocs = seasonsFromDocs(docs);
+    return _drDocs;
+  })();
+  return _drDocsLoading;
+}
+
 function _pastDragSeasons() {
+  /* THE DOCUMENTS WIN WHEN THEY ARE THERE. They carry her real maxi wins and
+     the real eliminations; the ledger below carries neither. */
+  if (_drDocs?.length) return _drDocs;
   try {
     const out = [];
     for (const [key, rec] of Object.entries(activeSeasons() || {})) {
@@ -1184,4 +1225,8 @@ export function dragEpisodesLeft() {
   return Array.isArray(gs?._drQueue) ? gs._drQueue.length : 0;
 }
 
-if (typeof window !== 'undefined') window._drRunnable = true;
+if (typeof window !== 'undefined') {
+  window._drRunnable = true;
+  // Fire and forget: All Stars wants these, and nothing else waits on them.
+  if (typeof fetch === 'function') { try { loadDragHistory(); } catch { /* offline */ } }
+}

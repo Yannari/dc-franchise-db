@@ -155,14 +155,25 @@ export const HISTORY_BEATS = {
       '{a} says {b}’s name like a fact rather than a greeting. {b} returns it exactly.',
       'They hug. It is the kind of hug two people do because there are cameras.',
     ],
+    /* SEVEN, because a room of real returnees produces a LOT of these -- on
+       a cast pulled out of one stored season there can be five or six pairs
+       with a lip sync between them, and a three-line pool ran the same
+       sentence three times in one premiere. */
     'sent-home': [
       '{b} walks in, sees {a}, and the whole room watches her decide how to play it. {a} is the queen who beat her in the song that ended season {s}.',
       '"Well," {b} says to {a}, "you owe me a season." {a} laughs. {b} half meant it.',
       '{a} gets to {b} first. "I have thought about that lip sync every week since." "So have I," {b} says. "Differently."',
+      '{b} hugs {a} for slightly too long and says, into her shoulder, "we are not doing that again."',
+      '"There she is," {b} says, and {a} has the grace to look caught. Season {s} ended for one of them on a song they both remember.',
+      '{a} starts to say something about season {s} and {b} holds up a hand. "Later. Let me get my face on first."',
+      'The room clocks it before either of them does: {a} and {b}, and a lip sync between them that only one of them walked away from.',
     ],
     mates: [
       '{a} and {b} did season {s} together and pick up like colleagues who liked each other fine.',
       '"Season {s}," {b} says to {a}, shaking her head. "We were babies."',
+      '{a} and {b} do the handshake they made up in season {s} and both of them are slightly embarrassed by it.',
+      '"You look better than you did in season {s}," {a} tells {b}, which is a compliment with a whole season inside it.',
+      '{b} and {a} spend the first ten minutes comparing what the two of them have been booked for since.',
     ],
   },
   // And in the werk room, once the season is under way.

@@ -58,7 +58,8 @@ const REHEARSAL_EVENT_KINDS = MAXI_EVENTS
   .map(e => `maxi:${e.id}`);
 import { rpBuildShowcase, rpBuildInterview, rpBuildCut, rpBuildCrownLipSync } from './finale-screens.js';
 import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
-import { wireStage } from './finale-stage.js';
+import { wireStage, FINALE_STAGE_CSS } from './finale-stage.js';
+import { lipstickStage, LEGACY_STAGE_CSS } from './legacy-stage.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -714,6 +715,25 @@ function buildSection(sec, row) {
     if (roomSt) wireStage(sec.suffix, roomSt, ep, _state);
     return `<style>${EXTRA_CSS}${WERK_CSS}${ROOM_CSS}${roomSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
       `${roomSt ? roomSt.html : ''}<div class="dr-room rmx-cards"><div class="dr-room-art">${art}</div>${cards}</div>`, ep, {
+        phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
+      })}${_controls(sec.suffix, scenes.length, ep.num)}`;
+  }
+
+  /* ── THE LIPSTICK, WHICH HAS A STAGE OF ITS OWN ──
+     js/vp-dr/legacy-stage.js: the counter, one tube per queen in the bottom,
+     and the winner of the song turning one around. Ahead of the generic room
+     stage because this section is a ceremony rather than a set of scenes. */
+  if (sec.id === 'dr-legacy') {
+    const lip = row?.dr?.lipsync || {};
+    const st = lipstickStage(row, scenes.map(sc => ({
+      kind: sc.kind, target: sc?.data?.target || lip.eliminated || null, text: sc.text,
+    })), {
+      ep, bottom: row?.dr?.callAtCall?.bottom?.length ? row.dr.callAtCall.bottom : (row?.dr?.call?.bottom || []),
+      holder: lip.chosenBy || null, uid: `lg${ep.num}`,
+    });
+    wireStage(sec.suffix, st, ep, _state);
+    return `<style>${EXTRA_CSS}${FINALE_STAGE_CSS}${LEGACY_STAGE_CSS}</style>${_shell(
+      `${st.html}<div class="dr-hallwrap rmx-cards">${steps}</div>`, ep, {
         phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
       })}${_controls(sec.suffix, scenes.length, ep.num)}`;
   }

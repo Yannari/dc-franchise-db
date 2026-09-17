@@ -33,6 +33,9 @@
 // queens are physically doing. The narration says what happened, not what
 // the rules were, so a truncated desc leaves a result nobody can follow.
 // That is a project rule with its own test on the Big Brother side.
+import { CHAL_STAGE_CSS, miniStage, briefStage, draftStage, perfStage } from './chal-stage.js';
+import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
+import { wireStage } from './finale-stage.js';
 import { _shell, _portrait, _icon, _note, _judgePortrait } from './style.js';
 import { _controls, _seedRail, _state, _reapplyVisibility } from './reveal.js';
 import { JUDGES } from '../dr/data/judges.js';
@@ -1576,8 +1579,23 @@ export function rpBuildMini(row) {
      building rows without it, which is the whole of why the mini read as
      older than everything around it. `.dr-minirow` keeps the aim arrow's
      layout; the card is the surface it sits on. */
-  return `<style>${CHAL_CSS}${WERK_CSS}</style>${_shell(
-    `<div class="dr-brief-room">${briefSet('mini')}${lead}${steps}${winStep}</div>`, ep, {
+  /* ── THE STAGE ── js/vp-dr/chal-stage.js: the reader and her target, the
+     room's vote as a live tally, and the trophy on the last click. */
+  const miniRoom = row?.houseAtStart?.length ? row.houseAtStart : (row?.dr?.roomAtStart || []);
+  const miniList = scenes.map(sc => {
+    const d = sc.data || {};
+    if (sc.kind === 'chal:mini-vote' || sc.kind === 'chal:mini-guess') {
+      return { t: 'vote', text: sc.text, tally: d.tally, named: d.named, owner: d.owner, count: d.count, of: d.of };
+    }
+    const who = (d.players || [])[0];
+    const at = who && READS.has(sc.kind) ? aimOf(sc) : null;
+    return at ? { t: 'read', who, at, tier: d.tier } : { t: 'say', who };
+  });
+  if (m.winner) miniList.push({ t: 'win', who: m.winner });
+  const miniSt = miniStage(row, miniList, { ep, room: miniRoom, name: m.name, prize: BUYS[m.buys] || '', uid: `mn${ep.num}` });
+  wireStage('mini', miniSt, ep, _state);
+  return `<style>${CHAL_CSS}${WERK_CSS}${CHAL_STAGE_CSS}</style>${_shell(
+    `${miniSt.html}<div class="dr-brief-room chx-cards">${briefSet('mini')}${lead}${steps}${winStep}</div>`, ep, {
       phase: 'werk', title: 'The Mini Challenge', subtitle: esc(m.name),
     sidebar: `<h4 class="dr-disp">The mini</h4><p style="font-size:13px">${esc(m.name)}<br>
       <span style="color:#C9A6BC">Worth ${prize}.</span></p>`,
@@ -1662,31 +1680,17 @@ export function rpBuildMaxiAnnounce(row) {
   const room = (row?.houseAtStart?.length ? row.houseAtStart
     : [...(row?.dr?.living || []), ...(row?.exits || []).map(x => x.name)])
     .filter(Boolean);
-  const board = room.length ? `<div class="dr-reax" id="dr-reax">
-      ${room.map(n => `<div class="dr-reax-q" data-queen="${esc(n)}">
-        ${_portrait(n, ep, { size: 40 })}<b>${esc(n)}</b><i></i>
-      </div>`).join('')}
-    </div>` : '';
-
-  if (typeof window !== 'undefined') {
-    const upTo = []; const seen = {};
-    for (const sc of scenes) {
-      const w = (sc.data?.players || [])[0];
-      if (w && sc.data?.tier) seen[w] = sc.data.tier;
-      upTo.push({ ...seen });
-    }
-    window._drRevealExtra = window._drRevealExtra || {};
-    window._drRevealExtra.announce = (idx) => {
-      const at = upTo[Math.max(0, Math.min(idx, upTo.length - 1))] || {};
-      for (const el of document.querySelectorAll('#dr-reax .dr-reax-q')) {
-        const t = idx >= 0 ? at[el.getAttribute('data-queen')] : null;
-        el.classList.toggle('on', !!t);
-        el.style.setProperty('--took', t ? (TIER_COLOUR[t] || '#C9A6BC') : 'transparent');
-        const tag = el.querySelector('i');
-        if (tag) tag.textContent = t || '';
-      }
-    };
-  }
+  /* ── THE STAGE ── js/vp-dr/chal-stage.js: the host walks in with the
+     title card, and the room's faces take the colour of how each queen
+     took it. It replaces the reaction board that stood here. */
+  const briefSt = scenes.length ? briefStage(row, scenes.map(sc => {
+    const host = /host-arrives|the-brief/.test(sc.kind || '');
+    const who = (sc.data?.players || [])[0];
+    return host ? { t: 'host' } : sc.data?.tier ? { t: 'react', who, tier: sc.data.tier } : { t: 'other', who };
+  }), { ep, room, name: ch.name, format: cat.format || ch.format || '', desc: cat.desc || '', uid: `br${ep.num}` }) : null;
+  if (briefSt) wireStage('announce', briefSt, ep, _state);
+  const board = briefSt ? briefSt.html : '';
+  void TIER_COLOUR;
 
   const steps = scenes.map((sc, i) => {
     const host = /host-arrives|the-brief/.test(sc.kind || '');
@@ -1704,8 +1708,8 @@ export function rpBuildMaxiAnnounce(row) {
           ${host ? '<span class="dr-sub">the host</span>' : ''}</div>
       </div></div>`;
   }).join('');
-  return `<style>${CHAL_CSS}</style>${_shell(
-    `<div class="dr-brief-room">${briefSet('brief')}${lead}${board}${steps}</div>`, ep, {
+  return `<style>${CHAL_CSS}${CHAL_STAGE_CSS}</style>${_shell(
+    `${board}<div class="dr-brief-room chx-cards">${briefSet('brief')}${lead}${steps}</div>`, ep, {
       phase: 'werk', title: 'The Maxi Challenge', subtitle: 'the brief',
     })}${_controls('announce', Math.max(1, scenes.length), ep.num)}`;
 }
@@ -2318,8 +2322,25 @@ export function rpBuildChoice(row) {
     window._drSidebar['choice'] = scenes.map((_, i) => railAt(i + 1));
   }
 
-  return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}</style>${_shell(
-    `<div class="dr-brief-room dr-draft">${briefSet('draft')}${board}${steps}</div>`, ep, {
+  /* ── THE STAGE ── js/vp-dr/chal-stage.js: her pick flipping in, and a
+     head-to-head called when somebody got there first. */
+  const draftRoom = railRoom.length ? railRoom : picks.map(([n]) => n);
+  const draftSt = scenes.length ? draftStage(row, scenes.map(sc => {
+    const who = (sc.data?.players || [])[0];
+    const p = who ? a.picks?.[who] : null;
+    return {
+      who, took: p ? _choiceLabel(p) : '',
+      lostTo: p?.lostTo && Number(p.depth) <= 2 ? p.lostTo : null,
+      pairedBy: p?.assignedBy || null,
+    };
+  }), {
+    ep, room: draftRoom, uid: `df${ep.num}`,
+    title: contested ? 'The draft' : pairedRoom ? 'The pairings' : 'The line-up',
+    sub: contested ? 'who takes what' : pairedRoom ? 'who works with who' : 'what everybody is doing',
+  }) : null;
+  if (draftSt) wireStage('choice', draftSt, ep, _state);
+  return `<style>${CHAL_CSS}${WERK_CSS}${DRAFT_CSS}${draftSt ? CHAL_STAGE_CSS : ''}</style>${_shell(
+    `${draftSt ? draftSt.html : ''}<div class="dr-brief-room dr-draft chx-cards">${briefSet('draft')}${board}${steps}</div>`, ep, {
       phase: 'werk',
       title: contested ? 'The Draft' : pairedRoom ? 'The Pairings' : 'The Line-Up',
       subtitle: contested ? 'who takes what, and who misses out'
@@ -2451,8 +2472,25 @@ export function rpBuildPrep(row, mine = null) {
   const shopPrep = `<div class="dr-shop dr-shop-work" aria-hidden="true">
       <i class="dr-shop-sign"></i><i class="dr-shop-mirrors"></i>
       <i class="dr-shop-bench"></i></div>`;
-  return `<style>${CHAL_CSS}${WERK_CSS}${PREP_SHOP_CSS}</style>${_shell(
-    `<div class="dr-prep-room">${shopPrep}${steps}</div>`, ep, {
+  /* ── THE STAGE ── js/vp-dr/room-stage.js: the room at work, the host's
+     walkthrough lighting every queen he stops at. */
+  const prepRoom = row?.houseAtStart?.length ? row.houseAtStart : (row?.dr?.roomAtStart || []);
+  const prepSt = prepRoom.length ? roomStage(row, groups.map(g => {
+    if (g.custom) return { players: [], note: 'the choreographer' };
+    if (g.walk) {
+      return { players: g.items.map(sc => (sc.data?.players || [])[0]).filter(Boolean).slice(0, 2), hostOn: true, note: 'the walkthrough' };
+    }
+    const sc = g.items[0];
+    const ev = (row?.dr?.events || []).find(e => (e.type || e.kind) === sc.kind
+      && String((e.players || []).join()) === String((sc?.data?.players || []).join()));
+    return {
+      players: sc?.data?.players || [], confess: !!sc?.data?.confessional, text: sc.text,
+      bond: Number((ev?.bond || [])[0]?.[2]) || 0, pop: ev?.pop || {}, note: _note(sc),
+    };
+  }), { ep, room: prepRoom, theme: 'werk', title: 'The work room', sub: 'building it', uid: `pp${ep.num}`, hostChip: true }) : null;
+  if (prepSt) wireStage('prep', prepSt, ep, _state);
+  return `<style>${CHAL_CSS}${WERK_CSS}${PREP_SHOP_CSS}${prepSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
+    `${prepSt ? prepSt.html : ''}<div class="dr-prep-room rmx-cards">${shopPrep}${steps}</div>`, ep, {
       phase: 'werk', title: 'The Work Room', subtitle: 'building it',
       sidebar: rail,
     })}${_controls('prep', groups.length, ep.num)}`;
@@ -3318,8 +3356,16 @@ export function rpBuildMaxi(row) {
   }
 
   const skin = skinFor(ch.id);
-  return `<style>${CHAL_CSS}</style>${_shell(
-    `<div class="dr-fam dr-chal dr-chal-${ch.id}">${ambientFor(ch.id)}${teams}${steps}${room}</div>`, ep, {
+  /* ── THE STAGE ── js/vp-dr/chal-stage.js: each queen centre stage with
+     her score filling, then the room between performances. */
+  const perfSt = perfStage(row, running.map(n => ({
+    who: n, perf: Number(perfs[n]?.perf) || 0, role: perfs[n]?.role || '', moment: !!perfs[n]?.moment,
+  })), maxiScenes.filter(sc => !usedScene.has(sc)).map(sc => ({ players: sc.data?.players || [] })), {
+    ep, title: ch.name, sub: skin.sub, uid: `px${ep.num}${sfx}`,
+  });
+  wireStage(sfx, perfSt, ep, _state);
+  return `<style>${CHAL_CSS}${CHAL_STAGE_CSS}</style>${_shell(
+    `${perfSt.html}<div class="dr-fam dr-chal dr-chal-${ch.id} chx-cards">${ambientFor(ch.id)}${teams}${steps}${room}</div>`, ep, {
       phase: 'stage', title: ch.name, subtitle: skin.sub,
       sidebar: _seedRail(sfx, '<h4 class="dr-disp">So far</h4>'),
     })}${_controls(sfx, total, ep.num)}`;

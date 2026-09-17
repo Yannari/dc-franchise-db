@@ -23,7 +23,7 @@
 // vanish off the end of the show without a word. `tests/dr-vp-registry`
 // asserts that EVERY scene reaches a screen, which is the only version of
 // this that stays true as the engine grows new scene kinds.
-import { _shell, _portrait, _icon, _judgePortrait } from './style.js';
+import { _shell, _portrait, _icon, _judgePortrait, _note } from './style.js';
 import { _controls, _state } from './reveal.js';
 import { rpBuildChart } from './chart.js';
 import { rpBuildRate } from './rate.js';
@@ -57,6 +57,8 @@ const REHEARSAL_EVENT_KINDS = MAXI_EVENTS
   .filter(e => e.from === 'rehearsal')
   .map(e => `maxi:${e.id}`);
 import { rpBuildShowcase, rpBuildInterview, rpBuildCut, rpBuildCrownLipSync } from './finale-screens.js';
+import { roomStage, ROOM_STAGE_CSS } from './room-stage.js';
+import { wireStage } from './finale-stage.js';
 
 const esc = v => String(v ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -688,8 +690,21 @@ function buildSection(sec, row) {
           _judgePortrait(m.id, { size: 34 })}<small>${esc(m.name)}</small></span>` : '';
       return sceneCard(sc, i, sec.suffix, ep, row, { accent: sec.accent, aside: bust });
     }).join('');
-    return `<style>${EXTRA_CSS}${WERK_CSS}${ROOM_CSS}</style>${_shell(
-      `<div class="dr-room"><div class="dr-room-art">${art}</div>${cards}</div>`, ep, {
+    /* ── THE STAGE ── js/vp-dr/room-stage.js, the same room stage as the
+       werk room: who is in the scene, what it did, and the cut to camera. */
+    const room = row?.houseAtStart?.length ? row.houseAtStart : (row?.dr?.roomAtStart || []);
+    const roomSt = room.length ? roomStage(row, scenes.map(sc => {
+      const ev = (row?.dr?.events || []).find(e => (e.type || e.kind) === sc.kind
+        && String((e.players || []).join()) === String((sc?.data?.players || []).join()));
+      return {
+        players: sc?.data?.players || [], confess: !!sc?.data?.confessional, text: sc.text,
+        bond: Number((ev?.bond || [])[0]?.[2]) || 0, pop: ev?.pop || {},
+        note: sc?.data?.mentor?.name ? `with ${sc.data.mentor.name}` : _note(sc),
+      };
+    }), { ep, room, theme: 'werk', title: sec.title, sub: sec.subtitle, uid: `${sec.suffix}${ep.num}` }) : null;
+    if (roomSt) wireStage(sec.suffix, roomSt, ep, _state);
+    return `<style>${EXTRA_CSS}${WERK_CSS}${ROOM_CSS}${roomSt ? ROOM_STAGE_CSS : ''}</style>${_shell(
+      `${roomSt ? roomSt.html : ''}<div class="dr-room rmx-cards"><div class="dr-room-art">${art}</div>${cards}</div>`, ep, {
         phase: sec.phase, title: sec.title, subtitle: sec.subtitle, sidebar: rail,
       })}${_controls(sec.suffix, scenes.length, ep.num)}`;
   }

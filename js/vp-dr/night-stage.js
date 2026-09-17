@@ -241,14 +241,19 @@ export function runwayStage(row, walkers, { ep, category = '', uid = 'x' } = {})
   const qs = walkers.map(w => `<div class="rwx-q" data-q="${esc(w.who)}" style="--w:${clamp(w.score * 10, 4, 100)}%">
       ${face(w.who, ep, 110)}<b>${esc(w.who)}</b>
       ${w.looks > 1 ? `<span class="rwx-looks">${w.looks} looks</span>` : ''}
-      <div class="rwx-meter"><i></i></div><span class="rwx-num">${w.score.toFixed(1)}</span></div>`).join('');
+      <div class="rwx-meter"><i></i></div><span class="rwx-num" data-v="${w.score.toFixed(1)}"></span></div>`).join('');
   const body = `<div class="rwx-marquee"><div class="rwx-bulbs t">${bulbs}</div><small>Category is</small><b>${esc(category)}</b><div class="rwx-bulbs b">${bulbs}</div></div>
     <div class="rwx-hall"><div class="rwx-floor"></div>${pit('l')}${pit('r')}${qs}<div class="rwx-conf" data-conf></div></div>
     <div class="rwx-strip">${walkers.map(w => `<span class="rwx-s" data-s="${esc(w.who)}">${face(w.who, ep, 32)}<em data-sc="${w.score.toFixed(1)}"></em></span>`).join('')}</div>`;
   const html = shell({ id: `rwx-${uid}`, title: 'The runway', sub: `${walkers.length} looks tonight`, body, theme: 'stage' });
   const apply = engine(`rwx-${uid}`, states, (el, st, fresh) => {
     el.classList.remove('flash');
-    for (const q of el.querySelectorAll('.rwx-q')) q.classList.toggle('cur', !!st && st.cur === q.dataset.q);
+    for (const q of el.querySelectorAll('.rwx-q')) {
+      const cur = !!st && st.cur === q.dataset.q;
+      q.classList.toggle('cur', cur);
+      const num = q.querySelector('.rwx-num');
+      num.textContent = cur ? num.dataset.v : '';
+    }
     for (const s of el.querySelectorAll('.rwx-s')) {
       const isDone = !!st && st.done.includes(s.dataset.s);
       s.classList.toggle('done', isDone);

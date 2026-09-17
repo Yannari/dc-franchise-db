@@ -391,7 +391,7 @@ export function shell({ id, title, sub, body, host = 'rupaul', hostLabel = 'The 
     <div class="fsx-top">
       <div class="fsx-title">${esc(title)}<small data-sub>${esc(sub)}</small></div>
       <div class="fsx-head"><span data-hd></span></div>
-      ${hostChip ? `<div class="fsx-host" data-host><span class="fsx-hface">${_judgePortrait(host, { stage: true, size: 36 })}</span><span class="fsx-hlabel">${esc(hostLabel)}</span></div>` : ''}
+      ${hostChip ? `<div class="fsx-host" data-host><span class="fsx-hface">${_judgePortrait(host, { stage: theme !== 'werk', size: 36 })}</span><span class="fsx-hlabel">${esc(hostLabel)}</span></div>` : ''}
     </div>
     <div class="fsx-body">${body}</div>
     <div class="fsx-banner"><b data-bn></b><small data-bs></small></div>

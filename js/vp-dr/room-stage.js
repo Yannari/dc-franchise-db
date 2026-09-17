@@ -121,7 +121,7 @@ const TIE = `<svg viewBox="0 0 120 18" aria-hidden="true"><path d="M4 9 Q30 1 60
  * `scenes`: [{ players, confess, bond, pop: { name: d }, note, text, band }].
  * `room`: the queens in the room tonight. `gone`: stations left empty.
  */
-export function roomStage(row, scenes, { ep, room = [], gone = [], theme = 'werk', title, sub, uid = 'x', bands = {} } = {}) {
+export function roomStage(row, scenes, { ep, room = [], gone = [], theme = 'werk', title, sub, uid = 'x', bands = {}, hostChip = false } = {}) {
   const seen = new Set();
   let heat = 0;
   const states = scenes.map(s => {
@@ -129,7 +129,7 @@ export function roomStage(row, scenes, { ep, room = [], gone = [], theme = 'werk
     who.forEach(n => seen.add(n));
     heat += Number(s.bond) || 0;
     const st = {
-      phase: 'scene', on: who, seen: [...seen], heat,
+      phase: 'scene', on: who, seen: [...seen], heat, hostOn: !!s.hostOn,
       band: bands[s.band] || '', focus: '', mood: '',
     };
     if (s.confess) {
@@ -161,7 +161,7 @@ export function roomStage(row, scenes, { ep, room = [], gone = [], theme = 'werk
   const body = `<div class="rmx-wall">${wall}</div>
     <div class="rmx-focus"><span class="rmx-note" data-note hidden></span><div data-focus></div><span class="rmx-band" data-band></span></div>
     <div class="rmx-temp"><span>apart</span><div class="bar"><i data-heat></i></div><span>together</span></div>`;
-  const html = shell({ id: `rmx-${uid}`, title, sub, body, theme, hostChip: false });
+  const html = shell({ id: `rmx-${uid}`, title, sub, body, theme, hostChip });
   let shown = null;
   const apply = engine(`rmx-${uid}`, states, (el, st) => {
     for (const s of el.querySelectorAll('.rmx-st')) {

@@ -353,3 +353,51 @@ describe('the season says its own name', () => {
     expect(plain).not.toContain('dr-as-chip');
   });
 });
+
+describe('the lipstick is not spoiled', () => {
+  /* A card on an EARLIER screen naming the queen the winner is about to pick
+     is the one thing this format cannot survive, and it shipped once: the old
+     `lipsync-legacy-choice` beat fired on the lip sync step, which now comes
+     before the ceremony, so the song's screen announced her. */
+  it('nothing before the ceremony says who she picked', () => {
+    let checked = 0;
+    for (let s = 90; s < 96; s++) {
+      for (const r of weekly(season(s, { drAllStars: true }))) {
+        const lip = r.dr.lipsync;
+        if (!lip?.legacy || !lip.eliminated) continue;
+        const list = r.dr.scenes || [];
+        const iCeremony = list.findIndex(x => x.step === 'legacy-choice');
+        expect(iCeremony).toBeGreaterThan(-1);
+        for (const sc of list.slice(0, iCeremony)) {
+          /* STRUCTURAL, not prose. The room talking about "who is going home"
+             in the abstract is correct and says nothing; what leaked was a
+             SCENE that carried the decision — the old stage beat named the
+             holder and her target in its own data, one screen early. */
+          expect(sc.data?.chosen).toBeUndefined();
+          expect(sc.data?.eliminated).toBeUndefined();
+          /* A campaign scene legitimately puts the two of them in a room --
+             she is lobbying the queen who may end up holding it, which is the
+             whole point of the night. Only a scene that carries the DECISION
+             is a leak, and that is the `data` check above. */
+        }
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(5);
+  });
+
+  it('and the ceremony still names her exactly once', () => {
+    let checked = 0;
+    for (let s = 90; s < 96; s++) {
+      for (const r of weekly(season(s, { drAllStars: true }))) {
+        const lip = r.dr.lipsync;
+        if (!lip?.legacy || !lip.eliminated) continue;
+        const reveal = (r.dr.scenes || []).filter(x => x.kind === 'legacy:reveal');
+        expect(reveal).toHaveLength(1);
+        expect(reveal[0].text).toContain(lip.eliminated);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(5);
+  });
+});

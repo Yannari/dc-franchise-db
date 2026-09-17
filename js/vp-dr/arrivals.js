@@ -157,6 +157,29 @@ export const ARRIVALS_CSS = `
   background:rgba(255,200,61,.08);color:#FFC83D}
 
 .dr-entrance .dr-intro{margin:10px 0 0;color:#f6e8f1;line-height:1.6;text-wrap:pretty}
+/* Her record, between the entrance line and the bio: a returning queen's
+   card leads with what she said, then with what she already did. */
+.dr-entrance .dr-resume{margin:8px 0 0;padding:7px 10px;border-radius:9px;
+  background:linear-gradient(90deg,rgba(255,214,107,.14),rgba(255,214,107,.03));
+  box-shadow:inset 0 0 0 1px rgba(255,214,107,.3);
+  color:#ffe9b8;font-size:12.5px;line-height:1.5}
+.dr-resume-k{display:inline-block;margin-right:8px;padding:1px 7px;border-radius:999px;
+  background:rgba(255,214,107,.22);font:400 10px/1.5 'Anton','Impact',sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;color:#ffd66b}
+/* And who was already in the room when she got there. */
+.dr-entrance .dr-hist{margin:8px 0 0;padding:7px 10px;border-radius:9px;
+  background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);
+  color:#efe4ea;font-size:12.5px;line-height:1.55}
+.dr-hist-k{display:inline-block;margin-right:8px;font:400 10px/1.5 'Anton','Impact',sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;color:#9ad7ff}
+.dr-hist-rival .dr-hist-k{color:#ff9ebb}
+.dr-hist-sent-home .dr-hist-k{color:#ffb36b}
+.dr-hist-friend .dr-hist-k{color:#9ee6bb}
+.dr-as-open{margin-top:10px;padding:10px 12px;border-radius:10px;
+  background:linear-gradient(180deg,rgba(255,214,107,.13),rgba(255,214,107,.03));
+  box-shadow:inset 0 0 0 1px rgba(255,214,107,.32)}
+.dr-as-open p{margin:0 0 7px;color:#ffe9b8;line-height:1.6}
+.dr-as-open p:last-child{margin-bottom:0}
 .dr-entrance .dr-back{margin:8px 0 0;color:#dcc4d5;font-size:14.5px;line-height:1.6;text-wrap:pretty}
 .dr-entrance .dr-reaction{margin:12px 0 0;padding:2px 0 2px 14px;font-size:13.5px;
   color:#c3a2b7;border-left:2px solid rgba(255,200,61,.45);text-wrap:pretty}
@@ -266,6 +289,14 @@ export function rpBuildArrivals(row) {
     const room = beats.find(b => b.kind === 'arrival:room');
     const intro = beats.find(b => b.kind === 'arrival:intro');
     const back = beats.find(b => b.kind === 'arrival:backstory');
+    /* ── WHAT SHE ALREADY DID, AND WHO SHE ALREADY KNOWS ─────────────
+       All Stars only, and absent otherwise. This screen picks its beats by
+       KIND, so a beat the engine emits and this list does not name reaches
+       the row and is never drawn — which is exactly what happened to both of
+       these: the resume line and the history meeting were in every season and
+       on no screen. */
+    const resume = beats.find(b => b.kind === 'arrival:resume');
+    const history = beats.find(b => b.kind === 'arrival:history');
     const style = walk?.data?.style;
     /* HER LINE IS THE HERO. An entrance line is the single most quoted thing
        a queen says all season and it was set at 18px above four paragraphs
@@ -284,10 +315,16 @@ export function rpBuildArrivals(row) {
           </div>
         </div>
         ${walk ? `<p class="dr-line dr-fash">${esc(walk.text)}</p>` : ''}
+        ${resume ? `<p class="dr-resume"><span class="dr-resume-k">Season ${esc(resume.data?.past?.season ?? '')}</span>${
+    esc(resume.text.replace(/^Season \d+:\s*/, ''))}</p>` : ''}
         <div class="dr-ent-body">
           ${intro ? `<p class="dr-intro">${esc(intro.text)}</p>` : ''}
           ${back ? `<p class="dr-back">${esc(back.text)}</p>` : ''}
           ${room ? `<p class="dr-reaction">${esc(room.text)}</p>` : ''}
+          ${history ? `<p class="dr-hist dr-hist-${esc(history.data?.kind || 'mates')}">
+            <span class="dr-hist-k">${esc({ friend: 'Old friends', rival: 'Old rivals',
+    'sent-home': 'She beat her once', mates: 'Same season' }[history.data?.kind] || 'Same season')}</span>
+            ${esc(history.text)}</p>` : ''}
           ${impressionOf(beats, name)}
         </div>
       </div></div>`;
@@ -296,13 +333,23 @@ export function rpBuildArrivals(row) {
   /* THE HOST CLOSES IT. She arrives once the room is full, which is what
      turns a row of introductions into the start of a season. Skipped
      silently while her pool is unwritten — a blank card would be worse. */
+  /* ── AND WHAT SEASON THIS IS ──────────────────────────────────────
+     The host's own announcement, on All Stars: who is in this room, what is
+     different about the game, and what it is worth. Under his welcome,
+     because it is the same speech. Absent on every other season. */
+  const asOpening = (r) => {
+    const said = (r?.dr?.scenes || []).filter(x => String(x.kind).startsWith('arrival:allstars'));
+    if (!said.length) return '';
+    return `<div class="dr-as-open">${said.map(x => `<p>${esc(x.text)}</p>`).join('')}</div>`;
+  };
   const hostBeat = (row?.dr?.scenes || []).find(s => s.kind === 'arrival:host');
   const hostStep = hostBeat ? `<div class="dr-step" id="dr-step-arrivals-${cast.length}">
       <div class="dr-panel dr-a-lip dr-entrance">
         <span class="dr-door">${_judgeBust()}</span>
         <div><span class="dr-order">AND THEN</span>
           <h3 class="dr-disp">RuPaul</h3>
-          <p class="dr-line">${esc(hostBeat.text)}</p></div>
+          <p class="dr-line">${esc(hostBeat.text)}</p>
+          ${asOpening(row)}</div>
       </div></div>` : '';
 
   /* THE RAIL SHOWS ONLY WHO HAS WALKED IN. One panel per step, each listing

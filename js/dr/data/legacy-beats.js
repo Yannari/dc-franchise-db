@@ -30,8 +30,23 @@ export const LEGACY_BEATS = {
       '{h} picks one up without looking at the other.',
     ],
   },
-  /* THE WALK BACK OUT, AND THE TUBE TURNED AROUND. */
+  /* ── THE WALK BACK OUT, AND THE TUBE TURNED AROUND ──
+     The eight long variants below came from `lipsync-legacy-choice` in
+     js/dr/data/stage-beats.js, which was written when NOTHING narrated the
+     legacy choice at all. It fired on the `lipsync` step -- and once the
+     ceremony got its own screen after the song, that step came first, so the
+     lip sync screen named the eliminated queen before the lipstick had turned
+     around. Moved here rather than suppressed: the prose is the best on this
+     screen, and a pool with no caller is how a written beat quietly dies. */
   reveal: [
+    "{h} walks to the lipstick rack and the room holds its breath and she uncaps the tube and the name written on it is {x}. The room exhales. {x} closes her eyes for one second and opens them and the opening is a person who has just been told her season is over by somebody who was standing next to her an hour ago.",
+    "\"I have made my decision.\" {h} turns the lipstick toward the room and the name on it reads {x}, and {x} nods once because the nod is the only response available to a queen who has just been named by another queen in front of everyone she has worked beside for weeks.",
+    "The host asks {h} to reveal her choice and {h} holds up the lipstick and the name is {x}. The room does not gasp — the room goes quiet, which is worse. {x} stands still and the stillness is a queen processing a verdict that was written by someone who earned the right to write it.",
+    "{h} says the name out loud — \"{x}\" — and the name fills the room. {x} takes it in and the taking-in happens behind her eyes where nobody can see it except the people who are watching closely, and tonight everybody is watching closely.",
+    "The lipstick is uncapped and the name is {x} and {h} delivers it with the steadiness of a queen who made this decision before the song was over and has been carrying it since. {x} hears it and the hearing is the loudest quiet thing that has happened on this stage all night.",
+    "{h} holds the power and the power has a name and the name is {x}. She says it clearly and without hesitation and the clarity is a kindness even if the verdict is not. {x} receives it standing up and the standing is its own statement.",
+    "\"The queen I have chosen to leave tonight is {x}.\" {h} says it and the sentence ends and the room holds the ending. {x} presses her lips together and breathes out through her nose and the breath is a person deciding how to carry this in front of an audience.",
+    "The host nods at {h} and {h} reveals the lipstick and {x} sees her own name on it and the seeing is a thing that takes longer than it should because the brain needs a moment to turn a name on a tube into a sentence about the rest of her season. {x} nods. The nod is enough.",
     '{h} walks back out with the lipstick closed in her fist, holds it up, and turns it around. It says {x}.',
     'The tube turns. {x}.',
     '{h} lets the room look at the back of her hand a moment longer than it needs, then shows it: {x}.',

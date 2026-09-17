@@ -1005,29 +1005,6 @@ export const STAGE_BEATS = [
     ],
   },
   {
-    id: 'lipsync-legacy-choice', step: 'lipsync', scope: 'pair', speaker: 'host',
-    variants: 8,
-    note: 'THE LEGACY NIGHT ONLY, AND THE THING THAT WAS NEVER NARRATED AT '
-      + 'ALL. {a} won the song and now spends it: she names {b}, and {b} goes '
-      + 'home. week.js emitted this as a marker with an empty string for '
-      + 'text and nothing in js/ rendered that kind, so on a legacy night the '
-      + 'queen who was eliminated left the season without the screen ever '
-      + 'saying who sent her or that she had been sent.',
-    tierBy: 'always',
-    tiers: [
-      tier('choice', 'She holds the power and she uses it, out loud, on {b}.', [
-        "{a} walks to the lipstick rack and the room holds its breath and she uncaps the tube and the name written on it is {b}. The room exhales. {b} closes her eyes for one second and opens them and the opening is a person who has just been told her season is over by somebody who was standing next to her an hour ago.",
-        "\"I have made my decision.\" {a} turns the lipstick toward the room and the name on it reads {b}, and {b} nods once because the nod is the only response available to a queen who has just been named by another queen in front of everyone she has worked beside for weeks.",
-        "The host asks {a} to reveal her choice and {a} holds up the lipstick and the name is {b}. The room does not gasp — the room goes quiet, which is worse. {b} stands still and the stillness is a queen processing a verdict that was written by someone who earned the right to write it.",
-        "{a} says the name out loud — \"{b}\" — and the name fills the room. {b} takes it in and the taking-in happens behind her eyes where nobody can see it except the people who are watching closely, and tonight everybody is watching closely.",
-        "The lipstick is uncapped and the name is {b} and {a} delivers it with the steadiness of a queen who made this decision before the song was over and has been carrying it since. {b} hears it and the hearing is the loudest quiet thing that has happened on this stage all night.",
-        "{a} holds the power and the power has a name and the name is {b}. She says it clearly and without hesitation and the clarity is a kindness even if the verdict is not. {b} receives it standing up and the standing is its own statement.",
-        "\"The queen I have chosen to leave tonight is {b}.\" {a} says it and the sentence ends and the room holds the ending. {b} presses her lips together and breathes out through her nose and the breath is a person deciding how to carry this in front of an audience.",
-        "The host nods at {a} and {a} reveals the lipstick and {b} sees her own name on it and the seeing is a thing that takes longer than it should because the brain needs a moment to turn a name on a tube into a sentence about the rest of her season. {b} nods. The nod is enough.",
-      ]),
-    ],
-  },
-  {
     id: 'lipsync-call', step: 'lipsync', scope: 'once', speaker: 'host',
     note: 'The verdict. Shantay, sashay, or one of the rarer calls.',
     tierBy: 'call',

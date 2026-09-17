@@ -839,11 +839,11 @@ export function renderStageBeats({
        queen she sent home left the season without the screen ever saying
        who sent her. `eliminated` is set on the lipsync object before this
        function runs, which is the only reason it can be named here. */
-    if (lipsync.call === 'legacy' && lipsync.winner && lipsync.eliminated) {
-      emit(beatById('lipsync-legacy-choice'), 'choice',
-        [lipsync.winner, lipsync.eliminated],
-        { winner: lipsync.winner, eliminated: lipsync.eliminated });
-    }
+    /* THE LEGACY CHOICE IS NOT NARRATED HERE ANY MORE. It was, because for a
+       while nothing narrated it at all -- and then the ceremony got its own
+       screen AFTER the song, which made this the card that named the
+       eliminated queen one screen early. Its eight variants live in
+       js/dr/data/legacy-beats.js now, on the step that owns the moment. */
     /* AND THEN SHE SPEAKS. The last card on the lip sync screen is the only
        one in her own voice — the host has said her name and she answers it.
        Tiered by swagger group so the queen who has been narrating her own

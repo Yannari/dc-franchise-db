@@ -1662,7 +1662,10 @@ export function runDragWeek(state, cfg, ctx) {
           const lv = { h: lc.winner, x: chosen, p: pool.join(', ') };
           const ceremony = (kind, who, lines) => scenes.push({
             step: 'legacy-choice', kind,
-            data: { players: who, holder: lc.winner, target: chosen, why: choice.why },
+            /* `chosen`, not `target`: a campaign scene already uses `target`
+               for the queen being lobbied, and one word meaning two things is
+               how a spoiler test cannot tell a pitch from a verdict. */
+            data: { players: who, holder: lc.winner, chosen, why: choice.why },
             text: legacyLine(lines, lv, rng),
           });
           ceremony('legacy:deliberate', [lc.winner],

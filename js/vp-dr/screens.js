@@ -726,7 +726,7 @@ function buildSection(sec, row) {
   if (sec.id === 'dr-legacy') {
     const lip = row?.dr?.lipsync || {};
     const st = lipstickStage(row, scenes.map(sc => ({
-      kind: sc.kind, target: sc?.data?.target || lip.eliminated || null, text: sc.text,
+      kind: sc.kind, target: sc?.data?.chosen || lip.eliminated || null, text: sc.text,
     })), {
       ep, bottom: row?.dr?.callAtCall?.bottom?.length ? row.dr.callAtCall.bottom : (row?.dr?.call?.bottom || []),
       holder: lip.chosenBy || null, uid: `lg${ep.num}`,

@@ -227,13 +227,19 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
     if (past) {
       const ord = n => (n === 1 ? 'won it' : n === 2 ? 'came second'
         : `went out ${n}${n === 3 ? 'rd' : 'th'} of ${past.of}`);
-      const wins = past.wins === 1 ? 'one maxi win'
-        : past.wins > 1 ? `${past.wins} maxi wins` : 'no wins at all';
+      /* THE WINS CLAUSE IS DROPPED WHEN THE RECORD CANNOT SHOW THEM.
+         See `realPast`: the franchise ledger counts the other shows' fields,
+         so a real drag season reports zero maxi wins for everybody. Saying
+         "with no wins at all" to a former winner is worse than saying
+         nothing, and this screen is not allowed to make a fact up. */
+      const wins = !past.winsKnown && past.real ? ''
+        : past.wins === 1 ? 'one maxi win'
+          : past.wins > 1 ? `${past.wins} maxi wins` : 'no wins at all';
       const biz = past.business.charAt(0).toUpperCase() + past.business.slice(1);
       out.push({
         step: 'arrivals', kind: 'arrival:resume',
         data: { players: [name], past },
-        text: `Season ${past.season}: she ${ord(past.rank)}, with ${wins}. ${biz}.`,
+        text: `Season ${past.season}: she ${ord(past.rank)}${wins ? `, with ${wins}` : ''}. ${biz}.`,
       });
     }
     /* ── AND WHO IS ALREADY IN THE ROOM ────────────────────────────

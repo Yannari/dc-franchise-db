@@ -2,7 +2,7 @@
 // tests/dr-past.test.js — what a queen already did (js/dr/past.js)
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it } from 'vitest';
-import { queenPast, derivedCraft, castPasts, craftIsFlat } from '../js/dr/past.js';
+import { queenPast, derivedCraft, castPasts, craftIsFlat, sharedHistory } from '../js/dr/past.js';
 import { DRAG_STATS } from '../js/dr/queen.js';
 
 const STATS = ['physical', 'endurance', 'mental', 'social', 'strategic',
@@ -80,5 +80,70 @@ describe('derived craft', () => {
     expect(craftIsFlat({ name: 'X' })).toBe(true);
     expect(craftIsFlat({ name: 'X', drag: Object.fromEntries(DRAG_STATS.map(k => [k, 5])) })).toBe(true);
     expect(craftIsFlat({ name: 'X', drag: { ...Object.fromEntries(DRAG_STATS.map(k => [k, 5])), dance: 9 } })).toBe(false);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// It never asserts what the record cannot show
+// ══════════════════════════════════════════════════════════════════════
+describe('a real returnee', () => {
+  const seasons = [{
+    season: 1, winsKnown: false,
+    placements: [
+      { name: 'Ripper', place: 1, wins: 0 },
+      { name: 'Brightly', place: 2, wins: 0 },
+      { name: 'MK', place: 5, wins: 0 },
+    ],
+  }];
+
+  it('is never told she won nothing when the source cannot count wins', () => {
+    const p = queenPast(queen('Ripper'), { seasons });
+    expect(p.real).toBe(true);
+    expect(p.winsKnown).toBe(false);
+    /* Her line may say she WON THE SEASON -- that is her placement, which
+       the record does show. What it must never do is claim a maxi-win count
+       the source cannot count. */
+    expect(p.business).not.toMatch(/no wins|maxi win|won more than/i);
+
+    const mid = queenPast(queen('MK'), { seasons });
+    expect(mid.business).not.toMatch(/no wins|maxi win|won more than/i);
+  });
+
+  it('keeps the wins when the source really does know them', () => {
+    const known = [{ season: 1, placements: [{ name: 'Ripper', place: 4, wins: 3 }] }];
+    const p = queenPast(queen('Ripper'), { seasons: known });
+    expect(p.winsKnown).toBe(true);
+    expect(p.wins).toBe(3);
+  });
+
+  it('never invents a history with another queen who really was there', () => {
+    const cast = [queen('Ripper'), queen('Brightly'), queen('MK')];
+    const pasts = Object.fromEntries(cast.map(p => [p.name, queenPast(p, { seasons })]));
+    const h = sharedHistory({ cast, pasts, players: Object.fromEntries(cast.map(p => [p.name, p])) });
+    // Same real season, nothing on record between them: the only claim made
+    // is the one that is true — they were there at the same time.
+    for (const x of h) expect(x.kind).toBe('mates');
+    expect(h.length).toBeGreaterThan(0);
+  });
+
+  it('uses the recorded relationship when there is one', () => {
+    const cast = [queen('Ripper'), queen('Brightly')];
+    const pasts = Object.fromEntries(cast.map(p => [p.name, queenPast(p, { seasons })]));
+    const h = sharedHistory({
+      cast, pasts, players: Object.fromEntries(cast.map(p => [p.name, p])),
+      real: [{ a: 'Ripper', b: 'Brightly', kind: 'rival', season: 1 }],
+    });
+    expect(h.find(x => x.kind === 'rival')).toBeTruthy();
+    expect(h.filter(x => x.a === 'Ripper' && x.b === 'Brightly')).toHaveLength(1);
+  });
+
+  it('still invents freely for a queen with no real past', () => {
+    const cast = [queen('Ripper'), queen('Nobody'), queen('Alsonobody')];
+    const pasts = Object.fromEntries(cast.map(p => [p.name, queenPast(p, { seasons })]));
+    const h = sharedHistory({ cast, pasts, players: Object.fromEntries(cast.map(p => [p.name, p])) });
+    // Nothing asserts a real pair, but an invented pair may have any history.
+    for (const x of h) {
+      if (x.real) expect(x.kind).toBe('mates');
+    }
   });
 });

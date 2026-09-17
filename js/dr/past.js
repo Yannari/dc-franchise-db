@@ -42,7 +42,7 @@ function hashOf(s) {
    One line, chosen from where she actually stands rather than at random: the
    queen who came second wants the crown, the queen who went out first wants
    to be seen at all. This is the sentence the entrance is built on. */
-function businessFor(rank, of, wins, name = '') {
+function businessFor(rank, of, wins, name = '', { winsKnown = true } = {}) {
   const share = rank / Math.max(2, of);
   /* One line per SHAPE of season, and three ways to say each — four queens in
      a row all reading "she was good and it was not enough" was the premiere
@@ -63,7 +63,8 @@ function businessFor(rank, of, wins, name = '') {
       'she lost it on the last night and has been rehearsing this one ever since',
     ]);
   }
-  if (wins >= 2) {
+  // A line about her wins is only available when the source can show them.
+  if (winsKnown && wins >= 2) {
     return pick3([
       'she won more than anybody and still went home',
       'she has more wins than the queen who beat her, which still does not sit right',
@@ -96,18 +97,30 @@ function businessFor(rank, of, wins, name = '') {
   ]);
 }
 
-/** Her real record, from a stored season, or null. */
+/** Her real record, from a stored season, or null.
+ *
+ * ── IT NEVER CLAIMS WHAT THE SOURCE CANNOT SHOW ──────────────────────
+ * `winsKnown` is the important half. The franchise ledger counts a season's
+ * competition wins from `immunityWinner` / `vetoWinner`, which are the other
+ * shows' fields — a drag season stamps neither, so the ledger reports zero
+ * maxi wins for every queen who ever played one. Asserting "with no wins at
+ * all" off that would tell a former winner, on screen, that she never won
+ * anything. So an unverifiable count is not a zero: it is silence, and the
+ * line that would have said it is dropped instead.
+ */
 function realPast(name, seasons) {
   for (const s of seasons || []) {
     const list = s?.placements || [];
     const row = list.find(p => p?.name === name);
     if (!row) continue;
     const rank = Number(row.place) || list.length;
+    const winsKnown = s.winsKnown !== false;
+    const wins = Number(row.wins) || 0;
     return {
       real: true, season: Number(s.season) || 0, rank, of: list.length,
-      wins: Number(row.wins) || 0,
+      wins, winsKnown,
       exit: rank === 1 ? 'crowned' : rank <= 3 ? 'finalist' : 'eliminated',
-      business: businessFor(rank, list.length, Number(row.wins) || 0, name),
+      business: businessFor(rank, list.length, winsKnown ? wins : 0, name, { winsKnown }),
     };
   }
   return null;
@@ -244,6 +257,20 @@ export function sharedHistory({ cast = [], pasts = {}, players = {}, real = [] }
       if (seen.has(pairKey(a, b))) continue;
       const pa = pasts[a]; const pb = pasts[b];
       if (!pa || !pb || pa.season !== pb.season) continue;
+      /* ── A REAL SEASON IS NOT A PLACE TO INVENT ──────────────────
+         If both of these queens actually played that season, then what
+         happened between them is a matter of record, and anything this
+         function made up could contradict it — "she beat me in the song that
+         ended my season" is a specific claim about a lip sync that either
+         happened or did not.
+         So for a real pair the only history asserted is the history PASSED IN
+         (`real`, from the stored season's own ledger, handled above). Falling
+         through to here means the record has nothing on them, and the one
+         thing still true is that they were in the same room that year. */
+      if (pa.real && pb.real) {
+        out.push({ a, b, kind: 'mates', season: pa.season, real: true });
+        continue;
+      }
       const A = players[a] || {}; const B = players[b] || {};
       const warmth = (HIST_NICE.has(A.archetype) ? 1 : 0) + (HIST_NICE.has(B.archetype) ? 1 : 0)
         - (HIST_SHARP.has(A.archetype) ? 1 : 0) - (HIST_SHARP.has(B.archetype) ? 1 : 0)

@@ -557,7 +557,22 @@ function _pastDragSeasons() {
         .map(([name, p]) => ({ name, place: Number(p?.placement) || 0, wins: Number(p?.chalWins) || 0 }))
         .filter(p => p.place > 0)
         .sort((a, b) => a.place - b.place);
-      if (placements.length) out.push({ season: num, placements });
+      /* ── WHAT THE LEDGER CAN AND CANNOT SHOW ──
+         `chalWins` counts `immunityWinner` and `vetoWinner`, which are the
+         other shows' fields: a drag season stamps neither, so this reports
+         zero maxi wins for every queen who ever played one. Flagged rather
+         than passed off as a zero — js/dr/past.js drops the wins clause
+         instead of telling a former winner she never won anything. */
+      const relations = [];
+      for (const [name, p] of Object.entries(rec?.players || {})) {
+        for (const ally of (p?.allies || [])) {
+          if (rec.players[ally]) relations.push({ a: name, b: ally, kind: 'friend', season: num });
+        }
+        for (const rival of (p?.rivals || [])) {
+          if (rec.players[rival]) relations.push({ a: name, b: rival, kind: 'rival', season: num });
+        }
+      }
+      if (placements.length) out.push({ season: num, placements, relations, winsKnown: false });
     }
     // Newest first: a queen who has played twice arrives as what she is NOW.
     return out.sort((a, b) => b.season - a.season);
@@ -575,6 +590,9 @@ function _config() {
     drAllStars: !!seasonConfig.drAllStars,
     drAllStarsRule: seasonConfig.drAllStarsRule || 'legacy',
     drPastSeasons: _pastDragSeasons(),
+    // The relationships those seasons actually recorded — never inferred for
+    // a pair the franchise has real history on. See `sharedHistory`.
+    drPastRelations: _pastDragSeasons().flatMap(s => s.relations || []),
     drDoubleShantay: seasonConfig.drDoubleShantay,
     drDoubleSashay: seasonConfig.drDoubleSashay,
     drImmunity: seasonConfig.drImmunity,

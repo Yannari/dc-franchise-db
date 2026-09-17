@@ -3,7 +3,7 @@
 // dr-chart.test.js — the signature screen, and the one grid behind it
 // ══════════════════════════════════════════════════════════════════════
 import { describe, expect, it, beforeEach } from 'vitest';
-import { GRID_RESULTS, gridRows, buildTrackRecordGrid } from '../js/dr/grid.js';
+import { GRID_RESULTS, PPE_POINTS, gridRows, buildTrackRecordGrid, resultMeta, shapeOf, ppeFor } from '../js/dr/grid.js';
 import { rpBuildChart, drChartRevealNext, drChartRevealAll } from '../js/vp-dr/chart.js';
 import { buildDragSeasonDocument } from '../js/dr/export.js';
 import { playDragSeason } from '../js/dr/season.js';
@@ -31,8 +31,12 @@ beforeEach(() => { window._tvState = {}; window._drSidebar = {}; window._drSeaso
 
 describe('the grid builder', () => {
   it("knows the results with the community's colours, BTM2 among them", () => {
+    /* BTM3 joined them for All Stars: the legacy rule names a bottom of three
+       and the winner of the song picks out of it, so two queens survive a
+       night none of them sang on. `resultMeta` is how one token means two
+       things without the two meanings merging. */
     expect(Object.keys(GRID_RESULTS).sort()).toEqual(
-      ['BTM', 'BTM2', 'ELIM', 'FINALIST', 'HIGH', 'LOW', 'OUT', 'SAFE', 'WIN', 'WINNER'].sort());
+      ['BTM', 'BTM2', 'BTM3', 'ELIM', 'FINALIST', 'HIGH', 'LOW', 'OUT', 'SAFE', 'WIN', 'WINNER'].sort());
     for (const [k, v] of Object.entries(GRID_RESULTS)) {
       expect(v.color, k).toBeTruthy();
       expect(v.short.length, k).toBeLessThanOrEqual(4);
@@ -207,5 +211,32 @@ describe('the chart screen', () => {
     window._drSeasonRows = null;
     expect(() => rpBuildChart({ num: 1, dr: {} })).not.toThrow();
     expect(rpBuildChart({ num: 1, dr: {} })).toBe('');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// The bottom, on an All Stars chart (spec §4, settled 2026-09-17)
+// ══════════════════════════════════════════════════════════════════════
+describe('the bottom, on an All Stars chart', () => {
+  it('has a cell for a bottom of three', () => {
+    expect(GRID_RESULTS.BTM3).toBeTruthy();
+    expect(PPE_POINTS.BTM3).toBe(PPE_POINTS.BTM2);
+  });
+
+  it('says what the cell MEANS in the season it is drawn for', () => {
+    expect(resultMeta('BTM2', { shape: 'flagship' }).title).toMatch(/lip synced/i);
+    expect(resultMeta('BTM2', { shape: 'all-stars' }).title).toMatch(/not chosen/i);
+    expect(resultMeta('BTM2', { shape: 'all-stars' }).title).not.toMatch(/lip synced/i);
+    expect(resultMeta('BTM3', { shape: 'all-stars' }).title).toMatch(/not chosen/i);
+  });
+
+  it('scores a spared queen the same either way', () => {
+    expect(ppeFor([{ result: 'BTM3' }, { result: 'WIN' }])).toBe(3);
+  });
+
+  it('takes the shape off the season rather than assuming it', () => {
+    expect(shapeOf([{ dr: { allStars: { rule: 'legacy' } } }])).toBe('all-stars');
+    expect(shapeOf([{ dr: {} }])).toBe('flagship');
+    expect(shapeOf(null)).toBe('flagship');
   });
 });

@@ -70,6 +70,16 @@ export const GRID_RESULTS = {
      it now. */
   BTM: { label: 'BTM', short: 'BTM', title: 'In the bottom, and saved (retired result)', color: '#fca5a5', ink: '#2b0000' },
   BTM2: { label: 'BTM2', short: 'BTM2', title: 'The bottom two — lip synced, and survived', color: '#f87171', ink: '#2b0000' },
+  /* ── THE BOTTOM THREE, WHICH ONLY ALL STARS PRODUCES ──
+     On the legacy rule the winner of the song chooses out of a named bottom,
+     so the queens who survive did not sing and did not do anything: they were
+     not picked. The record is the SIZE OF THE BOTTOM she was named in, which
+     is how the real chart draws these cells.
+     The retired `BTM` above is NOT reused for it. That one is retired on the
+     season 16 wikitext (one bare use against eleven LOWs, and no legend entry
+     at all), and bringing it back to mean a third thing is how a chart ends up
+     with two words for one night. */
+  BTM3: { label: 'BTM3', short: 'BTM3', title: 'The bottom three — lip synced, and survived', color: '#f98080', ink: '#2b0000' },
   ELIM: { label: 'ELIM', short: 'ELIM', title: null, color: '#7f1d1d', ink: '#fecaca' },
   OUT: { label: '', short: '', title: 'Already gone', color: 'transparent', ink: 'transparent' },
 };
@@ -83,7 +93,7 @@ export const GRID_RESULTS = {
  * them in the right order.
  */
 const ORDER_OF = {
-  WINNER: 0, WIN: 1, FINALIST: 2, HIGH: 3, SAFE: 4, LOW: 5, BTM: 6, BTM2: 7, ELIM: 8, OUT: 9,
+  WINNER: 0, WIN: 1, FINALIST: 2, HIGH: 3, SAFE: 4, LOW: 5, BTM: 6, BTM3: 6.5, BTM2: 7, ELIM: 8, OUT: 9,
 };
 
 /**
@@ -104,8 +114,41 @@ const ORDER_OF = {
  * there. That is what makes the number comparable across a cast.
  */
 export const PPE_POINTS = {
-  WINNER: 5, WIN: 5, FINALIST: 4, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, ELIM: 0,
+  WINNER: 5, WIN: 5, FINALIST: 4, HIGH: 4, SAFE: 3, LOW: 2, BTM: 1, BTM2: 1, BTM3: 1, ELIM: 0,
 };
+
+/* ── WHAT A CELL MEANS DEPENDS ON THE SEASON IT IS IN ─────────────────
+   `BTM2` is two different weeks. On a flagship season she lip synced and
+   survived it. On All Stars' legacy rule NOBODY in the bottom sings — the
+   winner of the top-two song simply chose somebody else — so the same token
+   means "named for elimination, and not chosen".
+
+   That is one word with two meanings, which is exactly the collapse this
+   show's docs exist to prevent, and it is only tolerable because it cannot be
+   ambiguous WITHIN a season: on the legacy rule there is no other reading
+   available. The mitigation is not a convention, it is this function — a
+   static map is how the two meanings would silently merge again. */
+const ALL_STARS_TITLES = {
+  BTM2: 'The bottom two — named for elimination, and not chosen',
+  BTM3: 'The bottom three — named for elimination, and not chosen',
+  ELIM: 'Named for elimination, and chosen by the winner of the song',
+  WIN: 'Won the maxi challenge and the Lip Sync for Your Legacy',
+  HIGH: 'Among the top two — lost the Lip Sync for Your Legacy',
+};
+
+/** A cell's look, and its wording for the shape of season being drawn. */
+export function resultMeta(result, { shape = 'flagship' } = {}) {
+  const base = GRID_RESULTS[result] || GRID_RESULTS.SAFE;
+  if (shape !== 'all-stars') return base;
+  const title = ALL_STARS_TITLES[result];
+  return title ? { ...base, title } : base;
+}
+
+/** Which game this season played, taken from the season rather than assumed. */
+export function shapeOf(source) {
+  const rows = Array.isArray(source) ? source : (source?.rows || source?.episodes || []);
+  return rows.some(r => r?.dr?.allStars || r?.allStars) ? 'all-stars' : 'flagship';
+}
 
 /** Her points per episode, to two decimals, or null if she has not competed. */
 export function ppeFor(cells) {
@@ -318,6 +361,9 @@ export function buildTrackRecordGrid(source, {
   const cols = { rank: true, photo: true, ppe: true, ...columns };
   const rows = gridRows(source, { format });
   if (!rows.length) return '';
+  /* An All Stars season's chart says different things in the same colours —
+     see `resultMeta`. Read off the season, never assumed. */
+  const shape = shapeOf(source);
   const w = showWords(format);
   /* CUT BY EPISODE, NOT BY COLUMN COUNT. The two are not the same number the
      moment a night judges nobody: taking the first N columns of a season with
@@ -358,7 +404,7 @@ export function buildTrackRecordGrid(source, {
   const body = rows.map(p => {
     const shownCells = shownOf(p.cells);
     const cells = shownCells.map(c => {
-      const meta = GRID_RESULTS[c.result] || GRID_RESULTS.SAFE;
+      const meta = resultMeta(c.result, { shape });
       /* The exit's word is the ROUND's, never a default. One `exitWord` per
          season is how a departure comes to be described by whichever door the
          code happened to look at first. */
@@ -430,8 +476,9 @@ export function buildTrackRecordGrid(source, {
   // nothing on the chart uses is a reader hunting for a colour that is not there.
   const used = new Set();
   for (const p of rows) for (const c of shownOf(p.cells)) used.add(c.result);
-  const legend = Object.entries(GRID_RESULTS)
-    .filter(([k]) => used.has(k) && k !== 'OUT')
+  const legend = Object.keys(GRID_RESULTS)
+    .filter(k => used.has(k) && k !== 'OUT')
+    .map(k => [k, resultMeta(k, { shape })])
     .map(([k, m]) => `<span class="dr-tr-key"><i style="background:${m.color}"></i>`
       + `${esc(m.label)} — ${esc(k === 'ELIM' ? cap(w.exit) : m.title)}</span>`)
     .join('');

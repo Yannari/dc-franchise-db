@@ -12,6 +12,7 @@
 // and the hub turns gold on the card that shows the Kneeling.
 import { players } from '../core.js';
 import { playerAvatarUrl } from '../players.js';
+import { STAGE_CSS, stageShell, stageFor, reducedMotion, stageEvents } from './mission-stage.js';
 
 const _esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -71,6 +72,162 @@ function _paneFor(s) {
   return out;
 }
 
+
+// ══════════════════════════════════════════════════════════════════════
+// THE STAGE — the church, played (js/vp-tr/mission-stage.js)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The nave: the rose window over the altar, a double confessional at the back
+// with a reader behind each grille, twelve masked figures in the pews, and a
+// kneeler at the front. Panes light as items are named and crack when a riddle
+// is lost; a mask lights when its item is found; the kneeler takes the Shield.
+function _cmKind(c, ph) {
+  if (c.relic) return 'kneel';
+  if (isCalled(c)) return 'called';
+  if (c.isSocial) return c.behaviour === 'selfish' ? 'snub' : 'scene';
+  if (ph.id === 'book') return c.tone === 'bad' ? 'lostpage' : 'read';
+  if (ph.id === 'pews') return c.tone === 'good' ? 'named' : isTouch(c) ? 'touched' : 'wrongmask';
+  return 'other';
+}
+const CM_CAP = { book: ['Part one', 'The Book'], pews: ['Part two', 'The Congregation'],
+  kneel: ['Part three', 'The Kneeling'] };
+
+function _cmPane(i, cls) {
+  const a0 = (i * 30 - 90) * Math.PI / 180, a1 = ((i + 1) * 30 - 90) * Math.PI / 180;
+  const r0 = 22, r1 = 76;
+  const f = x => x.toFixed(1);
+  const p = [[r0 * Math.cos(a0), r0 * Math.sin(a0)], [r1 * Math.cos(a0), r1 * Math.sin(a0)],
+    [r1 * Math.cos(a1), r1 * Math.sin(a1)], [r0 * Math.cos(a1), r0 * Math.sin(a1)]].map(q => q.map(f).join(' '));
+  return '<path class="ms-cm-pane ' + cls + '" data-cp="' + i + '" d="M' + p[0] + ' L' + p[1]
+    + ' A76 76 0 0 1 ' + p[2] + ' L' + p[3] + ' A22 22 0 0 0 ' + p[0] + 'Z"/>';
+}
+
+function _cmScene(v, s) {
+  const e = v.epNum;
+  const names = v.teams.map(x => x.name);
+  const t = v.tally.teams || {};
+  const masks = v.tally.masks || [];
+  // the rose window: six panes a team, Candle on the right, Bell on the left
+  let rose = '';
+  for (let ti = 0; ti < 2; ti++) {
+    for (let k = 0; k < 6; k++) {
+      const id = ti === 0 ? 5 - k : 6 + k;
+      const named = s.named[ti], lost = s.lost[ti];
+      rose += _cmPane(id, k < named ? 'lit ' + (ti ? 'bell' : 'candle') : k < named + lost ? 'crack' : '');
+    }
+  }
+  const booths = names.map((nm, i) => {
+    const reader = (t[nm] || {}).reader;
+    const x = i ? 866 : 134;
+    return '<g class="ms-cm-booth ' + (i ? 'bell' : 'candle') + '" transform="translate(' + x + ',196)">'
+      + '<path d="M-56 120 V-30 a56 56 0 0 1 112 0 V120 Z" fill="#16100c" stroke="#4a3828" stroke-width="3"/>'
+      + '<path d="M-34 44 V-20 a34 34 0 0 1 68 0 V44 Z" fill="#0b0a0c"/>'
+      + (reader ? '<image href="' + _esc(_url(reader)) + '" x="-26" y="-22" width="52" height="52" clip-path="url(#ms-cm-c-' + e + ')"/>' : '')
+      + '<path class="grille" d="M-34 -20 h68 M-34 -6 h68 M-34 8 h68 M-34 22 h68 M-20 -46 v90 M-6 -46 v90 M8 -46 v90 M22 -46 v90" stroke="rgba(0,0,0,.6)" stroke-width="3"/>'
+      + '<text class="lbl" y="86" text-anchor="middle">' + _esc(nm.toUpperCase()) + '</text>'
+      + '<text class="cnt" data-booth="' + i + '" y="106" text-anchor="middle">' + _esc(s.booth[i]) + '</text></g>';
+  }).join('');
+  const pew = masks.map((mk, i) => {
+    const col = i % 6, row = Math.floor(i / 6);
+    const x = 314 + col * 92, y = 252 + row * 66;
+    return '<g class="ms-cm-mask' + (s.found[i] ? ' found' : '') + '" data-cm="' + i + '" transform="translate(' + x + ',' + y + ')">'
+      + '<path class="face" d="M-22 -6c6-8 16-8 22 0 6-8 16-8 22 0-2 14-10 18-15 15-3-2-5-5-7-5s-4 3-7 5c-5 3-13-1-15-15z"/>'
+      + '<circle class="eye" cx="-13" cy="-3" r="3.4"/><circle class="eye" cx="9" cy="-3" r="3.4"/>'
+      + '<path class="item" d="M-3 14 l3 9 l3-9z"/></g>';
+  }).join('');
+  const sh = v.shield || {};
+  return '<rect width="1080" height="360" fill="#141518"/>'
+    + '<g class="ms-cm-arches" stroke="#2c2f36" stroke-width="8" fill="none">'
+    + '<path d="M228 360 V150 Q290 66 352 150 V360"/><path d="M728 360 V150 Q790 66 852 150 V360"/></g>'
+    + '<path d="M0 0 H1080 V360 H0Z" fill="url(#ms-cm-light-' + e + ')"/>'
+    + '<g class="ms-cm-rose" transform="translate(540,96)"><circle r="82" fill="#0a0a0c"/>' + rose
+    + '<circle class="ms-cm-hub' + (s.won ? ' on' : '') + '" r="18" fill="#23252b" stroke="#0a0a0c" stroke-width="3"/>'
+    + '<path d="M0 -11l8 3v5c0 6-4 9-8 11-4-2-8-5-8-11v-5z" fill="#0a0a0c" opacity=".7"/>'
+    + '<circle r="82" fill="none" stroke="#3a3e46" stroke-width="4"/></g>'
+    + booths + pew
+    + '<g class="ms-cm-kneel' + (s.won ? ' on' : '') + '" transform="translate(540,300)">'
+    + '<path d="M-46 40 h92 v10 h-92z M-36 40 v-22 h72 v22" fill="#2a1f18" stroke="#6b5c3a" stroke-width="2"/>'
+    + (sh.holder ? '<g class="holder" transform="translate(0,-26)"><circle r="24" fill="#111014" stroke="#f1cd5f" stroke-width="3"/>'
+      + '<image href="' + _esc(_url(sh.holder)) + '" x="-22" y="-22" width="44" height="44" clip-path="url(#ms-cm-h-' + e + ')"/></g>' : '')
+    + '</g>';
+}
+
+function _cmStage(v, states, n) {
+  const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
+  const e = v.epNum;
+  const defs = '<clipPath id="ms-cm-c-' + e + '"><circle r="26"/></clipPath>'
+    + '<clipPath id="ms-cm-h-' + e + '"><circle r="22"/></clipPath>'
+    + '<linearGradient id="ms-cm-light-' + e + '" x1="0" x2="1" y1="0" y2="1">'
+    + '<stop offset="0" stop-color="rgba(184,38,58,.10)"/><stop offset=".5" stop-color="rgba(42,79,179,.08)"/>'
+    + '<stop offset="1" stop-color="rgba(47,138,93,.08)"/></linearGradient>';
+  return stageShell({ epNum: e, defs, scene: _cmScene(v, s),
+    cap: [s.total + ' items named', (CM_CAP[s.capPhase] || CM_CAP.book)[1]],
+    pot: v.potBefore + (s.done ? v.earned : 0),
+    vars: '--ms-mono:\'Anonymous Pro\',monospace;--ms-accent:#f1e3b6;--ms-ink:#ece4d2',
+    label: 'The church, staged' });
+}
+
+function _cmSettle(st, v, s) {
+  st.phase(s.watch && s.watch.length ? 'watch' : 'rest');
+  const panes = {};
+  for (let ti = 0; ti < 2; ti++) {
+    for (let k = 0; k < 6; k++) {
+      const id = ti === 0 ? 5 - k : 6 + k;
+      panes[id] = k < s.named[ti] ? 'lit ' + (ti ? 'bell' : 'candle') : k < s.named[ti] + s.lost[ti] ? 'crack' : '';
+    }
+  }
+  st.qa('.ms-cm-pane').forEach(p => p.setAttribute('class', 'ms-cm-pane ' + (panes[p.getAttribute('data-cp')] || '')));
+  st.qa('.ms-cm-mask').forEach(m => m.setAttribute('class', 'ms-cm-mask' + (s.found[Number(m.getAttribute('data-cm'))] ? ' found' : '')));
+  st.qa('[data-booth]').forEach(b => { b.textContent = s.booth[Number(b.getAttribute('data-booth'))]; });
+  const hub = st.q('.ms-cm-hub'); if (hub) hub.setAttribute('class', 'ms-cm-hub' + (s.won ? ' on' : ''));
+  const kn = st.q('.ms-cm-kneel'); if (kn) kn.setAttribute('class', 'ms-cm-kneel' + (s.won ? ' on' : ''));
+  st.cap(s.total + ' items named', (CM_CAP[s.capPhase] || CM_CAP.book)[1]);
+  st.pot(v.potBefore + (s.done ? v.earned : 0), false);
+  st.clearStamp();
+}
+
+function _cmPlay(st, v, prev, s) {
+  _cmSettle(st, v, prev);
+  const e = s.ev;
+  if (!e) { _cmSettle(st, v, s); return; }
+  const land = (fn, ms) => st.later(fn, ms);
+  if (e.k === 'read' || e.k === 'named') {
+    st.phase('hold');
+    land(() => {
+      _cmSettle(st, v, s);
+      st.burst(12, 50, 28, 120, 'rgba(241,227,182,.9)');
+    }, 1200);
+  } else if (e.k === 'lostpage' || e.k === 'wrongmask' || e.k === 'touched') {
+    st.phase('hold');
+    land(() => {
+      _cmSettle(st, v, s); st.phase('bad');
+      st.stamp(e.k === 'touched' ? 'A HAND ON A MASK' : e.k === 'lostpage' ? 'THE WRONG PAGE' : 'THE WRONG FIGURE', 'bad');
+    }, 1400);
+  } else if (e.k === 'called') {
+    st.phase('hold');
+    land(() => {
+      _cmSettle(st, v, s);
+      st.stamp('CALLED FORWARD', 'cool');
+      st.burst(14, 50, 82, 130, 'rgba(241,227,182,.8)');
+    }, 1500);
+  } else if (e.k === 'kneel') {
+    st.phase('hold');
+    land(() => {
+      _cmSettle(st, v, s); st.phase('win');
+      st.flash('50%', '26%'); st.burst(22, 50, 30, 170, 'rgba(241,205,95,.95)');
+      st.stamp('THE KNEELING', 'gold');
+      land(() => st.pot(v.potBefore + v.earned, true), 1300);
+    }, 1800);
+  } else if (e.k === 'snub') {
+    _cmSettle(st, v, s); st.phase('watch');
+    land(() => st.stamp('PASSED OVER', 'bad'), 900);
+  } else if (e.k === 'scene') {
+    _cmSettle(st, v, s); st.phase('watch');
+  } else {
+    _cmSettle(st, v, s);
+  }
+}
+
 export const CHURCH = {
   id: 'church-match', prefix: 'cm', ownShield: true,
   shieldBeat: /kneel at the altar|Only one of you/,
@@ -109,6 +266,8 @@ export const CHURCH = {
     else if (ph.id === 'pews') ic = c.behaviour === 'cowardly' ? 'mask' : c.tone === 'good' ? 'found' : isTouch(c) ? 'hand' : 'mask';
     return '<span class="cm-ico"><svg viewBox="0 0 36 36" aria-hidden="true">' + ICONS[ic] + '</svg></span>';
   },
+
+  stage: (v, states, n) => _cmStage(v, states, n),
 
   sidebar(v, n, states) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))] || states[0];
@@ -151,6 +310,7 @@ export const CHURCH = {
 
   sideStates(v, total) {
     const pr = _prog(v);
+    const evs = stageEvents(v, _cmKind);
     const t = v.tally.teams || {};
     const names = v.teams.map(x => x.name);
     const per = v.tally.perTeam || 6;
@@ -181,7 +341,12 @@ export const CHURCH = {
       });
       const called = calledAt >= 0 && n > calledAt;
       const won = kneelAt >= 0 && n > kneelAt;
+      const ev = evs[n - 1] || null;
       out.push({
+        // the stage's own reading of the same step
+        ev, capPhase: ev ? ev.phase : 'book',
+        watch: ev && (ev.k === 'scene' || ev.k === 'snub') ? ev.who : [],
+        v: { epNum: v.epNum, potBefore: v.potBefore, earned: v.earned, tally: v.tally, shield: v.shield },
         named, lost, found, done, won,
         total: named[0] + (named[1] || 0),
         booth: names.map((nm, i) => (c1 <= 0 ? 'waiting' : read[i] + ' of ' + per + ' read')),
@@ -193,8 +358,14 @@ export const CHURCH = {
     return out;
   },
 
-  paintSide(prefix, states, n) {
+  paintSide(prefix, states, n, mode) {
     const s = states[Math.max(0, Math.min(states.length - 1, n))]; if (!s) return;
+    const st = stageFor(s.v.epNum);
+    if (st) {
+      st.clear();
+      if (mode === 'next' && n > 0 && !reducedMotion()) _cmPlay(st, s.v, states[n - 1], s);
+      else _cmSettle(st, s.v, s);
+    }
     const panel = document.querySelector('.cm-panel'); if (!panel) return;
     const panes = _paneFor(s);
     panel.querySelectorAll('.cm-pane').forEach(p => {
@@ -340,8 +511,29 @@ export const CHURCH = {
 .cm-btn[disabled]{opacity:.4;cursor:default}
 .cm-btn.ghost{background:transparent;color:var(--cm-parch);border:1px solid #3a3e46}
 .cm-counter{font:13px/1 'Anonymous Pro',monospace;color:#646a73;letter-spacing:.08em}
+
+/* ── THE STAGE: the nave ─────────────────────────────────────────────── */
+.ms-cm-pane{fill:#1a1c22;stroke:#0a0a0c;stroke-width:2;transition:fill .8s,filter .8s}
+.ms-cm-pane.lit.candle{fill:#b8263a;filter:drop-shadow(0 0 7px rgba(255,92,114,.85))}
+.ms-cm-pane.lit.bell{fill:#2a4fb3;filter:drop-shadow(0 0 7px rgba(111,150,255,.85))}
+.ms-cm-pane.crack{fill:#2a1c1c}
+.ms-cm-hub{transition:fill .8s,filter .8s}
+.ms-cm-hub.on{fill:#f1cd5f;filter:drop-shadow(0 0 16px rgba(241,205,95,.8))}
+.ms-cm-booth .lbl{font:11px 'Anonymous Pro',monospace;letter-spacing:.2em;fill:#8a9098}
+.ms-cm-booth .cnt{font:13px 'Anonymous Pro',monospace;fill:#ece4d2}
+.ms-cm-booth.candle .lbl{fill:#ff5c72}.ms-cm-booth.bell .lbl{fill:#6f96ff}
+.ms-cm-mask .face{fill:#0c0c0f;stroke:#2c2f36;stroke-width:2;transition:stroke .6s,filter .6s}
+.ms-cm-mask .eye{fill:#3a3e46;transition:fill .6s}
+.ms-cm-mask .item{fill:#3a3e46;transition:fill .6s,filter .6s}
+.ms-cm-mask.found .face{stroke:#f1e3b6;filter:drop-shadow(0 0 8px rgba(241,227,182,.6))}
+.ms-cm-mask.found .eye{fill:#ece4d2}
+.ms-cm-mask.found .item{fill:#f1e3b6;filter:drop-shadow(0 0 6px rgba(241,227,182,.9))}
+.ms-cm-kneel .holder{opacity:0;transform:translateY(16px);transition:opacity .7s,transform .9s cubic-bezier(.2,1.4,.4,1)}
+.ms-cm-kneel.on .holder{opacity:1;transform:translateY(-26px)}
+.ms[data-phase=watch] .ms-cm-mask,.ms[data-phase=watch] .ms-cm-booth{filter:brightness(.4)}
+.ms[data-phase=bad] .ms-vig{box-shadow:inset 0 0 160px 60px rgba(60,8,16,.85)}
 @media(prefers-reduced-motion:reduce){.cm-root *,.cm-root *::before,.cm-root *::after{animation:none !important;transition:none !important}.cm-card{opacity:1}}
-`,
+` + STAGE_CSS,
 };
 
 export default CHURCH;

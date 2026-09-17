@@ -24,12 +24,12 @@ function bareCast(n, seed) {
 
 function season(seed, config = {}, cast = null) {
   const bonds = {}; const key = (a, b) => [a, b].sort().join('|');
-  return playDragSeason({
+  return Object.assign({ bonds }, playDragSeason({
     cast: cast || bareCast(10, seed), seed: seed * 101 + 7, config,
     bond: (a, b) => bonds[key(a, b)] || 0,
     addBond: (a, b, d) => { const k = key(a, b); bonds[k] = Math.max(-10, Math.min(10, (bonds[k] || 0) + d)); },
     popDelta: () => {},
-  });
+  }));
 }
 
 describe('the mode', () => {
@@ -245,5 +245,40 @@ describe('the night runs in the All Stars order', () => {
     const row = weekly(season(21, { drAllStars: true })).find(r => r.dr.lipsync?.legacy);
     const ids = dragScreens(row).map(s => s.id);
     expect(ids.indexOf('dr-results')).toBeLessThan(ids.indexOf('dr-untucked'));
+  });
+});
+
+describe('the room already knows each other', () => {
+  it('walks in with a history, not as strangers', () => {
+    const res = season(55, { drAllStars: true });
+    const h = res.state.allStars.history;
+    expect(h.length).toBeGreaterThan(0);
+    for (const x of h) {
+      expect(['friend', 'rival', 'sent-home', 'mates']).toContain(x.kind);
+      expect(x.a).not.toBe(x.b);
+    }
+  });
+
+  it('gives somebody a grudge worth carrying', () => {
+    let withGrudge = 0;
+    for (let s = 50; s < 70; s++) {
+      const res = season(s, { drAllStars: true });
+      if ((res.state.power?.grudges || []).length) withGrudge++;
+    }
+    expect(withGrudge).toBeGreaterThan(8);
+  });
+
+  it('starts those bonds off zero', () => {
+    const res = season(55, { drAllStars: true });
+    const friend = res.state.allStars.history.find(x => x.kind === 'friend');
+    const rival = res.state.allStars.history.find(x => x.kind === 'rival');
+    const key = (a, b) => [a, b].sort().join('|');
+    if (friend) expect(res.bonds[key(friend.a, friend.b)]).toBeGreaterThan(0);
+    if (rival) expect(res.bonds[key(rival.a, rival.b)]).toBeLessThan(0);
+  });
+
+  it('changes nothing on an ordinary season', () => {
+    expect(season(55).state.allStars).toBeUndefined();
+    expect((season(55).state.power?.grudges || []).length).toBe(0);
   });
 });

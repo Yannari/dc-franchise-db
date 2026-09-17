@@ -186,3 +186,91 @@ export function castPasts({ cast = [], seasons = [], seed = 1 } = {}) {
   for (const p of cast) out[p.name] = queenPast(p, { seasons, rng });
   return out;
 }
+
+// ══════════════════════════════════════════════════════════════════════
+//  WHO SHE ALREADY KNOWS
+// ══════════════════════════════════════════════════════════════════════
+//
+// An All Stars room is not a room of strangers, and that was the single
+// biggest thing missing from the first pass: ten queens who had each done a
+// season walked in, and not one of them had ever met. Every bond started at
+// zero and the grudge term in js/dr/legacy.js measured 0.0% across forty
+// seasons, because nothing ever wrote a grudge.
+//
+// ── THE ANCHOR IS A SHARED SEASON ─────────────────────────────────────
+//
+// Two queens who came out of the same season know each other, and that is
+// true of an invented past as well as a real one — `queenPast` already gives
+// every queen a season number, so the web exists without a single stored
+// season in the franchise. Where a real season IS stored, the real thing wins:
+// its allies and rivals are facts and these are inferences.
+//
+// What kind of history they have is derived from who they ARE — the same
+// generosity read the arrivals already use — and is stable for the pair, so a
+// replay tells the same story.
+const HIST_NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
+const HIST_SHARP = new Set(['villain', 'mastermind', 'schemer', 'hothead', 'chaos-agent']);
+
+/**
+ * The history the room walks in with.
+ *
+ * Returns `[{ a, b, kind, season }]` where kind is:
+ *   `friend`    they came out of that season close
+ *   `rival`     they came out of it not speaking
+ *   `sent-home` `a` beat `b` in the lip sync that ended her season
+ *   `mates`     same season, no strong feeling either way
+ *
+ * `real` entries (from a stored season's ledger) are passed in by the caller
+ * and always beat an inferred one for the same pair.
+ */
+export function sharedHistory({ cast = [], pasts = {}, players = {}, real = [] } = {}) {
+  const out = [];
+  const seen = new Set();
+  const pairKey = (a, b) => [a, b].sort().join('|');
+  for (const r of real) {
+    if (!r?.a || !r?.b) continue;
+    out.push({ ...r, real: true });
+    seen.add(pairKey(r.a, r.b));
+  }
+  const names = cast.map(p => p?.name).filter(Boolean);
+  for (let i = 0; i < names.length; i++) {
+    for (let j = i + 1; j < names.length; j++) {
+      const a = names[i]; const b = names[j];
+      if (seen.has(pairKey(a, b))) continue;
+      const pa = pasts[a]; const pb = pasts[b];
+      if (!pa || !pb || pa.season !== pb.season) continue;
+      const A = players[a] || {}; const B = players[b] || {};
+      const warmth = (HIST_NICE.has(A.archetype) ? 1 : 0) + (HIST_NICE.has(B.archetype) ? 1 : 0)
+        - (HIST_SHARP.has(A.archetype) ? 1 : 0) - (HIST_SHARP.has(B.archetype) ? 1 : 0)
+        + (stat(A, 'loyalty') + stat(B, 'loyalty')) / 10 - 1;
+      const roll = hashOf(`${pairKey(a, b)}|hist`);
+      /* SHE BEAT ME IN THE SONG THAT SENT ME HOME. Only one of them can carry
+         it and it is the queen who finished higher, which is the only version
+         of "you ended my season" this show has: there is no vote to blame. */
+      const higher = pa.rank <= pb.rank ? a : b;
+      const lower = higher === a ? b : a;
+      /* `sent-home` IS CHECKED FIRST, and it does not care whether they liked
+         each other. It is the most loaded history this format has — she is in
+         a room with the queen who ended her season and now one of them may
+         hold the lipstick — and gating it behind "and they also disliked each
+         other" made it almost never happen: measured 0 grudges across a
+         ten-queen room, which left the grudge term in js/dr/legacy.js dead at
+         0.0%. Being beaten by a friend is its own story anyway. */
+      let kind;
+      if (roll < 0.34) kind = 'sent-home';
+      else if (warmth <= -0.6) kind = 'rival';
+      else if (warmth >= 0.6) kind = 'friend';
+      else if (roll < 0.62) kind = warmth >= 0 ? 'friend' : 'rival';
+      else kind = 'mates';
+      out.push(kind === 'sent-home'
+        ? { a: higher, b: lower, kind, season: pa.season }
+        : { a, b, kind, season: pa.season });
+    }
+  }
+  return out;
+}
+
+/** What that history is worth as a starting bond. */
+export function historyBond(kind) {
+  return { friend: 4, rival: -4, 'sent-home': -2, mates: 1 }[kind] || 0;
+}

@@ -116,3 +116,56 @@ export function legacyLine(pool, vars = {}, rng = Math.random) {
   const line = list[Math.floor(rng() * list.length) % list.length];
   return String(line).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+//  THE ROOM ALREADY KNOWS EACH OTHER
+// ══════════════════════════════════════════════════════════════════════
+//
+// The history beats: two queens out of the same season, meeting again in a
+// room where one of them is going home tonight. `{a}` and `{b}` are the pair,
+// `{s}` the season they shared.
+//
+// `sent-home` is written from the loser's side — she is the one carrying it —
+// so `{a}` is the queen who beat her and `{b}` is the queen who went home.
+export const HISTORY_BEATS = {
+  // At the door, when she sees who else got the call.
+  arrival: {
+    friend: [
+      '{b} sees {a} already at a station and the shriek is genuine. Season {s} put them in the same room for three months and they have not stopped since.',
+      '{a} and {b} do not say hello so much as pick something up mid-sentence, four years later.',
+      '"They cast us both again," {b} says to {a}, delighted and slightly afraid.',
+    ],
+    rival: [
+      '{b} clocks {a} across the room and the temperature drops about four degrees. Season {s} did not end well for either of them.',
+      '{a} says {b}’s name like a fact rather than a greeting. {b} returns it exactly.',
+      'They hug. It is the kind of hug two people do because there are cameras.',
+    ],
+    'sent-home': [
+      '{b} walks in, sees {a}, and the whole room watches her decide how to play it. {a} is the queen who beat her in the song that ended season {s}.',
+      '"Well," {b} says to {a}, "you owe me a season." {a} laughs. {b} half meant it.',
+      '{a} gets to {b} first. "I have thought about that lip sync every week since." "So have I," {b} says. "Differently."',
+    ],
+    mates: [
+      '{a} and {b} did season {s} together and pick up like colleagues who liked each other fine.',
+      '"Season {s}," {b} says to {a}, shaking her head. "We were babies."',
+    ],
+  },
+  // And in the werk room, once the season is under way.
+  room: {
+    friend: [
+      '{a} and {b} work side by side without talking much, which is what two people who already know how the other one sews look like.',
+      '"You are doing the thing you did in season {s}," {a} tells {b}. "The thing where you redo a good bodice." {b} puts the seam ripper down.',
+    ],
+    rival: [
+      '{a} and {b} manage a whole hour at neighbouring stations without a word. The room notices the hour.',
+      '"Do not do the face," {b} says, without looking up. {a} does the face.',
+    ],
+    'sent-home': [
+      '{b} tells the room what that lip sync was actually like, from her side of it. {a} listens to the whole thing and does not defend herself, which is the right call.',
+      '"I am not here to get her back," {b} says. "I am here to not be in that position again." Nobody in the room believes the first half.',
+    ],
+    mates: [
+      '{a} and {b} do ten minutes on how much better the workroom smells this time.',
+    ],
+  },
+};

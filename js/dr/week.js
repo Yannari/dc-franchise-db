@@ -49,7 +49,7 @@ import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
 import { chooseElimination } from './legacy.js';
-import { LEGACY_BEATS, LEGACY_CAMPAIGN, legacyLine } from './data/legacy-beats.js';
+import { LEGACY_BEATS, LEGACY_CAMPAIGN, HISTORY_BEATS, legacyLine } from './data/legacy-beats.js';
 import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
@@ -154,6 +154,7 @@ export function runDragWeek(state, cfg, ctx) {
     cast: [...living], players: ctx.players || {}, rng, star: state.star || {},
     // All Stars: every queen walks in with a record. Empty otherwise.
     pasts: state.allStars?.pasts || {},
+    history: state.allStars?.history || [],
   }) : [];
   for (const sc of arrivals) scenes.push(sc);
 
@@ -248,6 +249,53 @@ export function runDragWeek(state, cfg, ctx) {
   // are the ones that are about the room rather than about the work.
   // Declared before the room is drawn because the mini writes into it too.
   const werkEvents = [];
+
+  /* ── THE PAST, STILL IN THE ROOM ────────────────────────────────────
+     One callback a week to a season these two already shared. The premiere
+     has the meeting (js/dr/arrivals.js); this is what keeps it alive after
+     it — without it the history was a novelty in episode one and a set of
+     invisible bond numbers for the eleven weeks after.
+     Both queens have to still be here, and it rotates by episode so the same
+     pair does not carry it all season. It moves a bond, because an event that
+     changes nothing is not an event (the oldest rule in this repo). */
+  if (state.allStars?.history?.length && !isPremiere) {
+    const live = state.allStars.history.filter(h => living.includes(h.a) && living.includes(h.b));
+    /* LEAST RECENTLY USED, not `episode % length`: as queens leave the list
+       shrinks and a modulo lands on the same pair every week — measured, the
+       same callback ran verbatim on episodes 3, 4 and 5. The count is kept on
+       the season so a resumed week does not restart the rotation, and the
+       LINE is drawn without replacement inside the pair for the same reason. */
+    state.allStars.histSeen ||= {};
+    state.allStars.histLines ||= {};
+    const seen = state.allStars.histSeen;
+    const keyOf = h => `${h.a}|${h.b}`;
+    const pick0 = live.slice().sort((x, y) => (seen[keyOf(x)] || 0) - (seen[keyOf(y)] || 0)
+      || keyOf(x).localeCompare(keyOf(y)))[0];
+    const all = pick0 ? (HISTORY_BEATS.room[pick0.kind] || []) : [];
+    const used = pick0 ? (state.allStars.histLines[keyOf(pick0)] ||= []) : [];
+    const lines = all.filter(l => !used.includes(l));
+    if (pick0 && all.length) {
+      seen[keyOf(pick0)] = (seen[keyOf(pick0)] || 0) + 1;
+      const vars = pick0.kind === 'sent-home'
+        ? { a: pick0.a, b: pick0.b, s: pick0.season }
+        : { a: pick0.a, b: pick0.b, s: pick0.season };
+      const d = pick0.kind === 'friend' ? 1 : pick0.kind === 'rival' ? -1 : pick0.kind === 'sent-home' ? -0.5 : 0.5;
+      werkEvents.push({ type: `history:${pick0.kind}`, players: [pick0.a, pick0.b],
+        bond: [[pick0.a, pick0.b, d]], pop: {}, state: {}, data: {} });
+      scenes.push({
+        step: 'werk-morning', kind: `history:${pick0.kind}`,
+        data: { players: [pick0.a, pick0.b], kind: pick0.kind, season: pick0.season },
+        effects: { bond: d },
+        text: (() => {
+          const line = legacyLine(lines.length ? lines : all, vars, rng);
+          const raw = (lines.length ? lines : all).find(l => legacyLine([l], vars) === line);
+          if (raw && !used.includes(raw)) used.push(raw);
+          return line;
+        })(),
+      });
+    }
+  }
+
   /* AND FROM BEING IN THE ROOM AT ALL. A queen the werk room keeps cutting to
      is on television more than one it does not, whatever the scene was about.
      Small per scene, because it is the accumulation that reads as a presence

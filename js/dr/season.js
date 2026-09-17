@@ -24,7 +24,7 @@ import { RUNWAY_CATEGORIES } from './data/runways.js';
 import { rngFor, streamFor } from './rng.js';
 import { assignDragFamilies } from './family.js';
 import { initSaves } from './saves.js';
-import { castPasts, derivedCraft, craftIsFlat } from './past.js';
+import { castPasts, derivedCraft, craftIsFlat, sharedHistory, historyBond } from './past.js';
 import { panelFor } from './judges.js';
 import { performQueen } from './perform.js';
 import { judgeViews, panelRanking, hostBend } from './judging.js';
@@ -1185,7 +1185,26 @@ export function playDragSeason({
           Object.entries(p.drag || {}).filter(([, v]) => typeof v === 'number'));
       }
     }
-    state.allStars = { rule, pasts, craft };
+    /* ── AND WHO THEY ALREADY ARE TO EACH OTHER ──
+       The room walks in with a history: queens out of the same season are
+       friends, rivals, or one of them beat the other in the song that ended
+       her season. Applied as REAL BONDS through the caller's own ledger, so
+       every bond-gated event in the engine — reads, alliances, the campaign,
+       the legacy choice — sees them without a single new branch.
+       And a queen who was sent home by somebody in this room carries it into
+       the power ledger, which is what makes `grudge` a live input rather than
+       the 0.0% it measured across forty seasons. */
+    const history = sharedHistory({
+      cast, pasts, players: Object.fromEntries(cast.map(p => [p.name, p])),
+      real: config.drPastRelations || [],
+    });
+    state.allStars = { rule, pasts, craft, history };
+    state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] };
+    for (const h of history) {
+      const d = historyBond(h.kind);
+      if (d && addBond) addBond(h.a, h.b, d);
+      if (h.kind === 'sent-home') state.power.grudges.push({ by: h.b, against: h.a, season: h.season });
+    }
   }
 
   // The ledger, written into state so a headless season and a played one carry

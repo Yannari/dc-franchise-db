@@ -27,6 +27,7 @@ import {
   ARRIVAL_IMPRESSIONS,
   entranceAttitude, entranceLanding,
 } from './data/entrances.js';
+import { HISTORY_BEATS } from './data/legacy-beats.js';
 import { dragOf, starPower } from './queen.js';
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
@@ -80,7 +81,7 @@ const STYLE_WORDS = {
  * so the registry files them like any other and the transcript retranscribes
  * them without knowing they are special.
  */
-export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star = {}, pasts = {} } = {}) {
+export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star = {}, pasts = {}, history = [] } = {}) {
   if (!cast.length) return [];
   const draw = drawer(rng);
   const out = [{ step: 'arrivals', kind: 'arrivals', data: { cast: [...cast] }, text: '' }];
@@ -211,6 +212,32 @@ export function arrivalScenes({ cast = [], players = {}, rng = Math.random, star
         data: { players: [name], past },
         text: `Season ${past.season}: she ${ord(past.rank)}, with ${wins}. ${biz}.`,
       });
+    }
+    /* ── AND WHO IS ALREADY IN THE ROOM ────────────────────────────
+       She does not walk into a room of strangers. If somebody she shares a
+       season with is already through the door, that is the entrance — the
+       friend, the rival, or the queen who beat her in the song that ended her
+       last one. Only queens ALREADY INSIDE, for the same reason the room's
+       reaction is: the first queen through the door has nobody to see. */
+    const met = history.find(h => (h.a === name || h.b === name)
+      && already.includes(h.a === name ? h.b : h.a));
+    if (met) {
+      const other = met.a === name ? met.b : met.a;
+      /* `sent-home` is written from the loser's side, so the pair is ordered
+         beaten-by first. Everything else reads either way round. */
+      const vars2 = met.kind === 'sent-home'
+        ? { a: met.a, b: met.b, s: met.season }
+        : { a: other, b: name, s: met.season };
+      const line = draw(HISTORY_BEATS.arrival[met.kind] || [], `hist:${met.kind}:`);
+      if (line) {
+        out.push({
+          step: 'arrivals', kind: 'arrival:history',
+          data: { players: [name, other], kind: met.kind, season: met.season },
+          // Two queens who already know each other are not starting at zero.
+          bond: [[name, other, met.kind === 'friend' ? 1 : met.kind === 'rival' ? -1 : 0]],
+          text: fill(line, vars2),
+        });
+      }
     }
     const back = draw(usable(ARRIVAL_BACKSTORY[d.style]), `back:${d.style}:`);
     if (back) {

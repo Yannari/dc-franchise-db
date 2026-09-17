@@ -35,7 +35,7 @@ const ROSTER = roster.players.slice(0, 18);
 const CAST = ROSTER.map(p => p.name);
 
 const SOURCES = ['contract', 'index', 'drowned-causeway', 'nightjar-orrery',
-  'long-account', 'ash-vault', 'buried-alive', 'beacon-lighting', 'wicker-beasts', 'traitors-chess'];
+  'long-account', 'ash-vault', 'buried-alive', 'beacon-lighting', 'wicker-beasts', 'traitors-chess', 'church-match'];
 // `fileURLToPath` rather than handing a URL object straight to readFileSync:
 // under vitest's transform the relative-URL form resolved against the drive
 // root and every source arm below failed with ENOENT on `C:\js\...`.
@@ -149,7 +149,7 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
   // screen. All four are named here so a mission that quietly loses its
   // dilemma is a red test rather than a silent simplification.
   const DILEMMA = ['drowned-causeway', 'nightjar-orrery', 'long-account', 'ash-vault',
-    'buried-alive', 'beacon-lighting', 'wicker-beasts', 'traitors-chess'];
+    'buried-alive', 'beacon-lighting', 'wicker-beasts', 'traitors-chess', 'church-match'];
 
   it('every mission declares a dilemma, and it reads alignment through ctx and nowhere else', () => {
     for (const id of DILEMMA) {
@@ -203,6 +203,12 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
     },
     // Answers the room got right, out of five.
     'traitors-chess': r => (r.tally.right || 0) / 5,
+    // Items named, over the riddles read to a runner.
+    'church-match': r => {
+      const t = Object.values(r.tally.teams);
+      const read = t.reduce((a, x) => a + x.read, 0);
+      return read ? t.reduce((a, x) => a + x.named, 0) / read : 0;
+    },
     'buried-alive': r => {
       const w = Object.values(r.tally.wrong || {});
       return w.length ? 1 - w.reduce((a, b) => a + b, 0) / w.length : 0;
@@ -242,7 +248,9 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
         // knots that carried the flame: 0.773 conflicted (0.914 clean), measured 2026-09-16
         'wicker-beasts': 0.68,
         // answers right: 0.470 conflicted (0.528 clean), measured 2026-09-16
-        'traitors-chess': 0.42 };
+        'traitors-chess': 0.42,
+        // items named of those read: 0.524 conflicted (0.621 clean), measured 2026-09-16
+        'church-match': 0.46 };
       const all = runs(mission, 120, { traitors: CAST, from: 2000 });
       const rate = all.reduce((a, r) => a + DILEMMA_RATE[mission.id](r), 0) / all.length;
       expect(rate, `an all-conflicted castle got through the dilemma at a rate of `

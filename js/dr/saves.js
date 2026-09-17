@@ -16,6 +16,14 @@
 //                       that removes pulled levers needs five or more. A
 //                       mini challenge retired it in ep 10, with 8 left.
 //                       One pull per queen, always.
+//                       THE ROW IS SET ONCE (the user's rule, 2026-09-16):
+//                       how many levers and which of them are live is fixed
+//                       when the season starts and never rewired. A pulled
+//                       lever is gone whether it hit or missed, the lever a
+//                       queen picks is a blind, uniform choice among those
+//                       left, and once every live lever has been found the
+//                       tank is done. The bars are the same: which queens hold
+//                       gold is drawn at the start and never moves.
 //   holder  beaver      Canada S4-S6, CvtW S2. The maxi winner saves one of
 //                       a bottom three BEFORE the lip sync; two sing. Every
 //                       elimination week (CvtW S2 used it on ep 1; the S4-S6
@@ -61,7 +69,7 @@ export const SAVE_KINDS = {
   tank: {
     mode: 'luck', name: 'The Badonka Dunk Tank', short: 'Dunk Tank',
     color: '#38bdf8', chartNote: 'Saved by the Dunk Tank',
-    desc: 'A dunk tank sits on the main stage with a row of levers in front of it, and one lever (a season can wire more) drops the judge in the seat into the water. A queen who loses the lip sync gets one pull. Miss, and she sashays away and that lever is gone for good, so every pull makes the next one likelier. Hit, and the judge goes under, she stays, nobody goes home, and the tank is refilled with every lever back in play. It is there from the first episode, and once the room is down to its last eight a mini challenge drains it for good.',
+    desc: 'A dunk tank sits on the main stage with a row of levers in front of it, and one lever (a season can wire more) drops the judge in the seat into the water. A queen who loses the lip sync gets one pull. Miss, and she sashays away and that lever is gone for good, so every pull makes the next one likelier. Hit, and the judge goes under, she stays, nobody goes home, and that lever is spent too. Which levers are live is decided before the season starts and never changes, and once every live lever has been found the tank is drained for good. It is there from the first episode, and if any live lever is still hidden when the room is down to its last eight, a mini challenge drains it anyway.',
   },
   beaver: {
     mode: 'holder', name: 'The Golden Beaver', short: 'Golden Beaver',
@@ -117,7 +125,8 @@ export function initSaves({ kind, cast = [], rng, levers = 6, retireAt = 8, gold
     const all = Array.from({ length: n }, (_, i) => i + 1);
     return {
       kind, levers: n, liveCount: liveN, left: [...all],
-      live: drawDistinct(all, liveN, rng), dunks: 0, pulls: [],
+      // Wired once, here, for the whole season.
+      live: drawDistinct(all, liveN, rng), dunks: 0, pulls: [], drained: false,
       retireAt: clampInt(retireAt, 4, 20, 8), retired: false, introduced: false,
     };
   }
@@ -145,7 +154,7 @@ export function saveLiveTonight(saves, {
 } = {}) {
   if (!saves || blocked) return false;
   if (saves.kind === 'chocolate') return !saves.found;
-  if (saves.kind === 'tank') return !saves.retired;
+  if (saves.kind === 'tank') return !saves.retired && !saves.drained && (saves.left || []).length > 0;
   if (living < 5 || living <= finaleSize + 1) return false;
   return saves.kind === 'baguette' ? !!giver : true;
 }
@@ -784,22 +793,20 @@ export function luckSave({ saves, losers, rng }) {
       }
       tries.push({ queen: q, saved: golden, kind: 'chocolate', goldLeft: golds.length - (saves.foundBy || []).length });
     } else if (saves.kind === 'tank') {
-      if (saves.retired || !saves.left.length) continue;
+      if (saves.retired || saves.drained || !saves.left.length) continue;
       const before = [...saves.left];
       const liveNow = liveLevers(saves).filter(x => before.includes(x));
+      if (!liveNow.length) { saves.drained = true; continue; }
+      // A blind pick: every lever still in the row is as likely as any other.
       const lever = before[Math.floor(rng() * before.length)];
       const hit = liveNow.includes(lever);
       saves.pulls.push({ queen: q, lever, hit });
-      if (hit) {
-        // The tank is refilled: every lever back, fresh ones wired.
-        saves.dunks += 1;
-        const all = Array.from({ length: saves.levers }, (_, i) => i + 1);
-        saves.left = all;
-        saves.live = drawDistinct(all, saves.liveCount || liveNow.length || 1, rng);
-      } else {
-        saves.left = before.filter(x => x !== lever);
-      }
-      tries.push({ queen: q, saved: hit, kind: 'tank', lever, levers: before, liveCount: liveNow.length });
+      // Spent either way. Nothing is rewired.
+      saves.left = before.filter(x => x !== lever);
+      if (hit) saves.dunks += 1;
+      const liveLeft = liveNow.length - (hit ? 1 : 0);
+      if (!liveLeft) saves.drained = true;
+      tries.push({ queen: q, saved: hit, kind: 'tank', lever, levers: before, liveCount: liveNow.length, liveLeft });
     }
   }
   return tries;

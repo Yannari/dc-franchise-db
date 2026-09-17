@@ -226,7 +226,7 @@ Checked against the fandom wikitext, not remembered.
 | Save | Source (wiki chronology) | Who decides | When |
 |---|---|---|---|
 | **Golden Chocolate Bar** `chocolate` | US S14: bars arrive with the full cast (June Jambalaya, ep 3, first to open); found once (Bosco, ep 12) | luck | from the first night the WHOLE cast is in the room (a split season: the rejoin); a queen the lip sync sends home opens hers |
-| **Badonka Dunk Tank** `tank` | US S17: introduced ep 1; dunks on eps 2 and 5; four misses in a row (eps 6-9); retired by a mini challenge on ep 10 with 8 left | luck | from ep 1; a miss removes the lever, a dunk refills. `drTankLevers` (6: the ep 6-9 run needs 5+), retires at `drTankRetire` queens (8) |
+| **Badonka Dunk Tank** `tank` | US S17: introduced ep 1; dunks on eps 2 and 5; four misses in a row (eps 6-9); retired by a mini challenge on ep 10 with 8 left | luck | from ep 1. The row (how many levers, which are live) is fixed at the season's start and never rewired; every pulled lever is spent, hit or miss; the pick is uniform among the levers left; the tank is done once every live lever is found (`save:drained`), or at `drTankRetire` queens (8) if one is still hidden. `drTankLevers` (6) |
 | **Golden Beaver** `beaver` | Canada S4-S6, CvtW S2 (used on ep 1); two winners = two saves (S6 ep 3) | the maxi winner(s) | every elimination week, never the semi-final; a bottom three, or a bottom four on a double win |
 | **Golden Baguette** `baguette` | France S4 eps 2-6: last week's eliminated queen hands it over | the queen she hands it to | every week after an elimination, never the semi-final; no elimination last week = no baguette |
 
@@ -310,8 +310,9 @@ Rules that bite:
   `save-hold` (between the call and the song), `save-luck` (between the song
   and the exit). A queen who tried her luck and missed says goodbye on the
   luck screen, after the bar.
-- Measured over 30 seasons of 13: chocolate saves 0.8 a season, the tank 1.4
-  (S17 had 2) and always retires at 8, two-beaver nights 6 in 30 seasons, the
+- Measured over 30 seasons of 13: chocolate saves 0.8 a season, the tank
+  0.77 at 6 levers / 1 live (drained before 8 queens 23 of 30), 1.03 at 10 / 2,
+  3.0 at 6 / 3 (S17 had 2), two-beaver nights 6 in 30 seasons, the
   baguette's holder saves herself 42% (France: 2 of 5), first baguette ep 2.
 - Lines: `js/dr/data/save-beats.js`.
 

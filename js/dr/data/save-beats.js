@@ -44,6 +44,12 @@ export const SAVE_BEATS = {
       'Ru introduces the Golden Baguette. The last queen out decides who holds it, and the holder decides who is saved. Two decisions, two chances to make an enemy.',
     ],
   },
+  /* The last live lever has just been found: nothing left in the row can
+     dunk anybody. {a} is the queen who found it. */
+  drained: [
+    'That was the last live lever. The tank is done, and from next week losing the lip sync means going home.',
+    'Michelle climbs out, soaked, and waves goodbye to the tank. {a} found the last live lever. There are no more.',
+  ],
   retire: [
     'The dunk tank is drained and wheeled off. From tonight, losing the lip sync means going home.',
     'Michelle climbs out of the tank for the last time. No more levers. The next queen to lose a lip sync is gone.',

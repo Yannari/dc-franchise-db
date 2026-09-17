@@ -1052,12 +1052,20 @@ export function rpBuildSaveLuck(row, scenes = []) {
       const chosen = t?.lever;
       const was = [...live];
       railLate = railNow();
-      if (t?.saved) { dunks += 1; live = Array.from({ length: total }, (_, k) => k + 1); } else live = live.filter(x => x !== chosen);
+      if (t?.saved) dunks += 1;
+      /* Spent either way. An episode played before the row was fixed for the
+         season (no `liveLeft` on the try) refilled on a dunk, and shows that. */
+      live = t?.saved && t.liveLeft === undefined
+        ? Array.from({ length: total }, (_, k) => k + 1)
+        : live.filter(x => x !== chosen);
       steps.push({
         lead: 'pull', leadMs: 1200, leadCaption: cap('The lever', `Lever ${chosen}…`), phase: t?.saved ? 'hit' : 'miss', portrait: face(q, ep),
         caption: cap(t?.saved ? 'Splash!' : 'The lever', sc.text),
         levers: { live: was, chosen, missed: !t?.saved }, count: live.length,
       });
+    } else if (sc.kind === 'save:drained') {
+      steps.push({ phase: 'drained', portrait: face(q, ep), caption: cap('Drained', sc.text),
+        levers: { live: [...live] }, count: 0 });
     } else if (sc.kind === 'save:aftermath') {
       steps.push(kind === 'tank'
         ? { phase: 'hit', portrait: face(q, ep), caption: cap('Nobody goes home', sc.text),
@@ -1108,7 +1116,7 @@ export function rpBuildSaveLuck(row, scenes = []) {
   }
 
   const tagOf = sc => ({ 'save:ask': 'Last chance', 'save:open': 'The bar', 'save:pull': 'The lever',
-    'save:aftermath': 'Nobody goes home' }[sc.kind] || 'Sashay away');
+    'save:aftermath': 'Nobody goes home', 'save:drained': 'The tank is done' }[sc.kind] || 'Sashay away');
   const cards = list.map((sc, i) => card('saveluck', i, sc, ep, tagOf(sc), meta.color));
   publishRail('saveluck', railRows);
   return page(row, 'saveluck', {

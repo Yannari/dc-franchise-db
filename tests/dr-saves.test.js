@@ -89,24 +89,37 @@ describe('the golden chocolate bar', () => {
 });
 
 describe('the dunk tank', () => {
-  it('removes a missed lever, refills on a dunk, and stops once retired', () => {
-    let dunks = 0;
+  it('spends every pulled lever, never rewires, and stops once the live ones are found', () => {
+    let dunks = 0; let drained = 0;
     for (const s of SEEDS) {
-      const res = season(s, { drSave: 'tank', drTankLevers: 4, drTankRetire: 8 });
-      let inPlay = [1, 2, 3, 4];
-      let retiredAt = null;
-      for (const r of weekly(res)) {
-        if (r.dr.scenes.some(x => x.kind === 'save:retire')) retiredAt = r.num;
-        for (const t of r.dr.save?.tries || []) {
-          expect(retiredAt, 'a lever was pulled after the tank retired').toBeNull();
-          expect(t.levers).toEqual(inPlay);
-          expect(inPlay).toContain(t.lever);
-          if (t.saved) { dunks++; inPlay = [1, 2, 3, 4]; } else inPlay = inPlay.filter(x => x !== t.lever);
+      for (const cfg of [{ drTankLevers: 4, drTankLive: 1 }, { drTankLevers: 10, drTankLive: 2 }]) {
+        const res = season(s, { drSave: 'tank', drTankRetire: 8, ...cfg });
+        const n = cfg.drTankLevers;
+        let inPlay = Array.from({ length: n }, (_, i) => i + 1);
+        let stopped = null; let found = 0;
+        let live0 = null;
+        for (const r of weekly(res)) {
+          const st = r.dr.savesState;
+          if (st?.live) {
+            if (!live0) live0 = [...st.live];
+            expect(st.live, 'the live levers moved mid-season').toEqual(live0);
+          }
+          if (r.dr.scenes.some(x => x.kind === 'save:retire')) stopped = stopped ?? r.num;
+          for (const t of r.dr.save?.tries || []) {
+            expect(stopped, 'a lever was pulled after the tank stopped').toBeNull();
+            expect(t.levers).toEqual(inPlay);
+            expect(inPlay).toContain(t.lever);
+            inPlay = inPlay.filter(x => x !== t.lever);
+            if (t.saved) { dunks++; found++; }
+            if (t.liveLeft === 0) { drained++; stopped = r.num + 0.5; }
+          }
+          if (stopped !== null && stopped % 1) stopped = r.num;   // the drain night itself is allowed its own pulls
         }
-        if (retiredAt === r.num) expect(r.dr.roomAtStart.length).toBeLessThanOrEqual(8);
+        expect(found).toBeLessThanOrEqual(cfg.drTankLive);
       }
     }
     expect(dunks, 'nobody was ever dunked').toBeGreaterThan(0);
+    expect(drained, 'no tank was ever emptied of live levers').toBeGreaterThan(0);
   });
 
   it('keeps the queen a dunk saved and sends nobody else home for her', () => {
@@ -470,13 +483,20 @@ describe('the settings', () => {
     expect(saves).toBeGreaterThan(12);
   });
 
-  it('live levers: 1 to 3, one pull each, and a hit rewires the same number', () => {
+  it('live levers: 1 to 3, one pull each, fixed for the season, and a hit is spent', () => {
     const s = initSaves({ kind: 'tank', rng: rngFor(3), levers: 6, live: 3 });
     expect(s.live).toHaveLength(3);
+    const wired = [...s.live];
     const tries = luckSave({ saves: s, losers: ['A', 'B', 'C', 'D', 'E'], rng: rngFor(11) });
-    expect(tries).toHaveLength(5);
-    expect(new Set(tries.map(t => t.queen)).size).toBe(5);
-    expect(s.live).toHaveLength(3);
+    expect(new Set(tries.map(t => t.queen)).size).toBe(tries.length);
+    expect(s.live).toEqual(wired);
+    expect(s.left).toEqual([1, 2, 3, 4, 5, 6].filter(x => !tries.some(t => t.lever === x)));
+    // Every live lever found: the tank takes no more pulls.
+    const t = initSaves({ kind: 'tank', rng: rngFor(3), levers: 3, live: 2 });
+    luckSave({ saves: t, losers: ['A', 'B', 'C', 'D'], rng: rngFor(5) });
+    expect(t.drained).toBe(true);
+    expect(t.pulls.filter(p => p.hit)).toHaveLength(2);
+    expect(luckSave({ saves: t, losers: ['E'], rng: rngFor(6) })).toEqual([]);
     expect(initSaves({ kind: 'tank', rng: rngFor(3), levers: 2, live: 3 }).live).toHaveLength(1);
   });
 });
@@ -487,7 +507,8 @@ describe('the engine pieces', () => {
     saves.left = [saves.live[0]];
     const [t] = luckSave({ saves, losers: ['Q'], rng: rngFor(9) });
     expect(t.saved).toBe(true);
-    expect(saves.left).toHaveLength(3);
+    expect(saves.left).toHaveLength(0);
+    expect(saves.drained).toBe(true);
   });
 
   it('every kind explains itself in at least two sentences', () => {

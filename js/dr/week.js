@@ -215,7 +215,7 @@ export function runDragWeek(state, cfg, ctx) {
         saveScene('save-intro', 'handout', { players: fresh.slice(0, 2), handedTo: fresh },
           saveLine(SAVE_BEATS.intro.chocolate, {}));
       }
-    } else if (saves.kind === 'tank' && !saves.retired && living.length <= saves.retireAt
+    } else if (saves.kind === 'tank' && !saves.retired && !saves.drained && living.length <= saves.retireAt
       && saves.introduced) {
       saves.retired = true;
       saveScene('save-intro', 'retire', { dunks: saves.dunks },
@@ -1514,6 +1514,9 @@ export function runDragWeek(state, cfg, ctx) {
       if (t.saved && lipsync.winner && lipsync.winner !== t.queen) {
         saveScene('save-luck', 'aftermath', { players: [t.queen, lipsync.winner] },
           saveLine(SAVE_BEATS.aftermath.savedLuck, vars));
+      }
+      if (t.kind === 'tank' && t.saved && t.liveLeft === 0) {
+        saveScene('save-luck', 'drained', { players: [t.queen] }, saveLine(SAVE_BEATS.drained, vars));
       }
     }
   }

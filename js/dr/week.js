@@ -48,6 +48,8 @@ import { critiqueLines, runReactions, whoShouldGoHome, rateAQueen } from './crit
 import { renderStageBeats, runUntucked, applyUntuckedScene, renderChallengeBeats,
   renderMaxiEventScenes } from './stage.js';
 import { lipsyncScore, lipsyncCall } from './lipsync.js';
+import { chooseElimination } from './legacy.js';
+import { recordUse } from './power.js';
 import { runMaxi, applyEvents } from './maxi.js';
 import { showWords } from '../shows.js';
 import { familyForChallenge } from './data/maxi-performance.js';
@@ -827,6 +829,10 @@ export function runDragWeek(state, cfg, ctx) {
      out of that same bottom and naming them first would announce the pool
      she picks from before she has picked. */
   const legacy = !!(cfg.legacy && bend.length >= 4);
+  /* What the bottom bought itself in Untucked, on a legacy night. Filled by
+     the campaign below; an empty object until then, which is the correct
+     reading of a room that said nothing. */
+  let legacyPleas = {};
   /* ── ANY NIGHT NOBODY GOES HOME, NOT ONLY A RATE-A-QUEEN ONE ──
      This was gated on `cfg.rateAQueen && cfg.noElimination`, which was the
      twist the staging arrived with rather than a reason. On every other
@@ -1463,13 +1469,42 @@ export function runDragWeek(state, cfg, ctx) {
       const pool = (call.bottom.length ? call.bottom : bend.slice(2).map(r => r.name))
         .filter(n => n !== a && n !== b);
       if (pool.length) {
-        const appetite = ballotSelfishness(P(lc.winner));
-        const chosen = appetite >= 0.4 ? pool[0] : pool[pool.length - 1];
-        exits.push(chosen);
-        lipsync.eliminated = chosen;
-        lipsync.chosenBy = lc.winner;
-        lipsync.legacy = true;
-        say('lipsync', 'legacy-choice', { winner: lc.winner, eliminated: chosen, pool });
+        /* ── SHE SPENDS IT ──
+           js/dr/legacy.js decides and hands back the reason the ceremony
+           prints, so the screen cannot narrate a different decision from the
+           one the chart records. This was `appetite >= 0.4 ? first : last` —
+           a coin with two faces that could not see a grudge, a friendship, a
+           plea or a track record.
+           Still not a vote: one queen, alone, out of the bottom the panel
+           named. What the room did in Untucked arrives as `legacyPleas`, a
+           weight on her own read, and nothing else is counted. */
+        state.power ||= { uses: [], debts: [], grudges: [], promises: [], hopes: [] };
+        const choice = chooseElimination({
+          winner: lc.winner, pool,
+          players: Object.fromEntries(living.map(n => [n, P(n)])),
+          bond: (x, y) => Number(ctx.bond?.(x, y)) || 0,
+          state, ledger: state.power, pleas: legacyPleas, panelOrder: pool, rng,
+        });
+        const chosen = choice.target;
+        if (chosen) {
+          exits.push(chosen);
+          lipsync.eliminated = chosen;
+          lipsync.chosenBy = lc.winner;
+          lipsync.legacy = true;
+          lipsync.why = choice.why;
+          lipsync.reason = choice.reason;
+          /* ONE PICK PER QUEEN, because `timesSpared` counts picks whose
+             `saved` is a NAME — the shape the Beaver writes. A single entry
+             carrying an array would count as nobody. */
+          recordUse(state.power, {
+            ep: cfg.num, holder: lc.winner,
+            picks: pool.filter(n => n !== chosen).map(n => ({ saved: n, eliminated: chosen })),
+          });
+          say('lipsync', 'legacy-choice', {
+            winner: lc.winner, eliminated: chosen, pool,
+            why: choice.why, reason: choice.reason,
+          });
+        }
       }
     }
 

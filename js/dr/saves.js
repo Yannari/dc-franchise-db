@@ -59,6 +59,7 @@
 // PLAIN DATA ONLY on `state.saves` — it is serialised with the season and
 // snapshotted per episode, so a re-run rebuilds the same tank.
 import { noise } from './perform.js';
+import { powerMind, timesSpared, deliveredSince } from './power.js';
 
 export const SAVE_KINDS = {
   chocolate: {
@@ -173,47 +174,17 @@ function canScheme(p) {
   return stat(p, 'strategic') >= 6 && stat(p, 'loyalty') <= 4;
 }
 
-/* ── HOW A QUEEN WEIGHS A SAVE ─────────────────────────────────────────
-   Three pulls, and every queen feels all three. Nobody is only one thing:
-     strategy  keep the queen I can beat              strategic, low loyalty
-     merit     save whoever did not deserve the bottom boldness, intuition
-     fair      spread it around, reward the people     social, loyalty
-   The archetype leans on them (a villain plays harder, a nice queen spreads
-   it around more) but never zeroes one: a hero still wants to win, a villain
-   still notices who was robbed. Normalised, so the three sum to one.
-   This is the save's own read; `ballotSelfishness` stays as the legacy
-   choice and Rate-a-Queen use it, where the nice-queen zero is the rule. */
-const NICE_MIND = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
-const VILLAIN_MIND = new Set(['villain', 'mastermind', 'schemer']);
-const MERIT_MIND = new Set(['challenge-beast', 'hothead', 'perceptive-player']);
-export function holderMind(p) {
-  const a = p?.archetype || '';
-  const s = stat(p, 'strategic') / 10;
-  const l = stat(p, 'loyalty') / 10;
-  const strat = 0.05 + s * (1.2 - l) * (VILLAIN_MIND.has(a) ? 1.6 : NICE_MIND.has(a) ? 0.45 : 1);
-  const merit = 0.1 + (stat(p, 'boldness') + stat(p, 'intuition')) / 20 * (MERIT_MIND.has(a) ? 1.3 : 1);
-  const fair = 0.1 + (stat(p, 'social') + stat(p, 'loyalty')) / 20
-    * (NICE_MIND.has(a) ? 1.3 : VILLAIN_MIND.has(a) ? 0.5 : 1);
-  const t = strat + merit + fair;
-  return { strategy: strat / t, merit: merit / t, fair: fair / t };
-}
+/* ── THE LEDGER AND THE MIND LIVE IN js/dr/power.js NOW ───────────────
+   One account, shared with the legacy choice (All Stars): one queen sparing
+   another and one queen ending another are the same fact about the same
+   relationship, and two ledgers that never met could not carry it.
 
-/** How many times this season's save has already gone to `q`. */
-export function timesSaved(saves, q) {
-  return (saves?.uses || []).reduce((n, u) => n + (u.picks || []).filter(x => x.saved === q).length, 0);
-}
-/** The last episode she was saved on, or 0. */
-function lastSavedEp(saves, q) {
-  return (saves?.uses || []).filter(u => (u.picks || []).some(x => x.saved === q))
-    .reduce((m, u) => Math.max(m, Number(u.ep) || 0), 0);
-}
-/** What she did with it: wins and highs on the chart since that save. */
-export function deliveredSince(saves, q, state) {
-  const ep = lastSavedEp(saves, q);
-  if (!ep) return { wins: 0, highs: 0 };
-  const rec = (state?.record?.[q] || []).slice(ep);
-  return { wins: rec.filter(r => r === 'WIN').length, highs: rec.filter(r => r === 'HIGH').length };
-}
+   Re-exported under the names four modules and two suites already call, so
+   this move changes NO behaviour -- tests/dr-saves.test.js is the guard for
+   that, and it was green before the move and after it. */
+export { deliveredSince, recordUse, initLedger } from './power.js';
+export const holderMind = powerMind;
+export const timesSaved = timesSpared;
 
 const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
 function weighted(rng, opts) {

@@ -35,7 +35,7 @@ const ROSTER = roster.players.slice(0, 18);
 const CAST = ROSTER.map(p => p.name);
 
 const SOURCES = ['contract', 'index', 'drowned-causeway', 'nightjar-orrery',
-  'long-account', 'ash-vault', 'buried-alive', 'beacon-lighting'];
+  'long-account', 'ash-vault', 'buried-alive', 'beacon-lighting', 'wicker-beasts'];
 // `fileURLToPath` rather than handing a URL object straight to readFileSync:
 // under vitest's transform the relative-URL form resolved against the drive
 // root and every source arm below failed with ENOENT on `C:\js\...`.
@@ -149,7 +149,7 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
   // screen. All four are named here so a mission that quietly loses its
   // dilemma is a red test rather than a silent simplification.
   const DILEMMA = ['drowned-causeway', 'nightjar-orrery', 'long-account', 'ash-vault',
-    'buried-alive', 'beacon-lighting'];
+    'buried-alive', 'beacon-lighting', 'wicker-beasts'];
 
   it('every mission declares a dilemma, and it reads alignment through ctx and nowhere else', () => {
     for (const id of DILEMMA) {
@@ -196,6 +196,11 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
       const b = r.phases[1].beats;
       return b.length ? b.filter(x => x.kind !== 'bad').length / b.length : 0;
     },
+    // Knots that carried the flame, over everybody who tied one.
+    'wicker-beasts': r => {
+      const b = r.phases[2].beats;
+      return b.length ? b.filter(x => x.kind !== 'bad').length / b.length : 0;
+    },
     'buried-alive': r => {
       const w = Object.values(r.tally.wrong || {});
       return w.length ? 1 - w.reduce((a, b) => a + b, 0) / w.length : 0;
@@ -231,7 +236,9 @@ describe('undermining is a shift to a probability, never a guarantee', () => {
         // plot calls right: 0.708 conflicted (0.853 clean), measured 2026-09-16
         'buried-alive': 0.62,
         // pieces set right: 0.772 conflicted (0.906 clean), measured 2026-09-16
-        'beacon-lighting': 0.67 };
+        'beacon-lighting': 0.67,
+        // knots that carried the flame: 0.773 conflicted (0.914 clean), measured 2026-09-16
+        'wicker-beasts': 0.68 };
       const all = runs(mission, 120, { traitors: CAST, from: 2000 });
       const rate = all.reduce((a, r) => a + DILEMMA_RATE[mission.id](r), 0) / all.length;
       expect(rate, `an all-conflicted castle got through the dilemma at a rate of `

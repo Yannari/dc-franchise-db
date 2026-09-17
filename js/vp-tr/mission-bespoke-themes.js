@@ -18,6 +18,7 @@
 // paintSide(prefix, states, n), and the four control words.
 import { BURIED } from './mission-theme-buried-alive.js';
 import { BEACON } from './mission-theme-beacon-lighting.js';
+import { WICKER } from './mission-theme-wicker-beasts.js';
 
 const NAV = '46px';
 const _esc = s => String(s == null ? '' : s)
@@ -888,4 +889,4 @@ const VAULT = {
 `,
 };
 
-export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON];
+export const THEMES = [CAUSEWAY, ORRERY, ACCOUNT, VAULT, BURIED, BEACON, WICKER];

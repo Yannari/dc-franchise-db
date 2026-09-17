@@ -43,6 +43,7 @@ import { buriedAlive } from './buried-alive.js';
 import { beaconLighting } from './beacon-lighting.js';
 import { wickerBeasts } from './wicker-beasts.js';
 import { traitorsChess } from './traitors-chess.js';
+import { churchMatch } from './church-match.js';
 
 /**
  * The catalogue, in the order they were written.
@@ -64,6 +65,7 @@ export const TRAITORS_MISSIONS = Object.freeze([
   beaconLighting,
   wickerBeasts,
   traitorsChess,
+  churchMatch,
 ]);
 
 /** Every bespoke mission id, for tests and for anything enumerating the catalogue. */

@@ -105,7 +105,7 @@ const TR = 'traitors';
 
 /** The record fields a Shield search writes, one per mission. */
 const SHIELD_FIELDS = new Set(['leftTheRelay', 'askedForMoreTime', 'wentForTheFont',
-  'setTheHiddenRing', 'tookTheAgentsOffer', 'wentForAShield', 'unpickedTheHare', 'tookTheGambit']);
+  'setTheHiddenRing', 'tookTheAgentsOffer', 'wentForAShield', 'unpickedTheHare', 'tookTheGambit', 'wonTheKneeling']);
 
 const GOOD = new Set(['strong', 'cross', 'right', 'sharp', 'true', 'on', 'good', 'win']);
 const BAD = new Set(['weak', 'freeze', 'wrong', 'lost', 'out', 'bad', 'lose', 'stop', 'dull']);

@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wicker Beasts — mission mockup</title>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  mockup-tr-wicker-beasts.html — visual target for the seventh bespoke mission
+  ══════════════════════════════════════════════════════════════════════
+  From the wiki (thetraitors.fandom.com/wiki/Wicker_Beasts — UK S1, US S1,
+  Portugal S1). Two teams each build a fuse and set fire to a wicker beast
+  inside thirty minutes. Half of each team searches the debris on one side
+  of the river for rope to make the fuse; the other half rows across the
+  lake to fetch a torch. The first team to set its beast alight earns the
+  full prize, the second earns half.
+
+  THE SHIELD is a small wicker hare hidden somewhere in the debris with a
+  Shield tied inside it. Whoever stops to open it is not gathering rope, and
+  their team's fuse is shorter for it.
+
+  IT SHARES NOTHING WITH THE SIX BEFORE IT. This is FOLK-HORROR DAYLIGHT:
+  straw gold, woad blue, moss and charred black, red ribbons tied to the
+  wicker, a hand-cut display face.
+
+  THE ORGANISING PRIMITIVE IS THE FIELD IN PROFILE. From left to right: the
+  debris pile with rope coils coming out of it, the river with two rowing
+  boats crossing it, and the two giant beasts — a stag and a boar — with a
+  fuse running along the ground to each. Rope meters fill as rope is found,
+  a boat moves as it is rowed, the fuse lengthens as it is tied, and fire
+  climbs the beast when it is lit. The first beast to burn gets a red ribbon.
+
+  Cards are WOVEN IN: they slide in from the side with a straw weave that
+  settles behind them.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Almendra+Display&family=Spectral:ital,wght@0,400;0,600;1,400&family=Cutive+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wb-char:#16130e; --wb-soil:#2a241a; --wb-straw:#e2b95a; --wb-straw-lo:#8f6e2c; --wb-woad:#3f6c9b;
+  --wb-woad-lo:#223e5c; --wb-moss:#5d7a3d; --wb-cream:#f3ead2; --wb-ash:#b5ab97; --wb-ribbon:#c2362b;
+  --wb-fire:#ff8a2a; --wb-fire-hi:#ffd66b; --wb-shield:#f3cf5c; --wb-nav:46px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--wb-char);color:var(--wb-ash);font-family:'Spectral',Georgia,serif;font-size:18px;line-height:1.55;overflow-x:hidden}
+button{font:inherit}
+.wb-navstub{position:fixed;inset:0 0 auto 0;height:var(--wb-nav);z-index:60;background:#0d0b08;border-bottom:1px solid #000;
+  display:flex;align-items:center;gap:16px;padding:0 16px;font:13px/1 'Cutive Mono',monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:#6b6252;white-space:nowrap;overflow:hidden}
+.wb-navstub b{color:var(--wb-straw)}
+
+/* ── ATMOSPHERE: an overcast field, straw on the wind ───────────── */
+.wb-sky{position:fixed;left:0;right:0;top:var(--wb-nav);bottom:0;z-index:0;pointer-events:none;
+  background:radial-gradient(70% 45% at 30% 0%,rgba(226,185,90,.10),transparent 70%),
+    linear-gradient(180deg,#26221a 0%,#1a1711 50%,#110f0b 100%)}
+.wb-weave{position:fixed;left:0;right:0;top:var(--wb-nav);bottom:0;z-index:0;pointer-events:none;opacity:.07;
+  background:repeating-linear-gradient(45deg,var(--wb-straw) 0 2px,transparent 2px 14px),
+    repeating-linear-gradient(-45deg,var(--wb-straw) 0 2px,transparent 2px 14px)}
+.wb-chaff{position:fixed;left:0;right:0;top:var(--wb-nav);bottom:0;z-index:1;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(20deg,transparent 48%,var(--wb-straw) 49%,var(--wb-straw) 51%,transparent 52%),
+    linear-gradient(-30deg,transparent 48%,var(--wb-straw-lo) 49%,var(--wb-straw-lo) 51%,transparent 52%);
+  background-size:9px 9px,7px 7px;background-position:10% 20%,70% 60%;
+  -webkit-mask-image:radial-gradient(2px 2px at 12% 20%,#000 99%,transparent),radial-gradient(2px 2px at 58% 40%,#000 99%,transparent),radial-gradient(2px 2px at 86% 75%,#000 99%,transparent);
+  mask-image:radial-gradient(2px 2px at 12% 20%,#000 99%,transparent),radial-gradient(2px 2px at 58% 40%,#000 99%,transparent),radial-gradient(2px 2px at 86% 75%,#000 99%,transparent);
+  animation:wb-drift 18s linear infinite}
+@keyframes wb-drift{from{transform:translateX(0)}to{transform:translateX(60px)}}
+
+.wb-shell{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:calc(var(--wb-nav) + 26px) 16px 132px}
+
+/* ── HERO: a woven panel with ribbons ────────────────────────────── */
+.wb-hero{position:relative;padding:34px 26px 26px;text-align:center;overflow:hidden;border-radius:8px;
+  background:
+    repeating-linear-gradient(45deg,rgba(226,185,90,.08) 0 3px,transparent 3px 12px),
+    repeating-linear-gradient(-45deg,rgba(226,185,90,.08) 0 3px,transparent 3px 12px),
+    linear-gradient(180deg,#3a2f1c,#1d1810);
+  border:2px solid var(--wb-straw-lo);box-shadow:0 18px 44px rgba(0,0,0,.6)}
+.wb-ribbon{position:absolute;top:-6px;width:14px;height:70px;background:var(--wb-ribbon);clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%)}
+.wb-ribbon.l{left:34px}.wb-ribbon.r{right:34px}
+.wb-kicker{font:13px/1 'Cutive Mono',monospace;letter-spacing:.3em;text-transform:uppercase;color:var(--wb-straw)}
+.wb-title{font-family:'Almendra Display',serif;font-weight:400;color:var(--wb-cream);font-size:clamp(46px,9vw,98px);line-height:.95;margin:.12em 0 .06em;
+  text-shadow:2px 2px 0 #000,0 0 26px rgba(255,138,42,.25)}
+.wb-title span{color:var(--wb-straw)}
+.wb-sub{color:#c3b79c;max-width:58ch;margin:0 auto;font-style:italic}
+.wb-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+.wb-chip{font:12px/1 'Cutive Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--wb-cream);
+  border:1px solid var(--wb-straw-lo);padding:6px 11px;background:rgba(0,0,0,.35)}
+.wb-chip.shield{border-color:var(--wb-shield);color:var(--wb-shield)}
+.wb-roster{display:flex;justify-content:center;gap:34px;flex-wrap:wrap;margin-top:18px}
+.wb-rteam small{display:block;font:12px/1 'Cutive Mono',monospace;letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px}
+.wb-rteam.stag small{color:var(--wb-woad)}.wb-rteam.boar small{color:var(--wb-ribbon)}
+
+.wb-av{width:34px;height:34px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#2a241a;
+  border:2px solid var(--wb-straw-lo);box-shadow:0 2px 8px rgba(0,0,0,.6);display:inline-block;vertical-align:middle}
+.wb-faces{display:inline-flex}
+.wb-faces .wb-av+.wb-av{margin-left:-9px}
+
+.wb-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:24px;align-items:start}
+@media(max-width:940px){.wb-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── BRIEFING ─────────────────────────────────────────────────────── */
+.wb-brief{background:rgba(22,19,14,.9);border:1px solid #3a3122;border-top:4px solid var(--wb-straw);padding:20px 20px 16px}
+.wb-brief h2,.wb-phase-name{font-family:'Almendra Display',serif;font-weight:400;color:var(--wb-cream)}
+.wb-brief h2{font-size:34px;margin:0}
+.wb-host{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.wb-host .wb-av{width:46px;height:46px;border-color:var(--wb-straw)}
+.wb-host small{display:block;font:12px/1.4 'Cutive Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8a806c}
+.wb-staging{font-style:italic;color:#9b917c;border-bottom:1px solid #3a3122;padding-bottom:12px;margin:8px 0 14px}
+.wb-beat{margin:0 0 11px}
+.wb-beat p{margin:0}
+.wb-beat.do p{font:15px/1.5 'Cutive Mono',monospace;color:#8a806c}
+.wb-beat.say p{color:var(--wb-cream);padding-left:14px;border-left:3px double var(--wb-straw-lo)}
+.wb-beat.shield p{border-left-color:var(--wb-shield);color:#fbe8b0}
+.wb-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.wb-rule{font:11px/1 'Cutive Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#9b917c;border:1px dashed #5b4f39;padding:5px 8px}
+.wb-rule b{color:var(--wb-straw);font-weight:400;margin-right:4px}
+.wb-rule.shield b{color:var(--wb-shield)}
+
+/* ── PHASES ───────────────────────────────────────────────────────── */
+.wb-phase{margin-top:28px}
+.wb-phase-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:6px;border-bottom:2px dotted #5b4f39}
+.wb-phase-n{font:15px/1 'Cutive Mono',monospace;color:#16130e;background:var(--wb-straw);padding:6px 9px;transform:rotate(-3deg)}
+.wb-phase-name{font-size:34px;line-height:1}
+.wb-phase-stats{margin-left:auto;display:flex;gap:6px}
+.wb-stat{font:11px/1 'Cutive Mono',monospace;font-style:normal;text-transform:uppercase;letter-spacing:.1em;color:#c3b79c;background:#2a241a;padding:5px 8px}
+.wb-setting{font-style:italic;color:#9b917c;margin:8px 0 12px}
+
+/* ── CARDS: woven in ──────────────────────────────────────────────── */
+.wb-card{position:relative;margin:0 0 12px;padding:14px 16px 13px 64px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(42,36,26,.95),rgba(26,22,16,.96));border:1px solid #3a3122;
+  opacity:0;transform:translateX(-26px);transition:opacity .45s ease,transform .6s cubic-bezier(.2,.9,.25,1.1)}
+.wb-card::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:repeating-linear-gradient(45deg,rgba(226,185,90,.18) 0 2px,transparent 2px 10px);transition:opacity 1.2s ease}
+.wb-card.on{opacity:1;transform:none}
+.wb-card.on::before{opacity:.25}
+.wb-card.good{border-left:4px solid var(--wb-moss)}
+.wb-card.bad{border-left:4px solid var(--wb-ribbon)}
+.wb-card.social{border-left:4px solid var(--wb-woad)}
+.wb-card.relic{border:1px solid var(--wb-shield);box-shadow:0 0 22px rgba(243,207,92,.16)}
+.wb-card.fire{border:1px solid var(--wb-fire);box-shadow:0 0 30px rgba(255,138,42,.22);background:linear-gradient(180deg,rgba(80,34,10,.9),rgba(30,16,8,.96))}
+.wb-ico{position:absolute;left:14px;top:14px;width:36px;height:36px}
+.wb-ico svg{width:100%;height:100%;display:block}
+.wb-tag{float:right;font:11px/1 'Cutive Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9b917c;margin:4px 0 0 10px}
+.wb-card.good .wb-tag{color:#9dbb74}.wb-card.bad .wb-tag{color:#e0735f}.wb-card.relic .wb-tag{color:var(--wb-shield)}.wb-card.fire .wb-tag{color:var(--wb-fire)}
+.wb-who{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--wb-cream)}
+.wb-who i{font-style:normal;font-weight:400;color:#9b917c}
+.wb-card.good .wb-av{border-color:#9dbb74}.wb-card.bad .wb-av{border-color:var(--wb-ribbon)}.wb-card.relic .wb-av{border-color:var(--wb-shield)}.wb-card.fire .wb-av{border-color:var(--wb-fire)}
+.wb-txt{margin-top:6px;position:relative}
+.wb-conf{position:relative;margin-top:10px;padding:9px 12px;background:rgba(0,0,0,.32);border-left:3px double var(--wb-woad);font-style:italic;color:#e3dbc7}
+.wb-conf small{display:block;font:11px/1.4 'Cutive Mono',monospace;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#7ea2c9}
+.wb-fx{position:relative;display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.wb-fx span{font:11px/1 'Cutive Mono',monospace;color:#c3b79c;border:1px dashed #5b4f39;padding:4px 7px}
+.wb-summary{margin-top:24px;padding:18px 20px;border:2px solid var(--wb-straw-lo);background:rgba(22,19,14,.92);transition:opacity .4s}
+.wb-summary small{display:block;font:11px/1.4 'Cutive Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--wb-straw);margin-bottom:4px}
+
+/* ── SIDEBAR: the field in profile ────────────────────────────────── */
+.wb-side{position:sticky;top:calc(var(--wb-nav) + 14px)}
+.wb-panel{background:rgba(14,12,9,.95);border:2px solid #3a3122;padding:14px}
+.wb-panel h3{font:400 30px/1 'Almendra Display',serif;color:var(--wb-cream);margin:0 0 10px}
+.wb-clock{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wb-clock span{font:12px/1 'Cutive Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#8a806c}
+.wb-time{font:28px/1 'Cutive Mono',monospace;color:var(--wb-straw)}
+.wb-field{width:100%;display:block;background:#1d1a13}
+.wb-coil{transition:opacity .5s}
+.wb-coil.off{opacity:.12}
+.wb-boat{transition:transform 1s cubic-bezier(.3,.8,.3,1)}
+.wb-fuse{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);transition:stroke-dashoffset .9s ease}
+.wb-beast .fire{opacity:0;transition:opacity .8s}
+.wb-beast.lit .fire{opacity:1}
+.wb-beast.lit .body{fill:#5a2a10}
+.wb-beast .rib{opacity:0;transition:opacity .6s}
+.wb-beast.first .rib{opacity:1}
+.wb-flick{animation:wb-lick 1.1s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes wb-lick{from{transform:scaleY(.85) skewX(-5deg)}to{transform:scaleY(1.12) skewX(5deg)}}
+.wb-hare .wicker{transition:opacity .6s}
+.wb-hare.taken .wicker{opacity:.2}
+.wb-hare .face{opacity:0;transition:opacity .6s}
+.wb-hare.taken .face{opacity:1}
+.wb-legend{display:flex;justify-content:space-between;font:11px/1 'Cutive Mono',monospace;letter-spacing:.08em;color:#6b6252;text-transform:uppercase;margin:6px 0 10px}
+.wb-teams{border-top:2px dotted #3a3122;padding-top:6px}
+.wb-team{padding:8px 0;border-bottom:1px dashed #2a241a}
+.wb-team-head{display:flex;justify-content:space-between;align-items:center;font-weight:600;color:var(--wb-cream)}
+.wb-team-head b{font:13px/1 'Cutive Mono',monospace;font-weight:400;color:var(--wb-straw)}
+.wb-meter{display:flex;gap:3px;margin-top:7px}
+.wb-meter i{flex:1;height:7px;background:#2a241a;transition:background .5s}
+.wb-meter i.on{background:var(--wb-straw)}
+.wb-roles{display:flex;justify-content:space-between;gap:8px;margin-top:7px}
+.wb-roles small{display:block;font:10.5px/1.3 'Cutive Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:#6b6252;margin-bottom:3px}
+.wb-roles .wb-av{width:26px;height:26px;border-width:1.5px}
+.wb-roles .wb-faces .wb-av+.wb-av{margin-left:-7px}
+.wb-shieldbox{margin-top:12px;padding:11px 12px;border:1px dashed #6b5b2a;text-align:center;transition:all .5s}
+.wb-shieldbox .lbl{font:11px/1 'Cutive Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#8a7a4a}
+.wb-shieldbox .val{margin-top:6px;font-style:italic;color:#9b917c}
+.wb-shieldbox .holder{display:none;margin:8px auto 0}
+.wb-shieldbox .holder .wb-av{width:44px;height:44px;border-color:var(--wb-shield);box-shadow:0 0 14px rgba(243,207,92,.45)}
+.wb-shieldbox.on{border:1px solid var(--wb-shield);box-shadow:0 0 18px rgba(243,207,92,.15)}
+.wb-shieldbox.on .holder{display:block}
+.wb-shieldbox.on .lbl,.wb-shieldbox.on .val{color:var(--wb-shield);font-style:normal}
+.wb-shieldbox .cost{margin-top:4px;font:12px/1.35 'Cutive Mono',monospace;color:#8a806c}
+.wb-pot{margin-top:12px;border-top:2px dotted #3a3122;padding-top:10px}
+.wb-pot .r{display:flex;justify-content:space-between;font-size:15px;color:#9b917c}
+.wb-pot .r b{font:14px/1.6 'Cutive Mono',monospace;color:var(--wb-cream);font-weight:400}
+.wb-pot .big{font:32px/1.1 'Cutive Mono',monospace;color:var(--wb-straw);text-align:right;margin-top:4px}
+
+.wb-controls{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 16px;background:linear-gradient(0deg,#0d0b08 60%,rgba(13,11,8,0))}
+.wb-btn{font:600 16px/1 'Spectral',serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:12px 24px;
+  color:#16130e;background:var(--wb-straw);border:0;box-shadow:3px 3px 0 #000}
+.wb-btn:disabled{opacity:.4;cursor:default}
+.wb-btn.ghost{background:transparent;color:var(--wb-cream);border:1px solid var(--wb-straw-lo);box-shadow:none}
+.wb-btn:focus-visible{outline:2px solid var(--wb-cream);outline-offset:2px}
+.wb-counter{font:13px/1 'Cutive Mono',monospace;color:#8a806c;letter-spacing:.08em}
+@media (prefers-reduced-motion: reduce){
+  .wb-chaff,.wb-flick{animation:none}
+  .wb-card{transition:opacity .2s;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wb-navstub"><b>The Traitors</b><span>Episode 1 · Afternoon</span><span>Wicker Beasts</span></div>
+<div class="wb-sky"></div><div class="wb-weave"></div><div class="wb-chaff"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="weave" width="6" height="6" patternUnits="userSpaceOnUse">
+      <path d="M0 6L6 0M-1 1L1 -1M5 7L7 5" stroke="#e2b95a" stroke-width="1"/>
+      <path d="M0 0L6 6" stroke="#8f6e2c" stroke-width="1"/>
+    </pattern>
+    <symbol id="i-rope" viewBox="0 0 36 36"><ellipse cx="18" cy="20" rx="13" ry="9" fill="none" stroke="#e2b95a" stroke-width="3"/><ellipse cx="18" cy="20" rx="7" ry="4.5" fill="none" stroke="#8f6e2c" stroke-width="2.5"/><path d="M30 18c3-6 3-10 0-14" fill="none" stroke="#e2b95a" stroke-width="2.5"/></symbol>
+    <symbol id="i-fray" viewBox="0 0 36 36"><path d="M4 18h12" stroke="#e2b95a" stroke-width="3"/><path d="M20 18l6-5M20 18l7 0M20 18l6 5" stroke="#c2362b" stroke-width="2"/></symbol>
+    <symbol id="i-hare" viewBox="0 0 36 36"><path d="M8 28c0-8 6-12 12-12 5 0 8 4 8 8 0 3-2 4-4 4z" fill="url(#weave)" stroke="#e2b95a" stroke-width="1.2"/><path d="M20 16c-2-6-1-12 1-13 2 2 2 8 1 13M24 17c1-6 4-11 6-11 1 3-1 8-4 12" fill="url(#weave)" stroke="#e2b95a" stroke-width="1"/><circle cx="16" cy="24" r="4" fill="#f3cf5c"/></symbol>
+    <symbol id="i-oar" viewBox="0 0 36 36"><path d="M4 26c5 2 23 2 28 0l-3 5H7z" fill="#3f6c9b"/><path d="M6 6l20 20" stroke="#e2b95a" stroke-width="2.4"/><ellipse cx="27.5" cy="27.5" rx="3" ry="5" transform="rotate(-45 27.5 27.5)" fill="#e2b95a"/><path d="M2 32c4-2 8 2 12 0s8 2 12 0 6 2 8 1" fill="none" stroke="#3f6c9b" stroke-width="1.6"/></symbol>
+    <symbol id="i-torch" viewBox="0 0 36 36"><rect x="16" y="14" width="4" height="20" fill="#6b4a22"/><path d="M18 2c5 5 7 8 7 12a7 7 0 0 1-14 0c0-4 2-7 7-12z" fill="#ff8a2a"/><path d="M18 8c2 3 3 4 3 6a3 3 0 0 1-6 0c0-2 1-3 3-6z" fill="#ffd66b"/></symbol>
+    <symbol id="i-wet" viewBox="0 0 36 36"><rect x="16" y="14" width="4" height="20" fill="#6b4a22"/><path d="M18 6c3 3 4 5 4 7a4 4 0 0 1-8 0c0-2 1-4 4-7z" fill="#555"/><path d="M8 6v6M28 4v6M12 2v4" stroke="#3f6c9b" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-knot" viewBox="0 0 36 36"><path d="M2 18h10c4 0 4-8 8-8s4 8 0 8-4 8 0 8 4-8 8-8h6" fill="none" stroke="#e2b95a" stroke-width="3"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 36 36"><path d="M18 2c7 8 11 12 11 19a11 11 0 0 1-22 0c0-6 3-9 6-12 1 4 3 5 4 5-1-5-1-8 1-12z" fill="#ff8a2a"/><path d="M18 16c3 3 5 5 5 8a5 5 0 0 1-10 0c0-3 2-5 5-8z" fill="#ffd66b"/></symbol>
+  </defs>
+</svg>
+
+<div class="wb-shell">
+  <header class="wb-hero">
+    <i class="wb-ribbon l"></i><i class="wb-ribbon r"></i>
+    <div class="wb-kicker">Mission · Episode One</div>
+    <h1 class="wb-title">Wicker <span>Beasts</span></h1>
+    <p class="wb-sub">A stag and a boar made of willow, a river between you and the only torch, and half an hour
+      to set yours on fire before the other team sets theirs.</p>
+    <div class="wb-meta">
+      <span class="wb-chip">Stag v Boar</span>
+      <span class="wb-chip">30 minutes</span>
+      <span class="wb-chip">First to burn £10,000 · second £5,000</span>
+      <span class="wb-chip shield">A Shield inside a wicker hare</span>
+    </div>
+    <div class="wb-roster">
+      <div class="wb-rteam stag"><small>Stag</small><span class="wb-faces">
+        <img class="wb-av" src="../assets/avatars/brick.png" alt=""><img class="wb-av" src="../assets/avatars/priya.png" alt=""><img class="wb-av" src="../assets/avatars/fiore.png" alt=""><img class="wb-av" src="../assets/avatars/cody.png" alt=""><img class="wb-av" src="../assets/avatars/dawn.png" alt=""><img class="wb-av" src="../assets/avatars/alec.png" alt="">
+      </span></div>
+      <div class="wb-rteam boar"><small>Boar</small><span class="wb-faces">
+        <img class="wb-av" src="../assets/avatars/julia.png" alt=""><img class="wb-av" src="../assets/avatars/bowie.png" alt=""><img class="wb-av" src="../assets/avatars/gabby.png" alt=""><img class="wb-av" src="../assets/avatars/ellie.png" alt=""><img class="wb-av" src="../assets/avatars/manu.png" alt=""><img class="wb-av" src="../assets/avatars/courtney.png" alt="">
+      </span></div>
+    </div>
+  </header>
+
+  <div class="wb-grid">
+    <main>
+      <section class="wb-brief">
+        <div class="wb-host"><img class="wb-av" src="../assets/avatars/alan-cumming.png" alt=""><div><h2>The Briefing</h2><small>Alan Cumming · your host</small></div></div>
+        <p class="wb-staging">A riverside field. Two giant beasts woven from willow stand at the far end, a stag and a
+          boar. Heaps of storm debris line the near bank, and two rowing boats are tied up at the water.</p>
+
+        <div class="wb-beat do"><p>Alan Cumming stands between the two beasts, one hand resting on the stag's woven foreleg.</p></div>
+        <div class="wb-beat say"><p>Each team has a beast. Your job is to burn it.</p></div>
+        <div class="wb-beat say"><p>To burn it you need a fuse and a flame. The rope for the fuse is buried in that debris. Half of you dig it out and tie it into one long line from the beast to the bank.</p></div>
+        <div class="wb-beat do"><p>Alan Cumming points across the river to a single torch burning on a post.</p></div>
+        <div class="wb-beat say"><p>The other half row across and bring back the flame. Let it go out and you row back for another. Tie a bad knot and the fire stops at it.</p></div>
+        <div class="wb-beat say shield"><p>Somewhere in that debris is a small wicker hare, and inside the hare is a Shield. Whoever opens it keeps it.</p></div>
+        <div class="wb-beat say shield"><p>Whoever stops to open it is not finding rope, and your fuse will be shorter for it.</p></div>
+        <div class="wb-beat say"><p>The first beast to burn is ten thousand in the pot. The second is five. A beast that is still standing in thirty minutes earns nothing. Go.</p></div>
+        <div class="wb-beat do"><p>Alan Cumming steps well back from both beasts.</p></div>
+
+        <div class="wb-rules">
+          <span class="wb-rule"><b>task</b> beat 2</span>
+          <span class="wb-rule"><b>fuse</b> beat 3</span>
+          <span class="wb-rule"><b>failure</b> beat 5</span>
+          <span class="wb-rule shield"><b>shield</b> beat 6</span>
+          <span class="wb-rule shield"><b>cost</b> beat 7</span>
+          <span class="wb-rule"><b>reward</b> beat 8</span>
+          <span class="wb-rule"><b>finish</b> beat 8</span>
+        </div>
+      </section>
+
+      <section class="wb-phase">
+        <div class="wb-phase-head"><span class="wb-phase-n">I</span><span class="wb-phase-name">The Debris</span>
+          <span class="wb-phase-stats"><i class="wb-stat">intuition</i><i class="wb-stat">physical</i></span></div>
+        <p class="wb-setting">Heaps of storm wreckage on the near bank: branches, sacking, broken crates, and rope somewhere underneath.</p>
+
+        <article class="wb-card good" id="wb-step-0">
+          <span class="wb-ico"><svg><use href="#i-rope"/></svg></span><span class="wb-tag">Long coil</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/cody.png" alt=""></span>Cody <i>· Stag</i></div>
+          <div class="wb-txt">Cody pulled a whole broken fence out of the pile and found twenty feet of good rope still tied to it.</div>
+        </article>
+
+        <article class="wb-card bad" id="wb-step-1">
+          <span class="wb-ico"><svg><use href="#i-fray"/></svg></span><span class="wb-tag">Rotten</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/gabby.png" alt=""></span>Gabby <i>· Boar</i></div>
+          <div class="wb-txt">Gabby brought back three armfuls of rope, and two of them snapped the moment anybody pulled on them.</div>
+        </article>
+
+        <article class="wb-card relic" id="wb-step-2">
+          <span class="wb-ico"><svg><use href="#i-hare"/></svg></span><span class="wb-tag">The hare</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/fiore.png" alt=""></span>Fiore <i>· Stag</i></div>
+          <div class="wb-txt">Fiore found the wicker hare under a sheet of corrugated iron, sat down with it, and unpicked it until the Shield fell out. Priya saw her do it.</div>
+          <div class="wb-conf"><small>Fiore · confessional</small>Rope is rope. There was only one of those in the whole field.</div>
+          <div class="wb-fx"><span>shield · Fiore</span><span>seen by · Priya</span><span>fuse −1 length · Stag</span></div>
+        </article>
+
+        <article class="wb-card social bad" id="wb-step-3">
+          <span class="wb-ico"><svg><use href="#i-rope"/></svg></span><span class="wb-tag">Suspicious</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/brick.png" alt=""><img class="wb-av" src="../assets/avatars/fiore.png" alt=""></span>Brick &amp; Fiore <i>· Stag</i></div>
+          <div class="wb-txt">Brick counted the rope at the bank and asked, loudly, why one of the diggers had come back with nothing but straw on her.</div>
+          <div class="wb-conf"><small>Brick · confessional</small>Everybody else came back with rope. She came back with a smile.</div>
+          <div class="wb-fx"><span>claim · Brick → Fiore</span><span>suspicion +0.22</span><span>bond Brick ↔ Fiore −0.4</span></div>
+        </article>
+      </section>
+
+      <section class="wb-phase">
+        <div class="wb-phase-head"><span class="wb-phase-n">II</span><span class="wb-phase-name">The River</span>
+          <span class="wb-phase-stats"><i class="wb-stat">endurance</i><i class="wb-stat">strategic</i></span></div>
+        <p class="wb-setting">A slow brown river, two rowing boats, and one torch burning on a post on the far bank.</p>
+
+        <article class="wb-card good" id="wb-step-4">
+          <span class="wb-ico"><svg><use href="#i-oar"/></svg></span><span class="wb-tag">Strong oar</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/manu.png" alt=""></span>Manu <i>· Boar</i></div>
+          <div class="wb-txt">Manu rowed Boar across in a straight line and was at the torch before Stag had got their oars in the water.</div>
+        </article>
+
+        <article class="wb-card bad" id="wb-step-5">
+          <span class="wb-ico"><svg><use href="#i-oar"/></svg></span><span class="wb-tag">Circles</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/alec.png" alt=""></span>Alec <i>· Stag</i></div>
+          <div class="wb-txt">Alec pulled harder on one oar than the other, and Stag's boat turned a full circle in the middle of the river.</div>
+        </article>
+
+        <article class="wb-card social" id="wb-step-6">
+          <span class="wb-ico"><svg><use href="#i-oar"/></svg></span><span class="wb-tag">Heroic</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/dawn.png" alt=""><img class="wb-av" src="../assets/avatars/alec.png" alt=""></span>Dawn &amp; Alec <i>· Stag</i></div>
+          <div class="wb-txt">Dawn took one oar off Alec and counted the strokes out loud until the boat went straight.</div>
+          <div class="wb-conf"><small>Alec · confessional</small>Nobody taught me to row. Dawn did, in about ninety seconds, in the middle of a river.</div>
+          <div class="wb-fx"><span>bond Dawn ↔ Alec +0.6</span><span>crowd · Dawn heroic ×0.8</span></div>
+        </article>
+
+        <article class="wb-card bad" id="wb-step-7">
+          <span class="wb-ico"><svg><use href="#i-wet"/></svg></span><span class="wb-tag">Doused</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/bowie.png" alt=""></span>Bowie <i>· Boar</i></div>
+          <div class="wb-txt">Bowie held the torch too low coming back, a wave came over the side, and Boar rowed back across for another flame.</div>
+          <div class="wb-fx"><span>record · doused the torch</span><span>clock −4:00 · Boar</span></div>
+        </article>
+      </section>
+
+      <section class="wb-phase">
+        <div class="wb-phase-head"><span class="wb-phase-n">III</span><span class="wb-phase-name">The Fuse</span>
+          <span class="wb-phase-stats"><i class="wb-stat">mental</i><i class="wb-stat">temperament</i></span></div>
+        <p class="wb-setting">One long line of knotted rope from the bank to each beast's feet, and a torch coming up the field.</p>
+
+        <article class="wb-card good" id="wb-step-8">
+          <span class="wb-ico"><svg><use href="#i-knot"/></svg></span><span class="wb-tag">Tight knots</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/ellie.png" alt=""></span>Ellie <i>· Boar</i></div>
+          <div class="wb-txt">Ellie tied every join on Boar's fuse and tested each one with her whole weight.</div>
+        </article>
+
+        <article class="wb-card fire" id="wb-step-9">
+          <span class="wb-ico"><svg><use href="#i-fire"/></svg></span><span class="wb-tag">First to burn</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/priya.png" alt=""></span>Priya <i>· Stag</i></div>
+          <div class="wb-txt">Priya ran the torch up the field and put it to the end of Stag's fuse. The flame ran the whole length and the stag went up with eleven minutes to spare.</div>
+          <div class="wb-fx"><span>Stag · first · £10,000</span><span>crowd · Priya heroic ×0.6</span></div>
+        </article>
+
+        <article class="wb-card social bad" id="wb-step-10">
+          <span class="wb-ico"><svg><use href="#i-knot"/></svg></span><span class="wb-tag">Suspicious</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/ellie.png" alt=""><img class="wb-av" src="../assets/avatars/julia.png" alt=""></span>Ellie &amp; Julia <i>· Boar</i></div>
+          <div class="wb-txt">Boar's flame stopped dead at the one knot Ellie had not tied. Julia had tied it. Ellie retied it with the torch already burning beside her.</div>
+          <div class="wb-conf"><small>Ellie · confessional</small>I checked every knot I tied. I didn't check hers. I will next time.</div>
+          <div class="wb-fx"><span>claim · Ellie → Julia</span><span>suspicion +0.24</span><span>clock −3:00 · Boar</span></div>
+        </article>
+
+        <article class="wb-card fire" id="wb-step-11">
+          <span class="wb-ico"><svg><use href="#i-fire"/></svg></span><span class="wb-tag">Second</span>
+          <div class="wb-who"><span class="wb-faces"><img class="wb-av" src="../assets/avatars/manu.png" alt=""></span>Manu <i>· Boar</i></div>
+          <div class="wb-txt">The boar caught with four minutes left. Second, and still worth five thousand.</div>
+          <div class="wb-fx"><span>Boar · second · £5,000</span></div>
+        </article>
+      </section>
+
+      <div class="wb-summary" id="wb-summary" style="opacity:.25">
+        <small>The afternoon · solid</small>
+        Both beasts burned. The stag first, the boar late, and one wicker hare in the debris that nobody is going to talk about.
+      </div>
+    </main>
+
+    <aside class="wb-side" aria-label="The field">
+      <div class="wb-panel">
+        <h3>The Field</h3>
+        <div class="wb-clock"><span>left</span><div class="wb-time" id="wb-time">30:00</div></div>
+        <svg class="wb-field" viewBox="0 0 300 200" role="img" aria-label="The field in profile">
+          <defs><clipPath id="wf"><circle cx="0" cy="0" r="8"/></clipPath></defs>
+          <rect width="300" height="200" fill="#1d1a13"/>
+          <path d="M0 150 H300 V200 H0 Z" fill="#2a3a1c"/>
+          <!-- debris pile -->
+          <path d="M6 150 L22 118 L36 132 L50 110 L66 150 Z" fill="#3a3122"/>
+          <path d="M14 140 L60 124 M20 128 L48 146" stroke="#6b5b3a" stroke-width="2"/>
+          <g id="wb-coils"></g>
+          <g class="wb-hare" id="wb-hare" transform="translate(36,136)">
+            <path class="wicker" d="M-8 6c0-6 4-9 8-9 4 0 6 3 6 6 0 2-1 3-3 3z M0 -3c-1-5 0-9 1-10 1 1 1 6 0 10" fill="url(#weave)" stroke="#e2b95a" stroke-width="1"/>
+            <image class="face" href="../assets/avatars/fiore.png" x="-8" y="-8" width="16" height="16" clip-path="url(#wf)"/>
+          </g>
+          <!-- river -->
+          <path d="M92 150 C110 146 150 154 176 150 L176 200 L92 200 Z" fill="#223e5c"/>
+          <path d="M96 162 c8-3 16 3 24 0 s16 3 24 0 16 3 24 0" fill="none" stroke="#3f6c9b" stroke-width="1.4"/>
+          <g class="wb-boat" id="wb-boat-0" transform="translate(100,158)"><path d="M-12 0 h24 l-4 6 h-16 z" fill="#3f6c9b" stroke="#e2b95a"/><image href="../assets/avatars/alec.png" x="-6" y="-12" width="12" height="12" clip-path="url(#wf)" transform="translate(0,0)"/></g>
+          <g class="wb-boat" id="wb-boat-1" transform="translate(100,178)"><path d="M-12 0 h24 l-4 6 h-16 z" fill="#c2362b" stroke="#e2b95a"/><image href="../assets/avatars/manu.png" x="-6" y="-12" width="12" height="12" clip-path="url(#wf)"/></g>
+          <rect x="170" y="126" width="3" height="24" fill="#6b4a22"/>
+          <path d="M171.5 116c4 4 5 6 5 8a5 5 0 0 1-10 0c0-2 1-4 5-8z" fill="#ff8a2a"/>
+          <!-- fuses -->
+          <path class="wb-fuse" id="wb-fuse-0" style="--len:100" d="M176 146 C184 140 192 150 200 146" fill="none" stroke="#e2b95a" stroke-width="2" pathLength="100"/>
+          <path class="wb-fuse" id="wb-fuse-1" style="--len:100" d="M176 150 C200 158 226 146 252 150" fill="none" stroke="#c2362b" stroke-width="2" pathLength="100"/>
+          <!-- the stag -->
+          <g class="wb-beast" id="wb-beast-0" transform="translate(206,66) scale(1.4)">
+            <path class="body" d="M-16 60 L-14 30 L-22 10 L-10 12 L-8 0 L6 0 L10 12 L18 12 L14 30 L16 60 Z" fill="url(#weave)" stroke="#e2b95a" stroke-width="1.5"/>
+            <path d="M-8 0 L-16 -18 M-12 -10 L-22 -12 M6 0 L14 -18 M10 -10 L20 -12" stroke="#e2b95a" stroke-width="2"/>
+            <g class="fire"><path class="wb-flick" d="M-14 60c-4-20 4-34 8-50 6 16 12 30 6 50z" fill="#ff8a2a"/><path class="wb-flick" d="M-4 60c-4-26 6-44 10-64 8 22 12 40 4 64z" fill="#ffd66b"/><path class="wb-flick" d="M6 60c-2-18 4-28 8-42 5 14 8 26 2 42z" fill="#ff8a2a"/></g>
+            <path class="rib" d="M14 -4 l6 0 l0 16 l-3 -3 l-3 3 z" fill="#c2362b"/>
+          </g>
+          <!-- the boar -->
+          <g class="wb-beast" id="wb-beast-1" transform="translate(274,102) scale(1.4)">
+            <path class="body" d="M-26 34 L-24 14 L-30 8 L-22 0 L10 0 L18 8 L18 34 Z" fill="url(#weave)" stroke="#e2b95a" stroke-width="1.5"/>
+            <path d="M-30 8 L-36 12 M-28 12 l-6 -2" stroke="#e2b95a" stroke-width="2"/>
+            <g class="fire"><path class="wb-flick" d="M-22 34c-4-16 4-26 8-38 6 12 10 24 4 38z" fill="#ff8a2a"/><path class="wb-flick" d="M-8 34c-4-22 6-36 10-52 8 18 12 32 4 52z" fill="#ffd66b"/><path class="wb-flick" d="M6 34c-2-14 4-22 8-32 5 10 8 20 2 32z" fill="#ff8a2a"/></g>
+            <path class="rib" d="M12 -6 l6 0 l0 16 l-3 -3 l-3 3 z" fill="#c2362b"/>
+          </g>
+        </svg>
+        <div class="wb-legend"><span>debris</span><span>river</span><span>beasts</span></div>
+
+        <div class="wb-teams">
+          <div class="wb-team">
+            <div class="wb-team-head"><span style="color:#7ea2c9">Stag</span><b id="wb-r-0">no rope yet</b></div>
+            <div class="wb-meter" id="wb-m-0"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="wb-roles">
+              <div><small>diggers</small><span class="wb-faces"><img class="wb-av" src="../assets/avatars/brick.png" alt=""><img class="wb-av" src="../assets/avatars/fiore.png" alt=""><img class="wb-av" src="../assets/avatars/cody.png" alt=""></span></div>
+              <div><small>rowers</small><span class="wb-faces"><img class="wb-av" src="../assets/avatars/priya.png" alt=""><img class="wb-av" src="../assets/avatars/dawn.png" alt=""><img class="wb-av" src="../assets/avatars/alec.png" alt=""></span></div>
+            </div>
+          </div>
+          <div class="wb-team">
+            <div class="wb-team-head"><span style="color:#e0735f">Boar</span><b id="wb-r-1">no rope yet</b></div>
+            <div class="wb-meter" id="wb-m-1"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="wb-roles">
+              <div><small>diggers</small><span class="wb-faces"><img class="wb-av" src="../assets/avatars/gabby.png" alt=""><img class="wb-av" src="../assets/avatars/ellie.png" alt=""><img class="wb-av" src="../assets/avatars/julia.png" alt=""></span></div>
+              <div><small>rowers</small><span class="wb-faces"><img class="wb-av" src="../assets/avatars/manu.png" alt=""><img class="wb-av" src="../assets/avatars/bowie.png" alt=""><img class="wb-av" src="../assets/avatars/courtney.png" alt=""></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wb-shieldbox" id="wb-shieldbox">
+          <div class="lbl">The Hare</div>
+          <div class="holder"><img class="wb-av" src="../assets/avatars/fiore.png" alt=""></div>
+          <div class="val" id="wb-shieldval">somewhere in the debris</div>
+          <div class="cost" id="wb-shieldcost"></div>
+        </div>
+
+        <div class="wb-pot">
+          <div class="r"><span>Fund before</span><b>£0</b></div>
+          <div class="r"><span>First to burn</span><b id="wb-pot-1">—</b></div>
+          <div class="r"><span>Second</span><b id="wb-pot-2">—</b></div>
+          <div class="big" id="wb-pot-a">£0</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="wb-controls">
+  <button class="wb-btn" id="wb-next">Next</button>
+  <span class="wb-counter" id="wb-counter" aria-live="polite">0 of 12 revealed</span>
+  <button class="wb-btn ghost" id="wb-all">Reveal all</button>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 12, idx = -1;
+  /* per reveal count n: rope found (of 6), boat x (100 → 170 → back), fuse %, lit, first */
+  var ROPE = [[0,0],[3,0],[3,1],[3,1],[3,1],[3,1],[3,1],[3,1],[5,4],[5,4],[5,5],[5,6],[5,6]];
+  var BOATX = [[100,100],[100,100],[100,100],[100,100],[100,112],[106,168],[112,168],[168,168],[168,150],[168,150],[168,168],[168,168],[168,168]];
+  var FUSE = [[0,0],[20,0],[25,10],[25,10],[25,10],[25,10],[25,10],[25,10],[70,60],[100,70],[100,70],[100,100],[100,100]];
+  var LIT = [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[1,0],[1,0],[1,1]];
+  var TIME = ['30:00','28:10','26:40','25:05','23:20','21:15','19:40','18:00','14:10','11:00','08:20','05:30','04:00'];
+  var HARE_AT = 2;
+  function el(id){ return document.getElementById(id); }
+  function drawCoils(){
+    var out = '';
+    for (var t = 0; t < 2; t++) for (var i = 0; i < 6; i++) {
+      out += '<ellipse class="wb-coil off" id="wb-c-' + t + '-' + i + '" cx="' + (12 + i * 9) + '" cy="' + (158 + t * 12) + '" rx="4" ry="2.5" fill="none" stroke="' + (t ? '#c2362b' : '#e2b95a') + '" stroke-width="2"/>';
+    }
+    el('wb-coils').innerHTML = out;
+  }
+  function paint(){
+    var n = idx + 1;
+    for (var i = 0; i < TOTAL; i++) { var c = el('wb-step-' + i); if (c) c.classList.toggle('on', i <= idx); }
+    el('wb-counter').textContent = n + ' of ' + TOTAL + ' revealed';
+    el('wb-next').disabled = idx >= TOTAL - 1;
+    el('wb-summary').style.opacity = idx >= TOTAL - 1 ? '1' : '.25';
+    for (var t = 0; t < 2; t++) {
+      for (var k = 0; k < 6; k++) {
+        el('wb-c-' + t + '-' + k).setAttribute('class', 'wb-coil' + (k < ROPE[n][t] ? '' : ' off'));
+        el('wb-m-' + t).children[k].className = k < ROPE[n][t] ? 'on' : '';
+      }
+      el('wb-r-' + t).textContent = LIT[n][t] ? (t === 0 || !LIT[n][0] ? 'burning' : 'burning, second')
+        : ROPE[n][t] ? ROPE[n][t] + ' of 6 lengths' : 'no rope yet';
+      el('wb-boat-' + t).setAttribute('transform', 'translate(' + BOATX[n][t] + ',' + (158 + t * 20) + ')');
+      el('wb-fuse-' + t).style.strokeDashoffset = 100 - FUSE[n][t];
+      el('wb-beast-' + t).setAttribute('class', 'wb-beast' + (LIT[n][t] ? ' lit' : '') + (t === 0 && LIT[n][0] ? ' first' : ''));
+    }
+    var hare = n > HARE_AT;
+    el('wb-hare').setAttribute('class', 'wb-hare' + (hare ? ' taken' : ''));
+    el('wb-shieldbox').classList.toggle('on', hare);
+    el('wb-shieldval').textContent = hare ? 'Fiore · unpicked it in the debris' : 'somewhere in the debris';
+    el('wb-shieldcost').textContent = hare ? 'cost Stag one length of rope · seen by 1' : '';
+    el('wb-time').textContent = TIME[n];
+    el('wb-pot-1').textContent = LIT[n][0] ? 'Stag · £10,000' : '—';
+    el('wb-pot-2').textContent = LIT[n][1] ? 'Boar · £5,000' : '—';
+    el('wb-pot-a').textContent = '£' + ((LIT[n][0] ? 10000 : 0) + (LIT[n][1] ? 5000 : 0)).toLocaleString('en-GB');
+  }
+  el('wb-next').addEventListener('click', function(){
+    if (idx >= TOTAL - 1) return;
+    idx++; paint();
+    var c = el('wb-step-' + idx); if (c) c.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  el('wb-all').addEventListener('click', function(){ idx = TOTAL - 1; paint(); });
+  drawCoils();
+  paint();
+})();
+</script>
+</body>
+</html>
